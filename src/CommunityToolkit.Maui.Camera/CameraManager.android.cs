@@ -19,7 +19,7 @@ namespace CommunityToolkit.Maui.Core;
 [SupportedOSPlatform("android21.0")]
 partial class CameraManager
 {
-	readonly Context context = mauiContext.Context ?? throw new CameraViewException($"Unable to retrieve {nameof(Context)}");
+	readonly Context context = mauiContext.Context ?? throw new CameraException($"Unable to retrieve {nameof(Context)}");
 
 	NativePlatformCameraPreviewView? previewView;
 	IExecutorService? cameraExecutor;
@@ -47,7 +47,7 @@ partial class CameraManager
 		{
 			previewView.SetScaleType(NativePlatformCameraPreviewView.ScaleType.FitCenter);
 		}
-		cameraExecutor = Executors.NewSingleThreadExecutor() ?? throw new CameraViewException($"Unable to retrieve {nameof(IExecutorService)}");
+		cameraExecutor = Executors.NewSingleThreadExecutor() ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
 
 		return previewView;
 	}
@@ -64,12 +64,7 @@ partial class CameraManager
 
 	public partial void UpdateZoom(float zoomLevel)
 	{
-		if (cameraControl is null)
-		{
-			return;
-		}
-
-		cameraControl.SetZoomRatio(zoomLevel);
+		cameraControl?.SetZoomRatio(zoomLevel);
 	}
 
 	public async partial ValueTask UpdateCaptureResolution(Size resolution, CancellationToken token)
@@ -155,15 +150,15 @@ partial class CameraManager
 
 		cameraProviderFuture.AddListener(new Runnable(async () =>
 		{
-			processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new CameraViewException($"Unable to retrieve {nameof(ProcessCameraProvider)}"));
+			processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new CameraException($"Unable to retrieve {nameof(ProcessCameraProvider)}"));
 
 			if (cameraProvider.AvailableCameras is null)
 			{
 				await cameraProvider.RefreshAvailableCameras(token);
 
-				if (cameraProvider.AvailableCameras is null || cameraProvider.AvailableCameras.Count < 1)
+				if (cameraProvider.AvailableCameras is null)
 				{
-					throw new CameraViewException("No camera available on device");
+					throw new CameraException("Unable to refresh available cameras");
 				}
 			}
 
@@ -173,7 +168,7 @@ partial class CameraManager
 
 		}), ContextCompat.GetMainExecutor(context));
 
-		await cameraProviderTCS.Task;
+		await cameraProviderTCS.Task.WaitAsync(token);
 	}
 
 	protected async Task StartUseCase(CancellationToken token)
@@ -213,10 +208,10 @@ partial class CameraManager
 				await cameraProvider.RefreshAvailableCameras(token);
 			}
 
-			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraViewException("No camera available on device");
+			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 		}
 
-		var cameraSelector = cameraView.SelectedCamera.CameraSelector ?? throw new CameraViewException($"Unable to retrieve {nameof(CameraSelector)}");
+		var cameraSelector = cameraView.SelectedCamera.CameraSelector ?? throw new CameraException($"Unable to retrieve {nameof(CameraSelector)}");
 
 		var owner = (ILifecycleOwner)context;
 		camera = processCameraProvider.BindToLifecycle(owner, cameraSelector, cameraPreview, imageCapture);
@@ -224,7 +219,7 @@ partial class CameraManager
 		cameraControl = camera.CameraControl;
 
 		//start the camera with AutoFocus
-		MeteringPoint point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2, previewView.Height / 2, 0.1F);
+		MeteringPoint point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
 		FocusMeteringAction action = new FocusMeteringAction.Builder(point)
 															.DisableAutoCancel()
 															.Build();

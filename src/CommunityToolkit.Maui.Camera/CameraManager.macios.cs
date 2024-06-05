@@ -7,7 +7,6 @@ using CommunityToolkit.Maui.Extensions;
 using CoreMedia;
 using Foundation;
 using UIKit;
-using static UIKit.UIGestureRecognizer;
 
 namespace CommunityToolkit.Maui.Core;
 
@@ -64,7 +63,7 @@ partial class CameraManager
 		captureDevice.LockForConfiguration(out NSError error);
 		if (error is not null)
 		{
-			System.Diagnostics.Trace.WriteLine(error);
+			Trace.WriteLine(error);
 			return;
 		}
 
@@ -89,21 +88,21 @@ partial class CameraManager
 		if (cameraView.SelectedCamera is null)
 		{
 			await cameraProvider.RefreshAvailableCameras(token);
-			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraViewException("No camera available on device");
+			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 		}
 
 		var filteredFormatList = cameraView.SelectedCamera.SupportedFormats.Where(f =>
 		{
 			var d = ((CMVideoFormatDescription)f.FormatDescription).Dimensions;
 			return d.Width <= resolution.Width && d.Height <= resolution.Height;
-		});
+		}).ToList();
 
 		filteredFormatList = (filteredFormatList.Any() ? filteredFormatList : cameraView.SelectedCamera.SupportedFormats)
 			.OrderByDescending(f =>
 			{
 				var d = ((CMVideoFormatDescription)f.FormatDescription).Dimensions;
 				return d.Width * d.Height;
-			});
+			}).ToList();
 
 		if (filteredFormatList.Any())
 		{
@@ -119,9 +118,9 @@ partial class CameraManager
 		{
 			await cameraProvider.RefreshAvailableCameras(token);
 
-			if (cameraProvider.AvailableCameras is null || cameraProvider.AvailableCameras.Count < 1)
+			if (cameraProvider.AvailableCameras is null)
 			{
-				throw new CameraViewException("No camera available on device");
+				throw new CameraException("Unable to refresh cameras");
 			}
 		}
 
@@ -146,11 +145,11 @@ partial class CameraManager
 		if (cameraView.SelectedCamera is null)
 		{
 			await cameraProvider.RefreshAvailableCameras(token);
-			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraViewException("No camera available on device");
+			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 		}
 
-		captureDevice = cameraView.SelectedCamera.CaptureDevice ?? throw new CameraViewException($"No Camera found");
-		captureInput = new AVCaptureDeviceInput(captureDevice, out var err);
+		captureDevice = cameraView.SelectedCamera.CaptureDevice ?? throw new CameraException($"No Camera found");
+		captureInput = new AVCaptureDeviceInput(captureDevice, out _);
 		captureSession.AddInput(captureInput);
 
 		if (photoOutput is null)

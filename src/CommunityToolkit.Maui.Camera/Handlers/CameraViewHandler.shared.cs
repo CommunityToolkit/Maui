@@ -36,7 +36,7 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 		[nameof(ICameraView.StopCameraPreview)] = MapStopCameraPreview
 	};
 
-	readonly ICameraProvider cameraProvider = IPlatformApplication.Current?.Services.GetRequiredService<ICameraProvider>() ?? throw new CameraViewException($"{nameof(CameraProvider)} not found");
+	readonly ICameraProvider cameraProvider = IPlatformApplication.Current?.Services.GetRequiredService<ICameraProvider>() ?? throw new CameraException($"{nameof(CameraProvider)} not found");
 
 	CameraManager? cameraManager;
 
@@ -90,9 +90,11 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 	{
 		base.ConnectHandler(platformView);
 
+		var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+
 		await (cameraManager?.ArePermissionsGranted() ?? Task.CompletedTask);
-		await (cameraManager?.ConnectCamera(CancellationToken.None) ?? Task.CompletedTask);
-		await cameraProvider.RefreshAvailableCameras(CancellationToken.None);
+		await (cameraManager?.ConnectCamera(cancellationTokenSource.Token) ?? Task.CompletedTask);
+		await cameraProvider.RefreshAvailableCameras(cancellationTokenSource.Token);
 	}
 
 	/// <inheritdoc/>

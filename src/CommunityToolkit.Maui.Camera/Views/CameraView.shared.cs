@@ -174,7 +174,7 @@ public class CameraView : View, ICameraView
 		set => SetValue(IsTorchOnProperty, value);
 	}
 
-	static ICameraProvider CameraProvider => IPlatformApplication.Current?.Services.GetRequiredService<ICameraProvider>() ?? throw new CameraViewException("Unable to retrieve CameraProvider");
+	static ICameraProvider CameraProvider => IPlatformApplication.Current?.Services.GetRequiredService<ICameraProvider>() ?? throw new CameraException("Unable to retrieve CameraProvider");
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	bool ICameraView.IsAvailable
@@ -214,7 +214,7 @@ public class CameraView : View, ICameraView
 
 			if (CameraProvider.AvailableCameras is null)
 			{
-				throw new CameraViewException("No cameras found on device");
+				throw new CameraException("Unable to refresh available cameras");
 			}
 		}
 

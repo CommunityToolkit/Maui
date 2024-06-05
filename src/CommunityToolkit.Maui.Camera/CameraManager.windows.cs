@@ -117,9 +117,9 @@ partial class CameraManager
 		{
 			await cameraProvider.RefreshAvailableCameras(token);
 
-			if (cameraProvider.AvailableCameras is null || cameraProvider.AvailableCameras.Count < 1)
+			if (cameraProvider.AvailableCameras is null)
 			{
-				throw new CameraViewException("No camera available on device");
+				throw new CameraException("Unable to refresh cameras");
 			}
 		}
 
