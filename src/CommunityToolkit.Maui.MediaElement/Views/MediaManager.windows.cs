@@ -14,7 +14,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 partial class MediaManager : IDisposable
 {
-	MetaDataExtensions? metaDataExtensions;
+	Metadata? Metadata;
 	SystemMediaTransportControls? systemMediaControls;
 
 	// States that allow changing position
@@ -331,15 +331,15 @@ partial class MediaManager : IDisposable
 		}
 	}
 
-	void UpdateMetaData()
+	void UpdateMetadata()
 	{
 		if (systemMediaControls is null)
 		{
 			return;
 		}
 
-		metaDataExtensions ??= new(systemMediaControls, MediaElement, Dispatcher);
-		metaDataExtensions.SetMetaData(MediaElement);
+		Metadata ??= new(systemMediaControls, MediaElement, Dispatcher);
+		Metadata.SetMetadata(MediaElement);
 	}
 	void OnMediaElementMediaOpened(WindowsMediaElement sender, object args)
 	{
@@ -358,10 +358,14 @@ partial class MediaManager : IDisposable
 		}
 		MediaElement.MediaOpened();
 
-		static void SetDuration(in IMediaElement mediaElement, in MediaPlayerElement mediaPlayerElement) => mediaElement.Duration = mediaPlayerElement.MediaPlayer.NaturalDuration == TimeSpan.MaxValue
-																																		? TimeSpan.Zero
-																																		: mediaPlayerElement.MediaPlayer.NaturalDuration;
-		UpdateMetaData();
+		UpdateMetadata();
+
+		static void SetDuration(in IMediaElement mediaElement, in MediaPlayerElement mediaPlayerElement) 
+		{
+			mediaElement.Duration = mediaPlayerElement.MediaPlayer.NaturalDuration == TimeSpan.MaxValue
+				? TimeSpan.Zero
+				: mediaPlayerElement.MediaPlayer.NaturalDuration;		
+		}
 	}
 
 	void OnMediaElementMediaEnded(WindowsMediaElement sender, object args)

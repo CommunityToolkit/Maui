@@ -1,8 +1,10 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
+using Android.Graphics;
 using Android.Media;
 using Android.OS;
 using Android.Support.V4.Media.Session;
@@ -10,21 +12,22 @@ using AndroidX.Core.App;
 using AndroidX.LocalBroadcastManager.Content;
 using CommunityToolkit.Maui.Core.Views;
 using Microsoft.Win32.SafeHandles;
+using AndroidStream = Android.Media.Stream;
 using Resource = Microsoft.Maui.Resource;
-using Stream = Android.Media.Stream;
 
 namespace CommunityToolkit.Maui.Media.Services;
 
 [Service(Exported = false, Enabled = true, Name = "CommunityToolkit.Maui.Media.Services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
 public class MediaControlsService : Service
 {
-	bool disposedValue;
 	public const string ACTION_PLAY = "MediaAction.play";
 	public const string ACTION_PAUSE = "MediaAction.pause";
 	public const string ACTION_UPDATE_UI = "CommunityToolkit.Maui.Services.action.UPDATE_UI";
 	public const string ACTION_UPDATE_PLAYER = "CommunityToolkit.Maui.Services.action.UPDATE_PLAYER";
 	public const string ACTION_REWIND = "MediaAction.rewind";
 	public const string ACTION_FASTFORWARD = "MediaAction.fastForward";
+
+	bool isDisposed;
 
 	PendingIntentFlags pendingIntentFlags;
 	SafeHandle? safeHandle = new SafeFileHandle(IntPtr.Zero, true);
@@ -38,16 +41,9 @@ public class MediaControlsService : Service
 	MediaSessionCompat.Token? token;
 	ReceiveUpdates? receiveUpdates;
 
-	public MediaControlsService()
-	{
-	}
+	public override IBinder? OnBind(Intent? intent) => null;
 
-	public override IBinder? OnBind(Intent? intent)
-	{
-		return null;
-	}
-
-	public override StartCommandResult OnStartCommand(Intent? intent, StartCommandFlags flags, int startId)
+	public override StartCommandResult OnStartCommand([NotNull] Intent? intent, StartCommandFlags flags, int startId)
 	{
 		ArgumentNullException.ThrowIfNull(intent);
 
@@ -56,58 +52,71 @@ public class MediaControlsService : Service
 			BroadcastUpdate(ACTION_UPDATE_PLAYER, intent.Action);
 		}
 
-		startForegroundServiceAsync(intent).ContinueWith(t =>
+		StartForegroundService(intent).AsTask().ContinueWith(t =>
 		{
-			foreach (var exception in t.Exception!.InnerExceptions)
+			if (t.Exception is not null)
 			{
-				System.Diagnostics.Trace.WriteLine($"[error] {exception}, {exception.Message}");
+				foreach (var exception in t.Exception.InnerExceptions)
+				{
+					System.Diagnostics.Trace.WriteLine($"[error] {exception}, {exception.Message}");
+				}
 			}
 		}, TaskContinuationOptions.OnlyOnFaulted);
 
 		return StartCommandResult.Sticky;
 	}
 
-	async Task startForegroundServiceAsync(Intent mediaManagerIntent, CancellationToken cancellationToken = default)
+	static void CreateNotificationChannel(NotificationManager notificationMnaManager)
+	{
+		var channel = new NotificationChannel("1", "notification", NotificationImportance.Low);
+		notificationMnaManager.CreateNotificationChannel(channel);
+	}
+
+	[MemberNotNull(nameof(mediaSession))]
+	[MemberNotNull(nameof(token))]
+	[MemberNotNull(nameof(receiveUpdates))]
+	ValueTask StartForegroundService(Intent mediaManagerIntent, CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(mediaManagerIntent);
-		token ??= mediaManagerIntent.GetParcelableExtra("token") as MediaSessionCompat.Token;
-		ArgumentNullException.ThrowIfNull(token);
+		token ??= (MediaSessionCompat.Token)(mediaManagerIntent.GetParcelableExtra("token") ?? throw new InvalidOperationException("Token cannot be null"));
 
 		mediaSession ??= new MediaSessionCompat(Platform.AppContext, "notification")
 		{
 			Active = true,
 		};
-		ArgumentNullException.ThrowIfNull(mediaSession);
+
 		if (receiveUpdates is null)
 		{
 			receiveUpdates = new ReceiveUpdates();
 			receiveUpdates.PropertyChanged += OnReceiveUpdatesPropertyChanged;
 			LocalBroadcastManager.GetInstance(this).RegisterReceiver(receiveUpdates, new IntentFilter(ACTION_UPDATE_UI));
 		}
+
 		OnSetupAudioServices();
 
 		pendingIntentFlags = Build.VERSION.SdkInt >= BuildVersionCodes.S
-		? PendingIntentFlags.UpdateCurrent |
-		  PendingIntentFlags.Immutable
-		: PendingIntentFlags.UpdateCurrent;
+			? PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable
+			: PendingIntentFlags.UpdateCurrent;
 
-		await InitializeNotification(mediaSession, mediaManagerIntent, cancellationToken).ConfigureAwait(false);
+		return InitializeNotification(mediaSession, mediaManagerIntent, cancellationToken);
 	}
 
-	async Task InitializeNotification(MediaSessionCompat mediaSession, Intent mediaManagerIntent, CancellationToken cancellationToken)
+	async ValueTask InitializeNotification(MediaSessionCompat mediaSession, Intent mediaManagerIntent, CancellationToken cancellationToken)
 	{
-		var notificationManager = GetSystemService(Context.NotificationService) as NotificationManager;
+		var notificationManager = GetSystemService(NotificationService) as NotificationManager;
 		var intent = new Intent(this, typeof(MediaControlsService));
 		var pendingIntent = PendingIntent.GetActivity(this, 2, intent, pendingIntentFlags);
 
 		var style = new AndroidX.Media.App.NotificationCompat.MediaStyle();
 		style.SetMediaSession(token);
+
 		if (Build.VERSION.SdkInt >= BuildVersionCodes.S)
 		{
 			style.SetShowActionsInCompactView(0, 1, 2, 3);
 		}
 
-		if (Build.VERSION.SdkInt < BuildVersionCodes.Tiramisu && notification is null)
+		if (Build.VERSION.SdkInt < BuildVersionCodes.Tiramisu
+			&& notification is null)
 		{
 			notification = new NotificationCompat.Builder(Platform.AppContext, "1");
 			OnSetIntents();
@@ -117,7 +126,7 @@ public class MediaControlsService : Service
 		notification ??= new NotificationCompat.Builder(Platform.AppContext, "1");
 
 		notification.SetStyle(style);
-		notification.SetSmallIcon(Resource.Drawable.exo_styled_controls_audiotrack);
+		notification.SetSmallIcon(_Microsoft.Android.Resource.Designer.Resource.Drawable.exo_styled_controls_audiotrack);
 		notification.SetAutoCancel(false);
 		notification.SetVisibility(NotificationCompat.VisibilityPublic);
 		mediaSession.SetExtras(intent.Extras);
@@ -141,12 +150,6 @@ public class MediaControlsService : Service
 		}
 	}
 
-	static void CreateNotificationChannel(NotificationManager notificationMnaManager)
-	{
-		var channel = new NotificationChannel("1", "notification", NotificationImportance.Low);
-		notificationMnaManager.CreateNotificationChannel(channel);
-	}
-
 	void OnReceiveUpdatesPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (notification is null || string.IsNullOrEmpty(receiveUpdates?.Action))
@@ -155,11 +158,11 @@ public class MediaControlsService : Service
 		}
 		notification.ClearActions();
 		notification.AddAction(actionPrevious);
-		if (receiveUpdates.Action == ACTION_PLAY)
+		if (receiveUpdates.Action is ACTION_PLAY)
 		{
 			notification.AddAction(actionPause);
 		}
-		if (receiveUpdates.Action == ACTION_PAUSE)
+		if (receiveUpdates.Action is ACTION_PAUSE)
 		{
 			notification.AddAction(actionPlay);
 		}
@@ -171,9 +174,9 @@ public class MediaControlsService : Service
 	{
 		audioManager = GetSystemService(Context.AudioService) as AudioManager;
 		ArgumentNullException.ThrowIfNull(audioManager);
-		audioManager.RequestAudioFocus(null, Stream.Music, AudioFocus.Gain);
+		audioManager.RequestAudioFocus(null, AndroidStream.Music, AudioFocus.Gain);
 		audioManager.SetParameters("Ducking=true");
-		audioManager.SetStreamVolume(Stream.Music, audioManager.GetStreamVolume(Stream.Music), VolumeNotificationFlags.ShowUi);
+		audioManager.SetStreamVolume(AndroidStream.Music, audioManager.GetStreamVolume(AndroidStream.Music), VolumeNotificationFlags.ShowUi);
 	}
 
 	async Task OnSetContent(Intent mediaManagerIntent, CancellationToken cancellationToken)
@@ -228,7 +231,7 @@ public class MediaControlsService : Service
 
 	protected override void Dispose(bool disposing)
 	{
-		if (!disposedValue)
+		if (!isDisposed)
 		{
 			if (disposing)
 			{
@@ -249,7 +252,7 @@ public class MediaControlsService : Service
 			}
 			receiveUpdates?.Dispose();
 			receiveUpdates = null;
-			disposedValue = true;
+			isDisposed = true;
 		}
 		base.Dispose(disposing);
 	}

@@ -11,17 +11,17 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// <summary>
 	/// Gets or sets the title of the media.
 	/// </summary>
-	string MetaDataTitle { get; set; }
+	string MetadataTitle { get; set; }
 
 	/// <summary>
 	/// Gets or sets the artist of the media.
 	/// </summary>
-	string MetaDataArtist { get; set; }
+	string MetadataArtist { get; set; }
 
 	/// <summary>
 	/// Gets or sets the artwork Image Url.
 	/// </summary>
-	string MetaDataArtworkUrl { get; set; }
+	string MetadataArtworkUrl { get; set; }
 
 	/// <summary>
 	/// Gets the media aspect ratio.
