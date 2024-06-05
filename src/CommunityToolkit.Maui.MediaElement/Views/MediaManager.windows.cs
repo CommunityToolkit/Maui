@@ -14,7 +14,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 partial class MediaManager : IDisposable
 {
-	Metadata? Metadata;
+	Metadata? metadata;
 	SystemMediaTransportControls? systemMediaControls;
 
 	// States that allow changing position
@@ -338,9 +338,10 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
-		Metadata ??= new(systemMediaControls, MediaElement, Dispatcher);
-		Metadata.SetMetadata(MediaElement);
+		metadata ??= new(systemMediaControls, MediaElement, Dispatcher);
+		metadata.SetMetadata(MediaElement);
 	}
+
 	void OnMediaElementMediaOpened(WindowsMediaElement sender, object args)
 	{
 		if (Player is null)
