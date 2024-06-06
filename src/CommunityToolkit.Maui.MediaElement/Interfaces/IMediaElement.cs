@@ -9,6 +9,21 @@ namespace CommunityToolkit.Maui.Core;
 public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 {
 	/// <summary>
+	/// Gets or sets the title of the media.
+	/// </summary>
+	string MetadataTitle { get; set; }
+
+	/// <summary>
+	/// Gets or sets the artist of the media.
+	/// </summary>
+	string MetadataArtist { get; set; }
+
+	/// <summary>
+	/// Gets or sets the artwork Image Url.
+	/// </summary>
+	string MetadataArtworkUrl { get; set; }
+
+	/// <summary>
 	/// Gets the media aspect ratio.
 	/// </summary>
 	/// <remarks>Not functional for non-visual media.</remarks>

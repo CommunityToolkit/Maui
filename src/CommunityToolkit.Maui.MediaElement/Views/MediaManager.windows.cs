@@ -1,8 +1,9 @@
-﻿using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Media;
 using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.System.Display;
@@ -13,6 +14,9 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 partial class MediaManager : IDisposable
 {
+	Metadata? metadata;
+	SystemMediaTransportControls? systemMediaControls;
+
 	SubtitleExtensions? subtitleExtensions;
 	readonly CancellationTokenSource subTitles = new();
 	Task? startSubtitles;
@@ -57,6 +61,7 @@ partial class MediaManager : IDisposable
 		Player.MediaPlayer.VolumeChanged += OnMediaElementVolumeChanged;
 		Player.MediaPlayer.IsMutedChanged += OnMediaElementIsMutedChanged;
 
+		systemMediaControls = Player.MediaPlayer.SystemMediaTransportControls;
 		return Player;
 	}
 
@@ -350,6 +355,17 @@ partial class MediaManager : IDisposable
 		}
 	}
 
+	void UpdateMetadata()
+	{
+		if (systemMediaControls is null)
+		{
+			return;
+		}
+
+		metadata ??= new(systemMediaControls, MediaElement, Dispatcher);
+		metadata.SetMetadata(MediaElement);
+	}
+
 	void OnMediaElementMediaOpened(WindowsMediaElement sender, object args)
 	{
 		if (Player is null)
@@ -367,9 +383,14 @@ partial class MediaManager : IDisposable
 		}
 		MediaElement.MediaOpened();
 
-		static void SetDuration(in IMediaElement mediaElement, in MediaPlayerElement mediaPlayerElement) => mediaElement.Duration = mediaPlayerElement.MediaPlayer.NaturalDuration == TimeSpan.MaxValue
-																																		? TimeSpan.Zero
-																																		: mediaPlayerElement.MediaPlayer.NaturalDuration;
+		UpdateMetadata();
+
+		static void SetDuration(in IMediaElement mediaElement, in MediaPlayerElement mediaPlayerElement)
+		{
+			mediaElement.Duration = mediaPlayerElement.MediaPlayer.NaturalDuration == TimeSpan.MaxValue
+				? TimeSpan.Zero
+				: mediaPlayerElement.MediaPlayer.NaturalDuration;
+		}
 	}
 
 	void OnMediaElementMediaEnded(WindowsMediaElement sender, object args)
