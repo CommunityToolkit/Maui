@@ -7,6 +7,8 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 public partial class UpdatingPopupViewModel : BaseViewModel
 {
 	const double finalUpdateProgressValue = 1;
+	int updates;
+	
 	readonly IPopupService popupService;
 	[ObservableProperty]
 	string message = "";
@@ -23,6 +25,7 @@ public partial class UpdatingPopupViewModel : BaseViewModel
 	internal async void PerformUpdates(int numberOfUpdates)
 	{
 		double updateTotalForPercentage = numberOfUpdates + 1;
+		updates = numberOfUpdates;
 
 		for (var update = 1; update <= numberOfUpdates; update++)
 		{
@@ -34,13 +37,19 @@ public partial class UpdatingPopupViewModel : BaseViewModel
 		}
 
 		UpdateProgress = finalUpdateProgressValue;
-		Message = "Updates complete";
+		Message = $"Completed {numberOfUpdates} updates";
 	}
 
 	[RelayCommand(CanExecute = nameof(CanFinish))]
 	void OnFinish()
 	{
 		popupService.ClosePopup();
+	}
+	
+	[RelayCommand]
+	void OnMore()
+	{
+		popupService.ShowPopup<UpdatingPopupViewModel>(onPresenting: viewModel => viewModel.PerformUpdates(updates + 2));
 	}
 
 	bool CanFinish() => UpdateProgress is finalUpdateProgressValue;
