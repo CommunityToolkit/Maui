@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Core;
 partial class CameraProvider
 {
 	static readonly AVCaptureDeviceType[] captureDevices = InitializeCaptureDevices();
-	
+
 	public partial ValueTask RefreshAvailableCameras(CancellationToken token)
 	{
 		var discoverySession = AVCaptureDeviceDiscoverySession.Create(captureDevices, AVMediaTypes.Video, AVCaptureDevicePosition.Unspecified);

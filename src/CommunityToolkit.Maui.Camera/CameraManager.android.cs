@@ -72,10 +72,10 @@ partial class CameraManager
 		if (resolutionFilter is not null)
 		{
 			if (Math.Abs(resolutionFilter.TargetSize.Width - resolution.Width) < double.Epsilon &&
-			    Math.Abs(resolutionFilter.TargetSize.Height - resolution.Height) < double.Epsilon)
+				Math.Abs(resolutionFilter.TargetSize.Height - resolution.Height) < double.Epsilon)
 			{
 				return;
-			}	
+			}
 		}
 
 		var targetSize = new Android.Util.Size((int)resolution.Width, (int)resolution.Height);
@@ -249,7 +249,7 @@ partial class CameraManager
 	{
 		ArgumentNullException.ThrowIfNull(cameraExecutor);
 		ArgumentNullException.ThrowIfNull(imageCallback);
-		
+
 		imageCapture?.TakePicture(cameraExecutor, imageCallback);
 		return ValueTask.CompletedTask;
 	}

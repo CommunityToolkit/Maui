@@ -196,12 +196,13 @@ partial class CameraManager
 			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 		}
 
-		var filteredPropertiesList = cameraView.SelectedCamera.ImageEncodingProperties.Where(p => p.Width <= resolution.Width && p.Height <= resolution.Height);
+		var filteredPropertiesList = cameraView.SelectedCamera.ImageEncodingProperties.Where(p => p.Width <= resolution.Width && p.Height <= resolution.Height).ToList();
 
-		filteredPropertiesList = filteredPropertiesList.Any() ? filteredPropertiesList : cameraView.SelectedCamera.ImageEncodingProperties
-			.OrderByDescending(p => p.Width * p.Height);
+		filteredPropertiesList = filteredPropertiesList.Count is not 0
+			? filteredPropertiesList
+			: [.. cameraView.SelectedCamera.ImageEncodingProperties.OrderByDescending(p => p.Width * p.Height)];
 
-		if (filteredPropertiesList.Any())
+		if (filteredPropertiesList.Count is not 0)
 		{
 			await mediaCapture.VideoDeviceController.SetMediaStreamPropertiesAsync(MediaStreamType.Photo, filteredPropertiesList.First()).AsTask(token);
 		}
