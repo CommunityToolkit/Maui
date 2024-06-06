@@ -138,7 +138,7 @@ public class MauiMediaElement : CoordinatorLayout
 
 		var (_, currentWindow, _, _) = VerifyAndRetrieveCurrentWindowResources();
 		var layout = currentWindow?.DecorView as ViewGroup;
-		
+
 		if (e.IsFullScreen)
 		{
 			isFullScreen = true;
