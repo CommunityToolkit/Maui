@@ -28,7 +28,14 @@
 	<string>Assets.xcassets/appicon.appiconset</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>ISpeechToText Uses Speech Recognition</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string></string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>ISpeechToText Uses Microphone</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>bluetooth-central</string>
+		<string>audio</string>
+	</array>
 </dict>
 </plist>

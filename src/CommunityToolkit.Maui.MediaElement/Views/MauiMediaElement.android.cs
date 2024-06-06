@@ -21,8 +21,7 @@ public class MauiMediaElement : CoordinatorLayout
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
 	bool isFullScreen;
-	int playerHeight;
-	int playerWidth;
+	readonly RelativeLayout relativeLayout;
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -45,9 +44,18 @@ public class MauiMediaElement : CoordinatorLayout
 		playerView.FullscreenButtonClick += OnFullscreenButtonClick;
 		this.playerView.SetBackgroundColor(Android.Graphics.Color.Black);
 
-		AddView(playerView);
-	}
+		var layout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
+		layout.AddRule(LayoutRules.CenterInParent);
+		layout.AddRule(LayoutRules.CenterVertical);
+		layout.AddRule(LayoutRules.CenterHorizontal);
+		relativeLayout = new RelativeLayout(Platform.AppContext)
+		{
+			LayoutParameters = layout,
+		};
+		relativeLayout.AddView(playerView);
 
+		AddView(relativeLayout);
+	}
 	public override void OnDetachedFromWindow()
 	{
 		if (isFullScreen)
@@ -129,36 +137,22 @@ public class MauiMediaElement : CoordinatorLayout
 		}
 
 		var (_, currentWindow, _, _) = VerifyAndRetrieveCurrentWindowResources();
+		var layout = currentWindow?.DecorView as ViewGroup;
 
-		// Hide the SystemBars and Status bar
 		if (e.IsFullScreen)
 		{
 			isFullScreen = true;
-			playerHeight = playerView.Height;
-			playerWidth = playerView.Width;
-			DisplayMetrics displayMetrics = new DisplayMetrics();
-			currentWindow?.WindowManager?.DefaultDisplay?.GetMetrics(displayMetrics);
-			var layout = currentWindow?.DecorView as ViewGroup;
-
-			RemoveView(playerView);
-			RelativeLayout.LayoutParams item = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
-			item.Width = displayMetrics.WidthPixels;
-			item.Height = displayMetrics.HeightPixels;
-			layout?.AddView(playerView, item);
-			SetSystemBarsVisibility();
+			RemoveView(relativeLayout);
+			layout?.AddView(relativeLayout);
 		}
 		else
 		{
 			isFullScreen = false;
-			var layout = currentWindow?.DecorView as ViewGroup;
-			RelativeLayout.LayoutParams item = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
-			item.Width = playerWidth;
-			item.Height = playerHeight;
-
-			layout?.RemoveView(playerView);
-			AddView(playerView, item);
-			SetSystemBarsVisibility();
+			layout?.RemoveView(relativeLayout);
+			AddView(relativeLayout);
 		}
+		// Hide/Show the SystemBars and Status bar
+		SetSystemBarsVisibility();
 	}
 
 	void SetSystemBarsVisibility()
