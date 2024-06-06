@@ -17,6 +17,7 @@ using Com.Google.Android.Exoplayer2.UI;
 using Com.Google.Android.Exoplayer2.Video;
 using CommunityToolkit.Maui.ApplicationModel.Permissions;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
