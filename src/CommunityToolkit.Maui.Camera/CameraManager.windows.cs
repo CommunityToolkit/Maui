@@ -138,7 +138,7 @@ partial class CameraManager
 		if (cameraView.SelectedCamera is null)
 		{
 			await cameraProvider.RefreshAvailableCameras(token);
-			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraViewException("No camera available on device");
+			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 		}
 
 		await mediaCapture.InitializeCameraForCameraView(cameraView.SelectedCamera.DeviceId, token);
@@ -193,7 +193,7 @@ partial class CameraManager
 		if (cameraView.SelectedCamera is null)
 		{
 			await cameraProvider.RefreshAvailableCameras(token);
-			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraViewException("No camera available on device");
+			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 		}
 
 		var filteredPropertiesList = cameraView.SelectedCamera.ImageEncodingProperties.Where(p => p.Width <= resolution.Width && p.Height <= resolution.Height);
