@@ -224,6 +224,7 @@ public partial class MediaManager : IDisposable
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 		
 		AVAsset? asset = null;
+		subtitleExtensions?.StopSubtitleDisplay();
 		if (Player is null)
 		{
 			return;
@@ -231,7 +232,7 @@ public partial class MediaManager : IDisposable
 
 		metaData ??= new(Player);
 		metaData.ClearNowPlaying();
-
+		
 		if (MediaElement.Source is UriMediaSource uriMediaSource)
 		{
 			var uri = uriMediaSource.Uri;
@@ -277,8 +278,6 @@ public partial class MediaManager : IDisposable
 		CurrentItemErrorObserver?.Dispose();
 
 		Player.ReplaceCurrentItemWithPlayerItem(PlayerItem);
-
-		Player?.ReplaceCurrentItemWithPlayerItem(PlayerItem);
 		subtitleExtensions ??= new(Player, PlayerViewController);
 		CurrentItemErrorObserver = PlayerItem?.AddObserver("error",
 			valueObserverOptions, (NSObservedChange change) =>

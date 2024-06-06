@@ -202,6 +202,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 		};
 
+		subtitleExtensions = new(Platform.AppContext, PlayerView, Dispatcher);
 		checkPermissionsTask = CheckAndRequestForegroundPermission(checkPermissionSourceToken.Token);
 		return (Player, PlayerView);
 	}
