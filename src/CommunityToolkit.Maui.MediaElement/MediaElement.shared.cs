@@ -16,15 +16,15 @@ public class MediaElement : View, IMediaElement, IDisposable
 	public static readonly BindableProperty AspectProperty =
 		BindableProperty.Create(nameof(Aspect), typeof(Aspect), typeof(MediaElement), Aspect.AspectFit);
 
-	static readonly BindablePropertyKey durationPropertyKey =
-		BindableProperty.CreateReadOnly(nameof(Duration), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero);
-
 	/// <summary>
 	/// Backing store for the <see cref="CurrentState"/> property.
 	/// </summary>
 	public static readonly BindableProperty CurrentStateProperty =
 		BindableProperty.Create(nameof(CurrentState), typeof(MediaElementState), typeof(MediaElement),
 			MediaElementState.None, propertyChanged: OnCurrentStatePropertyChanged);
+
+	static readonly BindablePropertyKey durationPropertyKey =
+		BindableProperty.CreateReadOnly(nameof(Duration), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero);
 
 	/// <summary>
 	/// Backing store for the <see cref="Duration"/> property.
@@ -98,6 +98,21 @@ public class MediaElement : View, IMediaElement, IDisposable
 	public static readonly BindableProperty VolumeProperty =
 		BindableProperty.Create(nameof(Volume), typeof(double), typeof(MediaElement), 1.0,
 			BindingMode.TwoWay, propertyChanging: ValidateVolume);
+
+	/// <summary>
+	/// Backing store for the <see cref="MetadataTitle"/> property.
+	/// </summary>
+	public static readonly BindableProperty MetadataTitleProperty = BindableProperty.Create(nameof(MetadataTitle), typeof(string), typeof(MediaElement), string.Empty);
+
+	/// <summary>
+	/// Backing store for the <see cref="MetadataArtist"/> property.
+	/// </summary>
+	public static readonly BindableProperty MetadataArtistProperty = BindableProperty.Create(nameof(MetadataArtist), typeof(string), typeof(MediaElement), string.Empty);
+
+	/// <summary>
+	/// Backing store for the <see cref="MetadataArtworkUrl"/> property.
+	/// </summary>
+	public static readonly BindableProperty MetadataArtworkUrlProperty = BindableProperty.Create(nameof(MetadataArtworkUrl), typeof(string), typeof(MediaElement), string.Empty);
 
 	readonly WeakEventManager eventManager = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
@@ -316,6 +331,36 @@ public class MediaElement : View, IMediaElement, IDisposable
 	}
 
 	/// <summary>
+	/// Gets or sets the Title of the media.
+	/// This is a bindable property.
+	/// </summary>
+	public string MetadataTitle
+	{
+		get => (string)GetValue(MetadataTitleProperty);
+		set => SetValue(MetadataTitleProperty, value);
+	}
+
+	/// <summary>
+	/// Gets or sets the Artist of the media.
+	/// This is a bindable property.
+	/// </summary>
+	public string MetadataArtist
+	{
+		get => (string)GetValue(MetadataArtistProperty);
+		set => SetValue(MetadataArtistProperty, value);
+	}
+
+	/// <summary>
+	/// Gets or sets the Artwork Image Url of the media.
+	/// This is a bindable property.
+	/// </summary>
+	public string MetadataArtworkUrl
+	{
+		get => (string)GetValue(MetadataArtworkUrlProperty);
+		set => SetValue(MetadataArtworkUrlProperty, value);
+	}
+
+	/// <summary>
 	/// Gets or sets how the media will be scaled to fit the display area.
 	/// Default value is <see cref="Aspect.AspectFit"/>. This is a bindable property.
 	/// </summary>
@@ -354,6 +399,7 @@ public class MediaElement : View, IMediaElement, IDisposable
 		get => (TimeSpan)GetValue(DurationProperty);
 		set => SetValue(durationPropertyKey, value);
 	}
+
 
 	/// <inheritdoc/>
 	TaskCompletionSource IAsynchronousMediaElementHandler.SeekCompletedTCS => seekCompletedTaskCompletionSource;

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
@@ -159,22 +160,35 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		switch (result)
 		{
 			case loadOnlineMp4:
+				MediaElement.MetadataTitle = "Big Buck Bunny";
+				MediaElement.MetadataArtworkUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
+				MediaElement.MetadataArtist = "Big Buck Bunny Album";
 				MediaElement.Source =
 					MediaSource.FromUri(
 						"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
 				return;
 
 			case loadHls:
+				MediaElement.MetadataArtist = "HLS Album";
+				MediaElement.MetadataArtworkUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
+				MediaElement.MetadataTitle = "HLS Title";
 				MediaElement.Source
 					= MediaSource.FromUri(
 						"https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8");
 				return;
 
 			case resetSource:
+				MediaElement.MetadataArtworkUrl = string.Empty;
+				MediaElement.MetadataTitle = string.Empty;
+				MediaElement.MetadataArtist = string.Empty;
 				MediaElement.Source = null;
 				return;
 
 			case loadLocalResource:
+				MediaElement.MetadataArtworkUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
+				MediaElement.MetadataTitle = "Local Resource Title";
+				MediaElement.MetadataArtist = "Local Resource Album";
+
 				if (DeviceInfo.Platform == DevicePlatform.MacCatalyst
 					|| DeviceInfo.Platform == DevicePlatform.iOS)
 				{
@@ -192,7 +206,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	async void ChangeAspectClicked(Object sender, EventArgs e)
+	async void ChangeAspectClicked(object? sender, EventArgs e)
 	{
 		var resultAspect = await DisplayActionSheet("Choose aspect ratio",
 			"Cancel", null, Aspect.AspectFit.ToString(),
@@ -203,11 +217,9 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			return;
 		}
 
-		if (!Enum.TryParse(typeof(Aspect), resultAspect, true, out var aspectEnum)
-			|| aspectEnum is null)
+		if (!Enum.TryParse(typeof(Aspect), resultAspect, true, out var aspectEnum))
 		{
-			await DisplayAlert("Error", "There was an error determining the selected aspect",
-				"OK");
+			await DisplayAlert("Error", "There was an error determining the selected aspect", "OK");
 
 			return;
 		}
