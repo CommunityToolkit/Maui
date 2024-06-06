@@ -173,16 +173,6 @@ partial class CameraManager
 		IsInitialized = false;
 	}
 
-	protected ValueTask UpdateCameraInfo(CancellationToken token)
-	{
-		if (mediaCapture is null)
-		{
-			return ValueTask.CompletedTask;
-		}
-
-		return cameraProvider.RefreshAvailableCameras(token);
-	}
-
 	protected async Task PlatformUpdateResolution(Size resolution, CancellationToken token)
 	{
 		if (!IsInitialized || mediaCapture is null)

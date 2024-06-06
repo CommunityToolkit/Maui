@@ -121,7 +121,7 @@ partial class CameraManager(
 	/// Connects to the camera, at the platform specific level.
 	/// </summary>
 	/// <param name="token">A <see cref="CancellationToken"/> that can be used to cancel the work.</param>
-	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
+	/// <returns>A <see cref="Task"/> that can be awaited.</returns>
 	protected virtual partial Task PlatformConnectCamera(CancellationToken token);
 
 	/// <summary>
