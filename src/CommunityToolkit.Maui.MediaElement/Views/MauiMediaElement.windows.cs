@@ -46,7 +46,7 @@ public class MauiMediaElement : Grid, IDisposable
 
 		fullScreenButton = new Button
 		{
-			Content = fullScreenIcon,
+			Content = new FontIcon() { Glyph = "\uE740", FontFamily = new FontFamily("Segoe Fluent Icons") },
 			Background = new SolidColorBrush(Colors.Transparent),
 			Width = 45,
 			Height = 45
