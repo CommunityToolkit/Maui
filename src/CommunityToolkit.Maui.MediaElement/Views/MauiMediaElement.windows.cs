@@ -31,7 +31,6 @@ public class MauiMediaElement : Grid, IDisposable
 	readonly Grid buttonContainer;
 	readonly Button fullScreenButton;
 	readonly MediaPlayerElement mediaPlayerElement;
-	static readonly FontIcon exitFullScreenIcon = new() { Glyph = "\uE73F", FontFamily = new FontFamily("Segoe Fluent Icons") };
 	bool doesNavigationBarExistBeforeFullScreen;
 	bool isDisposed;
 
@@ -162,7 +161,7 @@ public class MauiMediaElement : Grid, IDisposable
 				popup.Child = null;
 				fullScreenGrid.Children.Clear();
 			}
-			fullScreenButton.Content = exitFullScreenIcon;
+			fullScreenButton.Content = new FontIcon() { Glyph = "\uE740", FontFamily = new FontFamily("Segoe Fluent Icons") };
 			Children.Add(mediaPlayerElement);
 			Children.Add(buttonContainer);
 
@@ -181,7 +180,7 @@ public class MauiMediaElement : Grid, IDisposable
 			mediaPlayerElement.Height = displayInfo.Height / displayInfo.Density;
 
 			Children.Clear();
-			fullScreenButton.Content = new FontIcon() { Glyph = "\uE740", FontFamily = new FontFamily("Segoe Fluent Icons") };
+			fullScreenButton.Content = new FontIcon() { Glyph = "\uE73F", FontFamily = new FontFamily("Segoe Fluent Icons") };
 			fullScreenGrid.Children.Add(mediaPlayerElement);
 			fullScreenGrid.Children.Add(buttonContainer);
 
