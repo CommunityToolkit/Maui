@@ -8,6 +8,9 @@ public partial class CameraProvider : ICameraProvider
 	/// <summary>
 	/// Gets the cameras that are connected to the current device.
 	/// </summary>
+	/// <remarks>
+	/// If <see langword="null"/>, use <see cref="RefreshAvailableCameras"/> to initialize list.
+	/// </remarks>
 	public IReadOnlyList<CameraInfo>? AvailableCameras { get; private set; }
 
 	/// <summary>
