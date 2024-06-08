@@ -9,7 +9,7 @@ public interface ICameraProvider
 	/// Cameras available on device
 	/// </summary>
 	/// <remarks>
-	/// Initialized using <see cref="RefreshAvailableCameras(CancellationToken)"/>
+	/// List is initialized using <see cref="RefreshAvailableCameras(CancellationToken)"/>
 	/// </remarks>
 	public IReadOnlyList<CameraInfo>? AvailableCameras { get; }
 
