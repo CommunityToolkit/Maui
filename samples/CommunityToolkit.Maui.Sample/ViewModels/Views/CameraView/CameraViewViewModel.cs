@@ -1,10 +1,11 @@
 ﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public partial class CameraViewViewModel : BaseViewModel
+public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseViewModel
 {
 	[ObservableProperty]
 	CameraFlashMode flashMode;
@@ -21,9 +22,14 @@ public partial class CameraViewViewModel : BaseViewModel
 	[ObservableProperty]
 	string cameraNameText = "", zoomRangeText = "", currentZoomText = "", flashModeText = "", resolutionText = "";
 
+	public IReadOnlyList<CameraInfo> Cameras => cameraProvider?.AvailableCameras ?? [];
+
 	public CancellationToken Token => CancellationToken.None;
 
 	public ICollection<CameraFlashMode> FlashModes { get; } = Enum.GetValues<CameraFlashMode>();
+
+	[RelayCommand]
+	async Task RefreshCameras(CancellationToken token) => await cameraProvider.RefreshAvailableCameras(token);
 
 	partial void OnFlashModeChanged(CameraFlashMode value)
 	{

@@ -24,6 +24,14 @@ public partial class CameraViewPage : BasePage<CameraViewViewModel>
 		};
 	}
 
+	protected override async void OnAppearing()
+	{
+		base.OnAppearing();
+
+		var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+		await BindingContext.RefreshCamerasCommand.ExecuteAsync(cancellationTokenSource.Token);
+	}
+
 	// https://github.com/dotnet/maui/issues/16697
 	// https://github.com/dotnet/maui/issues/15833
 	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
