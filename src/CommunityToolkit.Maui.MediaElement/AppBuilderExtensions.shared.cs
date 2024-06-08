@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Core.Handlers;
-using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui;
@@ -19,14 +18,7 @@ public static class AppBuilderExtensions
 		builder.ConfigureMauiHandlers(h =>
 		{
 			h.AddHandler<MediaElement, MediaElementHandler>();
-		})
-#if WINDOWS
-		.ConfigureFonts(fonts =>
-		 {
-			 fonts.AddFont("SegMDL2.ttf", "Segoe Fluent Icons");
-		 })
-#endif
-			;
+		});
 #if ANDROID
 		builder.Services.AddSingleton<Media.Services.MediaControlsService>();
 #endif
