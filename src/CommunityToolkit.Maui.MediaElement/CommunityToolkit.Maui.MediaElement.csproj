@@ -47,6 +47,11 @@
     <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <Folder Include="Resources\Fonts\" />
+    <MauiFont Include="Resources\Fonts\SegMDL2.ttf" Pack="true"/>
+  </ItemGroup>
   
   <ItemGroup>
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true"/>
