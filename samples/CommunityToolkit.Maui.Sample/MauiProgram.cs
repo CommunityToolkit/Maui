@@ -55,6 +55,7 @@ public static class MauiProgram
 								})
 #endif
 								.UseMauiCommunityToolkitMarkup()
+								.UseMauiCommunityToolkitCamera()
 								.UseMauiCommunityToolkitMediaElement()
 								.UseMauiCommunityToolkitMaps("KEY") // You should add your own key here from bingmapsportal.com
 								.UseMauiApp<App>()
@@ -187,6 +188,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<NavigationBarPage, NavigationBarAndroidViewModel>();
 
 		// Add Views Pages + ViewModels
+		services.AddTransientWithShellRoute<CameraViewPage, CameraViewViewModel>();
 		services.AddTransientWithShellRoute<DrawingViewPage, DrawingViewViewModel>();
 		services.AddTransientWithShellRoute<ExpanderPage, ExpanderViewModel>();
 
@@ -217,6 +219,7 @@ public static class MauiProgram
 		services.AddSingleton<IDeviceDisplay>(DeviceDisplay.Current);
 		services.AddSingleton<IDeviceInfo>(DeviceInfo.Current);
 		services.AddSingleton<IFileSaver>(FileSaver.Default);
+		services.AddSingleton<IFileSystem>(FileSystem.Current);
 		services.AddSingleton<IFolderPicker>(FolderPicker.Default);
 		services.AddSingleton<IBadge>(Badge.Default);
 		services.AddSingleton<ISpeechToText>(SpeechToText.Default);
