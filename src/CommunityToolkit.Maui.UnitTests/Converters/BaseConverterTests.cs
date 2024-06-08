@@ -45,7 +45,7 @@ public abstract class BaseConverterTest<TConverter> : ConverterTest<TConverter> 
 	}
 }
 
-public abstract class ConverterTest<TConverter> : BaseTest where TConverter : ICommunityToolkitValueConverter, new()
+public abstract class ConverterTest<TConverter> : BaseHandlerTest where TConverter : ICommunityToolkitValueConverter, new()
 {
 	[Fact]
 	public void InvalidConvertValue_ShouldThrowException()
