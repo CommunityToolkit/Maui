@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
@@ -18,5 +20,6 @@ public interface ICameraProvider
 	/// </summary>
 	/// <param name="token"></param>
 	/// <returns></returns>
+	[MemberNotNull(nameof(AvailableCameras))]
 	public ValueTask RefreshAvailableCameras(CancellationToken token);
 }
