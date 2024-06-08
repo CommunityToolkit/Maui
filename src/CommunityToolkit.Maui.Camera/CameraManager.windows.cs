@@ -167,6 +167,7 @@ partial class CameraManager
 
 		mediaElement.Source = null;
 		mediaCapture?.Dispose();
+
 		mediaCapture = null;
 		IsInitialized = false;
 	}

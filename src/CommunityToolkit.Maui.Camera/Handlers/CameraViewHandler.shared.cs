@@ -90,11 +90,9 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 	{
 		base.ConnectHandler(platformView);
 
-		var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-
 		await (cameraManager?.ArePermissionsGranted() ?? Task.CompletedTask);
-		await (cameraManager?.ConnectCamera(cancellationTokenSource.Token) ?? Task.CompletedTask);
-		await cameraProvider.RefreshAvailableCameras(cancellationTokenSource.Token);
+		await (cameraManager?.ConnectCamera(CancellationToken.None) ?? Task.CompletedTask);
+		await cameraProvider.RefreshAvailableCameras(CancellationToken.None);
 	}
 
 	/// <inheritdoc/>
