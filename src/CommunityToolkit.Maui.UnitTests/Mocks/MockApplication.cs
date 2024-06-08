@@ -2,9 +2,11 @@
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
-class MockApplication : Application
+class MockApplication(IServiceProvider serviceProvider) : Application, IPlatformApplication
 {
 	public new Application? Current = null;
+	public IServiceProvider Services { get; } = serviceProvider;
+	public IApplication Application => this;
 }
 
 // Inspired by https://github.com/dotnet/maui/blob/main/src/Controls/tests/Core.UnitTests/TestClasses/ApplicationHandlerStub.cs
