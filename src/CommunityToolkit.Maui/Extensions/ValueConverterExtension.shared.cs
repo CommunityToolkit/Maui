@@ -13,13 +13,13 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 
 	private protected static bool IsValidTargetType<TTarget>(in Type targetType, bool shouldAllowNullableValueTypes)
 	{
-		//&& !(shouldAllowNullableValueTypes && typeof(TTarget).IsValueType && IsValidNullableValueType(targetType)) // Is TTarget a Value Type and targetType a Nullable Value Type? Eg TTarget is bool and targetType is bool?
 		if (IsConvertingToString(targetType) && CanBeConvertedToString())
 		{
 			return true;
 		}
 
-		if (shouldAllowNullableValueTypes && targetType.IsValueType && IsValidNullableValueType(targetType))
+		// Is TTarget a Value Type and targetType a Nullable Value Type? Eg TTarget is bool and targetType is bool?
+		if (shouldAllowNullableValueTypes && typeof(TTarget).IsValueType && IsValidNullableValueType(targetType))
 		{
 			return true;
 		}
