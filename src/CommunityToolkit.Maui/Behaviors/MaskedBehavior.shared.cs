@@ -102,7 +102,17 @@ public class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 		await maskedBehavior.OnMaskChanged(maskedBehavior.Mask, CancellationToken.None).ConfigureAwait(false);
 	}
 
-	Task OnTextPropertyChanged(CancellationToken token) => ApplyMask(View?.Text, token);
+	Task OnTextPropertyChanged(CancellationToken token)
+	{
+#if ANDROID
+		// Android does not play well when we update the Text inside the TextChanged event. Therefore if we dispatch 
+		// the mechanism of updating the Text property it solves the issue of the caret position being updated incorrectly.
+		Application.Current?.Dispatcher.Dispatch(async () => await ApplyMask(View?.Text, token));
+		return Task.CompletedTask;
+#else
+		return ApplyMask(View?.Text, token);
+#endif
+	}
 
 	void SetMaskPositions(in string? mask)
 	{
