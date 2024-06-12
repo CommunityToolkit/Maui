@@ -125,7 +125,14 @@ public partial class IconTintColorBehavior
 
 	void LoadAndApplyImageTintColor(View element, WImage image, Color color)
 	{
-		image.ImageOpened += OnImageOpened;
+		if (image.IsLoaded)
+		{
+			ApplyTintColor();
+		}
+		else
+		{
+			image.ImageOpened += OnImageOpened;
+		}
 
 		void OnImageOpened(object sender, RoutedEventArgs e)
 		{
