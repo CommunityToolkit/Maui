@@ -63,6 +63,7 @@ public static partial class PopupExtensions
 
 		async void handler(object? sender, EventArgs args)
 		{
+			page.GetCurrentPage().Unloaded -= (_, _) => { };
 			page.GetCurrentPage().Loaded -= handler;
 
 			try
@@ -76,6 +77,8 @@ public static partial class PopupExtensions
 				taskCompletionSource.TrySetException(ex);
 			}
 		}
+
+		page.GetCurrentPage().Unloaded += (_, _) => { };
 		page.GetCurrentPage().Loaded += handler;
 
 		return taskCompletionSource.Task.WaitAsync(token);
