@@ -61,10 +61,12 @@ public static partial class PopupExtensions
 		// TODO: This is a workaround for https://github.com/dotnet/maui/issues/12970. Remove this `#if Windows` block when the issue is closed   
 		var taskCompletionSource = new TaskCompletionSource<object?>();
 
-		async void handler(object? sender, EventArgs args)
+		void unloadedHandler(object? sender, EventArgs args) { }
+
+		async void loadedHandler(object? sender, EventArgs args)
 		{
-			page.GetCurrentPage().Unloaded -= (_, _) => { };
-			page.GetCurrentPage().Loaded -= handler;
+			page.GetCurrentPage().Unloaded -= unloadedHandler;
+			page.GetCurrentPage().Loaded -= loadedHandler;
 
 			try
 			{
@@ -78,8 +80,8 @@ public static partial class PopupExtensions
 			}
 		}
 
-		page.GetCurrentPage().Unloaded += (_, _) => { };
-		page.GetCurrentPage().Loaded += handler;
+		page.GetCurrentPage().Unloaded += unloadedHandler;
+		page.GetCurrentPage().Loaded += loadedHandler;
 
 		return taskCompletionSource.Task.WaitAsync(token);
 #else
