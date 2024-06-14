@@ -15,28 +15,8 @@ class MockApplication : Application, IPlatformApplication
 #pragma warning restore CS0612 // Type or member is obsolete
 	{
 		Services = serviceProvider;
-
-		InitializeSystemResources(new MockResourcesProvider());
-	}
-#pragma warning disable CS0612 // Type or member is obsolete
-	void InitializeSystemResources(ISystemResourcesProvider resourcesProvider)
-#pragma warning restore CS0612 // Type or member is obsolete
-	{
-		const string privateFieldName = "_systemResources";
-
-		if (typeof(Application).GetField(privateFieldName, BindingFlags.NonPublic | BindingFlags.Instance) is not FieldInfo systemResourcesFieldInfo)
-		{
-			throw new InvalidOperationException($"Unable to access {privateFieldName}");
-		}
-
-		// .NET MAUI's SystemResources initialization: https://github.com/dotnet/maui/blob/79695fbb7ba6517a334c795ecf0a1d6358ef309a/src/Controls/src/Core/Application/Application.cs#L42-L49
-		systemResourcesFieldInfo.SetValue(this, new Lazy<IResourceDictionary>(() =>
-		{
-			var systemResources = resourcesProvider.GetSystemResources();
-			systemResources.ValuesChanged += OnParentResourcesChanged;
-			return systemResources;
-		}));
-
+		
+		DependencyService.Register<ISystemResourcesProvider, MockResourcesProvider>();
 	}
 }
 
