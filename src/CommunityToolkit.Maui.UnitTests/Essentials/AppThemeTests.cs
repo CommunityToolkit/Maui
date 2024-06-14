@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Essentials;
 
-public class AppThemeTests : BaseTest
+public class AppThemeTests : BaseHandlerTest
 {
 	readonly MockAppInfo mockAppInfo;
 	readonly Application app;
@@ -12,7 +12,7 @@ public class AppThemeTests : BaseTest
 	public AppThemeTests()
 	{
 		AppInfo.SetCurrent(mockAppInfo = new() { RequestedTheme = AppTheme.Light });
-		Application.Current = app = new Application();
+		Application.Current = app = new MockApplication(ServiceProvider);
 	}
 
 	[Fact]
@@ -113,6 +113,11 @@ public class AppThemeTests : BaseTest
 
 	void SetAppTheme(AppTheme theme)
 	{
+		app.RequestedThemeChanged += (sender, args) =>
+		{
+			var temp = DateTime.Now;
+		};
+		
 		mockAppInfo.RequestedTheme = theme;
 		((IApplication)app).ThemeChanged();
 	}
