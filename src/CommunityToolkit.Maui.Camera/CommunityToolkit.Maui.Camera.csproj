@@ -1,0 +1,88 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetVersion);$(NetVersion)-android;$(NetVersion)-ios;$(NetVersion)-maccatalyst</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);$(NetVersion)-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">$(TargetFrameworks);$(NetVersion)-tizen</TargetFrameworks> 
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">11.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">13.1</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>CommunityToolkit.Maui</RootNamespace>
+    <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GitInfoReportImportance>high</GitInfoReportImportance>
+    <PackageId>CommunityToolkit.Maui.Camera</PackageId>
+    <Summary>Camera contains CameraView, a view for displaying a preview of the camera output and other camera related functionalities in your .NET MAUI app.</Summary>
+    <Authors>Microsoft</Authors>
+    <Owners>Microsoft</Owners>
+    <NeutralLanguage>en</NeutralLanguage>
+    <Product>CommunityToolkit.Maui ($(NetVersion))</Product>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/CommunityToolkit/Maui</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/CommunityToolkit/Maui</RepositoryUrl>
+    <PackageReleaseNotes>See https://github.com/CommunityToolkit/Maui/releases</PackageReleaseNotes>
+    <DefineConstants>$(DefineConstants);</DefineConstants>
+    <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
+    <Title>.NET MAUI Camera</Title>
+    <Description>Camera contains CameraView, a view for displaying a preview of the camera output and other camera related functionalities in your .NET MAUI app.</Description>
+    <PackageIcon>icon.png</PackageIcon>
+    <Product>$(AssemblyName) ($(TargetFramework))</Product>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <AssemblyFileVersion>1.0.0.0</AssemblyFileVersion>
+    <Version>1.0.0-pre1</Version>
+    <PackageVersion>$(Version)$(VersionSuffix)</PackageVersion>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageTags>dotnet,maui,toolkit,kit,communitytoolkit,dotnetcommunitytoolkit,cameraview,camera,photo</PackageTags>
+    <Configurations>Debug;Release</Configurations>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true"/>
+    <None Include="ReadMe.txt" pack="true" PackagePath="."/>
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+    <PackageReference Include="Xamarin.AndroidX.Camera.View" Version="1.3.1.1" />
+    <PackageReference Include="Xamarin.AndroidX.Camera.Camera2" Version="1.3.1.1" />
+
+    <!-- Xamarin.AndroidX.Camera 1.3.1.1 depends on Xamarin.AndroidX.Lifecycle.LiveData 2.7.0.1:
+    https://www.nuget.org/packages/Xamarin.AndroidX.Camera.Core/#dependencies-body-tab 
+    However, Dotnet MAUI still implicitly references Xamarin.AndroidX.Lifecycle.LiveData 2.6.1.3:
+    https://github.com/dotnet/maui/blob/main/eng/AndroidX.targets
+    This causes build error "Detected package downgrade":
+    https://learn.microsoft.com/en-us/nuget/reference/errors-and-warnings/nu1605
+    Workaround: add a package reference to the higher version of the package. Possibly can be removed when MAUI bumps the implicit reference version.
+    -->
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.7.0.1" />
+
+    <!--Adding the above package reference requires Workaround for https://github.com/xamarin/AndroidX/issues/800#issuecomment-1774639627 -->
+    <!-- Tracking issue https://github.com/xamarin/AndroidX/issues/764 -->
+    <PackageReference Include="Xamarin.AndroidX.Collection" Version="1.4.0.1" />
+    <PackageReference Include="Xamarin.AndroidX.Collection.Ktx" Version="1.4.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiPackageVersion)"/>
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiPackageVersion)"/>
+  
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\CommunityToolkit.Maui.Camera.Analyzers\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.Camera.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+    <None Include="..\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj" />
+  </ItemGroup>
+
+</Project>
