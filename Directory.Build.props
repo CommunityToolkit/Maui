@@ -12,7 +12,6 @@
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
-    <IsTrimmable>false</IsTrimmable>
 
     <!-- WarningsAsErrors
      CS0419: Ambiguous reference in cref attribute 
