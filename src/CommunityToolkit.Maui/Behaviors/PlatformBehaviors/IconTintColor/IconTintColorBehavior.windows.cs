@@ -136,6 +136,10 @@ public partial class IconTintColorBehavior
 
 		void OnImageOpened(object sender, RoutedEventArgs e)
 		{
+			ArgumentNullException.ThrowIfNull(sender);
+
+			var image = (WImage)sender;
+
 			image.ImageOpened -= OnImageOpened;
 
 			ApplyTintColor();
