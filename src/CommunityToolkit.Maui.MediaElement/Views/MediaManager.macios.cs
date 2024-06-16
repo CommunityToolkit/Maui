@@ -15,6 +15,13 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MediaManager : IDisposable
 {
 	Metadata? metaData;
+	static event EventHandler<FullScreenStateChangedEventArgs>? WindowsChanged;
+	
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="e"></param>
+	public static void OnWindowsChanged(FullScreenStateChangedEventArgs e) => WindowsChanged?.Invoke(null, e);
 
 	// Media would still start playing when Speed was set although ShouldAutoPlay=False
 	// This field was added to overcome that.
@@ -121,6 +128,8 @@ public partial class MediaManager : IDisposable
 		AddPlayedToEndObserver();
 		AddErrorObservers();
 
+		WindowsChanged += OnWindowsChanged;
+
 		return (Player, PlayerViewController);
 	}
 
@@ -131,6 +140,18 @@ public partial class MediaManager : IDisposable
 	{
 		Dispose(true);
 		GC.SuppressFinalize(this);
+	}
+
+	void OnWindowsChanged(object? sender, FullScreenStateChangedEventArgs e)
+	{
+		if (MediaElement is not null)
+		{
+			MediaElement.FullScreenChanged(e.NewState);
+		}
+		else
+		{
+			Logger?.LogWarning("MediaElement is null");
+		}
 	}
 
 	protected virtual partial void PlatformPlay()
@@ -630,18 +651,12 @@ public partial class MediaManager : IDisposable
 
 sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
 {
-	/// <summary>
-	/// Handles the event when the windows change.
-	/// </summary>
-	public static event EventHandler<FullScreenStateChangedEventArgs>? WindowsChanged;
 	public override void WillBeginFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
 	{
-		MediaManagerDelegate.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
+		MediaManager.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
 	}
 	public override void WillEndFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
 	{
-		MediaManagerDelegate.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
+		MediaManager.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
 	}
-
-	static void OnWindowsChanged(FullScreenStateChangedEventArgs e) => WindowsChanged?.Invoke(null, e);
 }
