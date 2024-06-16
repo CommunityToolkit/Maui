@@ -23,7 +23,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 		this.logger = logger;
 		MediaElement.PropertyChanged += MediaElement_PropertyChanged;
-		MediaElement.FullScreenStateChanged += MediaElement_FullScreenStateChanged;
 	}
 
 	void MediaElement_FullScreenStateChanged(object? sender, FullScreenStateChangedEventArgs e) =>
