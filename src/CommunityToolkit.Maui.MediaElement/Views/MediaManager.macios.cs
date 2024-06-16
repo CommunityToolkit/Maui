@@ -18,7 +18,7 @@ public partial class MediaManager : IDisposable
 	static event EventHandler<FullScreenStateChangedEventArgs>? WindowsChanged;
 	
 	/// <summary>
-	/// 
+	/// Static event that is raised when the full screen state of the media element has changed.
 	/// </summary>
 	/// <param name="e"></param>
 	public static void OnWindowsChanged(FullScreenStateChangedEventArgs e) => WindowsChanged?.Invoke(null, e);
