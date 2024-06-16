@@ -79,15 +79,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			return bitmap;
 		}
-		PlayerView = new StyledPlayerView(MauiContext.Context)
-		{
-			Player = Player,
-			UseController = false,
-			ControllerAutoShow = false,
-			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
-		};
-		MauiMediaElement.WindowsChanged += OnWindowsChanged;
-		return (Player, PlayerView);
 	}
 
 	void OnWindowsChanged(object? sender, FullScreenStateChangedEventArgs e)
@@ -220,7 +211,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			ControllerAutoShow = false,
 			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 		};
-
+		MauiMediaElement.WindowsChanged += OnWindowsChanged;
 		checkPermissionsTask = CheckAndRequestForegroundPermission(checkPermissionSourceToken.Token);
 		return (Player, PlayerView);
 	}
