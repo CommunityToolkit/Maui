@@ -192,24 +192,20 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataArtworkUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
 				MediaElement.MetadataTitle = "Local Resource Title";
 				MediaElement.MetadataArtist = "Local Resource Album";
-
+				MediaElement.SubtitleUrl = string.Empty;
 				if (DeviceInfo.Platform == DevicePlatform.MacCatalyst
 					|| DeviceInfo.Platform == DevicePlatform.iOS)
 				{
-					MediaElement.SubtitleUrl = string.Empty;
 					MediaElement.Source = MediaSource.FromResource("AppleVideo.mp4");
 				}
 				else if (DeviceInfo.Platform == DevicePlatform.Android)
 				{
-					MediaElement.SubtitleUrl = string.Empty;
 					MediaElement.Source = MediaSource.FromResource("AndroidVideo.mp4");
 				}
 				else if (DeviceInfo.Platform == DevicePlatform.WinUI)
 				{
-					MediaElement.SubtitleUrl = string.Empty;
 					MediaElement.Source = MediaSource.FromResource("WindowsVideo.mp4");
 				}
-				MediaElement.SubtitleUrl = string.Empty;
 				return;
 			case loadSubTitles:
 				if(OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst())
