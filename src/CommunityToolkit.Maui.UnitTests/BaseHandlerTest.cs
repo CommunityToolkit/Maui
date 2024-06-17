@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.UnitTests.Mocks;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.UnitTests.Mocks;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
@@ -46,10 +47,14 @@ public abstract class BaseHandlerTest : BaseTest
 								.UseMauiCommunityToolkit()
 								.UseMauiApp<MockApplication>();
 
+		appBuilder.Services.AddSingleton<ICameraProvider, MockCameraProvider>();
+
 		var mauiApp = appBuilder.Build();
 
 		var application = mauiApp.Services.GetRequiredService<IApplication>();
 		serviceProvider = mauiApp.Services;
+
+		IPlatformApplication.Current = (IPlatformApplication)application;
 
 		application.Handler = new ApplicationHandlerStub();
 		application.Handler.SetMauiContext(new HandlersContextStub(mauiApp.Services));
