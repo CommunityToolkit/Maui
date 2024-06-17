@@ -47,7 +47,7 @@
     <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true"/>
     <None Include="ReadMe.txt" pack="true" PackagePath="."/>
@@ -61,6 +61,7 @@
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <PackageReference Include="Xam.Plugins.Android.ExoPlayer" Version="[2.19.1,)"/>
     <PackageReference Include="Xam.Plugins.Android.ExoPlayer.Transformer" Version="[2.19.1,)"/>
+    <PackageReference Include="Xam.Plugins.Android.ExoPlayer.MediaSession" Version="[2.19.1,)"/>
   </ItemGroup>
 
   <ItemGroup>

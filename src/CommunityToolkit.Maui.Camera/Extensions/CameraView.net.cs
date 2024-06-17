@@ -1,0 +1,1 @@
+namespace CommunityToolkit.Maui.Extensions;

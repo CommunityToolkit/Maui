@@ -125,7 +125,7 @@ public partial class MediaManager
 	}
 
 	/// <summary>
-	/// Update whether of not the screen should stay on while media is being played.
+	/// Update whether the screen should stay on while media is being played.
 	/// </summary>
 	public void UpdateShouldKeepScreenOn()
 	{
@@ -133,7 +133,7 @@ public partial class MediaManager
 	}
 
 	/// <summary>
-	/// Update whether or not the audio should be muted.
+	/// Update whether the audio should be muted.
 	/// </summary>
 	public void UpdateShouldMute()
 	{
@@ -150,7 +150,7 @@ public partial class MediaManager
 	}
 
 	/// <summary>
-	/// Update whether or not to show the platform playback controls.
+	/// Update whether to show the platform playback controls.
 	/// </summary>
 	public void UpdateShouldShowPlaybackControls()
 	{

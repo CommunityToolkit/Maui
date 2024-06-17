@@ -31,45 +31,46 @@ public class MauiMediaElement : Grid, IDisposable
 	readonly Grid buttonContainer;
 	readonly Button fullScreenButton;
 	readonly MediaPlayerElement mediaPlayerElement;
-	static readonly FontIcon fullScreenIcon = new() { Glyph = "\uE740", FontFamily = new FontFamily("Segoe Fluent Icons")};
-	static readonly FontIcon exitFullScreenIcon = new() { Glyph = "\uE73F", FontFamily = new FontFamily("Segoe Fluent Icons") };
+	// Cannot be static readonly because we need to be able to add icon to multiple instances of the button
+	readonly FontIcon fullScreenIcon = new() { Glyph = "\uE740", FontFamily = new FontFamily("Segoe Fluent Icons") };
+	readonly FontIcon exitFullScreenIcon = new() { Glyph = "\uE73F", FontFamily = new FontFamily("Segoe Fluent Icons") };
 	bool doesNavigationBarExistBeforeFullScreen;
 	bool isDisposed;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
-    /// </summary>
-    /// <param name="mediaPlayerElement"></param>
-    public MauiMediaElement(MediaPlayerElement mediaPlayerElement)
-    {
-        this.mediaPlayerElement = mediaPlayerElement;
+	/// </summary>
+	/// <param name="mediaPlayerElement"></param>
+	public MauiMediaElement(MediaPlayerElement mediaPlayerElement)
+	{
+		this.mediaPlayerElement = mediaPlayerElement;
 
-        fullScreenButton = new Button
-        {
-            Content = fullScreenIcon,
-            Background = new SolidColorBrush(Colors.Transparent),
-            Width = 45,
-            Height = 45
-        };
-        
+		fullScreenButton = new Button
+		{
+			Content = fullScreenIcon,
+			Background = new SolidColorBrush(Colors.Transparent),
+			Width = 45,
+			Height = 45
+		};
+
 		buttonContainer = new Grid
-        {
-            HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
-            VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
-            Visibility = mediaPlayerElement.TransportControls.Visibility,
-            Width = 45,
-            Height = 45,
-            Margin = new Thickness(0, 20, 30, 0)
-        };
+		{
+			HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
+			VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
+			Visibility = mediaPlayerElement.TransportControls.Visibility,
+			Width = 45,
+			Height = 45,
+			Margin = new Thickness(0, 20, 30, 0)
+		};
 
-        fullScreenButton.Click += OnFullScreenButtonClick;
-        buttonContainer.Children.Add(fullScreenButton);
+		fullScreenButton.Click += OnFullScreenButtonClick;
+		buttonContainer.Children.Add(fullScreenButton);
 
-        Children.Add(this.mediaPlayerElement);
-        Children.Add(buttonContainer);
+		Children.Add(this.mediaPlayerElement);
+		Children.Add(buttonContainer);
 
-        mediaPlayerElement.PointerMoved += OnMediaPlayerElementPointerMoved;
-    }
+		mediaPlayerElement.PointerMoved += OnMediaPlayerElementPointerMoved;
+	}
 
 	/// <summary>
 	/// Finalizer
@@ -103,7 +104,7 @@ public class MauiMediaElement : Grid, IDisposable
 
 		fullScreenButton.Click -= OnFullScreenButtonClick;
 		mediaPlayerElement.PointerMoved -= OnMediaPlayerElementPointerMoved;
-		
+
 		if (disposing)
 		{
 			mediaPlayerElement.MediaPlayer.Dispose();
@@ -163,7 +164,7 @@ public class MauiMediaElement : Grid, IDisposable
 				popup.Child = null;
 				fullScreenGrid.Children.Clear();
 			}
-			fullScreenButton.Content = exitFullScreenIcon;
+			fullScreenButton.Content = fullScreenIcon;
 			Children.Add(mediaPlayerElement);
 			Children.Add(buttonContainer);
 
@@ -182,7 +183,7 @@ public class MauiMediaElement : Grid, IDisposable
 			mediaPlayerElement.Height = displayInfo.Height / displayInfo.Density;
 
 			Children.Clear();
-			fullScreenButton.Content = fullScreenIcon;
+			fullScreenButton.Content = exitFullScreenIcon;
 			fullScreenGrid.Children.Add(mediaPlayerElement);
 			fullScreenGrid.Children.Add(buttonContainer);
 

@@ -31,13 +31,15 @@
                 x:Name="MediaElement"
                 ShouldAutoPlay="True"
                 Source="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                MetadataArtworkUrl="https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm"
+                MetadataTitle="Big Buck Bunny"
+                MetadataArtist="Blender Foundation"
                 MediaEnded="OnMediaEnded"
                 MediaFailed="OnMediaFailed"
                 MediaOpened="OnMediaOpened"
                 PositionChanged="OnPositionChanged"
                 StateChanged="OnStateChanged"
                 SeekCompleted="OnSeekCompleted"/>
-
             <HorizontalStackLayout Grid.Row="1" Padding="0,0,0,15">
                 <Label HorizontalOptions="Center">
                     <Label.Text>
