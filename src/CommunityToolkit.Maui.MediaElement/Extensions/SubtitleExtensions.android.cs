@@ -1,5 +1,4 @@
-﻿using System.Data;
-using Android.Content.Res;
+﻿using Android.Content.Res;
 using Android.Views;
 using Android.Widget;
 using Com.Google.Android.Exoplayer2.UI;
@@ -15,7 +14,6 @@ namespace CommunityToolkit.Maui.Extensions;
 /// </summary>
 public partial class SubtitleExtensions : IDisposable
 {
-	bool isFullScreen = false;
 	bool disposedValue;
 
 	readonly HttpClient httpClient;
@@ -23,10 +21,10 @@ public partial class SubtitleExtensions : IDisposable
 	readonly RelativeLayout.LayoutParams? textBlockLayout;
 	readonly StyledPlayerView styledPlayerView;
 
-	IMediaElement? mediaElement;
 	List<SubtitleCue> cues;
-	System.Timers.Timer? timer;
+	IMediaElement? mediaElement;
 	TextView? textBlock;
+	System.Timers.Timer? timer;
 
 	/// <summary>
 	/// The SubtitleExtensions class provides a way to display subtitles on a video player.
@@ -54,6 +52,7 @@ public partial class SubtitleExtensions : IDisposable
 	public async Task LoadSubtitles(IMediaElement mediaElement)
 	{
 		this.mediaElement = mediaElement;
+		cues.Clear();
 		string? vttContent;
 		try
 		{
@@ -77,8 +76,10 @@ public partial class SubtitleExtensions : IDisposable
 	/// </summary>
 	public void StartSubtitleDisplay()
 	{
-		if(textBlock is null || styledPlayerView.Parent is not ViewGroup parent)
+		ArgumentNullException.ThrowIfNull(textBlock);
+		if(styledPlayerView.Parent is not ViewGroup parent)
 		{
+			System.Diagnostics.Trace.TraceError("StyledPlayerView parent is not a ViewGroup");
 			return;
 		}
 		dispatcher.Dispatch(() => parent.AddView(textBlock));
@@ -98,10 +99,7 @@ public partial class SubtitleExtensions : IDisposable
 		}
 		if (styledPlayerView.Parent is ViewGroup parent)
 		{
-			dispatcher.Dispatch(() =>
-			{
-				parent.RemoveView(textBlock);
-			});
+			dispatcher.Dispatch(() => parent.RemoveView(textBlock));
 		}
 		textBlock.Text = string.Empty;
 		timer.Stop();
@@ -110,7 +108,9 @@ public partial class SubtitleExtensions : IDisposable
 
 	void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
 	{
-		if (mediaElement?.Position is null || textBlock is null || cues.Count == 0)
+		ArgumentNullException.ThrowIfNull(textBlock);
+		ArgumentNullException.ThrowIfNull(mediaElement);
+		if (cues.Count == 0)
 		{
 			return;
 		}
@@ -178,10 +178,9 @@ public partial class SubtitleExtensions : IDisposable
 
 	void MauiMediaElement_WindowsChanged(object? sender, WindowsEventArgs e)
 	{
-		if (textBlock is null)
-		{
-			throw new InvalidExpressionException("TextBlock cannot be null when the FullScreen button is tapped");
-		}
+		ArgumentNullException.ThrowIfNull(textBlock);
+
+		// If the subtitle URL is empty do nothing
 		if (string.IsNullOrEmpty(mediaElement?.SubtitleUrl))
 		{
 			return;
@@ -195,19 +194,17 @@ public partial class SubtitleExtensions : IDisposable
 		{
 			return;
 		}
-		switch (isFullScreen)
+		switch (e.data)
 		{
 			case true:
 				viewGroup.RemoveView(textBlock);
 				InitializeTextBlock();
 				parent.AddView(textBlock);
-				isFullScreen = false;
 				break;
 			case false:
 				parent.RemoveView(textBlock);
 				InitializeTextBlock();
 				viewGroup.AddView(textBlock);
-				isFullScreen = true;
 				break;
 		}
 	}

@@ -16,7 +16,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MediaManager : IDisposable
 {
 	Metadata? metaData;
-
 	SubtitleExtensions? subtitleExtensions;
 	readonly CancellationTokenSource subTitles = new();
 	Task? startSubtitles;
@@ -125,7 +124,7 @@ public partial class MediaManager : IDisposable
 		AddStatusObservers();
 		AddPlayedToEndObserver();
 		AddErrorObservers();
-
+		subtitleExtensions = new(Player, PlayerViewController);
 		return (Player, PlayerViewController);
 	}
 
@@ -278,7 +277,6 @@ public partial class MediaManager : IDisposable
 		CurrentItemErrorObserver?.Dispose();
 
 		Player.ReplaceCurrentItemWithPlayerItem(PlayerItem);
-		subtitleExtensions ??= new(Player, PlayerViewController);
 		CurrentItemErrorObserver = PlayerItem?.AddObserver("error",
 			valueObserverOptions, (NSObservedChange change) =>
 			{
@@ -315,11 +313,11 @@ public partial class MediaManager : IDisposable
 
 	async Task LoadSubtitles(CancellationToken cancellationToken = default)
 	{
-		subtitleExtensions?.StopSubtitleDisplay();
 		if (subtitleExtensions is null || string.IsNullOrEmpty(MediaElement.SubtitleUrl))
 		{
 			return;
 		}
+		subtitleExtensions.StopSubtitleDisplay();
 		await subtitleExtensions.LoadSubtitles(MediaElement).WaitAsync(cancellationToken).ConfigureAwait(false);
 		subtitleExtensions.StartSubtitleDisplay();
 	}
@@ -446,9 +444,12 @@ public partial class MediaManager : IDisposable
 				DestroyPlayedToEndObserver();
 				subtitleExtensions?.StopSubtitleDisplay();
 				subtitleExtensions?.Dispose();
+				subtitleExtensions = null;
 				subTitles.Dispose();
 				RateObserver?.Dispose();
 				RateObserver = null;
+				startSubtitles?.Dispose();
+				startSubtitles = null;
 
 				CurrentItemErrorObserver?.Dispose();
 				CurrentItemErrorObserver = null;
@@ -665,8 +666,5 @@ sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
 	/// <summary>
 	/// A method that raises the WindowsChanged event.
 	/// </summary>
-	void OnWindowsChanged(WindowsEventArgs e)
-	{
-		WindowsChanged?.Invoke(null, e);
-	}
+	static void OnWindowsChanged(WindowsEventArgs e) => WindowsChanged?.Invoke(null, e);
 }

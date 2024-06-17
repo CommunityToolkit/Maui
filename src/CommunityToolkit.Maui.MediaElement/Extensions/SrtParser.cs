@@ -17,6 +17,10 @@ public static partial class SrtParser
 	public static List<SubtitleCue> ParseSrtContent(string srtContent)
 	{
 		List<SubtitleCue> cues = [];
+		if(string.IsNullOrEmpty(srtContent))
+		{
+			return cues;
+		}
 		string[] lines = srtContent.Split(separator, StringSplitOptions.None);
 
 		Regex timecodePattern = MyRegex();

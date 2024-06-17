@@ -26,24 +26,26 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
-	static readonly HttpClient client = new();
+	SubtitleExtensions? subtitleExtensions;
+	static readonly HttpClient httpClient = new();
 
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
-
-	Task? checkPermissionsTask;
-	CancellationTokenSource checkPermissionSourceToken = new();
-	CancellationTokenSource startServiceSourceToken = new();
+	
+	MediaElementState currentState;
 	double? previousSpeed;
 	float volumeBeforeMute = 1;
+
 	MediaControllerCompat? mediaControllerCompat;
-	TaskCompletionSource? seekToTaskCompletionSource;
 	MediaSessionConnector? mediaSessionConnector;
 	MediaSessionCompat? mediaSession;
 	UIUpdateReceiver? uiUpdateReceiver;
-	MediaElementState currentState;
-	SubtitleExtensions? subtitleExtensions;
+	
+	TaskCompletionSource? seekToTaskCompletionSource;
+	CancellationTokenSource checkPermissionSourceToken = new();
+	CancellationTokenSource startServiceSourceToken = new();
 	CancellationTokenSource subTitles = new();
 	Task? startSubtitles;
+	Task? checkPermissionsTask;
 
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
@@ -69,7 +71,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		try
 		{
-			var response = await client.GetAsync(url, cancellationToken).ConfigureAwait(false);
+			var response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
 			var stream = response.IsSuccessStatusCode ? await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false) : null;
 
 			return stream switch
@@ -188,6 +190,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	[MemberNotNull(nameof(checkPermissionsTask))]
 	[MemberNotNull(nameof(mediaSessionConnector))]
 	[MemberNotNull(nameof(mediaControllerCompat))]
+	[MemberNotNull(nameof(subtitleExtensions))]
 	public (PlatformMediaElement platformView, StyledPlayerView PlayerView) CreatePlatformView()
 	{
 		ArgumentNullException.ThrowIfNull(MauiContext.Context);
@@ -457,11 +460,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	}
 	async Task LoadSubtitles(CancellationToken cancellationToken = default)
 	{
-		subtitleExtensions?.StopSubtitleDisplay();
 		if (subtitleExtensions is null || string.IsNullOrEmpty(MediaElement.SubtitleUrl))
 		{
 			return;
 		}
+		subtitleExtensions.StopSubtitleDisplay();
 		await subtitleExtensions.LoadSubtitles(MediaElement).WaitAsync(cancellationToken).ConfigureAwait(false);
 		subtitleExtensions.StartSubtitleDisplay();
 	}
@@ -598,6 +601,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		if (disposing)
 		{
 			StopService();
+			subtitleExtensions?.StopSubtitleDisplay();
+			subtitleExtensions = null;
+			subTitles?.Dispose();
+			startSubtitles?.Dispose();
+			startSubtitles = null;
 
 			mediaSessionConnector?.SetPlayer(null);
 			mediaSessionConnector?.Dispose();
@@ -618,7 +626,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			checkPermissionSourceToken.Dispose();
 			startServiceSourceToken.Dispose();
 
-			client.Dispose();
+			httpClient.Dispose();
 		}
 	}
 

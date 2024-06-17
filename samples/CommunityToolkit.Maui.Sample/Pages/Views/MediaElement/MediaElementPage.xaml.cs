@@ -167,6 +167,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.Source =
 					MediaSource.FromUri(
 						"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
+				MediaElement.SubtitleUrl = string.Empty;
 				return;
 
 			case loadHls:
@@ -176,6 +177,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.Source
 					= MediaSource.FromUri(
 						"https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8");
+				MediaElement.SubtitleUrl = string.Empty;
 				return;
 
 			case resetSource:
@@ -183,6 +185,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataTitle = string.Empty;
 				MediaElement.MetadataArtist = string.Empty;
 				MediaElement.Source = null;
+				MediaElement.SubtitleUrl = string.Empty;
 				return;
 
 			case loadLocalResource:
@@ -206,6 +209,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 					MediaElement.SubtitleUrl = string.Empty;
 					MediaElement.Source = MediaSource.FromResource("WindowsVideo.mp4");
 				}
+				MediaElement.SubtitleUrl = string.Empty;
 				return;
 			case loadSubTitles:
 				if(OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst())

@@ -299,7 +299,6 @@ partial class MediaManager : IDisposable
 
 	async Task LoadSubtitles(CancellationToken cancellationToken = default)
 	{
-		subtitleExtensions?.StopSubtitleDisplay();
 		if (subtitleExtensions is null || string.IsNullOrEmpty(MediaElement.SubtitleUrl) || Player is null)
 		{
 			System.Diagnostics.Trace.TraceError("SubtitleExtensions is null or SubtitleUrl is null or Player is null");
@@ -339,6 +338,8 @@ partial class MediaManager : IDisposable
 					displayActiveRequested = false;
 				}
 				subTitles.Dispose();
+				startSubtitles?.Dispose();
+				startSubtitles = null;
 				Player.MediaPlayer.MediaOpened -= OnMediaElementMediaOpened;
 				Player.MediaPlayer.MediaFailed -= OnMediaElementMediaFailed;
 				Player.MediaPlayer.MediaEnded -= OnMediaElementMediaEnded;

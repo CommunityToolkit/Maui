@@ -22,11 +22,13 @@ public class MauiMediaElement : CoordinatorLayout
 	/// Handles the event when the windows change.
 	/// </summary>
 	public static event EventHandler<WindowsEventArgs>? WindowsChanged;
-	readonly StyledPlayerView playerView;
+	
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
 	bool isFullScreen;
+
 	readonly RelativeLayout relativeLayout;
+	readonly StyledPlayerView playerView;
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -61,13 +63,11 @@ public class MauiMediaElement : CoordinatorLayout
 
 		AddView(relativeLayout);
 	}
+
 	/// <summary>
 	/// A method that raises the WindowsChanged event.
 	/// </summary>
-	protected virtual void OnWindowsChanged(WindowsEventArgs e)
-	{
-		WindowsChanged?.Invoke(null, e);
-	}
+	protected virtual void OnWindowsChanged(WindowsEventArgs e) => WindowsChanged?.Invoke(null, e);
 	public override void OnDetachedFromWindow()
 	{
 		if (isFullScreen)
@@ -156,14 +156,14 @@ public class MauiMediaElement : CoordinatorLayout
 			isFullScreen = true;
 			RemoveView(relativeLayout);
 			layout?.AddView(relativeLayout);
-            OnWindowsChanged(new Maui.Primitives.WindowsEventArgs(layout));
+            OnWindowsChanged(new Maui.Primitives.WindowsEventArgs(isFullScreen));
         }
 		else
 		{
 			isFullScreen = false;
 			layout?.RemoveView(relativeLayout);
 			AddView(relativeLayout);
-            OnWindowsChanged(new Maui.Primitives.WindowsEventArgs(layout));
+            OnWindowsChanged(new Maui.Primitives.WindowsEventArgs(isFullScreen));
         }
 		// Hide/Show the SystemBars and Status bar
 		SetSystemBarsVisibility();

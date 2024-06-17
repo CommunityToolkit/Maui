@@ -18,6 +18,10 @@ public static partial class VttParser
 	public static List<SubtitleCue> ParseVttContent(string vttContent)
 	{
 		List<SubtitleCue> cues = [];
+		if (string.IsNullOrEmpty(vttContent))
+		{
+			return cues;
+		}
 		string[] lines = vttContent.Split(separator, StringSplitOptions.None);
 
 		Regex timecodePattern = MyRegex();

@@ -9,15 +9,16 @@ namespace CommunityToolkit.Maui.Extensions;
 /// </summary>
 public partial class SubtitleExtensions : Grid, IDisposable
 {
-	bool isFullScreen = false;
-	readonly HttpClient httpClient;
-	Microsoft.UI.Xaml.Controls.Grid? item;
-	System.Timers.Timer? timer;
-	List<SubtitleCue> cues;
 	bool disposedValue;
+	bool isFullScreen = false;
+
+	readonly HttpClient httpClient;
+	readonly Microsoft.UI.Xaml.Controls.TextBlock xamlTextBlock;
+
+	List<SubtitleCue> cues;
 	IMediaElement? mediaElement;
-	readonly Microsoft.UI.Xaml.Controls.TextBlock? xamlTextBlock;
 	MauiMediaElement? mauiMediaElement;
+	System.Timers.Timer? timer;
 
 	/// <summary>
 	/// The SubtitleExtensions class provides a way to display subtitles on a video player.
@@ -40,21 +41,21 @@ public partial class SubtitleExtensions : Grid, IDisposable
 	}
 	void MauiMediaElement_WindowsChanged(object? sender, WindowsEventArgs e)
 	{
-		if (mauiMediaElement is null || e.data is not Microsoft.UI.Xaml.Controls.Grid gridItem || string.IsNullOrEmpty(mediaElement?.SubtitleUrl) || xamlTextBlock is null)
+		if (e.data is not Microsoft.UI.Xaml.Controls.Grid gridItem || string.IsNullOrEmpty(mediaElement?.SubtitleUrl))
 		{
 			return;
 		}
-		this.item = gridItem;
+		ArgumentNullException.ThrowIfNull(mauiMediaElement);
 		switch(isFullScreen)
 		{
 			case true:
 				xamlTextBlock.Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 20);
-				Dispatcher.Dispatch(() => { item.Children.Remove(xamlTextBlock); mauiMediaElement.Children.Add(xamlTextBlock); });
+				Dispatcher.Dispatch(() => { gridItem.Children.Remove(xamlTextBlock); mauiMediaElement.Children.Add(xamlTextBlock); });
 				isFullScreen = false;
 				break;
 			case false:
 				xamlTextBlock.Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 300);
-				Dispatcher.Dispatch(() => { mauiMediaElement.Children.Remove(xamlTextBlock); item.Children.Add(xamlTextBlock); });
+				Dispatcher.Dispatch(() => { mauiMediaElement.Children.Remove(xamlTextBlock); gridItem.Children.Add(xamlTextBlock); });
 				isFullScreen = true;
 				break;
 		}
@@ -69,6 +70,7 @@ public partial class SubtitleExtensions : Grid, IDisposable
 	{
 		this.mediaElement = mediaElement;
 		mauiMediaElement = player?.Parent as MauiMediaElement;
+		cues.Clear();
 		string? vttContent;
 		try
 		{
@@ -101,7 +103,7 @@ public partial class SubtitleExtensions : Grid, IDisposable
 
 	void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
 	{
-		if (mediaElement?.Position is null || cues.Count == 0 || string.IsNullOrEmpty(mediaElement.SubtitleUrl) || xamlTextBlock is null)
+		if (string.IsNullOrEmpty(mediaElement?.SubtitleUrl))
 		{
 			return;
 		}
