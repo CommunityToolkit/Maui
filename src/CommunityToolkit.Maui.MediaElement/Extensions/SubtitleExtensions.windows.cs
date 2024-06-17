@@ -30,7 +30,7 @@ public partial class SubtitleExtensions : Grid, IDisposable
 		xamlTextBlock = new()
 		{
 			Text = string.Empty,
-			Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 10),
+			Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 20),
 			Visibility = Microsoft.UI.Xaml.Visibility.Collapsed,
 			HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
 			VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Bottom,
@@ -40,7 +40,7 @@ public partial class SubtitleExtensions : Grid, IDisposable
 	}
 	void MauiMediaElement_WindowsChanged(object? sender, WindowsEventArgs e)
 	{
-		if (mauiMediaElement is null || e.data is not Microsoft.UI.Xaml.Controls.Grid gridItem || string.IsNullOrEmpty(mediaElement?.SubtitleUrl))
+		if (mauiMediaElement is null || e.data is not Microsoft.UI.Xaml.Controls.Grid gridItem || string.IsNullOrEmpty(mediaElement?.SubtitleUrl) || xamlTextBlock is null)
 		{
 			return;
 		}
@@ -48,10 +48,12 @@ public partial class SubtitleExtensions : Grid, IDisposable
 		switch(isFullScreen)
 		{
 			case true:
+				xamlTextBlock.Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 20);
 				Dispatcher.Dispatch(() => { item.Children.Remove(xamlTextBlock); mauiMediaElement.Children.Add(xamlTextBlock); });
 				isFullScreen = false;
 				break;
 			case false:
+				xamlTextBlock.Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 300);
 				Dispatcher.Dispatch(() => { mauiMediaElement.Children.Remove(xamlTextBlock); item.Children.Add(xamlTextBlock); });
 				isFullScreen = true;
 				break;

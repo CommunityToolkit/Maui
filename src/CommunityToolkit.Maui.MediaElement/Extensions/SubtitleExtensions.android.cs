@@ -1,5 +1,6 @@
-﻿// Works if PR# 1873 merged
+﻿using System.Data;
 using Android.Content;
+using Android.Content.Res;
 using Android.Views;
 using Android.Widget;
 using AndroidX.CoordinatorLayout.Widget;
@@ -7,6 +8,7 @@ using Com.Google.Android.Exoplayer2.UI;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Primitives;
+using Activity = Android.App.Activity;
 
 namespace CommunityToolkit.Maui.Extensions;
 /// <summary>
@@ -21,7 +23,7 @@ public partial class SubtitleExtensions : CoordinatorLayout
 	readonly IDispatcher dispatcher;
 	readonly RelativeLayout.LayoutParams? textBlockLayout;
 	readonly StyledPlayerView styledPlayerView;
-	readonly TextView textBlock;
+	TextView? textBlock;
 
 	IMediaElement? mediaElement;
 	List<SubtitleCue> cues;
@@ -42,7 +44,76 @@ public partial class SubtitleExtensions : CoordinatorLayout
 		textBlockLayout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
 		textBlockLayout.AddRule(LayoutRules.AlignParentBottom);
 		textBlockLayout.AddRule(LayoutRules.CenterHorizontal);
-		textBlock = new(Platform.AppContext)
+		InitializeTextBlock();
+
+		MauiMediaElement.WindowsChanged += MauiMediaElement_WindowsChanged;
+	}
+
+	static (Activity CurrentActivity, Android.Views.Window CurrentWindow, Resources CurrentWindowResources, Configuration CurrentWindowConfiguration) VerifyAndRetrieveCurrentWindowResources()
+	{
+		// Ensure current activity and window are available
+		if (Platform.CurrentActivity is not Activity currentActivity)
+		{
+			throw new InvalidOperationException("CurrentActivity cannot be null when the FullScreen button is tapped");
+		}
+		if (currentActivity.Window is not Android.Views.Window currentWindow)
+		{
+			throw new InvalidOperationException("CurrentActivity Window cannot be null when the FullScreen button is tapped");
+		}
+
+		if (currentActivity.Resources is not Resources currentResources)
+		{
+			throw new InvalidOperationException("CurrentActivity Resources cannot be null when the FullScreen button is tapped");
+		}
+
+		if (currentResources.Configuration is not Configuration configuration)
+		{
+			throw new InvalidOperationException("CurrentActivity Configuration cannot be null when the FullScreen button is tapped");
+		}
+
+		return (currentActivity, currentWindow, currentResources, configuration);
+	}
+
+	void MauiMediaElement_WindowsChanged(object? sender, WindowsEventArgs e)
+	{
+		if(textBlock is null)
+		{
+			throw new InvalidExpressionException("TextBlock cannot be null when the FullScreen button is tapped");
+		}
+		if(string.IsNullOrEmpty(mediaElement?.SubtitleUrl))
+		{
+			return;
+		}
+		var (_ , currentWindow, _, _) = VerifyAndRetrieveCurrentWindowResources();
+		if (currentWindow?.DecorView is not ViewGroup viewGroup)
+		{
+			return;
+		}
+		if (viewGroup.Parent is not ViewGroup parent)
+		{
+			return;
+		}
+		switch (isFullScreen)
+		{
+			case true:
+				viewGroup.RemoveView(textBlock);
+				InitializeTextBlock();
+				parent.AddView(textBlock);
+				isFullScreen = false;
+				break;
+			case false:
+				parent.RemoveView(textBlock);
+				InitializeTextBlock();
+				viewGroup.AddView(textBlock);
+				isFullScreen = true;
+				break;
+		}
+	}
+	void InitializeTextBlock()
+	{
+		var (currentActivity, _, _, _) = VerifyAndRetrieveCurrentWindowResources();
+		var activity = currentActivity;
+		textBlock = new(activity.ApplicationContext)
 		{
 			Text = string.Empty,
 			HorizontalScrollBarEnabled = false,
@@ -52,31 +123,8 @@ public partial class SubtitleExtensions : CoordinatorLayout
 			LayoutParameters = textBlockLayout
 		};
 		textBlock.SetBackgroundColor(Android.Graphics.Color.Argb(150, 0, 0, 0));
-		textBlock.SetPaddingRelative(10, 10, 10, 10);
 		textBlock.SetTextColor(Android.Graphics.Color.White);
-		
-		MauiMediaElement.WindowsChanged += MauiMediaElement_WindowsChanged;
-	}
-
-	void MauiMediaElement_WindowsChanged(object? sender, WindowsEventArgs e)
-	{
-		if (e.data is not ViewGroup viewGroup || styledPlayerView.Parent is not ViewGroup parent || string.IsNullOrEmpty(mediaElement?.SubtitleUrl))
-		{
-			return;
-		}
-		switch(isFullScreen)
-		{
-			case true:
-				viewGroup.RemoveView(textBlock);
-				parent.AddView(textBlock);
-				isFullScreen = false;
-				break;
-			case false:
-				parent.RemoveView(textBlock);
-				viewGroup.AddView(textBlock);
-				isFullScreen = true;
-				break;
-		}
+		textBlock.SetPaddingRelative(10, 10, 10, 20);
 	}
 	
 	/// <summary>
@@ -149,7 +197,7 @@ public partial class SubtitleExtensions : CoordinatorLayout
 	/// </summary>
 	public void StopSubtitleDisplay()
 	{
-		if (timer is null)
+		if (timer is null || textBlock is null)
 		{
 			return;
 		}
