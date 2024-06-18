@@ -292,6 +292,11 @@ public partial class MediaManager : IDisposable
 		{
 			MediaElement.MediaOpened();
 
+#if IOS
+			MediaElement.MediaWidth = (int?)Player.CurrentItem?.Asset.NaturalSize.Width ?? 0;
+			MediaElement.MediaHeight = (int?)Player.CurrentItem?.Asset.NaturalSize.Height ?? 0;
+#endif
+
 			if (MediaElement.ShouldAutoPlay)
 			{
 				Player.Play();
