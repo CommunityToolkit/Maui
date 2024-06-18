@@ -3,6 +3,7 @@ using AVKit;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Views;
 using CoreFoundation;
+using CoreGraphics;
 using CoreMedia;
 using Foundation;
 using MediaPlayer;
@@ -292,10 +293,9 @@ public partial class MediaManager : IDisposable
 		{
 			MediaElement.MediaOpened();
 
-#if IOS
-			MediaElement.MediaWidth = (int?)Player.CurrentItem?.Asset.NaturalSize.Width ?? 0;
-			MediaElement.MediaHeight = (int?)Player.CurrentItem?.Asset.NaturalSize.Height ?? 0;
-#endif
+			var mediaDimensions = GetVideoDimensions(PlayerItem);
+			MediaElement.MediaWidth = mediaDimensions.Width;
+			MediaElement.MediaHeight = mediaDimensions.Height;
 
 			if (MediaElement.ShouldAutoPlay)
 			{
@@ -627,6 +627,34 @@ public partial class MediaManager : IDisposable
 				metaData.NowPlayingInfo.PlaybackRate = (float)MediaElement.Speed;
 				MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = metaData.NowPlayingInfo;
 			}
+		}
+	}
+
+	(int Width, int Height) GetVideoDimensions(AVPlayerItem avPlayerItem)
+	{
+		// Create an AVAsset instance with the video file URL
+		var asset = avPlayerItem.Asset;
+
+		// Retrieve the video track
+		var videoTrack = asset.TracksWithMediaType(AVMediaTypes.Video.ToString()).FirstOrDefault();
+
+		if (videoTrack is not null)
+		{
+			// Get the natural size of the video
+			var size = videoTrack.NaturalSize;
+			var preferredTransform = videoTrack.PreferredTransform;
+			
+			// Apply the preferred transform to get the correct dimensions
+			var transformedSize = CGAffineTransform.CGRectApplyAffineTransform(new CGRect(CGPoint.Empty, size), preferredTransform);
+			var width = Math.Abs(transformedSize.Width);
+			var height = Math.Abs(transformedSize.Height);
+
+			return ((int)width, (int)height);
+		}
+		else
+		{
+			// Handle the case where there is no video track
+			return (0, 0);
 		}
 	}
 }
