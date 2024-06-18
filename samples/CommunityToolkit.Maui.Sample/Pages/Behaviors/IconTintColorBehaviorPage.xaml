@@ -13,7 +13,7 @@
         <Grid
 			Padding="20" 
 			ColumnDefinitions="*, *, *"
-			RowDefinitions="Auto, Auto, 60, Auto, 60, Auto, 60"
+			RowDefinitions="Auto, Auto, 60, Auto, 60, Auto, Auto, 60"
 			RowSpacing="20">
 
             <Label
@@ -104,14 +104,46 @@
 				FontAttributes="Italic"
 				Text="This ImageButton uses Bindings to change the ImageSource. Click it!"/>
 
+            <Label
+	            Grid.Column="0"
+	            Grid.ColumnSpan="3"
+	            Grid.Row="6"
+	            Padding="0,20,0,0"
+	            FontAttributes="Bold"
+	            FontSize="18"
+	            HorizontalTextAlignment="Center"
+	            Text="Image control with UriImageSource" />
+
             <Image 
-                Grid.Row="6"
-                Grid.ColumnSpan="3"
+                Grid.Row="7"
+                Grid.Column="1"
                 HorizontalOptions="Center"
                 VerticalOptions="End"
                 Source="https://api.nuget.org/v3-flatcontainer/communitytoolkit.maui/9.0.1/icon">
                 <Image.Behaviors>
-                    <mct:IconTintColorBehavior TintColor="#4F2DE0" />
+                    <mct:IconTintColorBehavior TintColor="Red" />
+                </Image.Behaviors>
+            </Image>
+
+            <Image 
+                Grid.Row="7"
+                Grid.Column="2"
+                HorizontalOptions="Center"
+                VerticalOptions="End"
+                Source="https://user-images.githubusercontent.com/13558917/137551073-ac8958bf-83e3-4ae3-8623-4db6dce49d02.png">
+                <Image.Behaviors>
+                    <mct:IconTintColorBehavior TintColor="Green" />
+                </Image.Behaviors>
+            </Image>
+
+            <Image 
+                Grid.Row="7"
+                Grid.Column="2"
+                HorizontalOptions="Center"
+                VerticalOptions="End"
+                Source="https://raw.githubusercontent.com/dotnet-foundation/swag/master/logo/dotnetfoundation_v4.svg">
+                <Image.Behaviors>
+                    <mct:IconTintColorBehavior TintColor="Purple" />
                 </Image.Behaviors>
             </Image>
 
