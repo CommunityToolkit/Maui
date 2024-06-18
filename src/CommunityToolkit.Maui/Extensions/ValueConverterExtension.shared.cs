@@ -60,7 +60,7 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 
 		// Ensure TTo can be assigned to the given Target Type
 		if (!typeof(TTarget).IsAssignableFrom(targetType) // Ensure TTarget can be assigned from targetType. Eg TTarget is IEnumerable and targetType is IList
-			&& !IsValidTargetType<TTarget>(targetType, shouldAllowNullableValueTypes) // Ensure targetType be converted to TTarget? Eg `Convert.ChangeType()` returns a non-null value
+			&& !IsValidTargetType<TTarget>(targetType, shouldAllowNullableValueTypes)) // Ensure targetType be converted to TTarget? Eg `Convert.ChangeType()` returns a non-null value
 		{
 			throw new ArgumentException($"targetType needs to be assignable from {typeof(TTarget)}.", nameof(targetType));
 		}
