@@ -78,8 +78,6 @@ public partial class IconTintColorBehavior
 		return false;
 	}
 
-
-
 	void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (e.PropertyName is not string propertyName
