@@ -737,7 +737,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	public void OnTimelineChanged(Timeline? timeline, int reason) { }
 	public void OnTracksChanged(Tracks? tracks) { }
 	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters) { }
-	public void OnVideoSizeChanged(VideoSize? videoSize) { }
+	public void OnVideoSizeChanged(VideoSize? videoSize)
+	{
+		MediaElement.MediaWidth = videoSize?.Width ?? 0;
+		MediaElement.MediaHeight = videoSize?.Height ?? 0;
+	}
 
 	#endregion
 
