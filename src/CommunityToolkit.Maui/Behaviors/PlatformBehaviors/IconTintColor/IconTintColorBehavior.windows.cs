@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
@@ -125,10 +124,9 @@ public partial class IconTintColorBehavior
 
 	void LoadAndApplyImageTintColor(View element, WImage image, Color color)
 	{
-		if (((IImageElement)element).Source is UriImageSource uriImageSource)
+		if (element is IImageElement { Source: UriImageSource uriImageSource })
 		{
-			BitmapImage bitmapImage = new BitmapImage(uriImageSource.Uri);
-			image.Source = bitmapImage;
+			image.Source = new BitmapImage(uriImageSource.Uri);
 			ApplyTintColor();
 		}
 		else
@@ -141,7 +139,6 @@ public partial class IconTintColorBehavior
 			ArgumentNullException.ThrowIfNull(sender);
 
 			var image = (WImage)sender;
-
 			image.ImageOpened -= OnImageOpened;
 
 			ApplyTintColor();
@@ -160,6 +157,9 @@ public partial class IconTintColorBehavior
 
 				void OnImageSizeChanged(object sender, SizeChangedEventArgs e)
 				{
+					ArgumentNullException.ThrowIfNull(sender);
+					var image = (WImage)sender;
+
 					image.SizeChanged -= OnImageSizeChanged;
 					ApplyImageTintColor(element, image, color);
 				}
