@@ -126,7 +126,12 @@ public partial class IconTintColorBehavior
 	{
 		if (element is IImageElement { Source: UriImageSource uriImageSource })
 		{
-			image.Source = new BitmapImage(uriImageSource.Uri);
+			image.Source = uriImageSource.Uri.AbsolutePath switch
+			{
+				var path when path.Contains(".svg", StringComparison.OrdinalIgnoreCase) => new SvgImageSource(uriImageSource.Uri),
+				_ => new BitmapImage(uriImageSource.Uri)
+			};
+
 			ApplyTintColor();
 		}
 		else

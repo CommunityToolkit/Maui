@@ -142,6 +142,7 @@
                 HorizontalOptions="Center"
                 VerticalOptions="End"
                 MinimumHeightRequest="60"
+                MinimumWidthRequest="60"
                 Source="https://raw.githubusercontent.com/dotnet-foundation/swag/master/logo/dotnetfoundation_v4.svg">
                 <Image.Behaviors>
                     <mct:IconTintColorBehavior TintColor="Purple" />
