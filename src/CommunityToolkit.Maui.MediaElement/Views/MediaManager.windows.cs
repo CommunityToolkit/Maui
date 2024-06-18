@@ -48,6 +48,7 @@ partial class MediaManager : IDisposable
 		MediaElement.MediaOpened += OnMediaElementMediaOpened;
 
 		Player.SetMediaPlayer(MediaElement);
+		Player.MediaPlayer.PlaybackSession.NaturalVideoSizeChanged += OnNaturalVideoSizeChanged;
 		Player.MediaPlayer.PlaybackSession.PlaybackRateChanged += OnPlaybackSessionPlaybackRateChanged;
 		Player.MediaPlayer.PlaybackSession.PlaybackStateChanged += OnPlaybackSessionPlaybackStateChanged;
 		Player.MediaPlayer.PlaybackSession.SeekCompleted += OnPlaybackSessionSeekCompleted;
@@ -323,6 +324,7 @@ partial class MediaManager : IDisposable
 
 				if (Player.MediaPlayer.PlaybackSession is not null)
 				{
+					Player.MediaPlayer.PlaybackSession.NaturalVideoSizeChanged -= OnNaturalVideoSizeChanged;
 					Player.MediaPlayer.PlaybackSession.PlaybackRateChanged -= OnPlaybackSessionPlaybackRateChanged;
 					Player.MediaPlayer.PlaybackSession.PlaybackStateChanged -= OnPlaybackSessionPlaybackStateChanged;
 					Player.MediaPlayer.PlaybackSession.SeekCompleted -= OnPlaybackSessionSeekCompleted;
@@ -357,6 +359,7 @@ partial class MediaManager : IDisposable
 		{
 			SetDuration(MediaElement, Player);
 		}
+
 		MediaElement.MediaOpened();
 
 		UpdateMetadata();
@@ -407,6 +410,15 @@ partial class MediaManager : IDisposable
 	void OnMediaElementVolumeChanged(WindowsMediaElement sender, object args)
 	{
 		MediaElement.Volume = sender.Volume;
+	}
+
+	void OnNaturalVideoSizeChanged(MediaPlaybackSession sender, object args)
+	{
+		if (MediaElement is not null)
+		{
+			MediaElement.MediaWidth = sender.NaturalVideoWidth;
+			MediaElement.MediaHeight = sender.NaturalVideoHeight;
+		}
 	}
 
 	void OnPlaybackSessionPlaybackRateChanged(MediaPlaybackSession sender, object args)
