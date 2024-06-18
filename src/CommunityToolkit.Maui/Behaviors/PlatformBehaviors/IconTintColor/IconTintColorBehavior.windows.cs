@@ -78,6 +78,8 @@ public partial class IconTintColorBehavior
 		return false;
 	}
 
+
+
 	void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (e.PropertyName is not string propertyName
@@ -125,8 +127,10 @@ public partial class IconTintColorBehavior
 
 	void LoadAndApplyImageTintColor(View element, WImage image, Color color)
 	{
-		if (image.IsLoaded)
+		if (((IImageElement)element).Source is UriImageSource uriImageSource)
 		{
+			BitmapImage bitmapImage = new BitmapImage(uriImageSource.Uri);
+			image.Source = bitmapImage;
 			ApplyTintColor();
 		}
 		else
