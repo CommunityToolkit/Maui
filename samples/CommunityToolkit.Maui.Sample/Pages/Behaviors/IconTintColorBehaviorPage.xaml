@@ -136,6 +136,7 @@
                 </Image.Behaviors>
             </Image>
 
+            <!-- UriImageSource using SVG is not yet supported on iOS + Android: https://github.com/dotnet/maui/issues/10050 -->
             <Image 
                 Grid.Row="7"
                 Grid.Column="2"
