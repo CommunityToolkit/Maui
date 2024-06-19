@@ -6,14 +6,10 @@ using MediaPlayer;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Primitives;
-
-/// <summary>
-/// The class that provides methods to update the system UI for media transport controls to display media metadata.
-/// </summary>
-public class Metadata : IDisposable
+class Metadata
 {
 	static readonly UIImage defaultUIImage = new();
-	static readonly MPMediaItemArtwork defaultImage = new(new UIImage());
+	static readonly MPMediaItemArtwork defaultImage = new(boundsSize: new(0, 0), requestHandler: _ => defaultUIImage);
 	static readonly MPNowPlayingInfo nowPlayingInfoDefault = new()
 	{
 		AlbumTitle = string.Empty,
@@ -27,8 +23,6 @@ public class Metadata : IDisposable
 	};
 
 	readonly PlatformMediaElement player;
-
-	bool isDisposed;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="Metadata"/> class.
@@ -65,19 +59,11 @@ public class Metadata : IDisposable
 	/// </summary>
 	public MPNowPlayingInfo NowPlayingInfo { get; } = new();
 
-	/// <summary>
-	/// Cleans up the resources used by the <see cref="Metadata"/>.
-	/// </summary>
-	public void Dispose()
-	{
-		Dispose(disposing: true);
-		GC.SuppressFinalize(this);
-	}
 
 	/// <summary>
 	/// Clears the metadata for the currently playing media.
 	/// </summary>
-	public void ClearNowPlaying() => MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = nowPlayingInfoDefault;
+	public static void ClearNowPlaying() => MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = nowPlayingInfoDefault;
 
 	/// <summary>
 	/// Sets the data for the currently playing media from the media element.
@@ -88,7 +74,7 @@ public class Metadata : IDisposable
 	{
 		if (mediaElement is null)
 		{
-			ClearNowPlaying();
+			Metadata.ClearNowPlaying();
 			return;
 		}
 
@@ -98,42 +84,8 @@ public class Metadata : IDisposable
 		NowPlayingInfo.IsLiveStream = false;
 		NowPlayingInfo.PlaybackRate = mediaElement.Speed;
 		NowPlayingInfo.ElapsedPlaybackTime = playerItem?.CurrentTime.Seconds ?? 0;
-		NowPlayingInfo.Artwork = GetArtwork(mediaElement.MetadataArtworkUrl);
+		NowPlayingInfo.Artwork = new(boundsSize: new(320, 240), requestHandler: _ => GetImage(mediaElement.MetadataArtworkUrl));
 		MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = NowPlayingInfo;
-	}
-
-	/// <summary>
-	/// Cleans up the resources used by the <see cref="Metadata"/>.
-	/// </summary>
-	/// <param name="disposing"></param>
-	protected virtual void Dispose(bool disposing)
-	{
-		if (!isDisposed)
-		{
-			if (disposing)
-			{
-				defaultImage.Dispose();
-			}
-
-			isDisposed = true;
-		}
-	}
-
-	static MPMediaItemArtwork GetArtwork(string? imageUri)
-	{
-		try
-		{
-			if (!string.IsNullOrWhiteSpace(imageUri))
-			{
-				return new MPMediaItemArtwork(GetImage(imageUri));
-			}
-
-			return defaultImage;
-		}
-		catch
-		{
-			return defaultImage;
-		}
 	}
 
 	static UIImage GetImage(string imageUri)

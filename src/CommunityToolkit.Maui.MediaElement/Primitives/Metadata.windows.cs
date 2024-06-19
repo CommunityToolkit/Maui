@@ -1,11 +1,7 @@
 ﻿using Windows.Media;
 
 namespace CommunityToolkit.Maui.Core.Primitives;
-
-/// <summary>
-/// A class that provides methods to update the system UI for media transport controls to display media metadata.
-/// </summary>
-public class Metadata
+class Metadata
 {
 	readonly IMediaElement? mediaElement;
 	readonly SystemMediaTransportControls? systemMediaControls;
