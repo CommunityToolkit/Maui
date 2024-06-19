@@ -50,13 +50,13 @@ public partial class SubtitleExtensions : Grid, IDisposable
 		switch (isFullScreen)
 		{
 			case true:
-				xamlTextBlock.FontSize = mediaElement.SubtitleFontSize + 8.0;
+				xamlTextBlock.FontSize = mediaElement.SubtitleFontSize;
 				xamlTextBlock.Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 20);
 				Dispatcher.Dispatch(() => { gridItem.Children.Remove(xamlTextBlock); mauiMediaElement.Children.Add(xamlTextBlock); });
 				isFullScreen = false;
 				break;
 			case false:
-				xamlTextBlock.FontSize = mediaElement.SubtitleFontSize;
+				xamlTextBlock.FontSize = mediaElement.SubtitleFontSize + 8.0;
 				xamlTextBlock.Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 300);
 				Dispatcher.Dispatch(() => { mauiMediaElement.Children.Remove(xamlTextBlock); gridItem.Children.Add(xamlTextBlock); });
 				isFullScreen = true;
@@ -74,6 +74,7 @@ public partial class SubtitleExtensions : Grid, IDisposable
 		this.mediaElement = mediaElement;
 		mauiMediaElement = player?.Parent as MauiMediaElement;
 		cues.Clear();
+		xamlTextBlock.FontSize = mediaElement.SubtitleFontSize;
 		string? vttContent;
 		try
 		{
