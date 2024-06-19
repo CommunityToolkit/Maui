@@ -636,7 +636,7 @@ public partial class MediaManager : IDisposable
 		var asset = avPlayerItem.Asset;
 
 		// Retrieve the video track
-		var videoTrack = asset.TracksWithMediaType(AVMediaTypes.Video.ToString()).FirstOrDefault();
+		var videoTrack = asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant()).FirstOrDefault();
 
 		if (videoTrack is not null)
 		{
@@ -653,7 +653,13 @@ public partial class MediaManager : IDisposable
 		}
 		else
 		{
-			// Handle the case where there is no video track
+			// HLS doesn't have tracks, try to get the dimensions this way
+			if (!avPlayerItem.PresentationSize.IsEmpty)
+			{
+				return ((int)avPlayerItem.PresentationSize.Width, (int)avPlayerItem.PresentationSize.Height);
+			}
+
+			// If all else fails, just return 0, 0
 			return (0, 0);
 		}
 	}
