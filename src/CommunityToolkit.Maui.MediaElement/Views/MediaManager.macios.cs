@@ -304,6 +304,8 @@ public partial class MediaManager : IDisposable
 		}
 		else if (PlayerItem is null)
 		{
+			MediaElement.MediaWidth = MediaElement.MediaHeight = 0;
+
 			MediaElement.CurrentStateChanged(MediaElementState.None);
 		}
 	}

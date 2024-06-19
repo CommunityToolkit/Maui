@@ -255,10 +255,13 @@ partial class MediaManager : IDisposable
 		if (MediaElement.Source is null)
 		{
 			Player.Source = null;
+			MediaElement.MediaWidth = MediaElement.MediaHeight = 0;
+
 			MediaElement.CurrentStateChanged(MediaElementState.None);
 
 			return;
 		}
+
 		MediaElement.Position = TimeSpan.Zero;
 		MediaElement.Duration = TimeSpan.Zero;
 		Player.AutoPlay = MediaElement.ShouldAutoPlay;

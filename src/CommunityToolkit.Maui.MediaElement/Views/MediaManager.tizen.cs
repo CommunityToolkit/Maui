@@ -133,18 +133,6 @@ public partial class MediaManager : IDisposable
 		};
 	}
 
-	protected virtual async partial void PlatformUpdateDimensions()
-	{
-		if (Player is null)
-		{
-			return;
-		}
-
-		var videoSize = await Player.GetVideoSize();
-		MediaElement.MediaWidth = (int)videoSize.Width;
-		MediaElement.MediaHeight = (int)videoSize.Height;
-	}
-
 	protected virtual partial void PlatformUpdateSource()
 	{
 		if (Player is null)
@@ -160,7 +148,10 @@ public partial class MediaManager : IDisposable
 		if (MediaElement.Source is null)
 		{
 			Player.SetSource(null);
+
 			MediaElement.Duration = TimeSpan.Zero;
+			MediaElement.MediaWidth = MediaElement.MediaHeight = 0;
+
 			MediaElement.CurrentStateChanged(MediaElementState.None);
 			return;
 		}
@@ -401,7 +392,11 @@ public partial class MediaManager : IDisposable
 		if (Player is not null)
 		{
 			await Player.PrepareAsync();
-			await PlatformUpdateDimensions();
+
+			var videoSize = await Player.GetVideoSize();
+			MediaElement.MediaWidth = (int)videoSize.Width;
+			MediaElement.MediaHeight = (int)videoSize.Height;
+
 			PlatformUpdatePosition();
 			UpdateCurrentState();
 		}
