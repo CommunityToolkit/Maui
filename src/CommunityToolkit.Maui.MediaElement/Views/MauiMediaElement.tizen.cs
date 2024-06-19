@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Views;
+using Tizen.Multimedia;
 using Tizen.NUI.BaseComponents;
 using Tizen.UIExtensions.NUI;
 using MSize = Tizen.Multimedia.Size;
@@ -11,6 +12,14 @@ namespace CommunityToolkit.Maui.Core.Views;
 public class MauiMediaElement : ViewGroup
 {
 	VideoView videoView;
+	Task? taskPrepare;
+	TaskCompletionSource<bool>? tcsForStreamInfo;
+
+	Task TaskPrepare
+	{
+		get => taskPrepare ?? Task.CompletedTask;
+		set => taskPrepare = value;
+	}
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
@@ -28,7 +37,7 @@ public class MauiMediaElement : ViewGroup
 	/// <returns>An object that holds the width and height of the currently loaded video.</returns>
 	public async Task<MSize> GetVideoSize()
 	{
-		if (player.State == PlayerState.Idle)
+		if (videoView.State == PlayerState.Idle)
 		{
 			if (tcsForStreamInfo == null || tcsForStreamInfo.Task.IsCompleted)
 			{
@@ -38,7 +47,7 @@ public class MauiMediaElement : ViewGroup
 		}
 		await TaskPrepare;
 
-		var videoSize = player.StreamInfo.GetVideoProperties().Size;
+		var videoSize = videoView.StreamInfo.GetVideoProperties().Size;
 		return new MSize(videoSize.Width, videoSize.Height);
 	}
 
