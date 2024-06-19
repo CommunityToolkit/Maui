@@ -416,8 +416,8 @@ partial class MediaManager : IDisposable
 	{
 		if (MediaElement is not null)
 		{
-			MediaElement.MediaWidth = sender.NaturalVideoWidth;
-			MediaElement.MediaHeight = sender.NaturalVideoHeight;
+			MediaElement.MediaWidth = (int)sender.NaturalVideoWidth;
+			MediaElement.MediaHeight = (int)sender.NaturalVideoHeight;
 		}
 	}
 
