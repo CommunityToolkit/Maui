@@ -318,14 +318,14 @@ public class MediaElement : View, IMediaElement, IDisposable
 	/// Gets the height (in pixels) of the loaded media in pixels.
 	/// This is a bindable property.
 	/// </summary>
-	/// <remarks>Not reported for non-visual media, sometimes not available for live streamed content on iOS.</remarks>
+	/// <remarks>Not reported for non-visual media, sometimes not available for live streamed content on iOS and macOS.</remarks>
 	public int MediaHeight => (int)GetValue(MediaHeightProperty);
 
 	/// <summary>
 	/// Gets the width (in pixels) of the loaded media in pixels.
 	/// This is a bindable property.
 	/// </summary>
-	/// <remarks>Not reported for non-visual media, sometimes not available for live streamed content on iOS.</remarks>
+	/// <remarks>Not reported for non-visual media, sometimes not available for live streamed content on iOS and macOS.</remarks>
 	public int MediaWidth => (int)GetValue(MediaWidthProperty);
 
 	/// <summary>
