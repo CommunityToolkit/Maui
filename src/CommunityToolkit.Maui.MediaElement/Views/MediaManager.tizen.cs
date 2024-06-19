@@ -393,7 +393,7 @@ public partial class MediaManager : IDisposable
 		{
 			await Player.PrepareAsync();
 
-			var videoSize = await Player.GetVideoSize();
+			var videoSize = Player.StreamInfo.GetVideoProperties().Size;
 			MediaElement.MediaWidth = (int)videoSize.Width;
 			MediaElement.MediaHeight = (int)videoSize.Height;
 
