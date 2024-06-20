@@ -13,10 +13,8 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 
 		Padding = 0;
 
-		Content = new CollectionView
-		{
-			SelectionMode = SelectionMode.Single,
-		}.ItemTemplate(new GalleryDataTemplate())
+		Content = new CollectionView { SelectionMode = SelectionMode.Single }
+			.ItemTemplate(new GalleryDataTemplate(deviceInfo))
 			.Bind(ItemsView.ItemsSourceProperty,
 				static (BaseGalleryViewModel vm) => vm.Items,
 				mode: BindingMode.OneTime)
@@ -36,18 +34,17 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 		}
 	}
 
-	sealed class GalleryDataTemplate() : DataTemplate(CreateDataTemplate)
+	sealed class GalleryDataTemplate(IDeviceInfo deviceInfo) : DataTemplate(() => CreateDataTemplate(deviceInfo))
 	{
-
 		enum Row { TopPadding, Content, BottomPadding }
 		enum Column { LeftPadding, Content, RightPadding }
 
-		static Grid CreateDataTemplate() => new()
+		static Grid CreateDataTemplate(IDeviceInfo deviceInfo) => new()
 		{
 			RowDefinitions = Rows.Define(
-				(Row.TopPadding, 12),
+				(Row.TopPadding, deviceInfo.Platform == DevicePlatform.WinUI ? 4 : 8),
 				(Row.Content, Star),
-				(Row.BottomPadding, 12)),
+				(Row.BottomPadding, deviceInfo.Platform == DevicePlatform.WinUI ? 4 : 8)),
 
 			ColumnDefinitions = Columns.Define(
 				(Column.LeftPadding, 24),

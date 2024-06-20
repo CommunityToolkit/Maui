@@ -18,7 +18,7 @@ using Resource = Microsoft.Maui.Resource;
 namespace CommunityToolkit.Maui.Media.Services;
 
 [Service(Exported = false, Enabled = true, Name = "CommunityToolkit.Maui.Media.Services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
-public class MediaControlsService : Service
+class MediaControlsService : Service
 {
 	public const string ACTION_PLAY = "MediaAction.play";
 	public const string ACTION_PAUSE = "MediaAction.pause";

@@ -273,21 +273,21 @@ partial class CameraManager
 		{
 			base.OnCaptureSuccess(image);
 			var img = image.Image;
-
+			
 			if (img is null)
 			{
 				return;
 			}
-
+			
 			var buffer = GetFirstPlane(img.GetPlanes())?.Buffer;
-
+			
 			if (buffer is null)
 			{
 				image.Close();
 				return;
 			}
-
-			var imgData = ArrayPool<byte>.Shared.Rent(buffer.Capacity());
+			
+			var imgData = new byte[buffer.Remaining()];
 			try
 			{
 				buffer.Get(imgData);
@@ -297,7 +297,6 @@ partial class CameraManager
 			finally
 			{
 				image.Close();
-				ArrayPool<byte>.Shared.Return(imgData);
 			}
 
 			static Plane? GetFirstPlane(Plane[]? planes)
