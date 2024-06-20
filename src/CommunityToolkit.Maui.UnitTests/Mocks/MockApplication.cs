@@ -6,12 +6,12 @@ namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
 class MockApplication : Application, IPlatformApplication
 {
-#pragma warning disable CS0612 // Type or member is obsolete
 	public MockApplication(IServiceProvider serviceProvider)
-#pragma warning restore CS0612 // Type or member is obsolete
 	{
 		Services = serviceProvider;
+#pragma warning disable CS0612 // Type or member is obsolete
 		DependencyService.Register<ISystemResourcesProvider, MockResourcesProvider>();
+#pragma warning restore CS0612 // Type or member is obsolete
 	}
 	
 	public IApplication Application => this;
