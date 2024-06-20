@@ -212,7 +212,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			"Cancel", null, Aspect.AspectFit.ToString(),
 			Aspect.AspectFill.ToString(), Aspect.Fill.ToString());
 
-		if (resultAspect.Equals("Cancel"))
+		if (resultAspect is null || resultAspect.Equals("Cancel"))
 		{
 			return;
 		}
