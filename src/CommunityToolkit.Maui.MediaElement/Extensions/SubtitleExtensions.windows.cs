@@ -10,7 +10,7 @@ partial class SubtitleExtensions : Grid, IDisposable
 	bool disposedValue;
 	bool isFullScreen = false;
 
-	readonly HttpClient httpClient;
+	static readonly HttpClient httpClient = new();
 	readonly Microsoft.UI.Xaml.Controls.TextBlock xamlTextBlock;
 
 	List<SubtitleCue> cues;
@@ -23,7 +23,6 @@ partial class SubtitleExtensions : Grid, IDisposable
 	/// </summary>
 	public SubtitleExtensions()
 	{
-		httpClient = new();
 		cues = [];
 		MauiMediaElement.WindowsChanged += MauiMediaElement_WindowsChanged;
 		xamlTextBlock = new()

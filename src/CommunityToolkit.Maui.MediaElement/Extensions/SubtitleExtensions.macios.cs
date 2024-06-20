@@ -11,7 +11,7 @@ namespace CommunityToolkit.Maui.Extensions;
 
 partial class SubtitleExtensions : UIViewController
 {
-	readonly HttpClient httpClient;
+	static readonly HttpClient httpClient = new();
 	readonly PlatformMediaElement player;
 	readonly UIViewController playerViewController;
 	readonly UILabel subtitleLabel;
@@ -31,7 +31,6 @@ partial class SubtitleExtensions : UIViewController
 		this.playerViewController = playerViewController;
 		this.player = player;
 		cues = [];
-		httpClient = new HttpClient();
 		subtitleLabel = new UILabel
 		{
 			Frame = CalculateSubtitleFrame(playerViewController),

@@ -14,7 +14,7 @@ partial class SubtitleExtensions : IDisposable
 {
 	bool disposedValue;
 
-	readonly HttpClient httpClient;
+	static readonly HttpClient httpClient = new();
 	readonly IDispatcher dispatcher;
 	readonly RelativeLayout.LayoutParams? textBlockLayout;
 	readonly StyledPlayerView styledPlayerView;
@@ -30,7 +30,6 @@ partial class SubtitleExtensions : IDisposable
 	/// <param name="styledPlayerView"></param>
 	public SubtitleExtensions(StyledPlayerView styledPlayerView, IDispatcher dispatcher)
 	{
-		httpClient = new HttpClient();
 		this.dispatcher = dispatcher;
 		this.styledPlayerView = styledPlayerView;
 		cues = [];
