@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Primitives;
+using Microsoft.UI.Xaml.Media;
 
 namespace CommunityToolkit.Maui.Extensions;
 
@@ -51,6 +52,7 @@ public partial class SubtitleExtensions : Grid, IDisposable
 		{
 			case true:
 				xamlTextBlock.FontSize = mediaElement.SubtitleFontSize;
+				xamlTextBlock.FontFamily = new FontFamily(mediaElement.SubtitleFont);
 				xamlTextBlock.Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 20);
 				Dispatcher.Dispatch(() => { gridItem.Children.Remove(xamlTextBlock); mauiMediaElement.Children.Add(xamlTextBlock); });
 				isFullScreen = false;

@@ -62,6 +62,7 @@ public static class MauiProgram
 								.ConfigureFonts(fonts =>
 								{
 									fonts.AddFont("Font Awesome 6 Brands-Regular-400.otf", FontFamilies.FontAwesomeBrands);
+									fonts.AddFont("PlaywriteSK-Regular.ttf", FontFamilies.PlaywriteSK);
 								});
 
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>()

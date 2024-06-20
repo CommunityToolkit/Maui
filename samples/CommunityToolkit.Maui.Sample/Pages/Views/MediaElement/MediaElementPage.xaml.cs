@@ -4,6 +4,7 @@ using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
+using CommunityToolkit.Maui.Sample.Resources.Fonts;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
@@ -208,17 +209,12 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				}
 				return;
 			case loadSubTitles:
-				if(OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst())
-				{
-					MediaElement.SubtitleFont = "Avenir-Book";
-				}
-				else
-				{
-					MediaElement.SubtitleFont = "monospace";
-				}
+				MediaElement.SubtitleFont = FontFamilies.PlaywriteSK;
 				MediaElement.SubtitleFontSize = 16;
 				MediaElement.SubtitleUrl = "https://raw.githubusercontent.com/ne0rrmatrix/SampleVideo/main/SRT/WindowsVideo.srt";
 				MediaElement.Source = MediaSource.FromResource("WindowsVideo.mp4");
+				//MediaElement.FontAttributes = FontAttributes.Bold;
+				//MediaElement.FontFamily = FontFamilies.PlaywriteSK;
 				return;
 		}
 	}
