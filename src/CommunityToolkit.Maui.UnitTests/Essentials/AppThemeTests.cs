@@ -11,8 +11,14 @@ public class AppThemeTests : BaseHandlerTest
 
 	public AppThemeTests()
 	{
-		AppInfo.SetCurrent(mockAppInfo = new() { RequestedTheme = AppTheme.Light });
-		Application.Current = app = new MockApplication(ServiceProvider);
+		const AppTheme initialAppTheme = AppTheme.Light;
+		AppInfo.SetCurrent(mockAppInfo = new() { RequestedTheme = initialAppTheme });
+		
+		Application.Current = app = new Application();
+
+		SetAppTheme(initialAppTheme);
+
+		Assert.Equal(initialAppTheme, app.PlatformAppTheme);
 	}
 
 	[Fact]
@@ -28,10 +34,12 @@ public class AppThemeTests : BaseHandlerTest
 		{
 			Text = "Green on Light, Red on Dark"
 		};
-
 		label.SetAppThemeColor(Label.TextColorProperty, color);
 
-		Application.Current = null;
+		app.MainPage = new ContentPage
+		{
+			Content = label
+		};
 
 		Assert.Equal(Colors.Green, label.TextColor);
 
@@ -56,7 +64,10 @@ public class AppThemeTests : BaseHandlerTest
 
 		label.SetAppThemeColor(Label.TextColorProperty, color);
 
-		Application.Current = null;
+		app.MainPage = new ContentPage
+		{
+			Content = label
+		};
 
 		Assert.Equal(Colors.Green, label.TextColor);
 
@@ -81,7 +92,10 @@ public class AppThemeTests : BaseHandlerTest
 
 		label.SetAppThemeColor(Label.TextColorProperty, color);
 
-		Application.Current = null;
+		app.MainPage = new ContentPage
+		{
+			Content = label
+		};
 
 		Assert.Equal(Colors.Blue, label.TextColor);
 
@@ -103,7 +117,11 @@ public class AppThemeTests : BaseHandlerTest
 
 		label.SetAppTheme(Label.TextProperty, resource);
 
-		Application.Current = null;
+		app.MainPage = new ContentPage
+		{
+			Content = label
+		};
+		
 		Assert.Equal("Light Theme", label.Text);
 
 		SetAppTheme(AppTheme.Dark);
@@ -111,13 +129,8 @@ public class AppThemeTests : BaseHandlerTest
 		Assert.Equal("Dark Theme", label.Text);
 	}
 
-	void SetAppTheme(AppTheme theme)
+	void SetAppTheme(in AppTheme theme)
 	{
-		app.RequestedThemeChanged += (sender, args) =>
-		{
-			var temp = DateTime.Now;
-		};
-		
 		mockAppInfo.RequestedTheme = theme;
 		((IApplication)app).ThemeChanged();
 	}

@@ -6,18 +6,16 @@ namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
 class MockApplication : Application, IPlatformApplication
 {
-	public new Application? Current = null;
-	public IServiceProvider Services { get; }
-	public IApplication Application => this;
-
 #pragma warning disable CS0612 // Type or member is obsolete
 	public MockApplication(IServiceProvider serviceProvider)
 #pragma warning restore CS0612 // Type or member is obsolete
 	{
 		Services = serviceProvider;
-		
 		DependencyService.Register<ISystemResourcesProvider, MockResourcesProvider>();
 	}
+	
+	public IApplication Application => this;
+	public IServiceProvider Services { get; }
 }
 
 // Inspired by https://github.com/dotnet/maui/blob/main/src/Controls/tests/Core.UnitTests/TestClasses/ApplicationHandlerStub.cs
