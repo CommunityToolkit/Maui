@@ -9,7 +9,6 @@ namespace CommunityToolkit.Maui.Core.Primitives;
 class Metadata
 {
 	static readonly UIImage defaultUIImage = new();
-	static readonly MPMediaItemArtwork defaultImage = new(boundsSize: new(0, 0), requestHandler: _ => defaultUIImage);
 	static readonly MPNowPlayingInfo nowPlayingInfoDefault = new()
 	{
 		AlbumTitle = string.Empty,
@@ -19,7 +18,7 @@ class Metadata
 		IsLiveStream = false,
 		PlaybackRate = 0,
 		ElapsedPlaybackTime = 0,
-		Artwork = defaultImage
+		Artwork = new(boundsSize: new(0, 0), requestHandler: _ => defaultUIImage)
 	};
 
 	readonly PlatformMediaElement player;
@@ -31,7 +30,7 @@ class Metadata
 	public Metadata(PlatformMediaElement player)
 	{
 		this.player = player;
-		MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = NowPlayingInfo;
+		MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = nowPlayingInfoDefault;
 
 		var commandCenter = MPRemoteCommandCenter.Shared;
 
@@ -90,12 +89,18 @@ class Metadata
 
 	static UIImage GetImage(string imageUri)
 	{
-		if (imageUri.StartsWith(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
+		try
 		{
-			return UIImage.LoadFromData(NSData.FromUrl(new NSUrl(imageUri))) ?? defaultUIImage;
+			if (imageUri.StartsWith(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
+			{
+				return UIImage.LoadFromData(NSData.FromUrl(new NSUrl(imageUri))) ?? defaultUIImage;
+			}
+			return defaultUIImage;
 		}
-
-		return defaultUIImage;
+		catch
+		{
+			return defaultUIImage;
+		}
 	}
 
 	MPRemoteCommandHandlerStatus SeekCommand(MPRemoteCommandEvent? commandEvent)
