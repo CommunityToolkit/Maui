@@ -1,6 +1,7 @@
 ﻿using Windows.Media;
 
 namespace CommunityToolkit.Maui.Core.Primitives;
+
 class Metadata
 {
 	readonly IMediaElement? mediaElement;

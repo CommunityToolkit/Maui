@@ -6,6 +6,7 @@ using MediaPlayer;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Primitives;
+
 class Metadata
 {
 	static readonly UIImage defaultUIImage = new();
