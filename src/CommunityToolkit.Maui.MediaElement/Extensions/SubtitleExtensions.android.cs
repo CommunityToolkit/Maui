@@ -9,10 +9,8 @@ using static Android.Views.ViewGroup;
 using Activity = Android.App.Activity;
 
 namespace CommunityToolkit.Maui.Extensions;
-/// <summary>
-/// A class that provides subtitle support for a video player.
-/// </summary>
-public partial class SubtitleExtensions : IDisposable
+
+partial class SubtitleExtensions : IDisposable
 {
 	bool disposedValue;
 

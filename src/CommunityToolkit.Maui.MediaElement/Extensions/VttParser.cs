@@ -3,10 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace CommunityToolkit.Maui.Extensions;
 
-/// <summary>
-/// A class that provides subtitle parser for VTT files.
-/// </summary>
-public static partial class VttParser
+static partial class VttParser
 {
 	static readonly string[] separator = ["\r\n", "\n"];
 

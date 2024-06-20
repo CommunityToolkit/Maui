@@ -9,10 +9,7 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.Extensions;
 
-/// <summary>
-/// A class that provides subtitle support for a video player.
-/// </summary>
-public partial class SubtitleExtensions : UIViewController
+partial class SubtitleExtensions : UIViewController
 {
 	readonly HttpClient httpClient;
 	readonly PlatformMediaElement player;

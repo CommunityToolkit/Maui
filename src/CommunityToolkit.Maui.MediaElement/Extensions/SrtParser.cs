@@ -2,10 +2,8 @@
 using System.Text.RegularExpressions;
 
 namespace CommunityToolkit.Maui.Extensions;
-/// <summary>
-/// a class that provides subtitle parser for SRT files.
-/// </summary>
-public static partial class SrtParser
+
+static partial class SrtParser
 {
 	static readonly string[] separator = ["\r\n", "\n"];
 

@@ -5,10 +5,7 @@ using Microsoft.UI.Xaml.Media;
 
 namespace CommunityToolkit.Maui.Extensions;
 
-/// <summary>
-/// A class that provides subtitle support for a video player.
-/// </summary>
-public partial class SubtitleExtensions : Grid, IDisposable
+partial class SubtitleExtensions : Grid, IDisposable
 {
 	bool disposedValue;
 	bool isFullScreen = false;

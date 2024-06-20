@@ -1,9 +1,6 @@
 ﻿namespace CommunityToolkit.Maui.Extensions;
 
-/// <summary>
-/// The SubtitleCue class represents a single cue in a subtitle file.
-/// </summary>
-public class SubtitleCue
+class SubtitleCue
 {
 	/// <summary>
 	/// The number of the cue.
