@@ -81,8 +81,4 @@
     <None Include="..\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj" />
-  </ItemGroup>
-
 </Project>
