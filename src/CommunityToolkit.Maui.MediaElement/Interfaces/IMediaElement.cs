@@ -86,11 +86,11 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// <summary>
 	/// Gets or sets the font to use for the subtitle text.
 	/// </summary>
-	string SubtitleFont { get; set; }
+	string SubtitleFont { get; }
 	/// <summary>
 	/// Gets or sets the URL of the subtitle file to display.
 	/// </summary>
-	string SubtitleUrl { get; set; }
+	string SubtitleUrl { get; }
 
 	/// <summary>
 	/// Gets or sets the source of the media to play.
@@ -107,7 +107,7 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// <summary>
 	/// Gets or sets the font size of the subtitle text.
 	/// </summary>
-	double SubtitleFontSize { get; set; }
+	double SubtitleFontSize { get; }
 	/// <summary>
 	/// Gets or sets the volume of the audio for the media.
 	/// </summary>
