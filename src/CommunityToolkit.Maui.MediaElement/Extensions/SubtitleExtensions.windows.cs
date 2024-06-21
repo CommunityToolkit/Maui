@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml.Media;
 
 namespace CommunityToolkit.Maui.Extensions;
 
-partial class SubtitleExtensions : Grid, IDisposable
+class SubtitleExtensions : Grid, IDisposable
 {
 	bool disposedValue;
 	bool isFullScreen = false;
@@ -24,7 +24,7 @@ partial class SubtitleExtensions : Grid, IDisposable
 	public SubtitleExtensions()
 	{
 		cues = [];
-		MauiMediaElement.WindowChanged += OnWindowStatusChanged;
+		MauiMediaElement.GridEventsChanged += OnFullScreenChanged;
 		subtitleTextBlock = new()
 		{
 			Text = string.Empty,
@@ -47,6 +47,7 @@ partial class SubtitleExtensions : Grid, IDisposable
 		this.mediaElement = mediaElement;
 		mauiMediaElement = player?.Parent as MauiMediaElement;
 		cues.Clear();
+		subtitleTextBlock.Text = string.Empty;
 		subtitleTextBlock.FontSize = mediaElement.SubtitleFontSize;
 		string? vttContent;
 		try
@@ -72,8 +73,8 @@ partial class SubtitleExtensions : Grid, IDisposable
 	/// </summary>
 	public void StartSubtitleDisplay()
 	{
-		Dispatcher.Dispatch(() => mauiMediaElement?.Children.Add(subtitleTextBlock));
 		timer = new System.Timers.Timer(1000);
+		Dispatcher.Dispatch(() => mauiMediaElement?.Children.Add(subtitleTextBlock));
 		timer.Elapsed += UpdateSubtitle;
 		timer.Start();
 	}
@@ -93,7 +94,7 @@ partial class SubtitleExtensions : Grid, IDisposable
 		{
 			return;
 		}
-		Dispatcher.Dispatch(() => mauiMediaElement.Children.Remove(subtitleTextBlock));
+		Dispatcher.Dispatch(() => mauiMediaElement?.Children.Remove(subtitleTextBlock));
 	}
 
 	void UpdateSubtitle(object? sender, System.Timers.ElapsedEventArgs e)
@@ -118,14 +119,14 @@ partial class SubtitleExtensions : Grid, IDisposable
 		});
 	}
 
-	void OnWindowStatusChanged(object? sender, WindowsEventArgs e)
+	void OnFullScreenChanged(object? sender, GridEventArgs e)
 	{
-		if (e.data is not Microsoft.UI.Xaml.Controls.Grid gridItem || string.IsNullOrEmpty(mediaElement?.SubtitleUrl))
+		if (e.Grid is not Microsoft.UI.Xaml.Controls.Grid gridItem || string.IsNullOrEmpty(mediaElement?.SubtitleUrl))
 		{
 			return;
 		}
 		ArgumentNullException.ThrowIfNull(mauiMediaElement);
-
+		subtitleTextBlock.Text = string.Empty;
 		switch (isFullScreen)
 		{
 			case true:

@@ -325,11 +325,6 @@ partial class MediaManager : IDisposable
 	{
 		if (disposing)
 		{
-			if(subtitleExtensions is not null)
-			{
-				subtitleExtensions.Dispose();
-				subtitleExtensions = null;
-			}
 			if (Player?.MediaPlayer is not null)
 			{
 				if (displayActiveRequested)
@@ -337,9 +332,7 @@ partial class MediaManager : IDisposable
 					DisplayRequest.RequestRelease();
 					displayActiveRequested = false;
 				}
-				subTitles.Dispose();
-				startSubtitles?.Dispose();
-				startSubtitles = null;
+				subtitleExtensions?.StopSubtitleDisplay();
 				Player.MediaPlayer.MediaOpened -= OnMediaElementMediaOpened;
 				Player.MediaPlayer.MediaFailed -= OnMediaElementMediaFailed;
 				Player.MediaPlayer.MediaEnded -= OnMediaElementMediaEnded;
@@ -353,6 +346,9 @@ partial class MediaManager : IDisposable
 					Player.MediaPlayer.PlaybackSession.SeekCompleted -= OnPlaybackSessionSeekCompleted;
 				}
 			}
+			
+			startSubtitles?.Dispose();
+			startSubtitles = null;
 		}
 	}
 

@@ -43,7 +43,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	TaskCompletionSource? seekToTaskCompletionSource;
 	CancellationTokenSource checkPermissionSourceToken = new();
 	CancellationTokenSource startServiceSourceToken = new();
-	CancellationTokenSource subTitles = new();
+	CancellationTokenSource subTitlesSourceToken = new();
 	Task? startSubtitles;
 	Task? checkPermissionsTask;
 
@@ -454,7 +454,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		if (hasSetSource && Player.PlayerError is null)
 		{
 			MediaElement.MediaOpened();
-			CancellationToken token = subTitles.Token;
+			CancellationToken token = subTitlesSourceToken.Token;
 			startSubtitles = LoadSubtitles(token);
 		}
 	}
@@ -600,33 +600,28 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		if (disposing)
 		{
-			StopService();
-			subtitleExtensions?.StopSubtitleDisplay();
-			subtitleExtensions = null;
-			subTitles?.Dispose();
-			startSubtitles?.Dispose();
-			startSubtitles = null;
-
-			mediaSessionConnector?.SetPlayer(null);
-			mediaSessionConnector?.Dispose();
-			mediaSessionConnector = null;
-
-			mediaSession?.Release();
-			mediaSession?.Dispose();
-			mediaSession = null;
-
 			if (uiUpdateReceiver is not null)
 			{
 				LocalBroadcastManager.GetInstance(Platform.AppContext).UnregisterReceiver(uiUpdateReceiver);
 			}
 
-			uiUpdateReceiver?.Dispose();
-			uiUpdateReceiver = null;
+			StopService();
+			mediaSessionConnector?.SetPlayer(null);
+			mediaSession?.Release();
 
+			mediaSessionConnector?.Dispose();
+			mediaSession?.Dispose();
+			uiUpdateReceiver?.Dispose();
 			checkPermissionSourceToken.Dispose();
 			startServiceSourceToken.Dispose();
-
+			subTitlesSourceToken?.Dispose();
 			httpClient.Dispose();
+			startSubtitles?.Dispose();
+
+			startSubtitles = null;
+			mediaSessionConnector = null;
+			mediaSession = null;
+			uiUpdateReceiver = null;
 		}
 	}
 

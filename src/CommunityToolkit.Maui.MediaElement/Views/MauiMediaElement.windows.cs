@@ -27,7 +27,7 @@ public class MauiMediaElement : Grid, IDisposable
 	/// <summary>
 	/// Handles the event when the windows change.
 	/// </summary>
-	public static event EventHandler<WindowsEventArgs>? WindowChanged;
+	public static event EventHandler<GridEventArgs>? GridEventsChanged;
 	static readonly AppWindow appWindow = GetAppWindowForCurrentWindow();
 	readonly Popup popup = new();
 	readonly Grid fullScreenGrid = new();
@@ -81,11 +81,11 @@ public class MauiMediaElement : Grid, IDisposable
 	~MauiMediaElement() => Dispose(false);
 
 	/// <summary>
-	/// A method that raises the WindowChanged event.
+	/// A method that raises the GridEventsChanged event.
 	/// </summary>
-	protected virtual void OnWindowsChanged(WindowsEventArgs e)
+	protected virtual void OnGridEventsChanged(GridEventArgs e)
 	{
-		WindowChanged?.Invoke(null, e);
+		GridEventsChanged?.Invoke(null, e);
 	}
 
 	/// <summary>
@@ -169,7 +169,7 @@ public class MauiMediaElement : Grid, IDisposable
 			appWindow.SetPresenter(AppWindowPresenterKind.Default);
 			Shell.SetNavBarIsVisible(CurrentPage, doesNavigationBarExistBeforeFullScreen);
 
-			OnWindowsChanged(new Maui.Primitives.WindowsEventArgs(fullScreenGrid));
+			OnGridEventsChanged(new Maui.Primitives.GridEventArgs(fullScreenGrid));
 			if (popup.IsOpen)
 			{
 				popup.IsOpen = false;
@@ -210,7 +210,7 @@ public class MauiMediaElement : Grid, IDisposable
 			{
 				popup.IsOpen = true;
 			}
-			OnWindowsChanged(new Maui.Primitives.WindowsEventArgs(fullScreenGrid));
+			OnGridEventsChanged(new Maui.Primitives.GridEventArgs(fullScreenGrid));
 		}
 	}
 }

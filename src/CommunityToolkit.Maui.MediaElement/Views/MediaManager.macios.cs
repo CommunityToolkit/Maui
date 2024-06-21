@@ -17,7 +17,7 @@ public partial class MediaManager : IDisposable
 {
 	Metadata? metaData;
 	SubtitleExtensions? subtitleExtensions;
-	readonly CancellationTokenSource subTitles = new();
+	readonly CancellationTokenSource subTitlesCancellationTokenSource = new();
 	Task? startSubtitles;
 
 	// Media would still start playing when Speed was set although ShouldAutoPlay=False
@@ -302,7 +302,7 @@ public partial class MediaManager : IDisposable
 			{
 				Player.Play();
 			}
-			CancellationToken token = subTitles.Token;
+			CancellationToken token = subTitlesCancellationTokenSource.Token;
 			startSubtitles = LoadSubtitles(token);
 		}
 		else if (PlayerItem is null)
@@ -443,33 +443,28 @@ public partial class MediaManager : IDisposable
 				DestroyErrorObservers();
 				DestroyPlayedToEndObserver();
 				subtitleExtensions?.StopSubtitleDisplay();
-				subtitleExtensions?.Dispose();
-				subtitleExtensions = null;
-				subTitles.Dispose();
-				RateObserver?.Dispose();
-				RateObserver = null;
-				startSubtitles?.Dispose();
-				startSubtitles = null;
-
-				CurrentItemErrorObserver?.Dispose();
-				CurrentItemErrorObserver = null;
-
 				Player.ReplaceCurrentItemWithPlayerItem(null);
 
+				subtitleExtensions?.Dispose();
+				subTitlesCancellationTokenSource.Dispose();
+				RateObserver?.Dispose();
+				startSubtitles?.Dispose();
+				CurrentItemErrorObserver?.Dispose();
 				MutedObserver?.Dispose();
-				MutedObserver = null;
-
 				VolumeObserver?.Dispose();
-				VolumeObserver = null;
-
 				StatusObserver?.Dispose();
-				StatusObserver = null;
-
 				TimeControlStatusObserver?.Dispose();
-				TimeControlStatusObserver = null;
-
 				Player.Dispose();
+
+				startSubtitles = null;
+				subtitleExtensions = null;
 				Player = null;
+				CurrentItemErrorObserver = null;
+				MutedObserver = null;
+				RateObserver = null;
+				TimeControlStatusObserver = null;
+				StatusObserver = null;
+				VolumeObserver = null;
 			}
 
 			PlayerViewController?.Dispose();
@@ -654,17 +649,17 @@ sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
 	/// <summary>
 	/// Handles the event when the windows change.
 	/// </summary>
-	public static event EventHandler<WindowsEventArgs>? WindowChanged;
+	public static event EventHandler<FullScreenEventArgs>? FullScreenChanged;
 	public override void WillBeginFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
 	{
-		OnWindowsChanged(new WindowsEventArgs(true));
+		OnWindowsChanged(new FullScreenEventArgs(true));
 	}
 	public override void WillEndFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
 	{
-		OnWindowsChanged(new WindowsEventArgs(false));
+		OnWindowsChanged(new FullScreenEventArgs(false));
 	}
 	/// <summary>
-	/// A method that raises the WindowChanged event.
+	/// A method that raises the FullScreenChanged event.
 	/// </summary>
-	static void OnWindowsChanged(WindowsEventArgs e) => WindowChanged?.Invoke(null, e);
+	static void OnWindowsChanged(FullScreenEventArgs e) => FullScreenChanged?.Invoke(null, e);
 }

@@ -9,7 +9,7 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.Extensions;
 
-partial class SubtitleExtensions : UIViewController
+class SubtitleExtensions : UIViewController
 {
 	static readonly HttpClient httpClient = new();
 	readonly PlatformMediaElement player;
@@ -41,7 +41,8 @@ partial class SubtitleExtensions : UIViewController
 			Lines = 0,
 			AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleTopMargin | UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleBottomMargin
 		};
-		MediaManagerDelegate.WindowChanged += OnWindowStatusChanged;
+		DispatchQueue.MainQueue.DispatchAsync(() => playerViewController.View?.AddSubview(subtitleLabel));
+		MediaManagerDelegate.FullScreenChanged += OnFullScreenChanged;
 	}
 
 	/// <summary>
@@ -81,15 +82,6 @@ partial class SubtitleExtensions : UIViewController
 		playerObserver = player?.AddPeriodicTimeObserver(CMTime.FromSeconds(1, 1), null, (time) =>
 		{
 			TimeSpan currentPlaybackTime = TimeSpan.FromSeconds(time.Seconds);
-			switch(viewController)
-			{
-				case null:
-					DispatchQueue.MainQueue.DispatchAsync(() => playerViewController.View?.AddSubview(subtitleLabel));
-					break;
-				default:
-					DispatchQueue.MainQueue.DispatchAsync(() => viewController?.View?.AddSubview(subtitleLabel));
-					break;
-			}
 			subtitleLabel.Frame = viewController is not null ? CalculateSubtitleFrame(viewController) : CalculateSubtitleFrame(playerViewController);
 			DispatchQueue.MainQueue.DispatchAsync(() => UpdateSubtitle(currentPlaybackTime));
 		});
@@ -128,30 +120,48 @@ partial class SubtitleExtensions : UIViewController
 	}
 
 	static CGRect CalculateSubtitleFrame(UIViewController uIViewController)
-	{
-		ArgumentNullException.ThrowIfNull(uIViewController?.View?.Bounds);
+	{ 
+		if(uIViewController is null || uIViewController.View is null)
+		{
+			return CGRect.Empty;
+		}
 		return new CGRect(0, uIViewController.View.Bounds.Height - 60, uIViewController.View.Bounds.Width, 50);
 	}
 
-	void OnWindowStatusChanged(object? sender, WindowsEventArgs e)
+	void OnFullScreenChanged(object? sender, FullScreenEventArgs e)
 	{
-		if (string.IsNullOrEmpty(mediaElement?.SubtitleUrl) || e.data is null)
+		if (string.IsNullOrEmpty(mediaElement?.SubtitleUrl))
 		{
 			return;
 		}
-		switch (e.data)
+		subtitleLabel.Text = string.Empty;
+		switch (e.isFullScreen)
 		{
 			case true:
 				viewController = WindowStateManager.Default.GetCurrentUIViewController() ?? throw new ArgumentException(nameof(viewController));
 				ArgumentNullException.ThrowIfNull(viewController.View);
 				subtitleLabel.Frame = CalculateSubtitleFrame(viewController);
-				viewController.View.AddSubview(subtitleLabel);
+				DispatchQueue.MainQueue.DispatchAsync(() => { subtitleLabel.RemoveFromSuperview(); viewController?.View?.AddSubview(subtitleLabel); });
 				break;
 			case false:
 				subtitleLabel.Frame = CalculateSubtitleFrame(playerViewController);
+				DispatchQueue.MainQueue.DispatchAsync(() => { subtitleLabel.RemoveFromSuperview(); playerViewController.View?.AddSubview(subtitleLabel); });
 				viewController = null;
 				break;
 		}
+	}
+	~SubtitleExtensions()
+	{
+		MediaManagerDelegate.FullScreenChanged -= OnFullScreenChanged;
+		subtitleLabel.Text = string.Empty;
+		subtitleLabel.RemoveFromSuperview();
+		if(playerObserver is not null) 
+		{
+			player.RemoveTimeObserver(playerObserver);
+			playerObserver.Dispose();
+			playerObserver = null;
+		}
+		subtitleLabel.Dispose();
 	}
 }
 

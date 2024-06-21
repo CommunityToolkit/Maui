@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Extensions;
 static partial class VttParser
 {
 	static readonly string[] separator = ["\r\n", "\n"];
-	static readonly Regex timecodePattern = new((@"(\d{2}:\d{2}:\d{2}\.\d{3}) --> (\d{2}:\d{2}:\d{2}\.\d{3})"));
+	static readonly Regex timecodePattern = MyRegex();
 	/// <summary>
 	/// The ParseVttContent method parses the VTT content and returns a list of SubtitleCue objects.
 	/// </summary>
@@ -56,4 +56,7 @@ static partial class VttParser
 
 		return cues;
 	}
+
+	[GeneratedRegex(@"(\d{2}:\d{2}:\d{2}\.\d{3}) --> (\d{2}:\d{2}:\d{2}\.\d{3})")]
+	private static partial Regex MyRegex();
 }

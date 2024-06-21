@@ -10,7 +10,7 @@ using Activity = Android.App.Activity;
 
 namespace CommunityToolkit.Maui.Extensions;
 
-partial class SubtitleExtensions : IDisposable
+class SubtitleExtensions : IDisposable
 {
 	bool disposedValue;
 
@@ -39,7 +39,7 @@ partial class SubtitleExtensions : IDisposable
 		subtitleLayout.AddRule(LayoutRules.CenterHorizontal);
 		InitializeTextBlock();
 
-		MauiMediaElement.WindowChanged += OnWindowStatusChanged;
+		MauiMediaElement.FullScreenChanged += OnFullScreenChanged;
 	}
 	
 	/// <summary>
@@ -173,7 +173,7 @@ partial class SubtitleExtensions : IDisposable
 		return (currentActivity, currentWindow, currentResources, configuration);
 	}
 
-	void OnWindowStatusChanged(object? sender, WindowsEventArgs e)
+	void OnFullScreenChanged(object? sender, FullScreenEventArgs e)
 	{
 		ArgumentNullException.ThrowIfNull(subtitleView);
 
@@ -191,7 +191,7 @@ partial class SubtitleExtensions : IDisposable
 		{
 			return;
 		}
-		switch (e.data)
+		switch (e.isFullScreen)
 		{
 			case true:
 				viewGroup.RemoveView(subtitleView);

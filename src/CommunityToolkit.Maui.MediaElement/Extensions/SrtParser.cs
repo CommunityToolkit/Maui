@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Extensions;
 static partial class SrtParser
 {
 	static readonly string[] separator = ["\r\n", "\n"];
-	static readonly Regex timecodePattern = new(@"(\d{2}\:\d{2}\:\d{2}\,\d{3}) --> (\d{2}\:\d{2}\:\d{2}\,\d{3})");
+	static readonly Regex timecodePattern = MyRegex();
 
 	/// <summary>
 	/// a method that parses the SRT content and returns a list of SubtitleCue objects.
@@ -66,5 +66,8 @@ static partial class SrtParser
 	{
 		return TimeSpan.ParseExact(timecode, @"hh\:mm\:ss\,fff", CultureInfo.InvariantCulture);
 	}
+
+	[GeneratedRegex(@"(\d{2}\:\d{2}\:\d{2}\,\d{3}) --> (\d{2}\:\d{2}\:\d{2}\,\d{3})")]
+	private static partial Regex MyRegex();
 }
 
