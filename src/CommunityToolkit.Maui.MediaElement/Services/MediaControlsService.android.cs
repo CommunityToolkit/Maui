@@ -176,7 +176,7 @@ class MediaControlsService : Service
 		ArgumentNullException.ThrowIfNull(audioManager);
 		audioManager.RequestAudioFocus(null, AndroidStream.Music, AudioFocus.Gain);
 		audioManager.SetParameters("Ducking=true");
-		audioManager.SetStreamVolume(AndroidStream.Music, audioManager.GetStreamVolume(AndroidStream.Music), VolumeNotificationFlags.ShowUi);
+		audioManager.SetStreamVolume(AndroidStream.Music, audioManager.GetStreamVolume(AndroidStream.Music), 0);
 	}
 
 	async Task OnSetContent(Intent mediaManagerIntent, CancellationToken cancellationToken)
