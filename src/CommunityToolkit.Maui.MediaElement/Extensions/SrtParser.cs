@@ -1,13 +1,7 @@
-﻿using System.Globalization;
-using System.Text.RegularExpressions;
-
-namespace CommunityToolkit.Maui.Extensions;
+﻿namespace CommunityToolkit.Maui.Extensions;
 
 static partial class SrtParser
 {
-	static readonly string[] separator = ["\r\n", "\n"];
-	static readonly Regex timecodePattern = MyRegex();
-
 	/// <summary>
 	/// a method that parses the SRT content and returns a list of SubtitleCue objects.
 	/// </summary>
@@ -20,7 +14,7 @@ static partial class SrtParser
 		{
 			return cues;
 		}
-		string[] lines = srtContent.Split(separator, StringSplitOptions.None);
+		string[] lines = srtContent.Split(Parser.Separator, StringSplitOptions.None);
 
 		SubtitleCue? currentCue = null;
 		foreach (var line in lines)
@@ -29,7 +23,7 @@ static partial class SrtParser
 			{
 				continue;
 			}
-			var match = timecodePattern.Match(line);
+			var match = Parser.TimecodePatternSRT.Match(line);
 			if (match.Success)
 			{
 				if (currentCue is not null)
@@ -39,8 +33,8 @@ static partial class SrtParser
 
 				currentCue = new SubtitleCue
 				{
-					StartTime = ParseTimecode(match.Groups[1].Value),
-					EndTime = ParseTimecode(match.Groups[2].Value),
+					StartTime = Parser.ParseTimecode(match.Groups[1].Value, false),
+					EndTime = Parser.ParseTimecode(match.Groups[2].Value, false),
 					Text = ""
 				};
 			}
@@ -62,12 +56,6 @@ static partial class SrtParser
 		return cues;
 	}
 
-	static TimeSpan ParseTimecode(string timecode)
-	{
-		return TimeSpan.ParseExact(timecode, @"hh\:mm\:ss\,fff", CultureInfo.InvariantCulture);
-	}
 
-	[GeneratedRegex(@"(\d{2}\:\d{2}\:\d{2}\,\d{3}) --> (\d{2}\:\d{2}\:\d{2}\,\d{3})")]
-	private static partial Regex MyRegex();
 }
 
