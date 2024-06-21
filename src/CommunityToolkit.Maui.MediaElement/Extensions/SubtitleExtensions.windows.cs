@@ -74,7 +74,7 @@ partial class SubtitleExtensions : Grid, IDisposable
 	{
 		Dispatcher.Dispatch(() => mauiMediaElement?.Children.Add(subtitleTextBlock));
 		timer = new System.Timers.Timer(1000);
-		timer.Elapsed += Timer_Elapsed;
+		timer.Elapsed += UpdateSubtitle;
 		timer.Start();
 	}
 
@@ -88,7 +88,7 @@ partial class SubtitleExtensions : Grid, IDisposable
 			return;
 		}
 		timer.Stop();
-		timer.Elapsed -= Timer_Elapsed;
+		timer.Elapsed -= UpdateSubtitle;
 		if(mauiMediaElement is null)
 		{
 			return;
@@ -96,7 +96,7 @@ partial class SubtitleExtensions : Grid, IDisposable
 		Dispatcher.Dispatch(() => mauiMediaElement.Children.Remove(subtitleTextBlock));
 	}
 
-	void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
+	void UpdateSubtitle(object? sender, System.Timers.ElapsedEventArgs e)
 	{
 		if (string.IsNullOrEmpty(mediaElement?.SubtitleUrl))
 		{
@@ -155,8 +155,9 @@ partial class SubtitleExtensions : Grid, IDisposable
 			if (timer is not null)
 			{
 				timer.Stop();
-				timer.Elapsed -= Timer_Elapsed;
+				timer.Elapsed -= UpdateSubtitle;
 			}
+
 			if (disposing)
 			{
 				httpClient?.Dispose();

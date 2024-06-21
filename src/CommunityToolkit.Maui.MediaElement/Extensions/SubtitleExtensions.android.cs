@@ -81,7 +81,7 @@ partial class SubtitleExtensions : IDisposable
 		}
 		dispatcher.Dispatch(() => parent.AddView(subtitleView));
 		timer = new System.Timers.Timer(1000);
-		timer.Elapsed += Timer_Elapsed;
+		timer.Elapsed += UpdateSubtitle;
 		timer.Start();
 	}
 
@@ -100,10 +100,10 @@ partial class SubtitleExtensions : IDisposable
 		}
 		subtitleView.Text = string.Empty;
 		timer.Stop();
-		timer.Elapsed -= Timer_Elapsed;
+		timer.Elapsed -= UpdateSubtitle;
 	}
 
-	void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
+	void UpdateSubtitle(object? sender, System.Timers.ElapsedEventArgs e)
 	{
 		ArgumentNullException.ThrowIfNull(subtitleView);
 		ArgumentNullException.ThrowIfNull(mediaElement);
@@ -210,6 +210,12 @@ partial class SubtitleExtensions : IDisposable
 	{
 		if (!disposedValue)
 		{
+			if (timer is not null)
+			{
+				timer.Stop();
+				timer.Elapsed -= UpdateSubtitle;
+			}
+
 			if (disposing)
 			{
 				httpClient.Dispose();
