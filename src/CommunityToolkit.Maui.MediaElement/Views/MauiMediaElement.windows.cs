@@ -83,7 +83,7 @@ public class MauiMediaElement : Grid, IDisposable
 	/// <summary>
 	/// A method that raises the GridEventsChanged event.
 	/// </summary>
-	protected virtual void OnGridEventsChanged(GridEventArgs e)
+	protected virtual void FullScreenChanged(GridEventArgs e)
 	{
 		GridEventsChanged?.Invoke(null, e);
 	}
@@ -169,7 +169,7 @@ public class MauiMediaElement : Grid, IDisposable
 			appWindow.SetPresenter(AppWindowPresenterKind.Default);
 			Shell.SetNavBarIsVisible(CurrentPage, doesNavigationBarExistBeforeFullScreen);
 
-			OnGridEventsChanged(new Maui.Primitives.GridEventArgs(fullScreenGrid));
+			FullScreenChanged(new Maui.Primitives.GridEventArgs(fullScreenGrid));
 			if (popup.IsOpen)
 			{
 				popup.IsOpen = false;
@@ -210,7 +210,7 @@ public class MauiMediaElement : Grid, IDisposable
 			{
 				popup.IsOpen = true;
 			}
-			OnGridEventsChanged(new Maui.Primitives.GridEventArgs(fullScreenGrid));
+			FullScreenChanged(new Maui.Primitives.GridEventArgs(fullScreenGrid));
 		}
 	}
 }
