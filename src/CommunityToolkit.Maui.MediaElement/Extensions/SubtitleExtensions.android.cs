@@ -1,4 +1,4 @@
-﻿using Android.Content.Res;
+﻿using System.Diagnostics.CodeAnalysis;
 using Android.Views;
 using Android.Widget;
 using Com.Google.Android.Exoplayer2.UI;
@@ -10,14 +10,12 @@ using Activity = Android.App.Activity;
 
 namespace CommunityToolkit.Maui.Extensions;
 
-class SubtitleExtensions : IDisposable
+class SubtitleExtensions : Java.Lang.Object
 {
-	bool disposedValue;
-
 	readonly IDispatcher dispatcher;
 	readonly RelativeLayout.LayoutParams? subtitleLayout;
 	readonly StyledPlayerView styledPlayerView;
-
+	readonly CurrentPlatformActivity platform;
 	List<SubtitleCue> cues;
 	IMediaElement? mediaElement;
 	TextView? subtitleView;
@@ -36,11 +34,17 @@ class SubtitleExtensions : IDisposable
 		subtitleLayout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
 		subtitleLayout.AddRule(LayoutRules.AlignParentBottom);
 		subtitleLayout.AddRule(LayoutRules.CenterHorizontal);
-		InitializeTextBlock();
 
 		MauiMediaElement.FullScreenChanged += OnFullScreenChanged;
+		ArgumentNullException.ThrowIfNull(Platform.CurrentActivity);
+		if (Platform.CurrentActivity.Window?.DecorView is not ViewGroup decorView)
+		{
+			throw new InvalidOperationException("Platform.CurrentActivity.Window.DecorView is not a ViewGroup");
+		}
+		platform = new(Platform.CurrentActivity, decorView);
+		InitializeTextBlock();
 	}
-	
+
 	/// <summary>
 	/// Loads the subtitles from the provided URL.
 	/// </summary>
@@ -116,9 +120,7 @@ class SubtitleExtensions : IDisposable
 
 	void InitializeTextBlock()
 	{
-		var (currentActivity, _, _, _) = VerifyAndRetrieveCurrentWindowResources();
-		var activity = currentActivity;
-		subtitleView = new(activity.ApplicationContext)
+		subtitleView = new(platform.currentActivity.ApplicationContext)
 		{
 			Text = string.Empty,
 			HorizontalScrollBarEnabled = false,
@@ -132,29 +134,10 @@ class SubtitleExtensions : IDisposable
 		subtitleView.SetPaddingRelative(10, 10, 10, 20);
 	}
 
-	static (Activity CurrentActivity, Android.Views.Window CurrentWindow, Resources CurrentWindowResources, Configuration CurrentWindowConfiguration) VerifyAndRetrieveCurrentWindowResources()
+	readonly record struct CurrentPlatformActivity(Activity currentActivity, ViewGroup viewGroup)
 	{
-		// Ensure current activity and window are available
-		if (Platform.CurrentActivity is not Activity currentActivity)
-		{
-			throw new InvalidOperationException("CurrentActivity cannot be null when the FullScreen button is tapped");
-		}
-		if (currentActivity.Window is not Android.Views.Window currentWindow)
-		{
-			throw new InvalidOperationException("CurrentActivity Window cannot be null when the FullScreen button is tapped");
-		}
-
-		if (currentActivity.Resources is not Resources currentResources)
-		{
-			throw new InvalidOperationException("CurrentActivity Resources cannot be null when the FullScreen button is tapped");
-		}
-
-		if (currentResources.Configuration is not Configuration configuration)
-		{
-			throw new InvalidOperationException("CurrentActivity Configuration cannot be null when the FullScreen button is tapped");
-		}
-
-		return (currentActivity, currentWindow, currentResources, configuration);
+		public Activity CurrentActivity { get; init; } = currentActivity;
+		public ViewGroup ViewGroup { get; init; } = viewGroup;
 	}
 
 	void OnFullScreenChanged(object? sender, FullScreenEventArgs e)
@@ -166,60 +149,35 @@ class SubtitleExtensions : IDisposable
 		{
 			return;
 		}
-		var (_, currentWindow, _, _) = VerifyAndRetrieveCurrentWindowResources();
-		if (currentWindow?.DecorView is not ViewGroup viewGroup)
+		
+		if (platform.viewGroup.Parent is not ViewGroup parent)
 		{
 			return;
 		}
-		if (viewGroup.Parent is not ViewGroup parent)
-		{
-			return;
-		}
+
 		switch (e.isFullScreen)
 		{
 			case true:
-				viewGroup.RemoveView(subtitleView);
+				platform.viewGroup.RemoveView(subtitleView);
 				InitializeTextBlock();
 				parent.AddView(subtitleView);
 				break;
 			case false:
 				parent.RemoveView(subtitleView);
 				InitializeTextBlock();
-				viewGroup.AddView(subtitleView);
+				platform.viewGroup.AddView(subtitleView);
 				break;
-		}
-	}
-
-	protected virtual void Dispose(bool disposing)
-	{
-		if (!disposedValue)
-		{
-			if (timer is not null)
-			{
-				timer.Stop();
-				timer.Elapsed -= UpdateSubtitle;
-			}
-
-			if (disposing)
-			{
-				timer?.Dispose();
-				subtitleView?.Dispose();
-			}
-
-			timer = null;
-			subtitleView = null;
-			disposedValue = true;
 		}
 	}
 
 	~SubtitleExtensions()
 	{
-	     Dispose(disposing: false);
-	}
-
-	public void Dispose()
-	{
-		Dispose(disposing: true);
-		GC.SuppressFinalize(this);
+		if (timer is not null)
+		{
+			timer.Stop();
+			timer.Elapsed -= UpdateSubtitle;
+		}
+		timer?.Dispose();
+		subtitleView?.Dispose();
 	}
 }
