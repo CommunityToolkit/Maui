@@ -653,14 +653,14 @@ sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
 	public static event EventHandler<FullScreenEventArgs>? FullScreenChanged;
 	public override void WillBeginFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
 	{
-		OnWindowsChanged(new FullScreenEventArgs(true));
+		OnFulScreenChanged(new FullScreenEventArgs(true));
 	}
 	public override void WillEndFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
 	{
-		OnWindowsChanged(new FullScreenEventArgs(false));
+		OnFulScreenChanged(new FullScreenEventArgs(false));
 	}
 	/// <summary>
 	/// A method that raises the FullScreenChanged event.
 	/// </summary>
-	static void OnWindowsChanged(FullScreenEventArgs e) => FullScreenChanged?.Invoke(null, e);
+	static void OnFulScreenChanged(FullScreenEventArgs e) => FullScreenChanged?.Invoke(null, e);
 }
