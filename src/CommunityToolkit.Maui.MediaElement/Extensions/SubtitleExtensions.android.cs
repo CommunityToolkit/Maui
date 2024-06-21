@@ -16,12 +16,12 @@ partial class SubtitleExtensions : IDisposable
 
 	static readonly HttpClient httpClient = new();
 	readonly IDispatcher dispatcher;
-	readonly RelativeLayout.LayoutParams? textBlockLayout;
+	readonly RelativeLayout.LayoutParams? subtitleLayout;
 	readonly StyledPlayerView styledPlayerView;
 
 	List<SubtitleCue> cues;
 	IMediaElement? mediaElement;
-	TextView? textBlock;
+	TextView? subtitleView;
 	System.Timers.Timer? timer;
 
 	/// <summary>
@@ -34,12 +34,12 @@ partial class SubtitleExtensions : IDisposable
 		this.styledPlayerView = styledPlayerView;
 		cues = [];
 
-		textBlockLayout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
-		textBlockLayout.AddRule(LayoutRules.AlignParentBottom);
-		textBlockLayout.AddRule(LayoutRules.CenterHorizontal);
+		subtitleLayout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
+		subtitleLayout.AddRule(LayoutRules.AlignParentBottom);
+		subtitleLayout.AddRule(LayoutRules.CenterHorizontal);
 		InitializeTextBlock();
 
-		MauiMediaElement.WindowsChanged += MauiMediaElement_WindowsChanged;
+		MauiMediaElement.WindowChanged += OnWindowStatusChanged;
 	}
 	
 	/// <summary>
@@ -73,13 +73,13 @@ partial class SubtitleExtensions : IDisposable
 	/// </summary>
 	public void StartSubtitleDisplay()
 	{
-		ArgumentNullException.ThrowIfNull(textBlock);
+		ArgumentNullException.ThrowIfNull(subtitleView);
 		if(styledPlayerView.Parent is not ViewGroup parent)
 		{
 			System.Diagnostics.Trace.TraceError("StyledPlayerView parent is not a ViewGroup");
 			return;
 		}
-		dispatcher.Dispatch(() => parent.AddView(textBlock));
+		dispatcher.Dispatch(() => parent.AddView(subtitleView));
 		timer = new System.Timers.Timer(1000);
 		timer.Elapsed += Timer_Elapsed;
 		timer.Start();
@@ -90,22 +90,22 @@ partial class SubtitleExtensions : IDisposable
 	/// </summary>
 	public void StopSubtitleDisplay()
 	{
-		if (timer is null || textBlock is null)
+		if (timer is null || subtitleView is null)
 		{
 			return;
 		}
 		if (styledPlayerView.Parent is ViewGroup parent)
 		{
-			dispatcher.Dispatch(() => parent.RemoveView(textBlock));
+			dispatcher.Dispatch(() => parent.RemoveView(subtitleView));
 		}
-		textBlock.Text = string.Empty;
+		subtitleView.Text = string.Empty;
 		timer.Stop();
 		timer.Elapsed -= Timer_Elapsed;
 	}
 
 	void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
 	{
-		ArgumentNullException.ThrowIfNull(textBlock);
+		ArgumentNullException.ThrowIfNull(subtitleView);
 		ArgumentNullException.ThrowIfNull(mediaElement);
 		if (cues.Count == 0)
 		{
@@ -117,15 +117,15 @@ partial class SubtitleExtensions : IDisposable
 		{
 			if (cue is not null)
 			{
-				textBlock.FontFeatureSettings = !string.IsNullOrEmpty(mediaElement.SubtitleFont) ? mediaElement.SubtitleFont : default;
-				textBlock.Text = cue.Text;
-				textBlock.TextSize = (float)mediaElement.SubtitleFontSize;
-				textBlock.Visibility = Android.Views.ViewStates.Visible;
+				subtitleView.FontFeatureSettings = !string.IsNullOrEmpty(mediaElement.SubtitleFont) ? mediaElement.SubtitleFont : default;
+				subtitleView.Text = cue.Text;
+				subtitleView.TextSize = (float)mediaElement.SubtitleFontSize;
+				subtitleView.Visibility = Android.Views.ViewStates.Visible;
 			}
 			else
 			{
-				textBlock.Text = string.Empty;
-				textBlock.Visibility = Android.Views.ViewStates.Gone;
+				subtitleView.Text = string.Empty;
+				subtitleView.Visibility = Android.Views.ViewStates.Gone;
 			}
 		});
 	}
@@ -134,18 +134,18 @@ partial class SubtitleExtensions : IDisposable
 	{
 		var (currentActivity, _, _, _) = VerifyAndRetrieveCurrentWindowResources();
 		var activity = currentActivity;
-		textBlock = new(activity.ApplicationContext)
+		subtitleView = new(activity.ApplicationContext)
 		{
 			Text = string.Empty,
 			HorizontalScrollBarEnabled = false,
 			VerticalScrollBarEnabled = false,
 			TextAlignment = Android.Views.TextAlignment.Center,
 			Visibility = Android.Views.ViewStates.Gone,
-			LayoutParameters = textBlockLayout
+			LayoutParameters = subtitleLayout
 		};
-		textBlock.SetBackgroundColor(Android.Graphics.Color.Argb(150, 0, 0, 0));
-		textBlock.SetTextColor(Android.Graphics.Color.White);
-		textBlock.SetPaddingRelative(10, 10, 10, 20);
+		subtitleView.SetBackgroundColor(Android.Graphics.Color.Argb(150, 0, 0, 0));
+		subtitleView.SetTextColor(Android.Graphics.Color.White);
+		subtitleView.SetPaddingRelative(10, 10, 10, 20);
 	}
 
 	static (Activity CurrentActivity, Android.Views.Window CurrentWindow, Resources CurrentWindowResources, Configuration CurrentWindowConfiguration) VerifyAndRetrieveCurrentWindowResources()
@@ -173,9 +173,9 @@ partial class SubtitleExtensions : IDisposable
 		return (currentActivity, currentWindow, currentResources, configuration);
 	}
 
-	void MauiMediaElement_WindowsChanged(object? sender, WindowsEventArgs e)
+	void OnWindowStatusChanged(object? sender, WindowsEventArgs e)
 	{
-		ArgumentNullException.ThrowIfNull(textBlock);
+		ArgumentNullException.ThrowIfNull(subtitleView);
 
 		// If the subtitle URL is empty do nothing
 		if (string.IsNullOrEmpty(mediaElement?.SubtitleUrl))
@@ -194,14 +194,14 @@ partial class SubtitleExtensions : IDisposable
 		switch (e.data)
 		{
 			case true:
-				viewGroup.RemoveView(textBlock);
+				viewGroup.RemoveView(subtitleView);
 				InitializeTextBlock();
-				parent.AddView(textBlock);
+				parent.AddView(subtitleView);
 				break;
 			case false:
-				parent.RemoveView(textBlock);
+				parent.RemoveView(subtitleView);
 				InitializeTextBlock();
-				viewGroup.AddView(textBlock);
+				viewGroup.AddView(subtitleView);
 				break;
 		}
 	}
@@ -214,11 +214,11 @@ partial class SubtitleExtensions : IDisposable
 			{
 				httpClient.Dispose();
 				timer?.Dispose();
-				textBlock?.Dispose();
+				subtitleView?.Dispose();
 			}
 
 			timer = null;
-			textBlock = null;
+			subtitleView = null;
 			disposedValue = true;
 		}
 	}

@@ -11,7 +11,7 @@ partial class SubtitleExtensions : Grid, IDisposable
 	bool isFullScreen = false;
 
 	static readonly HttpClient httpClient = new();
-	readonly Microsoft.UI.Xaml.Controls.TextBlock xamlTextBlock;
+	readonly Microsoft.UI.Xaml.Controls.TextBlock subtitleTextBlock;
 
 	List<SubtitleCue> cues;
 	IMediaElement? mediaElement;
@@ -24,8 +24,8 @@ partial class SubtitleExtensions : Grid, IDisposable
 	public SubtitleExtensions()
 	{
 		cues = [];
-		MauiMediaElement.WindowsChanged += MauiMediaElement_WindowsChanged;
-		xamlTextBlock = new()
+		MauiMediaElement.WindowChanged += OnWindowStatusChanged;
+		subtitleTextBlock = new()
 		{
 			Text = string.Empty,
 			Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 20),
@@ -35,31 +35,6 @@ partial class SubtitleExtensions : Grid, IDisposable
 			Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.White),
 			TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap,
 		};
-	}
-	void MauiMediaElement_WindowsChanged(object? sender, WindowsEventArgs e)
-	{
-		if (e.data is not Microsoft.UI.Xaml.Controls.Grid gridItem || string.IsNullOrEmpty(mediaElement?.SubtitleUrl))
-		{
-			return;
-		}
-		ArgumentNullException.ThrowIfNull(mauiMediaElement);
-		
-		switch (isFullScreen)
-		{
-			case true:
-				xamlTextBlock.FontSize = mediaElement.SubtitleFontSize;
-				xamlTextBlock.FontFamily = new FontFamily(mediaElement.SubtitleFont);
-				xamlTextBlock.Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 20);
-				Dispatcher.Dispatch(() => { gridItem.Children.Remove(xamlTextBlock); mauiMediaElement.Children.Add(xamlTextBlock); });
-				isFullScreen = false;
-				break;
-			case false:
-				xamlTextBlock.FontSize = mediaElement.SubtitleFontSize + 8.0;
-				xamlTextBlock.Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 300);
-				Dispatcher.Dispatch(() => { mauiMediaElement.Children.Remove(xamlTextBlock); gridItem.Children.Add(xamlTextBlock); });
-				isFullScreen = true;
-				break;
-		}
 	}
 
 	/// <summary>
@@ -72,7 +47,7 @@ partial class SubtitleExtensions : Grid, IDisposable
 		this.mediaElement = mediaElement;
 		mauiMediaElement = player?.Parent as MauiMediaElement;
 		cues.Clear();
-		xamlTextBlock.FontSize = mediaElement.SubtitleFontSize;
+		subtitleTextBlock.FontSize = mediaElement.SubtitleFontSize;
 		string? vttContent;
 		try
 		{
@@ -97,32 +72,10 @@ partial class SubtitleExtensions : Grid, IDisposable
 	/// </summary>
 	public void StartSubtitleDisplay()
 	{
-		Dispatcher.Dispatch(() => mauiMediaElement?.Children.Add(xamlTextBlock));
+		Dispatcher.Dispatch(() => mauiMediaElement?.Children.Add(subtitleTextBlock));
 		timer = new System.Timers.Timer(1000);
 		timer.Elapsed += Timer_Elapsed;
 		timer.Start();
-	}
-
-	void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
-	{
-		if (string.IsNullOrEmpty(mediaElement?.SubtitleUrl))
-		{
-			return;
-		}
-		var cue = cues.Find(c => c.StartTime <= mediaElement.Position && c.EndTime >= mediaElement.Position);
-		Dispatcher.Dispatch(() =>
-		{
-			if (cue is not null)
-			{
-				xamlTextBlock.Text = cue.Text;
-				xamlTextBlock.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-			}
-			else
-			{
-				xamlTextBlock.Text = string.Empty;
-				xamlTextBlock.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-			}
-		});
 	}
 
 	/// <summary>
@@ -140,7 +93,55 @@ partial class SubtitleExtensions : Grid, IDisposable
 		{
 			return;
 		}
-		Dispatcher.Dispatch(() => mauiMediaElement.Children.Remove(xamlTextBlock));
+		Dispatcher.Dispatch(() => mauiMediaElement.Children.Remove(subtitleTextBlock));
+	}
+
+	void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
+	{
+		if (string.IsNullOrEmpty(mediaElement?.SubtitleUrl))
+		{
+			return;
+		}
+		var cue = cues.Find(c => c.StartTime <= mediaElement.Position && c.EndTime >= mediaElement.Position);
+		Dispatcher.Dispatch(() =>
+		{
+			if (cue is not null)
+			{
+				subtitleTextBlock.Text = cue.Text;
+				subtitleTextBlock.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+			}
+			else
+			{
+				subtitleTextBlock.Text = string.Empty;
+				subtitleTextBlock.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+			}
+		});
+	}
+
+	void OnWindowStatusChanged(object? sender, WindowsEventArgs e)
+	{
+		if (e.data is not Microsoft.UI.Xaml.Controls.Grid gridItem || string.IsNullOrEmpty(mediaElement?.SubtitleUrl))
+		{
+			return;
+		}
+		ArgumentNullException.ThrowIfNull(mauiMediaElement);
+
+		switch (isFullScreen)
+		{
+			case true:
+				subtitleTextBlock.FontSize = mediaElement.SubtitleFontSize;
+				subtitleTextBlock.FontFamily = new FontFamily(mediaElement.SubtitleFont);
+				subtitleTextBlock.Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 20);
+				Dispatcher.Dispatch(() => { gridItem.Children.Remove(subtitleTextBlock); mauiMediaElement.Children.Add(subtitleTextBlock); });
+				isFullScreen = false;
+				break;
+			case false:
+				subtitleTextBlock.FontSize = mediaElement.SubtitleFontSize + 8.0;
+				subtitleTextBlock.Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 300);
+				Dispatcher.Dispatch(() => { mauiMediaElement.Children.Remove(subtitleTextBlock); gridItem.Children.Add(subtitleTextBlock); });
+				isFullScreen = true;
+				break;
+		}
 	}
 
 	/// <summary>

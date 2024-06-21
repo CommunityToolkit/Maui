@@ -654,7 +654,7 @@ sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
 	/// <summary>
 	/// Handles the event when the windows change.
 	/// </summary>
-	public static event EventHandler<WindowsEventArgs>? WindowsChanged;
+	public static event EventHandler<WindowsEventArgs>? WindowChanged;
 	public override void WillBeginFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
 	{
 		OnWindowsChanged(new WindowsEventArgs(true));
@@ -664,7 +664,7 @@ sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
 		OnWindowsChanged(new WindowsEventArgs(false));
 	}
 	/// <summary>
-	/// A method that raises the WindowsChanged event.
+	/// A method that raises the WindowChanged event.
 	/// </summary>
-	static void OnWindowsChanged(WindowsEventArgs e) => WindowsChanged?.Invoke(null, e);
+	static void OnWindowsChanged(WindowsEventArgs e) => WindowChanged?.Invoke(null, e);
 }

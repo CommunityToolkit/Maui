@@ -20,7 +20,7 @@ public class MauiMediaElement : CoordinatorLayout
 	/// <summary>
 	/// Handles the event when the windows change.
 	/// </summary>
-	public static event EventHandler<WindowsEventArgs>? WindowsChanged;
+	public static event EventHandler<WindowsEventArgs>? WindowChanged;
 	
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
@@ -64,9 +64,9 @@ public class MauiMediaElement : CoordinatorLayout
 	}
 
 	/// <summary>
-	/// A method that raises the WindowsChanged event.
+	/// A method that raises the WindowChanged event.
 	/// </summary>
-	protected virtual void OnWindowsChanged(WindowsEventArgs e) => WindowsChanged?.Invoke(null, e);
+	protected virtual void OnWindowsChanged(WindowsEventArgs e) => WindowChanged?.Invoke(null, e);
 	public override void OnDetachedFromWindow()
 	{
 		if (isFullScreen)

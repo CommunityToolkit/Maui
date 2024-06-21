@@ -41,28 +41,7 @@ partial class SubtitleExtensions : UIViewController
 			Lines = 0,
 			AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleTopMargin | UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleBottomMargin
 		};
-		MediaManagerDelegate.WindowsChanged += MauiMediaElement_WindowsChanged;
-	}
-
-	void MauiMediaElement_WindowsChanged(object? sender, WindowsEventArgs e)
-	{
-		if (string.IsNullOrEmpty(mediaElement?.SubtitleUrl) || e.data is null)
-		{
-			return;
-		}
-		switch (e.data)
-		{
-			case true:
-				viewController = WindowStateManager.Default.GetCurrentUIViewController() ?? throw new ArgumentException(nameof(viewController));
-				ArgumentNullException.ThrowIfNull(viewController.View);
-				subtitleLabel.Frame = CalculateSubtitleFrame(viewController);
-				viewController.View.AddSubview(subtitleLabel);
-				break;
-			case false:
-				subtitleLabel.Frame = CalculateSubtitleFrame(playerViewController);
-				viewController = null;
-				break;
-		}
+		MediaManagerDelegate.WindowChanged += OnWindowStatusChanged;
 	}
 
 	/// <summary>
@@ -153,6 +132,26 @@ partial class SubtitleExtensions : UIViewController
 		ArgumentNullException.ThrowIfNull(uIViewController?.View?.Bounds);
 		return new CGRect(0, uIViewController.View.Bounds.Height - 60, uIViewController.View.Bounds.Width, 50);
 	}
-	
+
+	void OnWindowStatusChanged(object? sender, WindowsEventArgs e)
+	{
+		if (string.IsNullOrEmpty(mediaElement?.SubtitleUrl) || e.data is null)
+		{
+			return;
+		}
+		switch (e.data)
+		{
+			case true:
+				viewController = WindowStateManager.Default.GetCurrentUIViewController() ?? throw new ArgumentException(nameof(viewController));
+				ArgumentNullException.ThrowIfNull(viewController.View);
+				subtitleLabel.Frame = CalculateSubtitleFrame(viewController);
+				viewController.View.AddSubview(subtitleLabel);
+				break;
+			case false:
+				subtitleLabel.Frame = CalculateSubtitleFrame(playerViewController);
+				viewController = null;
+				break;
+		}
+	}
 }
 

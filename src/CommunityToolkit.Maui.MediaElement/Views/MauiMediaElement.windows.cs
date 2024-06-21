@@ -27,7 +27,7 @@ public class MauiMediaElement : Grid, IDisposable
 	/// <summary>
 	/// Handles the event when the windows change.
 	/// </summary>
-	public static event EventHandler<WindowsEventArgs>? WindowsChanged;
+	public static event EventHandler<WindowsEventArgs>? WindowChanged;
 	static readonly AppWindow appWindow = GetAppWindowForCurrentWindow();
 	readonly Popup popup = new();
 	readonly Grid fullScreenGrid = new();
@@ -81,11 +81,11 @@ public class MauiMediaElement : Grid, IDisposable
 	~MauiMediaElement() => Dispose(false);
 
 	/// <summary>
-	/// A method that raises the WindowsChanged event.
+	/// A method that raises the WindowChanged event.
 	/// </summary>
 	protected virtual void OnWindowsChanged(WindowsEventArgs e)
 	{
-		WindowsChanged?.Invoke(null, e);
+		WindowChanged?.Invoke(null, e);
 	}
 
 	/// <summary>
