@@ -17,6 +17,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiMediaElement : CoordinatorLayout
 {
+	readonly CurrentPlatformActivity currentPlatformActivity;
 	readonly StyledPlayerView playerView;
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
@@ -55,6 +56,11 @@ public class MauiMediaElement : CoordinatorLayout
 		relativeLayout.AddView(playerView);
 
 		AddView(relativeLayout);
+		if(Platform.CurrentActivity?.Window is not Android.Views.Window currentWindow)
+		{
+			throw new InvalidOperationException("CurrentActivity cannot be null when the FullScreen button is tapped");
+		}
+		currentPlatformActivity = new CurrentPlatformActivity(Platform.CurrentActivity, currentWindow);
 	}
 	public override void OnDetachedFromWindow()
 	{
@@ -103,29 +109,10 @@ public class MauiMediaElement : CoordinatorLayout
 		base.Dispose(disposing);
 	}
 
-	static (Activity CurrentActivity, Android.Views.Window CurrentWindow, Resources CurrentWindowResources, Configuration CurrentWindowConfiguration) VerifyAndRetrieveCurrentWindowResources()
+	readonly record struct CurrentPlatformActivity(Activity currentActivity, Android.Views.Window currentWindow)
 	{
-		// Ensure current activity and window are available
-		if (Platform.CurrentActivity is not Activity currentActivity)
-		{
-			throw new InvalidOperationException("CurrentActivity cannot be null when the FullScreen button is tapped");
-		}
-		if (currentActivity.Window is not Android.Views.Window currentWindow)
-		{
-			throw new InvalidOperationException("CurrentActivity Window cannot be null when the FullScreen button is tapped");
-		}
-
-		if (currentActivity.Resources is not Resources currentResources)
-		{
-			throw new InvalidOperationException("CurrentActivity Resources cannot be null when the FullScreen button is tapped");
-		}
-
-		if (currentResources.Configuration is not Configuration configuration)
-		{
-			throw new InvalidOperationException("CurrentActivity Configuration cannot be null when the FullScreen button is tapped");
-		}
-
-		return (currentActivity, currentWindow, currentResources, configuration);
+		public Activity CurrentActivity { get; init; } = currentActivity;
+		public Android.Views.Window CurrentWindow { get; init; } = currentWindow;
 	}
 
 	void OnFullscreenButtonClick(object? sender, StyledPlayerView.FullscreenButtonClickEventArgs e)
@@ -136,8 +123,7 @@ public class MauiMediaElement : CoordinatorLayout
 			throw new InvalidOperationException("PlayerView cannot be null when the FullScreen button is tapped");
 		}
 
-		var (_, currentWindow, _, _) = VerifyAndRetrieveCurrentWindowResources();
-		var layout = currentWindow?.DecorView as ViewGroup;
+		var layout = currentPlatformActivity.CurrentWindow.DecorView as ViewGroup;
 
 		if (e.IsFullScreen)
 		{
@@ -157,8 +143,7 @@ public class MauiMediaElement : CoordinatorLayout
 
 	void SetSystemBarsVisibility()
 	{
-		var (_, currentWindow, _, _) = VerifyAndRetrieveCurrentWindowResources();
-
+		var currentWindow = currentPlatformActivity.CurrentWindow;
 		var windowInsetsControllerCompat = WindowCompat.GetInsetsController(currentWindow, currentWindow.DecorView);
 
 		var barTypes = WindowInsetsCompat.Type.StatusBars()
