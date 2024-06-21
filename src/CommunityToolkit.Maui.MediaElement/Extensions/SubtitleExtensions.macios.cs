@@ -15,6 +15,9 @@ class SubtitleExtensions : UIViewController
 	readonly UIViewController playerViewController;
 	readonly UILabel subtitleLabel;
 
+	static readonly UIColor subtitleBackgroundColor = UIColor.FromRGBA(0, 0, 0, 128);
+	static readonly UIColor clearBackgroundColor = UIColor.FromRGBA(0, 0, 0, 0);
+
 	List<SubtitleCue> cues;
 	IMediaElement? mediaElement;
 	NSObject? playerObserver;
@@ -76,13 +79,15 @@ class SubtitleExtensions : UIViewController
 	/// </summary>
 	public void StopSubtitleDisplay()
 	{
-		if (playerObserver is not null)
-		{
-			player.RemoveTimeObserver(playerObserver);
-		}
 		subtitleLabel.Text = string.Empty;
-		subtitleLabel.BackgroundColor = UIColor.FromRGBA(0, 0, 0, 0);
+		subtitleLabel.BackgroundColor = clearBackgroundColor;
 		DispatchQueue.MainQueue.DispatchAsync(() => subtitleLabel.RemoveFromSuperview());
+
+		if (playerObserver is null)
+		{
+			return;
+		}
+		player.RemoveTimeObserver(playerObserver);
 	}
 	void UpdateSubtitle(TimeSpan currentPlaybackTime)
 	{
@@ -92,13 +97,13 @@ class SubtitleExtensions : UIViewController
 			if (currentPlaybackTime >= cue.StartTime && currentPlaybackTime <= cue.EndTime)
 			{
 				subtitleLabel.Text = cue.Text;
-				subtitleLabel.BackgroundColor = UIColor.FromRGBA(0, 0, 0, 128);
+				subtitleLabel.BackgroundColor = subtitleBackgroundColor;
 				break;
 			}
 			else
 			{
 				subtitleLabel.Text = "";
-				subtitleLabel.BackgroundColor = UIColor.FromRGBA(0, 0, 0, 0);
+				subtitleLabel.BackgroundColor = clearBackgroundColor;
 			}
 		}
 	}
@@ -137,16 +142,11 @@ class SubtitleExtensions : UIViewController
 	~SubtitleExtensions()
 	{
 		MediaManagerDelegate.FullScreenChanged -= OnFullScreenChanged;
-		subtitleLabel.Text = string.Empty;
-		subtitleLabel.BackgroundColor = UIColor.FromRGBA(0, 0, 0, 0);
-		DispatchQueue.MainQueue.DispatchAsync(() => subtitleLabel.RemoveFromSuperview());
-		if (playerObserver is not null) 
+		if(playerObserver is null)
 		{
-			player.RemoveTimeObserver(playerObserver);
-			playerObserver.Dispose();
-			playerObserver = null;
+			return;
 		}
-		subtitleLabel.Dispose();
+		player.RemoveTimeObserver(playerObserver);
 	}
 }
 
