@@ -180,7 +180,7 @@ public class AvatarViewImageTests : BaseHandlerTest
 		avatarView.Layout(new Rect(0, 0, 73, 73));
 		avatarView.ImageSource.Should().NotBeNull();
 		avatarView.Content.Should().BeOfType<Image>();
-		
+
 		if (avatarView.Content is not Image avatarImage)
 		{
 			throw new InvalidCastException($"{nameof(avatarView.Content)} must be of type {nameof(Image)}");

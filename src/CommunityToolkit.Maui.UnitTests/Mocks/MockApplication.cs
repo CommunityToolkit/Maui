@@ -13,7 +13,7 @@ class MockApplication : Application, IPlatformApplication
 		DependencyService.Register<ISystemResourcesProvider, MockResourcesProvider>();
 #pragma warning restore CS0612 // Type or member is obsolete
 	}
-	
+
 	public IApplication Application => this;
 	public IServiceProvider Services { get; }
 }
