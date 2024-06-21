@@ -13,7 +13,7 @@ public class AppThemeTests : BaseHandlerTest
 	{
 		const AppTheme initialAppTheme = AppTheme.Light;
 		AppInfo.SetCurrent(mockAppInfo = new() { RequestedTheme = initialAppTheme });
-		
+
 		Application.Current = app = new Application();
 
 		SetAppTheme(initialAppTheme);
@@ -121,7 +121,7 @@ public class AppThemeTests : BaseHandlerTest
 		{
 			Content = label
 		};
-		
+
 		Assert.Equal("Light Theme", label.Text);
 
 		SetAppTheme(AppTheme.Dark);

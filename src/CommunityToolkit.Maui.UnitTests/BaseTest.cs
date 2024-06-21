@@ -19,10 +19,10 @@ public abstract class BaseTest : IDisposable
 	protected BaseTest()
 	{
 		CompatibilityCheck.UseCompatibility();
-		
+
 		defaultCulture = Thread.CurrentThread.CurrentCulture;
 		defaultUiCulture = Thread.CurrentThread.CurrentUICulture;
-		
+
 		DeviceDisplay.SetCurrent(null);
 		DeviceInfo.SetCurrent(null);
 		AppInfo.SetCurrent(null);
