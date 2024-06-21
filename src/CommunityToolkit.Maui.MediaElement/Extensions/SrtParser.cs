@@ -1,7 +1,11 @@
-﻿namespace CommunityToolkit.Maui.Extensions;
+﻿using System.Text.RegularExpressions;
+
+namespace CommunityToolkit.Maui.Extensions;
 
 static partial class SrtParser
 {
+	static readonly Regex timecodePatternSRT = SRTRegex();
+
 	/// <summary>
 	/// a method that parses the SRT content and returns a list of SubtitleCue objects.
 	/// </summary>
@@ -23,7 +27,7 @@ static partial class SrtParser
 			{
 				continue;
 			}
-			var match = Parser.TimecodePatternSRT.Match(line);
+			var match = timecodePatternSRT.Match(line);
 			if (match.Success)
 			{
 				if (currentCue is not null)
@@ -56,6 +60,7 @@ static partial class SrtParser
 		return cues;
 	}
 
-
+	[GeneratedRegex(@"(\d{2}\:\d{2}\:\d{2}\,\d{3}) --> (\d{2}\:\d{2}\:\d{2}\,\d{3})")]
+	private static partial Regex SRTRegex();
 }
 

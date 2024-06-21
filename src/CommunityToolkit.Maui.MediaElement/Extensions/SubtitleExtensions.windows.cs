@@ -10,7 +10,6 @@ class SubtitleExtensions : Grid, IDisposable
 	bool disposedValue;
 	bool isFullScreen = false;
 
-	static readonly HttpClient httpClient = new();
 	readonly Microsoft.UI.Xaml.Controls.TextBlock subtitleTextBlock;
 
 	List<SubtitleCue> cues;
@@ -49,23 +48,7 @@ class SubtitleExtensions : Grid, IDisposable
 		cues.Clear();
 		subtitleTextBlock.Text = string.Empty;
 		subtitleTextBlock.FontSize = mediaElement.SubtitleFontSize;
-		string? vttContent;
-		try
-		{
-			vttContent = await httpClient.GetStringAsync(mediaElement.SubtitleUrl);
-		}
-		catch (Exception ex)
-		{
-			System.Diagnostics.Trace.TraceError(ex.Message);
-			return;
-		}
-		
-		cues = mediaElement.SubtitleUrl switch
-		{
-			var url when url.EndsWith("srt") => SrtParser.ParseSrtContent(vttContent),
-			var url when url.EndsWith("vtt") => VttParser.ParseVttContent(vttContent),
-			_ => throw new NotSupportedException("Unsupported subtitle format"),
-		};
+		cues = await Parser.Content(mediaElement).ConfigureAwait(false);
 	}
 
 	/// <summary>
@@ -161,7 +144,6 @@ class SubtitleExtensions : Grid, IDisposable
 
 			if (disposing)
 			{
-				httpClient?.Dispose();
 				timer?.Dispose();
 			}
 			timer = null;

@@ -14,7 +14,6 @@ class SubtitleExtensions : IDisposable
 {
 	bool disposedValue;
 
-	static readonly HttpClient httpClient = new();
 	readonly IDispatcher dispatcher;
 	readonly RelativeLayout.LayoutParams? subtitleLayout;
 	readonly StyledPlayerView styledPlayerView;
@@ -50,24 +49,9 @@ class SubtitleExtensions : IDisposable
 	{
 		this.mediaElement = mediaElement;
 		cues.Clear();
-		string? vttContent;
-		try
-		{
-			vttContent = await httpClient.GetStringAsync(mediaElement.SubtitleUrl);
-		}
-		catch (Exception ex)
-		{
-			System.Diagnostics.Trace.TraceError(ex.Message);
-			return;
-		}
-		cues = mediaElement.SubtitleUrl switch
-		{
-			var url when url.EndsWith("srt") => SrtParser.ParseSrtContent(vttContent),
-			var url when url.EndsWith("vtt") => VttParser.ParseVttContent(vttContent),
-			_ => throw new NotSupportedException("Unsupported subtitle format"),
-		};
+		cues = await Parser.Content(mediaElement).ConfigureAwait(false);
 	}
-
+	
 	/// <summary>
 	/// Starts the subtitle display.
 	/// </summary>
@@ -218,7 +202,6 @@ class SubtitleExtensions : IDisposable
 
 			if (disposing)
 			{
-				httpClient.Dispose();
 				timer?.Dispose();
 				subtitleView?.Dispose();
 			}

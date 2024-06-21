@@ -1,7 +1,11 @@
-﻿namespace CommunityToolkit.Maui.Extensions;
+﻿using System.Text.RegularExpressions;
+
+namespace CommunityToolkit.Maui.Extensions;
 
 static partial class VttParser
 {
+	static readonly Regex timecodePatternVTT = VTTRegex();
+
 	/// <summary>
 	/// The ParseVttContent method parses the VTT content and returns a list of SubtitleCue objects.
 	/// </summary>
@@ -19,7 +23,7 @@ static partial class VttParser
 		SubtitleCue? currentCue = null;
 		foreach (var line in lines)
 		{
-			var match = Parser.TimecodePatternVTT.Match(line);
+			var match = timecodePatternVTT.Match(line);
 			if (match.Success)
 			{
 				if (currentCue is not null)
@@ -51,4 +55,7 @@ static partial class VttParser
 
 		return cues;
 	}
+
+	[GeneratedRegex(@"(\d{2}:\d{2}:\d{2}\.\d{3}) --> (\d{2}:\d{2}:\d{2}\.\d{3})")]
+	private static partial Regex VTTRegex();
 }

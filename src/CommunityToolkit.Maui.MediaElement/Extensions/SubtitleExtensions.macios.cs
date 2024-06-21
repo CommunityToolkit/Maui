@@ -11,7 +11,6 @@ namespace CommunityToolkit.Maui.Extensions;
 
 class SubtitleExtensions : UIViewController
 {
-	static readonly HttpClient httpClient = new();
 	readonly PlatformMediaElement player;
 	readonly UIViewController playerViewController;
 	readonly UILabel subtitleLabel;
@@ -41,7 +40,7 @@ class SubtitleExtensions : UIViewController
 			Lines = 0,
 			AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleTopMargin | UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleBottomMargin
 		};
-		DispatchQueue.MainQueue.DispatchAsync(() => playerViewController.View?.AddSubview(subtitleLabel));
+		
 		MediaManagerDelegate.FullScreenChanged += OnFullScreenChanged;
 	}
 
@@ -54,23 +53,7 @@ class SubtitleExtensions : UIViewController
 		this.mediaElement = mediaElement;
 		cues.Clear();
 		subtitleLabel.Font = UIFont.FromName(mediaElement.SubtitleFont, (float)mediaElement.SubtitleFontSize) ?? UIFont.SystemFontOfSize((float)mediaElement.SubtitleFontSize);
-		string? vttContent;
-		try
-		{
-			vttContent = await httpClient.GetStringAsync(mediaElement.SubtitleUrl);
-		}
-		catch (Exception ex)
-		{
-			System.Diagnostics.Trace.TraceError(ex.Message);
-			return;
-		}
-
-		cues = mediaElement.SubtitleUrl switch
-		{
-			var url when url.EndsWith("srt") => SrtParser.ParseSrtContent(vttContent),
-			var url when url.EndsWith("vtt") => VttParser.ParseVttContent(vttContent),
-			_ => throw new NotSupportedException("Unsupported subtitle format"),
-		};
+		cues = await Parser.Content(mediaElement).ConfigureAwait(false);
 	}
 
 	/// <summary>
@@ -79,6 +62,7 @@ class SubtitleExtensions : UIViewController
 	public void StartSubtitleDisplay()
 	{
 		ArgumentNullException.ThrowIfNull(subtitleLabel);
+		DispatchQueue.MainQueue.DispatchAsync(() => playerViewController.View?.AddSubview(subtitleLabel));
 		playerObserver = player?.AddPeriodicTimeObserver(CMTime.FromSeconds(1, 1), null, (time) =>
 		{
 			TimeSpan currentPlaybackTime = TimeSpan.FromSeconds(time.Seconds);
@@ -95,10 +79,10 @@ class SubtitleExtensions : UIViewController
 		if (playerObserver is not null)
 		{
 			player.RemoveTimeObserver(playerObserver);
-			playerObserver.Dispose();
-			playerObserver = null;
-			subtitleLabel.RemoveFromSuperview();
 		}
+		subtitleLabel.Text = string.Empty;
+		subtitleLabel.BackgroundColor = UIColor.FromRGBA(0, 0, 0, 0);
+		DispatchQueue.MainQueue.DispatchAsync(() => subtitleLabel.RemoveFromSuperview());
 	}
 	void UpdateSubtitle(TimeSpan currentPlaybackTime)
 	{
@@ -154,8 +138,9 @@ class SubtitleExtensions : UIViewController
 	{
 		MediaManagerDelegate.FullScreenChanged -= OnFullScreenChanged;
 		subtitleLabel.Text = string.Empty;
-		subtitleLabel.RemoveFromSuperview();
-		if(playerObserver is not null) 
+		subtitleLabel.BackgroundColor = UIColor.FromRGBA(0, 0, 0, 0);
+		DispatchQueue.MainQueue.DispatchAsync(() => subtitleLabel.RemoveFromSuperview());
+		if (playerObserver is not null) 
 		{
 			player.RemoveTimeObserver(playerObserver);
 			playerObserver.Dispose();

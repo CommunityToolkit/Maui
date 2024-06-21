@@ -223,7 +223,7 @@ public partial class MediaManager : IDisposable
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 		
 		AVAsset? asset = null;
-		subtitleExtensions?.StopSubtitleDisplay();
+		
 		if (Player is null)
 		{
 			return;
@@ -231,6 +231,7 @@ public partial class MediaManager : IDisposable
 
 		metaData ??= new(Player);
 		Metadata.ClearNowPlaying();
+		subtitleExtensions?.StopSubtitleDisplay();
 
 		if (MediaElement.Source is UriMediaSource uriMediaSource)
 		{
@@ -315,9 +316,9 @@ public partial class MediaManager : IDisposable
 	{
 		if (subtitleExtensions is null || string.IsNullOrEmpty(MediaElement.SubtitleUrl))
 		{
+			System.Diagnostics.Trace.TraceError("SubtitleExtensions is null or SubtitleUrl is null or empty.");
 			return;
 		}
-		subtitleExtensions.StopSubtitleDisplay();
 		await subtitleExtensions.LoadSubtitles(MediaElement).WaitAsync(cancellationToken).ConfigureAwait(false);
 		subtitleExtensions.StartSubtitleDisplay();
 	}

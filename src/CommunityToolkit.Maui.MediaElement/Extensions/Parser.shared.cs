@@ -1,11 +1,10 @@
 ﻿using System.Globalization;
-using System.Text.RegularExpressions;
+using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Extensions;
-static partial class Parser
+static class Parser
 {
-	public static readonly Regex TimecodePatternSRT = SRTRegex();
-	public static readonly Regex TimecodePatternVTT = VTTRegex();
+	static readonly HttpClient httpClient = new();
 	public static readonly string[] Separator = ["\r\n", "\n"];
 	
 	public static TimeSpan ParseTimecode(string timecode, bool isVtt)
@@ -18,9 +17,37 @@ static partial class Parser
 		return TimeSpan.ParseExact(timecode, @"hh\:mm\:ss\,fff", CultureInfo.InvariantCulture);
 	}
 
-	[GeneratedRegex(@"(\d{2}\:\d{2}\:\d{2}\,\d{3}) --> (\d{2}\:\d{2}\:\d{2}\,\d{3})")]
-	private static partial Regex SRTRegex();
+	public static async Task<List<SubtitleCue>> Content(IMediaElement mediaElement)
+	{
+		string? vttContent;
+		var emptyList = new List<SubtitleCue>();
+		try
+		{
+			if (mediaElement.SubtitleUrl.EndsWith("srt") || mediaElement.SubtitleUrl.EndsWith("vtt"))
+			{
+				vttContent = await httpClient.GetStringAsync(mediaElement.SubtitleUrl).ConfigureAwait(false);
+			}
+			else
+			{
+				System.Diagnostics.Trace.TraceError("Unsupported Subtitle file.");
+				return emptyList;
+			}
+		}
+		catch (Exception ex)
+		{
+			System.Diagnostics.Trace.TraceError(ex.Message);
+			return emptyList;
+		}
 
-	[GeneratedRegex(@"(\d{2}:\d{2}:\d{2}\.\d{3}) --> (\d{2}:\d{2}:\d{2}\.\d{3})")]
-	private static partial Regex VTTRegex();
+		switch (mediaElement.SubtitleUrl)
+		{
+			case var url when url.EndsWith("srt"):
+				return SrtParser.ParseSrtContent(vttContent);
+			case var url when url.EndsWith("vtt"):
+				return VttParser.ParseVttContent(vttContent);
+			default:
+				System.Diagnostics.Trace.TraceError("Unsupported Subtitle file.");
+				return emptyList;
+		}
+	}
 }
