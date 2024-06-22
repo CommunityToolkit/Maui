@@ -11,10 +11,10 @@ namespace CommunityToolkit.Maui.Views;
 public class MediaElement : View, IMediaElement, IDisposable
 {
 	/// <summary>
-	/// Backing store for the <see cref="CustomParser"/> property.
+	/// Backing store for the <see cref="CustomSubtitleParser"/> property.
 	/// </summary>
 	public static readonly BindableProperty ParserProperty = 
-		BindableProperty.Create(nameof(CustomParser), typeof(IParser), typeof(MediaElement), null);
+		BindableProperty.Create(nameof(CustomSubtitleParser), typeof(IParser), typeof(MediaElement), null);
 	
 	/// <summary>
 	/// Backing store for the <see cref="Aspect"/> property.
@@ -226,9 +226,9 @@ public class MediaElement : View, IMediaElement, IDisposable
 	~MediaElement() => Dispose(false);
 
 	/// <summary>
-	/// 
+	/// Custom parser for subtitles.
 	/// </summary>
-	public IParser? CustomParser
+	public IParser? CustomSubtitleParser
 	{
 		get => (IParser)GetValue(ParserProperty);
 		set => SetValue(ParserProperty, value);

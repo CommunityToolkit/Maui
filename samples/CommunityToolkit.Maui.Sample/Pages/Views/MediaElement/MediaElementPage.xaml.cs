@@ -212,7 +212,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				return;
 			case loadSubTitles:
 				SrtParser srtParser = new();
-				MediaElement.CustomParser = srtParser;
+				MediaElement.CustomSubtitleParser = srtParser;
 				MediaElement.SubtitleFont = FontFamilies.PlaywriteSK;
 				MediaElement.SubtitleFontSize = 16;
 				MediaElement.SubtitleUrl = "https://raw.githubusercontent.com/ne0rrmatrix/SampleVideo/main/SRT/WindowsVideo.srt";
@@ -294,7 +294,7 @@ partial class SrtParser : IParser
 			return cues;
 		}
 
-		var lines = content.Split(Parser.Separator, StringSplitOptions.None);
+		var lines = content.Split(SubtitleParser.Separator, StringSplitOptions.None);
 		SubtitleCue? currentCue = null;
 		var textBuffer = new List<string>();
 

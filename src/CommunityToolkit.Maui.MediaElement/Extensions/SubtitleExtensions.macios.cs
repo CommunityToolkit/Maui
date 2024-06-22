@@ -49,11 +49,11 @@ class SubtitleExtensions : UIViewController
 	{
 		this.mediaElement = mediaElement;
 		cues.Clear();
-		Parser parser;
-		var content = await Parser.Content(mediaElement.SubtitleUrl);
-		if (mediaElement.CustomParser is not null)
+		SubtitleParser parser;
+		var content = await SubtitleParser.Content(mediaElement.SubtitleUrl);
+		if (mediaElement.CustomSubtitleParser is not null)
 		{
-			parser = new(mediaElement.CustomParser);
+			parser = new(mediaElement.CustomSubtitleParser);
 			cues = parser.ParseContent(content);
 			return;
 		}

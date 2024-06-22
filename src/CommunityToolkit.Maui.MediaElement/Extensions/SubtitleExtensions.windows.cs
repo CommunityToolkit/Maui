@@ -40,12 +40,12 @@ class SubtitleExtensions : Grid, IDisposable
 		cues.Clear();
 		subtitleTextBlock.Text = string.Empty;
 		subtitleTextBlock.FontSize = mediaElement.SubtitleFontSize;
-		Parser parser;
+		SubtitleParser parser;
 		
-		var content = await Parser.Content(mediaElement.SubtitleUrl);
-		if(mediaElement.CustomParser is not null)
+		var content = await SubtitleParser.Content(mediaElement.SubtitleUrl);
+		if(mediaElement.CustomSubtitleParser is not null)
 		{
-			parser = new(mediaElement.CustomParser);
+			parser = new(mediaElement.CustomSubtitleParser);
 			cues = parser.ParseContent(content);
 			return;
 		}

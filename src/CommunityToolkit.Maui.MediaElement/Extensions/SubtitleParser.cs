@@ -3,7 +3,7 @@
 /// <summary>
 /// A class that Represents a parser.
 /// </summary>
-public class Parser
+public class SubtitleParser
 {
 	static readonly HttpClient httpClient = new();
 
@@ -21,7 +21,7 @@ public class Parser
 	/// A constructor that initializes the <see cref="IParser"/>
 	/// </summary>
 	/// <param name="parser"></param>
-	public Parser(IParser parser)
+	public SubtitleParser(IParser parser)
 	{
 		this.IParser = parser;
 	}

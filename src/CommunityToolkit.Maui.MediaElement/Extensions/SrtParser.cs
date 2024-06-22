@@ -15,7 +15,7 @@ partial class SrtParser : IParser
 			return cues;
 		}
 
-		var lines = content.Split(Parser.Separator, StringSplitOptions.None);
+		var lines = content.Split(SubtitleParser.Separator, StringSplitOptions.None);
 		SubtitleCue? currentCue = null;
 		var textBuffer = new List<string>();
 

@@ -49,7 +49,7 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// <summary>
 	/// Gets the <see cref="IParser"/> used to parse the subtitle file.
 	/// </summary>
-	IParser? CustomParser { get; set; }
+	IParser? CustomSubtitleParser { get; }
 
 	/// <summary>
 	/// The current position of the playing media.
