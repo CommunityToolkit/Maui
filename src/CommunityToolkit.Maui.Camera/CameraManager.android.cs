@@ -273,20 +273,20 @@ partial class CameraManager
 		{
 			base.OnCaptureSuccess(image);
 			var img = image.Image;
-			
+
 			if (img is null)
 			{
 				return;
 			}
-			
+
 			var buffer = GetFirstPlane(img.GetPlanes())?.Buffer;
-			
+
 			if (buffer is null)
 			{
 				image.Close();
 				return;
 			}
-			
+
 			var imgData = new byte[buffer.Remaining()];
 			try
 			{

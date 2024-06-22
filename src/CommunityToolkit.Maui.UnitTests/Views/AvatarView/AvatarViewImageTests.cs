@@ -121,40 +121,57 @@ public class AvatarViewImageTests : BaseHandlerTest
 	[Fact]
 	public void ImageSourceParentSize_WhenStrokeShapeNotSet()
 	{
-		var source = new UriImageSource()
-		{
-			Uri = new Uri("https://aka.ms/campus.jpg"),
-		};
+		const int borderWidth = 5;
+		const int widthRequest = 73;
+		const int heightRequest = 37;
+		const int layoutDiameter = widthRequest;
+		var padding = new Thickness(0, 5, 10, 15);
+
 		var avatarView = new Maui.Views.AvatarView
 		{
-			WidthRequest = 73,
-			HeightRequest = 37,
-			ImageSource = source
+			Padding = padding,
+			BorderWidth = borderWidth,
+			WidthRequest = widthRequest,
+			HeightRequest = heightRequest,
+			ImageSource = new UriImageSource
+			{
+				Uri = new Uri("https://aka.ms/campus.jpg"),
+			}
 		};
-		avatarView.Layout(new Rect(0, 0, 73, 73));
+		avatarView.Layout(new Rect(0, 0, layoutDiameter, layoutDiameter));
+
 		avatarView.ImageSource.Should().NotBeNull();
 		avatarView.Content.Should().BeOfType<Image>();
-		if (avatarView.Content is Image avatarImage)
+		if (avatarView.Content is not Image avatarImage)
 		{
-			avatarImage.WidthRequest.Should().Be(73);
-			avatarImage.HeightRequest.Should().Be(37);
-
-			avatarImage.Clip.Should().BeNull();
+			throw new InvalidCastException($"{nameof(avatarView.Content)} must be of type {nameof(Image)}");
 		}
+
+		avatarImage.WidthRequest.Should().Be(layoutDiameter - (borderWidth * 2) - padding.Left - padding.Right);
+		avatarImage.HeightRequest.Should().Be(layoutDiameter - (borderWidth * 2) - padding.Top - padding.Bottom);
+
+		avatarImage.Clip.Should().BeNull();
 	}
 
 	[Fact]
 	public void ImageSourceParentSize_WhenStrokeShapeSet()
 	{
-		var source = new UriImageSource()
-		{
-			Uri = new Uri("https://aka.ms/campus.jpg"),
-		};
+		const int borderWidth = 5;
+		const int widthRequest = 73;
+		const int heightRequest = 37;
+		const int layoutDiameter = widthRequest;
+		var padding = new Thickness(0, 5, 10, 15);
+
 		var avatarView = new Maui.Views.AvatarView
 		{
-			WidthRequest = 73,
-			HeightRequest = 37,
-			ImageSource = source,
+			Padding = padding,
+			BorderWidth = borderWidth,
+			WidthRequest = widthRequest,
+			HeightRequest = heightRequest,
+			ImageSource = new UriImageSource()
+			{
+				Uri = new Uri("https://aka.ms/campus.jpg"),
+			},
 			StrokeShape = new Rectangle
 			{
 				Clip = new RectangleGeometry()
@@ -163,12 +180,14 @@ public class AvatarViewImageTests : BaseHandlerTest
 		avatarView.Layout(new Rect(0, 0, 73, 73));
 		avatarView.ImageSource.Should().NotBeNull();
 		avatarView.Content.Should().BeOfType<Image>();
-		if (avatarView.Content is Image avatarImage)
-		{
-			avatarImage.WidthRequest.Should().Be(73);
-			avatarImage.HeightRequest.Should().Be(37);
 
-			avatarImage.Clip.Should().BeOfType<RectangleGeometry>();
+		if (avatarView.Content is not Image avatarImage)
+		{
+			throw new InvalidCastException($"{nameof(avatarView.Content)} must be of type {nameof(Image)}");
 		}
+
+		avatarImage.WidthRequest.Should().Be(layoutDiameter - (borderWidth * 2) - padding.Left - padding.Right);
+		avatarImage.HeightRequest.Should().Be(layoutDiameter - (borderWidth * 2) - padding.Top - padding.Bottom);
+		avatarImage.Clip.Should().BeOfType<RectangleGeometry>();
 	}
 }

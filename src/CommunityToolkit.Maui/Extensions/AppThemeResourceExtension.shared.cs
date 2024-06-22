@@ -35,7 +35,7 @@ public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 			var xmlLineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider ? xmlLineInfoProvider.XmlLineInfo : null;
 			throw new XamlParseException($"Resource not found for key {Key}", xmlLineInfo);
 		}
-		
+
 		switch (resource)
 		{
 			case AppThemeColor color:

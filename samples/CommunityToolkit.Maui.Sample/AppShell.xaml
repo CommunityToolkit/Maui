@@ -13,7 +13,13 @@
        xmlns:essentials="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Essentials"
        xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
        xmlns:sys="clr-namespace:System;assembly=netstandard"
-       Padding="4,0,0,0">
+       Padding="4,0,0,0"
+       x:Name="flyout"
+       Title="{OnPlatform WinUI='Toolkit Features', Default={x:Null}}"
+       FlyoutBackgroundColor="{OnPlatform WinUI=Transparent,
+                                          Default={AppThemeBinding Light={StaticResource White},
+                                                                   Dark={StaticResource Black}}}"
+       FlyoutBehavior="{OnPlatform WinUI=Locked, Default=Flyout}">
 
     <Shell.FlyoutHeader>
         <Label Margin="{OnPlatform Default='0,0,0,12',
@@ -21,12 +27,13 @@
                                    MacCatalyst='0'}"
                Padding="{OnPlatform Default='4,0',
                                     iOS='4, 100, 4, 0',
+                                    WinUI='20, 0',
                                     MacCatalyst='4, 100, 4, 0'}"
                FontSize="24"
                HorizontalTextAlignment="Start"
+               IsVisible="{OnPlatform WinUI=false, Default=true}"
                Text="Toolkit Features"
                VerticalTextAlignment="Center" />
-
     </Shell.FlyoutHeader>
 
     <FlyoutItem Title="Welcome"

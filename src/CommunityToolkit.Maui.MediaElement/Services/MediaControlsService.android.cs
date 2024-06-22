@@ -18,7 +18,7 @@ using Resource = Microsoft.Maui.Resource;
 namespace CommunityToolkit.Maui.Media.Services;
 
 [Service(Exported = false, Enabled = true, Name = "CommunityToolkit.Maui.Media.Services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
-public class MediaControlsService : Service
+class MediaControlsService : Service
 {
 	public const string ACTION_PLAY = "MediaAction.play";
 	public const string ACTION_PAUSE = "MediaAction.pause";
@@ -176,7 +176,7 @@ public class MediaControlsService : Service
 		ArgumentNullException.ThrowIfNull(audioManager);
 		audioManager.RequestAudioFocus(null, AndroidStream.Music, AudioFocus.Gain);
 		audioManager.SetParameters("Ducking=true");
-		audioManager.SetStreamVolume(AndroidStream.Music, audioManager.GetStreamVolume(AndroidStream.Music), VolumeNotificationFlags.ShowUi);
+		audioManager.SetStreamVolume(AndroidStream.Music, audioManager.GetStreamVolume(AndroidStream.Music), 0);
 	}
 
 	async Task OnSetContent(Intent mediaManagerIntent, CancellationToken cancellationToken)
