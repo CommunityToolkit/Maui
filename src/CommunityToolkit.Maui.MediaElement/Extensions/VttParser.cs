@@ -3,18 +3,10 @@ using System.Text.RegularExpressions;
 
 namespace CommunityToolkit.Maui.Core;
 
-/// <summary>
-/// 
-/// </summary>
 partial class VttParser : IParser
 {
 	static readonly Regex timecodePatternVTT = VTTRegex();
 
-	/// <summary>
-	/// The ParseVttContent method parses the VTT content and returns a list of SubtitleCue objects.
-	/// </summary>
-	/// <param name="content"></param>
-	/// <returns></returns>
 	public List<SubtitleCue> ParseContent(string content)
 	{
 		var cues = new List<SubtitleCue>();

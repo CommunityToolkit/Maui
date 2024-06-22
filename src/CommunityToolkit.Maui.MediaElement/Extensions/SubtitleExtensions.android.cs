@@ -20,10 +20,6 @@ class SubtitleExtensions : Java.Lang.Object
 	TextView? subtitleView;
 	System.Timers.Timer? timer;
 
-	/// <summary>
-	/// The SubtitleExtensions class provides a way to display subtitles on a video player.
-	/// </summary>
-	/// <param name="styledPlayerView"></param>
 	public SubtitleExtensions(StyledPlayerView styledPlayerView, IDispatcher dispatcher)
 	{
 		ArgumentNullException.ThrowIfNull(Platform.CurrentActivity);
@@ -44,10 +40,6 @@ class SubtitleExtensions : Java.Lang.Object
 		MauiMediaElement.FullScreenChanged += OnFullScreenChanged;
 	}
 
-	/// <summary>
-	/// Loads the subtitles from the provided URL.
-	/// </summary>
-	/// <param name="mediaElement"></param>
 	public async Task LoadSubtitles(IMediaElement mediaElement)
 	{
 		this.mediaElement = mediaElement;
@@ -75,10 +67,7 @@ class SubtitleExtensions : Java.Lang.Object
 				return;
 		}
 	}
-	
-	/// <summary>
-	/// Starts the subtitle display.
-	/// </summary>
+
 	public void StartSubtitleDisplay()
 	{
 		ArgumentNullException.ThrowIfNull(subtitleView);
@@ -93,9 +82,6 @@ class SubtitleExtensions : Java.Lang.Object
 		timer.Start();
 	}
 
-	/// <summary>
-	/// Stops the subtitle timer.
-	/// </summary>
 	public void StopSubtitleDisplay()
 	{
 		if (timer is null || subtitleView is null)

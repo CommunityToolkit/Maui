@@ -6,7 +6,7 @@
 public interface IParser
 {
 	/// <summary>
-	/// 
+	/// A method that parses the content.
 	/// </summary>
 	/// <param name="content"></param>
 	/// <returns></returns>

@@ -1,23 +1,24 @@
 ﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
-/// 
+/// A class that Represents a parser.
 /// </summary>
-public partial class Parser
+public class Parser
 {
-	/// <summary>
-	/// 
-	/// </summary>
-	public IParser IParser { get; set; }
 	static readonly HttpClient httpClient = new();
 
 	/// <summary>
-	/// 
+	/// A property that represents the <see cref="IParser"/>
+	/// </summary>
+	public IParser IParser { get; set; }
+
+	/// <summary>
+	/// A property that represents the separator.
 	/// </summary>
 	public static readonly string[] Separator = ["\r\n", "\n"];
 	
 	/// <summary>
-	/// 
+	/// A constructor that initializes the <see cref="IParser"/>
 	/// </summary>
 	/// <param name="parser"></param>
 	public Parser(IParser parser)
@@ -26,7 +27,7 @@ public partial class Parser
 	}
 
 	/// <summary>
-	/// 
+	/// A method that parses the content.
 	/// </summary>
 	/// <param name="content"></param>
 	/// <returns></returns>
@@ -35,12 +36,7 @@ public partial class Parser
 		return IParser.ParseContent(content);
 	}
 
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="subtitleUrl"></param>
-	/// <returns></returns>
-	public static async Task<string> Content(string subtitleUrl)
+	internal static async Task<string> Content(string subtitleUrl)
 	{
 		try
 		{

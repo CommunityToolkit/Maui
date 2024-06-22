@@ -17,9 +17,6 @@ class SubtitleExtensions : Grid, IDisposable
 	MauiMediaElement? mauiMediaElement;
 	System.Timers.Timer? timer;
 
-	/// <summary>
-	/// The SubtitleExtensions class provides a way to display subtitles on a video player.
-	/// </summary>
 	public SubtitleExtensions()
 	{
 		cues = [];
@@ -36,11 +33,6 @@ class SubtitleExtensions : Grid, IDisposable
 		};
 	}
 
-	/// <summary>
-	/// Loads the subtitles from the provided URL.
-	/// </summary>
-	/// <param name="mediaElement"></param>
-	/// <param name="player"></param>
 	public async Task LoadSubtitles(IMediaElement mediaElement, Microsoft.UI.Xaml.Controls.MediaPlayerElement player)
 	{
 		this.mediaElement = mediaElement;
@@ -73,9 +65,6 @@ class SubtitleExtensions : Grid, IDisposable
 		}
 	}
 
-	/// <summary>
-	/// Starts the subtitle display.
-	/// </summary>
 	public void StartSubtitleDisplay()
 	{
 		timer = new System.Timers.Timer(1000);
@@ -84,9 +73,6 @@ class SubtitleExtensions : Grid, IDisposable
 		timer.Start();
 	}
 
-	/// <summary>
-	/// Stops the subtitle timer.
-	/// </summary>
 	public void StopSubtitleDisplay()
 	{
 		if (timer is null)
@@ -150,10 +136,6 @@ class SubtitleExtensions : Grid, IDisposable
 		}
 	}
 
-	/// <summary>
-	/// The Dispose method. For the <see cref="SubtitleExtensions"/> class."/>
-	/// </summary>
-	/// <param name="disposing"></param>
 	protected virtual void Dispose(bool disposing)
 	{
 		if (!disposedValue)
@@ -173,17 +155,11 @@ class SubtitleExtensions : Grid, IDisposable
 		}
 	}
 
-	/// <summary>
-	/// A finalizer for the <see cref="SubtitleExtensions"/>.
-	/// </summary>
 	~SubtitleExtensions()
 	{
 	     Dispose(disposing: false);
 	}
 
-	/// <summary>
-	/// 
-	/// </summary>
 	public void Dispose()
 	{
 		Dispose(disposing: true);

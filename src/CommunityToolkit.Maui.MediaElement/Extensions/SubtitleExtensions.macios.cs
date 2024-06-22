@@ -23,11 +23,6 @@ class SubtitleExtensions : UIViewController
 	NSObject? playerObserver;
 	UIViewController? viewController;
 
-	/// <summary>
-	/// The SubtitleExtensions class provides a way to display subtitles on a video player.
-	/// </summary>
-	/// <param name="player"></param>
-	/// <param name="playerViewController"></param>
 	public SubtitleExtensions(PlatformMediaElement player, UIViewController playerViewController)
 	{
 		this.playerViewController = playerViewController;
@@ -50,10 +45,6 @@ class SubtitleExtensions : UIViewController
 		MediaManagerDelegate.FullScreenChanged += OnFullScreenChanged;
 	}
 
-	/// <summary>
-	/// Loads the subtitles from the provided URL.
-	/// </summary>
-	/// <param name="mediaElement"></param>
 	public async Task LoadSubtitles(IMediaElement mediaElement)
 	{
 		this.mediaElement = mediaElement;
@@ -82,9 +73,6 @@ class SubtitleExtensions : UIViewController
 		}
 	}
 
-	/// <summary>
-	/// Starts the subtitle display.
-	/// </summary>
 	public void StartSubtitleDisplay()
 	{
 		ArgumentNullException.ThrowIfNull(subtitleLabel);
@@ -97,9 +85,6 @@ class SubtitleExtensions : UIViewController
 		});
 	}
 
-	/// <summary>
-	/// Stops the subtitle display.
-	/// </summary>
 	public void StopSubtitleDisplay()
 	{
 		subtitleLabel.Text = string.Empty;

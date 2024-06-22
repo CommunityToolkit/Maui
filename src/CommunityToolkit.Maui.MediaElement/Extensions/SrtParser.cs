@@ -3,18 +3,10 @@ using System.Text.RegularExpressions;
 
 namespace CommunityToolkit.Maui.Core;
 
-/// <summary>
-/// 
-/// </summary>
 partial class SrtParser : IParser
 {
 	static readonly Regex timecodePatternSRT = SRTRegex();
 
-	/// <summary>
-	/// a method that parses the SRT content and returns a list of SubtitleCue objects.
-	/// </summary>
-	/// <param name="content"></param>
-	/// <returns></returns>
 	public List<SubtitleCue> ParseContent(string content)
 	{
 		var cues = new List<SubtitleCue>();
