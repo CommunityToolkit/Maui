@@ -58,9 +58,28 @@ class SubtitleExtensions : UIViewController
 	{
 		this.mediaElement = mediaElement;
 		cues.Clear();
-		subtitleLabel.Font = UIFont.FromName(mediaElement.SubtitleFont,
-									   (float)mediaElement.SubtitleFontSize) ?? UIFont.SystemFontOfSize((float)mediaElement.SubtitleFontSize);
-		cues = await Parser.Content(mediaElement).ConfigureAwait(false);
+		Parser parser;
+		var content = await Parser.Content(mediaElement.SubtitleUrl);
+		if (mediaElement.CustomParser is not null)
+		{
+			parser = new(mediaElement.CustomParser);
+			cues = parser.ParseContent(content);
+			return;
+		}
+		switch (mediaElement.SubtitleUrl)
+		{
+			case var url when url.EndsWith("srt"):
+				parser = new(new SrtParser());
+				cues = parser.ParseContent(content);
+				break;
+			case var url when url.EndsWith("vtt"):
+				parser = new(new VttParser());
+				cues = parser.ParseContent(content);
+				break;
+			default:
+				System.Diagnostics.Trace.TraceError("Unsupported Subtitle file.");
+				return;
+		}
 	}
 
 	/// <summary>
@@ -142,15 +161,6 @@ class SubtitleExtensions : UIViewController
 				viewController = null;
 				break;
 		}
-	}
-	~SubtitleExtensions()
-	{
-		MediaManagerDelegate.FullScreenChanged -= OnFullScreenChanged;
-		if(playerObserver is null)
-		{
-			return;
-		}
-		player.RemoveTimeObserver(playerObserver);
 	}
 }
 

@@ -1,25 +1,29 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
 
-namespace CommunityToolkit.Maui.Extensions;
+namespace CommunityToolkit.Maui.Core;
 
-static partial class VttParser
+/// <summary>
+/// 
+/// </summary>
+partial class VttParser : IParser
 {
 	static readonly Regex timecodePatternVTT = VTTRegex();
 
 	/// <summary>
 	/// The ParseVttContent method parses the VTT content and returns a list of SubtitleCue objects.
 	/// </summary>
-	/// <param name="vttContent"></param>
+	/// <param name="content"></param>
 	/// <returns></returns>
-	public static List<SubtitleCue> ParseVttContent(string vttContent)
+	public List<SubtitleCue> ParseContent(string content)
 	{
 		var cues = new List<SubtitleCue>();
-		if (string.IsNullOrEmpty(vttContent))
+		if (string.IsNullOrEmpty(content))
 		{
 			return cues;
 		}
 
-		var lines = vttContent.Split(Parser.Separator, StringSplitOptions.None);
+		var lines = content.Split(Parser.Separator, StringSplitOptions.None);
 		SubtitleCue? currentCue = null;
 		var textBuffer = new List<string>();
 
@@ -37,8 +41,8 @@ static partial class VttParser
 
 				currentCue = new SubtitleCue
 				{
-					StartTime = Parser.ParseTimecode(match.Groups[1].Value, true),
-					EndTime = Parser.ParseTimecode(match.Groups[2].Value, true),
+					StartTime = ParseTimecode(match.Groups[1].Value),
+					EndTime = ParseTimecode(match.Groups[2].Value),
 					Text = string.Empty
 				};
 			}
@@ -55,6 +59,11 @@ static partial class VttParser
 		}
 
 		return cues;
+	}
+
+	static TimeSpan ParseTimecode(string timecode)
+	{
+		return TimeSpan.Parse(timecode, CultureInfo.InvariantCulture);
 	}
 
 	[GeneratedRegex(@"(\d{2}:\d{2}:\d{2}\.\d{3}) --> (\d{2}:\d{2}:\d{2}\.\d{3})")]

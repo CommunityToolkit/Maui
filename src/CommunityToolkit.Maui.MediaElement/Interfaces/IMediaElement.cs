@@ -47,6 +47,11 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	int MediaWidth { get; }
 
 	/// <summary>
+	/// Gets the <see cref="IParser"/> used to parse the subtitle file.
+	/// </summary>
+	IParser? CustomParser { get; set; }
+
+	/// <summary>
 	/// The current position of the playing media.
 	/// </summary>
 	TimeSpan Position { get; internal set; }

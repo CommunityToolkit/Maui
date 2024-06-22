@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Android.Views;
+﻿using Android.Views;
 using Android.Widget;
 using Com.Google.Android.Exoplayer2.UI;
 using CommunityToolkit.Maui.Core;
@@ -53,7 +52,28 @@ class SubtitleExtensions : Java.Lang.Object
 	{
 		this.mediaElement = mediaElement;
 		cues.Clear();
-		cues = await Parser.Content(mediaElement).ConfigureAwait(false);
+		Parser parser;
+		var content = await Parser.Content(mediaElement.SubtitleUrl);
+		if (mediaElement.CustomParser is not null)
+		{
+			parser = new(mediaElement.CustomParser);
+			cues = parser.ParseContent(content);
+			return;
+		}
+		switch (mediaElement.SubtitleUrl)
+		{
+			case var url when url.EndsWith("srt"):
+				parser = new(new SrtParser());
+				cues = parser.ParseContent(content);
+				break;
+			case var url when url.EndsWith("vtt"):
+				parser = new(new VttParser());
+				cues = parser.ParseContent(content);
+				break;
+			default:
+				System.Diagnostics.Trace.TraceError("Unsupported Subtitle file.");
+				return;
+		}
 	}
 	
 	/// <summary>
@@ -168,16 +188,5 @@ class SubtitleExtensions : Java.Lang.Object
 				platform.viewGroup.AddView(subtitleView);
 				break;
 		}
-	}
-
-	~SubtitleExtensions()
-	{
-		if (timer is not null)
-		{
-			timer.Stop();
-			timer.Elapsed -= UpdateSubtitle;
-		}
-		timer?.Dispose();
-		subtitleView?.Dispose();
 	}
 }

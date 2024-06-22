@@ -48,7 +48,29 @@ class SubtitleExtensions : Grid, IDisposable
 		cues.Clear();
 		subtitleTextBlock.Text = string.Empty;
 		subtitleTextBlock.FontSize = mediaElement.SubtitleFontSize;
-		cues = await Parser.Content(mediaElement).ConfigureAwait(false);
+		Parser parser;
+		
+		var content = await Parser.Content(mediaElement.SubtitleUrl);
+		if(mediaElement.CustomParser is not null)
+		{
+			parser = new(mediaElement.CustomParser);
+			cues = parser.ParseContent(content);
+			return;
+		}
+		switch (mediaElement.SubtitleUrl)
+		{
+			case var url when url.EndsWith("srt"):
+				parser = new(new SrtParser());
+				cues = parser.ParseContent(content);
+				break;
+			case var url when url.EndsWith("vtt"):
+				parser = new(new VttParser());
+				cues = parser.ParseContent(content);
+				break;
+			default:
+				System.Diagnostics.Trace.TraceError("Unsupported Subtitle file.");
+				return;
+		}
 	}
 
 	/// <summary>

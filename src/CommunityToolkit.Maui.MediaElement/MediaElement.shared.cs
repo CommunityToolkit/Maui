@@ -11,6 +11,12 @@ namespace CommunityToolkit.Maui.Views;
 public class MediaElement : View, IMediaElement, IDisposable
 {
 	/// <summary>
+	/// Backing store for the <see cref="CustomParser"/> property.
+	/// </summary>
+	public static readonly BindableProperty ParserProperty = 
+		BindableProperty.Create(nameof(CustomParser), typeof(IParser), typeof(MediaElement), null);
+	
+	/// <summary>
 	/// Backing store for the <see cref="Aspect"/> property.
 	/// </summary>
 	public static readonly BindableProperty AspectProperty =
@@ -218,6 +224,15 @@ public class MediaElement : View, IMediaElement, IDisposable
 	/// Finalizer
 	/// </summary>
 	~MediaElement() => Dispose(false);
+
+	/// <summary>
+	/// 
+	/// </summary>
+	public IParser? CustomParser
+	{
+		get => (IParser)GetValue(ParserProperty);
+		set => SetValue(ParserProperty, value);
+	}
 
 	/// <summary>
 	/// The current position of the playing media. This is a bindable property.
