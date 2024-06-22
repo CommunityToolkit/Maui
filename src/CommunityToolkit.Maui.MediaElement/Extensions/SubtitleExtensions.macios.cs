@@ -41,7 +41,10 @@ class SubtitleExtensions : UIViewController
 			Font = UIFont.SystemFontOfSize(16),
 			Text = "",
 			Lines = 0,
-			AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleTopMargin | UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleBottomMargin
+			AutoresizingMask = UIViewAutoresizing.FlexibleWidth
+					  | UIViewAutoresizing.FlexibleTopMargin
+					  | UIViewAutoresizing.FlexibleHeight
+					  | UIViewAutoresizing.FlexibleBottomMargin
 		};
 		
 		MediaManagerDelegate.FullScreenChanged += OnFullScreenChanged;
@@ -55,7 +58,8 @@ class SubtitleExtensions : UIViewController
 	{
 		this.mediaElement = mediaElement;
 		cues.Clear();
-		subtitleLabel.Font = UIFont.FromName(mediaElement.SubtitleFont, (float)mediaElement.SubtitleFontSize) ?? UIFont.SystemFontOfSize((float)mediaElement.SubtitleFontSize);
+		subtitleLabel.Font = UIFont.FromName(mediaElement.SubtitleFont,
+									   (float)mediaElement.SubtitleFontSize) ?? UIFont.SystemFontOfSize((float)mediaElement.SubtitleFontSize);
 		cues = await Parser.Content(mediaElement).ConfigureAwait(false);
 	}
 

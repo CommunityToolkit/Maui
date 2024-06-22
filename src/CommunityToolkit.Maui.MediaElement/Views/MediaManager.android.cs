@@ -454,8 +454,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		if (hasSetSource && Player.PlayerError is null)
 		{
 			MediaElement.MediaOpened();
-			CancellationToken token = subTitlesSourceToken.Token;
-			startSubtitles = LoadSubtitles(token);
+			startSubtitles = LoadSubtitles(subTitlesSourceToken.Token);
 		}
 	}
 	async Task LoadSubtitles(CancellationToken cancellationToken = default)

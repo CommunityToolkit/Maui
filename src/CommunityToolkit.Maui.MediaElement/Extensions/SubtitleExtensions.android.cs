@@ -27,22 +27,22 @@ class SubtitleExtensions : Java.Lang.Object
 	/// <param name="styledPlayerView"></param>
 	public SubtitleExtensions(StyledPlayerView styledPlayerView, IDispatcher dispatcher)
 	{
+		ArgumentNullException.ThrowIfNull(Platform.CurrentActivity);
 		this.dispatcher = dispatcher;
 		this.styledPlayerView = styledPlayerView;
+		if (Platform.CurrentActivity.Window?.DecorView is not ViewGroup decorView)
+		{
+			throw new InvalidOperationException("Platform.CurrentActivity.Window.DecorView is not a ViewGroup");
+		}
+		platform = new(Platform.CurrentActivity, decorView);
 		cues = [];
 
 		subtitleLayout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
 		subtitleLayout.AddRule(LayoutRules.AlignParentBottom);
 		subtitleLayout.AddRule(LayoutRules.CenterHorizontal);
 
-		MauiMediaElement.FullScreenChanged += OnFullScreenChanged;
-		ArgumentNullException.ThrowIfNull(Platform.CurrentActivity);
-		if (Platform.CurrentActivity.Window?.DecorView is not ViewGroup decorView)
-		{
-			throw new InvalidOperationException("Platform.CurrentActivity.Window.DecorView is not a ViewGroup");
-		}
-		platform = new(Platform.CurrentActivity, decorView);
 		InitializeTextBlock();
+		MauiMediaElement.FullScreenChanged += OnFullScreenChanged;
 	}
 
 	/// <summary>
@@ -108,12 +108,12 @@ class SubtitleExtensions : Java.Lang.Object
 				subtitleView.FontFeatureSettings = !string.IsNullOrEmpty(mediaElement.SubtitleFont) ? mediaElement.SubtitleFont : default;
 				subtitleView.Text = cue.Text;
 				subtitleView.TextSize = (float)mediaElement.SubtitleFontSize;
-				subtitleView.Visibility = Android.Views.ViewStates.Visible;
+				subtitleView.Visibility = ViewStates.Visible;
 			}
 			else
 			{
 				subtitleView.Text = string.Empty;
-				subtitleView.Visibility = Android.Views.ViewStates.Gone;
+				subtitleView.Visibility = ViewStates.Gone;
 			}
 		});
 	}
