@@ -14,7 +14,6 @@ class SubtitleExtensions : Java.Lang.Object
 	readonly IDispatcher dispatcher;
 	readonly RelativeLayout.LayoutParams? subtitleLayout;
 	readonly StyledPlayerView styledPlayerView;
-	readonly CurrentPlatformActivity platform;
 	List<SubtitleCue> cues;
 	IMediaElement? mediaElement;
 	TextView? subtitleView;
@@ -25,11 +24,6 @@ class SubtitleExtensions : Java.Lang.Object
 		ArgumentNullException.ThrowIfNull(Platform.CurrentActivity);
 		this.dispatcher = dispatcher;
 		this.styledPlayerView = styledPlayerView;
-		if (Platform.CurrentActivity.Window?.DecorView is not ViewGroup decorView)
-		{
-			throw new InvalidOperationException("Platform.CurrentActivity.Window.DecorView is not a ViewGroup");
-		}
-		platform = new(Platform.CurrentActivity, decorView);
 		cues = [];
 
 		subtitleLayout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
@@ -42,8 +36,16 @@ class SubtitleExtensions : Java.Lang.Object
 
 	public async Task LoadSubtitles(IMediaElement mediaElement)
 	{
+		ArgumentNullException.ThrowIfNull(subtitleView);
 		this.mediaElement = mediaElement;
+		
 		cues.Clear();
+		subtitleView.Text = string.Empty;
+		if (string.IsNullOrEmpty(mediaElement.SubtitleUrl))
+		{
+			return;
+		}
+
 		SubtitleParser parser;
 		var content = await SubtitleParser.Content(mediaElement.SubtitleUrl);
 		if (mediaElement.CustomSubtitleParser is not null)
@@ -52,6 +54,7 @@ class SubtitleExtensions : Java.Lang.Object
 			cues = parser.ParseContent(content);
 			return;
 		}
+
 		switch (mediaElement.SubtitleUrl)
 		{
 			case var url when url.EndsWith("srt"):
@@ -70,6 +73,11 @@ class SubtitleExtensions : Java.Lang.Object
 
 	public void StartSubtitleDisplay()
 	{
+		if(cues.Count == 0 || string.IsNullOrEmpty(mediaElement?.SubtitleUrl))
+		{
+			return;
+		}
+
 		ArgumentNullException.ThrowIfNull(subtitleView);
 		if(styledPlayerView.Parent is not ViewGroup parent)
 		{
@@ -86,6 +94,7 @@ class SubtitleExtensions : Java.Lang.Object
 	{
 		if (timer is null || subtitleView is null)
 		{
+			cues.Clear();
 			return;
 		}
 		if (styledPlayerView.Parent is ViewGroup parent)
@@ -126,7 +135,7 @@ class SubtitleExtensions : Java.Lang.Object
 
 	void InitializeTextBlock()
 	{
-		subtitleView = new(platform.currentActivity.ApplicationContext)
+		subtitleView = new(CurrentPlatformActivity.CurrentActivity.ApplicationContext)
 		{
 			Text = string.Empty,
 			HorizontalScrollBarEnabled = false,
@@ -140,10 +149,41 @@ class SubtitleExtensions : Java.Lang.Object
 		subtitleView.SetPaddingRelative(10, 10, 10, 20);
 	}
 
-	readonly record struct CurrentPlatformActivity(Activity currentActivity, ViewGroup viewGroup)
+	record struct CurrentPlatformActivity()
 	{
-		public Activity CurrentActivity { get; init; } = currentActivity;
-		public ViewGroup ViewGroup { get; init; } = viewGroup;
+		public static Activity CurrentActivity
+		{
+			get
+			{
+				if (Platform.CurrentActivity is null)
+				{
+					throw new InvalidOperationException("CurrentActivity cannot be null when the FullScreen button is tapped");
+				}
+				return Platform.CurrentActivity;
+			}
+		}
+		public static Android.Views.Window CurrentWindow
+		{
+			get
+			{
+				if (Platform.CurrentActivity?.Window is null)
+				{
+					throw new InvalidOperationException("CurrentActivity cannot be null when the FullScreen button is tapped");
+				}
+				return Platform.CurrentActivity.Window;
+			}
+		}
+		public static Android.Views.ViewGroup CurrentViewGroup
+		{
+			get
+			{
+				if (CurrentWindow.DecorView is not ViewGroup viewGroup)
+				{
+					throw new InvalidOperationException("CurrentActivity Window cannot be null when the FullScreen button is tapped");
+				}
+				return viewGroup;
+			}
+		}
 	}
 
 	void OnFullScreenChanged(object? sender, FullScreenEventArgs e)
@@ -156,7 +196,7 @@ class SubtitleExtensions : Java.Lang.Object
 			return;
 		}
 		
-		if (platform.viewGroup.Parent is not ViewGroup parent)
+		if (CurrentPlatformActivity.CurrentViewGroup.Parent is not ViewGroup parent)
 		{
 			return;
 		}
@@ -164,14 +204,14 @@ class SubtitleExtensions : Java.Lang.Object
 		switch (e.isFullScreen)
 		{
 			case true:
-				platform.viewGroup.RemoveView(subtitleView);
+				CurrentPlatformActivity.CurrentViewGroup.RemoveView(subtitleView);
 				InitializeTextBlock();
 				parent.AddView(subtitleView);
 				break;
 			case false:
 				parent.RemoveView(subtitleView);
 				InitializeTextBlock();
-				platform.viewGroup.AddView(subtitleView);
+				CurrentPlatformActivity.CurrentViewGroup.AddView(subtitleView);
 				break;
 		}
 	}
