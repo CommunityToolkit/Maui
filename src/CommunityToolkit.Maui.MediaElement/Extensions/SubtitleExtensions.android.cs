@@ -21,7 +21,6 @@ class SubtitleExtensions : Java.Lang.Object
 
 	public SubtitleExtensions(StyledPlayerView styledPlayerView, IDispatcher dispatcher)
 	{
-		ArgumentNullException.ThrowIfNull(Platform.CurrentActivity);
 		this.dispatcher = dispatcher;
 		this.styledPlayerView = styledPlayerView;
 		cues = [];
