@@ -104,10 +104,19 @@ public class MauiMediaElement : CoordinatorLayout
 		base.Dispose(disposing);
 	}
 
-	readonly record struct CurrentPlatformActivity(Activity currentActivity, Android.Views.Window currentWindow)
+	record struct CurrentPlatformActivity()
 	{
-		public Activity CurrentActivity { get; init; } = currentActivity;
-		public Android.Views.Window CurrentWindow { get; init; } = currentWindow;
+		public static Android.Views.Window CurrentWindow
+		{
+			get
+			{
+				if (Platform.CurrentActivity?.Window is null)
+				{
+					throw new InvalidOperationException("CurrentActivity cannot be null when the FullScreen button is tapped");
+				}
+				return Platform.CurrentActivity.Window;
+			}
+		}
 	}
 
 	void OnFullscreenButtonClick(object? sender, StyledPlayerView.FullscreenButtonClickEventArgs e)
@@ -117,12 +126,7 @@ public class MauiMediaElement : CoordinatorLayout
 		{
 			throw new InvalidOperationException("PlayerView cannot be null when the FullScreen button is tapped");
 		}
-		if (Platform.CurrentActivity?.Window is not Android.Views.Window currentWindow)
-		{
-			throw new InvalidOperationException("CurrentActivity cannot be null when the FullScreen button is tapped");
-		}
-		var currentPlatformActivity = new CurrentPlatformActivity(Platform.CurrentActivity, currentWindow);
-		var layout = currentPlatformActivity.CurrentWindow.DecorView as ViewGroup;
+		var layout = CurrentPlatformActivity.CurrentWindow.DecorView as ViewGroup;
 
 		if (e.IsFullScreen)
 		{
@@ -142,11 +146,8 @@ public class MauiMediaElement : CoordinatorLayout
 
 	void SetSystemBarsVisibility()
 	{
-		if (Platform.CurrentActivity?.Window is not Android.Views.Window currentWindow)
-		{
-			throw new InvalidOperationException("CurrentActivity cannot be null when the FullScreen button is tapped");
-		}
-		var windowInsetsControllerCompat = WindowCompat.GetInsetsController(currentWindow, currentWindow.DecorView);
+		var currentWindow = CurrentPlatformActivity.CurrentWindow;
+		var windowInsetsControllerCompat = WindowCompat.GetInsetsController(CurrentPlatformActivity.CurrentWindow, CurrentPlatformActivity.CurrentWindow.DecorView);
 
 		var barTypes = WindowInsetsCompat.Type.StatusBars()
 			| WindowInsetsCompat.Type.SystemBars()
