@@ -5,7 +5,7 @@ using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Primitives;
 using static Android.Views.ViewGroup;
-using Activity = Android.App.Activity;
+using CurrentPlatformActivity = CommunityToolkit.Maui.Extensions.PageExtensions.CurrentPlatformActivity;
 
 namespace CommunityToolkit.Maui.Extensions;
 
@@ -147,43 +147,6 @@ class SubtitleExtensions : Java.Lang.Object
 		subtitleView.SetBackgroundColor(Android.Graphics.Color.Argb(150, 0, 0, 0));
 		subtitleView.SetTextColor(Android.Graphics.Color.White);
 		subtitleView.SetPaddingRelative(10, 10, 10, 20);
-	}
-
-	record struct CurrentPlatformActivity()
-	{
-		public static Activity CurrentActivity
-		{
-			get
-			{
-				if (Platform.CurrentActivity is null)
-				{
-					throw new InvalidOperationException("CurrentActivity cannot be null when the FullScreen button is tapped");
-				}
-				return Platform.CurrentActivity;
-			}
-		}
-		public static Android.Views.Window CurrentWindow
-		{
-			get
-			{
-				if (Platform.CurrentActivity?.Window is null)
-				{
-					throw new InvalidOperationException("CurrentActivity cannot be null when the FullScreen button is tapped");
-				}
-				return Platform.CurrentActivity.Window;
-			}
-		}
-		public static Android.Views.ViewGroup CurrentViewGroup
-		{
-			get
-			{
-				if (CurrentWindow.DecorView is not ViewGroup viewGroup)
-				{
-					throw new InvalidOperationException("CurrentActivity Window cannot be null when the FullScreen button is tapped");
-				}
-				return viewGroup;
-			}
-		}
 	}
 
 	void OnFullScreenChanged(object? sender, FullScreenEventArgs e)
