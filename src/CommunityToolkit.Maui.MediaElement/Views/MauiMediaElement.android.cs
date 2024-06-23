@@ -9,6 +9,7 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using Com.Google.Android.Exoplayer2.UI;
 using CommunityToolkit.Maui.Views;
+using CurrentPlatformContext =  CommunityToolkit.Maui.Extensions.PageExtensions.CurrentPlatformContext;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -56,6 +57,7 @@ public class MauiMediaElement : CoordinatorLayout
 
 		AddView(relativeLayout);
 	}
+
 	public override void OnDetachedFromWindow()
 	{
 		if (isFullScreen)
@@ -103,31 +105,6 @@ public class MauiMediaElement : CoordinatorLayout
 		base.Dispose(disposing);
 	}
 
-	static (Activity CurrentActivity, Android.Views.Window CurrentWindow, Resources CurrentWindowResources, Configuration CurrentWindowConfiguration) VerifyAndRetrieveCurrentWindowResources()
-	{
-		// Ensure current activity and window are available
-		if (Platform.CurrentActivity is not Activity currentActivity)
-		{
-			throw new InvalidOperationException("CurrentActivity cannot be null when the FullScreen button is tapped");
-		}
-		if (currentActivity.Window is not Android.Views.Window currentWindow)
-		{
-			throw new InvalidOperationException("CurrentActivity Window cannot be null when the FullScreen button is tapped");
-		}
-
-		if (currentActivity.Resources is not Resources currentResources)
-		{
-			throw new InvalidOperationException("CurrentActivity Resources cannot be null when the FullScreen button is tapped");
-		}
-
-		if (currentResources.Configuration is not Configuration configuration)
-		{
-			throw new InvalidOperationException("CurrentActivity Configuration cannot be null when the FullScreen button is tapped");
-		}
-
-		return (currentActivity, currentWindow, currentResources, configuration);
-	}
-
 	void OnFullscreenButtonClick(object? sender, StyledPlayerView.FullscreenButtonClickEventArgs e)
 	{
 		// Ensure there is a player view
@@ -135,9 +112,7 @@ public class MauiMediaElement : CoordinatorLayout
 		{
 			throw new InvalidOperationException("PlayerView cannot be null when the FullScreen button is tapped");
 		}
-
-		var (_, currentWindow, _, _) = VerifyAndRetrieveCurrentWindowResources();
-		var layout = currentWindow?.DecorView as ViewGroup;
+		var layout = CurrentPlatformContext.CurrentWindow.DecorView as ViewGroup;
 
 		if (e.IsFullScreen)
 		{
@@ -157,8 +132,7 @@ public class MauiMediaElement : CoordinatorLayout
 
 	void SetSystemBarsVisibility()
 	{
-		var (_, currentWindow, _, _) = VerifyAndRetrieveCurrentWindowResources();
-
+		var currentWindow = CurrentPlatformContext.CurrentWindow;
 		var windowInsetsControllerCompat = WindowCompat.GetInsetsController(currentWindow, currentWindow.DecorView);
 
 		var barTypes = WindowInsetsCompat.Type.StatusBars()
