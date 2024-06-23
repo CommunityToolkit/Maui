@@ -9,6 +9,7 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using Com.Google.Android.Exoplayer2.UI;
 using CommunityToolkit.Maui.Views;
+using CurrentPlatformActivity =  CommunityToolkit.Maui.Extensions.PageExtensions.CurrentPlatformActivity;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -102,21 +103,6 @@ public class MauiMediaElement : CoordinatorLayout
 		}
 
 		base.Dispose(disposing);
-	}
-
-	record struct CurrentPlatformActivity()
-	{
-		public static Android.Views.Window CurrentWindow
-		{
-			get
-			{
-				if (Platform.CurrentActivity?.Window is null)
-				{
-					throw new InvalidOperationException("CurrentActivity cannot be null when the FullScreen button is tapped");
-				}
-				return Platform.CurrentActivity.Window;
-			}
-		}
 	}
 
 	void OnFullscreenButtonClick(object? sender, StyledPlayerView.FullscreenButtonClickEventArgs e)
