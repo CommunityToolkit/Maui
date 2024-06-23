@@ -12,7 +12,7 @@ partial class PageExtensions
 			{
 				if (Platform.CurrentActivity is null)
 				{
-					throw new InvalidOperationException("CurrentActivity cannot be null when the FullScreen button is tapped");
+					throw new InvalidOperationException("CurrentActivity cannot be null");
 				}
 				return Platform.CurrentActivity;
 			}
@@ -23,7 +23,7 @@ partial class PageExtensions
 			{
 				if (Platform.CurrentActivity?.Window is null)
 				{
-					throw new InvalidOperationException("Window cannot be null when the FullScreen button is tapped");
+					throw new InvalidOperationException("Window cannot be null");
 				}
 				return Platform.CurrentActivity.Window;
 			}
@@ -34,7 +34,7 @@ partial class PageExtensions
 			{
 				if (Platform.CurrentActivity?.Window?.DecorView is not ViewGroup viewGroup)
 				{
-					throw new InvalidOperationException("DecorView cannot be null when the FullScreen button is tapped");
+					throw new InvalidOperationException("DecorView cannot be null");
 				}
 				return viewGroup;
 			}
