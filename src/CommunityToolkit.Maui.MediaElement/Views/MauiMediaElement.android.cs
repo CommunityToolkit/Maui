@@ -147,7 +147,7 @@ public class MauiMediaElement : CoordinatorLayout
 	void SetSystemBarsVisibility()
 	{
 		var currentWindow = CurrentPlatformActivity.CurrentWindow;
-		var windowInsetsControllerCompat = WindowCompat.GetInsetsController(CurrentPlatformActivity.CurrentWindow, CurrentPlatformActivity.CurrentWindow.DecorView);
+		var windowInsetsControllerCompat = WindowCompat.GetInsetsController(currentWindow, currentWindow.DecorView);
 
 		var barTypes = WindowInsetsCompat.Type.StatusBars()
 			| WindowInsetsCompat.Type.SystemBars()
