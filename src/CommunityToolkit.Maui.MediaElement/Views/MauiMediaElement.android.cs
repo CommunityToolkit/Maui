@@ -9,7 +9,7 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using Com.Google.Android.Exoplayer2.UI;
 using CommunityToolkit.Maui.Views;
-using CurrentPlatformActivity =  CommunityToolkit.Maui.Extensions.PageExtensions.CurrentPlatformActivity;
+using CurrentPlatformContext =  CommunityToolkit.Maui.Extensions.PageExtensions.CurrentPlatformContext;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -112,7 +112,7 @@ public class MauiMediaElement : CoordinatorLayout
 		{
 			throw new InvalidOperationException("PlayerView cannot be null when the FullScreen button is tapped");
 		}
-		var layout = CurrentPlatformActivity.CurrentWindow.DecorView as ViewGroup;
+		var layout = CurrentPlatformContext.CurrentWindow.DecorView as ViewGroup;
 
 		if (e.IsFullScreen)
 		{
@@ -132,7 +132,7 @@ public class MauiMediaElement : CoordinatorLayout
 
 	void SetSystemBarsVisibility()
 	{
-		var currentWindow = CurrentPlatformActivity.CurrentWindow;
+		var currentWindow = CurrentPlatformContext.CurrentWindow;
 		var windowInsetsControllerCompat = WindowCompat.GetInsetsController(currentWindow, currentWindow.DecorView);
 
 		var barTypes = WindowInsetsCompat.Type.StatusBars()

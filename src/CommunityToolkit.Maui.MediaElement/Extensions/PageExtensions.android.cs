@@ -4,7 +4,7 @@ using Activity = Android.App.Activity;
 namespace CommunityToolkit.Maui.Extensions;
 partial class PageExtensions
 {
-	public record struct CurrentPlatformActivity()
+	public record struct CurrentPlatformContext()
 	{
 		public static Activity CurrentActivity
 		{
