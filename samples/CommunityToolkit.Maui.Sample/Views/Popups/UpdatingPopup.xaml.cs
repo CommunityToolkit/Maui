@@ -9,12 +9,5 @@ public partial class UpdatingPopup : Popup
 	{
 		InitializeComponent();
 		BindingContext = updatingPopupViewModel;
-
-		updatingPopupViewModel.Finished += OnUpdatingPopupViewModelFinished;
-	}
-
-	void OnUpdatingPopupViewModelFinished(object? sender, EventArgs e)
-	{
-		this.Close();
 	}
 }
