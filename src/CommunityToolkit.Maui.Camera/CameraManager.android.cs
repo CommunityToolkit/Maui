@@ -287,7 +287,7 @@ partial class CameraManager
 				return;
 			}
 
-			var imgData = ArrayPool<byte>.Shared.Rent(buffer.Capacity());
+			var imgData = new byte[buffer.Remaining()];
 			try
 			{
 				buffer.Get(imgData);
@@ -297,7 +297,6 @@ partial class CameraManager
 			finally
 			{
 				image.Close();
-				ArrayPool<byte>.Shared.Return(imgData);
 			}
 
 			static Plane? GetFirstPlane(Plane[]? planes)

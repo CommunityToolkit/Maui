@@ -40,7 +40,7 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 
 		static bool IsConvertingToString(in Type targetType) => targetType == typeof(string);
 		static bool CanBeConvertedToString() => typeof(TTarget).GetMethods().Any(x => x.Name is nameof(ToString) && x.ReturnType == typeof(string));
-		
+
 		static bool IsValidNullableValueType(Type targetType)
 		{
 			if (!IsNullable(targetType))
@@ -60,8 +60,7 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 
 		// Ensure TTo can be assigned to the given Target Type
 		if (!typeof(TTarget).IsAssignableFrom(targetType) // Ensure TTarget can be assigned from targetType. Eg TTarget is IEnumerable and targetType is IList
-			&& !IsValidTargetType<TTarget>(targetType, shouldAllowNullableValueTypes) // Ensure targetType be converted to TTarget? Eg `Convert.ChangeType()` returns a non-null value
-			) 
+			&& !IsValidTargetType<TTarget>(targetType, shouldAllowNullableValueTypes)) // Ensure targetType be converted to TTarget? Eg `Convert.ChangeType()` returns a non-null value
 		{
 			throw new ArgumentException($"targetType needs to be assignable from {typeof(TTarget)}.", nameof(targetType));
 		}

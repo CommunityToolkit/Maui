@@ -17,7 +17,7 @@ public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 	/// <exception cref="ArgumentException">Thrown if <paramref name="serviceProvider"/> does no implement <see cref="IProvideParentValues"/>.</exception>
 	public BindingBase ProvideValue(IServiceProvider serviceProvider)
 	{
-		ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
+		ArgumentNullException.ThrowIfNull(serviceProvider);
 
 		if (Key is null)
 		{
@@ -35,19 +35,20 @@ public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 			var xmlLineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider ? xmlLineInfoProvider.XmlLineInfo : null;
 			throw new XamlParseException($"Resource not found for key {Key}", xmlLineInfo);
 		}
-		else if (resource is AppThemeColor color)
+
+		switch (resource)
 		{
-			return color.GetBinding();
+			case AppThemeColor color:
+				return color.GetBinding();
+			case AppThemeObject themeResource:
+				return themeResource.GetBinding();
+			default:
+				{
+					var xmlLineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider ? xmlLineInfoProvider.XmlLineInfo : null;
+					throw new XamlParseException($"Resource found for key {Key} is not of type {nameof(AppThemeColor)} or {nameof(AppThemeObject)}", xmlLineInfo);
+				}
 		}
-		else if (resource is AppThemeObject themeResource)
-		{
-			return themeResource.GetBinding();
-		}
-		else
-		{
-			var xmlLineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider ? xmlLineInfoProvider.XmlLineInfo : null;
-			throw new XamlParseException($"Resource found for key {Key} is not of type {nameof(AppThemeColor)} or {nameof(AppThemeObject)}", xmlLineInfo);
-		}
+
 	}
 
 	static bool TryGetResource(string key, IEnumerable<object> parentObjects, out object? resource, out ResourceDictionary? resourceDictionary)
@@ -57,8 +58,8 @@ public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 
 		foreach (var parentObject in parentObjects)
 		{
-			ResourceDictionary? resDict = parentObject is IResourcesProvider resoiurceProvider && resoiurceProvider.IsResourcesCreated
-											? resoiurceProvider.Resources
+			var resDict = parentObject is IResourcesProvider { IsResourcesCreated: true } resourcesProvider
+											? resourcesProvider.Resources
 											: parentObject as ResourceDictionary;
 			if (resDict is null)
 			{

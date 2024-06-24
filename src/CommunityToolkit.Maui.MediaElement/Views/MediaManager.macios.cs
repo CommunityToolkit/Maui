@@ -246,7 +246,7 @@ public partial class MediaManager : IDisposable
 		}
 
 		metaData ??= new(Player);
-		metaData.ClearNowPlaying();
+		Metadata.ClearNowPlaying();
 
 		if (MediaElement.Source is UriMediaSource uriMediaSource)
 		{
@@ -406,8 +406,7 @@ public partial class MediaManager : IDisposable
 		{
 			return;
 		}
-
-		Player.PreventsDisplaySleepDuringVideoPlayback = MediaElement.ShouldKeepScreenOn;
+		UIApplication.SharedApplication.IdleTimerDisabled = MediaElement.ShouldKeepScreenOn;
 	}
 
 	protected virtual partial void PlatformUpdateShouldMute()
@@ -440,7 +439,8 @@ public partial class MediaManager : IDisposable
 				{
 					UIApplication.SharedApplication.EndReceivingRemoteControlEvents();
 				});
-
+				// disable the idle timer so screen turns off when media is not playing
+				UIApplication.SharedApplication.IdleTimerDisabled = false;
 				var audioSession = AVAudioSession.SharedInstance();
 				audioSession.SetActive(false);
 
