@@ -3,6 +3,8 @@ using AVKit;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Views;
 using CoreFoundation;
+using CoreGraphics;
+using CoreImage;
 using CoreMedia;
 using Foundation;
 using MediaPlayer;
@@ -267,9 +269,57 @@ public partial class MediaManager : IDisposable
 			: null;
 
 		metaData.SetMetadata(PlayerItem, MediaElement);
+
 		CurrentItemErrorObserver?.Dispose();
 
 		Player.ReplaceCurrentItemWithPlayerItem(PlayerItem);
+
+		if (PlayerViewController?.View is not null && PlayerViewController.ContentOverlayView is not null)
+		{
+			var image = UIImage.LoadFromData(NSData.FromUrl(new NSUrl(MediaElement.MetadataArtworkUrl))) ?? throw new NullReferenceException();
+            var imageView = new UIImageView(image)
+            {
+                ContentMode = UIViewContentMode.ScaleAspectFit,
+                TranslatesAutoresizingMaskIntoConstraints = false,
+                ClipsToBounds = true,
+                AutoresizingMask = UIViewAutoresizing.FlexibleDimensions
+            };
+
+            // Create a blurred version of the artwork
+            UIImage blurredArtworkImage = CreateBlurredImage(image);
+
+            // Create UIImageView for the blurred artwork
+            var blurredImageView = new UIImageView(blurredArtworkImage)
+            {
+                ContentMode = UIViewContentMode.ScaleAspectFill,
+                TranslatesAutoresizingMaskIntoConstraints = false,
+                ClipsToBounds = true,
+                AutoresizingMask = UIViewAutoresizing.FlexibleDimensions,
+            };
+
+            PlayerViewController.ContentOverlayView.AddSubview(blurredImageView);
+            PlayerViewController.ContentOverlayView.AddSubview(imageView);
+
+			NSLayoutConstraint.ActivateConstraints(new NSLayoutConstraint[]
+			{
+				blurredImageView.CenterXAnchor.ConstraintEqualTo(PlayerViewController.ContentOverlayView.CenterXAnchor),
+				blurredImageView.CenterYAnchor.ConstraintEqualTo(PlayerViewController.ContentOverlayView.CenterYAnchor),
+				blurredImageView.WidthAnchor.ConstraintLessThanOrEqualTo(PlayerViewController.ContentOverlayView.WidthAnchor),
+				blurredImageView.HeightAnchor.ConstraintLessThanOrEqualTo(PlayerViewController.ContentOverlayView.HeightAnchor),
+			});
+
+			NSLayoutConstraint.ActivateConstraints(new NSLayoutConstraint[]
+			{
+				imageView.CenterXAnchor.ConstraintEqualTo(PlayerViewController.ContentOverlayView.CenterXAnchor),
+				imageView.CenterYAnchor.ConstraintEqualTo(PlayerViewController.ContentOverlayView.CenterYAnchor),
+				imageView.WidthAnchor.ConstraintLessThanOrEqualTo(PlayerViewController.ContentOverlayView.WidthAnchor),
+				imageView.HeightAnchor.ConstraintLessThanOrEqualTo(PlayerViewController.ContentOverlayView.HeightAnchor),
+
+				// Maintain the aspect ratio
+				imageView.WidthAnchor.ConstraintEqualTo(imageView.HeightAnchor, image.Size.Width / image.Size.Height)
+			});
+
+		}
 
 		CurrentItemErrorObserver = PlayerItem?.AddObserver("error",
 			valueObserverOptions, (NSObservedChange change) =>
@@ -302,6 +352,34 @@ public partial class MediaManager : IDisposable
 			MediaElement.CurrentStateChanged(MediaElementState.None);
 		}
 	}
+
+	private UIImage CreateBlurredImage(UIImage image)
+    {
+		var newSize = new CGSize(image.Size.Width * 50, image.Size.Height * 50);
+		UIGraphics.BeginImageContextWithOptions(newSize, false, image.CurrentScale);
+        image.Draw(new CGRect(0, 0, newSize.Width, newSize.Height));
+        UIImage resizedImage = UIGraphics.GetImageFromCurrentImageContext();
+        UIGraphics.EndImageContext();
+
+		// Create a CIImage from the UIImage
+        CIImage ciImage = new CIImage(resizedImage);
+
+        // Apply a Gaussian blur filter
+        var blurFilter = CIFilter.FromName("CIGaussianBlur") ?? throw new NullReferenceException();
+        blurFilter.SetValueForKey(ciImage, CIFilterInputKey.Image);
+        blurFilter.SetValueForKey(new NSNumber(40.0), CIFilterInputKey.Radius);
+
+        // Get the filtered output image
+        CIImage outputImage = blurFilter.OutputImage ?? throw new NullReferenceException();
+
+        // Create a UIImage from the filtered CIImage
+        var context = CIContext.FromOptions(null) ?? throw new NullReferenceException();
+        CoreGraphics.CGImage cgImage = context.CreateCGImage(outputImage, outputImage.Extent) ?? throw new NullReferenceException();
+        UIImage blurredImage = UIImage.FromImage(cgImage);
+        UIGraphics.EndImageContext();
+
+        return blurredImage;
+    }
 
 	protected virtual partial void PlatformUpdateSpeed()
 	{
