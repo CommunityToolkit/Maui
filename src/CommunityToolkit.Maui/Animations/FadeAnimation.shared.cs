@@ -20,7 +20,7 @@ public class FadeAnimation : BaseAnimation
 	/// <summary>
 	/// Initializes a new instance of <see cref="FadeAnimation"/>.
 	/// </summary>
-	public FadeAnimation() : base(300)
+	public FadeAnimation() : base(600)
 	{
 
 	}
@@ -41,7 +41,9 @@ public class FadeAnimation : BaseAnimation
 
 		var originalOpacity = view.Opacity;
 
-		await view.FadeTo(Opacity, Length, Easing).WaitAsync(token);
-		await view.FadeTo(originalOpacity, Length, Easing).WaitAsync(token);
+		var duration = Length / 2;
+
+		await view.FadeTo(Opacity, duration, Easing).WaitAsync(token);
+		await view.FadeTo(originalOpacity, duration, Easing).WaitAsync(token);
 	}
 }
