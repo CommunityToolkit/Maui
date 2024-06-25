@@ -106,7 +106,7 @@ class SubtitleExtensions : UIViewController
 			if (currentPlaybackTime >= cue.StartTime && currentPlaybackTime <= cue.EndTime)
 			{
 				subtitleLabel.Text = cue.Text;
-				subtitleLabel.Font = UIFont.FromName(name: "Playwrite SK",size: 16) ?? UIFont.SystemFontOfSize(16);
+				subtitleLabel.Font = UIFont.FromName(name: DeviceFontSpecs.OutputDeviceSpecifications(mediaElement.SubtitleFont).iOSFont,size: (float)mediaElement.SubtitleFontSize) ?? UIFont.SystemFontOfSize(16);
 				subtitleLabel.BackgroundColor = subtitleBackgroundColor;
 				break;
 			}

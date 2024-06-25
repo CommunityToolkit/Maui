@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Views;
+using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui;
 
@@ -15,13 +16,18 @@ public static class AppBuilderExtensions
 	/// <returns><see cref="MauiAppBuilder"/> initialized for <see cref="MediaElement"/>.</returns>
 	public static MauiAppBuilder UseMauiCommunityToolkitMediaElement(this MauiAppBuilder builder)
 	{
+		var importedFonts = FontHelper.GetExportedFonts();
+		
 		builder.ConfigureMauiHandlers(h =>
 		{
 			h.AddHandler<MediaElement, MediaElementHandler>();
 		})
 		.ConfigureFonts(fonts =>
 		{
-			fonts.AddFont("PlaywriteSK-Regular.ttf", "PlaywriteSK");
+			foreach (var (FontFileName, Alias) in importedFonts)
+			{
+				fonts.AddFont(FontFileName, Alias);
+			}
 		});
 
 #if ANDROID
