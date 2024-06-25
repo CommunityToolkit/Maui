@@ -218,7 +218,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 #elif ANDROID
 				MediaElement.SubtitleFont = "PlaywriteSK-Regular.ttf";
 #elif WINDOWS
-				MediaElement.SubtitleFont = "Playwrite SK";
+				MediaElement.SubtitleFont = "ms-appx:///PlaywriteSK-Regular.ttf#Playwrite SK";
 #endif
 				MediaElement.SubtitleFontSize = 16;
 				MediaElement.SubtitleUrl = "https://raw.githubusercontent.com/ne0rrmatrix/SampleVideo/main/SRT/WindowsVideo.srt";
