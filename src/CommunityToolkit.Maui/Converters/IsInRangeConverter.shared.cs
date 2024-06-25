@@ -1,71 +1,37 @@
-﻿using System.Globalization;
+﻿// Ignore Spelling: Bindable
+using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>Converts the incoming value to a <see cref="bool"/> indicating whether or not the value is within a range.</summary>
-public sealed class IsInRangeConverter : IsInRangeConverter<object>
-{
-}
+public sealed class IsInRangeConverter : IsInRangeConverter<IComparable, object>;
 
 /// <summary>Converts the incoming value to a <see cref="bool"/> indicating whether or not the value is within a range.</summary>
-public abstract class IsInRangeConverter<TObject> : BaseConverterOneWay<IComparable, object>
+public abstract class IsInRangeConverter<TValue, TReturnObject> : BaseConverterOneWay<TValue, object> where TValue : IComparable
 {
-	/// <summary>
-	/// Bindable property for <see cref="MinValue"/>
-	/// </summary>
-	public static readonly BindableProperty MinValueProperty = BindableProperty.Create(nameof(MinValue), typeof(IComparable), typeof(IsInRangeConverter<TObject>));
-
-	/// <summary>
-	/// Bindable property for <see cref="MaxValue"/>
-	/// </summary>
-	public static readonly BindableProperty MaxValueProperty = BindableProperty.Create(nameof(MaxValue), typeof(IComparable), typeof(IsInRangeConverter<TObject>));
-
-	/// <summary>
-	/// Bindable property for <see cref="TrueObject"/>
-	/// </summary>
-	public static readonly BindableProperty TrueObjectProperty = BindableProperty.Create(nameof(TrueObject), typeof(TObject?), typeof(IsInRangeConverter<TObject>));
-
-	/// <summary>
-	/// Bindable property for <see cref="FalseObject"/>
-	/// </summary>
-	public static readonly BindableProperty FalseObjectProperty = BindableProperty.Create(nameof(FalseObject), typeof(TObject?), typeof(IsInRangeConverter<TObject>));
-
 	/// <inheritdoc/>
 	public override object DefaultConvertReturnValue { get; set; } = new();
 
+	/// <summary>The comparing value.</summary>
+	public TValue? ComparingValue { get; set; }
+
 	/// <summary>Minimum value.</summary>
-	public IComparable? MinValue
-	{
-		get => (IComparable?)GetValue(MinValueProperty);
-		set => SetValue(MinValueProperty, value);
-	}
+	public TValue? MinValue { get; set; }
 
 	/// <summary>Maximum value.</summary>
-	public IComparable? MaxValue
-	{
-		get => (IComparable?)GetValue(MaxValueProperty);
-		set => SetValue(MaxValueProperty, value);
-	}
+	public TValue? MaxValue { get; set; }
 
 	/// <summary>The object that corresponds to True value.</summary>
-	public TObject? TrueObject
-	{
-		get => (TObject?)GetValue(TrueObjectProperty);
-		set => SetValue(TrueObjectProperty, value);
-	}
+	public TReturnObject? TrueObject { get; set; }
 
 	/// <summary>The object that corresponds to False value.</summary>
-	public TObject? FalseObject
-	{
-		get => (TObject?)GetValue(FalseObjectProperty);
-		set => SetValue(FalseObjectProperty, value);
-	}
+	public TReturnObject? FalseObject { get; set; }
 
 	/// <summary>Converts an object that implemented IComparable to a <see cref="bool"/> based on the object being within a <see cref="MinValue"/> and <see cref="MaxValue"/> range.</summary>
 	/// <param name="value">The value to convert.</param>
 	/// <param name="culture">(Not Used)</param>
 	/// <returns>The object assigned to <see cref="TrueObject"/> if value is between <see cref="MinValue"/> and <see cref="MaxValue"/> then <see cref="TrueObject"/> returns true, otherwise the value assigned to <see cref="FalseObject"/>.</returns>
-	public override object ConvertFrom(IComparable value, CultureInfo? culture = null)
+	public override object ConvertFrom(TValue value, CultureInfo? culture)
 	{
 		ArgumentNullException.ThrowIfNull(value);
 
