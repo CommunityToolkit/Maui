@@ -76,15 +76,6 @@ class SubtitleExtensions : UIViewController
 	public void StartSubtitleDisplay()
 	{
 		ArgumentNullException.ThrowIfNull(subtitleLabel);
-		var font = UIFont.FromName(name: "Playwrite SK", size: (float)16);
-		if(font is not null)
-		{
-			System.Diagnostics.Trace.TraceError("Font found.");
-		} 
-		else
-		{
-			System.Diagnostics.Trace.TraceError("Font not found.");
-		}
 		DispatchQueue.MainQueue.DispatchAsync(() => playerViewController.View?.AddSubview(subtitleLabel));
 		playerObserver = player?.AddPeriodicTimeObserver(CMTime.FromSeconds(1, 1), null, (time) =>
 		{
