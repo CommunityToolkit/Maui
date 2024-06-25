@@ -213,7 +213,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			case loadSubTitles:
 				SrtParser srtParser = new();
 				MediaElement.CustomSubtitleParser = srtParser;
-#if IOS
+#if IOS || MACCATALYST
 				MediaElement.SubtitleFont = "Playwrite SK";
 #elif ANDROID
 				MediaElement.SubtitleFont = "PlaywriteSK-Regular.ttf";
