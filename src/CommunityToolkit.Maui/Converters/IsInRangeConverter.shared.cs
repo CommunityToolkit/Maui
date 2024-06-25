@@ -12,25 +12,22 @@ public abstract class IsInRangeConverter<TValue, TReturnObject> : BaseConverterO
 	/// <inheritdoc/>
 	public override object DefaultConvertReturnValue { get; set; } = new();
 
-	/// <summary>The comparing value.</summary>
-	public TValue? ComparingValue { get; set; }
-
-	/// <summary>Minimum value.</summary>
-	public TValue? MinValue { get; set; }
+	/// <summary>The object that corresponds to False value.</summary>
+	public TReturnObject? FalseObject { get; set; }
 
 	/// <summary>Maximum value.</summary>
 	public TValue? MaxValue { get; set; }
 
+	/// <summary>Minimum value.</summary>
+	public TValue? MinValue { get; set; }
+
 	/// <summary>The object that corresponds to True value.</summary>
 	public TReturnObject? TrueObject { get; set; }
-
-	/// <summary>The object that corresponds to False value.</summary>
-	public TReturnObject? FalseObject { get; set; }
 
 	/// <summary>Converts an object that implemented IComparable to a <see cref="bool"/> based on the object being within a <see cref="MinValue"/> and <see cref="MaxValue"/> range.</summary>
 	/// <param name="value">The value to convert.</param>
 	/// <param name="culture">(Not Used)</param>
-	/// <returns>The object assigned to <see cref="TrueObject"/> if value is between <see cref="MinValue"/> and <see cref="MaxValue"/> then <see cref="TrueObject"/> returns true, otherwise the value assigned to <see cref="FalseObject"/>.</returns>
+	/// <returns>The object assigned to <see cref="TrueObject"/> if value is between <see cref="MinValue"/> and <see cref="MaxValue"/> returns true, otherwise the value assigned to <see cref="FalseObject"/>.</returns>
 	public override object ConvertFrom(TValue value, CultureInfo? culture)
 	{
 		ArgumentNullException.ThrowIfNull(value);
@@ -45,37 +42,57 @@ public abstract class IsInRangeConverter<TValue, TReturnObject> : BaseConverterO
 			throw new InvalidOperationException($"{nameof(TrueObject)} and {nameof(FalseObject)} should either be both defined or both omitted.");
 		}
 
-		var valueType = value.GetType();
-		if (MinValue is not null && MinValue.GetType() != valueType)
+		Type valueType = value.GetType();
+		if (MinValue is not null && !CanChangeType(MinValue, valueType))
 		{
-			throw new ArgumentException($"{nameof(value)} is expected to be of type {nameof(MinValue)}, but is {valueType}", nameof(value));
+			throw new InvalidOperationException($"{nameof(MinValue)} is expected to be of a matching type to {nameof(value)}, but is {MinValue.GetType()}");
 		}
 
-		if (MaxValue is not null && MaxValue.GetType() != valueType)
+		if (MaxValue is not null && !CanChangeType(MaxValue, valueType))
 		{
-			throw new ArgumentException($"{nameof(value)} is expected to be of type {nameof(MaxValue)}, but is {valueType}", nameof(value));
+			throw new InvalidOperationException($"{nameof(MaxValue)} is expected to be of a matching type to {nameof(value)}, but is {MaxValue.GetType()}");
 		}
 
-		var shouldReturnObjectResult = TrueObject is not null && FalseObject is not null;
-
+		bool shouldReturnObjectResult = TrueObject is not null && FalseObject is not null;
 		if (MaxValue is null)
 		{
 			return EvaluateCondition(value.CompareTo(MinValue) >= 0, shouldReturnObjectResult);
 		}
 
-		if (MinValue is null)
-		{
-			return EvaluateCondition(value.CompareTo(MaxValue) <= 0, shouldReturnObjectResult);
-		}
-
-		return EvaluateCondition(value.CompareTo(MinValue) >= 0 && value.CompareTo(MaxValue) <= 0, shouldReturnObjectResult);
+		return MinValue is null
+			? EvaluateCondition(value.CompareTo(MaxValue) <= 0, shouldReturnObjectResult)
+			: EvaluateCondition(value.CompareTo(MinValue) >= 0 && value.CompareTo(MaxValue) <= 0, shouldReturnObjectResult);
 	}
 
-	object EvaluateCondition(bool comparisonResult, bool shouldReturnObject) => (comparisonResult, shouldReturnObject) switch
+	/// <summary>Can the object type be changed to the target type.</summary>
+	/// <param name="value">Source object</param>
+	/// <param name="targetType">Target type.</param>
+	/// <returns>true if the object type can be converted to the target type; otherwise false.</returns>
+	static bool CanChangeType(object value, Type targetType)
 	{
-		(true, true) => TrueObject ?? throw new InvalidOperationException($"{nameof(TrueObject)} cannot be null"),
-		(false, true) => FalseObject ?? throw new InvalidOperationException($"{nameof(FalseObject)} cannot be null"),
-		(true, false) => true,
-		(false, false) => false
-	};
+		try
+		{
+			_ = Convert.ChangeType(value, targetType);
+			return true; // Conversion succeeded
+		}
+		catch (Exception)
+		{
+			return false; // Conversion failed
+		}
+	}
+
+	/// <summary>Evaluates a condition based on the given comparison result and returns an object.</summary>
+	/// <param name="comparisonResult">The result of the comparison.</param>
+	/// <param name="shouldReturnObject">Indicates whether an object should be returned.</param>
+	/// <returns>The result of the evaluation.</returns>
+	object EvaluateCondition(bool comparisonResult, bool shouldReturnObject)
+	{
+		return (comparisonResult, shouldReturnObject) switch
+		{
+			(true, true) => TrueObject ?? throw new InvalidOperationException($"{nameof(TrueObject)} cannot be null"),
+			(false, true) => FalseObject ?? throw new InvalidOperationException($"{nameof(FalseObject)} cannot be null"),
+			(true, false) => true,
+			(false, false) => false
+		};
+	}
 }

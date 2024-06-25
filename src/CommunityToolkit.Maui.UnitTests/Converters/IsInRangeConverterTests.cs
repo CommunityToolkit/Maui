@@ -193,7 +193,7 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 			TrueObject = trueObject,
 		};
 
-		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)isInRangeConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
+		Assert.Throws<InvalidOperationException>(() => ((ICommunityToolkitValueConverter)isInRangeConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
 	}
 
 	[Theory]
