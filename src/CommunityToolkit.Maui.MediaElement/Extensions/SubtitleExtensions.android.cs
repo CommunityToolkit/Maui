@@ -120,7 +120,7 @@ class SubtitleExtensions : Java.Lang.Object
 		{
 			if (cue is not null)
 			{
-				Typeface? typeface = Typeface.CreateFromAsset(Platform.AppContext.ApplicationContext?.Assets, DeviceFontSpecs.OutputDeviceSpecifications(mediaElement.SubtitleFont).androidFont) ?? Typeface.Default;
+				Typeface? typeface = Typeface.CreateFromAsset(Platform.AppContext.ApplicationContext?.Assets, new Core.FontExtensions.FontFamily(mediaElement.SubtitleFont).Android) ?? Typeface.Default;
 				subtitleView.SetTypeface(typeface, TypefaceStyle.Normal);
 				subtitleView.Text = cue.Text;
 				subtitleView.TextSize = (float)mediaElement.SubtitleFontSize;

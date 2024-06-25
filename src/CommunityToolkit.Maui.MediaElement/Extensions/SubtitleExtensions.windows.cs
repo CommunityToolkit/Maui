@@ -102,7 +102,7 @@ class SubtitleExtensions : Grid, IDisposable
 			if (cue is not null)
 			{
 				subtitleTextBlock.Text = cue.Text;
-				subtitleTextBlock.FontFamily = new FontFamily(DeviceFontSpecs.OutputDeviceSpecifications(mediaElement.SubtitleFont).windowsFont);
+				subtitleTextBlock.FontFamily = new FontFamily(new Core.FontExtensions.FontFamily(mediaElement.SubtitleFont).WindowsFont);
 				subtitleTextBlock.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
 			}
 			else

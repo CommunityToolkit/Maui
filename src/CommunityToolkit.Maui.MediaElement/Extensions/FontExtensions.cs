@@ -3,34 +3,61 @@ using System.Text.RegularExpressions;
 
 namespace CommunityToolkit.Maui.Core;
 
-static class DeviceFontSpecs
+static class FontExtensions
 {
-	/// <summary>
-	/// Extracts and returns the font file and font name for Android, Windows, and iOS from the given input string.
-	/// </summary>
-	/// <param name="input">The input string in the format "fontfile.ttf#fontname".</param>
-	/// <returns>A tuple containing the font specifications for Android, Windows, and iOS.</returns>
-	public static (string androidFont, string windowsFont, string iOSFont) OutputDeviceSpecifications(string input)
+	public record struct FontFamily(string input)
 	{
-		string pattern = @"(.+\.ttf)#(.+)";
+		static readonly string pattern = @"(.+\.ttf)#(.+)";
 
-		var match = Regex.Match(input, pattern);
-
-		if (match.Success)
+		readonly Match match = Regex.Match(input, pattern);
+		public readonly string Android
 		{
-			// Extract the font file and font name
-			var fontFile = match.Groups[1].Value;
-			var fontName = match.Groups[2].Value;
-			string windowsFont = $"ms-appx:///{fontFile}#{fontName}";
-			return (fontFile, windowsFont, fontName);
+				get 
+				{
+					if (match.Success)
+					{
+						return match.Groups[1].Value;
+					}
+					else
+					{
+						System.Diagnostics.Trace.TraceError("The input string is not in the expected format.");
+						return string.Empty;
+					}
+				}
 		}
-		else
+		public readonly string WindowsFont
 		{
-			System.Diagnostics.Trace.TraceError("The input string is not in the expected format.");
+				get 
+				{
+					if (match.Success)
+					{
+						return $"ms-appx:///{match.Groups[1].Value}#{match.Groups[2].Value}";
+					}
+					else
+					{
+						System.Diagnostics.Trace.TraceError("The input string is not in the expected format.");
+						return string.Empty;
+					}
+				}
 		}
-		return (string.Empty, string.Empty, string.Empty);
+		public readonly string MacIOS
+		{
+				get 
+				{
+					if (match.Success)
+					{
+						return match.Groups[2].Value;
+					}
+					else
+					{
+						System.Diagnostics.Trace.TraceError("The input string is not in the expected format.");
+						return string.Empty;
+					}
+				}
+		}
 	}
 }
+
 
 static class FontHelper
 {
