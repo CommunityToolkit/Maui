@@ -76,6 +76,15 @@ class SubtitleExtensions : UIViewController
 	public void StartSubtitleDisplay()
 	{
 		ArgumentNullException.ThrowIfNull(subtitleLabel);
+		var font = UIFont.FromName(name: "Playwrite SK", size: (float)16);
+		if(font is not null)
+		{
+			System.Diagnostics.Trace.TraceError("Font found.");
+		} 
+		else
+		{
+			System.Diagnostics.Trace.TraceError("Font not found.");
+		}
 		DispatchQueue.MainQueue.DispatchAsync(() => playerViewController.View?.AddSubview(subtitleLabel));
 		playerObserver = player?.AddPeriodicTimeObserver(CMTime.FromSeconds(1, 1), null, (time) =>
 		{
@@ -100,11 +109,13 @@ class SubtitleExtensions : UIViewController
 	void UpdateSubtitle(TimeSpan currentPlaybackTime)
 	{
 		ArgumentNullException.ThrowIfNull(subtitleLabel);
+		ArgumentNullException.ThrowIfNull(mediaElement);
 		foreach (var cue in cues)
 		{
 			if (currentPlaybackTime >= cue.StartTime && currentPlaybackTime <= cue.EndTime)
 			{
 				subtitleLabel.Text = cue.Text;
+				subtitleLabel.Font = UIFont.FromName(name: "Playwrite SK",size: 16) ?? UIFont.SystemFontOfSize(16);
 				subtitleLabel.BackgroundColor = subtitleBackgroundColor;
 				break;
 			}

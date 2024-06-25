@@ -1,4 +1,5 @@
-﻿using Android.Views;
+﻿using Android.Graphics;
+using Android.Views;
 using Android.Widget;
 using Com.Google.Android.Exoplayer2.UI;
 using CommunityToolkit.Maui.Core;
@@ -113,13 +114,14 @@ class SubtitleExtensions : Java.Lang.Object
 		{
 			return;
 		}
-
+		
 		var cue = cues.Find(c => c.StartTime <= mediaElement.Position && c.EndTime >= mediaElement.Position);
 		dispatcher.Dispatch(() =>
 		{
 			if (cue is not null)
 			{
-				subtitleView.FontFeatureSettings = !string.IsNullOrEmpty(mediaElement.SubtitleFont) ? mediaElement.SubtitleFont : default;
+				Typeface? typeface = Typeface.CreateFromAsset(Platform.AppContext.ApplicationContext?.Assets, mediaElement.SubtitleFont);
+				subtitleView.SetTypeface(typeface, TypefaceStyle.Normal);
 				subtitleView.Text = cue.Text;
 				subtitleView.TextSize = (float)mediaElement.SubtitleFontSize;
 				subtitleView.Visibility = ViewStates.Visible;

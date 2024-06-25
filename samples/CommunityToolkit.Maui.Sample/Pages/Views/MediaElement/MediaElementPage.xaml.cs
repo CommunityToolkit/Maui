@@ -213,7 +213,13 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			case loadSubTitles:
 				SrtParser srtParser = new();
 				MediaElement.CustomSubtitleParser = srtParser;
-				MediaElement.SubtitleFont = FontFamilies.PlaywriteSK;
+#if IOS
+				MediaElement.SubtitleFont = "Playwrite SK";
+#elif ANDROID
+				MediaElement.SubtitleFont = "PlaywriteSK-Regular.ttf";
+#elif WINDOWS
+				MediaElement.SubtitleFont = "Playwrite SK";
+#endif
 				MediaElement.SubtitleFontSize = 16;
 				MediaElement.SubtitleUrl = "https://raw.githubusercontent.com/ne0rrmatrix/SampleVideo/main/SRT/WindowsVideo.srt";
 				MediaElement.Source = MediaSource.FromResource("WindowsVideo.mp4");

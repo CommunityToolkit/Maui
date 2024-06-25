@@ -40,5 +40,9 @@
 	<array>
 		<string>audio</string>
 	</array>
+    <key>UIAppFonts</key>
+    <array>
+        <string>Resources/Fonts/PlaywriteSK-Regular.ttf</string>
+    </array>
 </dict>
 </plist>

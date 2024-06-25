@@ -40,6 +40,8 @@ class SubtitleExtensions : Grid, IDisposable
 		cues.Clear();
 		subtitleTextBlock.Text = string.Empty;
 		subtitleTextBlock.FontSize = mediaElement.SubtitleFontSize;
+		subtitleTextBlock.FontFamily = new FontFamily(mediaElement.SubtitleFont);
+		subtitleTextBlock.FontStyle = Windows.UI.Text.FontStyle.Normal;
 		SubtitleParser parser;
 		
 		var content = await SubtitleParser.Content(mediaElement.SubtitleUrl);
@@ -121,8 +123,6 @@ class SubtitleExtensions : Grid, IDisposable
 		switch (isFullScreen)
 		{
 			case true:
-				subtitleTextBlock.FontSize = mediaElement.SubtitleFontSize;
-				subtitleTextBlock.FontFamily = new FontFamily(mediaElement.SubtitleFont);
 				subtitleTextBlock.Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 20);
 				Dispatcher.Dispatch(() => { gridItem.Children.Remove(subtitleTextBlock); mauiMediaElement.Children.Add(subtitleTextBlock); });
 				isFullScreen = false;

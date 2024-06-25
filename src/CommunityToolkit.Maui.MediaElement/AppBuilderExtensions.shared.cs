@@ -18,6 +18,10 @@ public static class AppBuilderExtensions
 		builder.ConfigureMauiHandlers(h =>
 		{
 			h.AddHandler<MediaElement, MediaElementHandler>();
+		})
+		.ConfigureFonts(fonts =>
+		{
+			fonts.AddFont("PlaywriteSK-Regular.ttf", "PlaywriteSK");
 		});
 
 #if ANDROID

@@ -41,6 +41,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Media;
 #endif
 
+[assembly: ExportFont("PlaywriteSK-Regular.ttf", Alias = "PlaywriteSK")]
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
 namespace CommunityToolkit.Maui.Sample;
@@ -72,7 +73,7 @@ public static class MauiProgram
 								.ConfigureFonts(fonts =>
 								{
 									fonts.AddFont("Font Awesome 6 Brands-Regular-400.otf", FontFamilies.FontAwesomeBrands);
-									fonts.AddFont("PlaywriteSK-Regular.ttf", FontFamilies.PlaywriteSK);
+									fonts.AddFont("PlaywriteSK-Regular.ttf", "PlaywriteSK");
 								});
 
 
