@@ -7,16 +7,21 @@ static class FontExtensions
 {
 	public record struct FontFamily(string input)
 	{
-		static readonly string pattern = @"(.+\.ttf)#(.+)";
-
-		readonly Match match = Regex.Match(input, pattern);
+		static readonly string ttfPattern = @"(.+\.ttf)#(.+)";
+		static readonly string otfPattern = @"(.+\.otf)#(.+)";
+		readonly Match ttfMatch = Regex.Match(input, ttfPattern);
+		readonly Match otfMatch = Regex.Match(input, otfPattern);
 		public readonly string Android
 		{
 				get 
 				{
-					if (match.Success)
+					if (ttfMatch.Success)
 					{
-						return match.Groups[1].Value;
+						return ttfMatch.Groups[1].Value;
+					}
+					if (otfMatch.Success)
+					{
+						return otfMatch.Groups[1].Value;
 					}
 					else
 					{
@@ -29,24 +34,31 @@ static class FontExtensions
 		{
 				get 
 				{
-					if (match.Success)
+					if (ttfMatch.Success)
 					{
-						return $"ms-appx:///{match.Groups[1].Value}#{match.Groups[2].Value}";
+						return $"ms-appx:///{ttfMatch.Groups[1].Value}#{ttfMatch.Groups[2].Value}";
+					}
+					if (otfMatch.Success)
+					{
+						return $"ms-appx:///{otfMatch.Groups[1].Value}#{otfMatch.Groups[2].Value}";
 					}
 					else
 					{
 						System.Diagnostics.Trace.TraceError("The input string is not in the expected format.");
 						return string.Empty;
-					}
-				}
+					}				}
 		}
 		public readonly string MacIOS
 		{
 				get 
 				{
-					if (match.Success)
+					if (ttfMatch.Success)
 					{
-						return match.Groups[2].Value;
+						return ttfMatch.Groups[2].Value;
+					}
+					if (otfMatch.Success)
+					{
+						return otfMatch.Groups[2].Value;
 					}
 					else
 					{

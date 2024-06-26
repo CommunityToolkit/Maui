@@ -41,6 +41,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Media;
 #endif
 
+[assembly: ExportFont("Poppins-Regular.ttf", Alias = "Poppins")]
 [assembly: ExportFont("PlaywriteSK-Regular.ttf", Alias = "PlaywriteSK")]
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
