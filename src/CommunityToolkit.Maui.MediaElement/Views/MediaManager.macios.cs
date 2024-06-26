@@ -270,7 +270,7 @@ public partial class MediaManager : IDisposable
 		CurrentItemErrorObserver?.Dispose();
 
 		Player.ReplaceCurrentItemWithPlayerItem(PlayerItem);
-
+		PlayerViewController?.ContentOverlayView?.Subviews?.FirstOrDefault()?.RemoveFromSuperview();
 		CurrentItemErrorObserver = PlayerItem?.AddObserver("error",
 			valueObserverOptions, (NSObservedChange change) =>
 			{
@@ -296,10 +296,50 @@ public partial class MediaManager : IDisposable
 			{
 				Player.Play();
 			}
+			SetPoster();
 		}
 		else if (PlayerItem is null)
 		{
 			MediaElement.CurrentStateChanged(MediaElementState.None);
+		}
+	}
+
+	void SetPoster()
+	{
+		
+		if (PlayerItem is null || metaData is null)
+		{
+			return;
+		}
+		var tracks = PlayerItem.Asset.Tracks;
+		if (tracks.ToList().Exists(track => track.MediaType.Contains("vide")))
+		{
+			// IF video track exists, do not set poster
+			return;
+		}
+
+		if (PlayerViewController?.View is not null && PlayerViewController.ContentOverlayView is not null && !string.IsNullOrEmpty(MediaElement.MetadataArtworkUrl))
+		{
+			var image = UIImage.LoadFromData(NSData.FromUrl(new NSUrl(MediaElement.MetadataArtworkUrl))) ?? new UIImage();
+			var imageView = new UIImageView(image)
+			{
+				ContentMode = UIViewContentMode.ScaleAspectFit,
+				TranslatesAutoresizingMaskIntoConstraints = false,
+				ClipsToBounds = true,
+				AutoresizingMask = UIViewAutoresizing.FlexibleDimensions
+			};
+
+			PlayerViewController.ContentOverlayView.AddSubview(imageView);
+			NSLayoutConstraint.ActivateConstraints(
+			[
+				imageView.CenterXAnchor.ConstraintEqualTo(PlayerViewController.ContentOverlayView.CenterXAnchor),
+				imageView.CenterYAnchor.ConstraintEqualTo(PlayerViewController.ContentOverlayView.CenterYAnchor),
+				imageView.WidthAnchor.ConstraintLessThanOrEqualTo(PlayerViewController.ContentOverlayView.WidthAnchor),
+				imageView.HeightAnchor.ConstraintLessThanOrEqualTo(PlayerViewController.ContentOverlayView.HeightAnchor),
+
+				// Maintain the aspect ratio
+				imageView.WidthAnchor.ConstraintEqualTo(imageView.HeightAnchor, image.Size.Width / image.Size.Height)
+			]);
 		}
 	}
 
