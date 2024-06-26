@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace CommunityToolkit.Maui.Core;
@@ -15,9 +16,10 @@ partial class VttParser : IParser
 			return cues;
 		}
 
-		var lines = content.Split(SubtitleParser.Separator, StringSplitOptions.None);
+		var lines = content.Split(SubtitleParser.Separator, StringSplitOptions.RemoveEmptyEntries);
+
 		SubtitleCue? currentCue = null;
-		var textBuffer = new List<string>();
+		var textBuffer = new StringBuilder();
 
 		foreach (var line in lines)
 		{
@@ -26,21 +28,16 @@ partial class VttParser : IParser
 			{
 				if (currentCue is not null)
 				{
-					currentCue.Text = string.Join(" ", textBuffer);
+					currentCue.Text = textBuffer.ToString().Trim();
 					cues.Add(currentCue);
 					textBuffer.Clear();
 				}
 
-				currentCue = new SubtitleCue
-				{
-					StartTime = ParseTimecode(match.Groups[1].Value),
-					EndTime = ParseTimecode(match.Groups[2].Value),
-					Text = string.Empty
-				};
+				currentCue = CreateCue(match);
 			}
 			else if (currentCue is not null && !string.IsNullOrWhiteSpace(line))
 			{
-				textBuffer.Add(line.Trim('-').Trim());
+				textBuffer.AppendLine(line.Trim('-').Trim());
 			}
 		}
 
@@ -53,11 +50,25 @@ partial class VttParser : IParser
 		return cues;
 	}
 
-	static TimeSpan ParseTimecode(string timecode)
+	static SubtitleCue CreateCue(Match match)
 	{
-		return TimeSpan.Parse(timecode, CultureInfo.InvariantCulture);
+		return new SubtitleCue
+		{
+			StartTime = ParseTimecode(match.Groups[1].Value),
+			EndTime = ParseTimecode(match.Groups[2].Value),
+			Text = string.Empty
+		};
 	}
 
-	[GeneratedRegex(@"(\d{2}:\d{2}:\d{2}\.\d{3}) --> (\d{2}:\d{2}:\d{2}\.\d{3})")]
+	static TimeSpan ParseTimecode(string timecode)
+	{
+		if (TimeSpan.TryParse(timecode, CultureInfo.InvariantCulture, out var result))
+		{
+			return result;
+		}
+		throw new FormatException($"Invalid timecode format: {timecode}");
+	}
+
+	[GeneratedRegex(@"(\d{2}:\d{2}:\d{2}\.\d{3}) --> (\d{2}:\d{2}:\d{2}\.\d{3})", RegexOptions.Compiled)]
 	private static partial Regex VTTRegex();
 }
