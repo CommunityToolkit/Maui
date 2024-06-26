@@ -224,6 +224,7 @@ public partial class MediaManager : IDisposable
 
 		metaData ??= new(Player);
 		Metadata.ClearNowPlaying();
+		PlayerViewController?.ContentOverlayView?.Subviews?.FirstOrDefault()?.RemoveFromSuperview();
 
 		if (MediaElement.Source is UriMediaSource uriMediaSource)
 		{
@@ -270,7 +271,7 @@ public partial class MediaManager : IDisposable
 		CurrentItemErrorObserver?.Dispose();
 
 		Player.ReplaceCurrentItemWithPlayerItem(PlayerItem);
-		PlayerViewController?.ContentOverlayView?.Subviews?.FirstOrDefault()?.RemoveFromSuperview();
+
 		CurrentItemErrorObserver = PlayerItem?.AddObserver("error",
 			valueObserverOptions, (NSObservedChange change) =>
 			{
@@ -303,7 +304,6 @@ public partial class MediaManager : IDisposable
 			MediaElement.CurrentStateChanged(MediaElementState.None);
 		}
 	}
-
 	void SetPoster()
 	{
 		
@@ -311,13 +311,17 @@ public partial class MediaManager : IDisposable
 		{
 			return;
 		}
-		var tracks = PlayerItem.Asset.Tracks;
-		if (tracks.ToList().Exists(track => track.MediaType.Contains("vide")))
+		var videoTrack = PlayerItem.Asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant()).FirstOrDefault();
+		if(videoTrack is not null)
 		{
-			// IF video track exists, do not set poster
 			return;
 		}
-
+		if(PlayerItem.Asset.Tracks.Length == 0)
+		{
+			// No video track found and no tracks found. This is likely an audio file. So we can't set a poster.
+			return;
+		}
+		
 		if (PlayerViewController?.View is not null && PlayerViewController.ContentOverlayView is not null && !string.IsNullOrEmpty(MediaElement.MetadataArtworkUrl))
 		{
 			var image = UIImage.LoadFromData(NSData.FromUrl(new NSUrl(MediaElement.MetadataArtworkUrl))) ?? new UIImage();
