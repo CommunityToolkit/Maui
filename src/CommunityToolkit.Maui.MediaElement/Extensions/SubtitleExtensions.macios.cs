@@ -33,9 +33,10 @@ class SubtitleExtensions : UIViewController
 			Frame = CalculateSubtitleFrame(playerViewController),
 			TextColor = UIColor.White,
 			TextAlignment = UITextAlignment.Center,
-			Font = UIFont.SystemFontOfSize(16),
+			Font = UIFont.SystemFontOfSize(12),
 			Text = "",
 			Lines = 0,
+			LineBreakMode = UILineBreakMode.WordWrap,
 			AutoresizingMask = UIViewAutoresizing.FlexibleWidth
 					  | UIViewAutoresizing.FlexibleTopMargin
 					  | UIViewAutoresizing.FlexibleHeight
@@ -88,19 +89,19 @@ class SubtitleExtensions : UIViewController
 	public void StopSubtitleDisplay()
 	{
 		subtitleLabel.Text = string.Empty;
+		cues.Clear();
 		subtitleLabel.BackgroundColor = clearBackgroundColor;
 		DispatchQueue.MainQueue.DispatchAsync(() => subtitleLabel.RemoveFromSuperview());
-
-		if (playerObserver is null)
-		{
-			return;
-		}
-		player.RemoveTimeObserver(playerObserver);
 	}
 	void UpdateSubtitle(TimeSpan currentPlaybackTime)
 	{
 		ArgumentNullException.ThrowIfNull(subtitleLabel);
 		ArgumentNullException.ThrowIfNull(mediaElement);
+		if (string.IsNullOrEmpty(mediaElement.SubtitleUrl))
+		{
+			return;
+		}
+
 		foreach (var cue in cues)
 		{
 			if (currentPlaybackTime >= cue.StartTime && currentPlaybackTime <= cue.EndTime)

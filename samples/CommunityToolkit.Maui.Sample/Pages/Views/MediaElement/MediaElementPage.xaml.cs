@@ -19,7 +19,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string loadHls = "Load HTTP Live Stream (HLS)";
 	const string loadLocalResource = "Load Local Resource";
 	const string resetSource = "Reset Source to null";
-	const string loadSubTitles = "Load Subtitles";
+	const string loadSubTitles = "Load sample with Subtitles";
 
 	public MediaElementPage(MediaElementViewModel viewModel, ILogger<MediaElementPage> logger) : base(viewModel)
 	{
@@ -217,13 +217,15 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				if (DevicePlatform.iOS == DeviceInfo.Platform || DevicePlatform.macOS == DeviceInfo.Platform)
 				{
 					MediaElement.SubtitleFont = @"PlaywriteSK-Regular.ttf#Playwrite SK";
+					MediaElement.SubtitleFontSize = 12;
 				}
 				else
 				{
 					MediaElement.SubtitleFont = @"Poppins-Regular.ttf#Poppins";
+					MediaElement.SubtitleFontSize = 16;
 				}
 
-				MediaElement.SubtitleFontSize = 16;
+				
 				MediaElement.SubtitleUrl = "https://raw.githubusercontent.com/ne0rrmatrix/SampleVideo/main/SRT/WindowsVideo.srt";
 				MediaElement.Source = MediaSource.FromResource("WindowsVideo.mp4");
 				return;
