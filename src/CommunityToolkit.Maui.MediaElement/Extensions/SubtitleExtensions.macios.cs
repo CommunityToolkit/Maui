@@ -150,5 +150,14 @@ class SubtitleExtensions : UIViewController
 				break;
 		}
 	}
+
+	~SubtitleExtensions()
+	{
+		MediaManagerDelegate.FullScreenChanged -= OnFullScreenChanged;
+		if(playerObserver is not null && player is not null)
+		{
+			player.RemoveTimeObserver(playerObserver);
+		}
+	}
 }
 
