@@ -51,8 +51,7 @@ partial class MediaManager : IDisposable
 		MediaElement.MediaOpened += OnMediaElementMediaOpened;
 
 		Player.SetMediaPlayer(MediaElement);
-		subtitleExtensions = [];
-
+		
 		Player.MediaPlayer.PlaybackSession.PlaybackRateChanged += OnPlaybackSessionPlaybackRateChanged;
 		Player.MediaPlayer.PlaybackSession.PlaybackStateChanged += OnPlaybackSessionPlaybackStateChanged;
 		Player.MediaPlayer.PlaybackSession.SeekCompleted += OnPlaybackSessionSeekCompleted;
@@ -299,12 +298,22 @@ partial class MediaManager : IDisposable
 
 	async Task LoadSubtitles(CancellationToken cancellationToken = default)
 	{
-		if (subtitleExtensions is null || string.IsNullOrEmpty(MediaElement.SubtitleUrl) || Player is null)
+		if (string.IsNullOrEmpty(MediaElement.SubtitleUrl))
 		{
 			System.Diagnostics.Trace.TraceError("SubtitleExtensions is null or SubtitleUrl is null or Player is null");
 			return;
 		}
-		await subtitleExtensions.LoadSubtitles(MediaElement, Player).WaitAsync(cancellationToken).ConfigureAwait(false);
+
+		if (Player is null)
+		{
+
+		System.Diagnostics.Trace.TraceError("Player is null");
+			return;
+		}
+		
+		subtitleExtensions = new(Player);
+		
+		await subtitleExtensions.LoadSubtitles(MediaElement).WaitAsync(cancellationToken).ConfigureAwait(false);
 		subtitleExtensions.StartSubtitleDisplay();
 	}
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()

@@ -436,7 +436,7 @@ public partial class MediaManager : IDisposable
 				{
 					UIApplication.SharedApplication.EndReceivingRemoteControlEvents();
 				});
-				// disable the idle timer so screen turns off when media is not playing
+				// disable the idle Timer so screen turns off when media is not playing
 				UIApplication.SharedApplication.IdleTimerDisabled = false;
 				var audioSession = AVAudioSession.SharedInstance();
 				audioSession.SetActive(false);

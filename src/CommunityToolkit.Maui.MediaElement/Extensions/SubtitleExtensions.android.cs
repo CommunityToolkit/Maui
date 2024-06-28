@@ -2,7 +2,6 @@
 using Android.Views;
 using Android.Widget;
 using Com.Google.Android.Exoplayer2.UI;
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Primitives;
 using static Android.Views.ViewGroup;
@@ -10,22 +9,19 @@ using CurrentPlatformActivity = CommunityToolkit.Maui.Extensions.PageExtensions.
 
 namespace CommunityToolkit.Maui.Extensions;
 
-class SubtitleExtensions : Java.Lang.Object
+partial class SubtitleExtensions : Java.Lang.Object
 {
 	readonly IDispatcher dispatcher;
 	readonly RelativeLayout.LayoutParams? subtitleLayout;
 	readonly StyledPlayerView styledPlayerView;
-	List<SubtitleCue> cues;
-	IMediaElement? mediaElement;
+	
 	TextView? subtitleView;
-	System.Timers.Timer? timer;
 
 	public SubtitleExtensions(StyledPlayerView styledPlayerView, IDispatcher dispatcher)
 	{
 		this.dispatcher = dispatcher;
 		this.styledPlayerView = styledPlayerView;
-		cues = [];
-
+		Cues = [];
 		subtitleLayout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
 		subtitleLayout.AddRule(LayoutRules.AlignParentBottom);
 		subtitleLayout.AddRule(LayoutRules.CenterHorizontal);
@@ -34,75 +30,32 @@ class SubtitleExtensions : Java.Lang.Object
 		MauiMediaElement.FullScreenChanged += OnFullScreenChanged;
 	}
 
-	public async Task LoadSubtitles(IMediaElement mediaElement)
-	{
-		ArgumentNullException.ThrowIfNull(subtitleView);
-		this.mediaElement = mediaElement;
-		
-		cues.Clear();
-		subtitleView.Text = string.Empty;
-		if (string.IsNullOrEmpty(mediaElement.SubtitleUrl))
-		{
-			return;
-		}
-
-		SubtitleParser parser;
-		var content = await SubtitleParser.Content(mediaElement.SubtitleUrl);
-		try
-		{
-			if (mediaElement.CustomSubtitleParser is not null)
-			{
-				parser = new(mediaElement.CustomSubtitleParser);
-				cues = parser.ParseContent(content);
-				return;
-			}
-
-			switch (mediaElement.SubtitleUrl)
-			{
-				case var url when url.EndsWith("srt"):
-					parser = new(new SrtParser());
-					cues = parser.ParseContent(content);
-					break;
-				case var url when url.EndsWith("vtt"):
-					parser = new(new VttParser());
-					cues = parser.ParseContent(content);
-					break;
-				default:
-					System.Diagnostics.Trace.TraceError("Unsupported Subtitle file.");
-					return;
-			}
-		}
-		catch (Exception ex)
-		{
-			System.Diagnostics.Trace.TraceError(ex.Message);
-			return;
-		}
-	}
-
 	public void StartSubtitleDisplay()
 	{
-		if(cues.Count == 0 || string.IsNullOrEmpty(mediaElement?.SubtitleUrl))
+		ArgumentNullException.ThrowIfNull(subtitleView);
+		ArgumentNullException.ThrowIfNull(Cues);
+		if(Cues.Count == 0 || string.IsNullOrEmpty(MediaElement?.SubtitleUrl))
 		{
 			return;
 		}
 
-		ArgumentNullException.ThrowIfNull(subtitleView);
 		if(styledPlayerView.Parent is not ViewGroup parent)
 		{
 			System.Diagnostics.Trace.TraceError("StyledPlayerView parent is not a ViewGroup");
 			return;
 		}
 		dispatcher.Dispatch(() => parent.AddView(subtitleView));
-		timer = new System.Timers.Timer(1000);
-		timer.Elapsed += UpdateSubtitle;
-		timer.Start();
+		Timer = new System.Timers.Timer(1000);
+		Timer.Elapsed += UpdateSubtitle;
+		Timer.Start();
 	}
 
 	public void StopSubtitleDisplay()
 	{
-		if (timer is null || subtitleView is null)
+		ArgumentNullException.ThrowIfNull(Cues);
+		if (Timer is null || subtitleView is null)
 		{
-			cues.Clear();
+			Cues.Clear();
 			return;
 		}
 		if (styledPlayerView.Parent is ViewGroup parent)
@@ -110,28 +63,29 @@ class SubtitleExtensions : Java.Lang.Object
 			dispatcher.Dispatch(() => parent.RemoveView(subtitleView));
 		}
 		subtitleView.Text = string.Empty;
-		timer.Stop();
-		timer.Elapsed -= UpdateSubtitle;
+		Timer.Stop();
+		Timer.Elapsed -= UpdateSubtitle;
 	}
 
 	void UpdateSubtitle(object? sender, System.Timers.ElapsedEventArgs e)
 	{
 		ArgumentNullException.ThrowIfNull(subtitleView);
-		ArgumentNullException.ThrowIfNull(mediaElement);
-		if (cues.Count == 0)
+		ArgumentNullException.ThrowIfNull(MediaElement);
+		ArgumentNullException.ThrowIfNull(Cues);
+		if (Cues.Count == 0)
 		{
 			return;
 		}
 		
-		var cue = cues.Find(c => c.StartTime <= mediaElement.Position && c.EndTime >= mediaElement.Position);
+		var cue = Cues.Find(c => c.StartTime <= MediaElement.Position && c.EndTime >= MediaElement.Position);
 		dispatcher.Dispatch(() =>
 		{
 			if (cue is not null)
 			{
-				Typeface? typeface = Typeface.CreateFromAsset(Platform.AppContext.ApplicationContext?.Assets, new Core.FontExtensions.FontFamily(mediaElement.SubtitleFont).Android) ?? Typeface.Default;
+				Typeface? typeface = Typeface.CreateFromAsset(Platform.AppContext.ApplicationContext?.Assets, new Core.FontExtensions.FontFamily(MediaElement.SubtitleFont).Android) ?? Typeface.Default;
 				subtitleView.SetTypeface(typeface, TypefaceStyle.Normal);
 				subtitleView.Text = cue.Text;
-				subtitleView.TextSize = (float)mediaElement.SubtitleFontSize;
+				subtitleView.TextSize = (float)MediaElement.SubtitleFontSize;
 				subtitleView.Visibility = ViewStates.Visible;
 			}
 			else
@@ -161,9 +115,10 @@ class SubtitleExtensions : Java.Lang.Object
 	void OnFullScreenChanged(object? sender, FullScreenEventArgs e)
 	{
 		ArgumentNullException.ThrowIfNull(subtitleView);
+		ArgumentNullException.ThrowIfNull(MediaElement);
 
 		// If the subtitle URL is empty do nothing
-		if (string.IsNullOrEmpty(mediaElement?.SubtitleUrl))
+		if (string.IsNullOrEmpty(MediaElement.SubtitleUrl))
 		{
 			return;
 		}

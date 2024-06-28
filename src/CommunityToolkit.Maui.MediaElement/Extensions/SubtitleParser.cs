@@ -1,9 +1,11 @@
-﻿namespace CommunityToolkit.Maui.Core;
+﻿using System.Text.RegularExpressions;
+
+namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// A class that Represents a parser.
 /// </summary>
-public class SubtitleParser
+public partial class SubtitleParser
 {
 	static readonly HttpClient httpClient = new();
 
@@ -48,4 +50,25 @@ public class SubtitleParser
 			return string.Empty;
 		}
 	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="url"></param>
+	/// <returns></returns>
+    internal static bool ValidateUrlWithRegex(string url)
+    {
+        var urlRegex = ValidateUrl();
+        
+        urlRegex.Matches(url);
+        if(!urlRegex.IsMatch(url))
+		{
+			throw new ArgumentException("Invalid Subtitle URL");
+		}
+        return true;
+    }
+
+	[GeneratedRegex(@"^(https?|ftps?):\/\/(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?::(?:0|[1-9]\d{0,3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5]))?(?:\/(?:[-a-zA-Z0-9@%_\+.~#?&=]+\/?)*)?$", RegexOptions.IgnoreCase, "en-CA")]
+	private static partial Regex ValidateUrl();
 }
+

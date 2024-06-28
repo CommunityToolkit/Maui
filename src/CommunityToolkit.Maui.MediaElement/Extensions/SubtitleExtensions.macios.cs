@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Views;
+﻿using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Primitives;
 using CoreFoundation;
 using CoreGraphics;
@@ -9,7 +8,7 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.Extensions;
 
-class SubtitleExtensions : UIViewController
+partial class SubtitleExtensions : UIViewController
 {
 	readonly PlatformMediaElement player;
 	readonly UIViewController playerViewController;
@@ -18,8 +17,6 @@ class SubtitleExtensions : UIViewController
 	static readonly UIColor subtitleBackgroundColor = UIColor.FromRGBA(0, 0, 0, 128);
 	static readonly UIColor clearBackgroundColor = UIColor.FromRGBA(0, 0, 0, 0);
 
-	List<SubtitleCue> cues;
-	IMediaElement? mediaElement;
 	NSObject? playerObserver;
 	UIViewController? viewController;
 
@@ -27,7 +24,7 @@ class SubtitleExtensions : UIViewController
 	{
 		this.playerViewController = playerViewController;
 		this.player = player;
-		cues = [];
+		Cues = [];
 		subtitleLabel = new UILabel
 		{
 			Frame = CalculateSubtitleFrame(playerViewController),
@@ -46,44 +43,6 @@ class SubtitleExtensions : UIViewController
 		MediaManagerDelegate.FullScreenChanged += OnFullScreenChanged;
 	}
 
-	public async Task LoadSubtitles(IMediaElement mediaElement)
-	{
-		this.mediaElement = mediaElement;
-		cues.Clear();
-
-		SubtitleParser parser;
-		var content = await SubtitleParser.Content(mediaElement.SubtitleUrl);
-		try
-		{
-			if (mediaElement.CustomSubtitleParser is not null)
-			{
-				parser = new(mediaElement.CustomSubtitleParser);
-				cues = parser.ParseContent(content);
-				return;
-			}
-
-			switch (mediaElement.SubtitleUrl)
-			{
-				case var url when url.EndsWith("srt"):
-					parser = new(new SrtParser());
-					cues = parser.ParseContent(content);
-					break;
-				case var url when url.EndsWith("vtt"):
-					parser = new(new VttParser());
-					cues = parser.ParseContent(content);
-					break;
-				default:
-					System.Diagnostics.Trace.TraceError("Unsupported Subtitle file.");
-					return;
-			}
-		}
-		catch (Exception ex)
-		{
-			System.Diagnostics.Trace.TraceError(ex.Message);
-			return;
-		}
-	}
-
 	public void StartSubtitleDisplay()
 	{
 		ArgumentNullException.ThrowIfNull(subtitleLabel);
@@ -98,26 +57,28 @@ class SubtitleExtensions : UIViewController
 
 	public void StopSubtitleDisplay()
 	{
+		ArgumentNullException.ThrowIfNull(Cues);
 		subtitleLabel.Text = string.Empty;
-		cues.Clear();
+		Cues.Clear();
 		subtitleLabel.BackgroundColor = clearBackgroundColor;
 		DispatchQueue.MainQueue.DispatchAsync(() => subtitleLabel.RemoveFromSuperview());
 	}
 	void UpdateSubtitle(TimeSpan currentPlaybackTime)
 	{
+		ArgumentNullException.ThrowIfNull(Cues);
 		ArgumentNullException.ThrowIfNull(subtitleLabel);
-		ArgumentNullException.ThrowIfNull(mediaElement);
-		if (string.IsNullOrEmpty(mediaElement.SubtitleUrl))
+		ArgumentNullException.ThrowIfNull(MediaElement);
+		if (string.IsNullOrEmpty(MediaElement.SubtitleUrl))
 		{
 			return;
 		}
 
-		foreach (var cue in cues)
+		foreach (var cue in Cues)
 		{
 			if (currentPlaybackTime >= cue.StartTime && currentPlaybackTime <= cue.EndTime)
 			{
 				subtitleLabel.Text = cue.Text;
-				subtitleLabel.Font = UIFont.FromName(name: new Core.FontExtensions.FontFamily(mediaElement.SubtitleFont).MacIOS, size: (float)mediaElement.SubtitleFontSize) ?? UIFont.SystemFontOfSize(16);
+				subtitleLabel.Font = UIFont.FromName(name: new Core.FontExtensions.FontFamily(MediaElement.SubtitleFont).MacIOS, size: (float)MediaElement.SubtitleFontSize) ?? UIFont.SystemFontOfSize(16);
 				subtitleLabel.BackgroundColor = subtitleBackgroundColor;
 				break;
 			}
@@ -140,7 +101,8 @@ class SubtitleExtensions : UIViewController
 
 	void OnFullScreenChanged(object? sender, FullScreenEventArgs e)
 	{
-		if (string.IsNullOrEmpty(mediaElement?.SubtitleUrl))
+		ArgumentNullException.ThrowIfNull(MediaElement);
+		if (string.IsNullOrEmpty(MediaElement.SubtitleUrl))
 		{
 			return;
 		}
