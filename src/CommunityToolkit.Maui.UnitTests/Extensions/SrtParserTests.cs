@@ -69,7 +69,7 @@ This is the first subtitle.
 This is the second subtitle.";
 
 		// Act & Assert
-		VttParser vttParser = new();
-		Assert.Throws<FormatException>(() => vttParser.ParseContent(content));
+		SrtParser srtParser = new();
+		Assert.Throws<FormatException>(() => srtParser.ParseContent(content));
 	}
 }
