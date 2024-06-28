@@ -17,7 +17,6 @@ partial class SrtParser : IParser
 		}
 		
 		var lines = content.Split(SubtitleParser.Separator, StringSplitOptions.RemoveEmptyEntries);
-
 		SubtitleCue? currentCue = null;
 		var textBuffer = new StringBuilder();
 
@@ -37,7 +36,6 @@ partial class SrtParser : IParser
 					cues.Add(currentCue);
 					textBuffer.Clear();
 				}
-
 				currentCue = CreateCue(match);
 			}
 			else if (currentCue is not null && !string.IsNullOrWhiteSpace(line))

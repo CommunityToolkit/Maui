@@ -16,10 +16,10 @@ partial class MediaManager : IDisposable
 {
 	Metadata? metadata;
 	SystemMediaTransportControls? systemMediaControls;
-
 	SubtitleExtensions? subtitleExtensions;
 	readonly CancellationTokenSource subTitles = new();
 	Task? startSubtitles;
+
 	// States that allow changing position
 	readonly IReadOnlyList<MediaElementState> allowUpdatePositionStates =
 	[
@@ -303,14 +303,11 @@ partial class MediaManager : IDisposable
 			System.Diagnostics.Trace.TraceError("SubtitleExtensions is null or SubtitleUrl is null or Player is null");
 			return;
 		}
-
 		if (Player is null)
 		{
-
-		System.Diagnostics.Trace.TraceError("Player is null");
+			System.Diagnostics.Trace.TraceError("Player is null");
 			return;
 		}
-		
 		subtitleExtensions ??= new(Player);
 		await subtitleExtensions.LoadSubtitles(MediaElement).WaitAsync(cancellationToken).ConfigureAwait(false);
 		subtitleExtensions.StartSubtitleDisplay();

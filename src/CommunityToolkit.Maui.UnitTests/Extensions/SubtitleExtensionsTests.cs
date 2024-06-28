@@ -37,7 +37,6 @@ public class SubtitleExtensionTests : BaseTest
 	public void SetSubtitleExtensions_ValidSubtitleExtension()
 	{
 		// Arrange
-		IMediaElement mediaElement = new MediaElement();
 		SubtitleExtensions subtitleExtensions = new();
 
 		// Act & Assert

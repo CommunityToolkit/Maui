@@ -70,7 +70,6 @@ static class FontExtensions
 	}
 }
 
-
 static class FontHelper
 {
 	/// <summary>
@@ -81,14 +80,11 @@ static class FontHelper
 	{
 		var assembly = typeof(FontHelper).Assembly;
 		var exportedFonts = new List<(string FontFileName, string Alias)>();
-
 		var customAttributes = assembly.GetCustomAttributes<ExportFontAttribute>();
-
 		foreach (var attribute in customAttributes)
 		{
 			exportedFonts.Add((attribute.FontFileName, attribute.Alias));
 		}
-
 		return exportedFonts;
 	}
 }

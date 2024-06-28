@@ -22,9 +22,9 @@ partial class SubtitleExtensions
 		{
 			return;
 		}
-
 		SubtitleParser parser;
 		var content = await SubtitleParser.Content(mediaElement.SubtitleUrl);
+
 		try
 		{
 			if (mediaElement.CustomSubtitleParser is not null)
@@ -33,7 +33,6 @@ partial class SubtitleExtensions
 				Cues = parser.ParseContent(content);
 				return;
 			}
-
 			switch (mediaElement.SubtitleUrl)
 			{
 				case var url when url.EndsWith("srt"):

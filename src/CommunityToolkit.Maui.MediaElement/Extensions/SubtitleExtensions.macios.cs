@@ -13,10 +13,8 @@ partial class SubtitleExtensions : UIViewController
 	readonly PlatformMediaElement player;
 	readonly UIViewController playerViewController;
 	readonly UILabel subtitleLabel;
-
 	static readonly UIColor subtitleBackgroundColor = UIColor.FromRGBA(0, 0, 0, 128);
 	static readonly UIColor clearBackgroundColor = UIColor.FromRGBA(0, 0, 0, 0);
-
 	NSObject? playerObserver;
 	UIViewController? viewController;
 
@@ -39,7 +37,6 @@ partial class SubtitleExtensions : UIViewController
 					  | UIViewAutoresizing.FlexibleHeight
 					  | UIViewAutoresizing.FlexibleBottomMargin
 		};
-		
 		MediaManagerDelegate.FullScreenChanged += OnFullScreenChanged;
 	}
 

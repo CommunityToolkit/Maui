@@ -14,7 +14,6 @@ partial class SubtitleExtensions : Java.Lang.Object
 	readonly IDispatcher dispatcher;
 	readonly RelativeLayout.LayoutParams? subtitleLayout;
 	readonly StyledPlayerView styledPlayerView;
-	
 	TextView? subtitleView;
 
 	public SubtitleExtensions(StyledPlayerView styledPlayerView, IDispatcher dispatcher)
@@ -25,7 +24,6 @@ partial class SubtitleExtensions : Java.Lang.Object
 		subtitleLayout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
 		subtitleLayout.AddRule(LayoutRules.AlignParentBottom);
 		subtitleLayout.AddRule(LayoutRules.CenterHorizontal);
-
 		InitializeTextBlock();
 		MauiMediaElement.FullScreenChanged += OnFullScreenChanged;
 	}
@@ -38,7 +36,6 @@ partial class SubtitleExtensions : Java.Lang.Object
 		{
 			return;
 		}
-
 		if(styledPlayerView.Parent is not ViewGroup parent)
 		{
 			System.Diagnostics.Trace.TraceError("StyledPlayerView parent is not a ViewGroup");
@@ -54,19 +51,16 @@ partial class SubtitleExtensions : Java.Lang.Object
 	{
 		ArgumentNullException.ThrowIfNull(Cues);
 		Cues.Clear();
-
 		if(Timer is not null)
 		{
 			Timer.Stop();
 			Timer.Elapsed -= UpdateSubtitle;
 		}
-
 		if (subtitleView is null)
 		{
 			return;
 		}
 		subtitleView.Text = string.Empty;
-
 		if (styledPlayerView.Parent is ViewGroup parent)
 		{
 			dispatcher.Dispatch(() => parent.RemoveView(subtitleView));
@@ -82,7 +76,6 @@ partial class SubtitleExtensions : Java.Lang.Object
 		{
 			return;
 		}
-		
 		var cue = Cues.Find(c => c.StartTime <= MediaElement.Position && c.EndTime >= MediaElement.Position);
 		dispatcher.Dispatch(() =>
 		{
@@ -128,12 +121,10 @@ partial class SubtitleExtensions : Java.Lang.Object
 		{
 			return;
 		}
-		
 		if (CurrentPlatformActivity.CurrentViewGroup.Parent is not ViewGroup parent)
 		{
 			return;
 		}
-
 		switch (e.isFullScreen)
 		{
 			case true:

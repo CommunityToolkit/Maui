@@ -59,7 +59,6 @@ public partial class SubtitleParser
     internal static bool ValidateUrlWithRegex(string url)
     {
         var urlRegex = ValidateUrl();
-        
         urlRegex.Matches(url);
         if(!urlRegex.IsMatch(url))
 		{

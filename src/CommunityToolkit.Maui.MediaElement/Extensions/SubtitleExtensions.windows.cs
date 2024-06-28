@@ -9,7 +9,6 @@ partial class SubtitleExtensions : Grid, IDisposable
 {
 	bool disposedValue;
 	bool isFullScreen = false;
-
 	readonly Microsoft.UI.Xaml.Controls.TextBlock subtitleTextBlock;
 	readonly MauiMediaElement? mauiMediaElement;
 
@@ -113,7 +112,6 @@ partial class SubtitleExtensions : Grid, IDisposable
 				Timer.Stop();
 				Timer.Elapsed -= UpdateSubtitle;
 			}
-
 			if (disposing)
 			{
 				Timer?.Dispose();

@@ -15,9 +15,7 @@ partial class VttParser : IParser
 		{
 			return cues;
 		}
-
 		var lines = content.Split(SubtitleParser.Separator, StringSplitOptions.RemoveEmptyEntries);
-
 		SubtitleCue? currentCue = null;
 		var textBuffer = new StringBuilder();
 
@@ -32,7 +30,6 @@ partial class VttParser : IParser
 					cues.Add(currentCue);
 					textBuffer.Clear();
 				}
-
 				currentCue = CreateCue(match);
 			}
 			else if (currentCue is not null && !string.IsNullOrWhiteSpace(line))
@@ -46,7 +43,6 @@ partial class VttParser : IParser
 			currentCue.Text = string.Join(" ", textBuffer).TrimEnd('\r', '\n');
 			cues.Add(currentCue);
 		}
-
 		if(cues.Count == 0)
 		{
 			throw new FormatException("Invalid VTT format");
