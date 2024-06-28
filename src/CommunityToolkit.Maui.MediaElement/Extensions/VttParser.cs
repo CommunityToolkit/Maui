@@ -43,20 +43,31 @@ partial class VttParser : IParser
 
 		if (currentCue is not null)
 		{
-			currentCue.Text = string.Join(" ", textBuffer);
+			currentCue.Text = string.Join(" ", textBuffer).TrimEnd('\r', '\n');
 			cues.Add(currentCue);
 		}
 
+		if(cues.Count == 0)
+		{
+			throw new FormatException("Invalid VTT format");
+		}
 		return cues;
 	}
 
 	static SubtitleCue CreateCue(Match match)
 	{
+		var StartTime = ParseTimecode(match.Groups[1].Value);
+		var EndTime = ParseTimecode(match.Groups[2].Value);
+		var Text = string.Empty;
+		if (StartTime > EndTime)
+		{
+			throw new FormatException("Start time cannot be greater than end time.");
+		}
 		return new SubtitleCue
 		{
-			StartTime = ParseTimecode(match.Groups[1].Value),
-			EndTime = ParseTimecode(match.Groups[2].Value),
-			Text = string.Empty
+			StartTime = StartTime,
+			EndTime = EndTime,
+			Text = Text
 		};
 	}
 

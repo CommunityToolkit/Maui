@@ -48,26 +48,34 @@ class SubtitleExtensions : Java.Lang.Object
 
 		SubtitleParser parser;
 		var content = await SubtitleParser.Content(mediaElement.SubtitleUrl);
-		if (mediaElement.CustomSubtitleParser is not null)
+		try
 		{
-			parser = new(mediaElement.CustomSubtitleParser);
-			cues = parser.ParseContent(content);
-			return;
-		}
-
-		switch (mediaElement.SubtitleUrl)
-		{
-			case var url when url.EndsWith("srt"):
-				parser = new(new SrtParser());
+			if (mediaElement.CustomSubtitleParser is not null)
+			{
+				parser = new(mediaElement.CustomSubtitleParser);
 				cues = parser.ParseContent(content);
-				break;
-			case var url when url.EndsWith("vtt"):
-				parser = new(new VttParser());
-				cues = parser.ParseContent(content);
-				break;
-			default:
-				System.Diagnostics.Trace.TraceError("Unsupported Subtitle file.");
 				return;
+			}
+
+			switch (mediaElement.SubtitleUrl)
+			{
+				case var url when url.EndsWith("srt"):
+					parser = new(new SrtParser());
+					cues = parser.ParseContent(content);
+					break;
+				case var url when url.EndsWith("vtt"):
+					parser = new(new VttParser());
+					cues = parser.ParseContent(content);
+					break;
+				default:
+					System.Diagnostics.Trace.TraceError("Unsupported Subtitle file.");
+					return;
+			}
+		}
+		catch (Exception ex)
+		{
+			System.Diagnostics.Trace.TraceError(ex.Message);
+			return;
 		}
 	}
 
