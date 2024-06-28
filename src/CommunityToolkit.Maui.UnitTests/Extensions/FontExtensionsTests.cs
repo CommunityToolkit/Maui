@@ -108,9 +108,11 @@ public class FontExtensionsTests : BaseTest
 		{
 			SubtitleFont = "Invalid input"
 		};
+
+		// Act
 		var result = new Core.FontExtensions.FontFamily(mediaElement.SubtitleFont).Android;
 
-		// Act & Assert
+		// Assert
 		Assert.Equal(string.Empty, result);
 	}
 
@@ -122,9 +124,11 @@ public class FontExtensionsTests : BaseTest
 		{
 			SubtitleFont = "Invalid input"
 		};
+
+		// Act
 		var result = new Core.FontExtensions.FontFamily(mediaElement.SubtitleFont).WindowsFont;
 
-		// Act & Assert
+		// Assert
 		Assert.Equal(string.Empty, result);
 	}
 
@@ -136,9 +140,11 @@ public class FontExtensionsTests : BaseTest
 		{
 			SubtitleFont = "Invalid input"
 		};
+
+		// Act
 		var result = new Core.FontExtensions.FontFamily(mediaElement.SubtitleFont).MacIOS;
 
-		// Act & Assert
+		// Assert
 		Assert.Equal(string.Empty, result);
 	}
 }
