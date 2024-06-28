@@ -311,8 +311,7 @@ partial class MediaManager : IDisposable
 			return;
 		}
 		
-		subtitleExtensions = new(Player);
-		
+		subtitleExtensions ??= new(Player);
 		await subtitleExtensions.LoadSubtitles(MediaElement).WaitAsync(cancellationToken).ConfigureAwait(false);
 		subtitleExtensions.StartSubtitleDisplay();
 	}

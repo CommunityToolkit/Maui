@@ -53,18 +53,24 @@ partial class SubtitleExtensions : Java.Lang.Object
 	public void StopSubtitleDisplay()
 	{
 		ArgumentNullException.ThrowIfNull(Cues);
-		if (Timer is null || subtitleView is null)
+		Cues.Clear();
+
+		if(Timer is not null)
 		{
-			Cues.Clear();
+			Timer.Stop();
+			Timer.Elapsed -= UpdateSubtitle;
+		}
+
+		if (subtitleView is null)
+		{
 			return;
 		}
+		subtitleView.Text = string.Empty;
+
 		if (styledPlayerView.Parent is ViewGroup parent)
 		{
 			dispatcher.Dispatch(() => parent.RemoveView(subtitleView));
 		}
-		subtitleView.Text = string.Empty;
-		Timer.Stop();
-		Timer.Elapsed -= UpdateSubtitle;
 	}
 
 	void UpdateSubtitle(object? sender, System.Timers.ElapsedEventArgs e)

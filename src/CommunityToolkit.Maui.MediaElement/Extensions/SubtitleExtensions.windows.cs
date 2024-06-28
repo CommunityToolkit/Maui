@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Primitives;
 using Microsoft.UI.Xaml.Media;
+using Grid = Microsoft.Maui.Controls.Grid;
 
 namespace CommunityToolkit.Maui.Extensions;
 
@@ -10,8 +11,7 @@ partial class SubtitleExtensions : Grid, IDisposable
 	bool isFullScreen = false;
 
 	readonly Microsoft.UI.Xaml.Controls.TextBlock subtitleTextBlock;
-
-	MauiMediaElement? mauiMediaElement;
+	readonly MauiMediaElement? mauiMediaElement;
 
 	public SubtitleExtensions(Microsoft.UI.Xaml.Controls.MediaPlayerElement player)
 	{
@@ -39,6 +39,8 @@ partial class SubtitleExtensions : Grid, IDisposable
 
 	public void StopSubtitleDisplay()
 	{
+		Cues?.Clear();
+		subtitleTextBlock.Text = string.Empty;
 		if (Timer is null)
 		{
 			return;
