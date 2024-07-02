@@ -2,12 +2,12 @@
 using Android.Content;
 using Android.Content.Res;
 using Android.Runtime;
-using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using Com.Google.Android.Exoplayer2.UI;
+using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -17,11 +17,17 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiMediaElement : CoordinatorLayout
 {
-	readonly StyledPlayerView playerView;
+	/// <summary>
+	/// Handles the event when the windows change.
+	/// </summary>
+	public static event EventHandler<FullScreenEventArgs>? FullScreenChanged;
+	
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
 	bool isFullScreen;
+
 	readonly RelativeLayout relativeLayout;
+	readonly StyledPlayerView playerView;
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -56,6 +62,11 @@ public class MauiMediaElement : CoordinatorLayout
 
 		AddView(relativeLayout);
 	}
+
+	/// <summary>
+	/// A method that raises the FullScreenChanged event.
+	/// </summary>
+	protected virtual void OnFullScreenChanged(FullScreenEventArgs e) => FullScreenChanged?.Invoke(null, e);
 	public override void OnDetachedFromWindow()
 	{
 		if (isFullScreen)
@@ -144,13 +155,15 @@ public class MauiMediaElement : CoordinatorLayout
 			isFullScreen = true;
 			RemoveView(relativeLayout);
 			layout?.AddView(relativeLayout);
-		}
+            OnFullScreenChanged(new Maui.Primitives.FullScreenEventArgs(isFullScreen));
+        }
 		else
 		{
 			isFullScreen = false;
 			layout?.RemoveView(relativeLayout);
 			AddView(relativeLayout);
-		}
+            OnFullScreenChanged(new Maui.Primitives.FullScreenEventArgs(isFullScreen));
+        }
 		// Hide/Show the SystemBars and Status bar
 		SetSystemBarsVisibility();
 	}

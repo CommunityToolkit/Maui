@@ -16,6 +16,9 @@ partial class MediaManager : IDisposable
 {
 	Metadata? metadata;
 	SystemMediaTransportControls? systemMediaControls;
+	SubtitleExtensions? subtitleExtensions;
+	readonly CancellationTokenSource subTitles = new();
+	Task? startSubtitles;
 
 	// States that allow changing position
 	readonly IReadOnlyList<MediaElementState> allowUpdatePositionStates =
@@ -48,6 +51,7 @@ partial class MediaManager : IDisposable
 		MediaElement.MediaOpened += OnMediaElementMediaOpened;
 
 		Player.SetMediaPlayer(MediaElement);
+		
 		Player.MediaPlayer.PlaybackSession.PlaybackRateChanged += OnPlaybackSessionPlaybackRateChanged;
 		Player.MediaPlayer.PlaybackSession.PlaybackStateChanged += OnPlaybackSessionPlaybackStateChanged;
 		Player.MediaPlayer.PlaybackSession.SeekCompleted += OnPlaybackSessionSeekCompleted;
@@ -250,7 +254,7 @@ partial class MediaManager : IDisposable
 		{
 			return;
 		}
-
+		subtitleExtensions?.StopSubtitleDisplay();
 		if (MediaElement.Source is null)
 		{
 			Player.Source = null;
@@ -287,8 +291,27 @@ partial class MediaManager : IDisposable
 				Player.Source = WinMediaSource.CreateFromUri(new Uri(path));
 			}
 		}
+		
+		CancellationToken token = subTitles.Token;
+		startSubtitles = LoadSubtitles(token);
 	}
 
+	async Task LoadSubtitles(CancellationToken cancellationToken = default)
+	{
+		if (string.IsNullOrEmpty(MediaElement.SubtitleUrl))
+		{
+			System.Diagnostics.Trace.TraceError("SubtitleExtensions is null or SubtitleUrl is null or Player is null");
+			return;
+		}
+		if (Player is null)
+		{
+			System.Diagnostics.Trace.TraceError("Player is null");
+			return;
+		}
+		subtitleExtensions ??= new(Player);
+		await subtitleExtensions.LoadSubtitles(MediaElement).WaitAsync(cancellationToken).ConfigureAwait(false);
+		subtitleExtensions.StartSubtitleDisplay();
+	}
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()
 	{
 		if (Player is null)
@@ -314,7 +337,7 @@ partial class MediaManager : IDisposable
 					DisplayRequest.RequestRelease();
 					displayActiveRequested = false;
 				}
-
+				subtitleExtensions?.StopSubtitleDisplay();
 				Player.MediaPlayer.MediaOpened -= OnMediaElementMediaOpened;
 				Player.MediaPlayer.MediaFailed -= OnMediaElementMediaFailed;
 				Player.MediaPlayer.MediaEnded -= OnMediaElementMediaEnded;
@@ -328,6 +351,9 @@ partial class MediaManager : IDisposable
 					Player.MediaPlayer.PlaybackSession.SeekCompleted -= OnPlaybackSessionSeekCompleted;
 				}
 			}
+			
+			startSubtitles?.Dispose();
+			startSubtitles = null;
 		}
 	}
 

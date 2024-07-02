@@ -1,6 +1,8 @@
 ﻿using AVFoundation;
 using AVKit;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
 using CoreFoundation;
 using CoreMedia;
@@ -14,6 +16,9 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MediaManager : IDisposable
 {
 	Metadata? metaData;
+	SubtitleExtensions? subtitleExtensions;
+	readonly CancellationTokenSource subTitlesCancellationTokenSource = new();
+	Task? startSubtitles;
 
 	// Media would still start playing when Speed was set although ShouldAutoPlay=False
 	// This field was added to overcome that.
@@ -94,7 +99,8 @@ public partial class MediaManager : IDisposable
 		Player = new();
 		PlayerViewController = new()
 		{
-			Player = Player
+			Player = Player,
+			Delegate = new MediaManagerDelegate()
 		};
 		// Pre-initialize Volume and Muted properties to the player object
 		Player.Muted = MediaElement.ShouldMute;
@@ -118,7 +124,7 @@ public partial class MediaManager : IDisposable
 		AddStatusObservers();
 		AddPlayedToEndObserver();
 		AddErrorObservers();
-
+		subtitleExtensions = new(Player, PlayerViewController);
 		return (Player, PlayerViewController);
 	}
 
@@ -215,8 +221,9 @@ public partial class MediaManager : IDisposable
 	protected virtual partial void PlatformUpdateSource()
 	{
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
-
+		
 		AVAsset? asset = null;
+		
 		if (Player is null)
 		{
 			return;
@@ -224,6 +231,7 @@ public partial class MediaManager : IDisposable
 
 		metaData ??= new(Player);
 		Metadata.ClearNowPlaying();
+		subtitleExtensions?.StopSubtitleDisplay();
 
 		if (MediaElement.Source is UriMediaSource uriMediaSource)
 		{
@@ -270,7 +278,6 @@ public partial class MediaManager : IDisposable
 		CurrentItemErrorObserver?.Dispose();
 
 		Player.ReplaceCurrentItemWithPlayerItem(PlayerItem);
-
 		CurrentItemErrorObserver = PlayerItem?.AddObserver("error",
 			valueObserverOptions, (NSObservedChange change) =>
 			{
@@ -296,11 +303,24 @@ public partial class MediaManager : IDisposable
 			{
 				Player.Play();
 			}
+			CancellationToken token = subTitlesCancellationTokenSource.Token;
+			startSubtitles = LoadSubtitles(token);
 		}
 		else if (PlayerItem is null)
 		{
 			MediaElement.CurrentStateChanged(MediaElementState.None);
 		}
+	}
+
+	async Task LoadSubtitles(CancellationToken cancellationToken = default)
+	{
+		if (subtitleExtensions is null || string.IsNullOrEmpty(MediaElement.SubtitleUrl))
+		{
+			System.Diagnostics.Trace.TraceError("SubtitleExtensions is null or SubtitleUrl is null or empty.");
+			return;
+		}
+		await subtitleExtensions.LoadSubtitles(MediaElement).WaitAsync(cancellationToken).ConfigureAwait(false);
+		subtitleExtensions.StartSubtitleDisplay();
 	}
 
 	protected virtual partial void PlatformUpdateSpeed()
@@ -416,36 +436,36 @@ public partial class MediaManager : IDisposable
 				{
 					UIApplication.SharedApplication.EndReceivingRemoteControlEvents();
 				});
-				// disable the idle timer so screen turns off when media is not playing
+				// disable the idle Timer so screen turns off when media is not playing
 				UIApplication.SharedApplication.IdleTimerDisabled = false;
 				var audioSession = AVAudioSession.SharedInstance();
 				audioSession.SetActive(false);
 
 				DestroyErrorObservers();
 				DestroyPlayedToEndObserver();
-
-				RateObserver?.Dispose();
-				RateObserver = null;
-
-				CurrentItemErrorObserver?.Dispose();
-				CurrentItemErrorObserver = null;
-
+				subtitleExtensions?.StopSubtitleDisplay();
 				Player.ReplaceCurrentItemWithPlayerItem(null);
 
+				subtitleExtensions?.Dispose();
+				subTitlesCancellationTokenSource.Dispose();
+				RateObserver?.Dispose();
+				startSubtitles?.Dispose();
+				CurrentItemErrorObserver?.Dispose();
 				MutedObserver?.Dispose();
-				MutedObserver = null;
-
 				VolumeObserver?.Dispose();
-				VolumeObserver = null;
-
 				StatusObserver?.Dispose();
-				StatusObserver = null;
-
 				TimeControlStatusObserver?.Dispose();
-				TimeControlStatusObserver = null;
-
 				Player.Dispose();
+
+				startSubtitles = null;
+				subtitleExtensions = null;
 				Player = null;
+				CurrentItemErrorObserver = null;
+				MutedObserver = null;
+				RateObserver = null;
+				TimeControlStatusObserver = null;
+				StatusObserver = null;
+				VolumeObserver = null;
 			}
 
 			PlayerViewController?.Dispose();
@@ -624,4 +644,23 @@ public partial class MediaManager : IDisposable
 			}
 		}
 	}
+}
+sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
+{
+	/// <summary>
+	/// Handles the event when the windows change.
+	/// </summary>
+	public static event EventHandler<FullScreenEventArgs>? FullScreenChanged;
+	public override void WillBeginFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
+	{
+		OnFulScreenChanged(new FullScreenEventArgs(true));
+	}
+	public override void WillEndFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
+	{
+		OnFulScreenChanged(new FullScreenEventArgs(false));
+	}
+	/// <summary>
+	/// A method that raises the FullScreenChanged event.
+	/// </summary>
+	static void OnFulScreenChanged(FullScreenEventArgs e) => FullScreenChanged?.Invoke(null, e);
 }

@@ -17,6 +17,7 @@ using Com.Google.Android.Exoplayer2.UI;
 using Com.Google.Android.Exoplayer2.Video;
 using CommunityToolkit.Maui.ApplicationModel.Permissions;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
@@ -25,21 +26,26 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
-	static readonly HttpClient client = new();
+	SubtitleExtensions? subtitleExtensions;
+	static readonly HttpClient httpClient = new();
 
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
-
-	Task? checkPermissionsTask;
-	CancellationTokenSource checkPermissionSourceToken = new();
-	CancellationTokenSource startServiceSourceToken = new();
+	
+	MediaElementState currentState;
 	double? previousSpeed;
 	float volumeBeforeMute = 1;
+
 	MediaControllerCompat? mediaControllerCompat;
-	TaskCompletionSource? seekToTaskCompletionSource;
 	MediaSessionConnector? mediaSessionConnector;
 	MediaSessionCompat? mediaSession;
 	UIUpdateReceiver? uiUpdateReceiver;
-	MediaElementState currentState;
+	
+	TaskCompletionSource? seekToTaskCompletionSource;
+	CancellationTokenSource checkPermissionSourceToken = new();
+	CancellationTokenSource startServiceSourceToken = new();
+	CancellationTokenSource subTitlesSourceToken = new();
+	Task? startSubtitles;
+	Task? checkPermissionsTask;
 
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
@@ -65,7 +71,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		try
 		{
-			var response = await client.GetAsync(url, cancellationToken).ConfigureAwait(false);
+			var response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
 			var stream = response.IsSuccessStatusCode ? await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false) : null;
 
 			return stream switch
@@ -184,6 +190,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	[MemberNotNull(nameof(checkPermissionsTask))]
 	[MemberNotNull(nameof(mediaSessionConnector))]
 	[MemberNotNull(nameof(mediaControllerCompat))]
+	[MemberNotNull(nameof(subtitleExtensions))]
 	public (PlatformMediaElement platformView, StyledPlayerView PlayerView) CreatePlatformView()
 	{
 		ArgumentNullException.ThrowIfNull(MauiContext.Context);
@@ -199,6 +206,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 		};
 
+		subtitleExtensions = new(PlayerView, Dispatcher);
 		checkPermissionsTask = CheckAndRequestForegroundPermission(checkPermissionSourceToken.Token);
 		return (Player, PlayerView);
 	}
@@ -387,6 +395,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			return;
 		}
 
+		subtitleExtensions?.StopSubtitleDisplay();
 		StopService();
 		if (mediaSession is not null)
 		{
@@ -445,9 +454,18 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		if (hasSetSource && Player.PlayerError is null)
 		{
 			MediaElement.MediaOpened();
+			startSubtitles = LoadSubtitles(subTitlesSourceToken.Token);
 		}
 	}
-
+	async Task LoadSubtitles(CancellationToken cancellationToken = default)
+	{
+		if (subtitleExtensions is null || string.IsNullOrEmpty(MediaElement.SubtitleUrl))
+		{
+			return;
+		}
+		await subtitleExtensions.LoadSubtitles(MediaElement).WaitAsync(cancellationToken).ConfigureAwait(false);
+		subtitleExtensions.StartSubtitleDisplay();
+	}
 	protected virtual partial void PlatformUpdateAspect()
 	{
 		if (PlayerView is null)
@@ -580,28 +598,28 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		if (disposing)
 		{
-			StopService();
-
-			mediaSessionConnector?.SetPlayer(null);
-			mediaSessionConnector?.Dispose();
-			mediaSessionConnector = null;
-
-			mediaSession?.Release();
-			mediaSession?.Dispose();
-			mediaSession = null;
-
 			if (uiUpdateReceiver is not null)
 			{
 				LocalBroadcastManager.GetInstance(Platform.AppContext).UnregisterReceiver(uiUpdateReceiver);
 			}
 
-			uiUpdateReceiver?.Dispose();
-			uiUpdateReceiver = null;
+			StopService();
+			mediaSessionConnector?.SetPlayer(null);
+			mediaSession?.Release();
 
+			mediaSessionConnector?.Dispose();
+			mediaSession?.Dispose();
+			uiUpdateReceiver?.Dispose();
 			checkPermissionSourceToken.Dispose();
 			startServiceSourceToken.Dispose();
+			subTitlesSourceToken?.Dispose();
+			httpClient.Dispose();
+			startSubtitles?.Dispose();
 
-			client.Dispose();
+			startSubtitles = null;
+			mediaSessionConnector = null;
+			mediaSession = null;
+			uiUpdateReceiver = null;
 		}
 	}
 

@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -7,13 +8,11 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Imaging;
 using WinRT.Interop;
 using Application = Microsoft.Maui.Controls.Application;
 using Button = Microsoft.UI.Xaml.Controls.Button;
 using Colors = Microsoft.UI.Colors;
 using Grid = Microsoft.UI.Xaml.Controls.Grid;
-using ImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 using Page = Microsoft.Maui.Controls.Page;
 using SolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using Thickness = Microsoft.UI.Xaml.Thickness;
@@ -25,6 +24,10 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiMediaElement : Grid, IDisposable
 {
+	/// <summary>
+	/// Handles the event when the windows change.
+	/// </summary>
+	public static event EventHandler<GridEventArgs>? GridEventsChanged;
 	static readonly AppWindow appWindow = GetAppWindowForCurrentWindow();
 	readonly Popup popup = new();
 	readonly Grid fullScreenGrid = new();
@@ -76,6 +79,14 @@ public class MauiMediaElement : Grid, IDisposable
 	/// Finalizer
 	/// </summary>
 	~MauiMediaElement() => Dispose(false);
+
+	/// <summary>
+	/// A method that raises the GridEventsChanged event.
+	/// </summary>
+	protected virtual void FullScreenChanged(GridEventArgs e)
+	{
+		GridEventsChanged?.Invoke(null, e);
+	}
 
 	/// <summary>
 	/// Releases the managed and unmanaged resources used by the <see cref="MauiMediaElement"/>.
@@ -158,6 +169,7 @@ public class MauiMediaElement : Grid, IDisposable
 			appWindow.SetPresenter(AppWindowPresenterKind.Default);
 			Shell.SetNavBarIsVisible(CurrentPage, doesNavigationBarExistBeforeFullScreen);
 
+			FullScreenChanged(new Maui.Primitives.GridEventArgs(fullScreenGrid));
 			if (popup.IsOpen)
 			{
 				popup.IsOpen = false;
@@ -167,7 +179,6 @@ public class MauiMediaElement : Grid, IDisposable
 			fullScreenButton.Content = fullScreenIcon;
 			Children.Add(mediaPlayerElement);
 			Children.Add(buttonContainer);
-
 			var parent = mediaPlayerElement.Parent as FrameworkElement;
 			mediaPlayerElement.Width = parent?.Width ?? mediaPlayerElement.Width;
 			mediaPlayerElement.Height = parent?.Height ?? mediaPlayerElement.Height;
@@ -186,7 +197,7 @@ public class MauiMediaElement : Grid, IDisposable
 			fullScreenButton.Content = exitFullScreenIcon;
 			fullScreenGrid.Children.Add(mediaPlayerElement);
 			fullScreenGrid.Children.Add(buttonContainer);
-
+			
 			popup.XamlRoot = mediaPlayerElement.XamlRoot;
 			popup.HorizontalOffset = 0;
 			popup.VerticalOffset = 0;
@@ -199,6 +210,7 @@ public class MauiMediaElement : Grid, IDisposable
 			{
 				popup.IsOpen = true;
 			}
+			FullScreenChanged(new Maui.Primitives.GridEventArgs(fullScreenGrid));
 		}
 	}
 }
