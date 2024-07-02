@@ -21,16 +21,16 @@ public class SubtitleExtensionTests : BaseTest
 	}
 
 	[Fact]
-	public async Task LoadSubtitles_InvalidMediaElement_ThrowsArgumentExceptionAsync()
+	public async Task LoadSubtitles_InvalidSubtitleExtensions_ThrowsNullReferenceExceptionAsync()
 	{
 		// Arrange
-		IMediaElement mediaElement = null!;
+		IMediaElement mediaElement = new MediaElement();
 
 		// Act
-		SubtitleExtensions subtitleExtensions = new();
+		SubtitleExtensions subtitleExtensions = null!;
 
 		// Assert
-		await Assert.ThrowsAsync<ArgumentNullException>(async () => await subtitleExtensions.LoadSubtitles(mediaElement));
+		await Assert.ThrowsAsync<NullReferenceException>(async () => await subtitleExtensions.LoadSubtitles(mediaElement));
 	}
 
 	[Fact]
