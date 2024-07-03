@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace CommunityToolkit.Maui.CameraView.Analyzers {
+namespace CommunityToolkit.Maui.Camera.Analyzers {
     using System;
     
     
@@ -60,9 +60,9 @@ namespace CommunityToolkit.Maui.CameraView.Analyzers {
         /// <summary>
         ///   Looks up a localized string similar to Add `.UseMauiCommunityToolkitCamera()`.
         /// </summary>
-        internal static string Initialize__NET_MAUI_Community_Toolkit_CameraView_Before_UseMauiApp {
+        internal static string Initialize__NET_MAUI_Community_Toolkit_Camera_Before_UseMauiApp {
             get {
-                return ResourceManager.GetString("Initialize .NET MAUI Community Toolkit CameraView Before UseMauiApp", resourceCulture);
+                return ResourceManager.GetString("Initialize .NET MAUI Community Toolkit Camera Before UseMauiApp", resourceCulture);
             }
         }
     }

@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace CommunityToolkit.Maui.CameraView.Analyzers {
+namespace CommunityToolkit.Maui.Camera.Analyzers {
     using System;
     
     
