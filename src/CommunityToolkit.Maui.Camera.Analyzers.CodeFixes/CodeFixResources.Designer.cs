@@ -36,7 +36,7 @@ namespace CommunityToolkit.Maui.CameraView.Analyzers {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("CommunityToolkit.Maui.CameraView.Analyzers.CodeFixResources", typeof(CodeFixResources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("CommunityToolkit.Maui.Camera.Analyzers.CodeFixResources", typeof(CodeFixResources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
