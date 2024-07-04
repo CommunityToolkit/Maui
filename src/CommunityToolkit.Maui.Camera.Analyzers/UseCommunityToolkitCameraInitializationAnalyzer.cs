@@ -5,12 +5,12 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace CommunityToolkit.Maui.CameraView.Analyzers;
+namespace CommunityToolkit.Maui.Camera.Analyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class UseCommunityToolkitCameraInitializationAnalyzer : DiagnosticAnalyzer
 {
-	public const string DiagnosticId = "MCTME001";
+	public const string DiagnosticId = "MCTC001";
 
 	const string category = "Initialization";
 	static readonly LocalizableString title = new LocalizableResourceString(nameof(Resources.InitializationErrorTitle), Resources.ResourceManager, typeof(Resources));
