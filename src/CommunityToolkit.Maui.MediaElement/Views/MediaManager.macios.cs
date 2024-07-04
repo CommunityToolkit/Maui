@@ -651,25 +651,6 @@ public partial class MediaManager : IDisposable
 			}
 		}
 	}
-}
-sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
-{
-	/// <summary>
-	/// Handles the event when the windows change.
-	/// </summary>
-	public static event EventHandler<FullScreenEventArgs>? FullScreenChanged;
-	public override void WillBeginFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
-	{
-		OnFulScreenChanged(new FullScreenEventArgs(true));
-	}
-	public override void WillEndFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
-	{
-		OnFulScreenChanged(new FullScreenEventArgs(false));
-	}
-	/// <summary>
-	/// A method that raises the FullScreenChanged event.
-	/// </summary>
-	static void OnFulScreenChanged(FullScreenEventArgs e) => FullScreenChanged?.Invoke(null, e);
 
 	(int Width, int Height) GetVideoDimensions(AVPlayerItem avPlayerItem)
 	{
@@ -684,7 +665,7 @@ sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
 			// Get the natural size of the video
 			var size = videoTrack.NaturalSize;
 			var preferredTransform = videoTrack.PreferredTransform;
-			
+
 			// Apply the preferred transform to get the correct dimensions
 			var transformedSize = CGAffineTransform.CGRectApplyAffineTransform(new CGRect(CGPoint.Empty, size), preferredTransform);
 			var width = Math.Abs(transformedSize.Width);
@@ -704,4 +685,23 @@ sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
 			return (0, 0);
 		}
 	}
+}
+sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
+{
+	/// <summary>
+	/// Handles the event when the windows change.
+	/// </summary>
+	public static event EventHandler<FullScreenEventArgs>? FullScreenChanged;
+	public override void WillBeginFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
+	{
+		OnFulScreenChanged(new FullScreenEventArgs(true));
+	}
+	public override void WillEndFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
+	{
+		OnFulScreenChanged(new FullScreenEventArgs(false));
+	}
+	/// <summary>
+	/// A method that raises the FullScreenChanged event.
+	/// </summary>
+	static void OnFulScreenChanged(FullScreenEventArgs e) => FullScreenChanged?.Invoke(null, e);
 }
