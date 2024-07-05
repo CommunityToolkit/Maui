@@ -69,7 +69,7 @@ public class MediaElementTests : BaseHandlerTest
 		};
 
 		// Set the first (actual) media source, which will trigger the above event
-		mediaElement.Source = mediaSource;	
+		mediaElement.Source = mediaSource;
 	}
 
 	[Fact]
