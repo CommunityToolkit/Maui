@@ -645,7 +645,7 @@ public partial class MediaManager : IDisposable
 			// Get the natural size of the video
 			var size = videoTrack.NaturalSize;
 			var preferredTransform = videoTrack.PreferredTransform;
-			
+
 			// Apply the preferred transform to get the correct dimensions
 			var transformedSize = CGAffineTransform.CGRectApplyAffineTransform(new CGRect(CGPoint.Empty, size), preferredTransform);
 			var width = Math.Abs(transformedSize.Width);
