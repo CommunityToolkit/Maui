@@ -80,17 +80,23 @@ public class MediaElement : View, IMediaElement, IDisposable
 	public static readonly BindableProperty SpeedProperty =
 		BindableProperty.Create(nameof(Speed), typeof(double), typeof(MediaElement), 1.0);
 
+	static readonly BindablePropertyKey mediaHeightPropertyKey =
+		BindableProperty.CreateReadOnly(nameof(MediaHeight), typeof(int), typeof(MediaElement), 0);
+
 	/// <summary>
 	/// Backing store for the <see cref="MediaHeight"/> property.
 	/// </summary>
 	public static readonly BindableProperty MediaHeightProperty =
-		BindableProperty.Create(nameof(MediaHeight), typeof(int), typeof(MediaElement));
+		mediaHeightPropertyKey.BindableProperty;
+
+	static readonly BindablePropertyKey mediaWidthPropertyKey =
+		BindableProperty.CreateReadOnly(nameof(MediaWidth), typeof(int), typeof(MediaElement), 0);
 
 	/// <summary>
 	/// Backing store for the <see cref="MediaWidth"/> property.
 	/// </summary>
 	public static readonly BindableProperty MediaWidthProperty =
-		BindableProperty.Create(nameof(MediaWidth), typeof(int), typeof(MediaElement));
+		mediaWidthPropertyKey.BindableProperty;
 
 	/// <summary>
 	/// Backing store for the <see cref="Volume"/> property.
@@ -312,23 +318,15 @@ public class MediaElement : View, IMediaElement, IDisposable
 	/// Gets the height (in pixels) of the loaded media in pixels.
 	/// This is a bindable property.
 	/// </summary>
-	/// <remarks>Not reported for non-visual media.</remarks>
-	public int MediaHeight
-	{
-		get => (int)GetValue(MediaHeightProperty);
-		internal set => SetValue(MediaHeightProperty, value);
-	}
+	/// <remarks>Not reported for non-visual media, sometimes not available for live streamed content on iOS and macOS.</remarks>
+	public int MediaHeight => (int)GetValue(MediaHeightProperty);
 
 	/// <summary>
 	/// Gets the width (in pixels) of the loaded media in pixels.
 	/// This is a bindable property.
 	/// </summary>
-	/// <remarks>Not reported for non-visual media.</remarks>
-	public int MediaWidth
-	{
-		get => (int)GetValue(MediaWidthProperty);
-		internal set => SetValue(MediaWidthProperty, value);
-	}
+	/// <remarks>Not reported for non-visual media, sometimes not available for live streamed content on iOS and macOS.</remarks>
+	public int MediaWidth => (int)GetValue(MediaWidthProperty);
 
 	/// <summary>
 	/// Gets or sets the Title of the media.
@@ -400,6 +398,17 @@ public class MediaElement : View, IMediaElement, IDisposable
 		set => SetValue(durationPropertyKey, value);
 	}
 
+	int IMediaElement.MediaWidth
+	{
+		get => (int)GetValue(MediaWidthProperty);
+		set => SetValue(mediaWidthPropertyKey, value);
+	}
+
+	int IMediaElement.MediaHeight
+	{
+		get => (int)GetValue(MediaHeightProperty);
+		set => SetValue(mediaHeightPropertyKey, value);
+	}
 
 	/// <inheritdoc/>
 	TaskCompletionSource IAsynchronousMediaElementHandler.SeekCompletedTCS => seekCompletedTaskCompletionSource;

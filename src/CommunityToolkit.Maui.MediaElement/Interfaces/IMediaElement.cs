@@ -38,13 +38,13 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// Gets the height (in pixels) of the loaded media in pixels.
 	/// </summary>
 	/// <remarks>Not reported for non-visual media.</remarks>
-	int MediaHeight { get; }
+	int MediaHeight { get; internal set; }
 
 	/// <summary>
 	/// Gets the width (in pixels) of the loaded media in pixels.
 	/// </summary>
 	/// <remarks>Not reported for non-visual media.</remarks>
-	int MediaWidth { get; }
+	int MediaWidth { get; internal set; }
 
 	/// <summary>
 	/// The current position of the playing media.
