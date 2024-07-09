@@ -188,7 +188,7 @@ public class MauiMediaElement : CoordinatorLayout
 			windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorDefault;
 		}
 	}
-	
+
 	readonly record struct CurrentPlatformContext
 	{
 		public static Activity CurrentActivity
@@ -199,11 +199,11 @@ public class MauiMediaElement : CoordinatorLayout
 				{
 					throw new InvalidOperationException("CurrentActivity cannot be null");
 				}
-				
+
 				return Platform.CurrentActivity;
 			}
 		}
-		
+
 		public static Android.Views.Window CurrentWindow
 		{
 			get
@@ -212,11 +212,11 @@ public class MauiMediaElement : CoordinatorLayout
 				{
 					throw new InvalidOperationException("Window cannot be null");
 				}
-				
+
 				return CurrentActivity.Window;
 			}
 		}
-		
+
 		public static ViewGroup CurrentViewGroup
 		{
 			get
@@ -225,7 +225,7 @@ public class MauiMediaElement : CoordinatorLayout
 				{
 					throw new InvalidOperationException("DecorView cannot be null");
 				}
-				
+
 				return viewGroup;
 			}
 		}
