@@ -1,15 +1,12 @@
 ﻿using Android.App;
 using Android.Content;
-using Android.Content.Res;
 using Android.Runtime;
-using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using Com.Google.Android.Exoplayer2.UI;
 using CommunityToolkit.Maui.Views;
-using CurrentPlatformContext =  CommunityToolkit.Maui.Extensions.PageExtensions.CurrentPlatformContext;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -189,6 +186,48 @@ public class MauiMediaElement : CoordinatorLayout
 
 			windowInsetsControllerCompat.Show(barTypes);
 			windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorDefault;
+		}
+	}
+	
+	record struct CurrentPlatformContext
+	{
+		public static Activity CurrentActivity
+		{
+			get
+			{
+				if (Platform.CurrentActivity is null)
+				{
+					throw new InvalidOperationException("CurrentActivity cannot be null");
+				}
+				
+				return Platform.CurrentActivity;
+			}
+		}
+		
+		public static Android.Views.Window CurrentWindow
+		{
+			get
+			{
+				if (CurrentActivity.Window is null)
+				{
+					throw new InvalidOperationException("Window cannot be null");
+				}
+				
+				return CurrentActivity.Window;
+			}
+		}
+		
+		public static ViewGroup CurrentViewGroup
+		{
+			get
+			{
+				if (CurrentWindow.DecorView is not ViewGroup viewGroup)
+				{
+					throw new InvalidOperationException("DecorView cannot be null");
+				}
+				
+				return viewGroup;
+			}
 		}
 	}
 }
