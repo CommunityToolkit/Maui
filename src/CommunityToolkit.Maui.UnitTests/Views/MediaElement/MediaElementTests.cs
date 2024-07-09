@@ -27,6 +27,52 @@ public class MediaElementTests : BaseHandlerTest
 	}
 
 	[Fact]
+	public void CorrectDimensionsForVideoTest()
+	{
+		MediaElement mediaElement = new();
+		var mediaSource = MediaSource.FromUri("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
+
+		mediaElement.MediaOpened += (_, _) =>
+		{
+			mediaElement.MediaWidth.Should().Be(1280);
+			mediaElement.MediaHeight.Should().Be(720);
+		};
+
+		mediaElement.Source = mediaSource;
+	}
+
+	[Fact]
+	public void CorrectDimensionsForNullTest()
+	{
+		object context = new();
+		MediaElement mediaElement = new();
+		var mediaSource = MediaSource.FromUri("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
+
+		mediaElement.MediaOpened += (_, _) =>
+		{
+			// We set it to an actual media source first, when the is opened, set the source to null
+			if (mediaSource is not null)
+			{
+				mediaElement.MediaWidth.Should().Be(1280);
+				mediaElement.MediaHeight.Should().Be(720);
+
+				mediaElement.Source = null;
+				return;
+			}
+
+			// When the source is null, the dimensions should be 0
+			if (mediaElement.Source is null)
+			{
+				mediaElement.MediaWidth.Should().Be(0);
+				mediaElement.MediaHeight.Should().Be(0);
+			}
+		};
+
+		// Set the first (actual) media source, which will trigger the above event
+		mediaElement.Source = mediaSource;
+	}
+
+	[Fact]
 	public void MediaElementShouldBeAssignedToIMediaElement()
 	{
 		new MediaElement().Should().BeAssignableTo<IMediaElement>();
