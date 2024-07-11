@@ -699,8 +699,5 @@ sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
 	public override void WillEndFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
 	{
 		MediaManager.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
-		}
 	}
-
-	
 }
