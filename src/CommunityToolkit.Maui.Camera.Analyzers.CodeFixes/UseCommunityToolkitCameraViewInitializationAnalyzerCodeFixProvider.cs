@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Composition;
-using CommunityToolkit.Maui.CameraView.Analyzers;
+using CommunityToolkit.Maui.Camera.Analyzers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -10,8 +10,8 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace CommunityToolkit.Maui.Camera.Analyzers;
 
-[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseCommunityToolkitCameraViewInitializationAnalyzerCodeFixProvider)), Shared]
-public class UseCommunityToolkitCameraViewInitializationAnalyzerCodeFixProvider : CodeFixProvider
+[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseCommunityToolkitCameraInitializationAnalyzerCodeFixProvider)), Shared]
+public class UseCommunityToolkitCameraInitializationAnalyzerCodeFixProvider : CodeFixProvider
 {
 	public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(UseCommunityToolkitCameraInitializationAnalyzer.DiagnosticId);
 
@@ -30,9 +30,9 @@ public class UseCommunityToolkitCameraViewInitializationAnalyzerCodeFixProvider 
 		// Register a code action that will invoke the fix.
 		context.RegisterCodeFix(
 			CodeAction.Create(
-				title: CodeFixResources.Initialize__NET_MAUI_Community_Toolkit_CameraView_Before_UseMauiApp,
+				title: CodeFixResources.Initialize__NET_MAUI_Community_Toolkit_Camera_Before_UseMauiApp,
 				createChangedDocument: c => AddUseCommunityToolkit(context.Document, declaration, c),
-				equivalenceKey: nameof(CodeFixResources.Initialize__NET_MAUI_Community_Toolkit_CameraView_Before_UseMauiApp)),
+				equivalenceKey: nameof(CodeFixResources.Initialize__NET_MAUI_Community_Toolkit_Camera_Before_UseMauiApp)),
 			diagnostic);
 	}
 

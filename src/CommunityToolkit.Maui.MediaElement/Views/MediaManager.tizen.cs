@@ -148,7 +148,10 @@ public partial class MediaManager : IDisposable
 		if (MediaElement.Source is null)
 		{
 			Player.SetSource(null);
+
 			MediaElement.Duration = TimeSpan.Zero;
+			MediaElement.MediaWidth = MediaElement.MediaHeight = 0;
+
 			MediaElement.CurrentStateChanged(MediaElementState.None);
 			return;
 		}
@@ -389,6 +392,11 @@ public partial class MediaManager : IDisposable
 		if (Player is not null)
 		{
 			await Player.PrepareAsync();
+
+			var videoSize = Player.StreamInfo.GetVideoProperties().Size;
+			MediaElement.MediaWidth = (int)videoSize.Width;
+			MediaElement.MediaHeight = (int)videoSize.Height;
+
 			PlatformUpdatePosition();
 			UpdateCurrentState();
 		}

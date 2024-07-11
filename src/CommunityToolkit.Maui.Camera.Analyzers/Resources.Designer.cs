@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace CommunityToolkit.Maui.CameraView.Analyzers {
+namespace CommunityToolkit.Maui.Camera.Analyzers {
     using System;
     
     
@@ -36,7 +36,7 @@ namespace CommunityToolkit.Maui.CameraView.Analyzers {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("CommunityToolkit.Maui.CameraView.Analyzers.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("CommunityToolkit.Maui.Camera.Analyzers.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -67,7 +67,7 @@ namespace CommunityToolkit.Maui.CameraView.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to `.UseMauiCommunityToolkitCamera()` is required to initalize .NET MAUI Community Toolkit CameraView.
+        ///   Looks up a localized string similar to `.UseMauiCommunityToolkitCamera()` is required to initalize .NET MAUI Community Toolkit Camera.
         /// </summary>
         internal static string InitializationErrorMessage {
             get {
