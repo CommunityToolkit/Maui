@@ -38,7 +38,7 @@ public partial class IconTintColorBehavior
 	{
 		base.OnDetachedFrom(bindable, platformView);
 
-		ClearTintColor(bindable, platformView);
+		ClearTintColor();
 		bindable.PropertyChanged -= OnElementPropertyChanged;
 		PropertyChanged -= OnTintedImagePropertyChanged;
 	}
@@ -114,9 +114,14 @@ public partial class IconTintColorBehavior
 		ApplyTintColor();
 	}
 
-	void ClearTintColor(View element, AView control)
+	void ClearTintColor()
 	{
-		switch (control)
+		if (nativeView is null)
+		{
+			return;
+		}
+
+		switch (nativeView)
 		{
 			case ImageView image:
 				image.ClearColorFilter();
