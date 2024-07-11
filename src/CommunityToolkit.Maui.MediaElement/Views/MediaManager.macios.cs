@@ -654,19 +654,6 @@ public partial class MediaManager : IDisposable
 			}
 		}
 	}
-}
-
-sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
-{
-	public override void WillBeginFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
-	{
-		MediaManager.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
-	}
-	public override void WillEndFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
-	{
-		MediaManager.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
-		}
-	}
 
 	(int Width, int Height) GetVideoDimensions(AVPlayerItem avPlayerItem)
 	{
@@ -701,4 +688,19 @@ sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
 			return (0, 0);
 		}
 	}
+}
+
+sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
+{
+	public override void WillBeginFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
+	{
+		MediaManager.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
+	}
+	public override void WillEndFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
+	{
+		MediaManager.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
+		}
+	}
+
+	
 }
