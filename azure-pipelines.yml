@@ -27,7 +27,7 @@ variables:
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/8.0.6.json'
   CommunityToolkitSampleApp_Xcode_Version: '15.2.0'
-  CommunityToolkitLibrary_Xcode_Version: '15.2.0'
+  CommunityToolkitLibrary_Xcode_Version: '15.3.0'
 
 trigger:
   branches:
@@ -59,7 +59,7 @@ jobs:
         'Windows':
           image: 'windows-latest'
         'macOS':
-          image: 'macos-13'
+          image: 'macos-14'
     pool:
       vmImage: $(image)
     steps:
@@ -132,7 +132,7 @@ jobs:
         'Windows':
           image: 'windows-latest'
         'macOS':
-          image: 'macos-13'
+          image: 'macos-14'
     pool:
       vmImage: $(image)
     steps:
@@ -337,7 +337,8 @@ jobs:
         condition: and(eq(variables['Agent.OS'], 'Windows_NT'),
           startsWith(variables['Build.SourceBranch'], 'refs/tags/'),
           not(endsWith(variables['Build.SourceBranch'], '-mediaelement')), 
-          not(endsWith(variables['Build.SourceBranch'], '-maps'))) # Only run this step on Windows and when it's a tagged build and the tag does NOT end with -mediaelement and does NOT end with -maps
+          not(endsWith(variables['Build.SourceBranch'], '-maps')),
+          not(endsWith(variables['Build.SourceBranch'], '-camera'))) # Only run this step on Windows and when it's a tagged build and the tag does NOT end with -mediaelement and does NOT end with -maps and does NOT end with -camera
         displayName: 'Copy CommunityToolkit.Maui & CommunityToolkit.Maui.Core NuGet Packages to Staging Directory'
         inputs:
           targetType: 'inline'

@@ -13,7 +13,7 @@ public abstract class BaseHandlerTest : BaseTest
 
 	protected IServiceProvider ServiceProvider { get; }
 
-	protected static TElementHandler CreateElementHandler<TElementHandler>(Microsoft.Maui.IElement view, bool hasMauiContext = true)
+	protected static TElementHandler CreateElementHandler<TElementHandler>(IElement view, bool hasMauiContext = true)
 		where TElementHandler : IElementHandler, new()
 	{
 		var mockElementHandler = new TElementHandler();
