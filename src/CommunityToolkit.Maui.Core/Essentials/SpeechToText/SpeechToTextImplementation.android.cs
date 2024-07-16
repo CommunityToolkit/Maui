@@ -80,11 +80,16 @@ public sealed partial class SpeechToTextImplementation
 		{
 			throw new FeatureNotSupportedException("Speech Recognition is not available on this device");
 		}
-		if (SpeechRecognizer.isOnDeviceRecognitionAvailable(Application.Context)) {
-            speechRecognizer = SpeechRecognizer.createOnDeviceSpeechRecognizer(Application.Context);
-        } else {
+		
+		if (SpeechRecognizer.IsOnDeviceRecognitionAvailable(Application.Context))
+		{
+            speechRecognizer = SpeechRecognizer.CreateOnDeviceSpeechRecognizer(Application.Context);
+        } 
+		else 
+		{
 			speechRecognizer = SpeechRecognizer.CreateSpeechRecognizer(Application.Context);
 		}
+		
 		if (speechRecognizer is null)
 		{
 			throw new FeatureNotSupportedException("Speech recognizer is not available on this device");
