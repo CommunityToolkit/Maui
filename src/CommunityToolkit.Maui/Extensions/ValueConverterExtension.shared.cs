@@ -18,7 +18,7 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 			return true;
 		}
 
-		// Is TTarget a Value Type and targetType a Nullable Value Type? Eg TTarget is bool and targetType is bool?
+		// Is targetType a Nullable Value Type? Eg TTarget is bool and targetType is bool?
 		if (shouldAllowNullableValueTypes && targetType.IsValueType && IsValidNullableValueType(targetType))
 		{
 			return true;
