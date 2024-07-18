@@ -2,7 +2,6 @@
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Views;
-using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 using Tizen.Multimedia;
 using Tizen.NUI.BaseComponents;
 
