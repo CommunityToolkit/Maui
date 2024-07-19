@@ -59,6 +59,7 @@ public partial class IconTintColorBehavior
 
 		if (image is null && button.Content is Microsoft.UI.Xaml.Controls.Panel panel)
 			image = panel.Children?.FirstOrDefault(i => i is WImage) as WImage;
+		}
 
 		return image is not null;
 	}
