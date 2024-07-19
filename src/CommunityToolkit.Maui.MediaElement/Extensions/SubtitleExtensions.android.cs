@@ -5,7 +5,7 @@ using Com.Google.Android.Exoplayer2.UI;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Primitives;
 using static Android.Views.ViewGroup;
-using CurrentPlatformActivity = CommunityToolkit.Maui.Extensions.PageExtensions.CurrentPlatformActivity;
+using CurrentPlatformActivity = CommunityToolkit.Maui.Core.Views.MauiMediaElement.CurrentPlatformContext;
 
 namespace CommunityToolkit.Maui.Extensions;
 
