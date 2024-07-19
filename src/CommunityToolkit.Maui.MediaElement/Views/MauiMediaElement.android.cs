@@ -193,7 +193,7 @@ public class MauiMediaElement : CoordinatorLayout
 		}
 	}
 
-	public readonly record struct CurrentPlatformContext
+	internal readonly record struct CurrentPlatformContext
 	{
 		public static Activity CurrentActivity
 		{
