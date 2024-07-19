@@ -15,7 +15,7 @@ partial class SubtitleExtensions : Grid, IDisposable
 	public SubtitleExtensions(Microsoft.UI.Xaml.Controls.MediaPlayerElement player)
 	{
 		mauiMediaElement = player?.Parent as MauiMediaElement;
-		MauiMediaElement.GridEventsChanged += OnFullScreenChanged;
+		MediaManager.FullScreenEvents.WindowsChanged += OnFullScreenChanged;
 		subtitleTextBlock = new()
 		{
 			Text = string.Empty,
@@ -77,11 +77,13 @@ partial class SubtitleExtensions : Grid, IDisposable
 		});
 	}
 
-	void OnFullScreenChanged(object? sender, GridEventArgs e)
+	void OnFullScreenChanged(object? sender, FullScreenStateChangedEventArgs e)
 	{
+		var gridItem = MediaManager.FullScreenEvents.grid;
 		ArgumentNullException.ThrowIfNull(mauiMediaElement);
 		ArgumentNullException.ThrowIfNull(MediaElement);
-		if (e.Grid is not Microsoft.UI.Xaml.Controls.Grid gridItem || string.IsNullOrEmpty(MediaElement.SubtitleUrl))
+		ArgumentNullException.ThrowIfNull(gridItem);
+		if (string.IsNullOrEmpty(MediaElement.SubtitleUrl))
 		{
 			return;
 		}

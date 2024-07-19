@@ -15,12 +15,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// The user-interface element that represents the <see cref="MediaElement"/> on Android.
 /// </summary>
 public class MauiMediaElement : CoordinatorLayout
-{
-	/// <summary>
-	/// Handles the event when the windows change.
-	/// </summary>
-	public static event EventHandler<FullScreenEventArgs>? FullScreenChanged;
-	
+{	
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
 	bool isFullScreen;
@@ -61,11 +56,6 @@ public class MauiMediaElement : CoordinatorLayout
 
 		AddView(relativeLayout);
 	}
-
-	/// <summary>
-	/// A method that raises the FullScreenChanged event.
-	/// </summary>
-	protected virtual void OnFullScreenChanged(FullScreenEventArgs e) => FullScreenChanged?.Invoke(null, e);
 
 	public override void OnDetachedFromWindow()
 	{
@@ -128,15 +118,15 @@ public class MauiMediaElement : CoordinatorLayout
 			isFullScreen = true;
 			RemoveView(relativeLayout);
 			layout?.AddView(relativeLayout);
-            OnFullScreenChanged(new Maui.Primitives.FullScreenEventArgs(isFullScreen));
-        }
+			MediaManager.FullScreenEvents.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
+		}
 		else
 		{
 			isFullScreen = false;
 			layout?.RemoveView(relativeLayout);
 			AddView(relativeLayout);
-            OnFullScreenChanged(new Maui.Primitives.FullScreenEventArgs(isFullScreen));
-        }
+			MediaManager.FullScreenEvents.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
+		}
 		// Hide/Show the SystemBars and Status bar
 		SetSystemBarsVisibility();
 	}

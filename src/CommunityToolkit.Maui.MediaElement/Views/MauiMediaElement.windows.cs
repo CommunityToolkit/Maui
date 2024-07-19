@@ -24,10 +24,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiMediaElement : Grid, IDisposable
 {
-	/// <summary>
-	/// Handles the event when the windows change.
-	/// </summary>
-	public static event EventHandler<GridEventArgs>? GridEventsChanged;
 	static readonly AppWindow appWindow = GetAppWindowForCurrentWindow();
 	readonly Popup popup = new();
 	readonly Grid fullScreenGrid = new();
@@ -79,14 +75,6 @@ public class MauiMediaElement : Grid, IDisposable
 	/// Finalizer
 	/// </summary>
 	~MauiMediaElement() => Dispose(false);
-
-	/// <summary>
-	/// A method that raises the GridEventsChanged event.
-	/// </summary>
-	protected virtual void FullScreenChanged(GridEventArgs e)
-	{
-		GridEventsChanged?.Invoke(null, e);
-	}
 
 	/// <summary>
 	/// Releases the managed and unmanaged resources used by the <see cref="MauiMediaElement"/>.
@@ -169,7 +157,6 @@ public class MauiMediaElement : Grid, IDisposable
 			appWindow.SetPresenter(AppWindowPresenterKind.Default);
 			Shell.SetNavBarIsVisible(CurrentPage, doesNavigationBarExistBeforeFullScreen);
 
-			FullScreenChanged(new Maui.Primitives.GridEventArgs(fullScreenGrid));
 			if (popup.IsOpen)
 			{
 				popup.IsOpen = false;
@@ -182,6 +169,8 @@ public class MauiMediaElement : Grid, IDisposable
 			var parent = mediaPlayerElement.Parent as FrameworkElement;
 			mediaPlayerElement.Width = parent?.Width ?? mediaPlayerElement.Width;
 			mediaPlayerElement.Height = parent?.Height ?? mediaPlayerElement.Height;
+			MediaManager.FullScreenEvents.grid = fullScreenGrid;
+			MediaManager.FullScreenEvents.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
 		}
 		else
 		{
@@ -210,7 +199,8 @@ public class MauiMediaElement : Grid, IDisposable
 			{
 				popup.IsOpen = true;
 			}
-			FullScreenChanged(new Maui.Primitives.GridEventArgs(fullScreenGrid));
+			MediaManager.FullScreenEvents.grid = fullScreenGrid;
+			MediaManager.FullScreenEvents.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
 		}
 	}
 }

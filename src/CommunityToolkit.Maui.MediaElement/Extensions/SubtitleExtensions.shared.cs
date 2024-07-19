@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿// NOTE: PR shares code with #2041 https://github.com/CommunityToolkit/Maui/pull/2041
+using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Extensions;
 partial class SubtitleExtensions

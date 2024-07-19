@@ -688,20 +688,12 @@ public partial class MediaManager : IDisposable
 }
 sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
 {
-	/// <summary>
-	/// Handles the event when the windows change.
-	/// </summary>
-	public static event EventHandler<FullScreenEventArgs>? FullScreenChanged;
 	public override void WillBeginFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
 	{
-		OnFulScreenChanged(new FullScreenEventArgs(true));
+		MediaManager.FullScreenEvents.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
 	}
 	public override void WillEndFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
 	{
-		OnFulScreenChanged(new FullScreenEventArgs(false));
+		MediaManager.FullScreenEvents.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
 	}
-	/// <summary>
-	/// A method that raises the FullScreenChanged event.
-	/// </summary>
-	static void OnFulScreenChanged(FullScreenEventArgs e) => FullScreenChanged?.Invoke(null, e);
 }

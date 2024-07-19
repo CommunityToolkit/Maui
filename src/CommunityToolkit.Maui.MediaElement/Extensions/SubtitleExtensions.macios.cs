@@ -37,7 +37,7 @@ partial class SubtitleExtensions : UIViewController
 					  | UIViewAutoresizing.FlexibleHeight
 					  | UIViewAutoresizing.FlexibleBottomMargin
 		};
-		MediaManagerDelegate.FullScreenChanged += OnFullScreenChanged;
+		MediaManager.FullScreenEvents.WindowsChanged += OnFullScreenChanged;
 	}
 
 	public void StartSubtitleDisplay()
@@ -96,7 +96,7 @@ partial class SubtitleExtensions : UIViewController
 		return new CGRect(0, uIViewController.View.Bounds.Height - 60, uIViewController.View.Bounds.Width, 50);
 	}
 
-	void OnFullScreenChanged(object? sender, FullScreenEventArgs e)
+	void OnFullScreenChanged(object? sender, FullScreenStateChangedEventArgs e)
 	{
 		ArgumentNullException.ThrowIfNull(MediaElement);
 		if (string.IsNullOrEmpty(MediaElement.SubtitleUrl))
@@ -104,7 +104,7 @@ partial class SubtitleExtensions : UIViewController
 			return;
 		}
 		subtitleLabel.Text = string.Empty;
-		switch (e.isFullScreen)
+		switch (e.NewState == MediaElementScreenState.FullScreen)
 		{
 			case true:
 				viewController = WindowStateManager.Default.GetCurrentUIViewController() ?? throw new ArgumentException(nameof(viewController));
@@ -122,7 +122,7 @@ partial class SubtitleExtensions : UIViewController
 
 	~SubtitleExtensions()
 	{
-		MediaManagerDelegate.FullScreenChanged -= OnFullScreenChanged;
+		MediaManager.FullScreenEvents.WindowsChanged -= OnFullScreenChanged;
 		if(playerObserver is not null && player is not null)
 		{
 			player.RemoveTimeObserver(playerObserver);

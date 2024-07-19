@@ -25,7 +25,7 @@ partial class SubtitleExtensions : Java.Lang.Object
 		subtitleLayout.AddRule(LayoutRules.AlignParentBottom);
 		subtitleLayout.AddRule(LayoutRules.CenterHorizontal);
 		InitializeTextBlock();
-		MauiMediaElement.FullScreenChanged += OnFullScreenChanged;
+		MediaManager.FullScreenEvents.WindowsChanged += OnFullScreenChanged;
 	}
 
 	public void StartSubtitleDisplay()
@@ -111,7 +111,7 @@ partial class SubtitleExtensions : Java.Lang.Object
 		subtitleView.SetPaddingRelative(10, 10, 10, 20);
 	}
 
-	void OnFullScreenChanged(object? sender, FullScreenEventArgs e)
+	void OnFullScreenChanged(object? sender, FullScreenStateChangedEventArgs e)
 	{
 		ArgumentNullException.ThrowIfNull(subtitleView);
 		ArgumentNullException.ThrowIfNull(MediaElement);
@@ -125,7 +125,7 @@ partial class SubtitleExtensions : Java.Lang.Object
 		{
 			return;
 		}
-		switch (e.isFullScreen)
+		switch (e.NewState == MediaElementScreenState.FullScreen)
 		{
 			case true:
 				CurrentPlatformActivity.CurrentViewGroup.RemoveView(subtitleView);
