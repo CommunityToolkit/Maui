@@ -57,7 +57,6 @@ partial class MediaManager : IDisposable
 		Player.MediaPlayer.IsMutedChanged += OnMediaElementIsMutedChanged;
 
 		systemMediaControls = Player.MediaPlayer.SystemMediaTransportControls;
-		FullScreenEvents.WindowsChanged += OnWindowsChanged;
 		return Player;
 	}
 

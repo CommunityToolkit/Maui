@@ -199,7 +199,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			ControllerAutoShow = false,
 			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 		};
-		FullScreenEvents.WindowsChanged += OnWindowsChanged;
 		checkPermissionsTask = CheckAndRequestForegroundPermission(checkPermissionSourceToken.Token);
 		return (Player, PlayerView);
 	}

@@ -35,6 +35,7 @@ public partial class MediaManager
 		Dispatcher = dispatcher;
 		MediaElement = mediaElement;
 		Logger = MauiContext.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(MediaManager));
+		FullScreenEvents.WindowsChanged += OnWindowsChanged;
 	}
 
 	/// <summary>

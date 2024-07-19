@@ -122,8 +122,6 @@ public partial class MediaManager : IDisposable
 		AddPlayedToEndObserver();
 		AddErrorObservers();
 
-		MediaManager.FullScreenEvents.WindowsChanged += OnWindowsChanged;
-
 		return (Player, PlayerViewController);
 	}
 
