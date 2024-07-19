@@ -13,7 +13,7 @@
         <Grid
 			Padding="20" 
 			ColumnDefinitions="*, *, *"
-			RowDefinitions="Auto, Auto, 60, Auto, 60, Auto, Auto, 60"
+			RowDefinitions="Auto, Auto, 60, Auto, 60, Auto, Auto, 60, Auto"
 			RowSpacing="20">
 
             <Label
@@ -149,6 +149,19 @@
                     <mct:IconTintColorBehavior TintColor="Purple" />
                 </Image.Behaviors>
             </Image>
+
+			<!-- Applies tint color to Button images in iOS and Mac Catalyst pending #2040 -->
+			<Button 
+                Grid.Row="9"
+                Grid.ColumnSpan="3"
+                HorizontalOptions="Center"
+                VerticalOptions="End"
+				Text="Button with IconTintColorBehavior"
+                ImageSource="https://api.nuget.org/v3-flatcontainer/communitytoolkit.maui/9.0.1/icon">
+                <Button.Behaviors>
+                    <mct:IconTintColorBehavior TintColor="Red" />
+                </Button.Behaviors>
+            </Button>
         </Grid>
     </ScrollView>
 </pages:BasePage>
