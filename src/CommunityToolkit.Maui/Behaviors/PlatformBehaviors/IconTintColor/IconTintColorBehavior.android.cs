@@ -2,6 +2,7 @@
 using Android.Graphics;
 using Android.Widget;
 using Microsoft.Maui.Platform;
+using MButton = Google.Android.Material.Button.MaterialButton;
 using AButton = Android.Widget.Button;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
@@ -78,6 +79,13 @@ public partial class IconTintColorBehavior
 
 		static void SetButtonTintColor(AButton button, Color? color)
 		{
+            if (button is MButton mButton && color is not null)
+            {
+                mButton.IconTintMode = PorterDuff.Mode.SrcIn;
+                mButton.IconTint = new Android.Content.Res.ColorStateList(new int[][] { Array.Empty<int>() }, new int[] { color.ToPlatform() });
+                return;
+            }
+
 			var drawables = button.GetCompoundDrawables().Where(d => d is not null);
 
 			if (color is null)
@@ -122,10 +130,18 @@ public partial class IconTintColorBehavior
 				image.ClearColorFilter();
 				break;
 			case AButton button:
+
+				if (button is MButton mButton)
+                {
+                    mButton.IconTint = null;
+                    break;
+                }
+
 				foreach (var drawable in button.GetCompoundDrawables())
 				{
 					drawable?.ClearColorFilter();
 				}
+				
 				break;
 		}
 	}
