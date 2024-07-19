@@ -37,7 +37,7 @@ public partial class MediaManager
 		MediaElement = mediaElement;
 
 		Logger = MauiContext.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(MediaManager));
-		FullScreenEvents.WindowsChanged += OnWindowsChanged;
+		FullScreenEvents.WindowsChanged += OnFullScreenStatusChanged;
 	}
 
 	/// <summary>
@@ -61,7 +61,7 @@ public partial class MediaManager
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
-	protected void OnWindowsChanged(object? sender, FullScreenStateChangedEventArgs e)
+	protected void OnFullScreenStatusChanged(object? sender, FullScreenStateChangedEventArgs e)
 	{
 		if (MediaElement is not null)
 		{
@@ -72,6 +72,7 @@ public partial class MediaManager
 			Logger?.LogWarning("MediaElement is null");
 		}
 	}
+
 	/// <summary>
 	/// The <see cref="IMediaElement"/> instance managed by this manager.
 	/// </summary>
