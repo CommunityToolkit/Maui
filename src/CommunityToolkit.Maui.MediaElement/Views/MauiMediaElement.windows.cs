@@ -8,13 +8,11 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Imaging;
 using WinRT.Interop;
 using Application = Microsoft.Maui.Controls.Application;
 using Button = Microsoft.UI.Xaml.Controls.Button;
 using Colors = Microsoft.UI.Colors;
 using Grid = Microsoft.UI.Xaml.Controls.Grid;
-using ImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 using Page = Microsoft.Maui.Controls.Page;
 using SolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using Thickness = Microsoft.UI.Xaml.Thickness;
@@ -35,11 +33,6 @@ public class MauiMediaElement : Grid, IDisposable
 	// Cannot be static readonly because we need to be able to add icon to multiple instances of the button
 	readonly FontIcon fullScreenIcon = new() { Glyph = "\uE740", FontFamily = new FontFamily("Segoe Fluent Icons") };
 	readonly FontIcon exitFullScreenIcon = new() { Glyph = "\uE73F", FontFamily = new FontFamily("Segoe Fluent Icons") };
-
-	/// <summary>
-	/// An event that is raised when the full screen state of the media element has changed.
-	/// </summary>
-	public static event EventHandler<FullScreenStateChangedEventArgs>? WindowsChanged;
 
 	bool doesNavigationBarExistBeforeFullScreen;
 	bool isDisposed;
@@ -92,7 +85,6 @@ public class MauiMediaElement : Grid, IDisposable
 		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
-	static void OnWindowsChanged(FullScreenStateChangedEventArgs e) => WindowsChanged?.Invoke(null, e);
 
 	/// <summary>
 	/// Gets the presented page.
@@ -179,7 +171,8 @@ public class MauiMediaElement : Grid, IDisposable
 			var parent = mediaPlayerElement.Parent as FrameworkElement;
 			mediaPlayerElement.Width = parent?.Width ?? mediaPlayerElement.Width;
 			mediaPlayerElement.Height = parent?.Height ?? mediaPlayerElement.Height;
-			MauiMediaElement.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
+
+			MediaManager.FullScreenEvents.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
 		}
 		else
 		{
@@ -208,7 +201,7 @@ public class MauiMediaElement : Grid, IDisposable
 			{
 				popup.IsOpen = true;
 			}
-			MauiMediaElement.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
+			MediaManager.FullScreenEvents.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
 		}
 	}
 }

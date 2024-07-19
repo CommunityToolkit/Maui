@@ -16,13 +16,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MediaManager : IDisposable
 {
 	Metadata? metaData;
-	static event EventHandler<FullScreenStateChangedEventArgs>? WindowsChanged;
-	
-	/// <summary>
-	/// Static event that is raised when the full screen state of the media element has changed.
-	/// </summary>
-	/// <param name="e"></param>
-	public static void OnWindowsChanged(FullScreenStateChangedEventArgs e) => WindowsChanged?.Invoke(null, e);
 
 	// Media would still start playing when Speed was set although ShouldAutoPlay=False
 	// This field was added to overcome that.
@@ -129,7 +122,7 @@ public partial class MediaManager : IDisposable
 		AddPlayedToEndObserver();
 		AddErrorObservers();
 
-		WindowsChanged += OnWindowsChanged;
+		MediaManager.FullScreenEvents.WindowsChanged += OnWindowsChanged;
 
 		return (Player, PlayerViewController);
 	}
@@ -694,10 +687,10 @@ sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
 {
 	public override void WillBeginFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
 	{
-		MediaManager.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
+		MediaManager.FullScreenEvents.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
 	}
 	public override void WillEndFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
 	{
-		MediaManager.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
+		MediaManager.FullScreenEvents.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
 	}
 }

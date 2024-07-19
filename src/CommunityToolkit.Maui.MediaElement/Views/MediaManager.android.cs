@@ -18,9 +18,9 @@ using Com.Google.Android.Exoplayer2.Video;
 using CommunityToolkit.Maui.ApplicationModel.Permissions;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Media.Services;
+using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
-using CommunityToolkit.Maui.Primitives;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -211,7 +211,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			ControllerAutoShow = false,
 			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 		};
-		MauiMediaElement.WindowsChanged += OnWindowsChanged;
+		FullScreenEvents.WindowsChanged += OnWindowsChanged;
 		checkPermissionsTask = CheckAndRequestForegroundPermission(checkPermissionSourceToken.Token);
 		return (Player, PlayerView);
 	}

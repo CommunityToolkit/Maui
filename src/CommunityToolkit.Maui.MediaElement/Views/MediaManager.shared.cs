@@ -9,7 +9,7 @@ global using PlatformMediaElement = Microsoft.UI.Xaml.Controls.MediaPlayerElemen
 #elif TIZEN
 global using PlatformMediaElement = CommunityToolkit.Maui.Core.Views.TizenPlayer;
 #endif
-
+using CommunityToolkit.Maui.Primitives;
 using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -35,6 +35,22 @@ public partial class MediaManager
 		Dispatcher = dispatcher;
 		MediaElement = mediaElement;
 		Logger = MauiContext.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(MediaManager));
+	}
+
+	/// <summary>
+	/// An event that is raised when the full screen state of the media element has changed.
+	/// </summary>
+	public record FullScreenEvents()
+	{
+		/// <summary>
+		/// An event that is raised when the full screen state of the media element has changed.
+		/// </summary>
+		public static event EventHandler<FullScreenStateChangedEventArgs>? WindowsChanged;
+		/// <summary>
+		/// An event that is raised when the full screen state of the media element has changed.
+		/// </summary>
+		/// <param name="e"></param>
+		public static void OnWindowsChanged(FullScreenStateChangedEventArgs e) => WindowsChanged?.Invoke(null, e);
 	}
 
 	/// <summary>
