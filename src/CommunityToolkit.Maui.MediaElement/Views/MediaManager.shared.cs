@@ -9,6 +9,7 @@ global using PlatformMediaElement = Microsoft.UI.Xaml.Controls.MediaPlayerElemen
 #elif TIZEN
 global using PlatformMediaElement = CommunityToolkit.Maui.Core.Views.TizenPlayer;
 #endif
+
 using CommunityToolkit.Maui.Primitives;
 using Microsoft.Extensions.Logging;
 
@@ -34,6 +35,7 @@ public partial class MediaManager
 		MauiContext = context;
 		Dispatcher = dispatcher;
 		MediaElement = mediaElement;
+
 		Logger = MauiContext.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(MediaManager));
 		FullScreenEvents.WindowsChanged += OnWindowsChanged;
 	}

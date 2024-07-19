@@ -1,5 +1,5 @@
 using CommunityToolkit.Maui.Core.Primitives;
-using CommunityToolkit.Maui.Primitives;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Controls;
@@ -46,6 +46,7 @@ partial class MediaManager : IDisposable
 		Player = new();
 		WindowsMediaElement MediaElement = new();
 		MediaElement.MediaOpened += OnMediaElementMediaOpened;
+
 		Player.SetMediaPlayer(MediaElement);
 		Player.MediaPlayer.PlaybackSession.NaturalVideoSizeChanged += OnNaturalVideoSizeChanged;
 		Player.MediaPlayer.PlaybackSession.PlaybackRateChanged += OnPlaybackSessionPlaybackRateChanged;
