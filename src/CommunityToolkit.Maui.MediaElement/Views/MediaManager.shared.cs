@@ -44,7 +44,7 @@ public partial class MediaManager
 	/// <summary>
 	/// An event that is raised when the full screen state of the media element has changed.
 	/// </summary>
-	public record FullScreenEvents()
+	internal readonly record struct FullScreenEvents()
 	{
 		/// <summary>
 		/// An event that is raised when the full screen state of the media element has changed.
