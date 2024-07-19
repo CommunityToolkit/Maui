@@ -1,4 +1,5 @@
-﻿#if !(ANDROID || IOS || WINDOWS || MACCATALYST || TIZEN)
+﻿// NOTE: PR shares code with #1918 https://github.com/CommunityToolkit/Maui/pull/1918
+#if !(ANDROID || IOS || WINDOWS || MACCATALYST || TIZEN)
 global using PlatformMediaElement = System.Object;
 #elif ANDROID
 global using PlatformMediaElement = Com.Google.Android.Exoplayer2.IExoPlayer;
