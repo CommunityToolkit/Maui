@@ -54,6 +54,22 @@ public partial class MediaManager
 	}
 
 	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	protected void OnWindowsChanged(object? sender, FullScreenStateChangedEventArgs e)
+	{
+		if (MediaElement is not null)
+		{
+			MediaElement.FullScreenChanged(e.NewState);
+		}
+		else
+		{
+			Logger?.LogWarning("MediaElement is null");
+		}
+	}
+	/// <summary>
 	/// The <see cref="IMediaElement"/> instance managed by this manager.
 	/// </summary>
 	protected IMediaElement MediaElement { get; }

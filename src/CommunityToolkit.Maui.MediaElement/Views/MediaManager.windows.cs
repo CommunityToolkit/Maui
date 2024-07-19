@@ -61,18 +61,6 @@ partial class MediaManager : IDisposable
 		return Player;
 	}
 
-	void OnWindowsChanged(object? sender, FullScreenStateChangedEventArgs e)
-	{
-		if(MediaElement is not null)
-		{
-			MediaElement.FullScreenChanged(e.NewState);
-		}
-		else
-		{
-			Logger?.LogWarning("MediaElement is null");
-		}
-	}
-
 	/// <summary>
 	/// Releases the managed and unmanaged resources used by the <see cref="MediaManager"/>.
 	/// </summary>

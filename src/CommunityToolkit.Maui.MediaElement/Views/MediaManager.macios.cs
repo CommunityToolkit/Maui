@@ -136,18 +136,6 @@ public partial class MediaManager : IDisposable
 		GC.SuppressFinalize(this);
 	}
 
-	void OnWindowsChanged(object? sender, FullScreenStateChangedEventArgs e)
-	{
-		if (MediaElement is not null)
-		{
-			MediaElement.FullScreenChanged(e.NewState);
-		}
-		else
-		{
-			Logger?.LogWarning("MediaElement is null");
-		}
-	}
-
 	protected virtual partial void PlatformPlay()
 	{
 		if (Player?.CurrentTime == PlayerItem?.Duration)

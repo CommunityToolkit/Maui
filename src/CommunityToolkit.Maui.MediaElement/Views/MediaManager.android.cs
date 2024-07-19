@@ -81,18 +81,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		}
 	}
 
-	void OnWindowsChanged(object? sender, FullScreenStateChangedEventArgs e)
-	{
-		if (MediaElement is not null)
-		{
-			MediaElement.FullScreenChanged(e.NewState);
-		}
-		else
-		{
-			Logger?.LogWarning("MediaElement is null");
-		}
-	}
-
 	/// <summary>
 	/// Occurs when ExoPlayer changes the playback parameters.
 	/// </summary>
