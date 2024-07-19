@@ -39,7 +39,6 @@ public class MediaElement : View, IMediaElement, IDisposable
 		BindableProperty.Create(nameof(FullScreenState), typeof(MediaElementScreenState), typeof(MediaElement), 
 			MediaElementScreenState.Default, propertyChanged: OnFullScreenPropertyChanged);
 
-
 	/// <summary>
 	/// Backing store for the <see cref="ShouldAutoPlay"/> property.
 	/// </summary>
@@ -401,6 +400,7 @@ public class MediaElement : View, IMediaElement, IDisposable
 		get => (MediaElementScreenState)GetValue(FullScreenProperty);
 		private set => SetValue(FullScreenProperty, value);
 	}
+
 	TimeSpan IMediaElement.Position
 	{
 		get => (TimeSpan)GetValue(PositionProperty);
@@ -649,6 +649,7 @@ public class MediaElement : View, IMediaElement, IDisposable
 	}
 
 	void IMediaElement.CurrentStateChanged(MediaElementState newState) => CurrentState = newState;
+
 	void IMediaElement.FullScreenChanged(MediaElementScreenState newState) => FullScreenState = newState;
 
 	void OnPositionChanged(MediaPositionChangedEventArgs mediaPositionChangedEventArgs) =>
@@ -659,6 +660,7 @@ public class MediaElement : View, IMediaElement, IDisposable
 
 	void OnFullScreenChanged(FullScreenStateChangedEventArgs fullScreenStateChangedEventArgs) =>
 		eventManager.HandleEvent(this, fullScreenStateChangedEventArgs, nameof(FullScreenStateChanged));
+
 	void OnPauseRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(PauseRequested));
 
 	void OnPlayRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(PlayRequested));

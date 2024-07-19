@@ -33,7 +33,6 @@ public class MauiMediaElement : Grid, IDisposable
 	// Cannot be static readonly because we need to be able to add icon to multiple instances of the button
 	readonly FontIcon fullScreenIcon = new() { Glyph = "\uE740", FontFamily = new FontFamily("Segoe Fluent Icons") };
 	readonly FontIcon exitFullScreenIcon = new() { Glyph = "\uE73F", FontFamily = new FontFamily("Segoe Fluent Icons") };
-
 	bool doesNavigationBarExistBeforeFullScreen;
 	bool isDisposed;
 
@@ -171,7 +170,6 @@ public class MauiMediaElement : Grid, IDisposable
 			var parent = mediaPlayerElement.Parent as FrameworkElement;
 			mediaPlayerElement.Width = parent?.Width ?? mediaPlayerElement.Width;
 			mediaPlayerElement.Height = parent?.Height ?? mediaPlayerElement.Height;
-
 			MediaManager.FullScreenEvents.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
 		}
 		else
