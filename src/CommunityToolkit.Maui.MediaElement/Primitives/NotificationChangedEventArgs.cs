@@ -2,7 +2,7 @@
 /// <summary>
 /// A Class that contains the event arguments for the notification changed event.
 /// </summary>
-public sealed class NotificationChangedEventArgs
+sealed class NotificationChangedEventArgs
 {
 	/// <summary>
 	/// A Constructor that initializes the class with the action.
