@@ -93,9 +93,9 @@ class MediaControlsService : Service
 
 		OnSetupAudioServices();
 
-			pendingIntentFlags = Build.VERSION.SdkInt >= BuildVersionCodes.S
-				? PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable
-				: PendingIntentFlags.UpdateCurrent;
+		pendingIntentFlags = Build.VERSION.SdkInt >= BuildVersionCodes.S
+			? PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable
+			: PendingIntentFlags.UpdateCurrent;
 
 		return InitializeNotification(mediaSession, mediaManagerIntent, cancellationToken);
 	}
@@ -127,7 +127,7 @@ class MediaControlsService : Service
 
 		notification.SetStyle(style);
 		notification.SetSmallIcon(_Microsoft.Android.Resource.Designer.Resource.Drawable.exo_styled_controls_audiotrack);
-			notification.SetAutoCancel(false);
+		notification.SetAutoCancel(false);
 		notification.SetVisibility(NotificationCompat.VisibilityPublic);
 		mediaSession.SetExtras(intent.Extras);
 		mediaSession.SetPlaybackToLocal(AudioManager.AudioSessionIdGenerate);
@@ -273,7 +273,6 @@ sealed class ReceiveUpdates : BroadcastReceiver
 		public static event EventHandler<NotificationChangedEventArgs>? NotificationChanged;
 		public static void Update(NotificationChangedEventArgs e) => NotificationChanged?.Invoke(null, e);
 	}
-	public string Action = string.Empty;
 	
 	/// <summary>
 	/// Method that is called when a broadcast is received.
@@ -286,7 +285,7 @@ sealed class ReceiveUpdates : BroadcastReceiver
 		ArgumentNullException.ThrowIfNull(intent.Action);
 		if(intent.Action.Contains(MediaControlsService.ACTION_UPDATE_UI))
 		{
-			Action = intent.GetStringExtra("ACTION") ?? string.Empty;
+			var Action = intent.GetStringExtra("ACTION") ?? string.Empty;
 			UpdateNotification.Update(new NotificationChangedEventArgs(Action));
 		}
 	}
