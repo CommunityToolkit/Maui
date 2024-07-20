@@ -759,7 +759,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			if (intent.Action.Contains(MediaControlsService.ACTION_UPDATE_PLAYER))
 			{
 				var action = intent.GetStringExtra("ACTION") ?? string.Empty;
-				MainThread.InvokeOnMainThreadAsync(() => { 
+				Application.Current?.Dispatcher.Dispatch(() =>
+				{
 				switch (action)
 				{
 					case MediaControlsService.ACTION_PLAY:
