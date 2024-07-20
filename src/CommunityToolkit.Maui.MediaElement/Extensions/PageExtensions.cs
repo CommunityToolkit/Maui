@@ -2,7 +2,7 @@
 
 // Since MediaElement can't access .NET MAUI internals we have to copy this code here
 // https://github.com/dotnet/maui/blob/main/src/Controls/src/Core/Platform/PageExtensions.cs
-static partial class PageExtensions
+static class PageExtensions
 {
 	internal static Page GetCurrentPage(this Page currentPage)
 	{

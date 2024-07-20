@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace CommunityToolkit.Maui.Core;
 
-static class FontExtensions
+sealed class FontExtensions
 {
 	public record struct FontFamily(string input)
 	{
