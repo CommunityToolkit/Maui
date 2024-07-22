@@ -58,7 +58,7 @@ class MediaControlsService : Service
 			{
 				foreach (var exception in t.Exception.InnerExceptions)
 				{
-					System.Diagnostics.Trace.WriteLine($"[error] {exception}, {exception.Message}");
+					System.Diagnostics.Trace.TraceError($"[error] {exception}, {exception.Message}");
 				}
 			}
 		}, TaskContinuationOptions.OnlyOnFaulted);
@@ -102,6 +102,7 @@ class MediaControlsService : Service
 
 	async ValueTask InitializeNotification(MediaSessionCompat mediaSession, Intent mediaManagerIntent, CancellationToken cancellationToken)
 	{
+		ArgumentNullException.ThrowIfNull(receiveUpdates);
 		var notificationManager = GetSystemService(NotificationService) as NotificationManager;
 		var intent = new Intent(this, typeof(MediaControlsService));
 		var pendingIntent = PendingIntent.GetActivity(this, 2, intent, pendingIntentFlags);
@@ -120,7 +121,7 @@ class MediaControlsService : Service
 			notification = new NotificationCompat.Builder(Platform.AppContext, "1");
 			OnSetIntents();
 			await OnSetContent(mediaManagerIntent, cancellationToken).ConfigureAwait(false);
-			ReceiveUpdates.UpdateNotification.NotificationChanged += UpdateNotification_NotificationChanged;
+			receiveUpdates.NotificationChanged += UpdateNotification_NotificationChanged;
 		}
 
 		notification ??= new NotificationCompat.Builder(Platform.AppContext, "1");
@@ -252,7 +253,7 @@ class MediaControlsService : Service
 
 			if (receiveUpdates is not null)
 			{
-				ReceiveUpdates.UpdateNotification.NotificationChanged -= UpdateNotification_NotificationChanged;
+				receiveUpdates.NotificationChanged -= UpdateNotification_NotificationChanged;
 				LocalBroadcastManager.GetInstance(Platform.AppContext).UnregisterReceiver(receiveUpdates);
 			}
 			receiveUpdates?.Dispose();
@@ -268,11 +269,8 @@ class MediaControlsService : Service
 /// </summary>
 sealed class ReceiveUpdates : BroadcastReceiver
 {
-	internal readonly struct UpdateNotification
-	{
-		public static event EventHandler<NotificationChangedEventArgs>? NotificationChanged;
-		public static void Update(NotificationChangedEventArgs e) => NotificationChanged?.Invoke(null, e);
-	}
+	public event EventHandler<NotificationChangedEventArgs>? NotificationChanged;
+	public void Update(NotificationChangedEventArgs e) => NotificationChanged?.Invoke(Platform.AppContext, e);
 	
 	/// <summary>
 	/// Method that is called when a broadcast is received.
@@ -286,7 +284,7 @@ sealed class ReceiveUpdates : BroadcastReceiver
 		if(intent.Action.Contains(MediaControlsService.ACTION_UPDATE_UI))
 		{
 			var Action = intent.GetStringExtra("ACTION") ?? string.Empty;
-			UpdateNotification.Update(new NotificationChangedEventArgs(Action));
+			Update(new NotificationChangedEventArgs(Action));
 		}
 	}
 }

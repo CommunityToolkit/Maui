@@ -376,6 +376,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		Player.SeekTo(0);
 		Player.Stop();
 		MediaElement.Position = TimeSpan.Zero;
+		StopService();
 	}
 
 	protected virtual partial void PlatformUpdateSource()
