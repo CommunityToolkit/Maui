@@ -1,5 +1,4 @@
-﻿using System.Collections.Frozen;
-using System.Globalization;
+﻿using System.Globalization;
 using CommunityToolkit.Maui.Converters;
 using Xunit;
 
@@ -7,13 +6,13 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class SelectedItemEventArgsConverterTests : BaseOneWayConverterTest<SelectedItemEventArgsConverter>
 {
-	public static FrozenSet<object?[]> Data { get; } = new[]
-	{
-		new object?[] { null, null},
-		new object?[] { new SelectedItemChangedEventArgs(1, 1), 1},
-		new object?[] { new SelectedItemChangedEventArgs('c', 1), 'c'},
-		new object?[] { new SelectedItemChangedEventArgs(Colors.Black, 1), Colors.Black},
-	}.ToFrozenSet();
+	public static IReadOnlyList<object?[]> Data { get; } =
+	[
+		[null, null],
+		[new SelectedItemChangedEventArgs(1, 1), 1],
+		[new SelectedItemChangedEventArgs('c', 1), 'c'],
+		[new SelectedItemChangedEventArgs(Colors.Black, 1), Colors.Black],
+	];
 
 	[Theory]
 	[MemberData(nameof(Data))]

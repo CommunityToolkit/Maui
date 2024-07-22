@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Handlers;
 
@@ -217,6 +217,9 @@ public class MauiPopup : UIViewController
 		}
 
 		public override UIModalPresentationStyle GetAdaptivePresentationStyle(UIPresentationController forPresentationController) =>
+			UIModalPresentationStyle.None;
+
+		public override UIModalPresentationStyle GetAdaptivePresentationStyle(UIPresentationController controller, UITraitCollection traitCollection) =>
 			UIModalPresentationStyle.None;
 
 		public override void DidDismiss(UIPresentationController presentationController) =>

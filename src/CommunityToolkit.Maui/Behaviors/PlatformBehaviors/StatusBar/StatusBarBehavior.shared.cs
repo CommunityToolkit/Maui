@@ -19,14 +19,14 @@ public enum StatusBarApplyOn
 	/// <summary>
 	/// Apply color and style when the page has been navigated to.
 	/// </summary>
-	OnPageNavigatedTo,
+	OnPageNavigatedTo
 }
 
 /// <summary>
 /// <see cref="PlatformBehavior{TView,TPlatformView}"/> that controls the Status bar color
 /// </summary>
 [UnsupportedOSPlatform("Windows"), UnsupportedOSPlatform("MacCatalyst"), UnsupportedOSPlatform("MacOS"), UnsupportedOSPlatform("Tizen")]
-public class StatusBarBehavior : PlatformBehavior<Page>
+public class StatusBarBehavior : BasePlatformBehavior<Page>
 {
 	/// <summary>
 	/// <see cref="BindableProperty"/> that manages the StatusBarColor property.
@@ -85,6 +85,8 @@ public class StatusBarBehavior : PlatformBehavior<Page>
 	protected override void OnAttachedTo(Page bindable, object platformView)
 #endif
 	{
+		base.OnAttachedTo(bindable, platformView);
+
 		if (ApplyOn == StatusBarApplyOn.OnBehaviorAttachedTo)
 		{
 			StatusBar.SetColor(StatusBarColor);
@@ -109,6 +111,8 @@ public class StatusBarBehavior : PlatformBehavior<Page>
 #if IOS
 		bindable.SizeChanged -= OnPageSizeChanged;
 #endif
+		base.OnDetachedFrom(bindable, platformView);
+
 		bindable.NavigatedTo -= OnPageNavigatedTo;
 	}
 

@@ -14,10 +14,20 @@ namespace CommunityToolkit.Maui.Behaviors;
 public class SelectAllTextBehavior : PlatformBehavior<InputView, NView>
 {
 	/// <inheritdoc/>
-	protected override void OnAttachedTo(InputView bindable, NView platformView) => ApplyEffect(true, platformView);
+	protected override void OnAttachedTo(InputView bindable, NView platformView) 
+	{ 
+		base.OnAttachedTo(bindable, platformView);
+
+		ApplyEffect(true, platformView);
+	}
 
 	/// <inheritdoc/>
-	protected override void OnDetachedFrom(InputView bindable, NView platformView) => ApplyEffect(false, platformView);
+	protected override void OnDetachedFrom(InputView bindable, NView platformView) 
+	{
+		base.OnDetachedFrom(bindable, platformView);
+		
+		ApplyEffect(false, platformView);
+	}
 
 
 	void ApplyEffect(bool apply, NView inputView)

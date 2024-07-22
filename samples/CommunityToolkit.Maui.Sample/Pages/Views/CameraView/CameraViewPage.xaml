@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+                xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+                Title="CameraView"
+                Unloaded="OnUnloaded"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Views.CameraViewPage"
+                x:TypeArguments="viewModels:CameraViewViewModel"
+                x:DataType="viewModels:CameraViewViewModel">
+
+    <Grid RowDefinitions="200,*,Auto,Auto" ColumnDefinitions="3*,*">
+        <toolkit:CameraView
+            x:Name="Camera"
+            Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Grid.RowSpan="3"
+            CameraFlashMode="{Binding FlashMode}"
+            ZoomFactor="{Binding CurrentZoom}"
+            ImageCaptureResolution="{Binding SelectedResolution}"
+            SelectedCamera="{Binding SelectedCamera}"/>
+
+        <Grid Grid.Column="0" Grid.Row="0" RowDefinitions="Auto" BackgroundColor="#80CCCCCC">
+
+            <VerticalStackLayout Spacing="5" Padding="5" >
+                <Label Text="{Binding CameraNameText}" />
+                <Label Text="{Binding FlashModeText}" />
+                <Label Text="{Binding ZoomRangeText}" />
+                <Label Text="{Binding CurrentZoomText}" />
+                <Label Text="{Binding ResolutionText}" />
+                <Picker 
+                    Title="Available Resolutions"
+                    ItemsSource="{Binding SelectedCamera.SupportedResolutions}"
+                    SelectedItem="{Binding SelectedResolution}" />
+                <Label x:Name="debugText"/>
+
+            </VerticalStackLayout>
+        </Grid>
+
+        <ContentView Grid.Column="1" Grid.Row="0" ZIndex="100" BackgroundColor="#80CCCCCC">
+            <Image x:Name="image" VerticalOptions="Fill" HorizontalOptions="Fill">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnImageTapped" />
+                </Image.GestureRecognizers>
+            </Image>
+        </ContentView>
+
+        <Grid ColumnDefinitions="Auto,*,Auto"  Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2" ColumnSpacing="10" Margin="10"
+              BackgroundColor="#00000000">
+            <Button Clicked="ZoomOut" Text="Zoom -" Grid.Column="0"/>
+
+            <Slider 
+                x:Name="slider" Grid.Column="1"
+                Value="{Binding CurrentZoom}"
+                Maximum="{Binding SelectedCamera.MaximumZoomFactor, FallbackValue=1}"
+                Minimum="{Binding SelectedCamera.MinimumZoomFactor, FallbackValue=1}"/>
+
+            <Button Clicked="ZoomIn" Text="Zoom +" Grid.Column="2"/>
+        </Grid>
+
+        <Grid Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3" BackgroundColor="#80CCCCCC">
+
+            <FlexLayout Margin="5" JustifyContent="SpaceBetween" Wrap="Wrap">
+
+                <Picker 
+                    Title="Flash"
+                    IsVisible="{Binding Path=SelectedCamera.IsFlashSupported, FallbackValue=false}"
+                    ItemsSource="{Binding FlashModes}"
+                    SelectedItem="{Binding FlashMode}" />
+
+                <Button Command="{Binding CaptureImageCommand, Source={x:Reference Camera}}" 
+                        CommandParameter="{Binding Token}"
+                        Text="Capture Image"/>
+                <Button Command="{Binding StartCameraPreviewCommand, Source={x:Reference Camera}}"
+                        CommandParameter="{Binding Token}"
+                        Text="StartCameraPreview" />
+                
+                <Button Command="{Binding StopCameraPreviewCommand, Source={x:Reference Camera}}" 
+                        Text="StopCameraPreview" />
+
+            </FlexLayout>
+        </Grid>
+
+    </Grid>
+</pages:BasePage>

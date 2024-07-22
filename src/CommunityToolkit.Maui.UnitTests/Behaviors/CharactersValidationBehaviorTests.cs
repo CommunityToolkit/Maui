@@ -1,9 +1,10 @@
 ﻿using CommunityToolkit.Maui.Behaviors;
+using Nito.AsyncEx;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class CharactersValidationBehaviorTests : BaseTest
+public class CharactersValidationBehaviorTests() : BaseBehaviorTest<CharactersValidationBehavior, VisualElement>(new CharactersValidationBehavior(), new View())
 {
 	[Theory]
 	[InlineData(CharacterType.Any, 1, 2, "A", true)]
@@ -100,6 +101,28 @@ public class CharactersValidationBehaviorTests : BaseTest
 		{
 			await cts.CancelAsync();
 			await behavior.ForceValidate(cts.Token);
+		});
+	}
+
+	[Fact]
+	public void EnsureObjectDisposedExceptionThrownWhenDisposedBehaviorAttachedToVisualElement()
+	{
+		var behavior = new CharactersValidationBehavior();
+
+		Assert.Throws<ObjectDisposedException>(() =>
+		{
+			// Use AsyncContext to catch async void exception
+			AsyncContext.Run(() =>
+			{
+				behavior.Dispose();
+				var element = new VisualElement()
+				{
+					Behaviors =
+					{
+						behavior
+					}
+				};
+			});
 		});
 	}
 }

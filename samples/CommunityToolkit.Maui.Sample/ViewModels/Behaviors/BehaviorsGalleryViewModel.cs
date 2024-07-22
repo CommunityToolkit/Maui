@@ -21,5 +21,9 @@ public class BehaviorsGalleryViewModel() : BaseGalleryViewModel(
 	SectionModel.Create<AnimationBehaviorViewModel>(nameof(AnimationBehavior), "Perform animation when a specified UI element event is triggered"),
 	SectionModel.Create<SelectAllTextBehaviorViewModel>(nameof(SelectAllTextBehavior), "Select all text inside the Entry or Editor control."),
 	SectionModel.Create<IconTintColorBehaviorViewModel>(nameof(IconTintColorBehavior), "Tint an icon with the selected color."),
-	SectionModel.Create<StatusBarBehaviorViewModel>(nameof(StatusBarBehavior), "Change the Status Bar color.")
-]);
+	SectionModel.Create<StatusBarBehaviorViewModel>(nameof(StatusBarBehavior), "Change the Status Bar color."),
+	SectionModel.Create<TouchBehaviorViewModel>(nameof(TouchBehavior), "Alter a views appearance when responding to touch events (normal, pressed, hovered, long press).")
+])
+{
+
+}
