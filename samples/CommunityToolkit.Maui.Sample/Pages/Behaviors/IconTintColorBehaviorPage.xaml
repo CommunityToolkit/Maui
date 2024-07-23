@@ -159,8 +159,7 @@
                 FontSize="18"
                 HorizontalTextAlignment="Center"
                 Text="Button with Image" />
-
-			<!-- Applies tint color to Button images in iOS and Mac Catalyst pending #2040 -->
+            
 			<Button 
                 Grid.Row="9"
                 Grid.ColumnSpan="3"
