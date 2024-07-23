@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(NetVersion)</TargetFramework>
-    <UseMaui>true</UseMaui>
     <IsPackable>false</IsPackable>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GF</CompilerGeneratedFilesOutputPath>

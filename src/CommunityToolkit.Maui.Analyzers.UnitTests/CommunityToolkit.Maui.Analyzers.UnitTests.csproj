@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>$(NetVersion)</TargetFramework>
     <IsPackable>false</IsPackable>
-    <UseMaui>true</UseMaui>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GF</CompilerGeneratedFilesOutputPath>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
