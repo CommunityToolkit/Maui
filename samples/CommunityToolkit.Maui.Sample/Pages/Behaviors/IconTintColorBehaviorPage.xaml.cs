@@ -10,11 +10,11 @@ public partial class IconTintColorBehaviorPage : BasePage<IconTintColorBehaviorV
 	{
 		InitializeComponent();
 	}
-	
+
 	void HandleButtonClicked(object? sender, EventArgs e)
 	{
 		ArgumentNullException.ThrowIfNull(sender);
-		
+
 		var button = (Button)sender;
 
 		if (button.Behaviors.OfType<IconTintColorBehavior>().SingleOrDefault() is IconTintColorBehavior iconTintColorBehavior)
