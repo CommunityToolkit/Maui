@@ -37,28 +37,6 @@ public partial class IconTintColorBehavior
 		PropertyChanged -= OnTintedImagePropertyChanged;
 	}
 
-	static void ClearTintColor(View element, AndroidView control)
-	{
-		switch (control)
-		{
-			case ImageView image:
-				image.ClearColorFilter();
-				break;
-
-			case AndroidMaterialButton mButton:
-				mButton.IconTint = null;
-				break;
-
-			case AndroidWidgetButton button:
-				foreach (var drawable in button.GetCompoundDrawables())
-				{
-					drawable.ClearColorFilter();
-				}
-
-				break;
-		}
-	}
-
 	static void ApplyTintColor(AndroidView? nativeView, Color? tintColor)
 	{
 		if (nativeView is null)
@@ -122,6 +100,28 @@ public partial class IconTintColorBehavior
 			{
 				img.SetTint(color.ToPlatform());
 			}
+		}
+	}
+
+	static void ClearTintColor(View element, AndroidView control)
+	{
+		switch (control)
+		{
+			case ImageView image:
+				image.ClearColorFilter();
+				break;
+
+			case AndroidMaterialButton mButton:
+				mButton.IconTint = null;
+				break;
+
+			case AndroidWidgetButton button:
+				foreach (var drawable in button.GetCompoundDrawables())
+				{
+					drawable.ClearColorFilter();
+				}
+
+				break;
 		}
 	}
 

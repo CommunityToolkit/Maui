@@ -163,9 +163,11 @@
                 Grid.Row="9"
                 Grid.ColumnSpan="3"
                 Clicked="HandleButtonClicked"
+                HeightRequest="110"
+                WidthRequest="350"
                 HorizontalOptions="Center"
                 VerticalOptions="Center"
-				Text="Button with IconTintColorBehavior"
+				Text="Button with Image"
                 ImageSource="https://api.nuget.org/v3-flatcontainer/communitytoolkit.maui/9.0.1/icon">
             </Button>
             
