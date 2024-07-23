@@ -1,83 +1,125 @@
-﻿using System.Globalization;
-using System.Text;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace CommunityToolkit.Maui.Core;
 
-partial class SrtParser : IParser
+/// <summary>
+/// Parser for SubRip (SRT) subtitle files
+/// </summary>
+public partial class SrtParser : IParser
 {
-	static readonly Regex timecodePatternSRT = SRTRegex();
+	static readonly Regex timeCodeRegex = TimeCodeRegex();
+	static readonly string[] separator = { "\r\n", "\r", "\n" };
 
-	public List<SubtitleCue> ParseContent(string content)
+	/// <summary>
+	/// Parses the content of an SRT file and returns a SubtitleDocument
+	/// </summary>
+	/// <param name="content">The content of the SRT file</param>
+	/// <returns>A SubtitleDocument containing the parsed subtitles</returns>
+	public SubtitleDocument ParseContent(string content)
 	{
-		var cues = new List<SubtitleCue>();
-		if (string.IsNullOrEmpty(content))
+		if (string.IsNullOrWhiteSpace(content))
 		{
-			return cues;
+			return new SubtitleDocument();
 		}
-		
-		var lines = content.Split(SubtitleParser.Separator, StringSplitOptions.RemoveEmptyEntries);
+
+		var document = new SubtitleDocument();
+		var lines = content.Split(separator, StringSplitOptions.None);
+
 		SubtitleCue? currentCue = null;
-		var textBuffer = new StringBuilder();
+		var cueText = new List<string>();
 
 		foreach (var line in lines)
 		{
-			if (int.TryParse(line, out _))
-			{
-				continue;
-			}
+			var trimmedLine = line.Trim();
 
-			var match = timecodePatternSRT.Match(line);
-			if (match.Success)
+			if (string.IsNullOrWhiteSpace(trimmedLine))
 			{
 				if (currentCue is not null)
 				{
-					currentCue.Text = textBuffer.ToString().TrimEnd('\r', '\n');
-					cues.Add(currentCue);
-					textBuffer.Clear();
+					FinalizeCue(currentCue, cueText, document);
+					currentCue = null;
+					cueText.Clear();
 				}
-				currentCue = CreateCue(match);
+				continue;
 			}
-			else if (currentCue is not null && !string.IsNullOrWhiteSpace(line))
+
+			if (int.TryParse(trimmedLine, out _))
 			{
-				textBuffer.AppendLine(line.Trim().TrimEnd('\r', '\n'));
+				if (currentCue is not null)
+				{
+					FinalizeCue(currentCue, cueText, document);
+					cueText.Clear();
+				}
+
+				currentCue = new SubtitleCue { Id = trimmedLine };
+			}
+			else if (currentCue is not null && timeCodeRegex.IsMatch(trimmedLine))
+			{
+				var match = timeCodeRegex.Match(trimmedLine);
+
+				if (!match.Success)
+				{
+					throw new FormatException("Invalid timecode format.");
+				}
+
+				currentCue.StartTime = ParseTimeCode(match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value, match.Groups[4].Value);
+				currentCue.EndTime = ParseTimeCode(match.Groups[5].Value, match.Groups[6].Value, match.Groups[7].Value, match.Groups[8].Value);
+
+				if (currentCue.EndTime <= currentCue.StartTime)
+				{
+					throw new FormatException("End time must be greater than start time.");
+				}
+			}
+			else if (currentCue is not null)
+			{
+				cueText.Add(trimmedLine);
+			}
+			else
+			{
+				throw new FormatException("Invalid subtitle format.");
 			}
 		}
 
-		if (currentCue is not null)
+		// Add the last cue if there's any
+		if (currentCue is not null && cueText.Count > 0)
 		{
-			currentCue.Text = textBuffer.ToString().TrimEnd('\r', '\n');
-			cues.Add(currentCue);
+			FinalizeCue(currentCue, cueText, document);
 		}
-		if(cues.Count == 0)
-		{
-			throw new FormatException("Invalid SRT format");
-		}
-		return cues;
+
+		return document;
 	}
 
-	static SubtitleCue CreateCue(Match match)
+	static void FinalizeCue(SubtitleCue cue, List<string> cueText, SubtitleDocument document)
 	{
-		var StartTime = ParseTimecode(match.Groups[1].Value);
-		var EndTime = ParseTimecode(match.Groups[2].Value);
-		var Text = string.Empty;
-		if (StartTime > EndTime)
-		{
-			throw new FormatException("Start time cannot be greater than end time.");
-		}
-		return new SubtitleCue
-		{
-			StartTime = StartTime,
-			EndTime = EndTime,
-			Text = Text
-		};
+		cue.RawText = string.Join("\n", cueText);
+		cue.ParsedCueText = ParseCueText(cue.RawText);
+		document.Cues.Add(cue);
 	}
 
-	static TimeSpan ParseTimecode(string timecode)
+	static SubtitleNode ParseCueText(string rawText)
 	{
-		return TimeSpan.ParseExact(timecode, @"hh\:mm\:ss\,fff", CultureInfo.InvariantCulture);
+		var root = new SubtitleNode { NodeType = "root" };
+		var lines = rawText.Split('\n');
+
+		foreach (var line in lines)
+		{
+			var textNode = new SubtitleNode
+			{
+				NodeType = "text",
+				TextContent = line.TrimStart('-', ' ')
+			};
+
+			root.Children.Add(textNode);
+		}
+
+		return root;
 	}
 
-	[GeneratedRegex(@"(\d{2}\:\d{2}\:\d{2}\,\d{3}) --> (\d{2}\:\d{2}\:\d{2}\,\d{3})", RegexOptions.Compiled)]
-	private static partial Regex SRTRegex();
+	static TimeSpan ParseTimeCode(string hours, string minutes, string seconds, string milliseconds)
+	{
+		return new TimeSpan(0, int.Parse(hours), int.Parse(minutes), int.Parse(seconds), int.Parse(milliseconds));
+	}
+
+	[GeneratedRegex(@"(\d{2}):(\d{2}):(\d{2}),(\d{3}) --> (\d{2}):(\d{2}):(\d{2}),(\d{3})", RegexOptions.Compiled)]
+	private static partial Regex TimeCodeRegex();
 }

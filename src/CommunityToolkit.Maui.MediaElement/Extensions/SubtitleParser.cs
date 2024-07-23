@@ -33,13 +33,24 @@ public partial class SubtitleParser
 	/// </summary>
 	/// <param name="content"></param>
 	/// <returns></returns>
-	public virtual List<SubtitleCue> ParseContent(string content)
+	public virtual SubtitleDocument ParseContent(string content)
 	{
 		return IParser.ParseContent(content);
 	}
 
-	internal static async Task<string> Content(string subtitleUrl)
+	internal static async Task<string> Content(string? subtitleUrl)
 	{
+		ArgumentNullException.ThrowIfNull(subtitleUrl);
+		if (string.IsNullOrWhiteSpace(subtitleUrl))
+		{
+			throw new ArgumentException("Url is empty.");
+		}
+		if (!ValidateUrlWithRegex(subtitleUrl))
+		{
+			throw new UriFormatException("Invalid URL");
+		}
+		
+		
 		try
 		{
 			return await httpClient.GetStringAsync(subtitleUrl).ConfigureAwait(false);
@@ -47,7 +58,7 @@ public partial class SubtitleParser
 		catch (Exception ex)
 		{
 			System.Diagnostics.Trace.TraceError(ex.Message);
-			return string.Empty;
+			throw new FormatException("Invalid URL");
 		}
 	}
 
@@ -62,7 +73,7 @@ public partial class SubtitleParser
         urlRegex.Matches(url);
         if(!urlRegex.IsMatch(url))
 		{
-			throw new ArgumentException("Invalid Subtitle URL");
+			return false;
 		}
         return true;
     }
