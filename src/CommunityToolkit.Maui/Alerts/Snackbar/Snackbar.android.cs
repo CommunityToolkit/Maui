@@ -4,8 +4,8 @@ using Android.Graphics.Drawables;
 using Android.Util;
 using Android.Widget;
 using Google.Android.Material.Snackbar;
-using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Platform;
 using Object = Java.Lang.Object;
 using View = Android.Views.View;
 
@@ -119,7 +119,7 @@ public partial class Snackbar
 	{
 		if (snackbarView.Background is GradientDrawable shape)
 		{
-			shape.SetColor(VisualOptions.BackgroundColor.ToAndroid().ToArgb());
+			shape.SetColor(VisualOptions.BackgroundColor.ToPlatform().ToArgb());
 
 			var density = snackbarView.Context?.Resources?.DisplayMetrics?.Density ?? 1;
 			var cornerRadius = new Thickness(
@@ -149,7 +149,7 @@ public partial class Snackbar
 		var snackTextView = snackbarView.FindViewById<TextView>(Resource.Id.snackbar_text) ?? throw new InvalidOperationException("Unable to find Snackbar text view");
 		snackTextView.SetMaxLines(10);
 
-		snackTextView.SetTextColor(VisualOptions.TextColor.ToAndroid());
+		snackTextView.SetTextColor(VisualOptions.TextColor.ToPlatform());
 		if (VisualOptions.Font.Size > 0)
 		{
 			snackTextView.SetTextSize(ComplexUnitType.Dip, (float)VisualOptions.Font.Size);
@@ -165,7 +165,7 @@ public partial class Snackbar
 	{
 		var snackActionButtonView = platformSnackbar.View.FindViewById<TextView>(Resource.Id.snackbar_action) ?? throw new InvalidOperationException("Unable to find Snackbar action button");
 
-		platformSnackbar.SetActionTextColor(VisualOptions.ActionButtonTextColor.ToAndroid());
+		platformSnackbar.SetActionTextColor(VisualOptions.ActionButtonTextColor.ToPlatform());
 		if (VisualOptions.ActionButtonFont.Size > 0)
 		{
 			snackActionButtonView.SetTextSize(ComplexUnitType.Dip, (float)VisualOptions.ActionButtonFont.Size);
