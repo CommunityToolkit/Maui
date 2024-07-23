@@ -13,7 +13,7 @@
         <Grid
 			Padding="20" 
 			ColumnDefinitions="*, *, *"
-			RowDefinitions="Auto, Auto, 60, Auto, 60, Auto, Auto, 60, Auto"
+			RowDefinitions="Auto, Auto, 60, Auto, 60, Auto, Auto, 60, Auto, 60, Auto"
 			RowSpacing="20">
 
             <Label
@@ -149,19 +149,40 @@
                     <mct:IconTintColorBehavior TintColor="Purple" />
                 </Image.Behaviors>
             </Image>
+            
+            <Label
+                Grid.Column="0"
+                Grid.ColumnSpan="3"
+                Grid.Row="8"
+                Padding="0,20,0,0"
+                FontAttributes="Bold"
+                FontSize="18"
+                HorizontalTextAlignment="Center"
+                Text="Button with Image" />
 
 			<!-- Applies tint color to Button images in iOS and Mac Catalyst pending #2040 -->
 			<Button 
                 Grid.Row="9"
                 Grid.ColumnSpan="3"
+                Clicked="HandleButtonClicked"
                 HorizontalOptions="Center"
                 VerticalOptions="End"
 				Text="Button with IconTintColorBehavior"
                 ImageSource="https://api.nuget.org/v3-flatcontainer/communitytoolkit.maui/9.0.1/icon">
-                <Button.Behaviors>
-                    <mct:IconTintColorBehavior TintColor="Red" />
-                </Button.Behaviors>
             </Button>
+            
+            <Label
+                Grid.Row="10"
+                Grid.ColumnSpan="3"
+                Margin="0"
+                Padding="0"
+                FontSize="Micro"
+                FontAttributes="Italic"
+                HorizontalOptions="Center"
+                VerticalOptions="Start"
+                VerticalTextAlignment="Center"
+                HorizontalTextAlignment="Center"
+                Text="Clicking this Button adds/removes the TintColorBehavior for its icon. Click it!"/>
         </Grid>
     </ScrollView>
 </pages:BasePage>
