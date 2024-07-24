@@ -9,16 +9,20 @@ partial class SubtitleExtensions : Grid, IDisposable
 {
 	bool disposedValue;
 	bool isFullScreen = false;
-	readonly Microsoft.UI.Xaml.Controls.TextBlock subtitleTextBlock;
+	readonly Microsoft.UI.Xaml.Controls.TextBox subtitleTextBlock;
 	readonly MauiMediaElement? mauiMediaElement;
+	readonly int width;
 
 	public SubtitleExtensions(Microsoft.UI.Xaml.Controls.MediaPlayerElement player)
 	{
-		mauiMediaElement = player?.Parent as MauiMediaElement;
+		width = (int)player.ActualWidth / 3;
+		mauiMediaElement = player.Parent as MauiMediaElement;
 		MediaManager.FullScreenEvents.WindowsChanged += OnFullScreenChanged;
 		subtitleTextBlock = new()
 		{
-			Text = string.Empty,
+			FontSize = 16,
+			Width = width,
+			TextAlignment = Microsoft.UI.Xaml.TextAlignment.Center,
 			Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 20),
 			Visibility = Microsoft.UI.Xaml.Visibility.Collapsed,
 			HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
@@ -26,6 +30,12 @@ partial class SubtitleExtensions : Grid, IDisposable
 			Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.White),
 			TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap,
 		};
+		subtitleTextBlock.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.White);
+		subtitleTextBlock.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Black);
+		subtitleTextBlock.BackgroundSizing = Microsoft.UI.Xaml.Controls.BackgroundSizing.InnerBorderEdge;
+		subtitleTextBlock.Opacity = 0.7;
+		subtitleTextBlock.TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap;
+		subtitleTextBlock.Text = string.Empty;
 	}
 
 	public void StartSubtitleDisplay()
@@ -39,7 +49,7 @@ partial class SubtitleExtensions : Grid, IDisposable
 	public void StopSubtitleDisplay()
 	{
 		Cues?.Clear();
-		subtitleTextBlock.Text = string.Empty;
+		subtitleTextBlock.ClearValue(Microsoft.UI.Xaml.Controls.TextBox.TextProperty);
 		if (Timer is null)
 		{
 			return;
@@ -66,6 +76,7 @@ partial class SubtitleExtensions : Grid, IDisposable
 			if (cue is not null)
 			{
 				subtitleTextBlock.Text = cue.Text;
+				subtitleTextBlock.HorizontalTextAlignment = Microsoft.UI.Xaml.TextAlignment.Center;
 				subtitleTextBlock.FontFamily = new FontFamily(new Core.FontExtensions.FontFamily(MediaElement.SubtitleFont).WindowsFont);
 				subtitleTextBlock.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
 			}
@@ -87,18 +98,20 @@ partial class SubtitleExtensions : Grid, IDisposable
 		{
 			return;
 		}
-		subtitleTextBlock.Text = string.Empty;
+
 		switch (isFullScreen)
 		{
 			case true:
 				subtitleTextBlock.Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 20);
 				subtitleTextBlock.FontSize = MediaElement.SubtitleFontSize;
+				subtitleTextBlock.Width = width;
 				Dispatcher.Dispatch(() => { gridItem.Children.Remove(subtitleTextBlock); mauiMediaElement.Children.Add(subtitleTextBlock); });
 				isFullScreen = false;
 				break;
 			case false:
 				subtitleTextBlock.FontSize = MediaElement.SubtitleFontSize + 8.0;
-				subtitleTextBlock.Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 300);
+				subtitleTextBlock.Width = DeviceDisplay.Current.MainDisplayInfo.Width / 4;
+				subtitleTextBlock.Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 100);
 				Dispatcher.Dispatch(() => { mauiMediaElement.Children.Remove(subtitleTextBlock); gridItem.Children.Add(subtitleTextBlock); });
 				isFullScreen = true;
 				break;
