@@ -55,7 +55,13 @@ public partial class IconTintColorBehavior
 
 	static bool TryGetButtonImage(WButton button, [NotNullWhen(true)] out WImage? image)
 	{
-		image = button.Content as WImage;
+		image = button.Content switch
+		{
+			WImage windowsImage => windowsImage,
+			Microsoft.UI.Xaml.Controls.Panel panel => panel.Children?.OfType<WImage>().FirstOrDefault(),
+			_ => null
+		};
+
 		return image is not null;
 	}
 

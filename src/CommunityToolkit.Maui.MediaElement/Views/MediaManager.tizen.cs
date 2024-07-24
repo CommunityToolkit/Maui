@@ -2,9 +2,9 @@
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Views;
-using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 using Tizen.Multimedia;
 using Tizen.NUI.BaseComponents;
+using AppFW = Tizen.Applications;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -181,7 +181,7 @@ public partial class MediaManager : IDisposable
 			var path = resourceMediaSource.Path;
 			if (!string.IsNullOrWhiteSpace(path))
 			{
-				Player.SetSource(new MediaUriSource(ResourcePath.GetPath(path)));
+				Player.SetSource(new MediaUriSource(GetResourcePath(path)));
 				IsUriStreaming = false;
 			}
 		}
@@ -385,6 +385,36 @@ public partial class MediaManager : IDisposable
 		};
 
 		MediaElement.CurrentStateChanged(newsState);
+	}
+
+	string GetResourcePath(string res)
+	{
+		if (System.IO.Path.IsPathRooted(res))
+		{
+			return res;
+		}
+
+		foreach (AppFW.ResourceManager.Category category in Enum.GetValues(typeof(AppFW.ResourceManager.Category)))
+		{
+			var path = AppFW.ResourceManager.TryGetPath(category, res);
+
+			if (path != null)
+			{
+				return path;
+			}
+		}
+
+		AppFW.Application app = AppFW.Application.Current;
+		if (app != null)
+		{
+			string resPath = app.DirectoryInfo.Resource + res;
+			if (File.Exists(resPath))
+			{
+				return resPath;
+			}
+		}
+
+		return res;
 	}
 
 	async void PreparePlayer()
