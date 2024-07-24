@@ -19,14 +19,18 @@ public static partial class PopupExtensions
 	{
 #if WINDOWS
 		// TODO: This is a workaround for https://github.com/dotnet/maui/issues/12970. Remove this `#if Windows` block when the issue is closed
+		page.GetCurrentPage().Loaded += handler;
+
 		void handler(object? sender, EventArgs args)
 		{
+			ArgumentNullException.ThrowIfNull(sender);
+
+			var page = (Page)sender;
+
 			page.GetCurrentPage().Loaded -= handler;
 
 			CreateAndShowPopup(page, popup);
 		}
-
-		page.GetCurrentPage().Loaded += handler;
 #else
 		if (page.IsPlatformEnabled)
 		{
@@ -61,9 +65,21 @@ public static partial class PopupExtensions
 		// TODO: This is a workaround for https://github.com/dotnet/maui/issues/12970. Remove this `#if Windows` block when the issue is closed   
 		var taskCompletionSource = new TaskCompletionSource<object?>();
 
-		async void handler(object? sender, EventArgs args)
+		page.GetCurrentPage().Unloaded += unloadedHandler;
+		page.GetCurrentPage().Loaded += loadedHandler;
+
+		return taskCompletionSource.Task.WaitAsync(token);
+
+		static void unloadedHandler(object? sender, EventArgs args) { }
+
+		async void loadedHandler(object? sender, EventArgs args)
 		{
-			page.GetCurrentPage().Loaded -= handler;
+			ArgumentNullException.ThrowIfNull(sender);
+
+			var page = (Page)sender;
+
+			page.Unloaded -= unloadedHandler;
+			page.Loaded -= loadedHandler;
 
 			try
 			{
@@ -76,9 +92,6 @@ public static partial class PopupExtensions
 				taskCompletionSource.TrySetException(ex);
 			}
 		}
-		page.GetCurrentPage().Loaded += handler;
-
-		return taskCompletionSource.Task.WaitAsync(token);
 #else
 		if (page.IsPlatformEnabled)
 		{

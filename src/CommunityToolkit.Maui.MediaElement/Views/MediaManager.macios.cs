@@ -3,6 +3,7 @@ using AVKit;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Views;
 using CoreFoundation;
+using CoreGraphics;
 using CoreMedia;
 using Foundation;
 using MediaPlayer;
@@ -223,7 +224,7 @@ public partial class MediaManager : IDisposable
 		}
 
 		metaData ??= new(Player);
-		metaData.ClearNowPlaying();
+		Metadata.ClearNowPlaying();
 
 		if (MediaElement.Source is UriMediaSource uriMediaSource)
 		{
@@ -292,6 +293,10 @@ public partial class MediaManager : IDisposable
 		{
 			MediaElement.MediaOpened();
 
+			var mediaDimensions = GetVideoDimensions(PlayerItem);
+			MediaElement.MediaWidth = mediaDimensions.Width;
+			MediaElement.MediaHeight = mediaDimensions.Height;
+
 			if (MediaElement.ShouldAutoPlay)
 			{
 				Player.Play();
@@ -299,6 +304,8 @@ public partial class MediaManager : IDisposable
 		}
 		else if (PlayerItem is null)
 		{
+			MediaElement.MediaWidth = MediaElement.MediaHeight = 0;
+
 			MediaElement.CurrentStateChanged(MediaElementState.None);
 		}
 	}
@@ -383,8 +390,7 @@ public partial class MediaManager : IDisposable
 		{
 			return;
 		}
-
-		Player.PreventsDisplaySleepDuringVideoPlayback = MediaElement.ShouldKeepScreenOn;
+		UIApplication.SharedApplication.IdleTimerDisabled = MediaElement.ShouldKeepScreenOn;
 	}
 
 	protected virtual partial void PlatformUpdateShouldMute()
@@ -417,7 +423,8 @@ public partial class MediaManager : IDisposable
 				{
 					UIApplication.SharedApplication.EndReceivingRemoteControlEvents();
 				});
-
+				// disable the idle timer so screen turns off when media is not playing
+				UIApplication.SharedApplication.IdleTimerDisabled = false;
 				var audioSession = AVAudioSession.SharedInstance();
 				audioSession.SetActive(false);
 
@@ -622,6 +629,40 @@ public partial class MediaManager : IDisposable
 				metaData.NowPlayingInfo.PlaybackRate = (float)MediaElement.Speed;
 				MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = metaData.NowPlayingInfo;
 			}
+		}
+	}
+
+	(int Width, int Height) GetVideoDimensions(AVPlayerItem avPlayerItem)
+	{
+		// Create an AVAsset instance with the video file URL
+		var asset = avPlayerItem.Asset;
+
+		// Retrieve the video track
+		var videoTrack = asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant()).FirstOrDefault();
+
+		if (videoTrack is not null)
+		{
+			// Get the natural size of the video
+			var size = videoTrack.NaturalSize;
+			var preferredTransform = videoTrack.PreferredTransform;
+
+			// Apply the preferred transform to get the correct dimensions
+			var transformedSize = CGAffineTransform.CGRectApplyAffineTransform(new CGRect(CGPoint.Empty, size), preferredTransform);
+			var width = Math.Abs(transformedSize.Width);
+			var height = Math.Abs(transformedSize.Height);
+
+			return ((int)width, (int)height);
+		}
+		else
+		{
+			// HLS doesn't have tracks, try to get the dimensions this way
+			if (!avPlayerItem.PresentationSize.IsEmpty)
+			{
+				return ((int)avPlayerItem.PresentationSize.Width, (int)avPlayerItem.PresentationSize.Height);
+			}
+
+			// If all else fails, just return 0, 0
+			return (0, 0);
 		}
 	}
 }

@@ -9,7 +9,7 @@
     x:DataType="viewModels:UpdatingPopupViewModel"
     CanBeDismissedByTappingOutsideOfPopup="False">
 
-    <VerticalStackLayout Style="{StaticResource PopupLayout}" Spacing="12">
+    <VerticalStackLayout Style="{StaticResource PopupLayout}" Spacing="12" MinimumHeightRequest="350">
         <VerticalStackLayout.Resources>
             <ResourceDictionary>
                 <Style x:Key="Title" TargetType="Label">

@@ -4,15 +4,21 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Essentials;
 
-public class AppThemeTests : BaseTest
+public class AppThemeTests : BaseHandlerTest
 {
 	readonly MockAppInfo mockAppInfo;
 	readonly Application app;
 
 	public AppThemeTests()
 	{
-		AppInfo.SetCurrent(mockAppInfo = new() { RequestedTheme = AppTheme.Light });
+		const AppTheme initialAppTheme = AppTheme.Light;
+		AppInfo.SetCurrent(mockAppInfo = new() { RequestedTheme = initialAppTheme });
+
 		Application.Current = app = new Application();
+
+		SetAppTheme(initialAppTheme);
+
+		Assert.Equal(initialAppTheme, app.PlatformAppTheme);
 	}
 
 	[Fact]
@@ -28,10 +34,12 @@ public class AppThemeTests : BaseTest
 		{
 			Text = "Green on Light, Red on Dark"
 		};
-
 		label.SetAppThemeColor(Label.TextColorProperty, color);
 
-		Application.Current = null;
+		app.MainPage = new ContentPage
+		{
+			Content = label
+		};
 
 		Assert.Equal(Colors.Green, label.TextColor);
 
@@ -56,7 +64,10 @@ public class AppThemeTests : BaseTest
 
 		label.SetAppThemeColor(Label.TextColorProperty, color);
 
-		Application.Current = null;
+		app.MainPage = new ContentPage
+		{
+			Content = label
+		};
 
 		Assert.Equal(Colors.Green, label.TextColor);
 
@@ -81,7 +92,10 @@ public class AppThemeTests : BaseTest
 
 		label.SetAppThemeColor(Label.TextColorProperty, color);
 
-		Application.Current = null;
+		app.MainPage = new ContentPage
+		{
+			Content = label
+		};
 
 		Assert.Equal(Colors.Blue, label.TextColor);
 
@@ -103,7 +117,11 @@ public class AppThemeTests : BaseTest
 
 		label.SetAppTheme(Label.TextProperty, resource);
 
-		Application.Current = null;
+		app.MainPage = new ContentPage
+		{
+			Content = label
+		};
+
 		Assert.Equal("Light Theme", label.Text);
 
 		SetAppTheme(AppTheme.Dark);
@@ -111,7 +129,7 @@ public class AppThemeTests : BaseTest
 		Assert.Equal("Dark Theme", label.Text);
 	}
 
-	void SetAppTheme(AppTheme theme)
+	void SetAppTheme(in AppTheme theme)
 	{
 		mockAppInfo.RequestedTheme = theme;
 		((IApplication)app).ThemeChanged();

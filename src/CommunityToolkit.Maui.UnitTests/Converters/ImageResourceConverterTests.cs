@@ -9,7 +9,7 @@ public class ImageResourceConverterTests : BaseOneWayConverterTest<ImageResource
 {
 	public ImageResourceConverterTests()
 	{
-		Application.Current = new MockApplication();
+		Application.Current = new MockApplication(ServiceProvider);
 	}
 
 	public static IReadOnlyList<object[]> NonStringData { get; } =

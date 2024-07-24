@@ -4,7 +4,6 @@
     <TargetFrameworks>$(NetVersion);$(NetVersion)-android;$(NetVersion)-ios;$(NetVersion)-maccatalyst</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);$(NetVersion)-windows10.0.19041.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">$(TargetFrameworks);$(NetVersion)-tizen</TargetFrameworks>
-    <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
@@ -47,7 +46,7 @@
     <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true"/>
     <None Include="ReadMe.txt" pack="true" PackagePath="."/>
@@ -57,7 +56,7 @@
     <None Include="..\CommunityToolkit.Maui.MediaElement.Analyzers\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.MediaElement.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
     <None Include="..\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
   </ItemGroup>
-  
+
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <PackageReference Include="Xam.Plugins.Android.ExoPlayer" Version="[2.19.1,)"/>
     <PackageReference Include="Xam.Plugins.Android.ExoPlayer.Transformer" Version="[2.19.1,)"/>
@@ -66,7 +65,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiPackageVersion)"/>
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiPackageVersion)"/>
   </ItemGroup>
 
 </Project>
