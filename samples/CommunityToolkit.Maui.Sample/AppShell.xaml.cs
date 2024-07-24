@@ -116,6 +116,7 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<AvatarViewShadowsPage, AvatarViewShadowsViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<AvatarViewShapesPage, AvatarViewShapesViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<AvatarViewSizesPage, AvatarViewSizesViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<CameraViewPage, CameraViewViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<DrawingViewPage, DrawingViewViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<ExpanderPage, ExpanderViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 
@@ -139,7 +140,29 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<NavigationBarPage, NavigationBarAndroidViewModel, PlatformSpecificGalleryPage, PlatformSpecificGalleryViewModel>(),
 	});
 
-	public AppShell() => InitializeComponent();
+	public AppShell()
+	{
+		InitializeComponent();
+		SetupNavigationView();
+	}
+
+	protected override void OnNavigated(ShellNavigatedEventArgs args)
+	{
+		SetupNavigationView();
+		base.OnNavigated(args);
+	}
+
+	public void SetupNavigationView()
+	{
+#if WINDOWS
+		Loaded += delegate
+		{
+			var navigationView = (Microsoft.UI.Xaml.Controls.NavigationView)flyout.Handler!.PlatformView!;
+			navigationView.IsPaneToggleButtonVisible = true;
+			navigationView.PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.Auto;
+		};
+#endif
+	}
 
 	public static string GetPageRoute<TViewModel>() where TViewModel : BaseViewModel
 	{
