@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>$(NetVersion)</TargetFramework>
     <IsPackable>false</IsPackable>
-    <UseMaui>true</UseMaui>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GF</CompilerGeneratedFilesOutputPath>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -20,7 +19,6 @@
     <PackageReference Include="coverlet.collector" Version="6.0.2" PrivateAssets="All" />
     <PackageReference Include="Microsoft.CodeAnalysis" Version="4.9.2" />
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiPackageVersion)"/>
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiPackageVersion)"/>
   </ItemGroup>
 
   <ItemGroup>
