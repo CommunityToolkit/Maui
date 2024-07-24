@@ -1,5 +1,4 @@
-﻿using System.Collections.Frozen;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 

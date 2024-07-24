@@ -1,5 +1,0 @@
-<Project>
-  <ItemGroup>
-    <MauiImage Include="$(MSBuildThisFileDirectory)\Images\fullscreen.svg" />
-  </ItemGroup>
-</Project>

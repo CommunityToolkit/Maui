@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.StyleSheets;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
@@ -55,7 +55,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	TaskCompletionSource popupDismissedTaskCompletionSource = new();
 	TaskCompletionSource<object?> resultTaskCompletionSource = new();
 	Window window;
-	ResourceDictionary resources = new();
+	ResourceDictionary resources = [];
 
 	/// <summary>
 	/// Instantiates a new instance of <see cref="Popup"/>.

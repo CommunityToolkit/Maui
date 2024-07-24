@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.ImageSources;
+using CommunityToolkit.Maui.ImageSources;
 using FluentAssertions;
 using Xunit;
 

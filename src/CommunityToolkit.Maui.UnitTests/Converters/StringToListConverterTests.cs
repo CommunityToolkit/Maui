@@ -1,22 +1,21 @@
-﻿using System.Collections.Frozen;
-using CommunityToolkit.Maui.Converters;
+﻿using CommunityToolkit.Maui.Converters;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class StringToListConverterTests : BaseOneWayConverterTest<StringToListConverter>
 {
-	public static FrozenSet<object?[]> ListData { get; } = new[]
-	{
-		new object?[] { "A,B.C;D", new[] { ",", ".", ";" }, new[] { "A", "B", "C", "D" } },
-		new object?[] { "A+_+B+_+C", "+_+", new[] { "A", "B", "C" } },
-		new object?[] { "A,,C", ",", new[] { "A", string.Empty, "C" }, },
-		new object?[] { "A,C", ",", new[] { "A", "C" } },
-		new object?[] { "A", ":-:", new[] { "A" } },
-		new object?[] { string.Empty, ",", new[] { string.Empty } },
-		new object?[] { null, ",", Array.Empty<string>() },
-		new object?[] { "ABC", null, new[] { "ABC" } },
-	}.ToFrozenSet();
+	public static IReadOnlyList<object?[]> ListData { get; } =
+	[
+		["A,B.C;D", new[] { ",", ".", ";" }, new[] { "A", "B", "C", "D" }],
+		["A+_+B+_+C", "+_+", new[] { "A", "B", "C" }],
+		["A,,C", ",", new[] { "A", string.Empty, "C" }],
+		["A,C", ",", new[] { "A", "C" }],
+		["A", ":-:", new[] { "A" }],
+		[string.Empty, ",", new[] { string.Empty }],
+		[null, ",", Array.Empty<string>()],
+		["ABC", null, new[] { "ABC" }],
+	];
 
 	[Theory]
 	[MemberData(nameof(ListData))]

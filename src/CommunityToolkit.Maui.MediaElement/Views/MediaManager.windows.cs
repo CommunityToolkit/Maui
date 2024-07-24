@@ -1,8 +1,9 @@
-﻿using System.Collections.Frozen;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Media;
 using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.System.Display;
@@ -13,13 +14,16 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 partial class MediaManager : IDisposable
 {
+	Metadata? metadata;
+	SystemMediaTransportControls? systemMediaControls;
+
 	// States that allow changing position
-	readonly FrozenSet<MediaElementState> allowUpdatePositionStates = new[]
-	{
+	readonly IReadOnlyList<MediaElementState> allowUpdatePositionStates =
+	[
 		MediaElementState.Playing,
 		MediaElementState.Paused,
 		MediaElementState.Stopped,
-	}.ToFrozenSet();
+	];
 
 	// The requests to keep display active are cumulative, this bool makes sure it only gets requested once
 	bool displayActiveRequested;
@@ -44,7 +48,7 @@ partial class MediaManager : IDisposable
 		MediaElement.MediaOpened += OnMediaElementMediaOpened;
 
 		Player.SetMediaPlayer(MediaElement);
-
+		Player.MediaPlayer.PlaybackSession.NaturalVideoSizeChanged += OnNaturalVideoSizeChanged;
 		Player.MediaPlayer.PlaybackSession.PlaybackRateChanged += OnPlaybackSessionPlaybackRateChanged;
 		Player.MediaPlayer.PlaybackSession.PlaybackStateChanged += OnPlaybackSessionPlaybackStateChanged;
 		Player.MediaPlayer.PlaybackSession.SeekCompleted += OnPlaybackSessionSeekCompleted;
@@ -53,6 +57,7 @@ partial class MediaManager : IDisposable
 		Player.MediaPlayer.VolumeChanged += OnMediaElementVolumeChanged;
 		Player.MediaPlayer.IsMutedChanged += OnMediaElementIsMutedChanged;
 
+		systemMediaControls = Player.MediaPlayer.SystemMediaTransportControls;
 		return Player;
 	}
 
@@ -250,10 +255,13 @@ partial class MediaManager : IDisposable
 		if (MediaElement.Source is null)
 		{
 			Player.Source = null;
+			MediaElement.MediaWidth = MediaElement.MediaHeight = 0;
+
 			MediaElement.CurrentStateChanged(MediaElementState.None);
 
 			return;
 		}
+
 		MediaElement.Position = TimeSpan.Zero;
 		MediaElement.Duration = TimeSpan.Zero;
 		Player.AutoPlay = MediaElement.ShouldAutoPlay;
@@ -319,12 +327,24 @@ partial class MediaManager : IDisposable
 
 				if (Player.MediaPlayer.PlaybackSession is not null)
 				{
+					Player.MediaPlayer.PlaybackSession.NaturalVideoSizeChanged -= OnNaturalVideoSizeChanged;
 					Player.MediaPlayer.PlaybackSession.PlaybackRateChanged -= OnPlaybackSessionPlaybackRateChanged;
 					Player.MediaPlayer.PlaybackSession.PlaybackStateChanged -= OnPlaybackSessionPlaybackStateChanged;
 					Player.MediaPlayer.PlaybackSession.SeekCompleted -= OnPlaybackSessionSeekCompleted;
 				}
 			}
 		}
+	}
+
+	void UpdateMetadata()
+	{
+		if (systemMediaControls is null)
+		{
+			return;
+		}
+
+		metadata ??= new(systemMediaControls, MediaElement, Dispatcher);
+		metadata.SetMetadata(MediaElement);
 	}
 
 	void OnMediaElementMediaOpened(WindowsMediaElement sender, object args)
@@ -342,11 +362,17 @@ partial class MediaManager : IDisposable
 		{
 			SetDuration(MediaElement, Player);
 		}
+
 		MediaElement.MediaOpened();
 
-		static void SetDuration(in IMediaElement mediaElement, in MediaPlayerElement mediaPlayerElement) => mediaElement.Duration = mediaPlayerElement.MediaPlayer.NaturalDuration == TimeSpan.MaxValue
-																																		? TimeSpan.Zero
-																																		: mediaPlayerElement.MediaPlayer.NaturalDuration;
+		UpdateMetadata();
+
+		static void SetDuration(in IMediaElement mediaElement, in MediaPlayerElement mediaPlayerElement)
+		{
+			mediaElement.Duration = mediaPlayerElement.MediaPlayer.NaturalDuration == TimeSpan.MaxValue
+				? TimeSpan.Zero
+				: mediaPlayerElement.MediaPlayer.NaturalDuration;
+		}
 	}
 
 	void OnMediaElementMediaEnded(WindowsMediaElement sender, object args)
@@ -387,6 +413,15 @@ partial class MediaManager : IDisposable
 	void OnMediaElementVolumeChanged(WindowsMediaElement sender, object args)
 	{
 		MediaElement.Volume = sender.Volume;
+	}
+
+	void OnNaturalVideoSizeChanged(MediaPlaybackSession sender, object args)
+	{
+		if (MediaElement is not null)
+		{
+			MediaElement.MediaWidth = (int)sender.NaturalVideoWidth;
+			MediaElement.MediaHeight = (int)sender.NaturalVideoHeight;
+		}
 	}
 
 	void OnPlaybackSessionPlaybackRateChanged(MediaPlaybackSession sender, object args)

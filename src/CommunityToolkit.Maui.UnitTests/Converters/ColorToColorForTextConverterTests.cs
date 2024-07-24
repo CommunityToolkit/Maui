@@ -5,24 +5,24 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToColorForTextConverterTests : BaseOneWayConverterTest<ColorToColorForTextConverter>
 {
-	public static IReadOnlyList<object[]> ColorToColorForTextData { get; } = new[]
-	{
-		new[] { Colors.White, Colors.Black},
-		new[] { Colors.Yellow, Colors.Black },
-		new[] { Colors.Pink, Colors.Black },
-		new[] { Colors.LightBlue, Colors.Black },
-		new[] { Colors.Wheat, Colors.Black },
-		new[] { Colors.Black, Colors.White },
-		new[] { Colors.DarkBlue, Colors.White },
-		new[] { Colors.DarkCyan, Colors.White },
-		new[] { Colors.Brown, Colors.White },
-		new[] { Colors.DarkGreen, Colors.White },
-		new[] { Colors.DarkSlateGray, Colors.White },
-		new[] { Colors.Transparent, Colors.White},
-		new[] { Colors.DarkSalmon, Colors.White },
-		new[] { Colors.DarkOrchid, Colors.White },
-		new[] { Colors.DarkGrey, Colors.White }
-	};
+	public static IReadOnlyList<object[]> ColorToColorForTextData { get; } =
+	[
+		[Colors.White, Colors.Black],
+		[Colors.Yellow, Colors.Black],
+		[Colors.Pink, Colors.Black],
+		[Colors.LightBlue, Colors.Black],
+		[Colors.Wheat, Colors.Black],
+		[Colors.Black, Colors.White],
+		[Colors.DarkBlue, Colors.White],
+		[Colors.DarkCyan, Colors.White],
+		[Colors.Brown, Colors.White],
+		[Colors.DarkGreen, Colors.White],
+		[Colors.DarkSlateGray, Colors.White],
+		[Colors.Transparent, Colors.White],
+		[Colors.DarkSalmon, Colors.White],
+		[Colors.DarkOrchid, Colors.White],
+		[Colors.DarkGrey, Colors.White]
+	];
 
 	[Theory]
 	[MemberData(nameof(ColorToColorForTextData))]

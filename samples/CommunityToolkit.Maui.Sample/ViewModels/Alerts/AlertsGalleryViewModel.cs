@@ -2,14 +2,8 @@
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 
-public class AlertsGalleryViewModel : BaseGalleryViewModel
-{
-	public AlertsGalleryViewModel()
-		: base(new[]
-		{
-			SectionModel.Create<SnackbarViewModel>("Snackbar", "Show Snackbar"),
-			SectionModel.Create<ToastViewModel>("Toast", "Show Toast")
-		})
-	{
-	}
-}
+public class AlertsGalleryViewModel() : BaseGalleryViewModel(
+[
+	SectionModel.Create<SnackbarViewModel>("Snackbar", "Show Snackbar"),
+	SectionModel.Create<ToastViewModel>("Toast", "Show Toast")
+]);

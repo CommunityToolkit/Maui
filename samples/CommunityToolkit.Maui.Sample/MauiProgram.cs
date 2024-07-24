@@ -29,7 +29,17 @@ using CommunityToolkit.Maui.Sample.Views.Popups;
 using CommunityToolkit.Maui.Storage;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Platform;
 using Polly;
+
+
+#if WINDOWS10_0_17763_0_OR_GREATER
+using Microsoft.UI;
+using Microsoft.UI.Composition.SystemBackdrops;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml.Media;
+#endif
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
@@ -41,16 +51,21 @@ public static class MauiProgram
 	{
 		var builder = MauiApp.CreateBuilder()
 #if DEBUG
-								.UseMauiCommunityToolkit()
+								.UseMauiCommunityToolkit(options =>
+								{
+									options.SetShouldEnableSnackbarOnWindows(true);
+								})
 #else
 								.UseMauiCommunityToolkit(options =>
 								{
+									options.SetShouldEnableSnackbarOnWindows(true);
 									options.SetShouldSuppressExceptionsInConverters(true);
 									options.SetShouldSuppressExceptionsInBehaviors(true);
 									options.SetShouldSuppressExceptionsInAnimations(true);
 								})
 #endif
 								.UseMauiCommunityToolkitMarkup()
+								.UseMauiCommunityToolkitCamera()
 								.UseMauiCommunityToolkitMediaElement()
 								.UseMauiCommunityToolkitMaps("KEY") // You should add your own key here from bingmapsportal.com
 								.UseMauiApp<App>()
@@ -58,6 +73,35 @@ public static class MauiProgram
 								{
 									fonts.AddFont("Font Awesome 6 Brands-Regular-400.otf", FontFamilies.FontAwesomeBrands);
 								});
+
+
+		builder.ConfigureLifecycleEvents(events =>
+		{
+#if WINDOWS10_0_17763_0_OR_GREATER
+                events.AddWindows(wndLifeCycleBuilder =>
+                {
+                    wndLifeCycleBuilder.OnWindowCreated(window =>
+                    {
+                        window.SystemBackdrop = new MicaBackdrop { Kind = MicaKind.Base };
+
+                        var titleBar = window.GetAppWindow()!.TitleBar;
+
+                        titleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+
+                        window.ExtendsContentIntoTitleBar = false;
+
+                        IntPtr nativeWindowHandle = WinRT.Interop.WindowNative.GetWindowHandle(window);
+                        WindowId win32WindowsId = Win32Interop.GetWindowIdFromWindow(nativeWindowHandle);
+                        AppWindow winuiAppWindow = AppWindow.GetFromWindowId(win32WindowsId);
+
+                        if (winuiAppWindow.Presenter is OverlappedPresenter p)
+                        {
+                            p.SetBorderAndTitleBar(true, true);
+                        }
+                    });
+                });
+#endif
+		});
 
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>()
 						.AddStandardResilienceHandler(options => options.Retry = new MobileHttpRetryStrategyOptions());
@@ -119,10 +163,11 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<RequiredStringValidationBehaviorPage, RequiredStringValidationBehaviorViewModel>();
 		services.AddTransientWithShellRoute<SelectAllTextBehaviorPage, SelectAllTextBehaviorViewModel>();
 		services.AddTransientWithShellRoute<SetFocusOnEntryCompletedBehaviorPage, SetFocusOnEntryCompletedBehaviorViewModel>();
+		services.AddTransientWithShellRoute<StatusBarBehaviorPage, StatusBarBehaviorViewModel>();
 		services.AddTransientWithShellRoute<TextValidationBehaviorPage, TextValidationBehaviorViewModel>();
+		services.AddTransientWithShellRoute<TouchBehaviorPage, TouchBehaviorViewModel>();
 		services.AddTransientWithShellRoute<UriValidationBehaviorPage, UriValidationBehaviorViewModel>();
 		services.AddTransientWithShellRoute<UserStoppedTypingBehaviorPage, UserStoppedTypingBehaviorViewModel>();
-		services.AddTransientWithShellRoute<StatusBarBehaviorPage, StatusBarBehaviorViewModel>();
 
 		// Add Converters Pages + ViewModels
 		services.AddTransientWithShellRoute<BoolToObjectConverterPage, BoolToObjectConverterViewModel>();
@@ -182,6 +227,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<NavigationBarPage, NavigationBarAndroidViewModel>();
 
 		// Add Views Pages + ViewModels
+		services.AddTransientWithShellRoute<CameraViewPage, CameraViewViewModel>();
 		services.AddTransientWithShellRoute<DrawingViewPage, DrawingViewViewModel>();
 		services.AddTransientWithShellRoute<ExpanderPage, ExpanderViewModel>();
 
@@ -199,6 +245,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<SemanticOrderViewPage, SemanticOrderViewPageViewModel>();
 		services.AddTransientWithShellRoute<ShowPopupInOnAppearingPage, ShowPopupInOnAppearingPageViewModel>();
 		services.AddTransientWithShellRoute<StylePopupPage, StylePopupViewModel>();
+		services.AddTransientWithShellRoute<PopupSizingIssuesPage, PopupSizingIssuesViewModel>();
 
 		// Add Popups
 		services.AddTransientPopup<CsharpBindingPopup, CsharpBindingPopupViewModel>();
@@ -211,6 +258,7 @@ public static class MauiProgram
 		services.AddSingleton<IDeviceDisplay>(DeviceDisplay.Current);
 		services.AddSingleton<IDeviceInfo>(DeviceInfo.Current);
 		services.AddSingleton<IFileSaver>(FileSaver.Default);
+		services.AddSingleton<IFileSystem>(FileSystem.Current);
 		services.AddSingleton<IFolderPicker>(FolderPicker.Default);
 		services.AddSingleton<IBadge>(Badge.Default);
 		services.AddSingleton<ISpeechToText>(SpeechToText.Default);

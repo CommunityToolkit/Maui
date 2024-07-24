@@ -9,15 +9,15 @@ public class ImageResourceConverterTests : BaseOneWayConverterTest<ImageResource
 {
 	public ImageResourceConverterTests()
 	{
-		Application.Current = new MockApplication();
+		Application.Current = new MockApplication(ServiceProvider);
 	}
 
-	public static IReadOnlyList<object[]> NonStringData { get; } = new[]
-	{
-		new object[] { 3 }, // primitive type
-		new object[] { DateTime.UtcNow }, // Struct
-		new object[] { new() } // objects
-	};
+	public static IReadOnlyList<object[]> NonStringData { get; } =
+	[
+		[3], // primitive type
+		[DateTime.UtcNow], // Struct
+		[new()] // objects
+	];
 
 	protected override void Dispose(bool isDisposing)
 	{
