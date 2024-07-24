@@ -5,11 +5,11 @@ namespace CommunityToolkit.Maui.Extensions;
 partial class SubtitleExtensions
 {
 	public IMediaElement? MediaElement;
-	public SubtitleDocument? Document;
+	public List<SubtitleCue>? Cues;
 	public System.Timers.Timer? Timer;
 	public async Task LoadSubtitles(IMediaElement mediaElement)
 	{
-		Document ??= new();
+		Cues ??= [];
 		this.MediaElement = mediaElement;
 		if(MediaElement is null)
 		{
@@ -23,26 +23,26 @@ partial class SubtitleExtensions
 		{
 			return;
 		}
-
 		SubtitleParser parser;
 		var content = await SubtitleParser.Content(mediaElement.SubtitleUrl);
+
 		try
 		{
 			if (mediaElement.CustomSubtitleParser is not null)
 			{
 				parser = new(mediaElement.CustomSubtitleParser);
-				Document = parser.ParseContent(content);
+				Cues = parser.ParseContent(content);
 				return;
 			}
 			switch (mediaElement.SubtitleUrl)
 			{
 				case var url when url.EndsWith("srt"):
 					parser = new(new SrtParser());
-					Document = parser.ParseContent(content);
+					Cues = parser.ParseContent(content);
 					break;
 				case var url when url.EndsWith("vtt"):
 					parser = new(new VttParser());
-					Document = parser.ParseContent(content);
+					Cues = parser.ParseContent(content);
 					break;
 				default:
 					System.Diagnostics.Trace.TraceError("Unsupported Subtitle file.");

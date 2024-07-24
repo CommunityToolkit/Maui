@@ -303,12 +303,12 @@ partial class MediaManager : IDisposable
 	{
 		if (string.IsNullOrEmpty(MediaElement.SubtitleUrl))
 		{
-			System.Diagnostics.Trace.TraceError("SubtitleExtensions is null or SubtitleUrl is null or player is null");
+			System.Diagnostics.Trace.TraceError("SubtitleExtensions is null or SubtitleUrl is null or Player is null");
 			return;
 		}
 		if (Player is null)
 		{
-			System.Diagnostics.Trace.TraceError("player is null");
+			System.Diagnostics.Trace.TraceError("Player is null");
 			return;
 		}
 		subtitleExtensions ??= new(Player);
