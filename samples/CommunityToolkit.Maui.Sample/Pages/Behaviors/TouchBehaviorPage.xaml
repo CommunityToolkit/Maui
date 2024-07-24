@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<pages:BasePage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.TouchBehaviorPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
+    x:DataType="vm:TouchBehaviorViewModel"
+    x:TypeArguments="vm:TouchBehaviorViewModel">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <x:Double x:Key="SectionSpacing">10</x:Double>
+
+            <Style x:Key="SectionHeader" TargetType="Label">
+                <Setter Property="Margin" Value="0,16,0,6" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="HorizontalOptions" Value="Center" />
+                <Setter Property="FontSize" Value="Large" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="20">
+
+            <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
+                <Label
+                    FontSize="Body"
+                    HorizontalOptions="Center"
+                    HorizontalTextAlignment="Center"
+                    Text="{Binding TouchCount, StringFormat='Touches: {0}'}" />
+
+                <Label Style="{StaticResource SectionHeader}" Text="Image | Toggle" />
+                <Image HeightRequest="100" WidthRequest="100">
+                    <Image.Behaviors>
+                        <mct:ImageTouchBehavior
+                            Command="{Binding IncreaseTouchCountCommand}"
+                            DefaultImageSource="button.png"
+                            PressedImageSource="button_pressed.png" />
+                    </Image.Behaviors>
+                </Image>
+
+                <Label Style="{StaticResource SectionHeader}" Text="Scale | Fade | Animated" />
+                <HorizontalStackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="Center">
+                    <HorizontalStackLayout.Behaviors>
+                        <mct:TouchBehavior
+                            Command="{Binding IncreaseTouchCountCommand}"
+                            DefaultAnimationDuration="250"
+                            DefaultAnimationEasing="{x:Static Easing.CubicInOut}"
+                            PressedOpacity="0.6"
+                            PressedScale="0.8" />
+                    </HorizontalStackLayout.Behaviors>
+
+                    <ContentView
+                        BackgroundColor="Gold"
+                        HeightRequest="100"
+                        WidthRequest="10" />
+                    <Label
+                        LineBreakMode="TailTruncation"
+                        Text="The entire layout receives touches"
+                        VerticalOptions="Center" />
+                    <ContentView
+                        BackgroundColor="Gold"
+                        HeightRequest="100"
+                        WidthRequest="10" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
+                <Label Style="{StaticResource SectionHeader}" Text="Long Press | Hover" />
+
+                <Label
+                    Margin="0,0,0,6"
+                    FontSize="Body"
+                    HorizontalOptions="CenterAndExpand"
+                    Text="{Binding LongPressCount, StringFormat='Long press count: {0}'}" />
+                <HorizontalStackLayout
+                    Padding="20"
+                    Background="Black"
+                    HorizontalOptions="CenterAndExpand">
+                    <HorizontalStackLayout.Behaviors>
+                        <mct:TouchBehavior
+                            Command="{Binding IncreaseTouchCountCommand}"
+                            HoveredBackgroundColor="{StaticResource Gray900}"
+                            HoveredScale="1.2"
+                            LongPressCommand="{Binding IncreaseLongPressCountCommand}" />
+                    </HorizontalStackLayout.Behaviors>
+                    <Label
+                        FontSize="Large"
+                        Text="TITLE"
+                        TextColor="White"
+                        VerticalOptions="Start" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
+                <Label Style="{StaticResource SectionHeader}" Text="Color | Rotation | Animated" />
+
+                <HorizontalStackLayout
+                    Padding="20"
+                    BackgroundColor="Gold"
+                    HorizontalOptions="CenterAndExpand">
+
+                    <HorizontalStackLayout.Behaviors>
+                        <mct:TouchBehavior
+                            Command="{Binding IncreaseTouchCountCommand}"
+                            DefaultAnimationDuration="500"
+                            DefaultBackgroundColor="Gold"
+                            PressedBackgroundColor="Orange"
+                            PressedRotation="15" />
+
+                    </HorizontalStackLayout.Behaviors>
+
+                    <Label
+                        FontSize="Large"
+                        Text="TITLE"
+                        TextColor="White" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <Label Style="{StaticResource SectionHeader}" Text="Image | Native" />
+            <Border StrokeThickness="1">
+                <Image
+                    HeightRequest="100"
+                    Source="button.png"
+                    WidthRequest="100">
+                    <Image.Behaviors>
+                        <mct:TouchBehavior Command="{Binding IncreaseTouchCountCommand}" />
+                    </Image.Behaviors>
+                </Image>
+            </Border>
+
+            <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
+                <Label Style="{StaticResource SectionHeader}" Text="Nested effect" />
+
+                <ContentView
+                    Padding="50"
+                    Background="Yellow"
+                    HeightRequest="200"
+                    HorizontalOptions="Center"
+                    WidthRequest="200">
+                    <ContentView.Behaviors>
+                        <mct:TouchBehavior Command="{Binding ParentClickedCommand}" />
+                    </ContentView.Behaviors>
+
+                    <ContentView
+                        BackgroundColor="Red"
+                        HeightRequest="100"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                        WidthRequest="100">
+                        <ContentView.Behaviors>
+                            <mct:TouchBehavior Command="{Binding ChildClickedCommand}" />
+                        </ContentView.Behaviors>
+                    </ContentView>
+                </ContentView>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
+                <Label Style="{StaticResource SectionHeader}" Text="Command with parameter example" />
+
+                <Picker x:Name="MonkeyPicker" Title="Pick a monkey">
+                    <Picker.ItemsSource>
+                        <x:Array Type="{x:Type x:String}">
+                            <x:String>Baboon</x:String>
+                            <x:String>Capuchin Monkey</x:String>
+                            <x:String>Blue Monkey</x:String>
+                            <x:String>Squirrel Monkey</x:String>
+                            <x:String>Golden Lion Tamarin</x:String>
+                            <x:String>Howler Monkey</x:String>
+                            <x:String>Japanese Macaque</x:String>
+                        </x:Array>
+                    </Picker.ItemsSource>
+                </Picker>
+
+                <Border
+                    Padding="20"
+                    BackgroundColor="Orange"
+                    HeightRequest="200"
+                    HorizontalOptions="Fill"
+                    StrokeShape="RoundRectangle, 20"
+                    StrokeThickness="0">
+                    <ContentView.Behaviors>
+                        <mct:TouchBehavior Command="{Binding MonkeySelectedCommand}" CommandParameter="{Binding Source={x:Reference MonkeyPicker}, Path=SelectedItem}" />
+                    </ContentView.Behaviors>
+                    <Label
+                        FontAttributes="Bold"
+                        FontSize="18"
+                        HorizontalTextAlignment="Center"
+                        Text="Press me to announce the selected monkey!"
+                        TextColor="White"
+                        VerticalTextAlignment="Center" />
+                </Border>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
+                <Label Style="{StaticResource SectionHeader}" Text="Input transparency for nested layouts" />
+
+                <Border
+                    Margin="20"
+                    Padding="20,10"
+                    BackgroundColor="Transparent"
+                    StrokeShape="RoundRectangle, 10"
+                    StrokeThickness="0">
+                    <Border.Behaviors>
+                        <mct:TouchBehavior
+                            Command="{Binding IncreaseTouchCountCommand}"
+                            DefaultAnimationDuration="150"
+                            DefaultAnimationEasing="{x:Static Easing.CubicInOut}"
+                            PressedBackgroundColor="LightGray"
+                            PressedOpacity="0.8"
+                            PressedScale="0.9" />
+                    </Border.Behaviors>
+                    <Grid
+                        BackgroundColor="Transparent"
+                        ColumnDefinitions="Auto, *"
+                        ColumnSpacing="10">
+                        <Ellipse
+                            BackgroundColor="#A4CF5B"
+                            HeightRequest="40"
+                            WidthRequest="40" />
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                            <Label FontSize="20" Text="Lorem Ipsum" />
+                            <Label FontSize="12" Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam gravida, sapien in volutpat ornare, magna dui condimentum dui, quis egestas tellus leo non nulla. Quisque sit amet neque dapibus, congue justo non, dapibus dolor." />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</pages:BasePage>

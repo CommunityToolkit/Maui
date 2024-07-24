@@ -42,7 +42,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 		this.speechToText.RecognitionResultCompleted += HandleRecognitionResultCompleted;
 	}
 
-	public ObservableCollection<Locale> Locales { get; } = new();
+	public ObservableCollection<Locale> Locales { get; } = [];
 
 	[RelayCommand]
 	async Task SetLocales(CancellationToken token)

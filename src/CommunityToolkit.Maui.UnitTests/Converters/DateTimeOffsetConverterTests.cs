@@ -15,37 +15,37 @@ public class DateTimeOffsetConverterTests : BaseConverterTest<DateTimeOffsetConv
 	static readonly DateTimeOffset testDateTimeOffsetLocal = new(2020, 08, 25, 13, 37, 00, DateTimeOffset.Now.Offset);
 	static readonly DateTimeOffset testDateTimeOffsetUtc = new(2020, 08, 25, 13, 37, 00, DateTimeOffset.UtcNow.Offset);
 
-	public static IReadOnlyList<object[]> Data { get; } = new[]
-	{
-		new object[] { testDateTimeOffsetNow, testDateTimeNow },
-		new object[] { DateTimeOffset.MinValue, DateTime.MinValue },
-		new object[] { DateTimeOffset.MaxValue, DateTime.MaxValue },
-		new object[] { testDateTimeOffsetLocal, testDateTimeLocal },
-		new object[] { testDateTimeOffsetUtc, testDateTimeUtc },
-		new object[] { testDateTimeOffsetUtc, testDateTimeUnspecified },
-		new object[] { testDateTimeOffsetNow, testDateTimeNow, CultureInfo.CurrentCulture },
-		new object[] { DateTimeOffset.MinValue, DateTime.MinValue, CultureInfo.CurrentCulture },
-		new object[] { DateTimeOffset.MaxValue, DateTime.MaxValue, CultureInfo.CurrentCulture },
-		new object[] { testDateTimeOffsetLocal, testDateTimeLocal, CultureInfo.CurrentCulture },
-		new object[] { testDateTimeOffsetUtc, testDateTimeUtc, CultureInfo.CurrentCulture },
-		new object[] { testDateTimeOffsetUtc, testDateTimeUnspecified, CultureInfo.CurrentCulture },
-	};
+	public static IReadOnlyList<object[]> Data { get; } =
+	[
+		[testDateTimeOffsetNow, testDateTimeNow],
+		[DateTimeOffset.MinValue, DateTime.MinValue],
+		[DateTimeOffset.MaxValue, DateTime.MaxValue],
+		[testDateTimeOffsetLocal, testDateTimeLocal],
+		[testDateTimeOffsetUtc, testDateTimeUtc],
+		[testDateTimeOffsetUtc, testDateTimeUnspecified],
+		[testDateTimeOffsetNow, testDateTimeNow, CultureInfo.CurrentCulture],
+		[DateTimeOffset.MinValue, DateTime.MinValue, CultureInfo.CurrentCulture],
+		[DateTimeOffset.MaxValue, DateTime.MaxValue, CultureInfo.CurrentCulture],
+		[testDateTimeOffsetLocal, testDateTimeLocal, CultureInfo.CurrentCulture],
+		[testDateTimeOffsetUtc, testDateTimeUtc, CultureInfo.CurrentCulture],
+		[testDateTimeOffsetUtc, testDateTimeUnspecified, CultureInfo.CurrentCulture],
+	];
 
-	public static IReadOnlyList<object[]> DataReverse { get; } = new[]
-	{
-		new object[] { testDateTimeNow, testDateTimeOffsetNow },
-		new object[] { DateTime.MinValue, DateTimeOffset.MinValue },
-		new object[] { DateTime.MaxValue, DateTimeOffset.MaxValue },
-		new object[] { testDateTimeLocal, testDateTimeOffsetLocal },
-		new object[] { testDateTimeUtc, testDateTimeOffsetUtc },
-		new object[] { testDateTimeUnspecified, testDateTimeOffsetUtc },
-		new object[] { testDateTimeNow, testDateTimeOffsetNow, CultureInfo.CurrentCulture },
-		new object[] { DateTime.MinValue, DateTimeOffset.MinValue, CultureInfo.CurrentCulture },
-		new object[] { DateTime.MaxValue, DateTimeOffset.MaxValue, CultureInfo.CurrentCulture },
-		new object[] { testDateTimeLocal, testDateTimeOffsetLocal, CultureInfo.CurrentCulture },
-		new object[] { testDateTimeUtc, testDateTimeOffsetUtc, CultureInfo.CurrentCulture },
-		new object[] { testDateTimeUnspecified, testDateTimeOffsetUtc, CultureInfo.CurrentCulture },
-	};
+	public static IReadOnlyList<object[]> DataReverse { get; } =
+	[
+		[testDateTimeNow, testDateTimeOffsetNow],
+		[DateTime.MinValue, DateTimeOffset.MinValue],
+		[DateTime.MaxValue, DateTimeOffset.MaxValue],
+		[testDateTimeLocal, testDateTimeOffsetLocal],
+		[testDateTimeUtc, testDateTimeOffsetUtc],
+		[testDateTimeUnspecified, testDateTimeOffsetUtc],
+		[testDateTimeNow, testDateTimeOffsetNow, CultureInfo.CurrentCulture],
+		[DateTime.MinValue, DateTimeOffset.MinValue, CultureInfo.CurrentCulture],
+		[DateTime.MaxValue, DateTimeOffset.MaxValue, CultureInfo.CurrentCulture],
+		[testDateTimeLocal, testDateTimeOffsetLocal, CultureInfo.CurrentCulture],
+		[testDateTimeUtc, testDateTimeOffsetUtc, CultureInfo.CurrentCulture],
+		[testDateTimeUnspecified, testDateTimeOffsetUtc, CultureInfo.CurrentCulture],
+	];
 
 	[Theory]
 	[MemberData(nameof(Data))]

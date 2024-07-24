@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using ObjCRuntime;
 using UIKit;
 
@@ -7,15 +7,23 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <summary>
 /// A behavior that selects all text when the view is focused.
 /// </summary>
-public class SelectAllTextBehavior : PlatformBehavior<InputView>
+public class SelectAllTextBehavior : BasePlatformBehavior<InputView>
 {
 	/// <inheritdoc/>
-	protected override void OnAttachedTo(InputView bindable, UIView platformView) =>
+	protected override void OnAttachedTo(InputView bindable, UIView platformView)
+	{
+		base.OnAttachedTo(bindable, platformView);
+
 		ApplyBehaviorToControl(true, bindable, platformView);
+	}
 
 	/// <inheritdoc/>
-	protected override void OnDetachedFrom(InputView bindable, UIView platformView) =>
+	protected override void OnDetachedFrom(InputView bindable, UIView platformView)
+	{
+		base.OnDetachedFrom(bindable, platformView);
+
 		ApplyBehaviorToControl(false, bindable, platformView);
+	}
 
 	static void ApplyBehaviorToControl<T>(bool apply, InputView inputView, T platformView) where T : UIView
 	{

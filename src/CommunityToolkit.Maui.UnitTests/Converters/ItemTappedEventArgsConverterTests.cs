@@ -6,13 +6,13 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ItemTappedEventArgsConverterTests : BaseOneWayConverterTest<ItemTappedEventArgsConverter>
 {
-	public static IReadOnlyList<object?[]> Data { get; } = new[]
-	{
-		new object?[] { null, null },
-		new object?[] { new ItemTappedEventArgs("", 1, 1), 1},
-		new object?[] { new ItemTappedEventArgs("", 'c', 1), 'c'},
-		new object?[] { new ItemTappedEventArgs("", Colors.Black, 1), Colors.Black},
-	};
+	public static IReadOnlyList<object?[]> Data { get; } =
+	[
+		[null, null],
+		[new ItemTappedEventArgs("", 1, 1), 1],
+		[new ItemTappedEventArgs("", 'c', 1), 'c'],
+		[new ItemTappedEventArgs("", Colors.Black, 1), Colors.Black],
+	];
 
 	[Theory]
 	[MemberData(nameof(Data))]

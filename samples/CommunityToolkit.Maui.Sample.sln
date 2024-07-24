@@ -3,23 +3,23 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31521.260
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.UnitTests", "..\src\CommunityToolkit.Maui.UnitTests\CommunityToolkit.Maui.UnitTests.csproj", "{7D49CC16-93CF-471B-B1FA-0BA44DECC15D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.UnitTests", "..\src\CommunityToolkit.Maui.UnitTests\CommunityToolkit.Maui.UnitTests.csproj", "{7D49CC16-93CF-471B-B1FA-0BA44DECC15D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{AE67B86A-46F2-4078-BF02-0614B7E0E3F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Sample", "CommunityToolkit.Maui.Sample\CommunityToolkit.Maui.Sample.csproj", "{3A795407-604F-4502-8C76-281BE5575A84}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Sample", "CommunityToolkit.Maui.Sample\CommunityToolkit.Maui.Sample.csproj", "{3A795407-604F-4502-8C76-281BE5575A84}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3ED2C978-9DDB-48FE-8C5A-521B254F18A3}"
 	ProjectSection(SolutionItems) = preProject
 		..\.editorconfig = ..\.editorconfig
 		..\Directory.Build.props = ..\Directory.Build.props
-		..\global.json = ..\global.json
 		..\Directory.Build.targets = ..\Directory.Build.targets
+		..\global.json = ..\global.json
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Core", "..\src\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj", "{6B572EAD-1581-46BE-A08B-1C7F2246BA2E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Core", "..\src\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj", "{6B572EAD-1581-46BE-A08B-1C7F2246BA2E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui", "..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj", "{1BA2F867-25C1-4D7E-AE51-5466929D467A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui", "..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj", "{1BA2F867-25C1-4D7E-AE51-5466929D467A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.SourceGenerators", "..\src\CommunityToolkit.Maui.SourceGenerators\CommunityToolkit.Maui.SourceGenerators.csproj", "{98B61BE8-4A47-4A56-82C1-40498DF12214}"
 EndProject
@@ -31,15 +31,21 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Analy
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{9F7D54C0-EA17-409A-804F-B2E8D7F4A7F3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Analyzers.UnitTests", "..\src\CommunityToolkit.Maui.Analyzers.UnitTests\CommunityToolkit.Maui.Analyzers.UnitTests.csproj", "{60B976B2-F3FA-494E-A28B-7BED2EAE990E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Analyzers.UnitTests", "..\src\CommunityToolkit.Maui.Analyzers.UnitTests\CommunityToolkit.Maui.Analyzers.UnitTests.csproj", "{60B976B2-F3FA-494E-A28B-7BED2EAE990E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Maps", "..\src\CommunityToolkit.Maui.Maps\CommunityToolkit.Maui.Maps.csproj", "{6D2CACB2-9AAA-4F1F-B480-750F23D5FEA2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.MediaElement", "..\src\CommunityToolkit.Maui.MediaElement\CommunityToolkit.Maui.MediaElement.csproj", "{A651D248-B102-4B8B-90C2-3C4C28425EFF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.MediaElement", "..\src\CommunityToolkit.Maui.MediaElement\CommunityToolkit.Maui.MediaElement.csproj", "{A651D248-B102-4B8B-90C2-3C4C28425EFF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.MediaElement.Analyzers", "..\src\CommunityToolkit.Maui.MediaElement.Analyzers\CommunityToolkit.Maui.MediaElement.Analyzers.csproj", "{85B875BD-62F6-4EC3-BCFF-4DC25E94BCAE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.MediaElement.Analyzers", "..\src\CommunityToolkit.Maui.MediaElement.Analyzers\CommunityToolkit.Maui.MediaElement.Analyzers.csproj", "{85B875BD-62F6-4EC3-BCFF-4DC25E94BCAE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes", "..\src\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj", "{215083C8-D9CA-48FA-8B0A-1D21A989D055}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes", "..\src\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj", "{215083C8-D9CA-48FA-8B0A-1D21A989D055}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Camera", "..\src\CommunityToolkit.Maui.Camera\CommunityToolkit.Maui.Camera.csproj", "{7F1458F2-BA8C-4BE0-ACBF-C0A2835E588A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Camera.Analyzers", "..\src\CommunityToolkit.Maui.Camera.Analyzers\CommunityToolkit.Maui.Camera.Analyzers.csproj", "{56D98FC8-5FC2-4231-9161-9FD2672E8B6E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Camera.Analyzers.CodeFixes", "..\src\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.csproj", "{372D6A40-A4E0-434A-A463-C001441C68EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -99,6 +105,18 @@ Global
 		{215083C8-D9CA-48FA-8B0A-1D21A989D055}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{215083C8-D9CA-48FA-8B0A-1D21A989D055}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{215083C8-D9CA-48FA-8B0A-1D21A989D055}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F1458F2-BA8C-4BE0-ACBF-C0A2835E588A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F1458F2-BA8C-4BE0-ACBF-C0A2835E588A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F1458F2-BA8C-4BE0-ACBF-C0A2835E588A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F1458F2-BA8C-4BE0-ACBF-C0A2835E588A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56D98FC8-5FC2-4231-9161-9FD2672E8B6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56D98FC8-5FC2-4231-9161-9FD2672E8B6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56D98FC8-5FC2-4231-9161-9FD2672E8B6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56D98FC8-5FC2-4231-9161-9FD2672E8B6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{372D6A40-A4E0-434A-A463-C001441C68EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{372D6A40-A4E0-434A-A463-C001441C68EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{372D6A40-A4E0-434A-A463-C001441C68EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{372D6A40-A4E0-434A-A463-C001441C68EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -112,6 +130,8 @@ Global
 		{60B976B2-F3FA-494E-A28B-7BED2EAE990E} = {9F7D54C0-EA17-409A-804F-B2E8D7F4A7F3}
 		{85B875BD-62F6-4EC3-BCFF-4DC25E94BCAE} = {9BFC4026-BC8F-43E2-BAA9-5BC2D764D37D}
 		{215083C8-D9CA-48FA-8B0A-1D21A989D055} = {9BFC4026-BC8F-43E2-BAA9-5BC2D764D37D}
+		{56D98FC8-5FC2-4231-9161-9FD2672E8B6E} = {9BFC4026-BC8F-43E2-BAA9-5BC2D764D37D}
+		{372D6A40-A4E0-434A-A463-C001441C68EB} = {9BFC4026-BC8F-43E2-BAA9-5BC2D764D37D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1E9E61C1-5CB7-4C8E-87BA-6C1D38238679}

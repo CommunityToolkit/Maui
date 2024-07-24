@@ -30,13 +30,11 @@ static class AnimationExtensions
 
 		protected override object CreatePlatformView() => new();
 
-		class AnimationEnabledMauiContext : IMauiContext, IServiceProvider
+		class AnimationEnabledMauiContext(IAnimationManager manager) : IMauiContext, IServiceProvider
 		{
-			public AnimationEnabledMauiContext(IAnimationManager manager) => AnimationManager = manager;
-
 			public IServiceProvider Services => this;
 
-			public IAnimationManager AnimationManager { get; }
+			public IAnimationManager AnimationManager { get; } = manager;
 
 			IMauiHandlersFactory IMauiContext.Handlers => throw new NotSupportedException();
 
@@ -84,7 +82,7 @@ static class AnimationExtensions
 
 		class TestAnimationManager : IAnimationManager
 		{
-			readonly List<Microsoft.Maui.Animations.Animation> animations = new();
+			readonly List<Microsoft.Maui.Animations.Animation> animations = [];
 
 			public TestAnimationManager(ITicker ticker)
 			{
