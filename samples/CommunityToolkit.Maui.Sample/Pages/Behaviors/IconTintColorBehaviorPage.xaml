@@ -13,7 +13,7 @@
         <Grid
 			Padding="20" 
 			ColumnDefinitions="*, *, *"
-			RowDefinitions="Auto, Auto, 60, Auto, 60, Auto, Auto, 60"
+			RowDefinitions="Auto, Auto, 60, Auto, 60, Auto, Auto, 60, 40, 112, Auto"
 			RowSpacing="20">
 
             <Label
@@ -149,6 +149,40 @@
                     <mct:IconTintColorBehavior TintColor="Purple" />
                 </Image.Behaviors>
             </Image>
+            
+            <Label
+                Grid.Row="8"
+                Grid.ColumnSpan="3"
+                Padding="0,20,0,0"
+                FontAttributes="Bold"
+                FontSize="18"
+                HorizontalTextAlignment="Center"
+                Text="Button with Image" />
+            
+			<Button 
+                Grid.Row="9"
+                Grid.ColumnSpan="3"
+                Clicked="HandleButtonClicked"
+                HeightRequest="110"
+                WidthRequest="350"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+				Text="Button with Image"
+                ImageSource="https://api.nuget.org/v3-flatcontainer/communitytoolkit.maui/9.0.1/icon">
+            </Button>
+            
+            <Label
+                Grid.Row="10"
+                Grid.ColumnSpan="3"
+                Margin="0"
+                Padding="0"
+                FontSize="Micro"
+                FontAttributes="Italic"
+                HorizontalOptions="Center"
+                VerticalOptions="Start"
+                VerticalTextAlignment="Center"
+                HorizontalTextAlignment="Center"
+                Text="Clicking this Button adds/removes the TintColorBehavior for its icon. Click it!"/>
         </Grid>
     </ScrollView>
 </pages:BasePage>
