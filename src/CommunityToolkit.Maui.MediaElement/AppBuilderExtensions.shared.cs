@@ -41,6 +41,9 @@ public static class AppBuilderExtensions
 		configureMediaOptions?.Invoke(mediaOptions);
 		MediaManager.DefaultMediaOptions = mediaOptions;
 
+#if ANDROID
+		builder.Services.AddSingleton<Media.Services.MediaControlsService>();
+#endif
 		return builder;
 	}
 }

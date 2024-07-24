@@ -26,25 +26,28 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <toolkit:MediaElement
                 x:Name="MediaElement"
                 ShouldAutoPlay="True"
                 Source="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                MetadataArtworkUrl="https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm"
+                MetadataTitle="Big Buck Bunny"
+                MetadataArtist="Blender Foundation"
                 MediaEnded="OnMediaEnded"
                 MediaFailed="OnMediaFailed"
                 MediaOpened="OnMediaOpened"
                 PositionChanged="OnPositionChanged"
                 StateChanged="OnStateChanged"
                 SeekCompleted="OnSeekCompleted"/>
-
             <HorizontalStackLayout Grid.Row="1" Padding="0,0,0,15">
                 <Label HorizontalOptions="Center">
                     <Label.Text>
-                        <MultiBinding StringFormat="{}Position: {0}/{1} - Current State: {2}">
-                            <Binding Path="Position" Source="{x:Reference MediaElement}" Converter="{StaticResource SecondsToStringConverter}" />
-                            <Binding Path="Duration" Source="{x:Reference MediaElement}" Converter="{StaticResource SecondsToStringConverter}" />
+                        <MultiBinding StringFormat="{}Current State: {0} - Dimensions: {1}x{2}">
                             <Binding Path="CurrentState" Source="{x:Reference MediaElement}" />
+                            <Binding Path="MediaWidth" Source="{x:Reference MediaElement}" />
+                            <Binding Path="MediaHeight" Source="{x:Reference MediaElement}" />
                         </MultiBinding>
                     </Label.Text>
                 </Label>
@@ -79,7 +82,12 @@
                 DragStarted="Slider_DragStarted"
                 DragCompleted="Slider_DragCompleted"/>
 
-            <VerticalStackLayout Padding="0,20,0,0" Grid.Row="4" Spacing="5">
+            <Grid Grid.Row="4" HorizontalOptions="Fill">
+                <Label HorizontalOptions="Start"  Text="{Binding Position, Source={x:Reference MediaElement}, Converter={StaticResource SecondsToStringConverter}}" />
+                <Label HorizontalOptions="End" HorizontalTextAlignment="End" Text="{Binding Duration, Source={x:Reference MediaElement}, Converter={StaticResource SecondsToStringConverter}}" />
+            </Grid>
+
+            <VerticalStackLayout Padding="0,20,0,0" Grid.Row="5" Spacing="5">
                 <Button Text="Change Source" Clicked="ChangeSourceClicked" />
 
                 <Grid ColumnDefinitions="*, 100" ColumnSpacing="5">
@@ -90,7 +98,7 @@
                 <Button Text="Change Aspect" Clicked="ChangeAspectClicked" />
             </VerticalStackLayout>
 
-            <HorizontalStackLayout Grid.Row="5" Padding="0,10,0,10" Spacing="5">
+            <HorizontalStackLayout Grid.Row="6" Padding="0,10,0,10" Spacing="5">
                 <Label Margin="20,10">
                     <Label.FormattedText>
                         <FormattedString>
@@ -104,7 +112,7 @@
                 <Button Text="+" Clicked="OnSpeedPlusClicked" />
             </HorizontalStackLayout>
 
-            <HorizontalStackLayout Grid.Row="6" Padding="0,10,0,10" Spacing="5">
+            <HorizontalStackLayout Grid.Row="7" Padding="0,10,0,10" Spacing="5">
                 <Label Margin="20,10">
                     <Label.FormattedText>
                         <FormattedString>
@@ -118,7 +126,7 @@
                 <Button Text="+" Clicked="OnVolumePlusClicked" />
             </HorizontalStackLayout>
         
-            <VerticalStackLayout Grid.Row="7">
+            <VerticalStackLayout Grid.Row="8">
                 <HorizontalStackLayout Padding="0,0,0,10">
                     <Switch
                         Margin="0,0,5,0"

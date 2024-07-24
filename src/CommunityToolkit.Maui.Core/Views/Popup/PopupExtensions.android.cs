@@ -32,7 +32,7 @@ public static class PopupExtensions
 		var statusBarHeight = GetStatusBarHeight(windowManager);
 		var navigationBarHeight = GetNavigationBarHeight(windowManager);
 		var windowSize = GetWindowSize(windowManager);
-		var rotation = windowManager.DefaultDisplay!.Rotation;
+		var rotation = windowManager.DefaultDisplay?.Rotation ?? throw new InvalidOperationException("DefaultDisplay cannot be null");
 		navigationBarHeight = windowSize.Height < windowSize.Width ? (rotation == SurfaceOrientation.Rotation270 ? navigationBarHeight : 0) : 0;
 
 		if (popup.Handler?.MauiContext is null)
