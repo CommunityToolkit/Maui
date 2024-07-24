@@ -5,7 +5,6 @@
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);$(NetVersion)-windows10.0.19041.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">$(TargetFrameworks);$(NetVersion)-tizen</TargetFrameworks>
     <OutputType>Exe</OutputType>
-    <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
 
     <RootNamespace>CommunityToolkit.Maui.Sample</RootNamespace>
@@ -52,7 +51,6 @@
     <MauiFont Include="Resources\Fonts\*" />
 
     <PackageReference Include="Microsoft.Maui.Controls" Version="*"/>
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="*"/>
     <PackageReference Include="CommunityToolkit.Maui.Markup" Version="4.0.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="8.3.0" />
