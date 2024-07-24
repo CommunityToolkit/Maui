@@ -6,14 +6,17 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using WinRT.Interop;
 using Application = Microsoft.Maui.Controls.Application;
 using Button = Microsoft.UI.Xaml.Controls.Button;
+using Colors = Microsoft.UI.Colors;
 using Grid = Microsoft.UI.Xaml.Controls.Grid;
-using Image = Microsoft.UI.Xaml.Controls.Image;
 using ImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 using Page = Microsoft.Maui.Controls.Page;
+using SolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
+using Thickness = Microsoft.UI.Xaml.Thickness;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -23,14 +26,14 @@ namespace CommunityToolkit.Maui.Core.Views;
 public class MauiMediaElement : Grid, IDisposable
 {
 	static readonly AppWindow appWindow = GetAppWindowForCurrentWindow();
-	static readonly ImageSource source = new BitmapImage(new Uri("ms-appx:///fullscreen.png"));
-
 	readonly Popup popup = new();
 	readonly Grid fullScreenGrid = new();
 	readonly Grid buttonContainer;
 	readonly Button fullScreenButton;
 	readonly MediaPlayerElement mediaPlayerElement;
-
+	// Cannot be static readonly because we need to be able to add icon to multiple instances of the button
+	readonly FontIcon fullScreenIcon = new() { Glyph = "\uE740", FontFamily = new FontFamily("Segoe Fluent Icons") };
+	readonly FontIcon exitFullScreenIcon = new() { Glyph = "\uE73F", FontFamily = new FontFamily("Segoe Fluent Icons") };
 	bool doesNavigationBarExistBeforeFullScreen;
 	bool isDisposed;
 
@@ -44,31 +47,23 @@ public class MauiMediaElement : Grid, IDisposable
 
 		fullScreenButton = new Button
 		{
-			Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent),
-			Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent),
-			Width = 40,
-			Height = 40
-		};
-		fullScreenButton.Click += OnFullScreenButtonClick;
-
-		Image image = new()
-		{
-			Width = 40,
-			Height = 40,
-			HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
-			VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
-			Source = source,
+			Content = fullScreenIcon,
+			Background = new SolidColorBrush(Colors.Transparent),
+			Width = 45,
+			Height = 45
 		};
 
-		buttonContainer = new()
+		buttonContainer = new Grid
 		{
 			HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
 			VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
 			Visibility = mediaPlayerElement.TransportControls.Visibility,
-			Width = 40,
-			Height = 40
+			Width = 45,
+			Height = 45,
+			Margin = new Thickness(0, 20, 30, 0)
 		};
-		buttonContainer.Children.Add(image);
+
+		fullScreenButton.Click += OnFullScreenButtonClick;
 		buttonContainer.Children.Add(fullScreenButton);
 
 		Children.Add(this.mediaPlayerElement);
@@ -107,6 +102,9 @@ public class MauiMediaElement : Grid, IDisposable
 			return;
 		}
 
+		fullScreenButton.Click -= OnFullScreenButtonClick;
+		mediaPlayerElement.PointerMoved -= OnMediaPlayerElementPointerMoved;
+
 		if (disposing)
 		{
 			mediaPlayerElement.MediaPlayer.Dispose();
@@ -139,12 +137,12 @@ public class MauiMediaElement : Grid, IDisposable
 
 		if (mediaPlayerElement.TransportControls.Visibility == Microsoft.UI.Xaml.Visibility.Collapsed)
 		{
+			buttonContainer.Visibility = mediaPlayerElement.TransportControls.Visibility;
 			return;
 		}
 
 		mediaPlayerElement.PointerMoved -= OnMediaPlayerElementPointerMoved;
 		buttonContainer.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-
 		await Task.Delay(TimeSpan.FromSeconds(5));
 
 		buttonContainer.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
@@ -166,7 +164,7 @@ public class MauiMediaElement : Grid, IDisposable
 				popup.Child = null;
 				fullScreenGrid.Children.Clear();
 			}
-
+			fullScreenButton.Content = fullScreenIcon;
 			Children.Add(mediaPlayerElement);
 			Children.Add(buttonContainer);
 
@@ -185,6 +183,7 @@ public class MauiMediaElement : Grid, IDisposable
 			mediaPlayerElement.Height = displayInfo.Height / displayInfo.Density;
 
 			Children.Clear();
+			fullScreenButton.Content = exitFullScreenIcon;
 			fullScreenGrid.Children.Add(mediaPlayerElement);
 			fullScreenGrid.Children.Add(buttonContainer);
 

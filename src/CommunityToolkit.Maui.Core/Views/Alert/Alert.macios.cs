@@ -12,7 +12,7 @@ public class Alert
 	/// </summary>
 	public Alert()
 	{
-		AlertView = new AlertView();
+		AlertView = [];
 
 		AlertView.ParentView.AddSubview(AlertView);
 		AlertView.ParentView.BringSubviewToFront(AlertView);

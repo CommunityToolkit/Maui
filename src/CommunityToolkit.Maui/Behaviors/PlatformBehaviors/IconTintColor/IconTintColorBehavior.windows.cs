@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
@@ -56,7 +55,13 @@ public partial class IconTintColorBehavior
 
 	static bool TryGetButtonImage(WButton button, [NotNullWhen(true)] out WImage? image)
 	{
-		image = button.Content as WImage;
+		image = button.Content switch
+		{
+			WImage windowsImage => windowsImage,
+			Microsoft.UI.Xaml.Controls.Panel panel => panel.Children?.OfType<WImage>().FirstOrDefault(),
+			_ => null
+		};
+
 		return image is not null;
 	}
 
@@ -125,10 +130,26 @@ public partial class IconTintColorBehavior
 
 	void LoadAndApplyImageTintColor(View element, WImage image, Color color)
 	{
-		image.ImageOpened += OnImageOpened;
+		if (element is IImageElement { Source: UriImageSource uriImageSource })
+		{
+			image.Source = Path.GetExtension(uriImageSource.Uri.AbsolutePath) switch
+			{
+				var extension when extension.Equals(".svg", StringComparison.OrdinalIgnoreCase) => new SvgImageSource(uriImageSource.Uri),
+				_ => new BitmapImage(uriImageSource.Uri)
+			};
+
+			ApplyTintColor();
+		}
+		else
+		{
+			image.ImageOpened += OnImageOpened;
+		}
 
 		void OnImageOpened(object sender, RoutedEventArgs e)
 		{
+			ArgumentNullException.ThrowIfNull(sender);
+
+			var image = (WImage)sender;
 			image.ImageOpened -= OnImageOpened;
 
 			ApplyTintColor();
@@ -147,6 +168,9 @@ public partial class IconTintColorBehavior
 
 				void OnImageSizeChanged(object sender, SizeChangedEventArgs e)
 				{
+					ArgumentNullException.ThrowIfNull(sender);
+					var image = (WImage)sender;
+
 					image.SizeChanged -= OnImageSizeChanged;
 					ApplyImageTintColor(element, image, color);
 				}

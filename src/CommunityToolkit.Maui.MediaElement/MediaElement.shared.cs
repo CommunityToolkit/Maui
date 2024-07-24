@@ -16,15 +16,15 @@ public class MediaElement : View, IMediaElement, IDisposable
 	public static readonly BindableProperty AspectProperty =
 		BindableProperty.Create(nameof(Aspect), typeof(Aspect), typeof(MediaElement), Aspect.AspectFit);
 
-	static readonly BindablePropertyKey durationPropertyKey =
-		BindableProperty.CreateReadOnly(nameof(Duration), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero);
-
 	/// <summary>
 	/// Backing store for the <see cref="CurrentState"/> property.
 	/// </summary>
 	public static readonly BindableProperty CurrentStateProperty =
 		BindableProperty.Create(nameof(CurrentState), typeof(MediaElementState), typeof(MediaElement),
 			MediaElementState.None, propertyChanged: OnCurrentStatePropertyChanged);
+
+	static readonly BindablePropertyKey durationPropertyKey =
+		BindableProperty.CreateReadOnly(nameof(Duration), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero);
 
 	/// <summary>
 	/// Backing store for the <see cref="Duration"/> property.
@@ -80,17 +80,23 @@ public class MediaElement : View, IMediaElement, IDisposable
 	public static readonly BindableProperty SpeedProperty =
 		BindableProperty.Create(nameof(Speed), typeof(double), typeof(MediaElement), 1.0);
 
+	static readonly BindablePropertyKey mediaHeightPropertyKey =
+		BindableProperty.CreateReadOnly(nameof(MediaHeight), typeof(int), typeof(MediaElement), 0);
+
 	/// <summary>
 	/// Backing store for the <see cref="MediaHeight"/> property.
 	/// </summary>
 	public static readonly BindableProperty MediaHeightProperty =
-		BindableProperty.Create(nameof(MediaHeight), typeof(int), typeof(MediaElement));
+		mediaHeightPropertyKey.BindableProperty;
+
+	static readonly BindablePropertyKey mediaWidthPropertyKey =
+		BindableProperty.CreateReadOnly(nameof(MediaWidth), typeof(int), typeof(MediaElement), 0);
 
 	/// <summary>
 	/// Backing store for the <see cref="MediaWidth"/> property.
 	/// </summary>
 	public static readonly BindableProperty MediaWidthProperty =
-		BindableProperty.Create(nameof(MediaWidth), typeof(int), typeof(MediaElement));
+		mediaWidthPropertyKey.BindableProperty;
 
 	/// <summary>
 	/// Backing store for the <see cref="Volume"/> property.
@@ -98,6 +104,21 @@ public class MediaElement : View, IMediaElement, IDisposable
 	public static readonly BindableProperty VolumeProperty =
 		BindableProperty.Create(nameof(Volume), typeof(double), typeof(MediaElement), 1.0,
 			BindingMode.TwoWay, propertyChanging: ValidateVolume);
+
+	/// <summary>
+	/// Backing store for the <see cref="MetadataTitle"/> property.
+	/// </summary>
+	public static readonly BindableProperty MetadataTitleProperty = BindableProperty.Create(nameof(MetadataTitle), typeof(string), typeof(MediaElement), string.Empty);
+
+	/// <summary>
+	/// Backing store for the <see cref="MetadataArtist"/> property.
+	/// </summary>
+	public static readonly BindableProperty MetadataArtistProperty = BindableProperty.Create(nameof(MetadataArtist), typeof(string), typeof(MediaElement), string.Empty);
+
+	/// <summary>
+	/// Backing store for the <see cref="MetadataArtworkUrl"/> property.
+	/// </summary>
+	public static readonly BindableProperty MetadataArtworkUrlProperty = BindableProperty.Create(nameof(MetadataArtworkUrl), typeof(string), typeof(MediaElement), string.Empty);
 
 	readonly WeakEventManager eventManager = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
@@ -297,22 +318,44 @@ public class MediaElement : View, IMediaElement, IDisposable
 	/// Gets the height (in pixels) of the loaded media in pixels.
 	/// This is a bindable property.
 	/// </summary>
-	/// <remarks>Not reported for non-visual media.</remarks>
-	public int MediaHeight
-	{
-		get => (int)GetValue(MediaHeightProperty);
-		internal set => SetValue(MediaHeightProperty, value);
-	}
+	/// <remarks>Not reported for non-visual media, sometimes not available for live streamed content on iOS and macOS.</remarks>
+	public int MediaHeight => (int)GetValue(MediaHeightProperty);
 
 	/// <summary>
 	/// Gets the width (in pixels) of the loaded media in pixels.
 	/// This is a bindable property.
 	/// </summary>
-	/// <remarks>Not reported for non-visual media.</remarks>
-	public int MediaWidth
+	/// <remarks>Not reported for non-visual media, sometimes not available for live streamed content on iOS and macOS.</remarks>
+	public int MediaWidth => (int)GetValue(MediaWidthProperty);
+
+	/// <summary>
+	/// Gets or sets the Title of the media.
+	/// This is a bindable property.
+	/// </summary>
+	public string MetadataTitle
 	{
-		get => (int)GetValue(MediaWidthProperty);
-		internal set => SetValue(MediaWidthProperty, value);
+		get => (string)GetValue(MetadataTitleProperty);
+		set => SetValue(MetadataTitleProperty, value);
+	}
+
+	/// <summary>
+	/// Gets or sets the Artist of the media.
+	/// This is a bindable property.
+	/// </summary>
+	public string MetadataArtist
+	{
+		get => (string)GetValue(MetadataArtistProperty);
+		set => SetValue(MetadataArtistProperty, value);
+	}
+
+	/// <summary>
+	/// Gets or sets the Artwork Image Url of the media.
+	/// This is a bindable property.
+	/// </summary>
+	public string MetadataArtworkUrl
+	{
+		get => (string)GetValue(MetadataArtworkUrlProperty);
+		set => SetValue(MetadataArtworkUrlProperty, value);
 	}
 
 	/// <summary>
@@ -353,6 +396,18 @@ public class MediaElement : View, IMediaElement, IDisposable
 	{
 		get => (TimeSpan)GetValue(DurationProperty);
 		set => SetValue(durationPropertyKey, value);
+	}
+
+	int IMediaElement.MediaWidth
+	{
+		get => (int)GetValue(MediaWidthProperty);
+		set => SetValue(mediaWidthPropertyKey, value);
+	}
+
+	int IMediaElement.MediaHeight
+	{
+		get => (int)GetValue(MediaHeightProperty);
+		set => SetValue(mediaHeightPropertyKey, value);
 	}
 
 	/// <inheritdoc/>

@@ -1,5 +1,4 @@
-﻿using System.Collections.Frozen;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using CommunityToolkit.Maui.Core;
 
@@ -11,14 +10,14 @@ sealed partial class MathExpression
 
 	static readonly IFormatProvider formatProvider = new CultureInfo("en-US");
 
-	readonly FrozenSet<MathOperator> operators;
-	readonly FrozenSet<double> arguments;
+	readonly IReadOnlyList<MathOperator> operators;
+	readonly IReadOnlyList<double> arguments;
 
 	internal MathExpression(string expression, IEnumerable<double>? arguments = null)
 	{
 		ArgumentException.ThrowIfNullOrEmpty(expression, "Expression can't be null or empty.");
 
-		var argumentList = arguments?.ToList() ?? new List<double>();
+		var argumentList = arguments?.ToList() ?? [];
 
 		Expression = expression.ToLower();
 
@@ -69,8 +68,8 @@ sealed partial class MathExpression
 			operators.Add(new MathOperator($"x{i}", 0, MathOperatorPrecedence.Constant, _ => argumentList[index]));
 		}
 
-		this.operators = operators.ToFrozenSet();
-		this.arguments = argumentList.ToFrozenSet();
+		this.operators = operators;
+		this.arguments = argumentList;
 	}
 
 	internal string Expression { get; }
@@ -94,7 +93,7 @@ sealed partial class MathExpression
 
 			if (mathOperator.Precedence is MathOperatorPrecedence.Constant)
 			{
-				stack.Push(mathOperator.CalculateFunc(Array.Empty<double>()));
+				stack.Push(mathOperator.CalculateFunc([]));
 				continue;
 			}
 
@@ -113,7 +112,7 @@ sealed partial class MathExpression
 
 			args.Reverse();
 
-			stack.Push(mathOperator.CalculateFunc(args.ToArray()));
+			stack.Push(mathOperator.CalculateFunc([.. args]));
 		}
 
 		if (stack.Count != 1)

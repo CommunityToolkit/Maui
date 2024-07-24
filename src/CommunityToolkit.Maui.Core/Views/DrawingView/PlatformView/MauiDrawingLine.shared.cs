@@ -22,7 +22,7 @@ public class MauiDrawingLine
 	/// <summary>
 	/// The collection of <see cref="PointF"/> that makes up this line on the <see cref="MauiDrawingView"/>.
 	/// </summary>
-	public ObservableCollection<PointF> Points { get; set; } = new();
+	public ObservableCollection<PointF> Points { get; set; } = [];
 
 	/// <summary>
 	/// The granularity of this line. Clamped to a minimum value of 5. Value clamped between <see cref="DrawingViewDefaults.MinimumGranularity"/> and <see cref="int.MaxValue"/>

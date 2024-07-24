@@ -11,7 +11,7 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 
 	private protected static bool IsNullable<T>() => IsNullable(typeof(T));
 
-	private protected static bool IsValidTargetType<T>(in Type targetType)
+	private protected static bool IsValidTargetType<TTarget>(in Type targetType, bool shouldAllowNullableValueTypes)
 	{
 		if (IsConvertingToString(targetType))
 		{
@@ -23,9 +23,25 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 			return true;
 		}
 
+		// Is TTarget a Value Type and targetType a Nullable Value Type? Eg TTarget is bool and targetType is bool?
+		if (shouldAllowNullableValueTypes && typeof(TTarget).IsValueType && IsValidNullableValueType(targetType))
+		{
+			return true;
+		}
+
+		// Is TTarget a Value Type and targetType a Nullable Value Type? Eg TTarget is bool and targetType is bool?
+		if (shouldAllowNullableValueTypes && typeof(TTarget).IsValueType && IsValidNullableValueType(targetType))
+		{
+			return true;
+		}
+
 		try
 		{
-			var result = Convert.ChangeType(default(T), targetType);
+			var instanceOfT = default(TTarget);
+			instanceOfT ??= (TTarget?)Activator.CreateInstance(targetType);
+
+			var result = Convert.ChangeType(instanceOfT, targetType);
+
 			return result is not null;
 		}
 		catch
@@ -34,19 +50,7 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 		}
 
 		static bool IsConvertingToString(in Type targetType) => targetType == typeof(string);
-	}
-
-	private protected static void ValidateTargetType<TTarget>(Type targetType, bool shouldAllowNullableValueTypes)
-	{
-		ArgumentNullException.ThrowIfNull(targetType);
-
-		// Ensure TTo can be assigned to the given Target Type
-		if (!typeof(TTarget).IsAssignableFrom(targetType) // Ensure TTarget can be assigned from targetType. Eg TTarget is IEnumerable and targetType is IList
-			&& !IsValidTargetType<TTarget>(targetType) // Ensure targetType be converted to TTarget? Eg `Convert.ChangeType()` returns a non-null value
-			&& !(shouldAllowNullableValueTypes && typeof(TTarget).IsValueType && IsValidNullableValueType(targetType))) // Is TTarget a Value Type and targetType a Nullable Value Type? Eg TTarget is bool and targetType is bool?
-		{
-			throw new ArgumentException($"{targetType} needs to be assignable from {typeof(TTarget)}.", nameof(targetType));
-		}
+		static bool CanBeConvertedToString() => typeof(TTarget).GetMethods().Any(x => x.Name is nameof(ToString) && x.ReturnType == typeof(string));
 
 		static bool IsValidNullableValueType(Type targetType)
 		{
@@ -58,6 +62,18 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 			var underlyingType = Nullable.GetUnderlyingType(targetType) ?? throw new InvalidOperationException("Non-nullable are not valid");
 
 			return underlyingType == typeof(TTarget);
+		}
+	}
+
+	private protected static void ValidateTargetType<TTarget>(Type targetType, bool shouldAllowNullableValueTypes)
+	{
+		ArgumentNullException.ThrowIfNull(targetType);
+
+		// Ensure TTo can be assigned to the given Target Type
+		if (!typeof(TTarget).IsAssignableFrom(targetType) // Ensure TTarget can be assigned from targetType. Eg TTarget is IEnumerable and targetType is IList
+			&& !IsValidTargetType<TTarget>(targetType, shouldAllowNullableValueTypes)) // Ensure targetType be converted to TTarget? Eg `Convert.ChangeType()` returns a non-null value
+		{
+			throw new ArgumentException($"targetType needs to be assignable from {typeof(TTarget)}.", nameof(targetType));
 		}
 	}
 
