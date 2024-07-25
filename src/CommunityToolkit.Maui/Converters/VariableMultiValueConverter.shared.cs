@@ -8,7 +8,7 @@ public enum MultiBindingCondition
 {
 	/// <summary>None of the values should be true.</summary>
 	None,
-	/// <summary>All of the values should be true.</summary>
+	/// <summary>All the values should be true.</summary>
 	All,
 	/// <summary>Any of the values should be true.</summary>
 	Any,
@@ -66,7 +66,8 @@ public class VariableMultiValueConverter : MultiValueConverterExtension, ICommun
 			MultiBindingCondition.Exact => count == Count,
 			MultiBindingCondition.GreaterThan => count > Count,
 			MultiBindingCondition.LessThan => count < Count,
-			_ => count == boolValues.Length,
+			MultiBindingCondition.All => count == boolValues.Length,
+			_ => throw new NotSupportedException($"{ConditionType} not yet supported")
 		};
 	}
 
