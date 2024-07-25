@@ -5,6 +5,7 @@ using Com.Google.Android.Exoplayer2.UI;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Primitives;
 using static Android.Views.ViewGroup;
+using static CommunityToolkit.Maui.Core.Views.MauiMediaElement;
 using CurrentPlatformActivity = CommunityToolkit.Maui.Core.Views.MauiMediaElement.CurrentPlatformContext;
 
 namespace CommunityToolkit.Maui.Extensions;
@@ -12,22 +13,31 @@ namespace CommunityToolkit.Maui.Extensions;
 partial class SubtitleExtensions : Java.Lang.Object
 {
 	readonly IDispatcher dispatcher;
-	readonly RelativeLayout.LayoutParams? subtitleLayout;
+	FrameLayout.LayoutParams? subtitleLayout;
 	readonly StyledPlayerView styledPlayerView;
 	TextView? subtitleView;
+	MediaElementScreenState screenState;
 
 	public SubtitleExtensions(StyledPlayerView styledPlayerView, IDispatcher dispatcher)
 	{
+		screenState = MediaElementScreenState.Default;
 		this.dispatcher = dispatcher;
 		this.styledPlayerView = styledPlayerView;
 		Cues = [];
-		subtitleLayout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
-		subtitleLayout.AddRule(LayoutRules.AlignParentBottom);
-		subtitleLayout.AddRule(LayoutRules.CenterHorizontal);
+		InitializeLayout();
 		InitializeTextBlock();
 		MediaManager.FullScreenEvents.WindowsChanged += OnFullScreenChanged;
 	}
 
+	~SubtitleExtensions()
+	{
+		if (Timer is not null)
+		{
+			Timer.Stop();
+			Timer.Elapsed -= UpdateSubtitle;
+		}
+		MediaManager.FullScreenEvents.WindowsChanged -= OnFullScreenChanged;
+	}
 	public void StartSubtitleDisplay()
 	{
 		ArgumentNullException.ThrowIfNull(subtitleView);
@@ -36,12 +46,10 @@ partial class SubtitleExtensions : Java.Lang.Object
 		{
 			return;
 		}
-		if(styledPlayerView.Parent is not ViewGroup parent)
-		{
-			System.Diagnostics.Trace.TraceError("StyledPlayerView parent is not a ViewGroup");
-			return;
-		}
-		dispatcher.Dispatch(() => parent.AddView(subtitleView));
+
+		InitializeText();
+		dispatcher.Dispatch(() => styledPlayerView.AddView(subtitleView));
+
 		Timer = new System.Timers.Timer(1000);
 		Timer.Elapsed += UpdateSubtitle;
 		Timer.Start();
@@ -61,10 +69,7 @@ partial class SubtitleExtensions : Java.Lang.Object
 			return;
 		}
 		subtitleView.Text = string.Empty;
-		if (styledPlayerView.Parent is ViewGroup parent)
-		{
-			dispatcher.Dispatch(() => parent.RemoveView(subtitleView));
-		}
+		dispatcher.Dispatch(() => styledPlayerView.RemoveView(subtitleView));
 	}
 
 	void UpdateSubtitle(object? sender, System.Timers.ElapsedEventArgs e)
@@ -72,19 +77,20 @@ partial class SubtitleExtensions : Java.Lang.Object
 		ArgumentNullException.ThrowIfNull(subtitleView);
 		ArgumentNullException.ThrowIfNull(MediaElement);
 		ArgumentNullException.ThrowIfNull(Cues);
+
 		if (Cues.Count == 0)
 		{
 			return;
 		}
+		
 		var cue = Cues.Find(c => c.StartTime <= MediaElement.Position && c.EndTime >= MediaElement.Position);
 		dispatcher.Dispatch(() =>
 		{
+
+			SetHeight();
 			if (cue is not null)
 			{
-				Typeface? typeface = Typeface.CreateFromAsset(Platform.AppContext.ApplicationContext?.Assets, new Core.FontExtensions.FontFamily(MediaElement.SubtitleFont).Android) ?? Typeface.Default;
-				subtitleView.SetTypeface(typeface, TypefaceStyle.Normal);
 				subtitleView.Text = cue.Text;
-				subtitleView.TextSize = (float)MediaElement.SubtitleFontSize;
 				subtitleView.Visibility = ViewStates.Visible;
 			}
 			else
@@ -95,6 +101,52 @@ partial class SubtitleExtensions : Java.Lang.Object
 		});
 	}
 
+	void OnFullScreenChanged(object? sender, FullScreenStateChangedEventArgs e)
+	{
+		var layout = CurrentPlatformContext.CurrentWindow.DecorView as ViewGroup;
+		ArgumentNullException.ThrowIfNull(layout);
+		if (e.NewState == MediaElementScreenState.FullScreen)
+		{
+			screenState = MediaElementScreenState.FullScreen;
+			styledPlayerView.RemoveView(subtitleView);
+			InitializeLayout();
+			InitializeTextBlock();
+			InitializeText();
+			layout.AddView(subtitleView);
+				
+		}
+		else
+		{
+			screenState = MediaElementScreenState.Default;
+			layout.RemoveView(subtitleView);
+			InitializeLayout();
+			InitializeTextBlock();
+			InitializeText();
+			styledPlayerView.AddView(subtitleView);
+		}
+	}
+	void SetHeight()
+	{
+		int height = styledPlayerView.Height;
+		switch (screenState)
+		{
+			case MediaElementScreenState.Default:
+				height = (int)(height * 0.1);
+				break;
+			case MediaElementScreenState.FullScreen:
+				height = (int)(height * 0.2);
+				break;
+		}
+		dispatcher.Dispatch(() => subtitleLayout?.SetMargins(20, 0, 20, height));
+	}
+	void InitializeText()
+	{
+		ArgumentNullException.ThrowIfNull(subtitleView);
+		ArgumentNullException.ThrowIfNull(MediaElement);
+		Typeface? typeface = Typeface.CreateFromAsset(Platform.AppContext.ApplicationContext?.Assets, new Core.FontExtensions.FontFamily(MediaElement.SubtitleFont).Android) ?? Typeface.Default;
+		subtitleView.TextSize = (float)MediaElement.SubtitleFontSize;
+		subtitleView.SetTypeface(typeface, TypefaceStyle.Normal);
+	}
 	void InitializeTextBlock()
 	{
 		subtitleView = new(CurrentPlatformActivity.CurrentActivity.ApplicationContext)
@@ -110,33 +162,11 @@ partial class SubtitleExtensions : Java.Lang.Object
 		subtitleView.SetTextColor(Android.Graphics.Color.White);
 		subtitleView.SetPaddingRelative(10, 10, 10, 20);
 	}
-
-	void OnFullScreenChanged(object? sender, FullScreenStateChangedEventArgs e)
+	void InitializeLayout()
 	{
-		ArgumentNullException.ThrowIfNull(subtitleView);
-		ArgumentNullException.ThrowIfNull(MediaElement);
-
-		// If the subtitle URL is empty do nothing
-		if (string.IsNullOrEmpty(MediaElement.SubtitleUrl))
+		subtitleLayout = new FrameLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent)
 		{
-			return;
-		}
-		if (CurrentPlatformActivity.CurrentViewGroup.Parent is not ViewGroup parent)
-		{
-			return;
-		}
-		switch (e.NewState == MediaElementScreenState.FullScreen)
-		{
-			case true:
-				CurrentPlatformActivity.CurrentViewGroup.RemoveView(subtitleView);
-				InitializeTextBlock();
-				parent.AddView(subtitleView);
-				break;
-			case false:
-				parent.RemoveView(subtitleView);
-				InitializeTextBlock();
-				CurrentPlatformActivity.CurrentViewGroup.AddView(subtitleView);
-				break;
-		}
+			Gravity = GravityFlags.Center | GravityFlags.Bottom,
+		};
 	}
 }
