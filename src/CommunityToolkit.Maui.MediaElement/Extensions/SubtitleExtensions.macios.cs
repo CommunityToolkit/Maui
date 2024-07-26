@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Maui.Core.Views;
+﻿using System.Text;
+using System.Text.RegularExpressions;
+using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Primitives;
 using CoreFoundation;
 using CoreGraphics;
@@ -16,26 +18,25 @@ partial class SubtitleExtensions : UIViewController
 	static readonly UIColor subtitleBackgroundColor = UIColor.FromRGBA(0, 0, 0, 128);
 	static readonly UIColor clearBackgroundColor = UIColor.FromRGBA(0, 0, 0, 0);
 	NSObject? playerObserver;
-	UIViewController? viewController;
+	MediaElementScreenState screenState;
 
 	public SubtitleExtensions(PlatformMediaElement player, UIViewController playerViewController)
 	{
 		this.playerViewController = playerViewController;
 		this.player = player;
+		screenState = MediaElementScreenState.Default;
 		Cues = [];
+
 		subtitleLabel = new UILabel
 		{
 			Frame = CalculateSubtitleFrame(playerViewController),
 			TextColor = UIColor.White,
 			TextAlignment = UITextAlignment.Center,
 			Font = UIFont.SystemFontOfSize(12),
-			Text = "",
+			Text = string.Empty,
+			BackgroundColor = clearBackgroundColor,
 			Lines = 0,
 			LineBreakMode = UILineBreakMode.WordWrap,
-			AutoresizingMask = UIViewAutoresizing.FlexibleWidth
-					  | UIViewAutoresizing.FlexibleTopMargin
-					  | UIViewAutoresizing.FlexibleHeight
-					  | UIViewAutoresizing.FlexibleBottomMargin
 		};
 		MediaManager.FullScreenEvents.WindowsChanged += OnFullScreenChanged;
 	}
@@ -44,11 +45,10 @@ partial class SubtitleExtensions : UIViewController
 	{
 		ArgumentNullException.ThrowIfNull(subtitleLabel);
 		DispatchQueue.MainQueue.DispatchAsync(() => playerViewController.View?.AddSubview(subtitleLabel));
+
 		playerObserver = player?.AddPeriodicTimeObserver(CMTime.FromSeconds(1, 1), null, (time) =>
 		{
-			TimeSpan currentPlaybackTime = TimeSpan.FromSeconds(time.Seconds);
-			subtitleLabel.Frame = viewController is not null ? CalculateSubtitleFrame(viewController) : CalculateSubtitleFrame(playerViewController);
-			DispatchQueue.MainQueue.DispatchAsync(() => UpdateSubtitle(currentPlaybackTime));
+			DispatchQueue.MainQueue.DispatchAsync(() => UpdateSubtitle());
 		});
 	}
 
@@ -60,40 +60,86 @@ partial class SubtitleExtensions : UIViewController
 		subtitleLabel.BackgroundColor = clearBackgroundColor;
 		DispatchQueue.MainQueue.DispatchAsync(() => subtitleLabel.RemoveFromSuperview());
 	}
-	void UpdateSubtitle(TimeSpan currentPlaybackTime)
+
+	void UpdateSubtitle()
 	{
 		ArgumentNullException.ThrowIfNull(Cues);
 		ArgumentNullException.ThrowIfNull(subtitleLabel);
 		ArgumentNullException.ThrowIfNull(MediaElement);
+
 		if (string.IsNullOrEmpty(MediaElement.SubtitleUrl))
 		{
 			return;
 		}
 
-		foreach (var cue in Cues)
+		switch (screenState)
 		{
-			if (currentPlaybackTime >= cue.StartTime && currentPlaybackTime <= cue.EndTime)
-			{
-				subtitleLabel.Text = cue.Text;
-				subtitleLabel.Font = UIFont.FromName(name: new Core.FontExtensions.FontFamily(MediaElement.SubtitleFont).MacIOS, size: (float)MediaElement.SubtitleFontSize) ?? UIFont.SystemFontOfSize(16);
-				subtitleLabel.BackgroundColor = subtitleBackgroundColor;
+			case MediaElementScreenState.FullScreen:
+				var viewController = WindowStateManager.Default.GetCurrentUIViewController();
+				ArgumentNullException.ThrowIfNull(viewController);
+				subtitleLabel.Frame = CalculateSubtitleFrame(viewController);
 				break;
-			}
-			else
-			{
-				subtitleLabel.Text = "";
-				subtitleLabel.BackgroundColor = clearBackgroundColor;
-			}
+			case MediaElementScreenState.Default:
+				subtitleLabel.Frame = CalculateSubtitleFrame(playerViewController);
+				ArgumentNullException.ThrowIfNull(playerViewController.View);
+				break;
+		}
+
+		var cue = Cues.Find(c => c.StartTime <= MediaElement.Position && c.EndTime >= MediaElement.Position);
+		if (cue is not null)
+		{
+			subtitleLabel.Text = TextWrapper(cue.Text ?? string.Empty);
+			subtitleLabel.Font = UIFont.FromName(new Core.FontExtensions.FontFamily(MediaElement.SubtitleFont).MacIOS, (float)MediaElement.SubtitleFontSize) ?? UIFont.SystemFontOfSize(16);
+			subtitleLabel.BackgroundColor = subtitleBackgroundColor;
+		}
+		else
+		{
+			subtitleLabel.Text = string.Empty;
+			subtitleLabel.BackgroundColor = clearBackgroundColor;
 		}
 	}
 
+	static string TextWrapper(string input)
+	{
+		Regex wordRegex = MatchWorksRegex();
+		MatchCollection words = wordRegex.Matches(input);
+
+		StringBuilder wrappedTextBuilder = new();
+		int currentLineLength = 0;
+		int lineNumber = 1;
+
+		foreach (var matchValue in
+		from Match match in words
+		let matchValue = match.Value
+		select matchValue)
+		{
+			if (currentLineLength + matchValue.Length > 60)
+			{
+				wrappedTextBuilder.AppendLine();
+				lineNumber++;
+				currentLineLength = 0;
+			}
+
+			if (currentLineLength > 0)
+			{
+				wrappedTextBuilder.Append(' ');
+			}
+
+			wrappedTextBuilder.Append(matchValue);
+			currentLineLength += matchValue.Length + 1;
+		}
+
+		return wrappedTextBuilder.ToString();
+	}
 	static CGRect CalculateSubtitleFrame(UIViewController uIViewController)
-	{ 
-		if(uIViewController is null || uIViewController.View is null)
+	{
+		if (uIViewController is null || uIViewController.View is null)
 		{
 			return CGRect.Empty;
 		}
-		return new CGRect(0, uIViewController.View.Bounds.Height - 60, uIViewController.View.Bounds.Width, 50);
+		var viewHeight = uIViewController.View.Bounds.Height;
+		var viewWidth = uIViewController.View.Bounds.Width;
+		return new CGRect(0, viewHeight - 80, viewWidth, 50);
 	}
 
 	void OnFullScreenChanged(object? sender, FullScreenStateChangedEventArgs e)
@@ -103,19 +149,21 @@ partial class SubtitleExtensions : UIViewController
 		{
 			return;
 		}
-		subtitleLabel.Text = string.Empty;
+
 		switch (e.NewState == MediaElementScreenState.FullScreen)
 		{
 			case true:
-				viewController = WindowStateManager.Default.GetCurrentUIViewController() ?? throw new ArgumentException(nameof(viewController));
+				var viewController = WindowStateManager.Default.GetCurrentUIViewController();
+				screenState = MediaElementScreenState.FullScreen;
+				ArgumentNullException.ThrowIfNull(viewController);
 				ArgumentNullException.ThrowIfNull(viewController.View);
 				subtitleLabel.Frame = CalculateSubtitleFrame(viewController);
-				DispatchQueue.MainQueue.DispatchAsync(() => { subtitleLabel.RemoveFromSuperview(); viewController?.View?.AddSubview(subtitleLabel); });
+				DispatchQueue.MainQueue.DispatchAsync(() => { viewController?.View?.Add(subtitleLabel); });
 				break;
 			case false:
+				screenState = MediaElementScreenState.Default;
 				subtitleLabel.Frame = CalculateSubtitleFrame(playerViewController);
-				DispatchQueue.MainQueue.DispatchAsync(() => { subtitleLabel.RemoveFromSuperview(); playerViewController.View?.AddSubview(subtitleLabel); });
-				viewController = null;
+				DispatchQueue.MainQueue.DispatchAsync(() => { playerViewController.View?.AddSubview(subtitleLabel); });
 				break;
 		}
 	}
@@ -123,10 +171,13 @@ partial class SubtitleExtensions : UIViewController
 	~SubtitleExtensions()
 	{
 		MediaManager.FullScreenEvents.WindowsChanged -= OnFullScreenChanged;
-		if(playerObserver is not null && player is not null)
+
+		if (playerObserver is not null && player is not null)
 		{
 			player.RemoveTimeObserver(playerObserver);
 		}
 	}
-}
 
+	[GeneratedRegex(@"\b\w+\b")]
+	private static partial Regex MatchWorksRegex();
+}
