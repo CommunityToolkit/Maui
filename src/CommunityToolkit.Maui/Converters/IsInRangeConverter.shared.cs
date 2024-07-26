@@ -41,16 +41,6 @@ public abstract class IsInRangeConverter<TValue, TReturnObject> : BaseConverterO
 			throw new InvalidOperationException($"{nameof(TrueObject)} and {nameof(FalseObject)} should either be both defined or both omitted.");
 		}
 
-		if (MinValue is not null)
-		{
-			throw new InvalidOperationException($"{nameof(MinValue)} is expected to be of a matching type to {nameof(value)}, but is {MinValue.GetType()}");
-		}
-
-		if (MaxValue is not null)
-		{
-			throw new InvalidOperationException($"{nameof(MaxValue)} is expected to be of a matching type to {nameof(value)}, but is {MaxValue.GetType()}");
-		}
-
 		bool shouldReturnObjectResult = TrueObject is not null && FalseObject is not null;
 		if (MaxValue is null)
 		{

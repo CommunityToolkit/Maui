@@ -183,7 +183,7 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 	[InlineData(20d, "A", 'B', TrueTestObject, FalseTestObject)]
 	[InlineData(20d, 1d, 'B', TrueTestObject, FalseTestObject)]
 	[InlineData(20d, "A", 1d, TrueTestObject, FalseTestObject)]
-	public void InvalidIComparableThrowArgumentException(IComparable value, IComparable comparingMinValue, IComparable comparingMaxValue, object trueObject, object falseObject)
+	public void InvalidArgumentException(IComparable value, IComparable comparingMinValue, IComparable comparingMaxValue, object trueObject, object falseObject)
 	{
 		IsInRangeConverter isInRangeConverter = new()
 		{
@@ -193,7 +193,7 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 			TrueObject = trueObject,
 		};
 
-		Assert.Throws<InvalidOperationException>(() => ((ICommunityToolkitValueConverter)isInRangeConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)isInRangeConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
 	}
 
 	[Theory]
