@@ -1,5 +1,4 @@
-﻿// Ignore Spelling: Bindable
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters;
 
@@ -42,13 +41,12 @@ public abstract class IsInRangeConverter<TValue, TReturnObject> : BaseConverterO
 			throw new InvalidOperationException($"{nameof(TrueObject)} and {nameof(FalseObject)} should either be both defined or both omitted.");
 		}
 
-		Type valueType = value.GetType();
-		if (MinValue is not null && !CanChangeType(MinValue, valueType))
+		if (MinValue is not null)
 		{
 			throw new InvalidOperationException($"{nameof(MinValue)} is expected to be of a matching type to {nameof(value)}, but is {MinValue.GetType()}");
 		}
 
-		if (MaxValue is not null && !CanChangeType(MaxValue, valueType))
+		if (MaxValue is not null)
 		{
 			throw new InvalidOperationException($"{nameof(MaxValue)} is expected to be of a matching type to {nameof(value)}, but is {MaxValue.GetType()}");
 		}
@@ -62,23 +60,6 @@ public abstract class IsInRangeConverter<TValue, TReturnObject> : BaseConverterO
 		return MinValue is null
 			? EvaluateCondition(value.CompareTo(MaxValue) <= 0, shouldReturnObjectResult)
 			: EvaluateCondition(value.CompareTo(MinValue) >= 0 && value.CompareTo(MaxValue) <= 0, shouldReturnObjectResult);
-	}
-
-	/// <summary>Can the object type be changed to the target type.</summary>
-	/// <param name="value">Source object</param>
-	/// <param name="targetType">Target type.</param>
-	/// <returns>true if the object type can be converted to the target type; otherwise false.</returns>
-	static bool CanChangeType(object value, Type targetType)
-	{
-		try
-		{
-			_ = Convert.ChangeType(value, targetType);
-			return true; // Conversion succeeded
-		}
-		catch (Exception)
-		{
-			return false; // Conversion failed
-		}
 	}
 
 	/// <summary>Evaluates a condition based on the given comparison result and returns an object.</summary>
