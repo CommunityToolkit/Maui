@@ -602,11 +602,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			{
 				LocalBroadcastManager.GetInstance(Platform.AppContext).UnregisterReceiver(uiUpdateReceiver);
 			}
-
+			subtitleExtensions?.StopSubtitleDisplay();
 			StopService();
 			mediaSessionConnector?.SetPlayer(null);
 			mediaSession?.Release();
 
+			subtitleExtensions?.Dispose();
 			mediaSessionConnector?.Dispose();
 			mediaSession?.Dispose();
 			uiUpdateReceiver?.Dispose();

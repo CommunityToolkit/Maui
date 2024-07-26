@@ -59,10 +59,16 @@ partial class SubtitleExtensions : UIViewController
 		Cues.Clear();
 		subtitleLabel.BackgroundColor = clearBackgroundColor;
 		DispatchQueue.MainQueue.DispatchAsync(() => subtitleLabel.RemoveFromSuperview());
+		playerObserver?.Dispose();
 	}
 
 	void UpdateSubtitle()
 	{
+		if (playerViewController is null)
+		{
+			return;
+		}
+
 		ArgumentNullException.ThrowIfNull(Cues);
 		ArgumentNullException.ThrowIfNull(subtitleLabel);
 		ArgumentNullException.ThrowIfNull(MediaElement);
@@ -81,7 +87,6 @@ partial class SubtitleExtensions : UIViewController
 				break;
 			case MediaElementScreenState.Default:
 				subtitleLabel.Frame = CalculateSubtitleFrame(playerViewController);
-				ArgumentNullException.ThrowIfNull(playerViewController.View);
 				break;
 		}
 
@@ -171,11 +176,7 @@ partial class SubtitleExtensions : UIViewController
 	~SubtitleExtensions()
 	{
 		MediaManager.FullScreenEvents.WindowsChanged -= OnFullScreenChanged;
-
-		if (playerObserver is not null && player is not null)
-		{
-			player.RemoveTimeObserver(playerObserver);
-		}
+		playerObserver?.Dispose();
 	}
 
 	[GeneratedRegex(@"\b\w+\b")]

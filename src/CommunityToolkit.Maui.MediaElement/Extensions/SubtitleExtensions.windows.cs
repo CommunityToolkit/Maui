@@ -23,10 +23,8 @@ partial class SubtitleExtensions : Grid, IDisposable
 
 	public void StartSubtitleDisplay()
 	{
-		Timer = new System.Timers.Timer(1000);
 		Dispatcher.Dispatch(() => mauiMediaElement?.Children.Add(subtitleTextBlock));
-		Timer.Elapsed += UpdateSubtitle;
-		Timer.Start();
+		StartTimer();
 	}
 
 	public void StopSubtitleDisplay()
@@ -34,12 +32,7 @@ partial class SubtitleExtensions : Grid, IDisposable
 		ArgumentNullException.ThrowIfNull(subtitleTextBlock);
 		Cues?.Clear();
 		subtitleTextBlock.ClearValue(Microsoft.UI.Xaml.Controls.TextBox.TextProperty);
-		if (Timer is null)
-		{
-			return;
-		}
-		Timer.Stop();
-		Timer.Elapsed -= UpdateSubtitle;
+		StopTimer();
 		if(mauiMediaElement is null)
 		{
 			return;
@@ -47,6 +40,27 @@ partial class SubtitleExtensions : Grid, IDisposable
 		Dispatcher.Dispatch(() => mauiMediaElement?.Children.Remove(subtitleTextBlock));
 	}
 
+	void StartTimer()
+	{
+		if (Timer is not null)
+		{
+			Timer.Stop();
+			Timer.Dispose();
+		}
+		Timer = new System.Timers.Timer(1000);
+		Timer.Elapsed += UpdateSubtitle;
+		Timer.Start();
+	}
+
+	void StopTimer()
+	{
+		if (Timer is not null)
+		{
+			Timer.Elapsed -= UpdateSubtitle;
+			Timer.Stop();
+			Timer.Dispose();
+		}
+	}
 	void UpdateSubtitle(object? sender, System.Timers.ElapsedEventArgs e)
 	{
 		ArgumentNullException.ThrowIfNull(MediaElement);

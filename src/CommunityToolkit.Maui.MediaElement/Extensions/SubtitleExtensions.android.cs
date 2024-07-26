@@ -26,16 +26,14 @@ partial class SubtitleExtensions : Java.Lang.Object
 		Cues = [];
 		InitializeLayout();
 		InitializeTextBlock();
-		MediaManager.FullScreenEvents.WindowsChanged += OnFullScreenChanged;
 	}
 
-	~SubtitleExtensions()
+	protected override void Dispose(bool disposing)
 	{
-		if (Timer is not null)
-		{
-			Timer.Stop();
-			Timer.Elapsed -= UpdateSubtitle;
-		}
+		base.Dispose(disposing);
+		Cues?.Clear();
+		StopTimer();
+		subtitleView?.Dispose();
 		MediaManager.FullScreenEvents.WindowsChanged -= OnFullScreenChanged;
 	}
 	public void StartSubtitleDisplay()
@@ -47,29 +45,38 @@ partial class SubtitleExtensions : Java.Lang.Object
 			return;
 		}
 
+		MediaManager.FullScreenEvents.WindowsChanged += OnFullScreenChanged;
 		InitializeText();
 		dispatcher.Dispatch(() => styledPlayerView.AddView(subtitleView));
+		StartTimer();
+	}
 
+	void StartTimer()
+	{
+		if(Timer is not null)
+		{
+			Timer.Stop();
+			Timer.Dispose();
+		}
 		Timer = new System.Timers.Timer(1000);
 		Timer.Elapsed += UpdateSubtitle;
 		Timer.Start();
 	}
 
+	void StopTimer()
+	{
+		if (Timer is not null)
+		{
+			Timer.Elapsed -= UpdateSubtitle;
+			Timer.Stop();
+			Timer.Dispose();
+		}
+	}
 	public void StopSubtitleDisplay()
 	{
-		ArgumentNullException.ThrowIfNull(Cues);
-		Cues.Clear();
-		if(Timer is not null)
-		{
-			Timer.Stop();
-			Timer.Elapsed -= UpdateSubtitle;
-		}
-		if (subtitleView is null)
-		{
-			return;
-		}
-		subtitleView.Text = string.Empty;
-		dispatcher.Dispatch(() => styledPlayerView.RemoveView(subtitleView));
+		Cues?.Clear();
+		StopTimer();
+		MediaManager.FullScreenEvents.WindowsChanged -= OnFullScreenChanged;
 	}
 
 	void UpdateSubtitle(object? sender, System.Timers.ElapsedEventArgs e)
@@ -78,7 +85,7 @@ partial class SubtitleExtensions : Java.Lang.Object
 		ArgumentNullException.ThrowIfNull(MediaElement);
 		ArgumentNullException.ThrowIfNull(Cues);
 
-		if (Cues.Count == 0)
+		if (Cues.Count == 0 || styledPlayerView is null)
 		{
 			return;
 		}
@@ -127,6 +134,10 @@ partial class SubtitleExtensions : Java.Lang.Object
 	}
 	void SetHeight()
 	{
+		if (styledPlayerView is null || subtitleLayout is null || subtitleView is null)
+		{
+			return;
+		}
 		int height = styledPlayerView.Height;
 		switch (screenState)
 		{
