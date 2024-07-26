@@ -9,7 +9,7 @@ partial class SubtitleExtensions : Grid, IDisposable
 {
 	bool disposedValue;
 	bool isFullScreen = false;
-	readonly Microsoft.UI.Xaml.Controls.TextBox subtitleTextBlock;
+	Microsoft.UI.Xaml.Controls.TextBox? subtitleTextBlock;
 	readonly MauiMediaElement? mauiMediaElement;
 	readonly int width;
 
@@ -18,24 +18,7 @@ partial class SubtitleExtensions : Grid, IDisposable
 		width = (int)player.ActualWidth / 3;
 		mauiMediaElement = player.Parent as MauiMediaElement;
 		MediaManager.FullScreenEvents.WindowsChanged += OnFullScreenChanged;
-		subtitleTextBlock = new()
-		{
-			FontSize = 16,
-			Width = width,
-			TextAlignment = Microsoft.UI.Xaml.TextAlignment.Center,
-			Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 20),
-			Visibility = Microsoft.UI.Xaml.Visibility.Collapsed,
-			HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
-			VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Bottom,
-			Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.White),
-			TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap,
-		};
-		subtitleTextBlock.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.White);
-		subtitleTextBlock.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Black);
-		subtitleTextBlock.BackgroundSizing = Microsoft.UI.Xaml.Controls.BackgroundSizing.InnerBorderEdge;
-		subtitleTextBlock.Opacity = 0.7;
-		subtitleTextBlock.TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap;
-		subtitleTextBlock.Text = string.Empty;
+		InitializeTextBlock();
 	}
 
 	public void StartSubtitleDisplay()
@@ -48,6 +31,7 @@ partial class SubtitleExtensions : Grid, IDisposable
 
 	public void StopSubtitleDisplay()
 	{
+		ArgumentNullException.ThrowIfNull(subtitleTextBlock);
 		Cues?.Clear();
 		subtitleTextBlock.ClearValue(Microsoft.UI.Xaml.Controls.TextBox.TextProperty);
 		if (Timer is null)
@@ -66,6 +50,7 @@ partial class SubtitleExtensions : Grid, IDisposable
 	void UpdateSubtitle(object? sender, System.Timers.ElapsedEventArgs e)
 	{
 		ArgumentNullException.ThrowIfNull(MediaElement);
+		ArgumentNullException.ThrowIfNull(subtitleTextBlock);
 		if (string.IsNullOrEmpty(MediaElement.SubtitleUrl) || Cues is null)
 		{
 			return;
@@ -75,9 +60,8 @@ partial class SubtitleExtensions : Grid, IDisposable
 		{
 			if (cue is not null)
 			{
+				InitializeText();
 				subtitleTextBlock.Text = cue.Text;
-				subtitleTextBlock.HorizontalTextAlignment = Microsoft.UI.Xaml.TextAlignment.Center;
-				subtitleTextBlock.FontFamily = new FontFamily(new Core.FontExtensions.FontFamily(MediaElement.SubtitleFont).WindowsFont);
 				subtitleTextBlock.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
 			}
 			else
@@ -94,6 +78,7 @@ partial class SubtitleExtensions : Grid, IDisposable
 		ArgumentNullException.ThrowIfNull(mauiMediaElement);
 		ArgumentNullException.ThrowIfNull(MediaElement);
 		ArgumentNullException.ThrowIfNull(gridItem);
+		ArgumentNullException.ThrowIfNull(subtitleTextBlock);
 		if (string.IsNullOrEmpty(MediaElement.SubtitleUrl))
 		{
 			return;
@@ -117,7 +102,35 @@ partial class SubtitleExtensions : Grid, IDisposable
 				break;
 		}
 	}
+	void InitializeTextBlock()
+	{
+		subtitleTextBlock = new()
+		{
+			FontSize = 16,
+			Width = width,
+			TextAlignment = Microsoft.UI.Xaml.TextAlignment.Center,
+			Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 20),
+			Visibility = Microsoft.UI.Xaml.Visibility.Collapsed,
+			HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
+			VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Bottom,
+			Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.White),
+			TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap,
+			Text = string.Empty
+		};
+	}
 
+	void InitializeText()
+	{
+		ArgumentNullException.ThrowIfNull(MediaElement);
+		ArgumentNullException.ThrowIfNull(subtitleTextBlock);
+		subtitleTextBlock.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.White);
+		subtitleTextBlock.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Black);
+		subtitleTextBlock.BackgroundSizing = Microsoft.UI.Xaml.Controls.BackgroundSizing.InnerBorderEdge;
+		subtitleTextBlock.Opacity = 0.7;
+		subtitleTextBlock.TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap;
+		subtitleTextBlock.HorizontalTextAlignment = Microsoft.UI.Xaml.TextAlignment.Center;
+		subtitleTextBlock.FontFamily = new FontFamily(new Core.FontExtensions.FontFamily(MediaElement.SubtitleFont).WindowsFont);
+	}
 	protected virtual void Dispose(bool disposing)
 	{
 		if (!disposedValue)
