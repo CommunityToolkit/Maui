@@ -18,7 +18,7 @@ public abstract class IsInRangeConverter<TValue, TReturnObject> : BaseConverterO
 	/// <summary>The upper bounds of the range to compare against when determining whether the input value to the convert is within range.</summary>
 	public TValue? MaxValue { get; set; }
 
-	/// <summary>Minimum value.</summary>
+	/// <summary>The lower bounds of the range to compare against when determining whether the input value to the convert is within range.</summary>
 	public TValue? MinValue { get; set; }
 
 	/// <summary>If supplied this value will be returned when the converter receives an input value that is <b>inside</b> (inclusive) of the <see cref="MinValue" /> and <see cref="MaxValue" />s.</summary>
