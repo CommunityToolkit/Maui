@@ -163,12 +163,20 @@ partial class SubtitleExtensions : UIViewController
 				ArgumentNullException.ThrowIfNull(viewController);
 				ArgumentNullException.ThrowIfNull(viewController.View);
 				subtitleLabel.Frame = CalculateSubtitleFrame(viewController);
-				DispatchQueue.MainQueue.DispatchAsync(() => { viewController?.View?.Add(subtitleLabel); });
+				DispatchQueue.MainQueue.DispatchAsync(() => 
+				{
+					subtitleLabel.RemoveFromSuperview(); 
+					viewController?.View?.Add(subtitleLabel); 
+				});
 				break;
 			case false:
 				screenState = MediaElementScreenState.Default;
 				subtitleLabel.Frame = CalculateSubtitleFrame(playerViewController);
-				DispatchQueue.MainQueue.DispatchAsync(() => { playerViewController.View?.AddSubview(subtitleLabel); });
+				DispatchQueue.MainQueue.DispatchAsync(() => 
+				{
+					subtitleLabel.RemoveFromSuperview();
+					playerViewController.View?.AddSubview(subtitleLabel);
+				});
 				break;
 		}
 	}
