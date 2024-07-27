@@ -82,17 +82,19 @@ partial class SubtitleExtensions : UIViewController
 			subtitleLabel.BackgroundColor = clearBackgroundColor;
 		}
 	}
+
 	void SetText(string? text)
 	{
 		ArgumentNullException.ThrowIfNull(text);
 		ArgumentNullException.ThrowIfNull(subtitleLabel);
 		ArgumentNullException.ThrowIfNull(MediaElement);
 
+		var fontSize = GetFontSize((float)MediaElement.SubtitleFontSize);
 		subtitleLabel.Text = TextWrapper(text);
-		subtitleLabel.Font = GetFontFamily(MediaElement.SubtitleFont, (float)MediaElement.SubtitleFontSize);
+		subtitleLabel.Font = GetFontFamily(MediaElement.SubtitleFont, fontSize);
 		subtitleLabel.BackgroundColor = subtitleBackgroundColor;
-
 		var labelWidth = GetSubtileWidth(text);
+
 		switch (screenState)
 		{
 			case MediaElementScreenState.FullScreen:
@@ -114,19 +116,27 @@ partial class SubtitleExtensions : UIViewController
 		 return textSize.Width + 5;
 	}
 
+	float GetFontSize(float fontSize)
+	{
+		ArgumentNullException.ThrowIfNull(MediaElement);
+		#if IOS
+		return fontSize;
+		#else
+		return screenState == MediaElementScreenState.FullScreen? (float)MediaElement.SubtitleFontSize * 1.5f : (float)MediaElement.SubtitleFontSize;
+		#endif
+	}
+
 	static UIFont GetFontFamily(string fontFamily, float fontSize) =>  UIFont.FromName(new Core.FontExtensions.FontFamily(fontFamily).MacIOS, fontSize);
 
 	static UIViewController GetCurrentUIViewController()
 	{
 		UIViewController? viewController = null;
-
-		// Must use KeyWindow as it is the only one that will be available when the app is in full screen mode on macOS.
-		// It is deprecated for use in MacOS apps, but is still available and the only choice for this scenario.
-#if MACCATALYST
-		viewController =  UIApplication.SharedApplication.KeyWindow?.RootViewController;
-#endif
 #if IOS
 		viewController = WindowStateManager.Default.GetCurrentUIViewController();
+#else
+		// Must use KeyWindow as it is the only one that will be available when the app is in full screen mode on macOS.
+		// It is deprecated for use in MacOS apps, but is still available and the only choice for this scenario.
+		viewController =  UIApplication.SharedApplication.KeyWindow?.RootViewController;
 #endif
 		ArgumentNullException.ThrowIfNull(viewController);
 		return viewController;
