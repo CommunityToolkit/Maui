@@ -206,7 +206,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 		};
 
-		subtitleExtensions = new(PlayerView, Dispatcher);
+		subtitleExtensions ??= new(PlayerView, Dispatcher);
 		checkPermissionsTask = CheckAndRequestForegroundPermission(checkPermissionSourceToken.Token);
 		return (Player, PlayerView);
 	}
@@ -602,12 +602,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			{
 				LocalBroadcastManager.GetInstance(Platform.AppContext).UnregisterReceiver(uiUpdateReceiver);
 			}
-			subtitleExtensions?.StopSubtitleDisplay();
+			subtitleExtensions?.Dispose();
 			StopService();
 			mediaSessionConnector?.SetPlayer(null);
 			mediaSession?.Release();
 
-			subtitleExtensions?.Dispose();
 			mediaSessionConnector?.Dispose();
 			mediaSession?.Dispose();
 			uiUpdateReceiver?.Dispose();
@@ -617,7 +616,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			httpClient.Dispose();
 			startSubtitles?.Dispose();
 
-			startSubtitles = null;
 			mediaSessionConnector = null;
 			mediaSession = null;
 			uiUpdateReceiver = null;

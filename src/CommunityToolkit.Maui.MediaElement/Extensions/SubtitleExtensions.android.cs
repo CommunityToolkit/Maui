@@ -2,6 +2,7 @@
 using Android.Views;
 using Android.Widget;
 using Com.Google.Android.Exoplayer2.UI;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Primitives;
 using static Android.Views.ViewGroup;
@@ -27,20 +28,12 @@ partial class SubtitleExtensions : Java.Lang.Object
 		InitializeLayout();
 		InitializeTextBlock();
 	}
-
-	protected override void Dispose(bool disposing)
-	{
-		base.Dispose(disposing);
-		Cues?.Clear();
-		StopTimer();
-		subtitleView?.Dispose();
-		MediaManager.FullScreenEvents.WindowsChanged -= OnFullScreenChanged;
-	}
 	public void StartSubtitleDisplay()
 	{
 		ArgumentNullException.ThrowIfNull(subtitleView);
 		ArgumentNullException.ThrowIfNull(Cues);
-		if(Cues.Count == 0 || string.IsNullOrEmpty(MediaElement?.SubtitleUrl))
+
+		if (Cues.Count == 0 || string.IsNullOrEmpty(MediaElement?.SubtitleUrl))
 		{
 			return;
 		}
@@ -51,6 +44,11 @@ partial class SubtitleExtensions : Java.Lang.Object
 		StartTimer();
 	}
 
+	~SubtitleExtensions()
+	{
+		StopSubtitleDisplay();
+	}
+
 	void StartTimer()
 	{
 		if(Timer is not null)
@@ -58,7 +56,7 @@ partial class SubtitleExtensions : Java.Lang.Object
 			Timer.Stop();
 			Timer.Dispose();
 		}
-		Timer = new System.Timers.Timer(1000);
+		Timer ??= new System.Timers.Timer(1000);
 		Timer.Elapsed += UpdateSubtitle;
 		Timer.Start();
 	}
@@ -70,13 +68,17 @@ partial class SubtitleExtensions : Java.Lang.Object
 			Timer.Elapsed -= UpdateSubtitle;
 			Timer.Stop();
 			Timer.Dispose();
+			Timer = null;
 		}
 	}
 	public void StopSubtitleDisplay()
 	{
+		MediaManager.FullScreenEvents.WindowsChanged -= OnFullScreenChanged;
+		ArgumentNullException.ThrowIfNull(subtitleView);
+		subtitleView.Text = string.Empty;
 		Cues?.Clear();
 		StopTimer();
-		MediaManager.FullScreenEvents.WindowsChanged -= OnFullScreenChanged;
+		dispatcher.Dispatch(() => styledPlayerView?.RemoveView(subtitleView));
 	}
 
 	void UpdateSubtitle(object? sender, System.Timers.ElapsedEventArgs e)
@@ -89,11 +91,14 @@ partial class SubtitleExtensions : Java.Lang.Object
 		{
 			return;
 		}
-		
-		var cue = Cues.Find(c => c.StartTime <= MediaElement.Position && c.EndTime >= MediaElement.Position);
+
+		if (Cues.Find(c => c.StartTime <= MediaElement.Position && c.EndTime >= MediaElement.Position) is not SubtitleCue cue)
+		{
+			return;
+		}
+
 		dispatcher.Dispatch(() =>
 		{
-
 			SetHeight();
 			if (cue is not null)
 			{
@@ -112,25 +117,28 @@ partial class SubtitleExtensions : Java.Lang.Object
 	{
 		var layout = CurrentPlatformContext.CurrentWindow.DecorView as ViewGroup;
 		ArgumentNullException.ThrowIfNull(layout);
-		if (e.NewState == MediaElementScreenState.FullScreen)
-		{
-			screenState = MediaElementScreenState.FullScreen;
-			styledPlayerView.RemoveView(subtitleView);
-			InitializeLayout();
-			InitializeTextBlock();
-			InitializeText();
-			layout.AddView(subtitleView);
-				
-		}
-		else
-		{
-			screenState = MediaElementScreenState.Default;
-			layout.RemoveView(subtitleView);
-			InitializeLayout();
-			InitializeTextBlock();
-			InitializeText();
-			styledPlayerView.AddView(subtitleView);
-		}
+		dispatcher.Dispatch(() =>
+		{ 
+			switch(e.NewState)
+			{
+				case MediaElementScreenState.FullScreen:
+					screenState = MediaElementScreenState.FullScreen;
+					styledPlayerView.RemoveView(subtitleView);
+					InitializeLayout();
+					InitializeTextBlock();
+					InitializeText();
+					layout.AddView(subtitleView);
+					break;
+				default:
+					screenState = MediaElementScreenState.Default;
+					layout.RemoveView(subtitleView);
+					InitializeLayout();
+					InitializeTextBlock();
+					InitializeText();
+					styledPlayerView.AddView(subtitleView);
+					break;
+			}
+		});
 	}
 	void SetHeight()
 	{
