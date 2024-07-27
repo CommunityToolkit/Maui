@@ -115,12 +115,12 @@ partial class SubtitleExtensions : UIViewController
 
 		// Must use KeyWindow as it is the only one that will be available when the app is in full screen mode on macOS.
 		// It is deprecated for use in MacOS apps, but is still available and the only choice for this scenario.
-		#if MACCATALYST
-				viewController =  UIApplication.SharedApplication.KeyWindow?.RootViewController ?? Platform.GetCurrentUIViewController();
-		#endif
-		#if IOS
-			    viewController = WindowStateManager.Default.GetCurrentUIViewController();
-		#endif
+#if MACCATALYST
+		viewController =  UIApplication.SharedApplication.KeyWindow?.RootViewController ?? Platform.GetCurrentUIViewController();
+#endif
+#if IOS
+		viewController = WindowStateManager.Default.GetCurrentUIViewController();
+#endif
 		ArgumentNullException.ThrowIfNull(viewController);
 		return viewController;
 	}
