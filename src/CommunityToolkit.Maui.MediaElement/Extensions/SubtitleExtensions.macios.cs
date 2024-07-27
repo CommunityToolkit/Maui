@@ -87,15 +87,12 @@ partial class SubtitleExtensions : UIViewController
 		ArgumentNullException.ThrowIfNull(text);
 		ArgumentNullException.ThrowIfNull(subtitleLabel);
 		ArgumentNullException.ThrowIfNull(MediaElement);
+
 		subtitleLabel.Text = TextWrapper(text);
-		subtitleLabel.Font = UIFont.FromName(new Core.FontExtensions.FontFamily(MediaElement.SubtitleFont).MacIOS, (float)MediaElement.SubtitleFontSize) ?? UIFont.SystemFontOfSize(16);
+		subtitleLabel.Font = GetFontFamily(MediaElement.SubtitleFont, (float)MediaElement.SubtitleFontSize);
 		subtitleLabel.BackgroundColor = subtitleBackgroundColor;
 
-		var nsString = new NSString(subtitleLabel.Text);
-		var attributes = new UIStringAttributes { Font = subtitleLabel.Font };
-		var textSize = nsString.GetSizeUsingAttributes(attributes);
-		var labelWidth = textSize.Width + 5;
-
+		var labelWidth = GetSubtileWidth(text);
 		switch (screenState)
 		{
 			case MediaElementScreenState.FullScreen:
@@ -109,6 +106,16 @@ partial class SubtitleExtensions : UIViewController
 		}
 	}
 
+	nfloat GetSubtileWidth(string? text)
+	{
+		var nsString = new NSString(subtitleLabel.Text);
+		var attributes = new UIStringAttributes { Font = subtitleLabel.Font };
+		var textSize = nsString.GetSizeUsingAttributes(attributes);
+		 return textSize.Width + 5;
+	}
+
+	static UIFont GetFontFamily(string fontFamily, float fontSize) =>  UIFont.FromName(new Core.FontExtensions.FontFamily(fontFamily).MacIOS, fontSize);
+
 	static UIViewController GetCurrentUIViewController()
 	{
 		UIViewController? viewController = null;
@@ -116,7 +123,7 @@ partial class SubtitleExtensions : UIViewController
 		// Must use KeyWindow as it is the only one that will be available when the app is in full screen mode on macOS.
 		// It is deprecated for use in MacOS apps, but is still available and the only choice for this scenario.
 #if MACCATALYST
-		viewController =  UIApplication.SharedApplication.KeyWindow?.RootViewController ?? Platform.GetCurrentUIViewController();
+		viewController =  UIApplication.SharedApplication.KeyWindow?.RootViewController;
 #endif
 #if IOS
 		viewController = WindowStateManager.Default.GetCurrentUIViewController();
