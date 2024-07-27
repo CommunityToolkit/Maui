@@ -64,16 +64,9 @@ partial class SubtitleExtensions : UIViewController
 
 	void UpdateSubtitle()
 	{
-		if (playerViewController is null)
-		{
-			return;
-		}
-
 		ArgumentNullException.ThrowIfNull(Cues);
 		ArgumentNullException.ThrowIfNull(subtitleLabel);
-		ArgumentNullException.ThrowIfNull(MediaElement);
-
-		if (string.IsNullOrEmpty(MediaElement.SubtitleUrl))
+		if (playerViewController is null || string.IsNullOrEmpty(MediaElement?.SubtitleUrl))
 		{
 			return;
 		}
