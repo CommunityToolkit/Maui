@@ -110,7 +110,7 @@ partial class SubtitleExtensions : UIViewController
 
 	nfloat GetSubtileWidth(string? text)
 	{
-		var nsString = new NSString(subtitleLabel.Text);
+		var nsString = new NSString(text);
 		var attributes = new UIStringAttributes { Font = subtitleLabel.Font };
 		var textSize = nsString.GetSizeUsingAttributes(attributes);
 		 return textSize.Width + 5;
@@ -118,11 +118,10 @@ partial class SubtitleExtensions : UIViewController
 
 	float GetFontSize(float fontSize)
 	{
-		ArgumentNullException.ThrowIfNull(MediaElement);
 		#if IOS
 		return fontSize;
 		#else
-		return screenState == MediaElementScreenState.FullScreen? (float)MediaElement.SubtitleFontSize * 1.5f : (float)MediaElement.SubtitleFontSize;
+		return screenState == MediaElementScreenState.FullScreen? fontSize * 1.5f : fontSize;
 		#endif
 	}
 
