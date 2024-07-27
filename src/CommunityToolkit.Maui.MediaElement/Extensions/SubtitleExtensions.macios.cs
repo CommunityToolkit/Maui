@@ -94,7 +94,7 @@ partial class SubtitleExtensions : UIViewController
 		ArgumentNullException.ThrowIfNull(text);
 		ArgumentNullException.ThrowIfNull(subtitleLabel);
 		ArgumentNullException.ThrowIfNull(MediaElement);
-		subtitleLabel.Text = TextWrapper(text ?? string.Empty);
+		subtitleLabel.Text = TextWrapper(text);
 		subtitleLabel.Font = UIFont.FromName(new Core.FontExtensions.FontFamily(MediaElement.SubtitleFont).MacIOS, (float)MediaElement.SubtitleFontSize) ?? UIFont.SystemFontOfSize(16);
 		subtitleLabel.BackgroundColor = subtitleBackgroundColor;
 
@@ -116,7 +116,7 @@ partial class SubtitleExtensions : UIViewController
 		}
 	}
 
-	UIViewController GetCurrentUIViewController()
+	static UIViewController GetCurrentUIViewController()
 	{
 		UIViewController? viewController = null;
 
