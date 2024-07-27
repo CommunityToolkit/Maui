@@ -29,7 +29,7 @@ partial class SubtitleExtensions : UIViewController
 
 		subtitleLabel = new UILabel
 		{
-			Frame = CalculateSubtitleFrame(playerViewController),
+			Frame = CalculateSubtitleFrame(playerViewController, 100),
 			TextColor = UIColor.White,
 			TextAlignment = UITextAlignment.Center,
 			Font = UIFont.SystemFontOfSize(12),
@@ -78,30 +78,58 @@ partial class SubtitleExtensions : UIViewController
 			return;
 		}
 
-		switch (screenState)
-		{
-			case MediaElementScreenState.FullScreen:
-				var viewController = WindowStateManager.Default.GetCurrentUIViewController();
-				ArgumentNullException.ThrowIfNull(viewController);
-				subtitleLabel.Frame = CalculateSubtitleFrame(viewController);
-				break;
-			case MediaElementScreenState.Default:
-				subtitleLabel.Frame = CalculateSubtitleFrame(playerViewController);
-				break;
-		}
-
 		var cue = Cues.Find(c => c.StartTime <= MediaElement.Position && c.EndTime >= MediaElement.Position);
 		if (cue is not null)
 		{
-			subtitleLabel.Text = TextWrapper(cue.Text ?? string.Empty);
-			subtitleLabel.Font = UIFont.FromName(new Core.FontExtensions.FontFamily(MediaElement.SubtitleFont).MacIOS, (float)MediaElement.SubtitleFontSize) ?? UIFont.SystemFontOfSize(16);
-			subtitleLabel.BackgroundColor = subtitleBackgroundColor;
+			SetText(cue.Text);
 		}
 		else
 		{
 			subtitleLabel.Text = string.Empty;
 			subtitleLabel.BackgroundColor = clearBackgroundColor;
 		}
+	}
+	void SetText(string? text)
+	{
+		ArgumentNullException.ThrowIfNull(text);
+		ArgumentNullException.ThrowIfNull(subtitleLabel);
+		ArgumentNullException.ThrowIfNull(MediaElement);
+		subtitleLabel.Text = TextWrapper(text ?? string.Empty);
+		subtitleLabel.Font = UIFont.FromName(new Core.FontExtensions.FontFamily(MediaElement.SubtitleFont).MacIOS, (float)MediaElement.SubtitleFontSize) ?? UIFont.SystemFontOfSize(16);
+		subtitleLabel.BackgroundColor = subtitleBackgroundColor;
+
+		var nsString = new NSString(subtitleLabel.Text);
+		var attributes = new UIStringAttributes { Font = subtitleLabel.Font };
+		var textSize = nsString.GetSizeUsingAttributes(attributes);
+		var labelWidth = textSize.Width + 5;
+
+		switch (screenState)
+		{
+			case MediaElementScreenState.FullScreen:
+				var viewController = GetCurrentUIViewController();
+				ArgumentNullException.ThrowIfNull(viewController);
+				subtitleLabel.Frame = CalculateSubtitleFrame(viewController, labelWidth);
+				break;
+			case MediaElementScreenState.Default:
+				subtitleLabel.Frame = CalculateSubtitleFrame(playerViewController, labelWidth);
+				break;
+		}
+	}
+
+	UIViewController GetCurrentUIViewController()
+	{
+		UIViewController? viewController = null;
+
+		// Must use KeyWindow as it is the only one that will be available when the app is in full screen mode on macOS.
+		// It is deprecated for use in MacOS apps, but is still available and the only choice for this scenario.
+		#if MACCATALYST
+				viewController =  UIApplication.SharedApplication.KeyWindow?.RootViewController ?? Platform.GetCurrentUIViewController();
+		#endif
+		#if IOS
+			    viewController = WindowStateManager.Default.GetCurrentUIViewController();
+		#endif
+		ArgumentNullException.ThrowIfNull(viewController);
+		return viewController;
 	}
 
 	static string TextWrapper(string input)
@@ -136,15 +164,17 @@ partial class SubtitleExtensions : UIViewController
 
 		return wrappedTextBuilder.ToString();
 	}
-	static CGRect CalculateSubtitleFrame(UIViewController uIViewController)
+
+	static CGRect CalculateSubtitleFrame(UIViewController uIViewController, nfloat labelWidth)
 	{
 		if (uIViewController is null || uIViewController.View is null)
 		{
 			return CGRect.Empty;
 		}
-		var viewHeight = uIViewController.View.Bounds.Height;
 		var viewWidth = uIViewController.View.Bounds.Width;
-		return new CGRect(0, viewHeight - 80, viewWidth, 50);
+		var viewHeight = uIViewController.View.Bounds.Height;
+		var x = (viewWidth - labelWidth) / 2;
+		return new CGRect(x, viewHeight - 80, labelWidth, 50);
 	}
 
 	void OnFullScreenChanged(object? sender, FullScreenStateChangedEventArgs e)
@@ -155,30 +185,21 @@ partial class SubtitleExtensions : UIViewController
 			return;
 		}
 
+		DispatchQueue.MainQueue.DispatchAsync(subtitleLabel.RemoveFromSuperview);
 		switch (e.NewState == MediaElementScreenState.FullScreen)
 		{
 			case true:
-				var viewController = WindowStateManager.Default.GetCurrentUIViewController();
+				var viewController =  GetCurrentUIViewController();
 				screenState = MediaElementScreenState.FullScreen;
-				ArgumentNullException.ThrowIfNull(viewController);
 				ArgumentNullException.ThrowIfNull(viewController.View);
-				subtitleLabel.Frame = CalculateSubtitleFrame(viewController);
-				DispatchQueue.MainQueue.DispatchAsync(() => 
-				{
-					subtitleLabel.RemoveFromSuperview(); 
-					viewController?.View?.Add(subtitleLabel); 
-				});
+				DispatchQueue.MainQueue.DispatchAsync(() => viewController?.View?.Add(subtitleLabel)); 
 				break;
 			case false:
 				screenState = MediaElementScreenState.Default;
-				subtitleLabel.Frame = CalculateSubtitleFrame(playerViewController);
-				DispatchQueue.MainQueue.DispatchAsync(() => 
-				{
-					subtitleLabel.RemoveFromSuperview();
-					playerViewController.View?.AddSubview(subtitleLabel);
-				});
+				DispatchQueue.MainQueue.DispatchAsync(() => playerViewController.View?.AddSubview(subtitleLabel));
 				break;
 		}
+		DispatchQueue.MainQueue.DispatchAsync(UpdateSubtitle);
 	}
 
 	~SubtitleExtensions()
