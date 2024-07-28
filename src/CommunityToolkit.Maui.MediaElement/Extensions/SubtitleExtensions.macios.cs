@@ -41,6 +41,13 @@ partial class SubtitleExtensions : UIViewController
 		MediaManager.FullScreenEvents.WindowsChanged += OnFullScreenChanged;
 	}
 
+	protected override void Dispose(bool disposing)
+	{
+		MediaManager.FullScreenEvents.WindowsChanged -= OnFullScreenChanged;
+		playerObserver?.Dispose();
+		base.Dispose(disposing);
+	}
+
 	public void StartSubtitleDisplay()
 	{
 		ArgumentNullException.ThrowIfNull(subtitleLabel);
@@ -209,12 +216,6 @@ partial class SubtitleExtensions : UIViewController
 				break;
 		}
 		DispatchQueue.MainQueue.DispatchAsync(UpdateSubtitle);
-	}
-
-	~SubtitleExtensions()
-	{
-		MediaManager.FullScreenEvents.WindowsChanged -= OnFullScreenChanged;
-		playerObserver?.Dispose();
 	}
 
 	[GeneratedRegex(@"\b\w+\b")]

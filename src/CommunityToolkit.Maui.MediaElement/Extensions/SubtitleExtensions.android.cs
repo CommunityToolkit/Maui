@@ -28,6 +28,15 @@ partial class SubtitleExtensions : Java.Lang.Object
 		InitializeLayout();
 		InitializeTextBlock();
 	}
+
+	protected override void Dispose(bool disposing)
+	{
+		StopSubtitleDisplay();
+		subtitleLayout?.Dispose();
+		subtitleView?.Dispose();
+		base.Dispose(disposing);
+	}
+
 	public void StartSubtitleDisplay()
 	{
 		ArgumentNullException.ThrowIfNull(subtitleView);
@@ -42,11 +51,6 @@ partial class SubtitleExtensions : Java.Lang.Object
 		InitializeText();
 		dispatcher.Dispatch(() => styledPlayerView.AddView(subtitleView));
 		StartTimer();
-	}
-
-	~SubtitleExtensions()
-	{
-		StopSubtitleDisplay();
 	}
 
 	void StartTimer()
