@@ -38,11 +38,11 @@ public partial class SubtitleParser
 		return IParser.ParseContent(content);
 	}
 
-	internal static async Task<string> Content(string subtitleUrl)
+	internal static async Task<string> Content(string subtitleUrl, CancellationToken token = default)
 	{
 		try
 		{
-			return await httpClient.GetStringAsync(subtitleUrl).ConfigureAwait(false);
+			return await httpClient.GetStringAsync(subtitleUrl, token).ConfigureAwait(false);
 		}
 		catch (Exception ex)
 		{

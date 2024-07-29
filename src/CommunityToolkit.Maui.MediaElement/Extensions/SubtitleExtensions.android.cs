@@ -11,13 +11,12 @@ using CurrentPlatformActivity = CommunityToolkit.Maui.Core.Views.MauiMediaElemen
 
 namespace CommunityToolkit.Maui.Extensions;
 
-partial class SubtitleExtensions : Java.Lang.Object
+partial class SubtitleExtensions : SubtitleTimer<TextView>, IDisposable
 {
-	readonly IDispatcher dispatcher;
 	FrameLayout.LayoutParams? subtitleLayout;
 	readonly StyledPlayerView styledPlayerView;
-	TextView? subtitleView;
 	MediaElementScreenState screenState;
+	bool disposedValue;
 
 	public SubtitleExtensions(StyledPlayerView styledPlayerView, IDispatcher dispatcher)
 	{
@@ -28,18 +27,10 @@ partial class SubtitleExtensions : Java.Lang.Object
 		InitializeLayout();
 		InitializeTextBlock();
 	}
-
-	protected override void Dispose(bool disposing)
-	{
-		StopSubtitleDisplay();
-		subtitleLayout?.Dispose();
-		subtitleView?.Dispose();
-		base.Dispose(disposing);
-	}
-
+	
 	public void StartSubtitleDisplay()
 	{
-		ArgumentNullException.ThrowIfNull(subtitleView);
+		ArgumentNullException.ThrowIfNull(subtitleTextBlock);
 		ArgumentNullException.ThrowIfNull(Cues);
 
 		if (Cues.Count == 0 || string.IsNullOrEmpty(MediaElement?.SubtitleUrl))
@@ -49,45 +40,24 @@ partial class SubtitleExtensions : Java.Lang.Object
 
 		MediaManager.FullScreenEvents.WindowsChanged += OnFullScreenChanged;
 		InitializeText();
-		dispatcher.Dispatch(() => styledPlayerView.AddView(subtitleView));
+		dispatcher.Dispatch(() => styledPlayerView.AddView(subtitleTextBlock));
 		StartTimer();
-	}
-
-	void StartTimer()
-	{
-		if(Timer is not null)
-		{
-			Timer.Stop();
-			Timer.Dispose();
-		}
-		Timer ??= new System.Timers.Timer(1000);
-		Timer.Elapsed += UpdateSubtitle;
-		Timer.Start();
-	}
-
-	void StopTimer()
-	{
-		if (Timer is not null)
-		{
-			Timer.Elapsed -= UpdateSubtitle;
-			Timer.Stop();
-			Timer.Dispose();
-			Timer = null;
-		}
 	}
 	public void StopSubtitleDisplay()
 	{
-		MediaManager.FullScreenEvents.WindowsChanged -= OnFullScreenChanged;
-		ArgumentNullException.ThrowIfNull(subtitleView);
-		subtitleView.Text = string.Empty;
-		Cues?.Clear();
 		StopTimer();
-		dispatcher.Dispatch(() => styledPlayerView?.RemoveView(subtitleView));
+		MediaManager.FullScreenEvents.WindowsChanged -= OnFullScreenChanged;
+		ArgumentNullException.ThrowIfNull(subtitleTextBlock);
+		subtitleTextBlock.Text = string.Empty;
+		Cues?.Clear();
+		
+		dispatcher.Dispatch(() => styledPlayerView?.RemoveView(subtitleTextBlock));
 	}
 
-	void UpdateSubtitle(object? sender, System.Timers.ElapsedEventArgs e)
+	public override void UpdateSubtitle(object? sender, System.Timers.ElapsedEventArgs e)
 	{
-		ArgumentNullException.ThrowIfNull(subtitleView);
+		System.Diagnostics.Debug.WriteLine("UpdateSubtitle");
+		ArgumentNullException.ThrowIfNull(subtitleTextBlock);
 		ArgumentNullException.ThrowIfNull(MediaElement);
 		ArgumentNullException.ThrowIfNull(Cues);
 
@@ -106,13 +76,13 @@ partial class SubtitleExtensions : Java.Lang.Object
 			SetHeight();
 			if (cue is not null)
 			{
-				subtitleView.Text = cue.Text;
-				subtitleView.Visibility = ViewStates.Visible;
+				subtitleTextBlock.Text = cue.Text;
+				subtitleTextBlock.Visibility = ViewStates.Visible;
 			}
 			else
 			{
-				subtitleView.Text = string.Empty;
-				subtitleView.Visibility = ViewStates.Gone;
+				subtitleTextBlock.Text = string.Empty;
+				subtitleTextBlock.Visibility = ViewStates.Gone;
 			}
 		});
 	}
@@ -127,26 +97,26 @@ partial class SubtitleExtensions : Java.Lang.Object
 			{
 				case MediaElementScreenState.FullScreen:
 					screenState = MediaElementScreenState.FullScreen;
-					styledPlayerView.RemoveView(subtitleView);
+					styledPlayerView.RemoveView(subtitleTextBlock);
 					InitializeLayout();
 					InitializeTextBlock();
 					InitializeText();
-					layout.AddView(subtitleView);
+					layout.AddView(subtitleTextBlock);
 					break;
 				default:
 					screenState = MediaElementScreenState.Default;
-					layout.RemoveView(subtitleView);
+					layout.RemoveView(subtitleTextBlock);
 					InitializeLayout();
 					InitializeTextBlock();
 					InitializeText();
-					styledPlayerView.AddView(subtitleView);
+					styledPlayerView.AddView(subtitleTextBlock);
 					break;
 			}
 		});
 	}
 	void SetHeight()
 	{
-		if (styledPlayerView is null || subtitleLayout is null || subtitleView is null)
+		if (styledPlayerView is null || subtitleLayout is null || subtitleTextBlock is null)
 		{
 			return;
 		}
@@ -164,15 +134,15 @@ partial class SubtitleExtensions : Java.Lang.Object
 	}
 	void InitializeText()
 	{
-		ArgumentNullException.ThrowIfNull(subtitleView);
+		ArgumentNullException.ThrowIfNull(subtitleTextBlock);
 		ArgumentNullException.ThrowIfNull(MediaElement);
 		Typeface? typeface = Typeface.CreateFromAsset(Platform.AppContext.ApplicationContext?.Assets, new Core.FontExtensions.FontFamily(MediaElement.SubtitleFont).Android) ?? Typeface.Default;
-		subtitleView.TextSize = (float)MediaElement.SubtitleFontSize;
-		subtitleView.SetTypeface(typeface, TypefaceStyle.Normal);
+		subtitleTextBlock.TextSize = (float)MediaElement.SubtitleFontSize;
+		subtitleTextBlock.SetTypeface(typeface, TypefaceStyle.Normal);
 	}
 	void InitializeTextBlock()
 	{
-		subtitleView = new(CurrentPlatformActivity.CurrentActivity.ApplicationContext)
+		subtitleTextBlock = new(CurrentPlatformActivity.CurrentActivity.ApplicationContext)
 		{
 			Text = string.Empty,
 			HorizontalScrollBarEnabled = false,
@@ -181,9 +151,9 @@ partial class SubtitleExtensions : Java.Lang.Object
 			Visibility = Android.Views.ViewStates.Gone,
 			LayoutParameters = subtitleLayout
 		};
-		subtitleView.SetBackgroundColor(Android.Graphics.Color.Argb(150, 0, 0, 0));
-		subtitleView.SetTextColor(Android.Graphics.Color.White);
-		subtitleView.SetPaddingRelative(10, 10, 10, 20);
+		subtitleTextBlock.SetBackgroundColor(Android.Graphics.Color.Argb(150, 0, 0, 0));
+		subtitleTextBlock.SetTextColor(Android.Graphics.Color.White);
+		subtitleTextBlock.SetPaddingRelative(10, 10, 10, 20);
 	}
 	void InitializeLayout()
 	{
@@ -191,5 +161,28 @@ partial class SubtitleExtensions : Java.Lang.Object
 		{
 			Gravity = GravityFlags.Center | GravityFlags.Bottom,
 		};
+	}
+
+	protected virtual void Dispose(bool disposing)
+	{
+		if (!disposedValue)
+		{
+
+			if (disposing)
+			{
+				MediaManager.FullScreenEvents.WindowsChanged -= OnFullScreenChanged;
+				StopTimer();
+				subtitleLayout?.Dispose();
+				subtitleTextBlock?.Dispose();
+			}
+
+			disposedValue = true;
+		}
+	}
+
+	public void Dispose()
+	{
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
 	}
 }

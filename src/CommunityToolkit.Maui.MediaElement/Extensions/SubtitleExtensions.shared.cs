@@ -1,4 +1,4 @@
-﻿// NOTE: PR shares code with #2041 https://github.com/CommunityToolkit/Maui/pull/2041
+﻿using System.ComponentModel.DataAnnotations;
 using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Extensions;
@@ -6,8 +6,7 @@ partial class SubtitleExtensions
 {
 	public IMediaElement? MediaElement;
 	public List<SubtitleCue>? Cues;
-	public System.Timers.Timer? Timer;
-	public async Task LoadSubtitles(IMediaElement mediaElement)
+	public async Task LoadSubtitles(IMediaElement mediaElement, CancellationToken token)
 	{
 		Cues ??= [];
 		this.MediaElement = mediaElement;
@@ -24,7 +23,7 @@ partial class SubtitleExtensions
 			return;
 		}
 		SubtitleParser parser;
-		var content = await SubtitleParser.Content(mediaElement.SubtitleUrl);
+		var content = await SubtitleParser.Content(mediaElement.SubtitleUrl, token);
 
 		try
 		{
@@ -55,4 +54,42 @@ partial class SubtitleExtensions
 			return;
 		}
 	}
+}
+interface ITimer<T> where T : class
+{
+	public abstract System.Timers.Timer? timer { get; set; }
+	public abstract T? subtitleTextBlock { get; set; }
+	public abstract void StartTimer();
+	public abstract void StopTimer();
+	public abstract void UpdateSubtitle(object? sender, System.Timers.ElapsedEventArgs e);
+}
+
+abstract class SubtitleTimer<T> : ITimer<T> where T : class
+{
+	
+	[Required]
+	public IDispatcher dispatcher { get; set; } = null!;
+	public System.Timers.Timer? timer { get; set; }
+	public T? subtitleTextBlock { get; set; }
+	public void StartTimer()
+	{
+		if (timer is not null)
+		{
+			timer.Stop();
+			timer.Dispose();
+		}
+		timer = new System.Timers.Timer(1000);
+		timer.Elapsed += UpdateSubtitle;
+		timer.Start();
+	}
+	public void StopTimer()
+	{
+		if (timer is not null)
+		{
+			timer.Elapsed -= UpdateSubtitle;
+			timer.Stop();
+			timer.Dispose();
+		}
+	}
+	public abstract void UpdateSubtitle(object? sender, System.Timers.ElapsedEventArgs e);
 }

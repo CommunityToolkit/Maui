@@ -463,7 +463,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			return;
 		}
-		await subtitleExtensions.LoadSubtitles(MediaElement).WaitAsync(cancellationToken).ConfigureAwait(false);
+		await subtitleExtensions.LoadSubtitles(MediaElement, cancellationToken).ConfigureAwait(false);
 		subtitleExtensions.StartSubtitleDisplay();
 	}
 	protected virtual partial void PlatformUpdateAspect()

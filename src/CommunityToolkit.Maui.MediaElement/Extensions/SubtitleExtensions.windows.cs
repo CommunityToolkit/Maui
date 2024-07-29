@@ -1,29 +1,28 @@
 ﻿using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Primitives;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Grid = Microsoft.Maui.Controls.Grid;
 
 namespace CommunityToolkit.Maui.Extensions;
 
-partial class SubtitleExtensions : Grid, IDisposable
+
+partial class SubtitleExtensions : SubtitleTimer<TextBox>
 {
-	bool disposedValue;
-	bool isFullScreen = false;
-	Microsoft.UI.Xaml.Controls.TextBox? subtitleTextBlock;
 	readonly MauiMediaElement? mauiMediaElement;
 	readonly int width;
 
-	public SubtitleExtensions(Microsoft.UI.Xaml.Controls.MediaPlayerElement player)
-	{
+	public SubtitleExtensions(Microsoft.UI.Xaml.Controls.MediaPlayerElement player, IDispatcher dispatcher)
+	{	
+		this.dispatcher = dispatcher;
 		width = (int)player.ActualWidth / 3;
 		mauiMediaElement = player.Parent as MauiMediaElement;
 		MediaManager.FullScreenEvents.WindowsChanged += OnFullScreenChanged;
 		InitializeTextBlock();
 	}
-
 	public void StartSubtitleDisplay()
 	{
-		Dispatcher.Dispatch(() => mauiMediaElement?.Children.Add(subtitleTextBlock));
+		dispatcher.Dispatch(() => mauiMediaElement?.Children.Add(subtitleTextBlock));
 		StartTimer();
 	}
 
@@ -37,31 +36,10 @@ partial class SubtitleExtensions : Grid, IDisposable
 		{
 			return;
 		}
-		Dispatcher.Dispatch(() => mauiMediaElement?.Children.Remove(subtitleTextBlock));
+		dispatcher.Dispatch(() => mauiMediaElement?.Children.Remove(subtitleTextBlock));
 	}
 
-	void StartTimer()
-	{
-		if (Timer is not null)
-		{
-			Timer.Stop();
-			Timer.Dispose();
-		}
-		Timer = new System.Timers.Timer(1000);
-		Timer.Elapsed += UpdateSubtitle;
-		Timer.Start();
-	}
-
-	void StopTimer()
-	{
-		if (Timer is not null)
-		{
-			Timer.Elapsed -= UpdateSubtitle;
-			Timer.Stop();
-			Timer.Dispose();
-		}
-	}
-	void UpdateSubtitle(object? sender, System.Timers.ElapsedEventArgs e)
+	public override void UpdateSubtitle(object? sender, System.Timers.ElapsedEventArgs e)
 	{
 		ArgumentNullException.ThrowIfNull(MediaElement);
 		ArgumentNullException.ThrowIfNull(subtitleTextBlock);
@@ -70,7 +48,7 @@ partial class SubtitleExtensions : Grid, IDisposable
 			return;
 		}
 		var cue = Cues.Find(c => c.StartTime <= MediaElement.Position && c.EndTime >= MediaElement.Position);
-		Dispatcher.Dispatch(() =>
+		dispatcher.Dispatch(() =>
 		{
 			if (cue is not null)
 			{
@@ -98,21 +76,19 @@ partial class SubtitleExtensions : Grid, IDisposable
 			return;
 		}
 
-		switch (isFullScreen)
+		switch (e.NewState)
 		{
-			case true:
+			case MediaElementScreenState.Default:
 				subtitleTextBlock.Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 20);
 				subtitleTextBlock.FontSize = MediaElement.SubtitleFontSize;
 				subtitleTextBlock.Width = width;
-				Dispatcher.Dispatch(() => { gridItem.Children.Remove(subtitleTextBlock); mauiMediaElement.Children.Add(subtitleTextBlock); });
-				isFullScreen = false;
+				dispatcher.Dispatch(() => { gridItem.Children.Remove(subtitleTextBlock); mauiMediaElement.Children.Add(subtitleTextBlock); });
 				break;
-			case false:
+			case MediaElementScreenState.FullScreen:
 				subtitleTextBlock.FontSize = MediaElement.SubtitleFontSize + 8.0;
 				subtitleTextBlock.Width = DeviceDisplay.Current.MainDisplayInfo.Width / 4;
 				subtitleTextBlock.Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 100);
-				Dispatcher.Dispatch(() => { mauiMediaElement.Children.Remove(subtitleTextBlock); gridItem.Children.Add(subtitleTextBlock); });
-				isFullScreen = true;
+				dispatcher.Dispatch(() => { mauiMediaElement.Children.Remove(subtitleTextBlock); gridItem.Children.Add(subtitleTextBlock); });
 				break;
 		}
 	}
@@ -144,33 +120,5 @@ partial class SubtitleExtensions : Grid, IDisposable
 		subtitleTextBlock.TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap;
 		subtitleTextBlock.HorizontalTextAlignment = Microsoft.UI.Xaml.TextAlignment.Center;
 		subtitleTextBlock.FontFamily = new FontFamily(new Core.FontExtensions.FontFamily(MediaElement.SubtitleFont).WindowsFont);
-	}
-	protected virtual void Dispose(bool disposing)
-	{
-		if (!disposedValue)
-		{
-			if (Timer is not null)
-			{
-				Timer.Stop();
-				Timer.Elapsed -= UpdateSubtitle;
-			}
-			if (disposing)
-			{
-				Timer?.Dispose();
-			}
-			Timer = null;
-			disposedValue = true;
-		}
-	}
-
-	~SubtitleExtensions()
-	{
-	     Dispose(disposing: false);
-	}
-
-	public void Dispose()
-	{
-		Dispose(disposing: true);
-		GC.SuppressFinalize(this);
 	}
 }

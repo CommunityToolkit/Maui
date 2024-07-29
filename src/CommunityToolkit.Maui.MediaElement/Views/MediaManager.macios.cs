@@ -326,7 +326,7 @@ public partial class MediaManager : IDisposable
 			System.Diagnostics.Trace.TraceError("SubtitleExtensions is null or SubtitleUrl is null or empty.");
 			return;
 		}
-		await subtitleExtensions.LoadSubtitles(MediaElement).WaitAsync(cancellationToken).ConfigureAwait(false);
+		await subtitleExtensions.LoadSubtitles(MediaElement, cancellationToken).ConfigureAwait(false);
 		subtitleExtensions.StartSubtitleDisplay();
 	}
 
@@ -443,7 +443,7 @@ public partial class MediaManager : IDisposable
 				{
 					UIApplication.SharedApplication.EndReceivingRemoteControlEvents();
 				});
-				// disable the idle Timer so screen turns off when media is not playing
+				// disable the idle timer so screen turns off when media is not playing
 				UIApplication.SharedApplication.IdleTimerDisabled = false;
 				var audioSession = AVAudioSession.SharedInstance();
 				audioSession.SetActive(false);

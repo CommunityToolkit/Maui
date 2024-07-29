@@ -311,8 +311,8 @@ partial class MediaManager : IDisposable
 			System.Diagnostics.Trace.TraceError("Player is null");
 			return;
 		}
-		subtitleExtensions ??= new(Player);
-		await subtitleExtensions.LoadSubtitles(MediaElement).WaitAsync(cancellationToken).ConfigureAwait(false);
+		subtitleExtensions ??= new(Player, Dispatcher);
+		await subtitleExtensions.LoadSubtitles(MediaElement, cancellationToken).ConfigureAwait(false);
 		subtitleExtensions.StartSubtitleDisplay();
 	}
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()

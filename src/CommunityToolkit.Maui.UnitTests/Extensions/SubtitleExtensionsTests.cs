@@ -12,12 +12,13 @@ public class SubtitleExtensionTests : BaseTest
 	{
 		// Arrange
 		IMediaElement mediaElement = new MediaElement();
+		CancellationToken token = new();
 
 		// Act
 		SubtitleExtensions subtitleExtensions = new();
 
 		// Assert
-		Assert.NotNull(subtitleExtensions.LoadSubtitles(mediaElement));
+		Assert.NotNull(subtitleExtensions.LoadSubtitles(mediaElement, token));
 	}
 
 	[Fact]
@@ -25,12 +26,13 @@ public class SubtitleExtensionTests : BaseTest
 	{
 		// Arrange
 		IMediaElement mediaElement = new MediaElement();
+		CancellationToken token = new();
 
 		// Act
 		SubtitleExtensions subtitleExtensions = null!;
 
 		// Assert
-		await Assert.ThrowsAsync<NullReferenceException>(async () => await subtitleExtensions.LoadSubtitles(mediaElement));
+		await Assert.ThrowsAsync<NullReferenceException>(async () => await subtitleExtensions.LoadSubtitles(mediaElement, token));
 	}
 
 	[Fact]
@@ -75,8 +77,9 @@ public class SubtitleExtensionTests : BaseTest
 		var invalidSubtitleUrl = "invalid://uri";
 		mediaElement.SubtitleUrl = invalidSubtitleUrl;
 		SubtitleExtensions subtitleExtensions = new();
+		CancellationToken token = new();
 
 		// Act & Assert
-		await Assert.ThrowsAsync<ArgumentException>(async () => await subtitleExtensions.LoadSubtitles(mediaElement));
+		await Assert.ThrowsAsync<ArgumentException>(async () => await subtitleExtensions.LoadSubtitles(mediaElement, token));
 	}
 }
