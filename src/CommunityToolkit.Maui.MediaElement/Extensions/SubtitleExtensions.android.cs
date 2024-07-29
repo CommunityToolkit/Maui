@@ -66,11 +66,7 @@ partial class SubtitleExtensions : SubtitleTimer<TextView>, IDisposable
 			return;
 		}
 
-		if (Cues.Find(c => c.StartTime <= MediaElement.Position && c.EndTime >= MediaElement.Position) is not SubtitleCue cue)
-		{
-			return;
-		}
-
+		var cue = Cues.Find(c => c.StartTime <= MediaElement.Position && c.EndTime >= MediaElement.Position);
 		dispatcher.Dispatch(() =>
 		{
 			SetHeight();
