@@ -43,6 +43,7 @@ partial class SubtitleExtensions : SubtitleTimer<TextView>, IDisposable
 		dispatcher.Dispatch(() => styledPlayerView.AddView(subtitleTextBlock));
 		StartTimer();
 	}
+
 	public void StopSubtitleDisplay()
 	{
 		StopTimer();
@@ -56,7 +57,6 @@ partial class SubtitleExtensions : SubtitleTimer<TextView>, IDisposable
 
 	public override void UpdateSubtitle(object? sender, System.Timers.ElapsedEventArgs e)
 	{
-		System.Diagnostics.Debug.WriteLine("UpdateSubtitle");
 		ArgumentNullException.ThrowIfNull(subtitleTextBlock);
 		ArgumentNullException.ThrowIfNull(MediaElement);
 		ArgumentNullException.ThrowIfNull(Cues);
@@ -114,6 +114,7 @@ partial class SubtitleExtensions : SubtitleTimer<TextView>, IDisposable
 			}
 		});
 	}
+
 	void SetHeight()
 	{
 		if (styledPlayerView is null || subtitleLayout is null || subtitleTextBlock is null)
@@ -132,6 +133,7 @@ partial class SubtitleExtensions : SubtitleTimer<TextView>, IDisposable
 		}
 		dispatcher.Dispatch(() => subtitleLayout?.SetMargins(20, 0, 20, height));
 	}
+
 	void InitializeText()
 	{
 		ArgumentNullException.ThrowIfNull(subtitleTextBlock);
@@ -140,6 +142,7 @@ partial class SubtitleExtensions : SubtitleTimer<TextView>, IDisposable
 		subtitleTextBlock.TextSize = (float)MediaElement.SubtitleFontSize;
 		subtitleTextBlock.SetTypeface(typeface, TypefaceStyle.Normal);
 	}
+
 	void InitializeTextBlock()
 	{
 		subtitleTextBlock = new(CurrentPlatformActivity.CurrentActivity.ApplicationContext)
@@ -155,6 +158,7 @@ partial class SubtitleExtensions : SubtitleTimer<TextView>, IDisposable
 		subtitleTextBlock.SetTextColor(Android.Graphics.Color.White);
 		subtitleTextBlock.SetPaddingRelative(10, 10, 10, 20);
 	}
+
 	void InitializeLayout()
 	{
 		subtitleLayout = new FrameLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent)

@@ -6,7 +6,6 @@ using Grid = Microsoft.Maui.Controls.Grid;
 
 namespace CommunityToolkit.Maui.Extensions;
 
-
 partial class SubtitleExtensions : SubtitleTimer<TextBox>
 {
 	readonly MauiMediaElement? mauiMediaElement;
@@ -20,6 +19,7 @@ partial class SubtitleExtensions : SubtitleTimer<TextBox>
 		MediaManager.FullScreenEvents.WindowsChanged += OnFullScreenChanged;
 		InitializeTextBlock();
 	}
+
 	public void StartSubtitleDisplay()
 	{
 		dispatcher.Dispatch(() => mauiMediaElement?.Children.Add(subtitleTextBlock));
@@ -92,6 +92,7 @@ partial class SubtitleExtensions : SubtitleTimer<TextBox>
 				break;
 		}
 	}
+
 	void InitializeTextBlock()
 	{
 		subtitleTextBlock = new()

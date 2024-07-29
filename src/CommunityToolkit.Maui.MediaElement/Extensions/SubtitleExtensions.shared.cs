@@ -55,6 +55,7 @@ partial class SubtitleExtensions
 		}
 	}
 }
+
 interface ITimer<T> where T : class
 {
 	public abstract System.Timers.Timer? timer { get; set; }
@@ -66,7 +67,6 @@ interface ITimer<T> where T : class
 
 abstract class SubtitleTimer<T> : ITimer<T> where T : class
 {
-	
 	[Required]
 	public IDispatcher dispatcher { get; set; } = null!;
 	public System.Timers.Timer? timer { get; set; }
