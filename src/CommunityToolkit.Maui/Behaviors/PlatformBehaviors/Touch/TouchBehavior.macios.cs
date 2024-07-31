@@ -1,8 +1,6 @@
 using CommunityToolkit.Maui.Core;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
-using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Behaviors;
@@ -25,12 +23,6 @@ public partial class TouchBehavior
 
 		touchGesture = new TouchUITapGestureRecognizer(this);
 
-		if (((platformView as IVisualNativeElementRenderer)?.Control ?? platformView) is UIButton button)
-		{
-			button.AllTouchEvents += HandleAllTouchEvents;
-			((TouchUITapGestureRecognizer)touchGesture).IsButton = true;
-		}
-
 		platformView.AddGestureRecognizer(touchGesture);
 
 		if (OperatingSystem.IsIOSVersionAtLeast(13))
@@ -51,11 +43,6 @@ public partial class TouchBehavior
 	{
 		base.OnDetachedFrom(bindable, platformView);
 
-		if (((platformView as IVisualNativeElementRenderer)?.Control ?? platformView) is UIButton button)
-		{
-			button.AllTouchEvents -= HandleAllTouchEvents;
-		}
-
 		if (touchGesture is not null)
 		{
 			platformView.RemoveGestureRecognizer(touchGesture);
@@ -71,17 +58,6 @@ public partial class TouchBehavior
 		}
 
 		Element = null;
-	}
-
-	static void HandleAllTouchEvents(object? sender, EventArgs args)
-	{
-		if (sender is not UIButton button)
-		{
-			throw new ArgumentException($"{nameof(sender)} must be Type {nameof(UIButton)}", nameof(sender));
-		}
-
-		// Prevent Button Highlight
-		button.Highlighted = false;
 	}
 
 	void OnHover()
