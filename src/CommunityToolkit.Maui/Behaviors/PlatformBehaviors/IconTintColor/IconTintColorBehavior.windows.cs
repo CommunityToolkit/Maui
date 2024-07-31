@@ -124,6 +124,12 @@ public partial class IconTintColorBehavior
 
 	void LoadAndApplyImageTintColor(View element, WImage image, Color color)
 	{
+		// Sometimes image source is not correct, in that case get the correct source from element
+		if (element is IImageElement { Source: FileImageSource fileImageSource })
+		{
+			image.Source = new BitmapImage(new Uri($"ms-appx:///{fileImageSource.File}"));
+		}
+
 		if (element is IImageElement { Source: UriImageSource uriImageSource })
 		{
 			image.Source = Path.GetExtension(uriImageSource.Uri.AbsolutePath) switch
@@ -132,6 +138,10 @@ public partial class IconTintColorBehavior
 				_ => new BitmapImage(uriImageSource.Uri)
 			};
 
+			ApplyTintColor();
+		}
+		else if (image.IsLoaded)
+		{
 			ApplyTintColor();
 		}
 		else
