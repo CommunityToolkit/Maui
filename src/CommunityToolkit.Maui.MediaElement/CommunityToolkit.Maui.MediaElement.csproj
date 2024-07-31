@@ -58,9 +58,12 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
-    <PackageReference Include="Xam.Plugins.Android.ExoPlayer" Version="[2.19.1,)"/>
-    <PackageReference Include="Xam.Plugins.Android.ExoPlayer.Transformer" Version="[2.19.1,)"/>
-    <PackageReference Include="Xam.Plugins.Android.ExoPlayer.MediaSession" Version="[2.19.1,)"/>
+    <PackageReference Include="Xamarin.AndroidX.Media3.Common" Version="1.0.2" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.Ui" Version="1.0.2" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.DataSource" Version="1.0.2" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer" Version="1.0.2" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.Transformer" Version="1.0.2" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.Session" Version="1.0.2" />
   </ItemGroup>
 
   <ItemGroup>

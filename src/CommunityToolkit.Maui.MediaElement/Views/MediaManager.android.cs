@@ -1,29 +1,30 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Android.Content;
 using Android.Graphics;
+using Android.Media.Metrics;
 using Android.OS;
 using Android.Support.V4.Media;
 using Android.Support.V4.Media.Session;
 using Android.Views;
 using Android.Widget;
 using AndroidX.LocalBroadcastManager.Content;
-using Com.Google.Android.Exoplayer2;
-using Com.Google.Android.Exoplayer2.Audio;
-using Com.Google.Android.Exoplayer2.Ext.Mediasession;
-using Com.Google.Android.Exoplayer2.Metadata;
-using Com.Google.Android.Exoplayer2.Text;
-using Com.Google.Android.Exoplayer2.Trackselection;
-using Com.Google.Android.Exoplayer2.UI;
-using Com.Google.Android.Exoplayer2.Video;
+using AndroidX.Media3.Common;
+using AndroidX.Media3.Common.Text;
+using AndroidX.Media3.Common.Util;
+using AndroidX.Media3.ExoPlayer;
+using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.ApplicationModel.Permissions;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
+using AudioAttributes = AndroidX.Media3.Common.AudioAttributes;
+using DeviceInfo = AndroidX.Media3.Common.DeviceInfo;
+using SystemClock = Android.OS.SystemClock;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
-public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
+public partial class MediaManager : Java.Lang.Object, IPlayerListener
 {
 	static readonly HttpClient client = new();
 
@@ -36,7 +37,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	float volumeBeforeMute = 1;
 	MediaControllerCompat? mediaControllerCompat;
 	TaskCompletionSource? seekToTaskCompletionSource;
-	MediaSessionConnector? mediaSessionConnector;
 	MediaSessionCompat? mediaSession;
 	UIUpdateReceiver? uiUpdateReceiver;
 	MediaElementState currentState;
@@ -44,7 +44,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
 	/// </summary>
-	protected StyledPlayerView? PlayerView { get; set; }
+	protected PlayerView? PlayerView { get; set; }
 
 	/// <summary>
 	/// Retrieves bitmap for the given url
@@ -85,7 +85,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// </summary>
 	/// <paramref name="playbackParameters">Object containing the new playback parameter values.</paramref>
 	/// <remarks>
-	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
+	/// This is part of the <see cref="IPlayerListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
 	public void OnPlaybackParametersChanged(PlaybackParameters? playbackParameters)
@@ -104,7 +104,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// <paramref name="playWhenReady">Indicates whether the player should start playing the media whenever the media is ready.</paramref>
 	/// <paramref name="playbackState">The state that the player has transitioned to.</paramref>
 	/// <remarks>
-	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
+	/// This is part of the <see cref="IPlayerListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
 	public async void OnPlayerStateChanged(bool playWhenReady, int playbackState)
@@ -113,7 +113,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			return;
 		}
-
+		
 		var newState = playbackState switch
 		{
 			PlaybackStateCompat.StateFastForwarding
@@ -141,8 +141,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		};
 
 		MediaElement.CurrentStateChanged(newState);
-
-		if (playbackState is IPlayer.StateReady)
+		if (playbackState is PlaybackStateCompat.StatePlaying)
 		{
 			MediaElement.Duration = TimeSpan.FromMilliseconds(Player.Duration < 0 ? 0 : Player.Duration);
 			MediaElement.Position = TimeSpan.FromMilliseconds(Player.CurrentPosition < 0 ? 0 : Player.CurrentPosition);
@@ -182,20 +181,18 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	[MemberNotNull(nameof(PlayerView))]
 	[MemberNotNull(nameof(uiUpdateReceiver))]
 	[MemberNotNull(nameof(checkPermissionsTask))]
-	[MemberNotNull(nameof(mediaSessionConnector))]
 	[MemberNotNull(nameof(mediaControllerCompat))]
-	public (PlatformMediaElement platformView, StyledPlayerView PlayerView) CreatePlatformView()
+	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView()
 	{
 		ArgumentNullException.ThrowIfNull(MauiContext.Context);
-		Player = new IExoPlayer.Builder(MauiContext.Context).Build() ?? throw new NullReferenceException();
+		Player = new ExoPlayerBuilder(MauiContext.Context).Build() ?? throw new NullReferenceException();
 		Player.AddListener(this);
+		Player.SetHandleAudioBecomingNoisy(true);
 		InitializeMediaSession();
 
-		PlayerView = new StyledPlayerView(MauiContext.Context)
+		PlayerView = new PlayerView(MauiContext.Context)
 		{
 			Player = Player,
-			UseController = false,
-			ControllerAutoShow = false,
 			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 		};
 
@@ -208,41 +205,41 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// </summary>
 	/// <paramref name="playbackState">The state that the player has transitioned to.</paramref>
 	/// <remarks>
-	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
+	/// This is part of the <see cref="IPlayerListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
-	public void OnPlaybackStateChanged(int playbackState)
-	{
-		if (MediaElement.Source is null)
-		{
-			return;
-		}
+	  public void OnPlaybackStateChanged(PlaybackState playbackState)
+    {
+        if (MediaElement.Source is null)
+        {
+            return;
+        }
 
-		MediaElementState newState = MediaElement.CurrentState;
+        MediaElementState newState = MediaElement.CurrentState;
 
-		switch (playbackState)
-		{
-			case IPlayer.StateBuffering:
-				newState = MediaElementState.Buffering;
-				break;
-			case IPlayer.StateEnded:
-				newState = MediaElementState.Stopped;
-				MediaElement.MediaEnded();
-				break;
-			case IPlayer.StateReady:
-				seekToTaskCompletionSource?.TrySetResult();
-				break;
-		}
+        switch (playbackState)
+        {
+			case PlaybackState.Buffering:
+                newState = MediaElementState.Buffering;
+                break;
+			case PlaybackState.Ended:
+                newState = MediaElementState.Stopped;
+                MediaElement.MediaEnded();
+                break;
+			case PlaybackState.Abandoned:
+                seekToTaskCompletionSource?.TrySetResult();
+                break;
+        }
 
-		MediaElement.CurrentStateChanged(newState);
-	}
+        MediaElement.CurrentStateChanged(newState);
+    }
 
 	/// <summary>
 	/// Occurs when ExoPlayer encounters an error.
 	/// </summary>
 	/// <paramref name="error">An instance of <seealso cref="PlaybackException"/> containing details of the error.</paramref>
 	/// <remarks>
-	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
+	/// This is part of the <see cref="IPlayerListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
 	public void OnPlayerError(PlaybackException? error)
@@ -282,7 +279,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// Invoked when a seek operation has been processed.
 	/// </summary>
 	/// <remarks>
-	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
+	/// This is part of the <see cref="IPlayerListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
 	public void OnSeekProcessed()
@@ -296,7 +293,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// </summary>
 	/// <param name="volume">The new value for volume.</param>
 	/// <remarks>
-	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
+	/// This is part of the <see cref="IPlayerListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
 	public void OnVolumeChanged(float volume)
@@ -454,7 +451,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			return;
 		}
-
+		
 		PlayerView.ResizeMode = MediaElement.Aspect switch
 		{
 			Aspect.AspectFill => AspectRatioFrameLayout.ResizeModeZoom,
@@ -498,7 +495,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			return;
 		}
-
+		
 		PlayerView.UseController = MediaElement.ShouldShowPlaybackControls;
 	}
 
@@ -570,8 +567,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			return;
 		}
-
-		Player.RepeatMode = MediaElement.ShouldLoopPlayback ? IPlayer.RepeatModeOne : IPlayer.RepeatModeOff;
+		 
+		Player.RepeatMode = MediaElement.ShouldLoopPlayback ? RepeatModeUtil.RepeatToggleModeOne : RepeatModeUtil.RepeatToggleModeNone;
 	}
 
 	protected override void Dispose(bool disposing)
@@ -581,11 +578,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		if (disposing)
 		{
 			StopService();
-
+			/*
 			mediaSessionConnector?.SetPlayer(null);
 			mediaSessionConnector?.Dispose();
 			mediaSessionConnector = null;
-
+			*/
 			mediaSession?.Release();
 			mediaSession?.Dispose();
 			mediaSession = null;
@@ -623,23 +620,22 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	}
 
 	[MemberNotNull(nameof(uiUpdateReceiver))]
-	[MemberNotNull(nameof(mediaSessionConnector))]
 	[MemberNotNull(nameof(mediaControllerCompat))]
 	void InitializeMediaSession()
 	{
 		ArgumentNullException.ThrowIfNull(Player);
 		mediaSession ??= new MediaSessionCompat(Platform.AppContext, "notification");
 		mediaSession.Active = true;
-
+		/*
 		mediaSessionConnector ??= new MediaSessionConnector(mediaSession);
 		mediaSessionConnector.SetEnabledPlaybackActions(PlaybackStateCompat.ActionRewind | PlaybackStateCompat.ActionPlayPause | PlaybackStateCompat.ActionFastForward | PlaybackStateCompat.ActionSeekTo);
 		mediaSessionConnector.SetDispatchUnsupportedActionsEnabled(true);
 		mediaSessionConnector.SetPlayer(Player);
-
+		*/
 		uiUpdateReceiver ??= new UIUpdateReceiver(Player);
 		LocalBroadcastManager.GetInstance(Platform.AppContext).RegisterReceiver(uiUpdateReceiver, new IntentFilter(MediaControlsService.ACTION_UPDATE_PLAYER));
 
-		ArgumentNullException.ThrowIfNull(mediaSessionConnector);
+		//ArgumentNullException.ThrowIfNull(mediaSessionConnector);
 		ArgumentNullException.ThrowIfNull(Platform.CurrentActivity);
 		ArgumentNullException.ThrowIfNull(mediaSession.SessionToken);
 
@@ -650,7 +646,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		stateBuilder.SetActions(PlaybackStateCompat.ActionRewind | PlaybackStateCompat.ActionPlayPause | PlaybackStateCompat.ActionFastForward | PlaybackStateCompat.ActionSeekTo);
 		stateBuilder.SetState(PlaybackStateCompat.StateNone, 0, 1.0f, SystemClock.ElapsedRealtime());
 		mediaSession.SetPlaybackState(stateBuilder.Build());
-		mediaSession.SetFlags(MediaSessionCompat.FlagHandlesMediaButtons | MediaSessionCompat.FlagHandlesTransportControls);
+		//mediaSession.SetFlags(MediaSessionCompat.FlagHandlesMediaButtons | MediaSessionCompat.FlagHandlesTransportControls);
 	}
 
 	async Task StartService(CancellationToken cancellationToken = default)
@@ -714,12 +710,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 	public void OnAudioAttributesChanged(AudioAttributes? audioAttributes) { }
 	public void OnAudioSessionIdChanged(int audioSessionId) { }
-	public void OnAvailableCommandsChanged(IPlayer.Commands? availableCommands) { }
+	public void OnAvailableCommandsChanged(IPlayerCommand availableCommands) { }
 	public void OnCues(CueGroup? cueGroup) { }
 	public void OnCues(List<Cue> cues) { }
-	public void OnDeviceInfoChanged(Com.Google.Android.Exoplayer2.DeviceInfo? deviceInfo) { }
+	public void OnDeviceInfoChanged(DeviceInfo? deviceInfo) { }
 	public void OnDeviceVolumeChanged(int volume, bool muted) { }
-	public void OnEvents(IPlayer? player, IPlayer.Events? events) { }
+	public void OnEvents(IPlayer? player, IPlayerEvent events) { }
 	public void OnIsLoadingChanged(bool isLoading) { }
 	public void OnIsPlayingChanged(bool isPlaying) { }
 	public void OnLoadingChanged(bool isLoading) { }
@@ -732,7 +728,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }
 	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason) { }
 	public void OnPositionDiscontinuity(int reason) { }
-	public void OnPositionDiscontinuity(IPlayer.PositionInfo oldPosition, IPlayer.PositionInfo newPosition, int reason) { }
+	public void OnPositionDiscontinuity(PlayerPositionInfo? oldPosition, PlayerPositionInfo? newPosition, int reason) { }
 	public void OnRenderedFirstFrame() { }
 	public void OnRepeatModeChanged(int repeatMode) { }
 	public void OnSeekBackIncrementChanged(long seekBackIncrementMs) { }

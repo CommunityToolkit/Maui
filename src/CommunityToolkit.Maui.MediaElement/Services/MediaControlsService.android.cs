@@ -195,22 +195,22 @@ class MediaControlsService : Service
 		var pause = new Intent(this, typeof(MediaControlsService));
 		pause.SetAction("MediaAction.pause");
 		var pPause = PendingIntent.GetService(this, 1, pause, pendingIntentFlags);
-		actionPause ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_controls_pause, ACTION_PAUSE, pPause).Build();
+		actionPause ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_icon_pause, ACTION_PAUSE, pPause).Build();
 
 		var play = new Intent(this, typeof(MediaControlsService));
 		play.SetAction("MediaAction.play");
 		var pPlay = PendingIntent.GetService(this, 1, play, pendingIntentFlags);
-		actionPlay ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_controls_play, ACTION_PLAY, pPlay).Build();
+		actionPlay ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_icon_play, ACTION_PLAY, pPlay).Build();
 
 		var previous = new Intent(this, typeof(MediaControlsService));
 		previous.SetAction("MediaAction.rewind");
 		var pPrevious = PendingIntent.GetService(this, 1, previous, pendingIntentFlags);
-		actionPrevious ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_controls_rewind, ACTION_REWIND, pPrevious).Build();
+		actionPrevious ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_icon_rewind, ACTION_REWIND, pPrevious).Build();
 
 		var next = new Intent(this, typeof(MediaControlsService));
 		next.SetAction("MediaAction.fastForward");
 		var pNext = PendingIntent.GetService(this, 1, next, pendingIntentFlags);
-		actionNext ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_controls_fastforward, ACTION_FASTFORWARD, pNext).Build();
+		actionNext ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_icon_fastforward, ACTION_FASTFORWARD, pNext).Build();
 
 		notification?.AddAction(actionPrevious);
 		notification?.AddAction(actionPause);
