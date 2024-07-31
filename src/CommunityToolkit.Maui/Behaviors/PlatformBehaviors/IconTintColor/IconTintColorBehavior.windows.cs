@@ -55,7 +55,13 @@ public partial class IconTintColorBehavior
 
 	static bool TryGetButtonImage(WButton button, [NotNullWhen(true)] out WImage? image)
 	{
-		image = button.Content as WImage;
+		image = button.Content switch
+		{
+			WImage windowsImage => windowsImage,
+			Microsoft.UI.Xaml.Controls.Panel panel => panel.Children?.OfType<WImage>().FirstOrDefault(),
+			_ => null
+		};
+
 		return image is not null;
 	}
 
@@ -124,13 +130,14 @@ public partial class IconTintColorBehavior
 
 	void LoadAndApplyImageTintColor(View element, WImage image, Color color)
 	{
-		// Sometimes image source is not correct, in that case get the correct source from element
-		if (element is IImageElement { Source: FileImageSource fileImageSource })
+		// In toggle source button, WImage source is not initially correct, 
+		if (element is IImageElement { Source: FileImageSource fileImageSource } &&
+			image.Source is BitmapImage bitmapImage &&
+			Uri.Compare(new Uri($"{bitmapImage.UriSource.Scheme}:///{fileImageSource.File}"), bitmapImage.UriSource, UriComponents.Path, UriFormat.Unescaped, StringComparison.OrdinalIgnoreCase) != 0)
 		{
-			image.Source = new BitmapImage(new Uri($"ms-appx:///{fileImageSource.File}"));
+			image.ImageOpened += OnImageOpened;
 		}
-
-		if (element is IImageElement { Source: UriImageSource uriImageSource })
+		else if (element is IImageElement { Source: UriImageSource uriImageSource })
 		{
 			image.Source = Path.GetExtension(uriImageSource.Uri.AbsolutePath) switch
 			{
@@ -138,6 +145,10 @@ public partial class IconTintColorBehavior
 				_ => new BitmapImage(uriImageSource.Uri)
 			};
 
+			ApplyTintColor();
+		}
+		else if (image.IsLoaded)
+		{
 			ApplyTintColor();
 		}
 		else
