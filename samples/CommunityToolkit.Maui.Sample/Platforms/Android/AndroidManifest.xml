@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application android:allowBackup="true" android:icon="@mipmap/appicon" android:enableOnBackInvokedCallback="true"
                  android:supportsRtl="true">
-        <service android:name="CommunityToolkit.Maui.Media.Services" android:exported="false" android:enabled="true"
+        <service android:name="communityToolkit.maui.media.services" android:exported="false" android:enabled="true"
                  android:foregroundServiceType="mediaPlayback">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON"/>
