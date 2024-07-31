@@ -140,10 +140,6 @@ public partial class IconTintColorBehavior
 
 			ApplyTintColor();
 		}
-		else if (image.IsLoaded)
-		{
-			ApplyTintColor();
-		}
 		else
 		{
 			image.ImageOpened += OnImageOpened;
