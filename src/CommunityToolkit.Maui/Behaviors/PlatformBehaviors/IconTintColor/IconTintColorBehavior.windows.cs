@@ -55,13 +55,7 @@ public partial class IconTintColorBehavior
 
 	static bool TryGetButtonImage(WButton button, [NotNullWhen(true)] out WImage? image)
 	{
-		image = button.Content switch
-		{
-			WImage windowsImage => windowsImage,
-			Microsoft.UI.Xaml.Controls.Panel panel => panel.Children?.OfType<WImage>().FirstOrDefault(),
-			_ => null
-		};
-
+		image = button.Content as WImage;
 		return image is not null;
 	}
 
@@ -130,7 +124,7 @@ public partial class IconTintColorBehavior
 
 	void LoadAndApplyImageTintColor(View element, WImage image, Color color)
 	{
-		// In toggle source button, WImage source is not initially correct, 
+		// Sometimes WImage source doesn't match View source so the image is not ready to be tinted, have to wait for next ImageOpened event
 		if (element is IImageElement { Source: FileImageSource fileImageSource } &&
 			image.Source is BitmapImage bitmapImage &&
 			Uri.Compare(new Uri($"{bitmapImage.UriSource.Scheme}:///{fileImageSource.File}"), bitmapImage.UriSource, UriComponents.Path, UriFormat.Unescaped, StringComparison.OrdinalIgnoreCase) != 0)
