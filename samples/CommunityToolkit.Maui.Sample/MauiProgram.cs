@@ -68,14 +68,12 @@ public static class MauiProgram
 								.UseMauiCommunityToolkitCamera()
 								.UseMauiCommunityToolkitMediaElement()
 
-#if IOS || ANDROID
+#if WINDOWS
+								.UseMauiCommunityToolkitMaps("Key") // You should add your own key here from bingmapsportal.com
+#else
 								.UseMauiMaps()
 #endif
 
-#if WINDOWS
-								// See https://github.com/CommunityToolkit/Maui/releases/tag/2.0.1-maps for full multi-plaform example
-								.UseMauiCommunityToolkitMaps("Key") // You should add your own key here from bingmapsportal.com
-#endif
 								.UseMauiApp<App>()
 								.ConfigureFonts(fonts =>
 								{
