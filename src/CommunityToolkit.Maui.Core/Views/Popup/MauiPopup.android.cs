@@ -111,7 +111,7 @@ public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 					float x = e.GetX();
 					float y = e.GetY();
 
-					if (!(x >= 0 && x < decorView.Width && y >= 0 && y < decorView.Height))
+					if (!(x >= 0 && x <= decorView.Width && y >= 0 && y <= decorView.Height))
 					{
 						if (IsShowing)
 						{
