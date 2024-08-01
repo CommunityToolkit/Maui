@@ -99,5 +99,38 @@ public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 		SetOnCancelListener(this);
 	}
 
+	public override bool OnTouchEvent(MotionEvent e)
+	{
+		if (VirtualView is not null)
+		{
+			if (VirtualView.CanBeDismissedByTappingOutsideOfPopup &&
+				e.Action == MotionEventActions.Up)
+			{
+				if (Window?.DecorView is AView decorView)
+				{
+					float x = e.GetX();
+					float y = e.GetY();
+
+					if (!(x >= 0 && x < decorView.Width && y >= 0 && y < decorView.Height))
+					{
+						if (IsShowing)
+						{
+							OnDismissedByTappingOutsideOfPopup(this);
+						}
+					}
+				}
+			}
+		}
+
+		if (this.IsDisposed())
+		{
+			return true;
+		}
+		else
+		{
+			return base.OnTouchEvent(e);
+		}
+	}
+
 	void IDialogInterfaceOnCancelListener.OnCancel(IDialogInterface? dialog) => OnDismissedByTappingOutsideOfPopup(this);
 }
