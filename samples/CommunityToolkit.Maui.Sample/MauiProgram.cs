@@ -69,7 +69,7 @@ public static class MauiProgram
 								.UseMauiCommunityToolkitMediaElement()
 
 #if WINDOWS
-								.UseMauiCommunityToolkitMaps("Key") // You should add your own key here from bingmapsportal.com
+								.UseMauiCommunityToolkitMaps("Key")  // You should add your own key here from bingmapsportal.com
 #else
 								.UseMauiMaps()
 #endif
