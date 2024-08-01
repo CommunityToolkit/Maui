@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Graphics;
 using Android.Media;
 using Android.OS;
 using Android.Support.V4.Media.Session;
@@ -12,7 +11,6 @@ using AndroidX.Core.App;
 using AndroidX.LocalBroadcastManager.Content;
 using CommunityToolkit.Maui.Core.Views;
 using Microsoft.Win32.SafeHandles;
-using AndroidStream = Android.Media.Stream;
 using Resource = Microsoft.Maui.Resource;
 
 namespace CommunityToolkit.Maui.Media.Services;
@@ -32,7 +30,6 @@ class MediaControlsService : Service
 	PendingIntentFlags pendingIntentFlags;
 	SafeHandle? safeHandle = new SafeFileHandle(IntPtr.Zero, true);
 	MediaSessionCompat? mediaSession;
-	AudioManager? audioManager;
 	NotificationCompat.Builder? notification;
 	NotificationCompat.Action? actionPlay;
 	NotificationCompat.Action? actionPause;
@@ -46,23 +43,20 @@ class MediaControlsService : Service
 	public override StartCommandResult OnStartCommand([NotNull] Intent? intent, StartCommandFlags flags, int startId)
 	{
 		ArgumentNullException.ThrowIfNull(intent);
-
 		if (!string.IsNullOrEmpty(intent.Action) && receiveUpdates is not null)
 		{
 			BroadcastUpdate(ACTION_UPDATE_PLAYER, intent.Action);
 		}
-
 		StartForegroundService(intent).AsTask().ContinueWith(t =>
 		{
 			if (t.Exception is not null)
 			{
 				foreach (var exception in t.Exception.InnerExceptions)
 				{
-					System.Diagnostics.Trace.WriteLine($"[error] {exception}, {exception.Message}");
+					System.Diagnostics.Trace.TraceError($"[error] {exception}, {exception.Message}");
 				}
 			}
 		}, TaskContinuationOptions.OnlyOnFaulted);
-
 		return StartCommandResult.Sticky;
 	}
 
@@ -92,8 +86,6 @@ class MediaControlsService : Service
 			LocalBroadcastManager.GetInstance(this).RegisterReceiver(receiveUpdates, new IntentFilter(ACTION_UPDATE_UI));
 		}
 
-		OnSetupAudioServices();
-
 		pendingIntentFlags = Build.VERSION.SdkInt >= BuildVersionCodes.S
 			? PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable
 			: PendingIntentFlags.UpdateCurrent;
@@ -112,9 +104,8 @@ class MediaControlsService : Service
 
 		if (Build.VERSION.SdkInt >= BuildVersionCodes.S)
 		{
-			style.SetShowActionsInCompactView(0, 1, 2, 3);
+			style.SetShowActionsInCompactView(0,1,2);
 		}
-
 		if (Build.VERSION.SdkInt < BuildVersionCodes.Tiramisu
 			&& notification is null)
 		{
@@ -124,7 +115,7 @@ class MediaControlsService : Service
 		}
 
 		notification ??= new NotificationCompat.Builder(Platform.AppContext, "1");
-
+		
 		notification.SetStyle(style);
 		notification.SetSmallIcon(_Microsoft.Android.Resource.Designer.Resource.Drawable.exo_styled_controls_audiotrack);
 		notification.SetAutoCancel(false);
@@ -170,52 +161,43 @@ class MediaControlsService : Service
 		notification.Build();
 	}
 
-	void OnSetupAudioServices()
-	{
-		audioManager = GetSystemService(Context.AudioService) as AudioManager;
-		ArgumentNullException.ThrowIfNull(audioManager);
-		audioManager.RequestAudioFocus(null, AndroidStream.Music, AudioFocus.Gain);
-		audioManager.SetParameters("Ducking=true");
-		audioManager.SetStreamVolume(AndroidStream.Music, audioManager.GetStreamVolume(AndroidStream.Music), 0);
-	}
+		async Task OnSetContent(Intent mediaManagerIntent, CancellationToken cancellationToken)
+		{
+			var albumArtUri = mediaManagerIntent.GetStringExtra("albumArtUri") ?? string.Empty;
+			var bitmap = await MediaManager.GetBitmapFromUrl(albumArtUri, cancellationToken).ConfigureAwait(false);
+			var title = mediaManagerIntent.GetStringExtra("title") ?? string.Empty;
+			var artist = mediaManagerIntent.GetStringExtra("artist") ?? string.Empty;
+			notification?.SetContentTitle(title);
+			notification?.SetContentText(artist);
+			notification?.SetLargeIcon(bitmap);
+		}
 
-	async Task OnSetContent(Intent mediaManagerIntent, CancellationToken cancellationToken)
-	{
-		var albumArtUri = mediaManagerIntent.GetStringExtra("albumArtUri") ?? string.Empty;
-		var bitmap = await MediaManager.GetBitmapFromUrl(albumArtUri, cancellationToken).ConfigureAwait(false);
-		var title = mediaManagerIntent.GetStringExtra("title") ?? string.Empty;
-		var artist = mediaManagerIntent.GetStringExtra("artist") ?? string.Empty;
-		notification?.SetContentTitle(title);
-		notification?.SetContentText(artist);
-		notification?.SetLargeIcon(bitmap);
-	}
+		void OnSetIntents()
+		{
+			var pause = new Intent(this, typeof(MediaControlsService));
+			pause.SetAction("MediaAction.pause");
+			var pPause = PendingIntent.GetService(this, 1, pause, pendingIntentFlags);
+			actionPause ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_icon_pause, ACTION_PAUSE, pPause).Build();
 
-	void OnSetIntents()
-	{
-		var pause = new Intent(this, typeof(MediaControlsService));
-		pause.SetAction("MediaAction.pause");
-		var pPause = PendingIntent.GetService(this, 1, pause, pendingIntentFlags);
-		actionPause ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_icon_pause, ACTION_PAUSE, pPause).Build();
+			var play = new Intent(this, typeof(MediaControlsService));
+			play.SetAction("MediaAction.play");
+			var pPlay = PendingIntent.GetService(this, 1, play, pendingIntentFlags);
+			actionPlay ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_icon_play, ACTION_PLAY, pPlay).Build();
 
-		var play = new Intent(this, typeof(MediaControlsService));
-		play.SetAction("MediaAction.play");
-		var pPlay = PendingIntent.GetService(this, 1, play, pendingIntentFlags);
-		actionPlay ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_icon_play, ACTION_PLAY, pPlay).Build();
+			var previous = new Intent(this, typeof(MediaControlsService));
+			previous.SetAction("MediaAction.rewind");
+			var pPrevious = PendingIntent.GetService(this, 1, previous, pendingIntentFlags);
+			actionPrevious ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_icon_rewind, ACTION_REWIND, pPrevious).Build();
 
-		var previous = new Intent(this, typeof(MediaControlsService));
-		previous.SetAction("MediaAction.rewind");
-		var pPrevious = PendingIntent.GetService(this, 1, previous, pendingIntentFlags);
-		actionPrevious ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_icon_rewind, ACTION_REWIND, pPrevious).Build();
+			var next = new Intent(this, typeof(MediaControlsService));
+			next.SetAction("MediaAction.fastForward");
+			var pNext = PendingIntent.GetService(this, 1, next, pendingIntentFlags);
+			actionNext ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_icon_fastforward, ACTION_FASTFORWARD, pNext).Build();
 
-		var next = new Intent(this, typeof(MediaControlsService));
-		next.SetAction("MediaAction.fastForward");
-		var pNext = PendingIntent.GetService(this, 1, next, pendingIntentFlags);
-		actionNext ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_icon_fastforward, ACTION_FASTFORWARD, pNext).Build();
-
-		notification?.AddAction(actionPrevious);
-		notification?.AddAction(actionPause);
-		notification?.AddAction(actionNext);
-	}
+			notification?.AddAction(actionPrevious);
+			notification?.AddAction(actionPause);
+			notification?.AddAction(actionNext);
+		}
 
 	static void BroadcastUpdate(string receiver, string action)
 	{
@@ -223,7 +205,7 @@ class MediaControlsService : Service
 		{
 			System.Diagnostics.Trace.WriteLine($"{LocalBroadcastManager.GetInstance} not supported on Android 13 and above.");
 			return;
-		}
+	}
 		var intent = new Intent(receiver);
 		intent.PutExtra("ACTION", action);
 		LocalBroadcastManager.GetInstance(Platform.AppContext).SendBroadcast(intent);
@@ -238,9 +220,6 @@ class MediaControlsService : Service
 				safeHandle?.Dispose();
 				safeHandle = null;
 			}
-			audioManager?.AbandonAudioFocus(null);
-			audioManager?.SetParameters("Ducking=false");
-			audioManager?.Dispose();
 			mediaSession?.Release();
 			mediaSession?.Dispose();
 			mediaSession = null;
@@ -257,7 +236,6 @@ class MediaControlsService : Service
 		base.Dispose(disposing);
 	}
 }
-
 /// <summary>
 /// A <see cref="BroadcastReceiver"/> that listens for updates from the <see cref="MediaManager"/>. 
 /// </summary>
