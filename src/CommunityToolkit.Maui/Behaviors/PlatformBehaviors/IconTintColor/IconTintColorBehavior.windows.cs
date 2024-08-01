@@ -130,14 +130,7 @@ public partial class IconTintColorBehavior
 
 	void LoadAndApplyImageTintColor(View element, WImage image, Color color)
 	{
-		// Sometimes WImage source doesn't match View source so the image is not ready to be tinted, have to wait for next ImageOpened event
-		if (element is IImageElement { Source: FileImageSource fileImageSource } &&
-			image.Source is BitmapImage bitmapImage &&
-			Uri.Compare(new Uri($"{bitmapImage.UriSource.Scheme}:///{fileImageSource.File}"), bitmapImage.UriSource, UriComponents.Path, UriFormat.Unescaped, StringComparison.OrdinalIgnoreCase) != 0)
-		{
-			image.ImageOpened += OnImageOpened;
-		}
-		else if (element is IImageElement { Source: UriImageSource uriImageSource })
+		if (element is IImageElement { Source: UriImageSource uriImageSource })
 		{
 			image.Source = Path.GetExtension(uriImageSource.Uri.AbsolutePath) switch
 			{
@@ -149,7 +142,17 @@ public partial class IconTintColorBehavior
 		}
 		else if (image.IsLoaded)
 		{
-			ApplyTintColor();
+			// Sometimes WImage source doesn't match View source so the image is not ready to be tinted, have to wait for next ImageOpened event
+			if (element is IImageElement { Source: FileImageSource fileImageSource } &&
+				image.Source is BitmapImage bitmapImage &&
+				Uri.Compare(new Uri($"{bitmapImage.UriSource.Scheme}:///{fileImageSource.File}"), bitmapImage.UriSource, UriComponents.Path, UriFormat.Unescaped, StringComparison.OrdinalIgnoreCase) != 0)
+			{
+				image.ImageOpened += OnImageOpened;
+			}
+			else
+			{
+				ApplyTintColor();
+			}
 		}
 		else
 		{
