@@ -124,7 +124,7 @@ public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 
 		if (this.IsDisposed())
 		{
-			return true;
+			return false;
 		}
 		else
 		{
