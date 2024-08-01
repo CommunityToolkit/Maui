@@ -9,10 +9,14 @@ public partial class StatusBarBehaviorViewModel : BaseViewModel
 	int redSliderValue, greenSliderValue, blueSliderValue;
 
 	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(StatusBarColor))]
+	double alphaSliderValue = 1;
+
+	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(StatusBarStyle))]
 	bool isLightContentChecked, isDarkContentChecked, isDefaultChecked = true;
 
-	public Color StatusBarColor => Color.FromRgb(RedSliderValue, GreenSliderValue, BlueSliderValue);
+	public Color StatusBarColor => Color.FromRgba(RedSliderValue, GreenSliderValue, BlueSliderValue, AlphaSliderValue);
 
 	public StatusBarStyle StatusBarStyle
 	{
