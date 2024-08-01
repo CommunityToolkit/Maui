@@ -30,28 +30,31 @@ static partial class StatusBar
 
     static void PlatformSetColor(Color color)
     {
-        if (IsSupported)
+        if (!IsSupported)
         {
-            if (Activity.Window is not null)
-            {
-                var platformColor = color.ToPlatform();
-                Activity.Window.SetStatusBarColor(platformColor);
-
-                bool isColorTransparent = platformColor == PlatformColor.Transparent;
-                if (isColorTransparent)
-                {
-                    Activity.Window.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
-                    Activity.Window.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
-                }
-                else
-                {
-                    Activity.Window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
-                    Activity.Window.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
-                }
-
-                WindowCompat.SetDecorFitsSystemWindows(Activity.Window, !isColorTransparent);
-            }
+            return;
         }
+
+        if (Activity.Window is not null)
+        {
+            var platformColor = color.ToPlatform();
+            Activity.Window.SetStatusBarColor(platformColor);
+
+            bool isColorTransparent = platformColor == PlatformColor.Transparent;
+            if (isColorTransparent)
+            {
+                Activity.Window.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
+                Activity.Window.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
+            }
+            else
+            {
+                Activity.Window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
+                Activity.Window.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
+            }
+
+            WindowCompat.SetDecorFitsSystemWindows(Activity.Window, !isColorTransparent);
+        }
+
     }
 
     static void PlatformSetStyle(StatusBarStyle style)
