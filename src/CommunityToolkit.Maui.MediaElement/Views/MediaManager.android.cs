@@ -39,6 +39,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	MediaSession? session;
 	MediaElementState currentState;
 	UIUpdateReceiver? uiUpdateReceiver;
+	MediaSession? mediaSession;
 
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
@@ -447,6 +448,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		mediaItem = new MediaItem.Builder();
 		mediaItem.SetUri(url);
+		mediaItem.SetMediaId(url);
 		mediaItem.SetMediaMetadata(mediaMetaData.Build());
 		ArgumentNullException.ThrowIfNull(session);
 		session.SetSessionExtras(mediaItem.Build()?.ToBundle());
@@ -683,16 +685,15 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnIsPlayingChanged(bool isPlaying) { }
 	public void OnLoadingChanged(bool isLoading) { }
 	public void OnMaxSeekToPreviousPositionChanged(long maxSeekToPreviousPositionMs) { }
-	public void OnMediaItemTransition(MediaItem? mediaItem, int reason) { }
+	public void OnMediaItemTransition(global::AndroidX.Media3.Common.MediaItem? mediaItem, int reason) { }
 	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata) { }
 	public void OnMetadata(Metadata? metadata) { }
 	public void onPlaybackStateChanged(int playbackState) { }
 	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
 	public void OnPlayerErrorChanged(PlaybackException? error) { }
-	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }
+	public void OnPlaylistMetadataChanged(global::AndroidX.Media3.Common.MediaMetadata? mediaMetadata) { }
 	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason) { }
-	public void OnPositionDiscontinuity(int reason) { }
-	public void OnPositionDiscontinuity(PlayerPositionInfo? oldPosition, PlayerPositionInfo? newPosition, int reason) { }
+	public void OnPositionDiscontinuity(global::AndroidX.Media3.Common.PlayerPositionInfo? oldPosition, global::AndroidX.Media3.Common.PlayerPositionInfo? newPosition, int reason) { }
 	public void OnRenderedFirstFrame() { }
 	public void OnRepeatModeChanged(int repeatMode) { }
 	public void OnSeekBackIncrementChanged(long seekBackIncrementMs) { }
