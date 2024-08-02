@@ -21,7 +21,7 @@ static class AttributeExtensions
 	{
 		var data = attribute.ConstructorArguments[0];
 		
-		return data.Value is null ? throw new NullReferenceException() : data.Value.ToString();
+		return data.Value is null ? throw new InvalidOperationException() : data.Value.ToString();
 	}
 
 }
