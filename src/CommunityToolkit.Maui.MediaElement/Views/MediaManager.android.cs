@@ -18,7 +18,6 @@ using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 using AudioAttributes = AndroidX.Media3.Common.AudioAttributes;
 using DeviceInfo = AndroidX.Media3.Common.DeviceInfo;
-using MediaSession = AndroidX.Media3.Session.MediaSession;
 using SystemClock = Android.OS.SystemClock;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -36,10 +35,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	float volumeBeforeMute = 1;
 	MediaItem.Builder? mediaItem;
 	TaskCompletionSource? seekToTaskCompletionSource;
-	MediaSession? session;
+	AndroidX.Media3.Session.MediaSession? session;
 	MediaElementState currentState;
 	UIUpdateReceiver? uiUpdateReceiver;
-	MediaSession? mediaSession;
 
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
@@ -138,7 +136,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 			_ => MediaElementState.None,
 		};
-		
+
 		MediaElement.CurrentStateChanged(newState);
 		if (playbackState is PlaybackStateCompat.StatePlaying)
 		{
@@ -193,9 +191,13 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		};
 
 		checkPermissionsTask = CheckAndRequestForegroundPermission(checkPermissionSourceToken.Token);
-		session = new MediaSession.Builder(Platform.AppContext, Player).Build();
+
+		session = new AndroidX.Media3.Session.MediaSession.Builder(Platform.AppContext, Player).Build();
 		uiUpdateReceiver ??= new UIUpdateReceiver(Player);
-		LocalBroadcastManager.GetInstance(Platform.AppContext).RegisterReceiver(uiUpdateReceiver, new IntentFilter(MediaControlsService.ACTION_UPDATE_PLAYER));
+		if (Build.VERSION.SdkInt <= BuildVersionCodes.Tiramisu)
+		{
+			LocalBroadcastManager.GetInstance(Platform.AppContext).RegisterReceiver(uiUpdateReceiver, new IntentFilter(MediaControlsService.ACTION_UPDATE_PLAYER));
+		}
 		return (Player, PlayerView);
 	}
 
@@ -207,30 +209,30 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// This is part of the <see cref="IPlayerListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
-	  public void OnPlaybackStateChanged(int playbackState)
-    {
-        if (MediaElement.Source is null)
-        {
-            return;
-        }
+	public void OnPlaybackStateChanged(int playbackState)
+	{
+		if (MediaElement.Source is null)
+		{
+			return;
+		}
 
-        MediaElementState newState = MediaElement.CurrentState;
-        switch (playbackState)
-        {
+		MediaElementState newState = MediaElement.CurrentState;
+		switch (playbackState)
+		{
 			case PlaybackStateCompat.StateBuffering:
-                newState = MediaElementState.Buffering;
-                break;
+				newState = MediaElementState.Buffering;
+				break;
 			case PlaybackStateCompat.StateStopped:
-                newState = MediaElementState.Stopped;
-                MediaElement.MediaEnded();
-                break;
+				newState = MediaElementState.Stopped;
+				MediaElement.MediaEnded();
+				break;
 			case PlaybackStateCompat.StatePlaying:
-                seekToTaskCompletionSource?.TrySetResult();
-                break;
-        }
+				seekToTaskCompletionSource?.TrySetResult();
+				break;
+		}
 
-        MediaElement.CurrentStateChanged(newState);
-    }
+		MediaElement.CurrentStateChanged(newState);
+	}
 
 	/// <summary>
 	/// Occurs when ExoPlayer encounters an error.
@@ -341,34 +343,34 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		await seekToSemaphoreSlim.WaitAsync(token);
 
 		seekToTaskCompletionSource = new();
-
 		try
 		{
+			Player.RemoveListener(this);
 			Player.SeekTo((long)position.TotalMilliseconds);
+			MediaElement.Position = Player.CurrentPosition < 0 ? TimeSpan.Zero : TimeSpan.FromMilliseconds(Player.CurrentPosition);
+			Player.AddListener(this);
 
 			// Here, we don't want to throw an exception
 			// and to keep the execution on the thread that called this method
 			await seekToTaskCompletionSource.Task.WaitAsync(TimeSpan.FromMinutes(2), token).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing | ConfigureAwaitOptions.ContinueOnCapturedContext);
-
+			
 			MediaElement.SeekCompleted();
 		}
 		finally
-		{
+		{	
 			seekToSemaphoreSlim.Release();
 		}
 	}
 
-	protected virtual partial void PlatformStop()
+	protected virtual async partial void PlatformStop()
 	{
 		if (Player is null || MediaElement.Source is null)
 		{
 			return;
 		}
-
 		// Stops and resets the media player
-		Player.SeekTo(0);
+		await PlatformSeek(TimeSpan.Zero, CancellationToken.None).ConfigureAwait(true);
 		Player.Stop();
-		MediaElement.Position = TimeSpan.Zero;
 	}
 
 	protected virtual partial void PlatformUpdateSource()
@@ -383,13 +385,15 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		StopService();
 		if (MediaElement.Source is null)
 		{
+			Player.RemoveListener(this);
 			Player.ClearMediaItems();
+			Player.AddListener(this);
 			MediaElement.Duration = TimeSpan.Zero;
 			MediaElement.CurrentStateChanged(MediaElementState.None);
 
 			return;
 		}
-
+		
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 
 		Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
@@ -400,7 +404,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
 			{
 				var item = SetPlayerData(uri.AbsoluteUri);
+				Player.RemoveListener(this);
 				Player.SetMediaItem(item.Build());
+				Player.AddListener(this);
 				Player.Prepare();
 				hasSetSource = true;
 			}
@@ -411,7 +417,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			if (!string.IsNullOrWhiteSpace(filePath))
 			{
 				var item = SetPlayerData(filePath);
+				Player.RemoveListener(this);
 				Player.SetMediaItem(item.Build());
+				Player.AddListener(this);
 				Player.Prepare();
 				hasSetSource = true;
 			}
@@ -424,7 +432,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			{
 				var assetFilePath = $"asset://{package}{System.IO.Path.PathSeparator}{path}";
 				var item = SetPlayerData(assetFilePath);
+				Player.RemoveListener(this);
 				Player.SetMediaItem(item.Build());
+				Player.AddListener(this);
 				Player.Prepare();
 				hasSetSource = true;
 			}
@@ -438,7 +448,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	MediaItem.Builder SetPlayerData(string url)
 	{
-
 		MediaMetadata.Builder mediaMetaData = new MediaMetadata.Builder();
 		mediaMetaData.SetAlbumArtist(MediaElement.MetadataArtist);
 		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
@@ -578,7 +587,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return;
 		}
-		 
+ 
 		Player.RepeatMode = MediaElement.ShouldLoopPlayback ? RepeatModeUtil.RepeatToggleModeOne : RepeatModeUtil.RepeatToggleModeNone;
 	}
 
@@ -593,7 +602,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			{
 				LocalBroadcastManager.GetInstance(Platform.AppContext).UnregisterReceiver(uiUpdateReceiver);
 			}
-
+			Player?.RemoveListener(this);
+			Player?.Release();
 			uiUpdateReceiver?.Dispose();
 			uiUpdateReceiver = null;
 			checkPermissionSourceToken.Dispose();
@@ -677,7 +687,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnAudioSessionIdChanged(int audioSessionId) { }
 	public void OnAvailableCommandsChanged(PlayerCommands? availableCommands) { }
 	public void OnCues(CueGroup? cueGroup) { }
-	public void OnCues(List<Cue> cues) { }
 	public void OnDeviceInfoChanged(DeviceInfo? deviceInfo) { }
 	public void OnDeviceVolumeChanged(int volume, bool muted) { }
 	public void OnEvents(IPlayer? player, PlayerEvents? events) { }
@@ -685,15 +694,15 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnIsPlayingChanged(bool isPlaying) { }
 	public void OnLoadingChanged(bool isLoading) { }
 	public void OnMaxSeekToPreviousPositionChanged(long maxSeekToPreviousPositionMs) { }
-	public void OnMediaItemTransition(global::AndroidX.Media3.Common.MediaItem? mediaItem, int reason) { }
+	public void OnMediaItemTransition(MediaItem? mediaItem, int reason) { }
 	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata) { }
 	public void OnMetadata(Metadata? metadata) { }
-	public void onPlaybackStateChanged(int playbackState) { }
+	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason) { }
 	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
 	public void OnPlayerErrorChanged(PlaybackException? error) { }
-	public void OnPlaylistMetadataChanged(global::AndroidX.Media3.Common.MediaMetadata? mediaMetadata) { }
-	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason) { }
-	public void OnPositionDiscontinuity(global::AndroidX.Media3.Common.PlayerPositionInfo? oldPosition, global::AndroidX.Media3.Common.PlayerPositionInfo? newPosition, int reason) { }
+	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }
+	public void OnPositionDiscontinuity(int reason) { }
+	public void OnPositionDiscontinuity(PlayerPositionInfo? oldPosition, PlayerPositionInfo? newPosition, int reason) { }
 	public void OnRenderedFirstFrame() { }
 	public void OnRepeatModeChanged(int repeatMode) { }
 	public void OnSeekBackIncrementChanged(long seekBackIncrementMs) { }
@@ -702,8 +711,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnSkipSilenceEnabledChanged(bool skipSilenceEnabled) { }
 	public void OnSurfaceSizeChanged(int width, int height) { }
 	public void OnTimelineChanged(Timeline? timeline, int reason) { }
-	public void OnTracksChanged(Tracks? tracks) { }
 	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? parameters) { }
+	public void OnTracksChanged(Tracks? tracks) { }
+	public void OnTracksInfoChanged(Tracks tracksInfo) { }
 
 	#endregion
 
