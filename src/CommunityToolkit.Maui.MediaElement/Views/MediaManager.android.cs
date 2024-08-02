@@ -332,7 +332,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		Player.Pause();
 		BroadcastUpdate(MediaControlsService.ACTION_PAUSE);
 	}
-
+	//TODO: Fix Async issue with Seek
 	protected virtual async partial Task PlatformSeek(TimeSpan position, CancellationToken token)
 	{
 		if (Player is null)
@@ -345,10 +345,17 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		seekToTaskCompletionSource = new();
 		try
 		{
+			//NOTE: We need to remove the listener to avoid crash to be triggered
 			Player.RemoveListener(this);
 			Player.SeekTo((long)position.TotalMilliseconds);
 			MediaElement.Position = Player.CurrentPosition < 0 ? TimeSpan.Zero : TimeSpan.FromMilliseconds(Player.CurrentPosition);
 			Player.AddListener(this);
+			//NOTE: We need to wait for the seek to be completed
+			// to avoid the player to be in a wrong state
+			// and to avoid the UI to be out of sync
+			// But we need to add listener to avoid the player to be in a wrong state
+			// The issue is adding the listener will trigger the OnPlayerStateChanged event.
+			// When user scrubs timeline in player this is the wrong place for listner to be added.
 
 			// Here, we don't want to throw an exception
 			// and to keep the execution on the thread that called this method
@@ -358,6 +365,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 		finally
 		{	
+			//NOTE: We need to add the listener back here in case of an exception when user scrubs timeline in player
+			// to avoid the player to be in a wrong state but the listener will trigger the OnPlayerStateChanged event
+			// when developer scrubs the timeline in player this is the wrong place for listner to be added.
+			// PLayer.AddListener(this) added here and remove above to avoid the player to be in a wrong state
+			// and to avoid the UI to be out of sync when user scrubs timeline in player.
 			seekToSemaphoreSlim.Release();
 		}
 	}
