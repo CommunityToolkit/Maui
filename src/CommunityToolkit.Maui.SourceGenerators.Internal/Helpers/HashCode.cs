@@ -8,7 +8,6 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
 #pragma warning disable CS0809
-#pragma warning disable IDE1006 // Naming Styles
 
 namespace System;
 
@@ -184,5 +183,5 @@ struct HashCode
 	{
 		return (value << offset) | (value >> (32 - offset));
 	}
-#pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore CS0809
 }
