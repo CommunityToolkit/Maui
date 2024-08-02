@@ -17,11 +17,11 @@ namespace System;
 /// </summary>
 struct HashCode
 {
-	const uint Prime1 = 2654435761U;
-	const uint Prime2 = 2246822519U;
-	const uint Prime3 = 3266489917U;
-	const uint Prime4 = 668265263U;
-	const uint Prime5 = 374761393U;
+	const uint prime1 = 2654435761U;
+	const uint prime2 = 2246822519U;
+	const uint prime3 = 3266489917U;
+	const uint prime4 = 668265263U;
+	const uint prime5 = 374761393U;
 
 	static readonly uint seed = GenerateGlobalSeed();
 
@@ -55,22 +55,22 @@ struct HashCode
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static void Initialize(out uint v1, out uint v2, out uint v3, out uint v4)
 	{
-		v1 = seed + Prime1 + Prime2;
-		v2 = seed + Prime2;
+		v1 = seed + prime1 + prime2;
+		v2 = seed + prime2;
 		v3 = seed;
-		v4 = seed - Prime1;
+		v4 = seed - prime1;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static uint Round(uint hash, uint input)
 	{
-		return RotateLeft(hash + input * Prime2, 13) * Prime1;
+		return RotateLeft(hash + input * prime2, 13) * prime1;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static uint QueueRound(uint hash, uint queuedValue)
 	{
-		return RotateLeft(hash + queuedValue * Prime3, 17) * Prime4;
+		return RotateLeft(hash + queuedValue * prime3, 17) * prime4;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -82,16 +82,16 @@ struct HashCode
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static uint MixEmptyState()
 	{
-		return seed + Prime5;
+		return seed + prime5;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	 static uint MixFinal(uint hash)
 	{
 		hash ^= hash >> 15;
-		hash *= Prime2;
+		hash *= prime2;
 		hash ^= hash >> 13;
-		hash *= Prime3;
+		hash *= prime3;
 		hash ^= hash >> 16;
 
 		return hash;
@@ -100,32 +100,32 @@ struct HashCode
 	void Add(int value)
 	{
 		uint val = (uint)value;
-		uint previousLength = this.length++;
+		uint previousLength = length++;
 		uint position = previousLength % 4;
 
 		if (position == 0)
 		{
-			this.queue1 = val;
+			queue1 = val;
 		}
 		else if (position == 1)
 		{
-			this.queue2 = val;
+			queue2 = val;
 		}
 		else if (position == 2)
 		{
-			this.queue3 = val;
+			queue3 = val;
 		}
 		else
 		{
 			if (previousLength == 3)
 			{
-				Initialize(out this.v1, out this.v2, out this.v3, out this.v4);
+				Initialize(out v1, out v2, out v3, out v4);
 			}
 
-			this.v1 = Round(this.v1, this.queue1);
-			this.v2 = Round(this.v2, this.queue2);
-			this.v3 = Round(this.v3, this.queue3);
-			this.v4 = Round(this.v4, val);
+			v1 = Round(v1, queue1);
+			v2 = Round(v2, queue2);
+			v3 = Round(v3, queue3);
+			v4 = Round(v4, val);
 		}
 	}
 
@@ -137,21 +137,21 @@ struct HashCode
 	{
 		uint length = this.length;
 		uint position = length % 4;
-		uint hash = length < 4 ? MixEmptyState() : MixState(this.v1, this.v2, this.v3, this.v4);
+		uint hash = length < 4 ? MixEmptyState() : MixState(v1, v2, v3, v4);
 
 		hash += length * 4;
 
 		if (position > 0)
 		{
-			hash = QueueRound(hash, this.queue1);
+			hash = QueueRound(hash, queue1);
 
 			if (position > 1)
 			{
-				hash = QueueRound(hash, this.queue2);
+				hash = QueueRound(hash, queue2);
 
 				if (position > 2)
 				{
-					hash = QueueRound(hash, this.queue3);
+					hash = QueueRound(hash, queue3);
 				}
 			}
 		}
