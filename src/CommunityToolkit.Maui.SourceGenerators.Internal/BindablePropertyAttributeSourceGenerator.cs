@@ -168,6 +168,7 @@ namespace {value.ClassInformation.ContainingNamespace};
 		{
 			throw new ArgumentException($"{nameof(attributeData.AttributeClass)} Cannot Be Null", nameof(attributeData.AttributeClass));
 		}
+		
 		var bpType = attributeData.AttributeClass.TypeArguments[0];
 		var defaultValue = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DefaultValue));
 		var coerceValueMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.CoerceValueMethodName));
