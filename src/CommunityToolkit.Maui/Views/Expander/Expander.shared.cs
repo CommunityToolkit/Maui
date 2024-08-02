@@ -5,12 +5,12 @@ using CommunityToolkit.Maui.Core;
 namespace CommunityToolkit.Maui.Views;
 
 /// <inheritdoc cref="IExpander"/>
-[ContentProperty(nameof(Content))]
 [BindableProperty<IView>("Header", PropertyChangedMethodName = nameof(OnHeaderPropertyChanged))]
 [BindableProperty<IView>("Content", PropertyChangedMethodName = nameof(OnContentPropertyChanged))]
 [BindableProperty<bool>("IsExpanded", PropertyChangedMethodName = nameof(OnIsExpandedPropertyChanged))]
 [BindableProperty<object>("CommandParameter")]
 [BindableProperty<ICommand>("Command")]
+[ContentProperty(nameof(Content))]
 public partial class Expander : ContentView, IExpander
 {
 	/// <summary>

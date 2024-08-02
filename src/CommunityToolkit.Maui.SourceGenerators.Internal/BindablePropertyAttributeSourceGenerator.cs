@@ -13,7 +13,7 @@ namespace CommunityToolkit.Maui.SourceGenerators.Internal;
 [Generator]
 public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 {
-	static readonly SemanticValues emptySemanticValues = new(default, Array.Empty<BindablePropertyModel>().ToImmutableArray());
+	static readonly SemanticValues emptySemanticValues = new(default, []);
 
 	const string bpFullName = "global::Microsoft.Maui.Controls.BindableProperty";
 	const string bindingModeFullName = "global::Microsoft.Maui.Controls.";
@@ -26,7 +26,7 @@ namespace CommunityToolkit.Maui;
 sealed class BindablePropertyAttribute<TReturnType> : Attribute
 {
 	public string PropertyName { get; } = string.Empty;
-	public Type? OwnerType { get; set; }
+	public Type? DeclaringType { get; set; }
 	public object? DefaultValue { get; set; }
 	public string DefaultBindingMode { get; set; } = string.Empty;
 	public string ValidateValueMethodName { get; set; } = string.Empty;
@@ -86,9 +86,11 @@ namespace {value.ClassInformation.ContainingNamespace};
 
 		static void GenerateBindableProperty(StringBuilder sb, BindablePropertyModel info)
 		{
+			/*
 			/// <summary>
 			/// Backing BindableProperty for the <see cref="PropertyName"/> property.
 			/// </summary>
+			*/
 			sb.AppendLine("/// <summary>")
 				.AppendLine($"/// Backing BindableProperty for the <see cref=\"{info.PropertyName}\"/> property.")
 				.AppendLine("/// </summary>");
@@ -113,8 +115,9 @@ namespace {value.ClassInformation.ContainingNamespace};
 
 		static void GenerateProperty(StringBuilder sb, BindablePropertyModel info)
 		{
-
+			/*
 			/// <inheritdoc />
+			*/
 			sb.AppendLine("/// <inheritdoc />");
 			
 			//public string Text
@@ -136,9 +139,9 @@ namespace {value.ClassInformation.ContainingNamespace};
 
 	static SemanticValues SemanticTransform(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
 	{
-		var @class = Unsafe.As<ClassDeclarationSyntax>(context.TargetNode);
+		var classDeclarationSyntax = Unsafe.As<ClassDeclarationSyntax>(context.TargetNode);
 		var semanticModel = context.SemanticModel;
-		var classSymbol = (ITypeSymbol?)semanticModel.GetDeclaredSymbol(@class, cancellationToken);
+		var classSymbol = (ITypeSymbol?)semanticModel.GetDeclaredSymbol(classDeclarationSyntax, cancellationToken);
 
 		if (classSymbol is null)
 		{
@@ -150,8 +153,9 @@ namespace {value.ClassInformation.ContainingNamespace};
 
 		var bindablePropertyModels = new List<BindablePropertyModel>(context.Attributes.Length);
 
-		foreach (var attributeData in context.Attributes)
+		for (var index = 0; index < context.Attributes.Length; index++)
 		{
+			var attributeData = context.Attributes[index];
 			bindablePropertyModels.Add(GetAttributeValues(attributeData, classSymbol?.ToString() ?? string.Empty));
 		}
 
@@ -160,17 +164,20 @@ namespace {value.ClassInformation.ContainingNamespace};
 
 	static BindablePropertyModel GetAttributeValues(in AttributeData attributeData, in string declaringTypeString)
 	{
-		_ = attributeData.AttributeClass ?? throw new NullReferenceException(nameof(attributeData.AttributeClass));
+		if (attributeData.AttributeClass is null)
+		{
+			throw new ArgumentException($"{nameof(attributeData.AttributeClass)} Cannot Be Null", nameof(attributeData.AttributeClass));
+		}
 		var bpType = attributeData.AttributeClass.TypeArguments[0];
-		var defaultValue = attributeData.GetNamedArgumentsAttributeValueByNameAsString("DefaultValue");
-		var coerceValueMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString("CoerceValueMethodName");
-		var defaultBindingMode = attributeData.GetNamedArgumentsAttributeValueByNameAsString("DefaultBindingMode", "BindingMode.OneWay");
-		var defaultValueCreatorMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString("DefaultValueCreatorMethodName");
-		var declaringType = attributeData.GetNamedArgumentsAttributeValueByNameAsString("OwnerType", declaringTypeString);
-		var propertyChangedMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString("PropertyChangedMethodName");
-		var propertyChangingMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString("PropertyChangingMethodName");
+		var defaultValue = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DefaultValue));
+		var coerceValueMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.CoerceValueMethodName));
+		var defaultBindingMode = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DefaultBindingMode), "BindingMode.OneWay");
+		var defaultValueCreatorMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DefaultValueCreatorMethodName));
+		var declaringType = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DeclaringType), declaringTypeString);
+		var propertyChangedMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.PropertyChangedMethodName));
+		var propertyChangingMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.PropertyChangingMethodName));
 		var propertyName = attributeData.GetConstructorArgumentsAttributeValueByNameAsString();
-		var validateValueMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString("ValidateValueMethodName");
+		var validateValueMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.ValidateValueMethodName));
 
 		return new BindablePropertyModel
 		{
