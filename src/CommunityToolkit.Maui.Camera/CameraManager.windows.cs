@@ -95,11 +95,19 @@ partial class CameraManager
 
 		MemoryStream memoryStream = new();
 
-		await mediaCapture.CapturePhotoToStreamAsync(ImageEncodingProperties.CreateJpeg(), memoryStream.AsRandomAccessStream());
+		try
+		{
+			await mediaCapture.CapturePhotoToStreamAsync(ImageEncodingProperties.CreateJpeg(), memoryStream.AsRandomAccessStream());
 
-		memoryStream.Position = 0;
+			memoryStream.Position = 0;
 
-		cameraView.OnMediaCaptured(memoryStream);
+			cameraView.OnMediaCaptured(memoryStream);
+		}
+		catch (Exception ex)
+		{
+			cameraView.OnMediaCapturedFailed(ex.Message);
+			throw;
+		}
 	}
 
 	protected virtual void Dispose(bool disposing)

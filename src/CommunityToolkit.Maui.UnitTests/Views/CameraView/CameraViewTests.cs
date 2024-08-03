@@ -67,7 +67,7 @@ public class CameraViewTests : BaseHandlerTest
 		bool eventRaised = false;
 		cameraView.MediaCaptureFailed += (sender, args) => eventRaised = true;
 
-		cameraView.OnMediaCapturedFailed();
+		cameraView.OnMediaCapturedFailed(@"Proof that the test works");
 
 		Assert.True(eventRaised);
 	}

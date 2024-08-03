@@ -201,9 +201,9 @@ public class CameraView : View, ICameraView
 	}
 
 	/// <inheritdoc cref="ICameraView.OnMediaCapturedFailed"/>
-	public void OnMediaCapturedFailed()
+	public void OnMediaCapturedFailed(string failureReason)
 	{
-		weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(), nameof(MediaCaptureFailed));
+		weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(failureReason), nameof(MediaCaptureFailed));
 	}
 
 	/// <inheritdoc cref="ICameraView.GetAvailableCameras"/>
