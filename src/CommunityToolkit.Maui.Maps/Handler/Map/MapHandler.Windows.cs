@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Windows.Devices.Geolocation;
+using Microsoft.Maui.Handlers;
 using IMap = Microsoft.Maui.Maps.IMap;
 
 namespace CommunityToolkit.Maui.Maps.Handlers;
@@ -48,7 +49,7 @@ public partial class MapHandlerWindows : MapHandler
 		}
 
 		var mapPage = GetMapHtmlPage(MapsKey);
-		var webView = new MauiWebView();
+		var webView = new MauiWebView(new WebViewHandler());
 		webView.NavigationCompleted += WebViewNavigationCompleted;
 		webView.WebMessageReceived += WebViewWebMessageReceived;
 		webView.LoadHtml(mapPage, null);
