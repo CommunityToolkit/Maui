@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Maui.Core.Extensions;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Handlers;
 
@@ -56,6 +57,12 @@ public class MauiPopup : UIViewController
 		}
 
 		SetElementSize(new Size(View.Bounds.Width, View.Bounds.Height));
+
+		if (VirtualView is not null)
+		{
+			PopupExtensions.SetSize(this, VirtualView);
+			PopupExtensions.SetLayout(this, VirtualView);
+		}
 	}
 
 	/// <inheritdoc/>
@@ -176,6 +183,11 @@ public class MauiPopup : UIViewController
 		view.AddSubview(control.ViewController?.View ?? throw new InvalidOperationException($"{nameof(control.ViewController.View)} cannot be null."));
 		view.Bounds = new CGRect(0, 0, PreferredContentSize.Width, PreferredContentSize.Height);
 		AddChildViewController(control.ViewController);
+
+		view.SafeTopAnchor().ConstraintEqualTo(control.ViewController.View.SafeTopAnchor()).Active = true;
+		view.SafeBottomAnchor().ConstraintEqualTo(control.ViewController.View.SafeBottomAnchor()).Active = true;
+		view.SafeLeadingAnchor().ConstraintEqualTo(control.ViewController.View.SafeLeadingAnchor()).Active = true;
+		view.SafeTrailingAnchor().ConstraintEqualTo(control.ViewController.View.SafeTrailingAnchor()).Active = true;
 
 		if (VirtualView is not null)
 		{
