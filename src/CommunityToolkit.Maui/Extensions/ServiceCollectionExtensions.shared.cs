@@ -53,6 +53,25 @@ public static class ServiceCollectionExtensions
 	}
 
 	/// <summary>
+	/// Adds a <see cref="View"/> of the type specified in <typeparamref name="TPopupContentView"/> and a ViewModel
+	/// of the type specified in <typeparamref name="TPopupViewModel"/> to the specified
+	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime.
+	/// </summary>
+	/// <typeparam name="TPopupContentView">The type of the Popup to add. Constrained to <see cref="View"/></typeparam>
+	/// <typeparam name="TPopupViewModel">The type of the ViewModel to add. Constrained to 
+	/// <see cref="INotifyPropertyChanged"/></typeparam>
+	/// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+	/// <returns>A reference to this instance after the operation has completed.</returns>
+	public static IServiceCollection AddTransientPopupContent<TPopupContentView, TPopupViewModel>(this IServiceCollection services)
+		where TPopupContentView : View
+		where TPopupViewModel : INotifyPropertyChanged
+	{
+		PopupService.AddTransientPopupContent<TPopupContentView, TPopupViewModel>(services);
+
+		return services;
+	}
+
+	/// <summary>
 	/// Adds a <see cref="NavigableElement"/> of the type specified in <typeparamref name="TView"/> and a ViewModel
 	/// of the type specified in <typeparamref name="TViewModel"/> to the specified
 	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime
