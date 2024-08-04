@@ -25,6 +25,11 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MediaManager : Java.Lang.Object, IPlayerListener
 {
 	static readonly HttpClient client = new();
+	
+	const int sTATE_IDLE = 1;
+	const int sTATE_BUFFERING = 2;
+	const int sTATE_READY = 3;
+	const int sTATE_ENDED = 4;
 
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 
@@ -138,7 +143,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		};
 
 		MediaElement.CurrentStateChanged(newState);
-		if (playbackState is PlaybackStateCompat.StatePlaying)
+		if (playbackState is sTATE_READY)
 		{
 			MediaElement.Duration = TimeSpan.FromMilliseconds(Player.Duration < 0 ? 0 : Player.Duration);
 			MediaElement.Position = TimeSpan.FromMilliseconds(Player.CurrentPosition < 0 ? 0 : Player.CurrentPosition);
@@ -176,6 +181,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		ArgumentNullException.ThrowIfNull(MauiContext.Context);
 		Player = new ExoPlayerBuilder(MauiContext.Context).Build() ?? throw new NullReferenceException();
 		Player.AddListener(this);
+
 		Player.SetHandleAudioBecomingNoisy(true);
 		var audioAttributes = new AudioAttributes.Builder();
 		audioAttributes.SetUsage(C.UsageMedia);
@@ -193,11 +199,13 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		checkPermissionsTask = CheckAndRequestForegroundPermission(checkPermissionSourceToken.Token);
 
 		session = new AndroidX.Media3.Session.MediaSession.Builder(Platform.AppContext, Player).Build();
+
 		uiUpdateReceiver ??= new UIUpdateReceiver(Player);
 		if (Build.VERSION.SdkInt <= BuildVersionCodes.Tiramisu)
 		{
 			LocalBroadcastManager.GetInstance(Platform.AppContext).RegisterReceiver(uiUpdateReceiver, new IntentFilter(MediaControlsService.ACTION_UPDATE_PLAYER));
 		}
+
 		return (Player, PlayerView);
 	}
 
@@ -219,14 +227,14 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaElementState newState = MediaElement.CurrentState;
 		switch (playbackState)
 		{
-			case PlaybackStateCompat.StateBuffering:
+			case sTATE_BUFFERING:
 				newState = MediaElementState.Buffering;
 				break;
-			case PlaybackStateCompat.StateStopped:
+			case sTATE_ENDED:
 				newState = MediaElementState.Stopped;
 				MediaElement.MediaEnded();
 				break;
-			case PlaybackStateCompat.StatePlaying:
+			case sTATE_READY:
 				seekToTaskCompletionSource?.TrySetResult();
 				break;
 		}
@@ -345,7 +353,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		try
 		{
 			Player.SeekTo((long)position.TotalMilliseconds);
-			MediaElement.Position = Player.CurrentPosition < 0 ? TimeSpan.Zero : TimeSpan.FromMilliseconds(Player.CurrentPosition);
+
+			// Here, we don't want to throw an exception
+			// and to keep the execution on the thread that called this method
 			await seekToTaskCompletionSource.Task.WaitAsync(TimeSpan.FromMinutes(2), token).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing | ConfigureAwaitOptions.ContinueOnCapturedContext);
 			
 			MediaElement.SeekCompleted();
@@ -439,7 +449,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
 		mediaMetaData.SetArtworkUri(Android.Net.Uri.Parse(MediaElement.MetadataArtworkUrl));
 		mediaMetaData.Build();
-
+		
 		mediaItem = new MediaItem.Builder();
 		mediaItem.SetUri(url);
 		mediaItem.SetMediaId(url);
@@ -456,7 +466,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return;
 		}
-		
+
 		PlayerView.ResizeMode = MediaElement.Aspect switch
 		{
 			Aspect.AspectFill => AspectRatioFrameLayout.ResizeModeZoom,
@@ -572,7 +582,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return;
 		}
- 
+		
 		Player.RepeatMode = MediaElement.ShouldLoopPlayback ? RepeatModeUtil.RepeatToggleModeOne : RepeatModeUtil.RepeatToggleModeNone;
 	}
 
