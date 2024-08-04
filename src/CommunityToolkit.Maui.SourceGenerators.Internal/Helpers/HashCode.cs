@@ -85,7 +85,7 @@ struct HashCode
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	 static uint MixFinal(uint hash)
+	static uint MixFinal(uint hash)
 	{
 		hash ^= hash >> 15;
 		hash *= prime2;
