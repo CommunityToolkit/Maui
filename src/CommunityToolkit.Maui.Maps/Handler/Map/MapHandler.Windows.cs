@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Text.Json;
 using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Maps;
 using Microsoft.Maui.Maps.Handlers;
 using Microsoft.Maui.Platform;
@@ -8,7 +9,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Windows.Devices.Geolocation;
-using Microsoft.Maui.Handlers;
 using IMap = Microsoft.Maui.Maps.IMap;
 
 namespace CommunityToolkit.Maui.Maps.Handlers;
