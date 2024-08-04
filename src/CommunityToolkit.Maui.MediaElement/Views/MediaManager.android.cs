@@ -372,8 +372,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return;
 		}
-		Player.SeekToDefaultPosition();
+		Player.SeekTo(0);
 		Player.Stop();
+		MediaElement.Position = TimeSpan.Zero;
 	}
 
 	protected virtual partial void PlatformUpdateSource()
@@ -510,7 +511,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return;
 		}
-		
 		PlayerView.UseController = MediaElement.ShouldShowPlaybackControls;
 	}
 
@@ -603,7 +603,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			uiUpdateReceiver = null;
 			checkPermissionSourceToken.Dispose();
 			startServiceSourceToken.Dispose();
-
+			session?.Release();
+			session?.Dispose();
 			client.Dispose();
 		}
 	}
