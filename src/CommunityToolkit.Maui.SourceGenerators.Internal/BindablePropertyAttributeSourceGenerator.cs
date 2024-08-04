@@ -1,9 +1,9 @@
 ﻿using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Text;
+using CommunityToolkit.Maui.SourceGenerators.Helpers;
 using CommunityToolkit.Maui.SourceGenerators.Internal.Helpers;
 using CommunityToolkit.Maui.SourceGenerators.Internal.Models;
-using CommunityToolkit.Maui.SourceGenerators.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
@@ -94,7 +94,7 @@ namespace {value.ClassInformation.ContainingNamespace};
 			sb.AppendLine("/// <summary>")
 				.AppendLine($"/// Backing BindableProperty for the <see cref=\"{info.PropertyName}\"/> property.")
 				.AppendLine("/// </summary>");
-			
+
 			// public static readonly BindableProperty TextProperty = BindableProperty.Create(...);
 			sb.AppendLine($"public static readonly {bpFullName} {info.PropertyName}Property = ")
 							.Append($"{bpFullName}.Create(")
@@ -119,7 +119,7 @@ namespace {value.ClassInformation.ContainingNamespace};
 			/// <inheritdoc />
 			*/
 			sb.AppendLine("/// <inheritdoc />");
-			
+
 			//public string Text
 			//{
 			//	get => (string)GetValue(TextProperty);
@@ -168,7 +168,7 @@ namespace {value.ClassInformation.ContainingNamespace};
 		{
 			throw new ArgumentException($"{nameof(attributeData.AttributeClass)} Cannot Be Null", nameof(attributeData.AttributeClass));
 		}
-		
+
 		var bpType = attributeData.AttributeClass.TypeArguments[0];
 		var defaultValue = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DefaultValue));
 		var coerceValueMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.CoerceValueMethodName));
