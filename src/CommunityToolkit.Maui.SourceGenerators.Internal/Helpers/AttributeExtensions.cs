@@ -20,7 +20,7 @@ static class AttributeExtensions
 	public static string GetConstructorArgumentsAttributeValueByNameAsString(this AttributeData attribute)
 	{
 		var data = attribute.ConstructorArguments[0];
-		
+
 		return data.Value is null ? throw new InvalidOperationException() : data.Value.ToString();
 	}
 
