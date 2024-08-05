@@ -8,7 +8,7 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 {
 	public const string FalseTestObject = nameof(FalseTestObject);
 	public const string TrueTestObject = nameof(TrueTestObject);
-	public const DateTimeKind LocalDateTimeKind = DateTimeKind.Utc;
+	public const DateTimeKind UtcDateTimeKind = DateTimeKind.Utc;
 	public const DateTimeKind UnspecifiedDateTimeKind = DateTimeKind.Unspecified;
 
 	public enum Days { Sun, Mon, Tue, Wed, Thu, Fri, Sat };
@@ -34,11 +34,11 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 		[new DateOnly(2022, 01, 02), new DateOnly(2022, 5, 5), new DateOnly(2022, 12, 25), TrueTestObject, FalseTestObject, FalseTestObject],
 		[new DateOnly(2022, 12, 26), new DateOnly(2022, 5, 5), new DateOnly(2022, 12, 25), TrueTestObject, FalseTestObject, FalseTestObject],
 		// System.DateTime
-		[new DateTime(2022, 07, 07, 0, 0, 0, LocalDateTimeKind), new DateTime(2022, 5, 5, 0, 0, 0, LocalDateTimeKind), new DateTime(2022, 12, 25, 0, 0, 0, LocalDateTimeKind), TrueTestObject, FalseTestObject, TrueTestObject],
-		[new DateTime(2022, 05, 05, 0, 0, 0, LocalDateTimeKind), new DateTime(2022, 5, 5, 0, 0, 0, LocalDateTimeKind), new DateTime(2022, 12, 25, 0, 0, 0, LocalDateTimeKind), TrueTestObject, FalseTestObject, TrueTestObject],
-		[new DateTime(2022, 12, 25, 0, 0, 0, LocalDateTimeKind), new DateTime(2022, 5, 5, 0, 0, 0, LocalDateTimeKind), new DateTime(2022, 12, 25, 0, 0, 0, LocalDateTimeKind), TrueTestObject, FalseTestObject, TrueTestObject],
-		[new DateTime(2022, 01, 02, 0, 0, 0, LocalDateTimeKind), new DateTime(2022, 5, 5, 0, 0, 0, LocalDateTimeKind), new DateTime(2022, 12, 25, 0, 0, 0, LocalDateTimeKind), TrueTestObject, FalseTestObject, FalseTestObject],
-		[new DateTime(2022, 12, 26, 0, 0, 0, LocalDateTimeKind), new DateTime(2022, 5, 5, 0, 0, 0, LocalDateTimeKind), new DateTime(2022, 12, 25, 0, 0, 0, LocalDateTimeKind), TrueTestObject, FalseTestObject, FalseTestObject],
+		[new DateTime(2022, 07, 07, 0, 0, 0, UtcDateTimeKind), new DateTime(2022, 5, 5, 0, 0, 0, UtcDateTimeKind), new DateTime(2022, 12, 25, 0, 0, 0, UtcDateTimeKind), TrueTestObject, FalseTestObject, TrueTestObject],
+		[new DateTime(2022, 05, 05, 0, 0, 0, UtcDateTimeKind), new DateTime(2022, 5, 5, 0, 0, 0, UtcDateTimeKind), new DateTime(2022, 12, 25, 0, 0, 0, UtcDateTimeKind), TrueTestObject, FalseTestObject, TrueTestObject],
+		[new DateTime(2022, 12, 25, 0, 0, 0, UtcDateTimeKind), new DateTime(2022, 5, 5, 0, 0, 0, UtcDateTimeKind), new DateTime(2022, 12, 25, 0, 0, 0, UtcDateTimeKind), TrueTestObject, FalseTestObject, TrueTestObject],
+		[new DateTime(2022, 01, 02, 0, 0, 0, UtcDateTimeKind), new DateTime(2022, 5, 5, 0, 0, 0, UtcDateTimeKind), new DateTime(2022, 12, 25, 0, 0, 0, UtcDateTimeKind), TrueTestObject, FalseTestObject, FalseTestObject],
+		[new DateTime(2022, 12, 26, 0, 0, 0, UtcDateTimeKind), new DateTime(2022, 5, 5, 0, 0, 0, UtcDateTimeKind), new DateTime(2022, 12, 25, 0, 0, 0, UtcDateTimeKind), TrueTestObject, FalseTestObject, FalseTestObject],
 		// System.DateTimeOffset
 		[new DateTimeOffset(DateTime.SpecifyKind(new DateTime(1973, 1, 1, 0, 0, 0, UnspecifiedDateTimeKind), UnspecifiedDateTimeKind), new TimeSpan(3, 0, 0)), new DateTimeOffset(DateTime.SpecifyKind(new DateTime(1973, 1, 1, 0, 0, 0, UnspecifiedDateTimeKind), UnspecifiedDateTimeKind), new TimeSpan(4, 0, 0)), new DateTimeOffset(DateTime.SpecifyKind(new DateTime(1973, 1, 1, 0, 0, 0, UnspecifiedDateTimeKind), UnspecifiedDateTimeKind), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, TrueTestObject],
 		[new DateTimeOffset(DateTime.SpecifyKind(new DateTime(1973, 1, 1, 0, 0, 0, UnspecifiedDateTimeKind), UnspecifiedDateTimeKind), new TimeSpan(4, 0, 0)), new DateTimeOffset(DateTime.SpecifyKind(new DateTime(1973, 1, 1, 0, 0, 0, UnspecifiedDateTimeKind), UnspecifiedDateTimeKind), new TimeSpan(4, 0, 0)), new DateTimeOffset(DateTime.SpecifyKind(new DateTime(1973, 1, 1, 0, 0, 0, UnspecifiedDateTimeKind), UnspecifiedDateTimeKind), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, TrueTestObject],
