@@ -8,6 +8,8 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 {
 	public const string FalseTestObject = nameof(FalseTestObject);
 	public const string TrueTestObject = nameof(TrueTestObject);
+	public const DateTimeKind UtcDateTimeKind = DateTimeKind.Utc;
+	public const DateTimeKind UnspecifiedDateTimeKind = DateTimeKind.Unspecified;
 
 	public enum Days { Sun, Mon, Tue, Wed, Thu, Fri, Sat };
 
@@ -32,17 +34,17 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 		[new DateOnly(2022, 01, 02), new DateOnly(2022, 5, 5), new DateOnly(2022, 12, 25), TrueTestObject, FalseTestObject, FalseTestObject],
 		[new DateOnly(2022, 12, 26), new DateOnly(2022, 5, 5), new DateOnly(2022, 12, 25), TrueTestObject, FalseTestObject, FalseTestObject],
 		// System.DateTime
-		[new DateTime(2022, 07, 07), new DateTime(2022, 5, 5), new DateTime(2022, 12, 25), TrueTestObject, FalseTestObject, TrueTestObject],
-		[new DateTime(2022, 05, 05), new DateTime(2022, 5, 5), new DateTime(2022, 12, 25), TrueTestObject, FalseTestObject, TrueTestObject],
-		[new DateTime(2022, 12, 25), new DateTime(2022, 5, 5), new DateTime(2022, 12, 25), TrueTestObject, FalseTestObject, TrueTestObject],
-		[new DateTime(2022, 01, 02), new DateTime(2022, 5, 5), new DateTime(2022, 12, 25), TrueTestObject, FalseTestObject, FalseTestObject],
-		[new DateTime(2022, 12, 26), new DateTime(2022, 5, 5), new DateTime(2022, 12, 25), TrueTestObject, FalseTestObject, FalseTestObject],
+		[new DateTime(2022, 07, 07, 0, 0, 0, UtcDateTimeKind), new DateTime(2022, 5, 5, 0, 0, 0, UtcDateTimeKind), new DateTime(2022, 12, 25, 0, 0, 0, UtcDateTimeKind), TrueTestObject, FalseTestObject, TrueTestObject],
+		[new DateTime(2022, 05, 05, 0, 0, 0, UtcDateTimeKind), new DateTime(2022, 5, 5, 0, 0, 0, UtcDateTimeKind), new DateTime(2022, 12, 25, 0, 0, 0, UtcDateTimeKind), TrueTestObject, FalseTestObject, TrueTestObject],
+		[new DateTime(2022, 12, 25, 0, 0, 0, UtcDateTimeKind), new DateTime(2022, 5, 5, 0, 0, 0, UtcDateTimeKind), new DateTime(2022, 12, 25, 0, 0, 0, UtcDateTimeKind), TrueTestObject, FalseTestObject, TrueTestObject],
+		[new DateTime(2022, 01, 02, 0, 0, 0, UtcDateTimeKind), new DateTime(2022, 5, 5, 0, 0, 0, UtcDateTimeKind), new DateTime(2022, 12, 25, 0, 0, 0, UtcDateTimeKind), TrueTestObject, FalseTestObject, FalseTestObject],
+		[new DateTime(2022, 12, 26, 0, 0, 0, UtcDateTimeKind), new DateTime(2022, 5, 5, 0, 0, 0, UtcDateTimeKind), new DateTime(2022, 12, 25, 0, 0, 0, UtcDateTimeKind), TrueTestObject, FalseTestObject, FalseTestObject],
 		// System.DateTimeOffset
-		[new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(3, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, TrueTestObject],
-		[new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, TrueTestObject],
-		[new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, TrueTestObject],
-		[new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(1, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, FalseTestObject],
-		[new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(5, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(4, 0, 0)), new DateTimeOffset(new DateTime(1973, 1, 1), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, FalseTestObject],
+		[new DateTimeOffset(DateTime.SpecifyKind(new DateTime(1973, 1, 1, 0, 0, 0, UnspecifiedDateTimeKind), UnspecifiedDateTimeKind), new TimeSpan(3, 0, 0)), new DateTimeOffset(DateTime.SpecifyKind(new DateTime(1973, 1, 1, 0, 0, 0, UnspecifiedDateTimeKind), UnspecifiedDateTimeKind), new TimeSpan(4, 0, 0)), new DateTimeOffset(DateTime.SpecifyKind(new DateTime(1973, 1, 1, 0, 0, 0, UnspecifiedDateTimeKind), UnspecifiedDateTimeKind), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, TrueTestObject],
+		[new DateTimeOffset(DateTime.SpecifyKind(new DateTime(1973, 1, 1, 0, 0, 0, UnspecifiedDateTimeKind), UnspecifiedDateTimeKind), new TimeSpan(4, 0, 0)), new DateTimeOffset(DateTime.SpecifyKind(new DateTime(1973, 1, 1, 0, 0, 0, UnspecifiedDateTimeKind), UnspecifiedDateTimeKind), new TimeSpan(4, 0, 0)), new DateTimeOffset(DateTime.SpecifyKind(new DateTime(1973, 1, 1, 0, 0, 0, UnspecifiedDateTimeKind), UnspecifiedDateTimeKind), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, TrueTestObject],
+		[new DateTimeOffset(DateTime.SpecifyKind(new DateTime(1973, 1, 1, 0, 0, 0, UnspecifiedDateTimeKind), UnspecifiedDateTimeKind), new TimeSpan(2, 0, 0)), new DateTimeOffset(DateTime.SpecifyKind(new DateTime(1973, 1, 1, 0, 0, 0, UnspecifiedDateTimeKind), UnspecifiedDateTimeKind), new TimeSpan(4, 0, 0)), new DateTimeOffset(DateTime.SpecifyKind(new DateTime(1973, 1, 1, 0, 0, 0, UnspecifiedDateTimeKind), UnspecifiedDateTimeKind), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, TrueTestObject],
+		[new DateTimeOffset(DateTime.SpecifyKind(new DateTime(1973, 1, 1, 0, 0, 0, UnspecifiedDateTimeKind), UnspecifiedDateTimeKind), new TimeSpan(1, 0, 0)), new DateTimeOffset(DateTime.SpecifyKind(new DateTime(1973, 1, 1, 0, 0, 0, UnspecifiedDateTimeKind), UnspecifiedDateTimeKind), new TimeSpan(4, 0, 0)), new DateTimeOffset(DateTime.SpecifyKind(new DateTime(1973, 1, 1, 0, 0, 0, UnspecifiedDateTimeKind), UnspecifiedDateTimeKind), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, FalseTestObject],
+		[new DateTimeOffset(DateTime.SpecifyKind(new DateTime(1973, 1, 1, 0, 0, 0, UnspecifiedDateTimeKind), UnspecifiedDateTimeKind), new TimeSpan(5, 0, 0)), new DateTimeOffset(DateTime.SpecifyKind(new DateTime(1973, 1, 1, 0, 0, 0, UnspecifiedDateTimeKind), UnspecifiedDateTimeKind), new TimeSpan(4, 0, 0)), new DateTimeOffset(DateTime.SpecifyKind(new DateTime(1973, 1, 1, 0, 0, 0, UnspecifiedDateTimeKind), UnspecifiedDateTimeKind), new TimeSpan(2, 0, 0)), TrueTestObject, FalseTestObject, FalseTestObject],
 		// System.Decimal
 		[new decimal(037.73), new decimal(7.73), new decimal(73.37), TrueTestObject, FalseTestObject, TrueTestObject],
 		[new decimal(007.73), new decimal(7.73), new decimal(73.37), TrueTestObject, FalseTestObject, TrueTestObject],
@@ -181,7 +183,7 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 	[InlineData(20d, "A", 'B', TrueTestObject, FalseTestObject)]
 	[InlineData(20d, 1d, 'B', TrueTestObject, FalseTestObject)]
 	[InlineData(20d, "A", 1d, TrueTestObject, FalseTestObject)]
-	public void InvalidIComparableThrowArgumentException(IComparable value, IComparable comparingMinValue, IComparable comparingMaxValue, object trueObject, object falseObject)
+	public void InvalidArgumentException(IComparable value, IComparable comparingMinValue, IComparable comparingMaxValue, object trueObject, object falseObject)
 	{
 		IsInRangeConverter isInRangeConverter = new()
 		{
@@ -223,7 +225,7 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 		};
 
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)isInRangeConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture));
-		Assert.Throws<ArgumentException>(() => isInRangeConverter.ConvertFrom(value));
+		Assert.Throws<ArgumentException>(() => isInRangeConverter.ConvertFrom(value, CultureInfo.CurrentCulture));
 	}
 
 	[Theory]
@@ -239,7 +241,7 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 		};
 
 		object? convertResult = ((ICommunityToolkitValueConverter)isInRangeConverter).Convert(value, typeof(object), null, CultureInfo.CurrentCulture);
-		object convertFromResult = isInRangeConverter.ConvertFrom(value);
+		object convertFromResult = isInRangeConverter.ConvertFrom(value, CultureInfo.CurrentCulture);
 
 		Assert.Equal(expectedResult, convertResult);
 		Assert.Equal(expectedResult, convertFromResult);
@@ -260,7 +262,7 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 			TrueObject = trueObject,
 		};
 
-		object convertFromResult = isInRangeConverter.ConvertFrom(value);
+		object convertFromResult = isInRangeConverter.ConvertFrom(value, CultureInfo.CurrentCulture);
 		Assert.Equal(expectedResult, convertFromResult);
 	}
 
@@ -277,7 +279,7 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 			TrueObject = trueObject,
 		};
 
-		object convertFromResult = isInRangeConverter.ConvertFrom(value);
+		object convertFromResult = isInRangeConverter.ConvertFrom(value, CultureInfo.CurrentCulture);
 		Assert.Equal(expectedResult, convertFromResult);
 	}
 }
