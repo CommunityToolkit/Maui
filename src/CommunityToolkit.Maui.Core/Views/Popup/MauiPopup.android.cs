@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Android.Content;
+using Android.Views;
 using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 
@@ -97,6 +98,39 @@ public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 	void SubscribeEvents()
 	{
 		SetOnCancelListener(this);
+	}
+
+	public override bool OnTouchEvent(MotionEvent e)
+	{
+		if (VirtualView is not null)
+		{
+			if (VirtualView.CanBeDismissedByTappingOutsideOfPopup &&
+				e.Action == MotionEventActions.Up)
+			{
+				if (Window?.DecorView is AView decorView)
+				{
+					float x = e.GetX();
+					float y = e.GetY();
+
+					if (!(x >= 0 && x <= decorView.Width && y >= 0 && y <= decorView.Height))
+					{
+						if (IsShowing)
+						{
+							OnDismissedByTappingOutsideOfPopup(this);
+						}
+					}
+				}
+			}
+		}
+
+		if (this.IsDisposed())
+		{
+			return false;
+		}
+		else
+		{
+			return base.OnTouchEvent(e);
+		}
 	}
 
 	void IDialogInterfaceOnCancelListener.OnCancel(IDialogInterface? dialog) => OnDismissedByTappingOutsideOfPopup(this);
