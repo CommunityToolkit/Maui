@@ -7,6 +7,7 @@ using Windows.Media;
 using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.System.Display;
+using Page = Microsoft.Maui.Controls.Page;
 using WindowsMediaElement = Windows.Media.Playback.MediaPlayer;
 using WinMediaSource = Windows.Media.Core.MediaSource;
 
@@ -16,6 +17,40 @@ partial class MediaManager : IDisposable
 {
 	Metadata? metadata;
 	SystemMediaTransportControls? systemMediaControls;
+
+	/// <summary>
+	/// Checks if the parent window is null.
+	/// </summary>
+	public record struct ParentWindow
+	{
+		static Page CurrentPage =>
+		PageExtensions.GetCurrentPage(Application.Current?.MainPage ?? throw new InvalidOperationException($"{nameof(Application.Current.MainPage)} cannot be null."));
+		/// <summary>
+		/// Checks if the parent window is null.
+		/// </summary>
+		public static bool Exists
+		{
+			get
+			{
+				if (CurrentPage.GetParentWindow() is null)
+				{
+					System.Diagnostics.Trace.TraceError("Parent window is null");
+					return false;
+				}
+				if (CurrentPage.GetParentWindow().Handler is null)
+				{
+					System.Diagnostics.Trace.TraceError("Parent window handler is null");
+					return false;
+				}
+				if (CurrentPage.GetParentWindow().Handler.PlatformView is null)
+				{
+					System.Diagnostics.Trace.TraceError("Parent window handler platform view is null");
+					return false;
+				}
+				return true;
+			}
+		}
+	}
 
 	// States that allow changing position
 	readonly IReadOnlyList<MediaElementState> allowUpdatePositionStates =
@@ -181,7 +216,14 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdatePosition()
 	{
-		if (Player is not null && MediaElement is not null
+		if (!ParentWindow.Exists)
+		{
+			// Parent window is null, so we can't update the position
+			// This is a workaround for a bug where the timer keeps running after the window is closed
+			return;
+		}
+
+		if (Player is not null
 			&& allowUpdatePositionStates.Contains(MediaElement.CurrentState))
 		{
 			MediaElement.Position = Player.MediaPlayer.Position;
@@ -215,7 +257,7 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateShouldKeepScreenOn()
 	{
-		if (MediaElement is not null && MediaElement.ShouldKeepScreenOn)
+		if (MediaElement is not null)
 		{
 			if (allowUpdatePositionStates.Contains(MediaElement.CurrentState)
 				&& !displayActiveRequested)
