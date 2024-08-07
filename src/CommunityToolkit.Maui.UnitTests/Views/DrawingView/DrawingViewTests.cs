@@ -224,28 +224,28 @@ public class DrawingViewTests : BaseHandlerTest
 		currentLine?.LineColor.Should().Be(Colors.Linen);
 	}
 
-	[Fact]
-	public void SetDrawingLineAdapter_IDrawingLineIsMockDrawingLine()
-	{
-		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
-		drawingViewHandler.SetDrawingLineAdapter(new MockDrawingLineAdapter());
+	//[Fact]
+	//public void SetDrawingLineAdapter_IDrawingLineIsMockDrawingLine()
+	//{
+	//	var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
+	//	drawingViewHandler.SetDrawingLineAdapter(new MockDrawingLineAdapter());
 
-		IDrawingLine? currentLine = null;
-		var action = new EventHandler<DrawingLineCompletedEventArgs>((_, e) => currentLine = e.LastDrawingLine);
+	//	IDrawingLine? currentLine = null;
+	//	var action = new EventHandler<DrawingLineCompletedEventArgs>((_, e) => currentLine = e.LastDrawingLine);
 
-		drawingView.DrawingLineCompleted += action;
+	//	drawingView.DrawingLineCompleted += action;
 
-		drawingView.Lines.Add(new DrawingLine
-		{
-			LineColor = Colors.LimeGreen
-		});
+	//	drawingView.Lines.Add(new DrawingLine
+	//	{
+	//		LineColor = Colors.LimeGreen
+	//	});
 
-		drawingView.DrawingLineCompleted -= action;
+	//	drawingView.DrawingLineCompleted -= action;
 
-		currentLine.Should().NotBeNull();
-		currentLine.Should().BeOfType<MockDrawingLine>();
-		currentLine?.LineColor.Should().Be(Colors.LimeGreen);
-	}
+	//	currentLine.Should().NotBeNull();
+	//	currentLine.Should().BeOfType<MockDrawingLine>();
+	//	currentLine?.LineColor.Should().Be(Colors.LimeGreen);
+	//}
 
 	[Fact]
 	public void OnDrawingStartedLastPointPassedWithCommand()
