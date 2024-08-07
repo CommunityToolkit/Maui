@@ -257,7 +257,7 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateShouldKeepScreenOn()
 	{
-		if (MediaElement is not null)
+		if (MediaElement.ShouldKeepScreenOn)
 		{
 			if (allowUpdatePositionStates.Contains(MediaElement.CurrentState)
 				&& !displayActiveRequested)
