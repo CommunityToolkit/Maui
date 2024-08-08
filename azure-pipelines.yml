@@ -271,6 +271,31 @@ jobs:
           script: 'dotnet test $(PathToCommunityToolkitAnalyzersUnitTestCsproj) -c Release'
 
       - task: CmdLine@2
+        displayName: 'Build CommunityToolkit.Maui.Core'
+        inputs:
+          script: 'dotnet build $(PathToCommunityToolkitCoreCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
+
+      - task: CmdLine@2
+        displayName: 'Build CommunityToolkit.Maui'
+        inputs:
+          script: 'dotnet build $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
+
+      - task: CmdLine@2
+        displayName: 'Build CommunityToolkit.Maui.Camera'
+        inputs:
+          script: 'dotnet build $(PathToCommunityToolkitCameraCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionCamera)'
+
+      - task: CmdLine@2
+        displayName: 'Build CommunityToolkit.Maui.MediaElement'
+        inputs:
+          script: 'dotnet build $(PathToCommunityToolkitMediaElementCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionMediaElement)'
+
+      - task: CmdLine@2
+        displayName: 'Build CommunityToolkit.Maui.Maps'
+        inputs:
+          script: 'dotnet build $(PathToCommunityToolkitMapsCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionMaps)'
+
+      - task: CmdLine@2
         displayName: 'Run CommunityToolkit.Maui.UnitTests'
         inputs:
           script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory $(Agent.TempDirectory)'
