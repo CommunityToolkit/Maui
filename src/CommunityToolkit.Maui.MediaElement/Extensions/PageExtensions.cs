@@ -28,4 +28,35 @@ static class PageExtensions
 
 		return currentPage;
 	}
+
+	public record struct ParentWindow
+	{
+		static Page CurrentPage =>
+		PageExtensions.GetCurrentPage(Application.Current?.MainPage ?? throw new InvalidOperationException($"{nameof(Application.Current.MainPage)} cannot be null."));
+		/// <summary>
+		/// Checks if the parent window is null.
+		/// </summary>
+		public static bool Exists
+		{
+			get
+			{
+				if (CurrentPage.GetParentWindow() is null)
+				{
+					System.Diagnostics.Trace.TraceError("Parent window is null");
+					return false;
+				}
+				if (CurrentPage.GetParentWindow().Handler is null)
+				{
+					System.Diagnostics.Trace.TraceError("Parent window handler is null");
+					return false;
+				}
+				if (CurrentPage.GetParentWindow().Handler.PlatformView is null)
+				{
+					System.Diagnostics.Trace.TraceError("Parent window handler platform view is null");
+					return false;
+				}
+				return true;
+			}
+		}
+	}
 }
