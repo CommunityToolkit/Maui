@@ -67,7 +67,13 @@ public static class MauiProgram
 								.UseMauiCommunityToolkitMarkup()
 								.UseMauiCommunityToolkitCamera()
 								.UseMauiCommunityToolkitMediaElement()
-								.UseMauiCommunityToolkitMaps("KEY") // You should add your own key here from bingmapsportal.com
+
+#if WINDOWS
+								.UseMauiCommunityToolkitMaps("Key")  // You should add your own key here from bingmapsportal.com
+#else
+								.UseMauiMaps()
+#endif
+
 								.UseMauiApp<App>()
 								.ConfigureFonts(fonts =>
 								{
