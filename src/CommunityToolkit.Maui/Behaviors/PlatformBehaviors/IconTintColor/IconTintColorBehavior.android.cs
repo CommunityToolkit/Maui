@@ -67,7 +67,6 @@ public partial class IconTintColorBehavior
 		}
 		catch (ObjectDisposedException)
 		{
-			Trace.WriteLine("IconTintColorBehavior is already disposed.");
 		}
 
 		static void SetImageViewTintColor(ImageView image, Color? color)
