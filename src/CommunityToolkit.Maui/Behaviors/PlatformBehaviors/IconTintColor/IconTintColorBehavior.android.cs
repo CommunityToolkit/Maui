@@ -138,7 +138,6 @@ public partial class IconTintColorBehavior
 		}
 		catch (ObjectDisposedException)
 		{
-			Trace.WriteLine("IconTintColorBehavior is already disposed.");
 		}
 	}
 
