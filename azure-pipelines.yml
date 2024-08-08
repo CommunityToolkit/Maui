@@ -17,7 +17,7 @@ variables:
   PathToCommunityToolkitMapsCsproj: 'src/CommunityToolkit.Maui.Maps/CommunityToolkit.Maui.Maps.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
   PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
-  PathToCommunityToolkitAnalyzersCsproj: 'src/CommunityToolkit.Maui.Analyzers.Internal/CommunityToolkit.Maui.Analyzers.csproj'
+  PathToCommunityToolkitAnalyzersCsproj: 'src/CommunityToolkit.Maui.Analyzers/CommunityToolkit.Maui.Analyzers.csproj'
   PathToCommunityToolkitCameraAnalyzersCsproj: 'src/CommunityToolkit.Maui.Camera.Analyzers/CommunityToolkit.Maui.Camera.Analyzers.csproj'
   PathToCommunityToolkitMediaElementAnalyzersCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers/CommunityToolkit.Maui.MediaElement.Analyzers.csproj'
   PathToCommunityToolkitSourceGeneratorsCsproj: 'src/CommunityToolkit.Maui.SourceGenerators/CommunityToolkit.Maui.SourceGenerators.csproj'
