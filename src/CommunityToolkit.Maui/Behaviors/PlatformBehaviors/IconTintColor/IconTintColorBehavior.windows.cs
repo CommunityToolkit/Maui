@@ -140,6 +140,20 @@ public partial class IconTintColorBehavior
 
 			ApplyTintColor();
 		}
+		else if (image.IsLoaded)
+		{
+			// Sometimes WImage source doesn't match View source so the image is not ready to be tinted, have to wait for next ImageOpened event
+			if (element is IImageElement { Source: FileImageSource fileImageSource } &&
+				image.Source is BitmapImage bitmapImage &&
+				Uri.Compare(new Uri($"{bitmapImage.UriSource.Scheme}:///{fileImageSource.File}"), bitmapImage.UriSource, UriComponents.Path, UriFormat.Unescaped, StringComparison.OrdinalIgnoreCase) != 0)
+			{
+				image.ImageOpened += OnImageOpened;
+			}
+			else
+			{
+				ApplyTintColor();
+			}
+		}
 		else
 		{
 			image.ImageOpened += OnImageOpened;
