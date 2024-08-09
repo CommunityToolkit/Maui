@@ -169,8 +169,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		currentState = MediaElement.CurrentState;
 
 		BroadcastUpdate(newState is MediaElementState.Playing
-			? MediaControlsService.ACTION_PLAY
-			: MediaControlsService.ACTION_PAUSE);
+			? MediaControlsService.ACTION_PAUSE
+			: MediaControlsService.ACTION_PLAY);
 
 	}
 
@@ -376,6 +376,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		Player.SeekTo(0);
 		Player.Stop();
 		MediaElement.Position = TimeSpan.Zero;
+		StopService();
 	}
 
 	protected virtual partial void PlatformUpdateSource()
@@ -670,7 +671,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		mediaSession?.SetMetadata(mediaMetadata.Build());
 		var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
 
-		if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+		if (Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop)
 		{
 			intent.PutExtra("title", MediaElement.MetadataTitle);
 			intent.PutExtra("artist", MediaElement.MetadataArtist);
@@ -755,10 +756,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			ArgumentNullException.ThrowIfNull(intent);
 			ArgumentNullException.ThrowIfNull(intent.Action);
 			ArgumentNullException.ThrowIfNull(player);
-
-			if (intent.Action is MediaControlsService.ACTION_UPDATE_PLAYER)
+			if (intent.Action.Contains(MediaControlsService.ACTION_UPDATE_PLAYER))
 			{
 				var action = intent.GetStringExtra("ACTION") ?? string.Empty;
+				Application.Current?.Dispatcher.Dispatch(() =>
+				{
 				switch (action)
 				{
 					case MediaControlsService.ACTION_PLAY:
@@ -776,6 +778,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 						player.Play();
 						break;
 				}
+				});
 			}
 		}
 	}
