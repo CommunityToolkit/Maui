@@ -49,6 +49,11 @@
         <ProgressBar Progress="{Binding UpdateProgress}" />
 
         <Button
+            Command="{Binding MoreCommand}"
+            Style="{StaticResource ConfirmButton}"
+            Text="More" />
+        
+        <Button
             Command="{Binding FinishCommand}"
             Style="{StaticResource ConfirmButton}"
             Text="Finish" />
