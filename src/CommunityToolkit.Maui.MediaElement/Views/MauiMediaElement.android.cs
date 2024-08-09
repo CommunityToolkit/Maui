@@ -5,7 +5,7 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
-using Com.Google.Android.Exoplayer2.UI;
+using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -15,7 +15,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiMediaElement : CoordinatorLayout
 {
-	readonly StyledPlayerView playerView;
+	readonly PlayerView playerView;
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
 	bool isFullScreen;
@@ -34,8 +34,8 @@ public class MauiMediaElement : CoordinatorLayout
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
 	/// </summary>
 	/// <param name="context">The application's <see cref="Context"/>.</param>
-	/// <param name="playerView">The <see cref="StyledPlayerView"/> that acts as the platform media player.</param>
-	public MauiMediaElement(Context context, StyledPlayerView playerView) : base(context)
+	/// <param name="playerView">The <see cref="PlayerView"/> that acts as the platform media player.</param>
+	public MauiMediaElement(Context context, PlayerView playerView) : base(context)
 	{
 		this.playerView = playerView;
 
@@ -59,7 +59,7 @@ public class MauiMediaElement : CoordinatorLayout
 	{
 		if (isFullScreen)
 		{
-			OnFullscreenButtonClick(this, new StyledPlayerView.FullscreenButtonClickEventArgs(!isFullScreen));
+			OnFullscreenButtonClick(this, new PlayerView.FullscreenButtonClickEventArgs(!isFullScreen));
 		}
 		base.OnDetachedFromWindow();
 	}
@@ -102,7 +102,7 @@ public class MauiMediaElement : CoordinatorLayout
 		base.Dispose(disposing);
 	}
 
-	void OnFullscreenButtonClick(object? sender, StyledPlayerView.FullscreenButtonClickEventArgs e)
+	void OnFullscreenButtonClick(object? sender, PlayerView.FullscreenButtonClickEventArgs e)
 	{
 		// Ensure there is a player view
 		if (playerView is null)
@@ -111,7 +111,7 @@ public class MauiMediaElement : CoordinatorLayout
 		}
 		var layout = CurrentPlatformContext.CurrentWindow.DecorView as ViewGroup;
 
-		if (e.IsFullScreen)
+		if (e.P0)
 		{
 			isFullScreen = true;
 			RemoveView(relativeLayout);
