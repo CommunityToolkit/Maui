@@ -117,6 +117,32 @@ public class ColorToHexRgbaStringConverter : BaseConverter<Color, string>
 }
 
 /// <summary>
+/// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/> and vice-versa.
+/// </summary>
+public class ColorToHexArgbStringConverter : BaseConverter<Color, string>
+{
+	/// <inheritdoc/>
+	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
+
+	/// <inheritdoc/>
+	public override Color DefaultConvertBackReturnValue { get; set; } = Colors.Transparent;
+
+	/// <inheritdoc/>
+	public override string ConvertFrom(Color value, CultureInfo? culture = null)
+	{
+		ArgumentNullException.ThrowIfNull(value);
+		return value.ToHex(); // ToHex returns ARGB format
+	}
+
+	/// <inheritdoc/>
+	public override Color ConvertBackTo(string value, CultureInfo? culture = null)
+	{
+		ArgumentNullException.ThrowIfNull(value);
+		return Color.TryParse(value, out Color color) ? color : DefaultConvertBackReturnValue;
+	}
+}
+
+/// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/>.
 /// </summary>
 public class ColorToCmykStringConverter : BaseConverterOneWay<Color, string>
