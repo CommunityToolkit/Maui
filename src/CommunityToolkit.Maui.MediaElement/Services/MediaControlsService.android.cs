@@ -162,6 +162,11 @@ class MediaControlsService : Service
 			System.Diagnostics.Trace.TraceError("Cannot set notifications when they are null.");
 			return;
 		}
+		
+		if(e.Action.Contains(ACTION_REWIND) || e.Action.Contains(ACTION_FASTFORWARD))
+		{
+			return;
+		}
 		notification.ClearActions();
 		notification.AddAction(actionPrevious);
 		if (e.Action.Contains(ACTION_PLAY))
