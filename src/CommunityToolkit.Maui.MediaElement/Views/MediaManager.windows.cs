@@ -7,8 +7,10 @@ using Windows.Media;
 using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.System.Display;
+using Page = Microsoft.Maui.Controls.Page;
 using WindowsMediaElement = Windows.Media.Playback.MediaPlayer;
 using WinMediaSource = Windows.Media.Core.MediaSource;
+using ParentWindow = CommunityToolkit.Maui.Extensions.PageExtensions.ParentWindow;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -181,6 +183,13 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdatePosition()
 	{
+		if (!ParentWindow.Exists)
+		{
+			// Parent window is null, so we can't update the position
+			// This is a workaround for a bug where the timer keeps running after the window is closed
+			return;
+		}
+
 		if (Player is not null
 			&& allowUpdatePositionStates.Contains(MediaElement.CurrentState))
 		{
@@ -217,8 +226,7 @@ partial class MediaManager : IDisposable
 	{
 		if (MediaElement.ShouldKeepScreenOn)
 		{
-			if (MediaElement != null
-				&& allowUpdatePositionStates.Contains(MediaElement.CurrentState)
+			if (allowUpdatePositionStates.Contains(MediaElement.CurrentState)
 				&& !displayActiveRequested)
 			{
 				DisplayRequest.RequestActive();
