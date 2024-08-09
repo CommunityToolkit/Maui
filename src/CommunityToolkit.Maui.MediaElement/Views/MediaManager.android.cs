@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Android.Content;
 using Android.Graphics;
+using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Support.V4.Media.Session;
 using Android.Views;
@@ -632,6 +633,14 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			await checkPermissionsTask.WaitAsync(cancellationToken);
 		}
+
+		ArgumentNullException.ThrowIfNull(PlayerView);
+		PlayerView.ArtworkDisplayMode = StyledPlayerView.ArtworkDisplayModeFit;
+		Android.Content.Context? context = Platform.AppContext;
+		Android.Content.Res.Resources? resources = context.Resources;
+
+		var bitmap = await GetBitmapFromUrl(MediaElement.MetadataArtworkUrl, cancellationToken);
+		PlayerView.DefaultArtwork = new BitmapDrawable(resources, bitmap);
 
 		var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
 
