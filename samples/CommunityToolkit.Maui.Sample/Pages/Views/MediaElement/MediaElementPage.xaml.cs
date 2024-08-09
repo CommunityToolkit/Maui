@@ -20,6 +20,8 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string loadLocalResource = "Load Local Resource";
 	const string resetSource = "Reset Source to null";
 	const string loadSubTitles = "Load sample with Subtitles";
+	const string loadMusic = "Load Music";
+
 
 	public MediaElementPage(MediaElementViewModel viewModel, ILogger<MediaElementPage> logger) : base(viewModel)
 	{
@@ -160,7 +162,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	async void ChangeSourceClicked(Object sender, EventArgs e)
 	{
 		var result = await DisplayActionSheet("Choose a source", "Cancel", null,
-			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadSubTitles);
+			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadSubTitles, loadMusic);
 
 		switch (result)
 		{
@@ -211,6 +213,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 					MediaElement.Source = MediaSource.FromResource("WindowsVideo.mp4");
 				}
 				return;
+
 			case loadSubTitles:
 				SrtParser srtParser = new();
 				MediaElement.CustomSubtitleParser = srtParser;
@@ -227,6 +230,12 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 				MediaElement.SubtitleUrl = "https://raw.githubusercontent.com/ne0rrmatrix/SampleVideo/main/SRT/WindowsVideo.srt";
 				MediaElement.Source = MediaSource.FromResource("WindowsVideo.mp4");
+
+			case loadMusic:
+				MediaElement.MetadataTitle = "HAL 9000";
+				MediaElement.MetadataArtist = "HAL 9000 Album";
+				MediaElement.MetadataArtworkUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
+				MediaElement.Source = MediaSource.FromUri("https://github.com/prof3ssorSt3v3/media-sample-files/raw/master/hal-9000.mp3");
 				return;
 		}
 	}

@@ -397,6 +397,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		subtitleExtensions?.StopSubtitleDisplay();
 		StopService();
+
 		if (mediaSession is not null)
 		{
 			mediaSession.Active = false;

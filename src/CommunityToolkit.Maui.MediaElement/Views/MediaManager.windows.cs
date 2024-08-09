@@ -1,12 +1,14 @@
 using CommunityToolkit.Maui.Core.Primitives;
-using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Media;
 using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.System.Display;
+using Page = Microsoft.Maui.Controls.Page;
+using ParentWindow = CommunityToolkit.Maui.Extensions.PageExtensions.ParentWindow;
 using WindowsMediaElement = Windows.Media.Playback.MediaPlayer;
 using WinMediaSource = Windows.Media.Core.MediaSource;
 
@@ -184,6 +186,13 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdatePosition()
 	{
+		if (!ParentWindow.Exists)
+		{
+			// Parent window is null, so we can't update the position
+			// This is a workaround for a bug where the timer keeps running after the window is closed
+			return;
+		}
+
 		if (Player is not null
 			&& allowUpdatePositionStates.Contains(MediaElement.CurrentState))
 		{
@@ -220,8 +229,7 @@ partial class MediaManager : IDisposable
 	{
 		if (MediaElement.ShouldKeepScreenOn)
 		{
-			if (MediaElement != null
-				&& allowUpdatePositionStates.Contains(MediaElement.CurrentState)
+			if (allowUpdatePositionStates.Contains(MediaElement.CurrentState)
 				&& !displayActiveRequested)
 			{
 				DisplayRequest.RequestActive();
@@ -254,7 +262,10 @@ partial class MediaManager : IDisposable
 		{
 			return;
 		}
+
 		subtitleExtensions?.StopSubtitleDisplay();
+		Dispatcher.Dispatch(() => Player.PosterSource = new BitmapImage());
+    
 		if (MediaElement.Source is null)
 		{
 			Player.Source = null;
@@ -363,13 +374,14 @@ partial class MediaManager : IDisposable
 
 	void UpdateMetadata()
 	{
-		if (systemMediaControls is null)
+		if (systemMediaControls is null || Player is null)
 		{
 			return;
 		}
 
 		metadata ??= new(systemMediaControls, MediaElement, Dispatcher);
 		metadata.SetMetadata(MediaElement);
+		Dispatcher.Dispatch(() => Player.PosterSource = new BitmapImage(new Uri(MediaElement.MetadataArtworkUrl)));
 	}
 
 	void OnMediaElementMediaOpened(WindowsMediaElement sender, object args)
