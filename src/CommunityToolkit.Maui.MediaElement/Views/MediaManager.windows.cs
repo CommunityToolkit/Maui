@@ -1,16 +1,16 @@
 using CommunityToolkit.Maui.Core.Primitives;
-using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Media;
 using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.System.Display;
 using Page = Microsoft.Maui.Controls.Page;
+using ParentWindow = CommunityToolkit.Maui.Extensions.PageExtensions.ParentWindow;
 using WindowsMediaElement = Windows.Media.Playback.MediaPlayer;
 using WinMediaSource = Windows.Media.Core.MediaSource;
-using ParentWindow = CommunityToolkit.Maui.Extensions.PageExtensions.ParentWindow;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -259,7 +259,7 @@ partial class MediaManager : IDisposable
 		{
 			return;
 		}
-
+		Dispatcher.Dispatch(() => Player.PosterSource = new BitmapImage());
 		if (MediaElement.Source is null)
 		{
 			Player.Source = null;
@@ -346,13 +346,14 @@ partial class MediaManager : IDisposable
 
 	void UpdateMetadata()
 	{
-		if (systemMediaControls is null)
+		if (systemMediaControls is null || Player is null)
 		{
 			return;
 		}
 
 		metadata ??= new(systemMediaControls, MediaElement, Dispatcher);
 		metadata.SetMetadata(MediaElement);
+		Dispatcher.Dispatch(() => Player.PosterSource = new BitmapImage(new Uri(MediaElement.MetadataArtworkUrl)));
 	}
 
 	void OnMediaElementMediaOpened(WindowsMediaElement sender, object args)
