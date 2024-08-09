@@ -635,7 +635,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 
 		ArgumentNullException.ThrowIfNull(PlayerView);
-		PlayerView.ArtworkDisplayMode = StyledPlayerView.ArtworkDisplayModeFit;
+		PlayerView.UseArtwork = true;
 		Android.Content.Context? context = Platform.AppContext;
 		Android.Content.Res.Resources? resources = context.Resources;
 
