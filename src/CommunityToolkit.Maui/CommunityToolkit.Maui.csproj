@@ -6,6 +6,7 @@
     <TargetFrameworks Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">$(TargetFrameworks);$(NetVersion)-tizen</TargetFrameworks>
     <SingleProject>true</SingleProject>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsAotCompatible>true</IsAotCompatible>
 
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath>
