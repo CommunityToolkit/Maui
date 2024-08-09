@@ -230,6 +230,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 				MediaElement.SubtitleUrl = "https://raw.githubusercontent.com/ne0rrmatrix/SampleVideo/main/SRT/WindowsVideo.srt";
 				MediaElement.Source = MediaSource.FromResource("WindowsVideo.mp4");
+				return;
 
 			case loadMusic:
 				MediaElement.MetadataTitle = "HAL 9000";
