@@ -8,9 +8,9 @@ using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.System.Display;
 using Page = Microsoft.Maui.Controls.Page;
+using ParentWindow = CommunityToolkit.Maui.Extensions.PageExtensions.ParentWindow;
 using WindowsMediaElement = Windows.Media.Playback.MediaPlayer;
 using WinMediaSource = Windows.Media.Core.MediaSource;
-using ParentWindow = CommunityToolkit.Maui.Extensions.PageExtensions.ParentWindow;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
