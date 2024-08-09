@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
@@ -25,6 +26,8 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.PropertyChanged += MediaElement_PropertyChanged;
 	}
 
+	void MediaElement_FullScreenStateChanged(object? sender, FullScreenStateChangedEventArgs e) =>
+		logger.LogInformation("FullScreen State Changed. Old State: {PreviousState}, New State: {NewState}", e.PreviousState, e.NewState);
 	void MediaElement_PropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (e.PropertyName == MediaElement.DurationProperty.PropertyName)

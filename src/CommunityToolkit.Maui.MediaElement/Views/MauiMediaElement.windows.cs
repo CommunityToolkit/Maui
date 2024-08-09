@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -7,13 +8,11 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Imaging;
 using WinRT.Interop;
 using Application = Microsoft.Maui.Controls.Application;
 using Button = Microsoft.UI.Xaml.Controls.Button;
 using Colors = Microsoft.UI.Colors;
 using Grid = Microsoft.UI.Xaml.Controls.Grid;
-using ImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 using Page = Microsoft.Maui.Controls.Page;
 using SolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using Thickness = Microsoft.UI.Xaml.Thickness;
@@ -171,6 +170,7 @@ public class MauiMediaElement : Grid, IDisposable
 			var parent = mediaPlayerElement.Parent as FrameworkElement;
 			mediaPlayerElement.Width = parent?.Width ?? mediaPlayerElement.Width;
 			mediaPlayerElement.Height = parent?.Height ?? mediaPlayerElement.Height;
+			MediaManager.FullScreenEvents.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
 		}
 		else
 		{
@@ -199,6 +199,7 @@ public class MauiMediaElement : Grid, IDisposable
 			{
 				popup.IsOpen = true;
 			}
+			MediaManager.FullScreenEvents.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
 		}
 	}
 }
