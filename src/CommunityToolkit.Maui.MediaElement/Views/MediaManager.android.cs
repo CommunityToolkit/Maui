@@ -388,7 +388,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			return;
 		}
 
-		StopService();
 		if (mediaSession is not null)
 		{
 			mediaSession.Active = false;
