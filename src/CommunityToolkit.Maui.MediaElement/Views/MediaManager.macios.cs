@@ -313,22 +313,22 @@ public partial class MediaManager : IDisposable
 	}
 	void SetPoster()
 	{
-		
+
 		if (PlayerItem is null || metaData is null)
 		{
 			return;
 		}
 		var videoTrack = PlayerItem.Asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant()).FirstOrDefault();
-		if(videoTrack is not null)
+		if (videoTrack is not null)
 		{
 			return;
 		}
-		if(PlayerItem.Asset.Tracks.Length == 0)
+		if (PlayerItem.Asset.Tracks.Length == 0)
 		{
 			// No video track found and no tracks found. This is likely an audio file. So we can't set a poster.
 			return;
 		}
-		
+
 		if (PlayerViewController?.View is not null && PlayerViewController.ContentOverlayView is not null && !string.IsNullOrEmpty(MediaElement.MetadataArtworkUrl))
 		{
 			var image = UIImage.LoadFromData(NSData.FromUrl(new NSUrl(MediaElement.MetadataArtworkUrl))) ?? new UIImage();
