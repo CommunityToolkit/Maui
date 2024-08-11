@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Text.Json;
 using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Maps;
 using Microsoft.Maui.Maps.Handlers;
 using Microsoft.Maui.Platform;
@@ -48,7 +49,7 @@ public partial class MapHandlerWindows : MapHandler
 		}
 
 		var mapPage = GetMapHtmlPage(MapsKey);
-		var webView = new MauiWebView();
+		var webView = new MauiWebView(new WebViewHandler());
 		webView.NavigationCompleted += WebViewNavigationCompleted;
 		webView.WebMessageReceived += WebViewWebMessageReceived;
 		webView.LoadHtml(mapPage, null);
