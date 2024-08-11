@@ -119,7 +119,7 @@ public partial class TouchBehavior
 
 	void UpdateClickHandler()
 	{
-		if (view is null)
+		if (view is null || !view.IsAlive())
 		{
 			return;
 		}
