@@ -13,17 +13,6 @@ using Trace = System.Diagnostics.Trace;
 namespace CommunityToolkit.Maui.Behaviors;
 
 
-
-
-
-sealed class WeakWrapper<T>(T value)
-	where T : class
-{
-	readonly WeakReference<T> weakValue = new(value);
-
-	public T? Value => weakValue.TryGetTarget(out var target) ? target : null;
-}
-
 public partial class TouchBehavior
 {
 	static readonly MColor defaultNativeAnimationColor = MColor.FromRgba(128, 128, 128, 64);
@@ -31,8 +20,7 @@ public partial class TouchBehavior
 	bool isHoverSupported;
 	float startX;
 	float startY;
-	//AView? view;
-	WeakWrapper<AView> view = default!;
+	AView? view;
 	ViewGroup? viewGroup;
 
 	AccessibilityManager? accessibilityManager;
@@ -54,11 +42,10 @@ public partial class TouchBehavior
 		base.OnAttachedTo(bindable, platformView);
 
 		Element = bindable;
-		view = new(platformView);
+		view = platformView;
 		viewGroup = Microsoft.Maui.Platform.ViewExtensions.GetParentOfType<ViewGroup>(platformView);
 
 		platformView.Touch += OnTouch;
-		//platformView.SetOnTouchListener(new Listener(this));
 		UpdateClickHandler();
 		accessibilityManager = platformView.Context?.GetSystemService(Context.AccessibilityService) as AccessibilityManager;
 
@@ -87,7 +74,7 @@ public partial class TouchBehavior
 	{
 		base.OnDetachedFrom(bindable, platformView);
 
-		view = new(platformView);
+		view = platformView;
 
 		if (Element is null)
 		{
@@ -105,10 +92,10 @@ public partial class TouchBehavior
 				accessibilityListener = null;
 			}
 
-			if (view.Value is not null)
+			if (view is not null)
 			{
-				view.Value.Touch -= OnTouch;
-				view.Value.Click -= OnClick;
+				view.Touch -= OnTouch;
+				view.Click -= OnClick;
 			}
 
 			Element = null;
@@ -132,15 +119,15 @@ public partial class TouchBehavior
 
 	void UpdateClickHandler()
 	{
-		if (view.Value is null)
+		if (view is null)
 		{
 			return;
 		}
 
-		view.Value.Click -= OnClick;
+		view.Click -= OnClick;
 		if (IsAccessibilityMode || (IsEnabled && (Element?.IsEnabled ?? false)))
 		{
-			view.Value.Click += OnClick;
+			view.Click += OnClick;
 			return;
 		}
 	}
@@ -245,8 +232,8 @@ public partial class TouchBehavior
 			return;
 		}
 
-		var diffX = Math.Abs(touchEventArgs.Event.GetX() - startX) / this.view.Value?.Context?.Resources?.DisplayMetrics?.Density ?? throw new InvalidOperationException("Context cannot be null");
-		var diffY = Math.Abs(touchEventArgs.Event.GetY() - startY) / this.view.Value?.Context?.Resources?.DisplayMetrics?.Density ?? throw new InvalidOperationException("Context cannot be null");
+		var diffX = Math.Abs(touchEventArgs.Event.GetX() - startX) / this.view?.Context?.Resources?.DisplayMetrics?.Density ?? throw new InvalidOperationException("Context cannot be null");
+		var diffY = Math.Abs(touchEventArgs.Event.GetY() - startY) / this.view?.Context?.Resources?.DisplayMetrics?.Density ?? throw new InvalidOperationException("Context cannot be null");
 		var maxDiff = Math.Max(diffX, diffY);
 
 		var disallowTouchThreshold = DisallowTouchThreshold;
@@ -286,8 +273,8 @@ public partial class TouchBehavior
 
 	partial void PlatformDispose()
 	{
-		view.Value?.Dispose();
-		//view = null;
+		view?.Dispose();
+		view = null;
 
 		viewGroup?.Dispose();
 		viewGroup = null;
