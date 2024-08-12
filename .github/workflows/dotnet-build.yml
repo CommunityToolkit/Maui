@@ -43,8 +43,8 @@ env:
   PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/8.0.6.json'
-  CommunityToolkitSampleApp_Xcode_Version: '15.4.0'
-  CommunityToolkitLibrary_Xcode_Version: '15.4.0'
+  CommunityToolkitSampleApp_Xcode_Version: '15.3.0'
+  CommunityToolkitLibrary_Xcode_Version: '15.3.0'
 
 jobs:
   build_sample:
