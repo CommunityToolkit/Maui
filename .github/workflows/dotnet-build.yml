@@ -174,9 +174,97 @@ jobs:
           Get-ChildItem -Path "./src" -Recurse | Where-Object { $_.Extension -match "nupkg" } | Copy-Item -Destination "${{ github.workspace }}/nuget"
         shell: pwsh
 
+      - name: Upload Package List
+        uses: actions/upload-artifact@v4
+        if: runner.os == 'Windows'
+        with:
+          name: nuget-list
+          if-no-files-found: error
+          path: |
+            ${{ github.workspace }}/.github/workflows/SignClientFileList.txt
+
       - name: Publish Packages
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v4
         with:
-          name: Packages
+          name: packages
           path: ${{ github.workspace }}/nuget/
+
+  sign:
+    needs: [build_library]
+    if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/rel/') }}
+    runs-on: windows-latest
+    permissions:
+      id-token: write # Required for requesting the JWT
+
+    steps:
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+
+      - name: Download NuGet List
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-list
+          path: ./
+
+      - name: Download Package List
+        uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: ./packages
+
+      - name: Install Signing Tool
+        run: dotnet tool install --tool-path ./tools sign --version 0.9.1-beta.23356.1
+
+      - name: Sign Packages
+        run: >
+          ./tools/sign code azure-key-vault
+          **/*.nupkg
+          --base-directory "${{ github.workspace }}/packages"
+          --file-list "${{ github.workspace }}/SignClientFileList.txt"
+          --timestamp-url "http://timestamp.digicert.com"
+          --publisher-name ".NET Foundation"
+          --description "Community Toolkit MAUI"
+          --description-url "https://github.com/CommunityToolkit/Maui"
+          --azure-key-vault-url "${{ secrets.SIGN_KEY_VAULT_URL }}"
+          --azure-key-vault-client-id ${{ secrets.SIGN_CLIENT_ID }}
+          --azure-key-vault-client-secret "${{ secrets.SIGN_CLIENT_SECRET }}"
+          --azure-key-vault-tenant-id ${{ secrets.SIGN_TENANT_ID }}
+          --azure-key-vault-certificate "${{ secrets.SIGN_CERTIFICATE }}"
+          --verbosity Information
+
+      - name: Publish Packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: signed-packages
+          if-no-files-found: error
+          path: |
+            ${{ github.workspace }}/packages/**/*.nupkg
+
+  release:
+    if: ${{ startsWith(github.ref, 'refs/heads/rel/') }}
+    needs: [sign]
+    environment: nuget-release-gate # This gates this job until manually approved
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+
+      - name: Download signed packages for ${{ matrix.platform }}
+        uses: actions/download-artifact@v4
+        with:
+          name: signed-packages
+          path: ./packages
+
+      - name: Push to NuGet.org
+        run: >
+          dotnet nuget push
+          **/*.nupkg
+          --source https://api.nuget.org/v3/index.json
+          --api-key ${{ secrets.NUGET_PACKAGE_PUSH_TOKEN }}
+          --skip-duplicate
