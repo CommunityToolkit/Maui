@@ -83,14 +83,15 @@ jobs:
           script: 'dotnet workload install maui'
 
       - powershell: |
-          Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1' | findstr /S /c:"404";
-          if ($LastExitCode -ne 1)
+          Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
+          .\workload-install.ps1
+
+          if ($LastExitCode -ne 0)
           {
             exit 1;
           }
 
-          .\workload-install.ps1
-          exit 1;
+          exit 0;
         displayName: Install Tizen Workload
 
       # Print Information on the .NET SDK Used By the CI Build Host
@@ -219,13 +220,14 @@ jobs:
           script: dotnet workload install maui --skip-sign-check --source https://api.nuget.org/v3/index.json 
 
       - powershell: |
-          Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1' | findstr /S /c:"404";
-          if ($LastExitCode -ne 1)
+          Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
+          .\workload-install.ps1
+
+          if ($LastExitCode -ne 0)
           {
             exit 1;
           }
 
-          .\workload-install.ps1
           exit 0;
         displayName: Install Tizen Workload
 
