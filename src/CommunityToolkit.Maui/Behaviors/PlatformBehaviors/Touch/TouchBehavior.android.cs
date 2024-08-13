@@ -12,7 +12,6 @@ using Trace = System.Diagnostics.Trace;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
-
 public partial class TouchBehavior
 {
 	static readonly MColor defaultNativeAnimationColor = MColor.FromRgba(128, 128, 128, 64);
