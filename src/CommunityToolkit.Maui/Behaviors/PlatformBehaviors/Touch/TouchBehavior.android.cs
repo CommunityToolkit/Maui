@@ -311,7 +311,7 @@ public partial class TouchBehavior
 				platformTouchBehavior.UpdateClickHandler();
 			}
 		}
-		
+
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
