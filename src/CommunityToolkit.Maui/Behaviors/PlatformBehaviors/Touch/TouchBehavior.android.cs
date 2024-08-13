@@ -43,7 +43,7 @@ public partial class TouchBehavior
 
 		Element = bindable;
 		view = platformView;
-		viewGroup = Microsoft.Maui.Platform.ViewExtensions.GetParentOfType<ViewGroup>(platformView);
+		viewGroup = platformView.GetParentOfType<ViewGroup>();
 
 		platformView.Touch += OnTouch;
 		UpdateClickHandler();
@@ -290,21 +290,37 @@ public partial class TouchBehavior
 		AccessibilityManager.IAccessibilityStateChangeListener,
 		AccessibilityManager.ITouchExplorationStateChangeListener
 	{
-		WeakWrapper<TouchBehavior> platformTouchBehavior;
+		readonly WeakReference<TouchBehavior?> platformTouchBehaviorReference;
 
 		internal AccessibilityListener(TouchBehavior platformTouchBehavior)
 		{
-			this.platformTouchBehavior = new(platformTouchBehavior);
+			platformTouchBehaviorReference = new(platformTouchBehavior);
 		}
 
 		public void OnAccessibilityStateChanged(bool enabled)
 		{
-			platformTouchBehavior.Value?.UpdateClickHandler();
+			if (platformTouchBehaviorReference.TryGetTarget(out var platformTouchBehavior))
+			{
+				platformTouchBehavior.UpdateClickHandler();
+			}
 		}
 
 		public void OnTouchExplorationStateChanged(bool enabled)
 		{
-			platformTouchBehavior.Value?.UpdateClickHandler();
+			if (platformTouchBehaviorReference.TryGetTarget(out var platformTouchBehavior))
+			{
+				platformTouchBehavior.UpdateClickHandler();
+			}
+		}
+		
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				platformTouchBehaviorReference.SetTarget(null);
+			}
+
+			base.Dispose(disposing);
 		}
 	}
 }
