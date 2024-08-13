@@ -87,6 +87,7 @@ jobs:
           if ($LastExitCode -ne 1)
           {
             .\workload-install.ps1
+            exit 1;
           }
 
           exit 0;
@@ -222,6 +223,7 @@ jobs:
           if ($LastExitCode -ne 1)
           {
             .\workload-install.ps1
+            exit 1;
           }
 
           exit 0;
