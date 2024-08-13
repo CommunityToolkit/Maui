@@ -84,12 +84,12 @@ jobs:
 
       - powershell: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
-          .\workload-install.ps1
-
           if ($LastExitCode -ne 0)
           {
             exit 1;
           }
+          
+          .\workload-install.ps1
 
           exit 0;
         displayName: Install Tizen Workload
@@ -221,12 +221,12 @@ jobs:
 
       - powershell: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
-          .\workload-install.ps1
-
           if ($LastExitCode -ne 0)
           {
             exit 1;
           }
+          
+          .\workload-install.ps1
 
           exit 0;
         displayName: Install Tizen Workload
