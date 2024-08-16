@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project>
   <PropertyGroup>
-    <NetVersion>net8.0</NetVersion>
-    <MauiPackageVersion>8.0.71</MauiPackageVersion>
+    <NetVersion>net9.0</NetVersion>
+    <MauiPackageVersion>9.0.0-preview.7.24408.5</MauiPackageVersion>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
