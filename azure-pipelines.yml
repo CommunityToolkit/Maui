@@ -82,7 +82,7 @@ jobs:
         inputs:
           script: 'dotnet workload install maui'
 
-      - pwsh: |
+      - powershell: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
           .\workload-install.ps1
         displayName: Install Tizen Workload
@@ -212,7 +212,7 @@ jobs:
         inputs:
           script: dotnet workload install maui --skip-sign-check --source https://api.nuget.org/v3/index.json 
 
-      - pwsh: |
+      - powershell: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
           .\workload-install.ps1
         displayName: Install Tizen Workload
