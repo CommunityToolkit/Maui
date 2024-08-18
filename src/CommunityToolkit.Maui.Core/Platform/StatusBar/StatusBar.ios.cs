@@ -128,13 +128,13 @@ static partial class StatusBar
 
 	static void UpdateStatusBarAppearance(UIWindow? window)
 	{
-		var vc = window?.RootViewController ?? WindowStateManager.Default.GetCurrentUIViewController() ?? throw new InvalidOperationException($"{nameof(window.RootViewController)} cannot be null");
+		var vc = window?.RootViewController ?? WindowStateManager.Default.GetCurrentUIViewController();
 
-		while (vc.PresentedViewController is not null)
+		while (vc?.PresentedViewController is not null)
 		{
 			vc = vc.PresentedViewController;
 		}
 
-		vc.SetNeedsStatusBarAppearanceUpdate();
+		vc?.SetNeedsStatusBarAppearanceUpdate();
 	}
 }
