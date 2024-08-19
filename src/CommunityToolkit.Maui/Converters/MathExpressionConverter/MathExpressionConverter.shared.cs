@@ -5,10 +5,10 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converters for Math expressions
 /// </summary>
-public class MathExpressionConverter : BaseConverterOneWay<double, double, string>
+public class MathExpressionConverter : BaseConverterOneWay<object, object, string>
 {
 	/// <inheritdoc/>
-	public override double DefaultConvertReturnValue { get; set; } = 0.0d;
+	public override object DefaultConvertReturnValue { get; set; } = 0.0d;
 
 	/// <summary>
 	/// Calculate the incoming expression string with one variable.
@@ -17,7 +17,7 @@ public class MathExpressionConverter : BaseConverterOneWay<double, double, strin
 	/// <param name="parameter">The expression to calculate.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>A <see cref="double"/> The result of calculating an expression.</returns>
-	public override double ConvertFrom(double value, string parameter, CultureInfo? culture = null)
+	public override object ConvertFrom(object value, string parameter, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(parameter);
 

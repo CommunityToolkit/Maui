@@ -27,17 +27,14 @@ public sealed class MathOperator
 	/// </summary>
 	/// <param name="name">Name</param>
 	/// <param name="numericCount">Number of Numerals</param>
-	/// <param name="precedence">Math Operator Preference</param>
 	/// <param name="calculateFunc">Calculation Function</param>
 	public MathOperator(
 		string name,
 		int numericCount,
-		MathOperatorPrecedence precedence,
-		Func<double[], double> calculateFunc)
+		Func<object?[], object?> calculateFunc)
 	{
 		Name = name;
 		CalculateFunc = calculateFunc;
-		Precedence = precedence;
 		NumericCount = numericCount;
 	}
 
@@ -59,5 +56,5 @@ public sealed class MathOperator
 	/// <summary>
 	/// Calculation Function
 	/// </summary>
-	public Func<double[], double> CalculateFunc { get; }
+	public Func<object?[], object?> CalculateFunc { get; }
 }
