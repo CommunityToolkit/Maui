@@ -61,14 +61,27 @@ public class CameraViewTests : BaseHandlerTest
 		Assert.True(eventRaised);
 	}
 
-	[Fact]
-	public void OnMediaCapturedFailed_RaisesMediaCaptureFailedEvent()
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task OnMediaCapturedFailed_RaisesMediaCaptureFailedEvent()
 	{
-		bool eventRaised = false;
-		cameraView.MediaCaptureFailed += (sender, args) => eventRaised = true;
+		const string failureMessage = "Proof that this test passes";
+		
+		bool wasEventRaised = false;
+		var mediaCaptureFailedTcs = new TaskCompletionSource<MediaCaptureFailedEventArgs>();
+		cameraView.MediaCaptureFailed += HandleMediaCaptureFailed;
 
-		cameraView.OnMediaCapturedFailed();
+		cameraView.OnMediaCapturedFailed(failureMessage);
 
-		Assert.True(eventRaised);
+		var mediaCaptureFailedEventArgs = await mediaCaptureFailedTcs.Task;
+
+		Assert.True(wasEventRaised);
+		Assert.Equal(failureMessage, mediaCaptureFailedEventArgs.FailureReason);
+
+		void HandleMediaCaptureFailed(object? sender, MediaCaptureFailedEventArgs e)
+		{
+			cameraView.MediaCaptureFailed -= HandleMediaCaptureFailed;
+			wasEventRaised = true;
+			mediaCaptureFailedTcs.SetResult(e);
+		}
 	}
 }
