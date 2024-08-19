@@ -6,7 +6,7 @@ public partial class StatusBarBehaviorViewModel : BaseViewModel
 {
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(StatusBarColor))]
-	int redSliderValue, greenSliderValue, blueSliderValue;
+	double redSliderValue, greenSliderValue, blueSliderValue;
 
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(StatusBarColor))]
