@@ -49,7 +49,7 @@ static partial class StatusBar
 			TryUpdateStatusBarAppearance();
 		}
 	}
-	
+
 	static void PlatformSetColor(Color color)
 	{
 		var uiColor = color.ToPlatform();
@@ -116,7 +116,7 @@ static partial class StatusBar
 		if (OperatingSystem.IsIOSVersionAtLeast(13))
 		{
 			var didUpdateAllStatusBars = true;
-			
+
 			foreach (var window in UIApplication.SharedApplication.Windows)
 			{
 				didUpdateAllStatusBars &= TryUpdateStatusBarAppearance(window);

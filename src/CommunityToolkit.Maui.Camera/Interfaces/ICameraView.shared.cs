@@ -60,7 +60,8 @@ public interface ICameraView : IView, IAsynchronousHandler
 	/// <summary>
 	/// Occurs when an image capture fails.
 	/// </summary>
-	void OnMediaCapturedFailed();
+	/// <param name="failureReason">A string containing the reason why the capture attempt failed.</param>
+	void OnMediaCapturedFailed(string failureReason);
 
 	/// <summary>
 	/// Triggers the camera to capture an image.
