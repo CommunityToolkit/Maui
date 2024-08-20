@@ -276,6 +276,7 @@ partial class CameraManager
 
 			if (img is null)
 			{
+				cameraView.OnMediaCapturedFailed("Unable to obtain Image data.");
 				return;
 			}
 
@@ -283,6 +284,7 @@ partial class CameraManager
 
 			if (buffer is null)
 			{
+				cameraView.OnMediaCapturedFailed("Unable to obtain a buffer for the image plane.");
 				image.Close();
 				return;
 			}
@@ -293,6 +295,11 @@ partial class CameraManager
 				buffer.Get(imgData);
 				var memStream = new MemoryStream(imgData);
 				cameraView.OnMediaCaptured(memStream);
+			}
+			catch (System.Exception ex)
+			{
+				cameraView.OnMediaCapturedFailed(ex.Message);
+				throw;
 			}
 			finally
 			{
@@ -313,7 +320,7 @@ partial class CameraManager
 		public override void OnError(ImageCaptureException exception)
 		{
 			base.OnError(exception);
-			cameraView.OnMediaCapturedFailed();
+			cameraView.OnMediaCapturedFailed(exception.Message ?? "An unknown error occurred.");
 		}
 	}
 
