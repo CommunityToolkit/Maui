@@ -58,12 +58,13 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
-    <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer" Version="1.0.2" />
-    <PackageReference Include="Xamarin.AndroidX.Media3.UI" Version="1.0.2" />
-    <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Rtsp" Version="1.0.2" />
-    <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Hls" Version="1.0.2" />
-    <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Dash" Version="1.0.2" />
-    <PackageReference Include="Xamarin.AndroidX.Media3.Session" Version="1.0.2" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer" Version="1.1.1" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.Common" Version="1.1.1" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.UI" Version="1.1.1" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Rtsp" Version="1.1.1" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Hls" Version="1.1.1" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Dash" Version="1.1.1" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.Session" Version="1.1.1" />
 
     <!--Adding the above package reference requires Workaround for https://github.com/xamarin/AndroidX/issues/800#issuecomment-1774639627 -->
     <!-- Tracking issue https://github.com/xamarin/AndroidX/issues/764 -->
