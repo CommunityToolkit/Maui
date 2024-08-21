@@ -75,11 +75,6 @@ public partial class TouchBehavior
 
 		view = platformView;
 
-		if (Element is null)
-		{
-			return;
-		}
-
 		try
 		{
 			if (accessibilityManager is not null && accessibilityListener is not null)
