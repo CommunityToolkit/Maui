@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using Android.Graphics;
 using Android.Widget;
 using Microsoft.Maui.Platform;
@@ -44,22 +45,28 @@ public partial class IconTintColorBehavior
 			return;
 		}
 
-		switch (nativeView)
+		try
 		{
-			case ImageView image:
-				SetImageViewTintColor(image, tintColor);
-				break;
+			switch (nativeView)
+			{
+				case ImageView image:
+					SetImageViewTintColor(image, tintColor);
+					break;
 
-			case AndroidMaterialButton materialButton when tintColor is not null:
-				SetMaterialButtonTintColor(materialButton, tintColor);
-				break;
+				case AndroidMaterialButton materialButton when tintColor is not null:
+					SetMaterialButtonTintColor(materialButton, tintColor);
+					break;
 
-			case AndroidWidgetButton widgetButton:
-				SetWidgetButtonTintColor(widgetButton, tintColor);
-				break;
+				case AndroidWidgetButton widgetButton:
+					SetWidgetButtonTintColor(widgetButton, tintColor);
+					break;
 
-			default:
-				throw new NotSupportedException($"{nameof(IconTintColorBehavior)} only currently supports Android.Widget.Button and {nameof(ImageView)}.");
+				default:
+					throw new NotSupportedException($"{nameof(IconTintColorBehavior)} only currently supports Android.Widget.Button and {nameof(ImageView)}.");
+			}
+		}
+		catch (ObjectDisposedException)
+		{
 		}
 
 		static void SetImageViewTintColor(ImageView image, Color? color)
@@ -109,22 +116,28 @@ public partial class IconTintColorBehavior
 			return;
 		}
 
-		switch (nativeView)
+		try
 		{
-			case ImageView image:
-				image.ClearColorFilter();
-				break;
+			switch (nativeView)
+			{
+				case ImageView image:
+					image.ClearColorFilter();
+					break;
 
-			case AndroidMaterialButton mButton:
-				mButton.IconTint = null;
-				break;
-			case AndroidWidgetButton button:
-				foreach (var drawable in button.GetCompoundDrawables())
-				{
-					drawable.ClearColorFilter();
-				}
+				case AndroidMaterialButton mButton:
+					mButton.IconTint = null;
+					break;
+				case AndroidWidgetButton button:
+					foreach (var drawable in button.GetCompoundDrawables())
+					{
+						drawable.ClearColorFilter();
+					}
 
-				break;
+					break;
+			}
+		}
+		catch (ObjectDisposedException)
+		{
 		}
 	}
 
