@@ -220,10 +220,6 @@ class MediaControlsService : Service
 	public override void OnDestroy()
 	{
 		Platform.CurrentActivity?.StopService(new Intent(Platform.AppContext, typeof(MediaControlsService)));
-		System.Diagnostics.Trace.TraceInformation("MediaControlsService destroyed.");
-		Platform.CurrentActivity?.FinishAndRemoveTask();
-		System.Environment.Exit(0);
-		System.Diagnostics.Trace.TraceInformation("Application exiting.");
 		base.OnDestroy();
 	}
 	static void BroadcastUpdate(string receiver, string action)
