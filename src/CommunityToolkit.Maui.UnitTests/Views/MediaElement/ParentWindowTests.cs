@@ -5,8 +5,6 @@ using ParentWindow = CommunityToolkit.Maui.Extensions.PageExtensions.ParentWindo
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-[CollectionDefinition(nameof(ParentWindowTests), DisableParallelization = true)]
-[Collection("Sequential")]
 public class ParentWindowTests : BaseHandlerTest
 {
 	Application application { get; }
