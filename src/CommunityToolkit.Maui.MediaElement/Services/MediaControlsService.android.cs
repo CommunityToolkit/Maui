@@ -226,7 +226,6 @@ class MediaControlsService : Service
 	{
 		if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
 		{
-			System.Diagnostics.Trace.WriteLine($"{LocalBroadcastManager.GetInstance} not supported on Android 13 and above.");
 			return;
 		}
 		var intent = new Intent(receiver);
