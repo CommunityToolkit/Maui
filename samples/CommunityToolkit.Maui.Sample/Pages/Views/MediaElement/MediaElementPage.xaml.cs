@@ -4,12 +4,14 @@ using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.PlatformConfiguration;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class MediaElementPage : BasePage<MediaElementViewModel>
 {
+	Grid? grid;
 	readonly ILogger logger;
 	const string loadOnlineMp4 = "Load Online MP4";
 	const string loadHls = "Load HTTP Live Stream (HLS)";
@@ -237,33 +239,34 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 	void DisplayPopup(object sender, EventArgs e)
 	{
-		MediaElement.Pause();
-		MediaElement popupMediaElement = new MediaElement
+		if (MediaElement.Parent is not Grid parent)
 		{
-			Source = MediaSource.FromResource("AppleVideo.mp4"),
-			HeightRequest = 600,
-			WidthRequest = 600,
-			ShouldAutoPlay = true,
-			ShouldShowPlaybackControls = true,
-		};
+			logger.LogError("Parent of MediaElement is not a Grid");
+			return;
+		}
+		grid = parent;
+		parent.Children.Remove(MediaElement);
 		var popup = new Popup
 		{
 			VerticalOptions = LayoutAlignment.Center,
 			HorizontalOptions = LayoutAlignment.Center,
-		};
-		popup.Content = new StackLayout
-		{
-			Children =
+			Content = new Grid
 			{
-				popupMediaElement,
+				WidthRequest = 300,
+				HeightRequest = 300,
+				Children =
+				{
+					MediaElement,
+				}
 			}
 		};
 
 		this.ShowPopup(popup);
 		popup.Closed += (s, e) =>
 		{
-			popupMediaElement.Stop();
-			popupMediaElement.Handler?.DisconnectHandler();
+			var popupParent = MediaElement.Parent as Grid;
+			popupParent?.Children.Remove(MediaElement);
+			grid.Children.Add(MediaElement);
 		};
 	}
 }
