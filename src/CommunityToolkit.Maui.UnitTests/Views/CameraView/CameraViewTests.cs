@@ -65,7 +65,7 @@ public class CameraViewTests : BaseHandlerTest
 	public async Task OnMediaCapturedFailed_RaisesMediaCaptureFailedEvent()
 	{
 		const string failureMessage = "Proof that this test passes";
-		
+
 		bool wasEventRaised = false;
 		var mediaCaptureFailedTcs = new TaskCompletionSource<MediaCaptureFailedEventArgs>();
 		cameraView.MediaCaptureFailed += HandleMediaCaptureFailed;

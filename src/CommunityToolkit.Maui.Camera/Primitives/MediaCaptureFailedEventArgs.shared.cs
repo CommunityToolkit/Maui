@@ -13,9 +13,9 @@ public class MediaCaptureFailedEventArgs : EventArgs
 	{
 		FailureReason = failureReason;
 	}
-	
+
 	/// <summary>
 	/// Gets the reason why the capture attempt failed.
 	/// </summary>
-	public string FailureReason { get; } 
+	public string FailureReason { get; }
 }
