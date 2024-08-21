@@ -353,6 +353,12 @@ partial class MediaManager : IDisposable
 
 		metadata ??= new(systemMediaControls, MediaElement, Dispatcher);
 		metadata.SetMetadata(MediaElement);
+		
+		if(string.IsNullOrEmpty(MediaElement.MetadataArtworkUrl))
+		{
+			// NOTE: MediaElement cannot have a null or empty MetadataArtworkUrl. 
+			return;
+		}
 		Dispatcher.Dispatch(() => Player.PosterSource = new BitmapImage(new Uri(MediaElement.MetadataArtworkUrl)));
 	}
 
