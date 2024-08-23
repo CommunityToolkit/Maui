@@ -1,3 +1,10 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
+﻿// Ignore Spelling: csharp
+namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public class RatingViewXamlViewModel : BaseViewModel;
+using CommunityToolkit.Mvvm.ComponentModel;
+
+public partial class RatingViewXamlViewModel : BaseViewModel
+{
+	[ObservableProperty]
+	double stepperValueMaximumRatings = 1;
+}

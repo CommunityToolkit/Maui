@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Primitives;
 using FluentAssertions;
 using Xunit;
 using Path = Microsoft.Maui.Controls.Shapes.Path;
@@ -15,8 +14,8 @@ public class RatingViewTests : BaseHandlerTest
 		var ratingView = new Maui.Views.RatingView();
 
 		// Assert
-		Assert.Equal(RatingViewDefaults.BorderColor, ratingView.BorderColor);
-		Assert.Equal(RatingViewDefaults.BorderThickness, ratingView.BorderThickness);
+		Assert.Equal(RatingViewDefaults.RatingShapeOutlineColor, ratingView.RatingShapeOutlineColor);
+		Assert.Equal(RatingViewDefaults.RatingShapeOutlineThickness, ratingView.RatingShapeOutlineThickness);
 		Assert.Equal(RatingViewDefaults.CurrentRating, ratingView.CurrentRating);
 		Assert.Equal(RatingViewDefaults.EmptyBackgroundColor, ratingView.EmptyBackgroundColor);
 		Assert.Equal(RatingViewDefaults.FilledBackgroundColor, ratingView.FilledBackgroundColor);
@@ -78,9 +77,9 @@ public class RatingViewTests : BaseHandlerTest
 	{
 		Maui.Views.RatingView ratingView = new()
 		{
-			Shape = RatingViewShape.Heart
+			Shape = Maui.Views.RatingViewShape.Heart
 		};
 
-		ratingView.Shape.Should().Be(RatingViewShape.Heart);
+		ratingView.Shape.Should().Be(Maui.Views.RatingViewShape.Heart);
 	}
 }

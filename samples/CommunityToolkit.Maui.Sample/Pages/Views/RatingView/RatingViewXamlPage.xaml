@@ -6,53 +6,83 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
-    Title="Rating View XAML"
+    Title="RatingView XAML"
     x:DataType="vm:RatingViewXamlViewModel"
     x:TypeArguments="vm:RatingViewXamlViewModel">
     <ScrollView>
-        <VerticalStackLayout Spacing="12">
-            <Label Style="{StaticResource Description}" Text="RatingView showing different ratings with a maximum rating of 5." />
-            <Line Style="{StaticResource HR}" />
-            <toolkit:RatingView CurrentRating="0" MaximumRating="5" />
-            <toolkit:RatingView CurrentRating="0.5" MaximumRating="5" />
-            <toolkit:RatingView CurrentRating="1.0" MaximumRating="5" />
-            <toolkit:RatingView CurrentRating="1.5" MaximumRating="5" />
-            <toolkit:RatingView CurrentRating="2.0" MaximumRating="5" />
-            <toolkit:RatingView CurrentRating="2.5" MaximumRating="5" />
-            <toolkit:RatingView CurrentRating="3.0" MaximumRating="5" />
-            <toolkit:RatingView CurrentRating="3.5" MaximumRating="5" />
-            <toolkit:RatingView CurrentRating="4.0" MaximumRating="5" />
-            <toolkit:RatingView CurrentRating="4.5" MaximumRating="5" />
-            <toolkit:RatingView CurrentRating="5.0" MaximumRating="5" />
-            <Line Style="{StaticResource HR}" />
+        <VerticalStackLayout Padding="0,12,0,0" Spacing="12">
+            <VerticalStackLayout.Resources>
+                <ResourceDictionary>
+                    <Style x:Key="Description" TargetType="Label">
+                        <Setter Property="VerticalTextAlignment" Value="Start" />
+                        <Setter Property="HorizontalTextAlignment" Value="Center" />
+                        <Setter Property="LineBreakMode" Value="WordWrap" />
+                        <Setter Property="Margin" Value="4,0" />
+                    </Style>
+                    <Style x:Key="HR" TargetType="Line">
+                        <Setter Property="Stroke" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                        <Setter Property="X2" Value="300" />
+                        <Setter Property="HorizontalOptions" Value="Center" />
+                    </Style>
+                    <Style TargetType="Switch">
+                        <Setter Property="OnColor" Value="{StaticResource Gray400}" />
+                        <Setter Property="ThumbColor" Value="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}" />
+                        <Setter Property="VisualStateManager.VisualStateGroups">
+                            <VisualStateGroupList>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="On">
+                                        <VisualState.Setters>
+                                            <Setter Property="ThumbColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Off">
+                                        <VisualState.Setters>
+                                            <Setter Property="ThumbColor" Value="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateGroupList>
+                        </Setter>
+                    </Style>
+                    <Style TargetType="Slider">
+                        <Setter Property="MinimumTrackColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                        <Setter Property="MaximumTrackColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" />
+                        <Setter Property="ThumbColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                    </Style>
+                </ResourceDictionary>
+            </VerticalStackLayout.Resources>
+
             <Label Style="{StaticResource Description}" Text="RatingView showing different maximum ratings." />
             <Line Style="{StaticResource HR}" />
-            <toolkit:RatingView CurrentRating="1" MaximumRating="1" />
-            <toolkit:RatingView CurrentRating="2" MaximumRating="2" />
-            <toolkit:RatingView CurrentRating="3" MaximumRating="3" />
-            <toolkit:RatingView CurrentRating="4" MaximumRating="4" />
-            <toolkit:RatingView CurrentRating="5" MaximumRating="5" />
-            <toolkit:RatingView CurrentRating="6" MaximumRating="6" />
-            <toolkit:RatingView CurrentRating="7" MaximumRating="7" />
+            <Label>
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="Move slider to change maximum number of ratings, click/tap to set the ranking: " />
+                        <Span x:Name="StepperValueMaximumRatingsCurrentRanking" Text="0" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <Stepper
+                Increment="1"
+                Maximum="25"
+                Minimum="1"
+                SemanticProperties.Description="Change the rating maximum."
+                Value="{Binding StepperValueMaximumRatings, Mode=TwoWay}" />
+            <toolkit:RatingView
+                CurrentRating="0"
+                MaximumRating="{Binding StepperValueMaximumRatings, Mode=OneWay}"
+                RatingChanged="StepperValueMaximumRatings_RatingChanged" />
+
             <Line Style="{StaticResource HR}" />
             <Label Style="{StaticResource Description}" Text="RatingView showing non transparent empty ratings." />
             <Line Style="{StaticResource HR}" />
+            <Label Text="Empty background color: " />
+            <Picker x:Name="ColorPickerEmptyBackground" SelectedIndexChanged="ColorPickerEmptyBackground_SelectedIndexChanged" />
             <toolkit:RatingView
+                x:Name="ColorPickerEmptyBackgroundRatingView"
                 CurrentRating="2.5"
-                EmptyBackgroundColor="Red"
                 MaximumRating="5" />
-            <toolkit:RatingView
-                CurrentRating="2.5"
-                EmptyBackgroundColor="Green"
-                MaximumRating="5" />
-            <toolkit:RatingView
-                CurrentRating="2.5"
-                EmptyBackgroundColor="Blue"
-                MaximumRating="5" />
-            <toolkit:RatingView
-                CurrentRating="2.5"
-                EmptyBackgroundColor="Gray"
-                MaximumRating="5" />
+
             <Line Style="{StaticResource HR}" />
             <Label Style="{StaticResource Description}" Text="RatingView showing different rating sizing." />
             <Line Style="{StaticResource HR}" />
@@ -72,6 +102,7 @@
                 CurrentRating="5"
                 MaximumRating="5"
                 Size="60" />
+
             <Line Style="{StaticResource HR}" />
             <Label Style="{StaticResource Description}" Text="RatingView showing different rating background colors." />
             <Line Style="{StaticResource HR}" />
@@ -91,83 +122,83 @@
             <Label Style="{StaticResource Description}" Text="RatingView showing different rating border colors." />
             <Line Style="{StaticResource HR}" />
             <toolkit:RatingView
-                BorderColor="Red"
                 CurrentRating="5"
-                MaximumRating="5" />
+                MaximumRating="5"
+                RatingShapeOutlineColor="Red" />
             <toolkit:RatingView
-                BorderColor="Green"
                 CurrentRating="5"
-                MaximumRating="5" />
+                MaximumRating="5"
+                RatingShapeOutlineColor="Green" />
             <toolkit:RatingView
-                BorderColor="Blue"
                 CurrentRating="5"
-                MaximumRating="5" />
+                MaximumRating="5"
+                RatingShapeOutlineColor="Blue" />
             <Line Style="{StaticResource HR}" />
             <Label Style="{StaticResource Description}" Text="RatingView showing different rating border thickness." />
             <Line Style="{StaticResource HR}" />
             <toolkit:RatingView
-                BorderColor="Red"
-                BorderThickness="1"
                 CurrentRating="5"
                 MaximumRating="5"
+                RatingShapeOutlineColor="Red"
+                RatingShapeOutlineThickness="1"
                 Size="50" />
             <toolkit:RatingView
-                BorderColor="Green"
-                BorderThickness="3"
                 CurrentRating="5"
                 MaximumRating="5"
+                RatingShapeOutlineColor="Green"
+                RatingShapeOutlineThickness="3"
                 Size="50" />
             <toolkit:RatingView
-                BorderColor="Blue"
-                BorderThickness="5"
                 CurrentRating="5"
                 MaximumRating="5"
+                RatingShapeOutlineColor="Blue"
+                RatingShapeOutlineThickness="5"
                 Size="50" />
             <Line Style="{StaticResource HR}" />
             <Label Style="{StaticResource Description}" Text="RatingView showing different rating shapes." />
             <Line Style="{StaticResource HR}" />
             <toolkit:RatingView
-                BorderThickness="1"
                 CurrentRating="5"
                 MaximumRating="5"
+                RatingShapeOutlineThickness="1"
                 Shape="Star"
                 Size="40" />
             <toolkit:RatingView
-                BorderThickness="1"
                 CurrentRating="5"
                 MaximumRating="5"
+                RatingShapeOutlineThickness="1"
                 Shape="Circle"
                 Size="40" />
             <toolkit:RatingView
-                BorderThickness="1"
                 CurrentRating="5"
                 MaximumRating="5"
+                RatingShapeOutlineThickness="1"
                 Shape="Heart"
                 Size="40" />
             <toolkit:RatingView
-                BorderThickness="1"
                 CurrentRating="5"
                 MaximumRating="5"
+                RatingShapeOutlineThickness="1"
                 Shape="Like"
                 Size="40" />
             <toolkit:RatingView
-                BorderThickness="1"
                 CurrentRating="5"
                 MaximumRating="5"
+                RatingShapeOutlineThickness="1"
                 Shape="Dislike"
                 Size="40" />
             <toolkit:RatingView
-                BorderThickness="1"
                 CurrentRating="5"
                 CustomShape="M3.15452 1.01195C5.11987 1.32041 7.17569 2.2474 8.72607 3.49603C9.75381 3.17407 10.8558 2.99995 12 2.99995C13.1519 2.99995 14.261 3.17641 15.2946 3.5025C16.882 2.27488 18.8427 1.31337 20.8354 1.01339C21.2596 0.95092 21.7008 1.16534 21.8945 1.55273C22.6719 3.38958 22.6983 5.57987 22.2202 7.49248L22.2128 7.52213C22.0847 8.03536 21.9191 8.69868 21.3876 8.92182C21.7827 9.89315 22 10.9466 22 12.0526C22 14.825 20.8618 17.6774 19.8412 20.2348L19.8412 20.2348L19.7379 20.4936C19.1182 22.0486 17.7316 23.1196 16.125 23.418L13.8549 23.8397C13.1549 23.9697 12.4562 23.7172 12 23.2082C11.5438 23.7172 10.8452 23.9697 10.1452 23.8397L7.87506 23.418C6.26852 23.1196 4.88189 22.0486 4.26214 20.4936L4.15891 20.2348C3.13833 17.6774 2.00004 14.825 2.00004 12.0526C2.00004 10.9466 2.21737 9.89315 2.6125 8.92182C2.08046 8.69845 1.91916 8.05124 1.7909 7.53658L1.7799 7.49248C1.32311 5.66527 1.23531 3.2968 2.10561 1.55273C2.29827 1.16741 2.72906 0.945855 3.15452 1.01195ZM6.58478 4.44052C5.45516 5.10067 4.47474 5.9652 3.71373 6.98132C3.41572 5.76461 3.41236 4.41153 3.67496 3.18754C4.68842 3.48029 5.68018 3.89536 6.58478 4.44052ZM20.2863 6.98133C19.5303 5.97184 18.5577 5.11195 17.4374 4.45347C18.3364 3.9005 19.3043 3.45749 20.3223 3.17455C20.5884 4.40199 20.5853 5.76068 20.2863 6.98133ZM8.85364 5.56694C9.81678 5.20285 10.8797 4.99995 12 4.99995C13.1204 4.99995 14.1833 5.20285 15.1464 5.56694C18.0554 6.66661 20 9.1982 20 12.0526C20 14.4676 18.9891 16.9876 18.0863 19.238L18.0862 19.2382C18.0167 19.4115 17.9478 19.5832 17.8801 19.7531C17.5291 20.6338 16.731 21.2712 15.7597 21.4516L13.4896 21.8733L12.912 20.5896C12.7505 20.2307 12.3935 19.9999 12 19.9999C11.6065 19.9999 11.2496 20.2307 11.0881 20.5896L10.5104 21.8733L8.24033 21.4516C7.26908 21.2712 6.471 20.6338 6.12001 19.7531C6.05237 19.5834 5.98357 19.4119 5.91414 19.2388L5.91395 19.2384L5.91381 19.238C5.01102 16.9876 4.00004 14.4676 4.00004 12.0526C4.00004 9.1982 5.94472 6.66661 8.85364 5.56694ZM10.5 15.9999C10.1212 15.9999 9.77497 16.2139 9.60557 16.5527C9.43618 16.8915 9.47274 17.2969 9.7 17.5999L11.2 19.5999C11.3889 19.8517 11.6852 19.9999 12 19.9999C12.3148 19.9999 12.6111 19.8517 12.8 19.5999L14.3 17.5999C14.5273 17.2969 14.5638 16.8915 14.3944 16.5527C14.225 16.2139 13.8788 15.9999 13.5 15.9999H10.5ZM9.62134 11.1212C9.62134 11.9497 8.94977 12.6212 8.12134 12.6212C7.29291 12.6212 6.62134 11.9497 6.62134 11.1212C6.62134 10.2928 7.29291 9.62125 8.12134 9.62125C8.94977 9.62125 9.62134 10.2928 9.62134 11.1212ZM16 12.4999C16.8284 12.4999 17.5 11.8284 17.5 10.9999C17.5 10.1715 16.8284 9.49994 16 9.49994C15.1716 9.49994 14.5 10.1715 14.5 10.9999C14.5 11.8284 15.1716 12.4999 16 12.4999Z"
                 MaximumRating="5"
+                RatingShapeOutlineThickness="1"
                 Shape="Custom"
                 Size="40" />
             <toolkit:RatingView
-                BorderThickness="1"
                 CurrentRating="5"
                 CustomShape="M1 2C1 1.44772 1.44772 1 2 1H3.01472C4.87123 1 6.65171 1.7375 7.96446 3.05025L10.7457 5.83149L17.9212 3.041C19.03 2.60983 20.2887 2.87451 21.1299 3.71569L22.7071 5.29289C22.9283 5.51412 23.0333 5.82613 22.9907 6.13608C22.9481 6.44603 22.7629 6.71819 22.4903 6.87158L15.5633 10.768L17.8955 13.4334L20.1586 13.1101C20.9108 13.0026 21.6698 13.2556 22.2071 13.7929C23.1499 14.7357 23.1499 16.2643 22.2071 17.2071L17.2071 22.2071C16.2643 23.1499 14.7357 23.1499 13.7929 22.2071C13.2556 21.6698 13.0026 20.9108 13.1101 20.1586L13.4334 17.8955L10.768 15.5633L6.87157 22.4903C6.71819 22.7629 6.44603 22.9481 6.13608 22.9907C5.82613 23.0333 5.51412 22.9283 5.29289 22.7071L3.7157 21.1299C2.87451 20.2887 2.60983 19.03 3.041 17.9213L5.83149 10.7457L3.05025 7.96447C1.7375 6.65171 1 4.87123 1 3.01472V2ZM3 3V3.01472C3 4.3408 3.52678 5.61257 4.46447 6.55025L7.70711 9.79289C7.9875 10.0733 8.07573 10.4929 7.932 10.8624L4.90501 18.6461C4.76129 19.0157 4.84951 19.4353 5.12991 19.7157L5.77482 20.3606L9.62843 13.5098C9.77608 13.2473 10.0342 13.0653 10.331 13.0144C10.6279 12.9635 10.9318 13.0491 11.1585 13.2475L15.1585 16.7474C15.4131 16.9702 15.5378 17.3065 15.4899 17.6414L15.0899 20.4414C15.0715 20.5705 15.1149 20.7007 15.2071 20.7929C15.3689 20.9547 15.6311 20.9547 15.7929 20.7929L20.7929 15.7929C20.9547 15.6311 20.9547 15.3689 20.7929 15.2071C20.7007 15.1149 20.5705 15.0715 20.4414 15.0899L17.6414 15.4899C17.3065 15.5378 16.9702 15.4131 16.7474 15.1585L13.2474 11.1585C13.0491 10.9318 12.9635 10.6279 13.0144 10.331C13.0653 10.0342 13.2472 9.77608 13.5097 9.62842L20.3606 5.77481L19.7157 5.12991C19.4353 4.84951 19.0157 4.76129 18.6461 4.90501L10.8624 7.932C10.4929 8.07573 10.0733 7.9875 9.79289 7.70711L6.55025 4.46446C5.61257 3.52678 4.3408 3 3.01472 3H3Z"
                 MaximumRating="5"
+                RatingShapeOutlineThickness="1"
                 Size="40" />
 
         </VerticalStackLayout>

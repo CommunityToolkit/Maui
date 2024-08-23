@@ -34,7 +34,7 @@ public static class RatingViewDefaults
 
 	/// <summary>Default border thickness for a rating.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const double BorderThickness = 1.0;
+	public const double RatingShapeOutlineThickness = 1.0;
 
 	/// <summary>Default background color for an empty rating.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -46,7 +46,7 @@ public static class RatingViewDefaults
 
 	/// <summary>Default border color for a rating.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static Color BorderColor { get; } = Colors.Grey;
+	public static Color RatingShapeOutlineColor { get; } = Colors.Grey;
 
 	/// <summary>Default rating shape.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]

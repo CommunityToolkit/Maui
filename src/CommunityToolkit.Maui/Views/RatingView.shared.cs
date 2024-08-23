@@ -8,35 +8,38 @@ namespace CommunityToolkit.Maui.Views;
 /// <summary>Rating view control.</summary>
 public class RatingView : TemplatedView
 {
-	/// <summary>The backing store for the <see cref="BorderColor" /> bindable property.</summary>
-	public static readonly BindableProperty BorderColorProperty = BindableProperty.Create(nameof(BorderColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.BorderColor, propertyChanged: OnBindablePropertyChanged);
+	/// <summary>The backing store for the <see cref="RatingBorder" /> bindable property.</summary>
+	public static readonly BindableProperty RatingBorderProperty = BindableProperty.Create(nameof(RatingBorder), typeof(Border), typeof(RatingView), propertyChanged: OnRatingBorderChanged, defaultValueCreator: (_) => new Border());
 
-	/// <summary>The backing store for the <see cref="BorderThickness" /> bindable property.</summary>
-	public static readonly BindableProperty BorderThicknessProperty = BindableProperty.Create(nameof(BorderThickness), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.BorderThickness, propertyChanged: OnBindablePropertyChanged);
+	/// <summary>The backing store for the <see cref="RatingShapeOutlineColor" /> bindable property.</summary>
+	public static readonly BindableProperty RatingShapeOutlineColorProperty = BindableProperty.Create(nameof(RatingShapeOutlineColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.RatingShapeOutlineColor, propertyChanged: OnShapeOutlineColorChanged);
+
+	/// <summary>The backing store for the <see cref="RatingShapeOutlineThickness" /> bindable property.</summary>
+	public static readonly BindableProperty RatingShapeOutlineThicknessProperty = BindableProperty.Create(nameof(RatingShapeOutlineThickness), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.RatingShapeOutlineThickness, propertyChanged: OnShapeOutlineThicknessChanged);
 
 	/// <summary>The backing store for the <see cref="CurrentRating" /> bindable property.</summary>
-	public static readonly BindableProperty CurrentRatingProperty = BindableProperty.Create(nameof(CurrentRating), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.CurrentRating, propertyChanged: OnBindablePropertyChanged);
+	public static readonly BindableProperty CurrentRatingProperty = BindableProperty.Create(nameof(CurrentRating), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.CurrentRating, propertyChanged: OnUpdateRatingDraw);
 
 	/// <summary>The backing store for the <see cref="CustomShape" /> bindable property.</summary>
 	public readonly BindableProperty CustomShapeProperty = BindableProperty.Create(nameof(CustomShape), typeof(string), typeof(RatingView), defaultValue: null);
 
 	/// <summary>The backing store for the <see cref="EmptyBackgroundColor" /> bindable property.</summary>
-	public static readonly BindableProperty EmptyBackgroundColorProperty = BindableProperty.Create(nameof(EmptyBackgroundColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.EmptyBackgroundColor, propertyChanged: OnBindablePropertyChanged);
+	public static readonly BindableProperty EmptyBackgroundColorProperty = BindableProperty.Create(nameof(EmptyBackgroundColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.EmptyBackgroundColor, propertyChanged: OnUpdateRatingDraw);
 
 	/// <summary>The backing store for the <see cref="FilledBackgroundColor" /> bindable property.</summary>
-	public static readonly BindableProperty FilledBackgroundColorProperty = BindableProperty.Create(nameof(FilledBackgroundColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.FilledBackgroundColor, propertyChanged: OnBindablePropertyChanged);
+	public static readonly BindableProperty FilledBackgroundColorProperty = BindableProperty.Create(nameof(FilledBackgroundColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.FilledBackgroundColor, propertyChanged: OnUpdateRatingDraw);
 
 	/// <summary>The backing store for the <see cref="IsEnabled" /> bindable property.</summary>
 	public static new readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(RatingView), defaultValue: RatingViewDefaults.IsEnabled, propertyChanged: OnIsEnabledChanged);
 
 	/// <summary>The backing store for the <see cref="MaximumRating" /> bindable property.</summary>
-	public static readonly BindableProperty MaximumRatingProperty = BindableProperty.Create(nameof(MaximumRating), typeof(byte), typeof(RatingView), defaultValue: RatingViewDefaults.MaximumRating, validateValue: maximumRatingValidator, propertyChanged: OnBindablePropertyChanged);
+	public static readonly BindableProperty MaximumRatingProperty = BindableProperty.Create(nameof(MaximumRating), typeof(byte), typeof(RatingView), defaultValue: RatingViewDefaults.MaximumRating, validateValue: maximumRatingValidator, propertyChanged: OnMaximumRatingChange);
 
 	/// <summary>The backing store for the <see cref="Size" /> bindable property.</summary>
-	public static readonly BindableProperty SizeProperty = BindableProperty.Create(nameof(Size), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.Size, propertyChanged: OnBindablePropertyChanged);
+	public static readonly BindableProperty SizeProperty = BindableProperty.Create(nameof(Size), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.Size, propertyChanged: OnSizeChanged);
 
 	/// <summary>The backing store for the <see cref="Spacing" /> bindable property.</summary>
-	public static readonly BindableProperty SpacingProperty = BindableProperty.Create(nameof(Spacing), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.Spacing, propertyChanged: OnBindablePropertyChanged);
+	public static readonly BindableProperty SpacingProperty = BindableProperty.Create(nameof(Spacing), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.Spacing, propertyChanged: OnSpacingChanged);
 
 	/// <summary>The backing store for the <see cref="Shape" /> bindable property.</summary>
 	public readonly BindableProperty ShapeProperty = BindableProperty.Create(nameof(Shape), typeof(RatingViewShape), typeof(RatingView), defaultValue: RatingViewShape.Star, propertyChanged: OnShapePropertyChanged);
@@ -53,27 +56,32 @@ public class RatingView : TemplatedView
 		AddChildrenToControl();
 	}
 
-	/// <summary>
-	/// Occurs when <see cref="OnShapeTapped"/> and the rating is changed.
-	/// </summary>
+	/// <summary>Occurs when <see cref="OnShapeTapped"/> and the rating is changed.</summary>
 	public static event EventHandler RatingChanged
 	{
 		add => weakEventManager.AddEventHandler(value);
 		remove => weakEventManager.RemoveEventHandler(value);
 	}
 
-	/// <summary>Gets or sets a value of the control border color property.</summary>
-	public Color BorderColor
+	/// <summary>Gets or sets the rating border property.</summary>
+	public Border RatingBorder
 	{
-		get => (Color)GetValue(BorderColorProperty);
-		set => SetValue(BorderColorProperty, value);
+		get => (Border)GetValue(RatingBorderProperty);
+		set => SetValue(RatingBorderProperty, value);
 	}
 
-	///<summary>Defines the thickness of the shape's stroke(border).</summary>
-	public double BorderThickness
+	/// <summary>Gets or sets a value of the rating outline border color property.</summary>
+	public Color RatingShapeOutlineColor
 	{
-		get => (double)GetValue(BorderThicknessProperty);
-		set => SetValue(BorderThicknessProperty, value);
+		get => (Color)GetValue(RatingShapeOutlineColorProperty);
+		set => SetValue(RatingShapeOutlineColorProperty, value);
+	}
+
+	///<summary>Gets or sets a value of the rating outline border thickness property.</summary>
+	public double RatingShapeOutlineThickness
+	{
+		get => (double)GetValue(RatingShapeOutlineThicknessProperty);
+		set => SetValue(RatingShapeOutlineThicknessProperty, value);
 	}
 
 	///<summary>The control to be displayed</summary>
@@ -93,14 +101,14 @@ public class RatingView : TemplatedView
 		set => SetValue(CustomShapeProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the control empty background property.</summary>
+	/// <summary>Gets or sets a value of the empty rating background property.</summary>
 	public Color EmptyBackgroundColor
 	{
 		get => (Color)GetValue(EmptyBackgroundColorProperty);
 		set => SetValue(EmptyBackgroundColorProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the control filled background property.</summary>
+	/// <summary>Gets or sets a value of the filled rating background property.</summary>
 	public Color FilledBackgroundColor
 	{
 		get => (Color)GetValue(FilledBackgroundColorProperty);
@@ -169,22 +177,109 @@ public class RatingView : TemplatedView
 		return (byte)value <= RatingViewDefaults.MaximumRatings;
 	}
 
-	static void OnBindablePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	static void OnRatingBorderChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		((RatingView)bindable).ReDraw();
+		// TODO: Need to add the Border to the child controls of the grid, so as to allow true styling (such as TripAdvisor ratings)!
+	}
+
+	static void OnSpacingChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		RatingView ratingView = (RatingView)bindable;
+		if (ratingView.Control is Grid grid)
+		{
+			grid.ColumnSpacing = (double)newValue;
+		}
+	}
+
+	static void OnSizeChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		RatingView ratingView = (RatingView)bindable;
+		if (ratingView.Control is Grid grid)
+		{
+			double newSize = (double)newValue;
+			for (int column = 0; column < grid.Count; column++)
+			{
+				grid.ColumnDefinitions[column] = new ColumnDefinition { Width = newSize };
+				Microsoft.Maui.Controls.Shapes.Path rating = (Microsoft.Maui.Controls.Shapes.Path)grid.Children[column];
+				rating.WidthRequest = newSize;
+				rating.HeightRequest = newSize;
+				ratingView.shapes[column].WidthRequest = newSize;
+				ratingView.shapes[column].HeightRequest = newSize;
+			}
+		}
+	}
+
+	static void OnShapeOutlineColorChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		RatingView ratingView = (RatingView)bindable;
+		if (ratingView.Control is Grid grid)
+		{
+			Color newColor = (Color)newValue;
+			for (int column = 0; column < grid.Count; column++)
+			{
+				Microsoft.Maui.Controls.Shapes.Path rating = (Microsoft.Maui.Controls.Shapes.Path)grid.Children[column];
+				rating.Stroke = newColor;
+				ratingView.shapes[column].Stroke = newColor;
+			}
+		}
+	}
+
+	static void OnShapeOutlineThicknessChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		RatingView ratingView = (RatingView)bindable;
+		if (ratingView.Control is Grid grid)
+		{
+			double newThickness = (double)newValue;
+			for (int column = 0; column < grid.Count; column++)
+			{
+				Microsoft.Maui.Controls.Shapes.Path rating = (Microsoft.Maui.Controls.Shapes.Path)grid.Children[column];
+				rating.StrokeThickness = newThickness;
+				ratingView.shapes[column].StrokeThickness = newThickness;
+			}
+		}
 	}
 
 	static void OnIsEnabledChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		RatingView ratingView = (RatingView)bindable;
+		ratingView.OnPropertyChanged(nameof(ratingView.IsEnabled));
 		ratingView.HandleIsEnabledChanged();
-		ratingView.ReDraw();
 	}
 
+	/// <summary>Shape property changed.</summary>
+	/// <param name="bindable">RatingView object.</param>
+	/// <param name="oldValue">Old shape value.</param>
+	/// <param name="newValue">New shape value.</param>
 	static void OnShapePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		RatingView ratingView = (RatingView)bindable;
 		ratingView.ReDraw();
+	}
+
+	/// <summary>Maximum rating has changed.</summary>
+	/// <remarks>
+	///		Re draw the control.
+	///		If the current rating is greater than the maximum, then change the current rating to the new value.
+	/// </remarks>
+	/// <param name="bindable">RatingView object.</param>
+	/// <param name="oldValue">Old maximum rating value.</param>
+	/// <param name="newValue">New maximum rating value.</param>
+	static void OnMaximumRatingChange(BindableObject bindable, object oldValue, object newValue)
+	{
+		RatingView ratingView = (RatingView)bindable;
+		if ((byte)newValue < ratingView.CurrentRating)
+		{
+			ratingView.CurrentRating = (byte)newValue;
+			weakEventManager.HandleEvent(ratingView, EventArgs.Empty, nameof(RatingChanged));
+		}
+
+		ratingView.ReDraw();
+	}
+
+	static void OnUpdateRatingDraw(BindableObject bindable, object oldValue, object newValue)
+	{
+		RatingView ratingView = (RatingView)bindable;
+		ratingView.UpdateRatingDraw();
 	}
 
 	/// <summary>Add the required children to the control.</summary>
@@ -206,11 +301,11 @@ public class RatingView : TemplatedView
 			Microsoft.Maui.Controls.Shapes.Path image = new()
 			{
 				Data = (Geometry?)new PathGeometryConverter().ConvertFromInvariantString(shape),
-				Fill = i <= CurrentRating ? (Brush)FilledBackgroundColor : (Brush)EmptyBackgroundColor,
-				Stroke = BorderColor,
+				Fill = i <= CurrentRating ? FilledBackgroundColor : EmptyBackgroundColor,
+				Stroke = RatingShapeOutlineColor,
 				StrokeLineJoin = PenLineJoin.Round,
 				StrokeLineCap = PenLineCap.Round,
-				StrokeThickness = BorderThickness,
+				StrokeThickness = RatingShapeOutlineThickness,
 				Aspect = Stretch.Uniform,
 				HeightRequest = Size,
 				WidthRequest = Size
@@ -231,10 +326,18 @@ public class RatingView : TemplatedView
 		UpdateRatingDraw();
 	}
 
-	// Ensure VisualElement.IsEnabled always matches RatingView.IsEnabled
+	/// <summary>Ensure VisualElement.IsEnabled always matches RatingView.IsEnabled, and remove any gesture recognisers added</summary>
 	void HandleIsEnabledChanged()
 	{
 		base.IsEnabled = IsEnabled;
+		if (!IsEnabled)
+		{
+			for (int i = 0; i < Control?.Children.Count; i++)
+			{
+				Microsoft.Maui.Controls.Shapes.Path rankControl = (Microsoft.Maui.Controls.Shapes.Path)Control.Children[i];
+				rankControl?.GestureRecognizers.Clear();
+			}
+		}
 	}
 
 	/// <summary>Initialise the control.</summary>
@@ -246,8 +349,6 @@ public class RatingView : TemplatedView
 		{
 			Control.ColumnSpacing = Spacing;
 		}
-
-		AddChildrenToControl();
 	}
 
 	/// <summary>Shape tapped event.</summary>
@@ -274,7 +375,8 @@ public class RatingView : TemplatedView
 
 		if (!originalRating.Equals(CurrentRating))
 		{
-			weakEventManager.HandleEvent(this, CurrentRating, nameof(RatingChanged));
+			UpdateRatingDraw();
+			weakEventManager.HandleEvent(this, e, nameof(RatingChanged));
 		}
 	}
 
@@ -285,30 +387,25 @@ public class RatingView : TemplatedView
 		Control?.ColumnDefinitions.Clear();
 		shapes = new Microsoft.Maui.Controls.Shapes.Path[MaximumRating];
 		AddChildrenToControl();
-		UpdateRatingDraw();
 	}
 
-	/// <summary>Update the drawing of the control.</summary>
+	/// <summary>Update the drawing of the controls ratings.</summary>
 	void UpdateRatingDraw()
 	{
 		for (int i = 0; i < MaximumRating; i++)
 		{
 			Microsoft.Maui.Controls.Shapes.Path image = shapes[i];
-			//image.HeightRequest = Size;
-			//image.WidthRequest = Size;
-			//image.StrokeLineJoin = PenLineJoin.Round;
-			//image.StrokeThickness = BorderThickness;
 			if (CurrentRating >= i + 1)
 			{
-				image.Stroke = FilledBackgroundColor;
+				image.Stroke = RatingShapeOutlineColor;
+				image.Fill = FilledBackgroundColor;
 				continue;
 			}
 
 			if (CurrentRating % 1 is 0)
 			{
 				image.Fill = EmptyBackgroundColor;
-				image.Stroke = BorderColor;
-				//image.StrokeLineCap = PenLineCap.Round;
+				image.Stroke = RatingShapeOutlineColor;
 				continue;
 			}
 
@@ -321,9 +418,7 @@ public class RatingView : TemplatedView
 			];
 
 			element.Fill = new LinearGradientBrush(colors, new Point(0, 0), new Point(1, 0));
-			//element.StrokeThickness = BorderThickness;
-			//element.StrokeLineJoin = PenLineJoin.Round;
-			element.Stroke = BorderColor;
+			element.Stroke = RatingShapeOutlineColor;
 		}
 	}
 }
