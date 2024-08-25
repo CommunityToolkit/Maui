@@ -722,7 +722,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	{
 		if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
 		{
-			Logger.LogError("{LocalBroadcastManager} not supported on Android 13 and above.", typeof(LocalBroadcastManager));
 			return;
 		}
 		Intent intent = new(MediaControlsService.ACTION_UPDATE_UI);

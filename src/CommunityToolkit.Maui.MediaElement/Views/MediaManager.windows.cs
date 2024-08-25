@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
@@ -373,7 +374,7 @@ partial class MediaManager : IDisposable
 		}
 	}
 
-	void UpdateMetadata()
+	async ValueTask UpdateMetadata()
 	{
 		if (systemMediaControls is null || Player is null)
 		{
@@ -382,10 +383,29 @@ partial class MediaManager : IDisposable
 
 		metadata ??= new(systemMediaControls, MediaElement, Dispatcher);
 		metadata.SetMetadata(MediaElement);
-		Dispatcher.Dispatch(() => Player.PosterSource = new BitmapImage(new Uri(MediaElement.MetadataArtworkUrl)));
+
+		if (!Uri.TryCreate(MediaElement.MetadataArtworkUrl, UriKind.RelativeOrAbsolute, out var metadataArtworkUri))
+		{
+			Trace.WriteLine($"{nameof(MediaElement)} unable to update artwork because {nameof(MediaElement.MetadataArtworkUrl)} is not a valid URI");
+			return;
+		}
+
+		if (Dispatcher.IsDispatchRequired)
+		{
+			await Dispatcher.DispatchAsync(() => UpdatePosterSource(Player, metadataArtworkUri));
+		}
+		else
+		{
+			UpdatePosterSource(Player, metadataArtworkUri);
+		}
+
+		static void UpdatePosterSource(in MediaPlayerElement player, in Uri metadataArtworkUri)
+		{
+			player.PosterSource = new BitmapImage(metadataArtworkUri);
+		}
 	}
 
-	void OnMediaElementMediaOpened(WindowsMediaElement sender, object args)
+	async void OnMediaElementMediaOpened(WindowsMediaElement sender, object args)
 	{
 		if (Player is null)
 		{
@@ -403,7 +423,7 @@ partial class MediaManager : IDisposable
 
 		MediaElement.MediaOpened();
 
-		UpdateMetadata();
+		await UpdateMetadata();
 
 		static void SetDuration(in IMediaElement mediaElement, in MediaPlayerElement mediaPlayerElement)
 		{
