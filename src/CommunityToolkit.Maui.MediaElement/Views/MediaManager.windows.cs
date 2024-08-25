@@ -354,7 +354,10 @@ partial class MediaManager : IDisposable
 
 		metadata ??= new(systemMediaControls, MediaElement, Dispatcher);
 		metadata.SetMetadata(MediaElement);
-
+		if(string.IsNullOrEmpty(MediaElement.MetadataArtworkUrl))
+		{
+			return;
+		}
 		if (!Uri.TryCreate(MediaElement.MetadataArtworkUrl, UriKind.RelativeOrAbsolute, out var metadataArtworkUri))
 		{
 			Trace.WriteLine($"{nameof(MediaElement)} unable to update artwork because {nameof(MediaElement.MetadataArtworkUrl)} is not a valid URI");
