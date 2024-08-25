@@ -12,12 +12,12 @@ public abstract class IsInRangeConverter<TValue, TReturnObject> : BaseConverterO
 	/// Bindable property for <see cref="FalseObject"/>
 	/// </summary>
 	public static readonly BindableProperty FalseObjectProperty = BindableProperty.Create(nameof(FalseObject), typeof(TReturnObject?), typeof(IsInRangeConverter<TValue, TReturnObject>));
-	
+
 	/// <summary>
 	/// Bindable property for <see cref="MaxValue"/>
 	/// </summary>
 	public static readonly BindableProperty MaxValueProperty = BindableProperty.Create(nameof(MaxValue), typeof(TValue), typeof(IsInRangeConverter<TValue, TReturnObject>));
-	
+
 	/// <summary>
 	/// Bindable property for <see cref="MinValue"/>
 	/// </summary>
@@ -27,7 +27,7 @@ public abstract class IsInRangeConverter<TValue, TReturnObject> : BaseConverterO
 	/// Bindable property for <see cref="TrueObject"/>
 	/// </summary>
 	public static readonly BindableProperty TrueObjectProperty = BindableProperty.Create(nameof(TrueObject), typeof(TReturnObject?), typeof(IsInRangeConverter<TValue, TReturnObject>));
-	
+
 	/// <inheritdoc/>
 	public override object DefaultConvertReturnValue { get; set; } = new();
 
