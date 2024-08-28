@@ -217,11 +217,15 @@ class MediaControlsService : Service
 		notification?.AddAction(actionNext);
 	}
 
+	public override void OnDestroy()
+	{
+		Platform.CurrentActivity?.StopService(new Intent(Platform.AppContext, typeof(MediaControlsService)));
+		base.OnDestroy();
+	}
 	static void BroadcastUpdate(string receiver, string action)
 	{
 		if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
 		{
-			System.Diagnostics.Trace.WriteLine($"{LocalBroadcastManager.GetInstance} not supported on Android 13 and above.");
 			return;
 		}
 		var intent = new Intent(receiver);
