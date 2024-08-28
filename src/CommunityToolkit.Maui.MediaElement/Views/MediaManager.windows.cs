@@ -354,7 +354,7 @@ partial class MediaManager : IDisposable
 
 		metadata ??= new(systemMediaControls, MediaElement, Dispatcher);
 		metadata.SetMetadata(MediaElement);
-		if(string.IsNullOrEmpty(MediaElement.MetadataArtworkUrl))
+		if (string.IsNullOrEmpty(MediaElement.MetadataArtworkUrl))
 		{
 			return;
 		}
