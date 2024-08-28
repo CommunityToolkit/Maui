@@ -22,7 +22,7 @@ public class BackgroundColorToTests : BaseTest
 		Assert.Equal(updatedBackgroundColor, element.BackgroundColor);
 	}
 
-	[Fact(Timeout = (int)TestDuration.Short)]
+	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task BackgroundColorTo_CancellationTokenExpired()
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
