@@ -22,9 +22,12 @@ public partial class PopupHandler : ElementHandler<IPopup, MauiPopup>
 	{
 		var popup = handler.PlatformView;
 
-		if (popup.IsShowing)
+		if (!popup.Context.GetActivity().IsDestroyed())
 		{
-			popup.Dismiss();
+			if (popup.IsShowing)
+			{
+				popup.Dismiss();
+			}
 		}
 
 		view.HandlerCompleteTCS.TrySetResult();
