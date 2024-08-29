@@ -86,7 +86,7 @@
             <Label Text="Red" />
             <Slider
                 Margin="20,0"
-                Maximum="255"
+                Maximum="1"
                 MaximumTrackColor="Red"
                 Minimum="0"
                 MinimumTrackColor="Red"
@@ -96,7 +96,7 @@
             <Label Text="Green" />
             <Slider
                 Margin="20,0"
-                Maximum="255"
+                Maximum="1"
                 MaximumTrackColor="Green"
                 Minimum="0"
                 MinimumTrackColor="Green"
@@ -106,7 +106,7 @@
             <Label Text="Blue" />
             <Slider
                 Margin="20,0"
-                Maximum="255"
+                Maximum="1"
                 MaximumTrackColor="Blue"
                 Minimum="0"
                 MinimumTrackColor="Blue"
