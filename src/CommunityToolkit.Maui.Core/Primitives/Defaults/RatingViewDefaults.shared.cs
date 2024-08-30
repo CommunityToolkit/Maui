@@ -1,7 +1,6 @@
 ﻿// Ignore Spelling: color
 
 using System.ComponentModel;
-using CommunityToolkit.Maui.Core.Primitives;
 
 namespace CommunityToolkit.Maui.Core;
 
@@ -25,21 +24,17 @@ public static class RatingViewDefaults
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const byte MaximumRatings = 25;
 
-	/// <summary>Default border thickness for a rating.</summary>
+	/// <summary>Default border thickness for a rating shape.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const double RatingShapeOutlineThickness = 1.0;
+	public const double ShapeBorderThickness = 1.0;
 
-	/// <summary>Default size of a rating.</summary>
+	/// <summary>Default size of a rating item shape.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const double Size = 20.0;
+	public const double ItemShapeSize = 20.0;
 
 	/// <summary>Default spacing between ratings.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const double Spacing = 10.0;
-
-	/// <summary>Default shape padding.</summary>
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static Thickness ShapePadding { get; } = new(0);
 
 	/// <summary>Default background color for an empty rating.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -49,11 +44,15 @@ public static class RatingViewDefaults
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static Color FilledBackgroundColor { get; } = Colors.Yellow;
 
-	/// <summary>Default border color for a rating.</summary>
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static Color RatingShapeOutlineColor { get; } = Colors.Grey;
-
 	/// <summary>Default rating shape.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static RatingViewShape Shape { get; } = RatingViewShape.Star;
+
+	/// <summary>Default border color for a rating shape.</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public static Color ShapeBorderColor { get; } = Colors.Grey;
+
+	/// <summary>Default rating item padding.</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public static Thickness ItemPadding { get; } = new(0);
 }

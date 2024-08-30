@@ -35,7 +35,7 @@ public partial class RatingViewXamlPage : BasePage<RatingViewXamlViewModel>
 				ColorPickerFilledBackgroundTarget.FilledBackgroundColor = color;
 				break;
 			case "ColorPickerRatingShapeBorderColor":
-				ColorPickerRatingShapeBorderColorTarget.RatingShapeOutlineColor = color;
+				ColorPickerRatingShapeBorderColorTarget.ShapeBorderColor = color;
 				break;
 			default:
 				break;

@@ -11,15 +11,20 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 	/// <summary>Bindable property for <see cref="CustomShape"/> bindable property.</summary>
 	public static readonly BindableProperty CustomShapeProperty = RatingViewItemElement.CustomShapeProperty;
 
+	// TODO: Add BindableProperty to allow the developer to define and style the Item Border, then adjust the control creation accordingly.
+
+	// TODO: Move to RatingViewItemElement
 	/// <summary>The backing store for the <see cref="EmptyBackgroundColor" /> bindable property.</summary>
 	public static readonly BindableProperty EmptyBackgroundColorProperty = BindableProperty.Create(nameof(EmptyBackgroundColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.EmptyBackgroundColor, propertyChanged: OnUpdateRatingDraw);
 
+	// TODO: Move to RatingViewItemElement
 	/// <summary>The backing store for the <see cref="FilledBackgroundColor" /> bindable property.</summary>
 	public static readonly BindableProperty FilledBackgroundColorProperty = BindableProperty.Create(nameof(FilledBackgroundColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.FilledBackgroundColor, propertyChanged: OnUpdateRatingDraw);
 
 	/// <summary>The backing store for the <see cref="IsEnabled" /> bindable property.</summary>
 	public new static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(RatingView), defaultValue: RatingViewDefaults.IsEnabled, propertyChanged: OnIsEnabledChanged);
 
+	// TODO: Add some kind of Roslyn Analizer to validate at design/build time that the maximumrating is in bounds (1-25).
 	/// <summary>The backing store for the <see cref="MaximumRating" /> bindable property.</summary>
 	public static readonly BindableProperty MaximumRatingProperty = BindableProperty.Create(nameof(MaximumRating), typeof(byte), typeof(RatingView), defaultValue: RatingViewDefaults.MaximumRating, validateValue: maximumRatingValidator, propertyChanged: OnMaximumRatingChange);
 
@@ -29,17 +34,17 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 	/// <summary>The backing store for the <see cref="Rating" /> bindable property.</summary>
 	public static readonly BindableProperty RatingProperty = BindableProperty.Create(nameof(Rating), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.DefaultRating, propertyChanged: OnUpdateRatingDraw);
 
-	/// <summary>The backing store for the <see cref="RatingShapeOutlineColor" /> bindable property.</summary>
-	public static readonly BindableProperty RatingShapeOutlineColorProperty = BindableProperty.Create(nameof(RatingShapeOutlineColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.RatingShapeOutlineColor, propertyChanged: OnShapeOutlineColorChanged);
+	/// <summary>The backing store for the <see cref="ShapeBorderColor" /> bindable property.</summary>
+	public static readonly BindableProperty ShapeBorderColorProperty = RatingViewItemElement.ShapeBorderColorProperty;
 
-	/// <summary>The backing store for the <see cref="RatingShapeOutlineThickness" /> bindable property.</summary>
-	public static readonly BindableProperty RatingShapeOutlineThicknessProperty = BindableProperty.Create(nameof(RatingShapeOutlineThickness), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.RatingShapeOutlineThickness, propertyChanged: OnShapeOutlineThicknessChanged);
+	/// <summary>The backing store for the <see cref="ShapeBorderThickness" /> bindable property.</summary>
+	public static readonly BindableProperty ShapeBorderThicknessProperty = RatingViewItemElement.ShapeBorderThicknessProperty;
 
-	/// <summary>Bindable property for <see cref="ShapePadding"/> bindable property.</summary>
-	public static readonly BindableProperty ShapePaddingProperty = RatingViewItemElement.ShapePaddingProperty;
+	/// <summary>Bindable property for <see cref="ItemPadding"/> bindable property.</summary>
+	public static readonly BindableProperty ShapePaddingProperty = RatingViewItemElement.ItemPaddingProperty;
 
-	/// <summary>The backing store for the <see cref="Size" /> bindable property.</summary>
-	public static readonly BindableProperty SizeProperty = BindableProperty.Create(nameof(Size), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.Size, propertyChanged: OnSizeChanged);
+	/// <summary>The backing store for the <see cref="ItemShapeSize" /> bindable property.</summary>
+	public static readonly BindableProperty SizeProperty = RatingViewItemElement.SizeProperty;
 
 	/// <summary>The backing store for the <see cref="Spacing" /> bindable property.</summary>
 	public static readonly BindableProperty SpacingProperty = BindableProperty.Create(nameof(Spacing), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.Spacing, propertyChanged: OnSpacingChanged);
@@ -55,7 +60,6 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 	{
 		ControlTemplate = new ControlTemplate(typeof(HorizontalStackLayout));
 		shapes = new Microsoft.Maui.Controls.Shapes.Path[MaximumRating];
-		HorizontalOptions = new LayoutOptions(LayoutAlignment.Center, true);
 		AddChildrenToControl();
 	}
 
@@ -97,6 +101,20 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 		set => SetValue(IsEnabledProperty, value);
 	}
 
+	/// <summary>Defines the shape padding thickness.</summary>
+	public Thickness ItemPadding
+	{
+		get => (Thickness)GetValue(ShapePaddingProperty);
+		set => SetValue(ShapePaddingProperty, value);
+	}
+
+	/// <summary>Defines the item shape size.</summary>
+	public double ItemShapeSize
+	{
+		get => (double)GetValue(SizeProperty);
+		set => SetValue(SizeProperty, value);
+	}
+
 	/// <summary>Gets or sets a value of the control maximum rating property.</summary>
 	public byte MaximumRating
 	{
@@ -126,20 +144,6 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 		set => SetValue(RatingFillProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the rating outline border color property.</summary>
-	public Color RatingShapeOutlineColor
-	{
-		get => (Color)GetValue(RatingShapeOutlineColorProperty);
-		set => SetValue(RatingShapeOutlineColorProperty, value);
-	}
-
-	///<summary>Gets or sets a value of the rating outline border thickness property.</summary>
-	public double RatingShapeOutlineThickness
-	{
-		get => (double)GetValue(RatingShapeOutlineThicknessProperty);
-		set => SetValue(RatingShapeOutlineThicknessProperty, value);
-	}
-
 	///<summary>Defines the shape to be drawn.</summary>
 	public RatingViewShape Shape
 	{
@@ -147,18 +151,18 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 		set => SetValue(ShapeProperty, value);
 	}
 
-	/// <summary>Defines the shape padding thickness.</summary>
-	public Thickness ShapePadding
+	/// <summary>Defines the shape border color.</summary>
+	public Color ShapeBorderColor
 	{
-		get => (Thickness)GetValue(ShapePaddingProperty);
-		set => SetValue(ShapePaddingProperty, value);
+		get => (Color)GetValue(ShapeBorderColorProperty);
+		set => SetValue(ShapeBorderColorProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the control size for the drawn shape property.</summary>
-	public double Size
+	///<summary>Defines the shape border thickness.</summary>
+	public double ShapeBorderThickness
 	{
-		get => (double)GetValue(SizeProperty);
-		set => SetValue(SizeProperty, value);
+		get => (double)GetValue(ShapeBorderThicknessProperty);
+		set => SetValue(ShapeBorderThicknessProperty, value);
 	}
 
 	///<summary>Defines the space between the drawn shapes.</summary>
@@ -166,6 +170,26 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 	{
 		get => (double)GetValue(SpacingProperty);
 		set => SetValue(SpacingProperty, value);
+	}
+
+	Thickness IRatingViewShape.ItemPaddingDefaultValueCreator()
+	{
+		return RatingViewDefaults.ItemPadding;
+	}
+
+	Color IRatingViewShape.ItemShapeBorderColorDefaultValueCreator()
+	{
+		return RatingViewDefaults.ShapeBorderColor;
+	}
+
+	double IRatingViewShape.ItemShapeBorderThicknessDefaultValueCreator()
+	{
+		return RatingViewDefaults.ShapeBorderThickness;
+	}
+
+	double IRatingViewShape.ItemShapeSizeDefaultValueCreator()
+	{
+		return RatingViewDefaults.ItemShapeSize;
 	}
 
 	/// <summary>Change the rating shape to a custom shape.</summary>
@@ -179,13 +203,13 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 			return;
 		}
 
-		if ((this).Shape is RatingViewShape.Custom)
+		if (this.Shape is RatingViewShape.Custom)
 		{
 			ClearAndReDraw();
 		}
 	}
 
-	void IRatingViewShape.OnShapePaddingPropertyChanged(Thickness oldValue, Thickness newValue)
+	void IRatingViewShape.OnItemPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
 	{
 		if (Control is null)
 		{
@@ -199,7 +223,38 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 		}
 	}
 
-	void IRatingViewShape.OnShapePropertyChanged(RatingViewShape oldValue, RatingViewShape newValue)
+	void IRatingViewShape.OnItemShapeBorderColorChanged(Color oldValue, Color newValue)
+	{
+		if (newValue is null)
+		{
+			return;
+		}
+
+		if (Control is HorizontalStackLayout stack)
+		{
+			for (int column = 0; column < stack.Count; column++)
+			{
+				Microsoft.Maui.Controls.Shapes.Path rating = (Microsoft.Maui.Controls.Shapes.Path)((Border)stack.Children[column]).Content!.GetVisualTreeDescendants()[0];
+				rating.Stroke = newValue;
+				shapes[column].Stroke = newValue;
+			}
+		}
+	}
+
+	void IRatingViewShape.OnItemShapeBorderThicknessChanged(double oldValue, double newValue)
+	{
+		if (Control is HorizontalStackLayout stack)
+		{
+			for (int column = 0; column < stack.Count; column++)
+			{
+				Microsoft.Maui.Controls.Shapes.Path rating = (Microsoft.Maui.Controls.Shapes.Path)((Border)stack.Children[column]).Content!.GetVisualTreeDescendants()[0];
+				rating.StrokeThickness = newValue;
+				shapes[column].StrokeThickness = newValue;
+			}
+		}
+	}
+
+	void IRatingViewShape.OnItemShapePropertyChanged(RatingViewShape oldValue, RatingViewShape newValue)
 	{
 		if (Control is null)
 		{
@@ -209,14 +264,25 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 		ClearAndReDraw();
 	}
 
+	void IRatingViewShape.OnItemShapeSizeChanged(double oldValue, double newValue)
+	{
+		if (Control is HorizontalStackLayout stack)
+		{
+			for (int column = 0; column < stack.Count; column++)
+			{
+				Microsoft.Maui.Controls.Shapes.Path rating = (Microsoft.Maui.Controls.Shapes.Path)((Border)stack.Children[column]).Content!.GetVisualTreeDescendants()[0];
+				rating.WidthRequest = newValue;
+				rating.HeightRequest = newValue;
+				rating.Margin = ItemPadding;
+				shapes[column].WidthRequest = newValue;
+				shapes[column].HeightRequest = newValue;
+			}
+		}
+	}
+
 	RatingViewShape IRatingViewShape.ShapeDefaultValueCreator()
 	{
 		return RatingViewDefaults.Shape;
-	}
-
-	Thickness IRatingViewShape.ShapePaddingDefaultValueCreator()
-	{
-		return RatingViewDefaults.ShapePadding;
 	}
 
 	///<summary>Method called every time the control's Binding Context is changed.</summary>
@@ -282,69 +348,6 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 		}
 	}
 
-	static void OnShapeOutlineColorChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		if (newValue is null)
-		{
-			return;
-		}
-
-		RatingView ratingView = (RatingView)bindable;
-		if (ratingView.Control is HorizontalStackLayout stack)
-		{
-			Color newColor = (Color)newValue;
-			for (int column = 0; column < stack.Count; column++)
-			{
-				Microsoft.Maui.Controls.Shapes.Path rating = (Microsoft.Maui.Controls.Shapes.Path)((Border)stack.Children[column]).Content!.GetVisualTreeDescendants()[0];
-				rating.Stroke = newColor;
-				ratingView.shapes[column].Stroke = newColor;
-			}
-		}
-	}
-
-	static void OnShapeOutlineThicknessChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		if (newValue is null)
-		{
-			return;
-		}
-
-		RatingView ratingView = (RatingView)bindable;
-		if (ratingView.Control is HorizontalStackLayout stack)
-		{
-			double newThickness = (double)newValue;
-			for (int column = 0; column < stack.Count; column++)
-			{
-				Microsoft.Maui.Controls.Shapes.Path rating = (Microsoft.Maui.Controls.Shapes.Path)((Border)stack.Children[column]).Content!.GetVisualTreeDescendants()[0];
-				rating.StrokeThickness = newThickness;
-				ratingView.shapes[column].StrokeThickness = newThickness;
-			}
-		}
-	}
-
-	static void OnSizeChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		if (newValue is null)
-		{
-			return;
-		}
-
-		RatingView ratingView = (RatingView)bindable;
-		if (ratingView.Control is HorizontalStackLayout stack)
-		{
-			double newSize = (double)newValue;
-			for (int column = 0; column < stack.Count; column++)
-			{
-				Microsoft.Maui.Controls.Shapes.Path rating = (Microsoft.Maui.Controls.Shapes.Path)((Border)stack.Children[column]).Content!.GetVisualTreeDescendants()[0];
-				rating.WidthRequest = newSize;
-				rating.HeightRequest = newSize;
-				rating.Margin = ratingView.ShapePadding;
-				ratingView.shapes[column].WidthRequest = newSize;
-				ratingView.shapes[column].HeightRequest = newSize;
-			}
-		}
-	}
-
 	static void OnSpacingChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		if (newValue is null)
@@ -387,7 +390,7 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 		{
 			Border shapeBorder = new()
 			{
-				Padding = ShapePadding,
+				Padding = ItemPadding,
 				Margin = 0,
 				StrokeThickness = 0
 			};
@@ -395,13 +398,13 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 			{
 				Aspect = Stretch.Uniform,
 				Data = (Geometry?)new PathGeometryConverter().ConvertFromInvariantString(shape),
-				HeightRequest = Size,
-				Margin = ShapePadding,
-				Stroke = RatingShapeOutlineColor,
+				HeightRequest = ItemShapeSize,
+				Margin = ItemPadding,
+				Stroke = ShapeBorderColor,
 				StrokeLineCap = PenLineCap.Round,
 				StrokeLineJoin = PenLineJoin.Round,
-				StrokeThickness = RatingShapeOutlineThickness,
-				WidthRequest = Size,
+				StrokeThickness = ShapeBorderThickness,
+				WidthRequest = ItemShapeSize,
 			};
 
 			if (RatingFill is RatingFillElement.Shape)
@@ -455,7 +458,6 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 	void OnControlInitialized()
 	{
 		shapes = new Microsoft.Maui.Controls.Shapes.Path[MaximumRating];
-		HorizontalOptions = new LayoutOptions(LayoutAlignment.Center, true);
 		if (Control is not null)
 		{
 			Control.Spacing = Spacing;
@@ -496,7 +498,7 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 			Microsoft.Maui.Controls.Shapes.Path image = shapes[i];
 			if (Rating >= i + 1)
 			{
-				image.Stroke = RatingShapeOutlineColor;
+				image.Stroke = ShapeBorderColor;
 				if (RatingFill is RatingFillElement.Shape)
 				{
 					image.Fill = FilledBackgroundColor;
@@ -525,7 +527,7 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 					((Border)image.Parent).BackgroundColor = EmptyBackgroundColor;
 				}
 
-				image.Stroke = RatingShapeOutlineColor;
+				image.Stroke = ShapeBorderColor;
 				continue;
 			}
 
@@ -548,7 +550,7 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 				((Border)image.Parent).Background = new LinearGradientBrush(colors, new Point(0, 0), new Point(1, 0));
 			}
 
-			element.Stroke = RatingShapeOutlineColor;
+			element.Stroke = ShapeBorderColor;
 		}
 	}
 }
@@ -559,6 +561,6 @@ public enum RatingFillElement
 	/// <summary>Fill the rating shape.</summary>
 	Shape = 0,
 
-	/// <summary>Fill the rating cell.</summary>
-	Cell = 1
+	/// <summary>Fill the rating item.</summary>
+	Item = 1
 }

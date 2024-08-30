@@ -1,4 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Interfaces.RatingView;
+using CommunityToolkit.Maui.Core.Primitives.Defaults;
 using FluentAssertions;
 using Xunit;
 
@@ -13,14 +15,14 @@ public class RatingViewTests : BaseHandlerTest
 		var ratingView = new Maui.Views.RatingView();
 
 		// Assert
-		Assert.Equal(RatingViewDefaults.RatingShapeOutlineColor, ratingView.RatingShapeOutlineColor);
-		Assert.Equal(RatingViewDefaults.RatingShapeOutlineThickness, ratingView.RatingShapeOutlineThickness);
+		Assert.Equal(RatingViewDefaults.RatingShapeOutlineColor, ratingView.ShapeBorderColor);
+		Assert.Equal(RatingViewDefaults.RatingShapeOutlineThickness, ratingView.ShapeBorderThickness);
 		Assert.Equal(RatingViewDefaults.DefaultRating, ratingView.Rating);
 		Assert.Equal(RatingViewDefaults.EmptyBackgroundColor, ratingView.EmptyBackgroundColor);
 		Assert.Equal(RatingViewDefaults.FilledBackgroundColor, ratingView.FilledBackgroundColor);
 		Assert.Equal(RatingViewDefaults.IsEnabled, ratingView.IsEnabled);
 		Assert.Equal(RatingViewDefaults.MaximumRating, ratingView.MaximumRating);
-		Assert.Equal(RatingViewDefaults.Size, ratingView.Size);
+		Assert.Equal(RatingViewDefaults.ItemShapeSize, ratingView.ItemShapeSize);
 		Assert.Equal(RatingViewDefaults.Spacing, ratingView.Spacing);
 	}
 

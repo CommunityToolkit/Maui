@@ -1,5 +1,4 @@
-﻿// Ignore Spelling: bindable
-
+﻿// Ignore Spelling: bindable, color
 using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Views;
@@ -10,64 +9,83 @@ static class RatingViewItemElement
 	public static readonly BindableProperty CustomShapeProperty = BindableProperty.Create(nameof(IRatingViewShape.CustomShape), typeof(string), typeof(IRatingViewShape), defaultValue: null, propertyChanged: OnCustomShapePropertyChanged);
 
 	/// <summary>Bindable property for attached property <c>PaddingBottom</c>.</summary>
-	public static readonly BindableProperty ShapePaddingBottomProperty = BindableProperty.Create("PaddingBottom", typeof(double), typeof(IRatingViewShape), default(double), propertyChanged: OnShapePaddingBottomChanged);
+	public static readonly BindableProperty ItemPaddingBottomProperty = BindableProperty.Create("PaddingBottom", typeof(double), typeof(IRatingViewShape), default(double), propertyChanged: OnItemPaddingBottomChanged);
 
 	/// <summary>Bindable property for attached property <c>PaddingLeft</c>.</summary>
-	public static readonly BindableProperty ShapePaddingLeftProperty = BindableProperty.Create("PaddingLeft", typeof(double), typeof(IRatingViewShape), default(double), propertyChanged: OnShapePaddingLeftChanged);
+	public static readonly BindableProperty ItemPaddingLeftProperty = BindableProperty.Create("PaddingLeft", typeof(double), typeof(IRatingViewShape), default(double), propertyChanged: OnItemPaddingLeftChanged);
 
-	/// <summary>Bindable property for <see cref="IRatingViewShape.ShapePadding"/>.</summary>
-	public static readonly BindableProperty ShapePaddingProperty = BindableProperty.Create(nameof(IRatingViewShape.ShapePadding), typeof(Thickness), typeof(IRatingViewShape), default(Thickness), propertyChanged: OnShapePaddingPropertyChanged, defaultValueCreator: ShapePaddingDefaultValueCreator);
+	/// <summary>Bindable property for <see cref="IRatingViewShape.ItemPadding"/>.</summary>
+	public static readonly BindableProperty ItemPaddingProperty = BindableProperty.Create(nameof(IRatingViewShape.ItemPadding), typeof(Thickness), typeof(IRatingViewShape), default(Thickness), propertyChanged: OnItemPaddingPropertyChanged, defaultValueCreator: ItemPaddingDefaultValueCreator);
 
 	/// <summary>Bindable property for attached property <c>PaddingRight</c>.</summary>
-	public static readonly BindableProperty ShapePaddingRightProperty = BindableProperty.Create("PaddingRight", typeof(double), typeof(IRatingViewShape), default(double), propertyChanged: OnShapePaddingRightChanged);
+	public static readonly BindableProperty ItemPaddingRightProperty = BindableProperty.Create("PaddingRight", typeof(double), typeof(IRatingViewShape), default(double), propertyChanged: OnItemPaddingRightChanged);
 
 	/// <summary>Bindable property for attached property <c>PaddingTop</c>.</summary>
-	public static readonly BindableProperty ShapePaddingTopProperty = BindableProperty.Create("PaddingTop", typeof(double), typeof(IRatingViewShape), default(double), propertyChanged: OnShapePaddingTopChanged);
+	public static readonly BindableProperty ItemPaddingTopProperty = BindableProperty.Create("PaddingTop", typeof(double), typeof(IRatingViewShape), default(double), propertyChanged: OnItemPaddingTopChanged);
 
 	/// <summary>Bindable property for attached property <c>Shape</c>.</summary>
-	public static readonly BindableProperty ShapeProperty = BindableProperty.Create(nameof(IRatingViewShape.Shape), typeof(RatingViewShape), typeof(IRatingViewShape), defaultValue: RatingViewShape.Star, propertyChanged: OnShapePropertyChanged, defaultValueCreator: ShapeDefaultValueCreator);
+	public static readonly BindableProperty ShapeProperty = BindableProperty.Create(nameof(IRatingViewShape.Shape), typeof(RatingViewShape), typeof(IRatingViewShape), defaultValue: RatingViewShape.Star, propertyChanged: OnItemShapePropertyChanged, defaultValueCreator: ShapeDefaultValueCreator);
+
+	/// <summary>Bindable property for attached property <c>ShapeBorderColor</c>.</summary>
+	public static readonly BindableProperty ShapeBorderColorProperty = BindableProperty.Create(nameof(IRatingViewShape.ShapeBorderColor), typeof(Color), typeof(IRatingViewShape), defaultValue: RatingViewDefaults.ShapeBorderColor, propertyChanged: OnItemShapeBorderColorChanged, defaultValueCreator: ItemShapeBorderColorDefaultValueCreator);
+
+	/// <summary>Bindable property for attached property <c>ShapeBorderThickness</c>.</summary>
+	public static readonly BindableProperty ShapeBorderThicknessProperty = BindableProperty.Create(nameof(IRatingViewShape.ShapeBorderThickness), typeof(double), typeof(IRatingViewShape), defaultValue: RatingViewDefaults.ShapeBorderThickness, propertyChanged: OnItemShapeBorderThicknessChanged, defaultValueCreator: ItemShapeBorderThicknessDefaultValueCreator);
+
+	/// <summary>Bindable property for attached property <c>Size</c>.</summary>
+	public static readonly BindableProperty SizeProperty = BindableProperty.Create(nameof(IRatingViewShape.ItemShapeSize), typeof(double), typeof(IRatingViewShape), defaultValue: RatingViewDefaults.ItemShapeSize, propertyChanged: OnItemShapeSizeChanged, defaultValueCreator: ItemShapeSizeDefaultValueCreator);
+
+	static void OnItemShapeSizeChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		((IRatingViewShape)bindable).OnItemShapeSizeChanged((double)oldValue, (double)newValue);
+	}
 
 	static void OnCustomShapePropertyChanged(BindableObject bindable, object? oldValue, object? newValue)
 	{
 		((IRatingViewShape)bindable).OnCustomShapePropertyChanged((string?)oldValue, (string?)newValue);
 	}
 
-	static void OnShapePaddingBottomChanged(BindableObject bindable, object oldValue, object newValue)
+	static void OnItemPaddingBottomChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		Thickness padding = (Thickness)bindable.GetValue(ShapePaddingProperty);
+		Thickness padding = (Thickness)bindable.GetValue(ItemPaddingProperty);
 		padding.Bottom = (double)newValue;
-		bindable.SetValue(ShapePaddingProperty, padding);
+		bindable.SetValue(ItemPaddingProperty, padding);
 	}
 
-	static void OnShapePaddingLeftChanged(BindableObject bindable, object oldValue, object newValue)
+	static void OnItemPaddingLeftChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		Thickness padding = (Thickness)bindable.GetValue(ShapePaddingProperty);
+		Thickness padding = (Thickness)bindable.GetValue(ItemPaddingProperty);
 		padding.Left = (double)newValue;
-		bindable.SetValue(ShapePaddingProperty, padding);
+		bindable.SetValue(ItemPaddingProperty, padding);
 	}
 
-	static void OnShapePaddingPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	static void OnItemPaddingPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		((IRatingViewShape)bindable).OnShapePaddingPropertyChanged((Thickness)oldValue, (Thickness)newValue);
+		((IRatingViewShape)bindable).OnItemPaddingPropertyChanged((Thickness)oldValue, (Thickness)newValue);
 	}
 
-	static void OnShapePaddingRightChanged(BindableObject bindable, object oldValue, object newValue)
+	static void OnItemPaddingRightChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		Thickness padding = (Thickness)bindable.GetValue(ShapePaddingProperty);
+		Thickness padding = (Thickness)bindable.GetValue(ItemPaddingProperty);
 		padding.Right = (double)newValue;
-		bindable.SetValue(ShapePaddingProperty, padding);
+		bindable.SetValue(ItemPaddingProperty, padding);
 	}
 
-	static void OnShapePaddingTopChanged(BindableObject bindable, object oldValue, object newValue)
+	static void OnItemPaddingTopChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		Thickness padding = (Thickness)bindable.GetValue(ShapePaddingProperty);
+		Thickness padding = (Thickness)bindable.GetValue(ItemPaddingProperty);
 		padding.Top = (double)newValue;
-		bindable.SetValue(ShapePaddingProperty, padding);
+		bindable.SetValue(ItemPaddingProperty, padding);
 	}
 
-	static void OnShapePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	static void OnItemShapePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		((IRatingViewShape)bindable).OnShapePropertyChanged((RatingViewShape)oldValue, (RatingViewShape)newValue);
+		((IRatingViewShape)bindable).OnItemShapePropertyChanged((RatingViewShape)oldValue, (RatingViewShape)newValue);
+	}
+
+	static object ItemShapeSizeDefaultValueCreator(BindableObject bindable)
+	{
+		return ((IRatingViewShape)bindable).ItemShapeSizeDefaultValueCreator();
 	}
 
 	static object ShapeDefaultValueCreator(BindableObject bindable)
@@ -75,8 +93,28 @@ static class RatingViewItemElement
 		return ((IRatingViewShape)bindable).ShapeDefaultValueCreator();
 	}
 
-	static object ShapePaddingDefaultValueCreator(BindableObject bindable)
+	static object ItemPaddingDefaultValueCreator(BindableObject bindable)
 	{
-		return ((IRatingViewShape)bindable).ShapePaddingDefaultValueCreator();
+		return ((IRatingViewShape)bindable).ItemPaddingDefaultValueCreator();
+	}
+
+	static object ItemShapeBorderColorDefaultValueCreator(BindableObject bindable)
+	{
+		return ((IRatingViewShape)bindable).ItemShapeBorderColorDefaultValueCreator();
+	}
+
+	static void OnItemShapeBorderColorChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		((IRatingViewShape)bindable).OnItemShapeBorderColorChanged((Color)oldValue, (Color)newValue);
+	}
+
+	static object ItemShapeBorderThicknessDefaultValueCreator(BindableObject bindable)
+	{
+		return ((IRatingViewShape)bindable).ItemShapeBorderThicknessDefaultValueCreator();
+	}
+
+	static void OnItemShapeBorderThicknessChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		((IRatingViewShape)bindable).OnItemShapeBorderThicknessChanged((double)oldValue, (double)newValue);
 	}
 }
