@@ -1,16 +1,17 @@
 ﻿// Ignore Spelling: color
-namespace CommunityToolkit.Maui.Core;
 
 using System.ComponentModel;
 using CommunityToolkit.Maui.Core.Primitives;
+
+namespace CommunityToolkit.Maui.Core;
 
 /// <summary>Default Values for RatingView</summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static class RatingViewDefaults
 {
-	/// <summary>Default rating current rating.</summary>
+	/// <summary>Default rating value.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const double CurrentRating = 0.0;
+	public const double DefaultRating = 0.0;
 
 	/// <summary>Default enabled rating view.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -24,6 +25,10 @@ public static class RatingViewDefaults
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const byte MaximumRatings = 25;
 
+	/// <summary>Default border thickness for a rating.</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public const double RatingShapeOutlineThickness = 1.0;
+
 	/// <summary>Default size of a rating.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const double Size = 20.0;
@@ -32,9 +37,9 @@ public static class RatingViewDefaults
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const double Spacing = 10.0;
 
-	/// <summary>Default border thickness for a rating.</summary>
+	/// <summary>Default shape padding.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const double RatingShapeOutlineThickness = 1.0;
+	public static Thickness ShapePadding { get; } = new(0);
 
 	/// <summary>Default background color for an empty rating.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]

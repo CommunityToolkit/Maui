@@ -29,6 +29,7 @@ public sealed class ViewsGalleryViewModel() : BaseGalleryViewModel(
 	SectionModel.Create<PopupAnchorViewModel>("Anchor Popup", Colors.Red, "Popups can be anchored to other view's on the screen"),
 	SectionModel.Create<PopupLayoutAlignmentViewModel>("Popup Layout Page", Colors.Red, "Popup.Content demonstrated using different layouts"),
 	SectionModel.Create<PopupSizingIssuesViewModel>("Popup Sizing Issues Page", Colors.Red, "A page demonstrating how Popups can be styled in a .NET MAUI application."),
+	SectionModel.Create<RatingViewInspirationsViewModel>("RatingView Inspirations Page", Colors.Red, "A page with inspirations for possible uses of the RatingView control."),
 	SectionModel.Create<RatingViewXamlViewModel>("RatingView XAML Page", Colors.Red, "A page demonstrating the RatingView control and possible uses using XAML"),
 	SectionModel.Create<RatingViewCsharpViewModel>("RatingView C# Page", Colors.Red, "A page demonstrating the RatingView control and possible uses using C#"),
 	SectionModel.Create<ShowPopupInOnAppearingPageViewModel>("Show Popup in OnAppearing", Colors.Red, "Proves that we now support showing a popup before the platform is even ready."),

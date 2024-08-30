@@ -3,7 +3,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 
-public partial class RatingViewXamlViewModel : BaseViewModel
+public partial class RatingViewInspirationsViewModel : BaseViewModel
 {
 	[ObservableProperty]
 	double stepperValueMaximumRatings = 1;

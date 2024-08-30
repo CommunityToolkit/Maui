@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Views.RatingViewInspirationsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+    Title="RatingView Inspirations"
+    x:DataType="vm:RatingViewInspirationsViewModel"
+    x:TypeArguments="vm:RatingViewInspirationsViewModel">
+    <ScrollView>
+        <VerticalStackLayout Padding="0,12,0,0" Spacing="12">
+            <VerticalStackLayout.Resources>
+                <ResourceDictionary>
+                    <Style x:Key="Description" TargetType="Label">
+                        <Setter Property="VerticalTextAlignment" Value="Start" />
+                        <Setter Property="HorizontalTextAlignment" Value="Center" />
+                        <Setter Property="LineBreakMode" Value="WordWrap" />
+                        <Setter Property="Margin" Value="4,0" />
+                    </Style>
+                    <Style x:Key="HR" TargetType="Line">
+                        <Setter Property="Stroke" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                        <Setter Property="X2" Value="300" />
+                        <Setter Property="HorizontalOptions" Value="Center" />
+                    </Style>
+                </ResourceDictionary>
+            </VerticalStackLayout.Resources>
+
+            <Line Style="{StaticResource HR}" />
+            <Label Style="{StaticResource Description}" Text="RatingView showing example usages." />
+            <Line Style="{StaticResource HR}" />
+            <Label Text="A trust review 4 out of 5 mock-up" />
+            <Border
+                Margin="0"
+                Padding="10"
+                BackgroundColor="White"
+                Stroke="#E5E5DD"
+                StrokeThickness="2"
+                WidthRequest="500">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10" />
+                </Border.StrokeShape>
+                <Border.Shadow>
+                    <Shadow
+                        Brush="Gray"
+                        Opacity="0.8"
+                        Radius="7"
+                        Offset="1,1" />
+                </Border.Shadow>
+                <Grid
+                    ColumnDefinitions="100, *"
+                    RowDefinitions="100, 20, *"
+                    RowSpacing="10">
+                    <toolkit:AvatarView
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        BackgroundColor="Blue"
+                        BorderColor="Black"
+                        BorderWidth="1"
+                        CornerRadius="48"
+                        HeightRequest="96"
+                        ImageSource="avatar_icon.png"
+                        SemanticProperties.Description="Sample AvatarView showing using a local image."
+                        WidthRequest="96" />
+                    <toolkit:RatingView
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Margin="5,0,0,0"
+                        Padding="2"
+                        BackgroundColor="White"
+                        CustomShape="M296.863,587.059l14.254-3.612 l5.956,18.355L296.863,587.059z M329.668,563.334h-25.091l-7.713-23.627l-7.713,23.627h-25.091l20.307,14.645l-7.713,23.627 l20.307-14.645l12.497-8.982L329.668,563.334L329.668,563.334L329.668,563.334L329.668,563.334z"
+                        EmptyBackgroundColor="LightGray"
+                        FilledBackgroundColor="#04DA8D"
+                        HorizontalOptions="Start"
+                        IsEnabled="False"
+                        MaximumRating="5"
+                        Rating="4.5"
+                        RatingFill="Cell"
+                        RatingShapeOutlineThickness="0"
+                        Size="40"
+                        Spacing="5"
+                        VerticalOptions="Center" />
+
+                    <Label
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        TextColor="Black">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <FormattedString.Spans>
+                                    <Span FontAttributes="Bold" Text="Neytiri" />
+                                    <Span Text=" reviewed " />
+                                    <Span FontAttributes="Bold" Text=".NET MAUI Community Toolkit" />
+                                </FormattedString.Spans>
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Label
+                        Grid.Row="2"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        Text="&#x22;I have used the .NET MAUI Community Toolkit in all of my cross-platform projects.  It has nearly everything that I could ever wish for, but it needs&#x2026;&#x22;"
+                        TextColor="Black" />
+
+                </Grid>
+            </Border>
+            <Label Text="A trust review 4.5 out of 5" />
+            <toolkit:RatingView
+                Margin="0"
+                CustomShape="M12,17.964l5.214-1.321l2.179,6.714L12,17.964z M24,9.286h-9.179L12,0.643L9.179,9.286 H0l7.429,5.357l-2.821,8.643l7.429-5.357l4.571-3.286L24,9.286L24,9.286L24,9.286L24,9.286z"
+                EmptyBackgroundColor="#DCDCE6"
+                FilledBackgroundColor="#04DA8D"
+                IsEnabled="False"
+                MaximumRating="5"
+                Rating="4.5"
+                RatingFill="Cell"
+                RatingShapeOutlineThickness="0"
+                ShapePadding="2"
+                Size="40"
+                Spacing="5" />
+            <Label Text="A negative trust review 1 out of 5" />
+            <toolkit:RatingView
+                Margin="0"
+                CustomShape="M12,17.964l5.214-1.321l2.179,6.714L12,17.964z M24,9.286h-9.179L12,0.643L9.179,9.286 H0l7.429,5.357l-2.821,8.643l7.429-5.357l4.571-3.286L24,9.286L24,9.286L24,9.286L24,9.286z"
+                EmptyBackgroundColor="#DCDCE6"
+                FilledBackgroundColor="#FF3722"
+                IsEnabled="False"
+                MaximumRating="5"
+                Rating="1"
+                RatingFill="Cell"
+                RatingShapeOutlineThickness="0"
+                ShapePadding="2"
+                Size="40"
+                Spacing="5" />
+            <Label Text="A positive golden trust review 4.5 out of 5" />
+            <toolkit:RatingView
+                Margin="0"
+                CustomShape="M12,17.964l5.214-1.321l2.179,6.714L12,17.964z M24,9.286h-9.179L12,0.643L9.179,9.286 H0l7.429,5.357l-2.821,8.643l7.429-5.357l4.571-3.286L24,9.286L24,9.286L24,9.286L24,9.286z"
+                EmptyBackgroundColor="Transparent"
+                FilledBackgroundColor="Gold"
+                IsEnabled="False"
+                MaximumRating="5"
+                Rating="4.5"
+                RatingFill="Shape"
+                RatingShapeOutlineThickness="0"
+                ShapePadding="2"
+                Size="40"
+                Spacing="5">
+                <toolkit:RatingView.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStopCollection>
+                            <GradientStop Offset="0.0" Color="Gold" />
+                            <GradientStop Offset="1.0" Color="Red" />
+                        </GradientStopCollection>
+                    </LinearGradientBrush>
+                </toolkit:RatingView.Background>
+            </toolkit:RatingView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</pages:BasePage>        

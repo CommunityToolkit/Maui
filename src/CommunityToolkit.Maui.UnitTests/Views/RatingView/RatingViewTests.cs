@@ -1,9 +1,8 @@
 ﻿using CommunityToolkit.Maui.Core;
 using FluentAssertions;
 using Xunit;
-using Path = Microsoft.Maui.Controls.Shapes.Path;
 
-namespace CommunityToolkit.Maui.UnitTests.Views.RatingView;
+namespace CommunityToolkit.Maui.UnitTests.Views;
 
 public class RatingViewTests : BaseHandlerTest
 {
@@ -16,7 +15,7 @@ public class RatingViewTests : BaseHandlerTest
 		// Assert
 		Assert.Equal(RatingViewDefaults.RatingShapeOutlineColor, ratingView.RatingShapeOutlineColor);
 		Assert.Equal(RatingViewDefaults.RatingShapeOutlineThickness, ratingView.RatingShapeOutlineThickness);
-		Assert.Equal(RatingViewDefaults.CurrentRating, ratingView.CurrentRating);
+		Assert.Equal(RatingViewDefaults.DefaultRating, ratingView.Rating);
 		Assert.Equal(RatingViewDefaults.EmptyBackgroundColor, ratingView.EmptyBackgroundColor);
 		Assert.Equal(RatingViewDefaults.FilledBackgroundColor, ratingView.FilledBackgroundColor);
 		Assert.Equal(RatingViewDefaults.IsEnabled, ratingView.IsEnabled);
@@ -30,11 +29,11 @@ public class RatingViewTests : BaseHandlerTest
 	{
 		const int maximumRating = 3;
 		Maui.Views.RatingView ratingView = new();
-		ratingView.Control?.ColumnDefinitions.Count.Should().Be(RatingViewDefaults.MaximumRating);
+		ratingView.Control?.GetVisualTreeDescendants().Count.Should().Be(RatingViewDefaults.MaximumRating);
 		ratingView.Control?.Children.Count.Should().Be(RatingViewDefaults.MaximumRating);
 
 		ratingView.MaximumRating = maximumRating;
-		ratingView.Control?.ColumnDefinitions.Count.Should().Be(maximumRating);
+		ratingView.Control?.GetVisualTreeDescendants().Count.Should().Be(maximumRating);
 		ratingView.Control?.Children.Count.Should().Be(maximumRating);
 	}
 
@@ -43,19 +42,19 @@ public class RatingViewTests : BaseHandlerTest
 	{
 		const double currentRating = 3.5;
 		Maui.Views.RatingView ratingView = new();
-		ratingView.CurrentRating.Should().Be(RatingViewDefaults.CurrentRating);
+		ratingView.Rating.Should().Be(RatingViewDefaults.DefaultRating);
 
 		bool signaled = false;
 		ratingView.PropertyChanged += (sender, e) =>
 		{
-			if (e.PropertyName == "CurrentRating")
+			if (e.PropertyName == nameof(ratingView.Rating))
 			{
 				signaled = true;
 			}
 		};
 
-		ratingView.CurrentRating = currentRating;
-		ratingView.CurrentRating.Should().Be(currentRating);
+		ratingView.Rating = currentRating;
+		ratingView.Rating.Should().Be(currentRating);
 		signaled.Should().BeTrue();
 	}
 
@@ -68,7 +67,7 @@ public class RatingViewTests : BaseHandlerTest
 			MaximumRating = maximumRating
 		};
 
-		ratingView.Control?.ColumnDefinitions.Count.Should().Be(maximumRating);
+		ratingView.Control?.GetVisualTreeDescendants().Count.Should().Be(maximumRating);
 		ratingView.Control?.Children.Count.Should().Be(maximumRating);
 	}
 
@@ -77,9 +76,9 @@ public class RatingViewTests : BaseHandlerTest
 	{
 		Maui.Views.RatingView ratingView = new()
 		{
-			Shape = Maui.Views.RatingViewShape.Heart
+			Shape = RatingViewShape.Heart,
 		};
 
-		ratingView.Shape.Should().Be(Maui.Views.RatingViewShape.Heart);
+		ratingView.Shape.Should().Be(RatingViewShape.Heart);
 	}
 }

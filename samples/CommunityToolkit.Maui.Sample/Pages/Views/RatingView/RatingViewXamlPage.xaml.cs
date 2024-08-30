@@ -6,30 +6,76 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class RatingViewXamlPage : BasePage<RatingViewXamlViewModel>
 {
+	RatingViewXamlViewModel vm;
 	readonly IReadOnlyDictionary<string, Color> colors = typeof(Colors).GetFields(BindingFlags.Static | BindingFlags.Public).ToDictionary(c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()));
 
 	public RatingViewXamlPage(RatingViewXamlViewModel viewModel) : base(viewModel)
 	{
 		InitializeComponent();
+		vm = viewModel;
 	}
 
 	protected override void OnAppearing()
 	{
-		ColorPickerEmptyBackground.ItemsSource = colors.Keys.ToList();
+		List<string> colorKeys = colors.Keys.ToList();
+		ColorPickerEmptyBackground.ItemsSource = colorKeys;
+		ColorPickerFilledBackground.ItemsSource = colorKeys;
+		ColorPickerRatingShapeBorderColor.ItemsSource = colorKeys;
 	}
 
-	void ColorPickerEmptyBackground_SelectedIndexChanged(object sender, EventArgs e)
+	void ColorPicker_SelectedIndexChanged(object sender, EventArgs e)
 	{
 		Color color = colors.ElementAtOrDefault(ColorPickerEmptyBackground.SelectedIndex).Value ?? Colors.Transparent;
-		ColorPickerEmptyBackgroundRatingView.EmptyBackgroundColor = color;
+		switch (((Picker)sender).StyleId)
+		{
+			case "ColorPickerEmptyBackground":
+				ColorPickerEmptyBackgroundTarget.EmptyBackgroundColor = color;
+				break;
+			case "ColorPickerFilledBackground":
+				ColorPickerFilledBackgroundTarget.FilledBackgroundColor = color;
+				break;
+			case "ColorPickerRatingShapeBorderColor":
+				ColorPickerRatingShapeBorderColorTarget.RatingShapeOutlineColor = color;
+				break;
+			default:
+				break;
+		}
 	}
 
-	void StepperValueMaximumRatings_RatingChanged(object sender, EventArgs e)
+	void StepperMaximumRating_RatingChanged(object sender, EventArgs e)
 	{
-		// This is the weak event raised when the rating is changed, so that the developer can use to then perform further actions (such as save to DB).
+		// This is the weak event raised when the rating is changed.  The developer can then perform further actions (such as save to DB).
 		if (sender is RatingView ratingView)
 		{
-			StepperValueMaximumRatingsCurrentRanking.Text = ratingView.CurrentRating.ToString();
+			_ = ratingView.Rating;
 		}
+	}
+
+	void RatingViewShapePaddingLeft_ValueChanged(object sender, ValueChangedEventArgs e)
+	{
+		var currentThickness = vm.RatingViewShapePadding;
+		currentThickness.Left = e.NewValue;
+		vm.RatingViewShapePadding = currentThickness;
+	}
+
+	void RatingViewShapePaddingTop_ValueChanged(object sender, ValueChangedEventArgs e)
+	{
+		var currentThickness = vm.RatingViewShapePadding;
+		currentThickness.Top = e.NewValue;
+		vm.RatingViewShapePadding = currentThickness;
+	}
+
+	void RatingViewShapePaddingRight_ValueChanged(object sender, ValueChangedEventArgs e)
+	{
+		var currentThickness = vm.RatingViewShapePadding;
+		currentThickness.Right = e.NewValue;
+		vm.RatingViewShapePadding = currentThickness;
+	}
+
+	void RatingViewShapePaddingBottom_ValueChanged(object sender, ValueChangedEventArgs e)
+	{
+		var currentThickness = vm.RatingViewShapePadding;
+		currentThickness.Bottom = e.NewValue;
+		vm.RatingViewShapePadding = currentThickness;
 	}
 }
