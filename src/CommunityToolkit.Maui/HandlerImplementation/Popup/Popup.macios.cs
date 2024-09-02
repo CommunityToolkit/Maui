@@ -35,4 +35,38 @@ public partial class Popup
 			return (PageHandler)contentPage.ToHandler(mauiContext);
 		}
 	}
+
+	/// <summary>
+	/// Action that's triggered when the Popup is Closed.
+	/// </summary>
+	/// <param name="handler">An instance of <see cref="PopupHandler"/>.</param>
+	/// <param name="view">An instance of <see cref="IPopup"/>.</param>
+	/// <param name="result">We don't need to provide the result parameter here.</param>
+	public static void MapOnClosed(PopupHandler handler, IPopup view, object? result)
+	{
+		var parent = view.Parent as Element;
+		if (parent is not null)
+		{
+			var contentPage = parent.LogicalChildrenInternal
+				.Where(
+					x => x is ContentPage
+				)
+				.LastOrDefault();
+
+			var popup = parent.LogicalChildrenInternal
+				.Where(
+					x => x is Popup
+				)
+				.LastOrDefault();
+
+			if (contentPage is not null)
+			{
+				parent.RemoveLogicalChild(contentPage);
+			}
+			if (popup is not null)
+			{
+				parent.RemoveLogicalChild(popup);
+			}
+		}
+	}
 }
