@@ -77,6 +77,12 @@
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Maps\CommunityToolkit.Maui.Maps.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Pages\Views\RatingView\RatingViewShowcasePage.xaml.cs">
+      <DependentUpon>RatingViewShowcasePage.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='android'">
     <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
     <RuntimeIdentifiers>android-arm;android-arm64;android-x86;android-x64</RuntimeIdentifiers>

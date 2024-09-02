@@ -137,7 +137,7 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<StylePopupPage, StylePopupViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<RatingViewXamlPage, RatingViewXamlViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<RatingViewCsharpPage, RatingViewCsharpViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
-		CreateViewModelMapping<RatingViewInspirationsPage, RatingViewInspirationsViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<RatingViewShowcasePage, RatingViewShowcaseViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 
 		// Add PlatformSpecific View Models
 		CreateViewModelMapping<NavigationBarPage, NavigationBarAndroidViewModel, PlatformSpecificGalleryPage, PlatformSpecificGalleryViewModel>(),

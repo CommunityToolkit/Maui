@@ -6,25 +6,23 @@ using Microsoft.Maui.Controls.Shapes;
 namespace CommunityToolkit.Maui.Views;
 
 /// <summary>Rating view control.</summary>
-public class RatingView : TemplatedView, IContentView, IRatingViewShape
+public class RatingView : TemplatedView, IRatingViewShape
 {
 	/// <summary>Bindable property for <see cref="CustomShape"/> bindable property.</summary>
 	public static readonly BindableProperty CustomShapeProperty = RatingViewItemElement.CustomShapeProperty;
 
 	// TODO: Add BindableProperty to allow the developer to define and style the Item Border, then adjust the control creation accordingly.
 
-	// TODO: Move to RatingViewItemElement
 	/// <summary>The backing store for the <see cref="EmptyBackgroundColor" /> bindable property.</summary>
-	public static readonly BindableProperty EmptyBackgroundColorProperty = BindableProperty.Create(nameof(EmptyBackgroundColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.EmptyBackgroundColor, propertyChanged: OnUpdateRatingDraw);
+	public static readonly BindableProperty EmptyBackgroundColorProperty = RatingViewItemElement.EmptyBackgroundColorProperty;
 
-	// TODO: Move to RatingViewItemElement
 	/// <summary>The backing store for the <see cref="FilledBackgroundColor" /> bindable property.</summary>
-	public static readonly BindableProperty FilledBackgroundColorProperty = BindableProperty.Create(nameof(FilledBackgroundColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.FilledBackgroundColor, propertyChanged: OnUpdateRatingDraw);
+	public static readonly BindableProperty FilledBackgroundColorProperty = RatingViewItemElement.FilledBackgroundColorProperty;
 
 	/// <summary>The backing store for the <see cref="IsEnabled" /> bindable property.</summary>
-	public new static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(RatingView), defaultValue: RatingViewDefaults.IsEnabled, propertyChanged: OnIsEnabledChanged);
+	public static new readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(RatingView), defaultValue: RatingViewDefaults.IsEnabled, propertyChanged: OnIsEnabledChanged);
 
-	// TODO: Add some kind of Roslyn Analizer to validate at design/build time that the maximumrating is in bounds (1-25).
+	// TODO: Add some kind of Roslyn Analyser to validate at design/build time that the MaximumRating is in bounds (1-25).
 	/// <summary>The backing store for the <see cref="MaximumRating" /> bindable property.</summary>
 	public static readonly BindableProperty MaximumRatingProperty = BindableProperty.Create(nameof(MaximumRating), typeof(byte), typeof(RatingView), defaultValue: RatingViewDefaults.MaximumRating, validateValue: maximumRatingValidator, propertyChanged: OnMaximumRatingChange);
 
@@ -41,7 +39,7 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 	public static readonly BindableProperty ShapeBorderThicknessProperty = RatingViewItemElement.ShapeBorderThicknessProperty;
 
 	/// <summary>Bindable property for <see cref="ItemPadding"/> bindable property.</summary>
-	public static readonly BindableProperty ShapePaddingProperty = RatingViewItemElement.ItemPaddingProperty;
+	public static readonly BindableProperty ItemPaddingProperty = RatingViewItemElement.ItemPaddingProperty;
 
 	/// <summary>The backing store for the <see cref="ItemShapeSize" /> bindable property.</summary>
 	public static readonly BindableProperty SizeProperty = RatingViewItemElement.SizeProperty;
@@ -104,8 +102,8 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 	/// <summary>Defines the shape padding thickness.</summary>
 	public Thickness ItemPadding
 	{
-		get => (Thickness)GetValue(ShapePaddingProperty);
-		set => SetValue(ShapePaddingProperty, value);
+		get => (Thickness)GetValue(ItemPaddingProperty);
+		set => SetValue(ItemPaddingProperty, value);
 	}
 
 	/// <summary>Defines the item shape size.</summary>
@@ -165,6 +163,16 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 		set => SetValue(ShapeBorderThicknessProperty, value);
 	}
 
+	Color IRatingViewShape.EmptyBackgroundColorDefaultValueCreator()
+	{
+		return RatingViewDefaults.EmptyBackgroundColor;
+	}
+
+	Color IRatingViewShape.FilledBackgroundColorDefaultValueCreator()
+	{
+		return RatingViewDefaults.FilledBackgroundColor;
+	}
+
 	///<summary>Defines the space between the drawn shapes.</summary>
 	public double Spacing
 	{
@@ -209,6 +217,9 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 		}
 	}
 
+	/// <summary>Change the rating item padding.</summary>
+	/// <param name="oldValue">Old rating item padding.</param>
+	/// <param name="newValue">New rating item padding.</param>
 	void IRatingViewShape.OnItemPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
 	{
 		if (Control is null)
@@ -223,6 +234,9 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 		}
 	}
 
+	/// <summary>Change the rating item shape border color.</summary>
+	/// <param name="oldValue">Old rating item shape border color.</param>
+	/// <param name="newValue">New rating item shape border color.</param>
 	void IRatingViewShape.OnItemShapeBorderColorChanged(Color oldValue, Color newValue)
 	{
 		if (newValue is null)
@@ -241,6 +255,9 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 		}
 	}
 
+	/// <summary>Change the rating item shape border thickness.</summary>
+	/// <param name="oldValue">Old rating item shape border thickness.</param>
+	/// <param name="newValue">New rating item shape border thickness.</param>
 	void IRatingViewShape.OnItemShapeBorderThicknessChanged(double oldValue, double newValue)
 	{
 		if (Control is HorizontalStackLayout stack)
@@ -254,16 +271,20 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 		}
 	}
 
+	/// <summary>Change the rating item shape.</summary>
+	/// <param name="oldValue">Old rating item shape.</param>
+	/// <param name="newValue">New rating item shape.</param>
 	void IRatingViewShape.OnItemShapePropertyChanged(RatingViewShape oldValue, RatingViewShape newValue)
 	{
-		if (Control is null)
+		if (Control is not null)
 		{
-			return;
+			ClearAndReDraw();
 		}
-
-		ClearAndReDraw();
 	}
 
+	/// <summary>Change the rating item shape size.</summary>
+	/// <param name="oldValue">Old rating item shape size.</param>
+	/// <param name="newValue">New rating item shape size.</param>
 	void IRatingViewShape.OnItemShapeSizeChanged(double oldValue, double newValue)
 	{
 		if (Control is HorizontalStackLayout stack)
@@ -277,6 +298,28 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 				shapes[column].WidthRequest = newValue;
 				shapes[column].HeightRequest = newValue;
 			}
+		}
+	}
+
+	/// <summary>Change the rating item empty background color.</summary>
+	/// <param name="oldValue">Old rating item empty background color.</param>
+	/// <param name="newValue">new rating item empty background color.</param>
+	void IRatingViewShape.OnEmptyBackgroundColorPropertyChanged(Color oldValue, Color newValue)
+	{
+		if (Control is not null)
+		{
+			UpdateRatingDraw();
+		}
+	}
+
+	/// <summary>Change the rating item filled background color.</summary>
+	/// <param name="oldValue">Old rating item filled background color.</param>
+	/// <param name="newValue">new rating item filled background color.</param>
+	void IRatingViewShape.OnFilledBackgroundColorPropertyChanged(Color oldValue, Color newValue)
+	{
+		if (Control is not null)
+		{
+			UpdateRatingDraw();
 		}
 	}
 
@@ -513,7 +556,7 @@ public class RatingView : TemplatedView, IContentView, IRatingViewShape
 				continue;
 			}
 
-			if (Rating % 1 is 0)
+			if (Rating % (i + 1) is 0)
 			{
 				if (RatingFill is RatingFillElement.Shape)
 				{

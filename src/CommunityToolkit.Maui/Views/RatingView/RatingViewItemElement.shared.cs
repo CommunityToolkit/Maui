@@ -35,6 +35,22 @@ static class RatingViewItemElement
 	/// <summary>Bindable property for attached property <c>Size</c>.</summary>
 	public static readonly BindableProperty SizeProperty = BindableProperty.Create(nameof(IRatingViewShape.ItemShapeSize), typeof(double), typeof(IRatingViewShape), defaultValue: RatingViewDefaults.ItemShapeSize, propertyChanged: OnItemShapeSizeChanged, defaultValueCreator: ItemShapeSizeDefaultValueCreator);
 
+	/// <summary>Bindable property for attached property <c>EmptyBackgroundColor</c>.</summary>
+	public static readonly BindableProperty EmptyBackgroundColorProperty = BindableProperty.Create(nameof(IRatingViewShape.EmptyBackgroundColor), typeof(Color), typeof(IRatingViewShape), defaultValue: RatingViewDefaults.EmptyBackgroundColor, propertyChanged: OnEmptyBackgroundColorPropertyChanged, defaultValueCreator: EmptyBackgroundColorDefaultValueCreator);
+
+	/// <summary>Bindable property for attached property <c>FilledBackgroundColor</c>.</summary>
+	public static readonly BindableProperty FilledBackgroundColorProperty = BindableProperty.Create(nameof(IRatingViewShape.FilledBackgroundColor), typeof(Color), typeof(IRatingViewShape), defaultValue: RatingViewDefaults.FilledBackgroundColor, propertyChanged: OnFilledBackgroundColorPropertyChanged, defaultValueCreator: FilledBackgroundColorDefaultValueCreator);
+
+	static void OnEmptyBackgroundColorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		((IRatingViewShape)bindable).OnEmptyBackgroundColorPropertyChanged((Color)oldValue, (Color)newValue);
+	}
+
+	static void OnFilledBackgroundColorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		((IRatingViewShape)bindable).OnFilledBackgroundColorPropertyChanged((Color)oldValue, (Color)newValue);
+	}
+
 	static void OnItemShapeSizeChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		((IRatingViewShape)bindable).OnItemShapeSizeChanged((double)oldValue, (double)newValue);
@@ -86,6 +102,16 @@ static class RatingViewItemElement
 	static object ItemShapeSizeDefaultValueCreator(BindableObject bindable)
 	{
 		return ((IRatingViewShape)bindable).ItemShapeSizeDefaultValueCreator();
+	}
+
+	static object EmptyBackgroundColorDefaultValueCreator(BindableObject bindable)
+	{
+		return ((IRatingViewShape)bindable).EmptyBackgroundColorDefaultValueCreator();
+	}
+
+	static object FilledBackgroundColorDefaultValueCreator(BindableObject bindable)
+	{
+		return ((IRatingViewShape)bindable).FilledBackgroundColorDefaultValueCreator();
 	}
 
 	static object ShapeDefaultValueCreator(BindableObject bindable)

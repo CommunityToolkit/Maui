@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <pages:BasePage
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Views.RatingViewInspirationsPage"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Views.RatingViewShowcasePage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
-    Title="RatingView Inspirations"
-    x:DataType="vm:RatingViewInspirationsViewModel"
-    x:TypeArguments="vm:RatingViewInspirationsViewModel">
+    Title="RatingView Showcase"
+    x:DataType="vm:RatingViewShowcaseViewModel"
+    x:TypeArguments="vm:RatingViewShowcaseViewModel">
     <ScrollView>
         <VerticalStackLayout Padding="0,12,0,0" Spacing="12">
             <VerticalStackLayout.Resources>
@@ -37,9 +37,9 @@
                 IsEnabled="False"
                 MaximumRating="1"
                 Rating="0"
+                Shape="Like"
                 ShapeBorderColor="White"
-                RatingShapeOutlineThickness="2"
-                Shape="Like">
+                ShapeBorderThickness="2">
                 <toolkit:RatingView.GestureRecognizers>
                     <TapGestureRecognizer NumberOfTapsRequired="1" Tapped="StreamMobileRate_Tapped" />
                 </toolkit:RatingView.GestureRecognizers>
@@ -92,11 +92,11 @@
                         FilledBackgroundColor="#04DA8D"
                         HorizontalOptions="Start"
                         IsEnabled="False"
+                        ItemShapeSize="40"
                         MaximumRating="5"
                         Rating="4.5"
-                        RatingFill="Cell"
-                        RatingShapeOutlineThickness="0"
-                        Size="40"
+                        RatingFill="Item"
+                        ShapeBorderThickness="0"
                         Spacing="5"
                         VerticalOptions="Center" />
 
@@ -131,12 +131,12 @@
                 EmptyBackgroundColor="#DCDCE6"
                 FilledBackgroundColor="#04DA8D"
                 IsEnabled="False"
+                ItemPadding="2"
+                ItemShapeSize="40"
                 MaximumRating="5"
                 Rating="4.9"
-                RatingFill="Cell"
-                RatingShapeOutlineThickness="0"
-                ShapePadding="2"
-                Size="40"
+                RatingFill="Item"
+                ShapeBorderThickness="0"
                 Spacing="5" />
             <Label Text="A negative trust review 1 out of 5" />
             <toolkit:RatingView
@@ -145,12 +145,12 @@
                 EmptyBackgroundColor="#DCDCE6"
                 FilledBackgroundColor="#FF3722"
                 IsEnabled="False"
+                ItemPadding="2"
+                ItemShapeSize="40"
                 MaximumRating="5"
                 Rating="1"
-                RatingFill="Cell"
-                RatingShapeOutlineThickness="0"
-                ShapePadding="2"
-                Size="40"
+                RatingFill="Item"
+                ShapeBorderThickness="0"
                 Spacing="5" />
             <Label Text="A positive golden trust review 4.5 out of 5" />
             <toolkit:RatingView
@@ -160,12 +160,12 @@
                 FilledBackgroundColor="Gold"
                 HorizontalOptions="Start"
                 IsEnabled="False"
+                ItemPadding="2"
+                ItemShapeSize="40"
                 MaximumRating="5"
                 Rating="4.5"
                 RatingFill="Shape"
-                RatingShapeOutlineThickness="0"
-                ShapePadding="2"
-                Size="40"
+                ShapeBorderThickness="0"
                 Spacing="5">
                 <toolkit:RatingView.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
@@ -198,7 +198,6 @@
                         <Border
                             Grid.Row="0"
                             Grid.Column="1"
-                            Margin="0,8,8,0"
                             BackgroundColor="White"
                             HeightRequest="40"
                             StrokeThickness="1"
@@ -210,12 +209,12 @@
                                 EmptyBackgroundColor="White"
                                 FilledBackgroundColor="#00aa6c"
                                 HorizontalOptions="Center"
+                                ItemPadding="0"
+                                ItemShapeSize="24"
                                 MaximumRating="1"
-                                ShapeBorderColor="Black"
-                                RatingShapeOutlineThickness="2"
                                 Shape="Heart"
-                                ShapePadding="5"
-                                Size="24"
+                                ShapeBorderColor="Black"
+                                ShapeBorderThickness="2"
                                 VerticalOptions="Center" />
                         </Border>
                     </Grid>
@@ -230,9 +229,9 @@
                         IsEnabled="False"
                         MaximumRating="5"
                         Rating="5"
-                        ShapeBorderColor="#00aa6c"
-                        RatingShapeOutlineThickness="1"
                         Shape="Custom"
+                        ShapeBorderColor="#00aa6c"
+                        ShapeBorderThickness="1"
                         Spacing="3" />
                     <Label
                         Margin="8,0,0,0"
@@ -251,9 +250,9 @@
                 IsEnabled="False"
                 MaximumRating="5"
                 Rating="4.5"
-                ShapeBorderColor="#00aa6c"
-                RatingShapeOutlineThickness="1"
                 Shape="Custom"
+                ShapeBorderColor="#00aa6c"
+                ShapeBorderThickness="1"
                 Spacing="3" />
         </VerticalStackLayout>
     </ScrollView>

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿// Ignore Spelling: color
+using System.ComponentModel;
 
 namespace CommunityToolkit.Maui.Core;
 
@@ -23,6 +24,22 @@ public interface IRatingViewShape
 
 	/// <summary>Get a value indicating the rating item shape border color.</summary>
 	Color ShapeBorderColor { get; }
+
+	/// <summary>Get a value indicating the rating item background empty color.</summary>
+	Color EmptyBackgroundColor { get; }
+
+	/// <summary>Get a value indicating the rating item background filled color.</summary>
+	Color FilledBackgroundColor { get; }
+
+	/// <summary>Action when <see cref="EmptyBackgroundColor"/> changes.</summary>
+	/// <param name="oldValue">Old empty background color.</param>
+	/// <param name="newValue">New empty background color.</param>
+	void OnEmptyBackgroundColorPropertyChanged(Color oldValue, Color newValue);
+
+	/// <summary>Action when <see cref="FilledBackgroundColor"/> changes.</summary>
+	/// <param name="oldValue">Old filled background color.</param>
+	/// <param name="newValue">New filled background color.</param>
+	void OnFilledBackgroundColorPropertyChanged(Color oldValue, Color newValue);
 
 	/// <summary>Action when <see cref="CustomShape"/> changes.</summary>
 	/// <param name="oldValue">Old shape path.</param>
@@ -54,7 +71,7 @@ public interface IRatingViewShape
 	/// <param name="newValue">New item shape size.</param>
 	void OnItemShapeSizeChanged(double oldValue, double newValue);
 
-	/// <summary>Retrieved the default item shape size value.</summary>
+	/// <summary>Retrieves the default item shape size value.</summary>
 	/// <returns>The item shape <see cref="double"/> size.</returns>
 	double ItemShapeSizeDefaultValueCreator();
 
@@ -73,6 +90,14 @@ public interface IRatingViewShape
 	/// <summary>Retrieves the default rating item padding value.</summary>
 	/// <returns>The rating item padding <see cref="Thickness"/>.</returns>
 	Thickness ItemPaddingDefaultValueCreator();
+
+	/// <summary>Retrieves the default background color for an empty rating item.</summary>
+	/// <returns>The empty background color.</returns>
+	Color EmptyBackgroundColorDefaultValueCreator();
+
+	/// <summary>Retrieves the default background color for an filled rating item.</summary>
+	/// <returns>The filled background color.</returns>
+	Color FilledBackgroundColorDefaultValueCreator();
 }
 
 /// <summary>Rating view shape enumerator.</summary>
