@@ -85,7 +85,7 @@ public class UniformItemsLayoutManager : LayoutManager
 
 	int GetColumnsCount(int visibleChildrenCount, double widthConstraint)
 	{
-  		var columnsCount = visibleChildrenCount;
+		var columnsCount = visibleChildrenCount;
 		if (childWidth != 0 && !double.IsPositiveInfinity(widthConstraint))
 		{
 			columnsCount = Math.Min((int)(widthConstraint / childWidth), visibleChildrenCount);
