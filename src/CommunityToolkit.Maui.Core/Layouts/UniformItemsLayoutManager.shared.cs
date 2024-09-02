@@ -85,18 +85,13 @@ public class UniformItemsLayoutManager : LayoutManager
 
 	int GetColumnsCount(int visibleChildrenCount, double widthConstraint)
 	{
-		if (visibleChildrenCount <= 0)
-		{
-			return 1;
-		}
-	
   		var columnsCount = visibleChildrenCount;
 		if (childWidth != 0 && !double.IsPositiveInfinity(widthConstraint))
 		{
 			columnsCount = Math.Min((int)(widthConstraint / childWidth), visibleChildrenCount);
 		}
 
-		return Math.Min(columnsCount, uniformItemsLayout.MaxColumns);
+		return Math.Clamp(columnsCount, 1, uniformItemsLayout.MaxColumns);
 	}
 
 	int GetRowsCount(int visibleChildrenCount, int columnsCount)
