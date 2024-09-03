@@ -12,5 +12,12 @@ public partial class UniformItemsLayoutViewModel : BaseViewModel
 		Items.Add(Path.GetRandomFileName());
 	}
 
+ 	[RelayCommand]
+	void ClearItem()
+	{
+		Items = null;
+		OnPropertyChanged(nameof(Items));
+	}
+
 	public ObservableCollection<string> Items { get; } = [];
 }
