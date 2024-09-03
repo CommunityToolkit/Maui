@@ -15,8 +15,7 @@ public partial class UniformItemsLayoutViewModel : BaseViewModel
  	[RelayCommand]
 	void ClearItem()
 	{
-		Items = null;
-		OnPropertyChanged(nameof(Items));
+		Items.Clear();
 	}
 
 	public ObservableCollection<string> Items { get; } = [];
