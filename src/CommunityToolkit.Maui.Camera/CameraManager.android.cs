@@ -1,5 +1,4 @@
-﻿using System.Buffers;
-using System.Runtime.Versioning;
+﻿using System.Runtime.Versioning;
 using Android.Content;
 using AndroidX.Camera.Core;
 using AndroidX.Camera.Core.Impl.Utils.Futures;
@@ -220,9 +219,7 @@ partial class CameraManager
 
 		//start the camera with AutoFocus
 		MeteringPoint point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
-		FocusMeteringAction action = new FocusMeteringAction.Builder(point)
-															.DisableAutoCancel()
-															.Build();
+		FocusMeteringAction action = new FocusMeteringAction.Builder(point).Build();
 		camera.CameraControl.StartFocusAndMetering(action);
 
 		IsInitialized = true;
