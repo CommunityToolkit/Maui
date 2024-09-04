@@ -28,7 +28,10 @@ public class AnimationBehavior : EventToCommandBehavior
 	/// <remarks>
 	/// <see cref="AnimateCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter"
 	/// </remarks>
-	public Command<CancellationToken> AnimateCommand => (Command<CancellationToken>)GetValue(AnimateCommandProperty);
+	public Command<CancellationToken> AnimateCommand {
+		get => (Command<CancellationToken>)GetValue(AnimateCommandProperty);
+		set => SetValue(AnimateCommandProperty, value);
+	}
 
 	/// <summary>
 	/// The type of animation to perform.
