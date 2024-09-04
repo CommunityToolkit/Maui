@@ -25,7 +25,6 @@
 
     <ScrollView>
         <VerticalStackLayout Spacing="20">
-
             <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
                 <Label
                     FontSize="Body"
@@ -229,6 +228,48 @@
                     </Grid>
                 </Border>
             </VerticalStackLayout>
+            
+            <CollectionView ItemsSource="{Binding Items}"
+                            MaximumHeightRequest="250">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ItemViewModel">
+                        <Border
+                            Margin="10"
+                            Padding="10"
+                            x:Name="ItemViewRef">
+
+                            <Border.Behaviors>
+                                <mct:TouchBehavior BindingContext="{Binding BindingContext, Source={x:Reference ItemViewRef}}" Command="{Binding TapCommand}" />
+                            </Border.Behaviors>
+
+                            <Label Text="{Binding Title}" />
+
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
+            
+            <CollectionView ItemsSource="{Binding Items}"
+                            MaximumHeightRequest="250">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ItemViewModel">
+                        <Border
+                            Margin="10"
+                            Padding="10"
+                            x:Name="ItemViewRef">
+
+                            <Border.Behaviors>
+                                <mct:TouchBehavior Command="{Binding TapCommand}" />
+                            </Border.Behaviors>
+
+                            <Label Text="{Binding Title}" />
+
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>
