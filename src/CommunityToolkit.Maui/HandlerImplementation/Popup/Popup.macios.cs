@@ -47,24 +47,15 @@ public partial class Popup
 		var parent = view.Parent as Element;
 		if (parent is not null)
 		{
-			var contentPage = parent.LogicalChildrenInternal
-				.Where(
-					x => x is ContentPage
-				)
-				.LastOrDefault();
-
-			var popup = parent.LogicalChildrenInternal
-				.Where(
-					x => x is Popup
-				)
-				.LastOrDefault();
-
-			if (contentPage is not null)
+			if (handler.VirtualView is Popup popup)
 			{
-				parent.RemoveLogicalChild(contentPage);
-			}
-			if (popup is not null)
-			{
+				if (popup.Content is not null)
+				{
+					if (popup.Content.Parent is ContentPage contentPage)
+					{
+						parent.RemoveLogicalChild(contentPage);
+					}
+				}
 				parent.RemoveLogicalChild(popup);
 			}
 		}
