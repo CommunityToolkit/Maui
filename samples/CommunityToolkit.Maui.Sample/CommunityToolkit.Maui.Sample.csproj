@@ -50,6 +50,10 @@
 
     <!-- Custom Fonts -->
     <MauiFont Include="Resources\Fonts\*" />
+    <PackageReference Include="MemoryAnalyzers" Version="0.1.0-beta.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
 
     <PackageReference Include="Microsoft.Maui.Controls" Version="*"/>
     <PackageReference Include="CommunityToolkit.Maui.Markup" Version="4.0.0" />
