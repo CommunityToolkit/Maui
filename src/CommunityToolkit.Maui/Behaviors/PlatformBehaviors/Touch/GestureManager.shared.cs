@@ -93,7 +93,15 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 		var touchState = sender.CurrentTouchState;
 		var hoverState = sender.CurrentHoverState;
 
-		await AbortAnimations(sender, token);
+		if (sender.DefaultAnimationDuration > 0 && touchStatus == TouchStatus.Completed)
+		{
+			await Task.Delay(sender.DefaultAnimationDuration, token);
+		}
+		else
+		{
+			await AbortAnimations(sender, token);
+		}
+
 		animationTokenSource = new CancellationTokenSource();
 
 		if (sender.Element is not null)
