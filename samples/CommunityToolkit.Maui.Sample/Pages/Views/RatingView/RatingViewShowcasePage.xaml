@@ -48,14 +48,14 @@
             <Line Style="{StaticResource HR}" />
             <Label Style="{StaticResource Description}" Text="RatingView styled like a trusted review." />
             <Line Style="{StaticResource HR}" />
-            <Label Text="A trust review 4 out of 5 mock-up" />
+            <Label Text="A trust review 4.7 out of 5 mock-up" />
             <Border
                 Margin="0"
                 Padding="10"
                 BackgroundColor="White"
+                MaximumWidthRequest="500"
                 Stroke="#E5E5DD"
-                StrokeThickness="2"
-                WidthRequest="500">
+                StrokeThickness="2">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="10" />
                 </Border.StrokeShape>
@@ -92,9 +92,10 @@
                         FilledBackgroundColor="#04DA8D"
                         HorizontalOptions="Start"
                         IsEnabled="False"
+                        ItemPadding="3"
                         ItemShapeSize="40"
                         MaximumRating="5"
-                        Rating="4.5"
+                        Rating="4.7"
                         RatingFill="Item"
                         ShapeBorderThickness="0"
                         Spacing="5"
@@ -130,13 +131,15 @@
                 CustomShape="M12,17.964l5.214-1.321l2.179,6.714L12,17.964z M24,9.286h-9.179L12,0.643L9.179,9.286 H0l7.429,5.357l-2.821,8.643l7.429-5.357l4.571-3.286L24,9.286L24,9.286L24,9.286L24,9.286z"
                 EmptyBackgroundColor="#DCDCE6"
                 FilledBackgroundColor="#04DA8D"
+                HorizontalOptions="Start"
                 IsEnabled="False"
-                ItemPadding="2"
+                ItemPadding="3"
                 ItemShapeSize="40"
                 MaximumRating="5"
                 Rating="4.9"
                 RatingFill="Item"
-                ShapeBorderThickness="0"
+                ShapeBorderColor="Black"
+                ShapeBorderThickness="3"
                 Spacing="5" />
             <Label Text="A negative trust review 1 out of 5" />
             <toolkit:RatingView
@@ -144,8 +147,9 @@
                 CustomShape="M12,17.964l5.214-1.321l2.179,6.714L12,17.964z M24,9.286h-9.179L12,0.643L9.179,9.286 H0l7.429,5.357l-2.821,8.643l7.429-5.357l4.571-3.286L24,9.286L24,9.286L24,9.286L24,9.286z"
                 EmptyBackgroundColor="#DCDCE6"
                 FilledBackgroundColor="#FF3722"
+                HorizontalOptions="Start"
                 IsEnabled="False"
-                ItemPadding="2"
+                ItemPadding="3"
                 ItemShapeSize="40"
                 MaximumRating="5"
                 Rating="1"
@@ -156,7 +160,7 @@
             <toolkit:RatingView
                 Margin="0"
                 CustomShape="M12,17.964l5.214-1.321l2.179,6.714L12,17.964z M24,9.286h-9.179L12,0.643L9.179,9.286 H0l7.429,5.357l-2.821,8.643l7.429-5.357l4.571-3.286L24,9.286L24,9.286L24,9.286L24,9.286z"
-                EmptyBackgroundColor="Transparent"
+                EmptyBackgroundColor="White"
                 FilledBackgroundColor="Gold"
                 HorizontalOptions="Start"
                 IsEnabled="False"

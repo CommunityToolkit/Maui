@@ -11,7 +11,7 @@ public class RatingView : TemplatedView, IRatingViewShape
 	/// <summary>Bindable property for <see cref="CustomShape"/> bindable property.</summary>
 	public static readonly BindableProperty CustomShapeProperty = RatingViewItemElement.CustomShapeProperty;
 
-	// TODO: Add BindableProperty to allow the developer to define and style the Item Border, then adjust the control creation accordingly.
+	// TODO: Add BindableProperty to allow the developer to define and style the rating Item(s), then adjust the control creation accordingly.
 
 	/// <summary>The backing store for the <see cref="EmptyBackgroundColor" /> bindable property.</summary>
 	public static readonly BindableProperty EmptyBackgroundColorProperty = RatingViewItemElement.EmptyBackgroundColorProperty;
@@ -30,7 +30,7 @@ public class RatingView : TemplatedView, IRatingViewShape
 	public static readonly BindableProperty RatingFillProperty = BindableProperty.Create(nameof(RatingFill), typeof(RatingFillElement), typeof(RatingView), defaultValue: RatingFillElement.Shape, propertyChanged: OnUpdateRatingDraw);
 
 	/// <summary>The backing store for the <see cref="Rating" /> bindable property.</summary>
-	public static readonly BindableProperty RatingProperty = BindableProperty.Create(nameof(Rating), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.DefaultRating, propertyChanged: OnUpdateRatingDraw);
+	public static readonly BindableProperty RatingProperty = BindableProperty.Create(nameof(Rating), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.DefaultRating, propertyChanged: OnRatingChanged);
 
 	/// <summary>The backing store for the <see cref="ShapeBorderColor" /> bindable property.</summary>
 	public static readonly BindableProperty ShapeBorderColorProperty = RatingViewItemElement.ShapeBorderColorProperty;
@@ -229,8 +229,8 @@ public class RatingView : TemplatedView, IRatingViewShape
 
 		for (int element = 0; element < Control.Count; element++)
 		{
-			Microsoft.Maui.Controls.Shapes.Path rating = (Microsoft.Maui.Controls.Shapes.Path)((Border)Control.Children[element]).Content!.GetVisualTreeDescendants()[0];
-			rating.Margin = newValue;
+			Border item = (Border)Control.Children[element];
+			item.Padding = newValue;
 		}
 	}
 
@@ -433,16 +433,18 @@ public class RatingView : TemplatedView, IRatingViewShape
 		{
 			Border shapeBorder = new()
 			{
-				Padding = ItemPadding,
+				BackgroundColor = Colors.Transparent,
 				Margin = 0,
-				StrokeThickness = 0
+				Padding = ItemPadding,
+				Stroke = new SolidColorBrush(Colors.Transparent),
+				StrokeThickness = 0,
+				Style = null,
 			};
 			Microsoft.Maui.Controls.Shapes.Path image = new()
 			{
 				Aspect = Stretch.Uniform,
 				Data = (Geometry?)new PathGeometryConverter().ConvertFromInvariantString(shape),
 				HeightRequest = ItemShapeSize,
-				Margin = ItemPadding,
 				Stroke = ShapeBorderColor,
 				StrokeLineCap = PenLineCap.Round,
 				StrokeLineJoin = PenLineJoin.Round,
@@ -450,18 +452,19 @@ public class RatingView : TemplatedView, IRatingViewShape
 				WidthRequest = ItemShapeSize,
 			};
 
-			if (RatingFill is RatingFillElement.Shape)
-			{
-				image.Fill = i <= Rating ? (Brush)FilledBackgroundColor : (Brush)EmptyBackgroundColor;
-			}
-			else
-			{
-				image.Fill = BackgroundColor;
-				image.BackgroundColor = FilledBackgroundColor;
-			}
+			//if (RatingFill is RatingFillElement.Shape)
+			//{
+			//	image.Fill = i <= Rating ? (Brush)FilledBackgroundColor : (Brush)EmptyBackgroundColor;
+			//}
+			//else
+			//{
+			//	image.Fill = BackgroundColor;
+			//	image.BackgroundColor = FilledBackgroundColor;
+			//}
 
 			if (IsEnabled)
 			{
+				// TODO: Change this to the Item (aka Border) and not the shape!
 				TapGestureRecognizer tapGestureRecognizer = new();
 				tapGestureRecognizer.Tapped += OnShapeTapped;
 				image.GestureRecognizers.Add(tapGestureRecognizer);
@@ -524,18 +527,25 @@ public class RatingView : TemplatedView, IRatingViewShape
 		}
 
 		int childIndex = Control.Children.IndexOf(tappedShape.Parent);
-		double originalRating = Rating;
 		Rating = MaximumRating > 1 ? childIndex + 1 : Rating.Equals(0.0) ? 1 : 0;
-		if (!originalRating.Equals(Rating))
+	}
+
+	static void OnRatingChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		RatingView ratingView = (RatingView)bindable;
+		double oldValueDouble = (double)oldValue;
+		double newValueDouble = (double)newValue;
+		if (!oldValueDouble.Equals(newValueDouble))
 		{
-			UpdateRatingDraw();
-			weakEventManager.HandleEvent(this, e, nameof(RatingChanged));
+			ratingView.UpdateRatingDraw();
+			weakEventManager.HandleEvent(ratingView, null, nameof(RatingChanged));
 		}
 	}
 
 	/// <summary>Update the drawing of the controls ratings.</summary>
 	void UpdateRatingDraw()
 	{
+		// TODO: This is not working as expected and as such, correctly the tests fail!
 		for (int i = 0; i < MaximumRating; i++)
 		{
 			Microsoft.Maui.Controls.Shapes.Path image = shapes[i];
