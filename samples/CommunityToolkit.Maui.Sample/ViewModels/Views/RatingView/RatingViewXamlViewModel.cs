@@ -11,6 +11,9 @@ public partial class RatingViewXamlViewModel : BaseViewModel
 	public RatingViewXamlViewModel()
 	{
 		ColorsForPickers = colorList.Keys.ToList();
+		ColorPickerEmptyBackgroundSelectedIndex = ColorsForPickers.IndexOf("Red");
+		ColorPickerFilledBackgroundSelectedIndex = ColorsForPickers.IndexOf("Green");
+		ColorPickerRatingShapeBorderColorSelectedIndex = ColorsForPickers.IndexOf("Blue");
 	}
 
 	readonly IReadOnlyDictionary<string, Color> colorList = typeof(Colors).GetFields(BindingFlags.Static | BindingFlags.Public).ToDictionary(c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()));
@@ -25,13 +28,13 @@ public partial class RatingViewXamlViewModel : BaseViewModel
 	Thickness ratingViewShapePadding = new(0);
 
 	[ObservableProperty]
-	Color colorPickerFilledBackgroundTarget = Colors.Transparent;
+	Color colorPickerFilledBackgroundTarget = Colors.Green;
 
 	[ObservableProperty]
-	Color colorPickerEmptyBackgroundTarget = Colors.Transparent;
+	Color colorPickerEmptyBackgroundTarget = Colors.Red;
 
 	[ObservableProperty]
-	Color colorPickerRatingShapeBorderColorTarget = Colors.Transparent;
+	Color colorPickerRatingShapeBorderColorTarget = Colors.Blue;
 
 	[ObservableProperty]
 	int colorPickerFilledBackgroundSelectedIndex = -1;

@@ -156,107 +156,53 @@
             <Line Style="{StaticResource HR}" />
             <Label Style="{StaticResource Description}" Text="RatingView colors." />
             <Line Style="{StaticResource HR}" />
-            <Grid ColumnDefinitions="Auto,Auto,*,*" RowDefinitions="*,*,*,*">
-                <Label
-                    Grid.Row="0"
-                    Grid.Column="2"
-                    Text="Shape Fill" />
-                <Label
-                    Grid.Row="0"
-                    Grid.Column="3"
-                    Text="Item Fill" />
-                <Label
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    Text="Empty rating background color: " />
-                <Picker
-                    Grid.Row="1"
-                    Grid.Column="1"
-                    ItemsSource="{Binding ColorsForPickers}"
-                    SelectedIndex="{Binding ColorPickerEmptyBackgroundSelectedIndex}"
-                    SemanticProperties.Description="Pick to change the empty rating background color.">
-                    <Picker.Behaviors>
-                        <toolkit:EventToCommandBehavior Command="{Binding ColorPickerEmptyBackgroundCommand}" EventName="SelectedIndexChanged" />
-                    </Picker.Behaviors>
-                </Picker>
-                <toolkit:RatingView
-                    Grid.Row="1"
-                    Grid.Column="2"
-                    EmptyBackgroundColor="{Binding ColorPickerEmptyBackgroundTarget}"
-                    ItemShapeSize="40"
-                    MaximumRating="5"
-                    Rating="2.5" />
-                <toolkit:RatingView
-                    Grid.Row="1"
-                    Grid.Column="3"
-                    EmptyBackgroundColor="{Binding ColorPickerEmptyBackgroundTarget}"
-                    ItemShapeSize="40"
-                    MaximumRating="5"
-                    Rating="2.5"
-                    RatingFill="Item" />
-
-                <Label
-                    Grid.Row="2"
-                    Grid.Column="0"
-                    Text="Filled rating background color: " />
-                <Picker
-                    Grid.Row="2"
-                    Grid.Column="1"
-                    ItemsSource="{Binding ColorsForPickers}"
-                    SelectedIndex="{Binding ColorPickerFilledBackgroundSelectedIndex}"
-                    SemanticProperties.Description="Pick to change the filled rating background color.">
-                    <Picker.Behaviors>
-                        <toolkit:EventToCommandBehavior Command="{Binding ColorPickerFilledBackgroundCommand}" EventName="SelectedIndexChanged" />
-                    </Picker.Behaviors>
-                </Picker>
-                <toolkit:RatingView
-                    Grid.Row="2"
-                    Grid.Column="2"
-                    FilledBackgroundColor="{Binding ColorPickerFilledBackgroundTarget}"
-                    ItemShapeSize="40"
-                    MaximumRating="5"
-                    Rating="2.5" />
-                <toolkit:RatingView
-                    Grid.Row="2"
-                    Grid.Column="3"
-                    FilledBackgroundColor="{Binding ColorPickerFilledBackgroundTarget}"
-                    ItemShapeSize="40"
-                    MaximumRating="5"
-                    Rating="2.5"
-                    RatingFill="Item" />
-                <Label
-                    Grid.Row="3"
-                    Grid.Column="0"
-                    Text="Rating shape border color:" />
-                <Picker
-                    Grid.Row="3"
-                    Grid.Column="1"
-                    ItemsSource="{Binding ColorsForPickers}"
-                    SelectedIndex="{Binding ColorPickerRatingShapeBorderColorSelectedIndex}"
-                    SemanticProperties.Description="Pick to change the rating shape border color.">
-                    <Picker.Behaviors>
-                        <toolkit:EventToCommandBehavior Command="{Binding ColorPickerRatingShapeBorderColorCommand}" EventName="SelectedIndexChanged" />
-                    </Picker.Behaviors>
-                </Picker>
-                <toolkit:RatingView
-                    Grid.Row="3"
-                    Grid.Column="2"
-                    ItemShapeSize="40"
-                    MaximumRating="5"
-                    Rating="2.5"
-                    ShapeBorderColor="{Binding ColorPickerRatingShapeBorderColorTarget}"
-                    ShapeBorderThickness="3" />
-                <toolkit:RatingView
-                    Grid.Row="3"
-                    Grid.Column="3"
-                    ItemShapeSize="40"
-                    MaximumRating="5"
-                    Rating="2.5"
-                    RatingFill="Item"
-                    ShapeBorderColor="{Binding ColorPickerRatingShapeBorderColorTarget}"
-                    ShapeBorderThickness="3" />
-            </Grid>
-
+            <Label Text="Empty background color: " />
+            <Picker
+                ItemsSource="{Binding ColorsForPickers}"
+                SelectedIndex="{Binding ColorPickerEmptyBackgroundSelectedIndex}"
+                SemanticProperties.Description="Pick to change the empty rating background color.">
+                <Picker.Behaviors>
+                    <toolkit:EventToCommandBehavior Command="{Binding ColorPickerEmptyBackgroundCommand}" EventName="SelectedIndexChanged" />
+                </Picker.Behaviors>
+            </Picker>
+            <Label Text="Filled background color: " />
+            <Picker
+                ItemsSource="{Binding ColorsForPickers}"
+                SelectedIndex="{Binding ColorPickerFilledBackgroundSelectedIndex}"
+                SemanticProperties.Description="Pick to change the filled rating background color.">
+                <Picker.Behaviors>
+                    <toolkit:EventToCommandBehavior Command="{Binding ColorPickerFilledBackgroundCommand}" EventName="SelectedIndexChanged" />
+                </Picker.Behaviors>
+            </Picker>
+            <Label Text="Shape border color:" />
+            <Picker
+                ItemsSource="{Binding ColorsForPickers}"
+                SelectedIndex="{Binding ColorPickerRatingShapeBorderColorSelectedIndex}"
+                SemanticProperties.Description="Pick to change the rating shape border color.">
+                <Picker.Behaviors>
+                    <toolkit:EventToCommandBehavior Command="{Binding ColorPickerRatingShapeBorderColorCommand}" EventName="SelectedIndexChanged" />
+                </Picker.Behaviors>
+            </Picker>
+            <Label Text="Shape Fill" />
+            <toolkit:RatingView
+                EmptyBackgroundColor="{Binding ColorPickerEmptyBackgroundTarget}"
+                FilledBackgroundColor="{Binding ColorPickerFilledBackgroundTarget}"
+                ItemShapeSize="40"
+                MaximumRating="5"
+                Rating="2.7"
+                RatingFill="Shape"
+                ShapeBorderColor="{Binding ColorPickerRatingShapeBorderColorTarget}"
+                ShapeBorderThickness="1" />
+            <Label Text="Item Fill" />
+            <toolkit:RatingView
+                EmptyBackgroundColor="{Binding ColorPickerEmptyBackgroundTarget}"
+                FilledBackgroundColor="{Binding ColorPickerFilledBackgroundTarget}"
+                ItemShapeSize="40"
+                MaximumRating="5"
+                Rating="2.7"
+                RatingFill="Item"
+                ShapeBorderColor="{Binding ColorPickerRatingShapeBorderColorTarget}"
+                ShapeBorderThickness="1" />
             <Line Style="{StaticResource HR}" />
             <Label Style="{StaticResource Description}" Text="RatingView shape border thickness." />
             <Line Style="{StaticResource HR}" />
