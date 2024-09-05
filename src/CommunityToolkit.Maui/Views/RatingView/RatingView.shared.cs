@@ -1,4 +1,4 @@
-﻿// Ignore Spelling: color, bindable
+﻿// Ignore Spelling: color, bindable, colors
 
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.Shapes;
@@ -51,17 +51,15 @@ public class RatingView : TemplatedView, IRatingViewShape
 	public readonly BindableProperty ShapeProperty = RatingViewItemElement.ShapeProperty;
 
 	static readonly WeakEventManager weakEventManager = new();
-	Microsoft.Maui.Controls.Shapes.Path[] shapes;
 
 	///<summary>The default constructor of the control.</summary>
 	public RatingView()
 	{
 		ControlTemplate = new ControlTemplate(typeof(HorizontalStackLayout));
-		shapes = new Microsoft.Maui.Controls.Shapes.Path[MaximumRating];
 		AddChildrenToControl();
 	}
 
-	/// <summary>Occurs when <see cref="OnShapeTapped"/> and the rating is changed.</summary>
+	/// <summary>Occurs when <see cref="Rating"/> is changed.</summary>
 	public static event EventHandler RatingChanged
 	{
 		add => weakEventManager.AddEventHandler(value);
@@ -213,6 +211,7 @@ public class RatingView : TemplatedView, IRatingViewShape
 
 		if (this.Shape is RatingViewShape.Custom)
 		{
+			// TODO: Change this so that we only update the shape, as there is no need to clear and redraw.
 			ClearAndReDraw();
 		}
 	}
@@ -229,8 +228,7 @@ public class RatingView : TemplatedView, IRatingViewShape
 
 		for (int element = 0; element < Control.Count; element++)
 		{
-			Border item = (Border)Control.Children[element];
-			item.Padding = newValue;
+			((Border)Control.Children[element]).Padding = newValue;
 		}
 	}
 
@@ -239,19 +237,14 @@ public class RatingView : TemplatedView, IRatingViewShape
 	/// <param name="newValue">New rating item shape border color.</param>
 	void IRatingViewShape.OnItemShapeBorderColorChanged(Color oldValue, Color newValue)
 	{
-		if (newValue is null)
+		if (newValue is null || Control is null)
 		{
 			return;
 		}
 
-		if (Control is HorizontalStackLayout stack)
+		for (int element = 0; element < Control.Count; element++)
 		{
-			for (int column = 0; column < stack.Count; column++)
-			{
-				Microsoft.Maui.Controls.Shapes.Path rating = (Microsoft.Maui.Controls.Shapes.Path)((Border)stack.Children[column]).Content!.GetVisualTreeDescendants()[0];
-				rating.Stroke = newValue;
-				shapes[column].Stroke = newValue;
-			}
+			((Microsoft.Maui.Controls.Shapes.Path)((Border)Control.Children[element]).Content!.GetVisualTreeDescendants()[0]).Stroke = newValue;
 		}
 	}
 
@@ -260,14 +253,14 @@ public class RatingView : TemplatedView, IRatingViewShape
 	/// <param name="newValue">New rating item shape border thickness.</param>
 	void IRatingViewShape.OnItemShapeBorderThicknessChanged(double oldValue, double newValue)
 	{
-		if (Control is HorizontalStackLayout stack)
+		if (Control is null)
 		{
-			for (int column = 0; column < stack.Count; column++)
-			{
-				Microsoft.Maui.Controls.Shapes.Path rating = (Microsoft.Maui.Controls.Shapes.Path)((Border)stack.Children[column]).Content!.GetVisualTreeDescendants()[0];
-				rating.StrokeThickness = newValue;
-				shapes[column].StrokeThickness = newValue;
-			}
+			return;
+		}
+
+		for (int element = 0; element < Control.Count; element++)
+		{
+			((Microsoft.Maui.Controls.Shapes.Path)((Border)Control.Children[element]).Content!.GetVisualTreeDescendants()[0]).StrokeThickness = newValue;
 		}
 	}
 
@@ -278,6 +271,7 @@ public class RatingView : TemplatedView, IRatingViewShape
 	{
 		if (Control is not null)
 		{
+			// TODO: Change the rating shape directly, no need to clear and re-draw!!!
 			ClearAndReDraw();
 		}
 	}
@@ -294,9 +288,6 @@ public class RatingView : TemplatedView, IRatingViewShape
 				Microsoft.Maui.Controls.Shapes.Path rating = (Microsoft.Maui.Controls.Shapes.Path)((Border)stack.Children[column]).Content!.GetVisualTreeDescendants()[0];
 				rating.WidthRequest = newValue;
 				rating.HeightRequest = newValue;
-				rating.Margin = ItemPadding;
-				shapes[column].WidthRequest = newValue;
-				shapes[column].HeightRequest = newValue;
 			}
 		}
 	}
@@ -344,7 +335,6 @@ public class RatingView : TemplatedView, IRatingViewShape
 		if (Control is null && child is HorizontalStackLayout stack)
 		{
 			Control = stack;
-			OnControlInitialized();
 		}
 
 		base.OnChildAdded(child);
@@ -383,6 +373,7 @@ public class RatingView : TemplatedView, IRatingViewShape
 		}
 
 		RatingView ratingView = (RatingView)bindable;
+		// TODO: Change this so that if maximum is increased, we add new children, otherwise if less then we remove!
 		ratingView.ClearAndReDraw();
 		if ((byte)newValue < ratingView.Rating)
 		{
@@ -398,11 +389,7 @@ public class RatingView : TemplatedView, IRatingViewShape
 			return;
 		}
 
-		RatingView ratingView = (RatingView)bindable;
-		if (ratingView.Control is HorizontalStackLayout stack)
-		{
-			stack.Spacing = (double)newValue;
-		}
+		((RatingView)bindable).Spacing = (double)newValue;
 	}
 
 	static void OnUpdateRatingDraw(BindableObject bindable, object oldValue, object newValue)
@@ -431,58 +418,51 @@ public class RatingView : TemplatedView, IRatingViewShape
 
 		for (int i = 0; i < MaximumRating; i++)
 		{
-			Border shapeBorder = new()
-			{
-				BackgroundColor = Colors.Transparent,
-				Margin = 0,
-				Padding = ItemPadding,
-				Stroke = new SolidColorBrush(Colors.Transparent),
-				StrokeThickness = 0,
-				Style = null,
-			};
-			Microsoft.Maui.Controls.Shapes.Path image = new()
-			{
-				Aspect = Stretch.Uniform,
-				Data = (Geometry?)new PathGeometryConverter().ConvertFromInvariantString(shape),
-				HeightRequest = ItemShapeSize,
-				Stroke = ShapeBorderColor,
-				StrokeLineCap = PenLineCap.Round,
-				StrokeLineJoin = PenLineJoin.Round,
-				StrokeThickness = ShapeBorderThickness,
-				WidthRequest = ItemShapeSize,
-			};
-
-			//if (RatingFill is RatingFillElement.Shape)
-			//{
-			//	image.Fill = i <= Rating ? (Brush)FilledBackgroundColor : (Brush)EmptyBackgroundColor;
-			//}
-			//else
-			//{
-			//	image.Fill = BackgroundColor;
-			//	image.BackgroundColor = FilledBackgroundColor;
-			//}
-
+			Border child = CreateChild(shape, ItemPadding, ShapeBorderThickness, ItemShapeSize, ShapeBorderColor);
 			if (IsEnabled)
 			{
-				// TODO: Change this to the Item (aka Border) and not the shape!
 				TapGestureRecognizer tapGestureRecognizer = new();
-				tapGestureRecognizer.Tapped += OnShapeTapped;
-				image.GestureRecognizers.Add(tapGestureRecognizer);
+				tapGestureRecognizer.Tapped += OnItemTapped;
+				child.GestureRecognizers.Add(tapGestureRecognizer);
 			}
 
-			shapeBorder.Content = image;
-			Control?.Children.Add(shapeBorder);
-			shapes[i] = image;
+			Control?.Children.Add(child);
 		}
 
 		UpdateRatingDraw();
+	}
+
+	static Border CreateChild(string shape, Thickness itemPadding, double shapeBorderThickness, double itemShapeSize, Brush shapeBorderColor)
+	{
+		Border shapeBorder = new()
+		{
+			BackgroundColor = Colors.Transparent,
+			Margin = 0,
+			Padding = itemPadding,
+			Stroke = new SolidColorBrush(Colors.Transparent),
+			StrokeThickness = 0,
+			Style = null,
+		};
+		Microsoft.Maui.Controls.Shapes.Path shapePath = new()
+		{
+			Aspect = Stretch.Uniform,
+			Data = (Geometry?)new PathGeometryConverter().ConvertFromInvariantString(shape),
+			HeightRequest = itemShapeSize,
+			Stroke = shapeBorderColor,
+			StrokeLineCap = PenLineCap.Round,
+			StrokeLineJoin = PenLineJoin.Round,
+			StrokeThickness = shapeBorderThickness,
+			WidthRequest = itemShapeSize,
+		};
+		shapeBorder.Content = shapePath;
+
+		return shapeBorder;
 	}
 
 	/// <summary>Clear and re-draw the control.</summary>
 	void ClearAndReDraw()
 	{
 		Control?.Children.Clear();
-		shapes = new Microsoft.Maui.Controls.Shapes.Path[MaximumRating];
 		AddChildrenToControl();
 	}
 
@@ -494,29 +474,18 @@ public class RatingView : TemplatedView, IRatingViewShape
 		{
 			for (int i = 0; i < Control?.Children.Count; i++)
 			{
-				Microsoft.Maui.Controls.Shapes.Path rankControl = (Microsoft.Maui.Controls.Shapes.Path)((Border)Control.Children[i]).Content!.GetVisualTreeDescendants()[0];
-				rankControl?.GestureRecognizers.Clear();
+				((Border)Control.Children[i]).GestureRecognizers.Clear();
 			}
 		}
 	}
 
-	/// <summary>Initialise the control.</summary>
-	void OnControlInitialized()
-	{
-		shapes = new Microsoft.Maui.Controls.Shapes.Path[MaximumRating];
-		if (Control is not null)
-		{
-			Control.Spacing = Spacing;
-		}
-	}
-
-	/// <summary>Shape tapped event, to re-draw the current rating and bubble up the event.</summary>
+	/// <summary>Item tapped event, to re-draw the current rating and bubble up the event.</summary>
 	/// <remarks>When a shape such as 'Like' and there is only a maximum rating of 1, we then toggle the current between 0 and 1.</remarks>
 	/// <param name="sender">Element sender of event.</param>
 	/// <param name="e">Event arguments.</param>
-	void OnShapeTapped(object? sender, TappedEventArgs? e)
+	void OnItemTapped(object? sender, TappedEventArgs? e)
 	{
-		if (sender is not Microsoft.Maui.Controls.Shapes.Path tappedShape)
+		if (sender is not Border tappedItem)
 		{
 			return;
 		}
@@ -526,8 +495,8 @@ public class RatingView : TemplatedView, IRatingViewShape
 			return;
 		}
 
-		int childIndex = Control.Children.IndexOf(tappedShape.Parent);
-		Rating = MaximumRating > 1 ? childIndex + 1 : Rating.Equals(0.0) ? 1 : 0;
+		int itemIndex = Control.Children.IndexOf(tappedItem);
+		Rating = MaximumRating > 1 ? itemIndex + 1 : Rating.Equals(0.0) ? 1 : 0;
 	}
 
 	static void OnRatingChanged(BindableObject bindable, object oldValue, object newValue)
@@ -545,65 +514,120 @@ public class RatingView : TemplatedView, IRatingViewShape
 	/// <summary>Update the drawing of the controls ratings.</summary>
 	void UpdateRatingDraw()
 	{
-		// TODO: This is not working as expected and as such, correctly the tests fail!
-		for (int i = 0; i < MaximumRating; i++)
+		if (Control is null)
 		{
-			Microsoft.Maui.Controls.Shapes.Path image = shapes[i];
-			if (Rating >= i + 1)
+			return;
+		}
+
+		bool isShapeFill = RatingFill is RatingFillElement.Shape;
+		List<VisualElement> visualElements = GetVisualTreeDescendantsWithBorderAndShape((VisualElement)Control!.GetVisualTreeDescendants()[0], isShapeFill);
+		if (isShapeFill)
+		{
+			UpdateRatingShapeColors(visualElements, Rating, FilledBackgroundColor, EmptyBackgroundColor);
+		}
+		else
+		{
+			UpdateRatingItemColors(visualElements, Rating, FilledBackgroundColor, EmptyBackgroundColor, BackgroundColor);
+		}
+
+		return;
+	}
+	static List<VisualElement> GetVisualTreeDescendantsWithBorderAndShape(VisualElement root, bool isShapeFill)
+	{
+		List<VisualElement> result = new();
+		if (root.GetVisualTreeDescendants().OfType<VisualElement>().FirstOrDefault() is HorizontalStackLayout stackLayout)
+		{
+			// Iterate through the children of the HorizontalStackLayout
+			foreach (IView? child in stackLayout.Children)
 			{
-				image.Stroke = ShapeBorderColor;
-				if (RatingFill is RatingFillElement.Shape)
+				// Check if each child of the HorizontalStackLayout is a Border and contains a Shape
+				if (child is not Border border || border.Content is not Shape shape)
 				{
-					image.Fill = FilledBackgroundColor;
+					break;
+				}
+
+				if (isShapeFill)
+				{
+					result.Add(shape);
 				}
 				else
 				{
-					image.Fill = BackgroundColor;
-					image.BackgroundColor = FilledBackgroundColor;
-					((Border)image.Parent).BackgroundColor = FilledBackgroundColor;
+					result.Add(border);
 				}
-
-				continue;
 			}
+		}
 
-			if (Rating % (i + 1) is 0)
+		return result;
+	}
+
+	/// <summary>Updates each rating item colors based on the rating value (filled, partially filled, empty).</summary>
+	/// <param name="ratingItems">A list of rating item visual elements to update.</param>
+	/// <param name="rating">Current rating value (e.g., 3.7)</param>
+	/// <param name="filledBackgroundColor">Background color of a filled shape.</param>
+	/// <param name="emptyBackgroundColor">Background color of an empty shape.</param>
+	/// <param name="backgroundColor">Background color of the control.</param>
+	static void UpdateRatingItemColors(List<VisualElement> ratingItems, double rating, Color filledBackgroundColor, Color emptyBackgroundColor, Color backgroundColor)
+	{
+		int fullShapes = (int)Math.Floor(rating); // Determine the number of fully filled shapes
+		double partialFill = rating - fullShapes; // Determine the fraction for the partially filled shape (if any)
+
+		for (int i = 0; i < ratingItems.Count; i++)
+		{
+			((Shape)((Border)ratingItems[i]).Content!).Fill = emptyBackgroundColor;
+			if (i < fullShapes)
 			{
-				if (RatingFill is RatingFillElement.Shape)
-				{
-					image.Fill = EmptyBackgroundColor;
-				}
-				else
-				{
-					image.Fill = BackgroundColor;
-					image.Background = null;
-					image.BackgroundColor = EmptyBackgroundColor;
-					((Border)image.Parent).BackgroundColor = EmptyBackgroundColor;
-				}
-
-				image.Stroke = ShapeBorderColor;
-				continue;
+				ratingItems[i].BackgroundColor = filledBackgroundColor; // Fully filled shape
 			}
-
-			double fraction = Rating - Math.Floor(Rating);
-			Microsoft.Maui.Controls.Shapes.Path element = shapes[(int)(Rating - fraction)];
-			GradientStopCollection colors =
-			[
-				new(FilledBackgroundColor, (float)fraction),
-				new(EmptyBackgroundColor, (float)fraction)
-			];
-
-			if (RatingFill is RatingFillElement.Shape)
+			else if (i == fullShapes && partialFill > 0)
 			{
-				element.Fill = new LinearGradientBrush(colors, new Point(0, 0), new Point(1, 0));
+				// Set the background of the shape to partially filled, since .NET MAUI doesn't have direct partial fill, we'll approximate with a gradient
+				ratingItems[i].Background = new LinearGradientBrush(
+					[
+							new GradientStop(filledBackgroundColor, 0),
+							new GradientStop(filledBackgroundColor, (float)partialFill),  // Adjust the fill percentage
+							new GradientStop(backgroundColor, (float)partialFill),
+					],
+					new Point(0, 0), new Point(1, 0));
 			}
 			else
 			{
-				image.Fill = BackgroundColor;
-				image.Background = new LinearGradientBrush(colors, new Point(0, 0), new Point(1, 0));
-				((Border)image.Parent).Background = new LinearGradientBrush(colors, new Point(0, 0), new Point(1, 0));
+				ratingItems[i].BackgroundColor = backgroundColor;  // Empty shape
 			}
+		}
+	}
 
-			element.Stroke = ShapeBorderColor;
+	/// <summary>Updates each rating item shape colors based on the rating value (filled, partially filled, empty).</summary>
+	/// <param name="ratingItems">A list of rating item shape visual elements to update.</param>
+	/// <param name="rating">Current rating value (e.g., 3.7)</param>
+	/// <param name="filledBackgroundColor">Background color of a filled shape.</param>
+	/// <param name="emptyBackgroundColor">Background color of an empty shape.</param>
+	static void UpdateRatingShapeColors(List<VisualElement> ratingItems, double rating, Color filledBackgroundColor, Color emptyBackgroundColor)
+	{
+		int fullShapes = (int)Math.Floor(rating); // Determine the number of fully filled shapes
+		double partialFill = rating - fullShapes; // Determine the fraction for the partially filled shape (if any)
+
+		for (int i = 0; i < ratingItems.Count; i++)
+		{
+			Shape ratingShape = (Shape)ratingItems[i];
+			if (i < fullShapes)
+			{
+				ratingShape.Fill = filledBackgroundColor; // Fully filled shape
+			}
+			else if (i == fullShapes && partialFill > 0)
+			{
+				// Set the background of the shape to partially filled, since .NET MAUI doesn't have direct partial fill, we'll approximate with a gradient
+				ratingShape.Fill = new LinearGradientBrush(
+					[
+							new GradientStop(filledBackgroundColor, 0),
+							new GradientStop(filledBackgroundColor, (float)partialFill),  // Adjust the fill percentage
+							new GradientStop(emptyBackgroundColor, (float)partialFill),
+					],
+					new Point(0, 0), new Point(1, 0));
+			}
+			else
+			{
+				ratingShape.Fill = emptyBackgroundColor;  // Empty shape
+			}
 		}
 	}
 }
