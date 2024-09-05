@@ -13,6 +13,23 @@ public class MediaElementTests : BaseHandlerTest
 	}
 
 	[Fact]
+	public void PosterIsNotStringEmptyorNull()
+	{
+		MediaElement mediaElement = new();
+		mediaElement.MetadataArtworkUrl = "https://www.example.com/image.jpg";
+		Assert.True(!string.IsNullOrEmpty(mediaElement.MetadataArtworkUrl));
+	}
+
+	[Fact]
+	public void PosterIsStringEmptyDoesNotThrow()
+	{
+		MediaElement mediaElement = new();
+		mediaElement.MetadataArtworkUrl = string.Empty;
+		Assert.True(string.IsNullOrEmpty(mediaElement.MetadataArtworkUrl));
+		Assert.True(mediaElement.MetadataArtworkUrl == string.Empty);
+	}
+
+	[Fact]
 	public void BindingContextPropagation()
 	{
 		object context = new();
