@@ -83,36 +83,53 @@
 
             <Label Text="Slide to change StatusBar color" />
 
+            <Label Text="Red" />
             <Slider
-                Margin="20,10"
-                Maximum="255"
+                Margin="20,0"
+                Maximum="1"
                 MaximumTrackColor="Red"
                 Minimum="0"
                 MinimumTrackColor="Red"
                 ThumbColor="Red"
                 Value="{Binding RedSliderValue}" />
 
+            <Label Text="Green" />
             <Slider
-                Margin="20,10"
-                Maximum="255"
+                Margin="20,0"
+                Maximum="1"
                 MaximumTrackColor="Green"
                 Minimum="0"
                 MinimumTrackColor="Green"
                 ThumbColor="Green"
                 Value="{Binding GreenSliderValue}" />
 
+            <Label Text="Blue" />
             <Slider
-                Margin="20,10"
-                Maximum="255"
+                Margin="20,0"
+                Maximum="1"
                 MaximumTrackColor="Blue"
                 Minimum="0"
                 MinimumTrackColor="Blue"
                 ThumbColor="Blue"
                 Value="{Binding BlueSliderValue}" />
+            <HorizontalStackLayout>
+                <Label Text="Alpha: " />
+                <Label Text="{Binding AlphaSliderValue}"/>
+            </HorizontalStackLayout>
+           
+            <Stepper
+                HorizontalOptions="Start"
+                Margin="20,0"
+                Maximum="1"
+                Increment="0.1"
+                Minimum="0"
+                Value="{Binding AlphaSliderValue}" />
 
-            <VerticalStackLayout Spacing="15">
+            <Label Text="Select StatusBar and NavigationBar style" />
+            
+            <HorizontalStackLayout Spacing="15">
 
-                <Label Text="Select StatusBar and NavigationBar style" />
+                
 
                 <RadioButton
                     Content="Default"
@@ -133,7 +150,7 @@
                     </RadioButton.Content>
                 </RadioButton>
 
-            </VerticalStackLayout>
+            </HorizontalStackLayout>
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>

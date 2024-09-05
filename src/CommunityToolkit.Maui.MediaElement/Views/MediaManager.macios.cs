@@ -225,6 +225,7 @@ public partial class MediaManager : IDisposable
 
 		metaData ??= new(Player);
 		Metadata.ClearNowPlaying();
+		PlayerViewController?.ContentOverlayView?.Subviews?.FirstOrDefault()?.RemoveFromSuperview();
 
 		if (MediaElement.Source is UriMediaSource uriMediaSource)
 		{
@@ -301,12 +302,55 @@ public partial class MediaManager : IDisposable
 			{
 				Player.Play();
 			}
+			SetPoster();
 		}
 		else if (PlayerItem is null)
 		{
 			MediaElement.MediaWidth = MediaElement.MediaHeight = 0;
 
 			MediaElement.CurrentStateChanged(MediaElementState.None);
+		}
+	}
+	void SetPoster()
+	{
+
+		if (PlayerItem is null || metaData is null)
+		{
+			return;
+		}
+		var videoTrack = PlayerItem.Asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant()).FirstOrDefault();
+		if (videoTrack is not null)
+		{
+			return;
+		}
+		if (PlayerItem.Asset.Tracks.Length == 0)
+		{
+			// No video track found and no tracks found. This is likely an audio file. So we can't set a poster.
+			return;
+		}
+
+		if (PlayerViewController?.View is not null && PlayerViewController.ContentOverlayView is not null && !string.IsNullOrEmpty(MediaElement.MetadataArtworkUrl))
+		{
+			var image = UIImage.LoadFromData(NSData.FromUrl(new NSUrl(MediaElement.MetadataArtworkUrl))) ?? new UIImage();
+			var imageView = new UIImageView(image)
+			{
+				ContentMode = UIViewContentMode.ScaleAspectFit,
+				TranslatesAutoresizingMaskIntoConstraints = false,
+				ClipsToBounds = true,
+				AutoresizingMask = UIViewAutoresizing.FlexibleDimensions
+			};
+
+			PlayerViewController.ContentOverlayView.AddSubview(imageView);
+			NSLayoutConstraint.ActivateConstraints(
+			[
+				imageView.CenterXAnchor.ConstraintEqualTo(PlayerViewController.ContentOverlayView.CenterXAnchor),
+				imageView.CenterYAnchor.ConstraintEqualTo(PlayerViewController.ContentOverlayView.CenterYAnchor),
+				imageView.WidthAnchor.ConstraintLessThanOrEqualTo(PlayerViewController.ContentOverlayView.WidthAnchor),
+				imageView.HeightAnchor.ConstraintLessThanOrEqualTo(PlayerViewController.ContentOverlayView.HeightAnchor),
+
+				// Maintain the aspect ratio
+				imageView.WidthAnchor.ConstraintEqualTo(imageView.HeightAnchor, image.Size.Width / image.Size.Height)
+			]);
 		}
 	}
 

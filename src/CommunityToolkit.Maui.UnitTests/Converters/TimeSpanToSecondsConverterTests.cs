@@ -10,8 +10,6 @@ public class TimeSpanToSecondsConverterTests : BaseConverterTest<TimeSpanToSecon
 		[TimeSpan.MaxValue, 922337203685.4775],
 		[TimeSpan.FromSeconds(100), 100],
 		[new TimeSpan(), 0],
-		[TimeSpan.Zero, 0],
-		[default(TimeSpan), 0],
 		[TimeSpan.MinValue, -922337203685.4775],
 	];
 
