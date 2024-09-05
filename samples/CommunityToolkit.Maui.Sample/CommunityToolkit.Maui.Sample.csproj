@@ -33,6 +33,14 @@
     <!--<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>-->
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' 
+                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'tizen'
+                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'android'">
+    <!-- Ahead-of-time compilation is not yet supported net8.0-tizen -->
+    <!-- Cross-OS native compilation is not supported.	CommunityToolkit.Maui.Sample (net8.0-android) -->
+    <PublishAot>true</PublishAot>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- App Icon -->
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
@@ -77,20 +85,9 @@
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Maps\CommunityToolkit.Maui.Maps.csproj" />
   </ItemGroup>
 
-  <PropertyGroup Condition="'$(Configuration)' == 'Release' AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'tizen'">
-    <!-- Ahead-of-time compilation is not yet supported net8.0-tizen -->
-    <PublishAot>true</PublishAot>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='android' AND '$(Configuration)' == 'Debug'">
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='android'">
     <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
     <RuntimeIdentifiers>android-arm;android-arm64;android-x86;android-x64</RuntimeIdentifiers>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='android' AND '$(Configuration)' == 'Release'">
-    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
-    <!-- [NETSDK1203] Ahead-of-time compilation is not yet supported for the target runtime identifiers 'android-arm' and 'android-x86'-->
-    <RuntimeIdentifiers>android-arm64;android-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))=='false' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='maccatalyst' and $(Configuration) == 'Debug'">
