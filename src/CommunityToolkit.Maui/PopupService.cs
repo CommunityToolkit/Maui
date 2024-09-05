@@ -16,7 +16,7 @@ public class PopupService : IPopupService
 	/// <summary>
 	/// Gets or sets the <see cref="IPopupLifecycleController"/> implementation.
 	/// </summary>
-	public IPopupLifecycleController PopupLifecycleController { get; set; } = new StackBasedPopupLifecycleController();
+	public IPopupLifecycleController PopupLifecycleController { get; set; } = new PopupLifecycleController();
 
 	static Page CurrentPage =>
 		PageExtensions.GetCurrentPage(
