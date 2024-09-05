@@ -37,7 +37,7 @@
                  AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'tizen'
                  AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'android'">
     <!-- Ahead-of-time compilation is not yet supported net8.0-tizen -->
-    <!-- Cross-OS native compilation is not supported.	CommunityToolkit.Maui.Sample (net8.0-android) -->
+    <!-- Cross-OS native compilation is not supported net8.0-android -->
     <PublishAot>true</PublishAot>
   </PropertyGroup>
 
