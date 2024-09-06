@@ -209,7 +209,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 				break;
 
 			case SelectionMode.Multiple:
-				var selectedItems = collectionView.SelectedItems ?? [];
+				var selectedItems = collectionView.SelectedItems?.ToList() ?? [];
 
 				if (!selectedItems.Remove(selectedItem))
 				{

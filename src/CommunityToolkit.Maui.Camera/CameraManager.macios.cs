@@ -199,10 +199,15 @@ partial class CameraManager
 		var result = await wrapper.Task.WaitAsync(token);
 		var data = result.Photo.FileDataRepresentation;
 
+		if (result.Error is not null)
+		{
+			cameraView.OnMediaCapturedFailed(result.Error.LocalizedFailureReason);
+			return;
+		}
+
 		if (data is null)
 		{
-			// TODO: Pass NSError information
-			cameraView.OnMediaCapturedFailed();
+			cameraView.OnMediaCapturedFailed("Unable to retrieve the file data representation from the captured result.");
 			return;
 		}
 
@@ -213,6 +218,11 @@ partial class CameraManager
 			Marshal.Copy(data.Bytes, dataBytes, 0, (int)data.Length);
 
 			cameraView.OnMediaCaptured(new MemoryStream(dataBytes));
+		}
+		catch (Exception ex)
+		{
+			cameraView.OnMediaCapturedFailed(ex.Message);
+			throw;
 		}
 		finally
 		{
