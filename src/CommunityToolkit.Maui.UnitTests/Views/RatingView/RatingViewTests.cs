@@ -1,7 +1,5 @@
 ﻿// Ignore Spelling: color
 
-namespace CommunityToolkit.Maui.UnitTests.Views;
-
 using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
@@ -9,16 +7,10 @@ using FluentAssertions;
 using Microsoft.Maui.Controls.Shapes;
 using Xunit;
 
+namespace CommunityToolkit.Maui.UnitTests.Views;
+
 public class RatingViewTests : BaseHandlerTest
 {
-	[Fact]
-	public void Events_Border_TapGestureRecognizer()
-	{
-		RatingView ratingView = new();
-		// TODO: Finish this test!
-		Assert.Equal(ratingView, ratingView);
-	}
-
 	[Fact]
 	public void Defaults_BindingContext()
 	{
@@ -85,48 +77,53 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void Events_ShouldBeRaised_WhenCurrentRatingChanges()
+	public void Events_Border_TapGestureRecognizer()
 	{
-		const double currentRating = 3.5;
 		RatingView ratingView = new();
-		_ = ratingView.Rating.Should().Be(RatingViewDefaults.DefaultRating);
-
-		bool signaled = false;
-		ratingView.PropertyChanged += (sender, e) =>
-		{
-			if (e.PropertyName == nameof(ratingView.Rating))
-			{
-				signaled = true;
-			}
-		};
-
-		ratingView.Rating = currentRating;
-		_ = ratingView.Rating.Should().Be(currentRating);
-		_ = signaled.Should().BeTrue();
+		// TODO: Finish this test!
+		Assert.Equal(ratingView, ratingView);
 	}
 
 	[Fact]
-	public void Events_MaximumRatingChanged_BelowRating()
+	public void Events_ShouldBeRaised_MaximumRatingChanged_BelowRating()
 	{
-		List<EventArgs> receivedEvents = [];
+		List<RatingChangedEventArgs> receivedEvents = [];
+		const double expectedRating = 2;
 		RatingView ratingView = new()
 		{
 			MaximumRating = 3,
 			Rating = 3
 		};
 		RatingView.RatingChanged += (sender, e) => receivedEvents.Add(e);
-		ratingView.MaximumRating = 2;
-		_ = receivedEvents.Should().HaveCount(2);
+		ratingView.MaximumRating = (byte)expectedRating;
+		_ = receivedEvents.Should().HaveCount(1);
+		_ = receivedEvents[0].Rating.Should().Be(expectedRating);
 	}
 
 	[Fact]
-	public void Events_RatingChanged()
+	public void Events_ShouldBeRaised_RatingChangedEvent()
 	{
-		List<EventArgs> receivedEvents = [];
+		List<RatingChangedEventArgs> receivedEvents = [];
+		const double expectedRating = 2.0;
 		RatingView ratingView = new();
 		RatingView.RatingChanged += (sender, e) => receivedEvents.Add(e);
-		ratingView.Rating = 2;
+		ratingView.Rating = expectedRating;
 		_ = Assert.Single(receivedEvents);
+		_ = receivedEvents[0].Rating.Should().Be(expectedRating);
+	}
+
+	[Fact]
+	public void Events_ShouldNotBeRaised_MaximumRatingChanged_AboveRating()
+	{
+		List<RatingChangedEventArgs> receivedEvents = [];
+		RatingView ratingView = new()
+		{
+			MaximumRating = 3,
+			Rating = 3
+		};
+		RatingView.RatingChanged += (sender, e) => receivedEvents.Add(e);
+		ratingView.MaximumRating = 4;
+		_ = receivedEvents.Should().HaveCount(0);
 	}
 
 	[Fact]
@@ -140,7 +137,26 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void Properties_Change_EmptyBackgroundColor()
+	public void Properties_Change_EmptyBackgroundColor_Item()
+	{
+		const double rating = 1.5;
+		const byte maximumRating = 7;
+		Color emptyBackgroundColor = Colors.Snow;
+		RatingView ratingView = new()
+		{
+			MaximumRating = maximumRating,
+			Rating = rating,
+			RatingFill = RatingFillElement.Item
+		};
+		_ = ratingView.EmptyBackgroundColor.Should().NotBe(emptyBackgroundColor);
+		ratingView.EmptyBackgroundColor = emptyBackgroundColor;
+		_ = ratingView.EmptyBackgroundColor.Should().Be(emptyBackgroundColor);
+		Microsoft.Maui.Controls.Shapes.Path emptyRatingItem = (Microsoft.Maui.Controls.Shapes.Path)((Border)ratingView.Control!.Children[maximumRating - 1]).Content!.GetVisualTreeDescendants()[0];
+		_ = emptyRatingItem.Fill.Should().Be(new SolidColorBrush(emptyBackgroundColor));
+	}
+
+	[Fact]
+	public void Properties_Change_EmptyBackgroundColor_Shape()
 	{
 		const double rating = 1.5;
 		const byte maximumRating = 7;
@@ -154,11 +170,34 @@ public class RatingViewTests : BaseHandlerTest
 		ratingView.EmptyBackgroundColor = emptyBackgroundColor;
 		_ = ratingView.EmptyBackgroundColor.Should().Be(emptyBackgroundColor);
 		Microsoft.Maui.Controls.Shapes.Path emptyRatingItem = (Microsoft.Maui.Controls.Shapes.Path)((Border)ratingView.Control!.Children[maximumRating - 1]).Content!.GetVisualTreeDescendants()[0];
-		_ = emptyRatingItem.BackgroundColor.Should().Be(emptyBackgroundColor);
+		_ = emptyRatingItem.Fill.Should().Be(new SolidColorBrush(emptyBackgroundColor));
 	}
 
 	[Fact]
-	public void Properties_Change_FilledBackgroundColor()
+	public void Properties_Change_FilledBackgroundColor_Item()
+	{
+		const double rating = 1.5;
+		const byte maximumRating = 7;
+		Color filledBackgroundColor = Colors.Snow;
+		Color emptyBackgroundColor = Colors.Firebrick;
+		RatingView ratingView = new()
+		{
+			MaximumRating = maximumRating,
+			Rating = rating,
+			RatingFill = RatingFillElement.Item
+		};
+		_ = ratingView.FilledBackgroundColor.Should().NotBe(filledBackgroundColor);
+		ratingView.BackgroundColor = filledBackgroundColor;
+		ratingView.EmptyBackgroundColor = emptyBackgroundColor;
+		_ = ratingView.FilledBackgroundColor.Should().Be(filledBackgroundColor);
+		Microsoft.Maui.Controls.Shapes.Path filledRatingShape = (Microsoft.Maui.Controls.Shapes.Path)((Border)ratingView.Control!.Children[(int)Math.Floor(rating)]).Content!.GetVisualTreeDescendants()[0];
+		_ = filledRatingShape.Fill.Should().Be(new SolidColorBrush(emptyBackgroundColor));
+		Border filledRatingItem = (Border)ratingView.Control!.Children[(int)Math.Floor(rating)];
+		_ = filledRatingItem.BackgroundColor.Should().Be(filledBackgroundColor);
+	}
+
+	[Fact]
+	public void Properties_Change_FilledBackgroundColor_Shape()
 	{
 		const double rating = 1.5;
 		const byte maximumRating = 7;
@@ -171,8 +210,8 @@ public class RatingViewTests : BaseHandlerTest
 		_ = ratingView.FilledBackgroundColor.Should().NotBe(filledBackgroundColor);
 		ratingView.FilledBackgroundColor = filledBackgroundColor;
 		_ = ratingView.FilledBackgroundColor.Should().Be(filledBackgroundColor);
-		Microsoft.Maui.Controls.Shapes.Path filledRatingItem = (Microsoft.Maui.Controls.Shapes.Path)((Border)ratingView.Control!.Children[(int)Math.Floor(rating)]).Content!.GetVisualTreeDescendants()[0];
-		_ = filledRatingItem.BackgroundColor.Should().Be(filledBackgroundColor);
+		Microsoft.Maui.Controls.Shapes.Path filledRatingItem = (Microsoft.Maui.Controls.Shapes.Path)((Border)ratingView.Control!.Children[0]).Content!.GetVisualTreeDescendants()[0];
+		_ = filledRatingItem.Fill.Should().Be(new SolidColorBrush(filledBackgroundColor));
 	}
 
 	[Fact]
@@ -298,6 +337,27 @@ public class RatingViewTests : BaseHandlerTest
 		HorizontalStackLayout? control = ratingView.Control;
 		_ = control.Should().NotBeNull();
 		_ = control!.Spacing.Should().Be(spacing);
+	}
+
+	[Fact]
+	public void Properties_ChangeEvent_ShouldBeRaised_RatingPropertyChanged()
+	{
+		const double currentRating = 3.5;
+		RatingView ratingView = new();
+		_ = ratingView.Rating.Should().Be(RatingViewDefaults.DefaultRating);
+
+		bool signaled = false;
+		ratingView.PropertyChanged += (sender, e) =>
+		{
+			if (e.PropertyName == nameof(ratingView.Rating))
+			{
+				signaled = true;
+			}
+		};
+
+		ratingView.Rating = currentRating;
+		_ = ratingView.Rating.Should().Be(currentRating);
+		_ = signaled.Should().BeTrue();
 	}
 
 	[Fact]

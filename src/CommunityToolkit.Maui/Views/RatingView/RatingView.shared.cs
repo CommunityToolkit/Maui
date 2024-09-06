@@ -60,7 +60,7 @@ public class RatingView : TemplatedView, IRatingViewShape
 	}
 
 	/// <summary>Occurs when <see cref="Rating"/> is changed.</summary>
-	public static event EventHandler RatingChanged
+	public static event EventHandler<RatingChangedEventArgs> RatingChanged
 	{
 		add => weakEventManager.AddEventHandler(value);
 		remove => weakEventManager.RemoveEventHandler(value);
@@ -377,8 +377,9 @@ public class RatingView : TemplatedView, IRatingViewShape
 		ratingView.ClearAndReDraw();
 		if ((byte)newValue < ratingView.Rating)
 		{
-			ratingView.Rating = (byte)newValue;
-			weakEventManager.HandleEvent(ratingView, EventArgs.Empty, nameof(RatingChanged));
+			byte newRatingValue = (byte)newValue;
+			ratingView.Rating = newRatingValue;
+			weakEventManager.HandleEvent(ratingView, new RatingChangedEventArgs(newRatingValue), nameof(MaximumRating));
 		}
 	}
 
@@ -389,7 +390,7 @@ public class RatingView : TemplatedView, IRatingViewShape
 			return;
 		}
 
-		((RatingView)bindable).Spacing = (double)newValue;
+		((RatingView)bindable).Control!.Spacing = (double)newValue;
 	}
 
 	static void OnUpdateRatingDraw(BindableObject bindable, object oldValue, object newValue)
@@ -507,7 +508,7 @@ public class RatingView : TemplatedView, IRatingViewShape
 		if (!oldValueDouble.Equals(newValueDouble))
 		{
 			ratingView.UpdateRatingDraw();
-			weakEventManager.HandleEvent(ratingView, null, nameof(RatingChanged));
+			weakEventManager.HandleEvent(ratingView, new RatingChangedEventArgs(newValueDouble), nameof(RatingChanged));
 		}
 	}
 

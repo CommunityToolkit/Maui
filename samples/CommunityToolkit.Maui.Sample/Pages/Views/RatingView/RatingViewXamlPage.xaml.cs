@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
 
@@ -13,7 +14,7 @@ public partial class RatingViewXamlPage : BasePage<RatingViewXamlViewModel>
 		vm = viewModel;
 	}
 
-	void StepperMaximumRating_RatingChanged(object sender, EventArgs e)
+	void StepperMaximumRating_RatingChanged(object sender, RatingChangedEventArgs e)
 	{
 		// This is the weak event raised when the rating is changed.  The developer can then perform further actions (such as save to DB).
 		if (sender is RatingView ratingView)
