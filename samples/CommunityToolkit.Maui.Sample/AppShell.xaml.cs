@@ -183,7 +183,7 @@ public partial class AppShell : Shell
 	{
 		return new KeyValuePair<Type, (Type GalleryPageType, Type ContentPageType)>(typeof(TViewModel), (typeof(TGalleryPage), typeof(TPage)));
 	}
-	
+
 	void SetupNavigationView()
 	{
 #if WINDOWS
