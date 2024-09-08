@@ -229,17 +229,15 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<NavigationBarPage, NavigationBarAndroidViewModel>();
 
 		// Add Views Pages + ViewModels
+		services.AddTransientWithShellRoute<BasicMapsPage, BasicMapsViewModel>();
 		services.AddTransientWithShellRoute<CameraViewPage, CameraViewViewModel>();
+		services.AddTransientWithShellRoute<CustomSizeAndPositionPopupPage, CustomSizeAndPositionPopupViewModel>();
 		services.AddTransientWithShellRoute<DrawingViewPage, DrawingViewViewModel>();
 		services.AddTransientWithShellRoute<ExpanderPage, ExpanderViewModel>();
-
-		services.AddTransientWithShellRoute<BasicMapsPage, BasicMapsViewModel>();
-		services.AddTransientWithShellRoute<MapsPinsPage, MapsPinsViewModel>();
-
 		services.AddTransientWithShellRoute<LazyViewPage, LazyViewViewModel>();
+		services.AddTransientWithShellRoute<MapsPinsPage, MapsPinsViewModel>();
 		services.AddTransientWithShellRoute<MediaElementPage, MediaElementViewModel>();
-
-		services.AddTransientWithShellRoute<CustomSizeAndPositionPopupPage, CustomSizeAndPositionPopupViewModel>();
+		services.AddTransientWithShellRoute<MediaElementCarouselViewPage, MediaElementCarouselViewViewModel>();
 		services.AddTransientWithShellRoute<MultiplePopupPage, MultiplePopupViewModel>();
 		services.AddTransientWithShellRoute<PopupAnchorPage, PopupAnchorViewModel>();
 		services.AddTransientWithShellRoute<PopupLayoutAlignmentPage, PopupLayoutAlignmentViewModel>();
