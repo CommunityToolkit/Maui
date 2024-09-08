@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.ApplicationModel;
 using CommunityToolkit.Maui.Maps;
 using CommunityToolkit.Maui.Markup;
@@ -166,6 +167,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<StatusBarBehaviorPage, StatusBarBehaviorViewModel>();
 		services.AddTransientWithShellRoute<TextValidationBehaviorPage, TextValidationBehaviorViewModel>();
 		services.AddTransientWithShellRoute<TouchBehaviorPage, TouchBehaviorViewModel>();
+		services.AddTransientWithShellRoute<TouchBehaviorCollectionViewMultipleSelectionPage, TouchBehaviorCollectionViewMultipleSelectionViewModel>();
 		services.AddTransientWithShellRoute<UriValidationBehaviorPage, UriValidationBehaviorViewModel>();
 		services.AddTransientWithShellRoute<UserStoppedTypingBehaviorPage, UserStoppedTypingBehaviorViewModel>();
 
@@ -227,17 +229,15 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<NavigationBarPage, NavigationBarAndroidViewModel>();
 
 		// Add Views Pages + ViewModels
+		services.AddTransientWithShellRoute<BasicMapsPage, BasicMapsViewModel>();
 		services.AddTransientWithShellRoute<CameraViewPage, CameraViewViewModel>();
+		services.AddTransientWithShellRoute<CustomSizeAndPositionPopupPage, CustomSizeAndPositionPopupViewModel>();
 		services.AddTransientWithShellRoute<DrawingViewPage, DrawingViewViewModel>();
 		services.AddTransientWithShellRoute<ExpanderPage, ExpanderViewModel>();
-
-		services.AddTransientWithShellRoute<BasicMapsPage, BasicMapsViewModel>();
-		services.AddTransientWithShellRoute<MapsPinsPage, MapsPinsViewModel>();
-
 		services.AddTransientWithShellRoute<LazyViewPage, LazyViewViewModel>();
+		services.AddTransientWithShellRoute<MapsPinsPage, MapsPinsViewModel>();
 		services.AddTransientWithShellRoute<MediaElementPage, MediaElementViewModel>();
-
-		services.AddTransientWithShellRoute<CustomSizeAndPositionPopupPage, CustomSizeAndPositionPopupViewModel>();
+		services.AddTransientWithShellRoute<MediaElementCarouselViewPage, MediaElementCarouselViewViewModel>();
 		services.AddTransientWithShellRoute<MultiplePopupPage, MultiplePopupViewModel>();
 		services.AddTransientWithShellRoute<PopupAnchorPage, PopupAnchorViewModel>();
 		services.AddTransientWithShellRoute<PopupLayoutAlignmentPage, PopupLayoutAlignmentViewModel>();
@@ -265,7 +265,7 @@ public static class MauiProgram
 		services.AddSingleton<ITextToSpeech>(TextToSpeech.Default);
 	}
 
-	static IServiceCollection AddTransientWithShellRoute<TPage, TViewModel>(this IServiceCollection services) where TPage : BasePage<TViewModel>
+	static IServiceCollection AddTransientWithShellRoute<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPage, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TViewModel>(this IServiceCollection services) where TPage : BasePage<TViewModel>
 																												where TViewModel : BaseViewModel
 	{
 		return services.AddTransientWithShellRoute<TPage, TViewModel>(AppShell.GetPageRoute<TViewModel>());
