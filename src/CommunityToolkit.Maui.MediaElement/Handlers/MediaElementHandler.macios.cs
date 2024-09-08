@@ -5,7 +5,6 @@ using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Handlers;
-using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
 
@@ -56,7 +55,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		{
 			throw new InvalidOperationException($"{nameof(playerViewController)} must be set in the {nameof(CreatePlatformView)} method");
 		}
-		
+
 		if (VirtualView.TryFindParent<ItemsView>(out var itemsView) && itemsView.Handler is not null)
 		{
 			var parentViewController = itemsView.Handler switch
