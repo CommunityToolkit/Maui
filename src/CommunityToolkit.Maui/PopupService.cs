@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel;
-using System.Runtime.CompilerServices;
+using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Platform;
@@ -46,7 +46,7 @@ public class PopupService : IPopupService
 							?? throw new InvalidOperationException("Could not locate IDispatcher");
 	}
 
-	internal static void AddTransientPopup<TPopupView, TPopupViewModel>(IServiceCollection services)
+	internal static void AddTransientPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>(IServiceCollection services)
 		where TPopupView : IPopup
 		where TPopupViewModel : INotifyPropertyChanged
 	{

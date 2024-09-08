@@ -1,14 +1,14 @@
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Behaviors;
-using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 using CommunityToolkit.Maui.Markup;
+using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
 public class TouchBehaviorCollectionViewMultipleSelectionPage : BasePage<TouchBehaviorCollectionViewMultipleSelectionViewModel>
 {
 	readonly CollectionView collectionView;
-	
+
 	public TouchBehaviorCollectionViewMultipleSelectionPage(TouchBehaviorCollectionViewMultipleSelectionViewModel viewModel) : base(viewModel)
 	{
 		Content = new VerticalStackLayout
@@ -19,7 +19,7 @@ public class TouchBehaviorCollectionViewMultipleSelectionPage : BasePage<TouchBe
 					.Text($"This page demonstrates how to use the TouchBehavior inside of a CollectionView when {nameof(SelectionMode)}.{nameof(SelectionMode.Multiple)} is in use")
 					.Center()
 					.TextCenter(),
-				
+
 				new CollectionView { SelectionMode = SelectionMode.Multiple }
 					.ItemTemplate(new CreatorsDataTemplate(viewModel))
 					.Invoke(collectionView => collectionView.SelectionChanged += HandleSelectionChanged)
@@ -30,7 +30,7 @@ public class TouchBehaviorCollectionViewMultipleSelectionPage : BasePage<TouchBe
 			}
 		};
 	}
-	
+
 	async void HandleSelectionChanged(object? sender, SelectionChangedEventArgs e)
 	{
 		await Toast.Make($"Number of Creators Selected: {collectionView.SelectedItems?.Count ?? 0}").Show();
@@ -44,10 +44,10 @@ public class TouchBehaviorCollectionViewMultipleSelectionPage : BasePage<TouchBe
 			{
 				new Label()
 					.Center()
-					.Bind(Label.TextProperty, 
+					.Bind(Label.TextProperty,
 						getter: static (ContentCreator creator) => creator.Resource,
 						mode: BindingMode.OneTime),
-				
+
 				new Image()
 					.Size(100, 100)
 					.Bind(Image.SourceProperty,
