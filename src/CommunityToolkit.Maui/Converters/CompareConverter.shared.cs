@@ -14,7 +14,7 @@ public sealed class CompareConverter : CompareConverter<IComparable, object>
 /// <summary>
 /// Converts an object that implements IComparable to an object or a boolean based on a comparison.
 /// </summary>
-public abstract class CompareConverter<TValue, TReturnObject> : BaseConverterOneWay<TValue, object> where TValue : IComparable
+public abstract class CompareConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TValue, TReturnObject> : BaseConverterOneWay<TValue, object> where TValue : IComparable
 {
 	/// <inheritdoc/>
 	public override object DefaultConvertReturnValue { get; set; } = new();

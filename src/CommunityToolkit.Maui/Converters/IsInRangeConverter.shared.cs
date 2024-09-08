@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters;
 
@@ -6,7 +7,7 @@ namespace CommunityToolkit.Maui.Converters;
 public sealed class IsInRangeConverter : IsInRangeConverter<IComparable, object>;
 
 /// <summary>Converts the incoming value to a <see cref="bool"/> indicating whether or not the value is within a range.</summary>
-public abstract class IsInRangeConverter<TValue, TReturnObject> : BaseConverterOneWay<TValue, object> where TValue : IComparable
+public abstract class IsInRangeConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TValue, TReturnObject> : BaseConverterOneWay<TValue, object> where TValue : IComparable
 {
 	/// <summary>
 	/// Bindable property for <see cref="FalseObject"/>
