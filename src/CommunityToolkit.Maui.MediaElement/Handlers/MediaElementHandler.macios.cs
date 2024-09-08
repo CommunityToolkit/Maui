@@ -71,6 +71,8 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 			VirtualView.ParentChanged -= HandleMediaElementParentChanged;
 		}
 
+		// The Controller we need is a `protected internal` property in the ItemsViewContoller class: https://github.com/dotnet/maui/blob/cf002538cb73db4bf187a51e4786d7478a7025ee/src/Controls/src/Core/Handlers/Items/ItemsViewHandler.iOS.cs#L39
+		// In this method, we must use reflection to get the value of its backing field 
 		static ItemsViewController<TItemsView> GetInternalController<TItemsView>(ItemsViewHandler<TItemsView> handler) where TItemsView : ItemsView
 		{
 			var nonPublicInstanceFields = typeof(ItemsViewHandler<TItemsView>).GetFields(BindingFlags.NonPublic | BindingFlags.Instance);
