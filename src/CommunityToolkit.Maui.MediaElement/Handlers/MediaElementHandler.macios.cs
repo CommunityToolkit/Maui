@@ -42,8 +42,12 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	/// <inheritdoc/>
 	protected override void DisconnectHandler(MauiMediaElement platformView)
 	{
+		playerViewController?.Dispose();
+		playerViewController = null;
+		
 		platformView.Dispose();
 		Dispose();
+		
 		base.DisconnectHandler(platformView);
 	}
 
