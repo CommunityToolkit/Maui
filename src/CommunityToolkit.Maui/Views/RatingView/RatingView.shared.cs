@@ -466,15 +466,25 @@ public class RatingView : TemplatedView, IRatingViewShape
 		AddChildrenToControl();
 	}
 
-	/// <summary>Ensure VisualElement.IsEnabled always matches RatingView.IsEnabled, and remove any added gesture recognisers.</summary>
+	/// <summary>Ensure VisualElement.IsEnabled always matches RatingView.IsEnabled.  Remove any added gesture recognisers if not enabled; Otherwise, add if not already present.</summary>
 	void HandleIsEnabledChanged()
 	{
 		base.IsEnabled = IsEnabled;
-		if (!IsEnabled)
+		for (int i = 0; i < Control?.Children.Count; i++)
 		{
-			for (int i = 0; i < Control?.Children.Count; i++)
+			Border child = ((Border)Control.Children[i]);
+			if (!IsEnabled)
 			{
-				((Border)Control.Children[i]).GestureRecognizers.Clear();
+				child.GestureRecognizers.Clear();
+			}
+			else
+			{
+				if (child.GestureRecognizers.Count == 0)
+				{
+					TapGestureRecognizer tapGestureRecognizer = new();
+					tapGestureRecognizer.Tapped += OnItemTapped;
+					child.GestureRecognizers.Add(tapGestureRecognizer);
+				}
 			}
 		}
 	}

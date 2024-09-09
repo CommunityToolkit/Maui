@@ -223,11 +223,11 @@
             <Label Style="{StaticResource Description}" Text="RatingView enable and disable. Rating can only bechanged when enabled." />
             <Line Style="{StaticResource HR}" />
             <HorizontalStackLayout HorizontalOptions="Start">
-                <Switch x:Name="RatingViewIsEnabled" IsToggled="False" />
+                <CheckBox x:Name="RatingViewIsEnabled" IsChecked="True" />
                 <Label Text="IsEnabled" />
             </HorizontalStackLayout>
             <toolkit:RatingView
-                IsEnabled="{Binding Source={x:Reference RatingViewIsEnabled}, Path=IsToggled}"
+                IsEnabled="{Binding Source={x:Reference RatingViewIsEnabled}, Path=IsChecked}"
                 MaximumRating="5"
                 Rating="2.5" />
 
