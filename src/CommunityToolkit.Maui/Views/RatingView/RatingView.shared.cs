@@ -60,7 +60,7 @@ public class RatingView : TemplatedView, IRatingViewShape
 	}
 
 	/// <summary>Occurs when <see cref="Rating"/> is changed.</summary>
-	public static event EventHandler<RatingChangedEventArgs> RatingChanged
+	public event EventHandler<RatingChangedEventArgs> RatingChanged
 	{
 		add => weakEventManager.AddEventHandler(value);
 		remove => weakEventManager.RemoveEventHandler(value);
@@ -571,6 +571,10 @@ public class RatingView : TemplatedView, IRatingViewShape
 	{
 		int fullShapes = (int)Math.Floor(rating); // Determine the number of fully filled shapes
 		double partialFill = rating - fullShapes; // Determine the fraction for the partially filled shape (if any)
+		if (backgroundColor is null)
+		{
+			backgroundColor = Colors.Transparent;
+		}
 
 		for (int i = 0; i < ratingItems.Count; i++)
 		{
