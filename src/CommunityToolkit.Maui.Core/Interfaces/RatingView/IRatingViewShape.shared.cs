@@ -104,20 +104,20 @@ public interface IRatingViewShape
 public enum RatingViewShape
 {
 	/// <summary>A star rating shape.</summary>
-	Star = 0,
+	Star,
 
 	/// <summary>A heart rating shape.</summary>
-	Heart = 1,
+	Heart,
 
 	/// <summary>A circle rating shape.</summary>
-	Circle = 2,
+	Circle,
 
 	/// <summary>A like/thumbs up rating shape.</summary>
-	Like = 3,
+	Like,
 
 	/// <summary>A dislike/thumbs down rating shape.</summary>
-	Dislike = 4,
+	Dislike,
 
 	/// <summary>A custom rating shape.</summary>
-	Custom = 99
+	Custom
 }
