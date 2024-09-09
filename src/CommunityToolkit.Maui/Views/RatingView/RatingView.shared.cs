@@ -571,10 +571,7 @@ public class RatingView : TemplatedView, IRatingViewShape
 	{
 		int fullShapes = (int)Math.Floor(rating); // Determine the number of fully filled shapes
 		double partialFill = rating - fullShapes; // Determine the fraction for the partially filled shape (if any)
-		if (backgroundColor is null)
-		{
-			backgroundColor = Colors.Transparent;
-		}
+		backgroundColor ??= Colors.Transparent;
 
 		for (int i = 0; i < ratingItems.Count; i++)
 		{

@@ -94,7 +94,7 @@ public class RatingViewTests : BaseHandlerTest
 			MaximumRating = 3,
 			Rating = 3
 		};
-		RatingView.RatingChanged += (sender, e) => receivedEvents.Add(e);
+		ratingView.RatingChanged += (sender, e) => receivedEvents.Add(e);
 		ratingView.MaximumRating = (byte)expectedRating;
 		_ = receivedEvents.Should().HaveCount(1);
 		_ = receivedEvents[0].Rating.Should().Be(expectedRating);
@@ -106,7 +106,7 @@ public class RatingViewTests : BaseHandlerTest
 		List<RatingChangedEventArgs> receivedEvents = [];
 		const double expectedRating = 2.0;
 		RatingView ratingView = new();
-		RatingView.RatingChanged += (sender, e) => receivedEvents.Add(e);
+		ratingView.RatingChanged += (sender, e) => receivedEvents.Add(e);
 		ratingView.Rating = expectedRating;
 		_ = Assert.Single(receivedEvents);
 		_ = receivedEvents[0].Rating.Should().Be(expectedRating);
@@ -121,7 +121,7 @@ public class RatingViewTests : BaseHandlerTest
 			MaximumRating = 3,
 			Rating = 3
 		};
-		RatingView.RatingChanged += (sender, e) => receivedEvents.Add(e);
+		ratingView.RatingChanged += (sender, e) => receivedEvents.Add(e);
 		ratingView.MaximumRating = 4;
 		_ = receivedEvents.Should().HaveCount(0);
 	}
@@ -180,6 +180,7 @@ public class RatingViewTests : BaseHandlerTest
 		const byte maximumRating = 7;
 		Color filledBackgroundColor = Colors.Snow;
 		Color emptyBackgroundColor = Colors.Firebrick;
+		Color backgroundColor = Colors.DarkGreen;
 		RatingView ratingView = new()
 		{
 			MaximumRating = maximumRating,
@@ -187,13 +188,17 @@ public class RatingViewTests : BaseHandlerTest
 			RatingFill = RatingFillElement.Item
 		};
 		_ = ratingView.FilledBackgroundColor.Should().NotBe(filledBackgroundColor);
-		ratingView.BackgroundColor = filledBackgroundColor;
+		_ = ratingView.BackgroundColor.Should().BeNull();
+		ratingView.BackgroundColor = backgroundColor;
 		ratingView.EmptyBackgroundColor = emptyBackgroundColor;
+		ratingView.FilledBackgroundColor = filledBackgroundColor;
 		_ = ratingView.FilledBackgroundColor.Should().Be(filledBackgroundColor);
 		Microsoft.Maui.Controls.Shapes.Path filledRatingShape = (Microsoft.Maui.Controls.Shapes.Path)((Border)ratingView.Control!.Children[(int)Math.Floor(rating)]).Content!.GetVisualTreeDescendants()[0];
 		_ = filledRatingShape.Fill.Should().Be(new SolidColorBrush(emptyBackgroundColor));
 		Border filledRatingItem = (Border)ratingView.Control!.Children[(int)Math.Floor(rating)];
-		_ = filledRatingItem.BackgroundColor.Should().Be(filledBackgroundColor);
+		_ = filledRatingItem.BackgroundColor.Should().Be(Colors.Transparent);
+		filledRatingItem = (Border)ratingView.Control!.Children[maximumRating -1]; // Check the last one, as this is where we expect the background colour to be set
+		_ = filledRatingItem.BackgroundColor.Should().Be(backgroundColor);
 	}
 
 	[Fact]
