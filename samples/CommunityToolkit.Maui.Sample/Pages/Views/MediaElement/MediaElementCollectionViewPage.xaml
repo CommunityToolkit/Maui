@@ -9,6 +9,7 @@
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Views.MediaElementCollectionViewPage"
                 Padding="0, 20, 0, 0"
             Title="MediaElement in CollectionView">
+    <ScrollView>
     <VerticalStackLayout Spacing="12">
     <Label HorizontalTextAlignment="Center"
             VerticalTextAlignment="Center"
@@ -16,11 +17,11 @@
             VerticalOptions="Center"
             Text="This page demonstrates that the MediaElement can be used inside of a DataTemplate" 
             Margin="12,0,12,0"/>
-    <CollectionView HeightRequest="275" ItemsSource="{Binding ItemSource}">
+    <CollectionView HeightRequest="850" ItemsSource="{Binding ItemSource}">
             
         <CollectionView.ItemsLayout>
             <GridItemsLayout Orientation="Vertical"
-                                Span="3"
+                                Span="1"
                                 SnapPointsAlignment="Center"
                                 SnapPointsType="MandatorySingle" />
         </CollectionView.ItemsLayout>
@@ -56,5 +57,8 @@
             
     </CollectionView>
         
-</VerticalStackLayout>
+    </VerticalStackLayout>
+        
+    </ScrollView>
+    
 </pages:BasePage>
