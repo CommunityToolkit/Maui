@@ -456,7 +456,6 @@ public class RatingView : TemplatedView, IRatingViewShape
 			WidthRequest = itemShapeSize,
 		};
 		shapeBorder.Content = shapePath;
-
 		return shapeBorder;
 	}
 
@@ -480,7 +479,7 @@ public class RatingView : TemplatedView, IRatingViewShape
 		}
 	}
 
-	/// <summary>Item tapped event, to re-draw the current rating and bubble up the event.</summary>
+	/// <summary>Item tapped event, to re-draw the current rating.</summary>
 	/// <remarks>When a shape such as 'Like' and there is only a maximum rating of 1, we then toggle the current between 0 and 1.</remarks>
 	/// <param name="sender">Element sender of event.</param>
 	/// <param name="e">Event arguments.</param>
@@ -530,31 +529,32 @@ public class RatingView : TemplatedView, IRatingViewShape
 		{
 			UpdateRatingItemColors(visualElements, Rating, FilledBackgroundColor, EmptyBackgroundColor, BackgroundColor);
 		}
-
-		return;
 	}
+
 	static List<VisualElement> GetVisualTreeDescendantsWithBorderAndShape(VisualElement root, bool isShapeFill)
 	{
-		List<VisualElement> result = new();
-		if (root.GetVisualTreeDescendants().OfType<VisualElement>().FirstOrDefault() is HorizontalStackLayout stackLayout)
+		List<VisualElement> result = [];
+		if (root.GetVisualTreeDescendants().OfType<VisualElement>().FirstOrDefault() is not HorizontalStackLayout stackLayout)
 		{
-			// Iterate through the children of the HorizontalStackLayout
-			foreach (IView? child in stackLayout.Children)
-			{
-				// Check if each child of the HorizontalStackLayout is a Border and contains a Shape
-				if (child is not Border border || border.Content is not Shape shape)
-				{
-					break;
-				}
+			return result;
+		}
 
-				if (isShapeFill)
-				{
-					result.Add(shape);
-				}
-				else
-				{
-					result.Add(border);
-				}
+		// Iterate through the children of the HorizontalStackLayout
+		foreach (IView? child in stackLayout.Children)
+		{
+			// Check if each child of the HorizontalStackLayout is a Border and contains a Shape
+			if (child is not Border border || border.Content is not Shape shape)
+			{
+				break;
+			}
+
+			if (isShapeFill)
+			{
+				result.Add(shape);
+			}
+			else
+			{
+				result.Add(border);
 			}
 		}
 
@@ -562,11 +562,12 @@ public class RatingView : TemplatedView, IRatingViewShape
 	}
 
 	/// <summary>Updates each rating item colors based on the rating value (filled, partially filled, empty).</summary>
+	/// <remarks>At this time, since .NET MAUI doesn't have direct partial fill, we approximate with a gradient.</remarks>
 	/// <param name="ratingItems">A list of rating item visual elements to update.</param>
 	/// <param name="rating">Current rating value (e.g., 3.7)</param>
-	/// <param name="filledBackgroundColor">Background color of a filled shape.</param>
-	/// <param name="emptyBackgroundColor">Background color of an empty shape.</param>
-	/// <param name="backgroundColor">Background color of the control.</param>
+	/// <param name="filledBackgroundColor">Background color of a filled item.</param>
+	/// <param name="emptyBackgroundColor">Background color of an empty item.</param>
+	/// <param name="backgroundColor">Background color of the item.</param>
 	static void UpdateRatingItemColors(List<VisualElement> ratingItems, double rating, Color filledBackgroundColor, Color emptyBackgroundColor, Color backgroundColor)
 	{
 		int fullShapes = (int)Math.Floor(rating); // Determine the number of fully filled shapes
@@ -582,23 +583,23 @@ public class RatingView : TemplatedView, IRatingViewShape
 			}
 			else if (i == fullShapes && partialFill > 0)
 			{
-				// Set the background of the shape to partially filled, since .NET MAUI doesn't have direct partial fill, we'll approximate with a gradient
 				ratingItems[i].Background = new LinearGradientBrush(
 					[
 							new GradientStop(filledBackgroundColor, 0),
-							new GradientStop(filledBackgroundColor, (float)partialFill),  // Adjust the fill percentage
+							new GradientStop(filledBackgroundColor, (float)partialFill),
 							new GradientStop(backgroundColor, (float)partialFill),
 					],
-					new Point(0, 0), new Point(1, 0));
+					new Point(0, 0), new Point(1, 0));  // Partial fill
 			}
 			else
 			{
-				ratingItems[i].BackgroundColor = backgroundColor;  // Empty shape
+				ratingItems[i].BackgroundColor = backgroundColor;  // Empty fill
 			}
 		}
 	}
 
 	/// <summary>Updates each rating item shape colors based on the rating value (filled, partially filled, empty).</summary>
+	/// <remarks>At this time, since .NET MAUI doesn't have direct partial fill, we approximate with a gradient.</remarks>
 	/// <param name="ratingItems">A list of rating item shape visual elements to update.</param>
 	/// <param name="rating">Current rating value (e.g., 3.7)</param>
 	/// <param name="filledBackgroundColor">Background color of a filled shape.</param>
@@ -617,18 +618,17 @@ public class RatingView : TemplatedView, IRatingViewShape
 			}
 			else if (i == fullShapes && partialFill > 0)
 			{
-				// Set the background of the shape to partially filled, since .NET MAUI doesn't have direct partial fill, we'll approximate with a gradient
 				ratingShape.Fill = new LinearGradientBrush(
 					[
 							new GradientStop(filledBackgroundColor, 0),
-							new GradientStop(filledBackgroundColor, (float)partialFill),  // Adjust the fill percentage
+							new GradientStop(filledBackgroundColor, (float)partialFill),
 							new GradientStop(emptyBackgroundColor, (float)partialFill),
 					],
-					new Point(0, 0), new Point(1, 0));
+					new Point(0, 0), new Point(1, 0)); // Partial fill
 			}
 			else
 			{
-				ratingShape.Fill = emptyBackgroundColor;  // Empty shape
+				ratingShape.Fill = emptyBackgroundColor;  // Empty fill
 			}
 		}
 	}
@@ -638,8 +638,8 @@ public class RatingView : TemplatedView, IRatingViewShape
 public enum RatingFillElement
 {
 	/// <summary>Fill the rating shape.</summary>
-	Shape = 0,
+	Shape,
 
 	/// <summary>Fill the rating item.</summary>
-	Item = 1
+	Item
 }
