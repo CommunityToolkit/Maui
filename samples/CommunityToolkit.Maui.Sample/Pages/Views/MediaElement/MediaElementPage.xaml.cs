@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
@@ -33,7 +32,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 	void MediaElement_PropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		if (e.PropertyName == MediaElement.DurationProperty.PropertyName)
+		if (e.PropertyName == CommunityToolkit.Maui.Views.MediaElement.DurationProperty.PropertyName)
 		{
 			logger.LogInformation("Duration: {newDuration}", MediaElement.Duration);
 			PositionSlider.Maximum = MediaElement.Duration.TotalSeconds;
@@ -264,7 +263,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	void DisplayPopup(object sender, EventArgs e)
 	{
 		MediaElement.Pause();
-		MediaElement popupMediaElement = new MediaElement
+		var popupMediaElement = new Maui.Views.MediaElement
 		{
 			Source = MediaSource.FromResource("AppleVideo.mp4"),
 			HeightRequest = 600,
@@ -276,12 +275,12 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		{
 			VerticalOptions = LayoutAlignment.Center,
 			HorizontalOptions = LayoutAlignment.Center,
-		};
-		popup.Content = new StackLayout
-		{
-			Children =
+			Content = new StackLayout
 			{
-				popupMediaElement,
+				Children =
+				{
+					popupMediaElement,
+				}
 			}
 		};
 
