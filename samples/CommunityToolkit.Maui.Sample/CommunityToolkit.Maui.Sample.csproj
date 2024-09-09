@@ -33,7 +33,10 @@
     <!--<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>-->
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)' == 'Release' &#xD;&#xA;                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'tizen'&#xD;&#xA;                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'android'&#xD;&#xA;                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' 
+                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'tizen'
+                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'android'
+                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
     <!-- Ahead-of-time compilation is not yet supported net8.0-tizen -->
     <!-- Cross-OS native compilation is not supported net8.0-android -->
     <!-- Only iOS + MacCatalyst support AOT in .NET 8 -->
@@ -58,7 +61,7 @@
     <!-- Custom Fonts -->
     <MauiFont Include="Resources\Fonts\*" />
 
-    <PackageReference Include="Microsoft.Maui.Controls" Version="*" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="*"/>
     <PackageReference Include="CommunityToolkit.Maui.Markup" Version="4.1.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="8.8.0" />
@@ -82,18 +85,6 @@
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Camera\CommunityToolkit.Maui.Camera.csproj" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Maps\CommunityToolkit.Maui.Maps.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Pages\Views\MediaElement\MediaElementCollectionViewPage.xaml.cs">
-      <DependentUpon>MediaElementCollectionViewPage.xaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <MauiXaml Update="Pages\Views\MediaElement\MediaElementCollectionViewPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </MauiXaml>
   </ItemGroup>
 
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='windows' and $(Configuration) == 'Release'">
