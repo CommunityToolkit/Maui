@@ -19,8 +19,8 @@
     <CollectionView HeightRequest="275" ItemsSource="{Binding ItemSource}">
             
         <CollectionView.ItemsLayout>
-            <LinearItemsLayout Orientation="Horizontal"
-                                ItemSpacing="24"
+            <GridItemsLayout Orientation="Vertical"
+                                Span="3"
                                 SnapPointsAlignment="Center"
                                 SnapPointsType="MandatorySingle" />
         </CollectionView.ItemsLayout>
