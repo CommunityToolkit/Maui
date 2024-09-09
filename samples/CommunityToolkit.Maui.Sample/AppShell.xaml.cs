@@ -117,17 +117,16 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<AvatarViewShadowsPage, AvatarViewShadowsViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<AvatarViewShapesPage, AvatarViewShapesViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<AvatarViewSizesPage, AvatarViewSizesViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<BasicMapsPage, BasicMapsViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<CameraViewPage, CameraViewViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<CustomSizeAndPositionPopupPage, CustomSizeAndPositionPopupViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<DrawingViewPage, DrawingViewViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<ExpanderPage, ExpanderViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
-
-		CreateViewModelMapping<BasicMapsPage, BasicMapsViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
-		CreateViewModelMapping<MapsPinsPage, MapsPinsViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
-
 		CreateViewModelMapping<LazyViewPage, LazyViewViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<MapsPinsPage, MapsPinsViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<MediaElementPage, MediaElementViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
-
-		CreateViewModelMapping<CustomSizeAndPositionPopupPage, CustomSizeAndPositionPopupViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<MediaElementCarouselViewPage, MediaElementCarouselViewViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<MediaElementCollectionViewPage, MediaElementCollectionViewViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<MultiplePopupPage, MultiplePopupViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<PopupAnchorPage, PopupAnchorViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<PopupLayoutAlignmentPage, PopupLayoutAlignmentViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
@@ -174,7 +173,7 @@ public partial class AppShell : Shell
 		return uri.Uri.OriginalString[..^1];
 	}
 
-	static string GetPageRoute(Type galleryPageType, Type contentPageType) => $"/{galleryPageType.Name}/{contentPageType.Name}";
+	static string GetPageRoute(Type galleryPageType, Type contentPageType) => $"//{galleryPageType.Name}/{contentPageType.Name}";
 
 	static KeyValuePair<Type, (Type GalleryPageType, Type ContentPageType)> CreateViewModelMapping<TPage, TViewModel, TGalleryPage, TGalleryViewModel>() where TPage : BasePage<TViewModel>
 																																							where TViewModel : BaseViewModel
