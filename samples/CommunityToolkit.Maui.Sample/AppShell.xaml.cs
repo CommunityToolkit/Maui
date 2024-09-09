@@ -172,7 +172,7 @@ public partial class AppShell : Shell
 		return uri.Uri.OriginalString[..^1];
 	}
 
-	static string GetPageRoute(Type galleryPageType, Type contentPageType) => $"/{galleryPageType.Name}/{contentPageType.Name}";
+	static string GetPageRoute(Type galleryPageType, Type contentPageType) => $"//{galleryPageType.Name}//{contentPageType.Name}";
 
 	static KeyValuePair<Type, (Type GalleryPageType, Type ContentPageType)> CreateViewModelMapping<TPage, TViewModel, TGalleryPage, TGalleryViewModel>() where TPage : BasePage<TViewModel>
 																																							where TViewModel : BaseViewModel
