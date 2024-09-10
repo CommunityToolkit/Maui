@@ -73,6 +73,8 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 	[Theory]
 	[InlineData("x == 3 && x1", new object?[] { 3d, 4d }, 4d)]
 	[InlineData("x != 3 || x1", new object?[] { 3d, 4d }, 4d)]
+	[InlineData("x + x1 || true", new object?[] { 3d, 4d }, 7d)]
+	[InlineData("x + x1 && false", new object?[] { 2d, -2d }, 0d)]
 	public void MathExpressionConverter_WithBooleanOperator_ReturnsCorrectNumberResult(string expression, object[] variables, double expectedResult)
 	{
 		var mathExpressionConverter = new MultiMathExpressionConverter();
