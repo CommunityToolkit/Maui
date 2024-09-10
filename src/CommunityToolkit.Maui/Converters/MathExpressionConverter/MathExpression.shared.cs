@@ -205,8 +205,6 @@ sealed partial class MathExpression
 				case "if":
 				case "&&":
 				case "||":
-					nullGuard = args[0] is null;
-					break;
 				case "==":
 				case "!=":
 					nullGuard = false;
