@@ -26,8 +26,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MediaManager : Java.Lang.Object, IPlayerListener
 {
 	static readonly HttpClient client = new();
-	
-	const int sTATE_IDLE = 1;
+
 	const int sTATE_BUFFERING = 2;
 	const int sTATE_READY = 3;
 	const int sTATE_ENDED = 4;
@@ -154,7 +153,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			}
 			catch (Exception e)
 			{
-				System.Diagnostics.Trace.WriteLine($"[error] {e}, {e.Message}");
+				System.Diagnostics.Trace.TraceError($"[error] {e}, {e.Message}");
 			}
 		}
 
@@ -198,9 +197,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		};
 
 		checkPermissionsTask = CheckAndRequestForegroundPermission(checkPermissionSourceToken.Token);
-
-		session = new AndroidX.Media3.Session.MediaSession.Builder(Platform.AppContext, Player).Build();
-
+		
+		string RandomId = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8];
+		var mediaSessionWRandomId = new AndroidX.Media3.Session.MediaSession.Builder(Platform.AppContext, Player);
+		mediaSessionWRandomId.SetId(RandomId);
+		session = mediaSessionWRandomId.Build();
+		
 		uiUpdateReceiver ??= new UIUpdateReceiver(Player);
 		if (Build.VERSION.SdkInt <= BuildVersionCodes.Tiramisu)
 		{
@@ -264,12 +266,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		if (error?.ErrorCode is not null)
 		{
-			errorCode = $"Error code: {error?.ErrorCode}";
+			errorCode = $"Error code: {error.ErrorCode}";
 		}
 
 		if (!string.IsNullOrWhiteSpace(error?.ErrorCodeName))
 		{
-			errorCodeName = $"Error codename: {error?.ErrorCodeName}";
+			errorCodeName = $"Error codename: {error.ErrorCodeName}";
 		}
 
 		var message = string.Join(", ", new[]
@@ -281,7 +283,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		MediaElement.MediaFailed(new MediaFailedEventArgs(message));
 
-		Logger.LogError("{logMessage}", message);
+		Logger.LogError("{LogMessage}", message);
 	}
 
 	/// <summary>
@@ -451,13 +453,13 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
 		mediaMetaData.SetArtworkUri(Android.Net.Uri.Parse(MediaElement.MetadataArtworkUrl));
 		mediaMetaData.Build();
-		
+
 		mediaItem = new MediaItem.Builder();
 		mediaItem.SetUri(url);
 		mediaItem.SetMediaId(url);
 		mediaItem.SetMediaMetadata(mediaMetaData.Build());
 		ArgumentNullException.ThrowIfNull(session);
-		session.SetSessionExtras(mediaItem.Build()?.ToBundle());
+		session.SessionExtras = mediaItem.Build()?.ToBundle();
 		ArgumentNullException.ThrowIfNull(Player);
 		return mediaItem;
 	}
@@ -598,8 +600,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			{
 				LocalBroadcastManager.GetInstance(Platform.AppContext).UnregisterReceiver(uiUpdateReceiver);
 			}
-			Player?.RemoveListener(this);
-			Player?.Release();
 			uiUpdateReceiver?.Dispose();
 			uiUpdateReceiver = null;
 			checkPermissionSourceToken.Dispose();
@@ -635,7 +635,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 
 		ArgumentNullException.ThrowIfNull(PlayerView);
-		PlayerView.UseArtwork = true;
 		Android.Content.Context? context = Platform.AppContext;
 		Android.Content.Res.Resources? resources = context.Resources;
 
@@ -653,9 +652,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			intent.PutExtra("currentTime", SystemClock.ElapsedRealtime());
 			intent.PutExtra("duration", ((long)MediaElement.Duration.TotalSeconds));
 		}
-		
-		session?.SetSessionExtras(intent.Extras);
+
 		ArgumentNullException.ThrowIfNull(session);
+		session.SessionExtras = intent.Extras;
 		intent.PutExtra("token", session.SessionCompatToken);
 		
 		if (OperatingSystem.IsAndroidVersionAtLeast(26))
