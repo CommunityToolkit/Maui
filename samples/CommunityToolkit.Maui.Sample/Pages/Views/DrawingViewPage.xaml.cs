@@ -31,7 +31,7 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 	async void GetCurrentDrawingViewImageClicked(object sender, EventArgs e)
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-		var stream = await DrawingViewControl.GetImageStream(GestureImage.Width, GestureImage.Height, cts.Token);
+		var stream = await DrawingViewControl.GetImageStream(GestureImage.Width, GestureImage.Height, ImageOutputOption.Lines, cts.Token);
 
 		GestureImage.Source = ImageSource.FromStream(() => stream);
 	}
@@ -51,6 +51,7 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 		var stream = await DrawingView.GetImageStream(drawingLines,
 			new Size(points.Max(x => x.X) - points.Min(x => x.X), points.Max(x => x.Y) - points.Min(x => x.Y)),
 			Colors.Gray,
+			this.DrawingViewControl.Bounds.Size,
 			token);
 
 		GestureImage.Source = ImageSource.FromStream(() => stream);
@@ -79,7 +80,7 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 		var height = GetSide(GestureImage.Height);
 
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-		var stream = await e.LastDrawingLine.GetImageStream(width, height, Colors.Gray.AsPaint(), cts.Token);
+		var stream = await e.LastDrawingLine.GetImageStream(width, height, Colors.Gray.AsPaint(), this.DrawingViewControl.Bounds.Size, cts.Token);
 
 		GestureImage.Source = ImageSource.FromStream(() => stream);
 	}

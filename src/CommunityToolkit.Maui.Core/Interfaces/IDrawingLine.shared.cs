@@ -38,7 +38,8 @@ public interface IDrawingLine
 	/// <param name="imageSizeWidth">Desired width of the image that is returned.</param>
 	/// <param name="imageSizeHeight">Desired height of the image that is returned.</param>
 	/// <param name="background">Background of the generated image.</param>
-	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingLine"/>.</returns>
+	/// <param name="canvaSize"></param>
 	/// <param name="token"> <see cref="CancellationToken"/>.</param>
-	ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Paint background, CancellationToken token = default);
+	/// /// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingLine"/>.</returns>
+	ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Paint background, Size? canvaSize = null, CancellationToken token = default);
 }

@@ -45,9 +45,10 @@ public interface IDrawingView : IView
 	/// </summary>
 	/// <param name="imageSizeWidth">Desired width of the image that is returned. The image will be resized proportionally.</param>
 	/// <param name="imageSizeHeight">Desired height of the image that is returned. The image will be resized proportionally.</param>
+	/// <param name="imageOutputOption">The <see cref="ImageOutputOption"/> to determine the bounds and the contents of the resulting image.</param>
 	/// <param name="token"> <see cref="CancellationToken"/>.</param>
 	/// <returns><see cref="Task{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
-	ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, CancellationToken token = default);
+	ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, ImageOutputOption imageOutputOption = ImageOutputOption.Lines, CancellationToken token = default);
 
 	/// <summary>
 	/// Clears the <see cref="Lines"/> that are currently drawn on the <see cref="IDrawingView"/>.
@@ -76,4 +77,20 @@ public interface IDrawingView : IView
 	/// </summary>
 	/// <param name="lastDrawingLine">Last drawing line</param>
 	void OnDrawingLineCompleted(IDrawingLine lastDrawingLine);
+}
+
+/// <summary>
+/// Enumeration of the options available when generating an image stream using the DrawingView.
+/// </summary>
+public enum ImageOutputOption
+{
+	/// <summary>
+	/// Outputs the area covered by the top-left to the bottom-right most points.
+	/// </summary>
+	Lines,
+	
+	/// <summary>
+	/// Outputs the full area displayed within the drawing view.
+	/// </summary>
+	FullCanvas
 }

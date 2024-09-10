@@ -215,25 +215,28 @@ public class DrawingView : View, IDrawingView
 	/// Retrieves a <see cref="Stream"/> containing an image of the collection of <see cref="IDrawingLine"/> that is provided as a parameter.
 	/// </summary>
 	/// <param name="lines">A collection of <see cref="IDrawingLine"/> that a image is generated from.</param>
-	/// <param name="imageSize">The desired dimensions of the generated image. The image will be resized proportionally.</param>
+	/// <param name="desiredSize">The desired dimensions of the generated image. The image will be resized proportionally.</param>
 	/// <param name="background">Background of the generated image. If color is null, default background color is used.</param>
+	/// <param name="canvasSize">The size of the canvas where the lines fit.</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's provided through the <paramref name="lines"/> parameter.</returns>
 	public static ValueTask<Stream> GetImageStream(IEnumerable<IDrawingLine> lines,
-													Size imageSize,
+													Size desiredSize,
 													Brush? background,
+													Size? canvasSize = null,
 													CancellationToken token = default) =>
-		DrawingViewService.GetImageStream(lines.ToList(), imageSize, background, token);
+		DrawingViewService.GetImageStream(lines.ToList(), desiredSize, background, canvasSize, token);
 
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of the <see cref="Lines"/> that are currently drawn on the <see cref="DrawingView"/>.
 	/// </summary>
-	/// <param name="imageSizeWidth">Desired width of the image that is returned. The image will be resized proportionally.</param>
-	/// <param name="imageSizeHeight">Desired height of the image that is returned. The image will be resized proportionally.</param>
+	/// <param name="desiredWidth">Desired width of the image that is returned. The image will be resized proportionally.</param>
+	/// <param name="desiredHeight">Desired height of the image that is returned. The image will be resized proportionally.</param>
+	/// <param name="imageOutputOption">The <see cref="ImageOutputOption"/> to determine the bounds and the contents of the resulting image.</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="DrawingView"/>.</returns>
-	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, CancellationToken token = default) =>
-		DrawingViewService.GetImageStream(Lines.ToList(), new Size(imageSizeWidth, imageSizeHeight), Background, token);
+	public ValueTask<Stream> GetImageStream(double desiredWidth, double desiredHeight, ImageOutputOption imageOutputOption = ImageOutputOption.Lines, CancellationToken token = default) =>
+		DrawingViewService.GetImageStream(Lines.ToList(), new Size(desiredWidth, desiredHeight), Background, imageOutputOption == ImageOutputOption.Lines ? null : new Size(this.Width, this.Height), token);
 
 	/// <summary>
 	/// Clears the <see cref="Lines"/> collection.

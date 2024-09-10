@@ -46,6 +46,7 @@ public class DrawingLine : IDrawingLine
 	/// <param name="lineWidth">The desired line width to be used in the generated image.</param>
 	/// <param name="strokeColor">The desired color of the line to be used in the generated image.</param>
 	/// <param name="background">Background of the generated image.</param>
+	/// <param name="canvaSize"></param>
 	/// <param name="token"><see cref="CancellationToken"/> </param>
 	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's provided through the <paramref name="points"/> parameter.</returns>
 	public static ValueTask<Stream> GetImageStream(IEnumerable<PointF> points,
@@ -53,9 +54,10 @@ public class DrawingLine : IDrawingLine
 										float lineWidth,
 										Color strokeColor,
 										Paint background,
+										Size? canvaSize = null,
 										CancellationToken token = default)
 	{
-		return DrawingViewService.GetImageStream(points.ToList(), imageSize, lineWidth, strokeColor, background, token);
+		return DrawingViewService.GetImageStream(points.ToList(), imageSize, lineWidth, strokeColor, background, canvaSize, token);
 	}
 
 	/// <summary>
@@ -64,10 +66,11 @@ public class DrawingLine : IDrawingLine
 	/// <param name="imageSizeWidth">Desired width of the image that is returned.</param>
 	/// <param name="imageSizeHeight">Desired height of the image that is returned.</param>
 	/// <param name="background">Background of the generated image.</param>
+	/// <param name="canvasSize"></param>
 	/// <param name="token"><see cref="CancellationToken"/> </param>
 	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
-	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Paint background, CancellationToken token = default)
+	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Paint background, Size? canvasSize = null, CancellationToken token = default)
 	{
-		return DrawingViewService.GetImageStream(Points.ToList(), new Size(imageSizeWidth, imageSizeHeight), LineWidth, LineColor, background, token);
+		return DrawingViewService.GetImageStream(Points.ToList(), new Size(imageSizeWidth, imageSizeHeight), LineWidth, LineColor, background, canvasSize, token);
 	}
 }
