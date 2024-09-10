@@ -8,6 +8,7 @@ using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Text;
+using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
