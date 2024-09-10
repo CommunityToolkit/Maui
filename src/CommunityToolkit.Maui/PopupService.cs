@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Platform;
