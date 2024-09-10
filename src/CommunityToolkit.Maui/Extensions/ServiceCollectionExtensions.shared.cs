@@ -63,7 +63,7 @@ public static class ServiceCollectionExtensions
 	/// <see cref="INotifyPropertyChanged"/></typeparam>
 	/// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
 	/// <returns>A reference to this instance after the operation has completed.</returns>
-	public static IServiceCollection AddTransientPopupContent<TPopupContentView, TPopupViewModel>(this IServiceCollection services)
+	public static IServiceCollection AddTransientPopupContent<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupContentView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>(this IServiceCollection services)
 		where TPopupContentView : View
 		where TPopupViewModel : INotifyPropertyChanged
 	{
