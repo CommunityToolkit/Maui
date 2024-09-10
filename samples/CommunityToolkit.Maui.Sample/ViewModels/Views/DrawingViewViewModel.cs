@@ -17,6 +17,15 @@ public partial class DrawingViewViewModel : BaseViewModel
 	[ObservableProperty]
 	string logs = string.Empty;
 
+	[ObservableProperty]
+	DrawingViewOutputOption selectedOutputOption = DrawingViewOutputOption.Lines;
+	
+	public List<DrawingViewOutputOption> AvailableOutputOptions { get; } = [DrawingViewOutputOption.Lines, DrawingViewOutputOption.FullCanvas];
+	
+	public double CanvasHeight { get; set; }
+	
+	public double CanvasWidth { get; set; }
+
 	public DrawingViewViewModel(IFileSaver fileSaver)
 	{
 		this.fileSaver = fileSaver;
@@ -72,7 +81,13 @@ public partial class DrawingViewViewModel : BaseViewModel
 	{
 		try
 		{
-			await using var stream = await DrawingView.GetImageStream(Lines, new Size(1920, 1080), Brush.Blue, new Size(300, 200), cancellationToken);
+			await using var stream = await DrawingView.GetImageStream(
+				Lines,
+				new Size(1920, 1080),
+				Brush.Blue,
+				// If the user wants to output the full canvas then we need to pass in the canvas dimensions, otherwise null will use the bounds of the current drawing.
+				SelectedOutputOption == DrawingViewOutputOption.FullCanvas ? new Size(CanvasWidth, CanvasHeight) : null,
+				cancellationToken);
 
 			await Permissions.RequestAsync<Permissions.StorageRead>().WaitAsync(cancellationToken);
 			await Permissions.RequestAsync<Permissions.StorageWrite>().WaitAsync(cancellationToken);
