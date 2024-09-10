@@ -130,8 +130,8 @@ public static partial class DrawingViewService
 
 		var minPointX = points.Min(p => p.X) - maxLineWidth;
 		var minPointY = points.Min(p => p.Y) - maxLineWidth;
-		var drawingWidth = canvasSize?.Width ?? points.Max(p => p.X) - minPointX + maxLineWidth;
-		var drawingHeight = canvasSize?.Height ?? points.Max(p => p.Y) - minPointY + maxLineWidth;
+		var drawingWidth = (float)canvasSize?.Width ?? points.Max(p => p.X) - minPointX + maxLineWidth;
+		var drawingHeight = (float)canvasSize?.Height ?? points.Max(p => p.Y) - minPointY + maxLineWidth;
 		if (drawingWidth < minSize || drawingHeight < minSize)
 		{
 			return (null, new Size(minPointX, minPointY));

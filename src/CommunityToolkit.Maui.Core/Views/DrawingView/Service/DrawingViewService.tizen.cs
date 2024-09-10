@@ -54,7 +54,7 @@ public static partial class DrawingViewService
 	/// Get image stream from lines
 	/// </summary>
 	/// <param name="lines">Drawing lines</param>
-	/// <param name="imageSize">Maximum image size. The image will be resized proportionally.</param>
+	/// <param name="desiredSize">Maximum image size. The image will be resized proportionally.</param>
 	/// <param name="background">Image background</param>
 	/// <param name="canvasSize">
 	/// The actual size of the canvas being displayed. This is an optional parameter
