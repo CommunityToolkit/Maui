@@ -57,7 +57,7 @@ public class UseCommunityToolkitMediaElementInitializationAnalyzer : DiagnosticA
 	{
 		foreach (var method in root.DescendantNodes().OfType<MethodDeclarationSyntax>())
 		{
-			if (method.DescendantNodes().OfType<ExpressionStatementSyntax>().Any(static x => x.DescendantNodes().Any(static x => x.ToString().Where(static c => !char.IsWhiteSpace(c)).ToString().Contains(".UseMauiCommunityToolkitMediaElement("))))
+			if (method.DescendantNodes().OfType<ExpressionStatementSyntax>().Any(static x => x.DescendantNodes().Any(static x => string.Concat(x.ToString().Where(static c => !char.IsWhiteSpace(c))).Contains(".UseMauiCommunityToolkitMediaElement("))))
 			{
 				return true;
 			}

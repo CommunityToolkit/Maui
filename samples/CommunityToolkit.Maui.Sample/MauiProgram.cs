@@ -30,15 +30,14 @@ using CommunityToolkit.Maui.Storage;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.LifecycleEvents;
-using Microsoft.Maui.Platform;
 using Polly;
-
 
 #if WINDOWS10_0_17763_0_OR_GREATER
 using Microsoft.UI;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.Maui.Platform;
 #endif
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
@@ -51,12 +50,12 @@ public static class MauiProgram
 	{
 		var builder = MauiApp.CreateBuilder()
 #if DEBUG
-								.UseMauiCommunityToolkit(options =>
-								{
-									options.SetShouldEnableSnackbarOnWindows(true);
-								})
+								//.UseMauiCommunityToolkit (static options =>
+								//{
+								//	options.SetShouldEnableSnackbarOnWindows(true);
+								//})
 #else
-								.UseMauiCommunityToolkit(options =>
+								.UseMauiCommunityToolkit(static options =>
 								{
 									options.SetShouldEnableSnackbarOnWindows(true);
 									options.SetShouldSuppressExceptionsInConverters(true);
@@ -69,7 +68,7 @@ public static class MauiProgram
 								.UseMauiCommunityToolkitMediaElement()
 								.UseMauiCommunityToolkitMaps("KEY") // You should add your own key here from bingmapsportal.com
 								.UseMauiApp<App>()
-								.ConfigureFonts(fonts =>
+								.ConfigureFonts(static fonts =>
 								{
 									fonts.AddFont("Font Awesome 6 Brands-Regular-400.otf", FontFamilies.FontAwesomeBrands);
 								});
@@ -78,13 +77,13 @@ public static class MauiProgram
 		builder.ConfigureLifecycleEvents(events =>
 		{
 #if WINDOWS10_0_17763_0_OR_GREATER
-                events.AddWindows(wndLifeCycleBuilder =>
+                events.AddWindows(static windowLifeCycleBuilder =>
                 {
-                    wndLifeCycleBuilder.OnWindowCreated(window =>
+                    windowLifeCycleBuilder.OnWindowCreated(window =>
                     {
                         window.SystemBackdrop = new MicaBackdrop { Kind = MicaKind.Base };
 
-                        var titleBar = window.GetAppWindow()!.TitleBar;
+                        var titleBar = window.GetAppWindow()?.TitleBar ?? throw new InvalidOperationException("App Window Cannot be Null");
 
                         titleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
 
@@ -104,7 +103,7 @@ public static class MauiProgram
 		});
 
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>()
-						.AddStandardResilienceHandler(options => options.Retry = new MobileHttpRetryStrategyOptions());
+						.AddStandardResilienceHandler(static options => options.Retry = new MobileHttpRetryStrategyOptions());
 
 		builder.Services.AddSingleton<PopupSizeConstants>();
 
