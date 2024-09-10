@@ -226,7 +226,10 @@ public partial class MediaElementHandler
 		{
 			mediaManager?.Dispose();
 			mediaManager = null;
+			PlatformDispose();
 		}
 	}
+
+	partial void PlatformDispose();
 #endif
 }

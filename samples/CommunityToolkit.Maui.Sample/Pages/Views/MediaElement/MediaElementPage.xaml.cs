@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
@@ -29,7 +28,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 	void MediaElement_PropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		if (e.PropertyName == MediaElement.DurationProperty.PropertyName)
+		if (e.PropertyName == CommunityToolkit.Maui.Views.MediaElement.DurationProperty.PropertyName)
 		{
 			logger.LogInformation("Duration: {newDuration}", MediaElement.Duration);
 			PositionSlider.Maximum = MediaElement.Duration.TotalSeconds;
@@ -237,36 +236,42 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.Aspect = (Aspect)aspectEnum;
 	}
 
-	void DisplayPopup(object sender, EventArgs e)
-	{
-		if (MediaElement.Parent is not Grid parent)
-		{
-			logger.LogError("Parent of MediaElement is not a Grid");
-			return;
-		}
-		grid = parent;
-		parent.Children.Remove(MediaElement);
-		var popup = new Popup
-		{
-			VerticalOptions = LayoutAlignment.Center,
-			HorizontalOptions = LayoutAlignment.Center,
-			Content = new Grid
-			{
-				WidthRequest = 300,
-				HeightRequest = 300,
-				Children =
-				{
-					MediaElement,
-				}
-			}
-		};
+void DisplayPopup(object sender, EventArgs e)
+{
+    if (MediaElement.Parent is not Grid parent)
+    {
+      logger.LogError("Parent of MediaElement is not a Grid");
+      return;
+      }
+    var popupMediaElement = new Maui.Views.MediaElement
+    {
+      Source = MediaSource.FromResource("AppleVideo.mp4"),
+      HeightRequest = 600,
+      WidthRequest = 600,
+      ShouldAutoPlay = true,
+      ShouldShowPlaybackControls = true,
+    };
+    grid = parent;
+    var popup = new Popup
+    {
+      VerticalOptions = LayoutAlignment.Center,
+      HorizontalOptions = LayoutAlignment.Center,
+      Content = new Grid
+      {
+        WidthRequest = 300,
+        HeightRequest = 300,
+        Children =
+        {
+          popupMediaElement,
+        }
+      }
+    };
 
-		this.ShowPopup(popup);
-		popup.Closed += (s, e) =>
-		{
-			var popupParent = MediaElement.Parent as Grid;
-			popupParent?.Children.Remove(MediaElement);
-			grid.Children.Add(MediaElement);
-		};
-	}
+    this.ShowPopup(popup);
+    popup.Closed += (s, e) =>
+    {
+      var popupParent = MediaElement.Parent as Grid;
+      popupParent?.Children.Remove(popupMediaElement);
+    };
+  }
 }
