@@ -81,9 +81,10 @@ public static partial class DrawingViewService
 		float lineWidth,
 		Color lineColor,
 		Paint? background,
+		Size? canvasSize,
 		bool scale = false)
 	{
-		var (offscreen, offset) = GetCanvasRenderTarget(points, size, scale, lineWidth);
+		var (offscreen, offset) = GetCanvasRenderTarget(points, size, scale, lineWidth, canvasSize);
 		if (offscreen is null)
 		{
 			return null;

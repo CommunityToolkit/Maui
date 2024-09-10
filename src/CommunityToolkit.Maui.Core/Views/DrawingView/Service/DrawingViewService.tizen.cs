@@ -115,11 +115,11 @@ public static partial class DrawingViewService
 		return (bitmap, new SizeF(minPointX, minPointY));
 	}
 
-	static SKBitmap? GetBitmapForLines(in IList<IDrawingLine> lines, in Paint? background)
+	static SKBitmap? GetBitmapForLines(in IList<IDrawingLine> lines, in Paint? background, Size? canvasSize)
 	{
 		var points = lines.SelectMany(static x => x.Points).ToList();
 		var maxLineWidth = lines.Select(x => x.LineWidth).Max();
-		var (image, offset) = GetBitmap(points, maxLineWidth);
+		var (image, offset) = GetBitmap(points, maxLineWidth, canvasSize);
 
 		if (image is null)
 		{
