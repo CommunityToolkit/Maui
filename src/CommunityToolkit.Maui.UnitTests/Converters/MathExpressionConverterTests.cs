@@ -45,7 +45,7 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 	[InlineData("false", 2d, false)]
 	[InlineData("-x > 2", 3d, false)]
 	[InlineData("!!! (---x > 2)", 3d, true)]
-	public void MathExpressionConverter_ReturnsCorrectBooleanResult(string expression, double x, bool expectedResult)
+	public void MathExpressionConverter_WithComparisonOperator_ReturnsCorrectBooleanResult(string expression, double x, bool expectedResult)
 	{
 		var mathExpressionConverter = new MathExpressionConverter();
 
@@ -61,7 +61,7 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 	[InlineData("(x1 + x) * x1", new object[] { 2d, 3d }, 15d)]
 	[InlineData("3 + x * x1 / (1 - 5)^x1", new object[] { 4d, 2d }, 3.5d)]
 	[InlineData("3 + 4 * 2 + cos(100 + x) / (x1 - 5)^2 + pow(x0, 2)", new object[] { 20d, 1d }, 411.05088631065792d)]
-	public void MathExpressionConverter_WithMultiplyVariable_ReturnsCorrectResult(string expression, object[] variables, double expectedResult)
+	public void MathExpressionConverter_WithMultipleVariable_ReturnsCorrectResult(string expression, object[] variables, double expectedResult)
 	{
 		var mathExpressionConverter = new MultiMathExpressionConverter();
 
@@ -71,12 +71,52 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 	}
 
 	[Theory]
+	[InlineData("x == 3 && x1", new object?[] { 3d, 4d }, 4d)]
+	[InlineData("x != 3 || x1", new object?[] { 3d, 4d }, 4d)]
+	public void MathExpressionConverter_WithBooleanOperator_ReturnsCorrectNumberResult(string expression, object[] variables, double expectedResult)
+	{
+		var mathExpressionConverter = new MultiMathExpressionConverter();
+
+		object? result = mathExpressionConverter.Convert(variables, mathExpressionTargetType, expression);
+
+		Assert.True(result is not null);
+		Assert.Equal(expectedResult, result);
+	}
+
+	[Theory]
+	[InlineData("x != 3 && x1", new object?[] { 3d, 4d }, false)]
+	[InlineData("x == 3 || x1", new object?[] { 3d, 4d }, true)]
+	public void MathExpressionConverter_WithBooleanOperator_ReturnsCorrectBooleanResult(string expression, object[] variables, bool expectedResult)
+	{
+		var mathExpressionConverter = new MultiMathExpressionConverter();
+
+		object? result = mathExpressionConverter.Convert(variables, mathExpressionTargetType, expression);
+
+		Assert.True(result is not null);
+		Assert.Equal(expectedResult, result);
+	}
+
+	[Theory]
+	[InlineData("x == 3 && x1", new object?[] { 3d, null})]
+	[InlineData("x != 3 || x1", new object?[] { 3d, null })]
+	[InlineData("x == 3 ? x1 : x2", new object?[] { 3d, null, 5d })]
+	[InlineData("x != 3 ? x1 : x2", new object?[] { 3d, 4d, null})]
+	public void MathExpressionConverter_ReturnsCorrectNullResult(string expression, object[] variables)
+	{
+		var mathExpressionConverter = new MultiMathExpressionConverter();
+
+		object? result = mathExpressionConverter.Convert(variables, mathExpressionTargetType, expression);
+
+		Assert.True(result is null);
+	}
+
+	[Theory]
 	[InlineData("x == x1", new object?[] { 2d, 2d }, true)]
 	[InlineData("x == x1", new object?[] { 2d, null }, false)]
 	[InlineData("x == x1", new object?[] { null, 2d}, false)]
 	[InlineData("x == x1", new object?[] { null, null }, true)]
 	[InlineData("(x ? x1 : x2) == null", new object?[] { true, null, 2d }, true)]
-	public void MathExpressionConverter_WithMultiplyVariable_ReturnsCorrectBooleanResult(string expression, object[] variables, bool expectedResult)
+	public void MathExpressionConverter_WithEqualityOperator_ReturnsCorrectBooleanResult(string expression, object[] variables, bool expectedResult)
 	{
 		var mathExpressionConverter = new MultiMathExpressionConverter();
 
