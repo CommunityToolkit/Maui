@@ -43,12 +43,21 @@ public interface IDrawingView : IView
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of the <see cref="Lines"/> that are currently drawn on the <see cref="IDrawingView"/>.
 	/// </summary>
-	/// <param name="imageSizeWidth">Desired width of the image that is returned. The image will be resized proportionally.</param>
-	/// <param name="imageSizeHeight">Desired height of the image that is returned. The image will be resized proportionally.</param>
-	/// <param name="imageOutputOption">The <see cref="ImageOutputOption"/> to determine the bounds and the contents of the resulting image.</param>
+	/// <param name="desiredWidth">Desired width of the image that is returned. The image will be resized proportionally.</param>
+	/// <param name="desiredHeight">Desired height of the image that is returned. The image will be resized proportionally.</param>
 	/// <param name="token"> <see cref="CancellationToken"/>.</param>
 	/// <returns><see cref="Task{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
-	ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, ImageOutputOption imageOutputOption = ImageOutputOption.Lines, CancellationToken token = default);
+	ValueTask<Stream> GetImageStream(double desiredWidth, double desiredHeight, CancellationToken token = default) => GetImageStream(desiredWidth, desiredHeight, DrawingViewOutputOption.Lines, token);
+	
+	/// <summary>
+	/// Retrieves a <see cref="Stream"/> containing an image of the <see cref="Lines"/> that are currently drawn on the <see cref="IDrawingView"/>.
+	/// </summary>
+	/// <param name="desiredWidth">Desired width of the image that is returned. The image will be resized proportionally.</param>
+	/// <param name="desiredHeight">Desired height of the image that is returned. The image will be resized proportionally.</param>
+	/// <param name="imageOutputOption">The <see cref="DrawingViewOutputOption"/> to determine the bounds and the contents of the resulting image.</param>
+	/// <param name="token"> <see cref="CancellationToken"/>.</param>
+	/// <returns><see cref="Task{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
+	ValueTask<Stream> GetImageStream(double desiredWidth, double desiredHeight, DrawingViewOutputOption imageOutputOption, CancellationToken token = default);
 
 	/// <summary>
 	/// Clears the <see cref="Lines"/> that are currently drawn on the <see cref="IDrawingView"/>.
@@ -82,7 +91,7 @@ public interface IDrawingView : IView
 /// <summary>
 /// Enumeration of the options available when generating an image stream using the DrawingView.
 /// </summary>
-public enum ImageOutputOption
+public enum DrawingViewOutputOption
 {
 	/// <summary>
 	/// Outputs the area covered by the top-left to the bottom-right most points.

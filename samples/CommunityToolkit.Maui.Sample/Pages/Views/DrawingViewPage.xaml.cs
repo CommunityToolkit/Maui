@@ -31,7 +31,7 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 	async void GetCurrentDrawingViewImageClicked(object sender, EventArgs e)
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-		var stream = await DrawingViewControl.GetImageStream(GestureImage.Width, GestureImage.Height, ImageOutputOption.Lines, cts.Token);
+		var stream = await DrawingViewControl.GetImageStream(GestureImage.Width, GestureImage.Height, DrawingViewOutputOption.Lines, cts.Token);
 
 		GestureImage.Source = ImageSource.FromStream(() => stream);
 	}
