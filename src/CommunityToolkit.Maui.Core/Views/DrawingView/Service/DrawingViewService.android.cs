@@ -30,7 +30,7 @@ public static partial class DrawingViewService
 	{
 		token.ThrowIfCancellationRequested();
 
-		var image = GetBitmapForLines(lines, background);
+		var image = GetBitmapForLines(lines, background, canvasSize);
 
 		return ValueTask.FromResult(GetBitmapStream(image, desiredSize));
 	}
@@ -54,7 +54,7 @@ public static partial class DrawingViewService
 	{
 		token.ThrowIfCancellationRequested();
 
-		var image = GetBitmapForPoints(points, lineWidth, strokeColor, background);
+		var image = GetBitmapForPoints(points, lineWidth, strokeColor, background, canvasSize);
 
 		return ValueTask.FromResult(GetBitmapStream(image, desiredSize));
 	}
@@ -85,9 +85,10 @@ public static partial class DrawingViewService
 	static Bitmap? GetBitmapForPoints(ICollection<PointF> points,
 		float lineWidth,
 		Color strokeColor,
-		Paint? background)
+		Paint? background,
+		Size? canvasSize)
 	{
-		var (image, offset) = GetBitmap(points, lineWidth);
+		var (image, offset) = GetBitmap(points, lineWidth, canvasSize);
 		if (image is null)
 		{
 			return null;
@@ -99,11 +100,11 @@ public static partial class DrawingViewService
 		return image;
 	}
 
-	static Bitmap? GetBitmapForLines(IList<IDrawingLine> lines, Paint? background)
+	static Bitmap? GetBitmapForLines(IList<IDrawingLine> lines, Paint? background, Size? canvasSize)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
 		var maxLineWidth = lines.Select(x => x.LineWidth).Max();
-		var (image, offset) = GetBitmap(points, maxLineWidth);
+		var (image, offset) = GetBitmap(points, maxLineWidth, canvasSize);
 		if (image is null)
 		{
 			return null;
@@ -119,7 +120,7 @@ public static partial class DrawingViewService
 		return image;
 	}
 
-	static (Bitmap?, SizeF offset) GetBitmap(ICollection<PointF> points, float maxLineWidth)
+	static (Bitmap?, SizeF offset) GetBitmap(ICollection<PointF> points, float maxLineWidth, Size? canvasSize)
 	{
 		if (points.Count is 0)
 		{
@@ -128,8 +129,8 @@ public static partial class DrawingViewService
 
 		var minPointX = points.Min(p => p.X) - maxLineWidth;
 		var minPointY = points.Min(p => p.Y) - maxLineWidth;
-		var drawingWidth = points.Max(p => p.X) - minPointX + maxLineWidth;
-		var drawingHeight = points.Max(p => p.Y) - minPointY + maxLineWidth;
+		var drawingWidth = canvasSize?.Width ?? points.Max(p => p.X) - minPointX + maxLineWidth;
+		var drawingHeight = canvasSize?.Height ?? points.Max(p => p.Y) - minPointY + maxLineWidth;
 		const int minSize = 1;
 		if (drawingWidth < minSize || drawingHeight < minSize)
 		{
@@ -146,8 +147,10 @@ public static partial class DrawingViewService
 		{
 			return (null, SizeF.Zero);
 		}
+		
+		var offset = canvasSize is null ? new SizeF(minPointX, minPointY) : SizeF.Zero;
 
-		return (image, new SizeF(minPointX, minPointY));
+		return (image, offset);
 	}
 
 	static void DrawStrokes(Canvas canvas, ICollection<PointF> points, float lineWidth, Color strokeColor, SizeF offset)
