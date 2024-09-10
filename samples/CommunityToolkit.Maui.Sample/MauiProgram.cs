@@ -50,10 +50,10 @@ public static class MauiProgram
 	{
 		var builder = MauiApp.CreateBuilder()
 #if DEBUG
-								//.UseMauiCommunityToolkit (static options =>
-								//{
-								//	options.SetShouldEnableSnackbarOnWindows(true);
-								//})
+								.UseMauiCommunityToolkit(static options =>
+								{
+									options.SetShouldEnableSnackbarOnWindows(true);
+								})
 #else
 								.UseMauiCommunityToolkit(static options =>
 								{
