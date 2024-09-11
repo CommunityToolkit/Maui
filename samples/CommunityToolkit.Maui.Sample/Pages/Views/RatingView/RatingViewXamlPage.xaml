@@ -35,11 +35,11 @@
             <Label Style="{StaticResource Description}" Text="Defaults" />
             <Line Style="{StaticResource HR}" />
             <HorizontalStackLayout Spacing="8">
-                <Label Text="Default" />
+                <Label Text="Default" VerticalOptions="Center" />
                 <toolkit:RatingView SemanticProperties.Description="A RatingView showing the defaults." />
             </HorizontalStackLayout>
             <HorizontalStackLayout Spacing="8">
-                <Label Text="By properties" />
+                <Label Text="By properties" VerticalOptions="Center" />
                 <toolkit:RatingView
                     BackgroundColor="Red"
                     EmptyBackgroundColor="Green"
@@ -49,13 +49,14 @@
                     SemanticProperties.Description="A RatingView customised by setting properties." />
             </HorizontalStackLayout>
             <HorizontalStackLayout Spacing="8">
-                <Label Text="By style" />
+                <Label Text="By style" VerticalOptions="Center" />
                 <toolkit:RatingView
                     MaximumRating="5"
                     Rating="2.5"
                     SemanticProperties.Description="A RatingView customised by setting a style."
                     Style="{StaticResource ByStyle}" />
             </HorizontalStackLayout>
+            <Line Style="{StaticResource HR}" />
             <Label Style="{StaticResource Description}" Text="Available Shapes, and example custom shape" />
             <Line Style="{StaticResource HR}" />
             <Grid
@@ -178,7 +179,7 @@
             <Label Style="{StaticResource Description}" Text="Colors" />
             <Line Style="{StaticResource HR}" />
             <HorizontalStackLayout Spacing="8">
-                <Label Text="Empty background color: " />
+                <Label Text="Empty background color: " VerticalOptions="Center" />
                 <Picker
                     ItemsSource="{Binding ColorsForPickers}"
                     SelectedIndex="{Binding ColorPickerEmptyBackgroundSelectedIndex}"
@@ -190,7 +191,7 @@
             </HorizontalStackLayout>
             <HorizontalStackLayout Spacing="8">
 
-                <Label Text="Filled background color: " />
+                <Label Text="Filled background color: " VerticalOptions="Center" />
                 <Picker
                     ItemsSource="{Binding ColorsForPickers}"
                     SelectedIndex="{Binding ColorPickerFilledBackgroundSelectedIndex}"
@@ -201,7 +202,7 @@
                 </Picker>
             </HorizontalStackLayout>
             <HorizontalStackLayout Spacing="8">
-                <Label Text="Shape border color:" />
+                <Label Text="Shape border color: " VerticalOptions="Center" />
                 <Picker
                     ItemsSource="{Binding ColorsForPickers}"
                     SelectedIndex="{Binding ColorPickerRatingShapeBorderColorSelectedIndex}"
@@ -261,7 +262,7 @@
                 ShapeBorderThickness="{Binding Source={x:Reference StepperShapeBorderThickness}, Path=Value}" />
 
             <Line Style="{StaticResource HR}" />
-            <Label Style="{StaticResource Description}" Text="Enable and disable. Ratings can only bechanged when enabled." />
+            <Label Style="{StaticResource Description}" Text="Enable and disable. Ratings can only be changed when enabled." />
             <Line Style="{StaticResource HR}" />
             <HorizontalStackLayout Spacing="8">
                 <CheckBox
@@ -290,7 +291,7 @@
                         <toolkit:EventToCommandBehavior Command="{Binding RatingViewShapePaddingLeftCommandCommand}" EventName="ValueChanged" />
                     </Stepper.Behaviors>
                 </Stepper>
-                <Label SemanticProperties.Description="Shape Left Padding applied to the RatingView sample.">
+                <Label SemanticProperties.Description="Shape left padding applied to the RatingView sample.">
                     <Label.FormattedText>
                         <FormattedString>
                             <Span Text=": Left: " />
@@ -310,7 +311,7 @@
                         <toolkit:EventToCommandBehavior Command="{Binding RatingViewShapePaddingTopCommandCommand}" EventName="ValueChanged" />
                     </Stepper.Behaviors>
                 </Stepper>
-                <Label SemanticProperties.Description="Shape Top Padding applied to the RatingView sample.">
+                <Label SemanticProperties.Description="Shape top padding applied to the RatingView sample.">
                     <Label.FormattedText>
                         <FormattedString>
                             <Span Text=": Top: " />
@@ -330,7 +331,7 @@
                         <toolkit:EventToCommandBehavior Command="{Binding RatingViewShapePaddingRightCommandCommand}" EventName="ValueChanged" />
                     </Stepper.Behaviors>
                 </Stepper>
-                <Label SemanticProperties.Description="Shape right Padding applied to the RatingView sample.">
+                <Label SemanticProperties.Description="Shape right padding applied to the RatingView sample.">
                     <Label.FormattedText>
                         <FormattedString>
                             <Span Text=": Right: " />
@@ -350,7 +351,7 @@
                         <toolkit:EventToCommandBehavior Command="{Binding RatingViewShapePaddingBottomCommandCommand}" EventName="ValueChanged" />
                     </Stepper.Behaviors>
                 </Stepper>
-                <Label SemanticProperties.Description="Shape bottom Padding applied to the RatingView sample.">
+                <Label SemanticProperties.Description="Shape bottom padding applied to the RatingView sample.">
                     <Label.FormattedText>
                         <FormattedString>
                             <Span Text=": Bottom: " />

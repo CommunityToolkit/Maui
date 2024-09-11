@@ -14,7 +14,7 @@ public partial class RatingViewXamlPage : BasePage<RatingViewXamlViewModel>
 		vm = viewModel;
 	}
 
-	void StepperMaximumRating_RatingChanged(object sender, RatingChangedEventArgs e)
+	void StepperMaximumRating_RatingChanged(object? sender, RatingChangedEventArgs e)
 	{
 		// This is the weak event raised when the rating is changed.  The developer can then perform further actions (such as save to DB).
 		if (sender is RatingView ratingView)
@@ -23,28 +23,28 @@ public partial class RatingViewXamlPage : BasePage<RatingViewXamlViewModel>
 		}
 	}
 
-	void RatingViewShapePaddingLeft_ValueChanged(object sender, ValueChangedEventArgs e)
+	void RatingViewShapePaddingLeft_ValueChanged(object? sender, ValueChangedEventArgs e)
 	{
 		Thickness currentThickness = vm.RatingViewShapePadding;
 		currentThickness.Left = e.NewValue;
 		vm.RatingViewShapePadding = currentThickness;
 	}
 
-	void RatingViewShapePaddingTop_ValueChanged(object sender, ValueChangedEventArgs e)
+	void RatingViewShapePaddingTop_ValueChanged(object? sender, ValueChangedEventArgs e)
 	{
 		Thickness currentThickness = vm.RatingViewShapePadding;
 		currentThickness.Top = e.NewValue;
 		vm.RatingViewShapePadding = currentThickness;
 	}
 
-	void RatingViewShapePaddingRight_ValueChanged(object sender, ValueChangedEventArgs e)
+	void RatingViewShapePaddingRight_ValueChanged(object? sender, ValueChangedEventArgs e)
 	{
 		Thickness currentThickness = vm.RatingViewShapePadding;
 		currentThickness.Right = e.NewValue;
 		vm.RatingViewShapePadding = currentThickness;
 	}
 
-	void RatingViewShapePaddingBottom_ValueChanged(object sender, ValueChangedEventArgs e)
+	void RatingViewShapePaddingBottom_ValueChanged(object? sender, ValueChangedEventArgs e)
 	{
 		Thickness currentThickness = vm.RatingViewShapePadding;
 		currentThickness.Bottom = e.NewValue;
