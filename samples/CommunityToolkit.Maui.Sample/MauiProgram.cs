@@ -239,7 +239,6 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<RatingViewXamlPage, RatingViewXamlViewModel>();
 		services.AddTransientWithShellRoute<RatingViewCsharpPage, RatingViewCsharpViewModel>();
 		services.AddTransientWithShellRoute<RatingViewShowcasePage, RatingViewShowcaseViewModel>();
-
 		services.AddTransientWithShellRoute<MultiplePopupPage, MultiplePopupViewModel>();
 		services.AddTransientWithShellRoute<PopupAnchorPage, PopupAnchorViewModel>();
 		services.AddTransientWithShellRoute<PopupLayoutAlignmentPage, PopupLayoutAlignmentViewModel>();

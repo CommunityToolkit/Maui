@@ -126,6 +126,7 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<MapsPinsPage, MapsPinsViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<MediaElementPage, MediaElementViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<MediaElementCarouselViewPage, MediaElementCarouselViewViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<MediaElementCollectionViewPage, MediaElementCollectionViewViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<MultiplePopupPage, MultiplePopupViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<PopupAnchorPage, PopupAnchorViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<PopupLayoutAlignmentPage, PopupLayoutAlignmentViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
