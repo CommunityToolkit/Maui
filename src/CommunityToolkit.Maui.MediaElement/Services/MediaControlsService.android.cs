@@ -8,10 +8,10 @@ using Android.Media;
 using Android.OS;
 using Android.Support.V4.Media.Session;
 using AndroidX.Core.App;
-using AndroidX.LocalBroadcastManager.Content;
+using AndroidX.Core.Content;
 using CommunityToolkit.Maui.Core.Views;
 using Microsoft.Win32.SafeHandles;
-using Resource = Microsoft.Maui.Resource;
+using Resource = Microsoft.Maui.Controls.Resource;
 
 namespace CommunityToolkit.Maui.Media.Services;
 
@@ -44,13 +44,7 @@ class MediaControlsService : Service
 	public override StartCommandResult OnStartCommand([NotNull] Intent? intent, StartCommandFlags flags, int startId)
 	{
 		ArgumentNullException.ThrowIfNull(intent);
-		if (!string.IsNullOrEmpty(intent.Action) && receiveUpdates is not null)
-		{
-			BroadcastUpdate(ACTION_UPDATE_PLAYER, intent.Action);
-		}
-
 		StartForegroundService(intent).SafeFireAndForget(ex => System.Diagnostics.Trace.TraceError($"[error] {ex}, {ex.Message}"));
-
 		return StartCommandResult.Sticky;
 	}
 	
@@ -67,11 +61,6 @@ class MediaControlsService : Service
 			mediaSession?.Dispose();
 			mediaSession = null;
 
-			if (receiveUpdates is not null)
-			{
-				receiveUpdates.PropertyChanged -= OnReceiveUpdatesPropertyChanged;
-				LocalBroadcastManager.GetInstance(Platform.AppContext).UnregisterReceiver(receiveUpdates);
-			}
 			receiveUpdates?.Dispose();
 			receiveUpdates = null;
 			isDisposed = true;
@@ -98,13 +87,14 @@ class MediaControlsService : Service
 			Active = true,
 		};
 
-		if (receiveUpdates is null)
+		if(receiveUpdates is null)
 		{
 			receiveUpdates = new ReceiveUpdates();
-			receiveUpdates.PropertyChanged += OnReceiveUpdatesPropertyChanged;
-			LocalBroadcastManager.GetInstance(this).RegisterReceiver(receiveUpdates, new IntentFilter(ACTION_UPDATE_UI));
+			IntentFilter intentFilter = new(MediaControlsService.ACTION_UPDATE_UI);
+			var flags = ContextCompat.ReceiverNotExported;
+			ContextCompat.RegisterReceiver(Platform.AppContext, receiveUpdates, intentFilter, flags);
+			ReceiveUpdates.PropertyChanged += OnReceiveUpdatesPropertyChanged;
 		}
-
 		pendingIntentFlags = OperatingSystem.IsAndroidVersionAtLeast(23)
 			? PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable
 			: PendingIntentFlags.UpdateCurrent;
@@ -134,9 +124,8 @@ class MediaControlsService : Service
 		}
 
 		notification ??= new NotificationCompat.Builder(Platform.AppContext, "1");
-
 		notification.SetStyle(style);
-		notification.SetSmallIcon(Resource.Drawable.exo_styled_controls_audiotrack);
+		notification.SetSmallIcon(Resource.Drawable.media3_notification_small_icon);
 		notification.SetAutoCancel(false);
 		notification.SetVisibility(NotificationCompat.VisibilityPublic);
 		mediaSession.SetExtras(intent.Extras);
@@ -147,7 +136,7 @@ class MediaControlsService : Service
 		{
 			CreateNotificationChannel(notificationManager);
 		}
-
+		
 		if (Build.VERSION.SdkInt >= BuildVersionCodes.Q)
 		{
 			StartForeground(1, notification.Build(), ForegroundService.TypeMediaPlayback);
@@ -159,27 +148,6 @@ class MediaControlsService : Service
 			StartForeground(1, notification.Build());
 		}
 	}
-
-	void OnReceiveUpdatesPropertyChanged(object? sender, PropertyChangedEventArgs e)
-	{
-		if (notification is null || string.IsNullOrEmpty(receiveUpdates?.Action))
-		{
-			return;
-		}
-		notification.ClearActions();
-		notification.AddAction(actionPrevious);
-		if (receiveUpdates.Action is ACTION_PLAY)
-		{
-			notification.AddAction(actionPause);
-		}
-		if (receiveUpdates.Action is ACTION_PAUSE)
-		{
-			notification.AddAction(actionPlay);
-		}
-		notification.AddAction(actionNext);
-		notification.Build();
-	}
-
 	async Task OnSetContent(Intent mediaManagerIntent, CancellationToken cancellationToken)
 	{
 		var albumArtUri = mediaManagerIntent.GetStringExtra("albumArtUri") ?? string.Empty;
@@ -193,29 +161,52 @@ class MediaControlsService : Service
 
 	void OnSetIntents()
 	{
-		var pause = new Intent(this, typeof(MediaControlsService));
-		pause.SetAction("MediaAction.pause");
-		var pPause = PendingIntent.GetService(this, 1, pause, pendingIntentFlags);
-		actionPause ??= new NotificationCompat.Action.Builder(Resource.Drawable.media3_notification_pause, ACTION_PAUSE, pPause).Build();
+		var pause = new Intent(Platform.AppContext, typeof(UIUpdateReceiver));
+		pause.SetAction(MediaControlsService.ACTION_PAUSE);
+		pause.PutExtra("ACTION", MediaControlsService.ACTION_PAUSE);
+		var pPause = PendingIntent.GetBroadcast(Platform.AppContext, 1, pause, pendingIntentFlags);
+		actionPause = new NotificationCompat.Action.Builder(Resource.Drawable.media3_notification_pause, MediaControlsService.ACTION_PAUSE, pPause).Build();
 
-		var play = new Intent(this, typeof(MediaControlsService));
-		play.SetAction("MediaAction.play");
-		var pPlay = PendingIntent.GetService(this, 1, play, pendingIntentFlags);
-		actionPlay ??= new NotificationCompat.Action.Builder(Resource.Drawable.media3_icon_circular_play, ACTION_PLAY, pPlay).Build();
+		var play = new Intent(Platform.AppContext, typeof(UIUpdateReceiver));
+		play.SetAction(MediaControlsService.ACTION_PLAY);
+		play.PutExtra("ACTION", MediaControlsService.ACTION_PLAY);
+		var pPlay = PendingIntent.GetBroadcast(Platform.AppContext, 1, play, pendingIntentFlags);
+		actionPlay = new NotificationCompat.Action.Builder(Resource.Drawable.media3_notification_play, MediaControlsService.ACTION_PLAY, pPlay).Build();
 
-		var previous = new Intent(this, typeof(MediaControlsService));
-		previous.SetAction("MediaAction.rewind");
-		var pPrevious = PendingIntent.GetService(this, 1, previous, pendingIntentFlags);
-		actionPrevious ??= new NotificationCompat.Action.Builder(Resource.Drawable.media3_notification_seek_back, ACTION_REWIND, pPrevious).Build();
+		var previous = new Intent(Platform.AppContext, typeof(UIUpdateReceiver));
+		previous.SetAction(MediaControlsService.ACTION_REWIND);
+		previous.PutExtra("ACTION", MediaControlsService.ACTION_REWIND);
+		var pPrevious = PendingIntent.GetBroadcast(Platform.AppContext, 1, previous, pendingIntentFlags);
+		actionPrevious = new NotificationCompat.Action.Builder(Resource.Drawable.media3_notification_seek_back, MediaControlsService.ACTION_REWIND, pPrevious).Build();
 
-		var next = new Intent(this, typeof(MediaControlsService));
-		next.SetAction("MediaAction.fastForward");
-		var pNext = PendingIntent.GetService(this, 1, next, pendingIntentFlags);
-		actionNext ??= new NotificationCompat.Action.Builder(Resource.Drawable.media3_notification_seek_forward, ACTION_FASTFORWARD, pNext).Build();
+		var next = new Intent(Platform.AppContext, typeof(UIUpdateReceiver));
+		next.SetAction(MediaControlsService.ACTION_UPDATE_PLAYER);
+		next.PutExtra("ACTION", MediaControlsService.ACTION_FASTFORWARD);
+		var pNext = PendingIntent.GetBroadcast(Platform.AppContext, 1, next, pendingIntentFlags);
+		actionNext = new NotificationCompat.Action.Builder(Resource.Drawable.media3_notification_seek_forward, MediaControlsService.ACTION_FASTFORWARD, pNext).Build();
+	}
 
-		notification?.AddAction(actionPrevious);
-		notification?.AddAction(actionPause);
-		notification?.AddAction(actionNext);
+	void OnReceiveUpdatesPropertyChanged(object? sender, PropertyChangedEventArgs e)
+	{
+		if (notification is null || string.IsNullOrEmpty(e.PropertyName))
+		{
+			return;
+		}
+		var action = e.PropertyName;
+
+		notification.ClearActions();
+		notification.AddAction(actionPrevious);
+		switch (action)
+		{
+			case MediaControlsService.ACTION_PLAY:
+				notification.AddAction(actionPlay);
+				break;
+			case MediaControlsService.ACTION_PAUSE:
+				notification.AddAction(actionPause);
+				break;
+		}
+		notification.AddAction(actionNext);
+		notification.Build();
 	}
 
 	public override void OnDestroy()
@@ -223,37 +214,24 @@ class MediaControlsService : Service
 		Platform.CurrentActivity?.StopService(new Intent(Platform.AppContext, typeof(MediaControlsService)));
 		base.OnDestroy();
 	}
-	static void BroadcastUpdate(string receiver, string action)
+}
+
+[BroadcastReceiver(Enabled = true, Exported = false)]
+class ReceiveUpdates : BroadcastReceiver
+{
+	public static event EventHandler<PropertyChangedEventArgs>? PropertyChanged;
+	public ReceiveUpdates()
 	{
-		if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
+	}
+	public override void OnReceive(Context? context, Intent? intent)
+	{
+		
+		var action = intent?.Action;
+		if(context is null)
 		{
 			return;
 		}
-		var intent = new Intent(receiver);
-		intent.PutExtra("ACTION", action);
-		LocalBroadcastManager.GetInstance(Platform.AppContext).SendBroadcast(intent);
-	}
-}
-
-/// <summary>
-/// A <see cref="BroadcastReceiver"/> that listens for updates from the <see cref="MediaManager"/>. 
-/// </summary>
-sealed class ReceiveUpdates : BroadcastReceiver
-{
-	public string Action = string.Empty;
-
-	public event PropertyChangedEventHandler? PropertyChanged;
-
-	/// <summary>
-	/// Method that is called when a broadcast is received.
-	/// </summary>
-	/// <param name="context"></param>
-	/// <param name="intent"></param>
-	public override void OnReceive(Context? context, Intent? intent)
-	{
-		ArgumentNullException.ThrowIfNull(intent);
-		ArgumentNullException.ThrowIfNull(intent.Action);
-		Action = intent.GetStringExtra("ACTION") ?? string.Empty;
-		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Action)));
+		var args = new PropertyChangedEventArgs(action);
+		PropertyChanged?.Invoke(null, args);
 	}
 }
