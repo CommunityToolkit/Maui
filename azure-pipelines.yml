@@ -306,7 +306,7 @@ jobs:
         inputs:
           script: |
             echo VSTEST_TESTHOST_SHUTDOWN_TIMEOUT: $(VSTEST_TESTHOST_SHUTDOWN_TIMEOUT)
-            dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory $(Agent.TempDirectory)
+            dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release —-blame --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory $(Agent.TempDirectory)
 
       - task: PublishTestResults@2
         condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows

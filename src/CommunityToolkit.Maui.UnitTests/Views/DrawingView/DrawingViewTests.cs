@@ -9,6 +9,7 @@ using Xunit.Abstractions;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
+[CollectionDefinition("DrawingViewCollection", DisableParallelization = true)]
 public class DrawingViewTests : BaseHandlerTest
 {
 	readonly ITestOutputHelper testOutputHelper;
