@@ -10,6 +10,7 @@ using Xunit.Abstractions;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
+[Collection(nameof(DrawingViewTests)), CollectionDefinition(nameof(DrawingViewTests), DisableParallelization = true)]
 public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerTest
 {
 	[Fact]
@@ -144,9 +145,11 @@ public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerT
 	[Fact]
 	public void ClearShouldClearLines()
 	{
-		var drawingView = new DrawingView();
+		var drawingView = new DrawingView
+		{
+			Lines = [new DrawingLine()]
+		};
 
-		drawingView.Lines = [new DrawingLine()];
 		drawingView.Lines.Should().HaveCount(1);
 
 		drawingView.Clear();
@@ -162,10 +165,7 @@ public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerT
 		// Ensure CancellationToken Expired
 		await Task.Delay(100, CancellationToken.None);
 
-		await Assert.ThrowsAsync<OperationCanceledException>(async () => await DrawingView.GetImageStream(new[]
-		{
-			new DrawingLine()
-		}, Size.Zero, Colors.Blue, cts.Token));
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await DrawingView.GetImageStream([new DrawingLine()], Size.Zero, Colors.Blue, cts.Token));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -176,10 +176,9 @@ public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerT
 		// Ensure CancellationToken Expired
 		await cts.CancelAsync();
 
-		await Assert.ThrowsAsync<OperationCanceledException>(async () => await DrawingView.GetImageStream(new[]
-		{
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await DrawingView.GetImageStream([
 			new DrawingLine()
-		}, Size.Zero, Colors.Blue, cts.Token));
+		], Size.Zero, Colors.Blue, cts.Token));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -194,10 +193,9 @@ public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerT
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task GetImageStreamStaticReturnsNullStream()
 	{
-		var stream = await DrawingView.GetImageStream(new[]
-		{
+		var stream = await DrawingView.GetImageStream([
 			new DrawingLine()
-		}, Size.Zero, Colors.Blue, CancellationToken.None);
+		], Size.Zero, Colors.Blue, CancellationToken.None);
 		stream.Should().BeSameAs(Stream.Null);
 	}
 
@@ -412,10 +410,7 @@ public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerT
 			LineWidth = 15f,
 			ShouldSmoothPathWhenDrawn = false,
 			Granularity = 55,
-			Points = new ObservableCollection<PointF>(new[]
-			{
-				new PointF(10, 10)
-			})
+			Points = [new PointF(10, 10)]
 		};
 
 		IDrawingLine? currentLine = null;
