@@ -33,46 +33,14 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 		var expressionStatement = (ExpressionStatementSyntax)context.Node;
 		var root = expressionStatement.SyntaxTree.GetRoot();
 
-		if (!FileContainsCommunityToolkitMauiNamespace(root))
-		{
-			return;
-		}
+		var methodDeclarationWithoutWhiteSpace = string.Concat(root.DescendantNodes().OfType<MethodDeclarationSyntax>().SelectMany(static x => x.ToString().Where(static c => !char.IsWhiteSpace(c))));
 
-		if (HasUseMauiCommunityToolkit(root))
-		{
-			return;
-		}
-
-		if (DoesIncludeTheUseMauiMethod(expressionStatement))
+		if (methodDeclarationWithoutWhiteSpace.Contains(".UseMauiApp<") && !methodDeclarationWithoutWhiteSpace.Contains(".UseMauiCommunityToolkit("))
 		{
 			var expression = GetInvocationExpressionSyntax(expressionStatement);
 			var diagnostic = Diagnostic.Create(rule, expression.GetLocation());
 			context.ReportDiagnostic(diagnostic);
 		}
-	}
-
-	static bool FileContainsCommunityToolkitMauiNamespace(SyntaxNode root) =>
-		root.DescendantNodes().OfType<UsingDirectiveSyntax>().Any(static x => x.NamespaceOrType.ToString() == $"{nameof(CommunityToolkit)}.{nameof(CommunityToolkit.Maui)}");
-
-	static bool DoesIncludeTheUseMauiMethod(ExpressionStatementSyntax expressionStatement) =>
-		expressionStatement.DescendantNodes()
-							.OfType<GenericNameSyntax>()
-							.Any(x => x.Identifier.ValueText.Equals("UseMauiApp", StringComparison.Ordinal)
-										&& x.TypeArgumentList.Arguments.Count is 1);
-
-	static bool HasUseMauiCommunityToolkit(SyntaxNode root)
-	{
-		foreach (var method in root.DescendantNodes().OfType<MethodDeclarationSyntax>())
-		{
-			var methodDeclarationWithoutWhiteSpace =string.Concat(method.ToString().Where(static c => !char.IsWhiteSpace(c)));
-
-			if (methodDeclarationWithoutWhiteSpace.Contains(".UseMauiCommunityToolkit("))
-			{
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	static InvocationExpressionSyntax GetInvocationExpressionSyntax(SyntaxNode parent)
