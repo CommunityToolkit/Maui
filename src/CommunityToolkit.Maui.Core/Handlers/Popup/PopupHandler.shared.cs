@@ -23,9 +23,9 @@ public partial class PopupHandler
 	/// </summary>
 	public static CommandMapper<IPopup, PopupHandler> PopUpCommandMapper = new(ElementCommandMapper)
 	{
-		[nameof(IPopup.OnClosed)] = MapOnClosed,
 #if !(IOS || MACCATALYST)
 		[nameof(IPopup.OnOpened)] = MapOnOpened,
+		[nameof(IPopup.OnClosed)] = MapOnClosed,
 #endif
 		[nameof(IPopup.OnDismissedByTappingOutsideOfPopup)] = MapOnDismissedByTappingOutsideOfPopup
 	};
