@@ -39,7 +39,7 @@
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <AssemblyFileVersion>1.0.0.0</AssemblyFileVersion>
-    <Version>91.0.0-pre1</Version>
+    <Version>1.0.0-pre1</Version>
     <PackageVersion>$(Version)$(VersionSuffix)</PackageVersion>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>dotnet,maui,toolkit,kit,communitytoolkit,dotnetcommunitytoolkit</PackageTags>
