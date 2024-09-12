@@ -33,6 +33,11 @@ public class UseCommunityToolkitCameraInitializationAnalyzer : DiagnosticAnalyze
 		var expressionStatement = (ExpressionStatementSyntax)context.Node;
 		var root = expressionStatement.SyntaxTree.GetRoot();
 
+		if (!FileContainsCommunityToolkitMauiNamespace(root))
+		{
+			return;
+		}
+
 		if (HasUseMauiCommunityToolkit(root))
 		{
 			return;
@@ -45,6 +50,9 @@ public class UseCommunityToolkitCameraInitializationAnalyzer : DiagnosticAnalyze
 			context.ReportDiagnostic(diagnostic);
 		}
 	}
+
+	static bool FileContainsCommunityToolkitMauiNamespace(SyntaxNode root) =>
+		root.DescendantNodes().OfType<UsingDirectiveSyntax>().Any(static x => x.NamespaceOrType.ToString() == $"{nameof(CommunityToolkit)}.{nameof(CommunityToolkit.Maui)}");
 
 	static bool DoesIncludeTheUseMauiMethod(ExpressionStatementSyntax expressionStatement) =>
 		expressionStatement.DescendantNodes()
