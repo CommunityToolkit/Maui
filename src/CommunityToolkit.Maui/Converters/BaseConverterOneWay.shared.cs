@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters;
@@ -7,7 +8,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// </summary>
 /// <typeparam name="TFrom">Type of the input value</typeparam>
 /// <typeparam name="TTo">Type of the output value</typeparam>
-public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverter<TFrom, TTo>
+public abstract class BaseConverterOneWay<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TFrom, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TTo> : BaseConverter<TFrom, TTo>
 {
 	/// <inheritdoc/>
 	public sealed override TFrom DefaultConvertBackReturnValue
@@ -27,7 +28,7 @@ public abstract class BaseConverterOneWay<TFrom, TTo> : BaseConverter<TFrom, TTo
 /// <typeparam name="TFrom">Type of the input value</typeparam>
 /// <typeparam name="TTo">Type of the output value</typeparam>
 /// <typeparam name="TParam">Type of parameter</typeparam>
-public abstract class BaseConverterOneWay<TFrom, TTo, TParam> : BaseConverter<TFrom, TTo, TParam>
+public abstract class BaseConverterOneWay<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TFrom, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TTo, TParam> : BaseConverter<TFrom, TTo, TParam>
 {
 	/// <inheritdoc/>
 	public sealed override TFrom DefaultConvertBackReturnValue

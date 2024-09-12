@@ -37,7 +37,7 @@ public class VariableMultiValueConverterTests : BaseTest
 		var result = variableMultiConverter.Convert(value, typeof(bool), null, CultureInfo.CurrentCulture);
 		Assert.Equal(result, expectedResult);
 	}
-	
+
 	[Fact]
 	public void NonNullableNotValid()
 	{
@@ -45,7 +45,7 @@ public class VariableMultiValueConverterTests : BaseTest
 
 		var multiBinding = new MultiBinding
 		{
-			Bindings = 
+			Bindings =
 			[
 				new Binding(nameof(ContentPage.IsEnabled), source: contentPage, converter: new InvertedBoolConverter()),
 				new Binding(nameof(ContentPage.IsVisible), source: contentPage, converter: new InvertedBoolConverter())
@@ -58,14 +58,14 @@ public class VariableMultiValueConverterTests : BaseTest
 
 		var stackLayout = new VerticalStackLayout();
 		stackLayout.SetBinding(VerticalStackLayout.IsClippedToBoundsProperty, multiBinding);
-		
+
 		contentPage.Content = stackLayout;
-		
+
 		Assert.False(stackLayout.IsClippedToBounds);
 
 		contentPage.IsEnabled = false;
 		contentPage.IsVisible = false;
-		
+
 		Assert.True(stackLayout.IsClippedToBounds);
 	}
 }

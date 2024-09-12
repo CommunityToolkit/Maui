@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Converters;
+﻿using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Maui.Converters;
 
 namespace CommunityToolkit.Maui.Extensions;
 
@@ -11,7 +12,7 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 
 	private protected static bool IsNullable<T>() => IsNullable(typeof(T));
 
-	private protected static bool IsValidTargetType<TTarget>(in Type targetType, bool shouldAllowNullableValueTypes)
+	private protected static bool IsValidTargetType<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TTarget>([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] in Type targetType, bool shouldAllowNullableValueTypes)
 	{
 		if (IsConvertingToString(targetType) && CanBeConvertedToString())
 		{
@@ -54,7 +55,7 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 		}
 	}
 
-	private protected static void ValidateTargetType<TTarget>(Type targetType, bool shouldAllowNullableValueTypes)
+	private protected static void ValidateTargetType<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TTarget>([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type targetType, bool shouldAllowNullableValueTypes)
 	{
 		ArgumentNullException.ThrowIfNull(targetType);
 
