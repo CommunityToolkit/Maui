@@ -39,7 +39,7 @@ public class UseCommunityToolkitMediaElementInitializationAnalyzer : DiagnosticA
 			return;
 		}
 
-		if (CheckIfItIsUseMauiMethod(expressionStatement))
+		if (DoesIncludeTheUseMauiMethod(expressionStatement))
 		{
 			var expression = GetInvocationExpressionSyntax(expressionStatement);
 			var diagnostic = Diagnostic.Create(rule, expression.GetLocation());
@@ -47,7 +47,7 @@ public class UseCommunityToolkitMediaElementInitializationAnalyzer : DiagnosticA
 		}
 	}
 
-	static bool CheckIfItIsUseMauiMethod(ExpressionStatementSyntax expressionStatement) =>
+	static bool DoesIncludeTheUseMauiMethod(ExpressionStatementSyntax expressionStatement) =>
 		expressionStatement.DescendantNodes()
 							.OfType<GenericNameSyntax>()
 							.Any(x => x.Identifier.ValueText.Equals("UseMauiApp", StringComparison.Ordinal)
