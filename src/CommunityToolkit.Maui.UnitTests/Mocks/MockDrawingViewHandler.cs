@@ -12,7 +12,7 @@ public sealed class MockDrawingViewHandler(IPropertyMapper mapper) : ViewHandler
 {
 	IDrawingLineAdapter adapter = new DrawingLineAdapter();
 
-	public static readonly PropertyMapper<IDrawingView, MockDrawingViewHandler> DrawingViewPropertyMapper = new(ViewMapper)
+	public static readonly PropertyMapper<IDrawingView, MockDrawingViewHandler> DrawingViewPropertyMapper = new()
 	{
 		[nameof(IDrawingView.LineWidth)] = MapLineWidth,
 		[nameof(IDrawingView.LineColor)] = MapLineColor,
@@ -25,13 +25,13 @@ public sealed class MockDrawingViewHandler(IPropertyMapper mapper) : ViewHandler
 	{
 	}
 
+	public List<MauiDrawingLine> Lines { get; } = [];
 	public int MapLineWidthCount { get; private set; }
 	public int MapLineColorCount { get; private set; }
 	public int MapShouldSmoothPathWhenDrawnCount { get; private set; }
 	public int MapIsMultiLineModeEnabledCount { get; private set; }
 	public int MapDrawCount { get; private set; }
-	public List<MauiDrawingLine> Lines { get; } = [];
-	
+
 	/// <inheritdoc />
 	public void SetDrawingLineAdapter(IDrawingLineAdapter drawingLineAdapter)
 	{
@@ -39,11 +39,8 @@ public sealed class MockDrawingViewHandler(IPropertyMapper mapper) : ViewHandler
 	}
 
 	/// <inheritdoc />
-	protected override DrawingView CreatePlatformView()
-	{
-		return new DrawingView();
-	}
-	
+	protected override DrawingView CreatePlatformView() => new();
+
 	/// <inheritdoc />
 	protected override void ConnectHandler(DrawingView platformView)
 	{
