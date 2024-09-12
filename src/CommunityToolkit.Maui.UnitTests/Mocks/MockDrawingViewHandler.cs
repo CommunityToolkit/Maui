@@ -8,7 +8,7 @@ using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
-public sealed class MockDrawingViewHandler(IPropertyMapper mapper) : ViewHandler<IDrawingView, object>(mapper), IDrawingViewHandler
+public sealed class MockDrawingViewHandler(IPropertyMapper mapper) : ViewHandler<IDrawingView, DrawingView>(mapper), IDrawingViewHandler
 {
 	IDrawingLineAdapter adapter = new DrawingLineAdapter();
 
@@ -39,20 +39,20 @@ public sealed class MockDrawingViewHandler(IPropertyMapper mapper) : ViewHandler
 	}
 
 	/// <inheritdoc />
-	protected override object CreatePlatformView()
+	protected override DrawingView CreatePlatformView()
 	{
 		return new DrawingView();
 	}
 	
 	/// <inheritdoc />
-	protected override void ConnectHandler(object platformView)
+	protected override void ConnectHandler(DrawingView platformView)
 	{
 		base.ConnectHandler(platformView);
 		VirtualView.Lines.CollectionChanged += Lines_CollectionChanged;
 	}
 
 	/// <inheritdoc />
-	protected override void DisconnectHandler(object platformView)
+	protected override void DisconnectHandler(DrawingView platformView)
 	{
 		base.DisconnectHandler(platformView);
 		VirtualView.Lines.CollectionChanged -= Lines_CollectionChanged;
