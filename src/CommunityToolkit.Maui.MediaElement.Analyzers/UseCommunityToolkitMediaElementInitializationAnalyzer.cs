@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -34,7 +35,7 @@ public class UseCommunityToolkitMediaElementInitializationAnalyzer : DiagnosticA
 		var expressionStatement = (ExpressionStatementSyntax)context.Node;
 		var root = expressionStatement.SyntaxTree.GetRoot();
 
-		var methodDeclarationWithoutWhiteSpace = string.Concat(root.DescendantNodes().OfType<MethodDeclarationSyntax>().SelectMany(static x => x.ToString().Where(static c => !char.IsWhiteSpace(c))));
+		var methodDeclarationWithoutWhiteSpace = GetAllMethodDelcarationsWithoutWhiteSpace(root);
 
 		if (methodDeclarationWithoutWhiteSpace.Contains(".UseMauiApp<") && !methodDeclarationWithoutWhiteSpace.Contains(".UseMauiCommunityToolkitMediaElement("))
 		{
@@ -42,6 +43,17 @@ public class UseCommunityToolkitMediaElementInitializationAnalyzer : DiagnosticA
 			var diagnostic = Diagnostic.Create(rule, expression.GetLocation());
 			context.ReportDiagnostic(diagnostic);
 		}
+	}
+
+	static string GetAllMethodDelcarationsWithoutWhiteSpace(SyntaxNode root)
+	{
+		var stringBuilder = new StringBuilder();
+		foreach (var methodDeclaration in root.DescendantNodes().OfType<MethodDeclarationSyntax>())
+		{
+			stringBuilder.Append(methodDeclaration.ToString().Where(static c => !char.IsWhiteSpace(c)).ToArray());
+		}
+
+		return stringBuilder.ToString();
 	}
 
 	static InvocationExpressionSyntax GetInvocationExpressionSyntax(SyntaxNode parent)
