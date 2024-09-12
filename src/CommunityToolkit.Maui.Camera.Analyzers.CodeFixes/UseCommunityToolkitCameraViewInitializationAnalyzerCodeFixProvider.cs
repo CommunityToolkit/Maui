@@ -13,7 +13,7 @@ namespace CommunityToolkit.Maui.Camera.Analyzers;
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseCommunityToolkitCameraInitializationAnalyzerCodeFixProvider)), Shared]
 public class UseCommunityToolkitCameraInitializationAnalyzerCodeFixProvider : CodeFixProvider
 {
-	public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(UseCommunityToolkitCameraInitializationAnalyzer.DiagnosticId);
+	public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = [UseCommunityToolkitCameraInitializationAnalyzer.DiagnosticId];
 
 	public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 

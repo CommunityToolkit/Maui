@@ -311,10 +311,7 @@ public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerT
 			LineWidth = 11f,
 			ShouldSmoothPathWhenDrawn = false,
 			Granularity = 21,
-			Points = new ObservableCollection<PointF>(new[]
-			{
-				new PointF(10, 10)
-			})
+			Points = [new PointF(10, 10)]
 		};
 
 		IDrawingLine? currentLine = null;
