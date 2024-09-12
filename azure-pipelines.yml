@@ -272,7 +272,7 @@ jobs:
         displayName: 'Run CommunityToolkit.Maui.Analyzers.UnitTests'
         inputs:
           script: |
-            echo $(VSTEST_TESTHOST_SHUTDOWN_TIMEOUT)
+            echo VSTEST_TESTHOST_SHUTDOWN_TIMEOUT: $(VSTEST_TESTHOST_SHUTDOWN_TIMEOUT)
             dotnet test $(PathToCommunityToolkitAnalyzersUnitTestCsproj) -c Release
 
       - task: CmdLine@2
