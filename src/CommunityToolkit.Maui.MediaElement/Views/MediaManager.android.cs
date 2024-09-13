@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
@@ -15,7 +14,10 @@ using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.ApplicationModel.Permissions;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Interfaces;
 using CommunityToolkit.Maui.Media.Services;
+using CommunityToolkit.Maui.Primitives;
+using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 using AudioAttributes = AndroidX.Media3.Common.AudioAttributes;
@@ -26,24 +28,26 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : Java.Lang.Object, IPlayerListener
 {
-	static readonly HttpClient client = new();
-
 	const int sTATE_BUFFERING = 2;
 	const int sTATE_READY = 3;
 	const int sTATE_ENDED = 4;
+	double? previousSpeed;
+	float volumeBeforeMute = 1;
 
+	MediaElementState currentState;
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
-
+	static readonly HttpClient client = new();
+	
+	TaskCompletionSource? seekToTaskCompletionSource;
 	Task? checkPermissionsTask;
 	CancellationTokenSource checkPermissionSourceToken = new();
 	CancellationTokenSource startServiceSourceToken = new();
-	double? previousSpeed;
-	float volumeBeforeMute = 1;
+
 	MediaItem.Builder? mediaItem;
-	TaskCompletionSource? seekToTaskCompletionSource;
 	AndroidX.Media3.Session.MediaSession? session;
-	MediaElementState currentState;
+	
 	UIUpdateReceiver? uiUpdateReceiver;
+	INotificationService? notificationService;
 
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
@@ -60,8 +64,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public static async Task<Bitmap?> GetBitmapFromUrl(string? url, CancellationToken cancellationToken = default)
 	{
 		var bitmapConfig = Bitmap.Config.Argb8888 ?? throw new InvalidOperationException("Bitmap config cannot be null");
-		var bitmap = Bitmap.CreateBitmap(1024, 768, bitmapConfig, true);
-
+		var bitmap = CreateBitmap(1024, 768, bitmapConfig) ?? throw new InvalidOperationException("Bitmap cannot be null");
 		Canvas canvas = new();
 		canvas.SetBitmap(bitmap);
 		canvas.DrawColor(Android.Graphics.Color.White);
@@ -82,6 +85,19 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return bitmap;
 		}
+	}
+
+	static Bitmap? CreateBitmap(int width, int height, Bitmap.Config config)
+	{
+		if (OperatingSystem.IsAndroidVersionAtLeast(26))
+		{
+			return Bitmap.CreateBitmap(width, height, config, true);
+		}
+		else if (Build.VERSION.SdkInt <= BuildVersionCodes.O)
+		{
+			return Bitmap.CreateBitmap(width, height, config);
+		}
+		return null;
 	}
 
 	/// <summary>
@@ -151,7 +167,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			try
 			{
 				await StartService(startServiceSourceToken.Token);
-			}
+		}
 			catch (Exception e)
 			{
 				System.Diagnostics.Trace.TraceError($"[error] {e}, {e.Message}");
@@ -164,10 +180,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 		
 		currentState = MediaElement.CurrentState;
-
-		BroadcastUpdate(currentState is MediaElementState.Playing
-			? MediaControlsService.ACTION_PLAY
-			: MediaControlsService.ACTION_PAUSE);
+		BroadcastUpdate();
 	}
 
 	/// <summary>
@@ -180,7 +193,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView()
 	{
 		ArgumentNullException.ThrowIfNull(MauiContext.Context);
-		Player = new ExoPlayerBuilder(MauiContext.Context).Build() ?? throw new NullReferenceException();
+		Player = new ExoPlayerBuilder(MauiContext.Context).Build() ?? throw new InvalidOperationException("Player cannot be null");
 		Player.AddListener(this);
 
 		Player.SetHandleAudioBecomingNoisy(true);
@@ -198,29 +211,33 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		};
 
 		checkPermissionsTask = CheckAndRequestForegroundPermission(checkPermissionSourceToken.Token);
-		
+
 		string RandomId = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8];
 		var mediaSessionWRandomId = new AndroidX.Media3.Session.MediaSession.Builder(Platform.AppContext, Player);
 		mediaSessionWRandomId.SetId(RandomId);
-		session = mediaSessionWRandomId.Build();
-		
-		uiUpdateReceiver ??= new UIUpdateReceiver();
-		IntentFilter intentFilter = new(MediaControlsService.ACTION_UPDATE_PLAYER);
-		var flags = ContextCompat.ReceiverNotExported;
-		ContextCompat.RegisterReceiver(Platform.AppContext, uiUpdateReceiver, intentFilter, flags);
-		UIUpdateReceiver.OnPropertyChanged += OnPropertyChanged;
+		session ??= mediaSessionWRandomId.Build();
 
+		if (Build.VERSION.SdkInt < BuildVersionCodes.Tiramisu)
+		{
+			uiUpdateReceiver ??= new UIUpdateReceiver();
+			IntentFilter intentFilter = new(MediaControlsService.ACTION_UPDATE_PLAYER);
+			var flags = ContextCompat.ReceiverNotExported;
+			ContextCompat.RegisterReceiver(Platform.AppContext, uiUpdateReceiver, intentFilter, flags);
+
+			notificationService ??= Microsoft.Maui.Controls.Application.Current?.MainPage?.Handler?.MauiContext?.Services?.GetService<INotificationService>();
+			ArgumentNullException.ThrowIfNull(notificationService);
+			notificationService.NotificationReceived += OnPropertyChanged;
+		}
 		return (Player, PlayerView);
 	}
 
-	void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+	void OnPropertyChanged(object? sender, NotificationEventArgs e)
 	{
-		if (Player is null || e.PropertyName is null)
+		if (Player is null || e.Action is null || e.Sender.Equals(MediaControlsService.ACTION_UPDATE_UI))
 		{
 			return;
 		}
-		var action = e.PropertyName;
-
+		var action = e.Action;
 		switch (action)
 		{
 			case MediaControlsService.ACTION_PLAY:
@@ -321,7 +338,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// This is part of the <see cref="IPlayerListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
-	public void OnSeekProcessed()
+	public static void OnSeekProcessed()
 	{
 		// Deprecated in ExoPlayer v2.12.0
 		// Use OnPlaybackStateChanged with STATE_READY instead: https://stackoverflow.com/a/65745607/5953643
@@ -404,6 +421,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		Player.SeekTo(0);
 		Player.Stop();
 		MediaElement.Position = TimeSpan.Zero;
+		StopService();
 	}
 
 	protected virtual partial void PlatformUpdateSource()
@@ -415,12 +433,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			return;
 		}
 
-		StopService();
 		if (MediaElement.Source is null)
 		{
 			Player.ClearMediaItems();
 			MediaElement.Duration = TimeSpan.Zero;
 			MediaElement.CurrentStateChanged(MediaElementState.None);
+			StopService();
 
 			return;
 		}
@@ -473,7 +491,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	MediaItem.Builder SetPlayerData(string url)
 	{
-		MediaMetadata.Builder mediaMetaData = new MediaMetadata.Builder();
+		MediaMetadata.Builder mediaMetaData = new();
 		mediaMetaData.SetAlbumArtist(MediaElement.MetadataArtist);
 		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
 		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
@@ -520,7 +538,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			Player.SetPlaybackSpeed((float)MediaElement.Speed);
 
-			if (previousSpeed == 0)
+			if ((int)previousSpeed == 0)
 			{
 				Player.Play();
 			}
@@ -655,7 +673,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			await checkPermissionsTask.WaitAsync(cancellationToken);
 		}
-
+		
 		ArgumentNullException.ThrowIfNull(PlayerView);
 		Android.Content.Context? context = Platform.AppContext;
 		Android.Content.Res.Resources? resources = context.Resources;
@@ -689,8 +707,23 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 	}
 
-	static void BroadcastUpdate(string action)
+	void BroadcastUpdate()
 	{
+		var action = string.Empty;
+		ArgumentNullException.ThrowIfNull(MediaElement);
+		switch (MediaElement.CurrentState)
+		{
+			case MediaElementState.Playing:
+				action = MediaControlsService.ACTION_PLAY;
+				break;
+			case MediaElementState.Paused:
+				action = MediaControlsService.ACTION_PAUSE;
+				break;
+		}
+		if (string.IsNullOrWhiteSpace(action))
+		{
+			return;
+		}
 		Intent intent = new(Platform.AppContext, typeof(ReceiveUpdates));
 		intent.PutExtra("ACTION", action);
 		intent.SetAction(action);
@@ -724,7 +757,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
 	public void OnPlayerErrorChanged(PlaybackException? error) { }
 	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }
-	public void OnPositionDiscontinuity(int reason) { }
 	public void OnPositionDiscontinuity(PlayerPositionInfo? oldPosition, PlayerPositionInfo? newPosition, int reason) { }
 	public void OnRenderedFirstFrame() { }
 	public void OnRepeatModeChanged(int repeatMode) { }
@@ -736,25 +768,26 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnTimelineChanged(Timeline? timeline, int reason) { }
 	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? parameters) { }
 	public void OnTracksChanged(Tracks? tracks) { }
-	public void OnTracksInfoChanged(Tracks tracksInfo) { }
 
-	#endregion	
+	#endregion
 }
 
-/// <summary>
-/// A <see cref="BroadcastReceiver"/> that listens for updates from the <see cref="MediaControlsService"/>.
-/// </summary>
 [BroadcastReceiver(Enabled = true, Exported = false)]
 sealed class UIUpdateReceiver : BroadcastReceiver
 {
-	public static event EventHandler<PropertyChangedEventArgs>? OnPropertyChanged;
+	readonly NotificationService? notificationService;
 	public UIUpdateReceiver()
 	{
+		notificationService = Microsoft.Maui.Controls.Application.Current?.MainPage?.Handler?.MauiContext?.Services?.GetService<INotificationService>() as NotificationService;
 	}
 	public override void OnReceive(Context? context, Intent? intent)
 	{
 
 		var action = intent?.Action;
-		OnPropertyChanged?.Invoke(null, new PropertyChangedEventArgs(action));
+		if (context is null || action is null || notificationService is null)
+		{
+			return;
+		}
+		notificationService.Received(action, MediaControlsService.ACTION_UPDATE_PLAYER);
 	}
 }
