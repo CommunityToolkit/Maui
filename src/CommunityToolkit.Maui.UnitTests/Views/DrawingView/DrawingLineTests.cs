@@ -73,10 +73,10 @@ public class DrawingLineTests : BaseHandlerTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task GetImageStream_CancellationTokenExpired()
 	{
-		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+		var cts = new CancellationTokenSource();
 
 		// Ensure CancellationToken Expired
-		await Task.Delay(100, CancellationToken.None);
+		await cts.CancelAsync();
 
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await drawingLine.GetImageStream(10, 10, Colors.Blue.AsPaint(), cts.Token));
 	}
