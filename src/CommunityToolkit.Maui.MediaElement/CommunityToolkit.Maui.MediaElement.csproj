@@ -77,7 +77,6 @@
    
     <!-- Should match version of the referenced 'Xamarin.AndroidX.Activity' package -->
     <PackageReference Include="Xamarin.AndroidX.Activity.Ktx" Version="1.9.2" />
-    <PackageReference Include="Xamarin.AndroidX.Activity.Ktx" Version="1.9.2" />
   </ItemGroup>
   
   <ItemGroup>
