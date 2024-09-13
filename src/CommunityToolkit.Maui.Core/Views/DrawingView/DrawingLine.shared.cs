@@ -68,6 +68,6 @@ public class DrawingLine : IDrawingLine
 	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
 	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Paint background, CancellationToken token = default)
 	{
-		return DrawingViewService.GetImageStream(Points.ToList(), new Size(imageSizeWidth, imageSizeHeight), LineWidth, LineColor, background, token);
+		return DrawingViewService.GetImageStream([.. Points], new Size(imageSizeWidth, imageSizeHeight), LineWidth, LineColor, background, token);
 	}
 }
