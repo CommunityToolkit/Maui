@@ -211,16 +211,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		};
 
 		checkPermissionsTask = CheckAndRequestForegroundPermission(checkPermissionSourceToken.Token);
-		/*
-		 Waiting on Version bump with PR: https://github.com/xamarin/AndroidX/issues/764 to use the below code
-		 Until the above PR is merged, Popup, CollectionView and CarouselView will not work with MediaManager
-
+		
 		string RandomId = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8];
 		var mediaSessionWRandomId = new AndroidX.Media3.Session.MediaSession.Builder(Platform.AppContext, Player);
 		mediaSessionWRandomId.SetId(RandomId);
 		session ??= mediaSessionWRandomId.Build();
-		*/
-		session ??= new AndroidX.Media3.Session.MediaSession.Builder(Platform.AppContext, Player).Build();
+
 		if (Build.VERSION.SdkInt < BuildVersionCodes.Tiramisu)
 		{
 			uiUpdateReceiver ??= new UIUpdateReceiver();

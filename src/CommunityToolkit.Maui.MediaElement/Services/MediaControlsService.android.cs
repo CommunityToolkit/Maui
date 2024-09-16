@@ -59,7 +59,6 @@ class MediaControlsService : Service
 			{
 				safeHandle.Dispose();
 			}
-			mediaSession?.SessionToken?.Dispose();
 			mediaSession?.Release();
 			mediaSession?.Dispose();
 			Platform.CurrentActivity?.StopService(new Intent(Platform.AppContext, typeof(MediaControlsService)));
