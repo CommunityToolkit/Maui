@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Sample.Pages;
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Sample.Pages;
 using CommunityToolkit.Maui.Sample.Pages.Alerts;
 using CommunityToolkit.Maui.Sample.Pages.Behaviors;
 using CommunityToolkit.Maui.Sample.Pages.Converters;
@@ -24,8 +25,8 @@ namespace CommunityToolkit.Maui.Sample;
 
 public partial class AppShell : Shell
 {
-	static readonly IReadOnlyDictionary<Type, (Type GalleryPageType, Type ContentPageType)> viewModelMappings = new Dictionary<Type, (Type, Type)>(new[]
-	{
+	static readonly ReadOnlyDictionary<Type, (Type GalleryPageType, Type ContentPageType)> viewModelMappings = new Dictionary<Type, (Type, Type)>(
+	[
 		// Add Alerts View Models
 		CreateViewModelMapping<SnackbarPage, SnackbarViewModel, AlertsGalleryPage, AlertsGalleryViewModel>(),
 		CreateViewModelMapping<ToastPage, ToastViewModel, AlertsGalleryPage, AlertsGalleryViewModel>(),
@@ -137,8 +138,8 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<StylePopupPage, StylePopupViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 
 		// Add PlatformSpecific View Models
-		CreateViewModelMapping<NavigationBarPage, NavigationBarAndroidViewModel, PlatformSpecificGalleryPage, PlatformSpecificGalleryViewModel>(),
-	});
+		CreateViewModelMapping<NavigationBarPage, NavigationBarAndroidViewModel, PlatformSpecificGalleryPage, PlatformSpecificGalleryViewModel>()
+	]).AsReadOnly();
 
 	public AppShell()
 	{
