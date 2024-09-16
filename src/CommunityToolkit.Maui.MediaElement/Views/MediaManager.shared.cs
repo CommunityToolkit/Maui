@@ -241,7 +241,14 @@ public partial class MediaManager
 	/// </summary>
 	protected virtual partial void PlatformUpdateVolume();
 
-	static bool AreFloatingPointNumbersEqual(in double number1, in double number2, double tolerance = 0.01) => Math.Abs(number1 - number2) > tolerance;
+	/// <summary>
+	/// A helper method to determine if two floating-point numbers are equal.
+	/// </summary>
+	/// <param name="number1"></param>
+	/// <param name="number2"></param>
+	/// <param name="tolerance"></param>
+	/// <returns></returns>
+	public static bool AreFloatingPointNumbersEqual(in double number1, in double number2, double tolerance = 0.01) => Math.Abs(number1 - number2) > tolerance;
 }
 
 #if !(WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN)
