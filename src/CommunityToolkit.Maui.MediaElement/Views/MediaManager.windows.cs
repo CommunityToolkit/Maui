@@ -318,29 +318,26 @@ partial class MediaManager : IDisposable
 	/// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
 	protected virtual void Dispose(bool disposing)
 	{
-		if (disposing)
+		if (disposing && Player?.MediaPlayer is not null)
 		{
-			if (Player?.MediaPlayer is not null)
+			if (displayActiveRequested)
 			{
-				if (displayActiveRequested)
-				{
-					DisplayRequest.RequestRelease();
-					displayActiveRequested = false;
-				}
+				DisplayRequest.RequestRelease();
+				displayActiveRequested = false;
+			}
 
-				Player.MediaPlayer.MediaOpened -= OnMediaElementMediaOpened;
-				Player.MediaPlayer.MediaFailed -= OnMediaElementMediaFailed;
-				Player.MediaPlayer.MediaEnded -= OnMediaElementMediaEnded;
-				Player.MediaPlayer.VolumeChanged -= OnMediaElementVolumeChanged;
-				Player.MediaPlayer.IsMutedChanged -= OnMediaElementIsMutedChanged;
+			Player.MediaPlayer.MediaOpened -= OnMediaElementMediaOpened;
+			Player.MediaPlayer.MediaFailed -= OnMediaElementMediaFailed;
+			Player.MediaPlayer.MediaEnded -= OnMediaElementMediaEnded;
+			Player.MediaPlayer.VolumeChanged -= OnMediaElementVolumeChanged;
+			Player.MediaPlayer.IsMutedChanged -= OnMediaElementIsMutedChanged;
 
-				if (Player.MediaPlayer.PlaybackSession is not null)
-				{
-					Player.MediaPlayer.PlaybackSession.NaturalVideoSizeChanged -= OnNaturalVideoSizeChanged;
-					Player.MediaPlayer.PlaybackSession.PlaybackRateChanged -= OnPlaybackSessionPlaybackRateChanged;
-					Player.MediaPlayer.PlaybackSession.PlaybackStateChanged -= OnPlaybackSessionPlaybackStateChanged;
-					Player.MediaPlayer.PlaybackSession.SeekCompleted -= OnPlaybackSessionSeekCompleted;
-				}
+			if (Player.MediaPlayer.PlaybackSession is not null)
+			{
+				Player.MediaPlayer.PlaybackSession.NaturalVideoSizeChanged -= OnNaturalVideoSizeChanged;
+				Player.MediaPlayer.PlaybackSession.PlaybackRateChanged -= OnPlaybackSessionPlaybackRateChanged;
+				Player.MediaPlayer.PlaybackSession.PlaybackStateChanged -= OnPlaybackSessionPlaybackStateChanged;
+				Player.MediaPlayer.PlaybackSession.SeekCompleted -= OnPlaybackSessionSeekCompleted;
 			}
 		}
 	}
@@ -360,7 +357,7 @@ partial class MediaManager : IDisposable
 		}
 		if (!Uri.TryCreate(MediaElement.MetadataArtworkUrl, UriKind.RelativeOrAbsolute, out var metadataArtworkUri))
 		{
-			Trace.WriteLine($"{nameof(MediaElement)} unable to update artwork because {nameof(MediaElement.MetadataArtworkUrl)} is not a valid URI");
+			Trace.TraceError($"{nameof(MediaElement)} unable to update artwork because {nameof(MediaElement.MetadataArtworkUrl)} is not a valid URI");
 			return;
 		}
 
@@ -434,7 +431,7 @@ partial class MediaManager : IDisposable
 
 		MediaElement?.MediaFailed(new MediaFailedEventArgs(message));
 
-		Logger?.LogError("{logMessage}", message);
+		Logger?.LogError("{LogMessage}", message);
 	}
 
 	void OnMediaElementIsMutedChanged(WindowsMediaElement sender, object args)

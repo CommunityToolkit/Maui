@@ -287,7 +287,7 @@ public partial class MediaManager : IDisposable
 				MediaElement.MediaFailed(
 					new MediaFailedEventArgs(message));
 
-				Logger.LogError("{logMessage}", message);
+				Logger.LogError("{LogMessage}", message);
 			});
 
 		if (PlayerItem is not null && PlayerItem.Error is null)
@@ -621,7 +621,7 @@ public partial class MediaManager : IDisposable
 			message = error.LocalizedDescription;
 
 			MediaElement.MediaFailed(new MediaFailedEventArgs(message));
-			Logger.LogError("{logMessage}", message);
+			Logger.LogError("{LogMessage}", message);
 		}
 		else
 		{
@@ -629,7 +629,7 @@ public partial class MediaManager : IDisposable
 			message = args.Notification?.ToString() ??
 				"Media playback failed for an unknown reason.";
 
-			Logger?.LogWarning("{logMessage}", message);
+			Logger?.LogWarning("{LogMessage}", message);
 		}
 	}
 
@@ -653,7 +653,7 @@ public partial class MediaManager : IDisposable
 			}
 			catch (Exception e)
 			{
-				Logger.LogWarning(e, "{logMessage}", $"Failed to play media to end.");
+				Logger.LogWarning(e, "{LogMessage}", $"Failed to play media to end.");
 			}
 		}
 	}
@@ -676,7 +676,7 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	(int Width, int Height) GetVideoDimensions(AVPlayerItem avPlayerItem)
+	static (int Width, int Height) GetVideoDimensions(AVPlayerItem avPlayerItem)
 	{
 		// Create an AVAsset instance with the video file URL
 		var asset = avPlayerItem.Asset;
