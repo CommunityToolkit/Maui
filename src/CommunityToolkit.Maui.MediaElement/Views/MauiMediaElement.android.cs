@@ -216,18 +216,5 @@ public class MauiMediaElement : CoordinatorLayout
 				return CurrentActivity.Window;
 			}
 		}
-
-		public static ViewGroup CurrentViewGroup
-		{
-			get
-			{
-				if (CurrentWindow.DecorView is not ViewGroup viewGroup)
-				{
-					throw new InvalidOperationException("DecorView cannot be null");
-				}
-
-				return viewGroup;
-			}
-		}
 	}
 }
