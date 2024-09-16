@@ -12,7 +12,6 @@ using AndroidX.Media3.Common.Text;
 using AndroidX.Media3.Common.Util;
 using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.UI;
-using CommunityToolkit.Maui.ApplicationModel.Permissions;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Interfaces;
 using CommunityToolkit.Maui.Media.Services;
@@ -39,7 +38,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	static readonly HttpClient client = new();
 	
 	TaskCompletionSource? seekToTaskCompletionSource;
-	Task? checkPermissionsTask;
 	CancellationTokenSource checkPermissionSourceToken = new();
 	CancellationTokenSource startServiceSourceToken = new();
 
@@ -189,7 +187,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
 	/// <exception cref="NullReferenceException">Thrown when <see cref="Android.Content.Context"/> is <see langword="null"/> or when the platform view could not be created.</exception>
 	[MemberNotNull(nameof(PlayerView))]
-	[MemberNotNull(nameof(checkPermissionsTask))]
+	//[MemberNotNull(nameof(checkPermissionsTask))]
 	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView()
 	{
 		ArgumentNullException.ThrowIfNull(MauiContext.Context);
@@ -210,8 +208,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 		};
 
-		checkPermissionsTask = CheckAndRequestForegroundPermission(checkPermissionSourceToken.Token);
-		
 		string RandomId = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8];
 		var mediaSessionWRandomId = new AndroidX.Media3.Session.MediaSession.Builder(Platform.AppContext, Player);
 		mediaSessionWRandomId.SetId(RandomId);
@@ -639,6 +635,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		if (disposing)
 		{
+			if (notificationService is not null)
+			{
+				notificationService.NotificationReceived -= OnPropertyChanged;
+			}
 			StopService();
 			uiUpdateReceiver?.Dispose();
 			uiUpdateReceiver = null;
@@ -655,25 +655,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
 		Android.App.Application.Context.StopService(serviceIntent);
 	}
-
-	static async Task CheckAndRequestForegroundPermission(CancellationToken cancellationToken = default)
-	{
-		var status = await Permissions.CheckStatusAsync<AndroidMediaPermissions>().WaitAsync(cancellationToken);
-		if (status is PermissionStatus.Granted)
-		{
-			return;
-		}
-
-		await Permissions.RequestAsync<AndroidMediaPermissions>().WaitAsync(cancellationToken).ConfigureAwait(false);
-	}
-
 	async Task StartService(CancellationToken cancellationToken = default)
 	{
-		if (checkPermissionsTask is not null)
-		{
-			await checkPermissionsTask.WaitAsync(cancellationToken);
-		}
-		
 		ArgumentNullException.ThrowIfNull(PlayerView);
 		Android.Content.Context? context = Platform.AppContext;
 		Android.Content.Res.Resources? resources = context.Resources;

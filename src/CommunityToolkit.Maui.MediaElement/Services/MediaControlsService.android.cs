@@ -38,7 +38,7 @@ class MediaControlsService : Service
 	NotificationCompat.Action? actionNext;
 	NotificationCompat.Action? actionPrevious;
 	MediaSessionCompat.Token? token;
-
+	NotificationManager? notificationManager;
 	ReceiveUpdates? receiveUpdates;
 	INotificationService? notificationService;
 
@@ -59,13 +59,6 @@ class MediaControlsService : Service
 			{
 				safeHandle.Dispose();
 			}
-			mediaSession?.Release();
-			mediaSession?.Dispose();
-			Platform.CurrentActivity?.StopService(new Intent(Platform.AppContext, typeof(MediaControlsService)));
-			mediaSession = null;
-
-			receiveUpdates?.Dispose();
-			receiveUpdates = null;
 			isDisposed = true;
 		}
 		base.Dispose(disposing);
@@ -124,7 +117,7 @@ class MediaControlsService : Service
 
 	async ValueTask InitializeNotification(MediaSessionCompat mediaSession, Intent mediaManagerIntent, CancellationToken cancellationToken)
 	{
-		var notificationManager = GetSystemService(NotificationService) as NotificationManager;
+		notificationManager = GetSystemService(NotificationService) as NotificationManager;
 		var intent = new Intent(this, typeof(MediaControlsService));
 		var pendingIntent = PendingIntent.GetActivity(this, 2, intent, pendingIntentFlags);
 
@@ -233,15 +226,11 @@ class MediaControlsService : Service
 
 	public override void OnDestroy()
 	{
-		if(notificationService is not null)
+		notificationManager?.CancelAll();
+		if (notificationService is not null)
 		{
 			notificationService.NotificationReceived -= OnReceiveUpdatesPropertyChanged;
 		}
-
-		receiveUpdates?.Dispose();
-		mediaSession?.SessionToken?.Dispose();
-		mediaSession?.Release();
-		mediaSession?.Dispose();
 		Platform.CurrentActivity?.StopService(new Intent(Platform.AppContext, typeof(MediaControlsService)));
 		base.OnDestroy();
 	}
