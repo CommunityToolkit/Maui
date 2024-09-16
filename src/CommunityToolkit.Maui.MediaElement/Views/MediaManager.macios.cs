@@ -158,20 +158,18 @@ public partial class MediaManager : IDisposable
 			throw new InvalidOperationException($"{nameof(AVPlayer)}.{nameof(AVPlayer.CurrentItem)} is not yet initialized");
 		}
 
-		if (Player?.Status is not AVPlayerStatus.ReadyToPlay)
+		if (Player.Status is not AVPlayerStatus.ReadyToPlay)
 		{
 			throw new InvalidOperationException($"{nameof(AVPlayer)}.{nameof(AVPlayer.Status)} must first be set to {AVPlayerStatus.ReadyToPlay}");
 		}
 
 		var ranges = Player.CurrentItem.SeekableTimeRanges;
 		var seekToTime = new CMTime(Convert.ToInt64(position.TotalMilliseconds), 1000);
-
-		foreach (var v in ranges)
+		foreach (var range in ranges.Select(r => r.CMTimeRangeValue))
 		{
-			if (seekToTime >= (seekToTime - v.CMTimeRangeValue.Start)
-				&& seekToTime < (v.CMTimeRangeValue.Start + v.CMTimeRangeValue.Duration))
+			if (seekToTime >= range.Start && seekToTime < (range.Start + range.Duration))
 			{
-				Player.Seek(seekToTime + v.CMTimeRangeValue.Start, complete =>
+				Player.Seek(seekToTime, complete =>
 				{
 					if (!complete)
 					{
@@ -294,9 +292,9 @@ public partial class MediaManager : IDisposable
 		{
 			MediaElement.MediaOpened();
 
-			var mediaDimensions = GetVideoDimensions(PlayerItem);
-			MediaElement.MediaWidth = mediaDimensions.Width;
-			MediaElement.MediaHeight = mediaDimensions.Height;
+			var (Width, Height) = GetVideoDimensions(PlayerItem);
+			MediaElement.MediaWidth = Width;
+			MediaElement.MediaHeight = Height;
 
 			if (MediaElement.ShouldAutoPlay)
 			{
@@ -676,7 +674,7 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	(int Width, int Height) GetVideoDimensions(AVPlayerItem avPlayerItem)
+	static (int Width, int Height) GetVideoDimensions(AVPlayerItem avPlayerItem)
 	{
 		// Create an AVAsset instance with the video file URL
 		var asset = avPlayerItem.Asset;
