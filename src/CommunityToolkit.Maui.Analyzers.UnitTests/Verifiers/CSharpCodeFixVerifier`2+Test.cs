@@ -9,10 +9,29 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
 	where TAnalyzer : DiagnosticAnalyzer, new()
 	where TCodeFix : CodeFixProvider, new()
 {
-	public class Test : CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier>
+	protected class Test : CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier>
 	{
 		public Test()
 		{
+#if NET8_0
+			ReferenceAssemblies = ReferenceAssemblies.Net.Net80iOS;
+#else
+#error ReferenceAssemblies must be updated to current version of .NET
+#endif
+			Type[] typesForAssembliesUnderTest =
+			[
+				typeof(Microsoft.Maui.Controls.Xaml.Extensions), // Microsoft.Maui.Controls.Xaml
+				typeof(MauiApp),// Microsoft.Maui.Hosting
+				typeof(Application), // Microsoft.Maui.Controls
+				typeof(Options), // CommunityToolkit.Maui
+				typeof(Core.Options), // CommunityToolkit.Maui.Core
+			];
+
+			foreach (Type type in typesForAssembliesUnderTest)
+			{
+				TestState.AdditionalReferences.Add(MetadataReference.CreateFromFile(type.Assembly.Location));
+			}
+
 			SolutionTransforms.Add((solution, projectId) =>
 			{
 				ArgumentNullException.ThrowIfNull(solution);
@@ -25,6 +44,7 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
 				var compilationOptions = project.CompilationOptions ?? throw new InvalidOperationException($"{nameof(project.CompilationOptions)} cannot be null");
 				compilationOptions = compilationOptions.WithSpecificDiagnosticOptions(
 					compilationOptions.SpecificDiagnosticOptions.SetItems(CSharpVerifierHelper.NullableWarnings));
+
 				solution = solution.WithProjectCompilationOptions(projectId, compilationOptions);
 
 				return solution;
