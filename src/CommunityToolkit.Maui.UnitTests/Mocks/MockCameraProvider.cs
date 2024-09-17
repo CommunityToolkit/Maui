@@ -9,19 +9,18 @@ public class MockCameraProvider : ICameraProvider
 
 	public ValueTask RefreshAvailableCameras(CancellationToken token)
 	{
-		AvailableCameras = new[]
-		{
+		AvailableCameras =
+		[
 			new CameraInfo("Test Camera",
 				Guid.NewGuid().ToString(),
 				CameraPosition.Front,
 				false,
 				1.0f,
 				5.0f,
-				new[]
-				{
+				[
 					new Size(1920, 1080)
-				})
-		};
+				])
+		];
 
 		return ValueTask.CompletedTask;
 	}

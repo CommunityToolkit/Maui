@@ -3,15 +3,16 @@ using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
-public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawingViewHandler
+public sealed class MockDrawingViewHandler(IPropertyMapper mapper) : ViewHandler<IDrawingView, DrawingView>(mapper), IDrawingViewHandler
 {
 	IDrawingLineAdapter adapter = new DrawingLineAdapter();
 
-	public static readonly PropertyMapper<IDrawingView, MockDrawingViewHandler> DrawingViewPropertyMapper = new(ViewMapper)
+	public static readonly PropertyMapper<IDrawingView, MockDrawingViewHandler> DrawingViewPropertyMapper = new()
 	{
 		[nameof(IDrawingView.LineWidth)] = MapLineWidth,
 		[nameof(IDrawingView.LineColor)] = MapLineColor,
@@ -24,31 +25,35 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawin
 	{
 	}
 
-	public MockDrawingViewHandler(IPropertyMapper mapper) : base(mapper)
-	{
+	public List<MauiDrawingLine> Lines { get; } = [];
+	public int MapLineWidthCount { get; private set; }
+	public int MapLineColorCount { get; private set; }
+	public int MapShouldSmoothPathWhenDrawnCount { get; private set; }
+	public int MapIsMultiLineModeEnabledCount { get; private set; }
+	public int MapDrawCount { get; private set; }
 
+	/// <inheritdoc />
+	public void SetDrawingLineAdapter(IDrawingLineAdapter drawingLineAdapter)
+	{
+		adapter = drawingLineAdapter;
 	}
 
 	/// <inheritdoc />
-	protected override void ConnectHandler(object platformView)
+	protected override DrawingView CreatePlatformView() => new();
+
+	/// <inheritdoc />
+	protected override void ConnectHandler(DrawingView platformView)
 	{
 		base.ConnectHandler(platformView);
 		VirtualView.Lines.CollectionChanged += Lines_CollectionChanged;
 	}
 
 	/// <inheritdoc />
-	protected override void DisconnectHandler(object platformView)
+	protected override void DisconnectHandler(DrawingView platformView)
 	{
 		base.DisconnectHandler(platformView);
 		VirtualView.Lines.CollectionChanged -= Lines_CollectionChanged;
 	}
-
-	public int MapLineWidthCount { get; private set; }
-	public int MapLineColorCount { get; private set; }
-	public int MapShouldSmoothPathWhenDrawnCount { get; private set; }
-	public int MapIsMultiLineModeEnabledCount { get; private set; }
-	public int MapDrawCount { get; private set; }
-	public List<MauiDrawingLine> Lines { get; } = [];
 
 	static void MapLineWidth(MockDrawingViewHandler arg1, IDrawingView arg2)
 	{
@@ -75,11 +80,6 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawin
 		arg1.MapDrawCount++;
 	}
 
-	protected override object CreatePlatformView()
-	{
-		return new object();
-	}
-
 	void Lines_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 	{
 		Lines.Clear();
@@ -101,14 +101,9 @@ public class MockDrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawin
 			VirtualView.OnDrawingLineCompleted(drawingLine);
 		}
 	}
-
-	public void SetDrawingLineAdapter(IDrawingLineAdapter drawingLineAdapter)
-	{
-		adapter = drawingLineAdapter;
-	}
 }
 
-class MockDrawingLineAdapter : IDrawingLineAdapter
+sealed class MockDrawingLineAdapter : IDrawingLineAdapter
 {
 	public IDrawingLine ConvertMauiDrawingLine(MauiDrawingLine mauiDrawingLine)
 	{
@@ -123,7 +118,7 @@ class MockDrawingLineAdapter : IDrawingLineAdapter
 	}
 }
 
-class MockDrawingLine : IDrawingLine
+sealed class MockDrawingLine : IDrawingLine
 {
 	public int Granularity { get; set; }
 	public Color LineColor { get; set; } = Colors.Blue;
