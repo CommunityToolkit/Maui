@@ -82,13 +82,13 @@ class MediaControlsService : Service
 		{
 			token ??= (MediaSessionCompat.Token)(mediaManagerIntent.GetParcelableExtra("token", Java.Lang.Class.FromType(typeof(MediaSessionCompat.Token))) ?? throw new InvalidOperationException("Token cannot be null"));
 		}
-		if (OperatingSystem.IsAndroidVersionAtLeast(21) && Build.VERSION.SdkInt < BuildVersionCodes.S)
+		if (OperatingSystem.IsAndroidVersionAtLeast(21) && !OperatingSystem.IsAndroidVersionAtLeast(33))
 		{
 #pragma warning disable CA1422 // Validate platform compatibility
 			token ??= (MediaSessionCompat.Token)(mediaManagerIntent.GetParcelableExtra("token") ?? throw new InvalidOperationException("Token cannot be null"));
 #pragma warning restore CA1422 // Validate platform compatibility
 		}
-		if (Build.VERSION.SdkInt < BuildVersionCodes.Lollipop)
+		if (!OperatingSystem.IsAndroidVersionAtLeast(21))
 		{
 			throw new InvalidOperationException("MediaSessionCompat.Token is not supported on this device");
 		}
@@ -97,7 +97,7 @@ class MediaControlsService : Service
 			Active = true,
 		};
 
-		if(receiveUpdates is null && Build.VERSION.SdkInt < BuildVersionCodes.Tiramisu)
+		if(receiveUpdates is null && !OperatingSystem.IsAndroidVersionAtLeast(33))
 		{
 			receiveUpdates = new ReceiveUpdates();
 			IntentFilter intentFilter = new(MediaControlsService.ACTION_UPDATE_UI);
@@ -128,7 +128,7 @@ class MediaControlsService : Service
 		mediaSession.SetPlaybackToLocal(AudioManager.AudioSessionIdGenerate);
 		mediaSession.SetSessionActivity(pendingIntent);
 
-		if (Build.VERSION.SdkInt >= BuildVersionCodes.O && notificationManager is not null)
+		if (OperatingSystem.IsAndroidVersionAtLeast(26) && notificationManager is not null)
 		{
 			CreateNotificationChannel(notificationManager);
 		}
@@ -139,11 +139,11 @@ class MediaControlsService : Service
 			return;
 		}
 
-		if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+		if (OperatingSystem.IsAndroidVersionAtLeast(26))
 		{
 			StartForeground(1, notification.Build());
 		}
-		if(Build.VERSION.SdkInt < BuildVersionCodes.Tiramisu && !isInitialized)
+		if(!OperatingSystem.IsAndroidVersionAtLeast(33) && !isInitialized)
 		{
 			isInitialized = true;
 			OnReceiveUpdatesPropertyChanged(this, new NotificationEventArgs(ACTION_PLAY, ACTION_UPDATE_UI));
@@ -153,11 +153,11 @@ class MediaControlsService : Service
 	{
 		var style = new AndroidX.Media.App.NotificationCompat.MediaStyle();
 		style.SetMediaSession(token);
-		if (Build.VERSION.SdkInt >= BuildVersionCodes.S)
+		if (OperatingSystem.IsAndroidVersionAtLeast(31))
 		{
 			style.SetShowActionsInCompactView(0, 1, 2);
 		}
-		if (Build.VERSION.SdkInt < BuildVersionCodes.Tiramisu)
+		if (!OperatingSystem.IsAndroidVersionAtLeast(33))
 		{
 			OnSetIntents();
 			var albumArtUri = mediaManagerIntent.GetStringExtra("albumArtUri") ?? string.Empty;

@@ -90,7 +90,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return Bitmap.CreateBitmap(width, height, config, true);
 		}
-		else if (Build.VERSION.SdkInt <= BuildVersionCodes.O)
+		else if (!OperatingSystem.IsAndroidVersionAtLeast(26))
 		{
 			return Bitmap.CreateBitmap(width, height, config);
 		}
@@ -211,7 +211,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		mediaSessionWRandomId.SetId(RandomId);
 		session ??= mediaSessionWRandomId.Build();
 
-		if (Build.VERSION.SdkInt < BuildVersionCodes.Tiramisu)
+		if (!OperatingSystem.IsAndroidVersionAtLeast(33))
 		{
 			uiUpdateReceiver ??= new UIUpdateReceiver();
 			IntentFilter intentFilter = new(MediaControlsService.ACTION_UPDATE_PLAYER);
