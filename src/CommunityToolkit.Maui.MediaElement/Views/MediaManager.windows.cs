@@ -360,7 +360,7 @@ partial class MediaManager : IDisposable
 		}
 		if (!Uri.TryCreate(MediaElement.MetadataArtworkUrl, UriKind.RelativeOrAbsolute, out var metadataArtworkUri))
 		{
-			Trace.WriteLine($"{nameof(MediaElement)} unable to update artwork because {nameof(MediaElement.MetadataArtworkUrl)} is not a valid URI");
+			Trace.TraceError($"{nameof(MediaElement)} unable to update artwork because {nameof(MediaElement.MetadataArtworkUrl)} is not a valid URI");
 			return;
 		}
 
@@ -434,7 +434,7 @@ partial class MediaManager : IDisposable
 
 		MediaElement?.MediaFailed(new MediaFailedEventArgs(message));
 
-		Logger?.LogError("{logMessage}", message);
+		Logger?.LogError("{LogMessage}", message);
 	}
 
 	void OnMediaElementIsMutedChanged(WindowsMediaElement sender, object args)
