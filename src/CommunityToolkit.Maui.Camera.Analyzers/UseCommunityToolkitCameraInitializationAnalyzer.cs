@@ -71,17 +71,10 @@ public class UseCommunityToolkitCameraInitializationAnalyzer : DiagnosticAnalyze
 			{
 				return expressionSyntax;
 			}
-			else
-			{
-				var expression = GetInvocationExpressionSyntax(child);
-
-				if (expression is not null)
-				{
-					return expression;
-				}
-			}
+			
+			return GetInvocationExpressionSyntax(child);
 		}
-
+		
 		throw new InvalidOperationException("Wow, this shouldn't happen, please open a bug here: https://github.com/CommunityToolkit/Maui/issues/new/choose");
 	}
 }
