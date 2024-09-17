@@ -3,7 +3,7 @@ using static CommunityToolkit.Maui.Analyzers.UnitTests.CSharpCodeFixVerifier<Com
 
 namespace CommunityToolkit.Maui.Analyzers.UnitTests;
 
-public class UseCommunityToolkitInitializationAnalyzerTests : BaseTest
+public class UseCommunityToolkitInitializationAnalyzerTests
 {
 	[Fact]
 	public void UseCommunityToolkitInitializationAnalyzerId()
@@ -26,7 +26,7 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 		public static MauiApp CreateMauiApp()
 		{
 			var builder = MauiApp.CreateBuilder();
-			builder.UseMauiApp<App>()
+			builder.UseMauiApp<Microsoft.Maui.Controls.Application>()
 				.UseMauiCommunityToolkit()
 				.ConfigureFonts(fonts =>
 				{
@@ -39,7 +39,7 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 	}
 }";
 
-		await VerifyAnalyzerAsync(source + appCS,
+		await VerifyAnalyzerAsync(source,
 			[
 				typeof(Options), // CommunityToolkit.Maui
 				typeof(Core.Options), // CommunityToolkit.Maui.Core;

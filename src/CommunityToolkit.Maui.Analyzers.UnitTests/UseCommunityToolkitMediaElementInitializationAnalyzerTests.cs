@@ -4,7 +4,7 @@ using static CommunityToolkit.Maui.Analyzers.UnitTests.CSharpCodeFixVerifier<Com
 
 namespace CommunityToolkit.Maui.Analyzers.UnitTests;
 
-public class UseCommunityToolkitMediaElementInitializationAnalyzerTests : BaseTest
+public class UseCommunityToolkitMediaElementInitializationAnalyzerTests
 {
 	[Fact]
 	public void UseCommunityToolkitMediaElementInitializationAnalyzerId()
@@ -27,7 +27,7 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 		public static MauiApp CreateMauiApp()
 		{
 			var builder = MauiApp.CreateBuilder();
-			builder.UseMauiApp<App>()
+			builder.UseMauiApp<Microsoft.Maui.Controls.Application>()
 				.UseMauiCommunityToolkitMediaElement()
 				.ConfigureFonts(fonts =>
 				{
@@ -40,9 +40,11 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 	}
 }";
 
-		await VerifyAnalyzerAsync(source + appCS, 
+		await VerifyAnalyzerAsync(source, 
 		[
 			typeof(Views.MediaElement) // CommunityToolkit.Maui.MediaElement
 		]);
 	}
+
+
 }

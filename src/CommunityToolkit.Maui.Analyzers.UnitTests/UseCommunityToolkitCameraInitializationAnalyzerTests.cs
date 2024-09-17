@@ -3,7 +3,7 @@ using Xunit;
 using static CommunityToolkit.Maui.Analyzers.UnitTests.CSharpCodeFixVerifier<CommunityToolkit.Maui.Camera.Analyzers.UseCommunityToolkitCameraInitializationAnalyzer, CommunityToolkit.Maui.Camera.Analyzers.UseCommunityToolkitCameraInitializationAnalyzerCodeFixProvider>;
 
 namespace CommunityToolkit.Maui.Analyzers.UnitTests;
-public class UseCommunityToolkitCameraInitializationAnalyzerTests : BaseTest
+public class UseCommunityToolkitCameraInitializationAnalyzerTests
 {
 	[Fact]
 	public void UseCommunityToolkitMediaElementInitializationAnalyzerId()
@@ -26,7 +26,7 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 		public static MauiApp CreateMauiApp()
 		{
 			var builder = MauiApp.CreateBuilder();
-			builder.UseMauiApp<App>()
+			builder.UseMauiApp<Microsoft.Maui.Controls.Application>()
 				.UseMauiCommunityToolkitCamera()
 				.ConfigureFonts(fonts =>
 				{
@@ -39,7 +39,7 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 	}
 }";
 
-		await VerifyAnalyzerAsync(source + appCS, 
+		await VerifyAnalyzerAsync(source, 
 		[
 			typeof(Views.CameraView) // CommunityToolkit.Maui.Camera
 		]);
