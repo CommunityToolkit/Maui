@@ -36,14 +36,12 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 		var expressionStatement = (ExpressionStatementSyntax)context.Node;
 		var root = expressionStatement.SyntaxTree.GetRoot();
 
-		if (TryGetUseMauiAppMethodDeclaration(root, out var useMauiAppMethodDeclarationString))
+		if (TryGetUseMauiAppMethodDeclaration(root, out var useMauiAppMethodDeclarationString) 
+			&& !useMauiAppMethodDeclarationString.Contains(useMauiCommunityToolkit.AsSpan(), StringComparison.Ordinal))
 		{
-			if (!useMauiAppMethodDeclarationString.Contains(useMauiCommunityToolkit.AsSpan(), StringComparison.Ordinal))
-			{
-				var expression = GetInvocationExpressionSyntax(expressionStatement);
-				var diagnostic = Diagnostic.Create(rule, expression.GetLocation());
-				context.ReportDiagnostic(diagnostic);
-			}
+			var expression = GetInvocationExpressionSyntax(expressionStatement);
+			var diagnostic = Diagnostic.Create(rule, expression.GetLocation());
+			context.ReportDiagnostic(diagnostic);
 		}
 	}
 
