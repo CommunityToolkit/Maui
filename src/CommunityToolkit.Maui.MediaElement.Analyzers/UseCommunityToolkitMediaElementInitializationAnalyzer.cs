@@ -15,6 +15,9 @@ public class UseCommunityToolkitMediaElementInitializationAnalyzer : DiagnosticA
 	public const string DiagnosticId = "MCTME001";
 
 	const string category = "Initialization";
+	const string useMauiApp = ".UseMauiApp<";
+	const string useMauiCommunityToolkitMediaElement = ".UseMauiCommunityToolkitMediaElement(";
+	
 	static readonly LocalizableString title = new LocalizableResourceString(nameof(Resources.InitializationErrorTitle), Resources.ResourceManager, typeof(Resources));
 	static readonly LocalizableString messageFormat = new LocalizableResourceString(nameof(Resources.InitalizationMessageFormat), Resources.ResourceManager, typeof(Resources));
 	static readonly LocalizableString description = new LocalizableResourceString(nameof(Resources.InitializationErrorMessage), Resources.ResourceManager, typeof(Resources));
@@ -35,10 +38,9 @@ public class UseCommunityToolkitMediaElementInitializationAnalyzer : DiagnosticA
 		var expressionStatement = (ExpressionStatementSyntax)context.Node;
 		var root = expressionStatement.SyntaxTree.GetRoot();
 
-		if (TryGetUseMauiAppMethodDeclaration(root, out var useMauiAppMethodDeclarationString)
-			&& useMauiAppMethodDeclarationString is not null)
+		if (TryGetUseMauiAppMethodDeclaration(root, out var useMauiAppMethodDeclarationString))
 		{
-			if (!useMauiAppMethodDeclarationString.Contains(".UseMauiCommunityToolkitMediaElement("))
+			if (!useMauiAppMethodDeclarationString.Contains(useMauiCommunityToolkitMediaElement.AsSpan(), StringComparison.Ordinal))
 			{
 				var expression = GetInvocationExpressionSyntax(expressionStatement);
 				var diagnostic = Diagnostic.Create(rule, expression.GetLocation());
@@ -47,16 +49,17 @@ public class UseCommunityToolkitMediaElementInitializationAnalyzer : DiagnosticA
 		}
 	}
 
-	static bool TryGetUseMauiAppMethodDeclaration(SyntaxNode root, out string? useMauiAppMethodDeclarationString)
+	static bool TryGetUseMauiAppMethodDeclaration(SyntaxNode root, out ReadOnlySpan<char> useMauiAppMethodDeclarationString)
 	{
-		useMauiAppMethodDeclarationString = null;
+		useMauiAppMethodDeclarationString = string.Empty.AsSpan();
 
 		foreach (var methodDeclaration in root.DescendantNodes().OfType<MethodDeclarationSyntax>())
 		{
-			if (methodDeclaration.NormalizeWhitespace(string.Empty, true).ToString() is string methodDeclarationString
-				&& methodDeclarationString.Contains(".UseMauiApp<"))
+			var methodDeclarationSpan = methodDeclaration.NormalizeWhitespace(string.Empty, true).ToString().AsSpan();
+			
+			if (methodDeclarationSpan.Contains(useMauiApp.AsSpan(), StringComparison.Ordinal))
 			{
-				useMauiAppMethodDeclarationString = methodDeclarationString;
+				useMauiAppMethodDeclarationString = methodDeclarationSpan;
 				return true;
 			}
 		}
