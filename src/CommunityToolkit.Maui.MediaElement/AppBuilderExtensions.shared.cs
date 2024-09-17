@@ -22,7 +22,7 @@ public static class AppBuilderExtensions
 
 #if ANDROID
 		builder.Services.AddSingleton<Media.Services.MediaControlsService>();
-		builder.Services.AddSingleton<Interfaces.INotificationService, Services.NotificationService>();
+		builder.Services.AddSingleton<Services.NotificationService>();
 #endif
 		return builder;
 	}

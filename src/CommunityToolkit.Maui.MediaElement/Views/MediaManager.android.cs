@@ -13,7 +13,6 @@ using AndroidX.Media3.Common.Util;
 using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Core.Primitives;
-using CommunityToolkit.Maui.Interfaces;
 using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Services;
@@ -45,7 +44,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	AndroidX.Media3.Session.MediaSession? session;
 	
 	UIUpdateReceiver? uiUpdateReceiver;
-	INotificationService? notificationService;
+	NotificationService? notificationService;
 
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
@@ -219,7 +218,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			var flags = ContextCompat.ReceiverNotExported;
 			ContextCompat.RegisterReceiver(Platform.AppContext, uiUpdateReceiver, intentFilter, flags);
 
-			notificationService ??= Microsoft.Maui.Controls.Application.Current?.MainPage?.Handler?.MauiContext?.Services?.GetService<INotificationService>();
+			ArgumentNullException.ThrowIfNull(IPlatformApplication.Current);
+			notificationService = IPlatformApplication.Current.Services.GetService<NotificationService>();
 			ArgumentNullException.ThrowIfNull(notificationService);
 			notificationService.NotificationReceived += OnPropertyChanged;
 		}
@@ -760,7 +760,8 @@ sealed class UIUpdateReceiver : BroadcastReceiver
 	readonly NotificationService? notificationService;
 	public UIUpdateReceiver()
 	{
-		notificationService = Microsoft.Maui.Controls.Application.Current?.MainPage?.Handler?.MauiContext?.Services?.GetService<INotificationService>() as NotificationService;
+		ArgumentNullException.ThrowIfNull(IPlatformApplication.Current);
+		notificationService = IPlatformApplication.Current.Services.GetService<NotificationService>();
 	}
 	public override void OnReceive(Context? context, Intent? intent)
 	{

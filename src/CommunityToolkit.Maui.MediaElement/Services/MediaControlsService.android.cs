@@ -9,8 +9,8 @@ using Android.Support.V4.Media.Session;
 using AndroidX.Core.App;
 using AndroidX.Core.Content;
 using CommunityToolkit.Maui.Core.Views;
-using CommunityToolkit.Maui.Interfaces;
 using CommunityToolkit.Maui.Primitives;
+using CommunityToolkit.Maui.Services;
 using Microsoft.Win32.SafeHandles;
 using Resource = Microsoft.Maui.Controls.Resource;
 
@@ -40,7 +40,7 @@ class MediaControlsService : Service
 	MediaSessionCompat.Token? token;
 	NotificationManager? notificationManager;
 	ReceiveUpdates? receiveUpdates;
-	INotificationService? notificationService;
+	NotificationService? notificationService;
 
 	public override IBinder? OnBind(Intent? intent) => null;
 
@@ -103,8 +103,8 @@ class MediaControlsService : Service
 			IntentFilter intentFilter = new(MediaControlsService.ACTION_UPDATE_UI);
 			var flags = ContextCompat.ReceiverNotExported;
 			ContextCompat.RegisterReceiver(Platform.AppContext, receiveUpdates, intentFilter, flags);
-			
-			notificationService ??= Microsoft.Maui.Controls.Application.Current?.MainPage?.Handler?.MauiContext?.Services?.GetService<INotificationService>();
+			ArgumentNullException.ThrowIfNull(IPlatformApplication.Current);
+			notificationService = IPlatformApplication.Current.Services.GetService<NotificationService>();
 			ArgumentNullException.ThrowIfNull(notificationService);
 			notificationService.NotificationReceived += OnReceiveUpdatesPropertyChanged;
 		}
@@ -239,10 +239,11 @@ class MediaControlsService : Service
 [BroadcastReceiver(Enabled = true, Exported = false)]
 sealed class ReceiveUpdates : BroadcastReceiver
 {
-	readonly INotificationService? notificationService;
+	readonly NotificationService? notificationService;
 	public ReceiveUpdates()
 	{
-		notificationService = Microsoft.Maui.Controls.Application.Current?.MainPage?.Handler?.MauiContext?.Services?.GetService<INotificationService>();
+		ArgumentNullException.ThrowIfNull(IPlatformApplication.Current);
+		notificationService = IPlatformApplication.Current.Services.GetService<NotificationService>();
 	}
 	public override void OnReceive(Context? context, Intent? intent)
 	{
