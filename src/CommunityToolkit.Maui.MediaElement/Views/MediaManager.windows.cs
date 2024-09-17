@@ -318,26 +318,29 @@ partial class MediaManager : IDisposable
 	/// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
 	protected virtual void Dispose(bool disposing)
 	{
-		if (disposing && Player?.MediaPlayer is not null)
+		if (disposing)
 		{
-			if (displayActiveRequested)
+			if (Player?.MediaPlayer is not null)
 			{
-				DisplayRequest.RequestRelease();
-				displayActiveRequested = false;
-			}
+				if (displayActiveRequested)
+				{
+					DisplayRequest.RequestRelease();
+					displayActiveRequested = false;
+				}
 
-			Player.MediaPlayer.MediaOpened -= OnMediaElementMediaOpened;
-			Player.MediaPlayer.MediaFailed -= OnMediaElementMediaFailed;
-			Player.MediaPlayer.MediaEnded -= OnMediaElementMediaEnded;
-			Player.MediaPlayer.VolumeChanged -= OnMediaElementVolumeChanged;
-			Player.MediaPlayer.IsMutedChanged -= OnMediaElementIsMutedChanged;
+				Player.MediaPlayer.MediaOpened -= OnMediaElementMediaOpened;
+				Player.MediaPlayer.MediaFailed -= OnMediaElementMediaFailed;
+				Player.MediaPlayer.MediaEnded -= OnMediaElementMediaEnded;
+				Player.MediaPlayer.VolumeChanged -= OnMediaElementVolumeChanged;
+				Player.MediaPlayer.IsMutedChanged -= OnMediaElementIsMutedChanged;
 
-			if (Player.MediaPlayer.PlaybackSession is not null)
-			{
-				Player.MediaPlayer.PlaybackSession.NaturalVideoSizeChanged -= OnNaturalVideoSizeChanged;
-				Player.MediaPlayer.PlaybackSession.PlaybackRateChanged -= OnPlaybackSessionPlaybackRateChanged;
-				Player.MediaPlayer.PlaybackSession.PlaybackStateChanged -= OnPlaybackSessionPlaybackStateChanged;
-				Player.MediaPlayer.PlaybackSession.SeekCompleted -= OnPlaybackSessionSeekCompleted;
+				if (Player.MediaPlayer.PlaybackSession is not null)
+				{
+					Player.MediaPlayer.PlaybackSession.NaturalVideoSizeChanged -= OnNaturalVideoSizeChanged;
+					Player.MediaPlayer.PlaybackSession.PlaybackRateChanged -= OnPlaybackSessionPlaybackRateChanged;
+					Player.MediaPlayer.PlaybackSession.PlaybackStateChanged -= OnPlaybackSessionPlaybackStateChanged;
+					Player.MediaPlayer.PlaybackSession.SeekCompleted -= OnPlaybackSessionSeekCompleted;
+				}
 			}
 		}
 	}
