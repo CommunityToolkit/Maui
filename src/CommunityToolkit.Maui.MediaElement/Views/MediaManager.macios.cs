@@ -292,9 +292,7 @@ public partial class MediaManager : IDisposable
 		{
 			MediaElement.MediaOpened();
 
-			var (Width, Height) = GetVideoDimensions(PlayerItem);
-			MediaElement.MediaWidth = Width;
-			MediaElement.MediaHeight = Height;
+			(MediaElement.MediaWidth, MediaElement.MediaHeight) = GetVideoDimensions(PlayerItem);
 
 			if (MediaElement.ShouldAutoPlay)
 			{
