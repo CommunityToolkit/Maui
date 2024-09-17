@@ -110,7 +110,8 @@ public class MauiMediaElement : CoordinatorLayout
 			throw new InvalidOperationException("PlayerView cannot be null when the FullScreen button is tapped");
 		}
 		var layout = CurrentPlatformContext.CurrentWindow.DecorView as ViewGroup;
-
+		// `p0` is the boolean value of isFullScreen being passed into the method. 
+		// This is a binding issue that will not be fixed as it is now part of shipped API.
 		if (e.P0)
 		{
 			isFullScreen = true;
