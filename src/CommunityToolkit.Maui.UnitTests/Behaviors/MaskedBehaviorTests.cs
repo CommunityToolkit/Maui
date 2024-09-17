@@ -60,15 +60,15 @@ public class MaskedBehaviorTests() : BaseBehaviorTest<MaskedBehavior, InputView>
 	[Fact]
 	public void AttachedToInvalidElementTest()
 	{
-		IReadOnlyList<VisualElement> invalidVisualElements = new[]
-		{
+		IReadOnlyList<VisualElement> invalidVisualElements =
+		[
 			new Button(),
 			new Frame(),
 			new Label(),
 			new ProgressBar(),
 			new VisualElement(),
-			new View(),
-		};
+			new View()
+		];
 
 		foreach (var invalidVisualElement in invalidVisualElements)
 		{

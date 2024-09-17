@@ -13,13 +13,13 @@ public abstract class BaseHandlerTest : BaseTest
 
 	protected IServiceProvider ServiceProvider { get; }
 
-	protected static TElementHandler CreateElementHandler<TElementHandler>(IElement view, bool hasMauiContext = true)
+	protected static TElementHandler CreateElementHandler<TElementHandler>(IElement view, bool doesRequireMauiContext = true)
 		where TElementHandler : IElementHandler, new()
 	{
 		var mockElementHandler = new TElementHandler();
 		mockElementHandler.SetVirtualView(view);
 
-		if (hasMauiContext)
+		if (doesRequireMauiContext)
 		{
 			mockElementHandler.SetMauiContext(Application.Current?.Handler?.MauiContext ?? throw new NullReferenceException());
 		}
@@ -27,13 +27,13 @@ public abstract class BaseHandlerTest : BaseTest
 		return mockElementHandler;
 	}
 
-	protected static TViewHandler CreateViewHandler<TViewHandler>(IView view, bool hasMauiContext = true)
+	protected static TViewHandler CreateViewHandler<TViewHandler>(IView view, bool doesRequireMauiContext = true)
 		where TViewHandler : IViewHandler, new()
 	{
 		var mockViewHandler = new TViewHandler();
 		mockViewHandler.SetVirtualView(view);
 
-		if (hasMauiContext)
+		if (doesRequireMauiContext)
 		{
 			mockViewHandler.SetMauiContext(Application.Current?.Handler?.MauiContext ?? throw new NullReferenceException());
 		}
