@@ -42,6 +42,37 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 		await VerifyMauiToolkitAnalyzer(source);
 	}
 
+	[Fact]
+	public async Task VerifyNoErrorsWhenUseMauiCommunityToolkitHasAdditonalWhitespace()
+	{
+		const string source = @"
+namespace CommunityToolkit.Maui.Analyzers.UnitTests
+{
+	using Microsoft.Maui.Controls.Hosting;
+	using Microsoft.Maui.Hosting;
+	using CommunityToolkit.Maui;
+
+	public static class MauiProgram
+	{
+		public static MauiApp CreateMauiApp()
+		{
+			var builder = MauiApp.CreateBuilder ();
+			builder.UseMauiApp<Microsoft.Maui.Controls.Application> ()
+				.UseMauiCommunityToolkit ()
+				.ConfigureFonts (fonts =>
+				{
+					fonts.AddFont(""OpenSans-Regular.ttf"", ""OpenSansRegular"");
+					fonts.AddFont(""OpenSans-Semibold.ttf"", ""OpenSansSemibold"");
+				});
+
+			return builder.Build ();
+		}
+	}
+}";
+
+		await VerifyMauiToolkitAnalyzer(source);
+	}
+
 	static Task VerifyMauiToolkitAnalyzer(string source) => VerifyAnalyzerAsync(source,
 			[
 				typeof(Options), // CommunityToolkit.Maui
