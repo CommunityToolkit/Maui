@@ -1,7 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Testing.Verifiers;
 
 namespace CommunityToolkit.Maui.Analyzers.UnitTests;
 public static partial class CSharpAnalyzerVerifier<TAnalyzer>
