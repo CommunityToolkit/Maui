@@ -28,6 +28,49 @@
             </VerticalStackLayout.Resources>
 
             <Line Style="{StaticResource HR}" />
+            <Label Style="{StaticResource Description}" Text="User add review and show Review summary" />
+            <Line Style="{StaticResource HR}" />
+            <Grid ColumnDefinitions="*" RowDefinitions="*,*,*">
+                <Label
+                    Grid.Row="0"
+                    FontSize="Medium"
+                    Text=".NET MAUI Community Toolkit" />
+                <Label Grid.Row="1">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="Reviews: " />
+                            <Span Text="{Binding ReviewSummaryCount}" />
+                            <Span Text=" | Average" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+                <HorizontalStackLayout Grid.Row="2" Spacing="8">
+                    <toolkit:RatingView
+                        Margin="5,0,0,0"
+                        EmptyBackgroundColor="White"
+                        FilledBackgroundColor="#04DA8D"
+                        HorizontalOptions="Start"
+                        IsEnabled="False"
+                        ItemPadding="3"
+                        ItemShapeSize="40"
+                        MaximumRating="5"
+                        Rating="{Binding ReviewSummaryAverage, Mode=OneWay}"
+                        RatingFill="Item"
+                        Shape="Star"
+                        ShapeBorderThickness="0"
+                        Spacing="5"
+                        VerticalOptions="Center" />
+                    <Label Text="{Binding ReviewSummaryAverage, Mode=OneWay, StringFormat='{0:F1}'}" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </Grid>
+            <Label Text="Provide a rating: " VerticalOptions="Center" />
+            <toolkit:RatingView
+                MaximumRating="5"
+                Rating="0"
+                RatingChanged="ReviewSummaryRatingChanged" />
+            
+
+            <Line Style="{StaticResource HR}" />
             <Label Style="{StaticResource Description}" Text="RatingView styled like a n N-tier streaming service ratings." />
             <Line Style="{StaticResource HR}" />
             <Label Text="Mobile app rated: TODO" />

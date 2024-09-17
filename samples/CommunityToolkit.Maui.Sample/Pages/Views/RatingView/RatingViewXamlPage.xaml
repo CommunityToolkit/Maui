@@ -291,7 +291,7 @@
                         <toolkit:EventToCommandBehavior Command="{Binding RatingViewShapePaddingLeftCommandCommand}" EventName="ValueChanged" />
                     </Stepper.Behaviors>
                 </Stepper>
-                <Label SemanticProperties.Description="Shape left padding applied to the RatingView sample.">
+                <Label SemanticProperties.Description="Shape left padding applied to the RatingView sample." VerticalOptions="Center">
                     <Label.FormattedText>
                         <FormattedString>
                             <Span Text=": Left: " />
@@ -311,7 +311,7 @@
                         <toolkit:EventToCommandBehavior Command="{Binding RatingViewShapePaddingTopCommandCommand}" EventName="ValueChanged" />
                     </Stepper.Behaviors>
                 </Stepper>
-                <Label SemanticProperties.Description="Shape top padding applied to the RatingView sample.">
+                <Label SemanticProperties.Description="Shape top padding applied to the RatingView sample." VerticalOptions="Center">
                     <Label.FormattedText>
                         <FormattedString>
                             <Span Text=": Top: " />
@@ -331,7 +331,7 @@
                         <toolkit:EventToCommandBehavior Command="{Binding RatingViewShapePaddingRightCommandCommand}" EventName="ValueChanged" />
                     </Stepper.Behaviors>
                 </Stepper>
-                <Label SemanticProperties.Description="Shape right padding applied to the RatingView sample.">
+                <Label SemanticProperties.Description="Shape right padding applied to the RatingView sample." VerticalOptions="Center">
                     <Label.FormattedText>
                         <FormattedString>
                             <Span Text=": Right: " />
@@ -351,7 +351,7 @@
                         <toolkit:EventToCommandBehavior Command="{Binding RatingViewShapePaddingBottomCommandCommand}" EventName="ValueChanged" />
                     </Stepper.Behaviors>
                 </Stepper>
-                <Label SemanticProperties.Description="Shape bottom padding applied to the RatingView sample.">
+                <Label SemanticProperties.Description="Shape bottom padding applied to the RatingView sample." VerticalOptions="Center">
                     <Label.FormattedText>
                         <FormattedString>
                             <Span Text=": Bottom: " />
@@ -377,14 +377,15 @@
                 Maximum="10"
                 Minimum="0"
                 Value="0" />
-            <Label VerticalOptions="Center">
+            <Label HorizontalOptions="Center" VerticalOptions="Center">
                 <Label.FormattedText>
                     <FormattedString>
                         <Span Text=": " />
-                        <Span Text="{Binding Source={x:Reference RatingRatingView}, Path=Value}" />
+                        <Span Text="{Binding Source={x:Reference RatingRatingView}, Path=Value, StringFormat='{0:F2}'}" />
                     </FormattedString>
                 </Label.FormattedText>
             </Label>
+            <Label Text="Shape Fill" />
             <toolkit:RatingView
                 BackgroundColor="Purple"
                 EmptyBackgroundColor="Blue"

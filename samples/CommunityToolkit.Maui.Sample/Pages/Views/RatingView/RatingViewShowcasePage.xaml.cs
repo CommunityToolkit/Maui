@@ -1,13 +1,28 @@
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class RatingViewShowcasePage : BasePage<RatingViewShowcaseViewModel>
 {
-	public RatingViewShowcasePage(RatingViewShowcaseViewModel viewModel) : base(viewModel) => InitializeComponent();
+	readonly List<double> ratings = [];
+	readonly RatingViewShowcaseViewModel vm;
 
-	void StreamMobileRate_Tapped(object sender, TappedEventArgs e)
+	public RatingViewShowcasePage(RatingViewShowcaseViewModel viewModel) : base(viewModel)
 	{
-		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+		vm = viewModel;
+		InitializeComponent();
+	}
+
+	void ReviewSummaryRatingChanged(object sender, RatingChangedEventArgs e)
+	{
+		ratings.Add(e.Rating);
+		vm.ReviewSummaryCount = ratings.Count;
+		vm.ReviewSummaryAverage = ratings.Average(x => x);
+	}
+
+	static void StreamMobileRate_Tapped(object sender, TappedEventArgs e)
+	{
+		_ = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 	}
 }

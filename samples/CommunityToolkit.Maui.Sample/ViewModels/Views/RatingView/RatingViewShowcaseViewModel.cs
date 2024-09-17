@@ -10,4 +10,10 @@ public partial class RatingViewShowcaseViewModel : BaseViewModel
 
 	[ObservableProperty]
 	Thickness ratingViewShapePadding = new(0);
+
+	[ObservableProperty]
+	int reviewSummaryCount = 0;
+
+	[ObservableProperty]
+	double reviewSummaryAverage = 0.0;
 }
