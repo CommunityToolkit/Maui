@@ -33,25 +33,33 @@ public class UseCommunityToolkitCameraInitializationAnalyzer : DiagnosticAnalyze
 		var expressionStatement = (ExpressionStatementSyntax)context.Node;
 		var root = expressionStatement.SyntaxTree.GetRoot();
 
-		var methodDeclarationWithoutWhiteSpace = GetAllMethodDelcarationsWithoutWhiteSpace(root);
-
-		if (methodDeclarationWithoutWhiteSpace.Contains(".UseMauiApp<") && !methodDeclarationWithoutWhiteSpace.Contains(".UseMauiCommunityToolkitCamera("))
+		if (TryGetUseMauiAppMethodDeclaration(root, out var useMauiAppMethodDeclarationString)
+			&& useMauiAppMethodDeclarationString is not null)
 		{
-			var expression = GetInvocationExpressionSyntax(expressionStatement);
-			var diagnostic = Diagnostic.Create(rule, expression.GetLocation());
-			context.ReportDiagnostic(diagnostic);
+			if (!useMauiAppMethodDeclarationString.Contains(".UseMauiCommunityToolkitCamera("))
+			{
+				var expression = GetInvocationExpressionSyntax(expressionStatement);
+				var diagnostic = Diagnostic.Create(rule, expression.GetLocation());
+				context.ReportDiagnostic(diagnostic);
+			}
 		}
 	}
 
-	static string GetAllMethodDelcarationsWithoutWhiteSpace(SyntaxNode root)
+	static bool TryGetUseMauiAppMethodDeclaration(SyntaxNode root, out string? useMauiAppMethodDeclarationString)
 	{
-		var stringBuilder = new StringBuilder();
+		useMauiAppMethodDeclarationString = null;
+
 		foreach (var methodDeclaration in root.DescendantNodes().OfType<MethodDeclarationSyntax>())
 		{
-			stringBuilder.Append(methodDeclaration.ToString().Where(static c => !char.IsWhiteSpace(c)).ToArray());
+			if (methodDeclaration.NormalizeWhitespace(string.Empty, true).ToString() is string methodDeclarationString
+				&& methodDeclarationString.Contains(".UseMauiApp<"))
+			{
+				useMauiAppMethodDeclarationString = methodDeclarationString;
+				return true;
+			}
 		}
 
-		return stringBuilder.ToString();
+		return false;
 	}
 
 	static InvocationExpressionSyntax GetInvocationExpressionSyntax(SyntaxNode parent)
