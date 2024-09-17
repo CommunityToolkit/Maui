@@ -44,6 +44,8 @@ public partial class Popup
 	/// <param name="result">We don't need to provide the result parameter here.</param>
 	public static void MapOnClosed(PopupHandler handler, IPopup view, object? result)
 	{
+		PopupHandler.MapOnClosed(handler, view, result);
+
 		var parent = view.Parent as Element;
 		if (parent is not null)
 		{

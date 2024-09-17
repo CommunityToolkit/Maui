@@ -24,7 +24,7 @@ public class StringToListConverterTests : BaseOneWayConverterTest<StringToListCo
 		var stringToListConverter = new StringToListConverter
 		{
 			Separator = "~",
-			Separators = new[] { "@", "*" }
+			Separators = ["@", "*"]
 		};
 
 		var convertFromResult = stringToListConverter.ConvertFrom(value, parameter);
@@ -37,13 +37,16 @@ public class StringToListConverterTests : BaseOneWayConverterTest<StringToListCo
 	[Fact]
 	public void StringToListConverter_EnsureParameterDoesNotOverrideProperty()
 	{
-		var converter = new StringToListConverter { Separators = new[] { ",", " " } };
+		var converter = new StringToListConverter
+		{
+			Separators = [",", " "]
+		};
 
 		var parameterResult = converter.ConvertFrom("maui/toolkit tests", new[] { "/", " " });
-		Assert.Equal(new[] { "maui", "toolkit", "tests" }, parameterResult);
+		Assert.Equal(["maui", "toolkit", "tests"], parameterResult);
 
 		var propertyResult = converter.ConvertFrom("maui,toolkit tests");
-		Assert.Equal(new[] { "maui", "toolkit", "tests" }, propertyResult);
+		Assert.Equal(["maui", "toolkit", "tests"], propertyResult);
 	}
 
 	[Fact]
@@ -55,7 +58,7 @@ public class StringToListConverterTests : BaseOneWayConverterTest<StringToListCo
 		var stringToListConverter = new StringToListConverter
 		{
 			Separator = "~",
-			Separators = new[] { "@", "*" }
+			Separators = ["@", "*"]
 		};
 
 		var convertFromResult = stringToListConverter.ConvertFrom(valueToConvert);
