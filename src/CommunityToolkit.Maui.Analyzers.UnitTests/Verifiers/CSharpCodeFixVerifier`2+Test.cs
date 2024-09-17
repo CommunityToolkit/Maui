@@ -11,21 +11,20 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
 {
 	protected class Test : CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier>
 	{
-		public Test()
+		public Test(params Type[] assembliesUnderTest)
 		{
 #if NET8_0
 			ReferenceAssemblies = ReferenceAssemblies.Net.Net80iOS;
 #else
 #error ReferenceAssemblies must be updated to current version of .NET
 #endif
-			Type[] typesForAssembliesUnderTest =
+			List<Type> typesForAssembliesUnderTest =
 			[
 				typeof(Microsoft.Maui.Controls.Xaml.Extensions), // Microsoft.Maui.Controls.Xaml
 				typeof(MauiApp),// Microsoft.Maui.Hosting
 				typeof(Application), // Microsoft.Maui.Controls
-				typeof(Options), // CommunityToolkit.Maui
-				typeof(Core.Options), // CommunityToolkit.Maui.Core
 			];
+			typesForAssembliesUnderTest.AddRange(assembliesUnderTest);
 
 			foreach (Type type in typesForAssembliesUnderTest)
 			{

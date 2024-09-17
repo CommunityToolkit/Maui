@@ -39,6 +39,10 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 	}
 }";
 
-		await VerifyAnalyzerAsync(source + appCS);
+		await VerifyAnalyzerAsync(source + appCS,
+			[
+				typeof(Options), // CommunityToolkit.Maui
+				typeof(Core.Options), // CommunityToolkit.Maui.Core;
+			]);
 	}
 }
