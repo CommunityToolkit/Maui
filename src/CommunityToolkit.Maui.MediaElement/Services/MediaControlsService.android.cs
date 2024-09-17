@@ -84,9 +84,7 @@ class MediaControlsService : Service
 		}
 		if (OperatingSystem.IsAndroidVersionAtLeast(21) && !OperatingSystem.IsAndroidVersionAtLeast(33))
 		{
-#pragma warning disable CA1422 // Validate platform compatibility
 			token ??= (MediaSessionCompat.Token)(mediaManagerIntent.GetParcelableExtra("token") ?? throw new InvalidOperationException("Token cannot be null"));
-#pragma warning restore CA1422 // Validate platform compatibility
 		}
 		if (!OperatingSystem.IsAndroidVersionAtLeast(21))
 		{
