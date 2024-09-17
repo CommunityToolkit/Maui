@@ -39,9 +39,11 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 	}
 }";
 
-		await VerifyAnalyzerAsync(source, 
-		[
-			typeof(Views.CameraView) // CommunityToolkit.Maui.Camera
-		]);
+		await VerifyCameraToolkitAnalyzer(source);
 	}
+
+	static Task VerifyCameraToolkitAnalyzer(string source) => VerifyAnalyzerAsync(source,
+			[
+				typeof(Views.CameraView) // CommunityToolkit.Maui.Camera
+			]);
 }

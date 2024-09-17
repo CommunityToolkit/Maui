@@ -40,11 +40,11 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 	}
 }";
 
-		await VerifyAnalyzerAsync(source, 
-		[
-			typeof(Views.MediaElement) // CommunityToolkit.Maui.MediaElement
-		]);
+		await VerifyMediaElementToolkitAnalyzer(source);
 	}
 
-
+	static Task VerifyMediaElementToolkitAnalyzer(string source) => VerifyAnalyzerAsync(source,
+		[
+				typeof(Views.MediaElement) // CommunityToolkit.Maui.MediaElement
+		]);
 }
