@@ -207,7 +207,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 		};
 
-		string RandomId = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8];
+		string randomId = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8];
 		var mediaSessionWRandomId = new AndroidX.Media3.Session.MediaSession.Builder(Platform.AppContext, Player);
 		mediaSessionWRandomId.SetId(RandomId);
 		session ??= mediaSessionWRandomId.Build();
