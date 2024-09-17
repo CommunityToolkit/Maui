@@ -201,7 +201,7 @@ class MediaControlsService : Service
 	async void OnReceiveUpdatesPropertyChanged(object? sender, NotificationEventArgs e)
 	{
 		
-		if (notification is null || string.IsNullOrEmpty(e.Action) || e.Sender.Equals(ACTION_UPDATE_PLAYER) || Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
+		if (notification is null || string.IsNullOrEmpty(e.Action) || e.Sender.Equals(ACTION_UPDATE_PLAYER) || OperatingSystem.IsAndroidVersionAtLeast(33))
 		{
 			return;
 		}
