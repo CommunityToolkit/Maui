@@ -444,14 +444,14 @@ jobs:
           artifactName: nuget
           pathToPublish: '$(Build.ArtifactStagingDirectory)'
 
-- job: run_benchmarks
+  - job: run_benchmarks
     displayName: Run Benchmarks
     strategy:
-      matrix:
-        'Windows':
-          image: 'windows-latest'
-        'macOS':
-          image: 'macos-14'
+        matrix:
+          'Windows':
+            image: 'windows-latest'
+          'macOS':
+            image: 'macos-14'
     pool:
       vmImage: $(image)
     steps:
