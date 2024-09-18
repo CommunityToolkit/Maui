@@ -21,7 +21,7 @@ public class MathExpressionConverter : BaseConverterOneWay<object?, object?, str
 	{
 		ArgumentNullException.ThrowIfNull(parameter);
 
-		var mathExpression = new MathExpression(parameter, new[] { value });
+		var mathExpression = new MathExpression(parameter, [value]);
 		return mathExpression.Calculate();
 	}
 }

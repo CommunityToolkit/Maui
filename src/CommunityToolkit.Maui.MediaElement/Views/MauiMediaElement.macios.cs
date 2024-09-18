@@ -1,8 +1,5 @@
-﻿using System.ComponentModel;
-using AVKit;
+﻿using AVKit;
 using CommunityToolkit.Maui.Views;
-using Microsoft.Maui.Controls.Platform.Compatibility;
-using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -39,5 +36,20 @@ public class MauiMediaElement : UIView
 		}
 #endif
 		AddSubview(playerViewController.View);
+	}
+
+	/// <summary>
+	/// Adds PlayerViewController to the Parent ViewController
+	/// </summary>
+	/// <param name="playerViewController"></param>
+	/// <param name="parentViewController"></param>
+	public void UpdateParentViewController(AVPlayerViewController playerViewController, UIViewController parentViewController)
+	{
+		parentViewController.AddChildViewController(playerViewController);
+
+		if (playerViewController.View is not null)
+		{
+			AddSubview(playerViewController.View);
+		}
 	}
 }
