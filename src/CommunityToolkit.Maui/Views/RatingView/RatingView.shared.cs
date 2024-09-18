@@ -192,7 +192,18 @@ public class RatingView : TemplatedView, IRatingViewShape
 			return;
 		}
 
-		ChangeRatingItemShape(string.IsNullOrEmpty(newValue) ? Core.Primitives.RatingViewShape.Star.PathData : newValue);
+		string newShapePathData;
+		if (string.IsNullOrEmpty(newValue))
+		{
+			Shape = RatingViewDefaults.Shape;
+			newShapePathData = Core.Primitives.RatingViewShape.Star.PathData;
+		}
+		else
+		{
+			newShapePathData = newValue!;
+		}
+
+		ChangeRatingItemShape(newShapePathData);
 	}
 
 	/// <summary>Change the rating item empty background color.</summary>
