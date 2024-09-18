@@ -10,12 +10,12 @@ namespace CommunityToolkit.Maui.UnitTests.Layouts;
 
 public class StateContainerTests : BaseTest
 {
-	readonly IList<View> stateViews = new List<View>
-	{
+	readonly IList<View> stateViews =
+	[
 		new Label() { Text = "Loading" },
 		new Label() { Text = "Error" },
 		new Label() { Text = "Anything", HorizontalOptions = LayoutOptions.End, VerticalOptions = LayoutOptions.End },
-	};
+	];
 
 	readonly VerticalStackLayout layout = new()
 	{

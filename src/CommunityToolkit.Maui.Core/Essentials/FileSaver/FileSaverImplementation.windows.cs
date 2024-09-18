@@ -19,7 +19,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		var extension = Path.GetExtension(fileName);
 		if (!string.IsNullOrEmpty(extension))
 		{
-			savePicker.FileTypeChoices.Add(extension, new List<string> { extension });
+			savePicker.FileTypeChoices.Add(extension, [extension]);
 		}
 
 		savePicker.FileTypeChoices.Add("All files", allFilesExtension);
