@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.Testing;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using static CommunityToolkit.Maui.Analyzers.UnitTests.CSharpCodeFixVerifier<CommunityToolkit.Maui.Analyzers.UseCommunityToolkitInitializationAnalyzer, CommunityToolkit.Maui.Analyzers.UseCommunityToolkitInitializationAnalyzerCodeFixProvider>;
 
@@ -92,7 +93,7 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 		public static MauiApp CreateMauiApp()
 		{
 			var builder = MauiApp.CreateBuilder();
-			builder.[|UseMauiApp<Microsoft.Maui.Controls.Application>|]()
+			builder.UseMauiApp<Microsoft.Maui.Controls.Application>()
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -105,7 +106,7 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 }
 """;
 
-		await VerifyMauiToolkitAnalyzer(source);
+		await VerifyMauiToolkitAnalyzer(source, Diagnostic().WithSpan(12, 4, 12, 61).WithSeverity(DiagnosticSeverity.Error));
 	}
 
 	static Task VerifyMauiToolkitAnalyzer(string source, params DiagnosticResult[] expected)
