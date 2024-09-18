@@ -285,7 +285,7 @@ public partial class MediaManager : IDisposable
 				MediaElement.MediaFailed(
 					new MediaFailedEventArgs(message));
 
-				Logger.LogError("{logMessage}", message);
+				Logger.LogError("{LogMessage}", message);
 			});
 
 		if (PlayerItem is not null && PlayerItem.Error is null)
@@ -502,6 +502,40 @@ public partial class MediaManager : IDisposable
 
 	static TimeSpan ConvertTime(CMTime cmTime) => TimeSpan.FromSeconds(double.IsNaN(cmTime.Seconds) ? 0 : cmTime.Seconds);
 
+	static (int Width, int Height) GetVideoDimensions(AVPlayerItem avPlayerItem)
+	{
+		// Create an AVAsset instance with the video file URL
+		var asset = avPlayerItem.Asset;
+
+		// Retrieve the video track
+		var videoTrack = asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant()).FirstOrDefault();
+
+		if (videoTrack is not null)
+		{
+			// Get the natural size of the video
+			var size = videoTrack.NaturalSize;
+			var preferredTransform = videoTrack.PreferredTransform;
+
+			// Apply the preferred transform to get the correct dimensions
+			var transformedSize = CGAffineTransform.CGRectApplyAffineTransform(new CGRect(CGPoint.Empty, size), preferredTransform);
+			var width = Math.Abs(transformedSize.Width);
+			var height = Math.Abs(transformedSize.Height);
+
+			return ((int)width, (int)height);
+		}
+		else
+		{
+			// HLS doesn't have tracks, try to get the dimensions this way
+			if (!avPlayerItem.PresentationSize.IsEmpty)
+			{
+				return ((int)avPlayerItem.PresentationSize.Width, (int)avPlayerItem.PresentationSize.Height);
+			}
+
+			// If all else fails, just return 0, 0
+			return (0, 0);
+		}
+	}
+
 	void AddStatusObservers()
 	{
 		if (Player is null)
@@ -617,7 +651,7 @@ public partial class MediaManager : IDisposable
 			message = error.LocalizedDescription;
 
 			MediaElement.MediaFailed(new MediaFailedEventArgs(message));
-			Logger.LogError("{logMessage}", message);
+			Logger.LogError("{LogMessage}", message);
 		}
 		else
 		{
@@ -625,7 +659,7 @@ public partial class MediaManager : IDisposable
 			message = args.Notification?.ToString() ??
 				"Media playback failed for an unknown reason.";
 
-			Logger?.LogWarning("{logMessage}", message);
+			Logger?.LogWarning("{LogMessage}", message);
 		}
 	}
 
@@ -649,7 +683,7 @@ public partial class MediaManager : IDisposable
 			}
 			catch (Exception e)
 			{
-				Logger.LogWarning(e, "{logMessage}", $"Failed to play media to end.");
+				Logger.LogWarning(e, "{LogMessage}", $"Failed to play media to end.");
 			}
 		}
 	}
@@ -669,40 +703,6 @@ public partial class MediaManager : IDisposable
 				metaData.NowPlayingInfo.PlaybackRate = (float)MediaElement.Speed;
 				MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = metaData.NowPlayingInfo;
 			}
-		}
-	}
-
-	static (int Width, int Height) GetVideoDimensions(AVPlayerItem avPlayerItem)
-	{
-		// Create an AVAsset instance with the video file URL
-		var asset = avPlayerItem.Asset;
-
-		// Retrieve the video track
-		var videoTrack = asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant()).FirstOrDefault();
-
-		if (videoTrack is not null)
-		{
-			// Get the natural size of the video
-			var size = videoTrack.NaturalSize;
-			var preferredTransform = videoTrack.PreferredTransform;
-
-			// Apply the preferred transform to get the correct dimensions
-			var transformedSize = CGAffineTransform.CGRectApplyAffineTransform(new CGRect(CGPoint.Empty, size), preferredTransform);
-			var width = Math.Abs(transformedSize.Width);
-			var height = Math.Abs(transformedSize.Height);
-
-			return ((int)width, (int)height);
-		}
-		else
-		{
-			// HLS doesn't have tracks, try to get the dimensions this way
-			if (!avPlayerItem.PresentationSize.IsEmpty)
-			{
-				return ((int)avPlayerItem.PresentationSize.Width, (int)avPlayerItem.PresentationSize.Height);
-			}
-
-			// If all else fails, just return 0, 0
-			return (0, 0);
 		}
 	}
 }
