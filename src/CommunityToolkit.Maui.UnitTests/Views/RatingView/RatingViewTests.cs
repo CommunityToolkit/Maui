@@ -559,7 +559,7 @@ public class RatingViewTests : BaseHandlerTest
 	{
 		RatingView ratingView = new();
 		_ = RatingView.MaximumRatingProperty.ValidateValue(ratingView, (byte)0).Should().BeFalse();
-		_ = RatingView.MaximumRatingProperty.ValidateValue(ratingView, (byte)(RatingViewDefaults.MaximumRating + 1)).Should().BeFalse();
+		_ = RatingView.MaximumRatingProperty.ValidateValue(ratingView, (byte)(RatingViewDefaults.MaximumRatings + 1)).Should().BeFalse();
 		_ = RatingView.MaximumRatingProperty.ValidateValue(ratingView, (byte)1).Should().BeTrue();
 	}
 
