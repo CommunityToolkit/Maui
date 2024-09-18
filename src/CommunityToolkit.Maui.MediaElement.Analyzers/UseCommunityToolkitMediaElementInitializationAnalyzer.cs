@@ -12,9 +12,9 @@ public class UseCommunityToolkitMediaElementInitializationAnalyzer : DiagnosticA
 	public const string DiagnosticId = "MCTME001";
 
 	const string category = "Initialization";
-	const string useMauiApp = ".UseMauiApp<";
-	const string useMauiCommunityToolkitMediaElement = ".UseMauiCommunityToolkitMediaElement(";
-	
+	const string useMauiAppMethodName = "UseMauiApp";
+	const string useMauiCommunityToolkitMediaElementMethodName = "UseMauiCommunityToolkitMediaElement";
+
 	static readonly LocalizableString title = new LocalizableResourceString(nameof(Resources.InitializationErrorTitle), Resources.ResourceManager, typeof(Resources));
 	static readonly LocalizableString messageFormat = new LocalizableResourceString(nameof(Resources.InitalizationMessageFormat), Resources.ResourceManager, typeof(Resources));
 	static readonly LocalizableString description = new LocalizableResourceString(nameof(Resources.InitializationErrorMessage), Resources.ResourceManager, typeof(Resources));
@@ -32,48 +32,24 @@ public class UseCommunityToolkitMediaElementInitializationAnalyzer : DiagnosticA
 
 	static void AnalyzeNode(SyntaxNodeAnalysisContext context)
 	{
-		var expressionStatement = (ExpressionStatementSyntax)context.Node;
-		var root = expressionStatement.SyntaxTree.GetRoot();
-
-		if (TryGetUseMauiAppMethodDeclaration(root, out var useMauiAppMethodDeclarationString) 
-			&& !useMauiAppMethodDeclarationString.Contains(useMauiCommunityToolkitMediaElement.AsSpan(), StringComparison.Ordinal))
+		if (context.Node is InvocationExpressionSyntax invocationExpression
+			&& invocationExpression.Expression is MemberAccessExpressionSyntax memberAccessExpression
+			&& memberAccessExpression.Name.Identifier.ValueText == useMauiAppMethodName)
 		{
-			var expression = GetInvocationExpressionSyntax(expressionStatement);
-			var diagnostic = Diagnostic.Create(rule, expression.GetLocation());
-			context.ReportDiagnostic(diagnostic);
-		}
-	}
+			var root = invocationExpression.SyntaxTree.GetRoot();
+			var methodDeclaration = root.FindNode(invocationExpression.FullSpan)
+				.Ancestors()
+				.OfType<MethodDeclarationSyntax>()
+				.FirstOrDefault();
 
-	static bool TryGetUseMauiAppMethodDeclaration(SyntaxNode root, out ReadOnlySpan<char> useMauiAppMethodDeclarationString)
-	{
-		useMauiAppMethodDeclarationString = string.Empty.AsSpan();
-
-		foreach (var methodDeclaration in root.DescendantNodes().OfType<MethodDeclarationSyntax>())
-		{
-			var methodDeclarationSpan = methodDeclaration.NormalizeWhitespace(string.Empty, true).ToString().AsSpan();
-			
-			if (methodDeclarationSpan.Contains(useMauiApp.AsSpan(), StringComparison.Ordinal))
+			if (methodDeclaration is not null
+				&& !methodDeclaration.DescendantNodes().OfType<InvocationExpressionSyntax>().Any(static n =>
+					n.Expression is MemberAccessExpressionSyntax m &&
+					m.Name.Identifier.ValueText == useMauiCommunityToolkitMediaElementMethodName))
 			{
-				useMauiAppMethodDeclarationString = methodDeclarationSpan;
-				return true;
+				var diagnostic = Diagnostic.Create(rule, invocationExpression.GetLocation());
+				context.ReportDiagnostic(diagnostic);
 			}
 		}
-
-		return false;
-	}
-
-	static InvocationExpressionSyntax GetInvocationExpressionSyntax(SyntaxNode parent)
-	{
-		foreach (var child in parent.ChildNodes())
-		{
-			if (child is InvocationExpressionSyntax expressionSyntax)
-			{
-				return expressionSyntax;
-			}
-			
-			return GetInvocationExpressionSyntax(child);
-		}
-		
-		throw new InvalidOperationException("Wow, this shouldn't happen, please open a bug here: https://github.com/CommunityToolkit/Maui/issues/new/choose");
 	}
 }

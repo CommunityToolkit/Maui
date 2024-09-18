@@ -1,4 +1,6 @@
 ﻿using CommunityToolkit.Maui.MediaElement.Analyzers;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using static CommunityToolkit.Maui.Analyzers.UnitTests.CSharpCodeFixVerifier<CommunityToolkit.Maui.MediaElement.Analyzers.UseCommunityToolkitMediaElementInitializationAnalyzer, CommunityToolkit.Maui.MediaElement.Analyzers.UseCommunityToolkitMediaElementInitializationAnalyzerCodeFixProvider>;
 
@@ -74,8 +76,43 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 		await VerifyMediaElementToolkitAnalyzer(source);
 	}
 
-	static Task VerifyMediaElementToolkitAnalyzer(string source) => VerifyAnalyzerAsync(source,
-		[
-				typeof(Views.MediaElement) // CommunityToolkit.Maui.MediaElement
-		]);
+	[Fact]
+	public async Task VerifyErrorsWhenMissingUseMauiCommunityToolkitMediaElement()
+	{
+		const string source = @"
+namespace CommunityToolkit.Maui.Analyzers.UnitTests
+{
+	using Microsoft.Maui.Controls.Hosting;
+	using Microsoft.Maui.Hosting;
+	using CommunityToolkit.Maui;
+
+	public static class MauiProgram
+	{
+		public static MauiApp CreateMauiApp()
+		{
+			var builder = MauiApp.CreateBuilder();
+			builder.UseMauiApp<Microsoft.Maui.Controls.Application>()
+				.ConfigureFonts(fonts =>
+				{
+					fonts.AddFont(""OpenSans-Regular.ttf"", ""OpenSansRegular"");
+					fonts.AddFont(""OpenSans-Semibold.ttf"", ""OpenSansSemibold"");
+				});
+
+			return builder.Build();
+		}
+	}
+}";
+
+		await VerifyMediaElementToolkitAnalyzer(source, Diagnostic().WithSpan(13, 4, 13, 61).WithSeverity(DiagnosticSeverity.Error));
+	}
+
+	static Task VerifyMediaElementToolkitAnalyzer(string source, params DiagnosticResult[] diagnosticResults)
+	{
+		return VerifyAnalyzerAsync(
+			source,
+			[
+					typeof(Views.MediaElement) // CommunityToolkit.Maui.MediaElement
+			],
+			diagnosticResults);
+	}
 }
