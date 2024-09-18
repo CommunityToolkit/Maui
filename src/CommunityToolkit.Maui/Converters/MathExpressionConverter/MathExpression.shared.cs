@@ -24,11 +24,8 @@ sealed partial class MathExpression
 	internal static bool __bool(object? b) =>
 		 b switch
 		 {
-			 bool x => x,
-			 null => false,
-			 double doubleValue => doubleValue != 0 && doubleValue != double.NaN,
 			 string stringValue => !string.IsNullOrEmpty(stringValue),
-			 _ => Convert.ToBoolean(b!)
+			 _ => b is null ? false : Convert.ToBoolean(b!)
 		 };
 
 	internal MathExpression(string expression, IEnumerable<object>? arguments = null)
