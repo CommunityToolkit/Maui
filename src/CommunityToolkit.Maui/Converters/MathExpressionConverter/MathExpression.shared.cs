@@ -19,16 +19,19 @@ sealed partial class MathExpression
 	static readonly IFormatProvider formatProvider = new CultureInfo("en-US");
 
 	readonly IReadOnlyList<MathOperator> operators;
-	readonly IReadOnlyList<object> arguments;
+	readonly IReadOnlyList<object?> arguments;
 
 	internal static bool __bool(object? b) =>
 		 b switch
 		 {
+			 bool x => x,
+			 null => false,
+			 double doubleValue => doubleValue != 0 && doubleValue != double.NaN,
 			 string stringValue => !string.IsNullOrEmpty(stringValue),
-			 _ => b is null ? false : Convert.ToBoolean(b!)
+			 _ => Convert.ToBoolean(b)
 		 };
 
-	internal MathExpression(string expression, IEnumerable<object>? arguments = null)
+	internal MathExpression(string expression, IEnumerable<object?>? arguments = null)
 	{
 		ArgumentException.ThrowIfNullOrEmpty(expression, "Expression can't be null or empty.");
 

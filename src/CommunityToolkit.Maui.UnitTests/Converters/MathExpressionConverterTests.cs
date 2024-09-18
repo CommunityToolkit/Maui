@@ -29,6 +29,7 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 		var convertResult = ((ICommunityToolkitValueConverter)mathExpressionConverter).Convert(x, mathExpressionTargetType, expression, cultureInfo) ?? throw new NullReferenceException();
 		var convertFromResult = mathExpressionConverter.ConvertFrom(x, expression);
 
+		Assert.True(convertFromResult is not null);
 		Assert.True(Math.Abs((double)convertResult - expectedResult) < tolerance);
 		Assert.True(Math.Abs((double)convertFromResult - expectedResult) < tolerance);
 	}
@@ -52,6 +53,7 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 		var convertResult = ((ICommunityToolkitValueConverter)mathExpressionConverter).Convert(x, mathExpressionTargetType, expression, cultureInfo) ?? throw new NullReferenceException();
 		var convertFromResult = mathExpressionConverter.ConvertFrom(x, expression);
 
+		Assert.True(convertFromResult is not null);
 		Assert.True((bool)convertResult == expectedResult);
 		Assert.True((bool)convertFromResult == expectedResult);
 	}
