@@ -12,8 +12,8 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 	public const string DiagnosticId = "MCT001";
 
 	const string category = "Initialization";
-	const string useMauiApp = ".UseMauiApp<";
-	const string useMauiCommunityToolkit = ".UseMauiCommunityToolkit(";
+	const string useMauiAppMethodName = "UseMauiApp";
+	const string useMauiCommunityToolkitMethodName = "UseMauiCommunityToolkit";
 
 	static readonly LocalizableString title = new LocalizableResourceString(nameof(Resources.InitializationErrorTitle), Resources.ResourceManager, typeof(Resources));
 	static readonly LocalizableString messageFormat = new LocalizableResourceString(nameof(Resources.InitalizationMessageFormat), Resources.ResourceManager, typeof(Resources));
@@ -21,59 +21,40 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 
 	static readonly DiagnosticDescriptor rule = new(DiagnosticId, title, messageFormat, category, DiagnosticSeverity.Error, isEnabledByDefault: true, description: description);
 
-	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = [rule];
+	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(rule);
 
 	public override void Initialize(AnalysisContext context)
 	{
 		context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 		context.EnableConcurrentExecution();
-		context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.ExpressionStatement);
+		context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.InvocationExpression);
 	}
 
 	static void AnalyzeNode(SyntaxNodeAnalysisContext context)
 	{
-		var expressionStatement = (ExpressionStatementSyntax)context.Node;
-		var root = expressionStatement.SyntaxTree.GetRoot();
+		var invocationExpression = (InvocationExpressionSyntax)context.Node;
 
-		if (TryGetUseMauiAppMethodDeclaration(root, out var useMauiAppMethodDeclarationString) 
-			&& !useMauiAppMethodDeclarationString.Contains(useMauiCommunityToolkit.AsSpan(), StringComparison.Ordinal))
+		if (invocationExpression.Expression is not MemberAccessExpressionSyntax memberAccessExpression)
 		{
-			var expression = GetInvocationExpressionSyntax(expressionStatement);
-			var diagnostic = Diagnostic.Create(rule, expression.GetLocation());
-			context.ReportDiagnostic(diagnostic);
+			return;
 		}
-	}
 
-	static bool TryGetUseMauiAppMethodDeclaration(SyntaxNode root, out ReadOnlySpan<char> useMauiAppMethodDeclarationString)
-	{
-		useMauiAppMethodDeclarationString = string.Empty.AsSpan();
-
-		foreach (var methodDeclaration in root.DescendantNodes().OfType<MethodDeclarationSyntax>())
+		if (memberAccessExpression.Name.Identifier.ValueText == useMauiCommunityToolkitMethodName)
 		{
-			var methodDeclarationSpan = methodDeclaration.NormalizeWhitespace(string.Empty, true).ToString().AsSpan();
-			
-			if (methodDeclarationSpan.Contains(useMauiApp.AsSpan(), StringComparison.Ordinal))
+			var root = invocationExpression.SyntaxTree.GetRoot();
+
+			if (memberAccessExpression.Ancestors().OfType<MethodDeclarationSyntax>().FirstOrDefault() is MethodDeclarationSyntax methodDeclaration)
 			{
-				useMauiAppMethodDeclarationString = methodDeclarationSpan;
-				return true;
+				var useMauiCommunityToolkitCall = methodDeclaration.DescendantNodes()
+					.OfType<InvocationExpressionSyntax>()
+					.Any(static n => n.Expression is MemberAccessExpressionSyntax m && m.Name.Identifier.ValueText == useMauiCommunityToolkitMethodName);
+
+				if (!useMauiCommunityToolkitCall)
+				{
+					var diagnostic = Diagnostic.Create(rule, invocationExpression.GetLocation());
+					context.ReportDiagnostic(diagnostic);
+				}
 			}
 		}
-
-		return false;
-	}
-
-	static InvocationExpressionSyntax GetInvocationExpressionSyntax(SyntaxNode parent)
-	{
-		foreach (var child in parent.ChildNodes())
-		{
-			if (child is InvocationExpressionSyntax expressionSyntax)
-			{
-				return expressionSyntax;
-			}
-			
-			return GetInvocationExpressionSyntax(child);
-		}
-		
-		throw new InvalidOperationException("Wow, this shouldn't happen, please open a bug here: https://github.com/CommunityToolkit/Maui/issues/new/choose");
 	}
 }
