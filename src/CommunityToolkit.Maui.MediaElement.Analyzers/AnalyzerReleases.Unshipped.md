@@ -1,6 +1,4 @@
-﻿## Release 1.0.0
+﻿### New Rules
 
-### New Rules
-
-| Rule ID | Severity | Notes |
-|---------|----------|-------|
+Rule ID | Category | Severity | Notes
+--------|----------|----------|--------------------

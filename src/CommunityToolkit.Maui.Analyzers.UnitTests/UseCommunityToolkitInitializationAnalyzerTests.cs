@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
-using static CommunityToolkit.Maui.Analyzers.UnitTests.CSharpAnalyzerVerifier<CommunityToolkit.Maui.Analyzers.UseCommunityToolkitInitializationAnalyzer>;
+using static CommunityToolkit.Maui.Analyzers.UnitTests.CSharpCodeFixVerifier<CommunityToolkit.Maui.Analyzers.UseCommunityToolkitInitializationAnalyzer, CommunityToolkit.Maui.Analyzers.UseCommunityToolkitInitializationAnalyzerCodeFixProvider>;
 
 namespace CommunityToolkit.Maui.Analyzers.UnitTests;
 
@@ -16,7 +16,7 @@ public class UseCommunityToolkitInitializationAnalyzerTests
 	[Fact]
 	public async Task VerifyNoErrorsWhenUseMauiCommunityToolkit()
 	{
-		const string source = @"
+		const string source = /* language=C#-test */ """
 namespace CommunityToolkit.Maui.Analyzers.UnitTests
 {
 	using Microsoft.Maui.Controls.Hosting;
@@ -32,14 +32,16 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 				.UseMauiCommunityToolkit()
 				.ConfigureFonts(fonts =>
 				{
-					fonts.AddFont(""OpenSans-Regular.ttf"", ""OpenSansRegular"");
-					fonts.AddFont(""OpenSans-Semibold.ttf"", ""OpenSansSemibold"");
+					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+					fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 				});
 
 			return builder.Build();
 		}
 	}
-}";
+}
+""";
+
 
 		await VerifyMauiToolkitAnalyzer(source);
 	}
@@ -47,7 +49,7 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 	[Fact]
 	public async Task VerifyNoErrorsWhenUseMauiCommunityToolkitHasAdditonalWhitespace()
 	{
-		const string source = @"
+		const string source = /* language=C#-test */ """
 namespace CommunityToolkit.Maui.Analyzers.UnitTests
 {
 	using Microsoft.Maui.Controls.Hosting;
@@ -63,14 +65,15 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 				.UseMauiCommunityToolkit ()
 				.ConfigureFonts (fonts =>
 				{
-					fonts.AddFont(""OpenSans-Regular.ttf"", ""OpenSansRegular"");
-					fonts.AddFont(""OpenSans-Semibold.ttf"", ""OpenSansSemibold"");
+					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+					fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 				});
 
 			return builder.Build ();
 		}
 	}
-}";
+}
+""";
 
 		await VerifyMauiToolkitAnalyzer(source);
 	}
@@ -78,7 +81,7 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 	[Fact]
 	public async Task VerifyErrorsWhenMissingUseMauiCommunityToolkit()
 	{
-		const string source = @"
+		const string source = /* language=C#-test */ """
 namespace CommunityToolkit.Maui.Analyzers.UnitTests
 {
 	using Microsoft.Maui.Controls.Hosting;
@@ -93,16 +96,17 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 			builder.UseMauiApp<Microsoft.Maui.Controls.Application>()
 				.ConfigureFonts(fonts =>
 				{
-					fonts.AddFont(""OpenSans-Regular.ttf"", ""OpenSansRegular"");
-					fonts.AddFont(""OpenSans-Semibold.ttf"", ""OpenSansSemibold"");
+					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+					fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 				});
 
 			return builder.Build();
 		}
 	}
-}";
-		
-		await VerifyMauiToolkitAnalyzer(source, Diagnostic().WithSpan(13, 4, 13, 61).WithSeverity(DiagnosticSeverity.Error));
+}
+""";
+
+		await VerifyMauiToolkitAnalyzer(source, Diagnostic().WithSpan(12, 4, 12, 61).WithSeverity(DiagnosticSeverity.Error));
 	}
 
 	static Task VerifyMauiToolkitAnalyzer(string source, params DiagnosticResult[] expected)
