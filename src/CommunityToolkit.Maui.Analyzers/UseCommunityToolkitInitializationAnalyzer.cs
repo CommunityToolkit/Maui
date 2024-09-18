@@ -32,28 +32,23 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 
 	static void AnalyzeNode(SyntaxNodeAnalysisContext context)
 	{
-		var invocationExpression = (InvocationExpressionSyntax)context.Node;
-
-		if (invocationExpression.Expression is not MemberAccessExpressionSyntax memberAccessExpression)
-		{
-			return;
-		}
-
-		if (memberAccessExpression.Name.Identifier.ValueText == useMauiCommunityToolkitMethodName)
+		if (context.Node is InvocationExpressionSyntax invocationExpression
+			&& invocationExpression.Expression is MemberAccessExpressionSyntax memberAccessExpression
+			&& memberAccessExpression.Name.Identifier.ValueText == useMauiAppMethodName)
 		{
 			var root = invocationExpression.SyntaxTree.GetRoot();
+			var methodDeclaration = root.FindNode(invocationExpression.FullSpan)
+				.Ancestors()
+				.OfType<MethodDeclarationSyntax>()
+				.FirstOrDefault();
 
-			if (memberAccessExpression.Ancestors().OfType<MethodDeclarationSyntax>().FirstOrDefault() is MethodDeclarationSyntax methodDeclaration)
+			if (methodDeclaration is not null
+				&& !methodDeclaration.DescendantNodes().OfType<InvocationExpressionSyntax>().Any(static n =>
+					n.Expression is MemberAccessExpressionSyntax m &&
+					m.Name.Identifier.ValueText == useMauiCommunityToolkitMethodName))
 			{
-				var useMauiCommunityToolkitCall = methodDeclaration.DescendantNodes()
-					.OfType<InvocationExpressionSyntax>()
-					.Any(static n => n.Expression is MemberAccessExpressionSyntax m && m.Name.Identifier.ValueText == useMauiCommunityToolkitMethodName);
-
-				if (!useMauiCommunityToolkitCall)
-				{
-					var diagnostic = Diagnostic.Create(rule, invocationExpression.GetLocation());
-					context.ReportDiagnostic(diagnostic);
-				}
+				var diagnostic = Diagnostic.Create(rule, invocationExpression.GetLocation());
+				context.ReportDiagnostic(diagnostic);
 			}
 		}
 	}
