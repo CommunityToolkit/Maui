@@ -28,7 +28,7 @@ sealed partial class MathExpression
 			 null => false,
 			 double doubleValue => doubleValue != 0 && doubleValue != double.NaN,
 			 string stringValue => !string.IsNullOrEmpty(stringValue),
-			 _ => Convert.ToBoolean(b)
+			 _ => Convert.ToBoolean(b!)
 		 };
 
 	internal MathExpression(string expression, IEnumerable<object>? arguments = null)
