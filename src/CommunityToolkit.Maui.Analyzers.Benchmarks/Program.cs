@@ -8,6 +8,8 @@ public class Program
 	public static void Main(string[] args)
 	{
 		var config = DefaultConfig.Instance;
-		var summary = BenchmarkRunner.Run<CommunityToolkitMauiAnalyzerBenchmarks>(config, args);
+		BenchmarkRunner.Run<UseMauiCommunityToolkitAnalyzerBenchmarks>(config, args);
+		BenchmarkRunner.Run<UseMauiCommunityToolkitCameraAnalyzerBenchmarks>(config, args);
+		BenchmarkRunner.Run<UseMauiCommunityToolkitMediaElementInitializationAnalyzerBenchmarks>(config, args);
 	}
 }
