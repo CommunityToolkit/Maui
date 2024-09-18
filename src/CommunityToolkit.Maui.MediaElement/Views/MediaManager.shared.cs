@@ -65,7 +65,7 @@ public partial class MediaManager
 	/// </summary>
 	protected PlatformMediaElement? Player { get; set; }
 #endif
-	
+
 	/// <summary>
 	/// A helper method to determine if two floating-point numbers are equal.
 	/// </summary>
