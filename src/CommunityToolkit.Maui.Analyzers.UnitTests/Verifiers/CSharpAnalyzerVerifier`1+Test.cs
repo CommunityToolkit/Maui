@@ -8,8 +8,26 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
 {
 	public class Test : CSharpAnalyzerTest<TAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>
 	{
-		public Test()
+		public Test(params Type[] assembliesUnderTest)
 		{
+#if NET8_0
+			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net80;
+#else
+#error ReferenceAssemblies must be updated to current version of .NET
+#endif
+			List<Type> typesForAssembliesUnderTest =
+			[
+				typeof(Microsoft.Maui.Controls.Xaml.Extensions), // Microsoft.Maui.Controls.Xaml
+				typeof(MauiApp),// Microsoft.Maui.Hosting
+				typeof(Application), // Microsoft.Maui.Controls
+			];
+			typesForAssembliesUnderTest.AddRange(assembliesUnderTest);
+
+			foreach (Type type in typesForAssembliesUnderTest)
+			{
+				TestState.AdditionalReferences.Add(MetadataReference.CreateFromFile(type.Assembly.Location));
+			}
+
 			SolutionTransforms.Add((solution, projectId) =>
 			{
 				ArgumentNullException.ThrowIfNull(solution);

@@ -14,7 +14,7 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
 		public Test(params Type[] assembliesUnderTest)
 		{
 #if NET8_0
-			ReferenceAssemblies = ReferenceAssemblies.Net.Net80iOS;
+			ReferenceAssemblies = ReferenceAssemblies.Net.Net80;
 #else
 #error ReferenceAssemblies must be updated to current version of .NET
 #endif
