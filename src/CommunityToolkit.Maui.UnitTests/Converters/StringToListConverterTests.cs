@@ -114,10 +114,10 @@ public class StringToListConverterTests : BaseOneWayConverterTest<StringToListCo
 	[Fact]
 	public void StringToListConverterNullStringsInListTest()
 	{
-#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
-		Assert.Throws<ArgumentException>(() => new StringToListConverter { Separators = new List<string?> { ",", null } });
-		Assert.Throws<ArgumentException>(() => new StringToListConverter().Separators = new List<string?> { ",", null });
-#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentException>(() => new StringToListConverter { Separators = [",", null] });
+		Assert.Throws<ArgumentException>(() => new StringToListConverter().Separators = [",", null]);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
 	[Fact]
@@ -138,8 +138,8 @@ public class StringToListConverterTests : BaseOneWayConverterTest<StringToListCo
 	{
 		Assert.Throws<ArgumentException>(() => new StringToListConverter { Separator = string.Empty });
 		Assert.Throws<ArgumentException>(() => new StringToListConverter().Separator = string.Empty);
-		Assert.Throws<ArgumentException>(() => new StringToListConverter { Separators = new List<string> { ",", string.Empty } });
-		Assert.Throws<ArgumentException>(() => new StringToListConverter().Separators = new List<string> { ",", string.Empty });
+		Assert.Throws<ArgumentException>(() => new StringToListConverter { Separators = [",", string.Empty] });
+		Assert.Throws<ArgumentException>(() => new StringToListConverter().Separators = [",", string.Empty]);
 		Assert.Throws<ArgumentException>(() => new StringToListConverter().ConvertFrom(string.Empty, string.Empty));
 		Assert.Throws<ArgumentException>(() => new StringToListConverter().ConvertFrom(string.Empty, new[] { ",", "" }));
 		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)new StringToListConverter()).Convert(string.Empty, typeof(IList<string>), string.Empty, null));
