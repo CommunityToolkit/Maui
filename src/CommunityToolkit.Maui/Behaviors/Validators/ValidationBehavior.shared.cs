@@ -410,13 +410,8 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 	void UpdateStyle(in VisualElement view, bool isValid)
 	{
 		VisualStateManager.GoToState(view, isValid ? ValidVisualState : InvalidVisualState);
-
-		if ((ValidStyle ?? InvalidStyle) == null)
-		{
-			return;
-		}
-
-		view.Style = isValid ? ValidStyle : InvalidStyle;
+		
+		view.Style = (isValid ? ValidStyle : InvalidStyle) ?? view.Style;
 	}
 
 	void ResetValidationTokenSource(CancellationTokenSource? newTokenSource)
