@@ -2,6 +2,6 @@
 
 ### New Rules
 
-Rule ID | Severity | Notes
---------|----------|-------
-MCT001 | Error | `.UseMauiCommunityToolkit()` Not Found on MauiAppBuilder
+| Rule ID | Severity | Notes                                                    |
+|---------|----------|----------------------------------------------------------|
+| MCT001  | Error    | `.UseMauiCommunityToolkit()` Not Found on MauiAppBuilder | 
