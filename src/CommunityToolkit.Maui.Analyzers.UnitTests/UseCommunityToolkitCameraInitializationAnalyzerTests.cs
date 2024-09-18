@@ -16,7 +16,7 @@ public class UseCommunityToolkitCameraInitializationAnalyzerTests
 	[Fact]
 	public async Task VerifyNoErrorsWhenUseMauiCommunityToolkitCamera()
 	{
-		const string source = @"
+		const string source = /* language=C#-test */ """
 namespace CommunityToolkit.Maui.Analyzers.UnitTests
 {
 	using Microsoft.Maui.Controls.Hosting;
@@ -39,7 +39,8 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 			return builder.Build();
 		}
 	}
-}";
+}
+""";
 
 		await VerifyCameraToolkitAnalyzer(source);
 	}
@@ -47,7 +48,7 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 	[Fact]
 	public async Task VerifyNoErrorsWhenUseMauiCommunityToolkitCameraHasAdditonalWhitespace()
 	{
-		const string source = @"
+		const string source = /* language=C#-test */ """
 namespace CommunityToolkit.Maui.Analyzers.UnitTests
 {
 	using Microsoft.Maui.Controls.Hosting;
@@ -70,7 +71,8 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 			return builder.Build ();
 		}
 	}
-}";
+}
+""";
 
 		await VerifyCameraToolkitAnalyzer(source);
 	}
@@ -78,7 +80,7 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 	[Fact]
 	public async Task VerifyErrorsWhenMissingUseMauiCommunityToolkitCamera()
 	{
-		const string source = @"
+		const string source = /* language=C#-test */ """
 namespace CommunityToolkit.Maui.Analyzers.UnitTests
 {
 	using Microsoft.Maui.Controls.Hosting;
@@ -100,7 +102,8 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 			return builder.Build();
 		}
 	}
-}";
+}
+""";
 
 		await VerifyCameraToolkitAnalyzer(source, Diagnostic().WithSpan(13, 4, 13, 61).WithSeverity(DiagnosticSeverity.Error));
 	}
