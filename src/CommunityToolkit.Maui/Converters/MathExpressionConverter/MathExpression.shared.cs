@@ -10,19 +10,7 @@ enum MathTokenType
 	Operator,
 };
 
-class MathToken
-{
-	public MathToken(MathTokenType type, string text, object? value)
-	{
-		Type = type;
-		Text = text;
-		Value = value;
-	}
-
-	public MathTokenType Type { get; }
-	public string Text { get; }
-	public object? Value { get; }
-};
+record MathToken(MathTokenType type, string text, object? value);
 
 sealed partial class MathExpression
 {
@@ -33,38 +21,15 @@ sealed partial class MathExpression
 	readonly IReadOnlyList<MathOperator> operators;
 	readonly IReadOnlyList<object> arguments;
 
-	internal static bool __bool(object? value)
-	{
-		if (value is null)
-		{
-			return false;
-		}
-
-		if (value is bool boolValue)
-		{
-			return boolValue;
-		}
-
-		if (value is double doubleValue)
-		{
-			return doubleValue != 0 && doubleValue != double.NaN;
-		}
-
-		if (value is string stringValue)
-		{
-			return !string.IsNullOrEmpty(stringValue);
-		}
-
-		try
-		{
-			return Convert.ToBoolean(value);
-		}
-		catch (Exception ex)
-		{
-		}
-
-		return !string.IsNullOrEmpty(value.ToString());
-	}
+	internal static bool __bool(object? b) =>
+		 b switch
+		 {
+			 bool x => x,
+			 null => false,
+			 double doubleValue => doubleValue != 0 && doubleValue != double.NaN,
+			 string stringValue => !string.IsNullOrEmpty(stringValue),
+			 _ => Convert.ToBoolean(b)
+		 };
 
 	internal MathExpression(string expression, IEnumerable<object>? arguments = null)
 	{
@@ -167,14 +132,14 @@ sealed partial class MathExpression
 
 		foreach (var token in rpn)
 		{
-			if (token.Type == MathTokenType.Value)
+			if (token.type == MathTokenType.Value)
 			{
-				stack.Push(token.Value);
+				stack.Push(token.value);
 				continue;
 			}
 
-			var mathOperator = operators.FirstOrDefault(x => x.Name == token.Text) ??
-				throw new ArgumentException($"Invalid math expression. Can't find operator or value with name \"{token.Text}\".");
+			var mathOperator = operators.FirstOrDefault(x => x.Name == token.text) ??
+				throw new ArgumentException($"Invalid math expression. Can't find operator or value with name \"{token.text}\".");
 
 			if (mathOperator.NumericCount == 0)
 			{
