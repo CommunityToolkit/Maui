@@ -68,26 +68,7 @@
                 MaximumRating="5"
                 Rating="0"
                 RatingChanged="ReviewSummaryRatingChanged" />
-            
 
-            <Line Style="{StaticResource HR}" />
-            <Label Style="{StaticResource Description}" Text="RatingView styled like a n N-tier streaming service ratings." />
-            <Line Style="{StaticResource HR}" />
-            <Label Text="Mobile app rated: TODO" />
-            <toolkit:RatingView
-                x:Name="StreamMobileRate"
-                FilledBackgroundColor="White"
-                IsEnabled="False"
-                MaximumRating="1"
-                Rating="0"
-                Shape="Like"
-                ShapeBorderColor="White"
-                ShapeBorderThickness="2">
-                <toolkit:RatingView.GestureRecognizers>
-                    <TapGestureRecognizer NumberOfTapsRequired="1" Tapped="StreamMobileRate_Tapped" />
-                </toolkit:RatingView.GestureRecognizers>
-            </toolkit:RatingView>
-            <Label Text="Smart TV rated: TODO" />
             <Line Style="{StaticResource HR}" />
             <Label Style="{StaticResource Description}" Text="RatingView styled like a trusted review." />
             <Line Style="{StaticResource HR}" />
