@@ -465,7 +465,7 @@ jobs:
         displayName: 'Install .NET SDK'
         inputs:
           packageType: 'sdk'
-          version: '$(NET_VERSION)'
+          version: '$(LATEST_NET_VERSION)'
           includePreviewVersions: false
 
       - task: CmdLine@2
