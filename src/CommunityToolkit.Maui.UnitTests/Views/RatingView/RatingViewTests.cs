@@ -41,36 +41,34 @@ public class RatingViewTests : BaseHandlerTest
 	{
 		RatingView ratingView = new();
 		Microsoft.Maui.Controls.Shapes.Path firstItemShape = (Microsoft.Maui.Controls.Shapes.Path)((Border)ratingView.Control!.Children[0]).Content!.GetVisualTreeDescendants()[0];
-
-		Assert.NotNull(firstItemShape);
-		_ = Assert.IsType<Microsoft.Maui.Controls.Shapes.Path>(firstItemShape);
-		Assert.Equal(Stretch.Uniform, firstItemShape.Aspect);
-		Assert.Equal(RatingViewDefaults.ItemShapeSize, firstItemShape.HeightRequest);
-		Assert.Equal(RatingViewDefaults.ShapeBorderColor, firstItemShape.Stroke);
-		Assert.Equal(PenLineCap.Round, firstItemShape.StrokeLineCap);
-		Assert.Equal(PenLineJoin.Round, firstItemShape.StrokeLineJoin);
-		Assert.Equal(RatingViewDefaults.ShapeBorderThickness, firstItemShape.StrokeThickness);
-		Assert.Equal(RatingViewDefaults.ItemShapeSize, firstItemShape.WidthRequest);
+		_ = firstItemShape.Should().NotBeNull();
+		_ = firstItemShape.Should().BeOfType<Microsoft.Maui.Controls.Shapes.Path>();
+		_ = firstItemShape.Aspect.Should().Be(Stretch.Uniform);
+		_ = firstItemShape.HeightRequest.Should().Be(RatingViewDefaults.ItemShapeSize);
+		_ = firstItemShape.Stroke.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(RatingViewDefaults.ShapeBorderColor));
+		_ = firstItemShape.StrokeLineCap.Should().Be(PenLineCap.Round);
+		_ = firstItemShape.StrokeLineJoin.Should().Be(PenLineJoin.Round);
+		_ = firstItemShape.StrokeThickness.Should().Be(RatingViewDefaults.ShapeBorderThickness);
+		_ = firstItemShape.WidthRequest.Should().Be(RatingViewDefaults.ItemShapeSize);
 	}
 
 	[Fact]
 	public void Defaults_ShouldHaveCorrectDefaultProperties()
 	{
 		RatingView ratingView = new();
-
-		Assert.Equal(RatingViewDefaults.DefaultRating, ratingView.Rating);
-		Assert.Equal(RatingViewDefaults.EmptyBackgroundColor, ratingView.EmptyBackgroundColor);
-		Assert.Equal(RatingViewDefaults.FilledBackgroundColor, ratingView.FilledBackgroundColor);
-		Assert.Equal(RatingViewDefaults.IsEnabled, ratingView.IsEnabled);
-		Assert.Equal(RatingViewDefaults.ItemPadding, ratingView.ItemPadding);
-		Assert.Equal(RatingViewDefaults.ItemShapeSize, ratingView.ItemShapeSize);
-		Assert.Equal(RatingViewDefaults.MaximumRating, ratingView.MaximumRating);
-		Assert.Equal(RatingViewDefaults.Shape, ratingView.Shape);
-		Assert.Equal(RatingViewDefaults.ShapeBorderColor, ratingView.ShapeBorderColor);
-		Assert.Equal(RatingViewDefaults.ShapeBorderThickness, ratingView.ShapeBorderThickness);
-		Assert.Equal(RatingViewDefaults.Spacing, ratingView.Spacing);
-		Assert.Equal(RatingFillElement.Shape, ratingView.RatingFill);
-		Assert.Null(ratingView.CustomShape);
+		_ = ratingView.Rating.Should().Be(RatingViewDefaults.DefaultRating);
+		_ = ratingView.EmptyBackgroundColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.EmptyBackgroundColor);
+		_ = ratingView.FilledBackgroundColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.FilledBackgroundColor);
+		_ = ratingView.IsEnabled.Should().BeTrue().And.Be(RatingViewDefaults.IsEnabled);
+		_ = ratingView.ItemPadding.Should().BeOfType<Thickness>().And.Be(RatingViewDefaults.ItemPadding);
+		_ = ratingView.ItemShapeSize.Should().Be(RatingViewDefaults.ItemShapeSize);
+		_ = ratingView.MaximumRating.Should().Be(RatingViewDefaults.MaximumRating);
+		_ = ratingView.Shape.Should().BeOneOf(RatingViewDefaults.Shape).And.Be(RatingViewDefaults.Shape);
+		_ = ratingView.ShapeBorderColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.ShapeBorderColor);
+		_ = ratingView.ShapeBorderThickness.Should().Be(RatingViewDefaults.ShapeBorderThickness);
+		_ = ratingView.Spacing.Should().Be(RatingViewDefaults.Spacing);
+		_ = ratingView.RatingFill.Should().BeOneOf(RatingFillElement.Shape).And.Be(RatingFillElement.Shape);
+		_ = ratingView.CustomShape.Should().BeNullOrEmpty();
 	}
 
 	[Fact]
@@ -224,7 +222,7 @@ public class RatingViewTests : BaseHandlerTest
 		RatingView ratingView = new();
 		ratingView.RatingChanged += (sender, e) => receivedEvents.Add(e);
 		ratingView.Rating = expectedRating;
-		_ = Assert.Single(receivedEvents);
+		_ = receivedEvents.Should().ContainSingle();
 		_ = receivedEvents[0].Rating.Should().Be(expectedRating);
 	}
 
@@ -399,6 +397,7 @@ public class RatingViewTests : BaseHandlerTest
 			Border child = (Border)ratingView.Control.Children[i];
 			_ = child.GestureRecognizers.Count.Should().Be(1);
 		}
+
 		ratingView.IsEnabled = false;
 		_ = ratingView.IsEnabled.Should().BeFalse();
 		for (int i = 0; i < ratingView.Control?.Children.Count; i++)
@@ -481,7 +480,7 @@ public class RatingViewTests : BaseHandlerTest
 		ratingView.ShapeBorderColor = shapeBorderColor;
 		_ = ratingView.ShapeBorderColor.Should().Be(shapeBorderColor);
 		Microsoft.Maui.Controls.Shapes.Path firstFilledRatingItem = (Microsoft.Maui.Controls.Shapes.Path)((Border)ratingView.Control!.Children[0]).Content!.GetVisualTreeDescendants()[0];
-		_ = firstFilledRatingItem.Stroke.Should().Be(brush);
+		_ = firstFilledRatingItem.Stroke.Should().BeOfType<SolidColorBrush>().And.Be(brush);
 	}
 
 	[Fact]
@@ -567,7 +566,7 @@ public class RatingViewTests : BaseHandlerTest
 	public void ViewStructure_Control_IsHorizontalStackLayout()
 	{
 		RatingView ratingView = new();
-		_ = Assert.IsType<HorizontalStackLayout>(ratingView.Control);
+		_ = ratingView.Control.Should().BeOfType<HorizontalStackLayout>();
 	}
 
 	[Fact]
@@ -587,17 +586,19 @@ public class RatingViewTests : BaseHandlerTest
 	public void ViewStructure_Item_IsBorder()
 	{
 		RatingView ratingView = new();
-		Assert.NotNull(ratingView.Control);
-		Assert.NotNull(ratingView.Control.Children[0]);
-		_ = Assert.IsType<Border>(ratingView.Control!.Children[0]);
+		_ = ratingView.Control.Should().NotBeNull();
+		_ = ratingView.Control!.Children[0].Should().NotBeNull();
+		_ = ratingView.Control!.Children[0].Should().BeOfType<Border>();
 	}
 
 	[Fact]
 	public void ViewStructure_ItemChild_IsPath()
 	{
 		RatingView ratingView = new();
-		Assert.NotNull(((Border)ratingView.Control!.Children[0]).Content);
-		_ = Assert.IsType<Microsoft.Maui.Controls.Shapes.Path>(((Border)ratingView.Control!.Children[0]).Content!.GetVisualTreeDescendants()[0]);
+		_ = ratingView.Control!.Children[0].Should().BeOfType<Border>();
+		Border child = (Border)ratingView.Control!.Children[0];
+		_ = child.Content.Should().NotBeNull();
+		_ = child.Content!.GetVisualTreeDescendants()[0].Should().BeOfType<Microsoft.Maui.Controls.Shapes.Path>();
 	}
 
 	[Fact]
