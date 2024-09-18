@@ -4,7 +4,7 @@ using CommunityToolkit.Maui.Analyzers.UnitTests;
 namespace CommunityToolkit.Maui.Analyzers.Benchmarks;
 
 [MemoryDiagnoser]
-class CommunityToolkitCameraAnalyzerBenchmarks
+class UseMauiCommunityToolkitCameraAnalyzerBenchmarks
 {
 	static readonly UseCommunityToolkitCameraInitializationAnalyzerTests useCommunityToolkitCameraInitializationAnalyzerTests = new();
 

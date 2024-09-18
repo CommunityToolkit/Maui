@@ -4,7 +4,7 @@ using CommunityToolkit.Maui.Analyzers.UnitTests;
 namespace CommunityToolkit.Maui.Analyzers.Benchmarks;
 
 [MemoryDiagnoser]
-public class CommunityToolkitMauiAnalyzerBenchmarks
+public class UseMauiCommunityToolkitAnalyzerBenchmarks
 {
 	static readonly UseCommunityToolkitInitializationAnalyzerTests useCommunityToolkitInitializationAnalyzerTests = new();
 
