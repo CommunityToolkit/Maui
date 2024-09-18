@@ -16,61 +16,64 @@ public class UseCommunityToolkitInitializationAnalyzerTests
 	[Fact]
 	public async Task VerifyNoErrorsWhenUseMauiCommunityToolkit()
 	{
-		const string source = @"
-namespace CommunityToolkit.Maui.Analyzers.UnitTests
-{
-	using Microsoft.Maui.Controls.Hosting;
-	using Microsoft.Maui.Hosting;
-	using CommunityToolkit.Maui;
+		const string source = /* language=C#-test */ """
+			namespace CommunityToolkit.Maui.Analyzers.UnitTests
+			{
+				using Microsoft.Maui.Controls.Hosting;
+				using Microsoft.Maui.Hosting;
+				using CommunityToolkit.Maui;
 
-	public static class MauiProgram
-	{
-		public static MauiApp CreateMauiApp()
-		{
-			var builder = MauiApp.CreateBuilder();
-			builder.UseMauiApp<Microsoft.Maui.Controls.Application>()
-				.UseMauiCommunityToolkit()
-				.ConfigureFonts(fonts =>
+				public static class MauiProgram
 				{
-					fonts.AddFont(""OpenSans-Regular.ttf"", ""OpenSansRegular"");
-					fonts.AddFont(""OpenSans-Semibold.ttf"", ""OpenSansSemibold"");
-				});
+					public static MauiApp CreateMauiApp()
+					{
+						var builder = MauiApp.CreateBuilder();
+						builder.UseMauiApp<Microsoft.Maui.Controls.Application>()
+							.UseMauiCommunityToolkit()
+							.ConfigureFonts(fonts =>
+							{
+								fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+								fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+							});
 
-			return builder.Build();
-		}
-	}
-}";
+						return builder.Build();
+					}
+				}
+			}
+			""";
 
-		await VerifyMauiToolkitAnalyzer(source);
+
+        await VerifyMauiToolkitAnalyzer(source);
 	}
 
 	[Fact]
 	public async Task VerifyNoErrorsWhenUseMauiCommunityToolkitHasAdditonalWhitespace()
 	{
-		const string source = @"
-namespace CommunityToolkit.Maui.Analyzers.UnitTests
-{
-	using Microsoft.Maui.Controls.Hosting;
-	using Microsoft.Maui.Hosting;
-	using CommunityToolkit.Maui;
+		const string source = /* language=C#-test */ """
+			namespace CommunityToolkit.Maui.Analyzers.UnitTests
+			{
+				using Microsoft.Maui.Controls.Hosting;
+				using Microsoft.Maui.Hosting;
+				using CommunityToolkit.Maui;
 
-	public static class MauiProgram
-	{
-		public static MauiApp CreateMauiApp()
-		{
-			var builder = MauiApp.CreateBuilder ();
-			builder.UseMauiApp<Microsoft.Maui.Controls.Application> ()
-				.UseMauiCommunityToolkit ()
-				.ConfigureFonts (fonts =>
+				public static class MauiProgram
 				{
-					fonts.AddFont(""OpenSans-Regular.ttf"", ""OpenSansRegular"");
-					fonts.AddFont(""OpenSans-Semibold.ttf"", ""OpenSansSemibold"");
-				});
+					public static MauiApp CreateMauiApp()
+					{
+						var builder = MauiApp.CreateBuilder ();
+						builder.UseMauiApp<Microsoft.Maui.Controls.Application> ()
+							.UseMauiCommunityToolkit ()
+							.ConfigureFonts (fonts =>
+							{
+								fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+								fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+							});
 
-			return builder.Build ();
-		}
-	}
-}";
+						return builder.Build ();
+					}
+				}
+			}
+			""";
 
 		await VerifyMauiToolkitAnalyzer(source);
 	}
@@ -78,31 +81,33 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 	[Fact]
 	public async Task VerifyErrorsWhenMissingUseMauiCommunityToolkit()
 	{
-		const string source = @"
-namespace CommunityToolkit.Maui.Analyzers.UnitTests
-{
-	using Microsoft.Maui.Controls.Hosting;
-	using Microsoft.Maui.Hosting;
-	using CommunityToolkit.Maui;
+		const string source = /* language=C#-test */ """
 
-	public static class MauiProgram
-	{
-		public static MauiApp CreateMauiApp()
-		{
-			var builder = MauiApp.CreateBuilder();
-			builder.UseMauiApp<Microsoft.Maui.Controls.Application>()
-				.ConfigureFonts(fonts =>
+			namespace CommunityToolkit.Maui.Analyzers.UnitTests
+			{
+				using Microsoft.Maui.Controls.Hosting;
+				using Microsoft.Maui.Hosting;
+				using CommunityToolkit.Maui;
+
+				public static class MauiProgram
 				{
-					fonts.AddFont(""OpenSans-Regular.ttf"", ""OpenSansRegular"");
-					fonts.AddFont(""OpenSans-Semibold.ttf"", ""OpenSansSemibold"");
-				});
+					public static MauiApp CreateMauiApp()
+					{
+						var builder = MauiApp.CreateBuilder();
+						builder.[|UseMauiApp<Microsoft.Maui.Controls.Application>|]()
+							.ConfigureFonts(fonts =>
+							{
+								fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+								fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+							});
 
-			return builder.Build();
-		}
-	}
-}";
-		
-		await VerifyMauiToolkitAnalyzer(source, Diagnostic().WithSpan(13, 4, 13, 61).WithSeverity(DiagnosticSeverity.Error));
+						return builder.Build();
+					}
+				}
+			}
+			""";
+
+        await VerifyMauiToolkitAnalyzer(source);
 	}
 
 	static Task VerifyMauiToolkitAnalyzer(string source, params DiagnosticResult[] expected)
