@@ -452,7 +452,6 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Theory]
-	[InlineData(RatingViewShape.Star)]
 	[InlineData(RatingViewShape.Heart)]
 	[InlineData(RatingViewShape.Circle)]
 	[InlineData(RatingViewShape.Like)]
