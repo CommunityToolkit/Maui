@@ -27,7 +27,7 @@ public class UseCommunityToolkitMediaElementInitializationAnalyzer : DiagnosticA
 	{
 		context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 		context.EnableConcurrentExecution();
-		context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.ExpressionStatement);
+		context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.InvocationExpression);
 	}
 
 	static void AnalyzeNode(SyntaxNodeAnalysisContext context)
