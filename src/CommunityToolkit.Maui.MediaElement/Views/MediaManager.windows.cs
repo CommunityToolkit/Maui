@@ -160,7 +160,7 @@ partial class MediaManager : IDisposable
 		Player.MediaPlayer.PlaybackRate = MediaElement.Speed;
 
 		// Only trigger once when going to the paused state
-		if(AreFloatingPointNumbersEqual(MediaElement.Speed, 0) && previousSpeed > 0)
+		if (AreFloatingPointNumbersEqual(MediaElement.Speed, 0) && previousSpeed > 0)
 		{
 			Player.MediaPlayer.Pause();
 		}
@@ -458,7 +458,7 @@ partial class MediaManager : IDisposable
 
 	void OnPlaybackSessionPlaybackRateChanged(MediaPlaybackSession sender, object args)
 	{
-		if(AreFloatingPointNumbersEqual(MediaElement.Speed, sender.PlaybackRate))
+		if (AreFloatingPointNumbersEqual(MediaElement.Speed, sender.PlaybackRate))
 		{
 			if (Dispatcher.IsDispatchRequired)
 			{
@@ -485,7 +485,7 @@ partial class MediaManager : IDisposable
 		};
 
 		MediaElement?.CurrentStateChanged(newState);
-		if(sender.PlaybackState == MediaPlaybackState.Playing && AreFloatingPointNumbersEqual(sender.PlaybackRate, 0))
+		if (sender.PlaybackState == MediaPlaybackState.Playing && AreFloatingPointNumbersEqual(sender.PlaybackRate, 0))
 		{
 			Dispatcher.Dispatch(() =>
 			{

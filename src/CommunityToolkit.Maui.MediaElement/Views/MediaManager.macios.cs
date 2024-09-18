@@ -501,7 +501,7 @@ public partial class MediaManager : IDisposable
 	}
 
 	static TimeSpan ConvertTime(CMTime cmTime) => TimeSpan.FromSeconds(double.IsNaN(cmTime.Seconds) ? 0 : cmTime.Seconds);
-	
+
 	static (int Width, int Height) GetVideoDimensions(AVPlayerItem avPlayerItem)
 	{
 		// Create an AVAsset instance with the video file URL
