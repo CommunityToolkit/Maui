@@ -27,39 +27,29 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 	{
 		context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 		context.EnableConcurrentExecution();
-		context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.SimpleMemberAccessExpression);
+		context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.InvocationExpression);
 	}
 
 	static void AnalyzeNode(SyntaxNodeAnalysisContext context)
 	{
-		var memberAccessExpression = (MemberAccessExpressionSyntax)context.Node;
-
-		if (memberAccessExpression.Name is not GenericNameSyntax genericName)
+		if (context.Node is InvocationExpressionSyntax invocationExpression
+			&& invocationExpression.Expression is MemberAccessExpressionSyntax memberAccessExpression
+			&& memberAccessExpression.Name.Identifier.ValueText == useMauiAppMethodName)
 		{
-			return;
-		}
+			var root = invocationExpression.SyntaxTree.GetRoot();
+			var methodDeclaration = root.FindNode(invocationExpression.FullSpan)
+				.Ancestors()
+				.OfType<MethodDeclarationSyntax>()
+				.FirstOrDefault();
 
-		if (genericName.Arity != 1 || genericName.Identifier.Text != useMauiAppMethodName)
-		{
-			return;
-		}
-
-		var root = memberAccessExpression.SyntaxTree.GetRoot();
-		bool found = false;
-
-		foreach (var item in root.DescendantNodes().OfType<MemberAccessExpressionSyntax>())
-		{
-			if (item.Name is IdentifierNameSyntax identifierName && identifierName.Identifier.Text == useMauiCommunityToolkitMethodName)
+			if (methodDeclaration is not null
+				&& !methodDeclaration.DescendantNodes().OfType<InvocationExpressionSyntax>().Any(static n =>
+					n.Expression is MemberAccessExpressionSyntax m &&
+					m.Name.Identifier.ValueText == useMauiCommunityToolkitMethodName))
 			{
-				found = true;
-				break;
+				var diagnostic = Diagnostic.Create(rule, invocationExpression.GetLocation());
+				context.ReportDiagnostic(diagnostic);
 			}
-		}
-
-		if (!found)
-		{
-			var diagnostic = Diagnostic.Create(rule, genericName.GetLocation());
-			context.ReportDiagnostic(diagnostic);
 		}
 	}
 }
