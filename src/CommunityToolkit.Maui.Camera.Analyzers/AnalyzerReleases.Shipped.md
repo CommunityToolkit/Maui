@@ -1,7 +1,7 @@
-﻿## Release 1.1.0
+﻿## Release 1.0.0
 
 ### New Rules
 
 Rule ID | Category | Severity | Notes                                               
 --------|----------|----------|-----------------------------------------------------
-MCT001  | Usage    | Error    | `.UseMauiCommunityToolkit()` Not Found on MauiAppBuilder
+MCTC001 | Usage    | Error    | `.UseMauiCommunityToolkitCamera()` Not Found on MauiAppBuilder  

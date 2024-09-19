@@ -1,20 +1,20 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using CommunityToolkit.Maui.Camera.Analyzers;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
-using static CommunityToolkit.Maui.Analyzers.UnitTests.CSharpCodeFixVerifier<CommunityToolkit.Maui.Analyzers.UseCommunityToolkitInitializationAnalyzer, CommunityToolkit.Maui.Analyzers.UseCommunityToolkitInitializationAnalyzerCodeFixProvider>;
+using static CommunityToolkit.Maui.Analyzers.UnitTests.CSharpCodeFixVerifier<CommunityToolkit.Maui.Camera.Analyzers.UseCommunityToolkitCameraInitializationAnalyzer, CommunityToolkit.Maui.Camera.Analyzers.UseCommunityToolkitCameraInitializationAnalyzerCodeFixProvider>;
 
 namespace CommunityToolkit.Maui.Analyzers.UnitTests;
-
-public class UseCommunityToolkitInitializationAnalyzerTests
+public class UseCommunityToolkitCameraInitializationAnalyzerTests
 {
 	[Fact]
-	public void UseCommunityToolkitInitializationAnalyzerId()
+	public void UseCommunityToolkitMediaElementInitializationAnalyzerId()
 	{
-		Assert.Equal("MCT001", UseCommunityToolkitInitializationAnalyzer.DiagnosticId);
+		Assert.Equal("MCTC001", UseCommunityToolkitCameraInitializationAnalyzer.DiagnosticId);
 	}
 
 	[Fact]
-	public async Task VerifyNoErrorsWhenUseMauiCommunityToolkit()
+	public async Task VerifyNoErrorsWhenUseMauiCommunityToolkitCamera()
 	{
 		const string source = /* language=C#-test */ """
 namespace CommunityToolkit.Maui.Analyzers.UnitTests
@@ -29,7 +29,7 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 		{
 			var builder = MauiApp.CreateBuilder();
 			builder.UseMauiApp<Microsoft.Maui.Controls.Application>()
-				.UseMauiCommunityToolkit()
+				.UseMauiCommunityToolkitCamera()
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -42,12 +42,11 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 }
 """;
 
-
-		await VerifyMauiToolkitAnalyzer(source);
+		await VerifyCameraToolkitAnalyzer(source);
 	}
 
 	[Fact]
-	public async Task VerifyNoErrorsWhenUseMauiCommunityToolkitHasAdditonalWhitespace()
+	public async Task VerifyNoErrorsWhenUseMauiCommunityToolkitCameraHasAdditonalWhitespace()
 	{
 		const string source = /* language=C#-test */ """
 namespace CommunityToolkit.Maui.Analyzers.UnitTests
@@ -62,8 +61,8 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 		{
 			var builder = MauiApp.CreateBuilder ();
 			builder.UseMauiApp<Microsoft.Maui.Controls.Application> ()
-				.UseMauiCommunityToolkit ()
-				.ConfigureFonts (fonts =>
+				.UseMauiCommunityToolkitCamera ()
+				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 					fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
@@ -75,11 +74,11 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 }
 """;
 
-		await VerifyMauiToolkitAnalyzer(source);
+		await VerifyCameraToolkitAnalyzer(source);
 	}
 
 	[Fact]
-	public async Task VerifyErrorsWhenMissingUseMauiCommunityToolkit()
+	public async Task VerifyErrorsWhenMissingUseMauiCommunityToolkitCamera()
 	{
 		const string source = /* language=C#-test */ """
 namespace CommunityToolkit.Maui.Analyzers.UnitTests
@@ -106,17 +105,16 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 }
 """;
 
-		await VerifyMauiToolkitAnalyzer(source, Diagnostic().WithSpan(12, 4, 12, 61).WithSeverity(DiagnosticSeverity.Error));
+		await VerifyCameraToolkitAnalyzer(source, Diagnostic().WithSpan(12, 4, 12, 61).WithSeverity(DiagnosticSeverity.Error));
 	}
 
-	static Task VerifyMauiToolkitAnalyzer(string source, params DiagnosticResult[] expected)
+	static Task VerifyCameraToolkitAnalyzer(string source, params DiagnosticResult[] diagnosticResults)
 	{
 		return VerifyAnalyzerAsync(
 			source,
 			[
-				typeof(Options), // CommunityToolkit.Maui
-				typeof(Core.Options), // CommunityToolkit.Maui.Core;
+				typeof(Views.CameraView) // CommunityToolkit.Maui.Camera
 			],
-			expected);
+			diagnosticResults);
 	}
 }
