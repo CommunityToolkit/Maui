@@ -23,31 +23,11 @@ public partial class RatingViewXamlPage : BasePage<RatingViewXamlViewModel>
 		}
 	}
 
-	void RatingViewShapePaddingLeft_ValueChanged(object? sender, ValueChangedEventArgs e)
-	{
-		Thickness currentThickness = vm.RatingViewShapePadding;
-		currentThickness.Left = e.NewValue;
-		vm.RatingViewShapePadding = currentThickness;
-	}
+	void RatingViewShapePaddingBottom_ValueChanged(object? sender, ValueChangedEventArgs e) => vm.RatingViewShapePaddingBottom = e.NewValue;
 
-	void RatingViewShapePaddingTop_ValueChanged(object? sender, ValueChangedEventArgs e)
-	{
-		Thickness currentThickness = vm.RatingViewShapePadding;
-		currentThickness.Top = e.NewValue;
-		vm.RatingViewShapePadding = currentThickness;
-	}
+	void RatingViewShapePaddingLeft_ValueChanged(object? sender, ValueChangedEventArgs e) => vm.RatingViewShapePaddingLeft = e.NewValue;
 
-	void RatingViewShapePaddingRight_ValueChanged(object? sender, ValueChangedEventArgs e)
-	{
-		Thickness currentThickness = vm.RatingViewShapePadding;
-		currentThickness.Right = e.NewValue;
-		vm.RatingViewShapePadding = currentThickness;
-	}
+	void RatingViewShapePaddingRight_ValueChanged(object? sender, ValueChangedEventArgs e) => vm.RatingViewShapePaddingRight = e.NewValue;
 
-	void RatingViewShapePaddingBottom_ValueChanged(object? sender, ValueChangedEventArgs e)
-	{
-		Thickness currentThickness = vm.RatingViewShapePadding;
-		currentThickness.Bottom = e.NewValue;
-		vm.RatingViewShapePadding = currentThickness;
-	}
+	void RatingViewShapePaddingTop_ValueChanged(object? sender, ValueChangedEventArgs e) => vm.RatingViewShapePaddingTop = e.NewValue;
 }

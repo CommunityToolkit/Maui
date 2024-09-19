@@ -1,4 +1,5 @@
 // Ignore Spelling: csharp, color, colors
+using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
@@ -14,6 +15,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 	public RatingViewCsharpPage(RatingViewCsharpViewModel viewModel) : base(viewModel)
 	{
+		Title = "RatingView C# Syntax";
 		vm = viewModel;
 
 		Style Description = new(typeof(Label))
@@ -24,16 +26,6 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 					new Setter { Property = Label.HorizontalTextAlignmentProperty, Value = TextAlignment.Center },
 					new Setter { Property = Label.LineBreakModeProperty, Value = LineBreakMode.WordWrap },
 					new Setter { Property = Label.MarginProperty, Value = new Thickness(4, 0) }
-				}
-		};
-
-		Style HR = new(typeof(Line))
-		{
-			Setters =
-				{
-					new Setter { Property = Line.StrokeProperty, Value = new AppThemeBindingExtension { Light = Colors.Black, Dark = Colors.White } },
-					new Setter { Property = Line.X2Property, Value = 300 },
-					new Setter { Property = Line.HorizontalOptionsProperty, Value = LayoutOptions.Center }
 				}
 		};
 
@@ -73,6 +65,12 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 			Value = 0
 		};
 		PaddingLeftStepper.ValueChanged += RatingViewShapePaddingLeft_ValueChanged;
+		EventToCommandBehavior PaddingLeftBehavior = new()
+		{
+			EventName = nameof(PaddingLeftStepper.ValueChanged),
+			Command = vm.RatingViewShapePaddingLeftCommandCommand
+		};
+		PaddingLeftStepper.Behaviors.Add(PaddingLeftBehavior);
 
 		Stepper PaddingTopStepper = new()
 		{
@@ -82,6 +80,42 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 			Value = 0
 		};
 		PaddingTopStepper.ValueChanged += RatingViewShapePaddingTop_ValueChanged;
+		EventToCommandBehavior PaddingTopBehavior = new()
+		{
+			EventName = nameof(PaddingTopStepper.ValueChanged),
+			Command = vm.RatingViewShapePaddingTopCommandCommand
+		};
+		PaddingTopStepper.Behaviors.Add(PaddingTopBehavior);
+
+		Stepper PaddingRightStepper = new()
+		{
+			Increment = 1,
+			Minimum = 0,
+			Maximum = 10,
+			Value = 0
+		};
+		PaddingRightStepper.ValueChanged += RatingViewShapePaddingRight_ValueChanged;
+		EventToCommandBehavior PaddingRightBehavior = new()
+		{
+			EventName = nameof(PaddingRightStepper.ValueChanged),
+			Command = vm.RatingViewShapePaddingRightCommandCommand
+		};
+		PaddingRightStepper.Behaviors.Add(PaddingRightBehavior);
+
+		Stepper PaddingBottomStepper = new()
+		{
+			Increment = 1,
+			Minimum = 0,
+			Maximum = 10,
+			Value = 0
+		};
+		PaddingBottomStepper.ValueChanged += RatingViewShapePaddingBottom_ValueChanged;
+		EventToCommandBehavior PaddingBottomBehavior = new()
+		{
+			EventName = nameof(PaddingBottomStepper.ValueChanged),
+			Command = vm.RatingViewShapePaddingBottomCommandCommand
+		};
+		PaddingBottomStepper.Behaviors.Add(PaddingBottomBehavior);
 
 		RatingView PaddedRatingView = new()
 		{
@@ -91,7 +125,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 			Rating = 4.5,
 			VerticalOptions = LayoutOptions.Center,
 		};
-		PaddedRatingView.SetBinding(RatingView.ItemPaddingProperty, nameof(vm.RatingViewShapePaddingValue), BindingMode.TwoWay);
+		PaddedRatingView.SetBinding(RatingView.ItemPaddingProperty, nameof(vm.RatingViewShapePaddingValue));
 
 		Content = new ScrollView
 		{
@@ -101,9 +135,9 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 				Spacing = 12,
 				Children =
 				{
-					new Line { Style = HR },
+					GetSeparator(),
 					new Label { Style = Description, Text = "Defaults" },
-					new Line { Style = HR },
+					GetSeparator(),
 					new HorizontalStackLayout
 					{
 						Spacing = 8,
@@ -144,9 +178,9 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						}
 					},
 
-					new Line { Style = HR },
+					GetSeparator(),
 					new Label { Style = Description, Text = "Available Shapes, and example custom shape" },
-					new Line { Style = HR },
+					GetSeparator(),
 					new Grid
 					{
 						ColumnDefinitions = Columns.Define(
@@ -220,9 +254,9 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						}
 					},
 
-					new Line { Style = HR },
+					GetSeparator(),
 					new Label { Style = Description, Text = "Maximum ratings" },
-					new Line { Style = HR },
+					GetSeparator(),
 					new HorizontalStackLayout
 					{
 						Spacing = 8,
@@ -243,11 +277,11 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						mode: BindingMode.OneWay,
 						convert: (int steperValue) => steperValue,
 						source: stepperMaximumRating)
-						.SemanticDescription("A RatingView showing changes to the 'maximumrating' property and with an event handler when the 'RatingChanged' event is triggered."),
+						.SemanticDescription("A RatingView showing changes to the 'MaximumRating' property and with an event handler when the 'RatingChanged' event is triggered."),
 
-					new Line { Style = HR },
+					GetSeparator(),
 					new Label { Style = Description, Text = "Colors" },
-					new Line { Style = HR },
+					GetSeparator(),
 					new HorizontalStackLayout
 					{
 						Spacing = 8,
@@ -337,9 +371,9 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						)
 					.SemanticDescription("A RatingView showing the fill, empty and border color changes, shown using the fill type of 'Item'."),
 
-					new Line { Style = HR },
+					GetSeparator(),
 					new Label { Style = Description, Text = "Shape border thickness" },
-					new Line { Style = HR },
+					GetSeparator(),
 					new HorizontalStackLayout
 					{
 						Spacing = 8,
@@ -364,9 +398,9 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							)
 						.SemanticDescription("A RatingView showing the shape border thickness changes."),
 
-					new Line { Style = HR },
+					GetSeparator(),
 					new Label { Style = Description, Text = "Enable and disable. Ratings can only be changed when enabled." },
-					new Line { Style = HR },
+					GetSeparator(),
 					new HorizontalStackLayout
 					{
 						Spacing = 8,
@@ -386,9 +420,9 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						)
 						.SemanticDescription("A RatingView showing the IsEnabled changes."),
 
-					new Line { Style = HR },
+					GetSeparator(),
 					new Label { Style = Description, Text = "Shape padding" },
-					new Line { Style = HR },
+					GetSeparator(),
 					new HorizontalStackLayout
 					{
 						Spacing = 8,
@@ -409,7 +443,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						Spacing = 8,
 						Children =
 						{
-							PaddingLeftStepper.Assign(out Stepper stepperPaddingTop).SemanticHint("Change the rating view padding top."),
+							PaddingTopStepper.Assign(out Stepper stepperPaddingTop).SemanticHint("Change the rating view padding top."),
 							new Label { VerticalOptions = LayoutOptions.Center }.Bind(
 								Label.TextProperty,
 								static (Stepper stepper) => stepper.Value,
@@ -419,7 +453,152 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							.SemanticDescription("Shape top padding applied to the RatingView sample."),
 						}
 					},
+					new HorizontalStackLayout
+					{
+						Spacing = 8,
+						Children =
+						{
+							PaddingRightStepper.Assign(out Stepper stepperPaddingRight).SemanticHint("Change the rating view padding right."),
+							new Label { VerticalOptions = LayoutOptions.Center }.Bind(
+								Label.TextProperty,
+								static (Stepper stepper) => stepper.Value,
+								mode: BindingMode.OneWay,
+								convert: (double stepperValue) => $": Right: {stepperValue}",
+								source: stepperPaddingRight)
+							.SemanticDescription("Shape right padding applied to the RatingView sample."),
+						}
+					},
+					new HorizontalStackLayout
+					{
+						Spacing = 8,
+						Children =
+						{
+							PaddingBottomStepper.Assign(out Stepper stepperPaddingBottom).SemanticHint("Change the rating view padding bottom."),
+							new Label { VerticalOptions = LayoutOptions.Center }.Bind(
+								Label.TextProperty,
+								static (Stepper stepper) => stepper.Value,
+								mode: BindingMode.OneWay,
+								convert: (double stepperValue) => $": Bottom: {stepperValue}",
+								source: stepperPaddingBottom)
+							.SemanticDescription("Shape bottom padding applied to the RatingView sample."),
+						}
+					},
 					PaddedRatingView.SemanticDescription("A RatingView sample showing the padding changes."),
+
+					GetSeparator(),
+					new Label { Style = Description, Text = "Rating" },
+					GetSeparator(),
+					new Slider { Maximum = 10, Minimum = 0, Value = 0 }.Assign(out Slider ratingRatingView).SemanticHint("Slide to change the rating."),
+					new Label { HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center }.Bind(
+						Label.TextProperty,
+						static (Slider slider) => slider.Value,
+						mode: BindingMode.OneWay,
+						convert: (double sliderValue) => $": {sliderValue:F2}",
+						source: ratingRatingView)
+					.SemanticDescription("RatingView rating value."),
+					new Label { Text = "Shape Fill"},
+					new RatingView
+						{
+							BackgroundColor = Colors.Purple,
+							EmptyBackgroundColor = Colors.Blue,
+							FilledBackgroundColor = Colors.Green,
+							HorizontalOptions = LayoutOptions.Start,
+							IsEnabled = false,
+							ItemShapeSize = 40,
+							MaximumRating = 10,
+							RatingFill = RatingFillElement.Shape,
+							ShapeBorderColor = Colors.Grey,
+							ShapeBorderThickness = 1,
+							Spacing = 3,
+						}
+					.Bind(
+						RatingView.RatingProperty,
+						static (Slider slider) => slider.Value,
+						mode: BindingMode.OneWay,
+						convert: (double sliderValue) => sliderValue,
+						source: ratingRatingView)
+					.SemanticDescription("A RatingView sample showing the rating changes and the fill type of 'Shape'."),
+					new Label { Text = "Item Fill"},
+					new RatingView
+						{
+							BackgroundColor = Colors.Purple,
+							EmptyBackgroundColor = Colors.Blue,
+							FilledBackgroundColor = Colors.Green,
+							HorizontalOptions = LayoutOptions.Start,
+							IsEnabled = false,
+							ItemShapeSize = 40,
+							MaximumRating = 10,
+							RatingFill = RatingFillElement.Item,
+							ShapeBorderColor = Colors.Grey,
+							ShapeBorderThickness = 1,
+							Spacing = 3,
+						}
+					.Bind(
+						RatingView.RatingProperty,
+						static (Slider slider) => slider.Value,
+						mode: BindingMode.OneWay,
+						convert: (double sliderValue) => sliderValue,
+						source: ratingRatingView)
+					.SemanticDescription("A RatingView sample showing the rating changes and the fill type of 'Item'."),
+
+					GetSeparator(),
+					new Label { Style = Description, Text = "Sizing" },
+					GetSeparator(),
+					new RatingView
+						{
+							ItemShapeSize = 30,
+							MaximumRating = 5,
+							Rating = 5,
+						}
+					.SemanticDescription("A RatingView sample showing the size of 30"),
+					new RatingView
+						{
+							ItemShapeSize = 40,
+							MaximumRating = 5,
+							Rating = 5,
+						}
+					.SemanticDescription("A RatingView sample showing the size of 40"),
+					new RatingView
+						{
+							ItemShapeSize = 50,
+							MaximumRating = 5,
+							Rating = 5,
+						}
+					.SemanticDescription("A RatingView sample showing the size of 50"),
+					new RatingView
+						{
+							ItemShapeSize = 60,
+							MaximumRating = 5,
+							Rating = 5,
+						}
+					.SemanticDescription("A RatingView sample showing the size of 60"),
+
+					GetSeparator(),
+					new Label { Style = Description, Text = "Spacing" },
+					GetSeparator(),
+					new HorizontalStackLayout
+					{
+						Spacing = 8,
+						Children =
+						{
+							new Stepper { Increment = 1, Minimum = 0, Maximum = 10, Value = 0 }.Assign(out Stepper stepperSpacing).SemanticHint("Change the spacing between rating items."),
+							new Label { VerticalOptions = LayoutOptions.Center }.Bind(
+								Label.TextProperty,
+								static (Stepper stepper) => stepper.Value,
+								mode: BindingMode.OneWay,
+								convert: (double stepperValue) => $": {stepperValue}",
+								source: stepperSpacing),
+						}
+					},
+					new RatingView { MaximumRating = 5, Rating = 2.5}
+						.Bind(
+							RatingView.SpacingProperty,
+							static (Stepper stepper) => (int)stepper.Value,
+							mode: BindingMode.OneWay,
+							convert: (int stepperValue) => stepperValue,
+							source: stepperSpacing
+							)
+						.SemanticDescription("A RatingView sample showing the spacing changes."),
 				}
 			}
 		};
@@ -433,33 +612,18 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 		Star, Circle, Heart, Like, Dislike, Custom
 	}
 
-	void RatingViewShapePaddingBottom_ValueChanged(object? sender, ValueChangedEventArgs e)
+	static Line GetSeparator()
 	{
-		Thickness currentThickness = vm.RatingViewShapePadding;
-		currentThickness.Bottom = e.NewValue;
-		vm.RatingViewShapePadding = currentThickness;
+		return new Line { X2 = 300 }.Center().AppThemeBinding(Line.StrokeProperty, Colors.Black, Colors.White);
 	}
 
-	void RatingViewShapePaddingLeft_ValueChanged(object? sender, ValueChangedEventArgs e)
-	{
-		Thickness currentThickness = vm.RatingViewShapePadding;
-		currentThickness.Left = e.NewValue;
-		vm.RatingViewShapePadding = currentThickness;
-	}
+	void RatingViewShapePaddingBottom_ValueChanged(object? sender, ValueChangedEventArgs e) => vm.RatingViewShapePaddingBottom = e.NewValue;
 
-	void RatingViewShapePaddingRight_ValueChanged(object? sender, ValueChangedEventArgs e)
-	{
-		Thickness currentThickness = vm.RatingViewShapePadding;
-		currentThickness.Right = e.NewValue;
-		vm.RatingViewShapePadding = currentThickness;
-	}
+	void RatingViewShapePaddingLeft_ValueChanged(object? sender, ValueChangedEventArgs e) => vm.RatingViewShapePaddingLeft = e.NewValue;
 
-	void RatingViewShapePaddingTop_ValueChanged(object? sender, ValueChangedEventArgs e)
-	{
-		Thickness currentThickness = vm.RatingViewShapePadding;
-		currentThickness.Top = e.NewValue;
-		vm.RatingViewShapePadding = currentThickness;
-	}
+	void RatingViewShapePaddingRight_ValueChanged(object? sender, ValueChangedEventArgs e) => vm.RatingViewShapePaddingRight = e.NewValue;
+
+	void RatingViewShapePaddingTop_ValueChanged(object? sender, ValueChangedEventArgs e) => vm.RatingViewShapePaddingTop = e.NewValue;
 
 	void StepperMaximumRating_RatingChanged(object? sender, RatingChangedEventArgs e)
 	{

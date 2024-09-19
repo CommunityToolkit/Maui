@@ -6,7 +6,7 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
-    Title="RatingView XAML"
+    Title="RatingView XAML syntax"
     x:DataType="vm:RatingViewXamlViewModel"
     x:TypeArguments="vm:RatingViewXamlViewModel">
     <ScrollView>
@@ -173,7 +173,7 @@
             <toolkit:RatingView
                 MaximumRating="{Binding Source={x:Reference StepperMaximumRating}, Path=Value}"
                 RatingChanged="StepperMaximumRating_RatingChanged"
-                SemanticProperties.Description="A RatingView showing changes to the 'maximumrating' property and with an event handler when the 'RatingChanged' event is triggered." />
+                SemanticProperties.Description="A RatingView showing changes to the 'MaximumRating' property and with an event handler when the 'RatingChanged' event is triggered." />
 
             <Line Style="{StaticResource HR}" />
             <Label Style="{StaticResource Description}" Text="Colors" />
@@ -376,8 +376,12 @@
                 x:Name="RatingRatingView"
                 Maximum="10"
                 Minimum="0"
+                SemanticProperties.Hint="Slide to change the rating."
                 Value="0" />
-            <Label HorizontalOptions="Center" VerticalOptions="Center">
+            <Label
+                HorizontalOptions="Center"
+                SemanticProperties.Description="RatingView rating value."
+                VerticalOptions="Center">
                 <Label.FormattedText>
                     <FormattedString>
                         <Span Text=": " />
@@ -391,6 +395,7 @@
                 EmptyBackgroundColor="Blue"
                 FilledBackgroundColor="Green"
                 HorizontalOptions="Start"
+                IsEnabled="False"
                 ItemShapeSize="40"
                 MaximumRating="10"
                 Rating="{Binding Source={x:Reference RatingRatingView}, Path=Value}"
@@ -405,6 +410,7 @@
                 EmptyBackgroundColor="Blue"
                 FilledBackgroundColor="Green"
                 HorizontalOptions="Start"
+                IsEnabled="False"
                 ItemShapeSize="40"
                 MaximumRating="10"
                 Rating="{Binding Source={x:Reference RatingRatingView}, Path=Value}"
@@ -447,7 +453,7 @@
                     Increment="1"
                     Maximum="25"
                     Minimum="0"
-                    SemanticProperties.Hint="Change the spacing between rating shapes." />
+                    SemanticProperties.Hint="Change the spacing between rating items." />
                 <Label VerticalOptions="Center">
                     <Label.FormattedText>
                         <FormattedString>
