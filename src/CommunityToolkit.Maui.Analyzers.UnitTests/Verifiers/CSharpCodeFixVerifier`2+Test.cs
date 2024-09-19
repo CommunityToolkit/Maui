@@ -15,6 +15,8 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
 		{
 #if NET8_0
 			ReferenceAssemblies = ReferenceAssemblies.Net.Net80;
+#elif NET9_0
+			ReferenceAssemblies = ReferenceAssemblies.Net.Net90;
 #else
 #error ReferenceAssemblies must be updated to current version of .NET
 #endif
