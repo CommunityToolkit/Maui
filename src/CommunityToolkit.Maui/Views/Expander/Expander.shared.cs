@@ -167,7 +167,7 @@ public partial class Expander : ContentView, IExpander
 
 		Element element = this;
 		var size = IsExpanded
-					? Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins).Request
+					? Measure(double.PositiveInfinity, double.PositiveInfinity)
 					: Header.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 		while (element is not null)
