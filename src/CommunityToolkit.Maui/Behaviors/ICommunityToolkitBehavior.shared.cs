@@ -26,11 +26,13 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 			return false;
 		}
 
+#pragma warning disable IL2026 // NET9.0 - check if this can be fixed
 		behavior.SetBinding(BindableObject.BindingContextProperty, new Binding
 		{
 			Source = View,
 			Path = BindableObject.BindingContextProperty.PropertyName
 		});
+#pragma warning restore IL2026
 
 		return true;
 
