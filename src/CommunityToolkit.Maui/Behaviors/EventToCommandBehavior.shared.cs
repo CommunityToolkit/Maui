@@ -34,9 +34,7 @@ public class EventToCommandBehavior : BaseBehavior<VisualElement>
 	public static readonly BindableProperty EventArgsConverterProperty =
 		BindableProperty.Create(nameof(EventArgsConverter), typeof(IValueConverter), typeof(EventToCommandBehavior));
 
-#pragma warning disable IL2026 // NET9.0 - check if this can be fixed
 	readonly MethodInfo eventHandlerMethodInfo = typeof(EventToCommandBehavior).GetTypeInfo().GetDeclaredMethod(nameof(OnTriggerHandled)) ?? throw new InvalidOperationException($"Cannot find method {nameof(OnTriggerHandled)}");
-#pragma warning restore IL2026
 
 	Delegate? eventHandler;
 
