@@ -1,6 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -50,26 +48,6 @@ public abstract class BaseBehavior<TView> : Behavior<TView>, ICommunityToolkitBe
 		base.OnDetachingFrom(bindable);
 
 		((ICommunityToolkitBehavior<TView>)this).UnassignViewAndBingingContext(bindable);
-	}
-
-	/// <summary>
-	/// Virtual method that executes when a binding context is set
-	/// </summary>
-	/// <param name="property"></param>
-	/// <param name="defaultBinding"></param>
-	/// <returns></returns>
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	[Obsolete($"{nameof(IsBound)} is no longer used by {nameof(CommunityToolkit)}.{nameof(CommunityToolkit.Maui)} and will be removed in a future release")]
-	[RequiresUnreferencedCode($"The {nameof(IsBound)} method is not trim compatible")]
-	protected bool IsBound(BindableProperty property, BindingBase? defaultBinding = null)
-	{
-		var getContextMethod = typeof(BindableObject).GetRuntimeMethods().FirstOrDefault(m => m.Name is "GetContext");
-		var bindingField = getContextMethod?.ReturnType.GetRuntimeField("Binding");
-
-		var context = getContextMethod?.Invoke(this, [property]);
-		return context is not null
-			&& bindingField?.GetValue(context) is BindingBase binding
-			&& binding != defaultBinding;
 	}
 
 	void ICommunityToolkitBehavior<TView>.OnViewPropertyChanged(TView sender, PropertyChangedEventArgs e) => OnViewPropertyChanged(sender, e);
