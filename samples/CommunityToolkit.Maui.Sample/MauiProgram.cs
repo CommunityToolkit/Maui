@@ -77,13 +77,13 @@ public static class MauiProgram
 		builder.ConfigureLifecycleEvents(events =>
 		{
 #if WINDOWS10_0_17763_0_OR_GREATER
-      events.AddWindows(static windowLifeCycleBuilder =>
-      {
-          windowLifeCycleBuilder.OnWindowCreated(window =>
-          {
-              window.SystemBackdrop = new MicaBackdrop { Kind = MicaKind.Base };
+				events.AddWindows(static windowLifeCycleBuilder =>
+				{
+					windowLifeCycleBuilder.OnWindowCreated(window =>
+					{
+						window.SystemBackdrop = new MicaBackdrop { Kind = MicaKind.Base };
 
-              var titleBar = window.GetAppWindow()?.TitleBar ?? throw new InvalidOperationException("App Window Cannot be Null");
+						var titleBar = window.GetAppWindow()?.TitleBar ?? throw new InvalidOperationException("App Window Cannot be Null");
 
 						titleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
 
