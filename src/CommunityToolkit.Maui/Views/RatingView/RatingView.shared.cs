@@ -1,7 +1,9 @@
 ﻿// Ignore Spelling: color, bindable, colors
 
+using System.ComponentModel;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Views;
@@ -322,19 +324,13 @@ public class RatingView : TemplatedView, IRatingViewShape
 		HorizontalStackLayout stackLayout = (HorizontalStackLayout)(root.GetVisualTreeDescendants().OfType<VisualElement>().First());
 		foreach (IView? child in stackLayout.Children)
 		{
-			// Check if each child of the HorizontalStackLayout is a Border and contains a Shape
-			if (child is not Border border || border.Content is not Shape shape)
-			{
-				break;
-			}
-
 			if (isShapeFill)
 			{
-				result.Add(shape);
+				result.Add((Shape)(((Border)child!).Content!));
 			}
 			else
 			{
-				result.Add(border);
+				result.Add((Border)child!);
 			}
 		}
 
@@ -536,11 +532,6 @@ public class RatingView : TemplatedView, IRatingViewShape
 			Border child = (Border)Control.Children[i];
 			if (IsEnabled)
 			{
-				if (child.GestureRecognizers.Count != 0)
-				{
-					continue;
-				}
-
 				TapGestureRecognizer tapGestureRecognizer = new();
 				tapGestureRecognizer.Tapped += OnItemTapped;
 				child.GestureRecognizers.Add(tapGestureRecognizer);
