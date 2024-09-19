@@ -1,15 +1,13 @@
 ﻿// Ignore Spelling: color, bindable, colors
 
-using System.ComponentModel;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Views;
 
 /// <summary>Rating view control.</summary>
-public class RatingView : TemplatedView, IRatingViewShape
+public class RatingView : TemplatedView, IRatingView
 {
 	/// <summary>Bindable property for <see cref="CustomShape"/> bindable property.</summary>
 	public static readonly BindableProperty CustomShapeProperty = RatingViewItemElement.CustomShapeProperty;
@@ -352,10 +350,7 @@ public class RatingView : TemplatedView, IRatingViewShape
 	}
 
 	/// <summary>Maximum rating has changed.</summary>
-	/// <remarks>
-	///		Re draw the control.
-	///		If the current rating is greater than the maximum, then change the current rating to the new value.
-	/// </remarks>
+	/// <remarks>If the current rating is greater than the maximum, then change the current rating to the new value and raise the event as appropriate.</remarks>
 	/// <param name="bindable">RatingView object.</param>
 	/// <param name="oldValue">Old maximum rating value.</param>
 	/// <param name="newValue">New maximum rating value.</param>
@@ -429,6 +424,7 @@ public class RatingView : TemplatedView, IRatingViewShape
 			if (i < fullShapes)
 			{
 				ratingItems[i].BackgroundColor = filledBackgroundColor; // Fully filled shape
+				ratingItems[i].Background = null;  // Empty fill
 			}
 			else if (i == fullShapes && partialFill > 0)
 			{

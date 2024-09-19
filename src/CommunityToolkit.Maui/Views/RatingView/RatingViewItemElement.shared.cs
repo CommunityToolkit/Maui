@@ -8,20 +8,8 @@ static class RatingViewItemElement
 	/// <summary>Bindable property for attached property <c>CustomShape</c>.</summary>
 	public static readonly BindableProperty CustomShapeProperty = BindableProperty.Create(nameof(IRatingViewShape.CustomShape), typeof(string), typeof(IRatingViewShape), defaultValue: null, propertyChanged: OnCustomShapePropertyChanged);
 
-	/// <summary>Bindable property for attached property <c>PaddingBottom</c>.</summary>
-	public static readonly BindableProperty ItemPaddingBottomProperty = BindableProperty.Create("PaddingBottom", typeof(double), typeof(IRatingViewShape), default(double), propertyChanged: OnItemPaddingBottomChanged);
-
-	/// <summary>Bindable property for attached property <c>PaddingLeft</c>.</summary>
-	public static readonly BindableProperty ItemPaddingLeftProperty = BindableProperty.Create("PaddingLeft", typeof(double), typeof(IRatingViewShape), default(double), propertyChanged: OnItemPaddingLeftChanged);
-
 	/// <summary>Bindable property for <see cref="IRatingViewShape.ItemPadding"/>.</summary>
 	public static readonly BindableProperty ItemPaddingProperty = BindableProperty.Create(nameof(IRatingViewShape.ItemPadding), typeof(Thickness), typeof(IRatingViewShape), default(Thickness), propertyChanged: OnItemPaddingPropertyChanged, defaultValueCreator: ItemPaddingDefaultValueCreator);
-
-	/// <summary>Bindable property for attached property <c>PaddingRight</c>.</summary>
-	public static readonly BindableProperty ItemPaddingRightProperty = BindableProperty.Create("PaddingRight", typeof(double), typeof(IRatingViewShape), default(double), propertyChanged: OnItemPaddingRightChanged);
-
-	/// <summary>Bindable property for attached property <c>PaddingTop</c>.</summary>
-	public static readonly BindableProperty ItemPaddingTopProperty = BindableProperty.Create("PaddingTop", typeof(double), typeof(IRatingViewShape), default(double), propertyChanged: OnItemPaddingTopChanged);
 
 	/// <summary>Bindable property for attached property <c>Shape</c>.</summary>
 	public static readonly BindableProperty ShapeProperty = BindableProperty.Create(nameof(IRatingViewShape.Shape), typeof(RatingViewShape), typeof(IRatingViewShape), defaultValue: RatingViewShape.Star, propertyChanged: OnItemShapePropertyChanged, defaultValueCreator: ShapeDefaultValueCreator);
@@ -49,35 +37,7 @@ static class RatingViewItemElement
 
 	static void OnCustomShapePropertyChanged(BindableObject bindable, object? oldValue, object? newValue) => ((IRatingViewShape)bindable).OnCustomShapePropertyChanged((string?)oldValue, (string?)newValue);
 
-	static void OnItemPaddingBottomChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		Thickness padding = (Thickness)bindable.GetValue(ItemPaddingProperty);
-		padding.Bottom = (double)newValue;
-		bindable.SetValue(ItemPaddingProperty, padding);
-	}
-
-	static void OnItemPaddingLeftChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		Thickness padding = (Thickness)bindable.GetValue(ItemPaddingProperty);
-		padding.Left = (double)newValue;
-		bindable.SetValue(ItemPaddingProperty, padding);
-	}
-
 	static void OnItemPaddingPropertyChanged(BindableObject bindable, object oldValue, object newValue) => ((IRatingViewShape)bindable).OnItemPaddingPropertyChanged((Thickness)oldValue, (Thickness)newValue);
-
-	static void OnItemPaddingRightChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		Thickness padding = (Thickness)bindable.GetValue(ItemPaddingProperty);
-		padding.Right = (double)newValue;
-		bindable.SetValue(ItemPaddingProperty, padding);
-	}
-
-	static void OnItemPaddingTopChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		Thickness padding = (Thickness)bindable.GetValue(ItemPaddingProperty);
-		padding.Top = (double)newValue;
-		bindable.SetValue(ItemPaddingProperty, padding);
-	}
 
 	static void OnItemShapePropertyChanged(BindableObject bindable, object oldValue, object newValue) => ((IRatingViewShape)bindable).OnItemShapePropertyChanged((RatingViewShape)oldValue, (RatingViewShape)newValue);
 
