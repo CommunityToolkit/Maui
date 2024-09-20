@@ -36,13 +36,13 @@ public static class RatingViewDefaults
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const double Spacing = 10.0;
 
-	/// <summary>Default background color for an empty rating.</summary>
+	/// <summary>Default color for an empty rating.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static Color EmptyBackgroundColor { get; } = Colors.Transparent;
+	public static Color EmptyColor { get; } = Colors.Transparent;
 
 	/// <summary>Default filled color for a rating.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static Color FilledBackgroundColor { get; } = Colors.Yellow;
+	public static Color FilledColor { get; } = Colors.Yellow;
 
 	/// <summary>Default rating item padding.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]

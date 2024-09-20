@@ -26,20 +26,20 @@ public interface IRatingViewShape
 	Color ShapeBorderColor { get; }
 
 	/// <summary>Get a value indicating the rating item background empty color.</summary>
-	Color EmptyBackgroundColor { get; }
+	Color EmptyColor { get; }
 
 	/// <summary>Get a value indicating the rating item background filled color.</summary>
-	Color FilledBackgroundColor { get; }
+	Color FilledColor { get; }
 
-	/// <summary>Action when <see cref="EmptyBackgroundColor"/> changes.</summary>
+	/// <summary>Action when <see cref="EmptyColor"/> changes.</summary>
 	/// <param name="oldValue">Old empty background color.</param>
 	/// <param name="newValue">New empty background color.</param>
-	void OnEmptyBackgroundColorPropertyChanged(Color oldValue, Color newValue);
+	void OnEmptyColorPropertyChanged(Color oldValue, Color newValue);
 
-	/// <summary>Action when <see cref="FilledBackgroundColor"/> changes.</summary>
+	/// <summary>Action when <see cref="FilledColor"/> changes.</summary>
 	/// <param name="oldValue">Old filled background color.</param>
 	/// <param name="newValue">New filled background color.</param>
-	void OnFilledBackgroundColorPropertyChanged(Color oldValue, Color newValue);
+	void OnFilledColorPropertyChanged(Color oldValue, Color newValue);
 
 	/// <summary>Action when <see cref="CustomShape"/> changes.</summary>
 	/// <param name="oldValue">Old shape path.</param>
@@ -93,11 +93,11 @@ public interface IRatingViewShape
 
 	/// <summary>Retrieves the default background color for an empty rating item.</summary>
 	/// <returns>The empty background color.</returns>
-	Color EmptyBackgroundColorDefaultValueCreator();
+	Color EmptyColorDefaultValueCreator();
 
 	/// <summary>Retrieves the default background color for an filled rating item.</summary>
 	/// <returns>The filled background color.</returns>
-	Color FilledBackgroundColorDefaultValueCreator();
+	Color FilledColorDefaultValueCreator();
 }
 
 /// <summary>Rating view shape enumerator.</summary>

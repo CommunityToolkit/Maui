@@ -12,11 +12,11 @@ public class RatingView : TemplatedView, IRatingView
 	/// <summary>Bindable property for <see cref="CustomShape"/> bindable property.</summary>
 	public static readonly BindableProperty CustomShapeProperty = RatingViewItemElement.CustomShapeProperty;
 
-	/// <summary>The backing store for the <see cref="EmptyBackgroundColor" /> bindable property.</summary>
-	public static readonly BindableProperty EmptyBackgroundColorProperty = RatingViewItemElement.EmptyBackgroundColorProperty;
+	/// <summary>The backing store for the <see cref="EmptyColor" /> bindable property.</summary>
+	public static readonly BindableProperty EmptyColorProperty = RatingViewItemElement.EmptyColorProperty;
 
-	/// <summary>The backing store for the <see cref="FilledBackgroundColor" /> bindable property.</summary>
-	public static readonly BindableProperty FilledBackgroundColorProperty = RatingViewItemElement.FilledBackgroundColorProperty;
+	/// <summary>The backing store for the <see cref="FilledColor" /> bindable property.</summary>
+	public static readonly BindableProperty FilledColorProperty = RatingViewItemElement.FilledColorProperty;
 
 	/// <summary>The backing store for the <see cref="IsReadOnly" /> bindable property.</summary>
 	public static readonly BindableProperty IsReadOnlyProperty = BindableProperty.Create(nameof(IsReadOnly), typeof(bool), typeof(RatingView), defaultValue: RatingViewDefaults.IsReadOnly, propertyChanged: OnIsReadOnlyChanged);
@@ -78,18 +78,18 @@ public class RatingView : TemplatedView, IRatingView
 		set => SetValue(CustomShapeProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the empty rating background property.</summary>
-	public Color EmptyBackgroundColor
+	/// <summary>Gets or sets a value of the empty rating color property.</summary>
+	public Color EmptyColor
 	{
-		get => (Color)GetValue(EmptyBackgroundColorProperty);
-		set => SetValue(EmptyBackgroundColorProperty, value);
+		get => (Color)GetValue(EmptyColorProperty);
+		set => SetValue(EmptyColorProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the filled rating background property.</summary>
-	public Color FilledBackgroundColor
+	/// <summary>Gets or sets a value of the filled rating color property.</summary>
+	public Color FilledColor
 	{
-		get => (Color)GetValue(FilledBackgroundColorProperty);
-		set => SetValue(FilledBackgroundColorProperty, value);
+		get => (Color)GetValue(FilledColorProperty);
+		set => SetValue(FilledColorProperty, value);
 	}
 
 	///<summary>Gets or sets a value indicating if the controls is read-only.</summary>
@@ -169,14 +169,14 @@ public class RatingView : TemplatedView, IRatingView
 		set => SetValue(SpacingProperty, value);
 	}
 
-	Color IRatingViewShape.EmptyBackgroundColorDefaultValueCreator()
+	Color IRatingViewShape.EmptyColorDefaultValueCreator()
 	{
-		return RatingViewDefaults.EmptyBackgroundColor;
+		return RatingViewDefaults.EmptyColor;
 	}
 
-	Color IRatingViewShape.FilledBackgroundColorDefaultValueCreator()
+	Color IRatingViewShape.FilledColorDefaultValueCreator()
 	{
-		return RatingViewDefaults.FilledBackgroundColor;
+		return RatingViewDefaults.FilledColor;
 	}
 
 	Thickness IRatingViewShape.ItemPaddingDefaultValueCreator()
@@ -224,18 +224,18 @@ public class RatingView : TemplatedView, IRatingView
 		ChangeRatingItemShape(newShapePathData);
 	}
 
-	/// <summary>Change the rating item empty background color.</summary>
-	/// <param name="oldValue">Old rating item empty background color.</param>
-	/// <param name="newValue">new rating item empty background color.</param>
-	void IRatingViewShape.OnEmptyBackgroundColorPropertyChanged(Color oldValue, Color newValue)
+	/// <summary>Change the rating item empty color.</summary>
+	/// <param name="oldValue">Old rating item empty color.</param>
+	/// <param name="newValue">new rating item empty color.</param>
+	void IRatingViewShape.OnEmptyColorPropertyChanged(Color oldValue, Color newValue)
 	{
 		UpdateRatingDraw();
 	}
 
-	/// <summary>Change the rating item filled background color.</summary>
-	/// <param name="oldValue">Old rating item filled background color.</param>
-	/// <param name="newValue">new rating item filled background color.</param>
-	void IRatingViewShape.OnFilledBackgroundColorPropertyChanged(Color oldValue, Color newValue)
+	/// <summary>Change the rating item filled color.</summary>
+	/// <param name="oldValue">Old rating item filled color.</param>
+	/// <param name="newValue">new rating item filled color.</param>
+	void IRatingViewShape.OnFilledColorPropertyChanged(Color oldValue, Color newValue)
 	{
 		UpdateRatingDraw();
 	}
@@ -449,28 +449,28 @@ public class RatingView : TemplatedView, IRatingView
 	/// <remarks>At this time, since .NET MAUI doesn't have direct partial fill, we approximate with a gradient.</remarks>
 	/// <param name="ratingItems">A list of rating item visual elements to update.</param>
 	/// <param name="rating">Current rating value (e.g., 3.7)</param>
-	/// <param name="filledBackgroundColor">Background color of a filled item.</param>
-	/// <param name="emptyBackgroundColor">Background color of an empty item.</param>
-	/// <param name="backgroundColor">Background color of the item.</param>
-	static void UpdateRatingItemColors(List<VisualElement> ratingItems, double rating, Color filledBackgroundColor, Color emptyBackgroundColor, Color backgroundColor)
+	/// <param name="filledColor">Color of a filled item.</param>
+	/// <param name="emptyColor">Color of an empty item.</param>
+	/// <param name="backgroundColor">Color of the item.</param>
+	static void UpdateRatingItemColors(List<VisualElement> ratingItems, double rating, Color filledColor, Color emptyColor, Color backgroundColor)
 	{
 		int fullShapes = (int)Math.Floor(rating); // Determine the number of fully filled shapes
 		double partialFill = rating - fullShapes; // Determine the fraction for the partially filled shape (if any)
 		backgroundColor ??= Colors.Transparent;
 		for (int i = 0; i < ratingItems.Count; i++)
 		{
-			((Shape)((Border)ratingItems[i]).Content!).Fill = emptyBackgroundColor;
+			((Shape)((Border)ratingItems[i]).Content!).Fill = emptyColor;
 			if (i < fullShapes)
 			{
-				ratingItems[i].BackgroundColor = filledBackgroundColor; // Fully filled shape
+				ratingItems[i].BackgroundColor = filledColor; // Fully filled shape
 				ratingItems[i].Background = null;  // Empty fill
 			}
 			else if (i == fullShapes && partialFill > 0)
 			{
 				ratingItems[i].Background = new LinearGradientBrush(
 					[
-							new GradientStop(filledBackgroundColor, 0),
-							new GradientStop(filledBackgroundColor, (float)partialFill),
+							new GradientStop(filledColor, 0),
+							new GradientStop(filledColor, (float)partialFill),
 							new GradientStop(backgroundColor, (float)partialFill),
 					],
 					new Point(0, 0), new Point(1, 0));  // Partial fill
@@ -487,9 +487,9 @@ public class RatingView : TemplatedView, IRatingView
 	/// <remarks>At this time, since .NET MAUI doesn't have direct partial fill, we approximate with a gradient.</remarks>
 	/// <param name="ratingItems">A list of rating item shape visual elements to update.</param>
 	/// <param name="rating">Current rating value (e.g., 3.7)</param>
-	/// <param name="filledBackgroundColor">Background color of a filled shape.</param>
-	/// <param name="emptyBackgroundColor">Background color of an empty shape.</param>
-	static void UpdateRatingShapeColors(List<VisualElement> ratingItems, double rating, Color filledBackgroundColor, Color emptyBackgroundColor)
+	/// <param name="filledColor">Color of a filled shape.</param>
+	/// <param name="emptyColor">Color of an empty shape.</param>
+	static void UpdateRatingShapeColors(List<VisualElement> ratingItems, double rating, Color filledColor, Color emptyColor)
 	{
 		int fullShapes = (int)Math.Floor(rating); // Determine the number of fully filled shapes
 		double partialFill = rating - fullShapes; // Determine the fraction for the partially filled shape (if any)
@@ -498,21 +498,21 @@ public class RatingView : TemplatedView, IRatingView
 			Shape ratingShape = (Shape)ratingItems[i];
 			if (i < fullShapes)
 			{
-				ratingShape.Fill = filledBackgroundColor; // Fully filled shape
+				ratingShape.Fill = filledColor; // Fully filled shape
 			}
 			else if (i == fullShapes && partialFill > 0)
 			{
 				ratingShape.Fill = new LinearGradientBrush(
 					[
-							new GradientStop(filledBackgroundColor, 0),
-							new GradientStop(filledBackgroundColor, (float)partialFill),
-							new GradientStop(emptyBackgroundColor, (float)partialFill),
+							new GradientStop(filledColor, 0),
+							new GradientStop(filledColor, (float)partialFill),
+							new GradientStop(emptyColor, (float)partialFill),
 					],
 					new Point(0, 0), new Point(1, 0)); // Partial fill
 			}
 			else
 			{
-				ratingShape.Fill = emptyBackgroundColor;  // Empty fill
+				ratingShape.Fill = emptyColor;  // Empty fill
 			}
 		}
 	}
@@ -602,11 +602,11 @@ public class RatingView : TemplatedView, IRatingView
 		List<VisualElement> visualElements = GetVisualTreeDescendantsWithBorderAndShape((VisualElement)Control!.GetVisualTreeDescendants()[0], isShapeFill);
 		if (isShapeFill)
 		{
-			UpdateRatingShapeColors(visualElements, Rating, FilledBackgroundColor, EmptyBackgroundColor);
+			UpdateRatingShapeColors(visualElements, Rating, FilledColor, EmptyColor);
 		}
 		else
 		{
-			UpdateRatingItemColors(visualElements, Rating, FilledBackgroundColor, EmptyBackgroundColor, BackgroundColor);
+			UpdateRatingItemColors(visualElements, Rating, FilledColor, EmptyColor, BackgroundColor);
 		}
 	}
 

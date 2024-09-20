@@ -57,9 +57,9 @@ public class RatingViewTests : BaseHandlerTest
 	{
 		RatingView ratingView = new();
 		_ = ratingView.Rating.Should().Be(RatingViewDefaults.DefaultRating);
-		_ = ratingView.EmptyBackgroundColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.EmptyBackgroundColor);
-		_ = ratingView.FilledBackgroundColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.FilledBackgroundColor);
-		_ = ratingView.IsReadOnly.Should().BeTrue().And.Be(RatingViewDefaults.IsReadOnly);
+		_ = ratingView.EmptyColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.EmptyColor);
+		_ = ratingView.FilledColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.FilledColor);
+		_ = ratingView.IsReadOnly.Should().BeFalse().And.Be(RatingViewDefaults.IsReadOnly);
 		_ = ratingView.ItemPadding.Should().BeOfType<Thickness>().And.Be(RatingViewDefaults.ItemPadding);
 		_ = ratingView.ItemShapeSize.Should().Be(RatingViewDefaults.ItemShapeSize);
 		_ = ratingView.MaximumRating.Should().Be(RatingViewDefaults.MaximumRating);
@@ -154,7 +154,7 @@ public class RatingViewTests : BaseHandlerTest
 		RatingView ratingView = new()
 		{
 			Rating = currentRating,
-			IsReadOnly = false,
+			IsReadOnly = true,
 		};
 
 		bool signaled = false;
@@ -172,7 +172,7 @@ public class RatingViewTests : BaseHandlerTest
 		RatingView ratingView = new()
 		{
 			Rating = currentRating,
-			IsReadOnly = false,
+			IsReadOnly = true,
 		};
 
 		bool signaled = false;
@@ -188,7 +188,7 @@ public class RatingViewTests : BaseHandlerTest
 		const double currentRating = 3.5;
 		RatingView ratingView = new()
 		{
-			IsReadOnly = false
+			IsReadOnly = true
 		};
 
 		bool signaled = false;
@@ -296,49 +296,49 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void Properties_Change_EmptyBackgroundColor_Item()
+	public void Properties_Change_EmptyColor_Item()
 	{
 		const double rating = 1.5;
 		const byte maximumRating = 7;
-		Color emptyBackgroundColor = Colors.Snow;
+		Color emptyColor = Colors.Snow;
 		RatingView ratingView = new()
 		{
 			MaximumRating = maximumRating,
 			Rating = rating,
 			RatingFill = RatingFillElement.Item
 		};
-		_ = ratingView.EmptyBackgroundColor.Should().NotBe(emptyBackgroundColor);
-		ratingView.EmptyBackgroundColor = emptyBackgroundColor;
-		_ = ratingView.EmptyBackgroundColor.Should().Be(emptyBackgroundColor);
+		_ = ratingView.EmptyColor.Should().NotBe(emptyColor);
+		ratingView.EmptyColor = emptyColor;
+		_ = ratingView.EmptyColor.Should().Be(emptyColor);
 		Microsoft.Maui.Controls.Shapes.Path emptyRatingItem = (Microsoft.Maui.Controls.Shapes.Path)((Border)ratingView.Control!.Children[maximumRating - 1]).Content!.GetVisualTreeDescendants()[0];
-		_ = emptyRatingItem.Fill.Should().Be(new SolidColorBrush(emptyBackgroundColor));
+		_ = emptyRatingItem.Fill.Should().Be(new SolidColorBrush(emptyColor));
 	}
 
 	[Fact]
-	public void Properties_Change_EmptyBackgroundColor_Shape()
+	public void Properties_Change_EmptyColor_Shape()
 	{
 		const double rating = 1.5;
 		const byte maximumRating = 7;
-		Color emptyBackgroundColor = Colors.Snow;
+		Color emptyColor = Colors.Snow;
 		RatingView ratingView = new()
 		{
 			MaximumRating = maximumRating,
 			Rating = rating
 		};
-		_ = ratingView.EmptyBackgroundColor.Should().NotBe(emptyBackgroundColor);
-		ratingView.EmptyBackgroundColor = emptyBackgroundColor;
-		_ = ratingView.EmptyBackgroundColor.Should().Be(emptyBackgroundColor);
+		_ = ratingView.EmptyColor.Should().NotBe(emptyColor);
+		ratingView.EmptyColor = emptyColor;
+		_ = ratingView.EmptyColor.Should().Be(emptyColor);
 		Microsoft.Maui.Controls.Shapes.Path emptyRatingItem = (Microsoft.Maui.Controls.Shapes.Path)((Border)ratingView.Control!.Children[maximumRating - 1]).Content!.GetVisualTreeDescendants()[0];
-		_ = emptyRatingItem.Fill.Should().Be(new SolidColorBrush(emptyBackgroundColor));
+		_ = emptyRatingItem.Fill.Should().Be(new SolidColorBrush(emptyColor));
 	}
 
 	[Fact]
-	public void Properties_Change_FilledBackgroundColor_Item()
+	public void Properties_Change_FilledColor_Item()
 	{
 		const double rating = 1.5;
 		const byte maximumRating = 7;
-		Color filledBackgroundColor = Colors.Snow;
-		Color emptyBackgroundColor = Colors.Firebrick;
+		Color filledColor = Colors.Snow;
+		Color emptyColor = Colors.Firebrick;
 		Color backgroundColor = Colors.DarkGreen;
 		RatingView ratingView = new()
 		{
@@ -346,14 +346,14 @@ public class RatingViewTests : BaseHandlerTest
 			Rating = rating,
 			RatingFill = RatingFillElement.Item
 		};
-		_ = ratingView.FilledBackgroundColor.Should().NotBe(filledBackgroundColor);
+		_ = ratingView.FilledColor.Should().NotBe(filledColor);
 		_ = ratingView.BackgroundColor.Should().BeNull();
 		ratingView.BackgroundColor = backgroundColor;
-		ratingView.EmptyBackgroundColor = emptyBackgroundColor;
-		ratingView.FilledBackgroundColor = filledBackgroundColor;
-		_ = ratingView.FilledBackgroundColor.Should().Be(filledBackgroundColor);
+		ratingView.EmptyColor = emptyColor;
+		ratingView.FilledColor = filledColor;
+		_ = ratingView.FilledColor.Should().Be(filledColor);
 		Microsoft.Maui.Controls.Shapes.Path filledRatingShape = (Microsoft.Maui.Controls.Shapes.Path)((Border)ratingView.Control!.Children[(int)Math.Floor(rating)]).Content!.GetVisualTreeDescendants()[0];
-		_ = filledRatingShape.Fill.Should().Be(new SolidColorBrush(emptyBackgroundColor));
+		_ = filledRatingShape.Fill.Should().Be(new SolidColorBrush(emptyColor));
 		Border filledRatingItem = (Border)ratingView.Control!.Children[(int)Math.Floor(rating)];
 		_ = filledRatingItem.BackgroundColor.Should().Be(Colors.Transparent);
 		filledRatingItem = (Border)ratingView.Control!.Children[maximumRating - 1]; // Check the last one, as this is where we expect the background colour to be set
@@ -361,45 +361,45 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void Properties_Change_FilledBackgroundColor_Shape()
+	public void Properties_Change_FilledColor_Shape()
 	{
 		const double rating = 1.5;
 		const byte maximumRating = 7;
-		Color filledBackgroundColor = Colors.Snow;
+		Color filledColor = Colors.Snow;
 		RatingView ratingView = new()
 		{
 			MaximumRating = maximumRating,
 			Rating = rating
 		};
-		_ = ratingView.FilledBackgroundColor.Should().NotBe(filledBackgroundColor);
-		ratingView.FilledBackgroundColor = filledBackgroundColor;
-		_ = ratingView.FilledBackgroundColor.Should().Be(filledBackgroundColor);
+		_ = ratingView.FilledColor.Should().NotBe(filledColor);
+		ratingView.FilledColor = filledColor;
+		_ = ratingView.FilledColor.Should().Be(filledColor);
 		Microsoft.Maui.Controls.Shapes.Path filledRatingItem = (Microsoft.Maui.Controls.Shapes.Path)((Border)ratingView.Control!.Children[0]).Content!.GetVisualTreeDescendants()[0];
-		_ = filledRatingItem.Fill.Should().Be(new SolidColorBrush(filledBackgroundColor));
+		_ = filledRatingItem.Fill.Should().Be(new SolidColorBrush(filledColor));
 	}
 
 	[Fact]
 	public void Properties_Change_IsReadOnly()
 	{
 		RatingView ratingView = new();
-		_ = ratingView.IsReadOnly.Should().BeTrue();
-		ratingView.IsReadOnly = false;
 		_ = ratingView.IsReadOnly.Should().BeFalse();
+		ratingView.IsReadOnly = true;
+		_ = ratingView.IsReadOnly.Should().BeTrue();
 	}
 
 	[Fact]
 	public void Properties_Change_IsReadOnly_GestureRecognizers()
 	{
 		RatingView ratingView = new();
-		_ = ratingView.IsReadOnly.Should().BeTrue();
+		_ = ratingView.IsReadOnly.Should().BeFalse();
 		for (int i = 0; i < ratingView.Control?.Children.Count; i++)
 		{
 			Border child = (Border)ratingView.Control.Children[i];
 			_ = child.GestureRecognizers.Count.Should().Be(1);
 		}
 
-		ratingView.IsReadOnly = false;
-		_ = ratingView.IsReadOnly.Should().BeFalse();
+		ratingView.IsReadOnly = true;
+		_ = ratingView.IsReadOnly.Should().BeTrue();
 		for (int i = 0; i < ratingView.Control?.Children.Count; i++)
 		{
 			Border child = (Border)ratingView.Control.Children[i];
@@ -557,30 +557,6 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void ViewStructure_Spacing()
-	{
-		RatingView ratingView = new();
-		HorizontalStackLayout rvControl = ratingView.Control!;
-		_ = rvControl.Spacing.Should().Be(RatingViewDefaults.Spacing);
-	}
-
-	[Fact]
-	public void ViewStructure_ItemPadding()
-	{
-		const double expectedLeftPadding = 7;
-		const double expectedTopPadding = 3;
-		const double expectedRightPadding = 3;
-		const double expectedBottomPadding = 7;
-		Thickness expectedItemPadding = new(expectedLeftPadding, expectedTopPadding, expectedRightPadding, expectedBottomPadding);
-		RatingView ratingView = new()
-		{
-			ItemPadding = expectedItemPadding,
-		};
-		Border firstItem = (Border)ratingView.Control!.Children[0];
-		_ = firstItem.Padding.Should().Be(expectedItemPadding);
-	}
-
-	[Fact]
 	public void ViewStructure_Control_IsHorizontalStackLayout()
 	{
 		RatingView ratingView = new();
@@ -626,42 +602,66 @@ public class RatingViewTests : BaseHandlerTest
 		_ = ratingView.Control!.Children[0].Should().BeOfType<Border>();
 		Border child = (Border)ratingView.Control!.Children[0];
 		_ = child.Content.Should().NotBeNull();
-		Microsoft.Maui.Controls.Shapes.Path shape = (Microsoft.Maui.Controls.Shapes.Path)(child.Content!.GetVisualTreeDescendants()[0]);
-		shape.GetPath().Should().Be(Core.Primitives.RatingViewShape.Star.PathData);
+		Microsoft.Maui.Controls.Shapes.Path shape = (Microsoft.Maui.Controls.Shapes.Path)child.Content!.GetVisualTreeDescendants()[0];
+		_ = shape.GetPath().Should().Be(Core.Primitives.RatingViewShape.Star.PathData);
 	}
 
 	[Fact]
 	public void ViewStructure_ItemFill_Colors()
 	{
-		Color filledBackgroundColor = Colors.Red;
-		Color emptyBackgroundColor = Colors.Grey;
+		Color filledColor = Colors.Red;
+		Color emptyColor = Colors.Grey;
 		Color backgroundColor = Colors.CornflowerBlue;
-		RatingView ratingView = new() { Rating = 0, MaximumRating = 3, RatingFill = RatingFillElement.Item, FilledBackgroundColor = filledBackgroundColor, EmptyBackgroundColor = emptyBackgroundColor, BackgroundColor = backgroundColor };
+		RatingView ratingView = new() { Rating = 0, MaximumRating = 3, RatingFill = RatingFillElement.Item, FilledColor = filledColor, EmptyColor = emptyColor, BackgroundColor = backgroundColor };
 		ratingView.Rating = 1.5;
 		Border filledRatingItem = (Border)ratingView.Control!.Children[0];
 		Border partialFilledRatingItem = (Border)ratingView.Control!.Children[1];
 		Border emptyFilledRatingItem = (Border)ratingView.Control!.Children[2];
-		_ = filledRatingItem.BackgroundColor.Should().BeOfType<Color>().And.Be(filledBackgroundColor);
-		_ = ((Shape)filledRatingItem.Content!).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyBackgroundColor));
+		_ = filledRatingItem.BackgroundColor.Should().BeOfType<Color>().And.Be(filledColor);
+		_ = ((Shape)filledRatingItem.Content!).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyColor));
 		_ = emptyFilledRatingItem.BackgroundColor.Should().BeOfType<Color>().And.Be(backgroundColor);
 		_ = emptyFilledRatingItem.Background.Should().BeNull();
-		_ = ((Shape)emptyFilledRatingItem.Content!).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyBackgroundColor));
+		_ = ((Shape)emptyFilledRatingItem.Content!).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyColor));
 		_ = partialFilledRatingItem.Background.Should().BeOfType<LinearGradientBrush>();
-		_ = ((Shape)partialFilledRatingItem.Content!).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyBackgroundColor));
+		_ = ((Shape)partialFilledRatingItem.Content!).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyColor));
+	}
+
+	[Fact]
+	public void ViewStructure_ItemPadding()
+	{
+		const double expectedLeftPadding = 7;
+		const double expectedTopPadding = 3;
+		const double expectedRightPadding = 3;
+		const double expectedBottomPadding = 7;
+		Thickness expectedItemPadding = new(expectedLeftPadding, expectedTopPadding, expectedRightPadding, expectedBottomPadding);
+		RatingView ratingView = new()
+		{
+			ItemPadding = expectedItemPadding,
+		};
+		Border firstItem = (Border)ratingView.Control!.Children[0];
+		_ = firstItem.Padding.Should().Be(expectedItemPadding);
 	}
 
 	[Fact]
 	public void ViewStructure_ShapeFill_Colors()
 	{
-		Color filledBackgroundColor = Colors.Red;
-		Color emptyBackgroundColor = Colors.Grey;
-		RatingView ratingView = new() { Rating = 1.5, MaximumRating = 3, RatingFill = RatingFillElement.Shape, FilledBackgroundColor = filledBackgroundColor, EmptyBackgroundColor = emptyBackgroundColor };
+		Color filledColor = Colors.Red;
+		Color emptyColor = Colors.Grey;
+		RatingView ratingView = new() { Rating = 1.5, MaximumRating = 3, RatingFill = RatingFillElement.Shape, FilledColor = filledColor, EmptyColor = emptyColor };
 		Microsoft.Maui.Controls.Shapes.Path filledRatingItem = (Microsoft.Maui.Controls.Shapes.Path)((Border)ratingView.Control!.Children[0]).Content!.GetVisualTreeDescendants()[0];
 		Microsoft.Maui.Controls.Shapes.Path partialFilledRatingItem = (Microsoft.Maui.Controls.Shapes.Path)((Border)ratingView.Control!.Children[1]).Content!.GetVisualTreeDescendants()[0];
 		Microsoft.Maui.Controls.Shapes.Path emptyFilledRatingItem = (Microsoft.Maui.Controls.Shapes.Path)((Border)ratingView.Control!.Children[2]).Content!.GetVisualTreeDescendants()[0];
-		_ = filledRatingItem.Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(filledBackgroundColor));
-		_ = emptyFilledRatingItem.Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyBackgroundColor));
+		_ = filledRatingItem.Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(filledColor));
+		_ = emptyFilledRatingItem.Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyColor));
 		_ = partialFilledRatingItem.Fill.Should().BeOfType<LinearGradientBrush>();
+	}
+
+	[Fact]
+	public void ViewStructure_Spacing()
+	{
+		RatingView ratingView = new();
+		HorizontalStackLayout rvControl = ratingView.Control!;
+		_ = rvControl.Spacing.Should().Be(RatingViewDefaults.Spacing);
 	}
 }
 
