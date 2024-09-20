@@ -1,5 +1,4 @@
-﻿using System.Collections.Frozen;
-using CommunityToolkit.Maui.ImageSources;
+﻿using CommunityToolkit.Maui.ImageSources;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.ImageSources;
@@ -21,8 +20,8 @@ public partial class GravatarImageSourceViewModel : BaseViewModel
 
 	public TimeSpan CacheValidityTimespan => TimeSpan.FromDays(CacheValidityInDays);
 
-	public IReadOnlyList<DefaultImage> DefaultGravatarItems { get; } = new[]
-	{
+	public IReadOnlyList<DefaultImage> DefaultGravatarItems { get; } =
+	[
 		DefaultImage.MysteryPerson,
 		DefaultImage.FileNotFound,
 		DefaultImage.Identicon,
@@ -31,5 +30,5 @@ public partial class GravatarImageSourceViewModel : BaseViewModel
 		DefaultImage.Robohash,
 		DefaultImage.Wavatar,
 		DefaultImage.Blank
-	};
+	];
 }

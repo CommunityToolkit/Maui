@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Platform;
@@ -10,7 +11,7 @@ public class PopupService : IPopupService
 {
 	readonly IServiceProvider serviceProvider;
 
-	static readonly Dictionary<Type, Type> viewModelToViewMappings = new();
+	static readonly Dictionary<Type, Type> viewModelToViewMappings = [];
 
 	static Page CurrentPage =>
 		PageExtensions.GetCurrentPage(
@@ -35,7 +36,7 @@ public class PopupService : IPopupService
 							?? throw new InvalidOperationException("Could not locate IServiceProvider");
 	}
 
-	internal static void AddTransientPopup<TPopupView, TPopupViewModel>(IServiceCollection services)
+	internal static void AddTransientPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>(IServiceCollection services)
 		where TPopupView : IPopup
 		where TPopupViewModel : INotifyPropertyChanged
 	{

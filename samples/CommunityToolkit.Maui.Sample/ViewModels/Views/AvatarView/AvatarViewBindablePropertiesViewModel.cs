@@ -5,8 +5,8 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
 
 public class AvatarViewBindablePropertiesViewModel : BaseViewModel
 {
-	public ObservableCollection<AvatarModel> AvatarList { get; } = new()
-	{
+	public ObservableCollection<AvatarModel> AvatarList { get; } =
+	[
 		new AvatarModel
 		{
 			Description = "Sam Worthington",
@@ -88,5 +88,5 @@ public class AvatarViewBindablePropertiesViewModel : BaseViewModel
 			WidthRequest = 128,
 			HeightRequest = 72,
 		},
-	};
+	];
 }

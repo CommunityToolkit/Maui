@@ -1,5 +1,4 @@
-﻿using System.Collections.Frozen;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Application = Microsoft.Maui.Controls.Application;
 
@@ -10,12 +9,12 @@ public partial class ItemTappedEventArgsConverterViewModel : BaseViewModel
 	[ObservableProperty]
 	Person? itemSelected = null;
 
-	public IReadOnlyList<Person> Items { get; } = new[]
-	{
+	public IReadOnlyList<Person> Items { get; } =
+	[
 		new Person(1, "John Doe"),
 		new Person(2, "Jane Doe"),
 		new Person(3, "Joe Doe")
-	};
+	];
 
 	[RelayCommand]
 	Task ItemTapped(Person? person, CancellationToken token)

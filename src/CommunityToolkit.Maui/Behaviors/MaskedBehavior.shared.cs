@@ -102,7 +102,13 @@ public class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 		await maskedBehavior.OnMaskChanged(maskedBehavior.Mask, CancellationToken.None).ConfigureAwait(false);
 	}
 
-	Task OnTextPropertyChanged(CancellationToken token) => ApplyMask(View?.Text, token);
+	Task OnTextPropertyChanged(CancellationToken token)
+	{
+		// Android does not play well when we update the Text inside the TextChanged event. 
+		// Therefore if we dispatch the mechanism of updating the Text property it solves the issue of the caret position being updated incorrectly.
+		// https://github.com/CommunityToolkit/Maui/issues/460
+		return View?.Dispatcher.DispatchAsync(() => ApplyMask(View?.Text, token)) ?? Task.CompletedTask;
+	}
 
 	void SetMaskPositions(in string? mask)
 	{

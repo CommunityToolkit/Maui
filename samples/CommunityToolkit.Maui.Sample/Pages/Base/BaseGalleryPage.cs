@@ -13,17 +13,15 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 
 		Padding = 0;
 
-		Content = new CollectionView
-		{
-			SelectionMode = SelectionMode.Single,
-		}.ItemTemplate(new GalleryDataTemplate())
-		 .Bind(ItemsView.ItemsSourceProperty,
-					static (BaseGalleryViewModel vm) => vm.Items,
-					mode: BindingMode.OneTime)
-		 .Invoke(collectionView => collectionView.SelectionChanged += HandleSelectionChanged);
+		Content = new CollectionView { SelectionMode = SelectionMode.Single }
+			.ItemTemplate(new GalleryDataTemplate(deviceInfo))
+			.Bind(ItemsView.ItemsSourceProperty,
+				static (BaseGalleryViewModel vm) => vm.Items,
+				mode: BindingMode.OneTime)
+			.Invoke(static collectionView => collectionView.SelectionChanged += HandleSelectionChanged);
 	}
 
-	async void HandleSelectionChanged(object? sender, SelectionChangedEventArgs e)
+	static async void HandleSelectionChanged(object? sender, SelectionChangedEventArgs e)
 	{
 		ArgumentNullException.ThrowIfNull(sender);
 
@@ -36,22 +34,17 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 		}
 	}
 
-	class GalleryDataTemplate : DataTemplate
+	sealed class GalleryDataTemplate(IDeviceInfo deviceInfo) : DataTemplate(() => CreateDataTemplate(deviceInfo))
 	{
-		public GalleryDataTemplate() : base(CreateDataTemplate)
-		{
-
-		}
-
 		enum Row { TopPadding, Content, BottomPadding }
 		enum Column { LeftPadding, Content, RightPadding }
 
-		static Grid CreateDataTemplate() => new()
+		static Grid CreateDataTemplate(IDeviceInfo deviceInfo) => new()
 		{
 			RowDefinitions = Rows.Define(
-				(Row.TopPadding, 12),
+				(Row.TopPadding, deviceInfo.Platform == DevicePlatform.WinUI ? 4 : 8),
 				(Row.Content, Star),
-				(Row.BottomPadding, 12)),
+				(Row.BottomPadding, deviceInfo.Platform == DevicePlatform.WinUI ? 4 : 8)),
 
 			ColumnDefinitions = Columns.Define(
 				(Column.LeftPadding, 24),
@@ -60,11 +53,11 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 
 			Children =
 			{
-				new Card().Row(Row.Content).Column(Column.Content).DynamicResource(Border.StyleProperty, "BorderGalleryCard")
+				new Card().Row(Row.Content).Column(Column.Content).DynamicResource(StyleProperty, "BorderGalleryCard")
 			}
 		};
 
-		class Card : Border
+		sealed class Card : Border
 		{
 			public Card()
 			{
@@ -85,15 +78,19 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 						new Label()
 							.Row(CardRow.Title)
 							.Bind(Label.TextProperty,
-									static (SectionModel section) => section.Title,
-									mode: BindingMode.OneTime)
+								static (SectionModel section) => section.Title,
+								mode: BindingMode.OneTime)
 							.DynamicResource(Label.StyleProperty, "LabelSectionTitle"),
 
-						new Label { MaxLines = 4, LineBreakMode = LineBreakMode.WordWrap }
+						new Label
+							{
+								MaxLines = 4,
+								LineBreakMode = LineBreakMode.WordWrap
+							}
 							.Row(CardRow.Description).TextStart().TextTop()
 							.Bind(Label.TextProperty,
-									static (SectionModel section) => section.Description,
-									mode: BindingMode.OneTime)
+								static (SectionModel section) => section.Description,
+								mode: BindingMode.OneTime)
 							.DynamicResource(Label.StyleProperty, "LabelSectionText")
 					}
 				};

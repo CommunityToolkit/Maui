@@ -1,6 +1,8 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Maps;
 using Microsoft.Maui.Maps.Handlers;
 using Microsoft.Maui.Platform;
@@ -39,8 +41,15 @@ public partial class MapHandlerWindows : MapHandler
 	}
 
 	/// <inheritdoc/>
-
+	[RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
+	[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
+#if NET8_0 // Should be fixed in .NET 9
+#pragma warning disable IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
+#pragma warning disable IL3051 // 'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.
 	protected override FrameworkElement CreatePlatformView()
+#pragma warning restore IL3051 // 'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.
+#pragma warning restore IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
+#endif
 	{
 		if (string.IsNullOrEmpty(MapsKey))
 		{
@@ -48,7 +57,7 @@ public partial class MapHandlerWindows : MapHandler
 		}
 
 		var mapPage = GetMapHtmlPage(MapsKey);
-		var webView = new MauiWebView();
+		var webView = new MauiWebView(new WebViewHandler());
 		webView.NavigationCompleted += WebViewNavigationCompleted;
 		webView.WebMessageReceived += WebViewWebMessageReceived;
 		webView.LoadHtml(mapPage, null);
@@ -56,7 +65,15 @@ public partial class MapHandlerWindows : MapHandler
 	}
 
 	/// <inheritdoc />
+	[RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
+	[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
+#if NET8_0 // Should be fixed in .NET 9
+#pragma warning disable IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
+#pragma warning disable IL3051 // 'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.
 	protected override void DisconnectHandler(FrameworkElement platformView)
+#pragma warning restore IL3051 // 'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.
+#pragma warning restore IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
+#endif
 	{
 		if (PlatformView is MauiWebView mauiWebView)
 		{
@@ -302,7 +319,13 @@ public partial class MapHandlerWindows : MapHandler
 							function removeAllPins()
 							{
 								map.entities.clear();
-								locationPin = null;
+								if (locationPin != null )
+								{
+									map.entities.push(locationPin);
+									map.setView({
+										center: location
+									});
+								}
 							}
 
 							function addPin(latitude, longitude, label, address, id)
@@ -389,6 +412,8 @@ public partial class MapHandlerWindows : MapHandler
 		}
 	}
 
+	[RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
+	[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
 	void WebViewWebMessageReceived(WebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
 	{
 		// For some reason the web message is empty

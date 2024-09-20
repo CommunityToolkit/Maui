@@ -95,8 +95,6 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 
 	ValidationFlags currentStatus;
 
-	BindingBase? defaultValueBinding;
-
 	CancellationTokenSource? validationTokenSource;
 
 	bool isDisposed;
@@ -230,7 +228,10 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 	/// </summary>
 	protected abstract ValueTask<bool> ValidateAsync(object? value, CancellationToken token);
 
-	/// <inheritdoc/>
+	/// <summary>
+	/// Disposes of managed resources
+	/// </summary>
+	/// <param name="disposing"></param>
 	protected virtual void Dispose(bool disposing)
 	{
 		if (isDisposed)
@@ -274,11 +275,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 	/// <inheritdoc/>
 	protected override void OnDetachingFrom(VisualElement bindable)
 	{
-		if (defaultValueBinding != null)
-		{
-			RemoveBinding(ValueProperty);
-			defaultValueBinding = null;
-		}
+		RemoveBinding(ValueProperty);
 
 		currentStatus = ValidationFlags.None;
 		base.OnDetachingFrom(bindable);
@@ -301,7 +298,12 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 		}
 	}
 
-	/// <inheritdoc/>
+	/// <summary>
+	/// Used when a property in <see cref="ValidationBehavior"/> changes to update the validation state
+	/// </summary>
+	/// <param name="bindable"></param>
+	/// <param name="oldValue"></param>
+	/// <param name="newValue"></param>
 	protected static async void OnValidationPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var validationBehavior = (ValidationBehavior)bindable;
@@ -344,18 +346,11 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 
 	void OnValuePropertyNamePropertyChanged()
 	{
-		if (IsBound(ValueProperty, defaultValueBinding))
-		{
-			defaultValueBinding = null;
-			return;
-		}
-
-		defaultValueBinding = new Binding
+		SetBinding(ValueProperty, new Binding
 		{
 			Path = ValuePropertyName,
 			Source = View
-		};
-		SetBinding(ValueProperty, defaultValueBinding);
+		});
 	}
 
 	async ValueTask UpdateStateAsync(VisualElement? view, ValidationFlags flags, bool isForced, CancellationToken? parentToken = null)

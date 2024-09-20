@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Storage;
 /// <inheritdoc />
 public sealed partial class FileSaverImplementation : IFileSaver
 {
-	readonly List<string> allFilesExtension = new() { "." };
+	readonly List<string> allFilesExtension = ["."];
 
 	async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
 	{
@@ -19,7 +19,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		var extension = Path.GetExtension(fileName);
 		if (!string.IsNullOrEmpty(extension))
 		{
-			savePicker.FileTypeChoices.Add(extension, new List<string> { extension });
+			savePicker.FileTypeChoices.Add(extension, [extension]);
 		}
 
 		savePicker.FileTypeChoices.Add("All files", allFilesExtension);

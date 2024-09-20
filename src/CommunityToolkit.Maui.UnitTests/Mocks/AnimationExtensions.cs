@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Animations;
+﻿using System.Diagnostics;
+using Microsoft.Maui.Animations;
 using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
@@ -10,6 +11,8 @@ static class AnimationExtensions
 	// Inspired by Microsoft.Maui.Controls.Core.UnitTests.AnimationReadyHandler
 	class MockAnimationHandler : ViewHandler<IView, object>
 	{
+		const int millisecondTickIncrement = 16;
+
 		MockAnimationHandler(IAnimationManager animationManager) : base(new PropertyMapper<IView>())
 		{
 			SetMauiContext(new AnimationEnabledMauiContext(animationManager));
@@ -30,13 +33,11 @@ static class AnimationExtensions
 
 		protected override object CreatePlatformView() => new();
 
-		class AnimationEnabledMauiContext : IMauiContext, IServiceProvider
+		class AnimationEnabledMauiContext(IAnimationManager manager) : IMauiContext, IServiceProvider
 		{
-			public AnimationEnabledMauiContext(IAnimationManager manager) => AnimationManager = manager;
-
 			public IServiceProvider Services => this;
 
-			public IAnimationManager AnimationManager { get; }
+			public IAnimationManager AnimationManager { get; } = manager;
 
 			IMauiHandlersFactory IMauiContext.Handlers => throw new NotSupportedException();
 
@@ -65,11 +66,18 @@ static class AnimationExtensions
 
 				while (!cancellationTokenSource.IsCancellationRequested)
 				{
-					Fire?.Invoke();
+					try
+					{
+						Fire?.Invoke();
+					}
+					catch (Exception e)
+					{
+						Trace.WriteLine(e);
+					}
 
 					if (!cancellationTokenSource.IsCancellationRequested)
 					{
-						await Task.Delay(TimeSpan.FromMilliseconds(16));
+						await Task.Delay(TimeSpan.FromMilliseconds(millisecondTickIncrement));
 					}
 				}
 			}
@@ -79,12 +87,13 @@ static class AnimationExtensions
 			public void Dispose()
 			{
 				cancellationTokenSource?.Dispose();
+				cancellationTokenSource = null;
 			}
 		}
 
 		class TestAnimationManager : IAnimationManager
 		{
-			readonly List<Microsoft.Maui.Animations.Animation> animations = new();
+			readonly List<Microsoft.Maui.Animations.Animation> animations = [];
 
 			public TestAnimationManager(ITicker ticker)
 			{
@@ -121,7 +130,7 @@ static class AnimationExtensions
 				var animations = this.animations.ToList();
 				animations.ForEach(AnimationTick);
 
-				if (!this.animations.Any())
+				if (this.animations.Count <= 0)
 				{
 					Ticker.Stop();
 				}
@@ -135,7 +144,7 @@ static class AnimationExtensions
 						return;
 					}
 
-					animation.Tick(16);
+					animation.Tick(millisecondTickIncrement);
 					if (animation.HasFinished)
 					{
 						this.animations.Remove(animation);

@@ -4,9 +4,9 @@
     <TargetFrameworks>$(NetVersion);$(NetVersion)-android;$(NetVersion)-ios;$(NetVersion)-maccatalyst</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);$(NetVersion)-windows10.0.19041.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">$(TargetFrameworks);$(NetVersion)-tizen</TargetFrameworks>
-    <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsAotCompatible>true</IsAotCompatible>
 
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">11.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">13.1</SupportedOSPlatformVersion>
@@ -49,14 +49,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <MauiImage Include="Resources\Images\fullscreen.svg" Pack="True" PackagePath="buildTransitive\Images\" />
-  </ItemGroup>
-  
-  <ItemGroup>
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true"/>
     <None Include="ReadMe.txt" pack="true" PackagePath="."/>
-    <None Include="Resources\Images\fullscreen.svg" Pack="True" PackagePath="buildTransitive\Images\" />
-    <None Include="CommunityToolkit.Maui.MediaElement.targets" Pack="True" PackagePath="buildTransitive\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -67,11 +61,11 @@
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <PackageReference Include="Xam.Plugins.Android.ExoPlayer" Version="[2.19.1,)"/>
     <PackageReference Include="Xam.Plugins.Android.ExoPlayer.Transformer" Version="[2.19.1,)"/>
+    <PackageReference Include="Xam.Plugins.Android.ExoPlayer.MediaSession" Version="[2.19.1,)"/>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiPackageVersion)"/>
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiPackageVersion)"/>
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,4 @@
-﻿using System.Collections.Frozen;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
@@ -12,15 +11,15 @@ public partial class SelectedItemEventArgsConverterViewModel : BaseViewModel
 	[ObservableProperty]
 	string labelText = "This label will display the selected item";
 
-	public IReadOnlyList<string> StringItemSource { get; } = new[]
-	{
+	public IReadOnlyList<string> StringItemSource { get; } =
+	[
 		"Item 0",
 		"Item 1",
 		"Item 2",
 		"Item 3",
 		"Item 4",
-		"Item 5",
-	};
+		"Item 5"
+	];
 
 	[RelayCommand]
 	void HandleItemSelected(string text)

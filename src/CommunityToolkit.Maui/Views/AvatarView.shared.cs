@@ -364,6 +364,8 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 #endif
 			double imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
 			double imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
+			avatarImage.WidthRequest = imageWidth;
+			avatarImage.HeightRequest = imageHeight;
 
 			if (!OperatingSystem.IsIOS() && !OperatingSystem.IsMacCatalyst() && !OperatingSystem.IsMacOS())
 			{
@@ -381,6 +383,7 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 				Microsoft.Maui.Controls.Shapes.Path path => path.Clip,
 				Polygon polygon => polygon.Clip,
 				Rectangle rectangle => rectangle.Clip,
+				RoundRectangle roundRectangle => roundRectangle.Clip,
 				_ => avatarImageClipGeometry
 			};
 		}

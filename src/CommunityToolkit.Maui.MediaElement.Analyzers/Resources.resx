@@ -16,7 +16,7 @@
     <value>`.UseMauiCommunityToolkitMediaElement()` must be chained to `.UseMauiApp&lt;T&gt;()`</value>
   </data>
   <data name="InitializationErrorMessage" xml:space="preserve">
-    <value>`.UseMauiCommunityToolkitMediaElement()` is required to initalize .NET MAUI Community Toolkit MediaElement</value>
+    <value>`.UseMauiCommunityToolkitMediaElement()` is required to initalize .NET MAUI Community Toolkit MediaElement.</value>
   </data>
   <data name="InitializationErrorTitle" xml:space="preserve">
     <value>`.UseMauiCommunityToolkitMediaElement()` Not Found on MauiAppBuilder</value>

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(NetVersion)-ios;$(NetVersion)-android;$(NetVersion)-maccatalyst</TargetFrameworks>
@@ -33,6 +33,16 @@
     <!--<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>-->
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' 
+                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'tizen'
+                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'android'
+                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
+    <!-- Ahead-of-time compilation is not yet supported net8.0-tizen -->
+    <!-- Cross-OS native compilation is not supported net8.0-android -->
+    <!-- Only iOS + MacCatalyst support AOT in .NET 8 -->
+    <PublishAot>true</PublishAot>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- App Icon -->
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
@@ -42,7 +52,6 @@
 
     <!-- Images -->
     <MauiImage Include="Resources\Images\*" />
-    <MauiImage Update="Resources\Images\splash.svg" BaseSize="128,128" Color="#512BD4" Resize="false" />
 
     <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
@@ -52,11 +61,10 @@
     <!-- Custom Fonts -->
     <MauiFont Include="Resources\Fonts\*" />
 
-    <PackageReference Include="Microsoft.Maui.Controls" Version="[$(MauiPackageVersion),)"/>
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="[$(MauiPackageVersion),)"/>
-    <PackageReference Include="CommunityToolkit.Maui.Markup" Version="4.0.0" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="*"/>
+    <PackageReference Include="CommunityToolkit.Maui.Markup" Version="4.1.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="8.3.0" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="8.8.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
   </ItemGroup>
 
@@ -74,9 +82,14 @@
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Analyzers\CommunityToolkit.Maui.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Analyzers.CodeFixes\CommunityToolkit.Maui.Analyzers.CodeFixes.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.MediaElement\CommunityToolkit.Maui.MediaElement.csproj" />
+    <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Camera\CommunityToolkit.Maui.Camera.csproj" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Maps\CommunityToolkit.Maui.Maps.csproj" />
   </ItemGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='windows' and $(Configuration) == 'Release'">
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+  </PropertyGroup>
 
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='android'">
     <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>

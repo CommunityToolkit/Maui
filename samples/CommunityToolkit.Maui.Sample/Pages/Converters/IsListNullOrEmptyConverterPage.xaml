@@ -33,6 +33,7 @@
 
             <Label
                 Text="{Binding StringItemSource, Converter={StaticResource IsListNullOrEmptyConverter}}"
+                AutomationProperties.IsInAccessibleTree="{Binding StringItemSource, Converter={StaticResource IsListNullOrEmptyConverter}}"
                 FontAttributes="Bold"
                 TextColor="Red" />
 

@@ -70,13 +70,13 @@ public class DrawingLineTests : BaseHandlerTest
 		drawingLine.Granularity.Should().Be(expectedValue);
 	}
 
-	[Fact(Timeout = (int)TestDuration.Short)]
+	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task GetImageStream_CancellationTokenExpired()
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
 		// Ensure CancellationToken Expired
-		await Task.Delay(100, CancellationToken.None);
+		await Task.Delay(TimeSpan.FromSeconds(1), CancellationToken.None);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await drawingLine.GetImageStream(10, 10, Colors.Blue.AsPaint(), cts.Token));
 	}
@@ -115,7 +115,7 @@ public class DrawingLineTests : BaseHandlerTest
 			LineWidth = DrawingViewDefaults.LineWidth,
 			ShouldSmoothPathWhenDrawn = DrawingViewDefaults.ShouldSmoothPathWhenDrawn,
 			Granularity = DrawingViewDefaults.MinimumGranularity,
-			Points = new ObservableCollection<PointF>()
+			Points = []
 		};
 
 		drawingLine.Should().BeEquivalentTo(expectedDefaultValue);

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.UnitTests.Mocks;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.UnitTests.Mocks;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
@@ -12,13 +13,13 @@ public abstract class BaseHandlerTest : BaseTest
 
 	protected IServiceProvider ServiceProvider { get; }
 
-	protected static TElementHandler CreateElementHandler<TElementHandler>(Microsoft.Maui.IElement view, bool hasMauiContext = true)
+	protected static TElementHandler CreateElementHandler<TElementHandler>(IElement view, bool doesRequireMauiContext = true)
 		where TElementHandler : IElementHandler, new()
 	{
 		var mockElementHandler = new TElementHandler();
 		mockElementHandler.SetVirtualView(view);
 
-		if (hasMauiContext)
+		if (doesRequireMauiContext)
 		{
 			mockElementHandler.SetMauiContext(Application.Current?.Handler?.MauiContext ?? throw new NullReferenceException());
 		}
@@ -26,13 +27,13 @@ public abstract class BaseHandlerTest : BaseTest
 		return mockElementHandler;
 	}
 
-	protected static TViewHandler CreateViewHandler<TViewHandler>(IView view, bool hasMauiContext = true)
+	protected static TViewHandler CreateViewHandler<TViewHandler>(IView view, bool doesRequireMauiContext = true)
 		where TViewHandler : IViewHandler, new()
 	{
 		var mockViewHandler = new TViewHandler();
 		mockViewHandler.SetVirtualView(view);
 
-		if (hasMauiContext)
+		if (doesRequireMauiContext)
 		{
 			mockViewHandler.SetMauiContext(Application.Current?.Handler?.MauiContext ?? throw new NullReferenceException());
 		}
@@ -46,10 +47,14 @@ public abstract class BaseHandlerTest : BaseTest
 								.UseMauiCommunityToolkit()
 								.UseMauiApp<MockApplication>();
 
+		appBuilder.Services.AddSingleton<ICameraProvider, MockCameraProvider>();
+
 		var mauiApp = appBuilder.Build();
 
 		var application = mauiApp.Services.GetRequiredService<IApplication>();
 		serviceProvider = mauiApp.Services;
+
+		IPlatformApplication.Current = (IPlatformApplication)application;
 
 		application.Handler = new ApplicationHandlerStub();
 		application.Handler.SetMauiContext(new HandlersContextStub(mauiApp.Services));

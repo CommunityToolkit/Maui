@@ -1,4 +1,3 @@
-using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Core.Extensions;
 
@@ -19,7 +18,7 @@ public class AlertView : UIView
 	/// <summary>
 	/// PopupView Children
 	/// </summary>
-	public FrozenSet<UIView> Children => children.ToFrozenSet();
+	public IReadOnlyList<UIView> Children => children;
 
 	/// <summary>
 	/// <see cref="UIView"/> on which Alert will appear. When null, <see cref="AlertView"/> will appear at bottom of screen.
@@ -68,7 +67,7 @@ public class AlertView : UIView
 		}
 		else
 		{
-			this.SafeBottomAnchor().ConstraintEqualTo(AnchorView.SafeBottomAnchor(), -defaultSpacing).Active = true;
+			this.SafeBottomAnchor().ConstraintEqualTo(AnchorView.SafeTopAnchor(), -defaultSpacing).Active = true;
 		}
 
 		this.SafeLeadingAnchor().ConstraintGreaterThanOrEqualTo(ParentView.SafeLeadingAnchor(), defaultSpacing).Active = true;
@@ -84,7 +83,7 @@ public class AlertView : UIView
 	[MemberNotNull(nameof(Container))]
 	void Initialize()
 	{
-		Container = new UIStackView()
+		Container = new UIStackView
 		{
 			Alignment = UIStackViewAlignment.Fill,
 			Distribution = UIStackViewDistribution.EqualSpacing,

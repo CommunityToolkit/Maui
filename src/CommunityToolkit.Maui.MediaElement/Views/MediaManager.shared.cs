@@ -67,6 +67,15 @@ public partial class MediaManager
 #endif
 
 	/// <summary>
+	/// A helper method to determine if two floating-point numbers are equal.
+	/// </summary>
+	/// <param name="number1"></param>
+	/// <param name="number2"></param>
+	/// <param name="tolerance"></param>
+	/// <returns></returns>
+	public static bool AreFloatingPointNumbersEqual(in double number1, in double number2, double tolerance = 0.01) => Math.Abs(number1 - number2) > tolerance;
+
+	/// <summary>
 	/// Invokes the play operation on the platform element.
 	/// </summary>
 	public void Play()
@@ -125,7 +134,7 @@ public partial class MediaManager
 	}
 
 	/// <summary>
-	/// Update whether of not the screen should stay on while media is being played.
+	/// Update whether the screen should stay on while media is being played.
 	/// </summary>
 	public void UpdateShouldKeepScreenOn()
 	{
@@ -133,7 +142,7 @@ public partial class MediaManager
 	}
 
 	/// <summary>
-	/// Update whether or not the audio should be muted.
+	/// Update whether the audio should be muted.
 	/// </summary>
 	public void UpdateShouldMute()
 	{
@@ -150,7 +159,7 @@ public partial class MediaManager
 	}
 
 	/// <summary>
-	/// Update whether or not to show the platform playback controls.
+	/// Update whether to show the platform playback controls.
 	/// </summary>
 	public void UpdateShouldShowPlaybackControls()
 	{
@@ -240,8 +249,6 @@ public partial class MediaManager
 	/// Invokes the platform functionality to update the media playback volume.
 	/// </summary>
 	protected virtual partial void PlatformUpdateVolume();
-
-	static bool AreFloatingPointNumbersEqual(in double number1, in double number2, double tolerance = 0.01) => Math.Abs(number1 - number2) > tolerance;
 }
 
 #if !(WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN)
