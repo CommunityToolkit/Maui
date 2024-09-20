@@ -563,6 +563,30 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
+	public void ViewStructure_Spacing()
+	{
+		RatingView ratingView = new();
+		HorizontalStackLayout rvControl = ratingView.Control!;
+		_ = rvControl.Spacing.Should().Be(RatingViewDefaults.Spacing);
+	}
+
+	[Fact]
+	public void ViewStructure_ItemPadding()
+	{
+		const double expectedLeftPadding = 7;
+		const double expectedTopPadding = 3;
+		const double expectedRightPadding = 3;
+		const double expectedBottomPadding = 7;
+		Thickness expectedItemPadding = new(expectedLeftPadding, expectedTopPadding, expectedRightPadding, expectedBottomPadding);
+		RatingView ratingView = new()
+		{
+			ItemPadding = expectedItemPadding,
+		};
+		Border firstItem = (Border)ratingView.Control!.Children[0];
+		_ = firstItem.Padding.Should().Be(expectedItemPadding);
+	}
+
+	[Fact]
 	public void ViewStructure_Control_IsHorizontalStackLayout()
 	{
 		RatingView ratingView = new();
@@ -599,6 +623,17 @@ public class RatingViewTests : BaseHandlerTest
 		Border child = (Border)ratingView.Control!.Children[0];
 		_ = child.Content.Should().NotBeNull();
 		_ = child.Content!.GetVisualTreeDescendants()[0].Should().BeOfType<Microsoft.Maui.Controls.Shapes.Path>();
+	}
+
+	[Fact]
+	public void ViewStructure_ItemChild_Path_Star()
+	{
+		RatingView ratingView = new();
+		_ = ratingView.Control!.Children[0].Should().BeOfType<Border>();
+		Border child = (Border)ratingView.Control!.Children[0];
+		_ = child.Content.Should().NotBeNull();
+		Microsoft.Maui.Controls.Shapes.Path shape = (Microsoft.Maui.Controls.Shapes.Path)(child.Content!.GetVisualTreeDescendants()[0]);
+		shape.GetPath().Should().Be(Core.Primitives.RatingViewShape.Star.PathData);
 	}
 
 	[Fact]

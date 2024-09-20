@@ -483,6 +483,7 @@ public class RatingView : TemplatedView, IRatingView
 	/// <param name="maximum">Maximum position to add a child</param>
 	void AddChildrenToControl(int minimum, int maximum)
 	{
+		Control!.Spacing = Spacing;
 		string shape = GetShapePathData(Shape);
 		for (int i = minimum; i < maximum; i++)
 		{
@@ -494,7 +495,7 @@ public class RatingView : TemplatedView, IRatingView
 				child.GestureRecognizers.Add(tapGestureRecognizer);
 			}
 
-			Control?.Children.Add(child);
+			Control!.Children.Add(child);
 		}
 
 		UpdateRatingDraw();
