@@ -251,6 +251,19 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 								Shape = RatingViewShape.Custom,
 								ShapeBorderThickness = 1,
 							}.Row(Row.Custom).Column(Column.Result).SemanticDescription("A RatingView showing the 'Custom' shape and passing in the required custom shape path."),
+							new Label { Text = "Custom", VerticalOptions = LayoutOptions.Center }.Row(Row.Custom2).Column(Column.Input),
+							new RatingView
+							{
+								CustomShape = "M23.07 8h2.89l-6.015 5.957a5.621 5.621 0 01-7.89 0L6.035 8H8.93l4.57 4.523a3.556 3.556 0 004.996 0L23.07 8zM8.895 24.563H6l6.055-5.993a5.621 5.621 0 017.89 0L26 24.562h-2.895L18.5 20a3.556 3.556 0 00-4.996 0l-4.61 4.563z",
+								EmptyBackgroundColor = Colors.Red,
+								FilledBackgroundColor = Colors.White,
+								ItemShapeSize = 40,
+								MaximumRating = 5,
+								Rating = 5,
+								Shape = RatingViewShape.Custom,
+								ShapeBorderColor = Colors.White,
+								ShapeBorderThickness = 1,
+							}.Row(Row.Custom).Column(Column.Result).SemanticDescription("A RatingView showing the 'Custom' shape and passing in the required custom shape path."),
 						}
 					},
 
@@ -609,7 +622,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 	enum Row
 	{
-		Star, Circle, Heart, Like, Dislike, Custom
+		Star, Circle, Heart, Like, Dislike, Custom, Custom2
 	}
 
 	static Line GetSeparator()
