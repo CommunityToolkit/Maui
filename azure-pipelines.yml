@@ -8,7 +8,7 @@ variables:
   NugetPackageVersionMaps: '$(CurrentSemanticVersion)'
   TOOLKIT_NET_VERSION: '8.0.303'
   LATEST_NET_VERSION: '8.0.x'
-  TFM_NET_VERSION: $(TFM_NET_VERSION)
+  TFM_NET_VERSION: 'net8.0'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
