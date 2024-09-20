@@ -1,15 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net7.0-android;net7.0-ios;net7.0-maccatalyst</TargetFrameworks>
-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net7.0-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks>$(NetVersion)-ios;$(NetVersion)-android;$(NetVersion)-maccatalyst</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);$(NetVersion)-windows10.0.19041.0</TargetFrameworks>
     <!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
-    <!-- <TargetFrameworks>$(TargetFrameworks);net7.0-tizen</TargetFrameworks> -->
+    <!-- <TargetFrameworks>$(TargetFrameworks);$(NetVersion)-tizen</TargetFrameworks> -->
     <OutputType>Exe</OutputType>
     <RootNamespace>CommunityToolkit.Maui.DeviceTests</RootNamespace>
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
-    <ImplicitUsings>enable</ImplicitUsings>
 
     <!-- Display name -->
     <ApplicationTitle>CommunityToolkit.Maui.DeviceTests</ApplicationTitle>
@@ -50,15 +49,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
-    <PackageReference Include="DeviceRunners.VisualRunners.Maui" Version="0.1.0-preview.1" />
-    <PackageReference Include="DeviceRunners.VisualRunners.Xunit" Version="0.1.0-preview.1" />
-    <PackageReference Include="DeviceRunners.XHarness.Maui" Version="0.1.0-preview.1" />
-    <PackageReference Include="DeviceRunners.XHarness.Xunit" Version="0.1.0-preview.1" />
-    <PackageReference Include="DeviceRunners.UITesting.Maui" Version="0.1.0-preview.1" />
-    <PackageReference Include="DeviceRunners.UITesting.Xunit" Version="0.1.0-preview.1" />
-    <PackageReference Include="xunit" Version="2.5.0-pre.44" />
-    <PackageReference Include="xunit.runner.utility" Version="2.5.0-pre.44" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+    <PackageReference Include="DeviceRunners.VisualRunners.Maui" Version="0.1.0-preview.2" />
+    <PackageReference Include="DeviceRunners.VisualRunners.Xunit" Version="0.1.0-preview.2" />
+    <PackageReference Include="DeviceRunners.XHarness.Maui" Version="0.1.0-preview.2" />
+    <PackageReference Include="DeviceRunners.XHarness.Xunit" Version="0.1.0-preview.2" />
+    <PackageReference Include="DeviceRunners.UITesting.Maui" Version="0.1.0-preview.2" />
+    <PackageReference Include="DeviceRunners.UITesting.Xunit" Version="0.1.0-preview.2" />
+    <PackageReference Include="xunit" Version="2.9.0" />
+    <PackageReference Include="xunit.runner.utility" Version="2.9.0" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiPackageVersion)" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>

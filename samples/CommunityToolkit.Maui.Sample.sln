@@ -53,6 +53,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Benchmarks", "Benchmarks", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Analyzers.Benchmarks.csproj", "..\src\CommunityToolkit.Maui.Analyzers.Benchmarks\CommunityToolkit.Maui.Analyzers.Benchmarks.csproj", "{B80F59B7-276C-4A55-A8DD-54587C8BC3D2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.DeviceTests", "..\src\CommunityToolkit.Maui.DeviceTests\CommunityToolkit.Maui.DeviceTests\CommunityToolkit.Maui.DeviceTests.csproj", "{3DFFAB0A-11BF-4E61-9425-5A9F724F970F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -131,6 +133,10 @@ Global
 		{B80F59B7-276C-4A55-A8DD-54587C8BC3D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B80F59B7-276C-4A55-A8DD-54587C8BC3D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B80F59B7-276C-4A55-A8DD-54587C8BC3D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3DFFAB0A-11BF-4E61-9425-5A9F724F970F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DFFAB0A-11BF-4E61-9425-5A9F724F970F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DFFAB0A-11BF-4E61-9425-5A9F724F970F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DFFAB0A-11BF-4E61-9425-5A9F724F970F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -148,6 +154,7 @@ Global
 		{372D6A40-A4E0-434A-A463-C001441C68EB} = {9BFC4026-BC8F-43E2-BAA9-5BC2D764D37D}
 		{02C5B93A-B8D6-421D-B0EA-D0CC41A00F0B} = {9BFC4026-BC8F-43E2-BAA9-5BC2D764D37D}
 		{B80F59B7-276C-4A55-A8DD-54587C8BC3D2} = {ED5A9C0B-D270-442D-BABE-F4FF622926C8}
+		{3DFFAB0A-11BF-4E61-9425-5A9F724F970F} = {9F7D54C0-EA17-409A-804F-B2E8D7F4A7F3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1E9E61C1-5CB7-4C8E-87BA-6C1D38238679}
