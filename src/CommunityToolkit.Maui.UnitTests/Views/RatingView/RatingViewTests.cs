@@ -469,18 +469,12 @@ public class RatingViewTests : BaseHandlerTest
 	{
 		Color shapeBorderColor = Colors.Snow;
 		Brush brush = new SolidColorBrush(shapeBorderColor);
-		const double rating = 1.5;
-		const byte maximumRating = 7;
-		RatingView ratingView = new()
-		{
-			MaximumRating = maximumRating,
-			Rating = rating
-		};
+		RatingView ratingView = new();
 		_ = ratingView.ShapeBorderColor.Should().NotBe(shapeBorderColor);
 		ratingView.ShapeBorderColor = shapeBorderColor;
 		_ = ratingView.ShapeBorderColor.Should().Be(shapeBorderColor);
-		Microsoft.Maui.Controls.Shapes.Path firstFilledRatingItem = (Microsoft.Maui.Controls.Shapes.Path)((Border)ratingView.Control!.Children[0]).Content!.GetVisualTreeDescendants()[0];
-		_ = firstFilledRatingItem.Stroke.Should().BeOfType<SolidColorBrush>().And.Be(brush);
+		Microsoft.Maui.Controls.Shapes.Path firstRatingItem = (Microsoft.Maui.Controls.Shapes.Path)((Border)ratingView.Control!.Children[0]).Content!.GetVisualTreeDescendants()[0];
+		_ = firstRatingItem.Stroke.Should().BeOfType<SolidColorBrush>().And.Be(brush);
 	}
 
 	[Fact]
