@@ -224,7 +224,7 @@ jobs:
       - task: CmdLine@2
         displayName: 'Install Microsoft.DotNet.XHarness.CLI'
         inputs:
-          script:  dotnet tool install Microsoft.DotNet.XHarness.CLI --global --version "8.0.0-prerelease*" --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json
+          script:  dotnet tool install Microsoft.DotNet.XHarness.CLI --global --version "*-*" --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json
 
       # Print Information on the .NET SDK Used By the CI Build Host
       # These logs are useful information when debugging CI Builds
