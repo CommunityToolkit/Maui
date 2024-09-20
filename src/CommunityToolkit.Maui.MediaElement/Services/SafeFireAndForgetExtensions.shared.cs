@@ -1,12 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace CommunityToolkit.Maui.Media.Services;
+﻿namespace CommunityToolkit.Maui.Media.Services;
 
 /// <summary>
 /// Extension methods for System.Threading.Tasks.Task and System.Threading.Tasks.ValueTask
 /// </summary> 
-public static partial class SafeFireAndForgetExtensions
+static partial class SafeFireAndForgetExtensions
 {
 	/// <summary>
 	/// Safely execute the ValueTask without waiting for it to complete before moving to the next line of code; commonly known as "Fire And Forget". Inspired by John Thiriet's blog post, "Removing Async Void": https://johnthiriet.com/removing-async-void/.

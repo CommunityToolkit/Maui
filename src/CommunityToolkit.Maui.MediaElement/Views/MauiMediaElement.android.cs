@@ -15,11 +15,12 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiMediaElement : CoordinatorLayout
 {
+	readonly RelativeLayout relativeLayout;
+	
 	PlayerView playerView;
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
 	bool isFullScreen;
-	readonly RelativeLayout relativeLayout;
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -52,7 +53,8 @@ public class MauiMediaElement : CoordinatorLayout
 
 		AddView(relativeLayout);
 	}
-	public void UpdatePlayerView(PlayerView playerView)
+	
+	public void SetPlayerView(PlayerView playerView)
     {
 		if(playerView is null)
 		{
@@ -65,6 +67,7 @@ public class MauiMediaElement : CoordinatorLayout
         AddView(relativeLayout);
 		playerView.FullscreenButtonClick += OnFullscreenButtonClick;
     }
+	
     public override void OnDetachedFromWindow()
 	{
 		if (isFullScreen)
@@ -117,7 +120,7 @@ public class MauiMediaElement : CoordinatorLayout
 		// Ensure there is a player view
 		if (playerView is null)
 		{
-			throw new InvalidOperationException("PlayerView cannot be null when the FullScreen button is tapped");
+			throw new InvalidOperationException("UpdatedPlayerView cannot be null when the FullScreen button is tapped");
 		}
 		var layout = CurrentPlatformContext.CurrentWindow.DecorView as ViewGroup;
 		// `p0` is the boolean value of isFullScreen being passed into the method. 

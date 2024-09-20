@@ -23,46 +23,43 @@ class MediaControlsService : MediaSessionService
 	bool isDisposed;
 	readonly SafeHandle safeHandle = new SafeFileHandle(IntPtr.Zero, true);
 
-    public NotificationCompat.Builder? Notification;
-    public MediaSession? Session;
+	public NotificationCompat.Builder? Notification;
+	public MediaSession? Session;
 	public AndroidX.Media3.ExoPlayer.IExoPlayer? Player;
 	PlayerNotificationManager? playerNotificationManager;
 	NotificationManager? notificationManager;
 
 	public PlayerView? PlayerView { get; set; }
 
-    public BoundServiceBinder? Binder = null;
-    public override IBinder? OnBind(Intent? intent)
+	public BoundServiceBinder? Binder = null;
+	
+	public override IBinder? OnBind(Intent? intent)
 	{
 		Binder ??= new BoundServiceBinder(this);
-       
-        return Binder;
-    }
 
-    public override StartCommandResult OnStartCommand([NotNull] Intent? intent, StartCommandFlags flags, int startId)
-	{
-		ArgumentNullException.ThrowIfNull(intent);
-       
-        StartForegroundServices(intent);
-		return StartCommandResult.NotSticky;
+		return Binder;
 	}
 
-	public override void OnCreate()
+	public override StartCommandResult OnStartCommand([NotNull] Intent? intent, StartCommandFlags flags, int startId)
 	{
-		base.OnCreate();	
+		ArgumentNullException.ThrowIfNull(intent);
+
+		StartForegroundServices(intent);
+		return StartCommandResult.NotSticky;
 	}
 
 	public override void OnTaskRemoved(Intent? rootIntent)
 	{
 		base.OnTaskRemoved(rootIntent);
-        if (Player?.PlayWhenReady == true)
-        {
-            Player.Stop();
-        }
-        StopSelf();
-    }
+		if (Player?.PlayWhenReady == true)
+		{
+			Player.Stop();
+		}
+		StopSelf();
+	}
+
 	public override void OnDestroy()
-    {
+	{
 		playerNotificationManager?.SetPlayer(null);
 		notificationManager?.CancelAll();
 		Player?.Pause();
@@ -78,11 +75,17 @@ class MediaControlsService : MediaSessionService
 		notificationManager = null;
 		playerNotificationManager = null;
 		Player = null;
-        Platform.CurrentActivity?.StopService(new Intent(Platform.AppContext, typeof(MediaControlsService)));
-        base.OnDestroy();
-    }
+		Platform.CurrentActivity?.StopService(new Intent(Platform.AppContext, typeof(MediaControlsService)));
+		base.OnDestroy();
+	}
+	
+	public override AndroidX.Media3.Session.MediaSession? OnGetSession(MediaSession.ControllerInfo? p0)
+	{
+		ArgumentNullException.ThrowIfNull(Session);
+		return Session;
+	}
 
-    protected override void Dispose(bool disposing)
+	protected override void Dispose(bool disposing)
 	{
 		if (!isDisposed)
 		{
@@ -94,18 +97,19 @@ class MediaControlsService : MediaSessionService
 		}
 		base.Dispose(disposing);
 	}
-    static void CreateNotificationChannel(NotificationManager notificationMnaManager)
-    {
-        if (OperatingSystem.IsAndroidVersionAtLeast(26))
-        {
-            var channel = new NotificationChannel("1", "notification", NotificationImportance.Low);
-            notificationMnaManager.CreateNotificationChannel(channel);
-        }    
-    }
+
+	static void CreateNotificationChannel(NotificationManager notificationMnaManager)
+	{
+		if (OperatingSystem.IsAndroidVersionAtLeast(26))
+		{
+			var channel = new NotificationChannel("1", "notification", NotificationImportance.Low);
+			notificationMnaManager.CreateNotificationChannel(channel);
+		}
+	}
 
 	[MemberNotNull(nameof(Session))]
-    [MemberNotNull(nameof(Player))]
-    void StartForegroundServices(Intent mediaManagerIntent)
+	[MemberNotNull(nameof(Player))]
+	void StartForegroundServices(Intent mediaManagerIntent)
 	{
 		Player = new ExoPlayerBuilder(Platform.AppContext).Build() ?? throw new InvalidOperationException("Player cannot be null");
 		Player.SetHandleAudioBecomingNoisy(true);
@@ -121,53 +125,56 @@ class MediaControlsService : MediaSessionService
 		notificationManager = GetSystemService(NotificationService) as NotificationManager;
 		Notification = new NotificationCompat.Builder(Platform.AppContext, "1");
 
-		string RandomId = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8];
+		string randomId = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8];
 		var mediaSessionWRandomId = new AndroidX.Media3.Session.MediaSession.Builder(Platform.AppContext, Player);
-		mediaSessionWRandomId.SetId(RandomId);
+		mediaSessionWRandomId.SetId(randomId);
 		Session ??= mediaSessionWRandomId.Build();
 		ArgumentNullException.ThrowIfNull(mediaManagerIntent);
 		ArgumentNullException.ThrowIfNull(Session);
 		ArgumentNullException.ThrowIfNull(Player);
 
 		var style = new MediaStyleNotificationHelper.MediaStyle(Session);
-		
+
 		Notification.SetSmallIcon(Resource.Drawable.media3_notification_small_icon);
 		Notification.SetAutoCancel(false);
 		Notification.SetVisibility(NotificationCompat.VisibilityPublic);
 		if (OperatingSystem.IsAndroidVersionAtLeast(33))
-        {
+		{
 			style.SetShowActionsInCompactView(0, 1, 2, 3, 4);
 		}
 		else
 		{
-			LegacyNotifications();
+			SetLegacyNotifications();
 		}
 		Notification.SetStyle(style);
+		
 		if (OperatingSystem.IsAndroidVersionAtLeast(26))
-        {
-			 ArgumentNullException.ThrowIfNull(notificationManager);
-            CreateNotificationChannel(notificationManager);
-        }
+		{
+			ArgumentNullException.ThrowIfNull(notificationManager);
+			CreateNotificationChannel(notificationManager);
+		}
 
-        if (OperatingSystem.IsAndroidVersionAtLeast(29))
-        {
+		if (OperatingSystem.IsAndroidVersionAtLeast(29))
+		{
 			ArgumentNullException.ThrowIfNull(Notification);
-            StartForeground(1, Notification.Build(), ForegroundService.TypeMediaPlayback);
-            return;
-        }
-
-        if (OperatingSystem.IsAndroidVersionAtLeast(26))
-        {
+			StartForeground(1, Notification.Build(), ForegroundService.TypeMediaPlayback);
+			return;
+		}
+		
+		if (OperatingSystem.IsAndroidVersionAtLeast(26))
+		{
 			ArgumentNullException.ThrowIfNull(Notification);
 			StartForeground(1, Notification.Build());
-        }
-    }
-	void LegacyNotifications()
+			return;
+		}
+	}
+	
+	void SetLegacyNotifications()
 	{
 		ArgumentNullException.ThrowIfNull(Player);
 		ArgumentNullException.ThrowIfNull(Session);
 		playerNotificationManager = new PlayerNotificationManager.Builder(Platform.AppContext, 1, "1").Build();
-		
+
 		ArgumentNullException.ThrowIfNull(playerNotificationManager);
 		playerNotificationManager.SetUseFastForwardAction(true);
 		playerNotificationManager.SetUseFastForwardActionInCompactView(true);
@@ -187,10 +194,5 @@ class MediaControlsService : MediaSessionService
 		playerNotificationManager.SetSmallIcon(Resource.Drawable.media3_notification_small_icon);
 		playerNotificationManager.SetPriority(NotificationCompat.PriorityDefault);
 		playerNotificationManager.SetUseChronometer(true);
-	}
-	public override AndroidX.Media3.Session.MediaSession? OnGetSession(MediaSession.ControllerInfo? p0)
-	{
-		ArgumentNullException.ThrowIfNull(Session);
-		return Session;
 	}
 }
