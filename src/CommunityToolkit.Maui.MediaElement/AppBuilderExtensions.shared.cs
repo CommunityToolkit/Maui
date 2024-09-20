@@ -22,7 +22,6 @@ public static class AppBuilderExtensions
 
 #if ANDROID
 		builder.Services.AddSingleton<Media.Services.MediaControlsService>();
-		builder.Services.AddSingleton<Services.NotificationService>();
 #endif
 		return builder;
 	}

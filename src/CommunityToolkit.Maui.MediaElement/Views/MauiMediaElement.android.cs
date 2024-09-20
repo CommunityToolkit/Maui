@@ -15,7 +15,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiMediaElement : CoordinatorLayout
 {
-	readonly PlayerView playerView;
+	PlayerView playerView;
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
 	bool isFullScreen;
@@ -38,8 +38,6 @@ public class MauiMediaElement : CoordinatorLayout
 	public MauiMediaElement(Context context, PlayerView playerView) : base(context)
 	{
 		this.playerView = playerView;
-
-		playerView.FullscreenButtonClick += OnFullscreenButtonClick;
 		this.playerView.SetBackgroundColor(Android.Graphics.Color.Black);
 
 		var layout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
@@ -54,8 +52,20 @@ public class MauiMediaElement : CoordinatorLayout
 
 		AddView(relativeLayout);
 	}
+	public void UpdatePlayerView(PlayerView playerView)
+    {
+		if(playerView is null)
+		{
+			return;
+        }
 
-	public override void OnDetachedFromWindow()
+		RemoveView(relativeLayout);
+        this.playerView = playerView;
+		relativeLayout.AddView(playerView);
+        AddView(relativeLayout);
+		playerView.FullscreenButtonClick += OnFullscreenButtonClick;
+    }
+    public override void OnDetachedFromWindow()
 	{
 		if (isFullScreen)
 		{

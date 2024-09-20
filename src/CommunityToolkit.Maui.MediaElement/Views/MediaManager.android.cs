@@ -2,16 +2,16 @@
 using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
-using Android.OS;
 using Android.Support.V4.Media.Session;
 using Android.Views;
 using Android.Widget;
-using AndroidX.Core.Content;
+using AndroidX.Core.App;
 using AndroidX.Media3.Common;
 using AndroidX.Media3.Common.Text;
 using AndroidX.Media3.Common.Util;
 using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.UI;
+using CommunityToolkit.Maui.ApplicationModel.Permissions;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Primitives;
@@ -20,7 +20,6 @@ using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 using AudioAttributes = AndroidX.Media3.Common.AudioAttributes;
 using DeviceInfo = AndroidX.Media3.Common.DeviceInfo;
-using SystemClock = Android.OS.SystemClock;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -35,16 +34,15 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	MediaElementState currentState;
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 	static readonly HttpClient client = new();
-	
+
+	Task? checkPermissionsTask;
 	TaskCompletionSource? seekToTaskCompletionSource;
 	CancellationTokenSource checkPermissionSourceToken = new();
 	CancellationTokenSource startServiceSourceToken = new();
 
 	MediaItem.Builder? mediaItem;
-	AndroidX.Media3.Session.MediaSession? session;
-	
-	UIUpdateReceiver? uiUpdateReceiver;
-	NotificationService? notificationService;
+	BoundServiceConnection? connection;
+	public event EventHandler<NotificationEventArgs>? OnPlayerChanged;
 
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
@@ -52,7 +50,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	protected PlayerView? PlayerView { get; set; }
 
 	/// <summary>
-	/// Retrieves bitmap for the given url
+	/// Retrieves defaultArtwork for the given url
 	/// </summary>
 	/// <param name="url"></param>
 	/// <param name="cancellationToken"></param>
@@ -124,7 +122,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// This is part of the <see cref="IPlayerListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
-	public async void OnPlayerStateChanged(bool playWhenReady, int playbackState)
+	public void OnPlayerStateChanged(bool playWhenReady, int playbackState)
 	{
 		if (Player is null || MediaElement.Source is null)
 		{
@@ -161,23 +159,14 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			MediaElement.Duration = TimeSpan.FromMilliseconds(Player.Duration < 0 ? 0 : Player.Duration);
 			MediaElement.Position = TimeSpan.FromMilliseconds(Player.CurrentPosition < 0 ? 0 : Player.CurrentPosition);
-			try
-			{
-				await StartService(startServiceSourceToken.Token);
 		}
-			catch (Exception e)
-			{
-				System.Diagnostics.Trace.TraceError($"[error] {e}, {e.Message}");
-			}
-		}
-		
+
 		if (MediaElement.CurrentState == currentState)
 		{
 			return;
 		}
-		
+
 		currentState = MediaElement.CurrentState;
-		BroadcastUpdate();
 	}
 
 	/// <summary>
@@ -188,16 +177,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	[MemberNotNull(nameof(PlayerView))]
 	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView()
 	{
-		ArgumentNullException.ThrowIfNull(MauiContext.Context);
 		Player = new ExoPlayerBuilder(MauiContext.Context).Build() ?? throw new InvalidOperationException("Player cannot be null");
-		Player.AddListener(this);
-
-		Player.SetHandleAudioBecomingNoisy(true);
-		var audioAttributes = new AudioAttributes.Builder();
-		audioAttributes.SetUsage(C.UsageMedia);
-		audioAttributes.SetContentType(C.DataTypeMedia);
-		Player.SetAudioAttributes(audioAttributes.Build(), true);
-
 		PlayerView = new PlayerView(MauiContext.Context)
 		{
 			Player = Player,
@@ -205,50 +185,24 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			ControllerAutoShow = false,
 			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 		};
-
-		string RandomId = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8];
-		var mediaSessionWRandomId = new AndroidX.Media3.Session.MediaSession.Builder(Platform.AppContext, Player);
-		mediaSessionWRandomId.SetId(RandomId);
-		session ??= mediaSessionWRandomId.Build();
-
-		if (!OperatingSystem.IsAndroidVersionAtLeast(33))
-		{
-			uiUpdateReceiver ??= new UIUpdateReceiver();
-			IntentFilter intentFilter = new(MediaControlsService.ACTION_UPDATE_PLAYER);
-			var flags = ContextCompat.ReceiverNotExported;
-			ContextCompat.RegisterReceiver(Platform.AppContext, uiUpdateReceiver, intentFilter, flags);
-
-			ArgumentNullException.ThrowIfNull(IPlatformApplication.Current);
-			notificationService = IPlatformApplication.Current.Services.GetService<NotificationService>();
-			ArgumentNullException.ThrowIfNull(notificationService);
-			notificationService.NotificationReceived += OnPropertyChanged;
-		}
+		checkPermissionsTask = CheckAndRequestForegroundPermission(checkPermissionSourceToken.Token);
+		StartConnection();
 		return (Player, PlayerView);
 	}
 
-	void OnPropertyChanged(object? sender, NotificationEventArgs e)
+	void StartConnection()
 	{
-		if (Player is null || e.Action is null || e.Sender.Equals(MediaControlsService.ACTION_UPDATE_UI))
+		var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
+		connection = new BoundServiceConnection(this);
+		if (OperatingSystem.IsAndroidVersionAtLeast(26))
 		{
-			return;
+			Android.App.Application.Context.StartForegroundService(intent);
+			Android.App.Application.Context.ApplicationContext?.BindService(intent, connection, Bind.AutoCreate);
 		}
-		var action = e.Action;
-		switch (action)
+		else
 		{
-			case MediaControlsService.ACTION_PLAY:
-				Player.Play();
-				break;
-			case MediaControlsService.ACTION_PAUSE:
-				Player.Pause();
-				break;
-			case MediaControlsService.ACTION_FASTFORWARD:
-				Player.SeekTo(Player.CurrentPosition + 30_000);
-				Player.Play();
-				break;
-			case MediaControlsService.ACTION_REWIND:
-				Player.SeekTo(Player.CurrentPosition - 10_000);
-				Player.Play();
-				break;
+			Android.App.Application.Context.StartService(intent);
+			Android.App.Application.Context.ApplicationContext?.BindService(intent, connection, Bind.AutoCreate);
 		}
 	}
 
@@ -398,7 +352,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			// Here, we don't want to throw an exception
 			// and to keep the execution on the thread that called this method
 			await seekToTaskCompletionSource.Task.WaitAsync(TimeSpan.FromMinutes(2), token).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing | ConfigureAwaitOptions.ContinueOnCapturedContext);
-			
+
 			MediaElement.SeekCompleted();
 		}
 		finally
@@ -428,6 +382,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			return;
 		}
 
+		if (connection is not null && !connection.IsConnected)
+		{
+			return;
+		}
+
 		if (MediaElement.Source is null)
 		{
 			Player.ClearMediaItems();
@@ -439,9 +398,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
-
 		Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
-		
 		if (MediaElement.Source is UriMediaSource uriMediaSource)
 		{
 			var uri = uriMediaSource.Uri;
@@ -481,13 +438,21 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		if (hasSetSource && Player.PlayerError is null)
 		{
 			MediaElement.MediaOpened();
+			if(connection?.Binder?.Service?.Session is null)
+			{
+				return;
+			}
+			ArgumentNullException.ThrowIfNull(connection.Binder.Service.Session);
+			connection.Binder.Service.Session.SessionExtras = mediaItem?.Build()?.ToBundle();
+			var notification = connection.Binder.Service.Notification;
+			ArgumentNullException.ThrowIfNull(notification);
+			NotificationManagerCompat.From(Platform.AppContext).Notify(1, notification.Build());
 		}
 	}
-
+	
 	MediaItem.Builder SetPlayerData(string url)
 	{
 		MediaMetadata.Builder mediaMetaData = new();
-		mediaMetaData.SetAlbumArtist(MediaElement.MetadataArtist);
 		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
 		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
 		mediaMetaData.SetArtworkUri(Android.Net.Uri.Parse(MediaElement.MetadataArtworkUrl));
@@ -497,9 +462,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		mediaItem.SetUri(url);
 		mediaItem.SetMediaId(url);
 		mediaItem.SetMediaMetadata(mediaMetaData.Build());
-		ArgumentNullException.ThrowIfNull(session);
-		session.SessionExtras = mediaItem.Build()?.ToBundle();
-		ArgumentNullException.ThrowIfNull(Player);
 		return mediaItem;
 	}
 
@@ -624,7 +586,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return;
 		}
-		
+
 		Player.RepeatMode = MediaElement.ShouldLoopPlayback ? RepeatModeUtil.RepeatToggleModeOne : RepeatModeUtil.RepeatToggleModeNone;
 	}
 
@@ -634,17 +596,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		if (disposing)
 		{
-			if (notificationService is not null)
-			{
-				notificationService.NotificationReceived -= OnPropertyChanged;
-			}
 			StopService();
-			uiUpdateReceiver?.Dispose();
-			uiUpdateReceiver = null;
 			checkPermissionSourceToken.Dispose();
 			startServiceSourceToken.Dispose();
-			session?.Release();
-			session?.Dispose();
 			client.Dispose();
 		}
 	}
@@ -654,63 +608,37 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
 		Android.App.Application.Context.StopService(serviceIntent);
 	}
-	async Task StartService(CancellationToken cancellationToken = default)
+
+	public async Task UpdatePlayer()
+	{
+		ArgumentNullException.ThrowIfNull(connection?.Binder?.Service);
+		Player = connection.Binder.Service.Player;
+		PlayerView = connection.Binder.Service.PlayerView;
+		Player?.AddListener(this);
+		ArgumentNullException.ThrowIfNull(PlayerView);
+		PlayerView.UseController = MediaElement.ShouldShowPlaybackControls;
+		OnPlayerChanged?.Invoke(this, new(PlayerView));
+		await UpdateMetaData(startServiceSourceToken.Token).ConfigureAwait(false);
+	}
+
+	async Task UpdateMetaData(CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(PlayerView);
 		Android.Content.Context? context = Platform.AppContext;
 		Android.Content.Res.Resources? resources = context.Resources;
-
-		var bitmap = await GetBitmapFromUrl(MediaElement.MetadataArtworkUrl, cancellationToken);
-		PlayerView.DefaultArtwork = new BitmapDrawable(resources, bitmap);
-
-		var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
-
-		if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
-		{
-			intent.PutExtra("title", MediaElement.MetadataTitle);
-			intent.PutExtra("artist", MediaElement.MetadataArtist);
-			intent.PutExtra("albumArtUri", MediaElement.MetadataArtworkUrl);
-			intent.PutExtra("position", ((long)MediaElement.Position.TotalSeconds));
-			intent.PutExtra("currentTime", SystemClock.ElapsedRealtime());
-			intent.PutExtra("duration", ((long)MediaElement.Duration.TotalSeconds));
-		}
-
-		ArgumentNullException.ThrowIfNull(session);
-		session.SessionExtras = intent.Extras;
-		intent.PutExtra("token", session.SessionCompatToken);
-		
-		if (OperatingSystem.IsAndroidVersionAtLeast(26))
-		{
-			Android.App.Application.Context.StartForegroundService(intent);
-		}
-		else
-		{
-			Android.App.Application.Context.StartService(intent);
-		}
+		var defaultArtwork = await GetBitmapFromUrl(MediaElement.MetadataArtworkUrl, cancellationToken);
+		PlayerView.DefaultArtwork = new BitmapDrawable(resources, defaultArtwork);
+		PlatformUpdateSource();
 	}
-
-	void BroadcastUpdate()
+	static async Task CheckAndRequestForegroundPermission(CancellationToken cancellationToken = default)
 	{
-		var action = string.Empty;
-		ArgumentNullException.ThrowIfNull(MediaElement);
-		switch (MediaElement.CurrentState)
-		{
-			case MediaElementState.Playing:
-				action = MediaControlsService.ACTION_PLAY;
-				break;
-			case MediaElementState.Paused:
-				action = MediaControlsService.ACTION_PAUSE;
-				break;
-		}
-		if (string.IsNullOrWhiteSpace(action))
+		var status = await Permissions.CheckStatusAsync<AndroidMediaPermissions>().WaitAsync(cancellationToken);
+		if (status is PermissionStatus.Granted)
 		{
 			return;
 		}
-		Intent intent = new(Platform.AppContext, typeof(ReceiveUpdates));
-		intent.PutExtra("ACTION", action);
-		intent.SetAction(action);
-		var appContext = Android.App.Application.Context;
-		appContext.SendBroadcast(intent);
+
+		await Permissions.RequestAsync<AndroidMediaPermissions>().WaitAsync(cancellationToken).ConfigureAwait(false);
 	}
 
 	public void OnVideoSizeChanged(VideoSize? videoSize)
@@ -752,25 +680,4 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnTracksChanged(Tracks? tracks) { }
 
 	#endregion
-}
-
-[BroadcastReceiver(Enabled = true, Exported = false)]
-sealed class UIUpdateReceiver : BroadcastReceiver
-{
-	readonly NotificationService? notificationService;
-	public UIUpdateReceiver()
-	{
-		ArgumentNullException.ThrowIfNull(IPlatformApplication.Current);
-		notificationService = IPlatformApplication.Current.Services.GetService<NotificationService>();
-	}
-	public override void OnReceive(Context? context, Intent? intent)
-	{
-
-		var action = intent?.Action;
-		if (context is null || action is null || notificationService is null)
-		{
-			return;
-		}
-		notificationService.Received(action, MediaControlsService.ACTION_UPDATE_PLAYER);
-	}
 }

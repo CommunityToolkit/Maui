@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Handlers;
 
@@ -24,8 +25,17 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 								Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
 
 		var (_, playerView) = mediaManager.CreatePlatformView();
+		mediaManager.OnPlayerChanged += PlayerViewChanged;
 		return new(Context, playerView);
 	}
+
+	void PlayerViewChanged(object? sender, NotificationEventArgs e)
+	{
+		ArgumentNullException.ThrowIfNull(e.Playerview);
+        PlatformView?.UpdatePlayerView(e.Playerview);
+		ArgumentNullException.ThrowIfNull(mediaManager);
+        mediaManager.OnPlayerChanged -= PlayerViewChanged;
+    }
 
 	protected override void DisconnectHandler(MauiMediaElement platformView)
 	{
