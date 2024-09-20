@@ -298,7 +298,7 @@
                 <Label Text=": IsEnabled" VerticalOptions="Center" />
             </HorizontalStackLayout>
             <toolkit:RatingView
-                IsEnabled="{Binding Source={x:Reference RatingViewIsEnabled}, Path=IsChecked}"
+                IsReadOnly="{Binding Source={x:Reference RatingViewIsEnabled}, Path=IsChecked}"
                 MaximumRating="5"
                 Rating="2.5"
                 SemanticProperties.Description="A RatingView showing the IsEnabled changes." />
@@ -421,7 +421,7 @@
                 EmptyBackgroundColor="Blue"
                 FilledBackgroundColor="Green"
                 HorizontalOptions="Start"
-                IsEnabled="False"
+                IsReadOnly="False"
                 ItemShapeSize="40"
                 MaximumRating="10"
                 Rating="{Binding Source={x:Reference RatingRatingView}, Path=Value}"
@@ -436,7 +436,7 @@
                 EmptyBackgroundColor="Blue"
                 FilledBackgroundColor="Green"
                 HorizontalOptions="Start"
-                IsEnabled="False"
+                IsReadOnly="False"
                 ItemShapeSize="40"
                 MaximumRating="10"
                 Rating="{Binding Source={x:Reference RatingRatingView}, Path=Value}"

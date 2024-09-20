@@ -433,7 +433,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 					},
 					new RatingView { Rating = 2.5, MaximumRating = 5 }
 						.Bind(
-							RatingView.IsEnabledProperty,
+							RatingView.IsReadOnlyProperty,
 							static (CheckBox checkB) => checkB.IsChecked,
 							mode: BindingMode.OneWay,
 							convert: (bool isChecked) => isChecked,
@@ -524,7 +524,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							EmptyBackgroundColor = Colors.Blue,
 							FilledBackgroundColor = Colors.Green,
 							HorizontalOptions = LayoutOptions.Start,
-							IsEnabled = false,
+							IsReadOnly = false,
 							ItemShapeSize = 40,
 							MaximumRating = 10,
 							RatingFill = RatingFillElement.Shape,
@@ -546,7 +546,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							EmptyBackgroundColor = Colors.Blue,
 							FilledBackgroundColor = Colors.Green,
 							HorizontalOptions = LayoutOptions.Start,
-							IsEnabled = false,
+							IsReadOnly = false,
 							ItemShapeSize = 40,
 							MaximumRating = 10,
 							RatingFill = RatingFillElement.Item,

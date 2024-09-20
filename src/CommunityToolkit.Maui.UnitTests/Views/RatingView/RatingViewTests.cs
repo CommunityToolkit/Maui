@@ -59,7 +59,7 @@ public class RatingViewTests : BaseHandlerTest
 		_ = ratingView.Rating.Should().Be(RatingViewDefaults.DefaultRating);
 		_ = ratingView.EmptyBackgroundColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.EmptyBackgroundColor);
 		_ = ratingView.FilledBackgroundColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.FilledBackgroundColor);
-		_ = ratingView.IsEnabled.Should().BeTrue().And.Be(RatingViewDefaults.IsEnabled);
+		_ = ratingView.IsReadOnly.Should().BeTrue().And.Be(RatingViewDefaults.IsReadOnly);
 		_ = ratingView.ItemPadding.Should().BeOfType<Thickness>().And.Be(RatingViewDefaults.ItemPadding);
 		_ = ratingView.ItemShapeSize.Should().Be(RatingViewDefaults.ItemShapeSize);
 		_ = ratingView.MaximumRating.Should().Be(RatingViewDefaults.MaximumRating);
@@ -100,7 +100,7 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void Events_RatingChanged_ShouldBeRaised_MaximumRatingPropertyChanged_LEnabled()
+	public void Events_RatingChanged_ShouldBeRaised_MaximumRatingPropertyChanged_LNotReadOnly()
 	{
 		const double currentRating = 5;
 		const double maximumRating = 4;
@@ -117,7 +117,7 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void Events_RatingChanged_ShouldBeRaised_RatingPropertyChanged_Enabled()
+	public void Events_RatingChanged_ShouldBeRaised_RatingPropertyChanged_NotReadOnly()
 	{
 		const double currentRating = 3.5;
 		RatingView ratingView = new();
@@ -130,7 +130,7 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void Events_RatingChanged_ShouldNotBeRaised_MaximumRatingPropertyChanged_HEnabled()
+	public void Events_RatingChanged_ShouldNotBeRaised_MaximumRatingPropertyChanged_HNotReadOnly()
 	{
 		const double currentRating = 5;
 		const int maximumRating = 7;
@@ -147,14 +147,14 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void Events_RatingChanged_ShouldNotBeRaised_MaximumRatingPropertyChanged_HNotEnabled()
+	public void Events_RatingChanged_ShouldNotBeRaised_MaximumRatingPropertyChanged_HReadOnly()
 	{
 		const double currentRating = 5;
 		const int maximumRating = 7;
 		RatingView ratingView = new()
 		{
 			Rating = currentRating,
-			IsEnabled = false,
+			IsReadOnly = false,
 		};
 
 		bool signaled = false;
@@ -165,14 +165,14 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void Events_RatingChanged_ShouldNotBeRaised_MaximumRatingPropertyChanged_LNotEnabled()
+	public void Events_RatingChanged_ShouldNotBeRaised_MaximumRatingPropertyChanged_LReadOnly()
 	{
 		const double currentRating = 5;
 		const int maximumRating = 4;
 		RatingView ratingView = new()
 		{
 			Rating = currentRating,
-			IsEnabled = false,
+			IsReadOnly = false,
 		};
 
 		bool signaled = false;
@@ -183,12 +183,12 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void Events_RatingChanged_ShouldNotBeRaised_RatingPropertyChanged_NotEnabled()
+	public void Events_RatingChanged_ShouldNotBeRaised_RatingPropertyChanged_ReadOnly()
 	{
 		const double currentRating = 3.5;
 		RatingView ratingView = new()
 		{
-			IsEnabled = false
+			IsReadOnly = false
 		};
 
 		bool signaled = false;
@@ -379,27 +379,27 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void Properties_Change_IsEnabled()
+	public void Properties_Change_IsReadOnly()
 	{
 		RatingView ratingView = new();
-		_ = ratingView.IsEnabled.Should().BeTrue();
-		ratingView.IsEnabled = false;
-		_ = ratingView.IsEnabled.Should().BeFalse();
+		_ = ratingView.IsReadOnly.Should().BeTrue();
+		ratingView.IsReadOnly = false;
+		_ = ratingView.IsReadOnly.Should().BeFalse();
 	}
 
 	[Fact]
-	public void Properties_Change_IsEnabled_GestureRecognizers()
+	public void Properties_Change_IsReadOnly_GestureRecognizers()
 	{
 		RatingView ratingView = new();
-		_ = ratingView.IsEnabled.Should().BeTrue();
+		_ = ratingView.IsReadOnly.Should().BeTrue();
 		for (int i = 0; i < ratingView.Control?.Children.Count; i++)
 		{
 			Border child = (Border)ratingView.Control.Children[i];
 			_ = child.GestureRecognizers.Count.Should().Be(1);
 		}
 
-		ratingView.IsEnabled = false;
-		_ = ratingView.IsEnabled.Should().BeFalse();
+		ratingView.IsReadOnly = false;
+		_ = ratingView.IsReadOnly.Should().BeFalse();
 		for (int i = 0; i < ratingView.Control?.Children.Count; i++)
 		{
 			Border child = (Border)ratingView.Control.Children[i];

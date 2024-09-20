@@ -12,9 +12,13 @@ public static class RatingViewDefaults
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const double DefaultRating = 0.0;
 
-	/// <summary>Default enabled rating view.</summary>
+	/// <summary>Default view element read only.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const bool IsEnabled = true;
+	public const bool IsReadOnly = false;
+
+	/// <summary>Default size of a rating item shape.</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public const double ItemShapeSize = 20.0;
 
 	/// <summary>Default maximum value for the rating.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -28,10 +32,6 @@ public static class RatingViewDefaults
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const double ShapeBorderThickness = 1.0;
 
-	/// <summary>Default size of a rating item shape.</summary>
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const double ItemShapeSize = 20.0;
-
 	/// <summary>Default spacing between ratings.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const double Spacing = 10.0;
@@ -44,6 +44,10 @@ public static class RatingViewDefaults
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static Color FilledBackgroundColor { get; } = Colors.Yellow;
 
+	/// <summary>Default rating item padding.</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public static Thickness ItemPadding { get; } = new(0);
+
 	/// <summary>Default rating shape.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static RatingViewShape Shape { get; } = RatingViewShape.Star;
@@ -51,8 +55,4 @@ public static class RatingViewDefaults
 	/// <summary>Default border color for a rating shape.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static Color ShapeBorderColor { get; } = Colors.Grey;
-
-	/// <summary>Default rating item padding.</summary>
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static Thickness ItemPadding { get; } = new(0);
 }
