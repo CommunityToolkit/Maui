@@ -14,7 +14,7 @@
     <ApplicationTitle>CommunityToolkit.Maui.DeviceTests</ApplicationTitle>
 
     <!-- App Identifier -->
-    <ApplicationId>com.companyname.communitytoolkit.maui.devicetests</ApplicationId>
+    <ApplicationId>com.microsoft.CommunityToolkit.Maui.DeviceTests</ApplicationId>
     <ApplicationIdGuid>b9372eea-e8b8-45fb-b785-6ffb8eb6c099</ApplicationIdGuid>
 
     <!-- Versions -->
