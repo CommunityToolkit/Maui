@@ -320,7 +320,7 @@ jobs:
         inputs:
           script: |
             dotnet build $(PathToCommunityToolkitDeviceTestCsproj) -r iossimulator-x64 -f $(TFM_NET_VERSION)-ios -c Release
-            xharness apple test --target ios-simulator-64 --app $(PathToCommunityToolkitDeviceTestBin)/Release/$(TFM_NET_VERSION)-ios/iossimulator-x64/CommunityToolkit.Maui.DeviceTests.app --output-directory $(Agent.TempDirectory)'
+            xharness apple test --target ios-simulator-64 --app $(PathToCommunityToolkitDeviceTestBin)/Release/$(TFM_NET_VERSION)-ios/iossimulator-x64/CommunityToolkit.Maui.DeviceTests.app --output-directory $(Agent.TempDirectory)
 
       
       - task: CmdLine@2
@@ -329,7 +329,7 @@ jobs:
         inputs:
           script: |            
             dotnet build $(PathToCommunityToolkitDeviceTestCsproj) -r maccatalyst-x64 -f $(TFM_NET_VERSION)-maccatalyst -c Release
-            xharness apple test --target maccatalyst --app $(PathToCommunityToolkitDeviceTestBin)/Release/$(TFM_NET_VERSION)-maccatalyst/maccatalyst-x64/CommunityToolkit.Maui.DeviceTests.app --output-directory $(Agent.TempDirectory)'
+            xharness apple test --target maccatalyst --app $(PathToCommunityToolkitDeviceTestBin)/Release/$(TFM_NET_VERSION)-maccatalyst/maccatalyst-x64/CommunityToolkit.Maui.DeviceTests.app --output-directory $(Agent.TempDirectory)
 
      # Currently failing: Failed to find compatible device: x86_64
       - task: CmdLine@2
