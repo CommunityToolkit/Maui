@@ -368,7 +368,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		Player.SeekTo(0);
 		Player.Stop();
 		MediaElement.Position = TimeSpan.Zero;
-		StopService();
 	}
 
 	protected virtual partial void PlatformUpdateSource()
@@ -390,56 +389,19 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			Player.ClearMediaItems();
 			MediaElement.Duration = TimeSpan.Zero;
 			MediaElement.CurrentStateChanged(MediaElementState.None);
-			StopService();
 
 			return;
 		}
 
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 		Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
-		
-		switch (MediaElement.Source)
+
+		var item = SetPlayerData();
+		if (item is not null)
 		{
-			case UriMediaSource uriMediaSource:
-				{
-					var uri = uriMediaSource.Uri;
-					if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
-					{
-						var item = SetPlayerData(uri.AbsoluteUri);
-						Player.SetMediaItem(item.Build());
-						Player.Prepare();
-						hasSetSource = true;
-					}
-					break;
-				}
-			case FileMediaSource fileMediaSource:
-				{
-					var filePath = fileMediaSource.Path;
-					if (!string.IsNullOrWhiteSpace(filePath))
-					{
-						var item = SetPlayerData(filePath);
-						Player.SetMediaItem(item.Build());
-						Player.Prepare();
-						hasSetSource = true;
-					}
-					break;
-				}
-			case ResourceMediaSource resourceMediaSource:
-				{
-					var package = PlayerView?.Context?.PackageName ?? "";
-					var path = resourceMediaSource.Path;
-					if (!string.IsNullOrWhiteSpace(path))
-					{
-						var assetFilePath = $"asset://{package}{System.IO.Path.PathSeparator}{path}";
-						var item = SetPlayerData(assetFilePath);
-						Player.SetMediaItem(item.Build());
-						Player.Prepare();
-						hasSetSource = true;
-					}
-					break;
-				}
-			default:
-				throw new NotSupportedException($"{MediaElement.Source.GetType().FullName} is not yet supported for {nameof(MediaElement.Source)}");
+			Player.SetMediaItem(item.Build());
+			Player.Prepare();
+			hasSetSource = true;
 		}
 
 		if (hasSetSource && Player.PlayerError is null)
@@ -449,12 +411,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			{
 				return;
 			}
-			
-			connection.Binder.Service.Session.SessionExtras = mediaItem?.Build()?.ToBundle();
-			
+			connection.Binder.Service.Session.SessionExtras = item?.Build()?.ToBundle() ?? throw new InvalidOperationException($"{nameof(item)} cannot be null");
+			var id = connection.Binder.Service.Session.Id;
+			ArgumentNullException.ThrowIfNull(id);
 			var notification = connection.Binder.Service.Notification ?? throw new InvalidOperationException($"{nameof(connection.Binder.Service.Notification)} in {nameof(MediaControlsService)} cannot be null");
-			
-			NotificationManagerCompat.From(Platform.AppContext).Notify(1, notification.Build());
+			NotificationManagerCompat.From(Platform.AppContext).Notify(id.GetHashCode(), notification.Build());
 		}
 	}
 
@@ -610,10 +571,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	static Bitmap CreateBitmap(int width, int height, Bitmap.Config config) =>
 		OperatingSystem.IsAndroidVersionAtLeast(26) ? Bitmap.CreateBitmap(width, height, config, true) : Bitmap.CreateBitmap(width, height, config);
 
-	static void StopService()
+	void StopService()
 	{
 		var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
 		Android.App.Application.Context.StopService(serviceIntent);
+		ArgumentNullException.ThrowIfNull(connection);
+		Platform.AppContext.UnbindService(connection);
 	}
 
 	async Task UpdateMetaData(CancellationToken cancellationToken = default)
@@ -628,7 +591,51 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	void OnPlayerViewChanged(PlayerViewChangedEventArgs e) => playerChangedEventManager.HandleEvent(this, e, nameof(PlayerViewChanged));
 
-	MediaItem.Builder SetPlayerData(string url)
+	MediaItem.Builder? SetPlayerData()
+	{
+		if (MediaElement.Source is null)
+		{
+			return null;
+		}
+		switch (MediaElement.Source)
+		{
+			case UriMediaSource uriMediaSource:
+				{
+					var uri = uriMediaSource.Uri;
+					if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
+					{
+						return CreateMediaItem(uri.AbsoluteUri);
+					}
+					break;
+				}
+			case FileMediaSource fileMediaSource:
+				{
+					var filePath = fileMediaSource.Path;
+					if (!string.IsNullOrWhiteSpace(filePath))
+					{
+						return CreateMediaItem(filePath);
+					}
+					break;
+				}
+			case ResourceMediaSource resourceMediaSource:
+				{
+					var package = PlayerView?.Context?.PackageName ?? "";
+					var path = resourceMediaSource.Path;
+					if (!string.IsNullOrWhiteSpace(path))
+					{
+						var assetFilePath = $"asset://{package}{System.IO.Path.PathSeparator}{path}";
+						return CreateMediaItem(assetFilePath);
+					}
+					break;
+				}
+			default:
+				throw new NotSupportedException($"{MediaElement.Source.GetType().FullName} is not yet supported for {nameof(MediaElement.Source)}");
+		}
+
+		return mediaItem;
+	}
+
+	MediaItem.Builder? CreateMediaItem(string url)
 	{
 		MediaMetadata.Builder mediaMetaData = new();
 		mediaMetaData.SetArtist(MediaElement.MetadataArtist);

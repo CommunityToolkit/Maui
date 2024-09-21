@@ -51,6 +51,13 @@ class MediaControlsService : MediaSessionService
 	public override void OnTaskRemoved(Intent? rootIntent)
 	{
 		base.OnTaskRemoved(rootIntent);
+		Session?.Release();
+		Session?.Dispose();
+		notificationManager?.CancelAll();
+		notificationManager?.Dispose();
+		playerNotificationManager?.Dispose();
+		notificationManager = null;
+		playerNotificationManager = null;
 		if (Player?.PlayWhenReady == true)
 		{
 			Player.Stop();
@@ -60,22 +67,10 @@ class MediaControlsService : MediaSessionService
 
 	public override void OnDestroy()
 	{
+		StopSelf();
+		StopService(new Intent(Platform.AppContext, typeof(MediaControlsService)));
 		playerNotificationManager?.SetPlayer(null);
 		notificationManager?.CancelAll();
-		Player?.Pause();
-		Session?.Release();
-		Player?.Release();
-
-		Player?.Dispose();
-		notificationManager?.Dispose();
-		playerNotificationManager?.Dispose();
-		Session?.Dispose();
-
-		Session = null;
-		notificationManager = null;
-		playerNotificationManager = null;
-		Player = null;
-		Platform.CurrentActivity?.StopService(new Intent(Platform.AppContext, typeof(MediaControlsService)));
 		base.OnDestroy();
 	}
 	
@@ -98,11 +93,13 @@ class MediaControlsService : MediaSessionService
 		base.Dispose(disposing);
 	}
 
-	static void CreateNotificationChannel(NotificationManager notificationMnaManager)
+	void CreateNotificationChannel(NotificationManager notificationMnaManager)
 	{
 		if (OperatingSystem.IsAndroidVersionAtLeast(26))
 		{
-			var channel = new NotificationChannel("1", "notification", NotificationImportance.Low);
+			var id = Session?.Id;
+			ArgumentNullException.ThrowIfNull(id);
+			var channel = new NotificationChannel(id, id, NotificationImportance.Low);
 			notificationMnaManager.CreateNotificationChannel(channel);
 		}
 	}
@@ -115,6 +112,13 @@ class MediaControlsService : MediaSessionService
 		Player.SetHandleAudioBecomingNoisy(true);
 		Player.SetAudioAttributes(AudioAttributes.Default, true);
 
+		string randomId = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8];
+		var mediaSessionWRandomId = new AndroidX.Media3.Session.MediaSession.Builder(Platform.AppContext, Player);
+		mediaSessionWRandomId.SetId(randomId);
+		Session = mediaSessionWRandomId.Build();
+		ArgumentNullException.ThrowIfNull(mediaManagerIntent);
+		ArgumentNullException.ThrowIfNull(Session);
+
 		PlayerView = new PlayerView(Platform.AppContext)
 		{
 			Player = Player,
@@ -122,19 +126,13 @@ class MediaControlsService : MediaSessionService
 			ControllerAutoShow = false,
 			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 		};
+		var id = Session.Id;
+		ArgumentNullException.ThrowIfNull(id);
 		notificationManager = GetSystemService(NotificationService) as NotificationManager;
-		Notification = new NotificationCompat.Builder(Platform.AppContext, "1");
+		Notification = new NotificationCompat.Builder(Platform.AppContext, id);
 
-		string randomId = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8];
-		var mediaSessionWRandomId = new AndroidX.Media3.Session.MediaSession.Builder(Platform.AppContext, Player);
-		mediaSessionWRandomId.SetId(randomId);
-		Session ??= mediaSessionWRandomId.Build();
-		ArgumentNullException.ThrowIfNull(mediaManagerIntent);
-		ArgumentNullException.ThrowIfNull(Session);
 		ArgumentNullException.ThrowIfNull(Player);
-
 		var style = new MediaStyleNotificationHelper.MediaStyle(Session);
-
 		Notification.SetSmallIcon(Resource.Drawable.media3_notification_small_icon);
 		Notification.SetAutoCancel(false);
 		Notification.SetVisibility(NotificationCompat.VisibilityPublic);
@@ -157,15 +155,14 @@ class MediaControlsService : MediaSessionService
 		if (OperatingSystem.IsAndroidVersionAtLeast(29))
 		{
 			ArgumentNullException.ThrowIfNull(Notification);
-			StartForeground(1, Notification.Build(), ForegroundService.TypeMediaPlayback);
+			StartForeground(id.GetHashCode(), Notification.Build(), ForegroundService.TypeMediaPlayback);
 			return;
 		}
 		
 		if (OperatingSystem.IsAndroidVersionAtLeast(26))
 		{
 			ArgumentNullException.ThrowIfNull(Notification);
-			StartForeground(1, Notification.Build());
-			return;
+			StartForeground(id.GetHashCode(), Notification.Build());
 		}
 	}
 	
@@ -173,7 +170,9 @@ class MediaControlsService : MediaSessionService
 	{
 		ArgumentNullException.ThrowIfNull(Player);
 		ArgumentNullException.ThrowIfNull(Session);
-		playerNotificationManager = new PlayerNotificationManager.Builder(Platform.AppContext, 1, "1").Build();
+		var id = Session.Id;
+		ArgumentNullException.ThrowIfNull(id);
+		playerNotificationManager = new PlayerNotificationManager.Builder(Platform.AppContext, id.GetHashCode(), id).Build();
 
 		ArgumentNullException.ThrowIfNull(playerNotificationManager);
 		playerNotificationManager.SetUseFastForwardAction(true);
