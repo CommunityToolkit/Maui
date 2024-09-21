@@ -2,6 +2,6 @@
 
 ### New Rules
 
-| Rule ID | Severity | Notes                                                          |
-|---------|----------|----------------------------------------------------------------|
-| MCTC001 | Error    | `.UseMauiCommunityToolkitCamera()` Not Found on MauiAppBuilder | 
+Rule ID | Category | Severity | Notes                                               
+--------|----------|----------|-----------------------------------------------------
+MCTC001 | Usage    | Error    | `.UseMauiCommunityToolkitCamera()` Not Found on MauiAppBuilder  
