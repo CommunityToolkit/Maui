@@ -2,6 +2,6 @@
 
 ### New Rules
 
-| Rule ID  | Severity | Notes                                                                |
-|----------|----------|----------------------------------------------------------------------|
-| MCTME001 | Error    | `.UseMauiCommunityToolkitMediaElement()` Not Found on MauiAppBuilder | 
+Rule ID | Category | Severity | Notes
+--------|----------|----------|--------------------
+MCTME001| Usage    | Error    | `.UseMauiCommunityToolkitMediaElement()` Not Found on MauiAppBuilder
