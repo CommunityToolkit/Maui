@@ -114,11 +114,28 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		Player = connection.Binder.Service.Player;
 		PlayerView = connection.Binder.Service.PlayerView ?? throw new InvalidOperationException($"{nameof(connection.Binder.Service.PlayerView)} cannot be null in {nameof(MediaControlsService)}");
 		Player?.AddListener(this);
-		PlayerView.UseController = MediaElement.ShouldShowPlaybackControls;
+		PlayerView.UseController = MediaElement.ShouldShowPlaybackControls;		
 		OnPlayerViewChanged(new(PlayerView));
 		await UpdateMetaData(startServiceSourceToken.Token).ConfigureAwait(false);
 	}
 
+	public void UpdateNotification()
+	{
+		if (connection?.Binder?.Service?.Session?.Id is null)
+		{
+			return;
+		}
+		var item = SetPlayerData();
+		if(item is null)
+		{
+			return;
+		}
+		var id = connection.Binder.Service.Session.Id;
+		ArgumentNullException.ThrowIfNull(id);
+		connection.Binder.Service.Session.SessionExtras = item.Build()?.ToBundle() ?? throw new InvalidOperationException($"{nameof(item)} cannot be null");
+		var notification = connection.Binder.Service.Notification ?? throw new InvalidOperationException($"{nameof(connection.Binder.Service.Notification)} in {nameof(MediaControlsService)} cannot be null");
+		NotificationManagerCompat.From(Platform.AppContext).Notify(id.GetHashCode(), notification.Build());
+	}
 	/// <summary>
 	/// Occurs when ExoPlayer changes the player state.
 	/// </summary>
@@ -165,6 +182,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			MediaElement.Duration = TimeSpan.FromMilliseconds(Player.Duration < 0 ? 0 : Player.Duration);
 			MediaElement.Position = TimeSpan.FromMilliseconds(Player.CurrentPosition < 0 ? 0 : Player.CurrentPosition);
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
+			{
+				UpdateNotification();
+			}
 		}
 
 		currentState = MediaElement.CurrentState;
@@ -411,11 +432,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			{
 				return;
 			}
-			connection.Binder.Service.Session.SessionExtras = item?.Build()?.ToBundle() ?? throw new InvalidOperationException($"{nameof(item)} cannot be null");
-			var id = connection.Binder.Service.Session.Id;
-			ArgumentNullException.ThrowIfNull(id);
-			var notification = connection.Binder.Service.Notification ?? throw new InvalidOperationException($"{nameof(connection.Binder.Service.Notification)} in {nameof(MediaControlsService)} cannot be null");
-			NotificationManagerCompat.From(Platform.AppContext).Notify(id.GetHashCode(), notification.Build());
+			ArgumentNullException.ThrowIfNull(item);
+			UpdateNotification();
 		}
 	}
 

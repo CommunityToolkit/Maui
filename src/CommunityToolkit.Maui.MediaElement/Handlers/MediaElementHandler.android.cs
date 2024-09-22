@@ -41,8 +41,8 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		ArgumentNullException.ThrowIfNull(sender);
 		ArgumentNullException.ThrowIfNull(e.UpdatedPlayerView);
 		
-		var mediaManager = (MediaManager)sender;
-		mediaManager.PlayerViewChanged -= PlayerViewChanged;
+		var currentMediaManager = (MediaManager)sender;
+		currentMediaManager.PlayerViewChanged -= PlayerViewChanged;
 		
 		PlatformView.SetPlayerView(e.UpdatedPlayerView);
 	}
