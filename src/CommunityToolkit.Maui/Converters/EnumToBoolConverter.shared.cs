@@ -14,7 +14,7 @@ public class EnumToBoolConverter : BaseConverterOneWay<Enum, bool, Enum?>
 	/// <summary>
 	///     Enum values, that converts to <c>true</c> (optional)
 	/// </summary>
-	public IList<Enum> TrueValues { get; } = new List<Enum>();
+	public IList<Enum> TrueValues { get; } = [];
 
 	/// <summary>
 	///     Convert an <see cref="Enum" /> to corresponding <see cref="bool" />
