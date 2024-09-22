@@ -2,7 +2,6 @@
 using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
-using Android.Support.V4.Media.Session;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Core.App;
@@ -11,7 +10,6 @@ using AndroidX.Media3.Common.Text;
 using AndroidX.Media3.Common.Util;
 using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.UI;
-using CommunityToolkit.Maui.ApplicationModel.Permissions;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Primitives;
@@ -20,6 +18,7 @@ using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 using AudioAttributes = AndroidX.Media3.Common.AudioAttributes;
 using DeviceInfo = AndroidX.Media3.Common.DeviceInfo;
+using MediaMetadata = AndroidX.Media3.Common.MediaMetadata;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -36,9 +35,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	double? previousSpeed;
 	float volumeBeforeMute = 1;
 
-	MediaElementState currentState;
-
-	Task? checkPermissionsTask;
 	TaskCompletionSource? seekToTaskCompletionSource;
 	CancellationTokenSource checkPermissionSourceToken = new();
 	CancellationTokenSource startServiceSourceToken = new();
@@ -114,7 +110,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		Player = connection.Binder.Service.Player;
 		PlayerView = connection.Binder.Service.PlayerView ?? throw new InvalidOperationException($"{nameof(connection.Binder.Service.PlayerView)} cannot be null in {nameof(MediaControlsService)}");
 		Player?.AddListener(this);
-		PlayerView.UseController = MediaElement.ShouldShowPlaybackControls;		
+		PlayerView.Background = new ColorDrawable(Android.Graphics.Color.Black);
+		PlayerView.UseController = MediaElement.ShouldShowPlaybackControls;
 		OnPlayerViewChanged(new(PlayerView));
 		await UpdateMetaData(startServiceSourceToken.Token).ConfigureAwait(false);
 	}
@@ -130,11 +127,15 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return;
 		}
-		var id = connection.Binder.Service.Session.Id;
-		ArgumentNullException.ThrowIfNull(id);
-		connection.Binder.Service.Session.SessionExtras = item.Build()?.ToBundle() ?? throw new InvalidOperationException($"{nameof(item)} cannot be null");
-		var notification = connection.Binder.Service.Notification ?? throw new InvalidOperationException($"{nameof(connection.Binder.Service.Notification)} in {nameof(MediaControlsService)} cannot be null");
-		NotificationManagerCompat.From(Platform.AppContext).Notify(id.GetHashCode(), notification.Build());
+	
+		if (OperatingSystem.IsAndroidVersionAtLeast(33))
+		{
+			var id = connection.Binder.Service.Session.Id;
+			ArgumentNullException.ThrowIfNull(id);
+			connection.Binder.Service.Session.SessionExtras = item.Build()?.ToBundle() ?? throw new InvalidOperationException($"{nameof(item)} cannot be null");
+			var notification = connection.Binder.Service.Notification ?? throw new InvalidOperationException($"{nameof(connection.Binder.Service.Notification)} in {nameof(MediaControlsService)} cannot be null");
+			NotificationManagerCompat.From(Platform.AppContext).Notify(id.GetHashCode(), notification.Build());
+		}
 	}
 	/// <summary>
 	/// Occurs when ExoPlayer changes the player state.
@@ -153,26 +154,26 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 		var newState = playbackState switch
 		{
-			PlaybackStateCompat.StateFastForwarding
-				or PlaybackStateCompat.StateRewinding
-				or PlaybackStateCompat.StateSkippingToNext
-				or PlaybackStateCompat.StateSkippingToPrevious
-				or PlaybackStateCompat.StateSkippingToQueueItem
-				or PlaybackStateCompat.StatePlaying => playWhenReady
+			PlaybackState.StateFastForwarding
+				or PlaybackState.StateRewinding
+				or PlaybackState.StateSkippingToNext
+				or PlaybackState.StateSkippingToPrevious
+				or PlaybackState.StateSkippingToQueueItem
+				or PlaybackState.StatePlaying => playWhenReady
 					? MediaElementState.Playing
 					: MediaElementState.Paused,
 
-			PlaybackStateCompat.StatePaused => MediaElementState.Paused,
+			PlaybackState.StatePaused => MediaElementState.Paused,
 
-			PlaybackStateCompat.StateConnecting
-				or PlaybackStateCompat.StateBuffering => MediaElementState.Buffering,
+			PlaybackState.StateConnecting
+				or PlaybackState.StateBuffering => MediaElementState.Buffering,
 
-			PlaybackStateCompat.StateNone => MediaElementState.None,
-			PlaybackStateCompat.StateStopped => MediaElement.CurrentState is not MediaElementState.Failed
+			PlaybackState.StateNone => MediaElementState.None,
+			PlaybackState.StateStopped => MediaElement.CurrentState is not MediaElementState.Failed
 				? MediaElementState.Stopped
 				: MediaElementState.Failed,
 
-			PlaybackStateCompat.StateError => MediaElementState.Failed,
+			PlaybackState.StateError => MediaElementState.Failed,
 
 			_ => MediaElementState.None,
 		};
@@ -187,8 +188,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				UpdateNotification();
 			}
 		}
-
-		currentState = MediaElement.CurrentState;
 	}
 
 	/// <summary>
@@ -196,7 +195,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// </summary>
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
 	/// <exception cref="NullReferenceException">Thrown when <see cref="Android.Content.Context"/> is <see langword="null"/> or when the platform view could not be created.</exception>
-	[MemberNotNull(nameof(Player), nameof(PlayerView), nameof(checkPermissionsTask))]
+	[MemberNotNull(nameof(Player), nameof(PlayerView))]
 	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView()
 	{
 		Player = new ExoPlayerBuilder(MauiContext.Context).Build() ?? throw new InvalidOperationException("Player cannot be null");
@@ -207,7 +206,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			ControllerAutoShow = false,
 			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 		};
-		checkPermissionsTask = CheckAndRequestForegroundPermission(checkPermissionSourceToken.Token);
 		StartConnection();
 		return (Player, PlayerView);
 	}
@@ -417,10 +415,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 		Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
 
-		var item = SetPlayerData();
-		if (item is not null)
+		var item = SetPlayerData()?.Build();
+		
+		if (item?.MediaMetadata is not null)
 		{
-			Player.SetMediaItem(item.Build());
+			Player.SetMediaItem(item);
 			Player.Prepare();
 			hasSetSource = true;
 		}
@@ -575,17 +574,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 	}
 
-	static async Task CheckAndRequestForegroundPermission(CancellationToken cancellationToken = default)
-	{
-		var status = await Permissions.CheckStatusAsync<AndroidMediaPermissions>().WaitAsync(cancellationToken);
-		if (status is PermissionStatus.Granted)
-		{
-			return;
-		}
-
-		await Permissions.RequestAsync<AndroidMediaPermissions>().WaitAsync(cancellationToken).ConfigureAwait(false);
-	}
-
 	static Bitmap CreateBitmap(int width, int height, Bitmap.Config config) =>
 		OperatingSystem.IsAndroidVersionAtLeast(26) ? Bitmap.CreateBitmap(width, height, config, true) : Bitmap.CreateBitmap(width, height, config);
 
@@ -701,4 +689,21 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnTracksChanged(Tracks? tracks) { }
 
 	#endregion
+}
+
+static class PlaybackState
+{
+	public const int StateBuffering = 6;
+	public const int StateConnecting = 8;
+	public const int StateFailed = 7;
+	public const int StateFastForwarding = 4;
+	public const int StateNone = 0;
+	public const int StatePaused = 2;
+	public const int StatePlaying = 3;
+	public const int StateRewinding = 5;
+	public const int StateSkippingToNext = 10;
+	public const int StateSkippingToPrevious = 9;
+	public const int StateSkippingToQueueItem = 11;
+	public const int StateStopped = 1;
+	public const int StateError = 7;
 }
