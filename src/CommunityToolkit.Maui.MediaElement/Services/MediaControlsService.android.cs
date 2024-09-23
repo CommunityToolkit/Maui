@@ -17,7 +17,6 @@ namespace CommunityToolkit.Maui.Media.Services;
 class MediaControlsService : Service
 {
 	bool isDisposed;
-	readonly SafeHandle safeHandle = new SafeFileHandle(IntPtr.Zero, true);
 
 	public MediaSession? Session;
 	public AndroidX.Media3.ExoPlayer.IExoPlayer? Player;
@@ -89,10 +88,10 @@ class MediaControlsService : Service
 		}
 	}
 
-	[MemberNotNull(nameof(notification))]
+	[MemberNotNull(nameof(notification), nameof(NotificationManager))]
 	void StartForegroundServices(int id)
 	{
-		NotificationManager ??= GetSystemService(NotificationService) as NotificationManager;
+		NotificationManager ??= GetSystemService(NotificationService) as NotificationManager ?? throw new InvalidOperationException($"{nameof(NotificationManager)} cannot be null");
 		notification ??= new NotificationCompat.Builder(Platform.AppContext, $"{id}");
 		notification.SetSmallIcon(Resource.Drawable.media3_notification_small_icon);
 		notification.SetAutoCancel(false);
@@ -119,7 +118,7 @@ class MediaControlsService : Service
 		}
 	}
 
-	[MemberNotNull(nameof(NotificationManager))]
+	[MemberNotNull(nameof(NotificationManager), nameof(notification))]
 	public void UpdateNotifications(int id)
 	{
 		ArgumentNullException.ThrowIfNull(Player);
