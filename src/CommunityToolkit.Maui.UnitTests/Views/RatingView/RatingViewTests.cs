@@ -557,6 +557,15 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
+	public void Properties_Rating_Validator()
+	{
+		RatingView ratingView = new();
+		_ = RatingView.RatingProperty.ValidateValue(ratingView, -1.0).Should().BeFalse();
+		_ = RatingView.RatingProperty.ValidateValue(ratingView, (double)(RatingViewDefaults.MaximumRatings + 1)).Should().BeFalse();
+		_ = RatingView.RatingProperty.ValidateValue(ratingView, 0.1).Should().BeTrue();
+	}
+
+	[Fact]
 	public void ViewStructure_Control_IsHorizontalStackLayout()
 	{
 		RatingView ratingView = new();

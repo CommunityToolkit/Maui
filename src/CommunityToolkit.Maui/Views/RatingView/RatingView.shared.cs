@@ -38,7 +38,7 @@ public class RatingView : TemplatedView, IRatingView
 	public static readonly BindableProperty RatingFillProperty = BindableProperty.Create(nameof(RatingFill), typeof(RatingFillElement), typeof(RatingView), defaultValue: RatingFillElement.Shape, propertyChanged: OnUpdateRatingDraw);
 
 	/// <summary>The backing store for the <see cref="Rating" /> bindable property.</summary>
-	public static readonly BindableProperty RatingProperty = BindableProperty.Create(nameof(Rating), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.DefaultRating, propertyChanged: OnRatingChanged);
+	public static readonly BindableProperty RatingProperty = BindableProperty.Create(nameof(Rating), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.DefaultRating, validateValue: ratingValidator, propertyChanged: OnRatingChanged);
 
 	/// <summary>The backing store for the <see cref="ShapeBorderColor" /> bindable property.</summary>
 	public static readonly BindableProperty ShapeBorderColorProperty = RatingViewItemElement.ShapeBorderColorProperty;
@@ -127,7 +127,7 @@ public class RatingView : TemplatedView, IRatingView
 	public double Rating
 	{
 		get => (double)GetValue(RatingProperty);
-		set => SetValue(RatingProperty, value);
+		set => SetValue(RatingProperty, Math.Clamp(value, 0.0, (double)RatingViewDefaults.MaximumRatings));
 	}
 
 	/// <summary>Command that is triggered when the value of <see cref="Rating"/> is changed.</summary>
@@ -389,6 +389,16 @@ public class RatingView : TemplatedView, IRatingView
 		return (byte)value is >= 1 and <= RatingViewDefaults.MaximumRatings;
 	}
 
+	/// <summary>Validator for the <see cref="Rating"/>.</summary>
+	/// <remarks>The value must be between 0.00 and <see cref="RatingViewDefaults.MaximumRatings" />.</remarks>
+	/// <param name="bindable">The bindable object.</param>
+	/// <param name="value">Value to validate.</param>
+	/// <returns>True, if the value is within range; Otherwise false.</returns>
+	static bool ratingValidator(BindableObject bindable, object value)
+	{
+		return (double)value is >= 0.0 and <= RatingViewDefaults.MaximumRatings;
+	}
+
 	static void OnIsReadOnlyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		RatingView ratingView = (RatingView)bindable;
@@ -482,8 +492,7 @@ public class RatingView : TemplatedView, IRatingView
 		{
 			Border border = (Border)ratingItems[i];
 			Debug.Assert(border.Content is not null);
-			Shape shape = ((Shape)(border).Content);
-			shape.Fill = emptyColor;
+			((Shape)border.Content).Fill = emptyColor;
 			if (i < fullShapes)
 			{
 				ratingItems[i].BackgroundColor = filledColor; // Fully filled shape
