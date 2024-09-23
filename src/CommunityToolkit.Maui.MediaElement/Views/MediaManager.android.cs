@@ -99,30 +99,30 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		MediaElement.Speed = playbackParameters.Speed;
 	}
+
+	[MemberNotNull(nameof(connection))]
 	void UpdateNotifications()
 	{
-		if (connection?.Binder?.Service is not null)
+		connection = connection ?? throw new InvalidOperationException($"{nameof(connection)} cannot be null");
+		ArgumentNullException.ThrowIfNull(connection.Binder?.Service);
+
+		connection.Binder.Service.Player = Player;
+		connection.Binder.Service.PlayerView = PlayerView;
+		connection.Binder.Service.Session = session;
+		int id = session?.Id?.GetHashCode() ?? 1;
+		if (id <= 0)
 		{
-			
-			connection.Binder.Service.Player = Player;
-			connection.Binder.Service.PlayerView = PlayerView;
-			connection.Binder.Service.Session = session;
-			int id = session?.Id?.GetHashCode() ?? 1;
-			if(id <= 0)
-			{
-				id = 1;
-			}
-			connection.Binder.Service.UpdateNotifications(id);
+			id = 1;
 		}
+		connection.Binder.Service.UpdateNotifications(id);
 	}
+
+	[MemberNotNull(nameof(connection), nameof(PlayerView))]
 	public async Task UpdatePlayer()
 	{
 		ArgumentNullException.ThrowIfNull(connection?.Binder?.Service);
 		ArgumentNullException.ThrowIfNull(PlayerView);
-		ArgumentNullException.ThrowIfNull(Player);
-		ArgumentNullException.ThrowIfNull(session);
-		
-		ArgumentNullException.ThrowIfNull(PlayerView);
+
 		Android.Content.Context? context = Platform.AppContext;
 		Android.Content.Res.Resources? resources = context.Resources;
 		var defaultArtwork = await GetBitmapFromUrl(MediaElement.MetadataArtworkUrl, CancellationToken.None);
@@ -175,8 +175,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaElement.CurrentStateChanged(newState);
 		if (playbackState is readyState)
 		{
-			connection?.Binder?.Service?.NotificationManager?.CancelAll();
-			UpdateNotifications();
 			MediaElement.Duration = TimeSpan.FromMilliseconds(Player.Duration < 0 ? 0 : Player.Duration);
 			MediaElement.Position = TimeSpan.FromMilliseconds(Player.CurrentPosition < 0 ? 0 : Player.CurrentPosition);
 		}
@@ -433,6 +431,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		if (hasSetSource && Player.PlayerError is null)
 		{
 			MediaElement.MediaOpened();
+			UpdateNotifications();
 		}
 	}
 
@@ -632,7 +631,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		return mediaItem;
 	}
 
-	MediaItem.Builder? CreateMediaItem(string url)
+	[MemberNotNull(nameof(mediaItem))]
+	MediaItem.Builder CreateMediaItem(string url)
 	{
 		MediaMetadata.Builder mediaMetaData = new();
 		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
