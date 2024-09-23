@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
@@ -15,6 +14,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string loadHls = "Load HTTP Live Stream (HLS)";
 	const string loadLocalResource = "Load Local Resource";
 	const string resetSource = "Reset Source to null";
+	const string loadMusic = "Load Music";
 
 	public MediaElementPage(MediaElementViewModel viewModel, ILogger<MediaElementPage> logger) : base(viewModel)
 	{
@@ -26,7 +26,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 	void MediaElement_PropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		if (e.PropertyName == MediaElement.DurationProperty.PropertyName)
+		if (e.PropertyName == CommunityToolkit.Maui.Views.MediaElement.DurationProperty.PropertyName)
 		{
 			logger.LogInformation("Duration: {newDuration}", MediaElement.Duration);
 			PositionSlider.Maximum = MediaElement.Duration.TotalSeconds;
@@ -155,7 +155,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	async void ChangeSourceClicked(Object sender, EventArgs e)
 	{
 		var result = await DisplayActionSheet("Choose a source", "Cancel", null,
-			loadOnlineMp4, loadHls, loadLocalResource, resetSource);
+			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadMusic);
 
 		switch (result)
 		{
@@ -203,6 +203,13 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 					MediaElement.Source = MediaSource.FromResource("WindowsVideo.mp4");
 				}
 				return;
+
+			case loadMusic:
+				MediaElement.MetadataTitle = "HAL 9000";
+				MediaElement.MetadataArtist = "HAL 9000 Album";
+				MediaElement.MetadataArtworkUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
+				MediaElement.Source = MediaSource.FromUri("https://github.com/prof3ssorSt3v3/media-sample-files/raw/master/hal-9000.mp3");
+				return;
 		}
 	}
 
@@ -230,7 +237,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	void DisplayPopup(object sender, EventArgs e)
 	{
 		MediaElement.Pause();
-		MediaElement popupMediaElement = new MediaElement
+		var popupMediaElement = new Maui.Views.MediaElement
 		{
 			Source = MediaSource.FromResource("AppleVideo.mp4"),
 			HeightRequest = 600,
@@ -242,12 +249,12 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		{
 			VerticalOptions = LayoutAlignment.Center,
 			HorizontalOptions = LayoutAlignment.Center,
-		};
-		popup.Content = new StackLayout
-		{
-			Children =
+			Content = new StackLayout
 			{
-				popupMediaElement,
+				Children =
+				{
+					popupMediaElement,
+				}
 			}
 		};
 

@@ -1,12 +1,15 @@
+using System.Diagnostics;
 using CommunityToolkit.Maui.Core.Primitives;
-using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Media;
 using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.System.Display;
+using Page = Microsoft.Maui.Controls.Page;
+using ParentWindow = CommunityToolkit.Maui.Extensions.PageExtensions.ParentWindow;
 using WindowsMediaElement = Windows.Media.Playback.MediaPlayer;
 using WinMediaSource = Windows.Media.Core.MediaSource;
 
@@ -157,12 +160,12 @@ partial class MediaManager : IDisposable
 		Player.MediaPlayer.PlaybackRate = MediaElement.Speed;
 
 		// Only trigger once when going to the paused state
-		if (MediaElement.Speed == 0 && previousSpeed > 0)
+		if (AreFloatingPointNumbersEqual(MediaElement.Speed, 0) && previousSpeed > 0)
 		{
-			MediaElement.Pause();
+			Player.MediaPlayer.Pause();
 		}
 		// Only trigger once when we move from the paused state
-		else if (MediaElement.Speed > 0 && previousSpeed == 0)
+		else if (MediaElement.Speed > 0 && AreFloatingPointNumbersEqual(previousSpeed, 0))
 		{
 			MediaElement.Play();
 		}
@@ -181,6 +184,13 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdatePosition()
 	{
+		if (!ParentWindow.Exists)
+		{
+			// Parent window is null, so we can't update the position
+			// This is a workaround for a bug where the timer keeps running after the window is closed
+			return;
+		}
+
 		if (Player is not null
 			&& allowUpdatePositionStates.Contains(MediaElement.CurrentState))
 		{
@@ -217,8 +227,7 @@ partial class MediaManager : IDisposable
 	{
 		if (MediaElement.ShouldKeepScreenOn)
 		{
-			if (MediaElement != null
-				&& allowUpdatePositionStates.Contains(MediaElement.CurrentState)
+			if (allowUpdatePositionStates.Contains(MediaElement.CurrentState)
 				&& !displayActiveRequested)
 			{
 				DisplayRequest.RequestActive();
@@ -251,7 +260,7 @@ partial class MediaManager : IDisposable
 		{
 			return;
 		}
-
+		Dispatcher.Dispatch(() => Player.PosterSource = new BitmapImage());
 		if (MediaElement.Source is null)
 		{
 			Player.Source = null;
@@ -336,18 +345,41 @@ partial class MediaManager : IDisposable
 		}
 	}
 
-	void UpdateMetadata()
+	async ValueTask UpdateMetadata()
 	{
-		if (systemMediaControls is null)
+		if (systemMediaControls is null || Player is null)
 		{
 			return;
 		}
 
 		metadata ??= new(systemMediaControls, MediaElement, Dispatcher);
 		metadata.SetMetadata(MediaElement);
+		if (string.IsNullOrEmpty(MediaElement.MetadataArtworkUrl))
+		{
+			return;
+		}
+		if (!Uri.TryCreate(MediaElement.MetadataArtworkUrl, UriKind.RelativeOrAbsolute, out var metadataArtworkUri))
+		{
+			Trace.TraceError($"{nameof(MediaElement)} unable to update artwork because {nameof(MediaElement.MetadataArtworkUrl)} is not a valid URI");
+			return;
+		}
+
+		if (Dispatcher.IsDispatchRequired)
+		{
+			await Dispatcher.DispatchAsync(() => UpdatePosterSource(Player, metadataArtworkUri));
+		}
+		else
+		{
+			UpdatePosterSource(Player, metadataArtworkUri);
+		}
+
+		static void UpdatePosterSource(in MediaPlayerElement player, in Uri metadataArtworkUri)
+		{
+			player.PosterSource = new BitmapImage(metadataArtworkUri);
+		}
 	}
 
-	void OnMediaElementMediaOpened(WindowsMediaElement sender, object args)
+	async void OnMediaElementMediaOpened(WindowsMediaElement sender, object args)
 	{
 		if (Player is null)
 		{
@@ -365,7 +397,7 @@ partial class MediaManager : IDisposable
 
 		MediaElement.MediaOpened();
 
-		UpdateMetadata();
+		await UpdateMetadata();
 
 		static void SetDuration(in IMediaElement mediaElement, in MediaPlayerElement mediaPlayerElement)
 		{
@@ -402,7 +434,7 @@ partial class MediaManager : IDisposable
 
 		MediaElement?.MediaFailed(new MediaFailedEventArgs(message));
 
-		Logger?.LogError("{logMessage}", message);
+		Logger?.LogError("{LogMessage}", message);
 	}
 
 	void OnMediaElementIsMutedChanged(WindowsMediaElement sender, object args)
@@ -426,7 +458,7 @@ partial class MediaManager : IDisposable
 
 	void OnPlaybackSessionPlaybackRateChanged(MediaPlaybackSession sender, object args)
 	{
-		if (MediaElement.Speed != sender.PlaybackRate)
+		if (AreFloatingPointNumbersEqual(MediaElement.Speed, sender.PlaybackRate))
 		{
 			if (Dispatcher.IsDispatchRequired)
 			{
@@ -453,7 +485,7 @@ partial class MediaManager : IDisposable
 		};
 
 		MediaElement?.CurrentStateChanged(newState);
-		if (sender.PlaybackState == MediaPlaybackState.Playing && sender.PlaybackRate == 0)
+		if (sender.PlaybackState == MediaPlaybackState.Playing && AreFloatingPointNumbersEqual(sender.PlaybackRate, 0))
 		{
 			Dispatcher.Dispatch(() =>
 			{
