@@ -87,6 +87,10 @@ public class MauiMediaElement : CoordinatorLayout
 		{
 			try
 			{
+				if (playerView.Player is not null)
+				{
+					playerView.Player.PlayWhenReady = false;
+				}
 				// https://github.com/google/ExoPlayer/issues/1855#issuecomment-251041500
 				playerView.Player?.Release();
 				playerView.Player?.Dispose();

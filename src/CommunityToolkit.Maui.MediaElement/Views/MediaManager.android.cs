@@ -99,7 +99,22 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		MediaElement.Speed = playbackParameters.Speed;
 	}
-
+	void UpdateNotifications()
+	{
+		if (connection?.Binder?.Service is not null)
+		{
+			
+			connection.Binder.Service.Player = Player;
+			connection.Binder.Service.PlayerView = PlayerView;
+			connection.Binder.Service.Session = session;
+			int id = session?.Id?.GetHashCode() ?? 1;
+			if(id <= 0)
+			{
+				id = 1;
+			}
+			connection.Binder.Service.UpdateNotifications(id);
+		}
+	}
 	public async Task UpdatePlayer()
 	{
 		ArgumentNullException.ThrowIfNull(connection?.Binder?.Service);
@@ -160,6 +175,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaElement.CurrentStateChanged(newState);
 		if (playbackState is readyState)
 		{
+			connection?.Binder?.Service?.NotificationManager?.CancelAll();
+			UpdateNotifications();
 			MediaElement.Duration = TimeSpan.FromMilliseconds(Player.Duration < 0 ? 0 : Player.Duration);
 			MediaElement.Position = TimeSpan.FromMilliseconds(Player.CurrentPosition < 0 ? 0 : Player.CurrentPosition);
 		}
@@ -170,7 +187,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// </summary>
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
 	/// <exception cref="NullReferenceException">Thrown when <see cref="Android.Content.Context"/> is <see langword="null"/> or when the platform view could not be created.</exception>
-	[MemberNotNull(nameof(Player), nameof(PlayerView))]
+	[MemberNotNull(nameof(Player), nameof(PlayerView), nameof(session))]
 	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView()
 	{
 		Player = new ExoPlayerBuilder(MauiContext.Context).Build() ?? throw new InvalidOperationException("Player cannot be null");
@@ -187,16 +204,22 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		mediaSessionWRandomId.SetId(randomId);
 		var dataSourceBitmapLoader = new DataSourceBitmapLoader(Platform.AppContext);
 		mediaSessionWRandomId.SetBitmapLoader(dataSourceBitmapLoader);
-		session ??= mediaSessionWRandomId.Build();
+		session ??= mediaSessionWRandomId.Build() ?? throw new InvalidOperationException("Session cannot be null");
+		ArgumentNullException.ThrowIfNull(session.Id);
 		checkPermissionsTask = CheckAndRequestForegroundPermission(checkPermissionSourceToken.Token);
-		StartConnection();
+		StartConnection(session.Id.GetHashCode());
 		return (Player, PlayerView);
 	}
 
 	[MemberNotNull(nameof(connection))]
-	void StartConnection()
+	void StartConnection(int id)
 	{
+		if(id <= 0)
+		{
+			id = 1;
+		}
 		var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
+		intent.PutExtra("id", id);
 		connection = new BoundServiceConnection(this);
 		if (OperatingSystem.IsAndroidVersionAtLeast(26))
 		{
@@ -410,11 +433,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		if (hasSetSource && Player.PlayerError is null)
 		{
 			MediaElement.MediaOpened();
-			ArgumentNullException.ThrowIfNull(connection?.Binder?.Service);
-			connection.Binder.Service.Player = Player;
-			connection.Binder.Service.PlayerView = PlayerView;
-			connection.Binder.Service.Session = session;
-			connection.Binder.Service.UpdateNotifications();
 		}
 	}
 
@@ -490,7 +508,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return;
 		}
-
+		
 		// If the user changes while muted, change the internal field
 		// and do not update the actual volume.
 		if (MediaElement.ShouldMute)
@@ -542,14 +560,16 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		Player.RepeatMode = MediaElement.ShouldLoopPlayback ? RepeatModeUtil.RepeatToggleModeOne : RepeatModeUtil.RepeatToggleModeNone;
 	}
-
 	protected override void Dispose(bool disposing)
 	{
 		base.Dispose(disposing);
 
 		if (disposing)
 		{
+			session?.Release();
+			session?.Dispose();
 			StopService();
+			connection?.Dispose();
 			checkPermissionsTask?.Dispose();
 			checkPermissionSourceToken.Dispose();
 			startServiceSourceToken.Dispose();

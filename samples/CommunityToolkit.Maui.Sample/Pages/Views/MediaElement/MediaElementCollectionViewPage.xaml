@@ -39,7 +39,7 @@
                         <toolkit:MediaElement
                             HeightRequest="200"
                             x:Name="MediaElement"
-                            ShouldAutoPlay="True"
+                            ShouldAutoPlay="False"
                             ShouldShowPlaybackControls="True"
                             Source="{Binding Source, Mode=OneTime}" />
                         <Label TextColor="White"
