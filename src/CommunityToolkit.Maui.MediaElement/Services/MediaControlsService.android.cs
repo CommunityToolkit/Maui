@@ -4,22 +4,17 @@ using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
-using Android.Views;
-using Android.Widget;
 using AndroidX.Core.App;
-using AndroidX.Media3.DataSource;
-using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.Session;
 using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Services;
 using Microsoft.Win32.SafeHandles;
-using AudioAttributes = AndroidX.Media3.Common.AudioAttributes;
 using Resource = Microsoft.Maui.Controls.Resource;
 
 namespace CommunityToolkit.Maui.Media.Services;
 
 [Service(Exported = false, Enabled = true, Name = "communityToolkit.maui.media.services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
-class MediaControlsService : MediaSessionService
+class MediaControlsService : Service
 {
 	bool isDisposed;
 	readonly SafeHandle safeHandle = new SafeFileHandle(IntPtr.Zero, true);
@@ -43,25 +38,6 @@ class MediaControlsService : MediaSessionService
 	public override StartCommandResult OnStartCommand([NotNull] Intent? intent, StartCommandFlags flags, int startId)
 	{
 		ArgumentNullException.ThrowIfNull(intent);
-		Player = new ExoPlayerBuilder(Platform.AppContext).Build() ?? throw new InvalidOperationException("Player cannot be null");
-		Player.SetHandleAudioBecomingNoisy(true);
-		Player.SetAudioAttributes(AudioAttributes.Default, true);
-
-		string randomId = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8];
-		var mediaSessionWRandomId = new AndroidX.Media3.Session.MediaSession.Builder(Platform.AppContext, Player);
-		mediaSessionWRandomId.SetId(randomId);
-		var dataSourceBitmapLoader = new DataSourceBitmapLoader(Platform.AppContext);
-		mediaSessionWRandomId.SetBitmapLoader(dataSourceBitmapLoader);
-		Session ??= mediaSessionWRandomId.Build();
-		ArgumentNullException.ThrowIfNull(Session);
-		
-		PlayerView = new PlayerView(Platform.AppContext)
-		{
-			Player = Player,
-			UseController = false,
-			ControllerAutoShow = false,
-			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
-		};
 		StartForegroundServices();
 		return StartCommandResult.NotSticky;
 	}
@@ -108,55 +84,23 @@ class MediaControlsService : MediaSessionService
 		base.Dispose(disposing);
 	}
 
-	public override AndroidX.Media3.Session.MediaSession? OnGetSession(MediaSession.ControllerInfo? p0)
-	{	
-		return Session;
-	}
-
-	void CreateNotificationChannel(NotificationManager notificationMnaManager)
+	static void CreateNotificationChannel(NotificationManager notificationMnaManager)
 	{
-		if (OperatingSystem.IsAndroidVersionAtLeast(33))
-		{
-			var id = Session?.Id;
-			ArgumentNullException.ThrowIfNull(id);
-			var channel = new NotificationChannel(id, id, NotificationImportance.Low);
-			notificationMnaManager.CreateNotificationChannel(channel);
-			return;
-		}
 		if (OperatingSystem.IsAndroidVersionAtLeast(26))
 		{
-			var channel = new NotificationChannel("1", "1", NotificationImportance.Low);
+			var channel = new NotificationChannel("1", "notification", NotificationImportance.Low);
 			notificationMnaManager.CreateNotificationChannel(channel);
 		}
 	}
 
-	[MemberNotNull(nameof(Session))]
-	[MemberNotNull(nameof(Player))]
 	void StartForegroundServices()
 	{
-		ArgumentNullException.ThrowIfNull(Player);
-		ArgumentNullException.ThrowIfNull(Session);
-		var id = Session.Id ?? throw new InvalidOperationException("Session Id cannot be null");
-
 		notificationManager ??= GetSystemService(NotificationService) as NotificationManager;
-		Notification ??= new NotificationCompat.Builder(Platform.AppContext, id);
-
-		ArgumentNullException.ThrowIfNull(Player);
-		var style = new MediaStyleNotificationHelper.MediaStyle(Session);
+		Notification ??= new NotificationCompat.Builder(Platform.AppContext, "1");
 		Notification.SetSmallIcon(Resource.Drawable.media3_notification_small_icon);
 		Notification.SetAutoCancel(false);
 		Notification.SetForegroundServiceBehavior(NotificationCompat.ForegroundServiceImmediate);
 		Notification.SetVisibility(NotificationCompat.VisibilityPublic);
-		
-		if (OperatingSystem.IsAndroidVersionAtLeast(33))
-		{
-			style.SetShowActionsInCompactView(0, 1, 2);
-		}
-		else
-		{
-			SetLegacyNotifications();
-		}
-		Notification.SetStyle(style);
 		
 		if (OperatingSystem.IsAndroidVersionAtLeast(26))
 		{
@@ -167,17 +111,34 @@ class MediaControlsService : MediaSessionService
 		if (OperatingSystem.IsAndroidVersionAtLeast(29))
 		{
 			ArgumentNullException.ThrowIfNull(Notification);
-			StartForeground(id.GetHashCode(), Notification.Build(), ForegroundService.TypeMediaPlayback);
+			StartForeground(1, Notification.Build(), ForegroundService.TypeMediaPlayback);
 			return;
 		}
 		
 		if (OperatingSystem.IsAndroidVersionAtLeast(26))
 		{
 			ArgumentNullException.ThrowIfNull(Notification);
-			StartForeground(id.GetHashCode(), Notification.Build());
+			StartForeground(1, Notification.Build());
 		}
 	}
-	
+	public void UpdateNotifications()
+	{
+		ArgumentNullException.ThrowIfNull(Player);
+		ArgumentNullException.ThrowIfNull(Session);
+		ArgumentNullException.ThrowIfNull(Notification);
+
+		var style = new MediaStyleNotificationHelper.MediaStyle(Session);
+		if (OperatingSystem.IsAndroidVersionAtLeast(33))
+		{
+			style.SetShowActionsInCompactView(0, 1, 2);
+		}
+		else
+		{
+			SetLegacyNotifications();
+		}
+		Notification.SetStyle(style);
+		NotificationManagerCompat.From(Platform.AppContext).Notify(1, Notification.Build());
+	}
 	public void SetLegacyNotifications()
 	{
 		ArgumentNullException.ThrowIfNull(Player);

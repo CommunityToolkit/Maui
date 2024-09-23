@@ -40,7 +40,7 @@ public class MauiMediaElement : CoordinatorLayout
 	{
 		this.playerView = playerView;
 		this.playerView.SetBackgroundColor(Android.Graphics.Color.Black);
-
+		playerView.FullscreenButtonClick += OnFullscreenButtonClick;
 		var layout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
 		layout.AddRule(LayoutRules.CenterInParent);
 		layout.AddRule(LayoutRules.CenterVertical);
@@ -53,20 +53,6 @@ public class MauiMediaElement : CoordinatorLayout
 
 		AddView(relativeLayout);
 	}
-	
-	public void SetPlayerView(PlayerView playerView)
-    {
-		if(playerView is null)
-		{
-			return;
-        }
-
-		RemoveView(relativeLayout);
-        this.playerView = playerView;
-		relativeLayout.AddView(playerView);
-        AddView(relativeLayout);
-		playerView.FullscreenButtonClick += OnFullscreenButtonClick;
-    }
 	
     public override void OnDetachedFromWindow()
 	{

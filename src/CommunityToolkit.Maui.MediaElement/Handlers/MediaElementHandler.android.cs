@@ -25,7 +25,6 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 								Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
 
 		var (_, playerView) = mediaManager.CreatePlatformView();
-		mediaManager.PlayerViewChanged += PlayerViewChanged;
 		return new(Context, playerView);
 	}
 
@@ -34,16 +33,5 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		platformView.Dispose();
 		Dispose();
 		base.DisconnectHandler(platformView);
-	}
-	
-	void PlayerViewChanged(object? sender, PlayerViewChangedEventArgs e)
-	{
-		ArgumentNullException.ThrowIfNull(sender);
-		ArgumentNullException.ThrowIfNull(e.UpdatedPlayerView);
-		
-		var currentMediaManager = (MediaManager)sender;
-		currentMediaManager.PlayerViewChanged -= PlayerViewChanged;
-		
-		PlatformView.SetPlayerView(e.UpdatedPlayerView);
 	}
 }
