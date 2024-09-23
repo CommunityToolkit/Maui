@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Views;
@@ -127,7 +126,7 @@ public class RatingView : TemplatedView, IRatingView
 	public double Rating
 	{
 		get => (double)GetValue(RatingProperty);
-		set => SetValue(RatingProperty, Math.Clamp(value, 0.0, (double)RatingViewDefaults.MaximumRatings));
+		set => SetValue(RatingProperty, Math.Clamp(value, 0.0, RatingViewDefaults.MaximumRatings));
 	}
 
 	/// <summary>Command that is triggered when the value of <see cref="Rating"/> is changed.</summary>
@@ -389,16 +388,6 @@ public class RatingView : TemplatedView, IRatingView
 		return (byte)value is >= 1 and <= RatingViewDefaults.MaximumRatings;
 	}
 
-	/// <summary>Validator for the <see cref="Rating"/>.</summary>
-	/// <remarks>The value must be between 0.00 and <see cref="RatingViewDefaults.MaximumRatings" />.</remarks>
-	/// <param name="bindable">The bindable object.</param>
-	/// <param name="value">Value to validate.</param>
-	/// <returns>True, if the value is within range; Otherwise false.</returns>
-	static bool ratingValidator(BindableObject bindable, object value)
-	{
-		return (double)value is >= 0.0 and <= RatingViewDefaults.MaximumRatings;
-	}
-
 	static void OnIsReadOnlyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		RatingView ratingView = (RatingView)bindable;
@@ -476,6 +465,32 @@ public class RatingView : TemplatedView, IRatingView
 		((RatingView)bindable).UpdateRatingDraw();
 	}
 
+	/// <summary>Partial fill linear gradient brush, for shapes/items that are partial and not filled or empty.</summary>
+	/// <param name="filledColor">Offset start partial fill color.</param>
+	/// <param name="partialFill">Partial fill color.</param>
+	/// <param name="emptyColor">Empty fill color.</param>
+	/// <returns>A <see cref="LinearGradientBrush"/> for a partially filled element.</returns>
+	static LinearGradientBrush PartialFill(Color filledColor, double partialFill, Color emptyColor)
+	{
+		return new(
+			[
+					new GradientStop(filledColor, 0),
+				new GradientStop(filledColor, (float)partialFill),
+				new GradientStop(emptyColor, (float)partialFill),
+				],
+			new Point(0, 0), new Point(1, 0));
+	}
+
+	/// <summary>Validator for the <see cref="Rating"/>.</summary>
+	/// <remarks>The value must be between 0.00 and <see cref="RatingViewDefaults.MaximumRatings" />.</remarks>
+	/// <param name="bindable">The bindable object.</param>
+	/// <param name="value">Value to validate.</param>
+	/// <returns>True, if the value is within range; Otherwise false.</returns>
+	static bool ratingValidator(BindableObject bindable, object value)
+	{
+		return (double)value is >= 0.0 and <= RatingViewDefaults.MaximumRatings;
+	}
+
 	/// <summary>Updates each rating item colors based on the rating value (filled, partially filled, empty).</summary>
 	/// <remarks>At this time, since .NET MAUI doesn't have direct partial fill, we approximate with a gradient.</remarks>
 	/// <param name="ratingItems">A list of rating item visual elements to update.</param>
@@ -500,13 +515,7 @@ public class RatingView : TemplatedView, IRatingView
 			}
 			else if (i == fullShapes && partialFill > 0)
 			{
-				ratingItems[i].Background = new LinearGradientBrush(
-					[
-							new GradientStop(filledColor, 0),
-							new GradientStop(filledColor, (float)partialFill),
-							new GradientStop(backgroundColor, (float)partialFill),
-					],
-					new Point(0, 0), new Point(1, 0));  // Partial fill
+				ratingItems[i].Background = PartialFill(filledColor, partialFill, backgroundColor); // Partial fill
 			}
 			else
 			{
@@ -535,13 +544,7 @@ public class RatingView : TemplatedView, IRatingView
 			}
 			else if (i == fullShapes && partialFill > 0)
 			{
-				ratingShape.Fill = new LinearGradientBrush(
-					[
-							new GradientStop(filledColor, 0),
-							new GradientStop(filledColor, (float)partialFill),
-							new GradientStop(emptyColor, (float)partialFill),
-					],
-					new Point(0, 0), new Point(1, 0)); // Partial fill
+				ratingShape.Fill = PartialFill(filledColor, partialFill, emptyColor); // Partial fill
 			}
 			else
 			{
@@ -579,7 +582,7 @@ public class RatingView : TemplatedView, IRatingView
 		Debug.Assert(Control is not null);
 		for (int element = 0; element < Control.Count; element++)
 		{
-			Border border = ((Border)Control.Children[element]);
+			Border border = (Border)Control.Children[element];
 			Debug.Assert(border.Content is not null);
 			((Microsoft.Maui.Controls.Shapes.Path)border.Content.GetVisualTreeDescendants()[0]).Data = (Geometry?)new PathGeometryConverter().ConvertFromInvariantString(shape);
 		}
