@@ -38,7 +38,7 @@ public partial class IconTintColorBehavior
 
 		bindable.PropertyChanged -= OnElementPropertyChanged;
 		PropertyChanged -= OnIconTintColorBehaviorPropertyChanged;
-		
+
 		RemoveTintColor(platformView);
 	}
 
@@ -77,7 +77,7 @@ public partial class IconTintColorBehavior
 		ArgumentNullException.ThrowIfNull(sender);
 		var iconTintColorBehavior = (IconTintColorBehavior)sender;
 
-		if(iconTintColorBehavior.View is not IView bindable
+		if (iconTintColorBehavior.View is not IView bindable
 			|| bindable.Handler?.PlatformView is not FrameworkElement platformView)
 		{
 			return;
@@ -99,7 +99,7 @@ public partial class IconTintColorBehavior
 	void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (e.PropertyName is not string propertyName
-			|| sender is not View bindable
+			|| sender is not IView bindable
 			|| bindable.Handler?.PlatformView is not FrameworkElement platformView)
 		{
 			return;
@@ -155,10 +155,11 @@ public partial class IconTintColorBehavior
 		}
 		else if (image.IsLoaded)
 		{
-			// Sometimes WImage source doesn't match View source so the image is not ready to be tinted, have to wait for next ImageOpened event
-			if (element is IImageElement { Source: FileImageSource fileImageSource } &&
-				image.Source is BitmapImage bitmapImage &&
-				Uri.Compare(new Uri($"{bitmapImage.UriSource.Scheme}:///{fileImageSource.File}"), bitmapImage.UriSource, UriComponents.Path, UriFormat.Unescaped, StringComparison.OrdinalIgnoreCase) != 0)
+			// Sometimes WImage source doesn't match View source so the image is not ready to be tinted
+			// We must wait for next ImageOpened event
+			if (element is IImageElement { Source: FileImageSource fileImageSource }
+				&& image.Source is BitmapImage bitmapImage
+				&& Uri.Compare(new Uri($"{bitmapImage.UriSource.Scheme}:///{fileImageSource.File}"), bitmapImage.UriSource, UriComponents.Path, UriFormat.Unescaped, StringComparison.OrdinalIgnoreCase) is not 0)
 			{
 				image.ImageOpened += OnImageOpened;
 			}
