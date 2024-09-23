@@ -37,15 +37,16 @@ class MediaControlsService : Service
 
 	public override StartCommandResult OnStartCommand([NotNull] Intent? intent, StartCommandFlags flags, int startId)
 	{
-		var id = intent?.GetIntExtra("id", 1) ?? 1;
 		ArgumentNullException.ThrowIfNull(intent);
 		
-		StartForegroundServices(id);
+		StartForegroundServices();
 		return StartCommandResult.NotSticky;
 	}
 	public override void OnTaskRemoved(Intent? rootIntent)
 	{
 		base.OnTaskRemoved(rootIntent);
+		Player?.Stop();
+		Player?.Release();
 		playerNotificationManager?.SetPlayer(null);
 		NotificationManager?.CancelAll();
 		NotificationManager?.Dispose();
@@ -79,20 +80,20 @@ class MediaControlsService : Service
 	}
 
 	[MemberNotNull(nameof(NotificationManager))]
-	static void CreateNotificationChannel(NotificationManager notificationMnaManager, int id)
+	static void CreateNotificationChannel(NotificationManager notificationMnaManager)
 	{
 		if (OperatingSystem.IsAndroidVersionAtLeast(26))
 		{
-			var channel = new NotificationChannel($"{id}", $"{id}", NotificationImportance.Low);
+			var channel = new NotificationChannel("1", "1", NotificationImportance.Low);
 			notificationMnaManager.CreateNotificationChannel(channel);
 		}
 	}
 
 	[MemberNotNull(nameof(notification), nameof(NotificationManager))]
-	void StartForegroundServices(int id)
+	void StartForegroundServices()
 	{
 		NotificationManager ??= GetSystemService(NotificationService) as NotificationManager ?? throw new InvalidOperationException($"{nameof(NotificationManager)} cannot be null");
-		notification ??= new NotificationCompat.Builder(Platform.AppContext, $"{id}");
+		notification ??= new NotificationCompat.Builder(Platform.AppContext, "1");
 		notification.SetSmallIcon(Resource.Drawable.media3_notification_small_icon);
 		notification.SetAutoCancel(false);
 		notification.SetForegroundServiceBehavior(NotificationCompat.ForegroundServiceImmediate);
@@ -101,50 +102,46 @@ class MediaControlsService : Service
 		if (OperatingSystem.IsAndroidVersionAtLeast(26))
 		{
 			ArgumentNullException.ThrowIfNull(NotificationManager);
-			CreateNotificationChannel(NotificationManager, id);
+			CreateNotificationChannel(NotificationManager);
 		}
 
 		if (OperatingSystem.IsAndroidVersionAtLeast(29))
 		{
 			ArgumentNullException.ThrowIfNull(notification);
-			StartForeground(id, notification.Build(), ForegroundService.TypeMediaPlayback);
+			StartForeground(1, notification.Build(), ForegroundService.TypeMediaPlayback);
 			return;
 		}
 		
 		if (OperatingSystem.IsAndroidVersionAtLeast(26))
 		{
 			ArgumentNullException.ThrowIfNull(notification);
-			StartForeground(id, notification.Build());
+			StartForeground(1, notification.Build());
 		}
 	}
 
 	[MemberNotNull(nameof(NotificationManager), nameof(notification))]
-	public void UpdateNotifications(int id)
+	public void UpdateNotifications()
 	{
 		ArgumentNullException.ThrowIfNull(Player);
 		ArgumentNullException.ThrowIfNull(Session);
 		ArgumentNullException.ThrowIfNull(notification);
 
 		var style = new MediaStyleNotificationHelper.MediaStyle(Session);
-		if (OperatingSystem.IsAndroidVersionAtLeast(33))
+		if (!OperatingSystem.IsAndroidVersionAtLeast(33))
 		{
-			style.SetShowActionsInCompactView(0, 1, 2);
-		}
-		else
-		{
-			SetLegacyNotifications(id);
+			SetLegacyNotifications();
 		}
 		notification.SetStyle(style);
-		NotificationManagerCompat.From(Platform.AppContext).Notify(id, notification.Build());
+		NotificationManagerCompat.From(Platform.AppContext).Notify(1, notification.Build());
 		ArgumentNullException.ThrowIfNull(NotificationManager);
 	}
 
 	[MemberNotNull(nameof(playerNotificationManager))]
-	public void SetLegacyNotifications(int id)
+	public void SetLegacyNotifications()
 	{
 		ArgumentNullException.ThrowIfNull(Player);
 		ArgumentNullException.ThrowIfNull(Session);
-		playerNotificationManager ??= new PlayerNotificationManager.Builder(Platform.AppContext, id, $"{id}").Build();
+		playerNotificationManager ??= new PlayerNotificationManager.Builder(Platform.AppContext, 1, "1").Build();
 
 		ArgumentNullException.ThrowIfNull(playerNotificationManager);
 		playerNotificationManager.SetUseFastForwardAction(true);

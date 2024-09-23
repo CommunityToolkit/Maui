@@ -109,12 +109,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		connection.Binder.Service.Player = Player;
 		connection.Binder.Service.PlayerView = PlayerView;
 		connection.Binder.Service.Session = session;
-		int id = session?.Id?.GetHashCode() ?? 1;
-		if (id <= 0)
-		{
-			id = 1;
-		}
-		connection.Binder.Service.UpdateNotifications(id);
+		connection.Binder.Service.UpdateNotifications();
 	}
 
 	[MemberNotNull(nameof(connection), nameof(PlayerView))]
