@@ -26,6 +26,7 @@ variables:
   PathToCommunityToolkitCameraAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Camera.Analyzers.CodeFixes/CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
+  PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
   DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/8.0.6.json'
   CommunityToolkitSampleApp_Xcode_Version: '15.4'
   CommunityToolkitLibrary_Xcode_Version: '15.4'
@@ -267,6 +268,8 @@ jobs:
 
       - task: CmdLine@2
         displayName: 'Run CommunityToolkit.Maui.Analyzers.UnitTests'
+        env:
+          VSTEST_TESTHOST_SHUTDOWN_TIMEOUT: 1100 # Fixes "The active test run was aborted. Reason: Test host process crashed" https://dev.azure.com/dotnet/CommunityToolkit/_build/results?buildId=109660&view=logs&j=3f96dcf5-6e1e-5485-3200-c557d5216be3&t=12286b69-c788-55db-0a8c-ef899858fbe6&l=76 (source: https://github.com/microsoft/vstest/issues/2952#issuecomment-2234253765): $(sauceUsername)
         inputs:
           script: 'dotnet test $(PathToCommunityToolkitAnalyzersUnitTestCsproj) -c Release'
 
@@ -297,6 +300,8 @@ jobs:
 
       - task: CmdLine@2
         displayName: 'Run CommunityToolkit.Maui.UnitTests'
+        env:
+          VSTEST_TESTHOST_SHUTDOWN_TIMEOUT: 1100 # Fixes "The active test run was aborted. Reason: Test host process crashed" https://dev.azure.com/dotnet/CommunityToolkit/_build/results?buildId=109660&view=logs&j=3f96dcf5-6e1e-5485-3200-c557d5216be3&t=12286b69-c788-55db-0a8c-ef899858fbe6&l=76 (source: https://github.com/microsoft/vstest/issues/2952#issuecomment-2234253765): $(sauceUsername)
         inputs:
           script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory $(Agent.TempDirectory)'
 
@@ -437,4 +442,59 @@ jobs:
         displayName: 'Publish NuGets'
         inputs:
           artifactName: nuget
+          pathToPublish: '$(Build.ArtifactStagingDirectory)'
+
+  - job: run_benchmarks
+    displayName: Run Benchmarks
+    strategy:
+        matrix:
+          'Windows':
+            image: 'windows-latest'
+          'macOS':
+            image: 'macos-14'
+    pool:
+      vmImage: $(image)
+    steps:
+      - script: |
+          sudo xcode-select -s /Applications/Xcode_$(CommunityToolkitLibrary_Xcode_Version).app 
+          sudo xcode-select -p
+        displayName: 'Set Xcode v$(CommunityToolkitLibrary_Xcode_Version)'
+        condition: eq(variables['Agent.OS'], 'Darwin') # Only run this step on macOS
+
+      - task: UseDotNet@2
+        displayName: 'Install .NET SDK'
+        inputs:
+          packageType: 'sdk'
+          version: '$(LATEST_NET_VERSION)'
+          includePreviewVersions: false
+
+      - task: CmdLine@2
+        displayName: 'Install .NET MAUI Workload'
+        inputs:
+          script : 'dotnet workload install maui'
+
+      - pwsh: |
+          Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
+          .\workload-install.ps1
+        displayName: Install Tizen Workload
+
+      # Print Information on the .NET SDK Used By the CI Build Host
+      # These logs are useful information when debugging CI Builds
+      # Note: This step doesn't execute nor modify any code; it is strictly used for logging + debugging purposes
+      - task: CmdLine@2
+        displayName: 'Display dotnet --info'
+        inputs:
+          script: dotnet --info
+
+      - task: CmdLine@2
+        displayName: 'Run Benchmarks'
+        inputs:
+          script : 'dotnet run --project $(PathToCommunityToolkitAnalyzersBenchmarkCsproj) -c Release -- -a $(Build.ArtifactStagingDirectory)'
+
+      # publish the Benchmark Results
+      - task: PublishBuildArtifacts@1
+        condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
+        displayName: 'Publish Benchmark Artifacts'
+        inputs:
+          artifactName: benchmarks
           pathToPublish: '$(Build.ArtifactStagingDirectory)'
