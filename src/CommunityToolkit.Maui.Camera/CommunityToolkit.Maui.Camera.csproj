@@ -51,8 +51,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
-    <PackageReference Include="Xamarin.AndroidX.Camera.View" Version="1.3.4.2" />
-    <PackageReference Include="Xamarin.AndroidX.Camera.Camera2" Version="1.3.4.2" />
+    <PackageReference Include="Xamarin.AndroidX.Camera.View" Version="1.3.1.1" />
+    <PackageReference Include="Xamarin.AndroidX.Camera.Camera2" Version="1.3.1.1" />
   </ItemGroup>
 
   <ItemGroup>
