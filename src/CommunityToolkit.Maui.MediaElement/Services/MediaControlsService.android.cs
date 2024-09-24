@@ -42,11 +42,20 @@ class MediaControlsService : Service
 		StartForegroundServices();
 		return StartCommandResult.NotSticky;
 	}
+
 	public override void OnTaskRemoved(Intent? rootIntent)
 	{
 		base.OnTaskRemoved(rootIntent);
 		Player?.Stop();
-		Player?.Release();
+		playerNotificationManager?.SetPlayer(null);
+		NotificationManager?.CancelAll();
+		NotificationManager?.Dispose();
+		playerNotificationManager?.Dispose();
+	}
+
+	public override void OnDestroy()
+	{
+		base.OnDestroy();
 		playerNotificationManager?.SetPlayer(null);
 		NotificationManager?.CancelAll();
 		NotificationManager?.Dispose();
@@ -57,7 +66,6 @@ class MediaControlsService : Service
 		}
 		StopSelf();
 	}
-
 	protected override void Dispose(bool disposing)
 	{
 		if (!isDisposed)

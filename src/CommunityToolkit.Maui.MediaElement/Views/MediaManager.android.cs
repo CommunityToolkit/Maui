@@ -100,12 +100,13 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaElement.Speed = playbackParameters.Speed;
 	}
 
-	[MemberNotNull(nameof(connection))]
 	void UpdateNotifications()
 	{
-		connection = connection ?? throw new InvalidOperationException($"{nameof(connection)} cannot be null");
-		ArgumentNullException.ThrowIfNull(connection.Binder?.Service);
-
+		if(connection?.Binder?.Service is null)
+		{
+			System.Diagnostics.Trace.TraceInformation("Notification Service not running.");
+			return;
+		}
 		connection.Binder.Service.Player = Player;
 		connection.Binder.Service.PlayerView = PlayerView;
 		connection.Binder.Service.Session = session;
@@ -200,19 +201,14 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		session ??= mediaSessionWRandomId.Build() ?? throw new InvalidOperationException("Session cannot be null");
 		ArgumentNullException.ThrowIfNull(session.Id);
 		checkPermissionsTask = CheckAndRequestForegroundPermission(checkPermissionSourceToken.Token);
-		StartConnection(session.Id.GetHashCode());
+		
 		return (Player, PlayerView);
 	}
 
 	[MemberNotNull(nameof(connection))]
-	void StartConnection(int id)
+	void StartConnection()
 	{
-		if(id <= 0)
-		{
-			id = 1;
-		}
 		var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
-		intent.PutExtra("id", id);
 		connection = new BoundServiceConnection(this);
 		if (OperatingSystem.IsAndroidVersionAtLeast(26))
 		{
@@ -576,6 +572,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	void StopService()
 	{
+		if (connection is null)
+		{
+			return;
+		}
 		var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
 		Android.App.Application.Context.StopService(serviceIntent);
 		ArgumentNullException.ThrowIfNull(connection);
@@ -642,15 +642,20 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		return mediaItem;
 	}
 
-	static async Task CheckAndRequestForegroundPermission(CancellationToken cancellationToken = default)
+	async Task CheckAndRequestForegroundPermission(CancellationToken cancellationToken = default)
 	{
 		var status = await Permissions.CheckStatusAsync<AndroidMediaPermissions>().WaitAsync(cancellationToken);
 		if (status is PermissionStatus.Granted)
 		{
+			StartConnection();
 			return;
 		}
 
-		await Permissions.RequestAsync<AndroidMediaPermissions>().WaitAsync(cancellationToken).ConfigureAwait(false);
+		status = await Permissions.RequestAsync<AndroidMediaPermissions>().WaitAsync(cancellationToken).ConfigureAwait(false);
+		if (status is PermissionStatus.Granted) 
+		{
+			StartConnection();
+		}
 	}
 
 	#region IPlayer.IListener implementation method stubs
