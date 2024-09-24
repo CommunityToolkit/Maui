@@ -32,12 +32,13 @@ class MediaControlsService : Service
 		Binder = new BoundServiceBinder(this);
 		return Binder;
 	}
-
-	public override StartCommandResult OnStartCommand([NotNull] Intent? intent, StartCommandFlags flags, int startId)
+	public override void OnCreate()
 	{
-		ArgumentNullException.ThrowIfNull(intent);
-		
+		base.OnCreate();
 		StartForegroundServices();
+	}
+	public override StartCommandResult OnStartCommand(Intent? intent, StartCommandFlags flags, int startId)
+	{
 		return StartCommandResult.NotSticky;
 	}
 
@@ -47,8 +48,6 @@ class MediaControlsService : Service
 		Player?.Stop();
 		playerNotificationManager?.SetPlayer(null);
 		NotificationManager?.CancelAll();
-		NotificationManager?.Dispose();
-		playerNotificationManager?.Dispose();
 	}
 
 	public override void OnDestroy()
@@ -56,8 +55,6 @@ class MediaControlsService : Service
 		base.OnDestroy();
 		playerNotificationManager?.SetPlayer(null);
 		NotificationManager?.CancelAll();
-		NotificationManager?.Dispose();
-		playerNotificationManager?.Dispose();
 		if (OperatingSystem.IsAndroidVersionAtLeast(26) && !OperatingSystem.IsAndroidVersionAtLeast(33))
 		{
 			StopForeground(true);
@@ -70,8 +67,6 @@ class MediaControlsService : Service
 		{
 			if (disposing)
 			{
-				playerNotificationManager?.SetPlayer(null);
-				NotificationManager?.CancelAll();
 				NotificationManager?.Dispose();
 				playerNotificationManager?.Dispose();
 				if (OperatingSystem.IsAndroidVersionAtLeast(26) && !OperatingSystem.IsAndroidVersionAtLeast(33))
@@ -83,6 +78,12 @@ class MediaControlsService : Service
 			isDisposed = true;
 		}
 		base.Dispose(disposing);
+	}
+
+	public override void OnRebind(Intent? intent)
+	{
+		base.OnRebind(intent);
+		StartForegroundServices();
 	}
 
 	[MemberNotNull(nameof(NotificationManager))]
