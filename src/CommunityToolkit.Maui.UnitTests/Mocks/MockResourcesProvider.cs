@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.UnitTests.Mocks;
 class MockResourcesProvider : ISystemResourcesProvider
 #pragma warning restore CS0612 // Type or member is obsolete
 {
-	readonly ResourceDictionary dictionary = new();
+	readonly ResourceDictionary dictionary = [];
 
 	public IResourceDictionary GetSystemResources() => dictionary;
 }
