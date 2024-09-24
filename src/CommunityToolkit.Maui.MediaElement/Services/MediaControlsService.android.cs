@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
@@ -8,7 +7,6 @@ using AndroidX.Core.App;
 using AndroidX.Media3.Session;
 using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Services;
-using Microsoft.Win32.SafeHandles;
 using Resource = Microsoft.Maui.Controls.Resource;
 
 namespace CommunityToolkit.Maui.Media.Services;
