@@ -1,21 +1,13 @@
-﻿using System;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Composition;
-using System.Linq.Expressions;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.InteropServices.ComTypes;
-using System.Threading;
-using System.Threading.Tasks;
-using CommunityToolkit.Maui.MediaElement.Analyzers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Rename;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace CommunityToolkit.Maui.Analyzers;
+namespace CommunityToolkit.Maui.MediaElement.Analyzers;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseCommunityToolkitMediaElementInitializationAnalyzerCodeFixProvider)), Shared]
 public class UseCommunityToolkitMediaElementInitializationAnalyzerCodeFixProvider : CodeFixProvider

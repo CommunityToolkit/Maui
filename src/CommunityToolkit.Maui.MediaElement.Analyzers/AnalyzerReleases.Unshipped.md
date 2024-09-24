@@ -7,4 +7,4 @@ Rule ID | Category | Severity | Notes
 
 Rule ID | New Category | New Severity | Old Category | Old Severity | Notes
 --------|--------------|--------------|--------------|--------------|-------
-MCT001 | Initialization | Error | Usage | Error | UseCommunityToolkitInitializationAnalyzer
+MCTME001 | Initialization | Error | Usage | Error | UseCommunityToolkitMediaElementInitializationAnalyzer

@@ -12,7 +12,7 @@ static class AnimationExtensions
 	class MockAnimationHandler : ViewHandler<IView, object>
 	{
 		const int millisecondTickIncrement = 16;
-		
+
 		MockAnimationHandler(IAnimationManager animationManager) : base(new PropertyMapper<IView>())
 		{
 			SetMauiContext(new AnimationEnabledMauiContext(animationManager));

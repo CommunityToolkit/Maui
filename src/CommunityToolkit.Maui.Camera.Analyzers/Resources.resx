@@ -16,7 +16,7 @@
     <value>`.UseMauiCommunityToolkitCamera()` must be chained to `.UseMauiApp&lt;T&gt;()`</value>
   </data>
   <data name="InitializationErrorMessage" xml:space="preserve">
-    <value>`.UseMauiCommunityToolkitCamera()` is required to initalize .NET MAUI Community Toolkit Camera</value>
+    <value>`.UseMauiCommunityToolkitCamera()` is required to initalize .NET MAUI Community Toolkit Camera.</value>
   </data>
   <data name="InitializationErrorTitle" xml:space="preserve">
     <value>`.UseMauiCommunityToolkitCamera()` Not Found on MauiAppBuilder</value>

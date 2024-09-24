@@ -1,8 +1,5 @@
-﻿using System.ComponentModel;
-using AVKit;
+﻿using AVKit;
 using CommunityToolkit.Maui.Views;
-using Microsoft.Maui.Controls.Platform.Compatibility;
-using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
