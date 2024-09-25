@@ -58,7 +58,7 @@ public sealed partial class ByteArrayToImageSourceConverterViewModel : BaseViewM
 		}
 		catch (Exception e)
 		{
-			Trace.TraceInformation(e.Message);
+			Trace.TraceInformation(e.StackTrace);
 			OnImageDownloadFailed(e.Message);
 		}
 		finally
