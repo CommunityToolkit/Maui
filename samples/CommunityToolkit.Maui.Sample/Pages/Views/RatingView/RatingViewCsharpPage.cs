@@ -270,7 +270,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 								MaximumRating = 5,
 								Rating = 5,
 								Shape = RatingViewShape.Custom,
-								ShapeBorderColor = Colors.White,
+								ShapeBorderColor = Colors.Grey,
 								ShapeBorderThickness = 1,
 							}.Row(Row.Custom2).Column(Column.Result).SemanticDescription("A RatingView showing the 'Custom' shape and passing in the required custom shape path."),
 						}

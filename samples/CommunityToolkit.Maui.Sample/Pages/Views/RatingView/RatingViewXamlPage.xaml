@@ -173,7 +173,7 @@
                     Rating="5"
                     SemanticProperties.Description="A RatingView showing the 'Custom' shape and passing in the required custom shape path."
                     Shape="Custom"
-                    ShapeBorderColor="White"
+                    ShapeBorderColor="Grey"
                     ShapeBorderThickness="1" />
             </Grid>
 
@@ -242,6 +242,7 @@
             <toolkit:RatingView
                 EmptyColor="{Binding ColorPickerEmptyBackgroundTarget}"
                 FilledColor="{Binding ColorPickerFilledBackgroundTarget}"
+                HorizontalOptions="Start"
                 ItemShapeSize="40"
                 MaximumRating="5"
                 Rating="2.7"
@@ -253,6 +254,7 @@
             <toolkit:RatingView
                 EmptyColor="{Binding ColorPickerEmptyBackgroundTarget}"
                 FilledColor="{Binding ColorPickerFilledBackgroundTarget}"
+                HorizontalOptions="Start"
                 ItemShapeSize="40"
                 MaximumRating="5"
                 Rating="2.7"
