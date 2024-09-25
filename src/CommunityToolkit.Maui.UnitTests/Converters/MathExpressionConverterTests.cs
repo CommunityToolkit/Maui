@@ -134,12 +134,12 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 	[InlineData("1 + 3 + 5 + (3 - 2))")]
 	[InlineData("1 + 2) + (9")]
 	[InlineData("100 + pow(2)")]
-	public void MathExpressionConverterThrowsArgumentException(string expression)
+	public void MathExpressionConverter_WithInvalidExpressions_ReturnsNullResult(string expression)
 	{
 		var mathExpressionConverter = new MathExpressionConverter();
 
-		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)mathExpressionConverter).Convert(0d, mathExpressionTargetType, expression, cultureInfo));
-		Assert.Throws<ArgumentException>(() => mathExpressionConverter.ConvertFrom(0d, expression));
+		Assert.Null(((ICommunityToolkitValueConverter)mathExpressionConverter).Convert(0d, mathExpressionTargetType, expression, cultureInfo));
+		Assert.Null(mathExpressionConverter.ConvertFrom(0d, expression));
 	}
 
 	[Theory]

@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Converters;
@@ -37,7 +38,7 @@ sealed partial class MathExpression
 
 		var argumentList = arguments?.ToList() ?? [];
 
-		expr = expression.ToLower();
+		Expression = expression.ToLower();
 
 		var operators = new List<MathOperator>
 		{
@@ -113,24 +114,25 @@ sealed partial class MathExpression
 		this.arguments = argumentList;
 	}
 
-	internal string expr { get; }
+	internal string Expression { get; }
 
-	internal int exprIndex { get; set; } = 0;
+	internal int ExpressionIndex { get; set; } = 0;
 
-	internal Match patternMatch { get; set; } = Match.Empty;
+	internal Match PatternMatch { get; set; } = Match.Empty;
 
-	internal List<MathToken> rpn { get; } = new();
+	internal List<MathToken> RPN { get; } = new();
 
 	public object? Calculate()
 	{
 		if (!ParseExpression())
 		{
-			throw new ArgumentException("Invalid math expression.");
+			Trace.TraceWarning("Invalid math expression. Failed to parse expression.");
+			return null;
 		}
 
 		var stack = new Stack<object?>();
 
-		foreach (var token in rpn)
+		foreach (var token in RPN)
 		{
 			if (token.type == MathTokenType.Value)
 			{
@@ -138,8 +140,12 @@ sealed partial class MathExpression
 				continue;
 			}
 
-			var mathOperator = operators.FirstOrDefault(x => x.Name == token.text) ??
-				throw new ArgumentException($"Invalid math expression. Can't find operator or value with name \"{token.text}\".");
+			var mathOperator = operators.FirstOrDefault(x => x.Name == token.text);
+			if (mathOperator is null)
+			{
+				Trace.TraceWarning($"Invalid math expression. Can't find operator or value with name \"{token.text}\".");
+				return null;
+			}
 
 			if (mathOperator.NumericCount == 0)
 			{
@@ -151,7 +157,8 @@ sealed partial class MathExpression
 
 			if (stack.Count < operatorNumericCount)
 			{
-				throw new ArgumentException("Invalid math expression.");
+				Trace.TraceWarning($"Invalid math expression. Insufficient parameters to operator \"{mathOperator.Name}\".");
+				return null;
 			}
 
 			bool nullGuard = false;
@@ -179,9 +186,15 @@ sealed partial class MathExpression
 			stack.Push(!nullGuard ? mathOperator.CalculateFunc([.. args]) : null);
 		}
 
-		if (stack.Count != 1)
+		if (stack.Count == 0)
 		{
-			throw new ArgumentException("Invalid math expression.");
+			Trace.TraceWarning($"Invalid math expression. Stack is unexpectedly empty.");
+			return null;
+		}
+
+		if (stack.Count > 1)
+		{
+			Trace.WriteLine($"Invalid math expression. Stack unexpectedly contains too many ({stack.Count}) items.");
 		}
 
 		return stack.Pop();
@@ -189,9 +202,9 @@ sealed partial class MathExpression
 
 	bool ParseExpression()
 	{
-		exprIndex = 0;
-		rpn.Clear();
-		return ParseExpr() && exprIndex == expr.Length;
+		ExpressionIndex = 0;
+		RPN.Clear();
+		return ParseExpr() && ExpressionIndex == Expression.Length;
 	}
 
 	bool ParseExpr()
@@ -232,7 +245,7 @@ sealed partial class MathExpression
 			return false;
 		}
 
-		rpn.Add(new MathToken(MathTokenType.Operator, "if", null));
+		RPN.Add(new MathToken(MathTokenType.Operator, "if", null));
 		return true;
 	}
 
@@ -286,17 +299,17 @@ sealed partial class MathExpression
 		{
 			return false;
 		}
-		int index = exprIndex;
+		int index = ExpressionIndex;
 		while (ParsePattern(BinaryOperators))
 		{
-			string _operator = patternMatch.Groups[1].Value;
+			string _operator = PatternMatch.Groups[1].Value;
 			if (!ParseNext())
 			{
-				exprIndex = index;
+				ExpressionIndex = index;
 				return false;
 			}
-			rpn.Add(new MathToken(MathTokenType.Operator, _operator, null));
-			index = exprIndex;
+			RPN.Add(new MathToken(MathTokenType.Operator, _operator, null));
+			index = ExpressionIndex;
 		}
 		return true;
 	}
@@ -320,15 +333,15 @@ sealed partial class MathExpression
 	{
 		if (ParsePattern(NumberPattern()))
 		{
-			string _number = patternMatch.Groups[1].Value;
-			rpn.Add(new MathToken(MathTokenType.Value, _number, double.Parse(_number)));
+			string _number = PatternMatch.Groups[1].Value;
+			RPN.Add(new MathToken(MathTokenType.Value, _number, double.Parse(_number)));
 			return true;
 		}
 
 		if (ParsePattern(StringPattern()))
 		{
-			string _string = patternMatch.Groups[1].Value;
-			rpn.Add(new MathToken(MathTokenType.Value, _string, _string));
+			string _string = PatternMatch.Groups[1].Value;
+			RPN.Add(new MathToken(MathTokenType.Value, _string, _string));
 			return true;
 		}
 
@@ -339,41 +352,41 @@ sealed partial class MathExpression
 
 		if (ParsePattern(Constants()))
 		{
-			string _constant = patternMatch.Groups[1].Value;
-			rpn.Add(new MathToken(MathTokenType.Operator, _constant, null));
+			string _constant = PatternMatch.Groups[1].Value;
+			RPN.Add(new MathToken(MathTokenType.Operator, _constant, null));
 			return true;
 		}
 
-		int index = exprIndex;
+		int index = ExpressionIndex;
 		if (ParsePattern(ParenStart()))
 		{
 			if (!ParseExpr())
 			{
-				exprIndex = index;
+				ExpressionIndex = index;
 				return false;
 			}
 			if (!ParsePattern(ParenEnd()))
 			{
-				exprIndex = index;
+				ExpressionIndex = index;
 				return false;
 			}
 			return true;
 		}
 
-		index = exprIndex;
+		index = ExpressionIndex;
 		if (ParsePattern(UnaryOperators()))
 		{
-			string _operator = patternMatch.Groups[1].Value;
+			string _operator = PatternMatch.Groups[1].Value;
 			if (unaryMapping.ContainsKey(_operator))
 			{
 				_operator = unaryMapping[_operator];
 			}
 			if (!ParsePrimary())
 			{
-				exprIndex = index;
+				ExpressionIndex = index;
 				return false;
 			}
-			rpn.Add(new MathToken(MathTokenType.Operator, _operator, null));
+			RPN.Add(new MathToken(MathTokenType.Operator, _operator, null));
 			return true;
 		}
 
@@ -391,18 +404,18 @@ sealed partial class MathExpression
 
 	bool ParseFunction()
 	{
-		int index = exprIndex;
+		int index = ExpressionIndex;
 		if (!ParsePattern(FunctionStart()))
 		{
 			return false;
 		}
 
-		string text = patternMatch.Groups[0].Value;
-		string functionName = patternMatch.Groups[1].Value;
+		string text = PatternMatch.Groups[0].Value;
+		string functionName = PatternMatch.Groups[1].Value;
 
 		if (!ParseExpr())
 		{
-			exprIndex = index;
+			ExpressionIndex = index;
 			return false;
 		}
 
@@ -410,19 +423,19 @@ sealed partial class MathExpression
 		{
 			if (!ParseExpr())
 			{
-				exprIndex = index;
+				ExpressionIndex = index;
 				return false;
 			}
-			index = exprIndex;
+			index = ExpressionIndex;
 		}
 
 		if (!ParsePattern(FunctionEnd()))
 		{
-			exprIndex = index;
+			ExpressionIndex = index;
 			return false;
 		}
 
-		rpn.Add(new MathToken(MathTokenType.Operator, functionName, null));
+		RPN.Add(new MathToken(MathTokenType.Operator, functionName, null));
 
 		return true;
 	}
@@ -432,23 +445,23 @@ sealed partial class MathExpression
 
 	public bool ParsePattern(Regex regex)
 	{
-		var whitespaceMatch = Whitespace().Match(expr.Substring(exprIndex));
+		var whitespaceMatch = Whitespace().Match(Expression.Substring(ExpressionIndex));
 		if (whitespaceMatch.Success)
 		{
-			exprIndex += whitespaceMatch.Length;
+			ExpressionIndex += whitespaceMatch.Length;
 		}
 
-		patternMatch = regex.Match(expr.Substring(exprIndex));
-		if (!patternMatch.Success)
+		PatternMatch = regex.Match(Expression.Substring(ExpressionIndex));
+		if (!PatternMatch.Success)
 		{
 			return false;
 		}
-		exprIndex += patternMatch.Length;
+		ExpressionIndex += PatternMatch.Length;
 
-		whitespaceMatch = Whitespace().Match(expr.Substring(exprIndex));
+		whitespaceMatch = Whitespace().Match(Expression.Substring(ExpressionIndex));
 		if (whitespaceMatch.Success)
 		{
-			exprIndex += whitespaceMatch.Length;
+			ExpressionIndex += whitespaceMatch.Length;
 		}
 
 		return true;
