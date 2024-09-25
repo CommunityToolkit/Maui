@@ -176,7 +176,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.Source
 					= MediaSource.FromUri(
 						"https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8");
-#pragma warning restore S1075 // URIs should not be hardcoded
 				return;
 
 			case resetSource:
@@ -210,7 +209,8 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataTitle = "HAL 9000";
 				MediaElement.MetadataArtist = "HAL 9000 Album";
 				MediaElement.MetadataArtworkUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
-				MediaElement.Source = MediaSource.FromUri($"https://github.com/prof3ssorSt3v3/media-sample-files/raw/master/hal-9000.mp3");
+				MediaElement.Source = MediaSource.FromUri("https://github.com/prof3ssorSt3v3/media-sample-files/raw/master/hal-9000.mp3");
+#pragma warning restore S1075 // URIs should not be hardcoded
 				return;
 		}
 	}
