@@ -97,7 +97,7 @@ public partial class TouchBehavior
 		catch (ObjectDisposedException)
 		{
 			// Suppress exception
-			Trace.WriteLine("TouchBehavior is already disposed.");
+			Trace.TraceError("TouchBehavior is already disposed.");
 		}
 
 		isHoverSupported = false;

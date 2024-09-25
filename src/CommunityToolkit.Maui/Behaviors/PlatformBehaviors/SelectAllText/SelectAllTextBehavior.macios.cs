@@ -74,7 +74,7 @@ public class SelectAllTextBehavior : BasePlatformBehavior<InputView>
 	{
 		if (OperatingSystem.IsMacCatalyst())
 		{
-			Trace.WriteLine($"WARNING: {nameof(SelectAllTextBehavior)} does not support {typeof(Editor).FullName} on MacCatalyst. For more information, see https://github.com/CommunityToolkit/Maui/issues/432");
+			Trace.TraceWarning($"WARNING: {nameof(SelectAllTextBehavior)} does not support {typeof(Editor).FullName} on MacCatalyst. For more information, see https://github.com/CommunityToolkit/Maui/issues/432");
 		}
 
 		if (shouldApply)
