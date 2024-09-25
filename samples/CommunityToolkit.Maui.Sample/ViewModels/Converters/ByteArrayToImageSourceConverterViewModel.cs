@@ -50,7 +50,7 @@ public sealed partial class ByteArrayToImageSourceConverterViewModel : BaseViewM
 
 		try
 		{
-			DotNetBotImageByteArray = await client.GetByteArrayAsync("https://user-images.githubusercontent.com/13558917/137551073-ac8958bf-83e3-4ae3-8623-4db6dce49d02.png", maximumDownloadTimeCTS.Token).WaitAsync(token).ConfigureAwait(false);
+			DotNetBotImageByteArray = await client.GetByteArrayAsync($"https://user-images.githubusercontent.com/13558917/137551073-ac8958bf-83e3-4ae3-8623-4db6dce49d02.png", maximumDownloadTimeCTS.Token).WaitAsync(token).ConfigureAwait(false);
 
 			await minimumDownloadTimeTask.ConfigureAwait(false);
 
@@ -58,7 +58,7 @@ public sealed partial class ByteArrayToImageSourceConverterViewModel : BaseViewM
 		}
 		catch (Exception e)
 		{
-			Trace.WriteLine(e);
+			Trace.TraceInformation(e.Message);
 			OnImageDownloadFailed(e.Message);
 		}
 		finally

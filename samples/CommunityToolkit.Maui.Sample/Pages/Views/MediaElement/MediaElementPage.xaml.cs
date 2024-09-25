@@ -28,7 +28,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	{
 		if (e.PropertyName == CommunityToolkit.Maui.Views.MediaElement.DurationProperty.PropertyName)
 		{
-			logger.LogInformation("Duration: {newDuration}", MediaElement.Duration);
+			logger.LogInformation("Duration: {NewDuration}", MediaElement.Duration);
 			PositionSlider.Maximum = MediaElement.Duration.TotalSeconds;
 		}
 	}
@@ -44,7 +44,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 	void OnPositionChanged(object? sender, MediaPositionChangedEventArgs e)
 	{
-		logger.LogInformation("Position changed to {position}", e.Position);
+		logger.LogInformation("Position changed to {Position}", e.Position);
 		PositionSlider.Value = e.Position.TotalSeconds;
 	}
 
@@ -165,7 +165,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataArtist = "Big Buck Bunny Album";
 				MediaElement.Source =
 					MediaSource.FromUri(
-						"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
+						$"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
 				return;
 
 			case loadHls:
@@ -174,7 +174,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataTitle = "HLS Title";
 				MediaElement.Source
 					= MediaSource.FromUri(
-						"https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8");
+						$"https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8");
 				return;
 
 			case resetSource:
@@ -208,7 +208,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataTitle = "HAL 9000";
 				MediaElement.MetadataArtist = "HAL 9000 Album";
 				MediaElement.MetadataArtworkUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
-				MediaElement.Source = MediaSource.FromUri("https://github.com/prof3ssorSt3v3/media-sample-files/raw/master/hal-9000.mp3");
+				MediaElement.Source = MediaSource.FromUri($"https://github.com/prof3ssorSt3v3/media-sample-files/raw/master/hal-9000.mp3");
 				return;
 		}
 	}

@@ -48,7 +48,7 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 	async Task SaveFileInstance(CancellationToken cancellationToken)
 	{
 		using var client = new HttpClient();
-		await using var stream = await client.GetStreamAsync("https://www.nuget.org/api/v2/package/CommunityToolkit.Maui/5.0.0", cancellationToken);
+		await using var stream = await client.GetStreamAsync($"https://www.nuget.org/api/v2/package/CommunityToolkit.Maui/5.0.0", cancellationToken);
 		try
 		{
 			var fileSaverInstance = new FileSaverImplementation();
