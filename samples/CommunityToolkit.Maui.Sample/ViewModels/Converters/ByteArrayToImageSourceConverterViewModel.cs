@@ -50,7 +50,9 @@ public sealed partial class ByteArrayToImageSourceConverterViewModel : BaseViewM
 
 		try
 		{
-			DotNetBotImageByteArray = await client.GetByteArrayAsync($"https://user-images.githubusercontent.com/13558917/137551073-ac8958bf-83e3-4ae3-8623-4db6dce49d02.png", maximumDownloadTimeCTS.Token).WaitAsync(token).ConfigureAwait(false);
+#pragma warning disable S1075 // URIs should not be hardcoded
+			DotNetBotImageByteArray = await client.GetByteArrayAsync("https://user-images.githubusercontent.com/13558917/137551073-ac8958bf-83e3-4ae3-8623-4db6dce49d02.png", maximumDownloadTimeCTS.Token).WaitAsync(token).ConfigureAwait(false);
+#pragma warning restore S1075 // URIs should not be hardcoded
 
 			await minimumDownloadTimeTask.ConfigureAwait(false);
 
