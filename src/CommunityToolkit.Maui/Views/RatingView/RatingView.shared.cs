@@ -510,8 +510,7 @@ public class RatingView : TemplatedView, IRatingView
 			((Shape)border.Content).Fill = emptyColor;
 			if (i < fullShapes)
 			{
-				ratingItems[i].BackgroundColor = filledColor; // Fully filled shape
-				ratingItems[i].Background = null;  // Empty fill
+				ratingItems[i].Background = new SolidColorBrush(filledColor);  // Fully filled shape
 			}
 			else if (i == fullShapes && partialFill > 0)
 			{
@@ -519,8 +518,7 @@ public class RatingView : TemplatedView, IRatingView
 			}
 			else
 			{
-				ratingItems[i].BackgroundColor = backgroundColor;  // Empty fill
-				ratingItems[i].Background = null;  // Empty fill
+				ratingItems[i].Background = new SolidColorBrush(backgroundColor);  // Empty fill
 			}
 		}
 	}
