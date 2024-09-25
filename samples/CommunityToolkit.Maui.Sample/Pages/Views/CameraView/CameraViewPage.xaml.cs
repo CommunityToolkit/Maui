@@ -38,7 +38,7 @@ public partial class CameraViewPage : BasePage<CameraViewViewModel>
 	{
 		base.OnNavigatedFrom(args);
 
-		Debug.WriteLine($"< < OnNavigatedFrom {pageCount} {Navigation.NavigationStack.Count}");
+		Trace.TraceInformation($"< < OnNavigatedFrom {pageCount} {Navigation.NavigationStack.Count}");
 
 		if (Navigation.NavigationStack.Count < pageCount)
 		{

@@ -137,7 +137,7 @@ static partial class StatusBar
 
 		if (vc is null)
 		{
-			Trace.WriteLine("Unable to update Status Bar Appearance because Current UIViewController is null");
+			Trace.TraceError("Unable to update Status Bar Appearance because Current UIViewController is null");
 			return false;
 		}
 

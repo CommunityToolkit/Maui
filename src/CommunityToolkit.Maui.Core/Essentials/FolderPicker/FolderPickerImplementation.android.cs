@@ -17,7 +17,7 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 	{
 		if (!OperatingSystem.IsAndroidVersionAtLeast(26) && !string.IsNullOrEmpty(initialPath))
 		{
-			Trace.WriteLine("Specifying an initial path is only supported on Android 26 and later.");
+			Trace.TraceError("Specifying an initial path is only supported on Android 26 and later.");
 		}
 
 		Folder? folder = null;

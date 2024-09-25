@@ -11,6 +11,6 @@ public partial class TouchBehaviorCollectionViewMultipleSelectionViewModel : Bas
 	[RelayCommand]
 	void OnRowTapped(ContentCreator creatorTapped)
 	{
-		Trace.WriteLine($"{creatorTapped.Name} Tapped");
+		Trace.TraceInformation($"{creatorTapped.Name} Tapped");
 	}
 }

@@ -158,7 +158,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			}
 			catch (Exception e)
 			{
-				System.Diagnostics.Trace.WriteLine($"[error] {e}, {e.Message}");
+				System.Diagnostics.Trace.TraceError($"[error] {e}, {e.Message}");
 			}
 		}
 

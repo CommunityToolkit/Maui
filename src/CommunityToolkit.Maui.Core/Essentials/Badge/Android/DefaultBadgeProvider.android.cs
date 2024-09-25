@@ -13,20 +13,20 @@ class DefaultBadgeProvider : IBadgeProvider
 		var packageName = Application.Context.PackageName;
 		if (packageName is null)
 		{
-			Trace.WriteLine("Unable to get package name");
+			Trace.TraceError("Unable to get package name");
 			return;
 		}
 
 		var component = Application.Context.PackageManager?.GetLaunchIntentForPackage(packageName)?.Component;
 		if (component is null)
 		{
-			Trace.WriteLine($"Unable to get launch intent component for package {packageName}");
+			Trace.TraceError($"Unable to get launch intent component for package {packageName}");
 			return;
 		}
 
 		if (!CanSetBadgeCounter())
 		{
-			Trace.WriteLine("Current launcher doesn't support badge counter");
+			Trace.TraceError("Current launcher doesn't support badge counter");
 			return;
 		}
 
@@ -40,7 +40,7 @@ class DefaultBadgeProvider : IBadgeProvider
 		}
 		catch (Exception ex)
 		{
-			Trace.WriteLine($"{nameof(DefaultBadgeProvider)} unable to set badge count: " + ex.Message);
+			Trace.TraceError($"{nameof(DefaultBadgeProvider)} unable to set badge count: " + ex.Message);
 		}
 	}
 

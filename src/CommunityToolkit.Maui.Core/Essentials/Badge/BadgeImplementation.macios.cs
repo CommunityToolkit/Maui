@@ -13,7 +13,7 @@ public class BadgeImplementation : IBadge
 		{
 			if (error is not null)
 			{
-				Trace.WriteLine($"Error Requesting Authorization to Set Badge Count: {error.Description}");
+				Trace.TraceError($"Error Requesting Authorization to Set Badge Count: {error.Description}");
 			}
 		});
 
@@ -23,7 +23,7 @@ public class BadgeImplementation : IBadge
 			{
 				if (error is not null)
 				{
-					Trace.WriteLine($"Error setting the Badge Count: {error.Description}");
+					Trace.TraceError($"Error setting the Badge Count: {error.Description}");
 				}
 			});
 		}

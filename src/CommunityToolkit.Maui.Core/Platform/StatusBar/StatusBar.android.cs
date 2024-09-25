@@ -19,7 +19,7 @@ static partial class StatusBar
 			return true;
 		}
 
-		System.Diagnostics.Trace.WriteLine($"{nameof(StatusBar)} Color + Style functionality is not supported on this version of the Android operating system. Minimum supported Android API is {BuildVersionCodes.M}");
+		System.Diagnostics.Trace.TraceError($"{nameof(StatusBar)} Color + Style functionality is not supported on this version of the Android operating system. Minimum supported Android API is {BuildVersionCodes.M}");
 
 		return false;
 	});

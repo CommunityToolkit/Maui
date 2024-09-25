@@ -601,7 +601,7 @@ public class StateContainerTests : BaseTest
 			}
 		}
 
-		Command ChangeStateCommand => changeStateCommand ??= new Command(() => Trace.WriteLine("Command Tapped"), () => CanChangeState);
+		Command ChangeStateCommand => changeStateCommand ??= new Command(() => Trace.TraceInformation("Command Tapped"), () => CanChangeState);
 
 		public event PropertyChangedEventHandler? PropertyChanged;
 

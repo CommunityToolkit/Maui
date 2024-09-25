@@ -58,7 +58,7 @@ class MediaControlsService : Service
 			{
 				foreach (var exception in t.Exception.InnerExceptions)
 				{
-					System.Diagnostics.Trace.WriteLine($"[error] {exception}, {exception.Message}");
+					System.Diagnostics.Trace.TraceError($"[error] {exception}, {exception.Message}");
 				}
 			}
 		}, TaskContinuationOptions.OnlyOnFaulted);

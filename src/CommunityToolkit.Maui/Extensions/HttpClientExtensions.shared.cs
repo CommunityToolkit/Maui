@@ -21,7 +21,7 @@ static partial class HttpClientExtensions
 		}
 		catch (Exception ex)
 		{
-			Trace.WriteLine($"Error getting stream for {uri}: {ex}");
+			Trace.TraceError($"Error getting stream for {uri}: {ex}");
 			return Stream.Null;
 		}
 	}

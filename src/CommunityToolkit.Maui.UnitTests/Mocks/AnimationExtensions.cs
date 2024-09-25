@@ -72,7 +72,7 @@ static class AnimationExtensions
 					}
 					catch (Exception e)
 					{
-						Trace.WriteLine(e);
+						Trace.TraceError(e.StackTrace);
 					}
 
 					if (!cancellationTokenSource.IsCancellationRequested)

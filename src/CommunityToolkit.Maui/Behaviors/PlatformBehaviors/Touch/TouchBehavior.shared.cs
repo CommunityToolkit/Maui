@@ -926,13 +926,13 @@ public partial class TouchBehavior : BasePlatformBehavior<VisualElement>
 				gestureManager.Reset();
 				SetChildrenInputTransparent(false);
 			}
-			gestureManager.AbortAnimations(this, CancellationToken.None).SafeFireAndForget<TaskCanceledException>(ex => Trace.WriteLine(ex));
+			gestureManager.AbortAnimations(this, CancellationToken.None).SafeFireAndForget<TaskCanceledException>(ex => Trace.TraceError(ex.StackTrace));
 			View = value;
 
 			if (value is not null)
 			{
 				SetChildrenInputTransparent(ShouldMakeChildrenInputTransparent);
-				ForceUpdateState(CancellationToken.None, false).SafeFireAndForget<TaskCanceledException>(ex => Trace.WriteLine(ex));
+				ForceUpdateState(CancellationToken.None, false).SafeFireAndForget<TaskCanceledException>(ex => Trace.TraceError(ex.StackTrace));
 			}
 		}
 	}

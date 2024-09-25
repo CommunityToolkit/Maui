@@ -17,7 +17,7 @@ static partial class NavigationBar
 			return true;
 		}
 
-		System.Diagnostics.Trace.WriteLine($"{nameof(NavigationBar)} {nameof(Style)} + {nameof(Color)} functionality is not supported on this version of the Android operating system. Minimum supported Android API is {BuildVersionCodes.M}");
+		System.Diagnostics.Trace.TraceError($"{nameof(NavigationBar)} {nameof(Style)} + {nameof(Color)} functionality is not supported on this version of the Android operating system. Minimum supported Android API is {BuildVersionCodes.M}");
 
 		return false;
 	});
