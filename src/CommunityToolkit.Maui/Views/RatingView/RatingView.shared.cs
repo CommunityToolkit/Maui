@@ -332,11 +332,11 @@ public class RatingView : TemplatedView, IRatingView
 		base.OnChildAdded(child);
 	}
 
-	static Border CreateChild(string shape, Thickness itemPadding, double shapeBorderThickness, double itemShapeSize, Brush shapeBorderColor)
+	static Border CreateChild(string shape, Thickness itemPadding, double shapeBorderThickness, double itemShapeSize, Brush shapeBorderColor, Color itemColor)
 	{
 		Border shapeBorder = new()
 		{
-			BackgroundColor = Colors.Transparent,
+			BackgroundColor = itemColor,
 			Margin = 0,
 			Padding = itemPadding,
 			Stroke = new SolidColorBrush(Colors.Transparent),
@@ -561,7 +561,7 @@ public class RatingView : TemplatedView, IRatingView
 		string shape = GetShapePathData(Shape);
 		for (int i = minimum; i < maximum; i++)
 		{
-			Border child = CreateChild(shape, ItemPadding, ShapeBorderThickness, ItemShapeSize, ShapeBorderColor);
+			Border child = CreateChild(shape, ItemPadding, ShapeBorderThickness, ItemShapeSize, ShapeBorderColor, this.BackgroundColor);
 			if (!IsReadOnly)
 			{
 				TapGestureRecognizer tapGestureRecognizer = new();
