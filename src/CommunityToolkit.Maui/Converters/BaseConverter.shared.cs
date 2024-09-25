@@ -73,7 +73,7 @@ public abstract class BaseConverter<[DynamicallyAccessedMembers(DynamicallyAcces
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInConverters)
 		{
-			Trace.WriteLine(ex);
+			Trace.TraceError(ex.StackTrace);
 			return DefaultConvertBackReturnValue;
 		}
 	}
@@ -92,7 +92,7 @@ public abstract class BaseConverter<[DynamicallyAccessedMembers(DynamicallyAcces
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInConverters)
 		{
-			Trace.WriteLine(ex);
+			Trace.TraceError(ex.StackTrace);
 			return DefaultConvertReturnValue;
 		}
 	}
@@ -157,7 +157,7 @@ public abstract class BaseConverter<[DynamicallyAccessedMembers(DynamicallyAcces
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInConverters)
 		{
-			Trace.WriteLine(ex);
+			Trace.TraceError(ex.StackTrace);
 			return DefaultConvertBackReturnValue;
 		}
 	}
@@ -175,7 +175,7 @@ public abstract class BaseConverter<[DynamicallyAccessedMembers(DynamicallyAcces
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInConverters)
 		{
-			Trace.WriteLine(ex);
+			Trace.TraceError(ex.StackTrace);
 			return DefaultConvertReturnValue;
 		}
 	}

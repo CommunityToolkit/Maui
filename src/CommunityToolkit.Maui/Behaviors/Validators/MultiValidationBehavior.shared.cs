@@ -91,7 +91,7 @@ public class MultiValidationBehavior : ValidationBehavior
 				var isSuccessful = ((ICommunityToolkitBehavior<VisualElement>)child).TrySetBindingContextToAttachedViewBindingContext();
 				if (!isSuccessful)
 				{
-					Trace.WriteLine($"Setting {nameof(BindingContext)} for {child.GetType()} failed");
+					Trace.TraceError($"Setting {nameof(BindingContext)} for {child.GetType()} failed");
 				}
 			}
 		}
