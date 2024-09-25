@@ -163,9 +163,10 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataTitle = "Big Buck Bunny";
 				MediaElement.MetadataArtworkUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
 				MediaElement.MetadataArtist = "Big Buck Bunny Album";
+#pragma warning disable S1075 // URIs should not be hardcoded
 				MediaElement.Source =
 					MediaSource.FromUri(
-						$"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
+						"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
 				return;
 
 			case loadHls:
@@ -174,7 +175,8 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataTitle = "HLS Title";
 				MediaElement.Source
 					= MediaSource.FromUri(
-						$"https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8");
+						"https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8");
+#pragma warning restore S1075 // URIs should not be hardcoded
 				return;
 
 			case resetSource:
