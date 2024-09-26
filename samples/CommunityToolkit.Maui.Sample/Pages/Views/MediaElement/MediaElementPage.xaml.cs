@@ -152,7 +152,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.Source = MediaSource.FromUri(CustomSourceEntry.Text);
 	}
 
-	async void ChangeSourceClicked(Object sender, EventArgs e)
+	async void ChangeSourceClicked(object sender, EventArgs e)
 	{
 		var result = await DisplayActionSheet("Choose a source", "Cancel", null,
 			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadMusic);

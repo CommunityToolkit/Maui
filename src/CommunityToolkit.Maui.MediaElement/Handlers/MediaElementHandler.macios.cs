@@ -23,7 +23,8 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 
 		mediaManager ??= new(MauiContext,
 			VirtualView,
-			Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
+			Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"),
+			loggerFactory);
 
 		(_, playerViewController) = mediaManager.CreatePlatformView();
 
@@ -71,8 +72,8 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 				CollectionViewHandler collectionViewHandler => collectionViewHandler.ViewController ?? GetInternalController(collectionViewHandler),
 				_ => throw new NotSupportedException($"{itemsView.Handler.GetType()} not yet supported")
 			};
-
-			PlatformView.UpdateParentViewController(playerViewController, parentViewController);
+			
+			parentViewController.AddChildViewController(playerViewController);
 
 			VirtualView.ParentChanged -= HandleMediaElementParentChanged;
 		}
