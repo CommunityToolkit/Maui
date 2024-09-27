@@ -28,7 +28,7 @@ public class RatingViewTests : BaseHandlerTest
 		Border firstItem = (Border)ratingView.Control!.Children[0];
 
 		_ = firstItem.Should().BeOfType<Border>();
-		_ = firstItem.BackgroundColor.Should().Be(Colors.Transparent);
+		_ = firstItem.BackgroundColor.Should().BeNull();
 		_ = firstItem.Margin.Should().Be(Thickness.Zero);
 		_ = firstItem.Padding.Should().Be(RatingViewDefaults.ItemPadding);
 		_ = firstItem.Stroke.Should().Be(new SolidColorBrush(Colors.Transparent));
@@ -353,11 +353,13 @@ public class RatingViewTests : BaseHandlerTest
 		ratingView.FilledColor = filledColor;
 		_ = ratingView.FilledColor.Should().Be(filledColor);
 		Microsoft.Maui.Controls.Shapes.Path filledRatingShape = (Microsoft.Maui.Controls.Shapes.Path)((Border)ratingView.Control!.Children[(int)Math.Floor(rating)]).Content!.GetVisualTreeDescendants()[0];
-		_ = filledRatingShape.Fill.Should().Be(new SolidColorBrush(emptyColor));
-		Border filledRatingItem = (Border)ratingView.Control!.Children[(int)Math.Floor(rating)];
-		_ = filledRatingItem.BackgroundColor.Should().Be(Colors.Transparent);
-		filledRatingItem = (Border)ratingView.Control!.Children[maximumRating - 1]; // Check the last one, as this is where we expect the background colour to be set
-		_ = filledRatingItem.BackgroundColor.Should().Be(backgroundColor);
+		_ = filledRatingShape.Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyColor));
+		Border filledRatingItem = (Border)ratingView.Control!.Children[0];
+		_ = filledRatingItem.Background.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(filledColor));
+		Border partialFilledRatingItem = (Border)ratingView.Control!.Children[(int)Math.Floor(rating)];
+		_ = partialFilledRatingItem.Background.Should().BeOfType<LinearGradientBrush>();
+		Border emptyFilledRatingItem = (Border)ratingView.Control!.Children[maximumRating - 1]; // Check the last one, as this is where we expect the background colour to be set
+		_ = emptyFilledRatingItem.Background.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(backgroundColor));
 	}
 
 	[Fact]
@@ -626,13 +628,12 @@ public class RatingViewTests : BaseHandlerTest
 		Border filledRatingItem = (Border)ratingView.Control!.Children[0];
 		Border partialFilledRatingItem = (Border)ratingView.Control!.Children[1];
 		Border emptyFilledRatingItem = (Border)ratingView.Control!.Children[2];
-		_ = filledRatingItem.BackgroundColor.Should().BeOfType<Color>().And.Be(filledColor);
+		_ = filledRatingItem.Background.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(filledColor));
 		_ = ((Shape)filledRatingItem.Content!).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyColor));
-		_ = emptyFilledRatingItem.BackgroundColor.Should().BeOfType<Color>().And.Be(backgroundColor);
-		_ = emptyFilledRatingItem.Background.Should().BeNull();
-		_ = ((Shape)emptyFilledRatingItem.Content!).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyColor));
 		_ = partialFilledRatingItem.Background.Should().BeOfType<LinearGradientBrush>();
 		_ = ((Shape)partialFilledRatingItem.Content!).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyColor));
+		_ = emptyFilledRatingItem.Background.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(backgroundColor));
+		_ = ((Shape)emptyFilledRatingItem.Content!).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyColor));
 	}
 
 	[Fact]
