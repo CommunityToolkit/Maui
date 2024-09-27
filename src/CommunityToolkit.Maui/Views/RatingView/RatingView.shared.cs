@@ -457,7 +457,7 @@ public class RatingView : TemplatedView, IRatingView
 	{
 		RatingView ratingView = (RatingView)bindable;
 		Debug.Assert(ratingView.Control is not null);
-		ratingView.Control.Spacing = newValue is null ? RatingViewDefaults.Spacing : (double)newValue;
+		ratingView.Control.Spacing = (double)newValue;
 	}
 
 	static void OnUpdateRatingDraw(BindableObject bindable, object oldValue, object newValue)

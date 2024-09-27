@@ -100,6 +100,33 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
+	public void Events_RatingChanged_AddRemove()
+	{
+		List<RatingChangedEventArgs> receivedEvents = [];
+		const double expectedRating = 2;
+		RatingView ratingView = new()
+		{
+			MaximumRating = 3,
+			Rating = 3
+		};
+		ratingView.RatingChanged += (_, e) => receivedEvents.Add(e);
+		ratingView.Rating = expectedRating;
+		_ = receivedEvents.Should().HaveCount(1);
+		_ = receivedEvents[0].Rating.Should().Be(expectedRating);
+		ratingView.RatingChanged -= (_, e) => receivedEvents.Add(e);
+	}
+
+	[Fact]
+	public void Events_Command()
+	{
+		var commandHasBeenExecuted = false;
+		RatingView ratingView = new();
+		ratingView.RatingChangedCommand = new Command<string>((s) => commandHasBeenExecuted = true);
+		ratingView.Rating = 3;
+		_ = commandHasBeenExecuted.Should().BeFalse();
+	}
+
+	[Fact]
 	public void Events_RatingChanged_ShouldBeRaised_MaximumRatingPropertyChanged_LNotReadOnly()
 	{
 		const double currentRating = 5;
@@ -387,6 +414,8 @@ public class RatingViewTests : BaseHandlerTest
 		_ = ratingView.IsReadOnly.Should().BeFalse();
 		ratingView.IsReadOnly = true;
 		_ = ratingView.IsReadOnly.Should().BeTrue();
+		ratingView.IsReadOnly = false;
+		_ = ratingView.IsReadOnly.Should().BeFalse();
 	}
 
 	[Fact]
