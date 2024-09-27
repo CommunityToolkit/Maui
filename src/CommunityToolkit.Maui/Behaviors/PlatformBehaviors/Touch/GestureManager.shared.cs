@@ -109,7 +109,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			}
 			catch (TaskCanceledException ex)
 			{
-				Trace.TraceError(ex.StackTrace);
+				Trace.TraceError("{0}", ex);
 			}
 
 			return;
