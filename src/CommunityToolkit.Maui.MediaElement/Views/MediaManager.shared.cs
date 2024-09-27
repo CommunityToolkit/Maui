@@ -25,8 +25,7 @@ public partial class MediaManager
 	/// <param name="context">This application's <see cref="IMauiContext"/>.</param>
 	/// <param name="mediaElement">The <see cref="IMediaElement"/> instance that is managed through this class.</param>
 	/// <param name="dispatcher">The <see cref="IDispatcher"/> instance that allows propagation to the main thread.</param>
-	/// <param name="loggerFactory">The <see cref="ILoggerFactory"/> instance that allows the creation of a new <see cref="ILogger"/>.</param>
-	public MediaManager(IMauiContext context, IMediaElement mediaElement, IDispatcher dispatcher, ILoggerFactory loggerFactory)
+	public MediaManager(IMauiContext context, IMediaElement mediaElement, IDispatcher dispatcher)
 	{
 		ArgumentNullException.ThrowIfNull(context);
 		ArgumentNullException.ThrowIfNull(mediaElement);
@@ -36,7 +35,7 @@ public partial class MediaManager
 		Dispatcher = dispatcher;
 		MediaElement = mediaElement;
 
-		Logger = loggerFactory.CreateLogger(nameof(MediaManager));
+		Logger = MauiContext.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(MediaManager));
 	}
 
 	/// <summary>

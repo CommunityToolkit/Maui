@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Views;
-using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
 
@@ -10,8 +9,6 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 /// </summary>
 public partial class MediaElementHandler
 {
-	readonly ILoggerFactory loggerFactory;
-	
 #if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
 	/// <summary>
 	/// The <see cref="MediaManager"/> that is managing the <see cref="IMediaElement"/> instance.
@@ -51,9 +48,8 @@ public partial class MediaElementHandler
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MediaElementHandler"/> class.
 	/// </summary>
-	public MediaElementHandler(ILoggerFactory loggerFactory) : this(PropertyMapper, CommandMapper, loggerFactory)
+	public MediaElementHandler() : base(PropertyMapper, CommandMapper)
 	{
-		
 	}
 
 	/// <summary>
@@ -62,11 +58,10 @@ public partial class MediaElementHandler
 	/// </summary>
 	/// <param name="mapper">The custom property mapper to use.</param>
 	/// <param name="commandMapper">The custom command mapper to use.</param>
-	/// <param name="loggerFactory">The <see cref="ILoggerFactory"/> instance that allows the creation of a new <see cref="ILogger"/>.</param>
-	public MediaElementHandler(IPropertyMapper? mapper, CommandMapper? commandMapper, ILoggerFactory loggerFactory)
+	public MediaElementHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
 		: base(mapper ?? PropertyMapper, commandMapper ?? CommandMapper)
 	{
-		this.loggerFactory = loggerFactory;
+
 	}
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
