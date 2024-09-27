@@ -73,7 +73,7 @@ public abstract class BaseConverter<[DynamicallyAccessedMembers(DynamicallyAcces
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInConverters)
 		{
-			Trace.TraceError(ex.StackTrace);
+			Trace.TraceError("{0}", ex);
 			return DefaultConvertBackReturnValue;
 		}
 	}
@@ -92,7 +92,7 @@ public abstract class BaseConverter<[DynamicallyAccessedMembers(DynamicallyAcces
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInConverters)
 		{
-			Trace.TraceError(ex.StackTrace);
+			Trace.TraceError("{0}", ex);
 			return DefaultConvertReturnValue;
 		}
 	}
