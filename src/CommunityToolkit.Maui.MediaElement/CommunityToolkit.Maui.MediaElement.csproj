@@ -47,6 +47,10 @@
     <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
+  
+  <ItemGroup>
+    <AndroidResource Include="Assets\*"/>
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true"/>
