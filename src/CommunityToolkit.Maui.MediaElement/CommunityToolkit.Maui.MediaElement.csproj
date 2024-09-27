@@ -68,4 +68,9 @@
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiPackageVersion)"/>
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="ResourceDictionary.windows.xaml">
+      <LogicalName>ResourceDictionary.windows.xaml</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>
