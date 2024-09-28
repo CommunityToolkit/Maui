@@ -160,12 +160,12 @@ partial class MediaManager : IDisposable
 		Player.MediaPlayer.PlaybackRate = MediaElement.Speed;
 
 		// Only trigger once when going to the paused state
-		if (AreFloatingPointNumbersEqual(MediaElement.Speed, 0) && previousSpeed > 0)
+		if ((int)MediaElement.Speed == 0 && previousSpeed > 0)
 		{
 			Player.MediaPlayer.Pause();
 		}
 		// Only trigger once when we move from the paused state
-		else if (MediaElement.Speed > 0 && AreFloatingPointNumbersEqual(previousSpeed, 0))
+		else if (MediaElement.Speed > 0 && (int)previousSpeed == 0)
 		{
 			MediaElement.Play();
 		}
