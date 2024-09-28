@@ -48,7 +48,8 @@ public class GestureManagerTests : BaseTest
 		// Arrange
 		var touchBehavior = new TouchBehavior
 		{
-			IsEnabled = isEnabled
+			IsEnabled = isEnabled,
+			Element = new Label()
 		};
 		var tappedCompletedRaised = false;
 		touchBehavior.TouchGestureCompleted += HandleTouchGestureCompleted;
@@ -59,7 +60,7 @@ public class GestureManagerTests : BaseTest
 
 		// Assert
 		Assert.Equal(expectedTouchState, touchBehavior.CurrentTouchState);
-		Assert.Equal(status == TouchStatus.Completed && isEnabled, tappedCompletedRaised);
+		Assert.Equal(status is TouchStatus.Completed && isEnabled, tappedCompletedRaised);
 
 		void HandleTouchGestureCompleted(object? sender, TouchGestureCompletedEventArgs e)
 		{
@@ -75,7 +76,7 @@ public class GestureManagerTests : BaseTest
 		var touchBehavior = new TouchBehavior
 		{
 			IsEnabled = true,
-			Element = new Button()
+			Element = new Label()
 		};
 		var token = new CancellationTokenSource().Token;
 
