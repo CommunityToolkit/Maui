@@ -4,10 +4,10 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public sealed partial class ByteArrayToImageSourceConverterViewModel : BaseViewModel, IDisposable
+public sealed partial class ByteArrayToImageSourceConverterViewModel(HttpClient client) : BaseViewModel, IDisposable
 {
 	readonly WeakEventManager imageDownloadFailedEventManager = new();
-	readonly HttpClient client;
+	readonly HttpClient client = client;
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(DownloadDotNetBotImageCommand))]
 	bool isDownloadingImage;
@@ -17,11 +17,6 @@ public sealed partial class ByteArrayToImageSourceConverterViewModel : BaseViewM
 
 	[ObservableProperty]
 	string labelText = "Tap the Download Image Button to download an Image as a byte[]";
-
-	public ByteArrayToImageSourceConverterViewModel(HttpClient client)
-	{
-		this.client = client;
-	}
 
 	public event EventHandler<string> ImageDownloadFailed
 	{
@@ -50,9 +45,8 @@ public sealed partial class ByteArrayToImageSourceConverterViewModel : BaseViewM
 
 		try
 		{
-#pragma warning disable S1075 // URIs should not be hardcoded
-			DotNetBotImageByteArray = await client.GetByteArrayAsync("https://user-images.githubusercontent.com/13558917/137551073-ac8958bf-83e3-4ae3-8623-4db6dce49d02.png", maximumDownloadTimeCTS.Token).WaitAsync(token).ConfigureAwait(false);
-#pragma warning restore S1075 // URIs should not be hardcoded
+			const string url = "https://user-images.githubusercontent.com/13558917/137551073-ac8958bf-83e3-4ae3-8623-4db6dce49d02.png";
+			DotNetBotImageByteArray = await client.GetByteArrayAsync(url, maximumDownloadTimeCTS.Token).WaitAsync(token).ConfigureAwait(false);
 
 			await minimumDownloadTimeTask.ConfigureAwait(false);
 
