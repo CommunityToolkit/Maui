@@ -128,7 +128,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 			return;
 		}
 
-		if (sender.LongPressCommand is null || sender.CurrentInteractionStatus is TouchInteractionStatus.Completed)
+		if (!sender.CanExecute || sender.CurrentInteractionStatus is TouchInteractionStatus.Completed)
 		{
 			return;
 		}
