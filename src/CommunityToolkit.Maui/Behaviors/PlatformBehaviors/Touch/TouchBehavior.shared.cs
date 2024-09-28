@@ -926,7 +926,7 @@ public partial class TouchBehavior : BasePlatformBehavior<VisualElement>
 				gestureManager.Reset();
 				SetChildrenInputTransparent(false);
 			}
-			gestureManager.AbortAnimations(this, CancellationToken.None).SafeFireAndForget<TaskCanceledException>(ex => Trace.TraceError(ex.StackTrace));
+			gestureManager.AbortAnimations(this, CancellationToken.None).SafeFireAndForget<TaskCanceledException>(ex => Trace.TraceError("{0}", ex));
 			View = value;
 
 			if (value is not null)
