@@ -4,20 +4,20 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class GestureManagerTests
+public class GestureManagerTests : BaseTest
 {
 	[Fact]
 	public void HandleUserInteraction_ShouldUpdateInteractionStatus()
 	{
 		// Arrange
-		var sender = new TouchBehavior();
+		var touchBehavior = new TouchBehavior();
 		var interactionStatus = TouchInteractionStatus.Completed;
 
 		// Act
-		GestureManager.HandleUserInteraction(in sender, in interactionStatus);
+		GestureManager.HandleUserInteraction(in touchBehavior, in interactionStatus);
 
 		// Assert
-		Assert.Equal(interactionStatus, sender.CurrentInteractionStatus);
+		Assert.Equal(interactionStatus, touchBehavior.CurrentInteractionStatus);
 	}
 
 	[Theory]
@@ -26,47 +26,53 @@ public class GestureManagerTests
 	public void HandleHover_ShouldUpdateHoverStateAndStatus(HoverStatus hoverStatus, HoverState expectedHoverState)
 	{
 		// Arrange
-		var sender = new TouchBehavior
+		var touchBehavior = new TouchBehavior
 		{
 			IsEnabled = true
 		};
 
 		// Act
-		GestureManager.HandleHover(in sender, in hoverStatus);
+		GestureManager.HandleHover(in touchBehavior, in hoverStatus);
 
 		// Assert
-		Assert.Equal(expectedHoverState, sender.CurrentHoverState);
-		Assert.Equal(hoverStatus, sender.CurrentHoverStatus);
+		Assert.Equal(expectedHoverState, touchBehavior.CurrentHoverState);
+		Assert.Equal(hoverStatus, touchBehavior.CurrentHoverStatus);
 	}
 
 	[Theory]
 	[InlineData(TouchStatus.Started, true, TouchState.Pressed)]
 	[InlineData(TouchStatus.Completed, true, TouchState.Default)]
 	[InlineData(TouchStatus.Canceled, false, TouchState.Default)]
-	public void HandleTouch_ShouldUpdateTouchStatusAndState(TouchStatus status, bool canExecute, TouchState expectedTouchState)
+	public void HandleTouch_ShouldUpdateTouchStatusAndState(TouchStatus status, bool isEnabled, TouchState expectedTouchState)
 	{
 		// Arrange
-		var sender = new TouchBehavior
+		var touchBehavior = new TouchBehavior
 		{
-			IsEnabled = canExecute
+			IsEnabled = isEnabled
 		};
 		var tappedCompletedRaised = false;
-		sender.TouchGestureCompleted += (_, _) => tappedCompletedRaised = true;
+		touchBehavior.TouchGestureCompleted += HandleTouchGestureCompleted;
 
 		// Act
 		var gestureManager = new GestureManager();
-		gestureManager.HandleTouch(in sender, in status);
+		gestureManager.HandleTouch(in touchBehavior, in status);
 
 		// Assert
-		Assert.Equal(expectedTouchState, sender.CurrentTouchState);
-		Assert.Equal(status == TouchStatus.Completed && canExecute, tappedCompletedRaised);
+		Assert.Equal(expectedTouchState, touchBehavior.CurrentTouchState);
+		Assert.Equal(status == TouchStatus.Completed && isEnabled, tappedCompletedRaised);
+
+		void HandleTouchGestureCompleted(object? sender, TouchGestureCompletedEventArgs e)
+		{
+			touchBehavior.TouchGestureCompleted -= HandleTouchGestureCompleted;
+			tappedCompletedRaised = true;
+		}
 	}
 
 	[Fact]
 	public async Task ChangeStateAsync_ShouldUpdateVisualState()
 	{
 		// Arrange
-		var sender = new TouchBehavior
+		var touchBehavior = new TouchBehavior
 		{
 			IsEnabled = true,
 			Element = new Button()
@@ -75,14 +81,14 @@ public class GestureManagerTests
 
 		// Act
 		var gestureManager = new GestureManager();
-		await gestureManager.ChangeStateAsync(sender, false, token);
+		await gestureManager.ChangeStateAsync(touchBehavior, false, token);
 
 		// Assert
-		Assert.Equal(TouchState.Default, sender.CurrentTouchState);
-		Assert.Equal(HoverState.Default, sender.CurrentHoverState);
+		Assert.Equal(TouchState.Default, touchBehavior.CurrentTouchState);
+		Assert.Equal(HoverState.Default, touchBehavior.CurrentHoverState);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task HandleLongPress_ShouldRaiseLongPressCompleted()
 	{
 		// Arrange
@@ -91,7 +97,9 @@ public class GestureManagerTests
 			IsEnabled = true,
 			Element = new Button(),
 			CurrentTouchState = TouchState.Pressed,
-			LongPressDuration = 100
+			CurrentInteractionStatus = TouchInteractionStatus.Started,
+			LongPressDuration = 100,
+			LongPressCommand = null
 		};
 		var longPressCompletedRaised = false;
 		touchBehavior.LongPressCompleted += HandleLongPressCompleted;
