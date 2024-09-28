@@ -735,18 +735,18 @@
                                                     <FontIcon Glyph="&#xED3D;" />
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
-                                            <AppBarButton x:Name='PlaybackRateButton'
-								                  Style='{StaticResource AppBarButtonStyle}'
-								                  MediaTransportControlsHelper.DropoutOrder='10'
-								                  Visibility='Collapsed'>
-                                                <AppBarButton.Icon>
-                                                    <FontIcon Glyph="&#xEC57;" />
-                                                </AppBarButton.Icon>
-                                            </AppBarButton>
                                             <AppBarSeparator x:Name='RightSeparator'
 								                  Height='0'
 								                  Width ='0'
 								                  Margin='0,0' />
+                                            <AppBarButton x:Name='PlaybackRateButton'
+                                                  Style='{StaticResource AppBarButtonStyle}'
+                                                  MediaTransportControlsHelper.DropoutOrder='10'
+                                                  Visibility='Collapsed'>
+                                                <AppBarButton.Icon>
+                                                    <FontIcon Glyph="&#xEC57;" />
+                                                </AppBarButton.Icon>
+                                            </AppBarButton>
                                             <AppBarToggleButton x:Name='RepeatButton'
 								                  Style='{StaticResource AppBarToggleButtonStyle}'
 								                  MediaTransportControlsHelper.DropoutOrder='1'
