@@ -37,19 +37,4 @@ public class MauiMediaElement : UIView
 #endif
 		AddSubview(playerViewController.View);
 	}
-
-	/// <summary>
-	/// Adds PlayerViewController to the Parent ViewController
-	/// </summary>
-	/// <param name="playerViewController"></param>
-	/// <param name="parentViewController"></param>
-	public void UpdateParentViewController(AVPlayerViewController playerViewController, UIViewController parentViewController)
-	{
-		parentViewController.AddChildViewController(playerViewController);
-
-		if (playerViewController.View is not null)
-		{
-			AddSubview(playerViewController.View);
-		}
-	}
 }
