@@ -8,14 +8,15 @@
         <Setter Property="FlowDirection" Value="LeftToRight" />
         <Setter Property="Width" Value="{StaticResource MediaTransportControlsMaxWidth}" />
         <Setter Property="HorizontalContentAlignment" Value="Left" />
-        <Setter Property="UseLayoutRounding" Value="True" />
-        <Setter Property="Margin" Value="0,0,0,20" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Bottom" />
+        <Setter Property="Margin" Value="0,0,0,10" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="IsTextScaleFactorEnabled" Value="True" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="MediaTransportControls">
-                    <Grid x:Name="RootGrid" Background="Transparent">
+                    <Grid x:Name="RootGrid" Background="Transparent" CornerRadius="8,8,8,8">
 
                         <Grid.Resources>
                             <!-- New AppBar button style 48x48 pixels in size -->
