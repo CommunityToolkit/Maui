@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Numerics;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
@@ -8,7 +9,6 @@ using Windows.Media;
 using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.System.Display;
-using Page = Microsoft.Maui.Controls.Page;
 using ParentWindow = CommunityToolkit.Maui.Extensions.PageExtensions.ParentWindow;
 using WindowsMediaElement = Windows.Media.Playback.MediaPlayer;
 using WinMediaSource = Windows.Media.Core.MediaSource;
@@ -160,17 +160,17 @@ partial class MediaManager : IDisposable
 		Player.MediaPlayer.PlaybackRate = MediaElement.Speed;
 
 		// Only trigger once when going to the paused state
-		if (IsFloatingPointNumberZero(MediaElement.Speed) && previousSpeed > 0)
+		if (IsZero<double>(MediaElement.Speed) && previousSpeed > 0)
 		{
 			Player.MediaPlayer.Pause();
 		}
 		// Only trigger once when we move from the paused state
-		else if (MediaElement.Speed > 0 && IsFloatingPointNumberZero(previousSpeed))
+		else if (MediaElement.Speed > 0 && IsZero<double>(previousSpeed))
 		{
 			MediaElement.Play();
 		}
 	}
-	static bool IsFloatingPointNumberZero(double a) => (((int)a * 100) == 0);
+
 	protected virtual partial void PlatformUpdateShouldShowPlaybackControls()
 	{
 		if (Player is null)
@@ -485,7 +485,7 @@ partial class MediaManager : IDisposable
 		};
 
 		MediaElement?.CurrentStateChanged(newState);
-		if (sender.PlaybackState == MediaPlaybackState.Playing && AreFloatingPointNumbersEqual(sender.PlaybackRate, 0))
+		if (sender.PlaybackState == MediaPlaybackState.Playing && IsZero<double>(sender.PlaybackRate))
 		{
 			Dispatcher.Dispatch(() =>
 			{
@@ -497,5 +497,9 @@ partial class MediaManager : IDisposable
 	void OnPlaybackSessionSeekCompleted(MediaPlaybackSession sender, object args)
 	{
 		MediaElement?.SeekCompleted();
+	}
+	static bool IsZero<TValue>(TValue numericValue) where TValue : INumber<TValue>
+	{
+		return TValue.IsZero(numericValue);
 	}
 }
