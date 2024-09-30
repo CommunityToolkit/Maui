@@ -219,13 +219,13 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	async void ChangeAspectClicked(object? sender, EventArgs e)
 	{
 		const string cancel = "Cancel";
-		
+
 		var resultAspect = await DisplayActionSheet(
 			"Choose aspect ratio",
-			cancel, 
+			cancel,
 			null,
 			Aspect.AspectFit.ToString(),
-			Aspect.AspectFill.ToString(), 
+			Aspect.AspectFill.ToString(),
 			Aspect.Fill.ToString());
 
 		if (resultAspect is null or cancel)
