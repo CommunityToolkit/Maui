@@ -10,11 +10,17 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 public partial class MediaElementPage : BasePage<MediaElementViewModel>
 {
 	readonly ILogger logger;
+
 	const string loadOnlineMp4 = "Load Online MP4";
 	const string loadHls = "Load HTTP Live Stream (HLS)";
 	const string loadLocalResource = "Load Local Resource";
 	const string resetSource = "Reset Source to null";
 	const string loadMusic = "Load Music";
+
+	const string buckBunnyMp4Url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+	const string botImageUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
+	const string hlsStreamTestUrl = "https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8";
+	const string hal9000AudioUrl = "https://github.com/prof3ssorSt3v3/media-sample-files/raw/master/hal-9000.mp3";
 
 	public MediaElementPage(MediaElementViewModel viewModel, ILogger<MediaElementPage> logger) : base(viewModel)
 	{
@@ -26,7 +32,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 	void MediaElement_PropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		if (e.PropertyName == CommunityToolkit.Maui.Views.MediaElement.DurationProperty.PropertyName)
+		if (e.PropertyName == MediaElement.DurationProperty.PropertyName)
 		{
 			logger.LogInformation("Duration: {NewDuration}", MediaElement.Duration);
 			PositionSlider.Maximum = MediaElement.Duration.TotalSeconds;
@@ -161,21 +167,17 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		{
 			case loadOnlineMp4:
 				MediaElement.MetadataTitle = "Big Buck Bunny";
-				MediaElement.MetadataArtworkUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
+				MediaElement.MetadataArtworkUrl = botImageUrl;
 				MediaElement.MetadataArtist = "Big Buck Bunny Album";
-#pragma warning disable S1075 // URIs should not be hardcoded
 				MediaElement.Source =
-					MediaSource.FromUri(
-						"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
+					MediaSource.FromUri(buckBunnyMp4Url);
 				return;
 
 			case loadHls:
 				MediaElement.MetadataArtist = "HLS Album";
-				MediaElement.MetadataArtworkUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
+				MediaElement.MetadataArtworkUrl = botImageUrl;
 				MediaElement.MetadataTitle = "HLS Title";
-				MediaElement.Source
-					= MediaSource.FromUri(
-						"https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8");
+				MediaElement.Source = MediaSource.FromUri(hlsStreamTestUrl);
 				return;
 
 			case resetSource:
@@ -186,7 +188,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				return;
 
 			case loadLocalResource:
-				MediaElement.MetadataArtworkUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
+				MediaElement.MetadataArtworkUrl = botImageUrl;
 				MediaElement.MetadataTitle = "Local Resource Title";
 				MediaElement.MetadataArtist = "Local Resource Album";
 
@@ -208,20 +210,25 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			case loadMusic:
 				MediaElement.MetadataTitle = "HAL 9000";
 				MediaElement.MetadataArtist = "HAL 9000 Album";
-				MediaElement.MetadataArtworkUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
-				MediaElement.Source = MediaSource.FromUri("https://github.com/prof3ssorSt3v3/media-sample-files/raw/master/hal-9000.mp3");
-#pragma warning restore S1075 // URIs should not be hardcoded
+				MediaElement.MetadataArtworkUrl = botImageUrl;
+				MediaElement.Source = MediaSource.FromUri(hal9000AudioUrl);
 				return;
 		}
 	}
 
 	async void ChangeAspectClicked(object? sender, EventArgs e)
 	{
-		var resultAspect = await DisplayActionSheet("Choose aspect ratio",
-			"Cancel", null, Aspect.AspectFit.ToString(),
-			Aspect.AspectFill.ToString(), Aspect.Fill.ToString());
+		const string cancel = "Cancel";
+		
+		var resultAspect = await DisplayActionSheet(
+			"Choose aspect ratio",
+			cancel, 
+			null,
+			Aspect.AspectFit.ToString(),
+			Aspect.AspectFill.ToString(), 
+			Aspect.Fill.ToString());
 
-		if (resultAspect is null || resultAspect.Equals("Cancel"))
+		if (resultAspect is null or cancel)
 		{
 			return;
 		}
@@ -239,7 +246,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	void DisplayPopup(object sender, EventArgs e)
 	{
 		MediaElement.Pause();
-		var popupMediaElement = new Maui.Views.MediaElement
+		var popupMediaElement = new MediaElement
 		{
 			Source = MediaSource.FromResource("AppleVideo.mp4"),
 			HeightRequest = 600,
