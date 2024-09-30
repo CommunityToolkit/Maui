@@ -44,15 +44,14 @@ public sealed partial class ByteArrayToImageSourceConverterViewModel : BaseViewM
 		var maximumDownloadTime = TimeSpan.FromSeconds(5);
 		var maximumDownloadTimeCTS = new CancellationTokenSource(maximumDownloadTime);
 
-		// Ensure Activity Indicator appears on screen for a minumum of 1.5 seconds when the user taps the Download Button
+		// Ensure Activity Indicator appears on screen for a minimum of 1.5 seconds when the user taps the Download Button
 		var minimumDownloadTime = TimeSpan.FromSeconds(1.5);
 		var minimumDownloadTimeTask = Task.Delay(minimumDownloadTime, maximumDownloadTimeCTS.Token).WaitAsync(token);
 
 		try
 		{
-#pragma warning disable S1075 // URIs should not be hardcoded
-			DotNetBotImageByteArray = await client.GetByteArrayAsync("https://user-images.githubusercontent.com/13558917/137551073-ac8958bf-83e3-4ae3-8623-4db6dce49d02.png", maximumDownloadTimeCTS.Token).WaitAsync(token).ConfigureAwait(false);
-#pragma warning restore S1075 // URIs should not be hardcoded
+			const string dotnetBotImageUrl = "https://user-images.githubusercontent.com/13558917/137551073-ac8958bf-83e3-4ae3-8623-4db6dce49d02.png";
+			DotNetBotImageByteArray = await client.GetByteArrayAsync(dotnetBotImageUrl, maximumDownloadTimeCTS.Token).WaitAsync(token).ConfigureAwait(false);
 
 			await minimumDownloadTimeTask.ConfigureAwait(false);
 

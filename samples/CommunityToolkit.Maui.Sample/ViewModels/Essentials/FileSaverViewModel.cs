@@ -48,9 +48,9 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 	async Task SaveFileInstance(CancellationToken cancellationToken)
 	{
 		using var client = new HttpClient();
-#pragma warning disable S1075 // URIs should not be hardcoded
-		await using var stream = await client.GetStreamAsync("https://www.nuget.org/api/v2/package/CommunityToolkit.Maui/5.0.0", cancellationToken);
-#pragma warning restore S1075 // URIs should not be hardcoded
+		
+		const string communityToolkitNuGetUrl = "https://www.nuget.org/api/v2/package/CommunityToolkit.Maui/5.0.0"
+		await using var stream = await client.GetStreamAsync(communityToolkitNuGetUrl, cancellationToken);
 		try
 		{
 			var fileSaverInstance = new FileSaverImplementation();
