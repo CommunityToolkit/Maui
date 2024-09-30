@@ -48,8 +48,8 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 	async Task SaveFileInstance(CancellationToken cancellationToken)
 	{
 		using var client = new HttpClient();
-		
-		const string communityToolkitNuGetUrl = "https://www.nuget.org/api/v2/package/CommunityToolkit.Maui/5.0.0"
+
+		const string communityToolkitNuGetUrl = "https://www.nuget.org/api/v2/package/CommunityToolkit.Maui/5.0.0";
 		await using var stream = await client.GetStreamAsync(communityToolkitNuGetUrl, cancellationToken);
 		try
 		{
