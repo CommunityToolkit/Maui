@@ -39,22 +39,31 @@ class SpeechToTextImplementationMock : ISpeechToText
 		}
 	}
 
-	Task<SpeechToTextResult> ISpeechToText.ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
-	{
-		throw new NotImplementedException();
-	}
-
 	public async Task StartListenAsync(CultureInfo culture, CancellationToken cancellationToken)
 	{
 		CurrentState = SpeechToTextState.Listening;
-		await Task.Delay(1000, cancellationToken);
+		await Task.Delay(100, cancellationToken);
 		RecognitionResultUpdated?.Invoke(this, new SpeechToTextRecognitionResultUpdatedEventArgs(partialText));
 	}
 
 	public async Task StopListenAsync(CancellationToken cancellationToken)
 	{
 		CurrentState = SpeechToTextState.Stopped;
-		await Task.Delay(1000, cancellationToken);
-		RecognitionResultCompleted?.Invoke(this, new SpeechToTextRecognitionResultCompletedEventArgs(finalText));
+		await Task.Delay(100, cancellationToken);
+		RecognitionResultCompleted?.Invoke(this, new SpeechToTextRecognitionResultCompletedEventArgs(SpeechToTextResult.Success(finalText)));
+	}
+
+	public async Task StartOfflineListenAsync(CultureInfo culture, CancellationToken cancellationToken)
+	{
+		CurrentState = SpeechToTextState.Listening;
+		await Task.Delay(100, cancellationToken);
+		RecognitionResultUpdated?.Invoke(this, new SpeechToTextRecognitionResultUpdatedEventArgs(partialText));
+	}
+
+	public async Task StopOfflineListenAsync(CancellationToken cancellationToken)
+	{
+		CurrentState = SpeechToTextState.Stopped;
+		await Task.Delay(100, cancellationToken);
+		RecognitionResultCompleted?.Invoke(this, new SpeechToTextRecognitionResultCompletedEventArgs(SpeechToTextResult.Success(finalText)));
 	}
 }

@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Speech.Recognition;
 using Microsoft.Maui.ApplicationModel;
 using Windows.Globalization;
 using Windows.Media.SpeechRecognition;
@@ -14,29 +15,46 @@ public sealed partial class SpeechToTextImplementation
 
 	string recognitionText = string.Empty;
 	SpeechRecognizer? speechRecognizer;
-	IProgress<string>? recognitionProgress;
-	TaskCompletionSource<string>? speechRecognitionTaskCompletionSource;
+	SpeechRecognitionEngine? offlineSpeechRecognizer;
 
 	/// <inheritdoc/>
-	public SpeechToTextState CurrentState => speechRecognizer?.State switch
+	public SpeechToTextState CurrentState
 	{
-		SpeechRecognizerState.Idle => SpeechToTextState.Stopped,
-		_ => SpeechToTextState.Listening,
-	};
+		get
+		{
+			if (speechRecognizer == null)
+			{
+				return offlineSpeechRecognizer?.AudioState switch
+				{
+					AudioState.Speech => SpeechToTextState.Listening,
+					AudioState.Silence => SpeechToTextState.Silence,
+					_ => SpeechToTextState.Stopped
+				};
+			}
+
+			return speechRecognizer?.State switch
+			{
+				SpeechRecognizerState.Capturing or SpeechRecognizerState.SoundStarted or SpeechRecognizerState.SpeechDetected or SpeechRecognizerState.Processing => SpeechToTextState.Listening,
+				SpeechRecognizerState.SoundEnded => SpeechToTextState.Silence,
+				_ => SpeechToTextState.Stopped,
+			};
+		}
+	}
 
 	/// <inheritdoc />
 	public async ValueTask DisposeAsync()
 	{
 		await StopRecording(CancellationToken.None);
+		StopOfflineRecording();
 
+		offlineSpeechRecognizer?.Dispose();
+		offlineSpeechRecognizer = null;
 		speechRecognizer?.Dispose();
 		speechRecognizer = null;
 	}
 
 	async Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
 	{
-		ResetSpeechRecognitionTaskCompletionSource(cancellationToken);
-
 		await Initialize(culture, cancellationToken);
 
 		speechRecognizer.ContinuousRecognitionSession.AutoStopSilenceTimeout = TimeSpan.MaxValue;
@@ -52,41 +70,74 @@ public sealed partial class SpeechToTextImplementation
 			throw new PermissionException("Online Speech Recognition Disabled in Privacy Settings");
 		}
 	}
+	
+	async Task InternalStartOfflineListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
+	{
+		await InitializeOffline(culture, cancellationToken);
+
+		offlineSpeechRecognizer.AudioStateChanged += OfflineSpeechRecognizer_StateChanged;
+		offlineSpeechRecognizer.LoadGrammar(new DictationGrammar());
+
+		offlineSpeechRecognizer.InitialSilenceTimeout = TimeSpan.MaxValue;
+		offlineSpeechRecognizer.BabbleTimeout = TimeSpan.MaxValue;
+
+		offlineSpeechRecognizer.SetInputToDefaultAudioDevice();
+
+		offlineSpeechRecognizer.RecognizeCompleted += OnOfflineCompleted;
+		offlineSpeechRecognizer.SpeechRecognized += OfflineResultGenerated;
+		offlineSpeechRecognizer.RecognizeAsync(RecognizeMode.Multiple);
+	}
 
 	void OnCompleted(SpeechContinuousRecognitionSession sender, SpeechContinuousRecognitionCompletedEventArgs args)
 	{
 		switch (args.Status)
 		{
 			case SpeechRecognitionResultStatus.Success:
-				OnRecognitionResultCompleted(recognitionText);
-				speechRecognitionTaskCompletionSource?.TrySetResult(recognitionText);
+				OnRecognitionResultCompleted(SpeechToTextResult.Success(recognitionText));
 				break;
 			case SpeechRecognitionResultStatus.UserCanceled:
-				speechRecognitionTaskCompletionSource?.TrySetCanceled();
+				OnRecognitionResultCompleted(new SpeechToTextResult(recognitionText, new TaskCanceledException("Operation cancelled")));
 				break;
 			default:
-				speechRecognitionTaskCompletionSource?.TrySetException(new Exception(args.Status.ToString()));
+				OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception(args.Status.ToString())));
 				break;
+		}
+	}
+
+	void OnOfflineCompleted(object? sender, RecognizeCompletedEventArgs args)
+	{
+		if (args.Cancelled)
+		{
+			OnRecognitionResultCompleted(new SpeechToTextResult(recognitionText, new TaskCanceledException("Operation cancelled")));
+		}
+		else if (args.Error is not null)
+		{
+			OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception(args.Error.ToString())));
+		}
+		else
+		{
+			OnRecognitionResultCompleted(SpeechToTextResult.Success(recognitionText));
 		}
 	}
 
 	void ResultGenerated(SpeechContinuousRecognitionSession sender, SpeechContinuousRecognitionResultGeneratedEventArgs args)
 	{
 		recognitionText += args.Result.Text;
-		recognitionProgress?.Report(args.Result.Text);
+		OnRecognitionResultUpdated(args.Result.Text);
+	}
+
+	void OfflineResultGenerated(object? sender, SpeechRecognizedEventArgs args)
+	{
+		recognitionText += args.Result.Text;
 		OnRecognitionResultUpdated(args.Result.Text);
 	}
 
 	Task InternalStopListeningAsync(CancellationToken cancellationToken) => StopRecording(cancellationToken);
 
-	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
+	Task InternalStopOfflineListeningAsync(CancellationToken cancellationToken)
 	{
-		ResetSpeechRecognitionTaskCompletionSource(cancellationToken);
-
-		recognitionProgress = recognitionResult;
-		await StartListenAsync(culture, cancellationToken);
-
-		return await speechRecognitionTaskCompletionSource.Task.WaitAsync(cancellationToken);
+		StopOfflineRecording();
+		return Task.CompletedTask;
 	}
 
 	async Task StopRecording(CancellationToken cancellationToken)
@@ -109,19 +160,33 @@ public sealed partial class SpeechToTextImplementation
 		}
 	}
 
-	[MemberNotNull(nameof(speechRecognitionTaskCompletionSource))]
-	void ResetSpeechRecognitionTaskCompletionSource(CancellationToken token)
+	void StopOfflineRecording()
 	{
-		speechRecognitionTaskCompletionSource?.TrySetCanceled(token);
-		speechRecognitionTaskCompletionSource = new();
-
-		token.Register(async () =>
+		try
 		{
-			await StopRecording(token);
-			speechRecognitionTaskCompletionSource.TrySetCanceled(token);
-		});
+			if (offlineSpeechRecognizer is not null)
+			{
+				offlineSpeechRecognizer.RecognizeAsyncStop();
+
+				offlineSpeechRecognizer.AudioStateChanged -= OfflineSpeechRecognizer_StateChanged;
+				offlineSpeechRecognizer.RecognizeCompleted -= OnOfflineCompleted;
+				offlineSpeechRecognizer.SpeechRecognized -= OfflineResultGenerated;
+			}
+		}
+		catch
+		{
+			// ignored. Recording may be already stopped
+		}
 	}
 
+	[MemberNotNull(nameof(recognitionText), nameof(offlineSpeechRecognizer))]
+	Task InitializeOffline(CultureInfo culture, CancellationToken cancellationToken)
+	{
+		recognitionText = string.Empty;
+		offlineSpeechRecognizer = new SpeechRecognitionEngine(culture);
+		cancellationToken.ThrowIfCancellationRequested();
+		return Task.CompletedTask;
+	}
 
 	[MemberNotNull(nameof(recognitionText), nameof(speechRecognizer))]
 	async Task Initialize(CultureInfo culture, CancellationToken cancellationToken)
@@ -131,6 +196,11 @@ public sealed partial class SpeechToTextImplementation
 		speechRecognizer.StateChanged += SpeechRecognizer_StateChanged;
 		cancellationToken.ThrowIfCancellationRequested();
 		await speechRecognizer.CompileConstraintsAsync().AsTask(cancellationToken);
+	}
+
+	void OfflineSpeechRecognizer_StateChanged(object? sender, AudioStateChangedEventArgs e)
+	{
+		OnSpeechToTextStateChanged(CurrentState);
 	}
 
 	void SpeechRecognizer_StateChanged(SpeechRecognizer sender, SpeechRecognizerStateChangedEventArgs args)

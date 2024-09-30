@@ -19,19 +19,17 @@ public class SpeechToTextTests(ITestOutputHelper testOutputHelper) : BaseTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task ListenAsyncFailsOnNet()
-	{
-		SpeechToText.SetDefault(new SpeechToTextImplementation());
-		var result = await SpeechToText.ListenAsync(CultureInfo.CurrentCulture, null, CancellationToken.None);
-		result.Text.Should().BeNull();
-		result.Exception.Should().BeOfType<NotImplementedInReferenceAssemblyException>();
-	}
-
-	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task StartListenAsyncFailsOnNet()
 	{
 		SpeechToText.SetDefault(new SpeechToTextImplementation());
 		await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => SpeechToText.StartListenAsync(CultureInfo.CurrentCulture, CancellationToken.None));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task StartOfflineListenAsyncFailsOnNet()
+	{
+		SpeechToText.SetDefault(new SpeechToTextImplementation());
+		await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => SpeechToText.StartOfflineListenAsync(CultureInfo.CurrentCulture, CancellationToken.None));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -48,7 +46,7 @@ public class SpeechToTextTests(ITestOutputHelper testOutputHelper) : BaseTest
 		void OnStateChanged(object? sender, SpeechToTextStateChangedEventArgs args)
 		{
 			testOutputHelper.WriteLine(args.State.ToString());
-		};
+		}
 	}
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -75,7 +73,35 @@ public class SpeechToTextTests(ITestOutputHelper testOutputHelper) : BaseTest
 		};
 		void OnRecognitionTextCompleted(object? sender, SpeechToTextRecognitionResultCompletedEventArgs args)
 		{
-			currentFinalText = args.RecognitionResult;
+			currentFinalText = args.RecognitionResult.Text;
+		};
+	}
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public async Task StartStopOfflineListenAsyncShouldChangeRecognitionText()
+	{
+		var expectedPartialText = ".NET MAUI";
+		var expectedFinalText = ".NET MAUI";
+		var currentPartialText = string.Empty;
+		var currentFinalText = string.Empty;
+		SpeechToText.SetDefault(new SpeechToTextImplementationMock(expectedPartialText, expectedFinalText));
+		SpeechToText.Default.RecognitionResultUpdated += OnRecognitionTextUpdated;
+		SpeechToText.Default.RecognitionResultCompleted += OnRecognitionTextCompleted;
+		await SpeechToText.StartOfflineListenAsync(CultureInfo.CurrentCulture, CancellationToken.None);
+		await Task.Delay(500);
+		await SpeechToText.StopOfflineListenAsync(CancellationToken.None);
+		SpeechToText.Default.RecognitionResultUpdated -= OnRecognitionTextUpdated;
+		SpeechToText.Default.RecognitionResultCompleted -= OnRecognitionTextCompleted;
+		currentPartialText.Should().Be(expectedPartialText);
+		currentFinalText.Should().Be(expectedFinalText);
+
+		void OnRecognitionTextUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs args)
+		{
+			currentPartialText = args.RecognitionResult;
+		};
+		void OnRecognitionTextCompleted(object? sender, SpeechToTextRecognitionResultCompletedEventArgs args)
+		{
+			currentFinalText = args.RecognitionResult.Text;
 		};
 	}
 
@@ -84,6 +110,13 @@ public class SpeechToTextTests(ITestOutputHelper testOutputHelper) : BaseTest
 	{
 		SpeechToText.SetDefault(new SpeechToTextImplementation());
 		await Assert.ThrowsAsync<NotSupportedException>(() => SpeechToText.StopListenAsync(CancellationToken.None));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task StopOfflineListenAsyncFailsOnNet()
+	{
+		SpeechToText.SetDefault(new SpeechToTextImplementation());
+		await Assert.ThrowsAsync<NotSupportedException>(() => SpeechToText.StopOfflineListenAsync(CancellationToken.None));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]

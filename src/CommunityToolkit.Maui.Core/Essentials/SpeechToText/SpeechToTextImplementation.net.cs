@@ -11,18 +11,22 @@ public sealed partial class SpeechToTextImplementation
 		return ValueTask.CompletedTask;
 	}
 
-	Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult,
-		CancellationToken cancellationToken)
-	{
-		throw new NotSupportedException();
-	}
-
 	Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
 	{
 		throw new NotSupportedException();
 	}
 
 	Task InternalStopListeningAsync(CancellationToken cancellationToken)
+	{
+		throw new NotSupportedException();
+	}
+
+	Task InternalStartOfflineListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
+	{
+		throw new NotSupportedException();
+	}
+
+	Task InternalStopOfflineListeningAsync(CancellationToken cancellationToken)
 	{
 		throw new NotSupportedException();
 	}

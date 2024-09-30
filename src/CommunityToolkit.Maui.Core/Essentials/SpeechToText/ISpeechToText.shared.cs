@@ -28,15 +28,6 @@ public interface ISpeechToText : IAsyncDisposable
 	SpeechToTextState CurrentState { get; }
 
 	/// <summary>
-	/// Converts speech to text in real time.
-	/// </summary>
-	/// <param name="culture">Speak language</param>
-	/// <param name="recognitionResult">Intermediate recognition result.</param>
-	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
-	/// <returns>Final recognition result</returns>
-	Task<SpeechToTextResult> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken = default);
-
-	/// <summary>
 	/// Starts the SpeechToText service
 	/// </summary>
 	/// <remarks>
@@ -54,6 +45,25 @@ public interface ISpeechToText : IAsyncDisposable
 	/// </remarks>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	Task StopListenAsync(CancellationToken cancellationToken = default);
+	
+	/// <summary>
+	/// Starts the Offline SpeechToText service
+	/// </summary>
+	/// <remarks>
+	/// Real time speech recognition results will be surfaced via <see cref="RecognitionResultUpdated"/> and <see cref="RecognitionResultCompleted"/>
+	/// </remarks>
+	/// <param name="culture">Speak language</param>
+	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+	Task StartOfflineListenAsync(CultureInfo culture, CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Stops the OfflineSpeechToText service
+	/// </summary>
+	/// <remarks>
+	/// Speech recognition results will be surfaced via <see cref="RecognitionResultCompleted"/>
+	/// </remarks>
+	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+	Task StopOfflineListenAsync(CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Request permissions for speech to text.

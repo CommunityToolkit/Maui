@@ -20,17 +20,22 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	[ObservableProperty]
 	Locale? currentLocale;
 
+	public SpeechToTextState? State => speechToText.CurrentState;
+
 	[ObservableProperty]
 	string? recognitionText = "Welcome to .NET MAUI Community Toolkit!";
-
-	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ListenCommand))]
-	bool canListenExecute = true;
-
+	
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StartListenCommand))]
 	bool canStartListenExecute = true;
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StopListenCommand))]
 	bool canStopListenExecute = false;
+
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StartOfflineListenCommand))]
+	bool canStartOfflineListenExecute = true;
+
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StopOfflineListenCommand))]
+	bool canStopOfflineListenExecute = false;
 
 	public SpeechToTextViewModel(ITextToSpeech textToSpeech, ISpeechToText speechToText)
 	{
@@ -82,67 +87,24 @@ public partial class SpeechToTextViewModel : BaseViewModel
 		}
 	}
 
-	[RelayCommand(IncludeCancelCommand = true, CanExecute = nameof(CanListenExecute))]
-	async Task Listen(CancellationToken cancellationToken)
-	{
-		CanStartListenExecute = false;
-
-		try
-		{
-			var isGranted = await speechToText.RequestPermissions(cancellationToken);
-			if (!isGranted)
-			{
-				await Toast.Make("Permission not granted").Show(cancellationToken);
-				return;
-			}
-
-			const string beginSpeakingPrompt = "Begin speaking...";
-
-			RecognitionText = beginSpeakingPrompt;
-
-			var recognitionResult = await speechToText.ListenAsync(
-				CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage),
-				new Progress<string>(partialText =>
-				{
-					if (RecognitionText is beginSpeakingPrompt)
-					{
-						RecognitionText = string.Empty;
-					}
-
-					RecognitionText += partialText + " ";
-				}), cancellationToken);
-
-			if (recognitionResult.IsSuccessful)
-			{
-				RecognitionText = recognitionResult.Text;
-			}
-			else
-			{
-				await Toast.Make(recognitionResult.Exception?.Message ?? "Unable to recognize speech").Show(CancellationToken.None);
-			}
-
-			if (RecognitionText is beginSpeakingPrompt)
-			{
-				RecognitionText = string.Empty;
-			}
-		}
-		finally
-		{
-			CanStartListenExecute = true;
-		}
-	}
-
 	[RelayCommand(CanExecute = nameof(CanStartListenExecute))]
-	async Task StartListen(CancellationToken cancellationToken)
+	async Task StartListen()
 	{
-		CanListenExecute = false;
 		CanStartListenExecute = false;
+		CanStartOfflineListenExecute = false;
+		CanStopOfflineListenExecute = false;
 		CanStopListenExecute = true;
 
-		var isGranted = await speechToText.RequestPermissions(cancellationToken);
+		var isGranted = await speechToText.RequestPermissions(CancellationToken.None);
 		if (!isGranted)
 		{
-			await Toast.Make("Permission not granted").Show(cancellationToken);
+			await Toast.Make("Permission not granted").Show(CancellationToken.None);
+			return;
+		}
+
+		if (Connectivity.NetworkAccess != NetworkAccess.Internet)
+		{
+			await Toast.Make("Internet connection is required").Show(CancellationToken.None);
 			return;
 		}
 
@@ -150,10 +112,10 @@ public partial class SpeechToTextViewModel : BaseViewModel
 
 		RecognitionText = beginSpeakingPrompt;
 
-		await speechToText.StartListenAsync(CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage), cancellationToken);
-
 		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
 
+		await speechToText.StartListenAsync(CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage), CancellationToken.None);
+		
 		if (RecognitionText is beginSpeakingPrompt)
 		{
 			RecognitionText = string.Empty;
@@ -161,15 +123,58 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	}
 
 	[RelayCommand(CanExecute = nameof(CanStopListenExecute))]
-	Task StopListen(CancellationToken cancellationToken)
+	Task StopListen()
 	{
-		CanListenExecute = true;
 		CanStartListenExecute = true;
+		CanStartOfflineListenExecute = true;
+		CanStopOfflineListenExecute = false;
 		CanStopListenExecute = false;
 
 		speechToText.RecognitionResultUpdated -= HandleRecognitionResultUpdated;
 
-		return speechToText.StopListenAsync(cancellationToken);
+		return speechToText.StopListenAsync(CancellationToken.None);
+	}
+	
+	[RelayCommand(CanExecute = nameof(CanStartOfflineListenExecute))]
+	async Task StartOfflineListen()
+	{
+		CanStartListenExecute = false;
+		CanStopListenExecute = false;
+		CanStartOfflineListenExecute = false;
+		CanStopOfflineListenExecute = true;
+
+		var isGranted = await speechToText.RequestPermissions(CancellationToken.None);
+		if (!isGranted)
+		{
+			await Toast.Make("Permission not granted").Show(CancellationToken.None);
+			return;
+		}
+
+		const string beginSpeakingPrompt = "Begin speaking...";
+
+		RecognitionText = beginSpeakingPrompt;
+
+		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
+
+		await speechToText.StartOfflineListenAsync(CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage), CancellationToken.None);
+		
+		if (RecognitionText is beginSpeakingPrompt)
+		{
+			RecognitionText = string.Empty;
+		}
+	}
+
+	[RelayCommand(CanExecute = nameof(CanStopOfflineListenExecute))]
+	Task StopOfflineListen()
+	{
+		CanStartOfflineListenExecute = true;
+		CanStartListenExecute = true;
+		CanStopListenExecute = false;
+		CanStopOfflineListenExecute = false;
+
+		speechToText.RecognitionResultUpdated -= HandleRecognitionResultUpdated;
+
+		return speechToText.StopOfflineListenAsync(CancellationToken.None);
 	}
 
 	void HandleRecognitionResultUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs e)
@@ -179,12 +184,12 @@ public partial class SpeechToTextViewModel : BaseViewModel
 
 	void HandleRecognitionResultCompleted(object? sender, SpeechToTextRecognitionResultCompletedEventArgs e)
 	{
-		RecognitionText = e.RecognitionResult;
+		RecognitionText = e.RecognitionResult.IsSuccessful ? e.RecognitionResult.Text : e.RecognitionResult.Exception.Message;
 	}
 
-	async void HandleSpeechToTextStateChanged(object? sender, SpeechToTextStateChangedEventArgs e)
+	void HandleSpeechToTextStateChanged(object? sender, SpeechToTextStateChangedEventArgs e)
 	{
-		await Toast.Make($"State Changed: {e.State}").Show(CancellationToken.None);
+		OnPropertyChanged(nameof(State));
 	}
 
 	void HandleLocalesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
