@@ -63,7 +63,7 @@ public partial class TouchBehavior : IDisposable
 		}
 		catch (TaskCanceledException ex)
 		{
-			Trace.TraceError("{0}", ex);
+			Trace.TraceInformation("{0}", ex);
 		}
 	}
 

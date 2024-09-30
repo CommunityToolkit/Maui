@@ -397,7 +397,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 				IsValid = false;
 				IsRunning = false;
 
-				Trace.TraceError("{0}", ex);
+				Trace.TraceInformation("{0}", ex);
 			}
 		}
 
