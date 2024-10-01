@@ -89,7 +89,7 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInBehaviors)
 		{
-			Trace.WriteLine(ex);
+			Trace.TraceInformation("{0}", ex);
 		}
 	}
 
