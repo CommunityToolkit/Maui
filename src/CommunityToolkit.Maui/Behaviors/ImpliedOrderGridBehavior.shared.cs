@@ -34,7 +34,7 @@ public class ImpliedOrderGridBehavior : BaseBehavior<Grid>
 
 	static void LogWarning(string warning, bool shouldThrowException)
 	{
-		System.Diagnostics.Trace.WriteLine(warning);
+		System.Diagnostics.Trace.TraceWarning(warning);
 
 		if (shouldThrowException)
 		{
