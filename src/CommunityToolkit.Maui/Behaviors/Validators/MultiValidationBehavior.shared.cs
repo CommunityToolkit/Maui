@@ -66,9 +66,9 @@ public class MultiValidationBehavior : ValidationBehavior
 			return c.ValidateNestedAsync(token).AsTask();
 		})).ConfigureAwait(false);
 
-		var errors = children.Where(c => c.IsNotValid).Select(GetError).ToList();
+		var errors = children.Where(static c => c.IsNotValid).Select(GetError).ToList();
 
-		if (!errors.Any())
+		if (errors.Count is 0)
 		{
 			Errors = null;
 			return true;
@@ -82,7 +82,7 @@ public class MultiValidationBehavior : ValidationBehavior
 		return false;
 	}
 
-	void OnChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+	static void OnChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 	{
 		if (e.NewItems is not null)
 		{
@@ -91,7 +91,7 @@ public class MultiValidationBehavior : ValidationBehavior
 				var isSuccessful = ((ICommunityToolkitBehavior<VisualElement>)child).TrySetBindingContextToAttachedViewBindingContext();
 				if (!isSuccessful)
 				{
-					Trace.WriteLine($"Setting {nameof(BindingContext)} for {child.GetType()} failed");
+					Trace.TraceInformation($"Setting {nameof(BindingContext)} for {child.GetType()} failed");
 				}
 			}
 		}
