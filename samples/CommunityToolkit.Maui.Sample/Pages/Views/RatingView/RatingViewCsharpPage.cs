@@ -14,66 +14,75 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 {
 	public RatingViewCsharpPage(RatingViewCsharpViewModel viewModel) : base(viewModel)
 	{
+		const int ratingViewTitleRowHeight = 18;
+		const int stepperRowHeight = 24;
+		const int sliderRowHeight = 24;
+		const int pickerRowHeight = 32;
+		const int smallestSizeRatingViewHeight = 32;
+		const int smallerSizeRatingViewHeight = 40;
+		const int largerSizeRatingViewHeight = 50;
+		const int largestSizeRatingViewHeight = 60;
+		const int sampleRatingViewHeight = smallerSizeRatingViewHeight;
+		
 		Title = "RatingView C# Syntax";
 
 		Content = new ScrollView
 		{
 			Content = new Grid
 			{
-				Padding = new Thickness(0, 6, 0, 0),
 				RowSpacing = 12,
 				ColumnSpacing = 8,
 
 				RowDefinitions = Rows.Define(
 					(Row.DefaultsHeader, SectionHeader.RequestedHeight),
-					(Row.DefaultsRatingView, Auto),
-					(Row.DefaultsRatingViewUsingProperties, Auto),
-					(Row.DefaultsRatingViewUsingStyles, Auto),
+					(Row.DefaultsRatingView, sampleRatingViewHeight),
+					(Row.DefaultsRatingViewUsingProperties, sampleRatingViewHeight),
+					(Row.DefaultsRatingViewUsingStyles, sampleRatingViewHeight),
 					(Row.ShapesHeader, SectionHeader.RequestedHeight),
-					(Row.ShapesStar, Auto),
-					(Row.ShapesCircle, Auto),
-					(Row.ShapesHeart, Auto),
-					(Row.ShapesLike, Auto),
-					(Row.ShapesDislike, Auto),
-					(Row.ShapesCustomAnimal, Auto),
-					(Row.ShapesCustomLogo, Auto),
+					(Row.ShapesStar, sampleRatingViewHeight),
+					(Row.ShapesCircle, sampleRatingViewHeight),
+					(Row.ShapesHeart, sampleRatingViewHeight),
+					(Row.ShapesLike, sampleRatingViewHeight),
+					(Row.ShapesDislike, sampleRatingViewHeight),
+					(Row.ShapesCustomAnimal, sampleRatingViewHeight),
+					(Row.ShapesCustomLogo, sampleRatingViewHeight),
 					(Row.MaximumRatingsHeader, SectionHeader.RequestedHeight),
-					(Row.MaximumRatingsStepper, Auto),
-					(Row.MaximumRatingsRatingView, Auto),
+					(Row.MaximumRatingsStepper, stepperRowHeight),
+					(Row.MaximumRatingsRatingView, sampleRatingViewHeight),
 					(Row.ColorsHeader, SectionHeader.RequestedHeight),
-					(Row.ColorsEmptyRatingViewPicker, Auto),
-					(Row.ColorsFilledRatingViewPicker, Auto),
-					(Row.ColorsBorderRatingViewPicker, Auto),
-					(Row.ColorsShapeFillTitle, Auto),
-					(Row.ColorsShapeFillRatingView, Auto),
-					(Row.ColorsItemFillTitle, Auto),
-					(Row.ColorsItemFillRatingView, Auto),
+					(Row.ColorsEmptyRatingViewPicker, pickerRowHeight),
+					(Row.ColorsFilledRatingViewPicker, pickerRowHeight),
+					(Row.ColorsBorderRatingViewPicker, pickerRowHeight),
+					(Row.ColorsShapeFillTitle, ratingViewTitleRowHeight),
+					(Row.ColorsShapeFillRatingView, largerSizeRatingViewHeight),
+					(Row.ColorsItemFillTitle, ratingViewTitleRowHeight),
+					(Row.ColorsItemFillRatingView, largerSizeRatingViewHeight),
 					(Row.BorderThicknessHeader, SectionHeader.RequestedHeight),
-					(Row.BorderThicknessStepper, Auto),
-					(Row.BorderThicknessRatingView, Auto),
+					(Row.BorderThicknessStepper, stepperRowHeight),
+					(Row.BorderThicknessRatingView, sampleRatingViewHeight),
 					(Row.ReadOnlyHeader, SectionHeader.RequestedHeight),
-					(Row.ReadOnlyCheckBox, Auto),
-					(Row.ReadOnlyRatingView, Auto),
+					(Row.ReadOnlyCheckBox, ratingViewTitleRowHeight),
+					(Row.ReadOnlyRatingView, sampleRatingViewHeight),
 					(Row.PaddingHeader, SectionHeader.RequestedHeight),
-					(Row.PaddingLeftStepper, Auto),
-					(Row.PaddingTopStepper, Auto),
-					(Row.PaddingRightStepper, Auto),
-					(Row.PaddingBottomStepper, Auto),
-					(Row.PaddingRatingView, Auto),
+					(Row.PaddingLeftStepper, stepperRowHeight),
+					(Row.PaddingTopStepper, stepperRowHeight),
+					(Row.PaddingRightStepper, stepperRowHeight),
+					(Row.PaddingBottomStepper, stepperRowHeight),
+					(Row.PaddingRatingView, sampleRatingViewHeight),
 					(Row.RatingHeader, SectionHeader.RequestedHeight),
-					(Row.RatingSlider, Auto),
-					(Row.RatingShapeFillTitle, Auto),
-					(Row.RatingShapeFillRatingView, Auto),
-					(Row.RatingItemFillTitle, Auto),
-					(Row.RatingItemFillRatingView, Auto),
+					(Row.RatingSlider, sliderRowHeight),
+					(Row.RatingShapeFillTitle, ratingViewTitleRowHeight),
+					(Row.RatingShapeFillRatingView, sampleRatingViewHeight),
+					(Row.RatingItemFillTitle, ratingViewTitleRowHeight),
+					(Row.RatingItemFillRatingView, sampleRatingViewHeight),
 					(Row.SizingHeader, SectionHeader.RequestedHeight),
-					(Row.SizingRatingViewSmallest, Auto),
-					(Row.SizingRatingViewSmaller, Auto),
-					(Row.SizingRatingViewLarger, Auto),
-					(Row.SizingRatingViewLargest, Auto),
+					(Row.SizingRatingViewSmallest, smallestSizeRatingViewHeight),
+					(Row.SizingRatingViewSmaller, smallerSizeRatingViewHeight),
+					(Row.SizingRatingViewLarger, largerSizeRatingViewHeight),
+					(Row.SizingRatingViewLargest, largestSizeRatingViewHeight),
 					(Row.SpacingHeader, SectionHeader.RequestedHeight),
-					(Row.SpacingStepper, Auto),
-					(Row.SpacingRatingView, Auto)),
+					(Row.SpacingStepper, stepperRowHeight),
+					(Row.SpacingRatingView, sampleRatingViewHeight)),
 
 				ColumnDefinitions = Columns.Define(
 					(Column.Input, 120),
@@ -140,7 +149,6 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new RatingView
 						{
-							ItemShapeSize = 40,
 							MaximumRating = 5,
 							EmptyColor = Colors.White,
 							FilledColor = Colors.Blue,
@@ -160,7 +168,6 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new RatingView
 						{
-							ItemShapeSize = 40,
 							MaximumRating = 5,
 							EmptyColor = Colors.Red,
 							FilledColor = Colors.Blue,
@@ -180,7 +187,6 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new RatingView
 						{
-							ItemShapeSize = 40,
 							MaximumRating = 5,
 							FilledColor = Colors.White,
 							Rating = 5,
@@ -199,7 +205,6 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new RatingView
 						{
-							ItemShapeSize = 40,
 							MaximumRating = 5,
 							Rating = 5,
 							FilledColor = Colors.Red,
@@ -218,7 +223,6 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new RatingView
 						{
-							ItemShapeSize = 40,
 							MaximumRating = 5,
 							Rating = 5,
 							FilledColor = Colors.White,
@@ -239,7 +243,6 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						{
 							CustomShape =
 								"M3.15452 1.01195C5.11987 1.32041 7.17569 2.2474 8.72607 3.49603C9.75381 3.17407 10.8558 2.99995 12 2.99995C13.1519 2.99995 14.261 3.17641 15.2946 3.5025C16.882 2.27488 18.8427 1.31337 20.8354 1.01339C21.2596 0.95092 21.7008 1.16534 21.8945 1.55273C22.6719 3.38958 22.6983 5.57987 22.2202 7.49248L22.2128 7.52213C22.0847 8.03536 21.9191 8.69868 21.3876 8.92182C21.7827 9.89315 22 10.9466 22 12.0526C22 14.825 20.8618 17.6774 19.8412 20.2348L19.8412 20.2348L19.7379 20.4936C19.1182 22.0486 17.7316 23.1196 16.125 23.418L13.8549 23.8397C13.1549 23.9697 12.4562 23.7172 12 23.2082C11.5438 23.7172 10.8452 23.9697 10.1452 23.8397L7.87506 23.418C6.26852 23.1196 4.88189 22.0486 4.26214 20.4936L4.15891 20.2348C3.13833 17.6774 2.00004 14.825 2.00004 12.0526C2.00004 10.9466 2.21737 9.89315 2.6125 8.92182C2.08046 8.69845 1.91916 8.05124 1.7909 7.53658L1.7799 7.49248C1.32311 5.66527 1.23531 3.2968 2.10561 1.55273C2.29827 1.16741 2.72906 0.945855 3.15452 1.01195ZM6.58478 4.44052C5.45516 5.10067 4.47474 5.9652 3.71373 6.98132C3.41572 5.76461 3.41236 4.41153 3.67496 3.18754C4.68842 3.48029 5.68018 3.89536 6.58478 4.44052ZM20.2863 6.98133C19.5303 5.97184 18.5577 5.11195 17.4374 4.45347C18.3364 3.9005 19.3043 3.45749 20.3223 3.17455C20.5884 4.40199 20.5853 5.76068 20.2863 6.98133ZM8.85364 5.56694C9.81678 5.20285 10.8797 4.99995 12 4.99995C13.1204 4.99995 14.1833 5.20285 15.1464 5.56694C18.0554 6.66661 20 9.1982 20 12.0526C20 14.4676 18.9891 16.9876 18.0863 19.238L18.0862 19.2382C18.0167 19.4115 17.9478 19.5832 17.8801 19.7531C17.5291 20.6338 16.731 21.2712 15.7597 21.4516L13.4896 21.8733L12.912 20.5896C12.7505 20.2307 12.3935 19.9999 12 19.9999C11.6065 19.9999 11.2496 20.2307 11.0881 20.5896L10.5104 21.8733L8.24033 21.4516C7.26908 21.2712 6.471 20.6338 6.12001 19.7531C6.05237 19.5834 5.98357 19.4119 5.91414 19.2388L5.91395 19.2384L5.91381 19.238C5.01102 16.9876 4.00004 14.4676 4.00004 12.0526C4.00004 9.1982 5.94472 6.66661 8.85364 5.56694ZM10.5 15.9999C10.1212 15.9999 9.77497 16.2139 9.60557 16.5527C9.43618 16.8915 9.47274 17.2969 9.7 17.5999L11.2 19.5999C11.3889 19.8517 11.6852 19.9999 12 19.9999C12.3148 19.9999 12.6111 19.8517 12.8 19.5999L14.3 17.5999C14.5273 17.2969 14.5638 16.8915 14.3944 16.5527C14.225 16.2139 13.8788 15.9999 13.5 15.9999H10.5ZM9.62134 11.1212C9.62134 11.9497 8.94977 12.6212 8.12134 12.6212C7.29291 12.6212 6.62134 11.9497 6.62134 11.1212C6.62134 10.2928 7.29291 9.62125 8.12134 9.62125C8.94977 9.62125 9.62134 10.2928 9.62134 11.1212ZM16 12.4999C16.8284 12.4999 17.5 11.8284 17.5 10.9999C17.5 10.1715 16.8284 9.49994 16 9.49994C15.1716 9.49994 14.5 10.1715 14.5 10.9999C14.5 11.8284 15.1716 12.4999 16 12.4999Z",
-							ItemShapeSize = 40,
 							MaximumRating = 5,
 							FilledColor = Colors.Red,
 							Rating = 5,
@@ -261,7 +264,6 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							CustomShape = "M23.07 8h2.89l-6.015 5.957a5.621 5.621 0 01-7.89 0L6.035 8H8.93l4.57 4.523a3.556 3.556 0 004.996 0L23.07 8zM8.895 24.563H6l6.055-5.993a5.621 5.621 0 017.89 0L26 24.562h-2.895L18.5 20a3.556 3.556 0 00-4.996 0l-4.61 4.563z",
 							EmptyColor = Colors.Red,
 							FilledColor = Colors.White,
-							ItemShapeSize = 40,
 							MaximumRating = 5,
 							Rating = 5,
 							Shape = RatingViewShape.Custom,
@@ -272,7 +274,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						.Row(Row.ShapesCustomLogo).Column(Column.Result)
 						.SemanticDescription("A RatingView showing the 'Custom' shape and passing in the required custom shape path."),
 
-					new SectionHeader("Maximum ratings")
+					new SectionHeader("Maximum Ratings")
 						.Row(Row.MaximumRatingsHeader).ColumnSpan(All<Column>()),
 
 					new Stepper
@@ -363,20 +365,22 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						.SemanticHint("Pick to change the rating shape border color."),
 
 					new Label()
+						.BackgroundColor(Colors.Green)
 						.Row(Row.ColorsShapeFillTitle).ColumnSpan(All<Column>())
 						.Start()
-						.CenterVertical()
+						.Bottom()
 						.Text("Shape Fill"),
 
 					new RatingView
 						{
-							ItemShapeSize = 40,
+							ItemShapeSize = largerSizeRatingViewHeight,
 							MaximumRating = 5,
 							Rating = 2.7,
 							ShapeBorderThickness = 1
 						}
 						.Row(Row.ColorsShapeFillRatingView).ColumnSpan(All<Column>())
 						.Start()
+						.Top()
 						.Bind(RatingView.EmptyColorProperty,
 							static (RatingViewCsharpViewModel vm) => vm.ColorPickerEmptyBackgroundTarget,
 							mode: BindingMode.OneWay)
@@ -391,18 +395,19 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 					new Label()
 						.Row(Row.ColorsItemFillTitle).ColumnSpan(All<Column>())
 						.Start()
-						.CenterVertical()
+						.Bottom()
 						.Text("Item Fill"),
 
 					new RatingView
 						{
-							ItemShapeSize = 40,
+							ItemShapeSize = largerSizeRatingViewHeight,
 							MaximumRating = 5,
 							Rating = 2.7,
 							RatingFill = RatingFillElement.Item,
 							ShapeBorderThickness = 1
 						}
 						.Row(Row.ColorsItemFillRatingView).ColumnSpan(All<Column>())
+						.Top()
 						.Bind(RatingView.EmptyColorProperty,
 							getter: static (RatingViewCsharpViewModel vm) => vm.ColorPickerEmptyBackgroundTarget,
 							mode: BindingMode.OneWay)
@@ -469,7 +474,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new Label()
 						.Row(Row.ReadOnlyCheckBox).Column(Column.Result)
-						.Start()
+						.End()
 						.Text("IsReadOnly")
 						.CenterVertical(),
 
@@ -633,7 +638,8 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new Label()
 						.Row(Row.RatingShapeFillTitle).ColumnSpan(All<Column>())
-						.Text("Shape Fill"),
+						.Text("Shape Fill")
+						.Bottom(),
 
 					new RatingView
 						{
@@ -650,6 +656,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							Spacing = 3,
 						}
 						.Row(Row.RatingShapeFillRatingView).ColumnSpan(All<Column>())
+						.Top()
 						.Bind(RatingView.RatingProperty,
 							getter: static slider => slider.Value,
 							mode: BindingMode.OneWay,
@@ -659,7 +666,8 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new Label()
 						.Row(Row.RatingItemFillTitle).ColumnSpan(All<Column>())
-						.Text("Item Fill"),
+						.Text("Item Fill")
+						.Bottom(),
 
 					new RatingView
 						{
@@ -676,6 +684,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							Spacing = 3,
 						}
 						.Row(Row.RatingItemFillRatingView).ColumnSpan(All<Column>())
+						.Top()
 						.Bind(RatingView.RatingProperty,
 							getter: static slider => slider.Value,
 							mode: BindingMode.OneWay,
@@ -688,7 +697,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new RatingView
 						{
-							ItemShapeSize = 30,
+							ItemShapeSize = smallestSizeRatingViewHeight,
 							MaximumRating = 5,
 							Rating = 5,
 						}
@@ -697,7 +706,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new RatingView
 						{
-							ItemShapeSize = 40,
+							ItemShapeSize = smallerSizeRatingViewHeight,
 							MaximumRating = 5,
 							Rating = 5,
 						}
@@ -706,7 +715,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new RatingView
 						{
-							ItemShapeSize = 50,
+							ItemShapeSize = largerSizeRatingViewHeight,
 							MaximumRating = 5,
 							Rating = 5,
 						}
@@ -715,7 +724,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new RatingView
 						{
-							ItemShapeSize = 60,
+							ItemShapeSize = largestSizeRatingViewHeight,
 							MaximumRating = 5,
 							Rating = 5,
 						}
@@ -834,5 +843,4 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 				.Font(size: 24, bold: true);
 		}
 	}
-
 }
