@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <NetVersion>net8.0</NetVersion>
-    <iOSVersion>$(NetVersion)-ios17.0</iOSVersion>
+    <iOSVersion>$(NetVersion)-ios17.5</iOSVersion>
     <MauiPackageVersion>8.0.71</MauiPackageVersion>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
