@@ -1,6 +1,6 @@
 // Ignore Spelling: csharp, color, colors
 
-using CommunityToolkit.Maui.Behaviors;
+using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
@@ -264,9 +264,9 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 					},
 
 					new RatingView()
-						.Invoke(ratingView => ratingView.RatingChanged += StepperMaximumRating_RatingChanged)
+						.Invoke(static ratingView => ratingView.RatingChanged += HandleRatingChanged)
 						.Bind(RatingView.MaximumRatingProperty,
-							static stepper => (int)stepper.Value,
+							getter: static stepper => (int)stepper.Value,
 							mode: BindingMode.OneWay,
 							source: stepperMaximumRating)
 						.SemanticDescription("A RatingView showing changes to the 'MaximumRating' property and with an event handler when the 'RatingChanged' event is triggered."),
@@ -284,8 +284,8 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						{
 							new Label()
 								.Text("Empty color: ")
-								.CenterVertical()
-							,
+								.CenterVertical(),
+							
 							new Picker()
 								.Bind(Picker.ItemsSourceProperty,
 									getter: static (RatingViewCsharpViewModel vm) => vm.ColorsForPickers,
@@ -297,7 +297,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 								.SemanticHint("Pick to change the empty rating background color."),
 						}
 					},
-					
+
 					new HorizontalStackLayout
 					{
 						Spacing = 8,
@@ -306,7 +306,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							new Label()
 								.Text("Filled color: ")
 								.CenterVertical(),
-							
+
 							new Picker()
 								.Bind(Picker.ItemsSourceProperty,
 									getter: static (RatingViewCsharpViewModel vm) => vm.ColorsForPickers,
@@ -331,7 +331,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 								.Bind(Picker.ItemsSourceProperty,
 									getter: static (RatingViewCsharpViewModel vm) => vm.ColorsForPickers,
 									mode: BindingMode.OneTime)
-								.Bind(Picker.SelectedIndexProperty, 
+								.Bind(Picker.SelectedIndexProperty,
 									getter: static (RatingViewCsharpViewModel vm) => vm.ColorPickerRatingShapeBorderColorSelectedIndex,
 									setter: static (RatingViewCsharpViewModel vm, int index) => vm.ColorPickerRatingShapeBorderColorSelectedIndex = index,
 									mode: BindingMode.TwoWay)
@@ -357,10 +357,10 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							static (RatingViewCsharpViewModel vm) => vm.ColorPickerRatingShapeBorderColorTarget,
 							mode: BindingMode.OneWay)
 						.SemanticDescription("A RatingView showing the fill, empty and border color changes, shown using the fill type of 'Shape'."),
-					
+
 					new Label()
 						.Text("Item Fill"),
-					
+
 					new RatingView
 						{
 							ItemShapeSize = 40,
@@ -462,7 +462,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 					new TitleLabel("Shape padding"),
 
 					GetSeparator(),
-					
+
 					new HorizontalStackLayout
 					{
 						Spacing = 8,
@@ -576,12 +576,12 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 					},
 					new RatingView
 						{
-							BackgroundColor = Colors.Purple,
-							HorizontalOptions = LayoutOptions.Start,
 							MaximumRating = 5,
 							Rating = 4.5,
-							VerticalOptions = LayoutOptions.Center,
-						}.Bind(RatingView.ItemPaddingProperty,
+						}
+						.BackgroundColor(Colors.Purple)
+						.Start().CenterVertical()
+						.Bind(RatingView.ItemPaddingProperty,
 							getter: static (RatingViewCsharpViewModel vm) => vm.RatingViewShapePaddingValue)
 						.SemanticDescription("A RatingView sample showing the padding changes."),
 
@@ -591,21 +591,28 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					GetSeparator(),
 
-					new Slider
+					new HorizontalStackLayout
 					{
-						Maximum = 7,
-						Minimum = 0,
-						Value = 0
-					}.Assign(out Slider ratingRatingView).SemanticHint("Slide to change the rating."),
-					new Label()
-						.Center()
-						.Bind(
-							Label.TextProperty,
-							getter: static slider => slider.Value,
-							mode: BindingMode.OneWay,
-							convert: static sliderValue => $": {sliderValue:F2}",
-							source: ratingRatingView)
-						.SemanticDescription("RatingView rating value."),
+						Spacing = 8,
+						Children =
+						{
+							new Slider
+							{
+								Maximum = 7,
+								Minimum = 0,
+								Value = 0
+							}.Assign(out Slider ratingViewSlider).SemanticHint("Slide to change the rating."),
+
+							new Label()
+								.Center()
+								.Bind(Label.TextProperty,
+									getter: static slider => slider.Value,
+									mode: BindingMode.OneWay,
+									convert: static sliderValue => $": {sliderValue:F2}",
+									source: ratingViewSlider)
+								.SemanticDescription("RatingView rating value."),
+						}
+					},
 
 					new Label()
 						.Text("Shape Fill"),
@@ -628,7 +635,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							getter: static slider => slider.Value,
 							mode: BindingMode.OneWay,
 							convert: static sliderValue => sliderValue,
-							source: ratingRatingView)
+							source: ratingViewSlider)
 						.SemanticDescription("A RatingView sample showing the rating changes and the fill type of 'Shape'."),
 
 					new Label().Text("Item Fill"),
@@ -651,7 +658,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							getter: static slider => slider.Value,
 							mode: BindingMode.OneWay,
 							convert: static sliderValue => sliderValue,
-							source: ratingRatingView)
+							source: ratingViewSlider)
 						.SemanticDescription("A RatingView sample showing the rating changes and the fill type of 'Item'."),
 
 					GetSeparator(),
@@ -725,8 +732,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							MaximumRating = 5,
 							Rating = 2.5
 						}
-						.Bind(
-							RatingView.SpacingProperty,
+						.Bind(RatingView.SpacingProperty,
 							getter: static stepper => (int)stepper.Value,
 							mode: BindingMode.OneWay,
 							convert: static stepperValue => stepperValue,
@@ -750,19 +756,13 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 		}.Center().AppThemeBinding(Line.StrokeProperty, Colors.Black, Colors.White);
 	}
 
-	void RatingViewShapePaddingLeft_ValueChanged(object? sender, ValueChangedEventArgs e) => BindingContext.RatingViewShapePaddingLeft = e.NewValue;
-
-	void RatingViewShapePaddingRight_ValueChanged(object? sender, ValueChangedEventArgs e) => BindingContext.RatingViewShapePaddingRight = e.NewValue;
-
-	void RatingViewShapePaddingTop_ValueChanged(object? sender, ValueChangedEventArgs e) => BindingContext.RatingViewShapePaddingTop = e.NewValue;
-
-	void StepperMaximumRating_RatingChanged(object? sender, RatingChangedEventArgs e)
+	static async void HandleRatingChanged(object? sender, RatingChangedEventArgs e)
 	{
+		ArgumentNullException.ThrowIfNull(sender);
+		var ratingView = (RatingView)sender;
+
 		// This is the weak event raised when the rating is changed.  The developer can then perform further actions (such as save to DB).
-		if (sender is RatingView ratingView)
-		{
-			_ = ratingView.Rating;
-		}
+		await Toast.Make($"New Rating: {ratingView.Rating:F2}").Show(CancellationToken.None);
 	}
 
 	sealed class TitleLabel : Label
