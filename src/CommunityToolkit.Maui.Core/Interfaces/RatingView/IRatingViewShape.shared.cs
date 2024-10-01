@@ -70,34 +70,6 @@ public interface IRatingViewShape
 	/// <param name="oldValue">Old item shape size.</param>
 	/// <param name="newValue">New item shape size.</param>
 	void OnItemShapeSizeChanged(double oldValue, double newValue);
-
-	/// <summary>Retrieves the default item shape size value.</summary>
-	/// <returns>The item shape <see cref="double"/> size.</returns>
-	double ItemShapeSizeDefaultValueCreator();
-
-	/// <summary>Retrieves the default shape value.</summary>
-	/// <returns>The shape <see cref="RatingViewShape"/>.</returns>
-	RatingViewShape ShapeDefaultValueCreator();
-
-	/// <summary>Retrieves the default shape border color value.</summary>
-	/// <returns>The item shape border <see cref="Color"/>.</returns>
-	Color ItemShapeBorderColorDefaultValueCreator();
-
-	/// <summary>Retrieves the default shape border thickness value.</summary>
-	/// <returns>The item shape border <see cref="double"/>.</returns>
-	double ItemShapeBorderThicknessDefaultValueCreator();
-
-	/// <summary>Retrieves the default rating item padding value.</summary>
-	/// <returns>The rating item padding <see cref="Thickness"/>.</returns>
-	Thickness ItemPaddingDefaultValueCreator();
-
-	/// <summary>Retrieves the default background color for an empty rating item.</summary>
-	/// <returns>The empty background color.</returns>
-	Color EmptyColorDefaultValueCreator();
-
-	/// <summary>Retrieves the default background color for an filled rating item.</summary>
-	/// <returns>The filled background color.</returns>
-	Color FilledColorDefaultValueCreator();
 }
 
 /// <summary>Rating view shape enumerator.</summary>

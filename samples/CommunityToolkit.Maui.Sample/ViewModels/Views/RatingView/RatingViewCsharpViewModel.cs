@@ -1,22 +1,26 @@
 ﻿// Ignore Spelling: csharp
-namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
+using System.Collections.ObjectModel;
 using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Maui;
+
+namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public partial class RatingViewCsharpViewModel : BaseViewModel
 {
+	readonly ReadOnlyDictionary<string, Color> colorList = typeof(Colors)
+		.GetFields(BindingFlags.Static | BindingFlags.Public)
+		.ToDictionary(static c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()))
+		.AsReadOnly();
+
 	public RatingViewCsharpViewModel()
 	{
-		ColorsForPickers = colorList.Keys.ToList();
+		ColorsForPickers = [.. colorList.Keys];
 		ColorPickerEmptyBackgroundSelectedIndex = ColorsForPickers.IndexOf("Red");
 		ColorPickerFilledBackgroundSelectedIndex = ColorsForPickers.IndexOf("Green");
 		ColorPickerRatingShapeBorderColorSelectedIndex = ColorsForPickers.IndexOf("Blue");
 	}
-
-	readonly IReadOnlyDictionary<string, Color> colorList = typeof(Colors).GetFields(BindingFlags.Static | BindingFlags.Public).ToDictionary(c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()));
 
 	[ObservableProperty]
 	List<string> colorsForPickers;
@@ -28,34 +32,15 @@ public partial class RatingViewCsharpViewModel : BaseViewModel
 	Thickness ratingViewShapePadding = new(0);
 
 	[ObservableProperty]
-	Color colorPickerFilledBackgroundTarget = Colors.Green;
+	Color? colorPickerFilledBackgroundTarget = Colors.Green,
+		colorPickerEmptyBackgroundTarget = Colors.Red,
+		colorPickerRatingShapeBorderColorTarget = Colors.Blue;
 
 	[ObservableProperty]
-	Color colorPickerEmptyBackgroundTarget = Colors.Red;
+	int? colorPickerFilledBackgroundSelectedIndex, colorPickerEmptyBackgroundSelectedIndex, colorPickerRatingShapeBorderColorSelectedIndex;
 
 	[ObservableProperty]
-	Color colorPickerRatingShapeBorderColorTarget = Colors.Blue;
-
-	[ObservableProperty]
-	int colorPickerFilledBackgroundSelectedIndex = -1;
-
-	[ObservableProperty]
-	int colorPickerEmptyBackgroundSelectedIndex = -1;
-
-	[ObservableProperty]
-	int colorPickerRatingShapeBorderColorSelectedIndex = -1;
-
-	[ObservableProperty]
-	double ratingViewShapePaddingLeft = 0;
-
-	[ObservableProperty]
-	double ratingViewShapePaddingTop = 0;
-
-	[ObservableProperty]
-	double ratingViewShapePaddingRight = 0;
-
-	[ObservableProperty]
-	double ratingViewShapePaddingBottom = 0;
+	double ratingViewShapePaddingLeft, ratingViewShapePaddingTop, ratingViewShapePaddingRight, ratingViewShapePaddingBottom;
 
 	[ObservableProperty]
 	Thickness ratingViewShapePaddingValue = new(0);
@@ -63,32 +48,32 @@ public partial class RatingViewCsharpViewModel : BaseViewModel
 	[RelayCommand]
 	void ColorPickerFilledBackground()
 	{
-		if (ColorPickerFilledBackgroundSelectedIndex != -1)
+		if (ColorPickerFilledBackgroundSelectedIndex is not null)
 		{
-			ColorPickerFilledBackgroundTarget = colorList.ElementAtOrDefault(ColorPickerFilledBackgroundSelectedIndex).Value ?? Colors.Transparent;
+			ColorPickerFilledBackgroundTarget = colorList.ElementAtOrDefault(ColorPickerFilledBackgroundSelectedIndex.Value).Value ?? Colors.Transparent;
 		}
 	}
 
 	[RelayCommand]
 	void ColorPickerEmptyBackground()
 	{
-		if (ColorPickerEmptyBackgroundSelectedIndex != -1)
+		if (ColorPickerEmptyBackgroundSelectedIndex is not null)
 		{
-			ColorPickerEmptyBackgroundTarget = colorList.ElementAtOrDefault(ColorPickerEmptyBackgroundSelectedIndex).Value ?? Colors.Transparent;
+			ColorPickerEmptyBackgroundTarget = colorList.ElementAtOrDefault(ColorPickerEmptyBackgroundSelectedIndex.Value).Value ?? Colors.Transparent;
 		}
 	}
 
 	[RelayCommand]
 	void ColorPickerRatingShapeBorderColor()
 	{
-		if (ColorPickerRatingShapeBorderColorSelectedIndex != -1)
+		if (ColorPickerRatingShapeBorderColorSelectedIndex is not null)
 		{
-			ColorPickerRatingShapeBorderColorTarget = colorList.ElementAtOrDefault(ColorPickerRatingShapeBorderColorSelectedIndex).Value ?? Colors.Transparent;
+			ColorPickerRatingShapeBorderColorTarget = colorList.ElementAtOrDefault(ColorPickerRatingShapeBorderColorSelectedIndex.Value).Value ?? Colors.Transparent;
 		}
 	}
 
 	[RelayCommand]
-	void RatingViewShapePaddingLeftCommand()
+	void OnRatingViewShapePaddingLeftChanged()
 	{
 		Thickness thickness = RatingViewShapePaddingValue;
 		thickness.Left = RatingViewShapePaddingLeft;
@@ -96,7 +81,7 @@ public partial class RatingViewCsharpViewModel : BaseViewModel
 	}
 
 	[RelayCommand]
-	void RatingViewShapePaddingTopCommand()
+	void OnRatingViewShapePaddingTopChanged()
 	{
 		Thickness thickness = RatingViewShapePaddingValue;
 		thickness.Top = RatingViewShapePaddingTop;
@@ -104,7 +89,7 @@ public partial class RatingViewCsharpViewModel : BaseViewModel
 	}
 
 	[RelayCommand]
-	void RatingViewShapePaddingRightCommand()
+	void OnRatingViewShapePaddingRightChanged()
 	{
 		Thickness thickness = RatingViewShapePaddingValue;
 		thickness.Right = RatingViewShapePaddingRight;
@@ -112,7 +97,7 @@ public partial class RatingViewCsharpViewModel : BaseViewModel
 	}
 
 	[RelayCommand]
-	void RatingViewShapePaddingBottomCommand()
+	void OnRatingViewShapePaddingBottomChanged()
 	{
 		Thickness thickness = RatingViewShapePaddingValue;
 		thickness.Bottom = RatingViewShapePaddingBottom;

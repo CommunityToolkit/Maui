@@ -2,6 +2,7 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.Shapes;
@@ -28,7 +29,7 @@ public class RatingView : TemplatedView, IRatingView
 
 	// TODO: Add some kind of Roslyn Analyser to validate at design/build time that the MaximumRating is in bounds (1-25).
 	/// <summary>The backing store for the <see cref="MaximumRating" /> bindable property.</summary>
-	public static readonly BindableProperty MaximumRatingProperty = BindableProperty.Create(nameof(MaximumRating), typeof(byte), typeof(RatingView), defaultValue: RatingViewDefaults.MaximumRating, validateValue: maximumRatingValidator, propertyChanged: OnMaximumRatingChange);
+	public static readonly BindableProperty MaximumRatingProperty = BindableProperty.Create(nameof(MaximumRating), typeof(byte), typeof(RatingView), defaultValue: RatingViewDefaults.MaximumRating, validateValue: ValidateMaximumRating, propertyChanged: OnMaximumRatingChange);
 
 	/// <summary>The backing store for the <see cref="RatingChangedCommand"/> bindable property.</summary>
 	public static readonly BindableProperty RatingChangedCommandProperty = BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(RatingView));
@@ -81,17 +82,19 @@ public class RatingView : TemplatedView, IRatingView
 	}
 
 	/// <summary>Gets or sets a value of the empty rating color property.</summary>
+	[AllowNull]
 	public Color EmptyColor
 	{
 		get => (Color)GetValue(EmptyColorProperty);
-		set => SetValue(EmptyColorProperty, value);
+		set => SetValue(EmptyColorProperty, value ?? Colors.Transparent);
 	}
 
 	/// <summary>Gets or sets a value of the filled rating color property.</summary>
+	[AllowNull]
 	public Color FilledColor
 	{
 		get => (Color)GetValue(FilledColorProperty);
-		set => SetValue(FilledColorProperty, value);
+		set => SetValue(FilledColorProperty, value ?? Colors.Transparent);
 	}
 
 	///<summary>Gets or sets a value indicating if the controls is read-only.</summary>
@@ -151,10 +154,11 @@ public class RatingView : TemplatedView, IRatingView
 	}
 
 	/// <summary>Gets or sets a value indicating the rating shape border color.</summary>
+	[AllowNull]
 	public Color ShapeBorderColor
 	{
 		get => (Color)GetValue(ShapeBorderColorProperty);
-		set => SetValue(ShapeBorderColorProperty, value);
+		set => SetValue(ShapeBorderColorProperty, value ?? Colors.Transparent);
 	}
 
 	///<summary>Gets or sets a value indicating the rating shape border thickness.</summary>
@@ -169,36 +173,6 @@ public class RatingView : TemplatedView, IRatingView
 	{
 		get => (double)GetValue(SpacingProperty);
 		set => SetValue(SpacingProperty, value);
-	}
-
-	Color IRatingViewShape.EmptyColorDefaultValueCreator()
-	{
-		return RatingViewDefaults.EmptyColor;
-	}
-
-	Color IRatingViewShape.FilledColorDefaultValueCreator()
-	{
-		return RatingViewDefaults.FilledColor;
-	}
-
-	Thickness IRatingViewShape.ItemPaddingDefaultValueCreator()
-	{
-		return RatingViewDefaults.ItemPadding;
-	}
-
-	Color IRatingViewShape.ItemShapeBorderColorDefaultValueCreator()
-	{
-		return RatingViewDefaults.ShapeBorderColor;
-	}
-
-	double IRatingViewShape.ItemShapeBorderThicknessDefaultValueCreator()
-	{
-		return RatingViewDefaults.ShapeBorderThickness;
-	}
-
-	double IRatingViewShape.ItemShapeSizeDefaultValueCreator()
-	{
-		return RatingViewDefaults.ItemShapeSize;
 	}
 
 	/// <summary>Change the rating shape to a custom shape.</summary>
@@ -306,11 +280,6 @@ public class RatingView : TemplatedView, IRatingView
 		}
 	}
 
-	RatingViewShape IRatingViewShape.ShapeDefaultValueCreator()
-	{
-		return RatingViewDefaults.Shape;
-	}
-
 	///<summary>Method called every time the control's Binding Context is changed.</summary>
 	protected override void OnBindingContextChanged()
 	{
@@ -383,7 +352,7 @@ public class RatingView : TemplatedView, IRatingView
 	/// <param name="bindable">The bindable object.</param>
 	/// <param name="value">Value to validate.</param>
 	/// <returns>True, if the value is within range; Otherwise false.</returns>
-	static bool maximumRatingValidator(BindableObject bindable, object value)
+	static bool ValidateMaximumRating(BindableObject bindable, object value)
 	{
 		return (byte)value is >= 1 and <= RatingViewDefaults.MaximumRatings;
 	}
@@ -474,10 +443,10 @@ public class RatingView : TemplatedView, IRatingView
 	{
 		return new(
 			[
-					new GradientStop(filledColor, 0),
+				new GradientStop(filledColor, 0),
 				new GradientStop(filledColor, (float)partialFill),
 				new GradientStop(emptyColor, (float)partialFill),
-				],
+			],
 			new Point(0, 0), new Point(1, 0));
 	}
 
@@ -510,7 +479,7 @@ public class RatingView : TemplatedView, IRatingView
 			((Shape)border.Content).Fill = emptyColor;
 			if (i < fullShapes)
 			{
-				ratingItems[i].Background = new SolidColorBrush(filledColor);  // Fully filled shape
+				ratingItems[i].Background = new SolidColorBrush(filledColor); // Fully filled shape
 			}
 			else if (i == fullShapes && partialFill > 0)
 			{
@@ -518,7 +487,7 @@ public class RatingView : TemplatedView, IRatingView
 			}
 			else
 			{
-				ratingItems[i].Background = new SolidColorBrush(backgroundColor);  // Empty fill
+				ratingItems[i].Background = new SolidColorBrush(backgroundColor); // Empty fill
 			}
 		}
 	}
@@ -546,7 +515,7 @@ public class RatingView : TemplatedView, IRatingView
 			}
 			else
 			{
-				ratingShape.Fill = emptyColor;  // Empty fill
+				ratingShape.Fill = emptyColor; // Empty fill
 			}
 		}
 	}
