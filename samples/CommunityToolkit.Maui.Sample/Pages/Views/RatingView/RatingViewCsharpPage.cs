@@ -20,19 +20,23 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 		{
 			Content = new Grid
 			{
+				Padding = new Thickness(0, 6, 0, 0),
+				RowSpacing = 12,
+				ColumnSpacing = 8,
+
 				RowDefinitions = Rows.Define(
 					(Row.DefaultsHeader, SectionHeader.RequestedHeight),
 					(Row.DefaultsRatingView, Auto),
 					(Row.DefaultsRatingViewUsingProperties, Auto),
 					(Row.DefaultsRatingViewUsingStyles, Auto),
-					(Row.AvailableShapesHeader, SectionHeader.RequestedHeight),
-					(Row.AvailableShapesStar, Auto),
-					(Row.AvailableShapesCircle, Auto),
-					(Row.AvailableShapesHeart, Auto),
-					(Row.AvailableShapesLike, Auto),
-					(Row.AvailableShapesDislike, Auto),
-					(Row.AvailableShapesCustomDog, Auto),
-					(Row.AvailableShapesCustomLogo, Auto),
+					(Row.ShapesHeader, SectionHeader.RequestedHeight),
+					(Row.ShapesStar, Auto),
+					(Row.ShapesCircle, Auto),
+					(Row.ShapesHeart, Auto),
+					(Row.ShapesLike, Auto),
+					(Row.ShapesDislike, Auto),
+					(Row.ShapesCustomAnimal, Auto),
+					(Row.ShapesCustomLogo, Auto),
 					(Row.MaximumRatingsHeader, SectionHeader.RequestedHeight),
 					(Row.MaximumRatingsStepper, Auto),
 					(Row.MaximumRatingsRatingView, Auto),
@@ -72,77 +76,66 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 					(Row.SpacingRatingView, Auto)),
 
 				ColumnDefinitions = Columns.Define(
-					(Column.Input, 56),
+					(Column.Input, 120),
 					(Column.Result, Star)),
 
-				Padding = new Thickness(0, 6, 0, 0),
-				RowSpacing = 12,
 				Children =
 				{
 					new SectionHeader("Defaults")
 						.Row(Row.DefaultsHeader).ColumnSpan(All<Column>()),
 
-					new HorizontalStackLayout
-					{
-						Spacing = 8,
-						Children =
-						{
-							new Label()
-								.Text("Default")
-								.CenterVertical(),
+					new Label()
+						.Row(Row.DefaultsRatingView).Column(Column.Input)
+						.Text("Default")
+						.CenterVertical(),
 
-							new RatingView()
-								.SemanticDescription("A RatingView showing the defaults.")
-						}
-					}.Row(Row.DefaultsRatingView).ColumnSpan(All<Column>()),
+					new RatingView()
+						.Row(Row.DefaultsRatingView).Column(Column.Result)
+						.SemanticDescription("A RatingView showing the defaults."),
 
-					new HorizontalStackLayout
-					{
-						Spacing = 8,
-						Children =
-						{
-							new Label()
-								.Text("Using Properties")
-								.CenterVertical(),
-
-							new RatingView
-							{
-								BackgroundColor = Colors.Red,
-								EmptyColor = Colors.Green,
-								FilledColor = Colors.Blue,
-								MaximumRating = 5,
-								Rating = 2.5
-							}.SemanticDescription("A RatingView customised by setting properties.")
-						}
-					}.Row(Row.DefaultsRatingViewUsingProperties).ColumnSpan(All<Column>()),
-
-					new HorizontalStackLayout
-					{
-						Spacing = 8,
-						Children =
-						{
-							new Label()
-								.Text("Using Styles")
-								.CenterVertical(),
-
-							new RatingView
-							{
-								MaximumRating = 5,
-								Rating = 2.5,
-								Style = new Style<RatingView>()
-									.Add(RatingView.EmptyColorProperty, Colors.Green)
-									.Add(RatingView.FilledColorProperty, Colors.Blue)
-									.Add(BackgroundColorProperty, Colors.Red)
-							}.SemanticDescription("A RatingView customised by setting a style.")
-						}
-					}.Row(Row.DefaultsRatingViewUsingStyles).ColumnSpan(All<Column>()),
-
-					new SectionHeader("Available Shapes, and example custom shape")
-						.Row(Row.AvailableShapesHeader).ColumnSpan(All<Column>()),
 
 					new Label()
-						.Row(Row.AvailableShapesStar).Column(Column.Input)
+						.Row(Row.DefaultsRatingViewUsingProperties).Column(Column.Input)
+						.Text("Using Properties")
+						.CenterVertical(),
+
+					new RatingView
+						{
+							BackgroundColor = Colors.Red,
+							EmptyColor = Colors.Green,
+							FilledColor = Colors.Blue,
+							MaximumRating = 5,
+							Rating = 2.5
+						}
+						.Start()
+						.Row(Row.DefaultsRatingViewUsingProperties).Column(Column.Result)
+						.SemanticDescription("A RatingView customised by setting properties."),
+
+					new Label()
+						.Row(Row.DefaultsRatingViewUsingStyles).Column(Column.Input)
+						.Text("Using Styles")
+						.CenterVertical(),
+
+					new RatingView
+						{
+							MaximumRating = 5,
+							Rating = 2.5,
+							Style = new Style<RatingView>()
+								.Add(RatingView.EmptyColorProperty, Colors.Green)
+								.Add(RatingView.FilledColorProperty, Colors.Blue)
+								.Add(BackgroundColorProperty, Colors.Red)
+						}
+						.Start()
+						.Row(Row.DefaultsRatingViewUsingStyles).Column(Column.Result)
+						.SemanticDescription("A RatingView customised by setting a style."),
+
+					new SectionHeader("Shapes")
+						.Row(Row.ShapesHeader).ColumnSpan(All<Column>()),
+
+					new Label()
+						.Row(Row.ShapesStar).Column(Column.Input)
 						.Text("Star")
+						.Font(size: 16)
 						.CenterVertical(),
 
 					new RatingView
@@ -154,12 +147,15 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							Rating = 2,
 							Shape = RatingViewShape.Star,
 							ShapeBorderThickness = 1
-						}.Row(Row.AvailableShapesStar).Column(Column.Result)
+						}
+						.Start()
+						.Row(Row.ShapesStar).Column(Column.Result)
 						.SemanticDescription("A RatingView showing the 'Star' shape."),
 
 					new Label()
-						.Row(Row.AvailableShapesCircle).Column(Column.Input)
+						.Row(Row.ShapesCircle).Column(Column.Input)
 						.Text("Circle")
+						.Font(size: 16)
 						.CenterVertical(),
 
 					new RatingView
@@ -171,12 +167,15 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							Rating = 2,
 							Shape = RatingViewShape.Circle,
 							ShapeBorderThickness = 1
-						}.Row(Row.AvailableShapesCircle).Column(Column.Result)
+						}
+						.Start()
+						.Row(Row.ShapesCircle).Column(Column.Result)
 						.SemanticDescription("A RatingView showing the 'Circle' shape."),
 
 					new Label()
-						.Row(Row.AvailableShapesHeart).Column(Column.Input)
+						.Row(Row.ShapesHeart).Column(Column.Input)
 						.Text("Heart")
+						.Font(size: 16)
 						.CenterVertical(),
 
 					new RatingView
@@ -187,12 +186,15 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							Rating = 5,
 							Shape = RatingViewShape.Heart,
 							ShapeBorderThickness = 1
-						}.Row(Row.AvailableShapesHeart).Column(Column.Result)
+						}
+						.Start()
+						.Row(Row.ShapesHeart).Column(Column.Result)
 						.SemanticDescription("A RatingView showing the 'Heart' shape."),
 
 					new Label()
-						.Row(Row.AvailableShapesLike).Column(Column.Input)
+						.Row(Row.ShapesLike).Column(Column.Input)
 						.Text("Like")
+						.Font(size: 16)
 						.CenterVertical(),
 
 					new RatingView
@@ -203,12 +205,15 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							FilledColor = Colors.Red,
 							Shape = RatingViewShape.Like,
 							ShapeBorderThickness = 1
-						}.Row(Row.AvailableShapesLike).Column(Column.Result)
+						}
+						.Start()
+						.Row(Row.ShapesLike).Column(Column.Result)
 						.SemanticDescription("A RatingView showing the 'Like' shape."),
 
 					new Label()
-						.Row(Row.AvailableShapesDislike).Column(Column.Input)
+						.Row(Row.ShapesDislike).Column(Column.Input)
 						.Text("Dislike")
+						.Font(size: 16)
 						.CenterVertical(),
 
 					new RatingView
@@ -220,12 +225,14 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							Shape = RatingViewShape.Dislike,
 							ShapeBorderThickness = 1
 						}
-						.Row(Row.AvailableShapesDislike).Column(Column.Result)
+						.Start()
+						.Row(Row.ShapesDislike).Column(Column.Result)
 						.SemanticDescription("A RatingView showing the 'Dislike' shape."),
 
 					new Label()
-						.Row(Row.AvailableShapesCustomDog).Column(Column.Input)
+						.Row(Row.ShapesCustomAnimal).Column(Column.Input)
 						.Text("Custom")
+						.Font(size: 16)
 						.CenterVertical(),
 
 					new RatingView
@@ -239,12 +246,14 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							Shape = RatingViewShape.Custom,
 							ShapeBorderThickness = 1,
 						}
-						.Row(Row.AvailableShapesCustomDog).Column(Column.Result)
+						.Start()
+						.Row(Row.ShapesCustomAnimal).Column(Column.Result)
 						.SemanticDescription("A RatingView showing the 'Custom' shape and passing in the required custom shape path."),
 
 					new Label()
-						.Row(Row.AvailableShapesCustomLogo).Column(Column.Input)
+						.Row(Row.ShapesCustomLogo).Column(Column.Input)
 						.Text("Custom")
+						.Font(size: 16)
 						.CenterVertical(),
 
 					new RatingView
@@ -259,38 +268,38 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							ShapeBorderColor = Colors.Grey,
 							ShapeBorderThickness = 1,
 						}
-						.Row(Row.AvailableShapesCustomLogo).Column(Column.Result)
+						.Start()
+						.Row(Row.ShapesCustomLogo).Column(Column.Result)
 						.SemanticDescription("A RatingView showing the 'Custom' shape and passing in the required custom shape path."),
 
 					new SectionHeader("Maximum ratings")
 						.Row(Row.MaximumRatingsHeader).ColumnSpan(All<Column>()),
 
-					new HorizontalStackLayout
-					{
-						Spacing = 8,
-						Children =
+					new Stepper
 						{
-							new Stepper
-								{
-									Increment = 1,
-									Minimum = 1,
-									Maximum = 25,
-									Value = 0
-								}
-								.Assign(out Stepper stepperMaximumRating)
-								.SemanticHint("Change the maximum number of ratings."),
-
-							new Label()
-								.Bind(Label.TextProperty,
-									getter: static stepper => stepper.Value,
-									mode: BindingMode.OneWay,
-									convert: static stepperValue => $": {stepperValue}",
-									source: stepperMaximumRating),
+							Increment = 1,
+							Minimum = 1,
+							Maximum = 25,
+							Value = 0
 						}
-					}.Row(Row.MaximumRatingsStepper).ColumnSpan(All<Column>()),
+						.End()
+						.Row(Row.MaximumRatingsStepper).Column(Column.Input)
+						.Assign(out Stepper stepperMaximumRating)
+						.SemanticHint("Change the maximum number of ratings."),
+
+					new Label()
+						.Row(Row.MaximumRatingsStepper).Column(Column.Result)
+						.Start()
+						.CenterVertical()
+						.Bind(Label.TextProperty,
+							getter: static stepper => stepper.Value,
+							mode: BindingMode.OneWay,
+							convert: static stepperValue => $": {stepperValue}",
+							source: stepperMaximumRating),
 
 					new RatingView()
 						.Row(Row.MaximumRatingsRatingView).ColumnSpan(All<Column>())
+						.Center()
 						.Invoke(static ratingView => ratingView.RatingChanged += HandleRatingChanged)
 						.Bind(RatingView.MaximumRatingProperty,
 							getter: static stepper => (int)stepper.Value,
@@ -301,71 +310,62 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 					new SectionHeader("Colors")
 						.Row(Row.ColorsHeader).ColumnSpan(All<Column>()),
 
-					new HorizontalStackLayout
-					{
-						Spacing = 8,
-						Children =
-						{
-							new Label()
-								.Text("Empty Color: ")
-								.CenterVertical(),
+					new Label()
+						.Row(Row.ColorsEmptyRatingViewPicker).Column(Column.Input)
+						.Text("Empty Color: ")
+						.CenterVertical(),
 
-							new Picker()
-								.Bind(Picker.ItemsSourceProperty,
-									getter: static (RatingViewCsharpViewModel vm) => vm.ColorsForPickers,
-									mode: BindingMode.OneTime)
-								.Bind(Picker.SelectedIndexProperty,
-									getter: static (RatingViewCsharpViewModel vm) => vm.ColorPickerEmptyBackgroundSelectedIndex,
-									setter: static (RatingViewCsharpViewModel vm, int index) => vm.ColorPickerEmptyBackgroundSelectedIndex = index,
-									mode: BindingMode.TwoWay)
-								.SemanticHint("Pick to change the empty rating background color."),
-						}
-					}.Row(Row.ColorsEmptyRatingViewPicker).ColumnSpan(All<Column>()),
+					new Picker()
+						.Row(Row.ColorsEmptyRatingViewPicker).Column(Column.Result)
+						.Start()
+						.Bind(Picker.ItemsSourceProperty,
+							getter: static (RatingViewCsharpViewModel vm) => vm.ColorsForPickers,
+							mode: BindingMode.OneTime)
+						.Bind(Picker.SelectedIndexProperty,
+							getter: static (RatingViewCsharpViewModel vm) => vm.ColorPickerEmptyBackgroundSelectedIndex,
+							setter: static (RatingViewCsharpViewModel vm, int index) => vm.ColorPickerEmptyBackgroundSelectedIndex = index,
+							mode: BindingMode.TwoWay)
+						.SemanticHint("Pick to change the empty rating background color."),
 
-					new HorizontalStackLayout
-					{
-						Spacing = 8,
-						Children =
-						{
-							new Label()
-								.Text("Filled Color: ")
-								.CenterVertical(),
 
-							new Picker()
-								.Bind(Picker.ItemsSourceProperty,
-									getter: static (RatingViewCsharpViewModel vm) => vm.ColorsForPickers,
-									mode: BindingMode.OneTime)
-								.Bind(Picker.SelectedIndexProperty,
-									getter: static (RatingViewCsharpViewModel vm) => vm.ColorPickerFilledBackgroundSelectedIndex,
-									setter: static (RatingViewCsharpViewModel vm, int value) => vm.ColorPickerFilledBackgroundSelectedIndex = value,
-									mode: BindingMode.TwoWay)
-								.SemanticHint("Pick to change the filled rating background color."),
-						}
-					}.Row(Row.ColorsFilledRatingViewPicker).ColumnSpan(All<Column>()),
+					new Label()
+						.Row(Row.ColorsFilledRatingViewPicker).Column(Column.Input)
+						.Text("Filled Color: ")
+						.CenterVertical(),
 
-					new HorizontalStackLayout
-					{
-						Spacing = 8,
-						Children =
-						{
-							new Label()
-								.Text("Border Color: ")
-								.CenterVertical(),
+					new Picker()
+						.Row(Row.ColorsFilledRatingViewPicker).Column(Column.Result)
+						.Start()
+						.Bind(Picker.ItemsSourceProperty,
+							getter: static (RatingViewCsharpViewModel vm) => vm.ColorsForPickers,
+							mode: BindingMode.OneTime)
+						.Bind(Picker.SelectedIndexProperty,
+							getter: static (RatingViewCsharpViewModel vm) => vm.ColorPickerFilledBackgroundSelectedIndex,
+							setter: static (RatingViewCsharpViewModel vm, int value) => vm.ColorPickerFilledBackgroundSelectedIndex = value,
+							mode: BindingMode.TwoWay)
+						.SemanticHint("Pick to change the filled rating background color."),
 
-							new Picker()
-								.Bind(Picker.ItemsSourceProperty,
-									getter: static (RatingViewCsharpViewModel vm) => vm.ColorsForPickers,
-									mode: BindingMode.OneTime)
-								.Bind(Picker.SelectedIndexProperty,
-									getter: static (RatingViewCsharpViewModel vm) => vm.ColorPickerRatingShapeBorderColorSelectedIndex,
-									setter: static (RatingViewCsharpViewModel vm, int index) => vm.ColorPickerRatingShapeBorderColorSelectedIndex = index,
-									mode: BindingMode.TwoWay)
-								.SemanticHint("Pick to change the rating shape border color."),
-						}
-					}.Row(Row.ColorsBorderRatingViewPicker).ColumnSpan(All<Column>()),
+					new Label()
+						.Row(Row.ColorsBorderRatingViewPicker).Column(Column.Input)
+						.Text("Border Color: ")
+						.CenterVertical(),
+
+					new Picker()
+						.Row(Row.ColorsBorderRatingViewPicker).Column(Column.Result)
+						.Start()
+						.Bind(Picker.ItemsSourceProperty,
+							getter: static (RatingViewCsharpViewModel vm) => vm.ColorsForPickers,
+							mode: BindingMode.OneTime)
+						.Bind(Picker.SelectedIndexProperty,
+							getter: static (RatingViewCsharpViewModel vm) => vm.ColorPickerRatingShapeBorderColorSelectedIndex,
+							setter: static (RatingViewCsharpViewModel vm, int index) => vm.ColorPickerRatingShapeBorderColorSelectedIndex = index,
+							mode: BindingMode.TwoWay)
+						.SemanticHint("Pick to change the rating shape border color."),
 
 					new Label()
 						.Row(Row.ColorsShapeFillTitle).ColumnSpan(All<Column>())
+						.Start()
+						.CenterVertical()
 						.Text("Shape Fill"),
 
 					new RatingView
@@ -374,7 +374,9 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							MaximumRating = 5,
 							Rating = 2.7,
 							ShapeBorderThickness = 1
-						}.Row(Row.ColorsShapeFillRatingView).ColumnSpan(All<Column>())
+						}
+						.Row(Row.ColorsShapeFillRatingView).ColumnSpan(All<Column>())
+						.Start()
 						.Bind(RatingView.EmptyColorProperty,
 							static (RatingViewCsharpViewModel vm) => vm.ColorPickerEmptyBackgroundTarget,
 							mode: BindingMode.OneWay)
@@ -388,6 +390,8 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new Label()
 						.Row(Row.ColorsItemFillTitle).ColumnSpan(All<Column>())
+						.Start()
+						.CenterVertical()
 						.Text("Item Fill"),
 
 					new RatingView
@@ -397,7 +401,8 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							Rating = 2.7,
 							RatingFill = RatingFillElement.Item,
 							ShapeBorderThickness = 1
-						}.Row(Row.ColorsItemFillRatingView).ColumnSpan(All<Column>())
+						}
+						.Row(Row.ColorsItemFillRatingView).ColumnSpan(All<Column>())
 						.Bind(RatingView.EmptyColorProperty,
 							getter: static (RatingViewCsharpViewModel vm) => vm.ColorPickerEmptyBackgroundTarget,
 							mode: BindingMode.OneWay)
@@ -412,27 +417,27 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 					new SectionHeader("Shape Border Thickness")
 						.Row(Row.BorderThicknessHeader).ColumnSpan(All<Column>()),
 
-					new HorizontalStackLayout
-					{
-						Spacing = 8,
-						Children =
+					new Stepper
 						{
-							new Stepper
-							{
-								Increment = 1,
-								Minimum = 0,
-								Maximum = 10,
-								Value = 1
-							}.Assign(out Stepper stepperShapeBorderThickness).SemanticHint("Change the rating shape border thickness."),
-
-							new Label().CenterVertical()
-								.Bind(Label.TextProperty,
-									getter: static stepper => stepper.Value,
-									mode: BindingMode.OneWay,
-									convert: static stepperValue => $": {stepperValue}",
-									source: stepperShapeBorderThickness),
+							Increment = 1,
+							Minimum = 0,
+							Maximum = 10,
+							Value = 1
 						}
-					}.Row(Row.BorderThicknessStepper).ColumnSpan(All<Column>()),
+						.Row(Row.BorderThicknessStepper).Column(Column.Input)
+						.End()
+						.Assign(out Stepper stepperShapeBorderThickness)
+						.SemanticHint("Change the rating shape border thickness."),
+
+					new Label()
+						.Row(Row.BorderThicknessStepper).Column(Column.Result)
+						.Start()
+						.CenterVertical()
+						.Bind(Label.TextProperty,
+							getter: static stepper => stepper.Value,
+							mode: BindingMode.OneWay,
+							convert: static stepperValue => $": {stepperValue}",
+							source: stepperShapeBorderThickness),
 
 					new RatingView
 						{
@@ -440,6 +445,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							Rating = 2.5
 						}
 						.Row(Row.BorderThicknessRatingView).ColumnSpan(All<Column>())
+						.Center()
 						.Bind(RatingView.ShapeBorderThicknessProperty,
 							getter: static stepper => (int)stepper.Value,
 							mode: BindingMode.OneWay,
@@ -450,157 +456,145 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 					new SectionHeader("ReadOnly")
 						.Row(Row.ReadOnlyHeader).ColumnSpan(All<Column>()),
 
-					new HorizontalStackLayout
-					{
-						Spacing = 8,
-						Children =
+					new CheckBox
 						{
-							new CheckBox
-								{
-									IsChecked = true
-								}
-								.AppThemeColorBinding(CheckBox.BackgroundColorProperty, Colors.Black, Colors.White)
-								.AppThemeColorBinding(CheckBox.ColorProperty, Colors.White, Colors.Black)
-								.Assign(out CheckBox checkBox)
-								.SemanticHint("Check to make read only."),
-
-							new Label()
-								.Text("IsReadOnly")
-								.CenterVertical(),
+							IsChecked = true
 						}
-					}.Row(Row.ReadOnlyCheckBox).ColumnSpan(All<Column>()),
+						.Row(Row.ReadOnlyCheckBox).Column(Column.Input)
+						.End()
+						.AppThemeColorBinding(CheckBox.BackgroundColorProperty, Colors.Black, Colors.White)
+						.AppThemeColorBinding(CheckBox.ColorProperty, Colors.White, Colors.Black)
+						.Assign(out CheckBox checkBox)
+						.SemanticHint("Check to make read only."),
+
+					new Label()
+						.Row(Row.ReadOnlyCheckBox).Column(Column.Result)
+						.Start()
+						.Text("IsReadOnly")
+						.CenterVertical(),
 
 					new RatingView
 						{
-							Rating = 2.5,
-							MaximumRating = 5
+							MaximumRating = 13,
+							Rating = 6.5
 						}
 						.Row(Row.ReadOnlyRatingView).ColumnSpan(All<Column>())
+						.Center()
 						.Bind(RatingView.IsReadOnlyProperty,
 							getter: static checkBox => checkBox.IsChecked,
 							mode: BindingMode.OneWay,
-							source: checkBox
-						)
+							source: checkBox)
 						.SemanticDescription("A RatingView showing the IsReadOnly changes."),
 
 					new SectionHeader("Shape Padding")
 						.Row(Row.PaddingHeader).ColumnSpan(All<Column>()),
 
-					new HorizontalStackLayout
-					{
-						Spacing = 8,
-						Children =
+					new Stepper
 						{
-							new Stepper
-								{
-									Increment = 1,
-									Minimum = 0,
-									Maximum = 10,
-									Value = 0
-								}
-								.Bind(Stepper.ValueProperty,
-									getter: static (RatingViewCsharpViewModel vm) => vm.RatingViewShapePaddingLeft,
-									setter: static (RatingViewCsharpViewModel vm, double value) => vm.RatingViewShapePaddingLeft = value)
-								.Assign(out Stepper stepperPaddingLeft).SemanticHint("Change the rating view padding left."),
-
-							new Label
-								{
-									VerticalOptions = LayoutOptions.Center
-								}.Bind(Label.TextProperty,
-									static stepper => stepper.Value,
-									mode: BindingMode.OneWay,
-									convert: static stepperValue => $": Left: {stepperValue}",
-									source: stepperPaddingLeft)
-								.SemanticDescription("Shape left padding applied to the RatingView sample."),
+							Increment = 1,
+							Minimum = 0,
+							Maximum = 10,
+							Value = 0
 						}
-					}.Row(Row.PaddingLeftStepper).ColumnSpan(All<Column>()),
+						.Row(Row.PaddingLeftStepper).Column(Column.Input)
+						.End()
+						.CenterVertical()
+						.Bind(Stepper.ValueProperty,
+							getter: static (RatingViewCsharpViewModel vm) => vm.RatingViewShapePaddingLeft,
+							setter: static (RatingViewCsharpViewModel vm, double value) => vm.RatingViewShapePaddingLeft = value)
+						.Assign(out Stepper stepperPaddingLeft).SemanticHint("Change the rating view padding left."),
 
-					new HorizontalStackLayout
-					{
-						Spacing = 8,
-						Children =
+					new Label()
+						.Row(Row.PaddingLeftStepper).Column(Column.Result)
+						.Start()
+						.CenterVertical()
+						.Bind(Label.TextProperty,
+							static stepper => stepper.Value,
+							mode: BindingMode.OneWay,
+							convert: static stepperValue => $": Left: {stepperValue}",
+							source: stepperPaddingLeft)
+						.SemanticDescription("Shape left padding applied to the RatingView sample."),
+
+					new Stepper
 						{
-							new Stepper
-								{
-									Increment = 1,
-									Minimum = 0,
-									Maximum = 10,
-									Value = 0
-								}
-								.Bind(Stepper.ValueProperty,
-									getter: static (RatingViewCsharpViewModel vm) => vm.RatingViewShapePaddingTop,
-									setter: static (RatingViewCsharpViewModel vm, double value) => vm.RatingViewShapePaddingTop = value)
-								.Assign(out Stepper stepperPaddingTop)
-								.SemanticHint("Change the rating view padding top."),
-
-							new Label()
-								.CenterVertical()
-								.Bind(Label.TextProperty,
-									getter: static stepper => stepper.Value,
-									mode: BindingMode.OneWay,
-									convert: static stepperValue => $": Top: {stepperValue}",
-									source: stepperPaddingTop)
-								.SemanticDescription("Shape top padding applied to the RatingView sample."),
+							Increment = 1,
+							Minimum = 0,
+							Maximum = 10,
+							Value = 0
 						}
-					}.Row(Row.PaddingTopStepper).ColumnSpan(All<Column>()),
+						.Row(Row.PaddingTopStepper).Column(Column.Input)
+						.End()
+						.CenterVertical()
+						.Bind(Stepper.ValueProperty,
+							getter: static (RatingViewCsharpViewModel vm) => vm.RatingViewShapePaddingTop,
+							setter: static (RatingViewCsharpViewModel vm, double value) => vm.RatingViewShapePaddingTop = value)
+						.Assign(out Stepper stepperPaddingTop)
+						.SemanticHint("Change the rating view padding top."),
 
-					new HorizontalStackLayout
-					{
-						Spacing = 8,
-						Children =
+					new Label()
+						.Row(Row.PaddingTopStepper).Column(Column.Result)
+						.Start()
+						.CenterVertical()
+						.Bind(Label.TextProperty,
+							getter: static stepper => stepper.Value,
+							mode: BindingMode.OneWay,
+							convert: static stepperValue => $": Top: {stepperValue}",
+							source: stepperPaddingTop)
+						.SemanticDescription("Shape top padding applied to the RatingView sample."),
+
+					new Stepper
 						{
-							new Stepper
-								{
-									Increment = 1,
-									Minimum = 0,
-									Maximum = 10,
-									Value = 0
-								}
-								.Bind(Stepper.ValueProperty,
-									getter: static (RatingViewCsharpViewModel vm) => vm.RatingViewShapePaddingRight,
-									setter: static (RatingViewCsharpViewModel vm, double value) => vm.RatingViewShapePaddingRight = value)
-								.Assign(out Stepper stepperPaddingRight)
-								.SemanticHint("Change the rating view padding right."),
-
-							new Label()
-								.CenterVertical()
-								.Bind(Label.TextProperty,
-									getter: static stepper => stepper.Value,
-									mode: BindingMode.OneWay,
-									convert: static stepperValue => $": Right: {stepperValue}",
-									source: stepperPaddingRight)
-								.SemanticDescription("Shape right padding applied to the RatingView sample."),
+							Increment = 1,
+							Minimum = 0,
+							Maximum = 10,
+							Value = 0
 						}
-					}.Row(Row.PaddingRightStepper).ColumnSpan(All<Column>()),
+						.Row(Row.PaddingRightStepper).Column(Column.Input)
+						.End()
+						.CenterVertical()
+						.Bind(Stepper.ValueProperty,
+							getter: static (RatingViewCsharpViewModel vm) => vm.RatingViewShapePaddingRight,
+							setter: static (RatingViewCsharpViewModel vm, double value) => vm.RatingViewShapePaddingRight = value)
+						.Assign(out Stepper stepperPaddingRight)
+						.SemanticHint("Change the rating view padding right."),
 
-					new HorizontalStackLayout
-					{
-						Spacing = 8,
-						Children =
+					new Label()
+						.Row(Row.PaddingRightStepper).Column(Column.Result)
+						.Start()
+						.CenterVertical()
+						.Bind(Label.TextProperty,
+							getter: static stepper => stepper.Value,
+							mode: BindingMode.OneWay,
+							convert: static stepperValue => $": Right: {stepperValue}",
+							source: stepperPaddingRight)
+						.SemanticDescription("Shape right padding applied to the RatingView sample."),
+
+					new Stepper
 						{
-							new Stepper
-								{
-									Increment = 1,
-									Minimum = 0,
-									Maximum = 10,
-									Value = 0,
-								}
-								.Bind(Stepper.ValueProperty,
-									getter: static (RatingViewCsharpViewModel vm) => vm.RatingViewShapePaddingBottom,
-									setter: static (RatingViewCsharpViewModel vm, double value) => vm.RatingViewShapePaddingBottom = value)
-								.Assign(out Stepper stepperPaddingBottom)
-								.SemanticHint("Change the rating view padding bottom."),
-
-							new Label()
-								.CenterVertical()
-								.Bind(Label.TextProperty,
-									getter: static stepper => stepper.Value,
-									mode: BindingMode.OneWay,
-									convert: static stepperValue => $": Bottom: {stepperValue}",
-									source: stepperPaddingBottom)
-								.SemanticDescription("Shape bottom padding applied to the RatingView sample."),
+							Increment = 1,
+							Minimum = 0,
+							Maximum = 10,
+							Value = 0,
 						}
-					}.Row(Row.PaddingBottomStepper).ColumnSpan(All<Column>()),
+						.Row(Row.PaddingBottomStepper).Column(Column.Input)
+						.End()
+						.CenterVertical()
+						.Bind(Stepper.ValueProperty,
+							getter: static (RatingViewCsharpViewModel vm) => vm.RatingViewShapePaddingBottom,
+							setter: static (RatingViewCsharpViewModel vm, double value) => vm.RatingViewShapePaddingBottom = value)
+						.Assign(out Stepper stepperPaddingBottom)
+						.SemanticHint("Change the rating view padding bottom."),
+
+					new Label()
+						.Row(Row.PaddingBottomStepper).Column(Column.Result)
+						.Start()
+						.CenterVertical()
+						.Bind(Label.TextProperty,
+							getter: static stepper => stepper.Value,
+							mode: BindingMode.OneWay,
+							convert: static stepperValue => $": Bottom: {stepperValue}",
+							source: stepperPaddingBottom)
+						.SemanticDescription("Shape bottom padding applied to the RatingView sample."),
 
 					new RatingView
 						{
@@ -609,7 +603,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						}
 						.Row(Row.PaddingRatingView).ColumnSpan(All<Column>())
 						.BackgroundColor(Colors.Purple)
-						.Start().CenterVertical()
+						.Center()
 						.Bind(RatingView.ItemPaddingProperty,
 							getter: static (RatingViewCsharpViewModel vm) => vm.RatingViewShapePaddingValue)
 						.SemanticDescription("A RatingView sample showing the padding changes."),
@@ -617,28 +611,25 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 					new SectionHeader("Rating")
 						.Row(Row.RatingHeader).ColumnSpan(All<Column>()),
 
-					new HorizontalStackLayout
-					{
-						Spacing = 8,
-						Children =
+					new Slider
 						{
-							new Slider
-							{
-								Maximum = 7,
-								Minimum = 0,
-								Value = 0
-							}.Assign(out Slider ratingViewSlider).SemanticHint("Slide to change the rating."),
-
-							new Label()
-								.Center()
-								.Bind(Label.TextProperty,
-									getter: static slider => slider.Value,
-									mode: BindingMode.OneWay,
-									convert: static sliderValue => $": {sliderValue:F2}",
-									source: ratingViewSlider)
-								.SemanticDescription("RatingView rating value."),
+							Maximum = 7,
+							Minimum = 0,
+							Value = 0
 						}
-					}.Row(Row.RatingSlider).ColumnSpan(All<Column>()),
+						.Row(Row.RatingSlider).Column(Column.Input)
+						.Assign(out Slider ratingViewSlider).SemanticHint("Slide to change the rating."),
+
+					new Label()
+						.Row(Row.RatingSlider).Column(Column.Result)
+						.Start()
+						.CenterVertical()
+						.Bind(Label.TextProperty,
+							getter: static slider => slider.Value,
+							mode: BindingMode.OneWay,
+							convert: static sliderValue => $": {sliderValue:F2}",
+							source: ratingViewSlider)
+						.SemanticDescription("RatingView rating value."),
 
 					new Label()
 						.Row(Row.RatingShapeFillTitle).ColumnSpan(All<Column>())
@@ -735,28 +726,28 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 					new SectionHeader("Spacing")
 						.Row(Row.SpacingHeader).ColumnSpan(All<Column>()),
 
-					new HorizontalStackLayout
-					{
-						Spacing = 8,
-						Children =
+					new Stepper
 						{
-							new Stepper
-							{
-								Increment = 1,
-								Minimum = 0,
-								Maximum = 10,
-								Value = 0
-							}.Assign(out Stepper stepperSpacing).SemanticHint("Change the spacing between rating items."),
-
-							new Label()
-								.CenterVertical()
-								.Bind(Label.TextProperty,
-									getter: static stepper => stepper.Value,
-									mode: BindingMode.OneWay,
-									convert: static stepperValue => $": {stepperValue}",
-									source: stepperSpacing),
+							Increment = 1,
+							Minimum = 0,
+							Maximum = 10,
+							Value = 0
 						}
-					}.Row(Row.SpacingStepper).ColumnSpan(All<Column>()),
+						.Row(Row.SpacingStepper).Column(Column.Input)
+						.CenterVertical()
+						.End()
+						.Assign(out Stepper stepperSpacing)
+						.SemanticHint("Change the spacing between rating items."),
+
+					new Label()
+						.Row(Row.SpacingStepper).Column(Column.Result)
+						.CenterVertical()
+						.Start()
+						.Bind(Label.TextProperty,
+							getter: static stepper => stepper.Value,
+							mode: BindingMode.OneWay,
+							convert: static stepperValue => $": {stepperValue}",
+							source: stepperSpacing),
 
 					new RatingView
 						{
@@ -770,6 +761,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							source: stepperSpacing
 						)
 						.Row(Row.SpacingRatingView).ColumnSpan(All<Column>())
+						.Center()
 						.SemanticDescription("A RatingView sample showing the spacing changes."),
 				}
 			}
@@ -781,7 +773,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 	enum Row
 	{
 		DefaultsHeader, DefaultsRatingView, DefaultsRatingViewUsingProperties, DefaultsRatingViewUsingStyles,
-		AvailableShapesHeader, AvailableShapesStar, AvailableShapesCircle, AvailableShapesHeart, AvailableShapesLike, AvailableShapesDislike, AvailableShapesCustomDog, AvailableShapesCustomLogo,
+		ShapesHeader, ShapesStar, ShapesCircle, ShapesHeart, ShapesLike, ShapesDislike, ShapesCustomAnimal, ShapesCustomLogo,
 		MaximumRatingsHeader, MaximumRatingsStepper, MaximumRatingsRatingView,
 		ColorsHeader, ColorsEmptyRatingViewPicker, ColorsFilledRatingViewPicker, ColorsBorderRatingViewPicker, ColorsShapeFillTitle, ColorsShapeFillRatingView, ColorsItemFillTitle, ColorsItemFillRatingView,
 		BorderThicknessHeader, BorderThicknessStepper, BorderThicknessRatingView,
@@ -809,8 +801,6 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 		public SectionHeader(in string titleText)
 		{
-
-
 			RowDefinitions = Rows.Define(
 				(SectionHeaderRow.TopSeparator, separatorRowHeight),
 				(SectionHeaderRow.Title, titleHeight),
@@ -827,6 +817,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 		static Line GetSeparator() => new Line
 		{
+			StrokeThickness = 2,
 			X2 = 300
 		}.Center().AppThemeBinding(Line.StrokeProperty, Colors.Black, Colors.White);
 	}
@@ -840,7 +831,8 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 			this.Center()
 				.TextCenter()
 				.Text(text)
-				.Margin(4, 0);
+				.Font(size: 24, bold: true);
 		}
 	}
+
 }
