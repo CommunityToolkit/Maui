@@ -55,7 +55,7 @@ public class RatingView : TemplatedView, IRatingView
 	/// <summary>The backing store for the <see cref="Shape" /> bindable property.</summary>
 	public readonly BindableProperty ShapeProperty = RatingViewItemElement.ShapeProperty;
 
-	static readonly WeakEventManager weakEventManager = new();
+	readonly WeakEventManager weakEventManager = new();
 
 	///<summary>The default constructor of the control.</summary>
 	public RatingView()
@@ -402,7 +402,7 @@ public class RatingView : TemplatedView, IRatingView
 			return;
 		}
 
-		weakEventManager.HandleEvent(ratingView, new RatingChangedEventArgs(newMaximumRatingValue), nameof(MaximumRating));
+		ratingView.weakEventManager.HandleEvent(ratingView, new RatingChangedEventArgs(newMaximumRatingValue), nameof(MaximumRating));
 	}
 
 	static void OnRatingChanged(BindableObject bindable, object oldValue, object newValue)
