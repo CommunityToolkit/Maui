@@ -282,33 +282,40 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						Spacing = 8,
 						Children =
 						{
-							new Label
-							{
-								Text = "Empty color: ",
-								VerticalOptions = LayoutOptions.Center
-							},
+							new Label()
+								.Text("Empty color: ")
+								.CenterVertical()
+							,
 							new Picker()
-								.Bind(Picker.ItemsSourceProperty, nameof(BindingContext.ColorsForPickers))
-								.Bind(Picker.SelectedIndexProperty, nameof(BindingContext.ColorPickerFilledBackgroundSelectedIndex), BindingMode.TwoWay)
-								.Invoke(picker => picker.SelectedIndexChanged += (sender, e) => BindingContext.ColorPickerFilledBackgroundCommand.Execute(null))
-								.SemanticHint("Pick to change the empty rating color."),
+								.Bind(Picker.ItemsSourceProperty,
+									getter: static (RatingViewCsharpViewModel vm) => vm.ColorsForPickers,
+									mode: BindingMode.OneTime)
+								.Bind(Picker.SelectedIndexProperty,
+									getter: static (RatingViewCsharpViewModel vm) => vm.ColorPickerEmptyBackgroundSelectedIndex,
+									setter: static (RatingViewCsharpViewModel vm, int index) => vm.ColorPickerEmptyBackgroundSelectedIndex = index,
+									mode: BindingMode.TwoWay)
+								.SemanticHint("Pick to change the empty rating background color."),
 						}
 					},
+					
 					new HorizontalStackLayout
 					{
 						Spacing = 8,
 						Children =
 						{
-							new Label
-							{
-								Text = "Filled color: ",
-								VerticalOptions = LayoutOptions.Center
-							},
+							new Label()
+								.Text("Filled color: ")
+								.CenterVertical(),
+							
 							new Picker()
-								.Bind(Picker.ItemsSourceProperty, nameof(BindingContext.ColorsForPickers))
-								.Bind(Picker.SelectedIndexProperty, nameof(BindingContext.ColorPickerEmptyBackgroundSelectedIndex), BindingMode.TwoWay)
-								.Invoke(picker => picker.SelectedIndexChanged += (sender, e) => BindingContext.ColorPickerEmptyBackgroundCommand.Execute(null))
-								.SemanticHint("Pick to change the filled rating color."),
+								.Bind(Picker.ItemsSourceProperty,
+									getter: static (RatingViewCsharpViewModel vm) => vm.ColorsForPickers,
+									mode: BindingMode.OneTime)
+								.Bind(Picker.SelectedIndexProperty,
+									getter: static (RatingViewCsharpViewModel vm) => vm.ColorPickerFilledBackgroundSelectedIndex,
+									setter: static (RatingViewCsharpViewModel vm, int value) => vm.ColorPickerFilledBackgroundSelectedIndex = value,
+									mode: BindingMode.TwoWay)
+								.SemanticHint("Pick to change the filled rating background color."),
 						}
 					},
 					new HorizontalStackLayout
@@ -321,11 +328,13 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 								.CenterVertical(),
 
 							new Picker()
-								.Bind(Picker.ItemsSourceProperty, 
+								.Bind(Picker.ItemsSourceProperty,
 									getter: static (RatingViewCsharpViewModel vm) => vm.ColorsForPickers,
 									mode: BindingMode.OneTime)
-								.Bind(Picker.SelectedIndexProperty, nameof(BindingContext.ColorPickerRatingShapeBorderColorSelectedIndex), BindingMode.TwoWay)
-								.Invoke(picker => picker.SelectedIndexChanged += (sender, e) => BindingContext.ColorPickerRatingShapeBorderColorCommand.Execute(null))
+								.Bind(Picker.SelectedIndexProperty, 
+									getter: static (RatingViewCsharpViewModel vm) => vm.ColorPickerRatingShapeBorderColorSelectedIndex,
+									setter: static (RatingViewCsharpViewModel vm, int index) => vm.ColorPickerRatingShapeBorderColorSelectedIndex = index,
+									mode: BindingMode.TwoWay)
 								.SemanticHint("Pick to change the rating shape border color."),
 						}
 					},
@@ -334,53 +343,40 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new RatingView
 						{
-							EmptyColor = BindingContext.ColorPickerEmptyBackgroundTarget,
-							FilledColor = BindingContext.ColorPickerFilledBackgroundTarget,
 							ItemShapeSize = 40,
 							MaximumRating = 5,
 							Rating = 2.7,
-							RatingFill = RatingFillElement.Shape,
-							ShapeBorderColor = BindingContext.ColorPickerRatingShapeBorderColorTarget,
 							ShapeBorderThickness = 1
 						}.Bind(RatingView.EmptyColorProperty,
 							static (RatingViewCsharpViewModel vm) => vm.ColorPickerEmptyBackgroundTarget,
-							mode: BindingMode.OneWay,
-							convert: static colour => colour)
+							mode: BindingMode.OneWay)
 						.Bind(RatingView.FilledColorProperty,
 							static (RatingViewCsharpViewModel vm) => vm.ColorPickerFilledBackgroundTarget,
-							mode: BindingMode.OneWay,
-							convert: static colour => colour)
+							mode: BindingMode.OneWay)
 						.Bind(RatingView.ShapeBorderColorProperty,
 							static (RatingViewCsharpViewModel vm) => vm.ColorPickerRatingShapeBorderColorTarget,
-							mode: BindingMode.OneWay,
-							convert: static colour => colour)
+							mode: BindingMode.OneWay)
 						.SemanticDescription("A RatingView showing the fill, empty and border color changes, shown using the fill type of 'Shape'."),
-					new Label
-					{
-						Text = "Item Fill"
-					},
+					
+					new Label()
+						.Text("Item Fill"),
+					
 					new RatingView
 						{
-							EmptyColor = BindingContext.ColorPickerEmptyBackgroundTarget,
-							FilledColor = BindingContext.ColorPickerFilledBackgroundTarget,
 							ItemShapeSize = 40,
 							MaximumRating = 5,
 							Rating = 2.7,
 							RatingFill = RatingFillElement.Item,
-							ShapeBorderColor = BindingContext.ColorPickerRatingShapeBorderColorTarget,
 							ShapeBorderThickness = 1
 						}.Bind(RatingView.EmptyColorProperty,
 							getter: static (RatingViewCsharpViewModel vm) => vm.ColorPickerEmptyBackgroundTarget,
-							mode: BindingMode.OneWay,
-							convert: static colour => colour)
+							mode: BindingMode.OneWay)
 						.Bind(RatingView.FilledColorProperty,
 							getter: static (RatingViewCsharpViewModel vm) => vm.ColorPickerFilledBackgroundTarget,
-							mode: BindingMode.OneWay,
-							convert: static colour => colour)
+							mode: BindingMode.OneWay)
 						.Bind(RatingView.ShapeBorderColorProperty,
 							getter: static (RatingViewCsharpViewModel vm) => vm.ColorPickerRatingShapeBorderColorTarget,
-							mode: BindingMode.OneWay,
-							convert: static colour => colour)
+							mode: BindingMode.OneWay)
 						.SemanticDescription("A RatingView showing the fill, empty and border color changes, shown using the fill type of 'Item'."),
 
 					GetSeparator(),
@@ -466,6 +462,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 					new TitleLabel("Shape padding"),
 
 					GetSeparator(),
+					
 					new HorizontalStackLayout
 					{
 						Spacing = 8,

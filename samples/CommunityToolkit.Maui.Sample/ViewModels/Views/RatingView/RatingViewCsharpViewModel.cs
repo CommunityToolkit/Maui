@@ -15,14 +15,7 @@ public partial class RatingViewCsharpViewModel : BaseViewModel
 		.ToDictionary(static c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()))
 		.AsReadOnly();
 
-	public RatingViewCsharpViewModel()
-	{
-		ColorPickerEmptyBackgroundSelectedIndex = ColorsForPickers.IndexOf("Red");
-		ColorPickerFilledBackgroundSelectedIndex = ColorsForPickers.IndexOf("Green");
-		ColorPickerRatingShapeBorderColorSelectedIndex = ColorsForPickers.IndexOf("Blue");
-	}
-
-	public ImmutableList<string> ColorsForPickers { get;} = [.. colorList.Keys];
+	static readonly ImmutableList<string> colorsForPickers = [..colorList.Keys];
 
 	[ObservableProperty]
 	double stepperValueMaximumRatings = 1;
@@ -30,43 +23,25 @@ public partial class RatingViewCsharpViewModel : BaseViewModel
 	[ObservableProperty]
 	Thickness ratingViewShapePadding = new(0);
 
-	[ObservableProperty]
-	Color? colorPickerFilledBackgroundTarget = Colors.Green,
-		colorPickerEmptyBackgroundTarget = Colors.Red,
-		colorPickerRatingShapeBorderColorTarget = Colors.Blue;
+	[ObservableProperty, NotifyPropertyChangedFor(nameof(ColorPickerFilledBackgroundTarget))]
+	int colorPickerFilledBackgroundSelectedIndex = colorsForPickers.IndexOf(nameof(Colors.Red));
 
-	[ObservableProperty]
-	int? colorPickerFilledBackgroundSelectedIndex, colorPickerEmptyBackgroundSelectedIndex, colorPickerRatingShapeBorderColorSelectedIndex;
+	[ObservableProperty, NotifyPropertyChangedFor(nameof(ColorPickerEmptyBackgroundTarget))]
+	int colorPickerEmptyBackgroundSelectedIndex = colorsForPickers.IndexOf(nameof(Colors.Green));
+
+	[ObservableProperty, NotifyPropertyChangedFor(nameof(ColorPickerRatingShapeBorderColorTarget))]
+	int colorPickerRatingShapeBorderColorSelectedIndex = colorsForPickers.IndexOf(nameof(Colors.Blue));
 
 	[ObservableProperty, NotifyPropertyChangedFor(nameof(RatingViewShapePaddingValue))]
 	double ratingViewShapePaddingLeft, ratingViewShapePaddingTop, ratingViewShapePaddingRight, ratingViewShapePaddingBottom;
 
+	public IReadOnlyList<string> ColorsForPickers => [..colorsForPickers];
+
 	public Thickness RatingViewShapePaddingValue => new(RatingViewShapePaddingLeft, RatingViewShapePaddingTop, RatingViewShapePaddingRight, RatingViewShapePaddingBottom);
 
-	[RelayCommand]
-	void ColorPickerFilledBackground()
-	{
-		if (ColorPickerFilledBackgroundSelectedIndex is not null)
-		{
-			ColorPickerFilledBackgroundTarget = colorList.ElementAtOrDefault(ColorPickerFilledBackgroundSelectedIndex.Value).Value;
-		}
-	}
+	public Color ColorPickerEmptyBackgroundTarget => colorList.ElementAtOrDefault(ColorPickerEmptyBackgroundSelectedIndex).Value;
 
-	[RelayCommand]
-	void ColorPickerEmptyBackground()
-	{
-		if (ColorPickerEmptyBackgroundSelectedIndex is not null)
-		{
-			ColorPickerEmptyBackgroundTarget = colorList.ElementAtOrDefault(ColorPickerEmptyBackgroundSelectedIndex.Value).Value;
-		}
-	}
+	public Color ColorPickerRatingShapeBorderColorTarget => colorList.ElementAtOrDefault(ColorPickerRatingShapeBorderColorSelectedIndex).Value;
 
-	[RelayCommand]
-	void ColorPickerRatingShapeBorderColor()
-	{
-		if (ColorPickerRatingShapeBorderColorSelectedIndex is not null)
-		{
-			ColorPickerRatingShapeBorderColorTarget = colorList.ElementAtOrDefault(ColorPickerRatingShapeBorderColorSelectedIndex.Value).Value;
-		}
-	}
+	public Color ColorPickerFilledBackgroundTarget => colorList.ElementAtOrDefault(ColorPickerFilledBackgroundSelectedIndex).Value;
 }
