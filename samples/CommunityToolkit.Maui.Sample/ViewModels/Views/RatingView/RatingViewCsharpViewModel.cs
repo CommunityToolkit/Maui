@@ -15,7 +15,7 @@ public partial class RatingViewCsharpViewModel : BaseViewModel
 		.ToDictionary(static c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()))
 		.AsReadOnly();
 
-	static readonly ImmutableList<string> colorsForPickers = [..colorList.Keys];
+	static readonly ImmutableList<string> colorsForPickers = [.. colorList.Keys];
 
 	[ObservableProperty]
 	double stepperValueMaximumRatings = 1;
@@ -35,7 +35,7 @@ public partial class RatingViewCsharpViewModel : BaseViewModel
 	[ObservableProperty, NotifyPropertyChangedFor(nameof(RatingViewShapePaddingValue))]
 	double ratingViewShapePaddingLeft, ratingViewShapePaddingTop, ratingViewShapePaddingRight, ratingViewShapePaddingBottom;
 
-	public IReadOnlyList<string> ColorsForPickers => [..colorsForPickers];
+	public IReadOnlyList<string> ColorsForPickers => [.. colorsForPickers];
 
 	public Thickness RatingViewShapePaddingValue => new(RatingViewShapePaddingLeft, RatingViewShapePaddingTop, RatingViewShapePaddingRight, RatingViewShapePaddingBottom);
 
