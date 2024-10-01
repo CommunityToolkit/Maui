@@ -6,12 +6,9 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class RatingViewXamlPage : BasePage<RatingViewXamlViewModel>
 {
-	readonly RatingViewXamlViewModel vm;
-
 	public RatingViewXamlPage(RatingViewXamlViewModel viewModel) : base(viewModel)
 	{
 		InitializeComponent();
-		vm = viewModel;
 	}
 
 	void StepperMaximumRating_RatingChanged(object? sender, RatingChangedEventArgs e)
@@ -23,11 +20,11 @@ public partial class RatingViewXamlPage : BasePage<RatingViewXamlViewModel>
 		}
 	}
 
-	void RatingViewShapePaddingBottom_ValueChanged(object? sender, ValueChangedEventArgs e) => vm.RatingViewShapePaddingBottom = e.NewValue;
+	void RatingViewShapePaddingBottom_ValueChanged(object? sender, ValueChangedEventArgs e) => BindingContext.RatingViewShapePaddingBottom = e.NewValue;
 
-	void RatingViewShapePaddingLeft_ValueChanged(object? sender, ValueChangedEventArgs e) => vm.RatingViewShapePaddingLeft = e.NewValue;
+	void RatingViewShapePaddingLeft_ValueChanged(object? sender, ValueChangedEventArgs e) => BindingContext.RatingViewShapePaddingLeft = e.NewValue;
 
-	void RatingViewShapePaddingRight_ValueChanged(object? sender, ValueChangedEventArgs e) => vm.RatingViewShapePaddingRight = e.NewValue;
+	void RatingViewShapePaddingRight_ValueChanged(object? sender, ValueChangedEventArgs e) => BindingContext.RatingViewShapePaddingRight = e.NewValue;
 
-	void RatingViewShapePaddingTop_ValueChanged(object? sender, ValueChangedEventArgs e) => vm.RatingViewShapePaddingTop = e.NewValue;
+	void RatingViewShapePaddingTop_ValueChanged(object? sender, ValueChangedEventArgs e) => BindingContext.RatingViewShapePaddingTop = e.NewValue;
 }

@@ -50,7 +50,7 @@ public partial class RatingViewCsharpViewModel : BaseViewModel
 	{
 		if (ColorPickerFilledBackgroundSelectedIndex is not null)
 		{
-			ColorPickerFilledBackgroundTarget = colorList.ElementAtOrDefault(ColorPickerFilledBackgroundSelectedIndex.Value).Value ?? Colors.Transparent;
+			ColorPickerFilledBackgroundTarget = colorList.ElementAtOrDefault(ColorPickerFilledBackgroundSelectedIndex.Value).Value;
 		}
 	}
 
@@ -59,7 +59,7 @@ public partial class RatingViewCsharpViewModel : BaseViewModel
 	{
 		if (ColorPickerEmptyBackgroundSelectedIndex is not null)
 		{
-			ColorPickerEmptyBackgroundTarget = colorList.ElementAtOrDefault(ColorPickerEmptyBackgroundSelectedIndex.Value).Value ?? Colors.Transparent;
+			ColorPickerEmptyBackgroundTarget = colorList.ElementAtOrDefault(ColorPickerEmptyBackgroundSelectedIndex.Value).Value;
 		}
 	}
 
@@ -68,7 +68,7 @@ public partial class RatingViewCsharpViewModel : BaseViewModel
 	{
 		if (ColorPickerRatingShapeBorderColorSelectedIndex is not null)
 		{
-			ColorPickerRatingShapeBorderColorTarget = colorList.ElementAtOrDefault(ColorPickerRatingShapeBorderColorSelectedIndex.Value).Value ?? Colors.Transparent;
+			ColorPickerRatingShapeBorderColorTarget = colorList.ElementAtOrDefault(ColorPickerRatingShapeBorderColorSelectedIndex.Value).Value;
 		}
 	}
 
