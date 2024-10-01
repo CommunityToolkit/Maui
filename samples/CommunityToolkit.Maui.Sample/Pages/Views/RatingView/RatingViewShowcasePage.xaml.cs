@@ -6,19 +6,17 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 public partial class RatingViewShowcasePage : BasePage<RatingViewShowcaseViewModel>
 {
 	readonly List<double> ratings = [];
-	readonly RatingViewShowcaseViewModel vm;
 
 	public RatingViewShowcasePage(RatingViewShowcaseViewModel viewModel) : base(viewModel)
 	{
-		vm = viewModel;
 		InitializeComponent();
 	}
 
 	void ReviewSummaryRatingChanged(object sender, RatingChangedEventArgs e)
 	{
 		ratings.Add(e.Rating);
-		vm.ReviewSummaryCount = ratings.Count;
-		vm.ReviewSummaryAverage = ratings.Average(x => x);
+		BindingContext.ReviewSummaryCount = ratings.Count;
+		BindingContext.ReviewSummaryAverage = ratings.Average(x => x);
 	}
 
 	static void StreamMobileRate_Tapped(object sender, TappedEventArgs e)
