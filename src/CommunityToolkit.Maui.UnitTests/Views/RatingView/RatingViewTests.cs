@@ -110,11 +110,16 @@ public class RatingViewTests : BaseHandlerTest
 			MaximumRating = 3,
 			Rating = 3
 		};
-		ratingView.RatingChanged += (_, e) => receivedEvents.Add(e);
+		ratingView.RatingChanged += OnRatingChanged;
 		ratingView.Rating = expectedRating;
 		receivedEvents.Should().HaveCount(1);
 		receivedEvents[0].Rating.Should().Be(expectedRating);
-		ratingView.RatingChanged -= (_, e) => receivedEvents.Add(e);
+
+		void OnRatingChanged(object? sender, RatingChangedEventArgs e)
+		{
+			ratingView.RatingChanged -= OnRatingChanged;
+			receivedEvents.Add(e);
+		}
 	}
 
 	[Fact]
@@ -463,27 +468,53 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void RatingThrowsArgumentOutOfRangeExceptionWhenOutsideLowerBounds()
+	public void RatingViewThrowsArgumentOutOfRangeExceptionWhenRatingSetBeforeMaximumRating()
+	{
+		Assert.Throws<ArgumentOutOfRangeException>(() => new RatingView
+		{
+			Rating = 7,
+			MaximumRating = 12
+		});
+	}
+
+	[Fact]
+	public void RatingViewDoesNotThrowsArgumentOutOfRangeExceptionWhenRatingSetBeforeMaximumRating()
+	{
+		const int maximumRating = 12;
+		const int rating = 7;
+
+		var ratingView = new RatingView
+		{
+			MaximumRating = maximumRating,
+			Rating = rating,
+		};
+
+		Assert.Equal(rating, ratingView.Rating);
+		Assert.Equal(maximumRating, ratingView.MaximumRating);
+	}
+
+	[Fact]
+	public void RatingViewThrowsArgumentOutOfRangeExceptionWhenOutsideLowerBounds()
 	{
 		var ratingView = new RatingView();
 		Assert.Throws<ArgumentOutOfRangeException>(() => ratingView.Rating = 0 - double.Epsilon);
 	}
 
 	[Fact]
-	public void RatingThrowsArgumentOutOfRangeExceptionWhenOutsideUpperBounds()
+	public void RatingViewThrowsArgumentOutOfRangeExceptionWhenOutsideUpperBounds()
 	{
 		var ratingView = new RatingView();
 		Assert.Throws<ArgumentOutOfRangeException>(() => ratingView.Rating = ratingView.MaximumRating + 1);
 	}
 
 	[Fact]
-	public void MaximumRatingThrowsArgumentOutOfRangeExceptionWhenOutsideLowerBounds()
+	public void MaximumRatingViewThrowsArgumentOutOfRangeExceptionWhenOutsideLowerBounds()
 	{
 		Assert.Throws<ArgumentOutOfRangeException>(() => new RatingView().MaximumRating = 0);
 	}
 
 	[Fact]
-	public void MaximumRatingThrowsArgumentOutOfRangeExceptionWhenOutsideUpperBounds()
+	public void MaximumRatingViewThrowsArgumentOutOfRangeExceptionWhenOutsideUpperBounds()
 	{
 		Assert.Throws<ArgumentOutOfRangeException>(() => new RatingView().MaximumRating = RatingViewDefaults.MaximumRatingLimit + 1);
 	}
@@ -638,7 +669,7 @@ public class RatingViewTests : BaseHandlerTest
 		{
 			MaximumRating = maximumRating
 		};
-		
+
 		Assert.NotNull(ratingView.Control);
 		ratingView.Control.GetVisualTreeDescendants().Should().HaveCount(maximumRating * 2 + 1);
 		ratingView.Control.Children.Should().HaveCount(maximumRating);
