@@ -9,6 +9,7 @@
     Title="RatingView XAML syntax"
     x:DataType="vm:RatingViewXamlViewModel"
     x:TypeArguments="vm:RatingViewXamlViewModel">
+    
     <ScrollView>
         <VerticalStackLayout Padding="0,12,0,0" Spacing="12">
             <VerticalStackLayout.Resources>
@@ -295,12 +296,14 @@
             <HorizontalStackLayout Spacing="8">
                 <CheckBox
                     x:Name="RatingViewIsReadOnly"
-                    IsChecked="False"
+                    IsChecked="True"
+                    BackgroundColor="{AppThemeBinding Light=Black, Dark=White}"
+                    Color="{AppThemeBinding Light=White, Dark=Black}"
                     SemanticProperties.Hint="Check to make read only." />
                 <Label Text=": IsReadOnly" VerticalOptions="Center" />
             </HorizontalStackLayout>
             <toolkit:RatingView
-                IsReadOnly="{Binding Source={x:Reference RatingViewIsReadOnly}, Path=IsChecked, Converter={StaticResource InvertedBoolConverter}}"
+                IsReadOnly="{Binding Source={x:Reference RatingViewIsReadOnly}, Path=IsChecked}"
                 MaximumRating="5"
                 Rating="2.5"
                 SemanticProperties.Description="A RatingView showing the IsReadOnly changes." />
