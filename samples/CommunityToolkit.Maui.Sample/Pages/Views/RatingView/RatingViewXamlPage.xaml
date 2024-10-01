@@ -9,7 +9,7 @@
     Title="RatingView XAML syntax"
     x:DataType="vm:RatingViewXamlViewModel"
     x:TypeArguments="vm:RatingViewXamlViewModel">
-    
+
     <ScrollView>
         <VerticalStackLayout Padding="0,12,0,0" Spacing="12">
             <VerticalStackLayout.Resources>
@@ -206,11 +206,11 @@
             <Label Style="{StaticResource Description}" Text="Colors" />
             <Line Style="{StaticResource HR}" />
             <HorizontalStackLayout Spacing="8">
-                <Label Text="Empty background color: " VerticalOptions="Center" />
+                <Label Text="Empty color: " VerticalOptions="Center" />
                 <Picker
                     ItemsSource="{Binding ColorsForPickers}"
                     SelectedIndex="{Binding ColorPickerEmptyBackgroundSelectedIndex}"
-                    SemanticProperties.Hint="Pick to change the empty rating background color.">
+                    SemanticProperties.Hint="Pick to change the empty rating color.">
                     <Picker.Behaviors>
                         <toolkit:EventToCommandBehavior Command="{Binding ColorPickerEmptyBackgroundCommand}" EventName="SelectedIndexChanged" />
                     </Picker.Behaviors>
@@ -218,11 +218,11 @@
             </HorizontalStackLayout>
             <HorizontalStackLayout Spacing="8">
 
-                <Label Text="Filled background color: " VerticalOptions="Center" />
+                <Label Text="Filled color: " VerticalOptions="Center" />
                 <Picker
                     ItemsSource="{Binding ColorsForPickers}"
                     SelectedIndex="{Binding ColorPickerFilledBackgroundSelectedIndex}"
-                    SemanticProperties.Hint="Pick to change the filled rating background color.">
+                    SemanticProperties.Hint="Pick to change the filled rating color.">
                     <Picker.Behaviors>
                         <toolkit:EventToCommandBehavior Command="{Binding ColorPickerFilledBackgroundCommand}" EventName="SelectedIndexChanged" />
                     </Picker.Behaviors>
@@ -296,10 +296,12 @@
             <HorizontalStackLayout Spacing="8">
                 <CheckBox
                     x:Name="RatingViewIsReadOnly"
+                    BackgroundColor="{AppThemeBinding Light=Black,
+                                                      Dark=White}"
                     IsChecked="True"
-                    BackgroundColor="{AppThemeBinding Light=Black, Dark=White}"
-                    Color="{AppThemeBinding Light=White, Dark=Black}"
-                    SemanticProperties.Hint="Check to make read only." />
+                    SemanticProperties.Hint="Check to make read only."
+                    Color="{AppThemeBinding Light=White,
+                                            Dark=Black}" />
                 <Label Text=": IsReadOnly" VerticalOptions="Center" />
             </HorizontalStackLayout>
             <toolkit:RatingView
@@ -405,7 +407,7 @@
             <Line Style="{StaticResource HR}" />
             <Slider
                 x:Name="RatingRatingView"
-                Maximum="10"
+                Maximum="7"
                 Minimum="0"
                 SemanticProperties.Hint="Slide to change the rating."
                 Value="0" />
@@ -427,8 +429,8 @@
                 FilledColor="Green"
                 HorizontalOptions="Start"
                 IsReadOnly="False"
-                ItemShapeSize="40"
-                MaximumRating="10"
+                ItemShapeSize="30"
+                MaximumRating="7"
                 Rating="{Binding Source={x:Reference RatingRatingView}, Path=Value}"
                 RatingFill="Shape"
                 SemanticProperties.Description="A RatingView sample showing the rating changes and the fill type of 'Shape'."
@@ -442,8 +444,8 @@
                 FilledColor="Green"
                 HorizontalOptions="Start"
                 IsReadOnly="False"
-                ItemShapeSize="40"
-                MaximumRating="10"
+                ItemShapeSize="30"
+                MaximumRating="7"
                 Rating="{Binding Source={x:Reference RatingRatingView}, Path=Value}"
                 RatingFill="Item"
                 SemanticProperties.Description="A RatingView sample showing the rating changes and the fill type of 'Item'."

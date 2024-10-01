@@ -258,7 +258,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 								.Bind(Label.TextProperty,
 									getter: static stepper => stepper.Value,
 									mode: BindingMode.OneWay,
-									convert: static stepperValue => $"Change the maximum number of ratings: {stepperValue}",
+									convert: static stepperValue => $": {stepperValue}",
 									source: stepperMaximumRating),
 						}
 					},
@@ -284,14 +284,14 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						{
 							new Label
 							{
-								Text = "Empty background color: ",
+								Text = "Empty color: ",
 								VerticalOptions = LayoutOptions.Center
 							},
 							new Picker()
 								.Bind(Picker.ItemsSourceProperty, nameof(BindingContext.ColorsForPickers))
 								.Bind(Picker.SelectedIndexProperty, nameof(BindingContext.ColorPickerFilledBackgroundSelectedIndex), BindingMode.TwoWay)
 								.Invoke(picker => picker.SelectedIndexChanged += (sender, e) => BindingContext.ColorPickerFilledBackgroundCommand.Execute(null))
-								.SemanticHint("Pick to change the empty rating background color."),
+								.SemanticHint("Pick to change the empty rating color."),
 						}
 					},
 					new HorizontalStackLayout
@@ -301,14 +301,14 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						{
 							new Label
 							{
-								Text = "Filled background color: ",
+								Text = "Filled color: ",
 								VerticalOptions = LayoutOptions.Center
 							},
 							new Picker()
 								.Bind(Picker.ItemsSourceProperty, nameof(BindingContext.ColorsForPickers))
 								.Bind(Picker.SelectedIndexProperty, nameof(BindingContext.ColorPickerEmptyBackgroundSelectedIndex), BindingMode.TwoWay)
 								.Invoke(picker => picker.SelectedIndexChanged += (sender, e) => BindingContext.ColorPickerEmptyBackgroundCommand.Execute(null))
-								.SemanticHint("Pick to change the filled rating background color."),
+								.SemanticHint("Pick to change the filled rating color."),
 						}
 					},
 					new HorizontalStackLayout
@@ -596,7 +596,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new Slider
 					{
-						Maximum = 10,
+						Maximum = 7,
 						Minimum = 0,
 						Value = 0
 					}.Assign(out Slider ratingRatingView).SemanticHint("Slide to change the rating."),
@@ -620,8 +620,8 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							FilledColor = Colors.Green,
 							HorizontalOptions = LayoutOptions.Start,
 							IsReadOnly = false,
-							ItemShapeSize = 40,
-							MaximumRating = 10,
+							ItemShapeSize = 30,
+							MaximumRating = 7,
 							RatingFill = RatingFillElement.Shape,
 							ShapeBorderColor = Colors.Grey,
 							ShapeBorderThickness = 1,
@@ -643,8 +643,8 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							FilledColor = Colors.Green,
 							HorizontalOptions = LayoutOptions.Start,
 							IsReadOnly = false,
-							ItemShapeSize = 40,
-							MaximumRating = 10,
+							ItemShapeSize = 30,
+							MaximumRating = 7,
 							RatingFill = RatingFillElement.Item,
 							ShapeBorderColor = Colors.Grey,
 							ShapeBorderThickness = 1,
