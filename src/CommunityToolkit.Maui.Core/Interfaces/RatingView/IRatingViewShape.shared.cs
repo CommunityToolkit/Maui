@@ -11,10 +11,10 @@ public interface IRatingViewShape
 	double ItemShapeSize { get; }
 
 	/// <summary>Gets a value indicating the custom rating view shape path.</summary>
-	string? CustomShape { get; }
+	string? CustomItemShape { get; }
 
 	/// <summary>Gets a value indicating the Rating View shape.</summary>
-	RatingViewShape Shape { get; }
+	RatingViewShape ItemShape { get; }
 
 	/// <summary>Gets a value indicating the Rating View item padding.</summary>
 	Thickness ItemPadding { get; }
@@ -41,7 +41,7 @@ public interface IRatingViewShape
 	/// <param name="newValue">New filled background color.</param>
 	void OnFilledColorPropertyChanged(Color oldValue, Color newValue);
 
-	/// <summary>Action when <see cref="CustomShape"/> changes.</summary>
+	/// <summary>Action when <see cref="CustomItemShape"/> changes.</summary>
 	/// <param name="oldValue">Old shape path.</param>
 	/// <param name="newValue">New shape path.</param>
 	void OnCustomShapePropertyChanged(string? oldValue, string? newValue);
@@ -51,7 +51,7 @@ public interface IRatingViewShape
 	/// <param name="newValue">New padding thickness</param>
 	void OnItemPaddingPropertyChanged(Thickness oldValue, Thickness newValue);
 
-	/// <summary>Action when <see cref="Shape"/> changes.</summary>
+	/// <summary>Action when <see cref="ItemShape"/> changes.</summary>
 	/// <param name="oldValue">Old shape.</param>
 	/// <param name="newValue">New shape.</param>
 	void OnItemShapePropertyChanged(RatingViewShape oldValue, RatingViewShape newValue);

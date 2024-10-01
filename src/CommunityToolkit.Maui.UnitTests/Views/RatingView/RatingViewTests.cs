@@ -63,12 +63,12 @@ public class RatingViewTests : BaseHandlerTest
 		ratingView.ItemPadding.Should().BeOfType<Thickness>().And.Be(RatingViewDefaults.ItemPadding);
 		ratingView.ItemShapeSize.Should().Be(RatingViewDefaults.ItemShapeSize);
 		ratingView.MaximumRating.Should().Be(RatingViewDefaults.MaximumRating);
-		ratingView.Shape.Should().BeOneOf(RatingViewDefaults.Shape).And.Be(RatingViewDefaults.Shape);
+		ratingView.ItemShape.Should().BeOneOf(RatingViewDefaults.Shape).And.Be(RatingViewDefaults.Shape);
 		ratingView.ShapeBorderColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.ShapeBorderColor);
 		ratingView.ShapeBorderThickness.Should().Be(RatingViewDefaults.ShapeBorderThickness);
 		ratingView.Spacing.Should().Be(RatingViewDefaults.Spacing);
 		ratingView.RatingFill.Should().BeOneOf(RatingFillElement.Shape).And.Be(RatingFillElement.Shape);
-		ratingView.CustomShape.Should().BeNullOrEmpty();
+		ratingView.CustomItemShape.Should().BeNullOrEmpty();
 	}
 
 	[Fact]
@@ -278,9 +278,9 @@ public class RatingViewTests : BaseHandlerTest
 	{
 		const string customShape = "M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z";
 		RatingView ratingView = new();
-		ratingView.CustomShape.Should().BeNullOrEmpty();
-		ratingView.CustomShape = customShape;
-		ratingView.CustomShape.Should().Be(customShape);
+		ratingView.CustomItemShape.Should().BeNullOrEmpty();
+		ratingView.CustomItemShape = customShape;
+		ratingView.CustomItemShape.Should().Be(customShape);
 	}
 
 	[Theory]
@@ -291,13 +291,13 @@ public class RatingViewTests : BaseHandlerTest
 		const string customShape = "M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z";
 		RatingView ratingView = new()
 		{
-			Shape = RatingViewShape.Custom,
-			CustomShape = customShape,
+			ItemShape = RatingViewShape.Custom,
+			CustomItemShape = customShape,
 		};
-		ratingView.Shape.Should().Be(RatingViewShape.Custom);
-		ratingView.CustomShape.Should().Be(customShape);
-		ratingView.CustomShape = customShapes!;
-		ratingView.Shape.Should().Be(RatingViewShape.Star);
+		ratingView.ItemShape.Should().Be(RatingViewShape.Custom);
+		ratingView.CustomItemShape.Should().Be(customShape);
+		ratingView.CustomItemShape = customShapes!;
+		ratingView.ItemShape.Should().Be(RatingViewShape.Star);
 	}
 
 	[Fact]
@@ -306,12 +306,12 @@ public class RatingViewTests : BaseHandlerTest
 		const string customShape = "M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z";
 		RatingView ratingView = new()
 		{
-			Shape = RatingViewShape.Custom
+			ItemShape = RatingViewShape.Custom
 		};
-		ratingView.Shape.Should().Be(RatingViewShape.Custom);
-		ratingView.CustomShape = customShape;
-		ratingView.CustomShape.Should().Be(customShape);
-		ratingView.Shape.Should().Be(RatingViewShape.Custom);
+		ratingView.ItemShape.Should().Be(RatingViewShape.Custom);
+		ratingView.CustomItemShape = customShape;
+		ratingView.CustomItemShape.Should().Be(customShape);
+		ratingView.ItemShape.Should().Be(RatingViewShape.Custom);
 	}
 
 	[Fact]
@@ -320,12 +320,12 @@ public class RatingViewTests : BaseHandlerTest
 		const string customShape = "M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z";
 		RatingView ratingView = new()
 		{
-			Shape = RatingViewShape.Heart
+			ItemShape = RatingViewShape.Heart
 		};
-		ratingView.Shape.Should().Be(RatingViewShape.Heart);
-		ratingView.CustomShape = customShape;
-		ratingView.CustomShape.Should().Be(customShape);
-		ratingView.Shape.Should().Be(RatingViewShape.Heart);
+		ratingView.ItemShape.Should().Be(RatingViewShape.Heart);
+		ratingView.CustomItemShape = customShape;
+		ratingView.CustomItemShape.Should().Be(customShape);
+		ratingView.ItemShape.Should().Be(RatingViewShape.Heart);
 	}
 
 	[Fact]
@@ -548,9 +548,9 @@ public class RatingViewTests : BaseHandlerTest
 	public void Properties_Change_Shape(RatingViewShape expectedShape)
 	{
 		RatingView ratingView = new();
-		ratingView.Shape.Should().NotBe(expectedShape);
-		ratingView.Shape = expectedShape;
-		ratingView.Shape.Should().Be(expectedShape);
+		ratingView.ItemShape.Should().NotBe(expectedShape);
+		ratingView.ItemShape = expectedShape;
+		ratingView.ItemShape.Should().Be(expectedShape);
 	}
 
 	[Fact]

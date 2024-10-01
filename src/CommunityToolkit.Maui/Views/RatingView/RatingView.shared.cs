@@ -11,8 +11,8 @@ namespace CommunityToolkit.Maui.Views;
 /// <summary>Rating view control.</summary>
 public class RatingView : TemplatedView, IRatingView
 {
-	/// <summary>Bindable property for <see cref="CustomShape"/> bindable property.</summary>
-	public static readonly BindableProperty CustomShapeProperty = RatingViewItemElement.CustomShapeProperty;
+	/// <summary>Bindable property for <see cref="CustomItemShape"/> bindable property.</summary>
+	public static readonly BindableProperty CustomItemShapeProperty = RatingViewItemElement.CustomShapeProperty;
 
 	/// <summary>The backing store for the <see cref="EmptyColor" /> bindable property.</summary>
 	public static readonly BindableProperty EmptyColorProperty = RatingViewItemElement.EmptyColorProperty;
@@ -46,13 +46,13 @@ public class RatingView : TemplatedView, IRatingView
 	public static readonly BindableProperty ShapeBorderThicknessProperty = RatingViewItemElement.ShapeBorderThicknessProperty;
 
 	/// <summary>The backing store for the <see cref="ItemShapeSize" /> bindable property.</summary>
-	public static readonly BindableProperty SizeProperty = RatingViewItemElement.SizeProperty;
+	public static readonly BindableProperty ItemShapeSizeProperty = RatingViewItemElement.ItemShapeSizeProperty;
 
 	/// <summary>The backing store for the <see cref="Spacing" /> bindable property.</summary>
 	public static readonly BindableProperty SpacingProperty = BindableProperty.Create(nameof(Spacing), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.Spacing, propertyChanged: OnSpacingChanged);
 
-	/// <summary>The backing store for the <see cref="Shape" /> bindable property.</summary>
-	public readonly BindableProperty ShapeProperty = RatingViewItemElement.ShapeProperty;
+	/// <summary>The backing store for the <see cref="ItemShape" /> bindable property.</summary>
+	public readonly BindableProperty ItemShapeProperty = RatingViewItemElement.ShapeProperty;
 
 	readonly WeakEventManager weakEventManager = new();
 
@@ -70,14 +70,11 @@ public class RatingView : TemplatedView, IRatingView
 		remove => weakEventManager.RemoveEventHandler(value);
 	}
 
-	///<summary>The control to be displayed</summary>
-	public HorizontalStackLayout? Control { get; set; }
-
 	///<summary>Defines the shape to be drawn.</summary>
-	public string CustomShape
+	public string CustomItemShape
 	{
-		get => (string)GetValue(CustomShapeProperty);
-		set => SetValue(CustomShapeProperty, value);
+		get => (string)GetValue(CustomItemShapeProperty);
+		set => SetValue(CustomItemShapeProperty, value);
 	}
 
 	/// <summary>Gets or sets a value of the empty rating color property.</summary>
@@ -113,8 +110,8 @@ public class RatingView : TemplatedView, IRatingView
 	/// <summary>Gets or sets a value indicating the shape size.</summary>
 	public double ItemShapeSize
 	{
-		get => (double)GetValue(SizeProperty);
-		set => SetValue(SizeProperty, value);
+		get => (double)GetValue(ItemShapeSizeProperty);
+		set => SetValue(ItemShapeSizeProperty, value);
 	}
 
 	/// <summary>Gets or sets a value indicating the maximum rating.</summary>
@@ -168,10 +165,10 @@ public class RatingView : TemplatedView, IRatingView
 		set => SetValue(RatingFillProperty, value);
 	}
 	///<summary>Gets or sets a value indicating the rating shape.</summary>
-	public RatingViewShape Shape
+	public RatingViewShape ItemShape
 	{
-		get => (RatingViewShape)GetValue(ShapeProperty);
-		set => SetValue(ShapeProperty, value);
+		get => (RatingViewShape)GetValue(ItemShapeProperty);
+		set => SetValue(ItemShapeProperty, value);
 	}
 	/// <summary>Gets or sets a value indicating the rating shape border color.</summary>
 	[AllowNull]
@@ -194,12 +191,17 @@ public class RatingView : TemplatedView, IRatingView
 			SetValue(ShapeBorderThicknessProperty, value);
 		}
 	}
+	
 	///<summary>Gets or sets a value indicating the space between rating items.</summary>
 	public double Spacing
 	{
 		get => (double)GetValue(SpacingProperty);
 		set => SetValue(SpacingProperty, value);
 	}
+	
+	///<summary>The control to be displayed</summary>
+	internal HorizontalStackLayout? Control { get; set; }
+	
 	///<summary>Method called every time the control's Binding Context is changed.</summary>
 	protected override void OnBindingContextChanged()
 	{
@@ -259,7 +261,7 @@ public class RatingView : TemplatedView, IRatingView
 
 				if (border.Content is not Shape borderShape)
 				{
-					throw new InvalidOperationException($"Border Content must be of type {nameof(Shape)}");
+					throw new InvalidOperationException($"Border Content must be of type {nameof(ItemShape)}");
 				}
 
 				result.Add(borderShape);
@@ -480,7 +482,7 @@ public class RatingView : TemplatedView, IRatingView
 	/// <param name="newValue">Old rating custom shape path data.</param>
 	void IRatingViewShape.OnCustomShapePropertyChanged(string? oldValue, string? newValue)
 	{
-		if (Shape is not RatingViewShape.Custom)
+		if (ItemShape is not RatingViewShape.Custom)
 		{
 			return;
 		}
@@ -488,7 +490,7 @@ public class RatingView : TemplatedView, IRatingView
 		string newShapePathData;
 		if (string.IsNullOrEmpty(newValue))
 		{
-			Shape = RatingViewDefaults.Shape;
+			ItemShape = RatingViewDefaults.Shape;
 			newShapePathData = Core.Primitives.RatingViewShape.Star.PathData;
 		}
 		else
@@ -624,7 +626,7 @@ public class RatingView : TemplatedView, IRatingView
 
 		Control.Spacing = Spacing;
 
-		var shape = GetShapePathData(Shape);
+		var shape = GetShapePathData(ItemShape);
 		for (var i = minimum; i < maximum; i++)
 		{
 			var child = CreateChild(shape, ItemPadding, ShapeBorderThickness, ItemShapeSize, ShapeBorderColor, this.BackgroundColor);
@@ -664,7 +666,7 @@ public class RatingView : TemplatedView, IRatingView
 		return shape switch
 		{
 			RatingViewShape.Circle => Core.Primitives.RatingViewShape.Circle.PathData,
-			RatingViewShape.Custom => CustomShape ?? Core.Primitives.RatingViewShape.Star.PathData,
+			RatingViewShape.Custom => CustomItemShape ?? Core.Primitives.RatingViewShape.Star.PathData,
 			RatingViewShape.Dislike => Core.Primitives.RatingViewShape.Dislike.PathData,
 			RatingViewShape.Heart => Core.Primitives.RatingViewShape.Heart.PathData,
 			RatingViewShape.Like => Core.Primitives.RatingViewShape.Like.PathData,

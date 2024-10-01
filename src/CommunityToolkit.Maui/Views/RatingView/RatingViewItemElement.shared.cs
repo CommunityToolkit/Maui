@@ -5,14 +5,14 @@ namespace CommunityToolkit.Maui.Views;
 
 static class RatingViewItemElement
 {
-	/// <summary>Bindable property for attached property <c>CustomShape</c>.</summary>
-	public static readonly BindableProperty CustomShapeProperty = BindableProperty.Create(nameof(IRatingViewShape.CustomShape), typeof(string), typeof(IRatingViewShape), defaultValue: null, propertyChanged: OnCustomShapePropertyChanged);
+	/// <summary>Bindable property for attached property <c>CustomItemShape</c>.</summary>
+	public static readonly BindableProperty CustomShapeProperty = BindableProperty.Create(nameof(IRatingViewShape.CustomItemShape), typeof(string), typeof(IRatingViewShape), defaultValue: null, propertyChanged: OnCustomShapePropertyChanged);
 
 	/// <summary>Bindable property for <see cref="IRatingViewShape.ItemPadding"/>.</summary>
 	public static readonly BindableProperty ItemPaddingProperty = BindableProperty.Create(nameof(IRatingViewShape.ItemPadding), typeof(Thickness), typeof(IRatingViewShape), default(Thickness), propertyChanged: OnItemPaddingPropertyChanged, defaultValueCreator: static _ => RatingViewDefaults.ItemPadding);
 
-	/// <summary>Bindable property for attached property <c>Shape</c>.</summary>
-	public static readonly BindableProperty ShapeProperty = BindableProperty.Create(nameof(IRatingViewShape.Shape), typeof(RatingViewShape), typeof(IRatingViewShape), defaultValue: RatingViewDefaults.Shape, propertyChanged: OnItemShapePropertyChanged, defaultValueCreator: static _ => RatingViewDefaults.Shape);
+	/// <summary>Bindable property for attached property <c>ItemShape</c>.</summary>
+	public static readonly BindableProperty ShapeProperty = BindableProperty.Create(nameof(IRatingViewShape.ItemShape), typeof(RatingViewShape), typeof(IRatingViewShape), defaultValue: RatingViewDefaults.Shape, propertyChanged: OnItemShapePropertyChanged, defaultValueCreator: static _ => RatingViewDefaults.Shape);
 
 	/// <summary>Bindable property for attached property <c>ShapeBorderColor</c>.</summary>
 	public static readonly BindableProperty ShapeBorderColorProperty = BindableProperty.Create(nameof(IRatingViewShape.ShapeBorderColor), typeof(Color), typeof(IRatingViewShape), defaultValue: RatingViewDefaults.ShapeBorderColor, propertyChanged: OnItemShapeBorderColorChanged, defaultValueCreator: static _ => RatingViewDefaults.ShapeBorderColor);
@@ -21,7 +21,7 @@ static class RatingViewItemElement
 	public static readonly BindableProperty ShapeBorderThicknessProperty = BindableProperty.Create(nameof(IRatingViewShape.ShapeBorderThickness), typeof(double), typeof(IRatingViewShape), defaultValue: RatingViewDefaults.ShapeBorderThickness, propertyChanged: OnItemShapeBorderThicknessChanged, defaultValueCreator: static _ => RatingViewDefaults.ShapeBorderThickness);
 
 	/// <summary>Bindable property for attached property <c>Size</c>.</summary>
-	public static readonly BindableProperty SizeProperty = BindableProperty.Create(nameof(IRatingViewShape.ItemShapeSize), typeof(double), typeof(IRatingViewShape), defaultValue: RatingViewDefaults.ItemShapeSize, propertyChanged: OnItemShapeSizeChanged, defaultValueCreator: static _ => RatingViewDefaults.ItemShapeSize);
+	public static readonly BindableProperty ItemShapeSizeProperty = BindableProperty.Create(nameof(IRatingViewShape.ItemShapeSize), typeof(double), typeof(IRatingViewShape), defaultValue: RatingViewDefaults.ItemShapeSize, propertyChanged: OnItemShapeSizeChanged, defaultValueCreator: static _ => RatingViewDefaults.ItemShapeSize);
 
 	/// <summary>Bindable property for attached property <c>EmptyColor</c>.</summary>
 	public static readonly BindableProperty EmptyColorProperty = BindableProperty.Create(nameof(IRatingViewShape.EmptyColor), typeof(Color), typeof(IRatingViewShape), defaultValue: RatingViewDefaults.EmptyColor, propertyChanged: OnEmptyColorPropertyChanged, defaultValueCreator: static _ => RatingViewDefaults.EmptyColor);
