@@ -165,7 +165,15 @@ public class RatingView : TemplatedView, IRatingView
 	public double ShapeBorderThickness
 	{
 		get => (double)GetValue(ShapeBorderThicknessProperty);
-		set => SetValue(ShapeBorderThicknessProperty, value);
+		set
+		{
+			if (value < 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(ShapeBorderThickness), $"{nameof(ShapeBorderThickness)} must be greater than 0"); 
+			}
+			
+			SetValue(ShapeBorderThicknessProperty, value);
+		}
 	}
 
 	///<summary>Gets or sets a value indicating the space between rating items.</summary>
