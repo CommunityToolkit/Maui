@@ -706,6 +706,15 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
+	public void ShapeBorderThicknessShouldThrowArgumentOutOfRangeExceptionForNegativeNumbers()
+	{
+		Assert.Throws<ArgumentOutOfRangeException>(() => new RatingView
+		{
+			ShapeBorderThickness = -1
+		});
+	}
+
+	[Fact]
 	public void ViewStructure_ItemFill_Colors()
 	{
 		var filledColor = Colors.Red;
