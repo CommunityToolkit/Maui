@@ -343,15 +343,15 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						}.Bind(RatingView.EmptyColorProperty,
 							static (RatingViewCsharpViewModel vm) => vm.ColorPickerEmptyBackgroundTarget,
 							mode: BindingMode.OneWay,
-							convert: colour => colour)
+							convert: static colour => colour)
 						.Bind(RatingView.FilledColorProperty,
 							static (RatingViewCsharpViewModel vm) => vm.ColorPickerFilledBackgroundTarget,
 							mode: BindingMode.OneWay,
-							convert: colour => colour)
+							convert: static colour => colour)
 						.Bind(RatingView.ShapeBorderColorProperty,
 							static (RatingViewCsharpViewModel vm) => vm.ColorPickerRatingShapeBorderColorTarget,
 							mode: BindingMode.OneWay,
-							convert: colour => colour)
+							convert: static colour => colour)
 						.SemanticDescription("A RatingView showing the fill, empty and border color changes, shown using the fill type of 'Shape'."),
 					new Label
 					{
@@ -370,15 +370,15 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						}.Bind(RatingView.EmptyColorProperty,
 							getter: static (RatingViewCsharpViewModel vm) => vm.ColorPickerEmptyBackgroundTarget,
 							mode: BindingMode.OneWay,
-							convert: colour => colour)
+							convert: static colour => colour)
 						.Bind(RatingView.FilledColorProperty,
 							getter: static (RatingViewCsharpViewModel vm) => vm.ColorPickerFilledBackgroundTarget,
 							mode: BindingMode.OneWay,
-							convert: colour => colour)
+							convert: static colour => colour)
 						.Bind(RatingView.ShapeBorderColorProperty,
 							getter: static (RatingViewCsharpViewModel vm) => vm.ColorPickerRatingShapeBorderColorTarget,
 							mode: BindingMode.OneWay,
-							convert: colour => colour)
+							convert: static colour => colour)
 						.SemanticDescription("A RatingView showing the fill, empty and border color changes, shown using the fill type of 'Item'."),
 
 					GetSeparator(),
@@ -419,7 +419,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							RatingView.ShapeBorderThicknessProperty,
 							static stepper => (int)stepper.Value,
 							mode: BindingMode.OneWay,
-							convert: stepperValue => stepperValue,
+							convert: static stepperValue => stepperValue,
 							source: stepperShapeBorderThickness
 						).SemanticDescription("A RatingView showing the shape border thickness changes."),
 
@@ -433,7 +433,10 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						Spacing = 8,
 						Children =
 						{
-							new CheckBox { IsChecked = true }
+							new CheckBox
+								{
+									IsChecked = true
+								}
 								.AppThemeColorBinding(CheckBox.BackgroundColorProperty, Colors.Black, Colors.White)
 								.AppThemeColorBinding(CheckBox.ColorProperty, Colors.White, Colors.Black)
 								.Assign(out CheckBox checkBox)
@@ -473,12 +476,9 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 									Maximum = 10,
 									Value = 0
 								}
-								.Invoke(stepper => stepper.ValueChanged += RatingViewShapePaddingLeft_ValueChanged)
-								.Behaviors(new EventToCommandBehavior
-								{
-									EventName = nameof(Stepper.ValueChanged),
-									Command = BindingContext.RatingViewShapePaddingLeftChangedCommand
-								})
+								.Bind(Stepper.ValueProperty,
+									getter: static (RatingViewCsharpViewModel vm) => vm.RatingViewShapePaddingLeft,
+									setter: static (RatingViewCsharpViewModel vm, double value) => vm.RatingViewShapePaddingLeft = value)
 								.Assign(out Stepper stepperPaddingLeft).SemanticHint("Change the rating view padding left."),
 							new Label
 								{
@@ -486,7 +486,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 								}.Bind(Label.TextProperty,
 									static stepper => stepper.Value,
 									mode: BindingMode.OneWay,
-									convert: stepperValue => $": Left: {stepperValue}",
+									convert: static stepperValue => $": Left: {stepperValue}",
 									source: stepperPaddingLeft)
 								.SemanticDescription("Shape left padding applied to the RatingView sample."),
 						}
@@ -503,12 +503,9 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 									Maximum = 10,
 									Value = 0
 								}
-								.Invoke(stepper => stepper.ValueChanged += RatingViewShapePaddingTop_ValueChanged)
-								.Behaviors(new EventToCommandBehavior()
-								{
-									EventName = nameof(Stepper.ValueChanged),
-									Command = BindingContext.RatingViewShapePaddingTopChangedCommand
-								})
+								.Bind(Stepper.ValueProperty,
+									getter: static (RatingViewCsharpViewModel vm) => vm.RatingViewShapePaddingTop,
+									setter: static (RatingViewCsharpViewModel vm, double value) => vm.RatingViewShapePaddingTop = value)
 								.Assign(out Stepper stepperPaddingTop)
 								.SemanticHint("Change the rating view padding top."),
 
@@ -517,7 +514,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 								.Bind(Label.TextProperty,
 									getter: static stepper => stepper.Value,
 									mode: BindingMode.OneWay,
-									convert: stepperValue => $": Top: {stepperValue}",
+									convert: static stepperValue => $": Top: {stepperValue}",
 									source: stepperPaddingTop)
 								.SemanticDescription("Shape top padding applied to the RatingView sample."),
 						}
@@ -534,12 +531,9 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 									Maximum = 10,
 									Value = 0
 								}
-								.Invoke(stepper => stepper.ValueChanged += RatingViewShapePaddingRight_ValueChanged)
-								.Behaviors(new EventToCommandBehavior
-								{
-									EventName = nameof(Stepper.ValueChanged),
-									Command = BindingContext.RatingViewShapePaddingRightChangedCommand
-								})
+								.Bind(Stepper.ValueProperty,
+									getter: static (RatingViewCsharpViewModel vm) => vm.RatingViewShapePaddingRight,
+									setter: static (RatingViewCsharpViewModel vm, double value) => vm.RatingViewShapePaddingRight = value)
 								.Assign(out Stepper stepperPaddingRight)
 								.SemanticHint("Change the rating view padding right."),
 
@@ -565,12 +559,9 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 									Maximum = 10,
 									Value = 0,
 								}
-								.Invoke(stepper => stepper.ValueChanged += RatingViewShapePaddingBottom_ValueChanged)
-								.Behaviors(new EventToCommandBehavior
-								{
-									EventName = nameof(Stepper.ValueChanged),
-									Command = BindingContext.RatingViewShapePaddingBottomChangedCommand
-								})
+								.Bind(Stepper.ValueProperty,
+									getter: static (RatingViewCsharpViewModel vm) => vm.RatingViewShapePaddingBottom,
+									setter: static (RatingViewCsharpViewModel vm, double value) => vm.RatingViewShapePaddingBottom = value)
 								.Assign(out Stepper stepperPaddingBottom)
 								.SemanticHint("Change the rating view padding bottom."),
 
@@ -579,7 +570,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 								.Bind(Label.TextProperty,
 									getter: static stepper => stepper.Value,
 									mode: BindingMode.OneWay,
-									convert: stepperValue => $": Bottom: {stepperValue}",
+									convert: static stepperValue => $": Bottom: {stepperValue}",
 									source: stepperPaddingBottom)
 								.SemanticDescription("Shape bottom padding applied to the RatingView sample."),
 						}
@@ -591,7 +582,8 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							MaximumRating = 5,
 							Rating = 4.5,
 							VerticalOptions = LayoutOptions.Center,
-						}.Bind(RatingView.ItemPaddingProperty, nameof(BindingContext.RatingViewShapePaddingValue))
+						}.Bind(RatingView.ItemPaddingProperty,
+							getter: static (RatingViewCsharpViewModel vm) => vm.RatingViewShapePaddingValue)
 						.SemanticDescription("A RatingView sample showing the padding changes."),
 
 					GetSeparator(),
@@ -612,7 +604,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							Label.TextProperty,
 							getter: static slider => slider.Value,
 							mode: BindingMode.OneWay,
-							convert: sliderValue => $": {sliderValue:F2}",
+							convert: static sliderValue => $": {sliderValue:F2}",
 							source: ratingRatingView)
 						.SemanticDescription("RatingView rating value."),
 
@@ -636,7 +628,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						.Bind(RatingView.RatingProperty,
 							getter: static slider => slider.Value,
 							mode: BindingMode.OneWay,
-							convert: sliderValue => sliderValue,
+							convert: static sliderValue => sliderValue,
 							source: ratingRatingView)
 						.SemanticDescription("A RatingView sample showing the rating changes and the fill type of 'Shape'."),
 
@@ -659,7 +651,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						.Bind(RatingView.RatingProperty,
 							getter: static slider => slider.Value,
 							mode: BindingMode.OneWay,
-							convert: sliderValue => sliderValue,
+							convert: static sliderValue => sliderValue,
 							source: ratingRatingView)
 						.SemanticDescription("A RatingView sample showing the rating changes and the fill type of 'Item'."),
 
@@ -738,7 +730,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							RatingView.SpacingProperty,
 							getter: static stepper => (int)stepper.Value,
 							mode: BindingMode.OneWay,
-							convert: stepperValue => stepperValue,
+							convert: static stepperValue => stepperValue,
 							source: stepperSpacing
 						)
 						.SemanticDescription("A RatingView sample showing the spacing changes."),
@@ -758,8 +750,6 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 			X2 = 300
 		}.Center().AppThemeBinding(Line.StrokeProperty, Colors.Black, Colors.White);
 	}
-
-	void RatingViewShapePaddingBottom_ValueChanged(object? sender, ValueChangedEventArgs e) => BindingContext.RatingViewShapePaddingBottom = e.NewValue;
 
 	void RatingViewShapePaddingLeft_ValueChanged(object? sender, ValueChangedEventArgs e) => BindingContext.RatingViewShapePaddingLeft = e.NewValue;
 

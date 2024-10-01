@@ -39,11 +39,10 @@ public partial class RatingViewCsharpViewModel : BaseViewModel
 	[ObservableProperty]
 	int? colorPickerFilledBackgroundSelectedIndex, colorPickerEmptyBackgroundSelectedIndex, colorPickerRatingShapeBorderColorSelectedIndex;
 
-	[ObservableProperty]
+	[ObservableProperty, NotifyPropertyChangedFor(nameof(RatingViewShapePaddingValue))]
 	double ratingViewShapePaddingLeft, ratingViewShapePaddingTop, ratingViewShapePaddingRight, ratingViewShapePaddingBottom;
 
-	[ObservableProperty]
-	Thickness ratingViewShapePaddingValue = new(0);
+	public Thickness RatingViewShapePaddingValue => new(RatingViewShapePaddingLeft, RatingViewShapePaddingTop, RatingViewShapePaddingRight, RatingViewShapePaddingBottom);
 
 	[RelayCommand]
 	void ColorPickerFilledBackground()
@@ -70,37 +69,5 @@ public partial class RatingViewCsharpViewModel : BaseViewModel
 		{
 			ColorPickerRatingShapeBorderColorTarget = colorList.ElementAtOrDefault(ColorPickerRatingShapeBorderColorSelectedIndex.Value).Value;
 		}
-	}
-
-	[RelayCommand]
-	void OnRatingViewShapePaddingLeftChanged()
-	{
-		Thickness thickness = RatingViewShapePaddingValue;
-		thickness.Left = RatingViewShapePaddingLeft;
-		RatingViewShapePaddingValue = thickness;
-	}
-
-	[RelayCommand]
-	void OnRatingViewShapePaddingTopChanged()
-	{
-		Thickness thickness = RatingViewShapePaddingValue;
-		thickness.Top = RatingViewShapePaddingTop;
-		RatingViewShapePaddingValue = thickness;
-	}
-
-	[RelayCommand]
-	void OnRatingViewShapePaddingRightChanged()
-	{
-		Thickness thickness = RatingViewShapePaddingValue;
-		thickness.Right = RatingViewShapePaddingRight;
-		RatingViewShapePaddingValue = thickness;
-	}
-
-	[RelayCommand]
-	void OnRatingViewShapePaddingBottomChanged()
-	{
-		Thickness thickness = RatingViewShapePaddingValue;
-		thickness.Bottom = RatingViewShapePaddingBottom;
-		RatingViewShapePaddingValue = thickness;
 	}
 }
