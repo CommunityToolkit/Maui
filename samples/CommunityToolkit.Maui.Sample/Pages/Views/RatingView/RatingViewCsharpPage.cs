@@ -321,7 +321,9 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 								.CenterVertical(),
 
 							new Picker()
-								.Bind(Picker.ItemsSourceProperty, nameof(BindingContext.ColorsForPickers))
+								.Bind(Picker.ItemsSourceProperty, 
+									getter: static (RatingViewCsharpViewModel vm) => vm.ColorsForPickers,
+									mode: BindingMode.OneTime)
 								.Bind(Picker.SelectedIndexProperty, nameof(BindingContext.ColorPickerRatingShapeBorderColorSelectedIndex), BindingMode.TwoWay)
 								.Invoke(picker => picker.SelectedIndexChanged += (sender, e) => BindingContext.ColorPickerRatingShapeBorderColorCommand.Execute(null))
 								.SemanticHint("Pick to change the rating shape border color."),

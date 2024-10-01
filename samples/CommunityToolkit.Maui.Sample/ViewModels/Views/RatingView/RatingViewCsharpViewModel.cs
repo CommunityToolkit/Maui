@@ -1,5 +1,6 @@
 ﻿// Ignore Spelling: csharp
 
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -9,21 +10,19 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public partial class RatingViewCsharpViewModel : BaseViewModel
 {
-	readonly ReadOnlyDictionary<string, Color> colorList = typeof(Colors)
+	static readonly ReadOnlyDictionary<string, Color> colorList = typeof(Colors)
 		.GetFields(BindingFlags.Static | BindingFlags.Public)
 		.ToDictionary(static c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()))
 		.AsReadOnly();
 
 	public RatingViewCsharpViewModel()
 	{
-		ColorsForPickers = [.. colorList.Keys];
 		ColorPickerEmptyBackgroundSelectedIndex = ColorsForPickers.IndexOf("Red");
 		ColorPickerFilledBackgroundSelectedIndex = ColorsForPickers.IndexOf("Green");
 		ColorPickerRatingShapeBorderColorSelectedIndex = ColorsForPickers.IndexOf("Blue");
 	}
 
-	[ObservableProperty]
-	List<string> colorsForPickers;
+	public ImmutableList<string> ColorsForPickers { get;} = [.. colorList.Keys];
 
 	[ObservableProperty]
 	double stepperValueMaximumRatings = 1;
