@@ -282,7 +282,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							Increment = 1,
 							Minimum = 1,
 							Maximum = 25,
-							Value = 0
+							Value = 1
 						}
 						.End()
 						.Row(Row.MaximumRatingsStepper).Column(Column.Input)
@@ -365,7 +365,6 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						.SemanticHint("Pick to change the rating shape border color."),
 
 					new Label()
-						.BackgroundColor(Colors.Green)
 						.Row(Row.ColorsShapeFillTitle).ColumnSpan(All<Column>())
 						.Start()
 						.Bottom()
@@ -480,8 +479,8 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new RatingView
 						{
-							MaximumRating = 13,
-							Rating = 6.5
+							MaximumRating = 5,
+							Rating = 2.5
 						}
 						.Row(Row.ReadOnlyRatingView).ColumnSpan(All<Column>())
 						.Center()
