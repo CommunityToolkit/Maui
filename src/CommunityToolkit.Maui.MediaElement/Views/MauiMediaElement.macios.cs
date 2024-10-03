@@ -36,7 +36,7 @@ public class MauiMediaElement : UIView
 		{
 			viewController = parentUIViewController;
 		}
-		// If none of the Parents in the VisualTree of MediaElement do not contain a UIViewController, we can use the ViewController on the PageHandler
+		// If none of the Parents in the VisualTree of MediaElement use a UIViewController, we can use the ViewController in the PageHandler
 		// To find the PageHandler, we traverse `MediaElement.Parent` until the Page is located
 		else if (virtualView.TryFindParent<Page>(out var page)
 			&& page.Handler is PageHandler { ViewController: not null } pageHandler)
