@@ -143,11 +143,12 @@ public class RatingView : TemplatedView, IRatingView
 			{
 				throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(Rating)} cannot be less than 0");
 			}
+
 			if (value > MaximumRating)
 			{
 				throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(Rating)} cannot be greater than {nameof(MaximumRating)}");
 			}
-			
+
 			SetValue(RatingProperty, value);
 		}
 	}
@@ -158,18 +159,21 @@ public class RatingView : TemplatedView, IRatingView
 		get => (ICommand?)GetValue(RatingChangedCommandProperty);
 		set => SetValue(RatingChangedCommandProperty, value);
 	}
+
 	/// <summary>Gets or sets a value indicating which element of the rating to fill.</summary>
 	public RatingFillElement RatingFill
 	{
 		get => (RatingFillElement)GetValue(RatingFillProperty);
 		set => SetValue(RatingFillProperty, value);
 	}
+
 	///<summary>Gets or sets a value indicating the rating shape.</summary>
 	public RatingViewShape ItemShape
 	{
 		get => (RatingViewShape)GetValue(ItemShapeProperty);
 		set => SetValue(ItemShapeProperty, value);
 	}
+
 	/// <summary>Gets or sets a value indicating the rating shape border color.</summary>
 	[AllowNull]
 	public Color ShapeBorderColor
@@ -177,6 +181,7 @@ public class RatingView : TemplatedView, IRatingView
 		get => (Color)GetValue(ShapeBorderColorProperty);
 		set => SetValue(ShapeBorderColorProperty, value ?? Colors.Transparent);
 	}
+
 	///<summary>Gets or sets a value indicating the rating shape border thickness.</summary>
 	public double ShapeBorderThickness
 	{
@@ -191,17 +196,17 @@ public class RatingView : TemplatedView, IRatingView
 			SetValue(ShapeBorderThicknessProperty, value);
 		}
 	}
-	
+
 	///<summary>Gets or sets a value indicating the space between rating items.</summary>
 	public double Spacing
 	{
 		get => (double)GetValue(SpacingProperty);
 		set => SetValue(SpacingProperty, value);
 	}
-	
+
 	///<summary>The control to be displayed</summary>
 	internal HorizontalStackLayout? Control { get; set; }
-	
+
 	///<summary>Method called every time the control's Binding Context is changed.</summary>
 	protected override void OnBindingContextChanged()
 	{
@@ -300,7 +305,6 @@ public class RatingView : TemplatedView, IRatingView
 	static void OnMaximumRatingChange(BindableObject bindable, object oldValue, object newValue)
 	{
 		var ratingView = (RatingView)bindable;
-
 		if (ratingView.Control is null)
 		{
 			return;
@@ -363,7 +367,6 @@ public class RatingView : TemplatedView, IRatingView
 	static void OnSpacingChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var ratingView = (RatingView)bindable;
-
 		if (ratingView.Control is null)
 		{
 			return;
@@ -375,7 +378,6 @@ public class RatingView : TemplatedView, IRatingView
 	static void OnUpdateRatingDraw(BindableObject bindable, object oldValue, object newValue)
 	{
 		var ratingView = (RatingView)bindable;
-
 		if (ratingView.Control is null)
 		{
 			return;
@@ -532,6 +534,7 @@ public class RatingView : TemplatedView, IRatingView
 		{
 			return;
 		}
+
 		for (var element = 0; element < Control.Count; element++)
 		{
 			((Border)Control.Children[element]).Padding = newValue;
@@ -571,7 +574,6 @@ public class RatingView : TemplatedView, IRatingView
 		for (var element = 0; element < Control.Count; element++)
 		{
 			var border = (Border)Control.Children[element];
-
 			if (border.Content is not null)
 			{
 				((Microsoft.Maui.Controls.Shapes.Path)border.Content.GetVisualTreeDescendants()[0]).StrokeThickness = newValue;
@@ -600,7 +602,6 @@ public class RatingView : TemplatedView, IRatingView
 		for (var element = 0; element < Control.Count; element++)
 		{
 			var border = (Border)Control.Children[element];
-
 			if (border.Content is not null)
 			{
 				var rating = (Microsoft.Maui.Controls.Shapes.Path)border.Content.GetVisualTreeDescendants()[0];
@@ -621,7 +622,6 @@ public class RatingView : TemplatedView, IRatingView
 		}
 
 		Control.Spacing = Spacing;
-
 		var shape = GetShapePathData(ItemShape);
 		for (var i = minimum; i < maximum; i++)
 		{
@@ -649,7 +649,6 @@ public class RatingView : TemplatedView, IRatingView
 		for (var element = 0; element < Control.Count; element++)
 		{
 			var border = (Border)Control.Children[element];
-
 			if (border.Content is not null)
 			{
 				((Microsoft.Maui.Controls.Shapes.Path)border.Content.GetVisualTreeDescendants()[0]).Data = (Geometry?)new PathGeometryConverter().ConvertFromInvariantString(shape);
@@ -701,13 +700,9 @@ public class RatingView : TemplatedView, IRatingView
 		}
 
 		ArgumentNullException.ThrowIfNull(sender);
-
 		var border = (Border)sender;
 		var itemIndex = Control.Children.IndexOf(border);
-
-		Rating = MaximumRating > 1
-			? itemIndex + 1
-			: GetRatingWhenMaximumRatingEqualsOne(Rating);
+		Rating = MaximumRating > 1 ? itemIndex + 1 : GetRatingWhenMaximumRatingEqualsOne(Rating);
 	}
 
 	void OnRatingChangedEvent(RatingChangedEventArgs e)
@@ -719,9 +714,7 @@ public class RatingView : TemplatedView, IRatingView
 	void UpdateRatingDrawing(VisualElement control, RatingFillElement ratingFill)
 	{
 		var isShapeFill = ratingFill is RatingFillElement.Shape;
-
 		var visualElements = GetVisualTreeDescendantsWithBorderAndShape((VisualElement)control.GetVisualTreeDescendants()[0], isShapeFill);
-
 		if (isShapeFill)
 		{
 			UpdateRatingShapeColors(visualElements, Rating, FilledColor, EmptyColor);
