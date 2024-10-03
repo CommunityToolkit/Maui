@@ -30,6 +30,7 @@ public class MauiMediaElement : UIView
 		UIViewController? viewController;
 
 		// If any of the Parents of MediaElement uses a UIViewController for their PlatformView, use it as the child ViewController
+		// This enables support for UI controls, like CommunityToolkit.Maui.Popup, whose PlatformView is a UIViewController (e.g. `public class MauiPopup : UIViewController)
 		if (virtualView.Parent.TryFindParentPlatformView(out UIViewController? parentUIViewController))
 		{
 			viewController = parentUIViewController;
