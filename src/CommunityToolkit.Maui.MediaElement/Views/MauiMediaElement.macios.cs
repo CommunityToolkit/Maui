@@ -29,8 +29,14 @@ public class MauiMediaElement : UIView
 
 		UIViewController? viewController;
 
-		// If Parent is not null, we can retrieve the PageHandler using the traversing `MediaElement.Parent` until the Page is located
-		if (virtualView.TryFindParent<Page>(out var page)
+		// If MediaElement contains a UIViewController, use it
+		if (virtualView.Parent.TryFindParentPlatformView(out UIViewController? parentUIViewController))
+		{
+			viewController = parentUIViewController;
+		}
+		// If Parent does not contain a UIViewController, we can use the ViewController on the PageHandler
+		// To find the PageHandler, we traverse `MediaElement.Parent` until the Page is located
+		else if (virtualView.TryFindParent<Page>(out var page)
 			&& page.Handler is PageHandler { ViewController: not null } pageHandler)
 		{
 			viewController = pageHandler.ViewController;

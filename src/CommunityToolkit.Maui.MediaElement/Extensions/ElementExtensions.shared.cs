@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Maui.Platform;
 namespace CommunityToolkit.Maui.Extensions;
 
 static class ElementExtensions
@@ -17,6 +18,23 @@ static class ElementExtensions
 		}
 
 		parent = null;
+		return false;
+	}
+
+	public static bool TryFindParentPlatformView<T>(this Element? child, [NotNullWhen(true)] out T? parentPlatformView)
+	{
+		while (child is not null)
+		{
+			if (child.Parent?.Handler?.PlatformView is T element)
+			{
+				parentPlatformView = element;
+				return true;
+			}
+
+			child = child.Parent;
+		}
+
+		parentPlatformView = default;
 		return false;
 	}
 }
