@@ -306,11 +306,7 @@ public class RatingView : TemplatedView, IRatingView
 			return;
 		}
 
-		if (ratingView.Control is not Layout element)
-		{
-			throw new InvalidOperationException($"{nameof(RatingView)}.{nameof(Control)} must be of type {nameof(Layout)}");
-		}
-
+		var element = ratingView.Control;
 		var newMaximumRatingValue = (int)newValue;
 		var oldMaximumRatingValue = (int)oldValue;
 		if (newMaximumRatingValue < (int)oldValue)
