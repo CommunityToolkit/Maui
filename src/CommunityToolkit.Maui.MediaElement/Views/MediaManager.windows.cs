@@ -345,6 +345,11 @@ partial class MediaManager : IDisposable
 		}
 	}
 
+	static bool IsZero<TValue>(TValue numericValue) where TValue : INumber<TValue>
+	{
+		return TValue.IsZero(numericValue);
+	}
+
 	async ValueTask UpdateMetadata()
 	{
 		if (systemMediaControls is null || Player is null)
@@ -497,9 +502,5 @@ partial class MediaManager : IDisposable
 	void OnPlaybackSessionSeekCompleted(MediaPlaybackSession sender, object args)
 	{
 		MediaElement?.SeekCompleted();
-	}
-	static bool IsZero<TValue>(TValue numericValue) where TValue : INumber<TValue>
-	{
-		return TValue.IsZero(numericValue);
 	}
 }
