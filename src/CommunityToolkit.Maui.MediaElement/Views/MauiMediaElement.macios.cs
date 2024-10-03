@@ -29,7 +29,7 @@ public class MauiMediaElement : UIView
 
 		UIViewController? viewController;
 
-		// If MediaElement contains a UIViewController, use it
+		// If any of the Parents of MediaElement uses a UIViewController for their PlatformView, use it as the child ViewController
 		if (virtualView.Parent.TryFindParentPlatformView(out UIViewController? parentUIViewController))
 		{
 			viewController = parentUIViewController;
