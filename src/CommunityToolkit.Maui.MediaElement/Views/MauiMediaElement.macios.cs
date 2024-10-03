@@ -29,7 +29,7 @@ public class MauiMediaElement : UIView
 
 		UIViewController? viewController;
 
-		// If Parent is not null, we can retrieve the PageHandler using 
+		// If Parent is not null, we can retrieve the PageHandler using the traversing `MediaElement.Parent` until the Page is located
 		if (virtualView.TryFindParent<Page>(out var page)
 			&& page.Handler is PageHandler { ViewController: not null } pageHandler)
 		{
@@ -128,7 +128,7 @@ public class MauiMediaElement : UIView
 		if (Application.Current.Windows.Count > 1)
 		{
 			// We are unable to determine which Window contains the ItemsView that contains the MediaElement when multiple ItemsView are being used in the same page
-			// // TODO: Add support for MediaElement in an ItemsView in a multi-window application
+			// TODO: Add support for MediaElement in an ItemsView in a multi-window application
 			throw new NotSupportedException("MediaElement is not currently supported in multi-window applications");
 		}
 
