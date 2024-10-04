@@ -57,6 +57,53 @@
             
         </CarouselView>
         
+        <Label HorizontalTextAlignment="Center"
+               VerticalTextAlignment="Center"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               Text="Second CarouselView to confirm MediaElement can be used on a Page containing multiple ItemsView controls" 
+               Margin="12,0,12,0"/>
+        
+        <CarouselView HeightRequest="275" PeekAreaInsets="52" ItemsSource="{Binding ItemSource}">
+            
+            <CarouselView.ItemsLayout>
+                <LinearItemsLayout Orientation="Horizontal"
+                                   ItemSpacing="24"
+                                   SnapPointsAlignment="Center"
+                                   SnapPointsType="MandatorySingle" />
+            </CarouselView.ItemsLayout>
+
+            <CarouselView.ItemTemplate>
+                <DataTemplate x:DataType="viewModels:MediaElementDataSource">
+                    <Border
+                        x:Name="CarouselViewBorder"
+                        BackgroundColor="Black"
+                        Padding="5">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="4" />
+                        </Border.StrokeShape>
+                        <VerticalStackLayout Spacing="6" HeightRequest="250">
+                            <toolkit:MediaElement
+                                HeightRequest="200"
+                                x:Name="MediaElement"
+                                ShouldAutoPlay="True"
+                                ShouldShowPlaybackControls="True"
+                                Source="{Binding Source, Mode=OneTime}" />
+                            <Label TextColor="White"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"
+                                   HorizontalTextAlignment="Center"
+                                   VerticalTextAlignment="Center"
+                                   FontAttributes="Bold"
+                                   FontSize="18"
+                                   Text="{Binding Name, Mode=OneTime}"/>
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CarouselView.ItemTemplate>
+            
+        </CarouselView>
+        
         <Label Text="Swipe Left or Right to see next video"
                HorizontalOptions="Center"
                VerticalOptions="Center"
