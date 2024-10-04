@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Maui.Controls.Internals;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -26,14 +27,14 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 			return false;
 		}
 
-		behavior.SetBinding(BindableObject.BindingContextProperty, new Binding
-		{
-			Source = View,
-			Path = BindableObject.BindingContextProperty.PropertyName
-		});
+		behavior.SetBinding(
+			BindableObject.BindingContextProperty,
+			new TypedBinding<TView?, object?>(
+				static x => (x?.BindingContext, true),
+				(source, property) => { },
+				null));
 
 		return true;
-
 	}
 
 	internal bool TryRemoveBindingContext()

@@ -106,6 +106,7 @@ public static class MauiProgram
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>()
 						.AddStandardResilienceHandler(static options => options.Retry = new MobileHttpRetryStrategyOptions());
 
+		builder.Services.AddSingleton<AppShell>();
 		builder.Services.AddSingleton<PopupSizeConstants>();
 
 		RegisterViewsAndViewModels(builder.Services);

@@ -346,11 +346,13 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 
 	void OnValuePropertyNamePropertyChanged()
 	{
+#pragma warning disable IL2026 // NET9.0 - check if this can be fixed
 		SetBinding(ValueProperty, new Binding
 		{
 			Path = ValuePropertyName,
 			Source = View
 		});
+#pragma warning restore IL2026
 	}
 
 	async ValueTask UpdateStateAsync(VisualElement? view, ValidationFlags flags, bool isForced, CancellationToken? parentToken = null)
@@ -410,13 +412,8 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 	void UpdateStyle(in VisualElement view, bool isValid)
 	{
 		VisualStateManager.GoToState(view, isValid ? ValidVisualState : InvalidVisualState);
-
-		if ((ValidStyle ?? InvalidStyle) == null)
-		{
-			return;
-		}
-
-		view.Style = isValid ? ValidStyle : InvalidStyle;
+		
+		view.Style = (isValid ? ValidStyle : InvalidStyle) ?? view.Style;
 	}
 
 	void ResetValidationTokenSource(CancellationTokenSource? newTokenSource)

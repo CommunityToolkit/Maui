@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.ImageSources;
+﻿using Microsoft.Maui.Controls.Internals;
+
+namespace CommunityToolkit.Maui.ImageSources;
 
 using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Controls;
@@ -143,8 +145,8 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 			return;
 		}
 
-		SetBinding(ParentWidthProperty, new Binding(nameof(VisualElement.Width), BindingMode.OneWay, source: parentElement));
-		SetBinding(ParentHeightProperty, new Binding(nameof(VisualElement.Height), BindingMode.OneWay, source: parentElement));
+		SetBinding(ParentWidthProperty, BindingBase.Create<VisualElement, double>(static p => p.Width, source: parentElement));
+		SetBinding(ParentHeightProperty, BindingBase.Create<VisualElement, double>(static p => p.Height, source: parentElement));
 	}
 
 	static string DefaultGravatarName(DefaultImage defaultGravatar) => defaultGravatar switch

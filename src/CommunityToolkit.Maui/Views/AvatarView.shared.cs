@@ -72,8 +72,8 @@ public class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITe
 			CornerRadius = new CornerRadius(AvatarViewDefaults.DefaultCornerRadius.TopLeft, AvatarViewDefaults.DefaultCornerRadius.TopRight, AvatarViewDefaults.DefaultCornerRadius.BottomLeft, AvatarViewDefaults.DefaultCornerRadius.BottomRight),
 		};
 		Content = avatarLabel;
-		avatarImage.SetBinding(WidthRequestProperty, new Binding(nameof(WidthRequest), source: this));
-		avatarImage.SetBinding(HeightRequestProperty, new Binding(nameof(HeightRequest), source: this));
+		avatarImage.SetBinding(WidthRequestProperty, BindingBase.Create<VisualElement, double>(static p => p.WidthRequest, source: this));
+		avatarImage.SetBinding(HeightRequestProperty, BindingBase.Create<VisualElement, double>(static p => p.HeightRequest, source: this));
 	}
 
 	/// <summary>Gets or sets the control font.</summary>
