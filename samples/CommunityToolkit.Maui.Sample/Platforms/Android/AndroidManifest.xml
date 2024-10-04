@@ -5,9 +5,6 @@
         <service android:name="communityToolkit.maui.media.services" android:stopWithTask="true" android:exported="false" android:enabled="true"
                  android:foregroundServiceType="mediaPlayback">
             <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON"/>
-            </intent-filter>
-            <intent-filter>
                 <action android:name="androidx.media3.session.MediaSessionService"/>
             </intent-filter>
         </service>
