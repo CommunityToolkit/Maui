@@ -2,8 +2,8 @@
 <Project>
   <PropertyGroup>
     <NetVersion>net8.0</NetVersion>
-    <iOSVersion>$(NetVersion)-ios17.5</iOSVersion>
-    <MacCatalystVersion>$(NetVersion)-maccatalyst17.5</MacCatalystVersion>
+    <iOSVersion>$(NetVersion)-ios18.0</iOSVersion>
+    <MacCatalystVersion>$(NetVersion)-maccatalyst18.0</MacCatalystVersion>
     <MauiPackageVersion>8.0.71</MauiPackageVersion>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
