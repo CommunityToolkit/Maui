@@ -31,6 +31,8 @@
 
     <!-- Uncomment the line below if Android App installation fails -->
     <!--<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>-->
+
+    <WindowsSdkPackageVersion>10.0.19041.41</WindowsSdkPackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release' 
@@ -63,8 +65,8 @@
 
     <PackageReference Include="Microsoft.Maui.Controls" Version="*"/>
     <PackageReference Include="CommunityToolkit.Maui.Markup" Version="4.1.0" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="8.8.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="8.9.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
   </ItemGroup>
 
