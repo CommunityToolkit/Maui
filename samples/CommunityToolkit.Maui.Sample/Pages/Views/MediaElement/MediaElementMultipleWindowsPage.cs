@@ -20,17 +20,29 @@ public class MediaElementMultipleWindowsPage : BasePage<MediaElementMultipleWind
 #if WINDOWS || MACCATALYST
 		secondWindow = new Window(new ContentPage
 		{
-			Content = new MediaElement
+			Content = new Grid
 			{
-				Source = elephantsDreamMp4Url,
-				ShouldAutoPlay = true
+				Children =
+				{
+					new MediaElement
+					{
+						Source = elephantsDreamMp4Url,
+						ShouldAutoPlay = true
+					}
+				}
 			}
 		});
 
-		Content = new MediaElement
+		Content = new Grid
 		{
-			Source = buckBunnyMp4Url,
-			ShouldAutoPlay = true
+			Children =
+			{
+				new MediaElement
+				{
+					Source = buckBunnyMp4Url,
+					ShouldAutoPlay = true
+				}
+			}
 		};
 #else
 		Content = new Label()

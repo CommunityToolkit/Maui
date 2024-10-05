@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.UI;
@@ -7,7 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using WinRT.Interop;
+using Windows.Graphics;
 using Application = Microsoft.Maui.Controls.Application;
 using Button = Microsoft.UI.Xaml.Controls.Button;
 using Colors = Microsoft.UI.Colors;
@@ -23,13 +24,16 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiMediaElement : Grid, IDisposable
 {
-	static readonly AppWindow appWindow = GetAppWindowForCurrentWindow();
+	[DllImport("user32.dll")]
+	static extern IntPtr GetForegroundWindow();
+
+	SizeInt32? windowSize;
+	PointInt32? windowPosition;
 	readonly Popup popup = new();
 	readonly Grid fullScreenGrid = new();
 	readonly Grid buttonContainer;
 	readonly Button fullScreenButton;
 	readonly MediaPlayerElement mediaPlayerElement;
-	// Cannot be static readonly because we need to be able to add icon to multiple instances of the button
 	readonly FontIcon fullScreenIcon = new() { Glyph = "\uE740", FontFamily = new FontFamily("Segoe Fluent Icons") };
 	readonly FontIcon exitFullScreenIcon = new() { Glyph = "\uE73F", FontFamily = new FontFamily("Segoe Fluent Icons") };
 	bool doesNavigationBarExistBeforeFullScreen;
@@ -111,23 +115,6 @@ public class MauiMediaElement : Grid, IDisposable
 		isDisposed = true;
 	}
 
-	static AppWindow GetAppWindowForCurrentWindow()
-	{
-		// let's cache the CurrentPage here, since the user can navigate or background the app
-		// while this method is running
-		var currentPage = CurrentPage;
-
-		if (currentPage?.GetParentWindow().Handler.PlatformView is not MauiWinUIWindow window)
-		{
-			throw new InvalidOperationException($"{nameof(window)} cannot be null.");
-		}
-
-		var handle = WindowNative.GetWindowHandle(window);
-		var id = Win32Interop.GetWindowIdFromWindow(handle);
-
-		return AppWindow.GetFromWindowId(id);
-	}
-
 	async void OnMediaPlayerElementPointerMoved(object sender, PointerRoutedEventArgs e)
 	{
 		e.Handled = true;
@@ -150,53 +137,90 @@ public class MauiMediaElement : Grid, IDisposable
 	void OnFullScreenButtonClick(object sender, RoutedEventArgs e)
 	{
 		var currentPage = CurrentPage;
+		var windowHandle = GetForegroundWindow();
+		var appWindow = GetAppWindowForWindowHandle(windowHandle);
 
 		if (appWindow.Presenter.Kind is AppWindowPresenterKind.FullScreen)
 		{
-			appWindow.SetPresenter(AppWindowPresenterKind.Default);
-			Shell.SetNavBarIsVisible(CurrentPage, doesNavigationBarExistBeforeFullScreen);
-
-			if (popup.IsOpen)
-			{
-				popup.IsOpen = false;
-				popup.Child = null;
-				fullScreenGrid.Children.Clear();
-			}
-			fullScreenButton.Content = fullScreenIcon;
-			Children.Add(mediaPlayerElement);
-			Children.Add(buttonContainer);
-
-			var parent = mediaPlayerElement.Parent as FrameworkElement;
-			mediaPlayerElement.Width = parent?.Width ?? mediaPlayerElement.Width;
-			mediaPlayerElement.Height = parent?.Height ?? mediaPlayerElement.Height;
+			ExitFullScreen(appWindow, currentPage);
 		}
 		else
 		{
-			appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
-			doesNavigationBarExistBeforeFullScreen = Shell.GetNavBarIsVisible(currentPage);
-			Shell.SetNavBarIsVisible(CurrentPage, false);
+			EnterFullScreen(appWindow, currentPage);
+		}
+	}
 
-			var displayInfo = DeviceDisplay.Current.MainDisplayInfo;
-			mediaPlayerElement.Width = displayInfo.Width / displayInfo.Density;
-			mediaPlayerElement.Height = displayInfo.Height / displayInfo.Density;
+	static AppWindow GetAppWindowForWindowHandle(IntPtr hwnd)
+	{
+		var windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
+		return AppWindow.GetFromWindowId(windowId);
+	}
 
-			Children.Clear();
-			fullScreenButton.Content = exitFullScreenIcon;
-			fullScreenGrid.Children.Add(mediaPlayerElement);
-			fullScreenGrid.Children.Add(buttonContainer);
+	void ExitFullScreen(AppWindow window, Page currentPage)
+	{
+		window.SetPresenter(AppWindowPresenterKind.Default);
+		Shell.SetNavBarIsVisible(currentPage, doesNavigationBarExistBeforeFullScreen);
 
-			popup.XamlRoot = mediaPlayerElement.XamlRoot;
-			popup.HorizontalOffset = 0;
-			popup.VerticalOffset = 0;
-			popup.ShouldConstrainToRootBounds = false;
-			popup.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center;
-			popup.HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center;
-			popup.Child = fullScreenGrid;
+		if (popup.IsOpen)
+		{
+			popup.IsOpen = false;
+			popup.Child = null;
+			fullScreenGrid.Children.Clear();
+		}
 
-			if (!popup.IsOpen)
-			{
-				popup.IsOpen = true;
-			}
+		fullScreenButton.Content = fullScreenIcon;
+		Children.Add(mediaPlayerElement);
+		Children.Add(buttonContainer);
+		var parent = mediaPlayerElement.Parent as FrameworkElement;
+		mediaPlayerElement.Width = parent?.Width ?? mediaPlayerElement.Width;
+		mediaPlayerElement.Height = parent?.Height ?? mediaPlayerElement.Height;
+		window.Move(windowPosition ?? new PointInt32(0, 0));
+		window.Resize(windowSize ?? new SizeInt32((int)mediaPlayerElement.Width, (int)mediaPlayerElement.Height));
+	}
+
+	void EnterFullScreen(AppWindow window, Page currentPage)
+	{
+
+		doesNavigationBarExistBeforeFullScreen = Shell.GetNavBarIsVisible(currentPage);
+		Shell.SetNavBarIsVisible(currentPage, false);
+		var (screenWidth, screenHeight) = GetScreenSize();
+		
+		windowSize = window.Size;
+		windowPosition = new PointInt32(window.Position.X, window.Position.Y);
+		window.Resize(new SizeInt32((int)screenWidth, (int)screenHeight));
+		window.Move(new PointInt32(0, 0));
+		window.SetPresenter(AppWindowPresenterKind.FullScreen);
+
+		fullScreenButton.Content = exitFullScreenIcon;
+		mediaPlayerElement.Width = screenWidth;
+		mediaPlayerElement.Height = screenHeight;
+		Children.Clear();
+		fullScreenGrid.Children.Add(mediaPlayerElement);
+		fullScreenGrid.Children.Add(buttonContainer);
+	
+		ConfigureAndShowPopup();
+	}
+
+	static (double Width, double Height) GetScreenSize()
+	{
+		var displayInfo = DeviceDisplay.Current.MainDisplayInfo;
+		double screenWidth = displayInfo.Width / displayInfo.Density;
+		double screenHeight = displayInfo.Height / displayInfo.Density;
+		return (screenWidth, screenHeight);
+	}
+	void ConfigureAndShowPopup()
+	{
+		popup.XamlRoot = mediaPlayerElement.XamlRoot;
+		popup.HorizontalOffset = 0;
+		popup.VerticalOffset = 0;
+		popup.ShouldConstrainToRootBounds = false;
+		popup.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center;
+		popup.HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center;
+		popup.Child = fullScreenGrid;
+
+		if (!popup.IsOpen)
+		{
+			popup.IsOpen = true;
 		}
 	}
 }
