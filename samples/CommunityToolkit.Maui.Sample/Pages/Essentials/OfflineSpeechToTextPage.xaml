@@ -2,12 +2,12 @@
 <pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-                x:Class="CommunityToolkit.Maui.Sample.Pages.Essentials.SpeechToTextPage"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Essentials.OfflineSpeechToTextPage"
                 xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Essentials"
                 xmlns:essentials="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Essentials"
-                x:TypeArguments="vm:SpeechToTextViewModel"
-                x:DataType="vm:SpeechToTextViewModel"
-                Title="SpeechToText">
+                x:TypeArguments="vm:OfflineSpeechToTextViewModel"
+                x:DataType="vm:OfflineSpeechToTextViewModel"
+                Title="OfflineSpeechToText">
 
     <ContentPage.Resources>
         <essentials:PickerLocaleDisplayConverter x:Key="PickerLocaleDisplayConverter" />
@@ -94,7 +94,6 @@
                     </Grid>
                 </Border.Content>
             </Border>
-ee
         </VerticalStackLayout>
     </ScrollView>
 

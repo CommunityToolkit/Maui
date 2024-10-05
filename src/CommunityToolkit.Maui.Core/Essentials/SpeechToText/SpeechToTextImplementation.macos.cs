@@ -9,15 +9,10 @@ namespace CommunityToolkit.Maui.Media;
 public sealed partial class SpeechToTextImplementation
 {
 	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest))]
-	Task InternalStartListeningAsync(CultureInfo culture, bool isOnline, CancellationToken cancellationToken)
+	Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
 	{
-		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(culture.Name));
+		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(options.Culture.Name));
 
-		if (isOnline)
-		{
-			speechRecognizer.SupportsOnDeviceRecognition = true;
-		}
-		
 		if (!speechRecognizer.Available)
 		{
 			throw new ArgumentException("Speech recognizer is not available");
@@ -29,12 +24,8 @@ public sealed partial class SpeechToTextImplementation
 		};
 		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest()
 		{
-			ShouldReportPartialResults = true
+			ShouldReportPartialResults = options.ShouldReportPartialResults
 		};
-		if (isOnline)
-		{
-			liveSpeechRequest.RequiresOnDeviceRecognition = true;
-		}
 
 		InitializeAvAudioSession(out var audioSession);
 
@@ -102,17 +93,5 @@ public sealed partial class SpeechToTextImplementation
 		});
 
 		return Task.CompletedTask;
-	}
-
-	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest))]
-	Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
-	{
-		return InternalStartListeningAsync(culture, true, cancellationToken);
-	}
-
-	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest))]
-	Task InternalStartOfflineListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
-	{
-		return InternalStartListeningAsync(culture, false, cancellationToken);
 	}
 }

@@ -3,7 +3,7 @@ using System.Globalization;
 namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc />
-public sealed partial class SpeechToTextImplementation
+public sealed partial class OfflineSpeechToTextImplementation
 {
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()

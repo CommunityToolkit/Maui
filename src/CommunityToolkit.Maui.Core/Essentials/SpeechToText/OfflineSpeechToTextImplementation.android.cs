@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.Versioning;
 using Android.Content;
 using Android.Runtime;
 using Android.Speech;
@@ -8,7 +9,7 @@ using Microsoft.Maui.ApplicationModel;
 namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc />
-public sealed partial class SpeechToTextImplementation
+public sealed partial class OfflineSpeechToTextImplementation
 {
 	SpeechRecognizer? speechRecognizer;
 	SpeechRecognitionListener? listener;
@@ -53,25 +54,22 @@ public sealed partial class SpeechToTextImplementation
 		return intent;
 	}
 
-	static bool IsSpeechRecognitionAvailable() => SpeechRecognizer.IsRecognitionAvailable(Application.Context);
+	static bool IsSpeechRecognitionAvailable() => OperatingSystem.IsAndroidVersionAtLeast(33) && SpeechRecognizer.IsOnDeviceRecognitionAvailable(Application.Context);
 	
 	[MemberNotNull(nameof(speechRecognizer), nameof(listener))]
+	[SupportedOSPlatform("Android33.0")]
 	Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
 	{
-		var isSpeechRecognitionAvailable = IsSpeechRecognitionAvailable();
-		if (!isSpeechRecognitionAvailable)
+		if (!IsSpeechRecognitionAvailable())
 		{
 			throw new FeatureNotSupportedException("Speech Recognition is not available on this device");
 		}
 
 		var recognizerIntent = CreateSpeechIntent(options);
 
-		speechRecognizer = SpeechRecognizer.CreateSpeechRecognizer(Application.Context);
+		speechRecognizer = SpeechRecognizer.CreateOnDeviceSpeechRecognizer(Application.Context);
+		speechRecognizer.TriggerModelDownload(recognizerIntent);
 
-		if (speechRecognizer is null)
-		{
-			throw new FeatureNotSupportedException("Speech recognizer is not available on this device");
-		}
 
 		listener = new SpeechRecognitionListener(this)
 		{
@@ -93,7 +91,7 @@ public sealed partial class SpeechToTextImplementation
 		StopRecording();
 		return Task.CompletedTask;
 	}
-
+	
 	void HandleListenerError(SpeechRecognizerError error)
 	{
 		OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception($"Failure in speech engine - {error}")));
@@ -116,7 +114,7 @@ public sealed partial class SpeechToTextImplementation
 		CurrentState = SpeechToTextState.Stopped;
 	}
 
-	class SpeechRecognitionListener(SpeechToTextImplementation speechToText) : Java.Lang.Object, IRecognitionListener
+	class SpeechRecognitionListener(OfflineSpeechToTextImplementation speechToText) : Java.Lang.Object, IRecognitionListener
 	{
 		public required Action<SpeechRecognizerError> Error { get; init; }
 		public required Action<string> PartialResults { get; init; }

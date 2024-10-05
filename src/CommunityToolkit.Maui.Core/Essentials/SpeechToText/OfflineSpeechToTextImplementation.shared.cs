@@ -4,7 +4,7 @@ using Microsoft.Maui.ApplicationModel;
 namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc cref="ISpeechToText"/>
-public sealed partial class SpeechToTextImplementation : ISpeechToText
+public sealed partial class OfflineSpeechToTextImplementation : ISpeechToText
 {
 	readonly WeakEventManager recognitionResultUpdatedWeakEventManager = new();
 	readonly WeakEventManager recognitionResultCompletedWeakEventManager = new();

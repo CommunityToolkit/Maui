@@ -6,7 +6,7 @@ using Tizen.Uix.Stt;
 namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc />
-public sealed partial class SpeechToTextImplementation
+public sealed partial class OfflineSpeechToTextImplementation
 {
 	SttClient? sttClient;
 	TaskCompletionSource<bool>? tcsInitialize;
