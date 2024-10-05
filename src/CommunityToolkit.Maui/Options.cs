@@ -15,7 +15,7 @@ public class Options() : Core.Options
 	{
 		this.builder = builder;
 	}
-
+	internal static int NumberOfWindows { get; private set; } = 0;
 	internal static bool ShouldSuppressExceptionsInAnimations { get; private set; }
 	internal static bool ShouldSuppressExceptionsInConverters { get; private set; }
 	internal static bool ShouldSuppressExceptionsInBehaviors { get; private set; }
@@ -66,13 +66,25 @@ public class Options() : Core.Options
 			builder.ConfigureLifecycleEvents(events =>
 			{
 				events.AddWindows(windows => windows
+				.OnWindowCreated((_) =>
+				{
+					NumberOfWindows++;
+				})
 					.OnLaunched((_, _) =>
 					{
-						Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked += OnSnackbarNotificationInvoked;
-						Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Register();
+						if(NumberOfWindows == 1)
+						{
+							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked += OnSnackbarNotificationInvoked;
+							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Register();
+						}
 					})
 					.OnClosed((_, _) =>
 					{
+						if (NumberOfWindows > 1)
+						{
+							NumberOfWindows--;
+							return;
+						}
 						Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked -= OnSnackbarNotificationInvoked;
 						Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Unregister();
 					}));
