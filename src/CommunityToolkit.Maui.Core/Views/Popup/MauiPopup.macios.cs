@@ -60,8 +60,8 @@ public class MauiPopup : UIViewController
 
 		if (VirtualView is not null)
 		{
-			PopupExtensions.SetSize(this, VirtualView);
-			PopupExtensions.SetLayout(this, VirtualView);
+			this.SetSize(VirtualView);
+			this.SetLayout(VirtualView);
 		}
 	}
 
@@ -76,8 +76,8 @@ public class MauiPopup : UIViewController
 			// After screen rotate
 			if (VirtualView is not null)
 			{
-				PopupExtensions.SetSize(this, VirtualView);
-				PopupExtensions.SetLayout(this, VirtualView);
+				this.SetSize(VirtualView);
+				this.SetLayout(VirtualView);
 			}
 		});
 
