@@ -22,10 +22,10 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// The user-interface element that represents the <see cref="MediaElement"/> on Windows.
 /// </summary>
-public class MauiMediaElement : Grid, IDisposable
+public partial class MauiMediaElement : Grid, IDisposable
 {
-	[DllImport("user32.dll")]
-	static extern IntPtr GetForegroundWindow();
+	[LibraryImport("user32.dll")]
+	internal static partial IntPtr GetForegroundWindow();
 
 	SizeInt32? windowSize;
 	PointInt32? windowPosition;
