@@ -69,6 +69,7 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 
 		var result = mathExpressionConverter.Convert(variables, mathExpressionTargetType, expression);
 
+		Assert.NotNull(result); 
 		Assert.True(Math.Abs((double)result - expectedResult) < tolerance);
 	}
 
