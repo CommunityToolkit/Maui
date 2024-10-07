@@ -666,8 +666,8 @@ public class RatingViewTests : BaseHandlerTest
 	[Fact]
 	public void RatingViewDoesNotThrowsArgumentOutOfRangeExceptionWhenRatingSetBeforeMaximumRating()
 	{
-		const int maximumRating = 12;
-		const int rating = 7;
+		const int maximumRating = RatingViewDefaults.MaximumRatingLimit - 1;
+		const int rating = RatingViewDefaults.MaximumRatingLimit - 3;
 
 		RatingView ratingView = new()
 		{
@@ -698,8 +698,8 @@ public class RatingViewTests : BaseHandlerTest
 	{
 		_ = Assert.Throws<ArgumentOutOfRangeException>(() => new RatingView
 		{
-			Rating = 7,
-			MaximumRating = 12
+			Rating = RatingViewDefaults.MaximumRatingLimit - 1,
+			MaximumRating = RatingViewDefaults.MaximumRatingLimit
 		});
 	}
 
