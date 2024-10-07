@@ -44,6 +44,12 @@
     <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
+  <UsingTask TaskName="VerifyMauiWorkloadVersionTask" AssemblyFile="..\CommunityToolkit.Maui.BuildTasks\bin\$(Configuration)\$(NetVersion)\CommunityToolkit.Maui.BuildTasks.dll" />
+
+  <Target Name="CheckMauiVersion" BeforeTargets="Build">
+    <VerifyMauiWorkloadVersionTask />
+  </Target>
+
   <ItemGroup>
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
     <None Include="ReadMe.txt" pack="true" PackagePath="." />
