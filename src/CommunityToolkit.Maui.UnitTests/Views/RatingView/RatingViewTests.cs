@@ -101,16 +101,6 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void Events_Command()
-	{
-		RatingView ratingView = new();
-		bool commandHasBeenExecuted = false;
-		ratingView.RatingChangedCommand = new Command<string>((_) => commandHasBeenExecuted = true);
-		ratingView.Rating = 3;
-		_ = commandHasBeenExecuted.Should().BeFalse();
-	}
-
-	[Fact]
 	public void Events_RatingChanged_AddRemove()
 	{
 		List<RatingChangedEventArgs> receivedEvents = [];

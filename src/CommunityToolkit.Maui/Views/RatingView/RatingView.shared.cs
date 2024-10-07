@@ -2,7 +2,6 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.Shapes;
 
@@ -29,9 +28,6 @@ public class RatingView : TemplatedView, IRatingView
 	// TODO: Add some kind of Roslyn Analyser to validate at design/build time that the MaximumRating is in bounds (1-25).
 	/// <summary>The backing store for the <see cref="MaximumRating" /> bindable property.</summary>
 	public static readonly BindableProperty MaximumRatingProperty = BindableProperty.Create(nameof(MaximumRating), typeof(int), typeof(RatingView), defaultValue: RatingViewDefaults.MaximumRating, validateValue: ValidateMaximumRating, propertyChanged: OnMaximumRatingChange);
-
-	/// <summary>The backing store for the <see cref="RatingChangedCommand"/> bindable property.</summary>
-	public static readonly BindableProperty RatingChangedCommandProperty = BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(RatingView));
 
 	/// <summary>The backing store for the <see cref="RatingFill" /> bindable property.</summary>
 	public static readonly BindableProperty RatingFillProperty = BindableProperty.Create(nameof(RatingFill), typeof(RatingFillElement), typeof(RatingView), defaultValue: RatingFillElement.Shape, propertyChanged: OnUpdateRatingDraw);
@@ -151,13 +147,6 @@ public class RatingView : TemplatedView, IRatingView
 
 			SetValue(RatingProperty, value);
 		}
-	}
-
-	/// <summary>Command that is triggered when the value of <see cref="Rating"/> is changed.</summary>
-	public ICommand? RatingChangedCommand
-	{
-		get => (ICommand?)GetValue(RatingChangedCommandProperty);
-		set => SetValue(RatingChangedCommandProperty, value);
 	}
 
 	/// <summary>Gets or sets a value indicating which element of the rating to fill.</summary>
@@ -358,10 +347,6 @@ public class RatingView : TemplatedView, IRatingView
 		}
 
 		ratingView.OnRatingChangedEvent(new RatingChangedEventArgs(newValueDouble));
-		if (ratingView.RatingChangedCommand?.CanExecute(newValueDouble) ?? false)
-		{
-			ratingView.RatingChangedCommand.Execute(newValueDouble);
-		}
 	}
 
 	static void OnSpacingChanged(BindableObject bindable, object oldValue, object newValue)
