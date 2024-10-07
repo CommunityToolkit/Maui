@@ -15,15 +15,15 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 	public RatingViewCsharpPage(RatingViewCsharpViewModel viewModel) : base(viewModel)
 	{
 		const int ratingViewTitleRowHeight = 18;
-		const int stepperRowHeight = 24;
+		const int stepperRowHeight = 38;
 		const int sliderRowHeight = 24;
-		const int pickerRowHeight = 32;
+		const int pickerRowHeight = 38;
 		const int smallestSizeRatingViewHeight = 32;
 		const int smallerSizeRatingViewHeight = 40;
 		const int largerSizeRatingViewHeight = 50;
 		const int largestSizeRatingViewHeight = 60;
 		const int sampleRatingViewHeight = smallerSizeRatingViewHeight;
-		
+
 		Title = "RatingView C# Syntax";
 
 		Content = new ScrollView
@@ -101,7 +101,6 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 					new RatingView()
 						.Row(Row.DefaultsRatingView).Column(Column.Result)
 						.SemanticDescription("A RatingView showing the defaults."),
-
 
 					new Label()
 						.Row(Row.DefaultsRatingViewUsingProperties).Column(Column.Input)
@@ -328,7 +327,6 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							setter: static (RatingViewCsharpViewModel vm, int index) => vm.ColorPickerEmptyBackgroundSelectedIndex = index,
 							mode: BindingMode.TwoWay)
 						.SemanticHint("Pick to change the empty rating background color."),
-
 
 					new Label()
 						.Row(Row.ColorsFilledRatingViewPicker).Column(Column.Input)
@@ -803,7 +801,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 	sealed class SectionHeader : Grid
 	{
-		public const int RequestedHeight = separatorRowHeight * 2 + titleHeight;
+		public const int RequestedHeight = (separatorRowHeight * 2) + titleHeight;
 		const int separatorRowHeight = 8;
 		const int titleHeight = 32;
 
