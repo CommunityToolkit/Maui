@@ -1,13 +1,11 @@
-﻿// Ignore Spelling: csharp
-namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
+﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 using Mvvm.ComponentModel;
 
 public partial class RatingViewShowcaseViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	double stepperValueMaximumRatings = 1,
-		reviewSummaryAverage = 2.5;
+	double stepperValueMaximumRatings = 1, reviewSummaryAverage = 0;
 
 	[ObservableProperty]
 	Thickness ratingViewShapePadding = new(0);
