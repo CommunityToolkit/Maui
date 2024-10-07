@@ -680,6 +680,22 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
+	public void RatingViewThrowsInvalidOperationExceptionWhenBorderChildIsNotShape()
+	{
+		RatingView ratingView = new();
+		((Border)ratingView.Control!.Children[0]).Content = new Button();
+		_ = Assert.Throws<InvalidOperationException>(() => ratingView.Rating = 1);
+	}
+
+	[Fact]
+	public void RatingViewThrowsInvalidOperationExceptionWhenChildIsNotBorder()
+	{
+		RatingView ratingView = new();
+		ratingView.Control!.Children.Add(new Button());
+		_ = Assert.Throws<InvalidOperationException>(() => ratingView.Rating = 1);
+	}
+
+	[Fact]
 	public void RatingViewThrowsArgumentOutOfRangeExceptionWhenOutsideLowerBounds()
 	{
 		RatingView ratingView = new();
