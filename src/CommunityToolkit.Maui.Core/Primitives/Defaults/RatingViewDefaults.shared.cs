@@ -26,7 +26,7 @@ public static class RatingViewDefaults
 
 	/// <summary>Maximum number of ratings.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public const int MaximumRatingLimit = 25;
+	public const int MaximumRatingLimit = 10;
 
 	/// <summary>Default border thickness for a rating shape.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
