@@ -46,8 +46,8 @@
 
   <UsingTask TaskName="VerifyMauiWorkloadVersionTask" AssemblyFile="..\CommunityToolkit.Maui.BuildTasks\bin\$(Configuration)\$(NetVersion)\CommunityToolkit.Maui.BuildTasks.dll" />
 
-  <Target Name="CheckMauiVersion" BeforeTargets="Build">
-    <VerifyMauiWorkloadVersionTask />
+  <Target Name="VerifyMauiWorkloadVersionTask" BeforeTargets="Build">
+    <VerifyMauiWorkloadVersionTask MinimumRequiredMauiVersion="$(RequiredMauiWorkloadVersion)" />
   </Target>
 
   <ItemGroup>

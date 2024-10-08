@@ -3,6 +3,7 @@
   <PropertyGroup>
     <NetVersion>net8.0</NetVersion>
     <MauiPackageVersion>8.0.71</MauiPackageVersion>
+    <RequiredMauiWorkloadVersion>8.0.402.1</RequiredMauiWorkloadVersion>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
