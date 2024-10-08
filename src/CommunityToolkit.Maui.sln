@@ -45,6 +45,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Camer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.Camera", "CommunityToolkit.Maui.Camera\CommunityToolkit.Maui.Camera.csproj", "{9F4B8437-B200-4F96-B71C-4F4B4A517694}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.Maui.BuildTasks", "CommunityToolkit.Maui.BuildTasks\CommunityToolkit.Maui.BuildTasks.csproj", "{55170BFE-DEDB-43D1-8351-302E3CC68BA2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,6 +113,10 @@ Global
 		{9F4B8437-B200-4F96-B71C-4F4B4A517694}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F4B8437-B200-4F96-B71C-4F4B4A517694}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F4B8437-B200-4F96-B71C-4F4B4A517694}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55170BFE-DEDB-43D1-8351-302E3CC68BA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55170BFE-DEDB-43D1-8351-302E3CC68BA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55170BFE-DEDB-43D1-8351-302E3CC68BA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55170BFE-DEDB-43D1-8351-302E3CC68BA2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
