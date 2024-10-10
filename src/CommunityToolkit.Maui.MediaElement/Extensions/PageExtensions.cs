@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.Extensions;
+namespace CommunityToolkit.Maui.Extensions;
 
 // Since MediaElement can't access .NET MAUI internals we have to copy this code here
 // https://github.com/dotnet/maui/blob/main/src/Controls/src/Core/Platform/PageExtensions.cs
@@ -16,7 +16,7 @@ static class PageExtensions
 			return GetCurrentPage(flyoutPage.Detail);
 		}
 
-		if (currentPage is Shell shell && shell.CurrentItem?.CurrentItem is IShellSectionController shellSectionController)
+		if (currentPage is Shell { CurrentItem.CurrentItem: IShellSectionController shellSectionController })
 		{
 			return shellSectionController.PresentedPage;
 		}
