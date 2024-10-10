@@ -61,7 +61,7 @@ public class PopupService : IPopupService
 	{
 		ArgumentNullException.ThrowIfNull(viewModel);
 
-		var popup = GetPopup(typeof(TViewModel));
+		var popup = GetPopup(viewModel);
 
 		ValidateBindingContext<TViewModel>(popup, out _);
 
@@ -117,7 +117,7 @@ public class PopupService : IPopupService
 	{
 		ArgumentNullException.ThrowIfNull(viewModel);
 
-		var popup = GetPopup(typeof(TViewModel));
+		var popup = GetPopup(viewModel);
 
 		ValidateBindingContext<TViewModel>(popup, out _);
 
@@ -183,6 +183,18 @@ public class PopupService : IPopupService
 			throw new InvalidOperationException(
 				$"Unable to resolve popup type for {viewModelType} please make sure that you have called {nameof(AddTransientPopup)}");
 		}
+
+		return popup;
+	}
+	
+	Popup GetPopup<TViewModel>(
+		TViewModel viewModel)
+	{
+		var popup = GetPopup(
+			typeof(TViewModel));
+		
+		popup.BindingContext = viewModel;
+
 
 		return popup;
 	}
