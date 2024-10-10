@@ -291,6 +291,32 @@ public class PopupServiceTests : BaseHandlerTest
 		Assert.True(popupViewModel.HasLoaded);
 	}
 
+	[Fact]
+	public void ShowPopupWithViewModelParameterShouldUseItAsBindingContext()
+	{
+		var popupViewModel = new MockPageViewModel();
+		var popupInstance = new MockPopup();
+		
+		SetupTest(popupInstance, () => popupViewModel, out var popupService);
+		
+		popupService.ShowPopup(popupViewModel);
+		
+		Assert.Equal(popupInstance.BindingContext, popupViewModel);
+	}
+	
+	[Fact]
+	public async Task ShowPopupAsyncWithViewModelParameterShouldUseItAsBindingContext()
+	{
+		var popupViewModel = new MockPageViewModel();
+		var popupInstance = new MockPopup();
+		
+		SetupTest(popupInstance, () => popupViewModel, out var popupService);
+		
+		await popupService.ShowPopupAsync(popupViewModel);
+		
+		Assert.Equal(popupInstance.BindingContext, popupViewModel);
+	}
+
 	static void SetupTest(
 		Popup popup,
 		Func<INotifyPropertyChanged> createViewModelInstance,
