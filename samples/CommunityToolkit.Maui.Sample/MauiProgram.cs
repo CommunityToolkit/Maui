@@ -211,6 +211,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<FileSaverPage, FileSaverViewModel>();
 		services.AddTransientWithShellRoute<FolderPickerPage, FolderPickerViewModel>();
 		services.AddTransientWithShellRoute<SpeechToTextPage, SpeechToTextViewModel>();
+		services.AddTransientWithShellRoute<OfflineSpeechToTextPage, OfflineSpeechToTextViewModel>();
 
 		// Add Extensions Pages + ViewModels
 		services.AddTransientWithShellRoute<ColorAnimationExtensionsPage, ColorAnimationExtensionsViewModel>();

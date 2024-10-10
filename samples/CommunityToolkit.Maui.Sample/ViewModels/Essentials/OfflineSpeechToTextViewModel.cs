@@ -8,7 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Essentials;
 
-public partial class SpeechToTextViewModel : BaseViewModel
+public partial class OfflineSpeechToTextViewModel : BaseViewModel
 {
 	const string defaultLanguage = "en-US";
 	const string defaultLanguage_android = "en";
@@ -31,10 +31,10 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StopListenCommand))]
 	bool canStopListenExecute = false;
 
-	public SpeechToTextViewModel(ITextToSpeech textToSpeech, ISpeechToText speechToText)
+	public OfflineSpeechToTextViewModel(ITextToSpeech textToSpeech)
 	{
 		this.textToSpeech = textToSpeech;
-		this.speechToText = speechToText;
+		this.speechToText = OfflineSpeechToText.Default;
 
 		Locales.CollectionChanged += HandleLocalesCollectionChanged;
 		this.speechToText.StateChanged += HandleSpeechToTextStateChanged;
@@ -85,7 +85,6 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	async Task StartListen()
 	{
 		CanStartListenExecute = false;
-		CanStopListenExecute = true;
 
 		var isGranted = await speechToText.RequestPermissions(CancellationToken.None);
 		if (!isGranted)
