@@ -63,7 +63,7 @@ public class PopupService : IPopupService
 
 		var popup = GetPopup(typeof(TViewModel));
 
-		popup.BindingContext = viewModel;
+		popup.BindingContext ??= viewModel;
 
 		ShowPopup(popup);
 	}
@@ -119,7 +119,7 @@ public class PopupService : IPopupService
 
 		var popup = GetPopup(typeof(TViewModel));
 
-		popup.BindingContext = viewModel;
+		popup.BindingContext ??= viewModel;
 
 		return ShowPopupAsync(popup, token);
 	}
