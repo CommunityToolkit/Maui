@@ -41,17 +41,20 @@
      CS1712: Type parameter has no matching typeparam tag in the XML comment
      CS1723: XML comment has cref attribute that refers to a type parameter
      CS1734: XML comment has a paramref tag, but there is no parameter by that name
-   
+     NU1900	Error communicating with package source, while getting vulnerability information.
+     NU1901	Package with low severity detected
+     NU1902	Package with moderate severity detected
+     NU1903	Package with high severity detected
+     NU1904	Package with critical severity detected
+     NU1905	An audit source does not provide a vulnerability database
      xUnit1012: Null should not be used for type parameter
-     xUnit2021: Assert.ThrowsAsync is async. The resulting task should be awaited
-     
-     IL2***: Trim Warnings
-     
-     IL3***: AOT Warnings 
-     
+     xUnit2021: Assert.ThrowsAsync is async. The resulting task should be awaited     
+     IL2***: Trim Warnings     
+     IL3***: AOT Warnings     
      RS2007: Analyzer release file 'AnalyzerReleases.Shipped.md' has a missing or invalid release header-->
      <WarningsAsErrors>nullable,
        CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1580,CS1581,CS1584,CS1587,CS1589,CS1590,CS1591,CS1592,CS1598,CS1658,CS1710,CS1711,CS1712,CS1723,CS1734,
+       NU1900,NU1901,NU1902,NU1903,NU1904,NU1905,
        xUnit1012,xUnit2021,
        IL2001,IL2002,IL2003,IL2004,IL2005,IL2006,IL2007,IL2008,IL2009,
        IL2010,IL2011,IL2012,IL2013,IL2014,IL2015,IL2016,IL2017,IL2018,IL2019,
