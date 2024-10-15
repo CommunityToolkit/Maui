@@ -32,7 +32,8 @@
     <!-- Uncomment the line below if Android App installation fails -->
     <!--<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>-->
 
-    <WindowsSdkPackageVersion>10.0.19041.41</WindowsSdkPackageVersion>
+    <WindowsSdkPackageVersion>10.0.19041.53</WindowsSdkPackageVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release' 
