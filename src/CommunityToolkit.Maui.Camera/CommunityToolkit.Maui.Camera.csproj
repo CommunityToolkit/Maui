@@ -53,6 +53,13 @@
   <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
     <PackageReference Include="Xamarin.AndroidX.Camera.Camera2" Version="1.3.4.3" />
     <PackageReference Include="Xamarin.AndroidX.Camera.View" Version="1.3.4.3" />
+    
+    <!-- Resolve NuGet Dependency Conflicts between Microsoft.Maui.Core, Xamarin.AndroidX.Camera.Camera2 and Xamarin.AndroidX.Camera.View -->
+    <PackageReference Include="Xamarin.AndroidX.Collection.Jvm" Version="1.4.3.1" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime" Version="2.8.5.1" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel" Version="2.8.5.1" />
+    <PackageReference Include="Xamarin.AndroidX.Fragment" Version="1.8.3.1" />
+    <PackageReference Include="Xamarin.AndroidX.Activity" Version="1.9.2.1" />
   </ItemGroup>
 
   <ItemGroup>
