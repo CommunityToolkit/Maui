@@ -384,7 +384,12 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 		if (Content is not null)
 		{
 			SetInheritedBindingContext(Content, BindingContext);
-			Content.Parent = this;
+
+			if (ReferenceEquals(Content.Parent, this) is false)
+			{
+				Content.Parent = null;
+				Content.Parent = this;
+			}
 		}
 	}
 

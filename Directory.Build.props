@@ -38,11 +38,16 @@
      CS1711: XML comment has a typeparam tag, but there is no type parameter by that name 
      CS1712: Type parameter has no matching typeparam tag in the XML comment
      CS1723: XML comment has cref attribute that refers to a type parameter
-     CS1734: XML comment has a paramref tag, but there is no parameter by that name 
+     CS1734: XML comment has a paramref tag, but there is no parameter by that name
+   
      xUnit1012: Null should not be used for type parameter
      xUnit2021: Assert.ThrowsAsync is async. The resulting task should be awaited
+     
      IL2***: Trim Warnings
-     IL3***: AOT Warnings -->
+     
+     IL3***: AOT Warnings 
+     
+     RS2007: Analyzer release file 'AnalyzerReleases.Shipped.md' has a missing or invalid release header-->
      <WarningsAsErrors>nullable,
        CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1580,CS1581,CS1584,CS1587,CS1589,CS1590,CS1591,CS1592,CS1598,CS1658,CS1710,CS1711,CS1712,CS1723,CS1734,
        xUnit1012,xUnit2021,
@@ -59,7 +64,8 @@
        IL2100,IL2101,IL2102,IL2103,IL2104,IL2105,IL2106,IL2107,IL2108,IL2109,
        IL2110,IL2111,IL2112,IL2113,IL2114,IL2115,IL2116,IL2117,IL2118,IL2119,
        IL2120,IL2121,IL2122,
-       IL3050,IL3051,IL3052,IL3053,IL3054,IL3055,IL3056
+       IL3050,IL3051,IL3052,IL3053,IL3054,IL3055,IL3056,
+       RS2007
      </WarningsAsErrors>
   </PropertyGroup>
 
