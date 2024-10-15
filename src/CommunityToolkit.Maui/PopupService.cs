@@ -13,7 +13,7 @@ public class PopupService : IPopupService
 
 	static readonly Dictionary<Type, Type> viewModelToViewMappings = [];
 
-	static Page CurrentPage =>
+	static Page CurrentPage => 
 		PageExtensions.GetCurrentPage(
 			Application.Current?.MainPage ?? throw new InvalidOperationException("Application.Current.MainPage cannot be null."));
 
@@ -56,18 +56,6 @@ public class PopupService : IPopupService
 		ShowPopup(popup);
 	}
 
-	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(TViewModel)"/>
-	public void ShowPopup<TViewModel>(TViewModel viewModel) where TViewModel : INotifyPropertyChanged
-	{
-		ArgumentNullException.ThrowIfNull(viewModel);
-
-		var popup = GetPopup(typeof(TViewModel));
-
-		ValidateBindingContext<TViewModel>(popup, out _);
-
-		ShowPopup(popup);
-	}
-
 	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(Action{TViewModel})"/>
 	public void ShowPopup<TViewModel>(Action<TViewModel> onPresenting) where TViewModel : INotifyPropertyChanged
 	{
@@ -82,41 +70,9 @@ public class PopupService : IPopupService
 		ShowPopup(popup);
 	}
 
-	static void ShowPopup(Popup popup)
-	{
-#if WINDOWS
-		if (Application.Current is Application app)
-		{
-			if (app.Windows.FirstOrDefault(x => x.IsActivated) is Window activeWindow)
-			{
-				if (activeWindow.Page is Page page)
-				{
-					page.ShowPopup(popup);
-					return;
-				}
-			}
-		}
-		CurrentPage.ShowPopup(popup);
-#else
-		CurrentPage.ShowPopup(popup);
-#endif
-	}
-
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(CancellationToken)"/>
 	public Task<object?> ShowPopupAsync<TViewModel>(CancellationToken token = default) where TViewModel : INotifyPropertyChanged
 	{
-		var popup = GetPopup(typeof(TViewModel));
-
-		ValidateBindingContext<TViewModel>(popup, out _);
-
-		return ShowPopupAsync(popup, token);
-	}
-
-	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(TViewModel, CancellationToken)"/>
-	public Task<object?> ShowPopupAsync<TViewModel>(TViewModel viewModel, CancellationToken token = default) where TViewModel : INotifyPropertyChanged
-	{
-		ArgumentNullException.ThrowIfNull(viewModel);
-
 		var popup = GetPopup(typeof(TViewModel));
 
 		ValidateBindingContext<TViewModel>(popup, out _);
@@ -173,17 +129,31 @@ public class PopupService : IPopupService
 
 		bindingContext = viewModel;
 	}
+	
+	static void ShowPopup(Popup popup)
+	{
+#if WINDOWS
+		if (Application.Current is Application app)
+		{
+			if (app.Windows.FirstOrDefault(x => x.IsActivated) is Window activeWindow)
+			{
+				if (activeWindow.Page is Page page)
+				{
+					page.ShowPopup(popup);
+					return;
+				}
+			}
+		}
+		CurrentPage.ShowPopup(popup);
+#else
+		CurrentPage.ShowPopup(popup);
+#endif
+	}
 
 	Popup GetPopup(Type viewModelType)
 	{
-		var popup = serviceProvider.GetService(viewModelToViewMappings[viewModelType]) as Popup;
-
-		if (popup is null)
-		{
-			throw new InvalidOperationException(
-				$"Unable to resolve popup type for {viewModelType} please make sure that you have called {nameof(AddTransientPopup)}");
-		}
-
-		return popup;
+		var popup = (Popup)(serviceProvider.GetService(viewModelToViewMappings[viewModelType]) 
+			?? throw new InvalidOperationException($"Unable to resolve popup type for {viewModelType} please make sure that you have called {nameof(PopupService)}.{nameof(AddTransientPopup)} in MauiProgram.cs"));
+        return popup;
 	}
 }
