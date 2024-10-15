@@ -9,8 +9,8 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public class MediaElementMultipleWindowsPage : BasePage<MediaElementMultipleWindowsViewModel>
 {
-	const string buckBunnyMp4Url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
 #if WINDOWS || MACCATALYST
+	const string buckBunnyMp4Url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
 	const string elephantsDreamMp4Url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4";
 	readonly Window secondWindow;
 #endif
@@ -20,29 +20,17 @@ public class MediaElementMultipleWindowsPage : BasePage<MediaElementMultipleWind
 #if WINDOWS || MACCATALYST
 		secondWindow = new Window(new ContentPage
 		{
-			Content = new Grid
-			{
-				Children =
-				{
-					new MediaElement
-					{
-						Source = elephantsDreamMp4Url,
-						ShouldAutoPlay = true
-					}
-				}
-			}
+			Content = new MediaElement
+					 {
+						 Source = elephantsDreamMp4Url,
+						 ShouldAutoPlay = true
+					 }
 		});
 
-		Content = new Grid
+		Content = new MediaElement
 		{
-			Children =
-			{
-				new MediaElement
-				{
-					Source = buckBunnyMp4Url,
-					ShouldAutoPlay = true
-				}
-			}
+			Source = buckBunnyMp4Url,
+			ShouldAutoPlay = true
 		};
 #else
 		Content = new Label()
