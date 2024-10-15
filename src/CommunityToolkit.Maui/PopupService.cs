@@ -61,7 +61,7 @@ public class PopupService : IPopupService
 	{
 		ArgumentNullException.ThrowIfNull(viewModel);
 
-		var popup = GetPopup(viewModel);
+		var popup = GetPopup(typeof(TViewModel), viewModel);
 
 		ValidateBindingContext<TViewModel>(popup, out _);
 
@@ -117,7 +117,7 @@ public class PopupService : IPopupService
 	{
 		ArgumentNullException.ThrowIfNull(viewModel);
 
-		var popup = GetPopup(viewModel);
+		var popup = GetPopup(typeof(TViewModel), viewModel);
 
 		ValidateBindingContext<TViewModel>(popup, out _);
 
@@ -186,15 +186,12 @@ public class PopupService : IPopupService
 
 		return popup;
 	}
-	
-	Popup GetPopup<TViewModel>(
-		TViewModel viewModel)
-	{
-		var popup = GetPopup(
-			typeof(TViewModel));
-		
-		popup.BindingContext = viewModel;
 
+	Popup GetPopup(Type viewModelType, object instance)
+	{
+		var popup = GetPopup(viewModelType);
+
+		popup.BindingContext = instance;
 
 		return popup;
 	}
