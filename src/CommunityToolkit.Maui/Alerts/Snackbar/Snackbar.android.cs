@@ -35,12 +35,11 @@ public partial class Snackbar
 		isDisposed = true;
 	}
 
-	static bool IsModalPageActive() => Application.Current?.MainPage is not null &&
-										Application.Current.MainPage.Navigation.ModalStack.Count > 0;
+	static bool IsModalPageActive() => Application.Current?.Windows[0].Page is Page mainPage && mainPage.Navigation.ModalStack.Count > 0;
 
 	static View GetParentView()
 	{
-		var parentView = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.Window?.DecorView.FindViewById(Android.Resource.Id.Content);
+		var parentView = Platform.CurrentActivity?.Window?.DecorView.FindViewById(Android.Resource.Id.Content);
 
 		if (IsModalPageActive())
 		{

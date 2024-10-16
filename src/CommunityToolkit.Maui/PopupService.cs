@@ -21,7 +21,7 @@ public class PopupService : IPopupService
 
 	static Page CurrentPage =>
 		PageExtensions.GetCurrentPage(
-			Application.Current?.MainPage ?? throw new InvalidOperationException("Application.Current.MainPage cannot be null."));
+			Application.Current?.Windows[0].Page ?? throw new InvalidOperationException("Application.Current?.Windows[0].Page cannot be null."));
 
 	/// <summary>
 	/// Creates a new instance of <see cref="PopupService"/>.

@@ -36,7 +36,7 @@ public class AppThemeTests : BaseHandlerTest
 		};
 		label.SetAppThemeColor(Label.TextColorProperty, color);
 
-		app.MainPage = new ContentPage
+		app.Windows[0].Page = new ContentPage
 		{
 			Content = label
 		};

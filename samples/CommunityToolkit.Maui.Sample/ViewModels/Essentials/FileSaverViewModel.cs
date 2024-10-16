@@ -17,7 +17,7 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 		using var stream = new MemoryStream(Encoding.Default.GetBytes("Hello from the Community Toolkit!"));
 		try
 		{
-			var fileName = Application.Current?.MainPage?.DisplayPromptAsync("FileSaver", "Choose filename") ?? Task.FromResult("test.txt");
+			var fileName = Application.Current?.Windows[0].Page?.DisplayPromptAsync("FileSaver", "Choose filename") ?? Task.FromResult("test.txt");
 			var fileLocationResult = await fileSaver.SaveAsync(await fileName, stream, cancellationToken);
 			fileLocationResult.EnsureSuccess();
 
