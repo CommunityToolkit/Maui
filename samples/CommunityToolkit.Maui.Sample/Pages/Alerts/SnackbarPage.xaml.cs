@@ -105,7 +105,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 
 					Children =
 					{
-						new Button { Command = new AsyncRelayCommand(token => Snackbar.Make("Snackbar in a Modal Page").Show(token)) }
+						new Button { Command = new AsyncRelayCommand(static token => Snackbar.Make("Snackbar in a Modal Page").Show(token)) }
 							.Top().CenterHorizontal()
 							.Text("Display Snackbar"),
 
