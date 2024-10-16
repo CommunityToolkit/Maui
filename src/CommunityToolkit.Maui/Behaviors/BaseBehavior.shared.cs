@@ -39,7 +39,7 @@ public abstract class BaseBehavior<TView> : Behavior<TView>, ICommunityToolkitBe
 	{
 		base.OnAttachedTo(bindable);
 
-		((ICommunityToolkitBehavior<TView>)this).AssignViewAndBingingContext(bindable);
+		((ICommunityToolkitBehavior<TView>)this).InitializeBehavior(bindable);
 	}
 
 	/// <inheritdoc/>
@@ -47,7 +47,7 @@ public abstract class BaseBehavior<TView> : Behavior<TView>, ICommunityToolkitBe
 	{
 		base.OnDetachingFrom(bindable);
 
-		((ICommunityToolkitBehavior<TView>)this).UnassignViewAndBingingContext(bindable);
+		((ICommunityToolkitBehavior<TView>)this).UninitializeBehavior(bindable);
 	}
 
 	void ICommunityToolkitBehavior<TView>.OnViewPropertyChanged(TView sender, PropertyChangedEventArgs e) => OnViewPropertyChanged(sender, e);
