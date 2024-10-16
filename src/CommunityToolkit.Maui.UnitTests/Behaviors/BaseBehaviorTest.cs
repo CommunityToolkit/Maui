@@ -25,7 +25,7 @@ public abstract class BaseBehaviorTest<TBehavior, TView> : BaseTest
 	}
 
 	[Fact]
-	public void VerifyTrySetBindingContextIsCalledWhenViewAttached()
+	public void VerifyBindingContextNotAutomaticallySetWhenViewAttached()
 	{
 		if (behavior is BasePlatformBehavior<TView, object>)
 		{
@@ -36,13 +36,12 @@ public abstract class BaseBehaviorTest<TBehavior, TView> : BaseTest
 
 		view.Behaviors.Add((Behavior)behavior);
 
-		var falseResult = behavior.TrySetBindingContextToAttachedViewBindingContext();
-
-		Assert.False(falseResult);
+		Assert.Single(view.Behaviors);
+		Assert.Null(view.Behaviors[0].BindingContext);
 	}
 
 	[Fact]
-	public void EnsureTryRemoveBindingContextWhenViewAttached()
+	public void EnsureTryRemoveBindingContextUnchangedWhenViewAttached()
 	{
 		if (behavior is BasePlatformBehavior<TView, object>)
 		{
@@ -52,17 +51,20 @@ public abstract class BaseBehaviorTest<TBehavior, TView> : BaseTest
 			return;
 		}
 
-		// Ensure false by default
-		var falseResult = behavior.TryRemoveBindingContext();
-		Assert.False(falseResult);
+		// Ensure empty by default
+		Assert.Empty(view.Behaviors);
 
-		view.Behaviors.Add((Behavior)behavior);
+		var attachedBehavior = (Behavior)behavior;
+		
+		view.Behaviors.Add(attachedBehavior);
+		view.Behaviors[0].BindingContext = view.BindingContext;
+		
+		Assert.Equal(view.BindingContext, attachedBehavior.BindingContext);
 
-		Assert.False(behavior.TrySetBindingContextToAttachedViewBindingContext());
+		var wasSuccessful = view.Behaviors.TryRemove(attachedBehavior);
 
-		var trueResult = behavior.TryRemoveBindingContext();
-
-		Assert.True(trueResult);
+		Assert.True(wasSuccessful);
+		Assert.Equal(view.BindingContext, attachedBehavior.BindingContext);
 	}
 
 	protected class MockValidationBehavior : ValidationBehavior<string>
