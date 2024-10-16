@@ -23,7 +23,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 namespace CommunityToolkit.Maui;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-sealed class BindablePropertyAttribute<TReturnType> : Attribute
+sealed partial class BindablePropertyAttribute<TReturnType> : Attribute
 {
 	public string PropertyName { get; } = string.Empty;
 	public Type? DeclaringType { get; set; }
