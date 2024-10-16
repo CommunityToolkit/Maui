@@ -8,7 +8,7 @@ public partial class UpdatingPopupViewModel : BaseViewModel
 {
 	const double finalUpdateProgressValue = 1;
 	int updates;
-	
+
 	readonly IPopupService popupService;
 	[ObservableProperty]
 	string message = "";
@@ -45,7 +45,7 @@ public partial class UpdatingPopupViewModel : BaseViewModel
 	{
 		popupService.ClosePopup();
 	}
-	
+
 	[RelayCommand]
 	void OnMore()
 	{
