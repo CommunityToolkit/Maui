@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Maui.Controls.Internals;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
