@@ -47,7 +47,7 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 	}
 
 	[Fact]
-	public async Task VerifyNoErrorsWhenUseMauiCommunityToolkitMediaElementHasAdditonalWhitespace()
+	public async Task VerifyNoErrorsWhenUseMauiCommunityToolkitMediaElementHasAdditionalWhitespace()
 	{
 		const string source = /* language=C#-test */ """
 namespace CommunityToolkit.Maui.Analyzers.UnitTests
