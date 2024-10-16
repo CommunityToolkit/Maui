@@ -113,7 +113,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 							.Center().TextCenter()
 							.Text("This is a Modal MainPage"),
 
-						new Button { Command = new AsyncRelayCommand(Application.Current.W.Navigation.PopModalAsync) }
+						new Button { Command = new AsyncRelayCommand(mainPage.Navigation.PopModalAsync) }
 							.Bottom().CenterHorizontal()
 							.Text("Back to Snackbar MainPage")
 					}
