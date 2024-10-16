@@ -26,12 +26,13 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 
 	/// <summary>The backing store for the <see cref="ParentWidth" /> bindable property.</summary>
 	internal static readonly BindableProperty ParentWidthProperty = BindableProperty.Create(nameof(ParentWidth), typeof(int), typeof(GravatarImageSource), defaultValue: defaultSize, propertyChanged: OnSizePropertyChanged);
-
-	const int cancellationTokenSourceTimeout = 737;
+	
 	const string defaultGravatarImageAddress = "https://www.gravatar.com/avatar/";
 	const int defaultSize = 80;
-
+	
 	static readonly Lazy<HttpClient> singletonHttpClientHolder = new();
+	
+	readonly TimeSpan cancellationTokenSourceTimeout = TimeSpan.FromMilliseconds(737);
 
 	int? gravatarSize;
 	Uri? lastDispatch;
@@ -170,7 +171,7 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 
 	static async void OnSizePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		if (newValue is not int intNewValue || intNewValue <= -1)
+		if (newValue is not (int intNewValue and > -1))
 		{
 			return;
 		}
