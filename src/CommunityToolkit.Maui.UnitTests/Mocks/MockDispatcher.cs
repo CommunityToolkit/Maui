@@ -2,30 +2,30 @@ namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
 public sealed class MockDispatcher : IDispatcher
 {
-    public MockDispatcher() => ManagedThreadId = Environment.CurrentManagedThreadId;
+	public MockDispatcher() => ManagedThreadId = Environment.CurrentManagedThreadId;
 
-    public bool IsDispatchRequired => false;
+	public bool IsDispatchRequired => false;
 
-    public int ManagedThreadId { get; }
+	public int ManagedThreadId { get; }
 
-    public IDispatcherTimer CreateTimer()
-    {
-        return new DispatcherTimerStub(this);
-    }
+	public IDispatcherTimer CreateTimer()
+	{
+		return new DispatcherTimerStub(this);
+	}
 
-    public bool Dispatch(Action action)
-    {
-        action();
+	public bool Dispatch(Action action)
+	{
+		action();
 
-        return true;
-    }
+		return true;
+	}
 
-    public bool DispatchDelayed(TimeSpan delay, Action action)
-    {
-        return false;
-    }
+	public bool DispatchDelayed(TimeSpan delay, Action action)
+	{
+		return false;
+	}
 
-    sealed class DispatcherTimerStub : IDispatcherTimer, IDisposable
+	sealed class DispatcherTimerStub : IDispatcherTimer, IDisposable
 	{
 		readonly IDispatcher dispatcher;
 
