@@ -6,7 +6,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Concatenates the members of a collection, using the specified separator between each member.
 /// </summary>
-public class ListToStringConverter : BaseConverterOneWay<IEnumerable, string, string?>
+[AcceptEmptyServiceProvider]
+public partial class ListToStringConverter : BaseConverterOneWay<IEnumerable, string, string?>
 {
 	string separator = string.Empty;
 

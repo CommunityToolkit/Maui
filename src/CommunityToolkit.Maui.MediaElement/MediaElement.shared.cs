@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Views;
 /// <summary>
 /// Represents an object that is used to render audio and video to the display.
 /// </summary>
-public class MediaElement : View, IMediaElement, IDisposable
+public partial class MediaElement : View, IMediaElement, IDisposable
 {
 	/// <summary>
 	/// Backing store for the <see cref="Aspect"/> property.

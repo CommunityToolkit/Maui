@@ -5,7 +5,7 @@ using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
-public class TouchBehaviorCollectionViewMultipleSelectionPage : BasePage<TouchBehaviorCollectionViewMultipleSelectionViewModel>
+public partial class TouchBehaviorCollectionViewMultipleSelectionPage : BasePage<TouchBehaviorCollectionViewMultipleSelectionViewModel>
 {
 	readonly CollectionView collectionView;
 

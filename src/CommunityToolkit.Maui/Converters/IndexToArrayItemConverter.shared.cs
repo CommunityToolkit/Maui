@@ -5,7 +5,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts an <see cref="int"/> index to corresponding array item and vice versa.
 /// </summary>
-public class IndexToArrayItemConverter : BaseConverter<int, object?, Array>
+[AcceptEmptyServiceProvider]
+public partial class IndexToArrayItemConverter : BaseConverter<int, object?, Array>
 {
 	/// <inheritdoc/>
 	public override object? DefaultConvertReturnValue { get; set; } = null;

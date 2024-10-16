@@ -3,7 +3,7 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample.Views.Popups;
 
-public sealed class TransparentPopupCSharp : Popup
+public sealed partial class TransparentPopupCSharp : Popup
 {
 	public TransparentPopupCSharp(Size popupSize) : this()
 	{

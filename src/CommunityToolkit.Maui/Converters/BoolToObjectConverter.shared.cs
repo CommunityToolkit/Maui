@@ -6,14 +6,16 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts boolean to object and vice versa.
 /// </summary>
-public class BoolToObjectConverter : BoolToObjectConverter<object>
+[AcceptEmptyServiceProvider]
+public partial class BoolToObjectConverter : BoolToObjectConverter<object>
 {
 }
 
 /// <summary>
 /// Converts <see cref="bool"/> to object and vice versa.
 /// </summary>
-public class BoolToObjectConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TObject> : BaseConverter<bool, TObject?>
+[AcceptEmptyServiceProvider]
+public partial class BoolToObjectConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TObject> : BaseConverter<bool, TObject?>
 {
 	/// <inheritdoc/>
 	public override TObject? DefaultConvertReturnValue { get; set; } = default;

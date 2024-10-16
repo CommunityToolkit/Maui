@@ -6,7 +6,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Returns a string array that contains the substrings in this string that are delimited by <see cref="Separator"/>.
 /// </summary>
-public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable, object?>
+[AcceptEmptyServiceProvider]
+public partial class StringToListConverter : BaseConverterOneWay<string?, IEnumerable, object?>
 {
 	string separator = " ";
 	IList<string> separators = Array.Empty<string>();

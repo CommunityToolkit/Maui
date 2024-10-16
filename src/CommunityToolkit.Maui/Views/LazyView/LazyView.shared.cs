@@ -4,7 +4,7 @@
 /// This a basic implementation implementing <see cref="LazyView"/>
 /// </summary>
 /// <typeparam name="TView">Any <see cref="View"/></typeparam>
-public class LazyView<TView> : LazyView where TView : View, new()
+public partial class LazyView<TView> : LazyView where TView : View, new()
 {
 	/// <summary>
 	/// This method initializes <see cref="LazyView{TView}"/>.

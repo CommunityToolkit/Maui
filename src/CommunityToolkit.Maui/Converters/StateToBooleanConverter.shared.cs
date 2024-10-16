@@ -25,7 +25,8 @@ public enum LayoutState
 /// <summary>
 /// This converter can be used to determine if a certain state is visible. This can be useful, for instance, in scenarios where you want to show/hide certain elements based on the current state.
 /// </summary>
-public class StateToBooleanConverter : BaseConverterOneWay<LayoutState, bool, LayoutState?>
+[AcceptEmptyServiceProvider]
+public partial class StateToBooleanConverter : BaseConverterOneWay<LayoutState, bool, LayoutState?>
 {
 	LayoutState stateToCompare = LayoutState.None;
 

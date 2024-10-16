@@ -3,7 +3,8 @@
 /// <summary>
 /// Represents a parameter to be used in the <see cref="MultiConverter"/>.
 /// </summary>
-public class MultiConverterParameter : BindableObject
+[AcceptEmptyServiceProvider]
+public partial class MultiConverterParameter : BindableObject
 {
 	/// <summary>
 	/// The type of object of this parameter.

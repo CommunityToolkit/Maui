@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <summary>
 /// The <see cref="NumericValidationBehavior"/> is a behavior that allows the user to determine if text input is a valid numeric value. For example, an <see cref="Entry"/> control can be styled differently depending on whether a valid or an invalid numeric input is provided. Additional properties handling validation are inherited from <see cref="ValidationBehavior"/>.
 /// </summary>
-public class NumericValidationBehavior : ValidationBehavior<string>
+public partial class NumericValidationBehavior : ValidationBehavior<string>
 {
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="MinimumValue"/> property.

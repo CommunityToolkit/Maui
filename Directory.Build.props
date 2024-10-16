@@ -14,6 +14,8 @@
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
+    <MauiStrictXamlCompilation>true</MauiStrictXamlCompilation>
+    <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
 
     <!-- https://learn.microsoft.com/dotnet/core/deploying/native-aot/?tabs=net8plus%2Cwindows -->
     <StripSymbols>false</StripSymbols>
@@ -41,6 +43,8 @@
      CS1712: Type parameter has no matching typeparam tag in the XML comment
      CS1723: XML comment has cref attribute that refers to a type parameter
      CS1734: XML comment has a paramref tag, but there is no parameter by that name
+     CsWinRT1028: Class implements WinRT interfaces but isn't marked partial
+     CsWinRT1030: Class implements WinRT interfaces that require unsafe code
      NU1900	Error communicating with package source, while getting vulnerability information.
      NU1901	Package with low severity detected
      NU1902	Package with moderate severity detected
@@ -48,14 +52,19 @@
      NU1904	Package with critical severity detected
      NU1905	An audit source does not provide a vulnerability database
      xUnit1012: Null should not be used for type parameter
-     xUnit2021: Assert.ThrowsAsync is async. The resulting task should be awaited     
+     xUnit2021: Assert.ThrowsAsync is async. The resulting task should be awaited
+     XC0045: Binding: Property not found
+     XC0103: Consider attributing the markup extension with [RequireService] or [AcceptEmptyServiceProvider] if it doesn't require any
      IL2***: Trim Warnings     
      IL3***: AOT Warnings     
      RS2007: Analyzer release file 'AnalyzerReleases.Shipped.md' has a missing or invalid release header-->
-     <WarningsAsErrors>nullable,
+     <WarningsAsErrors>
+       nullable,
        CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1580,CS1581,CS1584,CS1587,CS1589,CS1590,CS1591,CS1592,CS1598,CS1658,CS1710,CS1711,CS1712,CS1723,CS1734,
+       CsWinRT1028,CsWinRT1030,
        NU1900,NU1901,NU1902,NU1903,NU1904,NU1905,
        xUnit1012,xUnit2021,
+       XC0045,XC0103,
        IL2001,IL2002,IL2003,IL2004,IL2005,IL2006,IL2007,IL2008,IL2009,
        IL2010,IL2011,IL2012,IL2013,IL2014,IL2015,IL2016,IL2017,IL2018,IL2019,
        IL2020,IL2021,IL2022,IL2023,IL2024,IL2025,IL2026,IL2027,IL2028,IL2029,

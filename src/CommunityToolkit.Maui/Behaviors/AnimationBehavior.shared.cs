@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <summary>
 /// The <see cref="AnimationBehavior"/> is a behavior that shows an animation on any <see cref="VisualElement"/> when the <see cref="AnimateCommand"/> is called.
 /// </summary>
-public class AnimationBehavior : EventToCommandBehavior
+public partial class AnimationBehavior : EventToCommandBehavior
 {
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="AnimationType"/> property.

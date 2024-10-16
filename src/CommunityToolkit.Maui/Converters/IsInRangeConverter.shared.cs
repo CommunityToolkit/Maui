@@ -4,7 +4,8 @@ using System.Globalization;
 namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>Converts the incoming value to a <see cref="bool"/> indicating whether or not the value is within a range.</summary>
-public sealed class IsInRangeConverter : IsInRangeConverter<IComparable, object>;
+[AcceptEmptyServiceProvider]
+public sealed partial class IsInRangeConverter : IsInRangeConverter<IComparable, object>;
 
 /// <summary>Converts the incoming value to a <see cref="bool"/> indicating whether or not the value is within a range.</summary>
 public abstract class IsInRangeConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TValue, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TReturnObject> : BaseConverterOneWay<TValue, object> where TValue : IComparable

@@ -5,7 +5,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts an incoming value using all of the incoming converters in sequence.
 /// </summary>
-public class MultiConverter : List<ICommunityToolkitValueConverter>, ICommunityToolkitValueConverter
+[AcceptEmptyServiceProvider]
+public partial class MultiConverter : List<ICommunityToolkitValueConverter>, ICommunityToolkitValueConverter
 {
 	object? ICommunityToolkitValueConverter.DefaultConvertReturnValue => throw new NotSupportedException($"{nameof(ICommunityToolkitMultiValueConverter)} does not implement {nameof(ICommunityToolkitValueConverter.DefaultConvertReturnValue)}");
 

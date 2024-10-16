@@ -6,7 +6,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts the incoming value to a <see cref="bool"/> indicating whether or not the value is null or empty.
 /// </summary>
-public class IsListNullOrEmptyConverter : BaseConverterOneWay<IEnumerable?, bool>
+[AcceptEmptyServiceProvider]
+public partial class IsListNullOrEmptyConverter : BaseConverterOneWay<IEnumerable?, bool>
 {
 	/// <inheritdoc/>
 	public override bool DefaultConvertReturnValue { get; set; } = false;

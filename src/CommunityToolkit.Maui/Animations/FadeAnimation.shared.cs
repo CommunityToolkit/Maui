@@ -4,7 +4,7 @@
 /// Animation that will fade the supplied view to the specified <see cref="Opacity"/>
 /// and then back to it's original <see cref="Opacity"/>.
 /// </summary>
-public class FadeAnimation : BaseAnimation
+public partial class FadeAnimation : BaseAnimation
 {
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Opacity"/> property.
