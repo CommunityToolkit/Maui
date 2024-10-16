@@ -12,7 +12,7 @@ public partial class ExpanderPageCS : ContentPage
 		const string dotnetBotUrl = "https://avatars.githubusercontent.com/u/9011267?v=4";
 		const string dotnetMauiUrl = "https://dot.net/maui";
 
-		Title = "Expander MainPage, C# UI";
+		Title = "Expander Page, C# UI";
 
 		Content = new VerticalStackLayout()
 		{
