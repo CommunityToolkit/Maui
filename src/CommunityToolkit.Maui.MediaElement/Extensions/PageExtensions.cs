@@ -47,11 +47,8 @@ static class PageExtensions
 				{
 					return false;
 				}
-				if (CurrentPage.GetParentWindow().Handler.PlatformView is null)
-				{
-					return false;
-				}
-				return true;
+				
+				return CurrentPage.GetParentWindow().Handler?.PlatformView is not null;
 			}
 		}
 	}
