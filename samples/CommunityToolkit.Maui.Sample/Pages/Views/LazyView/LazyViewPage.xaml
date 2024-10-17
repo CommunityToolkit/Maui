@@ -46,8 +46,8 @@
             <Line Style="{StaticResource HR}" />
             
             <Label Text="Lazy Loading After Page Activation" Style="{StaticResource Heading}"/>
-            <Label Text="{Binding Source={x:Reference LazyActiviation}, Path=HasLazyViewLoaded, StringFormat='HasLazyViewLoaded = {0}'}" Style="{StaticResource Heading}"/>
-            <local:CustomLazyView x:Name="LazyActiviation" x:TypeArguments="local:MyView" Style="{StaticResource MyViewStyle}"/>
+            <Label Text="{Binding Source={x:Reference LazyActivation}, Path=HasLazyViewLoaded, StringFormat='HasLazyViewLoaded = {0}'}" Style="{StaticResource Heading}"/>
+            <local:CustomLazyView x:Name="LazyActivation" x:TypeArguments="local:MyView" Style="{StaticResource MyViewStyle}"/>
             
             <Line Style="{StaticResource HR}" />
             

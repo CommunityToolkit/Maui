@@ -20,8 +20,9 @@
                        Margin="{StaticResource ContentPadding}" />
 
                 <!-- Settings -->
-                <Frame Margin="{StaticResource ContentPadding}"
-                       CornerRadius="10">
+                <Border
+                    Margin="{StaticResource ContentPadding}"
+                    StrokeShape="RoundRectangle 10">
                     <Grid RowDefinitions="*,*" ColumnDefinitions="2*, *" RowSpacing="24" ColumnSpacing="8">
                         <Label Text="MaxLength setting on Entry field"
                                HorizontalOptions="End"
@@ -43,7 +44,7 @@
                                 Grid.Row="1"
                                 Grid.Column="1" />
                     </Grid>
-                </Frame>
+                </Border>
 
                 <!-- First Scenario -->
                 <Label Text="When the MaxLength of the first Entry has been reached, the focus will be set to the next Entry field."

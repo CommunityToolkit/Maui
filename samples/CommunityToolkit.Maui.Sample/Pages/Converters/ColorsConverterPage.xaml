@@ -47,6 +47,8 @@
 
                 <Label TextColor="{StaticResource NormalLabelTextColor}" Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToRgbStringConverter}, StringFormat='The RGB value of selected color is: {0}'}"/>
 
+                <Label TextColor="{StaticResource NormalLabelTextColor}" Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToRgbaStringConverter}, StringFormat='The RGBA value of selected color is: {0}'}"/>
+
                 <Label TextColor="{StaticResource NormalLabelTextColor}" Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToHexRgbStringConverter}, StringFormat='The HEX value of selected color is: {0}'}"/>
 
                 <Label TextColor="{StaticResource NormalLabelTextColor}" Text="{Binding Source={x:Reference BoxView}, Path=BackgroundColor, Converter={StaticResource ColorToHexRgbaStringConverter}, StringFormat='The HEX RGBa value of selected color is: {0}'}"/>
