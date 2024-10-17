@@ -1,6 +1,6 @@
 ﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public class ImageResourceConverterViewModel : BaseViewModel
+public partial class ImageResourceConverterViewModel : BaseViewModel
 {
 	public string XamarinImageResource { get; } = BuildImageResource("XCT.png");
 	public string MauiImageResource { get; } = BuildImageResource("MCT.png");

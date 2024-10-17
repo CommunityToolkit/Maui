@@ -67,9 +67,10 @@
             </Grid>
 
             <Label Text="Type characters for validation behavior according to the settings you set upon." />
-            <Entry Placeholder="Type characters...">
+            <Entry Placeholder="Type characters..." x:Name="TypeCharactersEntry">
                 <Entry.Behaviors>
                     <mct:CharactersValidationBehavior
+                        BindingContext="{Binding Path = BindingContext, Source={x:Reference TypeCharactersEntry}}"
                         CharacterType="{Binding SelectedItem, Source={x:Reference CharacterTypePicker}}"
                         Flags="ValidateOnValueChanged"
                         InvalidStyle="{StaticResource InvalidEntryStyle}"
@@ -80,12 +81,14 @@
             </Entry>
 
             <Label Text="The same but styling handled by visual state manager." />
-            <Entry Placeholder="Type characters...">
+            <Entry Placeholder="Type characters..." x:Name="VisualStateEntry">
                 <Entry.Behaviors>
-                    <mct:CharactersValidationBehavior Flags="ValidateOnValueChanged"
-                                                      CharacterType="{Binding SelectedItem, Source={x:Reference CharacterTypePicker}}"
-                                                      MaximumCharacterTypeCount="{Binding Text, Source={x:Reference MaximumCharacterCountEntry}}"
-                                                      MinimumCharacterTypeCount="{Binding Text, Source={x:Reference MinimumCharacterCountEntry}}" />
+                    <mct:CharactersValidationBehavior
+                        Flags="ValidateOnValueChanged"
+                        BindingContext="{Binding Path = BindingContext, Source={x:Reference VisualStateEntry}}"
+                        CharacterType="{Binding SelectedItem, Source={x:Reference CharacterTypePicker}}"
+                        MaximumCharacterTypeCount="{Binding Text, Source={x:Reference MaximumCharacterCountEntry}}"
+                        MinimumCharacterTypeCount="{Binding Text, Source={x:Reference MinimumCharacterCountEntry}}" />
                 </Entry.Behaviors>
 
                 <VisualStateManager.VisualStateGroups>

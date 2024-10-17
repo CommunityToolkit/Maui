@@ -1,6 +1,6 @@
 ﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
-public class EmailValidationBehaviorViewModel : BaseViewModel
+public partial class EmailValidationBehaviorViewModel : BaseViewModel
 {
 
 }

@@ -10,8 +10,8 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
 	{
 		public Test(params Type[] assembliesUnderTest)
 		{
-#if NET8_0
-			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net80;
+#if NET9_0
+			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net90;
 #else
 #error ReferenceAssemblies must be updated to current version of .NET
 #endif

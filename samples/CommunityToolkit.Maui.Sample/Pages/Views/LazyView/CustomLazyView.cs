@@ -2,7 +2,7 @@
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views.LazyView;
 
-public class CustomLazyView<TView> : Maui.Views.LazyView where TView : View, new()
+public partial class CustomLazyView<TView> : Maui.Views.LazyView where TView : View, new()
 {
 	public override async ValueTask LoadViewAsync(CancellationToken token = default)
 	{

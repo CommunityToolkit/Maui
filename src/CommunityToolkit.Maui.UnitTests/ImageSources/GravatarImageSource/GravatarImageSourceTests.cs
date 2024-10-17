@@ -66,7 +66,7 @@ public class GravatarImageSourceTests : BaseHandlerTest
 	{
 		Image testControl = new()
 		{
-			Source = new GravatarImageSource()
+			Source = new GravatarImageSource
 			{
 				Email = email,
 			}

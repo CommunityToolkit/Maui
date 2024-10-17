@@ -1,9 +1,10 @@
 ﻿using CommunityToolkit.Maui.Behaviors;
+using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
-public class BehaviorsGalleryPage : BaseGalleryPage<BehaviorsGalleryViewModel>
+public partial class BehaviorsGalleryPage : BaseGalleryPage<BehaviorsGalleryViewModel>
 {
 	public BehaviorsGalleryPage(IDeviceInfo deviceInfo, BehaviorsGalleryViewModel behaviorsGalleryViewModel)
 		: base("Behaviors", deviceInfo, behaviorsGalleryViewModel)
@@ -11,6 +12,8 @@ public class BehaviorsGalleryPage : BaseGalleryPage<BehaviorsGalleryViewModel>
 #if ANDROID || IOS
 		AddStatusBarBehavior();
 #endif
+
+		new Image().Source("");
 	}
 
 	void AddStatusBarBehavior()

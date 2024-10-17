@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 // We still have to keep this class, due to some random exceptions that occurs when the 
 // .NET MAUI implementation is used.
-class WrapperControl : Panel
+partial class WrapperControl : Panel
 {
 	readonly View view;
 

@@ -6,6 +6,7 @@ namespace CommunityToolkit.Maui.Sample.Converters;
 /// Compares a double value against the ComparingValue property
 /// and returns a <see cref="Color"/> based on the comparison.
 /// </summary>
-public sealed class CompareDoubleToColorConverter : CompareConverter<double, Color>
+[AcceptEmptyServiceProvider]
+public sealed partial class CompareDoubleToColorConverter : CompareConverter<double, Color>
 {
 }

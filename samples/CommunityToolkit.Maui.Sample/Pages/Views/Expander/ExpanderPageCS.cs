@@ -5,7 +5,7 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-public class ExpanderPageCS : ContentPage
+public partial class ExpanderPageCS : ContentPage
 {
 	public ExpanderPageCS()
 	{

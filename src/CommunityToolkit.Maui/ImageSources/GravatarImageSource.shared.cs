@@ -1,11 +1,13 @@
-﻿namespace CommunityToolkit.Maui.ImageSources;
+﻿using Microsoft.Maui.Controls.Internals;
+
+namespace CommunityToolkit.Maui.ImageSources;
 
 using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Controls;
 
 /// <summary>Gravatar image source.</summary>
 /// <remarks>Note that <see cref="UriImageSource"/> is sealed and can't be used as a parent!</remarks>
-public class GravatarImageSource : StreamImageSource, IDisposable
+public partial class GravatarImageSource : StreamImageSource, IDisposable
 {
 	/// <summary>The backing store for the <see cref="CacheValidity" /> bindable property.</summary>
 	public static readonly BindableProperty CacheValidityProperty = BindableProperty.Create(nameof(CacheValidity), typeof(TimeSpan), typeof(GravatarImageSource), TimeSpan.FromDays(1));
@@ -24,12 +26,13 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 
 	/// <summary>The backing store for the <see cref="ParentWidth" /> bindable property.</summary>
 	internal static readonly BindableProperty ParentWidthProperty = BindableProperty.Create(nameof(ParentWidth), typeof(int), typeof(GravatarImageSource), defaultValue: defaultSize, propertyChanged: OnSizePropertyChanged);
-
-	const int cancellationTokenSourceTimeout = 737;
+	
 	const string defaultGravatarImageAddress = "https://www.gravatar.com/avatar/";
 	const int defaultSize = 80;
-
+	
 	static readonly Lazy<HttpClient> singletonHttpClientHolder = new();
+	
+	readonly TimeSpan cancellationTokenSourceTimeout = TimeSpan.FromMilliseconds(737);
 
 	int? gravatarSize;
 	Uri? lastDispatch;
@@ -143,8 +146,8 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 			return;
 		}
 
-		SetBinding(ParentWidthProperty, new Binding(nameof(VisualElement.Width), BindingMode.OneWay, source: parentElement));
-		SetBinding(ParentHeightProperty, new Binding(nameof(VisualElement.Height), BindingMode.OneWay, source: parentElement));
+		SetBinding(ParentWidthProperty, BindingBase.Create<VisualElement, double>(static p => p.Width, source: parentElement));
+		SetBinding(ParentHeightProperty, BindingBase.Create<VisualElement, double>(static p => p.Height, source: parentElement));
 	}
 
 	static string DefaultGravatarName(DefaultImage defaultGravatar) => defaultGravatar switch
@@ -168,7 +171,7 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 
 	static async void OnSizePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		if (newValue is not int intNewValue || intNewValue <= -1)
+		if (newValue is not (int intNewValue and > -1))
 		{
 			return;
 		}
