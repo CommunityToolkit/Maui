@@ -28,7 +28,7 @@ public class AnimationBehavior : EventToCommandBehavior
 	/// NOTE: Apps should not directly set this property, treating it as read only. The setter is only public because
 	/// that's currently needed to make XAML Hot Reload work. Instead, apps should provide a value for this OneWayToSource
 	/// property by creating a binding, in XAML or C#. If done via C# use code like this:
-	/// "behavior.SetBinding(AnimationBehavior.AnimateCommandProperty, nameof(ViewModel.TriggerAnimationCommand));"
+	/// <c>behavior.SetBinding(AnimationBehavior.AnimateCommandProperty, nameof(ViewModel.TriggerAnimationCommand));</c>
 	/// </summary>
 	/// <remarks>
 	/// <see cref="AnimateCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter"
