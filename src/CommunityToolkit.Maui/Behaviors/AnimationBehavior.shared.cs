@@ -35,7 +35,14 @@ public class AnimationBehavior : EventToCommandBehavior
 	/// </remarks>
 	public Command<CancellationToken> AnimateCommand {
 		get => (Command<CancellationToken>)GetValue(AnimateCommandProperty);
-      [Obsolete("Do not use this setter, it only exists to enable XAML Hot reload support in your IDE.")]
+      [Obsolete(
+"""
+Do not use this setter, it only exists to enable XAML Hot reload support in your IDE.
+
+Instead, apps should provide a value for this OneWayToSource property by creating a binding, in XAML or C#. If done via C# use code like this:
+
+behavior.SetBinding(AnimationBehavior.AnimateCommandProperty, nameof(ViewModel.TriggerAnimationCommand));
+""")]
 		set => SetValue(AnimateCommandProperty, value);
 	}
 
