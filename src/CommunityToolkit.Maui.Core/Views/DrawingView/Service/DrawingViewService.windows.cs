@@ -13,36 +13,46 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 ///     Drawing view service
 /// </summary>
-public static class DrawingViewService
+public static partial class DrawingViewService
 {
 	/// <summary>
-	///     Get image stream from lines
+	/// Get image stream from lines
 	/// </summary>
 	/// <param name="lines">Drawing lines</param>
-	/// <param name="imageSize">Maximum image size. The image will be resized proportionally.</param>
+	/// <param name="desiredSize">Maximum image size. The image will be resized proportionally.</param>
 	/// <param name="background">Image background</param>
+	/// <param name="canvasSize">
+	/// The actual size of the canvas being displayed. This is an optional parameter
+	/// if a value is provided then the contents of the <paramref name="lines"/> inside these dimensions will be included in the output,
+	/// if <c>null</c> is provided then the resulting output will be the area covered by the top-left to the bottom-right most points.
+	/// </param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background, CancellationToken token = default)
+	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size desiredSize, Paint? background, Size? canvasSize, CancellationToken token = default)
 	{
-		var canvas = GetImageInternal(lines, imageSize, background);
+		var canvas = GetImageInternal(lines, desiredSize, background, canvasSize);
 
 		return GetCanvasRenderTargetStream(canvas, token);
 	}
 
 	/// <summary>
-	///     Get image stream from points
+	/// Get image stream from points
 	/// </summary>
 	/// <param name="points">Drawing points</param>
-	/// <param name="imageSize">Maximum image size. The image will be resized proportionally.</param>
+	/// <param name="desiredSize">Maximum image size. The image will be resized proportionally.</param>
 	/// <param name="lineWidth">Line Width</param>
 	/// <param name="strokeColor">Line color</param>
 	/// <param name="background">Image background</param>
+	/// <param name="canvasSize">
+	/// The actual size of the canvas being displayed. This is an optional parameter
+	/// if a value is provided then the contents of the <paramref name="points"/> inside these dimensions will be included in the output,
+	/// if <c>null</c> is provided then the resulting output will be the area covered by the top-left to the bottom-right most points.
+	/// </param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<PointF> points, Size imageSize, float lineWidth, Color strokeColor, Paint? background, CancellationToken token = default)
+	public static ValueTask<Stream> GetImageStream(IList<PointF> points, Size desiredSize, float lineWidth, Color strokeColor, Paint? background, Size? canvasSize, CancellationToken token = default)
 	{
-		var canvas = GetImageInternal(points, imageSize, lineWidth, strokeColor, background);
+		var canvas = GetImageInternal(points, desiredSize, lineWidth, strokeColor, background, canvasSize);
 
 		return GetCanvasRenderTargetStream(canvas, token);
 	}
@@ -71,9 +81,10 @@ public static class DrawingViewService
 		float lineWidth,
 		Color lineColor,
 		Paint? background,
+		Size? canvasSize,
 		bool scale = false)
 	{
-		var (offscreen, offset) = GetCanvasRenderTarget(points, size, scale, lineWidth);
+		var (offscreen, offset) = GetCanvasRenderTarget(points, size, scale, lineWidth, canvasSize);
 		if (offscreen is null)
 		{
 			return null;
@@ -108,7 +119,7 @@ public static class DrawingViewService
 		session.DrawInk(strokes);
 	}
 
-	static (CanvasRenderTarget? offscreen, Size offset) GetCanvasRenderTarget(ICollection<PointF> points, SizeF size, bool scale, float maxLineWidth)
+	static (CanvasRenderTarget? offscreen, Size offset) GetCanvasRenderTarget(ICollection<PointF> points, SizeF size, bool scale, float maxLineWidth, Size? canvasSize)
 	{
 		const int minSize = 1;
 
@@ -119,22 +130,23 @@ public static class DrawingViewService
 
 		var minPointX = points.Min(p => p.X) - maxLineWidth;
 		var minPointY = points.Min(p => p.Y) - maxLineWidth;
-		var drawingWidth = points.Max(p => p.X) - minPointX + maxLineWidth;
-		var drawingHeight = points.Max(p => p.Y) - minPointY + maxLineWidth;
+		var drawingWidth = (float?)canvasSize?.Width ?? points.Max(p => p.X) - minPointX + maxLineWidth;
+		var drawingHeight = (float?)canvasSize?.Height ?? points.Max(p => p.Y) - minPointY + maxLineWidth;
 		if (drawingWidth < minSize || drawingHeight < minSize)
 		{
 			return (null, new Size(minPointX, minPointY));
 		}
 
 		var device = CanvasDevice.GetSharedDevice();
-		return (new CanvasRenderTarget(device, scale ? size.Width : drawingWidth, scale ? size.Height : drawingHeight, 96), new Size(minPointX, minPointY));
+		var offset = canvasSize is null ? new Size(minPointX, minPointY) : Size.Zero;
+		return (new CanvasRenderTarget(device, scale ? size.Width : drawingWidth, scale ? size.Height : drawingHeight, 96), offset);
 	}
 
-	static CanvasRenderTarget? GetImageInternal(IList<IDrawingLine> lines, Size size, Paint? background, bool scale = false)
+	static CanvasRenderTarget? GetImageInternal(IList<IDrawingLine> lines, Size size, Paint? background, Size? canvasSize, bool scale = false)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
 		var maxLineWidth = lines.Select(x => x.LineWidth).Max();
-		var (offscreen, offset) = GetCanvasRenderTarget(points, size, scale, maxLineWidth);
+		var (offscreen, offset) = GetCanvasRenderTarget(points, size, scale, maxLineWidth, canvasSize);
 		if (offscreen is null)
 		{
 			return null;
