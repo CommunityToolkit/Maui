@@ -35,6 +35,7 @@ public class AnimationBehavior : EventToCommandBehavior
 	/// </remarks>
 	public Command<CancellationToken> AnimateCommand {
 		get => (Command<CancellationToken>)GetValue(AnimateCommandProperty);
+      [Obsolete("Do not use this setter, it only exists to enable XAML Hot reload support in your IDE.")]
 		set => SetValue(AnimateCommandProperty, value);
 	}
 
