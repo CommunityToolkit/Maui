@@ -51,10 +51,12 @@
 
                 <Entry Placeholder="Start typing until MaxLength is reached..."
                        MaxLength="{Binding Path=Text, Source={x:Reference MaxLengthSetting}}"
-                       Margin="{StaticResource ContentPadding}">
+                       Margin="{StaticResource ContentPadding}"
+                       x:Name="MaxLengthEntry">
                     <Entry.Behaviors>
                         <mct:MaxLengthReachedBehavior 
                             MaxLengthReached="MaxLengthReachedBehavior_MaxLengthReached"
+                            BindingContext="{Binding Path=BindingContext, Source={x:Reference MaxLengthEntry}}"
                             ShouldDismissKeyboardAutomatically="{Binding Path=IsToggled, Source={x:Reference AutoDismissKeyboardSetting}}" />
                     </Entry.Behaviors>
                 </Entry>
@@ -70,9 +72,11 @@
 
                 <Entry Placeholder="Start typing until MaxLength is reached..."
                        MaxLength="{Binding Path=Text, Source={x:Reference MaxLengthSetting}}"
-                       Margin="{StaticResource ContentPadding}">
+                       Margin="{StaticResource ContentPadding}"
+                       x:Name="MaxLegnthCommandEntry">
                     <Entry.Behaviors>
                         <mct:MaxLengthReachedBehavior 
+                            BindingContext="{Binding Path=BindingContext, Source={x:Reference MaxLegnthCommandEntry}}"
                             Command="{Binding MaxLengthReachedCommand}"
                             ShouldDismissKeyboardAutomatically="{Binding Path=IsToggled, Source={x:Reference AutoDismissKeyboardSetting}}" />
                     </Entry.Behaviors>
