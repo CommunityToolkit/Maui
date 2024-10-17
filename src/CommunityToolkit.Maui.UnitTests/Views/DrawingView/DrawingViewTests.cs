@@ -3,26 +3,20 @@ using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.UnitTests.Mocks;
+using CommunityToolkit.Maui.Views;
 using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class DrawingViewTests : BaseHandlerTest
+[Collection(nameof(DrawingViewTests)), CollectionDefinition(nameof(DrawingViewTests), DisableParallelization = true)]
+public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerTest
 {
-	readonly ITestOutputHelper testOutputHelper;
-	readonly Maui.Views.DrawingView drawingView = new();
-
-	public DrawingViewTests(ITestOutputHelper testOutputHelper)
-	{
-		this.testOutputHelper = testOutputHelper;
-	}
-
 	[Fact]
 	public void DrawingViewShouldBeAssignedToIDrawingView()
 	{
-		new Maui.Views.DrawingView().Should().BeAssignableTo<IDrawingView>();
+		new DrawingView().Should().BeAssignableTo<IDrawingView>();
 	}
 
 	[Fact]
@@ -40,12 +34,14 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void DefaultLinesShouldNotBeShared()
 	{
-		new Maui.Views.DrawingView().Lines.Should().NotBeSameAs(new Maui.Views.DrawingView().Lines);
+		new DrawingView().Lines.Should().NotBeSameAs(new DrawingView().Lines);
 	}
 
 	[Fact]
 	public void OnLinesCollectionChangedHandlerIsCalled()
 	{
+		var drawingView = new DrawingView();
+
 		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		drawingView.Handler.Should().NotBeNull();
 
@@ -59,6 +55,8 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void LineWidthMapperIsCalled()
 	{
+		var drawingView = new DrawingView();
+
 		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		drawingView.Handler.Should().NotBeNull();
 
@@ -71,6 +69,8 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void ClearOnFinishMapperIsCalled()
 	{
+		var drawingView = new DrawingView();
+
 		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		drawingView.Handler.Should().NotBeNull();
 
@@ -83,6 +83,8 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void LineColorMapperIsCalled()
 	{
+		var drawingView = new DrawingView();
+
 		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		drawingView.Handler.Should().NotBeNull();
 
@@ -95,6 +97,8 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void MultiLineModeMapperIsCalled()
 	{
+		var drawingView = new DrawingView();
+
 		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		drawingView.Handler.Should().NotBeNull();
 
@@ -108,6 +112,8 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void DrawMapperIsCalled()
 	{
+		var drawingView = new DrawingView();
+
 		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		drawingView.Handler.Should().NotBeNull();
 
@@ -120,7 +126,9 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void CheckDefaultValues()
 	{
-		var expectedDefaultValue = new Maui.Views.DrawingView
+		var drawingView = new DrawingView();
+
+		var expectedDefaultValue = new DrawingView
 		{
 			LineColor = DrawingViewDefaults.LineColor,
 			LineWidth = DrawingViewDefaults.LineWidth,
@@ -137,7 +145,11 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void ClearShouldClearLines()
 	{
-		drawingView.Lines = [new DrawingLine()];
+		var drawingView = new DrawingView
+		{
+			Lines = [new DrawingLine()]
+		};
+
 		drawingView.Lines.Should().HaveCount(1);
 
 		drawingView.Clear();
@@ -153,7 +165,7 @@ public class DrawingViewTests : BaseHandlerTest
 		// Ensure CancellationToken Expired
 		await Task.Delay(100, CancellationToken.None);
 
-		await Assert.ThrowsAsync<OperationCanceledException>(async () => await Maui.Views.DrawingView.GetImageStream(new[] { new DrawingLine() }, Size.Zero, Colors.Blue, cts.Token));
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await DrawingView.GetImageStream([new DrawingLine()], Size.Zero, Colors.Blue, cts.Token));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -164,12 +176,16 @@ public class DrawingViewTests : BaseHandlerTest
 		// Ensure CancellationToken Expired
 		await cts.CancelAsync();
 
-		await Assert.ThrowsAsync<OperationCanceledException>(async () => await Maui.Views.DrawingView.GetImageStream(new[] { new DrawingLine() }, Size.Zero, Colors.Blue, cts.Token));
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await DrawingView.GetImageStream([
+			new DrawingLine()
+		], Size.Zero, Colors.Blue, cts.Token));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task GetImageStreamReturnsNullStream()
 	{
+		var drawingView = new DrawingView();
+
 		var stream = await drawingView.GetImageStream(10, 10, CancellationToken.None);
 		stream.Should().BeSameAs(Stream.Null);
 	}
@@ -177,13 +193,17 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task GetImageStreamStaticReturnsNullStream()
 	{
-		var stream = await Maui.Views.DrawingView.GetImageStream(new[] { new DrawingLine() }, Size.Zero, Colors.Blue, CancellationToken.None);
+		var stream = await DrawingView.GetImageStream([
+			new DrawingLine()
+		], Size.Zero, Colors.Blue, CancellationToken.None);
 		stream.Should().BeSameAs(Stream.Null);
 	}
 
 	[Fact]
 	public void DefaultDrawingLineAdapter_IDrawingLineIsDrawingLine()
 	{
+		var drawingView = new DrawingView();
+
 		CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		IDrawingLine? currentLine = null;
 		var action = new EventHandler<DrawingLineCompletedEventArgs>((_, e) => currentLine = e.LastDrawingLine);
@@ -204,6 +224,8 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void SetDefaultDrawingLineAdapter_IDrawingLineIsDrawingLine()
 	{
+		var drawingView = new DrawingView();
+
 		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		drawingViewHandler.SetDrawingLineAdapter(new DrawingLineAdapter());
 
@@ -227,6 +249,8 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void SetDrawingLineAdapter_IDrawingLineIsMockDrawingLine()
 	{
+		var drawingView = new DrawingView();
+
 		var drawingViewHandler = CreateViewHandler<MockDrawingViewHandler>(drawingView);
 		drawingViewHandler.SetDrawingLineAdapter(new MockDrawingLineAdapter());
 
@@ -250,6 +274,8 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void OnDrawingStartedLastPointPassedWithCommand()
 	{
+		var drawingView = new DrawingView();
+
 		var expectedPoint = new PointF(10, 10);
 
 		PointF? point = null;
@@ -262,6 +288,8 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void OnDrawingLastPointPassedWithCommand()
 	{
+		var drawingView = new DrawingView();
+
 		var expectedPoint = new PointF(10, 10);
 
 		PointF? point = null;
@@ -275,13 +303,15 @@ public class DrawingViewTests : BaseHandlerTest
 	[Obsolete]
 	public void OnDrawingLineCompletedLastDrawingLinePassedWithCommand()
 	{
+		var drawingView = new DrawingView();
+
 		var expectedDrawingLine = new DrawingLine
 		{
 			LineColor = Colors.Grey,
 			LineWidth = 11f,
 			ShouldSmoothPathWhenDrawn = false,
 			Granularity = 21,
-			Points = new ObservableCollection<PointF>(new[] { new PointF(10, 10) })
+			Points = [new PointF(10, 10)]
 		};
 
 		IDrawingLine? currentLine = null;
@@ -295,6 +325,8 @@ public class DrawingViewTests : BaseHandlerTest
 	[Obsolete]
 	public void OnDrawingLineCompleted_CommandIsNull_LastDrawingLineNotPassed()
 	{
+		var drawingView = new DrawingView();
+
 		IDrawingLine? currentLine = null;
 		drawingView.DrawingLineCompletedCommand = null;
 		((IDrawingView)drawingView).OnDrawingLineCompleted(new DrawingLine());
@@ -305,6 +337,8 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void OnDrawingStarted_CommandIsNull_LastDrawingPointNotPassed()
 	{
+		var drawingView = new DrawingView();
+
 		PointF? currentPoint = null;
 		drawingView.DrawingLineStartedCommand = null;
 		((IDrawingView)drawingView).OnDrawingLineStarted(new PointF());
@@ -315,6 +349,8 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void OnDrawing_CommandIsNull_LastDrawingPointNotPassed()
 	{
+		var drawingView = new DrawingView();
+
 		PointF? currentPoint = null;
 		drawingView.PointDrawnCommand = null;
 		((IDrawingView)drawingView).OnPointDrawn(new PointF());
@@ -326,6 +362,8 @@ public class DrawingViewTests : BaseHandlerTest
 	[Obsolete]
 	public void OnDrawingLineCompleted_CommandIsNotAllowedExecute_LastDrawingLineNotPassed()
 	{
+		var drawingView = new DrawingView();
+
 		IDrawingLine? currentLine = null;
 		drawingView.DrawingLineCompletedCommand = new Command<IDrawingLine>(line => currentLine = line, _ => false);
 		((IDrawingView)drawingView).OnDrawingLineCompleted(new DrawingLine());
@@ -336,6 +374,8 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void OnDrawingStarted_CommandIsNotAllowedExecute_LastDrawingPointNotPassed()
 	{
+		var drawingView = new DrawingView();
+
 		PointF? currentPoint = null;
 		drawingView.DrawingLineStartedCommand = new Command<PointF>(p => currentPoint = p, _ => false);
 		((IDrawingView)drawingView).OnDrawingLineStarted(new PointF());
@@ -346,6 +386,8 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void OnDrawing_CommandIsNotAllowedExecute_LastDrawingPointNotPassed()
 	{
+		var drawingView = new DrawingView();
+
 		PointF? currentPoint = null;
 		drawingView.PointDrawnCommand = new Command<PointF>(p => currentPoint = p, _ => false);
 		((IDrawingView)drawingView).OnPointDrawn(new PointF());
@@ -357,13 +399,15 @@ public class DrawingViewTests : BaseHandlerTest
 	[Obsolete]
 	public void OnDrawingLineCompletedLastDrawingLinePassedWithEvent()
 	{
+		var drawingView = new DrawingView();
+
 		var expectedDrawingLine = new DrawingLine
 		{
 			LineColor = Colors.GreenYellow,
 			LineWidth = 15f,
 			ShouldSmoothPathWhenDrawn = false,
 			Granularity = 55,
-			Points = new ObservableCollection<PointF>(new[] { new PointF(10, 10) })
+			Points = [new PointF(10, 10)]
 		};
 
 		IDrawingLine? currentLine = null;
@@ -378,6 +422,8 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void OnDrawingStartedLastDrawingPointPassedWithEvent()
 	{
+		var drawingView = new DrawingView();
+
 		var expectedPoint = new PointF(10, 10);
 
 		PointF? currentPoint = null;
@@ -392,6 +438,8 @@ public class DrawingViewTests : BaseHandlerTest
 	[Fact]
 	public void OnDrawingLastDrawingPointPassedWithEvent()
 	{
+		var drawingView = new DrawingView();
+
 		var expectedPoint = new PointF(10, 10);
 
 		PointF? currentPoint = null;

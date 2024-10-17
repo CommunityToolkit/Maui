@@ -31,6 +31,19 @@
 
     <!-- Uncomment the line below if Android App installation fails -->
     <!--<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>-->
+
+    <WindowsSdkPackageVersion>10.0.19041.53</WindowsSdkPackageVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' 
+                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'tizen'
+                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'android'
+                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
+    <!-- Ahead-of-time compilation is not yet supported net8.0-tizen -->
+    <!-- Cross-OS native compilation is not supported net8.0-android -->
+    <!-- Only iOS + MacCatalyst support AOT in .NET 8 -->
+    <PublishAot>true</PublishAot>
   </PropertyGroup>
 
   <ItemGroup>
@@ -51,11 +64,11 @@
     <!-- Custom Fonts -->
     <MauiFont Include="Resources\Fonts\*" />
 
-    <PackageReference Include="Microsoft.Maui.Controls" Version="*"/>
-    <PackageReference Include="CommunityToolkit.Maui.Markup" Version="4.0.0" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="8.7.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="*" />
+    <PackageReference Include="CommunityToolkit.Maui.Markup" Version="4.2.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="8.10.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.1" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -76,6 +89,10 @@
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Maps\CommunityToolkit.Maui.Maps.csproj" />
   </ItemGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='windows' and $(Configuration) == 'Release'">
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+  </PropertyGroup>
 
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='android'">
     <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>

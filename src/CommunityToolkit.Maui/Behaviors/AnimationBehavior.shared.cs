@@ -118,7 +118,7 @@ public class AnimationBehavior : EventToCommandBehavior
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInAnimations)
 		{
-			Trace.WriteLine(ex);
+			Trace.TraceInformation("{0}", ex);
 		}
 	}
 }

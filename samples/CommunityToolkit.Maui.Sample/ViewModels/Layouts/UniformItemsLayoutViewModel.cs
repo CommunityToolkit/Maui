@@ -12,7 +12,7 @@ public partial class UniformItemsLayoutViewModel : BaseViewModel
 		Items.Add(Path.GetRandomFileName());
 	}
 
- 	[RelayCommand]
+	[RelayCommand]
 	void ClearItem()
 	{
 		Items.Clear();
