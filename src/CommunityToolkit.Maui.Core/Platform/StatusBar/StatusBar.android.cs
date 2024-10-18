@@ -44,12 +44,12 @@ static partial class StatusBar
 			if (isColorTransparent)
 			{
 				Activity.Window.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
-				Activity.Window.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
+				Activity.Window.AddFlags(WindowManagerFlags.LayoutNoLimits | WindowManagerFlags.LayoutNoLimits);
 			}
 			else
 			{
 				Activity.Window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
-				Activity.Window.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
+				Activity.Window.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds | WindowManagerFlags.DrawsSystemBarBackgrounds);
 			}
 
 			WindowCompat.SetDecorFitsSystemWindows(Activity.Window, !isColorTransparent);
