@@ -81,7 +81,7 @@ public partial class Expander : ContentView, IExpander
 		var expander = (Expander)bindable;
 		if (newValue is View view)
 		{
-			view.SetBinding(IsVisibleProperty, new Binding(nameof(IsExpanded), source: bindable));
+			view.SetBinding(IsVisibleProperty, BindingBase.Create<Expander, bool>(static p => p.IsExpanded, source: expander));
 
 			expander.ContentGrid.Remove(oldValue);
 			expander.ContentGrid.Add(newValue);
@@ -167,7 +167,7 @@ public partial class Expander : ContentView, IExpander
 
 		Element element = this;
 		var size = IsExpanded
-					? Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins).Request
+					? Measure(double.PositiveInfinity, double.PositiveInfinity)
 					: Header.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 		while (element is not null)

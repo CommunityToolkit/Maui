@@ -6,7 +6,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 ///     Convert an <see cref="Enum" /> to corresponding <see cref="bool" />
 /// </summary>
-public class EnumToBoolConverter : BaseConverterOneWay<Enum, bool, Enum?>
+[AcceptEmptyServiceProvider]
+public partial class EnumToBoolConverter : BaseConverterOneWay<Enum, bool, Enum?>
 {
 	/// <inheritdoc/>
 	public override bool DefaultConvertReturnValue { get; set; } = false;

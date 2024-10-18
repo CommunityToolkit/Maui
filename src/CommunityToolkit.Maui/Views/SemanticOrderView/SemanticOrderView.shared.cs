@@ -4,7 +4,7 @@ using CommunityToolkit.Maui.Core;
 namespace CommunityToolkit.Maui.Views;
 
 /// <inheritdoc cref="ISemanticOrderView"/>
-public class SemanticOrderView : ContentView, ISemanticOrderView
+public partial class SemanticOrderView : ContentView, ISemanticOrderView
 {
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="ViewOrder"/> property.

@@ -31,9 +31,9 @@ public partial class ToastPage : BasePage<ToastViewModel>
 
 	async void DisplayToastInModalButtonClicked(object? sender, EventArgs e)
 	{
-		if (Application.Current?.MainPage is not null)
+		if (Application.Current?.Windows[0].Page is Page mainPage)
 		{
-			await Application.Current.MainPage.Navigation.PushModalAsync(new ContentPage
+			await mainPage.Navigation.PushModalAsync(new ContentPage
 			{
 				Content = new VerticalStackLayout
 				{
@@ -41,17 +41,17 @@ public partial class ToastPage : BasePage<ToastViewModel>
 
 					Children =
 					{
-						new Button { Command = new AsyncRelayCommand(token => Toast.Make("Toast in a Modal Page").Show(token)) }
+						new Button { Command = new AsyncRelayCommand(token => Toast.Make("Toast in a Modal MainPage").Show(token)) }
 							.Top().CenterHorizontal()
 							.Text("Display Toast"),
 
 						new Label()
 							.Center().TextCenter()
-							.Text("This is a Modal Page"),
+							.Text("This is a Modal MainPage"),
 
-						new Button { Command = new AsyncRelayCommand(Application.Current.MainPage.Navigation.PopModalAsync) }
+						new Button { Command = new AsyncRelayCommand(mainPage.Navigation.PopModalAsync) }
 							.Bottom().CenterHorizontal()
-							.Text("Back to Toast Page")
+							.Text("Back to Toast MainPage")
 					}
 				}.Center()
 			}.Padding(12));

@@ -1,5 +1,5 @@
 ﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 
-public class ToastViewModel : BaseViewModel
+public partial class ToastViewModel : BaseViewModel
 {
 }

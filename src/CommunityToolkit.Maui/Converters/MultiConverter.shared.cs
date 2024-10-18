@@ -5,7 +5,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts an incoming value using all of the incoming converters in sequence.
 /// </summary>
-public class MultiConverter : List<ICommunityToolkitValueConverter>, ICommunityToolkitValueConverter
+[AcceptEmptyServiceProvider]
+public partial class MultiConverter : List<ICommunityToolkitValueConverter>, ICommunityToolkitValueConverter
 {
 	object? ICommunityToolkitValueConverter.DefaultConvertReturnValue => throw new NotSupportedException($"{nameof(ICommunityToolkitMultiValueConverter)} does not implement {nameof(ICommunityToolkitValueConverter.DefaultConvertReturnValue)}");
 
@@ -17,9 +18,8 @@ public class MultiConverter : List<ICommunityToolkitValueConverter>, ICommunityT
 	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 	Type ICommunityToolkitValueConverter.ToType => throw new NotSupportedException($"{nameof(ICommunityToolkitMultiValueConverter)} does not implement {nameof(ICommunityToolkitValueConverter.ToType)}");
 
-#if NET8_0 // Should be fixed in .NET 9
+
 #pragma warning disable IL2092
-#endif
 	/// <summary>
 	/// Uses the incoming converters to convert the value.
 	/// </summary>
@@ -44,7 +44,5 @@ public class MultiConverter : List<ICommunityToolkitValueConverter>, ICommunityT
 	/// <returns>N/A</returns>
 	public object? ConvertBack(object? value, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type targetType, object? parameter, System.Globalization.CultureInfo? culture)
 		=> throw new NotSupportedException("Impossible to revert to original value. Consider setting BindingMode to OneWay.");
-#if NET8_0 // Should be fixed in .NET 9
 #pragma warning restore IL2092
-#endif
 }

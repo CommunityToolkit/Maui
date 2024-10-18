@@ -68,7 +68,7 @@ public abstract class BasePlatformBehavior<TView, TPlatformView> : PlatformBehav
 	{
 		base.OnAttachedTo(bindable, platformView);
 
-		((ICommunityToolkitBehavior<TView>)this).AssignViewAndBingingContext(bindable);
+		((ICommunityToolkitBehavior<TView>)this).InitializeBehavior(bindable);
 	}
 
 	/// <inheritdoc/>
@@ -76,7 +76,7 @@ public abstract class BasePlatformBehavior<TView, TPlatformView> : PlatformBehav
 	{
 		base.OnDetachedFrom(bindable, platformView);
 
-		((ICommunityToolkitBehavior<TView>)this).UnassignViewAndBingingContext(bindable);
+		((ICommunityToolkitBehavior<TView>)this).UninitializeBehavior(bindable);
 	}
 
 	void ICommunityToolkitBehavior<TView>.OnViewPropertyChanged(TView sender, PropertyChangedEventArgs e) => OnViewPropertyChanged(sender, e);

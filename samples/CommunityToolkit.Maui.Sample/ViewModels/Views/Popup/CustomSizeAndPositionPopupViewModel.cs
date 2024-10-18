@@ -91,7 +91,7 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 		&& Width > 0
 		&& IsFlowDirectionSelectionValid(FlowDirectionSelectedIndex, FlowDirectionOptions.Count);
 
-	class FlowDirectionPopup : RedBlueBoxPopup
+	partial class FlowDirectionPopup : RedBlueBoxPopup
 	{
 		readonly FlowDirection flowDirection;
 

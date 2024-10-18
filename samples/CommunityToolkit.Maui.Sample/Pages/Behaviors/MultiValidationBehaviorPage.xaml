@@ -48,7 +48,7 @@
                 </Entry.Behaviors>
             </Entry>
             <Label HeightRequest="30"
-                    Text="{Binding Errors[0], Source={x:Reference MultiValidation}}"/>
+                    Text="{Binding Errors[0], Source={x:Reference MultiValidation}, FallbackValue=''}"/>
             <Label Text="Password validation" />
             <Entry IsPassword="True" Placeholder="Password">
                 <Entry.Behaviors>

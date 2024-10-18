@@ -23,7 +23,7 @@ public partial class ItemTappedEventArgsConverterViewModel : BaseViewModel
 
 		ItemSelected = null;
 
-		return Application.Current?.MainPage?.DisplayAlert("Item Tapped", person.Name, "Ok").WaitAsync(token) ?? Task.CompletedTask;
+		return Application.Current?.Windows[0].Page?.DisplayAlert("Item Tapped", person.Name, "Ok").WaitAsync(token) ?? Task.CompletedTask;
 	}
 
 }
