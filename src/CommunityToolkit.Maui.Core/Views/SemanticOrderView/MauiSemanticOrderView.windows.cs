@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// The native implementation of the <see href="SemanticOrderView"/> control.
 /// </summary>
-public class MauiSemanticOrderView : ContentPanel
+public partial class MauiSemanticOrderView : ContentPanel
 {
 	ISemanticOrderView? virtualView;
 
