@@ -5,7 +5,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts an <see cref="int"/> to a corresponding <see cref="bool"/> and vice versa.
 /// </summary>
-public class IntToBoolConverter : BaseConverter<int, bool>
+[AcceptEmptyServiceProvider]
+public partial class IntToBoolConverter : BaseConverter<int, bool>
 {
 	/// <inheritdoc/>
 	public override bool DefaultConvertReturnValue { get; set; } = false;

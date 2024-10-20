@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 #if TIZEN
 public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>
 #else
-public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>, IDisposable
+public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>, IDisposable
 #endif
 {
 	/// <summary>

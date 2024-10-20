@@ -1,5 +1,5 @@
 ﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Alerts;
 
-public class SnackbarViewModel : BaseViewModel
+public partial class SnackbarViewModel : BaseViewModel
 {
 }

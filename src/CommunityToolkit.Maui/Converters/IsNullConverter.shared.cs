@@ -5,7 +5,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts the incoming value to a <see cref="bool"/> indicating whether or not the value is null.
 /// </summary>
-public class IsNullConverter : BaseConverterOneWay<object?, bool>
+[AcceptEmptyServiceProvider]
+public partial class IsNullConverter : BaseConverterOneWay<object?, bool>
 {
 	/// <inheritdoc/>
 	public override bool DefaultConvertReturnValue { get; set; } = false;

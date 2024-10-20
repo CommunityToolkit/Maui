@@ -3,7 +3,7 @@ using CommunityToolkit.Maui.Sample.Models;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
 
-public class AvatarViewBindablePropertiesViewModel : BaseViewModel
+public partial class AvatarViewBindablePropertiesViewModel : BaseViewModel
 {
 	public ObservableCollection<AvatarModel> AvatarList { get; } =
 	[

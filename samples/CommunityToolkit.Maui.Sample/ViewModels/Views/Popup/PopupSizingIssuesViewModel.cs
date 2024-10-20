@@ -68,7 +68,7 @@ public partial class PopupSizingIssuesViewModel : BaseViewModel
 	};
 }
 
-public class ContainerModel(string name, ControlTemplate controlTemplate) : ObservableObject
+public partial class ContainerModel(string name, ControlTemplate controlTemplate) : ObservableObject
 {
 	public string Name { get; } = name;
 
