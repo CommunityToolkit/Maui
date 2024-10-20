@@ -5,7 +5,7 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
-using Com.Google.Android.Exoplayer2.UI;
+using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -15,11 +15,12 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiMediaElement : CoordinatorLayout
 {
-	readonly StyledPlayerView playerView;
+	readonly RelativeLayout relativeLayout;
+	
+	PlayerView playerView;
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
 	bool isFullScreen;
-	readonly RelativeLayout relativeLayout;
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -34,14 +35,12 @@ public class MauiMediaElement : CoordinatorLayout
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
 	/// </summary>
 	/// <param name="context">The application's <see cref="Context"/>.</param>
-	/// <param name="playerView">The <see cref="StyledPlayerView"/> that acts as the platform media player.</param>
-	public MauiMediaElement(Context context, StyledPlayerView playerView) : base(context)
+	/// <param name="playerView">The <see cref="PlayerView"/> that acts as the platform media player.</param>
+	public MauiMediaElement(Context context, PlayerView playerView) : base(context)
 	{
 		this.playerView = playerView;
-
-		playerView.FullscreenButtonClick += OnFullscreenButtonClick;
 		this.playerView.SetBackgroundColor(Android.Graphics.Color.Black);
-
+		playerView.FullscreenButtonClick += OnFullscreenButtonClick;
 		var layout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
 		layout.AddRule(LayoutRules.CenterInParent);
 		layout.AddRule(LayoutRules.CenterVertical);
@@ -54,12 +53,12 @@ public class MauiMediaElement : CoordinatorLayout
 
 		AddView(relativeLayout);
 	}
-
-	public override void OnDetachedFromWindow()
+	
+    public override void OnDetachedFromWindow()
 	{
 		if (isFullScreen)
 		{
-			OnFullscreenButtonClick(this, new StyledPlayerView.FullscreenButtonClickEventArgs(!isFullScreen));
+			OnFullscreenButtonClick(this, new PlayerView.FullscreenButtonClickEventArgs(!isFullScreen));
 		}
 		base.OnDetachedFromWindow();
 	}
@@ -88,6 +87,10 @@ public class MauiMediaElement : CoordinatorLayout
 		{
 			try
 			{
+				if (playerView.Player is not null)
+				{
+					playerView.Player.PlayWhenReady = false;
+				}
 				// https://github.com/google/ExoPlayer/issues/1855#issuecomment-251041500
 				playerView.Player?.Release();
 				playerView.Player?.Dispose();
@@ -102,16 +105,17 @@ public class MauiMediaElement : CoordinatorLayout
 		base.Dispose(disposing);
 	}
 
-	void OnFullscreenButtonClick(object? sender, StyledPlayerView.FullscreenButtonClickEventArgs e)
+	void OnFullscreenButtonClick(object? sender, PlayerView.FullscreenButtonClickEventArgs e)
 	{
 		// Ensure there is a player view
 		if (playerView is null)
 		{
-			throw new InvalidOperationException("PlayerView cannot be null when the FullScreen button is tapped");
+			throw new InvalidOperationException("UpdatedPlayerView cannot be null when the FullScreen button is tapped");
 		}
 		var layout = CurrentPlatformContext.CurrentWindow.DecorView as ViewGroup;
-
-		if (e.IsFullScreen)
+		// `p0` is the boolean value of isFullScreen being passed into the method. 
+		// This is a binding issue that will not be fixed as it is now part of shipped API.
+		if (e.P0)
 		{
 			isFullScreen = true;
 			RemoveView(relativeLayout);
@@ -214,19 +218,6 @@ public class MauiMediaElement : CoordinatorLayout
 				}
 
 				return CurrentActivity.Window;
-			}
-		}
-
-		public static ViewGroup CurrentViewGroup
-		{
-			get
-			{
-				if (CurrentWindow.DecorView is not ViewGroup viewGroup)
-				{
-					throw new InvalidOperationException("DecorView cannot be null");
-				}
-
-				return viewGroup;
 			}
 		}
 	}
