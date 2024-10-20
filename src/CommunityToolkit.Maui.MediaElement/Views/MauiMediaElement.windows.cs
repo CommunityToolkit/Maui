@@ -21,7 +21,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// The user-interface element that represents the <see cref="MediaElement"/> on Windows.
 /// </summary>
-public class MauiMediaElement : Grid, IDisposable
+public partial class MauiMediaElement : Grid, IDisposable
 {
 	static readonly AppWindow appWindow = GetAppWindowForCurrentWindow();
 	readonly Popup popup = new();
