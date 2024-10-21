@@ -6,23 +6,28 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// Drawing view service
 /// </summary>
-public static class DrawingViewService
+public static partial class DrawingViewService
 {
 	/// <summary>
 	/// Get image stream from points
 	/// </summary>
 	/// <param name="points">Drawing points</param>
-	/// <param name="imageSize">Maximum image size. The image will be resized proportionally.</param>
+	/// <param name="desiredSize">Maximum image size. The image will be resized proportionally.</param>
 	/// <param name="lineWidth">Line Width</param>
 	/// <param name="strokeColor">Line color</param>
 	/// <param name="background">Image background</param>
+	/// <param name="canvasSize">
+	/// The actual size of the canvas being displayed. This is an optional parameter
+	/// if a value is provided then the contents of the <paramref name="points"/> inside these dimensions will be included in the output,
+	/// if <c>null</c> is provided then the resulting output will be the area covered by the top-left to the bottom-right most points.
+	/// </param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static async ValueTask<Stream> GetImageStream(IList<PointF> points, Size imageSize, float lineWidth, Color strokeColor, Paint? background, CancellationToken token = default)
+	public static async ValueTask<Stream> GetImageStream(IList<PointF> points, Size desiredSize, float lineWidth, Color strokeColor, Paint? background, Size? canvasSize, CancellationToken token = default)
 	{
 		token.ThrowIfCancellationRequested();
 
-		var image = GetBitmapForPoints(points, lineWidth, strokeColor, background);
+		var image = GetBitmapForPoints(points, lineWidth, strokeColor, background, canvasSize);
 
 		if (image is null)
 		{
@@ -32,7 +37,7 @@ public static class DrawingViewService
 		// Defer to thread pool thread https://github.com/CommunityToolkit/Maui/pull/692#pullrequestreview-1150202727
 		var stream = await Task.Run<Stream>(() =>
 		{
-			var resized = image.Resize(new SKImageInfo((int)imageSize.Width, (int)imageSize.Height, SKColorType.Bgra8888, SKAlphaType.Opaque), SKFilterQuality.High);
+			var resized = image.Resize(new SKImageInfo((int)desiredSize.Width, (int)desiredSize.Height, SKColorType.Bgra8888, SKAlphaType.Opaque), SKFilterQuality.High);
 			var data = resized.Encode(SKEncodedImageFormat.Png, 100);
 
 			var stream = new MemoryStream();
@@ -49,15 +54,20 @@ public static class DrawingViewService
 	/// Get image stream from lines
 	/// </summary>
 	/// <param name="lines">Drawing lines</param>
-	/// <param name="imageSize">Maximum image size. The image will be resized proportionally.</param>
+	/// <param name="desiredSize">Maximum image size. The image will be resized proportionally.</param>
 	/// <param name="background">Image background</param>
+	/// <param name="canvasSize">
+	/// The actual size of the canvas being displayed. This is an optional parameter
+	/// if a value is provided then the contents of the <paramref name="lines"/> inside these dimensions will be included in the output,
+	/// if <c>null</c> is provided then the resulting output will be the area covered by the top-left to the bottom-right most points.
+	/// </param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static async ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background, CancellationToken token = default)
+	public static async ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size desiredSize, Paint? background, Size? canvasSize, CancellationToken token = default)
 	{
 		token.ThrowIfCancellationRequested();
 
-		var image = GetBitmapForLines(lines, background);
+		var image = GetBitmapForLines(lines, background, canvasSize);
 
 		if (image is null)
 		{
@@ -67,7 +77,7 @@ public static class DrawingViewService
 		// Defer to thread pool thread https://github.com/CommunityToolkit/Maui/pull/692#pullrequestreview-1150202727
 		var stream = await Task.Run<Stream>(() =>
 		{
-			var resized = image.Resize(new SKImageInfo((int)imageSize.Width, (int)imageSize.Height, SKColorType.Bgra8888, SKAlphaType.Opaque), SKFilterQuality.High);
+			var resized = image.Resize(new SKImageInfo((int)desiredSize.Width, (int)desiredSize.Height, SKColorType.Bgra8888, SKAlphaType.Opaque), SKFilterQuality.High);
 			var data = resized.Encode(SKEncodedImageFormat.Png, 100);
 
 			var stream = new MemoryStream();
@@ -80,7 +90,7 @@ public static class DrawingViewService
 		return stream;
 	}
 
-	static (SKBitmap?, SizeF offset) GetBitmap(in ICollection<PointF> points, float maxLineWidth)
+	static (SKBitmap?, SizeF offset) GetBitmap(in ICollection<PointF> points, float maxLineWidth, Size? canvasSize)
 	{
 		if (points.Count is 0)
 		{
@@ -90,8 +100,8 @@ public static class DrawingViewService
 		const int minSize = 1;
 		var minPointX = points.Min(p => p.X) - maxLineWidth;
 		var minPointY = points.Min(p => p.Y) - maxLineWidth;
-		var drawingWidth = points.Max(p => p.X) - minPointX + maxLineWidth;
-		var drawingHeight = points.Max(p => p.Y) - minPointY + maxLineWidth;
+		var drawingWidth = canvasSize?.Width ?? points.Max(p => p.X) - minPointX + maxLineWidth;
+		var drawingHeight = canvasSize?.Height ?? points.Max(p => p.Y) - minPointY + maxLineWidth;
 
 		if (drawingWidth < minSize || drawingHeight < minSize)
 		{
@@ -100,14 +110,16 @@ public static class DrawingViewService
 
 		var bitmap = new SKBitmap((int)drawingWidth, (int)drawingHeight, SKColorType.Bgra8888, SKAlphaType.Opaque);
 
+		var offset = canvasSize is null ? new Size(minPointX, minPointY) : Size.Zero;
+		
 		return (bitmap, new SizeF(minPointX, minPointY));
 	}
 
-	static SKBitmap? GetBitmapForLines(in IList<IDrawingLine> lines, in Paint? background)
+	static SKBitmap? GetBitmapForLines(in IList<IDrawingLine> lines, in Paint? background, Size? canvasSize)
 	{
 		var points = lines.SelectMany(static x => x.Points).ToList();
 		var maxLineWidth = lines.Select(x => x.LineWidth).Max();
-		var (image, offset) = GetBitmap(points, maxLineWidth);
+		var (image, offset) = GetBitmap(points, maxLineWidth, canvasSize);
 
 		if (image is null)
 		{
@@ -126,9 +138,9 @@ public static class DrawingViewService
 		return image;
 	}
 
-	static SKBitmap? GetBitmapForPoints(in ICollection<PointF> points, in float lineWidth, in Color strokeColor, in Paint? background)
+	static SKBitmap? GetBitmapForPoints(in ICollection<PointF> points, in float lineWidth, in Color strokeColor, in Paint? background, in Size? canvasSize)
 	{
-		var (image, offset) = GetBitmap(points, lineWidth);
+		var (image, offset) = GetBitmap(points, lineWidth, canvasSize);
 		if (image is null)
 		{
 			return null;
