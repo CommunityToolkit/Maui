@@ -185,7 +185,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataArtworkUrl = botImageUrl;
 				MediaElement.MetadataTitle = "HLS Title";
 				MediaElement.SubtitleUrl = string.Empty;
-				MediaElement.Source
 				MediaElement.Source = MediaSource.FromUri(hlsStreamTestUrl);
 				return;
 
