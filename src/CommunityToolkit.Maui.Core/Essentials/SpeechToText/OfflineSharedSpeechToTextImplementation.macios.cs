@@ -3,7 +3,7 @@ using Speech;
 
 namespace CommunityToolkit.Maui.Media;
 
-public sealed partial class SpeechToTextImplementation
+public sealed partial class OfflineSpeechToTextImplementation
 {
 	AVAudioEngine? audioEngine;
 	SFSpeechRecognizer? speechRecognizer;
@@ -74,10 +74,5 @@ public sealed partial class SpeechToTextImplementation
 		cancellationToken.ThrowIfCancellationRequested();
 		StopRecording();
 		return Task.CompletedTask;
-	}
-
-	Task InternalStopOfflineListeningAsync(CancellationToken cancellationToken)
-	{
-		return InternalStopListeningAsync(cancellationToken);
 	}
 }
