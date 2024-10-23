@@ -21,3 +21,6 @@ updates:
         - dependency-name: "Xamarin.AndroidX.Media3.ExoPlayer.Hls"
         - dependency-name: "Xamarin.AndroidX.Media3.ExoPlayer.Dash"
         - dependency-name: "Xamarin.AndroidX.Media3.Session"
+        - dependency-name: "Xamarin.AndroidX.Collection"
+        - dependency-name: "Xamarin.AndroidX.Lifecycle.LiveData"
+        - dependency-name: "Xamarin.AndroidX.Collection.Ktx"
