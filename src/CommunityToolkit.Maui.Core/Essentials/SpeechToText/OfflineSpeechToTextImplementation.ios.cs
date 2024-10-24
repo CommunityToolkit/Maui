@@ -1,18 +1,27 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.Versioning;
 using AVFoundation;
 using Speech;
 
 namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc />
-public sealed partial class SpeechToTextImplementation
+public sealed partial class OfflineSpeechToTextImplementation
 {
 	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest))]
+	[SupportedOSPlatform("ios13.0")]
+	[SupportedOSPlatform("maccatalyst")]
 	Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
 	{
-		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(options.Culture.Name));
+		if (!UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
+		{
+			throw new NotSupportedException("Offline listening is supported on iOS 13 and later");
+		}
 
+		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(options.Culture.Name));
+		speechRecognizer.SupportsOnDeviceRecognition = true;
+		
 		if (!speechRecognizer.Available)
 		{
 			throw new ArgumentException("Speech recognizer is not available");
@@ -21,7 +30,8 @@ public sealed partial class SpeechToTextImplementation
 		audioEngine = new AVAudioEngine();
 		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest()
 		{
-			ShouldReportPartialResults = options.ShouldReportPartialResults
+			ShouldReportPartialResults = options.ShouldReportPartialResults,
+			RequiresOnDeviceRecognition = true
 		};
 
 		InitializeAvAudioSession(out _);
