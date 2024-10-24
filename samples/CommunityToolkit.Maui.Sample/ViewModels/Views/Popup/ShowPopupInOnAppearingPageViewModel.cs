@@ -1,5 +1,5 @@
 ﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public class ShowPopupInOnAppearingPageViewModel : BaseViewModel
+public partial class ShowPopupInOnAppearingPageViewModel : BaseViewModel
 {
 }

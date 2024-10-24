@@ -7,6 +7,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converters for multiple math expressions
 /// </summary>
+[AcceptEmptyServiceProvider]
 public class MultiMathExpressionConverter : MultiValueConverterExtension, ICommunityToolkitMultiValueConverter
 {
 	/// <summary>

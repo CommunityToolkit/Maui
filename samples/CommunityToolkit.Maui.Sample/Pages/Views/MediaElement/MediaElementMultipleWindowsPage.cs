@@ -7,7 +7,7 @@ using CommunityToolkit.Maui.Markup;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-public class MediaElementMultipleWindowsPage : BasePage<MediaElementMultipleWindowsViewModel>
+public partial class MediaElementMultipleWindowsPage : BasePage<MediaElementMultipleWindowsViewModel>
 {
 	const string buckBunnyMp4Url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
 #if WINDOWS || MACCATALYST

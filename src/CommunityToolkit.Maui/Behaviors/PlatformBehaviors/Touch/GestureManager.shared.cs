@@ -6,7 +6,7 @@ using static System.Math;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
-sealed class GestureManager : IDisposable, IAsyncDisposable
+sealed partial class GestureManager : IDisposable, IAsyncDisposable
 {
 	Color? defaultBackgroundColor;
 

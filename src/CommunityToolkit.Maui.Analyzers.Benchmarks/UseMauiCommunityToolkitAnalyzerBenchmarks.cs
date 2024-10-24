@@ -15,9 +15,9 @@ public class UseMauiCommunityToolkitAnalyzerBenchmarks
 	}
 
 	[Benchmark]
-	public Task VerifyNoErrorsWhenUseMauiCommunityToolkitHasAdditonalWhitespace()
+	public Task VerifyNoErrorsWhenUseMauiCommunityToolkitHasAdditionalWhitespace()
 	{
-		return useCommunityToolkitInitializationAnalyzerTests.VerifyNoErrorsWhenUseMauiCommunityToolkitHasAdditonalWhitespace();
+		return useCommunityToolkitInitializationAnalyzerTests.VerifyNoErrorsWhenUseMauiCommunityToolkitHasAdditionalWhitespace();
 	}
 
 	[Benchmark]

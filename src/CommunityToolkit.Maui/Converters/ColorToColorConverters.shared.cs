@@ -6,7 +6,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="Color"/>.
 /// </summary>
-public class ColorToBlackOrWhiteConverter : BaseConverterOneWay<Color, Color>
+[AcceptEmptyServiceProvider]
+public partial class ColorToBlackOrWhiteConverter : BaseConverterOneWay<Color, Color>
 {
 	/// <inheritdoc/>
 	public override Color DefaultConvertReturnValue { get; set; } = Colors.Transparent;
@@ -22,7 +23,8 @@ public class ColorToBlackOrWhiteConverter : BaseConverterOneWay<Color, Color>
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="Color"/>.
 /// </summary>
-public class ColorToColorForTextConverter : BaseConverterOneWay<Color, Color>
+[AcceptEmptyServiceProvider]
+public partial class ColorToColorForTextConverter : BaseConverterOneWay<Color, Color>
 {
 	/// <inheritdoc/>
 	public override Color DefaultConvertReturnValue { get; set; } = Colors.Transparent;
@@ -38,7 +40,8 @@ public class ColorToColorForTextConverter : BaseConverterOneWay<Color, Color>
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="Color"/>.
 /// </summary>
-public class ColorToGrayScaleColorConverter : BaseConverterOneWay<Color, Color>
+[AcceptEmptyServiceProvider]
+public partial class ColorToGrayScaleColorConverter : BaseConverterOneWay<Color, Color>
 {
 	/// <inheritdoc/>
 	public override Color DefaultConvertReturnValue { get; set; } = Colors.Transparent;
@@ -54,7 +57,8 @@ public class ColorToGrayScaleColorConverter : BaseConverterOneWay<Color, Color>
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="Color"/>.
 /// </summary>
-public class ColorToInverseColorConverter : BaseConverterOneWay<Color, Color>
+[AcceptEmptyServiceProvider]
+public partial class ColorToInverseColorConverter : BaseConverterOneWay<Color, Color>
 {
 	/// <inheritdoc/>
 	public override Color DefaultConvertReturnValue { get; set; } = Colors.Transparent;

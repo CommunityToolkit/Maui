@@ -7,7 +7,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts an object that implements IComparable to an object or a boolean based on a comparison.
 /// </summary>
-public sealed class CompareConverter : CompareConverter<IComparable, object>
+[AcceptEmptyServiceProvider]
+public sealed partial class CompareConverter : CompareConverter<IComparable, object>
 {
 }
 

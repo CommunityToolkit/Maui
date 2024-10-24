@@ -21,7 +21,7 @@ public class PopupService : IPopupService
 
 	static Page CurrentPage =>
 		PageExtensions.GetCurrentPage(
-			Application.Current?.MainPage ?? throw new InvalidOperationException("Application.Current.MainPage cannot be null."));
+			Application.Current?.Windows[0].Page ?? throw new InvalidOperationException("Application.Current?.Windows[0].Page cannot be null."));
 
 	/// <summary>
 	/// Creates a new instance of <see cref="PopupService"/>.
@@ -94,22 +94,6 @@ public class PopupService : IPopupService
 		ShowPopup(popup);
 	}
 
-	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(TViewModel)"/>
-	public void ShowPopup<TViewModel>(TViewModel viewModel) where TViewModel : INotifyPropertyChanged
-	{
-		EnsureMainThreadIsUsed();
-
-		ArgumentNullException.ThrowIfNull(viewModel);
-
-		var popup = GetPopup(typeof(TViewModel));
-
-		ValidateBindingContext<TViewModel>(popup, out _);
-
-		InitializePopup(popup);
-
-		ShowPopup(popup);
-	}
-
 	/// <inheritdoc cref="IPopupService.ShowPopup{TViewModel}(Action{TViewModel})"/>
 	public void ShowPopup<TViewModel>(Action<TViewModel> onPresenting) where TViewModel : INotifyPropertyChanged
 	{
@@ -128,26 +112,6 @@ public class PopupService : IPopupService
 		ShowPopup(popup);
 	}
 
-	static void ShowPopup(Popup popup)
-	{
-#if WINDOWS
-		if (Application.Current is Application app)
-		{
-			if (app.Windows.FirstOrDefault(x => x.IsActivated) is Window activeWindow)
-			{
-				if (activeWindow.Page is Page page)
-				{
-					page.ShowPopup(popup);
-					return;
-				}
-			}
-		}
-		CurrentPage.ShowPopup(popup);
-#else
-		CurrentPage.ShowPopup(popup);
-#endif
-	}
-
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(CancellationToken)"/>
 	public Task<object?> ShowPopupAsync<TViewModel>(CancellationToken token = default) where TViewModel : INotifyPropertyChanged
 	{
@@ -161,23 +125,7 @@ public class PopupService : IPopupService
 
 		return ShowPopupAsync(popup, token);
 	}
-
-	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(TViewModel, CancellationToken)"/>
-	public Task<object?> ShowPopupAsync<TViewModel>(TViewModel viewModel, CancellationToken token = default) where TViewModel : INotifyPropertyChanged
-	{
-		EnsureMainThreadIsUsed();
-
-		ArgumentNullException.ThrowIfNull(viewModel);
-
-		var popup = GetPopup(typeof(TViewModel));
-
-		ValidateBindingContext<TViewModel>(popup, out _);
-
-		InitializePopup(popup);
-
-		return ShowPopupAsync(popup, token);
-	}
-
+	
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(Action{TViewModel}, CancellationToken)"/>
 	public Task<object?> ShowPopupAsync<TViewModel>(Action<TViewModel> onPresenting, CancellationToken token = default) where TViewModel : INotifyPropertyChanged
 	{
@@ -231,6 +179,26 @@ public class PopupService : IPopupService
 
 		bindingContext = viewModel;
 	}
+	
+	static void ShowPopup(Popup popup)
+	{
+#if WINDOWS
+		if (Application.Current is Application app)
+		{
+			if (app.Windows.FirstOrDefault(x => x.IsActivated) is Window activeWindow)
+			{
+				if (activeWindow.Page is Page page)
+				{
+					page.ShowPopup(popup);
+					return;
+				}
+			}
+		}
+		CurrentPage.ShowPopup(popup);
+#else
+		CurrentPage.ShowPopup(popup);
+#endif
+	}
 
 	void EnsureMainThreadIsUsed([CallerMemberName] string? callerName = default)
 	{
@@ -242,15 +210,9 @@ public class PopupService : IPopupService
 
 	Popup GetPopup(Type viewModelType)
 	{
-		var popup = serviceProvider.GetService(viewModelToViewMappings[viewModelType]) as Popup;
-
-		if (popup is null)
-		{
-			throw new InvalidOperationException(
-				$"Unable to resolve popup type for {viewModelType} please make sure that you have called {nameof(AddTransientPopup)}");
-		}
-
-		return popup;
+		var popup = (Popup)(serviceProvider.GetService(viewModelToViewMappings[viewModelType]) 
+			?? throw new InvalidOperationException($"Unable to resolve popup type for {viewModelType} please make sure that you have called {nameof(PopupService)}.{nameof(AddTransientPopup)} in MauiProgram.cs"));
+        return popup;
 	}
 
 	void InitializePopup(Popup popup)

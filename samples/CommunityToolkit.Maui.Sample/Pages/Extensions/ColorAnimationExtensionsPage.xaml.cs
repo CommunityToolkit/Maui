@@ -49,7 +49,7 @@ public partial class ColorAnimationExtensionsPage : BasePage<ColorAnimationExten
 
 		var easing = easings.ElementAtOrDefault(EasingPicker.SelectedIndex).Value;
 
-		await Task.WhenAll(ColorFrame.BackgroundColorTo(color, rate, duration, easing),
+		await Task.WhenAll(ColorBorder.BackgroundColorTo(color, rate, duration, easing),
 							TextColorToDescriptionLabel.TextColorTo(color, rate, duration, easing));
 
 		SetPickersRandomValue();

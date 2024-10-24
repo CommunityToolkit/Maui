@@ -108,7 +108,7 @@ public class AvatarViewTests : BaseHandlerTest
 		avatarView.TextColor.Should().Be(Colors.Pink);
 		avatarView.Text.Should().Be("GL");
 		avatarView.TextTransform.Should().Be(TextTransform.Lowercase);
-		Size request = avatarView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
+		Size request = avatarView.Measure(double.PositiveInfinity, double.PositiveInfinity);
 		request.Width.Should().Be(10);
 		request.Height.Should().Be(20);
 	}
@@ -191,7 +191,7 @@ public class AvatarViewTests : BaseHandlerTest
 	public void DefaultHeightRequest()
 	{
 		var avatarView = new Maui.Views.AvatarView();
-		Size request = avatarView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
+		Size request = avatarView.Measure(double.PositiveInfinity, double.PositiveInfinity);
 		request.Height.Should().Be(AvatarViewDefaults.DefaultHeightRequest);
 	}
 
@@ -228,7 +228,7 @@ public class AvatarViewTests : BaseHandlerTest
 	public void DefaultWidthRequest()
 	{
 		var avatarView = new Maui.Views.AvatarView();
-		Size request = avatarView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
+		Size request = avatarView.Measure(double.PositiveInfinity, double.PositiveInfinity);
 		request.Width.Should().Be(AvatarViewDefaults.DefaultWidthRequest);
 	}
 

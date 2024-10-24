@@ -5,7 +5,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts a <see cref="TimeSpan"/> to a <see cref="double"/> value expressed in seconds.
 /// </summary>
-public class TimeSpanToSecondsConverter : BaseConverter<TimeSpan, double>
+[AcceptEmptyServiceProvider]
+public partial class TimeSpanToSecondsConverter : BaseConverter<TimeSpan, double>
 {
 	/// <inheritdoc/>
 	public override double DefaultConvertReturnValue { get; set; } = 0.0d;
