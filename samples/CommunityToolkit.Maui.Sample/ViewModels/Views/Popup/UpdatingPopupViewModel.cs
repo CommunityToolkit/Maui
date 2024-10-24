@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
@@ -6,9 +7,9 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 public partial class UpdatingPopupViewModel : BaseViewModel
 {
 	const double finalUpdateProgressValue = 1;
+	int updates;
 
-	readonly WeakEventManager finishedEventManager = new();
-
+	readonly IPopupService popupService;
 	[ObservableProperty]
 	string message = "";
 
@@ -16,15 +17,15 @@ public partial class UpdatingPopupViewModel : BaseViewModel
 	[NotifyCanExecuteChangedFor(nameof(FinishCommand))]
 	double updateProgress;
 
-	public event EventHandler<EventArgs> Finished
+	public UpdatingPopupViewModel(IPopupService popupService)
 	{
-		add => finishedEventManager.AddEventHandler(value);
-		remove => finishedEventManager.RemoveEventHandler(value);
+		this.popupService = popupService;
 	}
 
 	internal async void PerformUpdates(int numberOfUpdates)
 	{
 		double updateTotalForPercentage = numberOfUpdates + 1;
+		updates = numberOfUpdates;
 
 		for (var update = 1; update <= numberOfUpdates; update++)
 		{
@@ -36,13 +37,19 @@ public partial class UpdatingPopupViewModel : BaseViewModel
 		}
 
 		UpdateProgress = finalUpdateProgressValue;
-		Message = "Updates complete";
+		Message = $"Completed {numberOfUpdates} updates";
 	}
 
 	[RelayCommand(CanExecute = nameof(CanFinish))]
 	void OnFinish()
 	{
-		finishedEventManager.HandleEvent(this, EventArgs.Empty, nameof(Finished));
+		popupService.ClosePopup();
+	}
+
+	[RelayCommand]
+	void OnMore()
+	{
+		popupService.ShowPopup<UpdatingPopupViewModel>(onPresenting: viewModel => viewModel.PerformUpdates(updates + 2));
 	}
 
 	bool CanFinish() => UpdateProgress is finalUpdateProgressValue;
