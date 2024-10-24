@@ -49,23 +49,38 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true"/>
-    <None Include="ReadMe.txt" pack="true" PackagePath="."/>
+    <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
+    <None Include="ReadMe.txt" pack="true" PackagePath="." />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\CommunityToolkit.Maui.MediaElement.Analyzers\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.MediaElement.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
-    <None Include="..\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+    <None Include="..\CommunityToolkit.Maui.MediaElement.Analyzers\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.MediaElement.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="..\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
-    <PackageReference Include="Xam.Plugins.Android.ExoPlayer" Version="[2.19.1,)"/>
-    <PackageReference Include="Xam.Plugins.Android.ExoPlayer.Transformer" Version="[2.19.1,)"/>
-    <PackageReference Include="Xam.Plugins.Android.ExoPlayer.MediaSession" Version="[2.19.1,)"/>
-  </ItemGroup>
+    <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer" Version="1.4.1" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.Common" Version="1.4.1" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.UI" Version="1.4.1" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Rtsp" Version="1.4.1" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Hls" Version="1.4.1" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Dash" Version="1.4.1" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.Session" Version="1.4.1" />
 
+    <!--Adding the above package reference requires Workaround for https://github.com/xamarin/AndroidX/issues/800#issuecomment-1774639627 -->
+    <!-- Tracking issue https://github.com/xamarin/AndroidX/issues/764 -->
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.8.5.1" />
+
+    <!-- Should match version of the referenced 'Xamarin.AndroidX.Collection' package -->
+    <PackageReference Include="Xamarin.AndroidX.Collection.Jvm" Version="1.4.4" />
+    <PackageReference Include="Xamarin.AndroidX.Collection.Ktx" Version="1.4.4" />
+
+    <!-- Should match version of the referenced 'Xamarin.AndroidX.Activity' package -->
+    <PackageReference Include="Xamarin.AndroidX.Activity.Ktx" Version="1.9.2.1" />
+  </ItemGroup>
+  
   <ItemGroup>
-    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiPackageVersion)"/>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiPackageVersion)" />
   </ItemGroup>
-
+  
 </Project>
