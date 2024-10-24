@@ -93,7 +93,7 @@
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='windows' and $(Configuration) == 'Release'">
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
-
+  
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='android'">
     <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
     <RuntimeIdentifiers>android-arm;android-arm64;android-x86;android-x64</RuntimeIdentifiers>
