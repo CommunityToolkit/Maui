@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.Shapes;
+using Path = Microsoft.Maui.Controls.Shapes.Path;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -67,9 +68,9 @@ public class RatingView : TemplatedView, IRatingView
 	}
 
 	///<summary>Defines the shape to be drawn.</summary>
-	public string CustomItemShape
+	public string? CustomItemShape
 	{
-		get => (string)GetValue(CustomItemShapeProperty);
+		get => (string?)GetValue(CustomItemShapeProperty);
 		set => SetValue(CustomItemShapeProperty, value);
 	}
 
@@ -227,7 +228,7 @@ public class RatingView : TemplatedView, IRatingView
 		StrokeThickness = 0,
 		Style = null,
 
-		Content = new Microsoft.Maui.Controls.Shapes.Path()
+		Content = new Path
 		{
 			Aspect = Stretch.Uniform,
 			Data = (Geometry?)new PathGeometryConverter().ConvertFromInvariantString(shape),
@@ -382,7 +383,7 @@ public class RatingView : TemplatedView, IRatingView
 			[
 				new GradientStop(filledColor, 0),
 				new GradientStop(filledColor, (float)partialFill),
-				new GradientStop(emptyColor, (float)partialFill),
+				new GradientStop(emptyColor, (float)partialFill)
 			],
 			new Point(0, 0), new Point(1, 0));
 	}
@@ -404,7 +405,7 @@ public class RatingView : TemplatedView, IRatingView
 	/// <param name="filledColor">Color of a filled item.</param>
 	/// <param name="emptyColor">Color of an empty item.</param>
 	/// <param name="backgroundColor">Color of the item.</param>
-	static void UpdateRatingItemColors(ReadOnlyCollection<VisualElement> ratingItems, double rating, Color filledColor, Color emptyColor, Color backgroundColor)
+	static void UpdateRatingItemColors(ReadOnlyCollection<VisualElement> ratingItems, double rating, Color filledColor, Color emptyColor, Color? backgroundColor)
 	{
 		var fullShapes = (int)Math.Floor(rating); // Determine the number of fully filled shapes
 		var partialFill = rating - fullShapes; // Determine the fraction for the partially filled shape (if any)
@@ -541,7 +542,7 @@ public class RatingView : TemplatedView, IRatingView
 			var border = (Border)Control.Children[element];
 			if (border.Content is not null)
 			{
-				((Microsoft.Maui.Controls.Shapes.Path)border.Content.GetVisualTreeDescendants()[0]).Stroke = newValue;
+				((Path)border.Content.GetVisualTreeDescendants()[0]).Stroke = newValue;
 			}
 		}
 	}
@@ -561,7 +562,7 @@ public class RatingView : TemplatedView, IRatingView
 			var border = (Border)Control.Children[element];
 			if (border.Content is not null)
 			{
-				((Microsoft.Maui.Controls.Shapes.Path)border.Content.GetVisualTreeDescendants()[0]).StrokeThickness = newValue;
+				((Path)border.Content.GetVisualTreeDescendants()[0]).StrokeThickness = newValue;
 			}
 		}
 	}
@@ -587,12 +588,14 @@ public class RatingView : TemplatedView, IRatingView
 		for (var element = 0; element < Control.Count; element++)
 		{
 			var border = (Border)Control.Children[element];
-			if (border.Content is not null)
+			if (border.Content is null)
 			{
-				var rating = (Microsoft.Maui.Controls.Shapes.Path)border.Content.GetVisualTreeDescendants()[0];
-				rating.WidthRequest = newValue;
-				rating.HeightRequest = newValue;
+				continue;
 			}
+
+			var rating = (Path)border.Content.GetVisualTreeDescendants()[0];
+			rating.WidthRequest = newValue;
+			rating.HeightRequest = newValue;
 		}
 	}
 
@@ -610,7 +613,7 @@ public class RatingView : TemplatedView, IRatingView
 		var shape = GetShapePathData(ItemShape);
 		for (var i = minimum; i < maximum; i++)
 		{
-			var child = CreateChild(shape, ItemPadding, ShapeBorderThickness, ItemShapeSize, ShapeBorderColor, this.BackgroundColor);
+			var child = CreateChild(shape, ItemPadding, ShapeBorderThickness, ItemShapeSize, ShapeBorderColor, BackgroundColor);
 			if (!IsReadOnly)
 			{
 				TapGestureRecognizer tapGestureRecognizer = new();
@@ -636,7 +639,7 @@ public class RatingView : TemplatedView, IRatingView
 			var border = (Border)Control.Children[element];
 			if (border.Content is not null)
 			{
-				((Microsoft.Maui.Controls.Shapes.Path)border.Content.GetVisualTreeDescendants()[0]).Data = (Geometry?)new PathGeometryConverter().ConvertFromInvariantString(shape);
+				((Path)border.Content.GetVisualTreeDescendants()[0]).Data = (Geometry?)new PathGeometryConverter().ConvertFromInvariantString(shape);
 			}
 		}
 	}
