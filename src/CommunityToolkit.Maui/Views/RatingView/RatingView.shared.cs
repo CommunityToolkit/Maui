@@ -517,7 +517,7 @@ public class RatingView : TemplatedView, IRatingView
 			var border = (Border)ratingView.Control.Children[element];
 			if (border.Content is not null)
 			{
-				((Path)border.Content.GetVisualTreeDescendants()[0]).Stroke = (Brush)newValue;
+				((Path)border.Content.GetVisualTreeDescendants()[0]).Stroke = (Color)newValue;
 			}
 		}
 	}
