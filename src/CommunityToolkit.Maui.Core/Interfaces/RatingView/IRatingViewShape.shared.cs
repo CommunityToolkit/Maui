@@ -30,46 +30,6 @@ public interface IRatingViewShape
 
 	/// <summary>Get a value indicating the rating item background filled color.</summary>
 	Color FilledColor { get; }
-
-	/// <summary>Action when <see cref="EmptyColor"/> changes.</summary>
-	/// <param name="oldValue">Old empty background color.</param>
-	/// <param name="newValue">New empty background color.</param>
-	void OnEmptyColorPropertyChanged(Color oldValue, Color newValue);
-
-	/// <summary>Action when <see cref="FilledColor"/> changes.</summary>
-	/// <param name="oldValue">Old filled background color.</param>
-	/// <param name="newValue">New filled background color.</param>
-	void OnFilledColorPropertyChanged(Color oldValue, Color newValue);
-
-	/// <summary>Action when <see cref="CustomItemShape"/> changes.</summary>
-	/// <param name="oldValue">Old shape path.</param>
-	/// <param name="newValue">New shape path.</param>
-	void OnCustomShapePropertyChanged(string? oldValue, string? newValue);
-
-	/// <summary>Action when <see cref="ItemPadding"/> changes.</summary>
-	/// <param name="oldValue">Old padding thickness.</param>
-	/// <param name="newValue">New padding thickness</param>
-	void OnItemPaddingPropertyChanged(Thickness oldValue, Thickness newValue);
-
-	/// <summary>Action when <see cref="ItemShape"/> changes.</summary>
-	/// <param name="oldValue">Old shape.</param>
-	/// <param name="newValue">New shape.</param>
-	void OnItemShapePropertyChanged(RatingViewShape oldValue, RatingViewShape newValue);
-
-	/// <summary>Action when <see cref="ShapeBorderColor"/> changes.</summary>
-	/// <param name="oldValue">Old shape border color.</param>
-	/// <param name="newValue">New shape border color.</param>
-	void OnItemShapeBorderColorChanged(Color oldValue, Color newValue);
-
-	/// <summary>Action when <see cref="ShapeBorderThickness"/> changes.</summary>
-	/// <param name="oldValue">Old shape border thickness.</param>
-	/// <param name="newValue">New shape border thickness.</param>
-	void OnItemShapeBorderThicknessChanged(double oldValue, double newValue);
-
-	/// <summary>Action when <see cref="ItemShapeSize"/> changes.</summary>
-	/// <param name="oldValue">Old item shape size.</param>
-	/// <param name="newValue">New item shape size.</param>
-	void OnItemShapeSizeChanged(double oldValue, double newValue);
 }
 
 /// <summary>Rating view shape enumerator.</summary>
