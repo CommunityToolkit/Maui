@@ -310,7 +310,7 @@ public class RatingView : TemplatedView, IRatingView
 				element.RemoveAt(lastElement);
 			}
 
-			ratingView.UpdateRatingDrawing(ratingView.Control, ratingView.RatingFill);
+			ratingView.UpdateRatingDrawing(ratingView.RatingFill);
 		}
 
 		if (newMaximumRatingValue > oldMaximumRatingValue)
@@ -341,7 +341,7 @@ public class RatingView : TemplatedView, IRatingView
 		}
 
 		var newValueDouble = (double)newValue;
-		ratingView.UpdateRatingDrawing(ratingView.Control, ratingView.RatingFill);
+		ratingView.UpdateRatingDrawing(ratingView.RatingFill);
 		if (ratingView.IsReadOnly)
 		{
 			return;
@@ -369,7 +369,7 @@ public class RatingView : TemplatedView, IRatingView
 			return;
 		}
 
-		ratingView.UpdateRatingDrawing(ratingView.Control, ratingView.RatingFill);
+		ratingView.UpdateRatingDrawing(ratingView.RatingFill);
 	}
 
 	/// <summary>Partial fill linear gradient brush, for shapes/items that are partial and not filled or empty.</summary>
@@ -416,7 +416,9 @@ public class RatingView : TemplatedView, IRatingView
 			if (border.Content is not null)
 			{
 				((Shape)border.Content).Fill = emptyColor;
+				ratingItems[i].Background = new SolidColorBrush(backgroundColor); // Empty fill
 			}
+
 			if (i < fullShapes)
 			{
 				ratingItems[i].Background = new SolidColorBrush(filledColor); // Fully filled shape
@@ -495,7 +497,7 @@ public class RatingView : TemplatedView, IRatingView
 			return;
 		}
 
-		UpdateRatingDrawing(Control, RatingFill);
+		UpdateRatingDrawing(RatingFill);
 	}
 
 	/// <summary>Change the rating item filled color.</summary>
@@ -508,7 +510,7 @@ public class RatingView : TemplatedView, IRatingView
 			return;
 		}
 
-		UpdateRatingDrawing(Control, RatingFill);
+		UpdateRatingDrawing(RatingFill);
 	}
 
 	/// <summary>Change the rating item padding.</summary>
@@ -624,7 +626,7 @@ public class RatingView : TemplatedView, IRatingView
 			Control.Children.Add(child);
 		}
 
-		UpdateRatingDrawing(Control, RatingFill);
+		UpdateRatingDrawing(RatingFill);
 	}
 
 	void ChangeRatingItemShape(string shape)
@@ -661,7 +663,12 @@ public class RatingView : TemplatedView, IRatingView
 	/// <remarks>Remove any added gesture recognisers if not enabled; Otherwise, where not already present.</remarks>
 	void HandleIsReadOnlyChanged()
 	{
-		for (var i = 0; i < Control?.Children.Count; i++)
+		if (Control is null)
+		{
+			return;
+		}
+
+		for (var i = 0; i < Control.Children.Count; i++)
 		{
 			var child = (Border)Control.Children[i];
 			if (!IsReadOnly)
@@ -699,10 +706,20 @@ public class RatingView : TemplatedView, IRatingView
 	}
 
 	/// <summary>Update the drawing of the controls ratings.</summary>
-	void UpdateRatingDrawing(VisualElement control, RatingFillElement ratingFill)
+	void UpdateRatingDrawing(RatingFillElement ratingFill)
 	{
+		if (Control is null)
+		{
+			return;
+		}
+
 		var isShapeFill = ratingFill is RatingFillElement.Shape;
-		var visualElements = GetVisualTreeDescendantsWithBorderAndShape((VisualElement)control.GetVisualTreeDescendants()[0], isShapeFill);
+		var visualElements = GetVisualTreeDescendantsWithBorderAndShape((VisualElement)Control.GetVisualTreeDescendants()[0], isShapeFill);
+		if (visualElements is null)
+		{
+			return;
+		}
+
 		if (isShapeFill)
 		{
 			UpdateRatingShapeColors(visualElements, Rating, FilledColor, EmptyColor);
