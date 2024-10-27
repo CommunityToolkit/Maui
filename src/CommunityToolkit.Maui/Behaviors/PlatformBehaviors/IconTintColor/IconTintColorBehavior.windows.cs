@@ -25,8 +25,12 @@ public partial class IconTintColorBehavior
 	{
 		base.OnAttachedTo(bindable, platformView);
 
-		ApplyTintColor(platformView, bindable, TintColor);
+		if (ApplyOn is IconTintColorApplyOn.OnBehaviorAttachedTo)
+		{
+			ApplyTintColor(platformView, bindable, TintColor);
+		}
 
+		bindable.Loaded += OnBindableLoaded;
 		bindable.PropertyChanged += OnElementPropertyChanged;
 		this.PropertyChanged += (s, e) =>
 		{
@@ -50,7 +54,24 @@ public partial class IconTintColorBehavior
 		base.OnDetachedFrom(bindable, platformView);
 
 		bindable.PropertyChanged -= OnElementPropertyChanged;
+		bindable.Loaded -= OnBindableLoaded;
 		RemoveTintColor(platformView);
+	}
+	
+	void OnBindableLoaded(object? sender, EventArgs e)
+	{
+		if (ApplyOn is not IconTintColorApplyOn.OnViewLoaded)
+		{
+			return;
+		}
+		
+		if (sender is not View view
+		    || view.Handler?.PlatformView is not FrameworkElement platformView)
+		{
+			return;
+		}
+		
+		ApplyTintColor(platformView, view, TintColor);
 	}
 
 	static bool TryGetButtonImage(WButton button, [NotNullWhen(true)] out WImage? image)
