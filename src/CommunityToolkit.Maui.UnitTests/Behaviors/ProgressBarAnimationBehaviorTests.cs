@@ -76,7 +76,7 @@ public class ProgressBarAnimationBehaviorTests() : BaseBehaviorTest<ProgressBarA
 		IReadOnlyList<VisualElement> invalidVisualElements =
 		[
 			new Button(),
-			new Frame(),
+			new Border(),
 			new Label(),
 			new VisualElement(),
 			new View(),
