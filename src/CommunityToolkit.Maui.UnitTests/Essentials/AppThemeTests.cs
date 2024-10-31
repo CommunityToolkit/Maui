@@ -19,12 +19,10 @@ public class AppThemeTests : BaseHandlerTest
 
 		ArgumentNullException.ThrowIfNull(Application.Current);
 
-		Application.Current.ActivateWindow(new Window(new MockShell([
-			new ContentPage
-			{
-				Content = label
-			}
-		])));
+		Application.Current.Windows[0].Page = new ContentPage
+		{
+			Content = label
+		};
 
 		SetAppTheme(initialAppTheme, Application.Current);
 
@@ -61,7 +59,7 @@ public class AppThemeTests : BaseHandlerTest
 			Light = Colors.Green,
 			Default = Colors.Blue
 		};
-		
+
 		label.SetAppThemeColor(Label.TextColorProperty, color);
 
 		Assert.Equal(Colors.Green, label.TextColor);
