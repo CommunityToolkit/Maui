@@ -102,6 +102,8 @@ public class AvatarViewTests : BaseHandlerTest
 			HeightRequest = 20,
 		};
 
+		CreateViewHandler<MockAvatarViewHandler>(avatarView);
+
 		avatarView.BorderColor.Should().Be(Colors.Beige);
 		avatarView.BorderWidth.Should().Be(2);
 		avatarView.CornerRadius.Should().Be(new CornerRadius(4, 8, 12, 16));
