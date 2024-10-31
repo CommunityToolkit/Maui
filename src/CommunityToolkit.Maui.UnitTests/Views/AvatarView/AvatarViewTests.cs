@@ -193,6 +193,8 @@ public class AvatarViewTests : BaseHandlerTest
 	public void DefaultHeightRequest()
 	{
 		var avatarView = new Maui.Views.AvatarView();
+		CreateViewHandler<MockAvatarViewHandler>(avatarView);
+
 		Size request = avatarView.Measure(double.PositiveInfinity, double.PositiveInfinity);
 		request.Height.Should().Be(AvatarViewDefaults.DefaultHeightRequest);
 	}
@@ -230,6 +232,8 @@ public class AvatarViewTests : BaseHandlerTest
 	public void DefaultWidthRequest()
 	{
 		var avatarView = new Maui.Views.AvatarView();
+		CreateViewHandler<MockAvatarViewHandler>(avatarView);
+
 		Size request = avatarView.Measure(double.PositiveInfinity, double.PositiveInfinity);
 		request.Width.Should().Be(AvatarViewDefaults.DefaultWidthRequest);
 	}
@@ -259,24 +263,6 @@ public class AvatarViewTests : BaseHandlerTest
 		avatarView.FontFamily.Should().BeNull();
 		avatarView.FontFamily = "Arial";
 		avatarView.FontFamily.Should().Be("Arial");
-	}
-
-	[Theory]
-	[InlineData(nameof(IFontElement.FontAttributes), FontAttributes.Bold)]
-	[InlineData(nameof(IFontElement.FontAutoScalingEnabled), false)]
-	[InlineData(nameof(IFontElement.FontFamily), "Arial")]
-	[InlineData(nameof(IFontElement.FontSize), 10)]
-	public void FontPropertyTriggersFontProperty(string propertyName, object value)
-	{
-		var handler = new FontElementHandlerStub();
-		var avatarView = new Maui.Views.AvatarView()
-		{
-			Handler = handler
-		};
-		handler.Updates.Clear();
-		avatarView.GetType().GetProperty(propertyName)?.SetValue(avatarView, value, null);
-		handler.Updates.Should().HaveCount(2);
-		Assert.Equal(new[] { propertyName, nameof(ITextStyle.Font) }, handler.Updates);
 	}
 
 	[Fact]

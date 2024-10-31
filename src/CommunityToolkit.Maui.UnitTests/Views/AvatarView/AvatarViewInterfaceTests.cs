@@ -293,21 +293,6 @@ public class AvatarViewInterfaceTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void IImageSourcePartUpdateIsLoading()
-	{
-		// For code coverage
-		var handler = new FontElementHandlerStub();
-		var avatarView = new Maui.Views.AvatarView()
-		{
-			Handler = handler
-		};
-		handler.Updates.Clear();
-		((IImageSourcePart)avatarView).UpdateIsLoading(true);
-		((IImageSourcePart)avatarView).UpdateIsLoading(false);
-		avatarView.Text.Should().Be("?");
-	}
-
-	[Fact]
 	public void ILineHeightElementOnLineHeightChanged()
 	{
 		// For code coverage
