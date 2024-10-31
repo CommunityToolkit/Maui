@@ -146,8 +146,8 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 			return;
 		}
 
-		SetBinding(ParentWidthProperty, BindingBase.Create<VisualElement, double>(static p => p.Width, source: parentElement));
-		SetBinding(ParentHeightProperty, BindingBase.Create<VisualElement, double>(static p => p.Height, source: parentElement));
+		SetBinding(ParentWidthProperty, BindingBase.Create<VisualElement, double>(static p => p.Width, source: parentElement, mode: BindingMode.OneWay));
+		SetBinding(ParentHeightProperty, BindingBase.Create<VisualElement, double>(static p => p.Height, source: parentElement, mode: BindingMode.OneWay));
 	}
 
 	static string DefaultGravatarName(DefaultImage defaultGravatar) => defaultGravatar switch
