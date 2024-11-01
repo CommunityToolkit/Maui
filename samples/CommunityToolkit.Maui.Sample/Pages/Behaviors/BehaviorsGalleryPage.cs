@@ -1,6 +1,4 @@
-﻿using CommunityToolkit.Maui.Behaviors;
-using CommunityToolkit.Maui.Markup;
-using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
+﻿using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
@@ -12,17 +10,17 @@ public partial class BehaviorsGalleryPage : BaseGalleryPage<BehaviorsGalleryView
 #if ANDROID || IOS
 		AddStatusBarBehavior();
 #endif
-
-		new Image().Source("");
 	}
 
+#if ANDROID || IOS
 	void AddStatusBarBehavior()
 	{
-		Behaviors.Add(new StatusBarBehavior
+		Behaviors.Add(new CommunityToolkit.Maui.Behaviors.StatusBarBehavior
 		{
 			StatusBarColor = Color.FromRgb(25, 118, 210),
 			StatusBarStyle = Core.StatusBarStyle.LightContent,
-			ApplyOn = StatusBarApplyOn.OnPageNavigatedTo,
+			ApplyOn = CommunityToolkit.Maui.Behaviors.StatusBarApplyOn.OnPageNavigatedTo,
 		});
 	}
+#endif
 }
