@@ -60,6 +60,7 @@ public partial class StateToBooleanConverter : BaseConverterOneWay<LayoutState, 
 	/// <returns>True if the provided <see cref="LayoutState"/>s match, otherwise False if they don't match.</returns>
 	public override bool ConvertFrom(LayoutState value, LayoutState? parameter = null, CultureInfo? culture = null)
 	{
+		ArgumentNullException.ThrowIfNull(value);
 
 		if (parameter is not null)
 		{

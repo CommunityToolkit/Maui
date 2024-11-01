@@ -75,7 +75,6 @@ class MediaControlsService : Service
 	[MemberNotNull(nameof(mediaSession))]
 	[MemberNotNull(nameof(token))]
 	[MemberNotNull(nameof(receiveUpdates))]
-	[Obsolete]
 	ValueTask StartForegroundService(Intent mediaManagerIntent, CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(mediaManagerIntent);
@@ -223,8 +222,6 @@ class MediaControlsService : Service
 		Platform.CurrentActivity?.StopService(new Intent(Platform.AppContext, typeof(MediaControlsService)));
 		base.OnDestroy();
 	}
-
-	[Obsolete]
 	static void BroadcastUpdate(string receiver, string action)
 	{
 		if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
@@ -236,7 +233,6 @@ class MediaControlsService : Service
 		LocalBroadcastManager.GetInstance(Platform.AppContext).SendBroadcast(intent);
 	}
 
-	[Obsolete]
 	protected override void Dispose(bool disposing)
 	{
 		if (!isDisposed)

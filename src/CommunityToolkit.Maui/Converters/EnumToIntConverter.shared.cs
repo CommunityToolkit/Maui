@@ -42,6 +42,7 @@ public partial class EnumToIntConverter : BaseConverter<Enum, int, Type>
 	/// <exception cref="ArgumentException">If value is not a valid value in the targetType enum</exception>
 	public override Enum ConvertBackTo(int value, Type parameter, CultureInfo? culture = null)
 	{
+		ArgumentNullException.ThrowIfNull(value);
 		ArgumentNullException.ThrowIfNull(parameter);
 
 		if (!Enum.IsDefined(parameter, value))

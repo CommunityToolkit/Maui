@@ -30,7 +30,6 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	[Obsolete]
 	public async Task ShowPopupAsync_CancellationTokenExpired()
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
@@ -62,7 +61,6 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	[Obsolete]
 	public async Task ShowPopupAsync_CancellationTokenCancelled()
 	{
 		var cts = new CancellationTokenSource();
@@ -94,7 +92,6 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	[Obsolete]
 	public async Task CloseAsync_CancellationTokenExpired()
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
@@ -126,7 +123,6 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	[Obsolete]
 	public async Task CloseAsync_CancellationTokenCancelled()
 	{
 		var cts = new CancellationTokenSource();
@@ -158,7 +154,6 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	[Obsolete]
 	public async Task OnOpenedMapperIsCalled()
 	{
 		var app = Application.Current ?? throw new NullReferenceException();
@@ -194,7 +189,6 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Medium)]
-	[Obsolete]
 	public async Task PopupDismissedByTappingOutsideOfPopup()
 	{
 		var popupClosedTCS = new TaskCompletionSource<(string? Result, bool WasDismissedByTappingOutsideOfPopup)>();
@@ -233,7 +227,6 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	[Obsolete]
 	public async Task OnDismissedWithResult()
 	{
 		object? result = null;
@@ -276,7 +269,6 @@ public class PopupTests : BaseHandlerTest
 
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	[Obsolete]
 	public async Task OnDismissedWithoutResult()
 	{
 		object? result = null;
@@ -332,7 +324,6 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	[Obsolete]
 	public async Task ShowPopup_IsLogicalChild()
 	{
 		var app = Application.Current ?? throw new NullReferenceException();

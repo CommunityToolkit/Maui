@@ -22,6 +22,7 @@ public partial class DateTimeOffsetConverter : BaseConverter<DateTimeOffset, Dat
 	/// <returns>The <see cref="DateTime"/> value.</returns>
 	public override DateTime ConvertFrom(DateTimeOffset value, CultureInfo? culture = null)
 	{
+		ArgumentNullException.ThrowIfNull(value);
 		return value.DateTime;
 	}
 
@@ -33,6 +34,7 @@ public partial class DateTimeOffsetConverter : BaseConverter<DateTimeOffset, Dat
 	/// <returns>The <see cref="DateTimeOffset"/> value.</returns>
 	public override DateTimeOffset ConvertBackTo(DateTime value, CultureInfo? culture = null)
 	{
+		ArgumentNullException.ThrowIfNull(value);
 
 		var offset = value.Kind switch
 		{
