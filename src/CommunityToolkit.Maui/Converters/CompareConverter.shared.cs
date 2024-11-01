@@ -88,7 +88,6 @@ public abstract class CompareConverter<[DynamicallyAccessedMembers(DynamicallyAc
 	{
 		ArgumentNullException.ThrowIfNull(value);
 		ArgumentNullException.ThrowIfNull(ComparingValue);
-		ArgumentNullException.ThrowIfNull(ComparisonOperator);
 
 		if (!Enum.IsDefined(typeof(OperatorType), ComparisonOperator))
 		{

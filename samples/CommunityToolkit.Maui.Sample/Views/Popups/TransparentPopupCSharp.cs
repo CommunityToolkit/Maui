@@ -15,12 +15,12 @@ public sealed partial class TransparentPopupCSharp : Popup
 	public TransparentPopupCSharp()
 	{
 		Content = new Border
+		{
+			StrokeShape = new RoundRectangle
 			{
-				StrokeShape = new RoundRectangle
-				{
-					CornerRadius = 25
-				}
+				CornerRadius = 25
 			}
+		}
 			.Size(50, 50)
 			.Margin(10);
 	}

@@ -133,7 +133,7 @@ public class PopupService : IPopupService
 
 		return ShowPopupAsync(popup, token);
 	}
-	
+
 	/// <inheritdoc cref="IPopupService.ShowPopupAsync{TViewModel}(Action{TViewModel}, CancellationToken)"/>
 	public Task<object?> ShowPopupAsync<TViewModel>(Action<TViewModel> onPresenting, CancellationToken token = default) where TViewModel : INotifyPropertyChanged
 	{
@@ -187,7 +187,7 @@ public class PopupService : IPopupService
 
 		bindingContext = viewModel;
 	}
-	
+
 	static void ShowPopup(Popup popup)
 	{
 #if WINDOWS
@@ -218,9 +218,9 @@ public class PopupService : IPopupService
 
 	Popup GetPopup(Type viewModelType)
 	{
-		var popup = (Popup)(serviceProvider.GetService(viewModelToViewMappings[viewModelType]) 
+		var popup = (Popup)(serviceProvider.GetService(viewModelToViewMappings[viewModelType])
 			?? throw new InvalidOperationException($"Unable to resolve popup type for {viewModelType} please make sure that you have called {nameof(PopupService)}.{nameof(AddTransientPopup)} in MauiProgram.cs"));
-        return popup;
+		return popup;
 	}
 
 	void InitializePopup(Popup popup)

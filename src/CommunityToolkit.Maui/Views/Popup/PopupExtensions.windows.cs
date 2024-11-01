@@ -10,7 +10,7 @@ public static partial class PopupExtensions
 {
 	static void PlatformShowPopup(Popup popup, IMauiContext mauiContext)
 	{
-		if(mauiContext.GetPlatformWindow().GetWindow()?.Content is not Page parent)
+		if (mauiContext.GetPlatformWindow().GetWindow()?.Content is not Page parent)
 		{
 			throw new InvalidOperationException("Window Content cannot be null");
 		}

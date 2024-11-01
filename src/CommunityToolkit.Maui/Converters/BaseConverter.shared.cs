@@ -15,9 +15,9 @@ public abstract class BaseConverter<[DynamicallyAccessedMembers(DynamicallyAcces
 {
 	private protected BaseConverter()
 	{
-		
+
 	}
-	
+
 	/// <summary>
 	/// Default value to return when <see cref="IValueConverter.Convert(object?, Type, object?, CultureInfo?)"/> throws an <see cref="Exception"/>.
 	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters"/> is set to <see langword="true"/>.
@@ -112,9 +112,9 @@ public abstract class BaseConverter<[DynamicallyAccessedMembers(DynamicallyAcces
 {
 	private protected BaseConverter()
 	{
-		
+
 	}
-	
+
 	/// <summary>
 	/// Default value to return when <see cref="IValueConverter.Convert(object?, Type, object?, CultureInfo?)"/> throws an <see cref="Exception"/>.
 	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters"/> is set to <see langword="true"/>.

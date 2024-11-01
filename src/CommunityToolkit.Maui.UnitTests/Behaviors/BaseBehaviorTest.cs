@@ -55,10 +55,10 @@ public abstract class BaseBehaviorTest<TBehavior, TView> : BaseTest
 		Assert.Empty(view.Behaviors);
 
 		var attachedBehavior = (Behavior)behavior;
-		
+
 		view.Behaviors.Add(attachedBehavior);
 		view.Behaviors[0].BindingContext = view.BindingContext;
-		
+
 		Assert.Equal(view.BindingContext, attachedBehavior.BindingContext);
 
 		var wasSuccessful = view.Behaviors.TryRemove(attachedBehavior);

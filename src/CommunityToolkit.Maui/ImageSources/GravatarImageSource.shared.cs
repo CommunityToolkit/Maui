@@ -26,12 +26,12 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 
 	/// <summary>The backing store for the <see cref="ParentWidth" /> bindable property.</summary>
 	internal static readonly BindableProperty ParentWidthProperty = BindableProperty.Create(nameof(ParentWidth), typeof(int), typeof(GravatarImageSource), defaultValue: defaultSize, propertyChanged: OnSizePropertyChanged);
-	
+
 	const string defaultGravatarImageAddress = "https://www.gravatar.com/avatar/";
 	const int defaultSize = 80;
-	
+
 	static readonly Lazy<HttpClient> singletonHttpClientHolder = new();
-	
+
 	readonly TimeSpan cancellationTokenSourceTimeout = TimeSpan.FromMilliseconds(737);
 
 	int? gravatarSize;
