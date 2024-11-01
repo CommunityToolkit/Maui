@@ -25,6 +25,7 @@ public enum TextDecorationFlags
 /// <summary>
 /// The <see cref="TextValidationBehavior"/> is a behavior that allows the user to validate a given text depending on specified parameters. By adding this behavior to an <see cref="InputView"/> inherited control (i.e. <see cref="Entry"/>) it can be styled differently depending on whether a valid or an invalid text value is provided. It offers various built-in checks such as checking for a certain length or whether or not the input value matches a specific regular expression. Additional properties handling validation are inherited from <see cref="ValidationBehavior"/>.
 /// </summary>
+[RequiresUnreferencedCode($"{nameof(TextValidationBehavior)} is not trim safe because it uses bindings with string paths.")]
 public partial class TextValidationBehavior : ValidationBehavior<string>
 {
 	/// <summary>

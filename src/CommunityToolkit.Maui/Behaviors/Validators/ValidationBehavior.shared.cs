@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 
 namespace CommunityToolkit.Maui.Behaviors;
@@ -13,9 +14,9 @@ public enum ValidationFlags
 	/// <summary>Validate on attaching</summary>
 	ValidateOnAttaching = 1,
 	/// <summary> Validate on focusing</summary>
-	ValidateOnFocusing = 2,
-	/// <summary>Validate on unfocusing</summary>
-	ValidateOnUnfocusing = 4,
+	ValidateOnFocus = 2,
+	/// <summary>Validate on unfocus</summary>
+	ValidateOnUnfocus = 4,
 	/// <summary>Validate upon value changed</summary>
 	ValidateOnValueChanged = 8,
 	/// <summary>Force make valid when focused</summary>
@@ -23,8 +24,9 @@ public enum ValidationFlags
 }
 
 /// <summary>
-/// The <see cref="ValidationBehavior"/> allows users to create custom validation behaviors. All of the validation behaviors in the Xamarin Community Toolkit inherit from this behavior, to expose a number of shared properties. Users can inherit from this class to create a custom validation behavior currently not supported through the Xamarin Community Toolkit. This behavios cannot be used directly as it's abstract.
+/// The <see cref="ValidationBehavior"/> allows users to create custom validation behaviors. All the validation behaviors in the Xamarin Community Toolkit inherit from this behavior, to expose a number of shared properties. Users can inherit from this class to create a custom validation behavior currently not supported through the Xamarin Community Toolkit. This behavios cannot be used directly as it's abstract.
 /// </summary>
+[RequiresUnreferencedCode($"{nameof(ValidationBehavior)} is not trim safe because it uses bindings with string paths.")]
 public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposable
 {
 	/// <summary>
@@ -71,7 +73,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 	/// Backing BindableProperty for the <see cref="Flags"/> property.
 	/// </summary>
 	public static readonly BindableProperty FlagsProperty =
-		BindableProperty.Create(nameof(Flags), typeof(ValidationFlags), typeof(ValidationBehavior), ValidationFlags.ValidateOnUnfocusing | ValidationFlags.ForceMakeValidWhenFocused, propertyChanged: OnValidationPropertyChanged);
+		BindableProperty.Create(nameof(Flags), typeof(ValidationFlags), typeof(ValidationBehavior), ValidationFlags.ValidateOnUnfocus | ValidationFlags.ForceMakeValidWhenFocused, propertyChanged: OnValidationPropertyChanged);
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Value"/> property.
@@ -116,7 +118,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 	}
 
 	/// <summary>
-	/// Indicates whether or not the current value is considered valid. This is a bindable property.
+	/// Indicates whether the current value is considered valid. This is a bindable property.
 	/// </summary>
 	public bool IsValid
 	{
@@ -125,7 +127,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 	}
 
 	/// <summary>
-	/// Indicates whether or not the validation is in progress now (waiting for an asynchronous call is finished).
+	/// Indicates whether the validation is in progress now (waiting for an asynchronous call is finished).
 	/// </summary>
 	public bool IsRunning
 	{
@@ -134,7 +136,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 	}
 
 	/// <summary>
-	/// Indicates whether or not the current value is considered not valid. This is a bindable property.
+	/// Indicates whether the current value is considered not valid. This is a bindable property.
 	/// </summary>
 	public bool IsNotValid
 	{
@@ -290,8 +292,8 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 		{
 			currentStatus = sender.IsFocused switch
 			{
-				true => ValidationFlags.ValidateOnFocusing,
-				false => ValidationFlags.ValidateOnUnfocusing
+				true => ValidationFlags.ValidateOnFocus,
+				false => ValidationFlags.ValidateOnUnfocus
 			};
 
 			await UpdateStateAsync(View, Flags, false).ConfigureAwait(false);
@@ -319,6 +321,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 		OnValidationPropertyChanged(bindable, oldValue, newValue);
 	}
 
+	[RequiresUnreferencedCode($"{nameof(ValidationBehavior)} is not trim safe because it uses bindings with string paths.")]
 	static void OnValuePropertyNamePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		=> ((ValidationBehavior)bindable).OnValuePropertyNamePropertyChanged();
 
@@ -346,13 +349,11 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 
 	void OnValuePropertyNamePropertyChanged()
 	{
-#pragma warning disable IL2026 // NET9.0 - check if this can be fixed
 		SetBinding(ValueProperty, new Binding
 		{
 			Path = ValuePropertyName,
 			Source = View
 		});
-#pragma warning restore IL2026
 	}
 
 	async ValueTask UpdateStateAsync(VisualElement? view, ValidationFlags flags, bool isForced, CancellationToken? parentToken = null)
@@ -424,6 +425,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 }
 
 /// <inheritdoc />
+[RequiresUnreferencedCode($"{nameof(ValidationBehavior)} is not trim safe because it uses bindings with string paths.")]
 public abstract class ValidationBehavior<T> : ValidationBehavior
 {
 	/// <summary>
