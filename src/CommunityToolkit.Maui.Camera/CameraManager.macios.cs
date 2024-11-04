@@ -227,7 +227,7 @@ partial class CameraManager
 			imageData = null;
 		}
 
-		if (imageData == null)
+		if (imageData is null)
 		{
 			cameraView.OnMediaCapturedFailed("Unable to retrieve the file data representation from the captured result.");
 		}
