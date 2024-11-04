@@ -1,6 +1,4 @@
-﻿using System.Buffers;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
+﻿using System.Diagnostics;
 using AVFoundation;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Extensions;
@@ -22,6 +20,10 @@ partial class CameraManager
 
 	AVCaptureFlashMode flashMode;
 
+	IDisposable? orientationDidChangeObserver;
+	PreviewView? previewView;
+	AVCaptureVideoOrientation videoOrientation;
+
 	// IN the future change the return type to be an alias
 	public UIView CreatePlatformView()
 	{
@@ -30,7 +32,10 @@ partial class CameraManager
 			SessionPreset = AVCaptureSession.PresetPhoto
 		};
 
-		var previewView = new PreviewView();
+		orientationDidChangeObserver = UIDevice.Notifications.ObserveOrientationDidChange((_, _) => UpdateVideoOrientation());
+		UpdateVideoOrientation();
+
+		previewView = new PreviewView();
 		previewView.Session = captureSession;
 
 		return previewView;
@@ -191,42 +196,44 @@ partial class CameraManager
 
 		var capturePhotoSettings = AVCapturePhotoSettings.FromFormat(codecSettings);
 		capturePhotoSettings.FlashMode = photoOutput.SupportedFlashModes.Contains(flashMode) ? flashMode : photoOutput.SupportedFlashModes.First();
+		var photoOutputConnection = photoOutput.ConnectionFromMediaType(AVMediaTypes.Video.GetConstant()!);
+		photoOutputConnection!.VideoOrientation = videoOrientation;
 
 		var wrapper = new AVCapturePhotoCaptureDelegateWrapper();
 
 		photoOutput.CapturePhoto(capturePhotoSettings, wrapper);
 
 		var result = await wrapper.Task.WaitAsync(token);
-		var data = result.Photo.FileDataRepresentation;
-
 		if (result.Error is not null)
 		{
-			cameraView.OnMediaCapturedFailed(result.Error.LocalizedFailureReason);
+			var failureReason = result.Error.LocalizedDescription;
+			if (!string.IsNullOrEmpty(result.Error.LocalizedFailureReason))
+			{
+				failureReason = $"{failureReason} - {result.Error.LocalizedFailureReason}";
+			}
+
+			cameraView.OnMediaCapturedFailed(failureReason);
 			return;
 		}
 
-		if (data is null)
-		{
-			cameraView.OnMediaCapturedFailed("Unable to retrieve the file data representation from the captured result.");
-			return;
-		}
-
-		var dataBytes = ArrayPool<byte>.Shared.Rent((int)data.Length);
-
+		Stream? imageData;
 		try
 		{
-			Marshal.Copy(data.Bytes, dataBytes, 0, (int)data.Length);
+			imageData = result.Photo.FileDataRepresentation?.AsStream();
+		}
+		catch
+		{
+			// possible exception: ObjCException NSInvalidArgumentException NSAllocateMemoryPages(...) failed in AVCapturePhoto.get_FileDataRepresentation()
+			imageData = null;
+		}
 
-			cameraView.OnMediaCaptured(new MemoryStream(dataBytes));
-		}
-		catch (Exception ex)
+		if (imageData == null)
 		{
-			cameraView.OnMediaCapturedFailed(ex.Message);
-			throw;
+			cameraView.OnMediaCapturedFailed("Unable to retrieve the file data representation from the captured result.");
 		}
-		finally
+		else
 		{
-			ArrayPool<byte>.Shared.Return(dataBytes);
+			cameraView.OnMediaCaptured(imageData);
 		}
 	}
 
@@ -241,9 +248,54 @@ partial class CameraManager
 			captureInput?.Dispose();
 			captureInput = null;
 
+			orientationDidChangeObserver?.Dispose();
+			orientationDidChangeObserver = null;
+
 			photoOutput?.Dispose();
 			photoOutput = null;
 		}
+	}
+
+	// TODO: Move GetVideoOrientation() to Extensions class?
+	static AVCaptureVideoOrientation GetVideoOrientation()
+	{
+		if (!UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
+		{
+			return UIDevice.CurrentDevice.Orientation switch
+			{
+				UIDeviceOrientation.Portrait => AVCaptureVideoOrientation.Portrait,
+				UIDeviceOrientation.PortraitUpsideDown => AVCaptureVideoOrientation.PortraitUpsideDown,
+				UIDeviceOrientation.LandscapeLeft => AVCaptureVideoOrientation.LandscapeRight,
+				UIDeviceOrientation.LandscapeRight => AVCaptureVideoOrientation.LandscapeLeft,
+				_ => AVCaptureVideoOrientation.Portrait
+			};
+		}
+
+		UIInterfaceOrientation interfaceOrientation;
+		if (UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
+		{
+			IEnumerable<UIScene> scenes = UIApplication.SharedApplication.ConnectedScenes;
+			interfaceOrientation = scenes.FirstOrDefault() is UIWindowScene windowScene ? windowScene.InterfaceOrientation : UIApplication.SharedApplication.StatusBarOrientation;
+		}
+		else
+		{
+			interfaceOrientation = UIApplication.SharedApplication.StatusBarOrientation;
+		}
+
+		return interfaceOrientation switch
+		{
+			UIInterfaceOrientation.Portrait => AVCaptureVideoOrientation.Portrait,
+			UIInterfaceOrientation.PortraitUpsideDown => AVCaptureVideoOrientation.PortraitUpsideDown,
+			UIInterfaceOrientation.LandscapeRight => AVCaptureVideoOrientation.LandscapeRight,
+			UIInterfaceOrientation.LandscapeLeft => AVCaptureVideoOrientation.LandscapeLeft,
+			_ => AVCaptureVideoOrientation.Portrait
+		};
+	}
+
+	void UpdateVideoOrientation()
+	{
+		videoOrientation = GetVideoOrientation();
+		previewView?.UpdatePreviewVideoOrientation(videoOrientation);
 	}
 
 	sealed class AVCapturePhotoCaptureDelegateWrapper : AVCapturePhotoCaptureDelegate
@@ -297,20 +349,15 @@ partial class CameraManager
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
+			UpdatePreviewVideoOrientation(GetVideoOrientation());
+		}
 
-			if (PreviewLayer.Connection is null)
+		public void UpdatePreviewVideoOrientation(AVCaptureVideoOrientation videoOrientation)
+		{
+			if (PreviewLayer.Connection is not null)
 			{
-				return;
+				PreviewLayer.Connection.VideoOrientation = videoOrientation;
 			}
-
-			PreviewLayer.Connection.VideoOrientation = UIDevice.CurrentDevice.Orientation switch
-			{
-				UIDeviceOrientation.Portrait => AVCaptureVideoOrientation.Portrait,
-				UIDeviceOrientation.PortraitUpsideDown => AVCaptureVideoOrientation.PortraitUpsideDown,
-				UIDeviceOrientation.LandscapeLeft => AVCaptureVideoOrientation.LandscapeRight,
-				UIDeviceOrientation.LandscapeRight => AVCaptureVideoOrientation.LandscapeLeft,
-				_ => PreviewLayer.Connection.VideoOrientation
-			};
 		}
 	}
 }
