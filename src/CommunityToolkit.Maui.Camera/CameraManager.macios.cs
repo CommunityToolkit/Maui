@@ -196,8 +196,15 @@ partial class CameraManager
 
 		var capturePhotoSettings = AVCapturePhotoSettings.FromFormat(codecSettings);
 		capturePhotoSettings.FlashMode = photoOutput.SupportedFlashModes.Contains(flashMode) ? flashMode : photoOutput.SupportedFlashModes.First();
-		var photoOutputConnection = photoOutput.ConnectionFromMediaType(AVMediaTypes.Video.GetConstant()!);
-		photoOutputConnection!.VideoOrientation = videoOrientation;
+		var avMediaTypeVideo = AVMediaTypes.Video.GetConstant();
+		if (avMediaTypeVideo is not null)
+		{
+			var photoOutputConnection = photoOutput.ConnectionFromMediaType(avMediaTypeVideo);
+			if (photoOutputConnection is not null)
+			{
+				photoOutputConnection.VideoOrientation = videoOrientation;
+			}
+		}
 
 		var wrapper = new AVCapturePhotoCaptureDelegateWrapper();
 
@@ -256,7 +263,6 @@ partial class CameraManager
 		}
 	}
 
-	// TODO: Move GetVideoOrientation() to Extensions class?
 	static AVCaptureVideoOrientation GetVideoOrientation()
 	{
 		if (!UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
