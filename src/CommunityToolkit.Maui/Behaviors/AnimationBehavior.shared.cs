@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 using CommunityToolkit.Maui.Animations;
 
 namespace CommunityToolkit.Maui.Behaviors;
@@ -45,7 +46,8 @@ public partial class AnimationBehavior : EventToCommandBehavior
 	public Command<CancellationToken> AnimateCommand
 	{
 		get => (Command<CancellationToken>)GetValue(AnimateCommandProperty);
-		[Obsolete(animateCommandSetterWarning)]
+		
+		[Obsolete(animateCommandSetterWarning), EditorBrowsable(EditorBrowsableState.Never)]
 		set
 		{
 			Trace.WriteLine(animateCommandSetterWarning);
