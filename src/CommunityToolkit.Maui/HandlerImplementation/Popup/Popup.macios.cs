@@ -54,7 +54,7 @@ public partial class Popup
 		{
 			return;
 		}
-		
+
 		if (popup.Content?.Parent is ContentPage contentPage)
 		{
 			parent.RemoveLogicalChild(contentPage);

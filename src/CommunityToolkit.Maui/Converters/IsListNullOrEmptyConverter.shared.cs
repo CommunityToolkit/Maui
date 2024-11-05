@@ -28,7 +28,7 @@ public partial class IsListNullOrEmptyConverter : BaseConverterOneWay<IEnumerabl
 		}
 
 		var enumerator = value.GetEnumerator();
-		bool result =  !enumerator.MoveNext();
+		bool result = !enumerator.MoveNext();
 
 		((IDisposable)enumerator).Dispose();
 		return result;

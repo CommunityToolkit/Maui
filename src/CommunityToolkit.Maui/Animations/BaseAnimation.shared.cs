@@ -24,10 +24,10 @@ public abstract class BaseAnimation<TAnimatable>(uint defaultLength = 250u) : Bi
 	public static readonly BindableProperty EasingProperty =
 		BindableProperty.Create(nameof(Easing), typeof(Easing), typeof(BaseAnimation<TAnimatable>), Easing.Linear, BindingMode.OneWay);
 
-    /// <summary>
-    /// The time, in milliseconds, over which to animate the transition.
-    /// </summary>
-    public uint Length
+	/// <summary>
+	/// The time, in milliseconds, over which to animate the transition.
+	/// </summary>
+	public uint Length
 	{
 		get => (uint)GetValue(LengthProperty);
 		set => SetValue(LengthProperty, value);
