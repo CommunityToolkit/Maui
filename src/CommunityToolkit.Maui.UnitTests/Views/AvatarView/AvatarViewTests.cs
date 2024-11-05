@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using Xunit;
 

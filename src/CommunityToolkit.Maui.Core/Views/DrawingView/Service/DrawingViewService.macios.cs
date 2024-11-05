@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using Microsoft.Maui.Graphics.Platform;
+﻿using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Core.Views;

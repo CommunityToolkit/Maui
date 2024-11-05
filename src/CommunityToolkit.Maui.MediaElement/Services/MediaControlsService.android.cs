@@ -5,7 +5,6 @@ using System.Runtime.Versioning;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Graphics;
 using Android.Media;
 using Android.OS;
 using Android.Support.V4.Media.Session;

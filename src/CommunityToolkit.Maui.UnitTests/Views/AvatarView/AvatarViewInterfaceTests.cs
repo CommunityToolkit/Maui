@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
 

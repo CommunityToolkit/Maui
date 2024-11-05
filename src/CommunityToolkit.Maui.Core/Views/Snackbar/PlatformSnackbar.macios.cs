@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices;
-
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>

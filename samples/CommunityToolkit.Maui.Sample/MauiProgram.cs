@@ -29,7 +29,6 @@ using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
 using CommunityToolkit.Maui.Sample.Views.Popups;
 using CommunityToolkit.Maui.Storage;
 using Microsoft.Extensions.Http.Resilience;
-using Microsoft.Extensions.Logging;
 using Microsoft.Maui.LifecycleEvents;
 using Polly;
 

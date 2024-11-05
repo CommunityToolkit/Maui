@@ -1,5 +1,4 @@
 using System.Buffers;
-using System.Runtime.Versioning;
 using System.Web;
 using Android.Content;
 using Android.OS;
@@ -7,7 +6,6 @@ using Android.Provider;
 using Android.Webkit;
 using CommunityToolkit.Maui.Core.Essentials;
 using CommunityToolkit.Maui.Core.Extensions;
-using Java.IO;
 using Microsoft.Maui.ApplicationModel;
 using AndroidUri = Android.Net.Uri;
 using Trace = System.Diagnostics.Trace;

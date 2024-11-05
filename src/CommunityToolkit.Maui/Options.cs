@@ -1,6 +1,5 @@
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Converters;
-using Microsoft.Maui.LifecycleEvents;
 
 namespace CommunityToolkit.Maui;
 

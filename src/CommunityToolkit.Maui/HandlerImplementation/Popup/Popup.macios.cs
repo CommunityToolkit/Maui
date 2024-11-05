@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 

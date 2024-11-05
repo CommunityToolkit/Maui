@@ -1,5 +1,4 @@
 using CommunityToolkit.Maui.UnitTests.Mocks;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using ParentWindow = CommunityToolkit.Maui.Extensions.PageExtensions.ParentWindow;
 

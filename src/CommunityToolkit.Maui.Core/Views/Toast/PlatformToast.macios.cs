@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using CoreText;
+﻿using CoreText;
 using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Core.Views;

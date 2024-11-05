@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
 using FluentAssertions;
 using Xunit;

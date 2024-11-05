@@ -1,6 +1,5 @@
 ﻿using System.Text.RegularExpressions;
 using CommunityToolkit.Maui.Behaviors;
-using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;

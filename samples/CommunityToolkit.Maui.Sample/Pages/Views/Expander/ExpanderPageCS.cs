@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Maui.Alerts;
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Views;
 

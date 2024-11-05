@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics;
 using Android.Graphics;
 using Android.Widget;
 using Microsoft.Maui.Platform;

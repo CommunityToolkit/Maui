@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 
