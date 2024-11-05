@@ -55,7 +55,7 @@ public abstract class LazyView : ContentView
 	}
 
 	/// <summary>
-	/// This method change the value of the <see cref="HasLazyViewLoaded"/> property.
+	/// This method changes the value of the <see cref="HasLazyViewLoaded"/> property.
 	/// </summary>
 	/// <param name="hasLoaded"></param>
 	protected void SetHasLazyViewLoaded(bool hasLoaded) => SetValue(HasLazyViewLoadedPropertyKey, hasLoaded);

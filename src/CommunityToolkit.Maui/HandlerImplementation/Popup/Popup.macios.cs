@@ -24,7 +24,11 @@ public partial class Popup
 		{
 			var mauiContext = virtualView.Handler?.MauiContext ?? throw new NullReferenceException(nameof(IMauiContext));
 			var view = (View?)virtualView.Content ?? throw new InvalidOperationException($"{nameof(IPopup.Content)} can't be null here.");
-			view.SetBinding(BindingContextProperty, new Binding { Source = virtualView, Path = BindingContextProperty.PropertyName });
+			view.SetBinding(BindingContextProperty, new Binding
+			{
+				Source = virtualView,
+				Path = BindingContextProperty.PropertyName
+			});
 			var contentPage = new ContentPage
 			{
 				Content = view
@@ -46,20 +50,16 @@ public partial class Popup
 	{
 		PopupHandler.MapOnClosed(handler, view, result);
 
-		var parent = view.Parent as Element;
-		if (parent is not null)
+		if (view.Parent is not Element parent || handler.VirtualView is not Popup popup)
 		{
-			if (handler.VirtualView is Popup popup)
-			{
-				if (popup.Content is not null)
-				{
-					if (popup.Content.Parent is ContentPage contentPage)
-					{
-						parent.RemoveLogicalChild(contentPage);
-					}
-				}
-				parent.RemoveLogicalChild(popup);
-			}
+			return;
 		}
+		
+		if (popup.Content?.Parent is ContentPage contentPage)
+		{
+			parent.RemoveLogicalChild(contentPage);
+		}
+
+		parent.RemoveLogicalChild(popup);
 	}
 }

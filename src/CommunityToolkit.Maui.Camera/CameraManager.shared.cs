@@ -25,7 +25,7 @@ partial class CameraManager(
 	internal bool IsInitialized { get; private set; }
 
 	/// <summary>
-	/// Whether the required permissions have been granted by the user through the use of the <see cref="Permissions"/> API.
+	/// Whether the user has granted the required permissions through the use of the <see cref="Permissions"/> API.
 	/// </summary>
 	/// <returns>Returns <c>true</c> if permission has been granted, <c>false</c> otherwise.</returns>
 	public async Task<bool> ArePermissionsGranted()

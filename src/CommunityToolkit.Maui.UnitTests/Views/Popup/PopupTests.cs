@@ -394,6 +394,6 @@ public class PopupTests : BaseHandlerTest
 
 	interface IFooService
 	{
-		public int MyProperty { get; set; }
+		int MyProperty { get; set; }
 	}
 }

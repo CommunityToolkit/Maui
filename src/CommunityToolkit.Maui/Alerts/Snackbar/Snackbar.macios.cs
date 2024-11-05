@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Snackbar
 {
-	static CommunityToolkit.Maui.Core.Views.PlatformSnackbar? PlatformSnackbar { get; set; }
+	static PlatformSnackbar? PlatformSnackbar { get; set; }
 
 	/// <summary>
 	/// Dispose Snackbar

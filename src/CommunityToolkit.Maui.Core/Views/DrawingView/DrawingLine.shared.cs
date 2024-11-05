@@ -41,7 +41,7 @@ public class DrawingLine : IDrawingLine
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of the collection of <see cref="Point"/> that is provided as a parameter.
 	/// </summary>
-	/// <param name="points">A collection of <see cref="Point"/> that a image is generated from.</param>
+	/// <param name="points">A collection of <see cref="Point"/> that an image is generated from.</param>
 	/// <param name="imageSize">The desired dimensions of the generated image.</param>
 	/// <param name="lineWidth">The desired line width to be used in the generated image.</param>
 	/// <param name="strokeColor">The desired color of the line to be used in the generated image.</param>
@@ -61,7 +61,7 @@ public class DrawingLine : IDrawingLine
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of this line, based on the <see cref="Points"/> data.
 	/// </summary>
-	/// <param name="imageSizeWidth">Desired width of the image that is returned.</param>
+	/// <param name="imageSizeWidth">The desired width of the image that is returned.</param>
 	/// <param name="imageSizeHeight">Desired height of the image that is returned.</param>
 	/// <param name="background">Background of the generated image.</param>
 	/// <param name="token"><see cref="CancellationToken"/> </param>

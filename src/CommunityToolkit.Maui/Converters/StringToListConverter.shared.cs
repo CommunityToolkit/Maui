@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Converters;
 public partial class StringToListConverter : BaseConverterOneWay<string?, IEnumerable, object?>
 {
 	string separator = " ";
-	IList<string> separators = Array.Empty<string>();
+	IList<string> separators = [];
 
 	/// <inheritdoc/>
 	public override IEnumerable DefaultConvertReturnValue { get; set; } = Array.Empty<string>();
@@ -74,7 +74,7 @@ public partial class StringToListConverter : BaseConverterOneWay<string?, IEnume
 	{
 		if (value is null)
 		{
-			return Array.Empty<string>();
+			return [];
 		}
 
 		switch (parameter)

@@ -1,9 +1,5 @@
-﻿using Microsoft.Maui.Controls.Internals;
-
+﻿using CommunityToolkit.Maui.Extensions;
 namespace CommunityToolkit.Maui.ImageSources;
-
-using CommunityToolkit.Maui.Extensions;
-using Microsoft.Maui.Controls;
 
 /// <summary>Gravatar image source.</summary>
 /// <remarks>Note that <see cref="UriImageSource"/> is sealed and can't be used as a parent!</remarks>
@@ -79,7 +75,7 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 	}
 
 	/// <summary>Gets or sets the URI for the image to get.</summary>
-	[System.ComponentModel.TypeConverter(typeof(UriTypeConverter))]
+	[System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.UriTypeConverter))]
 	public Uri Uri { get; set; }
 
 	/// <summary>Gets the parent height.</summary>
@@ -234,7 +230,7 @@ public enum DefaultImage
 	/// <summary>A geometric pattern based on an email hash.</summary>
 	Identicon,
 
-	/// <summary>A generated 'monster' with different colours, faces, etc.</summary>
+	/// <summary>A generated 'monster' with different colors, faces, etc.</summary>
 	MonsterId,
 
 	/// <summary>Generated faces with differing features and backgrounds.</summary>
@@ -243,7 +239,7 @@ public enum DefaultImage
 	/// <summary>Awesome generated, 8-bit arcade-style pixilated faces.</summary>
 	Retro,
 
-	/// <summary>A generated robot with different colours, faces, etc.</summary>
+	/// <summary>A generated robot with different colors, faces, etc.</summary>
 	Robohash,
 
 	/// <summary>A transparent PNG image.</summary>

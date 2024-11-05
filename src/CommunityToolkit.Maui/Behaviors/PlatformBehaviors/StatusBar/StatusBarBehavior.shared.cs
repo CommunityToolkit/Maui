@@ -87,7 +87,7 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 	{
 		base.OnAttachedTo(bindable, platformView);
 
-		if (ApplyOn == StatusBarApplyOn.OnBehaviorAttachedTo)
+		if (ApplyOn is StatusBarApplyOn.OnBehaviorAttachedTo)
 		{
 			StatusBar.SetColor(StatusBarColor);
 			StatusBar.SetStyle(StatusBarStyle);
@@ -117,7 +117,7 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 	}
 
 #if IOS
-	void OnPageSizeChanged(object? sender, EventArgs e)
+	static void OnPageSizeChanged(object? sender, EventArgs e)
 	{
 		StatusBar.UpdateBarSize();
 	}
@@ -125,7 +125,7 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 
 	void OnPageNavigatedTo(object? sender, NavigatedToEventArgs e)
 	{
-		if (ApplyOn == StatusBarApplyOn.OnPageNavigatedTo)
+		if (ApplyOn is StatusBarApplyOn.OnPageNavigatedTo)
 		{
 			StatusBar.SetColor(StatusBarColor);
 			StatusBar.SetStyle(StatusBarStyle);

@@ -3,7 +3,7 @@
 namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>
-/// Converts true to false and false to true. Simple as that!
+/// Converts true to false and false to true
 /// </summary>
 [AcceptEmptyServiceProvider]
 public partial class InvertedBoolConverter : BaseConverter<bool, bool>

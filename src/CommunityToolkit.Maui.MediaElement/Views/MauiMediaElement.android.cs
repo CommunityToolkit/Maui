@@ -72,7 +72,7 @@ public class MauiMediaElement : CoordinatorLayout
 	protected override void OnVisibilityChanged(Android.Views.View changedView, [GeneratedEnum] ViewStates visibility)
 	{
 		base.OnVisibilityChanged(changedView, visibility);
-		if (isFullScreen && visibility == ViewStates.Visible)
+		if (isFullScreen && visibility is ViewStates.Visible)
 		{
 			SetSystemBarsVisibility();
 		}

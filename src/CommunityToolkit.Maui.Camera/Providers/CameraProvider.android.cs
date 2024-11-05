@@ -12,7 +12,7 @@ using Java.Lang;
 
 namespace CommunityToolkit.Maui.Core;
 
-[SupportedOSPlatform("android21.0")]
+[SupportedOSPlatform("Android21.0")]
 partial class CameraProvider
 {
 	readonly Context context = Android.App.Application.Context;

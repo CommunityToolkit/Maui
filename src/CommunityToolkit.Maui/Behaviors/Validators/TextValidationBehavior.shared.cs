@@ -123,7 +123,7 @@ public partial class TextValidationBehavior : ValidationBehavior<string>
 	/// <inheritdoc/>
 	protected override string? Decorate(string? value)
 	{
-		var stringValue = base.Decorate(value)?.ToString();
+		var stringValue = base.Decorate(value);
 		var flags = DecorationFlags;
 
 		if (flags.HasFlag(TextDecorationFlags.NullToEmpty))
@@ -198,6 +198,7 @@ public partial class TextValidationBehavior : ValidationBehavior<string>
 
 			builder.Append(ch);
 		}
+
 		return builder.ToString();
 	}
 

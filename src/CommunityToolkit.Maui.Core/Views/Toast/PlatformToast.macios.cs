@@ -32,7 +32,7 @@ public class PlatformToast : Alert, IDisposable
 		UIColor textColor,
 		UIFont font,
 		double characterSpacing,
-		NFloat padding)
+		nfloat padding)
 	{
 		padding += DefaultPadding;
 
@@ -115,5 +115,5 @@ public class PlatformToast : Alert, IDisposable
 		}
 	}
 
-	static NFloat GetEmFromPx(NFloat defaultFontSize, double currentValue) => 100 * (NFloat)currentValue / defaultFontSize;
+	static nfloat GetEmFromPx(nfloat defaultFontSize, double currentValue) => 100 * (nfloat)currentValue / defaultFontSize;
 }

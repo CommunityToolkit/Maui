@@ -204,14 +204,9 @@ public partial class MauiDrawingView
 		currentPath = new PathF();
 	}
 
-	class DrawingViewDrawable : IDrawable
+	sealed class DrawingViewDrawable(MauiDrawingView drawingView) : IDrawable
 	{
-		readonly MauiDrawingView drawingView;
-
-		public DrawingViewDrawable(MauiDrawingView drawingView)
-		{
-			this.drawingView = drawingView;
-		}
+		readonly MauiDrawingView drawingView = drawingView;
 
 		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{

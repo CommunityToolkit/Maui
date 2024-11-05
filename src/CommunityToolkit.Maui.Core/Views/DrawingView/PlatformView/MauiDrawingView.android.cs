@@ -10,16 +10,11 @@ using AView = Android.Views.View;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
-public partial class MauiDrawingView : PlatformTouchGraphicsView
+/// <summary>
+/// Initialize a new instance of <see cref="MauiDrawingView" />.
+/// </summary>
+public partial class MauiDrawingView(Context context) : PlatformTouchGraphicsView(context)
 {
-	/// <summary>
-	/// Initialize a new instance of <see cref="MauiDrawingView" />.
-	/// </summary>
-	public MauiDrawingView(Context context) : base(context)
-	{
-		previousPoint = new();
-	}
-
 	/// <inheritdoc />
 	protected override void Dispose(bool disposing)
 	{

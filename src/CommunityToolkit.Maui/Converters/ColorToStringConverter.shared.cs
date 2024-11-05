@@ -50,12 +50,7 @@ public partial class ColorToRgbaStringConverter : BaseConverter<Color, string>
 	/// <inheritdoc/>
 	public override Color ConvertBackTo(string value, CultureInfo? culture)
 	{
-		if (Color.TryParse(value, out Color color))
-		{
-			return color;
-		}
-
-		return DefaultConvertBackReturnValue;
+		return Color.TryParse(value, out var color) ? color : DefaultConvertBackReturnValue;
 	}
 
 	/// <inheritdoc/>

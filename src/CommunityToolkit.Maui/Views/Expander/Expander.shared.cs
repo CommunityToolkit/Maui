@@ -55,7 +55,7 @@ public partial class Expander : ContentView, IExpander
 	/// By default, this <see cref="Action"/> runs <see cref="ResizeExpanderInItemsView(TappedEventArgs)"/>.
 	/// </summary>
 	/// <remarks>
-	/// Warning: Overriding this <see cref="Action"/> may cause <see cref="Expander"/> to work improperly when placed inside of a <see cref="CollectionView"/> and placed inside of a <see cref="ListView"/>.
+	/// Warning: Overriding this <see cref="Action"/> may cause <see cref="Expander"/> to work improperly when placed inside a <see cref="CollectionView"/> and placed inside a <see cref="ListView"/>.
 	/// </remarks>
 	public Action<TappedEventArgs>? HandleHeaderTapped { get; set; }
 

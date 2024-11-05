@@ -3,7 +3,7 @@
 namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>
-/// Converts the incoming value to a <see cref="bool"/> indicating whether or not the value is null.
+/// Converts the incoming value to a <see cref="bool"/> indicating whether the value is null.
 /// </summary>
 [AcceptEmptyServiceProvider]
 public partial class IsNullConverter : BaseConverterOneWay<object?, bool>
@@ -12,7 +12,7 @@ public partial class IsNullConverter : BaseConverterOneWay<object?, bool>
 	public override bool DefaultConvertReturnValue { get; set; } = false;
 
 	/// <summary>
-	/// Converts the incoming object to a <see cref="bool"/> indicating whether or not the value is null.
+	/// Converts the incoming object to a <see cref="bool"/> indicating whether the value is null.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
 	/// <param name="culture">(Not Used)</param>

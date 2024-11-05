@@ -51,20 +51,22 @@ public partial class Snackbar
 
 	static void SetLayoutParametersForView(in View snackbarView)
 	{
-		if (IsModalPageActive() && snackbarView.Context?.Resources is not null)
+		if (!IsModalPageActive() || snackbarView.Context?.Resources is null)
 		{
-			var resourceId = snackbarView.Context.Resources.GetIdentifier(
-				"navigation_bar_height",
-				"dimen",
-				"android"
-			);
-			var navBarHeight = snackbarView.Context.Resources.GetDimensionPixelSize(resourceId);
-			var layoutParameters = (FrameLayout.LayoutParams?)snackbarView.LayoutParameters;
-			if (layoutParameters is not null)
-			{
-				layoutParameters.SetMargins(layoutParameters.LeftMargin, layoutParameters.TopMargin, layoutParameters.RightMargin, layoutParameters.BottomMargin + navBarHeight);
-				snackbarView.LayoutParameters = layoutParameters;
-			}
+			return;
+		}
+
+		var resourceId = snackbarView.Context.Resources.GetIdentifier(
+			"navigation_bar_height",
+			"dimen",
+			"android"
+		);
+		var navBarHeight = snackbarView.Context.Resources.GetDimensionPixelSize(resourceId);
+		var layoutParameters = (FrameLayout.LayoutParams?)snackbarView.LayoutParameters;
+		if (layoutParameters is not null)
+		{
+			layoutParameters.SetMargins(layoutParameters.LeftMargin, layoutParameters.TopMargin, layoutParameters.RightMargin, layoutParameters.BottomMargin + navBarHeight);
+			snackbarView.LayoutParameters = layoutParameters;
 		}
 	}
 
@@ -116,31 +118,33 @@ public partial class Snackbar
 
 	void SetContainerForView(in View snackbarView)
 	{
-		if (snackbarView.Background is GradientDrawable shape)
+		if (snackbarView.Background is not GradientDrawable shape)
 		{
-			shape.SetColor(VisualOptions.BackgroundColor.ToPlatform().ToArgb());
-
-			var density = snackbarView.Context?.Resources?.DisplayMetrics?.Density ?? 1;
-			var cornerRadius = new Thickness(
-				VisualOptions.CornerRadius.BottomLeft * density,
-				VisualOptions.CornerRadius.TopLeft * density,
-				VisualOptions.CornerRadius.TopRight * density,
-				VisualOptions.CornerRadius.BottomRight * density);
-
-			shape.SetCornerRadii(
-			[
-				(float)cornerRadius.Left,
-				(float)cornerRadius.Left,
-				(float)cornerRadius.Top,
-				(float)cornerRadius.Top,
-				(float)cornerRadius.Right,
-				(float)cornerRadius.Right,
-				(float)cornerRadius.Bottom,
-				(float)cornerRadius.Bottom
-			]);
-
-			snackbarView.SetBackground(shape);
+			return;
 		}
+
+		shape.SetColor(VisualOptions.BackgroundColor.ToPlatform().ToArgb());
+
+		var density = snackbarView.Context?.Resources?.DisplayMetrics?.Density ?? 1;
+		var cornerRadius = new Thickness(
+			VisualOptions.CornerRadius.BottomLeft * density,
+			VisualOptions.CornerRadius.TopLeft * density,
+			VisualOptions.CornerRadius.TopRight * density,
+			VisualOptions.CornerRadius.BottomRight * density);
+
+		shape.SetCornerRadii(
+		[
+			(float)cornerRadius.Left,
+			(float)cornerRadius.Left,
+			(float)cornerRadius.Top,
+			(float)cornerRadius.Top,
+			(float)cornerRadius.Right,
+			(float)cornerRadius.Right,
+			(float)cornerRadius.Bottom,
+			(float)cornerRadius.Bottom
+		]);
+
+		snackbarView.SetBackground(shape);
 	}
 
 	void SetMessageForView(in View snackbarView, IFontManager fontManager)
@@ -177,16 +181,10 @@ public partial class Snackbar
 		platformSnackbar.AddCallback(new SnackbarCallback(this, dismissedTCS = new()));
 	}
 
-	class SnackbarCallback : BaseTransientBottomBar.BaseCallback
+	sealed class SnackbarCallback(in Snackbar snackbar, in TaskCompletionSource<bool> dismissedTcs) : BaseTransientBottomBar.BaseCallback
 	{
-		readonly Snackbar snackbar;
-		readonly TaskCompletionSource<bool> dismissedTCS;
-
-		public SnackbarCallback(in Snackbar snackbar, in TaskCompletionSource<bool> dismissedTCS)
-		{
-			this.snackbar = snackbar;
-			this.dismissedTCS = dismissedTCS;
-		}
+		readonly Snackbar snackbar = snackbar;
+		readonly TaskCompletionSource<bool> dismissedTCS = dismissedTcs;
 
 		public override void OnShown(Object? transientBottomBar)
 		{

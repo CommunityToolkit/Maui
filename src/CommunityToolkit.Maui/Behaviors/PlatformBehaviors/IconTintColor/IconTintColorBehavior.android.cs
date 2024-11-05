@@ -83,10 +83,7 @@ public partial class IconTintColorBehavior
 		static void SetMaterialButtonTintColor(AndroidMaterialButton button, Color color)
 		{
 			button.IconTintMode = PorterDuff.Mode.SrcIn;
-			button.IconTint = new Android.Content.Res.ColorStateList(new int[][]
-			{
-				[]
-			}, [color.ToPlatform()]);
+			button.IconTint = new Android.Content.Res.ColorStateList([[]], [color.ToPlatform()]);
 		}
 
 		static void SetWidgetButtonTintColor(AndroidWidgetButton button, Color? color)
@@ -127,6 +124,7 @@ public partial class IconTintColorBehavior
 				case AndroidMaterialButton mButton:
 					mButton.IconTint = null;
 					break;
+
 				case AndroidWidgetButton button:
 					foreach (var drawable in button.GetCompoundDrawables())
 					{

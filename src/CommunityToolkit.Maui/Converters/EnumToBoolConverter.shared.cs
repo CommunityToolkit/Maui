@@ -52,7 +52,7 @@ public partial class EnumToBoolConverter : BaseConverterOneWay<Enum, bool, Enum?
 				return false;
 			}
 
-			if (valueToCheckType.GetTypeInfo().GetCustomAttribute<FlagsAttribute>() != null)
+			if (valueToCheckType.GetTypeInfo().GetCustomAttribute<FlagsAttribute>() is not null)
 			{
 				return referenceEnumValue.HasFlag(valueToCheck);
 			}

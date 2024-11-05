@@ -42,7 +42,7 @@ public partial class BoolToObjectConverter<[DynamicallyAccessedMembers(Dynamical
 	public override TObject? ConvertFrom(bool value, CultureInfo? culture = null) => value ? TrueObject : FalseObject;
 
 	/// <summary>
-	/// Converts back object to <see cref="bool"/>.
+	/// Converts back the object to <see cref="bool"/>.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
 	/// <param name="culture">The culture to use in the converter.  This is not implemented.</param>

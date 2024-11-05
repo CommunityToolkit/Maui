@@ -87,6 +87,6 @@ public partial class VariableMultiValueConverter : MultiValueConverterExtension,
 			return null;
 		}
 
-		return boolValue ? targetTypes?.Select(t => ConditionType == MultiBindingCondition.All).OfType<object>().ToArray() : null;
+		return boolValue ? targetTypes?.Select(_ => ConditionType is MultiBindingCondition.All).OfType<object>().ToArray() : null;
 	}
 }

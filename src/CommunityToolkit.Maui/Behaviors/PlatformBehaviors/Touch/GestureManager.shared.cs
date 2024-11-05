@@ -57,7 +57,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		touchBehavior.CurrentHoverStatus = hoverStatus;
 	}
 
-	internal void HandleTouch(in TouchBehavior touchBehavior, in TouchStatus status)
+	internal static void HandleTouch(in TouchBehavior touchBehavior, in TouchStatus status)
 	{
 		if (!touchBehavior.IsEnabled)
 		{

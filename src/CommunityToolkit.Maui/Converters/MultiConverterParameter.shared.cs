@@ -7,7 +7,7 @@
 public partial class MultiConverterParameter : BindableObject
 {
 	/// <summary>
-	/// The type of object of this parameter.
+	/// The object type of this parameter.
 	/// </summary>
 	public Type? ConverterType { get; set; }
 

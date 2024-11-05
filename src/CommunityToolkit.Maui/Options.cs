@@ -22,7 +22,7 @@ public class Options() : Core.Options
 	internal static bool ShouldEnableSnackbarOnWindows { get; private set; }
 
 	/// <summary>
-	/// Allows to return default value instead of throwing an exception when using <see cref="BaseConverter{TFrom,TTo}"/>.
+	/// Will return the <see cref="ICommunityToolkitValueConverter.DefaultConvertReturnValue"/> default value instead of throwing an exception when using <see cref="BaseConverter{TFrom,TTo}"/>.
 	/// </summary>
 	/// <remarks>
 	/// Default value is false.
@@ -30,7 +30,7 @@ public class Options() : Core.Options
 	public void SetShouldSuppressExceptionsInConverters(bool value) => ShouldSuppressExceptionsInConverters = value;
 
 	/// <summary>
-	/// Allows to return default value instead of throwing an exception when using <see cref="AnimationBehavior"/>.
+	/// Catches exceptions thrown when using <see cref="AnimationBehavior"/> and reports it to <see cref="System.Diagnostics.Trace"/>.
 	/// </summary>
 	/// <remarks>
 	/// Default value is false.
@@ -38,7 +38,7 @@ public class Options() : Core.Options
 	public void SetShouldSuppressExceptionsInAnimations(bool value) => ShouldSuppressExceptionsInAnimations = value;
 
 	/// <summary>
-	/// Allows to return default value instead of throwing an exception when using <see cref="BaseBehavior{TView}"/>.
+	/// Catches exceptions thrown when using <see cref="AnimationBehavior"/> and reports it to <see cref="System.Diagnostics.Trace"/>.
 	/// </summary>
 	/// <remarks>
 	/// Default value is false.

@@ -57,10 +57,10 @@ public partial class MultiValidationBehavior : ValidationBehavior
 	/// <inheritdoc/>
 	protected override async ValueTask<bool> ValidateAsync(object? value, CancellationToken token)
 	{
-		await Task.WhenAll(children.Select(c =>
+		await Task.WhenAll(children.Select(async validationBehavior =>
 		{
-			c.Value = value;
-			return c.ValidateNestedAsync(token).AsTask();
+			validationBehavior.Value = value;
+			await validationBehavior.ValidateNestedAsync(token);
 		})).ConfigureAwait(false);
 
 		var errors = children.Where(static c => c.IsNotValid).Select(GetError).ToList();

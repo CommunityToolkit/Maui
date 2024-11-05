@@ -94,7 +94,7 @@ public partial class NumericValidationBehavior : ValidationBehavior<string>
 		}
 
 		var decimalPlaces = hasDecimalDelimiter
-			? value.Substring(decimalDelimiterIndex + 1, value.Length - decimalDelimiterIndex - 1).Length
+			? value.Substring(decimalDelimiterIndex + 1).Length
 			: 0;
 
 		return new ValueTask<bool>(decimalPlaces >= MinimumDecimalPlaces && decimalPlaces <= MaximumDecimalPlaces);

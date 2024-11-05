@@ -6,7 +6,7 @@ using CommunityToolkit.Maui.Extensions;
 namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>
-/// Abstract class used to implement converters that implements the ConvertBack logic.
+/// Abstract class used to implement converters that implement the ConvertBack logic.
 /// </summary>
 /// <typeparam name="TFrom">Type of the input value.</typeparam>
 /// <typeparam name="TTo">Type of the output value.</typeparam>
@@ -104,7 +104,7 @@ public abstract class BaseConverter<[DynamicallyAccessedMembers(DynamicallyAcces
 }
 
 /// <summary>
-/// Abstract class used to implement converters that implements the ConvertBack logic.
+/// Abstract class used to implement converters that implement the ConvertBack logic.
 /// </summary>
 /// <typeparam name="TFrom">Type of the input value.</typeparam>
 /// <typeparam name="TTo">Type of the output value.</typeparam>

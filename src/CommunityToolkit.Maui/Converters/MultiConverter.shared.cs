@@ -3,7 +3,7 @@
 namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>
-/// Converts an incoming value using all of the incoming converters in sequence.
+/// Converts an incoming value using all the incoming converters in sequence.
 /// </summary>
 [AcceptEmptyServiceProvider]
 public partial class MultiConverter : List<ICommunityToolkitValueConverter>, ICommunityToolkitValueConverter
@@ -25,7 +25,7 @@ public partial class MultiConverter : List<ICommunityToolkitValueConverter>, ICo
 	/// </summary>
 	/// <param name="value">Value to convert.</param>
 	/// <param name="targetType">The type of the binding target property.</param>
-	/// <param name="parameter">Parameter to pass into subsequent converters.</param>
+	/// <param name="parameter">Parameter to pass into all converters.</param>
 	/// <param name="culture">The culture to use in the converter.</param>
 	/// <returns>The converted value.</returns>
 	public object? Convert(object? value, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type targetType, object? parameter, System.Globalization.CultureInfo? culture)

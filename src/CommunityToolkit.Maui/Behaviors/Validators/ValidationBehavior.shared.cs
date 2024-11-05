@@ -321,7 +321,6 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 		OnValidationPropertyChanged(bindable, oldValue, newValue);
 	}
 
-	[RequiresUnreferencedCode($"{nameof(ValidationBehavior)} is not trim safe because it uses bindings with string paths.")]
 	static void OnValuePropertyNamePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		=> ((ValidationBehavior)bindable).OnValuePropertyNamePropertyChanged();
 

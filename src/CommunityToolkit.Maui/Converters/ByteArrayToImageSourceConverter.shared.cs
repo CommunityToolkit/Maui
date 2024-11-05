@@ -24,12 +24,7 @@ public partial class ByteArrayToImageSourceConverter : BaseConverter<byte[]?, Im
 	[return: NotNullIfNotNull(nameof(value))]
 	public override ImageSource? ConvertFrom(byte[]? value, CultureInfo? culture = null)
 	{
-		if (value is null)
-		{
-			return null;
-		}
-
-		return ImageSource.FromStream(() => new MemoryStream(value));
+		return value is null ? null : ImageSource.FromStream(() => new MemoryStream(value));
 	}
 
 	/// <summary>

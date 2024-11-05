@@ -33,7 +33,7 @@ public abstract class IsInRangeConverter<[DynamicallyAccessedMembers(Dynamically
 	/// <inheritdoc/>
 	public override object DefaultConvertReturnValue { get; set; } = new();
 
-	/// <summary>If supplied this value will be returned when the converter receives an input value that is <b>outside</b> of the <see cref="MinValue" /> and <see cref="MaxValue" />s.</summary>
+	/// <summary>If supplied this value will be returned when the converter receives an input value that is <b>outside</b> the <see cref="MinValue" /> and <see cref="MaxValue" />s.</summary>
 	public TReturnObject? FalseObject
 	{
 		get => (TReturnObject?)GetValue(FalseObjectProperty);

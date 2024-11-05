@@ -67,7 +67,7 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	}
 
 	/// <summary>
-	/// Creates a platform specific view that will be rendered on that platform.
+	/// Creates a platform-specific view that will be rendered on that platform.
 	/// </summary>
 	protected override NativePlatformCameraPreviewView CreatePlatformView()
 	{

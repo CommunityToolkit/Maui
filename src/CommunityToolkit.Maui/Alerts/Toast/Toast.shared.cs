@@ -25,7 +25,7 @@ public partial class Toast : IToast
 		get => duration;
 		init
 		{
-			if (!Enum.IsDefined(typeof(ToastDuration), value))
+			if (!Enum.IsDefined(value))
 			{
 				throw new InvalidEnumArgumentException(nameof(value), (int)value, typeof(ToastDuration));
 			}

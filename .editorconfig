@@ -143,3 +143,6 @@ dotnet_diagnostic.CA1834.severity = error
 
 # IDE0220: Add explicit cast
 dotnet_diagnostic.IDE0220.severity = error
+
+# Warning CA2264 : Calling 'ArgumentNullException.ThrowIfNull' and passing a non-nullable value is a no-op
+dotnet_diagnostic.CA2264.severity = error
