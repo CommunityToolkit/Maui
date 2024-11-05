@@ -46,7 +46,7 @@ partial class CameraProvider
 				{
 					var streamConfigMap = camera2Info.GetCameraCharacteristic(CameraCharacteristics.ScalerStreamConfigurationMap) as StreamConfigurationMap;
 
-					if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.M)
+					if (OperatingSystem.IsAndroidVersionAtLeast(23))
 					{
 						var highResolutions = streamConfigMap?.GetHighResolutionOutputSizes((int)ImageFormatType.Jpeg);
 						if (highResolutions is not null)
