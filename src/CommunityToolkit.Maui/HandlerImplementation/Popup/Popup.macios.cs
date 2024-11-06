@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using System.Diagnostics;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
@@ -21,16 +22,21 @@ public partial class Popup
 
 		static PageHandler CreatePageHandler(IPopup virtualView)
 		{
-			var mauiContext = virtualView.Handler?.MauiContext ?? throw new NullReferenceException(nameof(IMauiContext));
-			var view = (View?)virtualView.Content ?? throw new InvalidOperationException($"{nameof(IPopup.Content)} can't be null here.");
-			view.SetBinding(BindingContextProperty, new Binding
+			var mauiContext = virtualView.Handler?.MauiContext ?? throw new InvalidOperationException($"Unable to retrieve {nameof(IMauiContext)}");
+			var popupContent = (View)(virtualView.Content ?? throw new InvalidOperationException($"{nameof(IPopup.Content)} cannot be null."));
+
+			if (virtualView is BindableObject bindableObject)
 			{
-				Source = virtualView,
-				Path = BindingContextProperty.PropertyName
-			});
+				popupContent.SetBinding(BindingContextProperty, BindingBase.Create<BindableObject, object>(static bindable => bindable.BindingContext, source: bindableObject));
+			}
+			else
+			{
+				Trace.TraceInformation($"Unable to set {nameof(BindableObject.BindingContext)} for {nameof(IPopup)}.{nameof(IPopup.Content)} because {nameof(IPopup)} implementation does not inherit from {nameof(BindableObject)}");
+			}
+
 			var contentPage = new ContentPage
 			{
-				Content = view
+				Content = popupContent
 			};
 			var parent = virtualView.Parent as Element;
 			parent?.AddLogicalChild(contentPage);
