@@ -7,7 +7,7 @@
              x:Class="CommunityToolkit.Maui.Sample.Pages.Views.BasicMapsPage"
              x:DataType="vm:BasicMapsViewModel"
              x:TypeArguments="vm:BasicMapsViewModel"
-             Title="Windows Map">
+             Title="Map">
     
     <Grid RowDefinitions="Auto, Auto, Auto, Auto, *">
         <HorizontalStackLayout Grid.Row="0">
