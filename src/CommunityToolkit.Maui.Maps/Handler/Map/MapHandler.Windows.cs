@@ -170,7 +170,7 @@ public partial class MapHandlerWindows : MapHandler
 			mapHandler.regionToGo = newRegion;
 		}
 
-		CallJSMethod(handler.PlatformView, $"setRegion({newRegion.Center.Latitude.ToString(CultureInfo.InvariantCulture)},{newRegion.Center.Longitude.ToString(CultureInfo.InvariantCulture)});");
+		CallJSMethod(handler.PlatformView, $"setRegion({newRegion.Center.Latitude.ToString(CultureInfo.InvariantCulture)},{newRegion.Center.Longitude.ToString(CultureInfo.InvariantCulture)},{newRegion.LatitudeDegrees.ToString(CultureInfo.InvariantCulture)},{newRegion.LongitudeDegrees.ToString(CultureInfo.InvariantCulture)});");
 	}
 
 	static void CallJSMethod(FrameworkElement platformWebView, string script)
@@ -290,11 +290,9 @@ public partial class MapHandlerWindows : MapHandler
 								});
 							}
 
-							function setRegion(latitude, longitude)
+							function setRegion(latitude, longitude, latitudeDegrees, longitudeDegrees)
 							{
-								map.setView({
-									center: new Microsoft.Maps.Location(latitude, longitude),
-								});
+								map.setView({bounds: new Microsoft.Maps.LocationRect(new Microsoft.Maps.Location(latitude, longitude), latitudeDegrees, longitudeDegrees) });
 							}
 
 							function addLocationPin(latitude, longitude)
