@@ -14,9 +14,9 @@ public enum ValidationFlags
 	/// <summary>Validate on attaching</summary>
 	ValidateOnAttaching = 1,
 	/// <summary> Validate on focusing</summary>
-	ValidateOnFocus = 2,
+	ValidateOnFocused = 2,
 	/// <summary>Validate on unfocus</summary>
-	ValidateOnUnfocus = 4,
+	ValidateOnUnfocused = 4,
 	/// <summary>Validate upon value changed</summary>
 	ValidateOnValueChanged = 8,
 	/// <summary>Force make valid when focused</summary>
@@ -73,7 +73,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 	/// Backing BindableProperty for the <see cref="Flags"/> property.
 	/// </summary>
 	public static readonly BindableProperty FlagsProperty =
-		BindableProperty.Create(nameof(Flags), typeof(ValidationFlags), typeof(ValidationBehavior), ValidationFlags.ValidateOnUnfocus | ValidationFlags.ForceMakeValidWhenFocused, propertyChanged: OnValidationPropertyChanged);
+		BindableProperty.Create(nameof(Flags), typeof(ValidationFlags), typeof(ValidationBehavior), ValidationFlags.ValidateOnUnfocused | ValidationFlags.ForceMakeValidWhenFocused, propertyChanged: OnValidationPropertyChanged);
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Value"/> property.
@@ -292,8 +292,8 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 		{
 			currentStatus = sender.IsFocused switch
 			{
-				true => ValidationFlags.ValidateOnFocus,
-				false => ValidationFlags.ValidateOnUnfocus
+				true => ValidationFlags.ValidateOnFocused,
+				false => ValidationFlags.ValidateOnUnfocused
 			};
 
 			await UpdateStateAsync(View, Flags, false).ConfigureAwait(false);
