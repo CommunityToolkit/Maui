@@ -184,6 +184,10 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdatePosition()
 	{
+		if (Application.Current?.Windows is null || Application.Current.Windows.Count == 0)
+		{
+			return;
+		}
 		if (!ParentWindow.Exists)
 		{
 			// Parent window is null, so we can't update the position
@@ -456,6 +460,7 @@ partial class MediaManager : IDisposable
 	{
 		if (MediaElement is not null)
 		{
+			System.Diagnostics.Trace.TraceInformation($"NaturalVideoSizeChanged: {sender.NaturalVideoWidth}x{sender.NaturalVideoHeight}");
 			MediaElement.MediaWidth = (int)sender.NaturalVideoWidth;
 			MediaElement.MediaHeight = (int)sender.NaturalVideoHeight;
 		}
