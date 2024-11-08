@@ -40,7 +40,7 @@
 
     <pages:BasePage.Content>
         <ScrollView>
-            <VerticalStackLayout Spacing="10">
+            <VerticalStackLayout x:DataType="{x:Type BoxView}" Spacing="10">
                 <Picker x:Name="Picker" SelectedIndexChanged="HandleSelectedIndexChanged"/>
 
                 <BoxView x:Name="BoxView" HeightRequest="100" BackgroundColor="White" />
