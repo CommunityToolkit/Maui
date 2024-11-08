@@ -228,10 +228,11 @@ partial class CameraManager
 		{
 			imageData = result.Photo.FileDataRepresentation?.AsStream();
 		}
-		catch
+		catch (Exception e)
 		{
 			// possible exception: ObjCException NSInvalidArgumentException NSAllocateMemoryPages(...) failed in AVCapturePhoto.get_FileDataRepresentation()
-			imageData = null;
+			cameraView.OnMediaCapturedFailed($"Unable to retrieve the file data representation from the captured result: {e.Message}");
+			return;
 		}
 
 		if (imageData is null)
