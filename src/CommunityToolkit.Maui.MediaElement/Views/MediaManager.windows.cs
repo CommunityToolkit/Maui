@@ -460,7 +460,6 @@ partial class MediaManager : IDisposable
 	{
 		if (MediaElement is not null)
 		{
-			System.Diagnostics.Trace.TraceInformation($"NaturalVideoSizeChanged: {sender.NaturalVideoWidth}x{sender.NaturalVideoHeight}");
 			MediaElement.MediaWidth = (int)sender.NaturalVideoWidth;
 			MediaElement.MediaHeight = (int)sender.NaturalVideoHeight;
 		}
