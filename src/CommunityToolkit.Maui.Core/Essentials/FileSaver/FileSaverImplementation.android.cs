@@ -102,7 +102,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 			{
 				await fileOutputStream.WriteAsync(buffer, 0, bytesRead).WaitAsync(cancellationToken).ConfigureAwait(false);
 				totalRead += bytesRead;
-				progress?.Report(totalRead / stream.Length);
+				progress?.Report((double)totalRead / stream.Length);
 			}
 
 			if (fileOutputStream.Channel is not null)
