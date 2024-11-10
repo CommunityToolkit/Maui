@@ -69,7 +69,9 @@ jobs:
         displayName: 'Set Xcode v$(CommunityToolkitSampleApp_Xcode_Version)'
         condition: eq(variables['Agent.OS'], 'Darwin') # Only run this step on macOS
         inputs:
-          script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(CommunityToolkitSampleApp_Xcode_Version).app;sudo xcode-select --switch /Applications/Xcode_$(CommunityToolkitSampleApp_Xcode_Version).app/Contents/Developer
+          script: |
+            ls -al | grep Xcode
+            echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(CommunityToolkitSampleApp_Xcode_Version).app;sudo xcode-select --switch /Applications/Xcode_$(CommunityToolkitSampleApp_Xcode_Version).app/Contents/Developer
 
       - task: UseDotNet@2
         displayName: 'Install Latest .NET SDK, v$(LATEST_NET_VERSION)'
@@ -199,7 +201,9 @@ jobs:
         displayName: 'Set Xcode v$(CommunityToolkitLibrary_Xcode_Version)'
         condition: eq(variables['Agent.OS'], 'Darwin') # Only run this step on macOS
         inputs:
-          script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(CommunityToolkitLibrary_Xcode_Version).app;sudo xcode-select --switch /Applications/Xcode_$(CommunityToolkitLibrary_Xcode_Version).app/Contents/Developer
+          script: |
+            ls -al | grep Xcode
+            echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(CommunityToolkitLibrary_Xcode_Version).app;sudo xcode-select --switch /Applications/Xcode_$(CommunityToolkitLibrary_Xcode_Version).app/Contents/Developer
 
       - task: UseDotNet@2
         displayName: Install .NET v$(TOOLKIT_NET_VERSION)
@@ -456,8 +460,8 @@ jobs:
       vmImage: $(image)
     steps:
       - script: |
-          sudo xcode-select -s /Applications/Xcode_$(CommunityToolkitLibrary_Xcode_Version).app 
-          sudo xcode-select -p
+          ls -al | grep Xcode
+          echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(CommunityToolkitSampleApp_Xcode_Version).app;sudo xcode-select --switch /Applications/Xcode_$(CommunityToolkitSampleApp_Xcode_Version).app/Contents/Developer
         displayName: 'Set Xcode v$(CommunityToolkitLibrary_Xcode_Version)'
         condition: eq(variables['Agent.OS'], 'Darwin') # Only run this step on macOS
 
