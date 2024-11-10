@@ -109,7 +109,7 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 		await VerifyMediaElementToolkitAnalyzer(source, Diagnostic().WithSpan(12, 4, 12, 61).WithSeverity(DiagnosticSeverity.Error));
 	}
 
-	static Task VerifyMediaElementToolkitAnalyzer(string source, params DiagnosticResult[] diagnosticResults)
+	static Task VerifyMediaElementToolkitAnalyzer(string source, params IReadOnlyList<DiagnosticResult> diagnosticResults)
 	{
 		return VerifyAnalyzerAsync(
 			source,

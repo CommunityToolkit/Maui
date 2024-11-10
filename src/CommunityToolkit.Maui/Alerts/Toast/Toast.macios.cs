@@ -64,7 +64,7 @@ public partial class Toast
 
 		PlatformToast.Show();
 
-		static T? GetMaximum<T>(params T[] items) => items.Max();
+		static T? GetMaximum<T>(params IReadOnlyList<T> items) => items.Max();
 	}
 
 	static CGRect CreateCornerRadius(int radius = 4)

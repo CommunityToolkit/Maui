@@ -108,7 +108,7 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 		await VerifyCameraToolkitAnalyzer(source, Diagnostic().WithSpan(12, 4, 12, 61).WithSeverity(DiagnosticSeverity.Error));
 	}
 
-	static Task VerifyCameraToolkitAnalyzer(string source, params DiagnosticResult[] diagnosticResults)
+	static Task VerifyCameraToolkitAnalyzer(string source, params IReadOnlyList<DiagnosticResult> diagnosticResults)
 	{
 		return VerifyAnalyzerAsync(
 			source,

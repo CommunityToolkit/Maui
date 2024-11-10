@@ -8,7 +8,7 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
 {
 	public class Test : CSharpAnalyzerTest<TAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>
 	{
-		public Test(params Type[] assembliesUnderTest)
+		public Test(params ReadOnlySpan<Type> assembliesUnderTest)
 		{
 #if NET9_0
 			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net90;
@@ -23,7 +23,7 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
 			];
 			typesForAssembliesUnderTest.AddRange(assembliesUnderTest);
 
-			foreach (Type type in typesForAssembliesUnderTest)
+			foreach (var type in typesForAssembliesUnderTest)
 			{
 				TestState.AdditionalReferences.Add(MetadataReference.CreateFromFile(type.Assembly.Location));
 			}

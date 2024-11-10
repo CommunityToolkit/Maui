@@ -11,7 +11,7 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
 {
 	protected class Test : CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier>
 	{
-		public Test(params Type[] assembliesUnderTest)
+		public Test(params ReadOnlySpan<Type> assembliesUnderTest)
 		{
 #if NET9_0
 			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net90;
@@ -26,7 +26,7 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
 			];
 			typesForAssembliesUnderTest.AddRange(assembliesUnderTest);
 
-			foreach (Type type in typesForAssembliesUnderTest)
+			foreach (var type in typesForAssembliesUnderTest)
 			{
 				TestState.AdditionalReferences.Add(MetadataReference.CreateFromFile(type.Assembly.Location));
 			}

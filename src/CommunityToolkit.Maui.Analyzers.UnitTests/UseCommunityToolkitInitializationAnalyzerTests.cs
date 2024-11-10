@@ -109,7 +109,7 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests
 		await VerifyMauiToolkitAnalyzer(source, Diagnostic().WithSpan(12, 4, 12, 61).WithSeverity(DiagnosticSeverity.Error));
 	}
 
-	static Task VerifyMauiToolkitAnalyzer(string source, params DiagnosticResult[] expected)
+	static Task VerifyMauiToolkitAnalyzer(string source, params IReadOnlyList<DiagnosticResult> expected)
 	{
 		return VerifyAnalyzerAsync(
 			source,
