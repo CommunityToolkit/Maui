@@ -27,12 +27,13 @@ public class PopupService : IPopupService
 	/// Creates a new instance of <see cref="PopupService"/>.
 	/// </summary>
 	/// <param name="serviceProvider">The <see cref="IServiceProvider"/> implementation.</param>
-	/// <param name="dispatcher"></param>
+	/// <param name="dispatcherProvider"></param>
 	[ActivatorUtilitiesConstructor]
-	public PopupService(IServiceProvider serviceProvider, IDispatcher dispatcher)
+	public PopupService(IServiceProvider serviceProvider, IDispatcherProvider dispatcherProvider)
 	{
 		this.serviceProvider = serviceProvider;
-		this.dispatcher = dispatcher;
+		dispatcher = dispatcherProvider.GetForCurrentThread()
+						?? throw new InvalidOperationException("Could not locate IDispatcher");
 	}
 
 	/// <summary>
