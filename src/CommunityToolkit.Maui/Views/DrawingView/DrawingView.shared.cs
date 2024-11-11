@@ -17,6 +17,7 @@ public partial class DrawingView : View, IDrawingView
 	/// </summary>
 	public DrawingView()
 	{
+		BackgroundColor = DrawingViewDefaults.BackgroundColor;
 		Unloaded += OnDrawingViewUnloaded;
 	}
 
