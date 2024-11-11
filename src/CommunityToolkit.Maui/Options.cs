@@ -15,7 +15,7 @@ public class Options() : Core.Options
 	{
 		this.builder = builder;
 	}
-	internal static int NumberOfWindows { get; private set; } = 0;
+
 	internal static bool ShouldSuppressExceptionsInAnimations { get; private set; }
 	internal static bool ShouldSuppressExceptionsInConverters { get; private set; }
 	internal static bool ShouldSuppressExceptionsInBehaviors { get; private set; }
@@ -58,21 +58,17 @@ public class Options() : Core.Options
 		{
 			throw new InvalidOperationException($"{nameof(SetShouldEnableSnackbarOnWindows)} must be called using the {nameof(AppBuilderExtensions.UseMauiCommunityToolkit)} extension method. See the Platform Specific Initialization section of the {nameof(Alerts.Snackbar)} documentaion for more inforamtion: https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar)")
 			{
- 				HelpLink = "https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar"
- 			};
+				HelpLink = "https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar"
+			};
 		}
 		else if (value is true && builder is not null)
 		{
 			builder.ConfigureLifecycleEvents(events =>
 			{
 				events.AddWindows(windows => windows
-				.OnWindowCreated((_) =>
-				{
-					NumberOfWindows++;
-				})
 					.OnLaunched((_, _) =>
 					{
-						if(NumberOfWindows == 1)
+						if (Application.Current?.Windows.Count is 1)
 						{
 							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked += OnSnackbarNotificationInvoked;
 							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Register();
@@ -80,13 +76,11 @@ public class Options() : Core.Options
 					})
 					.OnClosed((_, _) =>
 					{
-						if (NumberOfWindows > 1)
+						if (Application.Current?.Windows.Count is 1)
 						{
-							NumberOfWindows--;
-							return;
+							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked -= OnSnackbarNotificationInvoked;
+							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Unregister();
 						}
-						Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked -= OnSnackbarNotificationInvoked;
-						Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Unregister();
 					}));
 			});
 
