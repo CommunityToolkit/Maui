@@ -124,7 +124,7 @@ public class PopupServiceTests : BaseHandlerTest
 	[Fact]
 	public void ShowPopupWithNullOnPresentingShouldThrowArgumentNullException()
 	{
-		var popupService = new PopupService(ServiceProvider, new MockDispatcher());
+		var popupService = new PopupService(ServiceProvider, new MockDispatcherProvider());
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		Assert.Throws<ArgumentNullException>(() => popupService.ShowPopup<INotifyPropertyChanged>(onPresenting: null));
