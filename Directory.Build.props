@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project>
   <PropertyGroup>
-    <NetVersion>net9.0</NetVersion>
-    <MauiPackageVersion>9.0.0-rc.2.24503.2</MauiPackageVersion>
-    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
     <NoWarn>NETSDK1023</NoWarn>
-    <NuGetAudit>enable</NuGetAudit>
-    <NuGetAuditMode>all</NuGetAuditMode>
+    <NetVersion>net9.0</NetVersion>
+    <LangVersion>latest</LangVersion>
+    <MauiPackageVersion>9.0.0-rc.2.24503.2</MauiPackageVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
-    <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
-    <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
+    <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
+
+    <!-- Prevent NuGet Package Vulnerabilities -->
+    <NuGetAudit>enable</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+
+    <!-- MAUI Specific -->
     <MauiStrictXamlCompilation>true</MauiStrictXamlCompilation>
+    <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
 
     <!-- https://learn.microsoft.com/dotnet/core/deploying/native-aot/?tabs=net8plus%2Cwindows -->
@@ -83,10 +87,27 @@
      </WarningsAsErrors>
   </PropertyGroup>
 
+  <!-- Required for NuGet Source Link -->
+  <PropertyGroup Condition="'$(TF_BUILD)' == 'true' OR '$(GITHUB_ACTIONS)' == 'true'">
+    <!--  Ensure deterministic build when using Azure Pipelines or GitHub Actions-->
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+
+    <!-- Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+    <!-- Embed source files that are not tracked by the source control manager in the PDB -->
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+    <!-- Embed symbols containing Source Link in the main file (exe/dll) -->
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="CommunityToolkit.Maui.UnitTests" />
+    <InternalsVisibleTo Include="CommunityToolkit.Maui.Analyzers.UnitTests" />
   </ItemGroup>
-  <PropertyGroup Condition="'$(TF_BUILD)' == 'true' and $([MSBuild]::IsOSPlatform('windows')) == 'true'">
+  
+  <PropertyGroup Condition="('$(TF_BUILD)' == 'true' OR '$(GITHUB_ACTIONS)' == 'true') and $([MSBuild]::IsOSPlatform('windows')) == 'true'">
     <IncludeTizenTargetFrameworks>true</IncludeTizenTargetFrameworks>
   </PropertyGroup>
 </Project>
