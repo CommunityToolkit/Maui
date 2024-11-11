@@ -68,7 +68,12 @@ public class Options() : Core.Options
 				events.AddWindows(windows => windows
 					.OnLaunched((_, _) =>
 					{
-						if (Application.Current?.Windows.Count is 1)
+						if (Application.Current is null)
+						{
+							throw new InvalidOperationException($"{nameof(Application)}.{nameof(Application.Current)} cannot be null when Windows are launched");
+						}
+
+						else if (Application.Current.Windows.Count is 1)
 						{
 							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked += OnSnackbarNotificationInvoked;
 							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Register();
@@ -76,7 +81,11 @@ public class Options() : Core.Options
 					})
 					.OnClosed((_, _) =>
 					{
-						if (Application.Current?.Windows.Count is 1)
+						if (Application.Current is null)
+						{
+							throw new InvalidOperationException($"{nameof(Application)}.{nameof(Application.Current)} cannot be null when Windows are closed");
+						}
+						else if (Application.Current.Windows.Count is 1)
 						{
 							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked -= OnSnackbarNotificationInvoked;
 							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Unregister();
