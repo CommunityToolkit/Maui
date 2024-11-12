@@ -54,7 +54,11 @@ public partial class TouchBehaviorCollectionViewMultipleSelectionPage : BasePage
 						getter: static (ContentCreator creator) => creator.Image,
 						mode: BindingMode.OneTime)
 			}
-		}.Behaviors(new TouchBehavior()
+		}.Assign(out VerticalStackLayout stackLayout)
+		 .Behaviors(new TouchBehavior()
+			.Bind(Behavior.BindingContextProperty, 
+				getter: static (VerticalStackLayout layout) => layout.BindingContext,
+				source: stackLayout)
 			.Bind(TouchBehavior.CommandProperty,
 				getter: static vm => vm.RowTappedCommand,
 				source: viewModel)
