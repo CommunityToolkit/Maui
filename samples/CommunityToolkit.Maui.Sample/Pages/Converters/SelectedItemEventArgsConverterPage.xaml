@@ -44,6 +44,7 @@
             <ListView.Behaviors>
                 <mct:EventToCommandBehavior 
                     EventName="ItemSelected"
+                    BindingContext="{Binding Path=BindingContext, Source={x:Reference ListView},x:DataType=ListView}"
                     Command="{Binding HandleItemSelectedCommand}"
                     CommandParameter="{Binding ItemSelected}"/>
             </ListView.Behaviors>
