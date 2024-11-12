@@ -29,7 +29,7 @@ public class PopupServiceTests : BaseHandlerTest
 	[Fact]
 	public async Task ShowPopupAsyncWithNullViewModelShouldThrowArgumentNullException()
 	{
-		var popupService = new PopupService(new MockServiceProvider(), new MockDispatcher());
+		var popupService = new PopupService(new MockServiceProvider(), new MockDispatcherProvider());
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		await Assert.ThrowsAsync<ArgumentNullException>(() =>
@@ -40,7 +40,7 @@ public class PopupServiceTests : BaseHandlerTest
 	[Fact]
 	public async Task ShowPopupAsyncWithNullOnPresentingShouldThrowArgumentNullException()
 	{
-		var popupService = new PopupService(new MockServiceProvider(), new MockDispatcher());
+		var popupService = new PopupService(new MockServiceProvider(), new MockDispatcherProvider());
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		await Assert.ThrowsAsync<ArgumentNullException>(() =>
@@ -89,7 +89,7 @@ public class PopupServiceTests : BaseHandlerTest
 	[Fact]
 	public async Task ShowPopupAsyncWithMismatchedViewModelTypeShouldThrowInvalidOperationException()
 	{
-		var popupService = new PopupService(new MockServiceProvider(), new MockDispatcher());
+		var popupService = new PopupService(new MockServiceProvider(), new MockDispatcherProvider());
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		await Assert.ThrowsAsync<ArgumentNullException>(() =>
@@ -199,7 +199,7 @@ public class PopupServiceTests : BaseHandlerTest
 	[Fact]
 	public void ShowPopupWithNullViewModelShouldThrowArgumentNullException()
 	{
-		var popupService = new PopupService(new MockServiceProvider(), new MockDispatcher());
+		var popupService = new PopupService(new MockServiceProvider(), new MockDispatcherProvider());
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		Assert.Throws<ArgumentNullException>(() => popupService.ShowPopup<INotifyPropertyChanged>(viewModel: null));
@@ -209,7 +209,7 @@ public class PopupServiceTests : BaseHandlerTest
 	[Fact]
 	public void ShowPopupWithNullOnPresentingShouldThrowArgumentNullException()
 	{
-		var popupService = new PopupService(new MockServiceProvider(), new MockDispatcher());
+		var popupService = new PopupService(new MockServiceProvider(), new MockDispatcherProvider());
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		Assert.Throws<ArgumentNullException>(() => popupService.ShowPopup<INotifyPropertyChanged>(onPresenting: null));
@@ -219,7 +219,7 @@ public class PopupServiceTests : BaseHandlerTest
 	[Fact]
 	public void ShowPopupWithMismatchedViewModelTypeShouldThrowInvalidOperationException()
 	{
-		var popupService = new PopupService(new MockServiceProvider(), new MockDispatcher());
+		var popupService = new PopupService(new MockServiceProvider(), new MockDispatcherProvider());
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		Assert.Throws<ArgumentNullException>(() => popupService.ShowPopup<INotifyPropertyChanged>(viewModel: null));
@@ -300,7 +300,7 @@ public class PopupServiceTests : BaseHandlerTest
 			MockServiceProvider.ThatProvides(
 				(implementation: popup, forType: typeof(MockPopup)),
 				(implementation: createViewModelInstance.Invoke(), forType: typeof(MockPageViewModel))),
-			new MockDispatcher());
+			new MockDispatcherProvider());
 
 		var app = Application.Current ?? throw new NullReferenceException();
 

@@ -14,8 +14,15 @@ public static class MauiProgram
 		var builder = MauiApp.CreateBuilder();
 		builder
 			.UseMauiApp<App>()
+
+#if WINDOWS
 			// Initialize the .NET MAUI Community Toolkit Maps by adding the below line of code
 			.UseMauiCommunityToolkitMaps("key")
+#else
+            // For all other platforms
+            .UseMauiMaps()
+#endif
+
 			// After initializing the .NET MAUI Community Toolkit, optionally add additional fonts
 			.ConfigureFonts(fonts =>
 			{
