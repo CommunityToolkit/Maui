@@ -74,7 +74,7 @@
 
     <Page.Behaviors>
         <mct:StatusBarBehavior
-            BindingContext="{Binding Path=BindingContext, Source={x:Reference Page}}"
+            BindingContext="{Binding Path=BindingContext, Source={x:Reference Page}, x:DataType=ContentPage}"
             StatusBarColor="{Binding StatusBarColor}"
             StatusBarStyle="{Binding StatusBarStyle}" />
     </Page.Behaviors>

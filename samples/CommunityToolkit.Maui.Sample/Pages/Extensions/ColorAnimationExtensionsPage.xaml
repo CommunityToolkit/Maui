@@ -39,7 +39,7 @@
                        Stroke="Black"
                        BackgroundColor="White">
 
-                    <Label TextColor="{Binding Source={x:Reference ColorBorder}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}}"
+                    <Label TextColor="{Binding Source={x:Reference ColorBorder}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}, x:DataType=Border}"
                             Text="Watch My Background Color Change"
                             HorizontalTextAlignment="Center"
                             VerticalTextAlignment="Center"/>

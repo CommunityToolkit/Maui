@@ -24,7 +24,7 @@
             <Button.Behaviors>
                 <mct:EventToCommandBehavior
                         EventName="Clicked"
-                        BindingContext="{Binding Path=BindingContext, Source={x:Reference IncrementButton}}"
+                        BindingContext="{Binding Path=BindingContext, Source={x:Reference IncrementButton}, x:DataType=Button}"
                         Command="{Binding IncrementCommand}" />
             </Button.Behaviors>
         </Button>
@@ -38,7 +38,7 @@
                 <mct:EventToCommandBehavior
                         x:TypeArguments="system:EventArgs"
                         EventName="Clicked"
-                        BindingContext="{Binding Path=BindingContext, Source={x:Reference EventArgsButton}}"
+                        BindingContext="{Binding Path=BindingContext, Source={x:Reference EventArgsButton}, x:DataType=Button}"
                         Command="{Binding IncrementWithArgsCommand}" />
             </Button.Behaviors>
         </Button>

@@ -46,7 +46,7 @@
                      Grid.Row="2"/>
 
             <Label Text="{Binding Source={x:Reference Stepper},
-                                Path=Value, StringFormat='Selected index: {0}'}"
+                                Path=Value, StringFormat='Selected index: {0}', x:DataType=Stepper}"
                     VerticalOptions="CenterAndExpand"
                     FontAttributes="Bold"
                     Grid.Row="2"
@@ -65,9 +65,9 @@
                 Grid.Row="4"
                 Grid.ColumnSpan="2">
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="x:String">
                         <ContentView>
-                            <Label Padding="5" Text="{Binding}"/>
+                            <Label Padding="5" Text="{Binding .}"/>
                         </ContentView>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>

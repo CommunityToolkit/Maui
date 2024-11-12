@@ -79,7 +79,7 @@
                 x:Name="ToggleImageSourceButton">
                 <ImageButton.Behaviors>
                     <mct:IconTintColorBehavior 
-                        BindingContext="{Binding Path=BindingContext, Source={x:Reference ToggleImageSourceButton}}"
+                        BindingContext="{Binding Path=BindingContext, Source={x:Reference ToggleImageSourceButton}, x:DataType=ImageButton}"
                         TintColor="{Binding ToggleableIconTintColor}" />
                 </ImageButton.Behaviors>
             </ImageButton>
@@ -92,7 +92,7 @@
                 x:Name="ShieldButton">
                 <ImageButton.Behaviors>
                     <mct:IconTintColorBehavior
-                        BindingContext="{Binding Path=BindingContext, Source={x:Reference ShieldButton}}"
+                        BindingContext="{Binding Path=BindingContext, Source={x:Reference ShieldButton}, x:DataType=ImageButton}"
                         TintColor="{Binding ToggleableIconTintColor}" />
                 </ImageButton.Behaviors>
             </ImageButton>

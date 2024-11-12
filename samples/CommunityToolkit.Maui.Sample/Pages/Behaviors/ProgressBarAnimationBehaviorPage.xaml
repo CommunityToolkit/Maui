@@ -18,7 +18,7 @@
             <ProgressBar.Behaviors>
                 <mct:ProgressBarAnimationBehavior
                     x:Name="ProgressBarAnimationBehavior"
-                    BindingContext="{Binding Path=BindingContext, Source={x:Reference DemoProgressBar}}"
+                    BindingContext="{Binding Path=BindingContext, Source={x:Reference DemoProgressBar}, x:DataType=ProgressBar}"
                     Progress="{Binding Progress}"
                     Length="250"/>
             </ProgressBar.Behaviors>

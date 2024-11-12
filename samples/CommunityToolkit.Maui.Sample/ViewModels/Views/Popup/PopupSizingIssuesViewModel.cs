@@ -11,7 +11,13 @@ public partial class PopupSizingIssuesViewModel : BaseViewModel
 	public partial ContainerModel SelectedContainer { get; set; }
 
 	[ObservableProperty]
-	int padding = 6, margin = 12;
+	public partial int Padding { get; set; } = 6;
+
+	[ObservableProperty]
+	public partial int Adding { get; set; } = 6;
+
+	[ObservableProperty]
+	public partial int Margin { get; set; } = 12;
 
 	public PopupSizingIssuesViewModel()
 	{
@@ -32,7 +38,7 @@ public partial class PopupSizingIssuesViewModel : BaseViewModel
 	{
 		var popup = new Popup();
 
-		if (SelectedContainer?.ControlTemplate.LoadTemplate() is not View container)
+		if (SelectedContainer?.ControlTemplate.LoadTemplate() is not (View container and ContentView contentView))
 		{
 			await Toast.Make("Invalid Container Selected").Show();
 			return;
@@ -42,8 +48,7 @@ public partial class PopupSizingIssuesViewModel : BaseViewModel
 		container.SetValue(View.MarginProperty, new Thickness(Margin));
 
 		const string longText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
-
-		container.GetType().GetProperty(nameof(IContentView.Content))?.SetValue(container, GetContentLabel(longText));
+		contentView.Content = GetContentLabel(longText);
 
 		if (container is Layout layout)
 		{

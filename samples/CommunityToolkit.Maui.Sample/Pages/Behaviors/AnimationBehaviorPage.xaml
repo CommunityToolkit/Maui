@@ -82,13 +82,13 @@
             <Border.Behaviors>
                 <mct:AnimationBehavior 
                     AnimateCommand="{Binding AnimateFromViewModelCommand}"
-                    BindingContext="{Binding Path=BindingContext, Source={x:Reference AnimatedBorder}}">
+                    BindingContext="{Binding Path=BindingContext, Source={x:Reference AnimatedBorder}, x:DataType=Border}">
                     <mct:AnimationBehavior.AnimationType>
                         <mct:FadeAnimation Opacity="0.2" />
                     </mct:AnimationBehavior.AnimationType>
                 </mct:AnimationBehavior>
             </Border.Behaviors>
-            <Label Text="Click this Frame" HorizontalOptions="Center"/>
+            <Label Text="Click Inside This Border" HorizontalOptions="Center"/>
         </Border>
 
         <Button Text="Animate the frame above" Command="{Binding TriggerAnimationCommand}" />

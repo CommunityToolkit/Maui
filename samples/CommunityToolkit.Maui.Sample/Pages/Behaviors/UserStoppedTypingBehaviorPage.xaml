@@ -56,7 +56,7 @@
                            VerticalTextAlignment="Center"
                            Grid.Row="2"
                            Grid.Column="0" />
-                    <Switch x:Name="AutoDismissKeyboardSetting"
+                    <Switch x:Name="AutoDismissKeyboardSettingSwitch"
                             VerticalOptions="Center"
                             HorizontalOptions="End"
                             Grid.Row="2"
@@ -69,11 +69,11 @@
                        x:Name="Searchbar">
                 <SearchBar.Behaviors>
                     <mct:UserStoppedTypingBehavior 
-                        BindingContext="{Binding Path=BindingContext, Source={x:Reference Searchbar}}"
+                        BindingContext="{Binding Path=BindingContext, Source={x:Reference Searchbar}, x:DataType=SearchBar}"
                         Command="{Binding SearchCommand}"
-                        StoppedTypingTimeThreshold="{Binding Path=Text, Source={x:Reference TimeThresholdSetting}}"
-                        MinimumLengthThreshold="{Binding Path=Text, Source={x:Reference MinimumLengthThresholdSetting}}"
-                        ShouldDismissKeyboardAutomatically="{Binding Path=IsToggled, Source={x:Reference AutoDismissKeyboardSetting}}" />
+                        StoppedTypingTimeThreshold="{Binding Path=Text, Source={x:Reference TimeThresholdSetting}, x:DataType=Entry}"
+                        MinimumLengthThreshold="{Binding Path=Text, Source={x:Reference MinimumLengthThresholdSetting}, x:DataType=Entry}"
+                        ShouldDismissKeyboardAutomatically="{Binding Path=IsToggled, Source={x:Reference AutoDismissKeyboardSettingSwitch}, x:DataType=Switch}" />
                 </SearchBar.Behaviors>
             </SearchBar>
 
