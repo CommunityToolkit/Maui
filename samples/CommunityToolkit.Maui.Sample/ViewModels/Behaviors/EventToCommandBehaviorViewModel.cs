@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 public partial class EventToCommandBehaviorViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	int clickCount;
+	public partial int ClickCount { get; private set; }
 
 	[RelayCommand]
 	void Increment()

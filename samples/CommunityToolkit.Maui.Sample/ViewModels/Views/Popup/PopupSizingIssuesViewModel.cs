@@ -8,14 +8,14 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 public partial class PopupSizingIssuesViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	ContainerModel selectedContainer;
+	public partial ContainerModel SelectedContainer { get; set; }
 
 	[ObservableProperty]
 	int padding = 6, margin = 12;
 
 	public PopupSizingIssuesViewModel()
 	{
-		selectedContainer = Containers[0];
+		SelectedContainer = Containers[0];
 	}
 
 	public IReadOnlyList<ContainerModel> Containers { get; } =

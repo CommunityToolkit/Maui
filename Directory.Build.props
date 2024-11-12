@@ -4,7 +4,7 @@
     <Nullable>enable</Nullable>
     <NoWarn>NETSDK1023</NoWarn>
     <NetVersion>net9.0</NetVersion>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>preview</LangVersion>
     <MauiPackageVersion>9.0.0-rc.2.24503.2</MauiPackageVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
@@ -47,6 +47,7 @@
      CS1712: Type parameter has no matching typeparam tag in the XML comment
      CS1723: XML comment has cref attribute that refers to a type parameter
      CS1734: XML comment has a paramref tag, but there is no parameter by that name
+     MVMTK0042: The field [ObservableProperty] can be converted to a partial property
      CsWinRT1028: Class implements WinRT interfaces but isn't marked partial
      CsWinRT1030: Class implements WinRT interfaces that require unsafe code
      NU1900	Error communicating with package source, while getting vulnerability information.
@@ -66,6 +67,7 @@
        nullable,
        CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1580,CS1581,CS1584,CS1587,CS1589,CS1590,CS1591,CS1592,CS1598,CS1658,CS1710,CS1711,CS1712,CS1723,CS1734,
        CsWinRT1028,CsWinRT1030,
+       MVMTK0042,
        NU1900,NU1901,NU1902,NU1903,NU1904,NU1905,
        xUnit1012,xUnit2021,
        XC0045,XC0103,

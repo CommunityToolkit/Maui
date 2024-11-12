@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 public partial class MaxLengthReachedBehaviorViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	string commandExecutionText = string.Empty;
+	public partial string CommandExecutionText { get; set; } = string.Empty;
 
 	[RelayCommand]
 	void MaxLengthReached(string text)

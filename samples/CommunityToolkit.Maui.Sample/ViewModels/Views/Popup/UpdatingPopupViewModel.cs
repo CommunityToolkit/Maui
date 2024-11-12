@@ -11,11 +11,11 @@ public partial class UpdatingPopupViewModel : BaseViewModel
 
 	readonly IPopupService popupService;
 	[ObservableProperty]
-	string message = "";
+	public partial string Message { get; set; } = "";
 
 	[ObservableProperty]
 	[NotifyCanExecuteChangedFor(nameof(FinishCommand))]
-	double updateProgress;
+	public partial double UpdateProgress { get; set; }
 
 	public UpdatingPopupViewModel(IPopupService popupService)
 	{

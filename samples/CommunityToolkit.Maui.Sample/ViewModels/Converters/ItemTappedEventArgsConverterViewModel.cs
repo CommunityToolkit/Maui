@@ -7,8 +7,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 public partial class ItemTappedEventArgsConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	Person? itemSelected = null;
-
+	public partial Person? ItemSelected { get; set; } = null;
 	public IReadOnlyList<Person> Items { get; } =
 	[
 		new Person(1, "John Doe"),

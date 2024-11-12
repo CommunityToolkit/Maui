@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 public partial class StateToBooleanConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	LayoutState layoutState = LayoutState.None;
+	public partial LayoutState LayoutState { get; set; } = LayoutState.None;
 
 	[RelayCommand]
 	public void ChangeLayout()

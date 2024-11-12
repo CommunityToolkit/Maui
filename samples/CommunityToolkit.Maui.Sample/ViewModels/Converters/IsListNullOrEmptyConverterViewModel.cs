@@ -2,8 +2,4 @@
 
 public partial class IsListNullOrEmptyConverterViewModel : IsListNotNullOrEmptyConverterViewModel
 {
-	public IsListNullOrEmptyConverterViewModel()
-	{
-
-	}
 }
