@@ -68,6 +68,14 @@ public static class MauiProgram
 								.UseMauiCommunityToolkitCamera()
 								.UseMauiCommunityToolkitMediaElement()
 
+                                .ConfigureMauiHandlers(handlers =>
+                                {
+#if IOS || MACCATALYST
+									handlers.AddHandler<CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
+                                    handlers.AddHandler<CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
+#endif
+                                })
+
 #if WINDOWS
 								.UseMauiCommunityToolkitMaps("KEY") // You should add your own key here from bingmapsportal.com
 #else
