@@ -72,7 +72,6 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0-preview1" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
-    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
   </ItemGroup>
 
   <PropertyGroup>
