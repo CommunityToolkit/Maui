@@ -5,7 +5,7 @@
     <NoWarn>NETSDK1023</NoWarn>
     <NetVersion>net9.0</NetVersion>
     <LangVersion>preview</LangVersion>
-    <MauiPackageVersion>9.0.0-rc.2.24503.2</MauiPackageVersion>
+    <MauiPackageVersion>9.0.0</MauiPackageVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
