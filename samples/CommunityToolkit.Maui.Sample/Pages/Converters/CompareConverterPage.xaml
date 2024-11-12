@@ -17,7 +17,7 @@
 
             <converters:CompareDoubleToColorConverter
                 x:Key="isLargerThanOneConverter"
-                ComparingValue="1"
+                ComparingValue="5"
                 ComparisonOperator="Greater"
                 FalseObject="PaleVioletRed"
                 TrueObject="LightGreen" />
