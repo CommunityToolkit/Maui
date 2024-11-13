@@ -53,7 +53,7 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 	}
 
 	[MemberNotNull(nameof(View))]
-	internal void AssignViewAndBingingContext(TView bindable)
+	internal void AssignViewAndBindingContext(TView bindable)
 	{
 		View = bindable;
 		bindable.PropertyChanged += OnViewPropertyChanged;
@@ -61,7 +61,7 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 		TrySetBindingContextToAttachedViewBindingContext();
 	}
 
-	internal void UnassignViewAndBingingContext(TView bindable)
+	internal void UnassignViewAndBindingContext(TView bindable)
 	{
 		TryRemoveBindingContext();
 
