@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 
@@ -11,6 +12,7 @@ namespace CommunityToolkit.Maui.Views;
 [BindableProperty<object>("CommandParameter")]
 [BindableProperty<ICommand>("Command")]
 [ContentProperty(nameof(Content))]
+[RequiresUnreferencedCode("Calls Microsoft.Maui.Controls.Binding.Binding(String, BindingMode, IValueConverter, Object, String, Object)")]
 public partial class Expander : ContentView, IExpander
 {
 	/// <summary>
@@ -65,7 +67,7 @@ public partial class Expander : ContentView, IExpander
 		get => (ExpandDirection)GetValue(DirectionProperty);
 		set
 		{
-			if (!Enum.IsDefined(typeof(ExpandDirection), value))
+			if (!Enum.IsDefined(value))
 			{
 				throw new InvalidEnumArgumentException(nameof(value), (int)value, typeof(ExpandDirection));
 			}
@@ -81,7 +83,7 @@ public partial class Expander : ContentView, IExpander
 		var expander = (Expander)bindable;
 		if (newValue is View view)
 		{
-			view.SetBinding(IsVisibleProperty, BindingBase.Create<Expander, bool>(static p => p.IsExpanded, source: expander));
+			view.SetBinding(IsVisibleProperty, new Binding(nameof(IsExpanded), source: expander));
 
 			expander.ContentGrid.Remove(oldValue);
 			expander.ContentGrid.Add(newValue);
