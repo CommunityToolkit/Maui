@@ -41,7 +41,7 @@ public partial class StateToBooleanConverter : BaseConverterOneWay<LayoutState, 
 		get => stateToCompare;
 		set
 		{
-			if (!Enum.IsDefined(typeof(LayoutState), value))
+			if (!Enum.IsDefined(value))
 			{
 				throw new InvalidEnumArgumentException(nameof(value), (int)value, typeof(LayoutState));
 			}
