@@ -20,7 +20,7 @@
                 Grid.ColumnSpan="2"
                 BackgroundColor="White"
                 Command="{Binding AddNewLineCommand, Mode=OneTime}"
-                CommandParameter="{Binding Path=., Source={x:Reference DrawingViewControl}}"
+                CommandParameter="{Binding Path=., Source={x:Reference DrawingViewControl}, x:DataType=mct:DrawingView}"
                 Text="Add new line"
                 TextColor="Black" />
             <Button

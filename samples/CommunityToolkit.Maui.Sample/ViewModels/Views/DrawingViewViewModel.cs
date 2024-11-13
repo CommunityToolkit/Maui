@@ -15,7 +15,7 @@ public partial class DrawingViewViewModel : BaseViewModel
 	readonly IFileSaver fileSaver;
 
 	[ObservableProperty]
-	public partial string Logs { get; set; } = string.Empty;
+	public partial string Logs { get; private set; } = string.Empty;
 
 	public DrawingViewViewModel(IFileSaver fileSaver)
 	{
