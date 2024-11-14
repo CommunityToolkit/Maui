@@ -84,7 +84,9 @@ jobs:
       - task: CmdLine@2
         displayName: 'Install Latest .NET MAUI Workload'
         inputs:
-          script: 'dotnet workload install maui'
+          script: |
+            dotnet workload install maui
+            dotnet workload update
 
       - powershell: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
@@ -217,7 +219,9 @@ jobs:
       - task: CmdLine@2
         displayName: 'Install .NET MAUI Workload $(TOOLKIT_NET_VERSION)'
         inputs:
-          script: dotnet workload install maui --skip-sign-check --source https://api.nuget.org/v3/index.json 
+          script: |
+            dotnet workload install maui
+            dotnet workload update
 
       - powershell: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
@@ -478,7 +482,9 @@ jobs:
       - task: CmdLine@2
         displayName: 'Install .NET MAUI Workload'
         inputs:
-          script : 'dotnet workload install maui'
+          script : |
+            dotnet workload install maui
+            dotnet workload update
 
       - pwsh: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
