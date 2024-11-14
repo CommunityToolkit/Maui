@@ -12,7 +12,6 @@ namespace CommunityToolkit.Maui.Views;
 [BindableProperty<object>("CommandParameter")]
 [BindableProperty<ICommand>("Command")]
 [ContentProperty(nameof(Content))]
-[RequiresUnreferencedCode("Calls Microsoft.Maui.Controls.Binding.Binding(String, BindingMode, IValueConverter, Object, String, Object)")]
 public partial class Expander : ContentView, IExpander
 {
 	/// <summary>
@@ -83,7 +82,7 @@ public partial class Expander : ContentView, IExpander
 		var expander = (Expander)bindable;
 		if (newValue is View view)
 		{
-			view.SetBinding(IsVisibleProperty, new Binding(nameof(IsExpanded), source: expander));
+			view.SetBinding<Expander, bool>(IsVisibleProperty, static ex => ex.IsVisible);
 
 			expander.ContentGrid.Remove(oldValue);
 			expander.ContentGrid.Add(newValue);
