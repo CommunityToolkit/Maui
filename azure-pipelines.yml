@@ -139,8 +139,14 @@ jobs:
 
   - job: build_library
     displayName: Build Library
+    strategy:
+      matrix:
+        'Windows':
+          image: 'windows-latest'
+        'macOS':
+          image: 'macos-15'
     pool:
-      vmImage: windows-latest
+      vmImage: $(image)
     steps:
       # if this is a tagged build for CommunityToolkit.Maui, then update the version number
       - powershell: |
