@@ -19,6 +19,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	const string bindingModeFullName = "global::Microsoft.Maui.Controls.";
 
 	const string bpAttribute = /* language=C#-test */"""
+#pragma warning disable
 #nullable enable
 namespace CommunityToolkit.Maui;
 
