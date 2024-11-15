@@ -424,6 +424,7 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 		try
 		{
 			validationTokenSource?.Cancel();
+			validationTokenSource?.Dispose();
 		}
 		catch (ObjectDisposedException) { }
 		finally
