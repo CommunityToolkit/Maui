@@ -5,8 +5,9 @@
     <NoWarn>NETSDK1023</NoWarn>
     <NetVersion>net9.0</NetVersion>
     <LangVersion>preview</LangVersion>
-    <MauiPackageVersion>9.0.10</MauiPackageVersion>
     <ImplicitUsings>enable</ImplicitUsings>
+    <MauiPackageVersion>9.0.10</MauiPackageVersion>
+    <NextMauiPackageVersion>10.0.0</NextMauiPackageVersion>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
