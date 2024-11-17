@@ -1,9 +1,12 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
+[RequiresUnreferencedCode("Expander is not trim safe")]
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 public partial class ExpanderPageCS : ContentPage
 {
 	public ExpanderPageCS()

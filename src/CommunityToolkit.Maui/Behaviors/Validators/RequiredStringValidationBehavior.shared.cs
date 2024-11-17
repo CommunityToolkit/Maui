@@ -4,6 +4,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <summary>
 /// The <see cref="RequiredStringValidationBehavior"/> is a behavior that allows the user to determine if text input is equal to specific text. For example, an <see cref="Entry"/> control can be styled differently depending on whether a valid or an invalid text input is provided. Additional properties handling validation are inherited from <see cref="ValidationBehavior"/>.
 /// </summary>
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 [RequiresUnreferencedCode($"{nameof(RequiredStringValidationBehavior)} is not trim safe because it uses bindings with string paths.")]
 public partial class RequiredStringValidationBehavior : ValidationBehavior<string>
 {

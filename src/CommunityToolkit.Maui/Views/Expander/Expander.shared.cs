@@ -12,6 +12,7 @@ namespace CommunityToolkit.Maui.Views;
 [BindableProperty<object>("CommandParameter")]
 [BindableProperty<ICommand>("Command")]
 [ContentProperty(nameof(Content))]
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 [RequiresUnreferencedCode("Calls Microsoft.Maui.Controls.Binding.Binding(String, BindingMode, IValueConverter, Object, String, Object)")]
 public partial class Expander : ContentView, IExpander
 {

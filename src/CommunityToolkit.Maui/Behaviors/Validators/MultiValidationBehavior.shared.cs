@@ -6,6 +6,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <summary>
 /// The <see cref="MultiValidationBehavior"/> is a behavior that allows the user to combine multiple validators to validate text input depending on specified parameters. For example, an <see cref="Entry"/> control can be styled differently depending on whether a valid or an invalid text input is provided. By allowing the user to chain multiple existing validators together, it offers a high degree of customizability when it comes to validation. Additional properties handling validation are inherited from <see cref="ValidationBehavior"/>.
 /// </summary>
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 [RequiresUnreferencedCode($"{nameof(MultiValidationBehavior)} is not trim safe because it uses bindings with string paths.")]
 [ContentProperty(nameof(Children))]
 public partial class MultiValidationBehavior : ValidationBehavior
