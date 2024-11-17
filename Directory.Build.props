@@ -6,10 +6,8 @@
     <NetVersion>net9.0</NetVersion>
     <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
-    <MauiPackageVersion>9.0.10</MauiPackageVersion>
-    <NextMauiPackageVersion>10.0.0</NextMauiPackageVersion>
-    <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
 
@@ -18,6 +16,8 @@
     <NuGetAuditMode>all</NuGetAuditMode>
 
     <!-- MAUI Specific -->
+    <MauiPackageVersion>9.0.10</MauiPackageVersion>
+    <NextMauiPackageVersion>10.0.0</NextMauiPackageVersion>
     <MauiStrictXamlCompilation>true</MauiStrictXamlCompilation>
     <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
