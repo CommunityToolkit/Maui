@@ -11,42 +11,52 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// Drawing view service
 /// </summary>
-public static class DrawingViewService
+public static partial class DrawingViewService
 {
 	/// <summary>
 	/// Get image stream from lines
 	/// </summary>
 	/// <param name="lines">Drawing lines</param>
-	/// <param name="imageSize">Maximum image size. The image will be resized proportionally.</param>
+	/// <param name="desiredSize">The desired dimensions of the generated image. The image will be resized proportionally.</param>
 	/// <param name="background">Image background</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
+	/// <param name="canvasSize">
+	/// The actual size of the canvas being displayed. This is an optional parameter
+	/// if a value is provided then the contents of the <paramref name="lines"/> inside these dimensions will be included in the output,
+	/// if <c>null</c> is provided then the resulting output will be the area covered by the top-left to the bottom-right most points.
+	/// </param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background, CancellationToken token = default)
+	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size desiredSize, Paint? background, Size? canvasSize, CancellationToken token = default)
 	{
 		token.ThrowIfCancellationRequested();
 
-		var image = GetBitmapForLines(lines, background);
+		var image = GetBitmapForLines(lines, background, canvasSize);
 
-		return ValueTask.FromResult(GetBitmapStream(image, imageSize));
+		return ValueTask.FromResult(GetBitmapStream(image, desiredSize));
 	}
 
 	/// <summary>
 	/// Get image stream from points
 	/// </summary>
 	/// <param name="points">Drawing points</param>
-	/// <param name="imageSize">Maximum image size. The image will be resized proportionally.</param>
+	/// <param name="desiredSize">The desired dimensions of the generated image. The image will be resized proportionally.</param>
 	/// <param name="lineWidth">Line Width</param>
 	/// <param name="strokeColor">Line color</param>
 	/// <param name="background">Image background</param>
+	/// <param name="canvasSize">
+	/// The actual size of the canvas being displayed. This is an optional parameter
+	/// if a value is provided then the contents of the <paramref name="points"/> inside these dimensions will be included in the output,
+	/// if <c>null</c> is provided then the resulting output will be the area covered by the top-left to the bottom-right most points.
+	/// </param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<PointF> points, Size imageSize, float lineWidth, Color strokeColor, Paint? background, CancellationToken token = default)
+	public static ValueTask<Stream> GetImageStream(IList<PointF> points, Size desiredSize, float lineWidth, Color strokeColor, Paint? background, Size? canvasSize, CancellationToken token = default)
 	{
 		token.ThrowIfCancellationRequested();
 
-		var image = GetBitmapForPoints(points, lineWidth, strokeColor, background);
+		var image = GetBitmapForPoints(points, lineWidth, strokeColor, background, canvasSize);
 
-		return ValueTask.FromResult(GetBitmapStream(image, imageSize));
+		return ValueTask.FromResult(GetBitmapStream(image, desiredSize));
 	}
 
 	static Stream GetBitmapStream(Bitmap? image, Size imageSize)
@@ -75,9 +85,10 @@ public static class DrawingViewService
 	static Bitmap? GetBitmapForPoints(ICollection<PointF> points,
 		float lineWidth,
 		Color strokeColor,
-		Paint? background)
+		Paint? background,
+		Size? canvasSize)
 	{
-		var (image, offset) = GetBitmap(points, lineWidth);
+		var (image, offset) = GetBitmap(points, lineWidth, canvasSize);
 		if (image is null)
 		{
 			return null;
@@ -89,11 +100,11 @@ public static class DrawingViewService
 		return image;
 	}
 
-	static Bitmap? GetBitmapForLines(IList<IDrawingLine> lines, Paint? background)
+	static Bitmap? GetBitmapForLines(IList<IDrawingLine> lines, Paint? background, Size? canvasSize)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
 		var maxLineWidth = lines.Select(x => x.LineWidth).Max();
-		var (image, offset) = GetBitmap(points, maxLineWidth);
+		var (image, offset) = GetBitmap(points, maxLineWidth, canvasSize);
 		if (image is null)
 		{
 			return null;
@@ -109,7 +120,7 @@ public static class DrawingViewService
 		return image;
 	}
 
-	static (Bitmap?, SizeF offset) GetBitmap(ICollection<PointF> points, float maxLineWidth)
+	static (Bitmap?, SizeF offset) GetBitmap(ICollection<PointF> points, float maxLineWidth, Size? canvasSize)
 	{
 		if (points.Count is 0)
 		{
@@ -118,8 +129,8 @@ public static class DrawingViewService
 
 		var minPointX = points.Min(p => p.X) - maxLineWidth;
 		var minPointY = points.Min(p => p.Y) - maxLineWidth;
-		var drawingWidth = points.Max(p => p.X) - minPointX + maxLineWidth;
-		var drawingHeight = points.Max(p => p.Y) - minPointY + maxLineWidth;
+		var drawingWidth = canvasSize?.Width ?? points.Max(p => p.X) - minPointX + maxLineWidth;
+		var drawingHeight = canvasSize?.Height ?? points.Max(p => p.Y) - minPointY + maxLineWidth;
 		const int minSize = 1;
 		if (drawingWidth < minSize || drawingHeight < minSize)
 		{
@@ -136,8 +147,10 @@ public static class DrawingViewService
 		{
 			return (null, SizeF.Zero);
 		}
+		
+		var offset = canvasSize is null ? new SizeF(minPointX, minPointY) : SizeF.Zero;
 
-		return (image, new SizeF(minPointX, minPointY));
+		return (image, offset);
 	}
 
 	static void DrawStrokes(Canvas canvas, ICollection<PointF> points, float lineWidth, Color strokeColor, SizeF offset)
