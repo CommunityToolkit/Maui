@@ -121,7 +121,7 @@ public partial class IconTintColorBehavior
 
 	static void SetUIButtonTintColor(UIButton button, View element, Color color)
 	{
-		if (button.ImageView.Image is null)
+		if (button.ImageView.Image is null || button.CurrentImage is null)
 		{
 			return;
 		}
