@@ -13,7 +13,7 @@ namespace CommunityToolkit.Maui.SourceGenerators.Generators;
 // // Final version: {DateTime.Now}
 // Use this as a check, if the DateTime value changes when you change a code
 // that has not to do with the generator (changing a code in another class, e.g.)
-// then you broke the Incremental behavior of it and it need to be fixed before submit a PR
+// then you broke the Incremental behavior of it, and it needs to be fixed before submit a PR
 
 [Generator]
 class TextColorToGenerator : IIncrementalGenerator
