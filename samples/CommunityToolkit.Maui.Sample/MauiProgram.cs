@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.ApplicationModel;
-using CommunityToolkit.Maui.Maps;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Media;
 using CommunityToolkit.Maui.Sample.Models;
@@ -34,6 +33,7 @@ using Microsoft.Maui.LifecycleEvents;
 using Polly;
 
 #if WINDOWS10_0_17763_0_OR_GREATER
+using CommunityToolkit.Maui.Maps;
 using Microsoft.UI;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Windowing;
@@ -47,7 +47,8 @@ namespace CommunityToolkit.Maui.Sample;
 
 public static class MauiProgram
 {
-	public static MauiApp CreateMauiApp()
+    [RequiresUnreferencedCode($"{nameof(CommunityToolkit.Maui.Views.Expander)} and  {nameof(TouchBehaviorCollectionViewMultipleSelectionPage)} are not type safe")]
+    public static MauiApp CreateMauiApp()
 	{
 		var builder = MauiApp.CreateBuilder()
 #if DEBUG
@@ -77,7 +78,7 @@ public static class MauiProgram
                                 })
 
 #if WINDOWS
-								.UseMauiCommunityToolkitMaps("KEY") // You should add your own key here from bingmapsportal.com
+								.UseMauiCommunityToolkitMaps("KEY") // You should add your own key here from https://bingmapsportal.com
 #else
 								.UseMauiMaps()
 #endif
@@ -133,7 +134,8 @@ public static class MauiProgram
 		return builder.Build();
 	}
 
-	static void RegisterViewsAndViewModels(in IServiceCollection services)
+    [RequiresUnreferencedCode("Calls CommunityToolkit.Maui.Sample.MauiProgram.AddTransientWithShellRoute<TPage, TViewModel>()")]
+    static void RegisterViewsAndViewModels(in IServiceCollection services)
 	{
 		// Add Gallery Pages + ViewModels
 		services.AddTransient<AlertsGalleryPage, AlertsGalleryViewModel>();
