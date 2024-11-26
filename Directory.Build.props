@@ -138,6 +138,9 @@
      xUnit2030:	Do not use Assert.NotEmpty to check if a value exists in a collection
      xUnit2031:	Do not use Where clause with Assert.Single
      xUnit2032:	Type assertions based on 'assignable from' are confusingly named
+     xUnit3000: Classes which cross AppDomain boundaries must derive directly or indirectly from LongLivedMarshalByRefObject
+     xUnit3001: Classes that are marked as serializable (or created by the test framework at runtime) must have a public parameterless constructor
+     xUnit3002: Classes which are JSON serializable should not be tested for their concrete type
      XC0045: Binding: Property not found
      XC0103: Consider attributing the markup extension with [RequireService] or [AcceptEmptyServiceProvider] if it doesn't require any
      IL2***: Trim Warnings     
@@ -151,6 +154,7 @@
       NU1900,NU1901,NU1902,NU1903,NU1904,NU1905,
       xUnit1000,xUnit1001,xUnit1002,xUnit1003,xUnit1004,xUnit1005,xUnit1006,xUnit1007,xUnit1008,xUnit1009,xUnit1010,xUnit1011,xUnit1012,xUnit1013,xUnit1014,xUnit1015,xUnit1016,xUnit1017,xUnit1018,xUnit1019,xUnit1020,xUnit1021,xUnit1022,xUnit1023,xUnit1024,xUnit1025,xUnit1026,xUnit1027,xUnit1028,xUnit1029,xUnit1030,xUnit1031,xUnit1032,xUnit1033,xUnit1034,xUnit1035,xUnit1036,xUnit1037,xUnit1038,xUnit1039,xUnit1040,xUnit1041,xUnit1042,xUnit1043,xUnit1048,xUnit1049,xUnit1050,xUnit1051,
       xUnit2000,xUnit2001,xUnit2002,xUnit2003,xUnit2004,xUnit2005,xUnit2006,xUnit2007,xUnit2008,xUnit2009,xUnit2010,xUnit2011,xUnit2012,xUnit2013,xUnit2014,xUnit2015,xUnit2016,xUnit2017,xUnit2018,xUnit2019,xUnit2020,xUnit2021,xUnit2022,xUnit2023,xUnit2024,xUnit2025,xUnit2026,xUnit2027,xUnit2028,xUnit2029,xUnit2030,xUnit2031,xUnit2032,
+      xUnit3000,xUnit3001,xUnit3002,
       XC0045,XC0103,
       IL2001,IL2002,IL2003,IL2004,IL2005,IL2006,IL2007,IL2008,IL2009,
       IL2010,IL2011,IL2012,IL2013,IL2014,IL2015,IL2016,IL2017,IL2018,IL2019,
