@@ -105,7 +105,39 @@
      xUnit1049: Do not use 'async void' for test methods as it is no longer supported
      xUnit1050: The class referenced by the ClassData attribute returns untyped data rows
      xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken
-     xUnit2021: Assert.ThrowsAsync is async. The resulting task should be awaited
+     xUnit2000: Constants and literals should be the expected argument
+     xUnit2001: Do not use invalid equality check
+     xUnit2002: Do not use null check on value type
+     xUnit2003: Do not use equality check to test for null value
+     xUnit2004: Do not use equality check to test for boolean conditions
+     xUnit2005: Do not use identity check on value type
+     xUnit2006: Do not use invalid string equality check
+     xUnit2007: Do not use typeof expression to check the type
+     xUnit2008: Do not use boolean check to match on regular expressions
+     xUnit2009: Do not use boolean check to check for substrings
+     xUnit2010: Do not use boolean check to check for string equality
+     xUnit2011: Do not use empty collection check
+     xUnit2012: Do not use Enumerable.Any() to check if a value exists in a collection
+     xUnit2013: Do not use equality check to check for collection size.
+     xUnit2014:	Do not use throws check to check for asynchronously thrown exception
+     xUnit2015:	Do not use typeof expression to check the exception type
+     xUnit2016:	Keep precision in the allowed range when asserting equality of doubles or decimals.
+     xUnit2017:	Do not use Contains() to check if a value exists in a collection
+     xUnit2018:	Do not compare an object's exact type to an abstract class or interface
+     xUnit2019:	Do not use obsolete throws check to check for asynchronously thrown exception
+     xUnit2020:	Do not use always-failing boolean assertion to fail a test
+     xUnit2021:	Async assertions should be awaited
+     xUnit2022:	Boolean assertions should not be negated
+     xUnit2023:	Do not use collection methods for single-item collections
+     xUnit2024:	Do not use boolean asserts for simple equality tests
+     xUnit2025:	The boolean assertion statement can be simplified
+     xUnit2026:	Comparison of sets must be done with IEqualityComparer
+     xUnit2027:	Comparison of sets to linear containers have undefined results
+     xUnit2028:	Do not use Assert.Empty or Assert.NotEmpty with problematic types
+     xUnit2029:	Do not use Assert.Empty to check if a value does not exist in a collection
+     xUnit2030:	Do not use Assert.NotEmpty to check if a value exists in a collection
+     xUnit2031:	Do not use Where clause with Assert.Single
+     xUnit2032:	Type assertions based on 'assignable from' are confusingly named
      XC0045: Binding: Property not found
      XC0103: Consider attributing the markup extension with [RequireService] or [AcceptEmptyServiceProvider] if it doesn't require any
      IL2***: Trim Warnings     
@@ -118,7 +150,7 @@
       MVMTK0042,
       NU1900,NU1901,NU1902,NU1903,NU1904,NU1905,
       xUnit1000,xUnit1001,xUnit1002,xUnit1003,xUnit1004,xUnit1005,xUnit1006,xUnit1007,xUnit1008,xUnit1009,xUnit1010,xUnit1011,xUnit1012,xUnit1013,xUnit1014,xUnit1015,xUnit1016,xUnit1017,xUnit1018,xUnit1019,xUnit1020,xUnit1021,xUnit1022,xUnit1023,xUnit1024,xUnit1025,xUnit1026,xUnit1027,xUnit1028,xUnit1029,xUnit1030,xUnit1031,xUnit1032,xUnit1033,xUnit1034,xUnit1035,xUnit1036,xUnit1037,xUnit1038,xUnit1039,xUnit1040,xUnit1041,xUnit1042,xUnit1043,xUnit1048,xUnit1049,xUnit1050,xUnit1051,
-      xUnit2021,
+      xUnit2000,xUnit2001,xUnit2002,xUnit2003,xUnit2004,xUnit2005,xUnit2006,xUnit2007,xUnit2008,xUnit2009,xUnit2010,xUnit2011,xUnit2012,xUnit2013,xUnit2014,xUnit2015,xUnit2016,xUnit2017,xUnit2018,xUnit2019,xUnit2020,xUnit2021,xUnit2022,xUnit2023,xUnit2024,xUnit2025,xUnit2026,xUnit2027,xUnit2028,xUnit2029,xUnit2030,xUnit2031,xUnit2032,
       XC0045,XC0103,
       IL2001,IL2002,IL2003,IL2004,IL2005,IL2006,IL2007,IL2008,IL2009,
       IL2010,IL2011,IL2012,IL2013,IL2014,IL2015,IL2016,IL2017,IL2018,IL2019,
