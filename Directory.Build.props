@@ -58,6 +58,8 @@
      NU1904	Package with critical severity detected
      NU1905	An audit source does not provide a vulnerability database
      xUnit1012: Null should not be used for type parameter
+     xUnit1040: The type argument Microsoft. Maui. Controls. ItemTappedEventArgs? from ItemTappedEventArgsConverterTests. Data is nullable, while the type of the corresponding test method parameter value is not. Make the theory data type non-nullable, or make the test method parameter nullable
+     xUnit1042: The member referenced by the MemberData attribute returns untyped data rows, such as object[]. Consider using TheoryData<> as the return type to provide better type safety
      xUnit2021: Assert.ThrowsAsync is async. The resulting task should be awaited
      XC0045: Binding: Property not found
      XC0103: Consider attributing the markup extension with [RequireService] or [AcceptEmptyServiceProvider] if it doesn't require any
@@ -70,7 +72,7 @@
        CsWinRT1028,CsWinRT1030,
        MVMTK0042,
        NU1900,NU1901,NU1902,NU1903,NU1904,NU1905,
-       xUnit1012,xUnit2021,
+       xUnit1012,xUnit1040,xUnit1042,xUnit2021,
        XC0045,XC0103,
        IL2001,IL2002,IL2003,IL2004,IL2005,IL2006,IL2007,IL2008,IL2009,
        IL2010,IL2011,IL2012,IL2013,IL2014,IL2015,IL2016,IL2017,IL2018,IL2019,

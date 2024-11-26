@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui;
 /// </summary>
 public class PopupLifecycleController : IPopupLifecycleController
 {
-	readonly List<WeakReference<Popup>> currentPopups = new();
+	readonly List<WeakReference<Popup>> currentPopups = [];
 
 	/// <inheritdoc cref="IPopupLifecycleController.GetCurrentPopup"/>
 	public Popup? GetCurrentPopup()
