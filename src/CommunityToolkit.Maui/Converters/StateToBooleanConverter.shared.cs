@@ -28,8 +28,6 @@ public enum LayoutState
 [AcceptEmptyServiceProvider]
 public partial class StateToBooleanConverter : BaseConverterOneWay<LayoutState, bool, LayoutState?>
 {
-	LayoutState stateToCompare = LayoutState.None;
-
 	/// <inheritdoc/>
 	public override bool DefaultConvertReturnValue { get; set; } = false;
 
@@ -38,7 +36,7 @@ public partial class StateToBooleanConverter : BaseConverterOneWay<LayoutState, 
 	/// </summary>
 	public LayoutState StateToCompare
 	{
-		get => stateToCompare;
+		get;
 		set
 		{
 			if (!Enum.IsDefined(value))
@@ -46,10 +44,10 @@ public partial class StateToBooleanConverter : BaseConverterOneWay<LayoutState, 
 				throw new InvalidEnumArgumentException(nameof(value), (int)value, typeof(LayoutState));
 			}
 
-			stateToCompare = value;
+			field = value;
 		}
 
-	}
+	} = LayoutState.None;
 
 	/// <summary>
 	/// Takes the incoming <see cref="LayoutState"/> in <paramref name="value"/> and compares it to <see cref="StateToCompare"/>. If they are equal it returns True, if they are not equal it returns False. Additionally a state to compare against can be provided in <paramref name="parameter"/>.

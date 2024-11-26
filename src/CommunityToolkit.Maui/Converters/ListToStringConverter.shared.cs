@@ -9,8 +9,6 @@ namespace CommunityToolkit.Maui.Converters;
 [AcceptEmptyServiceProvider]
 public partial class ListToStringConverter : BaseConverterOneWay<IEnumerable, string, string?>
 {
-	string separator = string.Empty;
-
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
 
@@ -21,9 +19,9 @@ public partial class ListToStringConverter : BaseConverterOneWay<IEnumerable, st
 	/// </summary>
 	public string Separator
 	{
-		get => separator;
-		set => separator = value ?? throw new ArgumentNullException(nameof(value));
-	}
+		get;
+		set => field = value ?? throw new ArgumentNullException(nameof(value));
+	} = string.Empty;
 
 	/// <summary>
 	/// Concatenates the items of a collection, using the specified <see cref="Separator"/> between each item. On each item ToString() will be called.

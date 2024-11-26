@@ -7,14 +7,12 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiSemanticOrderView : ContentView, IUIAccessibilityContainer
 {
-	ISemanticOrderView? virtualView;
-
 	internal ISemanticOrderView? VirtualView
 	{
-		get => virtualView;
+		get;
 		set
 		{
-			virtualView = value;
+			field = value;
 			UpdateViewOrder();
 		}
 	}

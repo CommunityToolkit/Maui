@@ -28,8 +28,6 @@ public enum TextCaseType
 [ContentProperty(nameof(Type)), AcceptEmptyServiceProvider]
 public partial class TextCaseConverter : BaseConverterOneWay<string?, string?, TextCaseType?>
 {
-	TextCaseType type = TextCaseType.None;
-
 	/// <inheritdoc/>
 	public override string? DefaultConvertReturnValue { get; set; } = null;
 
@@ -38,7 +36,7 @@ public partial class TextCaseConverter : BaseConverterOneWay<string?, string?, T
 	/// </summary>
 	public TextCaseType Type
 	{
-		get => type;
+		get;
 		set
 		{
 			if (!Enum.IsDefined(value))
@@ -46,9 +44,9 @@ public partial class TextCaseConverter : BaseConverterOneWay<string?, string?, T
 				throw new InvalidEnumArgumentException(nameof(value), (int)value, typeof(TextCaseType));
 			}
 
-			type = value;
+			field = value;
 		}
-	}
+	} = TextCaseType.None;
 
 	/// <summary>
 	/// Converts text (string, char) to a certain case.

@@ -8,21 +8,17 @@ public partial class Toast : IToast
 {
 	bool isDisposed;
 
-	readonly string text = string.Empty;
-	readonly ToastDuration duration = ToastDuration.Short;
-	readonly double textSize = AlertDefaults.FontSize;
-
 	/// <inheritdoc/>
 	public string Text
 	{
-		get => text;
-		init => text = value ?? throw new ArgumentNullException(nameof(value));
-	}
+		get;
+		init => field = value ?? throw new ArgumentNullException(nameof(value));
+	} = string.Empty;
 
 	/// <inheritdoc/>
 	public ToastDuration Duration
 	{
-		get => duration;
+		get;
 		init
 		{
 			if (!Enum.IsDefined(value))
@@ -30,14 +26,14 @@ public partial class Toast : IToast
 				throw new InvalidEnumArgumentException(nameof(value), (int)value, typeof(ToastDuration));
 			}
 
-			duration = value;
+			field = value;
 		}
-	}
+	} = ToastDuration.Short;
 
 	/// <inheritdoc/>
 	public double TextSize
 	{
-		get => textSize;
+		get;
 		init
 		{
 			if (value <= 0)
@@ -45,9 +41,9 @@ public partial class Toast : IToast
 				throw new ArgumentOutOfRangeException(nameof(value), "Toast font size must be positive");
 			}
 
-			textSize = value;
+			field = value;
 		}
-	}
+	} = AlertDefaults.FontSize;
 
 	/// <summary>
 	/// Create new Toast

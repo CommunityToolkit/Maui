@@ -15,14 +15,12 @@ namespace CommunityToolkit.Maui.Core.Views;
 [SupportedOSPlatform("Android22.0")]
 public class MauiSemanticOrderView(Context context) : ContentViewGroup(context)
 {
-	ISemanticOrderView? virtualView;
-
 	internal ISemanticOrderView? VirtualView
 	{
-		get => virtualView;
+		get;
 		set
 		{
-			virtualView = value;
+			field = value;
 			UpdateViewOrder();
 		}
 	}

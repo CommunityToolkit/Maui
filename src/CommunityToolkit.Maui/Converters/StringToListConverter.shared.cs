@@ -9,9 +9,6 @@ namespace CommunityToolkit.Maui.Converters;
 [AcceptEmptyServiceProvider]
 public partial class StringToListConverter : BaseConverterOneWay<string?, IEnumerable, object?>
 {
-	string separator = " ";
-	IList<string> separators = [];
-
 	/// <inheritdoc/>
 	public override IEnumerable DefaultConvertReturnValue { get; set; } = Array.Empty<string>();
 
@@ -23,7 +20,7 @@ public partial class StringToListConverter : BaseConverterOneWay<string?, IEnume
 	/// </summary>
 	public string Separator
 	{
-		get => separator;
+		get;
 		set
 		{
 			ArgumentNullException.ThrowIfNull(value);
@@ -33,9 +30,9 @@ public partial class StringToListConverter : BaseConverterOneWay<string?, IEnume
 				throw new ArgumentException("An empty string is not a valid separator.", nameof(value));
 			}
 
-			separator = value;
+			field = value;
 		}
-	}
+	} = " ";
 
 	/// <summary>
 	/// The strings that delimit the substrings in this string
@@ -44,7 +41,7 @@ public partial class StringToListConverter : BaseConverterOneWay<string?, IEnume
 	/// </summary>
 	public IList<string> Separators
 	{
-		get => separators;
+		get;
 		set
 		{
 			ArgumentNullException.ThrowIfNull(value);
@@ -54,9 +51,9 @@ public partial class StringToListConverter : BaseConverterOneWay<string?, IEnume
 				throw new ArgumentException("A null or an empty string is not a valid separator.", nameof(value));
 			}
 
-			separators = value;
+			field = value;
 		}
-	}
+	} = [];
 
 	/// <summary>
 	/// A bitwise combination of the enumeration values that specifies whether to trim substrings and include empty substrings.

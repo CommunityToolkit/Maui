@@ -7,8 +7,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class DrawingLine : IDrawingLine
 {
-	int granularity = DrawingViewDefaults.MinimumGranularity;
-
 	/// <summary>
 	/// The <see cref="Color"/> that is used to draw this line on the <see cref="IDrawingView"/>.
 	/// </summary>
@@ -29,9 +27,9 @@ public class DrawingLine : IDrawingLine
 	/// </summary>
 	public int Granularity
 	{
-		get => granularity;
-		set => granularity = Math.Clamp(value, DrawingViewDefaults.MinimumGranularity, int.MaxValue);
-	}
+		get;
+		set => field = Math.Clamp(value, DrawingViewDefaults.MinimumGranularity, int.MaxValue);
+	} = DrawingViewDefaults.MinimumGranularity;
 
 	/// <summary>
 	/// Enables or disables if this line is smoothed (anti-aliased) when drawn.

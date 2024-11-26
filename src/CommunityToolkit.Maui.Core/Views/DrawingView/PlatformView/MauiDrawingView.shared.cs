@@ -14,7 +14,6 @@ public partial class MauiDrawingView
 	PointF previousPoint;
 	PathF currentPath = new();
 	MauiDrawingLine? currentLine;
-	Paint paint = new SolidPaint(DrawingViewDefaults.BackgroundColor);
 
 	/// <summary>
 	/// Event raised when drawing line completed 
@@ -87,13 +86,13 @@ public partial class MauiDrawingView
 	/// </summary>
 	public Paint Paint
 	{
-		get => paint;
+		get;
 		set
 		{
-			paint = value;
+			field = value;
 			Redraw();
 		}
-	}
+	} = new SolidPaint(DrawingViewDefaults.BackgroundColor);
 
 	/// <summary>
 	/// Clean up resources

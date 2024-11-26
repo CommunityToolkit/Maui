@@ -30,7 +30,6 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 
 	readonly TimeSpan cancellationTokenSourceTimeout = TimeSpan.FromMilliseconds(737);
 
-	int? gravatarSize;
 	Uri? lastDispatch;
 
 	/// <summary>Initializes a new instance of the <see cref="GravatarImageSource"/> class.</summary>
@@ -91,16 +90,16 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 	/// </remarks>
 	int? GravatarSize
 	{
-		get => gravatarSize;
+		get;
 		set
 		{
 			if (value is null)
 			{
-				gravatarSize = null;
+				field = null;
 			}
 			else
 			{
-				gravatarSize = Math.Clamp(value.Value, 1, 2048);
+				field = Math.Clamp(value.Value, 1, 2048);
 			}
 		}
 	}

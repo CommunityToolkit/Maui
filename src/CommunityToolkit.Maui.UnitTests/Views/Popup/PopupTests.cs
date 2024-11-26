@@ -374,22 +374,20 @@ public class PopupTests : BaseHandlerTest
 
 	class PopupViewModel : INotifyPropertyChanged
 	{
-		Color? color = new();
-
 		public event PropertyChangedEventHandler? PropertyChanged;
 
 		public Color? Color
 		{
-			get => color;
+			get;
 			set
 			{
-				if (!Equals(value, color))
+				if (!Equals(value, field))
 				{
-					color = value;
+					field = value;
 					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Color)));
 				}
 			}
-		}
+		} = new();
 	}
 
 	interface IFooService

@@ -53,7 +53,6 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 
 	TaskCompletionSource popupDismissedTaskCompletionSource = new();
 	TaskCompletionSource<object?> resultTaskCompletionSource = new();
-	Window window;
 	ResourceDictionary resources = [];
 
 	/// <summary>
@@ -64,7 +63,6 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 		((IResourceDictionary)resources).ValuesChanged += OnResourcesChanged;
 
 		VerticalOptions = HorizontalOptions = LayoutAlignment.Center;
-		window = Window;
 		mergedStyle = new MergedStyle(GetType(), this);
 	}
 
@@ -186,17 +184,17 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// </summary>
 	public Window Window
 	{
-		get => window;
+		get;
 		set
 		{
-			window = value;
+			field = value;
 
 			if (Content is IWindowController controller)
 			{
 				controller.Window = value;
 			}
 		}
-	}
+	} = new();
 
 	/// <summary>
 	/// Property that represents Resources of Popup.
