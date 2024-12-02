@@ -269,27 +269,27 @@ jobs:
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.Core'
         inputs:
-          script: 'dotnet build $(PathToCommunityToolkitCoreCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
+          script: 'dotnet build $(PathToCommunityToolkitCoreCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion)'
 
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui'
         inputs:
-          script: 'dotnet build $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
+          script: 'dotnet build $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion)'
 
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.Camera'
         inputs:
-          script: 'dotnet build $(PathToCommunityToolkitCameraCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionCamera)'
+          script: 'dotnet build $(PathToCommunityToolkitCameraCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionCamera) -p:Version=$(NugetPackageVersion)'
 
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.MediaElement'
         inputs:
-          script: 'dotnet build $(PathToCommunityToolkitMediaElementCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionMediaElement)'
+          script: 'dotnet build $(PathToCommunityToolkitMediaElementCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionMediaElement) -p:Version=$(NugetPackageVersion)'
 
       - task: CmdLine@2
         displayName: 'Build CommunityToolkit.Maui.Maps'
         inputs:
-          script: 'dotnet build $(PathToCommunityToolkitMapsCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionMaps)'
+          script: 'dotnet build $(PathToCommunityToolkitMapsCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionMaps) -p:Version=$(NugetPackageVersion)'
 
       - task: CmdLine@2
         displayName: 'Run CommunityToolkit.Maui.Analyzers.UnitTests'
@@ -324,27 +324,27 @@ jobs:
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit.Maui.Core NuGet'
         inputs:
-          script: 'dotnet pack $(PathToCommunityToolkitCoreCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
+          script: 'dotnet pack $(PathToCommunityToolkitCoreCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion)'
 
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit.Maui NuGet'
         inputs:
-          script: 'dotnet pack $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion)'
+          script: 'dotnet pack $(PathToCommunityToolkitCsproj) -c Release -p:PackageVersion=$(NugetPackageVersion) -p:Version=$(NugetPackageVersion)'
 
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit.Maui.Camera NuGet'
         inputs:
-          script: 'dotnet pack $(PathToCommunityToolkitCameraCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionCamera)'
+          script: 'dotnet pack $(PathToCommunityToolkitCameraCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionCamera) -p:Version=$(NugetPackageVersion)'
 
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit.Maui.MediaElement NuGet'
         inputs:
-          script: 'dotnet pack $(PathToCommunityToolkitMediaElementCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionMediaElement)'
+          script: 'dotnet pack $(PathToCommunityToolkitMediaElementCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionMediaElement) -p:Version=$(NugetPackageVersion)'
 
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit.Maui.Maps NuGet'
         inputs:
-          script: 'dotnet pack $(PathToCommunityToolkitMapsCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionMaps)'
+          script: 'dotnet pack $(PathToCommunityToolkitMapsCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionMaps) -p:Version=$(NugetPackageVersion)'
 
       # check vulnerabilities
       - powershell: |
