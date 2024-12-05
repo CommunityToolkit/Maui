@@ -212,11 +212,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			Android.App.Application.Context.StartForegroundService(intent);
 			Android.App.Application.Context.ApplicationContext?.BindService(intent, connection, Bind.AutoCreate);
 		}
-		else
-		{
-			Android.App.Application.Context.StartService(intent);
-			Android.App.Application.Context.ApplicationContext?.BindService(intent, connection, Bind.AutoCreate);
-		}
 	}
 
 	/// <summary>

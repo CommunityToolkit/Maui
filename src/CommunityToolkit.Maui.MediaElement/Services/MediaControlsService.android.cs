@@ -101,37 +101,28 @@ sealed class MediaControlsService : Service
 	{
 		NotificationManager ??= GetSystemService(NotificationService) as NotificationManager ?? throw new InvalidOperationException($"{nameof(NotificationManager)} cannot be null");
 		notification ??= new NotificationCompat.Builder(Platform.AppContext, "1");
+		
 		notification.SetSmallIcon(Resource.Drawable.media3_notification_small_icon);
 		notification.SetAutoCancel(false);
 		notification.SetForegroundServiceBehavior(NotificationCompat.ForegroundServiceImmediate);
 		notification.SetVisibility(NotificationCompat.VisibilityPublic);
-		
-		if (OperatingSystem.IsAndroidVersionAtLeast(26))
-		{
-			ArgumentNullException.ThrowIfNull(NotificationManager);
-			CreateNotificationChannel(NotificationManager);
-		}
+
+		CreateNotificationChannel(NotificationManager);
 
 		if (OperatingSystem.IsAndroidVersionAtLeast(29))
 		{
-			ArgumentNullException.ThrowIfNull(notification);
 			StartForeground(1, notification.Build(), ForegroundService.TypeMediaPlayback);
 			return;
 		}
-		
-		if (OperatingSystem.IsAndroidVersionAtLeast(26))
-		{
-			ArgumentNullException.ThrowIfNull(notification);
-			StartForeground(1, notification.Build());
-		}
+
+		StartForeground(1, notification.Build());
 	}
 
 	[MemberNotNull(nameof(NotificationManager), nameof(notification))]
 	public void UpdateNotifications()
 	{
-		ArgumentNullException.ThrowIfNull(Player);
-		ArgumentNullException.ThrowIfNull(Session);
 		ArgumentNullException.ThrowIfNull(notification);
+		ArgumentNullException.ThrowIfNull(NotificationManager);
 
 		var style = new MediaStyleNotificationHelper.MediaStyle(Session);
 		if (!OperatingSystem.IsAndroidVersionAtLeast(33))
@@ -140,17 +131,15 @@ sealed class MediaControlsService : Service
 		}
 		notification.SetStyle(style);
 		NotificationManagerCompat.From(Platform.AppContext).Notify(1, notification.Build());
-		ArgumentNullException.ThrowIfNull(NotificationManager);
 	}
 
 	[MemberNotNull(nameof(playerNotificationManager))]
 	public void SetLegacyNotifications()
 	{
-		ArgumentNullException.ThrowIfNull(Player);
-		ArgumentNullException.ThrowIfNull(Session);
 		playerNotificationManager ??= new PlayerNotificationManager.Builder(Platform.AppContext, 1, "1").Build();
-
+		ArgumentNullException.ThrowIfNull(Session);
 		ArgumentNullException.ThrowIfNull(playerNotificationManager);
+		
 		playerNotificationManager.SetUseFastForwardAction(true);
 		playerNotificationManager.SetUseFastForwardActionInCompactView(true);
 		playerNotificationManager.SetUseRewindAction(true);
