@@ -12,7 +12,7 @@ using Resource = Microsoft.Maui.Controls.Resource;
 namespace CommunityToolkit.Maui.Media.Services;
 
 [Service(Exported = false, Enabled = true, Name = "communityToolkit.maui.media.services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
-class MediaControlsService : Service
+sealed class MediaControlsService : Service
 {
 	bool isDisposed;
 

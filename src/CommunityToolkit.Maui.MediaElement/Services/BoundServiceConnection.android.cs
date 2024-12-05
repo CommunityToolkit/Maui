@@ -3,7 +3,7 @@ using Android.OS;
 using CommunityToolkit.Maui.Core.Views;
 
 namespace CommunityToolkit.Maui.Services;
-class BoundServiceConnection(MediaManager mediaManager) : Java.Lang.Object, IServiceConnection
+sealed class BoundServiceConnection(MediaManager mediaManager) : Java.Lang.Object, IServiceConnection
 {
     public MediaManager? Activity { get; } = mediaManager;
 
