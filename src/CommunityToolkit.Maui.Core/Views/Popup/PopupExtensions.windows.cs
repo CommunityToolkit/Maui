@@ -2,6 +2,7 @@ using CommunityToolkit.Maui.Core.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.Primitives;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -58,6 +59,33 @@ public static class PopupExtensions
 		mauiPopup.SetLayout(popup, mauiContext);
 	}
 
+	static bool CanMeasureContent(Popup mauiPopup)
+	{
+		if (mauiPopup.Child is FrameworkElement frameworkElement)
+		{
+			if (frameworkElement is SwipeControl)
+			{
+				SwipeControl swipeControl = (SwipeControl)frameworkElement;
+				if (!swipeControl.IsLoaded)
+				{
+					return false;
+				}
+			}
+			else
+			{
+				var swipeControls = frameworkElement.GetChildren<SwipeControl>();
+				foreach (SwipeControl? swipeControl in swipeControls)
+				{
+					if (swipeControl is not null && !swipeControl.IsLoaded)
+					{
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+
 	/// <summary>
 	/// Method to update the popup size based on the <see cref="Maui.Core.IPopup.Size"/>.
 	/// </summary>
@@ -79,7 +107,14 @@ public static class PopupExtensions
 		{
 			if (double.IsNaN(popup.Content.Width) || (double.IsNaN(popup.Content.Height)))
 			{
-				currentSize = popup.Content.Measure(double.IsNaN(popup.Content.Width) ? popupParent.Bounds.Width : popup.Content.Width, double.IsNaN(popup.Content.Height) ? popupParent.Bounds.Height : popup.Content.Height);
+				if (CanMeasureContent(mauiPopup))
+				{
+					currentSize = popup.Content.Measure(double.IsNaN(popup.Content.Width) ? popupParent.Bounds.Width : popup.Content.Width, double.IsNaN(popup.Content.Height) ? popupParent.Bounds.Height : popup.Content.Height);
+				}
+				else
+				{
+					return;
+				}
 
 				if (double.IsNaN(popup.Content.Width))
 				{
@@ -129,7 +164,16 @@ public static class PopupExtensions
 		ArgumentNullException.ThrowIfNull(popup.Content);
 
 		var popupParent = mauiContext.GetPlatformWindow();
-		popup.Content.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+		if (CanMeasureContent(mauiPopup))
+		{
+			popup.Content.Measure(double.PositiveInfinity, double.PositiveInfinity);
+		}
+		else
+		{
+			return;
+		}
+
 		var contentSize = popup.Content.ToPlatform(mauiContext).DesiredSize;
 		var popupParentFrame = popupParent.Bounds;
 
