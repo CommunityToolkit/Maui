@@ -48,16 +48,16 @@ sealed partial class MathExpression
 			new ("/", 2, x => Convert.ToDouble(x[0]) / Convert.ToDouble(x[1])),
 			new ("%", 2, x => Convert.ToDouble(x[0]) % Convert.ToDouble(x[1])),
 
-			new ("&&", 2, x => __bool(x[0]) ? x[1] : x[0]),
-			new ("||", 2, x => __bool(x[0]) ? x[0] : x[1]),
+			new ("and", 2, x => __bool(x[0]) ? x[1] : x[0]),
+			new ("or", 2, x => __bool(x[0]) ? x[0] : x[1]),
 
 			new ("==", 2, x => object.Equals(x[0], x[1])),
 			new ("!=", 2, x => !object.Equals(x[0], x[1])),
 
-			new (">=", 2, x => Convert.ToDouble(x[0]) >= Convert.ToDouble(x[1])),
-			new (">", 2, x => Convert.ToDouble(x[0]) > Convert.ToDouble(x[1])),
-			new ("<=", 2, x => Convert.ToDouble(x[0]) <= Convert.ToDouble(x[1])),
-			new ("<", 2, x => Convert.ToDouble(x[0]) < Convert.ToDouble(x[1])),
+			new ("ge", 2, x => Convert.ToDouble(x[0]) >= Convert.ToDouble(x[1])),
+			new ("gt", 2, x => Convert.ToDouble(x[0]) > Convert.ToDouble(x[1])),
+			new ("le", 2, x => Convert.ToDouble(x[0]) <= Convert.ToDouble(x[1])),
+			new ("lt", 2, x => Convert.ToDouble(x[0]) < Convert.ToDouble(x[1])),
 			new ("neg", 1, x => -Convert.ToDouble(x[0])),
 			new ("not", 1, x => !__bool(x[0])),
 			new ("if", 3, x => __bool(x[0]) ? x[1] : x[2]),
@@ -287,6 +287,16 @@ sealed partial class MathExpression
 	[GeneratedRegex("""^(\-|\!)""")]
 	private static partial Regex UnaryOperators();
 
+	static Dictionary<string, string> binaryMapping { get; } = new Dictionary<string, string>()
+	{
+		{ "<", "lt" },
+		{ "<=", "le" },
+		{ ">", "gt" },
+		{ ">=", "ge" },
+		{ "&&", "and" },
+		{ "||", "or" }
+	};
+
 	static Dictionary<string, string> unaryMapping { get; } = new Dictionary<string, string>()
 	{
 		{ "-", "neg" },
@@ -303,6 +313,10 @@ sealed partial class MathExpression
 		while (ParsePattern(BinaryOperators))
 		{
 			string _operator = PatternMatch.Groups[1].Value;
+			if (binaryMapping.ContainsKey(_operator))
+			{
+				_operator = binaryMapping[_operator];
+			}
 			if (!ParseNext())
 			{
 				ExpressionIndex = index;

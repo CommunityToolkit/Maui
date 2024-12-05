@@ -74,6 +74,53 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 	}
 
 	[Theory]
+	[InlineData("x && x1", new object?[] { true, true }, true)]
+	[InlineData("x && x1", new object?[] { true, false }, false)]
+	[InlineData("x && x1", new object?[] { false, true }, false)]
+	[InlineData("x && 3 == 4", new object?[] { false } , false)]
+	[InlineData("x && x1", new object?[] { "Cat", "Dog" }, "Dog")]
+	[InlineData("x && x1", new object?[] { false, "Cat" }, false)]
+	[InlineData("x && x1", new object?[] { "Cat", false }, false)]
+	[InlineData("x && x1", new object?[] { "", false }, "")]
+	[InlineData("x && x1", new object?[] { false, "" }, false)]
+	[InlineData("x || x1", new object?[] { true, true }, true)]
+	[InlineData("x || x1", new object?[] { false, true }, true)]
+	[InlineData("x || x1", new object?[] { true, false}, true)]
+	[InlineData("x || 3 == 4", new object?[] { false }, false)]
+	[InlineData("x || x1", new object?[] { "Cat", "Dog" }, "Cat")]
+	[InlineData("x || x1", new object?[] { false, "Cat" }, "Cat")]
+	[InlineData("x || x1", new object?[] { "Cat", false }, "Cat")]
+	[InlineData("x || x1", new object?[] { "", false }, false)]
+	[InlineData("x || x1", new object?[] { false, "" }, "")]
+	[InlineData("x || x1", new object?[] { false, new int[] { 1, 2, 3 }  }, new int[] { 1, 2, 3 })]
+	[InlineData("x and x1", new object?[] { true, true }, true)]
+	[InlineData("x and x1", new object?[] { true, false }, false)]
+	[InlineData("x and x1", new object?[] { false, true }, false)]
+	[InlineData("x and 3 == 4", new object?[] { false }, false)]
+	[InlineData("x and x1", new object?[] { "Cat", "Dog" }, "Dog")]
+	[InlineData("x and x1", new object?[] { false, "Cat" }, false)]
+	[InlineData("x and x1", new object?[] { "Cat", false }, false)]
+	[InlineData("x and x1", new object?[] { "", false }, "")]
+	[InlineData("x and x1", new object?[] { false, "" }, false)]
+	[InlineData("x or x1", new object?[] { true, true }, true)]
+	[InlineData("x or x1", new object?[] { false, true }, true)]
+	[InlineData("x or x1", new object?[] { true, false }, true)]
+	[InlineData("x or 3 == 4", new object?[] { false }, false)]
+	[InlineData("x or x1", new object?[] { "Cat", "Dog" }, "Cat")]
+	[InlineData("x or x1", new object?[] { false, "Cat" }, "Cat")]
+	[InlineData("x or x1", new object?[] { "Cat", false }, "Cat")]
+	[InlineData("x or x1", new object?[] { "", false }, false)]
+	[InlineData("x or x1", new object?[] { false, "" }, "")]
+	[InlineData("x or x1", new object?[] { false, new int[] { 1, 2, 3 } }, new int[] { 1, 2, 3 })]
+	public void MultiMathExpressionConverter_WithMultipleVariable_ReturnsCorrectLogicalResult(string expression, object?[] variables, object? expectedResult)
+	{
+		var mathExpressionConverter = new MultiMathExpressionConverter();
+		var result = mathExpressionConverter.Convert(variables, typeof(object), expression);
+		Assert.NotNull(result);
+		Assert.Equal(expectedResult, result);
+	}
+
+	[Theory]
 	[InlineData("x == 3 && x1", new object?[] { 3d, 4d }, 4d)]
 	[InlineData("x != 3 || x1", new object?[] { 3d, 4d }, 4d)]
 	[InlineData("x + x1 || true", new object?[] { 3d, 4d }, 7d)]
