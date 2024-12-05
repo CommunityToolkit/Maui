@@ -11,7 +11,6 @@ using AndroidX.Media3.DataSource;
 using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.Session;
 using AndroidX.Media3.UI;
-using CommunityToolkit.Maui.ApplicationModel.Permissions;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Services;
@@ -35,9 +34,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	double? previousSpeed;
 	float volumeBeforeMute = 1;
 
-	Task? checkPermissionsTask;
 	TaskCompletionSource? seekToTaskCompletionSource;
-	CancellationTokenSource checkPermissionSourceToken = new();
 	CancellationTokenSource startServiceSourceToken = new();
 
 	MediaSession? session;
@@ -200,8 +197,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		mediaSessionWRandomId.SetBitmapLoader(dataSourceBitmapLoader);
 		session ??= mediaSessionWRandomId.Build() ?? throw new InvalidOperationException("Session cannot be null");
 		ArgumentNullException.ThrowIfNull(session.Id);
-		checkPermissionsTask = CheckAndRequestForegroundPermission(checkPermissionSourceToken.Token);
-		
+		StartConnection();
+
 		return (Player, PlayerView);
 	}
 
@@ -560,8 +557,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			session?.Dispose();
 			StopService();
 			connection?.Dispose();
-			checkPermissionsTask?.Dispose();
-			checkPermissionSourceToken.Dispose();
 			startServiceSourceToken.Dispose();
 			client.Dispose();
 		}
@@ -640,28 +635,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		mediaItem.SetMediaId(url);
 		mediaItem.SetMediaMetadata(mediaMetaData.Build());
 		return mediaItem;
-	}
-
-	async Task CheckAndRequestForegroundPermission(CancellationToken cancellationToken = default)
-	{
-		// If Android is 33 or higher, we don't need to check for permissions and can start the connection. Permissions are handled by the OS.
-		if (OperatingSystem.IsAndroidVersionAtLeast(33))
-		{
-			StartConnection();
-			return;
-		}
-		var status = await Permissions.CheckStatusAsync<AndroidMediaPermissions>().WaitAsync(cancellationToken);
-		if (status is PermissionStatus.Granted)
-		{
-			StartConnection();
-			return;
-		}
-
-		status = await Permissions.RequestAsync<AndroidMediaPermissions>().WaitAsync(cancellationToken).ConfigureAwait(false);
-		if (status is PermissionStatus.Granted) 
-		{
-			StartConnection();
-		}
 	}
 
 	#region IPlayer.IListener implementation method stubs
