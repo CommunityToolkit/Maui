@@ -644,6 +644,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	async Task CheckAndRequestForegroundPermission(CancellationToken cancellationToken = default)
 	{
+		// If Android is 33 or higher, we don't need to check for permissions and can start the connection. Permissions are handled by the OS.
+		if (OperatingSystem.IsAndroidVersionAtLeast(33))
+		{
+			StartConnection();
+			return;
+		}
 		var status = await Permissions.CheckStatusAsync<AndroidMediaPermissions>().WaitAsync(cancellationToken);
 		if (status is PermissionStatus.Granted)
 		{
