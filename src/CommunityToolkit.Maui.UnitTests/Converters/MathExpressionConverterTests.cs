@@ -69,7 +69,7 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 
 		var result = mathExpressionConverter.Convert(variables, mathExpressionTargetType, expression);
 
-		Assert.NotNull(result); 
+		Assert.NotNull(result);
 		Assert.True(Math.Abs((double)result - expectedResult) < tolerance);
 	}
 
@@ -77,7 +77,7 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 	[InlineData("x && x1", new object?[] { true, true }, true)]
 	[InlineData("x && x1", new object?[] { true, false }, false)]
 	[InlineData("x && x1", new object?[] { false, true }, false)]
-	[InlineData("x && 3 == 4", new object?[] { false } , false)]
+	[InlineData("x && 3 == 4", new object?[] { false }, false)]
 	[InlineData("x && x1", new object?[] { "Cat", "Dog" }, "Dog")]
 	[InlineData("x && x1", new object?[] { false, "Cat" }, false)]
 	[InlineData("x && x1", new object?[] { "Cat", false }, false)]
@@ -85,39 +85,70 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 	[InlineData("x && x1", new object?[] { false, "" }, false)]
 	[InlineData("x || x1", new object?[] { true, true }, true)]
 	[InlineData("x || x1", new object?[] { false, true }, true)]
-	[InlineData("x || x1", new object?[] { true, false}, true)]
+	[InlineData("x || x1", new object?[] { true, false }, true)]
 	[InlineData("x || 3 == 4", new object?[] { false }, false)]
 	[InlineData("x || x1", new object?[] { "Cat", "Dog" }, "Cat")]
 	[InlineData("x || x1", new object?[] { false, "Cat" }, "Cat")]
 	[InlineData("x || x1", new object?[] { "Cat", false }, "Cat")]
 	[InlineData("x || x1", new object?[] { "", false }, false)]
 	[InlineData("x || x1", new object?[] { false, "" }, "")]
-	[InlineData("x || x1", new object?[] { false, new int[] { 1, 2, 3 }  }, new int[] { 1, 2, 3 })]
-	[InlineData("x and x1", new object?[] { true, true }, true)]
-	[InlineData("x and x1", new object?[] { true, false }, false)]
-	[InlineData("x and x1", new object?[] { false, true }, false)]
-	[InlineData("x and 3 == 4", new object?[] { false }, false)]
-	[InlineData("x and x1", new object?[] { "Cat", "Dog" }, "Dog")]
-	[InlineData("x and x1", new object?[] { false, "Cat" }, false)]
-	[InlineData("x and x1", new object?[] { "Cat", false }, false)]
-	[InlineData("x and x1", new object?[] { "", false }, "")]
-	[InlineData("x and x1", new object?[] { false, "" }, false)]
-	[InlineData("x or x1", new object?[] { true, true }, true)]
-	[InlineData("x or x1", new object?[] { false, true }, true)]
-	[InlineData("x or x1", new object?[] { true, false }, true)]
-	[InlineData("x or 3 == 4", new object?[] { false }, false)]
-	[InlineData("x or x1", new object?[] { "Cat", "Dog" }, "Cat")]
-	[InlineData("x or x1", new object?[] { false, "Cat" }, "Cat")]
-	[InlineData("x or x1", new object?[] { "Cat", false }, "Cat")]
-	[InlineData("x or x1", new object?[] { "", false }, false)]
-	[InlineData("x or x1", new object?[] { false, "" }, "")]
-	[InlineData("x or x1", new object?[] { false, new int[] { 1, 2, 3 } }, new int[] { 1, 2, 3 })]
+	[InlineData("x || x1", new object?[] { false, new int[] { 1, 2, 3 } }, new int[] { 1, 2, 3 })]
 	public void MultiMathExpressionConverter_WithMultipleVariable_ReturnsCorrectLogicalResult(string expression, object?[] variables, object? expectedResult)
 	{
 		var mathExpressionConverter = new MultiMathExpressionConverter();
 		var result = mathExpressionConverter.Convert(variables, typeof(object), expression);
 		Assert.NotNull(result);
 		Assert.Equal(expectedResult, result);
+	}
+
+	[Theory]
+	[InlineData("x && x1", "x and x1")]
+	[InlineData("x || x1", "x or x1")]
+	public void MultiMathExpressionConverter_WithAlternateEqualityOperators_ReturnsSameEvaluation(string expression, string alternateExpression)
+	{
+		var mathExpressionConverter = new MultiMathExpressionConverter();
+		var listOfVariables = new object?[][]
+		{
+			new object?[] { true, true },
+			new object?[] { true, false },
+			new object?[] { false, true },
+			new object?[] { false, false },
+			new object?[] { "Cat", "Dog" },
+			new object?[] { false, "Cat" },
+			new object?[] { "Cat", false },
+			new object?[] { "", false },
+			new object?[] { false, "" },
+		};
+		foreach (var variables in listOfVariables)
+		{
+			var result = mathExpressionConverter.Convert(variables, typeof(object), expression);
+			var alternateResult = mathExpressionConverter.Convert(variables, typeof(object), alternateExpression);
+			Assert.NotNull(result);
+			Assert.NotNull(alternateResult);
+			Assert.Equal(result, alternateResult);
+		}
+	}
+
+	[Theory]
+	[InlineData("x >= x1", "x ge x1")]
+	[InlineData("x > x1", "x gt x1")]
+	[InlineData("x <= x1", "x le x1")]
+	[InlineData("x < x1", "x lt x1")]
+	public void MultiMathExpressionConverter_WithAlternateCompareOperators_ReturnsSameEvaluation(string expression, string alternateExpression)
+	{
+		var mathExpressionConverter = new MultiMathExpressionConverter();
+		for (var i = 0; i <= 2; i++)
+		{
+			for (var j = 0; j <= 2; j++)
+			{
+				var variables = new object?[] { i, j };
+				var result = mathExpressionConverter.Convert(variables, typeof(object), expression);
+				var alternateResult = mathExpressionConverter.Convert(variables, typeof(object), alternateExpression);
+				Assert.NotNull(result);
+				Assert.NotNull(alternateResult);
+				Assert.Equal(result, alternateResult);
+			}
+		}
 	}
 
 	[Theory]
