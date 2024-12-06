@@ -168,13 +168,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		mediaSessionWRandomId.SetId(randomId);
 		session ??= mediaSessionWRandomId.Build() ?? throw new InvalidOperationException("Session cannot be null");
 		ArgumentNullException.ThrowIfNull(session.Id);
-		StartConnection();
 
 		return (Player, PlayerView);
 	}
 
 	[MemberNotNull(nameof(connection))]
-	void StartConnection()
+	void StartService()
 	{
 		var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
 		connection = new BoundServiceConnection(this);
@@ -355,10 +354,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return;
 		}
-
-		if (connection is not null && !connection.IsConnected)
+		if (connection is null)
 		{
-			return;
+			StartService();
 		}
 
 		if (MediaElement.Source is null)

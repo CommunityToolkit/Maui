@@ -16,7 +16,6 @@ sealed partial class BoundServiceConnection(MediaManager mediaManager) : Java.La
 	{
 		Binder = service as BoundServiceBinder;
 		isConnected = Binder is not null;
-		Activity?.UpdateSource();
 	}
 
 	void IServiceConnection.OnServiceDisconnected(ComponentName? name)
