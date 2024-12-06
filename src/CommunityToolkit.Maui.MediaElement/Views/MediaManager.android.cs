@@ -32,7 +32,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	float volumeBeforeMute = 1;
 
 	TaskCompletionSource? seekToTaskCompletionSource;
-	CancellationTokenSource startServiceSourceToken = new();
 
 	MediaSession? session;
 	MediaItem.Builder? mediaItem;
@@ -521,7 +520,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			session?.Dispose();
 			StopService();
 			connection?.Dispose();
-			startServiceSourceToken.Dispose();
 			client.Dispose();
 		}
 	}
