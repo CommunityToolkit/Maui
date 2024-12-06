@@ -12,13 +12,13 @@ using Resource = Microsoft.Maui.Controls.Resource;
 namespace CommunityToolkit.Maui.Media.Services;
 
 [Service(Exported = false, Enabled = true, Name = "communityToolkit.maui.media.services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
-sealed class MediaControlsService : Service
+sealed partial class MediaControlsService : Service
 {
 	bool isDisposed;
 
 	public MediaSession? Session;
-	public AndroidX.Media3.ExoPlayer.IExoPlayer? Player;
-	
+	public PlatformMediaElement? Player;
+
 	public NotificationManager? NotificationManager;
 	PlayerNotificationManager? playerNotificationManager;
 	NotificationCompat.Builder? notification;
@@ -26,7 +26,7 @@ sealed class MediaControlsService : Service
 	public PlayerView? PlayerView { get; set; }
 
 	public BoundServiceBinder? Binder = null;
-	
+
 	public override IBinder? OnBind(Intent? intent)
 	{
 		Binder = new BoundServiceBinder(this);
@@ -101,7 +101,7 @@ sealed class MediaControlsService : Service
 	{
 		NotificationManager ??= GetSystemService(NotificationService) as NotificationManager ?? throw new InvalidOperationException($"{nameof(NotificationManager)} cannot be null");
 		notification ??= new NotificationCompat.Builder(Platform.AppContext, "1");
-		
+
 		notification.SetSmallIcon(Resource.Drawable.media3_notification_small_icon);
 		notification.SetAutoCancel(false);
 		notification.SetForegroundServiceBehavior(NotificationCompat.ForegroundServiceImmediate);
@@ -139,7 +139,7 @@ sealed class MediaControlsService : Service
 		playerNotificationManager ??= new PlayerNotificationManager.Builder(Platform.AppContext, 1, "1").Build();
 		ArgumentNullException.ThrowIfNull(Session);
 		ArgumentNullException.ThrowIfNull(playerNotificationManager);
-		
+
 		playerNotificationManager.SetUseFastForwardAction(true);
 		playerNotificationManager.SetUseFastForwardActionInCompactView(true);
 		playerNotificationManager.SetUseRewindAction(true);
@@ -157,6 +157,6 @@ sealed class MediaControlsService : Service
 		playerNotificationManager.SetShowPlayButtonIfPlaybackIsSuppressed(true);
 		playerNotificationManager.SetSmallIcon(Resource.Drawable.media3_notification_small_icon);
 		playerNotificationManager.SetPriority(NotificationCompat.PriorityDefault);
-	 	playerNotificationManager.SetUseChronometer(true);
+		playerNotificationManager.SetUseChronometer(true);
 	}
 }

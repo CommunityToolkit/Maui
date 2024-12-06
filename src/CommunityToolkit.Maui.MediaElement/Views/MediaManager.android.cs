@@ -83,7 +83,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaElement.Speed = playbackParameters.Speed;
 	}
 
-	void UpdateNotifications()
+	/// <summary>
+	/// Updates the notifications for the media player.
+	/// </summary>
+	public void UpdateNotifications()
 	{
 		if (connection?.Binder?.Service is null)
 		{
@@ -149,7 +152,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// Creates the corresponding platform view of <see cref="MediaElement"/> on Android.
 	/// </summary>
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
-	/// <exception cref="NullReferenceException">Thrown when <see cref="Android.Content.Context"/> is <see langword="null"/> or when the platform view could not be created.</exception>
+	/// <exception cref="NullReferenceException">Thrown when <see cref="Context"/> is <see langword="null"/> or when the platform view could not be created.</exception>
 	[MemberNotNull(nameof(Player), nameof(PlayerView), nameof(session))]
 	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView()
 	{
@@ -363,7 +366,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			Player.ClearMediaItems();
 			MediaElement.Duration = TimeSpan.Zero;
 			MediaElement.CurrentStateChanged(MediaElementState.None);
-
 			return;
 		}
 

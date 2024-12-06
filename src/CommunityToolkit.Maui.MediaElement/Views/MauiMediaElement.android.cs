@@ -16,8 +16,8 @@ namespace CommunityToolkit.Maui.Core.Views;
 public class MauiMediaElement : CoordinatorLayout
 {
 	readonly RelativeLayout relativeLayout;
-	
-	PlayerView playerView;
+	readonly PlayerView playerView;
+
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
 	bool isFullScreen;
@@ -53,8 +53,8 @@ public class MauiMediaElement : CoordinatorLayout
 
 		AddView(relativeLayout);
 	}
-	
-    public override void OnDetachedFromWindow()
+
+	public override void OnDetachedFromWindow()
 	{
 		if (isFullScreen)
 		{
