@@ -97,15 +97,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		connection.Binder.Service.UpdateNotifications();
 	}
 
-	[MemberNotNull(nameof(connection), nameof(PlayerView))]
-	public void UpdatePlayer()
-	{
-		ArgumentNullException.ThrowIfNull(connection?.Binder?.Service);
-		ArgumentNullException.ThrowIfNull(PlayerView);
-		PlatformUpdateSource();
-	}
-
-
 	/// <summary>
 	/// Occurs when ExoPlayer changes the player state.
 	/// </summary>
@@ -581,7 +572,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 					var path = resourceMediaSource.Path;
 					if (!string.IsNullOrWhiteSpace(path))
 					{
-						var assetFilePath = $"asset://{package}{System.IO.Path.PathSeparator}{path}";
+						var assetFilePath = $"asset://{package}{Path.PathSeparator}{path}";
 						return await CreateMediaItem(assetFilePath);
 					}
 					break;
