@@ -83,6 +83,10 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 	[InlineData("x && x1", new object?[] { "Cat", false }, false)]
 	[InlineData("x && x1", new object?[] { "", false }, "")]
 	[InlineData("x && x1", new object?[] { false, "" }, false)]
+	[InlineData("x && x1", new object?[] { null, "Cat" }, null)]
+	[InlineData("x && x1", new object?[] { "Cat", null }, null)]
+	[InlineData("x && x1", new object?[] { "", null }, "")]
+	[InlineData("x && x1", new object?[] { null, "" }, null)]
 	[InlineData("x || x1", new object?[] { true, true }, true)]
 	[InlineData("x || x1", new object?[] { false, true }, true)]
 	[InlineData("x || x1", new object?[] { true, false }, true)]
@@ -92,41 +96,44 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 	[InlineData("x || x1", new object?[] { "Cat", false }, "Cat")]
 	[InlineData("x || x1", new object?[] { "", false }, false)]
 	[InlineData("x || x1", new object?[] { false, "" }, "")]
+	[InlineData("x || x1", new object?[] { null, "Cat" }, "Cat")]
+	[InlineData("x || x1", new object?[] { "Cat", null }, "Cat")]
+	[InlineData("x || x1", new object?[] { "", null }, null)]
+	[InlineData("x || x1", new object?[] { null, "" }, "")]
 	[InlineData("x || x1", new object?[] { false, new int[] { 1, 2, 3 } }, new int[] { 1, 2, 3 })]
 	public void MultiMathExpressionConverter_WithMultipleVariable_ReturnsCorrectLogicalResult(string expression, object?[] variables, object? expectedResult)
 	{
 		var mathExpressionConverter = new MultiMathExpressionConverter();
 		var result = mathExpressionConverter.Convert(variables, typeof(object), expression);
-		Assert.NotNull(result);
 		Assert.Equal(expectedResult, result);
 	}
 
 	[Theory]
-	[InlineData("x && x1", "x and x1")]
-	[InlineData("x || x1", "x or x1")]
-	public void MultiMathExpressionConverter_WithAlternateEqualityOperators_ReturnsSameEvaluation(string expression, string alternateExpression)
+	[InlineData(true, true, true, true)]
+	[InlineData(true, false, false, true)]
+	[InlineData(false, true, false, true)]
+	[InlineData(false, false, false, false)]
+	[InlineData("Cat", "Dog", "Dog", "Cat")]
+	[InlineData(false, "Cat", false, "Cat")]
+	[InlineData("Cat", false, false, "Cat")]
+	[InlineData("", false, "", false)]
+	[InlineData(false, "", false, "")]
+	[InlineData(null, "Cat", null, "Cat")]
+	[InlineData("Cat", null, null, "Cat")]
+	[InlineData("", null, "", null)]
+	[InlineData(null, "", null, "")]
+	public void MultiMathExpressionConverter_WithAlternateLogicalOperators_ReturnsSameEvaluation(object? x, object? x1, object? expectedAndResult, object? expectedOrResult)
 	{
+		var variables = new object?[] { x, x1 };
 		var mathExpressionConverter = new MultiMathExpressionConverter();
-		var listOfVariables = new object?[][]
-		{
-			new object?[] { true, true },
-			new object?[] { true, false },
-			new object?[] { false, true },
-			new object?[] { false, false },
-			new object?[] { "Cat", "Dog" },
-			new object?[] { false, "Cat" },
-			new object?[] { "Cat", false },
-			new object?[] { "", false },
-			new object?[] { false, "" },
-		};
-		foreach (var variables in listOfVariables)
-		{
-			var result = mathExpressionConverter.Convert(variables, typeof(object), expression);
-			var alternateResult = mathExpressionConverter.Convert(variables, typeof(object), alternateExpression);
-			Assert.NotNull(result);
-			Assert.NotNull(alternateResult);
-			Assert.Equal(result, alternateResult);
-		}
+		var andResult = mathExpressionConverter.Convert(variables, typeof(object), "x && x1");
+		var alternateAndResult = mathExpressionConverter.Convert(variables, typeof(object), "x and x1");
+		Assert.Equal(andResult, expectedAndResult);
+		Assert.Equal(alternateAndResult, expectedAndResult);
+		var orResult = mathExpressionConverter.Convert(variables, typeof(object), "x || x1");
+		var alternateOrResult = mathExpressionConverter.Convert(variables, typeof(object), "x or x1");
+		Assert.Equal(orResult, expectedOrResult);
+		Assert.Equal(alternateOrResult, expectedOrResult);
 	}
 
 	[Theory]

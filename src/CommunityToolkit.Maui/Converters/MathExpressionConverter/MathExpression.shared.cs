@@ -175,8 +175,10 @@ sealed partial class MathExpression
 			switch (mathOperator.Name)
 			{
 				case "if":
-				case "&&":
-				case "||":
+					nullGuard = args[0] is null;
+					break;
+				case "and":
+				case "or":
 				case "==":
 				case "!=":
 					nullGuard = false;
