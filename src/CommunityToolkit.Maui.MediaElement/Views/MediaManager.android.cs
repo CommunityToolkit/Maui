@@ -1,13 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Android.Content;
-using Android.Graphics;
-using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Media3.Common;
 using AndroidX.Media3.Common.Text;
 using AndroidX.Media3.Common.Util;
-using AndroidX.Media3.DataSource;
 using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.Session;
 using AndroidX.Media3.UI;
@@ -45,37 +42,27 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// The platform native counterpart of <see cref="MediaElement"/>.
 	/// </summary>
 	protected PlayerView? PlayerView { get; set; }
-
-	/// <summary>
-	/// Retrieves defaultArtwork for the given url
-	/// </summary>
-	/// <param name="url"></param>
-	/// <param name="cancellationToken"></param>
-	/// <returns></returns>
-	/// <exception cref="InvalidOperationException"></exception>
-	public static async Task<Bitmap?> GetBitmapFromUrl(string? url, CancellationToken cancellationToken = default)
+	static async Task<byte[]> GetBytesFromUrl(string? url, CancellationToken cancellationToken = default)
 	{
-		var bitmapConfig = Bitmap.Config.Argb8888 ?? throw new InvalidOperationException("Bitmap config cannot be null");
-		var bitmap = CreateBitmap(1024, 768, bitmapConfig) ?? throw new InvalidOperationException("Bitmap cannot be null");
-		Canvas canvas = new();
-		canvas.SetBitmap(bitmap);
-		canvas.DrawColor(Android.Graphics.Color.White);
-		canvas.Save();
-
+		byte[]? artworkData = [];
 		try
 		{
-			var response = await client.GetAsync(url, cancellationToken).ConfigureAwait(false);
-			var stream = response.IsSuccessStatusCode ? await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false) : null;
+			var response = await client.GetAsync(url, cancellationToken);
+			var stream = response.IsSuccessStatusCode ? await response.Content.ReadAsStreamAsync(cancellationToken) : null;
 
-			return stream switch
+			if (stream == null)
 			{
-				null => bitmap,
-				_ => await BitmapFactory.DecodeStreamAsync(stream)
-			};
+				return artworkData;
+			}
+
+			using var memoryStream = new MemoryStream();
+			await stream.CopyToAsync(memoryStream, cancellationToken);
+			var bytes = memoryStream.ToArray();
+			return bytes;
 		}
 		catch
 		{
-			return bitmap;
+			return artworkData;
 		}
 	}
 
@@ -99,7 +86,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	void UpdateNotifications()
 	{
-		if(connection?.Binder?.Service is null)
+		if (connection?.Binder?.Service is null)
 		{
 			System.Diagnostics.Trace.TraceInformation("Notification Service not running.");
 			return;
@@ -111,15 +98,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	}
 
 	[MemberNotNull(nameof(connection), nameof(PlayerView))]
-	public async Task UpdatePlayer()
+	public void UpdatePlayer()
 	{
 		ArgumentNullException.ThrowIfNull(connection?.Binder?.Service);
 		ArgumentNullException.ThrowIfNull(PlayerView);
-
-		Android.Content.Context? context = Platform.AppContext;
-		Android.Content.Res.Resources? resources = context.Resources;
-		var defaultArtwork = await GetBitmapFromUrl(MediaElement.MetadataArtworkUrl, CancellationToken.None);
-		PlayerView.DefaultArtwork = new BitmapDrawable(resources, defaultArtwork);
 		PlatformUpdateSource();
 	}
 
@@ -193,8 +175,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		string randomId = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8];
 		var mediaSessionWRandomId = new AndroidX.Media3.Session.MediaSession.Builder(Platform.AppContext, Player);
 		mediaSessionWRandomId.SetId(randomId);
-		var dataSourceBitmapLoader = new DataSourceBitmapLoader(Platform.AppContext);
-		mediaSessionWRandomId.SetBitmapLoader(dataSourceBitmapLoader);
 		session ??= mediaSessionWRandomId.Build() ?? throw new InvalidOperationException("Session cannot be null");
 		ArgumentNullException.ThrowIfNull(session.Id);
 		StartConnection();
@@ -336,7 +316,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 		Player.Pause();
 	}
-	
+
 	[MemberNotNull(nameof(Player))]
 	protected virtual async partial Task PlatformSeek(TimeSpan position, CancellationToken token)
 	{
@@ -370,13 +350,13 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return;
 		}
-		
+
 		Player.SeekTo(0);
 		Player.Stop();
 		MediaElement.Position = TimeSpan.Zero;
 	}
 
-	protected virtual partial void PlatformUpdateSource()
+	protected virtual async partial void PlatformUpdateSource()
 	{
 		var hasSetSource = false;
 
@@ -401,9 +381,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 		Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
+		var result = await SetPlayerData();
+		var item = result?.Build();
 
-		var item = SetPlayerData()?.Build();
-		
 		if (item?.MediaMetadata is not null)
 		{
 			Player.SetMediaItem(item);
@@ -490,7 +470,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return;
 		}
-		
+
 		// If the user changes while muted, change the internal field
 		// and do not update the actual volume.
 		if (MediaElement.ShouldMute)
@@ -557,9 +537,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 	}
 
-	static Bitmap CreateBitmap(int width, int height, Bitmap.Config config) =>
-		OperatingSystem.IsAndroidVersionAtLeast(26) ? Bitmap.CreateBitmap(width, height, config, true) : Bitmap.CreateBitmap(width, height, config);
-
 	void StopService()
 	{
 		if (connection is null)
@@ -572,7 +549,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		Platform.AppContext.UnbindService(connection);
 	}
 
-	MediaItem.Builder? SetPlayerData()
+	async Task<MediaItem.Builder?> SetPlayerData()
 	{
 		if (MediaElement.Source is null)
 		{
@@ -585,7 +562,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 					var uri = uriMediaSource.Uri;
 					if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
 					{
-						return CreateMediaItem(uri.AbsoluteUri);
+						return await CreateMediaItem(uri.AbsoluteUri);
 					}
 					break;
 				}
@@ -594,7 +571,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 					var filePath = fileMediaSource.Path;
 					if (!string.IsNullOrWhiteSpace(filePath))
 					{
-						return CreateMediaItem(filePath);
+						return await CreateMediaItem(filePath);
 					}
 					break;
 				}
@@ -605,7 +582,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 					if (!string.IsNullOrWhiteSpace(path))
 					{
 						var assetFilePath = $"asset://{package}{System.IO.Path.PathSeparator}{path}";
-						return CreateMediaItem(assetFilePath);
+						return await CreateMediaItem(assetFilePath);
 					}
 					break;
 				}
@@ -616,14 +593,14 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		return mediaItem;
 	}
 
-	[MemberNotNull(nameof(mediaItem))]
-	MediaItem.Builder CreateMediaItem(string url)
+	async Task<MediaItem.Builder> CreateMediaItem(string url)
 	{
+
 		MediaMetadata.Builder mediaMetaData = new();
 		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
 		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
-		mediaMetaData.SetArtworkUri(Android.Net.Uri.Parse(MediaElement.MetadataArtworkUrl));
-		mediaMetaData.Build();
+		var data = await GetBytesFromUrl(MediaElement.MetadataArtworkUrl, CancellationToken.None) ?? null;
+		mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);
 
 		mediaItem = new MediaItem.Builder();
 		mediaItem.SetUri(url);
