@@ -44,13 +44,13 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	protected PlayerView? PlayerView { get; set; }
 	static async Task<byte[]> GetBytesFromUrl(string? url, CancellationToken cancellationToken = default)
 	{
-		byte[]? artworkData = [];
+		byte[] artworkData = [];
 		try
 		{
 			var response = await client.GetAsync(url, cancellationToken);
 			var stream = response.IsSuccessStatusCode ? await response.Content.ReadAsStreamAsync(cancellationToken) : null;
 
-			if (stream == null)
+			if (stream is null)
 			{
 				return artworkData;
 			}
