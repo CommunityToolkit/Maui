@@ -47,8 +47,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		byte[] artworkData = [];
 		try
 		{
-			var response = await client.GetAsync(url, cancellationToken);
-			var stream = response.IsSuccessStatusCode ? await response.Content.ReadAsStreamAsync(cancellationToken) : null;
+			var response = await client.GetAsync(url, cancellationToken).ConfigureAwait(false);
+			var stream = response.IsSuccessStatusCode ? await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false) : null;
 
 			if (stream is null)
 			{
@@ -56,7 +56,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			}
 
 			using var memoryStream = new MemoryStream();
-			await stream.CopyToAsync(memoryStream, cancellationToken);
+			await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 			var bytes = memoryStream.ToArray();
 			return bytes;
 		}
@@ -173,7 +173,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 		};
 		string randomId = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8];
-		var mediaSessionWRandomId = new AndroidX.Media3.Session.MediaSession.Builder(Platform.AppContext, Player);
+		var mediaSessionWRandomId = new MediaSession.Builder(Platform.AppContext, Player);
 		mediaSessionWRandomId.SetId(randomId);
 		session ??= mediaSessionWRandomId.Build() ?? throw new InvalidOperationException("Session cannot be null");
 		ArgumentNullException.ThrowIfNull(session.Id);
@@ -595,11 +595,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	async Task<MediaItem.Builder> CreateMediaItem(string url)
 	{
-
 		MediaMetadata.Builder mediaMetaData = new();
 		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
 		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
-		var data = await GetBytesFromUrl(MediaElement.MetadataArtworkUrl, CancellationToken.None) ?? null;
+		var data = await GetBytesFromUrl(MediaElement.MetadataArtworkUrl, CancellationToken.None).ConfigureAwait(false) ?? null;
 		mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);
 
 		mediaItem = new MediaItem.Builder();
