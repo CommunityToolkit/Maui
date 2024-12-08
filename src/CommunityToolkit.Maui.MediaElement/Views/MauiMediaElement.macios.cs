@@ -4,6 +4,7 @@ using AVKit;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Handlers.Items2;
 using Microsoft.Maui.Handlers;
 using UIKit;
 
@@ -61,21 +62,33 @@ public class MauiMediaElement : UIView
 			{
 				var parentViewController = itemsView.Handler switch
 				{
-					CarouselViewHandler carouselViewHandler => carouselViewHandler.ViewController ?? GetInternalController(carouselViewHandler),
-					CollectionViewHandler collectionViewHandler => collectionViewHandler.ViewController ?? GetInternalController(collectionViewHandler),
+					CarouselViewHandler carouselViewHandler => carouselViewHandler.ViewController ?? GetInternalControllerForItemsView(carouselViewHandler),
+					CarouselViewHandler2 carouselViewHandler2 => carouselViewHandler2.ViewController ?? GetInternalControllerForItemsView2(carouselViewHandler2),
+					CollectionViewHandler collectionViewHandler => collectionViewHandler.ViewController ?? GetInternalControllerForItemsView(collectionViewHandler),
+					CollectionViewHandler2 collectionViewHandler2 => collectionViewHandler2.ViewController ?? GetInternalControllerForItemsView2(collectionViewHandler2),
 					null => throw new InvalidOperationException("Handler cannot be null"),
 					_ => throw new NotSupportedException($"{itemsView.Handler.GetType()} not yet supported")
 				};
 
 				viewController = parentViewController;
 
-				// The Controller we need is a `protected internal` property in the ItemsViewController class: https://github.com/dotnet/maui/blob/cf002538cb73db4bf187a51e4786d7478a7025ee/src/Controls/src/Core/Handlers/Items/ItemsViewHandler.iOS.cs#L39
+				// The Controller we need is a `protected internal` property called ItemsViewController in the ItemsViewHandler class: https://github.com/dotnet/maui/blob/cf002538cb73db4bf187a51e4786d7478a7025ee/src/Controls/src/Core/Handlers/Items/ItemsViewHandler.iOS.cs#L39
 				// In this method, we must use reflection to get the value of its backing field 
-				static ItemsViewController<TItemsView> GetInternalController<TItemsView>(ItemsViewHandler<TItemsView> handler) where TItemsView : ItemsView
+				static ItemsViewController<TItemsView> GetInternalControllerForItemsView<TItemsView>(ItemsViewHandler<TItemsView> handler) where TItemsView : ItemsView
 				{
 					var nonPublicInstanceFields = typeof(ItemsViewHandler<TItemsView>).GetFields(BindingFlags.NonPublic | BindingFlags.Instance);
 
 					var controllerProperty = nonPublicInstanceFields.Single(x => x.FieldType == typeof(ItemsViewController<TItemsView>));
+					return (ItemsViewController<TItemsView>)(controllerProperty.GetValue(handler) ?? throw new InvalidOperationException($"Unable to get the value for the Controller property on {handler.GetType()}"));
+				}
+
+				// The Controller we need is a `protected internal` property called ItemsViewController in the ItemsViewHandler2 class: https://github.com/dotnet/maui/blob/70e8ddfd4bd494bc71aa7afb812cc09161cf0c72/src/Controls/src/Core/Handlers/Items2/ItemsViewHandler2.iOS.cs#L64
+				// In this method, we must use reflection to get the value of its backing field 
+				static ItemsViewController<TItemsView> GetInternalControllerForItemsView2<TItemsView>(ItemsViewHandler2<TItemsView> handler) where TItemsView : ItemsView
+				{
+					var nonPublicInstanceFields = typeof(ItemsViewHandler2<TItemsView>).GetFields(BindingFlags.NonPublic | BindingFlags.Instance);
+
+					var controllerProperty = nonPublicInstanceFields.Single(x => x.FieldType == typeof(ItemsViewController2<TItemsView>));
 					return (ItemsViewController<TItemsView>)(controllerProperty.GetValue(handler) ?? throw new InvalidOperationException($"Unable to get the value for the Controller property on {handler.GetType()}"));
 				}
 			}

@@ -88,7 +88,7 @@ public partial class MauiMediaElement : Grid, IDisposable
 	/// Gets the presented page.
 	/// </summary>
 	protected static Page CurrentPage =>
-		PageExtensions.GetCurrentPage(Application.Current?.MainPage ?? throw new InvalidOperationException($"{nameof(Application.Current.MainPage)} cannot be null."));
+		PageExtensions.GetCurrentPage(Application.Current?.Windows[0].Page ?? throw new InvalidOperationException($"{nameof(Page)} cannot be null."));
 
 	/// <summary>
 	/// Releases the managed and unmanaged resources used by the <see cref="MauiMediaElement"/>.

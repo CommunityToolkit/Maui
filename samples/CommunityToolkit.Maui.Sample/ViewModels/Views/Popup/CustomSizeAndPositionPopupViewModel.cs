@@ -18,7 +18,7 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
 	int flowDirectionSelectedIndex;
 
-	public IReadOnlyList<string> FlowDirectionOptions { get; } = Enum.GetNames(typeof(FlowDirection)).ToList();
+	public IReadOnlyList<string> FlowDirectionOptions { get; } = Enum.GetNames<FlowDirection>().ToList();
 
 	[RelayCommand(CanExecute = nameof(CanShowButtonExecute))]
 	public Task ExecuteShowButton(CancellationToken token)
@@ -91,7 +91,7 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 		&& Width > 0
 		&& IsFlowDirectionSelectionValid(FlowDirectionSelectedIndex, FlowDirectionOptions.Count);
 
-	class FlowDirectionPopup : RedBlueBoxPopup
+	partial class FlowDirectionPopup : RedBlueBoxPopup
 	{
 		readonly FlowDirection flowDirection;
 

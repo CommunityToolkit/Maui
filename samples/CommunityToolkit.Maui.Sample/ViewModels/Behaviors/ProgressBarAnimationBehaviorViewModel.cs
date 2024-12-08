@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 public partial class ProgressBarAnimationBehaviorViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	double progress;
+	public partial double Progress { get; private set; }
 
 	public ProgressBarAnimationBehaviorViewModel()
 	{

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.Versioning;
+﻿using System.Runtime.Versioning;
 
 namespace CommunityToolkit.Maui.Core.Platform;
 

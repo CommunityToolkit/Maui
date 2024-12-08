@@ -133,6 +133,11 @@ public static class DrawingViewService
 	static CanvasRenderTarget? GetImageInternal(IList<IDrawingLine> lines, Size size, Paint? background, bool scale = false)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
+		if(points.Count is 0)
+		{
+			return null;
+		}
+
 		var maxLineWidth = lines.Select(x => x.LineWidth).Max();
 		var (offscreen, offset) = GetCanvasRenderTarget(points, size, scale, maxLineWidth);
 		if (offscreen is null)

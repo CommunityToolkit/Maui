@@ -7,16 +7,16 @@ public partial class GravatarImageSourceViewModel : BaseViewModel
 {
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(CacheValidityTimespan))]
-	int cacheValidityInDays = 1;
+	public partial int CacheValidityInDays { get; set; } = 1;
 
 	[ObservableProperty]
-	DefaultImage defaultGravatarSelected = DefaultImage.MysteryPerson;
+	public partial DefaultImage DefaultGravatarSelected { get; set; } = DefaultImage.MysteryPerson;
 
 	[ObservableProperty]
-	string email = "dsiegel@avantipoint.com";
+	public partial string Email { get; set; } = "dsiegel@avantipoint.com";
 
 	[ObservableProperty]
-	bool enableCache = true;
+	public partial bool EnableCache { get; set; } = true;
 
 	public TimeSpan CacheValidityTimespan => TimeSpan.FromDays(CacheValidityInDays);
 

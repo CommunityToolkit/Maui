@@ -6,11 +6,9 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Returns a string array that contains the substrings in this string that are delimited by <see cref="Separator"/>.
 /// </summary>
-public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable, object?>
+[AcceptEmptyServiceProvider]
+public partial class StringToListConverter : BaseConverterOneWay<string?, IEnumerable, object?>
 {
-	string separator = " ";
-	IList<string> separators = Array.Empty<string>();
-
 	/// <inheritdoc/>
 	public override IEnumerable DefaultConvertReturnValue { get; set; } = Array.Empty<string>();
 
@@ -22,7 +20,7 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable, o
 	/// </summary>
 	public string Separator
 	{
-		get => separator;
+		get;
 		set
 		{
 			ArgumentNullException.ThrowIfNull(value);
@@ -32,9 +30,9 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable, o
 				throw new ArgumentException("An empty string is not a valid separator.", nameof(value));
 			}
 
-			separator = value;
+			field = value;
 		}
-	}
+	} = " ";
 
 	/// <summary>
 	/// The strings that delimit the substrings in this string
@@ -43,7 +41,7 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable, o
 	/// </summary>
 	public IList<string> Separators
 	{
-		get => separators;
+		get;
 		set
 		{
 			ArgumentNullException.ThrowIfNull(value);
@@ -53,9 +51,9 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable, o
 				throw new ArgumentException("A null or an empty string is not a valid separator.", nameof(value));
 			}
 
-			separators = value;
+			field = value;
 		}
-	}
+	} = [];
 
 	/// <summary>
 	/// A bitwise combination of the enumeration values that specifies whether to trim substrings and include empty substrings.
@@ -73,7 +71,7 @@ public class StringToListConverter : BaseConverterOneWay<string?, IEnumerable, o
 	{
 		if (value is null)
 		{
-			return Array.Empty<string>();
+			return [];
 		}
 
 		switch (parameter)

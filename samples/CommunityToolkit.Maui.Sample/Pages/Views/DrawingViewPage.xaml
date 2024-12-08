@@ -12,15 +12,15 @@
     <ScrollView>
         <Grid RowDefinitions="40,40,40,40,40,40,40,40,40,200,200,100" ColumnDefinitions="*,*" RowSpacing="12" >
             <Label Grid.Row="0" Grid.Column="0" Text="Clear on Finish" Margin="0,0,5,0" HorizontalOptions="End" HorizontalTextAlignment="End"/>
-            <Switch Grid.Row="0" Grid.Column="1" x:Name="ClearOnFinish" HorizontalOptions="Start" />
+            <Switch Grid.Row="0" Grid.Column="1" x:Name="ClearOnFinishSwitch" HorizontalOptions="Start" />
             <Label Grid.Row="1" Grid.Column="0" Text="Multi-Line Mode" Margin="0,0,5,0" HorizontalOptions="End" HorizontalTextAlignment="End"/>
-            <Switch Grid.Row="1" Grid.Column="1" x:Name="MultiLineMode" HorizontalOptions="Start" />
+            <Switch Grid.Row="1" Grid.Column="1" x:Name="MultiLineModeSwitch" HorizontalOptions="Start" />
             <Button
                 Grid.Row="2" Grid.Column="0"
                 Grid.ColumnSpan="2"
                 BackgroundColor="White"
                 Command="{Binding AddNewLineCommand, Mode=OneTime}"
-                CommandParameter="{Binding Path=., Source={x:Reference DrawingViewControl}}"
+                CommandParameter="{Binding Path=., Source={x:Reference DrawingViewControl}, x:DataType=mct:DrawingView}"
                 Text="Add new line"
                 TextColor="Black" />
             <Button
@@ -75,8 +75,8 @@
                              DrawingLineStartedCommand="{Binding DrawingLineStartedCommand, Mode=OneTime}"
                              DrawingLineCancelledCommand="{Binding DrawingLineCancelledCommand, Mode=OneTime}"
                              PointDrawnCommand="{Binding PointDrawnCommand, Mode=OneTime}"
-                             ShouldClearOnFinish="{Binding Source={x:Reference ClearOnFinish}, Path=IsToggled}"
-                             IsMultiLineModeEnabled="{Binding Source={x:Reference MultiLineMode}, Path=IsToggled}">
+                             ShouldClearOnFinish="{Binding Source={x:Reference ClearOnFinishSwitch}, Path=IsToggled, x:DataType=Switch}"
+                             IsMultiLineModeEnabled="{Binding Source={x:Reference MultiLineModeSwitch}, Path=IsToggled, x:DataType=Switch}">
                 <mct:DrawingView.Background>
                     <LinearGradientBrush StartPoint="0,0"
                                          EndPoint="0,1">

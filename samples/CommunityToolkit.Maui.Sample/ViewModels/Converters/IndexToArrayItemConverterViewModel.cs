@@ -5,5 +5,5 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 public partial class IndexToArrayItemConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	int selectedIndex;
+	public partial int SelectedIndex { get; set; }
 }

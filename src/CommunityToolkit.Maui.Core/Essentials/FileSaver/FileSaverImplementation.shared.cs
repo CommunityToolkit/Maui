@@ -81,7 +81,7 @@ public sealed partial class FileSaverImplementation
 			double totalRead = 0;
 			while ((bytesRead = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
 			{
-				await fileStream.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
+				await fileStream.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
 				totalRead += bytesRead;
 				progress?.Report(totalRead / stream.Length);
 			}

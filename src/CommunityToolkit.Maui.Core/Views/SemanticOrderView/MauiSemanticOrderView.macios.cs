@@ -7,14 +7,12 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiSemanticOrderView : ContentView, IUIAccessibilityContainer
 {
-	ISemanticOrderView? virtualView;
-
 	internal ISemanticOrderView? VirtualView
 	{
-		get => virtualView;
+		get;
 		set
 		{
-			virtualView = value;
+			field = value;
 			UpdateViewOrder();
 		}
 	}
@@ -35,8 +33,7 @@ public class MauiSemanticOrderView : ContentView, IUIAccessibilityContainer
 
 		foreach (var view in viewOrder)
 		{
-			if (view.Handler is IPlatformViewHandler platformViewHandler
-				&& platformViewHandler.PlatformView is not null)
+			if (view.Handler is IPlatformViewHandler { PlatformView: not null } platformViewHandler)
 			{
 				yield return platformViewHandler.PlatformView;
 			}

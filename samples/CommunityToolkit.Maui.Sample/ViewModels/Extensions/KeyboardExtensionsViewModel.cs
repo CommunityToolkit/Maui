@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Extensions;
 public partial class KeyboardExtensionsViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	string operationResult = string.Empty;
+	public partial string OperationResult { get; set; } = string.Empty;
 
 	[RelayCommand]
 	void OnIsKeyboardShowing(ITextInput view)

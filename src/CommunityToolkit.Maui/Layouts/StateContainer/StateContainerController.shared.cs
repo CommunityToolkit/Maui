@@ -56,7 +56,7 @@ sealed class StateContainerController
 
 		// If the layout we're applying StateContainer to is a Grid,
 		// we want to have the StateContainer span the entire Grid surface.
-		// Otherwise it would just end up in row 0 : column 0.
+		// Otherwise, it would just end up in row 0 : column 0.
 		if (layout is IGridLayout grid)
 		{
 			if (grid.RowDefinitions.Count > 0)

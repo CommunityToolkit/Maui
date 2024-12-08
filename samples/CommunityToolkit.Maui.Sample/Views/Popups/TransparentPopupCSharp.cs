@@ -1,9 +1,10 @@
 ﻿using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Views;
+using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Sample.Views.Popups;
 
-public sealed class TransparentPopupCSharp : Popup
+public sealed partial class TransparentPopupCSharp : Popup
 {
 	public TransparentPopupCSharp(Size popupSize) : this()
 	{
@@ -13,8 +14,14 @@ public sealed class TransparentPopupCSharp : Popup
 
 	public TransparentPopupCSharp()
 	{
-		Content = new Frame { CornerRadius = 25 }
-					.Size(50, 50)
-					.Margin(10);
+		Content = new Border
+		{
+			StrokeShape = new RoundRectangle
+			{
+				CornerRadius = 25
+			}
+		}
+			.Size(50, 50)
+			.Margin(10);
 	}
 }

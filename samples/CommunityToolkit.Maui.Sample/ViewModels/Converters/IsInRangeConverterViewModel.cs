@@ -6,7 +6,7 @@ public partial class IsInRangeConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(InputChar))]
-	string inputString = "H";
+	public partial string InputString { get; set; } = "H";
 
 	public char InputChar => char.TryParse(InputString, out var returnChar) ? returnChar : default;
 }

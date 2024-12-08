@@ -1,7 +1,7 @@
 ﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
-/// Expander expand direction.
+/// Direction of expansion
 /// </summary>
 public enum ExpandDirection
 {

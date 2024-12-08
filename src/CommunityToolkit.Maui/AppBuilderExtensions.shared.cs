@@ -1,9 +1,7 @@
-﻿using CommunityToolkit.Maui.Alerts;
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;
 using CommunityToolkit.Maui.Views;
-using Microsoft.Maui.LifecycleEvents;
 
 namespace CommunityToolkit.Maui;
 

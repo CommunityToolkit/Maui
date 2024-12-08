@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Layouts;
-
-namespace CommunityToolkit.Maui.Core;
+﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// Uniform Items Layout Control

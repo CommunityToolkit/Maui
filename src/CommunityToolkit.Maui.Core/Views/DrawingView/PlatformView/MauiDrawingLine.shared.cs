@@ -7,8 +7,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiDrawingLine
 {
-	int granularity = DrawingViewDefaults.MinimumGranularity;
-
 	/// <summary>
 	/// The width that is used to draw this line on the <see cref="MauiDrawingView"/>.
 	/// </summary>
@@ -29,9 +27,9 @@ public class MauiDrawingLine
 	/// </summary>
 	public int Granularity
 	{
-		get => granularity;
-		set => granularity = Math.Clamp(value, DrawingViewDefaults.MinimumGranularity, int.MaxValue);
-	}
+		get;
+		set => field = Math.Clamp(value, DrawingViewDefaults.MinimumGranularity, int.MaxValue);
+	} = DrawingViewDefaults.MinimumGranularity;
 
 	/// <summary>
 	/// Enables or disabled if this line is smoothed (anti-aliased) when drawn.

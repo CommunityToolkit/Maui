@@ -6,14 +6,16 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts boolean to object and vice versa.
 /// </summary>
-public class BoolToObjectConverter : BoolToObjectConverter<object>
+[AcceptEmptyServiceProvider]
+public partial class BoolToObjectConverter : BoolToObjectConverter<object>
 {
 }
 
 /// <summary>
 /// Converts <see cref="bool"/> to object and vice versa.
 /// </summary>
-public class BoolToObjectConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TObject> : BaseConverter<bool, TObject?>
+[AcceptEmptyServiceProvider]
+public partial class BoolToObjectConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TObject> : BaseConverter<bool, TObject?>
 {
 	/// <inheritdoc/>
 	public override TObject? DefaultConvertReturnValue { get; set; } = default;
@@ -40,7 +42,7 @@ public class BoolToObjectConverter<[DynamicallyAccessedMembers(DynamicallyAccess
 	public override TObject? ConvertFrom(bool value, CultureInfo? culture = null) => value ? TrueObject : FalseObject;
 
 	/// <summary>
-	/// Converts back object to <see cref="bool"/>.
+	/// Converts back the object to <see cref="bool"/>.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
 	/// <param name="culture">The culture to use in the converter.  This is not implemented.</param>

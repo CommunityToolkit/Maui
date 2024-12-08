@@ -21,7 +21,7 @@ public sealed class MediaSourceConverter : TypeConverter
 		=> destinationType == typeof(string);
 
 	/// <inheritdoc/>
-	public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
+	public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object? value)
 	{
 		var valueAsString = value?.ToString() ?? string.Empty;
 
@@ -37,7 +37,8 @@ public sealed class MediaSourceConverter : TypeConverter
 			return MediaSource.FromResource(
 				valueAsString[embeddedResourcePrefix.Length..]);
 		}
-		else if (valueAsStringLowercase.StartsWith(fileSystemPrefix))
+
+		if (valueAsStringLowercase.StartsWith(fileSystemPrefix))
 		{
 			return MediaSource.FromFile(valueAsString[fileSystemPrefix.Length..]);
 		}
@@ -48,7 +49,7 @@ public sealed class MediaSourceConverter : TypeConverter
 	}
 
 	/// <inheritdoc/>
-	public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType) => value switch
+	public override object ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType) => value switch
 	{
 		UriMediaSource uriMediaSource => uriMediaSource.ToString(),
 		FileMediaSource fileMediaSource => fileMediaSource.ToString(),

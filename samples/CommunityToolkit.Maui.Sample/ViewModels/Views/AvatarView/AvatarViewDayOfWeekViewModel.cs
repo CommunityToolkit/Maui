@@ -1,5 +1,5 @@
 ﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
 
-public class AvatarViewDayOfWeekViewModel : BaseViewModel
+public partial class AvatarViewDayOfWeekViewModel : BaseViewModel
 {
 }

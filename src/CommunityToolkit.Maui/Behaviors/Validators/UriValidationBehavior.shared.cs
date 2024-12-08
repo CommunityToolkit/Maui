@@ -1,9 +1,12 @@
-﻿namespace CommunityToolkit.Maui.Behaviors;
+﻿using System.Diagnostics.CodeAnalysis;
+namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>
 /// The <see cref="UriValidationBehavior"/> is a behavior that allows users to determine whether or not text input is a valid URI. For example, an <see cref="Entry"/> control can be styled differently depending on whether a valid or an invalid URI is provided. Additional properties handling validation are inherited from <see cref="ValidationBehavior"/>.
 /// </summary>
-public class UriValidationBehavior : TextValidationBehavior
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+[RequiresUnreferencedCode($"{nameof(UriValidationBehavior)} is not trim safe because it uses bindings with string paths.")]
+public partial class UriValidationBehavior : TextValidationBehavior
 {
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="UriKind"/> property.

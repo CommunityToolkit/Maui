@@ -3,19 +3,14 @@
 /// <summary>
 /// Contains last drawing line
 /// </summary>
-public class DrawingLineCompletedEventArgs : EventArgs
+/// <remarks>
+/// Initialize a new instance of <see cref="DrawingLineCompletedEventArgs"/>
+/// </remarks>
+/// <param name="lastDrawingLine">Last drawing line</param>
+public class DrawingLineCompletedEventArgs(IDrawingLine lastDrawingLine) : EventArgs
 {
-	/// <summary>
-	/// Initialize a new instance of <see cref="DrawingLineCompletedEventArgs"/>
-	/// </summary>
-	/// <param name="lastDrawingLine">Last drawing line</param>
-	public DrawingLineCompletedEventArgs(IDrawingLine lastDrawingLine)
-	{
-		LastDrawingLine = lastDrawingLine;
-	}
-
 	/// <summary>
 	/// Last drawing line
 	/// </summary>
-	public IDrawingLine LastDrawingLine { get; }
+	public IDrawingLine LastDrawingLine { get; } = lastDrawingLine;
 }

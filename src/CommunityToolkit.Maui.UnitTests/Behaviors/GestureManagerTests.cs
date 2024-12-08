@@ -56,7 +56,7 @@ public class GestureManagerTests : BaseTest
 
 		// Act
 		var gestureManager = new GestureManager();
-		gestureManager.HandleTouch(in touchBehavior, in status);
+		GestureManager.HandleTouch(in touchBehavior, in status);
 
 		// Assert
 		Assert.Equal(expectedTouchState, touchBehavior.CurrentTouchState);

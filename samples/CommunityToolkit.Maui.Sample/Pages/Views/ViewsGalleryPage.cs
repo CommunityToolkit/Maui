@@ -2,7 +2,7 @@
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-public class ViewsGalleryPage(IDeviceInfo deviceInfo, ViewsGalleryViewModel viewsGalleryViewModel) : BaseGalleryPage<ViewsGalleryViewModel>("Views", deviceInfo, viewsGalleryViewModel)
+public partial class ViewsGalleryPage(IDeviceInfo deviceInfo, ViewsGalleryViewModel viewsGalleryViewModel) : BaseGalleryPage<ViewsGalleryViewModel>("Views", deviceInfo, viewsGalleryViewModel)
 {
 
 }

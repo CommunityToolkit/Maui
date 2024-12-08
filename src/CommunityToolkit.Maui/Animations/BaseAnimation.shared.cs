@@ -3,9 +3,13 @@
 /// Abstract class for animation types to inherit.
 /// </summary>
 /// <typeparam name="TAnimatable">The <see cref="VisualElement"/> that the behavior can be applied to</typeparam>
-public abstract class BaseAnimation<TAnimatable> : BindableObject where TAnimatable : IAnimatable
+/// <remarks>
+/// Initialize BaseAnimation
+/// </remarks>
+/// <param name="defaultLength">The default time, in milliseconds, over which to animate the transition</param>
+public abstract class BaseAnimation<TAnimatable>(uint defaultLength = 250u) : BindableObject where TAnimatable : IAnimatable
 {
-	readonly uint defaultLength;
+	readonly uint defaultLength = defaultLength;
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Length"/> property.
@@ -19,12 +23,6 @@ public abstract class BaseAnimation<TAnimatable> : BindableObject where TAnimata
 	/// </summary>
 	public static readonly BindableProperty EasingProperty =
 		BindableProperty.Create(nameof(Easing), typeof(Easing), typeof(BaseAnimation<TAnimatable>), Easing.Linear, BindingMode.OneWay);
-
-	/// <summary>
-	/// Initialize BaseAnimation
-	/// </summary>
-	/// <param name="defaultLength">The default time, in milliseconds, over which to animate the transition</param>
-	protected BaseAnimation(uint defaultLength = 250u) => this.defaultLength = defaultLength;
 
 	/// <summary>
 	/// The time, in milliseconds, over which to animate the transition.
@@ -53,14 +51,10 @@ public abstract class BaseAnimation<TAnimatable> : BindableObject where TAnimata
 }
 
 /// <inheritdoc/>
-public abstract class BaseAnimation : BaseAnimation<VisualElement>
+/// <summary>
+/// Initialize BaseAnimation
+/// </summary>
+/// <param name="defaultLength">The default time, in milliseconds, over which to animate the transition</param>
+public abstract class BaseAnimation(uint defaultLength = 250u) : BaseAnimation<VisualElement>(defaultLength)
 {
-	/// <summary>
-	/// Initialize BaseAnimation
-	/// </summary>
-	/// <param name="defaultLength">The default time, in milliseconds, over which to animate the transition</param>
-	protected BaseAnimation(uint defaultLength = 250u) : base(defaultLength)
-	{
-
-	}
 }

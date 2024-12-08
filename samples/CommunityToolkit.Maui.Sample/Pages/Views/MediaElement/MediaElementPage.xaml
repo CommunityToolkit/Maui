@@ -2,7 +2,6 @@
 <pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-             xmlns:views="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Views"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
              xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Converters"
@@ -11,7 +10,6 @@
              x:Class="CommunityToolkit.Maui.Sample.Pages.Views.MediaElementPage"
              Title="MediaElement">
     <pages:BasePage.Resources>
-        <toolkit:TimeSpanToSecondsConverter x:Key="TimeSpanConverter" />
         <converters:SecondsToStringConverter x:Key="SecondsToStringConverter" />
     </pages:BasePage.Resources>
 
@@ -42,7 +40,7 @@
                 StateChanged="OnStateChanged"
                 SeekCompleted="OnSeekCompleted"/>
             <HorizontalStackLayout Grid.Row="1" Padding="0,0,0,15">
-                <Label HorizontalOptions="Center">
+                <Label HorizontalOptions="Center" x:DataType="toolkit:MediaElement">
                     <Label.Text>
                         <MultiBinding StringFormat="{}Current State: {0} - Dimensions: {1}x{2}">
                             <Binding Path="CurrentState" Source="{x:Reference MediaElement}" />
@@ -61,11 +59,13 @@
                 <Button Grid.Column="3" Text="Mute" Clicked="OnMuteClicked">
                     <Button.Triggers>
                         <DataTrigger TargetType="Button"
+                                     x:DataType="toolkit:MediaElement"
                                      Binding="{Binding ShouldMute, Source={x:Reference MediaElement}}"
                                      Value="True">
                             <Setter Property="Text" Value="Unmute" />
                         </DataTrigger>
                         <DataTrigger TargetType="Button"
+                                     x:DataType="toolkit:MediaElement"
                                      Binding="{Binding ShouldMute, Source={x:Reference MediaElement}}"
                                      Value="False">
                             <Setter Property="Text" Value="Mute" />
@@ -83,8 +83,8 @@
                 DragCompleted="Slider_DragCompleted"/>
 
             <Grid Grid.Row="4" HorizontalOptions="Fill">
-                <Label HorizontalOptions="Start"  Text="{Binding Position, Source={x:Reference MediaElement}, Converter={StaticResource SecondsToStringConverter}}" />
-                <Label HorizontalOptions="End" HorizontalTextAlignment="End" Text="{Binding Duration, Source={x:Reference MediaElement}, Converter={StaticResource SecondsToStringConverter}}" />
+                <Label HorizontalOptions="Start" x:DataType="toolkit:MediaElement" Text="{Binding Position, Source={x:Reference MediaElement}, Converter={StaticResource SecondsToStringConverter}}" />
+                <Label HorizontalOptions="End" HorizontalTextAlignment="End" x:DataType="toolkit:MediaElement" Text="{Binding Duration, Source={x:Reference MediaElement}, Converter={StaticResource SecondsToStringConverter}}" />
             </Grid>
 
             <VerticalStackLayout Padding="0,20,0,0" Grid.Row="5" Spacing="5">
@@ -99,7 +99,7 @@
             </VerticalStackLayout>
 
             <HorizontalStackLayout Grid.Row="6" Padding="0,10,0,10" Spacing="5">
-                <Label Margin="20,10">
+                <Label Margin="20,10" x:DataType="toolkit:MediaElement">
                     <Label.FormattedText>
                         <FormattedString>
                             <Span Text="Speed:" />
@@ -113,7 +113,7 @@
             </HorizontalStackLayout>
 
             <HorizontalStackLayout Grid.Row="7" Padding="0,10,0,10" Spacing="5">
-                <Label Margin="20,10">
+                <Label Margin="20,10" x:DataType="toolkit:MediaElement">
                     <Label.FormattedText>
                         <FormattedString>
                             <Span Text="Volume:" />
@@ -132,6 +132,7 @@
                         Margin="0,0,5,0"
                         ThumbColor="White"
                         OnColor="LimeGreen"
+                        x:DataType="toolkit:MediaElement"
                         IsToggled="{Binding Source={x:Reference MediaElement}, Path=ShouldShowPlaybackControls}" />
                     <Label
                         VerticalOptions="Center"
@@ -142,6 +143,7 @@
                         Margin="0,0,5,0"
                         ThumbColor="White"
                         OnColor="LimeGreen"
+                        x:DataType="toolkit:MediaElement"
                         IsToggled="{Binding Source={x:Reference MediaElement}, Path=ShouldLoopPlayback}" />
                     <Label
                         VerticalOptions="Center"
@@ -152,6 +154,7 @@
                         Margin="0,0,5,0"
                         ThumbColor="White"
                         OnColor="LimeGreen"
+                        x:DataType="toolkit:MediaElement"
                         IsToggled="{Binding Source={x:Reference MediaElement}, Path=ShouldKeepScreenOn}" />
                     <Label
                         VerticalOptions="Center"

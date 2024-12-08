@@ -183,9 +183,9 @@
                     HorizontalOptions="Fill"
                     StrokeShape="RoundRectangle, 20"
                     StrokeThickness="0">
-                    <ContentView.Behaviors>
-                        <mct:TouchBehavior Command="{Binding MonkeySelectedCommand}" CommandParameter="{Binding Source={x:Reference MonkeyPicker}, Path=SelectedItem}" />
-                    </ContentView.Behaviors>
+                    <Border.Behaviors>
+                        <mct:TouchBehavior Command="{Binding MonkeySelectedCommand}" CommandParameter="{Binding Source={x:Reference MonkeyPicker}, Path=SelectedItem, x:DataType=Picker}" />
+                    </Border.Behaviors>
                     <Label
                         FontAttributes="Bold"
                         FontSize="18"

@@ -21,7 +21,7 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
 		=> CSharpAnalyzerVerifier<TAnalyzer, DefaultVerifier>.Diagnostic(descriptor);
 
 	/// <inheritdoc cref="AnalyzerVerifier{TAnalyzer, TTest, TVerifier}.VerifyAnalyzerAsync(string, DiagnosticResult[])"/>
-	public static async Task VerifyAnalyzerAsync(string source, Type[] assembliesUnderTest, params DiagnosticResult[] expected)
+	public static async Task VerifyAnalyzerAsync(string source, Type[] assembliesUnderTest, params IReadOnlyList<DiagnosticResult> expected)
 	{
 		var test = new Test(assembliesUnderTest)
 		{

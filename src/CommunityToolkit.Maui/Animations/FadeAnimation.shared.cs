@@ -2,9 +2,9 @@
 
 /// <summary>
 /// Animation that will fade the supplied view to the specified <see cref="Opacity"/>
-/// and then back to it's original <see cref="Opacity"/>.
+/// and then back to its original <see cref="Opacity"/>.
 /// </summary>
-public class FadeAnimation : BaseAnimation
+public partial class FadeAnimation() : BaseAnimation(300)
 {
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Opacity"/> property.
@@ -16,14 +16,6 @@ public class FadeAnimation : BaseAnimation
 			typeof(FadeAnimation),
 			0.3,
 			BindingMode.TwoWay);
-
-	/// <summary>
-	/// Initializes a new instance of <see cref="FadeAnimation"/>.
-	/// </summary>
-	public FadeAnimation() : base(300)
-	{
-
-	}
 
 	/// <summary>
 	/// Gets or sets the opacity to fade to before returning to the elements current Opacity.

@@ -1,4 +1,5 @@
-﻿namespace CommunityToolkit.Maui.Behaviors;
+﻿using System.Diagnostics.CodeAnalysis;
+namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>The allowed character types used to determine if a value is valid in the <see cref="CharactersValidationBehavior"/>. Since this is a flag, multiple flags cane be combined.</summary>
 [Flags]
@@ -39,9 +40,12 @@ public enum CharacterType
 }
 
 /// <summary>
-/// The <see cref="CharactersValidationBehavior"/> is a behavior that allows the user to validate text input depending on specified parameters.For example, an <see cref="Entry"/> control can be styled differently depending on whether a valid or an invalid text value is provided. This behavior includes built-in checks such as checking for a certain number of digits or alphanumeric characters. Additional properties handling validation are inherited from <see cref="ValidationBehavior"/>.
+/// The <see cref="CharactersValidationBehavior"/> is a behavior that allows the user to validate text input depending on specified parameters.
+/// For example, an <see cref="Entry"/> control can be styled differently depending on whether a valid or an invalid text value is provided. This behavior includes built-in checks such as checking for a certain number of digits or alphanumeric characters. Additional properties handling validation are inherited from <see cref="ValidationBehavior"/>.
 /// </summary>
-public class CharactersValidationBehavior : TextValidationBehavior
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+[RequiresUnreferencedCode($"{nameof(CharactersValidationBehavior)} is not trim safe because it uses bindings with string paths.")]
+public partial class CharactersValidationBehavior : TextValidationBehavior
 {
 	List<Predicate<char>> characterPredicates = Enumerable.Empty<Predicate<char>>().ToList();
 

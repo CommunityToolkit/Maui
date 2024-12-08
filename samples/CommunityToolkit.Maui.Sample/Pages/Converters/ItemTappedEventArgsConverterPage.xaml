@@ -25,6 +25,7 @@
                 Margin="0, 0, 0, 20" />
 
             <ListView
+                x:Name="ListView"
                 BackgroundColor="Transparent"
                 ItemsSource="{Binding Items}"
                 SelectedItem="{Binding ItemSelected, Mode=TwoWay}">
@@ -32,6 +33,7 @@
                 <ListView.Behaviors>
                     <mctBehaviors:EventToCommandBehavior 
                         EventName="ItemTapped"
+                        BindingContext="{Binding Path=BindingContext, Source={x:Reference ListView}, x:DataType=ListView}"
                         Command="{Binding ItemTappedCommand}"
                         EventArgsConverter="{StaticResource ItemTappedEventArgsConverter}" />
                 </ListView.Behaviors>

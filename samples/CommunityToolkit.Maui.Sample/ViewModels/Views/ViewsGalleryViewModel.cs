@@ -3,7 +3,7 @@ using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public sealed class ViewsGalleryViewModel() : BaseGalleryViewModel(
+public sealed partial class ViewsGalleryViewModel() : BaseGalleryViewModel(
 [
 	SectionModel.Create<AvatarViewBindablePropertiesViewModel>("AvatarView Bindable Properties Page", Colors.Red, "A page demonstrating how to bind to various AvatarView properties."),
 	SectionModel.Create<AvatarViewBordersViewModel>("AvatarView Borders Page", Colors.Red, "A page demonstrating AvatarView borders."),

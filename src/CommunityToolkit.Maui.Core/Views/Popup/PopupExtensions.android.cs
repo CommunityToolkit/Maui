@@ -205,11 +205,6 @@ public static class PopupExtensions
 
 				width = width == LayoutParams.WrapContent ? decorView.MeasuredWidth : width;
 				height = height == LayoutParams.WrapContent ? decorView.MeasuredHeight : height;
-
-				handler.LastPopupWidth = decorView.Width;
-				handler.LastPopupHeight = decorView.Height;
-				handler.LastWindowWidth = windowSize.Width;
-				handler.LastWindowHeight = windowSize.Height;
 			}
 			else
 			{
@@ -229,10 +224,6 @@ public static class PopupExtensions
 
 				window.SetLayout(width, height);
 
-				handler.LastPopupWidth = decorView.Width;
-				handler.LastPopupHeight = decorView.Height;
-				handler.LastWindowWidth = windowSize.Width;
-				handler.LastWindowHeight = windowSize.Height;
 			}
 		}
 		else
@@ -253,11 +244,12 @@ public static class PopupExtensions
 
 			window.SetLayout(width, height);
 
-			handler.LastPopupWidth = decorView.Width;
-			handler.LastPopupHeight = decorView.Height;
-			handler.LastWindowWidth = windowSize.Width;
-			handler.LastWindowHeight = windowSize.Height;
 		}
+
+		handler.LastPopupWidth = decorView.Width;
+		handler.LastPopupHeight = decorView.Height;
+		handler.LastWindowWidth = windowSize.Width;
+		handler.LastWindowHeight = windowSize.Height;
 
 		SetAnchor(dialog, popup, width, height);
 	}

@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Net;
 using System.Net.Mail;
 using System.Text.RegularExpressions;
@@ -11,6 +12,8 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// The validation is achieved through a regular expression that is used to verify whether or not the text input is a valid e-mail address.
 /// It can be overridden to customize the validation through the properties it inherits from <see cref="ValidationBehavior"/>.
 /// </summary>
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+[RequiresUnreferencedCode($"{nameof(EmailValidationBehavior)} is not trim safe because it uses bindings with string paths.")]
 public partial class EmailValidationBehavior : TextValidationBehavior
 {
 	/// <summary>

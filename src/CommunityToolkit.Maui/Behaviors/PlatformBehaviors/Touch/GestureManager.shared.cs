@@ -6,7 +6,7 @@ using static System.Math;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
-sealed class GestureManager : IDisposable, IAsyncDisposable
+sealed partial class GestureManager : IDisposable, IAsyncDisposable
 {
 	Color? defaultBackgroundColor;
 
@@ -57,7 +57,7 @@ sealed class GestureManager : IDisposable, IAsyncDisposable
 		touchBehavior.CurrentHoverStatus = hoverStatus;
 	}
 
-	internal void HandleTouch(in TouchBehavior touchBehavior, in TouchStatus status)
+	internal static void HandleTouch(in TouchBehavior touchBehavior, in TouchStatus status)
 	{
 		if (!touchBehavior.IsEnabled)
 		{

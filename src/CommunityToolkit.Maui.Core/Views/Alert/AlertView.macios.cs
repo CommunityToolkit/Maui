@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class AlertView : UIView
 {
-	readonly List<UIView> children = Enumerable.Empty<UIView>().ToList();
+	readonly List<UIView> children = [];
 
 	/// <summary>
 	/// Parent UIView

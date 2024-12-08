@@ -33,7 +33,7 @@ public partial class IconTintColorBehavior
 
 		ApplyTintColor(platformView, bindable, TintColor);
 
-		this.PropertyChanged += (s, e) =>
+		PropertyChanged += (s, e) =>
 		{
 			if (e.PropertyName == TintColorProperty.PropertyName)
 			{
