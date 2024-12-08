@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Core.Handlers;
-using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui;
