@@ -58,8 +58,8 @@ public class Options() : Core.Options
 		{
 			throw new InvalidOperationException($"{nameof(SetShouldEnableSnackbarOnWindows)} must be called using the {nameof(AppBuilderExtensions.UseMauiCommunityToolkit)} extension method. See the Platform Specific Initialization section of the {nameof(Alerts.Snackbar)} documentaion for more inforamtion: https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar)")
 			{
- 				HelpLink = "https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar"
- 			};
+				HelpLink = "https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar"
+			};
 		}
 		else if (value is true && builder is not null)
 		{
@@ -68,13 +68,28 @@ public class Options() : Core.Options
 				events.AddWindows(windows => windows
 					.OnLaunched((_, _) =>
 					{
-						Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked += OnSnackbarNotificationInvoked;
-						Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Register();
+						if (Application.Current is null)
+						{
+							throw new InvalidOperationException($"{nameof(Application)}.{nameof(Application.Current)} cannot be null when Windows are launched");
+						}
+
+						else if (Application.Current.Windows.Count is 1)
+						{
+							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked += OnSnackbarNotificationInvoked;
+							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Register();
+						}
 					})
 					.OnClosed((_, _) =>
 					{
-						Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked -= OnSnackbarNotificationInvoked;
-						Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Unregister();
+						if (Application.Current is null)
+						{
+							throw new InvalidOperationException($"{nameof(Application)}.{nameof(Application.Current)} cannot be null when Windows are closed");
+						}
+						else if (Application.Current.Windows.Count is 1)
+						{
+							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked -= OnSnackbarNotificationInvoked;
+							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Unregister();
+						}
 					}));
 			});
 
