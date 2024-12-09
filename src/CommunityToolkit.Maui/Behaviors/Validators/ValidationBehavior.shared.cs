@@ -421,8 +421,16 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 
 	void ResetValidationTokenSource(CancellationTokenSource? newTokenSource)
 	{
-		validationTokenSource?.Cancel();
-		validationTokenSource = newTokenSource;
+		try
+		{
+			validationTokenSource?.Cancel();
+			validationTokenSource?.Dispose();
+		}
+		catch (ObjectDisposedException) { }
+		finally
+		{
+			validationTokenSource = newTokenSource;
+		}
 	}
 }
 
