@@ -123,6 +123,7 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 		{
 			MauiContext.GetPlatformWindow().SizeChanged -= OnSizeChanged;
 		}
+		DetachSwipeControlEvent(platformView);
 	}
 
 	/// <inheritdoc/>
@@ -141,6 +142,7 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 		{
 			MauiContext.GetPlatformWindow().SizeChanged += OnSizeChanged;
 		}
+		AttachSwipeControlEvent(platformView);
 		base.ConnectHandler(platformView);
 	}
 
@@ -169,4 +171,60 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 			PopupExtensions.SetLayout(PlatformView, VirtualView, MauiContext);
 		}
 	}
+
+	void AttachSwipeControlEvent(Popup platformView)
+	{
+		if (platformView.Child is FrameworkElement frameworkElement)
+		{
+			if (frameworkElement is SwipeControl)
+			{
+				SwipeControl swipeControl = (SwipeControl)frameworkElement;
+				swipeControl.Loaded += OnLoadedSwipeControl;
+			}
+			else
+			{
+				var swipeControls = frameworkElement.GetChildren<SwipeControl>();
+				foreach (SwipeControl? swipeControl in swipeControls)
+				{
+					if (swipeControl is not null)
+					{
+						swipeControl.Loaded += OnLoadedSwipeControl;
+					}
+				}
+			}
+		}
+	}
+
+	void DetachSwipeControlEvent(Popup platformView)
+	{
+		if (platformView.Child is FrameworkElement frameworkElement)
+		{
+			if (frameworkElement is SwipeControl)
+			{
+				SwipeControl swipeControl = (SwipeControl)frameworkElement;
+				swipeControl.Loaded -= OnLoadedSwipeControl;
+			}
+			else
+			{
+				var swipeControls = frameworkElement.GetChildren<SwipeControl>();
+				foreach (SwipeControl? swipeControl in swipeControls)
+				{
+					if (swipeControl is not null)
+					{
+						swipeControl.Loaded -= OnLoadedSwipeControl;
+					}
+				}
+			}
+		}
+	}
+
+	void OnLoadedSwipeControl(object? sender, RoutedEventArgs e)
+	{
+		if (VirtualView is not null)
+		{
+			PopupExtensions.SetSize(PlatformView, VirtualView, MauiContext);
+			PopupExtensions.SetLayout(PlatformView, VirtualView, MauiContext);
+		}
+	}
+
 }
