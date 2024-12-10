@@ -37,7 +37,7 @@ public partial class VerifyMauiWorkloadVersionTask : Microsoft.Build.Utilities.T
 
 			if (currentVersion < minimumRequiredVersion)
 			{
-				Log.LogError($"The installed MAUI workload version, {installedMauiWorkloadVersion}, does not meet the minimum version required by the .NET MAUI Community Toolkit: {MinimumRequiredMauiVersion}./n{GenerateTroubleshootingText(MinimumRequiredMauiVersion)}");
+				Log.LogError($"The installed MAUI workload version, {installedMauiWorkloadVersion}, does not meet the minimum version required by the .NET MAUI Community Toolkit: {MinimumRequiredMauiVersion}.\n{GenerateTroubleshootingText(MinimumRequiredMauiVersion)}");
 				return false;
 			}
 
