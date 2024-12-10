@@ -1,6 +1,6 @@
 ﻿namespace CommunityToolkit.Maui.Core;
 
-/// <summary>vent args containing all contextual information related to rating changed event.</summary>
+/// <summary>Event args containing all contextual information related to rating changed event.</summary>
 /// <param name="rating">The new rating value.</param>
 public class RatingChangedEventArgs(double rating) : EventArgs
 {
