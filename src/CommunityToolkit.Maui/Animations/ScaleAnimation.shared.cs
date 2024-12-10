@@ -17,7 +17,7 @@ public class ScaleAnimation : BaseAnimation
 			BindingMode.TwoWay);
 
 	/// <summary>
-	/// Gets or sets the opacity to fade to before returning to the elements current Scale.
+	/// Gets or sets the scale to animate to before returning to the element's current scale.
 	/// </summary>
 	public double Scale
 	{
