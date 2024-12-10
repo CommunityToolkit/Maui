@@ -32,7 +32,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	float volumeBeforeMute = 1;
 
 	TaskCompletionSource? seekToTaskCompletionSource;
-
+	CancellationTokenSource? cancellationTokenSource;
 	MediaSession? session;
 	MediaItem.Builder? mediaItem;
 	BoundServiceConnection? connection;
@@ -41,7 +41,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// The platform native counterpart of <see cref="MediaElement"/>.
 	/// </summary>
 	protected PlayerView? PlayerView { get; set; }
-	static async Task<byte[]> GetBytesFromMetadataArtworkUrl(string? url, CancellationToken cancellationToken = default)
+	static async Task<byte[]> GetBytesFromUrl(string? url, CancellationToken cancellationToken = default)
 	{
 		byte[] artworkData = [];
 		try
@@ -83,9 +83,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaElement.Speed = playbackParameters.Speed;
 	}
 
-	/// <summary>
-	/// Updates the notifications for the media player.
-	/// </summary>
 	public void UpdateNotifications()
 	{
 		if (connection?.Binder?.Service is null)
@@ -371,7 +368,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 		Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
-		var result = await SetPlayerData();
+		cancellationTokenSource ??= new();
+		// ConfigureAwait(true) is required to prevent crash on startup
+		var result = await SetPlayerData(cancellationTokenSource.Token).ConfigureAwait(true);
 		var item = result?.Build();
 
 		if (item?.MediaMetadata is not null)
@@ -520,6 +519,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			session?.Release();
 			session?.Dispose();
+			cancellationTokenSource?.Dispose();
 			StopService();
 			connection?.Dispose();
 			client.Dispose();
@@ -538,7 +538,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		Platform.AppContext.UnbindService(connection);
 	}
 
-	async Task<MediaItem.Builder?> SetPlayerData()
+	async Task<MediaItem.Builder?> SetPlayerData(CancellationToken cancellationToken = default)
 	{
 		if (MediaElement.Source is null)
 		{
@@ -551,7 +551,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 					var uri = uriMediaSource.Uri;
 					if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
 					{
-						return await CreateMediaItem(uri.AbsoluteUri);
+						return await CreateMediaItem(uri.AbsoluteUri, cancellationToken).ConfigureAwait(false);
 					}
 					break;
 				}
@@ -560,7 +560,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 					var filePath = fileMediaSource.Path;
 					if (!string.IsNullOrWhiteSpace(filePath))
 					{
-						return await CreateMediaItem(filePath);
+						return await CreateMediaItem(filePath, cancellationToken).ConfigureAwait(false);
 					}
 					break;
 				}
@@ -571,7 +571,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 					if (!string.IsNullOrWhiteSpace(path))
 					{
 						var assetFilePath = $"asset://{package}{Path.PathSeparator}{path}";
-						return await CreateMediaItem(assetFilePath);
+						return await CreateMediaItem(assetFilePath, cancellationToken).ConfigureAwait(false);
 					}
 					break;
 				}
@@ -582,12 +582,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		return mediaItem;
 	}
 
-	async Task<MediaItem.Builder> CreateMediaItem(string url)
+	async Task<MediaItem.Builder> CreateMediaItem(string url, CancellationToken cancellationToken = default)
 	{
 		MediaMetadata.Builder mediaMetaData = new();
 		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
 		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
-		var data = await GetBytesFromMetadataArtworkUrl(MediaElement.MetadataArtworkUrl, CancellationToken.None).ConfigureAwait(false) ?? null;
+		var data = await GetBytesFromUrl(MediaElement.MetadataArtworkUrl, cancellationToken).ConfigureAwait(false) ?? null;
 		mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);
 
 		mediaItem = new MediaItem.Builder();
