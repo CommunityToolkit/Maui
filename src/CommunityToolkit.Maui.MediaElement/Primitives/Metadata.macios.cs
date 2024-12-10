@@ -7,7 +7,7 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Primitives;
 
-class Metadata
+sealed class Metadata
 {
 	static readonly UIImage defaultUIImage = new();
 	static readonly MPNowPlayingInfo nowPlayingInfoDefault = new()
