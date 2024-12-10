@@ -28,7 +28,7 @@ public partial class VerifyMauiWorkloadVersionTask : Microsoft.Build.Utilities.T
 
 			if (string.IsNullOrEmpty(installedMauiWorkloadVersion))
 			{
-				Log.LogError($"No MAUI workload installed/n{GenerateTroubleshootingText(MinimumRequiredMauiVersion)}");
+				Log.LogError($"No MAUI workload installed\n{GenerateTroubleshootingText(MinimumRequiredMauiVersion)}");
 				return false;
 			}
 
