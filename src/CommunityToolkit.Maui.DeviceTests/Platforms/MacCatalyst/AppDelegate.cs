@@ -2,7 +2,7 @@
 
 namespace CommunityToolkit.Maui.DeviceTests;
 [Register("AppDelegate")]
-public class AppDelegate : MauiUIApplicationDelegate
+public partial class AppDelegate : MauiUIApplicationDelegate
 {
 	protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 }
