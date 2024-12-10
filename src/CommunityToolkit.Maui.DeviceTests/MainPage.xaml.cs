@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.DeviceTests;
+namespace CommunityToolkit.Maui.DeviceTests;
 
 public partial class MainPage : ContentPage
 {
