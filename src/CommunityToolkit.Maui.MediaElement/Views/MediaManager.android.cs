@@ -41,7 +41,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// The platform native counterpart of <see cref="MediaElement"/>.
 	/// </summary>
 	protected PlayerView? PlayerView { get; set; }
-	static async Task<byte[]> GetBytesFromUrl(string? url, CancellationToken cancellationToken = default)
+	static async Task<byte[]> GetBytesFromMetadataArtworkUrl(string? url, CancellationToken cancellationToken = default)
 	{
 		byte[] artworkData = [];
 		try
@@ -587,7 +587,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaMetadata.Builder mediaMetaData = new();
 		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
 		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
-		var data = await GetBytesFromUrl(MediaElement.MetadataArtworkUrl, CancellationToken.None).ConfigureAwait(false) ?? null;
+		var data = await GetBytesFromMetadataArtworkUrl(MediaElement.MetadataArtworkUrl, CancellationToken.None).ConfigureAwait(false) ?? null;
 		mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);
 
 		mediaItem = new MediaItem.Builder();
