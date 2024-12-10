@@ -5,12 +5,12 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Animations;
 
-public class FadeAnimationTests : BaseTest
+public class FadeAnimationTests : BaseAnimationTests<FadeAnimation>
 {
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task AnimateShouldThrowWithNullView()
 	{
-		FadeAnimation animation = new();
+		FadeAnimation animation = CreateAnimation();
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		await Assert.ThrowsAsync<ArgumentNullException>(() => animation.Animate(null, CancellationToken.None));
@@ -54,7 +54,7 @@ public class FadeAnimationTests : BaseTest
 	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task AnimateShouldReturnToOriginalOpacity()
 	{
-		FadeAnimation animation = new();
+		FadeAnimation animation = CreateAnimation();
 
 		var label = new Label
 		{

@@ -1,4 +1,5 @@
 ﻿namespace CommunityToolkit.Maui.Animations;
+
 /// <summary>
 /// Abstract class for animation types to inherit.
 /// </summary>
