@@ -5,3 +5,4 @@
 Rule ID | Category | Severity | Notes                                               
 --------|----------|----------|-----------------------------------------------------
 MCT001  | Usage    | Error    | `.UseMauiCommunityToolkit()` Not Found on MauiAppBuilder
+MCT002  | Usage    | Error    | The value of MaximumRating must be between 1 and 10

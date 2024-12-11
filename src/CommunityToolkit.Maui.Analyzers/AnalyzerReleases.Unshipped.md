@@ -2,6 +2,7 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|--------------------
+MCT002 | Usage | Error | MaximumRatingRangeAnalyzer
 
 ### Changed Rules
 
