@@ -63,11 +63,11 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 	[InlineData("(x1 + x) * x1", new object[] { 2d, 3d }, 15d)]
 	[InlineData("3 + x * x1 / (1 - 5)^x1", new object[] { 4d, 2d }, 3.5d)]
 	[InlineData("3 + 4 * 2 + cos(100 + x) / (x1 - 5)^2 + pow(x0, 2)", new object[] { 20d, 1d }, 411.05088631065792d)]
-	public void MathExpressionConverter_WithMultipleVariable_ReturnsCorrectResult(string expression, object[] variables, double expectedResult)
+	public void MathExpressionConverter_WithMultipleVariable_ReturnsCorrectResult(string expression, object[] values, double expectedResult)
 	{
 		var mathExpressionConverter = new MultiMathExpressionConverter();
 
-		var result = mathExpressionConverter.Convert(variables, mathExpressionTargetType, expression);
+		var result = mathExpressionConverter.Convert(values, mathExpressionTargetType, expression);
 
 		Assert.NotNull(result);
 		Assert.True(Math.Abs((double)result - expectedResult) < tolerance);

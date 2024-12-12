@@ -13,15 +13,15 @@ public class MathExpressionConverter : BaseConverterOneWay<object?, object?, str
 	/// <summary>
 	/// Calculate the incoming expression string with one variable.
 	/// </summary>
-	/// <param name="value">The variable X for an expression</param>
+	/// <param name="inputValue">The variable X for an expression</param>
 	/// <param name="parameter">The expression to calculate.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>A <see cref="double"/> The result of calculating an expression.</returns>
-	public override object? ConvertFrom(object? value, string parameter, CultureInfo? culture = null)
+	public override object? ConvertFrom(object? inputValue, string parameter, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(parameter);
 
-		var mathExpression = new MathExpression(parameter, [value]);
+		var mathExpression = new MathExpression(parameter, [inputValue]);
 		return mathExpression.Calculate();
 	}
 }
