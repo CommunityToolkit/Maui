@@ -136,9 +136,9 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 				ClassConstraintWithInterface?,
 				ClassConstraint[],
 				ClassConstraintWithInterface,
-				RecordClassContstraint,
-				RecordClassContstraint[],
-				RecordStructContstraint
+				RecordClassConstraint,
+				RecordClassConstraint[],
+				RecordStructConstraint
 			>
 			{ TextColor = originalTextColor };
 			textStyleView.EnableAnimations();
@@ -265,13 +265,13 @@ namespace Unique.Namespace.TextStyle
 
 	}
 
-	public record RecordClassContstraint
+	public record RecordClassConstraint
 	{
 
 	}
 
 
-	public readonly record struct RecordStructContstraint
+	public readonly record struct RecordStructConstraint
 	{
 
 	}
