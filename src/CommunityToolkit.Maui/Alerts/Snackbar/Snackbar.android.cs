@@ -35,23 +35,31 @@ public partial class Snackbar
 		isDisposed = true;
 	}
 
-	static bool IsModalPageActive() => Application.Current?.Windows[0].Page is Page mainPage && mainPage.Navigation.ModalStack.Count > 0;
+	static bool TryGetPageActiveModalPage([NotNullWhen(true)] out View? modalPage)
+	{
+		if (Application.Current?.Windows[0].Page is Page mainPage && mainPage.Navigation.ModalStack.Count > 0)
+		{
+			modalPage = mainPage.Navigation.ModalStack.Last().ToPlatform();
+			return true;
+		}
+
+		modalPage = null;
+		return false;
+	}
 
 	static View GetParentView()
 	{
-		var parentView = Platform.CurrentActivity?.Window?.DecorView.FindViewById(Android.Resource.Id.Content);
-
-		if (IsModalPageActive())
+		if (TryGetPageActiveModalPage(out var modalPage))
 		{
-			parentView = parentView?.RootView;
+			return modalPage;
 		}
 
-		return parentView ?? throw new NotSupportedException("Unable to retrieve Snackbar parent");
+		return Platform.CurrentActivity?.Window?.DecorView.FindViewById(Android.Resource.Id.Content) ?? throw new NotSupportedException("Unable to retrieve Snackbar parent");
 	}
 
 	static void SetLayoutParametersForView(in View snackbarView)
 	{
-		if (!IsModalPageActive() || snackbarView.Context?.Resources is null)
+		if (!TryGetPageActiveModalPage(out _) || snackbarView.Context?.Resources is null)
 		{
 			return;
 		}
@@ -62,8 +70,7 @@ public partial class Snackbar
 			"android"
 		);
 		var navBarHeight = snackbarView.Context.Resources.GetDimensionPixelSize(resourceId);
-		var layoutParameters = (FrameLayout.LayoutParams?)snackbarView.LayoutParameters;
-		if (layoutParameters is not null)
+		if (snackbarView.LayoutParameters is FrameLayout.LayoutParams layoutParameters)
 		{
 			layoutParameters.SetMargins(layoutParameters.LeftMargin, layoutParameters.TopMargin, layoutParameters.RightMargin, layoutParameters.BottomMargin + navBarHeight);
 			snackbarView.LayoutParameters = layoutParameters;
