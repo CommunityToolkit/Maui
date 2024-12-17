@@ -67,7 +67,7 @@ public partial class Snackbar
 											padding)
 		{
 			Action = Action,
-			Anchor = Anchor?.Handler?.PlatformView as UIView,
+			Anchor = Anchor is Page ? null : Anchor?.Handler?.PlatformView as UIView,
 			Duration = Duration,
 			OnDismissed = OnDismissed,
 			OnShown = OnShown
