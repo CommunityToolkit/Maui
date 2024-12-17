@@ -105,4 +105,10 @@
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))=='false' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='maccatalyst' and $(Configuration) == 'Debug'">
     <RuntimeIdentifiers>maccatalyst-arm64;maccatalyst-x64</RuntimeIdentifiers>
   </PropertyGroup>
+
+  <Target Name="SelectStaticRegistrar" AfterTargets="SelectRegistrar">
+    <PropertyGroup Condition="'$(Registrar)' == 'managed-static' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='maccatalyst'">
+        <Registrar>static</Registrar>
+    </PropertyGroup>
+  </Target>
 </Project>
