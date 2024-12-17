@@ -13,7 +13,7 @@ public class PopupTests : BaseHandlerTest
 
 	public PopupTests()
 	{
-		Assert.IsAssignableFrom<IPopup>(new MockPopup());
+		Assert.IsType<IPopup>(new MockPopup(), exactMatch: false);
 	}
 
 	[Fact]

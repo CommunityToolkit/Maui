@@ -124,7 +124,7 @@ public class CompareConverterTests : BaseOneWayConverterTest<CompareConverter>
 
 	public static TheoryData<object> ThrowArgumentExceptionTestData { get; } =
 	[
-		new
+		(object)new
 		{
 			Name = "Not IComparable"
 		}

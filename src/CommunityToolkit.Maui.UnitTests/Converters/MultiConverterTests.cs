@@ -8,7 +8,7 @@ public class MultiConverterTests : BaseTest
 {
 	public static TheoryData<List<MultiConverterParameter>> Data { get; } =
 	[
-		new()
+		new List<MultiConverterParameter>
 		{
 			new()
 			{

@@ -5,7 +5,6 @@ using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.Views;
 using FluentAssertions;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 

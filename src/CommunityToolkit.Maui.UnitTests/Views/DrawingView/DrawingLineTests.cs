@@ -11,7 +11,7 @@ public class DrawingLineTests : BaseHandlerTest
 
 	public DrawingLineTests()
 	{
-		Assert.IsAssignableFrom<IDrawingLine>(drawingLine);
+		Assert.IsType<IDrawingLine>(drawingLine, exactMatch: false);
 	}
 
 	[Fact]

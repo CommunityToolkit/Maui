@@ -21,7 +21,7 @@ public abstract class BaseBehaviorTest<TBehavior, TView> : BaseTest
 	[Fact]
 	public void EnsureICommunityToolkitBehaviorIsBehavior()
 	{
-		Assert.IsAssignableFrom<Behavior>(behavior);
+		Assert.IsType<Behavior>(behavior, exactMatch: false);
 	}
 
 	[Fact]

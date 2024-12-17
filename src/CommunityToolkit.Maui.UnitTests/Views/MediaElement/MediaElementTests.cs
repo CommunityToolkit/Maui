@@ -9,7 +9,7 @@ public class MediaElementTests : BaseHandlerTest
 {
 	public MediaElementTests()
 	{
-		Assert.IsAssignableFrom<IMediaElement>(new MediaElement());
+		Assert.IsType<IMediaElement>(new MediaElement(), exactMatch: false);
 	}
 
 	[Fact]

@@ -8,9 +8,8 @@ public class ByteArrayToImageSourceConverterTests : BaseConverterTest<ByteArrayT
 {
 	public static TheoryData<object> NonImageStreamData { get; } =
 	[
-		3, // primitive type
-		DateTime.UtcNow, // Struct
-
+		(object)3, // primitive type
+		(object)DateTime.UtcNow, // Struct
 		new object()
 	];
 
