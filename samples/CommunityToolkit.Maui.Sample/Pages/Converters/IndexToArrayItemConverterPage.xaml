@@ -12,7 +12,6 @@
     <ContentPage.Resources>
         <mct:IndexToArrayItemConverter x:Key="IndexToArrayItemConverter"  />
         <x:Array x:Key="StringArray" Type="{x:Type x:String}">
-            <x:Null/>
             <x:String>Value 0</x:String>
             <x:String>Value 1</x:String>
             <x:String>Value 2</x:String>
@@ -47,7 +46,7 @@
                      Grid.Row="2"/>
 
             <Label Text="{Binding Source={x:Reference Stepper},
-                                Path=Value, StringFormat='Selected index: {0}', x:DataType=Stepper}"
+                                Path=Value, StringFormat='Selected index: {0}'}"
                     VerticalOptions="CenterAndExpand"
                     FontAttributes="Bold"
                     Grid.Row="2"
