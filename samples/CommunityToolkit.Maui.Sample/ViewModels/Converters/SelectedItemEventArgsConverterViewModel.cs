@@ -6,11 +6,10 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 public partial class SelectedItemEventArgsConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	string? itemSelected;
+	public partial string? ItemSelected { get; set; }
 
 	[ObservableProperty]
-	string labelText = "This label will display the selected item";
-
+	public partial string LabelText { get; set; } = "This label will display the selected item";
 	public IReadOnlyList<string> StringItemSource { get; } =
 	[
 		"Item 0",

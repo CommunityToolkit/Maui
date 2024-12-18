@@ -35,8 +35,10 @@ partial class CameraManager
 		orientationDidChangeObserver = UIDevice.Notifications.ObserveOrientationDidChange((_, _) => UpdateVideoOrientation());
 		UpdateVideoOrientation();
 
-		previewView = new PreviewView();
-		previewView.Session = captureSession;
+		var previewView = new PreviewView
+		{
+			Session = captureSession
+		};
 
 		return previewView;
 	}
@@ -65,7 +67,7 @@ partial class CameraManager
 			return;
 		}
 
-		captureDevice.LockForConfiguration(out NSError error);
+		captureDevice.LockForConfiguration(out NSError? error);
 		if (error is not null)
 		{
 			Trace.WriteLine(error);
@@ -83,7 +85,7 @@ partial class CameraManager
 			return;
 		}
 
-		captureDevice.LockForConfiguration(out NSError error);
+		captureDevice.LockForConfiguration(out NSError? error);
 		if (error is not null)
 		{
 			Trace.WriteLine(error);
@@ -102,14 +104,14 @@ partial class CameraManager
 			return d.Width <= resolution.Width && d.Height <= resolution.Height;
 		}).ToList();
 
-		filteredFormatList = (filteredFormatList.Any() ? filteredFormatList : cameraView.SelectedCamera.SupportedFormats)
+		filteredFormatList = [.. (filteredFormatList.Count is not 0 ? filteredFormatList : cameraView.SelectedCamera.SupportedFormats)
 			.OrderByDescending(f =>
 			{
 				var d = ((CMVideoFormatDescription)f.FormatDescription).Dimensions;
 				return d.Width * d.Height;
-			}).ToList();
+			})];
 
-		if (filteredFormatList.Any())
+		if (filteredFormatList.Count is not 0)
 		{
 			captureDevice.ActiveFormat = filteredFormatList.First();
 		}

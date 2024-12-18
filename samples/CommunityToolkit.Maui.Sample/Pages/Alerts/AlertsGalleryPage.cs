@@ -2,7 +2,7 @@
 
 namespace CommunityToolkit.Maui.Sample.Pages.Alerts;
 
-public class AlertsGalleryPage(IDeviceInfo deviceInfo, AlertsGalleryViewModel alertsGalleryViewModel) : BaseGalleryPage<AlertsGalleryViewModel>("Alerts", deviceInfo, alertsGalleryViewModel)
+public partial class AlertsGalleryPage(IDeviceInfo deviceInfo, AlertsGalleryViewModel alertsGalleryViewModel) : BaseGalleryPage<AlertsGalleryViewModel>("Alerts", deviceInfo, alertsGalleryViewModel)
 {
 
 }

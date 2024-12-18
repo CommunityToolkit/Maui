@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Layouts;
 using CommunityToolkit.Maui.UnitTests.Mocks;
@@ -584,24 +585,22 @@ public class StateContainerTests : BaseTest
 
 	class ViewModel : INotifyPropertyChanged
 	{
-		bool canStateChange;
-		Command? changeStateCommand;
-
 		public bool CanChangeState
 		{
-			get => canStateChange;
+			get;
 			set
 			{
-				if (value != canStateChange)
+				if (value != field)
 				{
-					canStateChange = value;
+					field = value;
 					OnPropertyChanged();
 					ChangeStateCommand.ChangeCanExecute();
 				}
 			}
 		}
 
-		Command ChangeStateCommand => changeStateCommand ??= new Command(() => Trace.WriteLine("Command Tapped"), () => CanChangeState);
+		[field: AllowNull, MaybeNull]
+		Command ChangeStateCommand => field ??= new Command(() => Trace.WriteLine("Command Tapped"), () => CanChangeState);
 
 		public event PropertyChangedEventHandler? PropertyChanged;
 
