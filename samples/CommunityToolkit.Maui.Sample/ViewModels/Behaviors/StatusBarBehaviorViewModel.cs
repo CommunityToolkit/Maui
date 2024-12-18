@@ -8,13 +8,13 @@ public partial class StatusBarBehaviorViewModel : BaseViewModel
 	[NotifyPropertyChangedFor(nameof(StatusBarColor))]
 	public partial double RedSliderValue { get; set; }
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(StatusBarColor))]
-    public partial double GreenSliderValue { get; set; }
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(StatusBarColor))]
+	public partial double GreenSliderValue { get; set; }
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(StatusBarColor))]
-    public partial double BlueSliderValue { get; set; }
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(StatusBarColor))]
+	public partial double BlueSliderValue { get; set; }
 
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(StatusBarColor))]
@@ -28,9 +28,9 @@ public partial class StatusBarBehaviorViewModel : BaseViewModel
 	[NotifyPropertyChangedFor(nameof(StatusBarStyle))]
 	public partial bool IsDarkContentChecked { get; set; } = true;
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(StatusBarStyle))]
-    public partial bool IsDefaultChecked { get; set; } = true;
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(StatusBarStyle))]
+	public partial bool IsDefaultChecked { get; set; } = true;
 
 	public Color StatusBarColor => Color.FromRgba(RedSliderValue, GreenSliderValue, BlueSliderValue, AlphaSliderValue);
 

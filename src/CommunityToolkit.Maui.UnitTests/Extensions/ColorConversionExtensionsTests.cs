@@ -772,7 +772,7 @@ public class ColorConversionExtensionsTests : BaseTest
 	[Fact]
 	public void WithBlue_Double_BlueNegativeShouldThrowArgumentOutOfRangeException()
 	{
-		Color c = new ();
+		Color c = new();
 
 		var blue = -Random.Shared.NextDouble();
 

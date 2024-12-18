@@ -14,7 +14,7 @@ public partial class IconTintColorBehaviorViewModel : BaseViewModel
 	public partial string ToggleableImageSource { get; private set; } = shieldImageFileName;
 
 	[ObservableProperty]
-    public partial Color? ToggleableIconTintColor { get; private set; } = toggleableColorsEnumerator.Current;
+	public partial Color? ToggleableIconTintColor { get; private set; } = toggleableColorsEnumerator.Current;
 
 	[RelayCommand]
 	void ToggleImageButton()

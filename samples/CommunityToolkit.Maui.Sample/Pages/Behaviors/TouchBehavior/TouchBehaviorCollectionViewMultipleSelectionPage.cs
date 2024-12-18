@@ -42,8 +42,8 @@ public partial class TouchBehaviorCollectionViewMultipleSelectionPage : BasePage
 	[RequiresUnreferencedCode("Calls CommunityToolkit.Maui.Markup.BindableObjectExtensions.Bind<TBindable>(BindableProperty, String, BindingMode, IValueConverter, Object, String, Object, Object, Object)")]
 	sealed class CreatorsDataTemplate(TouchBehaviorCollectionViewMultipleSelectionViewModel viewModel) : DataTemplate(() => CreateLayout(viewModel))
 	{
-        [RequiresUnreferencedCode("Calls CommunityToolkit.Maui.Markup.BindableObjectExtensions.Bind<TBindable>(BindableProperty, String, BindingMode, IValueConverter, Object, String, Object, Object, Object)")]
-        static VerticalStackLayout CreateLayout(TouchBehaviorCollectionViewMultipleSelectionViewModel viewModel) => new VerticalStackLayout
+		[RequiresUnreferencedCode("Calls CommunityToolkit.Maui.Markup.BindableObjectExtensions.Bind<TBindable>(BindableProperty, String, BindingMode, IValueConverter, Object, String, Object, Object, Object)")]
+		static VerticalStackLayout CreateLayout(TouchBehaviorCollectionViewMultipleSelectionViewModel viewModel) => new VerticalStackLayout
 		{
 			Children =
 			{

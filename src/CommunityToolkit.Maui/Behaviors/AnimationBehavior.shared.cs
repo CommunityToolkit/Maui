@@ -46,7 +46,7 @@ public partial class AnimationBehavior : EventToCommandBehavior
 	public Command<CancellationToken> AnimateCommand
 	{
 		get => (Command<CancellationToken>)GetValue(AnimateCommandProperty);
-		
+
 		[Obsolete(animateCommandSetterWarning), EditorBrowsable(EditorBrowsableState.Never)]
 		set
 		{
