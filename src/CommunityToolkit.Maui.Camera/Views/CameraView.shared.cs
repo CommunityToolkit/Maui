@@ -11,7 +11,7 @@ namespace CommunityToolkit.Maui.Views;
 /// A visual element that provides the ability to show a camera preview and capture images.
 /// </summary>
 [SupportedOSPlatform("windows10.0.10240.0")]
-[SupportedOSPlatform("android26.0")]
+[SupportedOSPlatform("android21.0")]
 [SupportedOSPlatform("ios")]
 [SupportedOSPlatform("maccatalyst")]
 public partial class CameraView : View, ICameraView
