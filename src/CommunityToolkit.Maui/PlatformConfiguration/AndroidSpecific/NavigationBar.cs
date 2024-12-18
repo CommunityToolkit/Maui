@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using System.Runtime.Versioning;
+using CommunityToolkit.Maui.Core;
 using MAndroid = Microsoft.Maui.Controls.PlatformConfiguration.Android;
 using MauiElement = Microsoft.Maui.Controls.Page;
 
@@ -7,6 +8,7 @@ namespace CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;
 /// <summary>
 /// Provides platform-specific configuration properties for the Android navigation bar.
 /// </summary>
+[SupportedOSPlatform("Android21.0")]
 public static partial class NavigationBar
 {
 	/// <summary>

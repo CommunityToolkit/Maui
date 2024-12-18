@@ -5,5 +5,5 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 public partial class CompareConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	double sliderValue = 0.5;
+	public partial double SliderValue { get; set; } = 0.5;
 }

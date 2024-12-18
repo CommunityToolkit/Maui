@@ -1,8 +1,11 @@
-﻿using CommunityToolkit.Maui.Alerts;
+﻿using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
+[RequiresUnreferencedCode("Expander is not trim safe")]
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 public partial class ExpanderPage : BasePage<ExpanderViewModel>
 {
 	public ExpanderPage(ExpanderViewModel viewModel) : base(viewModel)
