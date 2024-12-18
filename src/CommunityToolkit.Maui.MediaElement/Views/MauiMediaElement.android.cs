@@ -15,13 +15,14 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// The user-interface element that represents the <see cref="MediaElement"/> on Android.
 /// </summary>
 public class MauiMediaElement : CoordinatorLayout
-{	
+{
+	[Obsolete]
+	readonly StyledPlayerView playerView;
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
 	bool isFullScreen;
 
 	readonly RelativeLayout relativeLayout;
-	readonly StyledPlayerView playerView;
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -37,6 +38,7 @@ public class MauiMediaElement : CoordinatorLayout
 	/// </summary>
 	/// <param name="context">The application's <see cref="Context"/>.</param>
 	/// <param name="playerView">The <see cref="StyledPlayerView"/> that acts as the platform media player.</param>
+	[Obsolete]
 	public MauiMediaElement(Context context, StyledPlayerView playerView) : base(context)
 	{
 		this.playerView = playerView;
@@ -57,6 +59,7 @@ public class MauiMediaElement : CoordinatorLayout
 		AddView(relativeLayout);
 	}
 
+	[Obsolete]
 	public override void OnDetachedFromWindow()
 	{
 		if (isFullScreen)
@@ -74,7 +77,7 @@ public class MauiMediaElement : CoordinatorLayout
 	protected override void OnVisibilityChanged(Android.Views.View changedView, [GeneratedEnum] ViewStates visibility)
 	{
 		base.OnVisibilityChanged(changedView, visibility);
-		if (isFullScreen && visibility == ViewStates.Visible)
+		if (isFullScreen && visibility is ViewStates.Visible)
 		{
 			SetSystemBarsVisibility();
 		}
@@ -104,6 +107,7 @@ public class MauiMediaElement : CoordinatorLayout
 		base.Dispose(disposing);
 	}
 
+	[Obsolete]
 	void OnFullscreenButtonClick(object? sender, StyledPlayerView.FullscreenButtonClickEventArgs e)
 	{
 		// Ensure there is a player view

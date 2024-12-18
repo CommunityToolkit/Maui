@@ -9,7 +9,7 @@ public class AvatarViewImageTests : BaseHandlerTest
 {
 	public AvatarViewImageTests()
 	{
-		Assert.IsAssignableFrom<IAvatarView>(new Maui.Views.AvatarView());
+		Assert.IsType<IAvatarView>(new Maui.Views.AvatarView(), exactMatch: false);
 	}
 
 	[Fact]

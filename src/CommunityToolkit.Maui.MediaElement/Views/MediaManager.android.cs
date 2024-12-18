@@ -25,6 +25,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
+[Obsolete]
 public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
 	SubtitleExtensions? subtitleExtensions;
@@ -267,12 +268,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		if (error?.ErrorCode is not null)
 		{
-			errorCode = $"Error code: {error?.ErrorCode}";
+			errorCode = $"Error code: {error.ErrorCode}";
 		}
 
 		if (!string.IsNullOrWhiteSpace(error?.ErrorCodeName))
 		{
-			errorCodeName = $"Error codename: {error?.ErrorCodeName}";
+			errorCodeName = $"Error codename: {error.ErrorCodeName}";
 		}
 
 		var message = string.Join(", ", new[]
@@ -280,7 +281,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			errorCodeName,
 			errorCode,
 			errorMessage
-		}.Where(s => !string.IsNullOrEmpty(s)));
+		}.Where(static s => !string.IsNullOrEmpty(s)));
 
 		MediaElement.MediaFailed(new MediaFailedEventArgs(message));
 
@@ -774,6 +775,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// <summary>
 	/// A <see cref="BroadcastReceiver"/> that listens for updates from the <see cref="MediaControlsService"/>.
 	/// </summary>
+	[Obsolete]
 	sealed class UIUpdateReceiver(IExoPlayer player) : BroadcastReceiver
 	{
 		public override void OnReceive(Context? context, Intent? intent)

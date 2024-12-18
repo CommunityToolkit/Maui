@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <summary>
 /// The <see cref="MaxLengthReachedBehavior"/> is a behavior that allows the user to trigger an action when a user has reached the maximum length allowed on an <see cref="InputView"/>. It can either trigger a <see cref="ICommand"/> or an event depending on the user's preferred scenario.
 /// </summary>
-public class MaxLengthReachedBehavior : BaseBehavior<InputView>
+public partial class MaxLengthReachedBehavior : BaseBehavior<InputView>
 {
 	readonly WeakEventManager maxLengthReachedEventManager = new();
 

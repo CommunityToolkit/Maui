@@ -6,17 +6,25 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class SelectedItemEventArgsConverterTests : BaseOneWayConverterTest<SelectedItemEventArgsConverter>
 {
-	public static IReadOnlyList<object?[]> Data { get; } =
-	[
-		[null, null],
-		[new SelectedItemChangedEventArgs(1, 1), 1],
-		[new SelectedItemChangedEventArgs('c', 1), 'c'],
-		[new SelectedItemChangedEventArgs(Colors.Black, 1), Colors.Black],
-	];
+	public static TheoryData<SelectedItemChangedEventArgs?, object?> Data { get; } = new()
+	{
+		{
+			null, null
+		},
+		{
+			new SelectedItemChangedEventArgs(1, 1), 1
+		},
+		{
+			new SelectedItemChangedEventArgs('c', 1), 'c'
+		},
+		{
+			new SelectedItemChangedEventArgs(Colors.Black, 1), Colors.Black
+		},
+	};
 
 	[Theory]
 	[MemberData(nameof(Data))]
-	public void SelectedItemEventArgsConverter(SelectedItemChangedEventArgs value, object? expectedResult)
+	public void SelectedItemEventArgsConverter(SelectedItemChangedEventArgs? value, object? expectedResult)
 	{
 		var selectedItemEventArgsConverter = new SelectedItemEventArgsConverter();
 

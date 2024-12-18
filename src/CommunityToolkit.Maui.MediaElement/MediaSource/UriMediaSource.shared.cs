@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Views;
 /// <summary>
 /// Represents a source, loaded from a remote URI, that can be played by <see cref="MediaElement"/>.
 /// </summary>
-public sealed class UriMediaSource : MediaSource
+public sealed partial class UriMediaSource : MediaSource
 {
 	/// <summary>
 	/// Backing store for the <see cref="Uri"/> property.

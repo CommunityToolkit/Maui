@@ -6,17 +6,17 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ByteArrayToImageSourceConverterTests : BaseConverterTest<ByteArrayToImageSourceConverter>
 {
-	public static IReadOnlyList<object[]> NonImageStreamData { get; } =
+	public static TheoryData<object> NonImageStreamData { get; } =
 	[
-		[3], // primitive type
-		[DateTime.UtcNow], // Struct
-		[new object()] // objects
+		(object)3, // primitive type
+		(object)DateTime.UtcNow, // Struct
+		new object()
 	];
 
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ByteArrayToImageSourceConverter()
 	{
-		var byteArray = new byte[] { 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20 };
+		var byteArray = "       "u8.ToArray();
 
 		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 
@@ -46,7 +46,7 @@ public class ByteArrayToImageSourceConverterTests : BaseConverterTest<ByteArrayT
 	[Fact]
 	public void ConvertImageSourceBackToByteArray()
 	{
-		var byteArray = new byte[] { 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20 };
+		var byteArray = "       "u8.ToArray();
 
 		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 

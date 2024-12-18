@@ -188,6 +188,10 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdatePosition()
 	{
+		if (Application.Current?.Windows is null || Application.Current.Windows.Count == 0)
+		{
+			return;
+		}
 		if (!ParentWindow.Exists)
 		{
 			// Parent window is null, so we can't update the position

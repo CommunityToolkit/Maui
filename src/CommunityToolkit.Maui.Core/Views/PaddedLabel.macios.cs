@@ -1,42 +1,32 @@
-﻿using System.Runtime.InteropServices;
-
-namespace CommunityToolkit.Maui.Core.Views;
+﻿namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// <see cref="UILabel"/> with Left, Top, Right and Bottom Padding
 /// </summary>
-public class PaddedLabel : UILabel
+/// <remarks>
+/// Initialize <see cref="PaddedLabel"/>
+/// </remarks>
+public class PaddedLabel(nfloat leftPadding, nfloat topPadding, nfloat rightPadding, nfloat bottomPadding) : UILabel
 {
-	/// <summary>
-	/// Initialize <see cref="PaddedLabel"/>
-	/// </summary>
-	public PaddedLabel(NFloat leftPadding, NFloat topPadding, NFloat rightPadding, NFloat bottomPadding)
-	{
-		LeftPadding = leftPadding;
-		TopPadding = topPadding;
-		RightPadding = rightPadding;
-		BottomPadding = bottomPadding;
-	}
-
 	/// <summary>
 	/// Left Padding
 	/// </summary>
-	public NFloat LeftPadding { get; }
+	public nfloat LeftPadding { get; } = leftPadding;
 
 	/// <summary>
 	/// Top Padding
 	/// </summary>
-	public NFloat TopPadding { get; }
+	public nfloat TopPadding { get; } = topPadding;
 
 	/// <summary>
 	/// Right Padding
 	/// </summary>
-	public NFloat RightPadding { get; }
+	public nfloat RightPadding { get; } = rightPadding;
 
 	/// <summary>
 	/// Bottom Padding
 	/// </summary>
-	public NFloat BottomPadding { get; }
+	public nfloat BottomPadding { get; } = bottomPadding;
 
 	/// <inheritdoc/>
 	public override CGSize IntrinsicContentSize => new(

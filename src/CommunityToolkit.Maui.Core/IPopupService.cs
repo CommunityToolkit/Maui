@@ -57,18 +57,6 @@ public interface IPopupService
 	/// This method must be called on the UI thread otherwise it will throw an <see cref="InvalidOperationException"/>.
 	/// </remarks>
 	/// <typeparam name="TViewModel">The type of the view model registered with the <see cref="CommunityToolkit.Maui.Core.IPopup"/>.</typeparam>
-	/// <param name="viewModel">The view model to use as the <c>BindingContext</c> for the <see cref="CommunityToolkit.Maui.Core.IPopup"/>.</param>
-	/// <exception cref="InvalidOperationException">Thrown if this method is not called on the UI thread.</exception>
-	[Obsolete("This method will be removed in an upcoming version. Use ShowPopup<TViewModel> instead.")]
-	void ShowPopup<TViewModel>(TViewModel viewModel) where TViewModel : INotifyPropertyChanged;
-
-	/// <summary>
-	/// Resolves and displays a <see cref="CommunityToolkit.Maui.Core.IPopup"/> and <typeparamref name="TViewModel"/> pair that was registered with <c>AddTransientPopup</c>.
-	/// </summary>
-	/// <remarks>
-	/// This method must be called on the UI thread otherwise it will throw an <see cref="InvalidOperationException"/>.
-	/// </remarks>
-	/// <typeparam name="TViewModel">The type of the view model registered with the <see cref="CommunityToolkit.Maui.Core.IPopup"/>.</typeparam>
 	/// <param name="token"><see cref="CancellationToken"/> </param>
 	/// <returns>A <see cref="Task"/> that can be awaited to return the result of the <see cref="CommunityToolkit.Maui.Core.IPopup"/> once it has been dismissed.</returns>
 	/// <exception cref="InvalidOperationException">Thrown if this method is not called on the UI thread.</exception>
@@ -87,18 +75,4 @@ public interface IPopupService
 	/// <param name="token"><see cref="CancellationToken"/> </param>
 	/// <exception cref="InvalidOperationException">Thrown if this method is not called on the UI thread.</exception>
 	Task<object?> ShowPopupAsync<TViewModel>(Action<TViewModel> onPresenting, CancellationToken token = default) where TViewModel : INotifyPropertyChanged;
-
-	/// <summary>
-	/// Resolves and displays a <see cref="CommunityToolkit.Maui.Core.IPopup"/> and <typeparamref name="TViewModel"/> pair that was registered with <c>AddTransientPopup</c>.
-	/// </summary>
-	/// <remarks>
-	/// This method must be called on the UI thread otherwise it will throw an <see cref="InvalidOperationException"/>.
-	/// </remarks>
-	/// <typeparam name="TViewModel">The type of the view model registered with the <see cref="CommunityToolkit.Maui.Core.IPopup"/>.</typeparam>
-	/// <param name="viewModel">The view model to use as the <c>BindingContext</c> for the <see cref="CommunityToolkit.Maui.Core.IPopup"/>.</param>
-	/// <param name="token"><see cref="CancellationToken"/> </param>
-	/// <returns>A <see cref="Task"/> that can be awaited to return the result of the <see cref="CommunityToolkit.Maui.Core.IPopup"/> once it has been dismissed.</returns>
-	/// <exception cref="InvalidOperationException">Thrown if this method is not called on the UI thread.</exception>
-	[Obsolete("This method will be removed in an upcoming version. Use ShowPopupAsync<TViewModel> instead.")]
-	Task<object?> ShowPopupAsync<TViewModel>(TViewModel viewModel, CancellationToken token = default) where TViewModel : INotifyPropertyChanged;
 }

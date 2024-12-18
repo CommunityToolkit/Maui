@@ -8,7 +8,8 @@
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
     Title="StatusBarBehavior"
     x:DataType="vm:StatusBarBehaviorViewModel"
-    x:TypeArguments="vm:StatusBarBehaviorViewModel">
+    x:TypeArguments="vm:StatusBarBehaviorViewModel"
+    x:Name="Page">
 
     <ContentPage.Resources>
         <ControlTemplate x:Key="RadioButtonTemplate">
@@ -73,6 +74,7 @@
 
     <Page.Behaviors>
         <mct:StatusBarBehavior
+            BindingContext="{Binding Path=BindingContext, Source={x:Reference Page}, x:DataType=ContentPage}"
             StatusBarColor="{Binding StatusBarColor}"
             StatusBarStyle="{Binding StatusBarStyle}" />
     </Page.Behaviors>
