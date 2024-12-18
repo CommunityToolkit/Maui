@@ -14,59 +14,16 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 	/// </summary>
 	protected TView? View { get; set; }
 
-	internal bool TrySetBindingContextToAttachedViewBindingContext()
-	{
-		if (this is not Behavior behavior)
-		{
-			throw new InvalidOperationException($"{nameof(ICommunityToolkitBehavior<TView>)} can only be used for a {nameof(Behavior)}");
-		}
-
-		if (behavior.IsSet(BindableObject.BindingContextProperty) || View is null)
-		{
-			return false;
-		}
-
-		behavior.SetBinding(BindableObject.BindingContextProperty, new Binding
-		{
-			Source = View,
-			Path = BindableObject.BindingContextProperty.PropertyName
-		});
-
-		return true;
-
-	}
-
-	internal bool TryRemoveBindingContext()
-	{
-		if (this is not Behavior behavior)
-		{
-			throw new InvalidOperationException($"{nameof(ICommunityToolkitBehavior<TView>)} can only be used for a {nameof(Behavior)}");
-		}
-
-		if (behavior.IsSet(BindableObject.BindingContextProperty))
-		{
-			behavior.RemoveBinding(BindableObject.BindingContextProperty);
-			return true;
-		}
-
-		return false;
-	}
-
 	[MemberNotNull(nameof(View))]
-	internal void AssignViewAndBingingContext(TView bindable)
+	internal void InitializeBehavior(TView bindable)
 	{
 		View = bindable;
 		bindable.PropertyChanged += OnViewPropertyChanged;
-
-		TrySetBindingContextToAttachedViewBindingContext();
 	}
 
-	internal void UnassignViewAndBingingContext(TView bindable)
+	internal void UninitializeBehavior(TView bindable)
 	{
-		TryRemoveBindingContext();
-
 		bindable.PropertyChanged -= OnViewPropertyChanged;
-
 		View = null;
 	}
 
@@ -89,7 +46,7 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInBehaviors)
 		{
-			Trace.WriteLine(ex);
+			Trace.TraceInformation("{0}", ex);
 		}
 	}
 

@@ -8,19 +8,14 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// The native implementation of Popup control.
 /// </summary>
-public class MauiPopup : UIViewController
+/// <remarks>
+/// Constructor of <see cref="MauiPopup"/>.
+/// </remarks>
+/// <param name="mauiContext">An instance of <see cref="IMauiContext"/>.</param>
+/// <exception cref="ArgumentNullException">If <paramref name="mauiContext"/> is null an exception will be thrown. </exception>
+public class MauiPopup(IMauiContext mauiContext) : UIViewController
 {
-	readonly IMauiContext mauiContext;
-
-	/// <summary>
-	/// Constructor of <see cref="MauiPopup"/>.
-	/// </summary>
-	/// <param name="mauiContext">An instance of <see cref="IMauiContext"/>.</param>
-	/// <exception cref="ArgumentNullException">If <paramref name="mauiContext"/> is null an exception will be thrown. </exception>
-	public MauiPopup(IMauiContext mauiContext)
-	{
-		this.mauiContext = mauiContext ?? throw new ArgumentNullException(nameof(mauiContext));
-	}
+	readonly IMauiContext mauiContext = mauiContext ?? throw new ArgumentNullException(nameof(mauiContext));
 
 	/// <summary>
 	/// An instance of the <see cref="PageHandler"/> that holds the <see cref="IPopup.Content"/>.
@@ -60,8 +55,8 @@ public class MauiPopup : UIViewController
 
 		if (VirtualView is not null)
 		{
-			PopupExtensions.SetSize(this, VirtualView);
-			PopupExtensions.SetLayout(this, VirtualView);
+			this.SetSize(VirtualView);
+			this.SetLayout(VirtualView);
 		}
 	}
 
@@ -76,8 +71,8 @@ public class MauiPopup : UIViewController
 			// After screen rotate
 			if (VirtualView is not null)
 			{
-				PopupExtensions.SetSize(this, VirtualView);
-				PopupExtensions.SetLayout(this, VirtualView);
+				this.SetSize(VirtualView);
+				this.SetLayout(VirtualView);
 			}
 		});
 

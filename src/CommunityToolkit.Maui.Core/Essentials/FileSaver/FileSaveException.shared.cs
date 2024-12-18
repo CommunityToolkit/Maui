@@ -1,15 +1,11 @@
 ﻿namespace CommunityToolkit.Maui.Storage;
 
 /// <summary>
-/// Exception occurred if file is not saved
+/// Exception occurred if the file is not saved
 /// </summary>
-public sealed class FileSaveException : Exception
+/// <remarks>
+/// Initializes a new instance of <see cref="FileSaveException"/>
+/// </remarks>
+public sealed class FileSaveException(string message) : Exception(message)
 {
-	/// <summary>
-	/// Initializes a new instance of <see cref="FileSaveException"/>
-	/// </summary>
-	public FileSaveException(string message) : base(message)
-	{
-
-	}
 }

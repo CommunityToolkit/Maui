@@ -63,7 +63,7 @@ public partial class TouchBehavior : IDisposable
 		}
 		catch (TaskCanceledException ex)
 		{
-			Trace.WriteLine(ex);
+			Trace.TraceInformation("{0}", ex);
 		}
 	}
 
@@ -71,7 +71,7 @@ public partial class TouchBehavior : IDisposable
 	{
 		ObjectDisposedException.ThrowIf(isDisposed, this);
 
-		gestureManager.HandleTouch(this, status);
+		GestureManager.HandleTouch(this, status);
 	}
 
 	internal void HandleUserInteraction(TouchInteractionStatus interactionStatus)

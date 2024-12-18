@@ -29,7 +29,7 @@
                 <Label Text="{Binding ResolutionText}" />
                 <Picker 
                     Title="Available Resolutions"
-                    ItemsSource="{Binding SelectedCamera.SupportedResolutions}"
+                    ItemsSource="{Binding SelectedCamera.SupportedResolutions, FallbackValue=''}"
                     SelectedItem="{Binding SelectedResolution}" />
                 <Label x:Name="debugText"/>
 
@@ -67,14 +67,14 @@
                     ItemsSource="{Binding FlashModes}"
                     SelectedItem="{Binding FlashMode}" />
 
-                <Button Command="{Binding CaptureImageCommand, Source={x:Reference Camera}}" 
+                <Button Command="{Binding CaptureImageCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}" 
                         CommandParameter="{Binding Token}"
                         Text="Capture Image"/>
-                <Button Command="{Binding StartCameraPreviewCommand, Source={x:Reference Camera}}"
+                <Button Command="{Binding StartCameraPreviewCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}"
                         CommandParameter="{Binding Token}"
                         Text="StartCameraPreview" />
-                
-                <Button Command="{Binding StopCameraPreviewCommand, Source={x:Reference Camera}}" 
+
+                <Button Command="{Binding StopCameraPreviewCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}" 
                         Text="StopCameraPreview" />
 
             </FlexLayout>

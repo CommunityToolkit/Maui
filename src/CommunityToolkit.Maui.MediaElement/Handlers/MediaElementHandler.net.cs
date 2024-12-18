@@ -3,10 +3,10 @@ using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
 
-public partial class MediaElementHandler : ViewHandler<MediaElement, object>
+public partial class MediaElementHandler : ViewHandler<MediaElement, PlatformMediaElement>
 {
 	/// <inheritdoc/>
-	protected override object CreatePlatformView() => throw new NotImplementedException();
+	protected override PlatformMediaElement CreatePlatformView() => throw new NotImplementedException();
 
 	// Ignoring XML comments for this implementation since it's not used.
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member

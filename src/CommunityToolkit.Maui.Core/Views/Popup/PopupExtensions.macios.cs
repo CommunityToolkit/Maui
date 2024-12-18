@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 
@@ -153,7 +152,7 @@ public static class PopupExtensions
 		if (popup.Anchor is null)
 		{
 			var isFlowDirectionRightToLeft = popup.Content?.FlowDirection == FlowDirection.RightToLeft;
-			var horizontalOptionsPositiveNegativeMultiplier = isFlowDirectionRightToLeft ? (NFloat)(-1) : (NFloat)1;
+			var horizontalOptionsPositiveNegativeMultiplier = isFlowDirectionRightToLeft ? (nfloat)(-1) : (nfloat)1;
 
 			nfloat originY;
 			if (mauiPopup.PreferredContentSize.Height < frame.Height)
@@ -218,7 +217,7 @@ public static class PopupExtensions
 		}
 	}
 
-	class TransparentPopoverBackgroundView : UIPopoverBackgroundView
+	sealed class TransparentPopoverBackgroundView : UIPopoverBackgroundView
 	{
 		public TransparentPopoverBackgroundView(IntPtr handle) : base(handle)
 		{
@@ -226,7 +225,7 @@ public static class PopupExtensions
 			Alpha = 0.0f;
 		}
 
-		public override NFloat ArrowOffset { get; set; }
+		public override nfloat ArrowOffset { get; set; }
 
 		public override UIPopoverArrowDirection ArrowDirection { get; set; }
 

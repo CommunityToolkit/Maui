@@ -13,7 +13,7 @@ public class PopupTests : BaseHandlerTest
 
 	public PopupTests()
 	{
-		Assert.IsAssignableFrom<IPopup>(new MockPopup());
+		Assert.IsType<IPopup>(new MockPopup(), exactMatch: false);
 	}
 
 	[Fact]
@@ -30,6 +30,7 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
+	[Obsolete]
 	public async Task ShowPopupAsync_CancellationTokenExpired()
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
@@ -61,6 +62,7 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
+	[Obsolete]
 	public async Task ShowPopupAsync_CancellationTokenCancelled()
 	{
 		var cts = new CancellationTokenSource();
@@ -92,6 +94,7 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
+	[Obsolete]
 	public async Task CloseAsync_CancellationTokenExpired()
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
@@ -123,6 +126,7 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
+	[Obsolete]
 	public async Task CloseAsync_CancellationTokenCancelled()
 	{
 		var cts = new CancellationTokenSource();
@@ -154,6 +158,7 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
+	[Obsolete]
 	public async Task OnOpenedMapperIsCalled()
 	{
 		var app = Application.Current ?? throw new NullReferenceException();
@@ -189,6 +194,7 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Medium)]
+	[Obsolete]
 	public async Task PopupDismissedByTappingOutsideOfPopup()
 	{
 		var popupClosedTCS = new TaskCompletionSource<(string? Result, bool WasDismissedByTappingOutsideOfPopup)>();
@@ -227,6 +233,7 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
+	[Obsolete]
 	public async Task OnDismissedWithResult()
 	{
 		object? result = null;
@@ -269,6 +276,7 @@ public class PopupTests : BaseHandlerTest
 
 
 	[Fact(Timeout = (int)TestDuration.Short)]
+	[Obsolete]
 	public async Task OnDismissedWithoutResult()
 	{
 		object? result = null;
@@ -324,6 +332,7 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
+	[Obsolete]
 	public async Task ShowPopup_IsLogicalChild()
 	{
 		var app = Application.Current ?? throw new NullReferenceException();
@@ -374,26 +383,24 @@ public class PopupTests : BaseHandlerTest
 
 	class PopupViewModel : INotifyPropertyChanged
 	{
-		Color? color = new();
-
 		public event PropertyChangedEventHandler? PropertyChanged;
 
 		public Color? Color
 		{
-			get => color;
+			get;
 			set
 			{
-				if (!Equals(value, color))
+				if (!Equals(value, field))
 				{
-					color = value;
+					field = value;
 					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Color)));
 				}
 			}
-		}
+		} = new();
 	}
 
 	interface IFooService
 	{
-		public int MyProperty { get; set; }
+		int MyProperty { get; set; }
 	}
 }
