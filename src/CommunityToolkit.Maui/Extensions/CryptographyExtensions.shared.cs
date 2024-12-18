@@ -13,7 +13,7 @@ static class CryptographyExtensions
 	public static string GetMd5Hash(this string source, string separator = "-")
 	{
 		using var md5 = MD5.Create();
-		var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(source.AsSpan().ToArray())).AsSpan();
+		var hash = MD5.HashData(Encoding.UTF8.GetBytes([.. source])).AsSpan();
 
 		return BitConverter.ToString(hash.ToArray(), 0, hash.Length).Replace("-", separator, StringComparison.OrdinalIgnoreCase);
 	}

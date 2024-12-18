@@ -11,7 +11,7 @@ public partial class AnimationBehaviorPage : BasePage<AnimationBehaviorViewModel
 	}
 }
 
-class SampleScaleAnimation : BaseAnimation
+partial class SampleScaleAnimation : BaseAnimation
 {
 	public override async Task Animate(VisualElement view, CancellationToken token)
 	{
@@ -20,7 +20,7 @@ class SampleScaleAnimation : BaseAnimation
 	}
 }
 
-class SampleScaleToAnimation : BaseAnimation
+partial class SampleScaleToAnimation : BaseAnimation
 {
 	public double Scale { get; set; }
 

@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.Layouts;
 /// <summary>
 /// DockLayout positions its child elements along the edges of the layout container.
 /// </summary>
-public class DockLayout : Layout, IDockLayout
+public partial class DockLayout : Layout, IDockLayout
 {
 	/// <summary>
 	/// Docking position for a view.

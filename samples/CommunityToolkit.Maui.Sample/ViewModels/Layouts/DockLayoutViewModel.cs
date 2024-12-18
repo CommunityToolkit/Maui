@@ -1,6 +1,6 @@
 ﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 
-public class DockLayoutViewModel : BaseViewModel
+public partial class DockLayoutViewModel : BaseViewModel
 {
 
 }

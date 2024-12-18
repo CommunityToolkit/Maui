@@ -4,10 +4,12 @@ namespace CommunityToolkit.Maui.Sample;
 
 public partial class App : Application
 {
-	public App()
+	readonly AppShell appShell;
+
+	public App(AppShell appShell)
 	{
 		InitializeComponent();
-		MainPage = new AppShell();
+		this.appShell = appShell;
 	}
 
 #if MACCATALYST
@@ -26,5 +28,7 @@ public partial class App : Application
         return window;
     }
 
+#else
+	protected override Window CreateWindow(IActivationState? activationState) => new(appShell);
 #endif
 }

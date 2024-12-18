@@ -8,7 +8,8 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
     x:DataType="vm:TouchBehaviorViewModel"
-    x:TypeArguments="vm:TouchBehaviorViewModel">
+    x:TypeArguments="vm:TouchBehaviorViewModel"
+    x:Name="CurrentPage">
 
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -34,9 +35,10 @@
                     Text="{Binding TouchCount, StringFormat='Touches: {0}'}" />
 
                 <Label Style="{StaticResource SectionHeader}" Text="Image | Toggle" />
-                <Image HeightRequest="100" WidthRequest="100">
+                <Image HeightRequest="100" WidthRequest="100" x:Name="TestButton">
                     <Image.Behaviors>
                         <mct:ImageTouchBehavior
+                            BindingContext="{Binding Path=BindingContext, Source={x:Reference CurrentPage}, x:DataType=ContentPage}"
                             Command="{Binding IncreaseTouchCountCommand}"
                             DefaultImageSource="button.png"
                             PressedImageSource="button_pressed.png" />
@@ -47,6 +49,7 @@
                 <HorizontalStackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="Center">
                     <HorizontalStackLayout.Behaviors>
                         <mct:TouchBehavior
+                            BindingContext="{Binding Path=BindingContext, Source={x:Reference CurrentPage}, x:DataType=ContentPage}"
                             Command="{Binding IncreaseTouchCountCommand}"
                             DefaultAnimationDuration="250"
                             DefaultAnimationEasing="{x:Static Easing.CubicInOut}"
@@ -83,6 +86,7 @@
                     HorizontalOptions="CenterAndExpand">
                     <HorizontalStackLayout.Behaviors>
                         <mct:TouchBehavior
+                            BindingContext="{Binding Path=BindingContext, Source={x:Reference CurrentPage}, x:DataType=ContentPage}"
                             Command="{Binding IncreaseTouchCountCommand}"
                             HoveredBackgroundColor="{StaticResource Gray900}"
                             HoveredScale="1.2"
@@ -106,6 +110,7 @@
 
                     <HorizontalStackLayout.Behaviors>
                         <mct:TouchBehavior
+                            BindingContext="{Binding Path=BindingContext, Source={x:Reference CurrentPage}, x:DataType=ContentPage}"
                             Command="{Binding IncreaseTouchCountCommand}"
                             DefaultAnimationDuration="500"
                             DefaultBackgroundColor="Gold"
@@ -128,7 +133,9 @@
                     Source="button.png"
                     WidthRequest="100">
                     <Image.Behaviors>
-                        <mct:TouchBehavior Command="{Binding IncreaseTouchCountCommand}" />
+                        <mct:TouchBehavior
+                            BindingContext="{Binding Path=BindingContext, Source={x:Reference CurrentPage}, x:DataType=ContentPage}"
+                            Command="{Binding IncreaseTouchCountCommand}" />
                     </Image.Behaviors>
                 </Image>
             </Border>
@@ -143,7 +150,9 @@
                     HorizontalOptions="Center"
                     WidthRequest="200">
                     <ContentView.Behaviors>
-                        <mct:TouchBehavior Command="{Binding ParentClickedCommand}" />
+                        <mct:TouchBehavior
+                            BindingContext="{Binding Path=BindingContext, Source={x:Reference CurrentPage}, x:DataType=ContentPage}"
+                            Command="{Binding ParentClickedCommand}" />
                     </ContentView.Behaviors>
 
                     <ContentView
@@ -153,7 +162,9 @@
                         VerticalOptions="Center"
                         WidthRequest="100">
                         <ContentView.Behaviors>
-                            <mct:TouchBehavior Command="{Binding ChildClickedCommand}" />
+                            <mct:TouchBehavior
+                                BindingContext="{Binding Path=BindingContext, Source={x:Reference CurrentPage}, x:DataType=ContentPage}"
+                                Command="{Binding ChildClickedCommand}" />
                         </ContentView.Behaviors>
                     </ContentView>
                 </ContentView>
@@ -169,7 +180,7 @@
                             <x:String>Capuchin Monkey</x:String>
                             <x:String>Blue Monkey</x:String>
                             <x:String>Squirrel Monkey</x:String>
-                            <x:String>Golden Lion Tamarin</x:String>
+                            <x:String>Golden Lion Tamarind</x:String>
                             <x:String>Howler Monkey</x:String>
                             <x:String>Japanese Macaque</x:String>
                         </x:Array>
@@ -183,9 +194,12 @@
                     HorizontalOptions="Fill"
                     StrokeShape="RoundRectangle, 20"
                     StrokeThickness="0">
-                    <ContentView.Behaviors>
-                        <mct:TouchBehavior Command="{Binding MonkeySelectedCommand}" CommandParameter="{Binding Source={x:Reference MonkeyPicker}, Path=SelectedItem}" />
-                    </ContentView.Behaviors>
+                    <Border.Behaviors>
+                        <mct:TouchBehavior
+                            x:DataType="vm:TouchBehaviorViewModel"
+                            BindingContext="{Binding Path=BindingContext, Source={x:Reference CurrentPage}, x:DataType=ContentPage}"
+                            Command="{Binding MonkeySelectedCommand}" CommandParameter="{Binding Source={x:Reference MonkeyPicker}, Path=SelectedItem, x:DataType=Picker}" />
+                    </Border.Behaviors>
                     <Label
                         FontAttributes="Bold"
                         FontSize="18"
@@ -207,6 +221,7 @@
                     StrokeThickness="0">
                     <Border.Behaviors>
                         <mct:TouchBehavior
+                            BindingContext="{Binding Path=BindingContext, Source={x:Reference CurrentPage}, x:DataType=ContentPage}"
                             Command="{Binding IncreaseTouchCountCommand}"
                             DefaultAnimationDuration="150"
                             DefaultAnimationEasing="{x:Static Easing.CubicInOut}"
