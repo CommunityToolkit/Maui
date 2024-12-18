@@ -41,7 +41,7 @@ public abstract class MediaSource : Element
 	public static MediaSource FromResource(string? path) => new ResourceMediaSource { Path = isAndroid ? $"Assets/{path}" : path };
 
 	/// <summary>
-	/// Creates a <see cref="UriMediaSource"/> from an string that contains an absolute URI.
+	/// Creates a <see cref="UriMediaSource"/> from a string that contains an absolute URI.
 	/// </summary>
 	/// <param name="uri">String representation or an absolute URI to load.</param>
 	/// <returns>A <see cref="UriMediaSource"/> instance.</returns>

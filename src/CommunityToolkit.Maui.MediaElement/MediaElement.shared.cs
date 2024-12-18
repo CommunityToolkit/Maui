@@ -6,9 +6,9 @@ using CommunityToolkit.Maui.Core.Primitives;
 namespace CommunityToolkit.Maui.Views;
 
 /// <summary>
-/// Represents an object that is used to render audio and video to the display.
+/// Represents an object used to render audio and video to the display.
 /// </summary>
-public class MediaElement : View, IMediaElement, IDisposable
+public partial class MediaElement : View, IMediaElement, IDisposable
 {
 	/// <summary>
 	/// Backing store for the <see cref="Aspect"/> property.
@@ -232,7 +232,7 @@ public class MediaElement : View, IMediaElement, IDisposable
 	}
 
 	/// <summary>
-	/// Gets or sets if the video will play when reaches the end.
+	/// Gets or sets if the video plays when reaches the end.
 	/// Default is <see langword="false"/>. This is a bindable property.
 	/// </summary>
 	public bool ShouldLoopPlayback
@@ -242,7 +242,7 @@ public class MediaElement : View, IMediaElement, IDisposable
 	}
 
 	/// <summary>
-	/// Gets or sets if media playback will prevent the device display from going to sleep.
+	/// Gets or sets if media playback prevents the device display from going to sleep.
 	/// This is a bindable property.
 	/// </summary>
 	/// <remarks>If media is paused, stopped or has completed playing, the display will turn off.</remarks>
@@ -291,7 +291,7 @@ public class MediaElement : View, IMediaElement, IDisposable
 	/// Gets or sets the volume of the audio for the media.
 	/// </summary>
 	/// <remarks>
-	/// <para>A value of 1 means full volume, 0 is silence.</para>
+	/// <para>A value of 1 indicates full-volume, 0 is silence.</para>
 	/// <para>When <see cref="ShouldMute"/> is <see langword="true" />, changes to <see cref="Volume"/> are ignored.
 	/// The new volume will be applied when <see cref="ShouldMute"/> is set to <see langword="false" /> again.
 	/// When the user uses the platform player controls to influence the volume, it might still unmute.</para>
@@ -299,7 +299,20 @@ public class MediaElement : View, IMediaElement, IDisposable
 	public double Volume
 	{
 		get => (double)GetValue(VolumeProperty);
-		set => SetValue(VolumeProperty, value);
+		set
+		{
+			switch (value)
+			{
+				case > 1:
+					throw new ArgumentOutOfRangeException(nameof(value), value, $"The value of {nameof(Volume)} cannot be greater than {1}");
+				case < 0:
+					throw new ArgumentOutOfRangeException(nameof(value), value, $"The value of {nameof(Volume)} cannot be less than {0}");
+				default:
+					SetValue(VolumeProperty, value);
+					break;
+			}
+
+		}
 	}
 
 	/// <summary>
@@ -318,14 +331,14 @@ public class MediaElement : View, IMediaElement, IDisposable
 	/// Gets the height (in pixels) of the loaded media in pixels.
 	/// This is a bindable property.
 	/// </summary>
-	/// <remarks>Not reported for non-visual media, sometimes not available for live streamed content on iOS and macOS.</remarks>
+	/// <remarks>Not reported for non-visual media, sometimes not available for live-streamed content on iOS and macOS.</remarks>
 	public int MediaHeight => (int)GetValue(MediaHeightProperty);
 
 	/// <summary>
 	/// Gets the width (in pixels) of the loaded media in pixels.
 	/// This is a bindable property.
 	/// </summary>
-	/// <remarks>Not reported for non-visual media, sometimes not available for live streamed content on iOS and macOS.</remarks>
+	/// <remarks>Not reported for non-visual media, sometimes not available for live-streamed content on iOS and macOS.</remarks>
 	public int MediaWidth => (int)GetValue(MediaWidthProperty);
 
 	/// <summary>
@@ -516,11 +529,11 @@ public class MediaElement : View, IMediaElement, IDisposable
 
 	static void OnCurrentStatePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		var MediaElement = (MediaElement)bindable;
+		var mediaElement = (MediaElement)bindable;
 		var previousState = (MediaElementState)oldValue;
 		var newState = (MediaElementState)newValue;
 
-		MediaElement.OnStateChanged(new MediaStateChangedEventArgs(previousState, newState));
+		mediaElement.OnStateChanged(new MediaStateChangedEventArgs(previousState, newState));
 	}
 
 	static void ValidateVolume(BindableObject bindable, object oldValue, object newValue)

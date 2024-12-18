@@ -19,8 +19,9 @@
             <Label Text="This behavior waits for the user to stop typing and then executes a Command. The waiting threshold is adjustable, as well as there is an option to dismiss the keyboard after the user has stopped typing."
                    Margin="{StaticResource ContentPadding}" />
 
-            <Frame Margin="{StaticResource ContentPadding}"
-                   CornerRadius="10">
+            <Border 
+                Margin="{StaticResource ContentPadding}"
+                StrokeShape="RoundRectangle 10,10,10,10">
 
                 <Grid RowDefinitions="Auto, Auto, Auto"
                       ColumnDefinitions="2*, *"
@@ -55,20 +56,24 @@
                            VerticalTextAlignment="Center"
                            Grid.Row="2"
                            Grid.Column="0" />
-                    <Switch x:Name="AutoDismissKeyboardSetting"
+                    <Switch x:Name="AutoDismissKeyboardSettingSwitch"
                             VerticalOptions="Center"
                             HorizontalOptions="End"
                             Grid.Row="2"
                             Grid.Column="1" />
                 </Grid>
-            </Frame>
+            </Border>
 
-            <SearchBar Placeholder="Start searching..." Margin="{StaticResource ContentPadding}">
+            <SearchBar Placeholder="Start searching..." 
+                       Margin="{StaticResource ContentPadding}"
+                       x:Name="Searchbar">
                 <SearchBar.Behaviors>
-                    <mct:UserStoppedTypingBehavior Command="{Binding SearchCommand}"
-                                                   StoppedTypingTimeThreshold="{Binding Path=Text, Source={x:Reference TimeThresholdSetting}}"
-                                                   MinimumLengthThreshold="{Binding Path=Text, Source={x:Reference MinimumLengthThresholdSetting}}"
-                                                   ShouldDismissKeyboardAutomatically="{Binding Path=IsToggled, Source={x:Reference AutoDismissKeyboardSetting}}" />
+                    <mct:UserStoppedTypingBehavior 
+                        BindingContext="{Binding Path=BindingContext, Source={x:Reference Searchbar}, x:DataType=SearchBar}"
+                        Command="{Binding SearchCommand}"
+                        StoppedTypingTimeThreshold="{Binding Path=Text, Source={x:Reference TimeThresholdSetting}, x:DataType=Entry}"
+                        MinimumLengthThreshold="{Binding Path=Text, Source={x:Reference MinimumLengthThresholdSetting}, x:DataType=Entry}"
+                        ShouldDismissKeyboardAutomatically="{Binding Path=IsToggled, Source={x:Reference AutoDismissKeyboardSettingSwitch}, x:DataType=Switch}" />
                 </SearchBar.Behaviors>
             </SearchBar>
 

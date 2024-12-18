@@ -9,15 +9,15 @@ public class MediaElementTests : BaseHandlerTest
 {
 	public MediaElementTests()
 	{
-		Assert.IsAssignableFrom<IMediaElement>(new MediaElement());
+		Assert.IsType<IMediaElement>(new MediaElement(), exactMatch: false);
 	}
 
 	[Fact]
-	public void PosterIsNotStringEmptyorNull()
+	public void PosterIsNotStringEmptyOrNull()
 	{
 		MediaElement mediaElement = new();
 		mediaElement.MetadataArtworkUrl = "https://www.example.com/image.jpg";
-		Assert.True(!string.IsNullOrEmpty(mediaElement.MetadataArtworkUrl));
+		Assert.False(string.IsNullOrEmpty(mediaElement.MetadataArtworkUrl));
 	}
 
 	[Fact]

@@ -12,7 +12,7 @@
         <Style x:Key="ValidEntryStyle" TargetType="Entry">
             <Setter Property="TextColor" Value="Green"/>
         </Style>
-        
+
         <Style x:Key="InvalidEntryStyle" TargetType="Entry">
             <Setter Property="TextColor" Value="Red" />
         </Style>
@@ -48,7 +48,8 @@
                 </Entry.Behaviors>
             </Entry>
             <Label HeightRequest="30"
-                    Text="{Binding Errors[0], Source={x:Reference MultiValidation}}"/>
+                   x:DataType="mct:MultiValidationBehavior"
+                    Text="{Binding Errors[0], Source={x:Reference MultiValidation}, FallbackValue=''}"/>
             <Label Text="Password validation" />
             <Entry IsPassword="True" Placeholder="Password">
                 <Entry.Behaviors>
@@ -79,10 +80,10 @@
                 </Entry.Behaviors>
             </Entry>
             <VerticalStackLayout>
-                <Label Text="{Binding IsValid, Source={x:Reference DigitValidation}, StringFormat='{}{0} : at least 1 digit'}"/>
-                <Label Text="{Binding IsValid, Source={x:Reference UpperValidation}, StringFormat='{}{0} : at least 1 upper'}"/>
-                <Label Text="{Binding IsValid, Source={x:Reference SymbolValidation}, StringFormat='{}{0} : at least 1 symbol'}"/>
-                <Label Text="{Binding IsValid, Source={x:Reference AnyValidation}, StringFormat='{}{0} : at least 8 char'}"/>
+                <Label x:DataType="mct:CharactersValidationBehavior" Text="{Binding IsValid, Source={x:Reference DigitValidation}, StringFormat='{}{0} : at least 1 digit'}"/>
+                <Label x:DataType="mct:CharactersValidationBehavior" Text="{Binding IsValid, Source={x:Reference UpperValidation}, StringFormat='{}{0} : at least 1 upper'}"/>
+                <Label x:DataType="mct:CharactersValidationBehavior" Text="{Binding IsValid, Source={x:Reference SymbolValidation}, StringFormat='{}{0} : at least 1 symbol'}"/>
+                <Label x:DataType="mct:CharactersValidationBehavior" Text="{Binding IsValid, Source={x:Reference AnyValidation}, StringFormat='{}{0} : at least 8 char'}"/>
             </VerticalStackLayout>
         </VerticalStackLayout>
 

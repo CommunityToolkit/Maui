@@ -20,8 +20,9 @@
                        Margin="{StaticResource ContentPadding}" />
 
                 <!-- Settings -->
-                <Frame Margin="{StaticResource ContentPadding}"
-                       CornerRadius="10">
+                <Border
+                    Margin="{StaticResource ContentPadding}"
+                    StrokeShape="RoundRectangle 10">
                     <Grid RowDefinitions="*,*" ColumnDefinitions="2*, *" RowSpacing="24" ColumnSpacing="8">
                         <Label Text="MaxLength setting on Entry field"
                                HorizontalOptions="End"
@@ -38,24 +39,26 @@
                                HorizontalOptions="End"
                                HorizontalTextAlignment="Start"
                                Grid.Row="1" />
-                        <Switch x:Name="AutoDismissKeyboardSetting"
+                        <Switch x:Name="AutoDismissKeyboardSettingSwitch"
                                 HorizontalOptions="Start"
                                 Grid.Row="1"
                                 Grid.Column="1" />
                     </Grid>
-                </Frame>
+                </Border>
 
                 <!-- First Scenario -->
                 <Label Text="When the MaxLength of the first Entry has been reached, the focus will be set to the next Entry field."
                        Margin="{StaticResource ContentPadding}" />
 
                 <Entry Placeholder="Start typing until MaxLength is reached..."
-                       MaxLength="{Binding Path=Text, Source={x:Reference MaxLengthSetting}}"
-                       Margin="{StaticResource ContentPadding}">
+                       MaxLength="{Binding Path=Text, Source={x:Reference MaxLengthSetting}, x:DataType=Entry}"
+                       Margin="{StaticResource ContentPadding}"
+                       x:Name="MaxLengthEntry">
                     <Entry.Behaviors>
                         <mct:MaxLengthReachedBehavior 
                             MaxLengthReached="MaxLengthReachedBehavior_MaxLengthReached"
-                            ShouldDismissKeyboardAutomatically="{Binding Path=IsToggled, Source={x:Reference AutoDismissKeyboardSetting}}" />
+                            BindingContext="{Binding Path=BindingContext, Source={x:Reference MaxLengthEntry}, x:DataType=Entry}"
+                            ShouldDismissKeyboardAutomatically="{Binding Path=IsToggled, Source={x:Reference AutoDismissKeyboardSettingSwitch}, x:DataType=Switch}" />
                     </Entry.Behaviors>
                 </Entry>
 
@@ -69,12 +72,14 @@
                        Margin="{StaticResource ContentPadding}" />
 
                 <Entry Placeholder="Start typing until MaxLength is reached..."
-                       MaxLength="{Binding Path=Text, Source={x:Reference MaxLengthSetting}}"
-                       Margin="{StaticResource ContentPadding}">
+                       MaxLength="{Binding Path=Text, Source={x:Reference MaxLengthSetting}, x:DataType=Entry}"
+                       Margin="{StaticResource ContentPadding}"
+                       x:Name="MaxLegnthCommandEntry">
                     <Entry.Behaviors>
                         <mct:MaxLengthReachedBehavior 
+                            BindingContext="{Binding Path=BindingContext, Source={x:Reference MaxLegnthCommandEntry}, x:DataType=Entry}"
                             Command="{Binding MaxLengthReachedCommand}"
-                            ShouldDismissKeyboardAutomatically="{Binding Path=IsToggled, Source={x:Reference AutoDismissKeyboardSetting}}" />
+                            ShouldDismissKeyboardAutomatically="{Binding Path=IsToggled, Source={x:Reference AutoDismissKeyboardSettingSwitch}, x:DataType=Switch}" />
                     </Entry.Behaviors>
                 </Entry>
 

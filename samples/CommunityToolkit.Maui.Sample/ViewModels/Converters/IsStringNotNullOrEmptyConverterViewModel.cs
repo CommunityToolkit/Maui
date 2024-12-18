@@ -5,5 +5,5 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 public partial class IsStringNotNullOrEmptyConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	string? labelText;
+	public partial string? LabelText { get; set; }
 }
