@@ -87,17 +87,11 @@ public partial class CameraViewPage : BasePage<CameraViewViewModel>
 
 	void ZoomIn(object? sender, EventArgs e)
 	{
-		Dispatcher.Dispatch(() =>
-		{
-			Camera.ZoomFactor += 1.0f;
-		});
+		Camera.ZoomFactor += 1.0f;
 	}
 
 	void ZoomOut(object? sender, EventArgs e)
 	{
-		Dispatcher.Dispatch(() =>
-		{
-			Camera.ZoomFactor -= 1.0f;
-		});
+		Camera.ZoomFactor -= 1.0f;
 	}
 }
