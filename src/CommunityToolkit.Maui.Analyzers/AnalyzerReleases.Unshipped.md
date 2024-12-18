@@ -1,6 +1,10 @@
-﻿## Release 1.1.0
+﻿### New Rules
 
-### New Rules
+Rule ID | Category | Severity | Notes
+--------|----------|----------|--------------------
 
-Rule ID | Severity | Notes
---------|----------|-------
+### Changed Rules
+
+Rule ID | New Category | New Severity | Old Category | Old Severity | Notes
+--------|--------------|--------------|--------------|--------------|-------
+MCT001 | Initialization | Error | Usage | Error | UseCommunityToolkitInitializationAnalyzer

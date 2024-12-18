@@ -14,8 +14,7 @@
                 <Label Text="Select a container to show a popup" />
                 <Picker 
                     ItemsSource="{Binding Containers}" 
-                    SelectedItem="{Binding SelectedContainer}" 
-                    ItemDisplayBinding="{Binding Name}"/>
+                    SelectedItem="{Binding SelectedContainer}"/>
 
                 <Label Text="Padding" />
                 <Entry Text="{Binding Padding}" />

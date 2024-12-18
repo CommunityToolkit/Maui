@@ -7,7 +7,7 @@
              x:Class="CommunityToolkit.Maui.Sample.Pages.Views.BasicMapsPage"
              x:DataType="vm:BasicMapsViewModel"
              x:TypeArguments="vm:BasicMapsViewModel"
-             Title="Windows Map">
+             Title="Map">
     
     <Grid RowDefinitions="Auto, Auto, Auto, Auto, *">
         <HorizontalStackLayout Grid.Row="0">
@@ -34,9 +34,9 @@
         </HorizontalStackLayout>
         <Button Text="Move to region" Clicked="Button_OnClicked" Grid.Row="3"/>
         <maps:Map x:Name="BasicMap" Grid.Row="4" 
-             IsShowingUser="{Binding IsToggled, Source={x:Reference ShowUserLocationSwitch}}"
-             IsTrafficEnabled="{Binding IsToggled, Source={x:Reference ShowTrafficSwitch}}"
-             IsZoomEnabled="{Binding IsToggled, Source={x:Reference ZoomEnabledSwitch}}"
-             IsScrollEnabled="{Binding IsToggled, Source={x:Reference ScrollEnabledSwitch}}"/>
+             IsShowingUser="{Binding IsToggled, Source={x:Reference ShowUserLocationSwitch}, x:DataType=Switch}"
+             IsTrafficEnabled="{Binding IsToggled, Source={x:Reference ShowTrafficSwitch}, x:DataType=Switch}"
+             IsZoomEnabled="{Binding IsToggled, Source={x:Reference ZoomEnabledSwitch}, x:DataType=Switch}"
+             IsScrollEnabled="{Binding IsToggled, Source={x:Reference ScrollEnabledSwitch}, x:DataType=Switch}"/>
     </Grid>
 </pages:BasePage>

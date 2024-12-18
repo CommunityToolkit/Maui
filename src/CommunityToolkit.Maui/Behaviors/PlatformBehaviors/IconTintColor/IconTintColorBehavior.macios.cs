@@ -33,7 +33,7 @@ public partial class IconTintColorBehavior
 
 		ApplyTintColor(platformView, bindable, TintColor);
 
-		this.PropertyChanged += (s, e) =>
+		PropertyChanged += (s, e) =>
 		{
 			if (e.PropertyName == TintColorProperty.PropertyName)
 			{
@@ -98,7 +98,7 @@ public partial class IconTintColorBehavior
 
 	static void SetUIButtonTintColor(UIButton button, View element, Color color)
 	{
-		if (button.ImageView.Image is null)
+		if (button.ImageView.Image is null || button.CurrentImage is null)
 		{
 			return;
 		}

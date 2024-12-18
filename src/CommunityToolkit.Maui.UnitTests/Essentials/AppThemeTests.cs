@@ -7,43 +7,44 @@ namespace CommunityToolkit.Maui.UnitTests.Essentials;
 public class AppThemeTests : BaseHandlerTest
 {
 	readonly MockAppInfo mockAppInfo;
-	readonly Application app;
+	readonly Label label = new();
 
 	public AppThemeTests()
 	{
 		const AppTheme initialAppTheme = AppTheme.Light;
-		AppInfo.SetCurrent(mockAppInfo = new() { RequestedTheme = initialAppTheme });
+		AppInfo.SetCurrent(mockAppInfo = new()
+		{
+			RequestedTheme = initialAppTheme
+		});
 
-		Application.Current = app = new Application();
+		ArgumentNullException.ThrowIfNull(Application.Current);
 
-		SetAppTheme(initialAppTheme);
+		Application.Current.Windows[0].Page = new ContentPage
+		{
+			Content = label
+		};
 
-		Assert.Equal(initialAppTheme, app.PlatformAppTheme);
+		SetAppTheme(initialAppTheme, Application.Current);
+
+		Assert.Equal(initialAppTheme, Application.Current.PlatformAppTheme);
 	}
 
 	[Fact]
 	public void AppThemeColorUsesCorrectColorForTheme()
 	{
+		ArgumentNullException.ThrowIfNull(Application.Current);
+
 		AppThemeColor color = new()
 		{
 			Light = Colors.Green,
 			Dark = Colors.Red
 		};
 
-		Label label = new()
-		{
-			Text = "Green on Light, Red on Dark"
-		};
 		label.SetAppThemeColor(Label.TextColorProperty, color);
-
-		app.MainPage = new ContentPage
-		{
-			Content = label
-		};
 
 		Assert.Equal(Colors.Green, label.TextColor);
 
-		SetAppTheme(AppTheme.Dark);
+		SetAppTheme(AppTheme.Dark, Application.Current);
 
 		Assert.Equal(Colors.Red, label.TextColor);
 	}
@@ -51,27 +52,19 @@ public class AppThemeTests : BaseHandlerTest
 	[Fact]
 	public void AppThemeColorUsesDefaultColorWhenDarkColorNotSet()
 	{
+		ArgumentNullException.ThrowIfNull(Application.Current);
+
 		AppThemeColor color = new()
 		{
 			Light = Colors.Green,
 			Default = Colors.Blue
 		};
 
-		Label label = new()
-		{
-			Text = "Green on Light, Red on Dark"
-		};
-
 		label.SetAppThemeColor(Label.TextColorProperty, color);
-
-		app.MainPage = new ContentPage
-		{
-			Content = label
-		};
 
 		Assert.Equal(Colors.Green, label.TextColor);
 
-		SetAppTheme(AppTheme.Dark);
+		SetAppTheme(AppTheme.Dark, Application.Current);
 
 		Assert.Equal(Colors.Blue, label.TextColor);
 	}
@@ -79,27 +72,19 @@ public class AppThemeTests : BaseHandlerTest
 	[Fact]
 	public void AppThemeColorUsesDefaultColorWhenLightColorNotSet()
 	{
+		ArgumentNullException.ThrowIfNull(Application.Current);
+
 		AppThemeColor color = new()
 		{
 			Default = Colors.Blue,
 			Dark = Colors.Red
 		};
 
-		Label label = new()
-		{
-			Text = "Green on Light, Red on Dark"
-		};
-
 		label.SetAppThemeColor(Label.TextColorProperty, color);
-
-		app.MainPage = new ContentPage
-		{
-			Content = label
-		};
 
 		Assert.Equal(Colors.Blue, label.TextColor);
 
-		SetAppTheme(AppTheme.Dark);
+		SetAppTheme(AppTheme.Dark, Application.Current);
 
 		Assert.Equal(Colors.Red, label.TextColor);
 	}
@@ -107,7 +92,7 @@ public class AppThemeTests : BaseHandlerTest
 	[Fact]
 	public void AppThemeResourceUpdatesLabelText()
 	{
-		Label label = new();
+		ArgumentNullException.ThrowIfNull(Application.Current);
 
 		AppThemeObject resource = new()
 		{
@@ -117,21 +102,16 @@ public class AppThemeTests : BaseHandlerTest
 
 		label.SetAppTheme(Label.TextProperty, resource);
 
-		app.MainPage = new ContentPage
-		{
-			Content = label
-		};
-
 		Assert.Equal("Light Theme", label.Text);
 
-		SetAppTheme(AppTheme.Dark);
+		SetAppTheme(AppTheme.Dark, Application.Current);
 
 		Assert.Equal("Dark Theme", label.Text);
 	}
 
-	void SetAppTheme(in AppTheme theme)
+	void SetAppTheme(in AppTheme theme, in IApplication app)
 	{
 		mockAppInfo.RequestedTheme = theme;
-		((IApplication)app).ThemeChanged();
+		app.ThemeChanged();
 	}
 }

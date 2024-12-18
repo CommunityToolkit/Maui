@@ -1,14 +1,19 @@
-﻿using CommunityToolkit.Maui.Alerts;
+﻿using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-public class ExpanderPageCS : ContentPage
+[RequiresUnreferencedCode("Expander is not trim safe")]
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+public partial class ExpanderPageCS : ContentPage
 {
 	public ExpanderPageCS()
 	{
+		const string dotnetBotUrl = "https://avatars.githubusercontent.com/u/9011267?v=4";
+		const string dotnetMauiUrl = "https://dot.net/maui";
+
 		Title = "Expander Page, C# UI";
 
 		Content = new VerticalStackLayout()
@@ -36,7 +41,7 @@ public class ExpanderPageCS : ContentPage
 					Content = new VerticalStackLayout()
 					{
 						new Image()
-							.Source("https://avatars.githubusercontent.com/u/9011267?v=4")
+							.Source(dotnetBotUrl)
 							.Size(120)
 							.Aspect(Aspect.AspectFit),
 
@@ -46,7 +51,7 @@ public class ExpanderPageCS : ContentPage
 
 						new Button()
 							.Text("Learn more")
-							.Invoke(button => button.Clicked += async (s, e) => await Launcher.OpenAsync("https://dot.net/maui"))
+							.Invoke(button => button.Clicked += static async (_, _) => await Launcher.OpenAsync(dotnetMauiUrl))
 
 					}.Padding(10)
 

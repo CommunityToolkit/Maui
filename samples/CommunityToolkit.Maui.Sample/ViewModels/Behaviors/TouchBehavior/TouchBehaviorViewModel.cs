@@ -6,7 +6,10 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 public partial class TouchBehaviorViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	int touchCount, longPressCount;
+	public partial int TouchCount { get; private set; }
+
+	[ObservableProperty]
+	public partial int LongPressCount { get; private set; }
 
 	static Task DisplayAlert(string title, CancellationToken token)
 		=> Shell.Current.DisplayAlert(title, null, "Ok").WaitAsync(token);

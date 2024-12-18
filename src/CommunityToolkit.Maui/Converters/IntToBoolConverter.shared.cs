@@ -5,7 +5,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts an <see cref="int"/> to a corresponding <see cref="bool"/> and vice versa.
 /// </summary>
-public class IntToBoolConverter : BaseConverter<int, bool>
+[AcceptEmptyServiceProvider]
+public partial class IntToBoolConverter : BaseConverter<int, bool>
 {
 	/// <inheritdoc/>
 	public override bool DefaultConvertReturnValue { get; set; } = false;
@@ -14,7 +15,7 @@ public class IntToBoolConverter : BaseConverter<int, bool>
 	public override int DefaultConvertBackReturnValue { get; set; } = 0;
 
 	/// <summary>
-	/// Converts the incoming <see cref="int"/> to a <see cref="bool"/> indicating whether or not the value is not equal to 0.
+	/// Converts the incoming <see cref="int"/> to a <see cref="bool"/> indicating whether the value is not equal to 0.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
 	/// <param name="culture">(Not Used)</param>
@@ -22,7 +23,7 @@ public class IntToBoolConverter : BaseConverter<int, bool>
 	public override bool ConvertFrom(int value, CultureInfo? culture = null) => value is not 0;
 
 	/// <summary>
-	/// Converts the incoming <see cref="bool"/> to an <see cref="int"/> indicating whether or not the value is true.
+	/// Converts the incoming <see cref="bool"/> to an <see cref="int"/> indicating whether the value is true.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
 	/// <param name="culture">(Not Used)</param>

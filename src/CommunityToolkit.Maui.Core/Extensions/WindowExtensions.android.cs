@@ -1,5 +1,4 @@
-﻿using Android.OS;
-using Android.Views;
+﻿using Android.Views;
 
 namespace CommunityToolkit.Maui.Core.Extensions;
 

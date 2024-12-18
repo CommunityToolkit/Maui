@@ -1,48 +1,26 @@
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Views;
 
 /// <inheritdoc cref="IExpander"/>
+[BindableProperty<IView>("Header", PropertyChangedMethodName = nameof(OnHeaderPropertyChanged))]
+[BindableProperty<IView>("Content", PropertyChangedMethodName = nameof(OnContentPropertyChanged))]
+[BindableProperty<bool>("IsExpanded", PropertyChangedMethodName = nameof(OnIsExpandedPropertyChanged))]
+[BindableProperty<object>("CommandParameter")]
+[BindableProperty<ICommand>("Command")]
 [ContentProperty(nameof(Content))]
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+[RequiresUnreferencedCode("Calls Microsoft.Maui.Controls.Binding.Binding(String, BindingMode, IValueConverter, Object, String, Object)")]
 public partial class Expander : ContentView, IExpander
 {
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="Header"/> property.
-	/// </summary>
-	public static readonly BindableProperty HeaderProperty
-		= BindableProperty.Create(nameof(Header), typeof(IView), typeof(Expander), propertyChanged: OnHeaderPropertyChanged);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="Content"/> property.
-	/// </summary>
-	public static new readonly BindableProperty ContentProperty
-		= BindableProperty.Create(nameof(Content), typeof(IView), typeof(Expander), propertyChanged: OnContentPropertyChanged);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="IsExpanded"/> property.
-	/// </summary>
-	public static readonly BindableProperty IsExpandedProperty
-		= BindableProperty.Create(nameof(IsExpanded), typeof(bool), typeof(Expander), false, BindingMode.TwoWay, propertyChanged: OnIsExpandedPropertyChanged);
-
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Direction"/> property.
 	/// </summary>
 	public static readonly BindableProperty DirectionProperty
 		= BindableProperty.Create(nameof(Direction), typeof(ExpandDirection), typeof(Expander), ExpandDirection.Down, propertyChanged: OnDirectionPropertyChanged);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="CommandParameter"/> property.
-	/// </summary>
-	public static readonly BindableProperty CommandParameterProperty
-		= BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(Expander));
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="Command"/> property.
-	/// </summary>
-	public static readonly BindableProperty CommandProperty
-		= BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(Expander));
 
 	readonly WeakEventManager tappedEventManager = new();
 
@@ -80,30 +58,9 @@ public partial class Expander : ContentView, IExpander
 	/// By default, this <see cref="Action"/> runs <see cref="ResizeExpanderInItemsView(TappedEventArgs)"/>.
 	/// </summary>
 	/// <remarks>
-	/// Warning: Overriding this <see cref="Action"/> may cause <see cref="Expander"/> to work improperly when placed inside of a <see cref="CollectionView"/> and placed inside of a <see cref="ListView"/>.
+	/// Warning: Overriding this <see cref="Action"/> may cause <see cref="Expander"/> to work improperly when placed inside a <see cref="CollectionView"/> and placed inside a <see cref="ListView"/>.
 	/// </remarks>
 	public Action<TappedEventArgs>? HandleHeaderTapped { get; set; }
-
-	/// <inheritdoc />
-	public IView? Header
-	{
-		get => (IView?)GetValue(HeaderProperty);
-		set => SetValue(HeaderProperty, value);
-	}
-
-	/// <inheritdoc cref="ContentView.Content" />
-	public new IView? Content
-	{
-		get => (IView?)GetValue(Expander.ContentProperty);
-		set => SetValue(Expander.ContentProperty, value);
-	}
-
-	/// <inheritdoc />
-	public bool IsExpanded
-	{
-		get => (bool)GetValue(IsExpandedProperty);
-		set => SetValue(IsExpandedProperty, value);
-	}
 
 	/// <inheritdoc />
 	public ExpandDirection Direction
@@ -111,31 +68,13 @@ public partial class Expander : ContentView, IExpander
 		get => (ExpandDirection)GetValue(DirectionProperty);
 		set
 		{
-			if (!Enum.IsDefined(typeof(ExpandDirection), value))
+			if (!Enum.IsDefined(value))
 			{
 				throw new InvalidEnumArgumentException(nameof(value), (int)value, typeof(ExpandDirection));
 			}
 
 			SetValue(DirectionProperty, value);
 		}
-	}
-
-	/// <summary>
-	/// Command parameter passed to the <see cref="Command"/>
-	/// </summary>
-	public object? CommandParameter
-	{
-		get => GetValue(CommandParameterProperty);
-		set => SetValue(CommandParameterProperty, value);
-	}
-
-	/// <summary>
-	/// Command to execute when <see cref="IsExpanded"/> changed.
-	/// </summary>
-	public ICommand? Command
-	{
-		get => (ICommand?)GetValue(CommandProperty);
-		set => SetValue(CommandProperty, value);
 	}
 
 	Grid ContentGrid => (Grid)base.Content;
@@ -145,7 +84,7 @@ public partial class Expander : ContentView, IExpander
 		var expander = (Expander)bindable;
 		if (newValue is View view)
 		{
-			view.SetBinding(IsVisibleProperty, new Binding(nameof(IsExpanded), source: bindable));
+			view.SetBinding(IsVisibleProperty, new Binding(nameof(IsExpanded), source: expander));
 
 			expander.ContentGrid.Remove(oldValue);
 			expander.ContentGrid.Add(newValue);
@@ -231,7 +170,7 @@ public partial class Expander : ContentView, IExpander
 
 		Element element = this;
 		var size = IsExpanded
-					? Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins).Request
+					? Measure(double.PositiveInfinity, double.PositiveInfinity)
 					: Header.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 		while (element is not null)

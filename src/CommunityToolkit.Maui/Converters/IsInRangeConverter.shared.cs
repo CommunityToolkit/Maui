@@ -1,71 +1,71 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>Converts the incoming value to a <see cref="bool"/> indicating whether or not the value is within a range.</summary>
-public sealed class IsInRangeConverter : IsInRangeConverter<object>
-{
-}
+[AcceptEmptyServiceProvider]
+public sealed partial class IsInRangeConverter : IsInRangeConverter<IComparable, object>;
 
 /// <summary>Converts the incoming value to a <see cref="bool"/> indicating whether or not the value is within a range.</summary>
-public abstract class IsInRangeConverter<TObject> : BaseConverterOneWay<IComparable, object>
+public abstract class IsInRangeConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TValue, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TReturnObject> : BaseConverterOneWay<TValue, object> where TValue : IComparable
 {
 	/// <summary>
-	/// Bindable property for <see cref="MinValue"/>
+	/// Bindable property for <see cref="FalseObject"/>
 	/// </summary>
-	public static readonly BindableProperty MinValueProperty = BindableProperty.Create(nameof(MinValue), typeof(IComparable), typeof(IsInRangeConverter<TObject>));
+	public static readonly BindableProperty FalseObjectProperty = BindableProperty.Create(nameof(FalseObject), typeof(TReturnObject?), typeof(IsInRangeConverter<TValue, TReturnObject>));
 
 	/// <summary>
 	/// Bindable property for <see cref="MaxValue"/>
 	/// </summary>
-	public static readonly BindableProperty MaxValueProperty = BindableProperty.Create(nameof(MaxValue), typeof(IComparable), typeof(IsInRangeConverter<TObject>));
+	public static readonly BindableProperty MaxValueProperty = BindableProperty.Create(nameof(MaxValue), typeof(TValue), typeof(IsInRangeConverter<TValue, TReturnObject>));
+
+	/// <summary>
+	/// Bindable property for <see cref="MinValue"/>
+	/// </summary>
+	public static readonly BindableProperty MinValueProperty = BindableProperty.Create(nameof(MinValue), typeof(TValue), typeof(IsInRangeConverter<TValue, TReturnObject>));
 
 	/// <summary>
 	/// Bindable property for <see cref="TrueObject"/>
 	/// </summary>
-	public static readonly BindableProperty TrueObjectProperty = BindableProperty.Create(nameof(TrueObject), typeof(TObject?), typeof(IsInRangeConverter<TObject>));
-
-	/// <summary>
-	/// Bindable property for <see cref="FalseObject"/>
-	/// </summary>
-	public static readonly BindableProperty FalseObjectProperty = BindableProperty.Create(nameof(FalseObject), typeof(TObject?), typeof(IsInRangeConverter<TObject>));
+	public static readonly BindableProperty TrueObjectProperty = BindableProperty.Create(nameof(TrueObject), typeof(TReturnObject?), typeof(IsInRangeConverter<TValue, TReturnObject>));
 
 	/// <inheritdoc/>
 	public override object DefaultConvertReturnValue { get; set; } = new();
 
-	/// <summary>Minimum value.</summary>
-	public IComparable? MinValue
+	/// <summary>If supplied this value will be returned when the converter receives an input value that is <b>outside</b> the <see cref="MinValue" /> and <see cref="MaxValue" />s.</summary>
+	public TReturnObject? FalseObject
 	{
-		get => (IComparable?)GetValue(MinValueProperty);
-		set => SetValue(MinValueProperty, value);
+		get => (TReturnObject?)GetValue(FalseObjectProperty);
+		set => SetValue(FalseObjectProperty, value);
 	}
 
-	/// <summary>Maximum value.</summary>
-	public IComparable? MaxValue
+	/// <summary>The upper bounds of the range to compare against when determining whether the input value to the convert is within range.</summary>
+	public TValue? MaxValue
 	{
-		get => (IComparable?)GetValue(MaxValueProperty);
+		get => (TValue?)GetValue(MaxValueProperty);
 		set => SetValue(MaxValueProperty, value);
 	}
 
-	/// <summary>The object that corresponds to True value.</summary>
-	public TObject? TrueObject
+	/// <summary>The lower bounds of the range to compare against when determining whether the input value to the convert is within range.</summary>
+	public TValue? MinValue
 	{
-		get => (TObject?)GetValue(TrueObjectProperty);
-		set => SetValue(TrueObjectProperty, value);
+		get => (TValue?)GetValue(MinValueProperty);
+		set => SetValue(MinValueProperty, value);
 	}
 
-	/// <summary>The object that corresponds to False value.</summary>
-	public TObject? FalseObject
+	/// <summary>If supplied this value will be returned when the converter receives an input value that is <b>inside</b> (inclusive) of the <see cref="MinValue" /> and <see cref="MaxValue" />s.</summary>
+	public TReturnObject? TrueObject
 	{
-		get => (TObject?)GetValue(FalseObjectProperty);
-		set => SetValue(FalseObjectProperty, value);
+		get => (TReturnObject?)GetValue(TrueObjectProperty);
+		set => SetValue(TrueObjectProperty, value);
 	}
 
 	/// <summary>Converts an object that implemented IComparable to a <see cref="bool"/> based on the object being within a <see cref="MinValue"/> and <see cref="MaxValue"/> range.</summary>
 	/// <param name="value">The value to convert.</param>
 	/// <param name="culture">(Not Used)</param>
-	/// <returns>The object assigned to <see cref="TrueObject"/> if value is between <see cref="MinValue"/> and <see cref="MaxValue"/> then <see cref="TrueObject"/> returns true, otherwise the value assigned to <see cref="FalseObject"/>.</returns>
-	public override object ConvertFrom(IComparable value, CultureInfo? culture = null)
+	/// <returns>The object assigned to <see cref="TrueObject"/> if value is between <see cref="MinValue"/> and <see cref="MaxValue"/> returns true, otherwise the value assigned to <see cref="FalseObject"/>.</returns>
+	public override object ConvertFrom(TValue value, CultureInfo? culture)
 	{
 		ArgumentNullException.ThrowIfNull(value);
 
@@ -79,37 +79,29 @@ public abstract class IsInRangeConverter<TObject> : BaseConverterOneWay<ICompara
 			throw new InvalidOperationException($"{nameof(TrueObject)} and {nameof(FalseObject)} should either be both defined or both omitted.");
 		}
 
-		var valueType = value.GetType();
-		if (MinValue is not null && MinValue.GetType() != valueType)
-		{
-			throw new ArgumentException($"{nameof(value)} is expected to be of type {nameof(MinValue)}, but is {valueType}", nameof(value));
-		}
-
-		if (MaxValue is not null && MaxValue.GetType() != valueType)
-		{
-			throw new ArgumentException($"{nameof(value)} is expected to be of type {nameof(MaxValue)}, but is {valueType}", nameof(value));
-		}
-
-		var shouldReturnObjectResult = TrueObject is not null && FalseObject is not null;
-
+		bool shouldReturnObjectResult = TrueObject is not null && FalseObject is not null;
 		if (MaxValue is null)
 		{
 			return EvaluateCondition(value.CompareTo(MinValue) >= 0, shouldReturnObjectResult);
 		}
 
-		if (MinValue is null)
-		{
-			return EvaluateCondition(value.CompareTo(MaxValue) <= 0, shouldReturnObjectResult);
-		}
-
-		return EvaluateCondition(value.CompareTo(MinValue) >= 0 && value.CompareTo(MaxValue) <= 0, shouldReturnObjectResult);
+		return MinValue is null
+			? EvaluateCondition(value.CompareTo(MaxValue) <= 0, shouldReturnObjectResult)
+			: EvaluateCondition(value.CompareTo(MinValue) >= 0 && value.CompareTo(MaxValue) <= 0, shouldReturnObjectResult);
 	}
 
-	object EvaluateCondition(bool comparisonResult, bool shouldReturnObject) => (comparisonResult, shouldReturnObject) switch
+	/// <summary>Evaluates a condition based on the given comparison result and returns an object.</summary>
+	/// <param name="comparisonResult">The result of the comparison.</param>
+	/// <param name="shouldReturnObject">Indicates whether an object should be returned.</param>
+	/// <returns>The result of the evaluation.</returns>
+	object EvaluateCondition(bool comparisonResult, bool shouldReturnObject)
 	{
-		(true, true) => TrueObject ?? throw new InvalidOperationException($"{nameof(TrueObject)} cannot be null"),
-		(false, true) => FalseObject ?? throw new InvalidOperationException($"{nameof(FalseObject)} cannot be null"),
-		(true, false) => true,
-		(false, false) => false
-	};
+		return (comparisonResult, shouldReturnObject) switch
+		{
+			(true, true) => TrueObject ?? throw new InvalidOperationException($"{nameof(TrueObject)} cannot be null"),
+			(false, true) => FalseObject ?? throw new InvalidOperationException($"{nameof(FalseObject)} cannot be null"),
+			(true, false) => true,
+			(false, false) => false
+		};
+	}
 }
