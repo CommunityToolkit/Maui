@@ -6,6 +6,7 @@ using Android.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using Com.Google.Android.Exoplayer2.UI;
+using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -20,6 +21,7 @@ public class MauiMediaElement : CoordinatorLayout
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
 	bool isFullScreen;
+
 	readonly RelativeLayout relativeLayout;
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
@@ -120,12 +122,14 @@ public class MauiMediaElement : CoordinatorLayout
 			isFullScreen = true;
 			RemoveView(relativeLayout);
 			layout?.AddView(relativeLayout);
+			MediaManager.FullScreenEvents.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
 		}
 		else
 		{
 			isFullScreen = false;
 			layout?.RemoveView(relativeLayout);
 			AddView(relativeLayout);
+			MediaManager.FullScreenEvents.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
 		}
 		// Hide/Show the SystemBars and Status bar
 		SetSystemBarsVisibility();
@@ -193,7 +197,7 @@ public class MauiMediaElement : CoordinatorLayout
 		}
 	}
 
-	readonly record struct CurrentPlatformContext
+	internal readonly record struct CurrentPlatformContext
 	{
 		public static Activity CurrentActivity
 		{
