@@ -3,18 +3,13 @@
 /// <summary>
 /// Contains Expander IsExpanded state.
 /// </summary>
-public class ExpandedChangedEventArgs : EventArgs
+/// <remarks>
+/// Initialize a new instance of <see cref="ExpandedChangedEventArgs"/>
+/// </remarks>
+public class ExpandedChangedEventArgs(bool isExpanded) : EventArgs
 {
-	/// <summary>
-	/// Initialize a new instance of <see cref="ExpandedChangedEventArgs"/>
-	/// </summary>
-	public ExpandedChangedEventArgs(bool isExpanded)
-	{
-		IsExpanded = isExpanded;
-	}
-
 	/// <summary>
 	/// True if Is Expanded.
 	/// </summary>
-	public bool IsExpanded { get; }
+	public bool IsExpanded { get; } = isExpanded;
 }

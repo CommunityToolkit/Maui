@@ -52,16 +52,12 @@ public interface ICommunityToolkitValueConverter : IValueConverter
 
 
 	/// <inheritdoc />
-#if NET8_0 // Should be fixed in .NET 9
 #pragma warning disable IL2092
-#endif
 	object? IValueConverter.Convert(object? value, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type targetType, object? parameter, CultureInfo culture) =>
 		Convert(value, targetType, parameter, culture);
 
 	/// <inheritdoc />
 	object? IValueConverter.ConvertBack(object? value, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type targetType, object? parameter, CultureInfo culture) =>
 		ConvertBack(value, targetType, parameter, culture);
-#if NET8_0
 #pragma warning restore IL2092
-#endif
 }

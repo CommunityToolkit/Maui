@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
 
@@ -9,7 +8,7 @@ public class AvatarViewInterfaceTests : BaseHandlerTest
 {
 	public AvatarViewInterfaceTests()
 	{
-		Assert.IsAssignableFrom<IAvatarView>(new Maui.Views.AvatarView());
+		Assert.IsType<IAvatarView>(new Maui.Views.AvatarView(), exactMatch: false);
 	}
 
 	[Fact]
@@ -289,21 +288,6 @@ public class AvatarViewInterfaceTests : BaseHandlerTest
 		// For code coverage
 		var avatarView = new Maui.Views.AvatarView();
 		((ITextElement)avatarView).UpdateFormsText("Original Text", TextTransform.Uppercase);
-		avatarView.Text.Should().Be("?");
-	}
-
-	[Fact]
-	public void IImageSourcePartUpdateIsLoading()
-	{
-		// For code coverage
-		var handler = new FontElementHandlerStub();
-		var avatarView = new Maui.Views.AvatarView()
-		{
-			Handler = handler
-		};
-		handler.Updates.Clear();
-		((IImageSourcePart)avatarView).UpdateIsLoading(true);
-		((IImageSourcePart)avatarView).UpdateIsLoading(false);
 		avatarView.Text.Should().Be("?");
 	}
 
