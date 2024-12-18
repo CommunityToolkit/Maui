@@ -9,7 +9,7 @@ using Path = Microsoft.Maui.Controls.Shapes.Path;
 namespace CommunityToolkit.Maui.Views;
 
 /// <summary>Rating view control.</summary>
-public class RatingView : TemplatedView, IRatingView
+public partial class RatingView : TemplatedView, IRatingView
 {
 	/// <summary>Bindable property for attached property <c>CustomItemShape</c>.</summary>
 	public static readonly BindableProperty CustomItemShapeProperty = BindableProperty.Create(nameof(CustomItemShape), typeof(string), typeof(RatingView), defaultValue: null, propertyChanged: OnCustomShapePropertyChanged);
@@ -226,7 +226,7 @@ public class RatingView : TemplatedView, IRatingView
 		Padding = itemPadding,
 		Stroke = new SolidColorBrush(Colors.Transparent),
 		StrokeThickness = 0,
-		Style = null,
+		Style = null!,
 
 		Content = new Path
 		{

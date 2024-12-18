@@ -143,7 +143,7 @@
                         Grid.Row="2"
                         Grid.Column="0"
                         Grid.ColumnSpan="2"
-                        Text="&#x22;I have used the .NET MAUI Community Toolkit in all of my cross-platform projects.  It has nearly everything that I could ever wish for, but it needs&#x2026;&#x22;"
+                        Text="&#x22;I have used the .NET MAUI Community Toolkit in all of my cross-platform projects.  It's everything I could want and the community are great&#x2026;&#x22;"
                         TextColor="Black" />
 
                 </Grid>

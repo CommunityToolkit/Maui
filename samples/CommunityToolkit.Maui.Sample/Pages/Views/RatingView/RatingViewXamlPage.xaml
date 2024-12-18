@@ -241,7 +241,7 @@
                 <Label.FormattedText>
                     <FormattedString>
                         <Span Text=": " />
-                        <Span Text="{Binding Source={x:Reference StepperMaximumRating}, Path=Value, Mode=OneWay}" />
+                        <Span Text="{Binding Source={x:Reference StepperMaximumRating}, Path=Value, x:DataType=Stepper, Mode=OneWay}" />
                     </FormattedString>
                 </Label.FormattedText>
             </Label>
@@ -250,7 +250,7 @@
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 HorizontalOptions="Center"
-                MaximumRating="{Binding Source={x:Reference StepperMaximumRating}, Path=Value, Mode=OneWay}"
+                MaximumRating="{Binding Source={x:Reference StepperMaximumRating}, Path=Value, x:DataType=Stepper, Mode=OneWay}"
                 RatingChanged="StepperMaximumRating_RatingChanged"
                 SemanticProperties.Description="A RatingView showing changes to the 'MaximumRating' property and with an event handler when the 'RatingChanged' event is triggered."
                 VerticalOptions="Center" />
@@ -378,7 +378,7 @@
                     <FormattedString>
                         <FormattedString.Spans>
                             <Span Text=": " />
-                            <Span Text="{Binding Source={x:Reference StepperShapeBorderThickness}, Path=Value}" />
+                            <Span Text="{Binding Source={x:Reference StepperShapeBorderThickness}, Path=Value, x:DataType=Stepper}" />
                         </FormattedString.Spans>
                     </FormattedString>
                 </Label.FormattedText>
@@ -391,7 +391,7 @@
                 MaximumRating="5"
                 Rating="2.5"
                 SemanticProperties.Description="A RatingView showing the shape border thickness changes."
-                ShapeBorderThickness="{Binding Source={x:Reference StepperShapeBorderThickness}, Path=Value}" />
+                ShapeBorderThickness="{Binding Source={x:Reference StepperShapeBorderThickness}, Path=Value, x:DataType=Stepper}" />
 
             <Grid
                 Grid.Row="26"
@@ -427,7 +427,7 @@
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 HorizontalOptions="Center"
-                IsReadOnly="{Binding Source={x:Reference RatingViewIsReadOnly}, Path=IsChecked}"
+                IsReadOnly="{Binding Source={x:Reference RatingViewIsReadOnly}, Path=IsChecked, x:DataType=CheckBox}"
                 MaximumRating="5"
                 Rating="2.5"
                 SemanticProperties.Description="A RatingView showing the IsReadOnly changes." />
@@ -576,7 +576,7 @@
                 <Label.FormattedText>
                     <FormattedString>
                         <Span Text=": " />
-                        <Span Text="{Binding Source={x:Reference RatingRatingView}, Path=Value, StringFormat='{0:F2}'}" />
+                        <Span Text="{Binding Source={x:Reference RatingRatingView}, Path=Value, x:DataType=Slider, StringFormat='{0:F2}'}" />
                     </FormattedString>
                 </Label.FormattedText>
             </Label>
@@ -597,7 +597,7 @@
                 IsReadOnly="False"
                 ItemShapeSize="30"
                 MaximumRating="7"
-                Rating="{Binding Source={x:Reference RatingRatingView}, Path=Value}"
+                Rating="{Binding Source={x:Reference RatingRatingView}, Path=Value, x:DataType=Slider}"
                 RatingFill="Shape"
                 SemanticProperties.Description="A RatingView sample showing the rating changes and the fill type of 'ItemShape'."
                 ShapeBorderColor="Grey"
@@ -621,7 +621,7 @@
                 IsReadOnly="False"
                 ItemShapeSize="30"
                 MaximumRating="7"
-                Rating="{Binding Source={x:Reference RatingRatingView}, Path=Value}"
+                Rating="{Binding Source={x:Reference RatingRatingView}, Path=Value, x:DataType=Slider}"
                 RatingFill="Item"
                 SemanticProperties.Description="A RatingView sample showing the rating changes and the fill type of 'Item'."
                 ShapeBorderColor="Grey"
@@ -705,7 +705,7 @@
                 <Label.FormattedText>
                     <FormattedString>
                         <Span Text=": " />
-                        <Span Text="{Binding Source={x:Reference StepperSpacing}, Path=Value, Mode=OneWay}" />
+                        <Span Text="{Binding Source={x:Reference StepperSpacing}, Path=Value, x:DataType=Stepper, Mode=OneWay}" />
                     </FormattedString>
                 </Label.FormattedText>
             </Label>
@@ -716,7 +716,7 @@
                 MaximumRating="5"
                 Rating="2.5"
                 SemanticProperties.Description="A RatingView sample showing the spacing changes."
-                Spacing="{Binding Source={x:Reference StepperSpacing}, Path=Value, Mode=OneWay}"
+                Spacing="{Binding Source={x:Reference StepperSpacing}, Path=Value, x:DataType=Stepper, Mode=OneWay}"
                 VerticalOptions="Center" />
         </Grid>
     </ScrollView>
