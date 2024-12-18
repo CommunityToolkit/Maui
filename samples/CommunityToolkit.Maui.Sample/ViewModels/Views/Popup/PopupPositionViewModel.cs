@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public partial class PopupPositionViewModel : BaseViewModel
 {
-	static Page Page => Application.Current?.MainPage ?? throw new NullReferenceException();
+	static Page Page => Application.Current?.Windows[0].Page ?? throw new InvalidOperationException("MainPage cannot be null");
 
 	[RelayCommand]
 	static void DisplayPopup(PopupPosition position)

@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.Extensions;
+namespace CommunityToolkit.Maui.Extensions;
 
 // Since MediaElement can't access .NET MAUI internals we have to copy this code here
 // https://github.com/dotnet/maui/blob/main/src/Controls/src/Core/Platform/PageExtensions.cs
@@ -16,7 +16,7 @@ static class PageExtensions
 			return GetCurrentPage(flyoutPage.Detail);
 		}
 
-		if (currentPage is Shell shell && shell.CurrentItem?.CurrentItem is IShellSectionController shellSectionController)
+		if (currentPage is Shell { CurrentItem.CurrentItem: IShellSectionController shellSectionController })
 		{
 			return shellSectionController.PresentedPage;
 		}
@@ -31,7 +31,7 @@ static class PageExtensions
 
 	internal record struct ParentWindow
 	{
-		static Page CurrentPage => GetCurrentPage(Application.Current?.MainPage ?? throw new InvalidOperationException($"{nameof(Application.Current.MainPage)} cannot be null."));
+		static Page CurrentPage => GetCurrentPage(Application.Current?.Windows[0].Page ?? throw new InvalidOperationException($"{nameof(Page)} cannot be null."));
 		/// <summary>
 		/// Checks if the parent window is null.
 		/// </summary>
@@ -47,11 +47,8 @@ static class PageExtensions
 				{
 					return false;
 				}
-				if (CurrentPage.GetParentWindow().Handler.PlatformView is null)
-				{
-					return false;
-				}
-				return true;
+
+				return CurrentPage.GetParentWindow().Handler?.PlatformView is not null;
 			}
 		}
 	}

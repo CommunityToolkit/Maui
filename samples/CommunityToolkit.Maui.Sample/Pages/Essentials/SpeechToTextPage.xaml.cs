@@ -19,7 +19,8 @@ public partial class SpeechToTextPage : BasePage<SpeechToTextViewModel>
 	}
 }
 
-class PickerLocaleDisplayConverter : BaseConverterOneWay<Locale, string>
+[AcceptEmptyServiceProvider]
+partial class PickerLocaleDisplayConverter : BaseConverterOneWay<Locale, string>
 {
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
 

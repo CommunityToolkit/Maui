@@ -15,9 +15,9 @@ public class UseMauiCommunityToolkitMediaElementInitializationAnalyzerBenchmarks
 	}
 
 	[Benchmark]
-	public Task VerifyNoErrorsWhenUseMauiCommunityToolkitMediaElementHasAdditonalWhitespace()
+	public Task VerifyNoErrorsWhenUseMauiCommunityToolkitMediaElementHasAdditionalWhitespace()
 	{
-		return useCommunityToolkitMediaElementInitializationAnalyzerTests.VerifyNoErrorsWhenUseMauiCommunityToolkitMediaElementHasAdditonalWhitespace();
+		return useCommunityToolkitMediaElementInitializationAnalyzerTests.VerifyNoErrorsWhenUseMauiCommunityToolkitMediaElementHasAdditionalWhitespace();
 	}
 
 	[Benchmark]
