@@ -5,13 +5,14 @@ using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 
 namespace CommunityToolkit.Maui.Sample.Pages;
 
-public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where TViewModel : BaseGalleryViewModel
+public abstract partial class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where TViewModel : BaseGalleryViewModel
 {
 	protected BaseGalleryPage(string title, IDeviceInfo deviceInfo, TViewModel viewModel) : base(viewModel)
 	{
 		Title = title;
 
 		Padding = 0;
+
 
 		Content = new CollectionView { SelectionMode = SelectionMode.Single }
 			.ItemTemplate(new GalleryDataTemplate(deviceInfo))
@@ -34,7 +35,7 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 		}
 	}
 
-	sealed class GalleryDataTemplate(IDeviceInfo deviceInfo) : DataTemplate(() => CreateDataTemplate(deviceInfo))
+	sealed partial class GalleryDataTemplate(IDeviceInfo deviceInfo) : DataTemplate(() => CreateDataTemplate(deviceInfo))
 	{
 		enum Row { TopPadding, Content, BottomPadding }
 		enum Column { LeftPadding, Content, RightPadding }
@@ -57,7 +58,7 @@ public abstract class BaseGalleryPage<TViewModel> : BasePage<TViewModel> where T
 			}
 		};
 
-		sealed class Card : Border
+		sealed partial class Card : Border
 		{
 			public Card()
 			{

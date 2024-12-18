@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Maps;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace CommunityToolkit.Maui.Maps;
 
 /// <summary>
 /// Maps Extensions for <see cref="MauiAppBuilder"/>
@@ -36,13 +38,15 @@ public static class AppHostBuilderExtensions
 	/// </code>
 	/// </example>
 	/// 
+	[RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
+	[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
 	public static MauiAppBuilder UseMauiCommunityToolkitMaps(this MauiAppBuilder builder, string key)
 	{
 		builder.ConfigureMauiHandlers(handlers =>
 		{
 #if WINDOWS
-			CommunityToolkit.Maui.Maps.Handlers.MapHandlerWindows.MapsKey = key;
-			handlers.AddHandler<Microsoft.Maui.Controls.Maps.Map, CommunityToolkit.Maui.Maps.Handlers.MapHandlerWindows>();
+			Handlers.MapHandlerWindows.MapsKey = key;
+			IMauiHandlersCollection mauiHandlersCollection = handlers.AddHandler<Microsoft.Maui.Controls.Maps.Map, Handlers.MapHandlerWindows>();
 #endif
 		});
 

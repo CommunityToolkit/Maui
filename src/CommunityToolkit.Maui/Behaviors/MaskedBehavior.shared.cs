@@ -1,13 +1,12 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>
 /// The MaskedBehavior is a behavior that allows the user to define an input mask for data entry. Adding this behavior to an <see cref="InputView"/> (i.e. <see cref="Entry"/>) control will force the user to only input values matching a given mask. Examples of its usage include input of a credit card number or a phone number.
 /// </summary>
-public class MaskedBehavior : BaseBehavior<InputView>, IDisposable
+public partial class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 {
 	/// <summary>
 	/// BindableProperty for the <see cref="Mask"/> property.

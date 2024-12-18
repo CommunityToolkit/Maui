@@ -42,6 +42,7 @@
             VerticalOptions="Start"
             TextColor="Red"
             FontSize="25"
+            x:DataType="mct:EmailValidationBehavior"
             IsVisible="{Binding IsNotValid, Source={x:Reference EmailValidator}}"/>
     </VerticalStackLayout>
 

@@ -1,11 +1,13 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>
 /// Converts an <see cref="int"/> index to corresponding array item and vice versa.
 /// </summary>
-public class IndexToArrayItemConverter : BaseConverter<int, object?, Array>
+[AcceptEmptyServiceProvider]
+public partial class IndexToArrayItemConverter : BaseConverter<int, object?, Array>
 {
 	/// <inheritdoc/>
 	public override object? DefaultConvertReturnValue { get; set; } = null;
@@ -20,7 +22,7 @@ public class IndexToArrayItemConverter : BaseConverter<int, object?, Array>
 	/// <param name="parameter">The items array.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>The item from the array that corresponds to passed index.</returns>
-	public override object? ConvertFrom(int value, Array parameter, CultureInfo? culture = null)
+	public override object? ConvertFrom(int value, [AllowNull] Array parameter, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(parameter);
 
@@ -33,10 +35,10 @@ public class IndexToArrayItemConverter : BaseConverter<int, object?, Array>
 	}
 
 	/// <summary>
-	/// Converts back an array item to corresponding index of the item in the array.
+	/// Converts back an array item to the corresponding index of the item in the array.
 	/// </summary>
 	/// <param name="value">The item from the array.</param>
-	/// <param name="parameter">The items array.</param>
+	/// <param name="parameter">The item array.</param>
 	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
 	/// <returns>The index of the item from the array.</returns>
 	public override int ConvertBackTo(object? value, Array parameter, CultureInfo? culture = null)

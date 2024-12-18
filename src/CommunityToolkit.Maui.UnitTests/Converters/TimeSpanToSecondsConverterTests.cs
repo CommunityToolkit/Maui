@@ -5,13 +5,21 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class TimeSpanToSecondsConverterTests : BaseConverterTest<TimeSpanToSecondsConverter>
 {
-	public static readonly IReadOnlyList<object[]> ValidData =
-	[
-		[TimeSpan.MaxValue, 922337203685.4775],
-		[TimeSpan.FromSeconds(100), 100],
-		[new TimeSpan(), 0],
-		[TimeSpan.MinValue, -922337203685.4775],
-	];
+	public static readonly TheoryData<TimeSpan, double> ValidData = new()
+	{
+		{
+			TimeSpan.MaxValue, 922337203685.4775
+		},
+		{
+			TimeSpan.FromSeconds(100), 100
+		},
+		{
+			new TimeSpan(), 0
+		},
+		{
+			TimeSpan.MinValue, -922337203685.4775
+		},
+	};
 
 	[Theory]
 	[MemberData(nameof(ValidData))]

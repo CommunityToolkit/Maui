@@ -4,7 +4,7 @@
 /// This a basic implementation implementing <see cref="LazyView"/>
 /// </summary>
 /// <typeparam name="TView">Any <see cref="View"/></typeparam>
-public class LazyView<TView> : LazyView where TView : View, new()
+public partial class LazyView<TView> : LazyView where TView : View, new()
 {
 	/// <summary>
 	/// This method initializes <see cref="LazyView{TView}"/>.
@@ -55,7 +55,7 @@ public abstract class LazyView : ContentView
 	}
 
 	/// <summary>
-	/// This method change the value of the <see cref="HasLazyViewLoaded"/> property.
+	/// This method changes the value of the <see cref="HasLazyViewLoaded"/> property.
 	/// </summary>
 	/// <param name="hasLoaded"></param>
 	protected void SetHasLazyViewLoaded(bool hasLoaded) => SetValue(HasLazyViewLoadedPropertyKey, hasLoaded);

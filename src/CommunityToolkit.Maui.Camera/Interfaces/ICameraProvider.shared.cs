@@ -13,7 +13,7 @@ public interface ICameraProvider
 	/// <remarks>
 	/// List is initialized using <see cref="RefreshAvailableCameras(CancellationToken)"/>
 	/// </remarks>
-	public IReadOnlyList<CameraInfo>? AvailableCameras { get; }
+	IReadOnlyList<CameraInfo>? AvailableCameras { get; }
 
 	/// <summary>
 	/// Assigns <see cref="AvailableCameras"/> with the cameras available on device
@@ -21,5 +21,5 @@ public interface ICameraProvider
 	/// <param name="token"></param>
 	/// <returns></returns>
 	[MemberNotNull(nameof(AvailableCameras))]
-	public ValueTask RefreshAvailableCameras(CancellationToken token);
+	ValueTask RefreshAvailableCameras(CancellationToken token);
 }

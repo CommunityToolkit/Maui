@@ -12,7 +12,7 @@ using Java.Lang;
 
 namespace CommunityToolkit.Maui.Core;
 
-[SupportedOSPlatform("android21.0")]
+[SupportedOSPlatform("Android21.0")]
 partial class CameraProvider
 {
 	readonly Context context = Android.App.Application.Context;
@@ -46,7 +46,7 @@ partial class CameraProvider
 				{
 					var streamConfigMap = camera2Info.GetCameraCharacteristic(CameraCharacteristics.ScalerStreamConfigurationMap) as StreamConfigurationMap;
 
-					if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.M)
+					if (OperatingSystem.IsAndroidVersionAtLeast(23))
 					{
 						var highResolutions = streamConfigMap?.GetHighResolutionOutputSizes((int)ImageFormatType.Jpeg);
 						if (highResolutions is not null)

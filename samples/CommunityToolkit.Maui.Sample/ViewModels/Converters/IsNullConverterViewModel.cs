@@ -5,14 +5,14 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 public partial class IsNullConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	int intCheck;
+	public partial int IntCheck { get; set; }
 
 	[ObservableProperty]
-	List<string>? listCheck;
+	public partial List<string>? ListCheck { get; set; }
 
 	[ObservableProperty]
-	string? stringCheck;
+	public partial string? StringCheck { get; set; }
 
 	[ObservableProperty]
-	object? objectCheck;
+	public partial object? ObjectCheck { get; set; }
 }

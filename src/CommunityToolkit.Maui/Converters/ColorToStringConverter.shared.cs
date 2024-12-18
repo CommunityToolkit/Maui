@@ -7,7 +7,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/>.
 /// </summary>
-public class ColorToRgbStringConverter : BaseConverter<Color, string>
+[AcceptEmptyServiceProvider]
+public partial class ColorToRgbStringConverter : BaseConverter<Color, string>
 {
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
@@ -37,7 +38,8 @@ public class ColorToRgbStringConverter : BaseConverter<Color, string>
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/>.
 /// </summary>
-public class ColorToRgbaStringConverter : BaseConverter<Color, string>
+[AcceptEmptyServiceProvider]
+public partial class ColorToRgbaStringConverter : BaseConverter<Color, string>
 {
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
@@ -48,12 +50,7 @@ public class ColorToRgbaStringConverter : BaseConverter<Color, string>
 	/// <inheritdoc/>
 	public override Color ConvertBackTo(string value, CultureInfo? culture)
 	{
-		if (Color.TryParse(value, out Color color))
-		{
-			return color;
-		}
-
-		return DefaultConvertBackReturnValue;
+		return Color.TryParse(value, out var color) ? color : DefaultConvertBackReturnValue;
 	}
 
 	/// <inheritdoc/>
@@ -67,7 +64,8 @@ public class ColorToRgbaStringConverter : BaseConverter<Color, string>
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/> and vice-versa.
 /// </summary>
-public class ColorToHexRgbStringConverter : BaseConverter<Color, string>
+[AcceptEmptyServiceProvider]
+public partial class ColorToHexRgbStringConverter : BaseConverter<Color, string>
 {
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
@@ -93,7 +91,8 @@ public class ColorToHexRgbStringConverter : BaseConverter<Color, string>
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/> and vice-versa.
 /// </summary>
-public class ColorToHexRgbaStringConverter : BaseConverter<Color, string>
+[AcceptEmptyServiceProvider]
+public partial class ColorToHexRgbaStringConverter : BaseConverter<Color, string>
 {
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
@@ -119,7 +118,8 @@ public class ColorToHexRgbaStringConverter : BaseConverter<Color, string>
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/> and vice-versa.
 /// </summary>
-public class ColorToHexArgbStringConverter : BaseConverter<Color, string>
+[AcceptEmptyServiceProvider]
+public partial class ColorToHexArgbStringConverter : BaseConverter<Color, string>
 {
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
@@ -145,7 +145,8 @@ public class ColorToHexArgbStringConverter : BaseConverter<Color, string>
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/>.
 /// </summary>
-public class ColorToCmykStringConverter : BaseConverterOneWay<Color, string>
+[AcceptEmptyServiceProvider]
+public partial class ColorToCmykStringConverter : BaseConverterOneWay<Color, string>
 {
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
@@ -161,7 +162,8 @@ public class ColorToCmykStringConverter : BaseConverterOneWay<Color, string>
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/>.
 /// </summary>
-public class ColorToCmykaStringConverter : BaseConverterOneWay<Color, string>
+[AcceptEmptyServiceProvider]
+public partial class ColorToCmykaStringConverter : BaseConverterOneWay<Color, string>
 {
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
@@ -177,7 +179,8 @@ public class ColorToCmykaStringConverter : BaseConverterOneWay<Color, string>
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/>.
 /// </summary>
-public class ColorToHslStringConverter : BaseConverterOneWay<Color, string>
+[AcceptEmptyServiceProvider]
+public partial class ColorToHslStringConverter : BaseConverterOneWay<Color, string>
 {
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
@@ -193,7 +196,8 @@ public class ColorToHslStringConverter : BaseConverterOneWay<Color, string>
 /// <summary>
 /// Converts the incoming value from <see cref="Color"/> and returns the object of a type <see cref="string"/>.
 /// </summary>
-public class ColorToHslaStringConverter : BaseConverterOneWay<Color, string>
+[AcceptEmptyServiceProvider]
+public partial class ColorToHslaStringConverter : BaseConverterOneWay<Color, string>
 {
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;

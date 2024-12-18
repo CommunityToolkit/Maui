@@ -4,10 +4,14 @@ namespace CommunityToolkit.Maui.Sample;
 
 public partial class App : Application
 {
-	public App()
+	readonly AppShell appShell;
+
+	public App(AppShell appShell)
 	{
 		InitializeComponent();
 
-		MainPage = new AppShell();
+		this.appShell = appShell;
 	}
+
+	protected override Window CreateWindow(IActivationState? activationState) => new(appShell);
 }

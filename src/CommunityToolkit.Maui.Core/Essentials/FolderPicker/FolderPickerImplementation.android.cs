@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.Versioning;
 using System.Web;
 using Android.Content;
 using Android.Provider;
@@ -11,9 +12,10 @@ using AndroidUri = Android.Net.Uri;
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc />
+[SupportedOSPlatform("Android26.0")]
 public sealed partial class FolderPickerImplementation : IFolderPicker
 {
-	async Task<Folder> InternalPickAsync(string initialPath, CancellationToken cancellationToken)
+	static async Task<Folder> InternalPickAsync(string initialPath, CancellationToken cancellationToken)
 	{
 		if (!OperatingSystem.IsAndroidVersionAtLeast(26) && !string.IsNullOrEmpty(initialPath))
 		{
@@ -52,7 +54,7 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 		}
 	}
 
-	Task<Folder> InternalPickAsync(CancellationToken cancellationToken)
+	static Task<Folder> InternalPickAsync(CancellationToken cancellationToken)
 	{
 		return InternalPickAsync(AndroidPathExtensions.GetExternalDirectory(), cancellationToken);
 	}

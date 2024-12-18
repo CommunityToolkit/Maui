@@ -210,7 +210,7 @@ public class ValidationBehaviorTests() : BaseBehaviorTest<ValidationBehavior, Vi
 
 		view.Behaviors.Add(behavior);
 
-		Assert.IsAssignableFrom<MockValidationBehavior>(Assert.Single(view.Behaviors));
+		Assert.IsType<MockValidationBehavior>(Assert.Single(view.Behaviors), exactMatch: false);
 
 		view.Behaviors.Remove(behavior);
 
@@ -225,7 +225,7 @@ public class ValidationBehaviorTests() : BaseBehaviorTest<ValidationBehavior, Vi
 
 		view.Behaviors.Add(behavior);
 
-		Assert.IsAssignableFrom<MockValidationBehavior>(Assert.Single(view.Behaviors));
+		Assert.IsType<MockValidationBehavior>(Assert.Single(view.Behaviors), exactMatch: false);
 
 		view.Behaviors.Remove(behavior);
 

@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.ApplicationModel;
-using CommunityToolkit.Maui.Maps;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Media;
 using CommunityToolkit.Maui.Sample.Models;
@@ -34,6 +33,7 @@ using Microsoft.Maui.LifecycleEvents;
 using Polly;
 
 #if WINDOWS10_0_17763_0_OR_GREATER
+using CommunityToolkit.Maui.Maps;
 using Microsoft.UI;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Windowing;
@@ -47,6 +47,7 @@ namespace CommunityToolkit.Maui.Sample;
 
 public static class MauiProgram
 {
+	[RequiresUnreferencedCode($"{nameof(CommunityToolkit.Maui.Views.Expander)} and  {nameof(TouchBehaviorCollectionViewMultipleSelectionPage)} are not type safe")]
 	public static MauiApp CreateMauiApp()
 	{
 		var builder = MauiApp.CreateBuilder()
@@ -68,8 +69,16 @@ public static class MauiProgram
 								.UseMauiCommunityToolkitCamera()
 								.UseMauiCommunityToolkitMediaElement()
 
+								.ConfigureMauiHandlers(handlers =>
+								{
+#if IOS || MACCATALYST
+									handlers.AddHandler<CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
+									handlers.AddHandler<CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
+#endif
+								})
+
 #if WINDOWS
-								.UseMauiCommunityToolkitMaps("KEY") // You should add your own key here from bingmapsportal.com
+								.UseMauiCommunityToolkitMaps("KEY") // You should add your own key here from https://bingmapsportal.com
 #else
 								.UseMauiMaps()
 #endif
@@ -112,6 +121,7 @@ public static class MauiProgram
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>()
 						.AddStandardResilienceHandler(static options => options.Retry = new MobileHttpRetryStrategyOptions());
 
+		builder.Services.AddSingleton<AppShell>();
 		builder.Services.AddSingleton<PopupSizeConstants>();
 
 		RegisterViewsAndViewModels(builder.Services);
@@ -124,6 +134,7 @@ public static class MauiProgram
 		return builder.Build();
 	}
 
+	[RequiresUnreferencedCode("Calls CommunityToolkit.Maui.Sample.MauiProgram.AddTransientWithShellRoute<TPage, TViewModel>()")]
 	static void RegisterViewsAndViewModels(in IServiceCollection services)
 	{
 		// Add Gallery Pages + ViewModels

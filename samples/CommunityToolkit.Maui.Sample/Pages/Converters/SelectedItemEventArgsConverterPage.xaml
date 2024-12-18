@@ -26,7 +26,9 @@
             TextColor="{StaticResource NormalLabelTextColor}"
             Margin="0, 0, 0, 20"/>
 
-        <ListView BackgroundColor="Transparent"
+        <ListView 
+            x:Name="ListView"
+            BackgroundColor="Transparent"
             SelectedItem="{Binding ItemSelected, Mode=TwoWay}"
             ItemsSource="{Binding StringItemSource, Mode=OneWay}">
             <ListView.ItemTemplate>
@@ -42,6 +44,7 @@
             <ListView.Behaviors>
                 <mct:EventToCommandBehavior 
                     EventName="ItemSelected"
+                    BindingContext="{Binding Path=BindingContext, Source={x:Reference ListView},x:DataType=ListView}"
                     Command="{Binding HandleItemSelectedCommand}"
                     CommandParameter="{Binding ItemSelected}"/>
             </ListView.Behaviors>

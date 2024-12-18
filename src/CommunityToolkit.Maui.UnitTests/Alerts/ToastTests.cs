@@ -12,7 +12,7 @@ public class ToastTests : BaseTest
 
 	public ToastTests()
 	{
-		Assert.IsAssignableFrom<IAlert>(toast);
+		Assert.IsType<IAlert>(toast, exactMatch: false);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]

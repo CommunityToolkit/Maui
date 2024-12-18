@@ -11,10 +11,10 @@ public partial class IconTintColorBehaviorViewModel : BaseViewModel
 	static readonly IEnumerator<Color?> toggleableColorsEnumerator = new List<Color?> { Colors.Red, Colors.Green, null }.GetEnumerator();
 
 	[ObservableProperty]
-	string toggleableImageSource = shieldImageFileName;
+	public partial string ToggleableImageSource { get; private set; } = shieldImageFileName;
 
 	[ObservableProperty]
-	Color? toggleableIconTintColor = toggleableColorsEnumerator.Current;
+	public partial Color? ToggleableIconTintColor { get; private set; } = toggleableColorsEnumerator.Current;
 
 	[RelayCommand]
 	void ToggleImageButton()

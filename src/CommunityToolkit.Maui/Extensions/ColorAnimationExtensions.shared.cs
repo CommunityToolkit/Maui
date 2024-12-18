@@ -3,7 +3,7 @@
 namespace CommunityToolkit.Maui.Extensions;
 
 /// <summary>
-/// Extension methods for Microsoft.Maui.Graphics.Color animations
+/// Extension methods for <see cref="Microsoft.Maui.Graphics.Color"/> animations
 /// </summary>
 public static partial class ColorAnimationExtensions
 {
@@ -41,7 +41,7 @@ public static partial class ColorAnimationExtensions
 		}
 		catch (ArgumentException aex)
 		{
-			//When creating an Animation too early in the lifecycle of the Page, i.e. in the OnAppearing method,
+			//When creating an Animation too early in the lifecycle of the Page, i.e., in the OnAppearing method,
 			//the Page might not have an 'IAnimationManager' yet, resulting in an ArgumentException.
 			System.Diagnostics.Trace.WriteLine($"{aex.GetType().Name} thrown in {typeof(ColorAnimationExtensions).FullName}: {aex.Message}");
 			animationCompletionSource.SetResult(false);

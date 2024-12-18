@@ -2,6 +2,7 @@ using CommunityToolkit.Maui.Core.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.Primitives;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -21,10 +22,9 @@ public static class PopupExtensions
 		ArgumentNullException.ThrowIfNull(popup.Content);
 
 		var color = popup.Color ?? Colors.Transparent;
-		if (mauiPopup.Child is FrameworkElement content)
+		if (mauiPopup.Child is Panel panel)
 		{
-			var backgroundProperty = content.GetType().GetProperty("Background");
-			backgroundProperty?.SetValue(content, color.ToPlatform());
+			panel.Background = color.ToPlatform();
 		}
 	}
 

@@ -22,11 +22,11 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
 		=> CSharpCodeFixVerifier<TAnalyzer, TCodeFix, DefaultVerifier>.Diagnostic(descriptor);
 
 	/// <inheritdoc cref="CodeFixVerifier{TAnalyzer, TCodeFix, TTest, TVerifier}.VerifyAnalyzerAsync(string, DiagnosticResult[])"/>
-	public static async Task VerifyAnalyzerAsync(string source, Type[] assembliesUnderTest, params DiagnosticResult[] expected)
+	public static async Task VerifyAnalyzerAsync(string source, Type[] assembliesUnderTest, params IReadOnlyList<DiagnosticResult> expected)
 	{
 		var test = new Test(assembliesUnderTest)
 		{
-			TestCode = source,
+			TestCode = source
 		};
 
 		test.ExpectedDiagnostics.AddRange(expected);

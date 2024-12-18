@@ -4,11 +4,11 @@ using CommunityToolkit.Maui.Views;
 namespace CommunityToolkit.Maui;
 
 /// <summary>
-/// List based implementation that manages the presentation of popups which will return the last item as the current popup.
+/// List-based implementation that manages the presentation of popups which will return the last item as the current popup.
 /// </summary>
 public class PopupLifecycleController : IPopupLifecycleController
 {
-	readonly List<WeakReference<Popup>> currentPopups = new();
+	readonly List<WeakReference<Popup>> currentPopups = [];
 
 	/// <inheritdoc cref="IPopupLifecycleController.GetCurrentPopup"/>
 	public Popup? GetCurrentPopup()

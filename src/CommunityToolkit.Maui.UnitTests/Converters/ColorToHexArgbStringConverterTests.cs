@@ -2,43 +2,108 @@
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
+
 public class ColorToHexArgbStringConverterTests : BaseConverterTest<ColorToHexArgbStringConverter>
 {
-	public static readonly IReadOnlyList<object[]> ValidInputData =
-	[
-		[int.MinValue, int.MinValue, int.MinValue, int.MinValue, "#00000000"],
-		[int.MaxValue, int.MinValue, int.MinValue, int.MinValue, "#FF000000"],
-		[int.MinValue, 0, 0, 0, "#00000000"],
-		[-0.5, 0, 0, 0, "#00000000"],
-		[0, 0, 0, 0, "#00000000"],
-		[0.5, 0, 0, 0, "#7F000000"],
-		[1, 0, 0, 0, "#FF000000"],
-		[int.MaxValue, 0, 0, 0, "#FF000000"],
-		[int.MinValue, int.MaxValue, int.MaxValue, int.MaxValue, "#00FFFFFF"],
-		[int.MaxValue, int.MaxValue, int.MaxValue, int.MaxValue, "#FFFFFFFF"],
-		[0, 1, 0, 0, "#00FF0000"],
-		[1, 1, 0, 0, "#FFFF0000"],
-		[0, 1, 1, 0, "#00FFFF00"],
-		[1, 1, 1, 0, "#FFFFFF00"],
-		[0, 0, 1, 0, "#0000FF00"],
-		[1, 0, 1, 0, "#FF00FF00"],
-		[0, 0, 1, 1, "#0000FFFF"],
-		[1, 0, 1, 1, "#FF00FFFF"],
-		[0, 1, 0, 1, "#00FF00FF"],
-		[1, 1, 0, 1, "#FFFF00FF"],
-		[0, 0, 0.5, 1, "#00007FFF"],
-		[0, 0, 0.5, 0, "#00007F00"],
-		[0.5, 0.5, 0.5, 1, "#7F7F7FFF"],
-		[0.5, 0.5, 0.5, 0, "#7F7F7F00"],
-		[0.25, 0.25, 0.25, 1, "#3F3F3FFF"],
-		[0.25, 0.25, 0.25, 0, "#3F3F3F00"],
-		[0.25, 1, 0.25, 1, "#3FFF3FFF"],
-		[0.25, 1, 0.25, 0, "#3FFF3F00"],
-		[0.75, 1, 0.25, 1, "#BFFF3FFF"],
-		[0.75, 1, 0.25, 0, "#BFFF3F00"],
-		[0.75, 0, 1, 1, "#BF00FFFF"],
-		[0.75, 0, 1, 0, "#BF00FF00"]
-	];
+	public static readonly TheoryData<float, float, float, float, string> ValidInputData = new()
+	{
+		{
+			int.MinValue, int.MinValue, int.MinValue, int.MinValue, "#00000000"
+		},
+		{
+			int.MaxValue, int.MinValue, int.MinValue, int.MinValue, "#FF000000"
+		},
+		{
+			int.MinValue, 0, 0, 0, "#00000000"
+		},
+		{
+			-0.5f, 0, 0, 0, "#00000000"
+		},
+		{
+			0, 0, 0, 0, "#00000000"
+		},
+		{
+			0.5f, 0, 0, 0, "#7F000000"
+		},
+		{
+			1, 0, 0, 0, "#FF000000"
+		},
+		{
+			int.MaxValue, 0, 0, 0, "#FF000000"
+		},
+		{
+			int.MinValue, int.MaxValue, int.MaxValue, int.MaxValue, "#00FFFFFF"
+		},
+		{
+			int.MaxValue, int.MaxValue, int.MaxValue, int.MaxValue, "#FFFFFFFF"
+		},
+		{
+			0, 1, 0, 0, "#00FF0000"
+		},
+		{
+			1, 1, 0, 0, "#FFFF0000"
+		},
+		{
+			0, 1, 1, 0, "#00FFFF00"
+		},
+		{
+			1, 1, 1, 0, "#FFFFFF00"
+		},
+		{
+			0, 0, 1, 0, "#0000FF00"
+		},
+		{
+			1, 0, 1, 0, "#FF00FF00"
+		},
+		{
+			0, 0, 1, 1, "#0000FFFF"
+		},
+		{
+			1, 0, 1, 1, "#FF00FFFF"
+		},
+		{
+			0, 1, 0, 1, "#00FF00FF"
+		},
+		{
+			1, 1, 0, 1, "#FFFF00FF"
+		},
+		{
+			0, 0, 0.5f, 1, "#00007FFF"
+		},
+		{
+			0, 0, 0.5f, 0, "#00007F00"
+		},
+		{
+			0.5f, 0.5f, 0.5f, 1, "#7F7F7FFF"
+		},
+		{
+			0.5f, 0.5f, 0.5f, 0, "#7F7F7F00"
+		},
+		{
+			0.25f, 0.25f, 0.25f, 1, "#3F3F3FFF"
+		},
+		{
+			0.25f, 0.25f, 0.25f, 0, "#3F3F3F00"
+		},
+		{
+			0.25f, 1, 0.25f, 1, "#3FFF3FFF"
+		},
+		{
+			0.25f, 1, 0.25f, 0, "#3FFF3F00"
+		},
+		{
+			0.75f, 1, 0.25f, 1, "#BFFF3FFF"
+		},
+		{
+			0.75f, 1, 0.25f, 0, "#BFFF3F00"
+		},
+		{
+			0.75f, 0, 1, 1, "#BF00FFFF"
+		},
+		{
+			0.75f, 0, 1, 0, "#BF00FF00"
+		}
+	};
 
 	[Theory]
 	[MemberData(nameof(ValidInputData))]

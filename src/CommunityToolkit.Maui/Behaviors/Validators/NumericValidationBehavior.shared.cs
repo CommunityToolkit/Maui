@@ -1,11 +1,13 @@
-﻿using System.Globalization;
-
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>
 /// The <see cref="NumericValidationBehavior"/> is a behavior that allows the user to determine if text input is a valid numeric value. For example, an <see cref="Entry"/> control can be styled differently depending on whether a valid or an invalid numeric input is provided. Additional properties handling validation are inherited from <see cref="ValidationBehavior"/>.
 /// </summary>
-public class NumericValidationBehavior : ValidationBehavior<string>
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+[RequiresUnreferencedCode($"{nameof(NumericValidationBehavior)} is not trim safe because it uses bindings with string paths.")]
+public partial class NumericValidationBehavior : ValidationBehavior<string>
 {
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="MinimumValue"/> property.
@@ -77,13 +79,13 @@ public class NumericValidationBehavior : ValidationBehavior<string>
 		ArgumentNullException.ThrowIfNull(value);
 
 		if (!(double.TryParse(value, out var numeric)
-				&& numeric >= MinimumValue
-				&& numeric <= MaximumValue))
+			&& numeric >= MinimumValue
+			&& numeric <= MaximumValue))
 		{
 			return new ValueTask<bool>(false);
 		}
 
-		var decimalDelimiterIndex = value.IndexOf(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
+		var decimalDelimiterIndex = value.IndexOf(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator, StringComparison.Ordinal);
 		var hasDecimalDelimiter = decimalDelimiterIndex >= 0;
 
 		// If MaximumDecimalPlaces equals zero, ".5" or "14." should be considered as invalid inputs.
@@ -93,7 +95,7 @@ public class NumericValidationBehavior : ValidationBehavior<string>
 		}
 
 		var decimalPlaces = hasDecimalDelimiter
-			? value.Substring(decimalDelimiterIndex + 1, value.Length - decimalDelimiterIndex - 1).Length
+			? value.Substring(decimalDelimiterIndex + 1).Length
 			: 0;
 
 		return new ValueTask<bool>(decimalPlaces >= MinimumDecimalPlaces && decimalPlaces <= MaximumDecimalPlaces);

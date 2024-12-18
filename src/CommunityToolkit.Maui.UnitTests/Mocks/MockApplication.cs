@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Microsoft.Maui.Controls.Internals;
+﻿using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;

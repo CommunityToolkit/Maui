@@ -92,9 +92,6 @@ public partial class TouchBehavior
 	{
 		readonly TouchBehavior behavior;
 
-		float? defaultRadius;
-		float? defaultShadowRadius;
-		float? defaultShadowOpacity;
 		CGPoint? startPoint;
 
 		bool isCanceled;
@@ -105,8 +102,6 @@ public partial class TouchBehavior
 			CancelsTouchesInView = false;
 			Delegate = new TouchUITapGestureRecognizerDelegate();
 		}
-
-		public bool IsButton { get; set; }
 
 		public override void TouchesBegan(NSSet touches, UIEvent evt)
 		{
@@ -191,6 +186,16 @@ public partial class TouchBehavior
 			}
 		}
 
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				Delegate.Dispose();
+			}
+
+			base.Dispose(disposing);
+		}
+
 		void HandleTouch(TouchStatus status, TouchInteractionStatus? interactionStatus = null)
 		{
 			if (isCanceled || !behavior.IsEnabled)
@@ -210,16 +215,6 @@ public partial class TouchBehavior
 			{
 				behavior.HandleUserInteraction(interactionStatus.Value);
 			}
-		}
-
-		protected override void Dispose(bool disposing)
-		{
-			if (disposing)
-			{
-				Delegate.Dispose();
-			}
-
-			base.Dispose(disposing);
 		}
 
 		CGPoint? GetTouchPoint(NSSet touches)

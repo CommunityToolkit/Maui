@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Markup;
@@ -5,7 +6,8 @@ using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
-public class TouchBehaviorCollectionViewMultipleSelectionPage : BasePage<TouchBehaviorCollectionViewMultipleSelectionViewModel>
+[RequiresUnreferencedCode("Calls CommunityToolkit.Maui.Markup.BindableObjectExtensions.Bind<TBindable>(BindableProperty, String, BindingMode, IValueConverter, Object, String, Object, Object, Object)")]
+public partial class TouchBehaviorCollectionViewMultipleSelectionPage : BasePage<TouchBehaviorCollectionViewMultipleSelectionViewModel>
 {
 	readonly CollectionView collectionView;
 
@@ -36,8 +38,11 @@ public class TouchBehaviorCollectionViewMultipleSelectionPage : BasePage<TouchBe
 		await Toast.Make($"Number of Creators Selected: {collectionView.SelectedItems?.Count ?? 0}").Show();
 	}
 
+
+	[RequiresUnreferencedCode("Calls CommunityToolkit.Maui.Markup.BindableObjectExtensions.Bind<TBindable>(BindableProperty, String, BindingMode, IValueConverter, Object, String, Object, Object, Object)")]
 	sealed class CreatorsDataTemplate(TouchBehaviorCollectionViewMultipleSelectionViewModel viewModel) : DataTemplate(() => CreateLayout(viewModel))
 	{
+		[RequiresUnreferencedCode("Calls CommunityToolkit.Maui.Markup.BindableObjectExtensions.Bind<TBindable>(BindableProperty, String, BindingMode, IValueConverter, Object, String, Object, Object, Object)")]
 		static VerticalStackLayout CreateLayout(TouchBehaviorCollectionViewMultipleSelectionViewModel viewModel) => new VerticalStackLayout
 		{
 			Children =
@@ -54,10 +59,14 @@ public class TouchBehaviorCollectionViewMultipleSelectionPage : BasePage<TouchBe
 						getter: static (ContentCreator creator) => creator.Image,
 						mode: BindingMode.OneTime)
 			}
-		}.Behaviors(new TouchBehavior()
-			.Bind(TouchBehavior.CommandProperty,
-				getter: static vm => vm.RowTappedCommand,
-				source: viewModel)
-			.Bind(TouchBehavior.CommandParameterProperty));
+		}.Assign(out VerticalStackLayout stackLayout)
+		 .Behaviors(new TouchBehavior()
+			 .Bind(BindableObject.BindingContextProperty,
+				 getter: static (VerticalStackLayout layout) => layout.BindingContext,
+				 source: stackLayout)
+			 .Bind(TouchBehavior.CommandProperty,
+				 getter: static vm => vm.RowTappedCommand,
+				 source: viewModel)
+			 .Bind(TouchBehavior.CommandParameterProperty));
 	}
 }

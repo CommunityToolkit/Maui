@@ -55,7 +55,7 @@ public interface IPopup : IElement, IVisualTreeElement, IAsynchronousHandler
 	void OnOpened();
 
 	/// <summary>
-	/// Occurs when the Popup is dismissed by a user tapping outside of the Popup.
+	/// Occurs when the Popup is dismissed by a user tapping outside the Popup.
 	/// </summary>
 	void OnDismissedByTappingOutsideOfPopup();
 }

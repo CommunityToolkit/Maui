@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Graphics;
 using Android.Media;
 using Android.OS;
 using Android.Support.V4.Media.Session;
@@ -17,6 +17,7 @@ using Resource = Microsoft.Maui.Resource;
 
 namespace CommunityToolkit.Maui.Media.Services;
 
+[SupportedOSPlatform("Android26.0")]
 [Service(Exported = false, Enabled = true, Name = "communityToolkit.maui.media.services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
 class MediaControlsService : Service
 {
@@ -75,6 +76,7 @@ class MediaControlsService : Service
 	[MemberNotNull(nameof(mediaSession))]
 	[MemberNotNull(nameof(token))]
 	[MemberNotNull(nameof(receiveUpdates))]
+	[Obsolete]
 	ValueTask StartForegroundService(Intent mediaManagerIntent, CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(mediaManagerIntent);
@@ -138,13 +140,13 @@ class MediaControlsService : Service
 			CreateNotificationChannel(notificationManager);
 		}
 
-		if (Build.VERSION.SdkInt >= BuildVersionCodes.Q)
+		if (OperatingSystem.IsAndroidVersionAtLeast(29))
 		{
 			StartForeground(1, notification.Build(), ForegroundService.TypeMediaPlayback);
 			return;
 		}
 
-		if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+		if (OperatingSystem.IsAndroidVersionAtLeast(26))
 		{
 			StartForeground(1, notification.Build());
 		}
@@ -222,6 +224,8 @@ class MediaControlsService : Service
 		Platform.CurrentActivity?.StopService(new Intent(Platform.AppContext, typeof(MediaControlsService)));
 		base.OnDestroy();
 	}
+
+	[Obsolete]
 	static void BroadcastUpdate(string receiver, string action)
 	{
 		if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
@@ -233,6 +237,7 @@ class MediaControlsService : Service
 		LocalBroadcastManager.GetInstance(Platform.AppContext).SendBroadcast(intent);
 	}
 
+	[Obsolete]
 	protected override void Dispose(bool disposing)
 	{
 		if (!isDisposed)
@@ -267,9 +272,15 @@ class MediaControlsService : Service
 /// </summary>
 sealed class ReceiveUpdates : BroadcastReceiver
 {
+	readonly WeakEventManager propertyChangedEventManager = new();
+
 	public string Action = string.Empty;
 
-	public event PropertyChangedEventHandler? PropertyChanged;
+	public event PropertyChangedEventHandler PropertyChanged
+	{
+		add => propertyChangedEventManager.AddEventHandler(value);
+		remove => propertyChangedEventManager.RemoveEventHandler(value);
+	}
 
 	/// <summary>
 	/// Method that is called when a broadcast is received.
@@ -281,6 +292,6 @@ sealed class ReceiveUpdates : BroadcastReceiver
 		ArgumentNullException.ThrowIfNull(intent);
 		ArgumentNullException.ThrowIfNull(intent.Action);
 		Action = intent.GetStringExtra("ACTION") ?? string.Empty;
-		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Action)));
+		propertyChangedEventManager.HandleEvent(this, new PropertyChangedEventArgs(nameof(Action)), nameof(PropertyChanged));
 	}
 }

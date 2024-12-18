@@ -35,16 +35,15 @@
 
                 <Button Text="Animate" Clicked="Button_Clicked" BackgroundColor="DarkGreen" />
 
-                <Frame x:Name="ColorFrame"
-                       BorderColor="Black"
-                       HasShadow="False"
+                <Border x:Name="ColorBorder"
+                       Stroke="Black"
                        BackgroundColor="White">
 
-                    <Label TextColor="{Binding Source={x:Reference ColorFrame}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}}"
+                    <Label TextColor="{Binding Source={x:Reference ColorBorder}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}, x:DataType=Border}"
                             Text="Watch My Background Color Change"
                             HorizontalTextAlignment="Center"
                             VerticalTextAlignment="Center"/>
-                </Frame>
+                </Border>
 
             </VerticalStackLayout>
         </ScrollView>   

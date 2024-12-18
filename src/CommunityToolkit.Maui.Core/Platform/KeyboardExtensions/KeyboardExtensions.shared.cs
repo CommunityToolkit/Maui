@@ -46,42 +46,28 @@ public static partial class KeyboardExtensions
 	/// <param name="token">Cancellation token</param>
 	/// <returns>
 	/// Returns <c>true</c> if the platform was able to show the soft input device.</returns>
-	public static Task<bool> ShowKeyboardAsync(this ITextInput targetView, CancellationToken token = default)
+	public static async ValueTask<bool> ShowKeyboardAsync(this ITextInput targetView, CancellationToken token = default)
 	{
 		token.ThrowIfCancellationRequested();
 
 		if (!targetView.TryGetPlatformView(out var platformView, out var handler, out var view))
 		{
-			return Task.FromResult(false);
+			return false;
 		}
 
 		if (!view.IsFocused)
 		{
-			var showKeyboardTCS = new TaskCompletionSource<bool>();
-
 			var focusRequest = new FocusRequest();
 			focusRequest.SetResult(false);
 			handler.Invoke(nameof(IView.Focus), focusRequest);
 
-			handler.GetRequiredService<IDispatcher>().Dispatch(() =>
-			{
-				try
-				{
-					var result = platformView.ShowKeyboard();
-					showKeyboardTCS.SetResult(result);
-				}
-				catch (Exception e)
-				{
-					showKeyboardTCS.SetException(e);
-				}
-			});
-
-			return showKeyboardTCS.Task.WaitAsync(token);
+			var result = await handler.GetRequiredService<IDispatcher>().DispatchAsync(() => platformView.ShowKeyboard()).WaitAsync(token);
+			return result;
 		}
 		else
 		{
 			var result = platformView.ShowKeyboard();
-			return Task.FromResult(result).WaitAsync(token);
+			return result;
 		}
 	}
 
@@ -95,19 +81,18 @@ public static partial class KeyboardExtensions
 	{
 		if (!targetView.TryGetPlatformView(out var platformView, out _, out _))
 		{
-			throw new SoftKeyboardException($"Unable to retrive {typeof(PlatformView)} to determine soft keyboard status");
+			throw new SoftKeyboardException($"Unable to retrieve {typeof(PlatformView)} to determine soft keyboard status");
 		}
 
 		return platformView.IsSoftKeyboardShowing();
 	}
 
 	static bool TryGetPlatformView(this ITextInput textInput,
-									[NotNullWhen(true)] out PlatformView? platformView,
-									[NotNullWhen(true)] out IPlatformViewHandler? handler,
-									[NotNullWhen(true)] out IView? view)
+		[NotNullWhen(true)] out PlatformView? platformView,
+		[NotNullWhen(true)] out IPlatformViewHandler? handler,
+		[NotNullWhen(true)] out IView? view)
 	{
-		if (textInput is not IView iView ||
-			iView.Handler is not IPlatformViewHandler platformViewHandler)
+		if (textInput is not IView { Handler: IPlatformViewHandler platformViewHandler } iView)
 		{
 			platformView = null;
 			handler = null;

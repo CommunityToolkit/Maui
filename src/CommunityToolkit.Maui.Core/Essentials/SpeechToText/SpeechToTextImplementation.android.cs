@@ -16,21 +16,20 @@ public sealed partial class SpeechToTextImplementation
 	CancellationTokenRegistration? userProvidedCancellationTokenRegistration;
 	IProgress<string>? recognitionProgress;
 	CultureInfo? cultureInfo;
-	SpeechToTextState currentState = SpeechToTextState.Stopped;
 
 	/// <inheritdoc />
 	public SpeechToTextState CurrentState
 	{
-		get => currentState;
+		get;
 		private set
 		{
-			if (currentState != value)
+			if (field != value)
 			{
-				currentState = value;
-				OnSpeechToTextStateChanged(currentState);
+				field = value;
+				OnSpeechToTextStateChanged(field);
 			}
 		}
-	}
+	} = SpeechToTextState.Stopped;
 
 	/// <inheritdoc />
 	public async ValueTask DisposeAsync()

@@ -35,7 +35,7 @@ public interface IDrawingLine
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of this line, based on the <see cref="Points"/> data.
 	/// </summary>
-	/// <param name="imageSizeWidth">Desired width of the image that is returned.</param>
+	/// <param name="imageSizeWidth">The desired width of the image that is returned.</param>
 	/// <param name="imageSizeHeight">Desired height of the image that is returned.</param>
 	/// <param name="background">Background of the generated image.</param>
 	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingLine"/>.</returns>

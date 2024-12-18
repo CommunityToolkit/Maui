@@ -321,37 +321,22 @@ partial class CameraManager
 		}
 	}
 
-	sealed class ResolutionFilter : Java.Lang.Object, IResolutionFilter
+	sealed class ResolutionFilter(Android.Util.Size size) : Java.Lang.Object, IResolutionFilter
 	{
-		public Android.Util.Size TargetSize { get; set; }
-
-		public ResolutionFilter(Android.Util.Size size)
-		{
-			TargetSize = size;
-		}
+		public Android.Util.Size TargetSize { get; set; } = size;
 
 		public IList<Android.Util.Size> Filter(IList<Android.Util.Size> supportedSizes, int rotationDegrees)
 		{
 			var filteredList = supportedSizes.Where(size => size.Width <= TargetSize.Width && size.Height <= TargetSize.Height)
 				.OrderByDescending(size => size.Width * size.Height).ToList();
 
-			if (!filteredList.Any())
-			{
-				return supportedSizes;
-			}
-
-			return filteredList;
+			return filteredList.Count is 0 ? supportedSizes : filteredList;
 		}
 	}
 
-	sealed class Observer : Java.Lang.Object, IObserver
+	sealed class Observer(Action<Java.Lang.Object?> action) : Java.Lang.Object, IObserver
 	{
-		Action<Java.Lang.Object?> observerAction = (Java.Lang.Object? o) => { };
-
-		public Observer(Action<Java.Lang.Object?> action)
-		{
-			observerAction = action;
-		}
+		readonly Action<Java.Lang.Object?> observerAction = action;
 
 		public void OnChanged(Java.Lang.Object? value)
 		{

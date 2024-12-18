@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Toast
 {
-	static CommunityToolkit.Maui.Core.Views.PlatformToast? PlatformToast { get; set; }
+	static PlatformToast? PlatformToast { get; set; }
 
 	/// <summary>
 	/// Dispose Toast
@@ -31,12 +31,13 @@ public partial class Toast
 
 	static void DismissPlatform(CancellationToken token)
 	{
-		if (PlatformToast is not null)
+		if (PlatformToast is null)
 		{
-			token.ThrowIfCancellationRequested();
-
-			PlatformToast.Dismiss();
+			return;
 		}
+
+		token.ThrowIfCancellationRequested();
+		PlatformToast.Dismiss();
 	}
 
 	/// <summary>
@@ -63,7 +64,7 @@ public partial class Toast
 
 		PlatformToast.Show();
 
-		static T? GetMaximum<T>(params T[] items) => items.Max();
+		static T? GetMaximum<T>(params IReadOnlyList<T> items) => items.Max();
 	}
 
 	static CGRect CreateCornerRadius(int radius = 4)

@@ -3,17 +3,10 @@ using CommunityToolkit.Maui.Media;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
-class SpeechToTextImplementationMock : ISpeechToText
+class SpeechToTextImplementationMock(string partialText, string finalText) : ISpeechToText
 {
-	readonly string partialText;
-	readonly string finalText;
-	SpeechToTextState currentState = SpeechToTextState.Stopped;
-
-	public SpeechToTextImplementationMock(string partialText, string finalText)
-	{
-		this.partialText = partialText;
-		this.finalText = finalText;
-	}
+	readonly string partialText = partialText;
+	readonly string finalText = finalText;
 
 	public ValueTask DisposeAsync()
 	{
@@ -31,13 +24,13 @@ class SpeechToTextImplementationMock : ISpeechToText
 
 	public SpeechToTextState CurrentState
 	{
-		get => currentState;
+		get;
 		private set
 		{
-			currentState = value;
+			field = value;
 			StateChanged?.Invoke(this, new SpeechToTextStateChangedEventArgs(value));
 		}
-	}
+	} = SpeechToTextState.Stopped;
 
 	Task<SpeechToTextResult> ISpeechToText.ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
 	{

@@ -7,11 +7,15 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
 public class ProgressBarAnimationBehaviorTests() : BaseBehaviorTest<ProgressBarAnimationBehavior, ProgressBar>(new ProgressBarAnimationBehavior(), new ProgressBar())
 {
-	public static readonly IReadOnlyList<object[]> ValidData =
-	[
-		[1, 500, Easing.Default],
-		[0, 750, Easing.CubicOut]
-	];
+	public static readonly TheoryData<double, uint, Easing> ValidData = new()
+	{
+		{
+			1, 500, Easing.Default
+		},
+		{
+			0, 750, Easing.CubicOut
+		}
+	};
 
 	[Theory(Timeout = 5000)]
 	[MemberData(nameof(ValidData))]
@@ -76,7 +80,7 @@ public class ProgressBarAnimationBehaviorTests() : BaseBehaviorTest<ProgressBarA
 		IReadOnlyList<VisualElement> invalidVisualElements =
 		[
 			new Button(),
-			new Frame(),
+			new Border(),
 			new Label(),
 			new VisualElement(),
 			new View(),

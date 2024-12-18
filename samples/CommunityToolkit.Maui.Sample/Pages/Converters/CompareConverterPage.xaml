@@ -17,7 +17,7 @@
 
             <converters:CompareDoubleToColorConverter
                 x:Key="isLargerThanOneConverter"
-                ComparingValue="1"
+                ComparingValue="5"
                 ComparisonOperator="Greater"
                 FalseObject="PaleVioletRed"
                 TrueObject="LightGreen" />
@@ -37,7 +37,7 @@
         <Label
             Padding="4,0"
             BackgroundColor="{Binding SliderValue, Mode=OneWay, Converter={StaticResource isLargerThanOneConverter}}"
-            Text="The background of this label will be green if the value of the slider is greater than 1, and red otherwise."
+            Text="The background of this label will be green if the value of the slider is greater than 50%, and red otherwise."
             TextColor="Black" />
 
         <Label Text="The following label will show whether the value of the slider is greater than or equal to 50%:" TextColor="{StaticResource NormalLabelTextColor}" />

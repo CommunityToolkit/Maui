@@ -1,11 +1,9 @@
-﻿namespace CommunityToolkit.Maui.ImageSources;
-
-using CommunityToolkit.Maui.Extensions;
-using Microsoft.Maui.Controls;
+﻿using CommunityToolkit.Maui.Extensions;
+namespace CommunityToolkit.Maui.ImageSources;
 
 /// <summary>Gravatar image source.</summary>
 /// <remarks>Note that <see cref="UriImageSource"/> is sealed and can't be used as a parent!</remarks>
-public class GravatarImageSource : StreamImageSource, IDisposable
+public partial class GravatarImageSource : StreamImageSource, IDisposable
 {
 	/// <summary>The backing store for the <see cref="CacheValidity" /> bindable property.</summary>
 	public static readonly BindableProperty CacheValidityProperty = BindableProperty.Create(nameof(CacheValidity), typeof(TimeSpan), typeof(GravatarImageSource), TimeSpan.FromDays(1));
@@ -25,13 +23,13 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 	/// <summary>The backing store for the <see cref="ParentWidth" /> bindable property.</summary>
 	internal static readonly BindableProperty ParentWidthProperty = BindableProperty.Create(nameof(ParentWidth), typeof(int), typeof(GravatarImageSource), defaultValue: defaultSize, propertyChanged: OnSizePropertyChanged);
 
-	const int cancellationTokenSourceTimeout = 737;
 	const string defaultGravatarImageAddress = "https://www.gravatar.com/avatar/";
 	const int defaultSize = 80;
 
 	static readonly Lazy<HttpClient> singletonHttpClientHolder = new();
 
-	int? gravatarSize;
+	readonly TimeSpan cancellationTokenSourceTimeout = TimeSpan.FromMilliseconds(737);
+
 	Uri? lastDispatch;
 
 	/// <summary>Initializes a new instance of the <see cref="GravatarImageSource"/> class.</summary>
@@ -76,7 +74,7 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 	}
 
 	/// <summary>Gets or sets the URI for the image to get.</summary>
-	[System.ComponentModel.TypeConverter(typeof(UriTypeConverter))]
+	[System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.UriTypeConverter))]
 	public Uri Uri { get; set; }
 
 	/// <summary>Gets the parent height.</summary>
@@ -92,16 +90,16 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 	/// </remarks>
 	int? GravatarSize
 	{
-		get => gravatarSize;
+		get;
 		set
 		{
 			if (value is null)
 			{
-				gravatarSize = null;
+				field = null;
 			}
 			else
 			{
-				gravatarSize = Math.Clamp(value.Value, 1, 2048);
+				field = Math.Clamp(value.Value, 1, 2048);
 			}
 		}
 	}
@@ -143,8 +141,8 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 			return;
 		}
 
-		SetBinding(ParentWidthProperty, new Binding(nameof(VisualElement.Width), BindingMode.OneWay, source: parentElement));
-		SetBinding(ParentHeightProperty, new Binding(nameof(VisualElement.Height), BindingMode.OneWay, source: parentElement));
+		SetBinding(ParentWidthProperty, BindingBase.Create<VisualElement, double>(static p => p.Width, source: parentElement, mode: BindingMode.OneWay));
+		SetBinding(ParentHeightProperty, BindingBase.Create<VisualElement, double>(static p => p.Height, source: parentElement, mode: BindingMode.OneWay));
 	}
 
 	static string DefaultGravatarName(DefaultImage defaultGravatar) => defaultGravatar switch
@@ -168,7 +166,7 @@ public class GravatarImageSource : StreamImageSource, IDisposable
 
 	static async void OnSizePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		if (newValue is not int intNewValue || intNewValue <= -1)
+		if (newValue is not (int intNewValue and > -1))
 		{
 			return;
 		}
@@ -231,7 +229,7 @@ public enum DefaultImage
 	/// <summary>A geometric pattern based on an email hash.</summary>
 	Identicon,
 
-	/// <summary>A generated 'monster' with different colours, faces, etc.</summary>
+	/// <summary>A generated 'monster' with different colors, faces, etc.</summary>
 	MonsterId,
 
 	/// <summary>Generated faces with differing features and backgrounds.</summary>
@@ -240,7 +238,7 @@ public enum DefaultImage
 	/// <summary>Awesome generated, 8-bit arcade-style pixilated faces.</summary>
 	Retro,
 
-	/// <summary>A generated robot with different colours, faces, etc.</summary>
+	/// <summary>A generated robot with different colors, faces, etc.</summary>
 	Robohash,
 
 	/// <summary>A transparent PNG image.</summary>

@@ -5,19 +5,39 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToInverseColorConverterTests : BaseOneWayConverterTest<ColorToInverseColorConverter>
 {
-	public static IReadOnlyList<object[]> ColorToInverseColorConverterData { get; } =
-	[
-		[Colors.White, Colors.Black],
-		[new Color(0f, 0f, 0f), new Color(1f, 1f, 1f)],
-		[new Color(0f, 0f, 1f), new Color(1f, 1f, 0f)],
-		[new Color(0f, 1f, 0f), new Color(1f, 0f, 1f)],
-		[new Color(0f, 1f, 1f), new Color(1f, 0f, 0f)],
-		[new Color(1f, 0f, 0f), new Color(0f, 1f, 1f)],
-		[new Color(1f, 0f, 1f), new Color(0f, 1f, 0f)],
-		[new Color(1f, 1f, 0f), new Color(0f, 0f, 1f)],
-		[new Color(1f, 1f, 1f), new Color(0f, 0f, 0f)],
-		[Colors.Black, Colors.White],
-	];
+	public static TheoryData<Color, Color> ColorToInverseColorConverterData { get; } = new()
+	{
+		{
+			Colors.White, Colors.Black
+		},
+		{
+			new Color(0f, 0f, 0f), new Color(1f, 1f, 1f)
+		},
+		{
+			new Color(0f, 0f, 1f), new Color(1f, 1f, 0f)
+		},
+		{
+			new Color(0f, 1f, 0f), new Color(1f, 0f, 1f)
+		},
+		{
+			new Color(0f, 1f, 1f), new Color(1f, 0f, 0f)
+		},
+		{
+			new Color(1f, 0f, 0f), new Color(0f, 1f, 1f)
+		},
+		{
+			new Color(1f, 0f, 1f), new Color(0f, 1f, 0f)
+		},
+		{
+			new Color(1f, 1f, 0f), new Color(0f, 0f, 1f)
+		},
+		{
+			new Color(1f, 1f, 1f), new Color(0f, 0f, 0f)
+		},
+		{
+			Colors.Black, Colors.White
+		},
+	};
 
 	[Theory]
 	[MemberData(nameof(ColorToInverseColorConverterData))]

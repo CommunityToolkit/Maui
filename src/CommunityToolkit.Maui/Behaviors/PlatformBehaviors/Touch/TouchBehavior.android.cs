@@ -1,5 +1,4 @@
 using Android.Content;
-using Android.Content.Res;
 using Android.OS;
 using Android.Views;
 using Android.Views.Accessibility;
@@ -101,14 +100,6 @@ public partial class TouchBehavior
 		}
 
 		isHoverSupported = false;
-	}
-
-	static ColorStateList GetColorStateList(MColor? color)
-	{
-		var animationColor = color;
-		animationColor ??= defaultNativeAnimationColor;
-
-		return new ColorStateList([[]], [animationColor.ToPlatform()]);
 	}
 
 	void UpdateClickHandler()

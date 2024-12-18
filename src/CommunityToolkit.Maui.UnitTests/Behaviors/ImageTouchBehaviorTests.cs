@@ -2,7 +2,6 @@ using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Core;
 using Nito.AsyncEx;
 using Xunit;
-using IImage = Microsoft.Maui.IImage;
 using View = Microsoft.Maui.Controls.View;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;

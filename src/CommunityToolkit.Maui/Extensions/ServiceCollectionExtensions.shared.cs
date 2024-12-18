@@ -171,7 +171,7 @@ public static class ServiceCollectionExtensions
 	}
 
 	/// <summary>
-	/// Registers routes in in <see cref="Routing"/> for Views registered using WithShellRouting methods.
+	/// Registers routes in <see cref="Routing"/> for Views registered using WithShellRouting methods.
 	/// </summary>
 	/// <typeparam name="TView">The type of the View to add. Constrained to <see cref="NavigableElement"/></typeparam>
 	/// <param name="route">Route at which this page will be registered within Shell routing.</param>

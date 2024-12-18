@@ -8,7 +8,7 @@ public class EnumToIntConverterTests : BaseConverterTest<EnumToIntConverter>
 {
 	[Theory]
 	[InlineData(int.MinValue)]
-	[InlineData((-1))]
+	[InlineData(-1)]
 	[InlineData(2)]
 	[InlineData(41)]
 	[InlineData(43)]

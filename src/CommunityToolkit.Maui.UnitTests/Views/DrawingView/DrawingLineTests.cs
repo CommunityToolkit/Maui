@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
 using FluentAssertions;
 using Xunit;
@@ -12,7 +11,7 @@ public class DrawingLineTests : BaseHandlerTest
 
 	public DrawingLineTests()
 	{
-		Assert.IsAssignableFrom<IDrawingLine>(drawingLine);
+		Assert.IsType<IDrawingLine>(drawingLine, exactMatch: false);
 	}
 
 	[Fact]

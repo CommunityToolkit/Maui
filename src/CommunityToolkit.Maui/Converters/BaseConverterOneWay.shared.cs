@@ -4,7 +4,7 @@ using System.Globalization;
 namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>
-/// Abstract class used to implement converters that implements the Convert logic.
+/// Abstract class used to implement converters that implement the Convert logic.
 /// </summary>
 /// <typeparam name="TFrom">Type of the input value</typeparam>
 /// <typeparam name="TTo">Type of the output value</typeparam>
@@ -23,7 +23,7 @@ public abstract class BaseConverterOneWay<[DynamicallyAccessedMembers(Dynamicall
 }
 
 /// <summary>
-/// Abstract class used to implement converters that implements the Convert logic.
+/// Abstract class used to implement converters that implement the Convert logic.
 /// </summary>
 /// <typeparam name="TFrom">Type of the input value</typeparam>
 /// <typeparam name="TTo">Type of the output value</typeparam>
@@ -38,6 +38,6 @@ public abstract class BaseConverterOneWay<[DynamicallyAccessedMembers(Dynamicall
 	}
 
 	/// <inheritdoc/>
-	public sealed override TFrom ConvertBackTo(TTo value, TParam? parameter, CultureInfo? culture) =>
+	public sealed override TFrom ConvertBackTo(TTo? value, TParam? parameter, CultureInfo? culture) =>
 		throw new NotSupportedException("Impossible to revert to original value. Consider setting BindingMode to OneWay.");
 }

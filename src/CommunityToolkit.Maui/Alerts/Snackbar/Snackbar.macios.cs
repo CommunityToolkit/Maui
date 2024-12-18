@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Snackbar
 {
-	static CommunityToolkit.Maui.Core.Views.PlatformSnackbar? PlatformSnackbar { get; set; }
+	static PlatformSnackbar? PlatformSnackbar { get; set; }
 
 	/// <summary>
 	/// Dispose Snackbar
@@ -67,7 +67,7 @@ public partial class Snackbar
 											padding)
 		{
 			Action = Action,
-			Anchor = Anchor?.Handler?.PlatformView as UIView,
+			Anchor = Anchor is Page ? null : Anchor?.Handler?.PlatformView as UIView,
 			Duration = Duration,
 			OnDismissed = OnDismissed,
 			OnShown = OnShown
@@ -75,7 +75,7 @@ public partial class Snackbar
 
 		PlatformSnackbar.Show();
 
-		static T? GetMaximum<T>(params T[] items) => items.Max();
+		static T? GetMaximum<T>(params IReadOnlyList<T> items) => items.Max();
 	}
 
 	static CGRect GetCornerRadius(CornerRadius cornerRadius)

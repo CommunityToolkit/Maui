@@ -1,23 +1,42 @@
 ﻿using CommunityToolkit.Maui.Converters;
 using Xunit;
-
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToByteBlueConverterTests : BaseOneWayConverterTest<ColorToByteBlueConverter>
 {
-	public static readonly IReadOnlyList<object[]> ValidInputData =
-	[
-		[float.MinValue, (byte)0],
-		[-0.01f, (byte)0],
-		[-0f, (byte)0],
-		[0f, (byte)0],
-		[0.25f, (byte)64],
-		[0.5f, (byte)128],
-		[0.75f, (byte)191],
-		[1f, (byte)255],
-		[1.001f, (byte)255],
-		[float.MaxValue, (byte)255],
-	];
+	public static readonly TheoryData<float, byte> ValidInputData = new()
+	{
+		{
+			float.MinValue, 0
+		},
+		{
+			-0.01f, 0
+		},
+		{
+			-0f, 0
+		},
+		{
+			0f, 0
+		},
+		{
+			0.25f, 64
+		},
+		{
+			0.5f, 128
+		},
+		{
+			0.75f, 191
+		},
+		{
+			1f, 255
+		},
+		{
+			1.001f, 255
+		},
+		{
+			float.MaxValue, 255
+		},
+	};
 
 	[Theory]
 	[MemberData(nameof(ValidInputData))]

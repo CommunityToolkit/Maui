@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.Maui.Platform;
 namespace CommunityToolkit.Maui.Extensions;
 
 static class ElementExtensions
