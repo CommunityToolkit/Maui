@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace CommunityToolkit.Maui.Core.Views;
+﻿namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// <see cref="UIButton"/> with Left, Top, Right and Bottom Padding
@@ -10,7 +8,7 @@ public sealed class PaddedButton : UIButton
 	/// <summary>
 	/// Initialize <see cref="PaddedButton"/>
 	/// </summary>
-	public PaddedButton(NFloat leftPadding, NFloat topPadding, NFloat rightPadding, NFloat bottomPadding)
+	public PaddedButton(nfloat leftPadding, nfloat topPadding, nfloat rightPadding, nfloat bottomPadding)
 	{
 		LeftPadding = leftPadding;
 		TopPadding = topPadding;
@@ -22,24 +20,24 @@ public sealed class PaddedButton : UIButton
 	/// <summary>
 	/// Left Padding
 	/// </summary>
-	public NFloat LeftPadding { get; }
+	public nfloat LeftPadding { get; }
 
 	/// <summary>
 	/// Top Padding
 	/// </summary>
-	public NFloat TopPadding { get; }
+	public nfloat TopPadding { get; }
 
 	/// <summary>
 	/// Right Padding
 	/// </summary>
-	public NFloat RightPadding { get; }
+	public nfloat RightPadding { get; }
 
 	/// <summary>
 	/// Bottom Padding
 	/// </summary>
-	public NFloat BottomPadding { get; }
+	public nfloat BottomPadding { get; }
 
-	void SetPadding(NFloat leftPadding, NFloat topPadding, NFloat rightPadding, NFloat bottomPadding)
+	void SetPadding(nfloat leftPadding, nfloat topPadding, nfloat rightPadding, nfloat bottomPadding)
 	{
 		if (OperatingSystem.IsIOSVersionAtLeast(15) && Configuration is not null)
 		{

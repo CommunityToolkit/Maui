@@ -394,7 +394,7 @@ public partial class MediaManager : IDisposable
 			return res;
 		}
 
-		foreach (AppFW.ResourceManager.Category category in Enum.GetValues(typeof(AppFW.ResourceManager.Category)))
+		foreach (AppFW.ResourceManager.Category category in Enum.GetValues<AppFW.ResourceManager.Category>())
 		{
 			var path = AppFW.ResourceManager.TryGetPath(category, res);
 

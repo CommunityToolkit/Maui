@@ -3,6 +3,7 @@
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Views.ExpanderPage"
+                xmlns:sample="clr-namespace:CommunityToolkit.Maui.Sample"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
                 xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
                 x:TypeArguments="viewModels:ExpanderViewModel"
@@ -54,7 +55,7 @@
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>
-                            <mct:Expander x:DataType="viewModels:ContentCreator"
+                            <mct:Expander x:DataType="sample:ContentCreator"
                                           ExpandedChanged="Expander_ExpandedChanged">
                                 <mct:Expander.Header>
                                     <Label Text="{Binding Name}"/>
@@ -78,7 +79,7 @@
             <CollectionView ItemsSource="{Binding ContentCreators}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <mct:Expander x:DataType="viewModels:ContentCreator"
+                        <mct:Expander x:DataType="sample:ContentCreator"
                                       ExpandedChanged="Expander_ExpandedChanged">
                             <mct:Expander.Header>
                                 <Label Text="{Binding Name}"/>

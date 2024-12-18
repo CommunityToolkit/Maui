@@ -5,5 +5,5 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 public partial class IntToBoolConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	int number;
+	public partial int Number { get; set; }
 }

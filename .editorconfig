@@ -81,6 +81,7 @@ csharp_style_conditional_delegate_call = true:suggestion
 
 # Collection Expressions
 dotnet_style_prefer_collection_expression = when_types_loosely_match:suggestion
+dotnet_diagnostic.IDE0303.severity = suggestion
 
 # Naming rules
 
@@ -142,3 +143,12 @@ dotnet_diagnostic.CA1834.severity = error
 
 # IDE0220: Add explicit cast
 dotnet_diagnostic.IDE0220.severity = error
+
+# Warning CA2264 : Calling 'ArgumentNullException.ThrowIfNull' and passing a non-nullable value is a no-op
+dotnet_diagnostic.CA2264.severity = error
+
+# MVMTK0042: The field [ObservableProperty] can be converted to a partial property
+dotnet_diagnostic.MVMTK0042.severity = error
+
+# XC0045: Binding Property not found
+dotnet_diagnostic.XC0045.severity = error

@@ -6,9 +6,19 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class MultiConverterTests : BaseTest
 {
-	public static IReadOnlyList<object[]> Data { get; } =
+	public static TheoryData<List<MultiConverterParameter>> Data { get; } =
 	[
-		[new List<MultiConverterParameter> { new() { Value = "Param 1", }, new() { Value = "Param 2", } }],
+		new List<MultiConverterParameter>
+		{
+			new()
+			{
+				Value = "Param 1",
+			},
+			new()
+			{
+				Value = "Param 2",
+			}
+		}
 	];
 
 	[Theory]
@@ -33,8 +43,16 @@ public class MultiConverterTests : BaseTest
 
 		var multiParams = new List<MultiConverterParameter>
 		{
-			new MultiConverterParameter { ConverterType = typeof(TextCaseConverter), Value = TextCaseType.Upper },
-			new MultiConverterParameter { ConverterType = typeof(IsEqualConverter), Value = "MAUI" }
+			new MultiConverterParameter
+			{
+				ConverterType = typeof(TextCaseConverter),
+				Value = TextCaseType.Upper
+			},
+			new MultiConverterParameter
+			{
+				ConverterType = typeof(IsEqualConverter),
+				Value = "MAUI"
+			}
 		};
 
 		var falseResult = (bool?)multiConverter.Convert("JOHN", typeof(bool), multiParams, CultureInfo.CurrentCulture);

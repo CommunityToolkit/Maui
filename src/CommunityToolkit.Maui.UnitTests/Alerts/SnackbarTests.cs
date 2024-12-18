@@ -12,7 +12,7 @@ public class SnackbarTests : BaseTest
 
 	public SnackbarTests()
 	{
-		Assert.IsAssignableFrom<IAlert>(snackbar);
+		Assert.IsType<IAlert>(snackbar, exactMatch: false);
 	}
 
 	[Fact]
@@ -125,7 +125,7 @@ public class SnackbarTests : BaseTest
 			receivedEvents.Add(e);
 		};
 		var button = new Button();
-		await button.DisplaySnackbar("message");
+		await button.DisplaySnackbar("message", token: CancellationToken.None);
 		Assert.Single(receivedEvents);
 	}
 
@@ -233,8 +233,8 @@ public class SnackbarTests : BaseTest
 		});
 		Assert.Throws<ArgumentNullException>(() => Snackbar.Make(null));
 		Assert.Throws<ArgumentNullException>(() => Snackbar.Make(string.Empty, actionButtonText: null));
-		await Assert.ThrowsAsync<ArgumentNullException>(() => new Button().DisplaySnackbar(null));
-		await Assert.ThrowsAsync<ArgumentNullException>(() => new Button().DisplaySnackbar(string.Empty, actionButtonText: null));
+		await Assert.ThrowsAsync<ArgumentNullException>(() => new Button().DisplaySnackbar(null, token: CancellationToken.None));
+		await Assert.ThrowsAsync<ArgumentNullException>(() => new Button().DisplaySnackbar(string.Empty, actionButtonText: null, token: CancellationToken.None));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }

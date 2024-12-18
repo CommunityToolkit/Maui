@@ -14,10 +14,11 @@
         <Label Text="The ProgressBarAnimationBehavior is a behavior that behavior that animates a ProgressBar"
                TextColor="{StaticResource NormalLabelTextColor}" />
 
-        <ProgressBar>
+        <ProgressBar x:Name="DemoProgressBar">
             <ProgressBar.Behaviors>
                 <mct:ProgressBarAnimationBehavior
                     x:Name="ProgressBarAnimationBehavior"
+                    BindingContext="{Binding Path=BindingContext, Source={x:Reference DemoProgressBar}, x:DataType=ProgressBar}"
                     Progress="{Binding Progress}"
                     Length="250"/>
             </ProgressBar.Behaviors>

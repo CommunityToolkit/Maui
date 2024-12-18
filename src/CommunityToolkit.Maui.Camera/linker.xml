@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<linker>
+  <assembly fullname="Xamarin.AndroidX.Camera.Core" />
+  <assembly fullname="Xamarin.AndroidX.Camera.Lifecycle" />
+  <assembly fullname="Xamarin.AndroidX.Camera.Video" />
+  <assembly fullname="Xamarin.AndroidX.Camera.View" />
+  <assembly fullname="Xamarin.AndroidX.Camera.Camera2" />
+</linker>

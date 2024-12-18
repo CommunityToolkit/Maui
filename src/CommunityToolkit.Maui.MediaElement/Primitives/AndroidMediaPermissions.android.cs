@@ -10,7 +10,7 @@ sealed class AndroidMediaPermissions : BasePlatformPermission
 
 	static (string androidPermission, bool isRuntime)[] CreatePermissions()
 	{
-		List<(string androidPermission, bool isRuntime)> requiredPermissionsList = new();
+		List<(string androidPermission, bool isRuntime)> requiredPermissionsList = [];
 
 		if (OperatingSystem.IsAndroidVersionAtLeast(28))
 		{

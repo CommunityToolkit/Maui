@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
 using FluentAssertions;
 using Xunit;
@@ -12,7 +11,7 @@ public class DrawingLineTests : BaseHandlerTest
 
 	public DrawingLineTests()
 	{
-		Assert.IsAssignableFrom<IDrawingLine>(drawingLine);
+		Assert.IsType<IDrawingLine>(drawingLine, exactMatch: false);
 	}
 
 	[Fact]
@@ -70,13 +69,13 @@ public class DrawingLineTests : BaseHandlerTest
 		drawingLine.Granularity.Should().Be(expectedValue);
 	}
 
-	[Fact(Timeout = (int)TestDuration.Short)]
+	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task GetImageStream_CancellationTokenExpired()
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
 		// Ensure CancellationToken Expired
-		await Task.Delay(100, CancellationToken.None);
+		await Task.Delay(TimeSpan.FromSeconds(1), CancellationToken.None);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await drawingLine.GetImageStream(10, 10, Colors.Blue.AsPaint(), cts.Token));
 	}

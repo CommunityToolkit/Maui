@@ -1,5 +1,4 @@
-﻿using System.Buffers;
-using System.Runtime.Versioning;
+﻿using System.Runtime.Versioning;
 using Android.Content;
 using AndroidX.Camera.Core;
 using AndroidX.Camera.Core.Impl.Utils.Futures;
@@ -220,9 +219,7 @@ partial class CameraManager
 
 		//start the camera with AutoFocus
 		MeteringPoint point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
-		FocusMeteringAction action = new FocusMeteringAction.Builder(point)
-															.DisableAutoCancel()
-															.Build();
+		FocusMeteringAction action = new FocusMeteringAction.Builder(point).Build();
 		camera.CameraControl.StartFocusAndMetering(action);
 
 		IsInitialized = true;
@@ -276,6 +273,7 @@ partial class CameraManager
 
 			if (img is null)
 			{
+				cameraView.OnMediaCapturedFailed("Unable to obtain Image data.");
 				return;
 			}
 
@@ -283,6 +281,7 @@ partial class CameraManager
 
 			if (buffer is null)
 			{
+				cameraView.OnMediaCapturedFailed("Unable to obtain a buffer for the image plane.");
 				image.Close();
 				return;
 			}
@@ -293,6 +292,11 @@ partial class CameraManager
 				buffer.Get(imgData);
 				var memStream = new MemoryStream(imgData);
 				cameraView.OnMediaCaptured(memStream);
+			}
+			catch (System.Exception ex)
+			{
+				cameraView.OnMediaCapturedFailed(ex.Message);
+				throw;
 			}
 			finally
 			{
@@ -313,41 +317,26 @@ partial class CameraManager
 		public override void OnError(ImageCaptureException exception)
 		{
 			base.OnError(exception);
-			cameraView.OnMediaCapturedFailed();
+			cameraView.OnMediaCapturedFailed(exception.Message ?? "An unknown error occurred.");
 		}
 	}
 
-	sealed class ResolutionFilter : Java.Lang.Object, IResolutionFilter
+	sealed class ResolutionFilter(Android.Util.Size size) : Java.Lang.Object, IResolutionFilter
 	{
-		public Android.Util.Size TargetSize { get; set; }
-
-		public ResolutionFilter(Android.Util.Size size)
-		{
-			TargetSize = size;
-		}
+		public Android.Util.Size TargetSize { get; set; } = size;
 
 		public IList<Android.Util.Size> Filter(IList<Android.Util.Size> supportedSizes, int rotationDegrees)
 		{
 			var filteredList = supportedSizes.Where(size => size.Width <= TargetSize.Width && size.Height <= TargetSize.Height)
 				.OrderByDescending(size => size.Width * size.Height).ToList();
 
-			if (!filteredList.Any())
-			{
-				return supportedSizes;
-			}
-
-			return filteredList;
+			return filteredList.Count is 0 ? supportedSizes : filteredList;
 		}
 	}
 
-	sealed class Observer : Java.Lang.Object, IObserver
+	sealed class Observer(Action<Java.Lang.Object?> action) : Java.Lang.Object, IObserver
 	{
-		Action<Java.Lang.Object?> observerAction = (Java.Lang.Object? o) => { };
-
-		public Observer(Action<Java.Lang.Object?> action)
-		{
-			observerAction = action;
-		}
+		readonly Action<Java.Lang.Object?> observerAction = action;
 
 		public void OnChanged(Java.Lang.Object? value)
 		{

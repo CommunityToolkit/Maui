@@ -3,11 +3,11 @@
 /// <summary>
 /// A XAML markup extension that enables using <see cref="AppThemeColor"/> and <see cref="AppThemeObject"/> from XAML.
 /// </summary>
-[ContentProperty(nameof(Key))]
+[ContentProperty(nameof(Key)), RequireService([typeof(IServiceProvider)])]
 public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 {
 	/// <summary>
-	/// Gets or sets the key that is used to access the <see cref="AppThemeColor"/> or <see cref="AppThemeObject"/> from the <see cref="ResourceDictionary"/>.
+	/// Gets or sets the key used to access the <see cref="AppThemeColor"/> or <see cref="AppThemeObject"/> from the <see cref="ResourceDictionary"/>.
 	/// </summary>
 	public string? Key { get; set; }
 
