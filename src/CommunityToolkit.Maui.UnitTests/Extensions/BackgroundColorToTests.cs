@@ -16,7 +16,7 @@ public class BackgroundColorToTests : BaseTest
 
 		Assert.Equal(originalBackgroundColor, element.BackgroundColor);
 
-		var isSuccessful = await element.BackgroundColorTo(updatedBackgroundColor);
+		var isSuccessful = await element.BackgroundColorTo(updatedBackgroundColor, token: CancellationToken.None);
 
 		Assert.True(isSuccessful);
 		Assert.Equal(updatedBackgroundColor, element.BackgroundColor);
@@ -58,7 +58,7 @@ public class BackgroundColorToTests : BaseTest
 		VisualElement element = new Label();
 		element.EnableAnimations();
 
-		var isSuccessful = await element.BackgroundColorTo(updatedBackgroundColor);
+		var isSuccessful = await element.BackgroundColorTo(updatedBackgroundColor, token: CancellationToken.None);
 
 		Assert.True(isSuccessful);
 		Assert.Equal(updatedBackgroundColor, element.BackgroundColor);
@@ -70,7 +70,7 @@ public class BackgroundColorToTests : BaseTest
 		VisualElement? element = null;
 
 #pragma warning disable CS8603 // Possible null reference return.
-		await Assert.ThrowsAsync<NullReferenceException>(() => element?.BackgroundColorTo(Colors.Red));
+		await Assert.ThrowsAsync<NullReferenceException>(() => element?.BackgroundColorTo(Colors.Red, token: CancellationToken.None));
 #pragma warning restore CS8603 // Possible null reference return.
 	}
 
@@ -81,7 +81,7 @@ public class BackgroundColorToTests : BaseTest
 		element.EnableAnimations();
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		await Assert.ThrowsAsync<ArgumentNullException>(() => element.BackgroundColorTo(null));
+		await Assert.ThrowsAsync<ArgumentNullException>(() => element.BackgroundColorTo(null, token: CancellationToken.None));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 }

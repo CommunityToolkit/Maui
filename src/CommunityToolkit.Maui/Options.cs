@@ -1,6 +1,8 @@
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Converters;
+#if WINDOWS
 using Microsoft.Maui.LifecycleEvents;
+#endif
 
 namespace CommunityToolkit.Maui;
 
@@ -22,7 +24,7 @@ public class Options() : Core.Options
 	internal static bool ShouldEnableSnackbarOnWindows { get; private set; }
 
 	/// <summary>
-	/// Allows to return default value instead of throwing an exception when using <see cref="BaseConverter{TFrom,TTo}"/>.
+	/// Will return the <see cref="ICommunityToolkitValueConverter.DefaultConvertReturnValue"/> default value instead of throwing an exception when using <see cref="BaseConverter{TFrom,TTo}"/>.
 	/// </summary>
 	/// <remarks>
 	/// Default value is false.
@@ -30,7 +32,7 @@ public class Options() : Core.Options
 	public void SetShouldSuppressExceptionsInConverters(bool value) => ShouldSuppressExceptionsInConverters = value;
 
 	/// <summary>
-	/// Allows to return default value instead of throwing an exception when using <see cref="AnimationBehavior"/>.
+	/// Catches exceptions thrown when using <see cref="AnimationBehavior"/> and reports it to <see cref="System.Diagnostics.Trace"/>.
 	/// </summary>
 	/// <remarks>
 	/// Default value is false.
@@ -38,7 +40,7 @@ public class Options() : Core.Options
 	public void SetShouldSuppressExceptionsInAnimations(bool value) => ShouldSuppressExceptionsInAnimations = value;
 
 	/// <summary>
-	/// Allows to return default value instead of throwing an exception when using <see cref="BaseBehavior{TView}"/>.
+	/// Catches exceptions thrown when using <see cref="AnimationBehavior"/> and reports it to <see cref="System.Diagnostics.Trace"/>.
 	/// </summary>
 	/// <remarks>
 	/// Default value is false.
@@ -58,8 +60,8 @@ public class Options() : Core.Options
 		{
 			throw new InvalidOperationException($"{nameof(SetShouldEnableSnackbarOnWindows)} must be called using the {nameof(AppBuilderExtensions.UseMauiCommunityToolkit)} extension method. See the Platform Specific Initialization section of the {nameof(Alerts.Snackbar)} documentaion for more inforamtion: https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar)")
 			{
- 				HelpLink = "https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar"
- 			};
+				HelpLink = "https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar"
+			};
 		}
 		else if (value is true && builder is not null)
 		{
@@ -73,8 +75,15 @@ public class Options() : Core.Options
 					})
 					.OnClosed((_, _) =>
 					{
-						Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked -= OnSnackbarNotificationInvoked;
-						Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Unregister();
+						try
+						{
+							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked -= OnSnackbarNotificationInvoked;
+							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Unregister();
+						}
+						catch
+						{
+							// And Element not found exception may be thrown when unregistering the event handler after using MediaElement accross multiple Windows
+						}
 					}));
 			});
 

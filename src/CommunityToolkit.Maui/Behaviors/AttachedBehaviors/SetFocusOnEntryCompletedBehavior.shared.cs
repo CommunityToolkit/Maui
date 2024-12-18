@@ -3,7 +3,7 @@
 /// <summary>
 /// The <see cref="SetFocusOnEntryCompletedBehavior"/> is an attached property for entries that allows the user to specify what <see cref="VisualElement"/> should gain focus after the user completes that entry.
 /// </summary>
-public class SetFocusOnEntryCompletedBehavior : BaseBehavior<VisualElement>
+public partial class SetFocusOnEntryCompletedBehavior : BaseBehavior<VisualElement>
 {
 	/// <summary>
 	/// The <see cref="NextElementProperty"/> attached property.

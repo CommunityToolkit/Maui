@@ -17,8 +17,8 @@
        x:Name="flyout"
        Title="{OnPlatform WinUI='Toolkit Features', Default={x:Null}}"
        FlyoutBackgroundColor="{OnPlatform WinUI=Transparent,
-                                          Default={AppThemeBinding Light={StaticResource White},
-                                                                   Dark={StaticResource Black}}}"
+                                          Default={AppThemeBinding Light= White,
+                                                                   Dark= Black}}"
        FlyoutBehavior="{OnPlatform WinUI=Locked, Default=Flyout}">
 
     <Shell.FlyoutHeader>
@@ -100,6 +100,7 @@
     <Shell.FlyoutFooter>
         <Label Padding="4"
                HorizontalOptions="End"
+               x:DataType="{x:Type sys:DateTime}"
                Text="{Binding Source={x:Static sys:DateTime.Now}, StringFormat='{0:yyyy}'}"
                VerticalOptions="End" />
     </Shell.FlyoutFooter>

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
-using Microsoft.Maui.Platform;
-using Windows.UI.Xaml;
+﻿using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
