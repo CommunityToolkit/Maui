@@ -1,4 +1,5 @@
 ﻿using Android.App;
+using Android.Views;
 using AndroidX.Core.View;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Extensions;
@@ -92,11 +93,7 @@ static partial class NavigationBar
 
 		var color = GetColor(page).ToPlatform();
 
-		if (OperatingSystem.IsAndroidVersionAtLeast(35))
-		{
-
-		}
-		else if (OperatingSystem.IsAndroidVersionAtLeast(21))
+		if (OperatingSystem.IsAndroidVersionAtLeast(21))
 		{
 			window.SetNavigationBarColor(color);
 		}

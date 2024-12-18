@@ -6,22 +6,22 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.PlatformSpecific;
 public partial class NavigationBarAndroidViewModel : BaseViewModel
 {
     [ObservableProperty, NotifyPropertyChangedFor(nameof(NavigationBarColor))]
-    public partial int RedSliderValue { get; private set; }
+    public partial int RedSliderValue { get; set; }
 
     [ObservableProperty, NotifyPropertyChangedFor(nameof(NavigationBarColor))]
-    public partial int GreenSliderValue { get; private set; }
+    public partial int GreenSliderValue { get; set; }
 
     [ObservableProperty, NotifyPropertyChangedFor(nameof(NavigationBarColor))]
-    public partial int BlueSliderValue { get; private set; }
+    public partial int BlueSliderValue { get; set; }
 
     [ObservableProperty, NotifyPropertyChangedFor(nameof(NavigationBarStyle))]
-    public partial bool IsLightContentChecked { get; private set; }
+    public partial bool IsLightContentChecked { get; set; }
 
     [ObservableProperty, NotifyPropertyChangedFor(nameof(NavigationBarStyle))]
-    public partial bool IsDarkContentChecked { get; private set; }
+    public partial bool IsDarkContentChecked { get; set; }
 
     [ObservableProperty, NotifyPropertyChangedFor(nameof(NavigationBarStyle))]
-    public partial bool IsDefaultChecked { get; private set; } = true;
+    public partial bool IsDefaultChecked { get; set; } = true;
 
     public Color NavigationBarColor => Color.FromRgb(RedSliderValue, GreenSliderValue, BlueSliderValue);
 
