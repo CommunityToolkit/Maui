@@ -4,3 +4,23 @@ updates:
   directory: "/samples"
   schedule:
     interval: daily
+  ignore:
+        - dependency-name: "Microsoft.Maui.Controls"
+        - dependency-name: "Microsoft.Maui.Core"
+        - dependency-name: "Microsoft.Maui.Essentials"
+        - dependency-name: "Microsoft.Maui.Maps"
+        - dependency-name: "Xamarin.AndroidX.Camera.Camera2"
+        - dependency-name: "Xamarin.AndroidX.Camera.View"
+        - dependency-name: "Xam.Plugins.Android.ExoPlayer"
+        - dependency-name: "Xam.Plugins.Android.ExoPlayer.Transformer"
+        - dependency-name: "Xam.Plugins.Android.ExoPlayer.MediaSession"
+        - dependency-name: "Xamarin.AndroidX.Media3.ExoPlayer"
+        - dependency-name: "Xamarin.AndroidX.Media3.Common"
+        - dependency-name: "Xamarin.AndroidX.Media3.UI"
+        - dependency-name: "Xamarin.AndroidX.Media3.ExoPlayer.Rtsp"
+        - dependency-name: "Xamarin.AndroidX.Media3.ExoPlayer.Hls"
+        - dependency-name: "Xamarin.AndroidX.Media3.ExoPlayer.Dash"
+        - dependency-name: "Xamarin.AndroidX.Media3.Session"
+        - dependency-name: "Xamarin.AndroidX.Collection"
+        - dependency-name: "Xamarin.AndroidX.Lifecycle.LiveData"
+        - dependency-name: "Xamarin.AndroidX.Collection.Ktx"

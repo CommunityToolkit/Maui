@@ -15,41 +15,89 @@ public class DateTimeOffsetConverterTests : BaseConverterTest<DateTimeOffsetConv
 	static readonly DateTimeOffset testDateTimeOffsetLocal = new(2020, 08, 25, 13, 37, 00, DateTimeOffset.Now.Offset);
 	static readonly DateTimeOffset testDateTimeOffsetUtc = new(2020, 08, 25, 13, 37, 00, DateTimeOffset.UtcNow.Offset);
 
-	public static IReadOnlyList<object[]> Data { get; } =
-	[
-		[testDateTimeOffsetNow, testDateTimeNow],
-		[DateTimeOffset.MinValue, DateTime.MinValue],
-		[DateTimeOffset.MaxValue, DateTime.MaxValue],
-		[testDateTimeOffsetLocal, testDateTimeLocal],
-		[testDateTimeOffsetUtc, testDateTimeUtc],
-		[testDateTimeOffsetUtc, testDateTimeUnspecified],
-		[testDateTimeOffsetNow, testDateTimeNow, CultureInfo.CurrentCulture],
-		[DateTimeOffset.MinValue, DateTime.MinValue, CultureInfo.CurrentCulture],
-		[DateTimeOffset.MaxValue, DateTime.MaxValue, CultureInfo.CurrentCulture],
-		[testDateTimeOffsetLocal, testDateTimeLocal, CultureInfo.CurrentCulture],
-		[testDateTimeOffsetUtc, testDateTimeUtc, CultureInfo.CurrentCulture],
-		[testDateTimeOffsetUtc, testDateTimeUnspecified, CultureInfo.CurrentCulture],
-	];
+	public static TheoryData<DateTimeOffset, DateTime, CultureInfo?> Data { get; } = new()
+	{
+		{
+			testDateTimeOffsetNow, testDateTimeNow, null
+		},
+		{
+			DateTimeOffset.MinValue, DateTime.MinValue, null
+		},
+		{
+			DateTimeOffset.MaxValue, DateTime.MaxValue, null
+		},
+		{
+			testDateTimeOffsetLocal, testDateTimeLocal, null
+		},
+		{
+			testDateTimeOffsetUtc, testDateTimeUtc, null
+		},
+		{
+			testDateTimeOffsetUtc, testDateTimeUnspecified, null
+		},
+		{
+			testDateTimeOffsetNow, testDateTimeNow, CultureInfo.CurrentCulture
+		},
+		{
+			DateTimeOffset.MinValue, DateTime.MinValue, CultureInfo.CurrentCulture
+		},
+		{
+			DateTimeOffset.MaxValue, DateTime.MaxValue, CultureInfo.CurrentCulture
+		},
+		{
+			testDateTimeOffsetLocal, testDateTimeLocal, CultureInfo.CurrentCulture
+		},
+		{
+			testDateTimeOffsetUtc, testDateTimeUtc, CultureInfo.CurrentCulture
+		},
+		{
+			testDateTimeOffsetUtc, testDateTimeUnspecified, CultureInfo.CurrentCulture
+		},
+	};
 
-	public static IReadOnlyList<object[]> DataReverse { get; } =
-	[
-		[testDateTimeNow, testDateTimeOffsetNow],
-		[DateTime.MinValue, DateTimeOffset.MinValue],
-		[DateTime.MaxValue, DateTimeOffset.MaxValue],
-		[testDateTimeLocal, testDateTimeOffsetLocal],
-		[testDateTimeUtc, testDateTimeOffsetUtc],
-		[testDateTimeUnspecified, testDateTimeOffsetUtc],
-		[testDateTimeNow, testDateTimeOffsetNow, CultureInfo.CurrentCulture],
-		[DateTime.MinValue, DateTimeOffset.MinValue, CultureInfo.CurrentCulture],
-		[DateTime.MaxValue, DateTimeOffset.MaxValue, CultureInfo.CurrentCulture],
-		[testDateTimeLocal, testDateTimeOffsetLocal, CultureInfo.CurrentCulture],
-		[testDateTimeUtc, testDateTimeOffsetUtc, CultureInfo.CurrentCulture],
-		[testDateTimeUnspecified, testDateTimeOffsetUtc, CultureInfo.CurrentCulture],
-	];
+	public static TheoryData<DateTime, DateTimeOffset, CultureInfo?> DataReverse { get; } = new()
+	{
+		{
+			testDateTimeNow, testDateTimeOffsetNow, null
+		},
+		{
+			DateTime.MinValue, DateTimeOffset.MinValue, null
+		},
+		{
+			DateTime.MaxValue, DateTimeOffset.MaxValue, null
+		},
+		{
+			testDateTimeLocal, testDateTimeOffsetLocal, null
+		},
+		{
+			testDateTimeUtc, testDateTimeOffsetUtc, null
+		},
+		{
+			testDateTimeUnspecified, testDateTimeOffsetUtc, null
+		},
+		{
+			testDateTimeNow, testDateTimeOffsetNow, CultureInfo.CurrentCulture
+		},
+		{
+			DateTime.MinValue, DateTimeOffset.MinValue, CultureInfo.CurrentCulture
+		},
+		{
+			DateTime.MaxValue, DateTimeOffset.MaxValue, CultureInfo.CurrentCulture
+		},
+		{
+			testDateTimeLocal, testDateTimeOffsetLocal, CultureInfo.CurrentCulture
+		},
+		{
+			testDateTimeUtc, testDateTimeOffsetUtc, CultureInfo.CurrentCulture
+		},
+		{
+			testDateTimeUnspecified, testDateTimeOffsetUtc, CultureInfo.CurrentCulture
+		},
+	};
 
 	[Theory]
 	[MemberData(nameof(Data))]
-	public void DateTimeOffsetConverter(DateTimeOffset value, DateTime expectedResult, CultureInfo? culture = null)
+	public void DateTimeOffsetConverter(DateTimeOffset value, DateTime expectedResult, CultureInfo? culture)
 	{
 		var dateTimeOffsetConverter = new DateTimeOffsetConverter();
 
@@ -62,7 +110,7 @@ public class DateTimeOffsetConverterTests : BaseConverterTest<DateTimeOffsetConv
 
 	[Theory]
 	[MemberData(nameof(DataReverse))]
-	public void DateTimeOffsetConverterBack(DateTime value, DateTimeOffset expectedResult, CultureInfo? culture = null)
+	public void DateTimeOffsetConverterBack(DateTime value, DateTimeOffset expectedResult, CultureInfo? culture)
 	{
 		var dateTimeOffsetConverter = new DateTimeOffsetConverter();
 

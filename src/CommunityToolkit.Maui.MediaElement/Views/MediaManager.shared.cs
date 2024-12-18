@@ -63,8 +63,18 @@ public partial class MediaManager
 	/// <summary>
 	/// The platform-specific media player.
 	/// </summary>
+	[Obsolete]
 	protected PlatformMediaElement? Player { get; set; }
 #endif
+
+	/// <summary>
+	/// A helper method to determine if two floating-point numbers are equal.
+	/// </summary>
+	/// <param name="number1"></param>
+	/// <param name="number2"></param>
+	/// <param name="tolerance"></param>
+	/// <returns></returns>
+	public static bool AreFloatingPointNumbersEqual(in double number1, in double number2, double tolerance = 0.01) => Math.Abs(number1 - number2) > tolerance;
 
 	/// <summary>
 	/// Invokes the play operation on the platform element.
@@ -240,8 +250,6 @@ public partial class MediaManager
 	/// Invokes the platform functionality to update the media playback volume.
 	/// </summary>
 	protected virtual partial void PlatformUpdateVolume();
-
-	static bool AreFloatingPointNumbersEqual(in double number1, in double number2, double tolerance = 0.01) => Math.Abs(number1 - number2) > tolerance;
 }
 
 #if !(WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN)

@@ -3,7 +3,7 @@ using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public sealed class ViewsGalleryViewModel() : BaseGalleryViewModel(
+public sealed partial class ViewsGalleryViewModel() : BaseGalleryViewModel(
 [
 	SectionModel.Create<AvatarViewBindablePropertiesViewModel>("AvatarView Bindable Properties Page", Colors.Red, "A page demonstrating how to bind to various AvatarView properties."),
 	SectionModel.Create<AvatarViewBordersViewModel>("AvatarView Borders Page", Colors.Red, "A page demonstrating AvatarView borders."),
@@ -20,10 +20,13 @@ public sealed class ViewsGalleryViewModel() : BaseGalleryViewModel(
 	SectionModel.Create<CustomSizeAndPositionPopupViewModel>("Custom Size and Positioning Popup", Colors.Red, "Displays a basic popup anywhere on the screen with a custom size using VerticalOptions and HorizontalOptions."),
 	SectionModel.Create<DrawingViewViewModel>("DrawingView", Colors.Red, "DrawingView provides a canvas for users to \"paint\" on the screen. The drawing can also be captured and displayed as an Image."),
 	SectionModel.Create<ExpanderViewModel>("Expander Page", Colors.Red, "Expander allows collapse and expand content."),
-	SectionModel.Create<BasicMapsViewModel>("Windows Maps Basic Page", Colors.Red, "A page demonstrating a basic example of .NET MAUI Maps for Windows."),
-	SectionModel.Create<MapsPinsViewModel>("Windows Maps Pins Page", Colors.Red, "A page demonstrating .NET MAUI Maps for Windows with Pins."),
+	SectionModel.Create<BasicMapsViewModel>("Maps Basic Page", Colors.Red, "A page demonstrating a basic example of .NET MAUI Maps"),
 	SectionModel.Create<LazyViewViewModel>("LazyView", Colors.Red, "LazyView is a view that allows you to load its children in a delayed manner."),
+	SectionModel.Create<MapsPinsViewModel>("Maps Pins Page", Colors.Red, "A page demonstrating .NET MAUI Maps with Pins."),
 	SectionModel.Create<MediaElementViewModel>("MediaElement", Colors.Red, "MediaElement is a view for playing video and audio"),
+	SectionModel.Create<MediaElementCarouselViewViewModel>("MediaElement in CarouselView", Colors.Red, "MediaElement can be used inside a DataTemplate in a CarouselView"),
+	SectionModel.Create<MediaElementCollectionViewViewModel>("MediaElement in CollectionView", Colors.Red, "MediaElement can be used inside a DataTemplate in a CollectionView"),
+	SectionModel.Create<MediaElementMultipleWindowsViewModel>("MediaElement in a Multi-Window Application", Colors.Red, "Demonstrates that MediaElement can be used inside a DataTemplate simultaneously on multiple windows"),
 	SectionModel.Create<MultiplePopupViewModel>("Multiple Popups Page", Colors.Red, "A page demonstrating multiple different Popups"),
 	SectionModel.Create<PopupPositionViewModel>("Custom Positioning Popup", Colors.Red, "Displays a basic popup anywhere on the screen using VerticalOptions and HorizontalOptions"),
 	SectionModel.Create<PopupAnchorViewModel>("Anchor Popup", Colors.Red, "Popups can be anchored to other view's on the screen"),

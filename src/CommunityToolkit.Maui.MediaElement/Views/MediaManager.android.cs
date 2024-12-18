@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Android.Content;
 using Android.Graphics;
+using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Support.V4.Media;
 using Android.Support.V4.Media.Session;
@@ -23,6 +24,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
+[Obsolete]
 public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
 	static readonly HttpClient client = new();
@@ -36,6 +38,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	float volumeBeforeMute = 1;
 	MediaControllerCompat? mediaControllerCompat;
 	TaskCompletionSource? seekToTaskCompletionSource;
+	[Obsolete]
 	MediaSessionConnector? mediaSessionConnector;
 	MediaSessionCompat? mediaSession;
 	UIUpdateReceiver? uiUpdateReceiver;
@@ -44,6 +47,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
 	/// </summary>
+	[Obsolete]
 	protected StyledPlayerView? PlayerView { get; set; }
 
 	/// <summary>
@@ -88,6 +92,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
+	[Obsolete]
 	public void OnPlaybackParametersChanged(PlaybackParameters? playbackParameters)
 	{
 		if (playbackParameters is null || AreFloatingPointNumbersEqual(playbackParameters.Speed, MediaElement.Speed))
@@ -107,6 +112,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
+	[Obsolete]
 	public async void OnPlayerStateChanged(bool playWhenReady, int playbackState)
 	{
 		if (Player is null || MediaElement.Source is null)
@@ -184,6 +190,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	[MemberNotNull(nameof(checkPermissionsTask))]
 	[MemberNotNull(nameof(mediaSessionConnector))]
 	[MemberNotNull(nameof(mediaControllerCompat))]
+	[Obsolete]
 	public (PlatformMediaElement platformView, StyledPlayerView PlayerView) CreatePlatformView()
 	{
 		ArgumentNullException.ThrowIfNull(MauiContext.Context);
@@ -211,6 +218,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
+	[Obsolete]
 	public void OnPlaybackStateChanged(int playbackState)
 	{
 		if (MediaElement.Source is null)
@@ -245,6 +253,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
+	[Obsolete]
 	public void OnPlayerError(PlaybackException? error)
 	{
 		var errorMessage = string.Empty;
@@ -258,12 +267,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		if (error?.ErrorCode is not null)
 		{
-			errorCode = $"Error code: {error?.ErrorCode}";
+			errorCode = $"Error code: {error.ErrorCode}";
 		}
 
 		if (!string.IsNullOrWhiteSpace(error?.ErrorCodeName))
 		{
-			errorCodeName = $"Error codename: {error?.ErrorCodeName}";
+			errorCodeName = $"Error codename: {error.ErrorCodeName}";
 		}
 
 		var message = string.Join(", ", new[]
@@ -271,7 +280,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			errorCodeName,
 			errorCode,
 			errorMessage
-		}.Where(s => !string.IsNullOrEmpty(s)));
+		}.Where(static s => !string.IsNullOrEmpty(s)));
 
 		MediaElement.MediaFailed(new MediaFailedEventArgs(message));
 
@@ -338,6 +347,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		BroadcastUpdate(MediaControlsService.ACTION_PAUSE);
 	}
 
+	[Obsolete]
 	protected virtual async partial Task PlatformSeek(TimeSpan position, CancellationToken token)
 	{
 		if (Player is null)
@@ -378,6 +388,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		MediaElement.Position = TimeSpan.Zero;
 	}
 
+	[Obsolete]
 	protected virtual partial void PlatformUpdateSource()
 	{
 		var hasSetSource = false;
@@ -387,7 +398,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			return;
 		}
 
-		StopService();
 		if (mediaSession is not null)
 		{
 			mediaSession.Active = false;
@@ -448,6 +458,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		}
 	}
 
+	[Obsolete]
 	protected virtual partial void PlatformUpdateAspect()
 	{
 		if (PlayerView is null)
@@ -564,6 +575,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		Player.Volume = MediaElement.ShouldMute ? 0 : volumeBeforeMute;
 	}
 
+	[Obsolete]
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()
 	{
 		if (Player is null)
@@ -574,6 +586,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		Player.RepeatMode = MediaElement.ShouldLoopPlayback ? IPlayer.RepeatModeOne : IPlayer.RepeatModeOff;
 	}
 
+	[Obsolete]
 	protected override void Dispose(bool disposing)
 	{
 		base.Dispose(disposing);
@@ -625,6 +638,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	[MemberNotNull(nameof(uiUpdateReceiver))]
 	[MemberNotNull(nameof(mediaSessionConnector))]
 	[MemberNotNull(nameof(mediaControllerCompat))]
+	[Obsolete]
 	void InitializeMediaSession()
 	{
 		ArgumentNullException.ThrowIfNull(Player);
@@ -653,6 +667,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		mediaSession.SetFlags(MediaSessionCompat.FlagHandlesMediaButtons | MediaSessionCompat.FlagHandlesTransportControls);
 	}
 
+	[Obsolete]
 	async Task StartService(CancellationToken cancellationToken = default)
 	{
 		if (checkPermissionsTask is not null)
@@ -660,7 +675,14 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			await checkPermissionsTask.WaitAsync(cancellationToken);
 		}
 
+		ArgumentNullException.ThrowIfNull(PlayerView);
+		PlayerView.ArtworkDisplayMode = StyledPlayerView.ArtworkDisplayModeFit;
+		Android.Content.Context? context = Platform.AppContext;
+		Android.Content.Res.Resources? resources = context.Resources;
+
 		var bitmap = await GetBitmapFromUrl(MediaElement.MetadataArtworkUrl, cancellationToken);
+		PlayerView.DefaultArtwork = new BitmapDrawable(resources, bitmap);
+
 		var mediaMetadata = new MediaMetadataCompat.Builder();
 		mediaMetadata.PutString(MediaMetadataCompat.MetadataKeyArtist, MediaElement.MetadataArtist);
 		mediaMetadata.PutString(MediaMetadataCompat.MetadataKeyTitle, MediaElement.MetadataTitle);
@@ -692,11 +714,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		}
 	}
 
+	[Obsolete]
 	void BroadcastUpdate(string action)
 	{
 		if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
 		{
-			Logger.LogError("{LocalBroadcastManager} not supported on Android 13 and above.", typeof(LocalBroadcastManager));
 			return;
 		}
 		Intent intent = new(MediaControlsService.ACTION_UPDATE_UI);
@@ -704,6 +726,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		LocalBroadcastManager.GetInstance(Platform.AppContext).SendBroadcast(intent);
 	}
 
+	[Obsolete]
 	public void OnVideoSizeChanged(VideoSize? videoSize)
 	{
 		MediaElement.MediaWidth = videoSize?.Width ?? 0;
@@ -712,26 +735,49 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 	#region IPlayer.IListener implementation method stubs
 
+	[Obsolete]
 	public void OnAudioAttributesChanged(AudioAttributes? audioAttributes) { }
 	public void OnAudioSessionIdChanged(int audioSessionId) { }
+
+	[Obsolete]
 	public void OnAvailableCommandsChanged(IPlayer.Commands? availableCommands) { }
+
+	[Obsolete]
 	public void OnCues(CueGroup? cueGroup) { }
+
+	[Obsolete]
 	public void OnCues(List<Cue> cues) { }
+
+	[Obsolete]
 	public void OnDeviceInfoChanged(Com.Google.Android.Exoplayer2.DeviceInfo? deviceInfo) { }
 	public void OnDeviceVolumeChanged(int volume, bool muted) { }
+
+	[Obsolete]
 	public void OnEvents(IPlayer? player, IPlayer.Events? events) { }
 	public void OnIsLoadingChanged(bool isLoading) { }
 	public void OnIsPlayingChanged(bool isPlaying) { }
 	public void OnLoadingChanged(bool isLoading) { }
 	public void OnMaxSeekToPreviousPositionChanged(long maxSeekToPreviousPositionMs) { }
+
+	[Obsolete]
 	public void OnMediaItemTransition(MediaItem? mediaItem, int transition) { }
+
+	[Obsolete]
 	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata) { }
+
+	[Obsolete]
 	public void OnMetadata(Metadata? metadata) { }
 	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
+
+	[Obsolete]
 	public void OnPlayerErrorChanged(PlaybackException? error) { }
+
+	[Obsolete]
 	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }
 	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason) { }
 	public void OnPositionDiscontinuity(int reason) { }
+
+	[Obsolete]
 	public void OnPositionDiscontinuity(IPlayer.PositionInfo oldPosition, IPlayer.PositionInfo newPosition, int reason) { }
 	public void OnRenderedFirstFrame() { }
 	public void OnRepeatModeChanged(int repeatMode) { }
@@ -740,8 +786,14 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	public void OnShuffleModeEnabledChanged(bool shuffleModeEnabled) { }
 	public void OnSkipSilenceEnabledChanged(bool skipSilenceEnabled) { }
 	public void OnSurfaceSizeChanged(int width, int height) { }
+
+	[Obsolete]
 	public void OnTimelineChanged(Timeline? timeline, int reason) { }
+
+	[Obsolete]
 	public void OnTracksChanged(Tracks? tracks) { }
+
+	[Obsolete]
 	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters) { }
 
 	#endregion
@@ -749,6 +801,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// <summary>
 	/// A <see cref="BroadcastReceiver"/> that listens for updates from the <see cref="MediaControlsService"/>.
 	/// </summary>
+	[Obsolete]
 	sealed class UIUpdateReceiver(IExoPlayer player) : BroadcastReceiver
 	{
 		public override void OnReceive(Context? context, Intent? intent)

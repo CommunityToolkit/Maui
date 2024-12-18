@@ -7,8 +7,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class DrawingLine : IDrawingLine
 {
-	int granularity = DrawingViewDefaults.MinimumGranularity;
-
 	/// <summary>
 	/// The <see cref="Color"/> that is used to draw this line on the <see cref="IDrawingView"/>.
 	/// </summary>
@@ -29,9 +27,9 @@ public class DrawingLine : IDrawingLine
 	/// </summary>
 	public int Granularity
 	{
-		get => granularity;
-		set => granularity = Math.Clamp(value, DrawingViewDefaults.MinimumGranularity, int.MaxValue);
-	}
+		get;
+		set => field = Math.Clamp(value, DrawingViewDefaults.MinimumGranularity, int.MaxValue);
+	} = DrawingViewDefaults.MinimumGranularity;
 
 	/// <summary>
 	/// Enables or disables if this line is smoothed (anti-aliased) when drawn.
@@ -41,7 +39,7 @@ public class DrawingLine : IDrawingLine
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of the collection of <see cref="Point"/> that is provided as a parameter.
 	/// </summary>
-	/// <param name="points">A collection of <see cref="Point"/> that a image is generated from.</param>
+	/// <param name="points">A collection of <see cref="Point"/> that an image is generated from.</param>
 	/// <param name="imageSize">The desired dimensions of the generated image.</param>
 	/// <param name="lineWidth">The desired line width to be used in the generated image.</param>
 	/// <param name="strokeColor">The desired color of the line to be used in the generated image.</param>
@@ -61,13 +59,13 @@ public class DrawingLine : IDrawingLine
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of this line, based on the <see cref="Points"/> data.
 	/// </summary>
-	/// <param name="imageSizeWidth">Desired width of the image that is returned.</param>
+	/// <param name="imageSizeWidth">The desired width of the image that is returned.</param>
 	/// <param name="imageSizeHeight">Desired height of the image that is returned.</param>
 	/// <param name="background">Background of the generated image.</param>
 	/// <param name="token"><see cref="CancellationToken"/> </param>
 	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
 	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Paint background, CancellationToken token = default)
 	{
-		return DrawingViewService.GetImageStream(Points.ToList(), new Size(imageSizeWidth, imageSizeHeight), LineWidth, LineColor, background, token);
+		return DrawingViewService.GetImageStream([.. Points], new Size(imageSizeWidth, imageSizeHeight), LineWidth, LineColor, background, token);
 	}
 }

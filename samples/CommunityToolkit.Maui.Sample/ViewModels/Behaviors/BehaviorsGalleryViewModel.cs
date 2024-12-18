@@ -3,7 +3,7 @@ using CommunityToolkit.Maui.Sample.Models;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
-public class BehaviorsGalleryViewModel() : BaseGalleryViewModel(
+public partial class BehaviorsGalleryViewModel() : BaseGalleryViewModel(
 [
 	SectionModel.Create<EventToCommandBehaviorViewModel>(nameof(EventToCommandBehavior), "Turns any event into a command that can be bound to"),
 	SectionModel.Create<MaskedBehaviorViewModel>(nameof(MaskedBehavior), "Masked text in entry with specific pattern"),
@@ -22,7 +22,8 @@ public class BehaviorsGalleryViewModel() : BaseGalleryViewModel(
 	SectionModel.Create<SelectAllTextBehaviorViewModel>(nameof(SelectAllTextBehavior), "Select all text inside the Entry or Editor control."),
 	SectionModel.Create<IconTintColorBehaviorViewModel>(nameof(IconTintColorBehavior), "Tint an icon with the selected color."),
 	SectionModel.Create<StatusBarBehaviorViewModel>(nameof(StatusBarBehavior), "Change the Status Bar color."),
-	SectionModel.Create<TouchBehaviorViewModel>(nameof(TouchBehavior), "Alter a views appearance when responding to touch events (normal, pressed, hovered, long press).")
+	SectionModel.Create<TouchBehaviorViewModel>(nameof(TouchBehavior), "Alter a views appearance when responding to touch events (normal, pressed, hovered, long press)."),
+	SectionModel.Create<TouchBehaviorCollectionViewMultipleSelectionViewModel>(@$"{nameof(TouchBehavior)} in CollectionView", $"Demonstrates how to use TouchBehavior on a CollectionView where {nameof(SelectionMode)}.{nameof(SelectionMode.Multiple)} is used"),
 ])
 {
 

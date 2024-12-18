@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Essentials;
 public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 {
 	[ObservableProperty]
-	double progress;
+	public partial double Progress { get; set; }
 
 	[RelayCommand]
 	async Task SaveFile(CancellationToken cancellationToken)
@@ -17,7 +17,7 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 		using var stream = new MemoryStream(Encoding.Default.GetBytes("Hello from the Community Toolkit!"));
 		try
 		{
-			var fileName = Application.Current?.MainPage?.DisplayPromptAsync("FileSaver", "Choose filename") ?? Task.FromResult("test.txt");
+			var fileName = Application.Current?.Windows[0].Page?.DisplayPromptAsync("FileSaver", "Choose filename") ?? Task.FromResult("test.txt");
 			var fileLocationResult = await fileSaver.SaveAsync(await fileName, stream, cancellationToken);
 			fileLocationResult.EnsureSuccess();
 
@@ -48,7 +48,9 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 	async Task SaveFileInstance(CancellationToken cancellationToken)
 	{
 		using var client = new HttpClient();
-		await using var stream = await client.GetStreamAsync("https://www.nuget.org/api/v2/package/CommunityToolkit.Maui/5.0.0", cancellationToken);
+
+		const string communityToolkitNuGetUrl = "https://www.nuget.org/api/v2/package/CommunityToolkit.Maui/5.0.0";
+		await using var stream = await client.GetStreamAsync(communityToolkitNuGetUrl, cancellationToken);
 		try
 		{
 			var fileSaverInstance = new FileSaverImplementation();

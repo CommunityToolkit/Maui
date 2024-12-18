@@ -5,11 +5,11 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 public partial class MultiMathExpressionConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	double x0 = 10;
+	public partial double X0 { get; set; } = 10;
 
 	[ObservableProperty]
-	double x1 = 20;
+	public partial double X1 { get; set; } = 20;
 
 	[ObservableProperty]
-	double x2 = 30;
+	public partial double X2 { get; set; } = 30;
 }

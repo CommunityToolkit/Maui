@@ -4,24 +4,19 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public sealed partial class ByteArrayToImageSourceConverterViewModel : BaseViewModel, IDisposable
+public sealed partial class ByteArrayToImageSourceConverterViewModel(HttpClient client) : BaseViewModel, IDisposable
 {
 	readonly WeakEventManager imageDownloadFailedEventManager = new();
-	readonly HttpClient client;
+	readonly HttpClient client = client;
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(DownloadDotNetBotImageCommand))]
-	bool isDownloadingImage;
+	public partial bool IsDownloadingImage { get; set; }
 
 	[ObservableProperty]
-	byte[]? dotNetBotImageByteArray;
+	public partial byte[]? DotNetBotImageByteArray { get; private set; }
 
 	[ObservableProperty]
-	string labelText = "Tap the Download Image Button to download an Image as a byte[]";
-
-	public ByteArrayToImageSourceConverterViewModel(HttpClient client)
-	{
-		this.client = client;
-	}
+	public partial string LabelText { get; private set; } = "Tap the Download Image Button to download an Image as a byte[]";
 
 	public event EventHandler<string> ImageDownloadFailed
 	{
@@ -34,9 +29,9 @@ public sealed partial class ByteArrayToImageSourceConverterViewModel : BaseViewM
 		DotNetBotImageByteArray = null;
 	}
 
-	bool CanDownloadDotNetBotImageComandExecute => !IsDownloadingImage && DotNetBotImageByteArray is null;
+	bool CanDownloadDotNetBotImageCommandExecute => !IsDownloadingImage && DotNetBotImageByteArray is null;
 
-	[RelayCommand(CanExecute = nameof(CanDownloadDotNetBotImageComandExecute))]
+	[RelayCommand(CanExecute = nameof(CanDownloadDotNetBotImageCommandExecute))]
 	async Task DownloadDotNetBotImage(CancellationToken token)
 	{
 		IsDownloadingImage = true;
@@ -44,13 +39,14 @@ public sealed partial class ByteArrayToImageSourceConverterViewModel : BaseViewM
 		var maximumDownloadTime = TimeSpan.FromSeconds(5);
 		var maximumDownloadTimeCTS = new CancellationTokenSource(maximumDownloadTime);
 
-		// Ensure Activity Indicator appears on screen for a minumum of 1.5 seconds when the user taps the Download Button
+		// Ensure Activity Indicator appears on screen for a minimum of 1.5 seconds when the user taps the Download Button
 		var minimumDownloadTime = TimeSpan.FromSeconds(1.5);
 		var minimumDownloadTimeTask = Task.Delay(minimumDownloadTime, maximumDownloadTimeCTS.Token).WaitAsync(token);
 
 		try
 		{
-			DotNetBotImageByteArray = await client.GetByteArrayAsync("https://user-images.githubusercontent.com/13558917/137551073-ac8958bf-83e3-4ae3-8623-4db6dce49d02.png", maximumDownloadTimeCTS.Token).WaitAsync(token).ConfigureAwait(false);
+			const string dotnetBotImageUrl = "https://user-images.githubusercontent.com/13558917/137551073-ac8958bf-83e3-4ae3-8623-4db6dce49d02.png";
+			DotNetBotImageByteArray = await client.GetByteArrayAsync(dotnetBotImageUrl, maximumDownloadTimeCTS.Token).WaitAsync(token).ConfigureAwait(false);
 
 			await minimumDownloadTimeTask.ConfigureAwait(false);
 
@@ -58,7 +54,7 @@ public sealed partial class ByteArrayToImageSourceConverterViewModel : BaseViewM
 		}
 		catch (Exception e)
 		{
-			Trace.WriteLine(e);
+			Trace.TraceError("Error downloading image: {0}", e);
 			OnImageDownloadFailed(e.Message);
 		}
 		finally
