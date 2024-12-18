@@ -23,13 +23,11 @@ public enum TextCaseType
 }
 
 /// <summary>
-/// Converts text (string, char) to certain case as specified with <see cref="Type"/> or the parameter of the Convert method.
+/// Converts text (string, char) to a certain case as specified with <see cref="Type"/> or the parameter of the Convert method.
 /// </summary>
-[ContentProperty(nameof(Type))]
-public class TextCaseConverter : BaseConverterOneWay<string?, string?, TextCaseType?>
+[ContentProperty(nameof(Type)), AcceptEmptyServiceProvider]
+public partial class TextCaseConverter : BaseConverterOneWay<string?, string?, TextCaseType?>
 {
-	TextCaseType type = TextCaseType.None;
-
 	/// <inheritdoc/>
 	public override string? DefaultConvertReturnValue { get; set; } = null;
 
@@ -38,20 +36,20 @@ public class TextCaseConverter : BaseConverterOneWay<string?, string?, TextCaseT
 	/// </summary>
 	public TextCaseType Type
 	{
-		get => type;
+		get;
 		set
 		{
-			if (!Enum.IsDefined(typeof(TextCaseType), value))
+			if (!Enum.IsDefined(value))
 			{
 				throw new InvalidEnumArgumentException(nameof(value), (int)value, typeof(TextCaseType));
 			}
 
-			type = value;
+			field = value;
 		}
-	}
+	} = TextCaseType.None;
 
 	/// <summary>
-	/// Converts text (string, char) to certain case.
+	/// Converts text (string, char) to a certain case.
 	/// </summary>
 	/// <param name="value">The text to convert.</param>
 	/// <param name="parameter">The desired text case that the text should be converted to. Must match <see cref="TextCaseType"/> enum value.</param>

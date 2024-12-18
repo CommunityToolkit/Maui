@@ -2,7 +2,7 @@
 
 namespace CommunityToolkit.Maui.Sample.Pages.Layouts;
 
-public class LayoutsGalleryPage(IDeviceInfo deviceInfo, LayoutsGalleryViewModel layoutGalleryViewModel) : BaseGalleryPage<LayoutsGalleryViewModel>("Layouts", deviceInfo, layoutGalleryViewModel)
+public partial class LayoutsGalleryPage(IDeviceInfo deviceInfo, LayoutsGalleryViewModel layoutGalleryViewModel) : BaseGalleryPage<LayoutsGalleryViewModel>("Layouts", deviceInfo, layoutGalleryViewModel)
 {
 
 }
