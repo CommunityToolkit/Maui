@@ -2,13 +2,26 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.PlatformSpecific;
+
 public partial class NavigationBarAndroidViewModel : BaseViewModel
 {
 	[ObservableProperty, NotifyPropertyChangedFor(nameof(NavigationBarColor))]
-	int redSliderValue, greenSliderValue, blueSliderValue;
+	public partial int RedSliderValue { get; set; }
+
+	[ObservableProperty, NotifyPropertyChangedFor(nameof(NavigationBarColor))]
+	public partial int GreenSliderValue { get; set; }
+
+	[ObservableProperty, NotifyPropertyChangedFor(nameof(NavigationBarColor))]
+	public partial int BlueSliderValue { get; set; }
 
 	[ObservableProperty, NotifyPropertyChangedFor(nameof(NavigationBarStyle))]
-	bool isLightContentChecked, isDarkContentChecked, isDefaultChecked = true;
+	public partial bool IsLightContentChecked { get; set; }
+
+	[ObservableProperty, NotifyPropertyChangedFor(nameof(NavigationBarStyle))]
+	public partial bool IsDarkContentChecked { get; set; }
+
+	[ObservableProperty, NotifyPropertyChangedFor(nameof(NavigationBarStyle))]
+	public partial bool IsDefaultChecked { get; set; } = true;
 
 	public Color NavigationBarColor => Color.FromRgb(RedSliderValue, GreenSliderValue, BlueSliderValue);
 
@@ -20,10 +33,12 @@ public partial class NavigationBarAndroidViewModel : BaseViewModel
 			{
 				return NavigationBarStyle.Default;
 			}
+
 			if (IsLightContentChecked)
 			{
 				return NavigationBarStyle.LightContent;
 			}
+
 			if (IsDarkContentChecked)
 			{
 				return NavigationBarStyle.DarkContent;

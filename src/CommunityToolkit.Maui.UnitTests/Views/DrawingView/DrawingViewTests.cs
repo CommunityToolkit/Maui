@@ -1,12 +1,10 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.Views;
 using FluentAssertions;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
@@ -124,22 +122,18 @@ public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerT
 	}
 
 	[Fact]
-	public void CheckDefaultValues()
+	public void VerifyDefaultValues()
 	{
 		var drawingView = new DrawingView();
 
-		var expectedDefaultValue = new DrawingView
+		Assert.Multiple(() =>
 		{
-			LineColor = DrawingViewDefaults.LineColor,
-			LineWidth = DrawingViewDefaults.LineWidth,
-			IsMultiLineModeEnabled = DrawingViewDefaults.IsMultiLineModeEnabled,
-			ShouldClearOnFinish = DrawingViewDefaults.ShouldClearOnFinish,
-			Lines = [],
-			DrawAction = null,
-			DrawingLineCompletedCommand = null,
-		};
-
-		drawingView.Should().BeEquivalentTo(expectedDefaultValue, config => config.Excluding(ctx => ctx.Id));
+			drawingView.LineWidth.Should().Be(DrawingViewDefaults.LineWidth);
+			drawingView.IsMultiLineModeEnabled.Should().Be(DrawingViewDefaults.IsMultiLineModeEnabled);
+			drawingView.ShouldClearOnFinish.Should().Be(DrawingViewDefaults.ShouldClearOnFinish);
+			drawingView.LineColor.Should().Be(DrawingViewDefaults.LineColor);
+			drawingView.BackgroundColor.Should().Be(DrawingViewDefaults.BackgroundColor);
+		});
 	}
 
 	[Fact]

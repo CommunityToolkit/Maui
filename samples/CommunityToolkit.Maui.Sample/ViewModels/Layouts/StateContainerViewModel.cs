@@ -18,7 +18,7 @@ public partial class StateContainerViewModel : BaseViewModel
 	bool canFullPageStateChange = true;
 
 	[ObservableProperty]
-	bool canAnimationStateChange = true;
+	public partial bool CanAnimationStateChange { get; set; } = true;
 
 	[RelayCommand(CanExecute = nameof(CanCycleStateChange))]
 	async Task CycleStates(CancellationToken token)

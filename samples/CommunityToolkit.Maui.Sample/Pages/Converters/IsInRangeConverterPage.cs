@@ -6,7 +6,7 @@ using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
-public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
+public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 {
 	public IsInRangeConverterPage(IsInRangeConverterViewModel viewModel) : base(viewModel)
 	{
@@ -381,7 +381,7 @@ public class IsInRangeConverterPage : BasePage<IsInRangeConverterViewModel>
 	static Line GetSeparator() => new Line { X2 = 300 }.Center()
 									.AppThemeBinding(Line.StrokeProperty, Colors.Black, Colors.White);
 
-	class ExampleLabel : Label
+	sealed partial class ExampleLabel : Label
 	{
 		public ExampleLabel()
 		{

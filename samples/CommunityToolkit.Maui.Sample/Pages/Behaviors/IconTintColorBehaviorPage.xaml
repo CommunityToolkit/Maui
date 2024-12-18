@@ -75,9 +75,12 @@
 				Grid.Row="4"
 				Grid.Column="1"
 				Command="{Binding ToggleImageButtonCommand, Mode=OneTime}"
-				Source="{Binding ToggleableImageSource}">
+				Source="{Binding ToggleableImageSource}"
+                x:Name="ToggleImageSourceButton">
                 <ImageButton.Behaviors>
-                    <mct:IconTintColorBehavior TintColor="Red" />
+                    <mct:IconTintColorBehavior 
+                        BindingContext="{Binding Path=BindingContext, Source={x:Reference ToggleImageSourceButton}, x:DataType=ImageButton}"
+                        TintColor="{Binding ToggleableIconTintColor}" />
                 </ImageButton.Behaviors>
             </ImageButton>
 
@@ -85,9 +88,12 @@
 				Grid.Row="4"
 				Grid.Column="2"
 				Command="{Binding ChangeColorCommand}"
-				Source="shield.png">
+				Source="shield.png"
+                x:Name="ShieldButton">
                 <ImageButton.Behaviors>
-                    <mct:IconTintColorBehavior TintColor="{Binding ToggleableIconTintColor}" />
+                    <mct:IconTintColorBehavior
+                        BindingContext="{Binding Path=BindingContext, Source={x:Reference ShieldButton}, x:DataType=ImageButton}"
+                        TintColor="{Binding ToggleableIconTintColor}" />
                 </ImageButton.Behaviors>
             </ImageButton>
 

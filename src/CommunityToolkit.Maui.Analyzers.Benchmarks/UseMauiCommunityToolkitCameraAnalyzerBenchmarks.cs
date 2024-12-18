@@ -15,9 +15,9 @@ public class UseMauiCommunityToolkitCameraAnalyzerBenchmarks
 	}
 
 	[Benchmark]
-	public Task VerifyNoErrorsWhenUseMauiCommunityToolkitCameraHasAdditonalWhitespace()
+	public Task VerifyNoErrorsWhenUseMauiCommunityToolkitCameraHasAdditionalWhitespace()
 	{
-		return useCommunityToolkitCameraInitializationAnalyzerTests.VerifyNoErrorsWhenUseMauiCommunityToolkitCameraHasAdditonalWhitespace();
+		return useCommunityToolkitCameraInitializationAnalyzerTests.VerifyNoErrorsWhenUseMauiCommunityToolkitCameraHasAdditionalWhitespace();
 	}
 
 	[Benchmark]

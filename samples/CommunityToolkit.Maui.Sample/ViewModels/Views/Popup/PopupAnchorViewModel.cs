@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public sealed partial class PopupAnchorViewModel : BaseViewModel
 {
-	static Page Page => Application.Current?.MainPage ?? throw new NullReferenceException();
+	static Page MainPage => Application.Current?.Windows[0].Page ?? throw new InvalidOperationException("MainPage cannot be null");
 
 	[RelayCommand]
 	static void ShowPopup(View anchor)
@@ -15,6 +15,6 @@ public sealed partial class PopupAnchorViewModel : BaseViewModel
 		{
 			Anchor = anchor
 		};
-		Page.ShowPopup(popup);
+		MainPage.ShowPopup(popup);
 	}
 }
