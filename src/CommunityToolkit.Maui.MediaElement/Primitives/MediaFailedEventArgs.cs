@@ -9,7 +9,6 @@
 /// <param name="errorMessage">An error message providing more information for this event.</param>
 public sealed class MediaFailedEventArgs(string errorMessage) : EventArgs
 {
-
 	/// <summary>
 	/// Gets a description of why the media failed to load and/or play.
 	/// </summary>

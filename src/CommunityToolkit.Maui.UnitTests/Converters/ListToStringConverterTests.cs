@@ -5,19 +5,31 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ListToStringConverterTests : BaseOneWayConverterTest<ListToStringConverter>
 {
-	public static IReadOnlyList<object?[]> TestData { get; } =
-	[
-		[new[] { "A", "B", "C" }, "+_+", "A+_+B+_+C"],
-		[new[] { "A", string.Empty, "C" }, ",", "A,C"],
-		[new[] { "A", null, "C" }, ",", "A,C"],
-		[new[] { "A" }, ":-:", "A"],
-		[Array.Empty<string>(), ",", string.Empty],
-		[new[] { "A", "B", "C" }, null, "ABC"],
-	];
+	public static TheoryData<string?[], string?, string> TestData { get; } = new()
+	{
+		{
+			["A", "B", "C"], "+_+", "A+_+B+_+C"
+		},
+		{
+			["A", string.Empty, "C"], ",", "A,C"
+		},
+		{
+			["A", null, "C"], ",", "A,C"
+		},
+		{
+			["A"], ":-:", "A"
+		},
+		{
+			[], ",", string.Empty
+		},
+		{
+			["A", "B", "C"], null, "ABC"
+		},
+	};
 
 	[Theory]
 	[MemberData(nameof(TestData))]
-	public void ListToStringConverter(string[] value, string? parameter, string expectedResult)
+	public void ListToStringConverter(string?[] value, string? parameter, string expectedResult)
 	{
 		var listToStringConverter = new ListToStringConverter();
 
@@ -30,7 +42,7 @@ public class ListToStringConverterTests : BaseOneWayConverterTest<ListToStringCo
 
 	[Theory]
 	[MemberData(nameof(TestData))]
-	public void ListToStringConverterExplicitParameter(string[] value, string? parameter, string expectedResult)
+	public void ListToStringConverterExplicitParameter(string?[] value, string? parameter, string expectedResult)
 	{
 		var listToStringConverter = new ListToStringConverter()
 		{
@@ -51,7 +63,10 @@ public class ListToStringConverterTests : BaseOneWayConverterTest<ListToStringCo
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		Assert.Throws<ArgumentNullException>(() => listToStringConverter.Separator = null);
-		Assert.Throws<ArgumentNullException>(() => new ListToStringConverter { Separator = null });
+		Assert.Throws<ArgumentNullException>(() => new ListToStringConverter
+		{
+			Separator = null
+		});
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 

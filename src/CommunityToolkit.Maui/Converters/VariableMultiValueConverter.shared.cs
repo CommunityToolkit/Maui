@@ -23,7 +23,8 @@ public enum MultiBindingCondition
 /// <summary>
 /// The <see cref="VariableMultiValueConverter"/> is a converter that allows users to convert multiple <see cref="bool"/> value bindings to a single <see cref="bool"/>. It does this by enabling them to specify whether All, Any, None or a specific number of values are true as specified in <see cref="ConditionType"/>. This is useful when combined with the <see cref="MultiBinding"/>.
 /// </summary>
-public class VariableMultiValueConverter : MultiValueConverterExtension, ICommunityToolkitMultiValueConverter
+[AcceptEmptyServiceProvider]
+public partial class VariableMultiValueConverter : MultiValueConverterExtension, ICommunityToolkitMultiValueConverter
 {
 	/// <summary>
 	/// Indicates how many values should be true out of the provided boolean values in the <see cref="MultiBinding"/>. Supports the following values: All, None, Any, GreaterThan, LessThan.
@@ -86,6 +87,6 @@ public class VariableMultiValueConverter : MultiValueConverterExtension, ICommun
 			return null;
 		}
 
-		return boolValue ? targetTypes?.Select(t => ConditionType == MultiBindingCondition.All).OfType<object>().ToArray() : null;
+		return boolValue ? targetTypes?.Select(_ => ConditionType is MultiBindingCondition.All).OfType<object>().ToArray() : null;
 	}
 }

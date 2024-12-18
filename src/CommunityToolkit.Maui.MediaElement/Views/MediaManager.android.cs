@@ -250,7 +250,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			errorCodeName,
 			errorCode,
 			errorMessage
-		}.Where(s => !string.IsNullOrEmpty(s)));
+		}.Where(static s => !string.IsNullOrEmpty(s)));
 
 		MediaElement.MediaFailed(new MediaFailedEventArgs(message));
 
@@ -587,7 +587,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaMetadata.Builder mediaMetaData = new();
 		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
 		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
-		var data = await GetBytesFromMetadataArtworkUrl(MediaElement.MetadataArtworkUrl, cancellationToken).ConfigureAwait(false) ?? null;
+		var data = await GetBytesFromMetadataArtworkUrl(MediaElement.MetadataArtworkUrl, cancellationToken).ConfigureAwait(true) ?? null;
 		mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);
 
 		mediaItem = new MediaItem.Builder();

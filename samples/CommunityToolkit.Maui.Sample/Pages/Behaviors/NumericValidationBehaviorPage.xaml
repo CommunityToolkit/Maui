@@ -39,7 +39,7 @@
             </Entry.Behaviors>
         </Entry>
 
-        <Button Clicked="SetEntryValue" Text="Set Entry Value To Null" IsEnabled="{Binding Path=Text, Source={x:Reference SafeEntry}, Converter={StaticResource IsNotNullConverter}}"/>
+        <Button Clicked="SetEntryValue" Text="Set Entry Value To Null" IsEnabled="{Binding Path=Text, Source={x:Reference SafeEntry}, Converter={StaticResource IsNotNullConverter}, x:DataType=Entry}"/>
         <Label Text="After entering text then setting the above Entry value to null, the app will crash because null is not a valid input for NumericValidationBehavior and CommunityToolkit.Maui.Options.SetShouldSuppressExceptionsInBehaviors is not set to true."
                TextColor="{StaticResource NormalLabelTextColor}" />
     </VerticalStackLayout>

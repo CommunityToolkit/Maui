@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Sample.ViewModels.Converters;
-using Microsoft.Maui.Dispatching;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
