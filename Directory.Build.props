@@ -1,17 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project>
   <PropertyGroup>
-    <NetVersion>net8.0</NetVersion>
-    <MauiPackageVersion>8.0.71</MauiPackageVersion>
-    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
     <NoWarn>NETSDK1023</NoWarn>
-    <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
-    <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
-    <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
+    <NetVersion>net9.0</NetVersion>
+    <LangVersion>preview</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
+    <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
+
+    <!-- Prevent NuGet Package Vulnerabilities -->
+    <NuGetAudit>enable</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+
+    <!-- MAUI Specific -->
+    <MauiPackageVersion>9.0.21</MauiPackageVersion>
+    <NextMauiPackageVersion>10.0.0</NextMauiPackageVersion>
+    <MauiStrictXamlCompilation>true</MauiStrictXamlCompilation>
+    <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
+    <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
 
     <!-- https://learn.microsoft.com/dotnet/core/deploying/native-aot/?tabs=net8plus%2Cwindows -->
     <StripSymbols>false</StripSymbols>
@@ -39,40 +48,153 @@
      CS1712: Type parameter has no matching typeparam tag in the XML comment
      CS1723: XML comment has cref attribute that refers to a type parameter
      CS1734: XML comment has a paramref tag, but there is no parameter by that name
-   
-     xUnit1012: Null should not be used for type parameter
-     xUnit2021: Assert.ThrowsAsync is async. The resulting task should be awaited
-     
-     IL2***: Trim Warnings
-     
-     IL3***: AOT Warnings 
-     
+     MVMTK0042: The field [ObservableProperty] can be converted to a partial property
+     CsWinRT1028: Class implements WinRT interfaces but isn't marked partial
+     CsWinRT1030: Class implements WinRT interfaces that require unsafe code
+     NU1900	Error communicating with package source, while getting vulnerability information.
+     NU1901	Package with low severity detected
+     NU1902	Package with moderate severity detected
+     NU1903	Package with high severity detected
+     NU1904	Package with critical severity detected
+     NU1905	An audit source does not provide a vulnerability database
+     xUnit1000: Test classes must be public
+     xUnit1001: Fact methods cannot have parameters
+     xUnit1002: Test methods cannot have multiple Fact or Theory attributes
+     xUnit1003: Theory methods must have test data
+     xUnit1004: Test methods should not be skipped
+     xUnit1005: Fact methods should not have test data
+     xUnit1006: Theory methods should have parameters
+     xUnit1007: ClassData must point at a valid class
+     xUnit1008: Test data attribute should only be used on a Theory
+     xUnit1009: InlineData values must match the number of method parameters
+     xUnit1010: The value is not convertible to the method parameter type
+     xUnit1011: There is no matching method parameter
+     xUnit1012: Null should not be used for value type parameters
+     xUnit1013: Public method should be marked as test
+     xUnit1014: MemberData should use nameof operator for member name
+     xUnit1015: MemberData must reference an existing member
+     xUnit1016: MemberData must reference a public member
+     xUnit1017: MemberData must reference a static member
+     xUnit1018: MemberData must reference a valid member kind
+     xUnit1019: MemberData must reference a member providing a valid data type
+     xUnit1020: MemberData must reference a property with a getter
+     xUnit1021: MemberData should not have parameters if the referenced member is not a method
+     xUnit1022: Theory methods cannot have a parameter array
+     xUnit1023: Theory methods cannot have default parameter values
+     xUnit1024: Test methods cannot have overloads
+     xUnit1025: InlineData should be unique within the Theory it belongs to
+     xUnit1026: Theory methods should use all of their parameters
+     xUnit1027: Collection definition classes must be public
+     xUnit1028: Test method must have valid return type
+     xUnit1029: Local functions cannot be test functions
+     xUnit1030: Do not call ConfigureAwait in test method
+     xUnit1031: Do not use blocking task operations in test method
+     xUnit1032: Test classes cannot be nested within a generic class
+     xUnit1033: Test classes decorated with 'Xunit.IClassFixture' or 'Xunit.ICollectionFixture' should add a constructor argument of type TFixture
+     xUnit1034: Null should only be used for nullable parameters
+     xUnit1035: The value is not convertible to the method parameter type
+     xUnit1036: There is no matching method parameter
+     xUnit1037: There are fewer theory data type arguments than required by the parameters of the test method
+     xUnit1038: There are more theory data type arguments than allowed by the parameters of the test method
+     xUnit1039: The type argument to theory data is not compatible with the type of the corresponding test method parameter
+     xUnit1040: The type argument to theory data is nullable, while the type of the corresponding test method parameter is not
+     xUnit1041:	Fixture arguments to test classes must have fixture sources
+     xUnit1042: The member referenced by the MemberData attribute returns untyped data rows
+     xUnit1043: Constructors on classes derived from FactAttribute must be public when used on test methods
+     xUnit1048: Avoid using 'async void' for test methods as it is deprecated in xUnit.net v3
+     xUnit1049: Do not use 'async void' for test methods as it is no longer supported
+     xUnit1050: The class referenced by the ClassData attribute returns untyped data rows
+     xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken
+     xUnit2000: Constants and literals should be the expected argument
+     xUnit2001: Do not use invalid equality check
+     xUnit2002: Do not use null check on value type
+     xUnit2003: Do not use equality check to test for null value
+     xUnit2004: Do not use equality check to test for boolean conditions
+     xUnit2005: Do not use identity check on value type
+     xUnit2006: Do not use invalid string equality check
+     xUnit2007: Do not use typeof expression to check the type
+     xUnit2008: Do not use boolean check to match on regular expressions
+     xUnit2009: Do not use boolean check to check for substrings
+     xUnit2010: Do not use boolean check to check for string equality
+     xUnit2011: Do not use empty collection check
+     xUnit2012: Do not use Enumerable.Any() to check if a value exists in a collection
+     xUnit2013: Do not use equality check to check for collection size.
+     xUnit2014:	Do not use throws check to check for asynchronously thrown exception
+     xUnit2015:	Do not use typeof expression to check the exception type
+     xUnit2016:	Keep precision in the allowed range when asserting equality of doubles or decimals.
+     xUnit2017:	Do not use Contains() to check if a value exists in a collection
+     xUnit2018:	Do not compare an object's exact type to an abstract class or interface
+     xUnit2019:	Do not use obsolete throws check to check for asynchronously thrown exception
+     xUnit2020:	Do not use always-failing boolean assertion to fail a test
+     xUnit2021:	Async assertions should be awaited
+     xUnit2022:	Boolean assertions should not be negated
+     xUnit2023:	Do not use collection methods for single-item collections
+     xUnit2024:	Do not use boolean asserts for simple equality tests
+     xUnit2025:	The boolean assertion statement can be simplified
+     xUnit2026:	Comparison of sets must be done with IEqualityComparer
+     xUnit2027:	Comparison of sets to linear containers have undefined results
+     xUnit2028:	Do not use Assert.Empty or Assert.NotEmpty with problematic types
+     xUnit2029:	Do not use Assert.Empty to check if a value does not exist in a collection
+     xUnit2030:	Do not use Assert.NotEmpty to check if a value exists in a collection
+     xUnit2031:	Do not use Where clause with Assert.Single
+     xUnit2032:	Type assertions based on 'assignable from' are confusingly named
+     xUnit3000: Classes which cross AppDomain boundaries must derive directly or indirectly from LongLivedMarshalByRefObject
+     xUnit3001: Classes that are marked as serializable (or created by the test framework at runtime) must have a public parameterless constructor
+     xUnit3002: Classes which are JSON serializable should not be tested for their concrete type
+     XC0045: Binding: Property not found
+     XC0103: Consider attributing the markup extension with [RequireService] or [AcceptEmptyServiceProvider] if it doesn't require any
+     IL2***: Trim Warnings     
+     IL3***: AOT Warnings     
      RS2007: Analyzer release file 'AnalyzerReleases.Shipped.md' has a missing or invalid release header-->
-     <WarningsAsErrors>nullable,
-       CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1580,CS1581,CS1584,CS1587,CS1589,CS1590,CS1591,CS1592,CS1598,CS1658,CS1710,CS1711,CS1712,CS1723,CS1734,
-       xUnit1012,xUnit2021,
-       IL2001,IL2002,IL2003,IL2004,IL2005,IL2006,IL2007,IL2008,IL2009,
-       IL2010,IL2011,IL2012,IL2013,IL2014,IL2015,IL2016,IL2017,IL2018,IL2019,
-       IL2020,IL2021,IL2022,IL2023,IL2024,IL2025,IL2026,IL2027,IL2028,IL2029,
-       IL2030,IL2031,IL2032,IL2033,IL2034,IL2035,IL2036,IL2037,IL2038,IL2039,
-       IL2040,IL2041,IL2042,IL2043,IL2044,IL2045,IL2046,IL2047,IL2048,IL2049,
-       IL2050,IL2051,IL2052,IL2053,IL2054,IL2055,IL2056,IL2057,IL2058,IL2059,
-       IL2060,IL2061,IL2062,IL2063,IL2064,IL2065,IL2066,IL2067,IL2068,IL2069,
-       IL2070,IL2071,IL2072,IL2073,IL2074,IL2075,IL2076,IL2077,IL2078,IL2079,
-       IL2080,IL2081,IL2082,IL2083,IL2084,IL2085,IL2086,IL2087,IL2088,IL2089,
-       IL2090,IL2091,IL2092,IL2093,IL2094,IL2095,IL2096,IL2097,IL2098,IL2099,
-       IL2100,IL2101,IL2102,IL2103,IL2104,IL2105,IL2106,IL2107,IL2108,IL2109,
-       IL2110,IL2111,IL2112,IL2113,IL2114,IL2115,IL2116,IL2117,IL2118,IL2119,
-       IL2120,IL2121,IL2122,
-       IL3050,IL3051,IL3052,IL3053,IL3054,IL3055,IL3056,
-       RS2007
-     </WarningsAsErrors>
+    <WarningsAsErrors>
+      nullable,
+      CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1580,CS1581,CS1584,CS1587,CS1589,CS1590,CS1591,CS1592,CS1598,CS1658,CS1710,CS1711,CS1712,CS1723,CS1734,
+      CsWinRT1028,CsWinRT1030,
+      MVMTK0042,
+      NU1900,NU1901,NU1902,NU1903,NU1904,NU1905,
+      xUnit1000,xUnit1001,xUnit1002,xUnit1003,xUnit1004,xUnit1005,xUnit1006,xUnit1007,xUnit1008,xUnit1009,xUnit1010,xUnit1011,xUnit1012,xUnit1013,xUnit1014,xUnit1015,xUnit1016,xUnit1017,xUnit1018,xUnit1019,xUnit1020,xUnit1021,xUnit1022,xUnit1023,xUnit1024,xUnit1025,xUnit1026,xUnit1027,xUnit1028,xUnit1029,xUnit1030,xUnit1031,xUnit1032,xUnit1033,xUnit1034,xUnit1035,xUnit1036,xUnit1037,xUnit1038,xUnit1039,xUnit1040,xUnit1041,xUnit1042,xUnit1043,xUnit1048,xUnit1049,xUnit1050,xUnit1051,
+      xUnit2000,xUnit2001,xUnit2002,xUnit2003,xUnit2004,xUnit2005,xUnit2006,xUnit2007,xUnit2008,xUnit2009,xUnit2010,xUnit2011,xUnit2012,xUnit2013,xUnit2014,xUnit2015,xUnit2016,xUnit2017,xUnit2018,xUnit2019,xUnit2020,xUnit2021,xUnit2022,xUnit2023,xUnit2024,xUnit2025,xUnit2026,xUnit2027,xUnit2028,xUnit2029,xUnit2030,xUnit2031,xUnit2032,
+      xUnit3000,xUnit3001,xUnit3002,
+      XC0045,XC0103,
+      IL2001,IL2002,IL2003,IL2004,IL2005,IL2006,IL2007,IL2008,IL2009,
+      IL2010,IL2011,IL2012,IL2013,IL2014,IL2015,IL2016,IL2017,IL2018,IL2019,
+      IL2020,IL2021,IL2022,IL2023,IL2024,IL2025,IL2026,IL2027,IL2028,IL2029,
+      IL2030,IL2031,IL2032,IL2033,IL2034,IL2035,IL2036,IL2037,IL2038,IL2039,
+      IL2040,IL2041,IL2042,IL2043,IL2044,IL2045,IL2046,IL2047,IL2048,IL2049,
+      IL2050,IL2051,IL2052,IL2053,IL2054,IL2055,IL2056,IL2057,IL2058,IL2059,
+      IL2060,IL2061,IL2062,IL2063,IL2064,IL2065,IL2066,IL2067,IL2068,IL2069,
+      IL2070,IL2071,IL2072,IL2073,IL2074,IL2075,IL2076,IL2077,IL2078,IL2079,
+      IL2080,IL2081,IL2082,IL2083,IL2084,IL2085,IL2086,IL2087,IL2088,IL2089,
+      IL2090,IL2091,IL2092,IL2093,IL2094,IL2095,IL2096,IL2097,IL2098,IL2099,
+      IL2100,IL2101,IL2102,IL2103,IL2104,IL2105,IL2106,IL2107,IL2108,IL2109,
+      IL2110,IL2111,IL2112,IL2113,IL2114,IL2115,IL2116,IL2117,IL2118,IL2119,
+      IL2120,IL2121,IL2122,
+      IL3050,IL3051,IL3052,IL3053,IL3054,IL3055,IL3056,
+      RS2007
+    </WarningsAsErrors>
+  </PropertyGroup>
+
+  <!-- Required for NuGet Source Link -->
+  <PropertyGroup Condition="'$(TF_BUILD)' == 'true' OR '$(GITHUB_ACTIONS)' == 'true'">
+    <!--  Ensure deterministic build when using Azure Pipelines or GitHub Actions-->
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+
+    <!-- Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+    <!-- Embed source files that are not tracked by the source control manager in the PDB -->
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+    <!-- Embed symbols containing Source Link in the main file (exe/dll) -->
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="CommunityToolkit.Maui.UnitTests" />
+    <InternalsVisibleTo Include="CommunityToolkit.Maui.UnitTests"/>
+    <InternalsVisibleTo Include="CommunityToolkit.Maui.Analyzers.UnitTests"/>
   </ItemGroup>
-  <PropertyGroup Condition="'$(TF_BUILD)' == 'true' and $([MSBuild]::IsOSPlatform('windows')) == 'true'">
+
+  <PropertyGroup Condition="('$(TF_BUILD)' == 'true' OR '$(GITHUB_ACTIONS)' == 'true') and $([MSBuild]::IsOSPlatform('windows')) == 'true'">
     <IncludeTizenTargetFrameworks>true</IncludeTizenTargetFrameworks>
   </PropertyGroup>
 </Project>

@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <summary>
 /// The <see cref="ProgressBarAnimationBehavior"/> is a behavior that behavior that animates a <see cref="ProgressBar"/>
 /// /// </summary>
-public class ProgressBarAnimationBehavior : BaseBehavior<ProgressBar>
+public partial class ProgressBarAnimationBehavior : BaseBehavior<ProgressBar>
 {
 	readonly WeakEventManager animationCompletedEventManager = new();
 

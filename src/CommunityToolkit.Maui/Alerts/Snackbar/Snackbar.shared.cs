@@ -8,8 +8,6 @@ public partial class Snackbar : ISnackbar
 	static readonly WeakEventManager weakEventManager = new();
 
 	bool isDisposed;
-	readonly string text = string.Empty;
-	readonly string actionButtonText = AlertDefaults.ActionButtonText;
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="Snackbar"/>
@@ -38,16 +36,16 @@ public partial class Snackbar : ISnackbar
 	/// <inheritdoc/>
 	public string Text
 	{
-		get => text;
-		init => text = value ?? throw new ArgumentNullException(nameof(value));
-	}
+		get;
+		init => field = value ?? throw new ArgumentNullException(nameof(value));
+	} = string.Empty;
 
 	/// <inheritdoc/>
 	public string ActionButtonText
 	{
-		get => actionButtonText;
-		init => actionButtonText = value ?? throw new ArgumentNullException(nameof(value));
-	}
+		get;
+		init => field = value ?? throw new ArgumentNullException(nameof(value));
+	} = AlertDefaults.ActionButtonText;
 
 	/// <inheritdoc/>
 	public SnackbarOptions VisualOptions { get; init; }
