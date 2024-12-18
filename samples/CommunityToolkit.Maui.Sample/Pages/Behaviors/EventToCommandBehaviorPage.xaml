@@ -19,10 +19,12 @@
 
         <Button Text="Increment (No Args)"
                     TextColor="White"
-                    BackgroundColor="{StaticResource NormalButtonBackgroundColor}">
+                    BackgroundColor="{StaticResource NormalButtonBackgroundColor}"
+                    x:Name="IncrementButton">
             <Button.Behaviors>
                 <mct:EventToCommandBehavior
                         EventName="Clicked"
+                        BindingContext="{Binding Path=BindingContext, Source={x:Reference IncrementButton}, x:DataType=Button}"
                         Command="{Binding IncrementCommand}" />
             </Button.Behaviors>
         </Button>
@@ -30,11 +32,13 @@
         
         <Button Text="Click Me (Pass event args)"
                     TextColor="White"
-                    BackgroundColor="{StaticResource NormalButtonBackgroundColor}">
+                    BackgroundColor="{StaticResource NormalButtonBackgroundColor}"
+                    x:Name="EventArgsButton">
             <Button.Behaviors>
                 <mct:EventToCommandBehavior
                         x:TypeArguments="system:EventArgs"
                         EventName="Clicked"
+                        BindingContext="{Binding Path=BindingContext, Source={x:Reference EventArgsButton}, x:DataType=Button}"
                         Command="{Binding IncrementWithArgsCommand}" />
             </Button.Behaviors>
         </Button>

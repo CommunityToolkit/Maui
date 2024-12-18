@@ -35,7 +35,7 @@
                      HorizontalOptions="Center"
                      HeightRequest="100"
                      WidthRequest="100"
-                     Fill="{Binding Source={x:Reference CheckBox}, Path=IsChecked, Mode=TwoWay, Converter={StaticResource BoolToColorBrushConverter}}"/>
+                     Fill="{Binding Source={x:Reference CheckBox}, Path=IsChecked, Mode=TwoWay, Converter={StaticResource BoolToColorBrushConverter}, x:DataType=CheckBox}"/>
 
 
             <CheckBox HorizontalOptions="Start"
