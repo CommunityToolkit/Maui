@@ -1,5 +1,5 @@
 ﻿using Android.App;
-using Android.OS;
+using Android.Views;
 using AndroidX.Core.View;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Extensions;
@@ -17,7 +17,7 @@ static partial class NavigationBar
 			return true;
 		}
 
-		System.Diagnostics.Trace.WriteLine($"{nameof(NavigationBar)} {nameof(Style)} + {nameof(Color)} functionality is not supported on this version of the Android operating system. Minimum supported Android API is {BuildVersionCodes.M}");
+		System.Diagnostics.Trace.WriteLine($"{nameof(NavigationBar)} {nameof(Style)} + {nameof(Color)} functionality is not supported on this version of the Android operating system. Minimum supported Android API is 23.0");
 
 		return false;
 	});
@@ -93,7 +93,14 @@ static partial class NavigationBar
 
 		var color = GetColor(page).ToPlatform();
 
-		window.SetNavigationBarColor(color);
+		if (OperatingSystem.IsAndroidVersionAtLeast(21))
+		{
+			window.SetNavigationBarColor(color);
+		}
+		else
+		{
+			System.Diagnostics.Trace.WriteLine($"{nameof(NavigationBar)} {nameof(Style)} + {nameof(Color)} functionality is not supported on this version of the Android operating system. Minimum supported Android API is 23");
+		}
 	}
 
 	internal static partial void RemapForControls()
