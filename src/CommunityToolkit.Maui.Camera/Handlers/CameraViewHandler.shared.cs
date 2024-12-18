@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 #if TIZEN
 public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>
 #else
-public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>, IDisposable
+public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>, IDisposable
 #endif
 {
 	/// <summary>
@@ -67,7 +67,7 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 	}
 
 	/// <summary>
-	/// Creates a platform specific view that will be rendered on that platform.
+	/// Creates a platform-specific view that will be rendered on that platform.
 	/// </summary>
 	protected override NativePlatformCameraPreviewView CreatePlatformView()
 	{

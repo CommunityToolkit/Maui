@@ -3,7 +3,6 @@ using CommunityToolkit.Maui.Media;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace CommunityToolkit.Maui.UnitTests.Essentials;
 
@@ -62,7 +61,7 @@ public class SpeechToTextTests(ITestOutputHelper testOutputHelper) : BaseTest
 		SpeechToText.Default.RecognitionResultUpdated += OnRecognitionTextUpdated;
 		SpeechToText.Default.RecognitionResultCompleted += OnRecognitionTextCompleted;
 		await SpeechToText.StartListenAsync(CultureInfo.CurrentCulture, CancellationToken.None);
-		await Task.Delay(500);
+		await Task.Delay(500, CancellationToken.None);
 		await SpeechToText.StopListenAsync(CancellationToken.None);
 		SpeechToText.Default.RecognitionResultUpdated -= OnRecognitionTextUpdated;
 		SpeechToText.Default.RecognitionResultCompleted -= OnRecognitionTextCompleted;

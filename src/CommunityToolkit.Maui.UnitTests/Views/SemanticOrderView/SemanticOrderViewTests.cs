@@ -10,7 +10,7 @@ public class SemanticOrderViewTests : BaseHandlerTest
 
 	public SemanticOrderViewTests()
 	{
-		Assert.IsAssignableFrom<ISemanticOrderView>(new MockSemanticOrderView());
+		Assert.IsType<ISemanticOrderView>(new MockSemanticOrderView(), exactMatch: false);
 	}
 
 	[Fact]

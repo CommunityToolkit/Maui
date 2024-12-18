@@ -3,7 +3,7 @@ using CommunityToolkit.Maui.Sample.Models;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
-public class BehaviorsGalleryViewModel() : BaseGalleryViewModel(
+public partial class BehaviorsGalleryViewModel() : BaseGalleryViewModel(
 [
 	SectionModel.Create<EventToCommandBehaviorViewModel>(nameof(EventToCommandBehavior), "Turns any event into a command that can be bound to"),
 	SectionModel.Create<MaskedBehaviorViewModel>(nameof(MaskedBehavior), "Masked text in entry with specific pattern"),

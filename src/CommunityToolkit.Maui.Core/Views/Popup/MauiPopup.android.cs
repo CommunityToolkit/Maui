@@ -73,33 +73,14 @@ public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 	}
 
 	/// <summary>
-	/// Method to CleanUp the resources of the <see cref="MauiPopup"/>.
+	/// Method to clean up the resources of the <see cref="MauiPopup"/>.
 	/// </summary>
 	public void CleanUp()
 	{
 		VirtualView = null;
 	}
 
-	bool TryCreateContainer(in IPopup popup, [NotNullWhen(true)] out AView? container)
-	{
-		container = null;
-
-		if (popup.Content is null)
-		{
-			return false;
-		}
-
-		container = popup.Content.ToPlatform(mauiContext);
-		SetContentView(container);
-
-		return true;
-	}
-
-	void SubscribeEvents()
-	{
-		SetOnCancelListener(this);
-	}
-
+	/// <inheritdoc/>
 	public override bool OnTouchEvent(MotionEvent e)
 	{
 		if (VirtualView is not null)
@@ -123,14 +104,27 @@ public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 			}
 		}
 
-		if (this.IsDisposed())
+		return !this.IsDisposed() && base.OnTouchEvent(e);
+	}
+
+	bool TryCreateContainer(in IPopup popup, [NotNullWhen(true)] out AView? container)
+	{
+		container = null;
+
+		if (popup.Content is null)
 		{
 			return false;
 		}
-		else
-		{
-			return base.OnTouchEvent(e);
-		}
+
+		container = popup.Content.ToPlatform(mauiContext);
+		SetContentView(container);
+
+		return true;
+	}
+
+	void SubscribeEvents()
+	{
+		SetOnCancelListener(this);
 	}
 
 	void IDialogInterfaceOnCancelListener.OnCancel(IDialogInterface? dialog) => OnDismissedByTappingOutsideOfPopup(this);
