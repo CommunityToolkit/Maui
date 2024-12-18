@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
-using Microsoft.Maui.Platform;
-using Windows.UI.Xaml;
+﻿using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// The native implementation of the <see href="SemanticOrderView"/> control.
 /// </summary>
-public class MauiSemanticOrderView : ContentPanel
+public partial class MauiSemanticOrderView : ContentPanel
 {
 	ISemanticOrderView? virtualView;
 

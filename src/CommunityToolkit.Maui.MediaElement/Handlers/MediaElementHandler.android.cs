@@ -11,8 +11,8 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	/// <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
-	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
-	public static void ShouldLoopPlayback(MediaElementHandler handler, MediaElement MediaElement)
+	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	public static void ShouldLoopPlayback(MediaElementHandler handler, MediaElement mediaElement)
 	{
 		handler.mediaManager?.UpdateShouldLoopPlayback();
 	}

@@ -49,12 +49,10 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 
 	readonly WeakEventManager dismissWeakEventManager = new();
 	readonly WeakEventManager openedWeakEventManager = new();
-	readonly Lazy<PlatformConfigurationRegistry<Popup>> platformConfigurationRegistry;
 	readonly MergedStyle mergedStyle;
 
 	TaskCompletionSource popupDismissedTaskCompletionSource = new();
 	TaskCompletionSource<object?> resultTaskCompletionSource = new();
-	Window window;
 	ResourceDictionary resources = [];
 
 	/// <summary>
@@ -62,11 +60,9 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// </summary>
 	public Popup()
 	{
-		platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Popup>>(() => new(this));
 		((IResourceDictionary)resources).ValuesChanged += OnResourcesChanged;
 
 		VerticalOptions = HorizontalOptions = LayoutAlignment.Center;
-		window = Window;
 		mergedStyle = new MergedStyle(GetType(), this);
 	}
 
@@ -153,10 +149,10 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	}
 
 	/// <summary>
-	/// Gets or sets a value indicating whether the popup can be dismissed by tapping outside of the Popup.
+	/// Gets or sets a value indicating whether the popup can be dismissed by tapping outside the Popup.
 	/// </summary>
 	/// <remarks>
-	/// When true and the user taps outside of the popup it will dismiss.
+	/// When true and the user taps outside the popup, it will dismiss.
 	/// On Android - when false the hardware back button is disabled.
 	/// </remarks>
 	public bool CanBeDismissedByTappingOutsideOfPopup
@@ -178,7 +174,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// Gets or sets the <see cref="View"/> anchor.
 	/// </summary>
 	/// <remarks>
-	/// The Anchor is where the Popup will render closest to. When an Anchor is configured
+	/// The Anchor is where the Popup will render closest to. When an Anchor is configured,
 	/// the popup will appear centered over that control or as close as possible.
 	/// </remarks>
 	public View? Anchor { get; set; }
@@ -188,20 +184,20 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// </summary>
 	public Window Window
 	{
-		get => window;
+		get;
 		set
 		{
-			window = value;
+			field = value;
 
 			if (Content is IWindowController controller)
 			{
 				controller.Window = value;
 			}
 		}
-	}
+	} = new();
 
 	/// <summary>
-	/// Property that represent Resources of Popup.
+	/// Property that represents Resources of Popup.
 	/// </summary>
 	public ResourceDictionary Resources
 	{
@@ -228,7 +224,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	}
 
 	/// <summary>
-	/// Property that represent Style Class of Popup.
+	/// Property that represents Style Class of Popup.
 	/// </summary>
 	[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
 	public IList<string> StyleClass
@@ -238,7 +234,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	}
 
 	/// <summary>
-	/// Gets or sets the result that will return when user taps outside of the Popup.
+	/// Gets or sets the result that will return when the user taps outside the Popup.
 	/// </summary>
 	protected object? ResultWhenUserTapsOutsideOfPopup { get; set; }
 
@@ -366,7 +362,7 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	}
 
 	/// <summary>
-	/// Invoked when the popup is dismissed by tapping outside of the popup.
+	/// Invoked when the popup is dismissed by tapping outside the popup.
 	/// </summary>
 	protected internal virtual async Task OnDismissedByTappingOutsideOfPopup(CancellationToken token = default)
 	{
@@ -384,7 +380,12 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 		if (Content is not null)
 		{
 			SetInheritedBindingContext(Content, BindingContext);
-			Content.Parent = this;
+
+			if (ReferenceEquals(Content.Parent, this) is false)
+			{
+				Content.Parent = null;
+				Content.Parent = this;
+			}
 		}
 	}
 

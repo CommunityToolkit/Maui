@@ -7,14 +7,13 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 public partial class ItemTappedEventArgsConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	Person? itemSelected = null;
-
-	public IReadOnlyList<Person> Items { get; } = new[]
-	{
+	public partial Person? ItemSelected { get; set; } = null;
+	public IReadOnlyList<Person> Items { get; } =
+	[
 		new Person(1, "John Doe"),
 		new Person(2, "Jane Doe"),
 		new Person(3, "Joe Doe")
-	};
+	];
 
 	[RelayCommand]
 	Task ItemTapped(Person? person, CancellationToken token)
@@ -23,7 +22,7 @@ public partial class ItemTappedEventArgsConverterViewModel : BaseViewModel
 
 		ItemSelected = null;
 
-		return Application.Current?.MainPage?.DisplayAlert("Item Tapped", person.Name, "Ok").WaitAsync(token) ?? Task.CompletedTask;
+		return Application.Current?.Windows[0].Page?.DisplayAlert("Item Tapped", person.Name, "Ok").WaitAsync(token) ?? Task.CompletedTask;
 	}
 
 }

@@ -1,6 +1,8 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Maps;
 using Microsoft.Maui.Maps.Handlers;
 using Microsoft.Maui.Platform;
@@ -13,9 +15,10 @@ using IMap = Microsoft.Maui.Maps.IMap;
 namespace CommunityToolkit.Maui.Maps.Handlers;
 
 /// <inheritdoc />
+[RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
+[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
 public partial class MapHandlerWindows : MapHandler
 {
-	internal static string? MapsKey;
 	MapSpan? regionToGo;
 
 	readonly JsonSerializerOptions jsonSerializerOptions = new()
@@ -29,18 +32,25 @@ public partial class MapHandlerWindows : MapHandler
 	public MapHandlerWindows() : base(Mapper, CommandMapper)
 	{
 		Mapper.ModifyMapping(nameof(IMap.MapType), (handler, map, _) => MapMapType(handler, map));
-		Mapper.ModifyMapping(nameof(IMap.IsShowingUser), (handler, map, _) => MapIsShowingUser(handler, map));
+		Mapper.ModifyMapping(nameof(IMap.IsShowingUser), async (handler, map, _) => await MapIsShowingUser(handler, map));
 		Mapper.ModifyMapping(nameof(IMap.IsScrollEnabled), (handler, map, _) => MapIsScrollEnabled(handler, map));
 		Mapper.ModifyMapping(nameof(IMap.IsTrafficEnabled), (handler, map, _) => MapIsTrafficEnabled(handler, map));
 		Mapper.ModifyMapping(nameof(IMap.IsZoomEnabled), (handler, map, _) => MapIsZoomEnabled(handler, map));
-		Mapper.ModifyMapping(nameof(IMap.Pins), (handler, map, _) => MapPins(handler, map));
+		Mapper.ModifyMapping(nameof(IMap.Pins), async (handler, map, _) => await MapPins(handler, map));
 		Mapper.ModifyMapping(nameof(IMap.Elements), (handler, map, _) => MapElements(handler, map));
-		CommandMapper.ModifyMapping(nameof(IMap.MoveToRegion), (handler, map, args, _) => MapMoveToRegion(handler, map, args));
+		CommandMapper.ModifyMapping(nameof(IMap.MoveToRegion), async (handler, map, args, _) => await MapMoveToRegion(handler, map, args));
 	}
 
-	/// <inheritdoc/>
+	internal static string? MapsKey { get; set; }
 
+	/// <inheritdoc/>
+	[RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
+	[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
+#pragma warning disable IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
+#pragma warning disable IL3051 // 'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.
 	protected override FrameworkElement CreatePlatformView()
+#pragma warning restore IL3051 // 'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.
+#pragma warning restore IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
 	{
 		if (string.IsNullOrEmpty(MapsKey))
 		{
@@ -48,19 +58,25 @@ public partial class MapHandlerWindows : MapHandler
 		}
 
 		var mapPage = GetMapHtmlPage(MapsKey);
-		var webView = new MauiWebView();
-		webView.NavigationCompleted += WebViewNavigationCompleted;
+		var webView = new MauiWebView(new WebViewHandler());
+		webView.NavigationCompleted += HandleWebViewNavigationCompleted;
 		webView.WebMessageReceived += WebViewWebMessageReceived;
 		webView.LoadHtml(mapPage, null);
 		return webView;
 	}
 
 	/// <inheritdoc />
+	[RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
+	[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
+#pragma warning disable IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
+#pragma warning disable IL3051 // 'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.
 	protected override void DisconnectHandler(FrameworkElement platformView)
+#pragma warning restore IL3051 // 'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.
+#pragma warning restore IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
 	{
 		if (PlatformView is MauiWebView mauiWebView)
 		{
-			mauiWebView.NavigationCompleted -= WebViewNavigationCompleted;
+			mauiWebView.NavigationCompleted -= HandleWebViewNavigationCompleted;
 			mauiWebView.WebMessageReceived -= WebViewWebMessageReceived;
 		}
 
@@ -70,66 +86,70 @@ public partial class MapHandlerWindows : MapHandler
 	/// <summary>
 	/// Maps Map type
 	/// </summary>
-	public static new void MapMapType(IMapHandler handler, IMap map)
+	public static new Task MapMapType(IMapHandler handler, IMap map)
 	{
-		CallJSMethod(handler.PlatformView, $"setMapType('{map.MapType}');");
+		return CallJSMethod(handler.PlatformView, $"setMapType('{map.MapType}');");
 	}
 
 	/// <summary>
 	/// Maps IsZoomEnabled
 	/// </summary>
-	public static new void MapIsZoomEnabled(IMapHandler handler, IMap map)
+	public static new Task MapIsZoomEnabled(IMapHandler handler, IMap map)
 	{
-		CallJSMethod(handler.PlatformView, $"disableMapZoom({(!map.IsZoomEnabled).ToString().ToLower()});");
+		return CallJSMethod(handler.PlatformView, $"disableMapZoom({(!map.IsZoomEnabled).ToString().ToLower()});");
 	}
 
 	/// <summary>
 	/// Maps IsScrollEnabled
 	/// </summary>
-	public static new void MapIsScrollEnabled(IMapHandler handler, IMap map)
+	public static new Task MapIsScrollEnabled(IMapHandler handler, IMap map)
 	{
-		CallJSMethod(handler.PlatformView, $"disablePanning({(!map.IsScrollEnabled).ToString().ToLower()});");
+		return CallJSMethod(handler.PlatformView, $"disablePanning({(!map.IsScrollEnabled).ToString().ToLower()});");
 	}
 
 	/// <summary>
 	/// Maps IsTrafficEnabled
 	/// </summary>
-	public static new void MapIsTrafficEnabled(IMapHandler handler, IMap map)
+	public static new Task MapIsTrafficEnabled(IMapHandler handler, IMap map)
 	{
-		CallJSMethod(handler.PlatformView, $"disableTraffic({(!map.IsTrafficEnabled).ToString().ToLower()});");
+		return CallJSMethod(handler.PlatformView, $"disableTraffic({(!map.IsTrafficEnabled).ToString().ToLower()});");
 	}
 
 	/// <summary>
 	/// Maps IsShowingUser
 	/// </summary>
-	public static new async void MapIsShowingUser(IMapHandler handler, IMap map)
+	public static new async Task MapIsShowingUser(IMapHandler handler, IMap map)
 	{
 		if (map.IsShowingUser)
 		{
 			var location = await GetCurrentLocation();
 			if (location != null)
 			{
-				CallJSMethod(handler.PlatformView, $"addLocationPin({location.Latitude.ToString(CultureInfo.InvariantCulture)},{location.Longitude.ToString(CultureInfo.InvariantCulture)});");
+				await CallJSMethod(handler.PlatformView, $"addLocationPin({location.Latitude.ToString(CultureInfo.InvariantCulture)},{location.Longitude.ToString(CultureInfo.InvariantCulture)});");
 			}
 		}
 		else
 		{
-			CallJSMethod(handler.PlatformView, "removeLocationPin();");
+			await CallJSMethod(handler.PlatformView, "removeLocationPin();");
 		}
 	}
 
 	/// <summary>
 	/// Map Pins
 	/// </summary>
-	public static new void MapPins(IMapHandler handler, IMap map)
+	public static new async Task MapPins(IMapHandler handler, IMap map)
 	{
-		CallJSMethod(handler.PlatformView, "removeAllPins();");
+		await CallJSMethod(handler.PlatformView, "removeAllPins();");
+
+		var addPinTaskList = new List<Task>();
 
 		foreach (var pin in map.Pins)
 		{
-			CallJSMethod(handler.PlatformView, $"addPin({pin.Location.Latitude.ToString(CultureInfo.InvariantCulture)}," +
-				$"{pin.Location.Longitude.ToString(CultureInfo.InvariantCulture)},'{pin.Label}', '{pin.Address}', '{(pin as Pin)?.Id}');");
+			addPinTaskList.Add(CallJSMethod(handler.PlatformView, $"addPin({pin.Location.Latitude.ToString(CultureInfo.InvariantCulture)}," +
+				$"{pin.Location.Longitude.ToString(CultureInfo.InvariantCulture)},'{pin.Label}', '{pin.Address}', '{(pin as Pin)?.Id}');"));
 		}
+
+		await Task.WhenAll(addPinTaskList);
 	}
 
 	/// <summary>
@@ -140,10 +160,9 @@ public partial class MapHandlerWindows : MapHandler
 	/// <summary>
 	/// Maps MoveToRegion
 	/// </summary>
-	public static new void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
+	public static new async Task MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
 	{
-		var newRegion = arg as MapSpan;
-		if (newRegion == null)
+		if (arg is not MapSpan newRegion)
 		{
 			return;
 		}
@@ -153,14 +172,21 @@ public partial class MapHandlerWindows : MapHandler
 			mapHandler.regionToGo = newRegion;
 		}
 
-		CallJSMethod(handler.PlatformView, $"setRegion({newRegion.Center.Latitude.ToString(CultureInfo.InvariantCulture)},{newRegion.Center.Longitude.ToString(CultureInfo.InvariantCulture)});");
+		await CallJSMethod(handler.PlatformView, $"setRegion({newRegion.Center.Latitude.ToString(CultureInfo.InvariantCulture)},{newRegion.Center.Longitude.ToString(CultureInfo.InvariantCulture)},{newRegion.LatitudeDegrees.ToString(CultureInfo.InvariantCulture)},{newRegion.LongitudeDegrees.ToString(CultureInfo.InvariantCulture)});");
 	}
 
-	static void CallJSMethod(FrameworkElement platformWebView, string script)
+	static async Task CallJSMethod(FrameworkElement platformWebView, string script)
 	{
-		if (platformWebView is WebView2 webView2 && webView2.CoreWebView2 != null)
+		if (platformWebView is WebView2 webView2)
 		{
-			platformWebView.DispatcherQueue.TryEnqueue(async () => await webView2.ExecuteScriptAsync(script));
+			var tcs = new TaskCompletionSource();
+			webView2.DispatcherQueue.TryEnqueue(async () =>
+			{
+				await webView2.ExecuteScriptAsync(script);
+				tcs.SetResult();
+			});
+
+			await tcs.Task;
 		}
 	}
 
@@ -273,11 +299,9 @@ public partial class MapHandlerWindows : MapHandler
 								});
 							}
 
-							function setRegion(latitude, longitude)
+							function setRegion(latitude, longitude, latitudeDegrees, longitudeDegrees)
 							{
-								map.setView({
-									center: new Microsoft.Maps.Location(latitude, longitude),
-								});
+								map.setView({bounds: new Microsoft.Maps.LocationRect(new Microsoft.Maps.Location(latitude, longitude), latitudeDegrees, longitudeDegrees) });
 							}
 
 							function addLocationPin(latitude, longitude)
@@ -384,18 +408,20 @@ public partial class MapHandlerWindows : MapHandler
 		return new Location(position.Coordinate.Latitude, position.Coordinate.Longitude);
 	}
 
-	void WebViewNavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
+	async void HandleWebViewNavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
 	{
 		// Update initial properties when our page is loaded
 		Mapper.UpdateProperties(this, VirtualView);
 
 		if (regionToGo != null)
 		{
-			MapMoveToRegion(this, VirtualView, regionToGo);
+			await MapMoveToRegion(this, VirtualView, regionToGo);
 		}
 	}
 
-	void WebViewWebMessageReceived(WebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
+	[RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
+	[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
+	async void WebViewWebMessageReceived(WebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
 	{
 		// For some reason the web message is empty
 		if (string.IsNullOrEmpty(args.WebMessageAsJson))
@@ -450,7 +476,7 @@ public partial class MapHandlerWindows : MapHandler
 					var hideInfoWindow = clickedPin?.SendInfoWindowClick();
 					if (hideInfoWindow is not false)
 					{
-						CallJSMethod(PlatformView, "hideInfoWindow();");
+						await CallJSMethod(PlatformView, "hideInfoWindow();");
 					}
 				}
 				break;
@@ -466,7 +492,7 @@ public partial class MapHandlerWindows : MapHandler
 					var hideInfoWindow = clickedPin?.SendMarkerClick();
 					if (hideInfoWindow is not false)
 					{
-						CallJSMethod(PlatformView, "hideInfoWindow();");
+						await CallJSMethod(PlatformView, "hideInfoWindow();");
 					}
 				}
 				break;

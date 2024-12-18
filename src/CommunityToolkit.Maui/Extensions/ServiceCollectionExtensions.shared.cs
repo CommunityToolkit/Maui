@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Views;
 
 // Using root CommunityToolkit.Maui namespace so these extension methods
@@ -24,7 +25,7 @@ public static class ServiceCollectionExtensions
 	/// <remarks>Developers are still responsible for assigning the injected instance of 
 	/// <typeparamref name="TViewModel" />
 	/// to the BindingContext property of <typeparamref name="TView" />.</remarks>
-	public static IServiceCollection AddTransient<TView, TViewModel>(this IServiceCollection services)
+	public static IServiceCollection AddTransient<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TViewModel>(this IServiceCollection services)
 		where TView : BindableObject
 		where TViewModel : class, INotifyPropertyChanged
 	{
@@ -43,7 +44,7 @@ public static class ServiceCollectionExtensions
 	/// <see cref="INotifyPropertyChanged"/></typeparam>
 	/// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
 	/// <returns>A reference to this instance after the operation has completed.</returns>
-	public static IServiceCollection AddTransientPopup<TPopupView, TPopupViewModel>(this IServiceCollection services)
+	public static IServiceCollection AddTransientPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>(this IServiceCollection services)
 		where TPopupView : Popup
 		where TPopupViewModel : INotifyPropertyChanged
 	{
@@ -69,7 +70,7 @@ public static class ServiceCollectionExtensions
 	/// <returns>A reference to this instance after the operation has completed.</returns>
 	/// <remarks>Developers are still responsible for assigning the injected instance of <typeparamref name="TViewModel" /> 
 	/// to the BindingContext property of <typeparamref name="TView" />.</remarks>
-	public static IServiceCollection AddTransientWithShellRoute<TView, TViewModel>(this IServiceCollection services, string route, RouteFactory? factory = null)
+	public static IServiceCollection AddTransientWithShellRoute<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TViewModel>(this IServiceCollection services, string route, RouteFactory? factory = null)
 		where TView : NavigableElement
 		where TViewModel : class, INotifyPropertyChanged
 	{
@@ -89,7 +90,7 @@ public static class ServiceCollectionExtensions
 	/// <returns>A reference to this instance after the operation has completed.</returns>
 	/// <remarks>Developers are still responsible for assigning the injected instance of <typeparamref name="TViewModel" /> 
 	/// to the BindingContext property of <typeparamref name="TView" />.</remarks>
-	public static IServiceCollection AddSingleton<TView, TViewModel>(this IServiceCollection services)
+	public static IServiceCollection AddSingleton<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TViewModel>(this IServiceCollection services)
 		where TView : BindableObject
 		where TViewModel : class, INotifyPropertyChanged
 	{
@@ -115,7 +116,7 @@ public static class ServiceCollectionExtensions
 	/// <returns>A reference to this instance after the operation has completed.</returns>
 	/// <remarks>Developers are still responsible for assigning the injected instance of <typeparamref name="TViewModel" /> 
 	/// to the BindingContext property of <typeparamref name="TView" />.</remarks>
-	public static IServiceCollection AddSingletonWithShellRoute<TView, TViewModel>(this IServiceCollection services, string route, RouteFactory? factory = null)
+	public static IServiceCollection AddSingletonWithShellRoute<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TViewModel>(this IServiceCollection services, string route, RouteFactory? factory = null)
 		where TView : NavigableElement
 		where TViewModel : class, INotifyPropertyChanged
 	{
@@ -135,7 +136,7 @@ public static class ServiceCollectionExtensions
 	/// <returns>A reference to this instance after the operation has completed.</returns>
 	/// <remarks>Developers are still responsible for assigning the injected instance of <typeparamref name="TViewModel" /> 
 	/// to the BindingContext property of <typeparamref name="TView" />.</remarks>
-	public static IServiceCollection AddScoped<TView, TViewModel>(this IServiceCollection services)
+	public static IServiceCollection AddScoped<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TViewModel>(this IServiceCollection services)
 		where TView : BindableObject
 		where TViewModel : class, INotifyPropertyChanged
 	{
@@ -161,7 +162,7 @@ public static class ServiceCollectionExtensions
 	/// <returns>A reference to this instance after the operation has completed.</returns>
 	/// <remarks>Developers are still responsible for assigning the injected instance of <typeparamref name="TViewModel" /> 
 	/// to the BindingContext property of <typeparamref name="TView" />.</remarks>
-	public static IServiceCollection AddScopedWithShellRoute<TView, TViewModel>(this IServiceCollection services, string route, RouteFactory? factory = null)
+	public static IServiceCollection AddScopedWithShellRoute<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TViewModel>(this IServiceCollection services, string route, RouteFactory? factory = null)
 		where TView : NavigableElement
 		where TViewModel : class, INotifyPropertyChanged
 	{
@@ -170,13 +171,13 @@ public static class ServiceCollectionExtensions
 	}
 
 	/// <summary>
-	/// Registers routes in in <see cref="Routing"/> for Views registered using WithShellRouting methods.
+	/// Registers routes in <see cref="Routing"/> for Views registered using WithShellRouting methods.
 	/// </summary>
 	/// <typeparam name="TView">The type of the View to add. Constrained to <see cref="NavigableElement"/></typeparam>
 	/// <param name="route">Route at which this page will be registered within Shell routing.</param>
 	/// <param name="factory">RouteFactory to be used while creating the <see cref="NavigableElement"/> 
 	/// for the route. Defaults to TypeRouteFactory.</param>
-	static void RegisterShellRoute<TView>(string route, RouteFactory? factory = null)
+	static void RegisterShellRoute<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TView>(string route, RouteFactory? factory = null)
 		where TView : NavigableElement
 	{
 		if (factory is null)

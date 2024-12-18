@@ -7,14 +7,15 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts an object that implements IComparable to an object or a boolean based on a comparison.
 /// </summary>
-public sealed class CompareConverter : CompareConverter<IComparable, object>
+[AcceptEmptyServiceProvider]
+public sealed partial class CompareConverter : CompareConverter<IComparable, object>
 {
 }
 
 /// <summary>
 /// Converts an object that implements IComparable to an object or a boolean based on a comparison.
 /// </summary>
-public abstract class CompareConverter<TValue, TReturnObject> : BaseConverterOneWay<TValue, object> where TValue : IComparable
+public abstract class CompareConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TValue, TReturnObject> : BaseConverterOneWay<TValue, object> where TValue : IComparable
 {
 	/// <inheritdoc/>
 	public override object DefaultConvertReturnValue { get; set; } = new();
@@ -87,9 +88,8 @@ public abstract class CompareConverter<TValue, TReturnObject> : BaseConverterOne
 	{
 		ArgumentNullException.ThrowIfNull(value);
 		ArgumentNullException.ThrowIfNull(ComparingValue);
-		ArgumentNullException.ThrowIfNull(ComparisonOperator);
 
-		if (!Enum.IsDefined(typeof(OperatorType), ComparisonOperator))
+		if (!Enum.IsDefined(ComparisonOperator))
 		{
 			throw new InvalidEnumArgumentException(nameof(ComparisonOperator), (int)ComparisonOperator, typeof(OperatorType));
 		}

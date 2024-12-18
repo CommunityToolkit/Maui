@@ -7,7 +7,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts embedded image resource ID to it ImageSource.
 /// </summary>
-public class ImageResourceConverter : BaseConverterOneWay<string?, ImageSource?>
+[AcceptEmptyServiceProvider]
+public partial class ImageResourceConverter : BaseConverterOneWay<string?, ImageSource?>
 {
 	/// <inheritdoc/>
 	public override ImageSource? DefaultConvertReturnValue { get; set; } = null;

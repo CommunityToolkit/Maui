@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <summary>
 /// The <see cref="ImpliedOrderGridBehavior"/> enables you to automatically assign a <see cref="Grid"/> row and column to a view based on the order the view is added to the <see cref="Grid"/>. You only need to setup the row and column definitions and then add children to the <see cref="Grid"/>. You may still assign RowSpan and ColumnSpan to views and their values will be taken into account when assigning a row and column to a view. If a view has a user defined row or column value it will be honored.
 /// </summary>
-public class ImpliedOrderGridBehavior : BaseBehavior<Grid>
+public partial class ImpliedOrderGridBehavior : BaseBehavior<Grid>
 {
 	bool[][]? usedMatrix;
 	int rowCount;
@@ -34,7 +34,7 @@ public class ImpliedOrderGridBehavior : BaseBehavior<Grid>
 
 	static void LogWarning(string warning, bool shouldThrowException)
 	{
-		System.Diagnostics.Trace.WriteLine(warning);
+		System.Diagnostics.Trace.TraceWarning(warning);
 
 		if (shouldThrowException)
 		{

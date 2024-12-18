@@ -6,7 +6,6 @@ using Android.Provider;
 using Android.Webkit;
 using CommunityToolkit.Maui.Core.Essentials;
 using CommunityToolkit.Maui.Core.Extensions;
-using Java.IO;
 using Microsoft.Maui.ApplicationModel;
 using AndroidUri = Android.Net.Uri;
 using Trace = System.Diagnostics.Trace;
@@ -102,7 +101,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 			{
 				await fileOutputStream.WriteAsync(buffer, 0, bytesRead).WaitAsync(cancellationToken).ConfigureAwait(false);
 				totalRead += bytesRead;
-				progress?.Report(totalRead / stream.Length);
+				progress?.Report((double)totalRead / stream.Length);
 			}
 
 			if (fileOutputStream.Channel is not null)

@@ -15,6 +15,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiMediaElement : CoordinatorLayout
 {
+	[Obsolete]
 	readonly StyledPlayerView playerView;
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
@@ -35,6 +36,7 @@ public class MauiMediaElement : CoordinatorLayout
 	/// </summary>
 	/// <param name="context">The application's <see cref="Context"/>.</param>
 	/// <param name="playerView">The <see cref="StyledPlayerView"/> that acts as the platform media player.</param>
+	[Obsolete]
 	public MauiMediaElement(Context context, StyledPlayerView playerView) : base(context)
 	{
 		this.playerView = playerView;
@@ -55,6 +57,7 @@ public class MauiMediaElement : CoordinatorLayout
 		AddView(relativeLayout);
 	}
 
+	[Obsolete]
 	public override void OnDetachedFromWindow()
 	{
 		if (isFullScreen)
@@ -72,7 +75,7 @@ public class MauiMediaElement : CoordinatorLayout
 	protected override void OnVisibilityChanged(Android.Views.View changedView, [GeneratedEnum] ViewStates visibility)
 	{
 		base.OnVisibilityChanged(changedView, visibility);
-		if (isFullScreen && visibility == ViewStates.Visible)
+		if (isFullScreen && visibility is ViewStates.Visible)
 		{
 			SetSystemBarsVisibility();
 		}
@@ -102,6 +105,7 @@ public class MauiMediaElement : CoordinatorLayout
 		base.Dispose(disposing);
 	}
 
+	[Obsolete]
 	void OnFullscreenButtonClick(object? sender, StyledPlayerView.FullscreenButtonClickEventArgs e)
 	{
 		// Ensure there is a player view

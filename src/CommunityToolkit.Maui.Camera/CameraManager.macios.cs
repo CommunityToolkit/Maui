@@ -30,8 +30,10 @@ partial class CameraManager
 			SessionPreset = AVCaptureSession.PresetPhoto
 		};
 
-		var previewView = new PreviewView();
-		previewView.Session = captureSession;
+		var previewView = new PreviewView
+		{
+			Session = captureSession
+		};
 
 		return previewView;
 	}
@@ -60,7 +62,7 @@ partial class CameraManager
 			return;
 		}
 
-		captureDevice.LockForConfiguration(out NSError error);
+		captureDevice.LockForConfiguration(out NSError? error);
 		if (error is not null)
 		{
 			Trace.WriteLine(error);
@@ -78,7 +80,7 @@ partial class CameraManager
 			return;
 		}
 
-		captureDevice.LockForConfiguration(out NSError error);
+		captureDevice.LockForConfiguration(out NSError? error);
 		if (error is not null)
 		{
 			Trace.WriteLine(error);
@@ -97,14 +99,14 @@ partial class CameraManager
 			return d.Width <= resolution.Width && d.Height <= resolution.Height;
 		}).ToList();
 
-		filteredFormatList = (filteredFormatList.Any() ? filteredFormatList : cameraView.SelectedCamera.SupportedFormats)
+		filteredFormatList = [.. (filteredFormatList.Count is not 0 ? filteredFormatList : cameraView.SelectedCamera.SupportedFormats)
 			.OrderByDescending(f =>
 			{
 				var d = ((CMVideoFormatDescription)f.FormatDescription).Dimensions;
 				return d.Width * d.Height;
-			}).ToList();
+			})];
 
-		if (filteredFormatList.Any())
+		if (filteredFormatList.Count is not 0)
 		{
 			captureDevice.ActiveFormat = filteredFormatList.First();
 		}
@@ -199,10 +201,15 @@ partial class CameraManager
 		var result = await wrapper.Task.WaitAsync(token);
 		var data = result.Photo.FileDataRepresentation;
 
+		if (result.Error is not null)
+		{
+			cameraView.OnMediaCapturedFailed(result.Error.LocalizedFailureReason);
+			return;
+		}
+
 		if (data is null)
 		{
-			// TODO: Pass NSError information
-			cameraView.OnMediaCapturedFailed();
+			cameraView.OnMediaCapturedFailed("Unable to retrieve the file data representation from the captured result.");
 			return;
 		}
 
@@ -213,6 +220,11 @@ partial class CameraManager
 			Marshal.Copy(data.Bytes, dataBytes, 0, (int)data.Length);
 
 			cameraView.OnMediaCaptured(new MemoryStream(dataBytes));
+		}
+		catch (Exception ex)
+		{
+			cameraView.OnMediaCapturedFailed(ex.Message);
+			throw;
 		}
 		finally
 		{

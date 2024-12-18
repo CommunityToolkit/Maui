@@ -14,7 +14,7 @@ namespace CommunityToolkit.Maui.Views;
 [SupportedOSPlatform("android21.0")]
 [SupportedOSPlatform("ios")]
 [SupportedOSPlatform("maccatalyst")]
-public class CameraView : View, ICameraView
+public partial class CameraView : View, ICameraView
 {
 	static readonly BindablePropertyKey isAvailablePropertyKey =
 		BindableProperty.CreateReadOnly(nameof(IsAvailable), typeof(bool), typeof(CameraView), CameraViewDefaults.IsAvailable);
@@ -119,7 +119,7 @@ public class CameraView : View, ICameraView
 	/// Gets the Command that triggers an image capture.
 	/// </summary>
 	/// <remarks>
-	/// <see cref="CaptureImageCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter"
+	/// <see cref="CaptureImageCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter
 	/// </remarks>
 	public Command<CancellationToken> CaptureImageCommand => (Command<CancellationToken>)GetValue(CaptureImageCommandProperty);
 
@@ -127,7 +127,7 @@ public class CameraView : View, ICameraView
 	/// Gets the Command that starts the camera preview.
 	/// </summary>
 	/// /// <remarks>
-	/// <see cref="StartCameraPreviewCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter"
+	/// <see cref="StartCameraPreviewCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter
 	/// </remarks>
 	public Command<CancellationToken> StartCameraPreviewCommand => (Command<CancellationToken>)GetValue(StartCameraPreviewCommandProperty);
 
@@ -201,9 +201,9 @@ public class CameraView : View, ICameraView
 	}
 
 	/// <inheritdoc cref="ICameraView.OnMediaCapturedFailed"/>
-	public void OnMediaCapturedFailed()
+	public void OnMediaCapturedFailed(string failureReason)
 	{
-		weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(), nameof(MediaCaptureFailed));
+		weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(failureReason), nameof(MediaCaptureFailed));
 	}
 
 	/// <inheritdoc cref="ICameraView.GetAvailableCameras"/>

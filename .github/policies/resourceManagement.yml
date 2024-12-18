@@ -88,7 +88,7 @@ configuration:
           label: needs reproduction
       then:
       - addReply:
-          reply: Hi @${issueAuthor}. We have added the "needs reproduction" label to this issue, which indicates that we cannot take further action. This issue will be closed automatically in 5 days if we do not hear back from you by then - please feel free to re-open it if you come back to this issue after that time.
+          reply: Hi @${issueAuthor}! We have added the https://github.com/CommunityToolkit/Maui/labels/needs%20reproduction label to this issue, which indicates that we are unable to take further action until you provide a reproduction sample that we can use to reproduce + fix your bug. In accordance with the [`Reporting a bug` section of our `Contributing.md`](https://github.com/CommunityToolkit/Maui/blob/main/CONTRIBUTING.md#reporting-a-bug) that you confirmed reading before you submitted this Issue, we ask that every Issue author provide a link to an open-source repository containing the reproduction sample app. This issue will be closed automatically in 5 days if we do not receive a reproduction sample from you. Please feel free to re-open this Issue once you have provided a reproduction sample.
       description: Add comment when 'needs reproduction' is applied to issue
     - if:
       - payloadType: Issues

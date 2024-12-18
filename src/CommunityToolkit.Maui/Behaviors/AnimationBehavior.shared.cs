@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 using CommunityToolkit.Maui.Animations;
 
 namespace CommunityToolkit.Maui.Behaviors;
@@ -6,8 +7,17 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <summary>
 /// The <see cref="AnimationBehavior"/> is a behavior that shows an animation on any <see cref="VisualElement"/> when the <see cref="AnimateCommand"/> is called.
 /// </summary>
-public class AnimationBehavior : EventToCommandBehavior
+public partial class AnimationBehavior : EventToCommandBehavior
 {
+	const string animateCommandSetterWarning =
+		"""
+		Do not use this setter, it only exists to enable XAML Hot reload support in your IDE.
+
+		Instead, apps should provide a value for this OneWayToSource property by creating a binding, in XAML or C#. If done via C# use code like this:
+
+		behavior.SetBinding(AnimationBehavior.AnimateCommandProperty, nameof(ViewModel.TriggerAnimationCommand));
+		""";
+
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="AnimationType"/> property.
 	/// </summary>
@@ -24,11 +34,26 @@ public class AnimationBehavior : EventToCommandBehavior
 
 	/// <summary>
 	/// Gets the Command that allows the triggering of the animation.
+	/// 
+	/// NOTE: Apps should not directly set this property, treating it as read only. The setter is only public because
+	/// that's currently needed to make XAML Hot Reload work. Instead, apps should provide a value for this OneWayToSource
+	/// property by creating a binding, in XAML or C#. If done via C# use code like this:
+	/// <c>behavior.SetBinding(AnimationBehavior.AnimateCommandProperty, nameof(ViewModel.TriggerAnimationCommand));</c>
 	/// </summary>
 	/// <remarks>
 	/// <see cref="AnimateCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter"
 	/// </remarks>
-	public Command<CancellationToken> AnimateCommand => (Command<CancellationToken>)GetValue(AnimateCommandProperty);
+	public Command<CancellationToken> AnimateCommand
+	{
+		get => (Command<CancellationToken>)GetValue(AnimateCommandProperty);
+
+		[Obsolete(animateCommandSetterWarning), EditorBrowsable(EditorBrowsableState.Never)]
+		set
+		{
+			Trace.WriteLine(animateCommandSetterWarning);
+			SetValue(AnimateCommandProperty, value);
+		}
+	}
 
 	/// <summary>
 	/// The type of animation to perform.
@@ -44,29 +69,31 @@ public class AnimationBehavior : EventToCommandBehavior
 	{
 		base.OnAttachedTo(bindable);
 
-		if (string.IsNullOrWhiteSpace(EventName))
+		if (!string.IsNullOrWhiteSpace(EventName))
 		{
-			if (bindable is ITextInput)
-			{
-				throw new InvalidOperationException($"Animation Behavior can not be attached to {nameof(ITextInput)} without using the EventName property.");
-			}
-
-			if (bindable is not IGestureRecognizers gestureRecognizers)
-			{
-				throw new InvalidOperationException($"VisualElement does not implement {nameof(IGestureRecognizers)}.");
-			}
-
-			tapGestureRecognizer = new TapGestureRecognizer();
-			tapGestureRecognizer.Tapped += OnTriggerHandled;
-
-			gestureRecognizers.GestureRecognizers.Add(tapGestureRecognizer);
+			return;
 		}
+
+		if (bindable is ITextInput)
+		{
+			throw new InvalidOperationException($"Animation Behavior can not be attached to {nameof(ITextInput)} without using the EventName property.");
+		}
+
+		if (bindable is not IGestureRecognizers gestureRecognizers)
+		{
+			throw new InvalidOperationException($"VisualElement does not implement {nameof(IGestureRecognizers)}.");
+		}
+
+		tapGestureRecognizer = new TapGestureRecognizer();
+		tapGestureRecognizer.Tapped += OnTriggerHandled;
+
+		gestureRecognizers.GestureRecognizers.Add(tapGestureRecognizer);
 	}
 
 	/// <inheritdoc/>
 	protected override void OnDetachingFrom(VisualElement bindable)
 	{
-		if (tapGestureRecognizer != null)
+		if (tapGestureRecognizer is not null)
 		{
 			tapGestureRecognizer.Tapped -= OnTriggerHandled;
 			tapGestureRecognizer = null;
@@ -115,7 +142,7 @@ public class AnimationBehavior : EventToCommandBehavior
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInAnimations)
 		{
-			Trace.WriteLine(ex);
+			Trace.TraceInformation("{0}", ex);
 		}
 	}
 }

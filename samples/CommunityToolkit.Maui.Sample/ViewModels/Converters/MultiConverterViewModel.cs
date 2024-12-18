@@ -5,5 +5,5 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 public partial class MultiConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	string enteredName = "Steven";
+	public partial string EnteredName { get; set; } = "Steven";
 }

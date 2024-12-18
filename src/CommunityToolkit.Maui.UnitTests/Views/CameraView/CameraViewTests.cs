@@ -12,7 +12,7 @@ public class CameraViewTests : BaseHandlerTest
 
 	public CameraViewTests()
 	{
-		Assert.IsAssignableFrom<ICameraView>(cameraView);
+		Assert.IsType<ICameraView>(cameraView, exactMatch: false);
 		mockCameraProvider = (MockCameraProvider)ServiceProvider.GetRequiredService<ICameraProvider>();
 	}
 
@@ -61,14 +61,27 @@ public class CameraViewTests : BaseHandlerTest
 		Assert.True(eventRaised);
 	}
 
-	[Fact]
-	public void OnMediaCapturedFailed_RaisesMediaCaptureFailedEvent()
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task OnMediaCapturedFailed_RaisesMediaCaptureFailedEvent()
 	{
-		bool eventRaised = false;
-		cameraView.MediaCaptureFailed += (sender, args) => eventRaised = true;
+		const string failureMessage = "Proof that this test passes";
 
-		cameraView.OnMediaCapturedFailed();
+		bool wasEventRaised = false;
+		var mediaCaptureFailedTcs = new TaskCompletionSource<MediaCaptureFailedEventArgs>();
+		cameraView.MediaCaptureFailed += HandleMediaCaptureFailed;
 
-		Assert.True(eventRaised);
+		cameraView.OnMediaCapturedFailed(failureMessage);
+
+		var mediaCaptureFailedEventArgs = await mediaCaptureFailedTcs.Task;
+
+		Assert.True(wasEventRaised);
+		Assert.Equal(failureMessage, mediaCaptureFailedEventArgs.FailureReason);
+
+		void HandleMediaCaptureFailed(object? sender, MediaCaptureFailedEventArgs e)
+		{
+			cameraView.MediaCaptureFailed -= HandleMediaCaptureFailed;
+			wasEventRaised = true;
+			mediaCaptureFailedTcs.SetResult(e);
+		}
 	}
 }
