@@ -39,6 +39,6 @@ public class SnackbarOptions : ITextStyle
 	/// <summary>
 	/// Snackbar corner radius
 	/// </summary>
-	public CornerRadius CornerRadius { get; set; } = new CornerRadius(4, 4, 4, 4);
+	public CornerRadius CornerRadius { get; set; } = new(4, 4, 4, 4);
 
 }
