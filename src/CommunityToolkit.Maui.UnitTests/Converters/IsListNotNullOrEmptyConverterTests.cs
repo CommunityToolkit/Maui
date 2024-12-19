@@ -10,21 +10,31 @@ public class IsListNotNullOrEmptyConverterTests : BaseOneWayConverterTest<IsList
 	public static TheoryData<IEnumerable?, bool> Data { get; } = new()
 	{
 		{
-			new List<string>(), false
+			new List<string>(), true
+		},
+		{
+			Array.Empty<string>(), true
 		},
 		{
 			new List<string>
 			{
 				"TestValue"
 			},
-			true
+			false
 		},
 		{
-			null, false
+			new []
+			{
+				"TestValue"
+			},
+			false
 		},
 		{
-			Enumerable.Range(1, 3), true
+			null, true
 		},
+		{
+			Enumerable.Range(1, 3), false
+		}
 	};
 
 	[Theory]
