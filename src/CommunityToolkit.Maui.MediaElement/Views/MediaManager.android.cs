@@ -18,6 +18,7 @@ using Com.Google.Android.Exoplayer2.UI;
 using Com.Google.Android.Exoplayer2.Video;
 using CommunityToolkit.Maui.ApplicationModel.Permissions;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
@@ -27,27 +28,30 @@ namespace CommunityToolkit.Maui.Core.Views;
 [Obsolete]
 public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 {
-	static readonly HttpClient client = new();
+	SubtitleExtensions? subtitleExtensions;
+	static readonly HttpClient httpClient = new();
 
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
-
-	Task? checkPermissionsTask;
-	CancellationTokenSource checkPermissionSourceToken = new();
-	CancellationTokenSource startServiceSourceToken = new();
+	
+	MediaElementState currentState;
 	double? previousSpeed;
 	float volumeBeforeMute = 1;
+
 	MediaControllerCompat? mediaControllerCompat;
-	TaskCompletionSource? seekToTaskCompletionSource;
-	[Obsolete]
 	MediaSessionConnector? mediaSessionConnector;
 	MediaSessionCompat? mediaSession;
 	UIUpdateReceiver? uiUpdateReceiver;
-	MediaElementState currentState;
+	
+	TaskCompletionSource? seekToTaskCompletionSource;
+	CancellationTokenSource checkPermissionSourceToken = new();
+	CancellationTokenSource startServiceSourceToken = new();
+	CancellationTokenSource subTitlesSourceToken = new();
+	Task? startSubtitles;
+	Task? checkPermissionsTask;
 
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
 	/// </summary>
-	[Obsolete]
 	protected StyledPlayerView? PlayerView { get; set; }
 
 	/// <summary>
@@ -69,7 +73,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		try
 		{
-			var response = await client.GetAsync(url, cancellationToken).ConfigureAwait(false);
+			var response = await httpClient.GetAsync(url, cancellationToken).ConfigureAwait(false);
 			var stream = response.IsSuccessStatusCode ? await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false) : null;
 
 			return stream switch
@@ -92,7 +96,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
-	[Obsolete]
 	public void OnPlaybackParametersChanged(PlaybackParameters? playbackParameters)
 	{
 		if (playbackParameters is null || AreFloatingPointNumbersEqual(playbackParameters.Speed, MediaElement.Speed))
@@ -112,7 +115,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
-	[Obsolete]
 	public async void OnPlayerStateChanged(bool playWhenReady, int playbackState)
 	{
 		if (Player is null || MediaElement.Source is null)
@@ -190,7 +192,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	[MemberNotNull(nameof(checkPermissionsTask))]
 	[MemberNotNull(nameof(mediaSessionConnector))]
 	[MemberNotNull(nameof(mediaControllerCompat))]
-	[Obsolete]
+	[MemberNotNull(nameof(subtitleExtensions))]
 	public (PlatformMediaElement platformView, StyledPlayerView PlayerView) CreatePlatformView()
 	{
 		ArgumentNullException.ThrowIfNull(MauiContext.Context);
@@ -206,6 +208,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 		};
 
+		subtitleExtensions ??= new(PlayerView, Dispatcher);
 		checkPermissionsTask = CheckAndRequestForegroundPermission(checkPermissionSourceToken.Token);
 		return (Player, PlayerView);
 	}
@@ -218,7 +221,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
-	[Obsolete]
 	public void OnPlaybackStateChanged(int playbackState)
 	{
 		if (MediaElement.Source is null)
@@ -253,7 +255,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	/// This is part of the <see cref="IPlayer.IListener"/> implementation.
 	/// While this method does not seem to have any references, it's invoked at runtime.
 	/// </remarks>
-	[Obsolete]
 	public void OnPlayerError(PlaybackException? error)
 	{
 		var errorMessage = string.Empty;
@@ -347,7 +348,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		BroadcastUpdate(MediaControlsService.ACTION_PAUSE);
 	}
 
-	[Obsolete]
 	protected virtual async partial Task PlatformSeek(TimeSpan position, CancellationToken token)
 	{
 		if (Player is null)
@@ -388,7 +388,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		MediaElement.Position = TimeSpan.Zero;
 	}
 
-	[Obsolete]
 	protected virtual partial void PlatformUpdateSource()
 	{
 		var hasSetSource = false;
@@ -397,6 +396,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			return;
 		}
+
+		subtitleExtensions?.StopSubtitleDisplay();
+		StopService();
 
 		if (mediaSession is not null)
 		{
@@ -455,10 +457,18 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		if (hasSetSource && Player.PlayerError is null)
 		{
 			MediaElement.MediaOpened();
+			startSubtitles = LoadSubtitles(subTitlesSourceToken.Token);
 		}
 	}
-
-	[Obsolete]
+	async Task LoadSubtitles(CancellationToken cancellationToken = default)
+	{
+		if (subtitleExtensions is null || string.IsNullOrEmpty(MediaElement.SubtitleUrl))
+		{
+			return;
+		}
+		await subtitleExtensions.LoadSubtitles(MediaElement, cancellationToken).ConfigureAwait(false);
+		subtitleExtensions.StartSubtitleDisplay();
+	}
 	protected virtual partial void PlatformUpdateAspect()
 	{
 		if (PlayerView is null)
@@ -575,7 +585,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		Player.Volume = MediaElement.ShouldMute ? 0 : volumeBeforeMute;
 	}
 
-	[Obsolete]
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()
 	{
 		if (Player is null)
@@ -586,35 +595,33 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		Player.RepeatMode = MediaElement.ShouldLoopPlayback ? IPlayer.RepeatModeOne : IPlayer.RepeatModeOff;
 	}
 
-	[Obsolete]
 	protected override void Dispose(bool disposing)
 	{
 		base.Dispose(disposing);
 
 		if (disposing)
 		{
-			StopService();
-
-			mediaSessionConnector?.SetPlayer(null);
-			mediaSessionConnector?.Dispose();
-			mediaSessionConnector = null;
-
-			mediaSession?.Release();
-			mediaSession?.Dispose();
-			mediaSession = null;
-
 			if (uiUpdateReceiver is not null)
 			{
 				LocalBroadcastManager.GetInstance(Platform.AppContext).UnregisterReceiver(uiUpdateReceiver);
 			}
+			subtitleExtensions?.Dispose();
+			StopService();
+			mediaSessionConnector?.SetPlayer(null);
+			mediaSession?.Release();
 
+			mediaSessionConnector?.Dispose();
+			mediaSession?.Dispose();
 			uiUpdateReceiver?.Dispose();
-			uiUpdateReceiver = null;
-
 			checkPermissionSourceToken.Dispose();
 			startServiceSourceToken.Dispose();
+			subTitlesSourceToken?.Dispose();
+			httpClient.Dispose();
+			startSubtitles?.Dispose();
 
-			client.Dispose();
+			mediaSessionConnector = null;
+			mediaSession = null;
+			uiUpdateReceiver = null;
 		}
 	}
 
@@ -638,7 +645,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	[MemberNotNull(nameof(uiUpdateReceiver))]
 	[MemberNotNull(nameof(mediaSessionConnector))]
 	[MemberNotNull(nameof(mediaControllerCompat))]
-	[Obsolete]
 	void InitializeMediaSession()
 	{
 		ArgumentNullException.ThrowIfNull(Player);
@@ -667,7 +673,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		mediaSession.SetFlags(MediaSessionCompat.FlagHandlesMediaButtons | MediaSessionCompat.FlagHandlesTransportControls);
 	}
 
-	[Obsolete]
 	async Task StartService(CancellationToken cancellationToken = default)
 	{
 		if (checkPermissionsTask is not null)
@@ -714,7 +719,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		}
 	}
 
-	[Obsolete]
 	void BroadcastUpdate(string action)
 	{
 		if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
@@ -726,7 +730,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		LocalBroadcastManager.GetInstance(Platform.AppContext).SendBroadcast(intent);
 	}
 
-	[Obsolete]
 	public void OnVideoSizeChanged(VideoSize? videoSize)
 	{
 		MediaElement.MediaWidth = videoSize?.Width ?? 0;
@@ -735,49 +738,26 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 	#region IPlayer.IListener implementation method stubs
 
-	[Obsolete]
 	public void OnAudioAttributesChanged(AudioAttributes? audioAttributes) { }
 	public void OnAudioSessionIdChanged(int audioSessionId) { }
-
-	[Obsolete]
 	public void OnAvailableCommandsChanged(IPlayer.Commands? availableCommands) { }
-
-	[Obsolete]
 	public void OnCues(CueGroup? cueGroup) { }
-
-	[Obsolete]
 	public void OnCues(List<Cue> cues) { }
-
-	[Obsolete]
 	public void OnDeviceInfoChanged(Com.Google.Android.Exoplayer2.DeviceInfo? deviceInfo) { }
 	public void OnDeviceVolumeChanged(int volume, bool muted) { }
-
-	[Obsolete]
 	public void OnEvents(IPlayer? player, IPlayer.Events? events) { }
 	public void OnIsLoadingChanged(bool isLoading) { }
 	public void OnIsPlayingChanged(bool isPlaying) { }
 	public void OnLoadingChanged(bool isLoading) { }
 	public void OnMaxSeekToPreviousPositionChanged(long maxSeekToPreviousPositionMs) { }
-
-	[Obsolete]
 	public void OnMediaItemTransition(MediaItem? mediaItem, int transition) { }
-
-	[Obsolete]
 	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata) { }
-
-	[Obsolete]
 	public void OnMetadata(Metadata? metadata) { }
 	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
-
-	[Obsolete]
 	public void OnPlayerErrorChanged(PlaybackException? error) { }
-
-	[Obsolete]
 	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }
 	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason) { }
 	public void OnPositionDiscontinuity(int reason) { }
-
-	[Obsolete]
 	public void OnPositionDiscontinuity(IPlayer.PositionInfo oldPosition, IPlayer.PositionInfo newPosition, int reason) { }
 	public void OnRenderedFirstFrame() { }
 	public void OnRepeatModeChanged(int repeatMode) { }
@@ -786,14 +766,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 	public void OnShuffleModeEnabledChanged(bool shuffleModeEnabled) { }
 	public void OnSkipSilenceEnabledChanged(bool skipSilenceEnabled) { }
 	public void OnSurfaceSizeChanged(int width, int height) { }
-
-	[Obsolete]
 	public void OnTimelineChanged(Timeline? timeline, int reason) { }
-
-	[Obsolete]
 	public void OnTracksChanged(Tracks? tracks) { }
-
-	[Obsolete]
 	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters) { }
 
 	#endregion
