@@ -9,14 +9,37 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 {
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
-	double height = 100, width = 100;
+	public partial double Height { get; set; } = 100;
+	
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
+	public partial double Width { get; set; } = 100;
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
-	bool isStartHorizontalOptionSelected = true, isCenterHorizontalOptionSelected, isEndHorizontalOptionSelected, isFillHorizontalOptionSelected,
-		isStartVerticalOptionSelected = true, isCenterVerticalOptionSelected, isEndVerticalOptionSelected, isFillVerticalOptionSelected;
+	public partial bool IsStartHorizontalOptionSelected { get; set; } = true;
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
+	public partial bool IsCenterHorizontalOptionSelected { get; set; } = true;
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
-	int flowDirectionSelectedIndex;
+	public partial bool IsEndHorizontalOptionSelected { get; set; } = true;
+
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
+	public partial bool IsFillHorizontalOptionSelected { get; set; } = true;
+
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
+	public partial bool IsStartVerticalOptionSelected { get; set; } = true;
+
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
+	public partial bool IsCenterVerticalOptionSelected { get; set; }
+
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
+	
+	public partial bool IsEndVerticalOptionSelected { get; set; } = true;
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
+	
+	public partial bool IsFillVerticalOptionSelected { get; set; } = true;
+
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
+	public partial int FlowDirectionSelectedIndex { get; set; }
 
 	public IReadOnlyList<string> FlowDirectionOptions { get; } = Enum.GetNames<FlowDirection>().ToList();
 
