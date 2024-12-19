@@ -183,7 +183,8 @@ partial class CameraManager
 		imageCapture?.Dispose();
 
 		cameraPreview = new Preview.Builder().SetResolutionSelector(resolutionSelector).Build();
-		cameraPreview.SetSurfaceProvider(previewView?.SurfaceProvider);
+		IExecutor executor = Executors.NewSingleThreadExecutor() ?? throw new CameraException($"Unable to retrieve {nameof(IExecutor)}");
+		cameraPreview.SetSurfaceProvider(executor, previewView?.SurfaceProvider);
 
 		imageCapture = new ImageCapture.Builder()
 		.SetCaptureMode(ImageCapture.CaptureModeMaximizeQuality)
