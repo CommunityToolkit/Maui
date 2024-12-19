@@ -471,8 +471,8 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new Label()
 						.Row(Row.ReadOnlyCheckBox).Column(Column.Result)
-						.End()
-						.Text("IsReadOnly")
+						.Start()
+						.Text(": IsReadOnly")
 						.CenterVertical(),
 
 					new RatingView
@@ -728,7 +728,6 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						.Row(Row.SizingRatingViewLargest).ColumnSpan(All<Column>())
 						.SemanticDescription("A RatingView sample showing the size of 60"),
 
-
 					new SectionHeader("Spacing")
 						.Row(Row.SpacingHeader).ColumnSpan(All<Column>()),
 
@@ -767,7 +766,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							source: stepperSpacing
 						)
 						.Row(Row.SpacingRatingView).ColumnSpan(All<Column>())
-						.Center()
+						.Start()
 						.SemanticDescription("A RatingView sample showing the spacing changes."),
 				}
 			}
