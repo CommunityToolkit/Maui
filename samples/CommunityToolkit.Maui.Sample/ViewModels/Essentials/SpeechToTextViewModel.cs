@@ -24,10 +24,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 
 	[ObservableProperty]
 	public partial string? RecognitionText { get; set; } = "Welcome to .NET MAUI Community Toolkit!";
-
-	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ListenCommand))]
-	bool canListenExecute = true;
-
+	
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StartListenCommand))]
 	bool canStartListenExecute = true;
 
