@@ -20,7 +20,19 @@ public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseV
 	public partial float CurrentZoom { get; set; }
 
 	[ObservableProperty]
-	string cameraNameText = "", zoomRangeText = "", currentZoomText = "", flashModeText = "", resolutionText = "";
+	public partial string CameraNameText { get; set; } = string.Empty;
+
+	[ObservableProperty]
+	public partial string ZoomRangeText { get; set; } = string.Empty;
+
+	[ObservableProperty]
+	public partial string CurrentZoomText { get; set; } = string.Empty;
+	
+	[ObservableProperty] 
+	public partial string FlashModeText { get; set; } = string.Empty;
+	
+	[ObservableProperty] 
+	public partial string ResolutionText { get; set; } = string.Empty;
 
 	public IReadOnlyList<CameraInfo> Cameras => cameraProvider?.AvailableCameras ?? [];
 
