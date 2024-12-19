@@ -13,7 +13,17 @@ public class IsListNullOrEmptyConverterTests : BaseOneWayConverterTest<IsListNul
 			new List<string>(), true
 		},
 		{
+			Array.Empty<string>(), true
+		},
+		{
 			new List<string>
+			{
+				"TestValue"
+			},
+			false
+		},
+		{
+			new []
 			{
 				"TestValue"
 			},
@@ -24,7 +34,7 @@ public class IsListNullOrEmptyConverterTests : BaseOneWayConverterTest<IsListNul
 		},
 		{
 			Enumerable.Range(1, 3), false
-		},
+		}
 	};
 
 	[Theory]
