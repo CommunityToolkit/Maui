@@ -4,7 +4,7 @@ using Microsoft.Maui.ApplicationModel;
 namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc cref="ISpeechToText"/>
-public sealed partial class SpeechToTextImplementation : ISpeechToText
+public sealed partial class OfflineSpeechToTextImplementation : ISpeechToText
 {
 	readonly WeakEventManager recognitionResultUpdatedWeakEventManager = new();
 	readonly WeakEventManager recognitionResultCompletedWeakEventManager = new();
@@ -42,11 +42,16 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 			throw new PermissionException($"{nameof(Permissions)}.{nameof(Permissions.Microphone)} Not Granted");
 		}
 
-		await InternalStartListeningAsync(options, cancellationToken).ConfigureAwait(false);
+		InternalStartListening(options);
 	}
 
 	/// <inheritdoc/>
-	public Task StopListenAsync(CancellationToken cancellationToken = default) => InternalStopListeningAsync(cancellationToken);
+	public Task StopListenAsync(CancellationToken cancellationToken = default)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		InternalStopListening();
+		return Task.CompletedTask;
+	}
 
 	void OnRecognitionResultUpdated(string recognitionResult)
 	{

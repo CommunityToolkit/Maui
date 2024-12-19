@@ -228,6 +228,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<FileSaverPage, FileSaverViewModel>();
 		services.AddTransientWithShellRoute<FolderPickerPage, FolderPickerViewModel>();
 		services.AddTransientWithShellRoute<SpeechToTextPage, SpeechToTextViewModel>();
+		services.AddTransientWithShellRoute<OfflineSpeechToTextPage, OfflineSpeechToTextViewModel>();
 
 		// Add Extensions Pages + ViewModels
 		services.AddTransientWithShellRoute<ColorAnimationExtensionsPage, ColorAnimationExtensionsViewModel>();
@@ -279,7 +280,8 @@ public static class MauiProgram
 		services.AddSingleton<IFileSystem>(FileSystem.Current);
 		services.AddSingleton<IFolderPicker>(FolderPicker.Default);
 		services.AddSingleton<IBadge>(Badge.Default);
-		services.AddSingleton<ISpeechToText>(SpeechToText.Default);
+		services.AddKeyedSingleton<ISpeechToText, SpeechToTextImplementation>("Online");
+		services.AddKeyedSingleton<ISpeechToText, OfflineSpeechToTextImplementation>("Offline");
 		services.AddSingleton<ITextToSpeech>(TextToSpeech.Default);
 	}
 

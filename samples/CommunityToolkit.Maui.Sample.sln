@@ -51,7 +51,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Camer
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Benchmarks", "Benchmarks", "{ED5A9C0B-D270-442D-BABE-F4FF622926C8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Analyzers.Benchmarks.csproj", "..\src\CommunityToolkit.Maui.Analyzers.Benchmarks\CommunityToolkit.Maui.Analyzers.Benchmarks.csproj", "{B80F59B7-276C-4A55-A8DD-54587C8BC3D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.Maui.Analyzers.Benchmarks", "..\src\CommunityToolkit.Maui.Analyzers.Benchmarks\CommunityToolkit.Maui.Analyzers.Benchmarks.csproj", "{B80F59B7-276C-4A55-A8DD-54587C8BC3D2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
