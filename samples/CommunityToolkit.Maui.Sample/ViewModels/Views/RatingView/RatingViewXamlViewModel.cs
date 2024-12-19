@@ -1,8 +1,8 @@
-﻿// Ignore Spelling: csharp, color
+﻿// Ignore Spelling: csharp, color, colors
+
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Reflection;
-using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
@@ -12,26 +12,105 @@ public partial class RatingViewXamlViewModel : BaseViewModel
 		.GetFields(BindingFlags.Static | BindingFlags.Public)
 		.ToDictionary(static c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()))
 		.AsReadOnly();
-
 	static readonly ImmutableList<string> colorsForPickers = [.. colorList.Keys];
-
-	[ObservableProperty]
-	double stepperValueMaximumRatings = 1;
-
-	[ObservableProperty]
 	Thickness ratingViewShapePadding = new(0);
+	double ratingViewShapePaddingBottom;
 
-	[ObservableProperty, NotifyPropertyChangedFor(nameof(ColorPickerFilledBackgroundTarget))]
-	int colorPickerFilledBackgroundSelectedIndex = colorsForPickers.IndexOf(nameof(Colors.Red));
+	public double StepperValueMaximumRatings
+	{
+		get;
+		set => SetProperty(ref field, value);
+	} = 1;
 
-	[ObservableProperty, NotifyPropertyChangedFor(nameof(ColorPickerEmptyBackgroundTarget))]
-	int colorPickerEmptyBackgroundSelectedIndex = colorsForPickers.IndexOf(nameof(Colors.Green));
+	public Thickness RatingViewShapePadding
+	{
+		get => ratingViewShapePadding;
+		set => SetProperty(ref ratingViewShapePadding, value);
+	}
 
-	[ObservableProperty, NotifyPropertyChangedFor(nameof(ColorPickerRatingShapeBorderColorTarget))]
-	int colorPickerRatingShapeBorderColorSelectedIndex = colorsForPickers.IndexOf(nameof(Colors.Blue));
+	public int ColorPickerFilledBackgroundSelectedIndex
+	{
+		get;
+		set
+		{
+			if (SetProperty(ref field, value))
+			{
+				OnPropertyChanged(nameof(ColorPickerFilledBackgroundTarget));
+			}
+		}
+	} = colorsForPickers.IndexOf(nameof(Colors.Red));
 
-	[ObservableProperty, NotifyPropertyChangedFor(nameof(RatingViewShapePaddingValue))]
-	double ratingViewShapePaddingLeft, ratingViewShapePaddingTop, ratingViewShapePaddingRight, ratingViewShapePaddingBottom = 0;
+	public int ColorPickerEmptyBackgroundSelectedIndex
+	{
+		get;
+		set
+		{
+			if (SetProperty(ref field, value))
+			{
+				OnPropertyChanged(nameof(ColorPickerEmptyBackgroundTarget));
+			}
+		}
+	} = colorsForPickers.IndexOf(nameof(Colors.Green));
+
+	public int ColorPickerRatingShapeBorderColorSelectedIndex
+	{
+		get;
+		set
+		{
+			if (SetProperty(ref field, value))
+			{
+				OnPropertyChanged(nameof(ColorPickerRatingShapeBorderColorTarget));
+			}
+		}
+	} = colorsForPickers.IndexOf(nameof(Colors.Blue));
+
+	public double RatingViewShapePaddingLeft
+	{
+		get;
+		set
+		{
+			if (SetProperty(ref field, value))
+			{
+				OnPropertyChanged(nameof(RatingViewShapePaddingValue));
+			}
+		}
+	}
+
+	public double RatingViewShapePaddingTop
+	{
+		get;
+		set
+		{
+			if (SetProperty(ref field, value))
+			{
+				OnPropertyChanged(nameof(RatingViewShapePaddingValue));
+			}
+		}
+	}
+
+	public double RatingViewShapePaddingRight
+	{
+		get;
+		set
+		{
+			if (SetProperty(ref field, value))
+			{
+				OnPropertyChanged(nameof(RatingViewShapePaddingValue));
+			}
+		}
+	}
+
+	public double RatingViewShapePaddingBottom
+	{
+		get => ratingViewShapePaddingBottom;
+		set
+		{
+			if (SetProperty(ref ratingViewShapePaddingBottom, value))
+			{
+				OnPropertyChanged(nameof(RatingViewShapePaddingValue));
+			}
+		}
+	}
 
 	public IReadOnlyList<string> ColorsForPickers => [.. colorsForPickers];
 
