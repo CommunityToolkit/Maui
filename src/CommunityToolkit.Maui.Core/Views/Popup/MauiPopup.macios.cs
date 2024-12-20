@@ -42,6 +42,7 @@ public class MauiPopup(IMauiContext mauiContext) : UIViewController
 		base.ViewDidLayoutSubviews();
 
 		_ = View ?? throw new InvalidOperationException($"{nameof(View)} cannot be null.");
+		_ = View.Superview ?? throw new InvalidOperationException($"{nameof(View.Superview)} cannot be null.");
 
 		View.Superview.Layer.CornerRadius = 0.0f;
 		View.Superview.Layer.MasksToBounds = false;
@@ -115,7 +116,7 @@ public class MauiPopup(IMauiContext mauiContext) : UIViewController
 	}
 
 	/// <summary>
-	/// Method to CleanUp the resources of the <see cref="MauiPopup"/>.
+	/// Method to clean up the resources of the <see cref="MauiPopup"/>.
 	/// </summary>
 	public void CleanUp()
 	{
