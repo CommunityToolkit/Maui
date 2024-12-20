@@ -24,13 +24,13 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	public partial string? RecognitionText { get; set; } = "Welcome to .NET MAUI Community Toolkit!";
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ListenCommand))]
-	bool canListenExecute = true;
+	public partial bool CanListenExecute { get; set; } = true;
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StartListenCommand))]
-	bool canStartListenExecute = true;
+	public partial bool CanStartListenExecute { get; set; } = true;
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StopListenCommand))]
-	bool canStopListenExecute = false;
+	public partial bool CanStopListenExecute { get; set; } = false;
 
 	public SpeechToTextViewModel(ITextToSpeech textToSpeech, ISpeechToText speechToText)
 	{
