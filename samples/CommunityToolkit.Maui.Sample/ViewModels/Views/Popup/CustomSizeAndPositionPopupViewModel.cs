@@ -17,13 +17,13 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
 	public partial bool IsStartHorizontalOptionSelected { get; set; } = true;
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
-	public partial bool IsCenterHorizontalOptionSelected { get; set; } = true;
+	public partial bool IsCenterHorizontalOptionSelected { get; set; }
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
-	public partial bool IsEndHorizontalOptionSelected { get; set; } = true;
+	public partial bool IsEndHorizontalOptionSelected { get; set; }
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
-	public partial bool IsFillHorizontalOptionSelected { get; set; } = true;
+	public partial bool IsFillHorizontalOptionSelected { get; set; }
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
 	public partial bool IsStartVerticalOptionSelected { get; set; } = true;
@@ -33,10 +33,10 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
 	
-	public partial bool IsEndVerticalOptionSelected { get; set; } = true;
+	public partial bool IsEndVerticalOptionSelected { get; set; }
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
 	
-	public partial bool IsFillVerticalOptionSelected { get; set; } = true;
+	public partial bool IsFillVerticalOptionSelected { get; set; }
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
 	public partial int FlowDirectionSelectedIndex { get; set; }
