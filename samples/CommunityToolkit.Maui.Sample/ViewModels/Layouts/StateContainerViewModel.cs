@@ -6,16 +6,28 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 public partial class StateContainerViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	string? currentState, gridState, noAnimateState, notFoundState, fullPageState;
+	public partial string? CurrentState { get; set; }
+
+	[ObservableProperty]
+	public partial string? GridState { get; set; }
+
+	[ObservableProperty]
+	public partial string? NoAnimateState { get; set; }
+
+	[ObservableProperty]
+	public partial string? NotFoundState { get; set; }
+
+	[ObservableProperty]
+	public partial string? FullPageState { get; set; }
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ToggleGridStateCommand))]
-	bool canGridStateChange = true;
+	public partial bool CanGridStateChange { get; set; } = true;
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(CycleStatesCommand))]
-	bool canCycleStateChange = true;
+	public partial bool CanCycleStateChange { get; set; } = true;
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ToggleFullPageStateCommand))]
-	bool canFullPageStateChange = true;
+	public partial bool CanFullPageStateChange { get; set; } = true;
 
 	[ObservableProperty]
 	public partial bool CanAnimationStateChange { get; set; } = true;
