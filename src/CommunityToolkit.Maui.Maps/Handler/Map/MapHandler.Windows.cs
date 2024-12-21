@@ -179,6 +179,8 @@ public partial class MapHandlerWindows : MapHandler
 	{
 		if (platformWebView is WebView2 webView2)
 		{
+			await webView2.EnsureCoreWebView2Async();
+
 			var tcs = new TaskCompletionSource();
 			webView2.DispatcherQueue.TryEnqueue(async () =>
 			{
