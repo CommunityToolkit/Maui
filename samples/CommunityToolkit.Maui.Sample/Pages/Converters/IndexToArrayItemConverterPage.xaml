@@ -45,8 +45,8 @@
                      Grid.Column="0"
                      Grid.Row="2"/>
 
-            <Label Text="{Binding Source={x:Reference Stepper},
-                                Path=Value, StringFormat='Selected index: {0}'}"
+            <Label x:DataType="{x:Type Stepper}" 
+                    Text="{Binding Source={x:Reference Stepper}, Path=Value, StringFormat='Selected index: {0}'}"
                     VerticalOptions="CenterAndExpand"
                     FontAttributes="Bold"
                     Grid.Row="2"
