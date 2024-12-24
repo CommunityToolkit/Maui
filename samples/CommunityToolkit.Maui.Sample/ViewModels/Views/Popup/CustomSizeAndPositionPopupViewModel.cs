@@ -8,6 +8,8 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 {
+	public IReadOnlyList<string> FlowDirectionOptions { get; } = [.. Enum.GetNames<FlowDirection>()];
+	
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
 	public partial double Height { get; set; } = 100;
 	
@@ -40,8 +42,6 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
 	public partial int FlowDirectionSelectedIndex { get; set; }
-
-	public IReadOnlyList<string> FlowDirectionOptions { get; } = [.. Enum.GetNames<FlowDirection>()];
 
 	[RelayCommand(CanExecute = nameof(CanShowButtonExecute))]
 	public Task ExecuteShowButton(CancellationToken token)
