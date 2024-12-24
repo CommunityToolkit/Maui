@@ -16,6 +16,7 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
 	public partial bool IsStartHorizontalOptionSelected { get; set; } = true;
+	
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
 	public partial bool IsCenterHorizontalOptionSelected { get; set; }
 
@@ -32,16 +33,15 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 	public partial bool IsCenterVerticalOptionSelected { get; set; }
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
-	
 	public partial bool IsEndVerticalOptionSelected { get; set; }
-	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
 	
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
 	public partial bool IsFillVerticalOptionSelected { get; set; }
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
 	public partial int FlowDirectionSelectedIndex { get; set; }
 
-	public IReadOnlyList<string> FlowDirectionOptions { get; } = Enum.GetNames<FlowDirection>().ToList();
+	public IReadOnlyList<string> FlowDirectionOptions { get; } = [.. Enum.GetNames<FlowDirection>()];
 
 	[RelayCommand(CanExecute = nameof(CanShowButtonExecute))]
 	public Task ExecuteShowButton(CancellationToken token)
