@@ -223,7 +223,7 @@
                         <mct:TouchBehavior
                             BindingContext="{Binding Path=BindingContext, Source={x:Reference CurrentPage}, x:DataType=ContentPage}"
                             Command="{Binding IncreaseTouchCountCommand}"
-                            DefaultAnimationDuration="150"
+                            DefaultAnimationDuration="500"
                             DefaultAnimationEasing="{x:Static Easing.CubicInOut}"
                             PressedBackgroundColor="LightGray"
                             PressedOpacity="0.8"
