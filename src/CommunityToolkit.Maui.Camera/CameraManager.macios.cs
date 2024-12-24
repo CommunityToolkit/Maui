@@ -31,14 +31,14 @@ partial class CameraManager
 		{
 			SessionPreset = AVCaptureSession.PresetPhoto
 		};
-
-		orientationDidChangeObserver = UIDevice.Notifications.ObserveOrientationDidChange((_, _) => UpdateVideoOrientation());
-		UpdateVideoOrientation();
-
+		
 		previewView = new PreviewView
 		{
 			Session = captureSession
 		};
+
+		orientationDidChangeObserver = UIDevice.Notifications.ObserveOrientationDidChange((_, _) => UpdateVideoOrientation());
+		UpdateVideoOrientation();
 
 		return previewView;
 	}
