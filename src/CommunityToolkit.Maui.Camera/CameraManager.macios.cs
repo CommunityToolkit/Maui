@@ -35,7 +35,7 @@ partial class CameraManager
 		orientationDidChangeObserver = UIDevice.Notifications.ObserveOrientationDidChange((_, _) => UpdateVideoOrientation());
 		UpdateVideoOrientation();
 
-		var previewView = new PreviewView
+		previewView = new PreviewView
 		{
 			Session = captureSession
 		};
@@ -198,8 +198,8 @@ partial class CameraManager
 
 		var capturePhotoSettings = AVCapturePhotoSettings.FromFormat(codecSettings);
 		capturePhotoSettings.FlashMode = photoOutput.SupportedFlashModes.Contains(flashMode) ? flashMode : photoOutput.SupportedFlashModes.First();
-		var avMediaTypeVideo = AVMediaTypes.Video.GetConstant();
-		if (avMediaTypeVideo is not null)
+
+		if (AVMediaTypes.Video.GetConstant() is NSString avMediaTypeVideo)
 		{
 			var photoOutputConnection = photoOutput.ConnectionFromMediaType(avMediaTypeVideo);
 			if (photoOutputConnection is not null)
@@ -268,28 +268,10 @@ partial class CameraManager
 
 	static AVCaptureVideoOrientation GetVideoOrientation()
 	{
-		if (!UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
-		{
-			return UIDevice.CurrentDevice.Orientation switch
-			{
-				UIDeviceOrientation.Portrait => AVCaptureVideoOrientation.Portrait,
-				UIDeviceOrientation.PortraitUpsideDown => AVCaptureVideoOrientation.PortraitUpsideDown,
-				UIDeviceOrientation.LandscapeLeft => AVCaptureVideoOrientation.LandscapeRight,
-				UIDeviceOrientation.LandscapeRight => AVCaptureVideoOrientation.LandscapeLeft,
-				_ => AVCaptureVideoOrientation.Portrait
-			};
-		}
-
-		UIInterfaceOrientation interfaceOrientation;
-		if (UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
-		{
-			IEnumerable<UIScene> scenes = UIApplication.SharedApplication.ConnectedScenes;
-			interfaceOrientation = scenes.FirstOrDefault() is UIWindowScene windowScene ? windowScene.InterfaceOrientation : UIApplication.SharedApplication.StatusBarOrientation;
-		}
-		else
-		{
-			interfaceOrientation = UIApplication.SharedApplication.StatusBarOrientation;
-		}
+		IEnumerable<UIScene> scenes = UIApplication.SharedApplication.ConnectedScenes;
+		var interfaceOrientation = scenes.FirstOrDefault() is UIWindowScene windowScene 
+			? windowScene.InterfaceOrientation 
+			: UIApplication.SharedApplication.StatusBarOrientation;
 
 		return interfaceOrientation switch
 		{
