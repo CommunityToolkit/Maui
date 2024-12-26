@@ -1,9 +1,9 @@
 ﻿using Android.Content;
 using Android.Views;
 
-namespace CommunityToolkit.Maui.Core.Services;
+namespace CommunityToolkit.Maui.Core;
 
-interface IDialogFragmentService
+public interface IDialogFragmentService
 {
 	void OnFragmentAttached(AndroidX.Fragment.App.FragmentManager fm, AndroidX.Fragment.App.Fragment f, Context context);
 	void OnFragmentCreated(AndroidX.Fragment.App.FragmentManager fm, AndroidX.Fragment.App.Fragment f, Bundle? savedInstanceState);
