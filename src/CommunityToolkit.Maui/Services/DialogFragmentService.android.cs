@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Android.Content;
 using Android.OS;
 using Android.Views;
@@ -16,79 +15,43 @@ sealed class DialogFragmentService : IDialogFragmentService
 {
 	public void OnFragmentAttached(FragmentManager fm, Fragment f, Context context)
 	{
-		if (!IsDialogFragment(f, out var dialogFragment))
-		{
-			return;
-		}
 	}
 
 	public void OnFragmentCreated(FragmentManager fm, Fragment f, Bundle? savedInstanceState)
 	{
-		if (!IsDialogFragment(f, out var dialogFragment))
-		{
-			return;
-		}
 	}
 
 	public void OnFragmentDestroyed(FragmentManager fm, Fragment f)
 	{
-		if (!IsDialogFragment(f, out var dialogFragment))
-		{
-			return;
-		}
 	}
 
 	public void OnFragmentDetached(FragmentManager fm, Fragment f)
 	{
-		if (!IsDialogFragment(f, out var dialogFragment))
-		{
-			return;
-		}
 	}
 
 	public void OnFragmentPaused(FragmentManager fm, Fragment f)
 	{
-		if (!IsDialogFragment(f, out var dialogFragment))
-		{
-			return;
-		}
 	}
 
 	public void OnFragmentPreAttached(FragmentManager fm, Fragment f, Context context)
 	{
-		if (!IsDialogFragment(f, out var dialogFragment))
-		{
-			return;
-		}
 	}
 
 	public void OnFragmentPreCreated(FragmentManager fm, Fragment f, Bundle? savedInstanceState)
 	{
-		if (!IsDialogFragment(f, out var dialogFragment))
-		{
-			return;
-		}
 	}
 
 	public void OnFragmentResumed(FragmentManager fm, Fragment f)
 	{
-		if (!IsDialogFragment(f, out var dialogFragment))
-		{
-			return;
-		}
 	}
 
 	public void OnFragmentSaveInstanceState(FragmentManager fm, Fragment f, Bundle outState)
 	{
-		if (!IsDialogFragment(f, out var dialogFragment))
-		{
-			return;
-		}
 	}
 
 	public void OnFragmentStarted(FragmentManager fm, Fragment f)
 	{
-		if (!IsDialogFragment(f, out var dialogFragment) || Microsoft.Maui.ApplicationModel.Platform.CurrentActivity is not AppCompatActivity activity)
+		if (!IsDialogFragment(f, out var dialogFragment) || Platform.CurrentActivity is not AppCompatActivity activity)
 		{
 			return;
 		}
@@ -160,26 +123,14 @@ sealed class DialogFragmentService : IDialogFragmentService
 
 	public void OnFragmentStopped(FragmentManager fm, Fragment f)
 	{
-		if (!IsDialogFragment(f, out var dialogFragment))
-		{
-			return;
-		}
 	}
 
 	public void OnFragmentViewCreated(FragmentManager fm, Fragment f, Android.Views.View v, Bundle? savedInstanceState)
 	{
-		if (!IsDialogFragment(f, out var dialogFragment))
-		{
-			return;
-		}
 	}
 
 	public void OnFragmentViewDestroyed(FragmentManager fm, Fragment f)
 	{
-		if (!IsDialogFragment(f, out var dialogFragment))
-		{
-			return;
-		}
 	}
 
 	static bool IsDialogFragment(Fragment fragment, [NotNullWhen(true)] out DialogFragment? dialogFragment)
