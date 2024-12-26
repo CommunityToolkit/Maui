@@ -22,23 +22,7 @@ public static class AppBuilderExtensions
 	{
 		options?.Invoke(new Options());
 #if ANDROID
-		builder.Services.AddSingleton<IDialogFragmentService, DialogFragmentService>();
-
-		builder.ConfigureLifecycleEvents(builder =>
-		{
-			builder.AddAndroid(androidBuilder =>
-			{
-				androidBuilder.OnCreate((activity, bundle) =>
-				{
-					if (activity is not AndroidX.AppCompat.App.AppCompatActivity componentActivity)
-					{
-						return;
-					}
-
-					componentActivity.GetFragmentManager()?.RegisterFragmentLifecycleCallbacks(new MCTFragmentLifecycle(), false);
-				});
-			});
-		});
+		
 #endif
 		return builder;
 	}
