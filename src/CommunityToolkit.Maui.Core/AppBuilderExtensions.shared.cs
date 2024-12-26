@@ -1,4 +1,11 @@
-﻿namespace CommunityToolkit.Maui.Core;
+﻿#if ANDROID
+using CommunityToolkit.Maui.Core.Services;
+#endif
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Platform;
+
+namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// <see cref="MauiAppBuilder"/> Extensions
@@ -14,6 +21,25 @@ public static class AppBuilderExtensions
 	public static MauiAppBuilder UseMauiCommunityToolkitCore(this MauiAppBuilder builder, Action<Options>? options = default)
 	{
 		options?.Invoke(new Options());
+#if ANDROID
+		builder.Services.AddSingleton<IDialogFragmentService, DialogFragmentService>();
+
+		builder.ConfigureLifecycleEvents(builder =>
+		{
+			builder.AddAndroid(androidBuilder =>
+			{
+				androidBuilder.OnCreate((activity, bundle) =>
+				{
+					if (activity is not AndroidX.AppCompat.App.AppCompatActivity componentActivity)
+					{
+						return;
+					}
+
+					componentActivity.GetFragmentManager()?.RegisterFragmentLifecycleCallbacks(new MCTFragmentLifecycle(), false);
+				});
+			});
+		});
+#endif
 		return builder;
 	}
 }
