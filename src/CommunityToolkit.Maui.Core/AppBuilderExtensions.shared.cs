@@ -1,11 +1,4 @@
-﻿#if ANDROID
-using CommunityToolkit.Maui.Core.Services;
-#endif
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.LifecycleEvents;
-using Microsoft.Maui.Platform;
-
-namespace CommunityToolkit.Maui.Core;
+﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// <see cref="MauiAppBuilder"/> Extensions
@@ -21,9 +14,6 @@ public static class AppBuilderExtensions
 	public static MauiAppBuilder UseMauiCommunityToolkitCore(this MauiAppBuilder builder, Action<Options>? options = default)
 	{
 		options?.Invoke(new Options());
-#if ANDROID
-		
-#endif
 		return builder;
 	}
 }
