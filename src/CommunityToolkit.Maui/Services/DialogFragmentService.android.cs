@@ -82,7 +82,11 @@ sealed class DialogFragmentService : IDialogFragmentService
 			var windowInsetsController = window.InsetsController;
 			var appearance = activity.Window.InsetsController?.SystemBarsAppearance;
 
-			Debug.Assert(windowInsetsController is not null);
+			if (windowInsetsController is null)
+			{
+				System.Diagnostics.Trace.WriteLine("WindowInsetsController is null, cannot set system bars appearance.");
+				return;
+			}
 
 			if (appearance.HasValue)
 			{
