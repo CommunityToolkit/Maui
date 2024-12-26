@@ -7,6 +7,7 @@ using CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
+using System.Diagnostics;
 
 namespace CommunityToolkit.Maui;
 
@@ -45,6 +46,7 @@ public static class AppBuilderExtensions
 				{
 					if (activity is not AndroidX.AppCompat.App.AppCompatActivity componentActivity)
 					{
+						Trace.WriteLine("Activity is not an AppCompatActivity, cannot register fragment lifecycle callbacks.");
 						return;
 					}
 
