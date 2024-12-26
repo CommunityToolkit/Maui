@@ -1,13 +1,16 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Android.Content;
+using Android.OS;
 using Android.Views;
 using AndroidX.AppCompat.App;
+using CommunityToolkit.Maui.Core;
+using Debug = System.Diagnostics.Debug;
 using DialogFragment = AndroidX.Fragment.App.DialogFragment;
 using Fragment = AndroidX.Fragment.App.Fragment;
 using FragmentManager = AndroidX.Fragment.App.FragmentManager;
 
-namespace CommunityToolkit.Maui.Core.Services;
+namespace CommunityToolkit.Maui.Services;
 
 sealed class DialogFragmentService : IDialogFragmentService
 {
@@ -163,7 +166,7 @@ sealed class DialogFragmentService : IDialogFragmentService
 		}
 	}
 
-	public void OnFragmentViewCreated(FragmentManager fm, Fragment f, View v, Bundle? savedInstanceState)
+	public void OnFragmentViewCreated(FragmentManager fm, Fragment f, Android.Views.View v, Bundle? savedInstanceState)
 	{
 		if (!IsDialogFragment(f, out var dialogFragment))
 		{

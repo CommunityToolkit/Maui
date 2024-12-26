@@ -1,8 +1,9 @@
 ﻿using Android.Content;
-using Android.Views;
+using Android.OS;
+using CommunityToolkit.Maui.Core;
 using FragmentManager = AndroidX.Fragment.App.FragmentManager;
 
-namespace CommunityToolkit.Maui.Core.Services;
+namespace CommunityToolkit.Maui.Services;
 
 sealed class MCTFragmentLifecycle : FragmentManager.FragmentLifecycleCallbacks
 {
@@ -85,7 +86,7 @@ sealed class MCTFragmentLifecycle : FragmentManager.FragmentLifecycleCallbacks
 		dialogFragmentService.OnFragmentStopped(fm, f);
 	}
 
-	public override void OnFragmentViewCreated(FragmentManager fm, AndroidX.Fragment.App.Fragment f, View v, Bundle? savedInstanceState)
+	public override void OnFragmentViewCreated(FragmentManager fm, AndroidX.Fragment.App.Fragment f, Android.Views.View v, Bundle? savedInstanceState)
 	{
 		base.OnFragmentViewCreated(fm, f, v, savedInstanceState);
 		dialogFragmentService.OnFragmentViewCreated(fm, f, v, savedInstanceState);
