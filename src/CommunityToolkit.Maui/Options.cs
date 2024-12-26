@@ -22,6 +22,7 @@ public class Options() : Core.Options
 	internal static bool ShouldSuppressExceptionsInConverters { get; private set; }
 	internal static bool ShouldSuppressExceptionsInBehaviors { get; private set; }
 	internal static bool ShouldEnableSnackbarOnWindows { get; private set; }
+	internal static bool ShouldUseMCTDialogFragment { get; private set; } = true;
 
 	/// <summary>
 	/// Will return the <see cref="ICommunityToolkitValueConverter.DefaultConvertReturnValue"/> default value instead of throwing an exception when using <see cref="BaseConverter{TFrom,TTo}"/>.
@@ -46,6 +47,15 @@ public class Options() : Core.Options
 	/// Default value is false.
 	/// </remarks>
 	public void SetShouldSuppressExceptionsInBehaviors(bool value) => ShouldSuppressExceptionsInBehaviors = value;
+
+	/// <summary>
+	/// Enables the use of the DialogFragment Lifecycle service for Android.
+	/// </summary>
+	/// <param name="value">true if yes or false if you want to implement your own.</param>
+	/// <remarks>
+	/// Default value is true.
+	/// </remarks>
+	public void SetShouldUseMCTDialogFragment(bool value) => ShouldUseMCTDialogFragment = value;
 
 	/// <summary>
 	/// Enables <see cref="Alerts.Snackbar"/> for Windows
