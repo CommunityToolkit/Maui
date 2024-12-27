@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.Versioning;
 using Android.Content;
 using Android.Runtime;
 using Android.Speech;
@@ -8,25 +9,25 @@ using Microsoft.Maui.ApplicationModel;
 namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc />
-public sealed partial class SpeechToTextImplementation
+public sealed partial class OfflineSpeechToTextImplementation
 {
 	SpeechRecognizer? speechRecognizer;
 	SpeechRecognitionListener? listener;
-	CultureInfo? cultureInfo;
+	SpeechToTextState currentState = SpeechToTextState.Stopped;
 
 	/// <inheritdoc />
 	public SpeechToTextState CurrentState
 	{
-		get;
+		get => currentState;
 		private set
 		{
-			if (field != value)
+			if (currentState != value)
 			{
-				field = value;
-				OnSpeechToTextStateChanged(field);
+				currentState = value;
+				OnSpeechToTextStateChanged(currentState);
 			}
 		}
-	} = SpeechToTextState.Stopped;
+	}
 
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()
@@ -53,25 +54,21 @@ public sealed partial class SpeechToTextImplementation
 		return intent;
 	}
 
-	static bool IsSpeechRecognitionAvailable() => SpeechRecognizer.IsRecognitionAvailable(Application.Context);
+	static bool IsSpeechRecognitionAvailable() => OperatingSystem.IsAndroidVersionAtLeast(33) && SpeechRecognizer.IsOnDeviceRecognitionAvailable(Application.Context);
 	
 	[MemberNotNull(nameof(speechRecognizer), nameof(listener))]
-	Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
+	[SupportedOSPlatform("Android33.0")]
+	void InternalStartListening(SpeechToTextOptions options)
 	{
-		var isSpeechRecognitionAvailable = IsSpeechRecognitionAvailable();
-		if (!isSpeechRecognitionAvailable)
+		if (!IsSpeechRecognitionAvailable())
 		{
 			throw new FeatureNotSupportedException("Speech Recognition is not available on this device");
 		}
 
 		var recognizerIntent = CreateSpeechIntent(options);
 
-		speechRecognizer = SpeechRecognizer.CreateSpeechRecognizer(Application.Context);
-
-		if (speechRecognizer is null)
-		{
-			throw new FeatureNotSupportedException("Speech recognizer is not available on this device");
-		}
+		speechRecognizer = SpeechRecognizer.CreateOnDeviceSpeechRecognizer(Application.Context);
+		speechRecognizer.TriggerModelDownload(recognizerIntent);
 
 		listener = new SpeechRecognitionListener(this)
 		{
@@ -81,17 +78,6 @@ public sealed partial class SpeechToTextImplementation
 		};
 		speechRecognizer.SetRecognitionListener(listener);
 		speechRecognizer.StartListening(recognizerIntent);
-
-		cancellationToken.ThrowIfCancellationRequested();
-
-		return Task.CompletedTask;
-	}
-
-	Task InternalStopListeningAsync(CancellationToken cancellationToken)
-	{
-		cancellationToken.ThrowIfCancellationRequested();
-		StopRecording();
-		return Task.CompletedTask;
 	}
 
 	void HandleListenerError(SpeechRecognizerError error)
@@ -109,14 +95,14 @@ public sealed partial class SpeechToTextImplementation
 		OnRecognitionResultCompleted(SpeechToTextResult.Success(result));
 	}
 
-	void StopRecording()
+	void InternalStopListening()
 	{
 		speechRecognizer?.StopListening();
 		speechRecognizer?.Destroy();
 		CurrentState = SpeechToTextState.Stopped;
 	}
 
-	class SpeechRecognitionListener(SpeechToTextImplementation speechToText) : Java.Lang.Object, IRecognitionListener
+	class SpeechRecognitionListener(OfflineSpeechToTextImplementation speechToText) : Java.Lang.Object, IRecognitionListener
 	{
 		public required Action<SpeechRecognizerError> Error { get; init; }
 		public required Action<string> PartialResults { get; init; }

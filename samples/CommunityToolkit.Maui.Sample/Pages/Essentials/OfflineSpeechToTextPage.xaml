@@ -2,16 +2,12 @@
 <pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-                x:Class="CommunityToolkit.Maui.Sample.Pages.Essentials.SpeechToTextPage"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Essentials.OfflineSpeechToTextPage"
                 xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Essentials"
                 xmlns:essentials="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Essentials"
-                x:TypeArguments="vm:SpeechToTextViewModel"
-                x:DataType="vm:SpeechToTextViewModel"
-                Title="SpeechToText">
-
-    <ContentPage.Resources>
-        <essentials:PickerLocaleDisplayConverter x:Key="PickerLocaleDisplayConverter" />
-    </ContentPage.Resources>
+                x:TypeArguments="vm:OfflineSpeechToTextViewModel"
+                x:DataType="vm:OfflineSpeechToTextViewModel"
+                Title="OfflineSpeechToText">
 
     <ScrollView>
         <VerticalStackLayout
@@ -19,17 +15,8 @@
             Padding="30,0">
 
             <Label
-                Text="SpeechToText allows the user to convert speech to text in real time"
+                Text="OfflineSpeechToText allows the user to convert speech to text in real time in offline."
                 HorizontalTextAlignment="Center"/>
-
-            <Label
-                Text="Locale"
-                FontAttributes="Bold"/>
-
-            <Picker
-                ItemsSource="{Binding Locales}"
-                SelectedItem="{Binding CurrentLocale}"
-                ItemDisplayBinding="{Binding ., Converter={StaticResource PickerLocaleDisplayConverter}}"/>
 
             <Label
                 Text="State"
@@ -52,11 +39,6 @@
                 HorizontalOptions="Center"
                 HorizontalTextAlignment="Center"
                 MinimumHeightRequest="100" />
-
-            <Button
-                Text="Play"
-                Command="{Binding PlayCommand}"
-                HorizontalOptions="Center" />
 
             <Border
                 StrokeThickness="2"
@@ -94,7 +76,6 @@
                     </Grid>
                 </Border.Content>
             </Border>
-
         </VerticalStackLayout>
     </ScrollView>
 

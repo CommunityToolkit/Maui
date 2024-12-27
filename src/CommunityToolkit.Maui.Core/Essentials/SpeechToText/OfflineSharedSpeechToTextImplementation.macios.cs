@@ -3,7 +3,7 @@ using Speech;
 
 namespace CommunityToolkit.Maui.Media;
 
-public sealed partial class SpeechToTextImplementation
+public sealed partial class OfflineSpeechToTextImplementation
 {
 	AVAudioEngine? audioEngine;
 	SFSpeechRecognizer? speechRecognizer;
@@ -60,19 +60,12 @@ public sealed partial class SpeechToTextImplementation
 			AVAudioSessionCategoryOptions.DefaultToSpeaker | AVAudioSessionCategoryOptions.AllowBluetooth | AVAudioSessionCategoryOptions.AllowAirPlay | AVAudioSessionCategoryOptions.AllowBluetoothA2DP);
 	}
 
-	void StopRecording()
+	void InternalStopListening()
 	{
 		audioEngine?.InputNode.RemoveTapOnBus(0);
 		audioEngine?.Stop();
 		liveSpeechRequest?.EndAudio();
 		recognitionTask?.Cancel();
 		OnSpeechToTextStateChanged(CurrentState);
-	}
-
-	Task InternalStopListeningAsync(CancellationToken cancellationToken)
-	{
-		cancellationToken.ThrowIfCancellationRequested();
-		StopRecording();
-		return Task.CompletedTask;
 	}
 }
