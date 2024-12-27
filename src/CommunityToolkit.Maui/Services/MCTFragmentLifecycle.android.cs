@@ -5,20 +5,9 @@ using FragmentManager = AndroidX.Fragment.App.FragmentManager;
 
 namespace CommunityToolkit.Maui.Services;
 
-sealed class MCTFragmentLifecycle : FragmentManager.FragmentLifecycleCallbacks
+sealed class FragmentLifecycleManager(IDialogFragmentService dialogFragmentService) : FragmentManager.FragmentLifecycleCallbacks
 {
-	readonly IDialogFragmentService dialogFragmentService;
-
-	public MCTFragmentLifecycle()
-	{
-		if (IPlatformApplication.Current is null)
-		{
-			throw new InvalidOperationException("IPlatformApplication.Current is null.");
-		}
-
-		dialogFragmentService = (IDialogFragmentService?)IPlatformApplication.Current.Services.GetService(typeof(IDialogFragmentService))
-			?? throw new NullReferenceException($"{nameof(IDialogFragmentService)} is not registered, make sure to call UseMauiCommunityToolkit method on during the app builder or register the service manually.");
-	}
+	readonly IDialogFragmentService dialogFragmentService = dialogFragmentService;
 
 	public override void OnFragmentAttached(FragmentManager fm, AndroidX.Fragment.App.Fragment f, Context context)
 	{

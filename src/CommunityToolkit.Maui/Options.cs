@@ -18,11 +18,11 @@ public class Options() : Core.Options
 		this.builder = builder;
 	}
 
+	internal static bool ShouldUseStatusBarBehaviorOnAndroidModalPage { get; private set; } = true;
 	internal static bool ShouldSuppressExceptionsInAnimations { get; private set; }
 	internal static bool ShouldSuppressExceptionsInConverters { get; private set; }
 	internal static bool ShouldSuppressExceptionsInBehaviors { get; private set; }
 	internal static bool ShouldEnableSnackbarOnWindows { get; private set; }
-	internal static bool ShouldUseMCTDialogFragment { get; private set; } = true;
 
 	/// <summary>
 	/// Will return the <see cref="ICommunityToolkitValueConverter.DefaultConvertReturnValue"/> default value instead of throwing an exception when using <see cref="BaseConverter{TFrom,TTo}"/>.
@@ -55,7 +55,7 @@ public class Options() : Core.Options
 	/// <remarks>
 	/// Default value is true.
 	/// </remarks>
-	public void SetShouldUseMCTDialogFragment(bool value) => ShouldUseMCTDialogFragment = value;
+	public void SetShouldUseStatusBarBehaviorOnAndroidModalPage(bool value) => ShouldUseStatusBarBehaviorOnAndroidModalPage = value;
 
 	/// <summary>
 	/// Enables <see cref="Alerts.Snackbar"/> for Windows

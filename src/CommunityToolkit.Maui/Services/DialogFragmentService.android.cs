@@ -11,7 +11,7 @@ using FragmentManager = AndroidX.Fragment.App.FragmentManager;
 
 namespace CommunityToolkit.Maui.Services;
 
-sealed class DialogFragmentService : IDialogFragmentService
+sealed partial class DialogFragmentService : IDialogFragmentService
 {
 	public void OnFragmentAttached(FragmentManager fm, Fragment f, Context context)
 	{
