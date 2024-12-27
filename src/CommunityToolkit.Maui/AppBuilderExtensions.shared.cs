@@ -2,7 +2,6 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;
-using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
@@ -27,40 +26,6 @@ public static class AppBuilderExtensions
 
         // Invokes options for both `CommunityToolkit.Maui` and `CommunityToolkit.Maui.Core`
         options?.Invoke(new Options(builder));
-
-#if ANDROID
-        if (Options.ShouldUseStatusBarBehaviorOnAndroidModalPage)
-        {
-            builder.Services.AddSingleton<IDialogFragmentService, DialogFragmentService>();
-
-			builder.ConfigureLifecycleEvents(static lifecycleBuilder =>
-			{
-				lifecycleBuilder.AddAndroid(static androidBuilder =>
-				{
-					androidBuilder.OnCreate(static (activity, _) =>
-					{
-						if (activity is not AndroidX.AppCompat.App.AppCompatActivity componentActivity)
-						{
-							Trace.WriteLine($"Unable to Modify Android StatusBar On ModalPage: Activity {activity.LocalClassName} must be an {nameof(AndroidX.AppCompat.App.AppCompatActivity)}");
-							return;
-						}
-
-						if (componentActivity.GetFragmentManager() is not AndroidX.Fragment.App.FragmentManager fragmentManager)
-						{
-							Trace.WriteLine($"Unable to Modify Android StatusBar On ModalPage: Unable to retrieve fragment manager from {nameof(AndroidX.AppCompat.App.AppCompatActivity)}");
-							return;
-						}
-
-						var dialogFragmentService = IPlatformApplication.Current?.Services.GetRequiredService<IDialogFragmentService>() 
-						                            ?? throw new InvalidOperationException($"Unable to retrieve {nameof(IDialogFragmentService)}");
-
-
-						fragmentManager.RegisterFragmentLifecycleCallbacks(new FragmentLifecycleManager(dialogFragmentService), false);
-					});
-				});
-			});
-        }
-#endif
 
         builder.Services.AddSingleton<IPopupService, PopupService>();
 

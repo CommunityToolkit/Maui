@@ -17,8 +17,7 @@ public class Options() : Core.Options
 	{
 		this.builder = builder;
 	}
-
-	internal static bool ShouldUseStatusBarBehaviorOnAndroidModalPage { get; private set; } = true;
+	
 	internal static bool ShouldSuppressExceptionsInAnimations { get; private set; }
 	internal static bool ShouldSuppressExceptionsInConverters { get; private set; }
 	internal static bool ShouldSuppressExceptionsInBehaviors { get; private set; }
@@ -47,15 +46,6 @@ public class Options() : Core.Options
 	/// Default value is false.
 	/// </remarks>
 	public void SetShouldSuppressExceptionsInBehaviors(bool value) => ShouldSuppressExceptionsInBehaviors = value;
-
-	/// <summary>
-	/// Enables the use of the DialogFragment Lifecycle service for Android.
-	/// </summary>
-	/// <param name="value">true if yes or false if you want to implement your own.</param>
-	/// <remarks>
-	/// Default value is true.
-	/// </remarks>
-	public void SetShouldUseStatusBarBehaviorOnAndroidModalPage(bool value) => ShouldUseStatusBarBehaviorOnAndroidModalPage = value;
 
 	/// <summary>
 	/// Enables <see cref="Alerts.Snackbar"/> for Windows

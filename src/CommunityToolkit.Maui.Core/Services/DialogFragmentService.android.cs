@@ -1,15 +1,12 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Android.Content;
-using Android.OS;
 using Android.Views;
 using AndroidX.AppCompat.App;
-using CommunityToolkit.Maui.Core;
-using Debug = System.Diagnostics.Debug;
 using DialogFragment = AndroidX.Fragment.App.DialogFragment;
 using Fragment = AndroidX.Fragment.App.Fragment;
 using FragmentManager = AndroidX.Fragment.App.FragmentManager;
 
-namespace CommunityToolkit.Maui.Services;
+namespace CommunityToolkit.Maui.Core.Services;
 
 sealed partial class DialogFragmentService : IDialogFragmentService
 {
@@ -51,7 +48,7 @@ sealed partial class DialogFragmentService : IDialogFragmentService
 
 	public void OnFragmentStarted(FragmentManager fm, Fragment f)
 	{
-		if (!IsDialogFragment(f, out var dialogFragment) || Platform.CurrentActivity is not AppCompatActivity activity)
+		if (!TryConvertToDialogFragment(f, out var dialogFragment) || Microsoft.Maui.ApplicationModel.Platform.CurrentActivity is not AppCompatActivity activity)
 		{
 			return;
 		}
@@ -68,18 +65,16 @@ sealed partial class DialogFragmentService : IDialogFragmentService
 
 		var statusBarColor = activity.Window.StatusBarColor;
 		var platformColor = new Android.Graphics.Color(statusBarColor);
-		var dialog = dialogFragment.Dialog;
+		if (dialogFragment.Dialog?.Window is not Window dialogWindow)
+		{
+			throw new InvalidOperationException("Dialog window cannot be null");
+		}
 
-		Debug.Assert(dialog is not null);
-		Debug.Assert(dialog.Window is not null);
-
-		var window = dialog.Window;
-
-		bool isColorTransparent = platformColor == Android.Graphics.Color.Transparent;
+		var isColorTransparent = platformColor == Android.Graphics.Color.Transparent;
 
 		if (OperatingSystem.IsAndroidVersionAtLeast(30))
 		{
-			var windowInsetsController = window.InsetsController;
+			var windowInsetsController = dialogWindow.InsetsController;
 			var appearance = activity.Window.InsetsController?.SystemBarsAppearance;
 
 			if (windowInsetsController is null)
@@ -98,29 +93,31 @@ sealed partial class DialogFragmentService : IDialogFragmentService
 						isColorTransparent ? 0 : (int)WindowInsetsControllerAppearance.LightStatusBars,
 						(int)WindowInsetsControllerAppearance.LightStatusBars);
 			}
-			window.SetStatusBarColor(platformColor);
+			
+			dialogWindow.SetStatusBarColor(platformColor);
+			
 			if (!OperatingSystem.IsAndroidVersionAtLeast(35))
 			{
-				window.SetDecorFitsSystemWindows(!isColorTransparent);
+				dialogWindow.SetDecorFitsSystemWindows(!isColorTransparent);
 			}
 			else
 			{
-				AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(window, !isColorTransparent);
+				AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(dialogWindow, !isColorTransparent);
 			}
 		}
 		else
 		{
-			dialog.Window.SetStatusBarColor(platformColor);
+			dialogWindow.SetStatusBarColor(platformColor);
 
 			if (isColorTransparent)
 			{
-				window.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
-				window.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
+				dialogWindow.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
+				dialogWindow.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
 			}
 			else
 			{
-				window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
-				window.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
+				dialogWindow.ClearFlags(WindowManagerFlags.LayoutNoLimits);
+				dialogWindow.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
 			}
 		}
 	}
@@ -137,14 +134,16 @@ sealed partial class DialogFragmentService : IDialogFragmentService
 	{
 	}
 
-	static bool IsDialogFragment(Fragment fragment, [NotNullWhen(true)] out DialogFragment? dialogFragment)
+	static bool TryConvertToDialogFragment(Fragment fragment, [NotNullWhen(true)] out DialogFragment? dialogFragment)
 	{
 		dialogFragment = null;
-		if (fragment is DialogFragment dialog)
+		
+		if (fragment is not DialogFragment dialog)
 		{
-			dialogFragment = dialog;
-			return true;
+			return false;
 		}
-		return false;
+		
+		dialogFragment = dialog;
+		return true;
 	}
 }

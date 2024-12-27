@@ -1,9 +1,7 @@
 ﻿using Android.Content;
-using Android.OS;
-using CommunityToolkit.Maui.Core;
 using FragmentManager = AndroidX.Fragment.App.FragmentManager;
 
-namespace CommunityToolkit.Maui.Services;
+namespace CommunityToolkit.Maui.Core.Services;
 
 sealed class FragmentLifecycleManager(IDialogFragmentService dialogFragmentService) : FragmentManager.FragmentLifecycleCallbacks
 {

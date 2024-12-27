@@ -1,4 +1,4 @@
-namespace CommunityToolkit.Maui.Services;
+namespace CommunityToolkit.Maui.Core.Services;
 
 sealed partial class DialogFragmentService
 {
