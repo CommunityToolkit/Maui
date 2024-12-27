@@ -101,7 +101,7 @@
 
   <!-- Fixes Static Registrar causing Linker error: https://github.com/xamarin/xamarin-macios/blob/main/docs/managed-static-registrar.md -->
   <Target Name="SelectStaticRegistrar" AfterTargets="SelectRegistrar">
-    <PropertyGroup Condition="'$(Registrar)' == 'managed-static' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='maccatalyst'">
+    <PropertyGroup Condition="'$(Registrar)' == 'managed-static'">
         <Registrar>static</Registrar>
     </PropertyGroup>
   </Target>
