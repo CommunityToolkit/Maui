@@ -1,10 +1,7 @@
-﻿using System.Diagnostics;
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;
 using CommunityToolkit.Maui.Views;
-using Microsoft.Maui.LifecycleEvents;
-using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui;
 

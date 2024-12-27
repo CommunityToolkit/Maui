@@ -17,7 +17,7 @@ public class Options() : Core.Options
 	{
 		this.builder = builder;
 	}
-	
+
 	internal static bool ShouldSuppressExceptionsInAnimations { get; private set; }
 	internal static bool ShouldSuppressExceptionsInConverters { get; private set; }
 	internal static bool ShouldSuppressExceptionsInBehaviors { get; private set; }
