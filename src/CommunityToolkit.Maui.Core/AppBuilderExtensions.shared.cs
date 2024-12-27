@@ -20,7 +20,7 @@ public static class AppBuilderExtensions
 	public static MauiAppBuilder UseMauiCommunityToolkitCore(this MauiAppBuilder builder, Action<Options>? options = null)
 	{
 		options?.Invoke(new Options());
-		
+
 #if ANDROID
         if (Options.ShouldUseStatusBarBehaviorOnAndroidModalPage)
         {
@@ -54,7 +54,7 @@ public static class AppBuilderExtensions
 			});
         }
 #endif
-		
+
 		return builder;
 	}
 }

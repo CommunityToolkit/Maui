@@ -93,9 +93,9 @@ sealed partial class DialogFragmentService : IDialogFragmentService
 						isColorTransparent ? 0 : (int)WindowInsetsControllerAppearance.LightStatusBars,
 						(int)WindowInsetsControllerAppearance.LightStatusBars);
 			}
-			
+
 			dialogWindow.SetStatusBarColor(platformColor);
-			
+
 			if (!OperatingSystem.IsAndroidVersionAtLeast(35))
 			{
 				dialogWindow.SetDecorFitsSystemWindows(!isColorTransparent);
@@ -137,12 +137,12 @@ sealed partial class DialogFragmentService : IDialogFragmentService
 	static bool TryConvertToDialogFragment(Fragment fragment, [NotNullWhen(true)] out DialogFragment? dialogFragment)
 	{
 		dialogFragment = null;
-		
+
 		if (fragment is not DialogFragment dialog)
 		{
 			return false;
 		}
-		
+
 		dialogFragment = dialog;
 		return true;
 	}
