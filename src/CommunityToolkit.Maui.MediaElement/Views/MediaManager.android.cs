@@ -175,8 +175,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		currentState = MediaElement.CurrentState;
 
 		BroadcastUpdate(newState is MediaElementState.Playing
-			? MediaControlsService.ACTION_PLAY
-			: MediaControlsService.ACTION_PAUSE);
+			? MediaControlsService.ActionPlay
+			: MediaControlsService.ActionPause);
 
 	}
 
@@ -333,7 +333,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 
 		Player.Prepare();
 		Player.Play();
-		BroadcastUpdate(MediaControlsService.ACTION_PLAY);
+		BroadcastUpdate(MediaControlsService.ActionPlay);
 	}
 
 	protected virtual partial void PlatformPause()
@@ -344,7 +344,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		}
 
 		Player.Pause();
-		BroadcastUpdate(MediaControlsService.ACTION_PAUSE);
+		BroadcastUpdate(MediaControlsService.ActionPause);
 	}
 
 	[Obsolete]
@@ -651,7 +651,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		mediaSessionConnector.SetPlayer(Player);
 
 		uiUpdateReceiver ??= new UIUpdateReceiver(Player);
-		LocalBroadcastManager.GetInstance(Platform.AppContext).RegisterReceiver(uiUpdateReceiver, new IntentFilter(MediaControlsService.ACTION_UPDATE_PLAYER));
+		LocalBroadcastManager.GetInstance(Platform.AppContext).RegisterReceiver(uiUpdateReceiver, new IntentFilter(MediaControlsService.ActionUpdatePlayer));
 
 		ArgumentNullException.ThrowIfNull(mediaSessionConnector);
 		ArgumentNullException.ThrowIfNull(Platform.CurrentActivity);
@@ -721,7 +721,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 		{
 			return;
 		}
-		Intent intent = new(MediaControlsService.ACTION_UPDATE_UI);
+		Intent intent = new(MediaControlsService.ActionUpdateUI);
 		intent.PutExtra("ACTION", action);
 		LocalBroadcastManager.GetInstance(Platform.AppContext).SendBroadcast(intent);
 	}
@@ -810,22 +810,22 @@ public partial class MediaManager : Java.Lang.Object, IPlayer.IListener
 			ArgumentNullException.ThrowIfNull(intent.Action);
 			ArgumentNullException.ThrowIfNull(player);
 
-			if (intent.Action is MediaControlsService.ACTION_UPDATE_PLAYER)
+			if (intent.Action is MediaControlsService.ActionUpdatePlayer)
 			{
 				var action = intent.GetStringExtra("ACTION") ?? string.Empty;
 				switch (action)
 				{
-					case MediaControlsService.ACTION_PLAY:
+					case MediaControlsService.ActionPlay:
 						player.Play();
 						break;
-					case MediaControlsService.ACTION_PAUSE:
+					case MediaControlsService.ActionPause:
 						player.Pause();
 						break;
-					case MediaControlsService.ACTION_FASTFORWARD:
+					case MediaControlsService.ActionFastForward:
 						player.SeekTo(player.CurrentPosition + 30_000);
 						player.Play();
 						break;
-					case MediaControlsService.ACTION_REWIND:
+					case MediaControlsService.ActionRewind:
 						player.SeekTo(player.CurrentPosition - 10_000);
 						player.Play();
 						break;
