@@ -183,6 +183,8 @@ public partial class MapHandlerWindows : MapHandler
 			return false;
 		}
 
+		await webView2.EnsureCoreWebView2Async();
+
 		var tcs = new TaskCompletionSource();
 		var isEnqueueSuccessful = webView2.DispatcherQueue.TryEnqueue(async () =>
 		{
