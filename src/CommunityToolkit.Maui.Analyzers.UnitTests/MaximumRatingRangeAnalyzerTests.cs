@@ -17,47 +17,74 @@ public class MaximumRatingRangeAnalyzerTests
 	[Fact]
 	public async Task NoDiagnosticForValidMaximumRating()
 	{
-		const string ValidCode = /* language=C#-test */ """
-using System;
+		const string validCode =
+			/* language=C#-test */
+			//lang=csharp
+			"""
+            using System;
 
-namespace TestApp
-{
-	public class RatingView
-	{
-		public int MaximumRating { get; set; }
+            namespace TestApp
+            {
+            	public class RatingView
+            	{
+            		public int MaximumRating { get; set; }
+            
+            		public void TestMethod()
+            		{
+            			MaximumRating = 5; // Valid value
+            		}
+            	}
+            }
+            """;
 
-		public void TestMethod()
-		{
-			MaximumRating = 5; // Valid value
-		}
-	}
-}
-""";
-
-		await VerifyMauiToolkitAnalyzer(ValidCode);
+		await VerifyMauiToolkitAnalyzer(validCode);
 	}
 
 	[Fact]
 	public async Task DiagnosticForInvalidMaximumRating()
 	{
-		const string InvalidCode = /* language=C#-test */ """
-using System;
+		const string invalidUpperBoundsCode =
+			/* language=C#-test */
+			//lang=csharp
+			"""
+            using System;
 
-namespace TestApp
-{
-	public class RatingView
-	{
-		public int MaximumRating { get; set; }
+            namespace TestApp
+            {
+            	public class RatingView
+            	{
+            		public int MaximumRating { get; set; }
+            
+            		public void TestMethod()
+            		{
+            			MaximumRating = 11; // Invalid value
+            		}
+            	}
+            }
+            """;
 
-		public void TestMethod()
-		{
-			MaximumRating = 15; // Invalid value
-		}
-	}
-}
-""";
+		const string invalidLowerBoundsCode =
+			/* language=C#-test */
+			//lang=csharp
+			"""
+            using System;
 
-		await VerifyMauiToolkitAnalyzer(InvalidCode, Diagnostic().WithSpan(11, 4, 11, 22).WithSeverity(DiagnosticSeverity.Error).WithArguments(1, 10));
+            namespace TestApp
+            {
+            	public class RatingView
+            	{
+            		public int MaximumRating { get; set; }
+            
+            		public void TestMethod()
+            		{
+            			MaximumRating = 0; // Invalid value
+            		}
+            	}
+            }
+            """;
+
+		await VerifyMauiToolkitAnalyzer(invalidUpperBoundsCode, Diagnostic().WithSpan(11, 4, 11, 22).WithSeverity(DiagnosticSeverity.Error).WithArguments(1, 10));
+		await VerifyMauiToolkitAnalyzer(invalidLowerBoundsCode, Diagnostic().WithSpan(11, 4, 11, 21).WithSeverity(DiagnosticSeverity.Error).WithArguments(1, 10));
 	}
 
 	static Task VerifyMauiToolkitAnalyzer(string source, params DiagnosticResult[] expected)
@@ -66,7 +93,7 @@ namespace TestApp
 			source,
 			[
 				typeof(Options), // CommunityToolkit.Maui
-				typeof(Core.Options),
+                typeof(Core.Options),
 			],
 			expected);
 	}
