@@ -41,7 +41,7 @@ public class MaximumRatingRangeAnalyzerTests
 	}
 
 	[Fact]
-	public async Task DiagnosticForInvalidMaximumRating()
+	public async Task DiagnosticForInvalidMaximumRatings()
 	{
 		const string invalidUpperBoundsCode =
 			/* language=C#-test */
