@@ -17,6 +17,18 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	readonly ITextToSpeech textToSpeech;
 	readonly ISpeechToText speechToText;
 
+	public SpeechToTextViewModel(ITextToSpeech textToSpeech, ISpeechToText speechToText)
+	{
+		this.textToSpeech = textToSpeech;
+		this.speechToText = speechToText;
+
+		Locales.CollectionChanged += HandleLocalesCollectionChanged;
+		this.speechToText.StateChanged += HandleSpeechToTextStateChanged;
+		this.speechToText.RecognitionResultCompleted += HandleRecognitionResultCompleted;
+	}
+
+	public ObservableCollection<Locale> Locales { get; } = [];
+	
 	[ObservableProperty]
 	public partial Locale? CurrentLocale { get; set; }
 
@@ -31,18 +43,6 @@ public partial class SpeechToTextViewModel : BaseViewModel
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StopListenCommand))]
 	public partial bool CanStopListenExecute { get; set; } = false;
-
-	public SpeechToTextViewModel(ITextToSpeech textToSpeech, ISpeechToText speechToText)
-	{
-		this.textToSpeech = textToSpeech;
-		this.speechToText = speechToText;
-
-		Locales.CollectionChanged += HandleLocalesCollectionChanged;
-		this.speechToText.StateChanged += HandleSpeechToTextStateChanged;
-		this.speechToText.RecognitionResultCompleted += HandleRecognitionResultCompleted;
-	}
-
-	public ObservableCollection<Locale> Locales { get; } = [];
 
 	[RelayCommand]
 	async Task SetLocales(CancellationToken token)
