@@ -1,10 +1,10 @@
-﻿namespace CommunityToolkit.Maui.Analyzers;
-
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+
+namespace CommunityToolkit.Maui.Analyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class MaximumRatingRangeAnalyzer : DiagnosticAnalyzer
@@ -38,27 +38,15 @@ public class MaximumRatingRangeAnalyzer : DiagnosticAnalyzer
 
 	static void AnalyzePropertyAssignment(SyntaxNodeAnalysisContext context)
 	{
-		AssignmentExpressionSyntax assignmentExpression = (AssignmentExpressionSyntax)context.Node;
-		if (assignmentExpression.Left is IdentifierNameSyntax leftIdentifier && leftIdentifier.Identifier.Text == "MaximumRating")
+		if (context.Node is AssignmentExpressionSyntax { Left: IdentifierNameSyntax { Identifier.Text: "MaximumRating" } leftIdentifier, Right: LiteralExpressionSyntax { Token.Value: int value } } assignmentExpression)
 		{
-			SemanticModel semanticModel = context.SemanticModel;
-			IPropertySymbol? propertySymbol = semanticModel.GetSymbolInfo(leftIdentifier).Symbol as IPropertySymbol;
-			if (propertySymbol?.ContainingType.Name == "RatingView" && assignmentExpression.Right is LiteralExpressionSyntax literal && literal.IsKind(SyntaxKind.NumericLiteralExpression) && literal.Token.Value is not null)
+			var semanticModel = context.SemanticModel;
+			var propertySymbol = semanticModel.GetSymbolInfo(leftIdentifier).Symbol as IPropertySymbol;
+
+			if (propertySymbol?.ContainingType.Name == "RatingView" && (value < minValue || value > maxValue))
 			{
-				int value = (int)literal.Token.Value;
-
-				// Validate the value is within the range
-				if (value is < minValue or > maxValue)
-				{
-					Diagnostic diagnostic = Diagnostic.Create(
-						rule,
-						assignmentExpression.GetLocation(),
-						minValue,
-						maxValue
-					);
-
-					context.ReportDiagnostic(diagnostic);
-				}
+				var diagnostic = Diagnostic.Create(rule, assignmentExpression.GetLocation(), minValue, maxValue);
+				context.ReportDiagnostic(diagnostic);
 			}
 		}
 	}
