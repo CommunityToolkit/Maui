@@ -20,36 +20,30 @@ public enum MathOperatorPrecedence
 /// <summary>
 /// Math Operator
 /// </summary>
-public sealed class MathOperator
+/// <remarks>
+/// Initialize <see cref="MathOperator"/>
+/// </remarks>
+/// <param name="name">Name</param>
+/// <param name="numericCount">Number of Numerals</param>
+/// <param name="calculateFunc">Calculation Function</param>
+public sealed class MathOperator(
+    string name,
+    int numericCount,
+    Func<object?[], object?> calculateFunc)
 {
-	/// <summary>
-	/// Initialize <see cref="MathOperator"/>
-	/// </summary>
-	/// <param name="name">Name</param>
-	/// <param name="numericCount">Number of Numerals</param>
-	/// <param name="calculateFunc">Calculation Function</param>
-	public MathOperator(
-		string name,
-		int numericCount,
-		Func<object?[], object?> calculateFunc)
-	{
-		Name = name;
-		CalculateFunc = calculateFunc;
-		NumericCount = numericCount;
-	}
 
-	/// <summary>
-	/// Name
-	/// </summary>
-	public string Name { get; }
+    /// <summary>
+    /// Name
+    /// </summary>
+    public string Name { get; } = name;
 
-	/// <summary>
-	/// Number of Numerals
-	/// </summary>
-	public int NumericCount { get; }
+    /// <summary>
+    /// Number of Numerals
+    /// </summary>
+    public int NumericCount { get; } = numericCount;
 
-	/// <summary>
-	/// Calculation Function
-	/// </summary>
-	public Func<object?[], object?> CalculateFunc { get; }
+    /// <summary>
+    /// Calculation Function
+    /// </summary>
+    public Func<object?[], object?> CalculateFunc { get; } = calculateFunc;
 }
