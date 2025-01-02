@@ -27,7 +27,7 @@ static partial class StatusBar
 
 				statusBar ??= new UIView(statusBarFrame.Value);
 				statusBar.Tag = statusBarTag;
-				statusBar.Frame = UIApplication.SharedApplication.StatusBarFrame;
+				statusBar.Frame = new CGRect(statusBar.Frame.X, statusBar.Frame.Y, statusBar.Frame.Width, window.SafeAreaInsets.Top);
 				var statusBarSubViews = window.Subviews.Where(x => x.Tag == statusBarTag).ToList();
 				foreach (var statusBarSubView in statusBarSubViews)
 				{
@@ -72,7 +72,7 @@ static partial class StatusBar
 				statusBar.Tag = statusBarTag;
 				statusBar.BackgroundColor = uiColor;
 				statusBar.TintColor = uiColor;
-				statusBar.Frame = UIApplication.SharedApplication.StatusBarFrame;
+				statusBar.Frame = new CGRect(statusBar.Frame.X, statusBar.Frame.Y, statusBar.Frame.Width, window.SafeAreaInsets.Top);
 				var statusBarSubViews = window.Subviews.Where(x => x.Tag == statusBarTag).ToList();
 				foreach (var statusBarSubView in statusBarSubViews)
 				{
