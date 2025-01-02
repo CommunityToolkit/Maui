@@ -5,7 +5,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converters for Math expressions
 /// </summary>
-public class MathExpressionConverter : BaseConverterOneWay<object?, object?, string>
+[AcceptEmptyServiceProvider]
+public partial class MathExpressionConverter : BaseConverterOneWay<object?, object?, string>
 {
 	/// <inheritdoc/>
 	public override object? DefaultConvertReturnValue { get; set; } = 0.0d;

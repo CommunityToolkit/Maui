@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+﻿using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using CommunityToolkit.Maui.Core;
@@ -9,28 +9,13 @@ enum MathTokenType
 {
 	Value,
 	Operator,
-};
+}
 
-record MathToken(MathTokenType type, string text, object? value);
+sealed record MathToken(MathTokenType Type, string Text, object? Value);
 
 sealed partial class MathExpression
 {
-	const NumberStyles numberStyle = NumberStyles.Float | NumberStyles.AllowThousands;
-
-	static readonly IFormatProvider formatProvider = new CultureInfo("en-US");
-
 	readonly IReadOnlyList<MathOperator> operators;
-	readonly IReadOnlyList<object?> arguments;
-
-	internal static bool __bool(object? b) =>
-		 b switch
-		 {
-			 bool x => x,
-			 null => false,
-			 double doubleValue => doubleValue != 0 && doubleValue != double.NaN,
-			 string stringValue => !string.IsNullOrEmpty(stringValue),
-			 _ => Convert.ToBoolean(b)
-		 };
 
 	internal MathExpression(string expression, IEnumerable<object?>? arguments = null)
 	{
@@ -40,16 +25,16 @@ sealed partial class MathExpression
 
 		Expression = expression.ToLower();
 
-		var operators = new List<MathOperator>
-		{
+		List<MathOperator> operators =
+		[
 			new ("+", 2, x => Convert.ToDouble(x[0]) + Convert.ToDouble(x[1])),
 			new ("-", 2, x => Convert.ToDouble(x[0]) - Convert.ToDouble(x[1])),
 			new ("*", 2, x => Convert.ToDouble(x[0]) * Convert.ToDouble(x[1])),
 			new ("/", 2, x => Convert.ToDouble(x[0]) / Convert.ToDouble(x[1])),
 			new ("%", 2, x => Convert.ToDouble(x[0]) % Convert.ToDouble(x[1])),
 
-			new ("and", 2, x => __bool(x[0]) ? x[1] : x[0]),
-			new ("or", 2, x => __bool(x[0]) ? x[0] : x[1]),
+			new ("and", 2, x => ConvertToBoolean(x[0]) ? x[1] : x[0]),
+			new ("or", 2, x => ConvertToBoolean(x[0]) ? x[0] : x[1]),
 
 			new ("==", 2, x => object.Equals(x[0], x[1])),
 			new ("!=", 2, x => !object.Equals(x[0], x[1])),
@@ -59,8 +44,8 @@ sealed partial class MathExpression
 			new ("le", 2, x => Convert.ToDouble(x[0]) <= Convert.ToDouble(x[1])),
 			new ("lt", 2, x => Convert.ToDouble(x[0]) < Convert.ToDouble(x[1])),
 			new ("neg", 1, x => -Convert.ToDouble(x[0])),
-			new ("not", 1, x => !__bool(x[0])),
-			new ("if", 3, x => __bool(x[0]) ? x[1] : x[2]),
+			new ("not", 1, x => !ConvertToBoolean(x[0])),
+			new ("if", 3, x => ConvertToBoolean(x[0]) ? x[1] : x[2]),
 
 			new ("abs", 1, x => Math.Abs(Convert.ToDouble(x[0]))),
 			new ("acos", 1, x => Math.Acos(Convert.ToDouble(x[0]))),
@@ -97,7 +82,7 @@ sealed partial class MathExpression
 			new ("true", 0, _ => true),
 			new ("false", 0, _ => false),
 			new ("null", 0, _ => null),
-		};
+		];
 
 		if (argumentList.Count > 0)
 		{
@@ -107,7 +92,7 @@ sealed partial class MathExpression
 		for (var i = 0; i < argumentList.Count; i++)
 		{
 			var index = i;
-			operators.Add(new MathOperator($"x{i}", 0, _ => argumentList[index]));
+			operators.Add(new MathOperator($"x{index}", 0, _ => argumentList[index]));
 		}
 
 		this.operators = operators;
@@ -120,6 +105,22 @@ sealed partial class MathExpression
 	internal Match PatternMatch { get; set; } = Match.Empty;
 
 	internal List<MathToken> RPN { get; } = new();
+	
+	static ReadOnlyDictionary<string, string> BinaryMappingDictionary { get; } = new Dictionary<string, string>
+	{
+		{ "<", "lt" },
+		{ "<=", "le" },
+		{ ">", "gt" },
+		{ ">=", "ge" },
+		{ "&&", "and" },
+		{ "||", "or" }
+	}.AsReadOnly();
+
+	static ReadOnlyDictionary<string, string> UnaryMappingDictionary { get; } = new Dictionary<string, string>
+	{
+		{ "-", "neg" },
+		{ "!", "not" }
+	}.AsReadOnly();
 
 	public object? Calculate()
 	{
@@ -133,20 +134,20 @@ sealed partial class MathExpression
 
 		foreach (var token in RPN)
 		{
-			if (token.type == MathTokenType.Value)
+			if (token.Type is MathTokenType.Value)
 			{
-				stack.Push(token.value);
+				stack.Push(token.Value);
 				continue;
 			}
 
-			var mathOperator = operators.FirstOrDefault(x => x.Name == token.text);
+			var mathOperator = operators.FirstOrDefault(x => x.Name == token.Text);
 			if (mathOperator is null)
 			{
-				Trace.TraceWarning($"Invalid math expression. Can't find operator or value with name \"{token.text}\".");
+				Trace.TraceWarning($"Invalid math expression. Can't find operator or value with name \"{token.Text}\".");
 				return null;
 			}
 
-			if (mathOperator.NumericCount == 0)
+			if (mathOperator.NumericCount is 0)
 			{
 				stack.Push(mathOperator.CalculateFunc([]));
 				continue;
@@ -161,7 +162,8 @@ sealed partial class MathExpression
 			}
 
 			bool nullGuard = false;
-			var args = new List<object?>();
+			List<object?> args = [];
+			
 			for (var j = 0; j < operatorNumericCount; j++)
 			{
 				object? val = stack.Pop();
@@ -171,23 +173,17 @@ sealed partial class MathExpression
 
 			args.Reverse();
 
-			switch (mathOperator.Name)
+			nullGuard = mathOperator.Name switch
 			{
-				case "if":
-					nullGuard = args[0] is null;
-					break;
-				case "and":
-				case "or":
-				case "==":
-				case "!=":
-					nullGuard = false;
-					break;
-			}
+				"if" => args[0] is null,
+				"and" or "or" or "==" or "!=" => false,
+				_ => nullGuard
+			};
 
 			stack.Push(!nullGuard ? mathOperator.CalculateFunc([.. args]) : null);
 		}
 
-		if (stack.Count == 0)
+		if (stack.Count is 0)
 		{
 			Trace.TraceWarning($"Invalid math expression. Stack is unexpectedly empty.");
 			return null;
@@ -200,6 +196,96 @@ sealed partial class MathExpression
 
 		return stack.Pop();
 	}
+	
+	public bool ParsePattern(Regex regex)
+	{
+		var whitespaceMatch = Whitespace().Match(Expression[ExpressionIndex..]);
+		if (whitespaceMatch.Success)
+		{
+			ExpressionIndex += whitespaceMatch.Length;
+		}
+
+		PatternMatch = regex.Match(Expression[ExpressionIndex..]);
+		if (!PatternMatch.Success)
+		{
+			return false;
+		}
+		ExpressionIndex += PatternMatch.Length;
+
+		whitespaceMatch = Whitespace().Match(Expression.Substring(ExpressionIndex));
+		if (whitespaceMatch.Success)
+		{
+			ExpressionIndex += whitespaceMatch.Length;
+		}
+
+		return true;
+	}
+	
+	[GeneratedRegex("""^(\w+)\(""")]
+	private static partial Regex FunctionStart();
+
+	[GeneratedRegex("""^(\,)""")]
+	private static partial Regex Comma();
+
+	[GeneratedRegex("""^(\))""")]
+	private static partial Regex FunctionEnd();
+	
+	[GeneratedRegex("""^(\?)""")]
+	private static partial Regex ConditionalStart();
+
+	[GeneratedRegex("""^(\:)""")]
+	private static partial Regex ConditionalElse();
+	
+	[GeneratedRegex("""^(\|\||or)""")]
+	private static partial Regex LogicalOROperator();
+	
+	[GeneratedRegex("""^(\&\&|and)""")]
+	private static partial Regex LogicalAndOperator();
+
+	[GeneratedRegex("""^(==|!=|eq|ne)""")]
+	private static partial Regex EqualityOperators();
+
+	[GeneratedRegex("""^(\<\=|\>\=|\<|\>|le|ge|lt|gt)""")]
+	private static partial Regex CompareOperators();
+
+	[GeneratedRegex("""^(\+|\-)""")]
+	private static partial Regex SumOperators();
+
+	[GeneratedRegex("""^(\*|\/|\%)""")]
+	private static partial Regex ProductOperators();
+
+	[GeneratedRegex("""^(\^)""")]
+	private static partial Regex PowerOperator();
+
+	[GeneratedRegex("""^(\-|\!)""")]
+	private static partial Regex UnaryOperators();
+
+	[GeneratedRegex("""^(\-?\d+\.\d+|\-?\d+)""")]
+	private static partial Regex NumberPattern();
+
+	[GeneratedRegex("""^["]([^"]*)["]""")]
+	private static partial Regex StringPattern();
+
+	[GeneratedRegex("""^(\w+)""")]
+	private static partial Regex Constants();
+
+	[GeneratedRegex("""^(\()""")]
+	private static partial Regex ParenStart();
+
+	[GeneratedRegex("""^(\))""")]
+	private static partial Regex ParenEnd();
+	
+	[GeneratedRegex("""^\s*""")]
+	private static partial Regex Whitespace();
+	
+	static bool ConvertToBoolean(object? b) => b switch
+	{
+		bool x => x,
+		null => false,
+		double doubleValue => doubleValue != 0 && !double.IsNaN(doubleValue),
+		string stringValue => !string.IsNullOrEmpty(stringValue),
+		_ => Convert.ToBoolean(b)
+	};
 
 	bool ParseExpression()
 	{
@@ -212,12 +298,6 @@ sealed partial class MathExpression
 	{
 		return ParseConditional();
 	}
-
-	[GeneratedRegex("""^(\?)""")]
-	private static partial Regex ConditionalStart();
-
-	[GeneratedRegex("""^(\:)""")]
-	private static partial Regex ConditionalElse();
 
 	bool ParseConditional()
 	{
@@ -250,59 +330,19 @@ sealed partial class MathExpression
 		return true;
 	}
 
-	[GeneratedRegex("""^(\|\||or)""")]
-	private static partial Regex LogicalOROperator();
-
 	bool ParseLogicalOR() => ParseBinaryOperators(LogicalOROperator(), ParseLogicalAnd);
-
-	[GeneratedRegex("""^(\&\&|and)""")]
-	private static partial Regex LogicalAndOperator();
 
 	bool ParseLogicalAnd() => ParseBinaryOperators(LogicalAndOperator(), ParseEquality);
 
-	[GeneratedRegex("""^(==|!=|eq|ne)""")]
-	private static partial Regex EqualityOperators();
-
 	bool ParseEquality() => ParseBinaryOperators(EqualityOperators(), ParseCompare);
-
-	[GeneratedRegex("""^(\<\=|\>\=|\<|\>|le|ge|lt|gt)""")]
-	private static partial Regex CompareOperators();
 
 	bool ParseCompare() => ParseBinaryOperators(CompareOperators(), ParseSum);
 
-	[GeneratedRegex("""^(\+|\-)""")]
-	private static partial Regex SumOperators();
-
 	bool ParseSum() => ParseBinaryOperators(SumOperators(), ParseProduct);
-
-	[GeneratedRegex("""^(\*|\/|\%)""")]
-	private static partial Regex ProductOperators();
 
 	bool ParseProduct() => ParseBinaryOperators(ProductOperators(), ParsePower);
 
-	[GeneratedRegex("""^(\^)""")]
-	private static partial Regex PowerOperator();
-
 	bool ParsePower() => ParseBinaryOperators(PowerOperator(), ParsePrimary);
-
-	[GeneratedRegex("""^(\-|\!)""")]
-	private static partial Regex UnaryOperators();
-
-	static Dictionary<string, string> binaryMapping { get; } = new Dictionary<string, string>()
-	{
-		{ "<", "lt" },
-		{ "<=", "le" },
-		{ ">", "gt" },
-		{ ">=", "ge" },
-		{ "&&", "and" },
-		{ "||", "or" }
-	};
-
-	static Dictionary<string, string> unaryMapping { get; } = new Dictionary<string, string>()
-	{
-		{ "-", "neg" },
-		{ "!", "not" }
-	};
 
 	bool ParseBinaryOperators(Regex BinaryOperators, Func<bool> ParseNext)
 	{
@@ -314,9 +354,9 @@ sealed partial class MathExpression
 		while (ParsePattern(BinaryOperators))
 		{
 			string _operator = PatternMatch.Groups[1].Value;
-			if (binaryMapping.ContainsKey(_operator))
+			if (BinaryMappingDictionary.TryGetValue(_operator, out var value))
 			{
-				_operator = binaryMapping[_operator];
+				_operator = value;
 			}
 			if (!ParseNext())
 			{
@@ -328,21 +368,6 @@ sealed partial class MathExpression
 		}
 		return true;
 	}
-
-	[GeneratedRegex("""^(\-?\d+\.\d+|\-?\d+)""")]
-	private static partial Regex NumberPattern();
-
-	[GeneratedRegex("""^["]([^"]*)["]""")]
-	private static partial Regex StringPattern();
-
-	[GeneratedRegex("""^(\w+)""")]
-	private static partial Regex Constants();
-
-	[GeneratedRegex("""^(\()""")]
-	private static partial Regex ParenStart();
-
-	[GeneratedRegex("""^(\))""")]
-	private static partial Regex ParenEnd();
 
 	bool ParsePrimary()
 	{
@@ -392,9 +417,9 @@ sealed partial class MathExpression
 		if (ParsePattern(UnaryOperators()))
 		{
 			string _operator = PatternMatch.Groups[1].Value;
-			if (unaryMapping.ContainsKey(_operator))
+			if (UnaryMappingDictionary.TryGetValue(_operator, out var value))
 			{
-				_operator = unaryMapping[_operator];
+				_operator = value;
 			}
 			if (!ParsePrimary())
 			{
@@ -407,15 +432,6 @@ sealed partial class MathExpression
 
 		return false;
 	}
-
-	[GeneratedRegex("""^(\w+)\(""")]
-	private static partial Regex FunctionStart();
-
-	[GeneratedRegex("""^(\,)""")]
-	private static partial Regex Comma();
-
-	[GeneratedRegex("""^(\))""")]
-	private static partial Regex FunctionEnd();
 
 	bool ParseFunction()
 	{
@@ -451,33 +467,6 @@ sealed partial class MathExpression
 		}
 
 		RPN.Add(new MathToken(MathTokenType.Operator, functionName, null));
-
-		return true;
-	}
-
-	[GeneratedRegex("""^\s*""")]
-	private static partial Regex Whitespace();
-
-	public bool ParsePattern(Regex regex)
-	{
-		var whitespaceMatch = Whitespace().Match(Expression.Substring(ExpressionIndex));
-		if (whitespaceMatch.Success)
-		{
-			ExpressionIndex += whitespaceMatch.Length;
-		}
-
-		PatternMatch = regex.Match(Expression.Substring(ExpressionIndex));
-		if (!PatternMatch.Success)
-		{
-			return false;
-		}
-		ExpressionIndex += PatternMatch.Length;
-
-		whitespaceMatch = Whitespace().Match(Expression.Substring(ExpressionIndex));
-		if (whitespaceMatch.Success)
-		{
-			ExpressionIndex += whitespaceMatch.Length;
-		}
 
 		return true;
 	}

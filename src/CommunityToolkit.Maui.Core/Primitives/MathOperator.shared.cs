@@ -14,7 +14,7 @@ public enum MathOperatorPrecedence
 	/// <summary>High</summary>
 	High,
 	/// <summary>Constant</summary>
-	Constant,
+	Constant
 }
 
 /// <summary>
@@ -41,17 +41,12 @@ public sealed class MathOperator
 	/// <summary>
 	/// Name
 	/// </summary>
-	public string Name { get; } = name;
+	public string Name { get; }
 
 	/// <summary>
 	/// Number of Numerals
 	/// </summary>
-	public int NumericCount { get; } = numericCount;
-
-	/// <summary>
-	/// Math Operator Precedence
-	/// </summary>
-	public MathOperatorPrecedence Precedence { get; } = precedence;
+	public int NumericCount { get; }
 
 	/// <summary>
 	/// Calculation Function
