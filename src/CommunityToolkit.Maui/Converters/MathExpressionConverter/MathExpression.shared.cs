@@ -278,7 +278,7 @@ sealed partial class MathExpression
 		}
 		ExpressionIndex += PatternMatch.Length;
 
-		whitespaceMatch = EvaluateWhitespace().Match(Expression.Substring(ExpressionIndex));
+		whitespaceMatch = EvaluateWhitespace().Match(Expression[ExpressionIndex..]);
 		if (whitespaceMatch.Success)
 		{
 			ExpressionIndex += whitespaceMatch.Length;
