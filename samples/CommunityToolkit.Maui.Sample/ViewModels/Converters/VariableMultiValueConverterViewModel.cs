@@ -5,6 +5,26 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 public partial class VariableMultiValueConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	bool isAllGroupSwitch1On, isAllGroupSwitch2On, isAnyGroupSwitch1On, isAnyGroupSwitch2On,
-		isGreaterThanGroupSwitch1On, isGreaterThanGroupSwitch2On, isGreaterThanGroupSwitch3On, isGreaterThanGroupSwitch4On;
+	public partial bool IsAllGroupSwitch1On { get; set; }
+
+	[ObservableProperty]
+	public partial bool IsAllGroupSwitch2On { get; set; }
+
+	[ObservableProperty]
+	public partial bool IsAnyGroupSwitch1On { get; set; }
+
+	[ObservableProperty]
+	public partial bool IsAnyGroupSwitch2On { get; set; }
+
+	[ObservableProperty]
+	public partial bool IsGreaterThanGroupSwitch1On { get; set; }
+
+	[ObservableProperty]
+	public partial bool IsGreaterThanGroupSwitch2On { get; set; }
+
+	[ObservableProperty]
+	public partial bool IsGreaterThanGroupSwitch3On { get; set; }
+
+	[ObservableProperty]
+	public partial bool IsGreaterThanGroupSwitch4On { get; set; }
 }
