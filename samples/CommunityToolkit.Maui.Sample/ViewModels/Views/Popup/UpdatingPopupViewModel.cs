@@ -4,23 +4,19 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public partial class UpdatingPopupViewModel : BaseViewModel
+public partial class UpdatingPopupViewModel(IPopupService popupService) : BaseViewModel
 {
 	const double finalUpdateProgressValue = 1;
+	readonly IPopupService popupService = popupService;
+
 	int updates;
 
-	readonly IPopupService popupService;
 	[ObservableProperty]
-	string message = "";
+	public partial string Message { get; set; } = "";
 
 	[ObservableProperty]
 	[NotifyCanExecuteChangedFor(nameof(FinishCommand))]
-	double updateProgress;
-
-	public UpdatingPopupViewModel(IPopupService popupService)
-	{
-		this.popupService = popupService;
-	}
+	public partial double UpdateProgress { get; set; }
 
 	internal async void PerformUpdates(int numberOfUpdates)
 	{

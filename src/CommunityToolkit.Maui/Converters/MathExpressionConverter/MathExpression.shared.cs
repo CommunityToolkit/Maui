@@ -111,7 +111,6 @@ sealed partial class MathExpression
 		}
 
 		this.operators = operators;
-		this.arguments = argumentList;
 	}
 
 	internal string Expression { get; }

@@ -17,21 +17,6 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	readonly ITextToSpeech textToSpeech;
 	readonly ISpeechToText speechToText;
 
-	[ObservableProperty]
-	Locale? currentLocale;
-
-	[ObservableProperty]
-	string? recognitionText = "Welcome to .NET MAUI Community Toolkit!";
-
-	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ListenCommand))]
-	bool canListenExecute = true;
-
-	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StartListenCommand))]
-	bool canStartListenExecute = true;
-
-	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StopListenCommand))]
-	bool canStopListenExecute = false;
-
 	public SpeechToTextViewModel(ITextToSpeech textToSpeech, ISpeechToText speechToText)
 	{
 		this.textToSpeech = textToSpeech;
@@ -43,6 +28,21 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	}
 
 	public ObservableCollection<Locale> Locales { get; } = [];
+	
+	[ObservableProperty]
+	public partial Locale? CurrentLocale { get; set; }
+
+	[ObservableProperty]
+	public partial string? RecognitionText { get; set; } = "Welcome to .NET MAUI Community Toolkit!";
+
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ListenCommand))]
+	public partial bool CanListenExecute { get; set; } = true;
+
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StartListenCommand))]
+	public partial bool CanStartListenExecute { get; set; } = true;
+
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StopListenCommand))]
+	public partial bool CanStopListenExecute { get; set; } = false;
 
 	[RelayCommand]
 	async Task SetLocales(CancellationToken token)

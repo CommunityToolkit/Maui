@@ -6,8 +6,8 @@ variables:
   NugetPackageVersionCamera: '$(CurrentSemanticVersion)'
   NugetPackageVersionMediaElement: '$(CurrentSemanticVersion)'
   NugetPackageVersionMaps: '$(CurrentSemanticVersion)'
-  TOOLKIT_NET_VERSION: '8.0.303'
-  LATEST_NET_VERSION: '8.0.x'
+  TOOLKIT_NET_VERSION: '9.0.101'
+  LATEST_NET_VERSION: '9.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
@@ -28,8 +28,8 @@ variables:
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
   DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/8.0.6.json'
-  CommunityToolkitSampleApp_Xcode_Version: '16'
-  CommunityToolkitLibrary_Xcode_Version: '15.4'
+  CommunityToolkitSampleApp_Xcode_Version: '16.2'
+  CommunityToolkitLibrary_Xcode_Version: '16.1'
 
 trigger:
   branches:
@@ -61,7 +61,7 @@ jobs:
         'Windows':
           image: 'windows-latest'
         'macOS':
-          image: 'macos-14'
+          image: 'macos-15'
     pool:
       vmImage: $(image)
     steps:
@@ -69,7 +69,10 @@ jobs:
         displayName: 'Set Xcode v$(CommunityToolkitSampleApp_Xcode_Version)'
         condition: eq(variables['Agent.OS'], 'Darwin') # Only run this step on macOS
         inputs:
-          script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(CommunityToolkitSampleApp_Xcode_Version).app;sudo xcode-select --switch /Applications/Xcode_$(CommunityToolkitSampleApp_Xcode_Version).app/Contents/Developer
+          script: |
+            echo Installed Xcode Versions:
+            ls -al  /Applications | grep Xcode
+            echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(CommunityToolkitSampleApp_Xcode_Version).app;sudo xcode-select --switch /Applications/Xcode_$(CommunityToolkitSampleApp_Xcode_Version).app/Contents/Developer
 
       - task: UseDotNet@2
         displayName: 'Install Latest .NET SDK, v$(LATEST_NET_VERSION)'
@@ -81,7 +84,9 @@ jobs:
       - task: CmdLine@2
         displayName: 'Install Latest .NET MAUI Workload'
         inputs:
-          script: 'dotnet workload install maui'
+          script: |
+            dotnet workload install maui
+            dotnet workload update
 
       - powershell: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
@@ -139,7 +144,7 @@ jobs:
         'Windows':
           image: 'windows-latest'
         'macOS':
-          image: 'macos-14'
+          image: 'macos-15'
     pool:
       vmImage: $(image)
     steps:
@@ -199,7 +204,10 @@ jobs:
         displayName: 'Set Xcode v$(CommunityToolkitLibrary_Xcode_Version)'
         condition: eq(variables['Agent.OS'], 'Darwin') # Only run this step on macOS
         inputs:
-          script: echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(CommunityToolkitLibrary_Xcode_Version).app;sudo xcode-select --switch /Applications/Xcode_$(CommunityToolkitLibrary_Xcode_Version).app/Contents/Developer
+          script: |
+            echo Installed Xcode Versions:
+            ls -al  /Applications | grep Xcode
+            echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(CommunityToolkitLibrary_Xcode_Version).app;sudo xcode-select --switch /Applications/Xcode_$(CommunityToolkitLibrary_Xcode_Version).app/Contents/Developer
 
       - task: UseDotNet@2
         displayName: Install .NET v$(TOOLKIT_NET_VERSION)
@@ -211,7 +219,9 @@ jobs:
       - task: CmdLine@2
         displayName: 'Install .NET MAUI Workload $(TOOLKIT_NET_VERSION)'
         inputs:
-          script: dotnet workload install maui --skip-sign-check --source https://api.nuget.org/v3/index.json 
+          script: |
+            dotnet workload install maui
+            dotnet workload update
 
       - powershell: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
@@ -451,13 +461,14 @@ jobs:
           'Windows':
             image: 'windows-latest'
           'macOS':
-            image: 'macos-14'
+            image: 'macos-15'
     pool:
       vmImage: $(image)
     steps:
       - script: |
-          sudo xcode-select -s /Applications/Xcode_$(CommunityToolkitLibrary_Xcode_Version).app 
-          sudo xcode-select -p
+          echo Installed Xcode Versions:
+          ls -al  /Applications | grep Xcode
+          echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(CommunityToolkitLibrary_Xcode_Version).app;sudo xcode-select --switch /Applications/Xcode_$(CommunityToolkitLibrary_Xcode_Version).app/Contents/Developer
         displayName: 'Set Xcode v$(CommunityToolkitLibrary_Xcode_Version)'
         condition: eq(variables['Agent.OS'], 'Darwin') # Only run this step on macOS
 
@@ -471,7 +482,9 @@ jobs:
       - task: CmdLine@2
         displayName: 'Install .NET MAUI Workload'
         inputs:
-          script : 'dotnet workload install maui'
+          script : |
+            dotnet workload install maui
+            dotnet workload update
 
       - pwsh: |
           Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'

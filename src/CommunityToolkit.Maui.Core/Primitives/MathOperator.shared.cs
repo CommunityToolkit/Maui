@@ -41,17 +41,17 @@ public sealed class MathOperator
 	/// <summary>
 	/// Name
 	/// </summary>
-	public string Name { get; }
+	public string Name { get; } = name;
 
 	/// <summary>
 	/// Number of Numerals
 	/// </summary>
-	public int NumericCount { get; }
+	public int NumericCount { get; } = numericCount;
 
 	/// <summary>
 	/// Math Operator Precedence
 	/// </summary>
-	public MathOperatorPrecedence Precedence { get; }
+	public MathOperatorPrecedence Precedence { get; } = precedence;
 
 	/// <summary>
 	/// Calculation Function

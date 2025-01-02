@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Layouts;
 /// All rows and columns will have the same size.
 /// Use this when you need the Grid behavior without the need to specify different sizes for the rows and columns.
 /// </summary>
-public class UniformItemsLayout : Layout, IUniformItemsLayout
+public partial class UniformItemsLayout : Layout, IUniformItemsLayout
 {
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="MaxRows"/> property.

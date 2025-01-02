@@ -27,7 +27,7 @@
         
         <Button x:Name="DisplayCustomSnackbarButton"
                 Clicked="DisplayCustomSnackbarButtonClicked"
-                TextColor="{Binding Source={RelativeSource Self}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}}"/> 
+                TextColor="{Binding Source={RelativeSource Self}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}, x:DataType=Button}"/> 
         
         <Button x:Name="DisplaySnackbarInModalButton"
                 Text="Show Snackbar in Modal Page"

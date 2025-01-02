@@ -6,19 +6,31 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 public partial class StateContainerViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	string? currentState, gridState, noAnimateState, notFoundState, fullPageState;
-
-	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ToggleGridStateCommand))]
-	bool canGridStateChange = true;
-
-	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(CycleStatesCommand))]
-	bool canCycleStateChange = true;
-
-	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ToggleFullPageStateCommand))]
-	bool canFullPageStateChange = true;
+	public partial string? CurrentState { get; set; }
 
 	[ObservableProperty]
-	bool canAnimationStateChange = true;
+	public partial string? GridState { get; set; }
+
+	[ObservableProperty]
+	public partial string? NoAnimateState { get; set; }
+
+	[ObservableProperty]
+	public partial string? NotFoundState { get; set; }
+
+	[ObservableProperty]
+	public partial string? FullPageState { get; set; }
+
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ToggleGridStateCommand))]
+	public partial bool CanGridStateChange { get; set; } = true;
+
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(CycleStatesCommand))]
+	public partial bool CanCycleStateChange { get; set; } = true;
+
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ToggleFullPageStateCommand))]
+	public partial bool CanFullPageStateChange { get; set; } = true;
+
+	[ObservableProperty]
+	public partial bool CanAnimationStateChange { get; set; } = true;
 
 	[RelayCommand(CanExecute = nameof(CanCycleStateChange))]
 	async Task CycleStates(CancellationToken token)

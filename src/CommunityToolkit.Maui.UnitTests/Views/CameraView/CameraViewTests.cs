@@ -12,7 +12,7 @@ public class CameraViewTests : BaseHandlerTest
 
 	public CameraViewTests()
 	{
-		Assert.IsAssignableFrom<ICameraView>(cameraView);
+		Assert.IsType<ICameraView>(cameraView, exactMatch: false);
 		mockCameraProvider = (MockCameraProvider)ServiceProvider.GetRequiredService<ICameraProvider>();
 	}
 
