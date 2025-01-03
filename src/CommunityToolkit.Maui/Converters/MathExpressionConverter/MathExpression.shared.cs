@@ -142,13 +142,9 @@ sealed partial class MathExpression
 				continue;
 			}
 
-			var mathOperator = operators.FirstOrDefault(x => x.Name == token.Text);
-			if (mathOperator is null)
-			{
-				throw new ArgumentException($"Math Expression Invalid. Can't find operator or value with name \"{token.Text}\".");
-			}
-
-			if (mathOperator.NumericCount is 0)
+			var mathOperator = operators.FirstOrDefault(x => x.Name == token.Text) ?? throw new ArgumentException($"Math Expression Invalid. Can't find operator or value with name \"{token.Text}\".");
+			
+            if (mathOperator.NumericCount is 0)
 			{
 				stack.Push(mathOperator.CalculateFunc([]));
 				continue;
@@ -161,26 +157,26 @@ sealed partial class MathExpression
 				throw new ArgumentException($"Math Expression Invalid. Insufficient parameters to operator \"{mathOperator.Name}\".");
 			}
 
-			bool containsNullGuard = false;
+			bool containsNullArgument = false;
 			List<object?> args = [];
 			
 			for (var j = 0; j < operatorNumericCount; j++)
 			{
 				object? val = stack.Pop();
 				args.Add(val);
-				containsNullGuard = containsNullGuard || val is null;
+				containsNullArgument = containsNullArgument || val is null;
 			}
 
 			args.Reverse();
 
-			containsNullGuard = mathOperator.Name switch
+			containsNullArgument = mathOperator.Name switch
 			{
 				"if" => args[0] is null,
 				"and" or "or" or "==" or "!=" => false,
-				_ => containsNullGuard
+				_ => containsNullArgument
 			};
 
-			stack.Push(!containsNullGuard ? mathOperator.CalculateFunc([.. args]) : null);
+			stack.Push(!containsNullArgument ? mathOperator.CalculateFunc([.. args]) : null);
 		}
 
 		if (stack.Count is 0)
