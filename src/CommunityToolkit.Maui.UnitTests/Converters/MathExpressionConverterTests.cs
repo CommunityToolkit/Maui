@@ -217,21 +217,12 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 	}
 
 	[Theory]
-	[InlineData("1 + 3 + 5 + (3 - 2))")]
-	[InlineData("1 + 2) + (9")]
-	[InlineData("100 + pow(2)")]
-	public void MathExpressionConverter_WithInvalidExpressions_ReturnsNullResult(string expression)
-	{
-		var mathExpressionConverter = new MathExpressionConverter();
-
-		Assert.Null(((ICommunityToolkitValueConverter)mathExpressionConverter).Convert(0d, mathExpressionTargetType, expression, cultureInfo));
-		Assert.Null(mathExpressionConverter.ConvertFrom(0d, expression));
-	}
-
-	[Theory]
 	[InlineData(2.5)]
 	[InlineData('c')]
 	[InlineData(true)]
+	[InlineData("1 + 3 + 5 + (3 - 2))")]
+	[InlineData("1 + 2) + (9")]
+	[InlineData("100 + pow(2)")]
 	public void MultiMathExpressionConverterInvalidParameterThrowsArgumentException(object parameter)
 	{
 		var mathExpressionConverter = new MultiMathExpressionConverter();

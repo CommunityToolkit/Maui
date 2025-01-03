@@ -33,8 +33,9 @@ public class MultiMathExpressionConverter : MultiValueConverterExtension, ICommu
 			return null;
 		}
 
-		var math = new MathExpression(expression, values);
-		return math.Calculate();
+		new MathExpression(expression, values).TryCalculate(out var result);
+
+		return result;
 	}
 
 	/// <summary>

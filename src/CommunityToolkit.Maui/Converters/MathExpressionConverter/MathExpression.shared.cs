@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Converters;
@@ -122,12 +123,13 @@ sealed partial class MathExpression
 
 	List<MathToken> RPN { get; } = new();
 
-	public object? Calculate()
+	public bool TryCalculate(out object? result)
 	{
+		result = null;
+		
 		if (!ParseExpression())
 		{
-			Trace.TraceWarning("Invalid math expression. Failed to parse expression.");
-			return null;
+			throw new ArgumentException("Math Expression Invalid. Failed to parse math expression.");
 		}
 
 		var stack = new Stack<object?>();
@@ -143,8 +145,7 @@ sealed partial class MathExpression
 			var mathOperator = operators.FirstOrDefault(x => x.Name == token.Text);
 			if (mathOperator is null)
 			{
-				Trace.TraceWarning($"Invalid math expression. Can't find operator or value with name \"{token.Text}\".");
-				return null;
+				throw new ArgumentException($"Math Expression Invalid. Can't find operator or value with name \"{token.Text}\".");
 			}
 
 			if (mathOperator.NumericCount is 0)
@@ -157,44 +158,44 @@ sealed partial class MathExpression
 
 			if (stack.Count < operatorNumericCount)
 			{
-				Trace.TraceWarning($"Invalid math expression. Insufficient parameters to operator \"{mathOperator.Name}\".");
-				return null;
+				throw new ArgumentException($"Math Expression Invalid. Insufficient parameters to operator \"{mathOperator.Name}\".");
 			}
 
-			bool nullGuard = false;
+			bool containsNullGuard = false;
 			List<object?> args = [];
 			
 			for (var j = 0; j < operatorNumericCount; j++)
 			{
 				object? val = stack.Pop();
 				args.Add(val);
-				nullGuard = nullGuard || (val is null);
+				containsNullGuard = containsNullGuard || val is null;
 			}
 
 			args.Reverse();
 
-			nullGuard = mathOperator.Name switch
+			containsNullGuard = mathOperator.Name switch
 			{
 				"if" => args[0] is null,
 				"and" or "or" or "==" or "!=" => false,
-				_ => nullGuard
+				_ => containsNullGuard
 			};
 
-			stack.Push(!nullGuard ? mathOperator.CalculateFunc([.. args]) : null);
+			stack.Push(!containsNullGuard ? mathOperator.CalculateFunc([.. args]) : null);
 		}
 
 		if (stack.Count is 0)
 		{
-			Trace.TraceWarning($"Invalid math expression. Stack is unexpectedly empty.");
-			return null;
+			throw new InvalidOperationException($"Math Expression Invalid. Stack is unexpectedly empty.");
 		}
 
 		if (stack.Count > 1)
 		{
-			Trace.WriteLine($"Invalid math expression. Stack unexpectedly contains too many ({stack.Count}) items.");
+			throw new InvalidOperationException($"Math Expression Invalid. Stack unexpectedly contains multiple items ({stack.Count}) items.");
 		}
 
-		return stack.Pop();
+		result = stack.Pop();
+		
+		return true;
 	}
 	
 	[GeneratedRegex("""^(\w+)\(""")]
