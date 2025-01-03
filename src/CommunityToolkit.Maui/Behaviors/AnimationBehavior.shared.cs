@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 using CommunityToolkit.Maui.Animations;
 
 namespace CommunityToolkit.Maui.Behaviors;
@@ -6,8 +7,17 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <summary>
 /// The <see cref="AnimationBehavior"/> is a behavior that shows an animation on any <see cref="VisualElement"/> when the <see cref="AnimateCommand"/> is called.
 /// </summary>
-public class AnimationBehavior : EventToCommandBehavior
+public partial class AnimationBehavior : EventToCommandBehavior
 {
+	const string animateCommandSetterWarning =
+		"""
+		Do not use this setter, it only exists to enable XAML Hot reload support in your IDE.
+
+		Instead, apps should provide a value for this OneWayToSource property by creating a binding, in XAML or C#. If done via C# use code like this:
+
+		behavior.SetBinding(AnimationBehavior.AnimateCommandProperty, nameof(ViewModel.TriggerAnimationCommand));
+		""";
+
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="AnimationType"/> property.
 	/// </summary>
@@ -36,15 +46,13 @@ public class AnimationBehavior : EventToCommandBehavior
 	public Command<CancellationToken> AnimateCommand
 	{
 		get => (Command<CancellationToken>)GetValue(AnimateCommandProperty);
-		[Obsolete(
-  """
-Do not use this setter, it only exists to enable XAML Hot reload support in your IDE.
 
-Instead, apps should provide a value for this OneWayToSource property by creating a binding, in XAML or C#. If done via C# use code like this:
-
-behavior.SetBinding(AnimationBehavior.AnimateCommandProperty, nameof(ViewModel.TriggerAnimationCommand));
-""")]
-		set => SetValue(AnimateCommandProperty, value);
+		[Obsolete(animateCommandSetterWarning), EditorBrowsable(EditorBrowsableState.Never)]
+		set
+		{
+			Trace.WriteLine(animateCommandSetterWarning);
+			SetValue(AnimateCommandProperty, value);
+		}
 	}
 
 	/// <summary>
@@ -61,29 +69,31 @@ behavior.SetBinding(AnimationBehavior.AnimateCommandProperty, nameof(ViewModel.T
 	{
 		base.OnAttachedTo(bindable);
 
-		if (string.IsNullOrWhiteSpace(EventName))
+		if (!string.IsNullOrWhiteSpace(EventName))
 		{
-			if (bindable is ITextInput)
-			{
-				throw new InvalidOperationException($"Animation Behavior can not be attached to {nameof(ITextInput)} without using the EventName property.");
-			}
-
-			if (bindable is not IGestureRecognizers gestureRecognizers)
-			{
-				throw new InvalidOperationException($"VisualElement does not implement {nameof(IGestureRecognizers)}.");
-			}
-
-			tapGestureRecognizer = new TapGestureRecognizer();
-			tapGestureRecognizer.Tapped += OnTriggerHandled;
-
-			gestureRecognizers.GestureRecognizers.Add(tapGestureRecognizer);
+			return;
 		}
+
+		if (bindable is ITextInput)
+		{
+			throw new InvalidOperationException($"Animation Behavior can not be attached to {nameof(ITextInput)} without using the EventName property.");
+		}
+
+		if (bindable is not IGestureRecognizers gestureRecognizers)
+		{
+			throw new InvalidOperationException($"VisualElement does not implement {nameof(IGestureRecognizers)}.");
+		}
+
+		tapGestureRecognizer = new TapGestureRecognizer();
+		tapGestureRecognizer.Tapped += OnTriggerHandled;
+
+		gestureRecognizers.GestureRecognizers.Add(tapGestureRecognizer);
 	}
 
 	/// <inheritdoc/>
 	protected override void OnDetachingFrom(VisualElement bindable)
 	{
-		if (tapGestureRecognizer != null)
+		if (tapGestureRecognizer is not null)
 		{
 			tapGestureRecognizer.Tapped -= OnTriggerHandled;
 			tapGestureRecognizer = null;

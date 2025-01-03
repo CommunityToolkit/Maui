@@ -18,10 +18,10 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	readonly ISpeechToText speechToText;
 
 	[ObservableProperty]
-	Locale? currentLocale;
+	public partial Locale? CurrentLocale { get; set; }
 
 	[ObservableProperty]
-	string? recognitionText = "Welcome to .NET MAUI Community Toolkit!";
+	public partial string? RecognitionText { get; set; } = "Welcome to .NET MAUI Community Toolkit!";
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ListenCommand))]
 	bool canListenExecute = true;

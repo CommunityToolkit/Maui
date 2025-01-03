@@ -8,6 +8,7 @@
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:TypeArguments="vm:MultiConverterViewModel"
     x:DataType="vm:MultiConverterViewModel"
+    xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Converters"
     x:Name="ThisPage">
 
     <pages:BasePage.Resources>
@@ -34,12 +35,12 @@
                     ConverterType="{x:Type mct:TextCaseConverter}"
                     Value="{x:Static mct:TextCaseType.Upper}" />
             </x:Array>
-            
+
             <mct:VariableMultiValueConverter ConditionType="All" x:Key="VariableMultiValueConverterAll" />
             <mct:InvertedBoolConverter x:Key="InvertedBoolConverter" />
         </ResourceDictionary>
     </pages:BasePage.Resources>
-    
+
     <pages:BasePage.Content>
         <VerticalStackLayout Padding="20"
                              Spacing="20">
@@ -49,17 +50,17 @@
                    HorizontalOptions="CenterAndExpand"/>
             <Label Text="{Binding EnteredName, Converter={StaticResource MyMultiConverter}, ConverterParameter={StaticResource MultiParams}, Mode=OneWay}"
                    HorizontalOptions="CenterAndExpand"/>
-            
+
             <VerticalStackLayout
                 Padding="30,0"
                 Spacing="25">
                 <VerticalStackLayout.IsEnabled>
                     <MultiBinding Converter="{StaticResource VariableMultiValueConverterAll}">
-                        <Binding Path="IsEnabled" Source="{x:Reference ThisPage}" Converter="{StaticResource InvertedBoolConverter}" />
-                        <Binding Path="IsVisible" Source="{x:Reference ThisPage}" Converter="{StaticResource InvertedBoolConverter}" />
+                        <Binding x:DataType="converters:MultiConverterPage" Path="IsEnabled" Source="{x:Reference ThisPage}" Converter="{StaticResource InvertedBoolConverter}" />
+                        <Binding x:DataType="converters:MultiConverterPage" Path="IsVisible" Source="{x:Reference ThisPage}" Converter="{StaticResource InvertedBoolConverter}" />
                     </MultiBinding>
                 </VerticalStackLayout.IsEnabled>
-                
+
                 <Button Text="This button doesn't perform any action but helps to prove that the multi converter works when not using a compiled binding" />
             </VerticalStackLayout>
         </VerticalStackLayout>

@@ -8,16 +8,16 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseViewModel
 {
 	[ObservableProperty]
-	CameraFlashMode flashMode;
+	public partial CameraFlashMode FlashMode { get; set; }
 
 	[ObservableProperty]
-	CameraInfo? selectedCamera;
+	public partial CameraInfo? SelectedCamera { get; set; }
 
 	[ObservableProperty]
-	Size selectedResolution;
+	public partial Size SelectedResolution { get; set; }
 
 	[ObservableProperty]
-	float currentZoom;
+	public partial float CurrentZoom { get; set; }
 
 	[ObservableProperty]
 	string cameraNameText = "", zoomRangeText = "", currentZoomText = "", flashModeText = "", resolutionText = "";

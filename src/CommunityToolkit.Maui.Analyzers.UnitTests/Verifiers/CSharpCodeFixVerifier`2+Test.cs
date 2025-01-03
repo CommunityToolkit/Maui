@@ -11,10 +11,10 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
 {
 	protected class Test : CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier>
 	{
-		public Test(params Type[] assembliesUnderTest)
+		public Test(params ReadOnlySpan<Type> assembliesUnderTest)
 		{
-#if NET8_0
-			ReferenceAssemblies = ReferenceAssemblies.Net.Net80;
+#if NET9_0
+			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net90;
 #else
 #error ReferenceAssemblies must be updated to current version of .NET
 #endif
@@ -26,7 +26,7 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
 			];
 			typesForAssembliesUnderTest.AddRange(assembliesUnderTest);
 
-			foreach (Type type in typesForAssembliesUnderTest)
+			foreach (var type in typesForAssembliesUnderTest)
 			{
 				TestState.AdditionalReferences.Add(MetadataReference.CreateFromFile(type.Assembly.Location));
 			}

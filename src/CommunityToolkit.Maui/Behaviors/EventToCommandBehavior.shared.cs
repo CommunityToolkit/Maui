@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <summary>
 /// The <see cref="EventToCommandBehavior"/> is a behavior that allows the user to invoke a <see cref="ICommand"/> through an event. It is designed to associate Commands to events exposed by controls that were not designed to support Commands. It allows you to map any arbitrary event on a control to a Command.
 /// </summary>
-public class EventToCommandBehavior : BaseBehavior<VisualElement>
+public partial class EventToCommandBehavior : BaseBehavior<VisualElement>
 {
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="EventName"/> property.
