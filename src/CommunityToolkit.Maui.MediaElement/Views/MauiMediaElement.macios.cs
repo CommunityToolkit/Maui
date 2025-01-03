@@ -163,12 +163,6 @@ public class MauiMediaElement : UIView
 			return true;
 		}
 
-		if (Application.Current != null && Application.Current.MainPage != null && Application.Current.MainPage is Page mainPage)
-		{
-			currentPage = mainPage;
-			return true;
-		}
-
 
 		return false;
 
