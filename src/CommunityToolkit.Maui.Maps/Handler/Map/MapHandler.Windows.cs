@@ -62,6 +62,7 @@ public partial class MapHandlerWindows : MapHandler
 		webView.NavigationCompleted += HandleWebViewNavigationCompleted;
 		webView.WebMessageReceived += WebViewWebMessageReceived;
 		webView.LoadHtml(mapPage, null);
+
 		return webView;
 	}
 
@@ -88,7 +89,7 @@ public partial class MapHandlerWindows : MapHandler
 	/// </summary>
 	public static new Task MapMapType(IMapHandler handler, IMap map)
 	{
-		return CallJSMethod(handler.PlatformView, $"setMapType('{map.MapType}');");
+		return TryCallJSMethod(handler.PlatformView, $"setMapType('{map.MapType}');");
 	}
 
 	/// <summary>
@@ -96,7 +97,7 @@ public partial class MapHandlerWindows : MapHandler
 	/// </summary>
 	public static new Task MapIsZoomEnabled(IMapHandler handler, IMap map)
 	{
-		return CallJSMethod(handler.PlatformView, $"disableMapZoom({(!map.IsZoomEnabled).ToString().ToLower()});");
+		return TryCallJSMethod(handler.PlatformView, $"disableMapZoom({(!map.IsZoomEnabled).ToString().ToLower()});");
 	}
 
 	/// <summary>
@@ -104,7 +105,7 @@ public partial class MapHandlerWindows : MapHandler
 	/// </summary>
 	public static new Task MapIsScrollEnabled(IMapHandler handler, IMap map)
 	{
-		return CallJSMethod(handler.PlatformView, $"disablePanning({(!map.IsScrollEnabled).ToString().ToLower()});");
+		return TryCallJSMethod(handler.PlatformView, $"disablePanning({(!map.IsScrollEnabled).ToString().ToLower()});");
 	}
 
 	/// <summary>
@@ -112,7 +113,7 @@ public partial class MapHandlerWindows : MapHandler
 	/// </summary>
 	public static new Task MapIsTrafficEnabled(IMapHandler handler, IMap map)
 	{
-		return CallJSMethod(handler.PlatformView, $"disableTraffic({(!map.IsTrafficEnabled).ToString().ToLower()});");
+		return TryCallJSMethod(handler.PlatformView, $"disableTraffic({(!map.IsTrafficEnabled).ToString().ToLower()});");
 	}
 
 	/// <summary>
@@ -123,14 +124,14 @@ public partial class MapHandlerWindows : MapHandler
 		if (map.IsShowingUser)
 		{
 			var location = await GetCurrentLocation();
-			if (location != null)
+			if (location is not null)
 			{
-				await CallJSMethod(handler.PlatformView, $"addLocationPin({location.Latitude.ToString(CultureInfo.InvariantCulture)},{location.Longitude.ToString(CultureInfo.InvariantCulture)});");
+				await TryCallJSMethod(handler.PlatformView, $"addLocationPin({location.Latitude.ToString(CultureInfo.InvariantCulture)},{location.Longitude.ToString(CultureInfo.InvariantCulture)});");
 			}
 		}
 		else
 		{
-			await CallJSMethod(handler.PlatformView, "removeLocationPin();");
+			await TryCallJSMethod(handler.PlatformView, "removeLocationPin();");
 		}
 	}
 
@@ -139,13 +140,13 @@ public partial class MapHandlerWindows : MapHandler
 	/// </summary>
 	public static new async Task MapPins(IMapHandler handler, IMap map)
 	{
-		await CallJSMethod(handler.PlatformView, "removeAllPins();");
+		await TryCallJSMethod(handler.PlatformView, "removeAllPins();");
 
 		var addPinTaskList = new List<Task>();
 
 		foreach (var pin in map.Pins)
 		{
-			addPinTaskList.Add(CallJSMethod(handler.PlatformView, $"addPin({pin.Location.Latitude.ToString(CultureInfo.InvariantCulture)}," +
+			addPinTaskList.Add(TryCallJSMethod(handler.PlatformView, $"addPin({pin.Location.Latitude.ToString(CultureInfo.InvariantCulture)}," +
 				$"{pin.Location.Longitude.ToString(CultureInfo.InvariantCulture)},'{pin.Label}', '{pin.Address}', '{(pin as Pin)?.Id}');"));
 		}
 
@@ -172,22 +173,33 @@ public partial class MapHandlerWindows : MapHandler
 			mapHandler.regionToGo = newRegion;
 		}
 
-		await CallJSMethod(handler.PlatformView, $"setRegion({newRegion.Center.Latitude.ToString(CultureInfo.InvariantCulture)},{newRegion.Center.Longitude.ToString(CultureInfo.InvariantCulture)},{newRegion.LatitudeDegrees.ToString(CultureInfo.InvariantCulture)},{newRegion.LongitudeDegrees.ToString(CultureInfo.InvariantCulture)});");
+		await TryCallJSMethod(handler.PlatformView, $"setRegion({newRegion.Center.Latitude.ToString(CultureInfo.InvariantCulture)},{newRegion.Center.Longitude.ToString(CultureInfo.InvariantCulture)},{newRegion.LatitudeDegrees.ToString(CultureInfo.InvariantCulture)},{newRegion.LongitudeDegrees.ToString(CultureInfo.InvariantCulture)});");
 	}
 
-	static async Task CallJSMethod(FrameworkElement platformWebView, string script)
+	static async Task<bool> TryCallJSMethod(FrameworkElement platformWebView, string script)
 	{
-		if (platformWebView is WebView2 webView2)
+		if (platformWebView is not WebView2 webView2)
 		{
-			var tcs = new TaskCompletionSource();
-			webView2.DispatcherQueue.TryEnqueue(async () =>
-			{
-				await webView2.ExecuteScriptAsync(script);
-				tcs.SetResult();
-			});
-
-			await tcs.Task;
+			return false;
 		}
+
+		await webView2.EnsureCoreWebView2Async();
+
+		var tcs = new TaskCompletionSource();
+		var isEnqueueSuccessful = webView2.DispatcherQueue.TryEnqueue(async () =>
+		{
+			await webView2.ExecuteScriptAsync(script);
+			tcs.SetResult();
+		});
+
+		if (!isEnqueueSuccessful)
+		{
+			return false;
+		}
+
+		await tcs.Task;
+
+		return true;
 	}
 
 	static string GetMapHtmlPage(string key)
@@ -413,7 +425,7 @@ public partial class MapHandlerWindows : MapHandler
 		// Update initial properties when our page is loaded
 		Mapper.UpdateProperties(this, VirtualView);
 
-		if (regionToGo != null)
+		if (regionToGo is not null)
 		{
 			await MapMoveToRegion(this, VirtualView, regionToGo);
 		}
@@ -476,7 +488,7 @@ public partial class MapHandlerWindows : MapHandler
 					var hideInfoWindow = clickedPin?.SendInfoWindowClick();
 					if (hideInfoWindow is not false)
 					{
-						await CallJSMethod(PlatformView, "hideInfoWindow();");
+						await TryCallJSMethod(PlatformView, "hideInfoWindow();");
 					}
 				}
 				break;
@@ -492,7 +504,7 @@ public partial class MapHandlerWindows : MapHandler
 					var hideInfoWindow = clickedPin?.SendMarkerClick();
 					if (hideInfoWindow is not false)
 					{
-						await CallJSMethod(PlatformView, "hideInfoWindow();");
+						await TryCallJSMethod(PlatformView, "hideInfoWindow();");
 					}
 				}
 				break;
