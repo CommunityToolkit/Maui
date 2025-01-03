@@ -18,15 +18,20 @@ using Resource = Microsoft.Maui.Resource;
 namespace CommunityToolkit.Maui.Media.Services;
 
 [SupportedOSPlatform("Android26.0")]
-[Service(Exported = false, Enabled = true, Name = "communityToolkit.maui.media.services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
+[Service(Exported = false, Enabled = true, Name = "CommunityToolkit.Maui.Media.Services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
 class MediaControlsService : Service
 {
-	public const string ACTION_PLAY = "MediaAction.play";
-	public const string ACTION_PAUSE = "MediaAction.pause";
-	public const string ACTION_UPDATE_UI = "CommunityToolkit.Maui.Services.action.UPDATE_UI";
-	public const string ACTION_UPDATE_PLAYER = "CommunityToolkit.Maui.Services.action.UPDATE_PLAYER";
-	public const string ACTION_REWIND = "MediaAction.rewind";
-	public const string ACTION_FASTFORWARD = "MediaAction.fastForward";
+	public const string ActionPlay = "MediaAction.play";
+	public const string ActionPause = "MediaAction.pause";
+	public const string ActionUpdateUI = "CommunityToolkit.Maui.Services.action.UPDATE_UI";
+	public const string ActionUpdatePlayer = "CommunityToolkit.Maui.Services.action.UPDATE_PLAYER";
+	public const string ActionRewind = "MediaAction.rewind";
+	public const string ActionFastForward = "MediaAction.fastForward";
+
+	public const string NotificationChannelId = "Maui.MediaElement";
+	public const string NotificationChannelName = "Transport Controls";
+
+	public const int NotificationId = 2024;
 
 	bool isDisposed;
 
@@ -50,7 +55,7 @@ class MediaControlsService : Service
 
 		if (!string.IsNullOrEmpty(intent.Action) && receiveUpdates is not null)
 		{
-			BroadcastUpdate(ACTION_UPDATE_PLAYER, intent.Action);
+			BroadcastUpdate(ActionUpdatePlayer, intent.Action);
 		}
 
 		StartForegroundService(intent).AsTask().ContinueWith(t =>
@@ -69,7 +74,7 @@ class MediaControlsService : Service
 
 	static void CreateNotificationChannel(NotificationManager notificationMnaManager)
 	{
-		var channel = new NotificationChannel("1", "notification", NotificationImportance.Low);
+		var channel = new NotificationChannel(NotificationChannelId, NotificationChannelName, NotificationImportance.Low);
 		notificationMnaManager.CreateNotificationChannel(channel);
 	}
 
@@ -91,7 +96,7 @@ class MediaControlsService : Service
 		{
 			receiveUpdates = new ReceiveUpdates();
 			receiveUpdates.PropertyChanged += OnReceiveUpdatesPropertyChanged;
-			LocalBroadcastManager.GetInstance(this).RegisterReceiver(receiveUpdates, new IntentFilter(ACTION_UPDATE_UI));
+			LocalBroadcastManager.GetInstance(this).RegisterReceiver(receiveUpdates, new IntentFilter(ActionUpdateUI));
 		}
 
 		OnSetupAudioServices();
@@ -112,20 +117,15 @@ class MediaControlsService : Service
 		var style = new AndroidX.Media.App.NotificationCompat.MediaStyle();
 		style.SetMediaSession(token);
 
-		if (Build.VERSION.SdkInt >= BuildVersionCodes.S)
-		{
-			style.SetShowActionsInCompactView(0, 1, 2, 3);
-		}
-
 		if (Build.VERSION.SdkInt < BuildVersionCodes.Tiramisu
 			&& notification is null)
 		{
-			notification = new NotificationCompat.Builder(Platform.AppContext, "1");
+			notification = new NotificationCompat.Builder(Platform.AppContext, NotificationChannelId);
 			OnSetIntents();
 			await OnSetContent(mediaManagerIntent, cancellationToken).ConfigureAwait(false);
 		}
 
-		notification ??= new NotificationCompat.Builder(Platform.AppContext, "1");
+		notification ??= new NotificationCompat.Builder(Platform.AppContext, NotificationChannelId);
 
 		notification.SetStyle(style);
 		notification.SetSmallIcon(_Microsoft.Android.Resource.Designer.Resource.Drawable.exo_styled_controls_audiotrack);
@@ -142,13 +142,13 @@ class MediaControlsService : Service
 
 		if (OperatingSystem.IsAndroidVersionAtLeast(29))
 		{
-			StartForeground(1, notification.Build(), ForegroundService.TypeMediaPlayback);
+			StartForeground(NotificationId, notification.Build(), ForegroundService.TypeMediaPlayback);
 			return;
 		}
 
 		if (OperatingSystem.IsAndroidVersionAtLeast(26))
 		{
-			StartForeground(1, notification.Build());
+			StartForeground(NotificationId, notification.Build());
 		}
 	}
 
@@ -160,16 +160,15 @@ class MediaControlsService : Service
 		}
 		notification.ClearActions();
 		notification.AddAction(actionPrevious);
-		if (receiveUpdates.Action is ACTION_PLAY)
+		if (receiveUpdates.Action is ActionPlay)
 		{
 			notification.AddAction(actionPause);
 		}
-		if (receiveUpdates.Action is ACTION_PAUSE)
+		if (receiveUpdates.Action is ActionPause)
 		{
 			notification.AddAction(actionPlay);
 		}
 		notification.AddAction(actionNext);
-		notification.Build();
 	}
 
 	void OnSetupAudioServices()
@@ -195,24 +194,24 @@ class MediaControlsService : Service
 	void OnSetIntents()
 	{
 		var pause = new Intent(this, typeof(MediaControlsService));
-		pause.SetAction("MediaAction.pause");
+		pause.SetAction(ActionPause);
 		var pPause = PendingIntent.GetService(this, 1, pause, pendingIntentFlags);
-		actionPause ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_controls_pause, ACTION_PAUSE, pPause).Build();
+		actionPause ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_controls_pause, ActionPause, pPause).Build();
 
 		var play = new Intent(this, typeof(MediaControlsService));
-		play.SetAction("MediaAction.play");
+		play.SetAction(ActionPlay);
 		var pPlay = PendingIntent.GetService(this, 1, play, pendingIntentFlags);
-		actionPlay ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_controls_play, ACTION_PLAY, pPlay).Build();
+		actionPlay ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_controls_play, ActionPlay, pPlay).Build();
 
 		var previous = new Intent(this, typeof(MediaControlsService));
-		previous.SetAction("MediaAction.rewind");
+		previous.SetAction(ActionRewind);
 		var pPrevious = PendingIntent.GetService(this, 1, previous, pendingIntentFlags);
-		actionPrevious ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_controls_rewind, ACTION_REWIND, pPrevious).Build();
+		actionPrevious ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_controls_rewind, ActionRewind, pPrevious).Build();
 
 		var next = new Intent(this, typeof(MediaControlsService));
-		next.SetAction("MediaAction.fastForward");
+		next.SetAction(ActionFastForward);
 		var pNext = PendingIntent.GetService(this, 1, next, pendingIntentFlags);
-		actionNext ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_controls_fastforward, ACTION_FASTFORWARD, pNext).Build();
+		actionNext ??= new NotificationCompat.Action.Builder(Resource.Drawable.exo_controls_fastforward, ActionFastForward, pNext).Build();
 
 		notification?.AddAction(actionPrevious);
 		notification?.AddAction(actionPause);
