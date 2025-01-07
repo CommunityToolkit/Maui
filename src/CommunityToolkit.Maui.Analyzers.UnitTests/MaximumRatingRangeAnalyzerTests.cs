@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
-using static CommunityToolkit.Maui.Analyzers.UnitTests.CSharpCodeFixVerifier<MaximumRatingRangeAnalyzer, MaximumRatingCodeFixProvider>;
+using static CommunityToolkit.Maui.Analyzers.UnitTests.CSharpCodeFixVerifier<MaximumRatingRangeAnalyzer, MaximumRatingAnalyzerCodeFixProvider>;
 
 public class MaximumRatingRangeAnalyzerTests
 {

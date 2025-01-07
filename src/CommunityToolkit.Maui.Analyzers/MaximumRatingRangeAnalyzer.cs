@@ -1,4 +1,6 @@
-﻿using System.Collections.Immutable;
+﻿// Ignore Spelling: Analyzer
+
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
