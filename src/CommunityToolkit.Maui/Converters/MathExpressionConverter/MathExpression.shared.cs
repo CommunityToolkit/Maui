@@ -18,11 +18,10 @@ sealed partial class MathExpression
 {
 	readonly IReadOnlyList<MathOperator> operators;
 
-	internal MathExpression(string expression, IEnumerable<object?>? arguments = null)
+	internal MathExpression(in string expression, in IReadOnlyList<object?> arguments)
 	{
 		ArgumentException.ThrowIfNullOrEmpty(expression, "Expression can't be null or empty.");
-
-		var argumentList = arguments?.ToList() ?? [];
+		ArgumentNullException.ThrowIfNull(arguments, "Arguments cannot be null.");
 
 		Expression = expression.ToLower();
 
@@ -85,15 +84,16 @@ sealed partial class MathExpression
 			new ("null", 0, _ => null),
 		];
 
-		if (argumentList.Count > 0)
+		if (arguments.Count > 0)
 		{
-			operators.Add(new MathOperator("x", 0, _ => argumentList[0]));
+			var firstArgument = arguments[0];
+			operators.Add(new MathOperator("x", 0, _ => firstArgument));
 		}
 
-		for (var i = 0; i < argumentList.Count; i++)
+		for (var i = 0; i < arguments.Count; i++)
 		{
-			var index = i;
-			operators.Add(new MathOperator($"x{index}", 0, _ => argumentList[index]));
+			var currentArgument = arguments[i];
+			operators.Add(new MathOperator($"x{i}", 0, _ => currentArgument));
 		}
 
 		this.operators = operators;
@@ -117,16 +117,14 @@ sealed partial class MathExpression
 	
 	string Expression { get; }
 
-	int ExpressionIndex { get; set; } = 0;
+	List<MathToken> RPN { get; } = [];
+	
+	int ExpressionIndex { get; set; }
 
 	Match PatternMatch { get; set; } = Match.Empty;
 
-	List<MathToken> RPN { get; } = new();
-
-	public bool TryCalculate(out object? result)
+	public object? CalculateResult()
 	{
-		result = null;
-		
 		if (!ParseExpression())
 		{
 			throw new ArgumentException("Math Expression Invalid. Failed to parse math expression.");
@@ -179,19 +177,12 @@ sealed partial class MathExpression
 			stack.Push(!containsNullArgument ? mathOperator.CalculateFunc([.. args]) : null);
 		}
 
-		if (stack.Count is 0)
+		return stack.Count switch
 		{
-			throw new InvalidOperationException($"Math Expression Invalid. Stack is unexpectedly empty.");
-		}
-
-		if (stack.Count > 1)
-		{
-			throw new InvalidOperationException($"Math Expression Invalid. Stack unexpectedly contains multiple items ({stack.Count}) items.");
-		}
-
-		result = stack.Pop();
-		
-		return true;
+			0 => throw new InvalidOperationException($"Math Expression Invalid. Stack is unexpectedly empty."),
+			> 1 => throw new InvalidOperationException($"Math Expression Invalid. Stack unexpectedly contains multiple items ({stack.Count}) items when it should contain only the final result."),
+			_ => stack.Pop()
+		};
 	}
 	
 	[GeneratedRegex("""^(\w+)\(""")]

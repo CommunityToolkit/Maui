@@ -28,14 +28,9 @@ public class MultiMathExpressionConverter : MultiValueConverterExtension, ICommu
 			throw new ArgumentException("The parameter should be of type String.");
 		}
 
-		if (values is null)
-		{
-			return null;
-		}
-
-		new MathExpression(expression, values).TryCalculate(out var result);
-
-		return result;
+		return values is null 
+			? null 
+			: new MathExpression(expression, values).CalculateResult();
 	}
 
 	/// <summary>

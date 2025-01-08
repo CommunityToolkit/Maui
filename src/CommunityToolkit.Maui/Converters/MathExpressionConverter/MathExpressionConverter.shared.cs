@@ -22,8 +22,6 @@ public partial class MathExpressionConverter : BaseConverterOneWay<object?, obje
 	{
 		ArgumentNullException.ThrowIfNull(parameter);
 
-		new MathExpression(parameter, [inputValue]).TryCalculate(out var result);
-
-		return result;
+		return new MathExpression(parameter, [inputValue]).CalculateResult();
 	}
 }
