@@ -56,7 +56,7 @@ public partial class StatusBarBehaviorPage : BasePage<StatusBarBehaviorViewModel
                     button = modalPageButton;
                     return true;
                 
-                case ILayout nestedLayout:
+                case Microsoft.Maui.ILayout nestedLayout:
                     if (TryGetModalPageButton(nestedLayout, out var modalPageButtonInLayout))
                     {
                         button = modalPageButtonInLayout;
