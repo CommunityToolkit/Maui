@@ -1,18 +1,27 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.Versioning;
 using AVFoundation;
 using Speech;
 
 namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc />
-public sealed partial class SpeechToTextImplementation
+public sealed partial class OfflineSpeechToTextImplementation
 {
 	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest))]
-	Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
+	[SupportedOSPlatform("ios13.0")]
+	[SupportedOSPlatform("maccatalyst")]
+	void InternalStartListening(SpeechToTextOptions options)
 	{
-		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(options.Culture.Name));
+		if (!UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
+		{
+			throw new NotSupportedException("Offline listening is supported on iOS 13 and later");
+		}
 
+		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(options.Culture.Name));
+		speechRecognizer.SupportsOnDeviceRecognition = true;
+		
 		if (!speechRecognizer.Available)
 		{
 			throw new ArgumentException("Speech recognizer is not available");
@@ -21,7 +30,8 @@ public sealed partial class SpeechToTextImplementation
 		audioEngine = new AVAudioEngine();
 		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest()
 		{
-			ShouldReportPartialResults = options.ShouldReportPartialResults
+			ShouldReportPartialResults = options.ShouldReportPartialResults,
+			RequiresOnDeviceRecognition = true
 		};
 
 		InitializeAvAudioSession(out _);
@@ -38,14 +48,12 @@ public sealed partial class SpeechToTextImplementation
 			throw new ArgumentException("Error starting audio engine - " + error.LocalizedDescription);
 		}
 
-		cancellationToken.ThrowIfCancellationRequested();
-
 		var currentIndex = 0;
 		recognitionTask = speechRecognizer.GetRecognitionTask(liveSpeechRequest, (result, err) =>
 		{
 			if (err is not null)
 			{
-				StopRecording();
+				InternalStopListening();
 				OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception(err.LocalizedDescription)));
 			}
 			else
@@ -53,7 +61,7 @@ public sealed partial class SpeechToTextImplementation
 				if (result.Final)
 				{
 					currentIndex = 0;
-					StopRecording();
+					InternalStopListening();
 					OnRecognitionResultCompleted(SpeechToTextResult.Success(result.BestTranscription.FormattedString));
 				}
 				else
@@ -72,7 +80,5 @@ public sealed partial class SpeechToTextImplementation
 				}
 			}
 		});
-
-		return Task.CompletedTask;
 	}
 }
