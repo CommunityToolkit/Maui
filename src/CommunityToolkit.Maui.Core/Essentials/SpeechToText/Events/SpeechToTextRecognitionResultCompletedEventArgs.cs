@@ -8,7 +8,7 @@ public class SpeechToTextRecognitionResultCompletedEventArgs : EventArgs
 	/// <summary>
 	/// Initialize a new instance of <see cref="SpeechToTextRecognitionResultCompletedEventArgs"/>
 	/// </summary>
-	public SpeechToTextRecognitionResultCompletedEventArgs(string recognitionResult)
+	public SpeechToTextRecognitionResultCompletedEventArgs(SpeechToTextResult recognitionResult)
 	{
 		RecognitionResult = recognitionResult;
 	}
@@ -16,5 +16,5 @@ public class SpeechToTextRecognitionResultCompletedEventArgs : EventArgs
 	/// <summary>
 	/// Speech recognition result
 	/// </summary>
-	public string RecognitionResult { get; }
+	public SpeechToTextResult RecognitionResult { get; }
 }
