@@ -1,6 +1,9 @@
+using System.ComponentModel;
+
 namespace CommunityToolkit.Maui.Core.Services;
 
-sealed partial class DialogFragmentService
+[EditorBrowsable(EditorBrowsableState.Never)]
+public sealed partial class DialogFragmentService
 {
 
 }

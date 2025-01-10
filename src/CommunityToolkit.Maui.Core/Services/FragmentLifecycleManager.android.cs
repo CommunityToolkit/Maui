@@ -1,9 +1,11 @@
-﻿using Android.Content;
+﻿using System.ComponentModel;
+using Android.Content;
 using FragmentManager = AndroidX.Fragment.App.FragmentManager;
 
 namespace CommunityToolkit.Maui.Core.Services;
 
-sealed class FragmentLifecycleManager(IDialogFragmentService dialogFragmentService) : FragmentManager.FragmentLifecycleCallbacks
+[EditorBrowsable(EditorBrowsableState.Never)]
+public sealed class FragmentLifecycleManager(IDialogFragmentService dialogFragmentService) : FragmentManager.FragmentLifecycleCallbacks
 {
 	readonly IDialogFragmentService dialogFragmentService = dialogFragmentService;
 
