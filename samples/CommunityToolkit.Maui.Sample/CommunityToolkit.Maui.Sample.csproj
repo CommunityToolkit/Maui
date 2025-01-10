@@ -22,7 +22,7 @@
     <ApplicationVersion>1</ApplicationVersion>
 
     <!--
-    Uncomment the line below if you need to debug the SG code
+    Uncomment the lines below if you need to debug the SG code
     If you see any LongPath issue on Windows, check this doc
     https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd#enable-long-paths-in-windows-10-version-1607-and-later
     -->
