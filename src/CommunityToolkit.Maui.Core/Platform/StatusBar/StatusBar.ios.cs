@@ -11,7 +11,7 @@ static partial class StatusBar
 	/// <summary>
 	/// Method to update the status bar size.
 	/// </summary>
-	public static void UpdateBarSize()
+	public static void UpdateBarSize(bool useSafeArea)
 	{
 		if (OperatingSystem.IsIOSVersionAtLeast(13))
 		{
@@ -27,7 +27,14 @@ static partial class StatusBar
 
 				statusBar ??= new UIView(statusBarFrame.Value);
 				statusBar.Tag = statusBarTag;
-				statusBar.Frame = UIApplication.SharedApplication.StatusBarFrame;
+				if (useSafeArea)
+				{
+					statusBar.Frame = new CGRect(statusBar.Frame.X, statusBar.Frame.Y, statusBar.Frame.Width, window.SafeAreaInsets.Top);
+				}
+				else
+				{
+					statusBar.Frame = UIApplication.SharedApplication.StatusBarFrame;
+				}
 				var statusBarSubViews = window.Subviews.Where(x => x.Tag == statusBarTag).ToList();
 				foreach (var statusBarSubView in statusBarSubViews)
 				{
@@ -68,11 +75,15 @@ static partial class StatusBar
 
 				// ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
 				// window.ViewWithTag(tag) can return null
+				var statusBarSize = statusBar?.Frame.Size;
 				statusBar ??= new UIView(statusBarFrame.Value);
 				statusBar.Tag = statusBarTag;
 				statusBar.BackgroundColor = uiColor;
 				statusBar.TintColor = uiColor;
-				statusBar.Frame = UIApplication.SharedApplication.StatusBarFrame;
+				if (statusBarSize is null)
+				{
+					statusBar.Frame = new CGRect(statusBar.Frame.X, statusBar.Frame.Y, statusBar.Frame.Width, window.SafeAreaInsets.Top);
+				}
 				var statusBarSubViews = window.Subviews.Where(x => x.Tag == statusBarTag).ToList();
 				foreach (var statusBarSubView in statusBarSubViews)
 				{

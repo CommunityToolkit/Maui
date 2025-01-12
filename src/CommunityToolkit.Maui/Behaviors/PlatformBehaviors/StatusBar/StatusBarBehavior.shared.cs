@@ -119,7 +119,11 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 #if IOS
 	static void OnPageSizeChanged(object? sender, EventArgs e)
 	{
-		StatusBar.UpdateBarSize();
+		if(sender is not Page page)
+		{
+			return;
+		}
+		StatusBar.UpdateBarSize(PlatformConfiguration.iOSSpecific.StatusBar.GetUseSafeArea(page));
 	}
 #endif
 
