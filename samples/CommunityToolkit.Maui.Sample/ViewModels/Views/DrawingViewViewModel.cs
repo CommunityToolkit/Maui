@@ -81,13 +81,11 @@ public partial class DrawingViewViewModel : BaseViewModel
 	{
 		try
 		{
-			await using var stream = await DrawingView.GetImageStream(
-				Lines,
-				new Size(1920, 1080),
-				Brush.Blue,
-				// If the user wants to output the full canvas then we need to pass in the canvas dimensions, otherwise null will use the bounds of the current drawing.
-				SelectedOutputOption == DrawingViewOutputOption.FullCanvas ? new Size(CanvasWidth, CanvasHeight) : null,
-				cancellationToken);
+			var options = SelectedOutputOption == DrawingViewOutputOption.Lines
+				? ImageLineOptions.JustLines(Lines.ToList(), new Size(1920, 1080), Brush.Blue)
+				: ImageLineOptions.FullCanvas(Lines.ToList(), new Size(1920, 1080), Brush.Blue, new Size(CanvasWidth, CanvasHeight));
+			
+			await using var stream = await DrawingView.GetImageStream(options, cancellationToken);
 
 			await Permissions.RequestAsync<Permissions.StorageRead>().WaitAsync(cancellationToken);
 			await Permissions.RequestAsync<Permissions.StorageWrite>().WaitAsync(cancellationToken);

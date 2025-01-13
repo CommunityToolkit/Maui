@@ -11,21 +11,14 @@ public static partial class DrawingViewService
 	/// <summary>
 	/// Get image stream from lines
 	/// </summary>
-	/// <param name="lines">Drawing lines</param>
-	/// <param name="imageSize">Maximum image size. The image will be resized proportionally.</param>
-	/// <param name="background">Image background</param>
-	/// <param name="canvasSize">
-	/// The actual size of the canvas being displayed. This is an optional parameter
-	/// if a value is provided then the contents of the <paramref name="lines"/> inside these dimensions will be included in the output,
-	/// if <c>null</c> is provided then the resulting output will be the area covered by the top-left to the bottom-right most points.
-	/// </param>
+	/// <param name="options">The options controlling how the resulting image is generated.</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background, Size? canvasSize, CancellationToken token = default)
+	public static ValueTask<Stream> GetPlatformImageStream(ImageLineOptions options, CancellationToken token = default)
 	{
 		token.ThrowIfCancellationRequested();
 
-		var image = GetUIImageForLines(lines, background, canvasSize);
+		var image = GetUIImageForLines(options.Lines, options.Background, options.CanvasSize);
 		if (image is null)
 		{
 			return ValueTask.FromResult(Stream.Null);
@@ -33,7 +26,7 @@ public static partial class DrawingViewService
 
 		token.ThrowIfCancellationRequested();
 
-		var imageAsPng = GetMaximumUIImage(image, imageSize.Width, imageSize.Height)
+		var imageAsPng = GetMaximumUIImage(image, options.DesiredSize.Width, options.DesiredSize.Height)
 							.AsPNG() ?? throw new InvalidOperationException("Unable to convert image to PNG");
 
 		return ValueTask.FromResult(imageAsPng.AsStream());
@@ -42,23 +35,17 @@ public static partial class DrawingViewService
 	/// <summary>
 	/// Get image stream from points
 	/// </summary>
-	/// <param name="points">Drawing points</param>
-	/// <param name="imageSize">Image size</param>
-	/// <param name="lineWidth">Line Width</param>
-	/// <param name="strokeColor">Line color</param>
-	/// <param name="background">Image background</param>
-	/// <param name="canvasSize">
-	/// The actual size of the canvas being displayed. This is an optional parameter
-	/// if a value is provided then the contents of the <paramref name="points"/> inside these dimensions will be included in the output,
-	/// if <c>null</c> is provided then the resulting output will be the area covered by the top-left to the bottom-right most points.
-	/// </param>
+	/// <param name="options">The options controlling how the resulting image is generated.</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<PointF> points, Size imageSize, float lineWidth, Color strokeColor, Paint? background, Size? canvasSize, CancellationToken token = default)
+	public static ValueTask<Stream> GetPlatformImageStream(ImagePointOptions options, CancellationToken token = default)
 	{
 		token.ThrowIfCancellationRequested();
 
-		var image = GetUIImageForPoints(points, lineWidth, strokeColor, background, canvasSize);
+		var imageSize = options.DesiredSize;
+		var canvasSize = options.CanvasSize;
+
+		var image = GetUIImageForPoints(options.Points, options.LineWidth, options.StrokeColor, options.Background, canvasSize);
 		if (image is null)
 		{
 			return ValueTask.FromResult(Stream.Null);
@@ -103,7 +90,7 @@ public static partial class DrawingViewService
 		}, background, drawingLineWithLargestLineWidth.LineWidth, canvasSize);
 	}
 
-	static UIImage? GetUIImage(ICollection<PointF> points, Action<CGContext, Size> drawStrokes, Paint? background, NFloat maxLineWidth, Size? canvasSize)
+	static UIImage? GetUIImage(ICollection<PointF> points, Action<CGContext, Size> drawStrokes, Paint? background, nfloat maxLineWidth, Size? canvasSize)
 	{
 		const int minSize = 1;
 		var minPointX = points.Min(p => p.X) - maxLineWidth;

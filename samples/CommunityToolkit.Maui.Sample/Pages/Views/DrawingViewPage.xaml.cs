@@ -48,10 +48,12 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 	{
 		var drawingLines = lines.ToList();
 		var points = drawingLines.SelectMany(x => x.Points).ToList();
-		var stream = await DrawingView.GetImageStream(drawingLines,
-			new Size(points.Max(x => x.X) - points.Min(x => x.X), points.Max(x => x.Y) - points.Min(x => x.Y)),
-			Colors.Gray,
-			this.DrawingViewControl.Bounds.Size,
+		var stream = await DrawingView.GetImageStream(
+			ImageLineOptions.FullCanvas(
+				drawingLines.OfType<IDrawingLine>().ToList(),
+				new Size(points.Max(x => x.X) - points.Min(x => x.X), points.Max(x => x.Y) - points.Min(x => x.Y)),
+				new SolidPaint(Colors.Gray),
+				this.DrawingViewControl.Bounds.Size),
 			token);
 
 		GestureImage.Source = ImageSource.FromStream(() => stream);
