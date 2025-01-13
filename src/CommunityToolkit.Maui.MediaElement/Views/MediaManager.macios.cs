@@ -306,10 +306,10 @@ public partial class MediaManager : IDisposable
 
 			MediaElement.CurrentStateChanged(MediaElementState.None);
 		}
-		
+
 		return ValueTask.CompletedTask;
 	}
-	
+
 	void SetPoster()
 	{
 		if (PlayerItem is null || metaData is null)
