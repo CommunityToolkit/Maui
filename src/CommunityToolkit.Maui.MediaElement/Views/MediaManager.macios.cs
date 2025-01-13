@@ -211,19 +211,19 @@ public partial class MediaManager : IDisposable
 		};
 	}
 
-	protected virtual partial void PlatformUpdateSource()
+	protected virtual partial ValueTask PlatformUpdateSource()
 	{
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 
 		AVAsset? asset = null;
 		if (Player is null)
 		{
-			return;
+			return ValueTask.CompletedTask;
 		}
 
 		metaData ??= new(Player);
 		Metadata.ClearNowPlaying();
-		PlayerViewController?.ContentOverlayView?.Subviews?.FirstOrDefault()?.RemoveFromSuperview();
+		PlayerViewController?.ContentOverlayView?.Subviews.FirstOrDefault()?.RemoveFromSuperview();
 
 		if (MediaElement.Source is UriMediaSource uriMediaSource)
 		{
@@ -306,10 +306,12 @@ public partial class MediaManager : IDisposable
 
 			MediaElement.CurrentStateChanged(MediaElementState.None);
 		}
+		
+		return ValueTask.CompletedTask;
 	}
+	
 	void SetPoster()
 	{
-
 		if (PlayerItem is null || metaData is null)
 		{
 			return;
