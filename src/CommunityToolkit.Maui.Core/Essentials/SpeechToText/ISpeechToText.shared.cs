@@ -28,23 +28,14 @@ public interface ISpeechToText : IAsyncDisposable
 	SpeechToTextState CurrentState { get; }
 
 	/// <summary>
-	/// Converts speech to text in real time.
-	/// </summary>
-	/// <param name="culture">Speak language</param>
-	/// <param name="recognitionResult">Intermediate recognition result.</param>
-	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
-	/// <returns>Final recognition result</returns>
-	Task<SpeechToTextResult> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken = default);
-
-	/// <summary>
 	/// Starts the SpeechToText service
 	/// </summary>
 	/// <remarks>
 	/// Real time speech recognition results will be surfaced via <see cref="RecognitionResultUpdated"/> and <see cref="RecognitionResultCompleted"/>
 	/// </remarks>
-	/// <param name="culture">Speak language</param>
-	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
-	Task StartListenAsync(CultureInfo culture, CancellationToken cancellationToken = default);
+	/// <param name="options">The <see cref="SpeechToTextOptions"/> used to customize how the speech will be detected and converted to text.</param>
+	/// <param name="cancellationToken">A <see cref="CancellationToken"/> that provides the ability to cancel the starting process. Note that listening has started then you can only stop listening by calling <see cref="StopListenAsync"/>.</param>
+	Task StartListenAsync(SpeechToTextOptions options, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Stops the SpeechToText service

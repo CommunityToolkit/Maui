@@ -22,7 +22,7 @@
     <ApplicationVersion>1</ApplicationVersion>
 
     <!--
-    Uncomment the line below if you need to debug the SG code
+    Uncomment the lines below if you need to debug the SG code
     If you see any LongPath issue on Windows, check this doc
     https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd#enable-long-paths-in-windows-10-version-1607-and-later
     -->
@@ -65,7 +65,6 @@
     <MauiFont Include="Resources\Fonts\*" />
 
     <PackageReference Include="Microsoft.Maui.Controls" Version="*" />
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="*" />
     <PackageReference Include="CommunityToolkit.Maui.Markup" Version="5.1.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="9.0.0" />
@@ -101,7 +100,7 @@
 
   <!-- Fixes Static Registrar causing Linker error: https://github.com/xamarin/xamarin-macios/blob/main/docs/managed-static-registrar.md -->
   <Target Name="SelectStaticRegistrar" AfterTargets="SelectRegistrar">
-    <PropertyGroup Condition="'$(Registrar)' == 'managed-static' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='maccatalyst'">
+    <PropertyGroup Condition="'$(Registrar)' == 'managed-static'">
         <Registrar>static</Registrar>
     </PropertyGroup>
   </Target>
