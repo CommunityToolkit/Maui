@@ -4,7 +4,7 @@ using System.Windows.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public class IsListNotNullOrEmptyConverterViewModel : BaseViewModel
+public partial class IsListNotNullOrEmptyConverterViewModel : BaseViewModel
 {
 	public IsListNotNullOrEmptyConverterViewModel()
 	{

@@ -2,7 +2,7 @@
 
 namespace CommunityToolkit.Maui.Sample.Pages.Converters;
 
-public class ConvertersGalleryPage(IDeviceInfo deviceInfo, ConvertersGalleryViewModel convertersGalleryViewModel) : BaseGalleryPage<ConvertersGalleryViewModel>("Converters", deviceInfo, convertersGalleryViewModel)
+public partial class ConvertersGalleryPage(IDeviceInfo deviceInfo, ConvertersGalleryViewModel convertersGalleryViewModel) : BaseGalleryPage<ConvertersGalleryViewModel>("Converters", deviceInfo, convertersGalleryViewModel)
 {
 
 }

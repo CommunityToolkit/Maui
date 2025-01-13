@@ -10,7 +10,7 @@
     x:TypeArguments="vm:IndexToArrayItemConverterViewModel">
 
     <ContentPage.Resources>
-        <mct:IndexToArrayItemConverter x:Key="IndexToArrayItemConverter" />
+        <mct:IndexToArrayItemConverter x:Key="IndexToArrayItemConverter"  />
         <x:Array x:Key="StringArray" Type="{x:Type x:String}">
             <x:String>Value 0</x:String>
             <x:String>Value 1</x:String>
@@ -39,14 +39,14 @@
 
             <Stepper x:Name="Stepper" 
                      Minimum="0" 
-                     Maximum="7"
-                     Value="{Binding SelectedIndex}"
+                     Maximum="8"
+                     Value="{Binding SelectedIndex, TargetNullValue=0}"
                      Increment="1"
                      Grid.Column="0"
                      Grid.Row="2"/>
 
-            <Label Text="{Binding Source={x:Reference Stepper},
-                                Path=Value, StringFormat='Selected index: {0}'}"
+            <Label x:DataType="{x:Type Stepper}" 
+                    Text="{Binding Source={x:Reference Stepper}, Path=Value, StringFormat='Selected index: {0}'}"
                     VerticalOptions="CenterAndExpand"
                     FontAttributes="Bold"
                     Grid.Row="2"
@@ -60,14 +60,14 @@
 
             <CollectionView
                 SelectionMode="Single"
-                SelectedItem="{Binding SelectedIndex, Converter={StaticResource IndexToArrayItemConverter}, ConverterParameter={StaticResource StringArray}}"
+                SelectedItem="{Binding SelectedIndex, Converter={StaticResource IndexToArrayItemConverter}, ConverterParameter={StaticResource StringArray}, TargetNullValue='Value 0', Mode=TwoWay}"
                 ItemsSource="{StaticResource StringArray}"
                 Grid.Row="4"
                 Grid.ColumnSpan="2">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <ContentView>
-                            <Label Padding="5" Text="{Binding}"/>
+                            <Label Padding="5" Text="{Binding Path=., x:DataType=x:String}"/>
                         </ContentView>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>

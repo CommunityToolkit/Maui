@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
 

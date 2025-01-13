@@ -3,7 +3,6 @@ using CommunityToolkit.Maui.Media;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace CommunityToolkit.Maui.UnitTests.Essentials;
 
@@ -19,19 +18,10 @@ public class SpeechToTextTests(ITestOutputHelper testOutputHelper) : BaseTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task ListenAsyncFailsOnNet()
-	{
-		SpeechToText.SetDefault(new SpeechToTextImplementation());
-		var result = await SpeechToText.ListenAsync(CultureInfo.CurrentCulture, null, CancellationToken.None);
-		result.Text.Should().BeNull();
-		result.Exception.Should().BeOfType<NotImplementedInReferenceAssemblyException>();
-	}
-
-	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task StartListenAsyncFailsOnNet()
 	{
 		SpeechToText.SetDefault(new SpeechToTextImplementation());
-		await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => SpeechToText.StartListenAsync(CultureInfo.CurrentCulture, CancellationToken.None));
+		await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => SpeechToText.StartListenAsync(new SpeechToTextOptions { Culture = CultureInfo.CurrentCulture }, CancellationToken.None));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -40,7 +30,7 @@ public class SpeechToTextTests(ITestOutputHelper testOutputHelper) : BaseTest
 		SpeechToText.SetDefault(new SpeechToTextImplementationMock(string.Empty, string.Empty));
 		SpeechToText.Default.StateChanged += OnStateChanged;
 		SpeechToText.Default.CurrentState.Should().Be(SpeechToTextState.Stopped);
-		await SpeechToText.StartListenAsync(CultureInfo.CurrentCulture, CancellationToken.None);
+		await SpeechToText.StartListenAsync(new SpeechToTextOptions{Culture = CultureInfo.CurrentCulture}, CancellationToken.None);
 		SpeechToText.Default.CurrentState.Should().Be(SpeechToTextState.Listening);
 		await SpeechToText.StopListenAsync(CancellationToken.None);
 		SpeechToText.Default.CurrentState.Should().Be(SpeechToTextState.Stopped);
@@ -48,7 +38,7 @@ public class SpeechToTextTests(ITestOutputHelper testOutputHelper) : BaseTest
 		void OnStateChanged(object? sender, SpeechToTextStateChangedEventArgs args)
 		{
 			testOutputHelper.WriteLine(args.State.ToString());
-		};
+		}
 	}
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -61,8 +51,8 @@ public class SpeechToTextTests(ITestOutputHelper testOutputHelper) : BaseTest
 		SpeechToText.SetDefault(new SpeechToTextImplementationMock(expectedPartialText, expectedFinalText));
 		SpeechToText.Default.RecognitionResultUpdated += OnRecognitionTextUpdated;
 		SpeechToText.Default.RecognitionResultCompleted += OnRecognitionTextCompleted;
-		await SpeechToText.StartListenAsync(CultureInfo.CurrentCulture, CancellationToken.None);
-		await Task.Delay(500);
+		await SpeechToText.StartListenAsync(new SpeechToTextOptions { Culture = CultureInfo.CurrentCulture }, CancellationToken.None);
+		await Task.Delay(500, CancellationToken.None);
 		await SpeechToText.StopListenAsync(CancellationToken.None);
 		SpeechToText.Default.RecognitionResultUpdated -= OnRecognitionTextUpdated;
 		SpeechToText.Default.RecognitionResultCompleted -= OnRecognitionTextCompleted;
@@ -75,7 +65,7 @@ public class SpeechToTextTests(ITestOutputHelper testOutputHelper) : BaseTest
 		};
 		void OnRecognitionTextCompleted(object? sender, SpeechToTextRecognitionResultCompletedEventArgs args)
 		{
-			currentFinalText = args.RecognitionResult;
+			currentFinalText = args.RecognitionResult.Text;
 		};
 	}
 

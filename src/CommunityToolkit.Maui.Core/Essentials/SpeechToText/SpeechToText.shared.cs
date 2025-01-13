@@ -12,13 +12,9 @@ public static class SpeechToText
 	/// </summary>
 	public static ISpeechToText Default => defaultImplementation.Value;
 
-	/// <inheritdoc cref="ISpeechToText.ListenAsync"/>
-	public static Task<SpeechToTextResult> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken = default) =>
-		Default.ListenAsync(culture, recognitionResult, cancellationToken);
-
 	/// <inheritdoc cref="ISpeechToText.StartListenAsync"/>
-	public static Task StartListenAsync(CultureInfo culture, CancellationToken cancellationToken = default) =>
-		Default.StartListenAsync(culture, cancellationToken);
+	public static Task StartListenAsync(SpeechToTextOptions options, CancellationToken cancellationToken = default) =>
+		Default.StartListenAsync(options, cancellationToken);
 
 	/// <inheritdoc cref="ISpeechToText.StopListenAsync"/>
 	public static Task StopListenAsync(CancellationToken cancellationToken = default) =>

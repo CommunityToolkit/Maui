@@ -5,17 +5,33 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class StringToListConverterTests : BaseOneWayConverterTest<StringToListConverter>
 {
-	public static IReadOnlyList<object?[]> ListData { get; } =
-	[
-		["A,B.C;D", new[] { ",", ".", ";" }, new[] { "A", "B", "C", "D" }],
-		["A+_+B+_+C", "+_+", new[] { "A", "B", "C" }],
-		["A,,C", ",", new[] { "A", string.Empty, "C" }],
-		["A,C", ",", new[] { "A", "C" }],
-		["A", ":-:", new[] { "A" }],
-		[string.Empty, ",", new[] { string.Empty }],
-		[null, ",", Array.Empty<string>()],
-		["ABC", null, new[] { "ABC" }],
-	];
+	public static TheoryData<string?, object?, string[]> ListData { get; } = new()
+	{
+		{
+			"A,B.C;D", new[] { ",", ".", ";" }, ["A", "B", "C", "D"]
+		},
+		{
+			"A+_+B+_+C", "+_+", ["A", "B", "C"]
+		},
+		{
+			"A,,C", ",", ["A", string.Empty, "C"]
+		},
+		{
+			"A,C", ",", ["A", "C"]
+		},
+		{
+			"A", ":-:", ["A"]
+		},
+		{
+			string.Empty, ",", [string.Empty]
+		},
+		{
+			null, ",", []
+		},
+		{
+			"ABC", null, ["ABC"]
+		},
+	};
 
 	[Theory]
 	[MemberData(nameof(ListData))]

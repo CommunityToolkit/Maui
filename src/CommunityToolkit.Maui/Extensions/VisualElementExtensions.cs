@@ -2,10 +2,9 @@
 
 static class VisualElementExtensions
 {
-	public static void AbortAnimations(this VisualElement element, params string[] otherAnimationNames)
+	public static void AbortAnimations(this VisualElement element, params ReadOnlySpan<string> otherAnimationNames)
 	{
 		ArgumentNullException.ThrowIfNull(element);
-		ArgumentNullException.ThrowIfNull(otherAnimationNames);
 
 		element.CancelAnimations();
 		element.AbortAnimation(nameof(ColorAnimationExtensions.BackgroundColorTo));

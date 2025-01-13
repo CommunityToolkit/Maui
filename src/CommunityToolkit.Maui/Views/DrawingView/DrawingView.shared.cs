@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Views;
 /// <summary>
 /// The DrawingView allows you to draw one or multiple lines on a canvas.
 /// </summary>
-public class DrawingView : View, IDrawingView
+public partial class DrawingView : View, IDrawingView
 {
 	readonly WeakEventManager drawingViewEventManager = new();
 
@@ -17,6 +17,7 @@ public class DrawingView : View, IDrawingView
 	/// </summary>
 	public DrawingView()
 	{
+		BackgroundColor = DrawingViewDefaults.BackgroundColor;
 		Unloaded += OnDrawingViewUnloaded;
 	}
 
@@ -95,7 +96,7 @@ public class DrawingView : View, IDrawingView
 	}
 
 	/// <summary>
-	/// Event occurred when drawing line cancelled.
+	/// Event occurred when drawing line canceled.
 	/// </summary>
 	public event EventHandler<EventArgs> DrawingLineCancelled
 	{
@@ -152,7 +153,7 @@ public class DrawingView : View, IDrawingView
 	}
 
 	/// <summary>
-	/// This command is invoked whenever the drawing of a line on <see cref="DrawingView"/> has cancelled.
+	/// This command is invoked whenever the drawing of a line on <see cref="DrawingView"/> has canceled.
 	/// </summary>
 	public ICommand? DrawingLineCancelledCommand
 	{
@@ -202,7 +203,7 @@ public class DrawingView : View, IDrawingView
 	}
 
 	/// <summary>
-	/// Allows to draw on the <see cref="IDrawingView"/>.
+	/// Allows drawing on the <see cref="IDrawingView"/>.
 	/// This is a bindable property.
 	/// </summary>
 	public Action<ICanvas, RectF>? DrawAction

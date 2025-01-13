@@ -36,7 +36,7 @@ public interface IDrawingView : IView
 	bool ShouldClearOnFinish { get; }
 
 	/// <summary>
-	/// Allows to draw on the <see cref="IDrawingView"/>.
+	/// Allows drawing on the <see cref="IDrawingView"/>.
 	/// </summary>
 	Action<ICanvas, RectF>? DrawAction { get; }
 
@@ -71,7 +71,7 @@ public interface IDrawingView : IView
 	void OnDrawingLineStarted(PointF point);
 
 	/// <summary>
-	/// Event occurred when drawing line cancelled
+	/// Event occurred when drawing line canceled
 	/// </summary>
 	void OnDrawingLineCancelled();
 

@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using Microsoft.Maui.Graphics.Platform;
+﻿using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -74,7 +73,7 @@ public static partial class DrawingViewService
 	}
 
 	static UIImage? GetUIImageForPoints(ICollection<PointF> points,
-		NFloat lineWidth,
+		nfloat lineWidth,
 		Color strokeColor,
 		Paint? background,
 		Size? canvasSize = null)
@@ -134,7 +133,7 @@ public static partial class DrawingViewService
 		return image;
 	}
 
-	static void DrawStrokes(CGContext context, IList<PointF> points, NFloat lineWidth, Color strokeColor, Size offset)
+	static void DrawStrokes(CGContext context, IList<PointF> points, nfloat lineWidth, Color strokeColor, Size offset)
 	{
 		context.SetStrokeColor(strokeColor.ToCGColor());
 		context.SetLineWidth(lineWidth);
@@ -142,7 +141,7 @@ public static partial class DrawingViewService
 		context.SetLineJoin(CGLineJoin.Round);
 
 		var (startPointX, startPointY) = points[0];
-		context.MoveTo(new NFloat(startPointX), new NFloat(startPointY));
+		context.MoveTo(new nfloat(startPointX), new nfloat(startPointY));
 		context.AddLines(points.Select(p => new CGPoint(p.X - offset.Width, p.Y - offset.Height)).ToArray());
 
 		context.StrokePath();
@@ -175,7 +174,7 @@ public static partial class DrawingViewService
 			case LinearGradientPaint linearGradientBrush:
 				{
 					var colors = new CGColor[linearGradientBrush.GradientStops.Length];
-					var positions = new NFloat[linearGradientBrush.GradientStops.Length];
+					var positions = new nfloat[linearGradientBrush.GradientStops.Length];
 					for (var index = 0; index < linearGradientBrush.GradientStops.Length; index++)
 					{
 						var gradientStop = linearGradientBrush.GradientStops[index];
@@ -195,7 +194,7 @@ public static partial class DrawingViewService
 			case RadialGradientPaint radialGradientBrush:
 				{
 					var colors = new CGColor[radialGradientBrush.GradientStops.Length];
-					var positions = new NFloat[radialGradientBrush.GradientStops.Length];
+					var positions = new nfloat[radialGradientBrush.GradientStops.Length];
 					for (var index = 0; index < radialGradientBrush.GradientStops.Length; index++)
 					{
 						var gradientStop = radialGradientBrush.GradientStops[index];
@@ -213,7 +212,7 @@ public static partial class DrawingViewService
 		}
 	}
 
-	static void DrawRadialGradient(CGContext context, CGSize size, CGColor[] colors, NFloat[] locations)
+	static void DrawRadialGradient(CGContext context, CGSize size, CGColor[] colors, nfloat[] locations)
 	{
 		var colorSpace = CGColorSpace.CreateDeviceRGB();
 
@@ -227,13 +226,13 @@ public static partial class DrawingViewService
 		context.AddPath(path);
 		context.EOClip();
 
-		context.DrawRadialGradient(gradient, center, 0, center, (NFloat)radius, 0);
+		context.DrawRadialGradient(gradient, center, 0, center, (nfloat)radius, 0);
 
 		context.RestoreState();
 	}
 
 
-	static void DrawLinearGradient(CGContext context, CGSize size, CGColor[] colors, NFloat[] locations, CGPoint startPoint, CGPoint endPoint)
+	static void DrawLinearGradient(CGContext context, CGSize size, CGColor[] colors, nfloat[] locations, CGPoint startPoint, CGPoint endPoint)
 	{
 		var colorSpace = CGColorSpace.CreateDeviceRGB();
 

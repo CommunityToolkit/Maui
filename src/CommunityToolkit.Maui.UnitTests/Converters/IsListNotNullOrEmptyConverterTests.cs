@@ -7,13 +7,35 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class IsListNotNullOrEmptyConverterTests : BaseOneWayConverterTest<IsListNotNullOrEmptyConverter>
 {
-	public static IReadOnlyList<object?[]> Data { get; } =
-	[
-		[new List<string>(), false],
-		[new List<string> { "TestValue" }, true],
-		[null, false],
-		[Enumerable.Range(1, 3), true],
-	];
+	public static TheoryData<IEnumerable?, bool> Data { get; } = new()
+	{
+		{
+			new List<string>(), false
+		},
+		{
+			Array.Empty<string>(), false
+		},
+		{
+			new List<string>
+			{
+				"TestValue"
+			},
+			true
+		},
+		{
+			new []
+			{
+				"TestValue"
+			},
+			true
+		},
+		{
+			null, false
+		},
+		{
+			Enumerable.Range(1, 3), true
+		}
+	};
 
 	[Theory]
 	[MemberData(nameof(Data))]

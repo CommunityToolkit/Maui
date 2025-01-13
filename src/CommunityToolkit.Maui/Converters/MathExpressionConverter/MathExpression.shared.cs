@@ -11,7 +11,6 @@ sealed partial class MathExpression
 	static readonly IFormatProvider formatProvider = new CultureInfo("en-US");
 
 	readonly IReadOnlyList<MathOperator> operators;
-	readonly IReadOnlyList<double> arguments;
 
 	internal MathExpression(string expression, IEnumerable<double>? arguments = null)
 	{
@@ -69,7 +68,6 @@ sealed partial class MathExpression
 		}
 
 		this.operators = operators;
-		this.arguments = argumentList;
 	}
 
 	internal string Expression { get; }
@@ -126,7 +124,7 @@ sealed partial class MathExpression
 	[GeneratedRegex(@"(?<!\d)\-?(?:\d+\.\d+|\d+)|\+|\-|\/|\*|\(|\)|\^|\%|\,|\w+")]
 	private static partial Regex MathExpressionRegexPattern();
 
-	IEnumerable<string> GetReversePolishNotation(string expression)
+	List<string> GetReversePolishNotation(string expression)
 	{
 		var matches = MathExpressionRegexPattern().Matches(expression) ?? throw new ArgumentException("Invalid math expression.");
 
@@ -151,7 +149,7 @@ sealed partial class MathExpression
 					if (!isNegative)
 					{
 						stack.Push(("-", MathOperatorPrecedence.Low));
-						output.Add(Math.Abs(numeric).ToString());
+						output.Add(Math.Abs(numeric).ToString(formatProvider));
 						continue;
 					}
 				}
@@ -160,10 +158,10 @@ sealed partial class MathExpression
 				continue;
 			}
 
-			var @operator = operators.FirstOrDefault(x => x.Name == value);
-			if (@operator != null)
+			var mathOperator = operators.FirstOrDefault(x => x.Name == value);
+			if (mathOperator is not null)
 			{
-				if (@operator.Precedence is MathOperatorPrecedence.Constant)
+				if (mathOperator.Precedence is MathOperatorPrecedence.Constant)
 				{
 					output.Add(value);
 					continue;
@@ -171,8 +169,8 @@ sealed partial class MathExpression
 
 				while (stack.Count > 0)
 				{
-					var (name, precedence) = stack.Peek();
-					if (precedence >= @operator.Precedence)
+					var (_, precedence) = stack.Peek();
+					if (precedence >= mathOperator.Precedence)
 					{
 						output.Add(stack.Pop().Name);
 					}
@@ -182,7 +180,7 @@ sealed partial class MathExpression
 					}
 				}
 
-				stack.Push((value, @operator.Precedence));
+				stack.Push((value, mathOperator.Precedence));
 			}
 			else if (value is "(")
 			{
@@ -217,7 +215,7 @@ sealed partial class MathExpression
 			{
 				while (stack.Count > 0)
 				{
-					var (name, precedence) = stack.Peek();
+					var (_, precedence) = stack.Peek();
 					if (precedence >= MathOperatorPrecedence.Low)
 					{
 						output.Add(stack.Pop().Name);
@@ -232,7 +230,7 @@ sealed partial class MathExpression
 
 		for (var i = stack.Count - 1; i >= 0; i--)
 		{
-			var (name, precedence) = stack.Pop();
+			var (name, _) = stack.Pop();
 			if (name is "(")
 			{
 				throw new ArgumentException("Invalid math expression.");
