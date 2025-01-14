@@ -3,19 +3,15 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample.Views.Popups;
 
-public partial class ReturnResultPopup : Popup
+public partial class ReturnResultPopup : Maui.Views.Popup
 {
-	public ReturnResultPopup(PopupSizeConstants popupSizeConstants)
+	public ReturnResultPopup()
 	{
 		InitializeComponent();
-
-		Size = popupSizeConstants.Medium;
-		ResultWhenUserTapsOutsideOfPopup = "User Tapped Outside of Popup";
 	}
 
-	async void Button_Clicked(object? sender, EventArgs e)
+	void Button_Clicked(object? sender, EventArgs e)
 	{
-		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-		await CloseAsync("Close button tapped", cts.Token);
+		Close("Close button tapped");
 	}
 }

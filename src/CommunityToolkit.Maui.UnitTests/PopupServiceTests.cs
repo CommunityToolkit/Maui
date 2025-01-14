@@ -229,7 +229,7 @@ public class PopupServiceTests : BaseHandlerTest
 	}
 }
 
-sealed class MockSelfClosingPopup : Popup
+sealed class MockSelfClosingPopup: ContentView
 {
 	public MockSelfClosingPopup(MockPageViewModel viewModel, object? result = null)
 	{

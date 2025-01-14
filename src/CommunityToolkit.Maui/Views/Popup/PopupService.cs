@@ -1,0 +1,171 @@
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using CommunityToolkit.Maui.Core;
+
+namespace CommunityToolkit.Maui.Views;
+
+/// <inheritdoc cref="IPopupService"/>
+public class PopupService : IPopupService
+{
+	static readonly Dictionary<Type, Type> viewModelToViewMappings = [];
+
+	readonly IServiceProvider serviceProvider;
+	readonly IDispatcher dispatcher;
+
+	/// <summary>
+	/// Creates a new instance of <see cref="PopupService"/>.
+	/// </summary>
+	/// <param name="serviceProvider">The <see cref="IServiceProvider"/> implementation.</param>
+	/// <param name="dispatcherProvider"></param>
+	[ActivatorUtilitiesConstructor]
+	public PopupService(IServiceProvider serviceProvider, IDispatcherProvider dispatcherProvider)
+	{
+		this.serviceProvider = serviceProvider;
+		dispatcher = dispatcherProvider.GetForCurrentThread()
+						?? throw new InvalidOperationException("Could not locate IDispatcher");
+	}
+
+	/// <summary>
+	/// Creates a new instance of <see cref="PopupService"/>.
+	/// </summary>
+	public PopupService()
+	{
+		serviceProvider = IPlatformApplication.Current?.Services
+			?? throw new InvalidOperationException("Could not locate IServiceProvider");
+
+		dispatcher = Microsoft.Maui.Controls.Application.Current?.Dispatcher
+			?? throw new InvalidOperationException("Could not locate IDispatcher");
+	}
+
+	internal static void AddPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>(IServiceCollection services, ServiceLifetime lifetime)
+		where TPopupView : IView
+		where TPopupViewModel : notnull
+	{
+		viewModelToViewMappings.Add(typeof(TPopupViewModel), typeof(TPopupView));
+		Routing.RegisterRoute(typeof(TPopupViewModel).FullName, typeof(TPopupView));
+
+		services.Add(new ServiceDescriptor(typeof(TPopupView), typeof(TPopupView), lifetime));
+		services.Add(new ServiceDescriptor(typeof(TPopupViewModel), typeof(TPopupViewModel), lifetime));
+	}
+
+	void EnsureMainThreadIsUsed([CallerMemberName] string? callerName = null)
+	{
+		if (dispatcher.IsDispatchRequired)
+		{
+			throw new InvalidOperationException($"{callerName} must be called from the main thread.");
+		}
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <typeparam name="TBindingContext"></typeparam>
+	/// <param name="options"></param>
+	/// <param name="cancellationToken"></param>
+	/// <returns></returns>
+	public async Task<PopupResult> ShowPopupAsync<TBindingContext>(PopupOptions options, CancellationToken cancellationToken)
+		where TBindingContext : notnull
+	{
+		TaskCompletionSource<PopupResult> taskCompletionSource = new();
+		var bindingContext = serviceProvider.GetRequiredService<TBindingContext>();
+		var popup = GetPopup<TBindingContext>(options, bindingContext, () => taskCompletionSource.SetResult(new PopupResult(true)));
+		await ShowPopup(popup);
+		return await taskCompletionSource.Task;
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <typeparam name="TBindingContext"></typeparam>
+	/// <typeparam name="T"></typeparam>
+	/// <param name="options"></param>
+	/// <param name="cancellationToken"></param>
+	/// <returns></returns>
+	public async Task<PopupResult<T>> ShowPopupAsync<TBindingContext, T>(PopupOptions options, CancellationToken cancellationToken)
+		where TBindingContext : notnull
+	{
+		TaskCompletionSource<PopupResult<T>> taskCompletionSource = new();
+		var bindingContext = serviceProvider.GetRequiredService<TBindingContext>();
+		var popup = GetPopup<TBindingContext>(options, bindingContext, () => taskCompletionSource.SetResult(new PopupResult<T>(default, true)));
+		await ShowPopup(popup);
+		return await taskCompletionSource.Task;
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	public void ClosePopup()
+	{
+		var popupLifecycleController = serviceProvider.GetRequiredService<PopupLifecycleController>();
+		var popup = popupLifecycleController.GetCurrentPopup();
+		if (popup is null)
+		{
+			return;
+		}
+
+		popup.Close(new PopupResult(false));
+		popupLifecycleController.UnregisterPopup(popup);
+	}
+
+	async Task ShowPopup(PopupContainer popupContainer)
+	{
+		EnsureMainThreadIsUsed();
+		var popupLifecycleController = serviceProvider.GetRequiredService<PopupLifecycleController>();
+		popupLifecycleController.RegisterPopup(popupContainer);
+		var navigation = serviceProvider.GetRequiredService<INavigation>();
+		await navigation.PushModalAsync(popupContainer);
+	}
+
+	PopupContainer GetPopup<TBindingContext>(PopupOptions options, object bindingContext, Action onTappingOutsideOfPopup)
+	{
+		var content = GetPopupContent<TBindingContext>(bindingContext);
+		var navigation = serviceProvider.GetRequiredService<INavigation>();
+
+		var view = new Grid()
+		{
+			new Border()
+			{
+				Content = content
+			}
+		};
+		var popup = new PopupContainer
+		{
+			BackgroundColor = options.BackgroundColor ?? Color.FromRgba(0, 0, 0, 0.4), // https://rgbacolorpicker.com/rgba-to-hex,
+			CanBeDismissedByTappingOutsideOfPopup = options.CanBeDismissedByTappingOutsideOfPopup,
+			Content = view,
+			BindingContext = bindingContext
+		};
+		content.SetPopup(popup, options);
+
+		view.BindingContext = bindingContext;
+
+		if (options.CanBeDismissedByTappingOutsideOfPopup)
+		{
+			view.GestureRecognizers.Add(new TapGestureRecognizer()
+			{
+				Command = new Command(async () =>
+				{
+					onTappingOutsideOfPopup();
+					await navigation.PopModalAsync();
+				})
+			});
+		}
+
+		return popup;
+	}
+
+	Popup GetPopupContent<TBindingContext>(object bindingContext)
+	{
+		if (bindingContext is Popup view)
+		{
+			return view;
+		}
+
+		if (serviceProvider.GetRequiredService(viewModelToViewMappings[typeof(TBindingContext)]) is Popup content)
+		{
+			return content;
+		}
+
+		throw new InvalidOperationException($"Could not locate a view for {typeof(TBindingContext).FullName}");
+	}
+}

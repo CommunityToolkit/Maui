@@ -3,12 +3,10 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample.Views.Popups;
 
-public partial class XamlBindingPopup : Popup
+public partial class XamlBindingPopup : ContentView
 {
-	public XamlBindingPopup(PopupSizeConstants popupSizeConstants)
+	public XamlBindingPopup()
 	{
 		InitializeComponent();
-
-		Size = popupSizeConstants.Large;
 	}
 }

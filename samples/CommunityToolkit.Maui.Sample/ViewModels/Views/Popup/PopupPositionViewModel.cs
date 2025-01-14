@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Sample.Views.Popups;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Sample.Views.Popups;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.Input;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
@@ -10,53 +11,11 @@ public partial class PopupPositionViewModel : BaseViewModel
 	static Page Page => Application.Current?.Windows[0].Page ?? throw new InvalidOperationException("MainPage cannot be null");
 
 	[RelayCommand]
-	static void DisplayPopup(PopupPosition position)
+	static async Task DisplayPopup(PopupPosition position)
 	{
-		// Using the C# version of Popup until this get fixed
-		// https://github.com/dotnet/maui/issues/4300
-		var popup = new TransparentPopupCSharp();
+		var popup = new TransparentPopup();
 
-		switch (position)
-		{
-			case PopupPosition.TopLeft:
-				popup.VerticalOptions = LayoutAlignment.Start;
-				popup.HorizontalOptions = LayoutAlignment.Start;
-				break;
-			case PopupPosition.Top:
-				popup.VerticalOptions = LayoutAlignment.Start;
-				popup.HorizontalOptions = LayoutAlignment.Center;
-				break;
-			case PopupPosition.TopRight:
-				popup.VerticalOptions = LayoutAlignment.Start;
-				popup.HorizontalOptions = LayoutAlignment.End;
-				break;
-			case PopupPosition.Left:
-				popup.VerticalOptions = LayoutAlignment.Center;
-				popup.HorizontalOptions = LayoutAlignment.Start;
-				break;
-			case PopupPosition.Center:
-				popup.VerticalOptions = LayoutAlignment.Center;
-				popup.HorizontalOptions = LayoutAlignment.Center;
-				break;
-			case PopupPosition.Right:
-				popup.VerticalOptions = LayoutAlignment.Center;
-				popup.HorizontalOptions = LayoutAlignment.End;
-				break;
-			case PopupPosition.BottomLeft:
-				popup.VerticalOptions = LayoutAlignment.End;
-				popup.HorizontalOptions = LayoutAlignment.Start;
-				break;
-			case PopupPosition.Bottom:
-				popup.VerticalOptions = LayoutAlignment.End;
-				popup.HorizontalOptions = LayoutAlignment.Center;
-				break;
-			case PopupPosition.BottomRight:
-				popup.VerticalOptions = LayoutAlignment.End;
-				popup.HorizontalOptions = LayoutAlignment.End;
-				break;
-		}
-
-		Page.ShowPopup(popup);
+		await Page.Navigation.ShowPopup(popup, new PopupOptions());
 	}
 
 	public enum PopupPosition

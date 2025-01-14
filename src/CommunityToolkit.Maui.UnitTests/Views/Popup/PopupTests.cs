@@ -333,15 +333,15 @@ public class PopupTests : BaseHandlerTest
 	public void NullColorThrowsArgumentNullException()
 	{
 		var popupViewModel = new PopupViewModel();
-		var popupWithBinding = new Popup
+		var popupWithBinding = new PopupContainer
 		{
 			BindingContext = popupViewModel
 		};
-		popupWithBinding.SetBinding(Popup.ColorProperty, nameof(PopupViewModel.Color));
+		popupWithBinding.SetBinding(PopupContainer.ColorProperty, nameof(PopupViewModel.Color));
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => new Popup { Color = null });
-		Assert.Throws<ArgumentNullException>(() => new Popup().Color = null);
+		Assert.Throws<ArgumentNullException>(() => new PopupContainer { Color = null });
+		Assert.Throws<ArgumentNullException>(() => new PopupContainer().Color = null);
 		Assert.Throws<ArgumentNullException>(() => popupViewModel.Color = null);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
@@ -380,7 +380,7 @@ public class PopupTests : BaseHandlerTest
 		app.RemoveWindow(window);
 	}
 
-	sealed class MockPopup : Popup
+	class MockPopup: ContentView
 	{
 		public MockPopup()
 		{

@@ -18,7 +18,7 @@ using Window = Tizen.NUI.Window;
 
 namespace CommunityToolkit.Maui.Storage;
 
-sealed class FileFolderDialog : Popup<string>
+sealed class FileFolderDialog: ContentView<string>
 {
 	const string previousDirectorySymbol = "..";
 	const string slashSymbol = "/";

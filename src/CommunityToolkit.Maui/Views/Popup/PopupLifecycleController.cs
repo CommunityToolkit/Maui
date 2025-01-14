@@ -6,33 +6,24 @@ namespace CommunityToolkit.Maui;
 /// <summary>
 /// List-based implementation that manages the presentation of popups which will return the last item as the current popup.
 /// </summary>
-public class PopupLifecycleController : IPopupLifecycleController
+class PopupLifecycleController
 {
-	readonly List<WeakReference<Popup>> currentPopups = [];
+	readonly List<WeakReference<PopupContainer>> currentPopups = [];
 
-	/// <inheritdoc cref="IPopupLifecycleController.GetCurrentPopup"/>
-	public Popup? GetCurrentPopup()
+	public PopupContainer? GetCurrentPopup()
 	{
 		var popupReference = currentPopups.LastOrDefault();
 
 		return popupReference?.TryGetTarget(out var popup) is true ? popup : null;
 	}
 
-	/// <inheritdoc cref="IPopupLifecycleController.OnShowPopup"/>
-	public void OnShowPopup(Popup popup)
+	public void RegisterPopup(PopupContainer popup)
 	{
-		popup.Closed += OnPopupClosed;
 		currentPopups.Add(new(popup));
 	}
 
-	void OnPopupClosed(object? sender, PopupClosedEventArgs e)
+	public void UnregisterPopup(PopupContainer popup)
 	{
-		if (sender is not Popup popup)
-		{
-			return;
-		}
-
-		popup.Closed -= OnPopupClosed;
 		var matchingPopupReference = currentPopups.Find(reference => reference.TryGetTarget(out var target) && target == popup);
 
 		if (matchingPopupReference is not null)

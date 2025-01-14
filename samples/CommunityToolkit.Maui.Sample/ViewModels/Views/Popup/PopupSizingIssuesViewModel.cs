@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -62,7 +63,7 @@ public partial class PopupSizingIssuesViewModel : BaseViewModel
 
 		popup.Content = container;
 
-		page.ShowPopup(popup);
+		await page.Navigation.ShowPopup(popup, new PopupOptions());
 	}
 
 	static Label GetContentLabel(in string text) => new()

@@ -122,7 +122,6 @@ public static class MauiProgram
 						.AddStandardResilienceHandler(static options => options.Retry = new MobileHttpRetryStrategyOptions());
 
 		builder.Services.AddSingleton<AppShell>();
-		builder.Services.AddSingleton<PopupSizeConstants>();
 
 		RegisterViewsAndViewModels(builder.Services);
 		RegisterEssentials(builder.Services);
@@ -267,11 +266,11 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<PopupSizingIssuesPage, PopupSizingIssuesViewModel>();
 
 		// Add Popups
-		services.AddTransientPopup<CsharpBindingPopup, CsharpBindingPopupViewModel>();
-		services.AddTransientPopup<UpdatingPopup, UpdatingPopupViewModel>();
-		services.AddTransientPopup<XamlBindingPopup, XamlBindingPopupViewModel>();
+		services.AddPopup<CsharpBindingPopup, CsharpBindingPopupViewModel>();
+		services.AddPopup<UpdatingPopup, UpdatingPopupViewModel>();
+		services.AddPopup<XamlBindingPopup, XamlBindingPopupViewModel>();
 
-		services.AddTransientPopupContent<PopupContentView, PopupContentViewModel>();
+		services.AddPopup<PopupContentView, PopupContentViewModel>();
 	}
 
 	static void RegisterEssentials(in IServiceCollection services)

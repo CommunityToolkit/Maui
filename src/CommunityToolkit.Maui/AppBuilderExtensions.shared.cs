@@ -32,15 +32,13 @@ public static class AppBuilderExtensions
 		builder.UseMauiCommunityToolkitCore(null);
 
 		builder.Services.AddSingleton<IPopupService, PopupService>();
+		builder.Services.AddSingleton<PopupLifecycleController>();
 
 		builder.ConfigureMauiHandlers(static h =>
 		{
 			h.AddHandler<DrawingView, DrawingViewHandler>();
-			h.AddHandler<Popup, PopupHandler>();
 			h.AddHandler<SemanticOrderView, SemanticOrderViewHandler>();
 		});
-
-		Popup.RemapForControls();
 
 #if ANDROID
 		NavigationBar.RemapForControls();

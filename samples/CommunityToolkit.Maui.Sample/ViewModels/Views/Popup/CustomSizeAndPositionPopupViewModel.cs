@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Sample.Views.Popups;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -93,12 +94,11 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 
 		var popup = new FlowDirectionPopup((FlowDirection)FlowDirectionSelectedIndex)
 		{
-			Size = new Size(Width, Height),
-			VerticalOptions = verticalOptions.Value,
-			HorizontalOptions = horizontalOptions.Value
+			WidthRequest = Width,
+			HeightRequest = Height
 		};
 
-		return Shell.Current.ShowPopupAsync(popup, token);
+		return Shell.Current.Navigation.ShowPopup(popup, new PopupOptions());
 	}
 
 	static bool IsFlowDirectionSelectionValid(int flowDirectionSelection, int flowDirectionOptionsCount)

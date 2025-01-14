@@ -34,7 +34,7 @@
                 Text="Return Result Popup" />
         <BoxView Style="{StaticResource Divider}" />
         <Label Style="{StaticResource Content}" 
-                Text="This popup returns a value when it is dismissed. The value varies depending if you tap on the CLOSE button or dismis the popup by tapping outside of it's bounds." />
+                Text="This popup returns a value when it is dismissed. The value varies depending if you tap on the CLOSE button or dismiss the popup by tapping outside its bounds." />
         <Button Text="CLOSE"
                 Style="{StaticResource ConfirmButton}"
                 Clicked="Button_Clicked" />
