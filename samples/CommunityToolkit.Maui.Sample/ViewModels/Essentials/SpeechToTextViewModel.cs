@@ -17,7 +17,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	readonly ITextToSpeech textToSpeech;
 	readonly ISpeechToText speechToText;
 
-	public SpeechToTextViewModel(ITextToSpeech textToSpeech, [FromKeyedServices("Online")]ISpeechToText speechToText)
+	public SpeechToTextViewModel(ITextToSpeech textToSpeech, [FromKeyedServices("Online")] ISpeechToText speechToText)
 	{
 		this.textToSpeech = textToSpeech;
 		this.speechToText = speechToText;
@@ -28,15 +28,15 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	}
 
 	public ObservableCollection<Locale> Locales { get; } = [];
-  
+
 	public SpeechToTextState? State => speechToText.CurrentState;
-	
+
 	[ObservableProperty]
 	public partial Locale? CurrentLocale { get; set; }
 
 	[ObservableProperty]
 	public partial string? RecognitionText { get; set; } = "Welcome to .NET MAUI Community Toolkit!";
-	
+
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StartListenCommand))]
 	public partial bool CanStartListenExecute { get; set; } = true;
 

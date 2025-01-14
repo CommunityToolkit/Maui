@@ -44,6 +44,7 @@ class MediaControlsService : Service
 
 	public override IBinder? OnBind(Intent? intent) => null;
 
+	[Obsolete]
 	public override StartCommandResult OnStartCommand([NotNull] Intent? intent, StartCommandFlags flags, int startId)
 	{
 		ArgumentNullException.ThrowIfNull(intent);
@@ -181,6 +182,7 @@ class MediaControlsService : Service
 		audioManager.SetStreamVolume(AndroidStream.Music, audioManager.GetStreamVolume(AndroidStream.Music), 0);
 	}
 
+	[Obsolete]
 	async Task OnSetContent(Intent mediaManagerIntent, CancellationToken cancellationToken)
 	{
 		var albumArtUri = mediaManagerIntent.GetStringExtra("albumArtUri") ?? string.Empty;

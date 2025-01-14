@@ -55,7 +55,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 	}
 
 	static bool IsSpeechRecognitionAvailable() => OperatingSystem.IsAndroidVersionAtLeast(33) && SpeechRecognizer.IsOnDeviceRecognitionAvailable(Application.Context);
-	
+
 	[MemberNotNull(nameof(speechRecognizer), nameof(listener))]
 	[SupportedOSPlatform("Android33.0")]
 	void InternalStartListening(SpeechToTextOptions options)
