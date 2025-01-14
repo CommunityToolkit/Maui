@@ -31,7 +31,7 @@ partial class CameraManager
 		{
 			SessionPreset = AVCaptureSession.PresetPhoto
 		};
-		
+
 		previewView = new PreviewView
 		{
 			Session = captureSession
@@ -269,8 +269,8 @@ partial class CameraManager
 	static AVCaptureVideoOrientation GetVideoOrientation()
 	{
 		IEnumerable<UIScene> scenes = UIApplication.SharedApplication.ConnectedScenes;
-		var interfaceOrientation = scenes.FirstOrDefault() is UIWindowScene windowScene 
-			? windowScene.InterfaceOrientation 
+		var interfaceOrientation = scenes.FirstOrDefault() is UIWindowScene windowScene
+			? windowScene.InterfaceOrientation
 			: UIApplication.SharedApplication.StatusBarOrientation;
 
 		return interfaceOrientation switch

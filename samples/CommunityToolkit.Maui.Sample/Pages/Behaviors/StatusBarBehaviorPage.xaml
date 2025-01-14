@@ -153,6 +153,11 @@
                 </RadioButton>
 
             </HorizontalStackLayout>
+            
+            <Button
+                x:Name="ModalPageButton"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"/>
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>

@@ -17,6 +17,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		handler.mediaManager?.UpdateShouldLoopPlayback();
 	}
 
+	[Obsolete]
 	protected override MauiMediaElement CreatePlatformView()
 	{
 		mediaManager ??= new(MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null"),

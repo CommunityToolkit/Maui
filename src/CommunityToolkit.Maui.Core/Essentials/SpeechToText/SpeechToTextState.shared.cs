@@ -13,5 +13,10 @@ public enum SpeechToTextState
 	/// <summary>
 	/// Listening is active
 	/// </summary>
-	Listening
+	Listening,
+
+	/// <summary>
+	/// Listening is active, but no sound is detected
+	/// </summary>
+	Silence
 }
