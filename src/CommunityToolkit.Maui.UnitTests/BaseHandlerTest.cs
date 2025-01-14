@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.UnitTests.Mocks;
+using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
@@ -58,9 +59,8 @@ public abstract class BaseHandlerTest : BaseTest
 		var mockPageViewModel = new MockPageViewModel();
 		var mockPopup = new MockSelfClosingPopup(mockPageViewModel, new());
 
-		PopupService.ClearViewModelToViewMappings();
-		PopupService.AddTransientPopup(mockPopup, mockPageViewModel, appBuilder.Services);
 		var page = new ContentPage();
+		PopupService.AddPopup(mockPopup, mockPageViewModel, appBuilder.Services, ServiceLifetime.Transient);
 		#endregion
 
 		var mauiApp = appBuilder.Build();

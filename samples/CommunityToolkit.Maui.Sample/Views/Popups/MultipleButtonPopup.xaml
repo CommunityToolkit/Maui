@@ -31,8 +31,8 @@
 					<Setter Property="TextColor" Value="Blue" />
 				</Style>
 				<Style x:Key="ButtonGroup" TargetType="HorizontalStackLayout">
-					<Setter Property="VerticalOptions" Value="EndAndExpand" />
-					<Setter Property="HorizontalOptions" Value="CenterAndExpand" />
+					<Setter Property="VerticalOptions" Value="End" />
+					<Setter Property="HorizontalOptions" Value="Center" />
 					<Setter Property="Spacing" Value="20" />
 				</Style>
 			</ResourceDictionary>

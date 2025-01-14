@@ -28,7 +28,7 @@
                     <Setter Property="VerticalTextAlignment" Value="Center" />
                 </Style>
                 <Style x:Key="ConfirmButton" TargetType="Button">
-                    <Setter Property="VerticalOptions" Value="EndAndExpand" />
+                    <Setter Property="VerticalOptions" Value="End" />
                     <Setter Property="HorizontalOptions" Value="Center" />
                 </Style>
 

@@ -37,6 +37,14 @@ public class PopupService : IPopupService
 			?? throw new InvalidOperationException("Could not locate IDispatcher");
 	}
 
+	internal static void AddPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView>(IServiceCollection services, ServiceLifetime lifetime)
+		where TPopupView : IView
+	{
+		Routing.RegisterRoute(typeof(TPopupView).FullName, typeof(TPopupView));
+
+		services.Add(new ServiceDescriptor(typeof(TPopupView), typeof(TPopupView), lifetime));
+	}
+
 	internal static void AddPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>(IServiceCollection services, ServiceLifetime lifetime)
 		where TPopupView : IView
 		where TPopupViewModel : notnull
@@ -46,6 +54,17 @@ public class PopupService : IPopupService
 
 		services.Add(new ServiceDescriptor(typeof(TPopupView), typeof(TPopupView), lifetime));
 		services.Add(new ServiceDescriptor(typeof(TPopupViewModel), typeof(TPopupViewModel), lifetime));
+	}
+
+	internal static void AddPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>(TPopupView popup, TPopupViewModel viewModel, IServiceCollection services, ServiceLifetime lifetime)
+		where TPopupView : IView
+		where TPopupViewModel : notnull
+	{
+		viewModelToViewMappings.Add(typeof(TPopupViewModel), typeof(TPopupView));
+		Routing.RegisterRoute(typeof(TPopupViewModel).FullName, typeof(TPopupView));
+
+		services.Add(new ServiceDescriptor(typeof(TPopupView), () => popup, lifetime));
+		services.Add(new ServiceDescriptor(typeof(TPopupViewModel), () => viewModel, lifetime));
 	}
 
 	void EnsureMainThreadIsUsed([CallerMemberName] string? callerName = null)
@@ -112,14 +131,14 @@ public class PopupService : IPopupService
 		EnsureMainThreadIsUsed();
 		var popupLifecycleController = serviceProvider.GetRequiredService<PopupLifecycleController>();
 		popupLifecycleController.RegisterPopup(popupContainer);
-		var navigation = serviceProvider.GetRequiredService<INavigation>();
+		var navigation = Application.Current?.Windows[^1].Page?.Navigation ?? throw new InvalidOperationException("Unable to get navigation");
 		await navigation.PushModalAsync(popupContainer);
 	}
 
 	PopupContainer GetPopup<TBindingContext>(PopupOptions options, object bindingContext, Action onTappingOutsideOfPopup)
 	{
 		var content = GetPopupContent<TBindingContext>(bindingContext);
-		var navigation = serviceProvider.GetRequiredService<INavigation>();
+		var navigation = Application.Current?.Windows[^1].Page?.Navigation ?? throw new InvalidOperationException("Unable to get navigation");
 
 		var view = new Grid()
 		{

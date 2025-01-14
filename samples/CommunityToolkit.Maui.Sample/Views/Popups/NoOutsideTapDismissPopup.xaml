@@ -33,6 +33,6 @@
 		<Button
 			Clicked="Button_Clicked"
 			Text="Close"
-			VerticalOptions="EndAndExpand" />
+			VerticalOptions="End" />
 	</VerticalStackLayout>
 </mct:Popup>

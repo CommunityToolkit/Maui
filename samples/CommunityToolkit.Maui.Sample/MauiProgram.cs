@@ -269,6 +269,7 @@ public static class MauiProgram
 		services.AddPopup<CsharpBindingPopup, CsharpBindingPopupViewModel>();
 		services.AddPopup<UpdatingPopup, UpdatingPopupViewModel>();
 		services.AddPopup<XamlBindingPopup, XamlBindingPopupViewModel>();
+		services.AddPopup<ReturnResultPopup>();
 
 		services.AddPopup<PopupContentView, PopupContentViewModel>();
 	}
