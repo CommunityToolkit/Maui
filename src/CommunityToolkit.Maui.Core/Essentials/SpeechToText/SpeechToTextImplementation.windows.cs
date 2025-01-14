@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Speech.Recognition;
 using Microsoft.Maui.ApplicationModel;
 using Windows.Globalization;
 using Windows.Media.SpeechRecognition;
@@ -14,30 +15,33 @@ public sealed partial class SpeechToTextImplementation
 
 	string recognitionText = string.Empty;
 	SpeechRecognizer? speechRecognizer;
-	IProgress<string>? recognitionProgress;
-	TaskCompletionSource<string>? speechRecognitionTaskCompletionSource;
+	SpeechToTextOptions? speechToTextOptions;
 
 	/// <inheritdoc/>
-	public SpeechToTextState CurrentState => speechRecognizer?.State switch
+	public SpeechToTextState CurrentState
 	{
-		SpeechRecognizerState.Idle => SpeechToTextState.Stopped,
-		_ => SpeechToTextState.Listening,
-	};
+		get
+		{
+			return speechRecognizer?.State switch
+			{
+				SpeechRecognizerState.Capturing or SpeechRecognizerState.SoundStarted or SpeechRecognizerState.SpeechDetected or SpeechRecognizerState.Processing => SpeechToTextState.Listening,
+				SpeechRecognizerState.SoundEnded => SpeechToTextState.Silence,
+				_ => SpeechToTextState.Stopped,
+			};
+		}
+	}
 
 	/// <inheritdoc />
 	public async ValueTask DisposeAsync()
 	{
 		await StopRecording(CancellationToken.None);
-
 		speechRecognizer?.Dispose();
 		speechRecognizer = null;
 	}
 
-	async Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
+	async Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
 	{
-		ResetSpeechRecognitionTaskCompletionSource(cancellationToken);
-
-		await Initialize(culture, cancellationToken);
+		await Initialize(options, cancellationToken);
 
 		speechRecognizer.ContinuousRecognitionSession.AutoStopSilenceTimeout = TimeSpan.MaxValue;
 		speechRecognizer.ContinuousRecognitionSession.ResultGenerated += ResultGenerated;
@@ -58,14 +62,13 @@ public sealed partial class SpeechToTextImplementation
 		switch (args.Status)
 		{
 			case SpeechRecognitionResultStatus.Success:
-				OnRecognitionResultCompleted(recognitionText);
-				speechRecognitionTaskCompletionSource?.TrySetResult(recognitionText);
+				OnRecognitionResultCompleted(SpeechToTextResult.Success(recognitionText));
 				break;
 			case SpeechRecognitionResultStatus.UserCanceled:
-				speechRecognitionTaskCompletionSource?.TrySetCanceled();
+				OnRecognitionResultCompleted(new SpeechToTextResult(recognitionText, new TaskCanceledException("Operation cancelled")));
 				break;
 			default:
-				speechRecognitionTaskCompletionSource?.TrySetException(new Exception(args.Status.ToString()));
+				OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception(args.Status.ToString())));
 				break;
 		}
 	}
@@ -73,21 +76,13 @@ public sealed partial class SpeechToTextImplementation
 	void ResultGenerated(SpeechContinuousRecognitionSession sender, SpeechContinuousRecognitionResultGeneratedEventArgs args)
 	{
 		recognitionText += args.Result.Text;
-		recognitionProgress?.Report(args.Result.Text);
-		OnRecognitionResultUpdated(args.Result.Text);
+		if (speechToTextOptions?.ShouldReportPartialResults == true)
+		{
+			OnRecognitionResultUpdated(args.Result.Text);
+		}
 	}
 
 	Task InternalStopListeningAsync(CancellationToken cancellationToken) => StopRecording(cancellationToken);
-
-	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
-	{
-		ResetSpeechRecognitionTaskCompletionSource(cancellationToken);
-
-		recognitionProgress = recognitionResult;
-		await StartListenAsync(culture, cancellationToken);
-
-		return await speechRecognitionTaskCompletionSource.Task.WaitAsync(cancellationToken);
-	}
 
 	async Task StopRecording(CancellationToken cancellationToken)
 	{
@@ -109,25 +104,12 @@ public sealed partial class SpeechToTextImplementation
 		}
 	}
 
-	[MemberNotNull(nameof(speechRecognitionTaskCompletionSource))]
-	void ResetSpeechRecognitionTaskCompletionSource(CancellationToken token)
+	[MemberNotNull(nameof(recognitionText), nameof(speechRecognizer), nameof(speechToTextOptions))]
+	async Task Initialize(SpeechToTextOptions options, CancellationToken cancellationToken)
 	{
-		speechRecognitionTaskCompletionSource?.TrySetCanceled(token);
-		speechRecognitionTaskCompletionSource = new();
-
-		token.Register(async () =>
-		{
-			await StopRecording(token);
-			speechRecognitionTaskCompletionSource.TrySetCanceled(token);
-		});
-	}
-
-
-	[MemberNotNull(nameof(recognitionText), nameof(speechRecognizer))]
-	async Task Initialize(CultureInfo culture, CancellationToken cancellationToken)
-	{
+		speechToTextOptions = options;
 		recognitionText = string.Empty;
-		speechRecognizer = new SpeechRecognizer(new Language(culture.IetfLanguageTag));
+		speechRecognizer = new SpeechRecognizer(new Language(options.Culture.IetfLanguageTag));
 		speechRecognizer.StateChanged += SpeechRecognizer_StateChanged;
 		cancellationToken.ThrowIfCancellationRequested();
 		await speechRecognizer.CompileConstraintsAsync().AsTask(cancellationToken);

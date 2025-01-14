@@ -93,6 +93,7 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<FileSaverPage, FileSaverViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
 		CreateViewModelMapping<FolderPickerPage, FolderPickerViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
 		CreateViewModelMapping<SpeechToTextPage, SpeechToTextViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
+		CreateViewModelMapping<OfflineSpeechToTextPage, OfflineSpeechToTextViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
 
 		// Add Extensions View Models
 		CreateViewModelMapping<ColorAnimationExtensionsPage, ColorAnimationExtensionsViewModel, ExtensionsGalleryPage, ExtensionsGalleryViewModel>(),
