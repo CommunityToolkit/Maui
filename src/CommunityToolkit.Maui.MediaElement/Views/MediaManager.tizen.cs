@@ -133,7 +133,7 @@ public partial class MediaManager : IDisposable
 		};
 	}
 
-	protected virtual partial VaklueTask PlatformUpdateSource()
+	protected virtual partial ValueTask PlatformUpdateSource()
 	{
 		if (Player is null)
 		{
