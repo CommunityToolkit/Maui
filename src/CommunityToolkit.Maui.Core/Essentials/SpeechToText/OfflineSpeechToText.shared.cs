@@ -3,9 +3,10 @@ using System.Globalization;
 namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc cref="ISpeechToText"/>
-public static class SpeechToText
+/// <remarks>Offline Speech-To-Text provides offline speech recognition.</remarks>
+public static class OfflineSpeechToText
 {
-	static Lazy<ISpeechToText> defaultImplementation = new(new SpeechToTextImplementation());
+	static Lazy<ISpeechToText> defaultImplementation = new(new OfflineSpeechToTextImplementation());
 
 	/// <summary>
 	/// Default implementation of <see cref="ISpeechToText"/>
