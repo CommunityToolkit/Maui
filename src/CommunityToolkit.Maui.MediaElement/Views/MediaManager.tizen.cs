@@ -154,7 +154,7 @@ public partial class MediaManager : IDisposable
 
 			MediaElement.CurrentStateChanged(MediaElementState.None);
 			
-			return ValueTask.CompletedTask
+			return ValueTask.CompletedTask;
 		}
 
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
@@ -193,7 +193,7 @@ public partial class MediaManager : IDisposable
 			MediaElement.MediaOpened();
 		}
 
-		return ValueTask.CompletedTask
+		return ValueTask.CompletedTask;
 	}
 
 	protected virtual partial void PlatformUpdateSpeed()
