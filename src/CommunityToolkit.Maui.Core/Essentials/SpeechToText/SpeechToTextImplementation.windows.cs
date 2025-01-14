@@ -83,7 +83,7 @@ public sealed partial class SpeechToTextImplementation
 	}
 
 	Task InternalStopListeningAsync(CancellationToken cancellationToken) => StopRecording(cancellationToken);
-	
+
 	async Task StopRecording(CancellationToken cancellationToken)
 	{
 		try
