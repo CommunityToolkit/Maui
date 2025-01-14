@@ -3,7 +3,7 @@ using System.Globalization;
 namespace CommunityToolkit.Maui.Media;
 
 /// <inheritdoc />
-public sealed partial class SpeechToTextImplementation
+public sealed partial class OfflineSpeechToTextImplementation
 {
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()
@@ -11,12 +11,12 @@ public sealed partial class SpeechToTextImplementation
 		return ValueTask.CompletedTask;
 	}
 
-	Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
+	void InternalStartListening(SpeechToTextOptions options)
 	{
 		throw new NotSupportedException();
 	}
 
-	Task InternalStopListeningAsync(CancellationToken cancellationToken)
+	void InternalStopListening()
 	{
 		throw new NotSupportedException();
 	}

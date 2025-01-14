@@ -7,6 +7,7 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypingBehavior, InputView>(new UserStoppedTypingBehavior(), new Entry())
 {
 	[Fact(Timeout = (int)TestDuration.Short)]
+	[Obsolete]
 	public async Task ShouldExecuteCommandWhenTimeThresholdHasExpired()
 	{
 		// arrange
@@ -28,6 +29,7 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
+	[Obsolete]
 	public async Task ShouldExecuteCommandWithSpecificParameterWhenSpecified()
 	{
 		// arrange
@@ -48,6 +50,7 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
+	[Obsolete]
 	public async Task ShouldNotExecuteCommandBeforeTimeThresholdHasExpired()
 	{
 		// arrange
@@ -72,6 +75,7 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
+	[Obsolete]
 	public async Task ShouldOnlyExecuteCommandOnceWhenTextChangedHasOccurredMultipleTimes()
 	{
 		// arrange
@@ -95,6 +99,7 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
+	[Obsolete]
 	public async Task ShouldDismissKeyboardWhenTimeThresholdHasExpired()
 	{
 		// arrange
@@ -119,6 +124,7 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
+	[Obsolete]
 	public async Task ShouldExecuteCommandWhenMinimumLengthThresholdHasBeenReached()
 	{
 		// arrange
@@ -142,6 +148,7 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 	}
 
 	[Fact(Timeout = (int)TestDuration.Long)]
+	[Obsolete]
 	public async Task ShouldNotExecuteCommandWhenMinimumLengthThresholdHasNotBeenReached()
 	{
 		// arrange
@@ -180,6 +187,7 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 	}
 
 	[Fact(Timeout = (int)TestDuration.Long)]
+	[Obsolete]
 	public async Task ShouldNotDismissKeyboardWhenMinimumLengthThresholdHasNotBeenReached()
 	{
 		// arrange
@@ -220,6 +228,7 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
+	[Obsolete]
 	public async Task ShouldExecuteCommandImmediatelyWhenMinimumLengthThresholdHasNotBeenSet()
 	{
 		// arrange
