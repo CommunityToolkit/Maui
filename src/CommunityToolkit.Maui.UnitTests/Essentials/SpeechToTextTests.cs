@@ -30,7 +30,7 @@ public class SpeechToTextTests(ITestOutputHelper testOutputHelper) : BaseTest
 		SpeechToText.SetDefault(new SpeechToTextImplementationMock(string.Empty, string.Empty));
 		SpeechToText.Default.StateChanged += OnStateChanged;
 		SpeechToText.Default.CurrentState.Should().Be(SpeechToTextState.Stopped);
-		await SpeechToText.StartListenAsync(new SpeechToTextOptions{Culture = CultureInfo.CurrentCulture}, CancellationToken.None);
+		await SpeechToText.StartListenAsync(new SpeechToTextOptions { Culture = CultureInfo.CurrentCulture }, CancellationToken.None);
 		SpeechToText.Default.CurrentState.Should().Be(SpeechToTextState.Listening);
 		await SpeechToText.StopListenAsync(CancellationToken.None);
 		SpeechToText.Default.CurrentState.Should().Be(SpeechToTextState.Stopped);
