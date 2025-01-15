@@ -55,7 +55,8 @@ public partial class RatingView : TemplatedView, IRatingView
 	///<summary>The default constructor of the control.</summary>
 	public RatingView()
 	{
-		ControlTemplate = new ControlTemplate(typeof(HorizontalStackLayout));
+		ControlTemplate = new ControlTemplate(() => Control);
+		
 		AddChildrenToControl(0, MaximumRating);
 	}
 
@@ -194,30 +195,15 @@ public partial class RatingView : TemplatedView, IRatingView
 	}
 
 	///<summary>The control to be displayed</summary>
-	internal HorizontalStackLayout? Control
+	internal HorizontalStackLayout Control
 	{
 		get;
 		set
 		{
-			if (value is not null)
-			{
-				value.SetBinding<RatingView, object>(BindingContextProperty, static ratingView => ratingView.BindingContext, source: this);
-			}
-
+			value.SetBinding<RatingView, object>(BindingContextProperty, static ratingView => ratingView.BindingContext, source: this);
 			field = value;
 		}
-	}
-
-	///<summary>Called every time a child is added to the control.</summary>
-	protected override void OnChildAdded(Element child)
-	{
-		if (Control is null && child is HorizontalStackLayout stack)
-		{
-			Control = stack;
-		}
-
-		base.OnChildAdded(child);
-	}
+	} = new();
 
 	static int GetRatingWhenMaximumRatingEqualsOne(double rating) => rating.Equals(0.0) ? 1 : 0;
 
