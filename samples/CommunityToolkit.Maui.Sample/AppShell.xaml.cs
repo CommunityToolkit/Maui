@@ -191,9 +191,12 @@ public partial class AppShell : Shell
 #if WINDOWS
 		Loaded += delegate
 		{
-			var navigationView = (Microsoft.UI.Xaml.Controls.NavigationView)flyout.Handler!.PlatformView!;
-			navigationView.IsPaneToggleButtonVisible = true;
-			navigationView.PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.Auto;
+			if(flyout.Handler?.PlatformView is Microsoft.UI.Xaml.Controls.NavigationView navigationView)
+			{
+				var navigationView = (Microsoft.UI.Xaml.Controls.NavigationView)flyout.Handler!.PlatformView!;
+				navigationView.IsPaneToggleButtonVisible = true;
+				navigationView.PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.Auto;
+			}
 		};
 #endif
 	}
