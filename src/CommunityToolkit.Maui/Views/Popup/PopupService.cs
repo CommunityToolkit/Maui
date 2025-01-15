@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -41,6 +42,7 @@ public class PopupService : IPopupService
 	internal static void AddPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView>(IServiceCollection services, ServiceLifetime lifetime)
 		where TPopupView : IView
 	{
+		viewModelToViewMappings.TryAdd(typeof(TPopupView), typeof(TPopupView));
 		Routing.RegisterRoute(typeof(TPopupView).FullName, typeof(TPopupView));
 
 		services.Add(new ServiceDescriptor(typeof(TPopupView), typeof(TPopupView), lifetime));
@@ -90,7 +92,10 @@ public class PopupService : IPopupService
 		var bindingContext = serviceProvider.GetRequiredService<TBindingContext>();
 		var popup = GetPopup(options, bindingContext, taskCompletionSource);
 		await ShowPopup(popup);
-		return await taskCompletionSource.Task.WaitAsync(cancellationToken);
+		await taskCompletionSource.Task
+			.WaitAsync(cancellationToken)
+			.ContinueWith((_) => taskCompletionSource.SetResult(new PopupResult(false)), TaskContinuationOptions.OnlyOnCanceled);
+		return await taskCompletionSource.Task;
 	}
 
 	/// <summary>
@@ -108,7 +113,10 @@ public class PopupService : IPopupService
 		var bindingContext = serviceProvider.GetRequiredService<TBindingContext>();
 		var popup = GetPopup(options, bindingContext, taskCompletionSource);
 		await ShowPopup(popup);
-		return await taskCompletionSource.Task.WaitAsync(cancellationToken);
+		await taskCompletionSource.Task
+			.WaitAsync(cancellationToken)
+			.ContinueWith((_) => taskCompletionSource.SetResult(new PopupResult<T>(default, false)), TaskContinuationOptions.OnlyOnCanceled);
+		return await taskCompletionSource.Task;
 	}
 
 	/// <summary>
@@ -154,16 +162,25 @@ public class PopupService : IPopupService
 
 	PopupContainer GetPopup<TBindingContext>(PopupOptions<TBindingContext> options, TBindingContext bindingContext, TaskCompletionSource<PopupResult> taskCompletionSource)
 	{
-		var content = GetPopupContent(bindingContext);
-		
+		var popup = GetPopupContent(bindingContext);
+
 		var view = new Grid()
 		{
-			new Border()
-			{
-				Content = content
-			}
+			BackgroundColor = null
 		};
-		var popup = new PopupContainer(content, taskCompletionSource)
+		view.Children.Add(new Border()
+		{
+			Content = popup,
+			Background = popup.Background,
+			WidthRequest = popup.WidthRequest,
+			HeightRequest = popup.HeightRequest,
+			BackgroundColor = popup.BackgroundColor,
+			VerticalOptions = LayoutOptions.Center,
+			StrokeShape = new RoundRectangle() { CornerRadius = new CornerRadius(15) },
+			Margin = 30,
+			Padding = 15
+		});
+		var popupContainer = new PopupContainer(bindingContext as Popup ?? new Popup() { Content = popup }, taskCompletionSource)
 		{
 			BackgroundColor = options.BackgroundColor ?? Color.FromRgba(0, 0, 0, 0.4), // https://rgbacolorpicker.com/rgba-to-hex,
 			CanBeDismissedByTappingOutsideOfPopup = options.CanBeDismissedByTappingOutsideOfPopup,
@@ -171,9 +188,9 @@ public class PopupService : IPopupService
 			BindingContext = bindingContext
 		};
 
-		popup.Appearing += (s, e) => options.OnOpened?.Invoke(bindingContext);
-		popup.Disappearing += (s, e) => options.OnClosed?.Invoke(bindingContext);
-		
+		popupContainer.Appearing += (s, e) => options.OnOpened?.Invoke(bindingContext);
+		popupContainer.Disappearing += (s, e) => options.OnClosed?.Invoke(bindingContext);
+
 		view.BindingContext = bindingContext;
 
 		if (options.CanBeDismissedByTappingOutsideOfPopup)
@@ -183,22 +200,22 @@ public class PopupService : IPopupService
 				Command = new Command(async () =>
 				{
 					options.OnTappingOutsideOfPopup?.Invoke();
-					await popup.Close(new PopupResult(true));
+					await popupContainer.Close(new PopupResult(true));
 				})
 			});
 		}
 
-		return popup;
+		return popupContainer;
 	}
 
-	Popup GetPopupContent<TBindingContext>(TBindingContext bindingContext)
+	View GetPopupContent<TBindingContext>(TBindingContext bindingContext)
 	{
-		if (bindingContext is Popup view)
+		if (bindingContext is View view)
 		{
 			return view;
 		}
 
-		if (serviceProvider.GetRequiredService(viewModelToViewMappings[typeof(TBindingContext)]) is Popup content)
+		if (serviceProvider.GetRequiredService(viewModelToViewMappings[typeof(TBindingContext)]) is View content)
 		{
 			return content;
 		}
@@ -208,16 +225,26 @@ public class PopupService : IPopupService
 
 	PopupContainer<T> GetPopup<TBindingContext, T>(PopupOptions<TBindingContext> options, TBindingContext bindingContext, TaskCompletionSource<PopupResult<T>> taskCompletionSource)
 	{
-		var content = GetPopupContent<TBindingContext, T>(bindingContext);
-		
+		var popup = GetPopupContent(bindingContext);
+
 		var view = new Grid()
 		{
-			new Border()
-			{
-				Content = content
-			}
+			BackgroundColor = null
 		};
-		var popup = new PopupContainer<T>(content, taskCompletionSource)
+		view.Children.Add(new Border()
+		{
+			Content = popup,
+			Background = popup.Background,
+			WidthRequest = popup.WidthRequest,
+			HeightRequest = popup.HeightRequest,
+			BackgroundColor = popup.BackgroundColor,
+			VerticalOptions = LayoutOptions.Center,
+			HorizontalOptions = LayoutOptions.Center,
+			StrokeShape = new RoundRectangle() { CornerRadius = new CornerRadius(15) },
+			Margin = 30,
+			Padding = 15
+		});
+		var popupContainer = new PopupContainer<T>(bindingContext as Popup<T> ?? new Popup<T>() { Content = popup }, taskCompletionSource)
 		{
 			BackgroundColor = options.BackgroundColor ?? Color.FromRgba(0, 0, 0, 0.4), // https://rgbacolorpicker.com/rgba-to-hex,
 			CanBeDismissedByTappingOutsideOfPopup = options.CanBeDismissedByTappingOutsideOfPopup,
@@ -225,8 +252,8 @@ public class PopupService : IPopupService
 			BindingContext = bindingContext
 		};
 
-		popup.Appearing += (s, e) => options.OnOpened?.Invoke(bindingContext);
-		popup.Disappearing += (s, e) => options.OnClosed?.Invoke(bindingContext);
+		popupContainer.Appearing += (s, e) => options.OnOpened?.Invoke(bindingContext);
+		popupContainer.Disappearing += (s, e) => options.OnClosed?.Invoke(bindingContext);
 
 		view.BindingContext = bindingContext;
 
@@ -237,26 +264,11 @@ public class PopupService : IPopupService
 				Command = new Command(async () =>
 				{
 					options.OnTappingOutsideOfPopup?.Invoke();
-					await popup.Close(new PopupResult(true));
+					await popupContainer.Close(new PopupResult(true));
 				})
 			});
 		}
 
-		return popup;
-	}
-
-	Popup<T> GetPopupContent<TBindingContext, T>(TBindingContext bindingContext)
-	{
-		if (bindingContext is Popup<T> view)
-		{
-			return view;
-		}
-
-		if (serviceProvider.GetRequiredService(viewModelToViewMappings[typeof(TBindingContext)]) is Popup<T> content)
-		{
-			return content;
-		}
-
-		throw new InvalidOperationException($"Could not locate a view for {typeof(TBindingContext).FullName}");
+		return popupContainer;
 	}
 }

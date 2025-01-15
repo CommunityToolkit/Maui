@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -15,18 +16,27 @@ public static class PopupExtensions
 	/// <param name="popup"></param>
 	/// <param name="options"></param>
 	/// <returns></returns>
-	public static async Task ShowPopup<T>(this INavigation navigation, Popup popup, PopupOptions<T> options)
+	public static async Task ShowPopup<T>(this INavigation navigation, T popup, PopupOptions<T> options)
 		where T:Popup
 	{
 		TaskCompletionSource<PopupResult> taskCompletionSource = new();
 
 		var view = new Grid()
 		{
-			new Border()
-			{
-				Content = popup
-			}
+			BackgroundColor = null
 		};
+		view.Children.Add(new Border()
+		{
+			Content = popup,
+			Background = popup.Background,
+			BackgroundColor = popup.BackgroundColor,
+			WidthRequest = popup.WidthRequest,
+			HeightRequest = popup.HeightRequest,
+			VerticalOptions = LayoutOptions.Center,
+			StrokeShape = new RoundRectangle() { CornerRadius = new CornerRadius(15) },
+			Margin = 30,
+			Padding = 15
+		});
 		var popupContainer = new PopupContainer(popup, taskCompletionSource)
 		{
 			BackgroundColor = options.BackgroundColor ?? Color.FromRgba(0, 0, 0, 0.4), // https://rgbacolorpicker.com/rgba-to-hex,
@@ -34,6 +44,9 @@ public static class PopupExtensions
 			Content = view,
 			BindingContext = popup.BindingContext
 		};
+
+		popupContainer.Appearing += (s, e) => options.OnOpened?.Invoke(popup);
+		popupContainer.Disappearing += (s, e) => options.OnClosed?.Invoke(popup);
 
 		view.BindingContext = popup.BindingContext;
 

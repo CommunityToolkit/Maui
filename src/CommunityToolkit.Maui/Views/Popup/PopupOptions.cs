@@ -8,7 +8,7 @@ public class PopupOptions<T>
 	/// <summary>
 	/// 
 	/// </summary>
-	public bool CanBeDismissedByTappingOutsideOfPopup { get; init; }
+	public bool CanBeDismissedByTappingOutsideOfPopup { get; init; } = true;
 
 	/// <summary>
 	/// 

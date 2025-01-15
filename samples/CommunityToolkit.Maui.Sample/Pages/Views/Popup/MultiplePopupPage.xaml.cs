@@ -34,7 +34,7 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 
 	async void HandleNoOutsideTapDismissPopupClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync(new PopupOptions<NoOutsideTapDismissPopup>(){CanBeDismissedByTappingOutsideOfPopup = false}, CancellationToken.None);
+		await popupService.ShowPopupAsync(new PopupOptions<NoOutsideTapDismissPopup>() { CanBeDismissedByTappingOutsideOfPopup = false }, CancellationToken.None);
 	}
 
 	async void HandleToggleSizePopupButtonClicked(object sender, EventArgs e)
@@ -54,7 +54,7 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 
 	async void HandleReturnResultPopupButtonClicked(object sender, EventArgs e)
 	{
-		var result = await popupService.ShowPopupAsync<ReturnResultPopup, bool>(new PopupOptions<ReturnResultPopup>(), CancellationToken.None);
+		var result = await popupService.ShowPopupAsync<ReturnResultPopup, string>(new PopupOptions<ReturnResultPopup>(), CancellationToken.None);
 
 		await DisplayAlert("Pop Result Returned", $"Result: {result.Result}", "OK");
 	}

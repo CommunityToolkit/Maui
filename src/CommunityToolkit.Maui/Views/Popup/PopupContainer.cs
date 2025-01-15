@@ -47,14 +47,10 @@ partial class PopupContainer : ContentPage
 		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
 	}
 
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <returns></returns>
-	protected override bool OnBackButtonPressed()
-	{
-		return !CanBeDismissedByTappingOutsideOfPopup;
-	}
+	//protected override bool OnBackButtonPressed()
+	//{
+	//	return !CanBeDismissedByTappingOutsideOfPopup;
+	//}
 
 	/// <summary>
 	/// Gets or sets a value indicating whether the popup can be dismissed by tapping outside the Popup.
