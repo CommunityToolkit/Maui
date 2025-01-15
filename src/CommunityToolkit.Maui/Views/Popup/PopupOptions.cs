@@ -13,24 +13,34 @@ public class PopupOptions
 	/// <summary>
 	/// 
 	/// </summary>
-	public Color? BackgroundColor { get; init; }
-	
-	/// <summary>
-	/// 
-	/// </summary>
-	public Action? OnTappingOutsideOfPopup { get; set; }
+	public Color BackgroundColor { get; init; } = Color.FromRgba(0, 0, 0, 0.4);
 
 	/// <summary>
 	/// 
 	/// </summary>
-	public IShape? Shape { get; set; }
+	public Action? OnTappingOutsideOfPopup { get; init; }
 
 	/// <summary>
 	/// 
 	/// </summary>
-	public LayoutOptions VerticalOptions { get; set; } = LayoutOptions.Center;
+	public IShape? Shape { get; init; }
+
 	/// <summary>
 	/// 
 	/// </summary>
-	public LayoutOptions HorizontalOptions { get; set; } = LayoutOptions.Center;
+	public Thickness Margin { get; init; } = 30;
+
+	/// <summary>
+	/// 
+	/// </summary>
+	public Thickness Padding { get; init; } = 15;
+
+	/// <summary>
+	/// 
+	/// </summary>
+	public LayoutOptions VerticalOptions { get; init; } = LayoutOptions.Center;
+	/// <summary>
+	/// 
+	/// </summary>
+	public LayoutOptions HorizontalOptions { get; init; } = LayoutOptions.Center;
 }

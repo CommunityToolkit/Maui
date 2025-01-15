@@ -12,48 +12,53 @@ public partial class PopupPositionViewModel : BaseViewModel
 	[RelayCommand]
 	static async Task DisplayPopup(PopupPosition position)
 	{
-		var popupOptions = new PopupOptions();
+		var verticalOptions = LayoutOptions.Start;
+		var horizontalOptions = LayoutOptions.Start;
 		switch (position)
 		{
 			case PopupPosition.TopLeft:
-				popupOptions.VerticalOptions = LayoutOptions.Start;
-				popupOptions.HorizontalOptions = LayoutOptions.Start;
+				verticalOptions = LayoutOptions.Start;
+				horizontalOptions = LayoutOptions.Start;
 				break;
 			case PopupPosition.Top:
-				popupOptions.VerticalOptions = LayoutOptions.Start;
-				popupOptions.HorizontalOptions = LayoutOptions.Center;
+				verticalOptions = LayoutOptions.Start;
+				horizontalOptions = LayoutOptions.Center;
 				break;
 			case PopupPosition.TopRight:
-				popupOptions.VerticalOptions = LayoutOptions.Start;
-				popupOptions.HorizontalOptions = LayoutOptions.End;
+				verticalOptions = LayoutOptions.Start;
+				horizontalOptions = LayoutOptions.End;
 				break;
 			case PopupPosition.Left:
-				popupOptions.VerticalOptions = LayoutOptions.Center;
-				popupOptions.HorizontalOptions = LayoutOptions.Start;
+				verticalOptions = LayoutOptions.Center;
+				horizontalOptions = LayoutOptions.Start;
 				break;
 			case PopupPosition.Center:
-				popupOptions.VerticalOptions = LayoutOptions.Center;
-				popupOptions.HorizontalOptions = LayoutOptions.Center;
+				verticalOptions = LayoutOptions.Center;
+				horizontalOptions = LayoutOptions.Center;
 				break;
 			case PopupPosition.Right:
-				popupOptions.VerticalOptions = LayoutOptions.Center;
-				popupOptions.HorizontalOptions = LayoutOptions.End;
+				verticalOptions = LayoutOptions.Center;
+				horizontalOptions = LayoutOptions.End;
 				break;
 			case PopupPosition.BottomLeft:
-				popupOptions.VerticalOptions = LayoutOptions.End;
-				popupOptions.HorizontalOptions = LayoutOptions.Start;
+				verticalOptions = LayoutOptions.End;
+				horizontalOptions = LayoutOptions.Start;
 				break;
 			case PopupPosition.Bottom:
-				popupOptions.VerticalOptions = LayoutOptions.End;
-				popupOptions.HorizontalOptions = LayoutOptions.Center;
+				verticalOptions = LayoutOptions.End;
+				horizontalOptions = LayoutOptions.Center;
 				break;
 			case PopupPosition.BottomRight:
-				popupOptions.VerticalOptions = LayoutOptions.End;
-				popupOptions.HorizontalOptions = LayoutOptions.End;
+				verticalOptions = LayoutOptions.End;
+				horizontalOptions = LayoutOptions.End;
 				break;
 		}
 
-		await Page.Navigation.ShowPopup<TransparentPopup>(new TransparentPopup(), popupOptions);
+		await Page.Navigation.ShowPopup<TransparentPopup>(new TransparentPopup(), new PopupOptions()
+		{
+			VerticalOptions = verticalOptions,
+			HorizontalOptions = horizontalOptions
+		});
 	}
 
 	public enum PopupPosition

@@ -63,7 +63,7 @@ public static class PopupExtensions
 
 	static void ConfigurePopupContainer(PopupContainer popupContainer, View popupContent, PopupOptions options)
 	{
-		popupContainer.BackgroundColor = options.BackgroundColor ?? Color.FromRgba(0, 0, 0, 0.4); // https://rgbacolorpicker.com/rgba-to-hex,
+		popupContainer.BackgroundColor = options.BackgroundColor;
 		popupContainer.CanBeDismissedByTappingOutsideOfPopup = options.CanBeDismissedByTappingOutsideOfPopup;
 		popupContainer.Content = popupContent;
 		popupContainer.BindingContext = popupContent.BindingContext;
@@ -92,13 +92,11 @@ public static class PopupExtensions
 			Content = popup,
 			Background = popup.Background,
 			BackgroundColor = popup.BackgroundColor,
-			WidthRequest = popup.WidthRequest,
-			HeightRequest = popup.HeightRequest,
 			VerticalOptions = options.VerticalOptions,
 			HorizontalOptions = options.HorizontalOptions,
 			StrokeShape = options.Shape,
-			Margin = 30,
-			Padding = 15
+			Margin = options.Margin,
+			Padding = options.Padding
 		});
 		view.BindingContext = popup.BindingContext;
 

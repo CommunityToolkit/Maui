@@ -33,9 +33,9 @@ public partial class UpdatingPopupViewModel(IPopupService popupService) : BaseVi
 	}
 
 	[RelayCommand(CanExecute = nameof(CanFinish))]
-	void OnFinish()
+	async Task OnFinish()
 	{
-		popupService.ClosePopup();
+		await popupService.ClosePopupAsync();
 	}
 
 	[RelayCommand]

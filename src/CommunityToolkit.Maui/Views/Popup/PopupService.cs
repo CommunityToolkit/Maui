@@ -88,6 +88,7 @@ public class PopupService : IPopupService
 	public async Task<PopupResult> ShowPopupAsync<TBindingContext>(PopupOptions options, CancellationToken cancellationToken)
 		where TBindingContext : notnull
 	{
+		cancellationToken.ThrowIfCancellationRequested();
 		var bindingContext = serviceProvider.GetRequiredService<TBindingContext>();
 		var popupContent = GetPopupContent(bindingContext);
 
@@ -107,6 +108,7 @@ public class PopupService : IPopupService
 		CancellationToken cancellationToken)
 		where TBindingContext : notnull
 	{
+		cancellationToken.ThrowIfCancellationRequested();
 		var bindingContext = serviceProvider.GetRequiredService<TBindingContext>();
 		var popupContent = GetPopupContent(bindingContext);
 
@@ -117,8 +119,10 @@ public class PopupService : IPopupService
 	/// <summary>
 	/// 
 	/// </summary>
-	public async Task ClosePopup()
+	/// <param name="cancellationToken"></param>
+	public async Task ClosePopupAsync(CancellationToken cancellationToken)
 	{
+		cancellationToken.ThrowIfCancellationRequested();
 		var popupLifecycleController = serviceProvider.GetRequiredService<PopupLifecycleController>();
 		var popup = popupLifecycleController.GetCurrentPopup();
 		if (popup is null)
@@ -133,8 +137,9 @@ public class PopupService : IPopupService
 	/// <summary>
 	/// 
 	/// </summary>
-	public async Task ClosePopup<T>(T result)
+	public async Task ClosePopupAsync<T>(T result, CancellationToken cancellationToken)
 	{
+		cancellationToken.ThrowIfCancellationRequested();
 		var popupLifecycleController = serviceProvider.GetRequiredService<PopupLifecycleController>();
 		var popup = popupLifecycleController.GetCurrentPopup();
 		if (popup is null)

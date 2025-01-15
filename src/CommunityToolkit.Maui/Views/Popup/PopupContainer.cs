@@ -24,7 +24,7 @@ partial class PopupContainer<T> : PopupContainer
 	public async Task Close(PopupResult<T> result)
 	{
 		taskCompletionSource.SetResult(result);
-		await Navigation.PopModalAsync();
+		await Navigation.PopModalAsync().ConfigureAwait(false);
 	}
 }
 
@@ -66,27 +66,21 @@ partial class PopupContainer : ContentPage
 	/// </remarks>
 	public bool CanBeDismissedByTappingOutsideOfPopup { get; internal set; }
 
-	/// <summary>
-	/// 
-	/// </summary>
-	protected override void OnAppearing()
-	{
-		base.OnAppearing();
-		content.NotifyPopupIsOpened();
-	}
-
-	/// <summary>
-	/// 
-	/// </summary>
-	protected override void OnDisappearing()
+	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
 	{
 		content.NotifyPopupIsClosed();
-		base.OnDisappearing();
+		base.OnNavigatedFrom(args);
+	}
+
+	protected override void OnNavigatedTo(NavigatedToEventArgs args)
+	{
+		base.OnNavigatedTo(args);
+		content.NotifyPopupIsOpened();
 	}
 
 	public async Task Close(PopupResult result)
 	{
 		taskCompletionSource?.SetResult(result);
-		await Navigation.PopModalAsync();
+		await Navigation.PopModalAsync().ConfigureAwait(false);
 	}
 }

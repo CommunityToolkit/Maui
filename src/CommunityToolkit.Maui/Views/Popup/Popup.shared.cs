@@ -38,6 +38,7 @@ public partial class Popup : ContentView
 		popupContainer = container;
 	}
 
+
 	internal void NotifyPopupIsOpened()
 	{
 		OnOpened?.Invoke(this, EventArgs.Empty);

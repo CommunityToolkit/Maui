@@ -70,31 +70,31 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 
 	async void HandlePopupPositionButtonClicked(object sender, EventArgs e)
 	{
-		await Navigation.PushModalAsync(new PopupPositionPage(new PopupPositionViewModel()));
+		await Navigation.PushAsync(new PopupPositionPage(new PopupPositionViewModel()));
 	}
 	
 	async void HandlePopupAnchorButtonClicked(object sender, EventArgs e)
 	{
-		await Navigation.PushModalAsync(new PopupAnchorPage(DeviceInfo.Current, new PopupAnchorViewModel()));
+		await Navigation.PushAsync(new PopupAnchorPage(DeviceInfo.Current, new PopupAnchorViewModel()));
 	}
 	
 	async void HandlePopupLayoutAlignmentButtonClicked(object sender, EventArgs e)
 	{
-		await Navigation.PushModalAsync(new PopupLayoutAlignmentPage(new PopupLayoutAlignmentViewModel()));
+		await Navigation.PushAsync(new PopupLayoutAlignmentPage(new PopupLayoutAlignmentViewModel()));
 	}
 	
 	async void HandlePopupSizingIssuesButtonClicked(object sender, EventArgs e)
 	{
-		await Navigation.PushModalAsync(new PopupSizingIssuesPage(new PopupSizingIssuesViewModel()));
+		await Navigation.PushAsync(new PopupSizingIssuesPage(new PopupSizingIssuesViewModel()));
 	}
 	
 	async void HandleShowPopupInOnAppearingButtonClicked(object sender, EventArgs e)
 	{
-		await Navigation.PushModalAsync(new ShowPopupInOnAppearingPage(new ShowPopupInOnAppearingPageViewModel(), popupService));
+		await Navigation.PushAsync(new ShowPopupInOnAppearingPage(new ShowPopupInOnAppearingPageViewModel(), popupService));
 	}
 	
 	async void HandleStylePopupButtonClicked(object sender, EventArgs e)
 	{
-		await Navigation.PushModalAsync(new StylePopupPage(new StylePopupViewModel()));
+		await Navigation.PushAsync(new StylePopupPage(new StylePopupViewModel()));
 	}
 }

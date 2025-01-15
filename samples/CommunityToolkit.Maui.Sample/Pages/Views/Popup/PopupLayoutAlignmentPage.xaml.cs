@@ -14,23 +14,24 @@ public partial class PopupLayoutAlignmentPage : BasePage<PopupLayoutAlignmentVie
 
 	async void ShowPopupButtonClicked(object sender, EventArgs e)
 	{
-		var redBlueBoxPopupOptions = new PopupOptions();
+		var verticalOptions = LayoutOptions.Start;
+		var horizontalOptions = LayoutOptions.Start;
 
 		if (VerticalOptionsStartRadioButton.IsChecked)
 		{
-			redBlueBoxPopupOptions.VerticalOptions = LayoutOptions.Start;
+			verticalOptions = LayoutOptions.Start;
 		}
 		else if (VerticalOptionsCenterRadioButton.IsChecked)
 		{
-			redBlueBoxPopupOptions.VerticalOptions = LayoutOptions.Center;
+			verticalOptions = LayoutOptions.Center;
 		}
 		else if (VerticalOptionsEndRadioButton.IsChecked)
 		{
-			redBlueBoxPopupOptions.VerticalOptions = LayoutOptions.End;
+			verticalOptions = LayoutOptions.End;
 		}
 		else if (VerticalOptionsFillRadioButton.IsChecked)
 		{
-			redBlueBoxPopupOptions.VerticalOptions = LayoutOptions.Fill;
+			verticalOptions = LayoutOptions.Fill;
 		}
 		else
 		{
@@ -39,19 +40,19 @@ public partial class PopupLayoutAlignmentPage : BasePage<PopupLayoutAlignmentVie
 
 		if (HorizontalOptionsStartRadioButton.IsChecked)
 		{
-			redBlueBoxPopupOptions.HorizontalOptions = LayoutOptions.Start;
+			horizontalOptions = LayoutOptions.Start;
 		}
 		else if (HorizontalOptionsCenterRadioButton.IsChecked)
 		{
-			redBlueBoxPopupOptions.HorizontalOptions = LayoutOptions.Center;
+			horizontalOptions = LayoutOptions.Center;
 		}
 		else if (HorizontalOptionsEndRadioButton.IsChecked)
 		{
-			redBlueBoxPopupOptions.HorizontalOptions = LayoutOptions.End;
+			horizontalOptions = LayoutOptions.End;
 		}
 		else if (HorizontalOptionsFillRadioButton.IsChecked)
 		{
-			redBlueBoxPopupOptions.HorizontalOptions = LayoutOptions.Fill;
+			horizontalOptions = LayoutOptions.Fill;
 		}
 		else
 		{
@@ -62,6 +63,6 @@ public partial class PopupLayoutAlignmentPage : BasePage<PopupLayoutAlignmentVie
 		{
 			WidthRequest = double.Parse(widthEntry.Text),
 			HeightRequest = double.Parse(heightEntry.Text)
-		}, redBlueBoxPopupOptions);
+		}, new PopupOptions() { VerticalOptions = verticalOptions, HorizontalOptions = horizontalOptions });
 	}
 }
