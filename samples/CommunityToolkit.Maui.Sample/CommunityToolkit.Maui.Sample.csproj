@@ -29,7 +29,6 @@
     <!--<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath>-->
 
-    <WindowsSdkPackageVersion>10.0.19041.53</WindowsSdkPackageVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     
     <!-- Remove this NoWarn once XamlTypeInfo Generator (owned by .NET MAUI Engineering Team) implements a partial class-->
