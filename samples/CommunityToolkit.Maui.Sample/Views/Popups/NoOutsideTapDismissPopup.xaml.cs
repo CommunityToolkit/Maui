@@ -13,7 +13,7 @@ public partial class NoOutsideTapDismissPopup : Maui.Views.Popup
 
 	async void Button_Clicked(object? sender, EventArgs e)
 	{
-		Close();
+		await Close();
 		await Toast.Make("Popup Dismissed By Button").Show();
 	}
 }

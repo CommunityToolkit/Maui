@@ -23,18 +23,14 @@ public partial class Popup : ContentView
 	/// <summary>
 	/// 
 	/// </summary>
-	public void Close()
+	public async Task Close()
 	{
-		popupContainer?.Close(new PopupResult(false));
-	}
+		if (popupContainer is null)
+		{
+			return;
+		}
 
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="result"></param>
-	public void Close<T>(T result)
-	{
-		popupContainer?.Close(new PopupResult<T>(result, false));
+		await popupContainer.Close(new PopupResult(false));
 	}
 
 	internal void SetPopup(PopupContainer container)
@@ -64,9 +60,14 @@ public partial class Popup<T> : Popup
 	/// 
 	/// </summary>
 	/// <param name="result"></param>
-	public void Close(T result)
+	public async Task Close(T result)
 	{
-		popupContainer?.Close(new PopupResult<T>(result, false));
+		if (popupContainer is null)
+		{
+			return;
+		}
+
+		await popupContainer.Close(new PopupResult<T>(result, false));
 	}
 
 	internal void SetPopup(PopupContainer<T> container)

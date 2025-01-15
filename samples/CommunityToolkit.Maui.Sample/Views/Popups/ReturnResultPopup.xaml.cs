@@ -3,15 +3,15 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample.Views.Popups;
 
-public partial class ReturnResultPopup : Maui.Views.Popup
+public partial class ReturnResultPopup
 {
 	public ReturnResultPopup()
 	{
 		InitializeComponent();
 	}
 
-	void Button_Clicked(object? sender, EventArgs e)
+	async void Button_Clicked(object? sender, EventArgs e)
 	{
-		Close("Close button tapped");
+		await Close("Close button tapped");
 	}
 }

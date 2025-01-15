@@ -3,20 +3,20 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample.Views.Popups;
 
-public partial class MultipleButtonPopup : Maui.Views.Popup
+public partial class MultipleButtonPopup : Maui.Views.Popup<bool>
 {
 	public MultipleButtonPopup()
 	{
 		InitializeComponent();
 	}
 
-	void Cancel_Clicked(object? sender, EventArgs e)
+	async void Cancel_Clicked(object? sender, EventArgs e)
 	{
-		Close(false);
+		await Close(false);
 	}
 
-	void Okay_Clicked(object? sender, EventArgs e)
+	async void Okay_Clicked(object? sender, EventArgs e)
 	{
-		Close(true);
+		await Close(true);
 	}
 }
