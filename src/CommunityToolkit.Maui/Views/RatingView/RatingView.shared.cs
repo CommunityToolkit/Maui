@@ -194,15 +194,17 @@ public partial class RatingView : TemplatedView, IRatingView
 	}
 
 	///<summary>The control to be displayed</summary>
-	internal HorizontalStackLayout? Control { get; set; }
-
-	///<summary>Method called every time the control's Binding Context is changed.</summary>
-	protected override void OnBindingContextChanged()
+	internal HorizontalStackLayout? Control
 	{
-		base.OnBindingContextChanged();
-		if (Control is not null)
+		get;
+		set
 		{
-			Control.BindingContext = BindingContext;
+			if (value is not null)
+			{
+				value.SetBinding<RatingView, object>(BindingContextProperty, static ratingView => ratingView.BindingContext, source: this);
+			}
+
+			field = value;
 		}
 	}
 
@@ -283,8 +285,24 @@ public partial class RatingView : TemplatedView, IRatingView
 	static void OnIsReadOnlyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var ratingView = (RatingView)bindable;
-		ratingView.OnPropertyChanged(nameof(ratingView.IsReadOnly));
-		ratingView.HandleIsReadOnlyChanged();
+		
+		if (ratingView.Control is null)
+		{
+			return;
+		}
+
+		foreach (var child in ratingView.Control.Children.Cast<Border>())
+		{
+			if (!ratingView.IsReadOnly)
+			{
+				TapGestureRecognizer tapGestureRecognizer = new();
+				tapGestureRecognizer.Tapped += ratingView.OnItemTapped;
+				child.GestureRecognizers.Add(tapGestureRecognizer);
+				continue;
+			}
+
+			child.GestureRecognizers.Clear();
+		}
 	}
 
 	/// <summary>Maximum rating has changed.</summary>
@@ -630,30 +648,6 @@ public partial class RatingView : TemplatedView, IRatingView
 		};
 	}
 
-	/// <summary>Ensure the VisualElement is read only.</summary>
-	/// <remarks>Remove any added gesture recognisers if not enabled; Otherwise, where not already present.</remarks>
-	void HandleIsReadOnlyChanged()
-	{
-		if (Control is null)
-		{
-			return;
-		}
-
-		for (var i = 0; i < Control.Children.Count; i++)
-		{
-			var child = (Border)Control.Children[i];
-			if (!IsReadOnly)
-			{
-				TapGestureRecognizer tapGestureRecognizer = new();
-				tapGestureRecognizer.Tapped += OnItemTapped;
-				child.GestureRecognizers.Add(tapGestureRecognizer);
-				continue;
-			}
-
-			child.GestureRecognizers.Clear();
-		}
-	}
-
 	/// <summary>Item tapped event, to re-draw the current rating.</summary>
 	/// <remarks>When a shape such as 'Like' and there is only a maximum rating of 1, we then toggle the current between 0 and 1.</remarks>
 	/// <param name="sender">Element sender of event.</param>
@@ -686,10 +680,6 @@ public partial class RatingView : TemplatedView, IRatingView
 
 		var isShapeFill = ratingFill is RatingFillElement.Shape;
 		var visualElements = GetVisualTreeDescendantsWithBorderAndShape((VisualElement)Control.GetVisualTreeDescendants()[0], isShapeFill);
-		if (visualElements is null)
-		{
-			return;
-		}
 
 		if (isShapeFill)
 		{
@@ -702,12 +692,3 @@ public partial class RatingView : TemplatedView, IRatingView
 	}
 }
 
-/// <summary>Rating view fill element.</summary>
-public enum RatingFillElement
-{
-	/// <summary>Fill the rating shape.</summary>
-	Shape,
-
-	/// <summary>Fill the rating item.</summary>
-	Item
-}
