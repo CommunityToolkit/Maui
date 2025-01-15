@@ -16,11 +16,17 @@ public class RatingViewTests : BaseHandlerTest
 	{
 		MockRatingViewViewModel vm = new();
 		RatingView ratingViewWithBinding = new();
+		ratingViewWithBinding.Control = new();
+		
 		ratingViewWithBinding.BindingContext.Should().BeNull();
+		ratingViewWithBinding.Control.BindingContext.Should().BeNull();
+		ratingViewWithBinding.Control.BindingContext.Should().BeEquivalentTo(ratingViewWithBinding.BindingContext);
+		
 		ratingViewWithBinding.BindingContext = vm;
+		
 		ratingViewWithBinding.BindingContext.Should().Be(vm);
-		
-		
+		ratingViewWithBinding.Control.BindingContext.Should().Be(vm);
+		ratingViewWithBinding.Control.BindingContext.Should().BeEquivalentTo(ratingViewWithBinding.BindingContext);
 	}
 
 	[Fact]
