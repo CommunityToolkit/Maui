@@ -1,30 +1,18 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+
+namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public partial class RatingViewShowcaseViewModel : BaseViewModel
 {
-	public double StepperValueMaximumRatings
-	{
-		get;
-		set => SetProperty(ref field, value);
-	} = 1;
+    [ObservableProperty]
+    public partial double StepperValueMaximumRatings { get; set; } = 1;
 
-	public double ReviewSummaryAverage
-	{
-		get;
-		set => SetProperty(ref field, value);
-	} = 0;
+    [ObservableProperty]
+    public partial double ReviewSummaryAverage { get; set; } = 0;
 
-	Thickness ratingViewShapePadding = new(0);
+    [ObservableProperty]
+    public partial Thickness RatingViewShapePadding { get; set; } = new(0);
 
-	public Thickness RatingViewShapePadding
-	{
-		get => ratingViewShapePadding;
-		set => SetProperty(ref ratingViewShapePadding, value);
-	}
-
-	public double ReviewSummaryCount
-	{
-		get;
-		set => SetProperty(ref field, value);
-	} = 0;
+    [ObservableProperty]
+    public partial double ReviewSummaryCount { get; set; } = 0;
 }
