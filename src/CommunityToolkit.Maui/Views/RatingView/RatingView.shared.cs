@@ -11,28 +11,28 @@ namespace CommunityToolkit.Maui.Views;
 /// <summary>Rating view control.</summary>
 public partial class RatingView : TemplatedView, IRatingView
 {
-	/// <summary>Bindable property for attached property <c>CustomItemShape</c>.</summary>
+	/// <summary>Bindable property for attached property <see cref="CustomItemShape"/>.</summary>
 	public static readonly BindableProperty CustomItemShapeProperty = BindableProperty.Create(nameof(CustomItemShape), typeof(string), typeof(RatingView), defaultValue: null, propertyChanged: OnCustomShapePropertyChanged);
 
 	/// <summary>Bindable property for <see cref="ItemPadding"/>.</summary>
 	public static readonly BindableProperty ItemPaddingProperty = BindableProperty.Create(nameof(ItemPadding), typeof(Thickness), typeof(RatingView), default(Thickness), propertyChanged: OnItemPaddingPropertyChanged, defaultValueCreator: static _ => RatingViewDefaults.ItemPadding);
 
-	/// <summary>Bindable property for attached property <c>ItemShape</c>.</summary>
+	/// <summary>Bindable property for attached property <see cref="ItemShape"/>.</summary>
 	public static readonly BindableProperty ItemShapeProperty = BindableProperty.Create(nameof(ItemShape), typeof(RatingViewShape), typeof(RatingView), defaultValue: RatingViewDefaults.Shape, propertyChanged: OnItemShapePropertyChanged, defaultValueCreator: static _ => RatingViewDefaults.Shape);
 
-	/// <summary>Bindable property for attached property <c>ShapeBorderColor</c>.</summary>
+	/// <summary>Bindable property for attached property <see cref="ShapeBorderColor"/>.</summary>
 	public static readonly BindableProperty ShapeBorderColorProperty = BindableProperty.Create(nameof(ShapeBorderColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.ShapeBorderColor, propertyChanged: OnItemShapeBorderColorChanged, defaultValueCreator: static _ => RatingViewDefaults.ShapeBorderColor);
 
-	/// <summary>Bindable property for attached property <c>ShapeBorderThickness</c>.</summary>
+	/// <summary>Bindable property for attached property <see cref="ShapeBorderThickness"/>.</summary>
 	public static readonly BindableProperty ShapeBorderThicknessProperty = BindableProperty.Create(nameof(ShapeBorderThickness), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.ShapeBorderThickness, propertyChanged: OnItemShapeBorderThicknessChanged, defaultValueCreator: static _ => RatingViewDefaults.ShapeBorderThickness);
 
-	/// <summary>Bindable property for attached property <c>Size</c>.</summary>
+	/// <summary>Bindable property for attached property <see cref="Size"/>.</summary>
 	public static readonly BindableProperty ItemShapeSizeProperty = BindableProperty.Create(nameof(ItemShapeSize), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.ItemShapeSize, propertyChanged: OnItemShapeSizeChanged, defaultValueCreator: static _ => RatingViewDefaults.ItemShapeSize);
 
-	/// <summary>Bindable property for attached property <c>EmptyColor</c>.</summary>
+	/// <summary>Bindable property for attached property <see cref="EmptyColor"/>.</summary>
 	public static readonly BindableProperty EmptyColorProperty = BindableProperty.Create(nameof(EmptyColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.EmptyColor, propertyChanged: OnUpdateRatingDraw, defaultValueCreator: static _ => RatingViewDefaults.EmptyColor);
 
-	/// <summary>Bindable property for attached property <c>FilledColor</c>.</summary>
+	/// <summary>Bindable property for attached property <see cref="FilledColor"/>.</summary>
 	public static readonly BindableProperty FilledColorProperty = BindableProperty.Create(nameof(FilledColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.FilledColor, propertyChanged: OnUpdateRatingDraw, defaultValueCreator: static _ => RatingViewDefaults.FilledColor);
 
 	/// <summary>The backing store for the <see cref="IsReadOnly" /> bindable property.</summary>
