@@ -266,10 +266,25 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<PopupSizingIssuesPage, PopupSizingIssuesViewModel>();
 
 		// Add Popups
+		services.AddPopup<ApplyToDerivedTypesPopup>();
+		services.AddPopup<ButtonPopup>();
 		services.AddPopup<CsharpBindingPopup, CsharpBindingPopupViewModel>();
+		services.AddPopup<DynamicStyleInheritancePopup>();
+		services.AddPopup<DynamicStylePopup>();
+		services.AddPopup<ExplicitStylePopup>();
+		services.AddPopup<ImplicitStylePopup>();
+		services.AddPopup<MultipleButtonPopup>();
+		services.AddPopup<NoOutsideTapDismissPopup>();
+		services.AddPopup<OpenedEventSimplePopup>();
+		services.AddPopup<RedBlueBoxPopup>();
+		services.AddPopup<ReturnResultPopup>();
+		services.AddPopup<SimplePopup>();
+		services.AddPopup<StyleClassPopup>();
+		services.AddPopup<StyleInheritancePopup>();
+		services.AddPopup<ToggleSizePopup>();
+		services.AddPopup<TransparentPopup>();
 		services.AddPopup<UpdatingPopup, UpdatingPopupViewModel>();
 		services.AddPopup<XamlBindingPopup, XamlBindingPopupViewModel>();
-		services.AddPopup<ReturnResultPopup>();
 
 		services.AddPopup<PopupContentView, PopupContentViewModel>();
 	}
