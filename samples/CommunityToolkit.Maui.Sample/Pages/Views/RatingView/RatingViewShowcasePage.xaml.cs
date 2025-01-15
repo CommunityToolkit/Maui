@@ -18,9 +18,4 @@ public partial class RatingViewShowcasePage : BasePage<RatingViewShowcaseViewMod
 		BindingContext.ReviewSummaryCount = ratings.Count;
 		BindingContext.ReviewSummaryAverage = ratings.Average(x => x);
 	}
-
-	static void StreamMobileRate_Tapped(object sender, TappedEventArgs e)
-	{
-		_ = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-	}
 }
