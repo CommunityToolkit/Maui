@@ -8,8 +8,6 @@ public partial class UpdatingPopupViewModel(IPopupService popupService) : BaseVi
 {
 	const double finalUpdateProgressValue = 1;
 
-	int updates;
-
 	[ObservableProperty]
 	public partial string Message { get; set; } = "";
 
@@ -20,7 +18,6 @@ public partial class UpdatingPopupViewModel(IPopupService popupService) : BaseVi
 	internal async void PerformUpdates(int numberOfUpdates)
 	{
 		double updateTotalForPercentage = numberOfUpdates + 1;
-		updates = numberOfUpdates;
 
 		for (var update = 1; update <= numberOfUpdates; update++)
 		{
@@ -44,10 +41,7 @@ public partial class UpdatingPopupViewModel(IPopupService popupService) : BaseVi
 	[RelayCommand]
 	async Task OnMore()
 	{
-		await popupService.ShowPopupAsync<UpdatingPopupViewModel>(new PopupOptions<UpdatingPopupViewModel>()
-		{
-			OnOpened = viewModel => viewModel.PerformUpdates(updates + 2)
-		}, CancellationToken.None);
+		await popupService.ShowPopupAsync<UpdatingPopupViewModel>(new PopupOptions(), CancellationToken.None);
 	}
 
 	bool CanFinish() => UpdateProgress is finalUpdateProgressValue;

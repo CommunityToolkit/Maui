@@ -16,6 +16,6 @@ public sealed partial class PopupAnchorViewModel : BaseViewModel
 		{
 			
 		};
-		await MainPage.Navigation.ShowPopup(popup, new PopupOptions<TransparentPopup>());
+		await MainPage.Navigation.ShowPopup<TransparentPopup>(popup, new PopupOptions());
 	}
 }

@@ -13,48 +13,48 @@ public partial class StylePopupViewModel : BaseViewModel
 	static async Task DisplayImplicitStylePopup()
 	{
 		var popup = new ImplicitStylePopup();
-		await MainPage.Navigation.ShowPopup(popup, new PopupOptions<ImplicitStylePopup>());
+		await MainPage.Navigation.ShowPopup<ImplicitStylePopup>(popup, new PopupOptions());
 	}
 
 	[RelayCommand]
 	static async Task DisplayExplicitStylePopup()
 	{
 		var popup = new ExplicitStylePopup();
-		await MainPage.Navigation.ShowPopup(popup, new PopupOptions<ExplicitStylePopup>());
+		await MainPage.Navigation.ShowPopup<ExplicitStylePopup>(popup, new PopupOptions());
 	}
 
 	[RelayCommand]
 	static async Task DisplayDynamicStylePopup()
 	{
 		var popup = new DynamicStylePopup();
-		await MainPage.Navigation.ShowPopup(popup, new PopupOptions<DynamicStylePopup>());
+		await MainPage.Navigation.ShowPopup<DynamicStylePopup>(popup, new PopupOptions());
 	}
 
 	[RelayCommand]
 	static async Task DisplayApplyToDerivedTypesPopup()
 	{
 		var popup = new ApplyToDerivedTypesPopup();
-		await MainPage.Navigation.ShowPopup(popup, new PopupOptions<ApplyToDerivedTypesPopup>());
+		await MainPage.Navigation.ShowPopup<ApplyToDerivedTypesPopup>(popup, new PopupOptions());
 	}
 
 	[RelayCommand]
 	static async Task DisplayStyleInheritancePopup()
 	{
 		var popup = new StyleInheritancePopup();
-		await MainPage.Navigation.ShowPopup(popup, new PopupOptions<StyleInheritancePopup>());
+		await MainPage.Navigation.ShowPopup<StyleInheritancePopup>(popup, new PopupOptions());
 	}
 
 	[RelayCommand]
 	static async Task DisplayDynamicStyleInheritancePopup()
 	{
 		var popup = new DynamicStyleInheritancePopup();
-		await MainPage.Navigation.ShowPopup(popup, new PopupOptions<DynamicStyleInheritancePopup>());
+		await MainPage.Navigation.ShowPopup<DynamicStyleInheritancePopup>(popup, new PopupOptions());
 	}
 
 	[RelayCommand]
 	static async Task DisplayStyleClassPopup()
 	{
 		var popup = new StyleClassPopup();
-		await MainPage.Navigation.ShowPopup(popup, new PopupOptions<StyleClassPopup>());
+		await MainPage.Navigation.ShowPopup<StyleClassPopup>(popup, new PopupOptions());
 	}
 }

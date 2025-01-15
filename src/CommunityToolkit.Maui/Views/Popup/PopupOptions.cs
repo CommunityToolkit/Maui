@@ -3,7 +3,7 @@
 /// <summary>
 /// 
 /// </summary>
-public class PopupOptions<T>
+public class PopupOptions
 {
 	/// <summary>
 	/// 
@@ -18,15 +18,19 @@ public class PopupOptions<T>
 	/// <summary>
 	/// 
 	/// </summary>
-	public Action<T>? OnOpened { get; set; }
-
-	/// <summary>
-	/// 
-	/// </summary>
-	public Action<T>? OnClosed { get; set; }
-
-	/// <summary>
-	/// 
-	/// </summary>
 	public Action? OnTappingOutsideOfPopup { get; set; }
+
+	/// <summary>
+	/// 
+	/// </summary>
+	public IShape? Shape { get; set; }
+
+	/// <summary>
+	/// 
+	/// </summary>
+	public LayoutOptions VerticalOptions { get; set; } = LayoutOptions.Center;
+	/// <summary>
+	/// 
+	/// </summary>
+	public LayoutOptions HorizontalOptions { get; set; } = LayoutOptions.Center;
 }

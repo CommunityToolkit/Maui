@@ -98,7 +98,7 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 			HeightRequest = Height
 		};
 
-		return Shell.Current.Navigation.ShowPopup(popup, new PopupOptions<FlowDirectionPopup>());
+		return Shell.Current.Navigation.ShowPopup(popup, new PopupOptions());
 	}
 
 	static bool IsFlowDirectionSelectionValid(int flowDirectionSelection, int flowDirectionOptionsCount)

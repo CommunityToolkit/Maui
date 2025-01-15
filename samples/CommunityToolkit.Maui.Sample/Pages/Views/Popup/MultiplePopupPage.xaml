@@ -33,6 +33,18 @@
                 <Button Text="Updating Popup" Command="{Binding UpdatingPopupCommand}" />
 
                 <Button Text="Show Popup content" Command="{Binding ShowPopupContentCommand}" />
+
+                <Button Text="Custom Positioning Popup" Clicked="HandlePopupPositionButtonClicked" />
+
+                <Button Text="Anchor Popup" Clicked="HandlePopupAnchorButtonClicked" />
+
+                <Button Text="Popup Layout Page" Clicked="HandlePopupLayoutAlignmentButtonClicked" />
+
+                <Button Text="Popup Sizing Issues Page" Clicked="HandlePopupSizingIssuesButtonClicked" />
+
+                <Button Text="Show Popup in OnAppearing" Clicked="HandleShowPopupInOnAppearingButtonClicked" />
+
+                <Button Text="Popup Style Page" Clicked="HandleStylePopupButtonClicked" />
             </VerticalStackLayout>
         </ScrollView>
     </ContentPage.Content>

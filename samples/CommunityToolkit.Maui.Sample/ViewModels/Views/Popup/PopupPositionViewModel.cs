@@ -2,7 +2,6 @@
 using CommunityToolkit.Maui.Sample.Views.Popups;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.Input;
-using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
@@ -13,9 +12,48 @@ public partial class PopupPositionViewModel : BaseViewModel
 	[RelayCommand]
 	static async Task DisplayPopup(PopupPosition position)
 	{
-		var popup = new TransparentPopup();
+		var popupOptions = new PopupOptions();
+		switch (position)
+		{
+			case PopupPosition.TopLeft:
+				popupOptions.VerticalOptions = LayoutOptions.Start;
+				popupOptions.HorizontalOptions = LayoutOptions.Start;
+				break;
+			case PopupPosition.Top:
+				popupOptions.VerticalOptions = LayoutOptions.Start;
+				popupOptions.HorizontalOptions = LayoutOptions.Center;
+				break;
+			case PopupPosition.TopRight:
+				popupOptions.VerticalOptions = LayoutOptions.Start;
+				popupOptions.HorizontalOptions = LayoutOptions.End;
+				break;
+			case PopupPosition.Left:
+				popupOptions.VerticalOptions = LayoutOptions.Center;
+				popupOptions.HorizontalOptions = LayoutOptions.Start;
+				break;
+			case PopupPosition.Center:
+				popupOptions.VerticalOptions = LayoutOptions.Center;
+				popupOptions.HorizontalOptions = LayoutOptions.Center;
+				break;
+			case PopupPosition.Right:
+				popupOptions.VerticalOptions = LayoutOptions.Center;
+				popupOptions.HorizontalOptions = LayoutOptions.End;
+				break;
+			case PopupPosition.BottomLeft:
+				popupOptions.VerticalOptions = LayoutOptions.End;
+				popupOptions.HorizontalOptions = LayoutOptions.Start;
+				break;
+			case PopupPosition.Bottom:
+				popupOptions.VerticalOptions = LayoutOptions.End;
+				popupOptions.HorizontalOptions = LayoutOptions.Center;
+				break;
+			case PopupPosition.BottomRight:
+				popupOptions.VerticalOptions = LayoutOptions.End;
+				popupOptions.HorizontalOptions = LayoutOptions.End;
+				break;
+		}
 
-		await Page.Navigation.ShowPopup(popup, new PopupOptions<TransparentPopup>());
+		await Page.Navigation.ShowPopup<TransparentPopup>(new TransparentPopup(), popupOptions);
 	}
 
 	public enum PopupPosition

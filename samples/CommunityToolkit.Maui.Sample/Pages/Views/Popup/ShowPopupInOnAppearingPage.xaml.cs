@@ -23,6 +23,6 @@ public partial class ShowPopupInOnAppearingPage : BasePage<ShowPopupInOnAppearin
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 		// Proves that we now support showing a popup before the platform is even ready.
-		await popupService.ShowPopupAsync(new PopupOptions<ReturnResultPopup>(), cts.Token);
+		await popupService.ShowPopupAsync<ReturnResultPopup>(new PopupOptions(), cts.Token);
 	}
 }
