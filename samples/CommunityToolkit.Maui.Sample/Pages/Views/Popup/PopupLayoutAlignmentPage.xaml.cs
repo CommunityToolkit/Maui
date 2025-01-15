@@ -20,6 +20,6 @@ public partial class PopupLayoutAlignmentPage : BasePage<PopupLayoutAlignmentVie
 			HeightRequest = double.Parse(heightEntry.Text)
 		};
 
-		await Navigation.ShowPopup(redBlueBoxPopup, new PopupOptions());
+		await Navigation.ShowPopup(redBlueBoxPopup, new PopupOptions<RedBlueBoxPopup>());
 	}
 }

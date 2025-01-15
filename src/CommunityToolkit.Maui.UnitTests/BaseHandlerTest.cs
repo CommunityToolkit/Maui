@@ -60,7 +60,7 @@ public abstract class BaseHandlerTest : BaseTest
 		var mockPopup = new MockSelfClosingPopup(mockPageViewModel, new());
 
 		var page = new ContentPage();
-		PopupService.AddPopup(mockPopup, mockPageViewModel, appBuilder.Services, ServiceLifetime.Transient);
+		PopupService.AddPopup(mockPopup, mockPageViewModel, appBuilder.Services, ServiceLifetime.Singleton);
 		#endregion
 
 		var mauiApp = appBuilder.Build();

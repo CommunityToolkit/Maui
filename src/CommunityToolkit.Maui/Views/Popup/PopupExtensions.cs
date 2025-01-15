@@ -14,9 +14,9 @@ public static class PopupExtensions
 	/// <param name="navigation"></param>
 	/// <param name="popup"></param>
 	/// <param name="options"></param>
-	/// <param name="onTappingOutsideOfPopup"></param>
 	/// <returns></returns>
-	public static async Task ShowPopup(this INavigation navigation, Popup popup, PopupOptions options, Action? onTappingOutsideOfPopup = null)
+	public static async Task ShowPopup<T>(this INavigation navigation, Popup popup, PopupOptions<T> options)
+		where T:Popup
 	{
 		TaskCompletionSource<PopupResult> taskCompletionSource = new();
 
@@ -27,14 +27,13 @@ public static class PopupExtensions
 				Content = popup
 			}
 		};
-		var popupContainer = new PopupContainer
+		var popupContainer = new PopupContainer(popup, taskCompletionSource)
 		{
 			BackgroundColor = options.BackgroundColor ?? Color.FromRgba(0, 0, 0, 0.4), // https://rgbacolorpicker.com/rgba-to-hex,
 			CanBeDismissedByTappingOutsideOfPopup = options.CanBeDismissedByTappingOutsideOfPopup,
 			Content = view,
 			BindingContext = popup.BindingContext
 		};
-		popup.SetPopup(popupContainer, options);
 
 		view.BindingContext = popup.BindingContext;
 
@@ -44,9 +43,8 @@ public static class PopupExtensions
 			{
 				Command = new Command(async () =>
 				{
-					onTappingOutsideOfPopup?.Invoke();
-					taskCompletionSource.SetResult(new PopupResult(true));
-					await navigation.PopModalAsync();
+					options.OnTappingOutsideOfPopup?.Invoke();
+					await popupContainer.Close(new PopupResult(true));
 				})
 			});
 		}

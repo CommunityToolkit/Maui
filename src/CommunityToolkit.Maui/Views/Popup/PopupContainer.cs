@@ -4,13 +4,45 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
 namespace CommunityToolkit.Maui.Views;
 
-partial class PopupContainer : ContentPage
+partial class PopupContainer<T> : PopupContainer
 {
+	readonly TaskCompletionSource<PopupResult<T>> taskCompletionSource;
+
 	/// <summary>
 	/// 
 	/// </summary>
-	public PopupContainer()
+	/// <param name="content"></param>
+	/// <param name="taskCompletionSource"></param>
+	public PopupContainer(Popup<T> content, TaskCompletionSource<PopupResult<T>> taskCompletionSource) :base (content, null)
 	{
+		this.taskCompletionSource = taskCompletionSource;
+		content.SetPopup(this);
+		Shell.SetPresentationMode(this, PresentationMode.ModalNotAnimated);
+		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
+	}
+
+	public async Task Close(PopupResult<T> result)
+	{
+		taskCompletionSource.SetResult(result);
+		await Navigation.PopModalAsync();
+	}
+}
+
+partial class PopupContainer : ContentPage
+{
+	readonly Popup content;
+	readonly TaskCompletionSource<PopupResult>? taskCompletionSource;
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="content"></param>
+	/// <param name="taskCompletionSource"></param>
+	public PopupContainer(Popup content, TaskCompletionSource<PopupResult>? taskCompletionSource)
+	{
+		this.content = content;
+		this.taskCompletionSource = taskCompletionSource;
+		content.SetPopup(this);
 		Shell.SetPresentationMode(this, PresentationMode.ModalNotAnimated);
 		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
 	}
@@ -32,43 +64,28 @@ partial class PopupContainer : ContentPage
 	/// On Android - when false the hardware back button is disabled.
 	/// </remarks>
 	public bool CanBeDismissedByTappingOutsideOfPopup { get; internal set; }
-	
+
 	/// <summary>
 	/// 
 	/// </summary>
-	protected sealed override void OnAppearing()
+	protected override void OnAppearing()
 	{
 		base.OnAppearing();
-		if (Content is Popup popup)
-		{
-			popup.OnOpened?.Invoke();
-		}
+		content.NotifyPopupIsOpened();
 	}
 
 	/// <summary>
 	/// 
 	/// </summary>
-	protected sealed override void OnDisappearing()
+	protected override void OnDisappearing()
 	{
-		if (Content is Popup popup)
-		{
-			popup.OnClosed?.Invoke();
-		}
-
+		content.NotifyPopupIsClosed();
 		base.OnDisappearing();
 	}
 
-	public void Close(PopupResult result)
+	public async Task Close(PopupResult result)
 	{
-		
-	}
-
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="result"></param>
-	public void Close<T>(PopupResult<T> result)
-	{
-		
+		taskCompletionSource?.SetResult(result);
+		await Navigation.PopModalAsync();
 	}
 }

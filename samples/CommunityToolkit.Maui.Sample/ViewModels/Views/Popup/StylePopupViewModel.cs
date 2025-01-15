@@ -13,48 +13,48 @@ public partial class StylePopupViewModel : BaseViewModel
 	static async Task DisplayImplicitStylePopup()
 	{
 		var popup = new ImplicitStylePopup();
-		await MainPage.Navigation.ShowPopup(popup, new PopupOptions());
+		await MainPage.Navigation.ShowPopup(popup, new PopupOptions<ImplicitStylePopup>());
 	}
 
 	[RelayCommand]
 	static async Task DisplayExplicitStylePopup()
 	{
 		var popup = new ExplicitStylePopup();
-		await MainPage.Navigation.ShowPopup(popup, new PopupOptions());
+		await MainPage.Navigation.ShowPopup(popup, new PopupOptions<ExplicitStylePopup>());
 	}
 
 	[RelayCommand]
 	static async Task DisplayDynamicStylePopup()
 	{
 		var popup = new DynamicStylePopup();
-		await MainPage.Navigation.ShowPopup(popup, new PopupOptions());
+		await MainPage.Navigation.ShowPopup(popup, new PopupOptions<DynamicStylePopup>());
 	}
 
 	[RelayCommand]
 	static async Task DisplayApplyToDerivedTypesPopup()
 	{
 		var popup = new ApplyToDerivedTypesPopup();
-		await MainPage.Navigation.ShowPopup(popup, new PopupOptions());
+		await MainPage.Navigation.ShowPopup(popup, new PopupOptions<ApplyToDerivedTypesPopup>());
 	}
 
 	[RelayCommand]
 	static async Task DisplayStyleInheritancePopup()
 	{
 		var popup = new StyleInheritancePopup();
-		await MainPage.Navigation.ShowPopup(popup, new PopupOptions());
+		await MainPage.Navigation.ShowPopup(popup, new PopupOptions<StyleInheritancePopup>());
 	}
 
 	[RelayCommand]
 	static async Task DisplayDynamicStyleInheritancePopup()
 	{
 		var popup = new DynamicStyleInheritancePopup();
-		await MainPage.Navigation.ShowPopup(popup, new PopupOptions());
+		await MainPage.Navigation.ShowPopup(popup, new PopupOptions<DynamicStyleInheritancePopup>());
 	}
 
 	[RelayCommand]
 	static async Task DisplayStyleClassPopup()
 	{
 		var popup = new StyleClassPopup();
-		await MainPage.Navigation.ShowPopup(popup, new PopupOptions());
+		await MainPage.Navigation.ShowPopup(popup, new PopupOptions<StyleClassPopup>());
 	}
 }

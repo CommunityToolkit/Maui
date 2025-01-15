@@ -3,23 +3,7 @@
 /// <summary>
 /// 
 /// </summary>
-public class PopupOptions<T> : PopupOptions
-{
-	/// <summary>
-	/// 
-	/// </summary>
-	public new Action<T>? OnOpened { get; init; }
-
-	/// <summary>
-	/// 
-	/// </summary>
-	public new Action<T>? OnClosed { get; init; }
-}
-
-/// <summary>
-/// 
-/// </summary>
-public class PopupOptions
+public class PopupOptions<T>
 {
 	/// <summary>
 	/// 
@@ -30,14 +14,19 @@ public class PopupOptions
 	/// 
 	/// </summary>
 	public Color? BackgroundColor { get; init; }
+	
+	/// <summary>
+	/// 
+	/// </summary>
+	public Action<T>? OnOpened { get; set; }
 
 	/// <summary>
 	/// 
 	/// </summary>
-	public Action? OnOpened { get; init; }
+	public Action<T>? OnClosed { get; set; }
 
 	/// <summary>
 	/// 
 	/// </summary>
-	public Action? OnClosed { get; init; }
+	public Action? OnTappingOutsideOfPopup { get; set; }
 }

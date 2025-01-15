@@ -15,7 +15,7 @@ public partial class PopupPositionViewModel : BaseViewModel
 	{
 		var popup = new TransparentPopup();
 
-		await Page.Navigation.ShowPopup(popup, new PopupOptions());
+		await Page.Navigation.ShowPopup(popup, new PopupOptions<TransparentPopup>());
 	}
 
 	public enum PopupPosition

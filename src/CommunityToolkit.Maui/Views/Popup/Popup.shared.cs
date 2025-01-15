@@ -13,12 +13,12 @@ public partial class Popup : ContentView
 	/// <summary>
 	/// 
 	/// </summary>
-	public Action? OnOpened { get; set; }
+	public event EventHandler? OnOpened;
 
 	/// <summary>
 	/// 
 	/// </summary>
-	public Action? OnClosed { get; set; }
+	public event EventHandler? OnClosed;
 
 	/// <summary>
 	/// 
@@ -37,11 +37,40 @@ public partial class Popup : ContentView
 		popupContainer?.Close(new PopupResult<T>(result, false));
 	}
 
-	internal void SetPopup(PopupContainer container, PopupOptions options)
+	internal void SetPopup(PopupContainer container)
 	{
 		popupContainer = container;
+	}
 
-		OnOpened = options.OnOpened;
-		OnClosed = options.OnClosed;
+	internal void NotifyPopupIsOpened()
+	{
+		OnOpened?.Invoke(this, EventArgs.Empty);
+	}
+
+	internal void NotifyPopupIsClosed()
+	{
+		OnClosed?.Invoke(this, EventArgs.Empty);
+	}
+}
+
+/// <summary>
+/// Represents a small View that pops up at front the Page. Implements <see cref="PopupContainer"/>.
+/// </summary>
+public partial class Popup<T> : Popup
+{
+	PopupContainer<T>? popupContainer;
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="result"></param>
+	public void Close(T result)
+	{
+		popupContainer?.Close(new PopupResult<T>(result, false));
+	}
+
+	internal void SetPopup(PopupContainer<T> container)
+	{
+		popupContainer = container;
 	}
 }

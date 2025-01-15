@@ -19,48 +19,48 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 
 	async void HandleSimplePopupButtonClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<SimplePopup>(new PopupOptions(), CancellationToken.None);
+		await popupService.ShowPopupAsync(new PopupOptions<SimplePopup>(), CancellationToken.None);
 	}
 
 	async void HandleButtonPopupButtonClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync< ButtonPopup>(new PopupOptions(), CancellationToken.None);
+		await popupService.ShowPopupAsync(new PopupOptions<ButtonPopup>(), CancellationToken.None);
 	}
 
 	async void HandleMultipleButtonPopupButtonClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<MultipleButtonPopup>(new PopupOptions(), CancellationToken.None);
+		await popupService.ShowPopupAsync(new PopupOptions<MultipleButtonPopup>(), CancellationToken.None);
 	}
 
 	async void HandleNoOutsideTapDismissPopupClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<NoOutsideTapDismissPopup>(new PopupOptions(){CanBeDismissedByTappingOutsideOfPopup = false}, CancellationToken.None);
+		await popupService.ShowPopupAsync(new PopupOptions<NoOutsideTapDismissPopup>(){CanBeDismissedByTappingOutsideOfPopup = false}, CancellationToken.None);
 	}
 
 	async void HandleToggleSizePopupButtonClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<ToggleSizePopup>(new PopupOptions(), CancellationToken.None);
+		await popupService.ShowPopupAsync(new PopupOptions<ToggleSizePopup>(), CancellationToken.None);
 	}
 
 	async void HandleTransparentPopupButtonClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<TransparentPopup>(new PopupOptions(), CancellationToken.None);
+		await popupService.ShowPopupAsync(new PopupOptions<TransparentPopup>(), CancellationToken.None);
 	}
 
 	async void HandleOpenedEventSimplePopupButtonClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<OpenedEventSimplePopup>(new PopupOptions(), CancellationToken.None);
+		await popupService.ShowPopupAsync(new PopupOptions<OpenedEventSimplePopup>(), CancellationToken.None);
 	}
 
 	async void HandleReturnResultPopupButtonClicked(object sender, EventArgs e)
 	{
-		var result = await popupService.ShowPopupAsync< ReturnResultPopup, bool>(new PopupOptions(), CancellationToken.None);
+		var result = await popupService.ShowPopupAsync<ReturnResultPopup, bool>(new PopupOptions<ReturnResultPopup>(), CancellationToken.None);
 
 		await DisplayAlert("Pop Result Returned", $"Result: {result.Result}", "OK");
 	}
 
 	async void HandleXamlBindingPopupPopupButtonClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<XamlBindingPopup>(new PopupOptions(), CancellationToken.None);
+		await popupService.ShowPopupAsync(new PopupOptions<XamlBindingPopup>(), CancellationToken.None);
 	}
 }
