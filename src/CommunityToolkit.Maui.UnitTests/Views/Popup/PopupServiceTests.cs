@@ -59,7 +59,7 @@ public class PopupServiceTests : BaseHandlerTest
 		var popupInstance = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
 		var popupViewModel = ServiceProvider.GetRequiredService<MockPageViewModel>();
 
-		await popupService.ShowPopupAsync(new PopupOptions<MockPageViewModel>(), CancellationToken.None);
+		await popupService.ShowPopupAsync<MockPageViewModel, object?>(new PopupOptions<MockPageViewModel>(), CancellationToken.None);
 
 		Assert.Same(popupInstance.BindingContext, popupViewModel);
 	}
@@ -80,7 +80,7 @@ public class PopupServiceTests : BaseHandlerTest
 		// Ensure CancellationToken has expired
 		await Task.Delay(100, CancellationToken.None);
 
-		await Assert.ThrowsAsync<TaskCanceledException>(() => popupService.ShowPopupAsync(new PopupOptions<MockPageViewModel>(){OnOpened = viewModel => viewModel.HasLoaded = true}, cts.Token));
+		await Assert.ThrowsAsync<TaskCanceledException>(() => popupService.ShowPopupAsync(new PopupOptions<MockPageViewModel>() { OnOpened = viewModel => viewModel.HasLoaded = true }, cts.Token));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -102,7 +102,7 @@ public class PopupServiceTests : BaseHandlerTest
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 		var popupViewModel = ServiceProvider.GetRequiredService<MockPageViewModel>();
 
-		await popupService.ShowPopupAsync(new PopupOptions<MockPageViewModel>()
+		await popupService.ShowPopupAsync<MockPageViewModel, object?>(new PopupOptions<MockPageViewModel>()
 		{
 			OnOpened = viewModel => viewModel.HasLoaded = true
 		}, CancellationToken.None);
