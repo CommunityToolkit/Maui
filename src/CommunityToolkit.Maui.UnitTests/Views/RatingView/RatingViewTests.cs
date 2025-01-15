@@ -16,24 +16,23 @@ public class RatingViewTests : BaseHandlerTest
 	{
 		MockRatingViewViewModel vm = new();
 		RatingView ratingViewWithBinding = new();
-		ratingViewWithBinding.Control = new();
 		
 		ratingViewWithBinding.BindingContext.Should().BeNull();
-		ratingViewWithBinding.Control.BindingContext.Should().BeNull();
-		ratingViewWithBinding.Control.BindingContext.Should().BeEquivalentTo(ratingViewWithBinding.BindingContext);
+		ratingViewWithBinding.RatingLayout.BindingContext.Should().BeNull();
+		ratingViewWithBinding.RatingLayout.BindingContext.Should().BeEquivalentTo(ratingViewWithBinding.BindingContext);
 		
 		ratingViewWithBinding.BindingContext = vm;
 		
 		ratingViewWithBinding.BindingContext.Should().Be(vm);
-		ratingViewWithBinding.Control.BindingContext.Should().Be(vm);
-		ratingViewWithBinding.Control.BindingContext.Should().BeEquivalentTo(ratingViewWithBinding.BindingContext);
+		ratingViewWithBinding.RatingLayout.BindingContext.Should().Be(vm);
+		ratingViewWithBinding.RatingLayout.BindingContext.Should().BeEquivalentTo(ratingViewWithBinding.BindingContext);
 	}
 
 	[Fact]
 	public void Defaults_ItemDefaultsApplied()
 	{
 		RatingView ratingView = new();
-		var firstItem = (Border)ratingView.Control.Children[0];
+		var firstItem = (Border)ratingView.RatingLayout.Children[0];
 
 		firstItem.Should().BeOfType<Border>();
 		firstItem.BackgroundColor.Should().BeNull();
@@ -87,7 +86,7 @@ public class RatingViewTests : BaseHandlerTest
 		{
 			MaximumRating = 1
 		};
-		var child = (Border)ratingView.Control.Children[0];
+		var child = (Border)ratingView.RatingLayout.Children[0];
 		var tapGestureRecognizer = (TapGestureRecognizer)child.GestureRecognizers[0];
 		tapGestureRecognizer.SendTapped(child);
 		ratingView.Rating.Should().Be(1);
@@ -102,7 +101,7 @@ public class RatingViewTests : BaseHandlerTest
 		var handlerTappedCount = 0;
 		RatingView ratingView = new();
 		ratingView.Rating.Should().Be(handlerTappedCount);
-		var child = (Border)ratingView.Control.Children[0];
+		var child = (Border)ratingView.RatingLayout.Children[0];
 		var tgr = (TapGestureRecognizer)child.GestureRecognizers[0];
 		tgr.SendTapped(child);
 		handlerTappedCount++;
@@ -426,11 +425,11 @@ public class RatingViewTests : BaseHandlerTest
 		ratingView.FilledColor.Should().Be(filledColor);
 		var filledRatingShape = GetItemShape(ratingView, (int)Math.Floor(rating));
 		filledRatingShape.Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyColor));
-		var filledRatingItem = (Border)ratingView.Control.Children[0];
+		var filledRatingItem = (Border)ratingView.RatingLayout.Children[0];
 		filledRatingItem.Background.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(filledColor));
-		var partialFilledRatingItem = (Border)ratingView.Control.Children[(int)Math.Floor(rating)];
+		var partialFilledRatingItem = (Border)ratingView.RatingLayout.Children[(int)Math.Floor(rating)];
 		partialFilledRatingItem.Background.Should().BeOfType<LinearGradientBrush>();
-		var emptyFilledRatingItem = (Border)ratingView.Control.Children[maximumRating - 1]; // Check the last one, as this is where we expect the background colour to be set
+		var emptyFilledRatingItem = (Border)ratingView.RatingLayout.Children[maximumRating - 1]; // Check the last one, as this is where we expect the background colour to be set
 		emptyFilledRatingItem.Background.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(backgroundColor));
 	}
 
@@ -468,18 +467,18 @@ public class RatingViewTests : BaseHandlerTest
 	{
 		RatingView ratingView = new();
 		ratingView.IsReadOnly.Should().BeFalse();
-		for (var i = 0; i < ratingView.Control?.Children.Count; i++)
+		foreach (var t in ratingView.RatingLayout.Children)
 		{
-			var child = (Border)ratingView.Control.Children[i];
-			child.GestureRecognizers.Count.Should().Be(1);
+			var child = (Border)t;
+			child.GestureRecognizers.Should().ContainSingle();
 		}
 
 		ratingView.IsReadOnly = true;
 		ratingView.IsReadOnly.Should().BeTrue();
-		for (var i = 0; i < ratingView.Control?.Children.Count; i++)
+		foreach (var t in ratingView.RatingLayout.Children)
 		{
-			var child = (Border)ratingView.Control.Children[i];
-			child.GestureRecognizers.Count.Should().Be(0);
+			var child = (Border)t;
+			child.GestureRecognizers.Should().BeEmpty();
 		}
 	}
 
@@ -491,7 +490,7 @@ public class RatingViewTests : BaseHandlerTest
 		ratingView.ItemPadding.Should().NotBe(itemPadding);
 		ratingView.ItemPadding = itemPadding;
 		ratingView.ItemPadding.Should().Be(itemPadding);
-		var firstItem = (Border)ratingView.Control.Children[0];
+		var firstItem = (Border)ratingView.RatingLayout.Children[0];
 		firstItem.Padding.Should().Be(itemPadding);
 	}
 
@@ -503,7 +502,7 @@ public class RatingViewTests : BaseHandlerTest
 		ratingView.MaximumRating.Should().NotBe(maximumRating);
 		ratingView.MaximumRating = maximumRating;
 		ratingView.MaximumRating.Should().Be(maximumRating);
-		ratingView.Control.Children.Should().HaveCount(maximumRating);
+		ratingView.RatingLayout.Children.Should().HaveCount(maximumRating);
 	}
 
 	[Fact]
@@ -590,7 +589,7 @@ public class RatingViewTests : BaseHandlerTest
 		ratingView.Spacing.Should().NotBe(spacing);
 		ratingView.Spacing = spacing;
 		ratingView.Spacing.Should().Be(spacing);
-		var control = ratingView.Control;
+		var control = ratingView.RatingLayout;
 		control.Should().NotBeNull();
 		control.Spacing.Should().Be(spacing);
 	}
@@ -612,9 +611,9 @@ public class RatingViewTests : BaseHandlerTest
 	{
 		const byte minMaximumRating = 7;
 		RatingView ratingView = new();
-		ratingView.Control.Count.Should().Be(RatingViewDefaults.MaximumRating);
+		ratingView.RatingLayout.Count.Should().Be(RatingViewDefaults.MaximumRating);
 		ratingView.MaximumRating = minMaximumRating;
-		ratingView.Control.Count.Should().Be(minMaximumRating);
+		ratingView.RatingLayout.Count.Should().Be(minMaximumRating);
 	}
 
 	[Fact]
@@ -622,9 +621,9 @@ public class RatingViewTests : BaseHandlerTest
 	{
 		const byte minMaximumRating = 3;
 		RatingView ratingView = new();
-		ratingView.Control.Count.Should().Be(RatingViewDefaults.MaximumRating);
+		ratingView.RatingLayout.Count.Should().Be(RatingViewDefaults.MaximumRating);
 		ratingView.MaximumRating = minMaximumRating;
-		ratingView.Control.Count.Should().Be(minMaximumRating);
+		ratingView.RatingLayout.Count.Should().Be(minMaximumRating);
 	}
 
 	[Fact]
@@ -665,7 +664,7 @@ public class RatingViewTests : BaseHandlerTest
 	public void RatingViewThrowsInvalidOperationExceptionWhenBorderChildIsNotShape()
 	{
 		RatingView ratingView = new();
-		((Border)ratingView.Control.Children[0]).Content = new Button();
+		((Border)ratingView.RatingLayout.Children[0]).Content = new Button();
 		Assert.Throws<InvalidOperationException>(() => ratingView.Rating = 1);
 	}
 
@@ -673,7 +672,7 @@ public class RatingViewTests : BaseHandlerTest
 	public void RatingViewThrowsInvalidOperationExceptionWhenChildIsNotBorder()
 	{
 		RatingView ratingView = new();
-		ratingView.Control.Children.Add(new Button());
+		ratingView.RatingLayout.Children.Add(new Button());
 		Assert.Throws<InvalidOperationException>(() => ratingView.Rating = 1);
 	}
 
@@ -714,7 +713,7 @@ public class RatingViewTests : BaseHandlerTest
 	public void ViewStructure_Control_IsHorizontalStackLayout()
 	{
 		RatingView ratingView = new();
-		ratingView.Control.Should().BeOfType<HorizontalStackLayout>();
+		ratingView.RatingLayout.Should().BeOfType<HorizontalStackLayout>();
 	}
 
 	[Fact]
@@ -726,26 +725,26 @@ public class RatingViewTests : BaseHandlerTest
 			MaximumRating = maximumRating
 		};
 
-		Assert.NotNull(ratingView.Control);
-		ratingView.Control.GetVisualTreeDescendants().Should().HaveCount((maximumRating * 2) + 1);
-		ratingView.Control.Children.Should().HaveCount(maximumRating);
+		Assert.NotNull(ratingView.ControlTemplate);
+		ratingView.RatingLayout.GetVisualTreeDescendants().Should().HaveCount((maximumRating * 2) + 1);
+		ratingView.RatingLayout.Children.Should().HaveCount(maximumRating);
 	}
 
 	[Fact]
 	public void ViewStructure_Item_IsBorder()
 	{
 		RatingView ratingView = new();
-		ratingView.Control.Should().NotBeNull();
-		ratingView.Control.Children[0].Should().NotBeNull();
-		ratingView.Control.Children[0].Should().BeOfType<Border>();
+		ratingView.RatingLayout.Should().NotBeNull();
+		ratingView.RatingLayout.Children[0].Should().NotBeNull();
+		ratingView.RatingLayout.Children[0].Should().BeOfType<Border>();
 	}
 
 	[Fact]
 	public void ViewStructure_ItemChild_IsPath()
 	{
 		RatingView ratingView = new();
-		ratingView.Control.Children[0].Should().BeOfType<Border>();
-		var child = (Border)ratingView.Control.Children[0];
+		ratingView.RatingLayout.Children[0].Should().BeOfType<Border>();
+		var child = (Border)ratingView.RatingLayout.Children[0];
 		
 		Assert.NotNull(child.Content);
 		child.Content.GetVisualTreeDescendants()[0].Should().BeOfType<Microsoft.Maui.Controls.Shapes.Path>();
@@ -755,8 +754,8 @@ public class RatingViewTests : BaseHandlerTest
 	public void ViewStructure_ItemChild_Path_Star()
 	{
 		RatingView ratingView = new();
-		ratingView.Control.Children[0].Should().BeOfType<Border>();
-		var child = (Border)ratingView.Control.Children[0];
+		ratingView.RatingLayout.Children[0].Should().BeOfType<Border>();
+		var child = (Border)ratingView.RatingLayout.Children[0];
 		
 		Assert.NotNull(child.Content);
 		
@@ -780,9 +779,9 @@ public class RatingViewTests : BaseHandlerTest
 			BackgroundColor = backgroundColor
 		};
 		ratingView.Rating = 1.5;
-		var filledRatingItem = (Border)ratingView.Control.Children[0];
-		var partialFilledRatingItem = (Border)ratingView.Control.Children[1];
-		var emptyFilledRatingItem = (Border)ratingView.Control.Children[2];
+		var filledRatingItem = (Border)ratingView.RatingLayout.Children[0];
+		var partialFilledRatingItem = (Border)ratingView.RatingLayout.Children[1];
+		var emptyFilledRatingItem = (Border)ratingView.RatingLayout.Children[2];
 		filledRatingItem.Background.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(filledColor));
 		((Shape)filledRatingItem.Content!).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyColor));
 		partialFilledRatingItem.Background.Should().BeOfType<LinearGradientBrush>();
@@ -803,7 +802,7 @@ public class RatingViewTests : BaseHandlerTest
 		{
 			ItemPadding = expectedItemPadding,
 		};
-		var firstItem = (Border)ratingView.Control.Children[0];
+		var firstItem = (Border)ratingView.RatingLayout.Children[0];
 		firstItem.Padding.Should().Be(expectedItemPadding);
 	}
 
@@ -832,13 +831,13 @@ public class RatingViewTests : BaseHandlerTest
 	public void ViewStructure_Spacing()
 	{
 		RatingView ratingView = new();
-		var rvControl = ratingView.Control;
+		var rvControl = ratingView.RatingLayout;
 		rvControl.Spacing.Should().Be(RatingViewDefaults.Spacing);
 	}
 
 	static Microsoft.Maui.Controls.Shapes.Path GetItemShape(in RatingView ratingView, int itemIndex)
 	{
-		var border = (Border)ratingView.Control.Children[itemIndex];
+		var border = (Border)ratingView.RatingLayout.Children[itemIndex];
 		Assert.NotNull(border.Content);
 
 		return (Microsoft.Maui.Controls.Shapes.Path)border.Content.GetVisualTreeDescendants()[0];
