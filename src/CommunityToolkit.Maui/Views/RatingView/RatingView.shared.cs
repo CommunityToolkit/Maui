@@ -290,20 +290,20 @@ public partial class RatingView : TemplatedView, IRatingView
 	{
 		var ratingView = (RatingView)bindable;
 
-		var element = ratingView.RatingLayout;
+		var layout = ratingView.RatingLayout;
 		var newMaximumRatingValue = (int)newValue;
 		var oldMaximumRatingValue = (int)oldValue;
-		if (newMaximumRatingValue < (int)oldValue)
+		
+		if (newMaximumRatingValue < oldMaximumRatingValue)
 		{
-			for (var lastElement = element.Count - 1; lastElement >= newMaximumRatingValue; lastElement--)
+			for (var lastElement = layout.Count - 1; lastElement >= newMaximumRatingValue; lastElement--)
 			{
-				element.RemoveAt(lastElement);
+				layout.RemoveAt(lastElement);
 			}
 
 			ratingView.UpdateRatingDrawing(ratingView.RatingFill);
 		}
-
-		if (newMaximumRatingValue > oldMaximumRatingValue)
+		else if (newMaximumRatingValue > oldMaximumRatingValue)
 		{
 			ratingView.AddChildrenToControl(oldMaximumRatingValue - 1, newMaximumRatingValue - 1);
 		}
@@ -314,26 +314,15 @@ public partial class RatingView : TemplatedView, IRatingView
 		}
 
 		ratingView.Rating = newMaximumRatingValue;
-		if (ratingView.IsReadOnly)
-		{
-			return;
-		}
-
-		ratingView.weakEventManager.HandleEvent(ratingView, new RatingChangedEventArgs(newMaximumRatingValue), nameof(MaximumRating));
 	}
 
 	static void OnRatingChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var ratingView = (RatingView)bindable;
-
-		var newValueDouble = (double)newValue;
+		var newRating = (double)newValue;
+		
 		ratingView.UpdateRatingDrawing(ratingView.RatingFill);
-		if (ratingView.IsReadOnly)
-		{
-			return;
-		}
-
-		ratingView.OnRatingChangedEvent(new RatingChangedEventArgs(newValueDouble));
+		ratingView.OnRatingChangedEvent(new RatingChangedEventArgs(newRating));
 	}
 
 	static void OnSpacingChanged(BindableObject bindable, object oldValue, object newValue)
