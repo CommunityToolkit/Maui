@@ -71,7 +71,7 @@ public class RatingViewTests : BaseHandlerTest
 		ratingView.ItemPadding.Should().BeOfType<Thickness>().And.Be(RatingViewDefaults.ItemPadding);
 		ratingView.ItemShapeSize.Should().Be(RatingViewDefaults.ItemShapeSize);
 		ratingView.MaximumRating.Should().Be(RatingViewDefaults.MaximumRating);
-		ratingView.ItemShape.Should().BeOneOf(RatingViewDefaults.Shape).And.Be(RatingViewDefaults.Shape);
+		ratingView.ItemShape.Should().BeOneOf(RatingViewDefaults.ItemShape).And.Be(RatingViewDefaults.ItemShape);
 		ratingView.ShapeBorderColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.ShapeBorderColor);
 		ratingView.ShapeBorderThickness.Should().Be(RatingViewDefaults.ShapeBorderThickness);
 		ratingView.Spacing.Should().Be(RatingViewDefaults.Spacing);
