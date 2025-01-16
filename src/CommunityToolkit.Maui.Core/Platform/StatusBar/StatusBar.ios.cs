@@ -11,49 +11,33 @@ static partial class StatusBar
 	/// <summary>
 	/// Method to update the status bar size.
 	/// </summary>
-	public static void UpdateBarSize(bool useSafeArea)
+	public static void SetBarSize(bool isUsingSafeArea)
 	{
-		if (OperatingSystem.IsIOSVersionAtLeast(13))
+		var statusBarTag = new IntPtr(38482);
+		foreach (var window in UIApplication.SharedApplication.Windows)
 		{
-			var statusBarTag = new IntPtr(38482);
-			foreach (var window in UIApplication.SharedApplication.Windows)
+			var statusBar = window.ViewWithTag(statusBarTag);
+			var statusBarFrame = window.WindowScene?.StatusBarManager?.StatusBarFrame;
+			if (statusBarFrame is null)
 			{
-				var statusBar = window.ViewWithTag(statusBarTag);
-				var statusBarFrame = window.WindowScene?.StatusBarManager?.StatusBarFrame;
-				if (statusBarFrame is null)
-				{
-					continue;
-				}
-
-				statusBar ??= new UIView(statusBarFrame.Value);
-				statusBar.Tag = statusBarTag;
-				if (useSafeArea)
-				{
-					statusBar.Frame = new CGRect(statusBar.Frame.X, statusBar.Frame.Y, statusBar.Frame.Width, window.SafeAreaInsets.Top);
-				}
-				else
-				{
-					statusBar.Frame = UIApplication.SharedApplication.StatusBarFrame;
-				}
-				var statusBarSubViews = window.Subviews.Where(x => x.Tag == statusBarTag).ToList();
-				foreach (var statusBarSubView in statusBarSubViews)
-				{
-					statusBarSubView.RemoveFromSuperview();
-				}
-
-				window.AddSubview(statusBar);
-
-				TryUpdateStatusBarAppearance(window);
-			}
-		}
-		else
-		{
-			if (UIApplication.SharedApplication.ValueForKey(new NSString("statusBar")) is UIView statusBar)
-			{
-				statusBar.Frame = UIApplication.SharedApplication.StatusBarFrame;
+				continue;
 			}
 
-			TryUpdateStatusBarAppearance();
+			statusBar ??= new UIView(statusBarFrame.Value);
+			statusBar.Tag = statusBarTag;
+			statusBar.Frame = isUsingSafeArea
+				? new CGRect(statusBar.Frame.X, statusBar.Frame.Y, statusBar.Frame.Width, window.SafeAreaInsets.Top)
+				: UIApplication.SharedApplication.StatusBarFrame;
+
+			var statusBarSubViews = window.Subviews.Where(x => x.Tag == statusBarTag).ToList();
+			foreach (var statusBarSubView in statusBarSubViews)
+			{
+				statusBarSubView.RemoveFromSuperview();
+			}
+
+			window.AddSubview(statusBar);
+
+			TryUpdateStatusBarAppearance(window);
 		}
 	}
 
@@ -84,6 +68,7 @@ static partial class StatusBar
 				{
 					statusBar.Frame = new CGRect(statusBar.Frame.X, statusBar.Frame.Y, statusBar.Frame.Width, window.SafeAreaInsets.Top);
 				}
+
 				var statusBarSubViews = window.Subviews.Where(x => x.Tag == statusBarTag).ToList();
 				foreach (var statusBarSubView in statusBarSubViews)
 				{
