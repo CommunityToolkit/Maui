@@ -14,7 +14,7 @@ public enum MathOperatorPrecedence
 	/// <summary>High</summary>
 	High,
 	/// <summary>Constant</summary>
-	Constant,
+	Constant
 }
 
 /// <summary>
@@ -25,31 +25,25 @@ public enum MathOperatorPrecedence
 /// </remarks>
 /// <param name="name">Name</param>
 /// <param name="numericCount">Number of Numerals</param>
-/// <param name="precedence">Math Operator Preference</param>
 /// <param name="calculateFunc">Calculation Function</param>
 public sealed class MathOperator(
-	string name,
-	int numericCount,
-	MathOperatorPrecedence precedence,
-	Func<double[], double> calculateFunc)
+    string name,
+    int numericCount,
+    Func<object?[], object?> calculateFunc)
 {
-	/// <summary>
-	/// Name
-	/// </summary>
-	public string Name { get; } = name;
 
-	/// <summary>
-	/// Number of Numerals
-	/// </summary>
-	public int NumericCount { get; } = numericCount;
+    /// <summary>
+    /// Name
+    /// </summary>
+    public string Name { get; } = name;
 
-	/// <summary>
-	/// Math Operator Precedence
-	/// </summary>
-	public MathOperatorPrecedence Precedence { get; } = precedence;
+    /// <summary>
+    /// Number of Numerals
+    /// </summary>
+    public int NumericCount { get; } = numericCount;
 
-	/// <summary>
-	/// Calculation Function
-	/// </summary>
-	public Func<double[], double> CalculateFunc { get; } = calculateFunc;
+    /// <summary>
+    /// Calculation Function
+    /// </summary>
+    public Func<object?[], object?> CalculateFunc { get; } = calculateFunc;
 }

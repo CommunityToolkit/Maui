@@ -9,16 +9,16 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 {
 	public IReadOnlyList<string> FlowDirectionOptions { get; } = [.. Enum.GetNames<FlowDirection>()];
-	
+
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
 	public partial double Height { get; set; } = 100;
-	
+
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
 	public partial double Width { get; set; } = 100;
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
 	public partial bool IsStartHorizontalOptionSelected { get; set; } = true;
-	
+
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
 	public partial bool IsCenterHorizontalOptionSelected { get; set; }
 
@@ -36,7 +36,7 @@ public partial class CustomSizeAndPositionPopupViewModel : BaseViewModel
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
 	public partial bool IsEndVerticalOptionSelected { get; set; }
-	
+
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ExecuteShowButtonCommand))]
 	public partial bool IsFillVerticalOptionSelected { get; set; }
 
