@@ -94,22 +94,14 @@ static partial class StatusBar
 
 	static bool TryUpdateStatusBarAppearance()
 	{
-		if (OperatingSystem.IsIOSVersionAtLeast(13))
-		{
-			var didUpdateAllStatusBars = true;
+		var didUpdateAllStatusBars = true;
 
-			foreach (var window in UIApplication.SharedApplication.Windows)
-			{
-				didUpdateAllStatusBars &= TryUpdateStatusBarAppearance(window);
-			}
-
-			return didUpdateAllStatusBars;
-		}
-		else
+		foreach (var window in UIApplication.SharedApplication.Windows)
 		{
-			var window = UIApplication.SharedApplication.KeyWindow;
-			return TryUpdateStatusBarAppearance(window);
+			didUpdateAllStatusBars &= TryUpdateStatusBarAppearance(window);
 		}
+
+		return didUpdateAllStatusBars;
 	}
 
 	static bool TryUpdateStatusBarAppearance(UIWindow? window)
