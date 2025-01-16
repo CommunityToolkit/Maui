@@ -27,23 +27,23 @@ public enum MathOperatorPrecedence
 /// <param name="numericCount">Number of Numerals</param>
 /// <param name="calculateFunc">Calculation Function</param>
 public sealed class MathOperator(
-    string name,
-    int numericCount,
-    Func<object?[], object?> calculateFunc)
+	string name,
+	int numericCount,
+	Func<object?[], object?> calculateFunc)
 {
 
-    /// <summary>
-    /// Name
-    /// </summary>
-    public string Name { get; } = name;
+	/// <summary>
+	/// Name
+	/// </summary>
+	public string Name { get; } = name;
 
-    /// <summary>
-    /// Number of Numerals
-    /// </summary>
-    public int NumericCount { get; } = numericCount;
+	/// <summary>
+	/// Number of Numerals
+	/// </summary>
+	public int NumericCount { get; } = numericCount;
 
-    /// <summary>
-    /// Calculation Function
-    /// </summary>
-    public Func<object?[], object?> CalculateFunc { get; } = calculateFunc;
+	/// <summary>
+	/// Calculation Function
+	/// </summary>
+	public Func<object?[], object?> CalculateFunc { get; } = calculateFunc;
 }
