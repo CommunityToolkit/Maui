@@ -25,9 +25,7 @@ static partial class StatusBar
 
 			statusBar ??= new UIView(statusBarFrame.Value);
 			statusBar.Tag = statusBarTag;
-			statusBar.Frame = isUsingSafeArea
-				? new CGRect(statusBar.Frame.X, statusBar.Frame.Y, statusBar.Frame.Width, window.SafeAreaInsets.Top)
-				: UIApplication.SharedApplication.StatusBarFrame;
+			statusBar.Frame = GetStatusBarFrame(statusBar, window, isUsingSafeArea);
 
 			var statusBarSubViews = window.Subviews.Where(x => x.Tag == statusBarTag).ToList();
 			foreach (var statusBarSubView in statusBarSubViews)
@@ -54,18 +52,11 @@ static partial class StatusBar
 			{
 				continue;
 			}
-
-			// ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
-			// window.ViewWithTag(tag) can return null
-			var statusBarSize = statusBar?.Frame.Size;
+			
 			statusBar ??= new UIView(statusBarFrame.Value);
 			statusBar.Tag = statusBarTag;
 			statusBar.BackgroundColor = uiColor;
 			statusBar.TintColor = uiColor;
-			if (statusBarSize is null)
-			{
-				statusBar.Frame = new CGRect(statusBar.Frame.X, statusBar.Frame.Y, statusBar.Frame.Width, window.SafeAreaInsets.Top);
-			}
 
 			var statusBarSubViews = window.Subviews.Where(x => x.Tag == statusBarTag).ToList();
 			foreach (var statusBarSubView in statusBarSubViews)
@@ -77,6 +68,13 @@ static partial class StatusBar
 
 			TryUpdateStatusBarAppearance(window);
 		}
+	}
+
+	static CGRect GetStatusBarFrame(in UIView statusBar, in UIWindow window, bool isUsingSafeArea)
+	{
+		return isUsingSafeArea
+			? new CGRect(statusBar.Frame.X, statusBar.Frame.Y, statusBar.Frame.Width, window.SafeAreaInsets.Top)
+			: UIApplication.SharedApplication.StatusBarFrame;
 	}
 
 	static void PlatformSetStyle(StatusBarStyle statusBarStyle)
