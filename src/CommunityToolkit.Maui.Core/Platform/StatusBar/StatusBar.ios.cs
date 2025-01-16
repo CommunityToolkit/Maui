@@ -13,21 +13,20 @@ static partial class StatusBar
 	/// </summary>
 	public static void SetBarSize(bool isUsingSafeArea)
 	{
-		var statusBarTag = new IntPtr(38482);
+		var communityToolkitStatusBarTag = new IntPtr(38482);
 		foreach (var window in UIApplication.SharedApplication.Windows)
 		{
-			var statusBar = window.ViewWithTag(statusBarTag);
 			var statusBarFrame = window.WindowScene?.StatusBarManager?.StatusBarFrame;
 			if (statusBarFrame is null)
 			{
 				continue;
 			}
 
-			statusBar ??= new UIView(statusBarFrame.Value);
-			statusBar.Tag = statusBarTag;
-			statusBar.Frame = GetStatusBarFrame(statusBar, window, isUsingSafeArea);
+			var statusBar = window.ViewWithTag(communityToolkitStatusBarTag) ?? new UIView(statusBarFrame.Value);
+			statusBar.Tag = communityToolkitStatusBarTag;
+			statusBar.Frame = GetStatusBarFrame(window, isUsingSafeArea);
 
-			var statusBarSubViews = window.Subviews.Where(x => x.Tag == statusBarTag).ToList();
+			var statusBarSubViews = window.Subviews.Where(x => x.Tag == communityToolkitStatusBarTag).ToList();
 			foreach (var statusBarSubView in statusBarSubViews)
 			{
 				statusBarSubView.RemoveFromSuperview();
@@ -70,11 +69,13 @@ static partial class StatusBar
 		}
 	}
 
-	static CGRect GetStatusBarFrame(in UIView statusBar, in UIWindow window, bool isUsingSafeArea)
+	static CGRect GetStatusBarFrame(in UIWindow window, in bool isUsingSafeArea)
 	{
+		var statusBarFrame = UIApplication.SharedApplication.StatusBarFrame;
+		
 		return isUsingSafeArea
-			? new CGRect(statusBar.Frame.X, statusBar.Frame.Y, statusBar.Frame.Width, window.SafeAreaInsets.Top)
-			: UIApplication.SharedApplication.StatusBarFrame;
+			? new CGRect(statusBarFrame.X, statusBarFrame.Y, statusBarFrame.Width, window.SafeAreaInsets.Top)
+			: statusBarFrame;
 	}
 
 	static void PlatformSetStyle(StatusBarStyle statusBarStyle)
