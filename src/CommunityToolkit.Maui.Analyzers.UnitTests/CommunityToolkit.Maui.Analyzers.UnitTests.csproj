@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <!--Fix vulnerabilities-->
-    <PackageReference Include="System.Formats.Asn1" Version="9.0.0" />
+    <PackageReference Include="System.Formats.Asn1" Version="9.0.1" />
   </ItemGroup>
 
   <ItemGroup>
