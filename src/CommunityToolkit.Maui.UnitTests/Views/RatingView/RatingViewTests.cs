@@ -196,7 +196,7 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void Events_RatingChanged_ShouldNotBeRaised_MaximumRatingPropertyChanged_LReadOnly()
+	public void Events_RatingChanged_ShouldBeRaised_MaximumRatingPropertyChanged_LReadOnly()
 	{
 		const double currentRating = 5;
 		const int maximumRating = 4;
@@ -210,11 +210,11 @@ public class RatingViewTests : BaseHandlerTest
 		ratingView.RatingChanged += (sender, e) => signaled = true;
 		ratingView.MaximumRating = maximumRating;
 		ratingView.Rating.Should().Be(maximumRating);
-		signaled.Should().BeFalse();
+		signaled.Should().BeTrue();
 	}
 
 	[Fact]
-	public void Events_RatingChanged_ShouldNotBeRaised_RatingPropertyChanged_ReadOnly()
+	public void Events_RatingChanged_ShouldBeRaised_RatingPropertyChanged_ReadOnly()
 	{
 		const double currentRating = 3.5;
 		RatingView ratingView = new()
@@ -226,7 +226,7 @@ public class RatingViewTests : BaseHandlerTest
 		ratingView.RatingChanged += (sender, e) => signaled = true;
 		ratingView.Rating = currentRating;
 		ratingView.Rating.Should().Be(currentRating);
-		signaled.Should().BeFalse();
+		signaled.Should().BeTrue();
 	}
 
 	[Fact]
