@@ -6,7 +6,7 @@ variables:
   NugetPackageVersionCamera: '$(CurrentSemanticVersion)'
   NugetPackageVersionMediaElement: '$(CurrentSemanticVersion)'
   NugetPackageVersionMaps: '$(CurrentSemanticVersion)'
-  TOOLKIT_NET_VERSION: '9.0.101'
+  TOOLKIT_NET_VERSION: '9.0.102'
   LATEST_NET_VERSION: '9.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
