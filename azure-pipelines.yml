@@ -43,15 +43,15 @@ trigger:
     exclude:
     - README.md
 
-pr:
-  autoCancel: 'true'
-  branches:
-    include:
-    - main
-    - develop
-  paths:
-    exclude:
-    - README.md
+# pr:
+#   autoCancel: 'true'
+#   branches:
+#     include:
+#     - main
+#     - develop
+#   paths:
+#     exclude:
+#     - README.md
 
 jobs:
   - job: build_sample
