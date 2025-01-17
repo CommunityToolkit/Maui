@@ -275,7 +275,7 @@ jobs:
           --skip-duplicate
 
   run_benchmarks:
-    name: Run Manchmarks
+    name: Run Benchmarks
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
