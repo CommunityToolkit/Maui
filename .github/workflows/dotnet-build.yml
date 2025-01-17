@@ -1,4 +1,4 @@
-name: .NET
+name: .NET MAUI Community Toolkit CI/CD Pipeline
 
 on:
   push:
