@@ -187,10 +187,10 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 	}
 
 	[Theory]
-	[InlineData("x == 3 && x1", new object?[] { 3d, null})]
+	[InlineData("x == 3 && x1", new object?[] { 3d, null })]
 	[InlineData("x != 3 || x1", new object?[] { 3d, null })]
 	[InlineData("x == 3 ? x1 : x2", new object?[] { 3d, null, 5d })]
-	[InlineData("x != 3 ? x1 : x2", new object?[] { 3d, 4d, null})]
+	[InlineData("x != 3 ? x1 : x2", new object?[] { 3d, 4d, null })]
 	public void MathExpressionConverter_ReturnsCorrectNullResult(string expression, object[] variables)
 	{
 		var mathExpressionConverter = new MultiMathExpressionConverter();
@@ -203,7 +203,7 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 	[Theory]
 	[InlineData("x == x1", new object?[] { 2d, 2d }, true)]
 	[InlineData("x == x1", new object?[] { 2d, null }, false)]
-	[InlineData("x == x1", new object?[] { null, 2d}, false)]
+	[InlineData("x == x1", new object?[] { null, 2d }, false)]
 	[InlineData("x == x1", new object?[] { null, null }, true)]
 	[InlineData("(x ? x1 : x2) == null", new object?[] { true, null, 2d }, true)]
 	public void MathExpressionConverter_WithEqualityOperator_ReturnsCorrectBooleanResult(string expression, object[] variables, bool expectedResult)

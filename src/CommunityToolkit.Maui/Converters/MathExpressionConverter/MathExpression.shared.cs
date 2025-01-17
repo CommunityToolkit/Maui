@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
-using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Converters;
@@ -98,7 +98,7 @@ sealed partial class MathExpression
 
 		this.operators = operators;
 	}
-	
+
 	static ReadOnlyDictionary<string, string> BinaryMappingDictionary { get; } = new Dictionary<string, string>
 	{
 		{ "<", "lt" },
@@ -114,11 +114,11 @@ sealed partial class MathExpression
 		{ "-", "neg" },
 		{ "!", "not" }
 	}.AsReadOnly();
-	
+
 	string Expression { get; }
 
 	List<MathToken> RPN { get; } = [];
-	
+
 	int ExpressionIndex { get; set; }
 
 	Match PatternMatch { get; set; } = Match.Empty;
@@ -141,8 +141,8 @@ sealed partial class MathExpression
 			}
 
 			var mathOperator = operators.FirstOrDefault(x => x.Name == token.Text) ?? throw new ArgumentException($"Math Expression Invalid. Can't find operator or value with name \"{token.Text}\".");
-			
-            if (mathOperator.NumericCount is 0)
+
+			if (mathOperator.NumericCount is 0)
 			{
 				stack.Push(mathOperator.CalculateFunc([]));
 				continue;
@@ -157,7 +157,7 @@ sealed partial class MathExpression
 
 			bool containsNullArgument = false;
 			List<object?> args = [];
-			
+
 			for (var j = 0; j < operatorNumericCount; j++)
 			{
 				object? val = stack.Pop();
@@ -184,7 +184,7 @@ sealed partial class MathExpression
 			_ => stack.Pop()
 		};
 	}
-	
+
 	[GeneratedRegex("""^(\w+)\(""")]
 	private static partial Regex EvaluateFunctionStart();
 
@@ -193,16 +193,16 @@ sealed partial class MathExpression
 
 	[GeneratedRegex("""^(\))""")]
 	private static partial Regex EvaluateFunctionEnd();
-	
+
 	[GeneratedRegex("""^(\?)""")]
 	private static partial Regex EvaluateConditionalStart();
 
 	[GeneratedRegex("""^(\:)""")]
 	private static partial Regex EvaluateConditionalElse();
-	
+
 	[GeneratedRegex("""^(\|\||or)""")]
 	private static partial Regex EvaluateLogicalOROperator();
-	
+
 	[GeneratedRegex("""^(\&\&|and)""")]
 	private static partial Regex EvaluateLogicalAndOperator();
 
@@ -238,10 +238,10 @@ sealed partial class MathExpression
 
 	[GeneratedRegex("""^(\))""")]
 	private static partial Regex EvaluateParenEnd();
-	
+
 	[GeneratedRegex("""^\s*""")]
 	private static partial Regex EvaluateWhitespace();
-	
+
 	static bool ConvertToBoolean(object? b) => b switch
 	{
 		bool x => x,
@@ -250,7 +250,7 @@ sealed partial class MathExpression
 		string stringValue => !string.IsNullOrEmpty(stringValue),
 		_ => Convert.ToBoolean(b)
 	};
-	
+
 	bool ParsePattern(Regex regex)
 	{
 		var whitespaceMatch = EvaluateWhitespace().Match(Expression[ExpressionIndex..]);
