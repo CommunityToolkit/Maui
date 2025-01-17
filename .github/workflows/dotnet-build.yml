@@ -43,7 +43,6 @@ env:
   PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
-  DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/8.0.6.json'
   CommunityToolkitSampleApp_Xcode_Version: '16.2'
   CommunityToolkitLibrary_Xcode_Version: '16.2'
 
@@ -69,9 +68,12 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.LATEST_NET_VERSION }}
+          dotnet-quality: 'ga'
 
       - name: Install .NET MAUI Workload
-        run: dotnet workload install maui
+        run: |
+          dotnet workload install maui
+          dotnet workload update
 
       - name: Install Tizen Workload
         run: |
@@ -88,6 +90,8 @@ jobs:
   build_library:
     name: Build Library
     runs-on: ${{ matrix.os }}
+    env:
+      VSTEST_TESTHOST_SHUTDOWN_TIMEOUT: 1100 # Set your desired timeout value here
     strategy:
       matrix:
         os: [windows-latest, macos-15]
@@ -130,9 +134,12 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+          dotnet-quality: 'ga'
 
       - name: Install .NET MAUI Workload
-        run: dotnet workload install maui --skip-sign-check --source https://api.nuget.org/v3/index.json
+        run: |
+          dotnet workload install maui
+          dotnet workload update
 
       - name: Install Tizen Workload
         run: |
@@ -207,6 +214,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+          dotnet-quality: 'ga'
 
       - name: Download NuGet List
         uses: actions/download-artifact@v4
@@ -259,6 +267,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+          dotnet-quality: 'ga'
 
       - name: Download signed packages for ${{ matrix.platform }}
         uses: actions/download-artifact@v4
@@ -296,9 +305,12 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+          dotnet-quality: 'ga'
 
       - name: Install .NET MAUI Workload
-        run: dotnet workload install maui --skip-sign-check --source https://api.nuget.org/v3/index.json
+        run: |
+          dotnet workload install maui
+          dotnet workload update
 
       - name: Install Tizen Workload
         run: |
