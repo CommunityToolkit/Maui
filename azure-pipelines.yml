@@ -32,10 +32,10 @@ variables:
   CommunityToolkitLibrary_Xcode_Version: '16.2'
 
 trigger:
-  branches:
-    include:
-    - main
-    - develop
+  # branches:
+  #   include:
+  #   - main
+  #   - develop
   tags:
     include:
     - '*'
