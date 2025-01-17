@@ -294,7 +294,7 @@ public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerT
 	}
 
 	[Fact]
-	[Obsolete]
+	
 	public void OnDrawingLineCompletedLastDrawingLinePassedWithCommand()
 	{
 		var drawingView = new DrawingView();
@@ -316,7 +316,7 @@ public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerT
 	}
 
 	[Fact]
-	[Obsolete]
+	
 	public void OnDrawingLineCompleted_CommandIsNull_LastDrawingLineNotPassed()
 	{
 		var drawingView = new DrawingView();
@@ -353,7 +353,7 @@ public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerT
 	}
 
 	[Fact]
-	[Obsolete]
+	
 	public void OnDrawingLineCompleted_CommandIsNotAllowedExecute_LastDrawingLineNotPassed()
 	{
 		var drawingView = new DrawingView();
@@ -390,7 +390,7 @@ public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerT
 	}
 
 	[Fact]
-	[Obsolete]
+	
 	public void OnDrawingLineCompletedLastDrawingLinePassedWithEvent()
 	{
 		var drawingView = new DrawingView();

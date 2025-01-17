@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReachedBehavior, InputView>(new MaxLengthReachedBehavior(), new Entry())
 {
 	[Fact]
-	[Obsolete]
+	
 	public void ShouldExecuteCommandWhenMaxLengthHasBeenReached()
 	{
 		// arrange
@@ -23,7 +23,7 @@ public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReached
 	}
 
 	[Fact]
-	[Obsolete]
+	
 	public void ShouldInvokeEventHandlerWhenMaxLengthHasBeenReached()
 	{
 		// arrange
@@ -39,7 +39,7 @@ public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReached
 	}
 
 	[Fact]
-	[Obsolete]
+	
 	public void ShouldExecuteCommandWithTextValueNoLargerThenMaxLength()
 	{
 		// arrange
@@ -56,7 +56,7 @@ public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReached
 	}
 
 	[Fact]
-	[Obsolete]
+	
 	public void ShouldInvokeEventHandlerWithTextValueNoLargerThenMaxLength()
 	{
 		// arrange
@@ -73,7 +73,7 @@ public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReached
 	}
 
 	[Fact]
-	[Obsolete]
+	
 	public void ShouldNotExecuteCommandBeforeMaxLengthHasBeenReached()
 	{
 		// arrange
@@ -88,7 +88,7 @@ public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReached
 	}
 
 	[Fact]
-	[Obsolete]
+	
 	public void ShouldNotInvokeEventHandlerBeforeMaxLengthHasBeenReached()
 	{
 		// arrange
@@ -103,7 +103,7 @@ public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReached
 	}
 
 	[Fact]
-	[Obsolete]
+	
 	public void ShouldDismissKeyboardWhenMaxLengthHasBeenReached()
 	{
 		// arrange
@@ -119,7 +119,7 @@ public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReached
 	}
 
 	[Fact]
-	[Obsolete]
+	
 	public void ShouldNotDismissKeyboardBeforeMaxLengthHasBeenReached()
 	{
 		// arrange
@@ -134,7 +134,7 @@ public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReached
 	}
 
 	[Fact]
-	[Obsolete]
+	
 	public void ShouldNotDismissKeyboardWhenOptionSetToFalse()
 	{
 		// arrange
@@ -149,7 +149,7 @@ public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReached
 		Assert.True(entry.IsFocused);
 	}
 
-	[Obsolete]
+	
 	static Entry CreateEntry(int? maxLength = 2,
 							  bool shouldDismissKeyboardAutomatically = false,
 							  ICommand? command = null,

@@ -90,7 +90,7 @@ public partial class MediaManager : IDisposable
 	/// Creates the corresponding platform view of <see cref="MediaElement"/> on iOS and macOS.
 	/// </summary>
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
-	[Obsolete]
+	
 	public (PlatformMediaElement Player, AVPlayerViewController PlayerViewController) CreatePlatformView()
 	{
 		Player = new();
@@ -133,7 +133,7 @@ public partial class MediaManager : IDisposable
 		GC.SuppressFinalize(this);
 	}
 
-	[Obsolete]
+	
 	protected virtual partial void PlatformPlay()
 	{
 		if (Player?.CurrentTime == PlayerItem?.Duration)
@@ -144,13 +144,13 @@ public partial class MediaManager : IDisposable
 		Player?.Play();
 	}
 
-	[Obsolete]
+	
 	protected virtual partial void PlatformPause()
 	{
 		Player?.Pause();
 	}
 
-	[Obsolete]
+	
 	protected virtual async partial Task PlatformSeek(TimeSpan position, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
@@ -191,7 +191,7 @@ public partial class MediaManager : IDisposable
 		MediaElement.SeekCompleted();
 	}
 
-	[Obsolete]
+	
 	protected virtual partial void PlatformStop()
 	{
 		// There's no Stop method so pause the video and reset its position
@@ -385,7 +385,7 @@ public partial class MediaManager : IDisposable
 			MediaElement.ShouldShowPlaybackControls;
 	}
 
-	[Obsolete]
+	
 	protected virtual partial void PlatformUpdatePosition()
 	{
 		if (Player is null)
@@ -418,7 +418,7 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	[Obsolete]
+	
 	protected virtual partial void PlatformUpdateVolume()
 	{
 		if (Player is null)
@@ -433,7 +433,7 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	[Obsolete]
+	
 	protected virtual partial void PlatformUpdateShouldKeepScreenOn()
 	{
 		if (Player is null)
@@ -443,7 +443,7 @@ public partial class MediaManager : IDisposable
 		UIApplication.SharedApplication.IdleTimerDisabled = MediaElement.ShouldKeepScreenOn;
 	}
 
-	[Obsolete]
+	
 	protected virtual partial void PlatformUpdateShouldMute()
 	{
 		if (Player is null)
@@ -463,7 +463,7 @@ public partial class MediaManager : IDisposable
 	/// Releases the unmanaged resources used by the <see cref="MediaManager"/> and optionally releases the managed resources.
 	/// </summary>
 	/// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
-	[Obsolete]
+	
 	protected virtual void Dispose(bool disposing)
 	{
 		if (disposing)
@@ -548,7 +548,7 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	[Obsolete]
+	
 	void AddStatusObservers()
 	{
 		if (Player is null)
@@ -563,7 +563,7 @@ public partial class MediaManager : IDisposable
 		RateObserver = AVPlayer.Notifications.ObserveRateDidChange(RateChanged);
 	}
 
-	[Obsolete]
+	
 	void VolumeChanged(NSObservedChange e)
 	{
 		if (Player is null)
@@ -578,7 +578,7 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	[Obsolete]
+	
 	void MutedChanged(NSObservedChange e)
 	{
 		if (Player is null)
@@ -617,7 +617,7 @@ public partial class MediaManager : IDisposable
 		PlayedToEndObserver?.Dispose();
 	}
 
-	[Obsolete]
+	
 	void StatusChanged(NSObservedChange obj)
 	{
 		if (Player is null)
@@ -636,7 +636,7 @@ public partial class MediaManager : IDisposable
 		MediaElement.CurrentStateChanged(newState);
 	}
 
-	[Obsolete]
+	
 	void TimeControlStatusChanged(NSObservedChange obj)
 	{
 		if (Player is null || Player.Status is AVPlayerStatus.Unknown
@@ -658,7 +658,7 @@ public partial class MediaManager : IDisposable
 		MediaElement.CurrentStateChanged(newState);
 	}
 
-	[Obsolete]
+	
 	void ErrorOccurred(object? sender, NSNotificationEventArgs args)
 	{
 		string message;
@@ -681,7 +681,7 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	[Obsolete]
+	
 	void PlayedToEnd(object? sender, NSNotificationEventArgs args)
 	{
 		if (args.Notification.Object != PlayerViewController?.Player?.CurrentItem || Player is null)
@@ -707,7 +707,7 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	[Obsolete]
+	
 	void RateChanged(object? sender, NSNotificationEventArgs args)
 	{
 		if (Player is null)
