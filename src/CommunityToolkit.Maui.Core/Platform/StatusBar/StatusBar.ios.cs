@@ -41,7 +41,7 @@ static partial class StatusBar
 	static void PlatformSetColor(Color color)
 	{
 		var uiColor = color.ToPlatform();
-		
+
 		var statusBarTag = new IntPtr(38482);
 		foreach (var window in UIApplication.SharedApplication.Windows)
 		{
@@ -51,7 +51,7 @@ static partial class StatusBar
 			{
 				continue;
 			}
-			
+
 			statusBar ??= new UIView(statusBarFrame.Value);
 			statusBar.Tag = statusBarTag;
 			statusBar.BackgroundColor = uiColor;
@@ -72,7 +72,7 @@ static partial class StatusBar
 	static CGRect GetStatusBarFrame(in UIWindow window, in bool isUsingSafeArea)
 	{
 		var statusBarFrame = UIApplication.SharedApplication.StatusBarFrame;
-		
+
 		return isUsingSafeArea
 			? new CGRect(statusBarFrame.X, statusBarFrame.Y, statusBarFrame.Width, window.SafeAreaInsets.Top)
 			: statusBarFrame;
