@@ -87,7 +87,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, macos-14]
+        os: [windows-latest, macos-15]
     steps:
       - name: Checkout code
         uses: actions/checkout@main
