@@ -6,7 +6,6 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 public class SetFocusOnEntryCompletedTests() : BaseBehaviorTest<SetFocusOnEntryCompletedBehavior, VisualElement>(new SetFocusOnEntryCompletedBehavior(), new View())
 {
 	[Fact]
-	
 	public void DoesNotSetFocusBeforeCompletion()
 	{
 		// arrange
@@ -22,7 +21,6 @@ public class SetFocusOnEntryCompletedTests() : BaseBehaviorTest<SetFocusOnEntryC
 	}
 
 	[Fact]
-	
 	public void SetsFocusWhenCompleted()
 	{
 		// arrange
@@ -36,7 +34,6 @@ public class SetFocusOnEntryCompletedTests() : BaseBehaviorTest<SetFocusOnEntryC
 		// assert
 		Assert.True(entry2.IsFocused);
 	}
-
 	
 	static Entry CreateEntry(VisualElement? nextElement = null)
 	{

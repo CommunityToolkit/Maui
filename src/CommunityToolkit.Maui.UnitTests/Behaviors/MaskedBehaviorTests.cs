@@ -58,7 +58,6 @@ public class MaskedBehaviorTests() : BaseBehaviorTest<MaskedBehavior, InputView>
 	}
 
 	[Fact]
-	
 	public void AttachedToInvalidElementTest()
 	{
 		IReadOnlyList<VisualElement> invalidVisualElements =

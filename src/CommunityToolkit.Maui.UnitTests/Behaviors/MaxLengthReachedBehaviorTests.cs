@@ -7,7 +7,6 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReachedBehavior, InputView>(new MaxLengthReachedBehavior(), new Entry())
 {
 	[Fact]
-	
 	public void ShouldExecuteCommandWhenMaxLengthHasBeenReached()
 	{
 		// arrange
@@ -23,7 +22,6 @@ public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReached
 	}
 
 	[Fact]
-	
 	public void ShouldInvokeEventHandlerWhenMaxLengthHasBeenReached()
 	{
 		// arrange
@@ -39,7 +37,6 @@ public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReached
 	}
 
 	[Fact]
-	
 	public void ShouldExecuteCommandWithTextValueNoLargerThenMaxLength()
 	{
 		// arrange
@@ -56,7 +53,6 @@ public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReached
 	}
 
 	[Fact]
-	
 	public void ShouldInvokeEventHandlerWithTextValueNoLargerThenMaxLength()
 	{
 		// arrange
@@ -73,7 +69,6 @@ public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReached
 	}
 
 	[Fact]
-	
 	public void ShouldNotExecuteCommandBeforeMaxLengthHasBeenReached()
 	{
 		// arrange
@@ -88,7 +83,6 @@ public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReached
 	}
 
 	[Fact]
-	
 	public void ShouldNotInvokeEventHandlerBeforeMaxLengthHasBeenReached()
 	{
 		// arrange
@@ -103,7 +97,6 @@ public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReached
 	}
 
 	[Fact]
-	
 	public void ShouldDismissKeyboardWhenMaxLengthHasBeenReached()
 	{
 		// arrange
@@ -119,7 +112,6 @@ public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReached
 	}
 
 	[Fact]
-	
 	public void ShouldNotDismissKeyboardBeforeMaxLengthHasBeenReached()
 	{
 		// arrange
@@ -134,7 +126,6 @@ public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReached
 	}
 
 	[Fact]
-	
 	public void ShouldNotDismissKeyboardWhenOptionSetToFalse()
 	{
 		// arrange
@@ -148,7 +139,6 @@ public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReached
 		// assert
 		Assert.True(entry.IsFocused);
 	}
-
 	
 	static Entry CreateEntry(int? maxLength = 2,
 							  bool shouldDismissKeyboardAutomatically = false,

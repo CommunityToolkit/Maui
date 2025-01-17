@@ -90,7 +90,6 @@ public partial class MediaManager : IDisposable
 	/// Creates the corresponding platform view of <see cref="MediaElement"/> on iOS and macOS.
 	/// </summary>
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
-	
 	public (PlatformMediaElement Player, AVPlayerViewController PlayerViewController) CreatePlatformView()
 	{
 		Player = new();
@@ -132,7 +131,6 @@ public partial class MediaManager : IDisposable
 		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
-
 	
 	protected virtual partial void PlatformPlay()
 	{
@@ -144,12 +142,10 @@ public partial class MediaManager : IDisposable
 		Player?.Play();
 	}
 
-	
 	protected virtual partial void PlatformPause()
 	{
 		Player?.Pause();
 	}
-
 	
 	protected virtual async partial Task PlatformSeek(TimeSpan position, CancellationToken token)
 	{
@@ -191,7 +187,6 @@ public partial class MediaManager : IDisposable
 		MediaElement.SeekCompleted();
 	}
 
-	
 	protected virtual partial void PlatformStop()
 	{
 		// There's no Stop method so pause the video and reset its position
@@ -384,7 +379,6 @@ public partial class MediaManager : IDisposable
 		PlayerViewController.ShowsPlaybackControls =
 			MediaElement.ShouldShowPlaybackControls;
 	}
-
 	
 	protected virtual partial void PlatformUpdatePosition()
 	{
@@ -417,7 +411,6 @@ public partial class MediaManager : IDisposable
 			MediaElement.Duration = MediaElement.Position = TimeSpan.Zero;
 		}
 	}
-
 	
 	protected virtual partial void PlatformUpdateVolume()
 	{
@@ -433,7 +426,7 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	
+
 	protected virtual partial void PlatformUpdateShouldKeepScreenOn()
 	{
 		if (Player is null)
@@ -443,7 +436,7 @@ public partial class MediaManager : IDisposable
 		UIApplication.SharedApplication.IdleTimerDisabled = MediaElement.ShouldKeepScreenOn;
 	}
 
-	
+
 	protected virtual partial void PlatformUpdateShouldMute()
 	{
 		if (Player is null)
@@ -463,7 +456,7 @@ public partial class MediaManager : IDisposable
 	/// Releases the unmanaged resources used by the <see cref="MediaManager"/> and optionally releases the managed resources.
 	/// </summary>
 	/// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
-	
+
 	protected virtual void Dispose(bool disposing)
 	{
 		if (disposing)
@@ -548,7 +541,7 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	
+
 	void AddStatusObservers()
 	{
 		if (Player is null)
@@ -563,7 +556,7 @@ public partial class MediaManager : IDisposable
 		RateObserver = AVPlayer.Notifications.ObserveRateDidChange(RateChanged);
 	}
 
-	
+
 	void VolumeChanged(NSObservedChange e)
 	{
 		if (Player is null)
@@ -578,7 +571,7 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	
+
 	void MutedChanged(NSObservedChange e)
 	{
 		if (Player is null)
@@ -617,7 +610,7 @@ public partial class MediaManager : IDisposable
 		PlayedToEndObserver?.Dispose();
 	}
 
-	
+
 	void StatusChanged(NSObservedChange obj)
 	{
 		if (Player is null)
@@ -636,7 +629,7 @@ public partial class MediaManager : IDisposable
 		MediaElement.CurrentStateChanged(newState);
 	}
 
-	
+
 	void TimeControlStatusChanged(NSObservedChange obj)
 	{
 		if (Player is null || Player.Status is AVPlayerStatus.Unknown
@@ -658,7 +651,7 @@ public partial class MediaManager : IDisposable
 		MediaElement.CurrentStateChanged(newState);
 	}
 
-	
+
 	void ErrorOccurred(object? sender, NSNotificationEventArgs args)
 	{
 		string message;
@@ -681,7 +674,7 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	
+
 	void PlayedToEnd(object? sender, NSNotificationEventArgs args)
 	{
 		if (args.Notification.Object != PlayerViewController?.Player?.CurrentItem || Player is null)
@@ -707,7 +700,7 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	
+
 	void RateChanged(object? sender, NSNotificationEventArgs args)
 	{
 		if (Player is null)
