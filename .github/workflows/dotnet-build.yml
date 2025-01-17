@@ -91,7 +91,7 @@ jobs:
     name: Build Library
     runs-on: ${{ matrix.os }}
     env:
-      VSTEST_TESTHOST_SHUTDOWN_TIMEOUT: 1100 # Set your desired timeout value here
+      VSTEST_TESTHOST_SHUTDOWN_TIMEOUT: 1100 # Fixes "The active test run was aborted. Reason: Test host process crashed" 
     strategy:
       matrix:
         os: [windows-latest, macos-15]
