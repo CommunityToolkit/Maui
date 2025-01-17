@@ -42,6 +42,7 @@ env:
   PathToCommunityToolkitCameraAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Camera.Analyzers.CodeFixes/CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
+  PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
   DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/8.0.6.json'
   CommunityToolkitSampleApp_Xcode_Version: '16.2'
   CommunityToolkitLibrary_Xcode_Version: '16.2'
@@ -60,10 +61,12 @@ jobs:
       - name: Set Xcode version
         if: runner.os == 'macOS'
         run: |
+          echo Installed Xcode Versions:
+          ls -al  /Applications | grep Xcode
           sudo xcode-select --switch /Applications/Xcode_${{ env.CommunityToolkitSampleApp_Xcode_Version }}.app/Contents/Developer
 
-      - name: Install Latest .NET SDK
-        uses: actions/setup-dotnet@v3
+      - name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.LATEST_NET_VERSION }}
 
@@ -119,10 +122,12 @@ jobs:
       - name: Set Xcode version
         if: runner.os == 'macOS'
         run: |
+          echo Installed Xcode Versions:
+          ls -al  /Applications | grep Xcode
           sudo xcode-select --switch /Applications/Xcode_${{ env.CommunityToolkitLibrary_Xcode_Version }}.app/Contents/Developer
 
-      - name: Install .NET SDK
-        uses: actions/setup-dotnet@v3
+      - name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
 
@@ -198,8 +203,8 @@ jobs:
       id-token: write # Required for requesting the JWT
 
     steps:
-      - name: Install .NET SDK
-        uses: actions/setup-dotnet@v3
+      - name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
 
@@ -251,7 +256,7 @@ jobs:
 
     steps:
       - name: Install .NET SDK
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
 
@@ -268,3 +273,49 @@ jobs:
           --source https://api.nuget.org/v3/index.json
           --api-key ${{ secrets.NUGET_PACKAGE_PUSH_TOKEN }}
           --skip-duplicate
+
+  run_benchmarks:
+    name: Run Manchmarks
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-15]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@main
+
+      - name: Set Xcode version
+        if: runner.os == 'macOS'
+        run: |
+          echo Installed Xcode Versions:
+          ls -al  /Applications | grep Xcode
+          sudo xcode-select --switch /Applications/Xcode_${{ env.CommunityToolkitLibrary_Xcode_Version }}.app/Contents/Developer
+
+      - name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+
+      - name: Install .NET MAUI Workload
+        run: dotnet workload install maui --skip-sign-check --source https://api.nuget.org/v3/index.json
+
+      - name: Install Tizen Workload
+        run: |
+          Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
+          .\workload-install.ps1
+        shell: pwsh
+
+      - name: Display dotnet info
+        run: dotnet --info
+
+      - name: Run Benchmarks
+        run: dotnet run --project ${{ env.PathToCommunityToolkitAnalyzersBenchmarkCsproj }} -c Release -- -a ${{ runner.temp }}
+
+      - name: Publish Benchmarks
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Benchamrks
+          path: |
+            ${{ runner.temp }}/**/*.md
