@@ -151,43 +151,43 @@ jobs:
         run: dotnet --info
 
       - name: 'Build CommunityToolkit.Maui.Analyzers'
-        run: ${{ env.PathToCommunityToolkitAnalyzersCsproj }}
+        run: dotnet build ${{ env.PathToCommunityToolkitAnalyzersCsproj }} -c Release
 
       - name: 'Build CommunityToolkit.Maui.Analyzers.CodeFixes'
-        run: ${{ env.PathToCommunityToolkitAnalyzersCodeFixCsproj }}
+        run: dotnet build ${{ env.PathToCommunityToolkitAnalyzersCodeFixCsproj }} -c Release
 
       - name: 'Build CommunityToolkit.Maui.Camera.Analyzers'
-        run: ${{ env.PathToCommunityToolkitCameraAnalyzersCsproj }}
+        run: dotnet build ${{ env.PathToCommunityToolkitCameraAnalyzersCsproj }} -c Release
 
       - name: 'Build CommunityToolkit.Maui.Camera.Analyzers.CodeFixes'
-        run: ${{ env.PathToCommunityToolkitCameraAnalyzersCodeFixCsproj }}
+        run: dotnet build ${{ env.PathToCommunityToolkitCameraAnalyzersCodeFixCsproj }} -c Release
 
       - name: 'Build CommunityToolkit.Maui.MediaElement.Analyzers'
-        run: ${{ env.PathToCommunityToolkitMediaElementAnalyzersCsproj }}
+        run: dotnet build ${{ env.PathToCommunityToolkitMediaElementAnalyzersCsproj }} -c Release
 
       - name: 'Build CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes'
-        run: ${{ env.PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj }}
+        run: dotnet build ${{ env.PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj }} -c Release
 
       - name: 'Build CommunityToolkit.Maui.SourceGenerators'
-        run: ${{ env.PathToCommunityToolkitSourceGeneratorsCsproj }}
+        run: dotnet build ${{ env.PathToCommunityToolkitSourceGeneratorsCsproj }} -c Release
 
       - name: 'Build CommunityToolkit.SourceGenerators.Internal'
-        run: ${{ env.PathToCommunityToolkitSourceGeneratorsInternalCsproj }}
+        run: dotnet build ${{ env.PathToCommunityToolkitSourceGeneratorsInternalCsproj }} -c Release
 
       - name: 'Build CommunityToolkit.Maui.Camera'
-        run: ${{ env.PathToCommunityToolkitCameraCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionCamera }} -p:Version=${{ env.NugetPackageVersion }}
+        run: dotnet build ${{ env.PathToCommunityToolkitCameraCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionCamera }} -p:Version=${{ env.NugetPackageVersion }}
 
       - name: 'Build CommunityToolkit.Maui.MediaElement'
-        run: ${{ env.PathToCommunityToolkitMediaElementCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionMediaElement }} -p:Version=${{ env.NugetPackageVersion }}
+        run: dotnet build ${{ env.PathToCommunityToolkitMediaElementCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionMediaElement }} -p:Version=${{ env.NugetPackageVersion }}
 
       - name: 'Build CommunityToolkit.Maui.Maps'
-        run: ${{ env.PathToCommunityToolkitMapsCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionMaps }} -p:Version=${{ env.NugetPackageVersion }}
+        run: dotnet build ${{ env.PathToCommunityToolkitMapsCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionMaps }} -p:Version=${{ env.NugetPackageVersion }}
 
       - name: 'Build CommunityToolkit.Maui.Core'
-        run: ${{ env.PathToCommunityToolkitCoreCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }}
+        run: dotnet build ${{ env.PathToCommunityToolkitCoreCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }}
 
       - name: 'Build CommunityToolkit.Maui'
-        run: ${{ env.PathToCommunityToolkitCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }}
+        run: dotnet build ${{ env.PathToCommunityToolkitCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }}
 
       - name: 'Run CommunityToolkit.Maui.Analyzers.UnitTests'
         run: 'dotnet test ${{ env.PathToCommunityToolkitAnalyzersUnitTestCsproj }} -c Release'
