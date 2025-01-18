@@ -150,8 +150,47 @@ jobs:
       - name: Display dotnet info
         run: dotnet --info
 
-      - name: Build CommunityToolkit.Maui
-        run: dotnet build -c Release ${{ env.PathToLibrarySolution }}
+      - name: 'Build CommunityToolkit.Maui.Analyzers'
+        run: ${{ env.PathToCommunityToolkitAnalyzersCsproj }}
+
+      - name: 'Build CommunityToolkit.Maui.Analyzers.CodeFixes'
+        run: ${{ env.PathToCommunityToolkitAnalyzersCodeFixCsproj }}
+
+      - name: 'Build CommunityToolkit.Maui.Camera.Analyzers'
+        run: ${{ env.PathToCommunityToolkitCameraAnalyzersCsproj }}
+
+      - name: 'Build CommunityToolkit.Maui.Camera.Analyzers.CodeFixes'
+        run: ${{ env.PathToCommunityToolkitCameraAnalyzersCodeFixCsproj }}
+
+      - name: 'Build CommunityToolkit.Maui.MediaElement.Analyzers'
+        run: ${{ env.PathToCommunityToolkitMediaElementAnalyzersCsproj }}
+
+      - name: 'Build CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes'
+        run: ${{ env.PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj }}
+
+      - name: 'Build CommunityToolkit.Maui.SourceGenerators'
+        run: ${{ env.PathToCommunityToolkitSourceGeneratorsCsproj }}
+
+      - name: 'Build CommunityToolkit.SourceGenerators.Internal'
+        run: ${{ env.PathToCommunityToolkitSourceGeneratorsInternalCsproj }}
+
+      - name: 'Build CommunityToolkit.Maui.Camera'
+        run: ${{ env.PathToCommunityToolkitCameraCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionCamera }} -p:Version=${{ env.NugetPackageVersion }}
+
+      - name: 'Build CommunityToolkit.Maui.MediaElement'
+        run: ${{ env.PathToCommunityToolkitMediaElementCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionMediaElement }} -p:Version=${{ env.NugetPackageVersion }}
+
+      - name: 'Build CommunityToolkit.Maui.Maps'
+        run: ${{ env.PathToCommunityToolkitMapsCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionMaps }} -p:Version=${{ env.NugetPackageVersion }}
+
+      - name: 'Build CommunityToolkit.Maui.Core'
+        run: ${{ env.PathToCommunityToolkitCoreCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }}
+
+      - name: 'Build CommunityToolkit.Maui'
+        run: ${{ env.PathToCommunityToolkitCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }}
+
+      - name: 'Run CommunityToolkit.Maui.Analyzers.UnitTests'
+        run: 'dotnet test ${{ env.PathToCommunityToolkitAnalyzersUnitTestCsproj }} -c Release'
 
       - name: Run CommunityToolkit.Maui.UnitTests
         run: dotnet test -c Release ${{ env.PathToLibrarySolution }} --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory ${{ runner.temp }}
