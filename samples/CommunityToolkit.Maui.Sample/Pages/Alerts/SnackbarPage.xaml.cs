@@ -82,6 +82,25 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 			throw new NotSupportedException($"{nameof(DisplayCustomSnackbarButton)}.{nameof(ITextButton.Text)} Not Recognized");
 		}
 	}
+	async void DisplayCustomSnackbarButtonClicked2(object sender, EventArgs e)
+	{
+		var options = new SnackbarOptions
+		{
+			BackgroundColor = Colors.Red,
+			TextColor = Colors.Green,
+			CharacterSpacing = 1,
+			ActionButtonFont = Font.SystemFontOfSize(14),
+			ActionButtonTextColor = Colors.Yellow,
+			CornerRadius = new CornerRadius(10),
+			Font = Font.SystemFontOfSize(14),
+		};
+		await DisplayCustomSnackbarButton2.DisplaySnackbar(
+			"This is a customized Snackbar",
+			() => DisplayCustomSnackbarButton2.BackgroundColor = Colors.Blue,
+			"Close",
+			TimeSpan.FromSeconds(5),
+			options);
+	}
 
 	void Snackbar_Dismissed(object? sender, EventArgs e)
 	{

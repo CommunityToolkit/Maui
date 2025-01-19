@@ -62,11 +62,12 @@ public class Alert
 	/// <summary>
 	/// Show the <see cref="Alert"/> on the screen
 	/// </summary>
-	public void Show()
+	/// <param name="stretch">Should stretch alert container horizontally</param>
+	public void Show(bool stretch = false)
 	{
 		AlertView.AnchorView = Anchor;
 
-		AlertView.Setup();
+		AlertView.Setup(stretch);
 
 		timer = NSTimer.CreateScheduledTimer(Duration, t =>
 		{

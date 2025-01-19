@@ -15,9 +15,14 @@
     </pages:BasePage.Resources>
     
     <VerticalStackLayout Spacing="12">
+        <Button x:Name="DisplayCustomSnackbarButton2"
+                Text="Display Custom Snackbar"
+                Clicked="DisplayCustomSnackbarButtonClicked2"
+                TextColor="{Binding Source={RelativeSource Self}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}, x:DataType=Button}"/> 
+
         
         <Label Text="The Snackbar is a timed alert that appears at the bottom of the screen by default. It is dismissed after a configurable duration of time. Snackbar is fully customizable and can be anchored to any IView." 
-                LineBreakMode = "WordWrap" />
+               LineBreakMode = "WordWrap" />
         
         <Label Text="Windows uses toast notifications to display snackbar. Make sure you switched off Focus Assist."
                IsVisible="{OnPlatform Default='false', WinUI='true'}"/>

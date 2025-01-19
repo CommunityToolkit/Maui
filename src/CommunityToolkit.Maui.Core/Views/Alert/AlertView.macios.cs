@@ -8,6 +8,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class AlertView : UIView
 {
+	const int defaultSpacing = 10;
 	readonly List<UIView> children = [];
 
 	/// <summary>
@@ -49,17 +50,19 @@ public class AlertView : UIView
 	/// <summary>
 	/// Initializes <see cref="AlertView"/>
 	/// </summary>
-	public void Setup()
+	/// <param name="stretch">Should stretch container horizontally</param>
+	public void Setup(bool stretch = false)
 	{
 		Initialize();
-		ConstraintInParent();
+		ConstraintInParent(stretch);
 	}
 
-	void ConstraintInParent()
+	/// <inheritdoc />
+	public override void LayoutSubviews()
 	{
+		base.LayoutSubviews();
 		_ = Container ?? throw new InvalidOperationException($"{nameof(AlertView)}.{nameof(Initialize)} not called");
 
-		const int defaultSpacing = 10;
 		if (AnchorView is null)
 		{
 			this.SafeBottomAnchor().ConstraintEqualTo(ParentView.SafeBottomAnchor(), -defaultSpacing).Active = true;
@@ -67,11 +70,33 @@ public class AlertView : UIView
 		}
 		else
 		{
-			this.SafeBottomAnchor().ConstraintEqualTo(AnchorView.SafeTopAnchor(), -defaultSpacing).Active = true;
+			var anchorViewPosition = AnchorView.Superview.ConvertRectToView(AnchorView.Frame, null);
+			if (anchorViewPosition.Top < Container.Frame.Height + SafeAreaLayoutGuide.LayoutFrame.Bottom)
+			{
+				this.SafeTopAnchor().ConstraintEqualTo(AnchorView.SafeBottomAnchor(), defaultSpacing).Active = true;
+			}
+			else
+			{
+				this.SafeBottomAnchor().ConstraintEqualTo(AnchorView.SafeTopAnchor(), -defaultSpacing).Active = true;
+			}
 		}
+	}
 
-		this.SafeLeadingAnchor().ConstraintGreaterThanOrEqualTo(ParentView.SafeLeadingAnchor(), defaultSpacing).Active = true;
-		this.SafeTrailingAnchor().ConstraintLessThanOrEqualTo(ParentView.SafeTrailingAnchor(), -defaultSpacing).Active = true;
+	void ConstraintInParent(bool stretch)
+	{
+		_ = Container ?? throw new InvalidOperationException($"{nameof(AlertView)}.{nameof(Initialize)} not called");
+
+		if (stretch)
+		{
+			this.SafeLeadingAnchor().ConstraintEqualTo(ParentView.SafeLeadingAnchor(), defaultSpacing).Active = true;
+			this.SafeTrailingAnchor().ConstraintEqualTo(ParentView.SafeTrailingAnchor(), -defaultSpacing).Active = true;
+		}
+		else
+		{
+			this.SafeLeadingAnchor().ConstraintGreaterThanOrEqualTo(ParentView.SafeLeadingAnchor(), defaultSpacing).Active = true;
+			this.SafeTrailingAnchor().ConstraintLessThanOrEqualTo(ParentView.SafeTrailingAnchor(), -defaultSpacing).Active = true;
+		}
+		
 		this.SafeCenterXAnchor().ConstraintEqualTo(ParentView.SafeCenterXAnchor()).Active = true;
 
 		Container.SafeLeadingAnchor().ConstraintEqualTo(this.SafeLeadingAnchor(), defaultSpacing).Active = true;
