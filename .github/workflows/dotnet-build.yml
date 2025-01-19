@@ -189,9 +189,6 @@ jobs:
       - name: 'Build CommunityToolkit.Maui'
         run: dotnet build ${{ env.PathToCommunityToolkitCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }}
 
-      - name: 'Run CommunityToolkit.Maui.Analyzers.UnitTests'
-        run: 'dotnet test ${{ env.PathToCommunityToolkitAnalyzersUnitTestCsproj }} -c Release'
-
       - name: Run CommunityToolkit.Maui.UnitTests
         run: dotnet test -c Release ${{ env.PathToLibrarySolution }} --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory ${{ runner.temp }}
 
