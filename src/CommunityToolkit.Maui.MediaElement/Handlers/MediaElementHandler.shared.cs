@@ -13,7 +13,7 @@ public partial class MediaElementHandler
 	/// <summary>
 	/// The <see cref="MediaManager"/> that is managing the <see cref="IMediaElement"/> instance.
 	/// </summary>
-	[Obsolete]
+	
 	protected MediaManager? mediaManager;
 #endif
 
