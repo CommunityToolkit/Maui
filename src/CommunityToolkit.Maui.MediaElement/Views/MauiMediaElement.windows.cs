@@ -186,7 +186,7 @@ public partial class MauiMediaElement : Grid, IDisposable
 			fullScreenButton.Content = exitFullScreenIcon;
 			fullScreenGrid.Children.Add(mediaPlayerElement);
 			fullScreenGrid.Children.Add(buttonContainer);
-			
+
 			popup.XamlRoot = mediaPlayerElement.XamlRoot;
 			popup.HorizontalOffset = 0;
 			popup.VerticalOffset = 0;

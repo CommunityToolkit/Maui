@@ -1,28 +1,25 @@
 ﻿using Android.Graphics;
 using Android.Views;
 using Android.Widget;
-using Com.Google.Android.Exoplayer2.UI;
-using CommunityToolkit.Maui.Core;
+using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Primitives;
 using static Android.Views.ViewGroup;
-using static CommunityToolkit.Maui.Core.Views.MauiMediaElement;
-using CurrentPlatformActivity = CommunityToolkit.Maui.Core.Views.MauiMediaElement.CurrentPlatformContext;
 
 namespace CommunityToolkit.Maui.Extensions;
 
 partial class SubtitleExtensions : SubtitleTimer<TextView>, IDisposable
 {
 	FrameLayout.LayoutParams? subtitleLayout;
-	readonly StyledPlayerView styledPlayerView;
+	readonly PlayerView playerView;
 	MediaElementScreenState screenState;
 	bool disposedValue;
 
-	public SubtitleExtensions(StyledPlayerView styledPlayerView, IDispatcher dispatcher)
+	public SubtitleExtensions(PlayerView styledPlayerView, IDispatcher dispatcher)
 	{
 		screenState = MediaElementScreenState.Default;
 		this.dispatcher = dispatcher;
-		this.styledPlayerView = styledPlayerView;
+		this.playerView = styledPlayerView;
 		Cues = [];
 		InitializeLayout();
 		InitializeTextBlock();
@@ -40,7 +37,7 @@ partial class SubtitleExtensions : SubtitleTimer<TextView>, IDisposable
 
 		MediaManager.FullScreenEvents.WindowsChanged += OnFullScreenChanged;
 		InitializeText();
-		dispatcher.Dispatch(() => styledPlayerView.AddView(subtitleTextBlock));
+		dispatcher.Dispatch(() => playerView.AddView(subtitleTextBlock));
 		StartTimer();
 	}
 
@@ -52,7 +49,7 @@ partial class SubtitleExtensions : SubtitleTimer<TextView>, IDisposable
 		subtitleTextBlock.Text = string.Empty;
 		Cues?.Clear();
 		
-		dispatcher.Dispatch(() => styledPlayerView?.RemoveView(subtitleTextBlock));
+		dispatcher.Dispatch(() => playerView?.RemoveView(subtitleTextBlock));
 	}
 
 	public override void UpdateSubtitle(object? sender, System.Timers.ElapsedEventArgs e)
@@ -61,7 +58,7 @@ partial class SubtitleExtensions : SubtitleTimer<TextView>, IDisposable
 		ArgumentNullException.ThrowIfNull(MediaElement);
 		ArgumentNullException.ThrowIfNull(Cues);
 
-		if (Cues.Count == 0 || styledPlayerView is null)
+		if (Cues.Count == 0 || playerView is null)
 		{
 			return;
 		}
@@ -85,7 +82,7 @@ partial class SubtitleExtensions : SubtitleTimer<TextView>, IDisposable
 
 	void OnFullScreenChanged(object? sender, FullScreenStateChangedEventArgs e)
 	{
-		var layout = CurrentPlatformContext.CurrentWindow.DecorView as ViewGroup;
+		var layout = Platform.CurrentActivity?.Window?.DecorView as ViewGroup;
 		ArgumentNullException.ThrowIfNull(layout);
 		dispatcher.Dispatch(() =>
 		{ 
@@ -93,7 +90,7 @@ partial class SubtitleExtensions : SubtitleTimer<TextView>, IDisposable
 			{
 				case MediaElementScreenState.FullScreen:
 					screenState = MediaElementScreenState.FullScreen;
-					styledPlayerView.RemoveView(subtitleTextBlock);
+					playerView.RemoveView(subtitleTextBlock);
 					InitializeLayout();
 					InitializeTextBlock();
 					InitializeText();
@@ -105,7 +102,7 @@ partial class SubtitleExtensions : SubtitleTimer<TextView>, IDisposable
 					InitializeLayout();
 					InitializeTextBlock();
 					InitializeText();
-					styledPlayerView.AddView(subtitleTextBlock);
+					playerView.AddView(subtitleTextBlock);
 					break;
 			}
 		});
@@ -113,11 +110,11 @@ partial class SubtitleExtensions : SubtitleTimer<TextView>, IDisposable
 
 	void SetHeight()
 	{
-		if (styledPlayerView is null || subtitleLayout is null || subtitleTextBlock is null)
+		if (playerView is null || subtitleLayout is null || subtitleTextBlock is null)
 		{
 			return;
 		}
-		int height = styledPlayerView.Height;
+		int height = playerView.Height;
 		switch (screenState)
 		{
 			case MediaElementScreenState.Default:
@@ -141,7 +138,7 @@ partial class SubtitleExtensions : SubtitleTimer<TextView>, IDisposable
 
 	void InitializeTextBlock()
 	{
-		subtitleTextBlock = new(CurrentPlatformActivity.CurrentActivity.ApplicationContext)
+		subtitleTextBlock = new(Platform.CurrentActivity?.ApplicationContext)
 		{
 			Text = string.Empty,
 			HorizontalScrollBarEnabled = false,
