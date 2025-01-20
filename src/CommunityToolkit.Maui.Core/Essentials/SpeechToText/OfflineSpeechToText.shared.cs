@@ -20,7 +20,7 @@ public static class OfflineSpeechToText
 	/// <inheritdoc cref="ISpeechToText.StopListenAsync"/>
 	public static Task StopListenAsync(CancellationToken cancellationToken = default) =>
 		Default.StopListenAsync(cancellationToken);
-	
+
 	/// <inheritdoc cref="ISpeechToText.RequestPermissions"/>
 	public static Task<bool> RequestPermissions(CancellationToken cancellationToken = default) =>
 		Default.RequestPermissions(cancellationToken);

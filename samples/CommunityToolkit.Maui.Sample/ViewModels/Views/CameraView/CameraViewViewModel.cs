@@ -8,13 +8,13 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseViewModel
 {
 	readonly ICameraProvider cameraProvider = cameraProvider;
-	
+
 	public IReadOnlyList<CameraInfo> Cameras => cameraProvider.AvailableCameras ?? [];
 
 	public CancellationToken Token => CancellationToken.None;
 
 	public ICollection<CameraFlashMode> FlashModes { get; } = Enum.GetValues<CameraFlashMode>();
-	
+
 	[ObservableProperty]
 	public partial CameraFlashMode FlashMode { get; set; }
 
@@ -35,11 +35,11 @@ public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseV
 
 	[ObservableProperty]
 	public partial string CurrentZoomText { get; set; } = string.Empty;
-	
-	[ObservableProperty] 
+
+	[ObservableProperty]
 	public partial string FlashModeText { get; set; } = string.Empty;
-	
-	[ObservableProperty] 
+
+	[ObservableProperty]
 	public partial string ResolutionText { get; set; } = string.Empty;
 
 	[RelayCommand]

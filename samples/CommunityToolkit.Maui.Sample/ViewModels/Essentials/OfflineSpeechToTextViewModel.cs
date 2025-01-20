@@ -10,11 +10,6 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 {
 	readonly ISpeechToText speechToText;
 
-	public SpeechToTextState? State => speechToText.CurrentState;
-
-	[ObservableProperty]
-	string? recognitionText = "Welcome to .NET MAUI Community Toolkit!";
-
 	public OfflineSpeechToTextViewModel()
 	{
 		// For demo purposes. You can resolve dependency from the DI container,
@@ -23,6 +18,11 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 		speechToText.StateChanged += HandleSpeechToTextStateChanged;
 		speechToText.RecognitionResultCompleted += HandleRecognitionResultCompleted;
 	}
+
+	public SpeechToTextState? State => speechToText.CurrentState;
+
+	[ObservableProperty]
+	public partial string? RecognitionText { get; set; } = "Welcome to .NET MAUI Community Toolkit!";
 
 	[RelayCommand]
 	async Task StartListen()

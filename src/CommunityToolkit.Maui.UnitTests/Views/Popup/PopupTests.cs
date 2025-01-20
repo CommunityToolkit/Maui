@@ -30,7 +30,6 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	[Obsolete]
 	public async Task ShowPopupAsync_CancellationTokenExpired()
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
@@ -48,7 +47,7 @@ public class PopupTests : BaseHandlerTest
 		// Make sure that our page will have a Handler
 		CreateViewHandler<MockPageHandler>(page);
 
-		app.MainPage = page;
+		app.Windows[0].Page = page;
 
 		var popupHandler = CreateElementHandler<MockPopupHandler>(popup);
 
@@ -62,7 +61,6 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	[Obsolete]
 	public async Task ShowPopupAsync_CancellationTokenCancelled()
 	{
 		var cts = new CancellationTokenSource();
@@ -80,7 +78,7 @@ public class PopupTests : BaseHandlerTest
 		// Make sure that our page will have a Handler
 		CreateViewHandler<MockPageHandler>(page);
 
-		app.MainPage = page;
+		app.Windows[0].Page = page;
 
 		var popupHandler = CreateElementHandler<MockPopupHandler>(popup);
 
@@ -94,7 +92,6 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	[Obsolete]
 	public async Task CloseAsync_CancellationTokenExpired()
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
@@ -112,7 +109,7 @@ public class PopupTests : BaseHandlerTest
 		// Make sure that our page will have a Handler
 		CreateViewHandler<MockPageHandler>(page);
 
-		app.MainPage = page;
+		app.Windows[0].Page = page;
 
 		var popupHandler = CreateElementHandler<MockPopupHandler>(popup);
 
@@ -126,7 +123,6 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	[Obsolete]
 	public async Task CloseAsync_CancellationTokenCancelled()
 	{
 		var cts = new CancellationTokenSource();
@@ -144,7 +140,7 @@ public class PopupTests : BaseHandlerTest
 		// Make sure that our page will have a Handler
 		CreateViewHandler<MockPageHandler>(page);
 
-		app.MainPage = page;
+		app.Windows[0].Page = page;
 
 		var popupHandler = CreateElementHandler<MockPopupHandler>(popup);
 
@@ -158,7 +154,6 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	[Obsolete]
 	public async Task OnOpenedMapperIsCalled()
 	{
 		var app = Application.Current ?? throw new NullReferenceException();
@@ -174,7 +169,7 @@ public class PopupTests : BaseHandlerTest
 		// Make sure that our page will have a Handler
 		CreateViewHandler<MockPageHandler>(page);
 
-		app.MainPage = page;
+		app.Windows[0].Page = page;
 
 		var popupHandler = CreateElementHandler<MockPopupHandler>(popup);
 
@@ -194,7 +189,6 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Medium)]
-	[Obsolete]
 	public async Task PopupDismissedByTappingOutsideOfPopup()
 	{
 		var popupClosedTCS = new TaskCompletionSource<(string? Result, bool WasDismissedByTappingOutsideOfPopup)>();
@@ -217,7 +211,7 @@ public class PopupTests : BaseHandlerTest
 		// Make sure that our page will have a Handler
 		CreateViewHandler<MockPageHandler>(page);
 
-		app.MainPage = page;
+		app.Windows[0].Page = page;
 
 		CreateElementHandler<MockPopupHandler>(popup);
 
@@ -233,7 +227,6 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	[Obsolete]
 	public async Task OnDismissedWithResult()
 	{
 		object? result = null;
@@ -252,7 +245,7 @@ public class PopupTests : BaseHandlerTest
 		// Make sure that our page will have a Handler
 		CreateViewHandler<MockPageHandler>(page);
 
-		app.MainPage = page;
+		app.Windows[0].Page = page;
 
 		// Make sure that our popup will have a Handler
 		CreateElementHandler<MockPopupHandler>(popup);
@@ -276,7 +269,6 @@ public class PopupTests : BaseHandlerTest
 
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	[Obsolete]
 	public async Task OnDismissedWithoutResult()
 	{
 		object? result = null;
@@ -294,7 +286,7 @@ public class PopupTests : BaseHandlerTest
 		// Make sure that our page will have a Handler
 		CreateViewHandler<MockPageHandler>(page);
 
-		app.MainPage = page;
+		app.Windows[0].Page = page;
 
 		// Make sure that our popup will have a Handler
 		CreateElementHandler<MockPopupHandler>(popup);
@@ -332,7 +324,6 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	[Obsolete]
 	public async Task ShowPopup_IsLogicalChild()
 	{
 		var app = Application.Current ?? throw new NullReferenceException();
@@ -348,7 +339,7 @@ public class PopupTests : BaseHandlerTest
 		// Make sure that our page will have a Handler
 		CreateViewHandler<MockPageHandler>(page);
 
-		app.MainPage = page;
+		app.Windows[0].Page = page;
 
 		// Make sure that our popup will have a Handler
 		CreateElementHandler<MockPopupHandler>(popup);
@@ -364,14 +355,14 @@ public class PopupTests : BaseHandlerTest
 		Assert.Single(page.LogicalChildrenInternal);
 	}
 
-	class MockPopup : Popup
+	sealed class MockPopup : Popup
 	{
 		public MockPopup()
 		{
 			ResultWhenUserTapsOutsideOfPopup = resultWhenUserTapsOutsideOfPopup;
 		}
 
-		protected override async Task OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup, CancellationToken token)
+		protected override async Task OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup, CancellationToken token = default)
 		{
 			await Task.Delay(100, token);
 
@@ -381,7 +372,7 @@ public class PopupTests : BaseHandlerTest
 		}
 	}
 
-	class PopupViewModel : INotifyPropertyChanged
+	sealed class PopupViewModel : INotifyPropertyChanged
 	{
 		public event PropertyChangedEventHandler? PropertyChanged;
 

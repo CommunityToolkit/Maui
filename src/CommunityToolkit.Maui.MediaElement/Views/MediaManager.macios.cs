@@ -137,7 +137,7 @@ public partial class MediaManager : IDisposable
 		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
-
+	
 	protected virtual partial void PlatformPlay()
 	{
 		if (Player?.CurrentTime == PlayerItem?.Duration)
@@ -152,7 +152,7 @@ public partial class MediaManager : IDisposable
 	{
 		Player?.Pause();
 	}
-
+	
 	protected virtual async partial Task PlatformSeek(TimeSpan position, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
@@ -217,7 +217,7 @@ public partial class MediaManager : IDisposable
 		};
 	}
 
-	protected virtual partial void PlatformUpdateSource()
+	protected virtual partial ValueTask PlatformUpdateSource()
 	{
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 		
@@ -226,13 +226,12 @@ public partial class MediaManager : IDisposable
 
 		if (Player is null)
 		{
-			return;
+			return ValueTask.CompletedTask;
 		}
 
 		metaData ??= new(Player);
 		Metadata.ClearNowPlaying();
-
-		PlayerViewController?.ContentOverlayView?.Subviews?.FirstOrDefault()?.RemoveFromSuperview();
+		PlayerViewController?.ContentOverlayView?.Subviews.FirstOrDefault()?.RemoveFromSuperview();
 
 		if (MediaElement.Source is UriMediaSource uriMediaSource)
 		{
@@ -317,10 +316,12 @@ public partial class MediaManager : IDisposable
 
 			MediaElement.CurrentStateChanged(MediaElementState.None);
 		}
+
+		return ValueTask.CompletedTask;
 	}
+
 	void SetPoster()
 	{
-
 		if (PlayerItem is null || metaData is null)
 		{
 			return;
@@ -399,7 +400,7 @@ public partial class MediaManager : IDisposable
 		PlayerViewController.ShowsPlaybackControls =
 			MediaElement.ShouldShowPlaybackControls;
 	}
-
+	
 	protected virtual partial void PlatformUpdatePosition()
 	{
 		if (Player is null)
@@ -431,7 +432,7 @@ public partial class MediaManager : IDisposable
 			MediaElement.Duration = MediaElement.Position = TimeSpan.Zero;
 		}
 	}
-
+	
 	protected virtual partial void PlatformUpdateVolume()
 	{
 		if (Player is null)
@@ -446,6 +447,7 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
+
 	protected virtual partial void PlatformUpdateShouldKeepScreenOn()
 	{
 		if (Player is null)
@@ -454,6 +456,7 @@ public partial class MediaManager : IDisposable
 		}
 		UIApplication.SharedApplication.IdleTimerDisabled = MediaElement.ShouldKeepScreenOn;
 	}
+
 
 	protected virtual partial void PlatformUpdateShouldMute()
 	{
@@ -474,6 +477,7 @@ public partial class MediaManager : IDisposable
 	/// Releases the unmanaged resources used by the <see cref="MediaManager"/> and optionally releases the managed resources.
 	/// </summary>
 	/// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
+
 	protected virtual void Dispose(bool disposing)
 	{
 		if (disposing)
@@ -558,6 +562,7 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
+
 	void AddStatusObservers()
 	{
 		if (Player is null)
@@ -572,6 +577,7 @@ public partial class MediaManager : IDisposable
 		RateObserver = AVPlayer.Notifications.ObserveRateDidChange(RateChanged);
 	}
 
+
 	void VolumeChanged(NSObservedChange e)
 	{
 		if (Player is null)
@@ -585,6 +591,7 @@ public partial class MediaManager : IDisposable
 			MediaElement.Volume = Player.Volume;
 		}
 	}
+
 
 	void MutedChanged(NSObservedChange e)
 	{
@@ -624,6 +631,7 @@ public partial class MediaManager : IDisposable
 		PlayedToEndObserver?.Dispose();
 	}
 
+
 	void StatusChanged(NSObservedChange obj)
 	{
 		if (Player is null)
@@ -641,6 +649,7 @@ public partial class MediaManager : IDisposable
 
 		MediaElement.CurrentStateChanged(newState);
 	}
+
 
 	void TimeControlStatusChanged(NSObservedChange obj)
 	{
@@ -663,6 +672,7 @@ public partial class MediaManager : IDisposable
 		MediaElement.CurrentStateChanged(newState);
 	}
 
+
 	void ErrorOccurred(object? sender, NSNotificationEventArgs args)
 	{
 		string message;
@@ -684,6 +694,7 @@ public partial class MediaManager : IDisposable
 			Logger?.LogWarning("{LogMessage}", message);
 		}
 	}
+
 
 	void PlayedToEnd(object? sender, NSNotificationEventArgs args)
 	{
@@ -709,6 +720,7 @@ public partial class MediaManager : IDisposable
 			}
 		}
 	}
+
 
 	void RateChanged(object? sender, NSNotificationEventArgs args)
 	{

@@ -262,7 +262,7 @@ partial class MediaManager : IDisposable
 		Player.MediaPlayer.IsMuted = MediaElement.ShouldMute;
 	}
 
-	protected virtual async partial void PlatformUpdateSource()
+	protected virtual async partial ValueTask PlatformUpdateSource()
 	{
 		if (Player is null)
 		{
