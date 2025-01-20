@@ -3,12 +3,9 @@ using CommunityToolkit.Maui.Sample.ViewModels;
 
 namespace CommunityToolkit.Maui.Sample.Pages;
 
-public abstract class BasePage<TViewModel> : BasePage where TViewModel : BaseViewModel
+public abstract class BasePage<TViewModel>(TViewModel viewModel) : BasePage(viewModel)
+	where TViewModel : BaseViewModel
 {
-	protected BasePage(TViewModel viewModel) : base(viewModel)
-	{
-	}
-
 	public new TViewModel BindingContext => (TViewModel)base.BindingContext;
 }
 
