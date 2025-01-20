@@ -32,6 +32,17 @@
                 ItemDisplayBinding="{Binding ., Converter={StaticResource PickerLocaleDisplayConverter}}"/>
 
             <Label
+                Text="State"
+                FontAttributes="Bold"/>
+
+            <Label
+                Text="{Binding State}"
+                FontSize="18"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center"
+                MinimumHeightRequest="100" />
+
+            <Label
                 Text="Language Output"
                 FontAttributes="Bold"/>
 
@@ -46,44 +57,6 @@
                 Text="Play"
                 Command="{Binding PlayCommand}"
                 HorizontalOptions="Center" />
-
-            <Border
-                StrokeThickness="2"
-                Stroke="#808080"
-                StrokeShape="RoundRectangle 8,8,8,8"
-                Padding="12">
-                <Border.Content>
-
-                    <Grid RowDefinitions="*,60"
-                          ColumnDefinitions="*,*"
-                          RowSpacing="12"
-                          ColumnSpacing="12">
-
-                        <Button
-                            Grid.Row="0"
-                            Grid.Column="0"
-                            Text="ListenAsync"
-                            Command="{Binding ListenCommand}"
-                            HorizontalOptions="End" />
-
-                        <Button
-                            Grid.Row="0"
-                            Grid.Column="1"
-                            Text="Cancel Token"
-                            Command="{Binding ListenCancelCommand}"
-                            HorizontalOptions="Start" />
-
-                        <Label
-                            Grid.Row="1"
-                            Grid.ColumnSpan="2"
-                            Text="The `ListenAsync` API allows you to await the final speech recognition results using async/await. `ListenAsync` is cancelled via CancellationToken."
-                            HorizontalOptions="Center"
-                            HorizontalTextAlignment="Center"
-                            FontSize="12"/>
-
-                    </Grid>
-                </Border.Content>
-            </Border>
 
             <Border
                 StrokeThickness="2"

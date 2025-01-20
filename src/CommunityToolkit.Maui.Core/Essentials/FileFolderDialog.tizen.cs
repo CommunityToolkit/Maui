@@ -336,7 +336,12 @@ sealed class FileFolderDialog : Popup<string>
 		}
 		else if (isFileSelectionMode)
 		{
-			fileNameEntry!.Text = selectedItem;
+			if(fileNameEntry is null)
+			{
+				throw new InvalidOperationException($"{nameof(fileNameEntry)} cannot be null");
+			}
+
+			fileNameEntry.Text = selectedItem;
 		}
 	}
 

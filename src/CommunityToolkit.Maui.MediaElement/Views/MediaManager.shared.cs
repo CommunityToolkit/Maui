@@ -2,7 +2,7 @@
 #if !(ANDROID || IOS || WINDOWS || MACCATALYST || TIZEN)
 global using PlatformMediaElement = System.Object;
 #elif ANDROID
-global using PlatformMediaElement = Com.Google.Android.Exoplayer2.IExoPlayer;
+global using PlatformMediaElement = AndroidX.Media3.ExoPlayer.IExoPlayer;
 #elif IOS || MACCATALYST
 global using PlatformMediaElement = AVFoundation.AVPlayer;
 #elif WINDOWS
@@ -99,7 +99,6 @@ public partial class MediaManager
 	/// <summary>
 	/// The platform-specific media player.
 	/// </summary>
-	[Obsolete]
 	protected PlatformMediaElement? Player { get; set; }
 #endif
 
@@ -157,10 +156,7 @@ public partial class MediaManager
 	/// <summary>
 	/// Update the media source.
 	/// </summary>
-	public void UpdateSource()
-	{
-		PlatformUpdateSource();
-	}
+	public ValueTask UpdateSource() => PlatformUpdateSource();
 
 	/// <summary>
 	/// Update the media playback speed.
@@ -187,7 +183,7 @@ public partial class MediaManager
 	}
 
 	/// <summary>
-	/// Update whether or not the media should start playing from the beginning
+	/// Update whether the media should start playing from the beginning
 	/// when it reached the end.
 	/// </summary>
 	public void UpdateShouldLoopPlayback()
@@ -249,7 +245,7 @@ public partial class MediaManager
 	/// <summary>
 	/// Invokes the platform functionality to update the media source.
 	/// </summary>
-	protected virtual partial void PlatformUpdateSource();
+	protected virtual partial ValueTask PlatformUpdateSource();
 
 	/// <summary>
 	/// Invokes the platform functionality to update the media playback speed.
@@ -300,7 +296,7 @@ partial class MediaManager
 	protected virtual partial void PlatformPause() { }
 	protected virtual partial void PlatformStop() { }
 	protected virtual partial void PlatformUpdateAspect() { }
-	protected virtual partial void PlatformUpdateSource() { }
+	protected virtual partial ValueTask PlatformUpdateSource() => ValueTask.CompletedTask;
 	protected virtual partial void PlatformUpdateSpeed() { }
 	protected virtual partial void PlatformUpdateShouldShowPlaybackControls() { }
 	protected virtual partial void PlatformUpdatePosition() { }

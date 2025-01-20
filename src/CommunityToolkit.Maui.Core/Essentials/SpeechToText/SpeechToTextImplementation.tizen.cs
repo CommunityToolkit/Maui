@@ -10,9 +10,6 @@ public sealed partial class SpeechToTextImplementation
 {
 	SttClient? sttClient;
 	TaskCompletionSource<bool>? tcsInitialize;
-	TaskCompletionSource<string>? taskResult;
-	IProgress<string>? recognitionProgress;
-	string defaultSttEngineLocale = "ko_KR";
 
 	/// <inheritdoc/>
 	public SpeechToTextState CurrentState => sttClient?.CurrentState is Tizen.Uix.Stt.State.Recording
@@ -35,6 +32,7 @@ public sealed partial class SpeechToTextImplementation
 				sttClient.ErrorOccurred -= OnErrorOccurred;
 				sttClient.StateChanged -= OnStateChanged;
 			}
+
 			sttClient.Dispose();
 
 			sttClient = null;
@@ -55,30 +53,6 @@ public sealed partial class SpeechToTextImplementation
 		sttClient.StateChanged -= OnStateChanged;
 	}
 
-	[MemberNotNull(nameof(taskResult))]
-	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
-	{
-		recognitionProgress = recognitionResult;
-		
-		taskResult?.TrySetCanceled(cancellationToken);
-		taskResult = new TaskCompletionSource<string>();
-
-		await InternalStartListeningAsync(culture, cancellationToken);
-
-		await using (cancellationToken.Register(() =>
-		{
-			if (sttClient is not null)
-			{
-				StopRecording(sttClient);
-			}
-
-			taskResult.TrySetCanceled(cancellationToken);
-		}))
-		{
-			return await taskResult.Task.WaitAsync(cancellationToken);
-		}
-	}
-
 	void OnErrorOccurred(object? sender, ErrorOccurredEventArgs e)
 	{
 		if (sttClient is not null)
@@ -86,7 +60,7 @@ public sealed partial class SpeechToTextImplementation
 			StopRecording(sttClient);
 		}
 
-		taskResult?.TrySetException(new Exception("STT failed - " + e.ErrorMessage));
+		OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception("STT failed - " + e.ErrorMessage)));
 	}
 
 	void OnRecognitionResult(object? sender, RecognitionResultEventArgs e)
@@ -98,14 +72,13 @@ public sealed partial class SpeechToTextImplementation
 				StopRecording(sttClient);
 			}
 
-			taskResult?.TrySetException(new Exception("Failure in speech engine - " + e.Message));
+			OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception("Failure in speech engine - " + e.Message)));
 		}
 		else if (e.Result is ResultEvent.PartialResult)
 		{
-			foreach(var d in e.Data)
+			foreach (var d in e.Data)
 			{
 				OnRecognitionResultUpdated(d);
-				recognitionProgress?.Report(d);
 			}
 		}
 		else
@@ -115,8 +88,7 @@ public sealed partial class SpeechToTextImplementation
 				StopRecording(sttClient);
 			}
 
-			OnRecognitionResultCompleted(e.Data.ToString() ?? string.Empty);
-			taskResult?.TrySetResult(e.Data.ToString() ?? string.Empty);
+			OnRecognitionResultCompleted(SpeechToTextResult.Success(e.Data.ToString() ?? string.Empty));
 		}
 	}
 
@@ -150,13 +122,13 @@ public sealed partial class SpeechToTextImplementation
 		}
 		catch (Exception ex)
 		{
-			taskResult?.TrySetException(new Exception("STT is not available - " + ex));
+			OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception("STT is not available - " + ex)));
 		}
 
 		return tcsInitialize.Task.WaitAsync(cancellationToken);
 	}
 
-	async Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
+	async Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
 	{
 		await Initialize(cancellationToken);
 
@@ -164,11 +136,11 @@ public sealed partial class SpeechToTextImplementation
 		sttClient.RecognitionResult += OnRecognitionResult;
 		sttClient.StateChanged += OnStateChanged;
 
-		var recognitionType = sttClient.IsRecognitionTypeSupported(RecognitionType.Partial)
+		var recognitionType = options.ShouldReportPartialResults && sttClient.IsRecognitionTypeSupported(RecognitionType.Partial)
 			? RecognitionType.Partial
 			: RecognitionType.Free;
 
-		sttClient.Start(defaultSttEngineLocale, recognitionType);
+		sttClient.Start(options.Culture.Name, recognitionType);
 	}
 
 	Task InternalStopListeningAsync(CancellationToken cancellationToken)
