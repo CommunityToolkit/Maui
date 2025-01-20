@@ -6,7 +6,7 @@ variables:
   NugetPackageVersionCamera: '$(CurrentSemanticVersion)'
   NugetPackageVersionMediaElement: '$(CurrentSemanticVersion)'
   NugetPackageVersionMaps: '$(CurrentSemanticVersion)'
-  TOOLKIT_NET_VERSION: '9.0.101'
+  TOOLKIT_NET_VERSION: '9.0.102'
   LATEST_NET_VERSION: '9.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
@@ -29,13 +29,13 @@ variables:
   PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
   DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/8.0.6.json'
   CommunityToolkitSampleApp_Xcode_Version: '16.2'
-  CommunityToolkitLibrary_Xcode_Version: '16.1'
+  CommunityToolkitLibrary_Xcode_Version: '16.2'
 
 trigger:
-  branches:
-    include:
-    - main
-    - develop
+  # branches:
+  #   include:
+  #   - main
+  #   - develop
   tags:
     include:
     - '*'
@@ -43,15 +43,15 @@ trigger:
     exclude:
     - README.md
 
-pr:
-  autoCancel: 'true'
-  branches:
-    include:
-    - main
-    - develop
-  paths:
-    exclude:
-    - README.md
+# pr:
+#   autoCancel: 'true'
+#   branches:
+#     include:
+#     - main
+#     - develop
+#   paths:
+#     exclude:
+#     - README.md
 
 jobs:
   - job: build_sample
@@ -323,7 +323,7 @@ jobs:
           testResultsFiles: '**/*.trx'
           searchFolder: $(Agent.TempDirectory)
 
-      - task: PublishCodeCoverageResults@2
+      - task: PublishCodeCoverageResults@1
         condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
         displayName: 'Publish Code Coverage Results'
         inputs:
