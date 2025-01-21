@@ -1,4 +1,5 @@
 ﻿using AVFoundation;
+using CommunityToolkit.Maui.Views;
 using CoreMedia;
 using Foundation;
 using MediaPlayer;
@@ -69,38 +70,30 @@ sealed class Metadata
 	/// </summary>
 	/// <param name="playerItem"></param>
 	/// <param name="mediaElement"></param>
-	public void SetMetadata(AVPlayerItem? playerItem, IMediaElement? mediaElement)
+	public async Task SetMetadata(AVPlayerItem? playerItem, IMediaElement? mediaElement)
 	{
 		if (mediaElement is null)
 		{
-			Metadata.ClearNowPlaying();
 			return;
 		}
+		ClearNowPlaying();
+		var artwork = await MetadataArtworkUrl(mediaElement.MetadataArtworkSource).ConfigureAwait(false);
 
+		if (artwork is not null && artwork is UIImage image)
+		{
+			NowPlayingInfo.Artwork = new(boundsSize: new(320, 240), requestHandler: _ => image);
+		}
+		else
+		{
+			NowPlayingInfo.Artwork = new(boundsSize: new(0, 0), requestHandler: _ => defaultUIImage);
+		}
 		NowPlayingInfo.Title = mediaElement.MetadataTitle;
 		NowPlayingInfo.Artist = mediaElement.MetadataArtist;
 		NowPlayingInfo.PlaybackDuration = playerItem?.Duration.Seconds ?? 0;
 		NowPlayingInfo.IsLiveStream = false;
 		NowPlayingInfo.PlaybackRate = mediaElement.Speed;
 		NowPlayingInfo.ElapsedPlaybackTime = playerItem?.CurrentTime.Seconds ?? 0;
-		NowPlayingInfo.Artwork = new(boundsSize: new(320, 240), requestHandler: _ => GetImage(mediaElement.MetadataArtworkUrl));
 		MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = NowPlayingInfo;
-	}
-
-	static UIImage GetImage(string imageUri)
-	{
-		try
-		{
-			if (imageUri.StartsWith(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
-			{
-				return UIImage.LoadFromData(NSData.FromUrl(new NSUrl(imageUri))) ?? defaultUIImage;
-			}
-			return defaultUIImage;
-		}
-		catch
-		{
-			return defaultUIImage;
-		}
 	}
 
 	MPRemoteCommandHandlerStatus SeekCommand(MPRemoteCommandEvent? commandEvent)
@@ -178,5 +171,71 @@ sealed class Metadata
 		}
 
 		return MPRemoteCommandHandlerStatus.Success;
+	}
+
+	public static async Task<UIImage?> MetadataArtworkUrl(MediaSource? artworkUrl, CancellationToken cancellationToken = default)
+	{
+		if (artworkUrl is UriMediaSource uriMediaSource)
+		{
+			var uri = uriMediaSource.Uri;
+			return GetBitmapFromUrl(uri?.AbsoluteUri);
+		}
+		else if (artworkUrl is FileMediaSource fileMediaSource)
+		{
+			var uri = fileMediaSource.Path;
+
+			return await GetBitmapFromFile(uri, cancellationToken).ConfigureAwait(false);
+		}
+		else if (artworkUrl is ResourceMediaSource resourceMediaSource)
+		{
+			var path = resourceMediaSource.Path;
+			return await GetBitmapFromResource(path, cancellationToken).ConfigureAwait(false);
+		}
+		return null;
+	}
+
+	static async Task<UIImage?> GetBitmapFromFile(string? resource, CancellationToken cancellationToken = default)
+	{
+		if (string.IsNullOrWhiteSpace(resource))
+		{
+			return null;
+		}
+		using var fileStream = File.OpenRead(resource);
+		using var memoryStream = new MemoryStream();
+		await fileStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+		memoryStream.Position = 0;
+		NSData temp = NSData.FromStream(memoryStream) ?? new NSData();
+		return UIImage.LoadFromData(temp);
+	}
+	static UIImage? GetBitmapFromUrl(string? resource)
+	{
+		if (string.IsNullOrEmpty(resource))
+		{
+			return null;
+		}
+		return UIImage.LoadFromData(NSData.FromUrl(new NSUrl(resource)));
+	}
+	static async Task<UIImage?> GetBitmapFromResource(string? resource, CancellationToken cancellationToken = default)
+	{
+		if (string.IsNullOrWhiteSpace(resource))
+		{
+			return null;
+		}
+		using var inputStream = await FileSystem.OpenAppPackageFileAsync(resource).ConfigureAwait(false);
+		using var memoryStream = new MemoryStream();
+		if (inputStream is null)
+		{
+			System.Diagnostics.Trace.TraceError($"{inputStream} is null.");
+			return null;
+		}
+		await inputStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+		memoryStream.Position = 0;
+		NSData? nsdata = NSData.FromStream(memoryStream);
+		if (nsdata is null)
+		{
+			System.Diagnostics.Trace.TraceError($"{nsdata} is null.");
+			return null;
+		}
+		return UIImage.LoadFromData(nsdata);
 	}
 }

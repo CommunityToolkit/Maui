@@ -211,14 +211,14 @@ public partial class MediaManager : IDisposable
 		};
 	}
 
-	protected virtual partial ValueTask PlatformUpdateSource()
+	protected virtual async partial ValueTask PlatformUpdateSource()
 	{
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 
 		AVAsset? asset = null;
 		if (Player is null)
 		{
-			return ValueTask.CompletedTask;
+			return;
 		}
 
 		metaData ??= new(Player);
@@ -266,7 +266,7 @@ public partial class MediaManager : IDisposable
 			? new AVPlayerItem(asset)
 			: null;
 
-		metaData.SetMetadata(PlayerItem, MediaElement);
+		await metaData.SetMetadata(PlayerItem, MediaElement);
 		CurrentItemErrorObserver?.Dispose();
 
 		Player.ReplaceCurrentItemWithPlayerItem(PlayerItem);
@@ -298,57 +298,13 @@ public partial class MediaManager : IDisposable
 			{
 				Player.Play();
 			}
-			SetPoster();
+			await SetPoster();
 		}
 		else if (PlayerItem is null)
 		{
 			MediaElement.MediaWidth = MediaElement.MediaHeight = 0;
 
 			MediaElement.CurrentStateChanged(MediaElementState.None);
-		}
-
-		return ValueTask.CompletedTask;
-	}
-
-	void SetPoster()
-	{
-		if (PlayerItem is null || metaData is null)
-		{
-			return;
-		}
-		var videoTrack = PlayerItem.Asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant()).FirstOrDefault();
-		if (videoTrack is not null)
-		{
-			return;
-		}
-		if (PlayerItem.Asset.Tracks.Length == 0)
-		{
-			// No video track found and no tracks found. This is likely an audio file. So we can't set a poster.
-			return;
-		}
-
-		if (PlayerViewController?.View is not null && PlayerViewController.ContentOverlayView is not null && !string.IsNullOrEmpty(MediaElement.MetadataArtworkUrl))
-		{
-			var image = UIImage.LoadFromData(NSData.FromUrl(new NSUrl(MediaElement.MetadataArtworkUrl))) ?? new UIImage();
-			var imageView = new UIImageView(image)
-			{
-				ContentMode = UIViewContentMode.ScaleAspectFit,
-				TranslatesAutoresizingMaskIntoConstraints = false,
-				ClipsToBounds = true,
-				AutoresizingMask = UIViewAutoresizing.FlexibleDimensions
-			};
-
-			PlayerViewController.ContentOverlayView.AddSubview(imageView);
-			NSLayoutConstraint.ActivateConstraints(
-			[
-				imageView.CenterXAnchor.ConstraintEqualTo(PlayerViewController.ContentOverlayView.CenterXAnchor),
-				imageView.CenterYAnchor.ConstraintEqualTo(PlayerViewController.ContentOverlayView.CenterYAnchor),
-				imageView.WidthAnchor.ConstraintLessThanOrEqualTo(PlayerViewController.ContentOverlayView.WidthAnchor),
-				imageView.HeightAnchor.ConstraintLessThanOrEqualTo(PlayerViewController.ContentOverlayView.HeightAnchor),
-
-				// Maintain the aspect ratio
-				imageView.WidthAnchor.ConstraintEqualTo(imageView.HeightAnchor, image.Size.Width / image.Size.Height)
-			]);
 		}
 	}
 
@@ -541,6 +497,51 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
+	async Task SetPoster(CancellationToken cancellationToken = default)
+	{
+		if (PlayerItem is null || metaData is null || MediaElement is null)
+		{
+			return;
+		}
+		var artwork = await Metadata.MetadataArtworkUrl(MediaElement.MetadataArtworkSource, cancellationToken).ConfigureAwait(false);
+		if (artwork is null)
+		{
+			System.Diagnostics.Trace.TraceError($"{artwork} is null.");
+			return;
+		}
+		var videoTrack = PlayerItem.Asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant()).FirstOrDefault();
+		if (videoTrack is not null)
+		{
+			return;
+		}
+		if (PlayerItem.Asset.Tracks.Length == 0)
+		{
+			// No video track found and no tracks found. This is likely an audio file. So we can't set a poster.
+			return;
+		}
+		if (PlayerViewController?.View is not null && PlayerViewController.ContentOverlayView is not null)
+		{
+			var imageView = new UIImageView(artwork)
+			{
+				ContentMode = UIViewContentMode.ScaleAspectFit,
+				TranslatesAutoresizingMaskIntoConstraints = false,
+				ClipsToBounds = true,
+				AutoresizingMask = UIViewAutoresizing.FlexibleDimensions
+			};
+
+			PlayerViewController.ContentOverlayView.AddSubview(imageView);
+			NSLayoutConstraint.ActivateConstraints(
+			[
+				imageView.CenterXAnchor.ConstraintEqualTo(PlayerViewController.ContentOverlayView.CenterXAnchor),
+				imageView.CenterYAnchor.ConstraintEqualTo(PlayerViewController.ContentOverlayView.CenterYAnchor),
+				imageView.WidthAnchor.ConstraintLessThanOrEqualTo(PlayerViewController.ContentOverlayView.WidthAnchor),
+				imageView.HeightAnchor.ConstraintLessThanOrEqualTo(PlayerViewController.ContentOverlayView.HeightAnchor),
+
+				// Maintain the aspect ratio
+				imageView.WidthAnchor.ConstraintEqualTo(imageView.HeightAnchor, artwork.Size.Width / artwork.Size.Height)
+			]);
+		}
+	}
 
 	void AddStatusObservers()
 	{

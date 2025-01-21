@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Numerics;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Views;
@@ -8,6 +7,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Media;
 using Windows.Media.Playback;
 using Windows.Storage;
+using Windows.Storage.Streams;
 using Windows.System.Display;
 using ParentWindow = CommunityToolkit.Maui.Extensions.PageExtensions.ParentWindow;
 using WindowsMediaElement = Windows.Media.Playback.MediaPlayer;
@@ -17,7 +17,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 partial class MediaManager : IDisposable
 {
-	Metadata? metadata;
 	SystemMediaTransportControls? systemMediaControls;
 
 	// States that allow changing position
@@ -59,7 +58,7 @@ partial class MediaManager : IDisposable
 		Player.MediaPlayer.MediaEnded += OnMediaElementMediaEnded;
 		Player.MediaPlayer.VolumeChanged += OnMediaElementVolumeChanged;
 		Player.MediaPlayer.IsMutedChanged += OnMediaElementIsMutedChanged;
-
+		
 		systemMediaControls = Player.MediaPlayer.SystemMediaTransportControls;
 		return Player;
 	}
@@ -358,38 +357,49 @@ partial class MediaManager : IDisposable
 
 	async ValueTask UpdateMetadata()
 	{
-		if (systemMediaControls is null || Player is null)
+		if (systemMediaControls is null || Player is null || MediaElement.MetadataArtworkSource is null)
 		{
 			return;
 		}
 
-		metadata ??= new(systemMediaControls, MediaElement, Dispatcher);
-		metadata.SetMetadata(MediaElement);
-		if (string.IsNullOrEmpty(MediaElement.MetadataArtworkUrl))
+		var artwork = ArtworkUrl(MediaElement.MetadataArtworkSource);
+		if(string.IsNullOrEmpty(artwork))
 		{
 			return;
 		}
-		if (!Uri.TryCreate(MediaElement.MetadataArtworkUrl, UriKind.RelativeOrAbsolute, out var metadataArtworkUri))
+		
+		var file = RandomAccessStreamReference.CreateFromUri(new Uri(artwork));
+		if (file is not null)
 		{
-			Trace.TraceError($"{nameof(MediaElement)} unable to update artwork because {nameof(MediaElement.MetadataArtworkUrl)} is not a valid URI");
-			return;
+			systemMediaControls.DisplayUpdater.Thumbnail = file;
+			systemMediaControls.DisplayUpdater.Update();
+			Uri uri = new(artwork);
+			Dispatcher.Dispatch(() => Player.PosterSource = new BitmapImage(uri));
+		}
+		
+		if (File.Exists(artwork))
+		{
+			StorageFile ImageFile = await StorageFile.GetFileFromPathAsync(artwork);
+			Dispatcher.Dispatch(async () =>
+			{
+				var bitmap = await LoadBitmapImageAsync(ImageFile);
+				Player.PosterSource = bitmap;
+			});
+			systemMediaControls.DisplayUpdater.Thumbnail = RandomAccessStreamReference.CreateFromFile(ImageFile);
 		}
 
-		if (Dispatcher.IsDispatchRequired)
-		{
-			await Dispatcher.DispatchAsync(() => UpdatePosterSource(Player, metadataArtworkUri));
-		}
-		else
-		{
-			UpdatePosterSource(Player, metadataArtworkUri);
-		}
-
-		static void UpdatePosterSource(in MediaPlayerElement player, in Uri metadataArtworkUri)
-		{
-			player.PosterSource = new BitmapImage(metadataArtworkUri);
-		}
+		systemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Music;
+		systemMediaControls.DisplayUpdater.MusicProperties.Artist = MediaElement.MetadataTitle;
+		systemMediaControls.DisplayUpdater.MusicProperties.Title = MediaElement.MetadataArtist;
+		systemMediaControls.DisplayUpdater.Update();
 	}
-
+	static async Task<BitmapImage> LoadBitmapImageAsync(StorageFile artwork)
+	{
+		var bitmap = new BitmapImage();
+		using var randomAccessStream = await artwork.OpenReadAsync();
+		await bitmap.SetSourceAsync(randomAccessStream);
+		return bitmap;
+	}
 	async void OnMediaElementMediaOpened(WindowsMediaElement sender, object args)
 	{
 		if (Player is null)
@@ -505,6 +515,23 @@ partial class MediaManager : IDisposable
 		}
 	}
 
+	static string ArtworkUrl(MediaSource? artwork)
+	{
+		if (artwork is UriMediaSource uriMediaSource)
+		{
+			return uriMediaSource.Uri?.AbsoluteUri ?? string.Empty;
+		}
+		else if (artwork is FileMediaSource fileMediaSource)
+		{
+			return fileMediaSource.Path ?? string.Empty;
+		}
+		else if (artwork is ResourceMediaSource resourceMediaSource)
+		{
+			return "ms-appx:///" + resourceMediaSource.Path;
+		}
+		return string.Empty;
+	}
+	
 	void OnPlaybackSessionSeekCompleted(MediaPlaybackSession sender, object args)
 	{
 		MediaElement?.SeekCompleted();
