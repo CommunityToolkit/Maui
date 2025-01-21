@@ -8,11 +8,6 @@ partial class PopupContainer<T> : PopupContainer
 {
 	readonly TaskCompletionSource<PopupResult<T>> taskCompletionSource;
 
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="content"></param>
-	/// <param name="taskCompletionSource"></param>
 	public PopupContainer(Popup<T> content, TaskCompletionSource<PopupResult<T>> taskCompletionSource) :base (content, null)
 	{
 		this.taskCompletionSource = taskCompletionSource;
@@ -33,11 +28,6 @@ partial class PopupContainer : ContentPage
 	readonly Popup content;
 	readonly TaskCompletionSource<PopupResult>? taskCompletionSource;
 
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="content"></param>
-	/// <param name="taskCompletionSource"></param>
 	public PopupContainer(Popup content, TaskCompletionSource<PopupResult>? taskCompletionSource)
 	{
 		this.content = content;
@@ -57,13 +47,6 @@ partial class PopupContainer : ContentPage
 		return true;
 	}
 
-	/// <summary>
-	/// Gets or sets a value indicating whether the popup can be dismissed by tapping outside the Popup.
-	/// </summary>
-	/// <remarks>
-	/// When true and the user taps outside the popup, it will dismiss.
-	/// On Android - when false the hardware back button is disabled.
-	/// </remarks>
 	public bool CanBeDismissedByTappingOutsideOfPopup { get; internal set; }
 
 	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)

@@ -8,18 +8,18 @@ public partial class MultiplePopupViewModel(IPopupService popupService) : BaseVi
 	[RelayCommand]
 	Task OnCsharpBindingPopup(CancellationToken token)
 	{
-		return popupService.ShowPopupAsync<CsharpBindingPopupViewModel>(new PopupOptions(), token);
+		return popupService.ShowPopupAsync<CsharpBindingPopupViewModel>(Application.Current!.Windows[0].Page!.Navigation, new PopupOptions(), token);
 	}
 
 	[RelayCommand]
 	Task OnUpdatingPopup(CancellationToken token)
 	{
-		return popupService.ShowPopupAsync<UpdatingPopupViewModel>(new PopupOptions(), token);
+		return popupService.ShowPopupAsync<UpdatingPopupViewModel>(Application.Current!.Windows[0].Page!.Navigation, new PopupOptions(), token);
 	}
 
 	[RelayCommand]
 	Task OnShowPopupContent(CancellationToken token)
 	{
-		return popupService.ShowPopupAsync<PopupContentViewModel>(new PopupOptions(), token);
+		return popupService.ShowPopupAsync<PopupContentViewModel>(Application.Current!.Windows[0].Page!.Navigation, new PopupOptions(), token);
 	}
 }

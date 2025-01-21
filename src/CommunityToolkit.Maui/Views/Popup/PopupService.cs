@@ -1,8 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -12,19 +10,15 @@ public class PopupService : IPopupService
 	static readonly Dictionary<Type, Type> viewModelToViewMappings = [];
 
 	readonly IServiceProvider serviceProvider;
-	readonly IDispatcher dispatcher;
 
 	/// <summary>
 	/// Creates a new instance of <see cref="PopupService"/>.
 	/// </summary>
 	/// <param name="serviceProvider">The <see cref="IServiceProvider"/> implementation.</param>
-	/// <param name="dispatcherProvider"></param>
 	[ActivatorUtilitiesConstructor]
-	public PopupService(IServiceProvider serviceProvider, IDispatcherProvider dispatcherProvider)
+	public PopupService(IServiceProvider serviceProvider)
 	{
 		this.serviceProvider = serviceProvider;
-		dispatcher = dispatcherProvider.GetForCurrentThread()
-		             ?? throw new InvalidOperationException("Could not locate IDispatcher");
 	}
 
 	/// <summary>
@@ -34,9 +28,6 @@ public class PopupService : IPopupService
 	{
 		serviceProvider = IPlatformApplication.Current?.Services
 		                  ?? throw new InvalidOperationException("Could not locate IServiceProvider");
-
-		dispatcher = Microsoft.Maui.Controls.Application.Current?.Dispatcher
-		             ?? throw new InvalidOperationException("Could not locate IDispatcher");
 	}
 
 	internal static void AddPopup<
@@ -82,17 +73,17 @@ public class PopupService : IPopupService
 	/// 
 	/// </summary>
 	/// <typeparam name="TBindingContext"></typeparam>
+	/// <param name="navigation"></param>
 	/// <param name="options"></param>
 	/// <param name="cancellationToken"></param>
 	/// <returns></returns>
-	public async Task<PopupResult> ShowPopupAsync<TBindingContext>(PopupOptions options, CancellationToken cancellationToken)
+	public async Task<PopupResult> ShowPopupAsync<TBindingContext>(INavigation navigation, PopupOptions options, CancellationToken cancellationToken)
 		where TBindingContext : notnull
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 		var bindingContext = serviceProvider.GetRequiredService<TBindingContext>();
 		var popupContent = GetPopupContent(bindingContext);
 
-		var navigation = Application.Current?.Windows[^1].Page?.Navigation ?? throw new InvalidOperationException("Unable to get navigation");
 		return await navigation.ShowPopup(popupContent, options);
 	}
 
@@ -101,10 +92,11 @@ public class PopupService : IPopupService
 	/// </summary>
 	/// <typeparam name="TBindingContext"></typeparam>
 	/// <typeparam name="T"></typeparam>
+	/// <param name="navigation"></param>
 	/// <param name="options"></param>
 	/// <param name="cancellationToken"></param>
 	/// <returns></returns>
-	public async Task<PopupResult<T>> ShowPopupAsync<TBindingContext, T>(PopupOptions options,
+	public async Task<PopupResult<T>> ShowPopupAsync<TBindingContext, T>(INavigation navigation, PopupOptions options,
 		CancellationToken cancellationToken)
 		where TBindingContext : notnull
 	{
@@ -112,7 +104,6 @@ public class PopupService : IPopupService
 		var bindingContext = serviceProvider.GetRequiredService<TBindingContext>();
 		var popupContent = GetPopupContent(bindingContext);
 
-		var navigation = Application.Current?.Windows[^1].Page?.Navigation ?? throw new InvalidOperationException("Unable to get navigation");
 		return await navigation.ShowPopup<T>(popupContent, options);
 	}
 

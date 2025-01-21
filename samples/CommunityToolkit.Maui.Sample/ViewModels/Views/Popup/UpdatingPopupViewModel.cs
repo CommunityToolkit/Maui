@@ -41,7 +41,7 @@ public partial class UpdatingPopupViewModel(IPopupService popupService) : BaseVi
 	[RelayCommand]
 	async Task OnMore()
 	{
-		await popupService.ShowPopupAsync<UpdatingPopupViewModel>(new PopupOptions(), CancellationToken.None);
+		await popupService.ShowPopupAsync<UpdatingPopupViewModel>(Application.Current!.Windows[0].Page!.Navigation, new PopupOptions(), CancellationToken.None);
 	}
 
 	bool CanFinish() => UpdateProgress is finalUpdateProgressValue;

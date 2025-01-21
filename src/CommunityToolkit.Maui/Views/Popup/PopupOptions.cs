@@ -5,9 +5,14 @@
 /// </summary>
 public class PopupOptions
 {
+
 	/// <summary>
-	/// 
+	/// Gets or sets a value indicating whether the popup can be dismissed by tapping outside the Popup.
 	/// </summary>
+	/// <remarks>
+	/// When true and the user taps outside the popup, it will dismiss.
+	/// On Android - when false the hardware back button is disabled.
+	/// </remarks>
 	public bool CanBeDismissedByTappingOutsideOfPopup { get; init; } = true;
 
 	/// <summary>

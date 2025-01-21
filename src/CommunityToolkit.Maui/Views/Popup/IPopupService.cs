@@ -10,7 +10,7 @@ public interface IPopupService
 	/// </summary>
 	/// <typeparam name="TBindingContext"></typeparam>
 	/// <returns></returns>
-	Task<PopupResult> ShowPopupAsync<TBindingContext>(PopupOptions options, CancellationToken cancellationToken = default)
+	Task<PopupResult> ShowPopupAsync<TBindingContext>(INavigation navigation, PopupOptions options, CancellationToken cancellationToken = default)
 		where TBindingContext : notnull;
 
 	/// <summary>
@@ -19,7 +19,7 @@ public interface IPopupService
 	/// <typeparam name="TBindingContext"></typeparam>
 	/// <typeparam name="T"></typeparam>
 	/// <returns></returns>
-	Task<PopupResult<T>> ShowPopupAsync<TBindingContext, T>(PopupOptions options, CancellationToken cancellationToken = default)
+	Task<PopupResult<T>> ShowPopupAsync<TBindingContext, T>(INavigation navigation, PopupOptions options, CancellationToken cancellationToken = default)
 		where TBindingContext : notnull;
 
 	/// <summary>
