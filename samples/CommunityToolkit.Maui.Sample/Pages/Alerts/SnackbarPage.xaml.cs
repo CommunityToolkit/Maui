@@ -96,12 +96,12 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 			Font = Font.SystemFontOfSize(14),
 		};
 		
-		await DisplayCustomSnackbarButton.DisplaySnackbar(
+		await Snackbar.Make(
 			"This is a customized Snackbar",
 			() => DisplayCustomSnackbarButton.BackgroundColor = Colors.Blue,
 			"Close",
 			TimeSpan.FromSeconds(5),
-			options);
+			options).Show();
 	}
 
 	void Snackbar_Dismissed(object? sender, EventArgs e)
