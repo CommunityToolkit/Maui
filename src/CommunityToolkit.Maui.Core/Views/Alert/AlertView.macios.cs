@@ -84,6 +84,10 @@ public class AlertView : UIView
 				this.SafeBottomAnchor().ConstraintEqualTo(AnchorView.SafeTopAnchor(), -defaultSpacing).Active = true;
 			}
 		}
+		else
+		{
+			this.SafeBottomAnchor().ConstraintEqualTo(AnchorView.SafeTopAnchor(), -defaultSpacing).Active = true;
+		}
 	}
 
 	void ConstraintInParent(bool shouldFillAndExpandHorizontally)
