@@ -70,7 +70,7 @@ public class AlertView : UIView
 		}
 		else
 		{
-			var anchorViewPosition = AnchorView.Superview.ConvertRectToView(AnchorView.Frame, null);
+			var anchorViewPosition = AnchorView.Superview!.ConvertRectToView(AnchorView.Frame, null);
 			if (anchorViewPosition.Top < Container.Frame.Height + SafeAreaLayoutGuide.LayoutFrame.Bottom)
 			{
 				this.SafeTopAnchor().ConstraintEqualTo(AnchorView.SafeBottomAnchor(), defaultSpacing).Active = true;
