@@ -81,4 +81,9 @@
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" Condition=" '$(Configuration)'=='Release' " PrivateAssets="All" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="ResourceDictionary.windows.xaml">
+      <LogicalName>ResourceDictionary.windows.xaml</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>
