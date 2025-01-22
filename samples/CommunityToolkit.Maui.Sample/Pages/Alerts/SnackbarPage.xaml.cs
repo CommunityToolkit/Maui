@@ -12,12 +12,13 @@ namespace CommunityToolkit.Maui.Sample.Pages.Alerts;
 
 public partial class SnackbarPage : BasePage<SnackbarViewModel>
 {
-	const string displayCustomSnackbarText = "Display a Custom Snackbar, Anchored to this Button";
+	public const string DisplayCustomSnackbarText = "Display Custom Snackbar";
 	const string dismissCustomSnackbarText = "Dismiss Custom Snackbar";
-	readonly IReadOnlyList<Color> colors = typeof(Colors)
+	
+	readonly IReadOnlyList<Color> colors = [.. typeof(Colors)
 											.GetFields(BindingFlags.Static | BindingFlags.Public)
 											.ToDictionary(c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()))
-											.Values.ToList();
+											.Values];
 
 	ISnackbar? customSnackbar;
 
@@ -25,7 +26,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 	{
 		InitializeComponent();
 
-		DisplayCustomSnackbarButtonAnchoredToButton.Text = displayCustomSnackbarText;
+		DisplayCustomSnackbarButtonAnchoredToButton.Text = DisplayCustomSnackbarText;
 
 		Snackbar.Shown += Snackbar_Shown;
 		Snackbar.Dismissed += Snackbar_Dismissed;
@@ -36,7 +37,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 
 	async void DisplayCustomSnackbarAnchoredToButtonClicked(object? sender, EventArgs args)
 	{
-		if (DisplayCustomSnackbarButtonAnchoredToButton.Text is displayCustomSnackbarText)
+		if (DisplayCustomSnackbarButtonAnchoredToButton.Text is DisplayCustomSnackbarText)
 		{
 			var options = new SnackbarOptions
 			{
@@ -53,7 +54,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 				async () =>
 				{
 					await DisplayCustomSnackbarButtonAnchoredToButton.BackgroundColorTo(colors[Random.Shared.Next(colors.Count)], length: 500);
-					DisplayCustomSnackbarButtonAnchoredToButton.Text = displayCustomSnackbarText;
+					DisplayCustomSnackbarButtonAnchoredToButton.Text = DisplayCustomSnackbarText;
 				},
 				FontAwesomeIcons.Microsoft,
 				TimeSpan.FromSeconds(30),
@@ -75,7 +76,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 				customSnackbar.Dispose();
 			}
 
-			DisplayCustomSnackbarButtonAnchoredToButton.Text = displayCustomSnackbarText;
+			DisplayCustomSnackbarButtonAnchoredToButton.Text = DisplayCustomSnackbarText;
 		}
 		else
 		{
@@ -83,25 +84,13 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 		}
 	}
 	
-	async void DisplayCustomSnackbarButtonClicked(object sender, EventArgs e)
+	async void DisplaySnackbarButtonAnchoredToButtonOnBottomClicked(object sender, EventArgs e)
 	{
-		var options = new SnackbarOptions
-		{
-			BackgroundColor = Colors.Red,
-			TextColor = Colors.Green,
-			CharacterSpacing = 1,
-			ActionButtonFont = Font.SystemFontOfSize(14),
-			ActionButtonTextColor = Colors.Yellow,
-			CornerRadius = new CornerRadius(10),
-			Font = Font.SystemFontOfSize(14),
-		};
-		
-		await Snackbar.Make(
-			"This is a customized Snackbar",
-			() => DisplayCustomSnackbarButton.BackgroundColor = Colors.Blue,
+		await DisplaySnackbarButtonAnchoredToButtonOnBottom.DisplaySnackbar(
+			"This is Snackbar is anchored to the button on the bottom of a page. This Snackbar appears above the button to avoid clipping the Snackbar on the bottom of the Page.",
+			() => DisplaySnackbarButtonAnchoredToButtonOnBottom.BackgroundColor = Colors.Blue,
 			"Close",
-			TimeSpan.FromSeconds(5),
-			options).Show();
+			TimeSpan.FromSeconds(5));
 	}
 
 	void Snackbar_Dismissed(object? sender, EventArgs e)
