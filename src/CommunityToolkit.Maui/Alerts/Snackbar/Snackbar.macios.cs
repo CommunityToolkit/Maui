@@ -73,7 +73,7 @@ public partial class Snackbar
 			OnShown = OnShown
 		};
 
-		PlatformSnackbar.Show(true);
+		PlatformSnackbar.Show();
 
 		static T? GetMaximum<T>(params IReadOnlyList<T> items) => items.Max();
 	}

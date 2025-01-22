@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Core.Views;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// Popup for iOS + MacCatalyst
@@ -10,9 +12,10 @@ public class Alert
 	/// <summary>
 	/// Initialize Alert
 	/// </summary>
-	public Alert()
+	/// <param name="shouldFillAndExpandHorizontally">Should stretch container horizontally to fit the screen</param>
+	public Alert(bool shouldFillAndExpandHorizontally = false)
 	{
-		AlertView = [];
+		AlertView = new AlertView(shouldFillAndExpandHorizontally);
 
 		AlertView.ParentView.AddSubview(AlertView);
 		AlertView.ParentView.BringSubviewToFront(AlertView);
@@ -48,7 +51,7 @@ public class Alert
 	/// </summary>
 	public void Dismiss()
 	{
-		if (timer != null)
+		if (timer is not null)
 		{
 			timer.Invalidate();
 			timer.Dispose();
@@ -62,12 +65,12 @@ public class Alert
 	/// <summary>
 	/// Show the <see cref="Alert"/> on the screen
 	/// </summary>
-	/// <param name="shouldFillAndExpandHorizontally">Should stretch container horizontally to fit the screen</param>
-	public void Show(bool shouldFillAndExpandHorizontally = false)
+	[MemberNotNull(nameof(timer))]
+	public void Show()
 	{
 		AlertView.AnchorView = Anchor;
 
-		AlertView.Setup(shouldFillAndExpandHorizontally);
+		AlertView.Setup();
 
 		timer = NSTimer.CreateScheduledTimer(Duration, t =>
 		{
