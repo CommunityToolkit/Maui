@@ -28,12 +28,12 @@
         
         <Button Grid.Row="2"
                 Clicked="DisplayDefaultSnackbarButtonClicked"
-                Text="{x:Static alertPages:SnackbarPage.DisplayCustomSnackbarText}"/>
+                Text = "Display Default Snackbar"/>
         
         <Button Grid.Row="3" 
                 x:Name="DisplayCustomSnackbarButtonAnchoredToButton"
                 Clicked="DisplayCustomSnackbarAnchoredToButtonClicked"
-                Text="Display Custom Snackbar"
+                Text="{x:Static alertPages:SnackbarPage.DisplayCustomSnackbarText}"
                 TextColor="{Binding Source={RelativeSource Self}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}, x:DataType=Button}"/>
         
         <Button Grid.Row="4"
