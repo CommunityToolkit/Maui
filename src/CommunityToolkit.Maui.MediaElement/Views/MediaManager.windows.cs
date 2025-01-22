@@ -64,7 +64,9 @@ partial class MediaManager : IDisposable
 		Player.MediaPlayer.VolumeChanged += OnMediaElementVolumeChanged;
 		Player.MediaPlayer.IsMutedChanged += OnMediaElementIsMutedChanged;
 
+		Player.MediaPlayer.SystemMediaTransportControls.IsEnabled = false;
 		systemMediaControls = Player.MediaPlayer.SystemMediaTransportControls;
+
 		return Player;
 	}
 
@@ -254,12 +256,11 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateShouldMute()
 	{
-		if (Player?.MediaPlayer is null)
+		if (Player is null)
 		{
 			return;
 		}
-
-		Player.MediaPlayer.IsMuted = MediaElement.ShouldMute;
+		Dispatcher.Dispatch(() => Player.MediaPlayer.IsMuted = MediaElement.ShouldMute);
 	}
 
 	protected virtual async partial ValueTask PlatformUpdateSource()
