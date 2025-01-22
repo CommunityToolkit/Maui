@@ -20,16 +20,16 @@ public class AlertView : UIView
 	/// PopupView Children
 	/// </summary>
 	public IReadOnlyList<UIView> Children => children;
+	
+	/// <summary>
+	/// <see cref="AlertViewVisualOptions"/>
+	/// </summary>
+	public AlertViewVisualOptions VisualOptions { get; } = new();
 
 	/// <summary>
 	/// <see cref="UIView"/> on which Alert will appear. When null, <see cref="AlertView"/> will appear at bottom of screen.
 	/// </summary>
 	public UIView? AnchorView { get; set; }
-
-	/// <summary>
-	/// <see cref="AlertViewVisualOptions"/>
-	/// </summary>
-	public AlertViewVisualOptions VisualOptions { get; } = new();
 
 	/// <summary>
 	/// Container of <see cref="AlertView"/>
@@ -50,27 +50,31 @@ public class AlertView : UIView
 	/// <summary>
 	/// Initializes <see cref="AlertView"/>
 	/// </summary>
-	/// <param name="stretch">Should stretch container horizontally</param>
-	public void Setup(bool stretch = false)
+	/// <param name="shouldFillAndExpandHorizontally">Should stretch container horizontally to fit the screen</param>
+	public void Setup(bool shouldFillAndExpandHorizontally = false)
 	{
 		Initialize();
-		ConstraintInParent(stretch);
+		ConstraintInParent(shouldFillAndExpandHorizontally);
 	}
 
 	/// <inheritdoc />
 	public override void LayoutSubviews()
 	{
 		base.LayoutSubviews();
-		_ = Container ?? throw new InvalidOperationException($"{nameof(AlertView)}.{nameof(Initialize)} not called");
+		
+		if (Container is null)
+		{
+			throw new InvalidOperationException($"{nameof(AlertView)}.{nameof(Initialize)} must be called before {nameof(LayoutSubviews)}");
+		}
 
 		if (AnchorView is null)
 		{
 			this.SafeBottomAnchor().ConstraintEqualTo(ParentView.SafeBottomAnchor(), -defaultSpacing).Active = true;
 			this.SafeTopAnchor().ConstraintGreaterThanOrEqualTo(ParentView.SafeTopAnchor(), defaultSpacing).Active = true;
 		}
-		else
+		else if (AnchorView.Superview is not null)
 		{
-			var anchorViewPosition = AnchorView.Superview!.ConvertRectToView(AnchorView.Frame, null);
+			var anchorViewPosition = AnchorView.Superview.ConvertRectToView(AnchorView.Frame, null);
 			if (anchorViewPosition.Top < Container.Frame.Height + SafeAreaLayoutGuide.LayoutFrame.Bottom)
 			{
 				this.SafeTopAnchor().ConstraintEqualTo(AnchorView.SafeBottomAnchor(), defaultSpacing).Active = true;
@@ -82,11 +86,14 @@ public class AlertView : UIView
 		}
 	}
 
-	void ConstraintInParent(bool stretch)
+	void ConstraintInParent(bool shouldFillAndExpandHorizontally)
 	{
-		_ = Container ?? throw new InvalidOperationException($"{nameof(AlertView)}.{nameof(Initialize)} not called");
+		if (Container is null)
+		{
+			throw new InvalidOperationException($"{nameof(AlertView)}.{nameof(Initialize)} must be called before {nameof(LayoutSubviews)}");
+		}
 
-		if (stretch)
+		if (shouldFillAndExpandHorizontally)
 		{
 			this.SafeLeadingAnchor().ConstraintEqualTo(ParentView.SafeLeadingAnchor(), defaultSpacing).Active = true;
 			this.SafeTrailingAnchor().ConstraintEqualTo(ParentView.SafeTrailingAnchor(), -defaultSpacing).Active = true;

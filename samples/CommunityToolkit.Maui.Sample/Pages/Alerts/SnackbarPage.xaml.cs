@@ -25,7 +25,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 	{
 		InitializeComponent();
 
-		DisplayCustomSnackbarButton.Text = displayCustomSnackbarText;
+		DisplayCustomSnackbarButtonAnchoredToButton.Text = displayCustomSnackbarText;
 
 		Snackbar.Shown += Snackbar_Shown;
 		Snackbar.Dismissed += Snackbar_Dismissed;
@@ -34,9 +34,9 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 	async void DisplayDefaultSnackbarButtonClicked(object? sender, EventArgs args) =>
 		await this.DisplaySnackbar("This is a Snackbar.\nIt will disappear in 3 seconds.\nOr click OK to dismiss immediately");
 
-	async void DisplayCustomSnackbarButtonClicked(object? sender, EventArgs args)
+	async void DisplayCustomSnackbarAnchoredToButtonClicked(object? sender, EventArgs args)
 	{
-		if (DisplayCustomSnackbarButton.Text is displayCustomSnackbarText)
+		if (DisplayCustomSnackbarButtonAnchoredToButton.Text is displayCustomSnackbarText)
 		{
 			var options = new SnackbarOptions
 			{
@@ -52,20 +52,20 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 				"This is a customized Snackbar",
 				async () =>
 				{
-					await DisplayCustomSnackbarButton.BackgroundColorTo(colors[Random.Shared.Next(colors.Count)], length: 500);
-					DisplayCustomSnackbarButton.Text = displayCustomSnackbarText;
+					await DisplayCustomSnackbarButtonAnchoredToButton.BackgroundColorTo(colors[Random.Shared.Next(colors.Count)], length: 500);
+					DisplayCustomSnackbarButtonAnchoredToButton.Text = displayCustomSnackbarText;
 				},
 				FontAwesomeIcons.Microsoft,
 				TimeSpan.FromSeconds(30),
 				options,
-				DisplayCustomSnackbarButton);
+				DisplayCustomSnackbarButtonAnchoredToButton);
 
 			var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 			await customSnackbar.Show(cts.Token);
 
-			DisplayCustomSnackbarButton.Text = dismissCustomSnackbarText;
+			DisplayCustomSnackbarButtonAnchoredToButton.Text = dismissCustomSnackbarText;
 		}
-		else if (DisplayCustomSnackbarButton.Text is dismissCustomSnackbarText)
+		else if (DisplayCustomSnackbarButtonAnchoredToButton.Text is dismissCustomSnackbarText)
 		{
 			if (customSnackbar is not null)
 			{
@@ -75,14 +75,15 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 				customSnackbar.Dispose();
 			}
 
-			DisplayCustomSnackbarButton.Text = displayCustomSnackbarText;
+			DisplayCustomSnackbarButtonAnchoredToButton.Text = displayCustomSnackbarText;
 		}
 		else
 		{
-			throw new NotSupportedException($"{nameof(DisplayCustomSnackbarButton)}.{nameof(ITextButton.Text)} Not Recognized");
+			throw new NotSupportedException($"{nameof(DisplayCustomSnackbarButtonAnchoredToButton)}.{nameof(ITextButton.Text)} Not Recognized");
 		}
 	}
-	async void DisplayCustomSnackbarButtonClicked2(object sender, EventArgs e)
+	
+	async void DisplayCustomSnackbarButtonClicked(object sender, EventArgs e)
 	{
 		var options = new SnackbarOptions
 		{
@@ -94,9 +95,10 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 			CornerRadius = new CornerRadius(10),
 			Font = Font.SystemFontOfSize(14),
 		};
-		await DisplayCustomSnackbarButton2.DisplaySnackbar(
+		
+		await DisplayCustomSnackbarButton.DisplaySnackbar(
 			"This is a customized Snackbar",
-			() => DisplayCustomSnackbarButton2.BackgroundColor = Colors.Blue,
+			() => DisplayCustomSnackbarButton.BackgroundColor = Colors.Blue,
 			"Close",
 			TimeSpan.FromSeconds(5),
 			options);
