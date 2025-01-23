@@ -93,7 +93,7 @@ sealed partial class MediaControlsService : Service
 	}
 
 	[MemberNotNull(nameof(playerNotificationManager))]
-	[Obsolete]
+	
 	public void SetLegacyNotifications(in MediaSession session, in PlatformMediaElement mediaElement)
 	{
 		ArgumentNullException.ThrowIfNull(session);

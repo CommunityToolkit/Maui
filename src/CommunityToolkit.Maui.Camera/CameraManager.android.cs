@@ -172,7 +172,7 @@ partial class CameraManager
 
 	protected async Task StartUseCase(CancellationToken token)
 	{
-		if (resolutionSelector is null)
+		if (resolutionSelector is null || cameraExecutor is null)
 		{
 			return;
 		}
@@ -183,7 +183,7 @@ partial class CameraManager
 		imageCapture?.Dispose();
 
 		cameraPreview = new Preview.Builder().SetResolutionSelector(resolutionSelector).Build();
-		cameraPreview.SetSurfaceProvider(previewView?.SurfaceProvider);
+		cameraPreview.SetSurfaceProvider(cameraExecutor, previewView?.SurfaceProvider);
 
 		imageCapture = new ImageCapture.Builder()
 		.SetCaptureMode(ImageCapture.CaptureModeMaximizeQuality)
