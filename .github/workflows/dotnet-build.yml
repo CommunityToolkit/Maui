@@ -1,4 +1,4 @@
-name: .NET
+name: Build
 
 on:
   push:
@@ -42,7 +42,7 @@ env:
   PathToCommunityToolkitCameraAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Camera.Analyzers.CodeFixes/CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
-  DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/8.0.6.json'
+  PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
   CommunityToolkitSampleApp_Xcode_Version: '16.2'
   CommunityToolkitLibrary_Xcode_Version: '16.2'
 
@@ -60,15 +60,20 @@ jobs:
       - name: Set Xcode version
         if: runner.os == 'macOS'
         run: |
+          echo Installed Xcode Versions:
+          ls -al  /Applications | grep Xcode
           sudo xcode-select --switch /Applications/Xcode_${{ env.CommunityToolkitSampleApp_Xcode_Version }}.app/Contents/Developer
 
-      - name: Install Latest .NET SDK
-        uses: actions/setup-dotnet@v3
+      - name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.LATEST_NET_VERSION }}
+          dotnet-quality: 'ga'
 
       - name: Install .NET MAUI Workload
-        run: dotnet workload install maui
+        run: |
+          dotnet workload install maui
+          dotnet workload update
 
       - name: Install Tizen Workload
         run: |
@@ -85,6 +90,8 @@ jobs:
   build_library:
     name: Build Library
     runs-on: ${{ matrix.os }}
+    env:
+      VSTEST_TESTHOST_SHUTDOWN_TIMEOUT: 1100 # Fixes "The active test run was aborted. Reason: Test host process crashed" 
     strategy:
       matrix:
         os: [windows-latest, macos-15]
@@ -119,15 +126,20 @@ jobs:
       - name: Set Xcode version
         if: runner.os == 'macOS'
         run: |
+          echo Installed Xcode Versions:
+          ls -al  /Applications | grep Xcode
           sudo xcode-select --switch /Applications/Xcode_${{ env.CommunityToolkitLibrary_Xcode_Version }}.app/Contents/Developer
 
-      - name: Install .NET SDK
-        uses: actions/setup-dotnet@v3
+      - name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+          dotnet-quality: 'ga'
 
       - name: Install .NET MAUI Workload
-        run: dotnet workload install maui --skip-sign-check --source https://api.nuget.org/v3/index.json
+        run: |
+          dotnet workload install maui
+          dotnet workload update
 
       - name: Install Tizen Workload
         run: |
@@ -138,10 +150,46 @@ jobs:
       - name: Display dotnet info
         run: dotnet --info
 
-      - name: Build CommunityToolkit.Maui
-        run: dotnet build -c Release ${{ env.PathToLibrarySolution }}
+      - name: 'Build CommunityToolkit.Maui.Analyzers'
+        run: dotnet build ${{ env.PathToCommunityToolkitAnalyzersCsproj }} -c Release
 
-      - name: Run CommunityToolkit.Maui.UnitTests
+      - name: 'Build CommunityToolkit.Maui.Analyzers.CodeFixes'
+        run: dotnet build ${{ env.PathToCommunityToolkitAnalyzersCodeFixCsproj }} -c Release
+
+      - name: 'Build CommunityToolkit.Maui.Camera.Analyzers'
+        run: dotnet build ${{ env.PathToCommunityToolkitCameraAnalyzersCsproj }} -c Release
+
+      - name: 'Build CommunityToolkit.Maui.Camera.Analyzers.CodeFixes'
+        run: dotnet build ${{ env.PathToCommunityToolkitCameraAnalyzersCodeFixCsproj }} -c Release
+
+      - name: 'Build CommunityToolkit.Maui.MediaElement.Analyzers'
+        run: dotnet build ${{ env.PathToCommunityToolkitMediaElementAnalyzersCsproj }} -c Release
+
+      - name: 'Build CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes'
+        run: dotnet build ${{ env.PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj }} -c Release
+
+      - name: 'Build CommunityToolkit.Maui.SourceGenerators'
+        run: dotnet build ${{ env.PathToCommunityToolkitSourceGeneratorsCsproj }} -c Release
+
+      - name: 'Build CommunityToolkit.SourceGenerators.Internal'
+        run: dotnet build ${{ env.PathToCommunityToolkitSourceGeneratorsInternalCsproj }} -c Release
+
+      - name: 'Build CommunityToolkit.Maui.Camera'
+        run: dotnet build ${{ env.PathToCommunityToolkitCameraCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionCamera }} -p:Version=${{ env.NugetPackageVersion }}
+
+      - name: 'Build CommunityToolkit.Maui.MediaElement'
+        run: dotnet build ${{ env.PathToCommunityToolkitMediaElementCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionMediaElement }} -p:Version=${{ env.NugetPackageVersion }}
+
+      - name: 'Build CommunityToolkit.Maui.Maps'
+        run: dotnet build ${{ env.PathToCommunityToolkitMapsCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionMaps }} -p:Version=${{ env.NugetPackageVersion }}
+
+      - name: 'Build CommunityToolkit.Maui.Core'
+        run: dotnet build ${{ env.PathToCommunityToolkitCoreCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }}
+
+      - name: 'Build CommunityToolkit.Maui'
+        run: dotnet build ${{ env.PathToLibrarySolution }} -c Release -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }} 
+
+      - name: Run All Unit Tests
         run: dotnet test -c Release ${{ env.PathToLibrarySolution }} --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory ${{ runner.temp }}
 
       - name: Publish Test Results
@@ -198,10 +246,11 @@ jobs:
       id-token: write # Required for requesting the JWT
 
     steps:
-      - name: Install .NET SDK
-        uses: actions/setup-dotnet@v3
+      - name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+          dotnet-quality: 'ga'
 
       - name: Download NuGet List
         uses: actions/download-artifact@v4
@@ -251,9 +300,10 @@ jobs:
 
     steps:
       - name: Install .NET SDK
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+          dotnet-quality: 'ga'
 
       - name: Download signed packages for ${{ matrix.platform }}
         uses: actions/download-artifact@v4
