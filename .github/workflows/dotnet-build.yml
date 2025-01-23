@@ -1,4 +1,4 @@
-name: .NET MAUI Community Toolkit
+name: Build Libraries + Samples
 
 on:
   push:
