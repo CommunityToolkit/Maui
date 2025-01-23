@@ -1,4 +1,4 @@
-name: Build Libraries + Samples
+name: Build
 
 on:
   push:
