@@ -87,7 +87,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 	async void DisplaySnackbarButtonAnchoredToButtonOnBottomClicked(object sender, EventArgs e)
 	{
 		await DisplaySnackbarButtonAnchoredToButtonOnBottom.DisplaySnackbar(
-			"This is Snackbar is anchored to the button on the bottom of a page. This Snackbar appears above the button to avoid clipping the Snackbar on the bottom of the Page.",
+			"This Snackbar is anchored to the button on the bottom of a page. This Snackbar appears above the button to avoid clipping the Snackbar on the bottom of the Page.",
 			() => DisplaySnackbarButtonAnchoredToButtonOnBottom.BackgroundColor = Colors.Blue,
 			"Close",
 			TimeSpan.FromSeconds(5));
