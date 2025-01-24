@@ -190,6 +190,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <SupportedPlatform Include="Tizen" />
     <InternalsVisibleTo Include="CommunityToolkit.Maui.UnitTests"/>
     <InternalsVisibleTo Include="CommunityToolkit.Maui.Analyzers.UnitTests"/>
   </ItemGroup>
