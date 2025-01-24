@@ -1,0 +1,65 @@
+name: Benchmarks
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+    paths-ignore:
+      - README.md
+  pull_request:
+    branches:
+      - '*'
+
+env:
+  LATEST_NET_VERSION: '9.0.x'
+  PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
+
+jobs:
+  run_benchmarks:
+    name: Run Benchmarks
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-15]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@main
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        if: runner.os == 'macOS'
+        with:
+          xcode-version: latest-stable
+
+      - name: Install Latest Version of .NET, v${{ env.LATEST_NET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.LATEST_NET_VERSION }}
+          dotnet-quality: 'ga'
+
+      - name: Install .NET MAUI Workload
+        run: |
+          dotnet workload install maui
+          dotnet workload update
+
+      - name: Install Tizen Workload
+        run: |
+          Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
+          .\workload-install.ps1
+        shell: pwsh
+
+      - name: Display dotnet info
+        run: dotnet --info
+
+      - name: Run Benchmarks
+        run: dotnet run --project ${{ env.PathToCommunityToolkitAnalyzersBenchmarkCsproj }} -c Release -- -a ${{ runner.temp }}
+
+      - name: Publish Benchmarks
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Benchmarks
+          path: |
+            ${{ runner.temp }}/**/*.md
