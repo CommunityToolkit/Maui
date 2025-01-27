@@ -30,7 +30,11 @@ public partial class IsListNullOrEmptyConverter : BaseConverterOneWay<IEnumerabl
 		var enumerator = value.GetEnumerator();
 		bool result = !enumerator.MoveNext();
 
-		((IDisposable)enumerator).Dispose();
+		if (enumerator is IDisposable disposable)
+		{
+			disposable.Dispose();
+		}
+
 		return result;
 	}
 }

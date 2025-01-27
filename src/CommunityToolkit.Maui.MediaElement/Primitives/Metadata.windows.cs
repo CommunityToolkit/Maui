@@ -2,7 +2,7 @@
 
 namespace CommunityToolkit.Maui.Core.Primitives;
 
-class Metadata
+sealed class Metadata
 {
 	readonly IMediaElement? mediaElement;
 	readonly SystemMediaTransportControls? systemMediaControls;

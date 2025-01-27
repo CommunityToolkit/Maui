@@ -11,42 +11,30 @@ static partial class StatusBar
 	/// <summary>
 	/// Method to update the status bar size.
 	/// </summary>
-	public static void UpdateBarSize()
+	public static void SetBarSize(bool isUsingSafeArea)
 	{
-		if (OperatingSystem.IsIOSVersionAtLeast(13))
+		var communityToolkitStatusBarTag = new IntPtr(38482);
+		foreach (var window in UIApplication.SharedApplication.Windows)
 		{
-			var statusBarTag = new IntPtr(38482);
-			foreach (var window in UIApplication.SharedApplication.Windows)
+			var statusBarFrame = window.WindowScene?.StatusBarManager?.StatusBarFrame;
+			if (statusBarFrame is null)
 			{
-				var statusBar = window.ViewWithTag(statusBarTag);
-				var statusBarFrame = window.WindowScene?.StatusBarManager?.StatusBarFrame;
-				if (statusBarFrame is null)
-				{
-					continue;
-				}
-
-				statusBar ??= new UIView(statusBarFrame.Value);
-				statusBar.Tag = statusBarTag;
-				statusBar.Frame = UIApplication.SharedApplication.StatusBarFrame;
-				var statusBarSubViews = window.Subviews.Where(x => x.Tag == statusBarTag).ToList();
-				foreach (var statusBarSubView in statusBarSubViews)
-				{
-					statusBarSubView.RemoveFromSuperview();
-				}
-
-				window.AddSubview(statusBar);
-
-				TryUpdateStatusBarAppearance(window);
-			}
-		}
-		else
-		{
-			if (UIApplication.SharedApplication.ValueForKey(new NSString("statusBar")) is UIView statusBar)
-			{
-				statusBar.Frame = UIApplication.SharedApplication.StatusBarFrame;
+				continue;
 			}
 
-			TryUpdateStatusBarAppearance();
+			var statusBar = window.ViewWithTag(communityToolkitStatusBarTag) ?? new UIView(statusBarFrame.Value);
+			statusBar.Tag = communityToolkitStatusBarTag;
+			statusBar.Frame = GetStatusBarFrame(window, isUsingSafeArea);
+
+			var statusBarSubViews = window.Subviews.Where(x => x.Tag == communityToolkitStatusBarTag).ToList();
+			foreach (var statusBarSubView in statusBarSubViews)
+			{
+				statusBarSubView.RemoveFromSuperview();
+			}
+
+			window.AddSubview(statusBar);
+
+			TryUpdateStatusBarAppearance(window);
 		}
 	}
 
@@ -54,46 +42,40 @@ static partial class StatusBar
 	{
 		var uiColor = color.ToPlatform();
 
-		if (OperatingSystem.IsIOSVersionAtLeast(13))
+		var statusBarTag = new IntPtr(38482);
+		foreach (var window in UIApplication.SharedApplication.Windows)
 		{
-			var statusBarTag = new IntPtr(38482);
-			foreach (var window in UIApplication.SharedApplication.Windows)
+			var statusBar = window.ViewWithTag(statusBarTag);
+			var statusBarFrame = window.WindowScene?.StatusBarManager?.StatusBarFrame;
+			if (statusBarFrame is null)
 			{
-				var statusBar = window.ViewWithTag(statusBarTag);
-				var statusBarFrame = window.WindowScene?.StatusBarManager?.StatusBarFrame;
-				if (statusBarFrame is null)
-				{
-					continue;
-				}
-
-				// ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
-				// window.ViewWithTag(tag) can return null
-				statusBar ??= new UIView(statusBarFrame.Value);
-				statusBar.Tag = statusBarTag;
-				statusBar.BackgroundColor = uiColor;
-				statusBar.TintColor = uiColor;
-				statusBar.Frame = UIApplication.SharedApplication.StatusBarFrame;
-				var statusBarSubViews = window.Subviews.Where(x => x.Tag == statusBarTag).ToList();
-				foreach (var statusBarSubView in statusBarSubViews)
-				{
-					statusBarSubView.RemoveFromSuperview();
-				}
-
-				window.AddSubview(statusBar);
-
-				TryUpdateStatusBarAppearance(window);
-			}
-		}
-		else
-		{
-			if (UIApplication.SharedApplication.ValueForKey(new NSString("statusBar")) is UIView statusBar
-				&& statusBar.RespondsToSelector(new ObjCRuntime.Selector("setBackgroundColor:")))
-			{
-				statusBar.BackgroundColor = uiColor;
+				continue;
 			}
 
-			TryUpdateStatusBarAppearance();
+			statusBar ??= new UIView(statusBarFrame.Value);
+			statusBar.Tag = statusBarTag;
+			statusBar.BackgroundColor = uiColor;
+			statusBar.TintColor = uiColor;
+
+			var statusBarSubViews = window.Subviews.Where(x => x.Tag == statusBarTag).ToList();
+			foreach (var statusBarSubView in statusBarSubViews)
+			{
+				statusBarSubView.RemoveFromSuperview();
+			}
+
+			window.AddSubview(statusBar);
+
+			TryUpdateStatusBarAppearance(window);
 		}
+	}
+
+	static CGRect GetStatusBarFrame(in UIWindow window, in bool isUsingSafeArea)
+	{
+		var statusBarFrame = UIApplication.SharedApplication.StatusBarFrame;
+
+		return isUsingSafeArea
+			? new CGRect(statusBarFrame.X, statusBarFrame.Y, statusBarFrame.Width, window.SafeAreaInsets.Top)
+			: statusBarFrame;
 	}
 
 	static void PlatformSetStyle(StatusBarStyle statusBarStyle)
@@ -113,22 +95,14 @@ static partial class StatusBar
 
 	static bool TryUpdateStatusBarAppearance()
 	{
-		if (OperatingSystem.IsIOSVersionAtLeast(13))
-		{
-			var didUpdateAllStatusBars = true;
+		var didUpdateAllStatusBars = true;
 
-			foreach (var window in UIApplication.SharedApplication.Windows)
-			{
-				didUpdateAllStatusBars &= TryUpdateStatusBarAppearance(window);
-			}
-
-			return didUpdateAllStatusBars;
-		}
-		else
+		foreach (var window in UIApplication.SharedApplication.Windows)
 		{
-			var window = UIApplication.SharedApplication.KeyWindow;
-			return TryUpdateStatusBarAppearance(window);
+			didUpdateAllStatusBars &= TryUpdateStatusBarAppearance(window);
 		}
+
+		return didUpdateAllStatusBars;
 	}
 
 	static bool TryUpdateStatusBarAppearance(UIWindow? window)
