@@ -51,4 +51,8 @@ public record SpeechToTextResult
 			throw Exception;
 		}
 	}
+
+	internal static SpeechToTextResult Failed(Exception exception) => new(null, exception);
+
+	internal static SpeechToTextResult Success(string text) => new(text, null);
 }

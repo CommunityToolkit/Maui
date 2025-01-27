@@ -7,6 +7,14 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseViewModel
 {
+	readonly ICameraProvider cameraProvider = cameraProvider;
+
+	public IReadOnlyList<CameraInfo> Cameras => cameraProvider.AvailableCameras ?? [];
+
+	public CancellationToken Token => CancellationToken.None;
+
+	public ICollection<CameraFlashMode> FlashModes { get; } = Enum.GetValues<CameraFlashMode>();
+
 	[ObservableProperty]
 	public partial CameraFlashMode FlashMode { get; set; }
 
@@ -20,13 +28,19 @@ public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseV
 	public partial float CurrentZoom { get; set; }
 
 	[ObservableProperty]
-	string cameraNameText = "", zoomRangeText = "", currentZoomText = "", flashModeText = "", resolutionText = "";
+	public partial string CameraNameText { get; set; } = string.Empty;
 
-	public IReadOnlyList<CameraInfo> Cameras => cameraProvider?.AvailableCameras ?? [];
+	[ObservableProperty]
+	public partial string ZoomRangeText { get; set; } = string.Empty;
 
-	public CancellationToken Token => CancellationToken.None;
+	[ObservableProperty]
+	public partial string CurrentZoomText { get; set; } = string.Empty;
 
-	public ICollection<CameraFlashMode> FlashModes { get; } = Enum.GetValues<CameraFlashMode>();
+	[ObservableProperty]
+	public partial string FlashModeText { get; set; } = string.Empty;
+
+	[ObservableProperty]
+	public partial string ResolutionText { get; set; } = string.Empty;
 
 	[RelayCommand]
 	async Task RefreshCameras(CancellationToken token) => await cameraProvider.RefreshAvailableCameras(token);

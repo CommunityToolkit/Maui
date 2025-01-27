@@ -8,12 +8,10 @@ namespace CommunityToolkit.Maui.Media;
 /// <inheritdoc />
 public sealed partial class SpeechToTextImplementation
 {
-	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest), nameof(getRecognitionTaskCompletionSource))]
-	Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
+	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest))]
+	Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
 	{
-		ResetGetRecognitionTaskCompletionSource(cancellationToken);
-
-		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(culture.Name));
+		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(options.Culture.Name));
 
 		if (!speechRecognizer.Available)
 		{
@@ -21,7 +19,10 @@ public sealed partial class SpeechToTextImplementation
 		}
 
 		audioEngine = new AVAudioEngine();
-		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest();
+		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest()
+		{
+			ShouldReportPartialResults = options.ShouldReportPartialResults
+		};
 
 		InitializeAvAudioSession(out _);
 
@@ -45,7 +46,7 @@ public sealed partial class SpeechToTextImplementation
 			if (err is not null)
 			{
 				StopRecording();
-				getRecognitionTaskCompletionSource.TrySetException(new Exception(err.LocalizedDescription));
+				OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception(err.LocalizedDescription)));
 			}
 			else
 			{
@@ -53,8 +54,7 @@ public sealed partial class SpeechToTextImplementation
 				{
 					currentIndex = 0;
 					StopRecording();
-					OnRecognitionResultCompleted(result.BestTranscription.FormattedString);
-					getRecognitionTaskCompletionSource.TrySetResult(result.BestTranscription.FormattedString);
+					OnRecognitionResultCompleted(SpeechToTextResult.Success(result.BestTranscription.FormattedString));
 				}
 				else
 				{
@@ -67,7 +67,6 @@ public sealed partial class SpeechToTextImplementation
 					{
 						var s = result.BestTranscription.Segments[i].Substring;
 						currentIndex++;
-						recognitionProgress?.Report(s);
 						OnRecognitionResultUpdated(s);
 					}
 				}
