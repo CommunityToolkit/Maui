@@ -1,23 +1,23 @@
-using CommunityToolkit.Maui.Sample.ViewModels.Views;
-#if WINDOWS || MACCATALYST
-using CommunityToolkit.Maui.Views;
-#else
 using CommunityToolkit.Maui.Markup;
-#endif
+using CommunityToolkit.Maui.Sample.ViewModels.Views;
+using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class MediaElementMultipleWindowsPage : BasePage<MediaElementMultipleWindowsViewModel>
 {
 	const string buckBunnyMp4Url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
-#if WINDOWS || MACCATALYST
 	const string elephantsDreamMp4Url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4";
-	readonly Window secondWindow;
-#endif
-
+	readonly Window? secondWindow;
 	public MediaElementMultipleWindowsPage(MediaElementMultipleWindowsViewModel viewModel) : base(viewModel)
 	{
-#if WINDOWS || MACCATALYST
+		if(DeviceInfo.Current.Idiom == DeviceIdiom.Phone && DeviceInfo.Current.Platform == DevicePlatform.iOS)
+		{
+			Content = new Label()
+		.Text("This sample is only testable on MacCatalyst and Windows")
+		.TextCenter();
+			return;
+		}
 		secondWindow = new Window(new ContentPage
 		{
 			Content = new MediaElement
@@ -32,18 +32,15 @@ public partial class MediaElementMultipleWindowsPage : BasePage<MediaElementMult
 			Source = buckBunnyMp4Url,
 			ShouldAutoPlay = true
 		};
-#else
-		Content = new Label()
-			.Text("This sample is only testable on MacCatalyst and Windows")
-			.TextCenter();
-#endif
 	}
 
 	protected override void OnAppearing()
 	{
 		base.OnAppearing();
-#if WINDOWS || MACCATALYST
+		if(secondWindow is null)
+		{
+			return;
+		}
 		Application.Current?.OpenWindow(secondWindow);
-#endif
 	}
 }
