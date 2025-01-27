@@ -129,7 +129,7 @@ public static partial class DrawingViewService
 	static CanvasRenderTarget? GetImageInternal(IList<IDrawingLine> lines, Size size, Paint? background, Size? canvasSize, bool scale = false)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
-		if(points.Count is 0)
+		if (points.Count is 0)
 		{
 			return null;
 		}
