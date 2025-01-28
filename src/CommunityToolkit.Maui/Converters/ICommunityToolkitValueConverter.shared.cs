@@ -52,12 +52,12 @@ public interface ICommunityToolkitValueConverter : IValueConverter
 
 
 	/// <inheritdoc />
-#pragma warning disable IL2092
+	[UnconditionalSuppressMessage("TrimAnalysis", "IL2092", Justification = "The ToType and FromType properties are attributed with the appropriate DynamicallyAccessedMembers attributes.")]
 	object? IValueConverter.Convert(object? value, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type targetType, object? parameter, CultureInfo culture) =>
 		Convert(value, targetType, parameter, culture);
 
 	/// <inheritdoc />
+	[UnconditionalSuppressMessage("TrimAnalysis", "IL2092", Justification = "The ToType and FromType properties are attributed with the appropriate DynamicallyAccessedMembers attributes.")]
 	object? IValueConverter.ConvertBack(object? value, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type targetType, object? parameter, CultureInfo culture) =>
 		ConvertBack(value, targetType, parameter, culture);
-#pragma warning restore IL2092
 }
