@@ -3,7 +3,7 @@
 /// <summary>
 /// A XAML markup extension that enables using <see cref="AppThemeColor"/> and <see cref="AppThemeObject"/> from XAML.
 /// </summary>
-[ContentProperty(nameof(Key)), RequireService([typeof(IServiceProvider)])]
+[ContentProperty(nameof(Key)), RequireService([typeof(IServiceProvider), typeof(IProvideParentValues)])]
 public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 {
 	/// <summary>

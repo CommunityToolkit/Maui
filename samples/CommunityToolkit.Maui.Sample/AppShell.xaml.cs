@@ -93,6 +93,7 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<FileSaverPage, FileSaverViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
 		CreateViewModelMapping<FolderPickerPage, FolderPickerViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
 		CreateViewModelMapping<SpeechToTextPage, SpeechToTextViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
+		CreateViewModelMapping<OfflineSpeechToTextPage, OfflineSpeechToTextViewModel, EssentialsGalleryPage, EssentialsGalleryViewModel>(),
 
 		// Add Extensions View Models
 		CreateViewModelMapping<ColorAnimationExtensionsPage, ColorAnimationExtensionsViewModel, ExtensionsGalleryPage, ExtensionsGalleryViewModel>(),
@@ -193,9 +194,11 @@ public partial class AppShell : Shell
 #if WINDOWS
 		Loaded += delegate
 		{
-			var navigationView = (Microsoft.UI.Xaml.Controls.NavigationView)flyout.Handler!.PlatformView!;
-			navigationView.IsPaneToggleButtonVisible = true;
-			navigationView.PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.Auto;
+			if(flyout.Handler?.PlatformView is Microsoft.UI.Xaml.Controls.NavigationView navigationView)
+			{
+				navigationView.IsPaneToggleButtonVisible = true;
+				navigationView.PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.Auto;
+			}
 		};
 #endif
 	}

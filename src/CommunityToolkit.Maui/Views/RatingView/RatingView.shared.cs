@@ -12,41 +12,41 @@ namespace CommunityToolkit.Maui.Views;
 /// <summary>Rating view control.</summary>
 public partial class RatingView : TemplatedView, IRatingView
 {
-	/// <summary>Bindable property for attached property <c>CustomItemShape</c>.</summary>
+	/// <summary>Bindable property for attached property <see cref="CustomItemShape"/>.</summary>
 	public static readonly BindableProperty CustomItemShapeProperty = BindableProperty.Create(nameof(CustomItemShape), typeof(string), typeof(RatingView), defaultValue: null, propertyChanged: OnCustomShapePropertyChanged);
 
 	/// <summary>Bindable property for <see cref="ItemPadding"/>.</summary>
 	public static readonly BindableProperty ItemPaddingProperty = BindableProperty.Create(nameof(ItemPadding), typeof(Thickness), typeof(RatingView), default(Thickness), propertyChanged: OnItemPaddingPropertyChanged, defaultValueCreator: static _ => RatingViewDefaults.ItemPadding);
 
-	/// <summary>Bindable property for attached property <c>ItemShape</c>.</summary>
-	public static readonly BindableProperty ItemShapeProperty = BindableProperty.Create(nameof(ItemShape), typeof(RatingViewShapes), typeof(RatingView), defaultValue: RatingViewDefaults.Shape, propertyChanged: OnItemShapePropertyChanged, defaultValueCreator: static _ => RatingViewDefaults.Shape);
+	/// <summary>Bindable property for attached property <see cref="ItemShape"/>.</summary>
+	public static readonly BindableProperty ItemShapeProperty = BindableProperty.Create(nameof(ItemShape), typeof(RatingViewShapes), typeof(RatingView), defaultValue: RatingViewDefaults.ItemShape, propertyChanged: OnItemShapePropertyChanged, defaultValueCreator: static _ => RatingViewDefaults.ItemShape);
 
-	/// <summary>Bindable property for attached property <c>ShapeBorderColor</c>.</summary>
+	/// <summary>Bindable property for attached property <see cref="ShapeBorderColor"/>.</summary>
 	public static readonly BindableProperty ShapeBorderColorProperty = BindableProperty.Create(nameof(ShapeBorderColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.ShapeBorderColor, propertyChanged: OnItemShapeBorderColorChanged, defaultValueCreator: static _ => RatingViewDefaults.ShapeBorderColor);
 
-	/// <summary>Bindable property for attached property <c>ShapeBorderThickness</c>.</summary>
+	/// <summary>Bindable property for attached property <see cref="ShapeBorderThickness"/>.</summary>
 	public static readonly BindableProperty ShapeBorderThicknessProperty = BindableProperty.Create(nameof(ShapeBorderThickness), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.ShapeBorderThickness, propertyChanged: OnItemShapeBorderThicknessChanged, defaultValueCreator: static _ => RatingViewDefaults.ShapeBorderThickness);
 
-	/// <summary>Bindable property for attached property <c>Size</c>.</summary>
+	/// <summary>Bindable property for attached property <see cref="Size"/>.</summary>
 	public static readonly BindableProperty ItemShapeSizeProperty = BindableProperty.Create(nameof(ItemShapeSize), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.ItemShapeSize, propertyChanged: OnItemShapeSizeChanged, defaultValueCreator: static _ => RatingViewDefaults.ItemShapeSize);
 
-	/// <summary>Bindable property for attached property <c>EmptyColor</c>.</summary>
-	public static readonly BindableProperty EmptyColorProperty = BindableProperty.Create(nameof(EmptyColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.EmptyColor, propertyChanged: OnUpdateRatingDraw, defaultValueCreator: static _ => RatingViewDefaults.EmptyColor);
+	/// <summary>Bindable property for attached property <see cref="EmptyColor"/>.</summary>
+	public static readonly BindableProperty EmptyColorProperty = BindableProperty.Create(nameof(EmptyColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.EmptyColor, propertyChanged: OnRatingColorChanged, defaultValueCreator: static _ => RatingViewDefaults.EmptyColor);
 
-	/// <summary>Bindable property for attached property <c>FilledColor</c>.</summary>
-	public static readonly BindableProperty FilledColorProperty = BindableProperty.Create(nameof(FilledColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.FilledColor, propertyChanged: OnUpdateRatingDraw, defaultValueCreator: static _ => RatingViewDefaults.FilledColor);
+	/// <summary>Bindable property for attached property <see cref="FilledColor"/>.</summary>
+	public static readonly BindableProperty FilledColorProperty = BindableProperty.Create(nameof(FilledColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.FilledColor, propertyChanged: OnRatingColorChanged, defaultValueCreator: static _ => RatingViewDefaults.FilledColor);
 
 	/// <summary>The backing store for the <see cref="IsReadOnly" /> bindable property.</summary>
 	public static readonly BindableProperty IsReadOnlyProperty = BindableProperty.Create(nameof(IsReadOnly), typeof(bool), typeof(RatingView), defaultValue: RatingViewDefaults.IsReadOnly, propertyChanged: OnIsReadOnlyChanged);
 
 	/// <summary>The backing store for the <see cref="MaximumRating" /> bindable property.</summary>
-	public static readonly BindableProperty MaximumRatingProperty = BindableProperty.Create(nameof(MaximumRating), typeof(int), typeof(RatingView), defaultValue: RatingViewDefaults.MaximumRating, validateValue: ValidateMaximumRating, propertyChanged: OnMaximumRatingChange);
+	public static readonly BindableProperty MaximumRatingProperty = BindableProperty.Create(nameof(MaximumRating), typeof(int), typeof(RatingView), defaultValue: RatingViewDefaults.MaximumRating, validateValue: IsMaximumRatingValid, propertyChanged: OnMaximumRatingChange);
 
 	/// <summary>The backing store for the <see cref="RatingFill" /> bindable property.</summary>
-	public static readonly BindableProperty RatingFillProperty = BindableProperty.Create(nameof(RatingFill), typeof(RatingFillElement), typeof(RatingView), defaultValue: RatingFillElement.Shape, propertyChanged: OnUpdateRatingDraw);
+	public static readonly BindableProperty RatingFillProperty = BindableProperty.Create(nameof(RatingFill), typeof(RatingFillElement), typeof(RatingView), defaultValue: RatingFillElement.Shape, propertyChanged: OnRatingColorChanged);
 
 	/// <summary>The backing store for the <see cref="Rating" /> bindable property.</summary>
-	public static readonly BindableProperty RatingProperty = BindableProperty.Create(nameof(Rating), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.DefaultRating, validateValue: ValidateRating, propertyChanged: OnRatingChanged);
+	public static readonly BindableProperty RatingProperty = BindableProperty.Create(nameof(Rating), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.DefaultRating, validateValue: IsRatingValid, propertyChanged: OnRatingChanged);
 
 	/// <summary>The backing store for the <see cref="Spacing" /> bindable property.</summary>
 	public static readonly BindableProperty SpacingProperty = BindableProperty.Create(nameof(Spacing), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.Spacing, propertyChanged: OnSpacingChanged);
@@ -56,8 +56,10 @@ public partial class RatingView : TemplatedView, IRatingView
 	///<summary>The default constructor of the control.</summary>
 	public RatingView()
 	{
-		ControlTemplate = new ControlTemplate(typeof(HorizontalStackLayout));
-		AddChildrenToControl(0, MaximumRating);
+		RatingLayout.SetBinding<RatingView, object>(BindingContextProperty, static ratingView => ratingView.BindingContext, source: this);
+		base.ControlTemplate = new ControlTemplate(() => RatingLayout);
+		
+		AddChildrenToLayout(0, MaximumRating);
 	}
 
 	/// <summary>Occurs when <see cref="Rating"/> is changed.</summary>
@@ -66,6 +68,9 @@ public partial class RatingView : TemplatedView, IRatingView
 		add => weakEventManager.AddEventHandler(value);
 		remove => weakEventManager.RemoveEventHandler(value);
 	}
+	
+	/// <inheritdoc cref="ControlTemplate"/>
+	public new ControlTemplate ControlTemplate => base.ControlTemplate; // Ensures the ControlTemplate is readonly, preventing users from breaking the HorizontalStackLayout 
 
 	///<summary>Defines the shape to be drawn.</summary>
 	public string? CustomItemShape
@@ -194,29 +199,7 @@ public partial class RatingView : TemplatedView, IRatingView
 		set => SetValue(SpacingProperty, value);
 	}
 
-	///<summary>The control to be displayed</summary>
-	internal HorizontalStackLayout? Control { get; set; }
-
-	///<summary>Method called every time the control's Binding Context is changed.</summary>
-	protected override void OnBindingContextChanged()
-	{
-		base.OnBindingContextChanged();
-		if (Control is not null)
-		{
-			Control.BindingContext = BindingContext;
-		}
-	}
-
-	///<summary>Called every time a child is added to the control.</summary>
-	protected override void OnChildAdded(Element child)
-	{
-		if (Control is null && child is HorizontalStackLayout stack)
-		{
-			Control = stack;
-		}
-
-		base.OnChildAdded(child);
-	}
+	internal HorizontalStackLayout RatingLayout { get; } = new();
 
 	static int GetRatingWhenMaximumRatingEqualsOne(double rating) => rating.Equals(0.0) ? 1 : 0;
 
@@ -273,78 +256,63 @@ public partial class RatingView : TemplatedView, IRatingView
 
 		return result.AsReadOnly();
 	}
-
-	/// <summary>Validator for the <see cref="MaximumRating"/>.</summary>
-	/// <remarks>The value must be between 1 and <see cref="RatingViewDefaults.MaximumRatingLimit" />.</remarks>
-	/// <param name="bindable">The bindable object.</param>
-	/// <param name="value">Value to validate.</param>
-	/// <returns>True, if the value is within range; Otherwise false.</returns>
-	static bool ValidateMaximumRating(BindableObject bindable, object value)
+	
+	static bool IsMaximumRatingValid(BindableObject bindable, object value)
 	{
 		return (int)value is >= 1 and <= RatingViewDefaults.MaximumRatingLimit;
 	}
 
 	static void OnIsReadOnlyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		RatingView ratingView = (RatingView)bindable;
+		var ratingView = (RatingView)bindable;
 		ratingView.OnPropertyChanged(nameof(ratingView.IsReadOnly));
 		ratingView.HandleIsReadOnlyChanged();
 	}
 
-	/// <summary>Maximum rating has changed.</summary>
-	/// <remarks>If the current rating is greater than the maximum, then change the current rating to the new value and raise the event as appropriate.</remarks>
-	/// <param name="bindable">RatingView object.</param>
-	/// <param name="oldValue">Old maximum rating value.</param>
-	/// <param name="newValue">New maximum rating value.</param>
+			child.GestureRecognizers.Clear();
+		}
+	}
+	
 	static void OnMaximumRatingChange(BindableObject bindable, object oldValue, object newValue)
 	{
-		RatingView ratingView = (RatingView)bindable;
+		var ratingView = (RatingView)bindable;
 		if (ratingView.Control is null)
 		{
 			return;
 		}
 
-		HorizontalStackLayout element = ratingView.Control;
-		int newMaximumRatingValue = (int)newValue;
-		int oldMaximumRatingValue = (int)oldValue;
+		var element = ratingView.Control;
+		var newMaximumRatingValue = (int)newValue;
+		var oldMaximumRatingValue = (int)oldValue;
 		if (newMaximumRatingValue < (int)oldValue)
 		{
-			for (int lastElement = element.Count - 1; lastElement >= newMaximumRatingValue; lastElement--)
+			for (var lastElement = element.Count - 1; lastElement >= newMaximumRatingValue; lastElement--)
 			{
-				element.RemoveAt(lastElement);
+				layout.RemoveAt(lastElement);
 			}
 
-			ratingView.UpdateRatingDrawing(ratingView.RatingFill);
+			ratingView.UpdateAllRatingsFills(ratingView.RatingFill);
 		}
-
-		if (newMaximumRatingValue > oldMaximumRatingValue)
+		else if (newMaximumRatingValue > oldMaximumRatingValue)
 		{
-			ratingView.AddChildrenToControl(oldMaximumRatingValue - 1, newMaximumRatingValue - 1);
+			ratingView.AddChildrenToLayout(oldMaximumRatingValue - 1, newMaximumRatingValue - 1);
 		}
 
-		if (newMaximumRatingValue >= ratingView.Rating)
+		if (newMaximumRatingValue < ratingView.Rating) // Ensure Rating is never greater than MaximumRating 
 		{
-			return;
+			ratingView.Rating = newMaximumRatingValue;
 		}
-
-		ratingView.Rating = newMaximumRatingValue;
-		if (ratingView.IsReadOnly)
-		{
-			return;
-		}
-
-		ratingView.weakEventManager.HandleEvent(ratingView, new RatingChangedEventArgs(newMaximumRatingValue), nameof(MaximumRating));
 	}
 
 	static void OnRatingChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		RatingView ratingView = (RatingView)bindable;
+		var ratingView = (RatingView)bindable;
 		if (ratingView.Control is null)
 		{
 			return;
 		}
 
-		double newValueDouble = (double)newValue;
+		var newValueDouble = (double)newValue;
 		ratingView.UpdateRatingDrawing(ratingView.RatingFill);
 		if (ratingView.IsReadOnly)
 		{
@@ -356,7 +324,7 @@ public partial class RatingView : TemplatedView, IRatingView
 
 	static void OnSpacingChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		RatingView ratingView = (RatingView)bindable;
+		var ratingView = (RatingView)bindable;
 		if (ratingView.Control is null)
 		{
 			return;
@@ -365,9 +333,9 @@ public partial class RatingView : TemplatedView, IRatingView
 		ratingView.Control.Spacing = (double)newValue;
 	}
 
-	static void OnUpdateRatingDraw(BindableObject bindable, object oldValue, object newValue)
+	static void OnRatingColorChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		RatingView ratingView = (RatingView)bindable;
+		var ratingView = (RatingView)bindable;
 		if (ratingView.Control is null)
 		{
 			return;
@@ -375,13 +343,8 @@ public partial class RatingView : TemplatedView, IRatingView
 
 		ratingView.UpdateRatingDrawing(ratingView.RatingFill);
 	}
-
-	/// <summary>Partial fill linear gradient brush, for shapes/items that are partial and not filled or empty.</summary>
-	/// <param name="filledColor">Offset start partial fill color.</param>
-	/// <param name="partialFill">Partial fill color.</param>
-	/// <param name="emptyColor">Empty fill color.</param>
-	/// <returns>A <see cref="LinearGradientBrush"/> for a partially filled element.</returns>
-	static LinearGradientBrush PartialFill(Color filledColor, double partialFill, Color emptyColor)
+	
+	static LinearGradientBrush GetPartialFillBrush(Color filledColor, double partialFill, Color emptyColor)
 	{
 		return new(
 			[
@@ -391,13 +354,8 @@ public partial class RatingView : TemplatedView, IRatingView
 			],
 			new Point(0, 0), new Point(1, 0));
 	}
-
-	/// <summary>Validator for the <see cref="Rating"/>.</summary>
-	/// <remarks>The value must be between 0.00 and <see cref="RatingViewDefaults.MaximumRatingLimit" />.</remarks>
-	/// <param name="bindable">The bindable object.</param>
-	/// <param name="value">Value to validate.</param>
-	/// <returns>True, if the value is within range; Otherwise false.</returns>
-	static bool ValidateRating(BindableObject bindable, object value)
+	
+	static bool IsRatingValid(BindableObject bindable, object value)
 	{
 		return (double)value is >= 0.0 and <= RatingViewDefaults.MaximumRatingLimit;
 	}
@@ -411,12 +369,12 @@ public partial class RatingView : TemplatedView, IRatingView
 	/// <param name="backgroundColor">Color of the item.</param>
 	static void UpdateRatingItemColors(ReadOnlyCollection<VisualElement> ratingItems, double rating, Color filledColor, Color emptyColor, Color? backgroundColor)
 	{
-		int fullRatingItems = (int)Math.Floor(rating); // Determine the number of fully filled rating items
-		double partialFill = rating - fullRatingItems; // Determine the fraction for the partially filled rating item (if any)
+		var fullRatingItems = (int)Math.Floor(rating); // Determine the number of fully filled rating items
+		var partialFill = rating - fullRatingItems; // Determine the fraction for the partially filled rating item (if any)
 		backgroundColor ??= Colors.Transparent;
-		for (int i = 0; i < ratingItems.Count; i++)
+		for (var i = 0; i < ratingItems.Count; i++)
 		{
-			Border border = (Border)ratingItems[i];
+			var border = (Border)ratingItems[i];
 			if (border.Content is not Shape shape)
 			{
 				continue;
@@ -446,11 +404,11 @@ public partial class RatingView : TemplatedView, IRatingView
 	/// <param name="emptyColor">Color of an empty shape.</param>
 	static void UpdateRatingShapeColors(ReadOnlyCollection<VisualElement> ratingItems, double rating, Color filledColor, Color emptyColor)
 	{
-		int fullShapes = (int)Math.Floor(rating); // Determine the number of fully filled shapes
-		double partialFill = rating - fullShapes; // Determine the fraction for the partially filled shape (if any)
-		for (int i = 0; i < ratingItems.Count; i++)
+		var fullShapes = (int)Math.Floor(rating); // Determine the number of fully filled shapes
+		var partialFill = rating - fullShapes; // Determine the fraction for the partially filled shape (if any)
+		for (var i = 0; i < ratingItems.Count; i++)
 		{
-			Shape ratingShape = (Shape)ratingItems[i];
+			var ratingShape = (Shape)ratingItems[i];
 			if (i < fullShapes)
 			{
 				ratingShape.Fill = filledColor; // Fully filled shape
@@ -468,7 +426,7 @@ public partial class RatingView : TemplatedView, IRatingView
 
 	static void OnCustomShapePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		RatingView ratingView = (RatingView)bindable;
+		var ratingView = (RatingView)bindable;
 		if (ratingView.Control is null)
 		{
 			return;
@@ -480,14 +438,14 @@ public partial class RatingView : TemplatedView, IRatingView
 		}
 
 		string newShapePathData;
-		if (string.IsNullOrEmpty((string)newValue))
+		if (string.IsNullOrEmpty(newShape))
 		{
 			ratingView.ItemShape = RatingViewDefaults.Shape;
-			newShapePathData = Core.Primitives.RatingViewShapeHandler.Star.PathData;
+			newShapePathData = Core.Primitives.RatingViewShape.Star.PathData;
 		}
 		else
 		{
-			newShapePathData = (string)newValue;
+			newShapePathData = newShape;
 		}
 
 		ratingView.ChangeRatingItemShape(newShapePathData);
@@ -495,29 +453,29 @@ public partial class RatingView : TemplatedView, IRatingView
 
 	static void OnItemPaddingPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		RatingView ratingView = (RatingView)bindable;
+		var ratingView = (RatingView)bindable;
 		if (ratingView.Control is null)
 		{
 			return;
 		}
 
-		for (int element = 0; element < ratingView.Control.Count; element++)
+		for (var element = 0; element < ratingView.Control.Count; element++)
 		{
-			((Border)ratingView.Control.Children[element]).Padding = (Thickness)newValue;
+			((Border)ratingView.RatingLayout.Children[element]).Padding = (Thickness)newValue;
 		}
 	}
 
 	static void OnItemShapeBorderColorChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		RatingView ratingView = (RatingView)bindable;
+		var ratingView = (RatingView)bindable;
 		if (ratingView.Control is null)
 		{
 			return;
 		}
 
-		for (int element = 0; element < ratingView.Control.Count; element++)
+		for (var element = 0; element < ratingView.Control.Count; element++)
 		{
-			Border border = (Border)ratingView.Control.Children[element];
+			var border = (Border)ratingView.Control.Children[element];
 			if (border.Content is not null)
 			{
 				((Path)border.Content.GetVisualTreeDescendants()[0]).Stroke = (Color)newValue;
@@ -527,15 +485,15 @@ public partial class RatingView : TemplatedView, IRatingView
 
 	static void OnItemShapeBorderThicknessChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		RatingView ratingView = (RatingView)bindable;
+		var ratingView = (RatingView)bindable;
 		if (ratingView.Control is null)
 		{
 			return;
 		}
 
-		for (int element = 0; element < ratingView.Control.Count; element++)
+		for (var element = 0; element < ratingView.Control.Count; element++)
 		{
-			Border border = (Border)ratingView.Control.Children[element];
+			var border = (Border)ratingView.Control.Children[element];
 			if (border.Content is not null)
 			{
 				((Path)border.Content.GetVisualTreeDescendants()[0]).StrokeThickness = (double)newValue;
@@ -545,7 +503,7 @@ public partial class RatingView : TemplatedView, IRatingView
 
 	static void OnItemShapePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		RatingView ratingView = (RatingView)bindable;
+		var ratingView = (RatingView)bindable;
 		if (ratingView.Control is null)
 		{
 			return;
@@ -556,15 +514,15 @@ public partial class RatingView : TemplatedView, IRatingView
 
 	static void OnItemShapeSizeChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		RatingView ratingView = (RatingView)bindable;
+		var ratingView = (RatingView)bindable;
 		if (ratingView.Control is null)
 		{
 			return;
 		}
 
-		for (int element = 0; element < ratingView.Control.Count; element++)
+		for (var element = 0; element < ratingView.Control.Count; element++)
 		{
-			Border border = (Border)ratingView.Control.Children[element];
+			var border = (Border)ratingView.Control.Children[element];
 			if (border.Content is null)
 			{
 				continue;
@@ -575,11 +533,8 @@ public partial class RatingView : TemplatedView, IRatingView
 			rating.HeightRequest = (double)newValue;
 		}
 	}
-
-	/// <summary>Add the required children to the control.</summary>
-	/// <param name="minimum">Minimum position to add a child.</param>
-	/// <param name="maximum">Maximum position to add a child</param>
-	void AddChildrenToControl(int minimum, int maximum)
+	
+	void AddChildrenToLayout(int minimumRating, int maximumRating)
 	{
 		if (Control is null)
 		{
@@ -587,8 +542,8 @@ public partial class RatingView : TemplatedView, IRatingView
 		}
 
 		Control.Spacing = Spacing;
-		string shape = GetShapePathData(ItemShape);
-		for (int i = minimum; i < maximum; i++)
+		var shape = GetShapePathData(ItemShape);
+		for (var i = minimum; i < maximum; i++)
 		{
 			Border child = CreateChild(shape, ItemPadding, ShapeBorderThickness, ItemShapeSize, ShapeBorderColor, BackgroundColor);
 			if (!IsReadOnly)
@@ -598,22 +553,22 @@ public partial class RatingView : TemplatedView, IRatingView
 				child.GestureRecognizers.Add(tapGestureRecognizer);
 			}
 
-			Control.Children.Add(child);
+			RatingLayout.Children.Add(child);
 		}
 
-		UpdateRatingDrawing(RatingFill);
+		UpdateAllRatingsFills(RatingFill);
 	}
 
 	void ChangeRatingItemShape(string shape)
 	{
-		if (Control is null)
+		for (var element = 0; element < RatingLayout.Count; element++)
 		{
 			return;
 		}
 
-		for (int element = 0; element < Control.Count; element++)
+		for (var element = 0; element < Control.Count; element++)
 		{
-			Border border = (Border)Control.Children[element];
+			var border = (Border)Control.Children[element];
 			if (border.Content is not null)
 			{
 				((Path)border.Content.GetVisualTreeDescendants()[0]).Data = (Geometry?)new PathGeometryConverter().ConvertFromInvariantString(shape);
@@ -621,31 +576,27 @@ public partial class RatingView : TemplatedView, IRatingView
 		}
 	}
 
-	string GetShapePathData(RatingViewShapes shape)
+	string GetShapePathData(RatingViewShape shape)
 	{
 		return shape switch
 		{
-			RatingViewShapes.Circle => RatingViewShapeHandler.Circle.PathData,
-			RatingViewShapes.Custom => CustomItemShape ?? RatingViewShapeHandler.Star.PathData,
-			RatingViewShapes.Dislike => RatingViewShapeHandler.Dislike.PathData,
-			RatingViewShapes.Heart => RatingViewShapeHandler.Heart.PathData,
-			RatingViewShapes.Like => RatingViewShapeHandler.Like.PathData,
-			_ => RatingViewShapeHandler.Star.PathData,
+			RatingViewShape.Circle => Core.Primitives.RatingViewShape.Circle.PathData,
+			RatingViewShape.Custom => CustomItemShape ?? Core.Primitives.RatingViewShape.Star.PathData,
+			RatingViewShape.Dislike => Core.Primitives.RatingViewShape.Dislike.PathData,
+			RatingViewShape.Heart => Core.Primitives.RatingViewShape.Heart.PathData,
+			RatingViewShape.Like => Core.Primitives.RatingViewShape.Like.PathData,
+			_ => Core.Primitives.RatingViewShape.Star.PathData,
 		};
 	}
 
-	/// <summary>Ensure the VisualElement is read only.</summary>
-	/// <remarks>Remove any added gesture recognisers if not enabled; Otherwise, where not already present.</remarks>
-	void HandleIsReadOnlyChanged()
+	void OnRatingChangedEvent(RatingChangedEventArgs e)
 	{
-		if (Control is null)
-		{
-			return;
-		}
+		weakEventManager.HandleEvent(this, e, nameof(RatingChanged));
+	}
 
-		for (int i = 0; i < Control.Children.Count; i++)
+		for (var i = 0; i < Control.Children.Count; i++)
 		{
-			Border child = (Border)Control.Children[i];
+			var child = (Border)Control.Children[i];
 			if (!IsReadOnly)
 			{
 				TapGestureRecognizer tapGestureRecognizer = new();
@@ -670,8 +621,8 @@ public partial class RatingView : TemplatedView, IRatingView
 		}
 
 		ArgumentNullException.ThrowIfNull(sender);
-		Border border = (Border)sender;
-		int itemIndex = Control.Children.IndexOf(border);
+		var border = (Border)sender;
+		var itemIndex = Control.Children.IndexOf(border);
 		Rating = MaximumRating > 1 ? itemIndex + 1 : GetRatingWhenMaximumRatingEqualsOne(Rating);
 	}
 
@@ -688,8 +639,8 @@ public partial class RatingView : TemplatedView, IRatingView
 			return;
 		}
 
-		bool isShapeFill = ratingFill is RatingFillElement.Shape;
-		ReadOnlyCollection<VisualElement>? visualElements = GetVisualTreeDescendantsWithBorderAndShape((VisualElement)Control.GetVisualTreeDescendants()[0], isShapeFill);
+		var isShapeFill = ratingFill is RatingFillElement.Shape;
+		var visualElements = GetVisualTreeDescendantsWithBorderAndShape((VisualElement)Control.GetVisualTreeDescendants()[0], isShapeFill);
 		if (visualElements is null)
 		{
 			return;
@@ -706,12 +657,3 @@ public partial class RatingView : TemplatedView, IRatingView
 	}
 }
 
-/// <summary>Rating view fill element.</summary>
-public enum RatingFillElement
-{
-	/// <summary>Fill the rating shape.</summary>
-	Shape,
-
-	/// <summary>Fill the rating item.</summary>
-	Item
-}

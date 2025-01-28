@@ -20,12 +20,4 @@ public partial class RatingViewXamlPage : BasePage<RatingViewXamlViewModel>
 			await Toast.Make($"New Rating: {ratingView.Rating:F2}").Show(CancellationToken.None);
 		}
 	}
-
-	void RatingViewShapePaddingBottom_ValueChanged(object? sender, ValueChangedEventArgs e) => BindingContext.RatingViewShapePaddingBottom = e.NewValue;
-
-	void RatingViewShapePaddingLeft_ValueChanged(object? sender, ValueChangedEventArgs e) => BindingContext.RatingViewShapePaddingLeft = e.NewValue;
-
-	void RatingViewShapePaddingRight_ValueChanged(object? sender, ValueChangedEventArgs e) => BindingContext.RatingViewShapePaddingRight = e.NewValue;
-
-	void RatingViewShapePaddingTop_ValueChanged(object? sender, ValueChangedEventArgs e) => BindingContext.RatingViewShapePaddingTop = e.NewValue;
 }

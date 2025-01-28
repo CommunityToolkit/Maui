@@ -78,48 +78,53 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 
 	/// <inheritdoc /> 
 #if IOS
-	protected override void OnAttachedTo(Page bindable, UIKit.UIView platformView)
+	protected override void OnAttachedTo(Page page, UIKit.UIView platformView)
 #elif ANDROID
-	protected override void OnAttachedTo(Page bindable, Android.Views.View platformView)
+	protected override void OnAttachedTo(Page page, Android.Views.View platformView)
 #else
-	protected override void OnAttachedTo(Page bindable, object platformView)
+	protected override void OnAttachedTo(Page page, object platformView)
 #endif
 	{
-		base.OnAttachedTo(bindable, platformView);
+		base.OnAttachedTo(page, platformView);
 
 		if (ApplyOn is StatusBarApplyOn.OnBehaviorAttachedTo)
 		{
+#if IOS
+			StatusBar.SetBarSize(Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetUseSafeArea(page));
+#endif
+
 			StatusBar.SetColor(StatusBarColor);
 			StatusBar.SetStyle(StatusBarStyle);
 		}
 
-		bindable.NavigatedTo += OnPageNavigatedTo;
+		page.NavigatedTo += OnPageNavigatedTo;
 #if IOS
-		bindable.SizeChanged += OnPageSizeChanged;
+		page.SizeChanged += OnPageSizeChanged;
 #endif
 	}
 
 	/// <inheritdoc /> 
 #if IOS
-	protected override void OnDetachedFrom(Page bindable, UIKit.UIView platformView)
+	protected override void OnDetachedFrom(Page page, UIKit.UIView platformView)
 #elif ANDROID
-	protected override void OnDetachedFrom(Page bindable, Android.Views.View platformView)
+	protected override void OnDetachedFrom(Page page, Android.Views.View platformView)
 #else
-	protected override void OnDetachedFrom(Page bindable, object platformView)
+	protected override void OnDetachedFrom(Page page, object platformView)
 #endif
 	{
 #if IOS
-		bindable.SizeChanged -= OnPageSizeChanged;
+		page.SizeChanged -= OnPageSizeChanged;
 #endif
-		base.OnDetachedFrom(bindable, platformView);
+		base.OnDetachedFrom(page, platformView);
 
-		bindable.NavigatedTo -= OnPageNavigatedTo;
+		page.NavigatedTo -= OnPageNavigatedTo;
 	}
 
 #if IOS
 	static void OnPageSizeChanged(object? sender, EventArgs e)
 	{
-		StatusBar.UpdateBarSize();
+		ArgumentNullException.ThrowIfNull(sender);
+		StatusBar.SetBarSize(Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetUseSafeArea((Page)sender));
 	}
 #endif
 
