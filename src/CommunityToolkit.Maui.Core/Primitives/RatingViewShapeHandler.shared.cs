@@ -1,33 +1,33 @@
 ﻿namespace CommunityToolkit.Maui.Core.Primitives;
 
 /// <summary>Shapes available for the rating view.</summary>
-public sealed class RatingViewShape
+public sealed class RatingViewShapeHandler
 {
 	/// <summary>Custom data path for the shape of the rating.</summary>
 	public string PathData { get; }
 
 	/// <summary>Private constructor to initialize a new shape.</summary>
 	/// <param name="pathData">Path shape data from <see cref="PathShapes"/>.</param>
-	RatingViewShape(string pathData)
+	RatingViewShapeHandler(string pathData)
 	{
 		PathData = pathData;
 	}
 
 	/// <summary>Star shape.</summary>
 	/// <remarks>Default shape.</remarks>
-	public static readonly RatingViewShape Star = new(PathShapes.Star);
+	public static readonly RatingViewShapeHandler Star = new(PathShapes.Star);
 
 	/// <summary>Heart shape.</summary>
-	public static readonly RatingViewShape Heart = new(PathShapes.Heart);
+	public static readonly RatingViewShapeHandler Heart = new(PathShapes.Heart);
 
 	/// <summary>Circle shape.</summary>
-	public static readonly RatingViewShape Circle = new(PathShapes.Circle);
+	public static readonly RatingViewShapeHandler Circle = new(PathShapes.Circle);
 
 	/// <summary>Thumb like shape.</summary>
-	public static readonly RatingViewShape Like = new(PathShapes.Like);
+	public static readonly RatingViewShapeHandler Like = new(PathShapes.Like);
 
 	/// <summary>Thumb dislike shape.</summary>
-	public static readonly RatingViewShape Dislike = new(PathShapes.Dislike);
+	public static readonly RatingViewShapeHandler Dislike = new(PathShapes.Dislike);
 }
 
 /// <summary>SVG defined path shapes.</summary>

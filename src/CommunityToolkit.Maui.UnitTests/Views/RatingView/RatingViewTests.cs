@@ -2,6 +2,7 @@
 
 using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Views;
 using FluentAssertions;
 using Microsoft.Maui.Controls.Shapes;
@@ -352,13 +353,13 @@ public class RatingViewTests : BaseHandlerTest
 		const string customShape = "M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z";
 		RatingView ratingView = new()
 		{
-			ItemShape = RatingViewShape.Custom,
+			ItemShape = RatingViewShapes.Custom,
 			CustomItemShape = customShape,
 		};
-		_ = ratingView.ItemShape.Should().Be(RatingViewShape.Custom);
+		_ = ratingView.ItemShape.Should().Be(RatingViewShapes.Custom);
 		_ = ratingView.CustomItemShape.Should().Be(customShape);
 		ratingView.CustomItemShape = customShapes!;
-		_ = ratingView.ItemShape.Should().Be(RatingViewShape.Star);
+		_ = ratingView.ItemShape.Should().Be(RatingViewShapes.Star);
 	}
 
 	[Fact]
@@ -367,12 +368,12 @@ public class RatingViewTests : BaseHandlerTest
 		const string customShape = "M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z";
 		RatingView ratingView = new()
 		{
-			ItemShape = RatingViewShape.Custom
+			ItemShape = RatingViewShapes.Custom
 		};
-		_ = ratingView.ItemShape.Should().Be(RatingViewShape.Custom);
+		_ = ratingView.ItemShape.Should().Be(RatingViewShapes.Custom);
 		ratingView.CustomItemShape = customShape;
 		_ = ratingView.CustomItemShape.Should().Be(customShape);
-		_ = ratingView.ItemShape.Should().Be(RatingViewShape.Custom);
+		_ = ratingView.ItemShape.Should().Be(RatingViewShapes.Custom);
 	}
 
 	[Fact]
@@ -381,12 +382,12 @@ public class RatingViewTests : BaseHandlerTest
 		const string customShape = "M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z";
 		RatingView ratingView = new()
 		{
-			ItemShape = RatingViewShape.Heart
+			ItemShape = RatingViewShapes.Heart
 		};
-		_ = ratingView.ItemShape.Should().Be(RatingViewShape.Heart);
+		_ = ratingView.ItemShape.Should().Be(RatingViewShapes.Heart);
 		ratingView.CustomItemShape = customShape;
 		_ = ratingView.CustomItemShape.Should().Be(customShape);
-		_ = ratingView.ItemShape.Should().Be(RatingViewShape.Heart);
+		_ = ratingView.ItemShape.Should().Be(RatingViewShapes.Heart);
 	}
 
 	[Fact]
@@ -549,12 +550,12 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Theory]
-	[InlineData(RatingViewShape.Heart)]
-	[InlineData(RatingViewShape.Circle)]
-	[InlineData(RatingViewShape.Like)]
-	[InlineData(RatingViewShape.Dislike)]
-	[InlineData(RatingViewShape.Custom)]
-	public void Properties_Change_Shape(RatingViewShape expectedShape)
+	[InlineData(RatingViewShapes.Heart)]
+	[InlineData(RatingViewShapes.Circle)]
+	[InlineData(RatingViewShapes.Like)]
+	[InlineData(RatingViewShapes.Dislike)]
+	[InlineData(RatingViewShapes.Custom)]
+	public void Properties_Change_Shape(RatingViewShapes expectedShape)
 	{
 		RatingView ratingView = new();
 		_ = ratingView.ItemShape.Should().NotBe(expectedShape);
@@ -776,7 +777,7 @@ public class RatingViewTests : BaseHandlerTest
 		var child = (Border)ratingView.Control!.Children[0];
 		_ = child.Content.Should().NotBeNull();
 		var shape = (Microsoft.Maui.Controls.Shapes.Path)child.Content!.GetVisualTreeDescendants()[0];
-		_ = shape.GetPath().Should().Be(Core.Primitives.RatingViewShape.Star.PathData);
+		_ = shape.GetPath().Should().Be(Core.Primitives.RatingViewShapeHandler.Star.PathData);
 	}
 
 	[Fact]

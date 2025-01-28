@@ -2,6 +2,7 @@
 
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
@@ -152,7 +153,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							EmptyColor = Colors.White,
 							FilledColor = Colors.Blue,
 							Rating = 2,
-							ItemShape = RatingViewShape.Star,
+							ItemShape = RatingViewShapes.Star,
 							ShapeBorderThickness = 1
 						}
 						.Start()
@@ -171,7 +172,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							EmptyColor = Colors.Red,
 							FilledColor = Colors.Blue,
 							Rating = 2,
-							ItemShape = RatingViewShape.Circle,
+							ItemShape = RatingViewShapes.Circle,
 							ShapeBorderThickness = 1
 						}
 						.Start()
@@ -189,7 +190,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							MaximumRating = 5,
 							FilledColor = Colors.White,
 							Rating = 5,
-							ItemShape = RatingViewShape.Heart,
+							ItemShape = RatingViewShapes.Heart,
 							ShapeBorderThickness = 1
 						}
 						.Start()
@@ -207,7 +208,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							MaximumRating = 5,
 							Rating = 5,
 							FilledColor = Colors.Red,
-							ItemShape = RatingViewShape.Like,
+							ItemShape = RatingViewShapes.Like,
 							ShapeBorderThickness = 1
 						}
 						.Start()
@@ -225,7 +226,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							MaximumRating = 5,
 							Rating = 5,
 							FilledColor = Colors.White,
-							ItemShape = RatingViewShape.Dislike,
+							ItemShape = RatingViewShapes.Dislike,
 							ShapeBorderThickness = 1
 						}
 						.Start()
@@ -245,7 +246,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							MaximumRating = 5,
 							FilledColor = Colors.Red,
 							Rating = 5,
-							ItemShape = RatingViewShape.Custom,
+							ItemShape = RatingViewShapes.Custom,
 							ShapeBorderThickness = 1,
 						}
 						.Start()
@@ -265,7 +266,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							FilledColor = Colors.White,
 							MaximumRating = 5,
 							Rating = 5,
-							ItemShape = RatingViewShape.Custom,
+							ItemShape = RatingViewShapes.Custom,
 							ShapeBorderColor = Colors.Grey,
 							ShapeBorderThickness = 1,
 						}

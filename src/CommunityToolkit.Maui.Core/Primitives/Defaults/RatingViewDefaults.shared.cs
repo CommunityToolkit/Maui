@@ -1,6 +1,7 @@
 ﻿// Ignore Spelling: color
 
 using System.ComponentModel;
+using CommunityToolkit.Maui.Core.Primitives;
 
 namespace CommunityToolkit.Maui.Core;
 
@@ -50,7 +51,7 @@ public static class RatingViewDefaults
 
 	/// <summary>Default rating shape.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static RatingViewShape Shape { get; } = RatingViewShape.Star;
+	public static RatingViewShapes Shape { get; } = RatingViewShapes.Star;
 
 	/// <summary>Default border color for a rating shape.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
