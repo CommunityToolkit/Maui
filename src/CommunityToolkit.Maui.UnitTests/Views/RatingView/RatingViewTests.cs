@@ -72,7 +72,7 @@ public class RatingViewTests : BaseHandlerTest
 		ratingView.ItemPadding.Should().BeOfType<Thickness>().And.Be(RatingViewDefaults.ItemPadding);
 		ratingView.ItemShapeSize.Should().Be(RatingViewDefaults.ItemShapeSize);
 		ratingView.MaximumRating.Should().Be(RatingViewDefaults.MaximumRating);
-		ratingView.ItemShape.Should().BeOneOf(RatingViewDefaults.ItemShape).And.Be(RatingViewDefaults.ItemShape);
+		ratingView.ItemShape.Should().BeOneOf(RatingViewDefaults.Shape).And.Be(RatingViewDefaults.Shape);
 		ratingView.ShapeBorderColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.ShapeBorderColor);
 		ratingView.ShapeBorderThickness.Should().Be(RatingViewDefaults.ShapeBorderThickness);
 		ratingView.Spacing.Should().Be(RatingViewDefaults.Spacing);
@@ -746,7 +746,7 @@ public class RatingViewTests : BaseHandlerTest
 		RatingView ratingView = new();
 		ratingView.RatingLayout.Children[0].Should().BeOfType<Border>();
 		var child = (Border)ratingView.RatingLayout.Children[0];
-		
+
 		Assert.NotNull(child.Content);
 		child.Content.GetVisualTreeDescendants()[0].Should().BeOfType<Microsoft.Maui.Controls.Shapes.Path>();
 	}
@@ -755,11 +755,13 @@ public class RatingViewTests : BaseHandlerTest
 	public void ViewStructure_ItemChild_Path_Star()
 	{
 		RatingView ratingView = new();
-		_ = ratingView.Control!.Children[0].Should().BeOfType<Border>();
-		var child = (Border)ratingView.Control!.Children[0];
-		_ = child.Content.Should().NotBeNull();
-		var shape = (Microsoft.Maui.Controls.Shapes.Path)child.Content!.GetVisualTreeDescendants()[0];
-		_ = shape.GetPath().Should().Be(Core.Primitives.RatingViewShape.Star.PathData);
+		ratingView.RatingLayout.Children[0].Should().BeOfType<Border>();
+		var child = (Border)ratingView.RatingLayout.Children[0];
+
+		Assert.NotNull(child.Content);
+
+		var shape = (Microsoft.Maui.Controls.Shapes.Path)child.Content.GetVisualTreeDescendants()[0];
+		shape.GetPath().Should().Be(Core.Primitives.RatingViewShapeHandler.Star.PathData);
 	}
 
 	[Fact]
