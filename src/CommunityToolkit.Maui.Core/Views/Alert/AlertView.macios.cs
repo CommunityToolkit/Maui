@@ -10,7 +10,6 @@ public class AlertView(bool shouldFillAndExpandHorizontally) : UIView
 {
 	const int defaultSpacing = 10;
 	readonly List<UIView> children = [];
-	readonly bool shouldFillAndExpandHorizontally = shouldFillAndExpandHorizontally;
 
 	/// <summary>
 	/// Parent UIView
@@ -71,7 +70,7 @@ public class AlertView(bool shouldFillAndExpandHorizontally) : UIView
 	public override void LayoutSubviews()
 	{
 		base.LayoutSubviews();
-
+		
 		if (AnchorView is null)
 		{
 			this.SafeBottomAnchor().ConstraintEqualTo(ParentView.SafeBottomAnchor(), -defaultSpacing).Active = true;
@@ -80,11 +79,12 @@ public class AlertView(bool shouldFillAndExpandHorizontally) : UIView
 		else if (AnchorView.Superview is not null
 		         && AnchorView.Superview.ConvertRectToView(AnchorView.Frame, null).Top < Container.Frame.Height + SafeAreaLayoutGuide.LayoutFrame.Bottom)
 		{
-			this.SafeTopAnchor().ConstraintEqualTo(AnchorView.SafeBottomAnchor(), defaultSpacing).Active = true;
+			var top = AnchorView.Superview.Frame.Top + AnchorView.Frame.Height + defaultSpacing;
+			this.SafeTopAnchor().ConstraintEqualTo(ParentView.TopAnchor, top).Active = true;
 		}
 		else
 		{
-			this.SafeBottomAnchor().ConstraintEqualTo(AnchorView.SafeTopAnchor(), -defaultSpacing).Active = true;
+			this.SafeBottomAnchor().ConstraintEqualTo(AnchorView.SafeTopAnchor(), 0).Active = true;
 		}
 	}
 

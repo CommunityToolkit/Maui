@@ -83,15 +83,6 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 			throw new NotSupportedException($"{nameof(DisplayCustomSnackbarButtonAnchoredToButton)}.{nameof(ITextButton.Text)} Not Recognized");
 		}
 	}
-	
-	async void DisplaySnackbarButtonAnchoredToButtonOnBottomClicked(object sender, EventArgs e)
-	{
-		await DisplaySnackbarButtonAnchoredToButtonOnBottom.DisplaySnackbar(
-			"This Snackbar is anchored to the button on the bottom of a page. This Snackbar appears above the button to avoid clipping the Snackbar on the bottom of the Page.",
-			() => DisplaySnackbarButtonAnchoredToButtonOnBottom.BackgroundColor = Colors.Blue,
-			"Close",
-			TimeSpan.FromSeconds(5));
-	}
 
 	void Snackbar_Dismissed(object? sender, EventArgs e)
 	{
@@ -107,6 +98,20 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 	{
 		if (Application.Current?.Windows[0].Page is Page mainPage)
 		{
+			var button = new Button()
+				.CenterHorizontal()
+				.Text("Display Snackbar");
+			button.Command = new AsyncRelayCommand(token => button.DisplaySnackbar(
+				"This Snackbar is anchored to the button on the bottom to avoid clipping the Snackbar on the top of the Page.",
+				() => { },
+				"Close",
+				TimeSpan.FromSeconds(5), token: token));
+
+			var backButton = new Button()
+				.CenterHorizontal()
+				.Text("Back to Snackbar MainPage");
+			backButton.Command = new AsyncRelayCommand(mainPage.Navigation.PopModalAsync);
+			
 			await mainPage.Navigation.PushModalAsync(new ContentPage
 			{
 				Content = new VerticalStackLayout
@@ -115,19 +120,11 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 
 					Children =
 					{
-						new Button { Command = new AsyncRelayCommand(static token => Snackbar.Make("Snackbar in a Modal MainPage").Show(token)) }
-							.Top().CenterHorizontal()
-							.Text("Display Snackbar"),
+						button,
 
-						new Label()
-							.Center().TextCenter()
-							.Text("This is a Modal MainPage"),
-
-						new Button { Command = new AsyncRelayCommand(mainPage.Navigation.PopModalAsync) }
-							.Bottom().CenterHorizontal()
-							.Text("Back to Snackbar MainPage")
+						backButton
 					}
-				}.Center()
+				}
 			}.Padding(12));
 		}
 	}

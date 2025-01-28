@@ -16,7 +16,7 @@
     </pages:BasePage.Resources>
     
     <Grid RowSpacing="12"
-          RowDefinitions="70,20,40,40,40,20,*">
+          RowDefinitions="70,20,40,40,40,20">
         <Label Grid.Row="0"
                Text="The Snackbar is a timed alert that appears at the bottom of the screen by default. It is dismissed after a configurable duration of time. Snackbar is fully customizable and can be anchored to any IView."
                HorizontalTextAlignment="Justify"
@@ -43,12 +43,6 @@
 
         <Label Grid.Row="5"
                x:Name="SnackbarShownStatus" />
-        
-        <Button Grid.Row="6"
-                x:Name="DisplaySnackbarButtonAnchoredToButtonOnBottom"
-                VerticalOptions="End"
-                Text="Display Snackbar Anchored to this Button"
-                Clicked="DisplaySnackbarButtonAnchoredToButtonOnBottomClicked"/>
     </Grid>
     
 </pages:BasePage>
