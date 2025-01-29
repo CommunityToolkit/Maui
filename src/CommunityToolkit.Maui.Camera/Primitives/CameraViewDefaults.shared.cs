@@ -1,10 +1,16 @@
 using System.ComponentModel;
+using System.Runtime.Versioning;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Views;
 namespace CommunityToolkit.Maui.Core;
 
 /// <summary>Default Values for <see cref="ICameraView"/>"/></summary>
+[SupportedOSPlatform("windows10.0.10240.0")]
+[SupportedOSPlatform("android21.0")]
+[SupportedOSPlatform("ios")]
+[SupportedOSPlatform("maccatalyst")]
+[SupportedOSPlatform("tizen")]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static class CameraViewDefaults
 {
