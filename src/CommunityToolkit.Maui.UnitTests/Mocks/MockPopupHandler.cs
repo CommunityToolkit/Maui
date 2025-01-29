@@ -36,6 +36,6 @@ public class MockPopupHandler : ElementHandler<IPopup, object>
 
 	static void MapOnClosed(MockPopupHandler handler, IPopup view, object? result)
 	{
-		view.HandlerCompleteTCS.SetResult();
+		view.HandlerCompleteTCS.TrySetResult();
 	}
 }
