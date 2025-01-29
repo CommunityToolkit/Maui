@@ -1,5 +1,5 @@
 ﻿// Ignore Spelling: color
-namespace CommunityToolkit.Maui.Core.Primitives;
+namespace CommunityToolkit.Maui.Core;
 
 /// <summary>Rating view shape enumerator.</summary>
 public enum RatingViewShapes

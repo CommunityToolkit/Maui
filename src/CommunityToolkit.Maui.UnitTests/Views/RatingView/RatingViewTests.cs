@@ -2,7 +2,6 @@
 
 using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Views;
 using FluentAssertions;
 using Microsoft.Maui.Controls.Shapes;
@@ -17,13 +16,13 @@ public class RatingViewTests : BaseHandlerTest
 	{
 		MockRatingViewViewModel vm = new();
 		RatingView ratingViewWithBinding = new();
-		
+
 		ratingViewWithBinding.BindingContext.Should().BeNull();
 		ratingViewWithBinding.RatingLayout.BindingContext.Should().BeNull();
 		ratingViewWithBinding.RatingLayout.BindingContext.Should().BeEquivalentTo(ratingViewWithBinding.BindingContext);
-		
+
 		ratingViewWithBinding.BindingContext = vm;
-		
+
 		ratingViewWithBinding.BindingContext.Should().Be(vm);
 		ratingViewWithBinding.RatingLayout.BindingContext.Should().Be(vm);
 		ratingViewWithBinding.RatingLayout.BindingContext.Should().BeEquivalentTo(ratingViewWithBinding.BindingContext);
@@ -49,7 +48,7 @@ public class RatingViewTests : BaseHandlerTest
 	{
 		RatingView ratingView = new();
 		var firstItemShape = GetItemShape(ratingView, 0);
-		
+
 		firstItemShape.Should().NotBeNull();
 		firstItemShape.Should().BeOfType<Microsoft.Maui.Controls.Shapes.Path>();
 		firstItemShape.Aspect.Should().Be(Stretch.Uniform);
@@ -121,7 +120,7 @@ public class RatingViewTests : BaseHandlerTest
 		};
 		ratingView.RatingChanged += OnRatingChanged;
 		ratingView.Rating = expectedRating;
-		receivedEvents.Should().HaveCount(1);
+		receivedEvents.Should().ContainSingle();
 		receivedEvents[0].Rating.Should().Be(expectedRating);
 
 		void OnRatingChanged(object? sender, RatingChangedEventArgs e)
@@ -242,7 +241,7 @@ public class RatingViewTests : BaseHandlerTest
 		};
 		ratingView.RatingChanged += (sender, e) => receivedEvents.Add(e);
 		ratingView.MaximumRating = (byte)expectedRating;
-		receivedEvents.Should().HaveCount(1);
+		receivedEvents.Should().ContainSingle();
 		receivedEvents[0].Rating.Should().Be(expectedRating);
 	}
 
@@ -269,7 +268,7 @@ public class RatingViewTests : BaseHandlerTest
 		};
 		ratingView.RatingChanged += (sender, e) => receivedEvents.Add(e);
 		ratingView.MaximumRating = 4;
-		receivedEvents.Should().HaveCount(0);
+		receivedEvents.Should().BeEmpty();
 	}
 
 	[Fact]
@@ -381,7 +380,7 @@ public class RatingViewTests : BaseHandlerTest
 		ratingView.EmptyColor.Should().NotBe(emptyColor);
 		ratingView.EmptyColor = emptyColor;
 		ratingView.EmptyColor.Should().Be(emptyColor);
-		
+
 		var emptyRatingItem = (Microsoft.Maui.Controls.Shapes.Path) GetItemShape(ratingView, maximumRating - 1).GetVisualTreeDescendants()[0];
 		emptyRatingItem.Fill.Should().Be(new SolidColorBrush(emptyColor));
 	}
@@ -546,11 +545,11 @@ public class RatingViewTests : BaseHandlerTest
 		var shapeBorderColor = Colors.Snow;
 		Brush brush = new SolidColorBrush(shapeBorderColor);
 		RatingView ratingView = new();
-		
+
 		ratingView.ShapeBorderColor.Should().NotBe(shapeBorderColor);
 		ratingView.ShapeBorderColor = shapeBorderColor;
 		ratingView.ShapeBorderColor.Should().Be(shapeBorderColor);
-		
+
 		var firstRatingItem = GetItemShape(ratingView, 0);
 		firstRatingItem.Stroke.Should().BeOfType<SolidColorBrush>().And.Be(brush);
 	}
@@ -563,7 +562,7 @@ public class RatingViewTests : BaseHandlerTest
 		ratingView.ShapeBorderThickness.Should().NotBe(shapeBorderThickness);
 		ratingView.ShapeBorderThickness = shapeBorderThickness;
 		ratingView.ShapeBorderThickness.Should().Be(shapeBorderThickness);
-		
+
 		var firstRatingItem = GetItemShape(ratingView, 0);
 		firstRatingItem.StrokeThickness.Should().Be(shapeBorderThickness);
 	}
@@ -576,7 +575,7 @@ public class RatingViewTests : BaseHandlerTest
 		ratingView.ItemShapeSize.Should().NotBe(itemShapeSize);
 		ratingView.ItemShapeSize = itemShapeSize;
 		ratingView.ItemShapeSize.Should().Be(itemShapeSize);
-		
+
 		var firstRatingItem = GetItemShape(ratingView, 0);
 		firstRatingItem.WidthRequest.Should().Be(itemShapeSize);
 		firstRatingItem.HeightRequest.Should().Be(itemShapeSize);
@@ -657,8 +656,8 @@ public class RatingViewTests : BaseHandlerTest
 			Rating = rating,
 		};
 
-		Assert.Equal(rating, ratingView.Rating);
-		Assert.Equal(maximumRating, ratingView.MaximumRating);
+		ratingView.Rating.Should().Be(rating);
+		ratingView.MaximumRating.Should().Be(maximumRating);
 	}
 
 	[Fact]
@@ -726,7 +725,7 @@ public class RatingViewTests : BaseHandlerTest
 			MaximumRating = maximumRating
 		};
 
-		Assert.NotNull(ratingView.ControlTemplate);
+		ratingView.ControlTemplate.Should().NotBeNull();
 		ratingView.RatingLayout.GetVisualTreeDescendants().Should().HaveCount((maximumRating * 2) + 1);
 		ratingView.RatingLayout.Children.Should().HaveCount(maximumRating);
 	}
@@ -747,7 +746,7 @@ public class RatingViewTests : BaseHandlerTest
 		ratingView.RatingLayout.Children[0].Should().BeOfType<Border>();
 		var child = (Border)ratingView.RatingLayout.Children[0];
 
-		Assert.NotNull(child.Content);
+		child.Content.Should().NotBeNull();
 		child.Content.GetVisualTreeDescendants()[0].Should().BeOfType<Microsoft.Maui.Controls.Shapes.Path>();
 	}
 
@@ -758,10 +757,10 @@ public class RatingViewTests : BaseHandlerTest
 		ratingView.RatingLayout.Children[0].Should().BeOfType<Border>();
 		var child = (Border)ratingView.RatingLayout.Children[0];
 
-		Assert.NotNull(child.Content);
+		child.Content.Should().NotBeNull();
 
 		var shape = (Microsoft.Maui.Controls.Shapes.Path)child.Content.GetVisualTreeDescendants()[0];
-		shape.GetPath().Should().Be(Core.Primitives.RatingViewShapeHandler.Star.PathData);
+		shape.GetPath().Should().Be(Core.Handlers.RatingViewShapeHandler.Star.PathData);
 	}
 
 	[Fact]
@@ -839,7 +838,7 @@ public class RatingViewTests : BaseHandlerTest
 	static Microsoft.Maui.Controls.Shapes.Path GetItemShape(in RatingView ratingView, int itemIndex)
 	{
 		var border = (Border)ratingView.RatingLayout.Children[itemIndex];
-		Assert.NotNull(border.Content);
+		border.Content.Should().NotBeNull();
 
 		return (Microsoft.Maui.Controls.Shapes.Path)border.Content.GetVisualTreeDescendants()[0];
 	}

@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.Core.Primitives;
+﻿namespace CommunityToolkit.Maui.Core.Handlers;
 
 /// <summary>Shapes available for the rating view.</summary>
 public sealed class RatingViewShapeHandler

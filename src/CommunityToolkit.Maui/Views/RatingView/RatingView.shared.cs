@@ -3,7 +3,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Core.Handlers;
 using Microsoft.Maui.Controls.Shapes;
 using Path = Microsoft.Maui.Controls.Shapes.Path;
 
@@ -199,7 +199,7 @@ public partial class RatingView : TemplatedView, IRatingView
 		set => SetValue(SpacingProperty, value);
 	}
 
-	internal HorizontalStackLayout RatingLayout { get; } = new();
+	internal HorizontalStackLayout RatingLayout { get; } = [];
 
 	static int GetRatingWhenMaximumRatingEqualsOne(double rating) => rating.Equals(0.0) ? 1 : 0;
 
@@ -262,7 +262,6 @@ public partial class RatingView : TemplatedView, IRatingView
 	static void OnIsReadOnlyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var ratingView = (RatingView)bindable;
-
 		foreach (var child in ratingView.RatingLayout.Children.Cast<Border>())
 		{
 			if (!ratingView.IsReadOnly)
@@ -280,11 +279,9 @@ public partial class RatingView : TemplatedView, IRatingView
 	static void OnMaximumRatingChange(BindableObject bindable, object oldValue, object newValue)
 	{
 		var ratingView = (RatingView)bindable;
-
 		var layout = ratingView.RatingLayout;
 		var newMaximumRatingValue = (int)newValue;
 		var oldMaximumRatingValue = (int)oldValue;
-
 		if (newMaximumRatingValue < oldMaximumRatingValue)
 		{
 			for (var lastElement = layout.Count - 1; lastElement >= newMaximumRatingValue; lastElement--)
@@ -369,7 +366,6 @@ public partial class RatingView : TemplatedView, IRatingView
 	static void OnItemPaddingPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var ratingView = (RatingView)bindable;
-
 		for (var element = 0; element < ratingView.RatingLayout.Count; element++)
 		{
 			((Border)ratingView.RatingLayout.Children[element]).Padding = (Thickness)newValue;
@@ -379,7 +375,6 @@ public partial class RatingView : TemplatedView, IRatingView
 	static void OnItemShapeBorderColorChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var ratingView = (RatingView)bindable;
-
 		for (var element = 0; element < ratingView.RatingLayout.Count; element++)
 		{
 			var border = (Border)ratingView.RatingLayout.Children[element];
@@ -393,7 +388,6 @@ public partial class RatingView : TemplatedView, IRatingView
 	static void OnItemShapeBorderThicknessChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var ratingView = (RatingView)bindable;
-
 		for (var element = 0; element < ratingView.RatingLayout.Count; element++)
 		{
 			var border = (Border)ratingView.RatingLayout.Children[element];
@@ -407,14 +401,12 @@ public partial class RatingView : TemplatedView, IRatingView
 	static void OnItemShapePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var ratingView = (RatingView)bindable;
-
 		ratingView.ChangeRatingItemShape(ratingView.GetShapePathData((RatingViewShapes)newValue));
 	}
 
 	static void OnItemShapeSizeChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var ratingView = (RatingView)bindable;
-
 		for (var element = 0; element < ratingView.RatingLayout.Count; element++)
 		{
 			var border = (Border)ratingView.RatingLayout.Children[element];
@@ -489,7 +481,6 @@ public partial class RatingView : TemplatedView, IRatingView
 	{
 		var isShapeFill = ratingFill is RatingFillElement.Shape;
 		var visualElements = GetVisualTreeDescendantsWithBorderAndShape((VisualElement)RatingLayout.GetVisualTreeDescendants()[0], isShapeFill);
-
 		if (isShapeFill)
 		{
 			UpdateAllRatingShapeFills(visualElements, Rating, FilledColor, EmptyColor);
@@ -504,7 +495,6 @@ public partial class RatingView : TemplatedView, IRatingView
 	{
 		var fullFillCount = (int)Math.Floor(rating); // Determine the number of fully filled shapes
 		var partialFillCount = rating - fullFillCount; // Determine the fraction for the partially filled shape (if any)
-
 		for (var i = 0; i < ratingItems.Count; i++)
 		{
 			var ratingShape = (Shape)ratingItems[i];
@@ -527,9 +517,7 @@ public partial class RatingView : TemplatedView, IRatingView
 	{
 		var fullFillCount = (int)Math.Floor(rating); // Determine the number of fully filled rating items
 		var partialFillCount = rating - fullFillCount; // Determine the fraction for the partially filled rating item (if any)
-
 		backgroundColor ??= Colors.Transparent;
-
 		for (var i = 0; i < ratingItems.Count; i++)
 		{
 			var border = (Border)ratingItems[i];
@@ -553,5 +541,4 @@ public partial class RatingView : TemplatedView, IRatingView
 			}
 		}
 	}
-	
 }
