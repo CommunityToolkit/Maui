@@ -9,10 +9,12 @@ namespace CommunityToolkit.Maui.UnitTests.Views;
 public class PopupTests : BaseHandlerTest
 {
 	const string resultWhenUserTapsOutsideOfPopup = "User Tapped Outside of Popup";
-	readonly IPopup popup = new MockPopup();
+	readonly MockPopup popup = new();
+	readonly MockPopupHandler popupHandler;
 
 	public PopupTests()
 	{
+		popupHandler = CreateElementHandler<MockPopupHandler>(popup);
 		Assert.IsType<IPopup>(new MockPopup(), exactMatch: false);
 	}
 
@@ -49,15 +51,13 @@ public class PopupTests : BaseHandlerTest
 
 		app.Windows[0].Page = page;
 
-		var popupHandler = CreateElementHandler<MockPopupHandler>(popup);
-
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
 
 		// Ensure CancellationToken Has Expired
 		await Task.Delay(100, CancellationToken.None);
 
-		await Assert.ThrowsAsync<TaskCanceledException>(() => page.ShowPopupAsync((MockPopup)popup, cts.Token));
+		await Assert.ThrowsAsync<OperationCanceledException>(() => page.ShowPopupAsync(popup, cts.Token));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -80,15 +80,13 @@ public class PopupTests : BaseHandlerTest
 
 		app.Windows[0].Page = page;
 
-		var popupHandler = CreateElementHandler<MockPopupHandler>(popup);
-
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
 
 		// Ensure CancellationToken Has Expired
 		await cts.CancelAsync();
 
-		await Assert.ThrowsAsync<TaskCanceledException>(() => page.ShowPopupAsync((MockPopup)popup, cts.Token));
+		await Assert.ThrowsAsync<OperationCanceledException>(() => page.ShowPopupAsync(popup, cts.Token));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -111,15 +109,13 @@ public class PopupTests : BaseHandlerTest
 
 		app.Windows[0].Page = page;
 
-		var popupHandler = CreateElementHandler<MockPopupHandler>(popup);
-
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
 
 		// Ensure CancellationToken Has Expired
 		await Task.Delay(100, CancellationToken.None);
 
-		await Assert.ThrowsAsync<TaskCanceledException>(() => ((MockPopup)popup).CloseAsync(token: cts.Token));
+		await Assert.ThrowsAsync<OperationCanceledException>(() => popup.CloseAsync(token: cts.Token));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -142,15 +138,13 @@ public class PopupTests : BaseHandlerTest
 
 		app.Windows[0].Page = page;
 
-		var popupHandler = CreateElementHandler<MockPopupHandler>(popup);
-
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
 
 		// Ensure CancellationToken Has Expired
 		await cts.CancelAsync();
 
-		await Assert.ThrowsAsync<TaskCanceledException>(() => ((MockPopup)popup).CloseAsync(token: cts.Token));
+		await Assert.ThrowsAsync<OperationCanceledException>(() => popup.CloseAsync(token: cts.Token));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -171,17 +165,15 @@ public class PopupTests : BaseHandlerTest
 
 		app.Windows[0].Page = page;
 
-		var popupHandler = CreateElementHandler<MockPopupHandler>(popup);
-
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
 
-		page.ShowPopup((MockPopup)popup);
+		page.ShowPopup(popup);
 		Assert.Equal(1, popupHandler.OnOpenedCount);
-		popup.OnDismissedByTappingOutsideOfPopup();
+		await popup.OnDismissedByTappingOutsideOfPopup(CancellationToken.None);
 
-		var popupTask = page.ShowPopupAsync((MockPopup)popup, CancellationToken.None);
-		popup.OnDismissedByTappingOutsideOfPopup();
+		var popupTask = page.ShowPopupAsync(popup, CancellationToken.None);
+		await popup.OnDismissedByTappingOutsideOfPopup(CancellationToken.None);
 
 		await popupTask;
 
@@ -202,7 +194,7 @@ public class PopupTests : BaseHandlerTest
 			}
 		};
 
-		((MockPopup)popup).Closed += (s, e) =>
+		popup.Closed += (s, e) =>
 		{
 			Assert.Equal(popup, s);
 			popupClosedTCS.SetResult(((string?)e.Result, e.WasDismissedByTappingOutsideOfPopup));
@@ -213,12 +205,10 @@ public class PopupTests : BaseHandlerTest
 
 		app.Windows[0].Page = page;
 
-		CreateElementHandler<MockPopupHandler>(popup);
-
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
 
-		popup.OnDismissedByTappingOutsideOfPopup();
+		await popup.OnDismissedByTappingOutsideOfPopup(CancellationToken.None);
 
 		var (result, wasDismissedByTappingOutsideOfPopup) = await popupClosedTCS.Task;
 
@@ -247,20 +237,17 @@ public class PopupTests : BaseHandlerTest
 
 		app.Windows[0].Page = page;
 
-		// Make sure that our popup will have a Handler
-		CreateElementHandler<MockPopupHandler>(popup);
-
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
 
-		((MockPopup)popup).Closed += (_, e) =>
+		popup.Closed += (_, e) =>
 		{
 			result = e.Result;
 			isPopupDismissed = true;
-			closedTCS.TrySetResult();
+			closedTCS.SetResult();
 		};
 
-		((MockPopup)popup).Close(new object());
+		popup.Close(new object());
 		await closedTCS.Task;
 
 		Assert.True(isPopupDismissed);
@@ -288,19 +275,16 @@ public class PopupTests : BaseHandlerTest
 
 		app.Windows[0].Page = page;
 
-		// Make sure that our popup will have a Handler
-		CreateElementHandler<MockPopupHandler>(popup);
-
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
 
-		((MockPopup)popup).Closed += (_, e) =>
+		popup.Closed += (_, e) =>
 		{
 			result = e.Result;
 			isPopupDismissed = true;
 		};
 
-		await ((MockPopup)popup).CloseAsync(token: CancellationToken.None);
+		await popup.CloseAsync(token: CancellationToken.None);
 
 		Assert.True(isPopupDismissed);
 		Assert.Null(result);
@@ -341,17 +325,14 @@ public class PopupTests : BaseHandlerTest
 
 		app.Windows[0].Page = page;
 
-		// Make sure that our popup will have a Handler
-		CreateElementHandler<MockPopupHandler>(popup);
-
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
 
 		Assert.Single(page.LogicalChildrenInternal);
-		page.ShowPopup((MockPopup)popup);
+		page.ShowPopup(popup);
 		Assert.Equal(2, page.LogicalChildrenInternal.Count);
 
-		await ((MockPopup)popup).CloseAsync(token: CancellationToken.None);
+		await popup.CloseAsync(token: CancellationToken.None);
 		Assert.Single(page.LogicalChildrenInternal);
 	}
 
@@ -360,15 +341,6 @@ public class PopupTests : BaseHandlerTest
 		public MockPopup()
 		{
 			ResultWhenUserTapsOutsideOfPopup = resultWhenUserTapsOutsideOfPopup;
-		}
-
-		protected override async Task OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup, CancellationToken token = default)
-		{
-			await Task.Delay(100, token);
-
-			((IPopup)this).HandlerCompleteTCS.TrySetResult();
-
-			await base.OnClosed(result, wasDismissedByTappingOutsideOfPopup, token);
 		}
 	}
 
