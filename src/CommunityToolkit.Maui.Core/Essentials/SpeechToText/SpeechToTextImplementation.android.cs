@@ -54,7 +54,7 @@ public sealed partial class SpeechToTextImplementation
 	}
 
 	static bool IsSpeechRecognitionAvailable() => SpeechRecognizer.IsRecognitionAvailable(Application.Context);
-	
+
 	[MemberNotNull(nameof(speechRecognizer), nameof(listener))]
 	Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
 	{
