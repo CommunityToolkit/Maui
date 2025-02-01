@@ -4,7 +4,6 @@ using FragmentManager = AndroidX.Fragment.App.FragmentManager;
 
 namespace CommunityToolkit.Maui.Core.Services;
 
-[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class FragmentLifecycleManager(IDialogFragmentService dialogFragmentService) : FragmentManager.FragmentLifecycleCallbacks
 {
 	readonly IDialogFragmentService dialogFragmentService = dialogFragmentService;
