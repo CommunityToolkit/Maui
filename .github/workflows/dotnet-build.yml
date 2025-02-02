@@ -204,7 +204,7 @@ jobs:
            dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut.cobertura.xml" --coverage-output-format cobertura --report-xunit
 
       - name: Publish Test Results
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && (${{ success() || failure() }})
         uses: actions/upload-artifact@v4
         with:
           name: Test Results
