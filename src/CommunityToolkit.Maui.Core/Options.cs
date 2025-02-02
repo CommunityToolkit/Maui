@@ -5,4 +5,14 @@ namespace CommunityToolkit.Maui.Core;
 /// </summary>
 public class Options
 {
+	internal static bool ShouldUseStatusBarBehaviorOnAndroidModalPage { get; private set; } = true;
+
+	/// <summary>
+	/// Enables the use of the DialogFragment Lifecycle service for Android.
+	/// </summary>
+	/// <param name="value">true if yes or false if you want to implement your own.</param>
+	/// <remarks>
+	/// Default value is true.
+	/// </remarks>
+	public void SetShouldUseStatusBarBehaviorOnAndroidModalPage(bool value) => ShouldUseStatusBarBehaviorOnAndroidModalPage = value;
 }
