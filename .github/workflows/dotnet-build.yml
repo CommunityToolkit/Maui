@@ -32,7 +32,7 @@ env:
   PathToCommunityToolkitMediaElementCsproj: 'src/CommunityToolkit.Maui.MediaElement/CommunityToolkit.Maui.MediaElement.csproj'
   PathToCommunityToolkitMapsCsproj: 'src/CommunityToolkit.Maui.Maps/CommunityToolkit.Maui.Maps.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
-  PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj'
+  PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests'
   PathToCommunityToolkitAnalyzersCsproj: 'src/CommunityToolkit.Maui.Analyzers/CommunityToolkit.Maui.Analyzers.csproj'
   PathToCommunityToolkitCameraAnalyzersCsproj: 'src/CommunityToolkit.Maui.Camera.Analyzers/CommunityToolkit.Maui.Camera.Analyzers.csproj'
   PathToCommunityToolkitMediaElementAnalyzersCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers/CommunityToolkit.Maui.MediaElement.Analyzers.csproj'
@@ -41,7 +41,7 @@ env:
   PathToCommunityToolkitAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Analyzers.CodeFixes/CommunityToolkit.Maui.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitCameraAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Camera.Analyzers.CodeFixes/CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
-  PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
+  PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests'
   PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
   CommunityToolkitSampleApp_Xcode_Version: '16.2'
   CommunityToolkitLibrary_Xcode_Version: '16.2'
@@ -194,10 +194,14 @@ jobs:
         run: dotnet build ${{ env.PathToLibrarySolution }} -c Release -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }} 
 
       - name: Run CommunityToolkit Analyzers UnitTests
-        run: dotnet run ${{ env.PathToCommunityToolkitAnalyzersUnitTestCsproj }} -c Release  --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-analyzers.cobertura.xml" --coverage-output-format cobertura --report-xunit
+        run: |
+           cd ${{ env.PathToCommunityToolkitAnalyzersUnitTestCsproj }}
+           dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-analyzers.cobertura.xml" --coverage-output-format cobertura --report-xunit
 
       - name: Run CommunityToolkit UnitTests
-        run: dotnet run ${{ env.PathToCommunityToolkitUnitTestCsproj }} -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut.cobertura.xml" --coverage-output-format cobertura --report-xunit
+        run: |
+           cd ${{ env.PathToCommunityToolkitUnitTestCsproj }}
+           dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut.cobertura.xml" --coverage-output-format cobertura --report-xunit
 
       - name: Publish Test Results
         if: runner.os == 'Windows'
