@@ -46,11 +46,16 @@ env:
   CommunityToolkitSampleApp_Xcode_Version: '16.2'
   CommunityToolkitLibrary_Xcode_Version: '16.2'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build_sample:
     name: Build Sample App using Latest .NET SDK
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [windows-latest, macos-15]
     steps:
@@ -90,9 +95,8 @@ jobs:
   build_library:
     name: Build Library
     runs-on: ${{ matrix.os }}
-    env:
-      VSTEST_TESTHOST_SHUTDOWN_TIMEOUT: 1100 # Fixes "The active test run was aborted. Reason: Test host process crashed" 
     strategy:
+      fail-fast: false
       matrix:
         os: [windows-latest, macos-15]
     steps:
@@ -190,10 +194,10 @@ jobs:
         run: dotnet build ${{ env.PathToLibrarySolution }} -c Release -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }} 
 
       - name: Run CommunityToolkit Analyzers UnitTests
-        run: dotnet run -c Release ${{ env.PathToCommunityToolkitAnalyzersUnitTestCsproj }} --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-analyzers.cobertura.xml" --coverage-output-format cobertura --report-xunit
+        run: dotnet run ${{ env.PathToCommunityToolkitAnalyzersUnitTestCsproj }} -c Release  --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-analyzers.cobertura.xml" --coverage-output-format cobertura --report-xunit
 
       - name: Run CommunityToolkit UnitTests
-        run: dotnet run -c Release ${{ env.PathToCommunityToolkitUnitTestCsproj }} --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut.cobertura.xml" --coverage-output-format cobertura --report-xunit
+        run: dotnet run ${{ env.PathToCommunityToolkitUnitTestCsproj }} -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut.cobertura.xml" --coverage-output-format cobertura --report-xunit
 
       - name: Publish Test Results
         if: runner.os == 'Windows'
@@ -201,7 +205,8 @@ jobs:
         with:
           name: Test Results
           path: |
-            ${{ runner.temp }}
+            ${{ runner.temp }}/*.xunit
+            ${{ runner.temp }}/*cobertura.xml
 
       - name: Pack CommunityToolkit.Maui.Core NuGet
         run: dotnet pack -c Release ${{ env.PathToCommunityToolkitCoreCsproj }} -p:PackageVersion=${{ env.NugetPackageVersion }}
