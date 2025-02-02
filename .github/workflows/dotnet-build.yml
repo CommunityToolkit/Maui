@@ -189,8 +189,11 @@ jobs:
       - name: 'Build CommunityToolkit.Maui'
         run: dotnet build ${{ env.PathToLibrarySolution }} -c Release -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }} 
 
-      - name: Run All Unit Tests
-        run: dotnet test -c Release ${{ env.PathToLibrarySolution }} --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory ${{ runner.temp }} --logger GitHubActions
+      - name: Run CommunityToolkit Analyzers UnitTests
+        run: dotnet run -c Release ${{ env.PathToCommunityToolkitAnalyzersUnitTestCsproj }} --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-analyzers.cobertura.xml" --coverage-output-format cobertura --report-xunit
+
+      - name: Run CommunityToolkit UnitTests
+        run: dotnet run -c Release ${{ env.PathToCommunityToolkitUnitTestCsproj }} --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut.cobertura.xml" --coverage-output-format cobertura --report-xunit
 
       - name: Publish Test Results
         if: runner.os == 'Windows'
@@ -198,7 +201,7 @@ jobs:
         with:
           name: Test Results
           path: |
-            ${{ runner.temp }}/**/*.trx
+            ${{ runner.temp }}
 
       - name: Pack CommunityToolkit.Maui.Core NuGet
         run: dotnet pack -c Release ${{ env.PathToCommunityToolkitCoreCsproj }} -p:PackageVersion=${{ env.NugetPackageVersion }}
