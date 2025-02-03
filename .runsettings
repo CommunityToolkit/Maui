@@ -15,4 +15,8 @@
       </DataCollector>
     </DataCollectors>
   </DataCollectionRunSettings>
+    <Parallelize>
+        <Workers>1</Workers>
+        <Scope>MethodLevel</Scope>
+    </Parallelize>
 </RunSettings>
