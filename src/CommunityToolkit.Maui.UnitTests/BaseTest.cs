@@ -6,6 +6,8 @@ namespace CommunityToolkit.Maui.UnitTests;
 public abstract class BaseTest : IDisposable
 {
 	readonly CultureInfo defaultCulture, defaultUiCulture;
+	protected readonly MockAppInfo mockAppInfo;
+	protected const AppTheme initialAppTheme = AppTheme.Light;
 
 	bool isDisposed;
 
@@ -25,7 +27,10 @@ public abstract class BaseTest : IDisposable
 
 		DeviceDisplay.SetCurrent(null);
 		DeviceInfo.SetCurrent(null);
-		AppInfo.SetCurrent(null);
+		AppInfo.SetCurrent(mockAppInfo = new()
+		{
+			RequestedTheme = initialAppTheme
+		});
 
 		DispatcherProvider.SetCurrent(new MockDispatcherProvider());
 		DeviceDisplay.SetCurrent(null);

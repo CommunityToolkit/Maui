@@ -32,7 +32,6 @@ public class FadeAnimationTests : BaseTest
 		await Assert.ThrowsAsync<OperationCanceledException>(async () =>
 		{
 			await cts.CancelAsync();
-			await Task.Delay(100, TestContext.Current.CancellationToken);
 			await animation.Animate(label, cts.Token);
 		});
 	}
@@ -49,7 +48,7 @@ public class FadeAnimationTests : BaseTest
 		};
 		label.EnableAnimations();
 
-		await Task.Delay(100, TestContext.Current.CancellationToken);
+		await Task.Delay(10, TestContext.Current.CancellationToken);
 		await Assert.ThrowsAsync<OperationCanceledException>(() => animation.Animate(label, cts.Token));
 	}
 

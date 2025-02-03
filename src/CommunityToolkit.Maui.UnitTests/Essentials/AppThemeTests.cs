@@ -7,32 +7,29 @@ namespace CommunityToolkit.Maui.UnitTests.Essentials;
 
 public class AppThemeTests : BaseHandlerTest
 {
-	readonly MockAppInfo mockAppInfo;
 	readonly Label label = new();
+	readonly Window window;
 
 	public AppThemeTests()
 	{
-		const AppTheme initialAppTheme = AppTheme.Light;
-		AppInfo.SetCurrent(mockAppInfo = new()
-		{
-			RequestedTheme = initialAppTheme
-		});
-
 		ArgumentNullException.ThrowIfNull(Application.Current);
-
-		var window = new Window
+		var page = new ContentPage() { Content = label };
+		window = new Window
 		{
-			Page = new ContentPage
-			{
-				Content = label
-			}
+			Page = page
 		};
+		CreateViewHandler<MockPageHandler>(page);
 		Application.Current.AddWindow(window);
-		
+
 		SetAppTheme(initialAppTheme, Application.Current);
 
 		Assert.Equal(initialAppTheme, Application.Current.PlatformAppTheme);
-		Application.Current.RemoveWindow(window);
+	}
+
+	protected override void Dispose(bool isDisposing)
+	{
+		Application.Current?.RemoveWindow(window);
+		base.Dispose(isDisposing);
 	}
 
 	[Fact]

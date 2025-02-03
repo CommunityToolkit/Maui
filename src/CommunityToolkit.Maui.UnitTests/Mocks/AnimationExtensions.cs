@@ -95,7 +95,7 @@ static class AnimationExtensions
 
 		class TestAnimationManager : IAnimationManager
 		{
-			readonly ConcurrentDictionary<Microsoft.Maui.Animations.Animation, Microsoft.Maui.Animations.Animation> animations = [];
+			readonly List<Microsoft.Maui.Animations.Animation> animations = [];
 
 			public TestAnimationManager(ITicker ticker)
 			{
@@ -111,7 +111,7 @@ static class AnimationExtensions
 
 			public void Add(Microsoft.Maui.Animations.Animation animation)
 			{
-				animations.TryAdd(animation, animation);
+				animations.Add(animation);
 				if (AutoStartTicker && !Ticker.IsRunning)
 				{
 					Ticker.Start();
@@ -120,7 +120,7 @@ static class AnimationExtensions
 
 			public void Remove(Microsoft.Maui.Animations.Animation animation)
 			{
-				animations.TryRemove(animation, out _);
+				animations.Remove(animation);
 				if (!animations.Any())
 				{
 					Ticker.Stop();
@@ -129,8 +129,8 @@ static class AnimationExtensions
 
 			void OnFire()
 			{
-				var animationList = this.animations.Select(x => x.Value).ToList();
-				animationList.ForEach(AnimationTick);
+				var animationsList = this.animations.ToList();
+				animationsList.ForEach(AnimationTick);
 
 				if (this.animations.Count <= 0)
 				{
@@ -141,7 +141,7 @@ static class AnimationExtensions
 				{
 					if (animation.HasFinished)
 					{
-						this.animations.TryRemove(animation, out _);
+						this.animations.Remove(animation);
 						animation.RemoveFromParent();
 						return;
 					}
@@ -149,7 +149,7 @@ static class AnimationExtensions
 					animation.Tick(millisecondTickIncrement);
 					if (animation.HasFinished)
 					{
-						this.animations.TryRemove(animation, out _);
+						this.animations.Remove(animation);
 						animation.RemoveFromParent();
 					}
 				}
