@@ -157,6 +157,7 @@ public static class StateContainer
 	/// </summary>
 	public static async Task ChangeStateWithAnimation(BindableObject bindable, string? state, CancellationToken token = default)
 	{
+		token.ThrowIfCancellationRequested();
 		ValidateCanStateChange(bindable);
 		SetCanStateChange(bindable, false);
 

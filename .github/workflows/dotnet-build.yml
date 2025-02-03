@@ -207,7 +207,7 @@ jobs:
         if: runner.os == 'Windows' && (${{ success() || failure() }})
         uses: actions/upload-artifact@v4
         with:
-          name: Test Results
+          name: Test Results ${{ github.run_number }}
           path: |
             ${{ runner.temp }}/*.xunit
             ${{ runner.temp }}/*cobertura.xml

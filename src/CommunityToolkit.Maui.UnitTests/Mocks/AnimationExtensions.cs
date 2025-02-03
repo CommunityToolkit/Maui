@@ -1,6 +1,8 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using Microsoft.Maui.Animations;
 using Microsoft.Maui.Handlers;
+using Animation = Microsoft.Maui.Animations.Animation;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
@@ -9,20 +11,18 @@ static class AnimationExtensions
 	public static void EnableAnimations(this IView view) => MockAnimationHandler.Prepare(view);
 
 	// Inspired by Microsoft.Maui.Controls.Core.UnitTests.AnimationReadyHandler
-	class MockAnimationHandler : ViewHandler<IView, object>
+	sealed class MockAnimationHandler : ViewHandler<IView, object>
 	{
 		const int millisecondTickIncrement = 16;
 
-		MockAnimationHandler(IAnimationManager animationManager) : base(new PropertyMapper<IView>())
+		MockAnimationHandler(IAnimationManager animationManager, IDispatcherProvider dispatcherProvider) : base(new PropertyMapper<IView>())
 		{
-			SetMauiContext(new AnimationEnabledMauiContext(animationManager));
+			SetMauiContext(new AnimationEnabledMauiContext(animationManager, dispatcherProvider));
 		}
 
-		MockAnimationHandler() : this(new TestAnimationManager(new AsyncTicker()))
+		MockAnimationHandler() : this(new TestAnimationManager(new AsyncTicker()), new MockDispatcherProvider())
 		{
 		}
-
-		public IAnimationManager? AnimationManager => ((AnimationEnabledMauiContext?)MauiContext)?.AnimationManager;
 
 		public static T Prepare<T>(T view) where T : IView
 		{
@@ -33,11 +33,13 @@ static class AnimationExtensions
 
 		protected override object CreatePlatformView() => new();
 
-		class AnimationEnabledMauiContext(IAnimationManager manager) : IMauiContext, IServiceProvider
+		class AnimationEnabledMauiContext(IAnimationManager manager, IDispatcherProvider dispatcherProvider) : IMauiContext, IServiceProvider
 		{
 			public IServiceProvider Services => this;
 
 			public IAnimationManager AnimationManager { get; } = manager;
+
+			public IDispatcherProvider DispatcherProvider { get; } = dispatcherProvider;
 
 			IMauiHandlersFactory IMauiContext.Handlers => throw new NotSupportedException();
 
@@ -49,7 +51,7 @@ static class AnimationExtensions
 				}
 				else if (serviceType == typeof(IDispatcher))
 				{
-					return new MockDispatcherProvider().GetForCurrentThread();
+					return DispatcherProvider.GetForCurrentThread() ?? throw new NullReferenceException();
 				}
 
 				throw new NotSupportedException();
@@ -93,7 +95,7 @@ static class AnimationExtensions
 
 		class TestAnimationManager : IAnimationManager
 		{
-			readonly List<Microsoft.Maui.Animations.Animation> animations = [];
+			readonly ConcurrentDictionary<Microsoft.Maui.Animations.Animation, Microsoft.Maui.Animations.Animation> animations = [];
 
 			public TestAnimationManager(ITicker ticker)
 			{
@@ -109,7 +111,7 @@ static class AnimationExtensions
 
 			public void Add(Microsoft.Maui.Animations.Animation animation)
 			{
-				animations.Add(animation);
+				animations.TryAdd(animation, animation);
 				if (AutoStartTicker && !Ticker.IsRunning)
 				{
 					Ticker.Start();
@@ -118,7 +120,7 @@ static class AnimationExtensions
 
 			public void Remove(Microsoft.Maui.Animations.Animation animation)
 			{
-				animations.Remove(animation);
+				animations.TryRemove(animation, out _);
 				if (!animations.Any())
 				{
 					Ticker.Stop();
@@ -127,8 +129,8 @@ static class AnimationExtensions
 
 			void OnFire()
 			{
-				var animations = this.animations.ToList();
-				animations.ForEach(AnimationTick);
+				var animationList = this.animations.Select(x => x.Value).ToList();
+				animationList.ForEach(AnimationTick);
 
 				if (this.animations.Count <= 0)
 				{
@@ -139,7 +141,7 @@ static class AnimationExtensions
 				{
 					if (animation.HasFinished)
 					{
-						this.animations.Remove(animation);
+						this.animations.TryRemove(animation, out _);
 						animation.RemoveFromParent();
 						return;
 					}
@@ -147,7 +149,7 @@ static class AnimationExtensions
 					animation.Tick(millisecondTickIncrement);
 					if (animation.HasFinished)
 					{
-						this.animations.Remove(animation);
+						this.animations.TryRemove(animation, out _);
 						animation.RemoveFromParent();
 					}
 				}

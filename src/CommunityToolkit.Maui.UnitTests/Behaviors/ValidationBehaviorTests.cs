@@ -55,7 +55,7 @@ public class ValidationBehaviorTests() : BaseBehaviorTest<ValidationBehavior, Vi
 
 		// Act
 		entry.Text = "321";
-		await behavior.ForceValidate(CancellationToken.None);
+		await behavior.ForceValidate(TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.Equal(entry.Style, validStyle);
@@ -87,7 +87,7 @@ public class ValidationBehaviorTests() : BaseBehaviorTest<ValidationBehavior, Vi
 
 		// Act
 		entry.Text = "321";
-		await behavior.ForceValidate(CancellationToken.None);
+		await behavior.ForceValidate(TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.Equal(entry.Style, invalidStyle);
@@ -116,7 +116,7 @@ public class ValidationBehaviorTests() : BaseBehaviorTest<ValidationBehavior, Vi
 		Assert.False(behavior.IsRunning);
 
 		// Act
-		var forceValidateTask = behavior.ForceValidate(CancellationToken.None);
+		var forceValidateTask = behavior.ForceValidate(TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.True(behavior.IsRunning);
@@ -167,7 +167,7 @@ public class ValidationBehaviorTests() : BaseBehaviorTest<ValidationBehavior, Vi
 		// Act
 
 		// Ensure CancellationToken expires
-		await Task.Delay(100, CancellationToken.None);
+		await Task.Delay(100, TestContext.Current.CancellationToken);
 
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await behavior.ForceValidate(cts.Token));
@@ -189,7 +189,7 @@ public class ValidationBehaviorTests() : BaseBehaviorTest<ValidationBehavior, Vi
 		// Act
 
 		// Ensure CancellationToken expires
-		await Task.Delay(100, CancellationToken.None);
+		await Task.Delay(100, TestContext.Current.CancellationToken);
 
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () =>

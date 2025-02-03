@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.UnitTests.Mocks;
+using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Essentials;
@@ -19,14 +20,19 @@ public class AppThemeTests : BaseHandlerTest
 
 		ArgumentNullException.ThrowIfNull(Application.Current);
 
-		Application.Current.Windows[0].Page = new ContentPage
+		var window = new Window
 		{
-			Content = label
+			Page = new ContentPage
+			{
+				Content = label
+			}
 		};
-
+		Application.Current.AddWindow(window);
+		
 		SetAppTheme(initialAppTheme, Application.Current);
 
 		Assert.Equal(initialAppTheme, Application.Current.PlatformAppTheme);
+		Application.Current.RemoveWindow(window);
 	}
 
 	[Fact]
@@ -102,11 +108,11 @@ public class AppThemeTests : BaseHandlerTest
 
 		label.SetAppTheme(Label.TextProperty, resource);
 
-		Assert.Equal("Light Theme", label.Text);
+		label.Text.Should().Be("Light Theme");
 
 		SetAppTheme(AppTheme.Dark, Application.Current);
 
-		Assert.Equal("Dark Theme", label.Text);
+		label.Text.Should().Be("Dark Theme");
 	}
 
 	void SetAppTheme(in AppTheme theme, in IApplication app)

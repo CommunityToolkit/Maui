@@ -31,7 +31,7 @@ static class PageExtensions
 
 	internal record struct ParentWindow
 	{
-		static Page CurrentPage => GetCurrentPage(Application.Current?.Windows[0].Page ?? throw new InvalidOperationException($"{nameof(Page)} cannot be null."));
+		static Page CurrentPage => GetCurrentPage(Application.Current?.Windows[^1].Page ?? throw new InvalidOperationException($"{nameof(Page)} cannot be null."));
 		/// <summary>
 		/// Checks if the parent window is null.
 		/// </summary>

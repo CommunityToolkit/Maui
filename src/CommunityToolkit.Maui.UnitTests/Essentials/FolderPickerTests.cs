@@ -20,7 +20,7 @@ public class FolderPickerTests : BaseTest
 	public async Task PickAsyncFailsOnNet()
 	{
 		FolderPicker.SetDefault(new FolderPickerImplementation());
-		var result = await FolderPicker.PickAsync(CancellationToken.None);
+		var result = await FolderPicker.PickAsync(TestContext.Current.CancellationToken);
 		result.Should().NotBeNull();
 		result.Exception.Should().BeOfType<NotImplementedException>();
 		result.Folder.Should().BeNull();
@@ -32,7 +32,7 @@ public class FolderPickerTests : BaseTest
 	public async Task PickAsyncWithInitialPathFailsOnNet()
 	{
 		FolderPicker.SetDefault(new FolderPickerImplementation());
-		var result = await FolderPicker.PickAsync("initial path", CancellationToken.None);
+		var result = await FolderPicker.PickAsync("initial path", TestContext.Current.CancellationToken);
 		result.Should().NotBeNull();
 		result.Exception.Should().BeOfType<NotImplementedException>();
 		result.Folder.Should().BeNull();
