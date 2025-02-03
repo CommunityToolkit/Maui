@@ -13,7 +13,7 @@ public class FadeAnimationTests : BaseTest
 		FadeAnimation animation = new();
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		await Assert.ThrowsAsync<ArgumentNullException>(() => animation.Animate(null, CancellationToken.None));
+		await Assert.ThrowsAsync<ArgumentNullException>(() => animation.Animate(null, TestContext.Current.CancellationToken));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
@@ -29,10 +29,10 @@ public class FadeAnimationTests : BaseTest
 		};
 		label.EnableAnimations();
 
-		await Assert.ThrowsAsync<TaskCanceledException>(() =>
+		await Assert.ThrowsAsync<OperationCanceledException>(async () =>
 		{
-			cts.Cancel();
-			return animation.Animate(label, cts.Token);
+			await cts.CancelAsync();
+			await animation.Animate(label, cts.Token);
 		});
 	}
 
@@ -48,7 +48,8 @@ public class FadeAnimationTests : BaseTest
 		};
 		label.EnableAnimations();
 
-		await Assert.ThrowsAsync<TaskCanceledException>(() => animation.Animate(label, cts.Token));
+		await Task.Delay(10, TestContext.Current.CancellationToken);
+		await Assert.ThrowsAsync<OperationCanceledException>(() => animation.Animate(label, cts.Token));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Medium)]
@@ -62,7 +63,7 @@ public class FadeAnimationTests : BaseTest
 		};
 		label.EnableAnimations();
 
-		await animation.Animate(label, CancellationToken.None);
+		await animation.Animate(label, TestContext.Current.CancellationToken);
 
 		label.Opacity.Should().Be(0.9);
 	}
