@@ -30,6 +30,7 @@ public partial class FadeAnimation() : BaseAnimation(300)
 	public override async Task Animate(VisualElement view, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(view);
+		token.ThrowIfCancellationRequested();
 
 		var originalOpacity = view.Opacity;
 
