@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core.Handlers;
+﻿using System.Runtime.Versioning;
+using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Maui.Core;
 
@@ -7,6 +8,11 @@ namespace CommunityToolkit.Maui;
 /// <summary>
 /// This class contains MediaElement's <see cref="MauiAppBuilder"/> extensions.
 /// </summary>
+[SupportedOSPlatform("iOS15.0")]
+[SupportedOSPlatform("MacCatalyst15.0")]
+[SupportedOSPlatform("Android26.0")]
+[SupportedOSPlatform("Windows10.0.17763")]
+[SupportedOSPlatform("Tizen6.5")]
 public static class AppBuilderExtensions
 {
 	/// <summary>

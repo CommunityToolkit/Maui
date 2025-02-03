@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;
 /// <summary>
 /// Provides platform-specific configuration properties for the Android navigation bar.
 /// </summary>
-[SupportedOSPlatform("Android21.0")]
+[SupportedOSPlatform("Android23.0")]
 public static partial class NavigationBar
 {
 	/// <summary>
