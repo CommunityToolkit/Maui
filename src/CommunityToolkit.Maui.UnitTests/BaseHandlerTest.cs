@@ -5,9 +5,9 @@ namespace CommunityToolkit.Maui.UnitTests;
 
 public abstract class BaseHandlerTest : BaseTest
 {
-	protected BaseHandlerTest(IReadOnlyList<Type>? servicesToRegister = null)
+	protected BaseHandlerTest()
 	{
-		InitializeServicesAndSetMockApplication(servicesToRegister ?? [], out var serviceProvider);
+		InitializeServicesAndSetMockApplication(out var serviceProvider);
 		ServiceProvider = serviceProvider;
 	}
 
@@ -41,7 +41,7 @@ public abstract class BaseHandlerTest : BaseTest
 		return mockViewHandler;
 	}
 
-	static void InitializeServicesAndSetMockApplication(in IReadOnlyList<Type> transientServicesToRegister, out IServiceProvider serviceProvider)
+	static void InitializeServicesAndSetMockApplication(out IServiceProvider serviceProvider)
 	{
 		var appBuilder = MauiApp.CreateBuilder()
 			.UseMauiCommunityToolkit()
@@ -60,24 +60,21 @@ public abstract class BaseHandlerTest : BaseTest
 
 		PopupService.ClearViewModelToViewMappings();
 		PopupService.AddTransientPopup(mockPopup, mockPageViewModel, appBuilder.Services);
+		var page = new ContentPage();
 		#endregion
-
-		foreach (var service in transientServicesToRegister)
-		{
-			appBuilder.Services.AddTransient(service);
-		}
 
 		var mauiApp = appBuilder.Build();
 
 		var application = (MockApplication)mauiApp.Services.GetRequiredService<IApplication>();
-		application.AddWindow(new Window());
+		application.AddWindow(new Window() { Page = page });
 		serviceProvider = mauiApp.Services;
 
 		IPlatformApplication.Current = application;
 
 		application.Handler = new ApplicationHandlerStub();
-		application.Handler.SetMauiContext(new HandlersContextStub(mauiApp.Services));
+		application.Handler.SetMauiContext(new HandlersContextStub(serviceProvider));
 
 		CreateElementHandler<MockPopupHandler>(mockPopup);
+		CreateViewHandler<MockPageHandler>(page);
 	}
 }

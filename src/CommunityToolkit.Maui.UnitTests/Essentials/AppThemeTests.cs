@@ -1,32 +1,35 @@
 ﻿using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.UnitTests.Mocks;
+using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Essentials;
 
 public class AppThemeTests : BaseHandlerTest
 {
-	readonly MockAppInfo mockAppInfo;
 	readonly Label label = new();
+	readonly Window window;
 
 	public AppThemeTests()
 	{
-		const AppTheme initialAppTheme = AppTheme.Light;
-		AppInfo.SetCurrent(mockAppInfo = new()
-		{
-			RequestedTheme = initialAppTheme
-		});
-
 		ArgumentNullException.ThrowIfNull(Application.Current);
-
-		Application.Current.Windows[0].Page = new ContentPage
+		var page = new ContentPage() { Content = label };
+		window = new Window
 		{
-			Content = label
+			Page = page
 		};
+		CreateViewHandler<MockPageHandler>(page);
+		Application.Current.AddWindow(window);
 
 		SetAppTheme(initialAppTheme, Application.Current);
 
 		Assert.Equal(initialAppTheme, Application.Current.PlatformAppTheme);
+	}
+
+	protected override void Dispose(bool isDisposing)
+	{
+		Application.Current?.RemoveWindow(window);
+		base.Dispose(isDisposing);
 	}
 
 	[Fact]
@@ -102,11 +105,11 @@ public class AppThemeTests : BaseHandlerTest
 
 		label.SetAppTheme(Label.TextProperty, resource);
 
-		Assert.Equal("Light Theme", label.Text);
+		label.Text.Should().Be("Light Theme");
 
 		SetAppTheme(AppTheme.Dark, Application.Current);
 
-		Assert.Equal("Dark Theme", label.Text);
+		label.Text.Should().Be("Dark Theme");
 	}
 
 	void SetAppTheme(in AppTheme theme, in IApplication app)

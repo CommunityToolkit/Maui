@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.Versioning;
 using CommunityToolkit.Maui.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.LifecycleEvents;
@@ -9,6 +10,11 @@ namespace CommunityToolkit.Maui.Core;
 /// <summary>
 /// <see cref="MauiAppBuilder"/> Extensions
 /// </summary>
+[SupportedOSPlatform("iOS15.0")]
+[SupportedOSPlatform("MacCatalyst15.0")]
+[SupportedOSPlatform("Android21.0")]
+[SupportedOSPlatform("Windows10.0.17763")]
+[SupportedOSPlatform("Tizen6.5")]
 public static class AppBuilderExtensions
 {
 	/// <summary>

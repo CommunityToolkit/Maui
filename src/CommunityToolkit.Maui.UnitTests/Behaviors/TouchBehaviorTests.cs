@@ -115,7 +115,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		Assert.Equal(updatedDefaultOpacity, touchBehavior.DefaultOpacity);
 		Assert.Equal(updatedHoveredOpacity, touchBehavior.HoveredOpacity);
 
-		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
+		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
 		Assert.Equal(updatedDefaultOpacity, view.Opacity);
 
 		touchBehavior.HandleHover(HoverStatus.Entered);
@@ -156,7 +156,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 
 		Assert.Equal(TouchBehaviorDefaults.DefaultOpacity, view.Opacity);
 
-		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
+		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
 		Assert.Equal(updatedDefaultOpacity, view.Opacity);
 
 		touchBehavior.HandleTouch(TouchStatus.Started);
@@ -182,7 +182,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		Assert.Equal(TouchBehaviorDefaults.DefaultTranslationX, view.TranslationX);
 		Assert.Equal(TouchBehaviorDefaults.DefaultTranslationY, view.TranslationY);
 
-		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
+		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
 		Assert.Equal(updatedDefaultTranslation, view.TranslationX);
 		Assert.Equal(updatedDefaultTranslation, view.TranslationY);
 
@@ -211,7 +211,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		Assert.Equal(TouchBehaviorDefaults.PressedTranslationX, view.TranslationX);
 		Assert.Equal(TouchBehaviorDefaults.PressedTranslationY, view.TranslationY);
 
-		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
+		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
 		Assert.Equal(updatedDefaultTranslation, view.TranslationX);
 		Assert.Equal(updatedDefaultTranslation, view.TranslationY);
 
@@ -238,7 +238,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 
 		Assert.Equal(TouchBehaviorDefaults.DefaultScale, view.Scale);
 
-		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
+		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
 		Assert.Equal(updatedDefaultScale, view.Scale);
 
 		touchBehavior.HandleHover(HoverStatus.Entered);
@@ -261,7 +261,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 
 		Assert.Equal(TouchBehaviorDefaults.DefaultScale, view.Scale);
 
-		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
+		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
 		Assert.Equal(updatedDefaultScale, view.Scale);
 
 		touchBehavior.HandleTouch(TouchStatus.Started);
@@ -289,7 +289,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		Assert.Equal(TouchBehaviorDefaults.DefaultRotationX, view.RotationX);
 		Assert.Equal(TouchBehaviorDefaults.DefaultRotationY, view.RotationY);
 
-		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
+		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
 		Assert.Equal(updatedDefaultRotation, view.Rotation);
 		Assert.Equal(updatedDefaultRotation, view.RotationX);
 		Assert.Equal(updatedDefaultRotation, view.RotationY);
@@ -325,7 +325,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		Assert.Equal(TouchBehaviorDefaults.DefaultRotationX, view.RotationX);
 		Assert.Equal(TouchBehaviorDefaults.DefaultRotationY, view.RotationY);
 
-		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
+		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
 		Assert.Equal(updatedDefaultRotation, view.Rotation);
 		Assert.Equal(updatedDefaultRotation, view.RotationX);
 		Assert.Equal(updatedDefaultRotation, view.RotationY);
@@ -354,7 +354,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 
 		Assert.Equal(TouchBehaviorDefaults.DefaultBackgroundColor, view.BackgroundColor);
 
-		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
+		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
 		Assert.Equal(defaultColor, view.BackgroundColor);
 
 		touchBehavior.HandleHover(HoverStatus.Entered);
@@ -378,7 +378,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 
 		Assert.Equal(TouchBehaviorDefaults.DefaultBackgroundColor, view.BackgroundColor);
 
-		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
+		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
 		Assert.Equal(defaultColor, view.BackgroundColor);
 
 		touchBehavior.HandleTouch(TouchStatus.Started);
@@ -683,7 +683,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		var touchStatusChangedTCS = new TaskCompletionSource<TouchStatus>();
 		touchBehavior.CurrentTouchStatusChanged += HandleTouchStatusChanged;
 
-		await touchBehavior.ForceUpdateState(CancellationToken.None, false);
+		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
 
 		touchStatusChangedTCS = new TaskCompletionSource<TouchStatus>();
 		touchBehavior.HandleTouch(TouchStatus.Started);
