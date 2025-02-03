@@ -1,8 +1,10 @@
 ﻿using System.Globalization;
 using CommunityToolkit.Maui.UnitTests.Mocks;
+using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
+[Collection("CommunityToolkit.UnitTests")]
 public abstract class BaseTest : IDisposable
 {
 	readonly CultureInfo defaultCulture, defaultUiCulture;
