@@ -17,6 +17,7 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="3.0.1" PrivateAssets="All" />
     <PackageReference Include="coverlet.collector" Version="6.0.4" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiPackageVersion)"/>
+    <PackageReference Include="GitHubActionsTestLogger" Version="2.4.1" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
