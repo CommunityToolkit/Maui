@@ -90,7 +90,17 @@ public class ValidationBehaviorTests() : BaseBehaviorTest<ValidationBehavior, Vi
 		await behavior.ForceValidate(TestContext.Current.CancellationToken);
 
 		// Assert
-		Assert.Equal(entry.Style, invalidStyle);
+		Assert.Equal(entry.Style, invalidStyle, (style1, style2) =>
+		{
+			if (style1 == null || style2 == null)
+			{
+				return style1 == style2;
+			}
+
+			return style1.Setters.Count == style2.Setters.Count 
+			       && style1.TargetType.FullName == style2.TargetType.FullName
+			       && style1.Setters.All(style2.Setters.Contains);
+		});
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
