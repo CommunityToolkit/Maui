@@ -182,7 +182,7 @@ public partial class MauiMediaElement : Grid, IDisposable
 			mediaPlayerElement.Width = parent?.Width ?? mediaPlayerElement.Width;
 			mediaPlayerElement.Height = parent?.Height ?? mediaPlayerElement.Height;
 			MediaManager.FullScreenEvents.grid = fullScreenGrid;
-			MediaManager.FullScreenEvents.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
+			MediaManager.FullScreenEvents.OnFullScreenStateChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
 		}
 		else
 		{
@@ -210,7 +210,7 @@ public partial class MauiMediaElement : Grid, IDisposable
 				popup.IsOpen = true;
 			}
 			MediaManager.FullScreenEvents.grid = fullScreenGrid;
-			MediaManager.FullScreenEvents.OnWindowsChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
+			MediaManager.FullScreenEvents.OnFullScreenStateChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
 		}
 	}
 }

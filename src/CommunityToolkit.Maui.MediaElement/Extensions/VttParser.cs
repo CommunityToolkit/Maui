@@ -76,6 +76,6 @@ partial class VttParser : IParser
 		throw new FormatException($"Invalid timecode format: {timecode}");
 	}
 
-	[GeneratedRegex(@"(\d{2}:\d{2}:\d{2}\.\d{3}) --> (\d{2}:\d{2}:\d{2}\.\d{3})", RegexOptions.Compiled)]
+	[GeneratedRegex(@"(\d{2}:\d{2}:\d{2}\.\d{3}) --> (\d{2}:\d{2}:\d{2}\.\d{3})", RegexOptions.Compiled, 2000)]
 	private static partial Regex VTTRegex();
 }

@@ -52,7 +52,7 @@ public partial class MediaManager
 		/// An event that is raised when the full screen state of the media element has changed.
 		/// </summary>
 		/// <param name="e"></param>
-		public static void OnWindowsChanged(FullScreenStateChangedEventArgs e) => WindowsChanged?.Invoke(null, e);
+		public static void OnFullScreenStateChanged(FullScreenStateChangedEventArgs e) => WindowsChanged?.Invoke(null, e);
 #if WINDOWS
 		/// <summary>
 		/// Windows specific event that is raised when the full screen state of the media element has changed.

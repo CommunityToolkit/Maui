@@ -78,6 +78,6 @@ partial class SrtParser : IParser
 		return TimeSpan.ParseExact(timecode, @"hh\:mm\:ss\,fff", CultureInfo.InvariantCulture);
 	}
 
-	[GeneratedRegex(@"(\d{2}\:\d{2}\:\d{2}\,\d{3}) --> (\d{2}\:\d{2}\:\d{2}\,\d{3})", RegexOptions.Compiled)]
+	[GeneratedRegex(@"(\d{2}\:\d{2}\:\d{2}\,\d{3}) --> (\d{2}\:\d{2}\:\d{2}\,\d{3})", RegexOptions.Compiled, 2000)]
 	private static partial Regex SRTRegex();
 }
