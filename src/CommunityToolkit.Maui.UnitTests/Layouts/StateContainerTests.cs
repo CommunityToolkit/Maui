@@ -216,6 +216,7 @@ public class StateContainerTests : BaseTest
 		}
 
 		var cancelledTokenSource = new CancellationTokenSource(TimeSpan.FromMicroseconds(1));
+		await Task.Delay(10, TestContext.Current.CancellationToken);
 		await Assert.ThrowsAsync<OperationCanceledException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, cancelledTokenSource.Token));
 	}
 
