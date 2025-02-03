@@ -20,8 +20,6 @@ public abstract class BaseTest : IDisposable
 
 	protected BaseTest()
 	{
-		CompatibilityCheck.UseCompatibility();
-
 		defaultCulture = Thread.CurrentThread.CurrentCulture;
 		defaultUiCulture = Thread.CurrentThread.CurrentUICulture;
 
