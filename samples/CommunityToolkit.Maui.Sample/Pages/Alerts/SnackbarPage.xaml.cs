@@ -14,7 +14,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 {
 	public const string DisplayCustomSnackbarText = "Display Custom Snackbar";
 	const string dismissCustomSnackbarText = "Dismiss Custom Snackbar";
-	
+
 	readonly IReadOnlyList<Color> colors = [.. typeof(Colors)
 											.GetFields(BindingFlags.Static | BindingFlags.Public)
 											.ToDictionary(c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()))
@@ -111,7 +111,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 				.CenterHorizontal()
 				.Text("Back to Snackbar MainPage");
 			backButton.Command = new AsyncRelayCommand(mainPage.Navigation.PopModalAsync);
-			
+
 			await mainPage.Navigation.PushModalAsync(new ContentPage
 			{
 				Content = new VerticalStackLayout
