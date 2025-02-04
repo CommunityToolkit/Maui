@@ -74,7 +74,7 @@
                 </ListView.ItemTemplate>
             </ListView>
 
-            <Label Text="Expander in CollectionView" FontSize="24" FontAttributes="Bold"/>
+            <Label Text="Expander in CollectionView with LinearItemsLayout" FontSize="24" FontAttributes="Bold"/>
 
             <CollectionView ItemsSource="{Binding ContentCreators}">
                 <CollectionView.ItemTemplate>
@@ -96,6 +96,8 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
+            
+            <Label Text="Expander in CollectionView with GridItemsLayout" FontSize="24" FontAttributes="Bold"/>
 
             <CollectionView ItemsSource="{Binding ContentCreators}">
                 <CollectionView.ItemsLayout>
