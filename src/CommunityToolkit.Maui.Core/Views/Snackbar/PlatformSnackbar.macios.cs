@@ -31,7 +31,7 @@ public class PlatformSnackbar : PlatformToast
 		UIColor actionTextColor,
 		UIFont actionButtonFont,
 		nfloat padding)
-		: base(message, backgroundColor, cornerRadius, textColor, textFont, characterSpacing, padding)
+		: base(message, backgroundColor, cornerRadius, textColor, textFont, characterSpacing, padding, true)
 	{
 		padding += DefaultPadding;
 
