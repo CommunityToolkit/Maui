@@ -17,6 +17,15 @@ namespace CommunityToolkit.Maui.Core;
 [SupportedOSPlatform("Tizen6.5")]
 public static class AppBuilderExtensions
 {
+	static readonly WeakEventManager weakEventManager = new();
+
+	// This is an internal event used by Unit Tests to confirm when the code enters the `if (Options.ShouldUseStatusBarBehaviorOnAndroidModalPage)` block
+	internal static event EventHandler ShouldUseStatusBarBehaviorOnAndroidModalPageOptionCompleted
+	{
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
+	}
+
 	/// <summary>
 	/// Initializes the .NET MAUI Community Toolkit Core Library
 	/// </summary>
@@ -27,9 +36,10 @@ public static class AppBuilderExtensions
 	{
 		options?.Invoke(new Options());
 
-#if ANDROID
         if (Options.ShouldUseStatusBarBehaviorOnAndroidModalPage)
         {
+
+#if ANDROID
             builder.Services.AddSingleton<IDialogFragmentService, DialogFragmentService>();
 
 			builder.ConfigureLifecycleEvents(static lifecycleBuilder =>
@@ -58,8 +68,10 @@ public static class AppBuilderExtensions
 					});
 				});
 			});
-        }
 #endif
+
+			weakEventManager.HandleEvent(null, EventArgs.Empty, nameof(ShouldUseStatusBarBehaviorOnAndroidModalPageOptionCompleted));
+		}
 
 		return builder;
 	}
