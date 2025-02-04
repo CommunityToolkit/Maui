@@ -238,7 +238,7 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 		// assert
 		Assert.True(commandHasBeenExecuted);
 	}
-	
+
 	static Entry CreateEntryWithBehavior(int stoppedTypingTimeThreshold = 500,
 		int minimumLengthThreshold = 0,
 		bool shouldDismissKeyboardAutomatically = false,

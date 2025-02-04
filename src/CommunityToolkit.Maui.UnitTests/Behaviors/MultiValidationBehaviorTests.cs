@@ -58,7 +58,7 @@ public class MultiValidationBehaviorTests() : BaseBehaviorTest<MultiValidationBe
 		entry.Behaviors.Add(multiBehavior);
 
 		// Act
-		await multiBehavior.ForceValidate(CancellationToken.None);
+		await multiBehavior.ForceValidate(TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.Equal(expectedValue, multiBehavior.IsValid);
@@ -86,7 +86,7 @@ public class MultiValidationBehaviorTests() : BaseBehaviorTest<MultiValidationBe
 		// Act
 
 		// Ensure CancellationToken expires 
-		await Task.Delay(100, CancellationToken.None);
+		await Task.Delay(100, TestContext.Current.CancellationToken);
 
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await multiBehavior.ForceValidate(cts.Token));
