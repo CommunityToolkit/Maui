@@ -215,26 +215,28 @@ public partial class DrawingView : View, IDrawingView
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of the collection of <see cref="IDrawingLine"/> that is provided as a parameter.
 	/// </summary>
-	/// <param name="lines">A collection of <see cref="IDrawingLine"/> that an image is generated from.</param>
-	/// <param name="imageSize">The desired dimensions of the generated image. The image will be resized proportionally.</param>
-	/// <param name="background">Background of the generated image. If color is null, default background color is used.</param>
+	/// <param name="options">The options controlling how the resulting image is generated.</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
-	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's provided through the <paramref name="lines"/> parameter.</returns>
-	public static ValueTask<Stream> GetImageStream(IEnumerable<IDrawingLine> lines,
-													Size imageSize,
-													Brush? background,
-													CancellationToken token = default) =>
-		DrawingViewService.GetImageStream(lines.ToList(), imageSize, background, token);
+	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's provided through the <paramref name="options"/> parameter.</returns>
+	public static ValueTask<Stream> GetImageStream(
+		ImageLineOptions options,
+		CancellationToken token = default) =>
+		DrawingViewService.GetImageStream(options, token);
 
-	/// <summary>
-	/// Retrieves a <see cref="Stream"/> containing an image of the <see cref="Lines"/> that are currently drawn on the <see cref="DrawingView"/>.
-	/// </summary>
-	/// <param name="imageSizeWidth">The desired width of the image that is returned. The image will be resized proportionally.</param>
-	/// <param name="imageSizeHeight">Desired height of the image that is returned. The image will be resized proportionally.</param>
-	/// <param name="token"><see cref="CancellationToken"/></param>
-	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="DrawingView"/>.</returns>
-	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, CancellationToken token = default) =>
-		DrawingViewService.GetImageStream(Lines.ToList(), new Size(imageSizeWidth, imageSizeHeight), Background, token);
+	/// <inheritdoc cref="IDrawingView.GetImageStream(double, double, DrawingViewOutputOption, CancellationToken)"/>
+	public ValueTask<Stream> GetImageStream(double desiredWidth, double desiredHeight, CancellationToken token = default) =>
+		GetImageStream(desiredWidth, desiredHeight, DrawingViewOutputOption.Lines, token);
+	
+	/// <inheritdoc cref="IDrawingView.GetImageStream(double, double, DrawingViewOutputOption, CancellationToken)"/>
+	public ValueTask<Stream> GetImageStream(double desiredWidth, double desiredHeight, DrawingViewOutputOption imageOutputOption, CancellationToken token = default)
+	{
+		var options = imageOutputOption == DrawingViewOutputOption.Lines
+			? ImageLineOptions.JustLines(Lines.ToList(), new Size(desiredWidth, desiredHeight), Background)
+			: ImageLineOptions.FullCanvas(Lines.ToList(), new Size(desiredWidth, desiredHeight), Background,
+				new Size(this.Width, this.Height));
+		
+		return DrawingViewService.GetImageStream(options, token);
+	}
 
 	/// <summary>
 	/// Clears the <see cref="Lines"/> collection.
