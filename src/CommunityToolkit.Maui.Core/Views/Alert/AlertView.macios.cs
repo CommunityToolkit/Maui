@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 public class AlertView(bool shouldFillAndExpandHorizontally) : UIView
 {
 	const int defaultSpacing = 10;
-	
+
 	readonly List<UIView> children = [];
 	readonly bool shouldFillAndExpandHorizontally = shouldFillAndExpandHorizontally;
 
@@ -22,7 +22,7 @@ public class AlertView(bool shouldFillAndExpandHorizontally) : UIView
 	/// PopupView Children
 	/// </summary>
 	public IReadOnlyList<UIView> Children => children;
-	
+
 	/// <summary>
 	/// <see cref="AlertViewVisualOptions"/>
 	/// </summary>
@@ -32,7 +32,7 @@ public class AlertView(bool shouldFillAndExpandHorizontally) : UIView
 	/// <see cref="UIView"/> on which Alert will appear. When null, <see cref="AlertView"/> will appear at bottom of screen.
 	/// </summary>
 	public UIView? AnchorView { get; set; }
-	
+
 	/// <summary>
 	/// Container of <see cref="AlertView"/>
 	/// </summary>
@@ -72,14 +72,14 @@ public class AlertView(bool shouldFillAndExpandHorizontally) : UIView
 	public override void LayoutSubviews()
 	{
 		base.LayoutSubviews();
-		
+
 		if (AnchorView is null)
 		{
 			this.SafeBottomAnchor().ConstraintEqualTo(ParentView.SafeBottomAnchor(), -defaultSpacing).Active = true;
 			this.SafeTopAnchor().ConstraintGreaterThanOrEqualTo(ParentView.SafeTopAnchor(), defaultSpacing).Active = true;
 		}
 		else if (AnchorView.Superview is not null
-		         && AnchorView.Superview.ConvertRectToView(AnchorView.Frame, null).Top < Container.Frame.Height + SafeAreaLayoutGuide.LayoutFrame.Bottom)
+				 && AnchorView.Superview.ConvertRectToView(AnchorView.Frame, null).Top < Container.Frame.Height + SafeAreaLayoutGuide.LayoutFrame.Bottom)
 		{
 			var top = AnchorView.Superview.Frame.Top + AnchorView.Frame.Height + defaultSpacing;
 			this.SafeTopAnchor().ConstraintEqualTo(ParentView.TopAnchor, top).Active = true;
@@ -102,7 +102,7 @@ public class AlertView(bool shouldFillAndExpandHorizontally) : UIView
 			this.SafeLeadingAnchor().ConstraintGreaterThanOrEqualTo(ParentView.SafeLeadingAnchor(), defaultSpacing).Active = true;
 			this.SafeTrailingAnchor().ConstraintLessThanOrEqualTo(ParentView.SafeTrailingAnchor(), -defaultSpacing).Active = true;
 		}
-		
+
 		this.SafeCenterXAnchor().ConstraintEqualTo(ParentView.SafeCenterXAnchor()).Active = true;
 
 		Container.SafeLeadingAnchor().ConstraintEqualTo(this.SafeLeadingAnchor(), defaultSpacing).Active = true;
@@ -110,7 +110,7 @@ public class AlertView(bool shouldFillAndExpandHorizontally) : UIView
 		Container.SafeBottomAnchor().ConstraintEqualTo(this.SafeBottomAnchor(), -defaultSpacing).Active = true;
 		Container.SafeTopAnchor().ConstraintEqualTo(this.SafeTopAnchor(), defaultSpacing).Active = true;
 	}
-	
+
 	void Initialize()
 	{
 		TranslatesAutoresizingMaskIntoConstraints = false;
