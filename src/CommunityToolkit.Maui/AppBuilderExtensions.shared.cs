@@ -24,11 +24,11 @@ public static class AppBuilderExtensions
 	/// <returns><see cref="MauiAppBuilder"/> initialized for <see cref="CommunityToolkit.Maui"/></returns>
 	public static MauiAppBuilder UseMauiCommunityToolkit(this MauiAppBuilder builder, Action<Options>? options = null)
 	{
-		// Pass `null` because `options?.Invoke()` will set options on both `CommunityToolkit.Maui` and `CommunityToolkit.Maui.Core`
-		builder.UseMauiCommunityToolkitCore(null);
-
 		// Invokes options for both `CommunityToolkit.Maui` and `CommunityToolkit.Maui.Core`
 		options?.Invoke(new Options(builder));
+
+		// Pass `null` because `options?.Invoke()` will set options on both `CommunityToolkit.Maui` and `CommunityToolkit.Maui.Core`
+		builder.UseMauiCommunityToolkitCore(null);
 
 		builder.Services.AddSingleton<IPopupService, PopupService>();
 
