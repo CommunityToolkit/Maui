@@ -334,7 +334,7 @@ public class StateContainerTests : BaseTest
 		};
 
 		var changeStateWithAnimationTask = StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, null, afterStateChangeAnimation, TestContext.Current.CancellationToken);
-		
+
 		Assert.False(StateContainer.GetCanStateChange(layout));
 		var exception = Assert.Throws<StateContainerException>(() => StateContainer.SetCurrentState(layout, StateKey.Anything));
 		var exception2 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, TestContext.Current.CancellationToken));
