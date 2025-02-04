@@ -169,10 +169,11 @@ public partial class Expander : ContentView, IExpander
 		}
 
 		Element element = this;
+#if WINDOWS
 		var size = IsExpanded
 					? Measure(double.PositiveInfinity, double.PositiveInfinity)
 					: Header.Measure(double.PositiveInfinity, double.PositiveInfinity);
-
+#endif
 		while (element is not null)
 		{
 			if (element.Parent is ListView && element is Cell cell)
@@ -183,7 +184,7 @@ public partial class Expander : ContentView, IExpander
 				cell.ForceUpdateSize();
 #endif
 			}
-#if IOS || MACCATALYST || WINDOWS
+#if WINDOWS
 			else if (element is CollectionView collectionView)
 			{
 				var tapLocation = tappedEventArgs.GetPosition(collectionView);

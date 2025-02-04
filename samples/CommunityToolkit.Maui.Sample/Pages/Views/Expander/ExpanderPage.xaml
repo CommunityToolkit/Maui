@@ -106,7 +106,7 @@
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <mct:Expander x:DataType="viewModels:ContentCreator"
+                        <mct:Expander x:DataType="sample:ContentCreator"
                                       ExpandedChanged="Expander_ExpandedChanged">
                             <mct:Expander.Header>
                                 <Label Text="{Binding Name}"/>
