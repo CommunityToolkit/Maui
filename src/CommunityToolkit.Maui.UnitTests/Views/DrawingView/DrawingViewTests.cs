@@ -159,7 +159,9 @@ public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerT
 		// Ensure CancellationToken Expired
 		await Task.Delay(100, TestContext.Current.CancellationToken);
 
-		await Assert.ThrowsAsync<OperationCanceledException>(async () => await DrawingView.GetImageStream([new DrawingLine()], Size.Zero, Colors.Blue, cts.Token));
+		ImageLineOptions options = ImageLineOptions.JustLines([new DrawingLine()], Size.Zero, Colors.Transparent.AsPaint());
+		
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await DrawingView.GetImageStream(options, cts.Token)); 
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -170,9 +172,9 @@ public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerT
 		// Ensure CancellationToken Expired
 		await cts.CancelAsync();
 
-		await Assert.ThrowsAsync<OperationCanceledException>(async () => await DrawingView.GetImageStream([
-			new DrawingLine()
-		], Size.Zero, Colors.Blue, cts.Token));
+		ImageLineOptions options = ImageLineOptions.JustLines([new DrawingLine()], Size.Zero, Colors.Transparent.AsPaint());
+		
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await DrawingView.GetImageStream(options, cts.Token));  
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -187,9 +189,8 @@ public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerT
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task GetImageStreamStaticReturnsNullStream()
 	{
-		var stream = await DrawingView.GetImageStream([
-			new DrawingLine()
-		], Size.Zero, Colors.Blue, TestContext.Current.CancellationToken);
+		ImageLineOptions options = ImageLineOptions.JustLines([new DrawingLine()], Size.Zero, Colors.Blue.AsPaint());
+		var stream = await DrawingView.GetImageStream(options, TestContext.Current.CancellationToken);
 		stream.Should().BeSameAs(Stream.Null);
 	}
 
