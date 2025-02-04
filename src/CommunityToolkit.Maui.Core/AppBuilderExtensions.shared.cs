@@ -36,8 +36,8 @@ public static class AppBuilderExtensions
 	{
 		options?.Invoke(new Options());
 
-        if (Options.ShouldUseStatusBarBehaviorOnAndroidModalPage)
-        {
+		if (Options.ShouldUseStatusBarBehaviorOnAndroidModalPage)
+		{
 
 #if ANDROID
             builder.Services.AddSingleton<IDialogFragmentService, DialogFragmentService>();
