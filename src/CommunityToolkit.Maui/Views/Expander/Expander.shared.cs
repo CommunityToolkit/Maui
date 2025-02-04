@@ -176,25 +176,22 @@ public partial class Expander : ContentView, IExpander
 #endif
 		while (element is not null)
 		{
-			if (element.Parent is ListView && element is Cell cell)
-			{
 #if IOS || MACCATALYST
-				throw new NotSupportedException($"{nameof(Expander)} is not yet supported in {nameof(ListView)}");
-#else
-				cell.ForceUpdateSize();
-#endif
+			if (element is ListView listView)
+			{
+				(listView.Handler?.PlatformView as UIKit.UITableView)?.ReloadData();
 			}
+#endif
+			
 #if WINDOWS
+			if (element.Parent is ListView listView && element is Cell cell)
+			{
+				cell.ForceUpdateSize();
+			}
 			else if (element is CollectionView collectionView)
 			{
 				var tapLocation = tappedEventArgs.GetPosition(collectionView);
 				ForceUpdateCellSize(collectionView, size, tapLocation);
-			}
-#endif
-#if IOS || MACCATALYST
-            else if (element is ScrollView scrollView)
-			{
-			    ((IView)scrollView).InvalidateMeasure();
 			}
 #endif
 
