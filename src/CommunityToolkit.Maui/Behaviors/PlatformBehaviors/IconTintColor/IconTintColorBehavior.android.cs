@@ -20,12 +20,8 @@ public partial class IconTintColorBehavior
 		base.OnAttachedTo(bindable, platformView);
 		nativeView = platformView;
 
-		if (ApplyOn is IconTintColorApplyOn.OnBehaviorAttachedTo)
-		{
-			ApplyTintColor(nativeView, TintColor);
-		}
+		ApplyTintColor(nativeView, TintColor);
 
-		bindable.Loaded += OnBindableLoaded;
 		bindable.PropertyChanged += OnElementPropertyChanged;
 		PropertyChanged += OnTintedImagePropertyChanged;
 	}
@@ -37,19 +33,8 @@ public partial class IconTintColorBehavior
 
 		ClearTintColor(platformView);
 
-		bindable.Loaded -= OnBindableLoaded;
 		bindable.PropertyChanged -= OnElementPropertyChanged;
 		PropertyChanged -= OnTintedImagePropertyChanged;
-	}
-	
-	void OnBindableLoaded(object? sender, EventArgs e)
-	{
-		if (ApplyOn is not IconTintColorApplyOn.OnViewLoaded)
-		{
-			return;
-		}
-		
-		ApplyTintColor(nativeView, TintColor);
 	}
 
 	static void ApplyTintColor(AndroidView? nativeView, Color? tintColor)
