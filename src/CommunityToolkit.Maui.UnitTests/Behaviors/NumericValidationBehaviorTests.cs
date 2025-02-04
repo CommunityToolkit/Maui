@@ -61,7 +61,7 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 		try
 		{
 			// Act
-			await behavior.ForceValidate(CancellationToken.None);
+			await behavior.ForceValidate(TestContext.Current.CancellationToken);
 
 			// Assert
 			Assert.Equal(expectedValue, behavior.IsValid);
@@ -86,7 +86,7 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 		};
 		entry.Behaviors.Add(behavior);
 
-		await Assert.ThrowsAsync<ArgumentNullException>(async () => await behavior.ForceValidate(CancellationToken.None));
+		await Assert.ThrowsAsync<ArgumentNullException>(async () => await behavior.ForceValidate(TestContext.Current.CancellationToken));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -106,7 +106,7 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 		};
 		entry.Behaviors.Add(behavior);
 
-		var action = (async () => await behavior.ForceValidate(CancellationToken.None));
+		var action = (async () => await behavior.ForceValidate(TestContext.Current.CancellationToken));
 		await action.Should().NotThrowAsync<ArgumentNullException>();
 
 		options.SetShouldSuppressExceptionsInBehaviors(false);
@@ -128,7 +128,7 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 		// Act
 
 		// Ensure CancellationToken expires
-		await Task.Delay(100, CancellationToken.None);
+		await Task.Delay(100, TestContext.Current.CancellationToken);
 
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await behavior.ForceValidate(cts.Token));
@@ -150,7 +150,7 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 		// Act
 
 		// Ensure CancellationToken expires
-		await Task.Delay(100, CancellationToken.None);
+		await Task.Delay(100, TestContext.Current.CancellationToken);
 
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () =>

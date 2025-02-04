@@ -24,6 +24,7 @@ public class PlatformToast : Alert, IDisposable
 	/// <param name="font">Toast Font</param>
 	/// <param name="characterSpacing">Toast Message Character Spacing</param>
 	/// <param name="padding">Toast Padding</param>
+	/// <param name="shouldFillAndExpandHorizontally">Should stretch container horizontally to fit the screen</param>
 	public PlatformToast(
 		string message,
 		UIColor backgroundColor,
@@ -31,7 +32,8 @@ public class PlatformToast : Alert, IDisposable
 		UIColor textColor,
 		UIFont font,
 		double characterSpacing,
-		nfloat padding)
+		nfloat padding,
+		bool shouldFillAndExpandHorizontally = false) : base(shouldFillAndExpandHorizontally)
 	{
 		padding += DefaultPadding;
 
