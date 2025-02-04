@@ -30,13 +30,8 @@ public partial class IconTintColorBehavior
 	protected override void OnAttachedTo(View bindable, UIView platformView)
 	{
 		base.OnAttachedTo(bindable, platformView);
-		
-		bindable.Loaded += OnBindableLoaded;
 
-		if (ApplyOn is IconTintColorApplyOn.OnBehaviorAttachedTo)
-		{
-			ApplyTintColor(platformView, bindable, TintColor);
-		}
+		ApplyTintColor(platformView, bindable, TintColor);
 
 		PropertyChanged += (s, e) =>
 		{
@@ -51,26 +46,8 @@ public partial class IconTintColorBehavior
 	protected override void OnDetachedFrom(View bindable, UIView platformView)
 	{
 		base.OnDetachedFrom(bindable, platformView);
-		
-		bindable.Loaded -= OnBindableLoaded;
 
 		ClearTintColor(platformView, bindable);
-	}
-	
-	void OnBindableLoaded(object? sender, EventArgs e)
-	{
-		if (ApplyOn is not IconTintColorApplyOn.OnViewLoaded)
-		{
-			return;
-		}
-
-		if (sender is not View view
-		    || view.Handler?.PlatformView is not UIView platformView)
-		{
-			return;
-		}
-		
-		ApplyTintColor(platformView, view, TintColor);
 	}
 
 	static void ClearTintColor(UIView platformView, View element)
