@@ -8,8 +8,8 @@ public class AppBuilderExtensionsTests : BaseTest
     [Fact]
     public void ConfirmOptionsDefaultValue()
     {
-        // Assert
-        Assert.True(Core.Options.ShouldUseStatusBarBehaviorOnAndroidModalPage);
+		// Assert
+		Assert.True(Core.Options.ShouldUseStatusBarBehaviorOnAndroidModalPage);
         Assert.False(Options.ShouldEnableSnackbarOnWindows);
         Assert.False(Options.ShouldSuppressExceptionsInAnimations);
         Assert.False(Options.ShouldSuppressExceptionsInBehaviors);
