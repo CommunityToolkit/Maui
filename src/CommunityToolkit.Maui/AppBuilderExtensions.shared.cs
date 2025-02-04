@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using System.Runtime.Versioning;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;
 using CommunityToolkit.Maui.Views;
@@ -8,6 +9,11 @@ namespace CommunityToolkit.Maui;
 /// <summary>
 /// Extensions for MauiAppBuilder
 /// </summary>
+[SupportedOSPlatform("iOS15.0")]
+[SupportedOSPlatform("MacCatalyst15.0")]
+[SupportedOSPlatform("Android21.0")]
+[SupportedOSPlatform("Windows10.0.17763")]
+[SupportedOSPlatform("Tizen6.5")]
 public static class AppBuilderExtensions
 {
 	/// <summary>
@@ -34,7 +40,10 @@ public static class AppBuilderExtensions
 		});
 
 		Popup.RemapForControls();
+
+#if ANDROID
 		NavigationBar.RemapForControls();
+#endif
 		return builder;
 	}
 }

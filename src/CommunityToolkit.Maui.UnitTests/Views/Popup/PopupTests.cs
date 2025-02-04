@@ -2,6 +2,7 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.Views;
+using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
@@ -23,7 +24,7 @@ public class PopupTests : BaseHandlerTest
 	{
 		var handlerStub = new MockPopupHandler();
 
-		Assert.Null((handlerStub as IElementHandler).MauiContext);
+		(handlerStub as IElementHandler).MauiContext.Should().BeNull();
 
 		var ex = Assert.Throws<InvalidOperationException>(() => handlerStub.GetRequiredService<IFooService>());
 
@@ -49,23 +50,26 @@ public class PopupTests : BaseHandlerTest
 		// Make sure that our page will have a Handler
 		CreateViewHandler<MockPageHandler>(page);
 
-		app.Windows[0].Page = page;
+		var window = new Window
+		{
+			Page = page
+		};
+		app.AddWindow(window);
 
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
 
 		// Ensure CancellationToken Has Expired
-		await Task.Delay(100, CancellationToken.None);
+		await Task.Delay(100, TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => page.ShowPopupAsync(popup, cts.Token));
+		app.RemoveWindow(window);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_CancellationTokenCancelled()
 	{
 		var cts = new CancellationTokenSource();
-
-		var app = Application.Current ?? throw new NullReferenceException();
 
 		var page = new ContentPage
 		{
@@ -78,7 +82,11 @@ public class PopupTests : BaseHandlerTest
 		// Make sure that our page will have a Handler
 		CreateViewHandler<MockPageHandler>(page);
 
-		app.Windows[0].Page = page;
+		var window = new Window
+		{
+			Page = page
+		};
+		Application.Current?.AddWindow(window);
 
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
@@ -87,6 +95,7 @@ public class PopupTests : BaseHandlerTest
 		await cts.CancelAsync();
 
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => page.ShowPopupAsync(popup, cts.Token));
+		Application.Current?.RemoveWindow(window);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -107,15 +116,20 @@ public class PopupTests : BaseHandlerTest
 		// Make sure that our page will have a Handler
 		CreateViewHandler<MockPageHandler>(page);
 
-		app.Windows[0].Page = page;
+		var window = new Window
+		{
+			Page = page
+		};
+		app.AddWindow(window);
 
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
 
 		// Ensure CancellationToken Has Expired
-		await Task.Delay(100, CancellationToken.None);
+		await Task.Delay(100, TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => popup.CloseAsync(token: cts.Token));
+		app.RemoveWindow(window);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -136,7 +150,11 @@ public class PopupTests : BaseHandlerTest
 		// Make sure that our page will have a Handler
 		CreateViewHandler<MockPageHandler>(page);
 
-		app.Windows[0].Page = page;
+		var window = new Window
+		{
+			Page = page
+		};
+		app.AddWindow(window);
 
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
@@ -145,6 +163,7 @@ public class PopupTests : BaseHandlerTest
 		await cts.CancelAsync();
 
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => popup.CloseAsync(token: cts.Token));
+		app.RemoveWindow(window);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -163,21 +182,26 @@ public class PopupTests : BaseHandlerTest
 		// Make sure that our page will have a Handler
 		CreateViewHandler<MockPageHandler>(page);
 
-		app.Windows[0].Page = page;
+		var window = new Window
+		{
+			Page = page
+		};
+		app.AddWindow(window);
 
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
 
 		page.ShowPopup(popup);
 		Assert.Equal(1, popupHandler.OnOpenedCount);
-		await popup.OnDismissedByTappingOutsideOfPopup(CancellationToken.None);
+		await popup.OnDismissedByTappingOutsideOfPopup(TestContext.Current.CancellationToken);
 
-		var popupTask = page.ShowPopupAsync(popup, CancellationToken.None);
-		await popup.OnDismissedByTappingOutsideOfPopup(CancellationToken.None);
+		var popupTask = page.ShowPopupAsync(popup, TestContext.Current.CancellationToken);
+		await popup.OnDismissedByTappingOutsideOfPopup(TestContext.Current.CancellationToken);
 
 		await popupTask;
 
 		Assert.Equal(2, popupHandler.OnOpenedCount);
+		app.RemoveWindow(window);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Medium)]
@@ -203,17 +227,22 @@ public class PopupTests : BaseHandlerTest
 		// Make sure that our page will have a Handler
 		CreateViewHandler<MockPageHandler>(page);
 
-		app.Windows[0].Page = page;
+		var window = new Window
+		{
+			Page = page
+		};
+		app.AddWindow(window);
 
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
 
-		await popup.OnDismissedByTappingOutsideOfPopup(CancellationToken.None);
+		await popup.OnDismissedByTappingOutsideOfPopup(TestContext.Current.CancellationToken);
 
 		var (result, wasDismissedByTappingOutsideOfPopup) = await popupClosedTCS.Task;
 
 		Assert.True(wasDismissedByTappingOutsideOfPopup);
 		Assert.Equal(resultWhenUserTapsOutsideOfPopup, result);
+		app.RemoveWindow(window);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -235,7 +264,11 @@ public class PopupTests : BaseHandlerTest
 		// Make sure that our page will have a Handler
 		CreateViewHandler<MockPageHandler>(page);
 
-		app.Windows[0].Page = page;
+		var window = new Window
+		{
+			Page = page
+		};
+		app.AddWindow(window);
 
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
@@ -252,6 +285,7 @@ public class PopupTests : BaseHandlerTest
 
 		Assert.True(isPopupDismissed);
 		Assert.NotNull(result);
+		app.RemoveWindow(window);
 	}
 
 
@@ -273,7 +307,11 @@ public class PopupTests : BaseHandlerTest
 		// Make sure that our page will have a Handler
 		CreateViewHandler<MockPageHandler>(page);
 
-		app.Windows[0].Page = page;
+		var window = new Window
+		{
+			Page = page
+		};
+		app.AddWindow(window);
 
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
@@ -284,10 +322,11 @@ public class PopupTests : BaseHandlerTest
 			isPopupDismissed = true;
 		};
 
-		await popup.CloseAsync(token: CancellationToken.None);
+		await popup.CloseAsync(token: TestContext.Current.CancellationToken);
 
 		Assert.True(isPopupDismissed);
 		Assert.Null(result);
+		app.RemoveWindow(window);
 	}
 
 	[Fact]
@@ -323,7 +362,11 @@ public class PopupTests : BaseHandlerTest
 		// Make sure that our page will have a Handler
 		CreateViewHandler<MockPageHandler>(page);
 
-		app.Windows[0].Page = page;
+		var window = new Window
+		{
+			Page = page
+		};
+		app.AddWindow(window);
 
 		Assert.NotNull(popup.Handler);
 		Assert.NotNull(page.Handler);
@@ -332,8 +375,9 @@ public class PopupTests : BaseHandlerTest
 		page.ShowPopup(popup);
 		Assert.Equal(2, page.LogicalChildrenInternal.Count);
 
-		await popup.CloseAsync(token: CancellationToken.None);
+		await popup.CloseAsync(token: TestContext.Current.CancellationToken);
 		Assert.Single(page.LogicalChildrenInternal);
+		app.RemoveWindow(window);
 	}
 
 	sealed class MockPopup : Popup
