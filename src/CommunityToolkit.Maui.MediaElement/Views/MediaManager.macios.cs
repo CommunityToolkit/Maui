@@ -133,7 +133,7 @@ public partial class MediaManager : IDisposable
 		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
-	
+
 	protected virtual partial void PlatformPlay()
 	{
 		if (Player?.CurrentTime == PlayerItem?.Duration)
@@ -148,7 +148,7 @@ public partial class MediaManager : IDisposable
 	{
 		Player?.Pause();
 	}
-	
+
 	protected virtual async partial Task PlatformSeek(TimeSpan position, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
@@ -381,7 +381,7 @@ public partial class MediaManager : IDisposable
 		PlayerViewController.ShowsPlaybackControls =
 			MediaElement.ShouldShowPlaybackControls;
 	}
-	
+
 	protected virtual partial void PlatformUpdatePosition()
 	{
 		if (Player is null)
@@ -413,7 +413,7 @@ public partial class MediaManager : IDisposable
 			MediaElement.Duration = MediaElement.Position = TimeSpan.Zero;
 		}
 	}
-	
+
 	protected virtual partial void PlatformUpdateVolume()
 	{
 		if (Player is null)
