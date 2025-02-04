@@ -9,7 +9,9 @@ namespace CommunityToolkit.Maui.Core.Views;
 public class AlertView(bool shouldFillAndExpandHorizontally) : UIView
 {
 	const int defaultSpacing = 10;
+	
 	readonly List<UIView> children = [];
+	readonly bool shouldFillAndExpandHorizontally = shouldFillAndExpandHorizontally;
 
 	/// <summary>
 	/// Parent UIView
