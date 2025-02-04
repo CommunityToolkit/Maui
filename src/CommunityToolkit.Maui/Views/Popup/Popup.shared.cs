@@ -343,6 +343,8 @@ public partial class Popup : Element, IPopup, IWindowController, IPropertyPropag
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	protected virtual async Task OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup, CancellationToken token = default)
 	{
+		token.ThrowIfCancellationRequested();
+
 		((IPopup)this).OnClosed(result);
 		((IResourceDictionary)resources).ValuesChanged -= OnResourcesChanged;
 

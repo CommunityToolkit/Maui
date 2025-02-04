@@ -1,10 +1,11 @@
 ﻿using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using Xunit;
+using Xunit.v3;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class ValidationBehaviorTests() : BaseBehaviorTest<ValidationBehavior, VisualElement>(new MockValidationBehavior(), new View())
+public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseBehaviorTest<ValidationBehavior, VisualElement>(new MockValidationBehavior(), new View())
 {
 	[Fact]
 	public void ValidateOnValueChanged()
@@ -39,10 +40,10 @@ public class ValidationBehaviorTests() : BaseBehaviorTest<ValidationBehavior, Vi
 		};
 
 		var validStyle = new Style(entry.GetType());
-		validStyle.Setters.Add(new Setter() { Property = Entry.BackgroundColorProperty, Value = Colors.Green });
+		validStyle.Setters.Add(new Setter() { Property = VisualElement.BackgroundColorProperty, Value = Colors.Green });
 
 		var invalidStyle = new Style(entry.GetType());
-		invalidStyle.Setters.Add(new Setter() { Property = Entry.BackgroundColorProperty, Value = Colors.Red });
+		invalidStyle.Setters.Add(new Setter() { Property = VisualElement.BackgroundColorProperty, Value = Colors.Red });
 
 		var behavior = new MockValidationBehavior()
 		{
@@ -55,7 +56,7 @@ public class ValidationBehaviorTests() : BaseBehaviorTest<ValidationBehavior, Vi
 
 		// Act
 		entry.Text = "321";
-		await behavior.ForceValidate(CancellationToken.None);
+		await behavior.ForceValidate(TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.Equal(entry.Style, validStyle);
@@ -71,10 +72,10 @@ public class ValidationBehaviorTests() : BaseBehaviorTest<ValidationBehavior, Vi
 		};
 
 		var validStyle = new Style(entry.GetType());
-		validStyle.Setters.Add(new Setter() { Property = Entry.BackgroundColorProperty, Value = Colors.Green });
+		validStyle.Setters.Add(new Setter() { Property = VisualElement.BackgroundColorProperty, Value = Colors.Green });
 
 		var invalidStyle = new Style(entry.GetType());
-		invalidStyle.Setters.Add(new Setter() { Property = Entry.BackgroundColorProperty, Value = Colors.Red });
+		invalidStyle.Setters.Add(new Setter() { Property = VisualElement.BackgroundColorProperty, Value = Colors.Red });
 
 		var behavior = new MockValidationBehavior()
 		{
@@ -87,10 +88,23 @@ public class ValidationBehaviorTests() : BaseBehaviorTest<ValidationBehavior, Vi
 
 		// Act
 		entry.Text = "321";
-		await behavior.ForceValidate(CancellationToken.None);
+		await behavior.ForceValidate(TestContext.Current.CancellationToken);
 
 		// Assert
-		Assert.Equal(entry.Style, invalidStyle);
+		Assert.Equal(entry.Style, invalidStyle, (style1, style2) =>
+		{
+			if (style1 == null || style2 == null)
+			{
+				return style1 == style2;
+			}
+
+			testOutputHelper.WriteLine($"Style1: {style1.Setters.Count} - Style2: {style2.Setters.Count}");
+			testOutputHelper.WriteLine($"Style1: {style1.TargetType.FullName} - Style2: {style2.TargetType.FullName}");
+
+			return style1.Setters.Count == style2.Setters.Count
+				   && style1.TargetType.FullName == style2.TargetType.FullName
+				   && style1.Setters.All(x => style2.Setters.Contains(x, new StyleSetterComparer(testOutputHelper)));
+		});
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -116,7 +130,7 @@ public class ValidationBehaviorTests() : BaseBehaviorTest<ValidationBehavior, Vi
 		Assert.False(behavior.IsRunning);
 
 		// Act
-		var forceValidateTask = behavior.ForceValidate(CancellationToken.None);
+		var forceValidateTask = behavior.ForceValidate(TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.True(behavior.IsRunning);
@@ -136,7 +150,7 @@ public class ValidationBehaviorTests() : BaseBehaviorTest<ValidationBehavior, Vi
 		var behavior = new MockValidationBehavior()
 		{
 			ExpectedValue = "321",
-			ForceValidateCommand = new Command<CancellationToken>(token =>
+			ForceValidateCommand = new Command<CancellationToken>(_ =>
 			{
 				entry.Text = "321";
 			})
@@ -167,7 +181,7 @@ public class ValidationBehaviorTests() : BaseBehaviorTest<ValidationBehavior, Vi
 		// Act
 
 		// Ensure CancellationToken expires
-		await Task.Delay(100, CancellationToken.None);
+		await Task.Delay(100, TestContext.Current.CancellationToken);
 
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await behavior.ForceValidate(cts.Token));
@@ -189,7 +203,7 @@ public class ValidationBehaviorTests() : BaseBehaviorTest<ValidationBehavior, Vi
 		// Act
 
 		// Ensure CancellationToken expires
-		await Task.Delay(100, CancellationToken.None);
+		await Task.Delay(100, TestContext.Current.CancellationToken);
 
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () =>
@@ -230,5 +244,40 @@ public class ValidationBehaviorTests() : BaseBehaviorTest<ValidationBehavior, Vi
 		view.Behaviors.Remove(behavior);
 
 		Assert.Empty(view.Behaviors);
+	}
+}
+
+public class StyleSetterComparer(ITestOutputHelper testOutputHelper) : IEqualityComparer<Setter>
+{
+	public bool Equals(Setter? x, Setter? y)
+	{
+		if (ReferenceEquals(x, y))
+		{
+			return true;
+		}
+
+		if (x is null)
+		{
+			return false;
+		}
+
+		if (y is null)
+		{
+			return false;
+		}
+
+		if (x.GetType() != y.GetType())
+		{
+			return false;
+		}
+
+
+		testOutputHelper.WriteLine($"Setter1: {x.TargetName},{x.Property.PropertyName} - Setter2: {y.TargetName},{y.Property.PropertyName}");
+		return x.TargetName == y.TargetName && x.Property.PropertyName == y.Property.PropertyName;
+	}
+
+	public int GetHashCode(Setter obj)
+	{
+		return HashCode.Combine(obj.TargetName, obj.Property);
 	}
 }
