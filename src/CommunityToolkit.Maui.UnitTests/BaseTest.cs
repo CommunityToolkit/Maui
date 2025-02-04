@@ -57,7 +57,10 @@ public abstract class BaseTest : IDisposable
 		DeviceDisplay.SetCurrent(null);
 		DispatcherProvider.SetCurrent(null);
 
+		// Restore default options
 		var options = new Options();
+		options.SetShouldUseStatusBarBehaviorOnAndroidModalPage(true);
+		options.SetShouldEnableSnackbarOnWindows(false);
 		options.SetShouldSuppressExceptionsInAnimations(false);
 		options.SetShouldSuppressExceptionsInBehaviors(false);
 		options.SetShouldSuppressExceptionsInConverters(false);
