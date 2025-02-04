@@ -93,7 +93,7 @@ static partial class NavigationBar
 
 		var color = GetColor(page).ToPlatform();
 
-		if (OperatingSystem.IsAndroidVersionAtLeast(21))
+		if (OperatingSystem.IsAndroidVersionAtLeast(23))
 		{
 			window.SetNavigationBarColor(color);
 		}

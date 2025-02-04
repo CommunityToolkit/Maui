@@ -1,6 +1,6 @@
 ﻿namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
-class MockAppInfo : IAppInfo
+public class MockAppInfo : IAppInfo
 {
 	public string PackageName { get; set; } = string.Empty;
 
