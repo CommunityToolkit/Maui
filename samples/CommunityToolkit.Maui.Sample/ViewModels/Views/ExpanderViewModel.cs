@@ -20,7 +20,10 @@ namespace CommunityToolkit.Maui.Sample
 			new("Kym Phillpotts", "https://kymphillpotts.com", "https://avatars.githubusercontent.com/u/1327346"),
 			new("Pedro Jesus", "https://github.com/pictos", "https://avatars.githubusercontent.com/u/20712372"),
 			new("Shaun Lawrence", "https://github.com/bijington", "https://avatars.githubusercontent.com/u/17139988"),
-			new("Vladislav Antonyuk", "https://vladislavantonyuk.azurewebsites.net", "https://avatars.githubusercontent.com/u/33021114"),
+			new("Vladislav Antonyuk", "https://vladislavantonyuk.github.io", "https://avatars.githubusercontent.com/u/33021114"),
+			new("Víctor Hugo García Hernández", "", "https://avatars.githubusercontent.com/u/1047398"),
+			new("James Crutchley", "", "https://avatars.githubusercontent.com/u/4167863"),
+			new("Clifford Agius", "https://cliffordagius.co.uk/", "https://avatars.githubusercontent.com/u/5613809"),
 		];
 	}
 }
