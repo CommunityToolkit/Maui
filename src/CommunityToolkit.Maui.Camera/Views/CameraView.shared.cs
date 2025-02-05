@@ -14,6 +14,7 @@ namespace CommunityToolkit.Maui.Views;
 [SupportedOSPlatform("android21.0")]
 [SupportedOSPlatform("ios")]
 [SupportedOSPlatform("maccatalyst")]
+[SupportedOSPlatform("tizen")]
 public partial class CameraView : View, ICameraView
 {
 	static readonly BindablePropertyKey isAvailablePropertyKey =

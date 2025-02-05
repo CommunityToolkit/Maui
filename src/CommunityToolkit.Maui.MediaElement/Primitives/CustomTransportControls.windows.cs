@@ -17,10 +17,9 @@ sealed partial class CustomTransportControls : MediaTransportControls
 	{
 		base.OnApplyTemplate();
 
-		var temp = GetTemplateChild("FullWindowButton") as AppBarButton;
-		if(temp is not null)
+		if (GetTemplateChild("FullWindowButton") is AppBarButton appBarButton)
 		{
-			FullScreenButton = temp;
+			FullScreenButton = appBarButton;
 			FullScreenButton.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
 			OnTemplateLoaded?.Invoke(this, EventArgs.Empty);
 			FullScreenButton.Click += FullScreenButton_Click;
