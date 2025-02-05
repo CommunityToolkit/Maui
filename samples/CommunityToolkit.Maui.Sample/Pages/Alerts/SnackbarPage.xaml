@@ -2,9 +2,10 @@
 <pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                xmlns:alertPages="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Alerts"
                 xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-                x:Class="CommunityToolkit.Maui.Sample.Pages.Alerts.SnackbarPage"
                 xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Alerts"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Alerts.SnackbarPage"
                 x:TypeArguments="vm:SnackbarViewModel"
                 x:DataType="vm:SnackbarViewModel">
 
@@ -14,26 +15,34 @@
         </ResourceDictionary>
     </pages:BasePage.Resources>
     
-    <VerticalStackLayout Spacing="12">
+    <Grid RowSpacing="12"
+          RowDefinitions="70,20,40,40,40,20">
+        <Label Grid.Row="0"
+               Text="The Snackbar is a timed alert that appears at the bottom of the screen by default. It is dismissed after a configurable duration of time. Snackbar is fully customizable and can be anchored to any IView."
+               HorizontalTextAlignment="Justify"
+               LineBreakMode = "WordWrap" />
         
-        <Label Text="The Snackbar is a timed alert that appears at the bottom of the screen by default. It is dismissed after a configurable duration of time. Snackbar is fully customizable and can be anchored to any IView." 
-                LineBreakMode = "WordWrap" />
-        
-        <Label Text="Windows uses toast notifications to display snackbar. Make sure you switched off Focus Assist."
+        <Label Grid.Row="1"
+               Text="NOTE: Windows uses toast notifications to display snackbar. Be sure you've switched off Focus Assist."
                IsVisible="{OnPlatform Default='false', WinUI='true'}"/>
         
-        <Button Clicked="DisplayDefaultSnackbarButtonClicked"
-                Text="Display Default Snackbar"/>
+        <Button Grid.Row="2"
+                Clicked="DisplayDefaultSnackbarButtonClicked"
+                Text = "Display Default Snackbar"/>
         
-        <Button x:Name="DisplayCustomSnackbarButton"
-                Clicked="DisplayCustomSnackbarButtonClicked"
-                TextColor="{Binding Source={RelativeSource Self}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}, x:DataType=Button}"/> 
+        <Button Grid.Row="3" 
+                x:Name="DisplayCustomSnackbarButtonAnchoredToButton"
+                Clicked="DisplayCustomSnackbarAnchoredToButtonClicked"
+                Text="{x:Static alertPages:SnackbarPage.DisplayCustomSnackbarText}"
+                TextColor="{Binding Source={RelativeSource Self}, Path=BackgroundColor, Converter={StaticResource ColorToColorForTextConverter}, x:DataType=Button}"/>
         
-        <Button x:Name="DisplaySnackbarInModalButton"
+        <Button Grid.Row="4"
+                x:Name="DisplaySnackbarInModalButton"
                 Text="Show Snackbar in Modal Page"
                 Clicked="DisplaySnackbarInModalButtonClicked"/>
 
-        <Label x:Name="SnackbarShownStatus" />
-    </VerticalStackLayout>
+        <Label Grid.Row="5"
+               x:Name="SnackbarShownStatus" />
+    </Grid>
     
 </pages:BasePage>

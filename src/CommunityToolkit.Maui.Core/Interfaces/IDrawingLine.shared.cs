@@ -35,10 +35,26 @@ public interface IDrawingLine
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of this line, based on the <see cref="Points"/> data.
 	/// </summary>
-	/// <param name="imageSizeWidth">The desired width of the image that is returned.</param>
-	/// <param name="imageSizeHeight">Desired height of the image that is returned.</param>
+	/// <param name="desiredSizeWidth">Desired width of the image that is returned.</param>
+	/// <param name="desiredSizeHeight">Desired height of the image that is returned.</param>
 	/// <param name="background">Background of the generated image.</param>
-	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingLine"/>.</returns>
 	/// <param name="token"> <see cref="CancellationToken"/>.</param>
-	ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Paint background, CancellationToken token = default);
+	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingLine"/>.</returns>
+	ValueTask<Stream> GetImageStream(double desiredSizeWidth, double desiredSizeHeight, Paint background, CancellationToken token = default) =>
+		GetImageStream(desiredSizeWidth, desiredSizeHeight, background, null, token);
+	
+	/// <summary>
+	/// Retrieves a <see cref="Stream"/> containing an image of this line, based on the <see cref="Points"/> data.
+	/// </summary>
+	/// <param name="desiredSizeWidth">Desired width of the image that is returned.</param>
+	/// <param name="desiredSizeHeight">Desired height of the image that is returned.</param>
+	/// <param name="background">Background of the generated image.</param>
+	/// <param name="canvasSize">
+	/// The actual size of the canvas being displayed. This is an optional parameter
+	/// if a value is provided then the contents of this line inside these dimensions will be included in the output,
+	/// if <c>null</c> is provided then the resulting output will be the area covered by the top-left to the bottom-right most points.
+	/// </param>
+	/// <param name="token"> <see cref="CancellationToken"/>.</param>
+	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingLine"/>.</returns>
+	ValueTask<Stream> GetImageStream(double desiredSizeWidth, double desiredSizeHeight, Paint background, Size? canvasSize = null, CancellationToken token = default);
 }

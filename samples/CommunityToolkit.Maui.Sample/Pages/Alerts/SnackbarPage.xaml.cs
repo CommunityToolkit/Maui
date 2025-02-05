@@ -12,12 +12,13 @@ namespace CommunityToolkit.Maui.Sample.Pages.Alerts;
 
 public partial class SnackbarPage : BasePage<SnackbarViewModel>
 {
-	const string displayCustomSnackbarText = "Display a Custom Snackbar, Anchored to this Button";
+	public const string DisplayCustomSnackbarText = "Display Custom Snackbar";
 	const string dismissCustomSnackbarText = "Dismiss Custom Snackbar";
-	readonly IReadOnlyList<Color> colors = typeof(Colors)
+
+	readonly IReadOnlyList<Color> colors = [.. typeof(Colors)
 											.GetFields(BindingFlags.Static | BindingFlags.Public)
 											.ToDictionary(c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()))
-											.Values.ToList();
+											.Values];
 
 	ISnackbar? customSnackbar;
 
@@ -25,7 +26,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 	{
 		InitializeComponent();
 
-		DisplayCustomSnackbarButton.Text = displayCustomSnackbarText;
+		DisplayCustomSnackbarButtonAnchoredToButton.Text = DisplayCustomSnackbarText;
 
 		Snackbar.Shown += Snackbar_Shown;
 		Snackbar.Dismissed += Snackbar_Dismissed;
@@ -34,9 +35,9 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 	async void DisplayDefaultSnackbarButtonClicked(object? sender, EventArgs args) =>
 		await this.DisplaySnackbar("This is a Snackbar.\nIt will disappear in 3 seconds.\nOr click OK to dismiss immediately");
 
-	async void DisplayCustomSnackbarButtonClicked(object? sender, EventArgs args)
+	async void DisplayCustomSnackbarAnchoredToButtonClicked(object? sender, EventArgs args)
 	{
-		if (DisplayCustomSnackbarButton.Text is displayCustomSnackbarText)
+		if (DisplayCustomSnackbarButtonAnchoredToButton.Text is DisplayCustomSnackbarText)
 		{
 			var options = new SnackbarOptions
 			{
@@ -52,20 +53,20 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 				"This is a customized Snackbar",
 				async () =>
 				{
-					await DisplayCustomSnackbarButton.BackgroundColorTo(colors[Random.Shared.Next(colors.Count)], length: 500);
-					DisplayCustomSnackbarButton.Text = displayCustomSnackbarText;
+					await DisplayCustomSnackbarButtonAnchoredToButton.BackgroundColorTo(colors[Random.Shared.Next(colors.Count)], length: 500);
+					DisplayCustomSnackbarButtonAnchoredToButton.Text = DisplayCustomSnackbarText;
 				},
 				FontAwesomeIcons.Microsoft,
 				TimeSpan.FromSeconds(30),
 				options,
-				DisplayCustomSnackbarButton);
+				DisplayCustomSnackbarButtonAnchoredToButton);
 
 			var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 			await customSnackbar.Show(cts.Token);
 
-			DisplayCustomSnackbarButton.Text = dismissCustomSnackbarText;
+			DisplayCustomSnackbarButtonAnchoredToButton.Text = dismissCustomSnackbarText;
 		}
-		else if (DisplayCustomSnackbarButton.Text is dismissCustomSnackbarText)
+		else if (DisplayCustomSnackbarButtonAnchoredToButton.Text is dismissCustomSnackbarText)
 		{
 			if (customSnackbar is not null)
 			{
@@ -75,11 +76,11 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 				customSnackbar.Dispose();
 			}
 
-			DisplayCustomSnackbarButton.Text = displayCustomSnackbarText;
+			DisplayCustomSnackbarButtonAnchoredToButton.Text = DisplayCustomSnackbarText;
 		}
 		else
 		{
-			throw new NotSupportedException($"{nameof(DisplayCustomSnackbarButton)}.{nameof(ITextButton.Text)} Not Recognized");
+			throw new NotSupportedException($"{nameof(DisplayCustomSnackbarButtonAnchoredToButton)}.{nameof(ITextButton.Text)} Not Recognized");
 		}
 	}
 
@@ -97,6 +98,20 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 	{
 		if (Application.Current?.Windows[0].Page is Page mainPage)
 		{
+			var button = new Button()
+				.CenterHorizontal()
+				.Text("Display Snackbar");
+			button.Command = new AsyncRelayCommand(token => button.DisplaySnackbar(
+				"This Snackbar is anchored to the button on the bottom to avoid clipping the Snackbar on the top of the Page.",
+				() => { },
+				"Close",
+				TimeSpan.FromSeconds(5), token: token));
+
+			var backButton = new Button()
+				.CenterHorizontal()
+				.Text("Back to Snackbar MainPage");
+			backButton.Command = new AsyncRelayCommand(mainPage.Navigation.PopModalAsync);
+
 			await mainPage.Navigation.PushModalAsync(new ContentPage
 			{
 				Content = new VerticalStackLayout
@@ -105,19 +120,11 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 
 					Children =
 					{
-						new Button { Command = new AsyncRelayCommand(static token => Snackbar.Make("Snackbar in a Modal MainPage").Show(token)) }
-							.Top().CenterHorizontal()
-							.Text("Display Snackbar"),
+						button,
 
-						new Label()
-							.Center().TextCenter()
-							.Text("This is a Modal MainPage"),
-
-						new Button { Command = new AsyncRelayCommand(mainPage.Navigation.PopModalAsync) }
-							.Bottom().CenterHorizontal()
-							.Text("Back to Snackbar MainPage")
+						backButton
 					}
-				}.Center()
+				}
 			}.Padding(12));
 		}
 	}
