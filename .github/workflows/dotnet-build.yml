@@ -209,7 +209,7 @@ jobs:
           dotnet tool install -g dotnet-reportgenerator-globaltool
           reportgenerator -reports:'${{ runner.temp }}\*cobertura.xml' -targetdir:CodeCoverage -reporttypes:'MarkdownSummaryGithub'
           cat CodeCoverage/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
-          if [${{ github.event_name }} == 'pull_request']; then
+          if ['${{ github.event_name }}' == 'pull_request']; then
             gh pr comment ${{ github.event.number }} --body-file CodeCoverage/SummaryGithub.md
           fi
         env:
