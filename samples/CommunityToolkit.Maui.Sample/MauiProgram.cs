@@ -247,7 +247,6 @@ public static class MauiProgram
 		// Add Views Pages + ViewModels
 		services.AddTransientWithShellRoute<BasicMapsPage, BasicMapsViewModel>();
 		services.AddTransientWithShellRoute<CameraViewPage, CameraViewViewModel>();
-		services.AddTransientWithShellRoute<CustomSizeAndPositionPopupPage, CustomSizeAndPositionPopupViewModel>();
 		services.AddTransientWithShellRoute<DrawingViewPage, DrawingViewViewModel>();
 		services.AddTransientWithShellRoute<ExpanderPage, ExpanderViewModel>();
 		services.AddTransientWithShellRoute<LazyViewPage, LazyViewViewModel>();

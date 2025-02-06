@@ -23,7 +23,7 @@ public class PopupServiceTests : BaseHandlerTest
 	{
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 
-		await Assert.ThrowsAsync<InvalidOperationException>(() => popupService.ShowPopupAsync<INotifyPropertyChanged>(Application.Current!.Windows[0].Page!.Navigation, new PopupOptions(), CancellationToken.None));
+		await Assert.ThrowsAsync<InvalidOperationException>(() => popupService.ShowPopupAsync<INotifyPropertyChanged>(Application.Current!.Windows[0].Page!.Navigation, new PopupOptions(), TestContext.Current.CancellationToken));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -59,7 +59,7 @@ public class PopupServiceTests : BaseHandlerTest
 		var popupInstance = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
 		var popupViewModel = ServiceProvider.GetRequiredService<MockPageViewModel>();
 
-		await popupService.ShowPopupAsync<MockPageViewModel, object?>(Application.Current!.Windows[0].Page!.Navigation, new PopupOptions(), CancellationToken.None);
+		await popupService.ShowPopupAsync<MockPageViewModel, object?>(Application.Current!.Windows[0].Page!.Navigation, new PopupOptions(), TestContext.Current.CancellationToken);
 
 		Assert.Same(popupInstance.BindingContext, popupViewModel);
 	}
