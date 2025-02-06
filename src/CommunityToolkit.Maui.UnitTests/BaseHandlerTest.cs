@@ -74,7 +74,6 @@ public abstract class BaseHandlerTest : BaseTest
 		application.Handler = new ApplicationHandlerStub();
 		application.Handler.SetMauiContext(new HandlersContextStub(serviceProvider));
 
-		CreateElementHandler<MockPopupHandler>(mockPopup);
 		CreateViewHandler<MockPageHandler>(page);
 	}
 }
