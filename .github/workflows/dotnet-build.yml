@@ -128,7 +128,7 @@ jobs:
         shell: bash
 
       - name: Set Xcode version
-        if: runner.os == 'macOS'
+        if: ${{ runner.os == 'macOS' }}
         run: |
           echo Installed Xcode Versions:
           ls -al  /Applications | grep Xcode
@@ -204,11 +204,17 @@ jobs:
            dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut.cobertura.xml" --coverage-output-format cobertura --report-xunit
 
       - name: Create code coverage report
-        if: runner.os == 'Windows' && (${{ success() || failure() }})
+        if: ${{ runner.os == 'Windows' }} && (${{ success() || failure() }})
         run: |
           dotnet tool install -g dotnet-reportgenerator-globaltool
-          reportgenerator -reports:${{ runner.temp }}/*cobertura.xml -targetdir:CodeCoverage -reporttypes:'MarkdownSummaryGithub,Cobertura'
+          reportgenerator -reports:${{ runner.temp }}/*cobertura.xml -targetdir:CodeCoverage -reporttypes:'MarkdownSummaryGithub;Cobertura'
           cat CodeCoverage/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+          if []${{ github.event_name }} == 'pull_request']; then
+            gh pr comment ${{ github.event.number }} --body-file CodeCoverage/SummaryGithub.md
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.number }}
 
       - name: Pack CommunityToolkit.Maui.Core NuGet
         run: dotnet pack -c Release ${{ env.PathToCommunityToolkitCoreCsproj }} -p:PackageVersion=${{ env.NugetPackageVersion }}
@@ -226,7 +232,7 @@ jobs:
         run: dotnet pack -c Release ${{ env.PathToCommunityToolkitMapsCsproj }} -p:PackageVersion=${{ env.NugetPackageVersionMaps }}
 
       - name: Copy NuGet Packages to Staging Directory
-        if: runner.os == 'Windows' && !startsWith(github.ref, 'refs/tags/')
+        if: ${{ runner.os == 'Windows' }} && !startsWith(github.ref, 'refs/tags/')
         run: |
           mkdir -p ${{ github.workspace }}/nuget
           Get-ChildItem -Path "./src" -Recurse | Where-Object { $_.Extension -match "nupkg" } | Copy-Item -Destination "${{ github.workspace }}/nuget"
@@ -234,7 +240,7 @@ jobs:
 
       - name: Upload Package List
         uses: actions/upload-artifact@v4
-        if: runner.os == 'Windows'
+        if: ${{ runner.os == 'Windows' }}
         with:
           name: nuget-list
           if-no-files-found: error
@@ -242,7 +248,7 @@ jobs:
             ${{ github.workspace }}/.github/workflows/SignClientFileList.txt
 
       - name: Publish Packages
-        if: runner.os == 'Windows'
+        if: ${{ runner.os == 'Windows' }}
         uses: actions/upload-artifact@v4
         with:
           name: packages
