@@ -203,14 +203,12 @@ jobs:
            cd ${{ env.PathToCommunityToolkitUnitTestCsproj }}
            dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut.cobertura.xml" --coverage-output-format cobertura --report-xunit
 
-      - name: Publish Test Results
+      - name: Create code coverage report
         if: runner.os == 'Windows' && (${{ success() || failure() }})
-        uses: actions/upload-artifact@v4
-        with:
-          name: Test Results ${{ github.run_number }} ${{ runner.os }}
-          path: |
-            ${{ runner.temp }}/*.xunit
-            ${{ runner.temp }}/*cobertura.xml
+        run: |
+          dotnet tool install -g dotnet-reportgenerator-globaltool
+          reportgenerator -reports:${{ runner.temp }}/*cobertura.xml -targetdir:CodeCoverage -reporttypes:'MarkdownSummaryGithub,Cobertura'
+          cat CodeCoverage/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
 
       - name: Pack CommunityToolkit.Maui.Core NuGet
         run: dotnet pack -c Release ${{ env.PathToCommunityToolkitCoreCsproj }} -p:PackageVersion=${{ env.NugetPackageVersion }}
