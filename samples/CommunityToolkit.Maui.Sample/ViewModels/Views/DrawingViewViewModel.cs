@@ -13,14 +13,14 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 public partial class DrawingViewViewModel : BaseViewModel
 {
 	readonly IFileSaver fileSaver;
-
-	[ObservableProperty]
-	public partial string Logs { get; private set; } = string.Empty;
-
-	[ObservableProperty]
-	DrawingViewOutputOption selectedOutputOption = DrawingViewOutputOption.Lines;
 	
 	public List<DrawingViewOutputOption> AvailableOutputOptions { get; } = [DrawingViewOutputOption.Lines, DrawingViewOutputOption.FullCanvas];
+
+	[ObservableProperty]
+	public partial DrawingViewOutputOption SelectedOutputOption { get; set; } = DrawingViewOutputOption.Lines;
+	
+	[ObservableProperty]
+	public partial string Logs { get; private set; } = string.Empty;
 	
 	public double CanvasHeight { get; set; }
 	
