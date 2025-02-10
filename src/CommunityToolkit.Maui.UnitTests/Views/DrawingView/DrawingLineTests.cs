@@ -75,7 +75,7 @@ public class DrawingLineTests : BaseHandlerTest
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
 		// Ensure CancellationToken Expired
-		await Task.Delay(TimeSpan.FromSeconds(1), CancellationToken.None);
+		await Task.Delay(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await drawingLine.GetImageStream(10, 10, Colors.Blue.AsPaint(), cts.Token));
 	}
@@ -94,14 +94,15 @@ public class DrawingLineTests : BaseHandlerTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task GetImageStreamReturnsNullStream()
 	{
-		var stream = await drawingLine.GetImageStream(10, 10, Colors.Blue.AsPaint(), CancellationToken.None);
+		var stream = await drawingLine.GetImageStream(10, 10, Colors.Blue.AsPaint(), TestContext.Current.CancellationToken);
 		Assert.Equal(Stream.Null, stream);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task GetImageStreamStaticReturnsNullStream()
 	{
-		var stream = await DrawingLine.GetImageStream(Array.Empty<PointF>(), new Size(10, 10), 5, Colors.Yellow, Colors.Blue.AsPaint(), CancellationToken.None);
+		ImagePointOptions pointOptions = new([], new Size(10, 10), 5, Colors.Yellow, Colors.Blue.AsPaint(), null);
+		var stream = await DrawingLine.GetImageStream(pointOptions, TestContext.Current.CancellationToken); 
 		Assert.Equal(Stream.Null, stream);
 	}
 
