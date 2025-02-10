@@ -362,30 +362,45 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
-		var artwork = ArtworkUrl(MediaElement.MetadataArtworkSource);
-		if(string.IsNullOrEmpty(artwork))
+		if (MediaElement.MetadataArtworkSource is UriMediaSource uriMediaSource)
 		{
-			return;
-		}
-		
-		var file = RandomAccessStreamReference.CreateFromUri(new Uri(artwork));
-		if (file is not null)
-		{
-			systemMediaControls.DisplayUpdater.Thumbnail = file;
-			systemMediaControls.DisplayUpdater.Update();
-			Uri uri = new(artwork);
-			Dispatcher.Dispatch(() => Player.PosterSource = new BitmapImage(uri));
-		}
-		
-		if (File.Exists(artwork))
-		{
-			StorageFile ImageFile = await StorageFile.GetFileFromPathAsync(artwork);
-			Dispatcher.Dispatch(async () =>
+			var artwork = uriMediaSource.Uri?.AbsoluteUri ?? string.Empty;
+			var file = RandomAccessStreamReference.CreateFromUri(new Uri(artwork));
+			if (file is not null)
 			{
-				var bitmap = await LoadBitmapImageAsync(ImageFile);
-				Player.PosterSource = bitmap;
-			});
-			systemMediaControls.DisplayUpdater.Thumbnail = RandomAccessStreamReference.CreateFromFile(ImageFile);
+				systemMediaControls.DisplayUpdater.Thumbnail = file;
+				systemMediaControls.DisplayUpdater.Update();
+				Uri uri = new(artwork);
+				Dispatcher.Dispatch(() => Player.PosterSource = new BitmapImage(uri));
+			}
+		}
+
+		if (MediaElement.MetadataArtworkSource is FileMediaSource fileMediaSource)
+		{
+			var artwork = fileMediaSource.Path;
+			if (File.Exists(artwork))
+			{
+				StorageFile ImageFile = await StorageFile.GetFileFromPathAsync(artwork);
+				Dispatcher.Dispatch(async () =>
+				{
+					var bitmap = await LoadBitmapImageAsync(ImageFile);
+					Player.PosterSource = bitmap;
+				});
+				systemMediaControls.DisplayUpdater.Thumbnail = RandomAccessStreamReference.CreateFromFile(ImageFile);
+
+			}
+		}
+		if (MediaElement.MetadataArtworkSource is ResourceMediaSource resourceMediaSource)
+		{
+			var artwork = "ms-appx:///" + resourceMediaSource.Path;
+			var file = RandomAccessStreamReference.CreateFromUri(new Uri(artwork));
+			if (file is not null)
+			{
+				systemMediaControls.DisplayUpdater.Thumbnail = file;
+				systemMediaControls.DisplayUpdater.Update();
+				Uri uri = new(artwork);
+				Dispatcher.Dispatch(() => Player.PosterSource = new BitmapImage(uri));
+			}
 		}
 
 		systemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Music;
@@ -513,23 +528,6 @@ partial class MediaManager : IDisposable
 				sender.PlaybackRate = 1;
 			});
 		}
-	}
-
-	static string ArtworkUrl(MediaSource? artwork)
-	{
-		if (artwork is UriMediaSource uriMediaSource)
-		{
-			return uriMediaSource.Uri?.AbsoluteUri ?? string.Empty;
-		}
-		else if (artwork is FileMediaSource fileMediaSource)
-		{
-			return fileMediaSource.Path ?? string.Empty;
-		}
-		else if (artwork is ResourceMediaSource resourceMediaSource)
-		{
-			return "ms-appx:///" + resourceMediaSource.Path;
-		}
-		return string.Empty;
 	}
 	
 	void OnPlaybackSessionSeekCompleted(MediaPlaybackSession sender, object args)

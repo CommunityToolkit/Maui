@@ -79,7 +79,7 @@ sealed class Metadata
 		ClearNowPlaying();
 		var artwork = await MetadataArtworkUrl(mediaElement.MetadataArtworkSource).ConfigureAwait(false);
 
-		if (artwork is not null && artwork is UIImage image)
+		if (artwork is UIImage image)
 		{
 			NowPlayingInfo.Artwork = new(boundsSize: new(320, 240), requestHandler: _ => image);
 		}

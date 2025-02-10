@@ -505,8 +505,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 	}
 
-	
-
 	[MemberNotNull(nameof(connection))]
 	void StartService()
 	{
@@ -597,7 +595,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	{
 		if (mediaSource is null)
 		{
-			System.Diagnostics.Trace.TraceInformation("Atwork MediaSource is null");
 			return null;
 		}
 		var artworkUrl = mediaSource;
@@ -609,7 +606,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				System.Diagnostics.Trace.TraceInformation("Arkwork Uri is null or empty");
 				return null;
 			}
-			using var client = new HttpClient();
 			return await client.GetByteArrayAsync(uri, cancellationToken).ConfigureAwait(false);
 		}
 		else if (artworkUrl is FileMediaSource fileMediaSource)
@@ -635,23 +631,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 		return null;
 	}
-
-	static async Task<byte[]?> GetBytesFromMetadataArtworkUrl(string? url, CancellationToken cancellationToken = default)
-	{
-		var response = await client.GetAsync(url, cancellationToken).ConfigureAwait(false);
-		var stream = response.IsSuccessStatusCode ? await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false) : null;
-
-		if (stream is null)
-		{
-			System.Diagnostics.Trace.TraceInformation("Arkwork Url stream is null");
-			return null;
-		}
-
-		using var memoryStream = new MemoryStream();
-		await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
-		var bytes = memoryStream.ToArray();
-		return bytes;
-	}
 	
 	static async Task<byte[]?> GetByteArrayFromResource(string resource)
 	{
@@ -659,7 +638,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		using var stream = await FileSystem.Current.OpenAppPackageFileAsync(resource);
 		if(stream is null)
 		{
-			System.Diagnostics.Trace.TraceInformation("Arkwork Resource stream is null");
 			return null;
 		}
 		using var memoryStream = new MemoryStream();

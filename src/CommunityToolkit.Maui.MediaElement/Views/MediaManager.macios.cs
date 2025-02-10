@@ -497,7 +497,7 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	async Task SetPoster(CancellationToken cancellationToken = default)
+	async ValueTask SetPoster(CancellationToken cancellationToken = default)
 	{
 		if (PlayerItem is null || metaData is null || MediaElement is null)
 		{
