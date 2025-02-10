@@ -225,7 +225,7 @@ sealed class Metadata
 		using var memoryStream = new MemoryStream();
 		if (inputStream is null)
 		{
-			System.Diagnostics.Trace.TraceError($"{inputStream} is null.");
+			System.Diagnostics.Trace.TraceInformation($"{inputStream} is null.");
 			return null;
 		}
 		await inputStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
@@ -233,7 +233,7 @@ sealed class Metadata
 		NSData? nsdata = NSData.FromStream(memoryStream);
 		if (nsdata is null)
 		{
-			System.Diagnostics.Trace.TraceError($"{nsdata} is null.");
+			System.Diagnostics.Trace.TraceInformation($"{nsdata} is null.");
 			return null;
 		}
 		return UIImage.LoadFromData(nsdata);

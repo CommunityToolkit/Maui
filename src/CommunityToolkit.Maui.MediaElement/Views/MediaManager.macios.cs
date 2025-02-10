@@ -506,7 +506,7 @@ public partial class MediaManager : IDisposable
 		var artwork = await Metadata.MetadataArtworkUrl(MediaElement.MetadataArtworkSource, cancellationToken).ConfigureAwait(false);
 		if (artwork is null)
 		{
-			System.Diagnostics.Trace.TraceError($"{artwork} is null.");
+			System.Diagnostics.Trace.TraceInformation($"{artwork} is null.");
 			return;
 		}
 		var videoTrack = PlayerItem.Asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant()).FirstOrDefault();
