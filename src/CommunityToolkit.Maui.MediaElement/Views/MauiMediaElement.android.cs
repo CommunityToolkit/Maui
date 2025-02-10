@@ -9,6 +9,11 @@ using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
 
+[assembly: UsesPermission(Android.Manifest.Permission.ForegroundServiceMediaPlayback)]
+[assembly: UsesPermission(Android.Manifest.Permission.ForegroundService)]
+[assembly: UsesPermission(Android.Manifest.Permission.MediaContentControl)]
+[assembly: UsesPermission(Android.Manifest.Permission.PostNotifications)]
+
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
