@@ -18,7 +18,7 @@ public partial class DrawingViewViewModel : BaseViewModel
 	public partial string Logs { get; private set; } = string.Empty;
 
 	[ObservableProperty]
-	DrawingViewOutputOption selectedOutputOption = DrawingViewOutputOption.Lines;
+	public partial DrawingViewOutputOption SelectedOutputOption { get; set; } = DrawingViewOutputOption.Lines;
 	
 	public List<DrawingViewOutputOption> AvailableOutputOptions { get; } = [DrawingViewOutputOption.Lines, DrawingViewOutputOption.FullCanvas];
 	
