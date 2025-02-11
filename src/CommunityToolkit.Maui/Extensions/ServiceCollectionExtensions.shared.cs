@@ -35,7 +35,7 @@ public static class ServiceCollectionExtensions
 	}
 
 	/// <summary>
-	/// Adds a <see cref="PopupContainer"/> of the type specified in <typeparamref name="TPopupView"/> and a ViewModel
+	/// Adds a <see cref="View"/> of the type specified in <typeparamref name="TPopupView"/> and a ViewModel
 	/// of the type specified in <typeparamref name="TPopupViewModel"/> to the specified
 	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime.
 	/// </summary>
@@ -55,7 +55,7 @@ public static class ServiceCollectionExtensions
 	}
 
 	/// <summary>
-	/// Adds a <see cref="PopupContainer"/> of the type specified in <typeparamref name="TPopupView"/> and a ViewModel
+	/// Adds a <see cref="View"/> of the type specified in <typeparamref name="TPopupView"/> and a ViewModel
 	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime.
 	/// </summary>
 	/// <typeparam name="TPopupView">The type of the Popup to add. Constrained to <see cref="PopupContainer"/></typeparam>

@@ -3,17 +3,17 @@
 namespace CommunityToolkit.Maui.Views;
 
 /// <summary>
-/// 
+/// Popup extensions.
 /// </summary>
 public static class PopupExtensions
 {
 	/// <summary>
-	/// 
+	/// Opens a popup with the specified options.
 	/// </summary>
-	/// <param name="navigation"></param>
-	/// <param name="view"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
+	/// <param name="navigation">Popup parent</param>
+	/// <param name="view">Popup content</param>
+	/// <param name="options"><see cref="PopupOptions"/></param>
+	/// <returns>Popup Result</returns>
 	public static async Task<PopupResult<TResult>> ShowPopup<TResult>(this INavigation navigation, View view, PopupOptions options)
 	{
 		TaskCompletionSource<PopupResult<TResult>> taskCompletionSource = new();
@@ -30,12 +30,12 @@ public static class PopupExtensions
 	}
 
 	/// <summary>
-	/// 
+	/// Shows a popup with the specified options.
 	/// </summary>
-	/// <param name="navigation"></param>
-	/// <param name="view"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
+	/// <param name="navigation">Popup parent</param>
+	/// <param name="view">Popup content</param>
+	/// <param name="options"><see cref="PopupOptions"/></param>
+	/// <returns><see cref="PopupResult"/></returns>
 	public static async Task<PopupResult> ShowPopup(this INavigation navigation, View view, PopupOptions options)
 	{
 		TaskCompletionSource<PopupResult> taskCompletionSource = new();

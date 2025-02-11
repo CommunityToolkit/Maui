@@ -3,24 +3,24 @@ using CommunityToolkit.Maui.Core;
 namespace CommunityToolkit.Maui.Views;
 
 /// <summary>
-/// Represents a small View that pops up at front the Page. Implements <see cref="PopupContainer"/>.
+/// Represents a small View that pops up at front the Page.
 /// </summary>
 public partial class Popup : ContentView
 {
 	PopupContainer? popupContainer;
 
 	/// <summary>
-	/// 
+	/// Event occurs when the Popup is opened.
 	/// </summary>
 	public event EventHandler? OnOpened;
 
 	/// <summary>
-	/// 
+	/// Event occurs when the Popup is closed.
 	/// </summary>
 	public event EventHandler? OnClosed;
 
 	/// <summary>
-	/// 
+	/// Close the Popup.
 	/// </summary>
 	public async Task Close()
 	{
@@ -37,7 +37,6 @@ public partial class Popup : ContentView
 		popupContainer = container;
 	}
 
-
 	internal void NotifyPopupIsOpened()
 	{
 		OnOpened?.Invoke(this, EventArgs.Empty);
@@ -50,16 +49,16 @@ public partial class Popup : ContentView
 }
 
 /// <summary>
-/// Represents a small View that pops up at front the Page. Implements <see cref="PopupContainer"/>.
+/// Represents a small View that pops up at front the Page.
 /// </summary>
 public partial class Popup<T> : Popup
 {
 	PopupContainer<T>? popupContainer;
 
 	/// <summary>
-	/// 
+	/// Close the Popup with a result.
 	/// </summary>
-	/// <param name="result"></param>
+	/// <param name="result">Popup result</param>
 	public async Task Close(T result)
 	{
 		if (popupContainer is null)
