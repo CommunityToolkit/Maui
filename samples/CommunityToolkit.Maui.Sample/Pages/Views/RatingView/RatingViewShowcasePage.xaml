@@ -51,8 +51,8 @@
                         FilledColor="#04DA8D"
                         HorizontalOptions="Start"
                         IsReadOnly="True"
-                        ItemPadding="3"
-                        ItemShape="Star"
+                        ShapePadding="3"
+                        Shape="Star"
                         ShapeDiameter="40"
                         MaximumRating="5"
                         Rating="{Binding ReviewSummaryAverage, Mode=OneWay}"
@@ -110,12 +110,12 @@
                         Grid.Column="1"
                         Margin="5,0,0,0"
                         Padding="2"
-                        CustomItemShape="M296.863,587.059l14.254-3.612 l5.956,18.355L296.863,587.059z M329.668,563.334h-25.091l-7.713-23.627l-7.713,23.627h-25.091l20.307,14.645l-7.713,23.627 l20.307-14.645l12.497-8.982L329.668,563.334L329.668,563.334L329.668,563.334L329.668,563.334z"
+                        CustomShapePath="M296.863,587.059l14.254-3.612 l5.956,18.355L296.863,587.059z M329.668,563.334h-25.091l-7.713-23.627l-7.713,23.627h-25.091l20.307,14.645l-7.713,23.627 l20.307-14.645l12.497-8.982L329.668,563.334L329.668,563.334L329.668,563.334L329.668,563.334z"
                         EmptyColor="White"
                         FilledColor="#04DA8D"
                         HorizontalOptions="Start"
                         IsReadOnly="True"
-                        ItemPadding="3"
+                        ShapePadding="3"
                         ShapeDiameter="40"
                         MaximumRating="5"
                         Rating="4.5"
@@ -151,12 +151,12 @@
             <Label Text="A trust review 4.9 out of 5" />
             <toolkit:RatingView
                 Margin="0"
-                CustomItemShape="M12,17.964l5.214-1.321l2.179,6.714L12,17.964z M24,9.286h-9.179L12,0.643L9.179,9.286 H0l7.429,5.357l-2.821,8.643l7.429-5.357l4.571-3.286L24,9.286L24,9.286L24,9.286L24,9.286z"
+                CustomShapePath="M12,17.964l5.214-1.321l2.179,6.714L12,17.964z M24,9.286h-9.179L12,0.643L9.179,9.286 H0l7.429,5.357l-2.821,8.643l7.429-5.357l4.571-3.286L24,9.286L24,9.286L24,9.286L24,9.286z"
                 EmptyColor="White"
                 FilledColor="#04DA8D"
                 HorizontalOptions="Start"
                 IsReadOnly="True"
-                ItemPadding="3"
+                ShapePadding="3"
                 ShapeDiameter="40"
                 MaximumRating="5"
                 Rating="4.9"
@@ -167,12 +167,12 @@
             <Label Text="A negative trust review 1 out of 5" />
             <toolkit:RatingView
                 Margin="0"
-                CustomItemShape="M12,17.964l5.214-1.321l2.179,6.714L12,17.964z M24,9.286h-9.179L12,0.643L9.179,9.286 H0l7.429,5.357l-2.821,8.643l7.429-5.357l4.571-3.286L24,9.286L24,9.286L24,9.286L24,9.286z"
+                CustomShapePath="M12,17.964l5.214-1.321l2.179,6.714L12,17.964z M24,9.286h-9.179L12,0.643L9.179,9.286 H0l7.429,5.357l-2.821,8.643l7.429-5.357l4.571-3.286L24,9.286L24,9.286L24,9.286L24,9.286z"
                 EmptyColor="White"
                 FilledColor="#FF3722"
                 HorizontalOptions="Start"
                 IsReadOnly="True"
-                ItemPadding="3"
+                ShapePadding="3"
                 ShapeDiameter="40"
                 MaximumRating="5"
                 Rating="1"
@@ -182,12 +182,12 @@
             <Label Text="A positive golden trust review 4.5 out of 5" />
             <toolkit:RatingView
                 Margin="0"
-                CustomItemShape="M12,17.964l5.214-1.321l2.179,6.714L12,17.964z M24,9.286h-9.179L12,0.643L9.179,9.286 H0l7.429,5.357l-2.821,8.643l7.429-5.357l4.571-3.286L24,9.286L24,9.286L24,9.286L24,9.286z"
+                CustomShapePath="M12,17.964l5.214-1.321l2.179,6.714L12,17.964z M24,9.286h-9.179L12,0.643L9.179,9.286 H0l7.429,5.357l-2.821,8.643l7.429-5.357l4.571-3.286L24,9.286L24,9.286L24,9.286L24,9.286z"
                 EmptyColor="Transparent"
                 FilledColor="Gold"
                 HorizontalOptions="Start"
                 IsReadOnly="True"
-                ItemPadding="2"
+                ShapePadding="2"
                 ShapeDiameter="40"
                 MaximumRating="5"
                 Rating="4.5"
@@ -236,8 +236,8 @@
                                 EmptyColor="White"
                                 FilledColor="#00aa6c"
                                 HorizontalOptions="Center"
-                                ItemPadding="0"
-                                ItemShape="Heart"
+                                ShapePadding="0"
+                                Shape="Heart"
                                 ShapeDiameter="24"
                                 MaximumRating="1"
                                 ShapeBorderColor="Black"
@@ -249,7 +249,7 @@
                 <Label FontAttributes="Bold" Text=".net MAUI Community Toolkit - 9.0.3" />
                 <HorizontalStackLayout>
                     <toolkit:RatingView
-                        CustomItemShape="M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z"
+                        CustomShapePath="M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z"
                         EmptyColor="White"
                         FilledColor="#00aa6c"
                         HorizontalOptions="Start"
@@ -271,7 +271,7 @@
             </VerticalStackLayout>
             <Label Text="An advice travel rating of 4.5 out of 5" />
             <toolkit:RatingView
-                CustomItemShape="M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z"
+                CustomShapePath="M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z"
                 EmptyColor="White"
                 FilledColor="#00aa6c"
                 IsReadOnly="True"
