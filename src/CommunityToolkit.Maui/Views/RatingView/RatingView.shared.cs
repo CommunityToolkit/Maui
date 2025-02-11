@@ -19,7 +19,7 @@ public partial class RatingView : TemplatedView, IRatingView
 	public static readonly BindableProperty ItemPaddingProperty = BindableProperty.Create(nameof(ItemPadding), typeof(Thickness), typeof(RatingView), default(Thickness), propertyChanged: OnItemPaddingPropertyChanged, defaultValueCreator: static _ => RatingViewDefaults.ItemPadding);
 
 	/// <summary>Bindable property for attached property <see cref="ItemShape"/>.</summary>
-	public static readonly BindableProperty ItemShapeProperty = BindableProperty.Create(nameof(ItemShape), typeof(RatingViewShapes), typeof(RatingView), defaultValue: RatingViewDefaults.Shape, propertyChanged: OnItemShapePropertyChanged, defaultValueCreator: static _ => RatingViewDefaults.Shape);
+	public static readonly BindableProperty ItemShapeProperty = BindableProperty.Create(nameof(ItemShape), typeof(RatingViewShape), typeof(RatingView), defaultValue: RatingViewDefaults.Shape, propertyChanged: OnItemShapePropertyChanged, defaultValueCreator: static _ => RatingViewDefaults.Shape);
 
 	/// <summary>Bindable property for attached property <see cref="ShapeBorderColor"/>.</summary>
 	public static readonly BindableProperty ShapeBorderColorProperty = BindableProperty.Create(nameof(ShapeBorderColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.ShapeBorderColor, propertyChanged: OnItemShapeBorderColorChanged, defaultValueCreator: static _ => RatingViewDefaults.ShapeBorderColor);
@@ -163,9 +163,9 @@ public partial class RatingView : TemplatedView, IRatingView
 	}
 
 	///<summary>Gets or sets a value indicating the rating shape.</summary>
-	public RatingViewShapes ItemShape
+	public RatingViewShape ItemShape
 	{
-		get => (RatingViewShapes)GetValue(ItemShapeProperty);
+		get => (RatingViewShape)GetValue(ItemShapeProperty);
 		set => SetValue(ItemShapeProperty, value);
 	}
 
@@ -344,7 +344,7 @@ public partial class RatingView : TemplatedView, IRatingView
 		var ratingView = (RatingView)bindable;
 		var newShape = (string)newValue;
 
-		if (ratingView.ItemShape is not RatingViewShapes.Custom)
+		if (ratingView.ItemShape is not RatingViewShape.Custom)
 		{
 			return;
 		}
@@ -401,7 +401,7 @@ public partial class RatingView : TemplatedView, IRatingView
 	static void OnItemShapePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var ratingView = (RatingView)bindable;
-		ratingView.ChangeRatingItemShape(ratingView.GetShapePathData((RatingViewShapes)newValue));
+		ratingView.ChangeRatingItemShape(ratingView.GetShapePathData((RatingViewShape)newValue));
 	}
 
 	static void OnItemShapeSizeChanged(BindableObject bindable, object oldValue, object newValue)
@@ -453,13 +453,13 @@ public partial class RatingView : TemplatedView, IRatingView
 		}
 	}
 
-	string GetShapePathData(RatingViewShapes shape) => shape switch
+	string GetShapePathData(RatingViewShape shape) => shape switch
 	{
-		RatingViewShapes.Circle => PathShapes.Circle,
-		RatingViewShapes.Custom when CustomItemShape is not null => CustomItemShape,
-		RatingViewShapes.Dislike => PathShapes.Dislike,
-		RatingViewShapes.Heart => PathShapes.Heart,
-		RatingViewShapes.Like => PathShapes.Like,
+		RatingViewShape.Circle => PathShapes.Circle,
+		RatingViewShape.Custom when CustomItemShape is not null => CustomItemShape,
+		RatingViewShape.Dislike => PathShapes.Dislike,
+		RatingViewShape.Heart => PathShapes.Heart,
+		RatingViewShape.Like => PathShapes.Like,
 		_ => PathShapes.Star
 	};
 

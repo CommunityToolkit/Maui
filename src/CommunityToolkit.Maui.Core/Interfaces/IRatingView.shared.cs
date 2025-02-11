@@ -10,7 +10,7 @@ public interface IRatingView : IContentView
     string? CustomItemShape { get; }
 
     /// <summary>Gets a value indicating the Rating View shape.</summary>
-    RatingViewShapes ItemShape { get; }
+    RatingViewShape ItemShape { get; }
 
     /// <summary>Gets a value indicating the Rating View item padding.</summary>
     Thickness ItemPadding { get; }

@@ -2,7 +2,7 @@
 namespace CommunityToolkit.Maui.Core;
 
 /// <summary>Rating view shape enumerator.</summary>
-public enum RatingViewShapes
+public enum RatingViewShape
 {
 	/// <summary>A star rating shape.</summary>
 	Star,

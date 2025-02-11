@@ -328,13 +328,13 @@ public class RatingViewTests : BaseHandlerTest
 		const string customShape = "M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z";
 		RatingView ratingView = new()
 		{
-			ItemShape = RatingViewShapes.Custom,
+			ItemShape = RatingViewShape.Custom,
 			CustomItemShape = customShape,
 		};
-		ratingView.ItemShape.Should().Be(RatingViewShapes.Custom);
+		ratingView.ItemShape.Should().Be(RatingViewShape.Custom);
 		ratingView.CustomItemShape.Should().Be(customShape);
 		ratingView.CustomItemShape = customShapes;
-		ratingView.ItemShape.Should().Be(RatingViewShapes.Star);
+		ratingView.ItemShape.Should().Be(RatingViewShape.Star);
 	}
 
 	[Fact]
@@ -343,12 +343,12 @@ public class RatingViewTests : BaseHandlerTest
 		const string customShape = "M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z";
 		RatingView ratingView = new()
 		{
-			ItemShape = RatingViewShapes.Custom
+			ItemShape = RatingViewShape.Custom
 		};
-		ratingView.ItemShape.Should().Be(RatingViewShapes.Custom);
+		ratingView.ItemShape.Should().Be(RatingViewShape.Custom);
 		ratingView.CustomItemShape = customShape;
 		ratingView.CustomItemShape.Should().Be(customShape);
-		ratingView.ItemShape.Should().Be(RatingViewShapes.Custom);
+		ratingView.ItemShape.Should().Be(RatingViewShape.Custom);
 	}
 
 	[Fact]
@@ -357,12 +357,12 @@ public class RatingViewTests : BaseHandlerTest
 		const string customShape = "M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z";
 		RatingView ratingView = new()
 		{
-			ItemShape = RatingViewShapes.Heart
+			ItemShape = RatingViewShape.Heart
 		};
-		ratingView.ItemShape.Should().Be(RatingViewShapes.Heart);
+		ratingView.ItemShape.Should().Be(RatingViewShape.Heart);
 		ratingView.CustomItemShape = customShape;
 		ratingView.CustomItemShape.Should().Be(customShape);
-		ratingView.ItemShape.Should().Be(RatingViewShapes.Heart);
+		ratingView.ItemShape.Should().Be(RatingViewShape.Heart);
 	}
 
 	[Fact]
@@ -526,12 +526,12 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Theory]
-	[InlineData(RatingViewShapes.Heart)]
-	[InlineData(RatingViewShapes.Circle)]
-	[InlineData(RatingViewShapes.Like)]
-	[InlineData(RatingViewShapes.Dislike)]
-	[InlineData(RatingViewShapes.Custom)]
-	public void Properties_Change_Shape(RatingViewShapes expectedShape)
+	[InlineData(RatingViewShape.Heart)]
+	[InlineData(RatingViewShape.Circle)]
+	[InlineData(RatingViewShape.Like)]
+	[InlineData(RatingViewShape.Dislike)]
+	[InlineData(RatingViewShape.Custom)]
+	public void Properties_Change_Shape(RatingViewShape expectedShape)
 	{
 		RatingView ratingView = new();
 		ratingView.ItemShape.Should().NotBe(expectedShape);
