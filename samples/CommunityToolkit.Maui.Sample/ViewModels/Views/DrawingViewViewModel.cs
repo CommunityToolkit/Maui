@@ -15,12 +15,12 @@ public partial class DrawingViewViewModel : BaseViewModel
 	readonly IFileSaver fileSaver;
 	
 	public List<DrawingViewOutputOption> AvailableOutputOptions { get; } = [DrawingViewOutputOption.Lines, DrawingViewOutputOption.FullCanvas];
-
-	[ObservableProperty]
-	public partial DrawingViewOutputOption SelectedOutputOption { get; set; } = DrawingViewOutputOption.Lines;
 	
 	[ObservableProperty]
 	public partial string Logs { get; private set; } = string.Empty;
+	
+	[ObservableProperty]
+	public partial DrawingViewOutputOption SelectedOutputOption { get; set; } = DrawingViewOutputOption.Lines;
 	
 	public double CanvasHeight { get; set; }
 	
