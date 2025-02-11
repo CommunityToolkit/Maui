@@ -418,6 +418,57 @@ public partial class RatingView : TemplatedView, IRatingView
 			rating.HeightRequest = (double)newValue;
 		}
 	}
+	
+	static void UpdateAllRatingShapeFills(ReadOnlyCollection<VisualElement> ratingItems, double rating, Color filledColor, Color emptyColor)
+	{
+		var fullFillCount = (int)Math.Floor(rating); // Determine the number of fully filled shapes
+		var partialFillCount = rating - fullFillCount; // Determine the fraction for the partially filled shape (if any)
+		for (var i = 0; i < ratingItems.Count; i++)
+		{
+			var ratingShape = (Shape)ratingItems[i];
+			if (i < fullFillCount)
+			{
+				ratingShape.Fill = filledColor; // Fully filled shape
+			}
+			else if (i == fullFillCount && partialFillCount > 0)
+			{
+				ratingShape.Fill = GetPartialFillBrush(filledColor, partialFillCount, emptyColor); // Partial fill
+			}
+			else
+			{
+				ratingShape.Fill = emptyColor; // Empty fill
+			}
+		}
+	}
+
+	static void UpdateRatingItemsFills(ReadOnlyCollection<VisualElement> ratingItems, double rating, Color filledColor, Color emptyColor, Color? backgroundColor)
+	{
+		var fullFillCount = (int)Math.Floor(rating); // Determine the number of fully filled rating items
+		var partialFillCount = rating - fullFillCount; // Determine the fraction for the partially filled rating item (if any)
+		backgroundColor ??= Colors.Transparent;
+		for (var i = 0; i < ratingItems.Count; i++)
+		{
+			var border = (Border)ratingItems[i];
+			if (border.Content is not Shape shape)
+			{
+				continue;
+			}
+
+			shape.Fill = emptyColor;
+			if (i < fullFillCount)
+			{
+				border.Background = new SolidColorBrush(filledColor); // Fully filled shape
+			}
+			else if (i == fullFillCount && partialFillCount > 0)
+			{
+				border.Background = GetPartialFillBrush(filledColor, partialFillCount, backgroundColor); // Partial fill
+			}
+			else
+			{
+				border.Background = new SolidColorBrush(backgroundColor); // Empty fill
+			}
+		}
+	}
 
 	void AddChildrenToLayout(int minimumRating, int maximumRating)
 	{
@@ -486,57 +537,6 @@ public partial class RatingView : TemplatedView, IRatingView
 		else
 		{
 			UpdateRatingItemsFills(visualElements, Rating, FilledColor, EmptyColor, BackgroundColor);
-		}
-	}
-
-	static void UpdateAllRatingShapeFills(ReadOnlyCollection<VisualElement> ratingItems, double rating, Color filledColor, Color emptyColor)
-	{
-		var fullFillCount = (int)Math.Floor(rating); // Determine the number of fully filled shapes
-		var partialFillCount = rating - fullFillCount; // Determine the fraction for the partially filled shape (if any)
-		for (var i = 0; i < ratingItems.Count; i++)
-		{
-			var ratingShape = (Shape)ratingItems[i];
-			if (i < fullFillCount)
-			{
-				ratingShape.Fill = filledColor; // Fully filled shape
-			}
-			else if (i == fullFillCount && partialFillCount > 0)
-			{
-				ratingShape.Fill = GetPartialFillBrush(filledColor, partialFillCount, emptyColor); // Partial fill
-			}
-			else
-			{
-				ratingShape.Fill = emptyColor; // Empty fill
-			}
-		}
-	}
-
-	static void UpdateRatingItemsFills(ReadOnlyCollection<VisualElement> ratingItems, double rating, Color filledColor, Color emptyColor, Color? backgroundColor)
-	{
-		var fullFillCount = (int)Math.Floor(rating); // Determine the number of fully filled rating items
-		var partialFillCount = rating - fullFillCount; // Determine the fraction for the partially filled rating item (if any)
-		backgroundColor ??= Colors.Transparent;
-		for (var i = 0; i < ratingItems.Count; i++)
-		{
-			var border = (Border)ratingItems[i];
-			if (border.Content is not Shape shape)
-			{
-				continue;
-			}
-
-			shape.Fill = emptyColor;
-			if (i < fullFillCount)
-			{
-				border.Background = new SolidColorBrush(filledColor); // Fully filled shape
-			}
-			else if (i == fullFillCount && partialFillCount > 0)
-			{
-				border.Background = GetPartialFillBrush(filledColor, partialFillCount, backgroundColor); // Partial fill
-			}
-			else
-			{
-				border.Background = new SolidColorBrush(backgroundColor); // Empty fill
-			}
 		}
 	}
 	
