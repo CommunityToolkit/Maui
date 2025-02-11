@@ -760,7 +760,7 @@ public class RatingViewTests : BaseHandlerTest
 		child.Content.Should().NotBeNull();
 
 		var shape = (Microsoft.Maui.Controls.Shapes.Path)child.Content.GetVisualTreeDescendants()[0];
-		shape.GetPath().Should().Be(Core.Handlers.RatingViewShapeHandler.Star.PathData);
+		shape.GetPath().Should().Be("M9 11.3l3.71 2.7-1.42-4.36L15 7h-4.55L9 2.5 7.55 7H3l3.71 2.64L5.29 14z");
 	}
 
 	[Fact]
