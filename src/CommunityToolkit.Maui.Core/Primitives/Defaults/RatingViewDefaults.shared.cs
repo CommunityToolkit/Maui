@@ -47,7 +47,7 @@ public static class RatingViewDefaults
 
 	/// <summary>Default rating item padding.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static Thickness ItemPadding { get; } = new(0);
+	public static Thickness ShapePadding { get; } = new(0);
 
 	/// <summary>Default rating shape.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]

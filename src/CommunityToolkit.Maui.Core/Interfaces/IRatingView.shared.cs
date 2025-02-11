@@ -3,27 +3,27 @@
 /// <summary>Provides functionality to device a rating view.</summary>
 public interface IRatingView : IContentView
 {
-    /// <summary>Gets a value indicating the rating item shape size.</summary>
-    double ItemShapeSize { get; }
+    /// <summary>The rating item shape diameter in points.</summary>
+    double ShapeDiameter { get; }
 
-    /// <summary>Gets a value indicating the custom rating view shape path.</summary>
-    string? CustomItemShape { get; }
+    /// <summary>The custom rating view shape path.</summary>
+    string? CustomShapePath { get; }
 
-    /// <summary>Gets a value indicating the Rating View shape.</summary>
-    RatingViewShape ItemShape { get; }
+    /// <summary>The Rating View shape.</summary>
+    RatingViewShape Shape { get; }
 
-    /// <summary>Gets a value indicating the Rating View item padding.</summary>
-    Thickness ItemPadding { get; }
+    /// <summary>The padding on each shape.</summary>
+    Thickness ShapePadding { get; }
 
-    /// <summary>Gets a value indicating the rating item shape border thickness</summary>
+    /// <summary>The rating shape border thickness</summary>
     double ShapeBorderThickness { get; }
 
-    /// <summary>Get a value indicating the rating item shape border color.</summary>
+    /// <summary>Get a value indicating the shape border color.</summary>
     Color ShapeBorderColor { get; }
 
-    /// <summary>Get a value indicating the rating item background empty color.</summary>
+    /// <summary>Get a value indicating the background empty color.</summary>
     Color EmptyColor { get; }
 
-    /// <summary>Get a value indicating the rating item background filled color.</summary>
+    /// <summary>Get a value indicating the background filled color.</summary>
     Color FilledColor { get; }
 }

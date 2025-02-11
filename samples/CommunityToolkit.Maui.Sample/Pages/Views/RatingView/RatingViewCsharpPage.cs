@@ -370,7 +370,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new RatingView
 						{
-							ItemShapeSize = largerSizeRatingViewHeight,
+							ShapeDiameter = largerSizeRatingViewHeight,
 							MaximumRating = 5,
 							Rating = 2.7,
 							ShapeBorderThickness = 1
@@ -397,7 +397,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new RatingView
 						{
-							ItemShapeSize = largerSizeRatingViewHeight,
+							ShapeDiameter = largerSizeRatingViewHeight,
 							MaximumRating = 5,
 							Rating = 2.7,
 							RatingFill = RatingFillElement.Item,
@@ -606,7 +606,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						.Row(Row.PaddingRatingView).ColumnSpan(All<Column>())
 						.BackgroundColor(Colors.Purple)
 						.Center()
-						.Bind(RatingView.ItemPaddingProperty,
+						.Bind(RatingView.ShapePaddingProperty,
 							getter: static (RatingViewCsharpViewModel vm) => vm.RatingViewShapePaddingValue)
 						.SemanticDescription("A RatingView sample showing the padding changes."),
 
@@ -645,7 +645,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							FilledColor = Colors.Green,
 							HorizontalOptions = LayoutOptions.Start,
 							IsReadOnly = false,
-							ItemShapeSize = 30,
+							ShapeDiameter = 30,
 							MaximumRating = 7,
 							RatingFill = RatingFillElement.Shape,
 							ShapeBorderColor = Colors.Grey,
@@ -673,7 +673,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							FilledColor = Colors.Green,
 							HorizontalOptions = LayoutOptions.Start,
 							IsReadOnly = false,
-							ItemShapeSize = 30,
+							ShapeDiameter = 30,
 							MaximumRating = 7,
 							RatingFill = RatingFillElement.Item,
 							ShapeBorderColor = Colors.Grey,
@@ -694,7 +694,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new RatingView
 						{
-							ItemShapeSize = smallestSizeRatingViewHeight,
+							ShapeDiameter = smallestSizeRatingViewHeight,
 							MaximumRating = 5,
 							Rating = 5,
 						}
@@ -703,7 +703,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new RatingView
 						{
-							ItemShapeSize = smallerSizeRatingViewHeight,
+							ShapeDiameter = smallerSizeRatingViewHeight,
 							MaximumRating = 5,
 							Rating = 5,
 						}
@@ -712,7 +712,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new RatingView
 						{
-							ItemShapeSize = largerSizeRatingViewHeight,
+							ShapeDiameter = largerSizeRatingViewHeight,
 							MaximumRating = 5,
 							Rating = 5,
 						}
@@ -721,7 +721,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new RatingView
 						{
-							ItemShapeSize = largestSizeRatingViewHeight,
+							ShapeDiameter = largestSizeRatingViewHeight,
 							MaximumRating = 5,
 							Rating = 5,
 						}

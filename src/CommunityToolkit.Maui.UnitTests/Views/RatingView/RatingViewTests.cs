@@ -37,7 +37,7 @@ public class RatingViewTests : BaseHandlerTest
 		firstItem.Should().BeOfType<Border>();
 		firstItem.BackgroundColor.Should().BeNull();
 		firstItem.Margin.Should().Be(Thickness.Zero);
-		firstItem.Padding.Should().Be(RatingViewDefaults.ItemPadding);
+		firstItem.Padding.Should().Be(RatingViewDefaults.ShapePadding);
 		firstItem.Stroke.Should().Be(new SolidColorBrush(Colors.Transparent));
 		firstItem.StrokeThickness.Should().Be(0);
 		firstItem.Style.Should().BeNull();
@@ -68,15 +68,15 @@ public class RatingViewTests : BaseHandlerTest
 		ratingView.EmptyColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.EmptyColor);
 		ratingView.FilledColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.FilledColor);
 		ratingView.IsReadOnly.Should().BeFalse().And.Be(RatingViewDefaults.IsReadOnly);
-		ratingView.ItemPadding.Should().BeOfType<Thickness>().And.Be(RatingViewDefaults.ItemPadding);
-		ratingView.ItemShapeSize.Should().Be(RatingViewDefaults.ItemShapeSize);
+		ratingView.ShapePadding.Should().BeOfType<Thickness>().And.Be(RatingViewDefaults.ShapePadding);
+		ratingView.ShapeDiameter.Should().Be(RatingViewDefaults.ItemShapeSize);
 		ratingView.MaximumRating.Should().Be(RatingViewDefaults.MaximumRating);
-		ratingView.ItemShape.Should().BeOneOf(RatingViewDefaults.Shape).And.Be(RatingViewDefaults.Shape);
+		ratingView.Shape.Should().BeOneOf(RatingViewDefaults.Shape).And.Be(RatingViewDefaults.Shape);
 		ratingView.ShapeBorderColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.ShapeBorderColor);
 		ratingView.ShapeBorderThickness.Should().Be(RatingViewDefaults.ShapeBorderThickness);
 		ratingView.Spacing.Should().Be(RatingViewDefaults.Spacing);
 		ratingView.RatingFill.Should().BeOneOf(RatingFillElement.Shape).And.Be(RatingFillElement.Shape);
-		ratingView.CustomItemShape.Should().BeNullOrEmpty();
+		ratingView.CustomShapePath.Should().BeNullOrEmpty();
 	}
 
 	[Fact]
@@ -315,9 +315,9 @@ public class RatingViewTests : BaseHandlerTest
 	{
 		const string customShape = "M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z";
 		RatingView ratingView = new();
-		ratingView.CustomItemShape.Should().BeNullOrEmpty();
-		ratingView.CustomItemShape = customShape;
-		ratingView.CustomItemShape.Should().Be(customShape);
+		ratingView.CustomShapePath.Should().BeNullOrEmpty();
+		ratingView.CustomShapePath = customShape;
+		ratingView.CustomShapePath.Should().Be(customShape);
 	}
 
 	[Theory]
@@ -328,13 +328,13 @@ public class RatingViewTests : BaseHandlerTest
 		const string customShape = "M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z";
 		RatingView ratingView = new()
 		{
-			ItemShape = RatingViewShape.Custom,
-			CustomItemShape = customShape,
+			Shape = RatingViewShape.Custom,
+			CustomShapePath = customShape,
 		};
-		ratingView.ItemShape.Should().Be(RatingViewShape.Custom);
-		ratingView.CustomItemShape.Should().Be(customShape);
-		ratingView.CustomItemShape = customShapes;
-		ratingView.ItemShape.Should().Be(RatingViewShape.Star);
+		ratingView.Shape.Should().Be(RatingViewShape.Custom);
+		ratingView.CustomShapePath.Should().Be(customShape);
+		ratingView.CustomShapePath = customShapes;
+		ratingView.Shape.Should().Be(RatingViewShape.Star);
 	}
 
 	[Fact]
@@ -343,12 +343,12 @@ public class RatingViewTests : BaseHandlerTest
 		const string customShape = "M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z";
 		RatingView ratingView = new()
 		{
-			ItemShape = RatingViewShape.Custom
+			Shape = RatingViewShape.Custom
 		};
-		ratingView.ItemShape.Should().Be(RatingViewShape.Custom);
-		ratingView.CustomItemShape = customShape;
-		ratingView.CustomItemShape.Should().Be(customShape);
-		ratingView.ItemShape.Should().Be(RatingViewShape.Custom);
+		ratingView.Shape.Should().Be(RatingViewShape.Custom);
+		ratingView.CustomShapePath = customShape;
+		ratingView.CustomShapePath.Should().Be(customShape);
+		ratingView.Shape.Should().Be(RatingViewShape.Custom);
 	}
 
 	[Fact]
@@ -357,12 +357,12 @@ public class RatingViewTests : BaseHandlerTest
 		const string customShape = "M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z";
 		RatingView ratingView = new()
 		{
-			ItemShape = RatingViewShape.Heart
+			Shape = RatingViewShape.Heart
 		};
-		ratingView.ItemShape.Should().Be(RatingViewShape.Heart);
-		ratingView.CustomItemShape = customShape;
-		ratingView.CustomItemShape.Should().Be(customShape);
-		ratingView.ItemShape.Should().Be(RatingViewShape.Heart);
+		ratingView.Shape.Should().Be(RatingViewShape.Heart);
+		ratingView.CustomShapePath = customShape;
+		ratingView.CustomShapePath.Should().Be(customShape);
+		ratingView.Shape.Should().Be(RatingViewShape.Heart);
 	}
 
 	[Fact]
@@ -487,9 +487,9 @@ public class RatingViewTests : BaseHandlerTest
 	{
 		Thickness itemPadding = new(1, 2, 3, 4);
 		RatingView ratingView = new();
-		ratingView.ItemPadding.Should().NotBe(itemPadding);
-		ratingView.ItemPadding = itemPadding;
-		ratingView.ItemPadding.Should().Be(itemPadding);
+		ratingView.ShapePadding.Should().NotBe(itemPadding);
+		ratingView.ShapePadding = itemPadding;
+		ratingView.ShapePadding.Should().Be(itemPadding);
 		var firstItem = (Border)ratingView.RatingLayout.Children[0];
 		firstItem.Padding.Should().Be(itemPadding);
 	}
@@ -534,9 +534,9 @@ public class RatingViewTests : BaseHandlerTest
 	public void Properties_Change_Shape(RatingViewShape expectedShape)
 	{
 		RatingView ratingView = new();
-		ratingView.ItemShape.Should().NotBe(expectedShape);
-		ratingView.ItemShape = expectedShape;
-		ratingView.ItemShape.Should().Be(expectedShape);
+		ratingView.Shape.Should().NotBe(expectedShape);
+		ratingView.Shape = expectedShape;
+		ratingView.Shape.Should().Be(expectedShape);
 	}
 
 	[Fact]
@@ -572,9 +572,8 @@ public class RatingViewTests : BaseHandlerTest
 	{
 		const int itemShapeSize = 73;
 		RatingView ratingView = new();
-		ratingView.ItemShapeSize.Should().NotBe(itemShapeSize);
-		ratingView.ItemShapeSize = itemShapeSize;
-		ratingView.ItemShapeSize.Should().Be(itemShapeSize);
+		ratingView.ShapeDiameter.Should().NotBe(itemShapeSize);
+		ratingView.ShapeDiameter.Should().Be(itemShapeSize);
 
 		var firstRatingItem = GetItemShape(ratingView, 0);
 		firstRatingItem.WidthRequest.Should().Be(itemShapeSize);
@@ -800,7 +799,7 @@ public class RatingViewTests : BaseHandlerTest
 		Thickness expectedItemPadding = new(expectedLeftPadding, expectedTopPadding, expectedRightPadding, expectedBottomPadding);
 		RatingView ratingView = new()
 		{
-			ItemPadding = expectedItemPadding,
+			ShapePadding = expectedItemPadding,
 		};
 		var firstItem = (Border)ratingView.RatingLayout.Children[0];
 		firstItem.Padding.Should().Be(expectedItemPadding);
