@@ -287,7 +287,7 @@ public partial class RatingView : TemplatedView, IRatingView
 				layout.RemoveAt(lastElement);
 			}
 
-			ratingView.UpdateAllRatingsFills(ratingView.RatingFill);
+			UpdateAllItemsFills(ratingView.Rating, ratingView.FilledColor, ratingView.EmptyColor, ratingView.BackgroundColor, ratingView.RatingLayout);
 		}
 		else if (newMaximumRatingValue > oldMaximumRatingValue)
 		{
@@ -305,7 +305,7 @@ public partial class RatingView : TemplatedView, IRatingView
 		var ratingView = (RatingView)bindable;
 		var newRating = (double)newValue;
 
-		ratingView.UpdateAllRatingsFills(ratingView.RatingFill);
+		UpdateAllItemsFills(ratingView.Rating, ratingView.FilledColor, ratingView.EmptyColor, ratingView.BackgroundColor, ratingView.RatingLayout);
 		ratingView.OnRatingChangedEvent(new RatingChangedEventArgs(newRating));
 	}
 
@@ -318,7 +318,7 @@ public partial class RatingView : TemplatedView, IRatingView
 	static void OnRatingColorChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var ratingView = (RatingView)bindable;
-		ratingView.UpdateAllRatingsFills(ratingView.RatingFill);
+		UpdateAllItemsFills(ratingView.Rating, ratingView.FilledColor, ratingView.EmptyColor, ratingView.BackgroundColor, ratingView.RatingLayout);
 	}
 
 	static LinearGradientBrush GetPartialFillBrush(Color filledColor, double partialFill, Color emptyColor)
@@ -436,7 +436,17 @@ public partial class RatingView : TemplatedView, IRatingView
 			RatingLayout.Children.Add(child);
 		}
 
-		UpdateAllRatingsFills(RatingFill);
+		switch (RatingFill)
+		{
+			case RatingFillElement.Shape:
+				UpdateAllShapeFills(Rating, FilledColor, EmptyColor, RatingLayout);
+				break;
+			case RatingFillElement.Item:
+				UpdateAllItemsFills(Rating, FilledColor, EmptyColor, BackgroundColor, RatingLayout);
+				break;
+			default:
+				throw new NotSupportedException($"{RatingFill} is not yet supported");
+		}
 	}
 
 	void ChangeRatingItemShape(string shape)
@@ -475,22 +485,9 @@ public partial class RatingView : TemplatedView, IRatingView
 		weakEventManager.HandleEvent(this, e, nameof(RatingChanged));
 	}
 
-	void UpdateAllRatingsFills(RatingFillElement ratingFill)
+	static void UpdateAllShapeFills(double rating, Color filledColor, Color emptyColor, HorizontalStackLayout ratingLayout)
 	{
-		var isShapeFill = ratingFill is RatingFillElement.Shape;
-		var visualElements = GetVisualTreeDescendantsWithBorderAndShape((VisualElement)RatingLayout.GetVisualTreeDescendants()[0], isShapeFill);
-		if (isShapeFill)
-		{
-			UpdateAllRatingShapeFills(visualElements, Rating, FilledColor, EmptyColor);
-		}
-		else
-		{
-			UpdateRatingItemsFills(visualElements, Rating, FilledColor, EmptyColor, BackgroundColor);
-		}
-	}
-
-	static void UpdateAllRatingShapeFills(ReadOnlyCollection<VisualElement> ratingItems, double rating, Color filledColor, Color emptyColor)
-	{
+		var ratingItems = GetVisualTreeDescendantsWithBorderAndShape((VisualElement)ratingLayout.GetVisualTreeDescendants()[0], true);
 		var fullFillCount = (int)Math.Floor(rating); // Determine the number of fully filled shapes
 		var partialFillCount = rating - fullFillCount; // Determine the fraction for the partially filled shape (if any)
 		for (var i = 0; i < ratingItems.Count; i++)
@@ -511,8 +508,9 @@ public partial class RatingView : TemplatedView, IRatingView
 		}
 	}
 
-	static void UpdateRatingItemsFills(ReadOnlyCollection<VisualElement> ratingItems, double rating, Color filledColor, Color emptyColor, Color? backgroundColor)
+	static void UpdateAllItemsFills(double rating, Color filledColor, Color emptyColor, Color? backgroundColor, HorizontalStackLayout ratingLayout)
 	{
+		var ratingItems = GetVisualTreeDescendantsWithBorderAndShape((VisualElement)ratingLayout.GetVisualTreeDescendants()[0], false);
 		var fullFillCount = (int)Math.Floor(rating); // Determine the number of fully filled rating items
 		var partialFillCount = rating - fullFillCount; // Determine the fraction for the partially filled rating item (if any)
 		backgroundColor ??= Colors.Transparent;
