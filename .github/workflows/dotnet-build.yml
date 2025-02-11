@@ -211,14 +211,6 @@ jobs:
           cat CodeCoverage/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
         shell: bash
 
-      # - name: Leave a code coverage report comment in PR
-      #   if: ${{ runner.os == 'Windows' && (success() || failure()) && github.event_name == 'pull_request' }}
-      #   run: gh pr comment ${{ github.event.number }} --body-file CodeCoverage/SummaryGithub.md
-      #   env:
-      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     PR_NUMBER: ${{ github.event.number }}
-      #   shell: bash
-
       - name: Pack CommunityToolkit.Maui.Core NuGet
         run: dotnet pack -c Release ${{ env.PathToCommunityToolkitCoreCsproj }} -p:PackageVersion=${{ env.NugetPackageVersion }}
 
