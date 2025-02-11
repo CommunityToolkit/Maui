@@ -531,16 +531,16 @@ public partial class MapHandlerWindows : MapHandler
 		}
 	}
 
-	void Connectivity_ConnectivityChanged(object sender, ConnectivityChangedEventArgs e)
+	void Connectivity_ConnectivityChanged(object? sender, ConnectivityChangedEventArgs e)
     {
 		LoadMap();
 	}
 
 	void LoadMap()
 	{
-		if (Connectivity.NetworkAccess == NetworkAccess.Internet)
+		if (PlatformView is MauiWebView mauiWebView && Connectivity.NetworkAccess == NetworkAccess.Internet)
 		{
-			PlatformView.LoadHtml(MapPage, null);
+			mauiWebView.LoadHtml(MapPage, null);
 		}
 	}
 }
