@@ -42,6 +42,7 @@ public partial class MapHandlerWindows : MapHandler
 	}
 
 	internal static string? MapsKey { get; set; }
+	internal static string? MapPage { get; private set; }
 
 	/// <inheritdoc/>
 	[RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
@@ -57,13 +58,31 @@ public partial class MapHandlerWindows : MapHandler
 			throw new InvalidOperationException("You need to specify a Bing Maps Key");
 		}
 
-		var mapPage = GetMapHtmlPage(MapsKey);
+		MapPage = GetMapHtmlPage(MapsKey);
 		var webView = new MauiWebView(new WebViewHandler());
-		webView.NavigationCompleted += HandleWebViewNavigationCompleted;
-		webView.WebMessageReceived += WebViewWebMessageReceived;
-		webView.LoadHtml(mapPage, null);
-
+	
 		return webView;
+	}
+
+	/// <inheritdoc />
+	[RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
+	[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
+#pragma warning disable IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
+#pragma warning disable IL3051 // 'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.
+	protected override void ConnectHandler(FrameworkElement platformView)
+#pragma warning restore IL3051 // 'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.
+#pragma warning restore IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
+	{
+		if (PlatformView is MauiWebView mauiWebView)
+		{
+			LoadMap();
+
+			mauiWebView.NavigationCompleted += HandleWebViewNavigationCompleted;
+			mauiWebView.WebMessageReceived += WebViewWebMessageReceived;
+			Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
+		}
+
+		base.ConnectHandler(platformView);
 	}
 
 	/// <inheritdoc />
@@ -77,6 +96,7 @@ public partial class MapHandlerWindows : MapHandler
 	{
 		if (PlatformView is MauiWebView mauiWebView)
 		{
+			Connectivity.ConnectivityChanged -= Connectivity_ConnectivityChanged;
 			mauiWebView.NavigationCompleted -= HandleWebViewNavigationCompleted;
 			mauiWebView.WebMessageReceived -= WebViewWebMessageReceived;
 		}
@@ -508,6 +528,19 @@ public partial class MapHandlerWindows : MapHandler
 					}
 				}
 				break;
+		}
+	}
+
+	void Connectivity_ConnectivityChanged(object sender, ConnectivityChangedEventArgs e)
+    {
+		LoadMap();
+	}
+
+	void LoadMap()
+	{
+		if (Connectivity.NetworkAccess == NetworkAccess.Internet)
+		{
+			PlatformView.LoadHtml(MapPage, null);
 		}
 	}
 }
