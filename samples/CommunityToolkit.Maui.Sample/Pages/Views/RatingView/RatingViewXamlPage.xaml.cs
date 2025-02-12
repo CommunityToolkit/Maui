@@ -12,7 +12,7 @@ public partial class RatingViewXamlPage : BasePage<RatingViewXamlViewModel>
 		InitializeComponent();
 	}
 
-	async void StepperMaximumRating_RatingChanged(object? sender, RatingChangedEventArgs e)
+	static async void StepperMaximumRating_RatingChanged(object? sender, RatingChangedEventArgs e)
 	{
 		if (sender is RatingView ratingView)
 		{
