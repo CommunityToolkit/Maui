@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Core;
+﻿// Ignore Spelling: Color
+
+namespace CommunityToolkit.Maui.Core;
 
 /// <summary>Provides functionality to device a rating view.</summary>
 public interface IRatingView : IContentView
