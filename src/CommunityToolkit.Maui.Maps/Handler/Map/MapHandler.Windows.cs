@@ -60,7 +60,7 @@ public partial class MapHandlerWindows : MapHandler
 
 		MapPage = GetMapHtmlPage(MapsKey);
 		var webView = new MauiWebView(new WebViewHandler());
-	
+
 		return webView;
 	}
 
@@ -73,9 +73,9 @@ public partial class MapHandlerWindows : MapHandler
 #pragma warning restore IL3051 // 'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.
 #pragma warning restore IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
 	{
-		if (PlatformView is MauiWebView mauiWebView)
+		if (platformView is MauiWebView mauiWebView)
 		{
-			LoadMap();
+			LoadMap(platformView);
 
 			mauiWebView.NavigationCompleted += HandleWebViewNavigationCompleted;
 			mauiWebView.WebMessageReceived += WebViewWebMessageReceived;
@@ -94,7 +94,7 @@ public partial class MapHandlerWindows : MapHandler
 #pragma warning restore IL3051 // 'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.
 #pragma warning restore IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
 	{
-		if (PlatformView is MauiWebView mauiWebView)
+		if (platformView is MauiWebView mauiWebView)
 		{
 			Connectivity.ConnectivityChanged -= Connectivity_ConnectivityChanged;
 			mauiWebView.NavigationCompleted -= HandleWebViewNavigationCompleted;
@@ -435,6 +435,11 @@ public partial class MapHandlerWindows : MapHandler
 
 	static async Task<Location?> GetCurrentLocation()
 	{
+		if (await Geolocator.RequestAccessAsync() != GeolocationAccessStatus.Allowed)
+		{
+			return null;
+		}
+
 		var geoLocator = new Geolocator();
 		var position = await geoLocator.GetGeopositionAsync();
 		return new Location(position.Coordinate.Latitude, position.Coordinate.Longitude);
@@ -532,13 +537,13 @@ public partial class MapHandlerWindows : MapHandler
 	}
 
 	void Connectivity_ConnectivityChanged(object? sender, ConnectivityChangedEventArgs e)
-    {
-		LoadMap();
+	{
+		LoadMap(PlatformView);
 	}
 
-	void LoadMap()
+	static void LoadMap(FrameworkElement platformView)
 	{
-		if (PlatformView is MauiWebView mauiWebView && Connectivity.NetworkAccess == NetworkAccess.Internet)
+		if (platformView is MauiWebView mauiWebView && Connectivity.NetworkAccess == NetworkAccess.Internet)
 		{
 			mauiWebView.LoadHtml(MapPage, null);
 		}
