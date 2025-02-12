@@ -570,14 +570,15 @@ public class RatingViewTests : BaseHandlerTest
 	[Fact]
 	public void Properties_Change_Size()
 	{
-		const int itemShapeSize = 73;
+		const int itsmShapeDiameter = 73;
 		RatingView ratingView = new();
-		ratingView.ShapeDiameter.Should().NotBe(itemShapeSize);
-		ratingView.ShapeDiameter.Should().Be(itemShapeSize);
+		ratingView.ShapeDiameter.Should().NotBe(itsmShapeDiameter);
+		ratingView.ShapeDiameter = itsmShapeDiameter;
+		ratingView.ShapeDiameter.Should().Be(itsmShapeDiameter);
 
 		var firstRatingItem = GetItemShape(ratingView, 0);
-		firstRatingItem.WidthRequest.Should().Be(itemShapeSize);
-		firstRatingItem.HeightRequest.Should().Be(itemShapeSize);
+		firstRatingItem.WidthRequest.Should().Be(itsmShapeDiameter);
+		firstRatingItem.HeightRequest.Should().Be(itsmShapeDiameter);
 	}
 
 	[Fact]
