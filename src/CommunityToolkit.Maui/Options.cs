@@ -70,19 +70,27 @@ public class Options() : Core.Options
 				events.AddWindows(windows => windows
 					.OnLaunched((_, _) =>
 					{
-						Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked += OnSnackbarNotificationInvoked;
-						Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Register();
+						if (Application.Current is null)
+						{
+							throw new InvalidOperationException($"{nameof(Application)}.{nameof(Application.Current)} cannot be null when Windows are launched");
+						}
+
+						else if (Application.Current.Windows.Count is 1)
+						{
+							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked += OnSnackbarNotificationInvoked;
+							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Register();
+						}
 					})
 					.OnClosed((_, _) =>
 					{
-						try
+						if (Application.Current is null)
+						{
+							throw new InvalidOperationException($"{nameof(Application)}.{nameof(Application.Current)} cannot be null when Windows are closed");
+						}
+						else if (Application.Current.Windows.Count is 1)
 						{
 							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked -= OnSnackbarNotificationInvoked;
 							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Unregister();
-						}
-						catch
-						{
-							// And Element not found exception may be thrown when unregistering the event handler after using MediaElement accross multiple Windows
 						}
 					}));
 			});
