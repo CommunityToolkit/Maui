@@ -29,11 +29,11 @@ public partial class RatingView : TemplatedView, IRatingView
 	/// <summary>Bindable property for attached property <see cref="Size"/>.</summary>
 	public static readonly BindableProperty ShapeDiameterProperty = BindableProperty.Create(nameof(ShapeDiameter), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.ItemShapeSize, propertyChanged: OnShapeDiameterSizeChanged, defaultValueCreator: static _ => RatingViewDefaults.ItemShapeSize);
 
-	/// <summary>Bindable property for attached property <see cref="EmptyColor"/>.</summary>
-	public static readonly BindableProperty EmptyColorProperty = BindableProperty.Create(nameof(EmptyColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.EmptyColor, propertyChanged: OnRatingColorChanged, defaultValueCreator: static _ => RatingViewDefaults.EmptyColor);
+	/// <summary>Bindable property for attached property <see cref="EmptyShapeColor"/>.</summary>
+	public static readonly BindableProperty EmptyShapeColorProperty = BindableProperty.Create(nameof(EmptyShapeColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.EmptyShapeColor, propertyChanged: OnRatingColorChanged, defaultValueCreator: static _ => RatingViewDefaults.EmptyShapeColor);
 
-	/// <summary>Bindable property for attached property <see cref="FilledColor"/>.</summary>
-	public static readonly BindableProperty FilledColorProperty = BindableProperty.Create(nameof(FilledColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.FilledColor, propertyChanged: OnRatingColorChanged, defaultValueCreator: static _ => RatingViewDefaults.FilledColor);
+	/// <summary>Bindable property for attached property <see cref="FilledShapeColor"/>.</summary>
+	public static readonly BindableProperty FilledShapeColorProperty = BindableProperty.Create(nameof(FilledShapeColor), typeof(Color), typeof(RatingView), defaultValue: RatingViewDefaults.FilledShapeColor, propertyChanged: OnRatingColorChanged, defaultValueCreator: static _ => RatingViewDefaults.FilledShapeColor);
 
 	/// <summary>The backing store for the <see cref="IsReadOnly" /> bindable property.</summary>
 	public static readonly BindableProperty IsReadOnlyProperty = BindableProperty.Create(nameof(IsReadOnly), typeof(bool), typeof(RatingView), defaultValue: RatingViewDefaults.IsReadOnly, propertyChanged: OnIsReadOnlyChanged);
@@ -52,7 +52,7 @@ public partial class RatingView : TemplatedView, IRatingView
 
 	readonly WeakEventManager weakEventManager = new();
 
-	///<summary>The default constructor of the control.</summary>
+	///<summary>Instantiates <see cref="RatingView"/> .</summary>
 	public RatingView()
 	{
 		RatingLayout.SetBinding<RatingView, object>(BindingContextProperty, static ratingView => ratingView.BindingContext, source: this);
@@ -61,7 +61,7 @@ public partial class RatingView : TemplatedView, IRatingView
 		AddChildrenToLayout(0, MaximumRating);
 	}
 
-	/// <summary>Occurs when <see cref="Rating"/> is changed.</summary>
+	/// <summary>Fires when <see cref="Rating"/> is changed.</summary>
 	public event EventHandler<RatingChangedEventArgs> RatingChanged
 	{
 		add => weakEventManager.AddEventHandler(value);
@@ -78,23 +78,23 @@ public partial class RatingView : TemplatedView, IRatingView
 		set => SetValue(CustomShapePathProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the empty rating color property.</summary>
+	/// <summary>Gets or sets a value of the empty shape color property.</summary>
 	[AllowNull]
-	public Color EmptyColor
+	public Color EmptyShapeColor
 	{
-		get => (Color)GetValue(EmptyColorProperty);
-		set => SetValue(EmptyColorProperty, value ?? Colors.Transparent);
+		get => (Color)GetValue(EmptyShapeColorProperty);
+		set => SetValue(EmptyShapeColorProperty, value ?? Colors.Transparent);
 	}
 
-	/// <summary>Gets or sets a value of the filled rating color property.</summary>
+	/// <summary>Gets or sets a value of the filled shape color property.</summary>
 	[AllowNull]
-	public Color FilledColor
+	public Color FilledShapeColor
 	{
-		get => (Color)GetValue(FilledColorProperty);
-		set => SetValue(FilledColorProperty, value ?? Colors.Transparent);
+		get => (Color)GetValue(FilledShapeColorProperty);
+		set => SetValue(FilledShapeColorProperty, value ?? Colors.Transparent);
 	}
 
-	///<summary>Gets or sets a value indicating if the controls is read-only.</summary>
+	///<summary>Gets or sets a value indicating if the user can interact with the <see cref="RatingView"/>.</summary>
 	public bool IsReadOnly
 	{
 		get => (bool)GetValue(IsReadOnlyProperty);
@@ -265,7 +265,7 @@ public partial class RatingView : TemplatedView, IRatingView
 			if (!ratingView.IsReadOnly)
 			{
 				TapGestureRecognizer tapGestureRecognizer = new();
-				tapGestureRecognizer.Tapped += ratingView.OnItemTapped;
+				tapGestureRecognizer.Tapped += ratingView.OnShapeTapped;
 				child.GestureRecognizers.Add(tapGestureRecognizer);
 				continue;
 			}
@@ -287,7 +287,8 @@ public partial class RatingView : TemplatedView, IRatingView
 				layout.RemoveAt(lastElement);
 			}
 
-			ratingView.UpdateAllRatingsFills(ratingView.RatingViewTapFill);
+			ratingView.UpdateShapeFills(ratingView.RatingViewTapFill);
+			
 		}
 		else if (newMaximumRatingValue > oldMaximumRatingValue)
 		{
@@ -305,7 +306,7 @@ public partial class RatingView : TemplatedView, IRatingView
 		var ratingView = (RatingView)bindable;
 		var newRating = (double)newValue;
 
-		ratingView.UpdateAllRatingsFills(ratingView.RatingViewTapFill);
+		ratingView.UpdateShapeFills(ratingView.RatingViewTapFill);
 		ratingView.OnRatingChangedEvent(new RatingChangedEventArgs(newRating));
 	}
 
@@ -318,7 +319,7 @@ public partial class RatingView : TemplatedView, IRatingView
 	static void OnRatingColorChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var ratingView = (RatingView)bindable;
-		ratingView.UpdateAllRatingsFills(ratingView.RatingViewTapFill);
+		ratingView.UpdateShapeFills(ratingView.RatingViewTapFill);
 	}
 
 	static LinearGradientBrush GetPartialFillBrush(Color filledColor, double partialFill, Color emptyColor)
@@ -358,7 +359,7 @@ public partial class RatingView : TemplatedView, IRatingView
 			newShapePathData = newShape;
 		}
 
-		ratingView.ChangeRatingItemShape(newShapePathData);
+		ratingView.ChangeShape(newShapePathData);
 	}
 
 	static void OnShapePaddingPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -399,7 +400,7 @@ public partial class RatingView : TemplatedView, IRatingView
 	static void OnShapePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var ratingView = (RatingView)bindable;
-		ratingView.ChangeRatingItemShape(ratingView.GetShapePathData((RatingViewShape)newValue));
+		ratingView.ChangeShape(ratingView.GetShapePathData((RatingViewShape)newValue));
 	}
 
 	static void OnShapeDiameterSizeChanged(BindableObject bindable, object oldValue, object newValue)
@@ -419,57 +420,6 @@ public partial class RatingView : TemplatedView, IRatingView
 		}
 	}
 
-	static void UpdateAllRatingShapeFills(ReadOnlyCollection<VisualElement> ratingItems, double rating, Color filledColor, Color emptyColor)
-	{
-		var fullFillCount = (int)Math.Floor(rating); // Determine the number of fully filled shapes
-		var partialFillCount = rating - fullFillCount; // Determine the fraction for the partially filled shape (if any)
-		for (var i = 0; i < ratingItems.Count; i++)
-		{
-			var ratingShape = (Shape)ratingItems[i];
-			if (i < fullFillCount)
-			{
-				ratingShape.Fill = filledColor; // Fully filled shape
-			}
-			else if (i == fullFillCount && partialFillCount > 0)
-			{
-				ratingShape.Fill = GetPartialFillBrush(filledColor, partialFillCount, emptyColor); // Partial fill
-			}
-			else
-			{
-				ratingShape.Fill = emptyColor; // Empty fill
-			}
-		}
-	}
-
-	static void UpdateRatingItemsFills(ReadOnlyCollection<VisualElement> ratingItems, double rating, Color filledColor, Color emptyColor, Color? backgroundColor)
-	{
-		var fullFillCount = (int)Math.Floor(rating); // Determine the number of fully filled rating items
-		var partialFillCount = rating - fullFillCount; // Determine the fraction for the partially filled rating item (if any)
-		backgroundColor ??= Colors.Transparent;
-		for (var i = 0; i < ratingItems.Count; i++)
-		{
-			var border = (Border)ratingItems[i];
-			if (border.Content is not Shape shape)
-			{
-				continue;
-			}
-
-			shape.Fill = emptyColor;
-			if (i < fullFillCount)
-			{
-				border.Background = new SolidColorBrush(filledColor); // Fully filled shape
-			}
-			else if (i == fullFillCount && partialFillCount > 0)
-			{
-				border.Background = GetPartialFillBrush(filledColor, partialFillCount, backgroundColor); // Partial fill
-			}
-			else
-			{
-				border.Background = new SolidColorBrush(backgroundColor); // Empty fill
-			}
-		}
-	}
-
 	void AddChildrenToLayout(int minimumRating, int maximumRating)
 	{
 		RatingLayout.Spacing = Spacing;
@@ -480,17 +430,17 @@ public partial class RatingView : TemplatedView, IRatingView
 			if (!IsReadOnly)
 			{
 				TapGestureRecognizer tapGestureRecognizer = new();
-				tapGestureRecognizer.Tapped += OnItemTapped;
+				tapGestureRecognizer.Tapped += OnShapeTapped;
 				child.GestureRecognizers.Add(tapGestureRecognizer);
 			}
 
 			RatingLayout.Children.Add(child);
 		}
 
-		UpdateAllRatingsFills(RatingViewTapFill);
+		UpdateShapeFills(RatingViewTapFill);
 	}
 
-	void ChangeRatingItemShape(string shape)
+	void ChangeShape(string shape)
 	{
 		for (var element = 0; element < RatingLayout.Count; element++)
 		{
@@ -504,41 +454,95 @@ public partial class RatingView : TemplatedView, IRatingView
 
 	string GetShapePathData(RatingViewShape shape) => shape switch
 	{
+		RatingViewShape.Custom when CustomShapePath is null => throw new InvalidOperationException($"Unable to draw RatingViewShape.Custom because {nameof(CustomShapePath)} is null. Please provide an SVG Path to {nameof(CustomShapePath)}."),
+		RatingViewShape.Custom => CustomShapePath,
 		RatingViewShape.Circle => PathShapes.Circle,
 		RatingViewShape.Dislike => PathShapes.Dislike,
 		RatingViewShape.Heart => PathShapes.Heart,
 		RatingViewShape.Like => PathShapes.Like,
-		RatingViewShape.Custom when CustomShapePath is not null => CustomShapePath,
-		_ => PathShapes.Star
+		RatingViewShape.Star => PathShapes.Star,
+		_ => throw new NotSupportedException($"{shape} is not yet supported")
 	};
 
-	void OnItemTapped(object? sender, TappedEventArgs? e)
+	void OnShapeTapped(object? sender, TappedEventArgs? e)
 	{
 		ArgumentNullException.ThrowIfNull(sender);
 
-		var border = (Border)sender;
-		var itemIndex = RatingLayout.Children.IndexOf(border);
-		Rating = MaximumRating > 1 ? itemIndex + 1 : GetRatingWhenMaximumRatingEqualsOne(Rating);
+		var tappedShape = (Border)sender;
+		var tappedShapeIndex = RatingLayout.Children.IndexOf(tappedShape);
+		
+		Rating = MaximumRating > 1 
+			? tappedShapeIndex + 1 
+			: GetRatingWhenMaximumRatingEqualsOne(Rating);
 	}
 
-	void OnRatingChangedEvent(RatingChangedEventArgs e)
-	{
-		weakEventManager.HandleEvent(this, e, nameof(RatingChanged));
-	}
-
-	void UpdateAllRatingsFills(RatingViewTapFill ratingViewTapFill)
+	void UpdateShapeFills(RatingViewTapFill ratingViewTapFill)
 	{
 		var isShapeFill = ratingViewTapFill is RatingViewTapFill.Shape;
 		var visualElements = GetVisualTreeDescendantsWithBorderAndShape((VisualElement)RatingLayout.GetVisualTreeDescendants()[0], isShapeFill);
 		if (isShapeFill)
 		{
-			UpdateAllRatingShapeFills(visualElements, Rating, FilledColor, EmptyColor);
+			UpdateAllShapeFills(visualElements, Rating, FilledShapeColor, EmptyShapeColor);
 		}
 		else
 		{
-			UpdateRatingItemsFills(visualElements, Rating, FilledColor, EmptyColor, BackgroundColor);
+			UpdateAllBackgroundFills(visualElements, Rating, FilledShapeColor, EmptyShapeColor, BackgroundColor);
+		}
+		
+		static void UpdateAllShapeFills(ReadOnlyCollection<VisualElement> shapes, double rating, Color filledColor, Color emptyColor)
+		{
+			var fullFillCount = (int)Math.Floor(rating); // Determine the number of fully filled shapes
+			var partialFillCount = rating - fullFillCount; // Determine the fraction for the partially filled shape (if any)
+			for (var i = 0; i < shapes.Count; i++)
+			{
+				var ratingShape = (Shape)shapes[i];
+				if (i < fullFillCount)
+				{
+					ratingShape.Fill = filledColor; // Fully filled shape
+				}
+				else if (i == fullFillCount && partialFillCount > 0)
+				{
+					ratingShape.Fill = GetPartialFillBrush(filledColor, partialFillCount, emptyColor); // Partial fill
+				}
+				else
+				{
+					ratingShape.Fill = emptyColor; // Empty fill
+				}
+			}
+		}
+		
+		static void UpdateAllBackgroundFills(ReadOnlyCollection<VisualElement> shapes, double rating, Color filledColor, Color emptyColor, Color backgroundColor)
+		{
+			var fullFillCount = (int)Math.Floor(rating); // Determine the number of fully filled shapes
+			var partialFillCount = rating - fullFillCount; // Determine the fraction for the partially filled shapes (if any)
+
+			for (var i = 0; i < shapes.Count; i++)
+			{
+				var shapeBorder = (Border)shapes[i];
+				if (shapeBorder.Content is not Shape shape)
+				{
+					continue;
+				}
+
+				shape.Fill = emptyColor;
+				
+				if (i < fullFillCount) // Fully filled shape
+				{
+					shapeBorder.Background = new SolidColorBrush(filledColor); 
+				}
+				else if (i == fullFillCount && partialFillCount > 0) // Partial fill
+				{
+					shapeBorder.Background = GetPartialFillBrush(filledColor, partialFillCount, backgroundColor); 
+				}
+				else // Empty fill
+				{
+					shapeBorder.Background = new SolidColorBrush(backgroundColor); 
+				}
+			}
 		}
 	}
+	
+	void OnRatingChangedEvent(RatingChangedEventArgs e) => weakEventManager.HandleEvent(this, e, nameof(RatingChanged));
 
 	static class PathShapes
 	{

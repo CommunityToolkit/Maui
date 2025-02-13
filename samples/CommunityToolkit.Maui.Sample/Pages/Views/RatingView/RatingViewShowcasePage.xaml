@@ -47,8 +47,8 @@
                 <HorizontalStackLayout Grid.Row="2" Spacing="8">
                     <toolkit:RatingView
                         Margin="5,0,0,0"
-                        EmptyColor="White"
-                        FilledColor="#04DA8D"
+                        EmptyShapeColor="White"
+                        FilledShapeColor="#04DA8D"
                         HorizontalOptions="Start"
                         IsReadOnly="True"
                         ShapePadding="3"
@@ -111,8 +111,8 @@
                         Margin="5,0,0,0"
                         Padding="2"
                         CustomShapePath="M296.863,587.059l14.254-3.612 l5.956,18.355L296.863,587.059z M329.668,563.334h-25.091l-7.713-23.627l-7.713,23.627h-25.091l20.307,14.645l-7.713,23.627 l20.307-14.645l12.497-8.982L329.668,563.334L329.668,563.334L329.668,563.334L329.668,563.334z"
-                        EmptyColor="White"
-                        FilledColor="#04DA8D"
+                        EmptyShapeColor="White"
+                        FilledShapeColor="#04DA8D"
                         HorizontalOptions="Start"
                         IsReadOnly="True"
                         ShapePadding="3"
@@ -152,8 +152,8 @@
             <toolkit:RatingView
                 Margin="0"
                 CustomShapePath="M12,17.964l5.214-1.321l2.179,6.714L12,17.964z M24,9.286h-9.179L12,0.643L9.179,9.286 H0l7.429,5.357l-2.821,8.643l7.429-5.357l4.571-3.286L24,9.286L24,9.286L24,9.286L24,9.286z"
-                EmptyColor="White"
-                FilledColor="#04DA8D"
+                EmptyShapeColor="White"
+                FilledShapeColor="#04DA8D"
                 HorizontalOptions="Start"
                 IsReadOnly="True"
                 ShapePadding="3"
@@ -168,8 +168,8 @@
             <toolkit:RatingView
                 Margin="0"
                 CustomShapePath="M12,17.964l5.214-1.321l2.179,6.714L12,17.964z M24,9.286h-9.179L12,0.643L9.179,9.286 H0l7.429,5.357l-2.821,8.643l7.429-5.357l4.571-3.286L24,9.286L24,9.286L24,9.286L24,9.286z"
-                EmptyColor="White"
-                FilledColor="#FF3722"
+                EmptyShapeColor="White"
+                FilledShapeColor="#FF3722"
                 HorizontalOptions="Start"
                 IsReadOnly="True"
                 ShapePadding="3"
@@ -183,8 +183,8 @@
             <toolkit:RatingView
                 Margin="0"
                 CustomShapePath="M12,17.964l5.214-1.321l2.179,6.714L12,17.964z M24,9.286h-9.179L12,0.643L9.179,9.286 H0l7.429,5.357l-2.821,8.643l7.429-5.357l4.571-3.286L24,9.286L24,9.286L24,9.286L24,9.286z"
-                EmptyColor="Transparent"
-                FilledColor="Gold"
+                EmptyShapeColor="Transparent"
+                FilledShapeColor="Gold"
                 HorizontalOptions="Start"
                 IsReadOnly="True"
                 ShapePadding="2"
@@ -233,8 +233,8 @@
                                 <RoundRectangle CornerRadius="20" />
                             </Border.StrokeShape>
                             <toolkit:RatingView
-                                EmptyColor="White"
-                                FilledColor="#00aa6c"
+                                EmptyShapeColor="White"
+                                FilledShapeColor="#00aa6c"
                                 HorizontalOptions="Center"
                                 ShapePadding="0"
                                 Shape="Heart"
@@ -250,8 +250,8 @@
                 <HorizontalStackLayout>
                     <toolkit:RatingView
                         CustomShapePath="M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z"
-                        EmptyColor="White"
-                        FilledColor="#00aa6c"
+                        EmptyShapeColor="White"
+                        FilledShapeColor="#00aa6c"
                         HorizontalOptions="Start"
                         IsReadOnly="True"
                         Shape="Custom"
@@ -272,8 +272,8 @@
             <Label Text="An advice travel rating of 4.5 out of 5" />
             <toolkit:RatingView
                 CustomShapePath="M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z"
-                EmptyColor="White"
-                FilledColor="#00aa6c"
+                EmptyShapeColor="White"
+                FilledShapeColor="#00aa6c"
                 IsReadOnly="True"
                 Shape="Custom"
                 MaximumRating="5"

@@ -39,11 +39,11 @@ public static class RatingViewDefaults
 
 	/// <summary>Default color for an empty rating.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static Color EmptyColor { get; } = Colors.Transparent;
+	public static Color EmptyShapeColor { get; } = Colors.Transparent;
 
 	/// <summary>Default filled color for a rating.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static Color FilledColor { get; } = Colors.Yellow;
+	public static Color FilledShapeColor { get; } = Colors.Yellow;
 
 	/// <summary>Default rating item padding.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]

@@ -11,6 +11,8 @@ namespace CommunityToolkit.Maui.UnitTests.Views;
 
 public class RatingViewTests : BaseHandlerTest
 {
+	const string customShape = "M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z";
+	
 	[Fact]
 	public void Defaults_BindingContext()
 	{
@@ -65,8 +67,8 @@ public class RatingViewTests : BaseHandlerTest
 	{
 		RatingView ratingView = new();
 		ratingView.Rating.Should().Be(RatingViewDefaults.DefaultRating);
-		ratingView.EmptyColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.EmptyColor);
-		ratingView.FilledColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.FilledColor);
+		ratingView.EmptyShapeColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.EmptyShapeColor);
+		ratingView.FilledShapeColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.FilledShapeColor);
 		ratingView.IsReadOnly.Should().BeFalse().And.Be(RatingViewDefaults.IsReadOnly);
 		ratingView.ShapePadding.Should().BeOfType<Thickness>().And.Be(RatingViewDefaults.ShapePadding);
 		ratingView.ShapeDiameter.Should().Be(RatingViewDefaults.ItemShapeSize);
@@ -76,7 +78,7 @@ public class RatingViewTests : BaseHandlerTest
 		ratingView.ShapeBorderThickness.Should().Be(RatingViewDefaults.ShapeBorderThickness);
 		ratingView.Spacing.Should().Be(RatingViewDefaults.Spacing);
 		ratingView.RatingViewTapFill.Should().BeOneOf(RatingViewTapFill.Shape).And.Be(RatingViewTapFill.Shape);
-		ratingView.CustomShapePath.Should().BeNullOrEmpty();
+		ratingView.CustomShapePath.Should().BeNull();
 	}
 
 	[Fact]
@@ -284,21 +286,21 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void Null_EmptyColor()
+	public void Null_EmptyShapeColor()
 	{
 		RatingView ratingView = new();
-		ratingView.EmptyColor.Should().NotBeNull();
-		ratingView.EmptyColor = null;
-		ratingView.EmptyColor.Should().BeOfType<Color>().And.Be(Colors.Transparent);
+		ratingView.EmptyShapeColor.Should().NotBeNull();
+		ratingView.EmptyShapeColor = null;
+		ratingView.EmptyShapeColor.Should().BeOfType<Color>().And.Be(Colors.Transparent);
 	}
 
 	[Fact]
-	public void Null_FilledColor()
+	public void Null_FilledShapeColor()
 	{
 		RatingView ratingView = new();
-		ratingView.FilledColor.Should().NotBeNull();
-		ratingView.FilledColor = null;
-		ratingView.FilledColor.Should().BeOfType<Color>().And.Be(Colors.Transparent);
+		ratingView.FilledShapeColor.Should().NotBeNull();
+		ratingView.FilledShapeColor = null;
+		ratingView.FilledShapeColor.Should().BeOfType<Color>().And.Be(Colors.Transparent);
 	}
 
 	[Fact]
@@ -313,48 +315,15 @@ public class RatingViewTests : BaseHandlerTest
 	[Fact]
 	public void Properties_Change_CustomShape()
 	{
-		const string customShape = "M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z";
 		RatingView ratingView = new();
-		ratingView.CustomShapePath.Should().BeNullOrEmpty();
+		ratingView.CustomShapePath.Should().BeNull();
 		ratingView.CustomShapePath = customShape;
 		ratingView.CustomShapePath.Should().Be(customShape);
-	}
-
-	[Theory]
-	[InlineData("")]
-	[InlineData(null)]
-	public void Properties_Change_CustomShape_Null(string? customShapes)
-	{
-		const string customShape = "M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z";
-		RatingView ratingView = new()
-		{
-			Shape = RatingViewShape.Custom,
-			CustomShapePath = customShape,
-		};
-		ratingView.Shape.Should().Be(RatingViewShape.Custom);
-		ratingView.CustomShapePath.Should().Be(customShape);
-		ratingView.CustomShapePath = customShapes;
-		ratingView.Shape.Should().Be(RatingViewShape.Star);
-	}
-
-	[Fact]
-	public void Properties_Change_CustomShape_ShapeCustom()
-	{
-		const string customShape = "M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z";
-		RatingView ratingView = new()
-		{
-			Shape = RatingViewShape.Custom
-		};
-		ratingView.Shape.Should().Be(RatingViewShape.Custom);
-		ratingView.CustomShapePath = customShape;
-		ratingView.CustomShapePath.Should().Be(customShape);
-		ratingView.Shape.Should().Be(RatingViewShape.Custom);
 	}
 
 	[Fact]
 	public void Properties_Change_CustomShape_ShapeNotCustom()
 	{
-		const string customShape = "M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z";
 		RatingView ratingView = new()
 		{
 			Shape = RatingViewShape.Heart
@@ -366,50 +335,50 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void Properties_Change_EmptyColor_Item()
+	public void Properties_Change_EmptyShapeColor_Item()
 	{
 		const double rating = 1.5;
 		const byte maximumRating = 7;
-		var emptyColor = Colors.Snow;
+		var emptyShapeColor = Colors.Snow;
 		RatingView ratingView = new()
 		{
 			MaximumRating = maximumRating,
 			Rating = rating,
 			RatingViewTapFill = RatingViewTapFill.Background
 		};
-		ratingView.EmptyColor.Should().NotBe(emptyColor);
-		ratingView.EmptyColor = emptyColor;
-		ratingView.EmptyColor.Should().Be(emptyColor);
+		ratingView.EmptyShapeColor.Should().NotBe(emptyShapeColor);
+		ratingView.EmptyShapeColor = emptyShapeColor;
+		ratingView.EmptyShapeColor.Should().Be(emptyShapeColor);
 
 		var emptyRatingItem = (Microsoft.Maui.Controls.Shapes.Path) GetItemShape(ratingView, maximumRating - 1).GetVisualTreeDescendants()[0];
-		emptyRatingItem.Fill.Should().Be(new SolidColorBrush(emptyColor));
+		emptyRatingItem.Fill.Should().Be(new SolidColorBrush(emptyShapeColor));
 	}
 
 	[Fact]
-	public void Properties_Change_EmptyColor_Shape()
+	public void Properties_Change_EmptyShapeColor_Shape()
 	{
 		const double rating = 1.5;
 		const byte maximumRating = 7;
-		var emptyColor = Colors.Snow;
+		var emptyShapeColor = Colors.Snow;
 		RatingView ratingView = new()
 		{
 			MaximumRating = maximumRating,
 			Rating = rating
 		};
-		ratingView.EmptyColor.Should().NotBe(emptyColor);
-		ratingView.EmptyColor = emptyColor;
-		ratingView.EmptyColor.Should().Be(emptyColor);
+		ratingView.EmptyShapeColor.Should().NotBe(emptyShapeColor);
+		ratingView.EmptyShapeColor = emptyShapeColor;
+		ratingView.EmptyShapeColor.Should().Be(emptyShapeColor);
 		var emptyRatingItem = GetItemShape(ratingView, maximumRating - 1);
-		emptyRatingItem.Fill.Should().Be(new SolidColorBrush(emptyColor));
+		emptyRatingItem.Fill.Should().Be(new SolidColorBrush(emptyShapeColor));
 	}
 
 	[Fact]
-	public void Properties_Change_FilledColor_Item()
+	public void Properties_Change_FilledShapeColor_Item()
 	{
 		const double rating = 1.5;
 		const byte maximumRating = 7;
-		var filledColor = Colors.Snow;
-		var emptyColor = Colors.Firebrick;
+		var filledShapeColor = Colors.Snow;
+		var emptyShapeColor = Colors.Firebrick;
 		var backgroundColor = Colors.DarkGreen;
 		RatingView ratingView = new()
 		{
@@ -417,16 +386,16 @@ public class RatingViewTests : BaseHandlerTest
 			Rating = rating,
 			RatingViewTapFill = RatingViewTapFill.Background
 		};
-		ratingView.FilledColor.Should().NotBe(filledColor);
+		ratingView.FilledShapeColor.Should().NotBe(filledShapeColor);
 		ratingView.BackgroundColor.Should().BeNull();
 		ratingView.BackgroundColor = backgroundColor;
-		ratingView.EmptyColor = emptyColor;
-		ratingView.FilledColor = filledColor;
-		ratingView.FilledColor.Should().Be(filledColor);
+		ratingView.EmptyShapeColor = emptyShapeColor;
+		ratingView.FilledShapeColor = filledShapeColor;
+		ratingView.FilledShapeColor.Should().Be(filledShapeColor);
 		var filledRatingShape = GetItemShape(ratingView, (int)Math.Floor(rating));
-		filledRatingShape.Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyColor));
+		filledRatingShape.Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyShapeColor));
 		var filledRatingItem = (Border)ratingView.RatingLayout.Children[0];
-		filledRatingItem.Background.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(filledColor));
+		filledRatingItem.Background.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(filledShapeColor));
 		var partialFilledRatingItem = (Border)ratingView.RatingLayout.Children[(int)Math.Floor(rating)];
 		partialFilledRatingItem.Background.Should().BeOfType<LinearGradientBrush>();
 		var emptyFilledRatingItem = (Border)ratingView.RatingLayout.Children[maximumRating - 1]; // Check the last one, as this is where we expect the background colour to be set
@@ -434,21 +403,21 @@ public class RatingViewTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void Properties_Change_FilledColor_Shape()
+	public void Properties_Change_FilledShapeColor_Shape()
 	{
 		const double rating = 1.5;
 		const byte maximumRating = 7;
-		var filledColor = Colors.Snow;
+		var filledShapeColor = Colors.Snow;
 		RatingView ratingView = new()
 		{
 			MaximumRating = maximumRating,
 			Rating = rating
 		};
-		ratingView.FilledColor.Should().NotBe(filledColor);
-		ratingView.FilledColor = filledColor;
-		ratingView.FilledColor.Should().Be(filledColor);
+		ratingView.FilledShapeColor.Should().NotBe(filledShapeColor);
+		ratingView.FilledShapeColor = filledShapeColor;
+		ratingView.FilledShapeColor.Should().Be(filledShapeColor);
 		var filledRatingItem = GetItemShape(ratingView, 0);
-		filledRatingItem.Fill.Should().Be(new SolidColorBrush(filledColor));
+		filledRatingItem.Fill.Should().Be(new SolidColorBrush(filledShapeColor));
 	}
 
 	[Fact]
@@ -533,10 +502,20 @@ public class RatingViewTests : BaseHandlerTest
 	[InlineData(RatingViewShape.Custom)]
 	public void Properties_Change_Shape(RatingViewShape expectedShape)
 	{
-		RatingView ratingView = new();
+		var ratingView = new RatingView
+		{
+			CustomShapePath = customShape
+		};
+		
 		ratingView.Shape.Should().NotBe(expectedShape);
 		ratingView.Shape = expectedShape;
 		ratingView.Shape.Should().Be(expectedShape);
+	}
+
+	[Fact]
+	public void InvalidOperationExceptionThrownWhenUsingNullCustomShapePath()
+	{
+		Assert.Throws<InvalidOperationException>(() => new RatingView { Shape = RatingViewShape.Custom });
 	}
 
 	[Fact]
@@ -766,28 +745,34 @@ public class RatingViewTests : BaseHandlerTest
 	[Fact]
 	public void ViewStructure_ItemFill_Colors()
 	{
-		var filledColor = Colors.Red;
-		var emptyColor = Colors.Grey;
+		var filledShapeColor = Colors.Red;
+		var emptyShapeColor = Colors.Grey;
 		var backgroundColor = Colors.CornflowerBlue;
 		RatingView ratingView = new()
 		{
 			Rating = 0,
 			MaximumRating = 3,
 			RatingViewTapFill = RatingViewTapFill.Background,
-			FilledColor = filledColor,
-			EmptyColor = emptyColor,
+			FilledShapeColor = filledShapeColor,
+			EmptyShapeColor = emptyShapeColor,
 			BackgroundColor = backgroundColor
 		};
 		ratingView.Rating = 1.5;
 		var filledRatingItem = (Border)ratingView.RatingLayout.Children[0];
 		var partialFilledRatingItem = (Border)ratingView.RatingLayout.Children[1];
 		var emptyFilledRatingItem = (Border)ratingView.RatingLayout.Children[2];
-		filledRatingItem.Background.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(filledColor));
-		((Shape)filledRatingItem.Content!).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyColor));
+		
+		filledRatingItem.Content.Should().NotBeNull();
+		filledRatingItem.Background.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(filledShapeColor));
+		((Shape)filledRatingItem.Content).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyShapeColor));
+		
+		partialFilledRatingItem.Content.Should().NotBeNull();
 		partialFilledRatingItem.Background.Should().BeOfType<LinearGradientBrush>();
-		((Shape)partialFilledRatingItem.Content!).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyColor));
+		((Shape)partialFilledRatingItem.Content).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyShapeColor));
+		
+		emptyFilledRatingItem.Content.Should().NotBeNull();
 		emptyFilledRatingItem.Background.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(backgroundColor));
-		((Shape)emptyFilledRatingItem.Content!).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyColor));
+		((Shape)emptyFilledRatingItem.Content).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyShapeColor));
 	}
 
 	[Fact]
@@ -809,21 +794,21 @@ public class RatingViewTests : BaseHandlerTest
 	[Fact]
 	public void ViewStructure_ShapeFill_Colors()
 	{
-		var filledColor = Colors.Red;
-		var emptyColor = Colors.Grey;
+		var filledShapeColor = Colors.Red;
+		var emptyShapeColor = Colors.Grey;
 		RatingView ratingView = new()
 		{
 			Rating = 1.5,
 			MaximumRating = 3,
 			RatingViewTapFill = RatingViewTapFill.Shape,
-			FilledColor = filledColor,
-			EmptyColor = emptyColor
+			FilledShapeColor = filledShapeColor,
+			EmptyShapeColor = emptyShapeColor
 		};
 		var filledRatingItem = GetItemShape(ratingView, 0);
 		var partialFilledRatingItem = GetItemShape(ratingView, 1);
 		var emptyFilledRatingItem = GetItemShape(ratingView, 2);
-		filledRatingItem.Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(filledColor));
-		emptyFilledRatingItem.Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyColor));
+		filledRatingItem.Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(filledShapeColor));
+		emptyFilledRatingItem.Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyShapeColor));
 		partialFilledRatingItem.Fill.Should().BeOfType<LinearGradientBrush>();
 	}
 
