@@ -4,8 +4,8 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public sealed partial class PopupContentViewModel : BaseViewModel
 {
-    [ObservableProperty]
-	string message = "";
+	[ObservableProperty]
+	public partial string Message { get; private set; } = "";
 
-    internal void SetMessage(string text) => this.Message = text;
+	internal void SetMessage(string text) => this.Message = text;
 }
