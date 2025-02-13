@@ -9,7 +9,7 @@ public partial class OpenedEventSimplePopup
 	public OpenedEventSimplePopup()
 	{
 		InitializeComponent();
-		OnOpened += async (s,e) =>
+		Opened += async (s,e) =>
 		{
 			await Task.Delay(TimeSpan.FromSeconds(1));
 
