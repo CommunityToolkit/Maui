@@ -8,7 +8,7 @@ partial class PopupContainer<T> : PopupContainer
 {
 	readonly TaskCompletionSource<PopupResult<T>> taskCompletionSource;
 
-	public PopupContainer(Popup<T> content, TaskCompletionSource<PopupResult<T>> taskCompletionSource) :base (content, null)
+	public PopupContainer(Popup<T> content, TaskCompletionSource<PopupResult<T>> taskCompletionSource) : base(content, null)
 	{
 		this.taskCompletionSource = taskCompletionSource;
 		content.SetPopup(this);
@@ -19,7 +19,7 @@ partial class PopupContainer<T> : PopupContainer
 	public async Task Close(PopupResult<T> result)
 	{
 		taskCompletionSource.SetResult(result);
-		await Navigation.PopModalAsync().ConfigureAwait(false);
+		await Navigation.PopModalAsync(false).ConfigureAwait(false);
 	}
 }
 
@@ -37,6 +37,7 @@ partial class PopupContainer : ContentPage
 		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
 	}
 
+	// Prevent the Android Back Button from dismissing the Popup if CanBeDismissedByTappingOutsideOfPopup is true
 	protected override bool OnBackButtonPressed()
 	{
 		if (CanBeDismissedByTappingOutsideOfPopup)
@@ -64,6 +65,6 @@ partial class PopupContainer : ContentPage
 	public async Task Close(PopupResult result)
 	{
 		taskCompletionSource?.SetResult(result);
-		await Navigation.PopModalAsync().ConfigureAwait(false);
+		await Navigation.PopModalAsync(false).ConfigureAwait(false);
 	}
 }

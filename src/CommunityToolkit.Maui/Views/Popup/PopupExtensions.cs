@@ -25,7 +25,7 @@ public static class PopupExtensions
 		var popupLifecycleController = IPlatformApplication.Current?.Services.GetRequiredService<PopupLifecycleController>();
 		popupLifecycleController?.RegisterPopup(popupContainer);
 
-		await navigation.PushModalAsync(popupContainer);
+		await navigation.PushModalAsync(popupContainer, false);
 		return await taskCompletionSource.Task;
 	}
 
@@ -47,18 +47,18 @@ public static class PopupExtensions
 		var popupLifecycleController = IPlatformApplication.Current?.Services.GetRequiredService<PopupLifecycleController>();
 		popupLifecycleController?.RegisterPopup(popupContainer);
 
-		await navigation.PushModalAsync(popupContainer);
+		await navigation.PushModalAsync(popupContainer, false);
 		return await taskCompletionSource.Task;
 	}
 
 	static PopupContainer<TResult> BuildPopupContainer<TResult>(View view, TaskCompletionSource<PopupResult<TResult>> taskCompletionSource)
 	{
-		return new PopupContainer<TResult>(view as Popup<TResult> ?? new Popup<TResult>() { Content = view }, taskCompletionSource);
+		return new PopupContainer<TResult>(view as Popup<TResult> ?? new Popup<TResult> { Content = view }, taskCompletionSource);
 	}
 
 	static PopupContainer BuildPopupContainer(View view, TaskCompletionSource<PopupResult> taskCompletionSource)
 	{
-		return new PopupContainer(view as Popup ?? new Popup() { Content = view }, taskCompletionSource);
+		return new PopupContainer(view as Popup ?? new Popup { Content = view }, taskCompletionSource);
 	}
 
 	static void ConfigurePopupContainer(PopupContainer popupContainer, View popupContent, PopupOptions options)
@@ -81,13 +81,14 @@ public static class PopupExtensions
 		}
 	}
 
-	static View BuildPopupContent(View popup, PopupOptions options)
+	static Grid BuildPopupContent(View popup, PopupOptions options)
 	{
-		var view = new Grid()
+		var view = new Grid
 		{
 			BackgroundColor = null
 		};
-		view.Children.Add(new Border()
+		
+		view.Children.Add(new Border
 		{
 			Content = popup,
 			Background = popup.Background,
@@ -98,6 +99,7 @@ public static class PopupExtensions
 			Margin = options.Margin,
 			Padding = options.Padding
 		});
+		
 		view.BindingContext = popup.BindingContext;
 
 		return view;
