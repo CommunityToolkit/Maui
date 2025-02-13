@@ -77,7 +77,7 @@ public class RatingViewTests : BaseHandlerTest
 		ratingView.ShapeBorderColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.ShapeBorderColor);
 		ratingView.ShapeBorderThickness.Should().Be(RatingViewDefaults.ShapeBorderThickness);
 		ratingView.Spacing.Should().Be(RatingViewDefaults.Spacing);
-		ratingView.RatingViewTapFill.Should().BeOneOf(RatingViewTapFill.Shape).And.Be(RatingViewTapFill.Shape);
+		ratingView.FillWhenTapped.Should().BeOneOf(FillWhenTapped.Shape).And.Be(FillWhenTapped.Shape);
 		ratingView.CustomShapePath.Should().BeNull();
 	}
 
@@ -344,7 +344,7 @@ public class RatingViewTests : BaseHandlerTest
 		{
 			MaximumRating = maximumRating,
 			Rating = rating,
-			RatingViewTapFill = RatingViewTapFill.Background
+			FillWhenTapped = FillWhenTapped.Background
 		};
 		ratingView.EmptyShapeColor.Should().NotBe(emptyShapeColor);
 		ratingView.EmptyShapeColor = emptyShapeColor;
@@ -384,7 +384,7 @@ public class RatingViewTests : BaseHandlerTest
 		{
 			MaximumRating = maximumRating,
 			Rating = rating,
-			RatingViewTapFill = RatingViewTapFill.Background
+			FillWhenTapped = FillWhenTapped.Background
 		};
 		ratingView.FilledShapeColor.Should().NotBe(filledShapeColor);
 		ratingView.BackgroundColor.Should().BeNull();
@@ -487,11 +487,11 @@ public class RatingViewTests : BaseHandlerTest
 	[Fact]
 	public void Properties_Change_RatingFill()
 	{
-		const RatingViewTapFill ratingFill = RatingViewTapFill.Background;
+		const FillWhenTapped ratingFill = FillWhenTapped.Background;
 		RatingView ratingView = new();
-		ratingView.RatingViewTapFill.Should().NotBe(ratingFill);
-		ratingView.RatingViewTapFill = ratingFill;
-		ratingView.RatingViewTapFill.Should().Be(ratingFill);
+		ratingView.FillWhenTapped.Should().NotBe(ratingFill);
+		ratingView.FillWhenTapped = ratingFill;
+		ratingView.FillWhenTapped.Should().Be(ratingFill);
 	}
 
 	[Theory]
@@ -752,7 +752,7 @@ public class RatingViewTests : BaseHandlerTest
 		{
 			Rating = 0,
 			MaximumRating = 3,
-			RatingViewTapFill = RatingViewTapFill.Background,
+			FillWhenTapped = FillWhenTapped.Background,
 			FilledShapeColor = filledShapeColor,
 			EmptyShapeColor = emptyShapeColor,
 			BackgroundColor = backgroundColor
@@ -800,7 +800,7 @@ public class RatingViewTests : BaseHandlerTest
 		{
 			Rating = 1.5,
 			MaximumRating = 3,
-			RatingViewTapFill = RatingViewTapFill.Shape,
+			FillWhenTapped = FillWhenTapped.Shape,
 			FilledShapeColor = filledShapeColor,
 			EmptyShapeColor = emptyShapeColor
 		};

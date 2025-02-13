@@ -400,7 +400,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							ShapeDiameter = largerSizeRatingViewHeight,
 							MaximumRating = 5,
 							Rating = 2.7,
-							RatingViewTapFill = RatingViewTapFill.Background,
+							FillWhenTapped = FillWhenTapped.Background,
 							ShapeBorderThickness = 1
 						}
 						.Row(Row.ColorsItemFillRatingView).ColumnSpan(All<Column>())
@@ -647,7 +647,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							IsReadOnly = false,
 							ShapeDiameter = 30,
 							MaximumRating = 7,
-							RatingViewTapFill = RatingViewTapFill.Shape,
+							FillWhenTapped = FillWhenTapped.Shape,
 							ShapeBorderColor = Colors.Grey,
 							ShapeBorderThickness = 1,
 							Spacing = 3,
@@ -675,7 +675,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							IsReadOnly = false,
 							ShapeDiameter = 30,
 							MaximumRating = 7,
-							RatingViewTapFill = RatingViewTapFill.Background,
+							FillWhenTapped = FillWhenTapped.Background,
 							ShapeBorderColor = Colors.Grey,
 							ShapeBorderThickness = 1,
 							Spacing = 3,

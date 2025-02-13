@@ -41,8 +41,8 @@ public partial class RatingView : TemplatedView, IRatingView
 	/// <summary>The backing store for the <see cref="MaximumRating" /> bindable property.</summary>
 	public static readonly BindableProperty MaximumRatingProperty = BindableProperty.Create(nameof(MaximumRating), typeof(int), typeof(RatingView), defaultValue: RatingViewDefaults.MaximumRating, validateValue: IsMaximumRatingValid, propertyChanged: OnMaximumRatingChange);
 
-	/// <summary>The backing store for the <see cref="RatingViewTapFill" /> bindable property.</summary>
-	public static readonly BindableProperty RatingViewTapFillProperty = BindableProperty.Create(nameof(RatingViewTapFill), typeof(RatingViewTapFill), typeof(RatingView), defaultValue: RatingViewTapFill.Shape, propertyChanged: OnRatingColorChanged);
+	/// <summary>The backing store for the <see cref="FillWhenTapped" /> bindable property.</summary>
+	public static readonly BindableProperty FillWhenTappedProperty = BindableProperty.Create(nameof(FillWhenTapped), typeof(FillWhenTapped), typeof(RatingView), defaultValue: Core.FillWhenTapped.Shape, propertyChanged: OnRatingColorChanged);
 
 	/// <summary>The backing store for the <see cref="Rating" /> bindable property.</summary>
 	public static readonly BindableProperty RatingProperty = BindableProperty.Create(nameof(Rating), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.DefaultRating, validateValue: IsRatingValid, propertyChanged: OnRatingChanged);
@@ -154,11 +154,11 @@ public partial class RatingView : TemplatedView, IRatingView
 		}
 	}
 
-	/// <summary>RatingView selection determining which element of the RatingView Shape to fill when tapped.</summary>
-	public RatingViewTapFill RatingViewTapFill
+	/// <summary>Gets or sets the element to fill when a shape is tapped.</summary>
+	public FillWhenTapped FillWhenTapped
 	{
-		get => (RatingViewTapFill)GetValue(RatingViewTapFillProperty);
-		set => SetValue(RatingViewTapFillProperty, value);
+		get => (FillWhenTapped)GetValue(FillWhenTappedProperty);
+		set => SetValue(FillWhenTappedProperty, value);
 	}
 
 	/// <inheritdoc />
@@ -287,7 +287,7 @@ public partial class RatingView : TemplatedView, IRatingView
 				layout.RemoveAt(lastElement);
 			}
 
-			ratingView.UpdateShapeFills(ratingView.RatingViewTapFill);
+			ratingView.UpdateShapeFills(ratingView.FillWhenTapped);
 			
 		}
 		else if (newMaximumRatingValue > oldMaximumRatingValue)
@@ -306,7 +306,7 @@ public partial class RatingView : TemplatedView, IRatingView
 		var ratingView = (RatingView)bindable;
 		var newRating = (double)newValue;
 
-		ratingView.UpdateShapeFills(ratingView.RatingViewTapFill);
+		ratingView.UpdateShapeFills(ratingView.FillWhenTapped);
 		ratingView.OnRatingChangedEvent(new RatingChangedEventArgs(newRating));
 	}
 
@@ -319,7 +319,7 @@ public partial class RatingView : TemplatedView, IRatingView
 	static void OnRatingColorChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var ratingView = (RatingView)bindable;
-		ratingView.UpdateShapeFills(ratingView.RatingViewTapFill);
+		ratingView.UpdateShapeFills(ratingView.FillWhenTapped);
 	}
 
 	static LinearGradientBrush GetPartialFillBrush(Color filledColor, double partialFill, Color emptyColor)
@@ -437,7 +437,7 @@ public partial class RatingView : TemplatedView, IRatingView
 			RatingLayout.Children.Add(child);
 		}
 
-		UpdateShapeFills(RatingViewTapFill);
+		UpdateShapeFills(FillWhenTapped);
 	}
 
 	void ChangeShape(string shape)
@@ -476,9 +476,9 @@ public partial class RatingView : TemplatedView, IRatingView
 			: GetRatingWhenMaximumRatingEqualsOne(Rating);
 	}
 
-	void UpdateShapeFills(RatingViewTapFill ratingViewTapFill)
+	void UpdateShapeFills(FillWhenTapped fillWhenTapped)
 	{
-		var isShapeFill = ratingViewTapFill is RatingViewTapFill.Shape;
+		var isShapeFill = fillWhenTapped is FillWhenTapped.Shape;
 		var visualElements = GetVisualTreeDescendantsWithBorderAndShape((VisualElement)RatingLayout.GetVisualTreeDescendants()[0], isShapeFill);
 		if (isShapeFill)
 		{

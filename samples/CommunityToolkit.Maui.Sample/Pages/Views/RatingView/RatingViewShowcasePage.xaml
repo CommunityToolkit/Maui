@@ -56,7 +56,7 @@
                         ShapeDiameter="40"
                         MaximumRating="5"
                         Rating="{Binding ReviewSummaryAverage, Mode=OneWay}"
-                        RatingViewTapFill="Background"
+                        FillWhenTapped="Background"
                         ShapeBorderThickness="0"
                         Spacing="5"
                         VerticalOptions="Center" />
@@ -119,7 +119,7 @@
                         ShapeDiameter="40"
                         MaximumRating="5"
                         Rating="4.5"
-                        RatingViewTapFill="Background"
+                        FillWhenTapped="Background"
                         ShapeBorderThickness="0"
                         Spacing="5"
                         VerticalOptions="Center" />
@@ -160,7 +160,7 @@
                 ShapeDiameter="40"
                 MaximumRating="5"
                 Rating="4.9"
-                RatingViewTapFill="Background"
+                FillWhenTapped="Background"
                 ShapeBorderColor="Black"
                 ShapeBorderThickness="3"
                 Spacing="5" />
@@ -176,7 +176,7 @@
                 ShapeDiameter="40"
                 MaximumRating="5"
                 Rating="1"
-                RatingViewTapFill="Background"
+                FillWhenTapped="Background"
                 ShapeBorderThickness="0"
                 Spacing="5" />
             <Label Text="A positive golden trust review 4.5 out of 5" />
@@ -191,7 +191,7 @@
                 ShapeDiameter="40"
                 MaximumRating="5"
                 Rating="4.5"
-                RatingViewTapFill="Shape"
+                FillWhenTapped="Shape"
                 ShapeBorderThickness="0"
                 Spacing="5">
                 <toolkit:RatingView.Background>
