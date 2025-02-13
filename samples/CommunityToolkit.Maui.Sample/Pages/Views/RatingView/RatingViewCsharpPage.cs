@@ -393,14 +393,14 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						.Row(Row.ColorsItemFillTitle).ColumnSpan(All<Column>())
 						.Start()
 						.Bottom()
-						.Text("Item Fill"),
+						.Text("Background Fill"),
 
 					new RatingView
 						{
 							ShapeDiameter = largerSizeRatingViewHeight,
 							MaximumRating = 5,
 							Rating = 2.7,
-							RatingFill = RatingFillElement.Item,
+							RatingViewTapFill = RatingViewTapFill.Background,
 							ShapeBorderThickness = 1
 						}
 						.Row(Row.ColorsItemFillRatingView).ColumnSpan(All<Column>())
@@ -414,7 +414,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						.Bind(RatingView.ShapeBorderColorProperty,
 							getter: static (RatingViewCsharpViewModel vm) => vm.ColorPickerRatingShapeBorderColorTarget,
 							mode: BindingMode.OneWay)
-						.SemanticDescription("A RatingView showing the fill, empty and border color changes, shown using the fill type of 'Item'."),
+						.SemanticDescription("A RatingView showing the fill, empty and border color changes, shown using the fill type of 'Background'."),
 
 					new SectionHeader("ItemShape Border Thickness")
 						.Row(Row.BorderThicknessHeader).ColumnSpan(All<Column>()),
@@ -647,7 +647,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							IsReadOnly = false,
 							ShapeDiameter = 30,
 							MaximumRating = 7,
-							RatingFill = RatingFillElement.Shape,
+							RatingViewTapFill = RatingViewTapFill.Shape,
 							ShapeBorderColor = Colors.Grey,
 							ShapeBorderThickness = 1,
 							Spacing = 3,
@@ -663,7 +663,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 
 					new Label()
 						.Row(Row.RatingItemFillTitle).ColumnSpan(All<Column>())
-						.Text("Item Fill")
+						.Text("Background Fill")
 						.Bottom(),
 
 					new RatingView
@@ -675,7 +675,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							IsReadOnly = false,
 							ShapeDiameter = 30,
 							MaximumRating = 7,
-							RatingFill = RatingFillElement.Item,
+							RatingViewTapFill = RatingViewTapFill.Background,
 							ShapeBorderColor = Colors.Grey,
 							ShapeBorderThickness = 1,
 							Spacing = 3,
@@ -687,7 +687,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							mode: BindingMode.OneWay,
 							convert: static sliderValue => sliderValue,
 							source: ratingViewSlider)
-						.SemanticDescription("A RatingView sample showing the rating changes and the fill type of 'Item'."),
+						.SemanticDescription("A RatingView sample showing the rating changes and the fill type of 'Background'."),
 
 					new SectionHeader("Sizing")
 						.Row(Row.SizingHeader).ColumnSpan(All<Column>()),

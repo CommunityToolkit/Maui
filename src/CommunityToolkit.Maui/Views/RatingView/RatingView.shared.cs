@@ -41,8 +41,8 @@ public partial class RatingView : TemplatedView, IRatingView
 	/// <summary>The backing store for the <see cref="MaximumRating" /> bindable property.</summary>
 	public static readonly BindableProperty MaximumRatingProperty = BindableProperty.Create(nameof(MaximumRating), typeof(int), typeof(RatingView), defaultValue: RatingViewDefaults.MaximumRating, validateValue: IsMaximumRatingValid, propertyChanged: OnMaximumRatingChange);
 
-	/// <summary>The backing store for the <see cref="RatingFill" /> bindable property.</summary>
-	public static readonly BindableProperty RatingFillProperty = BindableProperty.Create(nameof(RatingFill), typeof(RatingFillElement), typeof(RatingView), defaultValue: RatingFillElement.Shape, propertyChanged: OnRatingColorChanged);
+	/// <summary>The backing store for the <see cref="RatingViewTapFill" /> bindable property.</summary>
+	public static readonly BindableProperty RatingViewTapFillProperty = BindableProperty.Create(nameof(RatingViewTapFill), typeof(RatingViewTapFill), typeof(RatingView), defaultValue: RatingViewTapFill.Shape, propertyChanged: OnRatingColorChanged);
 
 	/// <summary>The backing store for the <see cref="Rating" /> bindable property.</summary>
 	public static readonly BindableProperty RatingProperty = BindableProperty.Create(nameof(Rating), typeof(double), typeof(RatingView), defaultValue: RatingViewDefaults.DefaultRating, validateValue: IsRatingValid, propertyChanged: OnRatingChanged);
@@ -154,11 +154,11 @@ public partial class RatingView : TemplatedView, IRatingView
 		}
 	}
 
-	/// <summary>Gets or sets a value indicating which element of the rating to fill.</summary>
-	public RatingFillElement RatingFill
+	/// <summary>RatingView selection determining which element of the RatingView Shape to fill when tapped.</summary>
+	public RatingViewTapFill RatingViewTapFill
 	{
-		get => (RatingFillElement)GetValue(RatingFillProperty);
-		set => SetValue(RatingFillProperty, value);
+		get => (RatingViewTapFill)GetValue(RatingViewTapFillProperty);
+		set => SetValue(RatingViewTapFillProperty, value);
 	}
 
 	/// <inheritdoc />
@@ -287,7 +287,7 @@ public partial class RatingView : TemplatedView, IRatingView
 				layout.RemoveAt(lastElement);
 			}
 
-			ratingView.UpdateAllRatingsFills(ratingView.RatingFill);
+			ratingView.UpdateAllRatingsFills(ratingView.RatingViewTapFill);
 		}
 		else if (newMaximumRatingValue > oldMaximumRatingValue)
 		{
@@ -305,7 +305,7 @@ public partial class RatingView : TemplatedView, IRatingView
 		var ratingView = (RatingView)bindable;
 		var newRating = (double)newValue;
 
-		ratingView.UpdateAllRatingsFills(ratingView.RatingFill);
+		ratingView.UpdateAllRatingsFills(ratingView.RatingViewTapFill);
 		ratingView.OnRatingChangedEvent(new RatingChangedEventArgs(newRating));
 	}
 
@@ -318,7 +318,7 @@ public partial class RatingView : TemplatedView, IRatingView
 	static void OnRatingColorChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var ratingView = (RatingView)bindable;
-		ratingView.UpdateAllRatingsFills(ratingView.RatingFill);
+		ratingView.UpdateAllRatingsFills(ratingView.RatingViewTapFill);
 	}
 
 	static LinearGradientBrush GetPartialFillBrush(Color filledColor, double partialFill, Color emptyColor)
@@ -487,7 +487,7 @@ public partial class RatingView : TemplatedView, IRatingView
 			RatingLayout.Children.Add(child);
 		}
 
-		UpdateAllRatingsFills(RatingFill);
+		UpdateAllRatingsFills(RatingViewTapFill);
 	}
 
 	void ChangeRatingItemShape(string shape)
@@ -526,9 +526,9 @@ public partial class RatingView : TemplatedView, IRatingView
 		weakEventManager.HandleEvent(this, e, nameof(RatingChanged));
 	}
 
-	void UpdateAllRatingsFills(RatingFillElement ratingFill)
+	void UpdateAllRatingsFills(RatingViewTapFill ratingViewTapFill)
 	{
-		var isShapeFill = ratingFill is RatingFillElement.Shape;
+		var isShapeFill = ratingViewTapFill is RatingViewTapFill.Shape;
 		var visualElements = GetVisualTreeDescendantsWithBorderAndShape((VisualElement)RatingLayout.GetVisualTreeDescendants()[0], isShapeFill);
 		if (isShapeFill)
 		{

@@ -224,7 +224,7 @@
                 <Line Grid.Row="2" Style="{StaticResource HR}" />
             </Grid>
             <Stepper
-                x:Name="StepperMaximumRating"
+                x:Name="MaximumRatingStepper"
                 Grid.Row="13"
                 Grid.Column="0"
                 HorizontalOptions="End"
@@ -241,7 +241,7 @@
                 <Label.FormattedText>
                     <FormattedString>
                         <Span Text=": " />
-                        <Span Text="{Binding Source={x:Reference StepperMaximumRating}, Path=Value, x:DataType=Stepper, Mode=OneWay}" />
+                        <Span Text="{Binding Source={x:Reference MaximumRatingStepper}, Path=Value, x:DataType=Stepper, Mode=OneWay}" />
                     </FormattedString>
                 </Label.FormattedText>
             </Label>
@@ -250,8 +250,8 @@
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 HorizontalOptions="Center"
-                MaximumRating="{Binding Source={x:Reference StepperMaximumRating}, Path=Value, x:DataType=Stepper, Mode=OneWay}"
-                RatingChanged="StepperMaximumRating_RatingChanged"
+                MaximumRating="{Binding Source={x:Reference MaximumRatingStepper}, Path=Value, x:DataType=Stepper, Mode=OneWay}"
+                RatingChanged="HandleRatingChanged"
                 SemanticProperties.Description="A RatingView showing changes to the 'MaximumRating' property and with an event handler when the 'RatingChanged' event is triggered."
                 VerticalOptions="Center" />
 
@@ -320,7 +320,7 @@
                 ShapeDiameter="40"
                 MaximumRating="5"
                 Rating="2.7"
-                RatingFill="Shape"
+                RatingViewTapFill="Shape"
                 SemanticProperties.Description="A RatingView showing the fill, empty and border color changes, shown using the fill type of 'Shape'."
                 ShapeBorderColor="{Binding ColorPickerRatingShapeBorderColorTarget}"
                 ShapeBorderThickness="1"
@@ -329,7 +329,7 @@
                 Grid.Row="21"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
-                Text="Item Fill" />
+                Text="Background Fill" />
             <toolkit:RatingView
                 Grid.Row="22"
                 Grid.Column="0"
@@ -340,8 +340,8 @@
                 ShapeDiameter="40"
                 MaximumRating="5"
                 Rating="2.7"
-                RatingFill="Item"
-                SemanticProperties.Description="A RatingView showing the fill, empty and border color changes, shown using the fill type of 'Item'."
+                RatingViewTapFill="Background"
+                SemanticProperties.Description="A RatingView showing the fill, empty and border color changes, shown using the fill type of 'Background'."
                 ShapeBorderColor="{Binding ColorPickerRatingShapeBorderColorTarget}"
                 ShapeBorderThickness="1"
                 VerticalOptions="Start" />
@@ -598,7 +598,7 @@
                 ShapeDiameter="30"
                 MaximumRating="7"
                 Rating="{Binding Source={x:Reference RatingRatingView}, Path=Value, x:DataType=Slider}"
-                RatingFill="Shape"
+                RatingViewTapFill="Shape"
                 SemanticProperties.Description="A RatingView sample showing the rating changes and the fill type of 'Shape'."
                 ShapeBorderColor="Grey"
                 ShapeBorderThickness="1"
@@ -608,7 +608,7 @@
                 Grid.Row="39"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
-                Text="Item Fill"
+                Text="Background Fill"
                 VerticalOptions="End" />
             <toolkit:RatingView
                 Grid.Row="40"
@@ -622,8 +622,8 @@
                 ShapeDiameter="30"
                 MaximumRating="7"
                 Rating="{Binding Source={x:Reference RatingRatingView}, Path=Value, x:DataType=Slider}"
-                RatingFill="Item"
-                SemanticProperties.Description="A RatingView sample showing the rating changes and the fill type of 'Item'."
+                RatingViewTapFill="Background"
+                SemanticProperties.Description="A RatingView sample showing the rating changes and the fill type of 'Background'."
                 ShapeBorderColor="Grey"
                 ShapeBorderThickness="1"
                 Spacing="3"
