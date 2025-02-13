@@ -70,7 +70,7 @@ public static class PopupExtensions
 
 		if (options.CanBeDismissedByTappingOutsideOfPopup)
 		{
-			popupContent.GestureRecognizers.Add(new TapGestureRecognizer()
+			popupContent.GestureRecognizers.Add(new TapGestureRecognizer
 			{
 				Command = new Command(async () =>
 				{

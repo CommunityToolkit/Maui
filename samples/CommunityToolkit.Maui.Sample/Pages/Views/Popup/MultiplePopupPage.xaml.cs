@@ -20,7 +20,7 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 
 	async void HandleSimplePopupButtonClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<SimplePopup>(Navigation, new PopupOptions()
+		await popupService.ShowPopupAsync<SimplePopup>(Navigation, new PopupOptions
 		{
 			Shape = new RoundRectangle() { CornerRadius = new CornerRadius(15) }
 		}, CancellationToken.None);

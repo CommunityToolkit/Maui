@@ -11,7 +11,7 @@ public partial class PopupContentView : Popup
 
 		BindingContext = popupContentViewModel;
 
-		OnOpened += (s, e) =>
+		Opened += (s, e) =>
 			popupContentViewModel.SetMessage(
 				"This is a dynamically set message, shown in a popup without the need to create your own Popup subclass.");
 	}

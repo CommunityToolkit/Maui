@@ -7,44 +7,46 @@ namespace CommunityToolkit.Maui.Views;
 /// </summary>
 public partial class Popup : ContentView
 {
-	PopupContainer? popupContainer;
-
 	/// <summary>
 	/// Event occurs when the Popup is opened.
 	/// </summary>
-	public event EventHandler? OnOpened;
+	public event EventHandler? Opened;
 
 	/// <summary>
 	/// Event occurs when the Popup is closed.
 	/// </summary>
-	public event EventHandler? OnClosed;
+	public event EventHandler? Closed;
 
 	/// <summary>
 	/// Close the Popup.
 	/// </summary>
-	public async Task Close()
-	{
-		if (popupContainer is null)
-		{
-			return;
-		}
-
-		await popupContainer.Close(new PopupResult(false));
-	}
-
-	internal void SetPopup(PopupContainer container)
-	{
-		popupContainer = container;
-	}
+	public virtual Task Close() => GetPopupContainer().Close(new PopupResult(false));
 
 	internal void NotifyPopupIsOpened()
 	{
-		OnOpened?.Invoke(this, EventArgs.Empty);
+		Opened?.Invoke(this, EventArgs.Empty);
 	}
 
 	internal void NotifyPopupIsClosed()
 	{
-		OnClosed?.Invoke(this, EventArgs.Empty);
+		Closed?.Invoke(this, EventArgs.Empty);
+	}
+
+	PopupContainer GetPopupContainer()
+	{
+		var parent = Parent;
+
+		while (parent is not null)
+		{
+			if (parent.Parent is PopupContainer popupContainer)
+			{
+				return popupContainer;
+			}
+
+			parent = parent.Parent;
+		}
+		
+		throw new InvalidOperationException($"Unable to close popup: could not locate {nameof(PopupContainer)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Close)} method");
 	}
 }
 
@@ -53,24 +55,26 @@ public partial class Popup : ContentView
 /// </summary>
 public partial class Popup<T> : Popup
 {
-	PopupContainer<T>? popupContainer;
-
 	/// <summary>
 	/// Close the Popup with a result.
 	/// </summary>
 	/// <param name="result">Popup result</param>
-	public async Task Close(T result)
+	public virtual Task Close(T result) =>  GetPopupContainer().Close(new PopupResult<T>(result, false));
+	
+	PopupContainer<T> GetPopupContainer()
 	{
-		if (popupContainer is null)
+		var parent = Parent;
+		
+		while (parent is not null)
 		{
-			return;
+			if (parent.Parent is PopupContainer<T> popupContainer)
+			{
+				return popupContainer;
+			}
+
+			parent = parent.Parent;
 		}
-
-		await popupContainer.Close(new PopupResult<T>(result, false));
-	}
-
-	internal void SetPopup(PopupContainer<T> container)
-	{
-		popupContainer = container;
+		
+		throw new InvalidOperationException($"Unable to close popup: could not locate {nameof(PopupContainer)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Close)} method");
 	}
 }

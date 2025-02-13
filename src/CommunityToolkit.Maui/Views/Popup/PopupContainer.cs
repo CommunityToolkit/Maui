@@ -11,15 +11,15 @@ partial class PopupContainer<T> : PopupContainer
 	public PopupContainer(Popup<T> content, TaskCompletionSource<PopupResult<T>> taskCompletionSource) : base(content, null)
 	{
 		this.taskCompletionSource = taskCompletionSource;
-		content.SetPopup(this);
+		
 		Shell.SetPresentationMode(this, PresentationMode.ModalNotAnimated);
 		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
 	}
 
-	public async Task Close(PopupResult<T> result)
+	public Task Close(PopupResult<T> result)
 	{
 		taskCompletionSource.SetResult(result);
-		await Navigation.PopModalAsync(false).ConfigureAwait(false);
+		return Navigation.PopModalAsync(false);
 	}
 }
 
@@ -32,7 +32,7 @@ partial class PopupContainer : ContentPage
 	{
 		this.content = content;
 		this.taskCompletionSource = taskCompletionSource;
-		content.SetPopup(this);
+
 		Shell.SetPresentationMode(this, PresentationMode.ModalNotAnimated);
 		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
 	}
@@ -62,9 +62,9 @@ partial class PopupContainer : ContentPage
 		content.NotifyPopupIsOpened();
 	}
 
-	public async Task Close(PopupResult result)
+	public Task Close(PopupResult result)
 	{
 		taskCompletionSource?.SetResult(result);
-		await Navigation.PopModalAsync(false).ConfigureAwait(false);
+		return Navigation.PopModalAsync(false);
 	}
 }
