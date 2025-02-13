@@ -7,17 +7,17 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class RatingViewXamlPage : BasePage<RatingViewXamlViewModel>
 {
-	public RatingViewXamlPage(RatingViewXamlViewModel viewModel) : base(viewModel)
-	{
-		InitializeComponent();
-	}
+    public RatingViewXamlPage(RatingViewXamlViewModel viewModel) : base(viewModel)
+    {
+        InitializeComponent();
+    }
 
-	static async void StepperMaximumRating_RatingChanged(object? sender, RatingChangedEventArgs e)
-	{
-		if (sender is RatingView ratingView)
-		{
-			// This is the weak event raised when the rating is changed.  The developer can then perform further actions (such as save to DB).
-			await Toast.Make($"New Rating: {ratingView.Rating:F2}").Show(CancellationToken.None);
-		}
-	}
+    // This is event handler demonstrates the RatingChanged event is raised when a user modifies the rating
+    async void HandleRatingChanged(object? sender, RatingChangedEventArgs e)
+    {
+        ArgumentNullException.ThrowIfNull(sender);
+
+        var ratingView = (RatingView)sender;
+        await Toast.Make($"New Rating: {ratingView.Rating:F2}").Show(CancellationToken.None);
+    }
 }
