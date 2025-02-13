@@ -22,8 +22,13 @@ public class PopupServiceTests : BaseHandlerTest
 	public async Task ShowPopupAsyncWithNotRegisteredServiceShouldThrowInvalidOperationException()
 	{
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+		
+		if (Application.Current?.Windows[0].Page is not Page page)
+		{
+			throw new InvalidOperationException("Page cannot be null");
+		}
 
-		await Assert.ThrowsAsync<InvalidOperationException>(() => popupService.ShowPopupAsync<INotifyPropertyChanged>(Application.Current!.Windows[0].Page!.Navigation, new PopupOptions(), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAsync<InvalidOperationException>(() => popupService.ShowPopupAsync<INotifyPropertyChanged>(page.Navigation, new PopupOptions(), TestContext.Current.CancellationToken));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -35,8 +40,13 @@ public class PopupServiceTests : BaseHandlerTest
 
 		// Ensure CancellationToken has expired
 		await Task.Delay(100, CancellationToken.None);
+		
+		if (Application.Current?.Windows[0].Page is not Page page)
+		{
+			throw new InvalidOperationException("Page cannot be null");
+		}
 
-		await Assert.ThrowsAsync<OperationCanceledException>(() => popupService.ShowPopupAsync<MockPageViewModel>(Application.Current!.Windows[0].Page!.Navigation, new PopupOptions(), cts.Token));
+		await Assert.ThrowsAsync<OperationCanceledException>(() => popupService.ShowPopupAsync<MockPageViewModel>(page.Navigation, new PopupOptions(), cts.Token));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -59,7 +69,12 @@ public class PopupServiceTests : BaseHandlerTest
 		var popupInstance = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
 		var popupViewModel = ServiceProvider.GetRequiredService<MockPageViewModel>();
 
-		await popupService.ShowPopupAsync<MockPageViewModel, object?>(Application.Current!.Windows[0].Page!.Navigation, new PopupOptions(), TestContext.Current.CancellationToken);
+		if (Application.Current?.Windows[0].Page is not Page page)
+		{
+			throw new InvalidOperationException("Page cannot be null");
+		}
+		
+		await popupService.ShowPopupAsync<MockPageViewModel, object?>(page.Navigation, new PopupOptions(), TestContext.Current.CancellationToken);
 
 		Assert.Same(popupInstance.BindingContext, popupViewModel);
 	}
@@ -69,8 +84,13 @@ public class PopupServiceTests : BaseHandlerTest
 	{
 		var mockPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+		
+		if (Application.Current?.Windows[0].Page is not Page page)
+		{
+			throw new InvalidOperationException("Page cannot be null");
+		}
 
-		var result = await popupService.ShowPopupAsync<MockPageViewModel, object?>(Application.Current!.Windows[0].Page!.Navigation, new PopupOptions(), CancellationToken.None);
+		var result = await popupService.ShowPopupAsync<MockPageViewModel, object?>(page.Navigation, new PopupOptions(), CancellationToken.None);
 
 		Assert.Same(mockPopup.Result, result.Result);
 	}
@@ -82,10 +102,10 @@ sealed class MockSelfClosingPopup : Popup<object?>
 	{
 		BindingContext = viewModel;
 		Result = result;
-		OnOpened += MockSelfClosingPopup_OnOpened;
+		Opened += MockSelfClosingPopupOpened;
 	}
 
-	void MockSelfClosingPopup_OnOpened(object? sender, EventArgs e)
+	void MockSelfClosingPopupOpened(object? sender, EventArgs e)
 	{
 		var timer = Dispatcher.CreateTimer();
 		timer.Interval = TimeSpan.FromMilliseconds(500);
