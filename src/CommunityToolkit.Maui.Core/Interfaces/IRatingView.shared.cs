@@ -27,6 +27,6 @@ public interface IRatingView : IContentView
     /// <summary>Get a value indicating the background empty color.</summary>
     Color EmptyShapeColor { get; }
 
-    /// <summary>Get a value indicating the background filled color.</summary>
-    Color FilledShapeColor { get; }
+    /// <summary>Gets or sets the color of the fill used to display the current rating.</summary>
+    Color FillColor { get; }
 }

@@ -43,7 +43,7 @@ public static class RatingViewDefaults
 
 	/// <summary>Default filled color for a rating.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static Color FilledShapeColor { get; } = Colors.Yellow;
+	public static Color FillColor { get; } = Colors.Yellow;
 
 	/// <summary>Default rating item padding.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
