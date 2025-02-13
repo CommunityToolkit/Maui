@@ -16,9 +16,9 @@ public abstract partial class BaseRatingViewViewModel : BaseViewModel
 		.GetFields(BindingFlags.Static | BindingFlags.Public)
 		.ToDictionary(static c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()))
 		.AsReadOnly();
-	
+
 	static readonly ImmutableList<string> colorsForPickers = [.. colorList.Keys];
-	
+
 	public IReadOnlyList<string> ColorsForPickers => [.. colorsForPickers];
 
 	public Thickness RatingViewShapePaddingValue => new(RatingViewShapePaddingLeft, RatingViewShapePaddingTop, RatingViewShapePaddingRight, RatingViewShapePaddingBottom);
@@ -30,15 +30,15 @@ public abstract partial class BaseRatingViewViewModel : BaseViewModel
 	public Color ColorPickerFilledBackgroundTarget => colorList.ElementAtOrDefault(ColorPickerFilledBackgroundSelectedIndex).Value;
 
 	[ObservableProperty]
-    public partial double StepperValueMaximumRatings { get; set; } = 1;
+	public partial double StepperValueMaximumRatings { get; set; } = 1;
 
-    [ObservableProperty]
-    public partial Thickness RatingViewShapePadding { get; set; } = new(0);
+	[ObservableProperty]
+	public partial Thickness RatingViewShapePadding { get; set; } = new(0);
 
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(ColorPickerFilledBackgroundTarget))]
-    public partial int ColorPickerFilledBackgroundSelectedIndex { get; set; } =  colorsForPickers.IndexOf(nameof(Colors.Red));
+	[ObservableProperty, NotifyPropertyChangedFor(nameof(ColorPickerFilledBackgroundTarget))]
+	public partial int ColorPickerFilledBackgroundSelectedIndex { get; set; } = colorsForPickers.IndexOf(nameof(Colors.Red));
 
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(ColorPickerEmptyBackgroundTarget))]
+	[ObservableProperty, NotifyPropertyChangedFor(nameof(ColorPickerEmptyBackgroundTarget))]
 	public partial int ColorPickerEmptyBackgroundSelectedIndex { get; set; } = colorsForPickers.IndexOf(nameof(Colors.Green));
 
 	[ObservableProperty, NotifyPropertyChangedFor(nameof(ColorPickerRatingShapeBorderColorTarget))]

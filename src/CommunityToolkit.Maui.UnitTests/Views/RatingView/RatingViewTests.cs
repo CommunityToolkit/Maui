@@ -28,7 +28,7 @@ public class RatingViewTests : BaseHandlerTest
 		RatingView.PathShapes.Like.Should().BeEquivalentTo(expectedLikePath);
 		RatingView.PathShapes.Dislike.Should().BeEquivalentTo(expectedDislikePath);
 	}
-	
+
 	[Fact]
 	public void Defaults_BindingContext()
 	{
@@ -366,7 +366,7 @@ public class RatingViewTests : BaseHandlerTest
 		ratingView.EmptyShapeColor = emptyShapeColor;
 		ratingView.EmptyShapeColor.Should().Be(emptyShapeColor);
 
-		var emptyRatingItem = (Microsoft.Maui.Controls.Shapes.Path) GetItemShape(ratingView, maximumRating - 1).GetVisualTreeDescendants()[0];
+		var emptyRatingItem = (Microsoft.Maui.Controls.Shapes.Path)GetItemShape(ratingView, maximumRating - 1).GetVisualTreeDescendants()[0];
 		emptyRatingItem.Fill.Should().Be(new SolidColorBrush(emptyShapeColor));
 	}
 
@@ -522,7 +522,7 @@ public class RatingViewTests : BaseHandlerTest
 		{
 			CustomShapePath = customShape
 		};
-		
+
 		ratingView.Shape.Should().NotBe(expectedShape);
 		ratingView.Shape = expectedShape;
 		ratingView.Shape.Should().Be(expectedShape);
@@ -777,15 +777,15 @@ public class RatingViewTests : BaseHandlerTest
 		var filledRatingItem = (Border)ratingView.RatingLayout.Children[0];
 		var partialFilledRatingItem = (Border)ratingView.RatingLayout.Children[1];
 		var emptyFilledRatingItem = (Border)ratingView.RatingLayout.Children[2];
-		
+
 		filledRatingItem.Content.Should().NotBeNull();
 		filledRatingItem.Background.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(FillColor));
 		((Shape)filledRatingItem.Content).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyShapeColor));
-		
+
 		partialFilledRatingItem.Content.Should().NotBeNull();
 		partialFilledRatingItem.Background.Should().BeOfType<LinearGradientBrush>();
 		((Shape)partialFilledRatingItem.Content).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyShapeColor));
-		
+
 		emptyFilledRatingItem.Content.Should().NotBeNull();
 		emptyFilledRatingItem.Background.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(backgroundColor));
 		((Shape)emptyFilledRatingItem.Content).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyShapeColor));

@@ -289,7 +289,7 @@ public partial class RatingView : TemplatedView, IRatingView
 			}
 
 			ratingView.UpdateShapeFills(ratingView.FillOption);
-			
+
 		}
 		else if (newMaximumRatingValue > oldMaximumRatingValue)
 		{
@@ -471,9 +471,9 @@ public partial class RatingView : TemplatedView, IRatingView
 
 		var tappedShape = (Border)sender;
 		var tappedShapeIndex = RatingLayout.Children.IndexOf(tappedShape);
-		
-		Rating = MaximumRating > 1 
-			? tappedShapeIndex + 1 
+
+		Rating = MaximumRating > 1
+			? tappedShapeIndex + 1
 			: GetRatingWhenMaximumRatingEqualsOne(Rating);
 	}
 
@@ -489,7 +489,7 @@ public partial class RatingView : TemplatedView, IRatingView
 		{
 			UpdateAllBackgroundFills(visualElements, Rating, FillColor, EmptyShapeColor, BackgroundColor);
 		}
-		
+
 		static void UpdateAllShapeFills(ReadOnlyCollection<VisualElement> shapes, double rating, Color filledColor, Color emptyColor)
 		{
 			var fullFillCount = (int)Math.Floor(rating); // Determine the number of fully filled shapes
@@ -511,7 +511,7 @@ public partial class RatingView : TemplatedView, IRatingView
 				}
 			}
 		}
-		
+
 		static void UpdateAllBackgroundFills(ReadOnlyCollection<VisualElement> shapes, double rating, Color filledColor, Color emptyColor, Color? backgroundColor)
 		{
 			var fullFillCount = (int)Math.Floor(rating); // Determine the number of fully filled shapes
@@ -527,22 +527,22 @@ public partial class RatingView : TemplatedView, IRatingView
 				}
 
 				shape.Fill = emptyColor;
-				
+
 				if (i < fullFillCount) // Fully filled shape
 				{
-					shapeBorder.Background = new SolidColorBrush(filledColor); 
+					shapeBorder.Background = new SolidColorBrush(filledColor);
 				}
 				else if (i == fullFillCount && partialFillCount > 0) // Partial fill
 				{
-					shapeBorder.Background = GetPartialFillBrush(filledColor, partialFillCount, backgroundColor); 
+					shapeBorder.Background = GetPartialFillBrush(filledColor, partialFillCount, backgroundColor);
 				}
 				else // Empty fill
 				{
-					shapeBorder.Background = new SolidColorBrush(backgroundColor); 
+					shapeBorder.Background = new SolidColorBrush(backgroundColor);
 				}
 			}
 		}
 	}
-	
+
 	void OnRatingChangedEvent(RatingChangedEventArgs e) => weakEventManager.HandleEvent(this, e, nameof(RatingChanged));
 }
