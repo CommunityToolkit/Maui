@@ -511,10 +511,11 @@ public partial class RatingView : TemplatedView, IRatingView
 			}
 		}
 		
-		static void UpdateAllBackgroundFills(ReadOnlyCollection<VisualElement> shapes, double rating, Color filledColor, Color emptyColor, Color backgroundColor)
+		static void UpdateAllBackgroundFills(ReadOnlyCollection<VisualElement> shapes, double rating, Color filledColor, Color emptyColor, Color? backgroundColor)
 		{
 			var fullFillCount = (int)Math.Floor(rating); // Determine the number of fully filled shapes
 			var partialFillCount = rating - fullFillCount; // Determine the fraction for the partially filled shapes (if any)
+			backgroundColor ??= Colors.Transparent;
 
 			for (var i = 0; i < shapes.Count; i++)
 			{
