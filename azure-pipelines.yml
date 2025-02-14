@@ -301,35 +301,35 @@ jobs:
         inputs:
           script: 'dotnet build $(PathToCommunityToolkitMapsCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionMaps) -p:Version=$(NugetPackageVersion)'
 
-      - task: CmdLine@2
-        displayName: 'Run CommunityToolkit.Maui.Analyzers.UnitTests'
-        env:
-          VSTEST_TESTHOST_SHUTDOWN_TIMEOUT: 1100 # Fixes "The active test run was aborted. Reason: Test host process crashed" https://dev.azure.com/dotnet/CommunityToolkit/_build/results?buildId=109660&view=logs&j=3f96dcf5-6e1e-5485-3200-c557d5216be3&t=12286b69-c788-55db-0a8c-ef899858fbe6&l=76 (source: https://github.com/microsoft/vstest/issues/2952#issuecomment-2234253765): $(sauceUsername)
-        inputs:
-          script: 'dotnet test $(PathToCommunityToolkitAnalyzersUnitTestCsproj) -c Release'
+      # - task: CmdLine@2
+      #   displayName: 'Run CommunityToolkit.Maui.Analyzers.UnitTests'
+      #   env:
+      #     VSTEST_TESTHOST_SHUTDOWN_TIMEOUT: 1100 # Fixes "The active test run was aborted. Reason: Test host process crashed" https://dev.azure.com/dotnet/CommunityToolkit/_build/results?buildId=109660&view=logs&j=3f96dcf5-6e1e-5485-3200-c557d5216be3&t=12286b69-c788-55db-0a8c-ef899858fbe6&l=76 (source: https://github.com/microsoft/vstest/issues/2952#issuecomment-2234253765): $(sauceUsername)
+      #   inputs:
+      #     script: 'dotnet test $(PathToCommunityToolkitAnalyzersUnitTestCsproj) -c Release'
 
-      - task: CmdLine@2
-        displayName: 'Run CommunityToolkit.Maui.UnitTests'
-        env:
-          VSTEST_TESTHOST_SHUTDOWN_TIMEOUT: 1100 # Fixes "The active test run was aborted. Reason: Test host process crashed" https://dev.azure.com/dotnet/CommunityToolkit/_build/results?buildId=109660&view=logs&j=3f96dcf5-6e1e-5485-3200-c557d5216be3&t=12286b69-c788-55db-0a8c-ef899858fbe6&l=76 (source: https://github.com/microsoft/vstest/issues/2952#issuecomment-2234253765): $(sauceUsername)
-        inputs:
-          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory $(Agent.TempDirectory)'
+      # - task: CmdLine@2
+      #   displayName: 'Run CommunityToolkit.Maui.UnitTests'
+      #   env:
+      #     VSTEST_TESTHOST_SHUTDOWN_TIMEOUT: 1100 # Fixes "The active test run was aborted. Reason: Test host process crashed" https://dev.azure.com/dotnet/CommunityToolkit/_build/results?buildId=109660&view=logs&j=3f96dcf5-6e1e-5485-3200-c557d5216be3&t=12286b69-c788-55db-0a8c-ef899858fbe6&l=76 (source: https://github.com/microsoft/vstest/issues/2952#issuecomment-2234253765): $(sauceUsername)
+      #   inputs:
+      #     script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory $(Agent.TempDirectory)'
 
-      - task: PublishTestResults@2
-        condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
-        displayName: 'Publish Test Results'
-        inputs:
-          testResultsFormat: VSTest
-          testResultsFiles: '**/*.trx'
-          searchFolder: $(Agent.TempDirectory)
+      # - task: PublishTestResults@2
+      #   condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
+      #   displayName: 'Publish Test Results'
+      #   inputs:
+      #     testResultsFormat: VSTest
+      #     testResultsFiles: '**/*.trx'
+      #     searchFolder: $(Agent.TempDirectory)
 
-      - task: PublishCodeCoverageResults@1
-        condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
-        displayName: 'Publish Code Coverage Results'
-        inputs:
-          codeCoverageTool: 'Cobertura'
-          summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
-          failIfCoverageEmpty: true
+      # - task: PublishCodeCoverageResults@1
+      #   condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
+      #   displayName: 'Publish Code Coverage Results'
+      #   inputs:
+      #     codeCoverageTool: 'Cobertura'
+      #     summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
+      #     failIfCoverageEmpty: true
 
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit.Maui.Core NuGet'

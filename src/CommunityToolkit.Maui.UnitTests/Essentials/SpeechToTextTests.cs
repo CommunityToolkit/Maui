@@ -62,11 +62,12 @@ public class SpeechToTextTests(ITestOutputHelper testOutputHelper) : BaseTest
 		void OnRecognitionTextUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs args)
 		{
 			currentPartialText = args.RecognitionResult;
-		};
+		}
+
 		void OnRecognitionTextCompleted(object? sender, SpeechToTextRecognitionResultCompletedEventArgs args)
 		{
 			currentFinalText = args.RecognitionResult.Text;
-		};
+		}
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
