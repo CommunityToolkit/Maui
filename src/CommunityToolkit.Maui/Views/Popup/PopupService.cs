@@ -71,18 +71,18 @@ public class PopupService : IPopupService
 
 	
 	/// <inheritdoc />
-	public async Task<PopupResult> ShowPopupAsync<TBindingContext>(INavigation navigation, PopupOptions options, CancellationToken token = default)
+	public Task<PopupResult> ShowPopupAsync<TBindingContext>(INavigation navigation, PopupOptions options, CancellationToken token = default)
 		where TBindingContext : notnull
 	{
 		token.ThrowIfCancellationRequested();
 		var bindingContext = serviceProvider.GetRequiredService<TBindingContext>();
 		var popupContent = GetPopupContent(bindingContext);
 
-		return await navigation.ShowPopup(popupContent, options, token);
+		return navigation.ShowPopup(popupContent, options, token);
 	}
 
 	/// <inheritdoc />
-	public async Task<PopupResult<T>> ShowPopupAsync<TBindingContext, T>(INavigation navigation, 
+	public Task<PopupResult<T>> ShowPopupAsync<TBindingContext, T>(INavigation navigation, 
 		PopupOptions options,
 		CancellationToken token = default)
 		where TBindingContext : notnull
@@ -91,7 +91,7 @@ public class PopupService : IPopupService
 		var bindingContext = serviceProvider.GetRequiredService<TBindingContext>();
 		var popupContent = GetPopupContent(bindingContext);
 
-		return await navigation.ShowPopup<T>(popupContent, options, token);
+		return navigation.ShowPopup<T>(popupContent, options, token);
 	}
 
 	/// <inheritdoc />
