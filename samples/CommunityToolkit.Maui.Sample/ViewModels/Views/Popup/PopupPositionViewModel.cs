@@ -54,7 +54,7 @@ public partial class PopupPositionViewModel : BaseViewModel
 				break;
 		}
 
-		await Page.Navigation.ShowPopup<TransparentPopup>(new TransparentPopup(), new PopupOptions
+		await Page.ShowPopup<TransparentPopup>(new TransparentPopup(), new PopupOptions
 		{
 			VerticalOptions = verticalOptions,
 			HorizontalOptions = horizontalOptions

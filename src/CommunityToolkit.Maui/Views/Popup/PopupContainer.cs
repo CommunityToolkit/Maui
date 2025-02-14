@@ -16,10 +16,12 @@ partial class PopupContainer<T> : PopupContainer
 		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
 	}
 
-	public Task Close(PopupResult<T> result)
+	public Task Close(PopupResult<T> result, CancellationToken token = default)
 	{
+		token.ThrowIfCancellationRequested();
+		
 		taskCompletionSource.SetResult(result);
-		return Navigation.PopModalAsync(false);
+		return Navigation.PopModalAsync(false).WaitAsync(token);
 	}
 }
 
@@ -36,7 +38,17 @@ partial class PopupContainer : ContentPage
 		Shell.SetPresentationMode(this, PresentationMode.ModalNotAnimated);
 		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
 	}
-
+	
+	public bool CanBeDismissedByTappingOutsideOfPopup { get; internal set; }
+	
+	public Task Close(PopupResult result, CancellationToken token = default)
+	{
+		token.ThrowIfCancellationRequested();
+		
+		taskCompletionSource?.SetResult(result);
+		return Navigation.PopModalAsync(false).WaitAsync(token);
+	}
+	
 	// Prevent the Android Back Button from dismissing the Popup if CanBeDismissedByTappingOutsideOfPopup is true
 	protected override bool OnBackButtonPressed()
 	{
@@ -48,8 +60,6 @@ partial class PopupContainer : ContentPage
 		return true;
 	}
 
-	public bool CanBeDismissedByTappingOutsideOfPopup { get; internal set; }
-
 	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
 	{
 		content.NotifyPopupIsClosed();
@@ -60,11 +70,5 @@ partial class PopupContainer : ContentPage
 	{
 		base.OnNavigatedTo(args);
 		content.NotifyPopupIsOpened();
-	}
-
-	public Task Close(PopupResult result)
-	{
-		taskCompletionSource?.SetResult(result);
-		return Navigation.PopModalAsync(false);
 	}
 }

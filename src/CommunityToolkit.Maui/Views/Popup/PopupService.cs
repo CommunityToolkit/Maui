@@ -71,30 +71,31 @@ public class PopupService : IPopupService
 
 	
 	/// <inheritdoc />
-	public async Task<PopupResult> ShowPopupAsync<TBindingContext>(INavigation navigation, PopupOptions options, CancellationToken cancellationToken)
+	public async Task<PopupResult> ShowPopupAsync<TBindingContext>(INavigation navigation, PopupOptions options, CancellationToken token = default)
 		where TBindingContext : notnull
 	{
-		cancellationToken.ThrowIfCancellationRequested();
+		token.ThrowIfCancellationRequested();
 		var bindingContext = serviceProvider.GetRequiredService<TBindingContext>();
 		var popupContent = GetPopupContent(bindingContext);
 
-		return await navigation.ShowPopup(popupContent, options);
+		return await navigation.ShowPopup(popupContent, options, token);
 	}
 
 	/// <inheritdoc />
-	public async Task<PopupResult<T>> ShowPopupAsync<TBindingContext, T>(INavigation navigation, PopupOptions options,
-		CancellationToken cancellationToken)
+	public async Task<PopupResult<T>> ShowPopupAsync<TBindingContext, T>(INavigation navigation, 
+		PopupOptions options,
+		CancellationToken token = default)
 		where TBindingContext : notnull
 	{
-		cancellationToken.ThrowIfCancellationRequested();
+		token.ThrowIfCancellationRequested();
 		var bindingContext = serviceProvider.GetRequiredService<TBindingContext>();
 		var popupContent = GetPopupContent(bindingContext);
 
-		return await navigation.ShowPopup<T>(popupContent, options);
+		return await navigation.ShowPopup<T>(popupContent, options, token);
 	}
 
 	/// <inheritdoc />
-	public async Task ClosePopupAsync(CancellationToken cancellationToken)
+	public async Task ClosePopupAsync(CancellationToken cancellationToken = default)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 		var popupLifecycleController = serviceProvider.GetRequiredService<PopupLifecycleController>();
@@ -104,12 +105,12 @@ public class PopupService : IPopupService
 			return;
 		}
 
-		await popup.Close(new PopupResult(false));
+		await popup.Close(new PopupResult(false), cancellationToken);
 		popupLifecycleController.UnregisterPopup(popup);
 	}
 
 	/// <inheritdoc />
-	public async Task ClosePopupAsync<T>(T result, CancellationToken cancellationToken)
+	public async Task ClosePopupAsync<T>(T result, CancellationToken cancellationToken = default)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 		var popupLifecycleController = serviceProvider.GetRequiredService<PopupLifecycleController>();
@@ -119,7 +120,7 @@ public class PopupService : IPopupService
 			return;
 		}
 
-		await popup.Close(new PopupResult<T>(result, false));
+		await popup.Close(new PopupResult<T>(result, false), cancellationToken);
 		popupLifecycleController.UnregisterPopup(popup);
 	}
 
