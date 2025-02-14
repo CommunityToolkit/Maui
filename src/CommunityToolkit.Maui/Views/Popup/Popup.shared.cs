@@ -7,15 +7,25 @@ namespace CommunityToolkit.Maui.Views;
 /// </summary>
 public partial class Popup : ContentView
 {
+	readonly WeakEventManager weakEventManager = new();
+	
 	/// <summary>
 	/// Event occurs when the Popup is opened.
 	/// </summary>
-	public event EventHandler? Opened;
+	public event EventHandler Opened
+	{
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
+	}
 
 	/// <summary>
 	/// Event occurs when the Popup is closed.
 	/// </summary>
-	public event EventHandler? Closed;
+	public event EventHandler Closed
+	{
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
+	}
 
 	/// <summary>
 	/// Close the Popup.
@@ -24,12 +34,12 @@ public partial class Popup : ContentView
 
 	internal void NotifyPopupIsOpened()
 	{
-		Opened?.Invoke(this, EventArgs.Empty);
+		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Opened));
 	}
 
 	internal void NotifyPopupIsClosed()
 	{
-		Closed?.Invoke(this, EventArgs.Empty);
+		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Closed));
 	}
 
 	PopupContainer GetPopupContainer()
