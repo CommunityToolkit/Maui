@@ -13,9 +13,12 @@ public static class PopupExtensions
 	/// <param name="navigation">Popup parent</param>
 	/// <param name="view">Popup content</param>
 	/// <param name="options"><see cref="PopupOptions"/></param>
+	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Popup Result</returns>
-	public static async Task<PopupResult<TResult>> ShowPopup<TResult>(this INavigation navigation, View view, PopupOptions options)
+	public static async Task<PopupResult<TResult>> ShowPopup<TResult>(this INavigation navigation, View view, PopupOptions options, CancellationToken token = default)
 	{
+		token.ThrowIfCancellationRequested();
+		
 		TaskCompletionSource<PopupResult<TResult>> taskCompletionSource = new();
 
 		var popupContent = BuildPopupContent(view, options);
@@ -25,8 +28,8 @@ public static class PopupExtensions
 		var popupLifecycleController = IPlatformApplication.Current?.Services.GetRequiredService<PopupLifecycleController>();
 		popupLifecycleController?.RegisterPopup(popupContainer);
 
-		await navigation.PushModalAsync(popupContainer, false);
-		return await taskCompletionSource.Task;
+		await navigation.PushModalAsync(popupContainer, false).WaitAsync(token);
+		return await taskCompletionSource.Task.WaitAsync(token);
 	}
 
 	/// <summary>
@@ -35,9 +38,12 @@ public static class PopupExtensions
 	/// <param name="navigation">Popup parent</param>
 	/// <param name="view">Popup content</param>
 	/// <param name="options"><see cref="PopupOptions"/></param>
+	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="PopupResult"/></returns>
-	public static async Task<PopupResult> ShowPopup(this INavigation navigation, View view, PopupOptions options)
+	public static async Task<PopupResult> ShowPopup(this INavigation navigation, View view, PopupOptions options, CancellationToken token = default)
 	{
+		token.ThrowIfCancellationRequested();
+		
 		TaskCompletionSource<PopupResult> taskCompletionSource = new();
 
 		var popupContent = BuildPopupContent(view, options);
@@ -47,8 +53,8 @@ public static class PopupExtensions
 		var popupLifecycleController = IPlatformApplication.Current?.Services.GetRequiredService<PopupLifecycleController>();
 		popupLifecycleController?.RegisterPopup(popupContainer);
 
-		await navigation.PushModalAsync(popupContainer, false);
-		return await taskCompletionSource.Task;
+		await navigation.PushModalAsync(popupContainer, false).WaitAsync(token);
+		return await taskCompletionSource.Task.WaitAsync(token);
 	}
 
 	static PopupContainer<TResult> BuildPopupContainer<TResult>(View view, TaskCompletionSource<PopupResult<TResult>> taskCompletionSource)

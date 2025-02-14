@@ -65,8 +65,8 @@ public class PopupService : IPopupService
 		viewModelToViewMappings.TryAdd(typeof(TPopupViewModel), typeof(TPopupView));
 		Routing.RegisterRoute(typeof(TPopupViewModel).FullName, typeof(TPopupView));
 
-		services.TryAdd(new ServiceDescriptor(typeof(TPopupView), (_) => popup, lifetime));
-		services.TryAdd(new ServiceDescriptor(typeof(TPopupViewModel), (_) => viewModel, lifetime));
+		services.TryAdd(new ServiceDescriptor(typeof(TPopupView), _ => popup, lifetime));
+		services.TryAdd(new ServiceDescriptor(typeof(TPopupViewModel), _ => viewModel, lifetime));
 	}
 
 	
