@@ -13,11 +13,13 @@ public partial class RatingViewXamlPage : BasePage<RatingViewXamlViewModel>
 	}
 
 	// This is event handler demonstrates the RatingChanged event is raised when a user modifies the rating
-	async void HandleRatingChanged(object? sender, RatingChangedEventArgs e)
+	static async void HandleRatingChanged(object? sender, RatingChangedEventArgs e)
 	{
-		ArgumentNullException.ThrowIfNull(sender);
+		if (sender is not RatingView ratingView)
+		{
+			return;
+		}
 
-		var ratingView = (RatingView)sender;
 		await Toast.Make($"New Rating: {ratingView.Rating:F2}").Show(CancellationToken.None);
 	}
 }
