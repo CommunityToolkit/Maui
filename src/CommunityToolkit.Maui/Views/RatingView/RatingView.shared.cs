@@ -289,7 +289,6 @@ public partial class RatingView : TemplatedView, IRatingView
 			}
 
 			ratingView.UpdateShapeFills(ratingView.FillOption);
-
 		}
 		else if (newMaximumRatingValue > oldMaximumRatingValue)
 		{
@@ -467,9 +466,11 @@ public partial class RatingView : TemplatedView, IRatingView
 
 	void OnShapeTapped(object? sender, TappedEventArgs? e)
 	{
-		ArgumentNullException.ThrowIfNull(sender);
+		if (sender is not Border tappedShape)
+		{
+			return;
+		}
 
-		var tappedShape = (Border)sender;
 		var tappedShapeIndex = RatingLayout.Children.IndexOf(tappedShape);
 
 		Rating = MaximumRating > 1
