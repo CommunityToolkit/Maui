@@ -1,7 +1,6 @@
 ﻿// Ignore Spelling: color
 
 using System.ComponentModel;
-using CommunityToolkit.Maui.Core.Primitives;
 
 namespace CommunityToolkit.Maui.Core;
 

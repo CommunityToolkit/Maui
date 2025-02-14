@@ -12,7 +12,7 @@ public interface IRatingView : IContentView
 	string? CustomShapePath { get; }
 
 	/// <summary>The Rating View shape.</summary>
-	/// <remarks><see cref="RatingViewShape.Custom"/> requires </remarks>
+	/// <remarks><see cref="RatingViewShape.Custom"/> requires <see cref="CustomShapePath"/>.</remarks>
 	RatingViewShape Shape { get; }
 
 	/// <summary>The padding on each shape.</summary>
