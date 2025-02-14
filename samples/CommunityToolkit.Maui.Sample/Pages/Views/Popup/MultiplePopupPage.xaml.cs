@@ -22,7 +22,7 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 	{
 		await popupService.ShowPopupAsync<SimplePopup>(Navigation, new PopupOptions
 		{
-			Shape = new RoundRectangle() { CornerRadius = new CornerRadius(15) }
+			Shape = new RoundRectangle { CornerRadius = new CornerRadius(15) }
 		}, CancellationToken.None);
 	}
 
@@ -38,7 +38,7 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 
 	async void HandleNoOutsideTapDismissPopupClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<NoOutsideTapDismissPopup>(Navigation, new PopupOptions() { CanBeDismissedByTappingOutsideOfPopup = false }, CancellationToken.None);
+		await popupService.ShowPopupAsync<NoOutsideTapDismissPopup>(Navigation, new PopupOptions { CanBeDismissedByTappingOutsideOfPopup = false }, CancellationToken.None);
 	}
 
 	async void HandleToggleSizePopupButtonClicked(object sender, EventArgs e)

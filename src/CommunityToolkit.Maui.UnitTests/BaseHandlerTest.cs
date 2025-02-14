@@ -66,7 +66,7 @@ public abstract class BaseHandlerTest : BaseTest
 		var mauiApp = appBuilder.Build();
 
 		var application = (MockApplication)mauiApp.Services.GetRequiredService<IApplication>();
-		application.AddWindow(new Window() { Page = page });
+		application.AddWindow(new Window { Page = page });
 		serviceProvider = mauiApp.Services;
 
 		IPlatformApplication.Current = application;

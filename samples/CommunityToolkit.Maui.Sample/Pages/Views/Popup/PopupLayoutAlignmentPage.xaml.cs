@@ -59,10 +59,10 @@ public partial class PopupLayoutAlignmentPage : BasePage<PopupLayoutAlignmentVie
 			throw new InvalidOperationException("HorizontalOptions Radio Button Must Be Selected");
 		}
 
-		await Navigation.ShowPopup<RedBlueBoxPopup>(new RedBlueBoxPopup()
+		await Navigation.ShowPopup<RedBlueBoxPopup>(new RedBlueBoxPopup
 		{
 			WidthRequest = double.Parse(widthEntry.Text),
 			HeightRequest = double.Parse(heightEntry.Text)
-		}, new PopupOptions() { VerticalOptions = verticalOptions, HorizontalOptions = horizontalOptions });
+		}, new PopupOptions { VerticalOptions = verticalOptions, HorizontalOptions = horizontalOptions });
 	}
 }

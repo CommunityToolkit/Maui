@@ -12,7 +12,7 @@ public sealed partial class PopupAnchorViewModel : BaseViewModel
 	[RelayCommand]
 	static async Task ShowPopup(View anchor)
 	{
-		var popup = new TransparentPopup()
+		var popup = new TransparentPopup
 		{
 			
 		};
