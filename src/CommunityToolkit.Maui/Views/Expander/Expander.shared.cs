@@ -23,6 +23,10 @@ public partial class Expander : ContentView, IExpander
 		= BindableProperty.Create(nameof(Direction), typeof(ExpandDirection), typeof(Expander), ExpandDirection.Down, propertyChanged: OnDirectionPropertyChanged);
 
 	readonly WeakEventManager tappedEventManager = new();
+	readonly Grid contentGrid;
+	readonly ContentView headerContentView;
+	readonly VerticalStackLayout bodyLayout;
+	readonly ContentView bodyContentView;
 
 	/// <summary>
 	/// Initialize a new instance of <see cref="Expander"/>.
@@ -32,14 +36,88 @@ public partial class Expander : ContentView, IExpander
 		HandleHeaderTapped = ResizeExpanderInItemsView;
 		HeaderTapGestureRecognizer.Tapped += OnHeaderTapGestureRecognizerTapped;
 
-		base.Content = new Grid
+		base.Content = contentGrid = new Grid
 		{
 			RowDefinitions =
 			{
 				new RowDefinition(GridLength.Auto),
 				new RowDefinition(GridLength.Auto)
+			},
+			Children =
+			{
+				(headerContentView = new ContentView()),
+				(bodyLayout = new VerticalStackLayout()
+				{
+					HeightRequest = 1,
+					MinimumHeightRequest = 1,
+					Padding = new Thickness(0, 1, 0, 0),
+					Children = { (bodyContentView = new ContentView()) }
+				})
 			}
 		};
+
+		contentGrid.SetRow(headerContentView, 0);
+		contentGrid.SetRow(bodyLayout, 1);
+
+		headerContentView.GestureRecognizers.Add(HeaderTapGestureRecognizer);
+
+		bodyContentView.PropertyChanged += (s, e) =>
+		{
+			if (e.PropertyName == nameof(ContentView.Height))
+			{
+				if (IsExpanded)
+				{
+					ContentHeight = bodyContentView.Height + 1;
+				}
+				OnPropertyChanged(nameof(MaximumContentHeight));
+			}
+		};
+	}
+
+	/// <summary>
+	/// Controls the visibility of the content inside the <see cref="Expander"/>.
+	/// </summary>
+	public double ContentHeight
+	{
+		get => bodyLayout.HeightRequest;
+		set
+		{
+			double newHeight = Math.Max(Math.Min(value, MaximumContentHeight), MinimumContentHeight);
+			if (bodyLayout.Height != newHeight)
+			{
+				bodyLayout.HeightRequest = newHeight;
+				OnPropertyChanged(nameof(ContentHeight));
+			}
+		}
+	}
+
+	/// <summary>
+	/// The height of the content inside the <see cref="Expander"/> when it is collapsed.
+	/// </summary>
+	public double MinimumContentHeight => bodyLayout.MinimumHeightRequest;
+
+	/// <summary>
+	/// The height of the content inside the <see cref="Expander"/> when it is expanded.
+	/// </summary>
+	public double MaximumContentHeight => bodyContentView.Height + 1;
+
+	/// <summary>
+	/// Animates the expanding or collapsing of the content inside the <see cref="Expander"/>.
+	/// </summary>
+	/// <param name="value">The final height of the content.</param>
+	/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+	/// <param name="easing">The easing function to use for the animation.</param>
+	/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
+	public Task<bool> ContentHeightTo(double value, uint length = 250, Easing? easing = null)
+	{
+		if (easing == null)
+		{
+			easing = Easing.Linear;
+		}
+		var tcs = new TaskCompletionSource<bool>();
+		var animation = new Animation(v => ContentHeight = v, ContentHeight, value, easing);
+		animation.Commit(this, nameof(ContentHeightTo), 16, length, finished: (f, a) => tcs.SetResult(a));
+		return tcs.Task;
 	}
 
 	/// <summary>
@@ -77,23 +155,12 @@ public partial class Expander : ContentView, IExpander
 		}
 	}
 
-	Grid ContentGrid => (Grid)base.Content;
-
 	static void OnContentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var expander = (Expander)bindable;
 		if (newValue is View view)
 		{
-			view.SetBinding(IsVisibleProperty, new Binding(nameof(IsExpanded), source: expander));
-
-			expander.ContentGrid.Remove(oldValue);
-			expander.ContentGrid.Add(newValue);
-			expander.ContentGrid.SetRow(view, expander.Direction switch
-			{
-				ExpandDirection.Down => 1,
-				ExpandDirection.Up => 0,
-				_ => throw new NotSupportedException($"{nameof(ExpandDirection)} {expander.Direction} is not yet supported")
-			});
+			expander.bodyContentView.Content = view;
 		}
 	}
 
@@ -102,17 +169,7 @@ public partial class Expander : ContentView, IExpander
 		var expander = (Expander)bindable;
 		if (newValue is View view)
 		{
-			expander.SetHeaderGestures(view);
-
-			expander.ContentGrid.Remove(oldValue);
-			expander.ContentGrid.Add(newValue);
-
-			expander.ContentGrid.SetRow(view, expander.Direction switch
-			{
-				ExpandDirection.Down => 0,
-				ExpandDirection.Up => 1,
-				_ => throw new NotSupportedException($"{nameof(ExpandDirection)} {expander.Direction} is not yet supported")
-			});
+			expander.headerContentView.Content = view;
 		}
 	}
 
@@ -126,33 +183,21 @@ public partial class Expander : ContentView, IExpander
 
 	void HandleDirectionChanged(ExpandDirection expandDirection)
 	{
-		if (Header is null || Content is null)
-		{
-			return;
-		}
-
 		switch (expandDirection)
 		{
 			case ExpandDirection.Down:
-				ContentGrid.SetRow(Header, 0);
-				ContentGrid.SetRow(Content, 1);
+				contentGrid.SetRow(headerContentView, 0);
+				contentGrid.SetRow(bodyLayout, 1);
 				break;
 
 			case ExpandDirection.Up:
-				ContentGrid.SetRow(Header, 1);
-				ContentGrid.SetRow(Content, 0);
+				contentGrid.SetRow(headerContentView, 1);
+				contentGrid.SetRow(bodyLayout, 0);
 				break;
 
 			default:
 				throw new NotSupportedException($"{nameof(ExpandDirection)} {expandDirection} is not yet supported");
 		}
-	}
-
-	void SetHeaderGestures(in IView header)
-	{
-		var headerView = (View)header;
-		headerView.GestureRecognizers.Remove(HeaderTapGestureRecognizer);
-		headerView.GestureRecognizers.Add(HeaderTapGestureRecognizer);
 	}
 
 	void OnHeaderTapGestureRecognizerTapped(object? sender, TappedEventArgs tappedEventArgs)
@@ -163,16 +208,11 @@ public partial class Expander : ContentView, IExpander
 
 	void ResizeExpanderInItemsView(TappedEventArgs tappedEventArgs)
 	{
-		if (Header is null)
-		{
-			return;
-		}
-
 		Element element = this;
 #if WINDOWS
 		var size = IsExpanded
 					? Measure(double.PositiveInfinity, double.PositiveInfinity)
-					: Header.Measure(double.PositiveInfinity, double.PositiveInfinity);
+					: headerContentView.Measure(double.PositiveInfinity, double.PositiveInfinity);
 #endif
 		while (element is not null)
 		{
@@ -201,6 +241,8 @@ public partial class Expander : ContentView, IExpander
 
 	void IExpander.ExpandedChanged(bool isExpanded)
 	{
+		ContentHeight = isExpanded ? MaximumContentHeight : MinimumContentHeight;
+
 		if (Command?.CanExecute(CommandParameter) is true)
 		{
 			Command.Execute(CommandParameter);
