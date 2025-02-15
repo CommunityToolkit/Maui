@@ -10,5 +10,5 @@ public interface IParser
 	/// </summary>
 	/// <param name="content"></param>
 	/// <returns></returns>
-	public List<SubtitleCue> ParseContent(string content);
+	List<SubtitleCue> ParseContent(string content);
 }
