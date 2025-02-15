@@ -42,7 +42,7 @@ public interface IDrawingLine
 	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingLine"/>.</returns>
 	ValueTask<Stream> GetImageStream(double desiredSizeWidth, double desiredSizeHeight, Paint background, CancellationToken token = default) =>
 		GetImageStream(desiredSizeWidth, desiredSizeHeight, background, null, token);
-	
+
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of this line, based on the <see cref="Points"/> data.
 	/// </summary>
