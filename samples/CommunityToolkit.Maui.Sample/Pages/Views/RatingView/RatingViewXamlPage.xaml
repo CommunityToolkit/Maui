@@ -1,0 +1,723 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Views.RatingViewXamlPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+    Title="RatingView XAML syntax"
+    x:DataType="vm:RatingViewXamlViewModel"
+    x:TypeArguments="vm:RatingViewXamlViewModel">
+
+    <ScrollView>
+        <Grid
+            ColumnDefinitions="120, *"
+            ColumnSpacing="8"
+            RowDefinitions="48, 40, 40, 40, 48, 40, 40, 40, 40, 40, 40, 40, 48, 38, 40, 48, 38, 38, 38, 18, 50, 18, 50, 48, 38, 40, 48, 18, 40, 48, 38, 38, 38, 38, 40, 48, 24, 18, 40, 18, 40, 48, 38, 40, 50, 60, 48, 38, 40"
+            RowSpacing="12">
+            <Grid.Resources>
+                <ResourceDictionary>
+                    <Style x:Key="Description" TargetType="Label">
+                        <Setter Property="HorizontalTextAlignment" Value="Center" />
+                        <Setter Property="HorizontalOptions" Value="Center" />
+                        <Setter Property="VerticalOptions" Value="Center" />
+                        <Setter Property="LineBreakMode" Value="WordWrap" />
+                        <Setter Property="FontSize" Value="24" />
+                        <Setter Property="FontAttributes" Value="Bold" />
+                    </Style>
+                    <Style x:Key="HR" TargetType="Line">
+                        <Setter Property="Stroke" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                        <Setter Property="X2" Value="300" />
+                        <Setter Property="HorizontalOptions" Value="Center" />
+                        <Setter Property="VerticalOptions" Value="Center" />
+                    </Style>
+                    <Style x:Key="ByStyle" TargetType="toolkit:RatingView">
+                        <Setter x:DataType="Color" Property="EmptyShapeColor">Green</Setter>
+                        <Setter x:DataType="Color" Property="FillColor">Blue</Setter>
+                        <Setter x:DataType="Color" Property="BackgroundColor">Red</Setter>
+                    </Style>
+                </ResourceDictionary>
+            </Grid.Resources>
+            <Grid
+                Grid.Row="0"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                RowDefinitions="8, 32, 8">
+                <Line Grid.Row="0" Style="{StaticResource HR}" />
+                <Label
+                    Grid.Row="1"
+                    Style="{StaticResource Description}"
+                    Text="Defaults" />
+                <Line Grid.Row="2" Style="{StaticResource HR}" />
+            </Grid>
+            <Label
+                Grid.Row="1"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Text="Default"
+                VerticalOptions="Center" />
+            <toolkit:RatingView
+                Grid.Row="1"
+                Grid.Column="1"
+                Grid.ColumnSpan="2"
+                HorizontalOptions="Start"
+                SemanticProperties.Description="A RatingView showing the defaults." />
+            <Label
+                Grid.Row="2"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Text="Using Properties"
+                VerticalOptions="Center" />
+            <toolkit:RatingView
+                Grid.Row="2"
+                Grid.Column="1"
+                BackgroundColor="Red"
+                EmptyShapeColor="Green"
+                FillColor="Blue"
+                HorizontalOptions="Start"
+                MaximumRating="5"
+                Rating="2.5"
+                SemanticProperties.Description="A RatingView customised by setting properties." />
+            <Label
+                Grid.Row="3"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Text="Using Styles"
+                VerticalOptions="Center" />
+            <toolkit:RatingView
+                Grid.Row="3"
+                Grid.Column="1"
+                HorizontalOptions="Start"
+                MaximumRating="5"
+                Rating="2.5"
+                SemanticProperties.Description="A RatingView customised by setting a style."
+                Style="{StaticResource ByStyle}" />
+
+            <Grid
+                Grid.Row="4"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                RowDefinitions="8, 32, 8">
+                <Line Grid.Row="0" Style="{StaticResource HR}" />
+                <Label
+                    Grid.Row="1"
+                    Style="{StaticResource Description}"
+                    Text="Shapes" />
+                <Line Grid.Row="2" Style="{StaticResource HR}" />
+            </Grid>
+            <Label
+                Grid.Row="5"
+                Grid.Column="0"
+                Text="Star"
+                VerticalOptions="Center" />
+            <toolkit:RatingView
+                Grid.Row="5"
+                Grid.Column="1"
+                EmptyShapeColor="White"
+                FillColor="Blue"
+                MaximumRating="5"
+                Rating="2"
+                SemanticProperties.Description="A RatingView showing the 'Star' shape."
+                Shape="Star"
+                ShapeBorderThickness="1" />
+            <Label
+                Grid.Row="6"
+                Grid.Column="0"
+                Text="Circle"
+                VerticalOptions="Center" />
+            <toolkit:RatingView
+                Grid.Row="6"
+                Grid.Column="1"
+                EmptyShapeColor="Red"
+                FillColor="Blue"
+                MaximumRating="5"
+                Rating="2"
+                SemanticProperties.Description="A RatingView showing the 'Circle' shape."
+                Shape="Circle"
+                ShapeBorderThickness="1" />
+            <Label
+                Grid.Row="7"
+                Grid.Column="0"
+                Text="Heart"
+                VerticalOptions="Center" />
+            <toolkit:RatingView
+                Grid.Row="7"
+                Grid.Column="1"
+                FillColor="White"
+                MaximumRating="5"
+                Rating="5"
+                SemanticProperties.Description="A RatingView showing the 'Heart' shape."
+                Shape="Heart"
+                ShapeBorderThickness="1" />
+            <Label
+                Grid.Row="8"
+                Grid.Column="0"
+                Text="Like"
+                VerticalOptions="Center" />
+            <toolkit:RatingView
+                Grid.Row="8"
+                Grid.Column="1"
+                FillColor="Red"
+                MaximumRating="5"
+                Rating="5"
+                SemanticProperties.Description="A RatingView showing the 'Like' shape."
+                Shape="Like"
+                ShapeBorderThickness="1" />
+            <Label
+                Grid.Row="9"
+                Grid.Column="0"
+                Text="Dislike"
+                VerticalOptions="Center" />
+            <toolkit:RatingView
+                Grid.Row="9"
+                Grid.Column="1"
+                FillColor="White"
+                MaximumRating="5"
+                Rating="5"
+                SemanticProperties.Description="A RatingView showing the 'Dislike' shape."
+                Shape="Dislike"
+                ShapeBorderThickness="1" />
+            <Label
+                Grid.Row="10"
+                Grid.Column="0"
+                Text="Custom"
+                VerticalOptions="Center" />
+            <toolkit:RatingView
+                Grid.Row="10"
+                Grid.Column="1"
+                CustomShapePath="M3.15452 1.01195C5.11987 1.32041 7.17569 2.2474 8.72607 3.49603C9.75381 3.17407 10.8558 2.99995 12 2.99995C13.1519 2.99995 14.261 3.17641 15.2946 3.5025C16.882 2.27488 18.8427 1.31337 20.8354 1.01339C21.2596 0.95092 21.7008 1.16534 21.8945 1.55273C22.6719 3.38958 22.6983 5.57987 22.2202 7.49248L22.2128 7.52213C22.0847 8.03536 21.9191 8.69868 21.3876 8.92182C21.7827 9.89315 22 10.9466 22 12.0526C22 14.825 20.8618 17.6774 19.8412 20.2348L19.8412 20.2348L19.7379 20.4936C19.1182 22.0486 17.7316 23.1196 16.125 23.418L13.8549 23.8397C13.1549 23.9697 12.4562 23.7172 12 23.2082C11.5438 23.7172 10.8452 23.9697 10.1452 23.8397L7.87506 23.418C6.26852 23.1196 4.88189 22.0486 4.26214 20.4936L4.15891 20.2348C3.13833 17.6774 2.00004 14.825 2.00004 12.0526C2.00004 10.9466 2.21737 9.89315 2.6125 8.92182C2.08046 8.69845 1.91916 8.05124 1.7909 7.53658L1.7799 7.49248C1.32311 5.66527 1.23531 3.2968 2.10561 1.55273C2.29827 1.16741 2.72906 0.945855 3.15452 1.01195ZM6.58478 4.44052C5.45516 5.10067 4.47474 5.9652 3.71373 6.98132C3.41572 5.76461 3.41236 4.41153 3.67496 3.18754C4.68842 3.48029 5.68018 3.89536 6.58478 4.44052ZM20.2863 6.98133C19.5303 5.97184 18.5577 5.11195 17.4374 4.45347C18.3364 3.9005 19.3043 3.45749 20.3223 3.17455C20.5884 4.40199 20.5853 5.76068 20.2863 6.98133ZM8.85364 5.56694C9.81678 5.20285 10.8797 4.99995 12 4.99995C13.1204 4.99995 14.1833 5.20285 15.1464 5.56694C18.0554 6.66661 20 9.1982 20 12.0526C20 14.4676 18.9891 16.9876 18.0863 19.238L18.0862 19.2382C18.0167 19.4115 17.9478 19.5832 17.8801 19.7531C17.5291 20.6338 16.731 21.2712 15.7597 21.4516L13.4896 21.8733L12.912 20.5896C12.7505 20.2307 12.3935 19.9999 12 19.9999C11.6065 19.9999 11.2496 20.2307 11.0881 20.5896L10.5104 21.8733L8.24033 21.4516C7.26908 21.2712 6.471 20.6338 6.12001 19.7531C6.05237 19.5834 5.98357 19.4119 5.91414 19.2388L5.91395 19.2384L5.91381 19.238C5.01102 16.9876 4.00004 14.4676 4.00004 12.0526C4.00004 9.1982 5.94472 6.66661 8.85364 5.56694ZM10.5 15.9999C10.1212 15.9999 9.77497 16.2139 9.60557 16.5527C9.43618 16.8915 9.47274 17.2969 9.7 17.5999L11.2 19.5999C11.3889 19.8517 11.6852 19.9999 12 19.9999C12.3148 19.9999 12.6111 19.8517 12.8 19.5999L14.3 17.5999C14.5273 17.2969 14.5638 16.8915 14.3944 16.5527C14.225 16.2139 13.8788 15.9999 13.5 15.9999H10.5ZM9.62134 11.1212C9.62134 11.9497 8.94977 12.6212 8.12134 12.6212C7.29291 12.6212 6.62134 11.9497 6.62134 11.1212C6.62134 10.2928 7.29291 9.62125 8.12134 9.62125C8.94977 9.62125 9.62134 10.2928 9.62134 11.1212ZM16 12.4999C16.8284 12.4999 17.5 11.8284 17.5 10.9999C17.5 10.1715 16.8284 9.49994 16 9.49994C15.1716 9.49994 14.5 10.1715 14.5 10.9999C14.5 11.8284 15.1716 12.4999 16 12.4999Z"
+                FillColor="Red"
+                MaximumRating="5"
+                Rating="5"
+                SemanticProperties.Description="A RatingView showing the 'Custom' shape and passing in the required custom shape path."
+                Shape="Custom"
+                ShapeBorderThickness="1" />
+            <Label
+                Grid.Row="11"
+                Grid.Column="0"
+                Text="Custom"
+                VerticalOptions="Center" />
+            <toolkit:RatingView
+                Grid.Row="11"
+                Grid.Column="1"
+                CustomShapePath="M23.07 8h2.89l-6.015 5.957a5.621 5.621 0 01-7.89 0L6.035 8H8.93l4.57 4.523a3.556 3.556 0 004.996 0L23.07 8zM8.895 24.563H6l6.055-5.993a5.621 5.621 0 017.89 0L26 24.562h-2.895L18.5 20a3.556 3.556 0 00-4.996 0l-4.61 4.563z"
+                EmptyShapeColor="Red"
+                FillColor="White"
+                MaximumRating="5"
+                Rating="5"
+                SemanticProperties.Description="A RatingView showing the 'Custom' shape and passing in the required custom shape path."
+                Shape="Custom"
+                ShapeBorderColor="Grey"
+                ShapeBorderThickness="1" />
+
+            <Grid
+                Grid.Row="12"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                RowDefinitions="8, 32, 8">
+                <Line Grid.Row="0" Style="{StaticResource HR}" />
+                <Label
+                    Grid.Row="1"
+                    Style="{StaticResource Description}"
+                    Text="Maximum Ratings" />
+                <Line Grid.Row="2" Style="{StaticResource HR}" />
+            </Grid>
+            <Stepper
+                x:Name="MaximumRatingStepper"
+                Grid.Row="13"
+                Grid.Column="0"
+                HorizontalOptions="End"
+                Increment="1"
+                Maximum="25"
+                Minimum="1"
+                SemanticProperties.Hint="Change the maximum number of ratings."
+                Value="1" />
+            <Label
+                Grid.Row="13"
+                Grid.Column="1"
+                HorizontalOptions="Start"
+                VerticalOptions="Center">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text=": " />
+                        <Span Text="{Binding Source={x:Reference MaximumRatingStepper}, Path=Value, x:DataType=Stepper, Mode=OneWay}" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <toolkit:RatingView
+                Grid.Row="14"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                HorizontalOptions="Center"
+                MaximumRating="{Binding Source={x:Reference MaximumRatingStepper}, Path=Value, x:DataType=Stepper, Mode=OneWay}"
+                RatingChanged="HandleRatingChanged"
+                SemanticProperties.Description="A RatingView showing changes to the 'MaximumRating' property and with an event handler when the 'RatingChanged' event is triggered."
+                VerticalOptions="Center" />
+
+            <Grid
+                Grid.Row="15"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                RowDefinitions="8, 32, 8">
+                <Line Grid.Row="0" Style="{StaticResource HR}" />
+                <Label
+                    Grid.Row="1"
+                    Style="{StaticResource Description}"
+                    Text="Colors" />
+                <Line Grid.Row="2" Style="{StaticResource HR}" />
+            </Grid>
+            <Label
+                Grid.Row="16"
+                Grid.Column="0"
+                Text="Empty color: "
+                VerticalOptions="Center" />
+            <Picker
+                Grid.Row="16"
+                Grid.Column="1"
+                HorizontalOptions="Start"
+                ItemsSource="{Binding ColorsForPickers}"
+                SelectedIndex="{Binding ColorPickerEmptyBackgroundSelectedIndex}"
+                SemanticProperties.Hint="Pick to change the empty rating color." />
+            <Label
+                Grid.Row="17"
+                Grid.Column="0"
+                Text="Filled color: "
+                VerticalOptions="Center" />
+            <Picker
+                Grid.Row="17"
+                Grid.Column="1"
+                HorizontalOptions="Start"
+                ItemsSource="{Binding ColorsForPickers}"
+                SelectedIndex="{Binding ColorPickerFilledBackgroundSelectedIndex}"
+                SemanticProperties.Hint="Pick to change the filled rating color." />
+            <Label
+                Grid.Row="18"
+                Grid.Column="0"
+                Text="Border color: "
+                VerticalOptions="Center" />
+            <Picker
+                Grid.Row="18"
+                Grid.Column="1"
+                HorizontalOptions="Start"
+                ItemsSource="{Binding ColorsForPickers}"
+                SelectedIndex="{Binding ColorPickerRatingShapeBorderColorSelectedIndex}"
+                SemanticProperties.Hint="Pick to change the rating shape border color." />
+            <Label
+                Grid.Row="19"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                HorizontalOptions="Start"
+                Text="Shape Fill"
+                VerticalOptions="End" />
+            <toolkit:RatingView
+                Grid.Row="20"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                EmptyShapeColor="{Binding ColorPickerEmptyBackgroundTarget}"
+                FillColor="{Binding ColorPickerFilledBackgroundTarget}"
+                FillOption="Shape"
+                HorizontalOptions="Start"
+                MaximumRating="5"
+                Rating="2.7"
+                SemanticProperties.Description="A RatingView showing the fill, empty and border color changes, shown using the fill type of 'Shape'."
+                ShapeBorderColor="{Binding ColorPickerRatingShapeBorderColorTarget}"
+                ShapeBorderThickness="1"
+                ShapeDiameter="40"
+                VerticalOptions="Start" />
+            <Label
+                Grid.Row="21"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Text="Background Fill" />
+            <toolkit:RatingView
+                Grid.Row="22"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                EmptyShapeColor="{Binding ColorPickerEmptyBackgroundTarget}"
+                FillColor="{Binding ColorPickerFilledBackgroundTarget}"
+                FillOption="Background"
+                HorizontalOptions="Start"
+                MaximumRating="5"
+                Rating="2.7"
+                SemanticProperties.Description="A RatingView showing the fill, empty and border color changes, shown using the fill type of 'Background'."
+                ShapeBorderColor="{Binding ColorPickerRatingShapeBorderColorTarget}"
+                ShapeBorderThickness="1"
+                ShapeDiameter="40"
+                VerticalOptions="Start" />
+
+            <Grid
+                Grid.Row="23"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                RowDefinitions="8, 32, 8">
+                <Line Grid.Row="0" Style="{StaticResource HR}" />
+                <Label
+                    Grid.Row="1"
+                    Style="{StaticResource Description}"
+                    Text="Shape border thickness" />
+                <Line Grid.Row="2" Style="{StaticResource HR}" />
+            </Grid>
+            <Stepper
+                x:Name="StepperShapeBorderThickness"
+                Grid.Row="24"
+                Grid.Column="0"
+                HorizontalOptions="End"
+                Increment="1"
+                Maximum="10"
+                Minimum="0"
+                SemanticProperties.Hint="Change the rating shape border thickness."
+                VerticalOptions="Center"
+                Value="1" />
+            <Label
+                Grid.Row="24"
+                Grid.Column="1"
+                HorizontalOptions="Start"
+                VerticalOptions="Center">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <FormattedString.Spans>
+                            <Span Text=": " />
+                            <Span Text="{Binding Source={x:Reference StepperShapeBorderThickness}, Path=Value, x:DataType=Stepper}" />
+                        </FormattedString.Spans>
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <toolkit:RatingView
+                Grid.Row="25"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                HorizontalOptions="Center"
+                MaximumRating="5"
+                Rating="2.5"
+                SemanticProperties.Description="A RatingView showing the shape border thickness changes."
+                ShapeBorderThickness="{Binding Source={x:Reference StepperShapeBorderThickness}, Path=Value, x:DataType=Stepper}" />
+
+            <Grid
+                Grid.Row="26"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                RowDefinitions="8, 32, 8">
+                <Line Grid.Row="0" Style="{StaticResource HR}" />
+                <Label
+                    Grid.Row="1"
+                    Style="{StaticResource Description}"
+                    Text="ReadOnly" />
+                <Line Grid.Row="2" Style="{StaticResource HR}" />
+            </Grid>
+            <CheckBox
+                x:Name="RatingViewIsReadOnly"
+                Grid.Row="27"
+                Grid.Column="0"
+                BackgroundColor="{AppThemeBinding Light=Black,
+                                                  Dark=White}"
+                HorizontalOptions="End"
+                IsChecked="True"
+                SemanticProperties.Hint="Check to make read only."
+                Color="{AppThemeBinding Light=White,
+                                        Dark=Black}" />
+            <Label
+                Grid.Row="27"
+                Grid.Column="1"
+                HorizontalOptions="Start"
+                Text=": IsReadOnly"
+                VerticalOptions="Center" />
+            <toolkit:RatingView
+                Grid.Row="28"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                HorizontalOptions="Center"
+                IsReadOnly="{Binding Source={x:Reference RatingViewIsReadOnly}, Path=IsChecked, x:DataType=CheckBox}"
+                MaximumRating="5"
+                Rating="2.5"
+                SemanticProperties.Description="A RatingView showing the IsReadOnly changes." />
+
+            <Grid
+                Grid.Row="29"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                RowDefinitions="8, 32, 8">
+                <Line Grid.Row="0" Style="{StaticResource HR}" />
+                <Label
+                    Grid.Row="1"
+                    Style="{StaticResource Description}"
+                    Text="Shape padding" />
+                <Line Grid.Row="2" Style="{StaticResource HR}" />
+            </Grid>
+            <Stepper
+                Grid.Row="30"
+                Grid.Column="0"
+                HorizontalOptions="End"
+                Increment="1"
+                Maximum="10"
+                Minimum="0"
+                SemanticProperties.Hint="Change the rating view padding left."
+                VerticalOptions="Center"
+                Value="{Binding RatingViewShapePaddingLeft}" />
+            <Label
+                Grid.Row="30"
+                Grid.Column="1"
+                HorizontalOptions="Start"
+                SemanticProperties.Description="Shape left padding applied to the RatingView sample."
+                VerticalOptions="Center">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text=": Left: " />
+                        <Span Text="{Binding RatingViewShapePaddingLeft, Mode=OneWay}" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <Stepper
+                Grid.Row="31"
+                Grid.Column="0"
+                HorizontalOptions="End"
+                Increment="1"
+                Maximum="10"
+                Minimum="0"
+                SemanticProperties.Hint="Change the rating view padding top."
+                VerticalOptions="Center"
+                Value="{Binding RatingViewShapePaddingTop}" />
+            <Label
+                Grid.Row="31"
+                Grid.Column="1"
+                HorizontalOptions="Start"
+                SemanticProperties.Description="Shape top padding applied to the RatingView sample."
+                VerticalOptions="Center">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text=": Top: " />
+                        <Span Text="{Binding RatingViewShapePaddingTop, Mode=OneWay}" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <Stepper
+                Grid.Row="32"
+                Grid.Column="0"
+                HorizontalOptions="End"
+                Increment="1"
+                Maximum="10"
+                Minimum="0"
+                SemanticProperties.Hint="Change the rating view padding right."
+                VerticalOptions="Center"
+                Value="{Binding RatingViewShapePaddingRight}" />
+            <Label
+                Grid.Row="32"
+                Grid.Column="1"
+                HorizontalOptions="Start"
+                SemanticProperties.Description="Shape right padding applied to the RatingView sample."
+                VerticalOptions="Center">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text=": Right: " />
+                        <Span Text="{Binding RatingViewShapePaddingRight, Mode=OneWay}" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <Stepper
+                Grid.Row="33"
+                Grid.Column="0"
+                HorizontalOptions="End"
+                Increment="1"
+                Maximum="10"
+                Minimum="0"
+                SemanticProperties.Hint="Change the rating view padding bottom."
+                Value="{Binding RatingViewShapePaddingBottom}" />
+            <Label
+                Grid.Row="33"
+                Grid.Column="1"
+                HorizontalOptions="Start"
+                SemanticProperties.Description="Shape bottom padding applied to the RatingView sample."
+                VerticalOptions="Center">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text=": Bottom: " />
+                        <Span Text="{Binding RatingViewShapePaddingBottom, Mode=OneWay}" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <toolkit:RatingView
+                Grid.Row="34"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                BackgroundColor="Purple"
+                HorizontalOptions="Start"
+                MaximumRating="5"
+                Rating="4.5"
+                SemanticProperties.Description="A RatingView sample showing the padding changes."
+                ShapePadding="{Binding RatingViewShapePaddingValue, Mode=OneWay}"
+                VerticalOptions="Center" />
+
+            <Grid
+                Grid.Row="35"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                RowDefinitions="8, 32, 8">
+                <Line Grid.Row="0" Style="{StaticResource HR}" />
+                <Label
+                    Grid.Row="1"
+                    Style="{StaticResource Description}"
+                    Text="Rating" />
+                <Line Grid.Row="2" Style="{StaticResource HR}" />
+            </Grid>
+            <Slider
+                x:Name="RatingRatingView"
+                Grid.Row="36"
+                Grid.Column="0"
+                Maximum="7"
+                Minimum="0"
+                SemanticProperties.Hint="Slide to change the rating."
+                Value="0" />
+            <Label
+                Grid.Row="36"
+                Grid.Column="1"
+                HorizontalOptions="Start"
+                SemanticProperties.Description="RatingView rating value."
+                VerticalOptions="Center">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text=": " />
+                        <Span Text="{Binding Source={x:Reference RatingRatingView}, Path=Value, x:DataType=Slider, StringFormat='{0:F2}'}" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <Label
+                Grid.Row="37"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Text="Shape Fill"
+                VerticalOptions="End" />
+            <toolkit:RatingView
+                Grid.Row="38"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                BackgroundColor="Purple"
+                EmptyShapeColor="Blue"
+                FillColor="Green"
+                FillOption="Shape"
+                HorizontalOptions="Start"
+                IsReadOnly="False"
+                MaximumRating="7"
+                Rating="{Binding Source={x:Reference RatingRatingView}, Path=Value, x:DataType=Slider}"
+                SemanticProperties.Description="A RatingView sample showing the rating changes and the fill type of 'Shape'."
+                ShapeBorderColor="Grey"
+                ShapeBorderThickness="1"
+                ShapeDiameter="30"
+                Spacing="3"
+                VerticalOptions="Start" />
+            <Label
+                Grid.Row="39"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Text="Background Fill"
+                VerticalOptions="End" />
+            <toolkit:RatingView
+                Grid.Row="40"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                BackgroundColor="Purple"
+                EmptyShapeColor="Blue"
+                FillColor="Green"
+                FillOption="Background"
+                HorizontalOptions="Start"
+                IsReadOnly="False"
+                MaximumRating="7"
+                Rating="{Binding Source={x:Reference RatingRatingView}, Path=Value, x:DataType=Slider}"
+                SemanticProperties.Description="A RatingView sample showing the rating changes and the fill type of 'Background'."
+                ShapeBorderColor="Grey"
+                ShapeBorderThickness="1"
+                ShapeDiameter="30"
+                Spacing="3"
+                VerticalOptions="Start" />
+
+            <Grid
+                Grid.Row="41"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                RowDefinitions="8, 32, 8">
+                <Line Grid.Row="0" Style="{StaticResource HR}" />
+                <Label
+                    Grid.Row="1"
+                    Style="{StaticResource Description}"
+                    Text="Sizing" />
+                <Line Grid.Row="2" Style="{StaticResource HR}" />
+            </Grid>
+            <toolkit:RatingView
+                Grid.Row="42"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                MaximumRating="5"
+                Rating="5"
+                SemanticProperties.Description="A RatingView sample showing the size of 30"
+                ShapeDiameter="30" />
+            <toolkit:RatingView
+                Grid.Row="43"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                MaximumRating="5"
+                Rating="5"
+                SemanticProperties.Description="A RatingView sample showing the size of 40"
+                ShapeDiameter="40" />
+            <toolkit:RatingView
+                Grid.Row="44"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                MaximumRating="5"
+                Rating="5"
+                SemanticProperties.Description="A RatingView sample showing the size of 50"
+                ShapeDiameter="50" />
+            <toolkit:RatingView
+                Grid.Row="45"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                MaximumRating="5"
+                Rating="5"
+                SemanticProperties.Description="A RatingView sample showing the size of 60"
+                ShapeDiameter="60" />
+
+            <Grid
+                Grid.Row="46"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                RowDefinitions="8, 32, 8">
+                <Line Grid.Row="0" Style="{StaticResource HR}" />
+                <Label
+                    Grid.Row="1"
+                    Style="{StaticResource Description}"
+                    Text="Spacing" />
+                <Line Grid.Row="2" Style="{StaticResource HR}" />
+            </Grid>
+            <Stepper
+                x:Name="StepperSpacing"
+                Grid.Row="47"
+                Grid.Column="0"
+                HorizontalOptions="End"
+                Increment="1"
+                Maximum="10"
+                Minimum="0"
+                SemanticProperties.Hint="Change the spacing between rating items."
+                VerticalOptions="Center"
+                Value="0" />
+            <Label
+                Grid.Row="47"
+                Grid.Column="1"
+                HorizontalOptions="Start"
+                VerticalOptions="Center">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text=": " />
+                        <Span Text="{Binding Source={x:Reference StepperSpacing}, Path=Value, x:DataType=Stepper, Mode=OneWay}" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <toolkit:RatingView
+                Grid.Row="48"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                MaximumRating="5"
+                Rating="2.5"
+                SemanticProperties.Description="A RatingView sample showing the spacing changes."
+                Spacing="{Binding Source={x:Reference StepperSpacing}, Path=Value, x:DataType=Stepper, Mode=OneWay}"
+                VerticalOptions="Center" />
+        </Grid>
+    </ScrollView>
+</pages:BasePage>        
