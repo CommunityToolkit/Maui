@@ -48,6 +48,6 @@ public class DrawingLine : IDrawingLine
 		DrawingViewService.GetImageStream(options, token);
 
 	/// <inheritdoc cref="IDrawingLine.GetImageStream(double, double, Paint, Size?, CancellationToken)"/>
-	public ValueTask<Stream> GetImageStream(double desiredSizeWidth, double desiredSizeHeight, Paint background, Size? canvasSize = null, CancellationToken token = default) => 
+	public ValueTask<Stream> GetImageStream(double desiredSizeWidth, double desiredSizeHeight, Paint background, Size? canvasSize = null, CancellationToken token = default) =>
 		DrawingViewService.GetImageStream(new ImagePointOptions([.. Points], new Size(desiredSizeWidth, desiredSizeHeight), LineWidth, LineColor, background, canvasSize), token);
 }

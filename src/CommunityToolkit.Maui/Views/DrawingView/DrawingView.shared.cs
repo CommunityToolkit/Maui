@@ -226,7 +226,7 @@ public partial class DrawingView : View, IDrawingView
 	/// <inheritdoc cref="IDrawingView.GetImageStream(double, double, DrawingViewOutputOption, CancellationToken)"/>
 	public ValueTask<Stream> GetImageStream(double desiredWidth, double desiredHeight, CancellationToken token = default) =>
 		GetImageStream(desiredWidth, desiredHeight, DrawingViewOutputOption.Lines, token);
-	
+
 	/// <inheritdoc cref="IDrawingView.GetImageStream(double, double, DrawingViewOutputOption, CancellationToken)"/>
 	public ValueTask<Stream> GetImageStream(double desiredWidth, double desiredHeight, DrawingViewOutputOption imageOutputOption, CancellationToken token = default)
 	{
@@ -234,7 +234,7 @@ public partial class DrawingView : View, IDrawingView
 			? ImageLineOptions.JustLines(Lines.ToList(), new Size(desiredWidth, desiredHeight), Background)
 			: ImageLineOptions.FullCanvas(Lines.ToList(), new Size(desiredWidth, desiredHeight), Background,
 				new Size(this.Width, this.Height));
-		
+
 		return DrawingViewService.GetImageStream(options, token);
 	}
 
