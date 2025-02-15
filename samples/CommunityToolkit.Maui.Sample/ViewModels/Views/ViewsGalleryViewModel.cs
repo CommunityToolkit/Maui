@@ -26,6 +26,9 @@ public sealed partial class ViewsGalleryViewModel() : BaseGalleryViewModel(
 	SectionModel.Create<MediaElementCarouselViewViewModel>("MediaElement in CarouselView", Colors.Red, "MediaElement can be used inside a DataTemplate in a CarouselView"),
 	SectionModel.Create<MediaElementCollectionViewViewModel>("MediaElement in CollectionView", Colors.Red, "MediaElement can be used inside a DataTemplate in a CollectionView"),
 	SectionModel.Create<MediaElementMultipleWindowsViewModel>("MediaElement in a Multi-Window Application", Colors.Red, "Demonstrates that MediaElement can be used inside a DataTemplate simultaneously on multiple windows"),
+  SectionModel.Create<RatingViewShowcaseViewModel>("RatingView Showcase Page", Colors.Red, "A page with showcase examples for the RatingView control."),
+	SectionModel.Create<RatingViewXamlViewModel>("RatingView XAML Page", Colors.Red, "A page demonstrating the RatingView control and possible uses using XAML"),
+	SectionModel.Create<RatingViewCsharpViewModel>("RatingView C# Page", Colors.Red, "A page demonstrating the RatingView control and possible uses using C#"),
 	SectionModel.Create<SemanticOrderViewPageViewModel>("Semantic Order View", Colors.Red, "SemanticOrderView allows developers to indicate the focus order of visible controls when a user is navigating via TalkBack (Android), VoiceOver (iOS) or Narrator (Windows)."),
 	SectionModel.Create<MultiplePopupViewModel>("Multiple Popups Page", Colors.Red, "A page demonstrating multiple different Popups")
 ]);
