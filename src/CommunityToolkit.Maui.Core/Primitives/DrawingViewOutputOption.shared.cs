@@ -9,7 +9,7 @@ public enum DrawingViewOutputOption
 	/// Outputs the area covered by the top-left to the bottom-right most points.
 	/// </summary>
 	Lines,
-	
+
 	/// <summary>
 	/// Outputs the full area displayed within the drawing view.
 	/// </summary>

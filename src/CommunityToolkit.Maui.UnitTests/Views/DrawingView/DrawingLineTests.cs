@@ -102,7 +102,7 @@ public class DrawingLineTests : BaseHandlerTest
 	public async Task GetImageStreamStaticReturnsNullStream()
 	{
 		ImagePointOptions pointOptions = new([], new Size(10, 10), 5, Colors.Yellow, Colors.Blue.AsPaint(), null);
-		var stream = await DrawingLine.GetImageStream(pointOptions, TestContext.Current.CancellationToken); 
+		var stream = await DrawingLine.GetImageStream(pointOptions, TestContext.Current.CancellationToken);
 		Assert.Equal(Stream.Null, stream);
 	}
 
