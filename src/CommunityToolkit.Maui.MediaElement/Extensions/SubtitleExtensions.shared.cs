@@ -58,11 +58,11 @@ partial class SubtitleExtensions
 
 interface ITimer<T> where T : class
 {
-	public abstract System.Timers.Timer? timer { get; set; }
-	public abstract T? subtitleTextBlock { get; set; }
-	public abstract void StartTimer();
-	public abstract void StopTimer();
-	public abstract void UpdateSubtitle(object? sender, System.Timers.ElapsedEventArgs e);
+	abstract System.Timers.Timer? timer { get; set; }
+	abstract T? subtitleTextBlock { get; set; }
+	abstract void StartTimer();
+	abstract void StopTimer();
+	abstract void UpdateSubtitle(object? sender, System.Timers.ElapsedEventArgs e);
 }
 
 abstract class SubtitleTimer<T> : ITimer<T> where T : class

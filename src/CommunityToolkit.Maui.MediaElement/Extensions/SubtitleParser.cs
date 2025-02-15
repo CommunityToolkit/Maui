@@ -5,28 +5,23 @@ namespace CommunityToolkit.Maui.Core;
 /// <summary>
 /// A class that Represents a parser.
 /// </summary>
-public partial class SubtitleParser
+/// <remarks>
+/// A constructor that initializes the <see cref="IParser"/>
+/// </remarks>
+/// <param name="parser"></param>
+public partial class SubtitleParser(IParser parser)
 {
 	static readonly HttpClient httpClient = new();
 
 	/// <summary>
 	/// A property that represents the <see cref="IParser"/>
 	/// </summary>
-	public IParser IParser { get; set; }
+	public IParser IParser { get; set; } = parser;
 
 	/// <summary>
 	/// A property that represents the separator.
 	/// </summary>
 	public static readonly string[] Separator = ["\r\n", "\n"];
-	
-	/// <summary>
-	/// A constructor that initializes the <see cref="IParser"/>
-	/// </summary>
-	/// <param name="parser"></param>
-	public SubtitleParser(IParser parser)
-	{
-		this.IParser = parser;
-	}
 
 	/// <summary>
 	/// A method that parses the content.
