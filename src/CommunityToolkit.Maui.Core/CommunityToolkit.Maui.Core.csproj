@@ -50,8 +50,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Maui.Core" Version="[$(MauiPackageVersion),$(NextMauiPackageVersion))"/>
-    <PackageReference Include="Microsoft.Maui.Essentials" Version="[$(MauiPackageVersion),$(NextMauiPackageVersion))"/>
+    <PackageReference Include="Microsoft.Maui.Core" Version="[$(MauiPackageVersion),$(NextMauiPackageVersion))" />
+    <PackageReference Include="Microsoft.Maui.Essentials" Version="[$(MauiPackageVersion),$(NextMauiPackageVersion))" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" Condition=" '$(Configuration)'=='Release' " PrivateAssets="All" />
     <PackageReference Include="System.Speech" Version="9.0.0" Condition="'$(TargetFramework)' == '$(NetVersion)-windows10.0.19041.0'" />
   </ItemGroup>

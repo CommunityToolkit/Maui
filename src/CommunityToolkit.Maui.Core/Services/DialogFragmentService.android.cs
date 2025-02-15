@@ -94,7 +94,7 @@ sealed partial class DialogFragmentService : IDialogFragmentService
 		dialogFragment = dialog;
 		return true;
 	}
-	
+
 	static void HandleStatusBarColor(DialogFragment dialogFragment, AppCompatActivity activity)
 	{
 		if (activity.Window is null)

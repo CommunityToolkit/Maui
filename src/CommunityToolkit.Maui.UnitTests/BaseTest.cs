@@ -1,11 +1,15 @@
 ﻿using System.Globalization;
 using CommunityToolkit.Maui.UnitTests.Mocks;
+using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
+[Collection("CommunityToolkit.UnitTests")]
 public abstract class BaseTest : IDisposable
 {
 	readonly CultureInfo defaultCulture, defaultUiCulture;
+	protected readonly MockAppInfo mockAppInfo;
+	protected const AppTheme initialAppTheme = AppTheme.Light;
 
 	bool isDisposed;
 
@@ -18,14 +22,15 @@ public abstract class BaseTest : IDisposable
 
 	protected BaseTest()
 	{
-		CompatibilityCheck.UseCompatibility();
-
 		defaultCulture = Thread.CurrentThread.CurrentCulture;
 		defaultUiCulture = Thread.CurrentThread.CurrentUICulture;
 
 		DeviceDisplay.SetCurrent(null);
 		DeviceInfo.SetCurrent(null);
-		AppInfo.SetCurrent(null);
+		AppInfo.SetCurrent(mockAppInfo = new()
+		{
+			RequestedTheme = initialAppTheme
+		});
 
 		DispatcherProvider.SetCurrent(new MockDispatcherProvider());
 		DeviceDisplay.SetCurrent(null);
@@ -52,7 +57,10 @@ public abstract class BaseTest : IDisposable
 		DeviceDisplay.SetCurrent(null);
 		DispatcherProvider.SetCurrent(null);
 
+		// Restore default options
 		var options = new Options();
+		options.SetShouldUseStatusBarBehaviorOnAndroidModalPage(true);
+		options.SetShouldEnableSnackbarOnWindows(false);
 		options.SetShouldSuppressExceptionsInAnimations(false);
 		options.SetShouldSuppressExceptionsInBehaviors(false);
 		options.SetShouldSuppressExceptionsInConverters(false);

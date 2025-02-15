@@ -74,7 +74,7 @@
                 </ListView.ItemTemplate>
             </ListView>
 
-            <Label Text="Expander in CollectionView" FontSize="24" FontAttributes="Bold"/>
+            <Label Text="Expander in CollectionView with LinearItemsLayout" FontSize="24" FontAttributes="Bold"/>
 
             <CollectionView ItemsSource="{Binding ContentCreators}">
                 <CollectionView.ItemTemplate>
@@ -90,6 +90,35 @@
                                     <Image Source="{Binding Image}"
                                                WidthRequest="100"
                                                HeightRequest="100"/>
+                                </VerticalStackLayout>
+                            </mct:Expander.Content>
+                        </mct:Expander>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            
+            <Label Text="Expander in CollectionView with GridItemsLayout" FontSize="24" FontAttributes="Bold"/>
+
+            <CollectionView ItemsSource="{Binding ContentCreators}">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical"
+                                     Span="4"
+                                     HorizontalItemSpacing="5"
+                                     VerticalItemSpacing="5" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <mct:Expander x:DataType="sample:ContentCreator"
+                                      ExpandedChanged="Expander_ExpandedChanged">
+                            <mct:Expander.Header>
+                                <Label Text="{Binding Name}"/>
+                            </mct:Expander.Header>
+                            <mct:Expander.Content>
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding Resource}" HorizontalOptions="Center"/>
+                                    <Image Source="{Binding Image}"
+                                           WidthRequest="100"
+                                           HeightRequest="100"/>
                                 </VerticalStackLayout>
                             </mct:Expander.Content>
                         </mct:Expander>

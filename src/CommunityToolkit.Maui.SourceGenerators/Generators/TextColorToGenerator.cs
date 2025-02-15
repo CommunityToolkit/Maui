@@ -145,6 +145,7 @@ class TextColorToGenerator : IIncrementalGenerator
 			  	public static Task<bool> TextColorTo{{textStyleClassMetadata.GenericArguments}}(this global::{{textStyleClassMetadata.Namespace}}.{{textStyleClassMetadata.ClassName}}{{textStyleClassMetadata.GenericArguments}} element, {{mauiColorFullName}} color, uint rate = 16u, uint length = 250u, Easing? easing = null, CancellationToken token = default)
 			  {{textStyleClassMetadata.GenericConstraints}}
 			  	{
+			  		token.ThrowIfCancellationRequested();
 			  		ArgumentNullException.ThrowIfNull(element);
 			  		ArgumentNullException.ThrowIfNull(color);
 			  
