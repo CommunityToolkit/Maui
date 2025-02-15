@@ -9,7 +9,7 @@ public static partial class DrawingViewService
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
 	public static ValueTask<Stream> GetImageStream(ImagePointOptions options, CancellationToken token = default) =>
-		GetPlatformImageStream(options, token);	
+		GetPlatformImageStream(options, token);
 
 	/// <summary>
 	/// Get image stream from lines
@@ -35,12 +35,12 @@ public abstract class ImageOptions(Size desiredSize, Paint? background, Size? ca
 	/// Gets the desired dimensions of the generated image. The image will be resized proportionally.
 	/// </summary>
 	public Size DesiredSize { get; } = desiredSize;
-	
+
 	/// <summary>
 	/// Gets the background <see cref="Paint"/> to apply to the output image.
 	/// </summary>
 	public Paint? Background { get; } = background;
-	
+
 	/// <summary>
 	/// Gets the actual size of the canvas being displayed.
 	/// if a value is provided then the contents of the drawing inside these dimensions will be included in the output,
@@ -66,12 +66,12 @@ public class ImagePointOptions(IList<PointF> points, Size desiredSize, float lin
 	/// Gets the points that will result in a single line.
 	/// </summary>
 	public IList<PointF> Points { get; } = points;
-	
+
 	/// <summary>
 	/// Gets the width of the line to render.
 	/// </summary>
 	public float LineWidth { get; } = lineWidth;
-	
+
 	/// <summary>
 	/// Gets the <see cref="Color"/> of the line to render.
 	/// </summary>
@@ -100,7 +100,7 @@ public class ImageLineOptions : ImageOptions
 	{
 		return new ImageLineOptions(lines, desiredSize, background, null);
 	}
-	
+
 	/// <summary>
 	/// Creates an instance of <see cref="ImageLineOptions"/> that will result in the contents of the drawing inside the supplied <paramref name="canvasSize"/> will be included in the output,
 	/// </summary>
@@ -113,7 +113,7 @@ public class ImageLineOptions : ImageOptions
 	{
 		return new ImageLineOptions(lines, desiredSize, background, canvasSize);
 	}
-	
+
 	/// <summary>
 	/// Gets the lines that will be rendered in the resulting image.
 	/// </summary>

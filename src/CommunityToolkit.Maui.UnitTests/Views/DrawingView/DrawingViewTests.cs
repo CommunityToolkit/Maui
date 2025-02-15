@@ -160,8 +160,8 @@ public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerT
 		await Task.Delay(100, TestContext.Current.CancellationToken);
 
 		ImageLineOptions options = ImageLineOptions.JustLines([new DrawingLine()], Size.Zero, Colors.Transparent.AsPaint());
-		
-		await Assert.ThrowsAsync<OperationCanceledException>(async () => await DrawingView.GetImageStream(options, cts.Token)); 
+
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await DrawingView.GetImageStream(options, cts.Token));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -173,8 +173,8 @@ public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerT
 		await cts.CancelAsync();
 
 		ImageLineOptions options = ImageLineOptions.JustLines([new DrawingLine()], Size.Zero, Colors.Transparent.AsPaint());
-		
-		await Assert.ThrowsAsync<OperationCanceledException>(async () => await DrawingView.GetImageStream(options, cts.Token));  
+
+		await Assert.ThrowsAsync<OperationCanceledException>(async () => await DrawingView.GetImageStream(options, cts.Token));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
