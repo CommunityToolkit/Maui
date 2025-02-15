@@ -48,7 +48,7 @@ public interface IDrawingView : IView
 	/// <param name="token"> <see cref="CancellationToken"/>.</param>
 	/// <returns><see cref="Task{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
 	ValueTask<Stream> GetImageStream(double desiredWidth, double desiredHeight, CancellationToken token = default) => GetImageStream(desiredWidth, desiredHeight, DrawingViewOutputOption.Lines, token);
-	
+
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of the <see cref="Lines"/> that are currently drawn on the <see cref="IDrawingView"/>.
 	/// </summary>
