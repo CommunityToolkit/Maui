@@ -12,6 +12,7 @@ using Java.Lang;
 using Java.Util.Concurrent;
 using static Android.Media.Image;
 using Math = System.Math;
+using Android.Views;
 
 namespace CommunityToolkit.Maui.Core;
 
@@ -30,6 +31,7 @@ partial class CameraManager
 	Preview? cameraPreview;
 	ResolutionSelector? resolutionSelector;
 	ResolutionFilter? resolutionFilter;
+	OrientationListener? orientationListener;
 
 	public void Dispose()
 	{
@@ -47,6 +49,8 @@ partial class CameraManager
 			previewView.SetScaleType(NativePlatformCameraPreviewView.ScaleType.FitCenter);
 		}
 		cameraExecutor = Executors.NewSingleThreadExecutor() ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
+		orientationListener = new OrientationListener(context);
+		orientationListener.Enable();
 
 		return previewView;
 	}
@@ -134,6 +138,10 @@ partial class CameraManager
 
 			resolutionFilter?.Dispose();
 			resolutionFilter = null;
+			
+			orientationListener?.Disable();
+			orientationListener?.Dispose();
+			orientationListener = null;
 		}
 	}
 
@@ -172,7 +180,7 @@ partial class CameraManager
 
 	protected async Task StartUseCase(CancellationToken token)
 	{
-		if (resolutionSelector is null || cameraExecutor is null)
+		if (resolutionSelector is null || cameraExecutor is null || orientationListener is null)
 		{
 			return;
 		}
@@ -189,6 +197,8 @@ partial class CameraManager
 		.SetCaptureMode(ImageCapture.CaptureModeMaximizeQuality)
 		.SetResolutionSelector(resolutionSelector)
 		.Build();
+
+		orientationListener.ImageCapture = imageCapture;
 
 		await StartCameraPreview(token);
 	}
@@ -341,6 +351,40 @@ partial class CameraManager
 		public void OnChanged(Java.Lang.Object? value)
 		{
 			observerAction.Invoke(value);
+		}
+	}
+
+	/// <summary>
+	/// Listen to device orientation changes and update the 
+	/// ImageCapture use case accordingly. Alternative to
+	/// IDisplayListener that works regardless of MainActivity 
+	/// ConfigChange settings to provide raw sensor data.
+	/// </summary>
+	/// <remarks>
+	/// <see href="https://developer.android.com/media/camera/camerax/orientation-rotation">
+	/// Google
+	/// </see>
+	/// </remarks>
+	sealed class OrientationListener(Context context) : OrientationEventListener(context)
+	{
+		public ImageCapture? ImageCapture { get; set; }
+
+		public override void OnOrientationChanged(int orientation)
+		{
+			if (orientation == OrientationUnknown || ImageCapture is null)
+			{
+				return;
+			}
+
+			var rotation = orientation switch
+			{
+				>= 45 and < 135 => (int)SurfaceOrientation.Rotation270,
+				>= 135 and < 225 => (int)SurfaceOrientation.Rotation180,
+				>= 225 and < 315 => (int)SurfaceOrientation.Rotation90,
+				_ => (int)SurfaceOrientation.Rotation0
+			};
+
+			ImageCapture.TargetRotation = rotation;
 		}
 	}
 }
