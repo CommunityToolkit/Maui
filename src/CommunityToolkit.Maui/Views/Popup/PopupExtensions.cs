@@ -98,7 +98,8 @@ public static class PopupExtensions
 		popupContainer.BackgroundColor = options.BackgroundColor;
 		popupContainer.CanBeDismissedByTappingOutsideOfPopup = options.CanBeDismissedByTappingOutsideOfPopup;
 		popupContainer.Content = popupContent;
-		popupContainer.BindingContext = popupContent.BindingContext;
+		
+		popupContainer.SetBinding(BindableObject.BindingContextProperty, static (View x) => x.BindingContext, source: popupContent);
 
 		if (options.CanBeDismissedByTappingOutsideOfPopup)
 		{
@@ -132,7 +133,7 @@ public static class PopupExtensions
 			Padding = options.Padding
 		});
 		
-		view.BindingContext = popup.BindingContext;
+		view.SetBinding(BindableObject.BindingContextProperty, static (View x) => x.BindingContext, source: popup);
 
 		return view;
 	}
