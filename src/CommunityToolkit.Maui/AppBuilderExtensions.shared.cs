@@ -32,7 +32,6 @@ public static class AppBuilderExtensions
 		builder.UseMauiCommunityToolkitCore(null);
 
 		builder.Services.AddSingleton<IPopupService, PopupService>();
-		builder.Services.AddSingleton<PopupLifecycleController>();
 
 		builder.ConfigureMauiHandlers(static h =>
 		{

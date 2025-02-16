@@ -35,13 +35,23 @@ public partial class UpdatingPopupViewModel(IPopupService popupService) : BaseVi
 	[RelayCommand(CanExecute = nameof(CanFinish))]
 	async Task OnFinish()
 	{
-		await popupService.ClosePopupAsync();
+		if (Application.Current?.Windows[0].Page is not Page currentPage)
+		{
+			throw new InvalidOperationException("Unable to retrieve current page");
+		}
+		
+		await popupService.ClosePopupAsync(currentPage.Navigation);
 	}
 
 	[RelayCommand]
 	async Task OnMore()
 	{
-		await popupService.ShowPopupAsync<UpdatingPopupViewModel>(Application.Current!.Windows[0].Page!.Navigation, new PopupOptions(), CancellationToken.None);
+		if (Application.Current?.Windows[0].Page is not Page currentPage)
+		{
+			throw new InvalidOperationException("Unable to retrieve current page");
+		}
+		
+		await popupService.ShowPopupAsync<UpdatingPopupViewModel>(currentPage.Navigation, new PopupOptions(), CancellationToken.None);
 	}
 
 	bool CanFinish() => UpdateProgress is finalUpdateProgressValue;

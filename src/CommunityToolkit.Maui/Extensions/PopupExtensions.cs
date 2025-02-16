@@ -38,9 +38,6 @@ public static class PopupExtensions
 		var popupContainer = BuildPopupContainer(view, taskCompletionSource);
 		ConfigurePopupContainer(popupContainer, popupContent, options);
 
-		var popupLifecycleController = IPlatformApplication.Current?.Services.GetRequiredService<PopupLifecycleController>();
-		popupLifecycleController?.RegisterPopup(popupContainer);
-
 		await navigation.PushModalAsync(popupContainer, false).WaitAsync(token);
 		return await taskCompletionSource.Task.WaitAsync(token);
 	}
@@ -75,9 +72,6 @@ public static class PopupExtensions
 		var popupContent = BuildPopupContent(view, options);
 		var popupContainer = BuildPopupContainer(view, taskCompletionSource);
 		ConfigurePopupContainer(popupContainer, popupContent, options);
-
-		var popupLifecycleController = IPlatformApplication.Current?.Services.GetRequiredService<PopupLifecycleController>();
-		popupLifecycleController?.RegisterPopup(popupContainer);
 
 		await navigation.PushModalAsync(popupContainer, false).WaitAsync(token);
 		return await taskCompletionSource.Task.WaitAsync(token);

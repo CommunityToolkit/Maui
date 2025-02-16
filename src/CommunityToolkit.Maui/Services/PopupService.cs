@@ -95,34 +95,27 @@ public class PopupService : IPopupService
 	}
 
 	/// <inheritdoc />
-	public async Task ClosePopupAsync(CancellationToken cancellationToken = default)
+	public async Task ClosePopupAsync(INavigation navigation, CancellationToken cancellationToken = default)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-		var popupLifecycleController = serviceProvider.GetRequiredService<PopupLifecycleController>();
-		var popup = popupLifecycleController.GetCurrentPopup();
-		if (popup is null)
-		{
-			return;
-		}
+		var popup = GetCurrentPopupContainer(navigation);
 
 		await popup.Close(new PopupResult(false), cancellationToken);
-		popupLifecycleController.UnregisterPopup(popup);
 	}
 
 	/// <inheritdoc />
-	public async Task ClosePopupAsync<T>(T result, CancellationToken cancellationToken = default)
+	public async Task ClosePopupAsync<T>(INavigation navigation, T result, CancellationToken cancellationToken = default)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-		var popupLifecycleController = serviceProvider.GetRequiredService<PopupLifecycleController>();
-		var popup = popupLifecycleController.GetCurrentPopup();
-		if (popup is null)
-		{
-			return;
-		}
+		var popup = GetCurrentPopupContainer(navigation);
 
 		await popup.Close(new PopupResult<T>(result, false), cancellationToken);
-		popupLifecycleController.UnregisterPopup(popup);
 	}
+
+	// All popups are now displayed in a PopupContainer (ContentPage) that is pushed modally to the screen, e.g. Navigation.PushModalAsync(popupContainer
+	// We can use the ModalStack to retrieve the most recent popup by retrieving all PopupContainers and return the most recent from the ModalStack  
+	static PopupContainer GetCurrentPopupContainer(INavigation navigation) => 
+		navigation.ModalStack.OfType<PopupContainer>().LastOrDefault() ?? throw new InvalidOperationException($"Unable to locate {nameof(Popup)}");
 
 	View GetPopupContent<TBindingContext>(TBindingContext bindingContext)
 	{

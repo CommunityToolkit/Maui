@@ -8,7 +8,7 @@ partial class PopupContainer<T> : PopupContainer
 {
 	readonly TaskCompletionSource<PopupResult<T>> taskCompletionSource;
 
-	public PopupContainer(Popup<T> content, TaskCompletionSource<PopupResult<T>> taskCompletionSource) : base(content, null)
+	public PopupContainer(Popup<T> popup, TaskCompletionSource<PopupResult<T>> taskCompletionSource) : base(popup, null)
 	{
 		this.taskCompletionSource = taskCompletionSource;
 		
@@ -27,12 +27,12 @@ partial class PopupContainer<T> : PopupContainer
 
 partial class PopupContainer : ContentPage
 {
-	readonly Popup content;
+	readonly Popup popup;
 	readonly TaskCompletionSource<PopupResult>? taskCompletionSource;
 
-	public PopupContainer(Popup content, TaskCompletionSource<PopupResult>? taskCompletionSource)
+	public PopupContainer(Popup popup, TaskCompletionSource<PopupResult>? taskCompletionSource)
 	{
-		this.content = content;
+		this.popup = popup;
 		this.taskCompletionSource = taskCompletionSource;
 
 		Shell.SetPresentationMode(this, PresentationMode.ModalNotAnimated);
@@ -62,13 +62,13 @@ partial class PopupContainer : ContentPage
 
 	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
 	{
-		content.NotifyPopupIsClosed();
+		popup.NotifyPopupIsClosed();
 		base.OnNavigatedFrom(args);
 	}
 
 	protected override void OnNavigatedTo(NavigatedToEventArgs args)
 	{
 		base.OnNavigatedTo(args);
-		content.NotifyPopupIsOpened();
+		popup.NotifyPopupIsOpened();
 	}
 }
