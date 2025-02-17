@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using System.Runtime.Versioning;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Views;
 
@@ -7,6 +8,11 @@ namespace CommunityToolkit.Maui;
 /// <summary>
 /// This class contains CameraView's <see cref="MauiAppBuilder"/> extensions.
 /// </summary>
+[SupportedOSPlatform("windows10.0.10240.0")]
+[SupportedOSPlatform("android21.0")]
+[SupportedOSPlatform("ios15.0")]
+[SupportedOSPlatform("maccatalyst15.0")]
+[SupportedOSPlatform("tizen6.5")]
 public static class AppBuilderExtensions
 {
 	/// <summary>

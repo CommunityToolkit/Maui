@@ -8,8 +8,13 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsAotCompatible>true</IsAotCompatible>
 
-    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath>
+    <!--
+    Uncomment the lines below if you need to debug the SG code
+    If you see any LongPath issue on Windows, check this doc
+    https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd#enable-long-paths-in-windows-10-version-1607-and-later
+    -->
+    <!--<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath> -->
 
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
@@ -48,7 +53,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CommunityToolkit.Maui.SourceGenerators.Internal\CommunityToolkit.Maui.SourceGenerators.Internal.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
+    <ProjectReference Include="..\CommunityToolkit.Maui.SourceGenerators.Internal\CommunityToolkit.Maui.SourceGenerators.Internal.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj" />
   </ItemGroup>
 

@@ -72,7 +72,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 			Behaviors = { behavior }
 		}.EnableAnimations();
 
-		behavior.AnimateCommand.Execute(CancellationToken.None);
+		behavior.AnimateCommand.Execute(TestContext.Current.CancellationToken);
 
 		await animationStartedTcs.Task;
 		await animationEndedTcs.Task;
@@ -101,7 +101,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 	[Fact]
 	public void AnimateCommandTokenCanceled()
 	{
-		TaskCanceledException? exception = null;
+		OperationCanceledException? exception = null;
 		var animationEndedTcs = new TaskCompletionSource();
 		var animationCommandCts = new CancellationTokenSource();
 
@@ -128,7 +128,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 				await animationEndedTcs.Task;
 			});
 		}
-		catch (TaskCanceledException e)
+		catch (OperationCanceledException e)
 		{
 			exception = e;
 		}
@@ -145,7 +145,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 	[Fact]
 	public void AnimateCommandTokenExpired()
 	{
-		TaskCanceledException? exception = null;
+		OperationCanceledException? exception = null;
 		var animationEndedTcs = new TaskCompletionSource();
 		var animationCommandCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
@@ -171,7 +171,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 				await animationEndedTcs.Task;
 			});
 		}
-		catch (TaskCanceledException e)
+		catch (OperationCanceledException e)
 		{
 			exception = e;
 		}

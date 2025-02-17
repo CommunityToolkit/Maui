@@ -19,6 +19,7 @@ public static partial class ColorAnimationExtensions
 	/// <returns>Value indicating if the animation completed successfully or not</returns>
 	public static Task<bool> BackgroundColorTo(this VisualElement element, Color color, uint rate = 16u, uint length = 250u, Easing? easing = null, CancellationToken token = default)
 	{
+		token.ThrowIfCancellationRequested();
 		ArgumentNullException.ThrowIfNull(element);
 		ArgumentNullException.ThrowIfNull(color);
 

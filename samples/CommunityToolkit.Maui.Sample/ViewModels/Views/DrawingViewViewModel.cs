@@ -14,8 +14,17 @@ public partial class DrawingViewViewModel : BaseViewModel
 {
 	readonly IFileSaver fileSaver;
 
+	public List<DrawingViewOutputOption> AvailableOutputOptions { get; } = [DrawingViewOutputOption.Lines, DrawingViewOutputOption.FullCanvas];
+
 	[ObservableProperty]
 	public partial string Logs { get; private set; } = string.Empty;
+
+	[ObservableProperty]
+	public partial DrawingViewOutputOption SelectedOutputOption { get; set; } = DrawingViewOutputOption.Lines;
+
+	public double CanvasHeight { get; set; }
+
+	public double CanvasWidth { get; set; }
 
 	public DrawingViewViewModel(IFileSaver fileSaver)
 	{
@@ -72,7 +81,11 @@ public partial class DrawingViewViewModel : BaseViewModel
 	{
 		try
 		{
-			await using var stream = await DrawingView.GetImageStream(Lines, new Size(1920, 1080), Brush.Blue, cancellationToken);
+			var options = SelectedOutputOption == DrawingViewOutputOption.Lines
+				? ImageLineOptions.JustLines(Lines.ToList(), new Size(1920, 1080), Brush.Blue)
+				: ImageLineOptions.FullCanvas(Lines.ToList(), new Size(1920, 1080), Brush.Blue, new Size(CanvasWidth, CanvasHeight));
+
+			await using var stream = await DrawingView.GetImageStream(options, cancellationToken);
 
 			await Permissions.RequestAsync<Permissions.StorageRead>().WaitAsync(cancellationToken);
 			await Permissions.RequestAsync<Permissions.StorageWrite>().WaitAsync(cancellationToken);

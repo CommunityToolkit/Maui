@@ -41,9 +41,8 @@ public partial class PopupHandler : ElementHandler<IPopup, Popup>
 		ArgumentNullException.ThrowIfNull(handler.MauiContext);
 
 		var parent = view.Parent.ToPlatform(handler.MauiContext);
-
 		parent.IsHitTestVisible = false;
-		handler.PlatformView.XamlRoot = parent.XamlRoot;
+		handler.PlatformView.XamlRoot = view.GetWindow().Content?.Handler?.MauiContext?.GetPlatformWindow().Content.XamlRoot ?? throw new InvalidOperationException("Window Content cannot be null");
 		handler.PlatformView.IsHitTestVisible = true;
 		handler.PlatformView.IsOpen = true;
 
