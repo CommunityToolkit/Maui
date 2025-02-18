@@ -63,17 +63,7 @@
     <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Rtsp" Version="1.5.0" />
     <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Hls" Version="1.5.0" />
     <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Dash" Version="1.5.0" />
-    <PackageReference Include="Xamarin.AndroidX.Media3.Session" Version="1.5.0" />
-    
-    <!-- Resolve Transient Dependancies -->
-    <PackageReference Include="Xamarin.AndroidX.Fragment.Ktx" Version="1.8.5.1" />
-    <PackageReference Include="Xamarin.AndroidX.Activity.Ktx" Version="1.9.3.1" />
-    <PackageReference Include="Xamarin.AndroidX.Collection.Jvm" Version="1.4.5.1" />
-    <PackageReference Include="Xamarin.AndroidX.Collection.Ktx" Version="1.4.5.1" />
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.8.7.1" />
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime" Version="2.8.7.1" />
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.Process" Version="2.8.7.1" />
-    
+    <PackageReference Include="Xamarin.AndroidX.Media3.Session" Version="1.5.0" />    
   </ItemGroup>
   
   <ItemGroup>

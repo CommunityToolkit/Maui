@@ -182,7 +182,7 @@ public partial class Expander : ContentView, IExpander
 				(listView.Handler?.PlatformView as UIKit.UITableView)?.ReloadData();
 			}
 #endif
-			
+
 #if WINDOWS
 			if (element.Parent is ListView listView && element is Cell cell)
 			{

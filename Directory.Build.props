@@ -16,7 +16,7 @@
     <NuGetAuditMode>all</NuGetAuditMode>
 
     <!-- MAUI Specific -->
-    <MauiPackageVersion>9.0.30</MauiPackageVersion>
+    <MauiPackageVersion>9.0.40</MauiPackageVersion>
     <NextMauiPackageVersion>10.0.0</NextMauiPackageVersion>
     <MauiStrictXamlCompilation>true</MauiStrictXamlCompilation>
     <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
@@ -48,7 +48,34 @@
      CS1712: Type parameter has no matching typeparam tag in the XML comment
      CS1723: XML comment has cref attribute that refers to a type parameter
      CS1734: XML comment has a paramref tag, but there is no parameter by that name
-     MVMTK0042: The field [ObservableProperty] can be converted to a partial property
+     MVVMTK0001: Cannot apply [INotifyPropertyChanged] to a type that already declares the INotifyPropertyChanged interface
+     MVVMTK0002: Cannot apply [ObservableObject] to a type that already declares the INotifyPropertyChanged interface
+     MVVMTK0003: Cannot apply [ObservableObject] to a type that already declares the INotifyPropertyChanging interface.
+     MVVMTK0009: The CanExecute name in [RelayCommand] must refer to a valid member in its parent type.
+     MVVMTK0010: Cannot set the CanExecute name in [RelayCommand] to one that has multiple matches in its parent type (it must refer to a single compatible member).
+     MVVMTK0011: The CanExecute name in [RelayCommand] must refer to a compatible member (either a property or a method) to be used in a generated command.
+     MVVMTK0012: Cannot apply the [RelayCommand] attribute specifying a concurrency control option to methods mapping to non-asynchronous command types
+     MVVMTK0013: Cannot apply the [RelayCommand] attribute specifying to include a cancel command to methods not mapping to an asynchronous command type accepting a cancellation token
+     MVVMTK0017: Cannot apply [INotifyPropertyChanged] to a type that already has this attribute or [ObservableObject] applied to it (including base types).
+     MVVMTK0018: Cannot apply [ObservableObject] to a type that already has this attribute or [INotifyPropertyChanged] applied to it (including base types).
+     MVVMTK0019: Fields annotated with [ObservableProperty] must be contained in a type that inherits from ObservableObject or that is annotated with [ObservableObject] or [INotifyPropertyChanged] (including base types).
+     MVVMTK0020: Fields not annotated with [ObservableProperty] cannot use [NotifyPropertyChangedFor], [NotifyCanExecuteChangedFor], [NotifyPropertyChangedRecipients] and [NotifyDataErrorInfo].
+     MVVMTK0023: Methods with multiple overloads cannot be annotated with [RelayCommand], as command methods must be unique within their containing type. 
+     MVVMTK0024: The fields annotated with [ObservableProperty] cannot result in a property name or have a type that would cause conflicts with other generated members. 
+     MVVMTK0032: Classes with no base types should prefer inheriting from ObservableObject instead of using attributes to generate INotifyPropertyChanged code, as that will reduce the binary size of the application (the attributes are only meant to support cases where the annotated types are already inheriting from a different type). This diagnostic applies to cases where [INotifyPropertyChanged] is used in particular.
+     MVVMTK0033: Classes with no base types should prefer inheriting from ObservableObject instead of using attributes to generate INotifyPropertyChanged code, as that will reduce the binary size of the application (the attributes are only meant to support cases where the annotated types are already inheriting from a different type). This diagnostic applies to cases where [ObservableObject] is used in particular
+     MVVMTK0034: Fields with [ObservableProperty] should not be directly referenced, and the generated properties should be used instead. This warning exists to help avoid cases where developers accidentally refer to backing fields of a generated property to update its value, and then see no property change notification being raised. The generated property should always be referenced instead.
+     MVVMTK0035: All attributes targeting the generated property for a field annotated with [ObservableProperty] must correctly be resolved to valid types
+     MVVMTK0036: All attributes targeting the generated field or property for a method annotated with [RelayCommand] must correctly be resolved to valid types
+     MVVMTK0039: Asynchronous methods annotated with [RelayCommand] should return a Task value, and not be async void
+     MVVMTK0042: The field [ObservableProperty] can be converted to a partial property
+     MVVMTK0049: Using the [INotifyPropertyChanged] attribute on types is not AOT compatible in WinRT scenarios (such as UWP XAML and WinUI 3 apps), and they should derive from ObservableObject or manually implement INotifyPropertyChanged instead 
+     MVVMTK0050: Using the [ObservableObject] attribute on types is not AOT compatible in WinRT scenarios (such as UWP XAML and WinUI 3 apps), and they should derive from ObservableObject instead
+     MVVMTK0052: [ObservableProperty] must be used on partial property definitions with no implementation part
+     MVVMTK0053: [ObservableProperty] must be used on properties returning a type by value 
+     MVVMTK0054: [ObservableProperty] must be used on properties of a non byref-like type 
+     MVVMTK0055: [ObservableProperty] must be used on properties of a non pointer-like type     
+     MVVMTK0056: The semi-auto property can be converted to a partial property using [ObservableProperty] 
      CsWinRT1028: Class implements WinRT interfaces but isn't marked partial
      CsWinRT1030: Class implements WinRT interfaces that require unsafe code
      NU1900	Error communicating with package source, while getting vulnerability information.
@@ -150,7 +177,7 @@
       nullable,
       CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1580,CS1581,CS1584,CS1587,CS1589,CS1590,CS1591,CS1592,CS1598,CS1658,CS1710,CS1711,CS1712,CS1723,CS1734,
       CsWinRT1028,CsWinRT1030,
-      MVMTK0042,
+      MVVMTK0001,MVVMTK0002,MVVMTK0003,MVVMTK0009,MVVMTK0010,MVVMTK0011,MVVMTK0012,MVVMTK0013,MVVMTK0017,MVVMTK0018,MVVMTK0019,MVVMTK0020,MVVMTK0023,MVVMTK0024,MVVMTK0032,MVVMTK0033,MVVMTK0034,MVVMTK0035,MVVMTK0036,MVVMTK0039,MVVMTK0042,MVVMTK0049,MVVMTK0050,MVVMTK0052,MVVMTK0053,MVVMTK0054,MVVMTK0055,MVVMTK0056,
       NU1900,NU1901,NU1902,NU1903,NU1904,NU1905,
       xUnit1000,xUnit1001,xUnit1002,xUnit1003,xUnit1004,xUnit1005,xUnit1006,xUnit1007,xUnit1008,xUnit1009,xUnit1010,xUnit1011,xUnit1012,xUnit1013,xUnit1014,xUnit1015,xUnit1016,xUnit1017,xUnit1018,xUnit1019,xUnit1020,xUnit1021,xUnit1022,xUnit1023,xUnit1024,xUnit1025,xUnit1026,xUnit1027,xUnit1028,xUnit1029,xUnit1030,xUnit1031,xUnit1032,xUnit1033,xUnit1034,xUnit1035,xUnit1036,xUnit1037,xUnit1038,xUnit1039,xUnit1040,xUnit1041,xUnit1042,xUnit1043,xUnit1048,xUnit1049,xUnit1050,xUnit1051,
       xUnit2000,xUnit2001,xUnit2002,xUnit2003,xUnit2004,xUnit2005,xUnit2006,xUnit2007,xUnit2008,xUnit2009,xUnit2010,xUnit2011,xUnit2012,xUnit2013,xUnit2014,xUnit2015,xUnit2016,xUnit2017,xUnit2018,xUnit2019,xUnit2020,xUnit2021,xUnit2022,xUnit2023,xUnit2024,xUnit2025,xUnit2026,xUnit2027,xUnit2028,xUnit2029,xUnit2030,xUnit2031,xUnit2032,
