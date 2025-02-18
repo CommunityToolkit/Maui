@@ -168,6 +168,11 @@ public class MauiMediaElement : UIView
 			currentPage = modalPage;
 			return true;
 		}
+		if (window.Page is FlyoutPage flyoutPage)
+		{
+			currentPage = flyoutPage;
+			return true;
+		}
 
 		// If not using Shell or a Modal Page, return the visible page in the (non-modal) NavigationStack
 		if (window.Navigation.NavigationStack[^1] is Page page)
