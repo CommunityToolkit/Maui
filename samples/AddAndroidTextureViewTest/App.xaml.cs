@@ -1,10 +1,11 @@
 ﻿namespace AddAndroidTextureViewTest;
+
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Platform;
 using System.Diagnostics;
+
 public partial class App : Application {
 	public App() {
-		InitializeComponent();
 	}
 
 	protected override Window CreateWindow(IActivationState? activationState) {
@@ -15,15 +16,32 @@ public partial class App : Application {
 public partial class MyTestPage : ContentPage {
 	public MyTestPage() {
 
-		MediaElement mediaElement = new();
+		//======================================
+		//SET THE ANDROID VIEW TYPE TO CREATE
+		//======================================
+		MediaElementOptions options = new() { AndroidViewType = AndroidViewType.TextureView };
+		//MediaElementOptions options = new() { AndroidViewType = AndroidViewType.SurfaceView };
+
+		MediaElement mediaElement = new(options);
+		//MediaElement mediaElement = new(); // default is SurfaceView
+
 		mediaElement.HandlerChanged += delegate {
+
 #if ANDROID
-			/*var platformView = mediaElement.ToPlatform(mediaElement.Handler!.MauiContext!);
-			Debug.WriteLine("PLATFORM VIEW TYPE " + platformView.GetType());*/
+			//============================================
+			//TEST IF CREATED CORRECT ANDROID VIEW TYPE
+			//============================================
+			var platformView = ((CommunityToolkit.Maui.Core.Views.MauiMediaElement)mediaElement.ToPlatform(mediaElement.Handler!.MauiContext!));
+			var viewType = platformView.PlayerView.VideoSurfaceView?.GetType();
+			Debug.WriteLine("ANDROID VIEW TYPE: " + viewType?.ToString() ?? "");
+
+			//=== outputs either:
+			// ANDROID VIEW TYPE: Android.Views.TextureView
+			// ANDROID VIEW TYPE: Android.Views.SurfaceView
 #endif
 		};
-		AbsoluteLayout absDummy = new();
 
+		AbsoluteLayout absDummy = new();
 		this.Content = absDummy;
 
 		AbsoluteLayout absRoot = new();

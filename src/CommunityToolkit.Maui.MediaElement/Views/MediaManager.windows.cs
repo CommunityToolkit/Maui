@@ -44,7 +44,7 @@ partial class MediaManager : IDisposable
 	/// Creates the corresponding platform view of <see cref="MediaElement"/> on Windows.
 	/// </summary>
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
-	public PlatformMediaElement CreatePlatformView()
+	public PlatformMediaElement CreatePlatformView(MediaElementOptions mediaElementOptions)
 	{
 		Player = new();
 		WindowsMediaElement MediaElement = new();

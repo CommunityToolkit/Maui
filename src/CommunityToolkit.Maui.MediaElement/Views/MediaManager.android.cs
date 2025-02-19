@@ -12,6 +12,7 @@ using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
+using Java.Util.Jar;
 using Microsoft.Extensions.Logging;
 using AudioAttributes = AndroidX.Media3.Common.AudioAttributes;
 using DeviceInfo = AndroidX.Media3.Common.DeviceInfo;
@@ -130,17 +131,40 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
 	/// <exception cref="NullReferenceException">Thrown when <see cref="Context"/> is <see langword="null"/> or when the platform view could not be created.</exception>
 	[MemberNotNull(nameof(Player), nameof(PlayerView), nameof(session))]
-	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView()
+	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView(MediaElementOptions mediaElementOptions)
 	{
 		Player = new ExoPlayerBuilder(MauiContext.Context).Build() ?? throw new InvalidOperationException("Player cannot be null");
 		Player.AddListener(this);
-		PlayerView = new PlayerView(MauiContext.Context)
-		{
-			Player = Player,
-			UseController = false,
-			ControllerAutoShow = false,
-			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
-		};
+
+		// Create SurfaceView or TextureView
+		if (mediaElementOptions.AndroidViewType == AndroidViewType.SurfaceView) {
+
+			// Create SurfaceView
+			PlayerView = new PlayerView(MauiContext.Context) {
+				Player = Player,
+				UseController = false,
+				ControllerAutoShow = false,
+				LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
+			};
+		}
+		else {
+
+			// Create TextureView
+			Context context = MauiContext.Context!; 
+			Android.Content.Res.Resources resources = context.Resources!; 
+			System.Xml.XmlReader xmlResource = resources.GetXml(Microsoft.Maui.Resource.Layout.textureview);
+			xmlResource.Read();
+			Android.Util.IAttributeSet attributes = Android.Util.Xml.AsAttributeSet(xmlResource)!; 
+
+			PlayerView = new PlayerView(MauiContext.Context, attributes) {
+				Player = Player,
+				UseController = false,
+				ControllerAutoShow = false,
+				LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
+			};
+		}
+
+		// Finish construction		
 		string randomId = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8];
 		var mediaSessionWRandomId = new MediaSession.Builder(Platform.AppContext, Player);
 		mediaSessionWRandomId.SetId(randomId);
@@ -617,6 +641,35 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		return mediaItem;
 	}
 
+	#region PlayerListener implementation method stubs
+	public void OnAudioAttributesChanged(AudioAttributes? audioAttributes) { }
+	public void OnAvailableCommandsChanged(PlayerCommands? player) { }
+	public void OnCues(CueGroup? cues) { }
+	public void OnDeviceInfoChanged(DeviceInfo? deviceInfo) { }
+	public void OnDeviceVolumeChanged(int volume, bool muted) { }
+	public void OnEvents(IPlayer? player, PlayerEvents? playerEvents) { }
+	public void OnIsLoadingChanged(bool isLoading) { }
+	public void OnIsPlayingChanged(bool isPlaying) { }
+	public void OnLoadingChanged(bool isLoading) { }
+	public void OnMaxSeekToPreviousPositionChanged(long maxSeekToPreviousPositionMs) { }
+	public void OnMediaItemTransition(MediaItem? mediaItem, int reason) { }
+	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata) { }
+	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason) { }
+	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
+	public void OnPlayerErrorChanged(PlaybackException? error) { }
+	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }
+	public void OnRenderedFirstFrame() { }
+	public void OnRepeatModeChanged(int repeatMode) { }
+	public void OnSeekBackIncrementChanged(long seekBackIncrementMs) { }
+	public void OnSeekForwardIncrementChanged(long seekForwardIncrementMs) { }
+	public void OnShuffleModeEnabledChanged(bool shuffleModeEnabled) { }
+	public void OnSkipSilenceEnabledChanged(bool skipSilenceEnabled) { }
+	public void OnSurfaceSizeChanged(int width, int height) { }
+	public void OnTimelineChanged(Timeline? timeline, int reason) { }
+	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters) { }
+	public void OnTracksChanged(Tracks? tracks) { }
+	#endregion
+
 	static class PlaybackState
 	{
 		public const int StateBuffering = 6;
@@ -633,4 +686,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		public const int StateStopped = 1;
 		public const int StateError = 7;
 	}
+	
+
 }
