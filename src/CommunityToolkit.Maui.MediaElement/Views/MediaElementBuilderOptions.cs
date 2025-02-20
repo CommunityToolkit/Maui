@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace CommunityToolkit.Maui.Views;
 
+// Static class for holding the default MediaElementOptions that the MediaElement constructor can reference
 static class MediaElementBuilderOptions
 {
-	// Default options set by UseCommunityToolkitMediaElement(options) 
+	// Options which can be set in by UseCommunityToolkitMediaElement in builder
 	public static MediaElementOptions MediaElementOptions = new();
 }

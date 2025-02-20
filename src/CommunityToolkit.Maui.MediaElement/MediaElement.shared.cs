@@ -16,7 +16,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	///</summary>
 	public MediaElement(MediaElementOptions? mediaElementOptions = null) 
 	{
-		// Assign default options (set by builder or options constructor) if none is set as argument
+		// Assign default options (which may be set globally by UseMauiCommunityToolkitMediaElement in builder) if argument here is null
 		if (mediaElementOptions == null) { 
 			mediaElementOptions = MediaElementBuilderOptions.MediaElementOptions; 
 		}
