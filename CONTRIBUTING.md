@@ -136,7 +136,7 @@ Here we will have some:
 ### Methods Returning Task and ValueTask
 
 * Always include a `CancellationToken` as a parameter to every method returning `Task` or `ValueTask`
-* If the method is public, provide a the default value for the `CancellationToken` (e.g. `CancellationToken token = default`)
+* If the method is public, provide the default value for the `CancellationToken` (e.g. `CancellationToken token = default`)
   * If the method is not public, do not provide a default value for the `CancellationToken`
 * Use `CancellationToken.ThrowIfCancellationRequested()` to verify the `CancellationToken`
 
