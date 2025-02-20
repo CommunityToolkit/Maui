@@ -25,6 +25,14 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		this.MediaElementOptions = mediaElementOptions;
 	}
 	/// <summary>
+	/// Default Constructor
+	/// </summary>
+	public MediaElement() 
+	{
+		// Save the default Options to this object for handler to access during CreatePlatformView
+		this.MediaElementOptions = MediaElementBuilderOptions.MediaElementOptions;
+	}
+	/// <summary>
 	/// Read the MediaElementOptions set in on construction, cannot be changed after construction
 	/// </summary>
 	public MediaElementOptions MediaElementOptions { get; }
