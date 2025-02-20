@@ -12,7 +12,6 @@ using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
-using Java.Util.Jar;
 using Microsoft.Extensions.Logging;
 using AudioAttributes = AndroidX.Media3.Common.AudioAttributes;
 using DeviceInfo = AndroidX.Media3.Common.DeviceInfo;
