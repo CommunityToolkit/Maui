@@ -16,8 +16,10 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	///</summary>
 	public MediaElement(MediaElementOptions? mediaElementOptions = null) 
 	{
-		// Assign default options if none is set as argument
-		if (mediaElementOptions == null) { mediaElementOptions = new(); }
+		// Assign default options (set by builder or options constructor) if none is set as argument
+		if (mediaElementOptions == null) { 
+			mediaElementOptions = MediaElementBuilderOptions.MediaElementOptions; 
+		}
 
 		// Save to the object for handler to access during CreatePlatformView
 		this.MediaElementOptions = mediaElementOptions;

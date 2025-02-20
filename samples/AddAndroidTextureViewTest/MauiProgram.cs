@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using CommunityToolkit.Maui;
-
+using CommunityToolkit.Maui.Views;
 namespace AddAndroidTextureViewTest;
 
 public static class MauiProgram
@@ -11,7 +11,10 @@ public static class MauiProgram
 		builder
 			.UseMauiApp<App>()
 			.UseMauiCommunityToolkit()
-			.UseMauiCommunityToolkitMediaElement()
+			//.UseMauiCommunityToolkitMediaElement()
+			.UseMauiCommunityToolkitMediaElement(new MediaElementOptions() {
+				AndroidViewType = AndroidViewType.TextureView
+			})
 			.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

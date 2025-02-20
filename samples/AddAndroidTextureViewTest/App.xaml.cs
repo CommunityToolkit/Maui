@@ -40,7 +40,7 @@ public partial class MyTestPage : ContentPage {
 			// ANDROID VIEW TYPE: Android.Views.SurfaceView
 #endif
 		};
-
+		
 		AbsoluteLayout absDummy = new();
 		this.Content = absDummy;
 
