@@ -152,41 +152,11 @@ public class MauiMediaElement : UIView
 			// TODO: Add support for MediaElement in an ItemsView in a multi-window application
 			throw new NotSupportedException("MediaElement is not currently supported in multi-window applications");
 		}
-
-		var window = Application.Current.Windows[0];
-
-		// If using Shell, return the current page
-		if (window.Page is Shell { CurrentPage: not null } shell)
+		if (Application.Current.Windows[0].Page is Page page)
 		{
-			currentPage = shell.CurrentPage;
+			currentPage = PageExtensions.GetCurrentPage(page);
 			return true;
 		}
-
-		// If not using Shell, use the ModelNavigationStack to check for any pages displayed modally
-		if (TryGetModalPage(window, out var modalPage))
-		{
-			currentPage = modalPage;
-			return true;
-		}
-		if (window.Page is FlyoutPage flyoutPage)
-		{
-			currentPage = flyoutPage;
-			return true;
-		}
-
-		// If not using Shell or a Modal Page, return the visible page in the (non-modal) NavigationStack
-		if (window.Navigation.NavigationStack[^1] is Page page)
-		{
-			currentPage = page;
-			return true;
-		}
-
 		return false;
-
-		static bool TryGetModalPage(Window window, [NotNullWhen(true)] out Page? page)
-		{
-			page = window.Navigation.ModalStack.LastOrDefault();
-			return page is not null;
-		}
 	}
 }
