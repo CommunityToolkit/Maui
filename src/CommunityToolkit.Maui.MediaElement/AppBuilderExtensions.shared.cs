@@ -28,7 +28,7 @@ public static class AppBuilderExtensions
 		});
 
 		// Assign as default MediaElementOptions for MediaElement if not null
-		if (mediaElementOptions != null) {
+		if (mediaElementOptions is not null) {
 			MediaElementBuilderOptions.MediaElementOptions = mediaElementOptions;
 		}
 
