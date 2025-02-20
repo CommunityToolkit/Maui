@@ -12,7 +12,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 {
 	
 	/// <summary>
-	/// New Constructor with Options
+	/// Constructor with Options
 	///</summary>
 	public MediaElement(MediaElementOptions? mediaElementOptions = null) 
 	{
