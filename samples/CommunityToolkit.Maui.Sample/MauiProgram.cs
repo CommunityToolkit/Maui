@@ -67,10 +67,12 @@ public static class MauiProgram
 #endif
 								.UseMauiCommunityToolkitMarkup()
 								.UseMauiCommunityToolkitCamera()
-								.UseMauiCommunityToolkitMediaElement(new MediaElementOptions()
-								{
-									AndroidViewType = AndroidViewType.TextureView
+								.UseMauiCommunityToolkitMediaElement(options => {
+									options.AndroidViewType = AndroidViewType.TextureView;
 								})
+								/*.UseMauiCommunityToolkitMediaElement(new MediaElementOptions() {
+									AndroidViewType = AndroidViewType.TextureView
+								})*/
 
 								.ConfigureMauiHandlers(handlers =>
 								{

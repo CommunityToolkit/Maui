@@ -149,18 +149,36 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		else {
 
 			// Create TextureView
-			Context context = MauiContext.Context!; 
-			Android.Content.Res.Resources resources = context.Resources!; 
+			Context context = MauiContext.Context!;
+
+			// Method 1
+			/*Android.Content.Res.Resources resources = context.Resources!; 
 			System.Xml.XmlReader xmlResource = resources.GetXml(Microsoft.Maui.Resource.Layout.textureview);
 			xmlResource.Read();
 			Android.Util.IAttributeSet attributes = Android.Util.Xml.AsAttributeSet(xmlResource)!; 
-
 			PlayerView = new PlayerView(MauiContext.Context, attributes) {
 				Player = Player,
 				UseController = false,
 				ControllerAutoShow = false,
 				LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 			};
+			*/
+
+			// Method 2
+			var inflater = LayoutInflater.From(context)!;
+			var layout = inflater.Inflate(Microsoft.Maui.Resource.Layout.textureview, null)!;
+
+			// Find the PlayerView in the inflated layout
+			PlayerView = layout.FindViewById<PlayerView>(Microsoft.Maui.Resource.Id.texture_view_media_element);
+			if (PlayerView == null) {
+				throw new InvalidOperationException("PlayerView cannot be null");
+			}
+
+			PlayerView.Player = Player;
+			PlayerView.UseController = false;
+			PlayerView.ControllerAutoShow = false;
+			PlayerView.LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
+
 		}
 
 		// Finish construction		
