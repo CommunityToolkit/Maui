@@ -42,26 +42,18 @@ public partial class MapHandlerWindows : MapHandler
 	}
 
 	internal static string? MapsKey { get; set; }
+	internal static string? MapPage { get; private set; }
 
 	/// <inheritdoc/>
-	[RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
-	[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
-#pragma warning disable IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
-#pragma warning disable IL3051 // 'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.
 	protected override FrameworkElement CreatePlatformView()
-#pragma warning restore IL3051 // 'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.
-#pragma warning restore IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
 	{
 		if (string.IsNullOrEmpty(MapsKey))
 		{
 			throw new InvalidOperationException("You need to specify a Bing Maps Key");
 		}
 
-		var mapPage = GetMapHtmlPage(MapsKey);
+		MapPage = GetMapHtmlPage(MapsKey);
 		var webView = new MauiWebView(new WebViewHandler());
-		webView.NavigationCompleted += HandleWebViewNavigationCompleted;
-		webView.WebMessageReceived += WebViewWebMessageReceived;
-		webView.LoadHtml(mapPage, null);
 
 		return webView;
 	}
@@ -69,14 +61,28 @@ public partial class MapHandlerWindows : MapHandler
 	/// <inheritdoc />
 	[RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
 	[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
-#pragma warning disable IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
-#pragma warning disable IL3051 // 'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.
-	protected override void DisconnectHandler(FrameworkElement platformView)
-#pragma warning restore IL3051 // 'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.
-#pragma warning restore IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
+	[UnconditionalSuppressMessage("TrimAnalysis", "IL2046", Justification = "'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.")]
+	[UnconditionalSuppressMessage("TrimAnalysis", "IL3051", Justification = "'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.")]
+	protected override void ConnectHandler(FrameworkElement platformView) 
 	{
-		if (PlatformView is MauiWebView mauiWebView)
+		if (platformView is MauiWebView mauiWebView)
 		{
+			LoadMap(platformView);
+
+			mauiWebView.NavigationCompleted += HandleWebViewNavigationCompleted;
+			mauiWebView.WebMessageReceived += WebViewWebMessageReceived;
+			Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
+		}
+
+		base.ConnectHandler(platformView);
+	}
+
+	/// <inheritdoc />
+	protected override void DisconnectHandler(FrameworkElement platformView)
+	{
+		if (platformView is MauiWebView mauiWebView)
+		{
+			Connectivity.ConnectivityChanged -= Connectivity_ConnectivityChanged;
 			mauiWebView.NavigationCompleted -= HandleWebViewNavigationCompleted;
 			mauiWebView.WebMessageReceived -= WebViewWebMessageReceived;
 		}
@@ -415,6 +421,11 @@ public partial class MapHandlerWindows : MapHandler
 
 	static async Task<Location?> GetCurrentLocation()
 	{
+		if (await Geolocator.RequestAccessAsync() != GeolocationAccessStatus.Allowed)
+		{
+			return null;
+		}
+
 		var geoLocator = new Geolocator();
 		var position = await geoLocator.GetGeopositionAsync();
 		return new Location(position.Coordinate.Latitude, position.Coordinate.Longitude);
@@ -508,6 +519,19 @@ public partial class MapHandlerWindows : MapHandler
 					}
 				}
 				break;
+		}
+	}
+
+	void Connectivity_ConnectivityChanged(object? sender, ConnectivityChangedEventArgs e)
+	{
+		LoadMap(PlatformView);
+	}
+
+	static void LoadMap(FrameworkElement platformView)
+	{
+		if (platformView is MauiWebView mauiWebView && Connectivity.NetworkAccess == NetworkAccess.Internet)
+		{
+			mauiWebView.LoadHtml(MapPage, null);
 		}
 	}
 }
