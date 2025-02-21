@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Android.Content;
 using Android.Views;
 using Android.Widget;
@@ -150,9 +151,15 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 			// Create TextureView
 			Context context = MauiContext.Context!;
+		
+			// Create a new Stopwatch instance.
+			Stopwatch stopwatch = new Stopwatch();
+
+			// Start the stopwatch.
+			stopwatch.Start();
 
 			// Method 1
-			/*Android.Content.Res.Resources resources = context.Resources!; 
+			Android.Content.Res.Resources resources = context.Resources!; 
 			System.Xml.XmlReader xmlResource = resources.GetXml(Microsoft.Maui.Resource.Layout.textureview);
 			xmlResource.Read();
 			Android.Util.IAttributeSet attributes = Android.Util.Xml.AsAttributeSet(xmlResource)!; 
@@ -162,10 +169,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				ControllerAutoShow = false,
 				LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 			};
-			*/
+			
 
 			// Method 2
-			var inflater = LayoutInflater.From(context)!;
+			/*var inflater = LayoutInflater.From(context)!;
 			var layout = inflater.Inflate(Microsoft.Maui.Resource.Layout.textureview, null)!;
 
 			// Find the PlayerView in the inflated layout
@@ -178,6 +185,22 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			PlayerView.UseController = false;
 			PlayerView.ControllerAutoShow = false;
 			PlayerView.LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
+			*/
+
+			// Stop the stopwatch.
+			stopwatch.Stop();
+
+			// Display the elapsed time.
+			Debug.WriteLine("Elapsed ticks: {0}", stopwatch.Elapsed.Ticks);
+
+			//Results Debug to Pixel 5 Simulator:
+			//Method 2 = 2369134
+			//Method 2 = 2032470
+			//Method 2 = 2459508 
+
+			//Method 1 = 2019054
+			//Method 1 = 2032824
+			//Method 1 = 2282149
 
 		}
 
