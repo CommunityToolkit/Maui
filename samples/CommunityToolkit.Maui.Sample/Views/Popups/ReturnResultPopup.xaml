@@ -1,8 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<mct:Popup x:Class="CommunityToolkit.Maui.Sample.Views.Popups.ReturnResultPopup"
+<mct:Popup x:TypeArguments="system:String" x:Class="CommunityToolkit.Maui.Sample.Views.Popups.ReturnResultPopup"
            xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-           xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit">
+           xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+           xmlns:system="clr-namespace:System;assembly=System.Runtime">
 
     <VerticalStackLayout Style="{StaticResource PopupLayout}">
         <VerticalStackLayout.Resources>
@@ -24,7 +25,7 @@
                     <Setter Property="VerticalTextAlignment" Value="Center" />
                 </Style>
                 <Style x:Key="ConfirmButton" TargetType="Button">
-                    <Setter Property="VerticalOptions" Value="EndAndExpand" />
+                    <Setter Property="VerticalOptions" Value="End" />
                 </Style>
             </ResourceDictionary>
         </VerticalStackLayout.Resources>
@@ -34,7 +35,7 @@
                 Text="Return Result Popup" />
         <BoxView Style="{StaticResource Divider}" />
         <Label Style="{StaticResource Content}" 
-                Text="This popup returns a value when it is dismissed. The value varies depending if you tap on the CLOSE button or dismis the popup by tapping outside of it's bounds." />
+                Text="This popup returns a value when it is dismissed. The value varies depending if you tap on the CLOSE button or dismiss the popup by tapping outside its bounds." />
         <Button Text="CLOSE"
                 Style="{StaticResource ConfirmButton}"
                 Clicked="Button_Clicked" />

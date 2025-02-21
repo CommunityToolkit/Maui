@@ -2,7 +2,7 @@
 
 namespace CommunityToolkit.Maui.Sample.Views.Popups;
 
-public partial class DynamicStyleInheritancePopup : Popup
+public partial class DynamicStyleInheritancePopup
 {
 	public DynamicStyleInheritancePopup()
 	{

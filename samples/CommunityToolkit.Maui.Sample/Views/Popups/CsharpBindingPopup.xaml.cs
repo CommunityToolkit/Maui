@@ -6,11 +6,12 @@ namespace CommunityToolkit.Maui.Sample.Views.Popups;
 
 public partial class CsharpBindingPopup : Popup
 {
-	public CsharpBindingPopup(PopupSizeConstants popupSizeConstants, CsharpBindingPopupViewModel csharpBindingPopupViewModel)
+	public CsharpBindingPopup(CsharpBindingPopupViewModel csharpBindingPopupViewModel)
 	{
 		InitializeComponent();
 		BindingContext = csharpBindingPopupViewModel;
-
-		Size = popupSizeConstants.Large;
+		Opened += (s, e) =>
+			csharpBindingPopupViewModel.Load(
+				"This is a platform specific popup with a .NET MAUI View being rendered. The behaviors of the popup will confirm to 100% this platform look and feel, but still allows you to use your .NET MAUI Controls.");
 	}
 }

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
@@ -14,4 +15,6 @@ public sealed partial class CsharpBindingPopupViewModel : BaseViewModel
 	{
 		Message = updatedMessage;
 	}
+
+	public TaskCompletionSource<PopupResult>? PopupResultManager { get; set; }
 }
