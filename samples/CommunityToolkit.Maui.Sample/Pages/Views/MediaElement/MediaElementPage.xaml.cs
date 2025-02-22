@@ -248,14 +248,25 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.Pause();
 		var popupMediaElement = new MediaElement
 		{
+			// Sizing differences between windows and iOS
+#if IOS || MACCATALYST
+			WidthRequest = 500,
+			HeightRequest = 250,
+#else
+			WidthRequest = 800,
+			HeightRequest = 300,
+#endif
 			Source = MediaSource.FromResource("AppleVideo.mp4"),
-			HeightRequest = 600,
-			WidthRequest = 600,
 			ShouldAutoPlay = true,
 			ShouldShowPlaybackControls = true,
 		};
 		var popup = new Popup
 		{
+#if IOS || MACCATALYST
+			Size = new Size(500, 250),
+#else
+			Size = new Size(800, 300),
+#endif
 			VerticalOptions = LayoutAlignment.Center,
 			HorizontalOptions = LayoutAlignment.Center,
 			Content = new StackLayout
@@ -268,10 +279,5 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		};
 
 		this.ShowPopup(popup);
-		popup.Closed += (s, e) =>
-		{
-			popupMediaElement.Stop();
-			popupMediaElement.Handler?.DisconnectHandler();
-		};
 	}
 }
