@@ -116,10 +116,10 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	public static readonly BindableProperty MetadataArtistProperty = BindableProperty.Create(nameof(MetadataArtist), typeof(string), typeof(MediaElement), string.Empty);
 
 	/// <summary>
-	/// Backing store for the <see cref="MetadataArtworkUrl"/> property.
+	/// Backing store for the <see cref="MetadataArtworkSource"/> property.
 	/// </summary>
-	public static readonly BindableProperty MetadataArtworkUrlProperty = BindableProperty.Create(nameof(MetadataArtworkUrl), typeof(string), typeof(MediaElement), string.Empty);
-
+	public static readonly BindableProperty MetadataArtworkSourceProperty = BindableProperty.Create(nameof(MetadataArtworkSource), typeof(MediaSource), typeof(MediaElement));
+	
 	readonly WeakEventManager eventManager = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 
@@ -362,13 +362,14 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	}
 
 	/// <summary>
-	/// Gets or sets the Artwork Image Url of the media.
+	/// Gets or sets the Artwork Image Source of the media.
 	/// This is a bindable property.
 	/// </summary>
-	public string MetadataArtworkUrl
+	[TypeConverter(typeof(MediaSourceConverter))]
+	public MediaSource? MetadataArtworkSource
 	{
-		get => (string)GetValue(MetadataArtworkUrlProperty);
-		set => SetValue(MetadataArtworkUrlProperty, value);
+		get => (MediaSource)GetValue(MetadataArtworkSourceProperty);
+		set => SetValue(MetadataArtworkSourceProperty, value);
 	}
 
 	/// <summary>
@@ -577,7 +578,6 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		timer.Stop();
 		timer = null;
 	}
-
 	void OnSourceChanged(object? sender, EventArgs eventArgs)
 	{
 		OnPropertyChanged(SourceProperty.PropertyName);
