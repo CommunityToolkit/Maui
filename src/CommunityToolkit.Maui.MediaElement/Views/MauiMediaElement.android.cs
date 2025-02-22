@@ -21,7 +21,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 public class MauiMediaElement : CoordinatorLayout
 {
 	readonly RelativeLayout relativeLayout;
-	public PlayerView PlayerView { get; }
+	readonly PlayerView playerView;
 
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
@@ -43,8 +43,8 @@ public class MauiMediaElement : CoordinatorLayout
 	/// <param name="playerView">The <see cref="PlayerView"/> that acts as the platform media player.</param>
 	public MauiMediaElement(Context context, PlayerView playerView) : base(context)
 	{
-		this.PlayerView = playerView;
-		this.PlayerView.SetBackgroundColor(Android.Graphics.Color.Black);
+		this.playerView = playerView;
+		this.playerView.SetBackgroundColor(Android.Graphics.Color.Black);
 		playerView.FullscreenButtonClick += OnFullscreenButtonClick;
 		var layout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
 		layout.AddRule(LayoutRules.CenterInParent);
@@ -92,14 +92,14 @@ public class MauiMediaElement : CoordinatorLayout
 		{
 			try
 			{
-				if (PlayerView.Player is not null)
+				if (playerView.Player is not null)
 				{
-					PlayerView.Player.PlayWhenReady = false;
+					playerView.Player.PlayWhenReady = false;
 				}
 				// https://github.com/google/ExoPlayer/issues/1855#issuecomment-251041500
-				PlayerView.Player?.Release();
-				PlayerView.Player?.Dispose();
-				PlayerView.Dispose();
+				playerView.Player?.Release();
+				playerView.Player?.Dispose();
+				playerView.Dispose();
 			}
 			catch (ObjectDisposedException)
 			{
@@ -113,7 +113,7 @@ public class MauiMediaElement : CoordinatorLayout
 	void OnFullscreenButtonClick(object? sender, PlayerView.FullscreenButtonClickEventArgs e)
 	{
 		// Ensure there is a player view
-		if (PlayerView is null)
+		if (playerView is null)
 		{
 			throw new InvalidOperationException("UpdatedPlayerView cannot be null when the FullScreen button is tapped");
 		}
