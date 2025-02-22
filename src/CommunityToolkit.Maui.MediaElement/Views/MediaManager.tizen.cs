@@ -43,7 +43,7 @@ public partial class MediaManager : IDisposable
 	/// Creates the corresponding platform view of <see cref="MediaElement"/> on Tizen.
 	/// </summary>
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
-	public VideoView CreatePlatformView()
+	public VideoView CreatePlatformView(MediaElementOptions mediaElementOptions)
 	{
 		VideoView = new VideoView()
 		{
