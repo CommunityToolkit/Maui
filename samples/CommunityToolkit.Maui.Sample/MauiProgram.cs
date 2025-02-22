@@ -71,10 +71,6 @@ public static class MauiProgram
 								.UseMauiCommunityToolkitMediaElement(options => {
 									options.AndroidViewType = AndroidViewType.TextureView;
 								})
-								//.UseMauiCommunityToolkitMediaElement(new MediaElementOptions() {
-								//	AndroidViewType = AndroidViewType.TextureView
-								//})
-
 								.ConfigureMauiHandlers(handlers =>
 								{
 #if IOS || MACCATALYST
