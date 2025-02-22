@@ -1,4 +1,5 @@
-﻿#if !(ANDROID || IOS || WINDOWS || MACCATALYST || TIZEN)
+﻿// NOTE: PR shares code with #1918 https://github.com/CommunityToolkit/Maui/pull/1918
+#if !(ANDROID || IOS || WINDOWS || MACCATALYST || TIZEN)
 global using PlatformMediaElement = System.Object;
 #elif ANDROID
 global using PlatformMediaElement = AndroidX.Media3.ExoPlayer.IExoPlayer;
@@ -10,6 +11,7 @@ global using PlatformMediaElement = Microsoft.UI.Xaml.Controls.MediaPlayerElemen
 global using PlatformMediaElement = CommunityToolkit.Maui.Core.Views.TizenPlayer;
 #endif
 
+using CommunityToolkit.Maui.Primitives;
 using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -36,6 +38,40 @@ public partial class MediaManager
 		MediaElement = mediaElement;
 
 		Logger = MauiContext.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(MediaManager));
+		FullScreenEvents.WindowsChanged += OnFullScreenStatusChanged;
+	}
+
+	/// <summary>
+	/// An event that is raised when the full screen state of the media element has changed.
+	/// </summary>
+	internal readonly record struct FullScreenEvents()
+	{
+		/// <summary>
+		/// An event that is raised when the full screen state of the media element has changed.
+		/// </summary>
+		public static event EventHandler<FullScreenStateChangedEventArgs>? WindowsChanged;
+		/// <summary>
+		/// An event that is raised when the full screen state of the media element has changed.
+		/// </summary>
+		/// <param name="e"></param>
+		public static void OnFullScreenStateChanged(FullScreenStateChangedEventArgs e) => WindowsChanged?.Invoke(null, e);
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	protected void OnFullScreenStatusChanged(object? sender, FullScreenStateChangedEventArgs e)
+	{
+		if (MediaElement is not null)
+		{
+			MediaElement.FullScreenChanged(e.NewState);
+		}
+		else
+		{
+			Logger?.LogWarning("MediaElement is null");
+		}
 	}
 
 	/// <summary>
