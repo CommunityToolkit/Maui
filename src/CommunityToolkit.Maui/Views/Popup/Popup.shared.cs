@@ -8,56 +8,14 @@ namespace CommunityToolkit.Maui.Views;
 public partial class Popup : ContentView
 {
 	/// <summary>
-	///  Backing BindableProperty for the <see cref="CanBeDismissedByTappingOutsideOfPopup"/> property.
-	/// </summary>
-	public static readonly BindableProperty CanBeDismissedByTappingOutsideOfPopupProperty = BindableProperty.Create(nameof(CanBeDismissedByTappingOutsideOfPopup), typeof(bool), typeof(Popup), true);
-	
-	/// <summary>
-	///  Backing BindableProperty for the <see cref="OnTappingOutsideOfPopup"/> property.
-	/// </summary>
-	public static readonly BindableProperty OnTappingOutsideOfPopupProperty = BindableProperty.Create(nameof(OnTappingOutsideOfPopup), typeof(Action), typeof(Popup), null);
-	
-	readonly WeakEventManager weakEventManager = new();
-	
-	/// <summary>
 	/// Event occurs when the Popup is opened.
 	/// </summary>
-	public event EventHandler Opened
-	{
-		add => weakEventManager.AddEventHandler(value);
-		remove => weakEventManager.RemoveEventHandler(value);
-	}
+	public event EventHandler? Opened;
 
 	/// <summary>
 	/// Event occurs when the Popup is closed.
 	/// </summary>
-	public event EventHandler Closed
-	{
-		add => weakEventManager.AddEventHandler(value);
-		remove => weakEventManager.RemoveEventHandler(value);
-	}
-
-	/// <summary>
-	/// Gets or sets a value indicating whether the popup can be dismissed by tapping outside the Popup.
-	/// </summary>
-	/// <remarks>
-	/// When true and the user taps outside the popup, it will dismiss.
-	/// On Android - when false the hardware back button is disabled.
-	/// </remarks>
-	public bool CanBeDismissedByTappingOutsideOfPopup
-	{
-		get => (bool)GetValue(CanBeDismissedByTappingOutsideOfPopupProperty);
-		set => SetValue(CanBeDismissedByTappingOutsideOfPopupProperty, value);
-	}
-
-	/// <summary>
-	/// Action to be executed when the user taps outside the Popup.
-	/// </summary>
-	public Action? OnTappingOutsideOfPopup
-	{
-		get => (Action?)GetValue(OnTappingOutsideOfPopupProperty);
-		set => SetValue(OnTappingOutsideOfPopupProperty, value);
-	}
+	public event EventHandler? Closed;
 
 	/// <summary>
 	/// Close the Popup.
@@ -66,12 +24,12 @@ public partial class Popup : ContentView
 
 	internal void NotifyPopupIsOpened()
 	{
-		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Opened));
+		Opened?.Invoke(this, EventArgs.Empty);
 	}
 
 	internal void NotifyPopupIsClosed()
 	{
-		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Closed));
+		Closed?.Invoke(this, EventArgs.Empty);
 	}
 
 	PopupContainer GetPopupContainer()

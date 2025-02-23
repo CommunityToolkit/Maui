@@ -69,21 +69,30 @@ public class PopupService : IPopupService
 		services.TryAdd(new ServiceDescriptor(typeof(TPopupViewModel), _ => viewModel, lifetime));
 	}
 
-	
 	/// <inheritdoc />
-	public Task<PopupResult> ShowPopupAsync<TBindingContext>(INavigation navigation, PopupOptions options, CancellationToken token = default)
+	/// <remarks>This is an <see keyword="async"/> <see keyword="void"/> method. Use <see cref="ShowPopupAsync{TBindingContext}"/> to <see keyword="await"/> this method</remarks>
+	public void ShowPopup<TBindingContext>(INavigation navigation, PopupOptions? options = null) where TBindingContext : notnull
+	{
+		var bindingContext = serviceProvider.GetRequiredService<TBindingContext>();
+		var popupContent = GetPopupContent(bindingContext);
+		
+		navigation.ShowPopup(popupContent, options);
+	}
+
+	/// <inheritdoc />
+	public Task<PopupResult> ShowPopupAsync<TBindingContext>(INavigation navigation, PopupOptions? options = null, CancellationToken token = default)
 		where TBindingContext : notnull
 	{
 		token.ThrowIfCancellationRequested();
 		var bindingContext = serviceProvider.GetRequiredService<TBindingContext>();
 		var popupContent = GetPopupContent(bindingContext);
 
-		return navigation.ShowPopup(popupContent, options, token);
+		return navigation.ShowPopupAsync(popupContent, options, token);
 	}
 
 	/// <inheritdoc />
 	public Task<PopupResult<T>> ShowPopupAsync<TBindingContext, T>(INavigation navigation, 
-		PopupOptions options,
+		PopupOptions? options = null,
 		CancellationToken token = default)
 		where TBindingContext : notnull
 	{
@@ -91,7 +100,7 @@ public class PopupService : IPopupService
 		var bindingContext = serviceProvider.GetRequiredService<TBindingContext>();
 		var popupContent = GetPopupContent(bindingContext);
 
-		return navigation.ShowPopup<T>(popupContent, options, token);
+		return navigation.ShowPopupAsync<T>(popupContent, options, token);
 	}
 
 	/// <inheritdoc />

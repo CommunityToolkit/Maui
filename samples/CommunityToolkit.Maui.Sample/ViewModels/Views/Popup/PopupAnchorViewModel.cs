@@ -12,7 +12,11 @@ public sealed partial class PopupAnchorViewModel : BaseViewModel
 	[RelayCommand]
 	static async Task ShowPopup(View anchor)
 	{
-		var popup = new RedBlueBoxPopup();
-		await MainPage.ShowPopup(popup, new PopupOptions());
+		var popup = new RedBlueBoxPopup
+		{
+			HeightRequest = 100,
+			WidthRequest = 100
+		};
+		await MainPage.ShowPopupAsync(popup, new PopupOptions());
 	}
 }

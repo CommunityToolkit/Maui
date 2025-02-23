@@ -9,7 +9,7 @@ public partial class UpdatingPopup : Popup
 	{
 		InitializeComponent();
 		BindingContext = updatingPopupViewModel;
-		Opened += (s, e) =>
+		Opened += (_, _) =>
 		{
 			updatingPopupViewModel.PerformUpdates(3);
 		};

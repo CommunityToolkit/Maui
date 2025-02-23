@@ -39,7 +39,7 @@ public partial class PopupSizingIssuesViewModel : BaseViewModel
 	{
 		var popup = new Popup();
 
-		if (SelectedContainer?.ControlTemplate.LoadTemplate() is not (View container and ContentView contentView))
+		if (SelectedContainer.ControlTemplate.LoadTemplate() is not (View container and ContentView contentView))
 		{
 			await Toast.Make("Invalid Container Selected").Show();
 			return;
@@ -63,7 +63,7 @@ public partial class PopupSizingIssuesViewModel : BaseViewModel
 
 		popup.Content = container;
 
-		await page.ShowPopup(popup, new PopupOptions());
+		page.ShowPopup(popup, new PopupOptions());
 	}
 
 	static Label GetContentLabel(in string text) => new()

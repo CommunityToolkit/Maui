@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -11,7 +10,7 @@ sealed partial class PopupContainer<T> : PopupContainer
     readonly TaskCompletionSource<PopupResult<T>> taskCompletionSource;
 
     public PopupContainer(View view, PopupOptions popupOptions, TaskCompletionSource<PopupResult<T>> taskCompletionSource)
-        : this(view as Popup<T> ?? CreatePopupFromView<Popup<T>>(view, popupOptions), popupOptions, taskCompletionSource)
+        : this(view as Popup<T> ?? CreatePopupFromView<Popup<T>>(view), popupOptions, taskCompletionSource)
     {
     }
 
@@ -36,11 +35,12 @@ sealed partial class PopupContainer<T> : PopupContainer
 partial class PopupContainer : ContentPage
 {
     readonly Popup popup;
+    readonly PopupOptions popupOptions;
     readonly Command tapOutsideOfPopupCommand;
     readonly TaskCompletionSource<PopupResult>? taskCompletionSource;
 
     public PopupContainer(View view, PopupOptions popupOptions, TaskCompletionSource<PopupResult>? taskCompletionSource)
-        : this(view as Popup ?? CreatePopupFromView<Popup>(view, popupOptions), popupOptions, taskCompletionSource)
+        : this(view as Popup ?? CreatePopupFromView<Popup>(view), popupOptions, taskCompletionSource)
     {
         // Only set the content if overloaded constructor hasn't set the content already; don't override content if it already exists
         Content ??= new PopupContainerContent(view, popupOptions);
@@ -49,6 +49,7 @@ partial class PopupContainer : ContentPage
     public PopupContainer(Popup popup, PopupOptions popupOptions, TaskCompletionSource<PopupResult>? taskCompletionSource)
     {
         this.popup = popup;
+        this.popupOptions = popupOptions;
         this.taskCompletionSource = taskCompletionSource;
 
         // Only set the content if overloaded constructor hasn't set the content already; don't override content if it already exists
@@ -57,13 +58,13 @@ partial class PopupContainer : ContentPage
 
         tapOutsideOfPopupCommand = new Command(async () =>
         {
-            popup.OnTappingOutsideOfPopup?.Invoke();
+            popupOptions.OnTappingOutsideOfPopup?.Invoke();
             await Close(new PopupResult(true));
-        }, () => popup.CanBeDismissedByTappingOutsideOfPopup);
+        }, () => popupOptions.CanBeDismissedByTappingOutsideOfPopup);
         
         Content.GestureRecognizers.Add(new TapGestureRecognizer { Command  = tapOutsideOfPopupCommand });
         
-        this.popup.PropertyChanged += HandlePopupPropertyChanged;
+        this.popupOptions.PropertyChanged += HandlePopupPropertyChanged;
 
         this.SetBinding(BindingContextProperty, static (View x) => x.BindingContext, source: Content, mode: BindingMode.OneWay);
 
@@ -82,7 +83,7 @@ partial class PopupContainer : ContentPage
     // Prevent the Android Back Button from dismissing the Popup if CanBeDismissedByTappingOutsideOfPopup is true
     protected override bool OnBackButtonPressed()
     {
-        if (popup.CanBeDismissedByTappingOutsideOfPopup)
+        if (popupOptions.CanBeDismissedByTappingOutsideOfPopup)
         {
             return base.OnBackButtonPressed();
         }
@@ -102,19 +103,17 @@ partial class PopupContainer : ContentPage
         popup.NotifyPopupIsOpened();
     }
     
-    protected static T CreatePopupFromView<T>(in View view, PopupOptions popupOptions) where T : Popup, new()
+    protected static T CreatePopupFromView<T>(in View view) where T : Popup, new()
     {
         return new T
         {
-            OnTappingOutsideOfPopup = popupOptions.OnTappingOutsideOfPopup,
-            CanBeDismissedByTappingOutsideOfPopup = popupOptions.CanBeDismissedByTappingOutsideOfPopup,
             Content = view
         };
     }
     
     void HandlePopupPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(Popup.CanBeDismissedByTappingOutsideOfPopupProperty))
+        if (e.PropertyName is nameof(PopupOptions.CanBeDismissedByTappingOutsideOfPopupProperty))
         {
             tapOutsideOfPopupCommand.ChangeCanExecute();
         }

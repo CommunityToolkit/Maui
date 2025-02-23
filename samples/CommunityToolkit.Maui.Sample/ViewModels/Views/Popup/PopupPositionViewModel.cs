@@ -10,7 +10,7 @@ public partial class PopupPositionViewModel : BaseViewModel
 	static Page Page => Application.Current?.Windows[0].Page ?? throw new InvalidOperationException("MainPage cannot be null");
 
 	[RelayCommand]
-	static async Task DisplayPopup(PopupPosition position)
+	void DisplayPopup(PopupPosition position)
 	{
 		var verticalOptions = LayoutOptions.Start;
 		var horizontalOptions = LayoutOptions.Start;
@@ -66,7 +66,11 @@ public partial class PopupPositionViewModel : BaseViewModel
 				throw new NotSupportedException($"{position} not yet supported");
 		}
 
-		await Page.ShowPopup(new RedBlueBoxPopup(), new PopupOptions
+		Page.ShowPopup(new RedBlueBoxPopup
+		{
+			HeightRequest = 100,
+			WidthRequest = 100
+		}, new PopupOptions
 		{
 			VerticalOptions = verticalOptions,
 			HorizontalOptions = horizontalOptions

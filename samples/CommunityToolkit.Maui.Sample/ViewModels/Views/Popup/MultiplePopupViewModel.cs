@@ -5,21 +5,23 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public partial class MultiplePopupViewModel(IPopupService popupService) : BaseViewModel
 {
+	static INavigation currentNavigation => Application.Current?.Windows[0].Page?.Navigation ?? throw new InvalidOperationException($"{nameof(Page.Navigation)} not found");
+	
 	[RelayCommand]
-	Task OnCsharpBindingPopup(CancellationToken token)
+	void OnCsharpBindingPopup()
 	{
-		return popupService.ShowPopupAsync<CsharpBindingPopupViewModel>(Application.Current!.Windows[0].Page!.Navigation, new PopupOptions(), token);
+		popupService.ShowPopup<CsharpBindingPopupViewModel>(currentNavigation);
 	}
 
 	[RelayCommand]
-	Task OnUpdatingPopup(CancellationToken token)
-	{
-		return popupService.ShowPopupAsync<UpdatingPopupViewModel>(Application.Current!.Windows[0].Page!.Navigation, new PopupOptions(), token);
+	void OnUpdatingPopup()
+	{ 
+		popupService.ShowPopup<UpdatingPopupViewModel>(currentNavigation);
 	}
 
 	[RelayCommand]
 	Task OnShowPopupContent(CancellationToken token)
 	{
-		return popupService.ShowPopupAsync<PopupContentViewModel>(Application.Current!.Windows[0].Page!.Navigation, new PopupOptions(), token);
+		return popupService.ShowPopupAsync<PopupContentViewModel>(currentNavigation, cancellationToken: token);
 	}
 }

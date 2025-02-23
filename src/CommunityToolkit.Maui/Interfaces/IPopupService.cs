@@ -13,9 +13,18 @@ public interface IPopupService
 	/// <typeparam name="TBindingContext">Popup Binding Context Type</typeparam>
 	/// <param name="navigation">The parent of the popup</param>
 	/// <param name="options"><see cref="PopupOptions"/></param>
+	void ShowPopup<TBindingContext>(INavigation navigation, PopupOptions? options = null)
+		where TBindingContext : notnull;
+	
+	/// <summary>
+	/// Opens a popup with the specified options.
+	/// </summary>
+	/// <typeparam name="TBindingContext">Popup Binding Context Type</typeparam>
+	/// <param name="navigation">The parent of the popup</param>
+	/// <param name="options"><see cref="PopupOptions"/></param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="PopupResult"/></returns>
-	Task<PopupResult> ShowPopupAsync<TBindingContext>(INavigation navigation, PopupOptions options, CancellationToken cancellationToken = default)
+	Task<PopupResult> ShowPopupAsync<TBindingContext>(INavigation navigation, PopupOptions? options = null, CancellationToken cancellationToken = default)
 		where TBindingContext : notnull;
 
 	/// <summary>
@@ -27,7 +36,7 @@ public interface IPopupService
 	/// <param name="options"><see cref="PopupOptions"/></param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="PopupResult"/></returns>
-	Task<PopupResult<T>> ShowPopupAsync<TBindingContext, T>(INavigation navigation, PopupOptions options, CancellationToken cancellationToken = default)
+	Task<PopupResult<T>> ShowPopupAsync<TBindingContext, T>(INavigation navigation, PopupOptions? options = null, CancellationToken cancellationToken = default)
 		where TBindingContext : notnull;
 
 	/// <summary>
