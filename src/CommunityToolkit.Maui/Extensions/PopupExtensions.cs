@@ -33,10 +33,8 @@ public static class PopupExtensions
 		token.ThrowIfCancellationRequested();
 		
 		TaskCompletionSource<PopupResult<TResult>> taskCompletionSource = new();
-
-		var popupContent = BuildPopupContent(view, options);
-		var popupContainer = BuildPopupContainer(view, taskCompletionSource);
-		ConfigurePopupContainer(popupContainer, popupContent, options);
+		
+		var popupContainer = new PopupContainer<TResult>(view, options, taskCompletionSource);
 
 		await navigation.PushModalAsync(popupContainer, false).WaitAsync(token);
 		return await taskCompletionSource.Task.WaitAsync(token);
@@ -68,67 +66,10 @@ public static class PopupExtensions
 		token.ThrowIfCancellationRequested();
 		
 		TaskCompletionSource<PopupResult> taskCompletionSource = new();
-
-		var popupContent = BuildPopupContent(view, options);
-		var popupContainer = BuildPopupContainer(view, taskCompletionSource);
-		ConfigurePopupContainer(popupContainer, popupContent, options);
+		
+		var popupContainer = new PopupContainer(view, options, taskCompletionSource);
 
 		await navigation.PushModalAsync(popupContainer, false).WaitAsync(token);
 		return await taskCompletionSource.Task.WaitAsync(token);
-	}
-
-	static PopupContainer<TResult> BuildPopupContainer<TResult>(View view, TaskCompletionSource<PopupResult<TResult>> taskCompletionSource)
-	{
-		return new PopupContainer<TResult>(view as Popup<TResult> ?? new Popup<TResult> { Content = view }, taskCompletionSource);
-	}
-
-	static PopupContainer BuildPopupContainer(View view, TaskCompletionSource<PopupResult> taskCompletionSource)
-	{
-		return new PopupContainer(view as Popup ?? new Popup { Content = view }, taskCompletionSource);
-	}
-
-	static void ConfigurePopupContainer(PopupContainer popupContainer, View popupContent, PopupOptions options)
-	{
-		popupContainer.BackgroundColor = options.BackgroundColor;
-		popupContainer.CanBeDismissedByTappingOutsideOfPopup = options.CanBeDismissedByTappingOutsideOfPopup;
-		popupContainer.Content = popupContent;
-		
-		popupContainer.SetBinding(BindableObject.BindingContextProperty, static (View x) => x.BindingContext, source: popupContent);
-
-		if (options.CanBeDismissedByTappingOutsideOfPopup)
-		{
-			popupContent.GestureRecognizers.Add(new TapGestureRecognizer
-			{
-				Command = new Command(async () =>
-				{
-					options.OnTappingOutsideOfPopup?.Invoke();
-					await popupContainer.Close(new PopupResult(true));
-				})
-			});
-		}
-	}
-
-	static Grid BuildPopupContent(View popup, PopupOptions options)
-	{
-		var view = new Grid
-		{
-			BackgroundColor = null
-		};
-		
-		view.Children.Add(new Border
-		{
-			Content = popup,
-			Background = popup.Background,
-			BackgroundColor = popup.BackgroundColor,
-			VerticalOptions = options.VerticalOptions,
-			HorizontalOptions = options.HorizontalOptions,
-			StrokeShape = options.Shape,
-			Margin = options.Margin,
-			Padding = options.Padding
-		});
-		
-		view.SetBinding(BindableObject.BindingContextProperty, static (View x) => x.BindingContext, source: popup);
-
-		return view;
 	}
 }

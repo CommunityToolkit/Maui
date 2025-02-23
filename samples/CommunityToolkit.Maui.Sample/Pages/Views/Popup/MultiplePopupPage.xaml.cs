@@ -38,7 +38,7 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 
 	async void HandleNoOutsideTapDismissPopupClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<NoOutsideTapDismissPopup>(Navigation, new PopupOptions { CanBeDismissedByTappingOutsideOfPopup = false }, CancellationToken.None);
+		await popupService.ShowPopupAsync<NoOutsideTapDismissPopup>(Navigation, new PopupOptions(), CancellationToken.None);
 	}
 
 	async void HandleToggleSizePopupButtonClicked(object sender, EventArgs e)

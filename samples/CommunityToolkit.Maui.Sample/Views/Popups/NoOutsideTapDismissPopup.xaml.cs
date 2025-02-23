@@ -9,6 +9,7 @@ public partial class NoOutsideTapDismissPopup : Maui.Views.Popup
 	public NoOutsideTapDismissPopup()
 	{
 		InitializeComponent();
+		CanBeDismissedByTappingOutsideOfPopup = false;
 	}
 
 	async void Button_Clicked(object? sender, EventArgs e)
