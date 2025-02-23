@@ -66,7 +66,7 @@ public partial class PopupPositionViewModel : BaseViewModel
 				throw new NotSupportedException($"{position} not yet supported");
 		}
 
-		await Page.ShowPopup<TransparentPopup>(new TransparentPopup(), new PopupOptions
+		await Page.ShowPopup(new RedBlueBoxPopup(), new PopupOptions
 		{
 			VerticalOptions = verticalOptions,
 			HorizontalOptions = horizontalOptions
