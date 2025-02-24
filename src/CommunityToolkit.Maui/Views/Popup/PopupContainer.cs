@@ -43,7 +43,7 @@ partial class PopupContainer : ContentPage
         : this(view as Popup ?? CreatePopupFromView<Popup>(view), popupOptions, taskCompletionSource)
     {
         // Only set the content if overloaded constructor hasn't set the content already; don't override content if it already exists
-        Content ??= new PopupContainerContent(view, popupOptions);
+        base.Content ??= new PopupContainerContent(view, popupOptions);
     }
 
     public PopupContainer(Popup popup, PopupOptions popupOptions, TaskCompletionSource<PopupResult>? taskCompletionSource)
@@ -53,7 +53,7 @@ partial class PopupContainer : ContentPage
         this.taskCompletionSource = taskCompletionSource;
 
         // Only set the content if overloaded constructor hasn't set the content already; don't override content if it already exists
-        Content ??= new PopupContainerContent(popup, popupOptions);
+        base.Content ??= new PopupContainerContent(popup, popupOptions);
         BackgroundColor = popupOptions.BackgroundColor;
 
         tapOutsideOfPopupCommand = new Command(async () =>
@@ -71,6 +71,10 @@ partial class PopupContainer : ContentPage
         Shell.SetPresentationMode(this, PresentationMode.ModalNotAnimated);
         On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
     }
+
+    // Prevent Content from being set by external class
+    // Casts `PopupContainer.Content` to return typeof(PopupContainerContent)
+    private protected new PopupContainerContent Content => (PopupContainerContent)base.Content;
 
     public Task Close(PopupResult result, CancellationToken token = default)
     {
@@ -125,17 +129,19 @@ partial class PopupContainer : ContentPage
         {
             BackgroundColor = null;
 
-            Children.Add(new Border
+            var border = new Border
             {
-                Content = popupContent,
-                Background = popupContent.Background,
-                BackgroundColor = popupContent.BackgroundColor,
-                VerticalOptions = options.VerticalOptions,
-                HorizontalOptions = options.HorizontalOptions,
-                StrokeShape = options.Shape,
-                Margin = options.Margin,
-                Padding = options.Padding
-            });
+                Content = popupContent
+            };
+            border.SetBinding(Border.BackgroundProperty, static (View popupContent) => popupContent.Background, source: popupContent, mode: BindingMode.OneWay);
+            border.SetBinding(Border.BackgroundColorProperty, static (PopupOptions options) => options.BackgroundColor, source: options, mode: BindingMode.OneWay);
+            border.SetBinding(Border.VerticalOptionsProperty, static (PopupOptions options) => options.VerticalOptions, source: options, mode: BindingMode.OneWay);
+            border.SetBinding(Border.HorizontalOptionsProperty, static (PopupOptions options) => options.HorizontalOptions, source: options, mode: BindingMode.OneWay);
+            border.SetBinding(Border.StrokeShapeProperty, static (PopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay);
+            border.SetBinding(Border.MarginProperty, static (PopupOptions options) => options.Margin, source: options, mode: BindingMode.OneWay);
+            border.SetBinding(Border.PaddingProperty, static (PopupOptions options) => options.Padding, source: options, mode: BindingMode.OneWay);
+
+            Children.Add(border);
 
             this.SetBinding(BindingContextProperty, static (View x) => x.BindingContext, source: popupContent, mode: BindingMode.OneWay);
         }
