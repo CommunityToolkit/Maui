@@ -27,7 +27,7 @@ public class PopupService : IPopupService
 	public PopupService()
 	{
 		serviceProvider = IPlatformApplication.Current?.Services
-		                  ?? throw new InvalidOperationException("Could not locate IServiceProvider");
+						  ?? throw new InvalidOperationException("Could not locate IServiceProvider");
 	}
 
 	internal static void AddPopup<
@@ -75,7 +75,7 @@ public class PopupService : IPopupService
 	{
 		var bindingContext = serviceProvider.GetRequiredService<TBindingContext>();
 		var popupContent = GetPopupContent(bindingContext);
-		
+
 		navigation.ShowPopup(popupContent, options);
 	}
 
@@ -91,7 +91,7 @@ public class PopupService : IPopupService
 	}
 
 	/// <inheritdoc />
-	public Task<PopupResult<T>> ShowPopupAsync<TBindingContext, T>(INavigation navigation, 
+	public Task<PopupResult<T>> ShowPopupAsync<TBindingContext, T>(INavigation navigation,
 		PopupOptions? options = null,
 		CancellationToken token = default)
 		where TBindingContext : notnull
@@ -123,7 +123,7 @@ public class PopupService : IPopupService
 
 	// All popups are now displayed in a PopupContainer (ContentPage) that is pushed modally to the screen, e.g. Navigation.PushModalAsync(popupContainer
 	// We can use the ModalStack to retrieve the most recent popup by retrieving all PopupContainers and return the most recent from the ModalStack  
-	static PopupContainer GetCurrentPopupContainer(INavigation navigation) => 
+	static PopupContainer GetCurrentPopupContainer(INavigation navigation) =>
 		navigation.ModalStack.OfType<PopupContainer>().LastOrDefault() ?? throw new InvalidOperationException($"Unable to locate {nameof(Popup)}");
 
 	View GetPopupContent<TBindingContext>(TBindingContext bindingContext)

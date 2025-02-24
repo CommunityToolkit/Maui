@@ -15,7 +15,7 @@ public interface IPopupService
 	/// <param name="options"><see cref="PopupOptions"/></param>
 	void ShowPopup<TBindingContext>(INavigation navigation, PopupOptions? options = null)
 		where TBindingContext : notnull;
-	
+
 	/// <summary>
 	/// Opens a popup with the specified options.
 	/// </summary>

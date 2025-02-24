@@ -45,7 +45,7 @@ public partial class Popup : ContentView
 
 			parent = parent.Parent;
 		}
-		
+
 		throw new InvalidOperationException($"Unable to close popup: could not locate {nameof(PopupContainer)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Close)} method");
 	}
 }
@@ -59,12 +59,12 @@ public partial class Popup<T> : Popup
 	/// Close the Popup with a result.
 	/// </summary>
 	/// <param name="result">Popup result</param>
-	public virtual Task Close(T result) =>  GetPopupContainer().Close(new PopupResult<T>(result, false));
-	
+	public virtual Task Close(T result) => GetPopupContainer().Close(new PopupResult<T>(result, false));
+
 	PopupContainer<T> GetPopupContainer()
 	{
 		var parent = Parent;
-		
+
 		while (parent is not null)
 		{
 			if (parent.Parent is PopupContainer<T> popupContainer)
@@ -74,7 +74,7 @@ public partial class Popup<T> : Popup
 
 			parent = parent.Parent;
 		}
-		
+
 		throw new InvalidOperationException($"Unable to close popup: could not locate {nameof(PopupContainer<T>)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Close)} method");
 	}
 }

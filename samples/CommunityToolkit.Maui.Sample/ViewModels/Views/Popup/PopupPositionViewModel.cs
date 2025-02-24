@@ -14,54 +14,54 @@ public partial class PopupPositionViewModel : BaseViewModel
 	{
 		var verticalOptions = LayoutOptions.Start;
 		var horizontalOptions = LayoutOptions.Start;
-		
+
 		switch (position)
 		{
 			case PopupPosition.TopLeft:
 				verticalOptions = LayoutOptions.Start;
 				horizontalOptions = LayoutOptions.Start;
 				break;
-			
+
 			case PopupPosition.Top:
 				verticalOptions = LayoutOptions.Start;
 				horizontalOptions = LayoutOptions.Center;
 				break;
-			
+
 			case PopupPosition.TopRight:
 				verticalOptions = LayoutOptions.Start;
 				horizontalOptions = LayoutOptions.End;
 				break;
-			
+
 			case PopupPosition.Left:
 				verticalOptions = LayoutOptions.Center;
 				horizontalOptions = LayoutOptions.Start;
 				break;
-			
+
 			case PopupPosition.Center:
 				verticalOptions = LayoutOptions.Center;
 				horizontalOptions = LayoutOptions.Center;
 				break;
-			
+
 			case PopupPosition.Right:
 				verticalOptions = LayoutOptions.Center;
 				horizontalOptions = LayoutOptions.End;
 				break;
-			
+
 			case PopupPosition.BottomLeft:
 				verticalOptions = LayoutOptions.End;
 				horizontalOptions = LayoutOptions.Start;
 				break;
-			
+
 			case PopupPosition.Bottom:
 				verticalOptions = LayoutOptions.End;
 				horizontalOptions = LayoutOptions.Center;
 				break;
-			
+
 			case PopupPosition.BottomRight:
 				verticalOptions = LayoutOptions.End;
 				horizontalOptions = LayoutOptions.End;
 				break;
-			
+
 			default:
 				throw new NotSupportedException($"{position} not yet supported");
 		}

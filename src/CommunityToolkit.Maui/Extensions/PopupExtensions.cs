@@ -47,7 +47,7 @@ public static class PopupExtensions
 	{
 		return page.Navigation.ShowPopupAsync<TResult>(view, options, token);
 	}
-	
+
 	/// <summary>
 	/// Opens a popup with the specified options.
 	/// </summary>
@@ -59,9 +59,9 @@ public static class PopupExtensions
 	public static async Task<PopupResult<TResult>> ShowPopupAsync<TResult>(this INavigation navigation, View view, PopupOptions? options = null, CancellationToken token = default)
 	{
 		token.ThrowIfCancellationRequested();
-		
+
 		TaskCompletionSource<PopupResult<TResult>> taskCompletionSource = new();
-		
+
 		var popupContainer = new PopupContainer<TResult>(view, options ?? new(), taskCompletionSource);
 
 		await navigation.PushModalAsync(popupContainer, false).WaitAsync(token);
@@ -92,9 +92,9 @@ public static class PopupExtensions
 	public static async Task<PopupResult> ShowPopupAsync(this INavigation navigation, View view, PopupOptions? options, CancellationToken token = default)
 	{
 		token.ThrowIfCancellationRequested();
-		
+
 		TaskCompletionSource<PopupResult> taskCompletionSource = new();
-		
+
 		var popupContainer = new PopupContainer(view, options ?? new(), taskCompletionSource);
 
 		await navigation.PushModalAsync(popupContainer, false).WaitAsync(token);

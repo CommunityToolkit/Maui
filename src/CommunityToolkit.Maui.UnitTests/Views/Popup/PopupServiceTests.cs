@@ -22,7 +22,7 @@ public class PopupServiceTests : BaseHandlerTest
 	public async Task ShowPopupAsyncWithNotRegisteredServiceShouldThrowInvalidOperationException()
 	{
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
-		
+
 		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
@@ -40,7 +40,7 @@ public class PopupServiceTests : BaseHandlerTest
 
 		// Ensure CancellationToken has expired
 		await Task.Delay(100, CancellationToken.None);
-		
+
 		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
@@ -73,7 +73,7 @@ public class PopupServiceTests : BaseHandlerTest
 		{
 			throw new InvalidOperationException("Page cannot be null");
 		}
-		
+
 		await popupService.ShowPopupAsync<MockPageViewModel, object?>(page.Navigation, new PopupOptions(), TestContext.Current.CancellationToken);
 
 		Assert.Same(popupInstance.BindingContext, popupViewModel);
@@ -84,7 +84,7 @@ public class PopupServiceTests : BaseHandlerTest
 	{
 		var mockPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
-		
+
 		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");

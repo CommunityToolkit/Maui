@@ -14,7 +14,7 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 		: base(multiplePopupViewModel)
 	{
 		this.popupService = popupService;
-		
+
 		InitializeComponent();
 	}
 
@@ -72,27 +72,27 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 	{
 		await Navigation.PushAsync(new PopupPositionPage(new PopupPositionViewModel()));
 	}
-	
+
 	async void HandlePopupAnchorButtonClicked(object sender, EventArgs e)
 	{
 		await Navigation.PushAsync(new PopupAnchorPage(DeviceInfo.Current, new PopupAnchorViewModel()));
 	}
-	
+
 	async void HandlePopupLayoutAlignmentButtonClicked(object sender, EventArgs e)
 	{
 		await Navigation.PushAsync(new PopupLayoutAlignmentPage(new PopupLayoutAlignmentViewModel()));
 	}
-	
+
 	async void HandlePopupSizingIssuesButtonClicked(object sender, EventArgs e)
 	{
 		await Navigation.PushAsync(new PopupSizingIssuesPage(new PopupSizingIssuesViewModel()));
 	}
-	
+
 	async void HandleShowPopupInOnAppearingButtonClicked(object sender, EventArgs e)
 	{
 		await Navigation.PushAsync(new ShowPopupInOnAppearingPage(new ShowPopupInOnAppearingPageViewModel(), popupService));
 	}
-	
+
 	async void HandleStylePopupButtonClicked(object sender, EventArgs e)
 	{
 		await Navigation.PushAsync(new StylePopupPage(new StylePopupViewModel()));
