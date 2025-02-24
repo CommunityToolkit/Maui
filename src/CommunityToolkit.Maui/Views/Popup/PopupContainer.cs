@@ -134,7 +134,7 @@ partial class PopupContainer : ContentPage
 				Content = popupContent
 			};
 			border.SetBinding(Border.BackgroundProperty, static (View popupContent) => popupContent.Background, source: popupContent, mode: BindingMode.OneWay);
-			border.SetBinding(Border.BackgroundColorProperty, static (PopupOptions options) => options.BackgroundColor, source: options, mode: BindingMode.OneWay);
+			border.SetBinding(Border.BackgroundColorProperty, static (View popupContent) => popupContent.BackgroundColor, source: popupContent, mode: BindingMode.OneWay);
 			border.SetBinding(Border.VerticalOptionsProperty, static (PopupOptions options) => options.VerticalOptions, source: options, mode: BindingMode.OneWay);
 			border.SetBinding(Border.HorizontalOptionsProperty, static (PopupOptions options) => options.HorizontalOptions, source: options, mode: BindingMode.OneWay);
 			border.SetBinding(Border.StrokeShapeProperty, static (PopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay);
