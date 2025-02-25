@@ -46,7 +46,7 @@ public static class ServiceCollectionExtensions
 	/// <param name="lifetime">Service lifetime</param>
 	/// <returns>A reference to this instance after the operation has completed.</returns>
 	public static IServiceCollection AddPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
-		where TPopupView : View
+		where TPopupView : IView
 		where TPopupViewModel : notnull
 	{
 		PopupService.AddPopup<TPopupView, TPopupViewModel>(services, lifetime);
@@ -63,7 +63,7 @@ public static class ServiceCollectionExtensions
 	/// <param name="lifetime">Service lifetime</param>
 	/// <returns>A reference to this instance after the operation has completed.</returns>
 	public static IServiceCollection AddPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
-		where TPopupView : View
+		where TPopupView : IView
 	{
 		PopupService.AddPopup<TPopupView>(services, lifetime);
 

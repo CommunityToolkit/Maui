@@ -17,6 +17,7 @@ sealed partial class PopupContainer<T> : PopupContainer
 	public PopupContainer(Popup<T> popup, PopupOptions popupOptions, TaskCompletionSource<PopupResult<T>> taskCompletionSource)
 		: base(popup, popupOptions, null)
 	{
+		ArgumentNullException.ThrowIfNull(taskCompletionSource);
 		this.taskCompletionSource = taskCompletionSource;
 
 		Shell.SetPresentationMode(this, PresentationMode.ModalNotAnimated);
@@ -48,6 +49,8 @@ partial class PopupContainer : ContentPage
 
 	public PopupContainer(Popup popup, PopupOptions popupOptions, TaskCompletionSource<PopupResult>? taskCompletionSource)
 	{
+		ArgumentNullException.ThrowIfNull(popup);
+		ArgumentNullException.ThrowIfNull(popupOptions);
 		this.popup = popup;
 		this.popupOptions = popupOptions;
 		this.taskCompletionSource = taskCompletionSource;
@@ -80,7 +83,7 @@ partial class PopupContainer : ContentPage
 	{
 		token.ThrowIfCancellationRequested();
 
-		taskCompletionSource?.SetResult(result);
+		taskCompletionSource?.TrySetResult(result);
 		return Navigation.PopModalAsync(false).WaitAsync(token);
 	}
 
