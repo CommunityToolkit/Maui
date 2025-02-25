@@ -45,4 +45,3 @@ public interface IPopupOptions
 	/// </summary>
 	LayoutOptions HorizontalOptions { get; }
 }
-
