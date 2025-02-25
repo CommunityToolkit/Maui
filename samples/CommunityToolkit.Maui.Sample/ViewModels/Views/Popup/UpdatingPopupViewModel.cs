@@ -7,9 +7,6 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 public partial class UpdatingPopupViewModel(IPopupService popupService) : BaseViewModel
 {
 	const double finalUpdateProgressValue = 1;
-	readonly IPopupService popupService = popupService;
-
-	int updates;
 
 	[ObservableProperty]
 	public partial string Message { get; set; } = "";
@@ -21,7 +18,6 @@ public partial class UpdatingPopupViewModel(IPopupService popupService) : BaseVi
 	internal async void PerformUpdates(int numberOfUpdates)
 	{
 		double updateTotalForPercentage = numberOfUpdates + 1;
-		updates = numberOfUpdates;
 
 		for (var update = 1; update <= numberOfUpdates; update++)
 		{
@@ -37,15 +33,25 @@ public partial class UpdatingPopupViewModel(IPopupService popupService) : BaseVi
 	}
 
 	[RelayCommand(CanExecute = nameof(CanFinish))]
-	void OnFinish()
+	async Task OnFinish()
 	{
-		popupService.ClosePopup();
+		if (Application.Current?.Windows[0].Page is not Page currentPage)
+		{
+			throw new InvalidOperationException("Unable to retrieve current page");
+		}
+
+		await popupService.ClosePopupAsync(currentPage.Navigation);
 	}
 
 	[RelayCommand]
-	void OnMore()
+	async Task OnMore()
 	{
-		popupService.ShowPopup<UpdatingPopupViewModel>(onPresenting: viewModel => viewModel.PerformUpdates(updates + 2));
+		if (Application.Current?.Windows[0].Page is not Page currentPage)
+		{
+			throw new InvalidOperationException("Unable to retrieve current page");
+		}
+
+		await popupService.ShowPopupAsync<UpdatingPopupViewModel>(currentPage.Navigation, PopupOptions.Empty, CancellationToken.None);
 	}
 
 	bool CanFinish() => UpdateProgress is finalUpdateProgressValue;

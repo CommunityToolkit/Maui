@@ -36,11 +36,8 @@ public static class AppBuilderExtensions
 		builder.ConfigureMauiHandlers(static h =>
 		{
 			h.AddHandler<DrawingView, DrawingViewHandler>();
-			h.AddHandler<Popup, PopupHandler>();
 			h.AddHandler<SemanticOrderView, SemanticOrderViewHandler>();
 		});
-
-		Popup.RemapForControls();
 
 #if ANDROID
 		NavigationBar.RemapForControls();

@@ -120,7 +120,6 @@ public static class MauiProgram
 						.AddStandardResilienceHandler(static options => options.Retry = new MobileHttpRetryStrategyOptions());
 
 		builder.Services.AddSingleton<AppShell>();
-		builder.Services.AddSingleton<PopupSizeConstants>();
 
 		RegisterViewsAndViewModels(builder.Services);
 		RegisterEssentials(builder.Services);
@@ -245,7 +244,6 @@ public static class MauiProgram
 		// Add Views Pages + ViewModels
 		services.AddTransientWithShellRoute<BasicMapsPage, BasicMapsViewModel>();
 		services.AddTransientWithShellRoute<CameraViewPage, CameraViewViewModel>();
-		services.AddTransientWithShellRoute<CustomSizeAndPositionPopupPage, CustomSizeAndPositionPopupViewModel>();
 		services.AddTransientWithShellRoute<DrawingViewPage, DrawingViewViewModel>();
 		services.AddTransientWithShellRoute<ExpanderPage, ExpanderViewModel>();
 		services.AddTransientWithShellRoute<LazyViewPage, LazyViewViewModel>();
@@ -267,9 +265,27 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<PopupSizingIssuesPage, PopupSizingIssuesViewModel>();
 
 		// Add Popups
-		services.AddTransientPopup<CsharpBindingPopup, CsharpBindingPopupViewModel>();
-		services.AddTransientPopup<UpdatingPopup, UpdatingPopupViewModel>();
-		services.AddTransientPopup<XamlBindingPopup, XamlBindingPopupViewModel>();
+		services.AddPopup<ApplyToDerivedTypesPopup>();
+		services.AddPopup<ButtonPopup>();
+		services.AddPopup<CsharpBindingPopup, CsharpBindingPopupViewModel>();
+		services.AddPopup<DynamicStyleInheritancePopup>();
+		services.AddPopup<DynamicStylePopup>();
+		services.AddPopup<ExplicitStylePopup>();
+		services.AddPopup<ImplicitStylePopup>();
+		services.AddPopup<MultipleButtonPopup>();
+		services.AddPopup<NoOutsideTapDismissPopup>();
+		services.AddPopup<OpenedEventSimplePopup>();
+		services.AddPopup<RedBlueBoxPopup>();
+		services.AddPopup<ReturnResultPopup>();
+		services.AddPopup<SimplePopup>();
+		services.AddPopup<StyleClassPopup>();
+		services.AddPopup<StyleInheritancePopup>();
+		services.AddPopup<ToggleSizePopup>();
+		services.AddPopup<TransparentPopup>();
+		services.AddPopup<UpdatingPopup, UpdatingPopupViewModel>();
+		services.AddPopup<XamlBindingPopup, XamlBindingPopupViewModel>();
+
+		services.AddPopup<PopupContentView, PopupContentViewModel>();
 	}
 
 	static void RegisterEssentials(in IServiceCollection services)
