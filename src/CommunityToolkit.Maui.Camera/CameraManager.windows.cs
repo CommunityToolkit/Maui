@@ -106,7 +106,6 @@ partial class CameraManager
 		catch (Exception ex)
 		{
 			cameraView.OnMediaCapturedFailed(ex.Message);
-			throw;
 		}
 	}
 
