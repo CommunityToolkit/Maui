@@ -63,7 +63,7 @@ public partial class PopupSizingIssuesViewModel : BaseViewModel
 
 		popup.Content = container;
 
-		page.ShowPopup(popup, new PopupOptions());
+		page.ShowPopup(popup, PopupOptions.Empty);
 	}
 
 	static Label GetContentLabel(in string text) => new()

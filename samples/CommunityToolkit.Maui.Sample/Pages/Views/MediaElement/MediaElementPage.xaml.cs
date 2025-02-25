@@ -266,7 +266,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			}
 		};
 
-		await this.ShowPopupAsync(popup, new PopupOptions());
+		await this.ShowPopupAsync(popup);
 		popupMediaElement.Stop();
 		popupMediaElement.Handler?.DisconnectHandler();
 	}

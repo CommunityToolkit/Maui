@@ -71,7 +71,7 @@ public class PopupService : IPopupService
 
 	/// <inheritdoc />
 	/// <remarks>This is an <see keyword="async"/> <see keyword="void"/> method. Use <see cref="ShowPopupAsync{TBindingContext}"/> to <see keyword="await"/> this method</remarks>
-	public void ShowPopup<TBindingContext>(INavigation navigation, PopupOptions? options = null) where TBindingContext : notnull
+	public void ShowPopup<TBindingContext>(INavigation navigation, IPopupOptions? options = null) where TBindingContext : notnull
 	{
 		var bindingContext = serviceProvider.GetRequiredService<TBindingContext>();
 		var popupContent = GetPopupContent(bindingContext);
@@ -80,7 +80,7 @@ public class PopupService : IPopupService
 	}
 
 	/// <inheritdoc />
-	public Task<PopupResult> ShowPopupAsync<TBindingContext>(INavigation navigation, PopupOptions? options = null, CancellationToken token = default)
+	public Task<PopupResult> ShowPopupAsync<TBindingContext>(INavigation navigation, IPopupOptions? options = null, CancellationToken token = default)
 		where TBindingContext : notnull
 	{
 		token.ThrowIfCancellationRequested();
@@ -92,7 +92,7 @@ public class PopupService : IPopupService
 
 	/// <inheritdoc />
 	public Task<PopupResult<T>> ShowPopupAsync<TBindingContext, T>(INavigation navigation,
-		PopupOptions? options = null,
+		IPopupOptions? options = null,
 		CancellationToken token = default)
 		where TBindingContext : notnull
 	{

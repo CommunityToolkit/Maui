@@ -1,9 +1,9 @@
-﻿namespace CommunityToolkit.Maui.Core;
+﻿namespace CommunityToolkit.Maui;
 
 /// <summary>
 /// Popup options.
 /// </summary>
-public partial class PopupOptions : BindableObject
+public partial class PopupOptions : BindableObject, IPopupOptions
 {
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="CanBeDismissedByTappingOutsideOfPopup"/> property.
@@ -46,8 +46,11 @@ public partial class PopupOptions : BindableObject
 	public static readonly BindableProperty HorizontalOptionsProperty = BindableProperty.Create(nameof(HorizontalOptions), typeof(LayoutOptions), typeof(PopupOptions), LayoutOptions.Center);
 
 	/// <summary>
-	/// Gets or sets a value indicating whether the popup can be dismissed by tapping outside the Popup.
+	/// An empty instance of <see cref="IPopupOptions"/> containing default values.
 	/// </summary>
+	public static IPopupOptions Empty { get; } = new PopupOptions();
+
+	/// <inheritdoc/>
 	/// <remarks>
 	/// When true and the user taps outside the popup, it will dismiss.
 	/// On Android - when false the hardware back button is disabled.
@@ -58,27 +61,21 @@ public partial class PopupOptions : BindableObject
 		set => SetValue(CanBeDismissedByTappingOutsideOfPopupProperty, value);
 	}
 
-	/// <summary>
-	/// Popup background color.
-	/// </summary>
+	/// <inheritdoc/>
 	public Color BackgroundColor
 	{
 		get => (Color)GetValue(BackgroundColorProperty);
 		set => SetValue(BackgroundColorProperty, value);
 	}
 
-	/// <summary>
-	/// Action to be executed when the user taps outside the Popup.
-	/// </summary>
+	/// <inheritdoc/>
 	public Action? OnTappingOutsideOfPopup
 	{
 		get => (Action?)GetValue(OnTappingOutsideOfPopupProperty);
 		set => SetValue(OnTappingOutsideOfPopupProperty, value);
 	}
 
-	/// <summary>
-	/// Popup border shape.
-	/// </summary>
+	/// <inheritdoc/>
 	public IShape? Shape
 	{
 		get => (IShape?)GetValue(ShapeProperty);
@@ -94,27 +91,21 @@ public partial class PopupOptions : BindableObject
 		set => SetValue(MarginProperty, value);
 	}
 
-	/// <summary>
-	/// Popup padding.
-	/// </summary>
+	/// <inheritdoc/>
 	public Thickness Padding
 	{
 		get => (Thickness)GetValue(PaddingProperty);
 		set => SetValue(PaddingProperty, value);
 	}
 
-	/// <summary>
-	/// Popup vertical options.
-	/// </summary>
+	/// <inheritdoc/>
 	public LayoutOptions VerticalOptions
 	{
 		get => (LayoutOptions)GetValue(VerticalOptionsProperty);
 		set => SetValue(VerticalOptionsProperty, value);
 	}
 
-	/// <summary>
-	/// Popup horizontal options.
-	/// </summary>
+	/// <inheritdoc/>
 	public LayoutOptions HorizontalOptions
 	{
 		get => (LayoutOptions)GetValue(HorizontalOptionsProperty);

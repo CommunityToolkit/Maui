@@ -9,12 +9,12 @@ sealed partial class PopupContainer<T> : PopupContainer
 {
 	readonly TaskCompletionSource<PopupResult<T>> taskCompletionSource;
 
-	public PopupContainer(View view, PopupOptions popupOptions, TaskCompletionSource<PopupResult<T>> taskCompletionSource)
+	public PopupContainer(View view, IPopupOptions popupOptions, TaskCompletionSource<PopupResult<T>> taskCompletionSource)
 		: this(view as Popup<T> ?? CreatePopupFromView<Popup<T>>(view), popupOptions, taskCompletionSource)
 	{
 	}
 
-	public PopupContainer(Popup<T> popup, PopupOptions popupOptions, TaskCompletionSource<PopupResult<T>> taskCompletionSource)
+	public PopupContainer(Popup<T> popup, IPopupOptions popupOptions, TaskCompletionSource<PopupResult<T>> taskCompletionSource)
 		: base(popup, popupOptions, null)
 	{
 		ArgumentNullException.ThrowIfNull(taskCompletionSource);
@@ -36,21 +36,22 @@ sealed partial class PopupContainer<T> : PopupContainer
 partial class PopupContainer : ContentPage
 {
 	readonly Popup popup;
-	readonly PopupOptions popupOptions;
+	readonly IPopupOptions popupOptions;
 	readonly Command tapOutsideOfPopupCommand;
 	readonly TaskCompletionSource<PopupResult>? taskCompletionSource;
 
-	public PopupContainer(View view, PopupOptions popupOptions, TaskCompletionSource<PopupResult>? taskCompletionSource)
+	public PopupContainer(View view, IPopupOptions popupOptions, TaskCompletionSource<PopupResult>? taskCompletionSource)
 		: this(view as Popup ?? CreatePopupFromView<Popup>(view), popupOptions, taskCompletionSource)
 	{
 		// Only set the content if overloaded constructor hasn't set the content already; don't override content if it already exists
 		base.Content ??= new PopupContainerContent(view, popupOptions);
 	}
 
-	public PopupContainer(Popup popup, PopupOptions popupOptions, TaskCompletionSource<PopupResult>? taskCompletionSource)
+	public PopupContainer(Popup popup, IPopupOptions popupOptions, TaskCompletionSource<PopupResult>? taskCompletionSource)
 	{
 		ArgumentNullException.ThrowIfNull(popup);
 		ArgumentNullException.ThrowIfNull(popupOptions);
+
 		this.popup = popup;
 		this.popupOptions = popupOptions;
 		this.taskCompletionSource = taskCompletionSource;
@@ -67,7 +68,10 @@ partial class PopupContainer : ContentPage
 
 		Content.GestureRecognizers.Add(new TapGestureRecognizer { Command = tapOutsideOfPopupCommand });
 
-		this.popupOptions.PropertyChanged += HandlePopupPropertyChanged;
+		if(popupOptions is BindableObject bindableIPopupOptions)
+		{
+			bindableIPopupOptions.PropertyChanged += HandlePopupPropertyChanged;
+		}
 
 		this.SetBinding(BindingContextProperty, static (View x) => x.BindingContext, source: Content, mode: BindingMode.OneWay);
 
@@ -120,7 +124,7 @@ partial class PopupContainer : ContentPage
 
 	void HandlePopupPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		if (e.PropertyName is nameof(PopupOptions.CanBeDismissedByTappingOutsideOfPopupProperty))
+		if (e.PropertyName == nameof(IPopupOptions.CanBeDismissedByTappingOutsideOfPopup))
 		{
 			tapOutsideOfPopupCommand.ChangeCanExecute();
 		}
@@ -128,7 +132,7 @@ partial class PopupContainer : ContentPage
 
 	private protected sealed partial class PopupContainerContent : Grid
 	{
-		public PopupContainerContent(View popupContent, PopupOptions options)
+		public PopupContainerContent(View popupContent, IPopupOptions options)
 		{
 			BackgroundColor = null;
 
@@ -138,11 +142,11 @@ partial class PopupContainer : ContentPage
 			};
 			border.SetBinding(Border.BackgroundProperty, static (View popupContent) => popupContent.Background, source: popupContent, mode: BindingMode.OneWay);
 			border.SetBinding(Border.BackgroundColorProperty, static (View popupContent) => popupContent.BackgroundColor, source: popupContent, mode: BindingMode.OneWay);
-			border.SetBinding(Border.VerticalOptionsProperty, static (PopupOptions options) => options.VerticalOptions, source: options, mode: BindingMode.OneWay);
-			border.SetBinding(Border.HorizontalOptionsProperty, static (PopupOptions options) => options.HorizontalOptions, source: options, mode: BindingMode.OneWay);
-			border.SetBinding(Border.StrokeShapeProperty, static (PopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay);
-			border.SetBinding(Border.MarginProperty, static (PopupOptions options) => options.Margin, source: options, mode: BindingMode.OneWay);
-			border.SetBinding(Border.PaddingProperty, static (PopupOptions options) => options.Padding, source: options, mode: BindingMode.OneWay);
+			border.SetBinding(Border.VerticalOptionsProperty, static (IPopupOptions options) => options.VerticalOptions, source: options, mode: BindingMode.OneWay);
+			border.SetBinding(Border.HorizontalOptionsProperty, static (IPopupOptions options) => options.HorizontalOptions, source: options, mode: BindingMode.OneWay);
+			border.SetBinding(Border.StrokeShapeProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay);
+			border.SetBinding(Border.MarginProperty, static (IPopupOptions options) => options.Margin, source: options, mode: BindingMode.OneWay);
+			border.SetBinding(Border.PaddingProperty, static (IPopupOptions options) => options.Padding, source: options, mode: BindingMode.OneWay);
 
 			Children.Add(border);
 

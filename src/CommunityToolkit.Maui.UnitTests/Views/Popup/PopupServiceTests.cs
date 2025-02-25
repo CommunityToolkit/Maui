@@ -28,7 +28,7 @@ public class PopupServiceTests : BaseHandlerTest
 			throw new InvalidOperationException("Page cannot be null");
 		}
 
-		await Assert.ThrowsAsync<InvalidOperationException>(() => popupService.ShowPopupAsync<INotifyPropertyChanged>(page.Navigation, new PopupOptions(), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAsync<InvalidOperationException>(() => popupService.ShowPopupAsync<INotifyPropertyChanged>(page.Navigation, PopupOptions.Empty, TestContext.Current.CancellationToken));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -46,7 +46,7 @@ public class PopupServiceTests : BaseHandlerTest
 			throw new InvalidOperationException("Page cannot be null");
 		}
 
-		await Assert.ThrowsAsync<OperationCanceledException>(() => popupService.ShowPopupAsync<MockPageViewModel>(page.Navigation, new PopupOptions(), cts.Token));
+		await Assert.ThrowsAsync<OperationCanceledException>(() => popupService.ShowPopupAsync<MockPageViewModel>(page.Navigation, PopupOptions.Empty, cts.Token));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -59,7 +59,7 @@ public class PopupServiceTests : BaseHandlerTest
 		// Ensure CancellationToken has expired
 		await cts.CancelAsync();
 
-		await Assert.ThrowsAsync<OperationCanceledException>(() => popupService.ShowPopupAsync<MockPageViewModel>(Application.Current!.Windows[0].Page!.Navigation, new PopupOptions(), cts.Token));
+		await Assert.ThrowsAsync<OperationCanceledException>(() => popupService.ShowPopupAsync<MockPageViewModel>(Application.Current!.Windows[0].Page!.Navigation, PopupOptions.Empty, cts.Token));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Medium)]
@@ -74,7 +74,7 @@ public class PopupServiceTests : BaseHandlerTest
 			throw new InvalidOperationException("Page cannot be null");
 		}
 
-		await popupService.ShowPopupAsync<MockPageViewModel, object?>(page.Navigation, new PopupOptions(), TestContext.Current.CancellationToken);
+		await popupService.ShowPopupAsync<MockPageViewModel, object?>(page.Navigation, PopupOptions.Empty, TestContext.Current.CancellationToken);
 
 		Assert.Same(popupInstance.BindingContext, popupViewModel);
 	}
@@ -90,7 +90,7 @@ public class PopupServiceTests : BaseHandlerTest
 			throw new InvalidOperationException("Page cannot be null");
 		}
 
-		var result = await popupService.ShowPopupAsync<MockPageViewModel, object?>(page.Navigation, new PopupOptions(), CancellationToken.None);
+		var result = await popupService.ShowPopupAsync<MockPageViewModel, object?>(page.Navigation, PopupOptions.Empty, CancellationToken.None);
 
 		Assert.Same(mockPopup.Result, result.Result);
 	}

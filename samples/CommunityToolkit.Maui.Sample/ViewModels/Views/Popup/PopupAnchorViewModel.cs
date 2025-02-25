@@ -17,6 +17,6 @@ public sealed partial class PopupAnchorViewModel : BaseViewModel
 			HeightRequest = 100,
 			WidthRequest = 100
 		};
-		await MainPage.ShowPopupAsync(popup, new PopupOptions());
+		await MainPage.ShowPopupAsync(popup, PopupOptions.Empty);
 	}
 }
