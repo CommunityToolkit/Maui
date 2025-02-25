@@ -16,6 +16,7 @@ public partial class CameraViewPage : BasePage<CameraViewViewModel>
 		imagePath = Path.Combine(fileSystem.CacheDirectory, "camera-view-image.jpg");
 
 		Camera.MediaCaptured += OnMediaCaptured;
+		Camera.MediaCaptureFailed += OnMediaCaptureFailed;
 
 		Loaded += (s, e) =>
 		{
@@ -56,6 +57,7 @@ public partial class CameraViewPage : BasePage<CameraViewViewModel>
 
 	void Cleanup()
 	{
+		Camera.MediaCaptureFailed -= OnMediaCaptureFailed;
 		Camera.MediaCaptured -= OnMediaCaptured;
 		Camera.Handler?.DisconnectHandler();
 	}
@@ -83,6 +85,11 @@ public partial class CameraViewPage : BasePage<CameraViewViewModel>
 			debugText.Text = $"Image saved to {imagePath}";
 		});
 
+	}
+
+	void OnMediaCaptureFailed(object? sender, MediaCaptureFailedEventArgs e)
+	{
+		debugText.Text = $"Exception: {e.FailureReason}";
 	}
 
 	void ZoomIn(object? sender, EventArgs e)
