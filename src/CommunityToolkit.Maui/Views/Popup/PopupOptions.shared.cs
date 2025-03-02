@@ -1,6 +1,4 @@
-﻿using CommunityToolkit.Maui.Core;
-
-namespace CommunityToolkit.Maui;
+﻿namespace CommunityToolkit.Maui;
 
 /// <summary>
 /// Popup options.
