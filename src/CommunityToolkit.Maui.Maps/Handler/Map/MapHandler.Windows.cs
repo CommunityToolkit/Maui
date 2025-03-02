@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.Json;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Handlers;
@@ -15,8 +14,6 @@ using IMap = Microsoft.Maui.Maps.IMap;
 namespace CommunityToolkit.Maui.Maps.Handlers;
 
 /// <inheritdoc />
-[RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
-[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
 public partial class MapHandlerWindows : MapHandler
 {
 	MapSpan? regionToGo;
@@ -59,10 +56,6 @@ public partial class MapHandlerWindows : MapHandler
 	}
 
 	/// <inheritdoc />
-	[RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
-	[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
-	[UnconditionalSuppressMessage("TrimAnalysis", "IL2046", Justification = "'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.")]
-	[UnconditionalSuppressMessage("TrimAnalysis", "IL3051", Justification = "'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.")]
 	protected override void ConnectHandler(FrameworkElement platformView) 
 	{
 		if (platformView is MauiWebView mauiWebView)
@@ -426,9 +419,16 @@ public partial class MapHandlerWindows : MapHandler
 			return null;
 		}
 
-		var geoLocator = new Geolocator();
-		var position = await geoLocator.GetGeopositionAsync();
-		return new Location(position.Coordinate.Latitude, position.Coordinate.Longitude);
+		try
+		{
+			var geoLocator = new Geolocator();
+			var position = await geoLocator.GetGeopositionAsync();
+			return new Location(position.Coordinate.Latitude, position.Coordinate.Longitude);
+		}
+		catch
+		{
+			return null;
+		}
 	}
 
 	async void HandleWebViewNavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
@@ -442,8 +442,6 @@ public partial class MapHandlerWindows : MapHandler
 		}
 	}
 
-	[RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
-	[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
 	async void WebViewWebMessageReceived(WebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
 	{
 		// For some reason the web message is empty
@@ -452,7 +450,7 @@ public partial class MapHandlerWindows : MapHandler
 			return;
 		}
 
-		var eventMessage = JsonSerializer.Deserialize<EventMessage>(args.WebMessageAsJson, jsonSerializerOptions);
+		var eventMessage = JsonSerializer.Deserialize<EventMessage>(args.WebMessageAsJson, SerializerContext.Default.EventMessage);
 
 		// The web message (or it's ID) could not be deserialized to something we recognize
 		if (eventMessage is null || !Enum.TryParse<EventIdentifier>(eventMessage.Id, true, out var eventId))
@@ -471,7 +469,7 @@ public partial class MapHandlerWindows : MapHandler
 		switch (eventId)
 		{
 			case EventIdentifier.BoundsChanged:
-				var mapRect = JsonSerializer.Deserialize<Bounds>(payloadAsString, jsonSerializerOptions);
+				var mapRect = JsonSerializer.Deserialize<Bounds>(payloadAsString, SerializerContext.Default.Bounds);
 				if (mapRect?.Center is not null)
 				{
 					VirtualView.VisibleRegion = new MapSpan(new Location(mapRect.Center.Latitude, mapRect.Center.Longitude),
@@ -479,8 +477,7 @@ public partial class MapHandlerWindows : MapHandler
 				}
 				break;
 			case EventIdentifier.MapClicked:
-				var clickedLocation = JsonSerializer.Deserialize<Location>(payloadAsString,
-					jsonSerializerOptions);
+				var clickedLocation = JsonSerializer.Deserialize<Location>(payloadAsString, SerializerContext.Default.Location);
 				if (clickedLocation is not null)
 				{
 					VirtualView.Clicked(clickedLocation);
@@ -488,8 +485,7 @@ public partial class MapHandlerWindows : MapHandler
 				break;
 
 			case EventIdentifier.InfoWindowClicked:
-				var clickedInfoWindowWebView = JsonSerializer.Deserialize<InfoWindow>(payloadAsString,
-					jsonSerializerOptions);
+				var clickedInfoWindowWebView = JsonSerializer.Deserialize<InfoWindow>(payloadAsString, SerializerContext.Default.InfoWindow);
 				var clickedInfoWindowWebViewId = clickedInfoWindowWebView?.InfoWindowMarkerId;
 
 				if (!string.IsNullOrEmpty(clickedInfoWindowWebViewId))
@@ -505,7 +501,7 @@ public partial class MapHandlerWindows : MapHandler
 				break;
 
 			case EventIdentifier.PinClicked:
-				var clickedPinWebView = JsonSerializer.Deserialize<Pin>(payloadAsString, jsonSerializerOptions);
+				var clickedPinWebView = JsonSerializer.Deserialize<Pin>(payloadAsString, SerializerContext.Default.Pin);
 				var clickedPinWebViewId = clickedPinWebView?.MarkerId?.ToString();
 
 				if (!string.IsNullOrEmpty(clickedPinWebViewId))
