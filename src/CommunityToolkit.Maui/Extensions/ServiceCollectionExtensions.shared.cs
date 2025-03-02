@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
 
 // Using root CommunityToolkit.Maui namespace so these extension methods

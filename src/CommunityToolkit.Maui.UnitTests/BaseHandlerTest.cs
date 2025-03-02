@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.UnitTests.Mocks;
-using CommunityToolkit.Maui.Views;
+using CommunityToolkit.Maui.UnitTests.Services;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
@@ -44,9 +45,11 @@ public abstract class BaseHandlerTest : BaseTest
 
 	static void InitializeServicesAndSetMockApplication(out IServiceProvider serviceProvider)
 	{
+#pragma warning disable CA1416 // Validate platform compatibility
 		var appBuilder = MauiApp.CreateBuilder()
 			.UseMauiCommunityToolkit()
 			.UseMauiApp<MockApplication>();
+#pragma warning restore CA1416 // Validate platform compatibility
 
 		#region Register Services for CameraTests
 

@@ -1,13 +1,9 @@
 ﻿using System.ComponentModel;
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.UnitTests.Mocks;
-using CommunityToolkit.Maui.UnitTests.Views;
 using CommunityToolkit.Maui.Views;
-using FluentAssertions;
-using Microsoft.Maui.Dispatching;
 using Xunit;
 
-namespace CommunityToolkit.Maui.UnitTests;
+namespace CommunityToolkit.Maui.UnitTests.Services;
 
 public class PopupServiceTests : BaseHandlerTest
 {

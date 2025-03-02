@@ -1,8 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace CommunityToolkit.Maui.Views;
+namespace CommunityToolkit.Maui.Services;
 
 /// <inheritdoc cref="IPopupService"/>
 public class PopupService : IPopupService
