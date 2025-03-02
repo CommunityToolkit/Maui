@@ -1,11 +1,7 @@
 ﻿using System.ComponentModel;
-using System.Threading;
-using System.Threading.Tasks;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.Views;
 using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Controls;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Services;
