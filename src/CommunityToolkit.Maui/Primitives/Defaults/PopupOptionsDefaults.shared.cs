@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel;
-using Microsoft.Maui.Primitives;
 
-namespace CommunityToolkit.Maui.Core;
+namespace CommunityToolkit.Maui;
 
 /// <summary>
 /// Default Values for PopupOptions
@@ -49,11 +48,11 @@ public class PopupOptionsDefaults
 	/// Default value for <see cref="VerticalOptions"/> in PopupOptions/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static LayoutAlignment VerticalOptions { get; } = LayoutAlignment.Center;
+	public static LayoutOptions VerticalOptions { get; } = LayoutOptions.Center;
 
 	/// <summary>
 	/// Default value for <see cref="HorizontalOptions"/> in PopupOptions/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static LayoutAlignment HorizontalOptions { get; } = LayoutAlignment.Center;
+	public static LayoutOptions HorizontalOptions { get; } = LayoutOptions.Center;
 }
