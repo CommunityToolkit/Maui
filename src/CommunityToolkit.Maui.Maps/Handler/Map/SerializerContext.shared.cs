@@ -3,6 +3,7 @@ using Microsoft.Maui.Controls.Maps;
 
 namespace CommunityToolkit.Maui.Maps.Handlers;
 
+[JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true)]
 [JsonSerializable(typeof(EventMessage))]
 [JsonSerializable(typeof(Pin))]
 [JsonSerializable(typeof(Location))]

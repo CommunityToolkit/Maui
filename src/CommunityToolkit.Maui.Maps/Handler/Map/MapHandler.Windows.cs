@@ -18,11 +18,6 @@ public partial class MapHandlerWindows : MapHandler
 {
 	MapSpan? regionToGo;
 
-	readonly JsonSerializerOptions jsonSerializerOptions = new()
-	{
-		PropertyNameCaseInsensitive = true
-	};
-
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MapHandlerWindows"/> class.
 	/// </summary>
