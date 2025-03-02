@@ -40,12 +40,12 @@ public partial class PopupOptions : BindableObject, IPopupOptions
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="VerticalOptions"/> property.
 	/// </summary>
-	public static readonly BindableProperty VerticalOptionsProperty = BindableProperty.Create(nameof(VerticalOptions), typeof(LayoutOptions), typeof(PopupOptions), ConvertToLayoutOptions(PopupOptionsDefaults.VerticalOptions));
+	public static readonly BindableProperty VerticalOptionsProperty = BindableProperty.Create(nameof(VerticalOptions), typeof(LayoutOptions), typeof(PopupOptions), PopupOptionsDefaults.VerticalOptions);
 
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="HorizontalOptions"/> property.
 	/// </summary>
-	public static readonly BindableProperty HorizontalOptionsProperty = BindableProperty.Create(nameof(HorizontalOptions), typeof(LayoutOptions), typeof(PopupOptions), ConvertToLayoutOptions(PopupOptionsDefaults.HorizontalOptions));
+	public static readonly BindableProperty HorizontalOptionsProperty = BindableProperty.Create(nameof(HorizontalOptions), typeof(LayoutOptions), typeof(PopupOptions), PopupOptionsDefaults.HorizontalOptions);
 
 	/// <summary>
 	/// An empty instance of <see cref="IPopupOptions"/> containing default values.
@@ -113,13 +113,4 @@ public partial class PopupOptions : BindableObject, IPopupOptions
 		get => (LayoutOptions)GetValue(HorizontalOptionsProperty);
 		set => SetValue(HorizontalOptionsProperty, value);
 	}
-
-	static LayoutOptions ConvertToLayoutOptions(Microsoft.Maui.Primitives.LayoutAlignment layoutAlignment) => layoutAlignment switch
-	{
-		Microsoft.Maui.Primitives.LayoutAlignment.Start => LayoutOptions.Start,
-		Microsoft.Maui.Primitives.LayoutAlignment.Center => LayoutOptions.Center,
-		Microsoft.Maui.Primitives.LayoutAlignment.End => LayoutOptions.End,
-		Microsoft.Maui.Primitives.LayoutAlignment.Fill => LayoutOptions.Fill,
-		_ => throw new NotSupportedException($"{nameof(ConvertToLayoutOptions)} does not yet support {layoutAlignment}"),
-	};
 }

@@ -9,49 +9,49 @@ namespace CommunityToolkit.Maui;
 public class PopupOptionsDefaults
 {
 	/// <summary>
-	/// Default value for <see cref="CanBeDismissedByTappingOutsideOfPopup"/> in PopupOptions/>
+	/// Default value for <see cref="PopupOptions.CanBeDismissedByTappingOutsideOfPopup"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const bool CanBeDismissedByTappingOutsideOfPopup = true;
 
 	/// <summary>
-	/// Default value for <see cref="OnTappingOutsideOfPopup"/> in PopupOptions/>
+	/// Default value for <see cref="PopupOptions.OnTappingOutsideOfPopup"/> 
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static Action? OnTappingOutsideOfPopup { get; } = null;
 
 	/// <summary>
-	/// Default value for <see cref="BackgroundColor"/> in PopupOptions/>
+	/// Default value for <see cref="PopupOptions.BackgroundColor"/> 
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static Color BackgroundColor { get; } = Color.FromRgba(0, 0, 0, 0.4);
 
 	/// <summary>
-	/// Default value for <see cref="Shape"/> in PopupOptions/>
+	/// Default value for <see cref="PopupOptions.Shape"/> 
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static IShape? Shape { get; } = null;
 
 	/// <summary>
-	/// Default value for <see cref="Margin"/> in PopupOptions/>
+	/// Default value for <see cref="PopupOptions.Margin"/> 
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static Thickness Margin { get; } = new Thickness(30);
 
 	/// <summary>
-	/// Default value for <see cref="Padding"/> in PopupOptions/>
+	/// Default value for <see cref="PopupOptions.Padding"/> 
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static Thickness Padding { get; } = new Thickness(15);
 
 	/// <summary>
-	/// Default value for <see cref="VerticalOptions"/> in PopupOptions/>
+	/// Default value for <see cref="PopupOptions.VerticalOptions"/> 
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static LayoutOptions VerticalOptions { get; } = LayoutOptions.Center;
 
 	/// <summary>
-	/// Default value for <see cref="HorizontalOptions"/> in PopupOptions/>
+	/// Default value for <see cref="PopupOptions.HorizontalOptions"/> 
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static LayoutOptions HorizontalOptions { get; } = LayoutOptions.Center;
