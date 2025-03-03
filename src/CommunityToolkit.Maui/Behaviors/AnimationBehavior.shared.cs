@@ -83,7 +83,7 @@ public partial class AnimationBehavior : EventToCommandBehavior
 	{
 		base.OnAttachedTo(bindable);
 
-		if(AnimateOnTap && bindable is IGestureRecognizers gestureRecognizers)
+		if (AnimateOnTap && bindable is IGestureRecognizers gestureRecognizers)
 		{
 			tapGestureRecognizer = new TapGestureRecognizer();
 			tapGestureRecognizer.Tapped += OnTriggerHandled;
@@ -95,7 +95,7 @@ public partial class AnimationBehavior : EventToCommandBehavior
 	/// <inheritdoc/>
 	protected override void OnDetachingFrom(VisualElement bindable)
 	{
-		if(tapGestureRecognizer is not null)
+		if (tapGestureRecognizer is not null)
 		{
 			tapGestureRecognizer.Tapped -= OnTriggerHandled;
 			tapGestureRecognizer = null;
@@ -120,7 +120,7 @@ public partial class AnimationBehavior : EventToCommandBehavior
 
 	static void OnAnimateCommandChanging(BindableObject bindable, object oldValue, object newValue)
 	{
-		if(newValue is not Command<CancellationToken>)
+		if (newValue is not Command<CancellationToken>)
 		{
 			var animationBehavior = (AnimationBehavior)bindable;
 			throw new InvalidOperationException($"{nameof(AnimateCommand)} must of Type {animationBehavior.AnimateCommand.GetType().FullName}");
@@ -129,7 +129,7 @@ public partial class AnimationBehavior : EventToCommandBehavior
 
 	async Task OnAnimate(CancellationToken token)
 	{
-		if(View is null || AnimationType is null)
+		if (View is null || AnimationType is null)
 		{
 			return;
 		}
@@ -143,7 +143,7 @@ public partial class AnimationBehavior : EventToCommandBehavior
 			// Returning the `Task` would cause the `OnAnimate()` method to return immediately, before `AnimationType.Animate()` has completed. Returning immediately exits our try/catch block and thus negates our opportunity to handle any Exceptions which breaks `Options.ShouldSuppressExceptionsInAnimations`.
 			await AnimationType.Animate(View, token);
 		}
-		catch(Exception ex) when(Options.ShouldSuppressExceptionsInAnimations)
+		catch (Exception ex) when (Options.ShouldSuppressExceptionsInAnimations)
 		{
 			Trace.TraceInformation("{0}", ex);
 		}
