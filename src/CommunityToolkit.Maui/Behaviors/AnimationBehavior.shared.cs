@@ -34,7 +34,7 @@ public partial class AnimationBehavior : EventToCommandBehavior
 	/// Backing BindableProperty for the <see cref="AnimateOnTap"/> property.
 	/// </summary>
 	public static readonly BindableProperty AnimateOnTapProperty =
-		BindableProperty.Create(nameof(AnimationType), typeof(bool), typeof(AnimationBehavior));
+		BindableProperty.Create(nameof(AnimateOnTap), typeof(bool), typeof(AnimationBehavior));
 
 	TapGestureRecognizer? tapGestureRecognizer;
 
