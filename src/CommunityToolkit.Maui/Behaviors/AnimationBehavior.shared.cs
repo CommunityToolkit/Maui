@@ -83,22 +83,7 @@ public partial class AnimationBehavior : EventToCommandBehavior
 	{
 		base.OnAttachedTo(bindable);
 
-		if(!string.IsNullOrWhiteSpace(EventName))
-		{
-			return;
-		}
-
-		if(bindable is ITextInput)
-		{
-			throw new InvalidOperationException($"Animation Behavior can not be attached to {nameof(ITextInput)} without using the EventName property.");
-		}
-
-		if(bindable is not IGestureRecognizers gestureRecognizers)
-		{
-			throw new InvalidOperationException($"VisualElement does not implement {nameof(IGestureRecognizers)}.");
-		}
-
-		if(AnimateOnTap)
+		if(AnimateOnTap && bindable is IGestureRecognizers gestureRecognizers)
 		{
 			tapGestureRecognizer = new TapGestureRecognizer();
 			tapGestureRecognizer.Tapped += OnTriggerHandled;
