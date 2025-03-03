@@ -30,11 +30,17 @@ public partial class AnimationBehavior : EventToCommandBehavior
 	public static readonly BindableProperty AnimateCommandProperty =
 		BindableProperty.CreateReadOnly(nameof(AnimateCommand), typeof(Command<CancellationToken>), typeof(AnimationBehavior), default, BindingMode.OneWayToSource, propertyChanging: OnAnimateCommandChanging, defaultValueCreator: CreateAnimateCommand).BindableProperty;
 
+	/// <summary>
+	/// Backing BindableProperty for the <see cref="AnimateOnTap"/> property.
+	/// </summary>
+	public static readonly BindableProperty AnimateOnTapProperty =
+		BindableProperty.Create(nameof(AnimationType), typeof(bool), typeof(AnimationBehavior));
+
 	TapGestureRecognizer? tapGestureRecognizer;
 
 	/// <summary>
 	/// Gets the Command that allows the triggering of the animation.
-	/// 
+	///
 	/// NOTE: Apps should not directly set this property, treating it as read only. The setter is only public because
 	/// that's currently needed to make XAML Hot Reload work. Instead, apps should provide a value for this OneWayToSource
 	/// property by creating a binding, in XAML or C#. If done via C# use code like this:
@@ -63,37 +69,48 @@ public partial class AnimationBehavior : EventToCommandBehavior
 		get => (BaseAnimation?)GetValue(AnimationTypeProperty);
 		set => SetValue(AnimationTypeProperty, value);
 	}
+	/// <summary>
+	/// Whether a TapGestureRecognizer is added to the control or not
+	/// </summary>
+	public bool AnimateOnTap
+	{
+		get => (bool)GetValue(AnimateOnTapProperty);
+		set => SetValue(AnimateOnTapProperty, value);
+	}
 
 	/// <inheritdoc/>
 	protected override void OnAttachedTo(VisualElement bindable)
 	{
 		base.OnAttachedTo(bindable);
 
-		if (!string.IsNullOrWhiteSpace(EventName))
+		if(!string.IsNullOrWhiteSpace(EventName))
 		{
 			return;
 		}
 
-		if (bindable is ITextInput)
+		if(bindable is ITextInput)
 		{
 			throw new InvalidOperationException($"Animation Behavior can not be attached to {nameof(ITextInput)} without using the EventName property.");
 		}
 
-		if (bindable is not IGestureRecognizers gestureRecognizers)
+		if(bindable is not IGestureRecognizers gestureRecognizers)
 		{
 			throw new InvalidOperationException($"VisualElement does not implement {nameof(IGestureRecognizers)}.");
 		}
 
-		tapGestureRecognizer = new TapGestureRecognizer();
-		tapGestureRecognizer.Tapped += OnTriggerHandled;
+		if(AnimateOnTap)
+		{
+			tapGestureRecognizer = new TapGestureRecognizer();
+			tapGestureRecognizer.Tapped += OnTriggerHandled;
 
-		gestureRecognizers.GestureRecognizers.Add(tapGestureRecognizer);
+			gestureRecognizers.GestureRecognizers.Add(tapGestureRecognizer);
+		}
 	}
 
 	/// <inheritdoc/>
 	protected override void OnDetachingFrom(VisualElement bindable)
 	{
-		if (tapGestureRecognizer is not null)
+		if(tapGestureRecognizer is not null)
 		{
 			tapGestureRecognizer.Tapped -= OnTriggerHandled;
 			tapGestureRecognizer = null;
@@ -118,7 +135,7 @@ public partial class AnimationBehavior : EventToCommandBehavior
 
 	static void OnAnimateCommandChanging(BindableObject bindable, object oldValue, object newValue)
 	{
-		if (newValue is not Command<CancellationToken>)
+		if(newValue is not Command<CancellationToken>)
 		{
 			var animationBehavior = (AnimationBehavior)bindable;
 			throw new InvalidOperationException($"{nameof(AnimateCommand)} must of Type {animationBehavior.AnimateCommand.GetType().FullName}");
@@ -127,7 +144,7 @@ public partial class AnimationBehavior : EventToCommandBehavior
 
 	async Task OnAnimate(CancellationToken token)
 	{
-		if (View is null || AnimationType is null)
+		if(View is null || AnimationType is null)
 		{
 			return;
 		}
@@ -141,7 +158,7 @@ public partial class AnimationBehavior : EventToCommandBehavior
 			// Returning the `Task` would cause the `OnAnimate()` method to return immediately, before `AnimationType.Animate()` has completed. Returning immediately exits our try/catch block and thus negates our opportunity to handle any Exceptions which breaks `Options.ShouldSuppressExceptionsInAnimations`.
 			await AnimationType.Animate(View, token);
 		}
-		catch (Exception ex) when (Options.ShouldSuppressExceptionsInAnimations)
+		catch(Exception ex) when(Options.ShouldSuppressExceptionsInAnimations)
 		{
 			Trace.TraceInformation("{0}", ex);
 		}
