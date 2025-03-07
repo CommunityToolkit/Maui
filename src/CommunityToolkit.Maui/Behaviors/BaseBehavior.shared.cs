@@ -8,11 +8,6 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <typeparam name="TView">The <see cref="VisualElement"/> that the behavior can be applied to</typeparam>
 public abstract class BaseBehavior<TView> : Behavior<TView>, ICommunityToolkitBehavior<TView> where TView : VisualElement
 {
-	private protected BaseBehavior()
-	{
-
-	}
-
 	/// <summary>
 	/// View used by the Behavior
 	/// </summary>
