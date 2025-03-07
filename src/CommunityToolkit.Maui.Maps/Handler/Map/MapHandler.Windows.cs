@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.Json;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Handlers;
@@ -15,16 +14,9 @@ using IMap = Microsoft.Maui.Maps.IMap;
 namespace CommunityToolkit.Maui.Maps.Handlers;
 
 /// <inheritdoc />
-[RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
-[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
 public partial class MapHandlerWindows : MapHandler
 {
 	MapSpan? regionToGo;
-
-	readonly JsonSerializerOptions jsonSerializerOptions = new()
-	{
-		PropertyNameCaseInsensitive = true
-	};
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MapHandlerWindows"/> class.
@@ -42,41 +34,43 @@ public partial class MapHandlerWindows : MapHandler
 	}
 
 	internal static string? MapsKey { get; set; }
+	internal static string? MapPage { get; private set; }
 
 	/// <inheritdoc/>
-	[RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
-	[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
-#pragma warning disable IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
-#pragma warning disable IL3051 // 'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.
 	protected override FrameworkElement CreatePlatformView()
-#pragma warning restore IL3051 // 'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.
-#pragma warning restore IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
 	{
 		if (string.IsNullOrEmpty(MapsKey))
 		{
 			throw new InvalidOperationException("You need to specify a Bing Maps Key");
 		}
 
-		var mapPage = GetMapHtmlPage(MapsKey);
+		MapPage = GetMapHtmlPage(MapsKey);
 		var webView = new MauiWebView(new WebViewHandler());
-		webView.NavigationCompleted += HandleWebViewNavigationCompleted;
-		webView.WebMessageReceived += WebViewWebMessageReceived;
-		webView.LoadHtml(mapPage, null);
 
 		return webView;
 	}
 
 	/// <inheritdoc />
-	[RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
-	[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
-#pragma warning disable IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
-#pragma warning disable IL3051 // 'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.
-	protected override void DisconnectHandler(FrameworkElement platformView)
-#pragma warning restore IL3051 // 'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides.
-#pragma warning restore IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
+	protected override void ConnectHandler(FrameworkElement platformView) 
 	{
-		if (PlatformView is MauiWebView mauiWebView)
+		if (platformView is MauiWebView mauiWebView)
 		{
+			LoadMap(platformView);
+
+			mauiWebView.NavigationCompleted += HandleWebViewNavigationCompleted;
+			mauiWebView.WebMessageReceived += WebViewWebMessageReceived;
+			Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
+		}
+
+		base.ConnectHandler(platformView);
+	}
+
+	/// <inheritdoc />
+	protected override void DisconnectHandler(FrameworkElement platformView)
+	{
+		if (platformView is MauiWebView mauiWebView)
+		{
+			Connectivity.ConnectivityChanged -= Connectivity_ConnectivityChanged;
 			mauiWebView.NavigationCompleted -= HandleWebViewNavigationCompleted;
 			mauiWebView.WebMessageReceived -= WebViewWebMessageReceived;
 		}
@@ -415,9 +409,21 @@ public partial class MapHandlerWindows : MapHandler
 
 	static async Task<Location?> GetCurrentLocation()
 	{
-		var geoLocator = new Geolocator();
-		var position = await geoLocator.GetGeopositionAsync();
-		return new Location(position.Coordinate.Latitude, position.Coordinate.Longitude);
+		if (await Geolocator.RequestAccessAsync() != GeolocationAccessStatus.Allowed)
+		{
+			return null;
+		}
+
+		try
+		{
+			var geoLocator = new Geolocator();
+			var position = await geoLocator.GetGeopositionAsync();
+			return new Location(position.Coordinate.Latitude, position.Coordinate.Longitude);
+		}
+		catch
+		{
+			return null;
+		}
 	}
 
 	async void HandleWebViewNavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
@@ -431,8 +437,6 @@ public partial class MapHandlerWindows : MapHandler
 		}
 	}
 
-	[RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
-	[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
 	async void WebViewWebMessageReceived(WebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
 	{
 		// For some reason the web message is empty
@@ -441,7 +445,7 @@ public partial class MapHandlerWindows : MapHandler
 			return;
 		}
 
-		var eventMessage = JsonSerializer.Deserialize<EventMessage>(args.WebMessageAsJson, jsonSerializerOptions);
+		var eventMessage = JsonSerializer.Deserialize<EventMessage>(args.WebMessageAsJson, SerializerContext.Default.EventMessage);
 
 		// The web message (or it's ID) could not be deserialized to something we recognize
 		if (eventMessage is null || !Enum.TryParse<EventIdentifier>(eventMessage.Id, true, out var eventId))
@@ -460,7 +464,7 @@ public partial class MapHandlerWindows : MapHandler
 		switch (eventId)
 		{
 			case EventIdentifier.BoundsChanged:
-				var mapRect = JsonSerializer.Deserialize<Bounds>(payloadAsString, jsonSerializerOptions);
+				var mapRect = JsonSerializer.Deserialize<Bounds>(payloadAsString, SerializerContext.Default.Bounds);
 				if (mapRect?.Center is not null)
 				{
 					VirtualView.VisibleRegion = new MapSpan(new Location(mapRect.Center.Latitude, mapRect.Center.Longitude),
@@ -468,8 +472,7 @@ public partial class MapHandlerWindows : MapHandler
 				}
 				break;
 			case EventIdentifier.MapClicked:
-				var clickedLocation = JsonSerializer.Deserialize<Location>(payloadAsString,
-					jsonSerializerOptions);
+				var clickedLocation = JsonSerializer.Deserialize<Location>(payloadAsString, SerializerContext.Default.Location);
 				if (clickedLocation is not null)
 				{
 					VirtualView.Clicked(clickedLocation);
@@ -477,8 +480,7 @@ public partial class MapHandlerWindows : MapHandler
 				break;
 
 			case EventIdentifier.InfoWindowClicked:
-				var clickedInfoWindowWebView = JsonSerializer.Deserialize<InfoWindow>(payloadAsString,
-					jsonSerializerOptions);
+				var clickedInfoWindowWebView = JsonSerializer.Deserialize<InfoWindow>(payloadAsString, SerializerContext.Default.InfoWindow);
 				var clickedInfoWindowWebViewId = clickedInfoWindowWebView?.InfoWindowMarkerId;
 
 				if (!string.IsNullOrEmpty(clickedInfoWindowWebViewId))
@@ -494,7 +496,7 @@ public partial class MapHandlerWindows : MapHandler
 				break;
 
 			case EventIdentifier.PinClicked:
-				var clickedPinWebView = JsonSerializer.Deserialize<Pin>(payloadAsString, jsonSerializerOptions);
+				var clickedPinWebView = JsonSerializer.Deserialize<Pin>(payloadAsString, SerializerContext.Default.Pin);
 				var clickedPinWebViewId = clickedPinWebView?.MarkerId?.ToString();
 
 				if (!string.IsNullOrEmpty(clickedPinWebViewId))
@@ -508,6 +510,19 @@ public partial class MapHandlerWindows : MapHandler
 					}
 				}
 				break;
+		}
+	}
+
+	void Connectivity_ConnectivityChanged(object? sender, ConnectivityChangedEventArgs e)
+	{
+		LoadMap(PlatformView);
+	}
+
+	static void LoadMap(FrameworkElement platformView)
+	{
+		if (platformView is MauiWebView mauiWebView && Connectivity.NetworkAccess == NetworkAccess.Internet)
+		{
+			mauiWebView.LoadHtml(MapPage, null);
 		}
 	}
 }
