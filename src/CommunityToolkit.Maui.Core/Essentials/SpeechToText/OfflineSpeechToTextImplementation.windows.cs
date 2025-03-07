@@ -34,7 +34,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 		return ValueTask.CompletedTask;
 	}
 
-	void InternalStartListening(SpeechToTextOptions options)
+	Task InternalStartListening(SpeechToTextOptions options, CancellationToken token = default)
 	{
 		Initialize(options);
 
@@ -49,6 +49,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 		offlineSpeechRecognizer.RecognizeCompleted += OnRecognizeCompleted;
 		offlineSpeechRecognizer.SpeechRecognized += OnSpeechRecognized;
 		offlineSpeechRecognizer.RecognizeAsync(RecognizeMode.Multiple);
+		return Task.CompletedTask;
 	}
 
 	void OnRecognizeCompleted(object? sender, RecognizeCompletedEventArgs args)
