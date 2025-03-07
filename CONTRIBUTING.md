@@ -20,7 +20,7 @@ During a code review try to make a habit out of it to say at least one nice thin
 
 ### Make an effort to see it from their perspective
 
-Remember English is not everyones native language. Written communication always lacks non-verbal communication. With written communication in a language that is not your native tongue it is even harder to express certain emotions.
+Remember English is not everyone's native language. Written communication always lacks non-verbal communication. With written communication in a language that is not your native tongue it is even harder to express certain emotions.
 
 Always assume that people mean to do right. Try to read a sentence a couple of times over and take things more literal. Try to place yourself in their shoes and see the message beyond the actual words.
 
@@ -55,7 +55,7 @@ If you found something that looks like a bug don't hesitate in opening an issue 
 
 ### Bug reproduction
 
-We always request a reproduction sample, and that's not to make your life hard or anything like that... The reason of having a reproduction is to save us time to indentify and fix the bug. Create a new project; download the MCT NuGet; write UI; ViewModel; create a service; run it. As you can see it's a lot of timing consuming for us that we could spend fixing the actual issue. So **PLEASE** create a small reproduction project, upload it on GitHub or GitLab and paste the link in the issue.
+We always request a reproduction sample, and that's not to make your life hard or anything like that... The reason of having a reproduction is to save us time to identify and fix the bug. Create a new project; download the MCT NuGet; write UI; ViewModel; create a service; run it. As you can see it's a lot of timing consuming for us that we could spend fixing the actual issue. So **PLEASE** create a small reproduction project, upload it on GitHub or GitLab and paste the link in the issue.
 
 > We don't accept `.zip` files as reproduction samples, for security reasons. So if you send us a `.zip` file we will kindly ask you to upload it to GitHub or GitLab and share the link
 
@@ -136,8 +136,8 @@ Here we will have some:
 ### Methods Returning Task and ValueTask
 
 * Always include a `CancellationToken` as a parameter to every method returning `Task` or `ValueTask`
-* If the method is public, provide a the default value for the `CancellationToken` (eg `CancellationToken token = default`)
-  * If the method is not publc, do not provide a default value for the `CancellationToken`
+* If the method is public, provide the default value for the `CancellationToken` (e.g. `CancellationToken token = default`)
+  * If the method is not public, do not provide a default value for the `CancellationToken`
 * Use `CancellationToken.ThrowIfCancellationRequested()` to verify the `CancellationToken`
 
 ### Enums
@@ -250,4 +250,4 @@ The following topics should generally not be proposed for discussion as they are
 * Large renames of APIs
 * Large non-backward-compatible breaking changes
 * Platform-Specifics which can be accomplished without changing the .NET MAUI Community Toolkit
-* Avoid clutter posts like "+1" which do not serve to further the conversation, please use the emoji resonses for that
+* Avoid clutter posts like "+1" which do not serve to further the conversation, please use the emoji responses for that
