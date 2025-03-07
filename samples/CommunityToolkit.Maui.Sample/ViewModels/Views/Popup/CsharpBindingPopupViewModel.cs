@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
@@ -10,8 +11,5 @@ public sealed partial class CsharpBindingPopupViewModel : BaseViewModel
 	[ObservableProperty]
 	public partial string Message { get; set; } = "This message uses a ViewModel binding";
 
-	internal void Load(string updatedMessage)
-	{
-		Message = updatedMessage;
-	}
+	public TaskCompletionSource<PopupResult>? PopupResultManager { get; set; }
 }

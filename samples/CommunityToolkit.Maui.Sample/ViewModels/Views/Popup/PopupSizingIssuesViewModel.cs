@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -38,7 +39,7 @@ public partial class PopupSizingIssuesViewModel : BaseViewModel
 	{
 		var popup = new Popup();
 
-		if (SelectedContainer?.ControlTemplate.LoadTemplate() is not (View container and ContentView contentView))
+		if (SelectedContainer.ControlTemplate.LoadTemplate() is not (View container and ContentView contentView))
 		{
 			await Toast.Make("Invalid Container Selected").Show();
 			return;
@@ -62,7 +63,7 @@ public partial class PopupSizingIssuesViewModel : BaseViewModel
 
 		popup.Content = container;
 
-		page.ShowPopup(popup);
+		page.ShowPopup(popup, PopupOptions.Empty);
 	}
 
 	static Label GetContentLabel(in string text) => new()

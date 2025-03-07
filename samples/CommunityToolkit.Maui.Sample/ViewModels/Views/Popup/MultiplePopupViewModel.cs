@@ -5,19 +5,23 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public partial class MultiplePopupViewModel(IPopupService popupService) : BaseViewModel
 {
+	static INavigation currentNavigation => Application.Current?.Windows[0].Page?.Navigation ?? throw new InvalidOperationException($"{nameof(Page.Navigation)} not found");
+
 	[RelayCommand]
-	Task OnCsharpBindingPopup(CancellationToken token)
+	void OnCsharpBindingPopup()
 	{
-		return popupService.ShowPopupAsync<CsharpBindingPopupViewModel>(
-			onPresenting: viewModel => viewModel.Load("This is a platform specific popup with a .NET MAUI View being rendered. The behaviors of the popup will confirm to 100% this platform look and feel, but still allows you to use your .NET MAUI Controls."),
-			token);
+		popupService.ShowPopup<CsharpBindingPopupViewModel>(currentNavigation);
 	}
 
 	[RelayCommand]
-	Task OnUpdatingPopup(CancellationToken token)
+	void OnUpdatingPopup()
 	{
-		return popupService.ShowPopupAsync<UpdatingPopupViewModel>(
-			onPresenting: viewModel => viewModel.PerformUpdates(10),
-			token);
+		popupService.ShowPopup<UpdatingPopupViewModel>(currentNavigation);
+	}
+
+	[RelayCommand]
+	Task OnShowPopupContent(CancellationToken token)
+	{
+		return popupService.ShowPopupAsync<PopupContentViewModel>(currentNavigation, cancellationToken: token);
 	}
 }
