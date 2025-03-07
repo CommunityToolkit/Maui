@@ -12,7 +12,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest))]
 	[SupportedOSPlatform("ios13.0")]
 	[SupportedOSPlatform("maccatalyst")]
-	void InternalStartListening(SpeechToTextOptions options)
+	Task InternalStartListening(SpeechToTextOptions options, CancellationToken token = default)
 	{
 		if (!UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
 		{
@@ -80,5 +80,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 				}
 			}
 		});
+
+		return Task.CompletedTask;
 	}
 }
