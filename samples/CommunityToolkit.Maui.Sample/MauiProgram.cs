@@ -26,6 +26,7 @@ using CommunityToolkit.Maui.Sample.ViewModels.PlatformSpecific;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.Views.Popups;
 using CommunityToolkit.Maui.Storage;
+using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.LifecycleEvents;
@@ -66,8 +67,10 @@ public static class MauiProgram
 #endif
 								.UseMauiCommunityToolkitMarkup()
 								.UseMauiCommunityToolkitCamera()
-								.UseMauiCommunityToolkitMediaElement()
-
+								//.UseMauiCommunityToolkitMediaElement()
+								.UseMauiCommunityToolkitMediaElement(options => {
+									options.AndroidViewType = AndroidViewType.TextureView;
+								})
 								.ConfigureMauiHandlers(handlers =>
 								{
 #if IOS || MACCATALYST
@@ -250,6 +253,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<ExpanderPage, ExpanderViewModel>();
 		services.AddTransientWithShellRoute<LazyViewPage, LazyViewViewModel>();
 		services.AddTransientWithShellRoute<MapsPinsPage, MapsPinsViewModel>();
+		services.AddTransientWithShellRoute<MediaElementTextureViewPage, MediaElementTextureViewViewModel>();
 		services.AddTransientWithShellRoute<MediaElementPage, MediaElementViewModel>();
 		services.AddTransientWithShellRoute<MediaElementCarouselViewPage, MediaElementCarouselViewViewModel>();
 		services.AddTransientWithShellRoute<MediaElementCollectionViewPage, MediaElementCollectionViewViewModel>();

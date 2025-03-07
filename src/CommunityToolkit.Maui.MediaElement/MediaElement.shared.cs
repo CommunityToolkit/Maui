@@ -10,6 +10,39 @@ namespace CommunityToolkit.Maui.Views;
 /// </summary>
 public partial class MediaElement : View, IMediaElement, IDisposable
 {
+	
+	/// <summary>
+	/// Constructor with Options
+	///</summary>
+	public MediaElement(MediaElementOptions? mediaElementOptions = null) 
+	{
+		// Assign default options (which may be set globally by UseMauiCommunityToolkitMediaElement in builder) if argument here is null
+		if (mediaElementOptions is null) { 
+			mediaElementOptions = MediaElementBuilderOptions.MediaElementOptions; 
+		}
+
+		// Save to the object for handler to access during CreatePlatformView
+		this.MediaElementOptions = mediaElementOptions;
+	}
+	/// <summary>
+	/// Default Constructor
+	/// </summary>
+	public MediaElement() 
+	{
+		// Save the default Options to this object for handler to access during CreatePlatformView
+		this.MediaElementOptions = MediaElementBuilderOptions.MediaElementOptions;
+	}
+	/// <summary>
+	/// Read the MediaElementOptions set in on construction, cannot be changed after construction
+	/// </summary>
+	public MediaElementOptions MediaElementOptions { get; }
+
+	/// <summary>
+	/// Finalizer
+	/// </summary>
+	~MediaElement() => Dispose(false);
+
+
 	/// <summary>
 	/// Backing store for the <see cref="Aspect"/> property.
 	/// </summary>
@@ -204,12 +237,6 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		add => eventManager.AddEventHandler(value);
 		remove => eventManager.RemoveEventHandler(value);
 	}
-
-	/// <summary>
-	/// Finalizer
-	/// </summary>
-	~MediaElement() => Dispose(false);
-
 	/// <summary>
 	/// The current position of the playing media. This is a bindable property.
 	/// </summary>

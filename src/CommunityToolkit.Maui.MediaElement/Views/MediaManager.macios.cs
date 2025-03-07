@@ -90,7 +90,7 @@ public partial class MediaManager : IDisposable
 	/// Creates the corresponding platform view of <see cref="MediaElement"/> on iOS and macOS.
 	/// </summary>
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
-	public (PlatformMediaElement Player, AVPlayerViewController PlayerViewController) CreatePlatformView()
+	public (PlatformMediaElement Player, AVPlayerViewController PlayerViewController) CreatePlatformView(MediaElementOptions mediaElementOptions)
 	{
 		Player = new();
 		PlayerViewController = new()
