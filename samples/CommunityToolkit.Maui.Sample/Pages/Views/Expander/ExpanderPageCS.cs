@@ -16,6 +16,8 @@ public partial class ExpanderPageCS : ContentPage
 
 		Title = "Expander Page, C# UI";
 
+		Expander expander;
+
 		Content = new VerticalStackLayout()
 		{
 			Spacing = 12,
@@ -31,7 +33,7 @@ public partial class ExpanderPageCS : ContentPage
 					.CenterHorizontal().TextCenter()
 					.Assign(out Picker picker),
 
-				new Expander
+				(expander = new Expander
 				{
 					Header = new Label()
 								.Text("Expander\n(Tap Me)")
@@ -60,7 +62,17 @@ public partial class ExpanderPageCS : ContentPage
 						static (Picker picker) => picker.SelectedIndex,
 						source: picker,
 						convert: (int selectedIndex) => Enum.IsDefined(typeof(ExpandDirection), selectedIndex) ? (ExpandDirection)selectedIndex : default)
+				 )
 			 }
+		};
+
+		expander.PropertyChanged += async (s, e) =>
+		{
+			if (e.PropertyName == Expander.IsExpandedProperty.PropertyName)
+			{
+				expander.ContentHeight = expander.IsExpanded ? expander.MinimumContentHeight : expander.MaximumContentHeight;
+				await expander.ContentHeightTo(expander.IsExpanded ? expander.MaximumContentHeight : expander.MinimumContentHeight, 250, Easing.CubicInOut);
+			}
 		};
 	}
 }
