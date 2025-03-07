@@ -55,15 +55,6 @@
     <PackageReference Include="Xamarin.AndroidX.Camera.Camera2" Version="1.4.1" />
     <PackageReference Include="Xamarin.AndroidX.Camera.View" Version="1.4.1" />
 
-    <!-- Increase Minimum Version of Transient Dependencies For Xamarin.AndroidX.Camera.Camera2 and Xamarin.AndroidX.Camera.View -->
-    <PackageReference Include="Xamarin.AndroidX.Fragment.Ktx" Version="1.8.5.1" />
-    <PackageReference Include="Xamarin.AndroidX.Activity.Ktx" Version="1.9.3.1" />
-    <PackageReference Include="Xamarin.AndroidX.Collection.Jvm" Version="1.4.5.1" />
-    <PackageReference Include="Xamarin.AndroidX.Collection.Ktx" Version="1.4.5.1" />
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.8.7.1" />
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime" Version="2.8.7.1" />
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.Process" Version="2.8.7.1" />
-
     <!--  Ensure Linker does not remove required libraries -->
     <None Include="linker.xml" Pack="true" PackagePath="build\$(PackageId).LinkerConfigurationFile.xml" />
   </ItemGroup>
