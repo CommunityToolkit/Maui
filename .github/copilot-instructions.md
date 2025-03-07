@@ -162,7 +162,6 @@ Classes
 4.	Open a pull request and follow the [Pull Request template](https://github.com/CommunityToolkit/Maui/blob/main/.github/PULL_REQUEST_TEMPLATE.md).
 
 ## Additional Resources
-� (GitHub Copilot Documentation)[https://docs.github.com/en/copilot]
-� (.NET MAUI Documentation)[https://learn.microsoft.com/en-us/dotnet/maui/]
-
+- [GitHub Copilot Documentation](https://docs.github.com/en/copilot)
+- [.NET MAUI Documentation](https://learn.microsoft.com/en-us/dotnet/maui/)
 By following these guidelines, you can effectively use GitHub Copilot to contribute to the .NET MAUI Community Toolkit. Thank you for your contributions!

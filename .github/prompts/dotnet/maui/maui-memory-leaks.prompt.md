@@ -119,8 +119,7 @@ class DatePickerHandler : ViewHandler<IDatePicker, UIDatePicker>
 
         public void Connect(IDatePicker handler, UIDatePicker platformView)
         {
-            _virtualView = new(virtualView);
-
+            _virtualView = new(handler);
             platformView.ValueChanged += OnValueChanged;
         }
 
@@ -128,7 +127,7 @@ class DatePickerHandler : ViewHandler<IDatePicker, UIDatePicker>
         {
             _virtualView = null;
 
-            platformView.ValueChanged -= OValueChanged;
+            platformView.ValueChanged -= OnValueChanged;
         }
 
         public void OnValueChanged(object? sender, EventArgs e)
