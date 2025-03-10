@@ -33,14 +33,14 @@ This document provides guidelines for using GitHub Copilot to contribute to the 
 ### Methods Returning Task and ValueTask
 * Always include a `CancellationToken` as a parameter to every method returning `Task` or `ValueTask`
 * If the method is public, provide a the default value for the `CancellationToken` (e.g. `CancellationToken token = default`)
-  * If the method is not public, do not provide a default value for the `CancellationToken`
-* Use `CancellationToken.ThrowIfCancellationRequested()` to verify the `CancellationToken`
+* If the method is not public, do not provide a default value for the `CancellationToken`
+* If the method is used outside of a .net MAUI control, Use `CancellationToken.ThrowIfCancellationRequested()` to verify the `CancellationToken`, as it is not possible to catch exceptions in XAML.
 
 ### Enums
 * Always use `Unknown` at index 0 for return types that may have a value that is not known
 * Always use `Default` at index 0 for option types that can use the system default option
 * Follow naming guidelines for tense... `SensorSpeed` not `SensorSpeeds`
-* Assign values (0,1,2,3) for all enums
+* Assign values (0,1,2,3) for all enums, if not marked with a `Flags` attribute. This is to ensure that the enum can be serialized and deserialized correctly across platforms.
 
 ### Property Names
 * Include units only if one of the platforms includes it in their implementation. For instance HeadingMagneticNorth implies degrees on all platforms, but PressureInHectopascals is needed since platforms don't provide a consistent API for this.
@@ -118,7 +118,7 @@ If you're looking for something to fix, please browse [open issues](https://gith
 
 Follow the style used by the [.NET Foundation](https://github.com/dotnet/runtime/blob/master/docs/coding-guidelines/coding-style.md), with two primary exceptions:
 
-* We do not use the `private` keyword as it is the default accessibility level in C#.
+* We do **not** use the `private` keyword as it is the default accessibility level in C#.
 * We will **not** use `_` or `s_` as a prefix for internal or private field names
 * We will use `camelCaseFieldName` for naming internal or private fields in both instance and static implementations
 
@@ -131,7 +131,7 @@ Read and follow our [Pull Request template](https://github.com/CommunityToolkit/
 4.	Open a pull request and follow the [Pull Request template](https://github.com/CommunityToolkit/Maui/blob/main/.github/PULL_REQUEST_TEMPLATE.md).
 
 ## Additional Resources
-• (GitHub Copilot Documentation)[https://docs.github.com/en/copilot]
-• (.NET MAUI Documentation)[https://learn.microsoft.com/en-us/dotnet/maui/]
+- (GitHub Copilot Documentation)[https://docs.github.com/en/copilot]
+- (.NET MAUI Documentation)[https://learn.microsoft.com/en-us/dotnet/maui/]
 
 By following these guidelines, you can effectively use GitHub Copilot to contribute to the .NET MAUI Community Toolkit. Thank you for your contributions!
