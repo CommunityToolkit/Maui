@@ -26,6 +26,7 @@ Use `EventToCommandBehavior` from CommunityToolkit.Maui to handle page life-cycl
                 EventName="Appearing"                
                 Command="{Binding AppearingCommand}" />
     </ContentPage.Behaviors>
+</ContentPage>
 ```
 
 ## Control Choices
