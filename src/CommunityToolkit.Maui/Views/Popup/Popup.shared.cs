@@ -17,6 +17,26 @@ public partial class Popup : ContentView
 	/// </summary>
 	public event EventHandler? Closed;
 
+	/// <inheritdoc/>
+	/// <remarks>Use <see cref="PopupOptions.BackgroundColor"/> to set the <see cref="BackgroundColor"/> for <see cref="Popup"/></remarks>
+	public new Color BackgroundColor => base.BackgroundColor;
+
+	/// <inheritdoc/>
+	/// <remarks>Use <see cref="PopupOptions.Margin"/> to set the <see cref="Margin"/> for <see cref="Popup"/></remarks>
+	public new Thickness Margin => base.Margin;
+
+	/// <inheritdoc/>
+	/// <remarks>Use <see cref="PopupOptions.Padding"/> to set the <see cref="Padding"/> for <see cref="Popup"/></remarks>
+	public new Thickness Padding => base.Padding;
+
+	/// <inheritdoc/>
+	/// <remarks>Use <see cref="PopupOptions.VerticalOptions"/> to set the <see cref="VerticalOptions"/> for <see cref="Popup"/></remarks>
+	public new LayoutOptions VerticalOptions => base.VerticalOptions;
+
+	/// <inheritdoc/>
+	/// <remarks>Use <see cref="PopupOptions.HorizontalOptions"/> to set the <see cref="HorizontalOptions"/> for <see cref="Popup"/></remarks>
+	public new LayoutOptions HorizontalOptions => base.HorizontalOptions;
+
 	/// <summary>
 	/// Close the Popup.
 	/// </summary>
