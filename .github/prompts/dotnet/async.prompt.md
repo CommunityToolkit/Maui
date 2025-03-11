@@ -29,3 +29,4 @@ This cheat sheet should serve as a quick reminder of best practices when writing
   When a method returns a `Task`, wrapping it in a try/catch or using block may lead to unexpected behaviour because the task completes outside those blocks.  For these scenarios use `aync\await`.
 - **Don't Overuse Fire-and-Forget Patterns:**
   Unobserved tasks (fire-and-forget) can swallow exceptions and cause race conditions—if needed, use a “safe fire-and-forget” pattern with proper error handling.
+  
