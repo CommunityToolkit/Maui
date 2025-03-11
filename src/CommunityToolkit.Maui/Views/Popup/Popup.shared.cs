@@ -7,27 +7,26 @@ namespace CommunityToolkit.Maui.Views;
 /// </summary>
 public partial class Popup : ContentView
 {
-	/// <inheritdoc/>
 	/// <remarks>Use <see cref="PopupOptions.BackgroundColorProperty"/> to set the <see cref="BackgroundColorProperty"/> for <see cref="Popup"/></remarks>
 	[Obsolete($"Use {nameof(PopupOptions)} to bind to the BackgroundColorProperty of {nameof(Popup)}", true)]
 	public static new readonly BindableProperty BackgroundColorProperty = VisualElement.BackgroundColorProperty;
 
-	/// <inheritdoc/>
+	/// <remarks>Use <see cref="PopupOptions.BackgroundColorProperty"/> to set the <see cref="BackgroundProperty"/> for <see cref="Popup"/></remarks>
+	[Obsolete($"Use {nameof(PopupOptions)} to bind to the BackgroundProperty of {nameof(Popup)}", true)]
+	public static new readonly BindableProperty BackgroundProperty = VisualElement.BackgroundProperty;
+
 	/// <remarks>Use <see cref="PopupOptions.MarginProperty"/> to set the <see cref="MarginProperty"/> for <see cref="Popup"/></remarks>
 	[Obsolete($"Use {nameof(PopupOptions)} to bind to the MarginProperty of {nameof(Popup)}", true)]
 	public static new readonly BindableProperty MarginProperty = View.MarginProperty;
 
-	/// <inheritdoc/>
 	/// <remarks>Use <see cref="PopupOptions.PaddingProperty"/> to set the <see cref="PaddingProperty"/> for <see cref="Popup"/></remarks>
 	[Obsolete($"Use {nameof(PopupOptions)} to bind to the PaddingProperty of {nameof(Popup)}", true)]
 	public static new readonly BindableProperty PaddingProperty = Microsoft.Maui.Controls.Compatibility.Layout.PaddingProperty;
 
-	/// <inheritdoc/>
 	/// <remarks>Use <see cref="PopupOptions.VerticalOptionsProperty"/> to set the <see cref="VerticalOptionsProperty"/> for <see cref="Popup"/></remarks>
 	[Obsolete($"Use {nameof(PopupOptions)} to bind to the VerticalOptionsProperty  {nameof(Popup)}", true)]
 	public static new readonly BindableProperty VerticalOptionsProperty = View.VerticalOptionsProperty;
 
-	/// <inheritdoc/>
 	/// <remarks>Use <see cref="PopupOptions.HorizontalOptionsProperty"/> to set the <see cref="HorizontalOptionsProperty"/> for <see cref="Popup"/></remarks>
 	[Obsolete($"Use {nameof(PopupOptions)} to bind to the HorizontalOptionsProperty of {nameof(Popup)}", true)]
 	public static new readonly BindableProperty HorizontalOptionsProperty = View.HorizontalOptionsProperty;
@@ -42,23 +41,21 @@ public partial class Popup : ContentView
 	/// </summary>
 	public event EventHandler? Closed;
 
-	/// <inheritdoc/>
 	/// <remarks>Use <see cref="PopupOptions.BackgroundColor"/> to set the <see cref="BackgroundColor"/> for <see cref="Popup"/></remarks>
 	public new Color BackgroundColor => base.BackgroundColor;
 
-	/// <inheritdoc/>
+	/// <remarks>Use <see cref="PopupOptions.BackgroundColor"/> to set the <see cref="Background"/> for <see cref="Popup"/></remarks>
+	public new Brush Background => base.Background;
+
 	/// <remarks>Use <see cref="PopupOptions.Margin"/> to set the <see cref="Margin"/> for <see cref="Popup"/></remarks>
 	public new Thickness Margin => base.Margin;
 
-	/// <inheritdoc/>
 	/// <remarks>Use <see cref="PopupOptions.Padding"/> to set the <see cref="Padding"/> for <see cref="Popup"/></remarks>
 	public new Thickness Padding => base.Padding;
 
-	/// <inheritdoc/>
 	/// <remarks>Use <see cref="PopupOptions.VerticalOptions"/> to set the <see cref="VerticalOptions"/> for <see cref="Popup"/></remarks>
 	public new LayoutOptions VerticalOptions => base.VerticalOptions;
 
-	/// <inheritdoc/>
 	/// <remarks>Use <see cref="PopupOptions.HorizontalOptions"/> to set the <see cref="HorizontalOptions"/> for <see cref="Popup"/></remarks>
 	public new LayoutOptions HorizontalOptions => base.HorizontalOptions;
 
