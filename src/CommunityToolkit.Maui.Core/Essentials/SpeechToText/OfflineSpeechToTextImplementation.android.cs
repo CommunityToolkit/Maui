@@ -57,10 +57,10 @@ public sealed partial class OfflineSpeechToTextImplementation
 		return intent;
 	}
 
-	static bool IsSpeechRecognitionAvailable() => OperatingSystem.IsAndroidVersionAtLeast(34) && SpeechRecognizer.IsOnDeviceRecognitionAvailable(Application.Context);
+	static bool IsSpeechRecognitionAvailable() => OperatingSystem.IsAndroidVersionAtLeast(33) && SpeechRecognizer.IsOnDeviceRecognitionAvailable(Application.Context);
 
 	[MemberNotNull(nameof(speechRecognizer), nameof(listener))]
-	[SupportedOSPlatform("Android34.0")]
+	[SupportedOSPlatform("Android33.0")]
 	async Task InternalStartListening(SpeechToTextOptions options, CancellationToken token = default)
 	{
 		if (!IsSpeechRecognitionAvailable())
@@ -81,22 +81,46 @@ public sealed partial class OfflineSpeechToTextImplementation
 		var recognitionSupportTask = new TaskCompletionSource<RecognitionSupport>();
 		speechRecognizer.CheckRecognitionSupport(recognizerIntent, new Executor(), new RecognitionSupportCallback(recognitionSupportTask));
 		var recognitionSupportResult = await recognitionSupportTask.Task;
+
+		if (!recognitionSupportResult.SupportedOnDeviceLanguages.Contains(options.Culture.Name))
+		{
+			throw new NotSupportedException($"Culture '{options.Culture.Name}' is not supported");
+		}
+		if (recognitionSupportResult.PendingOnDeviceLanguages.Contains(options.Culture.Name))
+		{
+			throw new Exception($"Speech Recognition {options.Culture.Name} pending download. Loading can be delayed if WiFi only");
+		}
 		if (!recognitionSupportResult.InstalledOnDeviceLanguages.Contains(options.Culture.Name))
 		{
-			if (!recognitionSupportResult.SupportedOnDeviceLanguages.Contains(options.Culture.Name))
+			if (OperatingSystem.IsAndroidVersionAtLeast(34))
 			{
-				throw new NotSupportedException($"Culture '{options.Culture.Name}' is not supported");
+				await TryDownloadOfflineRecognizer34Async(recognizerIntent, token);
 			}
-			
-			var downloadLanguageTask = new TaskCompletionSource();
-			speechRecognizer.TriggerModelDownload(recognizerIntent, new Executor(), new ModelDownloadListener(downloadLanguageTask));
-			await downloadLanguageTask.Task.WaitAsync(token);
+			else if (OperatingSystem.IsAndroidVersionAtLeast(33))
+			{
+				TryDownloadOfflineRecognizer33Async(recognizerIntent);
+			}
 		}
 		
 		speechRecognizer.SetRecognitionListener(listener);
 		speechRecognizer.StartListening(recognizerIntent);
 	}
 
+	[SupportedOSPlatform("Android33.0")]
+	void TryDownloadOfflineRecognizer33Async(Intent recognizerIntent)
+	{
+		speechRecognizer?.TriggerModelDownload(recognizerIntent);
+	}
+	[SupportedOSPlatform("Android34.0")]
+	async Task TryDownloadOfflineRecognizer34Async(Intent recognizerIntent, CancellationToken token)
+	{
+		if (speechRecognizer is not null)
+		{
+			var downloadLanguageTask = new TaskCompletionSource();
+			speechRecognizer.TriggerModelDownload(recognizerIntent, new Executor(), new ModelDownloadListener(downloadLanguageTask));
+			await downloadLanguageTask.Task.WaitAsync(token);
+		}
+	}
 	void HandleListenerError(SpeechRecognizerError error)
 	{
 		OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception($"Failure in speech engine - {error}")));
