@@ -97,8 +97,7 @@ class DatePickerHandler : ViewHandler<IDatePicker, UIDatePicker>
 
     protected override void ConnectHandler(UIDatePicker platformView)
     {
-        proxy.Connect(VirtualView, picker);
-
+        proxy.Connect(VirtualView, platformView);
         base.ConnectHandler(platformView);
     }
 
@@ -119,8 +118,7 @@ class DatePickerHandler : ViewHandler<IDatePicker, UIDatePicker>
 
         public void Connect(IDatePicker handler, UIDatePicker platformView)
         {
-            _virtualView = new(virtualView);
-
+            _virtualView = new(handler);
             platformView.ValueChanged += OnValueChanged;
         }
 

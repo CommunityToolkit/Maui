@@ -26,7 +26,7 @@ This cheat sheet should serve as a quick reminder of best practices when writing
 - **Don't Mix Blocking and Async Code:**
   Blocking the calling thread in an otherwise async flow (e.g., by mixing synchronous calls with async ones) may cause deadlocks and performance issues.
 - **Avoid Wrapping Return Task in Try/Catch or Using Blocks:**
-  When a method returns a `Task`, wrapping it in a try/catch or using block may lead to unexpected behaviour because the task completes outside those blocks.  For these scenarios use `aync\await`.
+  When a method returns a `Task`, wrapping it in a try/catch or using block may lead to unexpected behaviour because the task completes outside those blocks.  For these scenarios use `async/await`.
 - **Don't Overuse Fire-and-Forget Patterns:**
   Unobserved tasks (fire-and-forget) can swallow exceptions and cause race conditions—if needed, use a “safe fire-and-forget” pattern with proper error handling.
   
