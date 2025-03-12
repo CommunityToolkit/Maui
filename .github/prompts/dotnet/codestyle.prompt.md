@@ -578,3 +578,35 @@ This guide provides a set of best practices and coding standards for writing C# 
 		}
 	}
 	```
+
+### Element Positioning
+
+Please adhere to [Style Cop SA1201](https://docs.github.com/en/copilot/using-github-copilot/code-review/configuring-coding-guidelines#creating-a-coding-guideline) for organizing code in a file.
+
+Elements at the file root level or within a namespace should be positioned in the following order:
+
+Extern Alias Directives
+Using Directives
+Namespaces
+Delegates
+Enums
+Interfaces
+Records
+Structs
+Classes
+
+Within a class, struct, or interface, elements should be positioned in the following order:
+
+Fields
+Constructors
+Finalizers (Destructors)
+Delegates
+Events
+Enums
+Interfaces
+Properties
+Indexers
+Methods
+Records
+Structs
+Classes

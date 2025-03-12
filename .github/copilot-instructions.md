@@ -124,37 +124,6 @@ Follow the style used by the [.NET Foundation](https://github.com/dotnet/runtime
 
 Read and follow our [Pull Request template](https://github.com/CommunityToolkit/Maui/blob/main/.github/PULL_REQUEST_TEMPLATE.md)
 
-### Element Positioning
-Please adhere to [Style Cop SA1201](https://docs.github.com/en/copilot/using-github-copilot/code-review/configuring-coding-guidelines#creating-a-coding-guideline) for organizing code in a file.
-
-Elements at the file root level or within a namespace should be positioned in the following order:
-
-Extern Alias Directives
-Using Directives
-Namespaces
-Delegates
-Enums
-Interfaces
-Records
-Structs
-Classes
-
-Within a class, struct, or interface, elements should be positioned in the following order:
-
-Fields
-Constructors
-Finalizers (Destructors)
-Delegates
-Events
-Enums
-Interfaces
-Properties
-Indexers
-Methods
-Records
-Structs
-Classes
-
 ## Submitting Contributions
 1.	Fork the repository and create a new branch for your changes.
 2.	Implement your changes using GitHub Copilot as needed.
