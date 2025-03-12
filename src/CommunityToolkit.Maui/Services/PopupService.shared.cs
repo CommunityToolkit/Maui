@@ -71,74 +71,72 @@ public class PopupService : IPopupService
 	}
 
 	/// <inheritdoc />
-	/// <remarks>This is an <see keyword="async"/> <see keyword="void"/> method. Use <see cref="ShowPopupAsync{TBindingContext}"/> to <see keyword="await"/> this method</remarks>
-	public void ShowPopup<TBindingContext>(INavigation navigation, IPopupOptions? options = null) where TBindingContext : notnull
-	{
-		var bindingContext = serviceProvider.GetRequiredService<TBindingContext>();
-		var popupContent = GetPopupContent(bindingContext);
+	/// <remarks>This is an <see keyword="async"/> <see keyword="void"/> method. Use <see cref="ShowPopupAsync{T}"/> to <see keyword="await"/> this method</remarks>
+	public void ShowPopup<T>(INavigation navigation, IPopupOptions? options = null) where T : notnull
+	{		
+		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
 
 		navigation.ShowPopup(popupContent, options);
 	}
 
 	/// <inheritdoc />
-	public Task<PopupResult> ShowPopupAsync<TBindingContext>(INavigation navigation, IPopupOptions? options = null, CancellationToken token = default)
-		where TBindingContext : notnull
+	public Task<PopupResult> ShowPopupAsync<T>(INavigation navigation, IPopupOptions? options = null, CancellationToken token = default)
+		where T : notnull
 	{
 		token.ThrowIfCancellationRequested();
-		var bindingContext = serviceProvider.GetRequiredService<TBindingContext>();
-		var popupContent = GetPopupContent(bindingContext);
+		
+		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
 
 		return navigation.ShowPopupAsync(popupContent, options, token);
 	}
 
 	/// <inheritdoc />
-	public Task<PopupResult<T>> ShowPopupAsync<TBindingContext, T>(INavigation navigation,
+	public Task<PopupResult<TResult>> ShowPopupAsync<T, TResult>(INavigation navigation,
 		IPopupOptions? options = null,
 		CancellationToken token = default)
-		where TBindingContext : notnull
+		where T : notnull
 	{
 		token.ThrowIfCancellationRequested();
-		var bindingContext = serviceProvider.GetRequiredService<TBindingContext>();
-		var popupContent = GetPopupContent(bindingContext);
+		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
 
-		return navigation.ShowPopupAsync<T>(popupContent, options, token);
+		return navigation.ShowPopupAsync<TResult>(popupContent, options, token);
 	}
 
 	/// <inheritdoc />
 	public async Task ClosePopupAsync(INavigation navigation, CancellationToken cancellationToken = default)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-		var popup = GetCurrentPopupContainer(navigation);
+		var popupContainer = GetCurrentPopupContainer(navigation);
 
-		await popup.Close(new PopupResult(false), cancellationToken);
+		await popupContainer.Close(new PopupResult(false), cancellationToken);
 	}
 
 	/// <inheritdoc />
 	public async Task ClosePopupAsync<T>(INavigation navigation, T result, CancellationToken cancellationToken = default)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-		var popup = GetCurrentPopupContainer(navigation);
+		var popupContainer = GetCurrentPopupContainer(navigation);
 
-		await popup.Close(new PopupResult<T>(result, false), cancellationToken);
+		await popupContainer.Close(new PopupResult<T>(result, false), cancellationToken);
 	}
 
 	// All popups are now displayed in a PopupContainer (ContentPage) that is pushed modally to the screen, e.g. Navigation.PushModalAsync(popupContainer
-	// We can use the ModalStack to retrieve the most recent popup by retrieving all PopupContainers and return the most recent from the ModalStack  
+	// We can use the ModalStack to retrieve the most recent popupContainer by retrieving all PopupContainers and return the most recent from the ModalStack  
 	static PopupContainer GetCurrentPopupContainer(INavigation navigation) =>
 		navigation.ModalStack.OfType<PopupContainer>().LastOrDefault() ?? throw new InvalidOperationException($"Unable to locate {nameof(Popup)}");
 
-	View GetPopupContent<TBindingContext>(TBindingContext bindingContext)
+	View GetPopupContent<T>(T bindingContext)
 	{
 		if (bindingContext is View view)
 		{
 			return view;
 		}
 
-		if (serviceProvider.GetRequiredService(viewModelToViewMappings[typeof(TBindingContext)]) is View content)
+		if (serviceProvider.GetRequiredService(viewModelToViewMappings[typeof(T)]) is View content)
 		{
 			return content;
 		}
 
-		throw new InvalidOperationException($"Could not locate a view for {typeof(TBindingContext).FullName}");
+		throw new InvalidOperationException($"Could not locate {typeof(T).FullName}");
 	}
 }
