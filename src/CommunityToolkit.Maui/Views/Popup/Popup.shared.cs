@@ -74,7 +74,7 @@ public partial class Popup : ContentView
 		Closed?.Invoke(this, EventArgs.Empty);
 	}
 
-	PopupContainer GetPopupContainer()
+	private protected PopupContainer GetPopupContainer()
 	{
 		var parent = Parent;
 
@@ -102,21 +102,4 @@ public partial class Popup<T> : Popup
 	/// </summary>
 	/// <param name="result">Popup result</param>
 	public virtual Task Close(T result) => GetPopupContainer().Close(new PopupResult<T>(result, false));
-
-	PopupContainer<T> GetPopupContainer()
-	{
-		var parent = Parent;
-
-		while (parent is not null)
-		{
-			if (parent.Parent is PopupContainer<T> popupContainer)
-			{
-				return popupContainer;
-			}
-
-			parent = parent.Parent;
-		}
-
-		throw new InvalidOperationException($"Unable to close popup: could not locate {nameof(PopupContainer<T>)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Close)} method");
-	}
 }
