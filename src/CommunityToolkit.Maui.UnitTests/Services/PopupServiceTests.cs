@@ -1,20 +1,128 @@
 ﻿using System.ComponentModel;
+using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.Views;
 using FluentAssertions;
+using Microsoft.Maui.Controls.Shapes;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Services;
+
 public class PopupServiceTests : BaseHandlerTest
 {
+	readonly INavigation navigation;
+
 	public PopupServiceTests()
 	{
 		var page = new MockPage(new MockPageViewModel());
 		Assert.NotNull(Application.Current);
+
 		Application.Current.Windows[0].Page = page;
+		navigation = page.Navigation;
 	}
 
 	[Fact]
+	public void AddPopup_RegistersViewInServiceCollection()
+	{
+		// Arrange
+		var services = new ServiceCollection();
+
+		// Act
+		PopupService.AddPopup<MockPopup>(services, ServiceLifetime.Transient);
+
+		// Assert
+		var serviceDescriptor = Assert.Single(services);
+		Assert.Equal(typeof(MockPopup), serviceDescriptor.ServiceType);
+		Assert.Equal(ServiceLifetime.Transient, serviceDescriptor.Lifetime);
+	}
+
+	[Fact]
+	public void AddPopup_WithViewModel_RegistersBothViewAndViewModel()
+	{
+		// Arrange
+		var services = new ServiceCollection();
+
+		// Act
+		PopupService.AddPopup<MockPopup, PopupViewModel>(services, ServiceLifetime.Transient);
+
+		// Assert
+		Assert.Equal(2, services.Count);
+		Assert.Contains(services, sd => sd.ServiceType == typeof(MockPopup));
+		Assert.Contains(services, sd => sd.ServiceType == typeof(PopupViewModel));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_WithViewType_ShowsPopup()
+	{
+		// Arrange
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+
+		// Act
+		await popupService.ShowPopupAsync<MockSelfClosingPopup>(navigation, cancellationToken: CancellationToken.None);
+
+		// Assert
+		Assert.Single(navigation.ModalStack);
+		Assert.IsType<PopupContainer>(navigation.ModalStack[0]);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_MultipleTimes_ShowsAllPopups()
+	{
+		// Arrange
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+
+		// Act
+		await popupService.ShowPopupAsync<MockSelfClosingPopup>(navigation, PopupOptions.Empty, CancellationToken.None);
+		await popupService.ShowPopupAsync<MockSelfClosingPopup>(navigation, PopupOptions.Empty, CancellationToken.None);
+
+		// Assert
+		Assert.Equal(2, navigation.ModalStack.Count);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_WithCustomOptions_AppliesOptions()
+	{
+		// Arrange
+		var onTappingOutsideOfPopup = () => { };
+
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+		var options = new PopupOptions
+		{
+			BackgroundColor = Colors.Red,
+			CanBeDismissedByTappingOutsideOfPopup = false,
+			HorizontalOptions = LayoutOptions.Start,
+			VerticalOptions = LayoutOptions.End,
+			Padding = new Thickness(1,2,3,4),
+			Margin = new Thickness(5,6,7,8),
+			Shape = new Ellipse(),
+			OnTappingOutsideOfPopup = onTappingOutsideOfPopup
+		};
+
+		// Act
+		var result = await popupService.ShowPopupAsync<MockSelfClosingPopup>(
+			navigation,
+			options,
+			CancellationToken.None);
+
+		var popupContainer = (PopupContainer)navigation.ModalStack[0];
+		var popupContainerContent = popupContainer.Content;
+		var border = (Border)popupContainerContent.Children[0];
+		var popup = border.Content;
+
+		// Assert
+		Assert.NotNull(popup);
+
+		Assert.Equal(options.BackgroundColor, border.BackgroundColor);
+		Assert.Equal(options.HorizontalOptions, border.HorizontalOptions);
+		Assert.Equal(options.VerticalOptions, border.VerticalOptions);
+		Assert.Equal(options.Shape, border.StrokeShape);
+		Assert.Equal(options.Margin, border.Margin);
+		Assert.Equal(options.Padding, border.Padding);
+		Assert.Equal(popup.BindingContext, border.BindingContext);
+		Assert.Equal(popupContainerContent.BindingContext, border.BindingContext);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsyncWithNotRegisteredServiceShouldThrowInvalidOperationException()
 	{
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
@@ -91,7 +199,7 @@ public class PopupServiceTests : BaseHandlerTest
 		Assert.Same(mockPopup.Result, result.Result);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_ShouldThrowArgumentNullException_WhenNavigationIsNull()
 	{
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
@@ -101,7 +209,7 @@ public class PopupServiceTests : BaseHandlerTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_ShouldThrowArgumentNullException_WhenPopupOptionsIsNull()
 	{
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
@@ -114,7 +222,7 @@ public class PopupServiceTests : BaseHandlerTest
 		await Assert.ThrowsAsync<ArgumentNullException>(() => popupService.ShowPopupAsync<MockPageViewModel>(page.Navigation, null, CancellationToken.None));
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_ShouldThrowArgumentNullException_WhenViewModelIsNull()
 	{
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
@@ -127,7 +235,7 @@ public class PopupServiceTests : BaseHandlerTest
 		await Assert.ThrowsAsync<ArgumentNullException>(() => popupService.ShowPopupAsync<object>(page.Navigation, PopupOptions.Empty, CancellationToken.None));
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_ShouldReturnDefaultResult_WhenPopupIsClosedWithoutResult()
 	{
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
@@ -164,11 +272,11 @@ sealed class MockSelfClosingPopup : Popup<object?>
 	public object? Result { get; }
 }
 
-public class MockPopup : Popup
+sealed file class MockPopup : Popup
 {
 }
 
-class PopupViewModel : INotifyPropertyChanged
+sealed file class PopupViewModel : INotifyPropertyChanged
 {
 	public event PropertyChangedEventHandler? PropertyChanged;
 

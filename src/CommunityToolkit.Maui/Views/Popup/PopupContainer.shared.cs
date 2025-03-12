@@ -81,7 +81,7 @@ partial class PopupContainer : ContentPage
 
 	// Prevent Content from being set by external class
 	// Casts `PopupContainer.Content` to return typeof(PopupContainerContent)
-	private protected new PopupContainerContent Content => (PopupContainerContent)base.Content;
+	internal new PopupContainerContent Content => (PopupContainerContent)base.Content;
 
 	public Task Close(PopupResult result, CancellationToken token = default)
 	{
@@ -130,18 +130,18 @@ partial class PopupContainer : ContentPage
 		}
 	}
 
-	private protected sealed partial class PopupContainerContent : Grid
+	internal sealed partial class PopupContainerContent : Grid
 	{
 		public PopupContainerContent(View popupContent, IPopupOptions options)
 		{
-			BackgroundColor = null;
+			Background = BackgroundColor = null;
 
 			var border = new Border
 			{
 				Content = popupContent
 			};
-			border.SetBinding(Border.BackgroundProperty, static (View popupContent) => popupContent.Background, source: popupContent, mode: BindingMode.OneWay);
-			border.SetBinding(Border.BackgroundColorProperty, static (View popupContent) => popupContent.BackgroundColor, source: popupContent, mode: BindingMode.OneWay);
+		
+			border.SetBinding(Border.BackgroundColorProperty, static (IPopupOptions options) => options.BackgroundColor, source: options, mode: BindingMode.OneWay);
 			border.SetBinding(Border.VerticalOptionsProperty, static (IPopupOptions options) => options.VerticalOptions, source: options, mode: BindingMode.OneWay);
 			border.SetBinding(Border.HorizontalOptionsProperty, static (IPopupOptions options) => options.HorizontalOptions, source: options, mode: BindingMode.OneWay);
 			border.SetBinding(Border.StrokeShapeProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay);
