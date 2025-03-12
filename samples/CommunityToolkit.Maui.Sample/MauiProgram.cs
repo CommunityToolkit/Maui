@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.ApplicationModel;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Media;
-using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.Pages;
 using CommunityToolkit.Maui.Sample.Pages.Alerts;
 using CommunityToolkit.Maui.Sample.Pages.Behaviors;

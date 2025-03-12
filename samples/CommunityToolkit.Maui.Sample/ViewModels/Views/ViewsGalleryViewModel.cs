@@ -1,5 +1,4 @@
 using CommunityToolkit.Maui.Sample.Models;
-using CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 

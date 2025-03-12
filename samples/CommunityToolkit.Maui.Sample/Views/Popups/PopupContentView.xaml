@@ -5,8 +5,7 @@
     x:Class="CommunityToolkit.Maui.Sample.Views.Popups.PopupContentView"
     xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-    x:DataType="viewModels:PopupContentViewModel"
-    BackgroundColor = "White">
+    x:DataType="viewModels:PopupContentViewModel">
 
     <Label
         Text="{Binding Message}"

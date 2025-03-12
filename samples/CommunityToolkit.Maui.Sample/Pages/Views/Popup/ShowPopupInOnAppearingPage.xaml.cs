@@ -1,8 +1,5 @@
-using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.Views.Popups;
-using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
@@ -23,6 +20,6 @@ public partial class ShowPopupInOnAppearingPage : BasePage<ShowPopupInOnAppearin
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 		// Proves that we now support showing a popup before the platform is even ready.
-		await popupService.ShowPopupAsync<ReturnResultPopup, string>(Navigation, PopupOptions.Empty, cts.Token);
+		await popupService.ShowPopupAsync<ReturnResultPopup, string>(Navigation, new PopupOptions { BackgroundColor = Colors.White }, cts.Token);
 	}
 }

@@ -1,7 +1,5 @@
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.Views.Popups;
-using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
@@ -28,37 +26,50 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 
 	async void HandleButtonPopupButtonClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<ButtonPopup>(Navigation);
+		await popupService.ShowPopupAsync<ButtonPopup>(Navigation, new PopupOptions {  BackgroundColor = Colors.Red });
 	}
 
 	async void HandleMultipleButtonPopupButtonClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<MultipleButtonPopup, bool>(Navigation);
+		await popupService.ShowPopupAsync<MultipleButtonPopup, bool>(Navigation, new PopupOptions
+		{
+			BackgroundColor = Colors.White
+		});
 	}
 
 	async void HandleNoOutsideTapDismissPopupClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<NoOutsideTapDismissPopup>(Navigation, new PopupOptions { CanBeDismissedByTappingOutsideOfPopup = false });
+		await popupService.ShowPopupAsync<NoOutsideTapDismissPopup>(Navigation, new PopupOptions
+		{
+			CanBeDismissedByTappingOutsideOfPopup = false,
+			BackgroundColor = Colors.White
+		});
 	}
 
 	async void HandleToggleSizePopupButtonClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<ToggleSizePopup>(Navigation);
+		await popupService.ShowPopupAsync<ToggleSizePopup>(Navigation, new PopupOptions {  BackgroundColor = Colors.White });
 	}
 
 	async void HandleTransparentPopupButtonClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<TransparentPopup>(Navigation);
+		await popupService.ShowPopupAsync<TransparentPopup>(Navigation, new PopupOptions { BackgroundColor = Colors.Transparent });
 	}
 
 	async void HandleOpenedEventSimplePopupButtonClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<OpenedEventSimplePopup>(Navigation);
+		await popupService.ShowPopupAsync<OpenedEventSimplePopup>(Navigation, new PopupOptions
+		{
+			BackgroundColor= Colors.White
+		});
 	}
 
 	async void HandleReturnResultPopupButtonClicked(object sender, EventArgs e)
 	{
-		var result = await popupService.ShowPopupAsync<ReturnResultPopup, string>(Navigation);
+		var result = await popupService.ShowPopupAsync<ReturnResultPopup, string>(Navigation, new PopupOptions
+		{
+			BackgroundColor= Colors.White
+		});
 
 		await DisplayAlert("Pop Result Returned", $"Result: {result.Result}", "OK");
 	}

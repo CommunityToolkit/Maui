@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
@@ -22,6 +21,9 @@ public partial class MultiplePopupViewModel(IPopupService popupService) : BaseVi
 	[RelayCommand]
 	Task OnShowPopupContent(CancellationToken token)
 	{
-		return popupService.ShowPopupAsync<PopupContentViewModel>(currentNavigation, cancellationToken: token);
+		return popupService.ShowPopupAsync<PopupContentViewModel>(
+			currentNavigation, 
+			new PopupOptions { BackgroundColor = Colors.White }, 
+			token);
 	}
 }

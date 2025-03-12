@@ -1,6 +1,4 @@
-﻿using CommunityToolkit.Maui.Views;
-
-namespace CommunityToolkit.Maui.Sample.Views.Popups;
+﻿namespace CommunityToolkit.Maui.Sample.Views.Popups;
 
 /// <summary>
 /// This popup demonstrates how the ApplyToDerivedTypes property can allow for Popup implementations

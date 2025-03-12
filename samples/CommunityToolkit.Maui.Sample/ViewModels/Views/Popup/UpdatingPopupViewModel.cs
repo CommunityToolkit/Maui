@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
@@ -51,7 +50,7 @@ public partial class UpdatingPopupViewModel(IPopupService popupService) : BaseVi
 			throw new InvalidOperationException("Unable to retrieve current page");
 		}
 
-		await popupService.ShowPopupAsync<UpdatingPopupViewModel>(currentPage.Navigation, PopupOptions.Empty, CancellationToken.None);
+		await popupService.ShowPopupAsync<UpdatingPopupViewModel>(currentPage.Navigation, new PopupOptions {  BackgroundColor = Colors.White }, CancellationToken.None);
 	}
 
 	bool CanFinish() => UpdateProgress is finalUpdateProgressValue;
