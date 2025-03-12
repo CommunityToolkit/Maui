@@ -98,7 +98,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 			}
 			else if (OperatingSystem.IsAndroidVersionAtLeast(33))
 			{
-				TryDownloadOfflineRecognizer33Async(recognizerIntent);
+				await TryDownloadOfflineRecognizer33Async(recognizerIntent);
 			}
 		}
 		
