@@ -98,7 +98,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 			}
 			else if (OperatingSystem.IsAndroidVersionAtLeast(33))
 			{
-				await TryDownloadOfflineRecognizer33Async(recognizerIntent);
+				TryDownloadOfflineRecognizer33(recognizerIntent);
 			}
 		}
 		
@@ -107,7 +107,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 	}
 
 	[SupportedOSPlatform("Android33.0")]
-	void TryDownloadOfflineRecognizer33Async(Intent recognizerIntent)
+	void TryDownloadOfflineRecognizer33(Intent recognizerIntent)
 	{
 		speechRecognizer?.TriggerModelDownload(recognizerIntent);
 	}
