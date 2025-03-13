@@ -239,6 +239,7 @@ class ModelDownloadListener(TaskCompletionSource downloadLanguageTask) : Java.La
 
 	public void OnScheduled()
 	{
+		downloadLanguageTask.SetException(new Exception($"Speech Recognition pending download. Loading Scheduled WiFi "));
 	}
 
 	public void OnSuccess()
