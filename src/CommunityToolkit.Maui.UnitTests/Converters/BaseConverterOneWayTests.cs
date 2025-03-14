@@ -6,10 +6,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-/// <summary>
-/// Unit tests that target <see cref="BaseConverter{TFrom,TTo}"/> and their public APIs.
-/// </summary>
-public abstract class BaseConverterTests
+public abstract class BaseConverterOneWayTests
 {
 	[Theory]
 	[InlineData(4.123, typeof(double))]
@@ -30,13 +27,24 @@ public abstract class BaseConverterTests
 		Assert.Equal("Two", converter.Convert(inputValue, targetType, null, CultureInfo.CurrentCulture));
 	}
 	
-	protected static BaseConverter<int, string> CreateConverter() => new MockConverter(["One", "Two", "Three"])
+	[Fact]
+	public void Setting_DefaultConvertBackReturnValue_WillThrowNotSupportedException()
 	{
-		DefaultConvertReturnValue = "Three",
-		DefaultConvertBackReturnValue = 42
+		ICommunityToolkitValueConverter converter = CreateConverter();
+
+		Assert.Throws<NotSupportedException>(() => new MockOneWayConverter(["One", "Two", "Three"])
+		{
+			DefaultConvertReturnValue = "Three",
+			DefaultConvertBackReturnValue = 1
+		});
+	}
+	
+	protected static BaseConverter<int, string> CreateConverter() => new MockOneWayConverter(["One", "Two", "Three"])
+	{
+		DefaultConvertReturnValue = "Three"
 	};
 	
-	protected BaseConverterTests(bool suppressExceptions)
+	protected BaseConverterOneWayTests(bool suppressExceptions)
 	{
 		new Options().SetShouldSuppressExceptionsInConverters(suppressExceptions);
 	}
@@ -45,9 +53,9 @@ public abstract class BaseConverterTests
 /// <summary>
 /// Unit tests that target <see cref="BaseConverter{TFrom,TTo}"/> and their public APIs with <see cref="Options.SetShouldSuppressExceptionsInConverters"/> == false.
 /// </summary>
-public class BaseConverterTestsWithExceptionsEnabled : BaseConverterTests
+public class BaseConverterOneWayTestsWithExceptionsEnabled : BaseConverterOneWayTests
 {
-	public BaseConverterTestsWithExceptionsEnabled() : base(false)
+	public BaseConverterOneWayTestsWithExceptionsEnabled() : base(false)
 	{
 	}
 	
@@ -73,9 +81,9 @@ public class BaseConverterTestsWithExceptionsEnabled : BaseConverterTests
 /// <summary>
 /// Unit tests that target <see cref="BaseConverter{TFrom,TTo}"/> and their public APIs with <see cref="Options.SetShouldSuppressExceptionsInConverters"/> == true.
 /// </summary>
-public class BaseConverterTestsWithExceptionsSuppressed : BaseConverterTests
+public class BaseConverterOneWayTestsWithExceptionsSuppressed : BaseConverterOneWayTests
 {
-	public BaseConverterTestsWithExceptionsSuppressed() : base(true)
+	public BaseConverterOneWayTestsWithExceptionsSuppressed() : base(true)
 	{
 	}
 
