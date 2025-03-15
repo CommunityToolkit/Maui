@@ -82,6 +82,16 @@ if (something is Bucket bucket)
 }
 ```
 
+### Use collection initializers or expressions
+* Use [Use collection initializers or expressions](https://learn.microsoft.com/en-gb/dotnet/fundamentals/code-analysis/style-rules/ide0028) Use collection initializers or expressions.
+
+e.g.
+
+```csharp
+List<int> list = [1, 2, 3];
+List<int> list = [];
+```
+
 ### File Scoped Namespaces
 * Use [file scoped namespaces](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-10.0/file-scoped-namespaces) to help reduce code verbosity.
 
