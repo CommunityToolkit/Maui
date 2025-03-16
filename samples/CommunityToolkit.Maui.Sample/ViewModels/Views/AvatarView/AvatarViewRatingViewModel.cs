@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
+﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public partial class AvatarViewRatingViewModel : BaseViewModel
 {

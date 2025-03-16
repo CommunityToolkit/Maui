@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>$(NetVersion)</TargetFramework>
     <OutputType>Exe</OutputType>
+    <StartupObject>CommunityToolkit.Maui.Analyzers.Benchmarks.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
     <PlatformTarget>AnyCPU</PlatformTarget>
