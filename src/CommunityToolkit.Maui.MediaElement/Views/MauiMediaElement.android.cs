@@ -140,8 +140,6 @@ public class MauiMediaElement : CoordinatorLayout
 		var insets = WindowCompat.GetInsetsController(window, decorView) ?? throw new InvalidOperationException();
 		if (isFullScreen)
 		{
-			window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
-			window.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
 			window.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
 			window.AddFlags(WindowManagerFlags.Fullscreen);
 			window.SetFlags(WindowManagerFlags.Fullscreen, WindowManagerFlags.Fullscreen);
