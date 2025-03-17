@@ -66,7 +66,7 @@ public class PopupServiceTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task ShowPopupAsync_MultipleTimes_ShowsAllPopups()
+	public async Task ShowPopupAsync_AwaitingShowPopupAsync_EnsurePreviousPopupClosed()
 	{
 		// Arrange
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
@@ -74,6 +74,20 @@ public class PopupServiceTests : BaseHandlerTest
 		// Act
 		await popupService.ShowPopupAsync<MockSelfClosingPopup>(navigation, PopupOptions.Empty, CancellationToken.None);
 		await popupService.ShowPopupAsync<MockSelfClosingPopup>(navigation, PopupOptions.Empty, CancellationToken.None);
+
+		// Assert
+		Assert.Single(navigation.ModalStack);
+	}
+	
+	[Fact]
+	public void ShowPopup_MultiplePopupsDisplayed()
+	{
+		// Arrange
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+
+		// Act
+		popupService.ShowPopup<MockSelfClosingPopup>(navigation, PopupOptions.Empty);
+		popupService.ShowPopup<MockSelfClosingPopup>(navigation, PopupOptions.Empty);
 
 		// Assert
 		Assert.Equal(2, navigation.ModalStack.Count);
@@ -265,7 +279,7 @@ sealed class MockSelfClosingPopup : Popup<object?>
 	{
 		var timer = Dispatcher.CreateTimer();
 		timer.Interval = TimeSpan.FromMilliseconds(500);
-		timer.Tick += async (s, e) => await Close(Result);
+		timer.Tick += async (_, _) => await Close(Result);
 		timer.Start();
 	}
 
