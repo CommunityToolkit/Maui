@@ -135,9 +135,9 @@ public class MauiMediaElement : CoordinatorLayout
 
 	public void SetStatusBarsHidden()
 	{
-		var window = Platform.CurrentActivity?.Window ?? throw new InvalidOperationException();
-		var decorView = window.DecorView ?? throw new InvalidOperationException();
-		var insets = WindowCompat.GetInsetsController(window, decorView) ?? throw new InvalidOperationException();
+		var window = Platform.CurrentActivity?.Window ?? throw new InvalidOperationException($"Window Activity cannot be null");
+		var decorView = window.DecorView ?? throw new InvalidOperationException("Window DecorView cannot be null");
+		var insets = WindowCompat.GetInsetsController(window, decorView) ?? throw new InvalidOperationException("Windows Insets Controller cannot be null");
 		if (isFullScreen)
 		{
 			window.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
