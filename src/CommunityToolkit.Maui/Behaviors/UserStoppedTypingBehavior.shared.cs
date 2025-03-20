@@ -153,6 +153,6 @@ public partial class UserStoppedTypingBehavior : BaseBehavior<InputView>, IDispo
 				{
 					Command.Execute(CommandParameter ?? View.Text);
 				}
-			});
+			}, CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.FromCurrentSynchronizationContext());
 	}
 }
