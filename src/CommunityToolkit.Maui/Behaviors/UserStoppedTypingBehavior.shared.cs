@@ -121,38 +121,40 @@ public partial class UserStoppedTypingBehavior : BaseBehavior<InputView>, IDispo
 		}
 	}
 
-	void OnTextPropertyChanged()
+	async void OnTextPropertyChanged()
 	{
-		if (tokenSource != null)
+		if (tokenSource is not null)
 		{
 			tokenSource.Cancel();
 			tokenSource.Dispose();
 		}
+
 		tokenSource = new CancellationTokenSource();
 
-		Task.Delay(StoppedTypingTimeThreshold, tokenSource.Token)
-			.ContinueWith(task =>
+		var task = Task.Delay(StoppedTypingTimeThreshold, tokenSource.Token);
+
+		try
+		{
+			await task.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing | ConfigureAwaitOptions.ContinueOnCapturedContext);
+
+			if (task.Status == TaskStatus.Canceled || View?.Text?.Length < MinimumLengthThreshold)
 			{
-				if (task.IsFaulted && task.Exception != null)
-				{
-					throw task.Exception;
-				}
+				return;
+			}
 
-				if (task.Status == TaskStatus.Canceled ||
-					View?.Text?.Length < MinimumLengthThreshold)
-				{
-					return;
-				}
+			if (View is not null && ShouldDismissKeyboardAutomatically)
+			{
+				Dispatcher.DispatchIfRequired(View.Unfocus);
+			}
 
-				if (View != null && ShouldDismissKeyboardAutomatically)
-				{
-					Dispatcher.DispatchIfRequired(View.Unfocus);
-				}
-
-				if (View != null && Command?.CanExecute(CommandParameter ?? View.Text) is true)
-				{
-					Command.Execute(CommandParameter ?? View.Text);
-				}
-			}, tokenSource.Token, TaskContinuationOptions.None, TaskScheduler.FromCurrentSynchronizationContext());
+			if (View is not null && Command?.CanExecute(CommandParameter ?? View.Text) is true)
+			{
+				Command.Execute(CommandParameter ?? View.Text);
+			}
+		}
+		catch
+		{
+			throw;
+		}
 	}
 }
