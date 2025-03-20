@@ -152,9 +152,9 @@ public partial class UserStoppedTypingBehavior : BaseBehavior<InputView>, IDispo
 				Command.Execute(CommandParameter ?? View.Text);
 			}
 		}
-		catch
+		catch(Exception e)
 		{
-			throw;
+			Trace.WriteLine($"Exception: {e} : {e.Message}");
 		}
 	}
 }
