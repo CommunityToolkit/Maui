@@ -126,7 +126,7 @@ public partial class UserStoppedTypingBehavior : BaseBehavior<InputView>, IDispo
 	{
 		if (tokenSource is not null)
 		{
-			tokenSource.Cancel();
+			await tokenSource.CancelAsync();
 			tokenSource.Dispose();
 		}
 
@@ -148,12 +148,12 @@ public partial class UserStoppedTypingBehavior : BaseBehavior<InputView>, IDispo
 
 		if (ShouldDismissKeyboardAutomatically)
 		{
-			view.Unfocus();
+			Dispatcher.DispatchIfRequired(view.Unfocus);
 		}
 
 		if (Command?.CanExecute(CommandParameter ?? text) is true)
 		{
-			Command.Execute(CommandParameter ?? text);
+			await Dispatcher.DispatchIfRequiredAsync(() => Command.Execute(CommandParameter ?? text));
 		}
 	}
 }
