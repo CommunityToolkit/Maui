@@ -13,7 +13,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 	public void TapGestureRecognizerAttachedWhenNoEventSpecified()
 	{
 		var boxView = new BoxView();
-		boxView.Behaviors.Add(new AnimationBehavior());
+		boxView.Behaviors.Add(new AnimationBehavior() { AnimateOnTap = true });
 		var gestureRecognizers = boxView.GestureRecognizers.ToList();
 
 		gestureRecognizers.Should().HaveCount(1).And.AllBeOfType<TapGestureRecognizer>();
@@ -24,7 +24,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 	{
 		var boxView = new BoxView();
 		boxView.GestureRecognizers.Add(new TapGestureRecognizer());
-		boxView.Behaviors.Add(new AnimationBehavior());
+		boxView.Behaviors.Add(new AnimationBehavior() { AnimateOnTap = true });
 		var gestureRecognizers = boxView.GestureRecognizers.ToList();
 
 		gestureRecognizers.Should().HaveCount(2).And.AllBeOfType<TapGestureRecognizer>();
@@ -41,13 +41,6 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 		var gestureRecognizers = boxView.GestureRecognizers.ToList();
 
 		gestureRecognizers.Should().BeEmpty();
-	}
-
-	[Fact]
-	public void TapGestureRecognizerNotAttachedWhenViewIsInputView()
-	{
-		var addBehavior = () => new Entry().Behaviors.Add(new AnimationBehavior());
-		addBehavior.Should().Throw<InvalidOperationException>();
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -128,7 +121,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 				await animationEndedTcs.Task;
 			});
 		}
-		catch (OperationCanceledException e)
+		catch(OperationCanceledException e)
 		{
 			exception = e;
 		}
@@ -171,7 +164,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 				await animationEndedTcs.Task;
 			});
 		}
-		catch (OperationCanceledException e)
+		catch(OperationCanceledException e)
 		{
 			exception = e;
 		}
@@ -190,6 +183,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 		public bool HasAnimated { get; private set; }
 
 		public event EventHandler? AnimationStarted;
+
 		public event EventHandler? AnimationEnded;
 
 		public override async Task Animate(VisualElement element, CancellationToken token)
