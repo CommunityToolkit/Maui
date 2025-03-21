@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows.Input;
 
 namespace CommunityToolkit.Maui.Behaviors;
@@ -97,13 +98,13 @@ public partial class UserStoppedTypingBehavior : BaseBehavior<InputView>, IDispo
 	}
 
 	/// <inheritdoc/>
-	protected override void OnViewPropertyChanged(InputView sender, PropertyChangedEventArgs e)
+	protected override async void OnViewPropertyChanged(InputView sender, PropertyChangedEventArgs e)
 	{
 		base.OnViewPropertyChanged(sender, e);
 
 		if (e.PropertyName == InputView.TextProperty.PropertyName)
 		{
-			OnTextPropertyChanged();
+			await OnTextPropertyChanged(sender, sender.Text);
 		}
 	}
 
@@ -121,7 +122,7 @@ public partial class UserStoppedTypingBehavior : BaseBehavior<InputView>, IDispo
 		}
 	}
 
-	async void OnTextPropertyChanged()
+	async Task OnTextPropertyChanged(InputView view, string? text)
 	{
 		if (tokenSource is not null)
 		{
@@ -131,30 +132,28 @@ public partial class UserStoppedTypingBehavior : BaseBehavior<InputView>, IDispo
 
 		tokenSource = new CancellationTokenSource();
 
-		var task = Task.Delay(StoppedTypingTimeThreshold, tokenSource.Token);
-
-		try
+		if (text is null || text.Length < MinimumLengthThreshold)
 		{
-			await task.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing | ConfigureAwaitOptions.ContinueOnCapturedContext);
-
-			if (task.Status == TaskStatus.Canceled || View?.Text?.Length < MinimumLengthThreshold)
-			{
-				return;
-			}
-
-			if (View is not null && ShouldDismissKeyboardAutomatically)
-			{
-				Dispatcher.DispatchIfRequired(View.Unfocus);
-			}
-
-			if (View is not null && Command?.CanExecute(CommandParameter ?? View.Text) is true)
-			{
-				Command.Execute(CommandParameter ?? View.Text);
-			}
+			return;
 		}
-		catch(Exception e)
+
+		var task = Task.Delay(StoppedTypingTimeThreshold, tokenSource.Token);
+		await task.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing | ConfigureAwaitOptions.ContinueOnCapturedContext);
+
+		if (task.Status is TaskStatus.Canceled)
 		{
-			Trace.WriteLine($"Exception: {e} : {e.Message}");
+			Trace.WriteLine($"{nameof(UserStoppedTypingBehavior)}.{nameof(OnTextPropertyChanged)} cancelled");
+			return;
+		}
+
+		if (ShouldDismissKeyboardAutomatically)
+		{
+			view.Unfocus();
+		}
+
+		if (Command?.CanExecute(CommandParameter ?? text) is true)
+		{
+			Command.Execute(CommandParameter ?? text);
 		}
 	}
 }
