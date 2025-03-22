@@ -1,6 +1,7 @@
 ﻿using AVFoundation;
 using AVKit;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
 using CoreFoundation;
 using CoreGraphics;
@@ -95,7 +96,8 @@ public partial class MediaManager : IDisposable
 		Player = new();
 		PlayerViewController = new()
 		{
-			Player = Player
+			Player = Player,
+			Delegate = new MediaManagerDelegate()
 		};
 		// Pre-initialize Volume and Muted properties to the player object
 		Player.Muted = MediaElement.ShouldMute;
@@ -717,5 +719,17 @@ public partial class MediaManager : IDisposable
 				MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = metaData.NowPlayingInfo;
 			}
 		}
+	}
+}
+
+sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
+{
+	public override void WillBeginFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
+	{
+		MediaManager.FullScreenEvents.OnFullScreenStateChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
+	}
+	public override void WillEndFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
+	{
+		MediaManager.FullScreenEvents.OnFullScreenStateChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
 	}
 }
