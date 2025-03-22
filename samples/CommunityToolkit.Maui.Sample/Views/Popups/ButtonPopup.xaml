@@ -25,7 +25,7 @@
 					<Setter Property="VerticalTextAlignment" Value="Center" />
 				</Style>
 				<Style x:Key="ConfirmButton" TargetType="Button">
-					<Setter Property="VerticalOptions" Value="EndAndExpand" />
+					<Setter Property="VerticalOptions" Value="End" />
 				</Style>
 			</ResourceDictionary>
 		</VerticalStackLayout.Resources>
