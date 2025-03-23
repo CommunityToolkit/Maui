@@ -28,7 +28,7 @@ public static class PopupExtensions
 	/// <param name="options"><see cref="IPopupOptions"/></param>
 	/// <returns><see cref="PopupResult"/></returns>
 	/// <remarks>This is an <see keyword="async"/> <see keyword="void"/> method. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see keyword="await"/> this method</remarks>
-	public static async void ShowPopup(this INavigation navigation, View view, IPopupOptions? options)
+	public static async void ShowPopup(this INavigation navigation, View view, IPopupOptions? options = null)
 	{
 		var popupContainer = new PopupContainer(view, options ?? PopupOptions.Empty);
 
@@ -86,6 +86,7 @@ public static class PopupExtensions
 	public static async Task<PopupResult> ShowPopupAsync(this INavigation navigation, View view, IPopupOptions? options, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(navigation);
+		ArgumentNullException.ThrowIfNull(view);
 		
 		token.ThrowIfCancellationRequested();
 
