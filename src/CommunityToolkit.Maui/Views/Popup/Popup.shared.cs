@@ -1,4 +1,3 @@
-using System.Runtime.ExceptionServices;
 using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Views;
