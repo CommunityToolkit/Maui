@@ -89,7 +89,7 @@ public partial class Popup : ContentView
 			parent = parent.Parent;
 		}
 		
-		throw new InvalidOperationException($"Unable to close popup: could not locate {nameof(PopupContainer)}. {nameof(PopupExtensions.ShowPopup)} or {nameof(PopupExtensions.ShowPopupAsync)} must be called before {Close()}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Close)} method");
+		throw new InvalidOperationException($"Unable to close popup: could not locate {nameof(PopupContainer)}. {nameof(PopupExtensions.ShowPopup)} or {nameof(PopupExtensions.ShowPopupAsync)} must be called before {nameof(Close)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Close)} method");
 	}
 }
 
