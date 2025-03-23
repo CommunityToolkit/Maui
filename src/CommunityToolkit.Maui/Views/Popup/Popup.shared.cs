@@ -1,3 +1,4 @@
+using System.Runtime.ExceptionServices;
 using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Views;
@@ -62,7 +63,7 @@ public partial class Popup : ContentView
 	/// <summary>
 	/// Close the Popup.
 	/// </summary>
-	public virtual Task Close() => GetPopupContainer().Close(new PopupResult(false));
+	public virtual Task Close(CancellationToken token = default) => GetPopupContainer().Close(new PopupResult(false), token);
 
 	internal void NotifyPopupIsOpened()
 	{
@@ -87,7 +88,7 @@ public partial class Popup : ContentView
 
 			parent = parent.Parent;
 		}
-
+		
 		throw new InvalidOperationException($"Unable to close popup: could not locate {nameof(PopupContainer)}. {nameof(PopupExtensions.ShowPopup)} or {nameof(PopupExtensions.ShowPopupAsync)} must be called before {Close()}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Close)} method");
 	}
 }

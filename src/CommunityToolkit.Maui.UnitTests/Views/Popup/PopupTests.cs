@@ -1,11 +1,10 @@
-﻿using CommunityToolkit.Maui.UnitTests.Mocks;
-using CommunityToolkit.Maui.Views;
+﻿using CommunityToolkit.Maui.Views;
 using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class PopupTests : BaseHandlerTest
+public class PopupTests : BaseTest
 {
 	[Fact]
 	public void NotifyPopupIsOpened_ShouldInvokeOpenedEvent()
@@ -42,10 +41,9 @@ public class PopupTests : BaseHandlerTest
 	{
 		// Arrange
 		var popup = new Popup();
-		popup.EnableAnimations();
-		
+
 		// Assert
-		await Assert.ThrowsAsync<InvalidOperationException>(async () => await popup.Close());
+		await Assert.ThrowsAsync<InvalidOperationException>(() => popup.Close(TestContext.Current.CancellationToken));
 	}
 	
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -53,10 +51,9 @@ public class PopupTests : BaseHandlerTest
 	{
 		// Arrange
 		var popup = new PopupOverridingClose();
-		popup.EnableAnimations();
 		
 		// Assert
-		await popup.Close();
+		await popup.Close(TestContext.Current.CancellationToken);
 	}
 }
 
@@ -70,7 +67,7 @@ file class MockPopup<T> : Popup<T>
 
 file class PopupOverridingClose : Popup
 {
-	public override Task Close() => Task.CompletedTask;
+	public override Task Close(CancellationToken token = default) => Task.CompletedTask;
 }
 
 file class MockPopupOptions : IPopupOptions
