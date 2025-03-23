@@ -1,10 +1,11 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.UnitTests.Mocks;
+using CommunityToolkit.Maui.UnitTests.Services;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
 using Xunit;
 
-namespace CommunityToolkit.Maui.UnitTests.Services;
+namespace CommunityToolkit.Maui.UnitTests.Extensions;
 
 public class PopupExtensionsTests : BaseHandlerTest
 {
