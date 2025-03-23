@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class PopupTests
+public class PopupTests : BaseTest
 {
 	[Fact]
 	public void NotifyPopupIsOpened_ShouldInvokeOpenedEvent()
@@ -12,7 +12,7 @@ public class PopupTests
 		// Arrange
 		var popup = new Popup();
 		var eventInvoked = false;
-		popup.Opened += (sender, args) => eventInvoked = true;
+		popup.Opened += (_, _) => eventInvoked = true;
 
 		// Act
 		popup.NotifyPopupIsOpened();
@@ -27,13 +27,33 @@ public class PopupTests
 		// Arrange
 		var popup = new Popup();
 		var eventInvoked = false;
-		popup.Closed += (sender, args) => eventInvoked = true;
+		popup.Closed += (_, _) => eventInvoked = true;
 
 		// Act
 		popup.NotifyPopupIsClosed();
 
 		// Assert
 		eventInvoked.Should().BeTrue();
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task Popup_Close_ShouldThrowExceptionWhenCalledBeforeShown()
+	{
+		// Arrange
+		var popup = new Popup();
+		
+		// Assert
+		await Assert.ThrowsAsync<InvalidOperationException>(async () => await popup.Close());
+	}
+	
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task Popup_Close_ShouldNotThrowExceptionWhenCloseIsOverridden()
+	{
+		// Arrange
+		var popup = new Popup();
+		
+		// Assert
+		await popup.Close();
 	}
 }
 
@@ -43,6 +63,11 @@ file class MockPopup : Popup
 
 file class MockPopup<T> : Popup<T>
 {
+}
+
+file class PopupOverridingClose : Popup
+{
+	public override Task Close() => Task.CompletedTask;
 }
 
 file class MockPopupOptions : IPopupOptions
