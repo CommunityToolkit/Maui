@@ -1,10 +1,11 @@
-﻿using CommunityToolkit.Maui.Views;
+﻿using CommunityToolkit.Maui.UnitTests.Mocks;
+using CommunityToolkit.Maui.Views;
 using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class PopupTests : BaseTest
+public class PopupTests : BaseHandlerTest
 {
 	[Fact]
 	public void NotifyPopupIsOpened_ShouldInvokeOpenedEvent()
@@ -41,6 +42,7 @@ public class PopupTests : BaseTest
 	{
 		// Arrange
 		var popup = new Popup();
+		popup.EnableAnimations();
 		
 		// Assert
 		await Assert.ThrowsAsync<InvalidOperationException>(async () => await popup.Close());
@@ -50,7 +52,8 @@ public class PopupTests : BaseTest
 	public async Task Popup_Close_ShouldNotThrowExceptionWhenCloseIsOverridden()
 	{
 		// Arrange
-		var popup = new Popup();
+		var popup = new PopupOverridingClose();
+		popup.EnableAnimations();
 		
 		// Assert
 		await popup.Close();
