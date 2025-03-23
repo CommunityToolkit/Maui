@@ -87,7 +87,7 @@ public partial class Popup : ContentView
 
 			parent = parent.Parent;
 		}
-		
+
 		throw new InvalidOperationException($"Unable to close popup: could not locate {nameof(PopupContainer)}. {nameof(PopupExtensions.ShowPopup)} or {nameof(PopupExtensions.ShowPopupAsync)} must be called before {nameof(Close)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Close)} method");
 	}
 }
@@ -101,5 +101,6 @@ public partial class Popup<T> : Popup
 	/// Close the Popup with a result.
 	/// </summary>
 	/// <param name="result">Popup result</param>
-	public virtual Task Close(T result) => GetPopupContainer().Close(new PopupResult<T>(result, false));
+	/// <param name="token"><see cref="CancellationToken"/></param>
+	public virtual Task Close(T result, CancellationToken token = default) => GetPopupContainer().Close(new PopupResult<T>(result, false), token);
 }
