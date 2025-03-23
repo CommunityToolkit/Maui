@@ -7,30 +7,21 @@ namespace CommunityToolkit.Maui.Views;
 
 sealed partial class PopupContainer<T> : PopupContainer
 {
-	readonly TaskCompletionSource<PopupResult<T>> taskCompletionSource;
+	readonly WeakEventManager popupClosedEventManager = new();
 
-	public PopupContainer(View view, IPopupOptions popupOptions, TaskCompletionSource<PopupResult<T>> taskCompletionSource)
-		: this(view as Popup<T> ?? CreatePopupFromView<Popup<T>>(view), popupOptions, taskCompletionSource)
+	public PopupContainer(View view, IPopupOptions popupOptions)
+		: this(view as Popup<T> ?? CreatePopupFromView<Popup<T>>(view), popupOptions)
 	{
 	}
 
-	public PopupContainer(Popup<T> popup, IPopupOptions popupOptions, TaskCompletionSource<PopupResult<T>> taskCompletionSource)
-		: base(popup, popupOptions, null)
+	public PopupContainer(Popup<T> popup, IPopupOptions popupOptions)
+		: base(popup, popupOptions)
 	{
-		ArgumentNullException.ThrowIfNull(taskCompletionSource);
-		this.taskCompletionSource = taskCompletionSource;
-
 		Shell.SetPresentationMode(this, PresentationMode.ModalNotAnimated);
 		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
 	}
 
-	public Task Close(PopupResult<T> result, CancellationToken token = default)
-	{
-		token.ThrowIfCancellationRequested();
-
-		taskCompletionSource.SetResult(result);
-		return Navigation.PopModalAsync(false).WaitAsync(token);
-	}
+	public Task Close(PopupResult<T> result, CancellationToken token = default) => base.Close(result, token);
 }
 
 partial class PopupContainer : ContentPage
@@ -38,23 +29,22 @@ partial class PopupContainer : ContentPage
 	readonly Popup popup;
 	readonly IPopupOptions popupOptions;
 	readonly Command tapOutsideOfPopupCommand;
-	readonly TaskCompletionSource<PopupResult>? taskCompletionSource;
+	readonly WeakEventManager popupClosedEventManager = new();
 
-	public PopupContainer(View view, IPopupOptions popupOptions, TaskCompletionSource<PopupResult>? taskCompletionSource)
-		: this(view as Popup ?? CreatePopupFromView<Popup>(view), popupOptions, taskCompletionSource)
+	public PopupContainer(View view, IPopupOptions popupOptions)
+		: this(view as Popup ?? CreatePopupFromView<Popup>(view), popupOptions)
 	{
 		// Only set the content if overloaded constructor hasn't set the content already; don't override content if it already exists
 		base.Content ??= new PopupContainerContent(view, popupOptions);
 	}
 
-	public PopupContainer(Popup popup, IPopupOptions popupOptions, TaskCompletionSource<PopupResult>? taskCompletionSource)
+	public PopupContainer(Popup popup, IPopupOptions popupOptions)
 	{
 		ArgumentNullException.ThrowIfNull(popup);
 		ArgumentNullException.ThrowIfNull(popupOptions);
 
 		this.popup = popup;
 		this.popupOptions = popupOptions;
-		this.taskCompletionSource = taskCompletionSource;
 
 		// Only set the content if overloaded constructor hasn't set the content already; don't override content if it already exists
 		base.Content ??= new PopupContainerContent(popup, popupOptions);
@@ -79,16 +69,23 @@ partial class PopupContainer : ContentPage
 		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
 	}
 
+	public event EventHandler<PopupResult> PopupClosed
+	{
+		add => popupClosedEventManager.AddEventHandler(value);
+		remove => popupClosedEventManager.RemoveEventHandler(value);
+	}
+
 	// Prevent Content from being set by external class
 	// Casts `PopupContainer.Content` to return typeof(PopupContainerContent)
 	internal new PopupContainerContent Content => (PopupContainerContent)base.Content;
 
-	public Task Close(PopupResult result, CancellationToken token = default)
+	public async Task Close(PopupResult result, CancellationToken token = default)
 	{
 		token.ThrowIfCancellationRequested();
-
-		taskCompletionSource?.TrySetResult(result);
-		return Navigation.PopModalAsync(false).WaitAsync(token);
+		
+		await Navigation.PopModalAsync(false).WaitAsync(token);
+		
+		popupClosedEventManager.HandleEvent(this, result, nameof(PopupClosed));
 	}
 
 	// Prevent the Android Back Button from dismissing the Popup if CanBeDismissedByTappingOutsideOfPopup is true

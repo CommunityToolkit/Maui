@@ -30,7 +30,7 @@ public static class PopupExtensions
 	/// <remarks>This is an <see keyword="async"/> <see keyword="void"/> method. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see keyword="await"/> this method</remarks>
 	public static async void ShowPopup(this INavigation navigation, View view, IPopupOptions? options)
 	{
-		var popupContainer = new PopupContainer(view, options ?? PopupOptions.Empty, null);
+		var popupContainer = new PopupContainer(view, options ?? PopupOptions.Empty);
 
 		await navigation.PushModalAsync(popupContainer, false);
 	}
@@ -58,14 +58,8 @@ public static class PopupExtensions
 	/// <returns>Popup Result</returns>
 	public static async Task<PopupResult<TResult>> ShowPopupAsync<TResult>(this INavigation navigation, View view, IPopupOptions? options = null, CancellationToken token = default)
 	{
-		token.ThrowIfCancellationRequested();
-
-		TaskCompletionSource<PopupResult<TResult>> taskCompletionSource = new();
-
-		var popupContainer = new PopupContainer<TResult>(view, options ?? PopupOptions.Empty, taskCompletionSource);
-
-		await navigation.PushModalAsync(popupContainer, false).WaitAsync(token);
-		return await taskCompletionSource.Task.WaitAsync(token);
+		var result = await ShowPopupAsync(navigation, view, options, token);
+		return (PopupResult<TResult>)result;
 	}
 
 	/// <summary>
@@ -91,13 +85,21 @@ public static class PopupExtensions
 	/// <returns><see cref="PopupResult"/></returns>
 	public static async Task<PopupResult> ShowPopupAsync(this INavigation navigation, View view, IPopupOptions? options, CancellationToken token = default)
 	{
+		ArgumentNullException.ThrowIfNull(navigation);
+		
 		token.ThrowIfCancellationRequested();
 
 		TaskCompletionSource<PopupResult> taskCompletionSource = new();
 
-		var popupContainer = new PopupContainer(view, options ?? PopupOptions.Empty, taskCompletionSource);
+		var popupContainer = new PopupContainer(view, options ?? PopupOptions.Empty);
+		popupContainer.PopupClosed += HandlePopupClosed;
 
 		await navigation.PushModalAsync(popupContainer, false).WaitAsync(token);
 		return await taskCompletionSource.Task.WaitAsync(token);
+
+		void HandlePopupClosed(object? sender, PopupResult e)
+		{
+			taskCompletionSource.SetResult(e);
+		}
 	}
 }

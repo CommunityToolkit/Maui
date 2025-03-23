@@ -16,7 +16,7 @@ public class PopupContainerTests
 
 		// Act
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Action act = () => new PopupContainer(null, popupOptions, taskCompletionSource);
+		Action act = () => new PopupContainer(null, popupOptions);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
 		// Assert
@@ -32,7 +32,7 @@ public class PopupContainerTests
 
 		// Act
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Action act = () => new PopupContainer(view, null, taskCompletionSource);
+		Action act = () => new PopupContainer(view, null);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
 		// Assert
@@ -43,18 +43,25 @@ public class PopupContainerTests
 	public async Task Close_ShouldSetResultAndPopModalAsync()
 	{
 		// Arrange
+		var tcs = new TaskCompletionSource<PopupResult>();
 		var view = new ContentView();
 		var popupOptions = new MockPopupOptions();
-		var taskCompletionSource = new TaskCompletionSource<PopupResult>();
-		var popupContainer = new PopupContainer(view, popupOptions, taskCompletionSource);
+		var popupContainer = new PopupContainer(view, popupOptions);
 		var expectedResult = new PopupResult(false);
+
+		popupContainer.PopupClosed += HandlePopupClosed;
 
 		// Act
 		await popupContainer.Close(expectedResult, CancellationToken.None);
-		var actualResult = await taskCompletionSource.Task;
+		var actualResult = await tcs.Task;
 
 		// Assert
 		actualResult.Should().Be(expectedResult);
+
+		void HandlePopupClosed(object? sender, PopupResult e)
+		{
+			tcs.SetResult(e);
+		}
 	}
 
 	[Fact]
@@ -63,8 +70,7 @@ public class PopupContainerTests
 		// Arrange
 		var view = new ContentView();
 		var popupOptions = new MockPopupOptions();
-		var taskCompletionSource = new TaskCompletionSource<PopupResult>();
-		var popupContainer = new PopupContainer(view, popupOptions, taskCompletionSource);
+		var popupContainer = new PopupContainer(view, popupOptions);
 		var result = new PopupResult(false);
 		var cts = new CancellationTokenSource();
 		cts.Cancel();
@@ -81,11 +87,10 @@ public class PopupContainerTests
 	{
 		// Arrange
 		var popupOptions = new MockPopupOptions();
-		var taskCompletionSource = new TaskCompletionSource<PopupResult<string>>();
 
 		// Act
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Action act = () => new PopupContainer<string>(null, popupOptions, taskCompletionSource);
+		Action act = () => new PopupContainer<string>(null, popupOptions);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
 		// Assert
@@ -97,27 +102,10 @@ public class PopupContainerTests
 	{
 		// Arrange
 		var view = new ContentView();
-		var taskCompletionSource = new TaskCompletionSource<PopupResult<string>>();
 
 		// Act
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Action act = () => new PopupContainer<string>(view, null, taskCompletionSource);
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-
-		// Assert
-		act.Should().Throw<ArgumentNullException>();
-	}
-
-	[Fact]
-	public void PopupContainerT_Constructor_ShouldThrowArgumentNullException_WhenTaskCompletionSourceIsNull()
-	{
-		// Arrange
-		var view = new ContentView();
-		var popupOptions = new MockPopupOptions();
-
-		// Act
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Action act = () => new PopupContainer<string>(view, popupOptions, null);
+		Action act = () => new PopupContainer<string>(view, null);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
 		// Assert
@@ -131,8 +119,10 @@ public class PopupContainerTests
 		var view = new ContentView();
 		var popupOptions = new MockPopupOptions();
 		var taskCompletionSource = new TaskCompletionSource<PopupResult<string>>();
-		var popupContainer = new PopupContainer<string>(view, popupOptions, taskCompletionSource);
+		var popupContainer = new PopupContainer<string>(view, popupOptions);
 		var expectedResult = new PopupResult<string>("Test", false);
+
+		popupContainer.PopupClosed += HandlePopupClosed;
 
 		// Act
 		await popupContainer.Close(expectedResult, CancellationToken.None);
@@ -140,6 +130,11 @@ public class PopupContainerTests
 
 		// Assert
 		actualResult.Should().Be(expectedResult);
+
+		void HandlePopupClosed(object? sender, PopupResult e)
+		{
+			taskCompletionSource.SetResult((PopupResult<string>)e);
+		}
 	}
 
 	[Fact]
@@ -148,8 +143,7 @@ public class PopupContainerTests
 		// Arrange
 		var view = new ContentView();
 		var popupOptions = new MockPopupOptions();
-		var taskCompletionSource = new TaskCompletionSource<PopupResult<string>>();
-		var popupContainer = new PopupContainer<string>(view, popupOptions, taskCompletionSource);
+		var popupContainer = new PopupContainer<string>(view, popupOptions);
 		var result = new PopupResult<string>("Test", false);
 		var cts = new CancellationTokenSource();
 		cts.Cancel();

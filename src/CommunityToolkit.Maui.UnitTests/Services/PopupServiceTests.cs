@@ -51,14 +51,14 @@ public class PopupServiceTests : BaseHandlerTest
 		Assert.Contains(services, sd => sd.ServiceType == typeof(PopupViewModel));
 	}
 
-	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task ShowPopupAsync_WithViewType_ShowsPopup()
+	[Fact]
+	public void ShowPopupAsync_WithViewType_ShowsPopup()
 	{
 		// Arrange
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 
 		// Act
-		await popupService.ShowPopupAsync<MockSelfClosingPopup>(navigation, cancellationToken: CancellationToken.None);
+		popupService.ShowPopup<MockSelfClosingPopup>(navigation);
 
 		// Assert
 		Assert.Single(navigation.ModalStack);
@@ -74,6 +74,20 @@ public class PopupServiceTests : BaseHandlerTest
 		// Act
 		await popupService.ShowPopupAsync<MockSelfClosingPopup>(navigation, PopupOptions.Empty, CancellationToken.None);
 		await popupService.ShowPopupAsync<MockSelfClosingPopup>(navigation, PopupOptions.Empty, CancellationToken.None);
+
+		// Assert
+		Assert.Empty(navigation.ModalStack);
+	}
+	
+	[Fact]
+	public void ShowPopup_NavigationModalStackCountIncreases()
+	{
+		// Arrange
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+		Assert.Empty(navigation.ModalStack);
+
+		// Act
+		popupService.ShowPopup<MockSelfClosingPopup>(navigation, PopupOptions.Empty);
 
 		// Assert
 		Assert.Single(navigation.ModalStack);
@@ -93,8 +107,8 @@ public class PopupServiceTests : BaseHandlerTest
 		Assert.Equal(2, navigation.ModalStack.Count);
 	}
 
-	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task ShowPopupAsync_WithCustomOptions_AppliesOptions()
+	[Fact]
+	public void ShowPopupAsync_WithCustomOptions_AppliesOptions()
 	{
 		// Arrange
 		var onTappingOutsideOfPopup = () => { };
@@ -113,10 +127,9 @@ public class PopupServiceTests : BaseHandlerTest
 		};
 
 		// Act
-		var result = await popupService.ShowPopupAsync<MockSelfClosingPopup>(
+		popupService.ShowPopup<MockSelfClosingPopup>(
 			navigation,
-			options,
-			CancellationToken.None);
+			options);
 
 		var popupContainer = (PopupContainer)navigation.ModalStack[0];
 		var popupContainerContent = popupContainer.Content;
@@ -211,6 +224,22 @@ public class PopupServiceTests : BaseHandlerTest
 		var result = await popupService.ShowPopupAsync<MockPageViewModel, object?>(page.Navigation, PopupOptions.Empty, CancellationToken.None);
 
 		Assert.Same(mockPopup.Result, result.Result);
+		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+	}
+	
+	[Fact(Timeout = (int)TestDuration.Medium)]
+	public async Task ShowPopupTAsyncShouldReturnResultOnceClosed()
+	{
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+
+		if (Application.Current?.Windows[0].Page is not Page page)
+		{
+			throw new InvalidOperationException("Page cannot be null");
+		}
+
+		var result = await popupService.ShowPopupAsync<MockPageViewModel>(page.Navigation, PopupOptions.Empty, CancellationToken.None);
+
+		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -224,19 +253,6 @@ public class PopupServiceTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task ShowPopupAsync_ShouldThrowArgumentNullException_WhenPopupOptionsIsNull()
-	{
-		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
-
-		if (Application.Current?.Windows[0].Page is not Page page)
-		{
-			throw new InvalidOperationException("Page cannot be null");
-		}
-
-		await Assert.ThrowsAsync<ArgumentNullException>(() => popupService.ShowPopupAsync<MockPageViewModel>(page.Navigation, null, CancellationToken.None));
-	}
-
-	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_ShouldThrowArgumentNullException_WhenViewModelIsNull()
 	{
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
@@ -246,7 +262,7 @@ public class PopupServiceTests : BaseHandlerTest
 			throw new InvalidOperationException("Page cannot be null");
 		}
 
-		await Assert.ThrowsAsync<ArgumentNullException>(() => popupService.ShowPopupAsync<object>(page.Navigation, PopupOptions.Empty, CancellationToken.None));
+		await Assert.ThrowsAsync<InvalidOperationException>(() => popupService.ShowPopupAsync<object>(page.Navigation, PopupOptions.Empty, CancellationToken.None));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -262,7 +278,7 @@ public class PopupServiceTests : BaseHandlerTest
 
 		var result = await popupService.ShowPopupAsync<MockPageViewModel, object?>(page.Navigation, PopupOptions.Empty, CancellationToken.None);
 
-		result.Result.Should().BeNull();
+		Assert.Equal(mockPopup.Result, result.Result);
 	}
 }
 
