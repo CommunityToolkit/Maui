@@ -1,9 +1,9 @@
 ﻿using Microsoft.Maui.Controls.Shapes;
 using Xunit;
 
-namespace CommunityToolkit.Maui.Tests.Views;
+namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class PopupOptionsTests
+public class PopupOptionsTests : BaseTest
 {
 	[Fact]
 	public void CanBeDismissedByTappingOutsideOfPopup_DefaultValue_ShouldBeTrue()

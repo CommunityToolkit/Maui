@@ -8,7 +8,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class PopupContainerTests
+public class PopupContainerTests : BaseTest
 {
 	[Fact]
 	public void Constructor_ShouldThrowArgumentNullException_WhenPopupIsNull()
