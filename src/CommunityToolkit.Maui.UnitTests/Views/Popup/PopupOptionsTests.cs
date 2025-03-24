@@ -131,4 +131,87 @@ public class PopupOptionsTests
 		popupOptions.HorizontalOptions = layoutOptions;
 		Assert.Equal(layoutOptions, popupOptions.HorizontalOptions);
 	}
+
+	[Fact]
+	public void CanBeDismissedByTappingOutsideOfPopup_ShouldReturnTrue()
+	{
+		var options = new MockPopupOptions { CanBeDismissedByTappingOutsideOfPopup = true };
+		Assert.True(options.CanBeDismissedByTappingOutsideOfPopup);
+	}
+
+	[Fact]
+	public void CanBeDismissedByTappingOutsideOfPopup_ShouldReturnFalse()
+	{
+		var options = new MockPopupOptions { CanBeDismissedByTappingOutsideOfPopup = false };
+		Assert.False(options.CanBeDismissedByTappingOutsideOfPopup);
+	}
+
+	[Fact]
+	public void BackgroundColor_ShouldReturnCorrectColor()
+	{
+		var color = Colors.Red;
+		var options = new MockPopupOptions { BackgroundColor = color };
+		Assert.Equal(color, options.BackgroundColor);
+	}
+
+	[Fact]
+	public void OnTappingOutsideOfPopup_ShouldInvokeAction()
+	{
+		bool actionInvoked = false;
+		var options = new MockPopupOptions { OnTappingOutsideOfPopup = () => actionInvoked = true };
+		options.OnTappingOutsideOfPopup?.Invoke();
+		Assert.True(actionInvoked);
+	}
+
+	[Fact]
+	public void Shape_ShouldReturnCorrectShape()
+	{
+		var shape = new Rectangle();
+		var options = new MockPopupOptions { Shape = shape };
+		Assert.Equal(shape, options.Shape);
+	}
+
+	[Fact]
+	public void Margin_ShouldReturnCorrectThickness()
+	{
+		var margin = new Thickness(10);
+		var options = new MockPopupOptions { Margin = margin };
+		Assert.Equal(margin, options.Margin);
+	}
+
+	[Fact]
+	public void Padding_ShouldReturnCorrectThickness()
+	{
+		var padding = new Thickness(5);
+		var options = new MockPopupOptions { Padding = padding };
+		Assert.Equal(padding, options.Padding);
+	}
+
+	[Fact]
+	public void VerticalOptions_ShouldReturnCorrectLayoutOptions()
+	{
+		var verticalOptions = LayoutOptions.Center;
+		var options = new MockPopupOptions { VerticalOptions = verticalOptions };
+		Assert.Equal(verticalOptions, options.VerticalOptions);
+	}
+
+	[Fact]
+	public void HorizontalOptions_ShouldReturnCorrectLayoutOptions()
+	{
+		var horizontalOptions = LayoutOptions.End;
+		var options = new MockPopupOptions { HorizontalOptions = horizontalOptions };
+		Assert.Equal(horizontalOptions, options.HorizontalOptions);
+	}
+}
+
+public class MockPopupOptions : IPopupOptions
+{
+	public bool CanBeDismissedByTappingOutsideOfPopup { get; set; }
+	public Color BackgroundColor { get; set; } = Colors.Transparent;
+	public Action? OnTappingOutsideOfPopup { get; set; }
+	public IShape? Shape { get; set; }
+	public Thickness Margin { get; set; }
+	public Thickness Padding { get; set; }
+	public LayoutOptions VerticalOptions { get; set; }
+	public LayoutOptions HorizontalOptions { get; set; }
 }
