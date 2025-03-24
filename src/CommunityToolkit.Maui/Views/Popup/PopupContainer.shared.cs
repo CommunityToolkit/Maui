@@ -32,6 +32,8 @@ partial class PopupContainer : ContentPage
 	public PopupContainer(View view, IPopupOptions popupOptions)
 		: this(view as Popup ?? CreatePopupFromView<Popup>(view), popupOptions)
 	{
+		ArgumentNullException.ThrowIfNull(view);
+
 		// Only set the content if overloaded constructor hasn't set the content already; don't override content if it already exists
 		base.Content ??= new PopupContainerContent(view, popupOptions);
 	}
