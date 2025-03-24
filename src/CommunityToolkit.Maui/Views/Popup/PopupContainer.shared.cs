@@ -7,8 +7,6 @@ namespace CommunityToolkit.Maui.Views;
 
 sealed partial class PopupContainer<T> : PopupContainer
 {
-	readonly WeakEventManager popupClosedEventManager = new();
-
 	public PopupContainer(View view, IPopupOptions popupOptions)
 		: this(view as Popup<T> ?? CreatePopupFromView<Popup<T>>(view), popupOptions)
 	{

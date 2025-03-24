@@ -202,16 +202,16 @@ public class PopupOptionsTests
 		var options = new MockPopupOptions { HorizontalOptions = horizontalOptions };
 		Assert.Equal(horizontalOptions, options.HorizontalOptions);
 	}
-}
 
-public class MockPopupOptions : IPopupOptions
-{
-	public bool CanBeDismissedByTappingOutsideOfPopup { get; set; }
-	public Color BackgroundColor { get; set; } = Colors.Transparent;
-	public Action? OnTappingOutsideOfPopup { get; set; }
-	public IShape? Shape { get; set; }
-	public Thickness Margin { get; set; }
-	public Thickness Padding { get; set; }
-	public LayoutOptions VerticalOptions { get; set; }
-	public LayoutOptions HorizontalOptions { get; set; }
+	sealed class MockPopupOptions : IPopupOptions
+	{
+		public bool CanBeDismissedByTappingOutsideOfPopup { get; set; }
+		public Color BackgroundColor { get; set; } = Colors.Transparent;
+		public Action? OnTappingOutsideOfPopup { get; set; }
+		public IShape? Shape { get; set; }
+		public Thickness Margin { get; set; }
+		public Thickness Padding { get; set; }
+		public LayoutOptions VerticalOptions { get; set; }
+		public LayoutOptions HorizontalOptions { get; set; }
+	}
 }

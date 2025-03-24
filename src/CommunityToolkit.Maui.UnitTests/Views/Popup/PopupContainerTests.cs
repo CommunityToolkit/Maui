@@ -155,7 +155,7 @@ public class PopupContainerTests
 		act.Should().ThrowAsync<OperationCanceledException>();
 	}
 
-	class MockPopupOptions : IPopupOptions
+	sealed class MockPopupOptions : IPopupOptions
 	{
 		public bool CanBeDismissedByTappingOutsideOfPopup { get; set; }
 		public Color BackgroundColor { get; set; } = Colors.Transparent;
