@@ -129,17 +129,19 @@ partial class PopupContainer : ContentPage
 
 	internal sealed partial class PopupContainerContent : Grid
 	{
-		public PopupContainerContent(View popupContent, IPopupOptions options)
+		public PopupContainerContent(in View popupContent, in IPopupOptions options)
 		{
 			Background = BackgroundColor = null;
+
+			popupContent.VerticalOptions = popupContent.HorizontalOptions = LayoutOptions.Center;
 
 			var border = new Border
 			{
 				Content = popupContent
 			};
 			
-			this.SetBinding(BackgroundProperty, static (View content) => content.Background, source: popupContent, mode: BindingMode.OneWay);
-			this.SetBinding(BackgroundColorProperty, static (View content) => content.BackgroundColor, source: popupContent, mode: BindingMode.OneWay);
+			border.SetBinding(Border.BackgroundProperty, static (View content) => content.Background, source: popupContent, mode: BindingMode.OneWay);
+			border.SetBinding(Border.BackgroundColorProperty, static (View content) => content.BackgroundColor, source: popupContent, mode: BindingMode.OneWay);
 			border.SetBinding(Border.VerticalOptionsProperty, static (IPopupOptions options) => options.VerticalOptions, source: options, mode: BindingMode.OneWay);
 			border.SetBinding(Border.HorizontalOptionsProperty, static (IPopupOptions options) => options.HorizontalOptions, source: options, mode: BindingMode.OneWay);
 			border.SetBinding(Border.StrokeShapeProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay);

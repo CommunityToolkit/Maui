@@ -42,13 +42,13 @@ public class PopupOptionsDefaults
 	/// Default value for <see cref="PopupOptions.Margin"/> 
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static Thickness Margin { get; } = new Thickness(30);
+	public static Thickness Margin { get; } = new(30);
 
 	/// <summary>
 	/// Default value for <see cref="PopupOptions.Padding"/> 
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static Thickness Padding { get; } = new Thickness(15);
+	public static Thickness Padding { get; } = 0;
 
 	/// <summary>
 	/// Default value for <see cref="PopupOptions.VerticalOptions"/> 
