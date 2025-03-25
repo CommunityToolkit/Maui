@@ -20,7 +20,8 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 	{
 		await popupService.ShowPopupAsync<SimplePopup>(Navigation, new PopupOptions
 		{
-			Shape = new RoundRectangle { CornerRadius = new CornerRadius(15) }
+			Shape = new RoundRectangle { CornerRadius = new CornerRadius(15) },
+			BorderStroke = Colors.White
 		}, CancellationToken.None);
 	}
 

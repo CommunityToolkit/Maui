@@ -323,6 +323,7 @@ public class PopupContainerTests : BaseTest
 	{
 		public bool CanBeDismissedByTappingOutsideOfPopup { get; set; }
 		public Color BackgroundColor { get; set; } = Colors.Transparent;
+		public Brush? BorderStroke { get; } = null;
 		public Action? OnTappingOutsideOfPopup { get; set; }
 		public IShape? Shape { get; set; }
 		public Thickness Margin { get; set; } = new Thickness(0);

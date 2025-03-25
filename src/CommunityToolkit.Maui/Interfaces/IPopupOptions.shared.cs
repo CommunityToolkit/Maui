@@ -14,6 +14,11 @@ public interface IPopupOptions
 	/// Popup background color.
 	/// </summary>
 	Color BackgroundColor { get; }
+	
+	/// <summary>
+	/// Popup border stroke.
+	/// </summary>
+	Brush? BorderStroke { get; }
 
 	/// <summary>
 	/// Action to be executed when the user taps outside the Popup.

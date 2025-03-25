@@ -27,6 +27,12 @@ public class PopupOptionsDefaults
 	public static Color BackgroundColor { get; } = Color.FromRgba(0, 0, 0, 0.4);
 
 	/// <summary>
+	/// Default value for <see cref="PopupOptions.BorderStroke"/> 
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public static Brush? BorderStroke { get; } = null;
+
+	/// <summary>
 	/// Default value for <see cref="PopupOptions.Shape"/> 
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]

@@ -19,6 +19,11 @@ public partial class PopupOptions : BindableObject, IPopupOptions
 	///  Backing BindableProperty for the <see cref="BackgroundColor"/> property.
 	/// </summary>
 	public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(PopupOptions), PopupOptionsDefaults.BackgroundColor);
+	
+	/// <summary>
+	///  Backing BindableProperty for the <see cref="BorderStroke"/> property.
+	/// </summary>
+	public static readonly BindableProperty BorderStrokeProperty = BindableProperty.Create(nameof(BorderStroke), typeof(Brush), typeof(PopupOptions), PopupOptionsDefaults.BorderStroke);
 
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="Shape"/> property.
@@ -66,6 +71,13 @@ public partial class PopupOptions : BindableObject, IPopupOptions
 	{
 		get => (Color)GetValue(BackgroundColorProperty);
 		set => SetValue(BackgroundColorProperty, value);
+	}
+
+	/// <inheritdoc/>
+	public Brush? BorderStroke
+	{
+		get => (Brush?)GetValue(BorderStrokeProperty);
+		set => SetValue(BorderStrokeProperty, value);
 	}
 
 	/// <inheritdoc/>
