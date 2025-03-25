@@ -58,9 +58,9 @@ partial class PopupContainer : ContentPage
 
 		Content.GestureRecognizers.Add(new TapGestureRecognizer { Command = tapOutsideOfPopupCommand });
 
-		if (popupOptions is BindableObject bindableIPopupOptions)
+		if (popupOptions is BindableObject bindablePopupOptions)
 		{
-			bindableIPopupOptions.PropertyChanged += HandlePopupPropertyChanged;
+			bindablePopupOptions.PropertyChanged += HandlePopupPropertyChanged;
 		}
 
 		this.SetBinding(BindingContextProperty, static (View x) => x.BindingContext, source: Content, mode: BindingMode.OneWay);
