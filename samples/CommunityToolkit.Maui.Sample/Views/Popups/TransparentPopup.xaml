@@ -3,7 +3,8 @@
     x:Class="CommunityToolkit.Maui.Sample.Views.Popups.TransparentPopup"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit">
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    BackgroundColor="Transparent">
 
     <Grid RowDefinitions="96, *,60" Style="{StaticResource PopupLayout}" BackgroundColor="Transparent">
 		<Label Text="The background should be transparent"

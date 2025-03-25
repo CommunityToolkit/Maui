@@ -50,7 +50,7 @@ public partial class UpdatingPopupViewModel(IPopupService popupService) : BaseVi
 			throw new InvalidOperationException("Unable to retrieve current page");
 		}
 
-		await popupService.ShowPopupAsync<UpdatingPopupViewModel>(currentPage.Navigation, new PopupOptions {  BackgroundColor = Colors.White }, CancellationToken.None);
+		await popupService.ShowPopupAsync<UpdatingPopupViewModel>(currentPage.Navigation);
 	}
 
 	bool CanFinish() => UpdateProgress is finalUpdateProgressValue;

@@ -32,10 +32,7 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 
 	async void HandleMultipleButtonPopupButtonClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<MultipleButtonPopup, bool>(Navigation, new PopupOptions
-		{
-			BackgroundColor = Colors.White
-		});
+		await popupService.ShowPopupAsync<MultipleButtonPopup, bool>(Navigation);
 	}
 
 	async void HandleNoOutsideTapDismissPopupClicked(object sender, EventArgs e)
@@ -43,34 +40,27 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 		await popupService.ShowPopupAsync<NoOutsideTapDismissPopup>(Navigation, new PopupOptions
 		{
 			CanBeDismissedByTappingOutsideOfPopup = false,
-			BackgroundColor = Colors.White
 		});
 	}
 
 	async void HandleToggleSizePopupButtonClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<ToggleSizePopup>(Navigation, new PopupOptions { BackgroundColor = Colors.White });
+		await popupService.ShowPopupAsync<ToggleSizePopup>(Navigation);
 	}
 
 	async void HandleTransparentPopupButtonClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<TransparentPopup>(Navigation, new PopupOptions { BackgroundColor = Colors.Transparent });
+		await popupService.ShowPopupAsync<TransparentPopup>(Navigation);
 	}
 
 	async void HandleOpenedEventSimplePopupButtonClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<OpenedEventSimplePopup>(Navigation, new PopupOptions
-		{
-			BackgroundColor = Colors.White
-		});
+		await popupService.ShowPopupAsync<OpenedEventSimplePopup>(Navigation);
 	}
 
 	async void HandleReturnResultPopupButtonClicked(object sender, EventArgs e)
 	{
-		var result = await popupService.ShowPopupAsync<ReturnResultPopup, string>(Navigation, new PopupOptions
-		{
-			BackgroundColor = Colors.White
-		});
+		var result = await popupService.ShowPopupAsync<ReturnResultPopup, string>(Navigation);
 
 		await DisplayAlert("Pop Result Returned", $"Result: {result.Result}", "OK");
 	}

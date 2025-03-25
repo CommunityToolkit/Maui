@@ -21,9 +21,6 @@ public partial class MultiplePopupViewModel(IPopupService popupService) : BaseVi
 	[RelayCommand]
 	Task OnShowPopupContent(CancellationToken token)
 	{
-		return popupService.ShowPopupAsync<PopupContentViewModel>(
-			currentNavigation, 
-			new PopupOptions { BackgroundColor = Colors.White }, 
-			token);
+		return popupService.ShowPopupAsync<PopupContentViewModel>(currentNavigation, cancellationToken: token);
 	}
 }
