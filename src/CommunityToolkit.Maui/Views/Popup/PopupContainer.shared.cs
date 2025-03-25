@@ -150,8 +150,6 @@ partial class PopupContainer : ContentPage
 			border.SetBinding(Border.PaddingProperty, static (IPopupOptions options) => options.Padding, source: options, mode: BindingMode.OneWay);
 
 			Children.Add(border);
-
-			this.SetBinding(BindingContextProperty, static (View x) => x.BindingContext, source: popupContent, mode: BindingMode.OneWay);
 		}
 	}
 }
