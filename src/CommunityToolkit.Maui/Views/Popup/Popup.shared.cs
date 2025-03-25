@@ -7,14 +7,6 @@ namespace CommunityToolkit.Maui.Views;
 /// </summary>
 public partial class Popup : ContentView
 {
-	/// <remarks>Use <see cref="PopupOptions.BackgroundColorProperty"/> to set the <see cref="BackgroundColorProperty"/> for <see cref="Popup"/></remarks>
-	[Obsolete($"Use {nameof(PopupOptions)} to bind to the BackgroundColorProperty of {nameof(Popup)}", true)]
-	public static new readonly BindableProperty BackgroundColorProperty = VisualElement.BackgroundColorProperty;
-
-	/// <remarks>Use <see cref="PopupOptions.BackgroundColorProperty"/> to set the <see cref="BackgroundProperty"/> for <see cref="Popup"/></remarks>
-	[Obsolete($"Use {nameof(PopupOptions)} to bind to the BackgroundProperty of {nameof(Popup)}", true)]
-	public static new readonly BindableProperty BackgroundProperty = VisualElement.BackgroundProperty;
-
 	/// <remarks>Use <see cref="PopupOptions.MarginProperty"/> to set the <see cref="MarginProperty"/> for <see cref="Popup"/></remarks>
 	[Obsolete($"Use {nameof(PopupOptions)} to bind to the MarginProperty of {nameof(Popup)}", true)]
 	public static new readonly BindableProperty MarginProperty = View.MarginProperty;
@@ -40,12 +32,6 @@ public partial class Popup : ContentView
 	/// Event occurs when the Popup is closed.
 	/// </summary>
 	public event EventHandler? Closed;
-
-	/// <remarks>Use <see cref="PopupOptions.BackgroundColor"/> to set the <see cref="BackgroundColor"/> for <see cref="Popup"/></remarks>
-	public new Color BackgroundColor => base.BackgroundColor;
-
-	/// <remarks>Use <see cref="PopupOptions.BackgroundColor"/> to set the <see cref="Background"/> for <see cref="Popup"/></remarks>
-	public new Brush Background => base.Background;
 
 	/// <remarks>Use <see cref="PopupOptions.Margin"/> to set the <see cref="Margin"/> for <see cref="Popup"/></remarks>
 	public new Thickness Margin => base.Margin;

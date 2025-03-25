@@ -14,11 +14,11 @@ public partial class PopupOptions : BindableObject, IPopupOptions
 	///  Backing BindableProperty for the <see cref="OnTappingOutsideOfPopup"/> property.
 	/// </summary>
 	public static readonly BindableProperty OnTappingOutsideOfPopupProperty = BindableProperty.Create(nameof(OnTappingOutsideOfPopup), typeof(Action), typeof(PopupOptions), PopupOptionsDefaults.OnTappingOutsideOfPopup);
-
+	
 	/// <summary>
-	///  Backing BindableProperty for the <see cref="BackgroundColor"/> property.
+	///  Backing BindableProperty for the <see cref="PageOverlayColor"/> property.
 	/// </summary>
-	public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(PopupOptions), PopupOptionsDefaults.BackgroundColor);
+	public static readonly BindableProperty PageOverlayColorProperty = BindableProperty.Create(nameof(PageOverlayColor), typeof(Color), typeof(PopupOptions), PopupOptionsDefaults.PageOverlayColor);
 	
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="BorderStroke"/> property.
@@ -67,10 +67,10 @@ public partial class PopupOptions : BindableObject, IPopupOptions
 	}
 
 	/// <inheritdoc/>
-	public Color BackgroundColor
+	public Color PageOverlayColor
 	{
-		get => (Color)GetValue(BackgroundColorProperty);
-		set => SetValue(BackgroundColorProperty, value);
+		get => (Color)GetValue(PageOverlayColorProperty);
+		set => SetValue(PageOverlayColorProperty, value);
 	}
 
 	/// <inheritdoc/>

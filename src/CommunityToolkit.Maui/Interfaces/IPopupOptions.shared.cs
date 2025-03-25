@@ -9,11 +9,11 @@ public interface IPopupOptions
 	/// Gets or sets a value indicating whether the popup can be dismissed by tapping outside the Popup.
 	/// </summary>
 	bool CanBeDismissedByTappingOutsideOfPopup { get; }
-
+	
 	/// <summary>
-	/// Popup background color.
+	/// Color of the overlay behind the Popup
 	/// </summary>
-	Color BackgroundColor { get; }
+	Color PageOverlayColor { get; }
 	
 	/// <summary>
 	/// Popup border stroke.

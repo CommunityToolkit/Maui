@@ -19,21 +19,21 @@ public class PopupOptionsTests : BaseTest
 		popupOptions.CanBeDismissedByTappingOutsideOfPopup = false;
 		Assert.False(popupOptions.CanBeDismissedByTappingOutsideOfPopup);
 	}
-
+	
 	[Fact]
-	public void BackgroundColor_DefaultValue_ShouldBeDefaultColor()
+	public void PageOverlayColor_DefaultValue_ShouldBeDefaultColor()
 	{
 		var popupOptions = new PopupOptions();
-		Assert.Equal(PopupOptionsDefaults.BackgroundColor, popupOptions.BackgroundColor);
+		Assert.Equal(PopupOptionsDefaults.PageOverlayColor, popupOptions.PageOverlayColor);
 	}
 
 	[Fact]
-	public void BackgroundColor_SetValue_ShouldBeUpdated()
+	public void PageOverlayColor_SetValue_ShouldBeUpdated()
 	{
 		var popupOptions = new PopupOptions();
 		var color = Colors.Red;
-		popupOptions.BackgroundColor = color;
-		Assert.Equal(color, popupOptions.BackgroundColor);
+		popupOptions.PageOverlayColor = color;
+		Assert.Equal(color, popupOptions.PageOverlayColor);
 	}
 	
 	[Fact]
@@ -161,14 +161,6 @@ public class PopupOptionsTests : BaseTest
 		var options = new MockPopupOptions { CanBeDismissedByTappingOutsideOfPopup = false };
 		Assert.False(options.CanBeDismissedByTappingOutsideOfPopup);
 	}
-
-	[Fact]
-	public void BackgroundColor_ShouldReturnCorrectColor()
-	{
-		var color = Colors.Red;
-		var options = new MockPopupOptions { BackgroundColor = color };
-		Assert.Equal(color, options.BackgroundColor);
-	}
 	
 	[Fact]
 	public void BorderStroke_ShouldReturnCorrectColor()
@@ -176,6 +168,14 @@ public class PopupOptionsTests : BaseTest
 		var color = Colors.Red;
 		var options = new MockPopupOptions { BorderStroke = color };
 		Assert.Equal(color, options.BorderStroke);
+	}
+	
+	[Fact]
+	public void PageOverylayColor_ShouldReturnCorrectColor()
+	{
+		var color = Colors.Red;
+		var options = new MockPopupOptions { PageOverlayColor = color };
+		Assert.Equal(color, options.PageOverlayColor);
 	}
 
 	[Fact]
@@ -230,7 +230,7 @@ public class PopupOptionsTests : BaseTest
 	sealed class MockPopupOptions : IPopupOptions
 	{
 		public bool CanBeDismissedByTappingOutsideOfPopup { get; set; }
-		public Color BackgroundColor { get; set; } = Colors.Transparent;
+		public Color PageOverlayColor { get; set; } = Colors.Transparent;
 		public Action? OnTappingOutsideOfPopup { get; set; }
 		public IShape? Shape { get; set; }
 		public Brush? BorderStroke { get; set; } = null;

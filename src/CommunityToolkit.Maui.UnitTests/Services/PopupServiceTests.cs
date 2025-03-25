@@ -115,7 +115,7 @@ public class PopupServiceTests : BaseHandlerTest
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 		var options = new PopupOptions
 		{
-			BackgroundColor = Colors.Red,
+			PageOverlayColor = Colors.Red,
 			CanBeDismissedByTappingOutsideOfPopup = false,
 			HorizontalOptions = LayoutOptions.Start,
 			VerticalOptions = LayoutOptions.End,
@@ -138,7 +138,7 @@ public class PopupServiceTests : BaseHandlerTest
 		// Assert
 		Assert.NotNull(popup);
 
-		Assert.Equal(options.BackgroundColor, border.BackgroundColor);
+		Assert.Equal(options.PageOverlayColor, popupContainer.BackgroundColor);
 		Assert.Equal(options.HorizontalOptions, border.HorizontalOptions);
 		Assert.Equal(options.VerticalOptions, border.VerticalOptions);
 		Assert.Equal(options.Shape, border.StrokeShape);
@@ -285,6 +285,7 @@ sealed class MockSelfClosingPopup : Popup<object?>
 {
 	public MockSelfClosingPopup(MockPageViewModel viewModel, object? result = null)
 	{
+		BackgroundColor = Colors.White;
 		BindingContext = viewModel;
 		Result = result;
 		Opened += MockSelfClosingPopupOpened;

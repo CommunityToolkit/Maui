@@ -166,12 +166,13 @@ public class PopupContainerTests : BaseTest
 		var popupOptions = new MockPopupOptions
 		{
 			CanBeDismissedByTappingOutsideOfPopup = true,
-			BackgroundColor = Colors.Red,
+			PageOverlayColor = Colors.Red,
 			Margin = new Thickness(10),
 			Padding = new Thickness(5),
 			VerticalOptions = LayoutOptions.Center,
 			HorizontalOptions = LayoutOptions.Center,
-			Shape = new RoundRectangle { CornerRadius = new CornerRadius(10) }
+			Shape = new RoundRectangle { CornerRadius = new CornerRadius(10) },
+			BorderStroke = {  }
 		};
 
 		// Act
@@ -180,7 +181,6 @@ public class PopupContainerTests : BaseTest
 		// Assert
 		Assert.NotNull(popupContainer.Content);
 		Assert.IsType<PopupContainer.PopupContainerContent>(popupContainer.Content);
-		Assert.Equal(popupOptions.BackgroundColor, popupContainer.BackgroundColor);
 
 		// Verify iOS platform specific settings
 		Assert.Equal(PresentationMode.ModalNotAnimated, Shell.GetPresentationMode(popupContainer));
@@ -271,7 +271,6 @@ public class PopupContainerTests : BaseTest
 	public void TapGestureRecognizer_ShouldNotExecuteWhenCanBeDismissedIsFalse()
 	{
 		// Arrange
-		var actionInvokedTCS = new TaskCompletionSource<bool>();
 		var view = new Label { Text = "Test Popup Content" };
 		var popupOptions = new MockPopupOptions
 		{
@@ -307,12 +306,8 @@ public class PopupContainerTests : BaseTest
 	}
 
 	// Helper class for testing protected methods
-	sealed class TestablePopupContainer : PopupContainer
+	sealed class TestablePopupContainer(View view, IPopupOptions popupOptions) : PopupContainer(view, popupOptions)
 	{
-		public TestablePopupContainer(View view, IPopupOptions popupOptions) : base(view, popupOptions)
-		{
-		}
-
 		public bool TestOnBackButtonPressed()
 		{
 			return OnBackButtonPressed();
@@ -322,7 +317,7 @@ public class PopupContainerTests : BaseTest
 	sealed class MockPopupOptions : IPopupOptions
 	{
 		public bool CanBeDismissedByTappingOutsideOfPopup { get; set; }
-		public Color BackgroundColor { get; set; } = Colors.Transparent;
+		public Color PageOverlayColor { get; set; } = Colors.Transparent;
 		public Brush? BorderStroke { get; } = null;
 		public Action? OnTappingOutsideOfPopup { get; set; }
 		public IShape? Shape { get; set; }

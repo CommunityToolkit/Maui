@@ -21,13 +21,13 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 		await popupService.ShowPopupAsync<SimplePopup>(Navigation, new PopupOptions
 		{
 			Shape = new RoundRectangle { CornerRadius = new CornerRadius(15) },
-			BorderStroke = Colors.White
+			BorderStroke = Colors.White,
 		}, CancellationToken.None);
 	}
 
 	async void HandleButtonPopupButtonClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<ButtonPopup>(Navigation, new PopupOptions {  BackgroundColor = Colors.Red });
+		await popupService.ShowPopupAsync<ButtonPopup>(Navigation);
 	}
 
 	async void HandleMultipleButtonPopupButtonClicked(object sender, EventArgs e)
@@ -49,7 +49,7 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 
 	async void HandleToggleSizePopupButtonClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<ToggleSizePopup>(Navigation, new PopupOptions {  BackgroundColor = Colors.White });
+		await popupService.ShowPopupAsync<ToggleSizePopup>(Navigation, new PopupOptions { BackgroundColor = Colors.White });
 	}
 
 	async void HandleTransparentPopupButtonClicked(object sender, EventArgs e)
@@ -61,7 +61,7 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 	{
 		await popupService.ShowPopupAsync<OpenedEventSimplePopup>(Navigation, new PopupOptions
 		{
-			BackgroundColor= Colors.White
+			BackgroundColor = Colors.White
 		});
 	}
 
@@ -69,7 +69,7 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 	{
 		var result = await popupService.ShowPopupAsync<ReturnResultPopup, string>(Navigation, new PopupOptions
 		{
-			BackgroundColor= Colors.White
+			BackgroundColor = Colors.White
 		});
 
 		await DisplayAlert("Pop Result Returned", $"Result: {result.Result}", "OK");
@@ -84,6 +84,7 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 	{
 		await Navigation.PushAsync(new PopupPositionPage(new PopupPositionViewModel()));
 	}
+
 	async void HandlePopupLayoutAlignmentButtonClicked(object sender, EventArgs e)
 	{
 		await Navigation.PushAsync(new PopupLayoutAlignmentPage(new PopupLayoutAlignmentViewModel()));

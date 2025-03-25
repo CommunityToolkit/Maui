@@ -48,7 +48,6 @@ partial class PopupContainer : ContentPage
 
 		// Only set the content if overloaded constructor hasn't set the content already; don't override content if it already exists
 		base.Content ??= new PopupContainerContent(popup, popupOptions);
-		BackgroundColor = popupOptions.BackgroundColor;
 
 		tapOutsideOfPopupCommand = new Command(async () =>
 		{
@@ -62,8 +61,9 @@ partial class PopupContainer : ContentPage
 		{
 			bindablePopupOptions.PropertyChanged += HandlePopupPropertyChanged;
 		}
-
-		this.SetBinding(BindingContextProperty, static (View x) => x.BindingContext, source: Content, mode: BindingMode.OneWay);
+		
+		this.SetBinding(BindingContextProperty, static (PopupContainerContent x) => x.BindingContext, source: Content, mode: BindingMode.OneWay);
+		this.SetBinding(BackgroundColorProperty, static (IPopupOptions options) => options.PageOverlayColor, source: popupOptions, mode: BindingMode.OneWay);
 
 		Shell.SetPresentationMode(this, PresentationMode.ModalNotAnimated);
 		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
@@ -137,8 +137,9 @@ partial class PopupContainer : ContentPage
 			{
 				Content = popupContent
 			};
-		
-			border.SetBinding(Border.BackgroundColorProperty, static (IPopupOptions options) => options.BackgroundColor, source: options, mode: BindingMode.OneWay);
+			
+			this.SetBinding(BackgroundProperty, static (View content) => content.Background, source: popupContent, mode: BindingMode.OneWay);
+			this.SetBinding(BackgroundColorProperty, static (View content) => content.BackgroundColor, source: popupContent, mode: BindingMode.OneWay);
 			border.SetBinding(Border.VerticalOptionsProperty, static (IPopupOptions options) => options.VerticalOptions, source: options, mode: BindingMode.OneWay);
 			border.SetBinding(Border.HorizontalOptionsProperty, static (IPopupOptions options) => options.HorizontalOptions, source: options, mode: BindingMode.OneWay);
 			border.SetBinding(Border.StrokeShapeProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay);

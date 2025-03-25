@@ -21,10 +21,10 @@ public class PopupOptionsDefaults
 	public static Action? OnTappingOutsideOfPopup { get; } = null;
 
 	/// <summary>
-	/// Default value for <see cref="PopupOptions.BackgroundColor"/> 
+	/// Default value for <see cref="PopupOptions.PageOverlayColor"/> 
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static Color BackgroundColor { get; } = Color.FromRgba(0, 0, 0, 0.4);
+	public static Color PageOverlayColor { get; } = Colors.Black.WithAlpha(0.3f);
 
 	/// <summary>
 	/// Default value for <see cref="PopupOptions.BorderStroke"/> 

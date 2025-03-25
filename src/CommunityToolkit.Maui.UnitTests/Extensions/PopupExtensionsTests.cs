@@ -127,7 +127,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
 		var options = new PopupOptions
 		{
-			BackgroundColor = Colors.Red,
+			PageOverlayColor = Colors.Red,
 			CanBeDismissedByTappingOutsideOfPopup = false,
 			HorizontalOptions = LayoutOptions.Start,
 			VerticalOptions = LayoutOptions.End,
@@ -148,7 +148,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		// Assert
 		Assert.NotNull(popup);
 
-		Assert.Equal(options.BackgroundColor, border.BackgroundColor);
+		Assert.Equal(options.PageOverlayColor, popupContainer.BackgroundColor);
 		Assert.Equal(options.HorizontalOptions, border.HorizontalOptions);
 		Assert.Equal(options.VerticalOptions, border.VerticalOptions);
 		Assert.Equal(options.Shape, border.StrokeShape);
@@ -167,7 +167,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		var view = new Grid();
 		var options = new PopupOptions
 		{
-			BackgroundColor = Colors.Red,
+			PageOverlayColor = Colors.Red,
 			CanBeDismissedByTappingOutsideOfPopup = false,
 			HorizontalOptions = LayoutOptions.Start,
 			VerticalOptions = LayoutOptions.End,
@@ -188,7 +188,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		// Assert
 		Assert.NotNull(popup);
 
-		Assert.Equal(options.BackgroundColor, border.BackgroundColor);
+		Assert.Equal(options.PageOverlayColor, popupContainer.BackgroundColor);
 		Assert.Equal(options.HorizontalOptions, border.HorizontalOptions);
 		Assert.Equal(options.VerticalOptions, border.VerticalOptions);
 		Assert.Equal(options.Shape, border.StrokeShape);
