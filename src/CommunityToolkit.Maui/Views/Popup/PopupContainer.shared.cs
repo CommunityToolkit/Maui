@@ -15,8 +15,7 @@ sealed partial class PopupContainer<T> : PopupContainer
 	public PopupContainer(Popup<T> popup, IPopupOptions popupOptions)
 		: base(popup, popupOptions)
 	{
-		Shell.SetPresentationMode(this, PresentationMode.ModalNotAnimated);
-		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
+		
 	}
 
 	public Task Close(PopupResult<T> result, CancellationToken token = default) => base.Close(result, token);
