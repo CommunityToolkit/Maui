@@ -59,7 +59,9 @@ public static class PopupExtensions
 	public static async Task<PopupResult<TResult>> ShowPopupAsync<TResult>(this INavigation navigation, View view, IPopupOptions? options = null, CancellationToken token = default)
 	{
 		var result = await ShowPopupAsync(navigation, view, options, token);
-		return (PopupResult<TResult>)result;
+		return result.WasDismissedByTappingOutsideOfPopup
+			? new PopupResult<TResult>(default, result.WasDismissedByTappingOutsideOfPopup)
+			: (PopupResult<TResult>)result;
 	}
 
 	/// <summary>
@@ -87,7 +89,7 @@ public static class PopupExtensions
 	{
 		ArgumentNullException.ThrowIfNull(navigation);
 		ArgumentNullException.ThrowIfNull(view);
-		
+
 		token.ThrowIfCancellationRequested();
 
 		TaskCompletionSource<PopupResult> taskCompletionSource = new();

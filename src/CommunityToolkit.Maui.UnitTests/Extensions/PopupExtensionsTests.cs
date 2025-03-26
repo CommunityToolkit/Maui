@@ -395,9 +395,9 @@ public class PopupExtensionsTests : BaseHandlerTest
 		var popupClosedResult = await popupClosedTCS.Task;
 		var showPopupResult = await showPopupTask;
 		
-		Assert.False(popupClosedResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(popupClosedResult.WasDismissedByTappingOutsideOfPopup);
 		Assert.Null(showPopupResult.Result);
-		Assert.False(showPopupResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(showPopupResult.WasDismissedByTappingOutsideOfPopup);
 
 		void HandlePopupClosed(object? sender, PopupResult e)
 		{

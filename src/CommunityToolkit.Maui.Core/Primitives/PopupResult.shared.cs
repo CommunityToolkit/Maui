@@ -12,4 +12,28 @@ public record PopupResult(bool WasDismissedByTappingOutsideOfPopup);
 /// <typeparam name="T">Popup result type</typeparam>
 /// <param name="Result">Popup result</param>
 /// <param name="WasDismissedByTappingOutsideOfPopup">True if Popup is closed by tapping outside the popup</param>
-public record PopupResult<T>(T? Result, bool WasDismissedByTappingOutsideOfPopup) : PopupResult(WasDismissedByTappingOutsideOfPopup);
+public record PopupResult<T>(T? Result, bool WasDismissedByTappingOutsideOfPopup) : PopupResult(WasDismissedByTappingOutsideOfPopup)
+{
+	static PopupResult()
+	{
+		if (!IsNullable(typeof(T)))
+		{
+			throw new ArgumentException("PopupResult type must be nullable; e.g. bool?, object");
+		}
+	}
+	
+	static bool IsNullable(Type type)
+	{
+		if (!type.IsValueType)
+		{
+			return true; // ref-type
+		}
+
+		if (Nullable.GetUnderlyingType(type) is not null)
+		{
+			return true; // Nullable<T>
+		}
+
+		return false; // value-type
+	}
+}
