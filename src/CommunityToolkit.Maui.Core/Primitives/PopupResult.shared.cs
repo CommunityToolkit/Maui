@@ -12,4 +12,4 @@ public record PopupResult(bool WasDismissedByTappingOutsideOfPopup);
 /// <typeparam name="T">Popup result type</typeparam>
 /// <param name="Result">Popup result</param>
 /// <param name="WasDismissedByTappingOutsideOfPopup">True if Popup is closed by tapping outside the popup</param>
-public record PopupResult<T>(T Result, bool WasDismissedByTappingOutsideOfPopup) : PopupResult(WasDismissedByTappingOutsideOfPopup);
+public record PopupResult<T>(T? Result, bool WasDismissedByTappingOutsideOfPopup) : PopupResult(WasDismissedByTappingOutsideOfPopup);
