@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core.Extensions;
+
+namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// Represents the result of a popup.
@@ -16,24 +18,9 @@ public record PopupResult<T>(T? Result, bool WasDismissedByTappingOutsideOfPopup
 {
 	static PopupResult()
 	{
-		if (!IsNullable(typeof(T)))
+		if (!typeof(T).IsNullable())
 		{
 			throw new ArgumentException("PopupResult type must be nullable; e.g. bool?, object");
 		}
-	}
-	
-	static bool IsNullable(Type type)
-	{
-		if (!type.IsValueType)
-		{
-			return true; // ref-type
-		}
-
-		if (Nullable.GetUnderlyingType(type) is not null)
-		{
-			return true; // Nullable<T>
-		}
-
-		return false; // value-type
 	}
 }

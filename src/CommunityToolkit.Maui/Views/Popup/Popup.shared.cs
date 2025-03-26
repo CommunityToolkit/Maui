@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -74,7 +75,7 @@ public partial class Popup : ContentView
 			parent = parent.Parent;
 		}
 
-		throw new InvalidOperationException($"Unable to close popup: could not locate {nameof(PopupContainer)}. {nameof(PopupExtensions.ShowPopup)} or {nameof(PopupExtensions.ShowPopupAsync)} must be called before {nameof(Close)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Close)} method");
+		throw new InvalidOperationException($"Unable to close popup: could not locate {nameof(PopupContainer)}.{nameof(PopupExtensions.ShowPopup)} or {nameof(PopupExtensions.ShowPopupAsync)} must be called before {nameof(Close)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Close)} method");
 	}
 }
 
@@ -83,6 +84,14 @@ public partial class Popup : ContentView
 /// </summary>
 public partial class Popup<T> : Popup
 {
+	static Popup()
+	{
+		if (!typeof(T).IsNullable())
+		{
+			throw new ArgumentException("Popup type must be nullable; e.g. bool?, object");
+		}
+	}
+	
 	/// <summary>
 	/// Close the Popup with a result.
 	/// </summary>
