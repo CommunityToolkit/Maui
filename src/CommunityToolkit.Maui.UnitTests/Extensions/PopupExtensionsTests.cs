@@ -374,4 +374,34 @@ public class PopupExtensionsTests : BaseHandlerTest
 
 		Assert.Equal(mockPopup.Result, result.Result);
 	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_ShouldReturnResult_WhenPopupIsClosedByTappingOutsidePopup()
+	{
+		var popupClosedTCS = new TaskCompletionSource<PopupResult>();
+		
+		if (Application.Current?.Windows[0].Page is not Page page)
+		{
+			throw new InvalidOperationException("Page cannot be null");
+		}
+
+		var showPopupTask = navigation.ShowPopupAsync<bool?>(new Popup<bool>(), token: CancellationToken.None);
+		var popupContainer = (PopupContainer)navigation.ModalStack[0];
+		popupContainer.PopupClosed += HandlePopupClosed;
+		
+		var tapGestureRecognizer = (TapGestureRecognizer)popupContainer.Content.GestureRecognizers[0];
+		tapGestureRecognizer.Command?.Execute(null);
+		
+		var popupClosedResult = await popupClosedTCS.Task;
+		var showPopupResult = await showPopupTask;
+		
+		Assert.False(popupClosedResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.Null(showPopupResult.Result);
+		Assert.False(showPopupResult.WasDismissedByTappingOutsideOfPopup);
+
+		void HandlePopupClosed(object? sender, PopupResult e)
+		{
+			popupClosedTCS.SetResult(e);
+		}
+	}
 }
