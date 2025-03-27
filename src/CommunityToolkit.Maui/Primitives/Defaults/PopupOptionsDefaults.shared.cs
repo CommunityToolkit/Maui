@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Views;
+using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui;
 
@@ -37,13 +38,17 @@ public static class PopupOptionsDefaults
 	/// Default value for <see cref="PopupOptions.BorderStroke"/> 
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static Brush? BorderStroke { get; } = null;
+	public static Brush? BorderStroke { get; } = Colors.White;
 
 	/// <summary>
 	/// Default value for <see cref="PopupOptions.Shape"/> 
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static IShape? Shape { get; } = null;
+	public static IShape? Shape { get; } = new RoundRectangle
+	{
+		CornerRadius = new CornerRadius(20, 20, 20, 20),
+		StrokeThickness = 2
+	};
 
 	/// <summary>
 	/// Default value for <see cref="PopupOptions.Margin"/> 
