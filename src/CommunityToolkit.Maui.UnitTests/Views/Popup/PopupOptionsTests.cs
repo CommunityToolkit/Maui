@@ -21,6 +21,21 @@ public class PopupOptionsTests : BaseTest
 	}
 	
 	[Fact]
+	public void Shadow_DefaultValue_ShouldBeTrue()
+	{
+		var popupOptions = new PopupOptions();
+		Assert.Equal(PopupOptionsDefaults.Shadow, popupOptions.Shadow);
+	}
+
+	[Fact]
+	public void Shadow_SetValue_ShouldBeUpdated()
+	{
+		var popupOptions = new PopupOptions();
+		popupOptions.Shadow = null;
+		Assert.Null(popupOptions.Shadow);
+	}
+	
+	[Fact]
 	public void PopupBackgroundColor_DefaultValue_ShouldBeWhite()
 	{
 		Assert.Equal(PopupOptionsDefaults.PopupBackgroundColor, Colors.White);

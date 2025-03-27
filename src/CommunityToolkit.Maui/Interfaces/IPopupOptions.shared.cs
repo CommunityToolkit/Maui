@@ -49,4 +49,9 @@ public interface IPopupOptions
 	/// Popup horizontal options.
 	/// </summary>
 	LayoutOptions HorizontalOptions { get; }
+	
+	/// <summary>
+	/// Popup Shadow
+	/// </summary>
+	Shadow? Shadow { get; }
 }

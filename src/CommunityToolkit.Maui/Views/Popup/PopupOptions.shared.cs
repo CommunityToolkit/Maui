@@ -49,6 +49,11 @@ public partial class PopupOptions : BindableObject, IPopupOptions
 	///  Backing BindableProperty for the <see cref="HorizontalOptions"/> property.
 	/// </summary>
 	public static readonly BindableProperty HorizontalOptionsProperty = BindableProperty.Create(nameof(HorizontalOptions), typeof(LayoutOptions), typeof(PopupOptions), PopupOptionsDefaults.HorizontalOptions);
+	
+	/// <summary>
+	///  Backing BindableProperty for the <see cref="HorizontalOptions"/> property.
+	/// </summary>
+	public static readonly BindableProperty ShadowProperty = BindableProperty.Create(nameof(Shadow), typeof(Shadow), typeof(PopupOptions), PopupOptionsDefaults.Shadow);
 
 	/// <summary>
 	/// An empty instance of <see cref="IPopupOptions"/> containing default values.
@@ -122,5 +127,12 @@ public partial class PopupOptions : BindableObject, IPopupOptions
 	{
 		get => (LayoutOptions)GetValue(HorizontalOptionsProperty);
 		set => SetValue(HorizontalOptionsProperty, value);
+	}
+
+	/// <inheritdoc/>
+	public Shadow? Shadow
+	{
+		get => (Shadow?)GetValue(ShadowProperty);
+		set => SetValue(ShadowProperty, value);
 	}
 }

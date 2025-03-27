@@ -73,4 +73,16 @@ public static class PopupOptionsDefaults
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static LayoutOptions HorizontalOptions { get; } = LayoutOptions.Center;
+
+	/// <summary>
+	/// Default value for <see cref="PopupOptions.Shadow"/> 
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public static Shadow Shadow { get; } = new Shadow
+	{
+		Brush = Colors.Black,
+		Offset = new(20, 20),
+		Radius = 40,
+		Opacity = 0.8f
+	};
 }

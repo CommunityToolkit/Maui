@@ -156,6 +156,7 @@ partial class PopupContainer : ContentPage
 			border.SetBinding(Border.StrokeProperty, static (IPopupOptions options) => options.BorderStroke, source: options, mode: BindingMode.OneWay);
 			border.SetBinding(Border.MarginProperty, static (IPopupOptions options) => options.Margin, source: options, mode: BindingMode.OneWay);
 			border.SetBinding(Border.PaddingProperty, static (IPopupOptions options) => options.Padding, source: options, mode: BindingMode.OneWay);
+			border.SetBinding(Border.ShadowProperty, static (IPopupOptions options) => options.Shadow, source: options, mode: BindingMode.OneWay);
 
 			Children.Add(border);
 		}
