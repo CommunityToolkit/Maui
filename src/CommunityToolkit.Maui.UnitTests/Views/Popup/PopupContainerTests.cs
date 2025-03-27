@@ -46,7 +46,7 @@ public class PopupContainerTests : BaseTest
 	public async Task Close_ShouldSetResultAndPopModalAsync()
 	{
 		// Arrange
-		var tcs = new TaskCompletionSource<PopupResult>();
+		var tcs = new TaskCompletionSource<IPopupResult>();
 		var view = new ContentView();
 		var popupOptions = new MockPopupOptions();
 		var popupContainer = new PopupContainer(view, popupOptions);
@@ -61,7 +61,7 @@ public class PopupContainerTests : BaseTest
 		// Assert
 		actualResult.Should().Be(expectedResult);
 
-		void HandlePopupClosed(object? sender, PopupResult e)
+		void HandlePopupClosed(object? sender, IPopupResult e)
 		{
 			tcs.SetResult(e);
 		}
@@ -134,7 +134,7 @@ public class PopupContainerTests : BaseTest
 		// Assert
 		actualResult.Should().Be(expectedResult);
 
-		void HandlePopupClosed(object? sender, PopupResult e)
+		void HandlePopupClosed(object? sender, IPopupResult e)
 		{
 			taskCompletionSource.SetResult((PopupResult<string>)e);
 		}

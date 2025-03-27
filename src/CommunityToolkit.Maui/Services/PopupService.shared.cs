@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -80,7 +81,7 @@ public class PopupService : IPopupService
 	}
 
 	/// <inheritdoc />
-	public Task<PopupResult> ShowPopupAsync<T>(INavigation navigation, IPopupOptions? options = null, CancellationToken token = default)
+	public Task<IPopupResult> ShowPopupAsync<T>(INavigation navigation, IPopupOptions? options = null, CancellationToken token = default)
 		where T : notnull
 	{
 		token.ThrowIfCancellationRequested();
@@ -91,7 +92,7 @@ public class PopupService : IPopupService
 	}
 
 	/// <inheritdoc />
-	public Task<PopupResult<TResult>> ShowPopupAsync<T, TResult>(INavigation navigation,
+	public Task<IPopupResult<TResult>> ShowPopupAsync<T, TResult>(INavigation navigation,
 		IPopupOptions? options = null,
 		CancellationToken token = default)
 		where T : notnull

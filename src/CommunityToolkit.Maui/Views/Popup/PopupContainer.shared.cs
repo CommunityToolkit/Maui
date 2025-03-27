@@ -68,7 +68,7 @@ partial class PopupContainer : ContentPage
 		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
 	}
 
-	public event EventHandler<PopupResult> PopupClosed
+	public event EventHandler<IPopupResult> PopupClosed
 	{
 		add => popupClosedEventManager.AddEventHandler(value);
 		remove => popupClosedEventManager.RemoveEventHandler(value);

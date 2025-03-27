@@ -24,7 +24,7 @@ public interface IPopupService
 	/// <param name="options"><see cref="IPopupOptions"/></param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="PopupResult"/></returns>
-	Task<PopupResult> ShowPopupAsync<T>(INavigation navigation, IPopupOptions? options = null, CancellationToken cancellationToken = default)
+	Task<IPopupResult> ShowPopupAsync<T>(INavigation navigation, IPopupOptions? options = null, CancellationToken cancellationToken = default)
 		where T : notnull;
 
 	/// <summary>
@@ -36,7 +36,7 @@ public interface IPopupService
 	/// <param name="options"><see cref="IPopupOptions"/></param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="PopupResult"/></returns>
-	Task<PopupResult<TResult>> ShowPopupAsync<T, TResult>(INavigation navigation, IPopupOptions? options = null, CancellationToken cancellationToken = default)
+	Task<IPopupResult<TResult>> ShowPopupAsync<T, TResult>(INavigation navigation, IPopupOptions? options = null, CancellationToken cancellationToken = default)
 		where T : notnull;
 
 	/// <summary>

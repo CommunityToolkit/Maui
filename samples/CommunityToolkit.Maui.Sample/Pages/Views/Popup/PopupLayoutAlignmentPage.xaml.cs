@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.Views.Popups;
-using CommunityToolkit.Maui.Views;
+using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 

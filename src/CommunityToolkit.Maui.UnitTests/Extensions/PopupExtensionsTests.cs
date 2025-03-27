@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.UnitTests.Services;
 using CommunityToolkit.Maui.Views;
@@ -378,7 +379,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_ShouldReturnResult_WhenPopupIsClosedByTappingOutsidePopup()
 	{
-		var popupClosedTCS = new TaskCompletionSource<PopupResult>();
+		var popupClosedTCS = new TaskCompletionSource<IPopupResult>();
 		
 		if (Application.Current?.Windows[0].Page is not Page page)
 		{
@@ -399,7 +400,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Assert.Null(showPopupResult.Result);
 		Assert.True(showPopupResult.WasDismissedByTappingOutsideOfPopup);
 
-		void HandlePopupClosed(object? sender, PopupResult e)
+		void HandlePopupClosed(object? sender, IPopupResult e)
 		{
 			popupClosedTCS.SetResult(e);
 		}

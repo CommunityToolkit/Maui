@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Views;
 
-namespace CommunityToolkit.Maui.Views;
+namespace CommunityToolkit.Maui.Extensions;
 
 /// <summary>
 /// Popup extensions.
@@ -43,7 +44,7 @@ public static class PopupExtensions
 	/// <param name="options"><see cref="IPopupOptions"/></param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Popup Result</returns>
-	public static Task<PopupResult<TResult>> ShowPopupAsync<TResult>(this Page page, View view, IPopupOptions? options = null, CancellationToken token = default)
+	public static Task<IPopupResult<TResult>> ShowPopupAsync<TResult>(this Page page, View view, IPopupOptions? options = null, CancellationToken token = default)
 	{
 		return page.Navigation.ShowPopupAsync<TResult>(view, options, token);
 	}
@@ -56,12 +57,16 @@ public static class PopupExtensions
 	/// <param name="options"><see cref="IPopupOptions"/></param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Popup Result</returns>
-	public static async Task<PopupResult<TResult>> ShowPopupAsync<TResult>(this INavigation navigation, View view, IPopupOptions? options = null, CancellationToken token = default)
+	public static async Task<IPopupResult<TResult>> ShowPopupAsync<TResult>(this INavigation navigation, View view, IPopupOptions? options = null, CancellationToken token = default)
 	{
 		var result = await ShowPopupAsync(navigation, view, options, token);
-		return result.WasDismissedByTappingOutsideOfPopup
-			? new PopupResult<TResult>(default, result.WasDismissedByTappingOutsideOfPopup)
-			: (PopupResult<TResult>)result;
+
+		return result switch
+		{
+			PopupResult<TResult> popupResult => popupResult,
+			IPopupResult => new PopupResult<TResult>(null, result.WasDismissedByTappingOutsideOfPopup),
+			_ => throw new NotSupportedException($"PopupResult type {typeof(TResult)} is not supported")
+		};
 	}
 
 	/// <summary>
@@ -72,7 +77,7 @@ public static class PopupExtensions
 	/// <param name="options"><see cref="IPopupOptions"/></param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="PopupResult"/></returns>
-	public static Task<PopupResult> ShowPopupAsync(this Page page, View view, IPopupOptions? options = null, CancellationToken token = default)
+	public static Task<IPopupResult> ShowPopupAsync(this Page page, View view, IPopupOptions? options = null, CancellationToken token = default)
 	{
 		return ShowPopupAsync(page.Navigation, view, options, token);
 	}
@@ -85,14 +90,14 @@ public static class PopupExtensions
 	/// <param name="options"><see cref="IPopupOptions"/></param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="PopupResult"/></returns>
-	public static async Task<PopupResult> ShowPopupAsync(this INavigation navigation, View view, IPopupOptions? options, CancellationToken token = default)
+	public static async Task<IPopupResult> ShowPopupAsync(this INavigation navigation, View view, IPopupOptions? options, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(navigation);
 		ArgumentNullException.ThrowIfNull(view);
 
 		token.ThrowIfCancellationRequested();
 
-		TaskCompletionSource<PopupResult> taskCompletionSource = new();
+		TaskCompletionSource<IPopupResult> taskCompletionSource = new();
 
 		var popupContainer = new PopupContainer(view, options ?? PopupOptions.Empty);
 		popupContainer.PopupClosed += HandlePopupClosed;
@@ -100,7 +105,7 @@ public static class PopupExtensions
 		await navigation.PushModalAsync(popupContainer, false).WaitAsync(token);
 		return await taskCompletionSource.Task.WaitAsync(token);
 
-		void HandlePopupClosed(object? sender, PopupResult e)
+		void HandlePopupClosed(object? sender, IPopupResult e)
 		{
 			taskCompletionSource.SetResult(e);
 		}
