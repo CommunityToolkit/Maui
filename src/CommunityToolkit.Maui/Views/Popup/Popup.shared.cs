@@ -84,14 +84,6 @@ public partial class Popup : ContentView
 /// </summary>
 public partial class Popup<T> : Popup
 {
-	static Popup()
-	{
-		if (!typeof(T).IsNullable())
-		{
-			throw new ArgumentException("Popup type must be nullable; e.g. bool?, object");
-		}
-	}
-	
 	/// <summary>
 	/// Close the Popup with a result.
 	/// </summary>

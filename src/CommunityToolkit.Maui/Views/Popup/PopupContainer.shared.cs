@@ -61,7 +61,7 @@ partial class PopupContainer : ContentPage
 			bindablePopupOptions.PropertyChanged += HandlePopupPropertyChanged;
 		}
 		
-		this.SetBinding(BindingContextProperty, static (PopupContainerContent x) => x.BindingContext, source: Content, mode: BindingMode.OneWay);
+		this.SetBinding(BindingContextProperty, static (Popup x) => x.BindingContext, source: popup, mode: BindingMode.OneWay);
 		this.SetBinding(BackgroundColorProperty, static (IPopupOptions options) => options.PageOverlayColor, source: popupOptions, mode: BindingMode.OneWay);
 
 		Shell.SetPresentationMode(this, PresentationMode.ModalNotAnimated);
@@ -149,6 +149,7 @@ partial class PopupContainer : ContentPage
 			border.SetBinding(Border.PaddingProperty, static (IPopupOptions options) => options.Padding, source: options, mode: BindingMode.OneWay);
 
 			Children.Add(border);
+			
 		}
 	}
 }
