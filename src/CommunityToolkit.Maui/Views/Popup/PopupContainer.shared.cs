@@ -1,4 +1,7 @@
 using System.ComponentModel;
+using System.Globalization;
+using CommunityToolkit.Maui.Behaviors;
+using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -112,10 +115,15 @@ partial class PopupContainer : ContentPage
 
 	protected static T CreatePopupFromView<T>(in View view) where T : Popup, new()
 	{
-		return new T
+		var popup = new T
 		{
+			BackgroundColor = view.BackgroundColor ??= PopupOptionsDefaults.PopupBackgroundColor,
 			Content = view
 		};
+		popup.SetBinding(BackgroundProperty, static (View view) => view.Background, source: view, mode: BindingMode.OneWay);
+		popup.SetBinding(BackgroundColorProperty, static (View view) => view.BackgroundColor, source: view, mode: BindingMode.OneWay);
+
+		return popup;
 	}
 
 	void HandlePopupPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -136,6 +144,7 @@ partial class PopupContainer : ContentPage
 
 			var border = new Border
 			{
+				BackgroundColor = popupContent.BackgroundColor ??= PopupOptionsDefaults.PopupBackgroundColor,
 				Content = popupContent
 			};
 			
@@ -149,7 +158,7 @@ partial class PopupContainer : ContentPage
 			border.SetBinding(Border.PaddingProperty, static (IPopupOptions options) => options.Padding, source: options, mode: BindingMode.OneWay);
 
 			Children.Add(border);
-			
 		}
 	}
 }
+

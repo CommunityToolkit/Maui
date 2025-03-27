@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui;
 
@@ -6,7 +7,7 @@ namespace CommunityToolkit.Maui;
 /// Default Values for PopupOptions
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
-public class PopupOptionsDefaults
+public static class PopupOptionsDefaults
 {
 	/// <summary>
 	/// Default value for <see cref="PopupOptions.CanBeDismissedByTappingOutsideOfPopup"/>
@@ -19,6 +20,12 @@ public class PopupOptionsDefaults
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static Action? OnTappingOutsideOfPopup { get; } = null;
+	
+	/// <summary>
+	/// Default value for <see cref="PopupContainer"/> BackgroundColor 
+	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public static Color PopupBackgroundColor { get; } = Colors.White;
 
 	/// <summary>
 	/// Default value for <see cref="PopupOptions.PageOverlayColor"/> 

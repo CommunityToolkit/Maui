@@ -21,6 +21,12 @@ public class PopupOptionsTests : BaseTest
 	}
 	
 	[Fact]
+	public void PopupBackgroundColor_DefaultValue_ShouldBeWhite()
+	{
+		Assert.Equal(PopupOptionsDefaults.PopupBackgroundColor, Colors.White);
+	}
+	
+	[Fact]
 	public void PageOverlayColor_DefaultValue_ShouldBeDefaultColor()
 	{
 		var popupOptions = new PopupOptions();
