@@ -115,6 +115,8 @@ partial class PopupContainer : ContentPage
 
 	protected static T CreatePopupFromView<T>(in View view) where T : Popup, new()
 	{
+		ArgumentNullException.ThrowIfNull(view);
+		
 		var popup = new T
 		{
 			BackgroundColor = view.BackgroundColor ??= PopupOptionsDefaults.PopupBackgroundColor,
