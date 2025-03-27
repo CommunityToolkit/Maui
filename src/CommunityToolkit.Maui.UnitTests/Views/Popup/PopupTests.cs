@@ -88,24 +88,3 @@ public class PopupTests : BaseTest
 		public override Task Close(string result, CancellationToken token = default) => Task.CompletedTask;
 	}
 }
-
-file class MockPopup : Popup
-{
-}
-
-file class MockPopup<T> : Popup<T>
-{
-}
-
-file class MockPopupOptions : IPopupOptions
-{
-	public bool CanBeDismissedByTappingOutsideOfPopup { get; set; }
-	public Color PageOverlayColor { get; set; } = Colors.Transparent;
-	public Brush? BorderStroke { get; } = null;
-	public Action? OnTappingOutsideOfPopup { get; set; }
-	public IShape? Shape { get; set; }
-	public Thickness Margin { get; set; }
-	public Thickness Padding { get; set; }
-	public LayoutOptions VerticalOptions { get; set; }
-	public LayoutOptions HorizontalOptions { get; set; }
-}

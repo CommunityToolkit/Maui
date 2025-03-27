@@ -259,5 +259,6 @@ public class PopupOptionsTests : BaseTest
 		public Thickness Padding { get; set; }
 		public LayoutOptions VerticalOptions { get; set; }
 		public LayoutOptions HorizontalOptions { get; set; }
+		public Shadow? Shadow { get; set; } = null;
 	}
 }

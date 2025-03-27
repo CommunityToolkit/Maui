@@ -209,11 +209,6 @@ public class PopupExtensionsTests : BaseHandlerTest
 		// Ensure CancellationToken has expired
 		await Task.Delay(100, CancellationToken.None);
 
-		if (Application.Current?.Windows[0].Page is not Page page)
-		{
-			throw new InvalidOperationException("Page cannot be null");
-		}
-
 		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ShowPopupAsync(selfClosingPopup, PopupOptions.Empty, cts.Token));
 	}
 	
@@ -226,11 +221,6 @@ public class PopupExtensionsTests : BaseHandlerTest
 
 		// Ensure CancellationToken has expired
 		await Task.Delay(100, CancellationToken.None);
-
-		if (Application.Current?.Windows[0].Page is not Page page)
-		{
-			throw new InvalidOperationException("Page cannot be null");
-		}
 
 		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ShowPopupAsync(view, PopupOptions.Empty, cts.Token));
 	}
@@ -268,11 +258,6 @@ public class PopupExtensionsTests : BaseHandlerTest
 		var popupInstance = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
 		var popupViewModel = ServiceProvider.GetRequiredService<MockPageViewModel>();
 
-		if (Application.Current?.Windows[0].Page is not Page page)
-		{
-			throw new InvalidOperationException("Page cannot be null");
-		}
-
 		await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, TestContext.Current.CancellationToken);
 
 		Assert.Same(popupInstance.BindingContext, popupViewModel);
@@ -284,11 +269,6 @@ public class PopupExtensionsTests : BaseHandlerTest
 		var view = new Grid();
 		var popupInstance = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
 		var popupViewModel = ServiceProvider.GetRequiredService<MockPageViewModel>();
-
-		if (Application.Current?.Windows[0].Page is not Page page)
-		{
-			throw new InvalidOperationException("Page cannot be null");
-		}
 
 		var showPopupTask = navigation.ShowPopupAsync<object?>(view, PopupOptions.Empty, TestContext.Current.CancellationToken);
 		
@@ -306,11 +286,6 @@ public class PopupExtensionsTests : BaseHandlerTest
 		var mockPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
 		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
 
-		if (Application.Current?.Windows[0].Page is not Page page)
-		{
-			throw new InvalidOperationException("Page cannot be null");
-		}
-
 		var result = await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, CancellationToken.None);
 
 		Assert.Same(mockPopup.Result, result.Result);
@@ -324,11 +299,6 @@ public class PopupExtensionsTests : BaseHandlerTest
 		
 		var view = new Grid();
 		var expectedPopupResult = new PopupResult<int>(popupResultValue, false);
-
-		if (Application.Current?.Windows[0].Page is not Page page)
-		{
-			throw new InvalidOperationException("Page cannot be null");
-		}
 
 		var showPopupTask = navigation.ShowPopupAsync<int>(view, PopupOptions.Empty, CancellationToken.None);
 
@@ -363,28 +333,18 @@ public class PopupExtensionsTests : BaseHandlerTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_ShouldReturnDefaultResult_WhenPopupIsClosedWithoutResult()
 	{
-		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
-		var mockPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
-
-		if (Application.Current?.Windows[0].Page is not Page page)
-		{
-			throw new InvalidOperationException("Page cannot be null");
-		}
+		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
 
 		var result = await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, CancellationToken.None);
 
-		Assert.Equal(mockPopup.Result, result.Result);
+		Assert.Equal(selfClosingPopup.Result, result.Result);
+		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
 	}
-
+	
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task ShowPopupAsync_ShouldReturnResult_WhenPopupIsClosedByTappingOutsidePopup()
+	public async Task ShowPopupAsync_ReferenceTypeShouldReturnResult_WhenPopupIsClosedByTappingOutsidePopup()
 	{
 		var popupClosedTCS = new TaskCompletionSource<IPopupResult>();
-		
-		if (Application.Current?.Windows[0].Page is not Page page)
-		{
-			throw new InvalidOperationException("Page cannot be null");
-		}
 
 		var showPopupTask = navigation.ShowPopupAsync<bool?>(new Popup<bool>(), token: CancellationToken.None);
 		var popupContainer = (PopupContainer)navigation.ModalStack[0];
@@ -399,6 +359,57 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Assert.True(popupClosedResult.WasDismissedByTappingOutsideOfPopup);
 		Assert.Null(showPopupResult.Result);
 		Assert.True(showPopupResult.WasDismissedByTappingOutsideOfPopup);
+
+		void HandlePopupClosed(object? sender, IPopupResult e)
+		{
+			popupClosedTCS.SetResult(e);
+		}
+	}
+	
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_NullableValueTypeShouldReturnResult_WhenPopupIsClosedByTappingOutsidePopup()
+	{
+		var popupClosedTCS = new TaskCompletionSource<IPopupResult>();
+
+		var showPopupTask = navigation.ShowPopupAsync<bool?>(new Popup<bool>(), token: CancellationToken.None);
+		var popupContainer = (PopupContainer)navigation.ModalStack[0];
+		popupContainer.PopupClosed += HandlePopupClosed;
+		
+		var tapGestureRecognizer = (TapGestureRecognizer)popupContainer.Content.GestureRecognizers[0];
+		tapGestureRecognizer.Command?.Execute(null);
+		
+		var popupClosedResult = await popupClosedTCS.Task;
+		var showPopupResult = await showPopupTask;
+		
+		Assert.True(popupClosedResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.Null(showPopupResult.Result);
+		Assert.True(showPopupResult.WasDismissedByTappingOutsideOfPopup);
+
+		void HandlePopupClosed(object? sender, IPopupResult e)
+		{
+			popupClosedTCS.SetResult(e);
+		}
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_ValueTypeShouldReturnResult_WhenPopupIsClosedByTappingOutsidePopup()
+	{
+		var popupClosedTCS = new TaskCompletionSource<IPopupResult>();
+
+		var showPopupTask = navigation.ShowPopupAsync<bool>(new Popup<bool>(), token: CancellationToken.None);
+		var popupContainer = (PopupContainer)navigation.ModalStack[0];
+		popupContainer.PopupClosed += HandlePopupClosed;
+		
+		var tapGestureRecognizer = (TapGestureRecognizer)popupContainer.Content.GestureRecognizers[0];
+		tapGestureRecognizer.Command?.Execute(null);
+		
+		var popupClosedResult = await popupClosedTCS.Task;
+		var showPopupResult = await showPopupTask;
+		
+		Assert.True(popupClosedResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(showPopupResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.ThrowsAny<PopupResultException>(() => (bool?)showPopupResult.Result);
+		Assert.ThrowsAny<InvalidCastException>(() => (bool?)showPopupResult.Result);
 
 		void HandlePopupClosed(object? sender, IPopupResult e)
 		{

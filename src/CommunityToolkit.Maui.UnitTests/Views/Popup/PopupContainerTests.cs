@@ -325,5 +325,6 @@ public class PopupContainerTests : BaseTest
 		public Thickness Padding { get; set; } = new Thickness(0);
 		public LayoutOptions VerticalOptions { get; set; } = LayoutOptions.Center;
 		public LayoutOptions HorizontalOptions { get; set; } = LayoutOptions.Center;
+		public Shadow? Shadow { get; set; } = null;
 	}
 }
