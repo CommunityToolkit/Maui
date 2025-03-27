@@ -62,13 +62,17 @@
 
         <Entry Margin="16,0" Placeholder="Animate on tap">
             <Entry.Behaviors>
-                <mct:AnimationBehavior AnimateOnTap="True">
+                <mct:AnimationBehavior AnimateOnTap="{Binding Source={x:Reference AnimateOnTapToggle}, Path=IsToggled, Mode=OneWay}">
                     <mct:AnimationBehavior.AnimationType>
                         <behaviorPages:SampleScaleAnimation Easing="{x:Static Easing.Linear}" Length="100" />
                     </mct:AnimationBehavior.AnimationType>
                 </mct:AnimationBehavior>
             </Entry.Behaviors>
         </Entry>
+        <HorizontalStackLayout Margin="16,0" Spacing="10">
+            <Label Text="Toggle animate on tap: " VerticalTextAlignment="Center" />
+            <Switch x:Name="AnimateOnTapToggle" />
+        </HorizontalStackLayout>
 
 
         <!--  Shows how the AnimationBehavior will play nicely with already attached TapGestureRecognizers  -->
