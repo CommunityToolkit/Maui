@@ -15,9 +15,15 @@ public abstract class BaseTest : IDisposable
 
 	protected enum TestDuration
 	{
-		Short = 2000,
-		Medium = 5000,
-		Long = 10000
+#if DEBUG
+		Short = 20_000,
+		Medium = 50_000,
+		Long = 100_000
+#else
+		Short = 2_000,
+		Medium = 5_000,
+		Long = 10_000
+#endif
 	}
 
 	protected BaseTest()
