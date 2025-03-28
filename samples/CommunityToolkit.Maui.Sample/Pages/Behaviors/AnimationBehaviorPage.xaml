@@ -62,7 +62,7 @@
 
         <Entry Margin="16,0" Placeholder="Animate on tap">
             <Entry.Behaviors>
-                <mct:AnimationBehavior AnimateOnTap="{Binding Source={x:Reference AnimateOnTapToggle}, Path=IsToggled}">
+                <mct:AnimationBehavior AnimateOnTap="{Binding Source={x:Reference AnimateOnTapToggle}, Path=IsToggled, x:DataType=Switch}">
                     <mct:AnimationBehavior.AnimationType>
                         <behaviorPages:SampleScaleAnimation Easing="{x:Static Easing.Linear}" Length="100" />
                     </mct:AnimationBehavior.AnimationType>
