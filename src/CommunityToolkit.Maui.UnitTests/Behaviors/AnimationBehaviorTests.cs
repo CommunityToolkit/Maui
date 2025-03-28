@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, VisualElement>(new AnimationBehavior(), new View())
 {
 	[Fact]
-	public void TapGestureRecognizerAttachedWhenNoEventSpecified()
+	public void TapGestureRecognizerAttachedWhenAnimateOnTapSetToTrue()
 	{
 		var boxView = new BoxView();
 		boxView.Behaviors.Add(new AnimationBehavior() { AnimateOnTap = true });
@@ -31,7 +31,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 	}
 
 	[Fact]
-	public void TapGestureRecognizerNotAttachedWhenEventSpecified()
+	public void TapGestureRecognizerNotAttachedWhenAnimateOnTapSetToFalse()
 	{
 		var boxView = new BoxView();
 		boxView.Behaviors.Add(new AnimationBehavior
@@ -41,6 +41,47 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 		var gestureRecognizers = boxView.GestureRecognizers.ToList();
 
 		gestureRecognizers.Should().BeEmpty();
+	}
+
+	[Fact]
+	public void TapGestureRecognizerAddedAndRemovedDynamically()
+	{
+		var behavior = new AnimationBehavior() { AnimateOnTap = false };
+
+		var boxView = new BoxView();
+		boxView.Behaviors.Add(behavior);
+		var gestureRecognizers = boxView.GestureRecognizers.ToList();
+
+		gestureRecognizers.Should().BeEmpty();
+
+		behavior.AnimateOnTap = true;
+
+		gestureRecognizers = boxView.GestureRecognizers.ToList();
+		gestureRecognizers.Should().HaveCount(1).And.AllBeOfType<TapGestureRecognizer>();
+
+		behavior.AnimateOnTap = false;
+
+		gestureRecognizers = boxView.GestureRecognizers.ToList();
+		gestureRecognizers.Should().BeEmpty();
+	}
+
+	[Fact]
+	public void CorrectTapGestureRecognizerRemoved()
+	{
+		var behavior = new AnimationBehavior() { AnimateOnTap = true };
+		var boxView = new BoxView();
+		boxView.GestureRecognizers.Add(new TapGestureRecognizer() { AutomationId = "Test1" });
+		boxView.Behaviors.Add(behavior);
+		boxView.GestureRecognizers.Add(new TapGestureRecognizer() { AutomationId = "Test2" });
+
+		var gestureRecognizers = boxView.GestureRecognizers.ToList();
+		gestureRecognizers.Should().HaveCount(3).And.AllBeOfType<TapGestureRecognizer>();
+
+		behavior.AnimateOnTap = false;
+
+		gestureRecognizers = boxView.GestureRecognizers.ToList();
+		gestureRecognizers.Should().HaveCount(2).And.AllBeOfType<TapGestureRecognizer>();
+		gestureRecognizers.Select(g => ((TapGestureRecognizer)g).AutomationId).Should().BeEquivalentTo("Test1", "Test2");
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
