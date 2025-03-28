@@ -34,7 +34,7 @@ public partial class AnimationBehavior : EventToCommandBehavior
 	/// Backing BindableProperty for the <see cref="AnimateOnTap"/> property.
 	/// </summary>
 	public static readonly BindableProperty AnimateOnTapProperty =
-		BindableProperty.Create(nameof(AnimateOnTap), typeof(bool), typeof(AnimationBehavior));
+		BindableProperty.Create(nameof(AnimateOnTap), typeof(bool), typeof(AnimationBehavior), propertyChanged: OnAnimateOnTapPropertyChanged);
 
 	TapGestureRecognizer? tapGestureRecognizer;
 
@@ -83,19 +83,16 @@ public partial class AnimationBehavior : EventToCommandBehavior
 	{
 		base.OnAttachedTo(bindable);
 
-		if (AnimateOnTap && bindable is IGestureRecognizers gestureRecognizers)
+		if(AnimateOnTap)
 		{
-			tapGestureRecognizer = new TapGestureRecognizer();
-			tapGestureRecognizer.Tapped += OnTriggerHandled;
-
-			gestureRecognizers.GestureRecognizers.Add(tapGestureRecognizer);
+			AddTapGestureRecognizer();
 		}
 	}
 
 	/// <inheritdoc/>
 	protected override void OnDetachingFrom(VisualElement bindable)
 	{
-		if (tapGestureRecognizer is not null)
+		if(tapGestureRecognizer is not null)
 		{
 			tapGestureRecognizer.Tapped -= OnTriggerHandled;
 			tapGestureRecognizer = null;
@@ -112,6 +109,52 @@ public partial class AnimationBehavior : EventToCommandBehavior
 		base.OnTriggerHandled(sender, eventArgs);
 	}
 
+	static void OnAnimateOnTapPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		if(bindable is not AnimationBehavior behavior)
+		{
+			return;
+		}
+
+		if((bool)newValue)
+		{
+			behavior.AddTapGestureRecognizer();
+		}
+		else
+		{
+			behavior.RemoveTapGestureRecognizer();
+		}
+	}
+
+	void AddTapGestureRecognizer()
+	{
+		if(View is not IGestureRecognizers gestureRecognizers)
+		{
+			return;
+		}
+
+		tapGestureRecognizer = new TapGestureRecognizer();
+		tapGestureRecognizer.Tapped += OnTriggerHandled;
+		gestureRecognizers.GestureRecognizers.Add(tapGestureRecognizer);
+	}
+
+	void RemoveTapGestureRecognizer()
+	{
+		if(tapGestureRecognizer is null)
+		{
+			return;
+		}
+
+		if(View is not IGestureRecognizers gestureRecognizers)
+		{
+			return;
+		}
+
+		gestureRecognizers.GestureRecognizers.Remove(tapGestureRecognizer);
+		tapGestureRecognizer.Tapped -= OnTriggerHandled;
+		tapGestureRecognizer = null;
+	}
+
 	static Command<CancellationToken> CreateAnimateCommand(BindableObject bindable)
 	{
 		var animationBehavior = (AnimationBehavior)bindable;
@@ -120,7 +163,7 @@ public partial class AnimationBehavior : EventToCommandBehavior
 
 	static void OnAnimateCommandChanging(BindableObject bindable, object oldValue, object newValue)
 	{
-		if (newValue is not Command<CancellationToken>)
+		if(newValue is not Command<CancellationToken>)
 		{
 			var animationBehavior = (AnimationBehavior)bindable;
 			throw new InvalidOperationException($"{nameof(AnimateCommand)} must of Type {animationBehavior.AnimateCommand.GetType().FullName}");
@@ -129,7 +172,7 @@ public partial class AnimationBehavior : EventToCommandBehavior
 
 	async Task OnAnimate(CancellationToken token)
 	{
-		if (View is null || AnimationType is null)
+		if(View is null || AnimationType is null)
 		{
 			return;
 		}
@@ -143,7 +186,7 @@ public partial class AnimationBehavior : EventToCommandBehavior
 			// Returning the `Task` would cause the `OnAnimate()` method to return immediately, before `AnimationType.Animate()` has completed. Returning immediately exits our try/catch block and thus negates our opportunity to handle any Exceptions which breaks `Options.ShouldSuppressExceptionsInAnimations`.
 			await AnimationType.Animate(View, token);
 		}
-		catch (Exception ex) when (Options.ShouldSuppressExceptionsInAnimations)
+		catch(Exception ex) when(Options.ShouldSuppressExceptionsInAnimations)
 		{
 			Trace.TraceInformation("{0}", ex);
 		}
