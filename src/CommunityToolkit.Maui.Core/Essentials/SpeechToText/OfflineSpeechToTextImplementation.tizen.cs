@@ -105,7 +105,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 		}
 	}
 
-	void InternalStartListening(SpeechToTextOptions options)
+	Task InternalStartListening(SpeechToTextOptions options, CancellationToken token = default)
 	{
 		Initialize();
 
@@ -118,5 +118,6 @@ public sealed partial class OfflineSpeechToTextImplementation
 			: RecognitionType.Free;
 
 		sttClient.Start(options.Culture.Name, recognitionType);
+		return Task.CompletedTask;
 	}
 }
