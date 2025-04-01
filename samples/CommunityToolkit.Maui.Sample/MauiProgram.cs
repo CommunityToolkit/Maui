@@ -24,7 +24,6 @@ using CommunityToolkit.Maui.Sample.ViewModels.ImageSources;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.PlatformSpecific;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
-using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
 using CommunityToolkit.Maui.Sample.Views.Popups;
 using CommunityToolkit.Maui.Storage;
 using Microsoft.Extensions.Http.Resilience;
@@ -89,32 +88,31 @@ public static class MauiProgram
 									fonts.AddFont("Font Awesome 6 Brands-Regular-400.otf", FontFamilies.FontAwesomeBrands);
 								});
 
-
 		builder.ConfigureLifecycleEvents(events =>
 		{
 #if WINDOWS10_0_17763_0_OR_GREATER
-                events.AddWindows(static windowLifeCycleBuilder =>
-                {
-                    windowLifeCycleBuilder.OnWindowCreated(window =>
-                    {
-                        window.SystemBackdrop = new MicaBackdrop { Kind = MicaKind.Base };
+				events.AddWindows(static windowLifeCycleBuilder =>
+				{
+					windowLifeCycleBuilder.OnWindowCreated(window =>
+					{
+						window.SystemBackdrop = new MicaBackdrop { Kind = MicaKind.Base };
 
-                        var titleBar = window.GetAppWindow()?.TitleBar ?? throw new InvalidOperationException("App Window Cannot be Null");
+						var titleBar = window.GetAppWindow()?.TitleBar ?? throw new InvalidOperationException("App Window Cannot be Null");
 
-                        titleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+						titleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
 
-                        window.ExtendsContentIntoTitleBar = false;
+						window.ExtendsContentIntoTitleBar = false;
 
-                        IntPtr nativeWindowHandle = WinRT.Interop.WindowNative.GetWindowHandle(window);
-                        WindowId win32WindowsId = Win32Interop.GetWindowIdFromWindow(nativeWindowHandle);
-                        AppWindow winuiAppWindow = AppWindow.GetFromWindowId(win32WindowsId);
+						IntPtr nativeWindowHandle = WinRT.Interop.WindowNative.GetWindowHandle(window);
+						WindowId win32WindowsId = Win32Interop.GetWindowIdFromWindow(nativeWindowHandle);
+						AppWindow winuiAppWindow = AppWindow.GetFromWindowId(win32WindowsId);
 
-                        if (winuiAppWindow.Presenter is OverlappedPresenter p)
-                        {
-                            p.SetBorderAndTitleBar(true, true);
-                        }
-                    });
-                });
+						if (winuiAppWindow.Presenter is OverlappedPresenter p)
+						{
+							p.SetBorderAndTitleBar(true, true);
+						}
+					});
+				});
 #endif
 		});
 
@@ -147,7 +145,6 @@ public static class MauiProgram
 		services.AddTransient<LayoutsGalleryPage, LayoutsGalleryViewModel>();
 		services.AddTransient<ViewsGalleryPage, ViewsGalleryViewModel>();
 		services.AddTransient<PlatformSpecificGalleryPage, PlatformSpecificGalleryViewModel>();
-
 
 		// Add Alerts Pages + ViewModels
 		services.AddTransientWithShellRoute<SnackbarPage, SnackbarViewModel>();
@@ -261,6 +258,9 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<PopupAnchorPage, PopupAnchorViewModel>();
 		services.AddTransientWithShellRoute<PopupLayoutAlignmentPage, PopupLayoutAlignmentViewModel>();
 		services.AddTransientWithShellRoute<PopupPositionPage, PopupPositionViewModel>();
+		services.AddTransientWithShellRoute<RatingViewCsharpPage, RatingViewCsharpViewModel>();
+		services.AddTransientWithShellRoute<RatingViewShowcasePage, RatingViewShowcaseViewModel>();
+		services.AddTransientWithShellRoute<RatingViewXamlPage, RatingViewXamlViewModel>();
 		services.AddTransientWithShellRoute<SemanticOrderViewPage, SemanticOrderViewPageViewModel>();
 		services.AddTransientWithShellRoute<ShowPopupInOnAppearingPage, ShowPopupInOnAppearingPageViewModel>();
 		services.AddTransientWithShellRoute<StylePopupPage, StylePopupViewModel>();
