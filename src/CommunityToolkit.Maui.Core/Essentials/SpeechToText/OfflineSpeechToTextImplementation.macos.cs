@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Media;
 public sealed partial class OfflineSpeechToTextImplementation
 {
 	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest))]
-	Task InternalStartListening(SpeechToTextOptions options, CancellationToken token = default)
+	void InternalStartListening(SpeechToTextOptions options)
 	{
 		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(options.Culture.Name));
 		speechRecognizer.SupportsOnDeviceRecognition = true;
@@ -91,7 +91,5 @@ public sealed partial class OfflineSpeechToTextImplementation
 				}
 			}
 		});
-		
-		return Task.CompletedTask;
 	}
 }

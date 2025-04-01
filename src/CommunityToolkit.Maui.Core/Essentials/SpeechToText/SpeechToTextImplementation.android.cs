@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Android.Content;
 using Android.Runtime;
 using Android.Speech;
@@ -11,6 +12,7 @@ public sealed partial class SpeechToTextImplementation
 {
 	SpeechRecognizer? speechRecognizer;
 	SpeechRecognitionListener? listener;
+	CultureInfo? cultureInfo;
 
 	/// <inheritdoc />
 	public SpeechToTextState CurrentState
@@ -40,15 +42,13 @@ public sealed partial class SpeechToTextImplementation
 	static Intent CreateSpeechIntent(SpeechToTextOptions options)
 	{
 		var intent = new Intent(RecognizerIntent.ActionRecognizeSpeech);
-		
+		intent.PutExtra(RecognizerIntent.ExtraLanguagePreference, Java.Util.Locale.Default.ToString());
 		intent.PutExtra(RecognizerIntent.ExtraLanguageModel, RecognizerIntent.LanguageModelFreeForm);
 		intent.PutExtra(RecognizerIntent.ExtraCallingPackage, Application.Context.PackageName);
 		intent.PutExtra(RecognizerIntent.ExtraPartialResults, options.ShouldReportPartialResults);
-		
-		var javaLocale = Java.Util.Locale.ForLanguageTag(options.Culture.Name).ToLanguageTag();
+
+		var javaLocale = Java.Util.Locale.ForLanguageTag(options.Culture.Name).ToString();
 		intent.PutExtra(RecognizerIntent.ExtraLanguage, javaLocale);
-		intent.PutExtra(RecognizerIntent.ExtraLanguagePreference, javaLocale);
-		intent.PutExtra(RecognizerIntent.ExtraOnlyReturnLanguagePreference, javaLocale);
 
 		return intent;
 	}

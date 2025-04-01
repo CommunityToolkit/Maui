@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Sample.Models;
 
-namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
+namespace CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
 
 public partial class AvatarViewBindablePropertiesViewModel : BaseViewModel
 {

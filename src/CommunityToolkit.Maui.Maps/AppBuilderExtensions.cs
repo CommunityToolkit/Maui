@@ -44,6 +44,8 @@ public static class AppBuilderExtensions
 	/// </code>
 	/// </example>
 	/// 
+	[RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
+	[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
 	public static MauiAppBuilder UseMauiCommunityToolkitMaps(this MauiAppBuilder builder, string key)
 	{
 		builder.ConfigureMauiHandlers(handlers =>

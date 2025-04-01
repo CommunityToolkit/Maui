@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics;
 using System.Windows.Input;
 
 namespace CommunityToolkit.Maui.Behaviors;
@@ -98,13 +97,13 @@ public partial class UserStoppedTypingBehavior : BaseBehavior<InputView>, IDispo
 	}
 
 	/// <inheritdoc/>
-	protected override async void OnViewPropertyChanged(InputView sender, PropertyChangedEventArgs e)
+	protected override void OnViewPropertyChanged(InputView sender, PropertyChangedEventArgs e)
 	{
 		base.OnViewPropertyChanged(sender, e);
 
 		if (e.PropertyName == InputView.TextProperty.PropertyName)
 		{
-			await OnTextPropertyChanged(sender, sender.Text);
+			OnTextPropertyChanged();
 		}
 	}
 
@@ -122,38 +121,38 @@ public partial class UserStoppedTypingBehavior : BaseBehavior<InputView>, IDispo
 		}
 	}
 
-	async Task OnTextPropertyChanged(InputView view, string? text)
+	void OnTextPropertyChanged()
 	{
-		if (tokenSource is not null)
+		if (tokenSource != null)
 		{
-			await tokenSource.CancelAsync();
+			tokenSource.Cancel();
 			tokenSource.Dispose();
 		}
-
 		tokenSource = new CancellationTokenSource();
 
-		if (text is null || text.Length < MinimumLengthThreshold)
-		{
-			return;
-		}
+		Task.Delay(StoppedTypingTimeThreshold, tokenSource.Token)
+			.ContinueWith(task =>
+			{
+				if (task.IsFaulted && task.Exception != null)
+				{
+					throw task.Exception;
+				}
 
-		var task = Task.Delay(StoppedTypingTimeThreshold, tokenSource.Token);
-		await task.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing | ConfigureAwaitOptions.ContinueOnCapturedContext);
+				if (task.Status == TaskStatus.Canceled ||
+					View?.Text?.Length < MinimumLengthThreshold)
+				{
+					return;
+				}
 
-		if (task.Status is TaskStatus.Canceled)
-		{
-			Trace.WriteLine($"{nameof(UserStoppedTypingBehavior)}.{nameof(OnTextPropertyChanged)} cancelled");
-			return;
-		}
+				if (View != null && ShouldDismissKeyboardAutomatically)
+				{
+					Dispatcher.DispatchIfRequired(View.Unfocus);
+				}
 
-		if (ShouldDismissKeyboardAutomatically)
-		{
-			Dispatcher.DispatchIfRequired(view.Unfocus);
-		}
-
-		if (Command?.CanExecute(CommandParameter ?? text) is true)
-		{
-			await Dispatcher.DispatchIfRequiredAsync(() => Command.Execute(CommandParameter ?? text));
-		}
+				if (View != null && Command?.CanExecute(CommandParameter ?? View.Text) is true)
+				{
+					Command.Execute(CommandParameter ?? View.Text);
+				}
+			});
 	}
 }

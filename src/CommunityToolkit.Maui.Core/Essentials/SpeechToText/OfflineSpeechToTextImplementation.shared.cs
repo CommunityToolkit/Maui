@@ -42,7 +42,7 @@ public sealed partial class OfflineSpeechToTextImplementation : ISpeechToText
 			throw new PermissionException($"{nameof(Permissions)}.{nameof(Permissions.Microphone)} Not Granted");
 		}
 
-		await InternalStartListening(options, cancellationToken);
+		InternalStartListening(options);
 	}
 
 	/// <inheritdoc/>

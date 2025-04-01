@@ -1,5 +1,5 @@
-﻿using Android.Content;
-using Android.Views;
+﻿using System.Runtime.Versioning;
+using Android.Content;
 using AndroidX.Camera.Core;
 using AndroidX.Camera.Core.Impl.Utils.Futures;
 using AndroidX.Camera.Core.ResolutionSelector;
@@ -10,7 +10,6 @@ using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Extensions;
 using Java.Lang;
 using Java.Util.Concurrent;
-using System.Runtime.Versioning;
 using static Android.Media.Image;
 using Math = System.Math;
 
@@ -31,7 +30,6 @@ partial class CameraManager
 	Preview? cameraPreview;
 	ResolutionSelector? resolutionSelector;
 	ResolutionFilter? resolutionFilter;
-	OrientationListener? orientationListener;
 
 	public void Dispose()
 	{
@@ -49,8 +47,6 @@ partial class CameraManager
 			previewView.SetScaleType(NativePlatformCameraPreviewView.ScaleType.FitCenter);
 		}
 		cameraExecutor = Executors.NewSingleThreadExecutor() ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
-		orientationListener = new OrientationListener(SetImageCaptureTargetRotation, context);
-		orientationListener.Enable();
 
 		return previewView;
 	}
@@ -138,10 +134,6 @@ partial class CameraManager
 
 			resolutionFilter?.Dispose();
 			resolutionFilter = null;
-
-			orientationListener?.Disable();
-			orientationListener?.Dispose();
-			orientationListener = null;
 		}
 	}
 
@@ -259,20 +251,6 @@ partial class CameraManager
 		return ValueTask.CompletedTask;
 	}
 
-	void SetImageCaptureTargetRotation(int rotation)
-	{
-		if (imageCapture is not null)
-		{
-			imageCapture.TargetRotation = rotation switch
-			{
-				>= 45 and < 135 => (int)SurfaceOrientation.Rotation270,
-				>= 135 and < 225 => (int)SurfaceOrientation.Rotation180,
-				>= 225 and < 315 => (int)SurfaceOrientation.Rotation90,
-				_ => (int)SurfaceOrientation.Rotation0
-			};
-		}
-	}
-
 	sealed class FutureCallback(Action<Java.Lang.Object?> action, Action<Throwable?> failure) : Java.Lang.Object, IFutureCallback
 	{
 		public void OnSuccess(Java.Lang.Object? value)
@@ -363,21 +341,6 @@ partial class CameraManager
 		public void OnChanged(Java.Lang.Object? value)
 		{
 			observerAction.Invoke(value);
-		}
-	}
-
-	sealed class OrientationListener(Action<int> callback, Context context) : OrientationEventListener(context)
-	{
-		readonly Action<int> callback = callback;
-
-		public override void OnOrientationChanged(int orientation)
-		{
-			if (orientation == OrientationUnknown)
-			{
-				return;
-			}
-
-			callback.Invoke(orientation);
 		}
 	}
 }

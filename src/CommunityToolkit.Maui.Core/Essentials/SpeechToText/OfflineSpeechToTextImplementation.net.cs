@@ -11,7 +11,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 		return ValueTask.CompletedTask;
 	}
 
-	Task InternalStartListening(SpeechToTextOptions options, CancellationToken token = default)
+	void InternalStartListening(SpeechToTextOptions options)
 	{
 		throw new NotSupportedException();
 	}

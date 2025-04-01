@@ -32,7 +32,9 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 
 	static void AnalyzeNode(SyntaxNodeAnalysisContext context)
 	{
-		if (context.Node is InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax { Name.Identifier.ValueText: useMauiAppMethodName } } invocationExpression)
+		if (context.Node is InvocationExpressionSyntax invocationExpression
+			&& invocationExpression.Expression is MemberAccessExpressionSyntax memberAccessExpression
+			&& memberAccessExpression.Name.Identifier.ValueText == useMauiAppMethodName)
 		{
 			var root = invocationExpression.SyntaxTree.GetRoot();
 			var methodDeclaration = root.FindNode(invocationExpression.FullSpan)
@@ -42,7 +44,8 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 
 			if (methodDeclaration is not null
 				&& !methodDeclaration.DescendantNodes().OfType<InvocationExpressionSyntax>().Any(static n =>
-					n.Expression is MemberAccessExpressionSyntax { Name.Identifier.ValueText: useMauiCommunityToolkitMethodName }))
+					n.Expression is MemberAccessExpressionSyntax m &&
+					m.Name.Identifier.ValueText == useMauiCommunityToolkitMethodName))
 			{
 				var diagnostic = Diagnostic.Create(rule, invocationExpression.GetLocation());
 				context.ReportDiagnostic(diagnostic);

@@ -151,7 +151,7 @@ partial class CameraManager
 
 		await mediaCapture.InitializeCameraForCameraView(cameraView.SelectedCamera.DeviceId, token);
 
-		frameSource = mediaCapture.FrameSources.FirstOrDefault(source => source.Value.Info.MediaStreamType == MediaStreamType.VideoRecord && source.Value.Info.SourceKind == MediaFrameSourceKind.Color).Value;
+		frameSource = mediaCapture.FrameSources.FirstOrDefault(source => source.Value.Info.MediaStreamType == MediaStreamType.VideoRecord).Value;
 
 		if (frameSource is not null)
 		{

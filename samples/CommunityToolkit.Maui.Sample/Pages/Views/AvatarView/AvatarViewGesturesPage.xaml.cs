@@ -1,5 +1,5 @@
 using CommunityToolkit.Maui.Alerts;
-using CommunityToolkit.Maui.Sample.ViewModels.Views;
+using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 

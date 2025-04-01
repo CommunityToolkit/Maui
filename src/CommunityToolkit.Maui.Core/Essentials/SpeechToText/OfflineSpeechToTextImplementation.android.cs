@@ -1,12 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.Versioning;
 using Android.Content;
 using Android.Runtime;
 using Android.Speech;
-using Java.Lang;
-using Java.Util.Concurrent;
 using Microsoft.Maui.ApplicationModel;
-using Exception = System.Exception;
 
 namespace CommunityToolkit.Maui.Media;
 
@@ -15,20 +13,21 @@ public sealed partial class OfflineSpeechToTextImplementation
 {
 	SpeechRecognizer? speechRecognizer;
 	SpeechRecognitionListener? listener;
+	SpeechToTextState currentState = SpeechToTextState.Stopped;
 
 	/// <inheritdoc />
 	public SpeechToTextState CurrentState
 	{
-		get;
+		get => currentState;
 		private set
 		{
-			if (field != value)
+			if (currentState != value)
 			{
-				field = value;
-				OnSpeechToTextStateChanged(field);
+				currentState = value;
+				OnSpeechToTextStateChanged(currentState);
 			}
 		}
-	} = SpeechToTextState.Stopped;
+	}
 
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()
@@ -44,24 +43,22 @@ public sealed partial class OfflineSpeechToTextImplementation
 	static Intent CreateSpeechIntent(SpeechToTextOptions options)
 	{
 		var intent = new Intent(RecognizerIntent.ActionRecognizeSpeech);
-		
-		intent.PutExtra(RecognizerIntent.ExtraLanguageModel, RecognizerIntent.LanguageModelFreeForm); 
+		intent.PutExtra(RecognizerIntent.ExtraLanguagePreference, Java.Util.Locale.Default.ToString());
+		intent.PutExtra(RecognizerIntent.ExtraLanguageModel, RecognizerIntent.LanguageModelFreeForm);
 		intent.PutExtra(RecognizerIntent.ExtraCallingPackage, Application.Context.PackageName);
 		intent.PutExtra(RecognizerIntent.ExtraPartialResults, options.ShouldReportPartialResults);
-		
-		var javaLocale = Java.Util.Locale.ForLanguageTag(options.Culture.Name).ToLanguageTag();
+
+		var javaLocale = Java.Util.Locale.ForLanguageTag(options.Culture.Name).ToString();
 		intent.PutExtra(RecognizerIntent.ExtraLanguage, javaLocale);
-		intent.PutExtra(RecognizerIntent.ExtraLanguagePreference, javaLocale);
-		intent.PutExtra(RecognizerIntent.ExtraOnlyReturnLanguagePreference, javaLocale);
 
 		return intent;
 	}
 
-	static bool IsSpeechRecognitionAvailable() => OperatingSystem.IsAndroidVersionAtLeast(34) && SpeechRecognizer.IsOnDeviceRecognitionAvailable(Application.Context);
+	static bool IsSpeechRecognitionAvailable() => OperatingSystem.IsAndroidVersionAtLeast(33) && SpeechRecognizer.IsOnDeviceRecognitionAvailable(Application.Context);
 
 	[MemberNotNull(nameof(speechRecognizer), nameof(listener))]
-	[SupportedOSPlatform("Android34.0")]
-	async Task InternalStartListening(SpeechToTextOptions options, CancellationToken token = default)
+	[SupportedOSPlatform("Android33.0")]
+	void InternalStartListening(SpeechToTextOptions options)
 	{
 		if (!IsSpeechRecognitionAvailable())
 		{
@@ -71,28 +68,14 @@ public sealed partial class OfflineSpeechToTextImplementation
 		var recognizerIntent = CreateSpeechIntent(options);
 
 		speechRecognizer = SpeechRecognizer.CreateOnDeviceSpeechRecognizer(Application.Context);
+		speechRecognizer.TriggerModelDownload(recognizerIntent);
+
 		listener = new SpeechRecognitionListener(this)
 		{
 			Error = HandleListenerError,
 			PartialResults = HandleListenerPartialResults,
 			Results = HandleListenerResults
 		};
-		
-		var recognitionSupportTask = new TaskCompletionSource<RecognitionSupport>();
-		speechRecognizer.CheckRecognitionSupport(recognizerIntent, new Executor(), new RecognitionSupportCallback(recognitionSupportTask));
-		var recognitionSupportResult = await recognitionSupportTask.Task;
-		if (!recognitionSupportResult.InstalledOnDeviceLanguages.Contains(options.Culture.Name))
-		{
-			if (!recognitionSupportResult.SupportedOnDeviceLanguages.Contains(options.Culture.Name))
-			{
-				throw new NotSupportedException($"Culture '{options.Culture.Name}' is not supported");
-			}
-			
-			var downloadLanguageTask = new TaskCompletionSource();
-			speechRecognizer.TriggerModelDownload(recognizerIntent, new Executor(), new ModelDownloadListener(downloadLanguageTask));
-			await downloadLanguageTask.Task.WaitAsync(token);
-		}
-		
 		speechRecognizer.SetRecognitionListener(listener);
 		speechRecognizer.StartListening(recognizerIntent);
 	}
@@ -177,48 +160,5 @@ public sealed partial class OfflineSpeechToTextImplementation
 
 			action.Invoke(matches[0]);
 		}
-	}
-}
-
-[SupportedOSPlatform("Android33.0")]
-class RecognitionSupportCallback(TaskCompletionSource<RecognitionSupport> recognitionSupportTask) : Java.Lang.Object, IRecognitionSupportCallback
-{
-	public void OnError(int error)
-	{
-		recognitionSupportTask.TrySetException(new Exception(error.ToString()));
-	}
-
-	public void OnSupportResult(RecognitionSupport recognitionSupport)
-	{
-		recognitionSupportTask.TrySetResult(recognitionSupport);
-	}
-}
-
-class Executor : Java.Lang.Object, IExecutor
-{
-	public void Execute(IRunnable? command)
-	{
-		command?.Run();
-	}
-}
-
-class ModelDownloadListener(TaskCompletionSource downloadLanguageTask) : Java.Lang.Object, IModelDownloadListener
-{
-	public void OnError(SpeechRecognizerError error)
-	{
-		downloadLanguageTask.SetException(new Exception(error.ToString()));
-	}
-
-	public void OnProgress(int completedPercent)
-	{
-	}
-
-	public void OnScheduled()
-	{
-	}
-
-	public void OnSuccess()
-	{
-		downloadLanguageTask.SetResult();
 	}
 }
