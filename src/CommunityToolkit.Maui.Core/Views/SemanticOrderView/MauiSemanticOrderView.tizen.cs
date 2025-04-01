@@ -34,27 +34,27 @@ public class MauiSemanticOrderView : ContentViewGroup
 			return;
 		}
 
-		var accessibilityManager = AccessibilityManager.Instance;
-		var order = accessibilityManager.GenerateNewFocusOrder();
+		// var accessibilityManager = AccessibilityManager.Instance;
+		// var order = accessibilityManager.GenerateNewFocusOrder();
 
-		foreach (var view in VirtualView.ViewOrder)
-		{
-			if (view.Handler is IPlatformViewHandler platformViewHandler && platformViewHandler.PlatformView is not null)
-			{
-				if (platformViewHandler.PlatformView is WrapperView wrapperView)
-				{
-					if (wrapperView.Content is not null)
-					{
-						accessibilityManager.SetFocusOrder(wrapperView.Content, order);
-					}
-				}
-				else
-				{
-					accessibilityManager.SetFocusOrder(platformViewHandler.PlatformView, order);
-				}
+		// foreach (var view in VirtualView.ViewOrder)
+		// {
+		// 	if (view.Handler is IPlatformViewHandler platformViewHandler && platformViewHandler.PlatformView is not null)
+		// 	{
+		// 		if (platformViewHandler.PlatformView is WrapperView wrapperView)
+		// 		{
+		// 			if (wrapperView.Content is not null)
+		// 			{
+		// 				accessibilityManager.SetFocusOrder(wrapperView.Content, order);
+		// 			}
+		// 		}
+		// 		else
+		// 		{
+		// 			accessibilityManager.SetFocusOrder(platformViewHandler.PlatformView, order);
+		// 		}
 
-				order++;
-			}
-		}
+		// 		order++;
+		// 	}
+		// }
 	}
 }
