@@ -22,6 +22,9 @@
     <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
 
+    <!-- WindowsAppSDK -->
+    <WindowsSdkPackageVersion>10.0.19041.44</WindowsSdkPackageVersion>
+
     <!-- https://learn.microsoft.com/dotnet/core/deploying/native-aot/?tabs=net8plus%2Cwindows -->
     <StripSymbols>false</StripSymbols>
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
