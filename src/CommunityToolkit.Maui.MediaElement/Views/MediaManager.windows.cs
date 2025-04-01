@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Numerics;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Controls;
@@ -301,14 +302,21 @@ partial class MediaManager : IDisposable
 		}
 		else if (MediaElement.Source is ResourceMediaSource resourceMediaSource)
 		{
-			string path = "ms-appx:///" + resourceMediaSource.Path;
+			if(string.IsNullOrWhiteSpace(resourceMediaSource.Path))
+			{
+				Logger.LogInformation("ResourceMediaSource Path is null or empty");
+				return;
+			}
+
+			// To test this run app as unpackaged and packaged.
+			string path = FileSystemUtils.PlatformGetFullAppPackageFilePath(resourceMediaSource.Path);
 			if (!string.IsNullOrWhiteSpace(path))
 			{
 				Player.Source = WinMediaSource.CreateFromUri(new Uri(path));
 			}
 		}
 	}
-
+	
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()
 	{
 		if (Player is null)
