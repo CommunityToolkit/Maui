@@ -13,11 +13,6 @@ namespace CommunityToolkit.Maui.Converters;
 /// <typeparam name="TParam">Type of parameter</typeparam>
 public abstract class BaseConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TFrom, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TTo, TParam> : ValueConverterExtension, ICommunityToolkitValueConverter
 {
-	private protected BaseConverter()
-	{
-
-	}
-
 	/// <summary>
 	/// Default value to return when <see cref="IValueConverter.Convert(object?, Type, object?, CultureInfo?)"/> throws an <see cref="Exception"/>.
 	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters"/> is set to <see langword="true"/>.
@@ -110,11 +105,6 @@ public abstract class BaseConverter<[DynamicallyAccessedMembers(DynamicallyAcces
 /// <typeparam name="TTo">Type of the output value.</typeparam>
 public abstract class BaseConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TFrom, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TTo> : ValueConverterExtension, ICommunityToolkitValueConverter
 {
-	private protected BaseConverter()
-	{
-
-	}
-
 	/// <summary>
 	/// Default value to return when <see cref="IValueConverter.Convert(object?, Type, object?, CultureInfo?)"/> throws an <see cref="Exception"/>.
 	/// This value is used when <see cref="Maui.Options.ShouldSuppressExceptionsInConverters"/> is set to <see langword="true"/>.
