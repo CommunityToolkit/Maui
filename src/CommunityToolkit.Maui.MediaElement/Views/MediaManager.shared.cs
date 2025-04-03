@@ -1,4 +1,5 @@
-﻿#if !(ANDROID || IOS || WINDOWS || MACCATALYST || TIZEN)
+﻿// NOTE: PR shares code with #1918 https://github.com/CommunityToolkit/Maui/pull/1918
+#if !(ANDROID || IOS || WINDOWS || MACCATALYST || TIZEN)
 global using PlatformMediaElement = System.Object;
 #elif ANDROID
 global using PlatformMediaElement = AndroidX.Media3.ExoPlayer.IExoPlayer;
@@ -10,6 +11,7 @@ global using PlatformMediaElement = Microsoft.UI.Xaml.Controls.MediaPlayerElemen
 global using PlatformMediaElement = CommunityToolkit.Maui.Core.Views.TizenPlayer;
 #endif
 
+using CommunityToolkit.Maui.Primitives;
 using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -36,6 +38,25 @@ public partial class MediaManager
 		MediaElement = mediaElement;
 
 		Logger = MauiContext.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(MediaManager));
+		FullScreenEvents.WindowsChanged += OnFullScreenStatusChanged;
+	}
+
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	protected void OnFullScreenStatusChanged(object? sender, FullScreenStateChangedEventArgs e)
+	{
+		if (MediaElement is not null)
+		{
+			MediaElement.FullScreenChanged(e.NewState);
+		}
+		else
+		{
+			Logger?.LogWarning("MediaElement is null");
+		}
 	}
 
 	/// <summary>
