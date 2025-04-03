@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Android.Content;
 using Android.Views;
 using Android.Widget;
@@ -130,17 +131,59 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
 	/// <exception cref="NullReferenceException">Thrown when <see cref="Context"/> is <see langword="null"/> or when the platform view could not be created.</exception>
 	[MemberNotNull(nameof(Player), nameof(PlayerView), nameof(session))]
-	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView()
+	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView(MediaElementOptions mediaElementOptions)
 	{
 		Player = new ExoPlayerBuilder(MauiContext.Context).Build() ?? throw new InvalidOperationException("Player cannot be null");
 		Player.AddListener(this);
-		PlayerView = new PlayerView(MauiContext.Context)
-		{
-			Player = Player,
-			UseController = false,
-			ControllerAutoShow = false,
-			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
-		};
+
+		// Create SurfaceView or TextureView
+		if (mediaElementOptions.AndroidViewType == AndroidViewType.SurfaceView) {
+
+			// Create SurfaceView
+			PlayerView = new PlayerView(MauiContext.Context) {
+				Player = Player,
+				UseController = false,
+				ControllerAutoShow = false,
+				LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
+			};
+		}
+		else {
+
+			// Create TextureView
+			Context context = MauiContext.Context!;
+		
+			// Construction Method 1 (slightly faster)
+			Android.Content.Res.Resources resources = context.Resources!; 
+			System.Xml.XmlReader xmlResource = resources.GetXml(Microsoft.Maui.Resource.Layout.textureview);
+			xmlResource.Read();
+			Android.Util.IAttributeSet attributes = Android.Util.Xml.AsAttributeSet(xmlResource)!; 
+			PlayerView = new PlayerView(MauiContext.Context, attributes) {
+				Player = Player,
+				UseController = false,
+				ControllerAutoShow = false,
+				LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
+			};
+
+
+			// Construction Method 2 (slightly slower)
+			/*var inflater = LayoutInflater.From(context)!;
+			var layout = inflater.Inflate(Microsoft.Maui.Resource.Layout.textureview, null)!;
+
+			// Find the PlayerView in the inflated layout
+			PlayerView = layout.FindViewById<PlayerView>(Microsoft.Maui.Resource.Id.texture_view_media_element);
+			if (PlayerView == null) {
+				throw new InvalidOperationException("PlayerView cannot be null");
+			}
+
+			PlayerView.Player = Player;
+			PlayerView.UseController = false;
+			PlayerView.ControllerAutoShow = false;
+			PlayerView.LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
+			*/
+
+		}
+
+		// Finish construction		
 		string randomId = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8];
 		var mediaSessionWRandomId = new MediaSession.Builder(Platform.AppContext, Player);
 		mediaSessionWRandomId.SetId(randomId);
@@ -662,4 +705,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		public const int StateStopped = 1;
 		public const int StateError = 7;
 	}
+	
+
 }
