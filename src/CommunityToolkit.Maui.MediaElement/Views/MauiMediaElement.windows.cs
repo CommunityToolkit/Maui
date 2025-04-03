@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.InteropServices;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
@@ -8,7 +9,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Markup;
-using WinRT.Interop;
 using Application = Microsoft.Maui.Controls.Application;
 using Grid = Microsoft.UI.Xaml.Controls.Grid;
 using Page = Microsoft.Maui.Controls.Page;
@@ -20,7 +20,9 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public partial class MauiMediaElement : Grid, IDisposable
 {
-	static readonly AppWindow appWindow = GetAppWindowForCurrentWindow();
+	[LibraryImport("user32.dll")]
+	internal static partial IntPtr GetForegroundWindow();
+
 	readonly Popup popup = new();
 	readonly Grid fullScreenGrid = new();
 	readonly MediaPlayerElement mediaPlayerElement;
@@ -147,24 +149,16 @@ public partial class MauiMediaElement : Grid, IDisposable
 
 	static AppWindow GetAppWindowForCurrentWindow()
 	{
-		// let's cache the CurrentPage here, since the user can navigate or background the app
-		// while this method is running
-		var currentPage = CurrentPage;
-
-		if (currentPage?.GetParentWindow().Handler.PlatformView is not MauiWinUIWindow window)
-		{
-			throw new InvalidOperationException($"{nameof(window)} cannot be null.");
-		}
-
-		var handle = WindowNative.GetWindowHandle(window);
-		var id = Win32Interop.GetWindowIdFromWindow(handle);
-
+		var windowHandle = GetForegroundWindow();
+		var id = Win32Interop.GetWindowIdFromWindow(windowHandle);
 		return AppWindow.GetFromWindowId(id);
 	}
 
 	void OnFullScreenButtonClick(object sender, RoutedEventArgs e)
 	{
 		var currentPage = CurrentPage;
+		var appWindow = GetAppWindowForCurrentWindow();
+
 		if (appWindow.Presenter.Kind is AppWindowPresenterKind.FullScreen)
 		{
 			appWindow.SetPresenter(AppWindowPresenterKind.Default);
