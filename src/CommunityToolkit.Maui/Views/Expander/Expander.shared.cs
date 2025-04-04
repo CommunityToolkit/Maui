@@ -79,7 +79,6 @@ public partial class Expander : ContentView, IExpander
 				(bodyLayout = new VerticalStackLayout()
 				{
 					HeightRequest = 1,
-					MinimumHeightRequest = 1,
 					Padding = new Thickness(0, 1, 0, 0),
 					Children = { (bodyContentView = new ContentView()) }
 				})
@@ -89,34 +88,38 @@ public partial class Expander : ContentView, IExpander
 		contentGrid.SetRow(headerContentView, 0);
 		contentGrid.SetRow(bodyLayout, 1);
 
+		#region Special case for bubbling height from nested Expanders
+		bodyContentView.PropertyChanged += (s, e) =>
+		{
+			if (e.PropertyName == nameof(Height))
+			{
+				if (IsExpanded)
+				{
+					ContentHeight = bodyContentView.Height;
+				}
+			}
+		};
+		#endregion
+
 		headerContentView.GestureRecognizers.Add(HeaderTapGestureRecognizer);
 	}
 
 	/// <summary>
 	/// Controls the visibility of the content inside the <see cref="Expander"/>.
 	/// </summary>
-	double ContentHeight
+	public double ContentHeight
 	{
 		get => bodyLayout.HeightRequest;
 		set
 		{
-			double newHeight = Math.Max(Math.Min(value, MaximumContentHeight), MinimumContentHeight);
+			double newHeight = Math.Max(Math.Min(value, bodyContentView.Height + 1.0), 1.0);
 			if (bodyLayout.Height != newHeight)
 			{
 				bodyLayout.HeightRequest = newHeight;
 			}
+			OnPropertyChanged(nameof(ContentHeight));
 		}
 	}
-
-	/// <summary>
-	/// The height of the content inside the <see cref="Expander"/> when it is collapsed.
-	/// </summary>
-	double MinimumContentHeight => bodyLayout.MinimumHeightRequest;
-
-	/// <summary>
-	/// The height of the content inside the <see cref="Expander"/> when it is expanded.
-	/// </summary>
-	double MaximumContentHeight => bodyContentView.Height + 1;
 
 	/// <summary>
 	/// Animates the expanding or collapsing of the content inside the <see cref="Expander"/>.
@@ -252,19 +255,28 @@ public partial class Expander : ContentView, IExpander
 		}
 	}
 
-	void OnHeaderTapGestureRecognizerTapped(object? sender, TappedEventArgs tappedEventArgs)
+	async void OnHeaderTapGestureRecognizerTapped(object? sender, TappedEventArgs tappedEventArgs)
 	{
 		IsExpanded = !IsExpanded;
+		if (AnimationsEnabled)
+		{
+			await Task.Delay(IsExpanded ? (int)ExpandDuration : (int)CollapseDuration);
+		}
 		HandleHeaderTapped?.Invoke(tappedEventArgs);
 	}
 
 	void ResizeExpanderInItemsView(TappedEventArgs tappedEventArgs)
 	{
+		if (Header is null)
+		{
+			return;
+		}
+
 		Element element = this;
 #if WINDOWS
 		var size = IsExpanded
 					? Measure(double.PositiveInfinity, double.PositiveInfinity)
-					: headerContentView.Measure(double.PositiveInfinity, double.PositiveInfinity);
+					: Header.Measure(double.PositiveInfinity, double.PositiveInfinity);
 #endif
 		while (element is not null)
 		{
@@ -297,22 +309,22 @@ public partial class Expander : ContentView, IExpander
 		{
 			if (AnimationsEnabled)
 			{
-				await ContentHeightTo(MaximumContentHeight, ExpandDuration, ExpandEasing);
+				await ContentHeightTo(bodyContentView.Height + 1.0, ExpandDuration, ExpandEasing);
 			}
 			else
 			{
-				ContentHeight = MaximumContentHeight;
+				ContentHeight = bodyContentView.Height + 1.0;
 			}
 		}
 		else
 		{
 			if (AnimationsEnabled)
 			{
-				await ContentHeightTo(MinimumContentHeight, CollapseDuration, CollapseEasing);
+				await ContentHeightTo(1.0, CollapseDuration, CollapseEasing);
 			}
 			else
 			{
-				ContentHeight = MinimumContentHeight;
+				ContentHeight = 1.0;
 			}
 		}
 
