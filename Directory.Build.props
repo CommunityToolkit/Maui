@@ -199,6 +199,13 @@
       IL3050,IL3051,IL3052,IL3053,IL3054,IL3055,IL3056,
       RS2007
     </WarningsAsErrors>
+
+    <!--
+      Once the repo moves to .NET 10 SDK, TestingPlatformDotnetTestSupport should be
+      replaced by dotnet.config that opts in the new dotnet test experience for Microsoft.Testing.Platform
+    -->
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
   </PropertyGroup>
 
   <!-- Required for NuGet Source Link -->
