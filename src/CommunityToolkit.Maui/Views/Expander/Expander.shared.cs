@@ -22,6 +22,36 @@ public partial class Expander : ContentView, IExpander
 	public static readonly BindableProperty DirectionProperty
 		= BindableProperty.Create(nameof(Direction), typeof(ExpandDirection), typeof(Expander), ExpandDirection.Down, propertyChanged: OnDirectionPropertyChanged);
 
+	/// <summary>
+	/// Backing BindableProperty for the <see cref="AnimationsEnabled"/> property.
+	/// </summary>
+	public static readonly BindableProperty AnimationsEnabledProperty
+		= BindableProperty.Create(nameof(AnimationsEnabledProperty), typeof(bool), typeof(Expander), true);
+
+	/// <summary>
+	/// Backing BindableProperty for the <see cref="CollapseDuration"/> property.
+	/// </summary>
+	public static readonly BindableProperty CollapseDurationProperty
+		= BindableProperty.Create(nameof(CollapseDuration), typeof(uint), typeof(Expander), (uint)250);
+
+	/// <summary>
+	/// Backing BindableProperty for the <see cref="CollapseEasing"/> property.
+	/// </summary>
+	public static readonly BindableProperty CollapseEasingProperty
+		= BindableProperty.Create(nameof(CollapseEasing), typeof(Easing), typeof(Expander));
+
+	/// <summary>
+	/// Backing BindableProperty for the <see cref="ExpandDuration"/> property.
+	/// </summary>
+	public static readonly BindableProperty ExpandDurationProperty
+		= BindableProperty.Create(nameof(ExpandDuration), typeof(uint), typeof(Expander), (uint)250);
+
+	/// <summary>
+	/// Backing BindableProperty for the <see cref="ExpandEasing"/> property.
+	/// </summary>
+	public static readonly BindableProperty ExpandEasingProperty
+		= BindableProperty.Create(nameof(ExpandEasing), typeof(Easing), typeof(Expander));
+
 	readonly WeakEventManager tappedEventManager = new();
 	readonly Grid contentGrid;
 	readonly ContentView headerContentView;
@@ -60,24 +90,12 @@ public partial class Expander : ContentView, IExpander
 		contentGrid.SetRow(bodyLayout, 1);
 
 		headerContentView.GestureRecognizers.Add(HeaderTapGestureRecognizer);
-
-		bodyContentView.PropertyChanged += (s, e) =>
-		{
-			if (e.PropertyName == nameof(ContentView.Height))
-			{
-				if (IsExpanded)
-				{
-					ContentHeight = bodyContentView.Height + 1;
-				}
-				OnPropertyChanged(nameof(MaximumContentHeight));
-			}
-		};
 	}
 
 	/// <summary>
 	/// Controls the visibility of the content inside the <see cref="Expander"/>.
 	/// </summary>
-	public double ContentHeight
+	double ContentHeight
 	{
 		get => bodyLayout.HeightRequest;
 		set
@@ -86,7 +104,6 @@ public partial class Expander : ContentView, IExpander
 			if (bodyLayout.Height != newHeight)
 			{
 				bodyLayout.HeightRequest = newHeight;
-				OnPropertyChanged(nameof(ContentHeight));
 			}
 		}
 	}
@@ -94,12 +111,12 @@ public partial class Expander : ContentView, IExpander
 	/// <summary>
 	/// The height of the content inside the <see cref="Expander"/> when it is collapsed.
 	/// </summary>
-	public double MinimumContentHeight => bodyLayout.MinimumHeightRequest;
+	double MinimumContentHeight => bodyLayout.MinimumHeightRequest;
 
 	/// <summary>
 	/// The height of the content inside the <see cref="Expander"/> when it is expanded.
 	/// </summary>
-	public double MaximumContentHeight => bodyContentView.Height + 1;
+	double MaximumContentHeight => bodyContentView.Height + 1;
 
 	/// <summary>
 	/// Animates the expanding or collapsing of the content inside the <see cref="Expander"/>.
@@ -108,7 +125,7 @@ public partial class Expander : ContentView, IExpander
 	/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 	/// <param name="easing">The easing function to use for the animation.</param>
 	/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
-	public Task<bool> ContentHeightTo(double value, uint length = 250, Easing? easing = null)
+	Task<bool> ContentHeightTo(double value, uint length = 250, Easing? easing = null)
 	{
 		if (easing == null)
 		{
@@ -153,6 +170,41 @@ public partial class Expander : ContentView, IExpander
 
 			SetValue(DirectionProperty, value);
 		}
+	}
+
+	/// <inheritdoc />
+	public bool AnimationsEnabled
+	{
+		get => (bool)GetValue(AnimationsEnabledProperty);
+		set => SetValue(AnimationsEnabledProperty, value);
+	}
+
+	/// <inheritdoc />
+	public uint CollapseDuration
+	{
+		get => (uint)GetValue(CollapseDurationProperty);
+		set => SetValue(CollapseDurationProperty, value);
+	}
+
+	/// <inheritdoc />
+	public Easing? CollapseEasing
+	{
+		get => (Easing?)GetValue(CollapseEasingProperty);
+		set => SetValue(CollapseEasingProperty, value);
+	}
+
+	/// <inheritdoc />
+	public uint ExpandDuration
+	{
+		get => (uint)GetValue(ExpandDurationProperty);
+		set => SetValue(ExpandDurationProperty, value);
+	}
+
+	/// <inheritdoc />
+	public Easing? ExpandEasing
+	{
+		get => (Easing?)GetValue(ExpandEasingProperty);
+		set => SetValue(ExpandEasingProperty, value);
 	}
 
 	static void OnContentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -239,9 +291,30 @@ public partial class Expander : ContentView, IExpander
 		}
 	}
 
-	void IExpander.ExpandedChanged(bool isExpanded)
+	async void IExpander.ExpandedChanged(bool isExpanded)
 	{
-		ContentHeight = isExpanded ? MaximumContentHeight : MinimumContentHeight;
+		if (isExpanded)
+		{
+			if (AnimationsEnabled)
+			{
+				await ContentHeightTo(MaximumContentHeight, ExpandDuration, ExpandEasing);
+			}
+			else
+			{
+				ContentHeight = MaximumContentHeight;
+			}
+		}
+		else
+		{
+			if (AnimationsEnabled)
+			{
+				await ContentHeightTo(MinimumContentHeight, CollapseDuration, CollapseEasing);
+			}
+			else
+			{
+				ContentHeight = MinimumContentHeight;
+			}
+		}
 
 		if (Command?.CanExecute(CommandParameter) is true)
 		{

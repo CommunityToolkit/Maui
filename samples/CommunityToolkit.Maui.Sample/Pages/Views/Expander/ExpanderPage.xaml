@@ -17,7 +17,7 @@
 
             <Label Text="Simple expander" FontSize="24" FontAttributes="Bold"/>
 
-            <mct:Expander PropertyChanged="AnimateExpander">
+            <mct:Expander>
                 <mct:Expander.Header>
                     <Label Text="Simple Expander (Tap Me)" FontSize="16" FontAttributes="Bold"/>
                 </mct:Expander.Header>
@@ -32,12 +32,12 @@
 
             <Label Text="Multi-level expander" FontSize="24" FontAttributes="Bold"/>
 
-            <mct:Expander Direction="Up" PropertyChanged="AnimateExpander">
+            <mct:Expander Direction="Up">
                 <mct:Expander.Header>
                     <Label Text="Multi-Level Expander (Tap Me)" FontSize="16" FontAttributes="Bold"/>
                 </mct:Expander.Header>
                 <mct:Expander.Content>
-                    <mct:Expander Direction="Down" BackgroundColor="LightGray" PropertyChanged="AnimateExpander">
+                    <mct:Expander Direction="Down" BackgroundColor="LightGray">
                         <mct:Expander.Header>
                             <Label Text="Nested Expander (Tap Me)" FontSize="14" FontAttributes="Bold"/>
                         </mct:Expander.Header>
@@ -56,8 +56,7 @@
                     <DataTemplate>
                         <ViewCell>
                             <mct:Expander x:DataType="sample:ContentCreator"
-                                          ExpandedChanged="Expander_ExpandedChanged"
-                                          PropertyChanged="AnimateExpander">
+                                          ExpandedChanged="Expander_ExpandedChanged">
                                 <mct:Expander.Header>
                                     <Label Text="{Binding Name}"/>
                                 </mct:Expander.Header>
@@ -81,8 +80,7 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <mct:Expander x:DataType="sample:ContentCreator"
-                                      ExpandedChanged="Expander_ExpandedChanged"
-                                      PropertyChanged="AnimateExpander">
+                                      ExpandedChanged="Expander_ExpandedChanged">
                             <mct:Expander.Header>
                                 <Label Text="{Binding Name}"/>
                             </mct:Expander.Header>
@@ -111,8 +109,7 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <mct:Expander x:DataType="sample:ContentCreator"
-                                      ExpandedChanged="Expander_ExpandedChanged"
-                                      PropertyChanged="AnimateExpander">
+                                      ExpandedChanged="Expander_ExpandedChanged">
                             <mct:Expander.Header>
                                 <Label Text="{Binding Name}"/>
                             </mct:Expander.Header>

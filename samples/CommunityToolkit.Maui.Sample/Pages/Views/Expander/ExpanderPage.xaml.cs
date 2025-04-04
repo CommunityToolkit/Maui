@@ -16,22 +16,11 @@ public partial class ExpanderPage : BasePage<ExpanderViewModel>
 	async void Expander_ExpandedChanged(object sender, Core.ExpandedChangedEventArgs e)
 	{
 		var collapsedText = e.IsExpanded ? "expanded" : "collapsed";
-
 		await Toast.Make($"Expander is {collapsedText}").Show(CancellationToken.None);
 	}
 
 	async void GoToCSharpSampleClicked(object sender, EventArgs e)
 	{
 		await Navigation.PushAsync(new ExpanderPageCS());
-	}
-
-	async void AnimateExpander(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-	{
-		if (e.PropertyName == CommunityToolkit.Maui.Views.Expander.IsExpandedProperty.PropertyName)
-		{
-			CommunityToolkit.Maui.Views.Expander expander = (CommunityToolkit.Maui.Views.Expander)sender;
-			expander.ContentHeight = expander.IsExpanded ? expander.MinimumContentHeight : expander.MaximumContentHeight;
-			await expander.ContentHeightTo(expander.IsExpanded ? expander.MaximumContentHeight : expander.MinimumContentHeight, 250, Easing.CubicInOut);
-		}
 	}
 }

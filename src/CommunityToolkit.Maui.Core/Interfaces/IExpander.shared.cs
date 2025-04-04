@@ -21,6 +21,31 @@ public interface IExpander : IContentView
 	bool IsExpanded { get; set; }
 
 	/// <summary>
+	/// Gets or sets whether animations are enabled.
+	/// </summary>
+	bool AnimationsEnabled { get; set; }
+
+	/// <summary>
+	/// Gets or sets collapse animation easing.
+	/// </summary>
+	Easing? CollapseEasing { get; set; }
+
+	/// <summary>
+	/// Gets or sets collapse animation duration.
+	/// </summary>
+	uint CollapseDuration { get; set; }
+
+	/// <summary>
+	/// Gets or sets expand animation easing.
+	/// </summary>
+	Easing? ExpandEasing { get; set; }
+
+	/// <summary>
+	/// Gets or sets expand animation duration.
+	/// </summary>
+	uint ExpandDuration { get; set; }
+
+	/// <summary>
 	/// Action when <see cref="IsExpanded"/> changes
 	/// </summary>
 	void ExpandedChanged(bool isExpanded);
