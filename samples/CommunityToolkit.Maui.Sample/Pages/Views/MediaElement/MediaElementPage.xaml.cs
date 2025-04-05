@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
-using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
@@ -243,7 +243,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.Aspect = (Aspect)aspectEnum;
 	}
 
-	void DisplayPopup(object sender, EventArgs e)
+	async void DisplayPopup(object sender, EventArgs e)
 	{
 		MediaElement.Pause();
 		var popupMediaElement = new MediaElement
@@ -256,8 +256,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		};
 		var popup = new Popup
 		{
-			VerticalOptions = LayoutAlignment.Center,
-			HorizontalOptions = LayoutAlignment.Center,
 			Content = new StackLayout
 			{
 				Children =
@@ -267,11 +265,8 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			}
 		};
 
-		this.ShowPopup(popup);
-		popup.Closed += (s, e) =>
-		{
-			popupMediaElement.Stop();
-			popupMediaElement.Handler?.DisconnectHandler();
-		};
+		await this.ShowPopupAsync(popup);
+		popupMediaElement.Stop();
+		popupMediaElement.Handler?.DisconnectHandler();
 	}
 }

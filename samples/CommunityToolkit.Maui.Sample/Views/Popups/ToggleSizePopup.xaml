@@ -3,7 +3,8 @@
 	x:Class="CommunityToolkit.Maui.Sample.Views.Popups.ToggleSizePopup"
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit">
+	xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    BackgroundColor="White">
 
 	<VerticalStackLayout Style="{StaticResource PopupLayout}">
 
@@ -26,7 +27,7 @@
 					<Setter Property="VerticalTextAlignment" Value="Center" />
 				</Style>
 				<Style x:Key="ConfirmButton" TargetType="Button">
-					<Setter Property="VerticalOptions" Value="EndAndExpand" />
+					<Setter Property="VerticalOptions" Value="End" />
 				</Style>
 			</ResourceDictionary>
 		</VerticalStackLayout.Resources>
