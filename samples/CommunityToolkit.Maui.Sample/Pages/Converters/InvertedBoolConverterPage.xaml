@@ -28,8 +28,6 @@
                 HorizontalOptions="CenterAndExpand"
                 Spacing="10">
 
-                <Label Text="False" TextColor="{StaticResource NormalLabelTextColor}" />
-
                 <Switch IsToggled="{Binding IsToggled, Mode=OneWayToSource}"/>
 
             </HorizontalStackLayout>
@@ -39,8 +37,6 @@
             <HorizontalStackLayout
                 HorizontalOptions="CenterAndExpand"
                 Spacing="10">
-
-                <Label Text="False" TextColor="{StaticResource NormalLabelTextColor}" />
 
                 <Switch IsToggled="{Binding IsToggled, Mode=OneWay, Converter={StaticResource InvertedBoolConverter}}" IsEnabled="false"/>
 
