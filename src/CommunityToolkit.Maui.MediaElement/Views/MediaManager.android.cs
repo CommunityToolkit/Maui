@@ -3,6 +3,7 @@ using Android.Content;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Media3.Common;
+using AndroidX.Media3.Common.Text;
 using AndroidX.Media3.Common.Util;
 using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.Session;
@@ -516,7 +517,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			client.Dispose();
 		}
 	}
-
 	static async Task<byte[]> GetBytesFromMetadataArtworkUrl(string? url, CancellationToken cancellationToken = default)
 	{
 		byte[] artworkData = [];
@@ -631,7 +631,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnAudioAttributesChanged(AudioAttributes? audioAttributes) { }
 	public void OnAvailableCommandsChanged(PlayerCommands? player) { }
 	public void OnCues(CueGroup? cues) { }
-	public void OnDeviceInfoChanged(DeviceInfo? deviceInfo) { }
+	public void OnDeviceInfoChanged(AndroidX.Media3.Common.DeviceInfo? deviceInfo) { }
 	public void OnDeviceVolumeChanged(int volume, bool muted) { }
 	public void OnEvents(IPlayer? player, PlayerEvents? playerEvents) { }
 	public void OnIsLoadingChanged(bool isLoading) { }
