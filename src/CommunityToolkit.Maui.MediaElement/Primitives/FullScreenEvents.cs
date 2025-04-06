@@ -1,14 +1,20 @@
-﻿namespace CommunityToolkit.Maui.Primitives;
+﻿using CommunityToolkit.Maui.Views;
 
-static class FullScreenEvents
+namespace CommunityToolkit.Maui.Primitives;
+
+/// <summary>
+/// Represents the event arguments for the <see cref="FullScreenEvents.WindowsChanged"/> event.
+/// </summary>
+public class FullScreenEvents
 {
 	/// <summary>
 	/// An event that is raised when the full screen state of the media element has changed.
 	/// </summary>
-	public static event EventHandler<FullScreenStateChangedEventArgs>? WindowsChanged;
+	public event EventHandler<FullScreenStateChangedEventArgs>? WindowsChanged;
 	/// <summary>
 	/// An event that is raised when the full screen state of the media element has changed.
 	/// </summary>
+	/// <param name="sender"></param>
 	/// <param name="e"></param>
-	public static void OnFullScreenStateChanged(FullScreenStateChangedEventArgs e) => WindowsChanged?.Invoke(null, e);
+	public void OnFullScreenStateChanged(object? sender, FullScreenStateChangedEventArgs e) => WindowsChanged?.Invoke(sender, e);
 }

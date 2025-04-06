@@ -22,6 +22,10 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MediaManager
 {
 	/// <summary>
+	/// The <see cref="IMediaElement"/> instance that is managed through this class.
+	/// </summary>
+	public static readonly FullScreenEvents FullScreenEvents = new();
+	/// <summary>
 	/// Initializes a new instance of the <see cref="MediaManager"/> class.
 	/// </summary>
 	/// <param name="context">This application's <see cref="IMauiContext"/>.</param>

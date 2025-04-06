@@ -126,14 +126,14 @@ public class MauiMediaElement : CoordinatorLayout
 			isFullScreen = true;
 			RemoveView(relativeLayout);
 			layout?.AddView(relativeLayout);
-			FullScreenEvents.OnFullScreenStateChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
+			MediaManager.FullScreenEvents.OnFullScreenStateChanged(this, new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
 		}
 		else
 		{
 			isFullScreen = false;
 			layout?.RemoveView(relativeLayout);
 			AddView(relativeLayout);
-			FullScreenEvents.OnFullScreenStateChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
+			MediaManager.FullScreenEvents.OnFullScreenStateChanged(this , new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
 		}
 		// Hide/Show the SystemBars and Status bar
 		SetSystemBarsVisibility();
