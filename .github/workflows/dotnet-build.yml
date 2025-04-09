@@ -75,6 +75,11 @@ jobs:
           dotnet-version: ${{ env.LATEST_NET_VERSION }}
           dotnet-quality: 'ga'
 
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
+
       - name: Install .NET MAUI Workload
         run: |
           dotnet workload install maui
@@ -139,6 +144,11 @@ jobs:
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
           dotnet-quality: 'ga'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
 
       - name: Install .NET MAUI Workload
         run: |
