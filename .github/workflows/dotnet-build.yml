@@ -61,7 +61,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@main
 
-      - name: Install Xcode
+      - name: Set Latest Xcode Version
+        if: runner.os == 'macOS'
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
@@ -130,6 +131,7 @@ jobs:
         shell: bash
 
       - name: Set Xcode Version
+        if: runner.os == 'macOS'
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: ${{ env.CommunityToolkitLibrary_Xcode_Version }}
