@@ -60,7 +60,7 @@ public static class PopupOptionsDefaults
 	/// Default value for <see cref="PopupOptions.Padding"/> 
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static Thickness Padding { get; } = 0;
+	public static Thickness Padding { get; } = new(15);
 
 	/// <summary>
 	/// Default value for <see cref="PopupOptions.VerticalOptions"/> 

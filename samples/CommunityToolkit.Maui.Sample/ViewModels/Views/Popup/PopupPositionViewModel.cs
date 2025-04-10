@@ -11,8 +11,7 @@ public partial class PopupPositionViewModel : BaseViewModel
 	[RelayCommand]
 	void DisplayPopup(PopupPosition position)
 	{
-		var verticalOptions = LayoutOptions.Start;
-		var horizontalOptions = LayoutOptions.Start;
+		LayoutOptions verticalOptions, horizontalOptions;
 
 		switch (position)
 		{
@@ -71,6 +70,8 @@ public partial class PopupPositionViewModel : BaseViewModel
 			WidthRequest = 100
 		}, new PopupOptions
 		{
+			BorderStroke = null,
+			Shape = null,
 			VerticalOptions = verticalOptions,
 			HorizontalOptions = horizontalOptions
 		});

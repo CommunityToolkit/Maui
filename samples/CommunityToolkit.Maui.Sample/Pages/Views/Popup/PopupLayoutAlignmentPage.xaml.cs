@@ -13,8 +13,7 @@ public partial class PopupLayoutAlignmentPage : BasePage<PopupLayoutAlignmentVie
 
 	void ShowPopupButtonClicked(object sender, EventArgs e)
 	{
-		var verticalOptions = LayoutOptions.Start;
-		var horizontalOptions = LayoutOptions.Start;
+		LayoutOptions verticalOptions, horizontalOptions;
 
 		if (VerticalOptionsStartRadioButton.IsChecked)
 		{
@@ -62,6 +61,12 @@ public partial class PopupLayoutAlignmentPage : BasePage<PopupLayoutAlignmentVie
 		{
 			WidthRequest = double.Parse(widthEntry.Text),
 			HeightRequest = double.Parse(heightEntry.Text)
-		}, new PopupOptions { VerticalOptions = verticalOptions, HorizontalOptions = horizontalOptions });
+		}, new PopupOptions
+		{
+			VerticalOptions = verticalOptions,
+			HorizontalOptions = horizontalOptions,
+			Shape = null,
+			BorderStroke = null
+		});
 	}
 }

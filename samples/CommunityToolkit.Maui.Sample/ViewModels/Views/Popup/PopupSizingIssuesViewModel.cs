@@ -1,5 +1,6 @@
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Sample.Pages.Views;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -35,35 +36,42 @@ public partial class PopupSizingIssuesViewModel : BaseViewModel
 	];
 
 	[RelayCommand]
-	async Task OnShowPopup(Page page)
+	async Task OnShowPopup()
 	{
 		var popup = new Popup();
 
-		if (SelectedContainer.ControlTemplate.LoadTemplate() is not (View container and ContentView contentView))
+		var temp = SelectedContainer.ControlTemplate.LoadTemplate();
+
+		if (SelectedContainer.ControlTemplate.LoadTemplate() is not View view)
 		{
 			await Toast.Make("Invalid Container Selected").Show();
 			return;
 		}
-
-		container.SetValue(Layout.PaddingProperty, new Thickness(Padding));
-		container.SetValue(View.MarginProperty, new Thickness(Margin));
+		
+		view.SetValue(View.MarginProperty, new Thickness(Margin));
 
 		const string longText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
-		contentView.Content = GetContentLabel(longText);
 
-		if (container is Layout layout)
+		switch (view)
 		{
-			layout.Children.Add(GetContentLabel(longText));
+			case Layout layout:
+				layout.Children.Add(GetContentLabel(longText));
+				layout.SetValue(Layout.PaddingProperty, new Thickness(Padding));
+				break;
+			case ItemsView itemsView:
+				itemsView.ItemsSource = Enumerable.Repeat(longText, 10);
+				itemsView.ItemTemplate = new DataTemplate(() => GetContentLabel(longText));
+				break;
 		}
-		else if (container is ItemsView itemsView)
+
+		popup.Content = view;
+
+		if (Application.Current?.Windows[0] is not Window { Page: not null } window)
 		{
-			itemsView.ItemsSource = Enumerable.Repeat(longText, 10);
-			itemsView.ItemTemplate = new DataTemplate(() => GetContentLabel(longText));
+			throw new InvalidOperationException("Unable to find page");
 		}
-
-		popup.Content = container;
-
-		page.ShowPopup(popup, PopupOptions.Empty);
+			
+		window.Page.ShowPopup(popup, PopupOptions.Empty);
 	}
 
 	static Label GetContentLabel(in string text) => new()
