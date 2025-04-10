@@ -51,7 +51,7 @@
                 Clicked="GenerateImageButtonClicked"
                 Text="Generate Image with Random Lines"
                 TextColor="Black" />
-            
+
             <Label 
                 Grid.Row="7" Grid.Column="0"
                 Text="Output" />
@@ -59,7 +59,7 @@
                 Grid.Row="7" Grid.Column="1"
                 ItemsSource="{Binding AvailableOutputOptions}"
                 SelectedItem="{Binding SelectedOutputOption}" />
-            
+
             <Button
                 Grid.Row="8" Grid.Column="0"
                 Grid.ColumnSpan="2"
@@ -83,8 +83,8 @@
                              DrawingLineStartedCommand="{Binding DrawingLineStartedCommand, Mode=OneTime}"
                              DrawingLineCancelledCommand="{Binding DrawingLineCancelledCommand, Mode=OneTime}"
                              PointDrawnCommand="{Binding PointDrawnCommand, Mode=OneTime}"
-                             ShouldClearOnFinish="{Binding Source={x:Reference ClearOnFinish}, Path=IsToggled, x:DataType=Switch}"
-                             IsMultiLineModeEnabled="{Binding Source={x:Reference MultiLineMode}, Path=IsToggled, x:DataType=Switch}"
+                             ShouldClearOnFinish="{Binding Source={x:Reference ClearOnFinishSwitch}, Path=IsToggled, x:DataType=Switch}"
+                             IsMultiLineModeEnabled="{Binding Source={x:Reference MultiLineModeSwitch}, Path=IsToggled, x:DataType=Switch}"
                              Height="{Binding CanvasHeight}"
                              Width="{Binding CanvasWidth}">
                 <mct:DrawingView.Background>
