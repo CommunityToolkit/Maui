@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Converters;
@@ -8,17 +9,11 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
 namespace CommunityToolkit.Maui.Views;
 
-sealed partial class PopupContainer<T> : PopupContainer
+sealed partial class PopupContainer<T>(Popup<T> popup, IPopupOptions popupOptions) : PopupContainer(popup, popupOptions)
 {
 	public PopupContainer(View view, IPopupOptions popupOptions)
 		: this(view as Popup<T> ?? CreatePopupFromView<Popup<T>>(view), popupOptions)
 	{
-	}
-
-	public PopupContainer(Popup<T> popup, IPopupOptions popupOptions)
-		: base(popup, popupOptions)
-	{
-		
 	}
 
 	public Task Close(PopupResult<T> result, CancellationToken token = default) => base.Close(result, token);
@@ -35,9 +30,6 @@ partial class PopupContainer : ContentPage
 		: this(view as Popup ?? CreatePopupFromView<Popup>(view), popupOptions)
 	{
 		ArgumentNullException.ThrowIfNull(view);
-
-		// Only set the content if overloaded constructor hasn't set the content already; don't override content if it already exists
-		base.Content ??= new PopupContainerContent(view, popupOptions);
 	}
 
 	public PopupContainer(Popup popup, IPopupOptions popupOptions)
@@ -48,8 +40,8 @@ partial class PopupContainer : ContentPage
 		this.popup = popup;
 		this.popupOptions = popupOptions;
 
-		// Only set the content if overloaded constructor hasn't set the content already; don't override content if it already exists
-		base.Content ??= new PopupContainerContent(popup, popupOptions);
+		// Only set the content if parent constructor hasn't set the content already; don't override content if it already exists
+		base.Content ??= new PopupContainerLayout(popup, popupOptions);
 
 		tapOutsideOfPopupCommand = new Command(async () =>
 		{
@@ -63,7 +55,7 @@ partial class PopupContainer : ContentPage
 		{
 			bindablePopupOptions.PropertyChanged += HandlePopupPropertyChanged;
 		}
-		
+
 		this.SetBinding(BindingContextProperty, static (Popup x) => x.BindingContext, source: popup, mode: BindingMode.OneWay);
 		this.SetBinding(BackgroundColorProperty, static (IPopupOptions options) => options.PageOverlayColor, source: popupOptions, mode: BindingMode.OneWay);
 
@@ -78,13 +70,21 @@ partial class PopupContainer : ContentPage
 	}
 
 	// Prevent Content from being set by external class
-	// Casts `PopupContainer.Content` to return typeof(PopupContainerContent)
-	internal new PopupContainerContent Content => (PopupContainerContent)base.Content;
+	// Casts `PopupContainer.Content` to return typeof(PopupContainerLayout)
+	internal new PopupContainerLayout Content => (PopupContainerLayout)base.Content;
 
 	public async Task Close(PopupResult result, CancellationToken token = default)
 	{
 		token.ThrowIfCancellationRequested();
+
+		var popupContainerToClose = Navigation.ModalStack.OfType<PopupContainer>().Last(popupContainer => popupContainer.Content == Content);
 		
+		if (Navigation.ModalStack[^1] is Microsoft.Maui.Controls.Page currentVisibleModalPage
+		    && currentVisibleModalPage != popupContainerToClose)
+		{
+			throw new InvalidOperationException($"Unable to close Popup because it is blocked by the Modal Page {currentVisibleModalPage.GetType().FullName}. Please call `{nameof(Navigation)}.{nameof(Navigation.PopModalAsync)}()` to first remove {currentVisibleModalPage.GetType().FullName} from the {nameof(Navigation.ModalStack)}");
+		}
+
 		await Navigation.PopModalAsync(false).WaitAsync(token);
 		
 		popupClosedEventManager.HandleEvent(this, result, nameof(PopupClosed));
@@ -116,7 +116,7 @@ partial class PopupContainer : ContentPage
 	protected static T CreatePopupFromView<T>(in View view) where T : Popup, new()
 	{
 		ArgumentNullException.ThrowIfNull(view);
-		
+
 		var popup = new T
 		{
 			BackgroundColor = view.BackgroundColor ??= PopupOptionsDefaults.PopupBackgroundColor,
@@ -136,20 +136,20 @@ partial class PopupContainer : ContentPage
 		}
 	}
 
-	internal sealed partial class PopupContainerContent : Grid
+	internal sealed partial class PopupContainerLayout : Grid
 	{
-		public PopupContainerContent(in View popupContent, in IPopupOptions options)
+		public PopupContainerLayout(in Popup popupContent, in IPopupOptions options)
 		{
 			Background = BackgroundColor = null;
 
-			popupContent.VerticalOptions = popupContent.HorizontalOptions = LayoutOptions.Center;
+			((View)popupContent).VerticalOptions = ((View)popupContent).HorizontalOptions = LayoutOptions.Center;
 
 			var border = new Border
 			{
 				BackgroundColor = popupContent.BackgroundColor ??= PopupOptionsDefaults.PopupBackgroundColor,
 				Content = popupContent
 			};
-			
+
 			border.SetBinding(Border.BackgroundProperty, static (View content) => content.Background, source: popupContent, mode: BindingMode.OneWay);
 			border.SetBinding(Border.BackgroundColorProperty, static (View content) => content.BackgroundColor, source: popupContent, mode: BindingMode.OneWay);
 			border.SetBinding(Border.VerticalOptionsProperty, static (IPopupOptions options) => options.VerticalOptions, source: options, mode: BindingMode.OneWay);
@@ -164,4 +164,3 @@ partial class PopupContainer : ContentPage
 		}
 	}
 }
-

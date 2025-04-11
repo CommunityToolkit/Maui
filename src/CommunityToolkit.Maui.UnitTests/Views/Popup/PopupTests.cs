@@ -77,12 +77,12 @@ public class PopupTests : BaseTest
 		await popup.Close("Hello", TestContext.Current.CancellationToken);
 	}
 
-	class PopupOverridingClose : Popup
+	sealed class PopupOverridingClose : Popup
 	{
 		public override Task Close(CancellationToken token = default) => Task.CompletedTask;
 	}
 
-	class PopupTOverridingClose : Popup<string>
+	sealed class PopupTOverridingClose : Popup<string>
 	{
 		public override Task Close(CancellationToken token = default) => Task.CompletedTask;
 		public override Task Close(string result, CancellationToken token = default) => Task.CompletedTask;

@@ -5,10 +5,11 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.Shapes;
 using Xunit;
+using Application = Microsoft.Maui.Controls.Application;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class PopupContainerTests : BaseTest
+public class PopupContainerTests : BaseHandlerTest
 {
 	[Fact]
 	public void Constructor_ShouldThrowArgumentNullException_WhenPopupIsNull()
@@ -55,6 +56,13 @@ public class PopupContainerTests : BaseTest
 		popupContainer.PopupClosed += HandlePopupClosed;
 
 		// Act
+		if (Application.Current?.Windows[0].Page?.Navigation is not INavigation navigation)
+		{
+			throw new InvalidOperationException("Unable to locate Navigation page");
+		}
+
+		await navigation.PushModalAsync(popupContainer);
+		
 		await popupContainer.Close(expectedResult, CancellationToken.None);
 		var actualResult = await tcs.Task;
 
@@ -128,6 +136,13 @@ public class PopupContainerTests : BaseTest
 		popupContainer.PopupClosed += HandlePopupClosed;
 
 		// Act
+		if (Application.Current?.Windows[0].Page?.Navigation is not INavigation navigation)
+		{
+			throw new InvalidOperationException("Unable to locate Navigation page");
+		}
+
+		await navigation.PushModalAsync(popupContainer);
+		
 		await popupContainer.Close(expectedResult, CancellationToken.None);
 		var actualResult = await taskCompletionSource.Task;
 
@@ -138,6 +153,27 @@ public class PopupContainerTests : BaseTest
 		{
 			taskCompletionSource.SetResult((PopupResult<string>)e);
 		}
+	}
+	
+	[Fact]
+	public async Task PopupContainerT_CloseAfterAdditionalModalPage_ShouldThrowInvalidOperationException()
+	{
+		// Arrange
+		var view = new ContentView();
+		var popupOptions = new MockPopupOptions();
+		var popupContainer = new PopupContainer<string>(view, popupOptions);
+
+		// Act
+		if (Application.Current?.Windows[0].Page?.Navigation is not INavigation navigation)
+		{
+			throw new InvalidOperationException("Unable to locate Navigation page");
+		}
+
+		await navigation.PushModalAsync(popupContainer);
+		await navigation.PushModalAsync(new ContentPage());
+
+		// Assert
+		await Assert.ThrowsAsync<InvalidOperationException>(async () => await popupContainer.Close(new PopupResult(false), CancellationToken.None));
 	}
 
 	[Fact]
@@ -180,7 +216,7 @@ public class PopupContainerTests : BaseTest
 
 		// Assert
 		Assert.NotNull(popupContainer.Content);
-		Assert.IsType<PopupContainer.PopupContainerContent>(popupContainer.Content);
+		Assert.IsType<PopupContainer.PopupContainerLayout>(popupContainer.Content);
 
 		// Verify iOS platform specific settings
 		Assert.Equal(PresentationMode.ModalNotAnimated, Shell.GetPresentationMode(popupContainer));
@@ -190,7 +226,7 @@ public class PopupContainerTests : BaseTest
 		Assert.Single(popupContainer.Content.GestureRecognizers);
 		Assert.IsType<TapGestureRecognizer>(popupContainer.Content.GestureRecognizers[0]);
 
-		// Verify PopupContainerContent structure
+		// Verify PopupContainerLayout structure
 		var containerContent = popupContainer.Content;
 		Assert.Single(containerContent.Children);
 		Assert.IsType<Border>(containerContent.Children[0]);
