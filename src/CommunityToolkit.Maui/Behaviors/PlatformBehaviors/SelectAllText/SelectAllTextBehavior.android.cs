@@ -12,7 +12,10 @@ public class SelectAllTextBehavior : BasePlatformBehavior<InputView, EditText>
 	{
 		base.OnAttachedTo(bindable, platformView);
 
-		platformView.SetSelectAllOnFocus(true);
+		if (!string.IsNullOrEmpty(platformView.Text))
+		{
+			platformView.SetSelectAllOnFocus(true);
+		}
 	}
 
 	/// <inheritdoc/>
