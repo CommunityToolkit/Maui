@@ -78,7 +78,7 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 		var commandTCS = new TaskCompletionSource();
 		var timesExecuted = 0;
 		var entry = CreateEntryWithBehavior(
-			minimumLengthThreshold:4,
+			minimumLengthThreshold: 4,
 			command: new Command<string>(_ =>
 		{
 			timesExecuted++;
