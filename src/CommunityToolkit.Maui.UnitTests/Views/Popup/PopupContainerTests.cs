@@ -44,6 +44,18 @@ public class PopupContainerTests : BaseHandlerTest
 	}
 
 	[Fact]
+	public async Task Close_ShouldThrowInvalidOperationException_NoPopupContainerFound()
+	{
+		// Arrange
+		var view = new ContentView();
+		var popupOptions = new MockPopupOptions();
+		var popupContainer = new PopupContainer<string>(view, popupOptions);
+
+		// Act / Assert
+		await Assert.ThrowsAsync<InvalidOperationException>(async () => await popupContainer.Close(new PopupResult(false), CancellationToken.None));
+	}
+
+	[Fact]
 	public async Task Close_ShouldSetResultAndPopModalAsync()
 	{
 		// Arrange
