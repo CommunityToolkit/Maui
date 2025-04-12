@@ -288,10 +288,10 @@ sealed class MockSelfClosingPopup : Popup<object?>
 		BackgroundColor = Colors.White;
 		BindingContext = viewModel;
 		Result = result;
-		Opened += MockSelfClosingPopupOpened;
+		Opened += HandlePopupOpened;
 	}
 
-	void MockSelfClosingPopupOpened(object? sender, EventArgs e)
+	void HandlePopupOpened(object? sender, EventArgs e)
 	{
 		var timer = Dispatcher.CreateTimer();
 		timer.Interval = TimeSpan.FromMilliseconds(500);
@@ -301,7 +301,15 @@ sealed class MockSelfClosingPopup : Popup<object?>
 		async void HandleTick(object? sender, EventArgs e)
 		{
 			timer.Tick -= HandleTick;
-			await Close(Result);
+			try
+			{
+				await Close(Result);
+			}
+			catch (InvalidOperationException)
+			{	
+				// If test has already ended, Popup.Close will throw an InvalidOperationException
+				// because all Popups are removed from ModalStack in BaseHandlerTest.DisposeAsyncCore()
+			}
 		}
 	}
 
