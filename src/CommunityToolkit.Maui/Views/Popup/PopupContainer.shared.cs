@@ -76,14 +76,13 @@ partial class PopupContainer : ContentPage
 	public async Task Close(PopupResult result, CancellationToken token = default)
 	{
 		token.ThrowIfCancellationRequested();
-
-		var popupContainersInModalStackList = Navigation.ModalStack.OfType<PopupContainer>().ToList();
-		if (popupContainersInModalStackList.Count is 0)
+		
+		var popupContainerToClose = Navigation.ModalStack.OfType<PopupContainer>().LastOrDefault(popupContainer => popupContainer.Content == Content);
+		
+		if (popupContainerToClose is null)
 		{
 			throw new InvalidOperationException($"Unable to close popup: could not locate {nameof(PopupContainer)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Close)} method");
 		}
-
-		var popupContainerToClose = popupContainersInModalStackList.Last(popupContainer => popupContainer.Content == Content);
 		
 		if (Navigation.ModalStack[^1] is Microsoft.Maui.Controls.Page currentVisibleModalPage
 		    && currentVisibleModalPage != popupContainerToClose)
