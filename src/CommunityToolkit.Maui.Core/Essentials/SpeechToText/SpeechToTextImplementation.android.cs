@@ -40,11 +40,11 @@ public sealed partial class SpeechToTextImplementation
 	static Intent CreateSpeechIntent(SpeechToTextOptions options)
 	{
 		var intent = new Intent(RecognizerIntent.ActionRecognizeSpeech);
-		
+
 		intent.PutExtra(RecognizerIntent.ExtraLanguageModel, RecognizerIntent.LanguageModelFreeForm);
 		intent.PutExtra(RecognizerIntent.ExtraCallingPackage, Application.Context.PackageName);
 		intent.PutExtra(RecognizerIntent.ExtraPartialResults, options.ShouldReportPartialResults);
-		
+
 		var javaLocale = Java.Util.Locale.ForLanguageTag(options.Culture.Name).ToLanguageTag();
 		intent.PutExtra(RecognizerIntent.ExtraLanguage, javaLocale);
 		intent.PutExtra(RecognizerIntent.ExtraLanguagePreference, javaLocale);

@@ -91,7 +91,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 				}
 			}
 		});
-		
+
 		return Task.CompletedTask;
 	}
 }

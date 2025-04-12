@@ -6,10 +6,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-/// <summary>
-/// Unit tests that target <see cref="BaseConverter{TFrom,TTo}"/> and their public APIs.
-/// </summary>
-public abstract class BaseConverterTests
+public abstract class BaseConverterOneWayTests
 {
 	[Theory]
 	[InlineData(4.123, typeof(double))]
@@ -30,32 +27,24 @@ public abstract class BaseConverterTests
 		Assert.Equal("Two", converter.Convert(inputValue, targetType, null, CultureInfo.CurrentCulture));
 	}
 
-	[Theory]
-	[InlineData("4.123", typeof(Color))]
-	[InlineData("4", typeof(Color))]
-	public abstract void ConvertBack_WithMismatchedTargetType(object? inputValue, Type targetType);
-
-	[Theory]
-	[InlineData(4.123, typeof(string))]
-	[InlineData(true, typeof(string))]
-	public abstract void ConvertBack_WithInvalidValueType(object? inputValue, Type targetType);
-
-	[Theory]
-	[InlineData("One", typeof(int))]
-	public void ConvertBack_ShouldCorrectlyReturnValueWithMatchingTargetType(object? inputValue, Type targetType)
+	[Fact]
+	public void Setting_DefaultConvertBackReturnValue_WillThrowNotSupportedException()
 	{
 		ICommunityToolkitValueConverter converter = CreateConverter();
 
-		Assert.Equal(0, converter.ConvertBack(inputValue, targetType, null, CultureInfo.CurrentCulture));
+		Assert.Throws<NotSupportedException>(() => new MockOneWayConverter(["One", "Two", "Three"])
+		{
+			DefaultConvertReturnValue = "Three",
+			DefaultConvertBackReturnValue = 1
+		});
 	}
 
-	protected static BaseConverter<int, string> CreateConverter() => new MockConverter(["One", "Two", "Three"])
+	protected static BaseConverter<int, string> CreateConverter() => new MockOneWayConverter(["One", "Two", "Three"])
 	{
-		DefaultConvertReturnValue = "Three",
-		DefaultConvertBackReturnValue = 42
+		DefaultConvertReturnValue = "Three"
 	};
 
-	protected BaseConverterTests(bool suppressExceptions)
+	protected BaseConverterOneWayTests(bool suppressExceptions)
 	{
 		new Options().SetShouldSuppressExceptionsInConverters(suppressExceptions);
 	}
@@ -64,9 +53,9 @@ public abstract class BaseConverterTests
 /// <summary>
 /// Unit tests that target <see cref="BaseConverter{TFrom,TTo}"/> and their public APIs with <see cref="Options.SetShouldSuppressExceptionsInConverters"/> == false.
 /// </summary>
-public class BaseConverterTestsWithExceptionsEnabled : BaseConverterTests
+public class BaseConverterOneWayTestsWithExceptionsEnabled : BaseConverterOneWayTests
 {
-	public BaseConverterTestsWithExceptionsEnabled() : base(false)
+	public BaseConverterOneWayTestsWithExceptionsEnabled() : base(false)
 	{
 	}
 
@@ -87,32 +76,14 @@ public class BaseConverterTestsWithExceptionsEnabled : BaseConverterTests
 
 		exception.Message.Should().Be($"Value needs to be of type {converter.FromType} (Parameter 'value')");
 	}
-
-	public override void ConvertBack_WithMismatchedTargetType(object? inputValue, Type targetType)
-	{
-		ICommunityToolkitValueConverter converter = CreateConverter();
-
-		var exception = Assert.Throws<ArgumentException>(() => converter.ConvertBack(inputValue, targetType, null, CultureInfo.CurrentCulture));
-
-		exception.Message.Should().Be($"targetType needs to be assignable from {converter.FromType}. (Parameter 'targetType')");
-	}
-
-	public override void ConvertBack_WithInvalidValueType(object? inputValue, Type targetType)
-	{
-		ICommunityToolkitValueConverter converter = CreateConverter();
-
-		var exception = Assert.Throws<ArgumentException>(() => converter.ConvertBack(inputValue, targetType, null, CultureInfo.CurrentCulture));
-
-		exception.Message.Should().Be($"Value needs to be of type {converter.ToType} (Parameter 'value')");
-	}
 }
 
 /// <summary>
 /// Unit tests that target <see cref="BaseConverter{TFrom,TTo}"/> and their public APIs with <see cref="Options.SetShouldSuppressExceptionsInConverters"/> == true.
 /// </summary>
-public class BaseConverterTestsWithExceptionsSuppressed : BaseConverterTests
+public class BaseConverterOneWayTestsWithExceptionsSuppressed : BaseConverterOneWayTests
 {
-	public BaseConverterTestsWithExceptionsSuppressed() : base(true)
+	public BaseConverterOneWayTestsWithExceptionsSuppressed() : base(true)
 	{
 	}
 
@@ -128,19 +99,5 @@ public class BaseConverterTestsWithExceptionsSuppressed : BaseConverterTests
 		ICommunityToolkitValueConverter converter = CreateConverter();
 
 		converter.Convert(inputValue, targetType, null, CultureInfo.CurrentCulture).Should().Be(converter.DefaultConvertReturnValue);
-	}
-
-	public override void ConvertBack_WithMismatchedTargetType(object? inputValue, Type targetType)
-	{
-		ICommunityToolkitValueConverter converter = CreateConverter();
-
-		converter.ConvertBack(inputValue, targetType, null, CultureInfo.CurrentCulture).Should().Be(converter.DefaultConvertBackReturnValue);
-	}
-
-	public override void ConvertBack_WithInvalidValueType(object? inputValue, Type targetType)
-	{
-		ICommunityToolkitValueConverter converter = CreateConverter();
-
-		converter.ConvertBack(inputValue, targetType, null, CultureInfo.CurrentCulture).Should().Be(converter.DefaultConvertBackReturnValue);
 	}
 }
