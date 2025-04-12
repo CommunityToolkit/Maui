@@ -26,7 +26,7 @@ public abstract class BaseConverterOneWayTests
 
 		Assert.Equal("Two", converter.Convert(inputValue, targetType, null, CultureInfo.CurrentCulture));
 	}
-	
+
 	[Fact]
 	public void Setting_DefaultConvertBackReturnValue_WillThrowNotSupportedException()
 	{
@@ -38,12 +38,12 @@ public abstract class BaseConverterOneWayTests
 			DefaultConvertBackReturnValue = 1
 		});
 	}
-	
+
 	protected static BaseConverter<int, string> CreateConverter() => new MockOneWayConverter(["One", "Two", "Three"])
 	{
 		DefaultConvertReturnValue = "Three"
 	};
-	
+
 	protected BaseConverterOneWayTests(bool suppressExceptions)
 	{
 		new Options().SetShouldSuppressExceptionsInConverters(suppressExceptions);
@@ -58,13 +58,13 @@ public class BaseConverterOneWayTestsWithExceptionsEnabled : BaseConverterOneWay
 	public BaseConverterOneWayTestsWithExceptionsEnabled() : base(false)
 	{
 	}
-	
+
 	public override void Convert_WithMismatchedTargetType(object? inputValue, Type targetType)
 	{
 		ICommunityToolkitValueConverter converter = CreateConverter();
 
 		var exception = Assert.Throws<ArgumentException>(() => converter.Convert(inputValue, targetType, null, CultureInfo.CurrentCulture));
-		
+
 		exception.Message.Should().Be($"targetType needs to be assignable from {converter.ToType}. (Parameter 'targetType')");
 	}
 
@@ -73,7 +73,7 @@ public class BaseConverterOneWayTestsWithExceptionsEnabled : BaseConverterOneWay
 		ICommunityToolkitValueConverter converter = CreateConverter();
 
 		var exception = Assert.Throws<ArgumentException>(() => converter.Convert(inputValue, targetType, null, CultureInfo.CurrentCulture));
-		
+
 		exception.Message.Should().Be($"Value needs to be of type {converter.FromType} (Parameter 'value')");
 	}
 }
@@ -93,7 +93,7 @@ public class BaseConverterOneWayTestsWithExceptionsSuppressed : BaseConverterOne
 
 		converter.Convert(inputValue, targetType, null, CultureInfo.CurrentCulture).Should().Be(converter.DefaultConvertReturnValue);
 	}
-	
+
 	public override void Convert_WithInvalidValueType(object? inputValue, Type targetType)
 	{
 		ICommunityToolkitValueConverter converter = CreateConverter();

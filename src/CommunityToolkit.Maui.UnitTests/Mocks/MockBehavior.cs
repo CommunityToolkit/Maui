@@ -19,7 +19,7 @@ public class NumericValidationBehavior : Behavior<Entry>
 public class MockBehavior : BaseBehavior<Label>
 {
 	internal bool IsAttached { get; private set; }
-	
+
 	protected override void OnAttachedTo(Label bindable)
 	{
 		base.OnAttachedTo(bindable);
@@ -39,7 +39,7 @@ public class MockBehavior : BaseBehavior<Label>
 	protected override void OnViewPropertyChanged(Label sender, PropertyChangedEventArgs e)
 	{
 		base.OnViewPropertyChanged(sender, e);
-		
+
 		PropertyChanges.Add(e);
 	}
 

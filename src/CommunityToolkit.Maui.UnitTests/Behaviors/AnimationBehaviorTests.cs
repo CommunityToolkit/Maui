@@ -162,7 +162,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 				await animationEndedTcs.Task;
 			});
 		}
-		catch(OperationCanceledException e)
+		catch (OperationCanceledException e)
 		{
 			exception = e;
 		}
@@ -205,7 +205,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 				await animationEndedTcs.Task;
 			});
 		}
-		catch(OperationCanceledException e)
+		catch (OperationCanceledException e)
 		{
 			exception = e;
 		}
