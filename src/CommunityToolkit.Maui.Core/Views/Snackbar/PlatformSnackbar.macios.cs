@@ -31,7 +31,7 @@ public class PlatformSnackbar : PlatformToast
 		UIColor actionTextColor,
 		UIFont actionButtonFont,
 		nfloat padding)
-		: base(message, backgroundColor, cornerRadius, textColor, textFont, characterSpacing, padding)
+		: base(message, backgroundColor, cornerRadius, textColor, textFont, characterSpacing, padding, true)
 	{
 		padding += DefaultPadding;
 
@@ -56,7 +56,7 @@ public class PlatformSnackbar : PlatformToast
 	/// </summary>
 	public string ActionButtonText
 	{
-		get => actionButton.Title(UIControlState.Normal);
+		get => actionButton.Title(UIControlState.Normal) ?? string.Empty;
 		private init => actionButton.SetTitle(value, UIControlState.Normal);
 	}
 

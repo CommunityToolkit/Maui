@@ -1,92 +1,146 @@
-﻿using System.Globalization;
+using System.Globalization;
 using CommunityToolkit.Maui.Converters;
+using CommunityToolkit.Maui.UnitTests.Mocks;
+using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public abstract class BaseOneWayConverterTest<TConverter> : ConverterTest<TConverter> where TConverter : ICommunityToolkitValueConverter, new()
+/// <summary>
+/// Unit tests that target <see cref="BaseConverter{TFrom,TTo}"/> and their public APIs.
+/// </summary>
+public abstract class BaseConverterTests
 {
-	[Fact]
-	public void ConvertBack_ShouldThrowNotSupportedException()
+	[Theory]
+	[InlineData(4.123, typeof(double))]
+	[InlineData(4, typeof(int))]
+	public abstract void Convert_WithMismatchedTargetType(object? inputValue, Type targetType);
+
+	[Theory]
+	[InlineData(4.123, typeof(string))]
+	[InlineData(true, typeof(string))]
+	public abstract void Convert_WithInvalidValueType(object? inputValue, Type targetType);
+
+	[Theory]
+	[InlineData(1, typeof(string))]
+	public void Convert_ShouldCorrectlyReturnValueWithMatchingTargetType(object? inputValue, Type targetType)
 	{
-		var options = new Options();
-		options.SetShouldSuppressExceptionsInConverters(true);
+		ICommunityToolkitValueConverter converter = CreateConverter();
 
-		var converter = InitializeConverterForInvalidConverterTests();
+		Assert.Equal("Two", converter.Convert(inputValue, targetType, null, CultureInfo.CurrentCulture));
+	}
 
-		Assert.ThrowsAny<NotSupportedException>(() => converter.ConvertBack(GetInvalidConvertBackValue(), converter.FromType, null, CultureInfo.CurrentCulture));
+	[Theory]
+	[InlineData("4.123", typeof(Color))]
+	[InlineData("4", typeof(Color))]
+	public abstract void ConvertBack_WithMismatchedTargetType(object? inputValue, Type targetType);
+
+	[Theory]
+	[InlineData(4.123, typeof(string))]
+	[InlineData(true, typeof(string))]
+	public abstract void ConvertBack_WithInvalidValueType(object? inputValue, Type targetType);
+
+	[Theory]
+	[InlineData("One", typeof(int))]
+	public void ConvertBack_ShouldCorrectlyReturnValueWithMatchingTargetType(object? inputValue, Type targetType)
+	{
+		ICommunityToolkitValueConverter converter = CreateConverter();
+
+		Assert.Equal(0, converter.ConvertBack(inputValue, targetType, null, CultureInfo.CurrentCulture));
+	}
+
+	protected static BaseConverter<int, string> CreateConverter() => new MockConverter(["One", "Two", "Three"])
+	{
+		DefaultConvertReturnValue = "Three",
+		DefaultConvertBackReturnValue = 42
+	};
+
+	protected BaseConverterTests(bool suppressExceptions)
+	{
+		new Options().SetShouldSuppressExceptionsInConverters(suppressExceptions);
 	}
 }
 
-public abstract class BaseConverterTest<TConverter> : ConverterTest<TConverter> where TConverter : ICommunityToolkitValueConverter, new()
+/// <summary>
+/// Unit tests that target <see cref="BaseConverter{TFrom,TTo}"/> and their public APIs with <see cref="Options.SetShouldSuppressExceptionsInConverters"/> == false.
+/// </summary>
+public class BaseConverterTestsWithExceptionsEnabled : BaseConverterTests
 {
-	[Fact]
-	public void InvalidConvertBackValue_ShouldThrowException()
+	public BaseConverterTestsWithExceptionsEnabled() : base(false)
 	{
-		var options = new Options();
-		options.SetShouldSuppressExceptionsInConverters(false);
-
-		var converter = InitializeConverterForInvalidConverterTests();
-
-		Assert.ThrowsAny<ArgumentException>(() => converter.ConvertBack(GetInvalidConvertBackValue(), converter.FromType, null, CultureInfo.CurrentCulture));
 	}
 
-	[Fact]
-	public void InvalidConvertBackValue_ShouldSuppressExceptionsInConverters_ShouldReturnDefaultConvertValue()
+	public override void Convert_WithMismatchedTargetType(object? inputValue, Type targetType)
 	{
-		var options = new Options();
-		options.SetShouldSuppressExceptionsInConverters(true);
+		ICommunityToolkitValueConverter converter = CreateConverter();
 
-		var converter = InitializeConverterForInvalidConverterTests();
+		var exception = Assert.Throws<ArgumentException>(() => converter.Convert(inputValue, targetType, null, CultureInfo.CurrentCulture));
 
-		var result = converter.ConvertBack(GetInvalidConvertBackValue(), converter.FromType, null, CultureInfo.CurrentCulture);
+		exception.Message.Should().Be($"targetType needs to be assignable from {converter.ToType}. (Parameter 'targetType')");
+	}
 
-		Assert.Equal(converter.DefaultConvertBackReturnValue, result);
+	public override void Convert_WithInvalidValueType(object? inputValue, Type targetType)
+	{
+		ICommunityToolkitValueConverter converter = CreateConverter();
+
+		var exception = Assert.Throws<ArgumentException>(() => converter.Convert(inputValue, targetType, null, CultureInfo.CurrentCulture));
+
+		exception.Message.Should().Be($"Value needs to be of type {converter.FromType} (Parameter 'value')");
+	}
+
+	public override void ConvertBack_WithMismatchedTargetType(object? inputValue, Type targetType)
+	{
+		ICommunityToolkitValueConverter converter = CreateConverter();
+
+		var exception = Assert.Throws<ArgumentException>(() => converter.ConvertBack(inputValue, targetType, null, CultureInfo.CurrentCulture));
+
+		exception.Message.Should().Be($"targetType needs to be assignable from {converter.FromType}. (Parameter 'targetType')");
+	}
+
+	public override void ConvertBack_WithInvalidValueType(object? inputValue, Type targetType)
+	{
+		ICommunityToolkitValueConverter converter = CreateConverter();
+
+		var exception = Assert.Throws<ArgumentException>(() => converter.ConvertBack(inputValue, targetType, null, CultureInfo.CurrentCulture));
+
+		exception.Message.Should().Be($"Value needs to be of type {converter.ToType} (Parameter 'value')");
 	}
 }
 
-public abstract class ConverterTest<TConverter> : BaseHandlerTest where TConverter : ICommunityToolkitValueConverter, new()
+/// <summary>
+/// Unit tests that target <see cref="BaseConverter{TFrom,TTo}"/> and their public APIs with <see cref="Options.SetShouldSuppressExceptionsInConverters"/> == true.
+/// </summary>
+public class BaseConverterTestsWithExceptionsSuppressed : BaseConverterTests
 {
-	[Fact]
-	public void InvalidConvertValue_ShouldThrowException()
+	public BaseConverterTestsWithExceptionsSuppressed() : base(true)
 	{
-		var options = new Options();
-		options.SetShouldSuppressExceptionsInConverters(false);
-
-		var converter = InitializeConverterForInvalidConverterTests();
-
-		Assert.ThrowsAny<ArgumentException>(() => converter.Convert(GetInvalidConvertFromValue(), converter.ToType, null, CultureInfo.CurrentCulture));
 	}
 
-	[Fact]
-	public void InvalidConverterValue_ShouldSuppressExceptionsInConverters_ShouldReturnDefaultConvertValue()
+	public override void Convert_WithMismatchedTargetType(object? inputValue, Type targetType)
 	{
-		var options = new Options();
-		options.SetShouldSuppressExceptionsInConverters(true);
+		ICommunityToolkitValueConverter converter = CreateConverter();
 
-		var converter = InitializeConverterForInvalidConverterTests();
-
-		var result = converter.Convert(GetInvalidConvertFromValue(), converter.ToType, null, CultureInfo.CurrentCulture);
-
-		Assert.Equal(converter.DefaultConvertReturnValue, result);
+		converter.Convert(inputValue, targetType, null, CultureInfo.CurrentCulture).Should().Be(converter.DefaultConvertReturnValue);
 	}
 
-	protected virtual object? GetInvalidConvertBackValue() => GetInvalidValue(InitializeConverterForInvalidConverterTests().ToType);
-	protected virtual object? GetInvalidConvertFromValue() => GetInvalidValue(InitializeConverterForInvalidConverterTests().FromType);
-	protected virtual TConverter InitializeConverterForInvalidConverterTests() => new();
-
-	static object GetInvalidValue(Type type)
+	public override void Convert_WithInvalidValueType(object? inputValue, Type targetType)
 	{
-		if (type != typeof(string))
-		{
-			return string.Empty;
-		}
+		ICommunityToolkitValueConverter converter = CreateConverter();
 
-		if (type != typeof(bool))
-		{
-			return true;
-		}
+		converter.Convert(inputValue, targetType, null, CultureInfo.CurrentCulture).Should().Be(converter.DefaultConvertReturnValue);
+	}
 
-		throw new NotImplementedException($"Invalid value not valid for {typeof(TConverter).Name}. If {nameof(InvalidConvertValue_ShouldThrowException)} is failing, please override {nameof(GetInvalidConvertFromValue)} and provide an invalid value. Otherwise, override {nameof(GetInvalidConvertBackValue)} and provide an invalid value");
+	public override void ConvertBack_WithMismatchedTargetType(object? inputValue, Type targetType)
+	{
+		ICommunityToolkitValueConverter converter = CreateConverter();
+
+		converter.ConvertBack(inputValue, targetType, null, CultureInfo.CurrentCulture).Should().Be(converter.DefaultConvertBackReturnValue);
+	}
+
+	public override void ConvertBack_WithInvalidValueType(object? inputValue, Type targetType)
+	{
+		ICommunityToolkitValueConverter converter = CreateConverter();
+
+		converter.ConvertBack(inputValue, targetType, null, CultureInfo.CurrentCulture).Should().Be(converter.DefaultConvertBackReturnValue);
 	}
 }

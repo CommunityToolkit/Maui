@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<pages:BasePage 
+<pages:BasePage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.AnimationBehaviorPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:behaviorPages="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Behaviors"
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:system="clr-namespace:System;assembly=netstandard"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.AnimationBehaviorPage"
-    xmlns:behaviorPages="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Behaviors"
-    x:TypeArguments="vm:AnimationBehaviorViewModel"
-    x:DataType="vm:AnimationBehaviorViewModel">
+    x:DataType="vm:AnimationBehaviorViewModel"
+    x:TypeArguments="vm:AnimationBehaviorViewModel">
 
-    <VerticalStackLayout Spacing="15" Padding="12">
+    <VerticalStackLayout Padding="12" Spacing="15">
         <Label>
             <Label.FormattedText>
                 <FormattedString>
@@ -28,69 +28,84 @@
             </Label.FormattedText>
         </Label>
 
-        <Button Text="Click this Button" Margin="16,0">
+        <Button Margin="16,0" Text="Click this Button">
             <Button.Behaviors>
                 <mct:AnimationBehavior EventName="Clicked">
                     <mct:AnimationBehavior.AnimationType>
-                        <behaviorPages:SampleScaleAnimation 
-                            Easing="{x:Static Easing.Linear}"
-                            Length="100"/>
+                        <behaviorPages:SampleScaleAnimation Easing="{x:Static Easing.Linear}" Length="100" />
                     </mct:AnimationBehavior.AnimationType>
                 </mct:AnimationBehavior>
             </Button.Behaviors>
         </Button>
 
-        <Entry Placeholder="Animate on Focused and Unfocused" Margin="16,0">
+        <Entry Margin="16,0" Placeholder="Animate on Focused and Unfocused">
             <Entry.Behaviors>
                 <mct:AnimationBehavior EventName="Focused">
                     <mct:AnimationBehavior.AnimationType>
-                        <behaviorPages:SampleScaleToAnimation 
+                        <behaviorPages:SampleScaleToAnimation
                             Easing="{x:Static Easing.Linear}"
                             Length="100"
-                            Scale="1.05"/>
+                            Scale="1.05" />
                     </mct:AnimationBehavior.AnimationType>
                 </mct:AnimationBehavior>
 
                 <mct:AnimationBehavior EventName="Unfocused">
                     <mct:AnimationBehavior.AnimationType>
-                        <behaviorPages:SampleScaleToAnimation 
+                        <behaviorPages:SampleScaleToAnimation
                             Easing="{x:Static Easing.Linear}"
                             Length="100"
-                            Scale="1"/>
+                            Scale="1" />
                     </mct:AnimationBehavior.AnimationType>
                 </mct:AnimationBehavior>
             </Entry.Behaviors>
         </Entry>
 
-        <!-- Shows how the AnimationBehavior will play nicely with already attached TapGestureRecognizers -->
-        <Label Text="Click this Label" Margin="16,0" HorizontalOptions="Center">
+        <Entry Margin="16,0" Placeholder="Animate on tap">
+            <Entry.Behaviors>
+                <mct:AnimationBehavior AnimateOnTap="{Binding Source={x:Reference AnimateOnTapToggle}, Path=IsToggled, x:DataType=Switch}">
+                    <mct:AnimationBehavior.AnimationType>
+                        <behaviorPages:SampleScaleAnimation Easing="{x:Static Easing.Linear}" Length="100" />
+                    </mct:AnimationBehavior.AnimationType>
+                </mct:AnimationBehavior>
+            </Entry.Behaviors>
+        </Entry>
+        <HorizontalStackLayout Margin="16,0" Spacing="10">
+            <Label Text="Toggle animate on tap: " VerticalTextAlignment="Center" />
+            <Switch x:Name="AnimateOnTapToggle" />
+        </HorizontalStackLayout>
+
+
+        <!--  Shows how the AnimationBehavior will play nicely with already attached TapGestureRecognizers  -->
+        <Label
+            Margin="16,0"
+            HorizontalOptions="Center"
+            Text="Click this Label">
             <Label.GestureRecognizers>
                 <TapGestureRecognizer Command="{Binding AnimationCommand}" />
             </Label.GestureRecognizers>
             <Label.Behaviors>
                 <mct:AnimationBehavior>
                     <mct:AnimationBehavior.AnimationType>
-                        <behaviorPages:SampleScaleAnimation 
-                            Easing="{x:Static Easing.Linear}"
-                            Length="100"/>
+                        <behaviorPages:SampleScaleAnimation Easing="{x:Static Easing.Linear}" Length="100" />
                     </mct:AnimationBehavior.AnimationType>
                 </mct:AnimationBehavior>
             </Label.Behaviors>
         </Label>
 
-        <Border BackgroundColor="LightGreen" Margin="16,0" x:Name="AnimatedBorder">
+        <Border
+            x:Name="AnimatedBorder"
+            Margin="16,0"
+            BackgroundColor="LightGreen">
             <Border.Behaviors>
-                <mct:AnimationBehavior 
-                    AnimateCommand="{Binding AnimateFromViewModelCommand}"
-                    BindingContext="{Binding Path=BindingContext, Source={x:Reference AnimatedBorder}, x:DataType=Border}">
+                <mct:AnimationBehavior AnimateCommand="{Binding AnimateFromViewModelCommand}" BindingContext="{Binding Path=BindingContext, Source={x:Reference AnimatedBorder}, x:DataType=Border}">
                     <mct:AnimationBehavior.AnimationType>
                         <mct:FadeAnimation Opacity="0.2" />
                     </mct:AnimationBehavior.AnimationType>
                 </mct:AnimationBehavior>
             </Border.Behaviors>
-            <Label Text="Click Inside This Border" HorizontalOptions="Center"/>
+            <Label HorizontalOptions="Center" Text="Click Inside This Border" />
         </Border>
 
-        <Button Text="Animate the frame above" Command="{Binding TriggerAnimationCommand}" />
+        <Button Command="{Binding TriggerAnimationCommand}" Text="Animate the frame above" />
     </VerticalStackLayout>
 </pages:BasePage>

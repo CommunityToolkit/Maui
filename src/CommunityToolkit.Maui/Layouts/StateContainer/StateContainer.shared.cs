@@ -73,6 +73,7 @@ public static class StateContainer
 		Animation? afterStateChange,
 		CancellationToken token = default)
 	{
+		token.ThrowIfCancellationRequested();
 		if (beforeStateChange is null && afterStateChange is null)
 		{
 			throw new ArgumentException($"Animation required. Parameters {nameof(beforeStateChange)} and {nameof(afterStateChange)} cannot both be null");
@@ -120,6 +121,7 @@ public static class StateContainer
 		Func<VisualElement, CancellationToken, Task>? afterStateChange,
 		CancellationToken cancellationToken = default)
 	{
+		cancellationToken.ThrowIfCancellationRequested();
 		if (beforeStateChange is null && afterStateChange is null)
 		{
 			throw new ArgumentException($"Animation required. Parameters {nameof(beforeStateChange)} and {nameof(afterStateChange)} cannot both be null");
@@ -157,6 +159,7 @@ public static class StateContainer
 	/// </summary>
 	public static async Task ChangeStateWithAnimation(BindableObject bindable, string? state, CancellationToken token = default)
 	{
+		token.ThrowIfCancellationRequested();
 		ValidateCanStateChange(bindable);
 		SetCanStateChange(bindable, false);
 

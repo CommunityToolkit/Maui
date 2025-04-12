@@ -77,7 +77,7 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 
 		Assert.Null(view.Source);
 
-		await imageTouchBehavior.ForceUpdateState(CancellationToken.None, false);
+		await imageTouchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
 		Assert.Equal(normalImageSource, view.Source);
 		Assert.Same(normalImageSource, view.Source);
 
@@ -106,7 +106,7 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 
 		Assert.Equal(Aspect.AspectFit, view.Aspect);
 
-		await imageTouchBehavior.ForceUpdateState(CancellationToken.None, false);
+		await imageTouchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
 		Assert.Equal(Aspect.AspectFit, view.Aspect);
 
 		imageTouchBehavior.HandleTouch(TouchStatus.Started);
@@ -128,7 +128,7 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 		imageTouchBehavior.DefaultImageSource = normalImageSource;
 		imageTouchBehavior.HoveredImageSource = hoveredImageSource;
 
-		await imageTouchBehavior.ForceUpdateState(CancellationToken.None, false);
+		await imageTouchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
 		Assert.Same(normalImageSource, view.Source);
 		Assert.Equal(normalImageSource, view.Source);
 
@@ -155,7 +155,7 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 		imageTouchBehavior.HoveredImageSource = hoverImageSource;
 		imageTouchBehavior.HoveredImageAspect = Aspect.AspectFill;
 
-		await imageTouchBehavior.ForceUpdateState(CancellationToken.None, false);
+		await imageTouchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
 		Assert.Equal(Aspect.AspectFit, view.Aspect);
 
 		imageTouchBehavior.HandleHover(HoverStatus.Entered);
