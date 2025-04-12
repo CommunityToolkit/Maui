@@ -6,6 +6,7 @@ using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -160,12 +161,27 @@ partial class PopupContainer : ContentPage
 			border.SetBinding(Border.VerticalOptionsProperty, static (IPopupOptions options) => options.VerticalOptions, source: options, mode: BindingMode.OneWay);
 			border.SetBinding(Border.HorizontalOptionsProperty, static (IPopupOptions options) => options.HorizontalOptions, source: options, mode: BindingMode.OneWay);
 			border.SetBinding(Border.StrokeShapeProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay);
-			border.SetBinding(Border.StrokeProperty, static (IPopupOptions options) => options.BorderStroke, source: options, mode: BindingMode.OneWay);
+			border.SetBinding(Border.StrokeThicknessProperty, static (IPopupOptions options) => options.Shape, source: options, converter: new BorderStrokeThicknessConverter(), mode: BindingMode.OneWay);
+			border.SetBinding(Border.StrokeProperty, static (IPopupOptions options) => options.Shape, source: options, converter: new BorderStrokeConverter(), mode: BindingMode.OneWay);
 			border.SetBinding(Border.MarginProperty, static (IPopupOptions options) => options.Margin, source: options, mode: BindingMode.OneWay);
 			border.SetBinding(Border.PaddingProperty, static (IPopupOptions options) => options.Padding, source: options, mode: BindingMode.OneWay);
 			border.SetBinding(Border.ShadowProperty, static (IPopupOptions options) => options.Shadow, source: options, mode: BindingMode.OneWay);
 
 			Children.Add(border);
+		}
+
+		sealed class BorderStrokeThicknessConverter : BaseConverterOneWay<Shape?, double>
+		{
+			public override double DefaultConvertReturnValue { get; set; } = PopupOptionsDefaults.BorderStrokeThickness;
+
+			public override double ConvertFrom(Shape? value, CultureInfo? culture) => value?.StrokeThickness ?? DefaultConvertReturnValue;
+		}
+		
+		sealed class BorderStrokeConverter : BaseConverterOneWay<Shape?, Brush?>
+		{
+			public override Brush? DefaultConvertReturnValue { get; set; } = PopupOptionsDefaults.BorderStroke;
+
+			public override Brush? ConvertFrom(Shape? value, CultureInfo? culture) => value?.Stroke;
 		}
 	}
 }

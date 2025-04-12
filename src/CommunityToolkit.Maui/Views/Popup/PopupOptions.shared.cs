@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui;
+﻿using Microsoft.Maui.Controls.Shapes;
+
+namespace CommunityToolkit.Maui;
 
 /// <summary>
 /// Popup options.
@@ -19,16 +21,11 @@ public partial class PopupOptions : BindableObject, IPopupOptions
 	///  Backing BindableProperty for the <see cref="PageOverlayColor"/> property.
 	/// </summary>
 	public static readonly BindableProperty PageOverlayColorProperty = BindableProperty.Create(nameof(PageOverlayColor), typeof(Color), typeof(PopupOptions), PopupOptionsDefaults.PageOverlayColor);
-	
-	/// <summary>
-	///  Backing BindableProperty for the <see cref="BorderStroke"/> property.
-	/// </summary>
-	public static readonly BindableProperty BorderStrokeProperty = BindableProperty.Create(nameof(BorderStroke), typeof(Brush), typeof(PopupOptions), PopupOptionsDefaults.BorderStroke);
 
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="Shape"/> property.
 	/// </summary>
-	public static readonly BindableProperty ShapeProperty = BindableProperty.Create(nameof(Shape), typeof(IShape), typeof(PopupOptions), PopupOptionsDefaults.Shape);
+	public static readonly BindableProperty ShapeProperty = BindableProperty.Create(nameof(Shape), typeof(Shape), typeof(PopupOptions), PopupOptionsDefaults.Shape);
 
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="Margin"/> property.
@@ -79,13 +76,6 @@ public partial class PopupOptions : BindableObject, IPopupOptions
 	}
 
 	/// <inheritdoc/>
-	public Brush? BorderStroke
-	{
-		get => (Brush?)GetValue(BorderStrokeProperty);
-		set => SetValue(BorderStrokeProperty, value);
-	}
-
-	/// <inheritdoc/>
 	public Action? OnTappingOutsideOfPopup
 	{
 		get => (Action?)GetValue(OnTappingOutsideOfPopupProperty);
@@ -93,9 +83,9 @@ public partial class PopupOptions : BindableObject, IPopupOptions
 	}
 
 	/// <inheritdoc/>
-	public IShape? Shape
+	public Shape? Shape
 	{
-		get => (IShape?)GetValue(ShapeProperty);
+		get => (Shape?)GetValue(ShapeProperty);
 		set => SetValue(ShapeProperty, value);
 	}
 

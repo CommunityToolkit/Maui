@@ -61,16 +61,7 @@ public class PopupOptionsTests : BaseTest
 	public void BorderStroke_DefaultValue_ShouldBeDefaultStroke()
 	{
 		var popupOptions = new PopupOptions();
-		Assert.Equal(PopupOptionsDefaults.BorderStroke, popupOptions.BorderStroke);
-	}
-
-	[Fact]
-	public void BorderStroke_SetValue_ShouldBeUpdated()
-	{
-		var popupOptions = new PopupOptions();
-		var color = Colors.Red;
-		popupOptions.BorderStroke = color;
-		Assert.Equal(color, popupOptions.BorderStroke);
+		Assert.Equal(PopupOptionsDefaults.BorderStroke, popupOptions.Shape?.Stroke);
 	}
 
 	[Fact]
@@ -94,15 +85,6 @@ public class PopupOptionsTests : BaseTest
 	{
 		var popupOptions = new PopupOptions();
 		Assert.Equal(PopupOptionsDefaults.Shape, popupOptions.Shape);
-	}
-
-	[Fact]
-	public void Shape_SetValue_ShouldBeUpdated()
-	{
-		var popupOptions = new PopupOptions();
-		IShape shape = new Rectangle();
-		popupOptions.Shape = shape;
-		Assert.Equal(shape, popupOptions.Shape);
 	}
 
 	[Fact]
@@ -187,8 +169,14 @@ public class PopupOptionsTests : BaseTest
 	public void BorderStroke_ShouldReturnCorrectColor()
 	{
 		var color = Colors.Red;
-		var options = new MockPopupOptions { BorderStroke = color };
-		Assert.Equal(color, options.BorderStroke);
+		var options = new MockPopupOptions
+		{
+			Shape = new Ellipse
+			{
+				Stroke = color
+			}
+		};
+		Assert.Equal(color, options.Shape.Stroke);
 	}
 	
 	[Fact]
@@ -253,8 +241,7 @@ public class PopupOptionsTests : BaseTest
 		public bool CanBeDismissedByTappingOutsideOfPopup { get; set; }
 		public Color PageOverlayColor { get; set; } = Colors.Transparent;
 		public Action? OnTappingOutsideOfPopup { get; set; }
-		public IShape? Shape { get; set; }
-		public Brush? BorderStroke { get; set; } = null;
+		public Shape? Shape { get; set; }
 		public Thickness Margin { get; set; }
 		public Thickness Padding { get; set; }
 		public LayoutOptions VerticalOptions { get; set; }

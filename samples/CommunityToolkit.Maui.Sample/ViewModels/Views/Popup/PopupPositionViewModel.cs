@@ -70,7 +70,6 @@ public partial class PopupPositionViewModel : BaseViewModel
 			WidthRequest = 100
 		}, new PopupOptions
 		{
-			BorderStroke = null,
 			Shape = null,
 			VerticalOptions = verticalOptions,
 			HorizontalOptions = horizontalOptions

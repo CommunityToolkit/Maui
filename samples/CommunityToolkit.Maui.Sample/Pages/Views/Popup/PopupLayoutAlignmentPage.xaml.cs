@@ -66,7 +66,6 @@ public partial class PopupLayoutAlignmentPage : BasePage<PopupLayoutAlignmentVie
 			VerticalOptions = verticalOptions,
 			HorizontalOptions = horizontalOptions,
 			Shape = null,
-			BorderStroke = null
 		});
 	}
 }

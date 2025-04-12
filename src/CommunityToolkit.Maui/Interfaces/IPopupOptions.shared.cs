@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui;
+﻿using Microsoft.Maui.Controls.Shapes;
+
+namespace CommunityToolkit.Maui;
 
 /// <summary>
 /// Interface defining the options used in <see cref="Views.Popup"/>.
@@ -14,11 +16,6 @@ public interface IPopupOptions
 	/// Color of the overlay behind the Popup
 	/// </summary>
 	Color PageOverlayColor { get; }
-	
-	/// <summary>
-	/// Popup border stroke.
-	/// </summary>
-	Brush? BorderStroke { get; }
 
 	/// <summary>
 	/// Action to be executed when the user taps outside the Popup.
@@ -28,7 +25,7 @@ public interface IPopupOptions
 	/// <summary>
 	/// Popup border shape.
 	/// </summary>
-	IShape? Shape { get; }
+	Shape? Shape { get; }
 
 	/// <summary>
 	/// Popup margin.

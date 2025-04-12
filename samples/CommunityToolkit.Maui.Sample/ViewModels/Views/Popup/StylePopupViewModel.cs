@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Sample.Views.Popups;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
@@ -12,7 +13,7 @@ public partial class StylePopupViewModel : BaseViewModel
 	static async Task DisplayImplicitStylePopup()
 	{
 		var popup = new ImplicitStylePopup();
-		await MainPage.ShowPopupAsync(popup, PopupOptions.Empty);
+		await MainPage.ShowPopupAsync(popup);
 	}
 
 	[RelayCommand]

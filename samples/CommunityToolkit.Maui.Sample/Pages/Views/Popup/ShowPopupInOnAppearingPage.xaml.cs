@@ -6,20 +6,24 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 public partial class ShowPopupInOnAppearingPage : BasePage<ShowPopupInOnAppearingPageViewModel>
 {
 	readonly IPopupService popupService;
+	bool hasPopupBeenShown;
 
 	public ShowPopupInOnAppearingPage(
 		ShowPopupInOnAppearingPageViewModel showPopupInOnAppearingPageViewModel,
 		IPopupService popupService)
 		: base(showPopupInOnAppearingPageViewModel)
 	{
-		this.popupService = popupService;
 		InitializeComponent();
+
+		this.popupService = popupService;
 	}
 
 	protected override async void OnAppearing()
 	{
-		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-		// Proves that we now support showing a popup before the platform is even ready.
-		await popupService.ShowPopupAsync<ReturnResultPopup, string>(Navigation, cancellationToken: cts.Token);
+		if (!hasPopupBeenShown)
+		{
+			hasPopupBeenShown = true;
+			await popupService.ShowPopupAsync<ReturnResultPopup, string>(Navigation);
+		}
 	}
 }

@@ -11,6 +11,11 @@ namespace CommunityToolkit.Maui;
 public static class PopupOptionsDefaults
 {
 	/// <summary>
+	/// Default value for <see cref="PopupOptions.Shape"/> StrokeThickness
+	/// </summary>
+	public const double BorderStrokeThickness = 2;
+	
+	/// <summary>
 	/// Default value for <see cref="PopupOptions.CanBeDismissedByTappingOutsideOfPopup"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -35,7 +40,7 @@ public static class PopupOptionsDefaults
 	public static Color PageOverlayColor { get; } = Colors.Black.WithAlpha(0.3f);
 
 	/// <summary>
-	/// Default value for <see cref="PopupOptions.BorderStroke"/> 
+	/// Default value for <see cref="PopupOptions.Shape"/> <see cref="Shape.Stroke"/>
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static Brush? BorderStroke { get; } = Colors.White;
@@ -47,7 +52,8 @@ public static class PopupOptionsDefaults
 	public static IShape? Shape { get; } = new RoundRectangle
 	{
 		CornerRadius = new CornerRadius(20, 20, 20, 20),
-		StrokeThickness = 2
+		StrokeThickness = BorderStrokeThickness,
+		Stroke = BorderStroke
 	};
 
 	/// <summary>

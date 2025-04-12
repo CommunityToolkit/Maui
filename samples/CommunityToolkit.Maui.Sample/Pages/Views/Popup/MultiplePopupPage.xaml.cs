@@ -20,8 +20,11 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 	{
 		await popupService.ShowPopupAsync<SimplePopup>(Navigation, new PopupOptions
 		{
-			Shape = new RoundRectangle { CornerRadius = new CornerRadius(15) },
-			BorderStroke = Colors.White,
+			Shape = new RoundRectangle
+			{
+				CornerRadius = new CornerRadius(4),
+				Stroke = Colors.White
+			},
 		}, CancellationToken.None);
 	}
 
@@ -55,7 +58,15 @@ public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
 
 	async void HandleOpenedEventSimplePopupButtonClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<OpenedEventSimplePopup>(Navigation);
+		await popupService.ShowPopupAsync<OpenedEventSimplePopup>(Navigation, new PopupOptions
+		{
+			Shape = new RoundRectangle
+			{
+				CornerRadius = new CornerRadius(20, 20, 20, 20),
+				StrokeThickness = 20,
+				Stroke = Colors.Blue
+			},
+		});
 	}
 
 	async void HandleReturnResultPopupButtonClicked(object sender, EventArgs e)

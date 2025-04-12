@@ -220,7 +220,6 @@ public class PopupContainerTests : BaseHandlerTest
 			VerticalOptions = LayoutOptions.Center,
 			HorizontalOptions = LayoutOptions.Center,
 			Shape = new RoundRectangle { CornerRadius = new CornerRadius(10) },
-			BorderStroke = {  }
 		};
 
 		// Act
@@ -366,9 +365,8 @@ public class PopupContainerTests : BaseHandlerTest
 	{
 		public bool CanBeDismissedByTappingOutsideOfPopup { get; set; }
 		public Color PageOverlayColor { get; set; } = Colors.Transparent;
-		public Brush? BorderStroke { get; } = null;
 		public Action? OnTappingOutsideOfPopup { get; set; }
-		public IShape? Shape { get; set; }
+		public Shape? Shape { get; set; }
 		public Thickness Margin { get; set; } = new Thickness(0);
 		public Thickness Padding { get; set; } = new Thickness(0);
 		public LayoutOptions VerticalOptions { get; set; } = LayoutOptions.Center;
