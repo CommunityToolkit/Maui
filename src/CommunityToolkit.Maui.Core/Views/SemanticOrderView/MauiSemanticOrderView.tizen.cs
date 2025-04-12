@@ -8,8 +8,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiSemanticOrderView : ContentViewGroup
 {
-	ISemanticOrderView? virtualView;
-
 	/// <summary>
 	/// Constructor for MauiSemanticOrderView.
 	/// </summary>
@@ -19,10 +17,10 @@ public class MauiSemanticOrderView : ContentViewGroup
 
 	internal ISemanticOrderView? VirtualView
 	{
-		get => virtualView;
+		get;
 		set
 		{
-			virtualView = value;
+			field = value;
 			UpdateViewOrder();
 		}
 	}
@@ -33,9 +31,8 @@ public class MauiSemanticOrderView : ContentViewGroup
 		{
 			return;
 		}
-
-		var accessibilityManager = AccessibilityManager.Instance;
-		var order = accessibilityManager.GenerateNewFocusOrder();
+		
+		var order = 0;
 
 		foreach (var view in VirtualView.ViewOrder)
 		{
@@ -45,12 +42,12 @@ public class MauiSemanticOrderView : ContentViewGroup
 				{
 					if (wrapperView.Content is not null)
 					{
-						accessibilityManager.SetFocusOrder(wrapperView.Content, order);
+						wrapperView.Content.SiblingOrder = order;
 					}
 				}
 				else
 				{
-					accessibilityManager.SetFocusOrder(platformViewHandler.PlatformView, order);
+					platformViewHandler.PlatformView.SiblingOrder = order;
 				}
 
 				order++;
