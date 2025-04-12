@@ -33,7 +33,7 @@ public class CameraViewTests : BaseHandlerTest
 	{
 		if (mockCameraProvider.AvailableCameras is null)
 		{
-			await mockCameraProvider.RefreshAvailableCameras(CancellationToken.None);
+			await mockCameraProvider.RefreshAvailableCameras(TestContext.Current.CancellationToken);
 
 			if (mockCameraProvider.AvailableCameras is null)
 			{
