@@ -29,7 +29,7 @@
             <Picker
                 ItemsSource="{Binding Locales}"
                 SelectedItem="{Binding CurrentLocale}"
-                ItemDisplayBinding="{Binding ., Converter={StaticResource PickerLocaleDisplayConverter}}"/>
+                ItemDisplayBinding="{Binding ., x:DataType={x:Type Picker}, Converter={StaticResource PickerLocaleDisplayConverter}}"/>
 
             <Label
                 Text="State"

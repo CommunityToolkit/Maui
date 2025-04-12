@@ -22,7 +22,7 @@ env:
   NugetPackageVersionCamera: '99.0.0-preview${{ github.run_number }}'
   NugetPackageVersionMediaElement: '99.0.0-preview${{ github.run_number }}'
   NugetPackageVersionMaps: '99.0.0-preview${{ github.run_number }}'
-  TOOLKIT_NET_VERSION: '9.0.102'
+  TOOLKIT_NET_VERSION: '9.0.202'
   LATEST_NET_VERSION: '9.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
@@ -32,7 +32,7 @@ env:
   PathToCommunityToolkitMediaElementCsproj: 'src/CommunityToolkit.Maui.MediaElement/CommunityToolkit.Maui.MediaElement.csproj'
   PathToCommunityToolkitMapsCsproj: 'src/CommunityToolkit.Maui.Maps/CommunityToolkit.Maui.Maps.csproj'
   PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
-  PathToCommunityToolkitUnitTestCsproj: 'src/CommunityToolkit.Maui.UnitTests'
+  PathToCommunityToolkitUnitTestProjectDirectory: 'src/CommunityToolkit.Maui.UnitTests'
   PathToCommunityToolkitAnalyzersCsproj: 'src/CommunityToolkit.Maui.Analyzers/CommunityToolkit.Maui.Analyzers.csproj'
   PathToCommunityToolkitCameraAnalyzersCsproj: 'src/CommunityToolkit.Maui.Camera.Analyzers/CommunityToolkit.Maui.Camera.Analyzers.csproj'
   PathToCommunityToolkitMediaElementAnalyzersCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers/CommunityToolkit.Maui.MediaElement.Analyzers.csproj'
@@ -41,9 +41,8 @@ env:
   PathToCommunityToolkitAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Analyzers.CodeFixes/CommunityToolkit.Maui.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitCameraAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Camera.Analyzers.CodeFixes/CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
-  PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests'
+  PathToCommunityToolkitAnalyzersUnitTestProjectDirectory: 'src/CommunityToolkit.Maui.Analyzers.UnitTests'
   PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
-  CommunityToolkitSampleApp_Xcode_Version: '16.2'
   CommunityToolkitLibrary_Xcode_Version: '16.2'
 
 concurrency:
@@ -62,18 +61,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@main
 
-      - name: Set Xcode version
+      - name: Set Latest Xcode Version
         if: runner.os == 'macOS'
-        run: |
-          echo Installed Xcode Versions:
-          ls -al  /Applications | grep Xcode
-          sudo xcode-select --switch /Applications/Xcode_${{ env.CommunityToolkitSampleApp_Xcode_Version }}.app/Contents/Developer
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
 
       - name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.LATEST_NET_VERSION }}
           dotnet-quality: 'ga'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
 
       - name: Install .NET MAUI Workload
         run: |
@@ -127,18 +130,22 @@ jobs:
           echo "NugetPackageVersionMaps=${{ env.CurrentSemanticVersionBase }}-build-${{ github.event.pull_request.number }}.${{ github.run_number }}+${{ github.sha }}"
         shell: bash
 
-      - name: Set Xcode version
+      - name: Set Xcode Version
         if: runner.os == 'macOS'
-        run: |
-          echo Installed Xcode Versions:
-          ls -al  /Applications | grep Xcode
-          sudo xcode-select --switch /Applications/Xcode_${{ env.CommunityToolkitLibrary_Xcode_Version }}.app/Contents/Developer
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.CommunityToolkitLibrary_Xcode_Version }}
 
       - name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
           dotnet-quality: 'ga'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
 
       - name: Install .NET MAUI Workload
         run: |
@@ -195,22 +202,21 @@ jobs:
 
       - name: Run CommunityToolkit Analyzers UnitTests
         run: |
-           cd ${{ env.PathToCommunityToolkitAnalyzersUnitTestCsproj }}
+           cd ${{ env.PathToCommunityToolkitAnalyzersUnitTestProjectDirectory }}
            dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-analyzers.cobertura.xml" --coverage-output-format cobertura --report-xunit
 
       - name: Run CommunityToolkit UnitTests
         run: |
-           cd ${{ env.PathToCommunityToolkitUnitTestCsproj }}
+           cd ${{ env.PathToCommunityToolkitUnitTestProjectDirectory }}
            dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut.cobertura.xml" --coverage-output-format cobertura --report-xunit
 
-      - name: Publish Test Results
-        if: runner.os == 'Windows' && (${{ success() || failure() }})
-        uses: actions/upload-artifact@v4
-        with:
-          name: Test Results ${{ github.run_number }} ${{ runner.os }}
-          path: |
-            ${{ runner.temp }}/*.xunit
-            ${{ runner.temp }}/*cobertura.xml
+      - name: Create code coverage report
+        if: ${{ runner.os == 'Windows' && (success() || failure()) }}
+        run: |
+          dotnet tool install -g dotnet-reportgenerator-globaltool
+          reportgenerator -reports:'${{ runner.temp }}\*cobertura.xml' -targetdir:CodeCoverage -reporttypes:'MarkdownSummaryGithub'
+          cat CodeCoverage/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+        shell: bash
 
       - name: Pack CommunityToolkit.Maui.Core NuGet
         run: dotnet pack -c Release ${{ env.PathToCommunityToolkitCoreCsproj }} -p:PackageVersion=${{ env.NugetPackageVersion }}
@@ -228,7 +234,7 @@ jobs:
         run: dotnet pack -c Release ${{ env.PathToCommunityToolkitMapsCsproj }} -p:PackageVersion=${{ env.NugetPackageVersionMaps }}
 
       - name: Copy NuGet Packages to Staging Directory
-        if: runner.os == 'Windows' && !startsWith(github.ref, 'refs/tags/')
+        if: ${{ runner.os == 'Windows' }} && !startsWith(github.ref, 'refs/tags/')
         run: |
           mkdir -p ${{ github.workspace }}/nuget
           Get-ChildItem -Path "./src" -Recurse | Where-Object { $_.Extension -match "nupkg" } | Copy-Item -Destination "${{ github.workspace }}/nuget"
@@ -236,7 +242,7 @@ jobs:
 
       - name: Upload Package List
         uses: actions/upload-artifact@v4
-        if: runner.os == 'Windows'
+        if: ${{ runner.os == 'Windows' }}
         with:
           name: nuget-list
           if-no-files-found: error
@@ -244,7 +250,7 @@ jobs:
             ${{ github.workspace }}/.github/workflows/SignClientFileList.txt
 
       - name: Publish Packages
-        if: runner.os == 'Windows'
+        if: ${{ runner.os == 'Windows' }}
         uses: actions/upload-artifact@v4
         with:
           name: packages

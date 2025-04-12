@@ -130,7 +130,7 @@ public static partial class DrawingViewService
 		{
 			return (null, SizeF.Zero);
 		}
-		
+
 		var offset = canvasSize is null ? new SizeF(minPointX, minPointY) : SizeF.Zero;
 
 		return (image, offset);
