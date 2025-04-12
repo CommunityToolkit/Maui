@@ -69,7 +69,7 @@ public partial class AnimationBehavior : EventToCommandBehavior
 		get => (BaseAnimation?)GetValue(AnimationTypeProperty);
 		set => SetValue(AnimationTypeProperty, value);
 	}
-	
+
 	/// <summary>
 	/// Whether a TapGestureRecognizer is added to the control or not
 	/// </summary>
@@ -187,7 +187,7 @@ public partial class AnimationBehavior : EventToCommandBehavior
 			// Returning the `Task` would cause the `OnAnimate()` method to return immediately, before `AnimationType.Animate()` has completed. Returning immediately exits our try/catch block and thus negates our opportunity to handle any Exceptions which breaks `Options.ShouldSuppressExceptionsInAnimations`.
 			await AnimationType.Animate(View, token);
 		}
-		catch (Exception ex) when(Options.ShouldSuppressExceptionsInAnimations)
+		catch (Exception ex) when (Options.ShouldSuppressExceptionsInAnimations)
 		{
 			Trace.TraceInformation("{0}", ex);
 		}

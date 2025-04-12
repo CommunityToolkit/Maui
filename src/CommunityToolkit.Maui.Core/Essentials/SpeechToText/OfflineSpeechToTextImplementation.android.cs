@@ -44,11 +44,11 @@ public sealed partial class OfflineSpeechToTextImplementation
 	static Intent CreateSpeechIntent(SpeechToTextOptions options)
 	{
 		var intent = new Intent(RecognizerIntent.ActionRecognizeSpeech);
-		
-		intent.PutExtra(RecognizerIntent.ExtraLanguageModel, RecognizerIntent.LanguageModelFreeForm); 
+
+		intent.PutExtra(RecognizerIntent.ExtraLanguageModel, RecognizerIntent.LanguageModelFreeForm);
 		intent.PutExtra(RecognizerIntent.ExtraCallingPackage, Application.Context.PackageName);
 		intent.PutExtra(RecognizerIntent.ExtraPartialResults, options.ShouldReportPartialResults);
-		
+
 		var javaLocale = Java.Util.Locale.ForLanguageTag(options.Culture.Name).ToLanguageTag();
 		intent.PutExtra(RecognizerIntent.ExtraLanguage, javaLocale);
 		intent.PutExtra(RecognizerIntent.ExtraLanguagePreference, javaLocale);
@@ -77,7 +77,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 			PartialResults = HandleListenerPartialResults,
 			Results = HandleListenerResults
 		};
-		
+
 		var recognitionSupportTask = new TaskCompletionSource<RecognitionSupport>();
 		speechRecognizer.CheckRecognitionSupport(recognizerIntent, new Executor(), new RecognitionSupportCallback(recognitionSupportTask));
 		var recognitionSupportResult = await recognitionSupportTask.Task;
@@ -87,12 +87,12 @@ public sealed partial class OfflineSpeechToTextImplementation
 			{
 				throw new NotSupportedException($"Culture '{options.Culture.Name}' is not supported");
 			}
-			
+
 			var downloadLanguageTask = new TaskCompletionSource();
 			speechRecognizer.TriggerModelDownload(recognizerIntent, new Executor(), new ModelDownloadListener(downloadLanguageTask));
 			await downloadLanguageTask.Task.WaitAsync(token);
 		}
-		
+
 		speechRecognizer.SetRecognitionListener(listener);
 		speechRecognizer.StartListening(recognizerIntent);
 	}
