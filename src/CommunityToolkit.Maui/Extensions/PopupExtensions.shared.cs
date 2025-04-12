@@ -36,9 +36,9 @@ public static class PopupExtensions
 		ArgumentNullException.ThrowIfNull(navigation);
 		ArgumentNullException.ThrowIfNull(view);
 
-		var popupContainer = new PopupContainer(view, options ?? PopupOptions.Empty);
+		var popupPage = new PopupPage(view, options ?? PopupOptions.Empty);
 
-		await navigation.PushModalAsync(popupContainer, false);
+		await navigation.PushModalAsync(popupPage, false);
 	}
 
 	/// <summary>
@@ -108,10 +108,10 @@ public static class PopupExtensions
 
 		TaskCompletionSource<IPopupResult> taskCompletionSource = new();
 
-		var popupContainer = new PopupContainer(view, options ?? PopupOptions.Empty);
-		popupContainer.PopupClosed += HandlePopupClosed;
+		var popupPage = new PopupPage(view, options ?? PopupOptions.Empty);
+		popupPage.PopupClosed += HandlePopupClosed;
 
-		await navigation.PushModalAsync(popupContainer, false).WaitAsync(token);
+		await navigation.PushModalAsync(popupPage, false).WaitAsync(token);
 		return await taskCompletionSource.Task.WaitAsync(token);
 
 		void HandlePopupClosed(object? sender, IPopupResult e)

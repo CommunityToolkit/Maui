@@ -107,24 +107,24 @@ public class PopupService : IPopupService
 	public async Task ClosePopupAsync(INavigation navigation, CancellationToken cancellationToken = default)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-		var popupContainer = GetCurrentPopupContainer(navigation);
+		var popupPage = GetCurrentPopupPage(navigation);
 
-		await popupContainer.Close(new PopupResult(false), cancellationToken);
+		await popupPage.Close(new PopupResult(false), cancellationToken);
 	}
 
 	/// <inheritdoc />
 	public async Task ClosePopupAsync<T>(INavigation navigation, T result, CancellationToken cancellationToken = default)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-		var popupContainer = GetCurrentPopupContainer(navigation);
+		var popupPage = GetCurrentPopupPage(navigation);
 
-		await popupContainer.Close(new PopupResult<T>(result, false), cancellationToken);
+		await popupPage.Close(new PopupResult<T>(result, false), cancellationToken);
 	}
 
-	// All popups are now displayed in a PopupContainer (ContentPage) that is pushed modally to the screen, e.g. Navigation.PushModalAsync(popupContainer
-	// We can use the ModalStack to retrieve the most recent popupContainer by retrieving all PopupContainers and return the most recent from the ModalStack  
-	static PopupContainer GetCurrentPopupContainer(INavigation navigation) =>
-		navigation.ModalStack.OfType<PopupContainer>().LastOrDefault() ?? throw new InvalidOperationException($"Unable to locate {nameof(Popup)}");
+	// All popups are now displayed in a PopupPage (ContentPage) that is pushed modally to the screen, e.g. Navigation.PushModalAsync(popupPage)
+	// We can use the ModalStack to retrieve the most recent popupPage by retrieving all PopupPages and return the most recent from the ModalStack  
+	static PopupPage GetCurrentPopupPage(INavigation navigation) =>
+		navigation.ModalStack.OfType<PopupPage>().LastOrDefault() ?? throw new InvalidOperationException($"Unable to locate {nameof(Popup)}");
 
 	View GetPopupContent<T>(T bindingContext)
 	{

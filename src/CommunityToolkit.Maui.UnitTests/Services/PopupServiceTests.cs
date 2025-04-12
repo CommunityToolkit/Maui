@@ -61,7 +61,7 @@ public class PopupServiceTests : BaseHandlerTest
 
 		// Assert
 		Assert.Single(navigation.ModalStack);
-		Assert.IsType<PopupContainer>(navigation.ModalStack[0]);
+		Assert.IsType<PopupPage>(navigation.ModalStack[0]);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -130,22 +130,22 @@ public class PopupServiceTests : BaseHandlerTest
 			navigation,
 			options);
 
-		var popupContainer = (PopupContainer)navigation.ModalStack[0];
-		var popupContainerContent = popupContainer.Content;
-		var border = (Border)popupContainerContent.Children[0];
+		var popupPage = (PopupPage)navigation.ModalStack[0];
+		var popupPageContent = popupPage.Content;
+		var border = (Border)popupPageContent.Children[0];
 		var popup = border.Content;
 
 		// Assert
 		Assert.NotNull(popup);
 
-		Assert.Equal(options.PageOverlayColor, popupContainer.BackgroundColor);
+		Assert.Equal(options.PageOverlayColor, popupPage.BackgroundColor);
 		Assert.Equal(options.HorizontalOptions, border.HorizontalOptions);
 		Assert.Equal(options.VerticalOptions, border.VerticalOptions);
 		Assert.Equal(options.Shape, border.StrokeShape);
 		Assert.Equal(options.Margin, border.Margin);
 		Assert.Equal(options.Padding, border.Padding);
 		Assert.Equal(popup.BindingContext, border.BindingContext);
-		Assert.Equal(popupContainerContent.BindingContext, border.BindingContext);
+		Assert.Equal(popupPageContent.BindingContext, border.BindingContext);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]

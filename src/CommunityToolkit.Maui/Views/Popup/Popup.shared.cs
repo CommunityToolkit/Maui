@@ -49,7 +49,7 @@ public partial class Popup : ContentView
 	/// <summary>
 	/// Close the Popup.
 	/// </summary>
-	public virtual Task Close(CancellationToken token = default) => GetPopupContainer().Close(new PopupResult(false), token);
+	public virtual Task Close(CancellationToken token = default) => GetPopupPage().Close(new PopupResult(false), token);
 
 	internal void NotifyPopupIsOpened()
 	{
@@ -61,21 +61,21 @@ public partial class Popup : ContentView
 		Closed?.Invoke(this, EventArgs.Empty);
 	}
 
-	private protected PopupContainer GetPopupContainer()
+	private protected PopupPage GetPopupPage()
 	{
 		var parent = Parent;
 
 		while (parent is not null)
 		{
-			if (parent.Parent is PopupContainer popupContainer)
+			if (parent.Parent is PopupPage popuppage)
 			{
-				return popupContainer;
+				return popuppage;
 			}
 
 			parent = parent.Parent;
 		}
 
-		throw new InvalidOperationException($"Unable to close popup: could not locate {nameof(PopupContainer)}. {nameof(PopupExtensions.ShowPopup)} or {nameof(PopupExtensions.ShowPopupAsync)} must be called before {nameof(Close)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Close)} method");
+		throw new InvalidOperationException($"Unable to close popup: could not locate {nameof(PopupPage)}. {nameof(PopupExtensions.ShowPopup)} or {nameof(PopupExtensions.ShowPopupAsync)} must be called before {nameof(Close)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Close)} method");
 	}
 }
 
@@ -89,5 +89,5 @@ public partial class Popup<T> : Popup
 	/// </summary>
 	/// <param name="result">Popup result</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
-	public virtual Task Close(T result, CancellationToken token = default) => GetPopupContainer().Close(new PopupResult<T>(result, false), token);
+	public virtual Task Close(T result, CancellationToken token = default) => GetPopupPage().Close(new PopupResult<T>(result, false), token);
 }

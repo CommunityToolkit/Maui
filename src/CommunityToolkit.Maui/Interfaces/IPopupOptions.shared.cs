@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui;
 public interface IPopupOptions
 {
 	/// <summary>
-	/// Gets or sets a value indicating whether the popup can be dismissed by tapping outside the Popup.
+	/// Indicates whether the popup can be dismissed by tapping outside the Popup.
 	/// </summary>
 	bool CanBeDismissedByTappingOutsideOfPopup { get; }
 

@@ -11,8 +11,9 @@ namespace CommunityToolkit.Maui;
 public static class PopupOptionsDefaults
 {
 	/// <summary>
-	/// Default value for <see cref="PopupOptions.Shape"/> StrokeThickness
+	/// Default value for <see cref="PopupOptions.Shape"/> <see cref="Shape.StrokeThickness"/>
 	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public const double BorderStrokeThickness = 2;
 
 	/// <summary>
@@ -28,7 +29,7 @@ public static class PopupOptionsDefaults
 	public static Action? OnTappingOutsideOfPopup { get; } = null;
 
 	/// <summary>
-	/// Default value for <see cref="PopupContainer"/> BackgroundColor 
+	/// Default value for <see cref="PopupPage"/> BackgroundColor 
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static Color PopupBackgroundColor { get; } = Colors.White;

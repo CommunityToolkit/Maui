@@ -1,7 +1,5 @@
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
-using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.PlatformConfiguration;
@@ -10,9 +8,9 @@ using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Views;
 
-sealed partial class PopupContainer<T>(Popup<T> popup, IPopupOptions popupOptions) : PopupContainer(popup, popupOptions)
+sealed partial class PopupPage<T>(Popup<T> popup, IPopupOptions popupOptions) : PopupPage(popup, popupOptions)
 {
-	public PopupContainer(View view, IPopupOptions popupOptions)
+	public PopupPage(View view, IPopupOptions popupOptions)
 		: this(view as Popup<T> ?? CreatePopupFromView<Popup<T>>(view), popupOptions)
 	{
 	}
@@ -20,20 +18,20 @@ sealed partial class PopupContainer<T>(Popup<T> popup, IPopupOptions popupOption
 	public Task Close(PopupResult<T> result, CancellationToken token = default) => base.Close(result, token);
 }
 
-partial class PopupContainer : ContentPage
+partial class PopupPage : ContentPage
 {
 	readonly Popup popup;
 	readonly IPopupOptions popupOptions;
 	readonly Command tapOutsideOfPopupCommand;
 	readonly WeakEventManager popupClosedEventManager = new();
 
-	public PopupContainer(View view, IPopupOptions popupOptions)
+	public PopupPage(View view, IPopupOptions popupOptions)
 		: this(view as Popup ?? CreatePopupFromView<Popup>(view), popupOptions)
 	{
 		ArgumentNullException.ThrowIfNull(view);
 	}
 
-	public PopupContainer(Popup popup, IPopupOptions popupOptions)
+	public PopupPage(Popup popup, IPopupOptions popupOptions)
 	{
 		ArgumentNullException.ThrowIfNull(popup);
 		ArgumentNullException.ThrowIfNull(popupOptions);
@@ -42,7 +40,7 @@ partial class PopupContainer : ContentPage
 		this.popupOptions = popupOptions;
 
 		// Only set the content if parent constructor hasn't set the content already; don't override content if it already exists
-		base.Content ??= new PopupContainerLayout(popup, popupOptions);
+		base.Content ??= new PopupPageLayout(popup, popupOptions);
 
 		tapOutsideOfPopupCommand = new Command(async () =>
 		{
@@ -71,22 +69,22 @@ partial class PopupContainer : ContentPage
 	}
 
 	// Prevent Content from being set by external class
-	// Casts `PopupContainer.Content` to return typeof(PopupContainerLayout)
-	internal new PopupContainerLayout Content => (PopupContainerLayout)base.Content;
+	// Casts `PopupPage.Content` to return typeof(PopupPageLayout)
+	internal new PopupPageLayout Content => (PopupPageLayout)base.Content;
 
 	public async Task Close(PopupResult result, CancellationToken token = default)
 	{
 		token.ThrowIfCancellationRequested();
 
-		var popupContainerPageToClose = Navigation.ModalStack.OfType<PopupContainer>().LastOrDefault(popupContainer => popupContainer.Content == Content);
+		var popupPageToClose = Navigation.ModalStack.OfType<PopupPage>().LastOrDefault(popupPage => popupPage.Content == Content);
 
-		if (popupContainerPageToClose is null)
+		if (popupPageToClose is null)
 		{
-			throw new InvalidOperationException($"Unable to close popup: could not locate {nameof(PopupContainer)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Close)} method");
+			throw new InvalidOperationException($"Unable to close popup: could not locate {nameof(PopupPage)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Close)} method");
 		}
 
 		if (Navigation.ModalStack[^1] is Microsoft.Maui.Controls.Page currentVisibleModalPage
-			&& currentVisibleModalPage != popupContainerPageToClose)
+			&& currentVisibleModalPage != popupPageToClose)
 		{
 			throw new InvalidOperationException($"Unable to close Popup because it is blocked by the Modal Page {currentVisibleModalPage.GetType().FullName}. Please call `{nameof(Navigation)}.{nameof(Navigation.PopModalAsync)}()` to first remove {currentVisibleModalPage.GetType().FullName} from the {nameof(Navigation.ModalStack)}");
 		}
@@ -142,9 +140,9 @@ partial class PopupContainer : ContentPage
 		}
 	}
 
-	internal sealed partial class PopupContainerLayout : Grid
+	internal sealed partial class PopupPageLayout : Grid
 	{
-		public PopupContainerLayout(in Popup popupContent, in IPopupOptions options)
+		public PopupPageLayout(in Popup popupContent, in IPopupOptions options)
 		{
 			Background = BackgroundColor = null;
 
@@ -160,12 +158,12 @@ partial class PopupContainer : ContentPage
 			border.SetBinding(Border.BackgroundColorProperty, static (View content) => content.BackgroundColor, source: popupContent, mode: BindingMode.OneWay);
 			border.SetBinding(Border.VerticalOptionsProperty, static (IPopupOptions options) => options.VerticalOptions, source: options, mode: BindingMode.OneWay);
 			border.SetBinding(Border.HorizontalOptionsProperty, static (IPopupOptions options) => options.HorizontalOptions, source: options, mode: BindingMode.OneWay);
-			border.SetBinding(Border.StrokeShapeProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay);
-			border.SetBinding(Border.StrokeThicknessProperty, static (IPopupOptions options) => options.Shape, source: options, converter: new BorderStrokeThicknessConverter(), mode: BindingMode.OneWay);
-			border.SetBinding(Border.StrokeProperty, static (IPopupOptions options) => options.Shape, source: options, converter: new BorderStrokeConverter(), mode: BindingMode.OneWay);
 			border.SetBinding(Border.MarginProperty, static (IPopupOptions options) => options.Margin, source: options, mode: BindingMode.OneWay);
 			border.SetBinding(Border.PaddingProperty, static (IPopupOptions options) => options.Padding, source: options, mode: BindingMode.OneWay);
 			border.SetBinding(Border.ShadowProperty, static (IPopupOptions options) => options.Shadow, source: options, mode: BindingMode.OneWay);
+			border.SetBinding(Border.StrokeShapeProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay);
+			border.SetBinding(Border.StrokeProperty, static (IPopupOptions options) => options.Shape, source: options, converter: new BorderStrokeConverter(), mode: BindingMode.OneWay);
+			border.SetBinding(Border.StrokeThicknessProperty, static (IPopupOptions options) => options.Shape, source: options, converter: new BorderStrokeThicknessConverter(), mode: BindingMode.OneWay);
 
 			Children.Add(border);
 		}

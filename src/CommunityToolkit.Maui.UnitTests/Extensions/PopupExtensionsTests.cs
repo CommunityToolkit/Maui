@@ -32,7 +32,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 
 		// Assert
 		Assert.Single(navigation.ModalStack);
-		Assert.IsType<PopupContainer>(navigation.ModalStack[0]);
+		Assert.IsType<PopupPage>(navigation.ModalStack[0]);
 	}
 	
 	[Fact]
@@ -46,7 +46,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 
 		// Assert
 		Assert.Single(navigation.ModalStack);
-		Assert.IsType<PopupContainer>(navigation.ModalStack[0]);
+		Assert.IsType<PopupPage>(navigation.ModalStack[0]);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -141,22 +141,22 @@ public class PopupExtensionsTests : BaseHandlerTest
 		// Act
 		navigation.ShowPopup(selfClosingPopup, options);
 
-		var popupContainer = (PopupContainer)navigation.ModalStack[0];
-		var popupContainerContent = popupContainer.Content;
-		var border = (Border)popupContainerContent.Children[0];
+		var popupPage = (PopupPage)navigation.ModalStack[0];
+		var popupPageContent = popupPage.Content;
+		var border = (Border)popupPageContent.Children[0];
 		var popup = border.Content;
 
 		// Assert
 		Assert.NotNull(popup);
 
-		Assert.Equal(options.PageOverlayColor, popupContainer.BackgroundColor);
+		Assert.Equal(options.PageOverlayColor, popupPage.BackgroundColor);
 		Assert.Equal(options.HorizontalOptions, border.HorizontalOptions);
 		Assert.Equal(options.VerticalOptions, border.VerticalOptions);
 		Assert.Equal(options.Shape, border.StrokeShape);
 		Assert.Equal(options.Margin, border.Margin);
 		Assert.Equal(options.Padding, border.Padding);
 		Assert.Equal(popup.BindingContext, border.BindingContext);
-		Assert.Equal(popupContainerContent.BindingContext, border.BindingContext);
+		Assert.Equal(popupPageContent.BindingContext, border.BindingContext);
 	}
 	
 	[Fact]
@@ -181,22 +181,22 @@ public class PopupExtensionsTests : BaseHandlerTest
 		// Act
 		navigation.ShowPopup(view, options);
 
-		var popupContainer = (PopupContainer)navigation.ModalStack[0];
-		var popupContainerContent = popupContainer.Content;
-		var border = (Border)popupContainerContent.Children[0];
+		var popupPage = (PopupPage)navigation.ModalStack[0];
+		var popupPageContent = popupPage.Content;
+		var border = (Border)popupPageContent.Children[0];
 		var popup = border.Content;
 
 		// Assert
 		Assert.NotNull(popup);
 
-		Assert.Equal(options.PageOverlayColor, popupContainer.BackgroundColor);
+		Assert.Equal(options.PageOverlayColor, popupPage.BackgroundColor);
 		Assert.Equal(options.HorizontalOptions, border.HorizontalOptions);
 		Assert.Equal(options.VerticalOptions, border.VerticalOptions);
 		Assert.Equal(options.Shape, border.StrokeShape);
 		Assert.Equal(options.Margin, border.Margin);
 		Assert.Equal(options.Padding, border.Padding);
 		Assert.Equal(popup.BindingContext, border.BindingContext);
-		Assert.Equal(popupContainerContent.BindingContext, border.BindingContext);
+		Assert.Equal(popupPageContent.BindingContext, border.BindingContext);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -272,8 +272,8 @@ public class PopupExtensionsTests : BaseHandlerTest
 
 		var showPopupTask = navigation.ShowPopupAsync<object?>(view, PopupOptions.Empty, TestContext.Current.CancellationToken);
 		
-		var popupContainer = (PopupContainer)navigation.ModalStack[0];
-		await popupContainer.Close(new PopupResult<object?>(null, false), TestContext.Current.CancellationToken);
+		var popupPage = (PopupPage)navigation.ModalStack[0];
+		await popupPage.Close(new PopupResult<object?>(null, false), TestContext.Current.CancellationToken);
 		
 		await showPopupTask;
 
@@ -302,8 +302,8 @@ public class PopupExtensionsTests : BaseHandlerTest
 
 		var showPopupTask = navigation.ShowPopupAsync<int>(view, PopupOptions.Empty, CancellationToken.None);
 
-		var popupContainer = (PopupContainer)navigation.ModalStack[0];
-		await popupContainer.Close(expectedPopupResult, TestContext.Current.CancellationToken);
+		var popupPage = (PopupPage)navigation.ModalStack[0];
+		await popupPage.Close(expectedPopupResult, TestContext.Current.CancellationToken);
 		
 		var actualPopupResult = await showPopupTask;
 
@@ -347,10 +347,10 @@ public class PopupExtensionsTests : BaseHandlerTest
 		var popupClosedTCS = new TaskCompletionSource<IPopupResult>();
 
 		var showPopupTask = navigation.ShowPopupAsync<bool?>(new Popup<bool>(), token: CancellationToken.None);
-		var popupContainer = (PopupContainer)navigation.ModalStack[0];
-		popupContainer.PopupClosed += HandlePopupClosed;
+		var popupPage = (PopupPage)navigation.ModalStack[0];
+		popupPage.PopupClosed += HandlePopupClosed;
 		
-		var tapGestureRecognizer = (TapGestureRecognizer)popupContainer.Content.GestureRecognizers[0];
+		var tapGestureRecognizer = (TapGestureRecognizer)popupPage.Content.GestureRecognizers[0];
 		tapGestureRecognizer.Command?.Execute(null);
 		
 		var popupClosedResult = await popupClosedTCS.Task;
@@ -372,10 +372,10 @@ public class PopupExtensionsTests : BaseHandlerTest
 		var popupClosedTCS = new TaskCompletionSource<IPopupResult>();
 
 		var showPopupTask = navigation.ShowPopupAsync<bool?>(new Popup<bool>(), token: CancellationToken.None);
-		var popupContainer = (PopupContainer)navigation.ModalStack[0];
-		popupContainer.PopupClosed += HandlePopupClosed;
+		var popupPage = (PopupPage)navigation.ModalStack[0];
+		popupPage.PopupClosed += HandlePopupClosed;
 		
-		var tapGestureRecognizer = (TapGestureRecognizer)popupContainer.Content.GestureRecognizers[0];
+		var tapGestureRecognizer = (TapGestureRecognizer)popupPage.Content.GestureRecognizers[0];
 		tapGestureRecognizer.Command?.Execute(null);
 		
 		var popupClosedResult = await popupClosedTCS.Task;
@@ -397,10 +397,10 @@ public class PopupExtensionsTests : BaseHandlerTest
 		var popupClosedTCS = new TaskCompletionSource<IPopupResult>();
 
 		var showPopupTask = navigation.ShowPopupAsync<bool>(new Popup<bool>(), token: CancellationToken.None);
-		var popupContainer = (PopupContainer)navigation.ModalStack[0];
-		popupContainer.PopupClosed += HandlePopupClosed;
+		var popupPage = (PopupPage)navigation.ModalStack[0];
+		popupPage.PopupClosed += HandlePopupClosed;
 		
-		var tapGestureRecognizer = (TapGestureRecognizer)popupContainer.Content.GestureRecognizers[0];
+		var tapGestureRecognizer = (TapGestureRecognizer)popupPage.Content.GestureRecognizers[0];
 		tapGestureRecognizer.Command?.Execute(null);
 		
 		var popupClosedResult = await popupClosedTCS.Task;
