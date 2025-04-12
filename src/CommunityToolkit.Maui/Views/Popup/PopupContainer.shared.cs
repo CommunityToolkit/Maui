@@ -77,15 +77,15 @@ partial class PopupContainer : ContentPage
 	{
 		token.ThrowIfCancellationRequested();
 		
-		var popupContainerToClose = Navigation.ModalStack.OfType<PopupContainer>().LastOrDefault(popupContainer => popupContainer.Content == Content);
+		var popupContainerPageToClose = Navigation.ModalStack.OfType<PopupContainer>().LastOrDefault(popupContainer => popupContainer.Content == Content);
 		
-		if (popupContainerToClose is null)
+		if (popupContainerPageToClose is null)
 		{
 			throw new InvalidOperationException($"Unable to close popup: could not locate {nameof(PopupContainer)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Close)} method");
 		}
 		
 		if (Navigation.ModalStack[^1] is Microsoft.Maui.Controls.Page currentVisibleModalPage
-		    && currentVisibleModalPage != popupContainerToClose)
+		    && currentVisibleModalPage != popupContainerPageToClose)
 		{
 			throw new InvalidOperationException($"Unable to close Popup because it is blocked by the Modal Page {currentVisibleModalPage.GetType().FullName}. Please call `{nameof(Navigation)}.{nameof(Navigation.PopModalAsync)}()` to first remove {currentVisibleModalPage.GetType().FullName} from the {nameof(Navigation.ModalStack)}");
 		}

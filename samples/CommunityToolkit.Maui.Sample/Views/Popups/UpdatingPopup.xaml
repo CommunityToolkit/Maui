@@ -50,7 +50,7 @@
         <Button
             Command="{Binding MoreCommand}"
             Style="{StaticResource ConfirmButton}"
-            Text="More" />
+            Text="Load Another Popup" />
         
         <Button
             Command="{Binding FinishCommand}"
