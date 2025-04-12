@@ -16,7 +16,7 @@ public partial class PopupOptions : BindableObject, IPopupOptions
 	///  Backing BindableProperty for the <see cref="OnTappingOutsideOfPopup"/> property.
 	/// </summary>
 	public static readonly BindableProperty OnTappingOutsideOfPopupProperty = BindableProperty.Create(nameof(OnTappingOutsideOfPopup), typeof(Action), typeof(PopupOptions), PopupOptionsDefaults.OnTappingOutsideOfPopup);
-	
+
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="PageOverlayColor"/> property.
 	/// </summary>
@@ -46,7 +46,7 @@ public partial class PopupOptions : BindableObject, IPopupOptions
 	///  Backing BindableProperty for the <see cref="HorizontalOptions"/> property.
 	/// </summary>
 	public static readonly BindableProperty HorizontalOptionsProperty = BindableProperty.Create(nameof(HorizontalOptions), typeof(LayoutOptions), typeof(PopupOptions), PopupOptionsDefaults.HorizontalOptions);
-	
+
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="HorizontalOptions"/> property.
 	/// </summary>

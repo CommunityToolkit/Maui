@@ -43,7 +43,7 @@ public abstract class BaseTest : IDisposable, IAsyncDisposable
 	}
 
 	~BaseTest() => Dispose(false);
-	
+
 	public async ValueTask DisposeAsync()
 	{
 		await DisposeAsyncCore().ConfigureAwait(false);
@@ -57,7 +57,7 @@ public abstract class BaseTest : IDisposable, IAsyncDisposable
 		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
-	
+
 	protected virtual ValueTask DisposeAsyncCore()
 	{
 		return ValueTask.CompletedTask;

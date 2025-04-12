@@ -77,22 +77,22 @@ partial class PopupContainer : ContentPage
 	public async Task Close(PopupResult result, CancellationToken token = default)
 	{
 		token.ThrowIfCancellationRequested();
-		
+
 		var popupContainerPageToClose = Navigation.ModalStack.OfType<PopupContainer>().LastOrDefault(popupContainer => popupContainer.Content == Content);
-		
+
 		if (popupContainerPageToClose is null)
 		{
 			throw new InvalidOperationException($"Unable to close popup: could not locate {nameof(PopupContainer)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Close)} method");
 		}
-		
+
 		if (Navigation.ModalStack[^1] is Microsoft.Maui.Controls.Page currentVisibleModalPage
-		    && currentVisibleModalPage != popupContainerPageToClose)
+			&& currentVisibleModalPage != popupContainerPageToClose)
 		{
 			throw new InvalidOperationException($"Unable to close Popup because it is blocked by the Modal Page {currentVisibleModalPage.GetType().FullName}. Please call `{nameof(Navigation)}.{nameof(Navigation.PopModalAsync)}()` to first remove {currentVisibleModalPage.GetType().FullName} from the {nameof(Navigation.ModalStack)}");
 		}
 
 		await Navigation.PopModalAsync(false).WaitAsync(token);
-		
+
 		popupClosedEventManager.HandleEvent(this, result, nameof(PopupClosed));
 	}
 
@@ -170,14 +170,14 @@ partial class PopupContainer : ContentPage
 			Children.Add(border);
 		}
 
-		sealed class BorderStrokeThicknessConverter : BaseConverterOneWay<Shape?, double>
+		sealed partial class BorderStrokeThicknessConverter : BaseConverterOneWay<Shape?, double>
 		{
 			public override double DefaultConvertReturnValue { get; set; } = PopupOptionsDefaults.BorderStrokeThickness;
 
 			public override double ConvertFrom(Shape? value, CultureInfo? culture) => value?.StrokeThickness ?? DefaultConvertReturnValue;
 		}
-		
-		sealed class BorderStrokeConverter : BaseConverterOneWay<Shape?, Brush?>
+
+		sealed partial class BorderStrokeConverter : BaseConverterOneWay<Shape?, Brush?>
 		{
 			public override Brush? DefaultConvertReturnValue { get; set; } = PopupOptionsDefaults.BorderStroke;
 

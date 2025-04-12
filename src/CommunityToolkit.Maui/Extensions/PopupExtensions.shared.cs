@@ -19,7 +19,7 @@ public static class PopupExtensions
 	public static void ShowPopup(this Page page, View view, IPopupOptions? options = null)
 	{
 		ArgumentNullException.ThrowIfNull(page);
-		
+
 		ShowPopup(page.Navigation, view, options);
 	}
 
@@ -35,7 +35,7 @@ public static class PopupExtensions
 	{
 		ArgumentNullException.ThrowIfNull(navigation);
 		ArgumentNullException.ThrowIfNull(view);
-		
+
 		var popupContainer = new PopupContainer(view, options ?? PopupOptions.Empty);
 
 		await navigation.PushModalAsync(popupContainer, false);
@@ -52,7 +52,7 @@ public static class PopupExtensions
 	public static Task<IPopupResult<TResult>> ShowPopupAsync<TResult>(this Page page, View view, IPopupOptions? options = null, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(page);
-		
+
 		return page.Navigation.ShowPopupAsync<TResult>(view, options, token);
 	}
 
@@ -87,7 +87,7 @@ public static class PopupExtensions
 	public static Task<IPopupResult> ShowPopupAsync(this Page page, View view, IPopupOptions? options = null, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(page);
-		
+
 		return ShowPopupAsync(page.Navigation, view, options, token);
 	}
 

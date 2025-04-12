@@ -11,7 +11,7 @@ public interface IPopupOptions
 	/// Gets or sets a value indicating whether the popup can be dismissed by tapping outside the Popup.
 	/// </summary>
 	bool CanBeDismissedByTappingOutsideOfPopup { get; }
-	
+
 	/// <summary>
 	/// Color of the overlay behind the Popup
 	/// </summary>
@@ -46,7 +46,7 @@ public interface IPopupOptions
 	/// Popup horizontal options.
 	/// </summary>
 	LayoutOptions HorizontalOptions { get; }
-	
+
 	/// <summary>
 	/// Popup Shadow
 	/// </summary>

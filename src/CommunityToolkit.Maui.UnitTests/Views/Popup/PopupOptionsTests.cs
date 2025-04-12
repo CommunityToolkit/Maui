@@ -19,7 +19,7 @@ public class PopupOptionsTests : BaseTest
 		popupOptions.CanBeDismissedByTappingOutsideOfPopup = false;
 		Assert.False(popupOptions.CanBeDismissedByTappingOutsideOfPopup);
 	}
-	
+
 	[Fact]
 	public void Shadow_DefaultValue_ShouldBeTrue()
 	{
@@ -34,13 +34,13 @@ public class PopupOptionsTests : BaseTest
 		popupOptions.Shadow = null;
 		Assert.Null(popupOptions.Shadow);
 	}
-	
+
 	[Fact]
 	public void PopupBackgroundColor_DefaultValue_ShouldBeWhite()
 	{
 		Assert.Equal(PopupOptionsDefaults.PopupBackgroundColor, Colors.White);
 	}
-	
+
 	[Fact]
 	public void PageOverlayColor_DefaultValue_ShouldBeDefaultColor()
 	{
@@ -56,7 +56,7 @@ public class PopupOptionsTests : BaseTest
 		popupOptions.PageOverlayColor = color;
 		Assert.Equal(color, popupOptions.PageOverlayColor);
 	}
-	
+
 	[Fact]
 	public void BorderStroke_DefaultValue_ShouldBeDefaultStroke()
 	{
@@ -164,7 +164,7 @@ public class PopupOptionsTests : BaseTest
 		var options = new MockPopupOptions { CanBeDismissedByTappingOutsideOfPopup = false };
 		Assert.False(options.CanBeDismissedByTappingOutsideOfPopup);
 	}
-	
+
 	[Fact]
 	public void BorderStroke_ShouldReturnCorrectColor()
 	{
@@ -178,7 +178,7 @@ public class PopupOptionsTests : BaseTest
 		};
 		Assert.Equal(color, options.Shape.Stroke);
 	}
-	
+
 	[Fact]
 	public void PageOverylayColor_ShouldReturnCorrectColor()
 	{

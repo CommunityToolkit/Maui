@@ -14,7 +14,7 @@ public static class PopupOptionsDefaults
 	/// Default value for <see cref="PopupOptions.Shape"/> StrokeThickness
 	/// </summary>
 	public const double BorderStrokeThickness = 2;
-	
+
 	/// <summary>
 	/// Default value for <see cref="PopupOptions.CanBeDismissedByTappingOutsideOfPopup"/>
 	/// </summary>
@@ -26,7 +26,7 @@ public static class PopupOptionsDefaults
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static Action? OnTappingOutsideOfPopup { get; } = null;
-	
+
 	/// <summary>
 	/// Default value for <see cref="PopupContainer"/> BackgroundColor 
 	/// </summary>

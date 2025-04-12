@@ -1,5 +1,5 @@
-﻿using CommunityToolkit.Maui.Sample.Views.Popups;
-using CommunityToolkit.Maui.Extensions;
+﻿using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Sample.Views.Popups;
 using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;

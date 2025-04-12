@@ -20,7 +20,7 @@ public abstract class BaseHandlerTest : BaseTest
 	protected override async ValueTask DisposeAsyncCore()
 	{
 		await base.DisposeAsyncCore();
-		
+
 		#region Cleanup Popup Tests
 
 		Application.Current.Should().NotBeNull();

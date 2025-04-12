@@ -1,8 +1,8 @@
 ﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using FluentAssertions;
-using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.PlatformConfiguration;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.Shapes;
 using Xunit;
 using Application = Microsoft.Maui.Controls.Application;
@@ -74,7 +74,7 @@ public class PopupContainerTests : BaseHandlerTest
 		}
 
 		await navigation.PushModalAsync(popupContainer);
-		
+
 		await popupContainer.Close(expectedResult, CancellationToken.None);
 		var actualResult = await tcs.Task;
 
@@ -154,7 +154,7 @@ public class PopupContainerTests : BaseHandlerTest
 		}
 
 		await navigation.PushModalAsync(popupContainer);
-		
+
 		await popupContainer.Close(expectedResult, CancellationToken.None);
 		var actualResult = await taskCompletionSource.Task;
 
@@ -166,7 +166,7 @@ public class PopupContainerTests : BaseHandlerTest
 			taskCompletionSource.SetResult((PopupResult<string>)e);
 		}
 	}
-	
+
 	[Fact]
 	public async Task PopupContainerT_CloseAfterAdditionalModalPage_ShouldThrowInvalidOperationException()
 	{

@@ -74,7 +74,7 @@ public class PopupService : IPopupService
 	/// <inheritdoc />
 	/// <remarks>This is an <see keyword="async"/> <see keyword="void"/> method. Use <see cref="ShowPopupAsync{T}"/> to <see keyword="await"/> this method</remarks>
 	public void ShowPopup<T>(INavigation navigation, IPopupOptions? options = null) where T : notnull
-	{		
+	{
 		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
 
 		navigation.ShowPopup(popupContent, options);
@@ -85,7 +85,7 @@ public class PopupService : IPopupService
 		where T : notnull
 	{
 		token.ThrowIfCancellationRequested();
-		
+
 		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
 
 		return navigation.ShowPopupAsync(popupContent, options, token);

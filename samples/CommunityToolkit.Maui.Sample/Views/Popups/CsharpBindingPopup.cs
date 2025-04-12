@@ -21,18 +21,18 @@ public partial class CsharpBindingPopup : Popup
 					.Top().Center()
 					.Bind(Label.TextProperty,
 						getter: static (CsharpBindingPopupViewModel vm) => vm.Title),
-				
+
 				new BoxView()
 					.Height(1)
 					.Margin(50, 25)
 					.BackgroundColor(Color.FromArgb("#c3c3c3")),
-				
+
 				new Label()
 					.Center()
 					.TextCenter()
 					.Bind(Label.TextProperty,
 						getter: static (CsharpBindingPopupViewModel vm) => vm.Message)
-				
+
 			}
 		};
 	}

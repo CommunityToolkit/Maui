@@ -77,7 +77,7 @@ public class PopupServiceTests : BaseHandlerTest
 		// Assert
 		Assert.Empty(navigation.ModalStack);
 	}
-	
+
 	[Fact]
 	public void ShowPopup_NavigationModalStackCountIncreases()
 	{
@@ -91,7 +91,7 @@ public class PopupServiceTests : BaseHandlerTest
 		// Assert
 		Assert.Single(navigation.ModalStack);
 	}
-	
+
 	[Fact]
 	public void ShowPopup_MultiplePopupsDisplayed()
 	{
@@ -119,8 +119,8 @@ public class PopupServiceTests : BaseHandlerTest
 			CanBeDismissedByTappingOutsideOfPopup = false,
 			HorizontalOptions = LayoutOptions.Start,
 			VerticalOptions = LayoutOptions.End,
-			Padding = new Thickness(1,2,3,4),
-			Margin = new Thickness(5,6,7,8),
+			Padding = new Thickness(1, 2, 3, 4),
+			Margin = new Thickness(5, 6, 7, 8),
 			Shape = new Ellipse(),
 			OnTappingOutsideOfPopup = onTappingOutsideOfPopup
 		};
@@ -225,7 +225,7 @@ public class PopupServiceTests : BaseHandlerTest
 		Assert.Same(mockPopup.Result, result.Result);
 		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task ShowPopupTAsyncShouldReturnResultOnceClosed()
 	{
@@ -306,7 +306,7 @@ sealed class MockSelfClosingPopup : Popup<object?>
 				await Close(Result);
 			}
 			catch (InvalidOperationException)
-			{	
+			{
 				// If test has already ended, Popup.Close will throw an InvalidOperationException
 				// because all Popups are removed from ModalStack in BaseHandlerTest.DisposeAsyncCore()
 			}

@@ -57,11 +57,11 @@ public partial class PopupSizingIssuesViewModel : BaseViewModel
 				itemsView.ItemsSource = Enumerable.Repeat(longText, 10);
 				itemsView.ItemTemplate = new DataTemplate(() => GetContentLabel(longText));
 				break;
-			
+
 			case Border border:
 				border.Content = GetContentLabel(longText);
 				break;
-			
+
 			default:
 				throw new NotSupportedException($"{view.GetType().FullName} is not yet supported");
 		}
