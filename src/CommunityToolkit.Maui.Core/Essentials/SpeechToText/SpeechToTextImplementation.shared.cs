@@ -31,29 +31,8 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 		remove => speechToTextStateChangedWeakEventManager.RemoveEventHandler(value);
 	}
 
-
 	/// <inheritdoc/>
-	public async Task<SpeechToTextResult> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken = default)
-	{
-		try
-		{
-			var isPermissionGranted = await IsSpeechPermissionAuthorized(cancellationToken).ConfigureAwait(false);
-			if (!isPermissionGranted)
-			{
-				return new SpeechToTextResult(null, new Exception("Speech Recognizer Permission not granted"));
-			}
-
-			var finalResult = await InternalListenAsync(culture, recognitionResult, cancellationToken).ConfigureAwait(false);
-			return new SpeechToTextResult(finalResult, null);
-		}
-		catch (Exception e)
-		{
-			return new SpeechToTextResult(null, e);
-		}
-	}
-
-	/// <inheritdoc/>
-	public async Task StartListenAsync(CultureInfo culture, CancellationToken cancellationToken = default)
+	public async Task StartListenAsync(SpeechToTextOptions options, CancellationToken cancellationToken = default)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 
@@ -63,7 +42,7 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 			throw new PermissionException($"{nameof(Permissions)}.{nameof(Permissions.Microphone)} Not Granted");
 		}
 
-		await InternalStartListeningAsync(culture, cancellationToken).ConfigureAwait(false);
+		await InternalStartListeningAsync(options, cancellationToken).ConfigureAwait(false);
 	}
 
 	/// <inheritdoc/>
@@ -74,7 +53,7 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 		recognitionResultUpdatedWeakEventManager.HandleEvent(this, new SpeechToTextRecognitionResultUpdatedEventArgs(recognitionResult), nameof(RecognitionResultUpdated));
 	}
 
-	void OnRecognitionResultCompleted(string recognitionResult)
+	void OnRecognitionResultCompleted(SpeechToTextResult recognitionResult)
 	{
 		recognitionResultCompletedWeakEventManager.HandleEvent(this, new SpeechToTextRecognitionResultCompletedEventArgs(recognitionResult), nameof(RecognitionResultCompleted));
 	}

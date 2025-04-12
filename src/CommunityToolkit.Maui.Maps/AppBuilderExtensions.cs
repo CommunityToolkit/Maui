@@ -1,11 +1,17 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Versioning;
 
 namespace CommunityToolkit.Maui.Maps;
 
 /// <summary>
 /// Maps Extensions for <see cref="MauiAppBuilder"/>
 /// </summary>
-public static class AppHostBuilderExtensions
+[SupportedOSPlatform("iOS15.0")]
+[SupportedOSPlatform("MacCatalyst15.0")]
+[SupportedOSPlatform("Android21.0")]
+[SupportedOSPlatform("Windows10.0.17763")]
+[SupportedOSPlatform("Tizen6.5")]
+public static class AppBuilderExtensions
 {
 	/// <summary>
 	/// Initializes the .NET MAUI Community Toolkit Maps Library
@@ -38,8 +44,6 @@ public static class AppHostBuilderExtensions
 	/// </code>
 	/// </example>
 	/// 
-	[RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
-	[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
 	public static MauiAppBuilder UseMauiCommunityToolkitMaps(this MauiAppBuilder builder, string key)
 	{
 		builder.ConfigureMauiHandlers(handlers =>

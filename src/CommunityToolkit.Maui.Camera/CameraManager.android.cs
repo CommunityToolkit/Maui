@@ -1,5 +1,6 @@
 ﻿using System.Runtime.Versioning;
 using Android.Content;
+using Android.Views;
 using AndroidX.Camera.Core;
 using AndroidX.Camera.Core.Impl.Utils.Futures;
 using AndroidX.Camera.Core.ResolutionSelector;
@@ -30,6 +31,7 @@ partial class CameraManager
 	Preview? cameraPreview;
 	ResolutionSelector? resolutionSelector;
 	ResolutionFilter? resolutionFilter;
+	OrientationListener? orientationListener;
 
 	public void Dispose()
 	{
@@ -47,6 +49,8 @@ partial class CameraManager
 			previewView.SetScaleType(NativePlatformCameraPreviewView.ScaleType.FitCenter);
 		}
 		cameraExecutor = Executors.NewSingleThreadExecutor() ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
+		orientationListener = new OrientationListener(SetImageCaptureTargetRotation, context);
+		orientationListener.Enable();
 
 		return previewView;
 	}
@@ -134,6 +138,10 @@ partial class CameraManager
 
 			resolutionFilter?.Dispose();
 			resolutionFilter = null;
+
+			orientationListener?.Disable();
+			orientationListener?.Dispose();
+			orientationListener = null;
 		}
 	}
 
@@ -172,7 +180,7 @@ partial class CameraManager
 
 	protected async Task StartUseCase(CancellationToken token)
 	{
-		if (resolutionSelector is null)
+		if (resolutionSelector is null || cameraExecutor is null)
 		{
 			return;
 		}
@@ -183,7 +191,7 @@ partial class CameraManager
 		imageCapture?.Dispose();
 
 		cameraPreview = new Preview.Builder().SetResolutionSelector(resolutionSelector).Build();
-		cameraPreview.SetSurfaceProvider(previewView?.SurfaceProvider);
+		cameraPreview.SetSurfaceProvider(cameraExecutor, previewView?.SurfaceProvider);
 
 		imageCapture = new ImageCapture.Builder()
 		.SetCaptureMode(ImageCapture.CaptureModeMaximizeQuality)
@@ -249,6 +257,20 @@ partial class CameraManager
 
 		imageCapture?.TakePicture(cameraExecutor, imageCallback);
 		return ValueTask.CompletedTask;
+	}
+
+	void SetImageCaptureTargetRotation(int rotation)
+	{
+		if (imageCapture is not null)
+		{
+			imageCapture.TargetRotation = rotation switch
+			{
+				>= 45 and < 135 => (int)SurfaceOrientation.Rotation270,
+				>= 135 and < 225 => (int)SurfaceOrientation.Rotation180,
+				>= 225 and < 315 => (int)SurfaceOrientation.Rotation90,
+				_ => (int)SurfaceOrientation.Rotation0
+			};
+		}
 	}
 
 	sealed class FutureCallback(Action<Java.Lang.Object?> action, Action<Throwable?> failure) : Java.Lang.Object, IFutureCallback
@@ -341,6 +363,21 @@ partial class CameraManager
 		public void OnChanged(Java.Lang.Object? value)
 		{
 			observerAction.Invoke(value);
+		}
+	}
+
+	sealed class OrientationListener(Action<int> callback, Context context) : OrientationEventListener(context)
+	{
+		readonly Action<int> callback = callback;
+
+		public override void OnOrientationChanged(int orientation)
+		{
+			if (orientation == OrientationUnknown)
+			{
+				return;
+			}
+
+			callback.Invoke(orientation);
 		}
 	}
 }

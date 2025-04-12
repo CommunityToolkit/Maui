@@ -21,7 +21,7 @@ public class ToastTests : BaseTest
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
 		// Ensure CancellationToken expires
-		await Task.Delay(100, CancellationToken.None);
+		await Task.Delay(100, TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(() => toast.Show(cts.Token));
 	}
@@ -44,7 +44,7 @@ public class ToastTests : BaseTest
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
 		// Ensure CancellationToken expires
-		await Task.Delay(100, CancellationToken.None);
+		await Task.Delay(100, TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(() => toast.Dismiss(cts.Token));
 	}
@@ -116,13 +116,13 @@ public class ToastTests : BaseTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ToastShow_CancellationTokenNone_NotReceiveException()
 	{
-		await toast.Invoking(x => x.Show(CancellationToken.None)).Should().NotThrowAsync<OperationCanceledException>();
+		await toast.Invoking(x => x.Show(TestContext.Current.CancellationToken)).Should().NotThrowAsync<OperationCanceledException>();
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ToastDismiss_CancellationTokenNone_NotReceiveException()
 	{
-		await toast.Invoking(x => x.Dismiss(CancellationToken.None)).Should().NotThrowAsync<OperationCanceledException>();
+		await toast.Invoking(x => x.Dismiss(TestContext.Current.CancellationToken)).Should().NotThrowAsync<OperationCanceledException>();
 	}
 
 	[Fact]

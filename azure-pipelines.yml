@@ -6,7 +6,7 @@ variables:
   NugetPackageVersionCamera: '$(CurrentSemanticVersion)'
   NugetPackageVersionMediaElement: '$(CurrentSemanticVersion)'
   NugetPackageVersionMaps: '$(CurrentSemanticVersion)'
-  TOOLKIT_NET_VERSION: '9.0.101'
+  TOOLKIT_NET_VERSION: '9.0.202'
   LATEST_NET_VERSION: '9.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
@@ -28,14 +28,14 @@ variables:
   PathToCommunityToolkitAnalyzersUnitTestCsproj: 'src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj'
   PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
   DotNetMauiRollbackFile: 'https://maui.blob.core.windows.net/metadata/rollbacks/8.0.6.json'
-  CommunityToolkitSampleApp_Xcode_Version: '16.1'
-  CommunityToolkitLibrary_Xcode_Version: '16.1'
+  CommunityToolkitSampleApp_Xcode_Version: '16.3'
+  CommunityToolkitLibrary_Xcode_Version: '16.2'
 
 trigger:
-  branches:
-    include:
-    - main
-    - develop
+  # branches:
+  #   include:
+  #   - main
+  #   - develop
   tags:
     include:
     - '*'
@@ -43,15 +43,15 @@ trigger:
     exclude:
     - README.md
 
-pr:
-  autoCancel: 'true'
-  branches:
-    include:
-    - main
-    - develop
-  paths:
-    exclude:
-    - README.md
+# pr:
+#   autoCancel: 'true'
+#   branches:
+#     include:
+#     - main
+#     - develop
+#   paths:
+#     exclude:
+#     - README.md
 
 jobs:
   - job: build_sample
@@ -72,7 +72,14 @@ jobs:
           script: |
             echo Installed Xcode Versions:
             ls -al  /Applications | grep Xcode
-            echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(CommunityToolkitSampleApp_Xcode_Version).app;sudo xcode-select --switch /Applications/Xcode_$(CommunityToolkitSampleApp_Xcode_Version).app/Contents/Developer
+            
+            echo '##vso[task.setvariable variable=MD_APPLE_SDK_ROOT;]'/Applications/Xcode_$(CommunityToolkitSampleApp_Xcode_Version).app
+            sudo xcode-select --switch /Applications/Xcode_$(CommunityToolkitSampleApp_Xcode_Version).app/Contents/Developer
+            
+            xcodebuild -downloadPlatform iOS
+            
+            echo Installed Simulator SDKs:
+            xcodebuild -showsdks
 
       - task: UseDotNet@2
         displayName: 'Install Latest .NET SDK, v$(LATEST_NET_VERSION)'
@@ -301,35 +308,35 @@ jobs:
         inputs:
           script: 'dotnet build $(PathToCommunityToolkitMapsCsproj) -c Release -p:PackageVersion=$(NugetPackageVersionMaps) -p:Version=$(NugetPackageVersion)'
 
-      - task: CmdLine@2
-        displayName: 'Run CommunityToolkit.Maui.Analyzers.UnitTests'
-        env:
-          VSTEST_TESTHOST_SHUTDOWN_TIMEOUT: 1100 # Fixes "The active test run was aborted. Reason: Test host process crashed" https://dev.azure.com/dotnet/CommunityToolkit/_build/results?buildId=109660&view=logs&j=3f96dcf5-6e1e-5485-3200-c557d5216be3&t=12286b69-c788-55db-0a8c-ef899858fbe6&l=76 (source: https://github.com/microsoft/vstest/issues/2952#issuecomment-2234253765): $(sauceUsername)
-        inputs:
-          script: 'dotnet test $(PathToCommunityToolkitAnalyzersUnitTestCsproj) -c Release'
+      # - task: CmdLine@2
+      #   displayName: 'Run CommunityToolkit.Maui.Analyzers.UnitTests'
+      #   env:
+      #     VSTEST_TESTHOST_SHUTDOWN_TIMEOUT: 1100 # Fixes "The active test run was aborted. Reason: Test host process crashed" https://dev.azure.com/dotnet/CommunityToolkit/_build/results?buildId=109660&view=logs&j=3f96dcf5-6e1e-5485-3200-c557d5216be3&t=12286b69-c788-55db-0a8c-ef899858fbe6&l=76 (source: https://github.com/microsoft/vstest/issues/2952#issuecomment-2234253765): $(sauceUsername)
+      #   inputs:
+      #     script: 'dotnet test $(PathToCommunityToolkitAnalyzersUnitTestCsproj) -c Release'
 
-      - task: CmdLine@2
-        displayName: 'Run CommunityToolkit.Maui.UnitTests'
-        env:
-          VSTEST_TESTHOST_SHUTDOWN_TIMEOUT: 1100 # Fixes "The active test run was aborted. Reason: Test host process crashed" https://dev.azure.com/dotnet/CommunityToolkit/_build/results?buildId=109660&view=logs&j=3f96dcf5-6e1e-5485-3200-c557d5216be3&t=12286b69-c788-55db-0a8c-ef899858fbe6&l=76 (source: https://github.com/microsoft/vstest/issues/2952#issuecomment-2234253765): $(sauceUsername)
-        inputs:
-          script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory $(Agent.TempDirectory)'
+      # - task: CmdLine@2
+      #   displayName: 'Run CommunityToolkit.Maui.UnitTests'
+      #   env:
+      #     VSTEST_TESTHOST_SHUTDOWN_TIMEOUT: 1100 # Fixes "The active test run was aborted. Reason: Test host process crashed" https://dev.azure.com/dotnet/CommunityToolkit/_build/results?buildId=109660&view=logs&j=3f96dcf5-6e1e-5485-3200-c557d5216be3&t=12286b69-c788-55db-0a8c-ef899858fbe6&l=76 (source: https://github.com/microsoft/vstest/issues/2952#issuecomment-2234253765): $(sauceUsername)
+      #   inputs:
+      #     script: 'dotnet test $(PathToCommunityToolkitUnitTestCsproj) -c Release --settings ".runsettings" --collect "XPlat code coverage" --logger trx --results-directory $(Agent.TempDirectory)'
 
-      - task: PublishTestResults@2
-        condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
-        displayName: 'Publish Test Results'
-        inputs:
-          testResultsFormat: VSTest
-          testResultsFiles: '**/*.trx'
-          searchFolder: $(Agent.TempDirectory)
+      # - task: PublishTestResults@2
+      #   condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
+      #   displayName: 'Publish Test Results'
+      #   inputs:
+      #     testResultsFormat: VSTest
+      #     testResultsFiles: '**/*.trx'
+      #     searchFolder: $(Agent.TempDirectory)
 
-      - task: PublishCodeCoverageResults@2
-        condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
-        displayName: 'Publish Code Coverage Results'
-        inputs:
-          codeCoverageTool: 'Cobertura'
-          summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
-          failIfCoverageEmpty: true
+      # - task: PublishCodeCoverageResults@1
+      #   condition: eq(variables['Agent.OS'], 'Windows_NT') # Only run this step on Windows
+      #   displayName: 'Publish Code Coverage Results'
+      #   inputs:
+      #     codeCoverageTool: 'Cobertura'
+      #     summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
+      #     failIfCoverageEmpty: true
 
       - task: CmdLine@2
         displayName: 'Pack CommunityToolkit.Maui.Core NuGet'

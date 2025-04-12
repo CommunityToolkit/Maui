@@ -77,7 +77,9 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 		// arrange
 		var commandTCS = new TaskCompletionSource();
 		var timesExecuted = 0;
-		var entry = CreateEntryWithBehavior(command: new Command<string>(_ =>
+		var entry = CreateEntryWithBehavior(
+			minimumLengthThreshold: 4,
+			command: new Command<string>(_ =>
 		{
 			timesExecuted++;
 			commandTCS.SetResult();
@@ -239,7 +241,6 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 		Assert.True(commandHasBeenExecuted);
 	}
 
-	[Obsolete]
 	static Entry CreateEntryWithBehavior(int stoppedTypingTimeThreshold = 500,
 		int minimumLengthThreshold = 0,
 		bool shouldDismissKeyboardAutomatically = false,

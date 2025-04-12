@@ -19,7 +19,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 
 			Assert.Equal(originalTextColor, textStyleView.TextColor);
 
-			var isSuccessful = await textStyleView.TextColorTo(updatedTextColor, token: CancellationToken.None);
+			var isSuccessful = await textStyleView.TextColorTo(updatedTextColor, token: TestContext.Current.CancellationToken);
 
 			Assert.True(isSuccessful);
 			Assert.Equal(updatedTextColor, textStyleView.TextColor);
@@ -34,9 +34,9 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 			label.EnableAnimations();
 
 			// Ensure CancellationToken has expired
-			await Task.Delay(100, CancellationToken.None);
+			await Task.Delay(100, TestContext.Current.CancellationToken);
 
-			await Assert.ThrowsAsync<TaskCanceledException>(() => label.TextColorTo(Colors.Green, token: cts.Token));
+			await Assert.ThrowsAsync<OperationCanceledException>(() => label.TextColorTo(Colors.Green, token: cts.Token));
 		}
 
 		[Fact(Timeout = (int)TestDuration.Short)]
@@ -50,7 +50,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 			// Ensure CancellationToken has expired
 			await cts.CancelAsync();
 
-			await Assert.ThrowsAsync<TaskCanceledException>(() => label.TextColorTo(Colors.Green, token: cts.Token));
+			await Assert.ThrowsAsync<OperationCanceledException>(() => label.TextColorTo(Colors.Green, token: cts.Token));
 		}
 
 		[Fact]
@@ -63,7 +63,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 
 			Assert.Equal(originalTextColor, textStyleView.TextColor);
 
-			var isSuccessful = await textStyleView.TextColorTo(updatedTextColor, token: CancellationToken.None);
+			var isSuccessful = await textStyleView.TextColorTo(updatedTextColor, token: TestContext.Current.CancellationToken);
 
 			Assert.True(isSuccessful);
 			Assert.Equal(updatedTextColor, textStyleView.TextColor);
@@ -79,7 +79,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 
 			Assert.Equal(originalTextColor, label.TextColor);
 
-			var isSuccessful = await label.TextColorTo(updatedTextColor, token: CancellationToken.None);
+			var isSuccessful = await label.TextColorTo(updatedTextColor, token: TestContext.Current.CancellationToken);
 
 			Assert.True(isSuccessful);
 			Assert.Equal(updatedTextColor, label.TextColor);
@@ -93,7 +93,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 			var label = new Label();
 			label.EnableAnimations();
 
-			var isSuccessful = await label.TextColorTo(updatedTextColor, token: CancellationToken.None);
+			var isSuccessful = await label.TextColorTo(updatedTextColor, token: TestContext.Current.CancellationToken);
 
 			Assert.True(isSuccessful);
 			Assert.Equal(updatedTextColor, label.TextColor);
@@ -105,7 +105,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 			Label? label = null;
 
 #pragma warning disable CS8603 // Possible null reference return.
-			await Assert.ThrowsAsync<NullReferenceException>(() => label?.TextColorTo(Colors.Red, token: CancellationToken.None));
+			await Assert.ThrowsAsync<NullReferenceException>(() => label?.TextColorTo(Colors.Red, token: TestContext.Current.CancellationToken));
 #pragma warning restore CS8603 // Possible null reference return.
 		}
 
@@ -116,7 +116,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 			label.EnableAnimations();
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-			await Assert.ThrowsAsync<ArgumentNullException>(() => label.TextColorTo(null, token: CancellationToken.None));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => label.TextColorTo(null, token: TestContext.Current.CancellationToken));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 		}
 
@@ -145,7 +145,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 
 			Assert.Equal(originalTextColor, textStyleView.TextColor);
 
-			var isSuccessful = await textStyleView.TextColorTo(updatedTextColor, token: CancellationToken.None);
+			var isSuccessful = await textStyleView.TextColorTo(updatedTextColor, token: TestContext.Current.CancellationToken);
 
 			Assert.True(isSuccessful);
 			Assert.Equal(updatedTextColor, textStyleView.TextColor);
@@ -158,7 +158,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 			genericPicker.EnableAnimations();
 
 			Color updatedTextColor = Colors.Yellow;
-			var isSuccessful = await genericPicker.TextColorTo(updatedTextColor, token: CancellationToken.None);
+			var isSuccessful = await genericPicker.TextColorTo(updatedTextColor, token: TestContext.Current.CancellationToken);
 
 			Assert.True(isSuccessful);
 		}
@@ -170,7 +170,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 			genericPicker.EnableAnimations();
 
 			Color updatedTextColor = Colors.Yellow;
-			var isSuccessful = await genericPicker.TextColorTo(updatedTextColor, token: CancellationToken.None);
+			var isSuccessful = await genericPicker.TextColorTo(updatedTextColor, token: TestContext.Current.CancellationToken);
 
 			Assert.True(isSuccessful);
 		}
@@ -182,7 +182,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 			brandNewControl.EnableAnimations();
 
 			Color updatedTextColor = Colors.Yellow;
-			var isSuccessful = await brandNewControl.TextColorTo(updatedTextColor, token: CancellationToken.None);
+			var isSuccessful = await brandNewControl.TextColorTo(updatedTextColor, token: TestContext.Current.CancellationToken);
 
 			Assert.True(isSuccessful);
 		}

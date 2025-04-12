@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Essentials.OfflineSpeechToTextPage"
+                xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Essentials"
+                xmlns:essentials="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Essentials"
+                x:TypeArguments="vm:OfflineSpeechToTextViewModel"
+                x:DataType="vm:OfflineSpeechToTextViewModel"
+                Title="OfflineSpeechToText">
+
+    <ScrollView>
+        <VerticalStackLayout
+            Spacing="20"
+            Padding="30,0">
+
+            <Label
+                Text="OfflineSpeechToText allows the user to convert speech to text in real time in offline."
+                HorizontalTextAlignment="Center"/>
+
+            <Label
+                Text="State"
+                FontAttributes="Bold"/>
+
+            <Label
+                Text="{Binding State}"
+                FontSize="18"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center"
+                MinimumHeightRequest="100" />
+
+            <Label
+                Text="Language Output"
+                FontAttributes="Bold"/>
+
+            <Label
+                Text="{Binding RecognitionText}"
+                FontSize="18"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center"
+                MinimumHeightRequest="100" />
+
+            <Border
+                StrokeThickness="2"
+                Stroke="#808080"
+                StrokeShape="RoundRectangle 8,8,8,8"
+                Padding="12">
+                <Border.Content>
+                    <Grid RowDefinitions="*,60"
+                          ColumnDefinitions="*,*"
+                          RowSpacing="12"
+                          ColumnSpacing="12">
+
+                        <Button
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Text="StartListenAsync"
+                            Command="{Binding StartListenCommand}"
+                            HorizontalOptions="End" />
+
+                        <Button
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Text="StopListenAsync"
+                            Command="{Binding StopListenCommand}"
+                            HorizontalOptions="Start" />
+
+                        <Label
+                            Grid.Row="1"
+                            Grid.ColumnSpan="2"
+                            Text="The `StartListenAsync` API starts the speech-to-text service and shares the results using `RecognitionResultUpdated` event and `RecognitionResultCompleted` event."
+                            HorizontalOptions="Center"
+                            HorizontalTextAlignment="Center"
+                            FontSize="12"/>
+
+                    </Grid>
+                </Border.Content>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+
+</pages:BasePage>

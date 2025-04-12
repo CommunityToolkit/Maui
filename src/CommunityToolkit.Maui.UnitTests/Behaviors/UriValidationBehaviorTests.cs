@@ -22,7 +22,7 @@ public class UriValidationBehaviorTests() : BaseBehaviorTest<UriValidationBehavi
 		};
 
 		// Act
-		await behavior.ForceValidate(CancellationToken.None);
+		await behavior.ForceValidate(TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.Equal(expectedValue, behavior.IsValid);
@@ -44,7 +44,7 @@ public class UriValidationBehaviorTests() : BaseBehaviorTest<UriValidationBehavi
 		// Act
 
 		// Ensure CancellationToken expires
-		await Task.Delay(100, CancellationToken.None);
+		await Task.Delay(100, TestContext.Current.CancellationToken);
 
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await behavior.ForceValidate(cts.Token));
@@ -66,7 +66,7 @@ public class UriValidationBehaviorTests() : BaseBehaviorTest<UriValidationBehavi
 		// Act
 
 		// Ensure CancellationToken expires
-		await Task.Delay(100, CancellationToken.None);
+		await Task.Delay(100, TestContext.Current.CancellationToken);
 
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () =>
