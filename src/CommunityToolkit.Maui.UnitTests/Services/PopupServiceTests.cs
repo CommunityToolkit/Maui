@@ -295,8 +295,14 @@ sealed class MockSelfClosingPopup : Popup<object?>
 	{
 		var timer = Dispatcher.CreateTimer();
 		timer.Interval = TimeSpan.FromMilliseconds(500);
-		timer.Tick += async (_, _) => await Close(Result);
+		timer.Tick += HandleTick;
 		timer.Start();
+
+		async void HandleTick(object? sender, EventArgs e)
+		{
+			timer.Tick -= HandleTick;
+			await Close(Result);
+		}
 	}
 
 	public object? Result { get; }

@@ -2,6 +2,8 @@
 using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.UnitTests.Services;
+using FluentAssertions;
+using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
@@ -14,6 +16,22 @@ public abstract class BaseHandlerTest : BaseTest
 	}
 
 	protected IServiceProvider ServiceProvider { get; }
+
+	protected override async ValueTask DisposeAsyncCore()
+	{
+		await base.DisposeAsyncCore();
+		
+		#region Cleanup Popup Tests
+
+		Application.Current.Should().NotBeNull();
+		var navigation = Application.Current.Windows[0].Page?.Navigation ?? throw new InvalidOperationException("Unable to locate Navigation Stack");
+
+		while (navigation.ModalStack.Any())
+		{
+			await navigation.PopModalAsync();
+		}
+		#endregion
+	}
 
 	protected static TElementHandler CreateElementHandler<TElementHandler>(IElement view, bool doesRequireMauiContext = true)
 		where TElementHandler : IElementHandler, new()
@@ -63,7 +81,7 @@ public abstract class BaseHandlerTest : BaseTest
 		var mockPopup = new MockSelfClosingPopup(mockPageViewModel, new());
 
 		var page = new ContentPage();
-		PopupService.AddPopup(mockPopup, mockPageViewModel, appBuilder.Services, ServiceLifetime.Singleton);
+		PopupService.AddPopup(mockPopup, mockPageViewModel, appBuilder.Services, ServiceLifetime.Transient);
 		#endregion
 
 		var mauiApp = appBuilder.Build();

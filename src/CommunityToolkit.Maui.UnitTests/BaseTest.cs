@@ -5,7 +5,7 @@ using Xunit;
 namespace CommunityToolkit.Maui.UnitTests;
 
 [Collection("CommunityToolkit.UnitTests")]
-public abstract class BaseTest : IDisposable
+public abstract class BaseTest : IDisposable, IAsyncDisposable
 {
 	readonly CultureInfo defaultCulture, defaultUiCulture;
 	protected readonly MockAppInfo mockAppInfo;
@@ -43,11 +43,24 @@ public abstract class BaseTest : IDisposable
 	}
 
 	~BaseTest() => Dispose(false);
+	
+	public async ValueTask DisposeAsync()
+	{
+		await DisposeAsyncCore().ConfigureAwait(false);
+
+		Dispose(false);
+		GC.SuppressFinalize(this);
+	}
 
 	public void Dispose()
 	{
 		Dispose(true);
 		GC.SuppressFinalize(this);
+	}
+	
+	protected virtual ValueTask DisposeAsyncCore()
+	{
+		return ValueTask.CompletedTask;
 	}
 
 	protected virtual void Dispose(bool isDisposing)
