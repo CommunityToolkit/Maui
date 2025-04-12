@@ -13,6 +13,7 @@ using Resource = Microsoft.Maui.Controls.Resource;
 namespace CommunityToolkit.Maui.Media.Services;
 
 [SupportedOSPlatform("Android26.0")]
+[IntentFilter(["androidx.media3.session.MediaSessionService"])]
 [Service(Exported = false, Enabled = true, Name = "communityToolkit.maui.media.services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
 sealed partial class MediaControlsService : Service
 {
@@ -93,7 +94,6 @@ sealed partial class MediaControlsService : Service
 	}
 
 	[MemberNotNull(nameof(playerNotificationManager))]
-	
 	public void SetLegacyNotifications(in MediaSession session, in PlatformMediaElement mediaElement)
 	{
 		ArgumentNullException.ThrowIfNull(session);

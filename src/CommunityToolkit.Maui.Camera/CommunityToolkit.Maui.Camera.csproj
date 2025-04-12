@@ -51,6 +51,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <!-- Required NuGet Packages -->
     <PackageReference Include="Xamarin.AndroidX.Camera.Camera2" Version="1.4.1" />
     <PackageReference Include="Xamarin.AndroidX.Camera.View" Version="1.4.1" />
 
