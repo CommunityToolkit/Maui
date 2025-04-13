@@ -1,9 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Converters;
+using CommunityToolkit.Maui.Core.Extensions;
 
 namespace CommunityToolkit.Maui.Extensions;
 
-/// <inheritdoc />
+/// <inheritdoc cref="Microsoft.Maui.Controls.Xaml.IMarkupExtension" />
 public abstract class ValueConverterExtension : BindableObject, IMarkupExtension<ICommunityToolkitValueConverter>
 {
 	/// <inheritdoc />

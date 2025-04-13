@@ -1,5 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Core.Extensions;
 
 namespace CommunityToolkit.Maui;
 
