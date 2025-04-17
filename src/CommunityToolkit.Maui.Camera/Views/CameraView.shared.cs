@@ -210,17 +210,8 @@ public partial class CameraView : View, ICameraView
 	/// <inheritdoc cref="ICameraView.GetAvailableCameras"/>
 	public async ValueTask<IReadOnlyList<CameraInfo>> GetAvailableCameras(CancellationToken token)
 	{
-		if (CameraProvider.AvailableCameras is null)
-		{
-			await CameraProvider.RefreshAvailableCameras(token);
-
-			if (CameraProvider.AvailableCameras is null)
-			{
-				throw new CameraException("Unable to refresh available cameras");
-			}
-		}
-
-		return CameraProvider.AvailableCameras;
+		await CameraProvider.InitializeAsync;
+		return CameraProvider.AvailableCameras ?? throw new CameraException("No camera available on device");
 	}
 
 	/// <inheritdoc cref="ICameraView.CaptureImage"/>

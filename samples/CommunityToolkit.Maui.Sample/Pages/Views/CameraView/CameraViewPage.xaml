@@ -10,7 +10,7 @@
                 x:TypeArguments="viewModels:CameraViewViewModel"
                 x:DataType="viewModels:CameraViewViewModel">
 
-    <Grid RowDefinitions="200,*,Auto,Auto" ColumnDefinitions="3*,*">
+    <Grid RowDefinitions="Auto,*,Auto,Auto" ColumnDefinitions="3*,*">
         <toolkit:CameraView
             x:Name="Camera"
             Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Grid.RowSpan="3"
@@ -36,13 +36,13 @@
             </VerticalStackLayout>
         </Grid>
 
-        <ContentView Grid.Column="1" Grid.Row="0" ZIndex="100" BackgroundColor="#80CCCCCC">
+        <Grid Grid.Column="1" Grid.Row="0" ZIndex="100" BackgroundColor="#80CCCCCC">
             <Image x:Name="image" VerticalOptions="Fill" HorizontalOptions="Fill">
                 <Image.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnImageTapped" />
                 </Image.GestureRecognizers>
             </Image>
-        </ContentView>
+        </Grid>
 
         <Grid ColumnDefinitions="Auto,*,Auto"  Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2" ColumnSpacing="10" Margin="10"
               BackgroundColor="#00000000">
@@ -60,6 +60,12 @@
         <Grid Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3" BackgroundColor="#80CCCCCC">
 
             <FlexLayout Margin="5" JustifyContent="SpaceBetween" Wrap="Wrap">
+
+                <Picker 
+                    Title="Cameras" 
+                    ItemsSource="{Binding Cameras}"
+                    ItemDisplayBinding="{Binding Name}" 
+                    SelectedItem="{Binding SelectedCamera}" />
 
                 <Picker 
                     Title="Flash"

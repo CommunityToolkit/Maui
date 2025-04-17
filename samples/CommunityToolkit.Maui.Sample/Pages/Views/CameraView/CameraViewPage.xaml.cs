@@ -27,8 +27,7 @@ public partial class CameraViewPage : BasePage<CameraViewViewModel>
 	{
 		base.OnAppearing();
 
-		var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-		await BindingContext.RefreshCamerasCommand.ExecuteAsync(cancellationTokenSource.Token);
+		await BindingContext.InitializeAsync();
 	}
 
 	// https://github.com/dotnet/maui/issues/16697
@@ -75,7 +74,7 @@ public partial class CameraViewPage : BasePage<CameraViewViewModel>
 		{
 			// workaround for https://github.com/dotnet/maui/issues/13858
 #if ANDROID
-            image.Source = ImageSource.FromStream(() => File.OpenRead(imagePath));
+			image.Source = ImageSource.FromStream(() => File.OpenRead(imagePath));
 #else
 			image.Source = ImageSource.FromFile(imagePath);
 #endif
