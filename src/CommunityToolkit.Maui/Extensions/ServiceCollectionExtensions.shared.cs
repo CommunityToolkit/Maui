@@ -45,12 +45,13 @@ public static class ServiceCollectionExtensions
 	/// <see cref="INotifyPropertyChanged"/></typeparam>
 	/// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
 	/// <param name="lifetime">Service lifetime</param>
+	/// <param name="shellRoute">When not null, the shell route will be added using <see cref="Routing.RegisterRoute(string, Type)"/></param>
 	/// <returns>A reference to this instance after the operation has completed.</returns>
-	public static IServiceCollection AddPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
+	public static IServiceCollection AddPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient, string? shellRoute = null)
 		where TPopupView : IView
 		where TPopupViewModel : notnull
 	{
-		PopupService.AddPopup<TPopupView, TPopupViewModel>(services, lifetime);
+		PopupService.AddPopup<TPopupView, TPopupViewModel>(services, lifetime, shellRoute);
 
 		return services;
 	}
@@ -62,8 +63,9 @@ public static class ServiceCollectionExtensions
 	/// <typeparam name="TPopupView">The type of the Popup to add. Constrained to <see cref="IView"/></typeparam>
 	/// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
 	/// <param name="lifetime">Service lifetime</param>
+	/// <param name="shellRoute">When not null, the shell route will be added using <see cref="Routing.RegisterRoute(string, Type)"/></param>
 	/// <returns>A reference to this instance after the operation has completed.</returns>
-	public static IServiceCollection AddPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
+	public static IServiceCollection AddPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient, string? shellRoute = null)
 		where TPopupView : IView
 	{
 		PopupService.AddPopup<TPopupView>(services, lifetime);

@@ -34,7 +34,7 @@ public class PopupService : IPopupService
 
 	internal static void AddPopup<
 		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView>(
-		IServiceCollection services, ServiceLifetime lifetime, string? shellRoute = null)
+		IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient, string? shellRoute = null)
 		where TPopupView : IView
 	{
 		viewModelToViewMappings.TryAdd(typeof(TPopupView), typeof(TPopupView));
@@ -48,7 +48,7 @@ public class PopupService : IPopupService
 	}
 
 	internal static void AddPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>
-		(IServiceCollection services, ServiceLifetime lifetime, string? shellRoute = null)
+		(IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient, string? shellRoute = null)
 		where TPopupView : IView
 		where TPopupViewModel : notnull
 	{
@@ -64,7 +64,7 @@ public class PopupService : IPopupService
 	}
 
 	internal static void AddPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>
-		(TPopupView popup, TPopupViewModel viewModel, IServiceCollection services, ServiceLifetime lifetime, string? shellRoute = null)
+		(TPopupView popup, TPopupViewModel viewModel, IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient, string? shellRoute = null)
 		where TPopupView : IView
 		where TPopupViewModel : notnull
 	{
