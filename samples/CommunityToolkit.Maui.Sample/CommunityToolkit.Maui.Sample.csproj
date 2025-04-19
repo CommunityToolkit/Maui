@@ -89,12 +89,6 @@
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Maps\CommunityToolkit.Maui.Maps.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Pages\Views\Popup\PopupPage.xaml.cs">
-      <DependentUpon>PopupPage.xaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='windows' and $(Configuration) == 'Release'">
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>

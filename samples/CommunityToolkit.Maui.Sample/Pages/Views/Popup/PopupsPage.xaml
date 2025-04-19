@@ -2,10 +2,10 @@
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
                 xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
-                x:Class="CommunityToolkit.Maui.Sample.Pages.Views.PopupPage"
-                Title="PopupPage"
-                x:TypeArguments="viewModels:MultiplePopupViewModel"
-                x:DataType="viewModels:MultiplePopupViewModel">
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Views.PopupsPage"
+                Title="Popups Page"
+                x:TypeArguments="viewModels:PopupsViewModel"
+                x:DataType="viewModels:PopupsViewModel">
 
     <ContentPage.Content>
         <ScrollView>
@@ -43,6 +43,8 @@
                 <Button Text="Show Popup in OnAppearing" Clicked="HandleShowPopupInOnAppearingButtonClicked" />
 
                 <Button Text="Popup Style Page" Clicked="HandleStylePopupButtonClicked" />
+
+                <Button Text="OnDisappearing Popup" Clicked="HandleOnDisappearingPopupClicked" />
             </VerticalStackLayout>
         </ScrollView>
     </ContentPage.Content>

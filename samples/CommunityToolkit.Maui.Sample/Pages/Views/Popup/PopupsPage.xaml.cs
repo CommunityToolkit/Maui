@@ -1,14 +1,15 @@
+using CommunityToolkit.Maui.Sample.Pages.Views.Popup;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.Views.Popups;
 using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-public partial class PopupPage : BasePage<MultiplePopupViewModel>
+public partial class PopupsPage : BasePage<PopupsViewModel>
 {
 	readonly IPopupService popupService;
 
-	public PopupPage(MultiplePopupViewModel multiplePopupViewModel, IPopupService popupService)
+	public PopupsPage(PopupsViewModel multiplePopupViewModel, IPopupService popupService)
 		: base(multiplePopupViewModel)
 	{
 		this.popupService = popupService;
@@ -104,5 +105,10 @@ public partial class PopupPage : BasePage<MultiplePopupViewModel>
 	async void HandleStylePopupButtonClicked(object sender, EventArgs e)
 	{
 		await Navigation.PushAsync(new StylePopupPage(new StylePopupViewModel()));
+	}
+
+	async void HandleOnDisappearingPopupClicked(object sender, EventArgs e)
+	{
+		await Navigation.PushMAsync(new PopupOnDisappearingPage());
 	}
 }
