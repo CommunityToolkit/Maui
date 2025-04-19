@@ -30,6 +30,7 @@ public partial class CsharpBindingPopup : Popup
 				new Label()
 					.Center()
 					.TextCenter()
+					.TextColor(Colors.Black)
 					.Bind(Label.TextProperty,
 						getter: static (CsharpBindingPopupViewModel vm) => vm.Message)
 

@@ -12,6 +12,7 @@
         Text="{Binding Message}"
         HorizontalTextAlignment="Center"
         VerticalTextAlignment="Center"
+        TextColor="Black"
         Margin="20" />
 
 </toolkit:Popup>

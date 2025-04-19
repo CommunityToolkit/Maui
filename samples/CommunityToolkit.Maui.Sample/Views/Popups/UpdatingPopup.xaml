@@ -36,14 +36,17 @@
             </ResourceDictionary>
         </VerticalStackLayout.Resources>
 
-        <Label Style="{StaticResource Title}" Text="Updating" />
+        <Label Style="{StaticResource Title}" 
+               Text="Updating" />
 
         <BoxView Style="{StaticResource Divider}" />
 
         <ActivityIndicator
             IsRunning="{Binding UpdateProgress, Converter={toolkit:CompareConverter ComparingValue={StaticResource ComparingValue}, ComparisonOperator=Smaller, FalseObject=False, TrueObject=True}}" />
 
-        <Label Style="{StaticResource Content}" Text="{Binding Message}" />
+        <Label Style="{StaticResource Content}" 
+               Text="{Binding Message}" 
+               TextColor="Black"/>
 
         <ProgressBar Progress="{Binding UpdateProgress}" />
 

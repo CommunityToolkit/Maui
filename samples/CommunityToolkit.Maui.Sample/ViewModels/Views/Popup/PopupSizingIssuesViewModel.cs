@@ -1,5 +1,6 @@
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -8,15 +9,6 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public partial class PopupSizingIssuesViewModel : BaseViewModel
 {
-	[ObservableProperty]
-	public partial ContainerModel SelectedContainer { get; set; }
-
-	[ObservableProperty]
-	public partial int Padding { get; set; } = 6;
-
-	[ObservableProperty]
-	public partial int Margin { get; set; } = 12;
-
 	public PopupSizingIssuesViewModel()
 	{
 		SelectedContainer = Containers[0];
@@ -30,6 +22,15 @@ public partial class PopupSizingIssuesViewModel : BaseViewModel
 		new("Grid", new ControlTemplate(() => new Grid())),
 		new("CollectionView", new ControlTemplate(() => new CollectionView()))
 	];
+
+	[ObservableProperty]
+	public partial ContainerModel SelectedContainer { get; set; }
+
+	[ObservableProperty]
+	public partial int Padding { get; set; } = 6;
+
+	[ObservableProperty]
+	public partial int Margin { get; set; } = 12;
 
 	[RelayCommand]
 	async Task OnShowPopup()
@@ -80,13 +81,7 @@ public partial class PopupSizingIssuesViewModel : BaseViewModel
 		});
 	}
 
-	static Label GetContentLabel(in string text) => new()
-	{
-		Text = text,
-		HorizontalOptions = LayoutOptions.Center,
-		VerticalOptions = LayoutOptions.Center,
-		LineBreakMode = LineBreakMode.WordWrap
-	};
+	static Label GetContentLabel(in string text) => new Label { LineBreakMode = LineBreakMode.WordWrap }.Text(text, Colors.Black).Center();
 }
 
 public partial class ContainerModel(in string name, in ControlTemplate controlTemplate) : ObservableObject
