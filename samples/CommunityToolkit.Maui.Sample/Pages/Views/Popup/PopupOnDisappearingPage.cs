@@ -13,7 +13,7 @@ public class PopupOnDisappearingPage : ContentPage
 		{
 			Children =
 			{
-				new Label().Text("A popup will be displayed when this page is dismissed").Center().TextCenter(),
+				new Label().Text("This is a modal page. A popup will be displayed when this modal page is dismissed").Center().TextCenter(),
 				new Button
 				{
 					Command = new AsyncRelayCommand(() => Navigation.PopModalAsync())
