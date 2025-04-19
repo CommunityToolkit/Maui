@@ -109,6 +109,6 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 
 	async void HandleOnDisappearingPopupClicked(object sender, EventArgs e)
 	{
-		await Navigation.PushMAsync(new PopupOnDisappearingPage());
+		await Navigation.PushModalAsync(new PopupOnDisappearingPage());
 	}
 }
