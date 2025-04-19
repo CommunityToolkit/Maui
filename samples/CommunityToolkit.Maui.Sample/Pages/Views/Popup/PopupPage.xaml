@@ -2,8 +2,8 @@
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
                 xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
-                x:Class="CommunityToolkit.Maui.Sample.Pages.Views.MultiplePopupPage"
-                Title="MultiplePopupPage"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Views.PopupPage"
+                Title="PopupPage"
                 x:TypeArguments="viewModels:MultiplePopupViewModel"
                 x:DataType="viewModels:MultiplePopupViewModel">
 

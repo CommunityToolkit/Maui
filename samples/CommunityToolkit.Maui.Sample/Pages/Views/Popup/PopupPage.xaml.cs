@@ -4,11 +4,11 @@ using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-public partial class MultiplePopupPage : BasePage<MultiplePopupViewModel>
+public partial class PopupPage : BasePage<MultiplePopupViewModel>
 {
 	readonly IPopupService popupService;
 
-	public MultiplePopupPage(MultiplePopupViewModel multiplePopupViewModel, IPopupService popupService)
+	public PopupPage(MultiplePopupViewModel multiplePopupViewModel, IPopupService popupService)
 		: base(multiplePopupViewModel)
 	{
 		this.popupService = popupService;
