@@ -71,6 +71,7 @@ public partial class PopupPositionViewModel : BaseViewModel
 		}, new PopupOptions
 		{
 			Shape = null,
+			Padding = 0,
 			VerticalOptions = verticalOptions,
 			HorizontalOptions = horizontalOptions
 		});

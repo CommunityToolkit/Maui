@@ -172,7 +172,7 @@ partial class PopupPage : ContentPage
 		{
 			public override double DefaultConvertReturnValue { get; set; } = PopupOptionsDefaults.BorderStrokeThickness;
 
-			public override double ConvertFrom(Shape? value, CultureInfo? culture) => value?.StrokeThickness ?? DefaultConvertReturnValue;
+			public override double ConvertFrom(Shape? value, CultureInfo? culture) => value?.StrokeThickness ?? 0;
 		}
 
 		sealed partial class BorderStrokeConverter : BaseConverterOneWay<Shape?, Brush?>
