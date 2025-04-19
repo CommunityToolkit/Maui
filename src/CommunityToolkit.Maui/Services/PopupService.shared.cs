@@ -34,38 +34,46 @@ public class PopupService : IPopupService
 
 	internal static void AddPopup<
 		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView>(
-		IServiceCollection services, ServiceLifetime lifetime)
+		IServiceCollection services, ServiceLifetime lifetime, string? shellRoute = null)
 		where TPopupView : IView
 	{
 		viewModelToViewMappings.TryAdd(typeof(TPopupView), typeof(TPopupView));
-		Routing.RegisterRoute(typeof(TPopupView).FullName, typeof(TPopupView));
+
+		if (shellRoute is not null)
+		{
+			Routing.RegisterRoute(shellRoute, typeof(TPopupView));
+		}
 
 		services.Add(new ServiceDescriptor(typeof(TPopupView), typeof(TPopupView), lifetime));
 	}
 
-	internal static void AddPopup<
-		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView,
-		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>(
-		IServiceCollection services, ServiceLifetime lifetime)
+	internal static void AddPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>
+		(IServiceCollection services, ServiceLifetime lifetime, string? shellRoute = null)
 		where TPopupView : IView
 		where TPopupViewModel : notnull
 	{
 		viewModelToViewMappings.TryAdd(typeof(TPopupViewModel), typeof(TPopupView));
-		Routing.RegisterRoute(typeof(TPopupViewModel).FullName, typeof(TPopupView));
+
+		if (shellRoute is not null)
+		{
+			Routing.RegisterRoute(shellRoute, typeof(TPopupView));
+		}
 
 		services.TryAdd(new ServiceDescriptor(typeof(TPopupView), typeof(TPopupView), lifetime));
 		services.TryAdd(new ServiceDescriptor(typeof(TPopupViewModel), typeof(TPopupViewModel), lifetime));
 	}
 
-	internal static void AddPopup<
-		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView,
-		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>(
-		TPopupView popup, TPopupViewModel viewModel, IServiceCollection services, ServiceLifetime lifetime)
+	internal static void AddPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>
+		(TPopupView popup, TPopupViewModel viewModel, IServiceCollection services, ServiceLifetime lifetime, string? shellRoute = null)
 		where TPopupView : IView
 		where TPopupViewModel : notnull
 	{
 		viewModelToViewMappings.TryAdd(typeof(TPopupViewModel), typeof(TPopupView));
-		Routing.RegisterRoute(typeof(TPopupViewModel).FullName, typeof(TPopupView));
+
+		if (shellRoute is not null)
+		{
+			Routing.RegisterRoute(shellRoute, typeof(TPopupView));
+		}
 
 		services.TryAdd(new ServiceDescriptor(typeof(TPopupView), _ => popup, lifetime));
 		services.TryAdd(new ServiceDescriptor(typeof(TPopupViewModel), _ => viewModel, lifetime));
