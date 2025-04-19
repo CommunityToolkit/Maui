@@ -27,7 +27,7 @@ public class PopupServiceTests : BaseHandlerTest
 		var services = new ServiceCollection();
 
 		// Act
-		PopupService.AddPopup<MockPopup>(services, ServiceLifetime.Transient);
+		PopupService.AddPopup<MockPopup>(services, ServiceLifetime.Transient, null);
 
 		// Assert
 		var serviceDescriptor = Assert.Single(services);
@@ -42,7 +42,7 @@ public class PopupServiceTests : BaseHandlerTest
 		var services = new ServiceCollection();
 
 		// Act
-		PopupService.AddPopup<MockPopup, PopupViewModel>(services, ServiceLifetime.Transient);
+		PopupService.AddPopup<MockPopup, PopupViewModel>(services, ServiceLifetime.Transient, null);
 
 		// Assert
 		Assert.Equal(2, services.Count);

@@ -68,7 +68,7 @@ public static class ServiceCollectionExtensions
 	public static IServiceCollection AddPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient, string? shellRoute = null)
 		where TPopupView : IView
 	{
-		PopupService.AddPopup<TPopupView>(services, lifetime);
+		PopupService.AddPopup<TPopupView>(services, lifetime, shellRoute);
 
 		return services;
 	}
