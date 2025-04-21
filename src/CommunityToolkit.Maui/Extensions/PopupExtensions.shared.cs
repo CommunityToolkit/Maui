@@ -106,7 +106,7 @@ public static class PopupExtensions
 
 		token.ThrowIfCancellationRequested();
 
-		TaskCompletionSource<IPopupResult> taskCompletionSource = new();
+		TaskCompletionSource<IPopupResult> taskCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
 		var popupPage = new PopupPage(view, options ?? PopupOptions.Empty);
 		popupPage.PopupClosed += HandlePopupClosed;
