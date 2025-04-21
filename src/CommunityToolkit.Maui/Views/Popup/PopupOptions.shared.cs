@@ -28,27 +28,7 @@ public partial class PopupOptions : BindableObject, IPopupOptions
 	public static readonly BindableProperty ShapeProperty = BindableProperty.Create(nameof(Shape), typeof(Shape), typeof(PopupOptions), PopupOptionsDefaults.Shape);
 
 	/// <summary>
-	///  Backing BindableProperty for the <see cref="Margin"/> property.
-	/// </summary>
-	public static readonly BindableProperty MarginProperty = BindableProperty.Create(nameof(Margin), typeof(Thickness), typeof(PopupOptions), PopupOptionsDefaults.Margin);
-
-	/// <summary>
-	///  Backing BindableProperty for the <see cref="Padding"/> property.
-	/// </summary>
-	public static readonly BindableProperty PaddingProperty = BindableProperty.Create(nameof(Padding), typeof(Thickness), typeof(PopupOptions), PopupOptionsDefaults.Padding);
-
-	/// <summary>
-	///  Backing BindableProperty for the <see cref="VerticalOptions"/> property.
-	/// </summary>
-	public static readonly BindableProperty VerticalOptionsProperty = BindableProperty.Create(nameof(VerticalOptions), typeof(LayoutOptions), typeof(PopupOptions), PopupOptionsDefaults.VerticalOptions);
-
-	/// <summary>
-	///  Backing BindableProperty for the <see cref="HorizontalOptions"/> property.
-	/// </summary>
-	public static readonly BindableProperty HorizontalOptionsProperty = BindableProperty.Create(nameof(HorizontalOptions), typeof(LayoutOptions), typeof(PopupOptions), PopupOptionsDefaults.HorizontalOptions);
-
-	/// <summary>
-	///  Backing BindableProperty for the <see cref="HorizontalOptions"/> property.
+	///  Backing BindableProperty for the <see cref="Shadow"/> property.
 	/// </summary>
 	public static readonly BindableProperty ShadowProperty = BindableProperty.Create(nameof(Shadow), typeof(Shadow), typeof(PopupOptions), PopupOptionsDefaults.Shadow);
 
@@ -87,36 +67,6 @@ public partial class PopupOptions : BindableObject, IPopupOptions
 	{
 		get => (Shape?)GetValue(ShapeProperty);
 		set => SetValue(ShapeProperty, value);
-	}
-
-	/// <summary>
-	/// Popup margin.
-	/// </summary>
-	public Thickness Margin
-	{
-		get => (Thickness)GetValue(MarginProperty);
-		set => SetValue(MarginProperty, value);
-	}
-
-	/// <inheritdoc/>
-	public Thickness Padding
-	{
-		get => (Thickness)GetValue(PaddingProperty);
-		set => SetValue(PaddingProperty, value);
-	}
-
-	/// <inheritdoc/>
-	public LayoutOptions VerticalOptions
-	{
-		get => (LayoutOptions)GetValue(VerticalOptionsProperty);
-		set => SetValue(VerticalOptionsProperty, value);
-	}
-
-	/// <inheritdoc/>
-	public LayoutOptions HorizontalOptions
-	{
-		get => (LayoutOptions)GetValue(HorizontalOptionsProperty);
-		set => SetValue(HorizontalOptionsProperty, value);
 	}
 
 	/// <inheritdoc/>

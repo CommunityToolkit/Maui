@@ -26,10 +26,9 @@ public class PopupOnDisappearingPage : ContentPage
 	{
 		base.OnDisappearing();
 
-		await this.ShowPopupAsync(new RedBlueBoxPopup(), new PopupOptions
+		await this.ShowPopupAsync(new RedBlueBoxPopup().Padding(0), new PopupOptions
 		{
 			Shape = null,
-			Padding = 0,
 		});
 	}
 }

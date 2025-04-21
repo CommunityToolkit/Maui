@@ -130,10 +130,6 @@ public class PopupExtensionsTests : BaseHandlerTest
 		{
 			PageOverlayColor = Colors.Red,
 			CanBeDismissedByTappingOutsideOfPopup = false,
-			HorizontalOptions = LayoutOptions.Start,
-			VerticalOptions = LayoutOptions.End,
-			Padding = new Thickness(1,2,3,4),
-			Margin = new Thickness(5,6,7,8),
 			Shape = new Ellipse(),
 			OnTappingOutsideOfPopup = onTappingOutsideOfPopup
 		};
@@ -150,11 +146,11 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Assert.NotNull(popup);
 
 		Assert.Equal(options.PageOverlayColor, popupPage.BackgroundColor);
-		Assert.Equal(options.HorizontalOptions, border.HorizontalOptions);
-		Assert.Equal(options.VerticalOptions, border.VerticalOptions);
+		Assert.Equal(popup.HorizontalOptions, border.HorizontalOptions);
+		Assert.Equal(popup.VerticalOptions, border.VerticalOptions);
 		Assert.Equal(options.Shape, border.StrokeShape);
-		Assert.Equal(options.Margin, border.Margin);
-		Assert.Equal(options.Padding, border.Padding);
+		Assert.Equal(popup.Margin, border.Margin);
+		Assert.Equal(border.Padding, border.Padding);
 		Assert.Equal(popup.BindingContext, border.BindingContext);
 		Assert.Equal(popupPageContent.BindingContext, border.BindingContext);
 	}
@@ -165,15 +161,15 @@ public class PopupExtensionsTests : BaseHandlerTest
 		// Arrange
 		var onTappingOutsideOfPopup = () => { };
 
-		var view = new Grid();
+		var view = new Grid
+		{
+			HorizontalOptions = LayoutOptions.End,
+			VerticalOptions = LayoutOptions.Start,
+		};
 		var options = new PopupOptions
 		{
 			PageOverlayColor = Colors.Red,
 			CanBeDismissedByTappingOutsideOfPopup = false,
-			HorizontalOptions = LayoutOptions.Start,
-			VerticalOptions = LayoutOptions.End,
-			Padding = new Thickness(1,2,3,4),
-			Margin = new Thickness(5,6,7,8),
 			Shape = new Ellipse(),
 			OnTappingOutsideOfPopup = onTappingOutsideOfPopup
 		};
@@ -184,18 +180,22 @@ public class PopupExtensionsTests : BaseHandlerTest
 		var popupPage = (PopupPage)navigation.ModalStack[0];
 		var popupPageContent = popupPage.Content;
 		var border = (Border)popupPageContent.Children[0];
-		var popup = border.Content;
+		var popup = (Popup)(border.Content ?? throw new InvalidCastException());
 
 		// Assert
 		Assert.NotNull(popup);
 
-		Assert.Equal(options.PageOverlayColor, popupPage.BackgroundColor);
-		Assert.Equal(options.HorizontalOptions, border.HorizontalOptions);
-		Assert.Equal(options.VerticalOptions, border.VerticalOptions);
-		Assert.Equal(options.Shape, border.StrokeShape);
-		Assert.Equal(options.Margin, border.Margin);
-		Assert.Equal(options.Padding, border.Padding);
+		Assert.Equal(view.HorizontalOptions, border.HorizontalOptions);
+		Assert.Equal(view.VerticalOptions, border.VerticalOptions);
+		Assert.Equal(view.Margin, border.Margin);
+		Assert.Equal(view.Padding, border.Padding);
+		Assert.Equal(popup.HorizontalOptions, border.HorizontalOptions);
+		Assert.Equal(popup.VerticalOptions, border.VerticalOptions);
+		Assert.Equal(popup.Margin, border.Margin);
+		Assert.Equal(popup.Padding, border.Padding);
 		Assert.Equal(popup.BindingContext, border.BindingContext);
+		Assert.Equal(options.Shape, border.StrokeShape);
+		Assert.Equal(options.PageOverlayColor, popupPage.BackgroundColor);
 		Assert.Equal(popupPageContent.BindingContext, border.BindingContext);
 	}
 

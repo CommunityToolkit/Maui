@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Extensions;
-using CommunityToolkit.Maui.Sample.Views.Popups;
+using CommunityToolkit.Maui.Markup;
+using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
@@ -64,16 +65,15 @@ public partial class PopupPositionViewModel : BaseViewModel
 				throw new NotSupportedException($"{position} not yet supported");
 		}
 
-		Page.ShowPopup(new RedBlueBoxPopup
+		Page.ShowPopup(new Popup
 		{
+			Content = new Label().Text("This Text Should Be Centered").Center().TextCenter(),
+			BackgroundColor = Colors.Green,
 			HeightRequest = 100,
-			WidthRequest = 100
-		}, new PopupOptions
-		{
-			Shape = null,
-			Padding = 0,
+			WidthRequest = 100,
 			VerticalOptions = verticalOptions,
-			HorizontalOptions = horizontalOptions
+			HorizontalOptions = horizontalOptions,
+			Padding = 0
 		});
 	}
 

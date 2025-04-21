@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Shapes;
 namespace CommunityToolkit.Maui;
 
 /// <summary>
-/// Default Values for PopupOptions
+/// Default Values for <see cref="PopupOptions"/>
 /// </summary>
 static class PopupOptionsDefaults
 {
@@ -23,11 +23,6 @@ static class PopupOptionsDefaults
 	/// Default value for <see cref="PopupOptions.OnTappingOutsideOfPopup"/> 
 	/// </summary>
 	public static Action? OnTappingOutsideOfPopup { get; } = null;
-
-	/// <summary>
-	/// Default value for <see cref="PopupPage"/> BackgroundColor 
-	/// </summary>
-	public static Color PopupBackgroundColor { get; } = Colors.White;
 
 	/// <summary>
 	/// Default value for <see cref="PopupOptions.PageOverlayColor"/> 
@@ -48,26 +43,6 @@ static class PopupOptionsDefaults
 		StrokeThickness = BorderStrokeThickness,
 		Stroke = BorderStroke
 	};
-
-	/// <summary>
-	/// Default value for <see cref="PopupOptions.Margin"/> 
-	/// </summary>
-	public static Thickness Margin { get; } = new(30);
-
-	/// <summary>
-	/// Default value for <see cref="PopupOptions.Padding"/> 
-	/// </summary>
-	public static Thickness Padding { get; } = new(15);
-
-	/// <summary>
-	/// Default value for <see cref="PopupOptions.VerticalOptions"/> 
-	/// </summary>
-	public static LayoutOptions VerticalOptions { get; } = LayoutOptions.Center;
-
-	/// <summary>
-	/// Default value for <see cref="PopupOptions.HorizontalOptions"/> 
-	/// </summary>
-	public static LayoutOptions HorizontalOptions { get; } = LayoutOptions.Center;
 
 	/// <summary>
 	/// Default value for <see cref="PopupOptions.Shadow"/> 

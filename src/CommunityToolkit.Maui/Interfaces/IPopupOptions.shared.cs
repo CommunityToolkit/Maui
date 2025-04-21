@@ -28,26 +28,6 @@ public interface IPopupOptions
 	Shape? Shape { get; }
 
 	/// <summary>
-	/// Popup margin.
-	/// </summary>
-	Thickness Margin { get; }
-
-	/// <summary>
-	/// Popup padding.
-	/// </summary>
-	Thickness Padding { get; }
-
-	/// <summary>
-	/// Popup vertical options.
-	/// </summary>
-	LayoutOptions VerticalOptions { get; }
-
-	/// <summary>
-	/// Popup horizontal options.
-	/// </summary>
-	LayoutOptions HorizontalOptions { get; }
-
-	/// <summary>
 	/// Popup Shadow
 	/// </summary>
 	Shadow? Shadow { get; }

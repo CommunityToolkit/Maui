@@ -7,6 +7,76 @@ namespace CommunityToolkit.Maui.UnitTests.Views;
 public class PopupTests : BaseTest
 {
 	[Fact]
+	public void PopupBackgroundColor_DefaultValue_ShouldBeWhite()
+	{
+		Assert.Equal(PopupDefaults.BackgroundColor, Colors.White);
+	}
+	
+	[Fact]
+	public void Margin_DefaultValue_ShouldBeDefaultThickness()
+	{
+		var popup = new Popup();
+		Assert.Equal(PopupDefaults.Margin, popup.Margin);
+	}
+
+	[Fact]
+	public void Margin_SetValue_ShouldBeUpdated()
+	{
+		var popup = new Popup();
+		var thickness = new Thickness(10);
+		popup.Margin = thickness;
+		Assert.Equal(thickness, popup.Margin);
+	}
+
+	[Fact]
+	public void Padding_DefaultValue_ShouldBeDefaultThickness()
+	{
+		var popup = new Popup();
+		Assert.Equal(PopupDefaults.Padding, popup.Padding);
+	}
+
+	[Fact]
+	public void Padding_SetValue_ShouldBeUpdated()
+	{
+		var popup = new Popup();
+		var thickness = new Thickness(10);
+		popup.Padding = thickness;
+		Assert.Equal(thickness, popup.Padding);
+	}
+
+	[Fact]
+	public void VerticalOptions_DefaultValue_ShouldBeDefaultLayoutOptions()
+	{
+		var popup = new Popup();
+		Assert.Equal(PopupDefaults.VerticalOptions, popup.VerticalOptions);
+	}
+
+	[Fact]
+	public void VerticalOptions_SetValue_ShouldBeUpdated()
+	{
+		var popup = new Popup();
+		var layoutOptions = LayoutOptions.Center;
+		popup.VerticalOptions = layoutOptions;
+		Assert.Equal(layoutOptions, popup.VerticalOptions);
+	}
+
+	[Fact]
+	public void HorizontalOptions_DefaultValue_ShouldBeDefaultLayoutOptions()
+	{
+		var popup = new Popup();
+		Assert.Equal(PopupDefaults.HorizontalOptions, popup.HorizontalOptions);
+	}
+
+	[Fact]
+	public void HorizontalOptions_SetValue_ShouldBeUpdated()
+	{
+		var popup = new Popup();
+		var layoutOptions = LayoutOptions.Center;
+		popup.HorizontalOptions = layoutOptions;
+		Assert.Equal(layoutOptions, popup.HorizontalOptions);
+	}
+	
+	[Fact]
 	public void NotifyPopupIsOpened_ShouldInvokeOpenedEvent()
 	{
 		// Arrange

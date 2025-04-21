@@ -1,4 +1,3 @@
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Views;
@@ -8,22 +7,18 @@ namespace CommunityToolkit.Maui.Views;
 /// </summary>
 public partial class Popup : ContentView
 {
-	/// <remarks>Use <see cref="PopupOptions.MarginProperty"/> to set the <see cref="MarginProperty"/> for <see cref="Popup"/></remarks>
-	[Obsolete($"Use {nameof(PopupOptions)} to bind to the MarginProperty of {nameof(Popup)}", true)]
-	public static new readonly BindableProperty MarginProperty = View.MarginProperty;
 
-	/// <remarks>Use <see cref="PopupOptions.PaddingProperty"/> to set the <see cref="PaddingProperty"/> for <see cref="Popup"/></remarks>
-	[Obsolete($"Use {nameof(PopupOptions)} to bind to the PaddingProperty of {nameof(Popup)}", true)]
-	public static new readonly BindableProperty PaddingProperty = Microsoft.Maui.Controls.Compatibility.Layout.PaddingProperty;
-
-	/// <remarks>Use <see cref="PopupOptions.VerticalOptionsProperty"/> to set the <see cref="VerticalOptionsProperty"/> for <see cref="Popup"/></remarks>
-	[Obsolete($"Use {nameof(PopupOptions)} to bind to the VerticalOptionsProperty  {nameof(Popup)}", true)]
-	public static new readonly BindableProperty VerticalOptionsProperty = View.VerticalOptionsProperty;
-
-	/// <remarks>Use <see cref="PopupOptions.HorizontalOptionsProperty"/> to set the <see cref="HorizontalOptionsProperty"/> for <see cref="Popup"/></remarks>
-	[Obsolete($"Use {nameof(PopupOptions)} to bind to the HorizontalOptionsProperty of {nameof(Popup)}", true)]
-	public static new readonly BindableProperty HorizontalOptionsProperty = View.HorizontalOptionsProperty;
-
+	/// <summary>
+	/// Initializes Popup
+	/// </summary>
+	public Popup()
+	{
+		Margin = PopupDefaults.Margin;
+		Padding = PopupDefaults.Padding;
+		HorizontalOptions = PopupDefaults.HorizontalOptions;
+		VerticalOptions = PopupDefaults.VerticalOptions;
+	}
+	
 	/// <summary>
 	/// Event occurs when the Popup is opened.
 	/// </summary>
@@ -33,18 +28,6 @@ public partial class Popup : ContentView
 	/// Event occurs when the Popup is closed.
 	/// </summary>
 	public event EventHandler? Closed;
-
-	/// <remarks>Use <see cref="PopupOptions.Margin"/> to set the <see cref="Margin"/> for <see cref="Popup"/></remarks>
-	public new Thickness Margin => base.Margin;
-
-	/// <remarks>Use <see cref="PopupOptions.Padding"/> to set the <see cref="Padding"/> for <see cref="Popup"/></remarks>
-	public new Thickness Padding => base.Padding;
-
-	/// <remarks>Use <see cref="PopupOptions.VerticalOptions"/> to set the <see cref="VerticalOptions"/> for <see cref="Popup"/></remarks>
-	public new LayoutOptions VerticalOptions => base.VerticalOptions;
-
-	/// <remarks>Use <see cref="PopupOptions.HorizontalOptions"/> to set the <see cref="HorizontalOptions"/> for <see cref="Popup"/></remarks>
-	public new LayoutOptions HorizontalOptions => base.HorizontalOptions;
 
 	/// <summary>
 	/// Close the Popup.

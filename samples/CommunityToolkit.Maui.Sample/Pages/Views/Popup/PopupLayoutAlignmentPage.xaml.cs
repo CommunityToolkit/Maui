@@ -59,14 +59,14 @@ public partial class PopupLayoutAlignmentPage : BasePage<PopupLayoutAlignmentVie
 
 		this.ShowPopup(new RedBlueBoxPopup
 		{
+			VerticalOptions = verticalOptions,
+			HorizontalOptions = horizontalOptions,
+			Padding = 0,
 			WidthRequest = double.Parse(widthEntry.Text),
 			HeightRequest = double.Parse(heightEntry.Text)
 		}, new PopupOptions
 		{
-			VerticalOptions = verticalOptions,
-			HorizontalOptions = horizontalOptions,
-			Shape = null,
-			Padding = 0
+			Shape = null
 		});
 	}
 }

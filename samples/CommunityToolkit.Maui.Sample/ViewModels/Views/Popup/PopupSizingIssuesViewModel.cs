@@ -68,17 +68,15 @@ public partial class PopupSizingIssuesViewModel : BaseViewModel
 		}
 
 		popup.Content = view;
+		popup.Margin = Margin;
+		popup.Padding = Padding;
 
 		if (Application.Current?.Windows[0] is not { Page: not null } window)
 		{
 			throw new InvalidOperationException("Unable to find page");
 		}
 
-		window.Page.ShowPopup(popup, new PopupOptions
-		{
-			Margin = Margin,
-			Padding = Padding
-		});
+		window.Page.ShowPopup(popup);
 	}
 
 	static Label GetContentLabel(in string text) => new Label { LineBreakMode = LineBreakMode.WordWrap }.Text(text, Colors.Black).Center();
