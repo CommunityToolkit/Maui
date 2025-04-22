@@ -116,6 +116,7 @@ public static class PopupExtensions
 
 		void HandlePopupClosed(object? sender, IPopupResult e)
 		{
+			popupPage.PopupClosed -= HandlePopupClosed;
 			taskCompletionSource.SetResult(e);
 		}
 	}
