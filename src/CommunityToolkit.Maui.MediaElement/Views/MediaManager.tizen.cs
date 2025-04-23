@@ -11,6 +11,15 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MediaManager : IDisposable
 {
 	/// <summary>
+	/// Releases the managed and unmanaged resources used by the <see cref="MediaManager"/>.
+	/// </summary>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+	
+	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
 	/// </summary>
 	protected VideoView? VideoView { get; set; }
@@ -31,19 +40,10 @@ public partial class MediaManager : IDisposable
 	protected bool IsScreenLocked { get; set; }
 
 	/// <summary>
-	/// Releases the managed and unmanaged resources used by the <see cref="MediaManager"/>.
-	/// </summary>
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
-	}
-
-	/// <summary>
 	/// Creates the corresponding platform view of <see cref="MediaElement"/> on Tizen.
 	/// </summary>
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
-	public VideoView CreatePlatformView(MediaElementOptions mediaElementOptions)
+	public VideoView CreatePlatformView()
 	{
 		VideoView = new VideoView()
 		{
