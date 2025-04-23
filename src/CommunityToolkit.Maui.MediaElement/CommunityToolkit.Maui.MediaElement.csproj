@@ -63,7 +63,11 @@
     <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Rtsp" Version="1.5.0" />
     <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Hls" Version="1.5.0" />
     <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Dash" Version="1.5.0" />
-    <PackageReference Include="Xamarin.AndroidX.Media3.Session" Version="1.5.0" />    
+    <PackageReference Include="Xamarin.AndroidX.Media3.Session" Version="1.5.0" />
+
+    <!--include the textureview.xml needed for creating textureview in android-->
+    <Folder Include="Platforms\Android\Resources\layout\" />
+    <AndroidResource Include="Platforms\Android\Resources\layout\textureview.xml" />
   </ItemGroup>
   
   <ItemGroup>
@@ -75,12 +79,6 @@
     <EmbeddedResource Include="ResourceDictionary.windows.xaml">
       <LogicalName>ResourceDictionary.windows.xaml</LogicalName>
     </EmbeddedResource>
-  </ItemGroup>
-
-  <!--include the textureview.xml needed for creating textureview in android-->
-  <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
-    <Folder Include="Platforms\Android\Resources\layout\" />
-    <AndroidResource Include="Platforms\Android\Resources\layout\textureview.xml" />
   </ItemGroup>
   
 </Project>
