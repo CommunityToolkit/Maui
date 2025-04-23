@@ -15,7 +15,7 @@ public static class PopupExtensions
 	/// <param name="view">Popup content</param>
 	/// <param name="options"><see cref="IPopupOptions"/></param>
 	/// <returns><see cref="PopupResult"/></returns>
-	/// <remarks>This is an <see keyword="async"/> <see keyword="void"/> method. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see keyword="await"/> this method and return <see cref="PopupResult{T}"/> </remarks>
+	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see langword="await"/> this method and return <see cref="PopupResult{T}"/> </remarks>
 	public static void ShowPopup(this Page page, View view, IPopupOptions? options = null)
 	{
 		ArgumentNullException.ThrowIfNull(page);
@@ -30,7 +30,7 @@ public static class PopupExtensions
 	/// <param name="view">Popup content</param>
 	/// <param name="options"><see cref="IPopupOptions"/></param>
 	/// <returns><see cref="PopupResult"/></returns>
-	/// <remarks>This is an <see keyword="async"/> <see keyword="void"/> method. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see keyword="await"/> this method</remarks>
+	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see langword="await"/> this method</remarks>
 	public static async void ShowPopup(this INavigation navigation, View view, IPopupOptions? options = null)
 	{
 		ArgumentNullException.ThrowIfNull(navigation);
