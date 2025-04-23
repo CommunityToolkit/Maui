@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 #if WINDOWS || MACCATALYST
 using CommunityToolkit.Maui.Sample.Constants;
@@ -21,6 +22,7 @@ public partial class MediaElementMultipleWindowsPage : BasePage<MediaElementMult
 		{
 			Content = new MediaElement
 			{
+				AndroidViewType= AndroidViewType.SurfaceView,
 				Source = StreamingVideoUrls.ElephantsDream,
 				ShouldAutoPlay = true
 			}
@@ -28,6 +30,7 @@ public partial class MediaElementMultipleWindowsPage : BasePage<MediaElementMult
 
 		Content = new MediaElement
 		{
+			AndroidViewType= AndroidViewType.SurfaceView,
 			Source = StreamingVideoUrls.BuckBunny,
 			ShouldAutoPlay = true
 		};
