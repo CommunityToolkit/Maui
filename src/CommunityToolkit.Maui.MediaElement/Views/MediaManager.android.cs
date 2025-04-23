@@ -134,10 +134,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	{
 		Player = new ExoPlayerBuilder(MauiContext.Context).Build() ?? throw new InvalidOperationException("Player cannot be null");
 		Player.AddListener(this);
-		
-		if (androidViewType is AndroidViewType.SurfaceView) 
+
+		if (androidViewType is AndroidViewType.SurfaceView)
 		{
-			PlayerView = new PlayerView(MauiContext.Context) 
+			PlayerView = new PlayerView(MauiContext.Context)
 			{
 				Player = Player,
 				UseController = false,
@@ -145,20 +145,20 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 			};
 		}
-		else if(androidViewType is AndroidViewType.TextureView)
+		else if (androidViewType is AndroidViewType.TextureView)
 		{
 			if (MauiContext.Context?.Resources is null)
 			{
 				throw new InvalidOperationException("Unable to retrieve Android Resources");
 			}
-			
-			var resources = MauiContext.Context.Resources; 
+
+			var resources = MauiContext.Context.Resources;
 			var xmlResource = resources.GetXml(Microsoft.Maui.Resource.Layout.textureview);
 			xmlResource.Read();
-			
-			var attributes = Android.Util.Xml.AsAttributeSet(xmlResource)!; 
-			
-			PlayerView = new PlayerView(MauiContext.Context, attributes) 
+
+			var attributes = Android.Util.Xml.AsAttributeSet(xmlResource)!;
+
+			PlayerView = new PlayerView(MauiContext.Context, attributes)
 			{
 				Player = Player,
 				UseController = false,
@@ -170,10 +170,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			throw new NotSupportedException($"{androidViewType} is not yet supported");
 		}
-		
+
 		var mediaSession = new MediaSession.Builder(Platform.AppContext, Player);
 		mediaSession.SetId(Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8]);
-		
+
 		session ??= mediaSession.Build() ?? throw new InvalidOperationException("Session cannot be null");
 		ArgumentNullException.ThrowIfNull(session.Id);
 
@@ -692,6 +692,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		public const int StateStopped = 1;
 		public const int StateError = 7;
 	}
-	
+
 
 }

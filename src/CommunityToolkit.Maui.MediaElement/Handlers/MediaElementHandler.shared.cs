@@ -55,7 +55,7 @@ public partial class MediaElementHandler
 	{
 
 	}
-	
+
 #if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
 	/// <summary>
 	/// The <see cref="Views.MediaManager"/> that is managing the <see cref="IMediaElement"/> instance.

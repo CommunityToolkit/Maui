@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Views;
 /// </summary>
 public partial class MediaElement : View, IMediaElement, IDisposable
 {
-		/// <summary>
+	/// <summary>
 	/// Backing store for the <see cref="Aspect"/> property.
 	/// </summary>
 	public static readonly BindableProperty AspectProperty =
@@ -118,14 +118,14 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// Backing store for the <see cref="MetadataArtworkUrl"/> property.
 	/// </summary>
 	public static readonly BindableProperty MetadataArtworkUrlProperty = BindableProperty.Create(nameof(MetadataArtworkUrl), typeof(string), typeof(MediaElement), string.Empty);
-	
+
 	readonly WeakEventManager eventManager = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 
 	bool isDisposed;
 	IDispatcherTimer? timer;
 	TaskCompletionSource seekCompletedTaskCompletionSource = new();
-	
+
 	/// <summary>
 	/// Constructor with Options
 	///</summary>
@@ -143,7 +143,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		// Save the default Options to this object for handler to access during CreatePlatformView
 		AndroidViewType = MediaElementOptions.DefaultAndroidViewType;
 	}
-	
+
 	/// <summary>
 	/// Finalizer
 	/// </summary>
@@ -237,7 +237,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// </summary>
 	/// <remarks>Might not be available for some types, like live streams.</remarks>
 	public TimeSpan Duration => (TimeSpan)GetValue(DurationProperty);
-	
+
 	/// <summary>
 	/// Read the MediaElementOptions set in on construction, cannot be changed after construction
 	/// </summary>

@@ -11,7 +11,7 @@ public class MediaElementOptions
 	{
 		this.builder = builder;
 	}
-	
+
 	/// <summary>
 	/// Set Android View type for MediaElement as SurfaceView or TextureView on construction
 	/// </summary>

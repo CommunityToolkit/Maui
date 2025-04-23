@@ -21,7 +21,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		MediaManager ??= new(MauiContext,
 			VirtualView,
 			Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
-		
+
 
 		(_, playerViewController) = MediaManager.CreatePlatformView();
 
