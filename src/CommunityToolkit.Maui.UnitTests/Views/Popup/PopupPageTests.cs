@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using FluentAssertions;
 using Microsoft.Maui.Controls.PlatformConfiguration;
@@ -6,6 +7,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.Shapes;
 using Xunit;
 using Application = Microsoft.Maui.Controls.Application;
+using Page = Microsoft.Maui.Controls.Page;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
@@ -87,22 +89,28 @@ public class PopupPageTests : BaseHandlerTest
 		}
 	}
 
-	[Fact]
-	public void Close_ShouldThrowOperationCanceledException_WhenTokenIsCancelled()
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task Close_ShouldThrowOperationCanceledException_WhenTokenIsCancelled_NavigationModalStackShouldStillContainPopupPage()
 	{
 		// Arrange
+		PopupPage popupPage;
 		var view = new ContentView();
-		var popupOptions = new MockPopupOptions();
-		var popupPage = new PopupPage(view, popupOptions);
 		var result = new PopupResult(false);
 		var cts = new CancellationTokenSource();
-		cts.Cancel();
-
+		if (Application.Current?.Windows[0].Page is not Page mainPage)
+		{
+			throw new InvalidOperationException("Failed to locate main page");
+		}
+		
 		// Act
-		Func<Task> act = async () => await popupPage.Close(result, cts.Token);
-
+		mainPage.Navigation.ShowPopup(view);
+		popupPage = mainPage.Navigation.ModalStack.OfType<PopupPage>().Single();
+		
+		await cts.CancelAsync();
+		
 		// Assert
-		act.Should().ThrowAsync<OperationCanceledException>();
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => popupPage.Close(result, cts.Token));
+		Assert.Single(mainPage.Navigation.ModalStack.OfType<PopupPage>());
 	}
 
 	[Fact]

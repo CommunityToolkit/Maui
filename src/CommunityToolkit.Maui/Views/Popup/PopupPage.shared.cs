@@ -39,7 +39,7 @@ partial class PopupPage : ContentPage
 		this.popup = popup;
 		this.popupOptions = popupOptions;
 
-		// Only set the content if parent constructor hasn't set the content already; don't override content if it already exists
+		// Only set the content if the parent constructor hasn't set the content already; don't override content if it already exists
 		base.Content ??= new PopupPageLayout(popup, popupOptions);
 
 		tapOutsideOfPopupCommand = new Command(async () =>
@@ -74,8 +74,11 @@ partial class PopupPage : ContentPage
 
 	public async Task Close(PopupResult result, CancellationToken token = default)
 	{
-		token.ThrowIfCancellationRequested();
-
+		// We first call `.ThrowIfCancellationRequested()` to ensure we don't throw one of the `InvalidOperationException`s (below) if the `CancellationToken` has already been canceled.
+		// This ensures we throw the correct `OperationCanceledException` in the rare scenario where a developer cancels the token, then manually calls `Navigation.PopModalAsync()` before calling `Popup.Close()`
+		// It may feel a bit redundant, given that we again call `ThrowIfCancellationRequested` later in this method, however, this ensures we propagate the correct Exception to the developer.
+		token.ThrowIfCancellationRequested(); 
+		
 		var popupPageToClose = Navigation.ModalStack.OfType<PopupPage>().LastOrDefault(popupPage => popupPage.Content == Content);
 
 		if (popupPageToClose is null)
@@ -89,6 +92,12 @@ partial class PopupPage : ContentPage
 			throw new InvalidOperationException($"Unable to close Popup because it is blocked by the Modal Page {currentVisibleModalPage.GetType().FullName}. Please call `{nameof(Navigation)}.{nameof(Navigation.PopModalAsync)}()` to first remove {currentVisibleModalPage.GetType().FullName} from the {nameof(Navigation.ModalStack)}");
 		}
 
+		// We call `.ThrowIfCancellationRequested()` again to avoid a race condition where a developer cancels the CancellationToken after we check for an InvalidOperationException
+		// At first glace, it may look redundant given that we are using `.WaitAsync(token)` in the next step,
+		// However, `Navigation.PopModalAsync()` may return a completed Task, and when a completed Task is returned, `.WaitAsync(token)` is never invoked.
+		// In other words, `.WaitAsync(token)` may not throw an `OperationCanceledException` as expected which is why we call `.ThrowIfCancellationRequested()` again here
+		// Here's the .NET MAUI Source code demonstrating that `Navigation.PopModalAsync()` sometimes returns `Task.FromResult()`: https://github.com/dotnet/maui/blob/e5c252ec7f430cbaf28c8a815a249e3270b49844/src/Controls/src/Core/NavigationProxy.cs#L192-L196
+		token.ThrowIfCancellationRequested();
 		await Navigation.PopModalAsync(false).WaitAsync(token);
 
 		popupClosedEventManager.HandleEvent(this, result, nameof(PopupClosed));
