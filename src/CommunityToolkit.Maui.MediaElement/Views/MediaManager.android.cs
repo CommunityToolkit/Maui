@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Android.Content;
 using Android.Views;
 using Android.Widget;
@@ -490,7 +489,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			return;
 		}
 
-		// We're going to mute state. Capture current volume first so we can restore later.
+		// We're going to mute state. Capture the current volume first so we can restore later.
 		if (MediaElement.ShouldMute)
 		{
 			volumeBeforeMute = Player.Volume;
