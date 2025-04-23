@@ -246,8 +246,9 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	void DisplayPopup(object sender, EventArgs e)
 	{
 		MediaElement.Pause();
-		var popupMediaElement = new MediaElement(AndroidViewType.SurfaceView)
+		var popupMediaElement = new MediaElement
 		{
+			AndroidViewType = AndroidViewType.SurfaceView,
 			Source = MediaSource.FromResource("AppleVideo.mp4"),
 			HeightRequest = 600,
 			WidthRequest = 600,

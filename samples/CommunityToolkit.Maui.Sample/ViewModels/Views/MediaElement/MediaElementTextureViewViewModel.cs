@@ -2,7 +2,4 @@
 
 public partial class MediaElementTextureViewViewModel : BaseViewModel
 {
-	public MediaElementTextureViewViewModel()
-	{
-	}
 }

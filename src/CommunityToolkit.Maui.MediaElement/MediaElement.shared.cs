@@ -127,24 +127,6 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	TaskCompletionSource seekCompletedTaskCompletionSource = new();
 
 	/// <summary>
-	/// Constructor with Options
-	///</summary>
-	public MediaElement(AndroidViewType? mediaElementOptions = null)
-	{
-		// Save to the object for handler to access during CreatePlatformView
-		AndroidViewType = mediaElementOptions ?? MediaElementOptions.DefaultAndroidViewType;
-	}
-
-	/// <summary>
-	/// Default Constructor
-	/// </summary>
-	public MediaElement()
-	{
-		// Save the default Options to this object for handler to access during CreatePlatformView
-		AndroidViewType = MediaElementOptions.DefaultAndroidViewType;
-	}
-
-	/// <summary>
 	/// Finalizer
 	/// </summary>
 	~MediaElement() => Dispose(false);
@@ -241,7 +223,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// <summary>
 	/// Read the MediaElementOptions set in on construction, cannot be changed after construction
 	/// </summary>
-	public AndroidViewType AndroidViewType { get; }
+	public AndroidViewType AndroidViewType { get; init; } = MediaElementOptions.DefaultAndroidViewType;
 
 	/// <summary>
 	/// Gets or sets whether the media should start playing as soon as it's loaded.
