@@ -137,7 +137,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		
 		if (androidViewType is AndroidViewType.SurfaceView) 
 		{
-			PlayerView = new PlayerView(MauiContext.Context) {
+			PlayerView = new PlayerView(MauiContext.Context) 
+			{
 				Player = Player,
 				UseController = false,
 				ControllerAutoShow = false,
@@ -146,28 +147,34 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 		else if(androidViewType is AndroidViewType.TextureView)
 		{
-			Context context = MauiContext.Context!;
-			Android.Content.Res.Resources resources = context.Resources!; 
-			System.Xml.XmlReader xmlResource = resources.GetXml(Microsoft.Maui.Resource.Layout.textureview);
+			if (MauiContext.Context?.Resources is null)
+			{
+				throw new InvalidOperationException("Unable to retrieve Android Resources");
+			}
+			
+			var resources = MauiContext.Context.Resources; 
+			var xmlResource = resources.GetXml(Microsoft.Maui.Resource.Layout.textureview);
 			xmlResource.Read();
-			Android.Util.IAttributeSet attributes = Android.Util.Xml.AsAttributeSet(xmlResource)!; 
-			PlayerView = new PlayerView(MauiContext.Context, attributes) {
+			
+			var attributes = Android.Util.Xml.AsAttributeSet(xmlResource)!; 
+			
+			PlayerView = new PlayerView(MauiContext.Context, attributes) 
+			{
 				Player = Player,
 				UseController = false,
 				ControllerAutoShow = false,
 				LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 			};
-		
 		}
 		else
 		{
 			throw new NotSupportedException($"{androidViewType} is not yet supported");
 		}
 		
-		string randomId = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8];
-		var mediaSessionWRandomId = new MediaSession.Builder(Platform.AppContext, Player);
-		mediaSessionWRandomId.SetId(randomId);
-		session ??= mediaSessionWRandomId.Build() ?? throw new InvalidOperationException("Session cannot be null");
+		var mediaSession = new MediaSession.Builder(Platform.AppContext, Player);
+		mediaSession.SetId(Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8]);
+		
+		session ??= mediaSession.Build() ?? throw new InvalidOperationException("Session cannot be null");
 		ArgumentNullException.ThrowIfNull(session.Id);
 
 		return (Player, PlayerView);
