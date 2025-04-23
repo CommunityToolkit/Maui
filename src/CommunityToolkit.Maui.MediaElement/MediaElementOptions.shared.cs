@@ -15,7 +15,7 @@ public class MediaElementOptions
 	/// <summary>
 	/// Set Android View type for MediaElement as SurfaceView or TextureView on construction
 	/// </summary>
-	internal static AndroidViewType DefaultAndroidViewType { get; set; } = AndroidViewType.SurfaceView;
+	internal static AndroidViewType DefaultAndroidViewType { get; private set; } = AndroidViewType.SurfaceView;
 
 	/// <summary>
 	/// Set Android View type for MediaElement as SurfaceView or TextureView on construction
