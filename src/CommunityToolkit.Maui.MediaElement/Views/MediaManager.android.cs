@@ -9,7 +9,6 @@ using AndroidX.Media3.Common.Util;
 using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.Session;
 using AndroidX.Media3.UI;
-using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
@@ -131,15 +130,13 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
 	/// <exception cref="NullReferenceException">Thrown when <see cref="Context"/> is <see langword="null"/> or when the platform view could not be created.</exception>
 	[MemberNotNull(nameof(Player), nameof(PlayerView), nameof(session))]
-	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView(MediaElementOptions mediaElementOptions)
+	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView(AndroidViewType androidViewType)
 	{
 		Player = new ExoPlayerBuilder(MauiContext.Context).Build() ?? throw new InvalidOperationException("Player cannot be null");
 		Player.AddListener(this);
-
-		// Create SurfaceView or TextureView
-		if (mediaElementOptions.AndroidViewType == AndroidViewType.SurfaceView) {
-
-			// Create SurfaceView
+		
+		if (androidViewType is AndroidViewType.SurfaceView) 
+		{
 			PlayerView = new PlayerView(MauiContext.Context) {
 				Player = Player,
 				UseController = false,
@@ -147,9 +144,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 			};
 		}
-		else {
-
-			// Create TextureView
+		else if(androidViewType is AndroidViewType.TextureView)
+		{
 			Context context = MauiContext.Context!;
 			Android.Content.Res.Resources resources = context.Resources!; 
 			System.Xml.XmlReader xmlResource = resources.GetXml(Microsoft.Maui.Resource.Layout.textureview);
@@ -163,8 +159,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			};
 		
 		}
-
-		// Finish construction		
+		else
+		{
+			throw new NotSupportedException($"{androidViewType} is not yet supported");
+		}
+		
 		string randomId = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8];
 		var mediaSessionWRandomId = new MediaSession.Builder(Platform.AppContext, Player);
 		mediaSessionWRandomId.SetId(randomId);

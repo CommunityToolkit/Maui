@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.ApplicationModel;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Media;
 using CommunityToolkit.Maui.Sample.Models;
@@ -67,11 +68,11 @@ public static class MauiProgram
 #endif
 								.UseMauiCommunityToolkitMarkup()
 								.UseMauiCommunityToolkitCamera()
-								.UseMauiCommunityToolkitMediaElement(options => 
+								.UseMauiCommunityToolkitMediaElement(static options => 
 								{
-									options.AndroidViewType = AndroidViewType.TextureView;
+									options.SetDefaultAndroidViewType(AndroidViewType.TextureView);
 								})
-								.ConfigureMauiHandlers(handlers =>
+								.ConfigureMauiHandlers(static handlers =>
 								{
 #if IOS || MACCATALYST
 									handlers.AddHandler<CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();

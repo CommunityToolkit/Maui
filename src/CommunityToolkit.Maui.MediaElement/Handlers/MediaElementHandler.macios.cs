@@ -18,14 +18,12 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 			throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null");
 		}
 
-		mediaManager ??= new(MauiContext,
+		MediaManager ??= new(MauiContext,
 			VirtualView,
 			Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
+		
 
-		// get the options from the MediaElement constructor
-		MediaElementOptions options = VirtualView.MediaElementOptions;
-
-		(_, playerViewController) = mediaManager.CreatePlatformView(options);
+		(_, playerViewController) = MediaManager.CreatePlatformView();
 
 		return new(playerViewController, VirtualView);
 	}
