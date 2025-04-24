@@ -19,6 +19,28 @@ public class ServiceCollectionExtensionsTests : BaseTest
 		const ServiceLifetime expectedServiceLifetime = ServiceLifetime.Transient;
 
 		// Act
+		services.AddTransientPopup<MockPopup>();
+		var serviceProvider = services.BuildServiceProvider();
+
+		// Assert
+		var mockPopupServiceDescriptor = services.Single(s => s.ServiceType == typeof(MockPopup) && s.Lifetime.Equals(expectedServiceLifetime));
+
+		Assert.NotNull(mockPopupServiceDescriptor);
+		Assert.Equal(expectedServiceLifetime, mockPopupServiceDescriptor.Lifetime);
+		Assert.Equal(typeof(MockPopup), mockPopupServiceDescriptor.ServiceType);
+		Assert.Equal(typeof(MockPopup), mockPopupServiceDescriptor.ImplementationType);
+
+		Assert.IsType<MockPopup>(serviceProvider.GetRequiredService<MockPopup>());
+	}
+	
+	[Fact]
+	public void IServiceCollection_VerifyTransientPopupWithViewModel()
+	{
+		// Arrange
+		var services = MauiApp.CreateBuilder().Services;
+		const ServiceLifetime expectedServiceLifetime = ServiceLifetime.Transient;
+
+		// Act
 		services.AddTransientPopup<MockSelfClosingPopup, MockPageViewModel>();
 		var serviceProvider = services.BuildServiceProvider();
 
@@ -151,23 +173,45 @@ public class ServiceCollectionExtensionsTests : BaseTest
 		var services = MauiApp.CreateBuilder().Services;
 
 		// Act
+		services.AddSingletonPopup<MockPopup>();
+		var serviceProvider = services.BuildServiceProvider();
+
+		// Assert
+		var mockPopupServiceDescriptor = services.Single(s => s.ServiceType == typeof(MockPopup) && s.Lifetime.Equals(expectedServiceLifetime));
+
+		Assert.NotNull(mockPopupServiceDescriptor);
+		Assert.Equal(expectedServiceLifetime, mockPopupServiceDescriptor.Lifetime);
+		Assert.Equal(typeof(MockPopup), mockPopupServiceDescriptor.ServiceType);
+		Assert.Equal(typeof(MockPopup), mockPopupServiceDescriptor.ImplementationType);
+		
+		Assert.IsType<MockPopup>(serviceProvider.GetRequiredService<MockPopup>());
+	}
+	
+	[Fact]
+	public void IServiceCollection_VerifySingletonPopupWithViewModel()
+	{
+		// Arrange
+		const ServiceLifetime expectedServiceLifetime = ServiceLifetime.Singleton;
+		var services = MauiApp.CreateBuilder().Services;
+
+		// Act
 		services.AddSingletonPopup<MockSelfClosingPopup, MockPageViewModel>();
 		var serviceProvider = services.BuildServiceProvider();
 
 		// Assert
-		var mockPpopupServiceDescriptor = services.Single(s => s.ServiceType == mockPopupType && s.Lifetime.Equals(expectedServiceLifetime));
+		var mockPopupServiceDescriptor = services.Single(s => s.ServiceType == mockPopupType && s.Lifetime.Equals(expectedServiceLifetime));
 		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
 
-		Assert.NotNull(mockPpopupServiceDescriptor);
+		Assert.NotNull(mockPopupServiceDescriptor);
 		Assert.NotNull(mockViewModelServiceDescriptor);
 
-		Assert.Equal(expectedServiceLifetime, mockPpopupServiceDescriptor.Lifetime);
+		Assert.Equal(expectedServiceLifetime, mockPopupServiceDescriptor.Lifetime);
 		Assert.Equal(expectedServiceLifetime, mockViewModelServiceDescriptor.Lifetime);
 
-		Assert.Equal(mockPopupType, mockPpopupServiceDescriptor.ServiceType);
+		Assert.Equal(mockPopupType, mockPopupServiceDescriptor.ServiceType);
 		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ServiceType);
 
-		Assert.Equal(mockPopupType, mockPpopupServiceDescriptor.ImplementationType);
+		Assert.Equal(mockPopupType, mockPopupServiceDescriptor.ImplementationType);
 		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ImplementationType);
 
 		Assert.IsType<MockSelfClosingPopup>(serviceProvider.GetRequiredService<MockSelfClosingPopup>());
@@ -278,6 +322,28 @@ public class ServiceCollectionExtensionsTests : BaseTest
 	
 	[Fact]
 	public void IServiceCollection_VerifyScopedPopup()
+	{
+		// Arrange
+		const ServiceLifetime expectedServiceLifetime = ServiceLifetime.Scoped;
+		var services = MauiApp.CreateBuilder().Services;
+
+		// Act
+		services.AddScopedPopup<MockPopup>();
+		var serviceProvider = services.BuildServiceProvider();
+
+		// Assert
+		var mockPopupServiceDescriptor = services.Single(s => s.ServiceType == typeof(MockPopup) && s.Lifetime.Equals(expectedServiceLifetime));
+
+		Assert.NotNull(mockPopupServiceDescriptor);
+		Assert.Equal(expectedServiceLifetime, mockPopupServiceDescriptor.Lifetime);
+		Assert.Equal(typeof(MockPopup), mockPopupServiceDescriptor.ServiceType);
+		Assert.Equal(typeof(MockPopup), mockPopupServiceDescriptor.ImplementationType);
+		
+		Assert.IsType<MockPopup>(serviceProvider.GetRequiredService<MockPopup>());
+	}
+	
+	[Fact]
+	public void IServiceCollection_VerifyScopedPopupWithViewModel()
 	{
 		// Arrange
 		const ServiceLifetime expectedServiceLifetime = ServiceLifetime.Scoped;
@@ -414,4 +480,6 @@ public class ServiceCollectionExtensionsTests : BaseTest
 		Routing.Clear();
 		base.Dispose(isDisposing);
 	}
+
+	sealed class MockPopup : View;
 }
