@@ -113,7 +113,8 @@ public class PopupTests : BaseTest
 		var popup = new Popup();
 
 		// Assert
-		await Assert.ThrowsAsync<InvalidOperationException>(() => popup.Close(TestContext.Current.CancellationToken));
+		await Assert.ThrowsAsync<PopupNotFoundException>(() => popup.Close(TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(() => popup.Close(TestContext.Current.CancellationToken));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -123,7 +124,8 @@ public class PopupTests : BaseTest
 		var popup = new Popup<string>();
 
 		// Assert
-		await Assert.ThrowsAsync<InvalidOperationException>(() => popup.Close("Hello", TestContext.Current.CancellationToken));
+		await Assert.ThrowsAsync<PopupNotFoundException>(() => popup.Close("Hello", TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(() => popup.Close("Hello", TestContext.Current.CancellationToken));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]

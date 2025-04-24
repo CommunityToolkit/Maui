@@ -54,7 +54,8 @@ public class PopupPageTests : BaseHandlerTest
 		var popupPage = new PopupPage<string>(view, popupOptions);
 
 		// Act / Assert
-		await Assert.ThrowsAsync<InvalidOperationException>(async () => await popupPage.Close(new PopupResult(false), CancellationToken.None));
+		await Assert.ThrowsAsync<PopupNotFoundException>(async () => await popupPage.Close(new PopupResult(false), CancellationToken.None));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await popupPage.Close(new PopupResult(false), CancellationToken.None));
 	}
 
 	[Fact]
@@ -193,7 +194,8 @@ public class PopupPageTests : BaseHandlerTest
 		await navigation.PushModalAsync(new ContentPage());
 
 		// Assert
-		await Assert.ThrowsAsync<InvalidOperationException>(async () => await popupPage.Close(new PopupResult(false), CancellationToken.None));
+		await Assert.ThrowsAsync<InvalidPopupOperationException>(async () => await popupPage.Close(new PopupResult(false), CancellationToken.None));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await popupPage.Close(new PopupResult(false), CancellationToken.None));
 	}
 
 	[Fact]

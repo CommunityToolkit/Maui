@@ -14,7 +14,6 @@ public static class PopupExtensions
 	/// <param name="page">Current page</param>
 	/// <param name="view">Popup content</param>
 	/// <param name="options"><see cref="IPopupOptions"/></param>
-	/// <returns><see cref="PopupResult"/></returns>
 	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see langword="await"/> this method and return <see cref="PopupResult{T}"/> </remarks>
 	public static void ShowPopup(this Page page, View view, IPopupOptions? options = null)
 	{
@@ -29,7 +28,6 @@ public static class PopupExtensions
 	/// <param name="navigation">Popup parent</param>
 	/// <param name="view">Popup content</param>
 	/// <param name="options"><see cref="IPopupOptions"/></param>
-	/// <returns><see cref="PopupResult"/></returns>
 	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see langword="await"/> this method</remarks>
 	public static async void ShowPopup(this INavigation navigation, View view, IPopupOptions? options = null)
 	{
@@ -48,7 +46,7 @@ public static class PopupExtensions
 	/// <param name="view">Popup content</param>
 	/// <param name="options"><see cref="IPopupOptions"/></param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
-	/// <returns>Popup Result</returns>
+	/// <returns><see cref="IPopupResult"/></returns>
 	public static Task<IPopupResult<TResult>> ShowPopupAsync<TResult>(this Page page, View view, IPopupOptions? options = null, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(page);
@@ -63,7 +61,7 @@ public static class PopupExtensions
 	/// <param name="view">Popup content</param>
 	/// <param name="options"><see cref="IPopupOptions"/></param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
-	/// <returns>Popup Result</returns>
+	/// <returns><see cref="IPopupResult{T}"/></returns>
 	public static async Task<IPopupResult<TResult>> ShowPopupAsync<TResult>(this INavigation navigation, View view, IPopupOptions? options = null, CancellationToken token = default)
 	{
 		var result = await ShowPopupAsync(navigation, view, options, token);
@@ -83,7 +81,7 @@ public static class PopupExtensions
 	/// <param name="view">Popup content</param>
 	/// <param name="options"><see cref="IPopupOptions"/></param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
-	/// <returns><see cref="PopupResult"/></returns>
+	/// <returns><see cref="IPopupResult"/></returns>
 	public static Task<IPopupResult> ShowPopupAsync(this Page page, View view, IPopupOptions? options = null, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(page);
@@ -98,7 +96,7 @@ public static class PopupExtensions
 	/// <param name="view">Popup content</param>
 	/// <param name="options"><see cref="IPopupOptions"/></param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
-	/// <returns><see cref="PopupResult"/></returns>
+	/// <returns><see cref="IPopupResult"/></returns>
 	public static async Task<IPopupResult> ShowPopupAsync(this INavigation navigation, View view, IPopupOptions? options, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(navigation);

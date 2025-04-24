@@ -11,6 +11,7 @@ public class PopupOnDisappearingPage : ContentPage
 	{
 		Content = new VerticalStackLayout
 		{
+			Spacing = 12,
 			Children =
 			{
 				new Label().Text("This is a modal page. A popup will be displayed when this modal page is dismissed").Center().TextCenter(),

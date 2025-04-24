@@ -7,6 +7,25 @@ namespace CommunityToolkit.Maui.Views;
 /// </summary>
 public partial class Popup : ContentView
 {
+	/// <summary>
+	/// Bindable property to set the margin between the <see cref="Popup"/> and the edge of the window
+	/// </summary>
+	public static new readonly BindableProperty MarginProperty = View.MarginProperty;
+
+	/// <summary>
+	/// Bindable property to set the padding between the <see cref="Popup"/> border and the <see cref="Popup"/> content
+	/// </summary>
+	public static new readonly BindableProperty PaddingProperty = ContentView.PaddingProperty;
+
+	/// <summary>
+	/// Bindable property to set the horizontal position of the <see cref="Popup"/> when displayed on screen
+	/// </summary>
+	public static new readonly BindableProperty HorizontalOptionsProperty = View.HorizontalOptionsProperty;
+
+	/// <summary>
+	/// Bindable property to set the vertical position of the <see cref="Popup"/> when displayed on screen
+	/// </summary>
+	public static new readonly BindableProperty VerticalOptionsProperty = View.VerticalOptionsProperty;
 
 	/// <summary>
 	/// Initializes Popup
@@ -18,16 +37,52 @@ public partial class Popup : ContentView
 		HorizontalOptions = PopupDefaults.HorizontalOptions;
 		VerticalOptions = PopupDefaults.VerticalOptions;
 	}
-	
+
 	/// <summary>
-	/// Event occurs when the Popup is opened.
+	/// Event occurs when <see cref="Popup"/> is opened.
 	/// </summary>
 	public event EventHandler? Opened;
 
 	/// <summary>
-	/// Event occurs when the Popup is closed.
+	/// Event occurs when <see cref="Popup"/> is closed.
 	/// </summary>
 	public event EventHandler? Closed;
+
+	/// <summary>
+	/// Sets the margin between the <see cref="Popup"/> and the edge of the window
+	/// </summary>
+	public new Thickness Margin
+	{
+		get => base.Margin;
+		set => base.Margin = value;
+	}
+
+	/// <summary>
+	/// Sets the padding between the <see cref="Popup"/> border and the <see cref="Popup"/> content
+	/// </summary>
+	public new Thickness Padding
+	{
+		get => base.Padding;
+		set => base.Padding = value;
+	}
+
+	/// <summary>
+	/// Sets the horizontal position of the <see cref="Popup"/> when displayed on screen
+	/// </summary>
+	public new LayoutOptions HorizontalOptions
+	{
+		get => base.HorizontalOptions;
+		set => base.HorizontalOptions = value;
+	}
+
+	/// <summary>
+	/// Sets the vertical position of the <see cref="Popup"/> when displayed on screen
+	/// </summary>
+	public new LayoutOptions VerticalOptions
+	{
+		get => base.VerticalOptions;
+		set => base.VerticalOptions = value;
+	}
 
 	/// <summary>
 	/// Close the Popup.
@@ -58,7 +113,7 @@ public partial class Popup : ContentView
 			parent = parent.Parent;
 		}
 
-		throw new InvalidOperationException($"Unable to close popup: could not locate {nameof(PopupPage)}. {nameof(PopupExtensions.ShowPopup)} or {nameof(PopupExtensions.ShowPopupAsync)} must be called before {nameof(Close)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Close)} method");
+		throw new PopupNotFoundException();
 	}
 }
 
@@ -74,3 +129,6 @@ public partial class Popup<T> : Popup
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	public virtual Task Close(T result, CancellationToken token = default) => GetPopupPage().Close(new PopupResult<T>(result, false), token);
 }
+
+class InvalidPopupOperationException(string message) : InvalidOperationException(message);
+sealed class PopupNotFoundException() : InvalidPopupOperationException($"Unable to close popup: could not locate {nameof(PopupPage)}. {nameof(PopupExtensions.ShowPopup)} or {nameof(PopupExtensions.ShowPopupAsync)} must be called before {nameof(Popup.Close)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Popup.Close)} method");
