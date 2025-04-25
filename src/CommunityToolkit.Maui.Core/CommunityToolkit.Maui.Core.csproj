@@ -47,6 +47,7 @@
   <ItemGroup>
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
     <None Include="ReadMe.txt" pack="true" PackagePath="." />
+    <InternalsVisibleTo Include="CommunityToolkit.Maui"/>
   </ItemGroup>
 
   <ItemGroup>

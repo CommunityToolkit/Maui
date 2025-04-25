@@ -24,3 +24,7 @@ updates:
         - dependency-name: "Xamarin.AndroidX.Collection"
         - dependency-name: "Xamarin.AndroidX.Lifecycle.LiveData"
         - dependency-name: "Xamarin.AndroidX.Collection.Ktx"
+- package-ecosystem: "github-actions"
+  directory: "/"
+  schedule:
+    interval: "weekly"
