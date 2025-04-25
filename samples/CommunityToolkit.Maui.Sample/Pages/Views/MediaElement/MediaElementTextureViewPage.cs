@@ -12,8 +12,17 @@ public partial class MediaElementTextureViewPage : BasePage<MediaElementTextureV
 		var width = 400;
 		var height = 150;
 		Content = new AbsoluteLayout {
+			new Label
+			{
+				Text = "Overlay two MediaElements to demonstrate TextureView.",
+				MaxLines = 2,
+				FontSize = 16,
+				HorizontalOptions = LayoutOptions.Center,
+				Padding = new Thickness(0, 0, 0, 40),
+			},
 			new Border
 			{
+				Padding = new Thickness(0, 40, 0, 0),
 				HorizontalOptions = LayoutOptions.Center,
 				StrokeThickness = 0,
 				WidthRequest = width,
@@ -33,6 +42,7 @@ public partial class MediaElementTextureViewPage : BasePage<MediaElementTextureV
 			},
 			new Border
 			{
+				Padding = new Thickness(0, 40, 0, 0),
 				HorizontalOptions = LayoutOptions.Center,
 				StrokeThickness = 0,
 				WidthRequest = width,
