@@ -20,7 +20,7 @@ public class AppBuilderExtensions_MediaElement
 	public void UseMauiCommunityToolkitMediaElement_ShouldAllowSettingDefaultAndroidViewTypeAfterNullOptions()
 	{
 		var builder = MauiApp.CreateBuilder();
-		builder.UseMauiCommunityToolkitMediaElement(null);
+		builder.UseMauiCommunityToolkitMediaElement(null!);
 		var mediaElementOptions = new MediaElementOptions(builder);
 		mediaElementOptions.SetDefaultAndroidViewType(AndroidViewType.SurfaceView);
 		MediaElementOptions.DefaultAndroidViewType.Should().Be(AndroidViewType.SurfaceView);
