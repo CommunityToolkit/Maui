@@ -1,5 +1,4 @@
 ﻿using System;
-using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Views;
 using Tizen.Multimedia;
