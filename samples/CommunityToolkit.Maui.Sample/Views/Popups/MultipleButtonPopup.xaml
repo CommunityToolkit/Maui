@@ -8,8 +8,7 @@
 	xmlns:system="clr-namespace:System;assembly=System.Runtime"
     BackgroundColor="White">
 
-	<VerticalStackLayout Style="{StaticResource PopupLayout}"
-                         Spacing="12">
+	<VerticalStackLayout>
 		<VerticalStackLayout.Resources>
 			<ResourceDictionary>
 				<Style x:Key="Title" TargetType="Label">
