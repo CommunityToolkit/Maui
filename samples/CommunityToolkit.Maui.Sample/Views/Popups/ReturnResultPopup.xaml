@@ -6,7 +6,7 @@
            xmlns:system="clr-namespace:System;assembly=System.Runtime"
            BackgroundColor="White">
 
-    <VerticalStackLayout Spacing="12">
+    <VerticalStackLayout Spacing="6">
         <VerticalStackLayout.Resources>
             <ResourceDictionary>
                 <Style x:Key="Title" TargetType="Label">

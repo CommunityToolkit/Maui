@@ -8,7 +8,7 @@
     xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
     x:DataType="viewModels:UpdatingPopupViewModel">
 
-    <VerticalStackLayout Spacing="12" MinimumHeightRequest="350">
+    <VerticalStackLayout Spacing="6" MinimumHeightRequest="350">
         <VerticalStackLayout.Resources>
             <ResourceDictionary>
                 <Style x:Key="Title" TargetType="Label">

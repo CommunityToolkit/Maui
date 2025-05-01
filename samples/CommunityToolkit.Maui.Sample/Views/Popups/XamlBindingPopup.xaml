@@ -16,7 +16,7 @@
     <VerticalStackLayout
         Style="{StaticResource PopupLayout}"
         HorizontalOptions="Center"
-        Spacing="12">
+        Spacing="6">
         <VerticalStackLayout.Resources>
             <ResourceDictionary>
                 <Style x:Key="Title" TargetType="Label">
