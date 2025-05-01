@@ -32,7 +32,7 @@ static class PopupOptionsDefaults
 	/// <summary>
 	/// Default value for <see cref="PopupOptions.Shape"/> <see cref="Shape.Stroke"/>
 	/// </summary>
-	public static Brush? BorderStroke { get; } = Colors.White;
+	public static Brush? BorderStroke { get; } = Colors.LightGray;
 
 	/// <summary>
 	/// Default value for <see cref="PopupOptions.Shape"/> 
