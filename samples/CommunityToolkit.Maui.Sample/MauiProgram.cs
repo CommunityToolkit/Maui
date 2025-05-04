@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.ApplicationModel;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Media;
 using CommunityToolkit.Maui.Sample.Models;
@@ -26,6 +27,7 @@ using CommunityToolkit.Maui.Sample.ViewModels.PlatformSpecific;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.Views.Popups;
 using CommunityToolkit.Maui.Storage;
+using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.LifecycleEvents;
@@ -66,9 +68,11 @@ public static class MauiProgram
 #endif
 								.UseMauiCommunityToolkitMarkup()
 								.UseMauiCommunityToolkitCamera()
-								.UseMauiCommunityToolkitMediaElement()
-
-								.ConfigureMauiHandlers(handlers =>
+								.UseMauiCommunityToolkitMediaElement(static options =>
+								{
+									options.SetDefaultAndroidViewType(AndroidViewType.TextureView);
+								})
+								.ConfigureMauiHandlers(static handlers =>
 								{
 #if IOS || MACCATALYST
 									handlers.AddHandler<CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
