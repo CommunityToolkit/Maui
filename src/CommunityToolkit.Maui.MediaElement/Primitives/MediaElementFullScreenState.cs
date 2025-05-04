@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.Primitives;
+﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// 

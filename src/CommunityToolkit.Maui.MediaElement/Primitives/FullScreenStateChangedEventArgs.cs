@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.Primitives;
+﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// Event data for when the full screen state of the media element has changed.

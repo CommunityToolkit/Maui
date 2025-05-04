@@ -1,8 +1,6 @@
 ﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Primitives;
-using CommunityToolkit.Maui.Primitives;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -135,6 +133,11 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	IDispatcherTimer? timer;
 	TaskCompletionSource seekCompletedTaskCompletionSource = new();
 
+	/// <summary>
+	/// Finalizer
+	/// </summary>
+	~MediaElement() => Dispose(false);
+
 	/// <inheritdoc cref="IMediaElement.MediaEnded"/>
 	public event EventHandler MediaEnded
 	{
@@ -221,11 +224,6 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	}
 
 	/// <summary>
-	/// Finalizer
-	/// </summary>
-	~MediaElement() => Dispose(false);
-
-	/// <summary>
 	/// The current position of the playing media. This is a bindable property.
 	/// </summary>
 	public TimeSpan Position => (TimeSpan)GetValue(PositionProperty);
@@ -235,6 +233,11 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// </summary>
 	/// <remarks>Might not be available for some types, like live streams.</remarks>
 	public TimeSpan Duration => (TimeSpan)GetValue(DurationProperty);
+
+	/// <summary>
+	/// Read the MediaElementOptions set in on construction, cannot be changed after construction
+	/// </summary>
+	public AndroidViewType AndroidViewType { get; init; } = MediaElementOptions.DefaultAndroidViewType;
 
 	/// <summary>
 	/// Gets or sets whether the media should start playing as soon as it's loaded.
@@ -326,7 +329,6 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 					SetValue(VolumeProperty, value);
 					break;
 			}
-
 		}
 	}
 
