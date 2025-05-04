@@ -74,7 +74,7 @@ public partial class MediaManager : IDisposable
 	/// <summary>
 	/// The default <see cref="NSKeyValueObservingOptions"/> flags used in the iOS and macOS observers.
 	/// </summary>
-	protected NSKeyValueObservingOptions valueObserverOptions => NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.New;
+	protected NSKeyValueObservingOptions ValueObserverOptions => NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.New;
 
 
 	/// <summary>
@@ -278,7 +278,7 @@ public partial class MediaManager : IDisposable
 
 		Player.ReplaceCurrentItemWithPlayerItem(PlayerItem);
 		CurrentItemErrorObserver = PlayerItem?.AddObserver("error",
-			valueObserverOptions, (NSObservedChange change) =>
+			ValueObserverOptions, (NSObservedChange change) =>
 			{
 				if (Player.CurrentItem?.Error is null)
 				{
@@ -569,10 +569,10 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		MutedObserver = Player.AddObserver("muted", valueObserverOptions, MutedChanged);
-		VolumeObserver = Player.AddObserver("volume", valueObserverOptions, VolumeChanged);
-		StatusObserver = Player.AddObserver("status", valueObserverOptions, StatusChanged);
-		TimeControlStatusObserver = Player.AddObserver("timeControlStatus", valueObserverOptions, TimeControlStatusChanged);
+		MutedObserver = Player.AddObserver("muted", ValueObserverOptions, MutedChanged);
+		VolumeObserver = Player.AddObserver("volume", ValueObserverOptions, VolumeChanged);
+		StatusObserver = Player.AddObserver("status", ValueObserverOptions, StatusChanged);
+		TimeControlStatusObserver = Player.AddObserver("timeControlStatus", ValueObserverOptions, TimeControlStatusChanged);
 		RateObserver = AVPlayer.Notifications.ObserveRateDidChange(RateChanged);
 	}
 
