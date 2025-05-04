@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using Xunit;
 
@@ -64,6 +65,10 @@ public abstract class BaseTest : IDisposable
 		options.SetShouldSuppressExceptionsInAnimations(false);
 		options.SetShouldSuppressExceptionsInBehaviors(false);
 		options.SetShouldSuppressExceptionsInConverters(false);
+		
+		// Restore default MediaElementOptions
+		var mediaElementOptions = new MediaElementOptions();
+		mediaElementOptions.SetDefaultAndroidViewType(AndroidViewType.SurfaceView);
 
 		isDisposed = true;
 	}

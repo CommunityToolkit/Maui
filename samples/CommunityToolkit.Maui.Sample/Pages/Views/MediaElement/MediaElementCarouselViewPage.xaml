@@ -37,6 +37,7 @@
                         </Border.StrokeShape>
                         <VerticalStackLayout Spacing="6" HeightRequest="250">
                             <toolkit:MediaElement
+                                AndroidViewType="SurfaceView"
                                 HeightRequest="200"
                                 x:Name="MediaElement"
                                 ShouldAutoPlay="True"
