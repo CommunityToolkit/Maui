@@ -1,6 +1,5 @@
 ﻿using AVFoundation;
 using AVKit;
-using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Views;
 using CoreFoundation;
 using CoreGraphics;
@@ -21,10 +20,56 @@ public partial class MediaManager : IDisposable
 	bool isInitialSpeedSet;
 
 	/// <summary>
+	/// Creates the corresponding platform view of <see cref="MediaElement"/> on iOS and macOS.
+	/// </summary>
+	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
+	public (PlatformMediaElement Player, AVPlayerViewController PlayerViewController) CreatePlatformView()
+	{
+		Player = new();
+		PlayerViewController = new()
+		{
+			Player = Player
+		};
+
+		// Pre-initialize Volume and Muted properties to the player object
+		Player.Muted = MediaElement.ShouldMute;
+		var volumeDiff = Math.Abs(Player.Volume - MediaElement.Volume);
+		if (volumeDiff > 0.01)
+		{
+			Player.Volume = (float)MediaElement.Volume;
+		}
+
+		UIApplication.SharedApplication.BeginReceivingRemoteControlEvents();
+
+#if IOS
+		PlayerViewController.UpdatesNowPlayingInfoCenter = false;
+#else
+		PlayerViewController.UpdatesNowPlayingInfoCenter = true;
+#endif
+		var avSession = AVAudioSession.SharedInstance();
+		avSession.SetCategory(AVAudioSessionCategory.Playback);
+		avSession.SetActive(true);
+
+		AddStatusObservers();
+		AddPlayedToEndObserver();
+		AddErrorObservers();
+
+		return (Player, PlayerViewController);
+	}
+
+	/// <summary>
+	/// Releases the managed and unmanaged resources used by the <see cref="MediaManager"/>.
+	/// </summary>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	/// <summary>
 	/// The default <see cref="NSKeyValueObservingOptions"/> flags used in the iOS and macOS observers.
 	/// </summary>
-	protected const NSKeyValueObservingOptions valueObserverOptions =
-		NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.New;
+	protected NSKeyValueObservingOptions ValueObserverOptions => NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.New;
 
 	/// <summary>
 	/// Observer that tracks when an error has occurred in the playback of the current item.
@@ -85,52 +130,6 @@ public partial class MediaManager : IDisposable
 	/// Observer that tracks if the audio is muted.
 	/// </summary>
 	protected IDisposable? MutedObserver { get; set; }
-
-	/// <summary>
-	/// Creates the corresponding platform view of <see cref="MediaElement"/> on iOS and macOS.
-	/// </summary>
-	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
-	public (PlatformMediaElement Player, AVPlayerViewController PlayerViewController) CreatePlatformView()
-	{
-		Player = new();
-		PlayerViewController = new()
-		{
-			Player = Player
-		};
-		// Pre-initialize Volume and Muted properties to the player object
-		Player.Muted = MediaElement.ShouldMute;
-		var volumeDiff = Math.Abs(Player.Volume - MediaElement.Volume);
-		if (volumeDiff > 0.01)
-		{
-			Player.Volume = (float)MediaElement.Volume;
-		}
-
-		UIApplication.SharedApplication.BeginReceivingRemoteControlEvents();
-
-#if IOS
-		PlayerViewController.UpdatesNowPlayingInfoCenter = false;
-#else
-		PlayerViewController.UpdatesNowPlayingInfoCenter = true;
-#endif
-		var avSession = AVAudioSession.SharedInstance();
-		avSession.SetCategory(AVAudioSessionCategory.Playback);
-		avSession.SetActive(true);
-
-		AddStatusObservers();
-		AddPlayedToEndObserver();
-		AddErrorObservers();
-
-		return (Player, PlayerViewController);
-	}
-
-	/// <summary>
-	/// Releases the managed and unmanaged resources used by the <see cref="MediaManager"/>.
-	/// </summary>
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
-	}
 
 	protected virtual partial void PlatformPlay()
 	{
@@ -272,7 +271,7 @@ public partial class MediaManager : IDisposable
 		Player.ReplaceCurrentItemWithPlayerItem(PlayerItem);
 
 		CurrentItemErrorObserver = PlayerItem?.AddObserver("error",
-			valueObserverOptions, (NSObservedChange change) =>
+			ValueObserverOptions, (NSObservedChange change) =>
 			{
 				if (Player.CurrentItem?.Error is null)
 				{
@@ -280,7 +279,7 @@ public partial class MediaManager : IDisposable
 				}
 
 				var message = $"{Player.CurrentItem?.Error?.LocalizedDescription} - " +
-					$"{Player.CurrentItem?.Error?.LocalizedFailureReason}";
+							  $"{Player.CurrentItem?.Error?.LocalizedFailureReason}";
 
 				MediaElement.MediaFailed(
 					new MediaFailedEventArgs(message));
@@ -389,6 +388,7 @@ public partial class MediaManager : IDisposable
 		{
 			return;
 		}
+
 		UIApplication.SharedApplication.IdleTimerDisabled = MediaElement.ShouldKeepScreenOn;
 	}
 
@@ -412,7 +412,6 @@ public partial class MediaManager : IDisposable
 	/// Releases the unmanaged resources used by the <see cref="MediaManager"/> and optionally releases the managed resources.
 	/// </summary>
 	/// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
-
 	protected virtual void Dispose(bool disposing)
 	{
 		if (disposing)
@@ -420,10 +419,7 @@ public partial class MediaManager : IDisposable
 			if (Player is not null)
 			{
 				Player.Pause();
-				Player.InvokeOnMainThread(() =>
-				{
-					UIApplication.SharedApplication.EndReceivingRemoteControlEvents();
-				});
+				Player.InvokeOnMainThread(() => { UIApplication.SharedApplication.EndReceivingRemoteControlEvents(); });
 				// disable the idle timer so screen turns off when media is not playing
 				UIApplication.SharedApplication.IdleTimerDisabled = false;
 				var audioSession = AVAudioSession.SharedInstance();
@@ -550,10 +546,10 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		MutedObserver = Player.AddObserver("muted", valueObserverOptions, MutedChanged);
-		VolumeObserver = Player.AddObserver("volume", valueObserverOptions, VolumeChanged);
-		StatusObserver = Player.AddObserver("status", valueObserverOptions, StatusChanged);
-		TimeControlStatusObserver = Player.AddObserver("timeControlStatus", valueObserverOptions, TimeControlStatusChanged);
+		MutedObserver = Player.AddObserver("muted", ValueObserverOptions, MutedChanged);
+		VolumeObserver = Player.AddObserver("volume", ValueObserverOptions, VolumeChanged);
+		StatusObserver = Player.AddObserver("status", ValueObserverOptions, StatusChanged);
+		TimeControlStatusObserver = Player.AddObserver("timeControlStatus", ValueObserverOptions, TimeControlStatusChanged);
 		RateObserver = AVPlayer.Notifications.ObserveRateDidChange(RateChanged);
 	}
 
@@ -634,7 +630,7 @@ public partial class MediaManager : IDisposable
 	void TimeControlStatusChanged(NSObservedChange obj)
 	{
 		if (Player is null || Player.Status is AVPlayerStatus.Unknown
-			|| Player.CurrentItem?.Error is not null)
+						   || Player.CurrentItem?.Error is not null)
 		{
 			return;
 		}
@@ -669,7 +665,7 @@ public partial class MediaManager : IDisposable
 		{
 			// Non-fatal error, just log
 			message = args.Notification?.ToString() ??
-				"Media playback failed for an unknown reason.";
+					  "Media playback failed for an unknown reason.";
 
 			Logger?.LogWarning("{LogMessage}", message);
 		}

@@ -12,7 +12,7 @@ public class Options
 	/// </summary>
 	/// <param name="value">true if yes or false if you want to implement your own.</param>
 	/// <remarks>
-	/// Default value is true.
+	/// Default value is fasle.
 	/// </remarks>
 	public void SetShouldUseStatusBarBehaviorOnAndroidModalPage(bool value) => ShouldUseStatusBarBehaviorOnAndroidModalPage = value;
 }

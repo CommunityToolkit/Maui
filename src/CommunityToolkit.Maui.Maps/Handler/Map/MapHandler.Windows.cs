@@ -51,7 +51,7 @@ public partial class MapHandlerWindows : MapHandler
 	}
 
 	/// <inheritdoc />
-	protected override void ConnectHandler(FrameworkElement platformView) 
+	protected override void ConnectHandler(FrameworkElement platformView)
 	{
 		if (platformView is MauiWebView mauiWebView)
 		{

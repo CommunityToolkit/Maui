@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
-using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Sample.Constants;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
@@ -171,7 +172,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataArtworkSource = MediaSource.FromUri(botImageUrl);
 				MediaElement.MetadataArtist = "Big Buck Bunny Album";
 				MediaElement.Source =
-					MediaSource.FromUri(buckBunnyMp4Url);
+					MediaSource.FromUri(StreamingVideoUrls.BuckBunny);
 				return;
 
 			case loadHls:
@@ -296,6 +297,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.Pause();
 		var popupMediaElement = new MediaElement
 		{
+			AndroidViewType = AndroidViewType.SurfaceView,
 			Source = MediaSource.FromResource("AppleVideo.mp4"),
 			HeightRequest = 600,
 			WidthRequest = 600,

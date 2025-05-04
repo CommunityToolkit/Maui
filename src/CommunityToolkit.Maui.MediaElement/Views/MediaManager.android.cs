@@ -4,15 +4,16 @@ using Android.Graphics;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Media3.Common;
+using AndroidX.Media3.Common.Text;
 using AndroidX.Media3.Common.Util;
 using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.Session;
 using AndroidX.Media3.UI;
-using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
+using DeviceInfo = AndroidX.Media3.Common.DeviceInfo;
 using MediaMetadata = AndroidX.Media3.Common.MediaMetadata;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -128,21 +129,51 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
 	/// <exception cref="NullReferenceException">Thrown when <see cref="Context"/> is <see langword="null"/> or when the platform view could not be created.</exception>
 	[MemberNotNull(nameof(Player), nameof(PlayerView), nameof(session))]
-	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView()
+	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView(AndroidViewType androidViewType)
 	{
 		Player = new ExoPlayerBuilder(MauiContext.Context).Build() ?? throw new InvalidOperationException("Player cannot be null");
 		Player.AddListener(this);
-		PlayerView = new PlayerView(MauiContext.Context)
+
+		if (androidViewType is AndroidViewType.SurfaceView)
 		{
-			Player = Player,
-			UseController = false,
-			ControllerAutoShow = false,
-			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
-		};
-		string randomId = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8];
-		var mediaSessionWRandomId = new MediaSession.Builder(Platform.AppContext, Player);
-		mediaSessionWRandomId.SetId(randomId);
-		session ??= mediaSessionWRandomId.Build() ?? throw new InvalidOperationException("Session cannot be null");
+			PlayerView = new PlayerView(MauiContext.Context)
+			{
+				Player = Player,
+				UseController = false,
+				ControllerAutoShow = false,
+				LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
+			};
+		}
+		else if (androidViewType is AndroidViewType.TextureView)
+		{
+			if (MauiContext.Context?.Resources is null)
+			{
+				throw new InvalidOperationException("Unable to retrieve Android Resources");
+			}
+
+			var resources = MauiContext.Context.Resources;
+			var xmlResource = resources.GetXml(Microsoft.Maui.Resource.Layout.textureview);
+			xmlResource.Read();
+
+			var attributes = Android.Util.Xml.AsAttributeSet(xmlResource)!;
+
+			PlayerView = new PlayerView(MauiContext.Context, attributes)
+			{
+				Player = Player,
+				UseController = false,
+				ControllerAutoShow = false,
+				LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
+			};
+		}
+		else
+		{
+			throw new NotSupportedException($"{androidViewType} is not yet supported");
+		}
+
+		var mediaSession = new MediaSession.Builder(Platform.AppContext, Player);
+		mediaSession.SetId(Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8]);
+
+		session ??= mediaSession.Build() ?? throw new InvalidOperationException("Session cannot be null");
 		ArgumentNullException.ThrowIfNull(session.Id);
 
 		return (Player, PlayerView);
@@ -458,7 +489,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			return;
 		}
 
-		// We're going to mute state. Capture current volume first so we can restore later.
+		// We're going to mute state. Capture the current volume first so we can restore later.
 		if (MediaElement.ShouldMute)
 		{
 			volumeBeforeMute = Player.Volume;
@@ -591,6 +622,34 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		return mediaItem;
 	}
 
+	#region PlayerListener implementation method stubs
+	public void OnAudioAttributesChanged(AudioAttributes? audioAttributes) { }
+	public void OnAvailableCommandsChanged(PlayerCommands? player) { }
+	public void OnCues(CueGroup? cues) { }
+	public void OnDeviceInfoChanged(DeviceInfo? deviceInfo) { }
+	public void OnDeviceVolumeChanged(int volume, bool muted) { }
+	public void OnEvents(IPlayer? player, PlayerEvents? playerEvents) { }
+	public void OnIsLoadingChanged(bool isLoading) { }
+	public void OnIsPlayingChanged(bool isPlaying) { }
+	public void OnLoadingChanged(bool isLoading) { }
+	public void OnMaxSeekToPreviousPositionChanged(long maxSeekToPreviousPositionMs) { }
+	public void OnMediaItemTransition(MediaItem? mediaItem, int reason) { }
+	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata) { }
+	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason) { }
+	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
+	public void OnPlayerErrorChanged(PlaybackException? error) { }
+	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }
+	public void OnRenderedFirstFrame() { }
+	public void OnRepeatModeChanged(int repeatMode) { }
+	public void OnSeekBackIncrementChanged(long seekBackIncrementMs) { }
+	public void OnSeekForwardIncrementChanged(long seekForwardIncrementMs) { }
+	public void OnShuffleModeEnabledChanged(bool shuffleModeEnabled) { }
+	public void OnSkipSilenceEnabledChanged(bool skipSilenceEnabled) { }
+	public void OnSurfaceSizeChanged(int width, int height) { }
+	public void OnTimelineChanged(Timeline? timeline, int reason) { }
+	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters) { }
+	public void OnTracksChanged(Tracks? tracks) { }
+	#endregion
 	static async Task<byte[]?> GetImageFromMediaSource(MediaSource? mediaSource, CancellationToken cancellationToken = default)
 	{
 		if (mediaSource is null)
