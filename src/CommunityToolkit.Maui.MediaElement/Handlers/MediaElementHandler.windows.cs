@@ -14,7 +14,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	public static void ShouldLoopPlayback(MediaElementHandler handler, MediaElement MediaElement)
 	{
-		handler.mediaManager?.UpdateShouldLoopPlayback();
+		handler?.mediaManager?.UpdateShouldLoopPlayback();
 	}
 
 	/// <inheritdoc/>
