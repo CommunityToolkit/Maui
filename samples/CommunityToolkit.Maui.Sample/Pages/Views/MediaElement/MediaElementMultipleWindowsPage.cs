@@ -1,5 +1,7 @@
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 #if WINDOWS || MACCATALYST
+using CommunityToolkit.Maui.Sample.Constants;
 using CommunityToolkit.Maui.Views;
 #else
 using CommunityToolkit.Maui.Markup;
@@ -9,9 +11,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class MediaElementMultipleWindowsPage : BasePage<MediaElementMultipleWindowsViewModel>
 {
-	const string buckBunnyMp4Url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
 #if WINDOWS || MACCATALYST
-	const string elephantsDreamMp4Url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4";
 	readonly Window secondWindow;
 #endif
 
@@ -22,14 +22,16 @@ public partial class MediaElementMultipleWindowsPage : BasePage<MediaElementMult
 		{
 			Content = new MediaElement
 			{
-				Source = elephantsDreamMp4Url,
+				AndroidViewType= AndroidViewType.SurfaceView,
+				Source = StreamingVideoUrls.ElephantsDream,
 				ShouldAutoPlay = true
 			}
 		});
 
 		Content = new MediaElement
 		{
-			Source = buckBunnyMp4Url,
+			AndroidViewType= AndroidViewType.SurfaceView,
+			Source = StreamingVideoUrls.BuckBunny,
 			ShouldAutoPlay = true
 		};
 #else
