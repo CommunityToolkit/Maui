@@ -4,7 +4,7 @@ using Foundation;
 using MediaPlayer;
 using UIKit;
 
-namespace CommunityToolkit.Maui.Core.Primitives;
+namespace CommunityToolkit.Maui.Core;
 
 sealed class Metadata
 {
