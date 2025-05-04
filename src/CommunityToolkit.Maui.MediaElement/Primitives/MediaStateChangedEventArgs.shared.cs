@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.Core.Primitives;
+﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// Represents event data for when media state has changed.

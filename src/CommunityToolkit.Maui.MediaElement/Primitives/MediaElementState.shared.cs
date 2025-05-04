@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.Core.Primitives;
+﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// Represents the different states media can go through.
