@@ -27,21 +27,8 @@ public partial class IconTintColorBehavior
 
 		ApplyTintColor(platformView, bindable, TintColor);
 
+		PropertyChanged += OnIconTintColorBehaviorPropertyChanged;
 		bindable.PropertyChanged += OnElementPropertyChanged;
-		this.PropertyChanged += (s, e) =>
-		{
-			if (e.PropertyName == TintColorProperty.PropertyName)
-			{
-				if (currentColorBrush is not null && TintColor is not null)
-				{
-					currentColorBrush.Color = TintColor.ToWindowsColor();
-				}
-				else
-				{
-					ApplyTintColor(platformView, bindable, TintColor);
-				}
-			}
-		};
 	}
 
 	/// <inheritdoc/>
@@ -50,6 +37,8 @@ public partial class IconTintColorBehavior
 		base.OnDetachedFrom(bindable, platformView);
 
 		bindable.PropertyChanged -= OnElementPropertyChanged;
+		PropertyChanged -= OnIconTintColorBehaviorPropertyChanged;
+
 		RemoveTintColor(platformView);
 	}
 
@@ -83,10 +72,34 @@ public partial class IconTintColorBehavior
 		return false;
 	}
 
+	void OnIconTintColorBehaviorPropertyChanged(object? sender, PropertyChangedEventArgs e)
+	{
+		ArgumentNullException.ThrowIfNull(sender);
+		var iconTintColorBehavior = (IconTintColorBehavior)sender;
+
+		if (iconTintColorBehavior.View is not IView bindable
+			|| bindable.Handler?.PlatformView is not FrameworkElement platformView)
+		{
+			return;
+		}
+
+		if (e.PropertyName == TintColorProperty.PropertyName)
+		{
+			if (currentColorBrush is not null && TintColor is not null)
+			{
+				currentColorBrush.Color = TintColor.ToWindowsColor();
+			}
+			else
+			{
+				ApplyTintColor(platformView, bindable, TintColor);
+			}
+		}
+	}
+
 	void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (e.PropertyName is not string propertyName
-			|| sender is not View bindable
+			|| sender is not IView bindable
 			|| bindable.Handler?.PlatformView is not FrameworkElement platformView)
 		{
 			return;
@@ -99,7 +112,7 @@ public partial class IconTintColorBehavior
 		}
 	}
 
-	void ApplyTintColor(FrameworkElement platformView, View element, Color? color)
+	void ApplyTintColor(FrameworkElement platformView, IView element, Color? color)
 	{
 		RemoveTintColor(platformView);
 
@@ -128,7 +141,7 @@ public partial class IconTintColorBehavior
 		}
 	}
 
-	void LoadAndApplyImageTintColor(View element, WImage image, Color color)
+	void LoadAndApplyImageTintColor(IView element, WImage image, Color color)
 	{
 		if (element is IImageElement { Source: UriImageSource uriImageSource })
 		{
@@ -139,6 +152,21 @@ public partial class IconTintColorBehavior
 			};
 
 			ApplyTintColor();
+		}
+		else if (image.IsLoaded)
+		{
+			// Sometimes WImage source doesn't match View source so the image is not ready to be tinted
+			// We must wait for next ImageOpened event
+			if (element is IImageElement { Source: FileImageSource fileImageSource }
+				&& image.Source is BitmapImage bitmapImage
+				&& Uri.Compare(new Uri($"{bitmapImage.UriSource.Scheme}:///{fileImageSource.File}"), bitmapImage.UriSource, UriComponents.Path, UriFormat.Unescaped, StringComparison.OrdinalIgnoreCase) is not 0)
+			{
+				image.ImageOpened += OnImageOpened;
+			}
+			else
+			{
+				ApplyTintColor();
+			}
 		}
 		else
 		{
@@ -178,7 +206,7 @@ public partial class IconTintColorBehavior
 		}
 	}
 
-	void ApplyImageTintColor(View element, WImage image, Color color)
+	void ApplyImageTintColor(IView element, WImage image, Color color)
 	{
 		if (!TryGetSourceImageUri(image, (IImageElement)element, out var uri))
 		{
