@@ -61,7 +61,7 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		GC.SuppressFinalize(this);
 	}
 
-	internal CameraManager CameraManager => cameraManager 
+	internal CameraManager CameraManager => cameraManager
 		?? throw new InvalidOperationException($"{nameof(CameraManager)} cannot be used until the native view has been created");
 
 	/// <summary>
