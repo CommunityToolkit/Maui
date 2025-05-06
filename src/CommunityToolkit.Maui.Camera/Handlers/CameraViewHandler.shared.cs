@@ -12,8 +12,6 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>, IDisposable
 #endif
 {
-	CameraManager? cameraManager;
-
 	/// <summary>
 	/// The currently defined mappings between properties on the <see cref="ICameraView"/> and
 	/// properties on the <see cref="NativePlatformCameraPreviewView"/>. 
@@ -34,6 +32,8 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	public static CommandMapper<ICameraView, CameraViewHandler> CommandMapper = new(ViewCommandMapper);
 
 	readonly ICameraProvider cameraProvider = IPlatformApplication.Current?.Services.GetRequiredService<ICameraProvider>() ?? throw new CameraException($"{nameof(CameraProvider)} not found");
+
+	CameraManager? cameraManager;
 
 
 	/// <summary>
