@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.Versioning;
 using System.Windows.Input;
-using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Views;
 namespace CommunityToolkit.Maui.Core;
 

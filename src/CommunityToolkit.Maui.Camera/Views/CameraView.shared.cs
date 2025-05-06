@@ -3,7 +3,6 @@ using System.Runtime.Versioning;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Camera;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Primitives;
 
 namespace CommunityToolkit.Maui.Views;
 
