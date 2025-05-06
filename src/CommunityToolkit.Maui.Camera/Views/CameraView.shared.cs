@@ -3,6 +3,7 @@ using System.Runtime.Versioning;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Camera;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Handlers;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -191,6 +192,8 @@ public partial class CameraView : View, ICameraView
 		set => SetValue(isCameraBusyPropertyKey, value);
 	}
 
+	private protected new CameraViewHandler Handler => (CameraViewHandler)(base.Handler ?? throw new InvalidOperationException("Unable to revtrieve Handler"));
+
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	TaskCompletionSource IAsynchronousHandler.HandlerCompleteTCS => handlerCompletedTCS;
 
@@ -223,32 +226,16 @@ public partial class CameraView : View, ICameraView
 	}
 
 	/// <inheritdoc cref="ICameraView.CaptureImage"/>
-	public async ValueTask CaptureImage(CancellationToken token)
-	{
-		handlerCompletedTCS.TrySetCanceled(token);
-
-		handlerCompletedTCS = new();
-		Handler?.Invoke(nameof(ICameraView.CaptureImage));
-
-		await handlerCompletedTCS.Task.WaitAsync(token);
-	}
+	public ValueTask CaptureImage(CancellationToken token) =>
+		Handler.CameraManager.TakePicture(token);
 
 	/// <inheritdoc cref="ICameraView.StartCameraPreview"/>
-	public async ValueTask StartCameraPreview(CancellationToken token)
-	{
-		handlerCompletedTCS.TrySetCanceled(token);
-
-		handlerCompletedTCS = new();
-		Handler?.Invoke(nameof(ICameraView.StartCameraPreview));
-
-		await handlerCompletedTCS.Task.WaitAsync(token);
-	}
+	public Task StartCameraPreview(CancellationToken token) =>
+		Handler.CameraManager.StartCameraPreview(token);
 
 	/// <inheritdoc cref="ICameraView.StopCameraPreview"/>
-	public void StopCameraPreview()
-	{
-		Handler?.Invoke(nameof(ICameraView.StopCameraPreview));
-	}
+	public void StopCameraPreview() =>
+		Handler.CameraManager.StopCameraPreview();
 
 	static object CoerceZoom(BindableObject bindable, object value)
 	{

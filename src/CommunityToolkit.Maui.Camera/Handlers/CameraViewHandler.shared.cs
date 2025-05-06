@@ -12,6 +12,8 @@ public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPr
 public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>, IDisposable
 #endif
 {
+	CameraManager? cameraManager;
+
 	/// <summary>
 	/// The currently defined mappings between properties on the <see cref="ICameraView"/> and
 	/// properties on the <see cref="NativePlatformCameraPreviewView"/>. 
@@ -29,16 +31,10 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	/// The currently defined mappings between commands on the <see cref="ICameraView"/> and
 	/// commands on the <see cref="NativePlatformCameraPreviewView"/>. 
 	/// </summary>
-	public static CommandMapper<ICameraView, CameraViewHandler> CommandMapper = new(ViewCommandMapper)
-	{
-		[nameof(ICameraView.CaptureImage)] = MapCaptureImage,
-		[nameof(ICameraView.StartCameraPreview)] = MapStartCameraPreview,
-		[nameof(ICameraView.StopCameraPreview)] = MapStopCameraPreview
-	};
+	public static CommandMapper<ICameraView, CameraViewHandler> CommandMapper = new(ViewCommandMapper);
 
 	readonly ICameraProvider cameraProvider = IPlatformApplication.Current?.Services.GetRequiredService<ICameraProvider>() ?? throw new CameraException($"{nameof(CameraProvider)} not found");
 
-	CameraManager? cameraManager;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="CameraViewHandler	"/> class.
@@ -67,6 +63,12 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	}
 
 	/// <summary>
+	/// Used to 
+	/// </summary>
+	internal CameraManager CameraManager => cameraManager 
+		?? throw new InvalidOperationException($"{nameof(CameraManager)} cannot be used until the native view has been created");
+
+	/// <summary>
 	/// Creates a platform-specific view that will be rendered on that platform.
 	/// </summary>
 	protected override NativePlatformCameraPreviewView CreatePlatformView()
@@ -74,7 +76,7 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		ArgumentNullException.ThrowIfNull(MauiContext);
 		cameraManager = new(MauiContext, VirtualView, cameraProvider, () => Init(VirtualView));
 
-		return (NativePlatformCameraPreviewView)cameraManager.CreatePlatformView();
+		return (NativePlatformCameraPreviewView)CameraManager.CreatePlatformView();
 
 		// When camera is loaded(switched), map the current flash mode to the platform view,
 		// reset the zoom factor to 1
@@ -90,8 +92,8 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	{
 		base.ConnectHandler(platformView);
 
-		await (cameraManager?.ArePermissionsGranted() ?? Task.CompletedTask);
-		await (cameraManager?.ConnectCamera(CancellationToken.None) ?? Task.CompletedTask);
+		await (CameraManager?.ArePermissionsGranted() ?? Task.CompletedTask);
+		await (CameraManager?.ConnectCamera(CancellationToken.None) ?? Task.CompletedTask);
 		await cameraProvider.RefreshAvailableCameras(CancellationToken.None);
 	}
 
@@ -136,40 +138,23 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 #endif
 	}
 
-	static async void MapCaptureImage(CameraViewHandler handler, ICameraView view, object? arg3)
-	{
-		await (handler.cameraManager?.TakePicture(CancellationToken.None) ?? ValueTask.CompletedTask);
-		view.HandlerCompleteTCS.SetResult();
-	}
-
-	static async void MapStartCameraPreview(CameraViewHandler handler, ICameraView view, object? arg3)
-	{
-		await (handler.cameraManager?.StartCameraPreview(CancellationToken.None) ?? Task.CompletedTask);
-		view.HandlerCompleteTCS.SetResult();
-	}
-
 	static async void MapImageCaptureResolution(CameraViewHandler handler, ICameraView view)
 	{
-		await (handler.cameraManager?.UpdateCaptureResolution(view.ImageCaptureResolution, CancellationToken.None) ?? ValueTask.CompletedTask);
+		await (handler.CameraManager?.UpdateCaptureResolution(view.ImageCaptureResolution, CancellationToken.None) ?? ValueTask.CompletedTask);
 	}
 
 	static async void MapSelectedCamera(CameraViewHandler handler, ICameraView view)
 	{
-		await (handler.cameraManager?.UpdateCurrentCamera(view.SelectedCamera, CancellationToken.None) ?? ValueTask.CompletedTask);
-	}
-
-	static void MapStopCameraPreview(CameraViewHandler handler, ICameraView view, object? arg3)
-	{
-		handler.cameraManager?.StopCameraPreview();
+		await (handler.CameraManager?.UpdateCurrentCamera(view.SelectedCamera, CancellationToken.None) ?? ValueTask.CompletedTask);
 	}
 
 	static void MapCameraFlashMode(CameraViewHandler handler, ICameraView view)
 	{
-		handler.cameraManager?.UpdateFlashMode(view.CameraFlashMode);
+		handler.CameraManager?.UpdateFlashMode(view.CameraFlashMode);
 	}
 
 	static void MapZoomFactor(CameraViewHandler handler, ICameraView view)
 	{
-		handler.cameraManager?.UpdateZoom(view.ZoomFactor);
+		handler.CameraManager?.UpdateZoom(view.ZoomFactor);
 	}
 }

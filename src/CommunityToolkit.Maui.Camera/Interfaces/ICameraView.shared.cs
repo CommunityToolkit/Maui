@@ -78,7 +78,7 @@ public interface ICameraView : IView, IAsynchronousHandler
 	/// To customize the behavior of starting the camera preview, consider overriding the behavior through
 	/// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.StartCameraPreview), ADD YOUR METHOD);</c>.
 	/// </remarks>
-	ValueTask StartCameraPreview(CancellationToken token);
+	Task StartCameraPreview(CancellationToken token);
 
 	/// <summary>
 	/// Stops the camera preview.
