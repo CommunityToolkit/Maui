@@ -122,14 +122,14 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	static void MapIsAvailable(CameraViewHandler handler, ICameraView view)
 #endif
 	{
-		var cameraAvailability = (ICameraView)handler.VirtualView;
+		var cameraView = (ICameraView)handler.VirtualView;
 
 #if ANDROID
-		cameraAvailability.UpdateAvailability(handler.Context);
+		cameraView.UpdateAvailability(handler.Context);
 #elif WINDOWS
-		await cameraAvailability.UpdateAvailability(CancellationToken.None);
+		await cameraView.UpdateAvailability(CancellationToken.None);
 #elif IOS || MACCATALYST
-		cameraAvailability.UpdateAvailability();
+		cameraView.UpdateAvailability();
 #elif TIZEN
 		throw new NotSupportedException("Tizen is not yet supported");
 #elif NET
