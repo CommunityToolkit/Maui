@@ -1,11 +1,9 @@
-﻿using CommunityToolkit.Maui.Camera;
-
-namespace CommunityToolkit.Maui.Core;
+﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// Represents a visual element that provides the ability to show a camera preview and capture images.
 /// </summary>
-public interface ICameraView : IView, IAsynchronousHandler
+public interface ICameraView : IView
 {
 	/// <summary>
 	/// Gets the <see cref="CameraFlashMode"/>.

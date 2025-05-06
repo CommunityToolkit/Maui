@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Runtime.Versioning;
 using System.Windows.Input;
-using CommunityToolkit.Maui.Camera;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
 
@@ -14,7 +13,6 @@ namespace CommunityToolkit.Maui.Views;
 [SupportedOSPlatform("android21.0")]
 [SupportedOSPlatform("ios")]
 [SupportedOSPlatform("maccatalyst")]
-[SupportedOSPlatform("tizen")]
 public partial class CameraView : View, ICameraView
 {
 	static readonly BindablePropertyKey isAvailablePropertyKey =
@@ -82,8 +80,6 @@ public partial class CameraView : View, ICameraView
 		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(ICommand), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopCameraPreviewCommand).BindableProperty;
 
 	readonly WeakEventManager weakEventManager = new();
-
-	TaskCompletionSource handlerCompletedTCS = new();
 
 	/// <summary>
 	/// Event that is raised when the camera capture fails.
@@ -193,9 +189,6 @@ public partial class CameraView : View, ICameraView
 	}
 
 	private protected new CameraViewHandler Handler => (CameraViewHandler)(base.Handler ?? throw new InvalidOperationException("Unable to revtrieve Handler"));
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	TaskCompletionSource IAsynchronousHandler.HandlerCompleteTCS => handlerCompletedTCS;
 
 	/// <inheritdoc cref="ICameraView.OnMediaCaptured"/>
 	public void OnMediaCaptured(Stream imageData)
