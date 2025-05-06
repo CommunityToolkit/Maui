@@ -3,6 +3,7 @@ using System.Runtime.Versioning;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
+using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -227,8 +228,11 @@ public partial class CameraView : View, ICameraView
 		Handler.CameraManager.StartCameraPreview(token);
 
 	/// <inheritdoc cref="ICameraView.StopCameraPreview"/>
-	public void StopCameraPreview() =>
+	public ValueTask StopCameraPreview()
+	{
 		Handler.CameraManager.StopCameraPreview();
+		return Handler.CameraManager.UpdateCurrentCamera(SelectedCamera, CancellationToken.None);
+	}
 
 	static object CoerceZoom(BindableObject bindable, object value)
 	{
