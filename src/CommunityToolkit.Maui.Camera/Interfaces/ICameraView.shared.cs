@@ -73,7 +73,7 @@ public interface ICameraView : IView
 	/// To customize the behavior of stopping the camera preview, consider overriding the behavior through
 	/// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.StopCameraPreview), ADD YOUR METHOD);</c>.
 	/// </remarks>
-	ValueTask StopCameraPreview(CancellationToken token);
+	void StopCameraPreview();
 
 	/// <summary>
 	/// Retrieves the cameras available on the current device.

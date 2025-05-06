@@ -215,11 +215,8 @@ public partial class CameraView : View, ICameraView
 		Handler.CameraManager.StartCameraPreview(token);
 
 	/// <inheritdoc cref="ICameraView.StopCameraPreview"/>
-	public ValueTask StopCameraPreview(CancellationToken token)
-	{
+	public void StopCameraPreview() =>
 		Handler.CameraManager.StopCameraPreview();
-		return Handler.CameraManager.UpdateCurrentCamera(SelectedCamera, token);
-	}
 
 	void ICameraView.OnMediaCaptured(Stream imageData)
 	{
