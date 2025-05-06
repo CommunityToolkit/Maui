@@ -91,8 +91,8 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	{
 		base.ConnectHandler(platformView);
 
-		await (CameraManager?.ArePermissionsGranted() ?? Task.CompletedTask);
-		await (CameraManager?.ConnectCamera(CancellationToken.None) ?? Task.CompletedTask);
+		await CameraManager.ArePermissionsGranted();
+		await CameraManager.ConnectCamera(CancellationToken.None);
 		await cameraProvider.RefreshAvailableCameras(CancellationToken.None);
 	}
 
@@ -139,21 +139,21 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 
 	static async void MapImageCaptureResolution(CameraViewHandler handler, ICameraView view)
 	{
-		await (handler.CameraManager?.UpdateCaptureResolution(view.ImageCaptureResolution, CancellationToken.None) ?? ValueTask.CompletedTask);
+		await handler.CameraManager.UpdateCaptureResolution(view.ImageCaptureResolution, CancellationToken.None);
 	}
 
 	static async void MapSelectedCamera(CameraViewHandler handler, ICameraView view)
 	{
-		await (handler.CameraManager?.UpdateCurrentCamera(view.SelectedCamera, CancellationToken.None) ?? ValueTask.CompletedTask);
+		await handler.CameraManager.UpdateCurrentCamera(view.SelectedCamera, CancellationToken.None);
 	}
 
 	static void MapCameraFlashMode(CameraViewHandler handler, ICameraView view)
 	{
-		handler.CameraManager?.UpdateFlashMode(view.CameraFlashMode);
+		handler.CameraManager.UpdateFlashMode(view.CameraFlashMode);
 	}
 
 	static void MapZoomFactor(CameraViewHandler handler, ICameraView view)
 	{
-		handler.CameraManager?.UpdateZoom(view.ZoomFactor);
+		handler.CameraManager.UpdateZoom(view.ZoomFactor);
 	}
 }
