@@ -188,7 +188,7 @@ public partial class CameraView : View, ICameraView
 		set => SetValue(isCameraBusyPropertyKey, value);
 	}
 
-	private protected new CameraViewHandler Handler => (CameraViewHandler)(base.Handler ?? throw new InvalidOperationException("Unable to revtrieve Handler"));
+	private protected new CameraViewHandler Handler => (CameraViewHandler)(base.Handler ?? throw new InvalidOperationException("Unable to retrieve Handler"));
 
 	/// <inheritdoc cref="ICameraView.OnMediaCaptured"/>
 	public void OnMediaCaptured(Stream imageData)
