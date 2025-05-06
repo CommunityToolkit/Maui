@@ -35,7 +35,6 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 
 	CameraManager? cameraManager;
 
-
 	/// <summary>
 	/// Initializes a new instance of the <see cref="CameraViewHandler	"/> class.
 	/// </summary>
