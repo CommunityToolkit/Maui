@@ -3,7 +3,6 @@ using System.Runtime.Versioning;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
-using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -189,19 +188,7 @@ public partial class CameraView : View, ICameraView
 		set => SetValue(isCameraBusyPropertyKey, value);
 	}
 
-	private protected new CameraViewHandler Handler => (CameraViewHandler)(base.Handler ?? throw new InvalidOperationException("Unable to retrieve Handler"));
-
-	/// <inheritdoc cref="ICameraView.OnMediaCaptured"/>
-	public void OnMediaCaptured(Stream imageData)
-	{
-		weakEventManager.HandleEvent(this, new MediaCapturedEventArgs(imageData), nameof(MediaCaptured));
-	}
-
-	/// <inheritdoc cref="ICameraView.OnMediaCapturedFailed"/>
-	public void OnMediaCapturedFailed(string failureReason)
-	{
-		weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(failureReason), nameof(MediaCaptureFailed));
-	}
+	private protected new CameraViewHandler Handler => (CameraViewHandler)(base.Handler ?? throw new InvalidOperationException("Unable to retrieve Handler"));	
 
 	/// <inheritdoc cref="ICameraView.GetAvailableCameras"/>
 	public async ValueTask<IReadOnlyList<CameraInfo>> GetAvailableCameras(CancellationToken token)
@@ -228,10 +215,20 @@ public partial class CameraView : View, ICameraView
 		Handler.CameraManager.StartCameraPreview(token);
 
 	/// <inheritdoc cref="ICameraView.StopCameraPreview"/>
-	public ValueTask StopCameraPreview()
+	public ValueTask StopCameraPreview(CancellationToken token)
 	{
 		Handler.CameraManager.StopCameraPreview();
-		return Handler.CameraManager.UpdateCurrentCamera(SelectedCamera, CancellationToken.None);
+		return Handler.CameraManager.UpdateCurrentCamera(SelectedCamera, token);
+	}
+
+	void ICameraView.OnMediaCaptured(Stream imageData)
+	{
+		weakEventManager.HandleEvent(this, new MediaCapturedEventArgs(imageData), nameof(MediaCaptured));
+	}
+
+	void ICameraView.OnMediaCapturedFailed(string failureReason)
+	{
+		weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(failureReason), nameof(MediaCaptureFailed));
 	}
 
 	static object CoerceZoom(BindableObject bindable, object value)

@@ -49,18 +49,6 @@ public interface ICameraView : IView
 	bool IsBusy { get; internal set; }
 
 	/// <summary>
-	/// Occurs when an image is captured by the camera.
-	/// </summary>
-	/// <param name="imageData">The image data held within a <see cref="Stream"/>.</param>
-	void OnMediaCaptured(Stream imageData);
-
-	/// <summary>
-	/// Occurs when an image capture fails.
-	/// </summary>
-	/// <param name="failureReason">A string containing the reason why the capture attempt failed.</param>
-	void OnMediaCapturedFailed(string failureReason);
-
-	/// <summary>
 	/// Triggers the camera to capture an image.
 	/// </summary>
 	/// <remarks>
@@ -85,7 +73,7 @@ public interface ICameraView : IView
 	/// To customize the behavior of stopping the camera preview, consider overriding the behavior through
 	/// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.StopCameraPreview), ADD YOUR METHOD);</c>.
 	/// </remarks>
-	ValueTask StopCameraPreview();
+	ValueTask StopCameraPreview(CancellationToken token);
 
 	/// <summary>
 	/// Retrieves the cameras available on the current device.
@@ -93,4 +81,16 @@ public interface ICameraView : IView
 	/// <param name="token"></param>
 	/// <returns></returns>
 	ValueTask<IReadOnlyList<CameraInfo>> GetAvailableCameras(CancellationToken token);
+
+	/// <summary>
+	/// Occurs when an image is captured by the camera.
+	/// </summary>
+	/// <param name="imageData">The image data held within a <see cref="Stream"/>.</param>
+	internal void OnMediaCaptured(Stream imageData);
+
+	/// <summary>
+	/// Occurs when an image capture fails.
+	/// </summary>
+	/// <param name="failureReason">A string containing the reason why the capture attempt failed.</param>
+	internal void OnMediaCapturedFailed(string failureReason);
 }

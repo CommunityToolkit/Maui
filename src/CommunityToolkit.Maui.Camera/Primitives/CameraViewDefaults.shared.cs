@@ -56,9 +56,9 @@ public static class CameraViewDefaults
 		return new(async token => await cameraView.StartCameraPreview(token).ConfigureAwait(false));
 	}
 
-	internal static ICommand CreateStopCameraPreviewCommand(BindableObject bindable)
+	internal static Command<CancellationToken> CreateStopCameraPreviewCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;
-		return new Command(token => cameraView.StopCameraPreview());
+		return new(async token => await cameraView.StopCameraPreview(token));
 	}
 }
