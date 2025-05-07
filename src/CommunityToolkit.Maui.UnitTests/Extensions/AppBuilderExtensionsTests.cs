@@ -141,11 +141,11 @@ public class AppBuilderExtensionsTests : BaseTest
 	}
 
 	[Fact]
-	public void UseMauiCommunityToolkitMediaElement_ShouldSetAndroidServiceByDefault()
+	public void UseMauiCommunityToolkitMediaElement_ShouldSetAndroidServiceByDefaultToFalse()
 	{
 		var builder = MauiApp.CreateBuilder();
 		builder.UseMauiCommunityToolkitMediaElement();
-		MediaElementOptions.AndroidForegroundServiceEnabled.Should().Be(true);
+		MediaElementOptions.AndroidForegroundServiceEnabled.Should().Be(false);
 	}
 
 	[Fact]
@@ -154,9 +154,9 @@ public class AppBuilderExtensionsTests : BaseTest
 		var builder = MauiApp.CreateBuilder();
 		builder.UseMauiCommunityToolkitMediaElement(static options =>
 		{
-			options.SetDefaultAndroidForegroundService(false);
+			options.SetDefaultAndroidForegroundService(true);
 		});
-		MediaElementOptions.AndroidForegroundServiceEnabled.Should().Be(false);
+		MediaElementOptions.AndroidForegroundServiceEnabled.Should().Be(true);
 	}
 }
 #pragma warning restore CA1416
