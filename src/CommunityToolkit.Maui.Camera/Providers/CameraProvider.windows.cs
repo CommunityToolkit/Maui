@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Core.Primitives;
+﻿
 using CommunityToolkit.Maui.Extensions;
 using Windows.Devices.Enumeration;
 using Windows.Media.Capture;

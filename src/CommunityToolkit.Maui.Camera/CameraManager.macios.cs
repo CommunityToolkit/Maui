@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using AVFoundation;
-using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Extensions;
 using CoreMedia;
 using Foundation;

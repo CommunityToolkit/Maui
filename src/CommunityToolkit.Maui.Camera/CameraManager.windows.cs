@@ -1,7 +1,5 @@
 ﻿using System.Runtime.Versioning;
-using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Extensions;
-using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Media.Capture;
 using Windows.Media.Capture.Frames;
