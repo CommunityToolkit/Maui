@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
-using CommunityToolkit.Maui.Core.Primitives;
-using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Sample.Constants;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
@@ -17,7 +17,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string resetSource = "Reset Source to null";
 	const string loadMusic = "Load Music";
 
-	const string buckBunnyMp4Url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
 	const string botImageUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
 	const string hlsStreamTestUrl = "https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8";
 	const string hal9000AudioUrl = "https://github.com/prof3ssorSt3v3/media-sample-files/raw/master/hal-9000.mp3";
@@ -170,7 +169,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataArtworkUrl = botImageUrl;
 				MediaElement.MetadataArtist = "Big Buck Bunny Album";
 				MediaElement.Source =
-					MediaSource.FromUri(buckBunnyMp4Url);
+					MediaSource.FromUri(StreamingVideoUrls.BuckBunny);
 				return;
 
 			case loadHls:
@@ -248,13 +247,13 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.Pause();
 		var popupMediaElement = new MediaElement
 		{
+			AndroidViewType = AndroidViewType.SurfaceView,
 			Source = MediaSource.FromResource("AppleVideo.mp4"),
 			ShouldAutoPlay = true,
 			ShouldShowPlaybackControls = true,
 		};
-
+    
 		await this.ShowPopupAsync(popupMediaElement);
 		popupMediaElement.Stop();
-		popupMediaElement.Handler?.DisconnectHandler();
 	}
 }
