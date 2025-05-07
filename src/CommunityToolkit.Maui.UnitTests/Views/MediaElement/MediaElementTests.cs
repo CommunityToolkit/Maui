@@ -16,17 +16,17 @@ public class MediaElementTests : BaseHandlerTest
 	public void PosterIsNotStringEmptyOrNull()
 	{
 		MediaElement mediaElement = new();
-		mediaElement.MetadataArtworkUrl = "https://www.example.com/image.jpg";
-		Assert.False(string.IsNullOrEmpty(mediaElement.MetadataArtworkUrl));
+		mediaElement.MetadataArtworkSource = "https://www.example.com/image.jpg";
+		Assert.IsType<MediaSource>(mediaElement.MetadataArtworkSource, exactMatch: false);
+		Assert.False((mediaElement.MetadataArtworkSource) is null);
 	}
 
 	[Fact]
 	public void PosterIsStringEmptyDoesNotThrow()
 	{
 		MediaElement mediaElement = new();
-		mediaElement.MetadataArtworkUrl = string.Empty;
-		Assert.True(string.IsNullOrEmpty(mediaElement.MetadataArtworkUrl));
-		Assert.True(mediaElement.MetadataArtworkUrl == string.Empty);
+		mediaElement.MetadataArtworkSource = null;
+		Assert.True((mediaElement.MetadataArtworkSource) is null);
 	}
 
 	[Fact]
