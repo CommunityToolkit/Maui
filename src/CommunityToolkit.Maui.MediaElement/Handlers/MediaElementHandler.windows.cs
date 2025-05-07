@@ -14,17 +14,17 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	/// <param name="MediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	public static void ShouldLoopPlayback(MediaElementHandler handler, MediaElement MediaElement)
 	{
-		handler.mediaManager?.UpdateShouldLoopPlayback();
+		handler?.MediaManager?.UpdateShouldLoopPlayback();
 	}
 
 	/// <inheritdoc/>
 	protected override MauiMediaElement CreatePlatformView()
 	{
-		mediaManager ??= new(MauiContext ?? throw new NullReferenceException(),
+		MediaManager ??= new(MauiContext ?? throw new NullReferenceException(),
 								VirtualView,
 								Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
 
-		var mediaPlatform = mediaManager.CreatePlatformView();
+		var mediaPlatform = MediaManager.CreatePlatformView();
 		return new(mediaPlatform);
 	}
 
