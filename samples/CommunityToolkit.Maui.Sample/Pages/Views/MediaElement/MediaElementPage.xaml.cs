@@ -30,6 +30,8 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.PropertyChanged += MediaElement_PropertyChanged;
 	}
 
+	void MediaElement_FullScreenStateChanged(object? sender, FullScreenStateChangedEventArgs e) =>
+		logger.LogInformation("FullScreen State Changed. Old State: {PreviousState}, New State: {NewState}", e.PreviousState, e.NewState);
 	void MediaElement_PropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (e.PropertyName == MediaElement.DurationProperty.PropertyName)
