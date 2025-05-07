@@ -163,6 +163,9 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		var result = await DisplayActionSheet("Choose a source", "Cancel", null,
 			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadMusic);
 
+		MediaElement.Stop();
+		MediaElement.Source = null;
+
 		switch (result)
 		{
 			case loadOnlineMp4:
@@ -273,6 +276,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		popup.Closed += (s, e) =>
 		{
 			popupMediaElement.Stop();
+			popupMediaElement.Source = null;
 		};
 	}
 }
