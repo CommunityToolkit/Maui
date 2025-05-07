@@ -4,7 +4,12 @@ using CommunityToolkit.Maui.Sample.Constants;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
+using CommunityToolkit.Maui.Sample.Resources.Fonts;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
+using System.Globalization;
+using System.Text.RegularExpressions;
+using System.Text;
+using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
@@ -16,6 +21,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string loadHls = "Load HTTP Live Stream (HLS)";
 	const string loadLocalResource = "Load Local Resource";
 	const string resetSource = "Reset Source to null";
+	const string loadSubTitles = "Load sample with Subtitles";
 	const string loadMusic = "Load Music";
 
 	const string botImageUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
@@ -161,7 +167,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	async void ChangeSourceClicked(Object sender, EventArgs e)
 	{
 		var result = await DisplayActionSheet("Choose a source", "Cancel", null,
-			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadMusic);
+			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadSubTitles, loadMusic);
 
 		switch (result)
 		{
@@ -169,6 +175,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataTitle = "Big Buck Bunny";
 				MediaElement.MetadataArtworkUrl = botImageUrl;
 				MediaElement.MetadataArtist = "Big Buck Bunny Album";
+				MediaElement.SubtitleUrl = string.Empty;
 				MediaElement.Source =
 					MediaSource.FromUri(StreamingVideoUrls.BuckBunny);
 				return;
@@ -177,6 +184,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataArtist = "HLS Album";
 				MediaElement.MetadataArtworkUrl = botImageUrl;
 				MediaElement.MetadataTitle = "HLS Title";
+				MediaElement.SubtitleUrl = string.Empty;
 				MediaElement.Source = MediaSource.FromUri(hlsStreamTestUrl);
 				return;
 
@@ -184,6 +192,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataArtworkUrl = string.Empty;
 				MediaElement.MetadataTitle = string.Empty;
 				MediaElement.MetadataArtist = string.Empty;
+				MediaElement.SubtitleUrl = string.Empty;
 				MediaElement.Source = null;
 				return;
 
@@ -191,7 +200,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataArtworkUrl = botImageUrl;
 				MediaElement.MetadataTitle = "Local Resource Title";
 				MediaElement.MetadataArtist = "Local Resource Album";
-
+				MediaElement.SubtitleUrl = string.Empty;
 				if (DeviceInfo.Platform == DevicePlatform.MacCatalyst
 					|| DeviceInfo.Platform == DevicePlatform.iOS)
 				{
@@ -205,6 +214,24 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				{
 					MediaElement.Source = MediaSource.FromResource("WindowsVideo.mp4");
 				}
+				return;
+
+			case loadSubTitles:
+				SrtParser srtParser = new();
+				MediaElement.CustomSubtitleParser = srtParser;
+				if (DevicePlatform.iOS == DeviceInfo.Platform || DevicePlatform.macOS == DeviceInfo.Platform)
+				{
+					MediaElement.SubtitleFont = @"PlaywriteSK-Regular.ttf#Playwrite SK";
+					MediaElement.SubtitleFontSize = 12;
+				}
+				else
+				{
+					MediaElement.SubtitleFont = @"Poppins-Regular.ttf#Poppins";
+					MediaElement.SubtitleFontSize = 16;
+				}
+
+				MediaElement.SubtitleUrl = "https://raw.githubusercontent.com/ne0rrmatrix/SampleVideo/main/SRT/WindowsVideo.srt";
+				MediaElement.Source = MediaSource.FromResource("WindowsVideo.mp4");
 				return;
 
 			case loadMusic:
@@ -242,7 +269,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 		MediaElement.Aspect = (Aspect)aspectEnum;
 	}
-
 	void DisplayPopup(object sender, EventArgs e)
 	{
 		MediaElement.Pause();
@@ -275,4 +301,87 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			popupMediaElement.Stop();
 		};
 	}
+}
+
+/// <summary>
+/// Sample implementation of an SRT parser.
+/// </summary>
+partial class SrtParser : IParser
+{
+	static readonly Regex timecodePatternSRT = SRTRegex();
+
+	public List<SubtitleCue> ParseContent(string content)
+	{
+		var cues = new List<SubtitleCue>();
+		if (string.IsNullOrEmpty(content))
+		{
+			return cues;
+		}
+
+		var lines = content.Split(SubtitleParser.Separator, StringSplitOptions.RemoveEmptyEntries);
+
+		SubtitleCue? currentCue = null;
+		var textBuffer = new StringBuilder();
+
+		foreach (var line in lines)
+		{
+			if (int.TryParse(line, out _))
+			{
+				continue;
+			}
+
+			var match = timecodePatternSRT.Match(line);
+			if (match.Success)
+			{
+				if (currentCue is not null)
+				{
+					currentCue.Text = textBuffer.ToString().TrimEnd('\r', '\n');
+					cues.Add(currentCue);
+					textBuffer.Clear();
+				}
+
+				currentCue = CreateCue(match);
+			}
+			else if (currentCue is not null && !string.IsNullOrWhiteSpace(line))
+			{
+				textBuffer.AppendLine(line.Trim().TrimEnd('\r', '\n'));
+			}
+		}
+
+		if (currentCue is not null)
+		{
+			currentCue.Text = textBuffer.ToString().TrimEnd('\r', '\n');
+			cues.Add(currentCue);
+		}
+		if (cues.Count == 0)
+		{
+			throw new FormatException("Invalid SRT format");
+		}
+		return cues;
+	}
+
+	static SubtitleCue CreateCue(Match match)
+	{
+		var StartTime = ParseTimecode(match.Groups[1].Value);
+		var EndTime = ParseTimecode(match.Groups[2].Value);
+		var Text = string.Empty;
+		if (StartTime > EndTime)
+		{
+			throw new FormatException("Start time cannot be greater than end time.");
+		}
+		return new SubtitleCue
+		{
+			StartTime = StartTime,
+			EndTime = EndTime,
+			Text = Text
+		};
+	}
+
+	static TimeSpan ParseTimecode(string timecode)
+	{
+		return TimeSpan.ParseExact(timecode, @"hh\:mm\:ss\,fff", CultureInfo.InvariantCulture);
+	}
+
+	[GeneratedRegex(@"(\d{2}\:\d{2}\:\d{2}\,\d{3}) --> (\d{2}\:\d{2}\:\d{2}\,\d{3})", RegexOptions.Compiled)]
+	private static partial Regex SRTRegex();
 }
