@@ -159,16 +159,6 @@ partial class CameraManager
 		{
 			processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new CameraException($"Unable to retrieve {nameof(ProcessCameraProvider)}"));
 
-			if (cameraProvider.AvailableCameras is null)
-			{
-				await cameraProvider.RefreshAvailableCameras(token);
-
-				if (cameraProvider.AvailableCameras is null)
-				{
-					throw new CameraException("Unable to refresh available cameras");
-				}
-			}
-
 			await StartUseCase(token);
 
 			cameraProviderTCS.SetResult();
@@ -201,22 +191,14 @@ partial class CameraManager
 		await StartCameraPreview(token);
 	}
 
-	protected virtual async partial Task PlatformStartCameraPreview(CancellationToken token)
+	protected virtual partial Task PlatformStartCameraPreview(CancellationToken token)
 	{
 		if (previewView is null || processCameraProvider is null || cameraPreview is null || imageCapture is null)
 		{
-			return;
+			return Task.CompletedTask;
 		}
 
-		if (cameraView.SelectedCamera is null)
-		{
-			if (cameraProvider.AvailableCameras is null)
-			{
-				await cameraProvider.RefreshAvailableCameras(token);
-			}
-
-			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
-		}
+		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
 		var cameraSelector = cameraView.SelectedCamera.CameraSelector ?? throw new CameraException($"Unable to retrieve {nameof(CameraSelector)}");
 
@@ -232,6 +214,7 @@ partial class CameraManager
 
 		IsInitialized = true;
 		OnLoaded.Invoke();
+		return Task.CompletedTask;
 	}
 
 	protected virtual partial void PlatformStopCameraPreview()
