@@ -252,6 +252,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		{
 			AndroidViewType = AndroidViewType.SurfaceView,
 			Source = MediaSource.FromResource("AppleVideo.mp4"),
+			MetadataArtworkUrl = botImageUrl,
 			HeightRequest = 600,
 			WidthRequest = 600,
 			ShouldAutoPlay = true,
@@ -274,7 +275,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		popup.Closed += (s, e) =>
 		{
 			popupMediaElement.Stop();
-			popupMediaElement.Handler?.DisconnectHandler();
 		};
 	}
 }
