@@ -22,6 +22,12 @@
     <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
 
+    <!-- WindowsAppSDK
+      We should keep this in sync with .NET MAUI https://github.com/dotnet/maui/blob/8ee00e00f603cd8a420a3467daddaf3935c8c587/Directory.Build.props#L142 
+      This will prevent transitive dependencies from causing conflicts when they're not aligned.
+    -->
+    <WindowsSdkPackageVersion>10.0.19041.44</WindowsSdkPackageVersion>
+
     <!-- https://learn.microsoft.com/dotnet/core/deploying/native-aot/?tabs=net8plus%2Cwindows -->
     <StripSymbols>false</StripSymbols>
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
