@@ -20,6 +20,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : Java.Lang.Object, IPlayerListener
 {
+	bool androidForegroundServiceEnabled;
 	const int bufferState = 2;
 	const int readyState = 3;
 	const int endedState = 4;
@@ -129,11 +130,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
 	/// <exception cref="NullReferenceException">Thrown when <see cref="Context"/> is <see langword="null"/> or when the platform view could not be created.</exception>
 	[MemberNotNull(nameof(Player), nameof(PlayerView), nameof(session))]
-	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView(AndroidViewType androidViewType)
+	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView(AndroidViewType androidViewType, bool androidForegroundServiceEnabled)
 	{
 		Player = new ExoPlayerBuilder(MauiContext.Context).Build() ?? throw new InvalidOperationException("Player cannot be null");
 		Player.AddListener(this);
-
+		this.androidForegroundServiceEnabled = androidForegroundServiceEnabled;
 		if (androidViewType is AndroidViewType.SurfaceView)
 		{
 			PlayerView = new PlayerView(MauiContext.Context)
@@ -352,7 +353,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			return;
 		}
 
-		if (connection is null)
+		if (connection is null && androidForegroundServiceEnabled)
 		{
 			StartService();
 		}
