@@ -139,27 +139,24 @@ public class AppBuilderExtensionsTests : BaseTest
 
 		MediaElementOptions.DefaultAndroidViewType.Should().Be(AndroidViewType.TextureView);
 	}
-	/*  Needs to be fixed! If it is run by itself it works, but when run with the rest of the tests it fails.
+
 	[Fact]
-	public void UseMauiCommunityToolkitMediaElement_ShouldSetAndroidServiceByDefaultToFalse()
+	public void UseMauiCommunityToolkitMediaElement_ShouldSetAndroidServiceByDefault()
 	{
-		MediaElementOptions.AndroidForegroundServiceEnabled.Should().Be(false);
 		var builder = MauiApp.CreateBuilder();
 		builder.UseMauiCommunityToolkitMediaElement();
-		MediaElementOptions.AndroidForegroundServiceEnabled.Should().Be(false);
+		MediaElementOptions.AndroidForegroundServiceEnabled.Should().Be(true);
 	}
-	*/
-	[Fact]
-	public void UseMauiCommunityToolkitMediaElement_ServiceCanBeEnabled()
-	{
-		MediaElementOptions.AndroidForegroundServiceEnabled.Should().Be(false);
 
+	[Fact]
+	public void UseMauiCommunityToolkitMediaElement_ServiceCanBeDisabled()
+	{
 		var builder = MauiApp.CreateBuilder();
 		builder.UseMauiCommunityToolkitMediaElement(static options =>
 		{
-			options.SetDefaultAndroidForegroundService(true);
+			options.SetDefaultAndroidForegroundService(false);
 		});
-		MediaElementOptions.AndroidForegroundServiceEnabled.Should().Be(true);
+		MediaElementOptions.AndroidForegroundServiceEnabled.Should().Be(false);
 	}
 }
 #pragma warning restore CA1416
