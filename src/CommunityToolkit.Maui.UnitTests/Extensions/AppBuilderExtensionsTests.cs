@@ -145,7 +145,7 @@ public class AppBuilderExtensionsTests : BaseTest
 	{
 		var builder = MauiApp.CreateBuilder();
 		builder.UseMauiCommunityToolkitMediaElement();
-		MediaElementOptions.AndroidForegroundServiceEnabled.Should().Be(true);
+		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(true);
 	}
 
 	[Fact]
@@ -156,7 +156,7 @@ public class AppBuilderExtensionsTests : BaseTest
 		{
 			options.SetDefaultAndroidForegroundService(false);
 		});
-		MediaElementOptions.AndroidForegroundServiceEnabled.Should().Be(false);
+		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(false);
 	}
 }
 #pragma warning restore CA1416
