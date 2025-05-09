@@ -3,9 +3,14 @@
 /// <summary>
 /// Construction options for MediaElement, for example, to create an Android SurfaceView or TextureView
 /// </summary>
-public class MediaElementOptions()
+public class MediaElementOptions
 {
 	readonly MauiAppBuilder? builder;
+	
+	internal MediaElementOptions()
+	{
+		
+	}
 
 	internal MediaElementOptions(in MauiAppBuilder builder) : this()
 	{

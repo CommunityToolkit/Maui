@@ -1,0 +1,419 @@
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.UnitTests.Mocks;
+using CommunityToolkit.Maui.UnitTests.Services;
+using CommunityToolkit.Maui.Views;
+using Microsoft.Maui.Controls.Shapes;
+using Xunit;
+
+namespace CommunityToolkit.Maui.UnitTests.Extensions;
+
+public class PopupExtensionsTests : BaseHandlerTest
+{
+	readonly INavigation navigation;
+
+	public PopupExtensionsTests()
+	{
+		var page = new MockPage(new MockPageViewModel());
+		Assert.NotNull(Application.Current);
+
+		Application.Current.Windows[0].Page = page;
+		navigation = page.Navigation;
+	}
+
+	[Fact]
+	public void ShowPopupAsync_WithPopupType_ShowsPopup()
+	{
+		// Arrange
+		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+
+		// Act
+		navigation.ShowPopup(selfClosingPopup);
+
+		// Assert
+		Assert.Single(navigation.ModalStack);
+		Assert.IsType<PopupPage>(navigation.ModalStack[0]);
+	}
+	
+	[Fact]
+	public void ShowPopupAsync_WithViewType_ShowsPopup()
+	{
+		// Arrange
+		var view = new Grid();
+
+		// Act
+		navigation.ShowPopup(view);
+
+		// Assert
+		Assert.Single(navigation.ModalStack);
+		Assert.IsType<PopupPage>(navigation.ModalStack[0]);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_AwaitingShowPopupAsync_EnsurePreviousPopupClosed()
+	{
+		// Arrange
+		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+
+		// Act
+		await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, CancellationToken.None);
+		await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, CancellationToken.None);
+
+		// Assert
+		Assert.Empty(navigation.ModalStack);
+	}
+	
+	[Fact]
+	public void ShowPopup_NavigationModalStackCountIncreases()
+	{
+		// Arrange
+		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+		Assert.Empty(navigation.ModalStack);
+
+		// Act
+		navigation.ShowPopup(selfClosingPopup, PopupOptions.Empty);
+
+		// Assert
+		Assert.Single(navigation.ModalStack);
+	}
+	
+	[Fact]
+	public void ShowPopupWithView_NavigationModalStackCountIncreases()
+	{
+		// Arrange
+		var view = new Grid();
+		Assert.Empty(navigation.ModalStack);
+
+		// Act
+		navigation.ShowPopup(view, PopupOptions.Empty);
+
+		// Assert
+		Assert.Single(navigation.ModalStack);
+	}
+	
+	[Fact]
+	public void ShowPopup_MultiplePopupsDisplayed()
+	{
+		// Arrange
+		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+
+		// Act
+		navigation.ShowPopup(selfClosingPopup, PopupOptions.Empty);
+		navigation.ShowPopup(selfClosingPopup, PopupOptions.Empty);
+
+		// Assert
+		Assert.Equal(2, navigation.ModalStack.Count);
+	}
+	
+	[Fact]
+	public void ShowPopupView_MultiplePopupsDisplayed()
+	{
+		// Arrange
+		var view = new Grid();
+
+		// Act
+		navigation.ShowPopup(view, PopupOptions.Empty);
+		navigation.ShowPopup(view, PopupOptions.Empty);
+
+		// Assert
+		Assert.Equal(2, navigation.ModalStack.Count);
+	}
+
+	[Fact]
+	public void ShowPopupAsync_WithCustomOptions_AppliesOptions()
+	{
+		// Arrange
+		var onTappingOutsideOfPopup = () => { };
+
+		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var options = new PopupOptions
+		{
+			PageOverlayColor = Colors.Red,
+			CanBeDismissedByTappingOutsideOfPopup = false,
+			Shape = new Ellipse(),
+			OnTappingOutsideOfPopup = onTappingOutsideOfPopup
+		};
+
+		// Act
+		navigation.ShowPopup(selfClosingPopup, options);
+
+		var popupPage = (PopupPage)navigation.ModalStack[0];
+		var popupPageContent = popupPage.Content;
+		var border = (Border)popupPageContent.Children[0];
+		var popup = border.Content;
+
+		// Assert
+		Assert.NotNull(popup);
+
+		Assert.Equal(options.PageOverlayColor, popupPage.BackgroundColor);
+		Assert.Equal(popup.HorizontalOptions, border.HorizontalOptions);
+		Assert.Equal(popup.VerticalOptions, border.VerticalOptions);
+		Assert.Equal(options.Shape, border.StrokeShape);
+		Assert.Equal(popup.Margin, border.Margin);
+		Assert.Equal(border.Padding, border.Padding);
+		Assert.Equal(popup.BindingContext, border.BindingContext);
+		Assert.Equal(popupPageContent.BindingContext, border.BindingContext);
+	}
+	
+	[Fact]
+	public void ShowPopupAsyncWithView_WithCustomOptions_AppliesOptions()
+	{
+		// Arrange
+		var onTappingOutsideOfPopup = () => { };
+
+		var view = new Grid
+		{
+			HorizontalOptions = LayoutOptions.End,
+			VerticalOptions = LayoutOptions.Start,
+		};
+		var options = new PopupOptions
+		{
+			PageOverlayColor = Colors.Red,
+			CanBeDismissedByTappingOutsideOfPopup = false,
+			Shape = new Ellipse(),
+			OnTappingOutsideOfPopup = onTappingOutsideOfPopup
+		};
+
+		// Act
+		navigation.ShowPopup(view, options);
+
+		var popupPage = (PopupPage)navigation.ModalStack[0];
+		var popupPageContent = popupPage.Content;
+		var border = (Border)popupPageContent.Children[0];
+		var popup = (Popup)(border.Content ?? throw new InvalidCastException());
+
+		// Assert
+		Assert.NotNull(popup);
+
+		Assert.Equal(view.HorizontalOptions, border.HorizontalOptions);
+		Assert.Equal(view.VerticalOptions, border.VerticalOptions);
+		Assert.Equal(view.Margin, border.Margin);
+		Assert.Equal(view.Padding, border.Padding);
+		Assert.Equal(popup.HorizontalOptions, border.HorizontalOptions);
+		Assert.Equal(popup.VerticalOptions, border.VerticalOptions);
+		Assert.Equal(popup.Margin, border.Margin);
+		Assert.Equal(popup.Padding, border.Padding);
+		Assert.Equal(popup.BindingContext, border.BindingContext);
+		Assert.Equal(options.Shape, border.StrokeShape);
+		Assert.Equal(options.PageOverlayColor, popupPage.BackgroundColor);
+		Assert.Equal(popupPageContent.BindingContext, border.BindingContext);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_CancellationTokenExpired()
+	{
+		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		// Ensure CancellationToken has expired
+		await Task.Delay(100, CancellationToken.None);
+
+		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ShowPopupAsync(selfClosingPopup, PopupOptions.Empty, cts.Token));
+	}
+	
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsyncWithView_CancellationTokenExpired()
+	{
+		var view = new Grid();
+
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		// Ensure CancellationToken has expired
+		await Task.Delay(100, CancellationToken.None);
+
+		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ShowPopupAsync(view, PopupOptions.Empty, cts.Token));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_CancellationTokenCanceled()
+	{
+		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		// Ensure CancellationToken has expired
+		await cts.CancelAsync();
+
+		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ShowPopupAsync(selfClosingPopup, PopupOptions.Empty, cts.Token));
+	}
+	
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsyncWithView_CancellationTokenCanceled()
+	{
+		var view = new Grid();
+
+		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+
+		// Ensure CancellationToken has expired
+		await cts.CancelAsync();
+
+		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ShowPopupAsync(view, PopupOptions.Empty, cts.Token));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Medium)]
+	public async Task ShowPopupAsync_ShouldValidateProperBindingContext()
+	{
+		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var popupInstance = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
+		var popupViewModel = ServiceProvider.GetRequiredService<MockPageViewModel>();
+
+		await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+
+		Assert.Same(popupInstance.BindingContext, popupViewModel);
+	}
+	
+	[Fact(Timeout = (int)TestDuration.Medium)]
+	public async Task ShowPopupAsyncWithView_ShouldValidateProperBindingContext()
+	{
+		var view = new Grid();
+		var popupInstance = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
+		var popupViewModel = ServiceProvider.GetRequiredService<MockPageViewModel>();
+
+		var showPopupTask = navigation.ShowPopupAsync<object?>(view, PopupOptions.Empty, TestContext.Current.CancellationToken);
+		
+		var popupPage = (PopupPage)navigation.ModalStack[0];
+		await popupPage.Close(new PopupResult<object?>(null, false), TestContext.Current.CancellationToken);
+		
+		await showPopupTask;
+
+		Assert.Same(popupInstance.BindingContext, popupViewModel);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Medium)]
+	public async Task ShowPopupAsync_ShouldReturnResultOnceClosed()
+	{
+		var mockPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
+		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+
+		var result = await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, CancellationToken.None);
+
+		Assert.Same(mockPopup.Result, result.Result);
+		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+	}
+	
+	[Fact(Timeout = (int)TestDuration.Medium)]
+	public async Task ShowPopupAsyncWithView_ShouldReturnResultOnceClosed()
+	{
+		const int popupResultValue = 2;
+		
+		var view = new Grid();
+		var expectedPopupResult = new PopupResult<int>(popupResultValue, false);
+
+		var showPopupTask = navigation.ShowPopupAsync<int>(view, PopupOptions.Empty, CancellationToken.None);
+
+		var popupPage = (PopupPage)navigation.ModalStack[0];
+		await popupPage.Close(expectedPopupResult, TestContext.Current.CancellationToken);
+		
+		var actualPopupResult = await showPopupTask;
+
+		Assert.Same(expectedPopupResult, actualPopupResult);
+		Assert.False(expectedPopupResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.Equal(popupResultValue, expectedPopupResult.Result);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_ShouldThrowArgumentNullException_WhenViewIsNull()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		await Assert.ThrowsAsync<ArgumentNullException>(() => navigation.ShowPopupAsync(null, PopupOptions.Empty, CancellationToken.None));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+	
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_ShouldThrowArgumentNullException_WhenNavigationIsNull()
+	{
+		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+		
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		await Assert.ThrowsAsync<ArgumentNullException>(() => PopupExtensions.ShowPopupAsync((INavigation?)null, selfClosingPopup, PopupOptions.Empty, CancellationToken.None));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_ShouldReturnDefaultResult_WhenPopupIsClosedWithoutResult()
+	{
+		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
+
+		var result = await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, CancellationToken.None);
+
+		Assert.Equal(selfClosingPopup.Result, result.Result);
+		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+	}
+	
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_ReferenceTypeShouldReturnResult_WhenPopupIsClosedByTappingOutsidePopup()
+	{
+		var popupClosedTCS = new TaskCompletionSource<IPopupResult>();
+
+		var showPopupTask = navigation.ShowPopupAsync<bool?>(new Popup<bool>(), token: CancellationToken.None);
+		var popupPage = (PopupPage)navigation.ModalStack[0];
+		popupPage.PopupClosed += HandlePopupClosed;
+		
+		var tapGestureRecognizer = (TapGestureRecognizer)popupPage.Content.GestureRecognizers[0];
+		tapGestureRecognizer.Command?.Execute(null);
+		
+		var popupClosedResult = await popupClosedTCS.Task;
+		var showPopupResult = await showPopupTask;
+		
+		Assert.True(popupClosedResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.Null(showPopupResult.Result);
+		Assert.True(showPopupResult.WasDismissedByTappingOutsideOfPopup);
+
+		void HandlePopupClosed(object? sender, IPopupResult e)
+		{
+			popupClosedTCS.SetResult(e);
+		}
+	}
+	
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_NullableValueTypeShouldReturnResult_WhenPopupIsClosedByTappingOutsidePopup()
+	{
+		var popupClosedTCS = new TaskCompletionSource<IPopupResult>();
+
+		var showPopupTask = navigation.ShowPopupAsync<bool?>(new Popup<bool>(), token: CancellationToken.None);
+		var popupPage = (PopupPage)navigation.ModalStack[0];
+		popupPage.PopupClosed += HandlePopupClosed;
+		
+		var tapGestureRecognizer = (TapGestureRecognizer)popupPage.Content.GestureRecognizers[0];
+		tapGestureRecognizer.Command?.Execute(null);
+		
+		var popupClosedResult = await popupClosedTCS.Task;
+		var showPopupResult = await showPopupTask;
+		
+		Assert.True(popupClosedResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.Null(showPopupResult.Result);
+		Assert.True(showPopupResult.WasDismissedByTappingOutsideOfPopup);
+
+		void HandlePopupClosed(object? sender, IPopupResult e)
+		{
+			popupClosedTCS.SetResult(e);
+		}
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_ValueTypeShouldReturnResult_WhenPopupIsClosedByTappingOutsidePopup()
+	{
+		var popupClosedTCS = new TaskCompletionSource<IPopupResult>();
+
+		var showPopupTask = navigation.ShowPopupAsync<bool>(new Popup<bool>(), token: CancellationToken.None);
+		var popupPage = (PopupPage)navigation.ModalStack[0];
+		popupPage.PopupClosed += HandlePopupClosed;
+		
+		var tapGestureRecognizer = (TapGestureRecognizer)popupPage.Content.GestureRecognizers[0];
+		tapGestureRecognizer.Command?.Execute(null);
+		
+		var popupClosedResult = await popupClosedTCS.Task;
+		var showPopupResult = await showPopupTask;
+		
+		Assert.True(popupClosedResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(showPopupResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.ThrowsAny<PopupResultException>(() => (bool?)showPopupResult.Result);
+		Assert.ThrowsAny<InvalidCastException>(() => (bool?)showPopupResult.Result);
+
+		void HandlePopupClosed(object? sender, IPopupResult e)
+		{
+			popupClosedTCS.SetResult(e);
+		}
+	}
+}

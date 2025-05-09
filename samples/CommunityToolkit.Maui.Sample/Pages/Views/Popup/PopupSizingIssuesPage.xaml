@@ -3,7 +3,7 @@
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
                 xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Views.PopupSizingIssuesPage"
-                Title="MultiplePopupPage"
+                Title="Popup Sizing Issues Page"
                 x:TypeArguments="viewModels:PopupSizingIssuesViewModel"
                 x:DataType="viewModels:PopupSizingIssuesViewModel"
                 x:Name="Self">
@@ -22,7 +22,7 @@
                 <Label Text="Margin" />
                 <Entry Text="{Binding Margin}" />
 
-                <Button Text="Show Popup" Command="{Binding ShowPopupCommand}" CommandParameter="{Binding Source={x:Reference Self}}" />
+                <Button Text="Show Popup" Command="{Binding ShowPopupCommand}"/>
             </VerticalStackLayout>
         </ScrollView>
     </ContentPage.Content>

@@ -7,11 +7,9 @@
            Style="{DynamicResource DynamicPopupStyle}">
     <mct:Popup.Resources>
         <Style TargetType="{x:Type popups:DynamicStylePopup}">
-            <Setter Property="Size" Value="100,200" />
-            <Setter Property="Color" Value="Green" />
-            <Setter Property="HorizontalOptions" Value="Center" />
-            <Setter Property="VerticalOptions" Value="Start" />
-            <Setter Property="CanBeDismissedByTappingOutsideOfPopup" Value="True" />
+            <Setter Property="WidthRequest" Value="100" />
+            <Setter Property="HeightRequest" Value="200" />
+            <Setter Property="BackgroundColor" Value="Green" />
         </Style>
     </mct:Popup.Resources>
     

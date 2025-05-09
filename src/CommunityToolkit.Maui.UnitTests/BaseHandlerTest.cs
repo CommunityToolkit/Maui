@@ -1,5 +1,9 @@
 ﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.UnitTests.Mocks;
+using CommunityToolkit.Maui.UnitTests.Services;
+using FluentAssertions;
+using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
@@ -12,6 +16,22 @@ public abstract class BaseHandlerTest : BaseTest
 	}
 
 	protected IServiceProvider ServiceProvider { get; }
+
+	protected override async ValueTask DisposeAsyncCore()
+	{
+		await base.DisposeAsyncCore();
+
+		#region Cleanup Popup Tests
+
+		Application.Current.Should().NotBeNull();
+		var navigation = Application.Current.Windows[0].Page?.Navigation ?? throw new InvalidOperationException("Unable to locate Navigation Stack");
+
+		while (navigation.ModalStack.Any())
+		{
+			await navigation.PopModalAsync();
+		}
+		#endregion
+	}
 
 	protected static TElementHandler CreateElementHandler<TElementHandler>(IElement view, bool doesRequireMauiContext = true)
 		where TElementHandler : IElementHandler, new()
@@ -43,9 +63,11 @@ public abstract class BaseHandlerTest : BaseTest
 
 	static void InitializeServicesAndSetMockApplication(out IServiceProvider serviceProvider)
 	{
+#pragma warning disable CA1416 // Validate platform compatibility
 		var appBuilder = MauiApp.CreateBuilder()
 			.UseMauiCommunityToolkit()
 			.UseMauiApp<MockApplication>();
+#pragma warning restore CA1416 // Validate platform compatibility
 
 		#region Register Services for CameraTests
 
@@ -58,15 +80,14 @@ public abstract class BaseHandlerTest : BaseTest
 		var mockPageViewModel = new MockPageViewModel();
 		var mockPopup = new MockSelfClosingPopup(mockPageViewModel, new());
 
-		PopupService.ClearViewModelToViewMappings();
-		PopupService.AddTransientPopup(mockPopup, mockPageViewModel, appBuilder.Services);
 		var page = new ContentPage();
+		PopupService.AddPopup(mockPopup, mockPageViewModel, appBuilder.Services, ServiceLifetime.Transient);
 		#endregion
 
 		var mauiApp = appBuilder.Build();
 
 		var application = (MockApplication)mauiApp.Services.GetRequiredService<IApplication>();
-		application.AddWindow(new Window() { Page = page });
+		application.AddWindow(new Window { Page = page });
 		serviceProvider = mauiApp.Services;
 
 		IPlatformApplication.Current = application;
@@ -74,7 +95,6 @@ public abstract class BaseHandlerTest : BaseTest
 		application.Handler = new ApplicationHandlerStub();
 		application.Handler.SetMauiContext(new HandlersContextStub(serviceProvider));
 
-		CreateElementHandler<MockPopupHandler>(mockPopup);
 		CreateViewHandler<MockPageHandler>(page);
 	}
 }

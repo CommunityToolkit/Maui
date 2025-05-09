@@ -35,10 +35,10 @@
     <NoWarn>CsWinRT1028</NoWarn>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)' == 'Release' 
-                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'tizen'
-                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'android'
-                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'
+                              AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'tizen'
+                              AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'android'
+                              AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
     <!-- Ahead-of-time compilation is not yet supported net8.0-tizen -->
     <!-- Cross-OS native compilation is not supported net8.0-android -->
     <!-- Only iOS + MacCatalyst support AOT in .NET 9 -->
