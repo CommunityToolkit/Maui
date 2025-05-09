@@ -42,6 +42,11 @@ partial class PopupPage : ContentPage
 		// Only set the content if the parent constructor hasn't set the content already; don't override content if it already exists
 		base.Content ??= new PopupPageLayout(popup, popupOptions);
 
+		if (Shell.Current is Shell shell)
+		{
+			Shell.SetPresentationMode(shell, PresentationMode.ModalNotAnimated);
+		}
+
 		tapOutsideOfPopupCommand = new Command(async () =>
 		{
 			popupOptions.OnTappingOutsideOfPopup?.Invoke();

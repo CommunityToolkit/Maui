@@ -20,11 +20,34 @@ public interface IPopupService
 	/// Opens a popup with the specified options.
 	/// </summary>
 	/// <typeparam name="T">Supports both Popup Type or Popup ViewModel Type</typeparam>
+	/// <param name="shell">Current <see cref="Shell"/></param>
+	/// <param name="options"><see cref="IPopupOptions"/></param>
+	/// <param name="shellParameters"><see cref="IPopupOptions"/></param>
+	/// <returns><see cref="PopupResult"/></returns>
+	void ShowPopup<T>(Shell shell, IPopupOptions? options = null, IDictionary<string, object>? shellParameters = null)
+		where T : notnull;
+
+	/// <summary>
+	/// Opens a popup with the specified options.
+	/// </summary>
+	/// <typeparam name="T">Supports both Popup Type or Popup ViewModel Type</typeparam>
 	/// <param name="navigation">The parent of the popup</param>
 	/// <param name="options"><see cref="IPopupOptions"/></param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="PopupResult"/></returns>
 	Task<IPopupResult> ShowPopupAsync<T>(INavigation navigation, IPopupOptions? options = null, CancellationToken cancellationToken = default)
+		where T : notnull;
+
+	/// <summary>
+	/// Opens a popup with the specified options.
+	/// </summary>
+	/// <typeparam name="T">Supports both Popup Type or Popup ViewModel Type</typeparam>
+	/// <param name="shell">Current <see cref="Shell"/></param>
+	/// <param name="options"><see cref="IPopupOptions"/></param>
+	/// <param name="shellParameters"><see cref="IPopupOptions"/></param>
+	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+	/// <returns><see cref="PopupResult"/></returns>
+	Task<IPopupResult> ShowPopupAsync<T>(Shell shell, IPopupOptions? options, IDictionary<string, object>? shellParameters = null, CancellationToken cancellationToken = default)
 		where T : notnull;
 
 	/// <summary>
@@ -37,6 +60,19 @@ public interface IPopupService
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="PopupResult"/></returns>
 	Task<IPopupResult<TResult>> ShowPopupAsync<T, TResult>(INavigation navigation, IPopupOptions? options = null, CancellationToken cancellationToken = default)
+		where T : notnull;
+
+	/// <summary>
+	/// Opens a popup with the specified options.
+	/// </summary>
+	/// <typeparam name="T">Supports both Popup Type or Popup ViewModel Type</typeparam>
+	/// <typeparam name="TResult">Popup Result Type</typeparam>
+	/// <param name="shell">Current <see cref="Shell"/></param>
+	/// <param name="options"><see cref="IPopupOptions"/></param>
+	/// <param name="shellParameters"><see cref="IPopupOptions"/></param>
+	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+	/// <returns><see cref="PopupResult"/></returns>
+	Task<IPopupResult<TResult>> ShowPopupAsync<T, TResult>(Shell shell, IPopupOptions? options = null, IDictionary<string, object>? shellParameters = null, CancellationToken cancellationToken = default)
 		where T : notnull;
 
 	/// <summary>

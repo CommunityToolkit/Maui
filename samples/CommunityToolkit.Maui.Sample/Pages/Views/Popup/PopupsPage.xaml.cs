@@ -19,14 +19,20 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 
 	async void HandleSimplePopupButtonClicked(object sender, EventArgs e)
 	{
-		await popupService.ShowPopupAsync<SimplePopup>(Navigation, new PopupOptions
+		var queryAttributes = new Dictionary<string, object>
 		{
-			Shape = new RoundRectangle
+			["DescriptionLabel"] = "This is a popup with a .NET MAUI View being rendered. "
+		};
+
+		await popupService.ShowPopupAsync<SimplePopup>(Shell.Current, new PopupOptions
 			{
-				CornerRadius = new CornerRadius(4),
-				Stroke = Colors.White
-			},
-		}, CancellationToken.None);
+				Shape = new RoundRectangle
+				{
+					CornerRadius = new CornerRadius(4),
+					Stroke = Colors.White
+				}
+			}, queryAttributes
+			, CancellationToken.None);
 	}
 
 	async void HandleButtonPopupButtonClicked(object sender, EventArgs e)
