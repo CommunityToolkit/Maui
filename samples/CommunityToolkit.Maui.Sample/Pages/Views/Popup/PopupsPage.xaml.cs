@@ -21,7 +21,7 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 	{
 		var queryAttributes = new Dictionary<string, object>
 		{
-			["DescriptionLabel"] = "This is a popup with a .NET MAUI View being rendered. "
+			["DescriptionLabel"] = "This is a popup where this text is being passed in using IQueryAttributable"
 		};
 
 		await popupService.ShowPopupAsync<SimplePopup>(Shell.Current, new PopupOptions
