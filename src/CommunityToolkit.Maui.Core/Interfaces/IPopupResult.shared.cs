@@ -1,7 +1,7 @@
 ﻿namespace CommunityToolkit.Maui.Core;
 
 /// <inheritdoc/>
-public interface IPopupResult<T> : IPopupResult
+public interface IPopupResult<out T> : IPopupResult
 {
 	/// <summary>
 	/// PopupResult
