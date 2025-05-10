@@ -173,7 +173,15 @@ public static class PopupExtensions
 		
 		try
 		{
-			await shell.GoToAsync(popupPageRoute, shellParameters);
+			if (shellParameters is null)
+			{
+				await shell.GoToAsync(popupPageRoute).WaitAsync(token);
+			}
+			else
+			{
+				await shell.GoToAsync(popupPageRoute, shellParameters).WaitAsync(token);
+			}
+			
 			return await taskCompletionSource.Task.WaitAsync(token);
 		}
 		finally
