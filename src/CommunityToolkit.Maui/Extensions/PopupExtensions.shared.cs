@@ -34,7 +34,7 @@ public static class PopupExtensions
 		ArgumentNullException.ThrowIfNull(navigation);
 		ArgumentNullException.ThrowIfNull(view);
 
-		var popupPage = new PopupPage(view, options ?? PopupOptions.Empty);
+		var popupPage = new PopupPage(view, options ?? PopupOptions.Empty, null);
 
 		await navigation.PushModalAsync(popupPage, false);
 	}
@@ -133,7 +133,7 @@ public static class PopupExtensions
 
 		TaskCompletionSource<IPopupResult> taskCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-		var popupPage = new PopupPage(view, options ?? PopupOptions.Empty);
+		var popupPage = new PopupPage(view, options ?? PopupOptions.Empty, null);
 		popupPage.PopupClosed += HandlePopupClosed;
 
 		await navigation.PushModalAsync(popupPage, false).WaitAsync(token);
@@ -166,7 +166,7 @@ public static class PopupExtensions
 
 		TaskCompletionSource<IPopupResult> taskCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-		var popupPage = new PopupPage(view, options ?? PopupOptions.Empty);
+		var popupPage = new PopupPage(view, options ?? PopupOptions.Empty, shellParameters);
 		popupPage.PopupClosed += HandlePopupClosed;
 
 		Routing.RegisterRoute(popupPageRoute, new PopupPageRouteFactory(popupPage));
