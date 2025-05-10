@@ -514,6 +514,46 @@ public class PopupPageTests : BaseHandlerTest
 		Assert.Equal(expectedBackgroundColor, view.BackgroundColor);
 		Assert.NotEqual(expectedBackgroundColor, initialBackgroundColor);
 	}
+	
+	[Fact]
+	public void PopupPageT_ShellParametersShouldBePassedToViewWithIQueryAttributable()
+	{
+		// Arrange
+		var view = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
+		var initialBackgroundColor = view.BackgroundColor;
+		var expectedBackgroundColor = Colors.Red;
+
+		// Act
+		var popupPage = new PopupPage<object?>(view, PopupOptions.Empty, new Dictionary<string, object>
+		{
+			{ nameof(ViewWithIQueryAttributable.BackgroundColor), expectedBackgroundColor },
+		});
+
+		// Assert
+		Assert.Null(initialBackgroundColor);
+		Assert.Equal(expectedBackgroundColor, view.BackgroundColor);
+		Assert.NotEqual(expectedBackgroundColor, initialBackgroundColor);
+	}
+	
+	[Fact]
+	public void PopupPageT_ShellParametersShouldBePassedToPopupWithIQueryAttributable()
+	{
+		// Arrange
+		var mockPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
+		var initialBackgroundColor = mockPopup.BackgroundColor;
+		var expectedBackgroundColor = Colors.Red;
+
+		// Act
+		var popupPage = new PopupPage<object?>(mockPopup, PopupOptions.Empty, new Dictionary<string, object>
+		{
+			{ nameof(ViewWithIQueryAttributable.BackgroundColor), expectedBackgroundColor },
+		});
+
+		// Assert
+		Assert.Equal(MockSelfClosingPopup.DefaultBackgroundColor, initialBackgroundColor);
+		Assert.Equal(expectedBackgroundColor, mockPopup.BackgroundColor);
+		Assert.NotEqual(expectedBackgroundColor, initialBackgroundColor);
+	}
 
 	// Helper class for testing protected methods
 	sealed class TestablePopupPage(View view, IPopupOptions popupOptions) : PopupPage(view, popupOptions, null)

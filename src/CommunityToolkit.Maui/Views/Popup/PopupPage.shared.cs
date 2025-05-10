@@ -8,12 +8,16 @@ using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Views;
 
-sealed partial class PopupPage<T>(Popup<T> popup, IPopupOptions popupOptions, IDictionary<string,object>? shellParameters) 
+sealed partial class PopupPage<T>(Popup<T> popup, IPopupOptions popupOptions, IDictionary<string, object>? shellParameters)
 	: PopupPage(popup, popupOptions, shellParameters)
 {
 	public PopupPage(View view, IPopupOptions popupOptions, IDictionary<string,object>? shellParameters)
 		: this(view as Popup<T> ?? CreatePopupFromView<Popup<T>>(view), popupOptions, shellParameters)
 	{
+		if (view is IQueryAttributable queryAttributableView && shellParameters is not null)
+		{
+			queryAttributableView.ApplyQueryAttributes(shellParameters);
+		}
 	}
 
 	public Task Close(PopupResult<T> result, CancellationToken token = default) => base.Close(result, token);
