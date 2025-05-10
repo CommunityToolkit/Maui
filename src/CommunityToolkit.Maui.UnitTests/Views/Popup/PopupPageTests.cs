@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.UnitTests.Extensions;
+using CommunityToolkit.Maui.UnitTests.Services;
 using CommunityToolkit.Maui.Views;
 using FluentAssertions;
 using Microsoft.Maui.Controls.PlatformConfiguration;
@@ -22,7 +24,7 @@ public class PopupPageTests : BaseHandlerTest
 
 		// Act
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Action act = () => new PopupPage(null, popupOptions);
+		Action act = () => new PopupPage(null, popupOptions, null);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
 		// Assert
@@ -38,7 +40,7 @@ public class PopupPageTests : BaseHandlerTest
 
 		// Act
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Action act = () => new PopupPage(view, null);
+		Action act = () => new PopupPage(view, null, null);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
 		// Assert
@@ -51,7 +53,7 @@ public class PopupPageTests : BaseHandlerTest
 		// Arrange
 		var view = new ContentView();
 		var popupOptions = new MockPopupOptions();
-		var popupPage = new PopupPage<string>(view, popupOptions);
+		var popupPage = new PopupPage<string>(view, popupOptions, null);
 
 		// Act / Assert
 		await Assert.ThrowsAsync<PopupNotFoundException>(async () => await popupPage.Close(new PopupResult(false), CancellationToken.None));
@@ -65,7 +67,7 @@ public class PopupPageTests : BaseHandlerTest
 		var tcs = new TaskCompletionSource<IPopupResult>();
 		var view = new ContentView();
 		var popupOptions = new MockPopupOptions();
-		var popupPage = new PopupPage(view, popupOptions);
+		var popupPage = new PopupPage(view, popupOptions, null);
 		var expectedResult = new PopupResult(false);
 
 		popupPage.PopupClosed += HandlePopupClosed;
@@ -102,13 +104,13 @@ public class PopupPageTests : BaseHandlerTest
 		{
 			throw new InvalidOperationException("Failed to locate main page");
 		}
-		
+
 		// Act
 		mainPage.Navigation.ShowPopup(view);
 		popupPage = mainPage.Navigation.ModalStack.OfType<PopupPage>().Single();
-		
+
 		await cts.CancelAsync();
-		
+
 		// Assert
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => popupPage.Close(result, cts.Token));
 		Assert.Single(mainPage.Navigation.ModalStack.OfType<PopupPage>());
@@ -122,7 +124,7 @@ public class PopupPageTests : BaseHandlerTest
 
 		// Act
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Action act = () => new PopupPage<string>(null, popupOptions);
+		Action act = () => new PopupPage<string>(null, popupOptions, null);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
 		// Assert
@@ -137,7 +139,7 @@ public class PopupPageTests : BaseHandlerTest
 
 		// Act
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Action act = () => new PopupPage<string>(view, null);
+		Action act = () => new PopupPage<string>(view, null, null);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
 		// Assert
@@ -151,7 +153,7 @@ public class PopupPageTests : BaseHandlerTest
 		var view = new ContentView();
 		var popupOptions = new MockPopupOptions();
 		var taskCompletionSource = new TaskCompletionSource<PopupResult<string>>();
-		var popupPage = new PopupPage<string>(view, popupOptions);
+		var popupPage = new PopupPage<string>(view, popupOptions, null);
 		var expectedResult = new PopupResult<string>("Test", false);
 
 		popupPage.PopupClosed += HandlePopupClosed;
@@ -182,7 +184,7 @@ public class PopupPageTests : BaseHandlerTest
 		// Arrange
 		var view = new ContentView();
 		var popupOptions = new MockPopupOptions();
-		var popupPage = new PopupPage<string>(view, popupOptions);
+		var popupPage = new PopupPage<string>(view, popupOptions, null);
 
 		// Act
 		if (Application.Current?.Windows[0].Page?.Navigation is not INavigation navigation)
@@ -204,7 +206,7 @@ public class PopupPageTests : BaseHandlerTest
 		// Arrange
 		var view = new ContentView();
 		var popupOptions = new MockPopupOptions();
-		var popupPage = new PopupPage<string>(view, popupOptions);
+		var popupPage = new PopupPage<string>(view, popupOptions, null);
 		var result = new PopupResult<string>("Test", false);
 		var cts = new CancellationTokenSource();
 		cts.Cancel();
@@ -220,20 +222,23 @@ public class PopupPageTests : BaseHandlerTest
 	public void Constructor_WithViewAndPopupOptions_SetsCorrectProperties()
 	{
 		// Arrange
-		var view = new Label { Text = "Test Popup Content" };
-		var popupOptions = new MockPopupOptions
+		var view = new Label
 		{
-			CanBeDismissedByTappingOutsideOfPopup = true,
-			PageOverlayColor = Colors.Red,
+			Text = "Test Popup Content",
 			Margin = new Thickness(10),
 			Padding = new Thickness(5),
 			VerticalOptions = LayoutOptions.Center,
 			HorizontalOptions = LayoutOptions.Center,
+		};
+		var popupOptions = new MockPopupOptions
+		{
+			CanBeDismissedByTappingOutsideOfPopup = true,
+			PageOverlayColor = Colors.Red,
 			Shape = new RoundRectangle { CornerRadius = new CornerRadius(10) },
 		};
 
 		// Act
-		var popupPage = new PopupPage(view, popupOptions);
+		var popupPage = new PopupPage(view, popupOptions, null);
 
 		// Assert
 		Assert.NotNull(popupPage.Content);
@@ -264,7 +269,7 @@ public class PopupPageTests : BaseHandlerTest
 
 		// Act & Assert
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => new PopupPage((View?)null, popupOptions));
+		Assert.Throws<ArgumentNullException>(() => new PopupPage((View?)null, popupOptions, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
@@ -276,7 +281,7 @@ public class PopupPageTests : BaseHandlerTest
 
 		// Act & Assert
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => new PopupPage((Popup?)null, popupOptions));
+		Assert.Throws<ArgumentNullException>(() => new PopupPage((Popup?)null, popupOptions, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
@@ -288,7 +293,7 @@ public class PopupPageTests : BaseHandlerTest
 		IPopupOptions popupOptions = null!;
 
 		// Act & Assert
-		Assert.Throws<ArgumentNullException>(() => new PopupPage(view, popupOptions));
+		Assert.Throws<ArgumentNullException>(() => new PopupPage(view, popupOptions, null));
 	}
 
 	[Fact]
@@ -308,7 +313,7 @@ public class PopupPageTests : BaseHandlerTest
 			}
 		};
 
-		var popupPage = new PopupPage(view, popupOptions);
+		var popupPage = new PopupPage(view, popupOptions, null);
 
 		var tapGestureRecognizer = (TapGestureRecognizer)popupPage.Content.GestureRecognizers[0];
 		var command = tapGestureRecognizer.Command;
@@ -334,7 +339,7 @@ public class PopupPageTests : BaseHandlerTest
 			CanBeDismissedByTappingOutsideOfPopup = false
 		};
 
-		var popupPage = new PopupPage(view, popupOptions);
+		var popupPage = new PopupPage(view, popupOptions, null);
 		var tapGestureRecognizer = (TapGestureRecognizer)popupPage.Content.GestureRecognizers[0];
 		var command = tapGestureRecognizer.Command;
 
@@ -362,8 +367,196 @@ public class PopupPageTests : BaseHandlerTest
 		Assert.True(result);
 	}
 
+	[Fact]
+	public void PopupPage_ShouldInitializeCorrectly_WithValidParameters()
+	{
+		// Arrange
+		var view = new Label { Text = "Test Popup Content" };
+		var popupOptions = new MockPopupOptions
+		{
+			CanBeDismissedByTappingOutsideOfPopup = true,
+			PageOverlayColor = Colors.Blue
+		};
+
+		// Act
+		var popupPage = new PopupPage(view, popupOptions, null);
+
+		// Assert
+		Assert.NotNull(popupPage.Content);
+		Assert.Equal(popupOptions.PageOverlayColor, popupPage.BackgroundColor);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task PopupClosedEvent_ShouldTriggerOnce_WhenPopupIsClosed()
+	{
+		// Arrange
+		Assert.NotNull(Application.Current);
+		var navigation = Application.Current.Windows[0].Page?.Navigation ?? throw new InvalidOperationException("Unable to locate INavigation");
+		var view = new Label { Text = "Test Popup Content" };
+		var popupOptions = new MockPopupOptions();
+		var eventTriggered = false;
+
+
+		// Act
+		navigation.ShowPopup(view, popupOptions);
+
+		var popupPage = (PopupPage)navigation.ModalStack[0];
+		popupPage.PopupClosed += (sender, args) => eventTriggered = true;
+		await popupPage.Close(new PopupResult(false), CancellationToken.None);
+
+		// Assert
+		Assert.True(eventTriggered);
+	}
+
+	[Fact]
+	public void TappingOutside_ShouldNotClosePopup_WhenCanBeDismissedIsFalse()
+	{
+		// Arrange
+		var view = new Label { Text = "Test Popup Content" };
+		var popupOptions = new MockPopupOptions
+		{
+			CanBeDismissedByTappingOutsideOfPopup = false
+		};
+		var popupPage = new PopupPage(view, popupOptions, null);
+
+		// Act
+		var tapGestureRecognizer = (TapGestureRecognizer)popupPage.Content.GestureRecognizers[0];
+		var command = tapGestureRecognizer.Command;
+
+		// Assert
+		Assert.NotNull(command);
+		Assert.False(command.CanExecute(null));
+	}
+
+	[Fact]
+	public void BackButton_ShouldNotClosePopup_WhenCanBeDismissedIsFalse()
+	{
+		// Arrange
+		var view = new Label { Text = "Test Popup Content" };
+		var popupOptions = new MockPopupOptions
+		{
+			CanBeDismissedByTappingOutsideOfPopup = false
+		};
+		var popupPage = new TestablePopupPage(view, popupOptions);
+
+		// Act
+		var result = popupPage.TestOnBackButtonPressed();
+
+		// Assert
+		Assert.True(result);
+	}
+
+	[Fact]
+	public async Task Close_ShouldThrowException_WhenCalledOnNonModalPopup()
+	{
+		// Arrange
+		var view = new Label { Text = "Test Popup Content" };
+		var popupOptions = new MockPopupOptions();
+		var popupPage = new PopupPage(view, popupOptions, null);
+
+		// Act & Assert
+		await Assert.ThrowsAsync<PopupNotFoundException>(async () => await popupPage.Close(new PopupResult(false), CancellationToken.None));
+	}
+
+	[Fact]
+	public void PopupPage_ShouldRespectLayoutOptions()
+	{
+		// Arrange
+		var view = new Label
+		{
+			Text = "Test Popup Content",
+			VerticalOptions = LayoutOptions.Start,
+			HorizontalOptions = LayoutOptions.End
+		};
+
+		// Act
+		var popupPage = new PopupPage(view, PopupOptions.Empty, null);
+		var border = (Border)popupPage.Content.Children[0];
+
+		// Assert
+		Assert.Equal(LayoutOptions.Start, border.VerticalOptions);
+		Assert.Equal(LayoutOptions.End, border.HorizontalOptions);
+	}
+
+	[Fact]
+	public void PopupPage_ShellParametersShouldBePassedToPopupWithIQueryable()
+	{
+		// Arrange
+		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var initialBackgroundColor = selfClosingPopup.BackgroundColor;
+		var expectedBackgroundColor = Colors.Red;
+
+		// Act
+		var popupPage = new PopupPage(selfClosingPopup, PopupOptions.Empty, new Dictionary<string, object> { { nameof(MockSelfClosingPopup.BackgroundColor), expectedBackgroundColor } });
+
+		// Assert
+		Assert.Equal(MockSelfClosingPopup.DefaultBackgroundColor, initialBackgroundColor);
+		Assert.Equal(expectedBackgroundColor, selfClosingPopup.BackgroundColor);
+		Assert.NotEqual(expectedBackgroundColor, initialBackgroundColor);
+	}
+
+	[Fact]
+	public void PopupPage_ShellParametersShouldBePassedToViewWithIQueryable()
+	{
+		// Arrange
+		var view = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
+		var initialBackgroundColor = view.BackgroundColor;
+		var expectedBackgroundColor = Colors.Red;
+
+		// Act
+		var popupPage = new PopupPage(view, PopupOptions.Empty, new Dictionary<string, object>
+		{
+			{ nameof(ViewWithIQueryAttributable.BackgroundColor), expectedBackgroundColor },
+		});
+
+		// Assert
+		Assert.Null(initialBackgroundColor);
+		Assert.Equal(expectedBackgroundColor, view.BackgroundColor);
+		Assert.NotEqual(expectedBackgroundColor, initialBackgroundColor);
+	}
+	
+	[Fact]
+	public void PopupPageT_ShellParametersShouldBePassedToViewWithIQueryAttributable()
+	{
+		// Arrange
+		var view = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
+		var initialBackgroundColor = view.BackgroundColor;
+		var expectedBackgroundColor = Colors.Red;
+
+		// Act
+		var popupPage = new PopupPage<object?>(view, PopupOptions.Empty, new Dictionary<string, object>
+		{
+			{ nameof(ViewWithIQueryAttributable.BackgroundColor), expectedBackgroundColor },
+		});
+
+		// Assert
+		Assert.Null(initialBackgroundColor);
+		Assert.Equal(expectedBackgroundColor, view.BackgroundColor);
+		Assert.NotEqual(expectedBackgroundColor, initialBackgroundColor);
+	}
+	
+	[Fact]
+	public void PopupPageT_ShellParametersShouldBePassedToPopupWithIQueryAttributable()
+	{
+		// Arrange
+		var mockPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
+		var initialBackgroundColor = mockPopup.BackgroundColor;
+		var expectedBackgroundColor = Colors.Red;
+
+		// Act
+		var popupPage = new PopupPage<object?>(mockPopup, PopupOptions.Empty, new Dictionary<string, object>
+		{
+			{ nameof(ViewWithIQueryAttributable.BackgroundColor), expectedBackgroundColor },
+		});
+
+		// Assert
+		Assert.Equal(MockSelfClosingPopup.DefaultBackgroundColor, initialBackgroundColor);
+		Assert.Equal(expectedBackgroundColor, mockPopup.BackgroundColor);
+		Assert.NotEqual(expectedBackgroundColor, initialBackgroundColor);
+	}
+
 	// Helper class for testing protected methods
-	sealed class TestablePopupPage(View view, IPopupOptions popupOptions) : PopupPage(view, popupOptions)
+	sealed class TestablePopupPage(View view, IPopupOptions popupOptions) : PopupPage(view, popupOptions, null)
 	{
 		public bool TestOnBackButtonPressed()
 		{
@@ -377,10 +570,6 @@ public class PopupPageTests : BaseHandlerTest
 		public Color PageOverlayColor { get; set; } = Colors.Transparent;
 		public Action? OnTappingOutsideOfPopup { get; set; }
 		public Shape? Shape { get; set; }
-		public Thickness Margin { get; set; } = new Thickness(0);
-		public Thickness Padding { get; set; } = new Thickness(0);
-		public LayoutOptions VerticalOptions { get; set; } = LayoutOptions.Center;
-		public LayoutOptions HorizontalOptions { get; set; } = LayoutOptions.Center;
 		public Shadow? Shadow { get; set; } = null;
 	}
 }

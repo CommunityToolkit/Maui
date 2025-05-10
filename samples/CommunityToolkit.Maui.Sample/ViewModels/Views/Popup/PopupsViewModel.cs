@@ -9,7 +9,12 @@ public partial class PopupsViewModel(IPopupService popupService) : BaseViewModel
 	[RelayCommand]
 	void OnCsharpBindingPopup()
 	{
-		popupService.ShowPopup<CsharpBindingPopupViewModel>(currentNavigation);
+		var queryAttributes = new Dictionary<string, object>
+		{
+			[nameof(CsharpBindingPopupViewModel.Title)] = "C# Binding Popup",
+			[nameof(CsharpBindingPopupViewModel.Message)] = "This message uses a ViewModel binding that was set using IQueryAttributable"
+		};
+		popupService.ShowPopup<CsharpBindingPopupViewModel>(Shell.Current, null, queryAttributes);
 	}
 
 	[RelayCommand]

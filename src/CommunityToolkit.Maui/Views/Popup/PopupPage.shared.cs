@@ -8,11 +8,16 @@ using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Views;
 
-sealed partial class PopupPage<T>(Popup<T> popup, IPopupOptions popupOptions) : PopupPage(popup, popupOptions)
+sealed partial class PopupPage<T>(Popup<T> popup, IPopupOptions popupOptions, IDictionary<string, object>? shellParameters)
+	: PopupPage(popup, popupOptions, shellParameters)
 {
-	public PopupPage(View view, IPopupOptions popupOptions)
-		: this(view as Popup<T> ?? CreatePopupFromView<Popup<T>>(view), popupOptions)
+	public PopupPage(View view, IPopupOptions popupOptions, IDictionary<string,object>? shellParameters)
+		: this(view as Popup<T> ?? CreatePopupFromView<Popup<T>>(view), popupOptions, shellParameters)
 	{
+		if (view is IQueryAttributable queryAttributableView && shellParameters is not null)
+		{
+			queryAttributableView.ApplyQueryAttributes(shellParameters);
+		}
 	}
 
 	public Task Close(PopupResult<T> result, CancellationToken token = default) => base.Close(result, token);
@@ -25,13 +30,18 @@ partial class PopupPage : ContentPage
 	readonly Command tapOutsideOfPopupCommand;
 	readonly WeakEventManager popupClosedEventManager = new();
 
-	public PopupPage(View view, IPopupOptions popupOptions)
-		: this(view as Popup ?? CreatePopupFromView<Popup>(view), popupOptions)
+	public PopupPage(View view, IPopupOptions popupOptions, IDictionary<string,object>? shellParameters)
+		: this(view as Popup ?? CreatePopupFromView<Popup>(view), popupOptions, shellParameters)
 	{
 		ArgumentNullException.ThrowIfNull(view);
+
+		if (view is IQueryAttributable queryAttributableView && shellParameters is not null)
+		{
+			queryAttributableView.ApplyQueryAttributes(shellParameters);
+		}
 	}
 
-	public PopupPage(Popup popup, IPopupOptions popupOptions)
+	public PopupPage(Popup popup, IPopupOptions popupOptions, IDictionary<string,object>? shellParameters)
 	{
 		ArgumentNullException.ThrowIfNull(popup);
 		ArgumentNullException.ThrowIfNull(popupOptions);
@@ -41,6 +51,16 @@ partial class PopupPage : ContentPage
 
 		// Only set the content if the parent constructor hasn't set the content already; don't override content if it already exists
 		base.Content ??= new PopupPageLayout(popup, popupOptions);
+
+		if (Shell.Current is Shell shell)
+		{
+			Shell.SetPresentationMode(shell, PresentationMode.ModalNotAnimated);
+		}
+		
+		if (popup is IQueryAttributable queryAttributablePopup && shellParameters is not null)
+		{
+			queryAttributablePopup.ApplyQueryAttributes(shellParameters);
+		}
 
 		tapOutsideOfPopupCommand = new Command(async () =>
 		{
@@ -136,10 +156,9 @@ partial class PopupPage : ContentPage
 			Content = view
 		};
 		popup.SetBinding(BackgroundProperty, static (View view) => view.Background, source: view, mode: BindingMode.OneWay);
+		popup.SetBinding(BindingContextProperty, static (View view) => view.BindingContext, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(BackgroundColorProperty, static (View view) => view.BackgroundColor, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(Popup.MarginProperty, static (View view) => view.Margin, source: view, mode: BindingMode.OneWay);
-		popup.SetBinding(Popup.BackgroundProperty, static (View view) => view.Background, source: view, mode: BindingMode.OneWay);
-		popup.SetBinding(Popup.BackgroundColorProperty, static (View view) => view.BackgroundColor, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(Popup.VerticalOptionsProperty, static (View view) => view.VerticalOptions, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(Popup.HorizontalOptionsProperty, static (View view) => view.HorizontalOptions, source: view, mode: BindingMode.OneWay);
 

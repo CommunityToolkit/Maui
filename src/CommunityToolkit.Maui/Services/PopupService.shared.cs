@@ -33,12 +33,20 @@ public class PopupService : IPopupService
 	}
 
 	/// <inheritdoc />
-	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync{T}"/> to <see langword="await"/> this method</remarks>
+	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync{T}(Microsoft.Maui.Controls.INavigation,CommunityToolkit.Maui.IPopupOptions?,System.Threading.CancellationToken)"/> to <see langword="await"/> this method</remarks>
 	public void ShowPopup<T>(INavigation navigation, IPopupOptions? options = null) where T : notnull
 	{
 		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
 
 		navigation.ShowPopup(popupContent, options);
+	}
+
+	/// <inheritdoc />
+	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync{T}(Microsoft.Maui.Controls.Shell,CommunityToolkit.Maui.IPopupOptions?,IDictionary{string,object}?, System.Threading.CancellationToken)"/> to <see langword="await"/> this method</remarks>
+	public void ShowPopup<T>(Shell shell, IPopupOptions? options = null, IDictionary<string, object>? shellParameters = null) where T : notnull
+	{
+		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
+		shell.ShowPopup(popupContent, options, shellParameters);
 	}
 
 	/// <inheritdoc />
@@ -53,6 +61,16 @@ public class PopupService : IPopupService
 	}
 
 	/// <inheritdoc />
+	public Task<IPopupResult> ShowPopupAsync<T>(Shell shell, IPopupOptions? options, IDictionary<string, object>? shellParameters, CancellationToken token) where T : notnull
+	{
+		token.ThrowIfCancellationRequested();
+
+		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
+
+		return shell.ShowPopupAsync(popupContent, options, shellParameters, token);
+	}
+
+	/// <inheritdoc />
 	public Task<IPopupResult<TResult>> ShowPopupAsync<T, TResult>(INavigation navigation,
 		IPopupOptions? options = null,
 		CancellationToken token = default)
@@ -62,6 +80,15 @@ public class PopupService : IPopupService
 		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
 
 		return navigation.ShowPopupAsync<TResult>(popupContent, options, token);
+	}
+
+	/// <inheritdoc />
+	public Task<IPopupResult<TResult>> ShowPopupAsync<T, TResult>(Shell shell, IPopupOptions? options, IDictionary<string, object>? shellParameters = null, CancellationToken token = default) where T : notnull
+	{
+		token.ThrowIfCancellationRequested();
+		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
+
+		return shell.ShowPopupAsync<TResult>(popupContent, options, shellParameters, token);
 	}
 
 	/// <inheritdoc />

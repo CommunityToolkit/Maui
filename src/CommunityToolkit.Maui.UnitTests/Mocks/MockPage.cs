@@ -1,6 +1,6 @@
 ﻿namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
-class MockPage : Page
+class MockPage : ContentPage
 {
 	public MockPage(MockPageViewModel viewModel)
 	{
