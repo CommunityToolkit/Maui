@@ -4,7 +4,7 @@
 public interface IPopupResult<out TResult> : IPopupResult
 {
 	/// <summary>
-	/// The <see cref="TResult"/> returned when the popup is closed programmatically.
+	/// The result returned when the popup is closed programmatically.
 	/// </summary>
 	/// <remarks>
 	/// Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.
