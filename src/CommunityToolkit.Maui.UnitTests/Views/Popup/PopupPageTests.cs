@@ -22,7 +22,7 @@ public class PopupPageTests : BaseHandlerTest
 
 		// Act
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Action act = () => new PopupPage(null, popupOptions);
+		Action act = () => new PopupPage(null, popupOptions, null);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
 		// Assert
@@ -38,7 +38,7 @@ public class PopupPageTests : BaseHandlerTest
 
 		// Act
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Action act = () => new PopupPage(view, null);
+		Action act = () => new PopupPage(view, null, null);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
 		// Assert
@@ -51,7 +51,7 @@ public class PopupPageTests : BaseHandlerTest
 		// Arrange
 		var view = new ContentView();
 		var popupOptions = new MockPopupOptions();
-		var popupPage = new PopupPage<string>(view, popupOptions);
+		var popupPage = new PopupPage<string>(view, popupOptions, null);
 
 		// Act / Assert
 		await Assert.ThrowsAsync<PopupNotFoundException>(async () => await popupPage.Close(new PopupResult(false), CancellationToken.None));
@@ -65,7 +65,7 @@ public class PopupPageTests : BaseHandlerTest
 		var tcs = new TaskCompletionSource<IPopupResult>();
 		var view = new ContentView();
 		var popupOptions = new MockPopupOptions();
-		var popupPage = new PopupPage(view, popupOptions);
+		var popupPage = new PopupPage(view, popupOptions, null);
 		var expectedResult = new PopupResult(false);
 
 		popupPage.PopupClosed += HandlePopupClosed;
@@ -122,7 +122,7 @@ public class PopupPageTests : BaseHandlerTest
 
 		// Act
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Action act = () => new PopupPage<string>(null, popupOptions);
+		Action act = () => new PopupPage<string>(null, popupOptions, null);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
 		// Assert
@@ -137,7 +137,7 @@ public class PopupPageTests : BaseHandlerTest
 
 		// Act
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Action act = () => new PopupPage<string>(view, null);
+		Action act = () => new PopupPage<string>(view, null, null);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
 		// Assert
@@ -151,7 +151,7 @@ public class PopupPageTests : BaseHandlerTest
 		var view = new ContentView();
 		var popupOptions = new MockPopupOptions();
 		var taskCompletionSource = new TaskCompletionSource<PopupResult<string>>();
-		var popupPage = new PopupPage<string>(view, popupOptions);
+		var popupPage = new PopupPage<string>(view, popupOptions, null);
 		var expectedResult = new PopupResult<string>("Test", false);
 
 		popupPage.PopupClosed += HandlePopupClosed;
@@ -182,7 +182,7 @@ public class PopupPageTests : BaseHandlerTest
 		// Arrange
 		var view = new ContentView();
 		var popupOptions = new MockPopupOptions();
-		var popupPage = new PopupPage<string>(view, popupOptions);
+		var popupPage = new PopupPage<string>(view, popupOptions, null);
 
 		// Act
 		if (Application.Current?.Windows[0].Page?.Navigation is not INavigation navigation)
@@ -204,7 +204,7 @@ public class PopupPageTests : BaseHandlerTest
 		// Arrange
 		var view = new ContentView();
 		var popupOptions = new MockPopupOptions();
-		var popupPage = new PopupPage<string>(view, popupOptions);
+		var popupPage = new PopupPage<string>(view, popupOptions, null);
 		var result = new PopupResult<string>("Test", false);
 		var cts = new CancellationTokenSource();
 		cts.Cancel();
@@ -233,7 +233,7 @@ public class PopupPageTests : BaseHandlerTest
 		};
 
 		// Act
-		var popupPage = new PopupPage(view, popupOptions);
+		var popupPage = new PopupPage(view, popupOptions, null);
 
 		// Assert
 		Assert.NotNull(popupPage.Content);
@@ -264,7 +264,7 @@ public class PopupPageTests : BaseHandlerTest
 
 		// Act & Assert
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => new PopupPage((View?)null, popupOptions));
+		Assert.Throws<ArgumentNullException>(() => new PopupPage((View?)null, popupOptions, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
@@ -276,7 +276,7 @@ public class PopupPageTests : BaseHandlerTest
 
 		// Act & Assert
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => new PopupPage((Popup?)null, popupOptions));
+		Assert.Throws<ArgumentNullException>(() => new PopupPage((Popup?)null, popupOptions, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
@@ -288,7 +288,7 @@ public class PopupPageTests : BaseHandlerTest
 		IPopupOptions popupOptions = null!;
 
 		// Act & Assert
-		Assert.Throws<ArgumentNullException>(() => new PopupPage(view, popupOptions));
+		Assert.Throws<ArgumentNullException>(() => new PopupPage(view, popupOptions, null));
 	}
 
 	[Fact]
@@ -308,7 +308,7 @@ public class PopupPageTests : BaseHandlerTest
 			}
 		};
 
-		var popupPage = new PopupPage(view, popupOptions);
+		var popupPage = new PopupPage(view, popupOptions, null);
 
 		var tapGestureRecognizer = (TapGestureRecognizer)popupPage.Content.GestureRecognizers[0];
 		var command = tapGestureRecognizer.Command;
@@ -334,7 +334,7 @@ public class PopupPageTests : BaseHandlerTest
 			CanBeDismissedByTappingOutsideOfPopup = false
 		};
 
-		var popupPage = new PopupPage(view, popupOptions);
+		var popupPage = new PopupPage(view, popupOptions, null);
 		var tapGestureRecognizer = (TapGestureRecognizer)popupPage.Content.GestureRecognizers[0];
 		var command = tapGestureRecognizer.Command;
 
@@ -363,7 +363,7 @@ public class PopupPageTests : BaseHandlerTest
 	}
 
 	// Helper class for testing protected methods
-	sealed class TestablePopupPage(View view, IPopupOptions popupOptions) : PopupPage(view, popupOptions)
+	sealed class TestablePopupPage(View view, IPopupOptions popupOptions) : PopupPage(view, popupOptions, null)
 	{
 		public bool TestOnBackButtonPressed()
 		{

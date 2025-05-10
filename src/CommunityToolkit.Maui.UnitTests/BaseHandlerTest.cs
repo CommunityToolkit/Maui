@@ -85,10 +85,10 @@ public abstract class BaseHandlerTest : BaseTest
 		#endregion
 
 		var mauiApp = appBuilder.Build();
+		serviceProvider = mauiApp.Services;
 
 		var application = (MockApplication)mauiApp.Services.GetRequiredService<IApplication>();
 		application.AddWindow(new Window { Page = page });
-		serviceProvider = mauiApp.Services;
 
 		IPlatformApplication.Current = application;
 
