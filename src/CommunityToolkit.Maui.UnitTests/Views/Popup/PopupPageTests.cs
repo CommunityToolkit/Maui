@@ -102,13 +102,13 @@ public class PopupPageTests : BaseHandlerTest
 		{
 			throw new InvalidOperationException("Failed to locate main page");
 		}
-		
+
 		// Act
 		mainPage.Navigation.ShowPopup(view);
 		popupPage = mainPage.Navigation.ModalStack.OfType<PopupPage>().Single();
-		
+
 		await cts.CancelAsync();
-		
+
 		// Assert
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => popupPage.Close(result, cts.Token));
 		Assert.Single(mainPage.Navigation.ModalStack.OfType<PopupPage>());
@@ -220,15 +220,18 @@ public class PopupPageTests : BaseHandlerTest
 	public void Constructor_WithViewAndPopupOptions_SetsCorrectProperties()
 	{
 		// Arrange
-		var view = new Label { Text = "Test Popup Content" };
-		var popupOptions = new MockPopupOptions
+		var view = new Label
 		{
-			CanBeDismissedByTappingOutsideOfPopup = true,
-			PageOverlayColor = Colors.Red,
+			Text = "Test Popup Content",
 			Margin = new Thickness(10),
 			Padding = new Thickness(5),
 			VerticalOptions = LayoutOptions.Center,
 			HorizontalOptions = LayoutOptions.Center,
+		};
+		var popupOptions = new MockPopupOptions
+		{
+			CanBeDismissedByTappingOutsideOfPopup = true,
+			PageOverlayColor = Colors.Red,
 			Shape = new RoundRectangle { CornerRadius = new CornerRadius(10) },
 		};
 
@@ -362,6 +365,117 @@ public class PopupPageTests : BaseHandlerTest
 		Assert.True(result);
 	}
 
+	[Fact]
+	public void PopupPage_ShouldInitializeCorrectly_WithValidParameters()
+	{
+		// Arrange
+		var view = new Label { Text = "Test Popup Content" };
+		var popupOptions = new MockPopupOptions
+		{
+			CanBeDismissedByTappingOutsideOfPopup = true,
+			PageOverlayColor = Colors.Blue
+		};
+
+		// Act
+		var popupPage = new PopupPage(view, popupOptions, null);
+
+		// Assert
+		Assert.NotNull(popupPage.Content);
+		Assert.Equal(popupOptions.PageOverlayColor, popupPage.BackgroundColor);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task PopupClosedEvent_ShouldTriggerOnce_WhenPopupIsClosed()
+	{
+		// Arrange
+		Assert.NotNull(Application.Current);
+		var navigation = Application.Current.Windows[0].Page?.Navigation ?? throw new InvalidOperationException("Unable to locate INavigation");
+		var view = new Label { Text = "Test Popup Content" };
+		var popupOptions = new MockPopupOptions();
+		var eventTriggered = false;
+
+
+		// Act
+		navigation.ShowPopup(view, popupOptions);
+
+		var popupPage = (PopupPage)navigation.ModalStack[0];
+		popupPage.PopupClosed += (sender, args) => eventTriggered = true;
+		await popupPage.Close(new PopupResult(false), CancellationToken.None);
+
+		// Assert
+		Assert.True(eventTriggered);
+	}
+
+	[Fact]
+	public void TappingOutside_ShouldNotClosePopup_WhenCanBeDismissedIsFalse()
+	{
+		// Arrange
+		var view = new Label { Text = "Test Popup Content" };
+		var popupOptions = new MockPopupOptions
+		{
+			CanBeDismissedByTappingOutsideOfPopup = false
+		};
+		var popupPage = new PopupPage(view, popupOptions, null);
+
+		// Act
+		var tapGestureRecognizer = (TapGestureRecognizer)popupPage.Content.GestureRecognizers[0];
+		var command = tapGestureRecognizer.Command;
+
+		// Assert
+		Assert.NotNull(command);
+		Assert.False(command.CanExecute(null));
+	}
+
+	[Fact]
+	public void BackButton_ShouldNotClosePopup_WhenCanBeDismissedIsFalse()
+	{
+		// Arrange
+		var view = new Label { Text = "Test Popup Content" };
+		var popupOptions = new MockPopupOptions
+		{
+			CanBeDismissedByTappingOutsideOfPopup = false
+		};
+		var popupPage = new TestablePopupPage(view, popupOptions);
+
+		// Act
+		var result = popupPage.TestOnBackButtonPressed();
+
+		// Assert
+		Assert.True(result);
+	}
+
+	[Fact]
+	public async Task Close_ShouldThrowException_WhenCalledOnNonModalPopup()
+	{
+		// Arrange
+		var view = new Label { Text = "Test Popup Content" };
+		var popupOptions = new MockPopupOptions();
+		var popupPage = new PopupPage(view, popupOptions, null);
+
+		// Act & Assert
+		await Assert.ThrowsAsync<PopupNotFoundException>(async () => await popupPage.Close(new PopupResult(false), CancellationToken.None));
+	}
+
+	[Fact]
+	public void PopupPage_ShouldRespectLayoutOptions()
+	{
+		// Arrange
+		var view = new Label
+		{
+			Text = "Test Popup Content",
+			VerticalOptions = LayoutOptions.Start,
+			HorizontalOptions = LayoutOptions.End
+		};
+
+		// Act
+		var popupPage = new PopupPage(view, PopupOptions.Empty, null);
+		var border = (Border)popupPage.Content.Children[0];
+
+		// Assert
+		Assert.Equal(LayoutOptions.Start, border.VerticalOptions);
+		Assert.Equal(LayoutOptions.End, border.HorizontalOptions);
+	}
+
 	// Helper class for testing protected methods
 	sealed class TestablePopupPage(View view, IPopupOptions popupOptions) : PopupPage(view, popupOptions, null)
 	{
@@ -377,10 +491,6 @@ public class PopupPageTests : BaseHandlerTest
 		public Color PageOverlayColor { get; set; } = Colors.Transparent;
 		public Action? OnTappingOutsideOfPopup { get; set; }
 		public Shape? Shape { get; set; }
-		public Thickness Margin { get; set; } = new Thickness(0);
-		public Thickness Padding { get; set; } = new Thickness(0);
-		public LayoutOptions VerticalOptions { get; set; } = LayoutOptions.Center;
-		public LayoutOptions HorizontalOptions { get; set; } = LayoutOptions.Center;
 		public Shadow? Shadow { get; set; } = null;
 	}
 }
