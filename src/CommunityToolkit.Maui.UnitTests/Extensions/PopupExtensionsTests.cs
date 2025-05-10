@@ -19,7 +19,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 	readonly IDictionary<string, object> shellParameters = new Dictionary<string, object>
 	{
 		{ nameof(View.BackgroundColor), shellParameterBackgroundColorValue },
-		{ nameof(ViewModelWithIQueryable.Text), shellParameterViewModelTextValue }
+		{ nameof(ViewModelWithIQueryAttributable.Text), shellParameterViewModelTextValue }
 	}.AsReadOnly();
 
 	public PopupExtensionsTests()
@@ -83,7 +83,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 	public void ShowPopupAsync_Shell_WithViewType_ShowsPopup()
 	{
 		// Arrange
-		var viewWithQueryable = new ViewWithIQueryable(new ViewModelWithIQueryable());
+		var viewWithQueryable = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
 		var shell = new Shell();
 		shell.Items.Add(new MockPage(new MockPageViewModel()));
 
@@ -156,7 +156,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 	public void ShowPopup_Shell_NavigationModalStackCountIncreases()
 	{
 		// Arrange
-		var viewWithQueryable = new ViewWithIQueryable(new ViewModelWithIQueryable());
+		var viewWithQueryable = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
 		var shell = new Shell();
 		shell.Items.Add(new MockPage(new MockPageViewModel()));
 
@@ -179,7 +179,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 	public void ShowPopupWithView_NavigationModalStackCountIncreases()
 	{
 		// Arrange
-		var viewWithQueryable = new ViewWithIQueryable(new ViewModelWithIQueryable());
+		var viewWithQueryable = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
 		var shell = new Shell();
 		shell.Items.Add(new MockPage(new MockPageViewModel()));
 
@@ -200,7 +200,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 	public void ShowPopupWithView_Shell_NavigationModalStackCountIncreases()
 	{
 		// Arrange
-		var viewWithQueryable = new ViewWithIQueryable(new ViewModelWithIQueryable());
+		var viewWithQueryable = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
 		var shell = new Shell();
 		shell.Items.Add(new MockPage(new MockPageViewModel()));
 
@@ -273,7 +273,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 	public void ShowPopupView_Shell_MultiplePopupsDisplayed()
 	{
 		// Arrange
-		var viewWithQueryable = new ViewWithIQueryable(new ViewModelWithIQueryable());
+		var viewWithQueryable = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
 		var shell = new Shell();
 		shell.Items.Add(new MockPage(new MockPageViewModel()));
 
@@ -515,7 +515,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		var shellNavigation = Shell.Current.Navigation;
 		var onTappingOutsideOfPopup = () => { };
 
-		var viewWithQueryable = new ViewWithIQueryable(new ViewModelWithIQueryable())
+		var viewWithQueryable = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable())
 		{
 			HorizontalOptions = LayoutOptions.End,
 			VerticalOptions = LayoutOptions.Start,
@@ -649,7 +649,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Application.Current.Windows[0].Page = shell;
 
 		var shellNavigation = Shell.Current.Navigation;
-		var view = new ViewWithIQueryable(new ViewModelWithIQueryable());
+		var view = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
 
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
@@ -724,7 +724,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Application.Current.Windows[0].Page = shell;
 
 		var shellNavigation = Shell.Current.Navigation;
-		var view = new ViewWithIQueryable(new ViewModelWithIQueryable());
+		var view = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
 
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
@@ -806,7 +806,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Application.Current.Windows[0].Page = shell;
 
 		var shellNavigation = Shell.Current.Navigation;
-		var view = new ViewWithIQueryable(new ViewModelWithIQueryable());
+		var view = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
 		var popupInstance = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
 		var popupViewModel = ServiceProvider.GetRequiredService<MockPageViewModel>();
 
@@ -898,7 +898,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 
 		var shellNavigation = Shell.Current.Navigation;
 
-		var view = new ViewWithIQueryable(new ViewModelWithIQueryable());
+		var view = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
 		var expectedPopupResult = new PopupResult<int>(popupResultValue, false);
 
 		// Act
@@ -1206,29 +1206,29 @@ public class PopupExtensionsTests : BaseHandlerTest
 			popupClosedTCS.SetResult(e);
 		}
 	}
+}
 
-	sealed class ViewWithIQueryable : Button, IQueryAttributable
+sealed class ViewWithIQueryAttributable : Button, IQueryAttributable
+{
+	public ViewWithIQueryAttributable(ViewModelWithIQueryAttributable viewModel)
 	{
-		public ViewWithIQueryable(ViewModelWithIQueryable viewModel)
-		{
-			base.BindingContext = viewModel;
-		}
-
-		public new ViewModelWithIQueryable BindingContext => (ViewModelWithIQueryable)base.BindingContext;
-
-		void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
-		{
-			BackgroundColor = (Color)query[nameof(BackgroundColor)];
-		}
+		base.BindingContext = viewModel;
 	}
 
-	sealed class ViewModelWithIQueryable : IQueryAttributable
-	{
-		public string? Text { get; set; }
+	public new ViewModelWithIQueryAttributable BindingContext => (ViewModelWithIQueryAttributable)base.BindingContext;
 
-		void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
-		{
-			Text = (string)query[nameof(Text)];
-		}
+	void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
+	{
+		BackgroundColor = (Color)query[nameof(BackgroundColor)];
+	}
+}
+
+sealed class ViewModelWithIQueryAttributable : IQueryAttributable
+{
+	public string? Text { get; set; }
+
+	void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
+	{
+		Text = (string)query[nameof(Text)];
 	}
 }

@@ -283,11 +283,13 @@ sealed class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
 	
 	public MockSelfClosingPopup(MockPageViewModel viewModel, object? result = null)
 	{
-		BackgroundColor = Colors.White;
+		BackgroundColor = DefaultBackgroundColor;
 		BindingContext = viewModel;
 		Result = result;
 		Opened += HandlePopupOpened;
 	}
+
+	public static Color DefaultBackgroundColor { get; } = Colors.White; 
 
 	void HandlePopupOpened(object? sender, EventArgs e)
 	{

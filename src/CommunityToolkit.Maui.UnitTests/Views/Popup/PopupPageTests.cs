@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.UnitTests.Extensions;
+using CommunityToolkit.Maui.UnitTests.Services;
 using CommunityToolkit.Maui.Views;
 using FluentAssertions;
 using Microsoft.Maui.Controls.PlatformConfiguration;
@@ -474,6 +476,43 @@ public class PopupPageTests : BaseHandlerTest
 		// Assert
 		Assert.Equal(LayoutOptions.Start, border.VerticalOptions);
 		Assert.Equal(LayoutOptions.End, border.HorizontalOptions);
+	}
+
+	[Fact]
+	public void PopupPage_ShellParametersShouldBePassedToPopupWithIQueryable()
+	{
+		// Arrange
+		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var initialBackgroundColor = selfClosingPopup.BackgroundColor;
+		var expectedBackgroundColor = Colors.Red;
+
+		// Act
+		var popupPage = new PopupPage(selfClosingPopup, PopupOptions.Empty, new Dictionary<string, object> { { nameof(MockSelfClosingPopup.BackgroundColor), expectedBackgroundColor } });
+
+		// Assert
+		Assert.Equal(MockSelfClosingPopup.DefaultBackgroundColor, initialBackgroundColor);
+		Assert.Equal(expectedBackgroundColor, selfClosingPopup.BackgroundColor);
+		Assert.NotEqual(expectedBackgroundColor, initialBackgroundColor);
+	}
+
+	[Fact]
+	public void PopupPage_ShellParametersShouldBePassedToViewWithIQueryable()
+	{
+		// Arrange
+		var view = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
+		var initialBackgroundColor = view.BackgroundColor;
+		var expectedBackgroundColor = Colors.Red;
+
+		// Act
+		var popupPage = new PopupPage(view, PopupOptions.Empty, new Dictionary<string, object>
+		{
+			{ nameof(ViewWithIQueryAttributable.BackgroundColor), expectedBackgroundColor },
+		});
+
+		// Assert
+		Assert.Null(initialBackgroundColor);
+		Assert.Equal(expectedBackgroundColor, view.BackgroundColor);
+		Assert.NotEqual(expectedBackgroundColor, initialBackgroundColor);
 	}
 
 	// Helper class for testing protected methods
