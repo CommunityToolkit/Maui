@@ -33,7 +33,7 @@
 
         <Label Style="{StaticResource Title}" Text="Simple Popup"/>
         <BoxView Style="{StaticResource Divider}" />
-        <Label Style="{StaticResource Content}" Text="This is a platform specific popup with a .NET MAUI View being rendered. " />
+        <Label x:Name="DescriptionLabel" Style="{StaticResource Content}" HorizontalOptions="Center"/>
         <Image Source="shield.png"
 			   Margin="0,10,0,10"
 			   WidthRequest="30"

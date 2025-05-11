@@ -1,21 +1,28 @@
 ﻿namespace CommunityToolkit.Maui.Core;
 
 /// <inheritdoc/>
-public interface IPopupResult<T> : IPopupResult
+public interface IPopupResult<out TResult> : IPopupResult
 {
 	/// <summary>
-	/// PopupResult
+	/// The result returned when the popup is closed programmatically.
 	/// </summary>
-	T? Result { get; }
+	/// <remarks>
+	/// Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.
+	/// This will always return <c>null</c> when <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> is <c>true</c>.
+	/// </remarks>
+	TResult? Result { get; }
 }
 
 /// <summary>
-/// Represents the result of a popup.
+/// Represents a result that can be returned when a popup is closed.
 /// </summary>
+/// <remarks>
+/// Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.
+/// </remarks>
 public interface IPopupResult
 {
 	/// <summary>
-	/// True if Popup is closed by tapping outside the popup
+	/// Gets whether the popup was closed by tapping outside the popup.
 	/// </summary>
 	bool WasDismissedByTappingOutsideOfPopup { get; }
 }

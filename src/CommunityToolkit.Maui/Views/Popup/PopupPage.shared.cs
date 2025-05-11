@@ -8,7 +8,8 @@ using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Views;
 
-sealed partial class PopupPage<T>(Popup<T> popup, IPopupOptions popupOptions) : PopupPage(popup, popupOptions)
+sealed partial class PopupPage<T>(Popup<T> popup, IPopupOptions popupOptions)
+	: PopupPage(popup, popupOptions)
 {
 	public PopupPage(View view, IPopupOptions popupOptions)
 		: this(view as Popup<T> ?? CreatePopupFromView<Popup<T>>(view), popupOptions)
@@ -18,7 +19,7 @@ sealed partial class PopupPage<T>(Popup<T> popup, IPopupOptions popupOptions) : 
 	public Task Close(PopupResult<T> result, CancellationToken token = default) => base.Close(result, token);
 }
 
-partial class PopupPage : ContentPage
+partial class PopupPage : ContentPage, IQueryAttributable
 {
 	readonly Popup popup;
 	readonly IPopupOptions popupOptions;
@@ -41,6 +42,11 @@ partial class PopupPage : ContentPage
 
 		// Only set the content if the parent constructor hasn't set the content already; don't override content if it already exists
 		base.Content ??= new PopupPageLayout(popup, popupOptions);
+
+		if (Shell.Current is Shell shell)
+		{
+			Shell.SetPresentationMode(shell, PresentationMode.ModalNotAnimated);
+		}
 
 		tapOutsideOfPopupCommand = new Command(async () =>
 		{
@@ -136,10 +142,9 @@ partial class PopupPage : ContentPage
 			Content = view
 		};
 		popup.SetBinding(BackgroundProperty, static (View view) => view.Background, source: view, mode: BindingMode.OneWay);
+		popup.SetBinding(BindingContextProperty, static (View view) => view.BindingContext, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(BackgroundColorProperty, static (View view) => view.BackgroundColor, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(Popup.MarginProperty, static (View view) => view.Margin, source: view, mode: BindingMode.OneWay);
-		popup.SetBinding(Popup.BackgroundProperty, static (View view) => view.Background, source: view, mode: BindingMode.OneWay);
-		popup.SetBinding(Popup.BackgroundColorProperty, static (View view) => view.BackgroundColor, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(Popup.VerticalOptionsProperty, static (View view) => view.VerticalOptions, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(Popup.HorizontalOptionsProperty, static (View view) => view.HorizontalOptions, source: view, mode: BindingMode.OneWay);
 
@@ -156,6 +161,19 @@ partial class PopupPage : ContentPage
 		if (e.PropertyName == nameof(IPopupOptions.CanBeDismissedByTappingOutsideOfPopup))
 		{
 			tapOutsideOfPopupCommand.ChangeCanExecute();
+		}
+	}
+	
+	void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
+	{
+		if (popup is IQueryAttributable popupIQueryAttributable)
+		{
+			popupIQueryAttributable.ApplyQueryAttributes(query);	
+		}
+
+		if (popup.Content is IQueryAttributable popupContentIQueryAttributable)
+		{
+			popupContentIQueryAttributable.ApplyQueryAttributes(query);
 		}
 	}
 
