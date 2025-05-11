@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<mct:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
            x:Class="CommunityToolkit.Maui.Sample.Views.Popups.XamlBindingPopup"
            xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
            xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
-           x:DataType="vm:XamlBindingPopupViewModel">    
+           x:DataType="vm:XamlBindingPopupViewModel"
+           HorizontalOptions="Center"
+           VerticalOptions="Center"
+           BackgroundColor="White">    
 
-    <mct:Popup.BindingContext>
+    <ContentView.BindingContext>
         <vm:XamlBindingPopupViewModel />
-    </mct:Popup.BindingContext>    
+    </ContentView.BindingContext>    
     
     <VerticalStackLayout
         Style="{StaticResource PopupLayout}"
-        HorizontalOptions="Center">
+        HorizontalOptions="Center"
+        Spacing="6">
         <VerticalStackLayout.Resources>
             <ResourceDictionary>
                 <Style x:Key="Title" TargetType="Label">
@@ -24,7 +28,7 @@
                 </Style>
                 <Style x:Key="Divider" TargetType="BoxView">
                     <Setter Property="HeightRequest" Value="1" />
-                    <Setter Property="Margin" Value="50, 25" />
+                    <Setter Property="Margin" Value="50, 12" />
                     <Setter Property="Color" Value="#c3c3c3" />
                 </Style>
                 <Style x:Key="Content" TargetType="Label">
@@ -39,8 +43,9 @@
         <BoxView Style="{StaticResource Divider}" />
         <Label Style="{StaticResource Content}" 
                HorizontalTextAlignment="Center"
+               TextColor="Black"
                MaxLines="5"
                LineBreakMode="WordWrap"
                Text="{Binding Message}" />
     </VerticalStackLayout>
-</mct:Popup>
+</ContentView>
