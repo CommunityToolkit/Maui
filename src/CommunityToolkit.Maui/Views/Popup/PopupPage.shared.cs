@@ -8,40 +8,31 @@ using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Views;
 
-sealed partial class PopupPage<T>(Popup<T> popup, IPopupOptions popupOptions, IDictionary<string, object>? shellParameters)
-	: PopupPage(popup, popupOptions, shellParameters)
+sealed partial class PopupPage<T>(Popup<T> popup, IPopupOptions popupOptions)
+	: PopupPage(popup, popupOptions)
 {
-	public PopupPage(View view, IPopupOptions popupOptions, IDictionary<string,object>? shellParameters)
-		: this(view as Popup<T> ?? CreatePopupFromView<Popup<T>>(view), popupOptions, shellParameters)
+	public PopupPage(View view, IPopupOptions popupOptions)
+		: this(view as Popup<T> ?? CreatePopupFromView<Popup<T>>(view), popupOptions)
 	{
-		if (view is IQueryAttributable queryAttributableView && shellParameters is not null)
-		{
-			queryAttributableView.ApplyQueryAttributes(shellParameters);
-		}
 	}
 
 	public Task Close(PopupResult<T> result, CancellationToken token = default) => base.Close(result, token);
 }
 
-partial class PopupPage : ContentPage
+partial class PopupPage : ContentPage, IQueryAttributable
 {
 	readonly Popup popup;
 	readonly IPopupOptions popupOptions;
 	readonly Command tapOutsideOfPopupCommand;
 	readonly WeakEventManager popupClosedEventManager = new();
 
-	public PopupPage(View view, IPopupOptions popupOptions, IDictionary<string,object>? shellParameters)
-		: this(view as Popup ?? CreatePopupFromView<Popup>(view), popupOptions, shellParameters)
+	public PopupPage(View view, IPopupOptions popupOptions)
+		: this(view as Popup ?? CreatePopupFromView<Popup>(view), popupOptions)
 	{
 		ArgumentNullException.ThrowIfNull(view);
-
-		if (view is IQueryAttributable queryAttributableView && shellParameters is not null)
-		{
-			queryAttributableView.ApplyQueryAttributes(shellParameters);
-		}
 	}
 
-	public PopupPage(Popup popup, IPopupOptions popupOptions, IDictionary<string,object>? shellParameters)
+	public PopupPage(Popup popup, IPopupOptions popupOptions)
 	{
 		ArgumentNullException.ThrowIfNull(popup);
 		ArgumentNullException.ThrowIfNull(popupOptions);
@@ -55,11 +46,6 @@ partial class PopupPage : ContentPage
 		if (Shell.Current is Shell shell)
 		{
 			Shell.SetPresentationMode(shell, PresentationMode.ModalNotAnimated);
-		}
-		
-		if (popup is IQueryAttributable queryAttributablePopup && shellParameters is not null)
-		{
-			queryAttributablePopup.ApplyQueryAttributes(shellParameters);
 		}
 
 		tapOutsideOfPopupCommand = new Command(async () =>
@@ -175,6 +161,19 @@ partial class PopupPage : ContentPage
 		if (e.PropertyName == nameof(IPopupOptions.CanBeDismissedByTappingOutsideOfPopup))
 		{
 			tapOutsideOfPopupCommand.ChangeCanExecute();
+		}
+	}
+	
+	void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
+	{
+		if (popup is IQueryAttributable popupIQueryAttributable)
+		{
+			popupIQueryAttributable.ApplyQueryAttributes(query);	
+		}
+
+		if (popup.Content is IQueryAttributable popupContentIQueryAttributable)
+		{
+			popupContentIQueryAttributable.ApplyQueryAttributes(query);
 		}
 	}
 
