@@ -538,25 +538,45 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	static async Task<byte[]> GetBytesFromMetadataArtworkUrl(string? url, CancellationToken cancellationToken = default)
 	{
-		byte[] artworkData = [];
+		Stream? stream = null;
 		try
 		{
-			var response = await client.GetAsync(url, cancellationToken).ConfigureAwait(false);
-			var stream = response.IsSuccessStatusCode ? await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false) : null;
-
-			if (stream is null)
+			byte[] artworkData = [];
+			if (Uri.TryCreate(url!, UriKind.Absolute, out var uri))
 			{
-				return artworkData;
-			}
+				int contentLength = 0;
+				if (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
+				{
+					var request = new HttpRequestMessage(HttpMethod.Head, url);
+					var contentLengthResponse = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+					contentLength = (int)(contentLengthResponse.Content.Headers.ContentLength ?? 0);
+					var response = await client.GetAsync(url, HttpCompletionOption.ResponseContentRead, cancellationToken).ConfigureAwait(false);
+					stream = response.IsSuccessStatusCode ? await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false) : null;
+				}
+				else if (uri.Scheme == Uri.UriSchemeFile)
+				{
+					stream = File.OpenRead(url!);
+					FileInfo fi = new(url);
+					contentLength = (int)fi.Length;
+				}
 
-			using var memoryStream = new MemoryStream();
-			await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
-			var bytes = memoryStream.ToArray();
-			return bytes;
-		}
-		catch
-		{
+				if (stream is not null)
+				{
+					// allocate memory once
+					artworkData = new byte[contentLength];
+					using var memoryStream = new MemoryStream(artworkData);
+					await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+				}
+			}
 			return artworkData;
+		}
+		catch (Exception)
+		{
+			return [];
+		}
+		finally
+		{
+			stream?.Close();
 		}
 	}
 
@@ -636,7 +656,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
 		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
 		var data = await GetBytesFromMetadataArtworkUrl(MediaElement.MetadataArtworkUrl, cancellationToken).ConfigureAwait(true);
-		mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);
+		if (data != null && data.Length > 0)
+		{
+			mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);
+		}
 
 		mediaItem = new MediaItem.Builder();
 		mediaItem.SetUri(url);
