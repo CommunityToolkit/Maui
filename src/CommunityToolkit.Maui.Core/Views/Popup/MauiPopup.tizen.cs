@@ -10,6 +10,9 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// The native implementation of Popup control.
 /// </summary>
+#if NET10_0_OR_GREATER
+#error Remove MauiPopup
+#endif
 [Obsolete($"{nameof(MauiPopup)} is no longer used by {nameof(CommunityToolkit)}.{nameof(Maui)} and will be removed in .NET 10")]
 public class MauiPopup : Popup
 {
