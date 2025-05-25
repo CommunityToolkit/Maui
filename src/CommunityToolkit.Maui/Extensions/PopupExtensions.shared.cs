@@ -215,24 +215,21 @@ public static class PopupExtensions
 		
 		ArgumentNullException.ThrowIfNull(navigation);
 
-		var currentVisibleModalPage = navigation.ModalStack.LastOrDefault();
+		var currentVisibleModalPage = Shell.Current is null
+			? navigation.ModalStack.LastOrDefault()
+			: Shell.Current.Navigation.ModalStack.LastOrDefault();
+		
 		if (currentVisibleModalPage is null)
 		{
 			throw new PopupNotFoundException();
 		}
 
-		if (currentVisibleModalPage is not PopupPage)
+		if (currentVisibleModalPage is not PopupPage popupPage)
 		{
 			throw new PopupBlockedException(currentVisibleModalPage);
 		}
-		
-		// At first glance, calling `token.ThrowIfCancellationRequested()` may look redundant given that we are using `.WaitAsync(token)` in the next step,
-		// However, `Navigation.PopModalAsync()` may return a completed Task, and when a completed Task is returned, `.WaitAsync(token)` is never invoked.
-		// In other words, `.WaitAsync(token)` may not throw an `OperationCanceledException` as expected which is why we call `.ThrowIfCancellationRequested()` again here
-		// Here's the .NET MAUI Source code demonstrating that `Navigation.PopModalAsync()` sometimes returns `Task.FromResult()`: https://github.com/dotnet/maui/blob/e5c252ec7f430cbaf28c8a815a249e3270b49844/src/Controls/src/Core/NavigationProxy.cs#L192-L196
-		token.ThrowIfCancellationRequested();
-		
-		return navigation.PopModalAsync(false).WaitAsync(token);
+
+		return popupPage.Close(new PopupResult(false), token);
 	}
 
 	static PopupResult<T> GetPopupResult<T>(in IPopupResult result)

@@ -196,7 +196,8 @@ public class PopupPageTests : BaseHandlerTest
 		await navigation.PushModalAsync(new ContentPage());
 
 		// Assert
-		await Assert.ThrowsAsync<InvalidPopupOperationException>(async () => await popupPage.Close(new PopupResult(false), CancellationToken.None));
+		await Assert.ThrowsAsync<PopupBlockedException>(async () => await popupPage.Close(new PopupResult(false), CancellationToken.None));
+		await Assert.ThrowsAnyAsync<InvalidPopupOperationException>(async () => await popupPage.Close(new PopupResult(false), CancellationToken.None));
 		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await popupPage.Close(new PopupResult(false), CancellationToken.None));
 	}
 

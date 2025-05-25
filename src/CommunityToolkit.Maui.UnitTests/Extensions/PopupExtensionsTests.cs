@@ -166,7 +166,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task qShowPopupAsync_Shell_AwaitingShowPopupAsync_EnsurePreviousPopupClosed()
+	public async Task ShowPopupAsync_Shell_AwaitingShowPopupAsync_EnsurePreviousPopupClosed()
 	{
 		// Arrange
 		var shell = new Shell();
