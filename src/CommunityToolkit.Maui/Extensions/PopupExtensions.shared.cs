@@ -196,6 +196,37 @@ public static class PopupExtensions
 		}
 	}
 
+	/// <summary>
+	/// Close the Popup
+	/// </summary>
+	public static Task ClosePopup(this Page page)
+	{
+		ArgumentNullException.ThrowIfNull(page);
+
+		return ClosePopup(page.Navigation);
+	}
+	
+	/// <summary>
+	/// Close the Popup
+	/// </summary>
+	public static Task ClosePopup(this INavigation navigation)
+	{
+		ArgumentNullException.ThrowIfNull(navigation);
+
+		var currentVisibleModalPage = navigation.ModalStack.LastOrDefault();
+		if (currentVisibleModalPage is null)
+		{
+			throw new PopupNotFoundException();
+		}
+
+		if (currentVisibleModalPage is not PopupPage)
+		{
+			throw new PopupBlockedException(currentVisibleModalPage);
+		}
+
+		return navigation.PopModalAsync(false);
+	}
+
 	static PopupResult<T> GetPopupResult<T>(in IPopupResult result)
 	{
 		return result switch

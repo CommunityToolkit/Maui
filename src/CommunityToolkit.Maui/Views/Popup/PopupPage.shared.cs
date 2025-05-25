@@ -95,7 +95,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		if (Navigation.ModalStack[^1] is Microsoft.Maui.Controls.Page currentVisibleModalPage
 			&& currentVisibleModalPage != popupPageToClose)
 		{
-			throw new InvalidPopupOperationException($"Unable to close Popup because it is blocked by the Modal Page {currentVisibleModalPage.GetType().FullName}. Please call `{nameof(Navigation)}.{nameof(Navigation.PopModalAsync)}()` to first remove {currentVisibleModalPage.GetType().FullName} from the {nameof(Navigation.ModalStack)}");
+			throw new PopupBlockedException(currentVisibleModalPage);
 		}
 
 		// We call `.ThrowIfCancellationRequested()` again to avoid a race condition where a developer cancels the CancellationToken after we check for an InvalidOperationException
