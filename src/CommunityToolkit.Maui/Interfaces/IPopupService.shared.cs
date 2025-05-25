@@ -60,7 +60,7 @@ public interface IPopupService
 	/// <returns>An <see cref="IPopupResult{TResult}"/> when the popup is closed or the <paramref name="cancellationToken"/> is cancelled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
 	Task<IPopupResult<TResult>> ShowPopupAsync<T, TResult>(INavigation navigation, IPopupOptions? options = null, CancellationToken cancellationToken = default)
 		where T : notnull;
-	
+
 	/// <summary>
 	/// Shows a popup with the specified options.
 	/// </summary>

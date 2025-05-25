@@ -38,7 +38,7 @@ public static class PopupExtensions
 
 		await navigation.PushModalAsync(popupPage, false);
 	}
-	
+
 	/// <summary>
 	/// Shows a popup with the specified options.
 	/// </summary>
@@ -84,7 +84,7 @@ public static class PopupExtensions
 
 		return GetPopupResult<TResult>(result);
 	}
-	
+
 	/// <summary>
 	/// Shows a popup with the specified options.
 	/// </summary>
@@ -97,7 +97,7 @@ public static class PopupExtensions
 	public static async Task<IPopupResult<TResult>> ShowPopupAsync<TResult>(this Shell shell, View view, IPopupOptions? options = null, IDictionary<string, object>? shellParameters = null, CancellationToken token = default)
 	{
 		var result = await ShowPopupAsync(shell, view, options, shellParameters, token);
-		
+
 		return GetPopupResult<TResult>(result);
 	}
 
@@ -170,7 +170,7 @@ public static class PopupExtensions
 		popupPage.PopupClosed += HandlePopupClosed;
 
 		Routing.RegisterRoute(popupPageRoute, new PopupPageRouteFactory(popupPage));
-		
+
 		try
 		{
 			if (shellParameters is null)
@@ -181,7 +181,7 @@ public static class PopupExtensions
 			{
 				await shell.GoToAsync(popupPageRoute, shellParameters).WaitAsync(token);
 			}
-			
+
 			return await taskCompletionSource.Task.WaitAsync(token);
 		}
 		finally
@@ -195,7 +195,7 @@ public static class PopupExtensions
 			taskCompletionSource.SetResult(e);
 		}
 	}
-	
+
 	static PopupResult<T> GetPopupResult<T>(in IPopupResult result)
 	{
 		return result switch

@@ -6,10 +6,10 @@
 public class MediaElementOptions
 {
 	readonly MauiAppBuilder? builder;
-	
+
 	internal MediaElementOptions()
 	{
-		
+
 	}
 
 	internal MediaElementOptions(in MauiAppBuilder builder) : this()

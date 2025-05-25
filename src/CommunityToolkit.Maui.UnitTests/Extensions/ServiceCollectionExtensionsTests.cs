@@ -10,7 +10,7 @@ public class ServiceCollectionExtensionsTests : BaseTest
 	readonly Type mockPageType = typeof(MockPage);
 	readonly Type mockPopupType = typeof(MockSelfClosingPopup);
 	readonly Type mockViewModelType = typeof(MockPageViewModel);
-	
+
 	[Fact]
 	public void IServiceCollection_VerifyTransientPopup()
 	{
@@ -32,7 +32,7 @@ public class ServiceCollectionExtensionsTests : BaseTest
 
 		Assert.IsType<MockPopup>(serviceProvider.GetRequiredService<MockPopup>());
 	}
-	
+
 	[Fact]
 	public void IServiceCollection_VerifyTransientPopupWithViewModel()
 	{
@@ -164,7 +164,7 @@ public class ServiceCollectionExtensionsTests : BaseTest
 		Assert.IsType<MockPageViewModel>(serviceProvider.GetRequiredService<MockPageViewModel>());
 		Assert.True(factory.WasInvoked);
 	}
-	
+
 	[Fact]
 	public void IServiceCollection_VerifySingletonPopup()
 	{
@@ -183,10 +183,10 @@ public class ServiceCollectionExtensionsTests : BaseTest
 		Assert.Equal(expectedServiceLifetime, mockPopupServiceDescriptor.Lifetime);
 		Assert.Equal(typeof(MockPopup), mockPopupServiceDescriptor.ServiceType);
 		Assert.Equal(typeof(MockPopup), mockPopupServiceDescriptor.ImplementationType);
-		
+
 		Assert.IsType<MockPopup>(serviceProvider.GetRequiredService<MockPopup>());
 	}
-	
+
 	[Fact]
 	public void IServiceCollection_VerifySingletonPopupWithViewModel()
 	{
@@ -319,7 +319,7 @@ public class ServiceCollectionExtensionsTests : BaseTest
 
 		Assert.True(factory.WasInvoked);
 	}
-	
+
 	[Fact]
 	public void IServiceCollection_VerifyScopedPopup()
 	{
@@ -338,10 +338,10 @@ public class ServiceCollectionExtensionsTests : BaseTest
 		Assert.Equal(expectedServiceLifetime, mockPopupServiceDescriptor.Lifetime);
 		Assert.Equal(typeof(MockPopup), mockPopupServiceDescriptor.ServiceType);
 		Assert.Equal(typeof(MockPopup), mockPopupServiceDescriptor.ImplementationType);
-		
+
 		Assert.IsType<MockPopup>(serviceProvider.GetRequiredService<MockPopup>());
 	}
-	
+
 	[Fact]
 	public void IServiceCollection_VerifyScopedPopupWithViewModel()
 	{

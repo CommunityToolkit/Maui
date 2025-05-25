@@ -27,7 +27,7 @@ public static class ServiceCollectionExtensions
 
 		return services;
 	}
-	
+
 	/// <summary>
 	/// Adds a <see cref="View"/> of the type specified in <typeparamref name="TPopupView"/> and a ViewModel
 	/// of the type specified in <typeparamref name="TPopupViewModel"/> to the specified
@@ -46,7 +46,7 @@ public static class ServiceCollectionExtensions
 
 		return services;
 	}
-	
+
 	/// <summary>
 	/// Adds a <see cref="View"/> of the type specified in <typeparamref name="TPopupView"/> and a ViewModel
 	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime.
@@ -61,7 +61,7 @@ public static class ServiceCollectionExtensions
 
 		return services;
 	}
-	
+
 	/// <summary>
 	/// Adds a <see cref="View"/> of the type specified in <typeparamref name="TPopupView"/> and a ViewModel
 	/// of the type specified in <typeparamref name="TPopupViewModel"/> to the specified
@@ -80,8 +80,8 @@ public static class ServiceCollectionExtensions
 
 		return services;
 	}
-	
-		/// <summary>
+
+	/// <summary>
 	/// Adds a <see cref="View"/> of the type specified in <typeparamref name="TPopupView"/> and a ViewModel
 	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime.
 	/// </summary>
@@ -95,7 +95,7 @@ public static class ServiceCollectionExtensions
 
 		return services;
 	}
-		
+
 	/// <summary>
 	/// Adds a <see cref="View"/> of the type specified in <typeparamref name="TPopupView"/> and a ViewModel
 	/// of the type specified in <typeparamref name="TPopupViewModel"/> to the specified
@@ -114,8 +114,8 @@ public static class ServiceCollectionExtensions
 
 		return services;
 	}
-	
-	
+
+
 	/// <summary>
 	/// Adds a <see cref="BindableObject"/> of the type specified in <typeparamref name="TView"/> and a ViewModel
 	/// of the type specified in <typeparamref name="TViewModel"/> to the specified

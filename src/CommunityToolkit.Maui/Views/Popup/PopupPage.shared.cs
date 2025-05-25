@@ -83,8 +83,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		// We first call `.ThrowIfCancellationRequested()` to ensure we don't throw one of the `InvalidOperationException`s (below) if the `CancellationToken` has already been canceled.
 		// This ensures we throw the correct `OperationCanceledException` in the rare scenario where a developer cancels the token, then manually calls `Navigation.PopModalAsync()` before calling `Popup.Close()`
 		// It may feel a bit redundant, given that we again call `ThrowIfCancellationRequested` later in this method, however, this ensures we propagate the correct Exception to the developer.
-		token.ThrowIfCancellationRequested(); 
-		
+		token.ThrowIfCancellationRequested();
+
 		var popupPageToClose = Navigation.ModalStack.OfType<PopupPage>().LastOrDefault(popupPage => popupPage.Content == Content);
 
 		if (popupPageToClose is null)
@@ -93,7 +93,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 
 		if (Navigation.ModalStack[^1] is Microsoft.Maui.Controls.Page currentVisibleModalPage
-		    && currentVisibleModalPage != popupPageToClose)
+			&& currentVisibleModalPage != popupPageToClose)
 		{
 			throw new InvalidPopupOperationException($"Unable to close Popup because it is blocked by the Modal Page {currentVisibleModalPage.GetType().FullName}. Please call `{nameof(Navigation)}.{nameof(Navigation.PopModalAsync)}()` to first remove {currentVisibleModalPage.GetType().FullName} from the {nameof(Navigation.ModalStack)}");
 		}
@@ -163,12 +163,12 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			tapOutsideOfPopupCommand.ChangeCanExecute();
 		}
 	}
-	
+
 	void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
 	{
 		if (popup is IQueryAttributable popupIQueryAttributable)
 		{
-			popupIQueryAttributable.ApplyQueryAttributes(query);	
+			popupIQueryAttributable.ApplyQueryAttributes(query);
 		}
 
 		if (popup.Content is IQueryAttributable popupContentIQueryAttributable)

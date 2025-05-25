@@ -84,7 +84,7 @@ public abstract class BaseTest : IDisposable, IAsyncDisposable
 		options.SetShouldSuppressExceptionsInAnimations(false);
 		options.SetShouldSuppressExceptionsInBehaviors(false);
 		options.SetShouldSuppressExceptionsInConverters(false);
-		
+
 		// Restore default MediaElementOptions
 		var mediaElementOptions = new MediaElementOptions();
 		mediaElementOptions.SetDefaultAndroidViewType(AndroidViewType.SurfaceView);

@@ -26,7 +26,7 @@ static class PopupDefaults
 	/// Default value for <see cref="Microsoft.Maui.Controls.View.HorizontalOptions"/> 
 	/// </summary>
 	public static LayoutOptions HorizontalOptions { get; } = LayoutOptions.Center;
-	
+
 	/// <summary>
 	/// Default value for <see cref="VisualElement.BackgroundColor"/> BackgroundColor 
 	/// </summary>

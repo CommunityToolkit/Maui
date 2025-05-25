@@ -787,7 +787,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		var showPopupTask = navigation.ShowPopupAsync<object?>(view, PopupOptions.Empty, TestContext.Current.CancellationToken);
 
 		var popupPage = (PopupPage)navigation.ModalStack[0];
-		
+
 		await popupPage.Close(new PopupResult<object?>(null, false), TestContext.Current.CancellationToken);
 		await showPopupTask;
 
@@ -875,7 +875,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		var showPopupTask = navigation.ShowPopupAsync<int>(view, PopupOptions.Empty, TestContext.Current.CancellationToken);
 
 		var popupPage = (PopupPage)navigation.ModalStack[0];
-		
+
 		await popupPage.Close(expectedPopupResult, TestContext.Current.CancellationToken);
 		var actualPopupResult = await showPopupTask;
 
@@ -905,7 +905,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		var showPopupTask = shell.ShowPopupAsync<int>(view, PopupOptions.Empty, shellParameters, TestContext.Current.CancellationToken);
 
 		var popupPage = (PopupPage)shellNavigation.ModalStack[0];
-		
+
 		await popupPage.Close(expectedPopupResult, TestContext.Current.CancellationToken);
 		var actualPopupResult = await showPopupTask;
 

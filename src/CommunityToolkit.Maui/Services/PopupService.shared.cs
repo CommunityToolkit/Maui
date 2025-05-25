@@ -29,7 +29,7 @@ public class PopupService : IPopupService
 	public PopupService()
 	{
 		serviceProvider = IPlatformApplication.Current?.Services
-		                  ?? throw new InvalidOperationException("Could not locate IServiceProvider");
+						  ?? throw new InvalidOperationException("Could not locate IServiceProvider");
 	}
 
 	/// <inheritdoc />
@@ -123,7 +123,7 @@ public class PopupService : IPopupService
 		where TPopupViewModel : notnull
 	{
 		viewModelToViewMappings.TryAdd(typeof(TPopupViewModel), typeof(TPopupView));
-		
+
 		services.TryAdd(new ServiceDescriptor(typeof(TPopupView), typeof(TPopupView), lifetime));
 		services.TryAdd(new ServiceDescriptor(typeof(TPopupViewModel), typeof(TPopupViewModel), lifetime));
 	}

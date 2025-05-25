@@ -280,7 +280,7 @@ public class PopupServiceTests : BaseHandlerTest
 sealed class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
 {
 	public const int ExpectedResult = 2;
-	
+
 	public MockSelfClosingPopup(MockPageViewModel viewModel, object? result = null)
 	{
 		BackgroundColor = DefaultBackgroundColor;
@@ -289,7 +289,7 @@ sealed class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
 		Opened += HandlePopupOpened;
 	}
 
-	public static Color DefaultBackgroundColor { get; } = Colors.White; 
+	public static Color DefaultBackgroundColor { get; } = Colors.White;
 
 	void HandlePopupOpened(object? sender, EventArgs e)
 	{
@@ -314,7 +314,7 @@ sealed class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
 	}
 
 	public object? Result { get; } = ExpectedResult;
-	
+
 	void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
 	{
 		BackgroundColor = (Color)query[nameof(BackgroundColor)];

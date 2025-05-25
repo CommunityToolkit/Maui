@@ -477,7 +477,7 @@ public class PopupPageTests : BaseHandlerTest
 		Assert.Equal(LayoutOptions.Start, border.VerticalOptions);
 		Assert.Equal(LayoutOptions.End, border.HorizontalOptions);
 	}
-	
+
 	// Helper class for testing protected methods
 	sealed class TestablePopupPage(View view, IPopupOptions popupOptions) : PopupPage(view, popupOptions)
 	{

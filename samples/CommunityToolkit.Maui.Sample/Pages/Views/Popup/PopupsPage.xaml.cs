@@ -25,13 +25,13 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		};
 
 		await popupService.ShowPopupAsync<SimplePopup>(Shell.Current, new PopupOptions
+		{
+			Shape = new RoundRectangle
 			{
-				Shape = new RoundRectangle
-				{
-					CornerRadius = new CornerRadius(4),
-					Stroke = Colors.White
-				}
-			}, queryAttributes
+				CornerRadius = new CornerRadius(4),
+				Stroke = Colors.White
+			}
+		}, queryAttributes
 			, CancellationToken.None);
 	}
 

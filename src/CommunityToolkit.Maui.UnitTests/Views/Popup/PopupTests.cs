@@ -11,7 +11,7 @@ public class PopupTests : BaseTest
 	{
 		Assert.Equal(PopupDefaults.BackgroundColor, Colors.White);
 	}
-	
+
 	[Fact]
 	public void Margin_DefaultValue_ShouldBeDefaultThickness()
 	{
@@ -75,7 +75,7 @@ public class PopupTests : BaseTest
 		popup.HorizontalOptions = layoutOptions;
 		Assert.Equal(layoutOptions, popup.HorizontalOptions);
 	}
-	
+
 	[Fact]
 	public void NotifyPopupIsOpened_ShouldInvokeOpenedEvent()
 	{
