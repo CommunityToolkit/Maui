@@ -31,8 +31,7 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 				CornerRadius = new CornerRadius(4),
 				Stroke = Colors.White
 			}
-		}, queryAttributes
-			, CancellationToken.None);
+		}, queryAttributes, CancellationToken.None);
 	}
 
 	async void HandleButtonPopupButtonClicked(object sender, EventArgs e)
