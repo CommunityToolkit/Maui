@@ -28,7 +28,7 @@ sealed record PopupResult<T> : PopupResult, IPopupResult<T>
 	}
 
 	public T? Result => WasDismissedByTappingOutsideOfPopup && !typeof(T).IsNullable()
-		? throw new PopupResultException($"{nameof(Result)} is null, but {nameof(PopupResult)} type, {typeof(T)}, cannot be converted to null. Every time {nameof(WasDismissedByTappingOutsideOfPopup)} is {true}, {nameof(Result)} is always null. When using a non-nullable type, e.g. bool, be sure to first check if {nameof(WasDismissedByTappingOutsideOfPopup)} is {false} before getting the value of {nameof(Result)}")
+		? throw new PopupResultException($"{nameof(Result)} is null, but {nameof(PopupResult)} type, {typeof(T)}, cannot be converted to null. Every time {nameof(WasDismissedByTappingOutsideOfPopup)} is {true}, {nameof(Result)} is always null. When using a non-nullable type (e.g. bool) be sure to first check if {nameof(WasDismissedByTappingOutsideOfPopup)} is {false} before getting the value of {nameof(Result)}")
 		: field;
 }
 

@@ -64,10 +64,10 @@
     <MauiFont Include="Resources\Fonts\*" />
 
     <PackageReference Include="Microsoft.Maui.Controls" Version="*" />
-    <PackageReference Include="CommunityToolkit.Maui.Markup" Version="5.1.0" />
+    <PackageReference Include="CommunityToolkit.Maui.Markup" Version="6.0.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="9.4.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="9.5.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.5" />
   </ItemGroup>
 
   <PropertyGroup>
