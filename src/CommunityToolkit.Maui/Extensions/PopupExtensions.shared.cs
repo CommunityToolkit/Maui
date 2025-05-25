@@ -211,6 +211,8 @@ public static class PopupExtensions
 	/// </summary>
 	public static Task ClosePopup(this INavigation navigation, CancellationToken token = default)
 	{
+		token.ThrowIfCancellationRequested();
+		
 		ArgumentNullException.ThrowIfNull(navigation);
 
 		var currentVisibleModalPage = navigation.ModalStack.LastOrDefault();

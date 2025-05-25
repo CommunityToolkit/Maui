@@ -31,8 +31,45 @@ public class PopupExtensionsTests : BaseHandlerTest
 		navigation = page.Navigation;
 	}
 
-	[Fact]
-	public void ShowPopupAsync_WithPopupType_ShowsPopup()
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ClosePopup_TokenExpired_ShouldThrowOperationCancelledException()
+	{
+		// Arrange
+		var cts = new CancellationTokenSource();
+		
+		// Act
+		await cts.CancelAsync();
+		
+		// Assert
+		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ClosePopup(cts.Token));
+	}
+	
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ClosePopup_NoExistingPopup_ShouldThrowPopupNotFoundException()
+	{
+		// Arrange
+		
+		// Act
+		
+		// Assert
+		await Assert.ThrowsAsync<PopupNotFoundException>(() => navigation.ClosePopup(TestContext.Current.CancellationToken));
+	}
+	
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ClosePopup_PopupBlocked_ShouldThrowPopupBlockedException()
+	{
+		// Arrange
+		
+		// Act
+		navigation.ShowPopup(new Button());
+		await navigation.PushModalAsync(new ContentPage());
+		
+		// Assert
+		await Assert.ThrowsAsync<PopupBlockedException>(() => navigation.ClosePopup(TestContext.Current.CancellationToken));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_WithPopupType_ShowsPopupAndClosesPopup()
 	{
 		// Arrange
 		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
@@ -43,10 +80,16 @@ public class PopupExtensionsTests : BaseHandlerTest
 		// Assert
 		Assert.Single(navigation.ModalStack);
 		Assert.IsType<PopupPage>(navigation.ModalStack[0]);
+		
+		// Act
+		await navigation.ClosePopup(TestContext.Current.CancellationToken);
+		
+		// Assert
+		Assert.Empty(navigation.ModalStack);
 	}
 
-	[Fact]
-	public void ShowPopupAsync_Shell_WithPopupType_ShowsPopup()
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_Shell_WithPopupType_ShowsPopupAndClosesPopup()
 	{
 		// Arrange
 		var shell = new Shell();
@@ -63,6 +106,12 @@ public class PopupExtensionsTests : BaseHandlerTest
 		// Assert
 		Assert.Single(shellNavigation.ModalStack);
 		Assert.IsType<PopupPage>(shellNavigation.ModalStack[0]);
+		
+		// Act
+		await navigation.ClosePopup(TestContext.Current.CancellationToken);
+		
+		// Assert
+		Assert.Empty(navigation.ModalStack);
 	}
 
 	[Fact]
