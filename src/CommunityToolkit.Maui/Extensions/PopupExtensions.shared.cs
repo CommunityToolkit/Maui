@@ -197,7 +197,7 @@ public static class PopupExtensions
 	}
 
 	/// <summary>
-	/// Close the Popup
+	/// Close the Visible Popup
 	/// </summary>
 	public static Task ClosePopup(this Page page)
 	{
@@ -207,7 +207,7 @@ public static class PopupExtensions
 	}
 	
 	/// <summary>
-	/// Close the Popup
+	/// Close the Visible Popup
 	/// </summary>
 	public static Task ClosePopup(this INavigation navigation)
 	{
