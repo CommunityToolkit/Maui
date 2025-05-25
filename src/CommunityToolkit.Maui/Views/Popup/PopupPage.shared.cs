@@ -150,7 +150,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		if (view is IPaddingElement paddingElement)
 		{
-			popup.SetBinding(Popup.PaddingProperty, static (IPaddingElement paddingElement) => paddingElement.Padding, source: paddingElement, mode: BindingMode.OneWay);
+			popup.SetBinding(Popup.PaddingProperty, static (IPaddingElement paddingElement) => paddingElement.Padding, source: paddingElement, mode: BindingMode.OneWay, converter: new PaddingConverter());
 		}
 
 		return popup;
@@ -219,5 +219,12 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 			public override Brush? ConvertFrom(Shape? value, CultureInfo? culture) => value?.Stroke;
 		}
+	}
+	
+	sealed partial class PaddingConverter : BaseConverterOneWay<Thickness, Thickness>
+	{
+		public override Thickness DefaultConvertReturnValue { get; set; } = PopupDefaults.Padding;
+
+		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value == default ? PopupDefaults.Padding : value;
 	}
 }
