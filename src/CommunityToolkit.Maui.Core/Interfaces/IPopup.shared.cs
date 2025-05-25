@@ -6,6 +6,9 @@ namespace CommunityToolkit.Maui.Core;
 /// <summary>
 /// Represents a small View that pops up at front the Page.
 /// </summary>
+#if NET10_0_OR_GREATER
+#error Remove IPopup
+#endif
 [Obsolete($"{nameof(IPopup)} is no longer used by {nameof(CommunityToolkit)}.{nameof(Maui)} and will be removed in .NET 10")]
 public interface IPopup : IElement, IVisualTreeElement, IAsynchronousHandler
 {
