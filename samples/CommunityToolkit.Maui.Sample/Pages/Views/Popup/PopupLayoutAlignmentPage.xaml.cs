@@ -27,10 +27,6 @@ public partial class PopupLayoutAlignmentPage : BasePage<PopupLayoutAlignmentVie
 		{
 			verticalOptions = LayoutOptions.End;
 		}
-		else if (VerticalOptionsFillRadioButton.IsChecked)
-		{
-			verticalOptions = LayoutOptions.Fill;
-		}
 		else
 		{
 			throw new InvalidOperationException("VerticalOptions Radio Button Must Be Selected");
@@ -47,10 +43,6 @@ public partial class PopupLayoutAlignmentPage : BasePage<PopupLayoutAlignmentVie
 		else if (HorizontalOptionsEndRadioButton.IsChecked)
 		{
 			horizontalOptions = LayoutOptions.End;
-		}
-		else if (HorizontalOptionsFillRadioButton.IsChecked)
-		{
-			horizontalOptions = LayoutOptions.Fill;
 		}
 		else
 		{
