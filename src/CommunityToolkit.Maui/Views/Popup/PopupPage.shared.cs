@@ -145,8 +145,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		popup.SetBinding(BindingContextProperty, static (View view) => view.BindingContext, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(BackgroundColorProperty, static (View view) => view.BackgroundColor, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(Popup.MarginProperty, static (View view) => view.Margin, source: view, mode: BindingMode.OneWay);
-		popup.SetBinding(Popup.VerticalOptionsProperty, static (View view) => view.VerticalOptions, source: view, mode: BindingMode.OneWay);
-		popup.SetBinding(Popup.HorizontalOptionsProperty, static (View view) => view.HorizontalOptions, source: view, mode: BindingMode.OneWay);
+		popup.SetBinding(Popup.VerticalOptionsProperty, static (View view) => view.VerticalOptions, source: view, mode: BindingMode.OneWay, converter: new VerticalOptionsConverter());
+		popup.SetBinding(Popup.HorizontalOptionsProperty, static (View view) => view.HorizontalOptions, source: view, mode: BindingMode.OneWay, converter: new HorizontalOptionsConverter());
 
 		if (view is IPaddingElement paddingElement)
 		{
@@ -226,5 +226,19 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		public override Thickness DefaultConvertReturnValue { get; set; } = PopupDefaults.Padding;
 
 		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value == default ? PopupDefaults.Padding : value;
+	}
+	
+	sealed partial class HorizontalOptionsConverter : BaseConverterOneWay<LayoutOptions, LayoutOptions>
+	{
+		public override LayoutOptions DefaultConvertReturnValue { get; set; } = PopupDefaults.HorizontalOptions;
+
+		public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? PopupDefaults.HorizontalOptions : value;
+	}
+	
+	sealed partial class VerticalOptionsConverter : BaseConverterOneWay<LayoutOptions, LayoutOptions>
+	{
+		public override LayoutOptions DefaultConvertReturnValue { get; set; } = PopupDefaults.VerticalOptions;
+
+		public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? PopupDefaults.VerticalOptions : value;
 	}
 }
