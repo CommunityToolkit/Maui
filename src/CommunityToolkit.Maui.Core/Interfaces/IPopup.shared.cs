@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using IElement = Microsoft.Maui.IElement;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
@@ -9,7 +10,7 @@ namespace CommunityToolkit.Maui.Core;
 #if NET10_0_OR_GREATER
 #error Remove IPopup
 #endif
-[Obsolete($"{nameof(IPopup)} is no longer used by {nameof(CommunityToolkit)}.{nameof(Maui)} and will be removed in .NET 10")]
+[EditorBrowsable(EditorBrowsableState.Never), Obsolete($"{nameof(IPopup)} is no longer used by {nameof(CommunityToolkit)}.{nameof(Maui)} and will be removed in .NET 10")]
 public interface IPopup : IElement, IVisualTreeElement, IAsynchronousHandler
 {
 	/// <summary>

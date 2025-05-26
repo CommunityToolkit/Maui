@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Core.Extensions;
 using Microsoft.Maui.ApplicationModel;
@@ -16,7 +17,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 #if NET10_0_OR_GREATER
 #error Remove MauiPopup
 #endif
-[Obsolete($"{nameof(MauiPopup)} is no longer used by {nameof(CommunityToolkit)}.{nameof(Maui)} and will be removed in .NET 10")]
+[EditorBrowsable(EditorBrowsableState.Never), Obsolete($"{nameof(MauiPopup)} is no longer used by {nameof(CommunityToolkit)}.{nameof(Maui)} and will be removed in .NET 10")]
 public class MauiPopup(IMauiContext mauiContext) : UIViewController
 {
 	readonly IMauiContext mauiContext = mauiContext ?? throw new ArgumentNullException(nameof(mauiContext));

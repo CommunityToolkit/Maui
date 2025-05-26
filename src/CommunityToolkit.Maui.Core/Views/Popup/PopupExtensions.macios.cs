@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 
@@ -8,7 +9,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 #if NET10_0_OR_GREATER
 #error Remove PopupExtensions
 #endif
-[Obsolete($"{nameof(PopupExtensions)} is no longer used by {nameof(CommunityToolkit)}.{nameof(Maui)} and will be removed in .NET 10")]
+[EditorBrowsable(EditorBrowsableState.Never), Obsolete($"{nameof(PopupExtensions)} is no longer used by {nameof(CommunityToolkit)}.{nameof(Maui)} and will be removed in .NET 10")]
 public static class PopupExtensions
 {
 	static readonly nfloat defaultPopoverLayoutMargin = 0.0001f;
