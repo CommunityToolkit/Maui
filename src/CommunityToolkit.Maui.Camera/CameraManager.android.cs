@@ -130,6 +130,7 @@ partial class CameraManager
 			previewView?.Dispose();
 			previewView = null;
 
+			processCameraProvider?.UnbindAll();
 			processCameraProvider?.Dispose();
 			processCameraProvider = null;
 
