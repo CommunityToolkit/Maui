@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 namespace CommunityToolkit.Maui.Core.Handlers;
 
 /// <summary>
@@ -6,7 +8,7 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 #if NET10_0_OR_GREATER
 #error Remove PopupHandler
 #endif
-[Obsolete($"{nameof(PopupHandler)} is no longer used by {nameof(CommunityToolkit)}.{nameof(Maui)} and will be removed in .NET 10")]
+[EditorBrowsable(EditorBrowsableState.Never), Obsolete($"{nameof(PopupHandler)} is no longer used by {nameof(CommunityToolkit)}.{nameof(Maui)} and will be removed in .NET 10")]
 public partial class PopupHandler
 {
 	/// <summary>

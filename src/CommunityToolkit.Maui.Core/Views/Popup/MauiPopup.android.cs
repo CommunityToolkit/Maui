@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Android.Content;
 using Android.Views;
 using Microsoft.Maui.Platform;
@@ -12,7 +13,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 #if NET10_0_OR_GREATER
 #error Remove MauiPopup
 #endif
-[Obsolete($"{nameof(MauiPopup)} is no longer used by {nameof(CommunityToolkit)}.{nameof(Maui)} and will be removed in .NET 10")]
+[EditorBrowsable(EditorBrowsableState.Never), Obsolete($"{nameof(MauiPopup)} is no longer used by {nameof(CommunityToolkit)}.{nameof(Maui)} and will be removed in .NET 10")]
 public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 {
 	readonly IMauiContext mauiContext;
