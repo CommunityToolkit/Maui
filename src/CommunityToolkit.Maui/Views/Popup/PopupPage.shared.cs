@@ -16,7 +16,7 @@ sealed partial class PopupPage<T>(Popup<T> popup, IPopupOptions popupOptions)
 	{
 	}
 
-	public Task Close(PopupResult<T> result, CancellationToken token = default) => base.CloseAsync(result, token);
+	public Task CloseAsync(PopupResult<T> result, CancellationToken token = default) => base.CloseAsync(result, token);
 }
 
 partial class PopupPage : ContentPage, IQueryAttributable

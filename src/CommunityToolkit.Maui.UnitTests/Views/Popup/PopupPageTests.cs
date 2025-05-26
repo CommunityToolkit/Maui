@@ -166,7 +166,7 @@ public class PopupPageTests : BaseHandlerTest
 
 		await navigation.PushModalAsync(popupPage);
 
-		await popupPage.Close(expectedResult, CancellationToken.None);
+		await popupPage.CloseAsync(expectedResult, CancellationToken.None);
 		var actualResult = await taskCompletionSource.Task;
 
 		// Assert
@@ -213,7 +213,7 @@ public class PopupPageTests : BaseHandlerTest
 		cts.Cancel();
 
 		// Act
-		Func<Task> act = async () => await popupPage.Close(result, cts.Token);
+		Func<Task> act = async () => await popupPage.CloseAsync(result, cts.Token);
 
 		// Assert
 		act.Should().ThrowAsync<OperationCanceledException>();
