@@ -11,6 +11,8 @@
         <ScrollView>
             <VerticalStackLayout Spacing="12">
                 <Button Text="Simple Popup" Clicked="HandleSimplePopupButtonClicked" />
+                
+                <Button Text="Self Closing Popup" Clicked="HandleSelfClosingPopupButtonClicked"/>
 
                 <Button Text="Button Popup" Clicked="HandleButtonPopupButtonClicked" />
 
@@ -45,6 +47,7 @@
                 <Button Text="Popup Style Page" Clicked="HandleStylePopupButtonClicked" />
 
                 <Button Text="OnDisappearing Popup" Clicked="HandleOnDisappearingPopupClicked" />
+                
             </VerticalStackLayout>
         </ScrollView>
     </ContentPage.Content>

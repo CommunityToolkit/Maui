@@ -113,8 +113,8 @@ public class PopupTests : BaseTest
 		var popup = new Popup();
 
 		// Assert
-		await Assert.ThrowsAsync<PopupNotFoundException>(() => popup.Close(TestContext.Current.CancellationToken));
-		await Assert.ThrowsAnyAsync<InvalidOperationException>(() => popup.Close(TestContext.Current.CancellationToken));
+		await Assert.ThrowsAsync<PopupNotFoundException>(() => popup.CloseAsync(TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(() => popup.CloseAsync(TestContext.Current.CancellationToken));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -124,8 +124,8 @@ public class PopupTests : BaseTest
 		var popup = new Popup<string>();
 
 		// Assert
-		await Assert.ThrowsAsync<PopupNotFoundException>(() => popup.Close("Hello", TestContext.Current.CancellationToken));
-		await Assert.ThrowsAnyAsync<InvalidOperationException>(() => popup.Close("Hello", TestContext.Current.CancellationToken));
+		await Assert.ThrowsAsync<PopupNotFoundException>(() => popup.CloseAsync("Hello", TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(() => popup.CloseAsync("Hello", TestContext.Current.CancellationToken));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -135,7 +135,7 @@ public class PopupTests : BaseTest
 		var popup = new PopupOverridingClose();
 
 		// Assert
-		await popup.Close(TestContext.Current.CancellationToken);
+		await popup.CloseAsync(TestContext.Current.CancellationToken);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -145,18 +145,18 @@ public class PopupTests : BaseTest
 		var popup = new PopupTOverridingClose();
 
 		// Assert
-		await popup.Close(TestContext.Current.CancellationToken);
-		await popup.Close("Hello", TestContext.Current.CancellationToken);
+		await popup.CloseAsync(TestContext.Current.CancellationToken);
+		await popup.CloseAsync("Hello", TestContext.Current.CancellationToken);
 	}
 
 	sealed class PopupOverridingClose : Popup
 	{
-		public override Task Close(CancellationToken token = default) => Task.CompletedTask;
+		public override Task CloseAsync(CancellationToken token = default) => Task.CompletedTask;
 	}
 
 	sealed class PopupTOverridingClose : Popup<string>
 	{
-		public override Task Close(CancellationToken token = default) => Task.CompletedTask;
-		public override Task Close(string result, CancellationToken token = default) => Task.CompletedTask;
+		public override Task CloseAsync(CancellationToken token = default) => Task.CompletedTask;
+		public override Task CloseAsync(string result, CancellationToken token = default) => Task.CompletedTask;
 	}
 }

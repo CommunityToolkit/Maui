@@ -9,6 +9,6 @@ public partial class ButtonPopup : Maui.Views.Popup
 
 	void Button_Clicked(object? sender, EventArgs e)
 	{
-		Close();
+		CloseAsync();
 	}
 }

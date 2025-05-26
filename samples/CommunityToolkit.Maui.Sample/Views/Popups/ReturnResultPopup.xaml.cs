@@ -9,6 +9,6 @@ public partial class ReturnResultPopup
 
 	async void Button_Clicked(object? sender, EventArgs e)
 	{
-		await Close("Close button tapped");
+		await CloseAsync("Close button tapped");
 	}
 }

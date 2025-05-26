@@ -32,7 +32,7 @@
         <Label  Grid.Row="0"
                 Grid.ColumnSpan="3"
                 Style="{StaticResource Header}"
-                Text="Popup's can be positioned anywhere on the screen using VerticalOptions and HorizontalOptions. Tap the arrows below to see how this works." 
+                Text="Popups can be positioned anywhere on the screen using VerticalOptions and HorizontalOptions. Tap the arrows below to see how this works." 
                 HorizontalTextAlignment="Center"/>
 
         <Button Grid.Row="1"
