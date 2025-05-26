@@ -85,9 +85,9 @@ public partial class Popup : ContentView
 	}
 
 	/// <summary>
-	/// Close the Popup.
+	/// CloseAsync the Popup.
 	/// </summary>
-	public virtual Task Close(CancellationToken token = default) => GetPopupPage().Close(new PopupResult(false), token);
+	public virtual Task CloseAsync(CancellationToken token = default) => GetPopupPage().CloseAsync(new PopupResult(false), token);
 
 	internal void NotifyPopupIsOpened()
 	{
@@ -123,13 +123,13 @@ public partial class Popup : ContentView
 public partial class Popup<T> : Popup
 {
 	/// <summary>
-	/// Close the Popup with a result.
+	/// CloseAsync the Popup with a result.
 	/// </summary>
 	/// <param name="result">Popup result</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
-	public virtual Task Close(T result, CancellationToken token = default) => GetPopupPage().Close(new PopupResult<T>(result, false), token);
+	public virtual Task CloseAsync(T result, CancellationToken token = default) => GetPopupPage().CloseAsync(new PopupResult<T>(result, false), token);
 }
 
-sealed class PopupNotFoundException() : InvalidPopupOperationException($"Unable to close popup: could not locate {nameof(PopupPage)}. {nameof(PopupExtensions.ShowPopup)} or {nameof(PopupExtensions.ShowPopupAsync)} must be called before {nameof(Popup.Close)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Popup.Close)} method");
+sealed class PopupNotFoundException() : InvalidPopupOperationException($"Unable to close popup: could not locate {nameof(PopupPage)}. {nameof(PopupExtensions.ShowPopup)} or {nameof(PopupExtensions.ShowPopupAsync)} must be called before {nameof(Popup.CloseAsync)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Popup.CloseAsync)} method");
 sealed class PopupBlockedException(in Page currentVisibleModalPage):  InvalidPopupOperationException($"Unable to close Popup because it is blocked by the Modal Page {currentVisibleModalPage.GetType().FullName}. Please call `{nameof(Page.Navigation)}.{nameof(Page.Navigation.PopModalAsync)}()` to first remove {currentVisibleModalPage.GetType().FullName} from the {nameof(Page.Navigation.ModalStack)}");
 class InvalidPopupOperationException(in string message) : InvalidOperationException(message);

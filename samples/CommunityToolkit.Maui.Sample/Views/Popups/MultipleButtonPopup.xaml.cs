@@ -9,11 +9,11 @@ public partial class MultipleButtonPopup : Maui.Views.Popup<bool>
 
 	async void Cancel_Clicked(object? sender, EventArgs e)
 	{
-		await Close(false);
+		await CloseAsync(false);
 	}
 
 	async void Okay_Clicked(object? sender, EventArgs e)
 	{
-		await Close(true);
+		await CloseAsync(true);
 	}
 }

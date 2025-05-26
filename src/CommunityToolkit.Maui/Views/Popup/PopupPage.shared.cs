@@ -16,7 +16,7 @@ sealed partial class PopupPage<T>(Popup<T> popup, IPopupOptions popupOptions)
 	{
 	}
 
-	public Task Close(PopupResult<T> result, CancellationToken token = default) => base.Close(result, token);
+	public Task Close(PopupResult<T> result, CancellationToken token = default) => base.CloseAsync(result, token);
 }
 
 partial class PopupPage : ContentPage, IQueryAttributable
@@ -51,7 +51,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		tapOutsideOfPopupCommand = new Command(async () =>
 		{
 			popupOptions.OnTappingOutsideOfPopup?.Invoke();
-			await Close(new PopupResult(true));
+			await CloseAsync(new PopupResult(true));
 		}, () => popupOptions.CanBeDismissedByTappingOutsideOfPopup);
 
 		Content.GestureRecognizers.Add(new TapGestureRecognizer { Command = tapOutsideOfPopupCommand });
@@ -78,10 +78,10 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	// Casts `PopupPage.Content` to return typeof(PopupPageLayout)
 	internal new PopupPageLayout Content => (PopupPageLayout)base.Content;
 
-	public async Task Close(PopupResult result, CancellationToken token = default)
+	public async Task CloseAsync(PopupResult result, CancellationToken token = default)
 	{
 		// We first call `.ThrowIfCancellationRequested()` to ensure we don't throw one of the `InvalidOperationException`s (below) if the `CancellationToken` has already been canceled.
-		// This ensures we throw the correct `OperationCanceledException` in the rare scenario where a developer cancels the token, then manually calls `Navigation.PopModalAsync()` before calling `Popup.Close()`
+		// This ensures we throw the correct `OperationCanceledException` in the rare scenario where a developer cancels the token, then manually calls `Navigation.PopModalAsync()` before calling `Popup.CloseAsync()`
 		// It may feel a bit redundant, given that we again call `ThrowIfCancellationRequested` later in this method, however, this ensures we propagate the correct Exception to the developer.
 		token.ThrowIfCancellationRequested();
 

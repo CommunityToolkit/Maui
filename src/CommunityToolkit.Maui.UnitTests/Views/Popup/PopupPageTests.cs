@@ -56,8 +56,8 @@ public class PopupPageTests : BaseHandlerTest
 		var popupPage = new PopupPage<string>(view, popupOptions);
 
 		// Act / Assert
-		await Assert.ThrowsAsync<PopupNotFoundException>(async () => await popupPage.Close(new PopupResult(false), CancellationToken.None));
-		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await popupPage.Close(new PopupResult(false), CancellationToken.None));
+		await Assert.ThrowsAsync<PopupNotFoundException>(async () => await popupPage.CloseAsync(new PopupResult(false), CancellationToken.None));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), CancellationToken.None));
 	}
 
 	[Fact]
@@ -80,7 +80,7 @@ public class PopupPageTests : BaseHandlerTest
 
 		await navigation.PushModalAsync(popupPage);
 
-		await popupPage.Close(expectedResult, CancellationToken.None);
+		await popupPage.CloseAsync(expectedResult, CancellationToken.None);
 		var actualResult = await tcs.Task;
 
 		// Assert
@@ -112,7 +112,7 @@ public class PopupPageTests : BaseHandlerTest
 		await cts.CancelAsync();
 
 		// Assert
-		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => popupPage.Close(result, cts.Token));
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => popupPage.CloseAsync(result, cts.Token));
 		Assert.Single(mainPage.Navigation.ModalStack.OfType<PopupPage>());
 	}
 
@@ -196,9 +196,9 @@ public class PopupPageTests : BaseHandlerTest
 		await navigation.PushModalAsync(new ContentPage());
 
 		// Assert
-		await Assert.ThrowsAsync<PopupBlockedException>(async () => await popupPage.Close(new PopupResult(false), CancellationToken.None));
-		await Assert.ThrowsAnyAsync<InvalidPopupOperationException>(async () => await popupPage.Close(new PopupResult(false), CancellationToken.None));
-		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await popupPage.Close(new PopupResult(false), CancellationToken.None));
+		await Assert.ThrowsAsync<PopupBlockedException>(async () => await popupPage.CloseAsync(new PopupResult(false), CancellationToken.None));
+		await Assert.ThrowsAnyAsync<InvalidPopupOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), CancellationToken.None));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), CancellationToken.None));
 	}
 
 	[Fact]
@@ -403,7 +403,7 @@ public class PopupPageTests : BaseHandlerTest
 
 		var popupPage = (PopupPage)navigation.ModalStack[0];
 		popupPage.PopupClosed += (sender, args) => eventTriggered = true;
-		await popupPage.Close(new PopupResult(false), CancellationToken.None);
+		await popupPage.CloseAsync(new PopupResult(false), CancellationToken.None);
 
 		// Assert
 		Assert.True(eventTriggered);
@@ -456,7 +456,7 @@ public class PopupPageTests : BaseHandlerTest
 		var popupPage = new PopupPage(view, popupOptions);
 
 		// Act & Assert
-		await Assert.ThrowsAsync<PopupNotFoundException>(async () => await popupPage.Close(new PopupResult(false), CancellationToken.None));
+		await Assert.ThrowsAsync<PopupNotFoundException>(async () => await popupPage.CloseAsync(new PopupResult(false), CancellationToken.None));
 	}
 
 	[Fact]

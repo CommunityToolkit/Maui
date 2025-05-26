@@ -303,11 +303,11 @@ sealed class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
 			timer.Tick -= HandleTick;
 			try
 			{
-				await Close(Result);
+				await CloseAsync(Result);
 			}
 			catch (InvalidOperationException)
 			{
-				// If test has already ended, Popup.Close will throw an InvalidOperationException
+				// If test has already ended, Popup.CloseAsync will throw an InvalidOperationException
 				// because all Popups are removed from ModalStack in BaseHandlerTest.DisposeAsyncCore()
 			}
 		}

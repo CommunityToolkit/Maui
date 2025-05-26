@@ -97,7 +97,7 @@ public class PopupService : IPopupService
 		cancellationToken.ThrowIfCancellationRequested();
 		var popupPage = GetCurrentPopupPage(navigation);
 
-		await popupPage.Close(new PopupResult(false), cancellationToken);
+		await popupPage.CloseAsync(new PopupResult(false), cancellationToken);
 	}
 
 	/// <inheritdoc />
@@ -106,7 +106,7 @@ public class PopupService : IPopupService
 		cancellationToken.ThrowIfCancellationRequested();
 		var popupPage = GetCurrentPopupPage(navigation);
 
-		await popupPage.Close(new PopupResult<T>(result, false), cancellationToken);
+		await popupPage.CloseAsync(new PopupResult<T>(result, false), cancellationToken);
 	}
 
 	internal static void AddPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView>(

@@ -197,7 +197,7 @@ public static class PopupExtensions
 	}
 
 	/// <summary>
-	/// Close the Visible Popup
+	/// CloseAsync the Visible Popup
 	/// </summary>
 	public static Task ClosePopup(this Page page, CancellationToken token = default)
 	{
@@ -207,7 +207,7 @@ public static class PopupExtensions
 	}
 	
 	/// <summary>
-	/// Close the Visible Popup
+	/// CloseAsync the Visible Popup
 	/// </summary>
 	public static Task ClosePopup(this INavigation navigation, CancellationToken token = default)
 	{
@@ -229,7 +229,7 @@ public static class PopupExtensions
 			throw new PopupBlockedException(currentVisibleModalPage);
 		}
 
-		return popupPage.Close(new PopupResult(false), token);
+		return popupPage.CloseAsync(new PopupResult(false), token);
 	}
 
 	static PopupResult<T> GetPopupResult<T>(in IPopupResult result)
