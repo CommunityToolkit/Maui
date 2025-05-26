@@ -4,8 +4,8 @@ public partial class TransparentPopup : Maui.Views.Popup
 {
 	public TransparentPopup() => InitializeComponent();
 
-	void CloseButtonClicked(object? sender, EventArgs args)
+	async void CloseButtonClicked(object? sender, EventArgs args)
 	{
-		CloseAsync();
+		await CloseAsync();
 	}
 }
