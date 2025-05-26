@@ -34,8 +34,18 @@ public class PopupService : IPopupService
 
 	/// <inheritdoc />
 	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync{T}(Microsoft.Maui.Controls.INavigation,CommunityToolkit.Maui.IPopupOptions?,System.Threading.CancellationToken)"/> to <see langword="await"/> this method</remarks>
+	public void ShowPopup<T>(Page page, IPopupOptions? options = null) where T : notnull
+	{
+		ArgumentNullException.ThrowIfNull(page);
+		ShowPopup<T>(page.Navigation, options);
+	}
+
+	/// <inheritdoc />
+	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync{T}(Microsoft.Maui.Controls.INavigation,CommunityToolkit.Maui.IPopupOptions?,System.Threading.CancellationToken)"/> to <see langword="await"/> this method</remarks>
 	public void ShowPopup<T>(INavigation navigation, IPopupOptions? options = null) where T : notnull
 	{
+		ArgumentNullException.ThrowIfNull(navigation);
+		
 		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
 
 		navigation.ShowPopup(popupContent, options);
@@ -45,14 +55,26 @@ public class PopupService : IPopupService
 	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync{T}(Microsoft.Maui.Controls.Shell,CommunityToolkit.Maui.IPopupOptions?,IDictionary{string,object}?, System.Threading.CancellationToken)"/> to <see langword="await"/> this method</remarks>
 	public void ShowPopup<T>(Shell shell, IPopupOptions? options = null, IDictionary<string, object>? shellParameters = null) where T : notnull
 	{
+		ArgumentNullException.ThrowIfNull(shell);
+		
 		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
 		shell.ShowPopup(popupContent, options, shellParameters);
+	}
+
+	/// <inheritdoc />
+	public Task<IPopupResult> ShowPopupAsync<T>(Page page, IPopupOptions? options = null, CancellationToken cancellationToken = default) where T : notnull
+	{
+		ArgumentNullException.ThrowIfNull(page);
+
+		return ShowPopupAsync<T>(page.Navigation, options, cancellationToken);
 	}
 
 	/// <inheritdoc />
 	public Task<IPopupResult> ShowPopupAsync<T>(INavigation navigation, IPopupOptions? options = null, CancellationToken token = default)
 		where T : notnull
 	{
+		ArgumentNullException.ThrowIfNull(navigation);
+		
 		token.ThrowIfCancellationRequested();
 
 		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
@@ -63,6 +85,8 @@ public class PopupService : IPopupService
 	/// <inheritdoc />
 	public Task<IPopupResult> ShowPopupAsync<T>(Shell shell, IPopupOptions? options, IDictionary<string, object>? shellParameters, CancellationToken token) where T : notnull
 	{
+		ArgumentNullException.ThrowIfNull(shell);
+		
 		token.ThrowIfCancellationRequested();
 
 		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
@@ -71,11 +95,21 @@ public class PopupService : IPopupService
 	}
 
 	/// <inheritdoc />
+	public Task<IPopupResult<TResult>> ShowPopupAsync<T, TResult>(Page page, IPopupOptions? options = null, CancellationToken cancellationToken = default) where T : notnull
+	{
+		ArgumentNullException.ThrowIfNull(page);
+
+		return ShowPopupAsync<T, TResult>(page.Navigation, options, cancellationToken);
+	}
+
+	/// <inheritdoc />
 	public Task<IPopupResult<TResult>> ShowPopupAsync<T, TResult>(INavigation navigation,
 		IPopupOptions? options = null,
 		CancellationToken token = default)
 		where T : notnull
 	{
+		ArgumentNullException.ThrowIfNull(navigation);
+		
 		token.ThrowIfCancellationRequested();
 		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
 
@@ -85,6 +119,8 @@ public class PopupService : IPopupService
 	/// <inheritdoc />
 	public Task<IPopupResult<TResult>> ShowPopupAsync<T, TResult>(Shell shell, IPopupOptions? options, IDictionary<string, object>? shellParameters = null, CancellationToken token = default) where T : notnull
 	{
+		ArgumentNullException.ThrowIfNull(shell);
+		
 		token.ThrowIfCancellationRequested();
 		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
 
@@ -92,21 +128,63 @@ public class PopupService : IPopupService
 	}
 
 	/// <inheritdoc />
-	public async Task ClosePopupAsync(INavigation navigation, CancellationToken cancellationToken = default)
+	public Task<IPopupResult> ClosePopupAsync(Page page, CancellationToken cancellationToken = default)
 	{
-		cancellationToken.ThrowIfCancellationRequested();
-		var popupPage = GetCurrentPopupPage(navigation);
-
-		await popupPage.CloseAsync(new PopupResult(false), cancellationToken);
+		ArgumentNullException.ThrowIfNull(page);
+		return ClosePopupAsync(page.Navigation, cancellationToken);
 	}
 
 	/// <inheritdoc />
-	public async Task ClosePopupAsync<T>(INavigation navigation, T result, CancellationToken cancellationToken = default)
+	public Task<IPopupResult<T>> ClosePopupAsync<T>(Page page, T result, CancellationToken cancellationToken = default)
 	{
+		ArgumentNullException.ThrowIfNull(page);
+		return ClosePopupAsync(page.Navigation, result, cancellationToken);
+	}
+
+	/// <inheritdoc />
+	public async Task<IPopupResult> ClosePopupAsync(INavigation navigation, CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(navigation);
 		cancellationToken.ThrowIfCancellationRequested();
+		
+		var popupClosedTCS = new TaskCompletionSource<IPopupResult>();
+		
 		var popupPage = GetCurrentPopupPage(navigation);
+		popupPage.PopupClosed += HandlePopupPageClosed;
+
+		await popupPage.CloseAsync(new PopupResult(false), cancellationToken);
+		
+		var popupResult = await popupClosedTCS.Task;
+		return popupResult;
+		
+		void HandlePopupPageClosed(object? sender, IPopupResult e)
+		{
+			popupPage.PopupClosed -= HandlePopupPageClosed;
+			popupClosedTCS.SetResult(e);
+		}
+	}
+
+	/// <inheritdoc />
+	public async Task<IPopupResult<T>> ClosePopupAsync<T>(INavigation navigation, T result, CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(navigation);
+		cancellationToken.ThrowIfCancellationRequested();
+
+		var popupClosedTCS = new TaskCompletionSource<IPopupResult>();
+		
+		var popupPage = GetCurrentPopupPage(navigation);
+		popupPage.PopupClosed += HandlePopupPageClosed;
 
 		await popupPage.CloseAsync(new PopupResult<T>(result, false), cancellationToken);
+
+		var popupResult = await popupClosedTCS.Task;
+		return PopupExtensions.GetPopupResult<T>(popupResult);
+
+		void HandlePopupPageClosed(object? sender, IPopupResult e)
+		{
+			popupPage.PopupClosed -= HandlePopupPageClosed;
+			popupClosedTCS.SetResult(e);
+		}
 	}
 
 	internal static void AddPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView>(

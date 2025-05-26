@@ -232,7 +232,7 @@ public static class PopupExtensions
 		return popupPage.CloseAsync(new PopupResult(false), token);
 	}
 
-	static PopupResult<T> GetPopupResult<T>(in IPopupResult result)
+	internal static PopupResult<T> GetPopupResult<T>(in IPopupResult result)
 	{
 		return result switch
 		{
