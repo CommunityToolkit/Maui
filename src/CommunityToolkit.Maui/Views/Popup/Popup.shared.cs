@@ -85,7 +85,7 @@ public partial class Popup : ContentView
 	}
 
 	/// <summary>
-	/// CloseAsync the Popup.
+	/// Close the Popup.
 	/// </summary>
 	public virtual Task CloseAsync(CancellationToken token = default) => GetPopupPage().CloseAsync(new PopupResult(false), token);
 
@@ -123,7 +123,7 @@ public partial class Popup : ContentView
 public partial class Popup<T> : Popup
 {
 	/// <summary>
-	/// CloseAsync the Popup with a result.
+	/// Close the Popup with a result.
 	/// </summary>
 	/// <param name="result">Popup result</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
