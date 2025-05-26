@@ -1,3 +1,5 @@
+using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Sample.Pages.Views.Popup;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.Views.Popups;
@@ -115,5 +117,17 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 	async void HandleOnDisappearingPopupClicked(object sender, EventArgs e)
 	{
 		await Navigation.PushModalAsync(new PopupOnDisappearingPage());
+	}
+
+	async void HandleSelfClosingPopupButtonClicked(object? sender, EventArgs e)
+	{
+		this.ShowPopup(new Label().Text("This Popup Will Close Automatically in 2 Seconds"), new PopupOptions
+		{
+			CanBeDismissedByTappingOutsideOfPopup = false
+		});
+		
+		await Task.Delay(TimeSpan.FromSeconds(2));
+		
+		await this.ClosePopupAsync();
 	}
 }

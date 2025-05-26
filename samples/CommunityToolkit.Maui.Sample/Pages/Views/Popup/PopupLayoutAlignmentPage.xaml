@@ -6,6 +6,7 @@
              xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
              x:TypeArguments="viewModels:PopupLayoutAlignmentViewModel"
              x:DataType="viewModels:PopupLayoutAlignmentViewModel"
+             Padding="20"
              Title="Popup Layout Alignment">
 
     <Grid RowDefinitions="64,44,32,44,24,44,*"
@@ -41,7 +42,6 @@
 
         <Entry Grid.Row="1"
                Grid.Column="5"
-               Grid.ColumnSpan="2"
                Text="100"
                x:Name="heightEntry"
                Keyboard="Numeric"

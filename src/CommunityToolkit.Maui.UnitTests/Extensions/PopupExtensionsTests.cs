@@ -41,7 +41,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		await cts.CancelAsync();
 		
 		// Assert
-		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ClosePopup(cts.Token));
+		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ClosePopupAsync(cts.Token));
 	}
 	
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -52,7 +52,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		// Act
 		
 		// Assert
-		await Assert.ThrowsAsync<PopupNotFoundException>(() => navigation.ClosePopup(TestContext.Current.CancellationToken));
+		await Assert.ThrowsAsync<PopupNotFoundException>(() => navigation.ClosePopupAsync(TestContext.Current.CancellationToken));
 	}
 	
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -65,7 +65,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		await navigation.PushModalAsync(new ContentPage());
 		
 		// Assert
-		await Assert.ThrowsAsync<PopupBlockedException>(() => navigation.ClosePopup(TestContext.Current.CancellationToken));
+		await Assert.ThrowsAsync<PopupBlockedException>(() => navigation.ClosePopupAsync(TestContext.Current.CancellationToken));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -82,7 +82,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Assert.IsType<PopupPage>(navigation.ModalStack[0]);
 		
 		// Act
-		await navigation.ClosePopup(TestContext.Current.CancellationToken);
+		await navigation.ClosePopupAsync(TestContext.Current.CancellationToken);
 		
 		// Assert
 		Assert.Empty(navigation.ModalStack);
@@ -108,7 +108,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Assert.IsType<PopupPage>(shellNavigation.ModalStack[0]);
 		
 		// Act
-		await navigation.ClosePopup(TestContext.Current.CancellationToken);
+		await navigation.ClosePopupAsync(TestContext.Current.CancellationToken);
 		
 		// Assert
 		Assert.Empty(navigation.ModalStack);

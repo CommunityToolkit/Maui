@@ -7,7 +7,7 @@
 
     <!-- Explicit styles -->
     <Style x:Key="PopupLayout" TargetType="Layout" ApplyToDerivedTypes="true">
-        <Setter Property="Padding" Value="{OnPlatform Android=20, WinUI=20, iOS=5, MacCatalyst=5, Tizen=20}" />
+        <Setter Property="Padding" Value="{OnPlatform Android=5, WinUI=20, iOS=5, MacCatalyst=5, Tizen=20}" />
     </Style>
 
     <!--  Implicit styles  -->

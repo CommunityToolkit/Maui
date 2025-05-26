@@ -199,17 +199,17 @@ public static class PopupExtensions
 	/// <summary>
 	/// CloseAsync the Visible Popup
 	/// </summary>
-	public static Task ClosePopup(this Page page, CancellationToken token = default)
+	public static Task ClosePopupAsync(this Page page, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(page);
 
-		return ClosePopup(page.Navigation, token);
+		return ClosePopupAsync(page.Navigation, token);
 	}
 	
 	/// <summary>
 	/// CloseAsync the Visible Popup
 	/// </summary>
-	public static Task ClosePopup(this INavigation navigation, CancellationToken token = default)
+	public static Task ClosePopupAsync(this INavigation navigation, CancellationToken token = default)
 	{
 		token.ThrowIfCancellationRequested();
 		

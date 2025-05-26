@@ -8,7 +8,7 @@
 	xmlns:system="clr-namespace:System;assembly=System.Runtime"
     BackgroundColor="White">
 
-	<VerticalStackLayout>
+	<VerticalStackLayout Spacing="6">
 		<VerticalStackLayout.Resources>
 			<ResourceDictionary>
 				<Style x:Key="Title" TargetType="Label">
@@ -37,6 +37,7 @@
 					<Setter Property="VerticalOptions" Value="End" />
 					<Setter Property="HorizontalOptions" Value="Center" />
 					<Setter Property="Spacing" Value="20" />
+                    <Setter Property="Margin" Value="8" />
 				</Style>
 			</ResourceDictionary>
 		</VerticalStackLayout.Resources>
