@@ -2,6 +2,7 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;
+using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui;
@@ -36,11 +37,8 @@ public static class AppBuilderExtensions
 		builder.ConfigureMauiHandlers(static h =>
 		{
 			h.AddHandler<DrawingView, DrawingViewHandler>();
-			h.AddHandler<Popup, PopupHandler>();
 			h.AddHandler<SemanticOrderView, SemanticOrderViewHandler>();
 		});
-
-		Popup.RemapForControls();
 
 #if ANDROID
 		NavigationBar.RemapForControls();

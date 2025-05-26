@@ -1,14 +1,14 @@
-using CommunityToolkit.Maui.Sample.Models;
-using CommunityToolkit.Maui.Views;
-
 namespace CommunityToolkit.Maui.Sample.Views.Popups;
 
-public partial class SimplePopup : Popup
+public partial class SimplePopup : ContentView, IQueryAttributable
 {
-	public SimplePopup(PopupSizeConstants popupSizeConstants)
+	public SimplePopup()
 	{
 		InitializeComponent();
+	}
 
-		Size = popupSizeConstants.Small;
+	void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
+	{
+		DescriptionLabel.Text = (string)query[nameof(DescriptionLabel)];
 	}
 }
