@@ -251,8 +251,8 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			AndroidViewType = AndroidViewType.SurfaceView,
 			Source = MediaSource.FromResource("AppleVideo.mp4"),
 			MetadataArtworkUrl = botImageUrl,
-			HeightRequest = 600,
-			WidthRequest = 600,
+			HeightRequest = 300,
+			WidthRequest = 800,
 			ShouldAutoPlay = true,
 			ShouldShowPlaybackControls = true,
 		};
