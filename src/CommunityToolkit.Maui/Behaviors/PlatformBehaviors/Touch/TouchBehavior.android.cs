@@ -126,6 +126,9 @@ public partial class TouchBehavior
 			IsCanceled = false;
 			HandleTouchEnded(TouchStatus.Completed);
 		}
+
+		// This ensures that native focus navigation and keyboard input flow are preserved
+		e.Handled = false;
 	}
 
 	void OnClick(object? sender, EventArgs args)
