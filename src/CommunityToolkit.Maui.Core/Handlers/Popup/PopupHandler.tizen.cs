@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.Core.Views;
 using Tizen.UIExtensions.NUI;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
