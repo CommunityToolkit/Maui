@@ -63,13 +63,13 @@ public class PopupServiceTests : BaseHandlerTest
 		Assert.Single(navigation.ModalStack);
 		Assert.IsType<PopupPage>(navigation.ModalStack[0]);
 	}
-	
+
 	[Fact]
 	public void ShowPopupAsync_UsingPage_WithViewType_ShowsPopup()
 	{
 		// Arrange
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
-		
+
 		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
@@ -96,13 +96,13 @@ public class PopupServiceTests : BaseHandlerTest
 		// Assert
 		Assert.Empty(navigation.ModalStack);
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_UsingPage_AwaitingShowPopupAsync_EnsurePreviousPopupClosed()
 	{
 		// Arrange
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
-		
+
 		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
@@ -246,7 +246,7 @@ public class PopupServiceTests : BaseHandlerTest
 		// Act
 		await popupService.ShowPopupAsync<MockPageViewModel, object?>(page.Navigation, PopupOptions.Empty, TestContext.Current.CancellationToken);
 
-		
+
 		// Assert
 		Assert.Same(popupInstance.BindingContext, popupViewModel);
 	}
@@ -265,7 +265,7 @@ public class PopupServiceTests : BaseHandlerTest
 
 		// Act
 		var result = await popupService.ShowPopupAsync<MockPageViewModel, object?>(page.Navigation, PopupOptions.Empty, CancellationToken.None);
-		
+
 		// Assert
 		Assert.Same(mockPopup.Result, result.Result);
 		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
@@ -288,7 +288,7 @@ public class PopupServiceTests : BaseHandlerTest
 		// Assert
 		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_UsingNavigation_ShouldThrowArgumentNullException_WhenNavigationIsNull()
 	{
@@ -312,7 +312,7 @@ public class PopupServiceTests : BaseHandlerTest
 		await Assert.ThrowsAsync<ArgumentNullException>(() => popupService.ShowPopupAsync<MockPageViewModel>((Page?)null, PopupOptions.Empty, CancellationToken.None));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
-	
+
 	[Fact]
 	public void ShowPopup_UsingPage_ShouldThrowArgumentNullException_WhenNavigationIsNull()
 	{
@@ -322,10 +322,10 @@ public class PopupServiceTests : BaseHandlerTest
 
 		// Act // Assert
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => popupService.ShowPopup<MockPageViewModel>((Page?)null,PopupOptions.Empty));
+		Assert.Throws<ArgumentNullException>(() => popupService.ShowPopup<MockPageViewModel>((Page?)null, PopupOptions.Empty));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ClosePopupAsync_UsingPage_ShouldThrowArgumentNullException_WhenPageIsNull()
 	{
@@ -338,7 +338,7 @@ public class PopupServiceTests : BaseHandlerTest
 		await Assert.ThrowsAsync<ArgumentNullException>(() => popupService.ClosePopupAsync((Page?)null, TestContext.Current.CancellationToken));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ClosePopupAsyncT_UsingPage_ShouldThrowArgumentNullException_WhenPageIsNull()
 	{
@@ -351,7 +351,7 @@ public class PopupServiceTests : BaseHandlerTest
 		await Assert.ThrowsAsync<ArgumentNullException>(() => popupService.ClosePopupAsync<int>((Page?)null, 2, TestContext.Current.CancellationToken));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ClosePopupAsync_UsingNavigation_ShouldThrowArgumentNullException_WhenNavigationIsNull()
 	{
@@ -363,7 +363,7 @@ public class PopupServiceTests : BaseHandlerTest
 		await Assert.ThrowsAsync<ArgumentNullException>(() => popupService.ClosePopupAsync((INavigation?)null, TestContext.Current.CancellationToken));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ClosePopupAsyncT_UsingNavigation_ShouldThrowArgumentNullException_WhenNavigationIsNull()
 	{
@@ -416,105 +416,105 @@ public class PopupServiceTests : BaseHandlerTest
 	{
 		// Arrange
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
-		
-		
+
+
 		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
 		}
-		
+
 		// Act
 		popupService.ShowPopup<MockPopup>(page.Navigation);
-		
+
 		// Assert
 		Assert.Single(page.Navigation.ModalStack);
 		Assert.IsType<PopupPage>(page.Navigation.ModalStack[0]);
-		
+
 		// Act 
 		var popupResult = await popupService.ClosePopupAsync(page.Navigation, TestContext.Current.CancellationToken);
-		
+
 		// Assert
 		Assert.Empty(page.Navigation.ModalStack);
 		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ClosePopupAsync_ShouldClosePopupUsingPageAndReturnResult()
 	{
 		// Arrange
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
-		
-		
+
+
 		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
 		}
-		
+
 		// Act
 		popupService.ShowPopup<MockPopup>(page);
-		
+
 		// Assert
 		Assert.Single(page.Navigation.ModalStack);
 		Assert.IsType<PopupPage>(page.Navigation.ModalStack[0]);
-		
+
 		// Act 
 		var popupResult = await popupService.ClosePopupAsync(page, TestContext.Current.CancellationToken);
-		
+
 		// Assert
 		Assert.Empty(page.Navigation.ModalStack);
 		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ClosePopupAsyncT_ShouldClosePopupUsingNavigationAndReturnResult()
 	{
 		// Arrange
 		const int expectedResult = 2;
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
-		
+
 		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
 		}
-		
+
 		// Act
 		popupService.ShowPopup<MockPopup>(page.Navigation);
-		
+
 		// Assert
 		Assert.Single(page.Navigation.ModalStack);
 		Assert.IsType<PopupPage>(page.Navigation.ModalStack[0]);
-		
+
 		// Act 
 		var popupResult = await popupService.ClosePopupAsync(page.Navigation, expectedResult, TestContext.Current.CancellationToken);
-		
+
 		// Assert
 		Assert.Empty(page.Navigation.ModalStack);
 		Assert.Equal(expectedResult, popupResult.Result);
 		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ClosePopupAsyncT_ShouldClosePopupUsingPageAndReturnResult()
 	{
 		// Arrange
 		const int expectedResult = 2;
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
-		
+
 		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
 		}
-		
+
 		// Act
 		popupService.ShowPopup<MockPopup>(page);
-		
+
 		// Assert
 		Assert.Single(page.Navigation.ModalStack);
 		Assert.IsType<PopupPage>(page.Navigation.ModalStack[0]);
-		
+
 		// Act 
 		var popupResult = await popupService.ClosePopupAsync(page.Navigation, expectedResult, TestContext.Current.CancellationToken);
-		
+
 		// Assert
 		Assert.Empty(page.Navigation.ModalStack);
 		Assert.Equal(expectedResult, popupResult.Result);
