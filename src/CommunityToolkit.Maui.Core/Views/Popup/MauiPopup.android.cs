@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Android.Content;
 using Android.Views;
 using Microsoft.Maui.Platform;
@@ -9,6 +10,10 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// The native implementation of Popup control.
 /// </summary>
+#if NET10_0_OR_GREATER
+#error Remove MauiPopup
+#endif
+[EditorBrowsable(EditorBrowsableState.Never), Obsolete($"{nameof(MauiPopup)} is no longer used by {nameof(CommunityToolkit)}.{nameof(Maui)} and will be removed in .NET 10")]
 public class MauiPopup : Dialog, IDialogInterfaceOnCancelListener
 {
 	readonly IMauiContext mauiContext;
