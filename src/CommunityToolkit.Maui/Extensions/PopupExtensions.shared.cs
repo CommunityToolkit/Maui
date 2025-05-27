@@ -216,19 +216,7 @@ public static class PopupExtensions
 
 		var popupClosedTCS = new TaskCompletionSource<IPopupResult>();
 
-		var currentVisibleModalPage = Shell.Current is null
-			? navigation.ModalStack.LastOrDefault()
-			: Shell.Current.Navigation.ModalStack.LastOrDefault();
-
-		if (currentVisibleModalPage is null)
-		{
-			throw new PopupNotFoundException();
-		}
-
-		if (currentVisibleModalPage is not PopupPage popupPage)
-		{
-			throw new PopupBlockedException(currentVisibleModalPage);
-		}
+		var popupPage = GetMostRecentPopupPage(navigation);
 
 		popupPage.PopupClosed += HandlePopupPageClosed;
 		await popupPage.CloseAsync(new PopupResult(false), token);
@@ -263,6 +251,24 @@ public static class PopupExtensions
 
 		var popupClosedTCS = new TaskCompletionSource<IPopupResult>();
 
+		var popupPage = GetMostRecentPopupPage(navigation);
+
+		popupPage.PopupClosed += HandlePopupPageClosed;
+
+		await popupPage.CloseAsync(new PopupResult<TResult>(result, false), token);
+
+		var popupResult = await popupClosedTCS.Task;
+		return GetPopupResult<TResult>(popupResult);
+
+		void HandlePopupPageClosed(object? sender, IPopupResult e)
+		{
+			popupPage.PopupClosed -= HandlePopupPageClosed;
+			popupClosedTCS.SetResult(e);
+		}
+	}
+
+	static PopupPage GetMostRecentPopupPage(in INavigation navigation)
+	{
 		var currentVisibleModalPage = Shell.Current is null
 			? navigation.ModalStack.LastOrDefault()
 			: Shell.Current.Navigation.ModalStack.LastOrDefault();
@@ -277,18 +283,7 @@ public static class PopupExtensions
 			throw new PopupBlockedException(currentVisibleModalPage);
 		}
 
-		popupPage.PopupClosed += HandlePopupPageClosed;
-
-		await popupPage.CloseAsync(new PopupResult<TResult>(result, false), token);
-
-		var popupResult = await popupClosedTCS.Task;
-		return GetPopupResult<TResult>(popupResult);
-
-		void HandlePopupPageClosed(object? sender, IPopupResult e)
-		{
-			popupPage.PopupClosed -= HandlePopupPageClosed;
-			popupClosedTCS.SetResult(e);
-		}
+		return popupPage;
 	}
 
 	static PopupResult<T> GetPopupResult<T>(in IPopupResult result)
