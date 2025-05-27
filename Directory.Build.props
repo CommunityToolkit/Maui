@@ -173,7 +173,8 @@
      XC0618: Property, Property setter or BindableProperty "BackgroundColor" is deprecated
      IL2***: Trim Warnings     
      IL3***: AOT Warnings     
-     RS2007: Analyzer release file 'AnalyzerReleases.Shipped.md' has a missing or invalid release header-->
+     RS1038: Compiler extensions should be implemented in assemblies with compiler-provided references
+     RS2007: Analyzer release file 'AnalyzerReleases.Shipped.md' has a missing or invalid release header -->
     <WarningsAsErrors>
       nullable,
       CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1580,CS1581,CS1584,CS1587,CS1589,CS1590,CS1591,CS1592,CS1598,CS1658,CS1710,CS1711,CS1712,CS1723,CS1734,
@@ -198,7 +199,7 @@
       IL2110,IL2111,IL2112,IL2113,IL2114,IL2115,IL2116,IL2117,IL2118,IL2119,
       IL2120,IL2121,IL2122,
       IL3050,IL3051,IL3052,IL3053,IL3054,IL3055,IL3056,
-      RS2007
+      RS1038,RS2007
     </WarningsAsErrors>
 
     <!--
