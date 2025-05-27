@@ -69,6 +69,58 @@ public class PopupExtensionsTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ClosePopup_NullPage_ShouldThrowArgumentNullException()
+	{
+		// Arrange
+
+		// Act
+
+		// Assert
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		await Assert.ThrowsAsync<ArgumentNullException>(() => PopupExtensions.ClosePopupAsync((Page?)null, TestContext.Current.CancellationToken));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ClosePopup_NullNavigation_ShouldThrowArgumentNullException()
+	{
+		// Arrange
+
+		// Act
+
+		// Assert
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		await Assert.ThrowsAsync<ArgumentNullException>(() => PopupExtensions.ClosePopupAsync((INavigation?)null, TestContext.Current.CancellationToken));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ClosePopupT_NullPage_ShouldThrowArgumentNullException()
+	{
+		// Arrange
+
+		// Act
+
+		// Assert
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		await Assert.ThrowsAsync<ArgumentNullException>(() => PopupExtensions.ClosePopupAsync((Page?)null, 2, TestContext.Current.CancellationToken));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ClosePopupT_NullNavigation_ShouldThrowArgumentNullException()
+	{
+		// Arrange
+
+		// Act
+
+		// Assert
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		await Assert.ThrowsAsync<ArgumentNullException>(() => PopupExtensions.ClosePopupAsync((INavigation?)null, 2, TestContext.Current.CancellationToken));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_WithPopupType_ShowsPopupAndClosesPopup()
 	{
 		// Arrange
