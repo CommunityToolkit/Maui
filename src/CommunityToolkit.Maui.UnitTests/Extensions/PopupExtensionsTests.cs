@@ -1295,7 +1295,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Assert.IsType<PopupPage>(page.Navigation.ModalStack[0]);
 
 		// Act
-		var popupResult = await page.ClosePopupAsync(page.Navigation, TestContext.Current.CancellationToken);
+		var popupResult = await page.ClosePopupAsync(TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.Empty(page.Navigation.ModalStack);
