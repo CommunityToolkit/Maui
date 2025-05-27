@@ -232,7 +232,7 @@ public static class PopupExtensions
 	}
 
 	/// <summary>
-	/// Closes the most recent popup and returns a result of type <see cref="IPopupResult{TResult}"/>.
+	/// Closes the most recent popup and returns an <see cref="IPopupResult{TResult}"/> that provides details about the closure.
 	/// </summary>
 	public static Task<IPopupResult<TResult>> ClosePopupAsync<TResult>(this Page page, TResult result, CancellationToken token = default)
 	{
@@ -242,7 +242,7 @@ public static class PopupExtensions
 	}
 
 	/// <summary>
-	/// Closes the most recent popup and returns an <see cref="IPopupResult"/> that provides details about the closure.
+	/// Closes the most recent popup and returns an <see cref="IPopupResult{TResult}"/> that provides details about the closure.
 	/// </summary>
 	public static async Task<IPopupResult<TResult>> ClosePopupAsync<TResult>(this INavigation navigation, TResult result, CancellationToken token = default)
 	{
