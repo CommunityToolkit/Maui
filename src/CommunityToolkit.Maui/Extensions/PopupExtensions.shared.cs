@@ -197,28 +197,82 @@ public static class PopupExtensions
 	}
 
 	/// <summary>
-	/// CloseAsync the Visible Popup
+	/// Closes the most recent popup and returns an <see cref="IPopupResult"/> that provides details about the closure.
 	/// </summary>
-	public static Task ClosePopupAsync(this Page page, CancellationToken token = default)
+	public static Task<IPopupResult> ClosePopupAsync(this Page page, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(page);
 
 		return ClosePopupAsync(page.Navigation, token);
 	}
-	
-	/// <summary>
-	/// CloseAsync the Visible Popup
-	/// </summary>
-	public static Task ClosePopupAsync(this INavigation navigation, CancellationToken token = default)
-	{
-		token.ThrowIfCancellationRequested();
-		
-		ArgumentNullException.ThrowIfNull(navigation);
 
+	/// <summary>
+	/// Closes the most recent popup and returns an <see cref="IPopupResult"/> that provides details about the closure.
+	/// </summary>
+	public static async Task<IPopupResult> ClosePopupAsync(this INavigation navigation, CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(navigation);
+		token.ThrowIfCancellationRequested();
+
+		var popupClosedTCS = new TaskCompletionSource<IPopupResult>();
+
+		var popupPage = GetMostRecentPopupPage(navigation);
+
+		popupPage.PopupClosed += HandlePopupPageClosed;
+		await popupPage.CloseAsync(new PopupResult(false), token);
+
+		var popupResult = await popupClosedTCS.Task;
+		return popupResult;
+
+		void HandlePopupPageClosed(object? sender, IPopupResult e)
+		{
+			popupPage.PopupClosed -= HandlePopupPageClosed;
+			popupClosedTCS.SetResult(e);
+		}
+	}
+
+	/// <summary>
+	/// Closes the most recent popup and returns an <see cref="IPopupResult{TResult}"/> that provides details about the closure.
+	/// </summary>
+	public static Task<IPopupResult<TResult>> ClosePopupAsync<TResult>(this Page page, TResult result, CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(page);
+
+		return ClosePopupAsync(page.Navigation, result, token);
+	}
+
+	/// <summary>
+	/// Closes the most recent popup and returns an <see cref="IPopupResult{TResult}"/> that provides details about the closure.
+	/// </summary>
+	public static async Task<IPopupResult<TResult>> ClosePopupAsync<TResult>(this INavigation navigation, TResult result, CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(navigation);
+		token.ThrowIfCancellationRequested();
+
+		var popupClosedTCS = new TaskCompletionSource<IPopupResult>();
+
+		var popupPage = GetMostRecentPopupPage(navigation);
+
+		popupPage.PopupClosed += HandlePopupPageClosed;
+
+		await popupPage.CloseAsync(new PopupResult<TResult>(result, false), token);
+
+		var popupResult = await popupClosedTCS.Task;
+		return GetPopupResult<TResult>(popupResult);
+
+		void HandlePopupPageClosed(object? sender, IPopupResult e)
+		{
+			popupPage.PopupClosed -= HandlePopupPageClosed;
+			popupClosedTCS.SetResult(e);
+		}
+	}
+
+	static PopupPage GetMostRecentPopupPage(in INavigation navigation)
+	{
 		var currentVisibleModalPage = Shell.Current is null
 			? navigation.ModalStack.LastOrDefault()
 			: Shell.Current.Navigation.ModalStack.LastOrDefault();
-		
+
 		if (currentVisibleModalPage is null)
 		{
 			throw new PopupNotFoundException();
@@ -229,10 +283,10 @@ public static class PopupExtensions
 			throw new PopupBlockedException(currentVisibleModalPage);
 		}
 
-		return popupPage.CloseAsync(new PopupResult(false), token);
+		return popupPage;
 	}
 
-	internal static PopupResult<T> GetPopupResult<T>(in IPopupResult result)
+	static PopupResult<T> GetPopupResult<T>(in IPopupResult result)
 	{
 		return result switch
 		{
