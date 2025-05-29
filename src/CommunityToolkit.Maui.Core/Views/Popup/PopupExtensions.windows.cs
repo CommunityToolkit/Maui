@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using CommunityToolkit.Maui.Core.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.Primitives;
@@ -10,6 +11,10 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// Extension class where Helper methods for Popup lives.
 /// </summary>
+#if NET10_0_OR_GREATER
+#error Remove PopupExtensions
+#endif
+[EditorBrowsable(EditorBrowsableState.Never), Obsolete($"{nameof(PopupExtensions)} is no longer used by {nameof(CommunityToolkit)}.{nameof(Maui)} and will be removed in .NET 10")]
 public static class PopupExtensions
 {
 	/// <summary>

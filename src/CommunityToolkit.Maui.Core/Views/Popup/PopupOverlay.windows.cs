@@ -1,8 +1,13 @@
-﻿namespace CommunityToolkit.Maui.Core.Views;
+﻿using System.ComponentModel;
+namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// Displays Overlay in the Popup background.
 /// </summary>
+#if NET10_0_OR_GREATER
+#error Remove PopupOverlay
+#endif
+[EditorBrowsable(EditorBrowsableState.Never), Obsolete($"{nameof(PopupOverlay)} is no longer used by {nameof(CommunityToolkit)}.{nameof(Maui)} and will be removed in .NET 10")]
 class PopupOverlay : WindowOverlay
 {
 	readonly IWindowOverlayElement popupOverlayElement;
