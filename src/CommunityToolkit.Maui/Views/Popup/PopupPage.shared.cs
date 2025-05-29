@@ -220,21 +220,21 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			public override Brush? ConvertFrom(Shape? value, CultureInfo? culture) => value?.Stroke;
 		}
 	}
-	
+
 	sealed partial class PaddingConverter : BaseConverterOneWay<Thickness, Thickness>
 	{
 		public override Thickness DefaultConvertReturnValue { get; set; } = PopupDefaults.Padding;
 
 		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value == default ? PopupDefaults.Padding : value;
 	}
-	
+
 	sealed partial class HorizontalOptionsConverter : BaseConverterOneWay<LayoutOptions, LayoutOptions>
 	{
 		public override LayoutOptions DefaultConvertReturnValue { get; set; } = PopupDefaults.HorizontalOptions;
 
 		public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? PopupDefaults.HorizontalOptions : value;
 	}
-	
+
 	sealed partial class VerticalOptionsConverter : BaseConverterOneWay<LayoutOptions, LayoutOptions>
 	{
 		public override LayoutOptions DefaultConvertReturnValue { get; set; } = PopupDefaults.VerticalOptions;
