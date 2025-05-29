@@ -253,7 +253,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			ShouldAutoPlay = true,
 			ShouldShowPlaybackControls = true,
 		};
-    
+
 		await this.ShowPopupAsync(popupMediaElement);
 		popupMediaElement.Stop();
 	}

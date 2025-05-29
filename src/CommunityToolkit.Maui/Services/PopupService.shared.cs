@@ -45,7 +45,7 @@ public class PopupService : IPopupService
 	public void ShowPopup<T>(INavigation navigation, IPopupOptions? options = null) where T : notnull
 	{
 		ArgumentNullException.ThrowIfNull(navigation);
-		
+
 		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
 
 		navigation.ShowPopup(popupContent, options);
@@ -56,7 +56,7 @@ public class PopupService : IPopupService
 	public void ShowPopup<T>(Shell shell, IPopupOptions? options = null, IDictionary<string, object>? shellParameters = null) where T : notnull
 	{
 		ArgumentNullException.ThrowIfNull(shell);
-		
+
 		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
 		shell.ShowPopup(popupContent, options, shellParameters);
 	}
@@ -74,7 +74,7 @@ public class PopupService : IPopupService
 		where T : notnull
 	{
 		ArgumentNullException.ThrowIfNull(navigation);
-		
+
 		token.ThrowIfCancellationRequested();
 
 		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
@@ -86,7 +86,7 @@ public class PopupService : IPopupService
 	public Task<IPopupResult> ShowPopupAsync<T>(Shell shell, IPopupOptions? options, IDictionary<string, object>? shellParameters, CancellationToken token) where T : notnull
 	{
 		ArgumentNullException.ThrowIfNull(shell);
-		
+
 		token.ThrowIfCancellationRequested();
 
 		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
@@ -109,7 +109,7 @@ public class PopupService : IPopupService
 		where T : notnull
 	{
 		ArgumentNullException.ThrowIfNull(navigation);
-		
+
 		token.ThrowIfCancellationRequested();
 		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
 
@@ -120,7 +120,7 @@ public class PopupService : IPopupService
 	public Task<IPopupResult<TResult>> ShowPopupAsync<T, TResult>(Shell shell, IPopupOptions? options, IDictionary<string, object>? shellParameters = null, CancellationToken token = default) where T : notnull
 	{
 		ArgumentNullException.ThrowIfNull(shell);
-		
+
 		token.ThrowIfCancellationRequested();
 		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
 
@@ -142,49 +142,21 @@ public class PopupService : IPopupService
 	}
 
 	/// <inheritdoc />
-	public async Task<IPopupResult> ClosePopupAsync(INavigation navigation, CancellationToken cancellationToken = default)
+	public Task<IPopupResult> ClosePopupAsync(INavigation navigation, CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(navigation);
 		cancellationToken.ThrowIfCancellationRequested();
-		
-		var popupClosedTCS = new TaskCompletionSource<IPopupResult>();
-		
-		var popupPage = GetCurrentPopupPage(navigation);
-		popupPage.PopupClosed += HandlePopupPageClosed;
 
-		await popupPage.CloseAsync(new PopupResult(false), cancellationToken);
-		
-		var popupResult = await popupClosedTCS.Task;
-		return popupResult;
-		
-		void HandlePopupPageClosed(object? sender, IPopupResult e)
-		{
-			popupPage.PopupClosed -= HandlePopupPageClosed;
-			popupClosedTCS.SetResult(e);
-		}
+		return navigation.ClosePopupAsync(cancellationToken);
 	}
 
 	/// <inheritdoc />
-	public async Task<IPopupResult<T>> ClosePopupAsync<T>(INavigation navigation, T result, CancellationToken cancellationToken = default)
+	public Task<IPopupResult<T>> ClosePopupAsync<T>(INavigation navigation, T result, CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(navigation);
 		cancellationToken.ThrowIfCancellationRequested();
 
-		var popupClosedTCS = new TaskCompletionSource<IPopupResult>();
-		
-		var popupPage = GetCurrentPopupPage(navigation);
-		popupPage.PopupClosed += HandlePopupPageClosed;
-
-		await popupPage.CloseAsync(new PopupResult<T>(result, false), cancellationToken);
-
-		var popupResult = await popupClosedTCS.Task;
-		return PopupExtensions.GetPopupResult<T>(popupResult);
-
-		void HandlePopupPageClosed(object? sender, IPopupResult e)
-		{
-			popupPage.PopupClosed -= HandlePopupPageClosed;
-			popupClosedTCS.SetResult(e);
-		}
+		return navigation.ClosePopupAsync(result, cancellationToken);
 	}
 
 	internal static void AddPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView>(
@@ -216,11 +188,6 @@ public class PopupService : IPopupService
 		services.TryAdd(new ServiceDescriptor(typeof(TPopupView), _ => popup, lifetime));
 		services.TryAdd(new ServiceDescriptor(typeof(TPopupViewModel), _ => viewModel, lifetime));
 	}
-
-	// All popups are now displayed in a PopupPage (ContentPage) that is pushed modally to the screen, e.g. Navigation.PushModalAsync(popupPage)
-	// We can use the ModalStack to retrieve the most recent popupPage by retrieving all PopupPages and return the most recent from the ModalStack  
-	static PopupPage GetCurrentPopupPage(INavigation navigation) =>
-		navigation.ModalStack.OfType<PopupPage>().LastOrDefault() ?? throw new PopupNotFoundException();
 
 	View GetPopupContent<T>(T bindingContext)
 	{
