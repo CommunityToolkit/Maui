@@ -2,12 +2,12 @@
 This document provides guidelines for using GitHub Copilot to contribute to the .NET MAUI Community Toolkit. It includes instructions on setting up your environment, writing code, and following best practices specific to .NET MAUI.
 
 ## Prerequisites
-1.	Install the latest stable (.NET SDK)[https://dotnet.microsoft.com/en-us/download].
+1.	Install the latest stable [.NET SDK](https://dotnet.microsoft.com/en-us/download).
 2.	Install .NET MAUI workloads (we recommend using Visual Studio installer).
 
 ## Setting Up GitHub Copilot
 1.	Ensure you have GitHub Copilot installed and enabled in Visual Studio.
-2.	Familiarize yourself with the basic usage of GitHub Copilot by reviewing the (official documentation)[https://docs.github.com/en/copilot].
+2.	Familiarize yourself with the basic usage of GitHub Copilot by reviewing the [official documentation](https://docs.github.com/en/copilot).
 
 ## Writing Code with GitHub Copilot
 ### General Guidelines
@@ -17,7 +17,7 @@ This document provides guidelines for using GitHub Copilot to contribute to the 
 ### Specific to .NET MAUI
 * Ensure that any UI components or controls are compatible with .NET MAUI.
 * Avoid using Xamarin.Forms-specific code unless there is a direct .NET MAUI equivalent.
-* Follow the project's coding style and best practices as outlined in the (contributing)[https://github.com/CommunityToolkit/Maui/blob/main/CONTRIBUTING.md] document.
+* Follow the project's coding style and best practices as outlined in the [contributing](https://github.com/CommunityToolkit/Maui/blob/main/CONTRIBUTING.md) document.
 
 ## Best Practices
 * Use **Trace.WriteLine()** for debug logging instead of **Debug.WriteLine()**.
@@ -25,7 +25,7 @@ This document provides guidelines for using GitHub Copilot to contribute to the 
 * Use **is** for null checking and type checking.
 * Use file-scoped namespaces to reduce code verbosity.
 * Avoid using the **!** null forgiving operator.
-** Follow naming conventions for enums and property names.
+* Follow naming conventions for enums and property names.
 
 ### Debug Logging
 * Always use `Trace.WriteLine()` instead of `Debug.WriteLine` for debug logging because `Debug.WriteLine` is removed by the compiler in Release builds
@@ -141,7 +141,7 @@ Read and follow our [Pull Request template](https://github.com/CommunityToolkit/
 4.	Open a pull request and follow the [Pull Request template](https://github.com/CommunityToolkit/Maui/blob/main/.github/PULL_REQUEST_TEMPLATE.md).
 
 ## Additional Resources
-- (GitHub Copilot Documentation)[https://docs.github.com/en/copilot]
-- (.NET MAUI Documentation)[https://learn.microsoft.com/en-us/dotnet/maui/]
+- [GitHub Copilot Documentation](https://docs.github.com/en/copilot)
+- [.NET MAUI Documentation](https://learn.microsoft.com/en-us/dotnet/maui/)
 
 By following these guidelines, you can effectively use GitHub Copilot to contribute to the .NET MAUI Community Toolkit. Thank you for your contributions!
