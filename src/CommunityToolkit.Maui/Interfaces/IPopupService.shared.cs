@@ -15,7 +15,7 @@ public interface IPopupService
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
 	void ShowPopup<T>(Page page, IPopupOptions? options = null)
 		where T : notnull;
-	
+
 	/// <summary>
 	/// Shows a popup with the specified options.
 	/// </summary>
@@ -34,7 +34,7 @@ public interface IPopupService
 	/// <param name="shellParameters">Parameters that will be passed into the view or its associated BindingContext if they implement <see cref="IQueryAttributable"/>.</param>
 	void ShowPopup<T>(Shell shell, IPopupOptions? options = null, IDictionary<string, object>? shellParameters = null)
 		where T : notnull;
-	
+
 	/// <summary>
 	/// Shows a popup with the specified options.
 	/// </summary>
@@ -68,7 +68,7 @@ public interface IPopupService
 	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="cancellationToken"/> is cancelled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
 	Task<IPopupResult> ShowPopupAsync<T>(Shell shell, IPopupOptions? options, IDictionary<string, object>? shellParameters = null, CancellationToken cancellationToken = default)
 		where T : notnull;
-	
+
 	/// <summary>
 	/// Shows a popup with the specified options.
 	/// </summary>
@@ -105,7 +105,7 @@ public interface IPopupService
 	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="cancellationToken"/> is cancelled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
 	Task<IPopupResult<TResult>> ShowPopupAsync<T, TResult>(Shell shell, IPopupOptions? options = null, IDictionary<string, object>? shellParameters = null, CancellationToken cancellationToken = default)
 		where T : notnull;
-	
+
 	/// <summary>
 	/// Closes the current popup.
 	/// </summary>
