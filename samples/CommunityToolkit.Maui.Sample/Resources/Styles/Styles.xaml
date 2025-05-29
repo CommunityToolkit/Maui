@@ -7,18 +7,12 @@
 
     <!-- Explicit styles -->
     <Style x:Key="PopupLayout" TargetType="Layout" ApplyToDerivedTypes="true">
-        <Setter Property="Padding" Value="{OnPlatform Android=20, WinUI=20, iOS=5, MacCatalyst=5, Tizen=20}" />
+        <Setter Property="Padding" Value="{OnPlatform Android=5, WinUI=20, iOS=5, MacCatalyst=5, Tizen=20}" />
     </Style>
 
     <!--  Implicit styles  -->
     <Style TargetType="Grid">
         <Setter Property="BackgroundColor" Value="{OnPlatform WinUI=Transparent, Default={AppThemeBinding Light={StaticResource AppBackgroundLightColor}, Dark={StaticResource AppBackgroundDarkColor}}}" />
-    </Style>
-
-    <Style TargetType="toolkit:Popup" ApplyToDerivedTypes="true">
-        <Setter Property="VerticalOptions" Value="Center" />
-        <Setter Property="HorizontalOptions" Value="Center" />
-        <Setter Property="Color" Value="{AppThemeBinding Light={StaticResource AppBackgroundLightColor}, Dark={StaticResource AppBackgroundDarkColor}}" />
     </Style>
 
     <Style TargetType="NavigationPage">
