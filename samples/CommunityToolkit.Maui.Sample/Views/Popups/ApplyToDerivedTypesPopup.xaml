@@ -3,15 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="CommunityToolkit.Maui.Sample.Views.Popups.ApplyToDerivedTypesPopup">
-    <mct:Popup.Resources>
-        <Style TargetType="{x:Type mct:Popup}" ApplyToDerivedTypes="True">
-            <Setter Property="Size" Value="150,150" />
-            <Setter Property="Color" Value="Orange" />
-            <Setter Property="HorizontalOptions" Value="End" />
-            <Setter Property="VerticalOptions" Value="Center" />
-            <Setter Property="CanBeDismissedByTappingOutsideOfPopup" Value="True" />
+    <ContentView.Resources>
+        <Style TargetType="{x:Type ContentView}" ApplyToDerivedTypes="True">
+            <Setter Property="WidthRequest" Value="150" />
+            <Setter Property="HeightRequest" Value="150" />
+            <Setter Property="BackgroundColor" Value="Orange" />
         </Style>
-    </mct:Popup.Resources>
+    </ContentView.Resources>
     
     <Grid VerticalOptions="Fill" HorizontalOptions="Fill" BackgroundColor="Transparent" Style="{StaticResource PopupLayout}">
         <Grid WidthRequest="10" HeightRequest="10" VerticalOptions="Start" HorizontalOptions="Start" BackgroundColor="Blue" />
