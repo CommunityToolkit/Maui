@@ -7,10 +7,12 @@
                 Title="ShowPopupInOnAppearingPage"
                 x:TypeArguments="viewModels:ShowPopupInOnAppearingPageViewModel"
                 x:DataType="viewModels:ShowPopupInOnAppearingPageViewModel">
-    <VerticalStackLayout>
+    <VerticalStackLayout Spacing="12">
         <Label 
-            Text="Proves that we now support showing a popup before the platform is even ready."
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
+            Text="This page demonstrates that we now support showing a popup before the platform is even ready."/>
+        <Label 
+            Text="Be careful displaying Popup in OnAppearing because OnAppearing will fire again when the Popup is closed." />
+        <Label 
+            Text="In this sample, we add `bool hasPopupBeenShown` to ensure we only display the Popup once in the OnAppearing method."/>
     </VerticalStackLayout>
 </pages:BasePage>

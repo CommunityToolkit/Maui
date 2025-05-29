@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Core;
+using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Extensions;
@@ -114,6 +115,29 @@ public class AppBuilderExtensionsTests : BaseTest
 			Core.AppBuilderExtensions.ShouldUseStatusBarBehaviorOnAndroidModalPageOptionCompleted -= HandleShouldUseStatusBarBehaviorOnAndroidModalPageOptionCompleted;
 			isAndroidDialogFragmentServiceInitialized = true;
 		}
+	}
+
+	[Fact]
+	public void UseMauiCommunityToolkitMediaElement_ShouldUseSurfaceViewByDefault()
+	{
+		var builder = MauiApp.CreateBuilder();
+		builder.UseMauiCommunityToolkitMediaElement();
+
+		MediaElementOptions.DefaultAndroidViewType.Should().Be(AndroidViewType.SurfaceView);
+	}
+
+	[Fact]
+	public void UseMauiCommunityToolkitMediaElement_ShouldSetDefaultAndroidViewType()
+	{
+		MediaElementOptions.DefaultAndroidViewType.Should().Be(AndroidViewType.SurfaceView);
+
+		var builder = MauiApp.CreateBuilder();
+		builder.UseMauiCommunityToolkitMediaElement(static options =>
+		{
+			options.SetDefaultAndroidViewType(AndroidViewType.TextureView);
+		});
+
+		MediaElementOptions.DefaultAndroidViewType.Should().Be(AndroidViewType.TextureView);
 	}
 }
 #pragma warning restore CA1416
