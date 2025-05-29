@@ -10,8 +10,6 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class MediaElementPage : BasePage<MediaElementViewModel>
 {
-	readonly ILogger logger;
-
 	const string loadOnlineMp4 = "Load Online MP4";
 	const string loadHls = "Load HTTP Live Stream (HLS)";
 	const string loadLocalResource = "Load Local Resource";
@@ -21,12 +19,19 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string botImageUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
 	const string hlsStreamTestUrl = "https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8";
 	const string hal9000AudioUrl = "https://github.com/prof3ssorSt3v3/media-sample-files/raw/master/hal-9000.mp3";
+	
+	
+	readonly ILogger logger;
+	readonly IDeviceInfo deviceInfo;
+	readonly IFileSystem fileSystem;
 
-	public MediaElementPage(MediaElementViewModel viewModel, ILogger<MediaElementPage> logger) : base(viewModel)
+	public MediaElementPage(MediaElementViewModel viewModel, IFileSystem fileSystem, IDeviceInfo deviceInfo, ILogger<MediaElementPage> logger) : base(viewModel)
 	{
 		InitializeComponent();
 
 		this.logger = logger;
+		this.deviceInfo = deviceInfo;
+		this.fileSystem = fileSystem;
 		MediaElement.PropertyChanged += MediaElement_PropertyChanged;
 	}
 
@@ -249,16 +254,62 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	async void DisplayPopup(object sender, EventArgs e)
 	{
 		MediaElement.Pause();
+
+		MediaSource source;
+		
+		if (deviceInfo.Platform == DevicePlatform.Android)
+		{
+			source = MediaSource.FromResource("AndroidVideo.mp4");
+		}
+		else if (deviceInfo.Platform == DevicePlatform.MacCatalyst
+		         || deviceInfo.Platform == DevicePlatform.iOS
+		         || deviceInfo.Platform == DevicePlatform.macOS)
+		{
+			source = MediaSource.FromResource("AppleVideo.mp4");
+		}
+		else
+		{
+			source = MediaSource.FromResource("WindowsVideo.mp4");
+		}
+
+		var artworkFilePath = await GetFilePath("dotnet_bot.png");
+		
 		var popupMediaElement = new MediaElement
 		{
 			AndroidViewType = AndroidViewType.SurfaceView,
-			Source = MediaSource.FromResource("AppleVideo.mp4"),
+			Source = source,
+			MetadataArtworkUrl = "dotnet_bot.png",
 			ShouldAutoPlay = true,
 			ShouldShowPlaybackControls = true,
 		};
     
 		await this.ShowPopupAsync(popupMediaElement);
+		
 		popupMediaElement.Stop();
 		popupMediaElement.Source = null;
+	}
+
+	async Task<string> GetFilePath(string fileName)
+	{
+		if (!await fileSystem.AppPackageFileExistsAsync(fileName))
+		{
+			throw new FileNotFoundException($"File not found: {fileName}");
+		}
+
+		// Extract to cache directory to get a real file path
+		string targetPath = Path.Combine(FileSystem.CacheDirectory, fileName);
+    
+		// Check if already extracted
+		if (File.Exists(targetPath))
+		{
+			return targetPath;
+		}
+
+		// Extract the file
+		await using var sourceStream = await FileSystem.OpenAppPackageFileAsync(fileName);
+		await using var targetStream = File.Create(targetPath);
+		await sourceStream.CopyToAsync(targetStream);
+    
+		return targetPath;
 	}
 }
