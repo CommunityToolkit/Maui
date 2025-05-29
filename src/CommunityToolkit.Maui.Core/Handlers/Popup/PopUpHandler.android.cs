@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.Core.Views;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
