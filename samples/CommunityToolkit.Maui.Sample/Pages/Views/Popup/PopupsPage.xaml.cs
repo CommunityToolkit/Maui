@@ -125,9 +125,9 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		{
 			CanBeDismissedByTappingOutsideOfPopup = false
 		});
-		
+
 		await Task.Delay(TimeSpan.FromSeconds(2));
-		
+
 		await this.ClosePopupAsync();
 	}
 }
