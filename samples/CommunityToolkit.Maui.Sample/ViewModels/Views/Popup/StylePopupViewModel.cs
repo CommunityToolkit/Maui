@@ -1,6 +1,7 @@
-﻿using CommunityToolkit.Maui.Sample.Views.Popups;
-using CommunityToolkit.Maui.Views;
+﻿using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Sample.Views.Popups;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
@@ -9,51 +10,51 @@ public partial class StylePopupViewModel : BaseViewModel
 	static Page MainPage => Shell.Current;
 
 	[RelayCommand]
-	static void DisplayImplicitStylePopup()
+	static async Task DisplayImplicitStylePopup()
 	{
 		var popup = new ImplicitStylePopup();
-		MainPage.ShowPopup(popup);
+		await MainPage.ShowPopupAsync(popup);
 	}
 
 	[RelayCommand]
-	static void DisplayExplicitStylePopup()
+	static async Task DisplayExplicitStylePopup()
 	{
 		var popup = new ExplicitStylePopup();
-		MainPage.ShowPopup(popup);
+		await MainPage.ShowPopupAsync(popup, PopupOptions.Empty);
 	}
 
 	[RelayCommand]
-	static void DisplayDynamicStylePopup()
+	static async Task DisplayDynamicStylePopup()
 	{
 		var popup = new DynamicStylePopup();
-		MainPage.ShowPopup(popup);
+		await MainPage.ShowPopupAsync(popup, PopupOptions.Empty);
 	}
 
 	[RelayCommand]
-	static void DisplayApplyToDerivedTypesPopup()
+	static async Task DisplayApplyToDerivedTypesPopup()
 	{
 		var popup = new ApplyToDerivedTypesPopup();
-		MainPage.ShowPopup(popup);
+		await MainPage.Navigation.ShowPopupAsync(popup, PopupOptions.Empty);
 	}
 
 	[RelayCommand]
-	static void DisplayStyleInheritancePopup()
+	static async Task DisplayStyleInheritancePopup()
 	{
 		var popup = new StyleInheritancePopup();
-		MainPage.ShowPopup(popup);
+		await MainPage.ShowPopupAsync(popup, PopupOptions.Empty);
 	}
 
 	[RelayCommand]
-	static void DisplayDynamicStyleInheritancePopup()
+	static async Task DisplayDynamicStyleInheritancePopup()
 	{
 		var popup = new DynamicStyleInheritancePopup();
-		MainPage.ShowPopup(popup);
+		await MainPage.ShowPopupAsync(popup, PopupOptions.Empty);
 	}
 
 	[RelayCommand]
-	static void DisplayStyleClassPopup()
+	static async Task DisplayStyleClassPopup()
 	{
 		var popup = new StyleClassPopup();
-		MainPage.ShowPopup(popup);
+		await MainPage.ShowPopupAsync(popup, PopupOptions.Empty);
 	}
 }

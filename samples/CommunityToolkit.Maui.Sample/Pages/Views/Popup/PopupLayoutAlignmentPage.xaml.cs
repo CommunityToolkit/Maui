@@ -1,6 +1,6 @@
-﻿using CommunityToolkit.Maui.Sample.ViewModels.Views;
+﻿using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.Views.Popups;
-using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
@@ -13,26 +13,19 @@ public partial class PopupLayoutAlignmentPage : BasePage<PopupLayoutAlignmentVie
 
 	void ShowPopupButtonClicked(object sender, EventArgs e)
 	{
-		var redBlueBoxPopup = new RedBlueBoxPopup
-		{
-			Size = new Size(double.Parse(widthEntry.Text), double.Parse(heightEntry.Text)),
-		};
+		LayoutOptions verticalOptions, horizontalOptions;
 
 		if (VerticalOptionsStartRadioButton.IsChecked)
 		{
-			redBlueBoxPopup.VerticalOptions = Microsoft.Maui.Primitives.LayoutAlignment.Start;
+			verticalOptions = LayoutOptions.Start;
 		}
 		else if (VerticalOptionsCenterRadioButton.IsChecked)
 		{
-			redBlueBoxPopup.VerticalOptions = Microsoft.Maui.Primitives.LayoutAlignment.Center;
+			verticalOptions = LayoutOptions.Center;
 		}
 		else if (VerticalOptionsEndRadioButton.IsChecked)
 		{
-			redBlueBoxPopup.VerticalOptions = Microsoft.Maui.Primitives.LayoutAlignment.End;
-		}
-		else if (VerticalOptionsFillRadioButton.IsChecked)
-		{
-			redBlueBoxPopup.VerticalOptions = Microsoft.Maui.Primitives.LayoutAlignment.Fill;
+			verticalOptions = LayoutOptions.End;
 		}
 		else
 		{
@@ -41,25 +34,31 @@ public partial class PopupLayoutAlignmentPage : BasePage<PopupLayoutAlignmentVie
 
 		if (HorizontalOptionsStartRadioButton.IsChecked)
 		{
-			redBlueBoxPopup.HorizontalOptions = Microsoft.Maui.Primitives.LayoutAlignment.Start;
+			horizontalOptions = LayoutOptions.Start;
 		}
 		else if (HorizontalOptionsCenterRadioButton.IsChecked)
 		{
-			redBlueBoxPopup.HorizontalOptions = Microsoft.Maui.Primitives.LayoutAlignment.Center;
+			horizontalOptions = LayoutOptions.Center;
 		}
 		else if (HorizontalOptionsEndRadioButton.IsChecked)
 		{
-			redBlueBoxPopup.HorizontalOptions = Microsoft.Maui.Primitives.LayoutAlignment.End;
-		}
-		else if (HorizontalOptionsFillRadioButton.IsChecked)
-		{
-			redBlueBoxPopup.HorizontalOptions = Microsoft.Maui.Primitives.LayoutAlignment.Fill;
+			horizontalOptions = LayoutOptions.End;
 		}
 		else
 		{
 			throw new InvalidOperationException("HorizontalOptions Radio Button Must Be Selected");
 		}
 
-		this.ShowPopup(redBlueBoxPopup);
+		this.ShowPopup(new RedBlueBoxPopup
+		{
+			VerticalOptions = verticalOptions,
+			HorizontalOptions = horizontalOptions,
+			Padding = 0,
+			WidthRequest = double.Parse(widthEntry.Text),
+			HeightRequest = double.Parse(heightEntry.Text)
+		}, new PopupOptions
+		{
+			Shape = null
+		});
 	}
 }
