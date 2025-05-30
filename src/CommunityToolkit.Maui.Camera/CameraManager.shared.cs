@@ -1,6 +1,4 @@
-﻿using CommunityToolkit.Maui.Core.Primitives;
-
-namespace CommunityToolkit.Maui.Core;
+﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// A class that manages the camera functionality.

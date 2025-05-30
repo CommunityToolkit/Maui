@@ -1,9 +1,8 @@
 ﻿using System.ComponentModel;
 using System.Runtime.Versioning;
 using System.Windows.Input;
-using CommunityToolkit.Maui.Camera;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Core.Handlers;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -14,7 +13,6 @@ namespace CommunityToolkit.Maui.Views;
 [SupportedOSPlatform("android21.0")]
 [SupportedOSPlatform("ios")]
 [SupportedOSPlatform("maccatalyst")]
-[SupportedOSPlatform("tizen")]
 public partial class CameraView : View, ICameraView
 {
 	static readonly BindablePropertyKey isAvailablePropertyKey =
@@ -82,8 +80,6 @@ public partial class CameraView : View, ICameraView
 		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(ICommand), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopCameraPreviewCommand).BindableProperty;
 
 	readonly WeakEventManager weakEventManager = new();
-
-	TaskCompletionSource handlerCompletedTCS = new();
 
 	/// <summary>
 	/// Event that is raised when the camera capture fails.
@@ -192,20 +188,7 @@ public partial class CameraView : View, ICameraView
 		set => SetValue(isCameraBusyPropertyKey, value);
 	}
 
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	TaskCompletionSource IAsynchronousHandler.HandlerCompleteTCS => handlerCompletedTCS;
-
-	/// <inheritdoc cref="ICameraView.OnMediaCaptured"/>
-	public void OnMediaCaptured(Stream imageData)
-	{
-		weakEventManager.HandleEvent(this, new MediaCapturedEventArgs(imageData), nameof(MediaCaptured));
-	}
-
-	/// <inheritdoc cref="ICameraView.OnMediaCapturedFailed"/>
-	public void OnMediaCapturedFailed(string failureReason)
-	{
-		weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(failureReason), nameof(MediaCaptureFailed));
-	}
+	private protected new CameraViewHandler Handler => (CameraViewHandler)(base.Handler ?? throw new InvalidOperationException("Unable to retrieve Handler"));
 
 	/// <inheritdoc cref="ICameraView.GetAvailableCameras"/>
 	public async ValueTask<IReadOnlyList<CameraInfo>> GetAvailableCameras(CancellationToken token)
@@ -224,31 +207,25 @@ public partial class CameraView : View, ICameraView
 	}
 
 	/// <inheritdoc cref="ICameraView.CaptureImage"/>
-	public async ValueTask CaptureImage(CancellationToken token)
-	{
-		handlerCompletedTCS.TrySetCanceled(token);
-
-		handlerCompletedTCS = new();
-		Handler?.Invoke(nameof(ICameraView.CaptureImage));
-
-		await handlerCompletedTCS.Task.WaitAsync(token);
-	}
+	public ValueTask CaptureImage(CancellationToken token) =>
+		Handler.CameraManager.TakePicture(token);
 
 	/// <inheritdoc cref="ICameraView.StartCameraPreview"/>
-	public async ValueTask StartCameraPreview(CancellationToken token)
-	{
-		handlerCompletedTCS.TrySetCanceled(token);
-
-		handlerCompletedTCS = new();
-		Handler?.Invoke(nameof(ICameraView.StartCameraPreview));
-
-		await handlerCompletedTCS.Task.WaitAsync(token);
-	}
+	public Task StartCameraPreview(CancellationToken token) =>
+		Handler.CameraManager.StartCameraPreview(token);
 
 	/// <inheritdoc cref="ICameraView.StopCameraPreview"/>
-	public void StopCameraPreview()
+	public void StopCameraPreview() =>
+		Handler.CameraManager.StopCameraPreview();
+
+	void ICameraView.OnMediaCaptured(Stream imageData)
 	{
-		Handler?.Invoke(nameof(ICameraView.StopCameraPreview));
+		weakEventManager.HandleEvent(this, new MediaCapturedEventArgs(imageData), nameof(MediaCaptured));
+	}
+
+	void ICameraView.OnMediaCapturedFailed(string failureReason)
+	{
+		weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(failureReason), nameof(MediaCaptureFailed));
 	}
 
 	static object CoerceZoom(BindableObject bindable, object value)
