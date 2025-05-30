@@ -543,7 +543,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return [];
 		}
-		
+
 		Stream? stream = null;
 		Uri.TryCreate(url, UriKind.Absolute, out var uri);
 
@@ -554,7 +554,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 			// HTTP or HTTPS URL
 			if (uri is not null &&
-			    (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+				(uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
 			{
 				var request = new HttpRequestMessage(HttpMethod.Head, url);
 				var contentLengthResponse = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
@@ -567,7 +567,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			else if (uri is not null && uri.Scheme == Uri.UriSchemeFile)
 			{
 				var normalizedFilePath = NormalizeFilePath(url);
-				
+
 				stream = File.Open(normalizedFilePath, FileMode.Create);
 				contentLength = await GetByteCountFromStream(stream, cancellationToken);
 			}
@@ -575,7 +575,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			else if (Uri.TryCreate(url, UriKind.Relative, out _))
 			{
 				var normalizedFilePath = NormalizeFilePath(url);
-				
+
 				stream = Platform.AppContext.Assets?.Open(normalizedFilePath) ?? throw new InvalidOperationException("Assets cannot be null");
 				contentLength = await GetByteCountFromStream(stream, cancellationToken);
 			}
@@ -607,7 +607,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				await stream.DisposeAsync();
 			}
 		}
-		
+
 		static string NormalizeFilePath(string filePath) => filePath.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
 
 		static async ValueTask<long> GetByteCountFromStream(Stream stream, CancellationToken token)
@@ -618,15 +618,15 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			}
 
 			long countedStreamBytes = 0;
-					
+
 			var buffer = new byte[8192];
 			int bytesRead;
-        
+
 			while ((bytesRead = await stream.ReadAsync(buffer, token)) > 0)
 			{
 				countedStreamBytes += bytesRead;
 			}
-        
+
 			return countedStreamBytes;
 		}
 	}
@@ -707,7 +707,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
 		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
 		var data = await GetBytesFromMetadataArtworkUrl(MediaElement.MetadataArtworkUrl, cancellationToken).ConfigureAwait(true);
-		if (data != null && data.Length > 0)
+		if (data is not null && data.Length > 0)
 		{
 			mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);
 		}

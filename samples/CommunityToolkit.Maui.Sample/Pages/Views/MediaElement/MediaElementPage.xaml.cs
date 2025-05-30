@@ -19,8 +19,8 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string botImageUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
 	const string hlsStreamTestUrl = "https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8";
 	const string hal9000AudioUrl = "https://github.com/prof3ssorSt3v3/media-sample-files/raw/master/hal-9000.mp3";
-	
-	
+
+
 	readonly ILogger logger;
 	readonly IDeviceInfo deviceInfo;
 	readonly IFileSystem fileSystem;
@@ -256,14 +256,14 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.Pause();
 
 		MediaSource source;
-		
+
 		if (deviceInfo.Platform == DevicePlatform.Android)
 		{
 			source = MediaSource.FromResource("AndroidVideo.mp4");
 		}
 		else if (deviceInfo.Platform == DevicePlatform.MacCatalyst
-		         || deviceInfo.Platform == DevicePlatform.iOS
-		         || deviceInfo.Platform == DevicePlatform.macOS)
+				 || deviceInfo.Platform == DevicePlatform.iOS
+				 || deviceInfo.Platform == DevicePlatform.macOS)
 		{
 			source = MediaSource.FromResource("AppleVideo.mp4");
 		}
@@ -273,7 +273,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 
 		var artworkFilePath = await GetFilePath("dotnet_bot.png");
-		
+
 		var popupMediaElement = new MediaElement
 		{
 			AndroidViewType = AndroidViewType.SurfaceView,
@@ -282,9 +282,9 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			ShouldAutoPlay = true,
 			ShouldShowPlaybackControls = true,
 		};
-    
+
 		await this.ShowPopupAsync(popupMediaElement);
-		
+
 		popupMediaElement.Stop();
 		popupMediaElement.Source = null;
 	}
@@ -298,7 +298,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 		// Extract to cache directory to get a real file path
 		string targetPath = Path.Combine(FileSystem.CacheDirectory, fileName);
-    
+
 		// Check if already extracted
 		if (File.Exists(targetPath))
 		{
@@ -309,7 +309,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		await using var sourceStream = await FileSystem.OpenAppPackageFileAsync(fileName);
 		await using var targetStream = File.Create(targetPath);
 		await sourceStream.CopyToAsync(targetStream);
-    
+
 		return targetPath;
 	}
 }
