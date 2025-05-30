@@ -3,7 +3,7 @@
 /// <summary>
 /// A XAML markup extension that enables using <see cref="AppThemeColor"/> and <see cref="AppThemeObject"/> from XAML.
 /// </summary>
-[ContentProperty(nameof(Key)), RequireService([typeof(IServiceProvider), typeof(IProvideParentValues)])]
+[ContentProperty(nameof(Key)), RequireService([typeof(IServiceProvider), typeof(IProvideValueTarget), typeof(IRootObjectProvider)])]
 public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 {
 	/// <summary>
@@ -21,68 +21,106 @@ public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 
 		if (Key is null)
 		{
-			throw new XamlParseException($"{nameof(AppThemeResourceExtension)}.{nameof(Key)} Cannot be null. You must set a {nameof(Key)} that specifies the AppTheme resource to use", serviceProvider);
+			throw new XamlParseException($"{nameof(AppThemeResourceExtension)}.{nameof(Key)} cannot be null.", serviceProvider);
 		}
 
-		if (serviceProvider.GetService(typeof(IProvideValueTarget)) is not IProvideParentValues valueProvider)
+		var valueTarget = serviceProvider.GetService(typeof(IProvideValueTarget)) as IProvideValueTarget;
+		var targetObject = valueTarget?.TargetObject;
+		if (targetObject is null)
 		{
-			throw new ArgumentException(null, nameof(serviceProvider));
+			var info = (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) as IXmlLineInfoProvider)?.XmlLineInfo;
+			throw new XamlParseException($"Cannot determine target for {nameof(AppThemeResourceExtension)}.", info);
 		}
 
-		if (!TryGetResource(Key, valueProvider.ParentObjects, out var resource, out var resourceDictionary)
-			&& !TryGetApplicationLevelResource(Key, out resource, out resourceDictionary))
+		if (TryFindResourceInVisualElement(targetObject, Key, out var resource))
 		{
-			var xmlLineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider ? xmlLineInfoProvider.XmlLineInfo : null;
-			throw new XamlParseException($"Resource not found for key {Key}", xmlLineInfo);
-		}
-
-		switch (resource)
-		{
-			case AppThemeColor color:
-				return color.GetBinding();
-			case AppThemeObject themeResource:
-				return themeResource.GetBinding();
-			default:
-				{
-					var xmlLineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider ? xmlLineInfoProvider.XmlLineInfo : null;
-					throw new XamlParseException($"Resource found for key {Key} is not of type {nameof(AppThemeColor)} or {nameof(AppThemeObject)}", xmlLineInfo);
-				}
-		}
-
-	}
-
-	static bool TryGetResource(string key, IEnumerable<object> parentObjects, out object? resource, out ResourceDictionary? resourceDictionary)
-	{
-		resource = null;
-		resourceDictionary = null;
-
-		foreach (var parentObject in parentObjects)
-		{
-			var resDict = parentObject is IResourcesProvider { IsResourcesCreated: true } resourcesProvider
-											? resourcesProvider.Resources
-											: parentObject as ResourceDictionary;
-			if (resDict is null)
+			if (resource is AppThemeColor color)
 			{
-				continue;
+				return color.GetBinding();
+			}
+			if (resource is AppThemeObject theme)
+			{
+				return theme.GetBinding();
 			}
 
-			if (resDict.TryGetValueAndSource(key, out resource, out resourceDictionary))
+			var info = (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) as IXmlLineInfoProvider)?.XmlLineInfo;
+			throw new XamlParseException($"Resource found for key {Key} is not a valid AppTheme resource.", info);
+		}
+
+		// Fallback to root object ResourceDictionary (e.g. page-level resources)
+		var rootProvider = serviceProvider.GetService(typeof(IRootObjectProvider)) as IRootObjectProvider;
+		var root = rootProvider?.RootObject;
+		if (root is IResourcesProvider rootResources && rootResources.IsResourcesCreated
+			&& rootResources.Resources.TryGetValue(Key, out resource))
+		{
+			if (resource is AppThemeColor rootColor)
+			{
+				return rootColor.GetBinding();
+			}
+			if (resource is AppThemeObject rootTheme)
+			{
+				return rootTheme.GetBinding();
+			}
+			var info = (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) as IXmlLineInfoProvider)?.XmlLineInfo;
+			throw new XamlParseException($"Resource found for key {Key} is not a valid AppTheme resource.", info);
+		}
+
+		if (Application.Current?.Resources.TryGetValueAndSource(Key, out resource, out _) == true)
+		{
+			if (resource is AppThemeColor color)
+			{
+				return color.GetBinding();
+			}
+			if (resource is AppThemeObject theme)
+			{
+				return theme.GetBinding();
+			}
+			var info = (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) as IXmlLineInfoProvider)?.XmlLineInfo;
+			throw new XamlParseException($"Resource found for key {Key} is not a valid AppTheme resource.", info);
+		}
+
+		var xmlInfo = (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) as IXmlLineInfoProvider)?.XmlLineInfo;
+		throw new XamlParseException($"Resource not found for key {Key}.", xmlInfo);
+	}
+
+	/// <summary>
+	/// Attempts to locate a resource by walking up the visual tree from a target object.
+	/// </summary>
+	static bool TryFindResourceInVisualElement(object element, string key, out object resource)
+	{
+		resource = default!;
+
+		// If the element has a Resources property via IResourcesProvider
+		if (element is IResourcesProvider provider && provider.IsResourcesCreated)
+		{
+			if (provider.Resources.TryGetValue(key, out resource))
 			{
 				return true;
 			}
 		}
 
+		// Walk up the element tree
+		if (element is Element elementObj)
+		{
+			var parent = elementObj.Parent;
+			while (parent is not null)
+			{
+				if (parent is IResourcesProvider parentProvider && parentProvider.IsResourcesCreated
+					&& parentProvider.Resources.TryGetValue(key, out resource))
+				{
+					return true;
+				}
+				parent = parent.Parent;
+			}
+		}
+
+		// If it's a ResourceDictionary, check it directly
+		if (element is ResourceDictionary dict && dict.TryGetValue(key, out resource))
+		{
+			return true;
+		}
+
 		return false;
-	}
-
-	static bool TryGetApplicationLevelResource(string key, out object? resource, out ResourceDictionary? resourceDictionary)
-	{
-		resource = null;
-		resourceDictionary = null;
-
-		return Application.Current is not null
-			&& ((IResourcesProvider)Application.Current).IsResourcesCreated
-			&& Application.Current.Resources.TryGetValueAndSource(key, out resource, out resourceDictionary);
 	}
 
 	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider) => ProvideValue(serviceProvider);
