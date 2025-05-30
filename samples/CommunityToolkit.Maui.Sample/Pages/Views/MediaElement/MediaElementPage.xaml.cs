@@ -272,8 +272,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			source = MediaSource.FromResource("WindowsVideo.mp4");
 		}
 
-		var artworkFilePath = await GetFilePath("dotnet_bot.png");
-
 		var popupMediaElement = new MediaElement
 		{
 			AndroidViewType = AndroidViewType.SurfaceView,
@@ -287,29 +285,5 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 		popupMediaElement.Stop();
 		popupMediaElement.Source = null;
-	}
-
-	async Task<string> GetFilePath(string fileName)
-	{
-		if (!await fileSystem.AppPackageFileExistsAsync(fileName))
-		{
-			throw new FileNotFoundException($"File not found: {fileName}");
-		}
-
-		// Extract to cache directory to get a real file path
-		string targetPath = Path.Combine(FileSystem.CacheDirectory, fileName);
-
-		// Check if already extracted
-		if (File.Exists(targetPath))
-		{
-			return targetPath;
-		}
-
-		// Extract the file
-		await using var sourceStream = await FileSystem.OpenAppPackageFileAsync(fileName);
-		await using var targetStream = File.Create(targetPath);
-		await sourceStream.CopyToAsync(targetStream);
-
-		return targetPath;
 	}
 }
