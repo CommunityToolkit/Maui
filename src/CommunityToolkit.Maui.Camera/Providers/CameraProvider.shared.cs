@@ -10,4 +10,13 @@ partial class CameraProvider : ICameraProvider
 
 	/// <inheritdoc/>
 	public partial ValueTask RefreshAvailableCameras(CancellationToken token);
+
+	public CameraProvider()
+	{
+		InitializeAsync = RefreshAvailableCameras(CancellationToken.None).AsTask();
+	}
+
+	/// <inheritdoc/>
+	public Task InitializeAsync { get; init; }
+
 }

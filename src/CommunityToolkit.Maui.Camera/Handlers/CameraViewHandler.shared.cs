@@ -90,9 +90,20 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	{
 		base.ConnectHandler(platformView);
 
-		await (cameraManager?.ArePermissionsGranted() ?? Task.CompletedTask);
-		await (cameraManager?.ConnectCamera(CancellationToken.None) ?? Task.CompletedTask);
-		await cameraProvider.RefreshAvailableCameras(CancellationToken.None);
+		if (cameraManager is null)
+		{
+			throw new CameraException("CameraManager is null");
+		}
+
+		if (await cameraManager.ArePermissionsGranted() is false)
+		{
+			throw new PermissionException("Camera permissions not granted");
+		}
+
+		await cameraProvider.InitializeAsync;
+		VirtualView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
+
+		await cameraManager.ConnectCamera(CancellationToken.None);
 	}
 
 	/// <inheritdoc/>

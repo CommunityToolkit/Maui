@@ -14,12 +14,12 @@ partial class CameraProvider
 		var deviceInfoCollection = await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture).AsTask(token);
 		var mediaFrameSourceGroup = await MediaFrameSourceGroup.FindAllAsync().AsTask(token);
 		var videoCaptureSourceGroup = mediaFrameSourceGroup.Where(sourceGroup => deviceInfoCollection.Any(deviceInfo => deviceInfo.Id == sourceGroup.Id)).ToList();
-		var mediaCapture = new MediaCapture();
 
 		var availableCameras = new List<CameraInfo>();
 
 		foreach (var sourceGroup in videoCaptureSourceGroup)
 		{
+			var mediaCapture = new MediaCapture();
 			await mediaCapture.InitializeCameraForCameraView(sourceGroup.Id, token);
 
 			CameraPosition position = CameraPosition.Unknown;
@@ -63,6 +63,8 @@ partial class CameraProvider
 				imageEncodingPropertiesList);
 
 			availableCameras.Add(cameraInfo);
+
+			mediaCapture.Dispose();
 		}
 
 		AvailableCameras = availableCameras;
