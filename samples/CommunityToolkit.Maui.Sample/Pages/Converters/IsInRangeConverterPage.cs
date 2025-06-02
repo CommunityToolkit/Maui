@@ -296,7 +296,7 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 						.Start().CenterVertical()
 						.Bind(Entry.TextProperty,
 								static (IsInRangeConverterViewModel vm) => vm.InputString,
-								static (IsInRangeConverterViewModel vm, string text) => vm.InputString = text),
+								static (IsInRangeConverterViewModel vm, string? text) => vm.InputString = text ?? string.Empty),
 
 					new ExampleLabel()
 						.Row(Row.CharExample1).Column(Column.Input)

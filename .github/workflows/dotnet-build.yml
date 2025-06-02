@@ -22,7 +22,7 @@ env:
   NugetPackageVersionCamera: '99.0.0-preview${{ github.run_number }}'
   NugetPackageVersionMediaElement: '99.0.0-preview${{ github.run_number }}'
   NugetPackageVersionMaps: '99.0.0-preview${{ github.run_number }}'
-  TOOLKIT_NET_VERSION: '9.0.202'
+  TOOLKIT_NET_VERSION: '9.0.300'
   LATEST_NET_VERSION: '9.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
@@ -59,7 +59,7 @@ jobs:
         os: [windows-latest, macos-15]
     steps:
       - name: Checkout code
-        uses: actions/checkout@main
+        uses: actions/checkout@v4
 
       - name: Set Latest Xcode Version
         if: runner.os == 'macOS'
@@ -104,28 +104,33 @@ jobs:
         os: [windows-latest, macos-15]
     steps:
       - name: Checkout code
-        uses: actions/checkout@main
+        uses: actions/checkout@v4
 
       - name: Set NuGet Version to Tag Number
-        if: startsWith(github.ref, 'refs/tags/') && !endsWith(github.ref, '-mediaelement')
-        run: echo "NugetPackageVersion=${{ github.ref }}" >> $GITHUB_ENV
+        if: startsWith(github.ref, 'refs/tags/') && (!endsWith(github.ref, '-mediaelement') && !endsWith(github.ref, '-camera') && !endsWith(github.ref, '-maps'))
+        run: echo "NugetPackageVersion=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        shell: bash
 
       - name: Set NuGet Version to Tag Number for Camera
         if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-camera')
-        run: echo "NugetPackageVersionCamera=${{ github.ref }}" >> $GITHUB_ENV
+        run: echo "NugetPackageVersionCamera=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        shell: bash
 
       - name: Set NuGet Version to Tag Number for MediaElement
         if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-mediaelement')
-        run: echo "NugetPackageVersionMediaElement=${{ github.ref }}" >> $GITHUB_ENV
+        run: echo "NugetPackageVersionMediaElement=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        shell: bash
 
       - name: Set NuGet Version to Tag Number for Maps
         if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-maps')
-        run: echo "NugetPackageVersionMaps=${{ github.ref }}" >> $GITHUB_ENV
+        run: echo "NugetPackageVersionMaps=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        shell: bash
 
       - name: Set NuGet Version to PR Version
         if: ${{ github.event_name == 'pull_request' }}
         run: |
           echo "NugetPackageVersion=${{ env.CurrentSemanticVersionBase }}-build-${{ github.event.pull_request.number }}.${{ github.run_number }}+${{ github.sha }}"
+          echo "NugetPackageVersionCamera=${{ env.CurrentSemanticVersionBase }}-build-${{ github.event.pull_request.number }}.${{ github.run_number }}+${{ github.sha }}"
           echo "NugetPackageVersionMediaElement=${{ env.CurrentSemanticVersionBase }}-build-${{ github.event.pull_request.number }}.${{ github.run_number }}+${{ github.sha }}"
           echo "NugetPackageVersionMaps=${{ env.CurrentSemanticVersionBase }}-build-${{ github.event.pull_request.number }}.${{ github.run_number }}+${{ github.sha }}"
         shell: bash
@@ -258,7 +263,7 @@ jobs:
 
   sign:
     needs: [build_library]
-    if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/rel/') }}
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
     runs-on: windows-latest
     permissions:
       id-token: write # Required for requesting the JWT
@@ -281,6 +286,27 @@ jobs:
         with:
           name: packages
           path: ./packages
+      
+      - name: Remove MediaElement package if that is not being released
+        if: startsWith(github.ref, 'refs/tags/') && !endsWith(github.ref, '-mediaelement')
+        run: |
+          ${{ github.workspace }}/packages/**/*.nupkg | Where-Object { $_ -notmatch "CommunityToolkit.Maui.MediaElement" } | Remove-Item -Force
+
+      - name: Remove Camera package if that is not being released
+        if: startsWith(github.ref, 'refs/tags/') && !endsWith(github.ref, '-camera')
+        run: |
+          ${{ github.workspace }}/packages/**/*.nupkg | Where-Object { $_ -notmatch "CommunityToolkit.Maui.Camera" } | Remove-Item -Force
+
+      - name: Remove Maps package if that is not being released
+        if: startsWith(github.ref, 'refs/tags/') && !endsWith(github.ref, '-maps')
+        run: |
+          ${{ github.workspace }}/packages/**/*.nupkg | Where-Object { $_ -notmatch "CommunityToolkit.Maui.Maps" } | Remove-Item -Force
+
+      - name: Remove Core & Main package if that is not being released
+        if: startsWith(github.ref, 'refs/tags/') && (!endsWith(github.ref, '-mediaelement') && !endsWith(github.ref, '-camera') && !endsWith(github.ref, '-maps'))
+        run: |
+          ${{ github.workspace }}/packages/**/*.nupkg | Where-Object { $_ -notmatch "CommunityToolkit.Maui" } | Remove-Item -Force
+          ${{ github.workspace }}/packages/**/*.nupkg | Where-Object { $_ -notmatch "CommunityToolkit.Maui.Core" } | Remove-Item -Force
 
       - name: Install Signing Tool
         run: dotnet tool install --tool-path ./tools sign --version 0.9.1-beta.23356.1
@@ -293,7 +319,7 @@ jobs:
           --file-list "${{ github.workspace }}/SignClientFileList.txt"
           --timestamp-url "http://timestamp.digicert.com"
           --publisher-name ".NET Foundation"
-          --description "Community Toolkit MAUI"
+          --description ".NET MAUI Community Toolkit"
           --description-url "https://github.com/CommunityToolkit/Maui"
           --azure-key-vault-url "${{ secrets.SIGN_KEY_VAULT_URL }}"
           --azure-key-vault-client-id ${{ secrets.SIGN_CLIENT_ID }}
@@ -311,7 +337,7 @@ jobs:
             ${{ github.workspace }}/packages/**/*.nupkg
 
   release:
-    if: ${{ startsWith(github.ref, 'refs/heads/rel/') }}
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
     needs: [sign]
     environment: nuget-release-gate # This gates this job until manually approved
     runs-on: ubuntu-latest

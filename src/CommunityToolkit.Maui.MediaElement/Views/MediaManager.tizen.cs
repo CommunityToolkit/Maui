@@ -1,5 +1,4 @@
 ﻿using System;
-using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Views;
 using Tizen.Multimedia;
@@ -29,7 +28,7 @@ public partial class MediaManager : IDisposable
 	/// Indicates whether the device's screen is locked.
 	/// </summary>
 	protected bool IsScreenLocked { get; set; }
-
+	
 	/// <summary>
 	/// Releases the managed and unmanaged resources used by the <see cref="MediaManager"/>.
 	/// </summary>
