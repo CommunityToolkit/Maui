@@ -6,13 +6,14 @@
              xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
              x:TypeArguments="viewModels:PopupLayoutAlignmentViewModel"
              x:DataType="viewModels:PopupLayoutAlignmentViewModel"
+             Padding="20"
              Title="Popup Layout Alignment">
 
     <Grid RowDefinitions="64,44,32,44,24,44,*"
-          ColumnDefinitions="*,*,*,*,*,*,*,*"
+          ColumnDefinitions="*,*,*,*,*,*"
           ColumnSpacing="5">
         <Label Grid.Row="0"
-               Grid.ColumnSpan="8"
+               Grid.ColumnSpan="6"
                HorizontalTextAlignment="Center"
                Text="Popup allows you to position it on the page using its LayoutAlignmentOptions, HorizontalOptions and VerticalOptions" />
 
@@ -41,7 +42,6 @@
 
         <Entry Grid.Row="1"
                Grid.Column="5"
-               Grid.ColumnSpan="2"
                Text="100"
                x:Name="heightEntry"
                Keyboard="Numeric"
@@ -51,7 +51,7 @@
         <Label
             Grid.Row="2"
             Grid.Column="0"
-            Grid.ColumnSpan="8"
+            Grid.ColumnSpan="6"
             Text="HorizontalOptions"
             VerticalOptions="End"
             FontAttributes="Bold" />
@@ -107,26 +107,9 @@
             GroupName="HorizontalLayoutOptions" />
 
         <Label
-            Grid.Row="3"
-            Grid.Column="6"
-            FontSize="13"
-            Text="Fill"
-            VerticalOptions="Center"
-            HorizontalOptions="End"/>
-
-        <RadioButton
-            Grid.Row="3"
-            Grid.Column="7"
-            x:Name="HorizontalOptionsFillRadioButton"
-            IsChecked="False"
-            HorizontalOptions="Start"
-            VerticalOptions="Center"
-            GroupName="HorizontalLayoutOptions" />
-
-        <Label
             Grid.Row="4"
             Grid.Column="0"
-            Grid.ColumnSpan="8"
+            Grid.ColumnSpan="6"
             Text="VerticalOptions"
             VerticalOptions="End"
             FontAttributes="Bold" />
@@ -181,27 +164,10 @@
             VerticalOptions="Center"
             GroupName="VerticalLayoutOptions" />
 
-        <Label
-            Grid.Row="5"
-            Grid.Column="6"
-            FontSize="13"
-            Text="Fill"
-            VerticalOptions="Center"
-            HorizontalOptions="End"/>
-
-        <RadioButton
-            Grid.Row="5"
-            Grid.Column="7"
-            x:Name="VerticalOptionsFillRadioButton"
-            IsChecked="False"
-            HorizontalOptions="Start"
-            VerticalOptions="Center"
-            GroupName="VerticalLayoutOptions" />
-
         <Button
             Grid.Row="6"
             Grid.Column="0"
-            Grid.ColumnSpan="8"
+            Grid.ColumnSpan="6"
             x:Name="ShowPopupButton"
             Text="Show Popup"
             BackgroundColor="Blue"

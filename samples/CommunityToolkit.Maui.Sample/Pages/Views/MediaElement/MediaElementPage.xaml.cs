@@ -1,17 +1,15 @@
 ﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Sample.Constants;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
-using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class MediaElementPage : BasePage<MediaElementViewModel>
 {
-	readonly ILogger logger;
-
 	const string loadOnlineMp4 = "Load Online MP4";
 	const string loadHls = "Load HTTP Live Stream (HLS)";
 	const string loadLocalResource = "Load Local Resource";
@@ -22,11 +20,18 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string hlsStreamTestUrl = "https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8";
 	const string hal9000AudioUrl = "https://github.com/prof3ssorSt3v3/media-sample-files/raw/master/hal-9000.mp3";
 
-	public MediaElementPage(MediaElementViewModel viewModel, ILogger<MediaElementPage> logger) : base(viewModel)
+
+	readonly ILogger logger;
+	readonly IDeviceInfo deviceInfo;
+	readonly IFileSystem fileSystem;
+
+	public MediaElementPage(MediaElementViewModel viewModel, IFileSystem fileSystem, IDeviceInfo deviceInfo, ILogger<MediaElementPage> logger) : base(viewModel)
 	{
 		InitializeComponent();
 
 		this.logger = logger;
+		this.deviceInfo = deviceInfo;
+		this.fileSystem = fileSystem;
 		MediaElement.PropertyChanged += MediaElement_PropertyChanged;
 	}
 
@@ -163,6 +168,9 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		var result = await DisplayActionSheet("Choose a source", "Cancel", null,
 			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadMusic);
 
+		MediaElement.Stop();
+		MediaElement.Source = null;
+
 		switch (result)
 		{
 			case loadOnlineMp4:
@@ -243,36 +251,40 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.Aspect = (Aspect)aspectEnum;
 	}
 
-	void DisplayPopup(object sender, EventArgs e)
+	async void DisplayPopup(object sender, EventArgs e)
 	{
 		MediaElement.Pause();
+
+		MediaSource source;
+
+		if (deviceInfo.Platform == DevicePlatform.Android)
+		{
+			source = MediaSource.FromResource("AndroidVideo.mp4");
+		}
+		else if (deviceInfo.Platform == DevicePlatform.MacCatalyst
+				 || deviceInfo.Platform == DevicePlatform.iOS
+				 || deviceInfo.Platform == DevicePlatform.macOS)
+		{
+			source = MediaSource.FromResource("AppleVideo.mp4");
+		}
+		else
+		{
+			source = MediaSource.FromResource("WindowsVideo.mp4");
+		}
+
 		var popupMediaElement = new MediaElement
 		{
 			AndroidViewType = AndroidViewType.SurfaceView,
-			Source = MediaSource.FromResource("AppleVideo.mp4"),
 			IsAndroidForegroundServiceEnabled = false,
-			HeightRequest = 600,
-			WidthRequest = 600,
+			Source = source,
+			MetadataArtworkUrl = "dotnet_bot.png",
 			ShouldAutoPlay = true,
 			ShouldShowPlaybackControls = true,
 		};
-		var popup = new Popup
-		{
-			VerticalOptions = LayoutAlignment.Center,
-			HorizontalOptions = LayoutAlignment.Center,
-			Content = new StackLayout
-			{
-				Children =
-				{
-					popupMediaElement,
-				}
-			}
-		};
 
-		this.ShowPopup(popup);
-		popup.Closed += (s, e) =>
-		{
-			popupMediaElement.Stop();
-		};
+		await this.ShowPopupAsync(popupMediaElement);
+
+		popupMediaElement.Stop();
+		popupMediaElement.Source = null;
 	}
 }

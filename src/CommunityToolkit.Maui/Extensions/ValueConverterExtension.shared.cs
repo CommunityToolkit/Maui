@@ -1,16 +1,17 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Converters;
+using CommunityToolkit.Maui.Core.Extensions;
 
 namespace CommunityToolkit.Maui.Extensions;
 
-/// <inheritdoc />
+/// <inheritdoc cref="Microsoft.Maui.Controls.Xaml.IMarkupExtension" />
 public abstract class ValueConverterExtension : BindableObject, IMarkupExtension<ICommunityToolkitValueConverter>
 {
 	/// <inheritdoc />
 	public ICommunityToolkitValueConverter ProvideValue(IServiceProvider serviceProvider)
 		=> (ICommunityToolkitValueConverter)this;
 
-	private protected static bool IsNullable<T>() => IsNullable(typeof(T));
+	private protected static bool IsNullable<T>() => typeof(T).IsNullable();
 
 	private protected static bool IsValidTargetType<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TTarget>([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] in Type targetType, bool shouldAllowNullableValueTypes)
 	{
@@ -44,7 +45,7 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 
 		static bool IsValidNullableValueType(Type targetType)
 		{
-			if (!IsNullable(targetType))
+			if (!targetType.IsNullable())
 			{
 				return false;
 			}
@@ -86,21 +87,6 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 		_ => throw new ArgumentException($"Value needs to be of type {typeof(TValue)}", nameof(value))
 	};
 #pragma warning restore CS8603 // Possible null reference return.
-
-	static bool IsNullable(Type type)
-	{
-		if (!type.IsValueType)
-		{
-			return true; // ref-type
-		}
-
-		if (Nullable.GetUnderlyingType(type) is not null)
-		{
-			return true; // Nullable<T>
-		}
-
-		return false; // value-type
-	}
 
 	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
 		=> ((IMarkupExtension<ICommunityToolkitValueConverter>)this).ProvideValue(serviceProvider);
