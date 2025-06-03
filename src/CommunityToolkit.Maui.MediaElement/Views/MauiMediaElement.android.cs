@@ -183,7 +183,6 @@ public class MauiMediaElement : CoordinatorLayout
 		}
 		else
 		{
-			WindowCompat.SetDecorFitsSystemWindows(currentWindow, true);
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
 				if (isSystemBarVisible)
@@ -198,6 +197,7 @@ public class MauiMediaElement : CoordinatorLayout
 
 			windowInsetsControllerCompat.Show(barTypes);
 			windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorDefault;
+			WindowCompat.SetDecorFitsSystemWindows(currentWindow, true);
 		}
 	}
 

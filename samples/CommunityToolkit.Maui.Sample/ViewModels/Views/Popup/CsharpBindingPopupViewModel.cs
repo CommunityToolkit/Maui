@@ -1,17 +1,21 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public sealed partial class CsharpBindingPopupViewModel : BaseViewModel
+public sealed partial class CsharpBindingPopupViewModel : BaseViewModel, IQueryAttributable
 {
 	[ObservableProperty]
-	public partial string Title { get; set; } = "C# Binding Popup";
+	public partial string Title { get; private set; } = string.Empty;
 
 	[ObservableProperty]
-	public partial string Message { get; set; } = "This message uses a ViewModel binding";
+	public partial string Message { get; private set; } = string.Empty;
 
-	internal void Load(string updatedMessage)
+	public TaskCompletionSource<IPopupResult>? PopupResultManager { get; set; }
+
+	void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
 	{
-		Message = updatedMessage;
+		Title = (string)query[nameof(Title)];
+		Message = (string)query[nameof(Message)];
 	}
 }
