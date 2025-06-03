@@ -7,6 +7,8 @@ public class MockCameraProvider : ICameraProvider
 {
 	public IReadOnlyList<CameraInfo>? AvailableCameras { get; private set; }
 
+	public Task InitializeAsync { get; } = Task.CompletedTask;
+
 	public ValueTask RefreshAvailableCameras(CancellationToken token)
 	{
 		AvailableCameras =
