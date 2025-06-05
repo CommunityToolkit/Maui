@@ -56,7 +56,7 @@ public class CameraViewTests : BaseHandlerTest
 		cameraView.MediaCaptured += (sender, args) => eventRaised = true;
 
 		var imageData = new MemoryStream();
-		cameraView.OnMediaCaptured(imageData);
+		((ICameraView)cameraView).OnMediaCaptured(imageData);
 
 		Assert.True(eventRaised);
 	}
@@ -70,7 +70,7 @@ public class CameraViewTests : BaseHandlerTest
 		var mediaCaptureFailedTcs = new TaskCompletionSource<MediaCaptureFailedEventArgs>();
 		cameraView.MediaCaptureFailed += HandleMediaCaptureFailed;
 
-		cameraView.OnMediaCapturedFailed(failureMessage);
+		((ICameraView)cameraView).OnMediaCapturedFailed(failureMessage);
 
 		var mediaCaptureFailedEventArgs = await mediaCaptureFailedTcs.Task;
 
