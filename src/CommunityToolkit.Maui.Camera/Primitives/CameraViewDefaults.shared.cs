@@ -1,8 +1,8 @@
 using System.ComponentModel;
 using System.Runtime.Versioning;
 using System.Windows.Input;
-using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Views;
+
 namespace CommunityToolkit.Maui.Core;
 
 /// <summary>Default Values for <see cref="ICameraView"/>"/></summary>
@@ -59,6 +59,6 @@ public static class CameraViewDefaults
 	internal static ICommand CreateStopCameraPreviewCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;
-		return new Command(token => cameraView.StopCameraPreview());
+		return new Command(_ => cameraView.StopCameraPreview());
 	}
 }
