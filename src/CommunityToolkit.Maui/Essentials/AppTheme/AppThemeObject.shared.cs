@@ -29,7 +29,7 @@ public abstract class AppThemeObject<T>
 	public T? Default { get; set; }
 
 	/// <summary>
-	/// Gets a bindable object which holds the diffent values for each operating system theme. 
+	/// Gets a bindable object which holds the different values for each operating system theme. 
 	/// </summary>
 	/// <returns>A <see cref="AppThemeBinding"/> instance with the respective theme values.</returns>
 	public virtual BindingBase GetBinding()
