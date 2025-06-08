@@ -1,5 +1,3 @@
-using CommunityToolkit.Maui.Core.Primitives;
-
 namespace CommunityToolkit.Maui.Core;
 
 partial class CameraManager
