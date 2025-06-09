@@ -54,7 +54,7 @@ jobs:
     name: Build Sample App using Latest .NET SDK
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: [windows-latest, macos-15]
     steps:
@@ -99,7 +99,7 @@ jobs:
     name: Build Library
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: [windows-latest, macos-15]
     steps:
