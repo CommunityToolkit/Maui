@@ -209,18 +209,30 @@ public partial class CameraView : View, ICameraView
 	/// <inheritdoc cref="ICameraView.CaptureImage"/>
 	public async Task<Stream> CaptureImage(CancellationToken token)
 	{
-		var mediaStream = new TaskCompletionSource<Stream>();
+		var mediaStreamTCS = new TaskCompletionSource<Stream>();
 
 		MediaCaptured += HandleMediaCaptured;
+		MediaCaptureFailed += HandleMediaCapturedFailed;
+
 		await Handler.CameraManager.TakePicture(token);
 
-		var stream = await mediaStream.Task.WaitAsync(token);
+		var stream = await mediaStreamTCS.Task.WaitAsync(token);
 		return stream;
 
 		void HandleMediaCaptured(object? sender, MediaCapturedEventArgs e)
 		{
 			MediaCaptured -= HandleMediaCaptured;
-			mediaStream.SetResult(e.Media);
+			MediaCaptureFailed -= HandleMediaCapturedFailed;
+
+			mediaStreamTCS.SetResult(e.Media);
+		}
+
+		void HandleMediaCapturedFailed(object? sender, MediaCaptureFailedEventArgs e)
+		{
+			MediaCaptured -= HandleMediaCaptured;
+			MediaCaptureFailed -= HandleMediaCapturedFailed;
+
+			mediaStreamTCS.SetException(new CameraException(e.FailureReason));
 		}
 	}
 
