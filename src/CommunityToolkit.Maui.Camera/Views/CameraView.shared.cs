@@ -224,7 +224,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 		// Without this SemaphoreSlim, previous calls to this method will fire `MediaCaptured` and/or `MediaCaptureFailed` events causing this method to return the wrong Stream or throw the wrong Exception
 		await captureImageSemaphoreSlim.WaitAsync(token);
 
-		var mediaStreamTCS = new TaskCompletionSource<Stream>();
+		var mediaStreamTCS = new TaskCompletionSource<Stream>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 		MediaCaptured += HandleMediaCaptured;
 		MediaCaptureFailed += HandleMediaCapturedFailed;
