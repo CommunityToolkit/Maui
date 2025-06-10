@@ -15,6 +15,8 @@ namespace CommunityToolkit.Maui.Views;
 [SupportedOSPlatform("maccatalyst")]
 public partial class CameraView : View, ICameraView
 {
+	readonly SemaphoreSlim captureImageSemaphoreSlim = new(1,1);
+
 	static readonly BindablePropertyKey isAvailablePropertyKey =
 		BindableProperty.CreateReadOnly(nameof(IsAvailable), typeof(bool), typeof(CameraView), CameraViewDefaults.IsAvailable);
 
@@ -209,6 +211,10 @@ public partial class CameraView : View, ICameraView
 	/// <inheritdoc cref="ICameraView.CaptureImage"/>
 	public async Task<Stream> CaptureImage(CancellationToken token)
 	{
+		// Use SemaphoreSlim to ensure `MediaCaptured` and `MediaCaptureFailed` events are unsubscribed before calling `TakePicture` again
+		// Without this SemaphoreSlim, previous calls to this method will fire `MediaCaptured` and/or `MediaCaptureFailed` events causing this method to return the wrong Stream or throw the wrong Exception
+		await captureImageSemaphoreSlim.WaitAsync(token);
+
 		var mediaStreamTCS = new TaskCompletionSource<Stream>();
 
 		MediaCaptured += HandleMediaCaptured;
@@ -225,6 +231,9 @@ public partial class CameraView : View, ICameraView
 		{
 			MediaCaptured -= HandleMediaCaptured;
 			MediaCaptureFailed -= HandleMediaCapturedFailed;
+
+			// Release SemaphoreSlim after `MediaCaptured` and `MediaCaptureFailed` events are unsubscribed
+			captureImageSemaphoreSlim.Release();
 		}
 
 		void HandleMediaCaptured(object? sender, MediaCapturedEventArgs e) => mediaStreamTCS.SetResult(e.Media);
