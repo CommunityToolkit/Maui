@@ -13,10 +13,8 @@ namespace CommunityToolkit.Maui.Views;
 [SupportedOSPlatform("android21.0")]
 [SupportedOSPlatform("ios")]
 [SupportedOSPlatform("maccatalyst")]
-public partial class CameraView : View, ICameraView
+public partial class CameraView : View, ICameraView, IDisposable
 {
-	readonly SemaphoreSlim captureImageSemaphoreSlim = new(1,1);
-
 	static readonly BindablePropertyKey isAvailablePropertyKey =
 		BindableProperty.CreateReadOnly(nameof(IsAvailable), typeof(bool), typeof(CameraView), CameraViewDefaults.IsAvailable);
 
@@ -81,7 +79,11 @@ public partial class CameraView : View, ICameraView
 	public static readonly BindableProperty StopCameraPreviewCommandProperty =
 		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(ICommand), typeof(CameraView), null, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopCameraPreviewCommand).BindableProperty;
 
+
+	readonly SemaphoreSlim captureImageSemaphoreSlim = new(1, 1);
 	readonly WeakEventManager weakEventManager = new();
+
+	bool isDisposed;
 
 	/// <summary>
 	/// Event that is raised when the camera capture fails.
@@ -192,6 +194,13 @@ public partial class CameraView : View, ICameraView
 
 	new CameraViewHandler Handler => (CameraViewHandler)(base.Handler ?? throw new InvalidOperationException("Unable to retrieve Handler"));
 
+	/// <inheritdoc/>
+	public void Dispose()
+	{
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
+	}
+
 	/// <inheritdoc cref="ICameraView.GetAvailableCameras"/>
 	public async ValueTask<IReadOnlyList<CameraInfo>> GetAvailableCameras(CancellationToken token)
 	{
@@ -248,6 +257,20 @@ public partial class CameraView : View, ICameraView
 	/// <inheritdoc cref="ICameraView.StopCameraPreview"/>
 	public void StopCameraPreview() =>
 		Handler.CameraManager.StopCameraPreview();
+
+	/// <inheritdoc/>
+	protected virtual void Dispose(bool disposing)
+	{
+		if (!isDisposed)
+		{
+			if (disposing)
+			{
+				captureImageSemaphoreSlim.Dispose();
+			}
+
+			isDisposed = true;
+		}
+	}
 
 	void ICameraView.OnMediaCaptured(Stream imageData)
 	{
