@@ -214,26 +214,22 @@ public partial class CameraView : View, ICameraView
 		MediaCaptured += HandleMediaCaptured;
 		MediaCaptureFailed += HandleMediaCapturedFailed;
 
-		await Handler.CameraManager.TakePicture(token);
+		try
+		{
+			await Handler.CameraManager.TakePicture(token);
 
-		var stream = await mediaStreamTCS.Task.WaitAsync(token);
-		return stream;
-
-		void HandleMediaCaptured(object? sender, MediaCapturedEventArgs e)
+			var stream = await mediaStreamTCS.Task.WaitAsync(token);
+			return stream;
+		}
+		finally
 		{
 			MediaCaptured -= HandleMediaCaptured;
 			MediaCaptureFailed -= HandleMediaCapturedFailed;
-
-			mediaStreamTCS.SetResult(e.Media);
 		}
 
-		void HandleMediaCapturedFailed(object? sender, MediaCaptureFailedEventArgs e)
-		{
-			MediaCaptured -= HandleMediaCaptured;
-			MediaCaptureFailed -= HandleMediaCapturedFailed;
+		void HandleMediaCaptured(object? sender, MediaCapturedEventArgs e) => mediaStreamTCS.SetResult(e.Media);
 
-			mediaStreamTCS.SetException(new CameraException(e.FailureReason));
-		}
+		void HandleMediaCapturedFailed(object? sender, MediaCaptureFailedEventArgs e) => mediaStreamTCS.SetException(new CameraException(e.FailureReason));
 	}
 
 	/// <inheritdoc cref="ICameraView.StartCameraPreview"/>
