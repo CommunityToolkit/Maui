@@ -65,19 +65,19 @@ public partial class CameraView : View, ICameraView
 	/// Backing BindableProperty for the <see cref="CaptureImageCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty CaptureImageCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(CaptureImageCommand), typeof(Command<CancellationToken>), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateCaptureImageCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(CaptureImageCommand), typeof(Command<CancellationToken>), typeof(CameraView), null, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateCaptureImageCommand).BindableProperty;
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="StartCameraPreviewCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty StartCameraPreviewCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(StartCameraPreviewCommand), typeof(Command<CancellationToken>), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStartCameraPreviewCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(StartCameraPreviewCommand), typeof(Command<CancellationToken>), typeof(CameraView), null, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStartCameraPreviewCommand).BindableProperty;
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="StopCameraPreviewCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty StopCameraPreviewCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(ICommand), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopCameraPreviewCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(ICommand), typeof(CameraView), null, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopCameraPreviewCommand).BindableProperty;
 
 	readonly WeakEventManager weakEventManager = new();
 
@@ -188,7 +188,7 @@ public partial class CameraView : View, ICameraView
 		set => SetValue(isCameraBusyPropertyKey, value);
 	}
 
-	private protected new CameraViewHandler Handler => (CameraViewHandler)(base.Handler ?? throw new InvalidOperationException("Unable to retrieve Handler"));
+	new CameraViewHandler Handler => (CameraViewHandler)(base.Handler ?? throw new InvalidOperationException("Unable to retrieve Handler"));
 
 	/// <inheritdoc cref="ICameraView.GetAvailableCameras"/>
 	public async ValueTask<IReadOnlyList<CameraInfo>> GetAvailableCameras(CancellationToken token)
@@ -207,8 +207,22 @@ public partial class CameraView : View, ICameraView
 	}
 
 	/// <inheritdoc cref="ICameraView.CaptureImage"/>
-	public ValueTask CaptureImage(CancellationToken token) =>
-		Handler.CameraManager.TakePicture(token);
+	public async Task<Stream> CaptureImage(CancellationToken token)
+	{
+		var mediaStream = new TaskCompletionSource<Stream>();
+
+		MediaCaptured += HandleMediaCaptured;
+		await Handler.CameraManager.TakePicture(token);
+
+		var stream = await mediaStream.Task.WaitAsync(token);
+		return stream;
+
+		void HandleMediaCaptured(object? sender, MediaCapturedEventArgs e)
+		{
+			MediaCaptured -= HandleMediaCaptured;
+			mediaStream.SetResult(e.Media);
+		}
+	}
 
 	/// <inheritdoc cref="ICameraView.StartCameraPreview"/>
 	public Task StartCameraPreview(CancellationToken token) =>
