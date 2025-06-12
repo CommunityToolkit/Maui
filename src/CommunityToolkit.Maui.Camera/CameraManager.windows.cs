@@ -1,4 +1,5 @@
-﻿using System.Runtime.Versioning;
+﻿using System;
+using System.Runtime.Versioning;
 using CommunityToolkit.Maui.Extensions;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Media.Capture;
@@ -14,6 +15,7 @@ partial class CameraManager
 	MediaPlayerElement? mediaElement;
 	MediaCapture? mediaCapture;
 	MediaFrameSource? frameSource;
+	LowLagMediaRecording? mediaRecording;
 
 	public MediaPlayerElement CreatePlatformView()
 	{
@@ -200,6 +202,47 @@ partial class CameraManager
 		if (filteredPropertiesList.Count is not 0)
 		{
 			await mediaCapture.VideoDeviceController.SetMediaStreamPropertiesAsync(MediaStreamType.Photo, filteredPropertiesList.First()).AsTask(token);
+		}
+	}
+
+	protected virtual async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
+	{
+		if (!IsInitialized || mediaCapture is null || mediaElement is null)
+		{
+			return;
+		}
+
+		MediaEncodingProfile profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto);
+		mediaRecording = await mediaCapture.PrepareLowLagRecordToStreamAsync(profile, stream.AsRandomAccessStream());
+
+		frameSource = mediaCapture.FrameSources.FirstOrDefault(source =>
+			source.Value.Info.MediaStreamType == MediaStreamType.VideoRecord
+			&& source.Value.Info.SourceKind == MediaFrameSourceKind.Color).Value;
+		if (frameSource != null)
+		{
+			var frameFormat = frameSource.SupportedFormats
+					.OrderByDescending(f => f.VideoFormat.Width * f.VideoFormat.Height).FirstOrDefault();
+
+			if (frameFormat != null)
+			{
+				await frameSource.SetFormatAsync(frameFormat);
+				mediaElement.AutoPlay = true;
+				mediaElement.Source = MediaSource.CreateFromMediaFrameSource(frameSource);
+				await mediaRecording.StartAsync();
+			}
+		}
+	}
+
+	protected virtual async partial Task PlatformStopVideoRecording(CancellationToken token)
+	{
+		if (!IsInitialized || mediaElement is null)
+		{
+			return;
+		}
+
+		if (mediaRecording != null)
+		{
+			await mediaRecording.StopAsync();
 		}
 	}
 }
