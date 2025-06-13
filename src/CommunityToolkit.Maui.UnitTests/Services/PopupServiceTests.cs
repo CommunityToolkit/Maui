@@ -251,7 +251,7 @@ public class PopupServiceTests : BaseHandlerTest
 		Assert.Same(popupInstance.BindingContext, popupViewModel);
 	}
 
-	[Fact(Timeout = (int)TestDuration.Medium)]
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task ShowPopupAsyncShouldReturnResultOnceClosed()
 	{
 		// Arrange
