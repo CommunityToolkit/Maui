@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Globalization;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.Shapes;
@@ -109,8 +110,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	{
 		if (popupOptions.CanBeDismissedByTappingOutsideOfPopup)
 		{
-			popupClosedEventManager.HandleEvent(this, new PopupResult(true), nameof(PopupClosed));
-			return base.OnBackButtonPressed();
+			CloseAsync(new PopupResult(true), CancellationToken.None).SafeFireAndForget();
 		}
 		
 		return true;
