@@ -104,15 +104,16 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		popupClosedEventManager.HandleEvent(this, result, nameof(PopupClosed));
 	}
-
-	// Prevent the Android Back Button from dismissing the Popup if CanBeDismissedByTappingOutsideOfPopup is true
+	
 	protected override bool OnBackButtonPressed()
 	{
+		// Only close the Popup if PopupOptions.CanBeDismissedByTappingOutsideOfPopup is true
 		if (popupOptions.CanBeDismissedByTappingOutsideOfPopup)
 		{
 			CloseAsync(new PopupResult(true), CancellationToken.None).SafeFireAndForget();
 		}
 		
+		// Always return true to let the Android Operating System know that we are manually handling the Navigation request from the Android Back Button
 		return true;
 	}
 
