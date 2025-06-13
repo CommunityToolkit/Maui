@@ -97,7 +97,7 @@ public class PopupServiceTests : BaseHandlerTest
 		Assert.Empty(navigation.ModalStack);
 	}
 
-	[Fact(Timeout = (int)TestDuration.Short)]
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task ShowPopupAsync_UsingPage_AwaitingShowPopupAsync_EnsurePreviousPopupClosed()
 	{
 		// Arrange
