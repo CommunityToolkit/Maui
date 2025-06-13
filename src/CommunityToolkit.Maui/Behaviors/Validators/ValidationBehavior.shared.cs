@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -21,6 +22,13 @@ public enum ValidationFlags
 	ValidateOnValueChanged = 8,
 	/// <summary>Force make valid when focused</summary>
 	ForceMakeValidWhenFocused = 16
+
+	/// <summary> Validate on focusing</summary>
+ 	[Obsolete("Use ValidateOnFocused instead.")]
+	ValidateOnFocusing = ValidateOnFocused,
+	/// <summary>Validate on unfocusing</summary>
+ 	[Obsolete("Use ValidateOnUnfocused instead.")]
+	ValidateOnUnfocusing = ValidateOnUnfocused,
 }
 
 /// <summary>
