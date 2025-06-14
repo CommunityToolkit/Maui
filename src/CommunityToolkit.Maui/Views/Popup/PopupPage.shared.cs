@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Globalization;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.Shapes;
@@ -42,11 +43,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		// Only set the content if the parent constructor hasn't set the content already; don't override content if it already exists
 		base.Content ??= new PopupPageLayout(popup, popupOptions);
-
-		if (Shell.Current is Shell shell)
-		{
-			Shell.SetPresentationMode(shell, PresentationMode.ModalNotAnimated);
-		}
 
 		tapOutsideOfPopupCommand = new Command(async () =>
 		{
@@ -108,15 +104,16 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		popupClosedEventManager.HandleEvent(this, result, nameof(PopupClosed));
 	}
-
-	// Prevent the Android Back Button from dismissing the Popup if CanBeDismissedByTappingOutsideOfPopup is true
+	
 	protected override bool OnBackButtonPressed()
 	{
+		// Only close the Popup if PopupOptions.CanBeDismissedByTappingOutsideOfPopup is true
 		if (popupOptions.CanBeDismissedByTappingOutsideOfPopup)
 		{
-			return base.OnBackButtonPressed();
+			CloseAsync(new PopupResult(true), CancellationToken.None).SafeFireAndForget();
 		}
-
+		
+		// Always return true to let the Android Operating System know that we are manually handling the Navigation request from the Android Back Button
 		return true;
 	}
 

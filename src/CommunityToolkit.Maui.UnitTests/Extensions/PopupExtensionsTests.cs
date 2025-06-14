@@ -1430,6 +1430,35 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Assert.Equal(expectedResult, popupResult.Result);
 		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
 	}
+	
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_TaskShouldCompleteWhenCloseAsyncIsCalled()
+	{
+		// Arrange
+		const int expectedResult = 2;
+		Task<IPopupResult> showPopupAsyncTask;
+
+		if (Application.Current?.Windows[0].Page is not Page page)
+		{
+			throw new InvalidOperationException("Page cannot be null");
+		}
+
+		// Act
+		showPopupAsyncTask = page.ShowPopupAsync(new MockPopup(), token: TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.Single(page.Navigation.ModalStack);
+		Assert.IsType<PopupPage>(page.Navigation.ModalStack[0]);
+
+		// Act
+		var popupResult = await page.ClosePopupAsync(expectedResult, TestContext.Current.CancellationToken);
+		await showPopupAsyncTask;
+
+		// Assert
+		Assert.Empty(page.Navigation.ModalStack);
+		Assert.Equal(expectedResult, popupResult.Result);
+		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
+	}
 }
 
 sealed class ViewWithIQueryAttributable : Button, IQueryAttributable

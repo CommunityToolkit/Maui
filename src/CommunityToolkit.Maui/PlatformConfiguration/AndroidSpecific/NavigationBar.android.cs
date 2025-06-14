@@ -64,8 +64,10 @@ static partial class NavigationBar
 		static void SetSystemNavigationBarAppearance(Activity activity, bool isLightSystemNavigationBars)
 		{
 			var window = activity.GetCurrentWindow();
-			var windowController = WindowCompat.GetInsetsController(window, window.DecorView);
-			windowController.AppearanceLightNavigationBars = isLightSystemNavigationBars;
+			if (WindowCompat.GetInsetsController(window, window.DecorView) is WindowInsetsControllerCompat insetsController)
+			{
+				insetsController.AppearanceLightNavigationBars = isLightSystemNavigationBars;
+			}
 		}
 	}
 

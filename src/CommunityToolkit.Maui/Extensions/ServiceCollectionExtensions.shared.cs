@@ -17,11 +17,11 @@ public static class ServiceCollectionExtensions
 	/// Adds a <see cref="View"/> of the type specified in <typeparamref name="TPopupView"/>
 	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime.
 	/// </summary>
-	/// <typeparam name="TPopupView">The type of the Popup to add. Constrained to <see cref="IView"/></typeparam>
+	/// <typeparam name="TPopupView">The type of the Popup to add. Constrained to <see cref="View"/></typeparam>
 	/// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
 	/// <returns>A reference to this instance after the operation has completed.</returns>
 	public static IServiceCollection AddTransientPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView>(this IServiceCollection services)
-		where TPopupView : IView
+		where TPopupView : View
 	{
 		PopupService.AddPopup<TPopupView>(services, ServiceLifetime.Transient);
 
@@ -33,13 +33,13 @@ public static class ServiceCollectionExtensions
 	/// of the type specified in <typeparamref name="TPopupViewModel"/> to the specified
 	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime.
 	/// </summary>
-	/// <typeparam name="TPopupView">The type of the Popup to add. Constrained to <see cref="IView"/></typeparam>
+	/// <typeparam name="TPopupView">The type of the Popup to add. Constrained to <see cref="View"/></typeparam>
 	/// <typeparam name="TPopupViewModel">The type of the ViewModel to add. Constrained to 
 	/// <see cref="INotifyPropertyChanged"/></typeparam>
 	/// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
 	/// <returns>A reference to this instance after the operation has completed.</returns>
 	public static IServiceCollection AddTransientPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>(this IServiceCollection services)
-		where TPopupView : IView
+		where TPopupView : View
 		where TPopupViewModel : notnull
 	{
 		PopupService.AddPopup<TPopupView, TPopupViewModel>(services, ServiceLifetime.Transient);
@@ -51,11 +51,11 @@ public static class ServiceCollectionExtensions
 	/// Adds a <see cref="View"/> of the type specified in <typeparamref name="TPopupView"/> and a ViewModel
 	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime.
 	/// </summary>
-	/// <typeparam name="TPopupView">The type of the Popup to add. Constrained to <see cref="IView"/></typeparam>
+	/// <typeparam name="TPopupView">The type of the Popup to add. Constrained to <see cref="View"/></typeparam>
 	/// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
 	/// <returns>A reference to this instance after the operation has completed.</returns>
 	public static IServiceCollection AddSingletonPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView>(this IServiceCollection services)
-		where TPopupView : IView
+		where TPopupView : View
 	{
 		PopupService.AddPopup<TPopupView>(services, ServiceLifetime.Singleton);
 
@@ -67,13 +67,13 @@ public static class ServiceCollectionExtensions
 	/// of the type specified in <typeparamref name="TPopupViewModel"/> to the specified
 	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime.
 	/// </summary>
-	/// <typeparam name="TPopupView">The type of the Popup to add. Constrained to <see cref="IView"/></typeparam>
+	/// <typeparam name="TPopupView">The type of the Popup to add. Constrained to <see cref="View"/></typeparam>
 	/// <typeparam name="TPopupViewModel">The type of the ViewModel to add. Constrained to 
 	/// <see cref="INotifyPropertyChanged"/></typeparam>
 	/// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
 	/// <returns>A reference to this instance after the operation has completed.</returns>
 	public static IServiceCollection AddSingletonPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>(this IServiceCollection services)
-		where TPopupView : IView
+		where TPopupView : View
 		where TPopupViewModel : notnull
 	{
 		PopupService.AddPopup<TPopupView, TPopupViewModel>(services, ServiceLifetime.Singleton);
@@ -85,11 +85,11 @@ public static class ServiceCollectionExtensions
 	/// Adds a <see cref="View"/> of the type specified in <typeparamref name="TPopupView"/> and a ViewModel
 	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime.
 	/// </summary>
-	/// <typeparam name="TPopupView">The type of the Popup to add. Constrained to <see cref="IView"/></typeparam>
+	/// <typeparam name="TPopupView">The type of the Popup to add. Constrained to <see cref="View"/></typeparam>
 	/// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
 	/// <returns>A reference to this instance after the operation has completed.</returns>
 	public static IServiceCollection AddScopedPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView>(this IServiceCollection services)
-		where TPopupView : IView
+		where TPopupView : View
 	{
 		PopupService.AddPopup<TPopupView>(services, ServiceLifetime.Scoped);
 
@@ -101,13 +101,13 @@ public static class ServiceCollectionExtensions
 	/// of the type specified in <typeparamref name="TPopupViewModel"/> to the specified
 	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime.
 	/// </summary>
-	/// <typeparam name="TPopupView">The type of the Popup to add. Constrained to <see cref="IView"/></typeparam>
+	/// <typeparam name="TPopupView">The type of the Popup to add. Constrained to <see cref="View"/></typeparam>
 	/// <typeparam name="TPopupViewModel">The type of the ViewModel to add. Constrained to 
 	/// <see cref="INotifyPropertyChanged"/></typeparam>
 	/// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
 	/// <returns>A reference to this instance after the operation has completed.</returns>
 	public static IServiceCollection AddScopedPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>(this IServiceCollection services)
-		where TPopupView : IView
+		where TPopupView : View
 		where TPopupViewModel : notnull
 	{
 		PopupService.AddPopup<TPopupView, TPopupViewModel>(services, ServiceLifetime.Scoped);
