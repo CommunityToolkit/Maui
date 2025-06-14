@@ -1,29 +1,22 @@
-﻿using System.IO;
+﻿using System.Buffers;
 using System.Runtime.Versioning;
 using Android.Content;
-using Android.Hardware.Camera2;
-using Android.Hardware.Camera2.Params;
-using Android.Media;
 using Android.OS;
-using Android.Runtime;
-using Android.SE.Omapi;
+using Android.Provider;
 using Android.Views;
 using AndroidX.Camera.Core;
-using AndroidX.Camera.Core.Impl.Utils.Futures;
 using AndroidX.Camera.Core.ResolutionSelector;
 using AndroidX.Camera.Lifecycle;
 using AndroidX.Camera.Video;
 using AndroidX.Core.Content;
+using AndroidX.Core.Util;
 using AndroidX.Lifecycle;
 using CommunityToolkit.Maui.Extensions;
-using Java.IO;
 using Java.Lang;
 using Java.Util.Concurrent;
-using static Android.Media.Image;
-using static Android.Print.PrintAttributes;
-using static AndroidX.Camera.Core.Internal.CameraUseCaseAdapter;
-using Exception = System.Exception;
+using Image = Android.Media.Image;
 using Math = System.Math;
+using Object = Java.Lang.Object;
 
 namespace CommunityToolkit.Maui.Core;
 
@@ -37,6 +30,9 @@ partial class CameraManager
 	ProcessCameraProvider? processCameraProvider;
 	ImageCapture? imageCapture;
 	ImageCallBack? imageCallback;
+	VideoCapture? videoCapture;
+	Recorder? videoRecorder;
+	Recording? videoRecording;
 	ICamera? camera;
 	ICameraControl? cameraControl;
 	Preview? cameraPreview;
@@ -44,14 +40,10 @@ partial class CameraManager
 	ResolutionFilter? resolutionFilter;
 	OrientationListener? orientationListener;
 
-	MediaRecorder? mediaRecorder;
-	CameraDevice? cameraDevice;
-	CameraCaptureSession? captureSession;
+
+	Task? pipeTask;
 	ParcelFileDescriptor? writeFd;
 	ParcelFileDescriptor? readFd;
-	Task? pipeTask;
-	HandlerThread? cameraThread;
-	Handler? cameraHandler;
 
 	public void Dispose()
 	{
@@ -144,6 +136,9 @@ partial class CameraManager
 			imageCapture?.Dispose();
 			imageCapture = null;
 
+			videoCapture?.Dispose();
+			videoCapture = null;
+
 			imageCallback?.Dispose();
 			imageCallback = null;
 
@@ -218,6 +213,12 @@ partial class CameraManager
 		.SetResolutionSelector(resolutionSelector)
 		.Build();
 
+		videoRecorder = new Recorder.Builder()
+			.SetExecutor(cameraExecutor)
+			.SetQualitySelector(QualitySelector.From(Quality.Highest!))
+			.Build();
+		videoCapture = VideoCapture.WithOutput(videoRecorder);
+
 		await StartCameraPreview(token);
 	}
 
@@ -241,6 +242,7 @@ partial class CameraManager
 		var cameraSelector = cameraView.SelectedCamera.CameraSelector ?? throw new CameraException($"Unable to retrieve {nameof(CameraSelector)}");
 
 		var owner = (ILifecycleOwner)context;
+		processCameraProvider.UnbindAll();
 		camera = processCameraProvider.BindToLifecycle(owner, cameraSelector, cameraPreview, imageCapture);
 
 		cameraControl = camera.CameraControl;
@@ -279,122 +281,99 @@ partial class CameraManager
 		return ValueTask.CompletedTask;
 	}
 
-	protected virtual async partial Task PlatformStartVideoRecording(System.IO.Stream stream, CancellationToken token)
+	protected virtual async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
 	{
-		var cameraManager = (Android.Hardware.Camera2.CameraManager)context.GetSystemService(Context.CameraService)!;
-		var audioManager = (AudioManager)context.GetSystemService(Context.AudioService)!;
+		if (previewView is null || processCameraProvider is null || cameraPreview is null || videoCapture is null || videoRecorder is null)
+		{
+			return;
+		}
 
-		cameraThread = new HandlerThread("CameraThread");
-		cameraThread.Start();
-		cameraHandler = new Handler(cameraThread.Looper!);
+		if (cameraView.SelectedCamera is null)
+		{
+			if (cameraProvider.AvailableCameras is null)
+			{
+				await cameraProvider.RefreshAvailableCameras(token);
+			}
 
-		mediaRecorder = OperatingSystem.IsAndroidVersionAtLeast(31)
-			? new MediaRecorder(context)
-			: new MediaRecorder();
+			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
+		}
 
-		audioManager.Mode = Mode.Normal;
+		var cameraSelector = cameraView.SelectedCamera.CameraSelector ?? throw new CameraException($"Unable to retrieve {nameof(CameraSelector)}");
 
-		mediaRecorder.SetAudioSource(AudioSource.Mic);
-		mediaRecorder.SetVideoSource(VideoSource.Surface);
-		mediaRecorder.SetOutputFormat(OutputFormat.Mpeg4);
+		var owner = (ILifecycleOwner)context;
+		processCameraProvider.UnbindAll();
+		camera = processCameraProvider.BindToLifecycle(owner, cameraSelector, cameraPreview, videoCapture);
 
+		cameraControl = camera.CameraControl;
 		var pipe = ParcelFileDescriptor.CreatePipe()!;
 		writeFd = pipe[1];
 		readFd = pipe[0];
 
-		mediaRecorder.SetOutputFile(writeFd.FileDescriptor);
-		mediaRecorder.SetVideoEncodingBitRate(10_000_000);
-		mediaRecorder.SetVideoFrameRate(30);
-		mediaRecorder.SetVideoEncoder(VideoEncoder.H264);
-		mediaRecorder.SetAudioEncoder(AudioEncoder.Aac);
-		mediaRecorder.Prepare();
+		var outputOptions = new FileDescriptorOutputOptions.Builder(writeFd).Build();
+		var name = "CameraX-recording.mp4";
 
-		// Start background streaming to .NET stream
+		var contentValues = new ContentValues();
+		contentValues.Put(MediaStore.Video.VideoColumns.DisplayName, name);
+
+		var mediaStoreOutput = new MediaStoreOutputOptions.Builder(
+				context.ContentResolver!,
+				MediaStore.Video.Media.ExternalContentUri!)
+			.SetContentValues(contentValues)
+			.Build();
+		
+		var captureListener = new CameraConsumer();
+		videoRecording = videoRecorder
+			.PrepareRecording(context, mediaStoreOutput)
+			.WithAudioEnabled()
+			.Start(ContextCompat.GetMainExecutor(context), captureListener);
+
 		pipeTask = Task.Run(async () =>
 		{
+			using var inputStream = new ParcelFileDescriptor.AutoCloseInputStream(readFd);
+			var buffer = ArrayPool<byte>.Shared.Rent(4096);
+
 			try
 			{
-				using var inputStream = new ParcelFileDescriptor.AutoCloseInputStream(readFd);
-				byte[] buffer = new byte[81920];
 				int bytesRead;
-				while ((bytesRead = inputStream.Read(buffer, 0, buffer.Length)) > 0 && !token.IsCancellationRequested)
+				long totalRead = 0;
+				while ((bytesRead = await inputStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) > 0)
 				{
-					await stream.WriteAsync(buffer.AsMemory(0, bytesRead), token);
-					await stream.FlushAsync(token);
+					await stream.WriteAsync(buffer.AsMemory(0, bytesRead), token).ConfigureAwait(false);
+					totalRead += bytesRead;
+				}
+
+				await stream.FlushAsync(token);
+				if (inputStream.Channel is not null)
+				{
+					await inputStream.Channel.TruncateAsync(totalRead).WaitAsync(token).ConfigureAwait(false);
 				}
 			}
-			catch (System.OperationCanceledException) { }
-			catch (Exception ex)
+			finally
 			{
-				System.Diagnostics.Debug.WriteLine($"[VideoRecorder] CopyToAsync failed: {ex}");
+				ArrayPool<byte>.Shared.Return(buffer);
 			}
 		}, token);
-
-		// Open camera and start recording session
-		var openTcs = new TaskCompletionSource();
-
-		var cameraCallback = new CameraStateListener(device =>
-		{
-			cameraDevice = device;
-
-			var surfaces = new List<Surface> { mediaRecorder.Surface! };
-			var sessionCallback = new CaptureStateListener(session =>
-			{
-				captureSession = session;
-				var builder = cameraDevice.CreateCaptureRequest(CameraTemplate.Record);
-				builder.AddTarget(mediaRecorder.Surface!);
-				session.SetRepeatingRequest(builder.Build(), null, cameraHandler);
-
-				mediaRecorder.Start();
-				openTcs.TrySetResult();
-			});
-
-			device.CreateCaptureSession(surfaces, sessionCallback, cameraHandler);
-		});
-
-		cameraManager.OpenCamera(cameraView.SelectedCamera!.DeviceId, cameraCallback, cameraHandler);
-
-		await openTcs.Task;
 	}
 
 	protected virtual async partial Task PlatformStopVideoRecording(CancellationToken token)
 	{
 		ArgumentNullException.ThrowIfNull(cameraExecutor);
-		try
+		if (videoRecording is null)
 		{
-			mediaRecorder?.Stop();
-		}
-		catch (Exception ex)
-		{
-			System.Diagnostics.Debug.WriteLine($"[VideoRecorder] Stop failed: {ex}");
+			return;
 		}
 
-		mediaRecorder?.Release();
-		mediaRecorder = null;
-
-		captureSession?.Close();
-		cameraDevice?.Close();
-		captureSession = null;
-		cameraDevice = null;
-
-		writeFd?.Close();
-		readFd?.Close();
-		writeFd = null;
-		readFd = null;
-
+		videoRecording.Stop();
 		if (pipeTask is not null)
 		{
 			await pipeTask;
 			pipeTask = null;
 		}
 
-		if (cameraThread != null)
-		{
-			cameraThread.QuitSafely();
-			cameraThread.Join();
-			cameraThread = null;
-			cameraHandler = null;
-		}
+		writeFd?.Close();
+		readFd?.Close();
+		writeFd = null;
+		readFd = null;
 	}
 
 	void SetImageCaptureTargetRotation(int rotation)
@@ -408,19 +387,6 @@ partial class CameraManager
 				>= 225 and < 315 => (int)SurfaceOrientation.Rotation90,
 				_ => (int)SurfaceOrientation.Rotation0
 			};
-		}
-	}
-
-	sealed class FutureCallback(Action<Java.Lang.Object?> action, Action<Throwable?> failure) : Java.Lang.Object, IFutureCallback
-	{
-		public void OnSuccess(Java.Lang.Object? value)
-		{
-			action.Invoke(value);
-		}
-
-		public void OnFailure(Throwable? throwable)
-		{
-			failure.Invoke(throwable);
 		}
 	}
 
@@ -463,7 +429,7 @@ partial class CameraManager
 				image.Close();
 			}
 
-			static Plane? GetFirstPlane(Plane[]? planes)
+			static Image.Plane? GetFirstPlane(Image.Plane[]? planes)
 			{
 				if (planes is null || planes.Length is 0)
 				{
@@ -481,7 +447,7 @@ partial class CameraManager
 		}
 	}
 
-	sealed class ResolutionFilter(Android.Util.Size size) : Java.Lang.Object, IResolutionFilter
+	sealed class ResolutionFilter(Android.Util.Size size) : Object, IResolutionFilter
 	{
 		public Android.Util.Size TargetSize { get; set; } = size;
 
@@ -494,20 +460,8 @@ partial class CameraManager
 		}
 	}
 
-	sealed class Observer(Action<Java.Lang.Object?> action) : Java.Lang.Object, IObserver
-	{
-		readonly Action<Java.Lang.Object?> observerAction = action;
-
-		public void OnChanged(Java.Lang.Object? value)
-		{
-			observerAction.Invoke(value);
-		}
-	}
-
 	sealed class OrientationListener(Action<int> callback, Context context) : OrientationEventListener(context)
 	{
-		readonly Action<int> callback = callback;
-
 		public override void OnOrientationChanged(int orientation)
 		{
 			if (orientation == OrientationUnknown)
@@ -520,21 +474,11 @@ partial class CameraManager
 	}
 }
 
-public class CameraStateListener : CameraDevice.StateCallback
+public class CameraConsumer : Object, IConsumer
 {
-	readonly Action<CameraDevice> onOpened;
-	public CameraStateListener(Action<CameraDevice> onOpened) => this.onOpened = onOpened;
-
-	public override void OnOpened(CameraDevice camera) => onOpened(camera);
-	public override void OnDisconnected(CameraDevice camera) => camera.Close();
-	public override void OnError(CameraDevice camera, [GeneratedEnum] CameraError error) => camera.Close();
-}
-
-public class CaptureStateListener : CameraCaptureSession.StateCallback
-{
-	readonly Action<CameraCaptureSession> onConfigured;
-	public CaptureStateListener(Action<CameraCaptureSession> onConfigured) => this.onConfigured = onConfigured;
-
-	public override void OnConfigured(CameraCaptureSession session) => onConfigured(session);
-	public override void OnConfigureFailed(CameraCaptureSession session) => session.Close();
+	public void Accept(Object? videoRecordEvent)
+	{
+		var videoRecorderEventStarted = videoRecordEvent as VideoRecordEvent.Start;
+		Console.WriteLine(videoRecorderEventStarted);
+	}
 }
