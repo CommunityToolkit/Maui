@@ -46,6 +46,11 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	int MediaWidth { get; internal set; }
 
 	/// <summary>
+	/// Gets the <see cref="IParser"/> used to parse the subtitle file.
+	/// </summary>
+	IParser? CustomSubtitleParser { get; }
+
+	/// <summary>
 	/// The current position of the playing media.
 	/// </summary>
 	TimeSpan Position { get; internal set; }
@@ -83,6 +88,15 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	bool ShouldShowPlaybackControls { get; set; }
 
 	/// <summary>
+	/// Gets or sets the font to use for the subtitle text.
+	/// </summary>
+	string SubtitleFont { get; }
+	/// <summary>
+	/// Gets or sets the URL of the subtitle file to display.
+	/// </summary>
+	string SubtitleUrl { get; }
+
+	/// <summary>
 	/// Gets or sets the source of the media to play.
 	/// </summary>
 	MediaSource? Source { get; set; }
@@ -94,6 +108,10 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// Anything more than 1 is faster speed, anything less than 1 is slower speed.</remarks>
 	double Speed { get; set; }
 
+	/// <summary>
+	/// Gets or sets the font size of the subtitle text.
+	/// </summary>
+	double SubtitleFontSize { get; }
 	/// <summary>
 	/// Gets or sets the volume of the audio for the media.
 	/// </summary>
