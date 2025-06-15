@@ -83,13 +83,13 @@ public partial class CameraView : View, ICameraView
 	/// Backing BindableProperty for the <see cref="StartCameraPreviewCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty StartVideoRecordingCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(StartVideoRecordingCommand), typeof(Command<CancellationToken>), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStartVideoRecordingCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(StartVideoRecordingCommand), typeof(ICommand), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStartVideoRecordingCommand).BindableProperty;
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="StopCameraPreviewCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty StopVideoRecordingCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(StopVideoRecordingCommand), typeof(ICommand), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopVideoRecordingCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(StopVideoRecordingCommand), typeof(Command<Stream>), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopVideoRecordingCommand).BindableProperty;
 
 	readonly WeakEventManager weakEventManager = new();
 
@@ -143,7 +143,7 @@ public partial class CameraView : View, ICameraView
 	/// <summary>
 	/// 
 	/// </summary>
-	public Command<Stream> StartVideoRecordingCommand => (Command<Stream>)GetValue(StartVideoRecordingCommandProperty);
+	public ICommand StartVideoRecordingCommand => (ICommand)GetValue(StartVideoRecordingCommandProperty);
 
 	/// <summary>
 	/// Gets the Command that stops the camera preview.
@@ -153,7 +153,7 @@ public partial class CameraView : View, ICameraView
 	/// <summary>
 	/// 
 	/// </summary>
-	public ICommand StopVideoRecordingCommand => (ICommand)GetValue(StopVideoRecordingCommandProperty);
+	public Command<Stream> StopVideoRecordingCommand => (Command<Stream>)GetValue(StopVideoRecordingCommandProperty);
 
 	/// <summary>
 	/// Gets or sets the <see cref="CameraFlashMode"/>.
@@ -241,11 +241,11 @@ public partial class CameraView : View, ICameraView
 		Handler.CameraManager.StopCameraPreview();
 
 	/// <inheritdoc cref="ICameraView.StartCameraPreview"/>
-	public Task StartVideoRecording(Stream stream, CancellationToken token) =>
-		Handler.CameraManager.StartVideoRecording(stream, token);
+	public Task StartVideoRecording(CancellationToken token) =>
+		Handler.CameraManager.StartVideoRecording(token);
 
 	/// <inheritdoc cref="ICameraView.StopCameraPreview"/>
-	public Task StopVideoRecording(CancellationToken token) =>
+	public Task<Stream> StopVideoRecording(CancellationToken token) =>
 		Handler.CameraManager.StopVideoRecording(token);
 
 	void ICameraView.OnMediaCaptured(Stream imageData)

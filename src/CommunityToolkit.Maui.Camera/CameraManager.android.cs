@@ -1,10 +1,10 @@
-﻿using System.Buffers;
-using System.Runtime.Versioning;
+﻿using System.Runtime.Versioning;
 using Android.Content;
 using Android.OS;
-using Android.Provider;
 using Android.Views;
+using Android.Widget;
 using AndroidX.Camera.Core;
+using AndroidX.Camera.Core.Internal.Utils;
 using AndroidX.Camera.Core.ResolutionSelector;
 using AndroidX.Camera.Lifecycle;
 using AndroidX.Camera.Video;
@@ -39,11 +39,7 @@ partial class CameraManager
 	ResolutionSelector? resolutionSelector;
 	ResolutionFilter? resolutionFilter;
 	OrientationListener? orientationListener;
-
-
-	Task? pipeTask;
-	ParcelFileDescriptor? writeFd;
-	ParcelFileDescriptor? readFd;
+	Java.IO.File? videoRecordingFile;
 
 	public void Dispose()
 	{
@@ -248,8 +244,8 @@ partial class CameraManager
 		cameraControl = camera.CameraControl;
 
 		//start the camera with AutoFocus
-		MeteringPoint point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
-		FocusMeteringAction action = new FocusMeteringAction.Builder(point).Build();
+		var point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
+		var action = new FocusMeteringAction.Builder(point).Build();
 		camera.CameraControl.StartFocusAndMetering(action);
 
 		IsInitialized = true;
@@ -281,7 +277,7 @@ partial class CameraManager
 		return ValueTask.CompletedTask;
 	}
 
-	protected virtual async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
+	protected virtual async partial Task PlatformStartVideoRecording(CancellationToken token)
 	{
 		if (previewView is null || processCameraProvider is null || cameraPreview is null || videoCapture is null || videoRecorder is null)
 		{
@@ -305,76 +301,41 @@ partial class CameraManager
 		camera = processCameraProvider.BindToLifecycle(owner, cameraSelector, cameraPreview, videoCapture);
 
 		cameraControl = camera.CameraControl;
-		var pipe = ParcelFileDescriptor.CreatePipe()!;
-		writeFd = pipe[1];
-		readFd = pipe[0];
-
-		var outputOptions = new FileDescriptorOutputOptions.Builder(writeFd).Build();
-		var name = "CameraX-recording.mp4";
-
-		var contentValues = new ContentValues();
-		contentValues.Put(MediaStore.Video.VideoColumns.DisplayName, name);
-
-		var mediaStoreOutput = new MediaStoreOutputOptions.Builder(
-				context.ContentResolver!,
-				MediaStore.Video.Media.ExternalContentUri!)
-			.SetContentValues(contentValues)
-			.Build();
 		
+		videoRecordingFile = new Java.IO.File(context.CacheDir, $"{DateTime.UtcNow.Ticks}.mp4");
+		videoRecordingFile.DeleteOnExit();
+
+		var parcelFileDescriptor = ParcelFileDescriptor.Open(
+			videoRecordingFile,
+			ParcelFileMode.ReadWrite | ParcelFileMode.Create
+		);
+
+		var outputOptions = new FileDescriptorOutputOptions.Builder(parcelFileDescriptor).Build();
+
 		var captureListener = new CameraConsumer();
 		videoRecording = videoRecorder
-			.PrepareRecording(context, mediaStoreOutput)
+			.PrepareRecording(context, outputOptions)
 			.WithAudioEnabled()
-			.Start(ContextCompat.GetMainExecutor(context), captureListener);
-
-		pipeTask = Task.Run(async () =>
-		{
-			using var inputStream = new ParcelFileDescriptor.AutoCloseInputStream(readFd);
-			var buffer = ArrayPool<byte>.Shared.Rent(4096);
-
-			try
-			{
-				int bytesRead;
-				long totalRead = 0;
-				while ((bytesRead = await inputStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) > 0)
-				{
-					await stream.WriteAsync(buffer.AsMemory(0, bytesRead), token).ConfigureAwait(false);
-					totalRead += bytesRead;
-				}
-
-				await stream.FlushAsync(token);
-				if (inputStream.Channel is not null)
-				{
-					await inputStream.Channel.TruncateAsync(totalRead).WaitAsync(token).ConfigureAwait(false);
-				}
-			}
-			finally
-			{
-				ArrayPool<byte>.Shared.Return(buffer);
-			}
-		}, token);
+			.Start(ContextCompat.GetMainExecutor(context)!, captureListener);
 	}
 
-	protected virtual async partial Task PlatformStopVideoRecording(CancellationToken token)
+	protected virtual async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
 	{
 		ArgumentNullException.ThrowIfNull(cameraExecutor);
-		if (videoRecording is null)
+		if (videoRecording is null || videoRecordingFile is null)
 		{
-			return;
+			return Stream.Null;
 		}
 
 		videoRecording.Stop();
-		if (pipeTask is not null)
-		{
-			await pipeTask;
-			pipeTask = null;
-		}
 
-		writeFd?.Close();
-		readFd?.Close();
-		writeFd = null;
-		readFd = null;
+		await using var inputStream = new FileStream(videoRecordingFile.AbsolutePath, FileMode.Open);
+		var memoryStream = new MemoryStream();
+		await inputStream.CopyToAsync(memoryStream, token);
+		memoryStream.Position = 0;
+		return memoryStream;
 	}
+
 
 	void SetImageCaptureTargetRotation(int rotation)
 	{
