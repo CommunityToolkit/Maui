@@ -294,27 +294,22 @@ partial class CameraManager
 
 		var cameraSelector = cameraView.SelectedCamera.CameraSelector ?? throw new CameraException($"Unable to retrieve {nameof(CameraSelector)}");
 
-		var owner = (ILifecycleOwner)context;
 		processCameraProvider.UnbindAll();
-		camera = processCameraProvider.BindToLifecycle(owner, cameraSelector, cameraPreview, videoCapture);
+		camera = processCameraProvider.BindToLifecycle((ILifecycleOwner)context, cameraSelector, cameraPreview, videoCapture);
 
 		cameraControl = camera.CameraControl;
 		
 		videoRecordingFile = new Java.IO.File(context.CacheDir, $"{DateTime.UtcNow.Ticks}.mp4");
+		videoRecordingFile.CreateNewFile();
 		videoRecordingFile.DeleteOnExit();
 
-		var parcelFileDescriptor = ParcelFileDescriptor.Open(
-			videoRecordingFile,
-			ParcelFileMode.ReadWrite | ParcelFileMode.Create
-		) ?? throw new IOException("Unable to create recording");
-
-		var outputOptions = new FileDescriptorOutputOptions.Builder(parcelFileDescriptor).Build();
+		var outputOptions = new FileOutputOptions.Builder(videoRecordingFile).Build();
 
 		var captureListener = new CameraConsumer();
 		videoRecording = videoRecorder
 			.PrepareRecording(context, outputOptions)
 			.WithAudioEnabled()
-			.Start(ContextCompat.GetMainExecutor(context)!, captureListener);
+			.Start(ContextCompat.GetMainExecutor(context), captureListener);
 	}
 
 	protected virtual async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
@@ -437,7 +432,5 @@ public class CameraConsumer : Object, IConsumer
 {
 	public void Accept(Object? videoRecordEvent)
 	{
-		var videoRecorderEventStarted = videoRecordEvent as VideoRecordEvent.Start;
-		Console.WriteLine(videoRecorderEventStarted);
 	}
 }
