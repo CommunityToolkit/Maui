@@ -73,7 +73,7 @@ public static class CameraViewDefaults
 		var cameraView = (CameraView)bindable;
 		return new Command<Stream>(async stream =>
 		{
-			var resultStream = await cameraView.StopVideoRecording(CancellationToken.None);
+			await using var resultStream = await cameraView.StopVideoRecording(CancellationToken.None);
 			await resultStream.CopyToAsync(stream);
 		});
 	}

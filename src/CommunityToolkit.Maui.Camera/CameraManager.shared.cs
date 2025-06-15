@@ -63,7 +63,12 @@ partial class CameraManager(
 	/// Starts the video recording.
 	/// </summary>
 	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
-	public Task<Stream> StopVideoRecording(CancellationToken token) => PlatformStopVideoRecording(token);
+	public async Task<Stream> StopVideoRecording(CancellationToken token)
+	{
+		var stream = await PlatformStopVideoRecording(token);
+		stream.Position = 0;
+		return stream;
+	}
 
 	/// <summary>
 	/// Stops the camera preview.

@@ -205,7 +205,7 @@ partial class CameraManager
 		}
 	}
 
-	MemoryStream? stream;
+	MemoryStream? recordingStream;
 	protected virtual async partial Task PlatformStartVideoRecording(CancellationToken token)
 	{
 		if (!IsInitialized || mediaCapture is null || mediaElement is null)
@@ -213,9 +213,9 @@ partial class CameraManager
 			return;
 		}
 
-		stream = new MemoryStream();
+		recordingStream = new MemoryStream();
 		MediaEncodingProfile profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto);
-		mediaRecording = await mediaCapture.PrepareLowLagRecordToStreamAsync(profile, stream.AsRandomAccessStream());
+		mediaRecording = await mediaCapture.PrepareLowLagRecordToStreamAsync(profile, recordingStream.AsRandomAccessStream());
 
 		frameSource = mediaCapture.FrameSources.FirstOrDefault(source =>
 			source.Value.Info.MediaStreamType == MediaStreamType.VideoRecord
@@ -247,6 +247,6 @@ partial class CameraManager
 			await mediaRecording.StopAsync();
 		}
 
-		return stream ?? Stream.Null;
+		return recordingStream ?? Stream.Null;
 	}
 }
