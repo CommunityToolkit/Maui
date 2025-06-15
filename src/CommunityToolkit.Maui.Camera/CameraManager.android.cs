@@ -2,9 +2,7 @@
 using Android.Content;
 using Android.OS;
 using Android.Views;
-using Android.Widget;
 using AndroidX.Camera.Core;
-using AndroidX.Camera.Core.Internal.Utils;
 using AndroidX.Camera.Core.ResolutionSelector;
 using AndroidX.Camera.Lifecycle;
 using AndroidX.Camera.Video;
@@ -308,7 +306,7 @@ partial class CameraManager
 		var parcelFileDescriptor = ParcelFileDescriptor.Open(
 			videoRecordingFile,
 			ParcelFileMode.ReadWrite | ParcelFileMode.Create
-		);
+		) ?? throw new IOException("Unable to create recording");
 
 		var outputOptions = new FileDescriptorOutputOptions.Builder(parcelFileDescriptor).Build();
 
