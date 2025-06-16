@@ -12,25 +12,25 @@ public partial class ExpanderAnimationBehavior : BaseBehavior<Expander>
 	/// Backing BindableProperty for the <see cref="CollapsingLength"/> property.
 	/// </summary>
 	public static readonly BindableProperty CollapsingLengthProperty =
-		BindableProperty.CreateAttached(nameof(CollapsingLength), typeof(uint), typeof(ExpanderAnimationBehavior), 250u);
+		BindableProperty.Create(nameof(CollapsingLength), typeof(uint), typeof(ExpanderAnimationBehavior), 250u);
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="CollapsingEasing"/> property.
 	/// </summary>
 	public static readonly BindableProperty CollapsingEasingProperty =
-		BindableProperty.CreateAttached(nameof(CollapsingEasing), typeof(Easing), typeof(ExpanderAnimationBehavior), Easing.Linear);
+		BindableProperty.Create(nameof(CollapsingEasing), typeof(Easing), typeof(ExpanderAnimationBehavior), Easing.Linear);
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="ExpandingLength"/> property.
 	/// </summary>
 	public static readonly BindableProperty ExpandingLengthProperty =
-		BindableProperty.CreateAttached(nameof(ExpandingLength), typeof(uint), typeof(ExpanderAnimationBehavior), 250u);
+		BindableProperty.Create(nameof(ExpandingLength), typeof(uint), typeof(ExpanderAnimationBehavior), 250u);
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="ExpandingEasing"/> property.
 	/// </summary>
 	public static readonly BindableProperty ExpandingEasingProperty =
-		BindableProperty.CreateAttached(nameof(ExpandingEasing), typeof(Easing), typeof(ExpanderAnimationBehavior), Easing.Linear);
+		BindableProperty.Create(nameof(ExpandingEasing), typeof(Easing), typeof(ExpanderAnimationBehavior), Easing.Linear);
 
 	/// <summary>
 	/// Length in milliseconds of the collapse animation when the <see cref="Expander"/> is collapsing.
@@ -50,9 +50,7 @@ public partial class ExpanderAnimationBehavior : BaseBehavior<Expander>
 		set => SetValue(CollapsingEasingProperty, value);
 	}
 
-	/// <summary>
-	/// Length in milliseconds of the expand animation when the <see cref="Expander"/> is expanding.
-	/// </summary>
+	/// <summary>Length in milliseconds of the expand animation when the <see cref="Expander"/> is expanding.</summary>
 	public uint ExpandingLength
 	{
 		get => (uint)GetValue(ExpandingLengthProperty);
@@ -69,6 +67,16 @@ public partial class ExpanderAnimationBehavior : BaseBehavior<Expander>
 	}
 
 	/// <summary>
+	/// Occurs when the animation for the <see cref="Expander"/> finishes collapsing.
+	/// </summary>
+	public event EventHandler Collapsed;
+
+	/// <summary>
+	/// Occurs when the animation for the <see cref="Expander"/> finishes expanding.
+	/// </summary>
+	public event EventHandler Expanded;
+
+	/// <summary>
 	/// 
 	/// </summary>
 	/// <param name="sender"></param>
@@ -82,16 +90,20 @@ public partial class ExpanderAnimationBehavior : BaseBehavior<Expander>
 			case nameof(Expander.IsExpanded):
 				if (sender.IsExpanded)
 				{
-					AnimateContentHeight(sender, 1.0, sender.BodyContentView.Height, ExpandingLength, ExpandingEasing);
+					sender.Dispatcher.Dispatch(async () =>
+					{
+						await AnimateContentHeight(sender, 1.0, sender.BodyContentView.Height, ExpandingLength, ExpandingEasing);
+						Expanded?.Invoke(sender, EventArgs.Empty);
+					});
 				}
 				else
 				{
-					AnimateContentHeight(sender, sender.BodyContentView.Height, 1.0, ExpandingLength, ExpandingEasing);
+					sender.Dispatcher.Dispatch(async () =>
+					{
+						await AnimateContentHeight(sender, sender.BodyContentView.Height, 1.0, CollapsingLength, CollapsingEasing);
+						Collapsed?.Invoke(sender, EventArgs.Empty);
+					});
 				}
-				break;
-			case nameof(Expander.Header):
-			case nameof(Expander.Content):
-				sender.InvalidateMeasure();
 				break;
 		}
 	}

@@ -48,6 +48,9 @@
                         <mct:Expander.Content>
                             <Label Text="Item 1" />
                         </mct:Expander.Content>
+                        <mct:Expander.Behaviors>
+                            <mct:ExpanderAnimationBehavior CollapsingLength="250" ExpandingLength="250"/>
+                        </mct:Expander.Behaviors>
                     </mct:Expander>
                 </mct:Expander.Content>
                 <mct:Expander.Behaviors>
