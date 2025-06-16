@@ -258,4 +258,20 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 		Assert.Throws<ArgumentNullException>(() => new MultiMathExpressionConverter().Convert([0.0, 7], typeof(bool), null, null));
 	}
+
+	[Theory]
+	[InlineData("en-US", "x0 ? -123.4 : 123.4", new object?[] { true }, -123.4)]
+	[InlineData("en-US", "x0 ? -123.4 : 123.4", new object?[] { false }, 123.4)]
+	[InlineData("ar-AR", "x0 ? -123.4 : 123.4", new object?[] { true }, -123.4)]
+	[InlineData("ar-AR", "x0 ? -123.4 : 123.4", new object?[] { false }, 123.4)]
+	public void MathExpressionConverter_WithAlternateCulture_ReturnsCorrectNumericResult(string cultureName, string expression, object[] variables, double expectedResult)
+	{
+		CultureInfo.CurrentCulture = new CultureInfo(cultureName);
+		var mathExpressionConverter = new MultiMathExpressionConverter();
+
+		object? result = mathExpressionConverter.Convert(variables, mathExpressionTargetType, expression);
+
+		Assert.True(result is not null);
+		Assert.Equal(expectedResult, result);
+	}
 }
