@@ -50,7 +50,9 @@ public partial class ExpanderAnimationBehavior : BaseBehavior<Expander>
 		set => SetValue(CollapsingEasingProperty, value);
 	}
 
-	/// <summary>Length in milliseconds of the expand animation when the <see cref="Expander"/> is expanding.</summary>
+	/// <summary>
+	/// Length in milliseconds of the expand animation when the <see cref="Expander"/> is expanding.
+	/// </summary>
 	public uint ExpandingLength
 	{
 		get => (uint)GetValue(ExpandingLengthProperty);
@@ -76,11 +78,6 @@ public partial class ExpanderAnimationBehavior : BaseBehavior<Expander>
 	/// </summary>
 	public event EventHandler Expanded;
 
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="sender"></param>
-	/// <param name="e"></param>
 	protected override void OnViewPropertyChanged(Expander sender, PropertyChangedEventArgs e)
 	{
 		base.OnViewPropertyChanged(sender, e);
