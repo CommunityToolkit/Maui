@@ -33,44 +33,44 @@ public class PopupService : IPopupService
 	}
 
 	/// <inheritdoc />
-	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync{T}(Microsoft.Maui.Controls.INavigation,CommunityToolkit.Maui.IPopupOptions?,System.Threading.CancellationToken)"/> to <see langword="await"/> this method</remarks>
-	public void ShowPopup<T>(Page page, IPopupOptions? options = null) where T : notnull
+	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync{T}(Microsoft.Maui.Controls.INavigation,CommunityToolkit.Maui.IPopupOptions?,IDictionary{string,object}?,System.Threading.CancellationToken)"/> to <see langword="await"/> this method</remarks>
+	public void ShowPopup<T>(Page page, IPopupOptions? options = null, IDictionary<string, object>? parameters = null) where T : notnull
 	{
 		ArgumentNullException.ThrowIfNull(page);
-		ShowPopup<T>(page.Navigation, options);
+		ShowPopup<T>(page.Navigation, options, parameters);
 	}
 
 	/// <inheritdoc />
-	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync{T}(Microsoft.Maui.Controls.INavigation,CommunityToolkit.Maui.IPopupOptions?,System.Threading.CancellationToken)"/> to <see langword="await"/> this method</remarks>
-	public void ShowPopup<T>(INavigation navigation, IPopupOptions? options = null) where T : notnull
+	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync{T}(Microsoft.Maui.Controls.INavigation,CommunityToolkit.Maui.IPopupOptions?,IDictionary{string,object}?,System.Threading.CancellationToken)"/> to <see langword="await"/> this method</remarks>
+	public void ShowPopup<T>(INavigation navigation, IPopupOptions? options = null, IDictionary<string, object>? parameters = null) where T : notnull
 	{
 		ArgumentNullException.ThrowIfNull(navigation);
 
 		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
 
-		navigation.ShowPopup(popupContent, options);
+		navigation.ShowPopup(popupContent, options, parameters);
 	}
 
 	/// <inheritdoc />
 	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync{T}(Microsoft.Maui.Controls.Shell,CommunityToolkit.Maui.IPopupOptions?,IDictionary{string,object}?, System.Threading.CancellationToken)"/> to <see langword="await"/> this method</remarks>
-	public void ShowPopup<T>(Shell shell, IPopupOptions? options = null, IDictionary<string, object>? shellParameters = null) where T : notnull
+	public void ShowPopup<T>(Shell shell, IPopupOptions? options = null, IDictionary<string, object>? parameters = null) where T : notnull
 	{
 		ArgumentNullException.ThrowIfNull(shell);
 
 		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
-		shell.ShowPopup(popupContent, options, shellParameters);
+		shell.ShowPopup(popupContent, options, parameters);
 	}
 
 	/// <inheritdoc />
-	public Task<IPopupResult> ShowPopupAsync<T>(Page page, IPopupOptions? options = null, CancellationToken cancellationToken = default) where T : notnull
+	public Task<IPopupResult> ShowPopupAsync<T>(Page page, IPopupOptions? options = null, IDictionary<string, object>? parameters = null, CancellationToken cancellationToken = default) where T : notnull
 	{
 		ArgumentNullException.ThrowIfNull(page);
 
-		return ShowPopupAsync<T>(page.Navigation, options, cancellationToken);
+		return ShowPopupAsync<T>(page.Navigation, options, parameters, cancellationToken);
 	}
 
 	/// <inheritdoc />
-	public Task<IPopupResult> ShowPopupAsync<T>(INavigation navigation, IPopupOptions? options = null, CancellationToken token = default)
+	public Task<IPopupResult> ShowPopupAsync<T>(INavigation navigation, IPopupOptions? options = null, IDictionary<string, object>? parameters = null, CancellationToken token = default)
 		where T : notnull
 	{
 		ArgumentNullException.ThrowIfNull(navigation);
@@ -79,11 +79,11 @@ public class PopupService : IPopupService
 
 		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
 
-		return navigation.ShowPopupAsync(popupContent, options, token);
+		return navigation.ShowPopupAsync(popupContent, options, parameters, token);
 	}
 
 	/// <inheritdoc />
-	public Task<IPopupResult> ShowPopupAsync<T>(Shell shell, IPopupOptions? options, IDictionary<string, object>? shellParameters, CancellationToken token) where T : notnull
+	public Task<IPopupResult> ShowPopupAsync<T>(Shell shell, IPopupOptions? options, IDictionary<string, object>? parameters, CancellationToken token) where T : notnull
 	{
 		ArgumentNullException.ThrowIfNull(shell);
 
@@ -91,20 +91,21 @@ public class PopupService : IPopupService
 
 		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
 
-		return shell.ShowPopupAsync(popupContent, options, shellParameters, token);
+		return shell.ShowPopupAsync(popupContent, options, parameters, token);
 	}
 
 	/// <inheritdoc />
-	public Task<IPopupResult<TResult>> ShowPopupAsync<T, TResult>(Page page, IPopupOptions? options = null, CancellationToken cancellationToken = default) where T : notnull
+	public Task<IPopupResult<TResult>> ShowPopupAsync<T, TResult>(Page page, IPopupOptions? options = null, IDictionary<string, object>? parameters = null, CancellationToken cancellationToken = default) where T : notnull
 	{
 		ArgumentNullException.ThrowIfNull(page);
 
-		return ShowPopupAsync<T, TResult>(page.Navigation, options, cancellationToken);
+		return ShowPopupAsync<T, TResult>(page.Navigation, options, parameters, cancellationToken);
 	}
 
 	/// <inheritdoc />
 	public Task<IPopupResult<TResult>> ShowPopupAsync<T, TResult>(INavigation navigation,
 		IPopupOptions? options = null,
+		IDictionary<string, object>? parameters = null,
 		CancellationToken token = default)
 		where T : notnull
 	{
@@ -113,18 +114,18 @@ public class PopupService : IPopupService
 		token.ThrowIfCancellationRequested();
 		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
 
-		return navigation.ShowPopupAsync<TResult>(popupContent, options, token);
+		return navigation.ShowPopupAsync<TResult>(popupContent, options, parameters, token);
 	}
 
 	/// <inheritdoc />
-	public Task<IPopupResult<TResult>> ShowPopupAsync<T, TResult>(Shell shell, IPopupOptions? options, IDictionary<string, object>? shellParameters = null, CancellationToken token = default) where T : notnull
+	public Task<IPopupResult<TResult>> ShowPopupAsync<T, TResult>(Shell shell, IPopupOptions? options, IDictionary<string, object>? parameters = null, CancellationToken token = default) where T : notnull
 	{
 		ArgumentNullException.ThrowIfNull(shell);
 
 		token.ThrowIfCancellationRequested();
 		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
 
-		return shell.ShowPopupAsync<TResult>(popupContent, options, shellParameters, token);
+		return shell.ShowPopupAsync<TResult>(popupContent, options, parameters, token);
 	}
 
 	/// <inheritdoc />

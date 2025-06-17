@@ -215,7 +215,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		var shellNavigation = Shell.Current.Navigation;
 
 		// Act
-		shell.ShowPopup(viewWithQueryable, shellParameters: shellParameters);
+		shell.ShowPopup(viewWithQueryable, parameters: shellParameters);
 
 		// Assert
 		Assert.Single(shellNavigation.ModalStack);
@@ -231,8 +231,8 @@ public class PopupExtensionsTests : BaseHandlerTest
 		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
 
 		// Act
-		await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, TestContext.Current.CancellationToken);
-		await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+		await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, token: TestContext.Current.CancellationToken);
+		await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, token: TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.Empty(navigation.ModalStack);
@@ -289,7 +289,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Assert.Empty(shellNavigation.ModalStack);
 
 		// Act
-		shell.ShowPopup(viewWithQueryable, shellParameters: shellParameters);
+		shell.ShowPopup(viewWithQueryable, parameters: shellParameters);
 
 		// Assert
 		Assert.Single(shellNavigation.ModalStack);
@@ -720,7 +720,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		await Task.Delay(100, TestContext.Current.CancellationToken); // Ensure CancellationToken has expired
 
 		// Assert
-		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ShowPopupAsync(selfClosingPopup, PopupOptions.Empty, cts.Token));
+		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ShowPopupAsync(selfClosingPopup, PopupOptions.Empty, token: cts.Token));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -757,7 +757,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		await Task.Delay(100, TestContext.Current.CancellationToken); // Ensure CancellationToken has expired
 
 		// Assert
-		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ShowPopupAsync(view, PopupOptions.Empty, cts.Token));
+		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ShowPopupAsync(view, PopupOptions.Empty, token: cts.Token));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -795,7 +795,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		await cts.CancelAsync(); // Ensure CancellationToken has expired
 
 		// Assert
-		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ShowPopupAsync(selfClosingPopup, PopupOptions.Empty, cts.Token));
+		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ShowPopupAsync(selfClosingPopup, PopupOptions.Empty, token: cts.Token));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -817,7 +817,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		await cts.CancelAsync();
 
 		// Assert
-		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ShowPopupAsync(selfClosingPopup, PopupOptions.Empty, cts.Token));
+		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ShowPopupAsync(selfClosingPopup, PopupOptions.Empty, token: cts.Token));
 		Assert.NotEqual(shellParameterBackgroundColorValue, selfClosingPopup.BackgroundColor);
 	}
 
@@ -832,7 +832,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		await cts.CancelAsync(); // Ensure CancellationToken has expired
 
 		// Assert
-		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ShowPopupAsync(view, PopupOptions.Empty, cts.Token));
+		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ShowPopupAsync(view, PopupOptions.Empty, token: cts.Token));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -868,7 +868,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		var popupViewModel = ServiceProvider.GetRequiredService<MockPageViewModel>();
 
 		// Act
-		await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+		await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, token: TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.Same(popupInstance.BindingContext, popupViewModel);
@@ -906,7 +906,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		var popupViewModel = ServiceProvider.GetRequiredService<MockPageViewModel>();
 
 		// Act
-		var showPopupTask = navigation.ShowPopupAsync<object?>(view, PopupOptions.Empty, TestContext.Current.CancellationToken);
+		var showPopupTask = navigation.ShowPopupAsync<object?>(view, PopupOptions.Empty, token: TestContext.Current.CancellationToken);
 
 		var popupPage = (PopupPage)navigation.ModalStack[0];
 
@@ -954,7 +954,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
 
 		// Act
-		var result = await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+		var result = await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, token: TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.Same(mockPopup.Result, result.Result);
@@ -994,7 +994,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		var expectedPopupResult = new PopupResult<int>(popupResultValue, false);
 
 		// Act
-		var showPopupTask = navigation.ShowPopupAsync<int>(view, PopupOptions.Empty, TestContext.Current.CancellationToken);
+		var showPopupTask = navigation.ShowPopupAsync<int>(view, PopupOptions.Empty, token: TestContext.Current.CancellationToken);
 
 		var popupPage = (PopupPage)navigation.ModalStack[0];
 
@@ -1044,7 +1044,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 
 		// Act/Assert
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		await Assert.ThrowsAsync<ArgumentNullException>(() => navigation.ShowPopupAsync(null, PopupOptions.Empty, TestContext.Current.CancellationToken));
+		await Assert.ThrowsAsync<ArgumentNullException>(() => navigation.ShowPopupAsync(null, PopupOptions.Empty, token: TestContext.Current.CancellationToken));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
@@ -1074,7 +1074,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 
 		// Act / Assert
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		await Assert.ThrowsAsync<ArgumentNullException>(() => PopupExtensions.ShowPopupAsync((INavigation?)null, selfClosingPopup, PopupOptions.Empty, TestContext.Current.CancellationToken));
+		await Assert.ThrowsAsync<ArgumentNullException>(() => PopupExtensions.ShowPopupAsync((INavigation?)null, selfClosingPopup, PopupOptions.Empty, token: TestContext.Current.CancellationToken));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
@@ -1103,7 +1103,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		// Arrange
 
 		// Act
-		var showPopupTask = navigation.ShowPopupAsync<object?>(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
+		var showPopupTask = navigation.ShowPopupAsync<object?>(new Popup(), PopupOptions.Empty, token: TestContext.Current.CancellationToken);
 
 		var popupPage = (PopupPage)navigation.ModalStack.Last();
 		await popupPage.CloseAsync(new PopupResult(true), TestContext.Current.CancellationToken);

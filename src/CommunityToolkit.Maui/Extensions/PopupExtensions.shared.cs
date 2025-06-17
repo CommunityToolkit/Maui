@@ -14,12 +14,13 @@ public static class PopupExtensions
 	/// <param name="page">The current page that provides access to the <see cref="INavigation"/> implementation.</param>
 	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
-	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see langword="await"/> this method and return <see cref="PopupResult{T}"/> </remarks>
-	public static void ShowPopup(this Page page, View view, IPopupOptions? options = null)
+	/// <param name="parameters">Parameters that will be passed into the <paramref name="view"/> or its associated BindingContext if they implement <see cref="IQueryAttributable"/>.</param>
+	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,IDictionary{string,object}?,CancellationToken)"/> to <see langword="await"/> this method and return <see cref="PopupResult{T}"/> </remarks>
+	public static void ShowPopup(this Page page, View view, IPopupOptions? options = null, IDictionary<string, object>? parameters = null)
 	{
 		ArgumentNullException.ThrowIfNull(page);
 
-		ShowPopup(page.Navigation, view, options);
+		ShowPopup(page.Navigation, view, options, parameters);
 	}
 
 	/// <summary>
@@ -28,13 +29,19 @@ public static class PopupExtensions
 	/// <param name="navigation">The <see cref="INavigation"/> implementation responsible for displaying the popup. Make sure to use the one associated with the <see cref="Window"/> that you wish the popup to be displayed on.</param>
 	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
-	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see langword="await"/> this method</remarks>
-	public static async void ShowPopup(this INavigation navigation, View view, IPopupOptions? options = null)
+	/// <param name="parameters">Parameters that will be passed into the <paramref name="view"/> or its associated BindingContext if they implement <see cref="IQueryAttributable"/>.</param>
+	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync(INavigation,View,CommunityToolkit.Maui.IPopupOptions?,IDictionary{string,object}?,CancellationToken)"/> to <see langword="await"/> this method</remarks>
+	public static async void ShowPopup(this INavigation navigation, View view, IPopupOptions? options = null, IDictionary<string, object>? parameters = null)
 	{
 		ArgumentNullException.ThrowIfNull(navigation);
 		ArgumentNullException.ThrowIfNull(view);
 
 		var popupPage = new PopupPage(view, options ?? PopupOptions.Empty);
+		
+		if (parameters is not null)
+		{
+			((IQueryAttributable)popupPage).ApplyQueryAttributes(parameters);
+		}
 
 		await navigation.PushModalAsync(popupPage, false);
 	}
@@ -45,14 +52,14 @@ public static class PopupExtensions
 	/// <param name="shell">Current <see cref="Shell"/></param>
 	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
-	/// <param name="shellParameters">Parameters that will be passed into the <paramref name="view"/> or its associated BindingContext if they implement <see cref="IQueryAttributable"/>.</param>
-	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see langword="await"/> this method</remarks>
-	public static async void ShowPopup(this Shell shell, View view, IPopupOptions? options = null, IDictionary<string, object>? shellParameters = null)
+	/// <param name="parameters">Parameters that will be passed into the <paramref name="view"/> or its associated BindingContext if they implement <see cref="IQueryAttributable"/>.</param>
+	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,IDictionary{string,object}?,CancellationToken)"/> to <see langword="await"/> this method</remarks>
+	public static async void ShowPopup(this Shell shell, View view, IPopupOptions? options = null, IDictionary<string, object>? parameters = null)
 	{
 		ArgumentNullException.ThrowIfNull(shell);
 		ArgumentNullException.ThrowIfNull(view);
 
-		await shell.ShowPopupAsync(view, options, shellParameters);
+		await shell.ShowPopupAsync(view, options, parameters);
 	}
 
 	/// <summary>
@@ -61,13 +68,14 @@ public static class PopupExtensions
 	/// <param name="page">The current page that provides access to the <see cref="INavigation"/> implementation.</param>
 	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
+	/// <param name="parameters">Parameters that will be passed into the <paramref name="view"/> or its associated BindingContext if they implement <see cref="IQueryAttributable"/>.</param>
 	/// <param name="token">A <see cref="CancellationToken"/> providing support for canceling the wait for a result to be returned. This will <b>not</b> close the popup.</param>
 	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="token"/> is canceled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
-	public static Task<IPopupResult<TResult>> ShowPopupAsync<TResult>(this Page page, View view, IPopupOptions? options = null, CancellationToken token = default)
+	public static Task<IPopupResult<TResult>> ShowPopupAsync<TResult>(this Page page, View view, IPopupOptions? options = null, IDictionary<string, object>? parameters = null, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(page);
 
-		return page.Navigation.ShowPopupAsync<TResult>(view, options, token);
+		return page.Navigation.ShowPopupAsync<TResult>(view, options, parameters, token);
 	}
 
 	/// <summary>
@@ -76,11 +84,12 @@ public static class PopupExtensions
 	/// <param name="navigation">The <see cref="INavigation"/> implementation responsible for displaying the popup. Make sure to use the one associated with the <see cref="Window"/> that you wish the popup to be displayed on.</param>
 	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
+	/// <param name="parameters">Parameters that will be passed into the <paramref name="view"/> or its associated BindingContext if they implement <see cref="IQueryAttributable"/>.</param>
 	/// <param name="token">A <see cref="CancellationToken"/> providing support for canceling the wait for a result to be returned. This will <b>not</b> close the popup.</param>
 	/// <returns>An <see cref="IPopupResult{T}"/> when the popup is closed or the <paramref name="token"/> is canceled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
-	public static async Task<IPopupResult<TResult>> ShowPopupAsync<TResult>(this INavigation navigation, View view, IPopupOptions? options = null, CancellationToken token = default)
+	public static async Task<IPopupResult<TResult>> ShowPopupAsync<TResult>(this INavigation navigation, View view, IPopupOptions? options = null, IDictionary<string, object>? parameters = null, CancellationToken token = default)
 	{
-		var result = await ShowPopupAsync(navigation, view, options, token);
+		var result = await ShowPopupAsync(navigation, view, options, parameters, token);
 
 		return GetPopupResult<TResult>(result);
 	}
@@ -91,12 +100,12 @@ public static class PopupExtensions
 	/// <param name="shell">Current <see cref="Shell"/></param>
 	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
-	/// <param name="shellParameters">Parameters that will be passed into the <paramref name="view"/> or its associated BindingContext if they implement <see cref="IQueryAttributable"/>.</param>
+	/// <param name="parameters">Parameters that will be passed into the <paramref name="view"/> or its associated BindingContext if they implement <see cref="IQueryAttributable"/>.</param>
 	/// <param name="token">A <see cref="CancellationToken"/> providing support for canceling the wait for a result to be returned. This will <b>not</b> close the popup.</param>
 	/// <returns>An <see cref="IPopupResult{T}"/> when the popup is closed or the <paramref name="token"/> is canceled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
-	public static async Task<IPopupResult<TResult>> ShowPopupAsync<TResult>(this Shell shell, View view, IPopupOptions? options = null, IDictionary<string, object>? shellParameters = null, CancellationToken token = default)
+	public static async Task<IPopupResult<TResult>> ShowPopupAsync<TResult>(this Shell shell, View view, IPopupOptions? options = null, IDictionary<string, object>? parameters = null, CancellationToken token = default)
 	{
-		var result = await ShowPopupAsync(shell, view, options, shellParameters, token);
+		var result = await ShowPopupAsync(shell, view, options, parameters, token);
 
 		return GetPopupResult<TResult>(result);
 	}
@@ -107,13 +116,14 @@ public static class PopupExtensions
 	/// <param name="page">The current page that provides access to the <see cref="INavigation"/> implementation.</param>
 	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
+	/// <param name="parameters">Parameters that will be passed into the <paramref name="view"/> or its associated BindingContext if they implement <see cref="IQueryAttributable"/>.</param>
 	/// <param name="token">A <see cref="CancellationToken"/> providing support for canceling the wait for a result to be returned. This will <b>not</b> close the popup.</param>
 	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="token"/> is canceled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
-	public static Task<IPopupResult> ShowPopupAsync(this Page page, View view, IPopupOptions? options = null, CancellationToken token = default)
+	public static Task<IPopupResult> ShowPopupAsync(this Page page, View view, IPopupOptions? options = null, IDictionary<string, object>? parameters = null, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(page);
 
-		return ShowPopupAsync(page.Navigation, view, options, token);
+		return ShowPopupAsync(page.Navigation, view, options, parameters, token);
 	}
 
 	/// <summary>
@@ -122,9 +132,10 @@ public static class PopupExtensions
 	/// <param name="navigation">The <see cref="INavigation"/> implementation responsible for displaying the popup. Make sure to use the one associated with the <see cref="Window"/> that you wish the popup to be displayed on.</param>
 	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
+	/// <param name="parameters">Parameters that will be passed into the <paramref name="view"/> or its associated BindingContext if they implement <see cref="IQueryAttributable"/>.</param>
 	/// <param name="token">A <see cref="CancellationToken"/> providing support for canceling the wait for a result to be returned. This will <b>not</b> close the popup.</param>
 	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="token"/> is canceled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
-	public static async Task<IPopupResult> ShowPopupAsync(this INavigation navigation, View view, IPopupOptions? options, CancellationToken token = default)
+	public static async Task<IPopupResult> ShowPopupAsync(this INavigation navigation, View view, IPopupOptions? options, IDictionary<string, object>? parameters = null, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(navigation);
 		ArgumentNullException.ThrowIfNull(view);
@@ -135,6 +146,11 @@ public static class PopupExtensions
 
 		var popupPage = new PopupPage(view, options ?? PopupOptions.Empty);
 		popupPage.PopupClosed += HandlePopupClosed;
+		
+		if (parameters is not null)
+		{
+			((IQueryAttributable)popupPage).ApplyQueryAttributes(parameters);
+		}
 
 		await navigation.PushModalAsync(popupPage, false).WaitAsync(token);
 		return await taskCompletionSource.Task.WaitAsync(token);
@@ -152,10 +168,10 @@ public static class PopupExtensions
 	/// <param name="shell">Current <see cref="Shell"/></param>
 	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
-	/// <param name="shellParameters">Parameters that will be passed into the <paramref name="view"/> or its associated BindingContext if they implement <see cref="IQueryAttributable"/>.</param>
+	/// <param name="parameters">Parameters that will be passed into the <paramref name="view"/> or its associated BindingContext if they implement <see cref="IQueryAttributable"/>.</param>
 	/// <param name="token">A <see cref="CancellationToken"/> providing support for canceling the wait for a result to be returned. This will <b>not</b> close the popup.</param>
 	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="token"/> is cancelled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
-	public static async Task<IPopupResult> ShowPopupAsync(this Shell shell, View view, IPopupOptions? options, IDictionary<string, object>? shellParameters = null, CancellationToken token = default)
+	public static async Task<IPopupResult> ShowPopupAsync(this Shell shell, View view, IPopupOptions? options, IDictionary<string, object>? parameters = null, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(shell);
 		ArgumentNullException.ThrowIfNull(view);
@@ -173,13 +189,13 @@ public static class PopupExtensions
 
 		try
 		{
-			if (shellParameters is null)
+			if (parameters is null)
 			{
 				await shell.GoToAsync(popupPageRoute).WaitAsync(token);
 			}
 			else
 			{
-				await shell.GoToAsync(popupPageRoute, shellParameters).WaitAsync(token);
+				await shell.GoToAsync(popupPageRoute, parameters).WaitAsync(token);
 			}
 
 			return await taskCompletionSource.Task.WaitAsync(token);
