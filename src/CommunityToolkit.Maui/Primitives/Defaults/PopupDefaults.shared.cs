@@ -31,4 +31,7 @@ static class PopupDefaults
 	/// Default value for <see cref="VisualElement.BackgroundColor"/> BackgroundColor 
 	/// </summary>
 	public static Color BackgroundColor { get; } = Colors.White;
+
+	public static bool CanBeDismissedByTappingOutsideOfPopup { get; internal set; } =
+		PopupDefaults.CanBeDismissedByTappingOutsideOfPopup;
 }
