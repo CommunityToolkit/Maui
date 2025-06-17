@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Globalization;
-using System.Windows.Input;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
@@ -42,14 +41,16 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		this.popup = popup;
 		this.popupOptions = popupOptions;
 
+		// Only set the content if the parent constructor hasn't set the content already; don't override content if it already exists
+		base.Content ??= new PopupPageLayout(popup, popupOptions);
+
 		tapOutsideOfPopupCommand = new Command(async () =>
 		{
 			popupOptions.OnTappingOutsideOfPopup?.Invoke();
 			await CloseAsync(new PopupResult(true));
 		}, () => popupOptions.CanBeDismissedByTappingOutsideOfPopup);
-		
-		// Only set the content if the parent constructor hasn't set the content already; don't override content if it already exists
-		base.Content ??= new PopupPageLayout(popup, popupOptions, tapOutsideOfPopupCommand);
+
+		Content.GestureRecognizers.Add(new TapGestureRecognizer { Command = tapOutsideOfPopupCommand });
 
 		if (popupOptions is BindableObject bindablePopupOptions)
 		{
@@ -175,7 +176,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 	internal sealed partial class PopupPageLayout : Grid
 	{
-		public PopupPageLayout(in Popup popupContent, in IPopupOptions options, ICommand tapOutsideOfPopupCommand)
+		public PopupPageLayout(in Popup popupContent, in IPopupOptions options)
 		{
 			Background = BackgroundColor = null;
 
@@ -184,12 +185,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 				BackgroundColor = popupContent.BackgroundColor ??= PopupDefaults.BackgroundColor,
 				Content = popupContent
 			};
-
-			var backgroundGrid = new Grid();
-			
-			backgroundGrid.GestureRecognizers.Add(new TapGestureRecognizer { Command = tapOutsideOfPopupCommand });
-			
-			Children.Add(backgroundGrid);
 
 			// Bind `Popup` values through to Border using OneWay Bindings 
 			border.SetBinding(Border.MarginProperty, static (Popup popup) => popup.Margin, source: popupContent, mode: BindingMode.OneWay);
