@@ -71,13 +71,18 @@ public partial class ExpanderAnimationBehavior : BaseBehavior<Expander>
 	/// <summary>
 	/// Occurs when the animation for the <see cref="Expander"/> finishes collapsing.
 	/// </summary>
-	public event EventHandler Collapsed;
+	public event EventHandler? Collapsed;
 
 	/// <summary>
 	/// Occurs when the animation for the <see cref="Expander"/> finishes expanding.
 	/// </summary>
-	public event EventHandler Expanded;
+	public event EventHandler? Expanded;
 
+	/// <summary>
+	/// Responds to the <see cref="Expander"/> property changes and triggers the expand/collapse animations.
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
 	protected override void OnViewPropertyChanged(Expander sender, PropertyChangedEventArgs e)
 	{
 		base.OnViewPropertyChanged(sender, e);
