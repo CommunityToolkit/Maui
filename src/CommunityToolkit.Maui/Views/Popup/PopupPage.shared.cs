@@ -49,7 +49,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}, () => popupOptions.CanBeDismissedByTappingOutsideOfPopup);
 		
 		// Only set the content if the parent constructor hasn't set the content already; don't override content if it already exists
-		base.Content ??= new PopupPageLayout(popup, popupOptions, tapOutsideOfPopupCommand);
+		base.Content = new PopupPageLayout(popup, popupOptions, tapOutsideOfPopupCommand);
 
 		if (popupOptions is BindableObject bindablePopupOptions)
 		{
