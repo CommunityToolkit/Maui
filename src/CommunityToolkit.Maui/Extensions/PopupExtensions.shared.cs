@@ -40,7 +40,7 @@ public static class PopupExtensions
 		
 		if (parameters is not null)
 		{
-			((IQueryAttributable)popupPage).ApplyQueryAttributes(parameters);
+			popupPage.ApplyQueryAttributes(parameters);
 		}
 
 		await navigation.PushModalAsync(popupPage, false);
@@ -149,7 +149,7 @@ public static class PopupExtensions
 		
 		if (parameters is not null)
 		{
-			((IQueryAttributable)popupPage).ApplyQueryAttributes(parameters);
+			popupPage.ApplyQueryAttributes(parameters);
 		}
 
 		await navigation.PushModalAsync(popupPage, false).WaitAsync(token);

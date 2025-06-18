@@ -161,7 +161,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 	}
 
-	void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
+	public void ApplyQueryAttributes(IDictionary<string, object> query)
 	{
 		if (popup is IQueryAttributable popupIQueryAttributable)
 		{
