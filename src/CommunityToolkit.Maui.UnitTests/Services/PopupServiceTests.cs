@@ -166,7 +166,7 @@ public class PopupServiceTests : BaseHandlerTest
 
 		var popupPage = (PopupPage)navigation.ModalStack[0];
 		var popupPageLayout = popupPage.Content;
-		var border = popupPageLayout.Border;
+		var border = (Border)popupPageLayout.Children[0];
 		var popup = border.Content;
 
 		// Assert

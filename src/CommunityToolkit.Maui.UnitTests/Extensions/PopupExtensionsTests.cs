@@ -435,7 +435,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 
 		var popupPage = (PopupPage)navigation.ModalStack[0];
 		var popupPageContent = popupPage.Content;
-		var border = popupPageContent.Border;
+		var border = (Border)popupPageContent.Children[0];
 		var popup = border.Content;
 
 		// Assert
@@ -507,7 +507,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 
 		var popupPage = (PopupPage)shellNavigation.ModalStack[0];
 		var popupPageContent = popupPage.Content;
-		var border = popupPageContent.Border;
+		var border = (Border)popupPageContent.Children[0];
 		var popup = border.Content;
 
 		// Assert
@@ -579,7 +579,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 
 		var popupPage = (PopupPage)navigation.ModalStack[0];
 		var popupPageContent = popupPage.Content;
-		var border = popupPageContent.Border;
+		var border = (Border)popupPageContent.Children[0];
 		var popup = (Popup)(border.Content ?? throw new InvalidCastException());
 
 		// Assert
@@ -660,7 +660,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 
 		var popupPage = (PopupPage)shellNavigation.ModalStack[0];
 		var popupPageContent = popupPage.Content;
-		var border = popupPageContent.Border;
+		var border = (Border)popupPageContent.Children[0];
 		var popup = (Popup)(border.Content ?? throw new InvalidCastException());
 
 		// Assert
