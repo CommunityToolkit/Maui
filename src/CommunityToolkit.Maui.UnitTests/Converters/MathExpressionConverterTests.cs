@@ -264,10 +264,16 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 	[InlineData("en-US", "x0 ? -123.4 : 123.4", new object?[] { false }, 123.4)]
 	[InlineData("en-US", "str(x0)", new object?[] { 3.1415 }, "3.1415")]
 	[InlineData("en-US", "len(str(x0))", new object?[] { 3.1415 }, 6)]
+	[InlineData("en-US", "x0 * x1", new object?[] { "3.1415", 2 }, 6.283)]
+	[InlineData("en-US", "int(double(x0))", new object?[] { "3.1415" }, 3)]
+	[InlineData("en-US", "int(double(x0)) / x1", new object?[] { "3.1415", 2 }, 1.5)]
 	[InlineData("ar-AR", "x0 ? -123.4 : 123.4", new object?[] { true }, -123.4)]
 	[InlineData("ar-AR", "x0 ? -123.4 : 123.4", new object?[] { false }, 123.4)]
 	[InlineData("ar-AR", "str(x0)", new object?[] { 3.1415 }, "3.1415")]
 	[InlineData("ar-AR", "len(str(x0))", new object?[] { 3.1415 }, 6)]
+	[InlineData("ar-AR", "x0 * x1", new object?[] { "3.1415", 2 }, 6.283)]
+	[InlineData("ar-AR", "int(double(x0))", new object?[] { "3.1415" }, 3)]
+	[InlineData("ar-AR", "int(double(x0)) / x1", new object?[] { "3.1415", 2 }, 1.5)]
 	public void MathExpressionConverter_WithAlternateCulture_ReturnsCorrectNumericResult(string cultureName, string expression, object[] variables, object? expectedResult)
 	{
 		CultureInfo.CurrentCulture = new CultureInfo(cultureName);
