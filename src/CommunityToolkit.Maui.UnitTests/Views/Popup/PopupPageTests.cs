@@ -472,7 +472,7 @@ public class PopupPageTests : BaseHandlerTest
 
 		// Act
 		var popupPage = new PopupPage(view, PopupOptions.Empty);
-		var border = (Border)popupPage.Content.Children[0];
+		var border = popupPage.Content.Border;
 
 		// Assert
 		Assert.Equal(LayoutOptions.Start, border.VerticalOptions);
