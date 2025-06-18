@@ -365,7 +365,7 @@ sealed partial class MathExpression
 		if (ParsePattern(EvaluateNumberPattern()))
 		{
 			string _number = PatternMatch.Groups[1].Value;
-			RPN.Add(new MathToken(MathTokenType.Value, _number, double.Parse(_number, System.Globalization.CultureInfo.InvariantCulture)));
+			RPN.Add(new MathToken(MathTokenType.Value, _number, double.Parse(_number, CultureInfo.InvariantCulture)));
 			return true;
 		}
 
