@@ -250,13 +250,22 @@ public class PopupPageTests : BaseHandlerTest
 		Assert.Equal(UIModalPresentationStyle.OverFullScreen, popupPage.On<iOS>().ModalPresentationStyle());
 
 		// Verify content has tap gesture recognizer attached
-		Assert.Single(popupPage.Content.GestureRecognizers);
-		Assert.IsType<TapGestureRecognizer>(popupPage.Content.GestureRecognizers[0]);
+		var gestureRecognizers = popupPage.Content.Children.OfType<BoxView>().Single().GestureRecognizers;
+		Assert.Single(gestureRecognizers);
+		Assert.IsType<TapGestureRecognizer>(gestureRecognizers[0]);
 
 		// Verify PopupPageLayout structure
 		var pageContent = popupPage.Content;
-		Assert.Single(pageContent.Children);
-		Assert.IsType<Border>(pageContent.Children[0]);
+		Assert.Collection(
+			pageContent.Children,
+			first =>
+			{
+				first.Should().BeOfType<BoxView>();
+			},
+			second =>
+			{
+				second.Should().BeOfType<Border>();
+			});
 
 		// Verify content binding context is set correctly
 		Assert.Equal(view.BindingContext, pageContent.BindingContext);
@@ -316,7 +325,7 @@ public class PopupPageTests : BaseHandlerTest
 
 		var popupPage = new PopupPage(view, popupOptions);
 
-		var tapGestureRecognizer = (TapGestureRecognizer)popupPage.Content.GestureRecognizers[0];
+		var tapGestureRecognizer = GetTapOutsideGestureRecognizer(popupPage);
 		var command = tapGestureRecognizer.Command;
 		Assert.NotNull(command);
 
@@ -341,7 +350,7 @@ public class PopupPageTests : BaseHandlerTest
 		};
 
 		var popupPage = new PopupPage(view, popupOptions);
-		var tapGestureRecognizer = (TapGestureRecognizer)popupPage.Content.GestureRecognizers[0];
+		var tapGestureRecognizer = GetTapOutsideGestureRecognizer(popupPage);
 		var command = tapGestureRecognizer.Command;
 
 		// Act & Assert
@@ -421,7 +430,7 @@ public class PopupPageTests : BaseHandlerTest
 		var popupPage = new PopupPage(view, popupOptions);
 
 		// Act
-		var tapGestureRecognizer = (TapGestureRecognizer)popupPage.Content.GestureRecognizers[0];
+		var tapGestureRecognizer = GetTapOutsideGestureRecognizer(popupPage);
 		var command = tapGestureRecognizer.Command;
 
 		// Assert
@@ -472,12 +481,15 @@ public class PopupPageTests : BaseHandlerTest
 
 		// Act
 		var popupPage = new PopupPage(view, PopupOptions.Empty);
-		var border = (Border)popupPage.Content.Children[0];
+		var border = popupPage.Content.Children.OfType<Border>().Single();
 
 		// Assert
 		Assert.Equal(LayoutOptions.Start, border.VerticalOptions);
 		Assert.Equal(LayoutOptions.End, border.HorizontalOptions);
 	}
+	
+	static TapGestureRecognizer GetTapOutsideGestureRecognizer(PopupPage popupPage) => 
+		(TapGestureRecognizer)popupPage.Content.Children.OfType<BoxView>().Single().GestureRecognizers[0];
 
 	// Helper class for testing protected methods
 	sealed class TestablePopupPage(View view, IPopupOptions popupOptions) : PopupPage(view, popupOptions)
