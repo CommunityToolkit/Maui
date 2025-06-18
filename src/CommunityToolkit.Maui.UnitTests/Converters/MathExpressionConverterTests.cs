@@ -262,9 +262,13 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 	[Theory]
 	[InlineData("en-US", "x0 ? -123.4 : 123.4", new object?[] { true }, -123.4)]
 	[InlineData("en-US", "x0 ? -123.4 : 123.4", new object?[] { false }, 123.4)]
+	[InlineData("en-US", "str(x0)", new object?[] { 3.1415 }, "3.1415")]
+	[InlineData("en-US", "len(str(x0))", new object?[] { 3.1415 }, 6)]
 	[InlineData("ar-AR", "x0 ? -123.4 : 123.4", new object?[] { true }, -123.4)]
 	[InlineData("ar-AR", "x0 ? -123.4 : 123.4", new object?[] { false }, 123.4)]
-	public void MathExpressionConverter_WithAlternateCulture_ReturnsCorrectNumericResult(string cultureName, string expression, object[] variables, double expectedResult)
+	[InlineData("ar-AR", "str(x0)", new object?[] { 3.1415 }, "3.1415")]
+	[InlineData("ar-AR", "len(str(x0))", new object?[] { 3.1415 }, 6)]
+	public void MathExpressionConverter_WithAlternateCulture_ReturnsCorrectNumericResult(string cultureName, string expression, object[] variables, object? expectedResult)
 	{
 		CultureInfo.CurrentCulture = new CultureInfo(cultureName);
 		var mathExpressionConverter = new MultiMathExpressionConverter();

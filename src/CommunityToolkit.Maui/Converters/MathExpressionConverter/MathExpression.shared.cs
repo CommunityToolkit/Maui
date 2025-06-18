@@ -73,8 +73,8 @@ sealed partial class MathExpression
 			new ("int", 1, x => ConvertToInt32(x[0])),
 			new ("double", 1, x => ConvertToDouble(x[0])),
 			new ("bool", 1, x => ConvertToBoolean(x[0])),
-			new ("str", 1, x => x[0]?.ToString()),
-			new ("len", 1, x => x[0]?.ToString()?.Length),
+			new ("str", 1, x => ConvertToString(x[0])),
+			new ("len", 1, x => ConvertToString(x[0])?.Length),
 			new ("^", 2, x => Math.Pow(ConvertToDouble(x[0]), ConvertToDouble(x[1]))),
 			new ("pi", 0, _ => Math.PI),
 			new ("e", 0, _ => Math.E),
@@ -241,10 +241,6 @@ sealed partial class MathExpression
 	[GeneratedRegex("""^\s*""")]
 	private static partial Regex EvaluateWhitespace();
 
-	static double ConvertToDouble(object? x) => Convert.ToDouble(x, CultureInfo.InvariantCulture);
-
-	static int ConvertToInt32(object? x) => Convert.ToInt32(x, CultureInfo.InvariantCulture);
-
 	static bool ConvertToBoolean(object? b) => b switch
 	{
 		bool x => x,
@@ -253,6 +249,12 @@ sealed partial class MathExpression
 		string stringValue => !string.IsNullOrEmpty(stringValue),
 		_ => Convert.ToBoolean(b, CultureInfo.InvariantCulture)
 	};
+
+	static double ConvertToDouble(object? x) => Convert.ToDouble(x, CultureInfo.InvariantCulture);
+
+	static int ConvertToInt32(object? x) => Convert.ToInt32(x, CultureInfo.InvariantCulture);
+
+	static string? ConvertToString(object? x) => Convert.ToString(x, CultureInfo.InvariantCulture);
 
 	bool ParsePattern(Regex regex)
 	{
