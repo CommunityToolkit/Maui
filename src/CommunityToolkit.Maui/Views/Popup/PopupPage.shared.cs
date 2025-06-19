@@ -47,7 +47,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			popupOptions.OnTappingOutsideOfPopup?.Invoke();
 			await CloseAsync(new PopupResult(true));
 		}, () => popupOptions.CanBeDismissedByTappingOutsideOfPopup);
-		
+
 		// Only set the content if the parent constructor hasn't set the content already; don't override content if it already exists
 		base.Content = new PopupPageLayout(popup, popupOptions, tapOutsideOfPopupCommand);
 
@@ -103,7 +103,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		popupClosedEventManager.HandleEvent(this, result, nameof(PopupClosed));
 	}
-	
+
 	protected override bool OnBackButtonPressed()
 	{
 		// Only close the Popup if PopupOptions.CanBeDismissedByTappingOutsideOfPopup is true
@@ -111,7 +111,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		{
 			CloseAsync(new PopupResult(true), CancellationToken.None).SafeFireAndForget();
 		}
-		
+
 		// Always return true to let the Android Operating System know that we are manually handling the Navigation request from the Android Back Button
 		return true;
 	}
@@ -175,24 +175,24 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 	internal sealed partial class PopupPageLayout : Grid
 	{
-		public PopupPageLayout(in Popup popupContent, in IPopupOptions options, ICommand tapOutsideOfPopupCommand)
+		public PopupPageLayout(in Popup popupContent, in IPopupOptions options, in ICommand tapOutsideOfPopupCommand)
 		{
 			Background = BackgroundColor = null;
+
+			var tappableBackground = new BoxView
+			{
+				BackgroundColor = Colors.Transparent,
+				HorizontalOptions = LayoutOptions.Fill,
+				VerticalOptions = LayoutOptions.Fill
+			};
+			tappableBackground.GestureRecognizers.Add(new TapGestureRecognizer { Command = tapOutsideOfPopupCommand });
+			Children.Add(tappableBackground); // Add the Tappable Background to the PopupPageLayout Grid before adding the Border to ensure the Border is displayed on top
 
 			var border = new Border
 			{
 				BackgroundColor = popupContent.BackgroundColor ??= PopupDefaults.BackgroundColor,
 				Content = popupContent
 			};
-			
-			var backgroundGrid = new BoxView
-			{
-				BackgroundColor = Colors.Transparent,
-			};
-			
-			backgroundGrid.GestureRecognizers.Add(new TapGestureRecognizer { Command = tapOutsideOfPopupCommand });
-			
-			Children.Add(backgroundGrid);
 
 			// Bind `Popup` values through to Border using OneWay Bindings 
 			border.SetBinding(Border.MarginProperty, static (Popup popup) => popup.Margin, source: popupContent, mode: BindingMode.OneWay);
