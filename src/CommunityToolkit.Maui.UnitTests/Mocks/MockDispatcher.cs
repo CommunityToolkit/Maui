@@ -22,7 +22,14 @@ public sealed class MockDispatcher : IDispatcher
 
 	public bool DispatchDelayed(TimeSpan delay, Action action)
 	{
-		return false;
+		Task.Run(async () =>
+		{
+			await Task.Delay(delay);
+		
+			action();
+		});
+		
+		return true;
 	}
 
 	sealed class DispatcherTimerStub : IDispatcherTimer, IDisposable
