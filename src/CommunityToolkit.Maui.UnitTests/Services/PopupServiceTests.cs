@@ -65,22 +65,6 @@ public class PopupServiceTests : BaseHandlerTest
 		Assert.IsType<PopupPage>(navigation.ModalStack[0]);
 	}
 	
-	public class AsynchronousPopupTest
-	{
-		readonly TimeSpan waitTime;
-
-		public AsynchronousPopupTest(Action action, TimeSpan waitTime)
-		{
-			this.waitTime = waitTime;
-			action.Invoke();
-		}
-		
-		public async Task WaitUntilCompleted()
-		{
-			await Task.Delay(waitTime, TestContext.Current.CancellationToken);
-		}
-	}
-	
 	[Fact]
 	public void ShowPopupAsync_UsingPage_WithViewType_ShowsPopup()
 	{
