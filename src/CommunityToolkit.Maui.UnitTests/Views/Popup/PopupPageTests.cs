@@ -481,7 +481,7 @@ public class PopupPageTests : BaseHandlerTest
 
 		// Act
 		var popupPage = new PopupPage(view, PopupOptions.Empty);
-		var border = popupPage.Content.Children.OfType<Border>().Single();
+		var border = popupPage.Content.PopupBorder;
 
 		// Assert
 		Assert.Equal(LayoutOptions.Start, border.VerticalOptions);

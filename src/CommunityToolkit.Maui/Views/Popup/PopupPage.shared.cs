@@ -188,28 +188,30 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			tappableBackground.GestureRecognizers.Add(new TapGestureRecognizer { Command = tapOutsideOfPopupCommand });
 			Children.Add(tappableBackground); // Add the Tappable Background to the PopupPageLayout Grid before adding the Border to ensure the Border is displayed on top
 
-			var border = new Border
+			PopupBorder = new Border
 			{
 				BackgroundColor = popupContent.BackgroundColor ??= PopupDefaults.BackgroundColor,
 				Content = popupContent
 			};
 
 			// Bind `Popup` values through to Border using OneWay Bindings 
-			border.SetBinding(Border.MarginProperty, static (Popup popup) => popup.Margin, source: popupContent, mode: BindingMode.OneWay);
-			border.SetBinding(Border.PaddingProperty, static (Popup popup) => popup.Padding, source: popupContent, mode: BindingMode.OneWay);
-			border.SetBinding(Border.BackgroundProperty, static (Popup popup) => popup.Background, source: popupContent, mode: BindingMode.OneWay);
-			border.SetBinding(Border.BackgroundColorProperty, static (Popup popup) => popup.BackgroundColor, source: popupContent, mode: BindingMode.OneWay);
-			border.SetBinding(Border.VerticalOptionsProperty, static (Popup popup) => popup.VerticalOptions, source: popupContent, mode: BindingMode.OneWay);
-			border.SetBinding(Border.HorizontalOptionsProperty, static (Popup popup) => popup.HorizontalOptions, source: popupContent, mode: BindingMode.OneWay);
+			PopupBorder.SetBinding(Border.MarginProperty, static (Popup popup) => popup.Margin, source: popupContent, mode: BindingMode.OneWay);
+			PopupBorder.SetBinding(Border.PaddingProperty, static (Popup popup) => popup.Padding, source: popupContent, mode: BindingMode.OneWay);
+			PopupBorder.SetBinding(Border.BackgroundProperty, static (Popup popup) => popup.Background, source: popupContent, mode: BindingMode.OneWay);
+			PopupBorder.SetBinding(Border.BackgroundColorProperty, static (Popup popup) => popup.BackgroundColor, source: popupContent, mode: BindingMode.OneWay);
+			PopupBorder.SetBinding(Border.VerticalOptionsProperty, static (Popup popup) => popup.VerticalOptions, source: popupContent, mode: BindingMode.OneWay);
+			PopupBorder.SetBinding(Border.HorizontalOptionsProperty, static (Popup popup) => popup.HorizontalOptions, source: popupContent, mode: BindingMode.OneWay);
 
 			// Bind `PopupOptions` values through to Border using OneWay Bindings
-			border.SetBinding(Border.ShadowProperty, static (IPopupOptions options) => options.Shadow, source: options, mode: BindingMode.OneWay);
-			border.SetBinding(Border.StrokeProperty, static (IPopupOptions options) => options.Shape, source: options, converter: new BorderStrokeConverter(), mode: BindingMode.OneWay);
-			border.SetBinding(Border.StrokeShapeProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay);
-			border.SetBinding(Border.StrokeThicknessProperty, static (IPopupOptions options) => options.Shape, source: options, converter: new BorderStrokeThicknessConverter(), mode: BindingMode.OneWay);
+			PopupBorder.SetBinding(Border.ShadowProperty, static (IPopupOptions options) => options.Shadow, source: options, mode: BindingMode.OneWay);
+			PopupBorder.SetBinding(Border.StrokeProperty, static (IPopupOptions options) => options.Shape, source: options, converter: new BorderStrokeConverter(), mode: BindingMode.OneWay);
+			PopupBorder.SetBinding(Border.StrokeShapeProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay);
+			PopupBorder.SetBinding(Border.StrokeThicknessProperty, static (IPopupOptions options) => options.Shape, source: options, converter: new BorderStrokeThicknessConverter(), mode: BindingMode.OneWay);
 
-			Children.Add(border);
+			Children.Add(PopupBorder);
 		}
+
+		public Border PopupBorder { get; }
 
 		sealed partial class BorderStrokeThicknessConverter : BaseConverterOneWay<Shape?, double>
 		{
