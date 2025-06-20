@@ -16,6 +16,13 @@ public class PopupTests : BaseHandlerTest
 	}
 
 	[Fact]
+	public void CanBeDismissedByTappingOutsideOfPopup_DefaultValue_ShouldBeTrue()
+	{
+		var popup = new Popup();
+		Assert.Equal(PopupDefaults.CanBeDismissedByTappingOutsideOfPopup, popup.CanBeDismissedByTappingOutsideOfPopup);
+	}
+
+	[Fact]
 	public void Margin_DefaultValue_ShouldBeDefaultThickness()
 	{
 		var popup = new Popup();
@@ -151,7 +158,7 @@ public class PopupTests : BaseHandlerTest
 		await popup.CloseAsync(TestContext.Current.CancellationToken);
 		await popup.CloseAsync("Hello", TestContext.Current.CancellationToken);
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_TaskShouldCompleteWhenPopupCloseAsyncIsCalled()
 	{
