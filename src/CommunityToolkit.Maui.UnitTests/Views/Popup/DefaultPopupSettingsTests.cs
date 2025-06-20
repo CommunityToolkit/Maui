@@ -4,7 +4,7 @@ using Xunit;
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
 #pragma warning disable CA1416
-public class DefaultPopupSettingsTests
+public class DefaultPopupSettingsTests : BaseTest
 {
 	[Fact]
 	public void Popup_SetPopupDefaultsNotCalled_UsesPopupDefaults()
