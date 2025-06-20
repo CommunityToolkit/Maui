@@ -159,7 +159,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			tapOutsideOfPopupCommand.ChangeCanExecute();
 		}
 	}
-	
+
 	void HandlePopupPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (e.PropertyName == Popup.CanBeDismissedByTappingOutsideOfPopupProperty.PropertyName)

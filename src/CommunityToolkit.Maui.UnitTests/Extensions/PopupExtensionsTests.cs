@@ -945,7 +945,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Assert.Equal(shellParameterBackgroundColorValue, view.BackgroundColor);
 		Assert.Equal(shellParameterViewModelTextValue, view.BindingContext.Text);
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task ShowPopupAsync_ShouldSuccessfullyCompleteAndReturnResultUnderHeavyGarbageCollection()
 	{
@@ -1445,7 +1445,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Assert.Equal(expectedResult, popupResult.Result);
 		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_TaskShouldCompleteWhenCloseAsyncIsCalled()
 	{
@@ -1475,7 +1475,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
 	}
 
-	static TapGestureRecognizer GetTapOutsideGestureRecognizer(PopupPage popupPage) => 
+	static TapGestureRecognizer GetTapOutsideGestureRecognizer(PopupPage popupPage) =>
 		(TapGestureRecognizer)popupPage.Content.Children.OfType<BoxView>().Single().GestureRecognizers[0];
 }
 

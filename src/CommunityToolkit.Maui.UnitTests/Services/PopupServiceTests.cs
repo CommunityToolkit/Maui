@@ -522,12 +522,7 @@ public class PopupServiceTests : BaseHandlerTest
 	}
 }
 
-class GarbageCollectionHeavySelfClosingPopup : MockSelfClosingPopup
-{
-	public GarbageCollectionHeavySelfClosingPopup(MockPageViewModel viewModel, object? result = null) : base(viewModel, result)
-	{
-	}
-}
+class GarbageCollectionHeavySelfClosingPopup(MockPageViewModel viewModel, object? result = null) : MockSelfClosingPopup(viewModel, result);
 
 class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
 {
