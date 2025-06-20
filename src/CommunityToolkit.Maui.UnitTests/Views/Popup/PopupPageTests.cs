@@ -221,19 +221,20 @@ public class PopupPageTests : BaseHandlerTest
 	public void TapGestureRecognizer_VerifyCanBeDismissedByTappingOutsideOfPopup_ShouldNotExecuteWhenEitherFalse()
 	{
 		// Arrange
-		var view = new Popup
-		{
-			CanBeDismissedByTappingOutsideOfPopup = false
-		};
-		var popupOptions = new PopupOptions
-		{
-			CanBeDismissedByTappingOutsideOfPopup = false
-		};
+		var view = new Popup();
+		var popupOptions = new PopupOptions();
 
 		// Act
 		var popupPage = new PopupPage(view, popupOptions);
 		var tapGestureRecognizer = popupPage.Content.Children.OfType<BoxView>().Single().GestureRecognizers.OfType<TapGestureRecognizer>().Single();
 
+		// Assert
+		Assert.True(tapGestureRecognizer.Command?.CanExecute(null));
+		
+		// Act
+		view.CanBeDismissedByTappingOutsideOfPopup = false;
+		popupOptions.CanBeDismissedByTappingOutsideOfPopup = false;
+		
 		// Assert
 		Assert.False(tapGestureRecognizer.Command?.CanExecute(null));
 		
