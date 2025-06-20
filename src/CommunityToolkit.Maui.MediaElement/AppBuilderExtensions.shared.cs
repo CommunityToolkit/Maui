@@ -25,7 +25,7 @@ public static class AppBuilderExtensions
 	{
 		// Update the default MediaElementOptions for MediaElement if Action is not null
 		options?.Invoke(new MediaElementOptions(builder));
-
+		
 		// Perform Handler configuration
 		builder.ConfigureMauiHandlers(h =>
 		{
