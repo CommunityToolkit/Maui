@@ -14,6 +14,13 @@ public class PopupTests : BaseHandlerTest
 	{
 		Assert.Equal(PopupDefaults.BackgroundColor, Colors.White);
 	}
+	
+	[Fact]
+	public void CanBeDismissedByTappingOutsideOfPopup_DefaultValue_ShouldBeTrue()
+	{
+		var popup = new Popup();
+		Assert.Equal(PopupDefaults.CanBeDismissedByTappingOutsideOfPopup, popup.CanBeDismissedByTappingOutsideOfPopup);
+	}
 
 	[Fact]
 	public void Margin_DefaultValue_ShouldBeDefaultThickness()
