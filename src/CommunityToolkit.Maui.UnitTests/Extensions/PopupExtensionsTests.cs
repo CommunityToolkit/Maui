@@ -947,6 +947,21 @@ public class PopupExtensionsTests : BaseHandlerTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Medium)]
+	public async Task ShowPopupAsync_ShouldSuccessfullyCompleteAndReturnResultUnderHeavyGarbageCollection()
+	{
+		// Arrange
+		var mockPopup = ServiceProvider.GetRequiredService<GarbageCollectionHeavySelfClosingPopup>();
+		var selfClosingPopup = ServiceProvider.GetRequiredService<GarbageCollectionHeavySelfClosingPopup>() ?? throw new InvalidOperationException();
+
+		// Act
+		var result = await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.Same(mockPopup.Result, result.Result);
+		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task ShowPopupAsync_ShouldReturnResultOnceClosed()
 	{
 		// Arrange
@@ -1430,7 +1445,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Assert.Equal(expectedResult, popupResult.Result);
 		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_TaskShouldCompleteWhenCloseAsyncIsCalled()
 	{
@@ -1460,7 +1475,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
 	}
 
-	static TapGestureRecognizer GetTapOutsideGestureRecognizer(PopupPage popupPage) => 
+	static TapGestureRecognizer GetTapOutsideGestureRecognizer(PopupPage popupPage) =>
 		(TapGestureRecognizer)popupPage.Content.Children.OfType<BoxView>().Single().GestureRecognizers[0];
 }
 

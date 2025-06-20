@@ -26,7 +26,7 @@ public partial class Popup : ContentView
 	/// Bindable property to set the vertical position of the <see cref="Popup"/> when displayed on screen
 	/// </summary>
 	public static new readonly BindableProperty VerticalOptionsProperty = View.VerticalOptionsProperty;
-	
+
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="CanBeDismissedByTappingOutsideOfPopup"/> property.
 	/// </summary>
@@ -88,7 +88,7 @@ public partial class Popup : ContentView
 		get => base.VerticalOptions;
 		set => base.VerticalOptions = value;
 	}
-	
+
 	/// <inheritdoc cref="IPopupOptions.CanBeDismissedByTappingOutsideOfPopup"/> />
 	/// <remarks>
 	/// When true and the user taps outside the popup, it will dismiss.
