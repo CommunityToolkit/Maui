@@ -26,6 +26,11 @@ public partial class Popup : ContentView
 	/// Bindable property to set the vertical position of the <see cref="Popup"/> when displayed on screen
 	/// </summary>
 	public static new readonly BindableProperty VerticalOptionsProperty = View.VerticalOptionsProperty;
+	
+	/// <summary>
+	///  Backing BindableProperty for the <see cref="CanBeDismissedByTappingOutsideOfPopup"/> property.
+	/// </summary>
+	public static readonly BindableProperty CanBeDismissedByTappingOutsideOfPopupProperty = BindableProperty.Create(nameof(CanBeDismissedByTappingOutsideOfPopup), typeof(bool), typeof(Popup), PopupDefaults.CanBeDismissedByTappingOutsideOfPopup);
 
 	/// <summary>
 	/// Initializes Popup
@@ -82,6 +87,17 @@ public partial class Popup : ContentView
 	{
 		get => base.VerticalOptions;
 		set => base.VerticalOptions = value;
+	}
+	
+	/// <inheritdoc cref="IPopupOptions.CanBeDismissedByTappingOutsideOfPopup"/> />
+	/// <remarks>
+	/// When true and the user taps outside the popup, it will dismiss.
+	/// On Android - when false the hardware back button is disabled.
+	/// </remarks>
+	public bool CanBeDismissedByTappingOutsideOfPopup
+	{
+		get => (bool)GetValue(CanBeDismissedByTappingOutsideOfPopupProperty);
+		set => SetValue(CanBeDismissedByTappingOutsideOfPopupProperty, value);
 	}
 
 	/// <summary>
