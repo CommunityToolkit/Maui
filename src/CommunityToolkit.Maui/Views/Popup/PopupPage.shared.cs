@@ -46,7 +46,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		{
 			popupOptions.OnTappingOutsideOfPopup?.Invoke();
 			await CloseAsync(new PopupResult(true));
-		}, () => popupOptions.CanBeDismissedByTappingOutsideOfPopup & popup.CanBeDismissedByTappingOutsideOfPopup);
+		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
 
 		// Only set the content if the parent constructor hasn't set the content already; don't override content if it already exists
 		base.Content = new PopupPageLayout(popup, popupOptions, tapOutsideOfPopupCommand);
@@ -107,8 +107,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 	protected override bool OnBackButtonPressed()
 	{
-		// Only close the Popup if PopupOptions.CanBeDismissedByTappingOutsideOfPopup is true
-		if (popupOptions.CanBeDismissedByTappingOutsideOfPopup)
+		// Only close the Popup if CanBeDismissedByTappingOutsideOfPopup is true
+		if (GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions))
 		{
 			CloseAsync(new PopupResult(true), CancellationToken.None).SafeFireAndForget();
 		}
@@ -153,6 +153,10 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		return popup;
 	}
 
+	// Only dismiss when a user taps outside Popup when **both** Popup.CanBeDismissedByTappingOutsideOfPopup and PopupOptions.CanBeDismissedByTappingOutsideOfPopup are true
+	// If either value is false, do not dismiss Popup
+	static bool GetCanBeDismissedByTappingOutsideOfPopup(in Popup popup, in IPopupOptions popupOptions) => popup.CanBeDismissedByTappingOutsideOfPopup & popupOptions.CanBeDismissedByTappingOutsideOfPopup;
+
 	void HandlePopupOptionsPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (e.PropertyName == nameof(IPopupOptions.CanBeDismissedByTappingOutsideOfPopup))
@@ -163,7 +167,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	
 	void HandlePopupPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		if (e.PropertyName == nameof(Popup.CanBeDismissedByTappingOutsideOfPopup))
+		if (e.PropertyName == Popup.CanBeDismissedByTappingOutsideOfPopupProperty.PropertyName)
 		{
 			tapOutsideOfPopupCommand.ChangeCanExecute();
 		}
