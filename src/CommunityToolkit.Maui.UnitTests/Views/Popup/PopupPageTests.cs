@@ -226,7 +226,7 @@ public class PopupPageTests : BaseHandlerTest
 
 		// Act
 		var popupPage = new PopupPage(view, popupOptions);
-		var tapGestureRecognizer = popupPage.Content.Children.OfType<BoxView>().Single().GestureRecognizers.OfType<TapGestureRecognizer>().Single();
+		var tapGestureRecognizer = GetTapOutsideGestureRecognizer(popupPage);
 
 		// Assert
 		Assert.True(tapGestureRecognizer.Command?.CanExecute(null));

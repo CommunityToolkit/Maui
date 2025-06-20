@@ -76,7 +76,6 @@ public abstract class BaseHandlerTest : BaseTest
 		#endregion
 
 		#region Register Services for PopupServiceTests
-
 		var mockPageViewModel = new MockPageViewModel();
 		var mockPopup = new MockSelfClosingPopup(mockPageViewModel, new());
 

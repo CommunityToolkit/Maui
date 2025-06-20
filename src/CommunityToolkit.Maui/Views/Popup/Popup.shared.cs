@@ -146,28 +146,6 @@ public partial class Popup<T> : Popup
 	public virtual Task CloseAsync(T result, CancellationToken token = default) => GetPopupPage().CloseAsync(new PopupResult<T>(result, false), token);
 }
 
-/// <summary>
-/// Sets global app defaults for Popup
-/// </summary>
-/// <remarks>Used in .UseMauiCommunityToolkit(Options)</remarks>
-public class DefaultPopupSettings(Thickness? margin = null, Thickness? padding = null, LayoutOptions? horizontalOptions = null, LayoutOptions? verticalOptions = null, bool? canBeDismissedByTappingOutsideOfPopup = null)
-{
-	/// <inheritdoc cref="Popup.Margin"/>
-	public Thickness Margin { get; } = margin ?? PopupDefaults.Margin;
-	
-	/// <inheritdoc cref="Popup.Padding"/>
-	public Thickness Padding { get; } = padding ?? PopupDefaults.Padding;
-	
-	/// <inheritdoc cref="Popup.HorizontalOptions"/>
-	public LayoutOptions HorizontalOptions { get; } = horizontalOptions ?? PopupDefaults.HorizontalOptions;
-	
-	/// <inheritdoc cref="Popup.VerticalOptions"/>
-	public LayoutOptions VerticalOptions { get; } = verticalOptions ?? PopupDefaults.VerticalOptions;
-	
-	/// <inheritdoc cref="Popup.CanBeDismissedByTappingOutsideOfPopup"/>
-	public bool CanBeDismissedByTappingOutsideOfPopup { get; } = canBeDismissedByTappingOutsideOfPopup ?? PopupDefaults.CanBeDismissedByTappingOutsideOfPopup;
-}
-
 sealed class PopupNotFoundException() : InvalidPopupOperationException($"Unable to close popup: could not locate {nameof(PopupPage)}. {nameof(PopupExtensions.ShowPopup)} or {nameof(PopupExtensions.ShowPopupAsync)} must be called before {nameof(Popup.CloseAsync)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Popup.CloseAsync)} method");
 sealed class PopupBlockedException(in Page currentVisibleModalPage) : InvalidPopupOperationException($"Unable to close Popup because it is blocked by the Modal Page {currentVisibleModalPage.GetType().FullName}. Please call `{nameof(Page.Navigation)}.{nameof(Page.Navigation.PopModalAsync)}()` to first remove {currentVisibleModalPage.GetType().FullName} from the {nameof(Page.Navigation.ModalStack)}");
 class InvalidPopupOperationException(in string message) : InvalidOperationException(message);

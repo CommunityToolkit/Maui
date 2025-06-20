@@ -12,21 +12,21 @@ public class PopupTests : BaseHandlerTest
 	[Fact]
 	public void PopupBackgroundColor_DefaultValue_ShouldBeWhite()
 	{
-		Assert.Equal(PopupDefaults.BackgroundColor, Colors.White);
+		Assert.Equal(DefaultPopupSettings.PopupDefaults.BackgroundColor, Colors.White);
 	}
 
 	[Fact]
 	public void CanBeDismissedByTappingOutsideOfPopup_DefaultValue_ShouldBeTrue()
 	{
 		var popup = new Popup();
-		Assert.Equal(PopupDefaults.CanBeDismissedByTappingOutsideOfPopup, popup.CanBeDismissedByTappingOutsideOfPopup);
+		Assert.Equal(DefaultPopupSettings.PopupDefaults.CanBeDismissedByTappingOutsideOfPopup, popup.CanBeDismissedByTappingOutsideOfPopup);
 	}
 
 	[Fact]
 	public void Margin_DefaultValue_ShouldBeDefaultThickness()
 	{
 		var popup = new Popup();
-		Assert.Equal(PopupDefaults.Margin, popup.Margin);
+		Assert.Equal(DefaultPopupSettings.PopupDefaults.Margin, popup.Margin);
 	}
 
 	[Fact]
@@ -42,7 +42,7 @@ public class PopupTests : BaseHandlerTest
 	public void Padding_DefaultValue_ShouldBeDefaultThickness()
 	{
 		var popup = new Popup();
-		Assert.Equal(PopupDefaults.Padding, popup.Padding);
+		Assert.Equal(DefaultPopupSettings.PopupDefaults.Padding, popup.Padding);
 	}
 
 	[Fact]
@@ -58,7 +58,7 @@ public class PopupTests : BaseHandlerTest
 	public void VerticalOptions_DefaultValue_ShouldBeDefaultLayoutOptions()
 	{
 		var popup = new Popup();
-		Assert.Equal(PopupDefaults.VerticalOptions, popup.VerticalOptions);
+		Assert.Equal(DefaultPopupSettings.PopupDefaults.VerticalOptions, popup.VerticalOptions);
 	}
 
 	[Fact]
@@ -74,7 +74,7 @@ public class PopupTests : BaseHandlerTest
 	public void HorizontalOptions_DefaultValue_ShouldBeDefaultLayoutOptions()
 	{
 		var popup = new Popup();
-		Assert.Equal(PopupDefaults.HorizontalOptions, popup.HorizontalOptions);
+		Assert.Equal(DefaultPopupSettings.PopupDefaults.HorizontalOptions, popup.HorizontalOptions);
 	}
 
 	[Fact]

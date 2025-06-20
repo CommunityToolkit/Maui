@@ -10,10 +10,10 @@ using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Views;
 
-sealed partial class PopupPage<T>(Popup<T> popup, IPopupOptions popupOptions)
+sealed partial class PopupPage<T>(Popup<T> popup, IPopupOptions? popupOptions)
 	: PopupPage(popup, popupOptions)
 {
-	public PopupPage(View view, IPopupOptions popupOptions)
+	public PopupPage(View view, IPopupOptions? popupOptions)
 		: this(view as Popup<T> ?? CreatePopupFromView<Popup<T>>(view), popupOptions)
 	{
 	}
@@ -27,23 +27,22 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	readonly IPopupOptions popupOptions;
 	readonly Command tapOutsideOfPopupCommand;
 
-	public PopupPage(View view, IPopupOptions popupOptions)
+	public PopupPage(View view, IPopupOptions? popupOptions)
 		: this(view as Popup ?? CreatePopupFromView<Popup>(view), popupOptions)
 	{
 		ArgumentNullException.ThrowIfNull(view);
 	}
 
-	public PopupPage(Popup popup, IPopupOptions popupOptions)
+	public PopupPage(Popup popup, IPopupOptions? popupOptions)
 	{
 		ArgumentNullException.ThrowIfNull(popup);
-		ArgumentNullException.ThrowIfNull(popupOptions);
 
 		this.popup = popup;
-		this.popupOptions = popupOptions;
+		this.popupOptions = popupOptions ??= Options.DefaultPopupOptionsSettings;
 
 		tapOutsideOfPopupCommand = new Command(async () =>
 		{
-			popupOptions.OnTappingOutsideOfPopup?.Invoke();
+			this.popupOptions.OnTappingOutsideOfPopup?.Invoke();
 			await CloseAsync(new PopupResult(true));
 		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
 
@@ -130,7 +129,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		var popup = new T
 		{
-			BackgroundColor = view.BackgroundColor ??= PopupDefaults.BackgroundColor,
+			BackgroundColor = view.BackgroundColor ??= Options.DefaultPopupSettings.BackgroundColor,
 			Content = view
 		};
 		popup.SetBinding(BackgroundProperty, static (View view) => view.Background, source: view, mode: BindingMode.OneWay);
@@ -198,7 +197,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 			PopupBorder = new Border
 			{
-				BackgroundColor = popupContent.BackgroundColor ??= PopupDefaults.BackgroundColor,
+				BackgroundColor = popupContent.BackgroundColor ??= Options.DefaultPopupSettings.BackgroundColor,
 				Content = popupContent
 			};
 
@@ -223,14 +222,14 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		sealed partial class BorderStrokeThicknessConverter : BaseConverterOneWay<Shape?, double>
 		{
-			public override double DefaultConvertReturnValue { get; set; } = PopupOptionsDefaults.BorderStrokeThickness;
+			public override double DefaultConvertReturnValue { get; set; } = Options.DefaultPopupOptionsSettings.Shape?.StrokeThickness ?? DefaultPopupOptionsSettings.PopupOptionsDefaults.BorderStrokeThickness;
 
 			public override double ConvertFrom(Shape? value, CultureInfo? culture) => value?.StrokeThickness ?? 0;
 		}
 
 		sealed partial class BorderStrokeConverter : BaseConverterOneWay<Shape?, Brush?>
 		{
-			public override Brush? DefaultConvertReturnValue { get; set; } = PopupOptionsDefaults.BorderStroke;
+			public override Brush? DefaultConvertReturnValue { get; set; } = Options.DefaultPopupOptionsSettings.Shape?.Stroke ?? DefaultPopupOptionsSettings.PopupOptionsDefaults.BorderStroke;
 
 			public override Brush? ConvertFrom(Shape? value, CultureInfo? culture) => value?.Stroke;
 		}
@@ -238,22 +237,22 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 	sealed partial class PaddingConverter : BaseConverterOneWay<Thickness, Thickness>
 	{
-		public override Thickness DefaultConvertReturnValue { get; set; } = PopupDefaults.Padding;
+		public override Thickness DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.Padding;
 
-		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value == default ? PopupDefaults.Padding : value;
+		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value == default ? Options.DefaultPopupSettings.Padding : value;
 	}
 
 	sealed partial class HorizontalOptionsConverter : BaseConverterOneWay<LayoutOptions, LayoutOptions>
 	{
-		public override LayoutOptions DefaultConvertReturnValue { get; set; } = PopupDefaults.HorizontalOptions;
+		public override LayoutOptions DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.HorizontalOptions;
 
-		public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? PopupDefaults.HorizontalOptions : value;
+		public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? Options.DefaultPopupSettings.HorizontalOptions : value;
 	}
 
 	sealed partial class VerticalOptionsConverter : BaseConverterOneWay<LayoutOptions, LayoutOptions>
 	{
-		public override LayoutOptions DefaultConvertReturnValue { get; set; } = PopupDefaults.VerticalOptions;
+		public override LayoutOptions DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.VerticalOptions;
 
-		public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? PopupDefaults.VerticalOptions : value;
+		public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? Options.DefaultPopupSettings.VerticalOptions : value;
 	}
 }
