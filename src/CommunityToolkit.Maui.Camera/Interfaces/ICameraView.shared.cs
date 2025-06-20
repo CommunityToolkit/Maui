@@ -55,7 +55,7 @@ public interface ICameraView : IView
 	/// To customize the behavior of the camera when capturing an image, consider overriding the behavior through
 	/// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.CaptureImage), ADD YOUR METHOD);</c>.
 	/// </remarks>
-	ValueTask CaptureImage(CancellationToken token);
+	Task<Stream> CaptureImage(CancellationToken token);
 
 	/// <summary>
 	/// Starts the camera preview.

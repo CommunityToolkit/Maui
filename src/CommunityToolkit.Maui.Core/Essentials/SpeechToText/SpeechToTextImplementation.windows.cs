@@ -1,6 +1,5 @@
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Speech.Recognition;
 using Microsoft.Maui.ApplicationModel;
 using Windows.Globalization;
 using Windows.Media.SpeechRecognition;
@@ -35,8 +34,6 @@ public sealed partial class SpeechToTextImplementation
 	public async ValueTask DisposeAsync()
 	{
 		await StopRecording(CancellationToken.None);
-		speechRecognizer?.Dispose();
-		speechRecognizer = null;
 	}
 
 	async Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
@@ -48,7 +45,10 @@ public sealed partial class SpeechToTextImplementation
 		speechRecognizer.ContinuousRecognitionSession.Completed += OnCompleted;
 		try
 		{
-			await speechRecognizer.ContinuousRecognitionSession.StartAsync().AsTask(cancellationToken);
+			if (speechRecognizer.State == SpeechRecognizerState.Idle)
+			{
+				await speechRecognizer.ContinuousRecognitionSession.StartAsync().AsTask(cancellationToken);
+			}
 		}
 		catch (Exception ex) when ((uint)ex.HResult is privacyStatementDeclinedCode)
 		{
@@ -88,12 +88,8 @@ public sealed partial class SpeechToTextImplementation
 	{
 		try
 		{
-			if (speechRecognizer is not null)
+			if (speechRecognizer is not null && speechRecognizer.State != SpeechRecognizerState.Idle)
 			{
-				speechRecognizer.StateChanged -= SpeechRecognizer_StateChanged;
-				speechRecognizer.ContinuousRecognitionSession.ResultGenerated -= ResultGenerated;
-				speechRecognizer.ContinuousRecognitionSession.Completed -= OnCompleted;
-
 				cancellationToken.ThrowIfCancellationRequested();
 				await speechRecognizer.ContinuousRecognitionSession.StopAsync().AsTask(cancellationToken);
 			}
@@ -101,6 +97,17 @@ public sealed partial class SpeechToTextImplementation
 		catch
 		{
 			// ignored. Recording may be already stopped
+		}
+		finally
+		{
+			if (speechRecognizer is not null)
+			{
+				speechRecognizer.StateChanged -= SpeechRecognizer_StateChanged;
+				speechRecognizer.ContinuousRecognitionSession.ResultGenerated -= ResultGenerated;
+				speechRecognizer.ContinuousRecognitionSession.Completed -= OnCompleted;
+				speechRecognizer?.Dispose();
+				speechRecognizer = null;
+			}
 		}
 	}
 

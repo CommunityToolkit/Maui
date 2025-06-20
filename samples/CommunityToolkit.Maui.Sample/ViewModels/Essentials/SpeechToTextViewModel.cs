@@ -8,11 +8,9 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Essentials;
 
-public partial class SpeechToTextViewModel : BaseViewModel
+public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 {
 	const string defaultLanguage = "en-US";
-	const string defaultLanguage_android = "en";
-	const string defaultLanguage_tizen = "en_US";
 
 	readonly ITextToSpeech textToSpeech;
 	readonly ISpeechToText speechToText;
@@ -55,7 +53,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 			Locales.Add(locale);
 		}
 
-		CurrentLocale = Locales.FirstOrDefault(x => x.Language is defaultLanguage or defaultLanguage_android or defaultLanguage_tizen) ?? Locales.FirstOrDefault();
+		CurrentLocale = Locales.FirstOrDefault();
 	}
 
 	[RelayCommand]
@@ -147,5 +145,10 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	void HandleLocalesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 	{
 		OnPropertyChanged(nameof(CurrentLocale));
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		await speechToText.DisposeAsync();
 	}
 }

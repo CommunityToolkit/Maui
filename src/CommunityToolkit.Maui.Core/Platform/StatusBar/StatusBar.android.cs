@@ -83,7 +83,9 @@ static partial class StatusBar
 	static void SetStatusBarAppearance(Activity activity, bool isLightStatusBars)
 	{
 		var window = activity.GetCurrentWindow();
-		var windowController = WindowCompat.GetInsetsController(window, window.DecorView);
-		windowController.AppearanceLightStatusBars = isLightStatusBars;
+		if (WindowCompat.GetInsetsController(window, window.DecorView) is WindowInsetsControllerCompat windowController)
+		{
+			windowController.AppearanceLightStatusBars = isLightStatusBars;
+		}
 	}
 }
