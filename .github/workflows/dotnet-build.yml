@@ -287,26 +287,25 @@ jobs:
           name: packages
           path: ./packages
       
-      - name: Remove MediaElement package if that is not being released
-        if: startsWith(github.ref, 'refs/tags/') && !endsWith(github.ref, '-mediaelement')
+      - name: Remove packages for MediaElement-only release
+        if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-mediaelement')
         run: |
-          Get-ChildItem -Path "${{ github.workspace }}/packages" -Recurse -Filter "*.nupkg" | Where-Object { $_ -notmatch "CommunityToolkit.Maui.MediaElement" } | Remove-Item -Force
+          Get-ChildItem -Path "${{ github.workspace }}/packages" -Recurse -Filter "*.nupkg" | Where-Object { $_.Name -notmatch "CommunityToolkit\.Maui\.MediaElement" } | Remove-Item -Force
 
-      - name: Remove Camera package if that is not being released
-        if: startsWith(github.ref, 'refs/tags/') && !endsWith(github.ref, '-camera')
+      - name: Remove packages for Camera-only release
+        if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-camera')
         run: |
-          Get-ChildItem -Path "${{ github.workspace }}/packages" -Recurse -Filter "*.nupkg" | Where-Object { $_ -notmatch "CommunityToolkit.Maui.Camera" } | Remove-Item -Force
+          Get-ChildItem -Path "${{ github.workspace }}/packages" -Recurse -Filter "*.nupkg" | Where-Object { $_.Name -notmatch "CommunityToolkit\.Maui\.Camera" } | Remove-Item -Force
 
-      - name: Remove Maps package if that is not being released
-        if: startsWith(github.ref, 'refs/tags/') && !endsWith(github.ref, '-maps')
+      - name: Remove packages for Maps-only release
+        if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-maps')
         run: |
-          Get-ChildItem -Path "${{ github.workspace }}/packages" -Recurse -Filter "*.nupkg" | Where-Object { $_ -notmatch "CommunityToolkit.Maui.Maps" } | Remove-Item -Force
+          Get-ChildItem -Path "${{ github.workspace }}/packages" -Recurse -Filter "*.nupkg" | Where-Object { $_.Name -notmatch "CommunityToolkit\.Maui\.Maps" } | Remove-Item -Force
 
-      - name: Remove Core & Main package if that is not being released
+      - name: Remove packages for Core & Main release
         if: startsWith(github.ref, 'refs/tags/') && (!endsWith(github.ref, '-mediaelement') && !endsWith(github.ref, '-camera') && !endsWith(github.ref, '-maps'))
         run: |
-          Get-ChildItem -Path "${{ github.workspace }}/packages" -Recurse -Filter "*.nupkg" | Where-Object { $_ -notmatch "CommunityToolkit.Maui" } | Remove-Item -Force
-          Get-ChildItem -Path "${{ github.workspace }}/packages" -Recurse -Filter "*.nupkg" | Where-Object { $_ -notmatch "CommunityToolkit.Maui.Core" } | Remove-Item -Force
+          Get-ChildItem -Path "${{ github.workspace }}/packages" -Recurse -Filter "*.nupkg" | Where-Object { $_.Name -match "CommunityToolkit\.Maui\.(Camera|MediaElement|Maps)" } | Remove-Item -Force
 
       - name: Install Signing Tool
         run: dotnet tool install --tool-path ./tools sign --version 0.9.1-beta.23356.1
@@ -349,7 +348,7 @@ jobs:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
           dotnet-quality: 'ga'
 
-      - name: Download signed packages for ${{ matrix.platform }}
+      - name: Download signed packages
         uses: actions/download-artifact@v4
         with:
           name: signed-packages

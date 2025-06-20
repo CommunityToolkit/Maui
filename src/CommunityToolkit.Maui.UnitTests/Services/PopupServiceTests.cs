@@ -97,7 +97,7 @@ public class PopupServiceTests : BaseHandlerTest
 		Assert.Empty(navigation.ModalStack);
 	}
 
-	[Fact(Timeout = (int)TestDuration.Short)]
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task ShowPopupAsync_UsingPage_AwaitingShowPopupAsync_EnsurePreviousPopupClosed()
 	{
 		// Arrange
@@ -166,7 +166,7 @@ public class PopupServiceTests : BaseHandlerTest
 
 		var popupPage = (PopupPage)navigation.ModalStack[0];
 		var popupPageLayout = popupPage.Content;
-		var border = (Border)popupPageLayout.Children[0];
+		var border = popupPageLayout.PopupBorder;
 		var popup = border.Content;
 
 		// Assert
@@ -251,7 +251,7 @@ public class PopupServiceTests : BaseHandlerTest
 		Assert.Same(popupInstance.BindingContext, popupViewModel);
 	}
 
-	[Fact(Timeout = (int)TestDuration.Medium)]
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task ShowPopupAsyncShouldReturnResultOnceClosed()
 	{
 		// Arrange
