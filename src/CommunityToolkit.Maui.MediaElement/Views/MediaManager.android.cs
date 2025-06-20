@@ -9,18 +9,18 @@ using AndroidX.Media3.Common.Util;
 using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.Session;
 using AndroidX.Media3.UI;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
-using AudioAttributes = AndroidX.Media3.Common.AudioAttributes;
-using DeviceInfo = AndroidX.Media3.Common.DeviceInfo;
 using MediaMetadata = AndroidX.Media3.Common.MediaMetadata;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : Java.Lang.Object, IPlayerListener
 {
+	SubtitleExtensions? subtitleExtensions;
 	const int bufferState = 2;
 	const int readyState = 3;
 	const int endedState = 4;
@@ -176,6 +176,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		session ??= mediaSession.Build() ?? throw new InvalidOperationException("Session cannot be null");
 		ArgumentNullException.ThrowIfNull(session.Id);
+		subtitleExtensions ??= new(PlayerView, Dispatcher);
 
 		return (Player, PlayerView);
 	}
@@ -353,6 +354,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			return;
 		}
 
+		subtitleExtensions?.StopSubtitleDisplay();
 		if (connection is null)
 		{
 			StartService();
@@ -383,11 +385,20 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		if (hasSetSource && Player.PlayerError is null)
 		{
+			await LoadSubtitles();
 			MediaElement.MediaOpened();
 			UpdateNotifications();
 		}
 	}
-
+	async Task LoadSubtitles(CancellationToken cancellationToken = default)
+	{
+		if (subtitleExtensions is null || string.IsNullOrEmpty(MediaElement.SubtitleUrl))
+		{
+			return;
+		}
+		await subtitleExtensions.LoadSubtitles(MediaElement, cancellationToken).ConfigureAwait(false);
+		subtitleExtensions.StartSubtitleDisplay();
+	}
 	protected virtual partial void PlatformUpdateAspect()
 	{
 		if (PlayerView is null)
@@ -724,7 +735,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnAudioAttributesChanged(AudioAttributes? audioAttributes) { }
 	public void OnAvailableCommandsChanged(PlayerCommands? player) { }
 	public void OnCues(CueGroup? cues) { }
-	public void OnDeviceInfoChanged(DeviceInfo? deviceInfo) { }
+	public void OnDeviceInfoChanged(AndroidX.Media3.Common.DeviceInfo? deviceInfo) { }
 	public void OnDeviceVolumeChanged(int volume, bool muted) { }
 	public void OnEvents(IPlayer? player, PlayerEvents? playerEvents) { }
 	public void OnIsLoadingChanged(bool isLoading) { }
