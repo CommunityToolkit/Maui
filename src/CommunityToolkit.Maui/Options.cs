@@ -24,6 +24,34 @@ public class Options() : Core.Options
 	internal static bool ShouldEnableSnackbarOnWindows { get; private set; }
 
 	/// <summary>
+	/// 
+	/// </summary>
+	public Default Defaults { get; } = new Default();
+	
+	/// <summary>
+	/// 
+	/// </summary>
+	public class Default
+	{
+		/// <summary>
+		/// 
+		/// </summary>
+		public PopupDefault Popup { get; } = new();
+		
+		/// <summary>
+		/// 
+		/// </summary>
+		public class PopupDefault
+		{
+			/// <summary>
+			/// 
+			/// </summary>
+			/// <param name="canBeDismissedByTappingOutsideOfPopup"></param>
+			public void SetCanBeDismissedByTappingOutsideOfPopup(bool canBeDismissedByTappingOutsideOfPopup) => PopupDefaults.CanBeDismissedByTappingOutsideOfPopup = canBeDismissedByTappingOutsideOfPopup;
+		}
+	}
+
+	/// <summary>
 	/// Will return the <see cref="ICommunityToolkitValueConverter.DefaultConvertReturnValue"/> default value instead of throwing an exception when using <see cref="BaseConverter{TFrom,TTo}"/>.
 	/// </summary>
 	/// <remarks>
