@@ -30,17 +30,17 @@ public partial class Popup : ContentView
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="CanBeDismissedByTappingOutsideOfPopup"/> property.
 	/// </summary>
-	public static readonly BindableProperty CanBeDismissedByTappingOutsideOfPopupProperty = BindableProperty.Create(nameof(CanBeDismissedByTappingOutsideOfPopup), typeof(bool), typeof(Popup), PopupDefaults.CanBeDismissedByTappingOutsideOfPopup);
+	public static readonly BindableProperty CanBeDismissedByTappingOutsideOfPopupProperty = BindableProperty.Create(nameof(CanBeDismissedByTappingOutsideOfPopup), typeof(bool), typeof(Popup), Options.DefaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup);
 
 	/// <summary>
 	/// Initializes Popup
 	/// </summary>
 	public Popup()
 	{
-		Margin = PopupDefaults.Margin;
-		Padding = PopupDefaults.Padding;
-		HorizontalOptions = PopupDefaults.HorizontalOptions;
-		VerticalOptions = PopupDefaults.VerticalOptions;
+		Margin = Options.DefaultPopupSettings.Margin;
+		Padding = Options.DefaultPopupSettings.Padding;
+		HorizontalOptions = Options.DefaultPopupSettings.HorizontalOptions;
+		VerticalOptions = Options.DefaultPopupSettings.VerticalOptions;
 	}
 
 	/// <summary>
@@ -144,6 +144,28 @@ public partial class Popup<T> : Popup
 	/// <param name="result">Popup result</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	public virtual Task CloseAsync(T result, CancellationToken token = default) => GetPopupPage().CloseAsync(new PopupResult<T>(result, false), token);
+}
+
+/// <summary>
+/// Sets global app defaults for Popup
+/// </summary>
+/// <remarks>Used in .UseMauiCommunityToolkit(Options)</remarks>
+public class DefaultPopupSettings(Thickness? margin = null, Thickness? padding = null, LayoutOptions? horizontalOptions = null, LayoutOptions? verticalOptions = null, bool? canBeDismissedByTappingOutsideOfPopup = null)
+{
+	/// <inheritdoc cref="Popup.Margin"/>
+	public Thickness Margin { get; } = margin ?? PopupDefaults.Margin;
+	
+	/// <inheritdoc cref="Popup.Padding"/>
+	public Thickness Padding { get; } = padding ?? PopupDefaults.Padding;
+	
+	/// <inheritdoc cref="Popup.HorizontalOptions"/>
+	public LayoutOptions HorizontalOptions { get; } = horizontalOptions ?? PopupDefaults.HorizontalOptions;
+	
+	/// <inheritdoc cref="Popup.VerticalOptions"/>
+	public LayoutOptions VerticalOptions { get; } = verticalOptions ?? PopupDefaults.VerticalOptions;
+	
+	/// <inheritdoc cref="Popup.CanBeDismissedByTappingOutsideOfPopup"/>
+	public bool CanBeDismissedByTappingOutsideOfPopup { get; } = canBeDismissedByTappingOutsideOfPopup ?? PopupDefaults.CanBeDismissedByTappingOutsideOfPopup;
 }
 
 sealed class PopupNotFoundException() : InvalidPopupOperationException($"Unable to close popup: could not locate {nameof(PopupPage)}. {nameof(PopupExtensions.ShowPopup)} or {nameof(PopupExtensions.ShowPopupAsync)} must be called before {nameof(Popup.CloseAsync)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Popup.CloseAsync)} method");

@@ -1,5 +1,6 @@
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Converters;
+using CommunityToolkit.Maui.Views;
 #if WINDOWS
 using Microsoft.Maui.LifecycleEvents;
 #endif
@@ -9,9 +10,15 @@ namespace CommunityToolkit.Maui;
 /// <summary>
 /// .NET MAUI Community Toolkit Options.
 /// </summary>
+#if NET9_0
 public class Options() : Core.Options
+#elif NET10_OR_GREATER
+#error Remove .NET 9 code now that we're upgrading to .NET 10; Options should not have a public constructor, only public methods. Having a public constructor allows developers to override the values set when using AppBuilderExtensions    
+public class Options : Core.Options
+#endif
 {
 	readonly MauiAppBuilder? builder;
+	PopupOptions popupOptions = new();
 
 	internal Options(in MauiAppBuilder builder) : this()
 	{
@@ -22,6 +29,7 @@ public class Options() : Core.Options
 	internal static bool ShouldSuppressExceptionsInConverters { get; private set; }
 	internal static bool ShouldSuppressExceptionsInBehaviors { get; private set; }
 	internal static bool ShouldEnableSnackbarOnWindows { get; private set; }
+	internal static DefaultPopupSettings DefaultPopupSettings { get; private set; } = new();
 
 	/// <summary>
 	/// Will return the <see cref="ICommunityToolkitValueConverter.DefaultConvertReturnValue"/> default value instead of throwing an exception when using <see cref="BaseConverter{TFrom,TTo}"/>.
@@ -104,5 +112,10 @@ public class Options() : Core.Options
 #endif
 
 		ShouldEnableSnackbarOnWindows = value;
+	}
+
+	public void SetPopupDefaults(DefaultPopupSettings defaultPopupSettings)
+	{
+		DefaultPopupSettings = defaultPopupSettings;
 	}
 }
