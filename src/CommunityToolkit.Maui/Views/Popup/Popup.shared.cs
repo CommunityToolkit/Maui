@@ -41,6 +41,7 @@ public partial class Popup : ContentView
 		Padding = Options.DefaultPopupSettings.Padding;
 		HorizontalOptions = Options.DefaultPopupSettings.HorizontalOptions;
 		VerticalOptions = Options.DefaultPopupSettings.VerticalOptions;
+		BackgroundColor = Options.DefaultPopupSettings.BackgroundColor;
 	}
 
 	/// <summary>

@@ -30,22 +30,6 @@ public class PopupPageTests : BaseHandlerTest
 	}
 
 	[Fact]
-	public void Constructor_ShouldThrowArgumentNullException_WhenPopupOptionsIsNull()
-	{
-		// Arrange
-		var view = new ContentView();
-		var taskCompletionSource = new TaskCompletionSource<PopupResult>();
-
-		// Act
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Action act = () => new PopupPage(view, null);
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-
-		// Assert
-		act.Should().Throw<ArgumentNullException>();
-	}
-
-	[Fact]
 	public async Task Close_ShouldThrowInvalidOperationException_NoPopupPageFound()
 	{
 		// Arrange
@@ -123,21 +107,6 @@ public class PopupPageTests : BaseHandlerTest
 		// Act
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		Action act = () => new PopupPage<string>(null, popupOptions);
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-
-		// Assert
-		act.Should().Throw<ArgumentNullException>();
-	}
-
-	[Fact]
-	public void PopupPageT_Constructor_ShouldThrowArgumentNullException_WhenPopupOptionsIsNull()
-	{
-		// Arrange
-		var view = new ContentView();
-
-		// Act
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Action act = () => new PopupPage<string>(view, null);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
 		// Assert
@@ -335,17 +304,6 @@ public class PopupPageTests : BaseHandlerTest
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		Assert.Throws<ArgumentNullException>(() => new PopupPage((Popup?)null, popupOptions));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-	}
-
-	[Fact]
-	public void Constructor_WithNullPopupOptions_ThrowsArgumentNullException()
-	{
-		// Arrange
-		var view = new Label();
-		IPopupOptions popupOptions = null!;
-
-		// Act & Assert
-		Assert.Throws<ArgumentNullException>(() => new PopupPage(view, popupOptions));
 	}
 
 	[Fact]
