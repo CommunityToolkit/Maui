@@ -130,7 +130,7 @@ public class PopupServiceTests : BaseHandlerTest
 		Assert.Single(navigation.ModalStack);
 	}
 
-	[Fact(Timeout = (int)TestDuration.Short)]
+	[Fact]
 	public void ShowPopup_MultiplePopupsDisplayed()
 	{
 		// Arrange
