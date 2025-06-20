@@ -945,6 +945,21 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Assert.Equal(shellParameterBackgroundColorValue, view.BackgroundColor);
 		Assert.Equal(shellParameterViewModelTextValue, view.BindingContext.Text);
 	}
+	
+	[Fact(Timeout = (int)TestDuration.Medium)]
+	public async Task ShowPopupAsync_ShouldSuccessfullyCompleteAndReturnResultUnderHeavyGarbageCollection()
+	{
+		// Arrange
+		var mockPopup = ServiceProvider.GetRequiredService<GarbageCollectionHeavySelfClosingPopup>();
+		var selfClosingPopup = ServiceProvider.GetRequiredService<GarbageCollectionHeavySelfClosingPopup>() ?? throw new InvalidOperationException();
+
+		// Act
+		var result = await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.Same(mockPopup.Result, result.Result);
+		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+	}
 
 	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task ShowPopupAsync_ShouldReturnResultOnceClosed()

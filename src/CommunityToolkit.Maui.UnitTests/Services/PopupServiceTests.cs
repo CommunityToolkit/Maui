@@ -522,7 +522,14 @@ public class PopupServiceTests : BaseHandlerTest
 	}
 }
 
-sealed class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
+class GarbageCollectionHeavySelfClosingPopup : MockSelfClosingPopup
+{
+	public GarbageCollectionHeavySelfClosingPopup(MockPageViewModel viewModel, object? result = null) : base(viewModel, result)
+	{
+	}
+}
+
+class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
 {
 	public const int ExpectedResult = 2;
 
@@ -548,7 +555,9 @@ sealed class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
 			timer.Tick -= HandleTick;
 			try
 			{
+				GC.Collect();
 				await CloseAsync(Result);
+				GC.Collect();
 			}
 			catch (InvalidOperationException)
 			{
