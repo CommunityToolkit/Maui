@@ -173,9 +173,12 @@ public class MauiMediaElement : CoordinatorLayout
 					| SystemUiFlags.Fullscreen
 					| SystemUiFlags.Immersive;
 			}
-
-			windowInsetsControllerCompat.Hide(barTypes);
-			windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
+			
+			if(windowInsetsControllerCompat is not null)
+			{
+				windowInsetsControllerCompat.Hide(barTypes);
+				windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
+			}
 
 		}
 		else
@@ -192,8 +195,12 @@ public class MauiMediaElement : CoordinatorLayout
 				currentWindow.DecorView.SystemUiFlags = (SystemUiFlags)defaultSystemUiVisibility;
 			}
 
-			windowInsetsControllerCompat.Show(barTypes);
-			windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorDefault;
+			if(windowInsetsControllerCompat is not null)
+			{
+				windowInsetsControllerCompat.Show(barTypes);
+				windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorDefault;
+			}
+			
 			WindowCompat.SetDecorFitsSystemWindows(currentWindow, true);
 		}
 	}
