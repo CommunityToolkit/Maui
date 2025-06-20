@@ -1,7 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
-using CommunityToolkit.Maui.UnitTests.Extensions;
-using CommunityToolkit.Maui.UnitTests.Services;
 using CommunityToolkit.Maui.Views;
 using FluentAssertions;
 using Microsoft.Maui.Controls.PlatformConfiguration;
@@ -217,6 +215,49 @@ public class PopupPageTests : BaseHandlerTest
 
 		// Assert
 		act.Should().ThrowAsync<OperationCanceledException>();
+	}
+
+	[Fact]
+	public void TapGestureRecognizer_VerifyCanBeDismissedByTappingOutsideOfPopup_ShouldNotExecuteWhenEitherFalse()
+	{
+		// Arrange
+		var view = new Popup
+		{
+			CanBeDismissedByTappingOutsideOfPopup = false
+		};
+		var popupOptions = new PopupOptions
+		{
+			CanBeDismissedByTappingOutsideOfPopup = false
+		};
+
+		// Act
+		var popupPage = new PopupPage(view, popupOptions);
+		var tapGestureRecognizer = popupPage.Content.Children.OfType<BoxView>().Single().GestureRecognizers.OfType<TapGestureRecognizer>().Single();
+
+		// Assert
+		Assert.False(tapGestureRecognizer.Command?.CanExecute(null));
+		
+		// Act
+		view.CanBeDismissedByTappingOutsideOfPopup = true;
+		popupOptions.CanBeDismissedByTappingOutsideOfPopup = false;
+		
+		// Assert
+		Assert.False(tapGestureRecognizer.Command?.CanExecute(null));
+		
+		// Act
+		view.CanBeDismissedByTappingOutsideOfPopup = false;
+		popupOptions.CanBeDismissedByTappingOutsideOfPopup = true;
+		
+		// Assert
+		Assert.False(tapGestureRecognizer.Command?.CanExecute(null));
+		
+		// Act
+		view.CanBeDismissedByTappingOutsideOfPopup = true;
+		popupOptions.CanBeDismissedByTappingOutsideOfPopup = true;
+		
+		// Assert
+		Assert.True(tapGestureRecognizer.Command?.CanExecute(null));
+
 	}
 
 	[Fact]
