@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.Core.Primitives;
+﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// Enumeration of the possible positions that a camera can be placed.
