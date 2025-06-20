@@ -561,31 +561,31 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
 		cancellationTokenSource?.Cancel();
 	}
 	
-	void HandlePopupOpened(object? sender, EventArgs e)
+	async void HandlePopupOpened(object? sender, EventArgs e)
 	{
-		cancellationTokenSource?.Cancel();
-		
+		if (cancellationTokenSource is not null)
+		{
+			await cancellationTokenSource.CancelAsync();
+		}
+
 		cancellationTokenSource = new CancellationTokenSource();
-		
+
 		Console.WriteLine($"{DateTime.Now:O} HandlePopupOpened {BindingContext.GetType().Name}");
 
-		Dispatcher.DispatchDelayed(
-			DisplayDuration,
-			async () =>
-			{
-				if (cancellationTokenSource?.IsCancellationRequested is true)
-				{
-					return;
-				}
-				
-				Console.WriteLine(
-					$"{DateTime.Now:O} Closing {BindingContext.GetType().Name} - {Application.Current?.Windows[0].Page?.Navigation.ModalStack.Count}");
-				
-				await CloseAsync(Result, cancellationTokenSource?.Token ?? CancellationToken.None);
+		await Task.Delay(DisplayDuration);
 
-				Console.WriteLine(
-					$"{DateTime.Now:O} Closed {BindingContext.GetType().Name} - {Application.Current?.Windows[0].Page?.Navigation.ModalStack.Count}");
-			});
+		if (cancellationTokenSource?.IsCancellationRequested is true)
+		{
+			return;
+		}
+
+		Console.WriteLine(
+			$"{DateTime.Now:O} Closing {BindingContext.GetType().Name} - {Application.Current?.Windows[0].Page?.Navigation.ModalStack.Count}");
+
+		await CloseAsync(Result, cancellationTokenSource?.Token ?? CancellationToken.None);
+
+		Console.WriteLine(
+			$"{DateTime.Now:O} Closed {BindingContext.GetType().Name} - {Application.Current?.Windows[0].Page?.Navigation.ModalStack.Count}");
 	}
 
 	public object? Result { get; }

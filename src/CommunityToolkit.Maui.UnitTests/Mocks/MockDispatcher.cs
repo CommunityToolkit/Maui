@@ -22,12 +22,9 @@ public sealed class MockDispatcher : IDispatcher
 
 	public bool DispatchDelayed(TimeSpan delay, Action action)
 	{
-		Task.Run(async () =>
-		{
-			await Task.Delay(delay);
-		
-			action();
-		});
+		Thread.Sleep(delay);
+
+		action();
 		
 		return true;
 	}
