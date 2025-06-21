@@ -233,9 +233,9 @@ public partial class CameraView : View, ICameraView
 	/// Set Extension Mode
 	/// </summary>
 	/// <param name="mode">mode</param>
-	public void SetExtensionMode(int mode)
+	public Task SetExtensionMode(int mode)
 	{
-		Handler.CameraManager.SetExtensionMode(mode);
+		return Handler.CameraManager.SetExtensionMode(mode);
 	}
 #endif
 

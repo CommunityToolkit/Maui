@@ -38,7 +38,7 @@
     <Description>Camera contains CameraView, a view for displaying a preview of the camera output and other camera related functionalities in your .NET MAUI app.</Description>
     <PackageIcon>icon.png</PackageIcon>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
-    <Version>99.0.2</Version>
+    <Version>99.0.4</Version>
     <PackageVersion>$(Version)$(VersionSuffix)</PackageVersion>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>dotnet,maui,toolkit,kit,communitytoolkit,dotnetcommunitytoolkit,cameraview,camera,photo</PackageTags>
