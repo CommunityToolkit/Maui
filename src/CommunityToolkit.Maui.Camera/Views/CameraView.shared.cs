@@ -228,6 +228,17 @@ public partial class CameraView : View, ICameraView
 		return CameraProvider.AvailableCameras;
 	}
 
+#if ANDROID
+	/// <summary>
+	/// Set Extension Mode
+	/// </summary>
+	/// <param name="mode">mode</param>
+	public void SetExtensionMode(int mode)
+	{
+		Handler.CameraManager.SetExtensionMode(mode);
+	}
+#endif
+
 	/// <inheritdoc cref="ICameraView.CaptureImage"/>
 	public ValueTask CaptureImage(CancellationToken token) =>
 		Handler.CameraManager.TakePicture(token);

@@ -94,4 +94,11 @@ public partial class CameraViewPage : BasePage<CameraViewViewModel>
 	{
 		Camera.ZoomFactor -= 1.0f;
 	}
+
+	void SetNightMode(object? sender, EventArgs e)
+	{
+#if ANDROID
+		Camera.SetExtensionMode(AndroidX.Camera.Extensions.ExtensionMode.Night);
+#endif
+	}
 }

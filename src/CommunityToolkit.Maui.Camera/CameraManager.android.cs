@@ -1,9 +1,9 @@
 ﻿using System.Runtime.Versioning;
 using Android.Content;
-using Android.OS;
 using Android.Views;
 using AndroidX.Camera.Core;
 using AndroidX.Camera.Core.ResolutionSelector;
+using AndroidX.Camera.Extensions;
 using AndroidX.Camera.Lifecycle;
 using AndroidX.Camera.Video;
 using AndroidX.Core.Content;
@@ -38,6 +38,21 @@ partial class CameraManager
 	ResolutionFilter? resolutionFilter;
 	OrientationListener? orientationListener;
 	Java.IO.File? videoRecordingFile;
+	int extensionMode = ExtensionMode.Auto;
+
+	public void SetExtensionMode(int mode)
+	{
+		extensionMode = mode;
+		if (cameraView.SelectedCamera is null || processCameraProvider is null || cameraPreview is null || imageCapture is null || videoCapture is null)
+		{
+			return;
+		}
+
+		var cameraSelector = EnableModes(cameraView.SelectedCamera);
+		camera = RebindCamera(processCameraProvider, cameraSelector, cameraPreview, imageCapture, videoCapture);
+
+		cameraControl = camera.CameraControl;
+	}
 
 	public void Dispose()
 	{
@@ -54,6 +69,7 @@ partial class CameraManager
 		{
 			previewView.SetScaleType(NativePlatformCameraPreviewView.ScaleType.FitCenter);
 		}
+
 		cameraExecutor = Executors.NewSingleThreadExecutor() ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
 		orientationListener = new OrientationListener(SetImageCaptureTargetRotation, context);
 		orientationListener.Enable();
@@ -233,15 +249,10 @@ partial class CameraManager
 			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 		}
 
-		var cameraSelector = cameraView.SelectedCamera.CameraSelector ?? throw new CameraException($"Unable to retrieve {nameof(CameraSelector)}");
-
-		var owner = (ILifecycleOwner)context;
-		processCameraProvider.UnbindAll();
-		camera = processCameraProvider.BindToLifecycle(owner, cameraSelector, cameraPreview, imageCapture);
-
+		var cameraSelector = EnableModes(cameraView.SelectedCamera);
+		camera = RebindCamera(processCameraProvider, cameraSelector, cameraPreview, imageCapture);
 		cameraControl = camera.CameraControl;
 
-		//start the camera with AutoFocus
 		var point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
 		var action = new FocusMeteringAction.Builder(point).Build();
 		camera.CameraControl.StartFocusAndMetering(action);
@@ -292,10 +303,9 @@ partial class CameraManager
 			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 		}
 
-		var cameraSelector = cameraView.SelectedCamera.CameraSelector ?? throw new CameraException($"Unable to retrieve {nameof(CameraSelector)}");
 
-		processCameraProvider.UnbindAll();
-		camera = processCameraProvider.BindToLifecycle((ILifecycleOwner)context, cameraSelector, cameraPreview, videoCapture);
+		var cameraSelector = EnableModes(cameraView.SelectedCamera);
+		camera = RebindCamera(processCameraProvider, cameraSelector, cameraPreview, videoCapture);
 
 		cameraControl = camera.CameraControl;
 		
@@ -329,6 +339,30 @@ partial class CameraManager
 		return memoryStream;
 	}
 
+	CameraSelector EnableModes(CameraInfo selectedCamera)
+	{
+		var cameraSelector = selectedCamera.CameraSelector ?? throw new CameraException($"Unable to retrieve {nameof(CameraSelector)}");
+		var androidCameraProvider = (AndroidX.Camera.Core.ICameraProvider)(ProcessCameraProvider.GetInstance(context).Get() ?? throw new CameraException($"Unable to retrieve {nameof(ProcessCameraProvider)}"));
+
+		var extensionsManagerFuture = ExtensionsManager.GetInstanceAsync(context, androidCameraProvider);
+		var extensionsManager = (ExtensionsManager)extensionsManagerFuture.Get()!;
+
+		if (extensionsManager.IsExtensionAvailable(cameraSelector, extensionMode))
+		{
+			return extensionsManager.GetExtensionEnabledCameraSelector(cameraSelector, extensionMode);
+		}
+
+		return cameraSelector;
+	}
+
+	ICamera RebindCamera(ProcessCameraProvider provider, CameraSelector cameraSelector, params UseCase[] useCases)
+	{
+		provider.UnbindAll();
+		return provider.BindToLifecycle(
+			(ILifecycleOwner)context,
+			cameraSelector,
+			useCases);
+	}
 
 	void SetImageCaptureTargetRotation(int rotation)
 	{

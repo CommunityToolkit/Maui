@@ -84,6 +84,7 @@
                         Text="StopVideoRecording" />
 
                 <Button Command="{Binding SaveVideoCommand}" Text="GetStream" />
+                <Button Clicked="SetNightMode" Text="Set Night Mode (Android)" />
 
             </FlexLayout>
         </Grid>
