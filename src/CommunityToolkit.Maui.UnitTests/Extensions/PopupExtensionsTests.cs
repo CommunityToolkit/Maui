@@ -597,6 +597,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Assert.Equal(view.BindingContext, popup.BindingContext);
 		Assert.Equal(view.Background, popup.Background);
 		Assert.Equal(view.BackgroundColor, popup.BackgroundColor);
+		Assert.Equal(view.Margin, popup.Margin);
 		Assert.Equal(view.VerticalOptions, popup.VerticalOptions);
 		Assert.Equal(view.HorizontalOptions, popup.HorizontalOptions);
 
@@ -604,6 +605,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Assert.Equal(view.BindingContext, border.BindingContext);
 		Assert.Equal(view.Background, border.Background);
 		Assert.Equal(view.BackgroundColor, border.BackgroundColor);
+		Assert.Equal(view.Margin, border.Margin);
 		Assert.Equal(view.VerticalOptions, border.VerticalOptions);
 		Assert.Equal(view.HorizontalOptions, border.HorizontalOptions);
 
@@ -675,6 +677,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Assert.Equal(viewWithQueryable.BindingContext, popup.BindingContext);
 		Assert.Equal(viewWithQueryable.Background, popup.Background);
 		Assert.Equal(viewWithQueryable.BackgroundColor, popup.BackgroundColor);
+		Assert.Equal(viewWithQueryable.Margin, popup.Margin);
 
 		// Verify View options Binding to Border
 		Assert.Equal(viewWithQueryable.BindingContext, border.BindingContext);
