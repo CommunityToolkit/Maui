@@ -7,7 +7,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Services;
 
-public class PopupServiceTests : BaseHandlerTest
+public class PopupServiceTests : BaseViewTest
 {
 	readonly INavigation navigation;
 

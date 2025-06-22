@@ -1,15 +1,13 @@
 ﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.UnitTests.Services;
 using FluentAssertions;
-using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
-public abstract class BaseHandlerTest : BaseTest
+public abstract class BaseViewTest : BaseTest
 {
-	protected BaseHandlerTest()
+	protected BaseViewTest()
 	{
 		InitializeServicesAndSetMockApplication(out var serviceProvider);
 		ServiceProvider = serviceProvider;

@@ -102,21 +102,21 @@ public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 		{
 			// Walk up the element tree to try to find the resource
 			case Element elementObj:
-			{
-				var parent = elementObj.Parent;
-				while (parent is not null)
 				{
-					if (parent is IResourcesProvider { IsResourcesCreated: true } parentProvider
-					    && parentProvider.Resources.TryGetValue(key, out resource))
+					var parent = elementObj.Parent;
+					while (parent is not null)
 					{
-						return true;
+						if (parent is IResourcesProvider { IsResourcesCreated: true } parentProvider
+							&& parentProvider.Resources.TryGetValue(key, out resource))
+						{
+							return true;
+						}
+
+						parent = parent.Parent;
 					}
 
-					parent = parent.Parent;
+					break;
 				}
-
-				break;
-			}
 			// If it's a ResourceDictionary, check it directly
 			case ResourceDictionary dict when dict.TryGetValue(key, out resource):
 				return true;

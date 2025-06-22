@@ -9,7 +9,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Extensions;
 
-public class PopupExtensionsTests : BaseHandlerTest
+public class PopupExtensionsTests : BaseViewTest
 {
 	const string shellParameterViewModelTextValue = "Hello World";
 	static readonly Color shellParameterBackgroundColorValue = Colors.Green;
