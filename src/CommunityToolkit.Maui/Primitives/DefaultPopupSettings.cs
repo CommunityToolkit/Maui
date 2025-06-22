@@ -52,7 +52,7 @@ public record DefaultPopupSettings
 		public static LayoutOptions HorizontalOptions { get; } = LayoutOptions.Center;
 
 		/// <summary>
-		/// Default value for <see cref="Popup.BackgroundColor"/> BackgroundColor 
+		/// Default value for <see cref="VisualElement.BackgroundColor"/> BackgroundColor 
 		/// </summary>
 		public static Color BackgroundColor { get; } = Colors.White;
 
