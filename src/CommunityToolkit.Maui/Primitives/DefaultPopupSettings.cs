@@ -29,7 +29,7 @@ public record DefaultPopupSettings
 	/// <summary>
 	/// Default Values for <see cref="Microsoft.Maui.Controls.View"/>
 	/// </summary>
-	internal static class PopupDefaults
+	static class PopupDefaults
 	{
 		/// <summary>
 		/// Default value for <see cref="Microsoft.Maui.Controls.View.Margin"/> 
@@ -59,6 +59,6 @@ public record DefaultPopupSettings
 		/// <summary>
 		/// Default value for <see cref="Popup.CanBeDismissedByTappingOutsideOfPopup"/>
 		/// </summary>
-		public const bool CanBeDismissedByTappingOutsideOfPopup = DefaultPopupOptionsSettings.PopupOptionsDefaults.CanBeDismissedByTappingOutsideOfPopup;
+		public const bool CanBeDismissedByTappingOutsideOfPopup = true;
 	}
 }

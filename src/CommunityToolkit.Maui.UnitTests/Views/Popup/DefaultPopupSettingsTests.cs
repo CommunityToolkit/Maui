@@ -14,12 +14,12 @@ public class DefaultPopupSettingsTests : BaseTest
 		var popup = (Popup)(popupPage.Content.PopupBorder.Content ?? throw new InvalidOperationException("Popup cannot be null"));
 
 		// Assert
-		Assert.Equal(DefaultPopupSettings.PopupDefaults.CanBeDismissedByTappingOutsideOfPopup, popup.CanBeDismissedByTappingOutsideOfPopup);
-		Assert.Equal(DefaultPopupSettings.PopupDefaults.Margin, popup.Margin);
-		Assert.Equal(DefaultPopupSettings.PopupDefaults.Padding, popup.Padding);
-		Assert.Equal(DefaultPopupSettings.PopupDefaults.HorizontalOptions, popup.HorizontalOptions);
-		Assert.Equal(DefaultPopupSettings.PopupDefaults.VerticalOptions, popup.VerticalOptions);
-		Assert.Equal(DefaultPopupSettings.PopupDefaults.BackgroundColor, popup.BackgroundColor);
+		Assert.True(popup.CanBeDismissedByTappingOutsideOfPopup);
+		Assert.Equal(new Thickness(30), popup.Margin);
+		Assert.Equal(new Thickness(15), popup.Padding);
+		Assert.Equal(LayoutOptions.Center, popup.HorizontalOptions);
+		Assert.Equal(LayoutOptions.Center, popup.VerticalOptions);
+		Assert.Equal(Colors.White, popup.BackgroundColor);
 	}
 
 	[Fact]
@@ -37,10 +37,7 @@ public class DefaultPopupSettingsTests : BaseTest
 		};
 
 		var builder = MauiApp.CreateBuilder();
-		builder.UseMauiCommunityToolkit(options =>
-		{
-			options.SetPopupDefaults(defaultPopupSettings);
-		});
+		builder.UseMauiCommunityToolkit(options => { options.SetPopupDefaults(defaultPopupSettings); });
 
 		var popupPage = new PopupPage(new Popup(), PopupOptions.Empty);
 		var popup = (Popup)(popupPage.Content.PopupBorder.Content ?? throw new InvalidOperationException("Popup cannot be null"));
@@ -63,12 +60,12 @@ public class DefaultPopupSettingsTests : BaseTest
 		var popup = (Popup)(popupBorder.Content ?? throw new InvalidOperationException("Popup cannot be null"));
 
 		// Assert
-		Assert.Equal(DefaultPopupSettings.PopupDefaults.Margin, popupBorder.Margin);
-		Assert.Equal(DefaultPopupSettings.PopupDefaults.HorizontalOptions, popupBorder.HorizontalOptions);
-		Assert.Equal(DefaultPopupSettings.PopupDefaults.VerticalOptions, popupBorder.VerticalOptions);
-		Assert.Equal(DefaultPopupSettings.PopupDefaults.Padding, popup.Padding);
-		Assert.Equal(DefaultPopupSettings.PopupDefaults.BackgroundColor, popup.BackgroundColor);
-		Assert.Equal(DefaultPopupSettings.PopupDefaults.CanBeDismissedByTappingOutsideOfPopup, popup.CanBeDismissedByTappingOutsideOfPopup);
+		Assert.True(popup.CanBeDismissedByTappingOutsideOfPopup);
+		Assert.Equal(new Thickness(30), popup.Margin);
+		Assert.Equal(new Thickness(15), popup.Padding);
+		Assert.Equal(LayoutOptions.Center, popupBorder.HorizontalOptions);
+		Assert.Equal(LayoutOptions.Center, popupBorder.VerticalOptions);
+		Assert.Equal(Colors.White, popup.BackgroundColor);
 	}
 
 	[Fact]

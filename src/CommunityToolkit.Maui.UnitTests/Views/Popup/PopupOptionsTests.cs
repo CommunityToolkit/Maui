@@ -9,7 +9,7 @@ public class PopupOptionsTests : BaseTest
 	public void CanBeDismissedByTappingOutsideOfPopup_DefaultValue_ShouldBeTrue()
 	{
 		var popupOptions = new PopupOptions();
-		Assert.Equal(DefaultPopupOptionsSettings.PopupOptionsDefaults.CanBeDismissedByTappingOutsideOfPopup, popupOptions.CanBeDismissedByTappingOutsideOfPopup);
+		Assert.True(popupOptions.CanBeDismissedByTappingOutsideOfPopup);
 	}
 
 	[Fact]
@@ -24,7 +24,11 @@ public class PopupOptionsTests : BaseTest
 	public void Shadow_DefaultValue_ShouldBeTrue()
 	{
 		var popupOptions = new PopupOptions();
-		Assert.Equal(DefaultPopupOptionsSettings.PopupOptionsDefaults.Shadow, popupOptions.Shadow);
+		
+		Assert.Equal(Colors.Black, popupOptions.Shadow?.Brush);
+		Assert.Equal(new(20, 20), popupOptions.Shadow?.Offset);
+		Assert.Equal(40, popupOptions.Shadow?.Radius);
+		Assert.Equal(0.8f, popupOptions.Shadow?.Opacity);
 	}
 
 	[Fact]
@@ -39,7 +43,7 @@ public class PopupOptionsTests : BaseTest
 	public void PageOverlayColor_DefaultValue_ShouldBeDefaultColor()
 	{
 		var popupOptions = new PopupOptions();
-		Assert.Equal(DefaultPopupOptionsSettings.PopupOptionsDefaults.PageOverlayColor, popupOptions.PageOverlayColor);
+		Assert.Equal(Colors.Black.WithAlpha(0.3f), popupOptions.PageOverlayColor);
 	}
 
 	[Fact]
@@ -55,14 +59,14 @@ public class PopupOptionsTests : BaseTest
 	public void BorderStroke_DefaultValue_ShouldBeDefaultStroke()
 	{
 		var popupOptions = new PopupOptions();
-		Assert.Equal(DefaultPopupOptionsSettings.PopupOptionsDefaults.BorderStroke, popupOptions.Shape?.Stroke);
+		Assert.Equal(Colors.LightGray, popupOptions.Shape?.Stroke);
 	}
 
 	[Fact]
 	public void OnTappingOutsideOfPopup_DefaultValue_ShouldBeNull()
 	{
 		var popupOptions = new PopupOptions();
-		Assert.Equal(DefaultPopupOptionsSettings.PopupOptionsDefaults.OnTappingOutsideOfPopup, popupOptions.OnTappingOutsideOfPopup);
+		Assert.Null(popupOptions.OnTappingOutsideOfPopup);
 	}
 
 	[Fact]
@@ -78,7 +82,9 @@ public class PopupOptionsTests : BaseTest
 	public void Shape_DefaultValue_ShouldBeNull()
 	{
 		var popupOptions = new PopupOptions();
-		Assert.Equal(DefaultPopupOptionsSettings.PopupOptionsDefaults.Shape, popupOptions.Shape);
+		Assert.Equal(new CornerRadius(20, 20, 20, 20), ((RoundRectangle?)popupOptions.Shape)?.CornerRadius);
+		Assert.Equal(2, ((RoundRectangle?)popupOptions.Shape)?.StrokeThickness);
+		Assert.Equal(Colors.LightGray, ((RoundRectangle?)popupOptions.Shape)?.Stroke);
 	}
 
 	[Fact]

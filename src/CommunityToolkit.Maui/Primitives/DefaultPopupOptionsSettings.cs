@@ -26,7 +26,7 @@ public record DefaultPopupOptionsSettings : IPopupOptions
 	/// <summary>
 	/// Default Values for <see cref="PopupOptions"/>
 	/// </summary>
-	internal static class PopupOptionsDefaults
+	static class PopupOptionsDefaults
 	{
 		/// <summary>
 		/// Default value for <see cref="PopupOptions.Shape"/> <see cref="Microsoft.Maui.Controls.Shapes.Shape.StrokeThickness"/>

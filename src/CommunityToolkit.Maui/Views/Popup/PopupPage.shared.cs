@@ -36,13 +36,13 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	public PopupPage(Popup popup, IPopupOptions? popupOptions)
 	{
 		ArgumentNullException.ThrowIfNull(popup);
-
+		
 		this.popup = popup;
 		this.popupOptions = popupOptions ??= Options.DefaultPopupOptionsSettings;
 
 		tapOutsideOfPopupCommand = new Command(async () =>
 		{
-			this.popupOptions.OnTappingOutsideOfPopup?.Invoke();
+			popupOptions.OnTappingOutsideOfPopup?.Invoke();
 			await CloseAsync(new PopupResult(true));
 		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
 
@@ -134,6 +134,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		popup.SetBinding(BackgroundProperty, static (View view) => view.Background, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(BindingContextProperty, static (View view) => view.BindingContext, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(BackgroundColorProperty, static (View view) => view.BackgroundColor, source: view, mode: BindingMode.OneWay);
+		popup.SetBinding(Popup.MarginProperty, static (View view) => view.Margin, source: view, mode: BindingMode.OneWay, converter: new MarginConverter());
 		popup.SetBinding(Popup.VerticalOptionsProperty, static (View view) => view.VerticalOptions, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(Popup.HorizontalOptionsProperty, static (View view) => view.HorizontalOptions, source: view, mode: BindingMode.OneWay);
 
@@ -200,7 +201,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			};
 
 			// Bind `Popup` values through to Border using OneWay Bindings 
-			PopupBorder.SetBinding(Border.MarginProperty, static (Popup popup) => popup.Margin, source: popupContent, mode: BindingMode.OneWay);
+			PopupBorder.SetBinding(Border.MarginProperty, static (Popup popup) => popup.Margin, source: popupContent, mode: BindingMode.OneWay, converter: new MarginConverter());
 			PopupBorder.SetBinding(Border.BackgroundProperty, static (Popup popup) => popup.Background, source: popupContent, mode: BindingMode.OneWay);
 			PopupBorder.SetBinding(Border.BackgroundColorProperty, static (Popup popup) => popup.BackgroundColor, source: popupContent, mode: BindingMode.OneWay, converter: new BackgroundColorConverter());
 			PopupBorder.SetBinding(Border.VerticalOptionsProperty, static (Popup popup) => popup.VerticalOptions, source: popupContent, mode: BindingMode.OneWay, converter: new VerticalOptionsConverter());
@@ -208,9 +209,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 			// Bind `PopupOptions` values through to Border using OneWay Bindings
 			PopupBorder.SetBinding(Border.ShadowProperty, static (IPopupOptions options) => options.Shadow, source: options, mode: BindingMode.OneWay);
-			PopupBorder.SetBinding(Border.StrokeProperty, static (IPopupOptions options) => options.Shape, source: options, converter: new BorderStrokeConverter(), mode: BindingMode.OneWay);
+			PopupBorder.SetBinding(Border.StrokeProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay, converter: new BorderStrokeConverter());
 			PopupBorder.SetBinding(Border.StrokeShapeProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay);
-			PopupBorder.SetBinding(Border.StrokeThicknessProperty, static (IPopupOptions options) => options.Shape, source: options, converter: new BorderStrokeThicknessConverter(), mode: BindingMode.OneWay);
+			PopupBorder.SetBinding(Border.StrokeThicknessProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay, converter: new BorderStrokeThicknessConverter());
 
 			Children.Add(PopupBorder);
 		}
@@ -219,14 +220,14 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		sealed partial class BorderStrokeThicknessConverter : BaseConverterOneWay<Shape?, double>
 		{
-			public override double DefaultConvertReturnValue { get; set; } = Options.DefaultPopupOptionsSettings.Shape?.StrokeThickness ?? DefaultPopupOptionsSettings.PopupOptionsDefaults.BorderStrokeThickness;
+			public override double DefaultConvertReturnValue { get; set; } = Options.DefaultPopupOptionsSettings.Shape?.StrokeThickness ?? 0;
 
 			public override double ConvertFrom(Shape? value, CultureInfo? culture) => value?.StrokeThickness ?? 0;
 		}
 
 		sealed partial class BorderStrokeConverter : BaseConverterOneWay<Shape?, Brush?>
 		{
-			public override Brush? DefaultConvertReturnValue { get; set; } = Options.DefaultPopupOptionsSettings.Shape?.Stroke ?? DefaultPopupOptionsSettings.PopupOptionsDefaults.BorderStroke;
+			public override Brush? DefaultConvertReturnValue { get; set; } = Options.DefaultPopupOptionsSettings.Shape?.Stroke;
 
 			public override Brush? ConvertFrom(Shape? value, CultureInfo? culture) => value?.Stroke;
 		}
@@ -258,5 +259,12 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		public override Thickness DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.Padding;
 
 		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value == default ? Options.DefaultPopupSettings.Padding : value;
+	}
+	
+	sealed partial class MarginConverter : BaseConverterOneWay<Thickness, Thickness>
+	{
+		public override Thickness DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.Margin;
+
+		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value == default ? Options.DefaultPopupSettings.Margin : value;
 	}
 }
