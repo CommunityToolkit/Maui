@@ -598,6 +598,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Assert.Equal(view.BindingContext, popup.BindingContext);
 		Assert.Equal(view.Background, popup.Background);
 		Assert.Equal(view.BackgroundColor, popup.BackgroundColor);
+		Assert.Equal(view.Margin, popup.Margin);
 		Assert.Equal(view.VerticalOptions, popup.VerticalOptions);
 		Assert.Equal(view.HorizontalOptions, popup.HorizontalOptions);
 
