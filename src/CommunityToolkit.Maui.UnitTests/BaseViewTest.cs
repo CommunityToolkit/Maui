@@ -74,10 +74,9 @@ public abstract class BaseViewTest : BaseTest
 		#endregion
 
 		#region Register Services for PopupServiceTests
-		var mockPageViewModel = new MockPageViewModel();
-		var mockPopup = new MockSelfClosingPopup(mockPageViewModel, new());
-
-		PopupService.AddPopup(mockPopup, mockPageViewModel, appBuilder.Services, ServiceLifetime.Transient);
+		appBuilder.Services.AddTransientPopup<LongLivedSelfClosingPopup, LongLivedMockPageViewModel>();
+		appBuilder.Services.AddTransientPopup<ShortLivedSelfClosingPopup, ShortLivedMockPageViewModel>();
+		appBuilder.Services.AddTransientPopup<GarbageCollectionHeavySelfClosingPopup, MockPageViewModel>();
 
 		appBuilder.Services.AddTransientPopup<MockPopup>();
 		#endregion

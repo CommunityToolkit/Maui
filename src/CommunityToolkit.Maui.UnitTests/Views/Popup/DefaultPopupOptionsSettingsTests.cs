@@ -6,7 +6,7 @@ using Xunit;
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
 #pragma warning disable CA1416
-public class DefaultPopupOptionsSettingsTests : BaseHandlerTest
+public class DefaultPopupOptionsSettingsTests : BaseViewTest
 {
 	readonly INavigation navigation;
 
