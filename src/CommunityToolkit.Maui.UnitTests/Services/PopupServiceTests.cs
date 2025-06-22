@@ -520,6 +520,12 @@ public class PopupServiceTests : BaseHandlerTest
 	}
 }
 
+
+class GarbageCollectionHeavySelfClosingPopup(MockPageViewModel viewModel, object? result = null) : MockSelfClosingPopup(viewModel, TimeSpan.FromMilliseconds(500), result)
+{
+	
+}
+
 class LongLivedSelfClosingPopup : MockSelfClosingPopup
 {
 	public LongLivedSelfClosingPopup(LongLivedMockPageViewModel viewModel)
@@ -561,7 +567,7 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
 		cancellationTokenSource?.Cancel();
 	}
 	
-	async void HandlePopupOpened(object? sender, EventArgs e)
+	protected virtual async void HandlePopupOpened(object? sender, EventArgs e)
 	{
 		if (cancellationTokenSource is not null)
 		{
@@ -570,7 +576,7 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
 
 		cancellationTokenSource = new CancellationTokenSource();
 
-		Console.WriteLine($"{DateTime.Now:O} HandlePopupOpened {BindingContext.GetType().Name}");
+		Console.WriteLine($@"{DateTime.Now:O} HandlePopupOpened {BindingContext.GetType().Name}");
 
 		await Task.Delay(DisplayDuration);
 
@@ -580,12 +586,12 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
 		}
 
 		Console.WriteLine(
-			$"{DateTime.Now:O} Closing {BindingContext.GetType().Name} - {Application.Current?.Windows[0].Page?.Navigation.ModalStack.Count}");
+			$@"{DateTime.Now:O} Closing {BindingContext.GetType().Name} - {Application.Current?.Windows[0].Page?.Navigation.ModalStack.Count}");
 
 		await CloseAsync(Result, cancellationTokenSource?.Token ?? CancellationToken.None);
 
 		Console.WriteLine(
-			$"{DateTime.Now:O} Closed {BindingContext.GetType().Name} - {Application.Current?.Windows[0].Page?.Navigation.ModalStack.Count}");
+			$@"{DateTime.Now:O} Closed {BindingContext.GetType().Name} - {Application.Current?.Windows[0].Page?.Navigation.ModalStack.Count}");
 	}
 
 	public object? Result { get; }
