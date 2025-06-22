@@ -9,7 +9,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Extensions;
 
-public class PopupExtensionsTests : BaseHandlerTest
+public class PopupExtensionsTests : BaseViewTest
 {
 	const string shellParameterViewModelTextValue = "Hello World";
 	static readonly Color shellParameterBackgroundColorValue = Colors.Green;
@@ -124,7 +124,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 	public async Task ShowPopupAsync_WithPopupType_ShowsPopupAndClosesPopup()
 	{
 		// Arrange
-		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
 
 		// Act
 		navigation.ShowPopup(selfClosingPopup);
@@ -232,7 +232,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 	public async Task ShowPopupAsync_AwaitingShowPopupAsync_EnsurePreviousPopupClosed()
 	{
 		// Arrange
-		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
 
 		// Act
 		await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, TestContext.Current.CancellationToken);
@@ -253,7 +253,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Application.Current.Windows[0].Page = shell;
 
 		var shellNavigation = Shell.Current.Navigation;
-		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
 
 		// Act
 		await shell.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, shellParameters, TestContext.Current.CancellationToken);
@@ -268,7 +268,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 	public void ShowPopup_NavigationModalStackCountIncreases()
 	{
 		// Arrange
-		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
 		Assert.Empty(navigation.ModalStack);
 
 		// Act
@@ -349,7 +349,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 	public void ShowPopup_MultiplePopupsDisplayed()
 	{
 		// Arrange
-		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
 
 		// Act
 		navigation.ShowPopup(selfClosingPopup, PopupOptions.Empty);
@@ -363,7 +363,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 	public void ShowPopup_Shell_MultiplePopupsDisplayed()
 	{
 		// Arrange
-		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
 		var shell = new Shell();
 		shell.Items.Add(new MockPage(new MockPageViewModel()));
 
@@ -425,7 +425,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		// Arrange
 		var onTappingOutsideOfPopup = () => { };
 
-		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
 		var options = new PopupOptions
 		{
 			PageOverlayColor = Colors.Red,
@@ -496,7 +496,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		var shellNavigation = Shell.Current.Navigation;
 		var onTappingOutsideOfPopup = () => { };
 
-		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
 		var options = new PopupOptions
 		{
 			PageOverlayColor = Colors.Red,
@@ -711,7 +711,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 	public async Task ShowPopupAsync_CancellationTokenExpired()
 	{
 		// Arrange
-		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
 		// Act
@@ -732,7 +732,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Application.Current.Windows[0].Page = shell;
 
 		var shellNavigation = Shell.Current.Navigation;
-		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
 
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
@@ -786,7 +786,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 	public async Task ShowPopupAsync_CancellationTokenCanceled()
 	{
 		// Arrange
-		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
 		// Act
@@ -807,7 +807,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Application.Current.Windows[0].Page = shell;
 
 		var shellNavigation = Shell.Current.Navigation;
-		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
 
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
@@ -861,15 +861,15 @@ public class PopupExtensionsTests : BaseHandlerTest
 	public async Task ShowPopupAsync_ShouldValidateProperBindingContext()
 	{
 		// Arrange
-		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
-		var popupInstance = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
-		var popupViewModel = ServiceProvider.GetRequiredService<MockPageViewModel>();
+		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var popupInstance = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>();
 
 		// Act
 		await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, TestContext.Current.CancellationToken);
 
 		// Assert
-		Assert.Same(popupInstance.BindingContext, popupViewModel);
+		Assert.NotNull(popupInstance.BindingContext);
+		Assert.IsType<ShortLivedMockPageViewModel>(popupInstance.BindingContext);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Medium)]
@@ -883,15 +883,15 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Application.Current.Windows[0].Page = shell;
 
 		var shellNavigation = Shell.Current.Navigation;
-		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
-		var popupInstance = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
-		var popupViewModel = ServiceProvider.GetRequiredService<MockPageViewModel>();
+		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var popupInstance = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>();
 
 		// Act
 		await shell.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, shellParameters, TestContext.Current.CancellationToken);
 
 		// Assert
-		Assert.Same(popupInstance.BindingContext, popupViewModel);
+		Assert.NotNull(popupInstance.BindingContext);
+		Assert.IsType<ShortLivedMockPageViewModel>(popupInstance.BindingContext);
 		Assert.Equal(shellParameterBackgroundColorValue, selfClosingPopup.BackgroundColor);
 	}
 
@@ -900,8 +900,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 	{
 		// Arrange
 		var view = new Grid();
-		var popupInstance = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
-		var popupViewModel = ServiceProvider.GetRequiredService<MockPageViewModel>();
+		var popupInstance = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>();
 
 		// Act
 		var showPopupTask = navigation.ShowPopupAsync<object?>(view, PopupOptions.Empty, TestContext.Current.CancellationToken);
@@ -912,7 +911,8 @@ public class PopupExtensionsTests : BaseHandlerTest
 		await showPopupTask;
 
 		// Assert
-		Assert.Same(popupInstance.BindingContext, popupViewModel);
+		Assert.NotNull(popupInstance.BindingContext);
+		Assert.IsType<ShortLivedMockPageViewModel>(popupInstance.BindingContext);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Medium)]
@@ -927,8 +927,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 
 		var shellNavigation = Shell.Current.Navigation;
 		var view = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
-		var popupInstance = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
-		var popupViewModel = ServiceProvider.GetRequiredService<MockPageViewModel>();
+		var popupInstance = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>();
 
 		// Act
 		var showPopupTask = shell.ShowPopupAsync<object?>(view, PopupOptions.Empty, shellParameters, TestContext.Current.CancellationToken);
@@ -939,7 +938,8 @@ public class PopupExtensionsTests : BaseHandlerTest
 		await showPopupTask;
 
 		// Assert
-		Assert.Same(popupInstance.BindingContext, popupViewModel);
+		Assert.NotNull(popupInstance.BindingContext);
+		Assert.IsType<ShortLivedMockPageViewModel>(popupInstance.BindingContext);
 		Assert.Equal(shellParameterBackgroundColorValue, view.BackgroundColor);
 		Assert.Equal(shellParameterViewModelTextValue, view.BindingContext.Text);
 	}
@@ -963,8 +963,8 @@ public class PopupExtensionsTests : BaseHandlerTest
 	public async Task ShowPopupAsync_ShouldReturnResultOnceClosed()
 	{
 		// Arrange
-		var mockPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
-		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var mockPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>();
+		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
 
 		// Act
 		var result = await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, TestContext.Current.CancellationToken);
@@ -985,8 +985,8 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Application.Current.Windows[0].Page = shell;
 
 		var shellNavigation = Shell.Current.Navigation;
-		var mockPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>();
-		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var mockPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>();
+		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
 
 		// Act
 		var result = await shell.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, shellParameters, TestContext.Current.CancellationToken);
@@ -1083,7 +1083,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 	public async Task ShowPopupAsync_ShouldThrowArgumentNullException_WhenNavigationIsNull()
 	{
 		// Arrange
-		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
 
 		// Act / Assert
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
@@ -1102,7 +1102,7 @@ public class PopupExtensionsTests : BaseHandlerTest
 		Application.Current.Windows[0].Page = shell;
 
 		var shellNavigation = Shell.Current.Navigation;
-		var selfClosingPopup = ServiceProvider.GetRequiredService<MockSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
 
 		// Act/Assert
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
