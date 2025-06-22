@@ -52,7 +52,7 @@ public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 		var rootProvider = serviceProvider.GetService(typeof(IRootObjectProvider)) as IRootObjectProvider;
 		var root = rootProvider?.RootObject;
 		if (root is IResourcesProvider { IsResourcesCreated: true } rootResources
-		    && rootResources.Resources.TryGetValue(Key, out resource))
+			&& rootResources.Resources.TryGetValue(Key, out resource))
 		{
 			switch (resource)
 			{
@@ -93,7 +93,7 @@ public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 
 		// If the element has a Resources property via IResourcesProvider
 		if (element is IResourcesProvider { IsResourcesCreated: true } provider
-		    && provider.Resources.TryGetValue(key, out resource))
+			&& provider.Resources.TryGetValue(key, out resource))
 		{
 			return true;
 		}

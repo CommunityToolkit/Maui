@@ -76,10 +76,10 @@ public abstract class BaseHandlerTest : BaseTest
 		#endregion
 
 		#region Register Services for PopupServiceTests
-		
+
 		appBuilder.Services.AddTransientPopup<LongLivedSelfClosingPopup, LongLivedMockPageViewModel>();
 		appBuilder.Services.AddTransientPopup<ShortLivedSelfClosingPopup, ShortLivedMockPageViewModel>();
-		
+
 		appBuilder.Services.AddTransientPopup<MockPopup>();
 		appBuilder.Services.AddTransient<GarbageCollectionHeavySelfClosingPopup, MockPageViewModel>();
 		#endregion

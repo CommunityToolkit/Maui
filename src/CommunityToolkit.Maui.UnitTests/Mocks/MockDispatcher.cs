@@ -25,7 +25,7 @@ public sealed class MockDispatcher : IDispatcher
 		Thread.Sleep(delay);
 
 		action();
-		
+
 		return true;
 	}
 
