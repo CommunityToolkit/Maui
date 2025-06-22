@@ -523,7 +523,19 @@ public class PopupServiceTests : BaseHandlerTest
 
 class GarbageCollectionHeavySelfClosingPopup(MockPageViewModel viewModel, object? result = null) : MockSelfClosingPopup(viewModel, TimeSpan.FromMilliseconds(500), result)
 {
-	
+	protected override void HandlePopupOpened(object? sender, EventArgs e)
+	{
+		GC.Collect(); // Run Garbage Collection before closing the popup
+		
+		base.HandlePopupOpened(sender, e); // Closes the popup
+	}
+
+	protected override void HandlePopupClosed(object? sender, EventArgs e)
+	{
+		base.HandlePopupClosed(sender, e);
+		
+		GC.Collect(); // Run Garbage collection again after closing the Popup
+	}
 }
 
 class LongLivedSelfClosingPopup : MockSelfClosingPopup
@@ -562,7 +574,7 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
 
 	public static Color DefaultBackgroundColor { get; } = Colors.White;
 
-	void HandlePopupClosed(object? sender, EventArgs e)
+	protected virtual void HandlePopupClosed(object? sender, EventArgs e)
 	{
 		cancellationTokenSource?.Cancel();
 	}
