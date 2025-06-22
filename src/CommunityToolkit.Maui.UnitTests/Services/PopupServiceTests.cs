@@ -558,19 +558,18 @@ class ShortLivedSelfClosingPopup : MockSelfClosingPopup
 class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
 #pragma warning restore CA1001
 {
-	internal TimeSpan DisplayDuration { get; }
+	readonly TimeSpan displayDuration;
+	CancellationTokenSource? cancellationTokenSource;
 
 	public MockSelfClosingPopup(MockPageViewModel viewModel, TimeSpan displayDuration, object? result = null)
 	{
+		this.displayDuration = displayDuration;
 		BackgroundColor = DefaultBackgroundColor;
 		BindingContext = viewModel;
-		DisplayDuration = displayDuration;
 		Result = result;
 		Opened += HandlePopupOpened;
 		Closed += HandlePopupClosed;
 	}
-
-	CancellationTokenSource? cancellationTokenSource;
 
 	public static Color DefaultBackgroundColor { get; } = Colors.White;
 
@@ -590,7 +589,7 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
 
 		Console.WriteLine($@"{DateTime.Now:O} HandlePopupOpened {BindingContext.GetType().Name}");
 
-		await Task.Delay(DisplayDuration);
+		await Task.Delay(displayDuration);
 
 		if (cancellationTokenSource?.IsCancellationRequested is true)
 		{
