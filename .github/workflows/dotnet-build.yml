@@ -263,7 +263,7 @@ jobs:
 
   sign:
     needs: [build_library]
-    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    if: ${{ startsWith(github.ref, 'refs/tags/') }} || (github.event_name != 'pull_request')
     runs-on: windows-latest
     permissions:
       id-token: write # Required for requesting the JWT
@@ -335,7 +335,34 @@ jobs:
           path: |
             ${{ github.workspace }}/packages/**/*.nupkg
 
-  release:
+  release-main:
+    if: github.event_name != 'pull_request' && ${{ !startsWith(github.ref, 'refs/tags/') }}
+    needs: [sign]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+          dotnet-quality: 'ga'
+
+      - name: Download signed packages
+        uses: actions/download-artifact@v4
+        with:
+          name: signed-packages
+          path: ./packages
+
+      -  name: Upload artifact
+         if: github.event_name != 'pull_request'
+         run: |
+           dotnet nuget push
+           **/*.nupkg
+           --source "https://nuget.pkg.github.com/CommunityToolkit/index.json"
+           --api-key ${{ secrets.GITHUB_TOKEN }}
+           --skip-duplicate
+
+  release-nuget:
     if: ${{ startsWith(github.ref, 'refs/tags/') }}
     needs: [sign]
     environment: nuget-release-gate # This gates this job until manually approved
