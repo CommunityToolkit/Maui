@@ -353,7 +353,8 @@ partial class CameraManager
 		var cameraProviderFuture = ProcessCameraProvider.GetInstance(context) ?? throw new CameraException($"Unable to retrieve {nameof(ProcessCameraProvider)}");
 		cameraProviderFuture.AddListener(new Runnable(() =>
 		{
-			if (cameraProviderFuture.Get() is not AndroidX.Camera.Core.ICameraProvider androidCameraProvider)
+			var cameraProviderInstance = cameraProviderFuture.Get();
+			if (cameraProviderInstance is not AndroidX.Camera.Core.ICameraProvider androidCameraProvider)
 			{
 				cameraFutureCts.SetResult();
 				return;
