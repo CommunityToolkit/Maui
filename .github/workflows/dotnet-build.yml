@@ -263,7 +263,7 @@ jobs:
 
   sign:
     needs: [build_library]
-    if: ${{ startsWith(github.ref, 'refs/tags/') }} || (github.event_name != 'pull_request')
+    if: ${{ startsWith(github.ref, 'refs/tags/') || (github.event_name != 'pull_request') }}
     runs-on: windows-latest
     permissions:
       id-token: write # Required for requesting the JWT
@@ -336,7 +336,7 @@ jobs:
             ${{ github.workspace }}/packages/**/*.nupkg
 
   release-main:
-    if: github.event_name != 'pull_request' && ${{ !startsWith(github.ref, 'refs/tags/') }}
+    if: ${{ github.event_name != 'pull_request' && !startsWith(github.ref, 'refs/tags/') }}
     needs: [sign]
     runs-on: ubuntu-latest
 
