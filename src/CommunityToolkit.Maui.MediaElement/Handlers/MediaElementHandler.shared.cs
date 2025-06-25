@@ -8,6 +8,7 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 /// </summary>
 public partial class MediaElementHandler
 {
+
 	/// <summary>
 	/// The default property mapper for this handler.
 	/// </summary>
@@ -62,7 +63,7 @@ public partial class MediaElementHandler
 	/// </summary>
 	
 	protected MediaManager? MediaManager { get; set; }
-	
+
 	/// <summary>
 	/// Maps the <see cref="IMediaElement.Aspect"/> property between the abstract
 	/// <see cref="MediaElement"/> and platform counterpart.
