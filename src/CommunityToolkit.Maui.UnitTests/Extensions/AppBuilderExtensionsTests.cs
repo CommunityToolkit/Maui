@@ -116,7 +116,7 @@ public class AppBuilderExtensionsTests : BaseTest
 			isAndroidDialogFragmentServiceInitialized = true;
 		}
 	}
-	
+
 	[Fact]
 	public void UseMauiCommunityToolkitMediaElement_ShouldUseSurfaceViewByDefault()
 	{
@@ -125,12 +125,12 @@ public class AppBuilderExtensionsTests : BaseTest
 
 		MediaElementOptions.DefaultAndroidViewType.Should().Be(AndroidViewType.SurfaceView);
 	}
-	
+
 	[Fact]
 	public void UseMauiCommunityToolkitMediaElement_ShouldSetDefaultAndroidViewType()
 	{
 		MediaElementOptions.DefaultAndroidViewType.Should().Be(AndroidViewType.SurfaceView);
-		
+
 		var builder = MauiApp.CreateBuilder();
 		builder.UseMauiCommunityToolkitMediaElement(static options =>
 		{
