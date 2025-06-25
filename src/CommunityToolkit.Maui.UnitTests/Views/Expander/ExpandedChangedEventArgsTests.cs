@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class ExpandedChangedEventArgsTests : BaseHandlerTest
+public class ExpandedChangedEventArgsTests : BaseViewTest
 {
 	[Theory]
 	[InlineData(true)]
