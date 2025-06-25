@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Sample.Pages.Views.Popup;
@@ -129,5 +130,36 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		await Task.Delay(TimeSpan.FromSeconds(2));
 
 		await this.ClosePopupAsync();
+	}
+
+	async void HandleComplexPopupClicked(object? sender, EventArgs e)
+	{
+		var complexPopupOptionsViewModel = new ComplexPopupOptionsViewModel();
+		var complexPopupOptions = new PopupOptions
+		{
+			BindingContext = complexPopupOptionsViewModel,
+			Shape = new RoundRectangle
+			{
+				CornerRadius = new CornerRadius(4),
+				StrokeThickness = 12,
+				Stroke = Colors.Orange
+			}
+		};
+		complexPopupOptions.SetBinding<ComplexPopupOptionsViewModel, Color>(PopupOptions.PageOverlayColorProperty, static x => x.PageOverlayBackgroundColor, source: complexPopupOptionsViewModel);
+
+		var popupResultTask = popupService.ShowPopupAsync<ComplexPopup, string>(Navigation, complexPopupOptions);
+
+		while (!popupResultTask.IsCompleted)
+		{
+			await Task.Delay(TimeSpan.FromSeconds(2));
+			complexPopupOptionsViewModel.PageOverlayBackgroundColor =
+				Color.FromRgba(Random.Shared.NextDouble(), Random.Shared.NextDouble(), Random.Shared.NextDouble(), 0.2f);
+		}
+
+		var popupResult = await popupResultTask;
+		if (!popupResult.WasDismissedByTappingOutsideOfPopup)
+		{
+			await Toast.Make($"You entered {popupResult.Result}").Show();
+		}
 	}
 }
