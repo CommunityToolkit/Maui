@@ -52,7 +52,7 @@ public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 		var rootProvider = serviceProvider.GetService(typeof(IRootObjectProvider)) as IRootObjectProvider;
 		var root = rootProvider?.RootObject;
 		if (root is IResourcesProvider { IsResourcesCreated: true } rootResources
-		    && rootResources.Resources.TryGetValue(Key, out resource))
+			&& rootResources.Resources.TryGetValue(Key, out resource))
 		{
 			switch (resource)
 			{
@@ -93,7 +93,7 @@ public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 
 		// If the element has a Resources property via IResourcesProvider
 		if (element is IResourcesProvider { IsResourcesCreated: true } provider
-		    && provider.Resources.TryGetValue(key, out resource))
+			&& provider.Resources.TryGetValue(key, out resource))
 		{
 			return true;
 		}
@@ -102,21 +102,21 @@ public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 		{
 			// Walk up the element tree to try to find the resource
 			case Element elementObj:
-			{
-				var parent = elementObj.Parent;
-				while (parent is not null)
 				{
-					if (parent is IResourcesProvider { IsResourcesCreated: true } parentProvider
-					    && parentProvider.Resources.TryGetValue(key, out resource))
+					var parent = elementObj.Parent;
+					while (parent is not null)
 					{
-						return true;
+						if (parent is IResourcesProvider { IsResourcesCreated: true } parentProvider
+							&& parentProvider.Resources.TryGetValue(key, out resource))
+						{
+							return true;
+						}
+
+						parent = parent.Parent;
 					}
 
-					parent = parent.Parent;
+					break;
 				}
-
-				break;
-			}
 			// If it's a ResourceDictionary, check it directly
 			case ResourceDictionary dict when dict.TryGetValue(key, out resource):
 				return true;

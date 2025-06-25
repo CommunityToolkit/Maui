@@ -178,17 +178,6 @@ public class PopupService : IPopupService
 		services.TryAdd(new ServiceDescriptor(typeof(TPopupViewModel), typeof(TPopupViewModel), lifetime));
 	}
 
-	internal static void AddPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>
-		(TPopupView popup, TPopupViewModel viewModel, IServiceCollection services, ServiceLifetime lifetime)
-		where TPopupView : IView
-		where TPopupViewModel : notnull
-	{
-		viewModelToViewMappings.TryAdd(typeof(TPopupViewModel), typeof(TPopupView));
-
-		services.TryAdd(new ServiceDescriptor(typeof(TPopupView), _ => popup, lifetime));
-		services.TryAdd(new ServiceDescriptor(typeof(TPopupViewModel), _ => viewModel, lifetime));
-	}
-
 	View GetPopupContent<T>(T bindingContext)
 	{
 		if (bindingContext is View view)
