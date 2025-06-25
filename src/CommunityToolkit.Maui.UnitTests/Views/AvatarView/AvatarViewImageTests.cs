@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class AvatarViewImageTests : BaseHandlerTest
+public class AvatarViewImageTests : BaseViewTest
 {
 	public AvatarViewImageTests()
 	{

@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.ImageSources;
 
-public class GravatarImageSourceTests : BaseHandlerTest
+public class GravatarImageSourceTests : BaseViewTest
 {
 	readonly TimeSpan cacheValidity = new(1, 0, 0);
 	readonly bool cachingEnabled = false;
