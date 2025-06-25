@@ -9,7 +9,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class RatingViewTests : BaseHandlerTest
+public class RatingViewTests : BaseViewTest
 {
 	const string customShape = "M 12 0C5.388 0 0 5.388 0 12s5.388 12 12 12 12-5.38 12-12c0-6.612-5.38-12-12-12z";
 

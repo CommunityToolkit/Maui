@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Essentials;
 
-public class AppThemeTests : BaseHandlerTest
+public class AppThemeTests : BaseViewTest
 {
 	readonly Label label = new();
 	readonly Window window;

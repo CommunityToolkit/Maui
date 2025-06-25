@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class CameraViewTests : BaseHandlerTest
+public class CameraViewTests : BaseViewTest
 {
 	readonly CameraView cameraView = new();
 	readonly MockCameraProvider mockCameraProvider;
