@@ -7,7 +7,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class PopupTests : BaseHandlerTest
+public class PopupTests : BaseViewTest
 {
 	[Fact]
 	public void PopupBackgroundColor_DefaultValue_ShouldBeWhite()

@@ -1,15 +1,13 @@
 ﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.UnitTests.Services;
 using FluentAssertions;
-using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
-public abstract class BaseHandlerTest : BaseTest
+public abstract class BaseViewTest : BaseTest
 {
-	protected BaseHandlerTest()
+	protected BaseViewTest()
 	{
 		InitializeServicesAndSetMockApplication(out var serviceProvider);
 		ServiceProvider = serviceProvider;
@@ -77,13 +75,11 @@ public abstract class BaseHandlerTest : BaseTest
 
 		#region Register Services for PopupServiceTests
 
-		var mockPageViewModel = new MockPageViewModel();
-		var mockPopup = new MockSelfClosingPopup(mockPageViewModel, new());
-
-		PopupService.AddPopup(mockPopup, mockPageViewModel, appBuilder.Services, ServiceLifetime.Transient);
+		appBuilder.Services.AddTransientPopup<LongLivedSelfClosingPopup, LongLivedMockPageViewModel>();
+		appBuilder.Services.AddTransientPopup<ShortLivedSelfClosingPopup, ShortLivedMockPageViewModel>();
+		appBuilder.Services.AddTransientPopup<GarbageCollectionHeavySelfClosingPopup, MockPageViewModel>();
 
 		appBuilder.Services.AddTransientPopup<MockPopup>();
-		appBuilder.Services.AddTransient<GarbageCollectionHeavySelfClosingPopup>();
 		#endregion
 
 		var mauiApp = appBuilder.Build();

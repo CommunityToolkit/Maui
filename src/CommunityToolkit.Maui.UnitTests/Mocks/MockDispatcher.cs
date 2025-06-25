@@ -22,7 +22,11 @@ public sealed class MockDispatcher : IDispatcher
 
 	public bool DispatchDelayed(TimeSpan delay, Action action)
 	{
-		return false;
+		Thread.Sleep(delay);
+
+		action();
+
+		return true;
 	}
 
 	sealed class DispatcherTimerStub : IDispatcherTimer, IDisposable

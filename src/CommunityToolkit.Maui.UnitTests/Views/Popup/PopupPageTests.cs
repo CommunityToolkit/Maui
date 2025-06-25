@@ -11,7 +11,7 @@ using Page = Microsoft.Maui.Controls.Page;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class PopupPageTests : BaseHandlerTest
+public class PopupPageTests : BaseViewTest
 {
 	[Fact]
 	public void Constructor_ShouldThrowArgumentNullException_WhenPopupIsNull()
