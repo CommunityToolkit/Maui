@@ -6,7 +6,8 @@
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="FlowDirection" Value="LeftToRight" />
-        <Setter Property="Width" Value="{StaticResource MediaTransportControlsMaxWidth}" />
+        <Setter Property="MaxWidth" Value="{StaticResource MediaTransportControlsMaxWidth}" />
+        <Setter Property="Width" Value="Auto" />
         <Setter Property="HorizontalContentAlignment" Value="Left" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Bottom" />
