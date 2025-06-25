@@ -149,9 +149,11 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 
 		var popupResultTask = popupService.ShowPopupAsync<ComplexPopup, string>(Navigation, complexPopupOptions);
 
+		// Rotate `PopupOptions.PageOverlayBackgroundColor` every 2 seconds using random colors 
 		while (!popupResultTask.IsCompleted)
 		{
 			await Task.Delay(TimeSpan.FromSeconds(2));
+			
 			complexPopupOptionsViewModel.PageOverlayBackgroundColor =
 				Color.FromRgba(Random.Shared.NextDouble(), Random.Shared.NextDouble(), Random.Shared.NextDouble(), 0.2f);
 		}
@@ -159,6 +161,7 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		var popupResult = await popupResultTask;
 		if (!popupResult.WasDismissedByTappingOutsideOfPopup)
 		{
+			// Display Popup Result as a Toast
 			await Toast.Make($"You entered {popupResult.Result}").Show();
 		}
 	}

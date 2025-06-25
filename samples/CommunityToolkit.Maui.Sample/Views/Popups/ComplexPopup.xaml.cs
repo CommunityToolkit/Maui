@@ -19,6 +19,6 @@ public partial class ComplexPopup : Popup<string>
 	{
 		// Delay for one second to ensure the user sees the previous text
 		await Task.Delay(TimeSpan.FromSeconds(1));
-		DescriptionLabel.Text = "This Popup demonstrates constructor injection to pass in a value using Dependency Injection using PopupService, demonstrates how to use the Opened event to trigger an action once the Popup appears, demonstrates how to bind to IPopupOptions, and demonstrates how to return a result.";
+		DescriptionLabel.Text = "This Popup demonstrates constructor injection to pass in a value using Dependency Injection using PopupService, demonstrates how to use the Opened event to trigger an action once the Popup appears, demonstrates how to bind to PopupOptions, and demonstrates how to return a result.";
 	}
 }
