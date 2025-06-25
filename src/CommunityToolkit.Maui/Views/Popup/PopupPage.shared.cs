@@ -26,7 +26,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	readonly Popup popup;
 	readonly IPopupOptions popupOptions;
 	readonly Command tapOutsideOfPopupCommand;
-	readonly WeakEventManager popupClosedEventManager = new();
 
 	public PopupPage(View view, IPopupOptions popupOptions)
 		: this(view as Popup ?? CreatePopupFromView<Popup>(view), popupOptions)
@@ -64,11 +63,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
 	}
 
-	public event EventHandler<IPopupResult> PopupClosed
-	{
-		add => popupClosedEventManager.AddEventHandler(value);
-		remove => popupClosedEventManager.RemoveEventHandler(value);
-	}
+	public event EventHandler<IPopupResult>? PopupClosed;
 
 	// Prevent Content from being set by external class
 	// Casts `PopupPage.Content` to return typeof(PopupPageLayout)
@@ -102,7 +97,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		token.ThrowIfCancellationRequested();
 		await Navigation.PopModalAsync(false).WaitAsync(token);
 
-		popupClosedEventManager.HandleEvent(this, result, nameof(PopupClosed));
+		PopupClosed?.Invoke(this, result);
 	}
 
 	protected override bool OnBackButtonPressed()
@@ -164,7 +159,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			tapOutsideOfPopupCommand.ChangeCanExecute();
 		}
 	}
-	
+
 	void HandlePopupPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (e.PropertyName == Popup.CanBeDismissedByTappingOutsideOfPopupProperty.PropertyName)

@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class MediaElementTests : BaseHandlerTest
+public class MediaElementTests : BaseViewTest
 {
 	public MediaElementTests()
 	{

@@ -7,14 +7,14 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class PopupTests : BaseHandlerTest
+public class PopupTests : BaseViewTest
 {
 	[Fact]
 	public void PopupBackgroundColor_DefaultValue_ShouldBeWhite()
 	{
 		Assert.Equal(PopupDefaults.BackgroundColor, Colors.White);
 	}
-	
+
 	[Fact]
 	public void CanBeDismissedByTappingOutsideOfPopup_DefaultValue_ShouldBeTrue()
 	{
@@ -158,7 +158,7 @@ public class PopupTests : BaseHandlerTest
 		await popup.CloseAsync(TestContext.Current.CancellationToken);
 		await popup.CloseAsync("Hello", TestContext.Current.CancellationToken);
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_TaskShouldCompleteWhenPopupCloseAsyncIsCalled()
 	{

@@ -11,7 +11,7 @@ using Page = Microsoft.Maui.Controls.Page;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class PopupPageTests : BaseHandlerTest
+public class PopupPageTests : BaseViewTest
 {
 	[Fact]
 	public void Constructor_ShouldThrowArgumentNullException_WhenPopupIsNull()
@@ -230,32 +230,32 @@ public class PopupPageTests : BaseHandlerTest
 
 		// Assert
 		Assert.True(tapGestureRecognizer.Command?.CanExecute(null));
-		
+
 		// Act
 		view.CanBeDismissedByTappingOutsideOfPopup = false;
 		popupOptions.CanBeDismissedByTappingOutsideOfPopup = false;
-		
+
 		// Assert
 		Assert.False(tapGestureRecognizer.Command?.CanExecute(null));
-		
+
 		// Act
 		view.CanBeDismissedByTappingOutsideOfPopup = true;
 		popupOptions.CanBeDismissedByTappingOutsideOfPopup = false;
-		
+
 		// Assert
 		Assert.False(tapGestureRecognizer.Command?.CanExecute(null));
-		
+
 		// Act
 		view.CanBeDismissedByTappingOutsideOfPopup = false;
 		popupOptions.CanBeDismissedByTappingOutsideOfPopup = true;
-		
+
 		// Assert
 		Assert.False(tapGestureRecognizer.Command?.CanExecute(null));
-		
+
 		// Act
 		view.CanBeDismissedByTappingOutsideOfPopup = true;
 		popupOptions.CanBeDismissedByTappingOutsideOfPopup = true;
-		
+
 		// Assert
 		Assert.True(tapGestureRecognizer.Command?.CanExecute(null));
 
@@ -529,8 +529,8 @@ public class PopupPageTests : BaseHandlerTest
 		Assert.Equal(LayoutOptions.Start, border.VerticalOptions);
 		Assert.Equal(LayoutOptions.End, border.HorizontalOptions);
 	}
-	
-	static TapGestureRecognizer GetTapOutsideGestureRecognizer(PopupPage popupPage) => 
+
+	static TapGestureRecognizer GetTapOutsideGestureRecognizer(PopupPage popupPage) =>
 		(TapGestureRecognizer)popupPage.Content.Children.OfType<BoxView>().Single().GestureRecognizers[0];
 
 	// Helper class for testing protected methods
