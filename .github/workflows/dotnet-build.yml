@@ -13,6 +13,7 @@ on:
       - main
     paths-ignore:
       - README.md
+  workflow_dispatch:
 
 env:
   CurrentSemanticVersionBase: '99.0.0'
