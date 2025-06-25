@@ -7,6 +7,7 @@ using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.Shapes;
+using static Microsoft.Maui.Controls.View;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -136,13 +137,13 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		popup.SetBinding(BackgroundProperty, static (View view) => view.Background, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(BindingContextProperty, static (View view) => view.BindingContext, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(BackgroundColorProperty, static (View view) => view.BackgroundColor, source: view, mode: BindingMode.OneWay);
-		popup.SetBinding(Popup.MarginProperty, static (View view) => view.Margin, source: view, mode: BindingMode.OneWay);
-		popup.SetBinding(Popup.VerticalOptionsProperty, static (View view) => view.VerticalOptions, source: view, mode: BindingMode.OneWay, converter: new VerticalOptionsConverter());
-		popup.SetBinding(Popup.HorizontalOptionsProperty, static (View view) => view.HorizontalOptions, source: view, mode: BindingMode.OneWay, converter: new HorizontalOptionsConverter());
+		popup.SetBinding(MarginProperty, static (View view) => view.Margin, source: view, mode: BindingMode.OneWay);
+		popup.SetBinding(VerticalOptionsProperty, static (View view) => view.VerticalOptions, source: view, mode: BindingMode.OneWay, converter: new VerticalOptionsConverter());
+		popup.SetBinding(HorizontalOptionsProperty, static (View view) => view.HorizontalOptions, source: view, mode: BindingMode.OneWay, converter: new HorizontalOptionsConverter());
 
 		if (view is IPaddingElement paddingElement)
 		{
-			popup.SetBinding(Popup.PaddingProperty, static (IPaddingElement paddingElement) => paddingElement.Padding, source: paddingElement, mode: BindingMode.OneWay, converter: new PaddingConverter());
+			popup.SetBinding(PaddingProperty, static (IPaddingElement paddingElement) => paddingElement.Padding, source: paddingElement, mode: BindingMode.OneWay, converter: new PaddingConverter());
 		}
 
 		return popup;

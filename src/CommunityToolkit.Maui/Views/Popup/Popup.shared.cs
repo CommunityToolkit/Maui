@@ -8,39 +8,26 @@ namespace CommunityToolkit.Maui.Views;
 public partial class Popup : ContentView
 {
 	/// <summary>
-	/// Bindable property to set the margin between the <see cref="Popup"/> and the edge of the window
-	/// </summary>
-	public static new readonly BindableProperty MarginProperty = View.MarginProperty;
-
-	/// <summary>
-	/// Bindable property to set the padding between the <see cref="Popup"/> border and the <see cref="Popup"/> content
-	/// </summary>
-	public static new readonly BindableProperty PaddingProperty = ContentView.PaddingProperty;
-
-	/// <summary>
-	/// Bindable property to set the horizontal position of the <see cref="Popup"/> when displayed on screen
-	/// </summary>
-	public static new readonly BindableProperty HorizontalOptionsProperty = View.HorizontalOptionsProperty;
-
-	/// <summary>
-	/// Bindable property to set the vertical position of the <see cref="Popup"/> when displayed on screen
-	/// </summary>
-	public static new readonly BindableProperty VerticalOptionsProperty = View.VerticalOptionsProperty;
-
-	/// <summary>
 	///  Backing BindableProperty for the <see cref="CanBeDismissedByTappingOutsideOfPopup"/> property.
 	/// </summary>
 	public static readonly BindableProperty CanBeDismissedByTappingOutsideOfPopupProperty = BindableProperty.Create(nameof(CanBeDismissedByTappingOutsideOfPopup), typeof(bool), typeof(Popup), PopupDefaults.CanBeDismissedByTappingOutsideOfPopup);
-
+	
 	/// <summary>
 	/// Initializes Popup
 	/// </summary>
 	public Popup()
 	{
-		Margin = PopupDefaults.Margin;
-		Padding = PopupDefaults.Padding;
-		HorizontalOptions = PopupDefaults.HorizontalOptions;
-		VerticalOptions = PopupDefaults.VerticalOptions;
+		var style = new Style(typeof(Popup))
+		{
+			ApplyToDerivedTypes = true
+		};
+
+		style.Setters.Add(new Setter { Property = Popup.HorizontalOptionsProperty, Value = PopupDefaults.HorizontalOptions });
+		style.Setters.Add(new Setter { Property = Popup.VerticalOptionsProperty, Value = PopupDefaults.VerticalOptions });
+		style.Setters.Add(new Setter { Property = Popup.MarginProperty, Value = PopupDefaults.Margin });
+		style.Setters.Add(new Setter { Property = Popup.PaddingProperty, Value = PopupDefaults.Padding });
+		
+		Resources.Add(style);
 	}
 
 	/// <summary>
