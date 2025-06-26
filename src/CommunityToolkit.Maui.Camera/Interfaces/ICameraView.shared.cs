@@ -1,12 +1,9 @@
-﻿using CommunityToolkit.Maui.Camera;
-using CommunityToolkit.Maui.Core.Primitives;
-
-namespace CommunityToolkit.Maui.Core;
+﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// Represents a visual element that provides the ability to show a camera preview and capture images.
 /// </summary>
-public interface ICameraView : IView, IAsynchronousHandler
+public interface ICameraView : IView
 {
 	/// <summary>
 	/// Gets the <see cref="CameraFlashMode"/>.
@@ -52,25 +49,13 @@ public interface ICameraView : IView, IAsynchronousHandler
 	bool IsBusy { get; internal set; }
 
 	/// <summary>
-	/// Occurs when an image is captured by the camera.
-	/// </summary>
-	/// <param name="imageData">The image data held within a <see cref="Stream"/>.</param>
-	void OnMediaCaptured(Stream imageData);
-
-	/// <summary>
-	/// Occurs when an image capture fails.
-	/// </summary>
-	/// <param name="failureReason">A string containing the reason why the capture attempt failed.</param>
-	void OnMediaCapturedFailed(string failureReason);
-
-	/// <summary>
 	/// Triggers the camera to capture an image.
 	/// </summary>
 	/// <remarks>
 	/// To customize the behavior of the camera when capturing an image, consider overriding the behavior through
 	/// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.CaptureImage), ADD YOUR METHOD);</c>.
 	/// </remarks>
-	ValueTask CaptureImage(CancellationToken token);
+	Task<Stream> CaptureImage(CancellationToken token);
 
 	/// <summary>
 	/// Starts the camera preview.
@@ -79,7 +64,7 @@ public interface ICameraView : IView, IAsynchronousHandler
 	/// To customize the behavior of starting the camera preview, consider overriding the behavior through
 	/// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.StartCameraPreview), ADD YOUR METHOD);</c>.
 	/// </remarks>
-	ValueTask StartCameraPreview(CancellationToken token);
+	Task StartCameraPreview(CancellationToken token);
 
 	/// <summary>
 	/// Stops the camera preview.
@@ -96,4 +81,16 @@ public interface ICameraView : IView, IAsynchronousHandler
 	/// <param name="token"></param>
 	/// <returns></returns>
 	ValueTask<IReadOnlyList<CameraInfo>> GetAvailableCameras(CancellationToken token);
+
+	/// <summary>
+	/// Occurs when an image is captured by the camera.
+	/// </summary>
+	/// <param name="imageData">The image data held within a <see cref="Stream"/>.</param>
+	internal void OnMediaCaptured(Stream imageData);
+
+	/// <summary>
+	/// Occurs when an image capture fails.
+	/// </summary>
+	/// <param name="failureReason">A string containing the reason why the capture attempt failed.</param>
+	internal void OnMediaCapturedFailed(string failureReason);
 }

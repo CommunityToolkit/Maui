@@ -29,12 +29,7 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	/// The currently defined mappings between commands on the <see cref="ICameraView"/> and
 	/// commands on the <see cref="NativePlatformCameraPreviewView"/>. 
 	/// </summary>
-	public static CommandMapper<ICameraView, CameraViewHandler> CommandMapper = new(ViewCommandMapper)
-	{
-		[nameof(ICameraView.CaptureImage)] = MapCaptureImage,
-		[nameof(ICameraView.StartCameraPreview)] = MapStartCameraPreview,
-		[nameof(ICameraView.StopCameraPreview)] = MapStopCameraPreview
-	};
+	public static CommandMapper<ICameraView, CameraViewHandler> CommandMapper = new(ViewCommandMapper);
 
 	readonly ICameraProvider cameraProvider = IPlatformApplication.Current?.Services.GetRequiredService<ICameraProvider>() ?? throw new CameraException($"{nameof(CameraProvider)} not found");
 
@@ -66,6 +61,9 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		GC.SuppressFinalize(this);
 	}
 
+	internal CameraManager CameraManager => cameraManager
+		?? throw new InvalidOperationException($"{nameof(CameraManager)} cannot be used until the native view has been created");
+
 	/// <summary>
 	/// Creates a platform-specific view that will be rendered on that platform.
 	/// </summary>
@@ -74,7 +72,7 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		ArgumentNullException.ThrowIfNull(MauiContext);
 		cameraManager = new(MauiContext, VirtualView, cameraProvider, () => Init(VirtualView));
 
-		return (NativePlatformCameraPreviewView)cameraManager.CreatePlatformView();
+		return (NativePlatformCameraPreviewView)CameraManager.CreatePlatformView();
 
 		// When camera is loaded(switched), map the current flash mode to the platform view,
 		// reset the zoom factor to 1
@@ -90,12 +88,7 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	{
 		base.ConnectHandler(platformView);
 
-		if (cameraManager is null)
-		{
-			throw new CameraException("CameraManager is null");
-		}
-
-		if (await cameraManager.ArePermissionsGranted() is false)
+		if (await CameraManager.ArePermissionsGranted() is false)
 		{
 			throw new PermissionException("Camera permissions not granted");
 		}
@@ -103,7 +96,7 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		await cameraProvider.InitializeAsync;
 		VirtualView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
-		await cameraManager.ConnectCamera(CancellationToken.None);
+		await CameraManager.ConnectCamera(CancellationToken.None);
 	}
 
 	/// <inheritdoc/>
@@ -132,14 +125,14 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	static void MapIsAvailable(CameraViewHandler handler, ICameraView view)
 #endif
 	{
-		var cameraAvailability = (ICameraView)handler.VirtualView;
+		var cameraView = (ICameraView)handler.VirtualView;
 
 #if ANDROID
-		cameraAvailability.UpdateAvailability(handler.Context);
+		cameraView.UpdateAvailability(handler.Context);
 #elif WINDOWS
-		await cameraAvailability.UpdateAvailability(CancellationToken.None);
+		await cameraView.UpdateAvailability(CancellationToken.None);
 #elif IOS || MACCATALYST
-		cameraAvailability.UpdateAvailability();
+		cameraView.UpdateAvailability();
 #elif TIZEN
 		throw new NotSupportedException("Tizen is not yet supported");
 #elif NET
@@ -147,40 +140,23 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 #endif
 	}
 
-	static async void MapCaptureImage(CameraViewHandler handler, ICameraView view, object? arg3)
-	{
-		await (handler.cameraManager?.TakePicture(CancellationToken.None) ?? ValueTask.CompletedTask);
-		view.HandlerCompleteTCS.SetResult();
-	}
-
-	static async void MapStartCameraPreview(CameraViewHandler handler, ICameraView view, object? arg3)
-	{
-		await (handler.cameraManager?.StartCameraPreview(CancellationToken.None) ?? Task.CompletedTask);
-		view.HandlerCompleteTCS.SetResult();
-	}
-
 	static async void MapImageCaptureResolution(CameraViewHandler handler, ICameraView view)
 	{
-		await (handler.cameraManager?.UpdateCaptureResolution(view.ImageCaptureResolution, CancellationToken.None) ?? ValueTask.CompletedTask);
+		await handler.CameraManager.UpdateCaptureResolution(view.ImageCaptureResolution, CancellationToken.None);
 	}
 
 	static async void MapSelectedCamera(CameraViewHandler handler, ICameraView view)
 	{
-		await (handler.cameraManager?.UpdateCurrentCamera(view.SelectedCamera, CancellationToken.None) ?? ValueTask.CompletedTask);
-	}
-
-	static void MapStopCameraPreview(CameraViewHandler handler, ICameraView view, object? arg3)
-	{
-		handler.cameraManager?.StopCameraPreview();
+		await handler.CameraManager.UpdateCurrentCamera(view.SelectedCamera, CancellationToken.None);
 	}
 
 	static void MapCameraFlashMode(CameraViewHandler handler, ICameraView view)
 	{
-		handler.cameraManager?.UpdateFlashMode(view.CameraFlashMode);
+		handler.CameraManager.UpdateFlashMode(view.CameraFlashMode);
 	}
 
 	static void MapZoomFactor(CameraViewHandler handler, ICameraView view)
 	{
-		handler.cameraManager?.UpdateZoom(view.ZoomFactor);
+		handler.CameraManager.UpdateZoom(view.ZoomFactor);
 	}
 }

@@ -1,9 +1,8 @@
 ﻿using System.ComponentModel;
 using System.Runtime.Versioning;
 using System.Windows.Input;
-using CommunityToolkit.Maui.Camera;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Core.Handlers;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -14,8 +13,7 @@ namespace CommunityToolkit.Maui.Views;
 [SupportedOSPlatform("android21.0")]
 [SupportedOSPlatform("ios")]
 [SupportedOSPlatform("maccatalyst")]
-[SupportedOSPlatform("tizen")]
-public partial class CameraView : View, ICameraView
+public partial class CameraView : View, ICameraView, IDisposable
 {
 	static readonly BindablePropertyKey isAvailablePropertyKey =
 		BindableProperty.CreateReadOnly(nameof(IsAvailable), typeof(bool), typeof(CameraView), CameraViewDefaults.IsAvailable);
@@ -67,23 +65,25 @@ public partial class CameraView : View, ICameraView
 	/// Backing BindableProperty for the <see cref="CaptureImageCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty CaptureImageCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(CaptureImageCommand), typeof(Command<CancellationToken>), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateCaptureImageCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(CaptureImageCommand), typeof(Command<CancellationToken>), typeof(CameraView), null, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateCaptureImageCommand).BindableProperty;
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="StartCameraPreviewCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty StartCameraPreviewCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(StartCameraPreviewCommand), typeof(Command<CancellationToken>), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStartCameraPreviewCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(StartCameraPreviewCommand), typeof(Command<CancellationToken>), typeof(CameraView), null, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStartCameraPreviewCommand).BindableProperty;
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="StopCameraPreviewCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty StopCameraPreviewCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(ICommand), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopCameraPreviewCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(ICommand), typeof(CameraView), null, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopCameraPreviewCommand).BindableProperty;
 
+
+	readonly SemaphoreSlim captureImageSemaphoreSlim = new(1, 1);
 	readonly WeakEventManager weakEventManager = new();
 
-	TaskCompletionSource handlerCompletedTCS = new();
+	bool isDisposed;
 
 	/// <summary>
 	/// Event that is raised when the camera capture fails.
@@ -192,19 +192,13 @@ public partial class CameraView : View, ICameraView
 		set => SetValue(isCameraBusyPropertyKey, value);
 	}
 
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	TaskCompletionSource IAsynchronousHandler.HandlerCompleteTCS => handlerCompletedTCS;
+	new CameraViewHandler Handler => (CameraViewHandler)(base.Handler ?? throw new InvalidOperationException("Unable to retrieve Handler"));
 
-	/// <inheritdoc cref="ICameraView.OnMediaCaptured"/>
-	public void OnMediaCaptured(Stream imageData)
+	/// <inheritdoc/>
+	public void Dispose()
 	{
-		weakEventManager.HandleEvent(this, new MediaCapturedEventArgs(imageData), nameof(MediaCaptured));
-	}
-
-	/// <inheritdoc cref="ICameraView.OnMediaCapturedFailed"/>
-	public void OnMediaCapturedFailed(string failureReason)
-	{
-		weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(failureReason), nameof(MediaCaptureFailed));
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
 	}
 
 	/// <inheritdoc cref="ICameraView.GetAvailableCameras"/>
@@ -215,31 +209,68 @@ public partial class CameraView : View, ICameraView
 	}
 
 	/// <inheritdoc cref="ICameraView.CaptureImage"/>
-	public async ValueTask CaptureImage(CancellationToken token)
+	public async Task<Stream> CaptureImage(CancellationToken token)
 	{
-		handlerCompletedTCS.TrySetCanceled(token);
+		// Use SemaphoreSlim to ensure `MediaCaptured` and `MediaCaptureFailed` events are unsubscribed before calling `TakePicture` again
+		// Without this SemaphoreSlim, previous calls to this method will fire `MediaCaptured` and/or `MediaCaptureFailed` events causing this method to return the wrong Stream or throw the wrong Exception
+		await captureImageSemaphoreSlim.WaitAsync(token);
 
-		handlerCompletedTCS = new();
-		Handler?.Invoke(nameof(ICameraView.CaptureImage));
+		var mediaStreamTCS = new TaskCompletionSource<Stream>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-		await handlerCompletedTCS.Task.WaitAsync(token);
+		MediaCaptured += HandleMediaCaptured;
+		MediaCaptureFailed += HandleMediaCapturedFailed;
+
+		try
+		{
+			await Handler.CameraManager.TakePicture(token);
+
+			var stream = await mediaStreamTCS.Task.WaitAsync(token);
+			return stream;
+		}
+		finally
+		{
+			MediaCaptured -= HandleMediaCaptured;
+			MediaCaptureFailed -= HandleMediaCapturedFailed;
+
+			// Release SemaphoreSlim after `MediaCaptured` and `MediaCaptureFailed` events are unsubscribed
+			captureImageSemaphoreSlim.Release();
+		}
+
+		void HandleMediaCaptured(object? sender, MediaCapturedEventArgs e) => mediaStreamTCS.SetResult(e.Media);
+
+		void HandleMediaCapturedFailed(object? sender, MediaCaptureFailedEventArgs e) => mediaStreamTCS.SetException(new CameraException(e.FailureReason));
 	}
 
 	/// <inheritdoc cref="ICameraView.StartCameraPreview"/>
-	public async ValueTask StartCameraPreview(CancellationToken token)
-	{
-		handlerCompletedTCS.TrySetCanceled(token);
-
-		handlerCompletedTCS = new();
-		Handler?.Invoke(nameof(ICameraView.StartCameraPreview));
-
-		await handlerCompletedTCS.Task.WaitAsync(token);
-	}
+	public Task StartCameraPreview(CancellationToken token) =>
+		Handler.CameraManager.StartCameraPreview(token);
 
 	/// <inheritdoc cref="ICameraView.StopCameraPreview"/>
-	public void StopCameraPreview()
+	public void StopCameraPreview() =>
+		Handler.CameraManager.StopCameraPreview();
+
+	/// <inheritdoc/>
+	protected virtual void Dispose(bool disposing)
 	{
-		Handler?.Invoke(nameof(ICameraView.StopCameraPreview));
+		if (!isDisposed)
+		{
+			if (disposing)
+			{
+				captureImageSemaphoreSlim.Dispose();
+			}
+
+			isDisposed = true;
+		}
+	}
+
+	void ICameraView.OnMediaCaptured(Stream imageData)
+	{
+		weakEventManager.HandleEvent(this, new MediaCapturedEventArgs(imageData), nameof(MediaCaptured));
+	}
+
+	void ICameraView.OnMediaCapturedFailed(string failureReason)
+	{
+		weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(failureReason), nameof(MediaCaptureFailed));
 	}
 
 	static object CoerceZoom(BindableObject bindable, object value)

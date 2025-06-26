@@ -1,5 +1,4 @@
 ﻿using System.Runtime.Versioning;
-using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Extensions;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Media.Capture;
