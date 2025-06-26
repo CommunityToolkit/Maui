@@ -47,36 +47,13 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 
 	static bool HasUseMauiCommunityToolkitCall(MethodDeclarationSyntax methodDeclaration)
 	{
-		// Use a visitor to traverse the syntax tree efficiently
-		var visitor = new UseMauiCommunityToolkitVisitor();
-		visitor.Visit(methodDeclaration);
-		return visitor.Found;
+		// Fall back to the original approach but more memory efficient
+		// Check if any of the method's text spans contain the method name
+		var sourceText = methodDeclaration.SyntaxTree.GetText();
+		var methodSpan = methodDeclaration.Span;
+		var methodText = sourceText.GetSubText(methodSpan);
+
+		return methodText.ToString().Contains(useMauiCommunityToolkitMethodName, StringComparison.Ordinal);
 	}
 
-	class UseMauiCommunityToolkitVisitor : CSharpSyntaxWalker
-	{
-		public bool Found { get; private set; }
-
-		public UseMauiCommunityToolkitVisitor() : base(SyntaxWalkerDepth.StructuredTrivia)
-		{
-			// Ensure we visit trivia (including preprocessor directives)
-		}
-
-		public override void VisitInvocationExpression(InvocationExpressionSyntax node)
-		{
-			if(Found)
-			{
-				return; // Early exit if already found
-			}
-
-			// Check if this is a call to UseMauiCommunityToolkit
-			if(node.Expression is MemberAccessExpressionSyntax memberAccess && memberAccess.Name.Identifier.ValueText == useMauiCommunityToolkitMethodName)
-			{
-				Found = true;
-				return;
-			}
-
-			base.VisitInvocationExpression(node);
-		}
-	}
 }
