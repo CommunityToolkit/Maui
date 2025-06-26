@@ -55,9 +55,8 @@ public class UseCommunityToolkitCameraInitializationAnalyzer : DiagnosticAnalyze
 		var hasInSyntaxTree = methodDeclaration
 			.DescendantNodes()
 			.OfType<InvocationExpressionSyntax>()
-			.Any(invocation =>
-				invocation.Expression is MemberAccessExpressionSyntax memberAccess &&
-				memberAccess.Name.Identifier.ValueText == useMauiCommunityToolkitCameraMethodName);
+			.Any(static invocation => invocation.Expression is MemberAccessExpressionSyntax memberAccess
+				&& memberAccess.Name.Identifier.ValueText == useMauiCommunityToolkitCameraMethodName);
 
 		if (hasInSyntaxTree)
 		{
@@ -67,8 +66,7 @@ public class UseCommunityToolkitCameraInitializationAnalyzer : DiagnosticAnalyze
 		// Check trivia (comments, preprocessor directives, disabled code)
 		return methodDeclaration
 			.DescendantTrivia()
-			.Any(trivia =>
-				trivia.IsKind(SyntaxKind.DisabledTextTrivia) &&
-				trivia.ToString().Contains(useMauiCommunityToolkitCameraMethodName, StringComparison.Ordinal));
+			.Any(static trivia => trivia.IsKind(SyntaxKind.DisabledTextTrivia)
+				&& trivia.ToString().Contains(useMauiCommunityToolkitCameraMethodName, StringComparison.Ordinal));
 	}
 }

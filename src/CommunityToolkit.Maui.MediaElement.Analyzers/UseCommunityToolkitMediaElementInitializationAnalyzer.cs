@@ -55,9 +55,8 @@ public class UseCommunityToolkitMediaElementInitializationAnalyzer : DiagnosticA
 		var hasInSyntaxTree = methodDeclaration
 			.DescendantNodes()
 			.OfType<InvocationExpressionSyntax>()
-			.Any(invocation =>
-				invocation.Expression is MemberAccessExpressionSyntax memberAccess &&
-				memberAccess.Name.Identifier.ValueText == useMauiCommunityToolkitMediaElementMethodName);
+			.Any(static invocation => invocation.Expression is MemberAccessExpressionSyntax memberAccess
+				&& memberAccess.Name.Identifier.ValueText == useMauiCommunityToolkitMediaElementMethodName);
 
 		if (hasInSyntaxTree)
 		{
@@ -67,8 +66,7 @@ public class UseCommunityToolkitMediaElementInitializationAnalyzer : DiagnosticA
 		// Check trivia (comments, preprocessor directives, disabled code)
 		return methodDeclaration
 			.DescendantTrivia()
-			.Any(trivia =>
-				trivia.IsKind(SyntaxKind.DisabledTextTrivia) &&
-				trivia.ToString().Contains(useMauiCommunityToolkitMediaElementMethodName, StringComparison.Ordinal));
+			.Any(static trivia => trivia.IsKind(SyntaxKind.DisabledTextTrivia)
+				&& trivia.ToString().Contains(useMauiCommunityToolkitMediaElementMethodName, StringComparison.Ordinal));
 	}
 }
