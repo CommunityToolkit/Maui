@@ -37,39 +37,17 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 				.OfType<MethodDeclarationSyntax>()
 				.FirstOrDefault();
 
-			if(methodDeclaration is not null && !HasUseMauiCommunityToolkitCall(methodDeclaration))
+			if(methodDeclaration is not null)
 			{
-				var diagnostic = Diagnostic.Create(rule, invocationExpression.GetLocation());
-				context.ReportDiagnostic(diagnostic);
-			}
-		}
-	}
-
-	static bool HasUseMauiCommunityToolkitCall(MethodDeclarationSyntax methodDeclaration)
-	{
-		// Ultra-efficient: search character by character without string allocations
-		var sourceText = methodDeclaration.SyntaxTree.GetText();
-		var methodSpan = methodDeclaration.Span;
-		var searchText = useMauiCommunityToolkitMethodName.AsSpan();
-
-		// Search through the method span character by character
-		for(int i = methodSpan.Start; i <= methodSpan.End - searchText.Length; i++)
-		{
-			bool found = true;
-			for(int j = 0; j < searchText.Length; j++)
-			{
-				if(sourceText[i + j] != searchText[j])
+				// Check if the method contains UseMauiCommunityToolkit call
+				// This will find it even inside preprocessor directives
+				var methodText = methodDeclaration.ToString();
+				if(!methodText.Contains(useMauiCommunityToolkitMethodName))
 				{
-					found = false;
-					break;
+					var diagnostic = Diagnostic.Create(rule, invocationExpression.GetLocation());
+					context.ReportDiagnostic(diagnostic);
 				}
 			}
-			if(found)
-			{
-				return true;
-			}
 		}
-
-		return false;
 	}
 }
