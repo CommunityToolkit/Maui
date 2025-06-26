@@ -47,30 +47,24 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 
 	static bool HasUseMauiCommunityToolkitCall(MethodDeclarationSyntax methodDeclaration)
 	{
-		// Ultra-efficient: search character by character without string allocations
-		var sourceText = methodDeclaration.SyntaxTree.GetText();
-		var methodSpan = methodDeclaration.Span;
-		var searchText = useMauiCommunityToolkitMethodName.AsSpan();
+		// Check syntax nodes first (handles active code)
+		var hasInSyntaxTree = methodDeclaration
+			.DescendantNodes()
+			.OfType<InvocationExpressionSyntax>()
+			.Any(invocation =>
+				invocation.Expression is MemberAccessExpressionSyntax memberAccess &&
+				memberAccess.Name.Identifier.ValueText == useMauiCommunityToolkitMethodName);
 
-		// Search through the method span character by character
-		for(int i = methodSpan.Start; i <= methodSpan.End - searchText.Length; i++)
+		if(hasInSyntaxTree)
 		{
-			bool found = true;
-			for(int j = 0; j < searchText.Length; j++)
-			{
-				if(sourceText[i + j] != searchText[j])
-				{
-					found = false;
-					break;
-				}
-			}
-			if(found)
-			{
-				return true;
-			}
+			return true;
 		}
 
-		return false;
+		// Check trivia (comments, preprocessor directives, disabled code)
+		return methodDeclaration
+			.DescendantTrivia()
+			.Any(trivia =>
+				trivia.IsKind(SyntaxKind.DisabledTextTrivia) &&
+				trivia.ToString().Contains(useMauiCommunityToolkitMethodName, StringComparison.Ordinal));
 	}
-
 }
