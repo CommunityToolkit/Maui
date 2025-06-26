@@ -33,7 +33,18 @@ partial class CameraManager(
 	/// Connects to the camera.
 	/// </summary>
 	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
-	public Task ConnectCamera(CancellationToken token) => PlatformConnectCamera(token);
+	public async Task ConnectCamera(CancellationToken token)
+	{
+		if (await ArePermissionsGranted() is false)
+		{
+			throw new PermissionException("Camera permissions not granted");
+		}
+
+		await cameraProvider.InitializeAsync;
+		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
+
+		await PlatformConnectCamera(token);
+	}
 
 	/// <summary>
 	/// Disconnects from the camera.

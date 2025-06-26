@@ -87,15 +87,6 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	protected override async void ConnectHandler(NativePlatformCameraPreviewView platformView)
 	{
 		base.ConnectHandler(platformView);
-
-		if (await CameraManager.ArePermissionsGranted() is false)
-		{
-			throw new PermissionException("Camera permissions not granted");
-		}
-
-		await cameraProvider.InitializeAsync;
-		VirtualView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
-
 		await CameraManager.ConnectCamera(CancellationToken.None);
 	}
 
