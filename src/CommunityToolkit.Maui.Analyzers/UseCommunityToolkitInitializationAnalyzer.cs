@@ -47,13 +47,23 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 
 	static bool HasUseMauiCommunityToolkitCall(MethodDeclarationSyntax methodDeclaration)
 	{
-		// Fall back to the original approach but more memory efficient
-		// Check if any of the method's text spans contain the method name
+		// More memory efficient: only get the text we need
 		var sourceText = methodDeclaration.SyntaxTree.GetText();
-		var methodSpan = methodDeclaration.Span;
-		var methodText = sourceText.GetSubText(methodSpan);
 
-		return methodText.ToString().Contains(useMauiCommunityToolkitMethodName, StringComparison.Ordinal);
+		// Check if the method name appears anywhere in the method's text span
+		foreach(var line in sourceText.Lines)
+		{
+			if(line.Span.OverlapsWith(methodDeclaration.Span))
+			{
+				var lineText = line.ToString();
+				if(lineText.Contains(useMauiCommunityToolkitMethodName, StringComparison.Ordinal))
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 }
