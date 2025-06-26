@@ -36,8 +36,7 @@ public class UseCommunityToolkitCameraInitializationAnalyzer : DiagnosticAnalyze
 			&& invocationExpression.Expression is MemberAccessExpressionSyntax memberAccessExpression
 			&& memberAccessExpression.Name.Identifier.ValueText == useMauiAppMethodName)
 		{
-			var root = invocationExpression.SyntaxTree.GetRoot();
-			var methodDeclaration = root.FindNode(invocationExpression.FullSpan)
+			var methodDeclaration = invocationExpression
 				.Ancestors()
 				.OfType<MethodDeclarationSyntax>()
 				.FirstOrDefault();

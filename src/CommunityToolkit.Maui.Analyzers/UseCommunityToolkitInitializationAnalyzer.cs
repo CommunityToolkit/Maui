@@ -30,7 +30,9 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 
 	static void AnalyzeNode(SyntaxNodeAnalysisContext context)
 	{
-		if (context.Node is InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax { Name.Identifier.ValueText: useMauiAppMethodName } } invocationExpression)
+		if (context.Node is InvocationExpressionSyntax invocationExpression
+			&& invocationExpression.Expression is MemberAccessExpressionSyntax memberAccessExpression
+			&& memberAccessExpression.Name.Identifier.ValueText == useMauiAppMethodName)
 		{
 			var methodDeclaration = invocationExpression
 				.Ancestors()
