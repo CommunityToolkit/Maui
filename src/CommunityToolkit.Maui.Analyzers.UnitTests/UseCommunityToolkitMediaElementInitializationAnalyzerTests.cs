@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.MediaElement.Analyzers;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.MediaElement.Analyzers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
@@ -118,12 +119,49 @@ public class UseCommunityToolkitMediaElementInitializationAnalyzerTests
 		await VerifyMediaElementToolkitAnalyzer(source, Diagnostic().WithSpan(12, 4, 12, 61).WithSeverity(DiagnosticSeverity.Error));
 	}
 
+	[Fact]
+	public async Task VerifyNoErrorsWhenUseMauiCommunityToolkitMediaElementWrapInPreprocessorDirectives()
+	{
+		const string source =
+			/* language=C#-test */
+			//lang=csharp
+			"""
+			namespace CommunityToolkit.Maui.Analyzers.UnitTests
+			{
+				using Microsoft.Maui.Controls.Hosting;
+				using Microsoft.Maui.Hosting;
+				using CommunityToolkit.Maui;
+			
+				public static class MauiProgram
+				{
+					public static MauiApp CreateMauiApp()
+					{
+						var builder = MauiApp.CreateBuilder();
+						builder.UseMauiApp<Microsoft.Maui.Controls.Application>()
+						#if ANDROID || IOS
+							.UseMauiCommunityToolkitMediaElement()
+					    #endif
+							.ConfigureFonts(fonts =>
+							{
+								fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+								fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+							});
+			
+						return builder.Build();
+					}
+				}
+			}
+			""";
+
+		await VerifyMediaElementToolkitAnalyzer(source);
+	}
+
 	static Task VerifyMediaElementToolkitAnalyzer(string source, params IReadOnlyList<DiagnosticResult> diagnosticResults)
 	{
 		return VerifyAnalyzerAsync(
 			source,
 			[
-				typeof(Views.MediaElement) // CommunityToolkit.Maui.MediaElement
+				typeof(MediaElementOptions) // CommunityToolkit.Maui.MediaElement
 			],
 			diagnosticResults);
 	}
