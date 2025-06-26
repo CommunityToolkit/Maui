@@ -6,7 +6,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class DrawingLineCompletedEventArgsTests : BaseHandlerTest
+public class DrawingLineCompletedEventArgsTests : BaseViewTest
 {
 	[Fact]
 	public void DrawingLineShouldBeEqualInDrawingLineCompletedEventArgs()

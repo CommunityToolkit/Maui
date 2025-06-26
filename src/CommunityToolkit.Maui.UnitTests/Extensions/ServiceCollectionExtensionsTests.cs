@@ -8,8 +8,9 @@ public class ServiceCollectionExtensionsTests : BaseTest
 {
 	const string customRoute = "//MockCustomRoute";
 	readonly Type mockPageType = typeof(MockPage);
-	readonly Type mockPopupType = typeof(MockSelfClosingPopup);
-	readonly Type mockViewModelType = typeof(MockPageViewModel);
+	readonly Type mockPageViewModelType = typeof(MockPageViewModel);
+	readonly Type mockPopupType = typeof(ShortLivedSelfClosingPopup);
+	readonly Type mockPopupViewModelType = typeof(ShortLivedMockPageViewModel);
 
 	[Fact]
 	public void IServiceCollection_VerifyTransientPopup()
@@ -41,12 +42,12 @@ public class ServiceCollectionExtensionsTests : BaseTest
 		const ServiceLifetime expectedServiceLifetime = ServiceLifetime.Transient;
 
 		// Act
-		services.AddTransientPopup<MockSelfClosingPopup, MockPageViewModel>();
+		services.AddTransientPopup<ShortLivedSelfClosingPopup, ShortLivedMockPageViewModel>();
 		var serviceProvider = services.BuildServiceProvider();
 
 		// Assert
 		var mockPopupServiceDescriptor = services.Single(s => s.ServiceType == mockPopupType && s.Lifetime.Equals(expectedServiceLifetime));
-		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
+		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockPopupViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
 
 		Assert.NotNull(mockPopupServiceDescriptor);
 		Assert.NotNull(mockViewModelServiceDescriptor);
@@ -55,13 +56,13 @@ public class ServiceCollectionExtensionsTests : BaseTest
 		Assert.Equal(expectedServiceLifetime, mockViewModelServiceDescriptor.Lifetime);
 
 		Assert.Equal(mockPopupType, mockPopupServiceDescriptor.ServiceType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ServiceType);
+		Assert.Equal(mockPopupViewModelType, mockViewModelServiceDescriptor.ServiceType);
 
 		Assert.Equal(mockPopupType, mockPopupServiceDescriptor.ImplementationType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ImplementationType);
+		Assert.Equal(mockPopupViewModelType, mockViewModelServiceDescriptor.ImplementationType);
 
-		Assert.IsType<MockSelfClosingPopup>(serviceProvider.GetRequiredService<MockSelfClosingPopup>());
-		Assert.IsType<MockPageViewModel>(serviceProvider.GetRequiredService<MockPageViewModel>());
+		Assert.IsType<ShortLivedSelfClosingPopup>(serviceProvider.GetRequiredService<ShortLivedSelfClosingPopup>());
+		Assert.IsType<ShortLivedMockPageViewModel>(serviceProvider.GetRequiredService<ShortLivedMockPageViewModel>());
 	}
 
 	[Fact]
@@ -77,7 +78,7 @@ public class ServiceCollectionExtensionsTests : BaseTest
 
 		// Assert
 		var mockPageServiceDescriptor = services.Single(s => s.ServiceType == mockPageType && s.Lifetime.Equals(expectedServiceLifetime));
-		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
+		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockPageViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
 
 		Assert.NotNull(mockPageServiceDescriptor);
 		Assert.NotNull(mockViewModelServiceDescriptor);
@@ -86,10 +87,10 @@ public class ServiceCollectionExtensionsTests : BaseTest
 		Assert.Equal(expectedServiceLifetime, mockViewModelServiceDescriptor.Lifetime);
 
 		Assert.Equal(mockPageType, mockPageServiceDescriptor.ServiceType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ServiceType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ServiceType);
 
 		Assert.Equal(mockPageType, mockPageServiceDescriptor.ImplementationType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ImplementationType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ImplementationType);
 
 		Assert.IsType<MockPage>(serviceProvider.GetRequiredService<MockPage>());
 		Assert.IsType<MockPageViewModel>(serviceProvider.GetRequiredService<MockPageViewModel>());
@@ -109,7 +110,7 @@ public class ServiceCollectionExtensionsTests : BaseTest
 
 		// Assert
 		var mockPageServiceDescriptor = services.Single(s => s.ServiceType == mockPageType && s.Lifetime.Equals(expectedServiceLifetime));
-		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
+		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockPageViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
 
 		Assert.NotNull(mockPageServiceDescriptor);
 		Assert.NotNull(mockViewModelServiceDescriptor);
@@ -120,10 +121,10 @@ public class ServiceCollectionExtensionsTests : BaseTest
 		Assert.Equal(expectedServiceLifetime, mockViewModelServiceDescriptor.Lifetime);
 
 		Assert.Equal(mockPageType, mockPageServiceDescriptor.ServiceType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ServiceType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ServiceType);
 
 		Assert.Equal(mockPageType, mockPageServiceDescriptor.ImplementationType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ImplementationType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ImplementationType);
 
 		Assert.IsType<MockPage>(serviceProvider.GetRequiredService<MockPage>());
 		Assert.IsType<MockPageViewModel>(serviceProvider.GetRequiredService<MockPageViewModel>());
@@ -144,7 +145,7 @@ public class ServiceCollectionExtensionsTests : BaseTest
 
 		// Assert
 		var mockPageServiceDescriptor = services.Single(s => s.ServiceType == mockPageType && s.Lifetime.Equals(expectedServiceLifetime));
-		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
+		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockPageViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
 
 		Assert.NotNull(mockPageServiceDescriptor);
 		Assert.NotNull(mockViewModelServiceDescriptor);
@@ -155,10 +156,10 @@ public class ServiceCollectionExtensionsTests : BaseTest
 		Assert.Equal(expectedServiceLifetime, mockViewModelServiceDescriptor.Lifetime);
 
 		Assert.Equal(mockPageType, mockPageServiceDescriptor.ServiceType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ServiceType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ServiceType);
 
 		Assert.Equal(mockPageType, mockPageServiceDescriptor.ImplementationType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ImplementationType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ImplementationType);
 
 		Assert.IsType<MockPage>(serviceProvider.GetRequiredService<MockPage>());
 		Assert.IsType<MockPageViewModel>(serviceProvider.GetRequiredService<MockPageViewModel>());
@@ -195,12 +196,12 @@ public class ServiceCollectionExtensionsTests : BaseTest
 		var services = MauiApp.CreateBuilder().Services;
 
 		// Act
-		services.AddSingletonPopup<MockSelfClosingPopup, MockPageViewModel>();
+		services.AddSingletonPopup<ShortLivedSelfClosingPopup, ShortLivedMockPageViewModel>();
 		var serviceProvider = services.BuildServiceProvider();
 
 		// Assert
 		var mockPopupServiceDescriptor = services.Single(s => s.ServiceType == mockPopupType && s.Lifetime.Equals(expectedServiceLifetime));
-		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
+		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockPopupViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
 
 		Assert.NotNull(mockPopupServiceDescriptor);
 		Assert.NotNull(mockViewModelServiceDescriptor);
@@ -209,13 +210,13 @@ public class ServiceCollectionExtensionsTests : BaseTest
 		Assert.Equal(expectedServiceLifetime, mockViewModelServiceDescriptor.Lifetime);
 
 		Assert.Equal(mockPopupType, mockPopupServiceDescriptor.ServiceType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ServiceType);
+		Assert.Equal(mockPopupViewModelType, mockViewModelServiceDescriptor.ServiceType);
 
 		Assert.Equal(mockPopupType, mockPopupServiceDescriptor.ImplementationType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ImplementationType);
+		Assert.Equal(mockPopupViewModelType, mockViewModelServiceDescriptor.ImplementationType);
 
-		Assert.IsType<MockSelfClosingPopup>(serviceProvider.GetRequiredService<MockSelfClosingPopup>());
-		Assert.IsType<MockPageViewModel>(serviceProvider.GetRequiredService<MockPageViewModel>());
+		Assert.IsType<ShortLivedSelfClosingPopup>(serviceProvider.GetRequiredService<ShortLivedSelfClosingPopup>());
+		Assert.IsType<ShortLivedMockPageViewModel>(serviceProvider.GetRequiredService<ShortLivedMockPageViewModel>());
 	}
 
 	[Fact]
@@ -231,7 +232,7 @@ public class ServiceCollectionExtensionsTests : BaseTest
 
 		// Assert
 		var mockPageServiceDescriptor = services.Single(s => s.ServiceType == mockPageType && s.Lifetime.Equals(expectedServiceLifetime));
-		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
+		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockPageViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
 
 		Assert.NotNull(mockPageServiceDescriptor);
 		Assert.NotNull(mockViewModelServiceDescriptor);
@@ -240,10 +241,10 @@ public class ServiceCollectionExtensionsTests : BaseTest
 		Assert.Equal(expectedServiceLifetime, mockViewModelServiceDescriptor.Lifetime);
 
 		Assert.Equal(mockPageType, mockPageServiceDescriptor.ServiceType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ServiceType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ServiceType);
 
 		Assert.Equal(mockPageType, mockPageServiceDescriptor.ImplementationType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ImplementationType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ImplementationType);
 
 		Assert.IsType<MockPage>(serviceProvider.GetRequiredService<MockPage>());
 		Assert.IsType<MockPageViewModel>(serviceProvider.GetRequiredService<MockPageViewModel>());
@@ -263,7 +264,7 @@ public class ServiceCollectionExtensionsTests : BaseTest
 
 		// Assert
 		var mockPageServiceDescriptor = services.Single(s => s.ServiceType == mockPageType && s.Lifetime.Equals(expectedServiceLifetime));
-		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
+		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockPageViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
 
 		Assert.NotNull(mockPageServiceDescriptor);
 		Assert.NotNull(mockViewModelServiceDescriptor);
@@ -274,10 +275,10 @@ public class ServiceCollectionExtensionsTests : BaseTest
 		Assert.Equal(expectedServiceLifetime, mockViewModelServiceDescriptor.Lifetime);
 
 		Assert.Equal(mockPageType, mockPageServiceDescriptor.ServiceType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ServiceType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ServiceType);
 
 		Assert.Equal(mockPageType, mockPageServiceDescriptor.ImplementationType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ImplementationType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ImplementationType);
 
 		Assert.IsType<MockPage>(serviceProvider.GetRequiredService<MockPage>());
 		Assert.IsType<MockPageViewModel>(serviceProvider.GetRequiredService<MockPageViewModel>());
@@ -298,7 +299,7 @@ public class ServiceCollectionExtensionsTests : BaseTest
 
 		// Assert
 		var mockPageServiceDescriptor = services.Single(s => s.ServiceType == mockPageType && s.Lifetime.Equals(expectedServiceLifetime));
-		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
+		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockPageViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
 
 		Assert.NotNull(mockPageServiceDescriptor);
 		Assert.NotNull(mockViewModelServiceDescriptor);
@@ -309,10 +310,10 @@ public class ServiceCollectionExtensionsTests : BaseTest
 		Assert.Equal(expectedServiceLifetime, mockViewModelServiceDescriptor.Lifetime);
 
 		Assert.Equal(mockPageType, mockPageServiceDescriptor.ServiceType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ServiceType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ServiceType);
 
 		Assert.Equal(mockPageType, mockPageServiceDescriptor.ImplementationType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ImplementationType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ImplementationType);
 
 		Assert.IsType<MockPage>(serviceProvider.GetRequiredService<MockPage>());
 		Assert.IsType<MockPageViewModel>(serviceProvider.GetRequiredService<MockPageViewModel>());
@@ -350,12 +351,12 @@ public class ServiceCollectionExtensionsTests : BaseTest
 		var services = MauiApp.CreateBuilder().Services;
 
 		// Act
-		services.AddScopedPopup<MockSelfClosingPopup, MockPageViewModel>();
+		services.AddScopedPopup<ShortLivedSelfClosingPopup, ShortLivedMockPageViewModel>();
 		var serviceProvider = services.BuildServiceProvider();
 
 		// Assert
 		var mockPopupServiceDescriptor = services.Single(s => s.ServiceType == mockPopupType && s.Lifetime.Equals(expectedServiceLifetime));
-		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
+		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockPopupViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
 
 		Assert.NotNull(mockPopupServiceDescriptor);
 		Assert.NotNull(mockViewModelServiceDescriptor);
@@ -364,13 +365,13 @@ public class ServiceCollectionExtensionsTests : BaseTest
 		Assert.Equal(expectedServiceLifetime, mockViewModelServiceDescriptor.Lifetime);
 
 		Assert.Equal(mockPopupType, mockPopupServiceDescriptor.ServiceType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ServiceType);
+		Assert.Equal(mockPopupViewModelType, mockViewModelServiceDescriptor.ServiceType);
 
 		Assert.Equal(mockPopupType, mockPopupServiceDescriptor.ImplementationType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ImplementationType);
+		Assert.Equal(mockPopupViewModelType, mockViewModelServiceDescriptor.ImplementationType);
 
-		Assert.IsType<MockSelfClosingPopup>(serviceProvider.GetRequiredService<MockSelfClosingPopup>());
-		Assert.IsType<MockPageViewModel>(serviceProvider.GetRequiredService<MockPageViewModel>());
+		Assert.IsType<ShortLivedSelfClosingPopup>(serviceProvider.GetRequiredService<ShortLivedSelfClosingPopup>());
+		Assert.IsType<ShortLivedMockPageViewModel>(serviceProvider.GetRequiredService<ShortLivedMockPageViewModel>());
 	}
 
 	[Fact]
@@ -386,7 +387,7 @@ public class ServiceCollectionExtensionsTests : BaseTest
 
 		// Assert
 		var mockPageServiceDescriptor = services.Single(s => s.ServiceType == mockPageType && s.Lifetime.Equals(expectedServiceLifetime));
-		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
+		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockPageViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
 
 		Assert.NotNull(mockPageServiceDescriptor);
 		Assert.NotNull(mockViewModelServiceDescriptor);
@@ -395,10 +396,10 @@ public class ServiceCollectionExtensionsTests : BaseTest
 		Assert.Equal(expectedServiceLifetime, mockViewModelServiceDescriptor.Lifetime);
 
 		Assert.Equal(mockPageType, mockPageServiceDescriptor.ServiceType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ServiceType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ServiceType);
 
 		Assert.Equal(mockPageType, mockPageServiceDescriptor.ImplementationType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ImplementationType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ImplementationType);
 
 		Assert.IsType<MockPage>(serviceProvider.GetRequiredService<MockPage>());
 		Assert.IsType<MockPageViewModel>(serviceProvider.GetRequiredService<MockPageViewModel>());
@@ -418,7 +419,7 @@ public class ServiceCollectionExtensionsTests : BaseTest
 
 		// Assert
 		var mockPageServiceDescriptor = services.Single(s => s.ServiceType == mockPageType && s.Lifetime.Equals(expectedServiceLifetime));
-		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
+		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockPageViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
 
 		Assert.NotNull(mockPageServiceDescriptor);
 		Assert.NotNull(mockViewModelServiceDescriptor);
@@ -429,10 +430,10 @@ public class ServiceCollectionExtensionsTests : BaseTest
 		Assert.Equal(expectedServiceLifetime, mockViewModelServiceDescriptor.Lifetime);
 
 		Assert.Equal(mockPageType, mockPageServiceDescriptor.ServiceType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ServiceType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ServiceType);
 
 		Assert.Equal(mockPageType, mockPageServiceDescriptor.ImplementationType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ImplementationType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ImplementationType);
 
 		Assert.IsType<MockPage>(serviceProvider.GetRequiredService<MockPage>());
 		Assert.IsType<MockPageViewModel>(serviceProvider.GetRequiredService<MockPageViewModel>());
@@ -453,7 +454,7 @@ public class ServiceCollectionExtensionsTests : BaseTest
 
 		// Assert
 		var mockPageServiceDescriptor = services.Single(s => s.ServiceType == mockPageType && s.Lifetime.Equals(expectedServiceLifetime));
-		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
+		var mockViewModelServiceDescriptor = services.Single(s => s.ServiceType == mockPageViewModelType && s.Lifetime.Equals(expectedServiceLifetime));
 
 		Assert.NotNull(mockPageServiceDescriptor);
 		Assert.NotNull(mockViewModelServiceDescriptor);
@@ -464,10 +465,10 @@ public class ServiceCollectionExtensionsTests : BaseTest
 		Assert.Equal(expectedServiceLifetime, mockViewModelServiceDescriptor.Lifetime);
 
 		Assert.Equal(mockPageType, mockPageServiceDescriptor.ServiceType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ServiceType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ServiceType);
 
 		Assert.Equal(mockPageType, mockPageServiceDescriptor.ImplementationType);
-		Assert.Equal(mockViewModelType, mockViewModelServiceDescriptor.ImplementationType);
+		Assert.Equal(mockPageViewModelType, mockViewModelServiceDescriptor.ImplementationType);
 
 		Assert.IsType<MockPage>(serviceProvider.GetRequiredService<MockPage>());
 		Assert.IsType<MockPageViewModel>(serviceProvider.GetRequiredService<MockPageViewModel>());

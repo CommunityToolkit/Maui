@@ -13,7 +13,7 @@ namespace CommunityToolkit.Maui.Views;
 [SupportedOSPlatform("android21.0")]
 [SupportedOSPlatform("ios")]
 [SupportedOSPlatform("maccatalyst")]
-public partial class CameraView : View, ICameraView
+public partial class CameraView : View, ICameraView, IDisposable
 {
 	static readonly BindablePropertyKey isAvailablePropertyKey =
 		BindableProperty.CreateReadOnly(nameof(IsAvailable), typeof(bool), typeof(CameraView), CameraViewDefaults.IsAvailable);
@@ -65,18 +65,19 @@ public partial class CameraView : View, ICameraView
 	/// Backing BindableProperty for the <see cref="CaptureImageCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty CaptureImageCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(CaptureImageCommand), typeof(Command<CancellationToken>), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateCaptureImageCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(CaptureImageCommand), typeof(Command<CancellationToken>), typeof(CameraView), null, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateCaptureImageCommand).BindableProperty;
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="StartCameraPreviewCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty StartCameraPreviewCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(StartCameraPreviewCommand), typeof(Command<CancellationToken>), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStartCameraPreviewCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(StartCameraPreviewCommand), typeof(Command<CancellationToken>), typeof(CameraView), null, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStartCameraPreviewCommand).BindableProperty;
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="StopCameraPreviewCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty StopCameraPreviewCommandProperty =
+<<<<<<< feature/camera-video-recording -- Incoming Change
 		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(ICommand), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopCameraPreviewCommand).BindableProperty;
 	
 	/// <summary>
@@ -90,8 +91,15 @@ public partial class CameraView : View, ICameraView
 	/// </summary>
 	public static readonly BindableProperty StopVideoRecordingCommandProperty =
 		BindableProperty.CreateReadOnly(nameof(StopVideoRecordingCommand), typeof(Command<Stream>), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopVideoRecordingCommand).BindableProperty;
+=======
+		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(ICommand), typeof(CameraView), null, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopCameraPreviewCommand).BindableProperty;
+>>>>>>> main -- Current Change
 
+
+	readonly SemaphoreSlim captureImageSemaphoreSlim = new(1, 1);
 	readonly WeakEventManager weakEventManager = new();
+
+	bool isDisposed;
 
 	/// <summary>
 	/// Event that is raised when the camera capture fails.
@@ -210,7 +218,14 @@ public partial class CameraView : View, ICameraView
 		set => SetValue(isCameraBusyPropertyKey, value);
 	}
 
-	private protected new CameraViewHandler Handler => (CameraViewHandler)(base.Handler ?? throw new InvalidOperationException("Unable to retrieve Handler"));
+	new CameraViewHandler Handler => (CameraViewHandler)(base.Handler ?? throw new InvalidOperationException("Unable to retrieve Handler"));
+
+	/// <inheritdoc/>
+	public void Dispose()
+	{
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
+	}
 
 	/// <inheritdoc cref="ICameraView.GetAvailableCameras"/>
 	public async ValueTask<IReadOnlyList<CameraInfo>> GetAvailableCameras(CancellationToken token)
@@ -240,8 +255,37 @@ public partial class CameraView : View, ICameraView
 #endif
 
 	/// <inheritdoc cref="ICameraView.CaptureImage"/>
-	public ValueTask CaptureImage(CancellationToken token) =>
-		Handler.CameraManager.TakePicture(token);
+	public async Task<Stream> CaptureImage(CancellationToken token)
+	{
+		// Use SemaphoreSlim to ensure `MediaCaptured` and `MediaCaptureFailed` events are unsubscribed before calling `TakePicture` again
+		// Without this SemaphoreSlim, previous calls to this method will fire `MediaCaptured` and/or `MediaCaptureFailed` events causing this method to return the wrong Stream or throw the wrong Exception
+		await captureImageSemaphoreSlim.WaitAsync(token);
+
+		var mediaStreamTCS = new TaskCompletionSource<Stream>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+		MediaCaptured += HandleMediaCaptured;
+		MediaCaptureFailed += HandleMediaCapturedFailed;
+
+		try
+		{
+			await Handler.CameraManager.TakePicture(token);
+
+			var stream = await mediaStreamTCS.Task.WaitAsync(token);
+			return stream;
+		}
+		finally
+		{
+			MediaCaptured -= HandleMediaCaptured;
+			MediaCaptureFailed -= HandleMediaCapturedFailed;
+
+			// Release SemaphoreSlim after `MediaCaptured` and `MediaCaptureFailed` events are unsubscribed
+			captureImageSemaphoreSlim.Release();
+		}
+
+		void HandleMediaCaptured(object? sender, MediaCapturedEventArgs e) => mediaStreamTCS.SetResult(e.Media);
+
+		void HandleMediaCapturedFailed(object? sender, MediaCaptureFailedEventArgs e) => mediaStreamTCS.SetException(new CameraException(e.FailureReason));
+	}
 
 	/// <inheritdoc cref="ICameraView.StartCameraPreview"/>
 	public Task StartCameraPreview(CancellationToken token) =>
@@ -251,6 +295,7 @@ public partial class CameraView : View, ICameraView
 	public void StopCameraPreview() =>
 		Handler.CameraManager.StopCameraPreview();
 
+<<<<<<< feature/camera-video-recording -- Incoming Change
 	/// <inheritdoc cref="ICameraView.StartCameraPreview"/>
 	public Task StartVideoRecording(CancellationToken token) =>
 		Handler.CameraManager.StartVideoRecording(token);
@@ -258,6 +303,21 @@ public partial class CameraView : View, ICameraView
 	/// <inheritdoc cref="ICameraView.StopCameraPreview"/>
 	public Task<Stream> StopVideoRecording(CancellationToken token) =>
 		Handler.CameraManager.StopVideoRecording(token);
+=======
+	/// <inheritdoc/>
+	protected virtual void Dispose(bool disposing)
+	{
+		if (!isDisposed)
+		{
+			if (disposing)
+			{
+				captureImageSemaphoreSlim.Dispose();
+			}
+
+			isDisposed = true;
+		}
+	}
+>>>>>>> main -- Current Change
 
 	void ICameraView.OnMediaCaptured(Stream imageData)
 	{

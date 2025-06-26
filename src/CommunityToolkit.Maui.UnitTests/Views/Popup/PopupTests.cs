@@ -1,15 +1,25 @@
-﻿using CommunityToolkit.Maui.Views;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.UnitTests.Services;
+using CommunityToolkit.Maui.Views;
 using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class PopupTests : BaseTest
+public class PopupTests : BaseViewTest
 {
 	[Fact]
 	public void PopupBackgroundColor_DefaultValue_ShouldBeWhite()
 	{
 		Assert.Equal(PopupDefaults.BackgroundColor, Colors.White);
+	}
+
+	[Fact]
+	public void CanBeDismissedByTappingOutsideOfPopup_DefaultValue_ShouldBeTrue()
+	{
+		var popup = new Popup();
+		Assert.Equal(PopupDefaults.CanBeDismissedByTappingOutsideOfPopup, popup.CanBeDismissedByTappingOutsideOfPopup);
 	}
 
 	[Fact]
@@ -147,6 +157,33 @@ public class PopupTests : BaseTest
 		// Assert
 		await popup.CloseAsync(TestContext.Current.CancellationToken);
 		await popup.CloseAsync("Hello", TestContext.Current.CancellationToken);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_TaskShouldCompleteWhenPopupCloseAsyncIsCalled()
+	{
+		// Arrange
+		Task<IPopupResult> showPopupAsyncTask;
+		var popup = new Popup();
+
+		if (Application.Current?.Windows[0].Page is not Page page)
+		{
+			throw new InvalidOperationException("Page cannot be null");
+		}
+
+		// Act
+		showPopupAsyncTask = page.ShowPopupAsync(popup, token: TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.Single(page.Navigation.ModalStack);
+		Assert.IsType<PopupPage>(page.Navigation.ModalStack[0]);
+
+		// Act
+		await popup.CloseAsync(TestContext.Current.CancellationToken);
+		await showPopupAsyncTask;
+
+		// Assert
+		Assert.Empty(page.Navigation.ModalStack);
 	}
 
 	sealed class PopupOverridingClose : Popup
