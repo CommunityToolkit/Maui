@@ -45,7 +45,7 @@ public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 				// Check if the method contains UseMauiCommunityToolkit call
 				// This will find it even inside preprocessor directives
 				var methodText = methodDeclaration.ToString();
-				if(!methodText.Contains(useMauiCommunityToolkitMethodName))
+				if(!methodText.Contains(useMauiCommunityToolkitMethodName, StringComparison.Ordinal))
 				{
 					var diagnostic = Diagnostic.Create(rule, invocationExpression.GetLocation());
 					context.ReportDiagnostic(diagnostic);
