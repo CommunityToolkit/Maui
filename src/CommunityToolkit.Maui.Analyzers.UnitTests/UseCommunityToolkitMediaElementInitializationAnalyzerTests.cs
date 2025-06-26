@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.MediaElement.Analyzers;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.MediaElement.Analyzers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
@@ -160,7 +161,7 @@ public class UseCommunityToolkitMediaElementInitializationAnalyzerTests
 		return VerifyAnalyzerAsync(
 			source,
 			[
-				typeof(Views.MediaElement) // CommunityToolkit.Maui.MediaElement
+				typeof(MediaElementOptions) // CommunityToolkit.Maui.MediaElement
 			],
 			diagnosticResults);
 	}
