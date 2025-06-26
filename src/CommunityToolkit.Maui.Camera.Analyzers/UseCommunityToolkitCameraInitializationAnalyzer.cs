@@ -42,14 +42,34 @@ public class UseCommunityToolkitCameraInitializationAnalyzer : DiagnosticAnalyze
 				.OfType<MethodDeclarationSyntax>()
 				.FirstOrDefault();
 
-			if (methodDeclaration is not null
-				&& !methodDeclaration.DescendantNodes().OfType<InvocationExpressionSyntax>().Any(static n =>
-					n.Expression is MemberAccessExpressionSyntax m &&
-					m.Name.Identifier.ValueText == useMauiCommunityToolkitCameraMethodName))
+			if (methodDeclaration is not null && !HasUseMauiCommunityToolkitCameraCall(methodDeclaration))
 			{
 				var diagnostic = Diagnostic.Create(rule, invocationExpression.GetLocation());
 				context.ReportDiagnostic(diagnostic);
 			}
 		}
+	}
+
+	static bool HasUseMauiCommunityToolkitCameraCall(MethodDeclarationSyntax methodDeclaration)
+	{
+		// Check syntax nodes first (handles active code)
+		var hasInSyntaxTree = methodDeclaration
+			.DescendantNodes()
+			.OfType<InvocationExpressionSyntax>()
+			.Any(invocation =>
+				invocation.Expression is MemberAccessExpressionSyntax memberAccess &&
+				memberAccess.Name.Identifier.ValueText == useMauiCommunityToolkitCameraMethodName);
+
+		if (hasInSyntaxTree)
+		{
+			return true;
+		}
+
+		// Check trivia (comments, preprocessor directives, disabled code)
+		return methodDeclaration
+			.DescendantTrivia()
+			.Any(trivia =>
+				trivia.IsKind(SyntaxKind.DisabledTextTrivia) &&
+				trivia.ToString().Contains(useMauiCommunityToolkitCameraMethodName, StringComparison.Ordinal));
 	}
 }
