@@ -87,7 +87,7 @@ public class Options() : Core.Options
 						{
 							throw new InvalidOperationException($"{nameof(Application)}.{nameof(Application.Current)} cannot be null when Windows are closed");
 						}
-						else if (Application.Current.Windows.Count is 1)
+						else if (Application.Current.Windows.Count is 0)
 						{
 							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked -= OnSnackbarNotificationInvoked;
 							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Unregister();
