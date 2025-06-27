@@ -191,6 +191,10 @@ partial class CameraManager
 	{
 	}
 
+	protected virtual partial Task PlatformStartVideoRecording(CancellationToken token) => throw new NotSupportedException("notSupportedMessage");
+	protected virtual partial Task<Stream> PlatformStopVideoRecording(CancellationToken token) => throw new NotSupportedException("notSupportedMessage");
+
+
 	protected virtual async partial ValueTask PlatformTakePicture(CancellationToken token)
 	{
 		ArgumentNullException.ThrowIfNull(photoOutput);

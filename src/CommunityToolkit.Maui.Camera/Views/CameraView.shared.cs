@@ -77,7 +77,23 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// Backing BindableProperty for the <see cref="StopCameraPreviewCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty StopCameraPreviewCommandProperty =
+<<<<<<< feature/camera-video-recording -- Incoming Change
+		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(ICommand), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopCameraPreviewCommand).BindableProperty;
+	
+	/// <summary>
+	/// Backing BindableProperty for the <see cref="StartCameraPreviewCommand"/> property.
+	/// </summary>
+	public static readonly BindableProperty StartVideoRecordingCommandProperty =
+		BindableProperty.CreateReadOnly(nameof(StartVideoRecordingCommand), typeof(ICommand), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStartVideoRecordingCommand).BindableProperty;
+
+	/// <summary>
+	/// Backing BindableProperty for the <see cref="StopCameraPreviewCommand"/> property.
+	/// </summary>
+	public static readonly BindableProperty StopVideoRecordingCommandProperty =
+		BindableProperty.CreateReadOnly(nameof(StopVideoRecordingCommand), typeof(Command<Stream>), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopVideoRecordingCommand).BindableProperty;
+=======
 		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(ICommand), typeof(CameraView), null, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopCameraPreviewCommand).BindableProperty;
+>>>>>>> main -- Current Change
 
 
 	readonly SemaphoreSlim captureImageSemaphoreSlim = new(1, 1);
@@ -131,11 +147,21 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// <see cref="StartCameraPreviewCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter
 	/// </remarks>
 	public Command<CancellationToken> StartCameraPreviewCommand => (Command<CancellationToken>)GetValue(StartCameraPreviewCommandProperty);
+	
+	/// <summary>
+	/// 
+	/// </summary>
+	public ICommand StartVideoRecordingCommand => (ICommand)GetValue(StartVideoRecordingCommandProperty);
 
 	/// <summary>
 	/// Gets the Command that stops the camera preview.
 	/// </summary>
 	public ICommand StopCameraPreviewCommand => (ICommand)GetValue(StopCameraPreviewCommandProperty);
+	
+	/// <summary>
+	/// 
+	/// </summary>
+	public Command<Stream> StopVideoRecordingCommand => (Command<Stream>)GetValue(StopVideoRecordingCommandProperty);
 
 	/// <summary>
 	/// Gets or sets the <see cref="CameraFlashMode"/>.
@@ -217,6 +243,17 @@ public partial class CameraView : View, ICameraView, IDisposable
 		return CameraProvider.AvailableCameras;
 	}
 
+#if ANDROID
+	/// <summary>
+	/// Set Extension Mode
+	/// </summary>
+	/// <param name="mode">mode</param>
+	public Task SetExtensionMode(int mode)
+	{
+		return Handler.CameraManager.SetExtensionMode(mode);
+	}
+#endif
+
 	/// <inheritdoc cref="ICameraView.CaptureImage"/>
 	public async Task<Stream> CaptureImage(CancellationToken token)
 	{
@@ -258,6 +295,15 @@ public partial class CameraView : View, ICameraView, IDisposable
 	public void StopCameraPreview() =>
 		Handler.CameraManager.StopCameraPreview();
 
+<<<<<<< feature/camera-video-recording -- Incoming Change
+	/// <inheritdoc cref="ICameraView.StartCameraPreview"/>
+	public Task StartVideoRecording(CancellationToken token) =>
+		Handler.CameraManager.StartVideoRecording(token);
+
+	/// <inheritdoc cref="ICameraView.StopCameraPreview"/>
+	public Task<Stream> StopVideoRecording(CancellationToken token) =>
+		Handler.CameraManager.StopVideoRecording(token);
+=======
 	/// <inheritdoc/>
 	protected virtual void Dispose(bool disposing)
 	{
@@ -271,6 +317,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 			isDisposed = true;
 		}
 	}
+>>>>>>> main -- Current Change
 
 	void ICameraView.OnMediaCaptured(Stream imageData)
 	{
