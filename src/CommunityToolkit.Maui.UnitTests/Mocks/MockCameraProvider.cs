@@ -1,11 +1,22 @@
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Primitives;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
 public class MockCameraProvider : ICameraProvider
 {
 	public IReadOnlyList<CameraInfo>? AvailableCameras { get; private set; }
+
+	public bool IsInitialized { get; private set; }
+
+	public ValueTask InitializeAsync(CancellationToken token)
+	{
+		if (IsInitialized)
+		{
+			return ValueTask.CompletedTask;
+		}
+		IsInitialized = true;
+		return RefreshAvailableCameras(token);
+	}
 
 	public ValueTask RefreshAvailableCameras(CancellationToken token)
 	{
