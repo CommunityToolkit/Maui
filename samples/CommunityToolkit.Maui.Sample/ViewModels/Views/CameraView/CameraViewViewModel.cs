@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -45,7 +44,7 @@ public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseV
 
 	public async Task InitializeAsync()
 	{
-		await cameraProvider.InitializeAsync;
+		await cameraProvider.InitializeAsync(CancellationToken.None);
 		Cameras = cameraProvider.AvailableCameras ?? [];
 	}
 

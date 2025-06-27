@@ -16,19 +16,25 @@ public interface ICameraProvider
 	IReadOnlyList<CameraInfo>? AvailableCameras { get; }
 
 	/// <summary>
-	/// Refreshes <see cref="AvailableCameras"/> with the cameras available on device
+	/// Refreshes <see cref="AvailableCameras"/> with the cameras available on device.
 	/// </summary>
-	/// <remarks>
-	/// Only call this method when the available cameras on device has been updated, as the list is automatically initialized with <see cref="InitializeAsync"/>
-	/// </remarks>
 	/// <param name="token"></param>
 	/// <returns></returns>
 	[MemberNotNull(nameof(AvailableCameras))]
 	ValueTask RefreshAvailableCameras(CancellationToken token);
 
 	/// <summary>
-	/// The <see cref="Task"/> to initialize the available cameras list. This task is automatically started when the <see cref="ICameraProvider"/> is created.
+	/// Gets a value indicating whether the camera provider has been successfully initialized.
 	/// </summary>
-	Task InitializeAsync { get; }
+	bool IsInitialized { get; }
+
+	/// <summary>
+	/// Initialize the camera provider by refreshing the <see cref="AvailableCameras"/>. 
+	/// </summary>
+	/// <remarks>
+	/// If the provider is already initialized, the <see cref="AvailableCameras"/> will not be refreshed again until <see cref="RefreshAvailableCameras(CancellationToken)"/> is called,
+	/// and this method will return a <see cref="ValueTask.CompletedTask"/>.
+	/// </remarks>
+	ValueTask InitializeAsync(CancellationToken token);
 
 }

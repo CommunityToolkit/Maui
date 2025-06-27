@@ -204,7 +204,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// <inheritdoc cref="ICameraView.GetAvailableCameras"/>
 	public async ValueTask<IReadOnlyList<CameraInfo>> GetAvailableCameras(CancellationToken token)
 	{
-		await CameraProvider.InitializeAsync;
+		await CameraProvider.InitializeAsync(token);
 		return CameraProvider.AvailableCameras ?? throw new CameraException("No camera available on device");
 	}
 

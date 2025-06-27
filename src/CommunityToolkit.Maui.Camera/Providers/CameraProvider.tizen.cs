@@ -2,5 +2,5 @@
 
 partial class CameraProvider
 {
-	public partial ValueTask RefreshAvailableCameras(CancellationToken token) => throw new NotSupportedException();
+	internal partial ValueTask PlatformRefreshAvailableCameras(CancellationToken token) => throw new NotSupportedException();
 }

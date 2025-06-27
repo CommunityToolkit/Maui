@@ -40,7 +40,7 @@ partial class CameraManager(
 			throw new PermissionException("Camera permissions not granted");
 		}
 
-		await cameraProvider.InitializeAsync;
+		await cameraProvider.InitializeAsync(token);
 		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
 		await PlatformConnectCamera(token);

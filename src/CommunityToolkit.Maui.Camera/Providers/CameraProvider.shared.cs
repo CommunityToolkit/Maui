@@ -5,18 +5,50 @@
 /// </summary>
 partial class CameraProvider : ICameraProvider
 {
+	readonly Lock initializationLock = new();
+	Task? initializationTask;
+
+	internal partial ValueTask PlatformRefreshAvailableCameras(CancellationToken token);
+
 	/// <inheritdoc/>
 	public IReadOnlyList<CameraInfo>? AvailableCameras { get; private set; }
 
 	/// <inheritdoc/>
-	public partial ValueTask RefreshAvailableCameras(CancellationToken token);
+	public bool IsInitialized => initializationTask?.IsCompletedSuccessfully is true;
 
-	public CameraProvider()
+	bool IsNotRefreshing => initializationTask is null || initializationTask.IsCompleted;
+
+	/// <inheritdoc/>	
+	public ValueTask InitializeAsync(CancellationToken token)
 	{
-		InitializeAsync = RefreshAvailableCameras(CancellationToken.None).AsTask();
+		lock (initializationLock)
+		{
+			if (IsInitialized)
+			{
+				return ValueTask.CompletedTask;
+			}
+
+			if (IsNotRefreshing)
+			{
+				initializationTask = PlatformRefreshAvailableCameras(token).AsTask();
+			}
+
+			return new ValueTask(initializationTask!);
+		}
 	}
 
 	/// <inheritdoc/>
-	public Task InitializeAsync { get; init; }
+	public ValueTask RefreshAvailableCameras(CancellationToken token)
+	{
+		lock (initializationLock)
+		{
+			if (IsNotRefreshing)
+			{
+				initializationTask = PlatformRefreshAvailableCameras(token).AsTask();
+			}
+
+			return new ValueTask(initializationTask!);
+		}
+	}
 
 }
