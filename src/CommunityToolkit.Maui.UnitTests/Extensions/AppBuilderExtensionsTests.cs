@@ -21,6 +21,8 @@ public class AppBuilderExtensionsTests : BaseTest
 		Assert.False(Options.ShouldSuppressExceptionsInBehaviors);
 		Assert.False(Options.ShouldSuppressExceptionsInConverters);
 		Assert.False(isAndroidDialogFragmentServiceInitialized);
+		Assert.Equal(Options.DefaultPopupSettings, new DefaultPopupSettings());
+		Assert.Equal(Options.DefaultPopupOptionsSettings, new DefaultPopupOptionsSettings());
 
 		Core.AppBuilderExtensions.ShouldUseStatusBarBehaviorOnAndroidModalPageOptionCompleted -= HandleShouldUseStatusBarBehaviorOnAndroidModalPageOptionCompleted;
 
@@ -50,6 +52,8 @@ public class AppBuilderExtensionsTests : BaseTest
 		Assert.False(Options.ShouldSuppressExceptionsInBehaviors);
 		Assert.False(Options.ShouldSuppressExceptionsInConverters);
 		Assert.True(isAndroidDialogFragmentServiceInitialized);
+		Assert.Equal(Options.DefaultPopupSettings, new DefaultPopupSettings());
+		Assert.Equal(Options.DefaultPopupOptionsSettings, new DefaultPopupOptionsSettings());
 
 		void HandleShouldUseStatusBarBehaviorOnAndroidModalPageOptionCompleted(object? sender, EventArgs e)
 		{
@@ -88,6 +92,25 @@ public class AppBuilderExtensionsTests : BaseTest
 		// Arrange
 		var builder = MauiApp.CreateBuilder();
 		bool isAndroidDialogFragmentServiceInitialized = false;
+		var defaultPopupSettings = new DefaultPopupSettings
+		{
+			CanBeDismissedByTappingOutsideOfPopup = true,
+			BackgroundColor = Colors.Orange,
+			HorizontalOptions = LayoutOptions.End,
+			VerticalOptions = LayoutOptions.Start,
+			Margin = 72,
+			Padding = 4
+		};
+
+		var defaultPopupOptionsSettings = new DefaultPopupOptionsSettings
+		{
+			CanBeDismissedByTappingOutsideOfPopup = true,
+			OnTappingOutsideOfPopup = () => Console.WriteLine("Hello World"),
+			PageOverlayColor = Colors.Green,
+			Shadow = null,
+			Shape = null
+		};
+		
 		Core.AppBuilderExtensions.ShouldUseStatusBarBehaviorOnAndroidModalPageOptionCompleted += HandleShouldUseStatusBarBehaviorOnAndroidModalPageOptionCompleted;
 
 		// Act
@@ -98,6 +121,8 @@ public class AppBuilderExtensionsTests : BaseTest
 			options.SetShouldSuppressExceptionsInBehaviors(!Options.ShouldSuppressExceptionsInBehaviors);
 			options.SetShouldSuppressExceptionsInConverters(!Options.ShouldSuppressExceptionsInConverters);
 			options.SetShouldUseStatusBarBehaviorOnAndroidModalPage(!Core.Options.ShouldUseStatusBarBehaviorOnAndroidModalPage);
+			options.SetPopupDefaults(defaultPopupSettings);
+			options.SetPopupOptionsDefaults(defaultPopupOptionsSettings);
 		});
 
 		// Assert
@@ -107,6 +132,8 @@ public class AppBuilderExtensionsTests : BaseTest
 		Assert.True(Options.ShouldSuppressExceptionsInBehaviors);
 		Assert.True(Options.ShouldSuppressExceptionsInConverters);
 		Assert.False(isAndroidDialogFragmentServiceInitialized);
+		Assert.Equal(defaultPopupSettings, Options.DefaultPopupSettings);
+		Assert.Equal(defaultPopupOptionsSettings, Options.DefaultPopupOptionsSettings);
 
 		Core.AppBuilderExtensions.ShouldUseStatusBarBehaviorOnAndroidModalPageOptionCompleted -= HandleShouldUseStatusBarBehaviorOnAndroidModalPageOptionCompleted;
 

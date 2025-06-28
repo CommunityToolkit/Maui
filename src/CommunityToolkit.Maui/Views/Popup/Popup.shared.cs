@@ -30,17 +30,18 @@ public partial class Popup : ContentView
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="CanBeDismissedByTappingOutsideOfPopup"/> property.
 	/// </summary>
-	public static readonly BindableProperty CanBeDismissedByTappingOutsideOfPopupProperty = BindableProperty.Create(nameof(CanBeDismissedByTappingOutsideOfPopup), typeof(bool), typeof(Popup), PopupDefaults.CanBeDismissedByTappingOutsideOfPopup);
+	public static readonly BindableProperty CanBeDismissedByTappingOutsideOfPopupProperty = BindableProperty.Create(nameof(CanBeDismissedByTappingOutsideOfPopup), typeof(bool), typeof(Popup), Options.DefaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup);
 
 	/// <summary>
 	/// Initializes Popup
 	/// </summary>
 	public Popup()
 	{
-		Margin = PopupDefaults.Margin;
-		Padding = PopupDefaults.Padding;
-		HorizontalOptions = PopupDefaults.HorizontalOptions;
-		VerticalOptions = PopupDefaults.VerticalOptions;
+		Margin = Options.DefaultPopupSettings.Margin;
+		Padding = Options.DefaultPopupSettings.Padding;
+		HorizontalOptions = Options.DefaultPopupSettings.HorizontalOptions;
+		VerticalOptions = Options.DefaultPopupSettings.VerticalOptions;
+		BackgroundColor = Options.DefaultPopupSettings.BackgroundColor;
 	}
 
 	/// <summary>
