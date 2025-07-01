@@ -134,10 +134,10 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 
 	async void HandleComplexPopupClicked(object? sender, EventArgs e)
 	{
-		var complexPopupOptionsViewModel = new ComplexPopupOptionsViewModel();
+		var complexPopupOpenedCancellationTokenSource = new CancellationTokenSource();
 		var complexPopupOptions = new PopupOptions
 		{
-			BindingContext = complexPopupOptionsViewModel,
+			BindingContext = this.BindingContext,
 			Shape = new RoundRectangle
 			{
 				CornerRadius = new CornerRadius(4),
@@ -145,24 +145,21 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 				Stroke = Colors.Orange
 			}
 		};
-		complexPopupOptions.SetBinding<ComplexPopupOptionsViewModel, Color>(PopupOptions.PageOverlayColorProperty, static x => x.PageOverlayBackgroundColor, source: complexPopupOptionsViewModel);
+		complexPopupOptions.SetBinding<PopupsViewModel, Color>(PopupOptions.PageOverlayColorProperty, static x => x.PageOverlayBackgroundColor);
 
 		var popupResultTask = popupService.ShowPopupAsync<ComplexPopup, string>(Navigation, complexPopupOptions);
 
-		// Rotate `PopupOptions.PageOverlayBackgroundColor` every 2 seconds using random colors 
-		while (!popupResultTask.IsCompleted)
-		{
-			await Task.Delay(TimeSpan.FromSeconds(2));
-			
-			complexPopupOptionsViewModel.PageOverlayBackgroundColor =
-				Color.FromRgba(Random.Shared.NextDouble(), Random.Shared.NextDouble(), Random.Shared.NextDouble(), 0.2f);
-		}
+		// Trigger Command in ViewModel to Rotate PopupOptions.PageOverlayColorProperty
+		BindingContext.ComplexPopupOpenedCommand.Execute(complexPopupOpenedCancellationTokenSource.Token);
 
 		var popupResult = await popupResultTask;
+		await complexPopupOpenedCancellationTokenSource.CancelAsync();
+
 		if (!popupResult.WasDismissedByTappingOutsideOfPopup)
 		{
 			// Display Popup Result as a Toast
 			await Toast.Make($"You entered {popupResult.Result}").Show();
 		}
+
 	}
 }
