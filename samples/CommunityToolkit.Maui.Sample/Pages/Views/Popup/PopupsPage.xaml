@@ -48,6 +48,8 @@
 
                 <Button Text="OnDisappearing Popup" Clicked="HandleOnDisappearingPopupClicked" />
                 
+                <Button Text="Complex Popup" Clicked="HandleComplexPopupClicked" />
+                
             </VerticalStackLayout>
         </ScrollView>
     </ContentPage.Content>
