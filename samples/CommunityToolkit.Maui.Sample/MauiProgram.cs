@@ -70,6 +70,7 @@ public static class MauiProgram
 								.UseMauiCommunityToolkitMediaElement(static options =>
 								{
 									options.SetDefaultAndroidViewType(AndroidViewType.TextureView);
+									options.SetDefaultAndroidForegroundService(true);
 								})
 								.ConfigureMauiHandlers(static handlers =>
 								{

@@ -225,10 +225,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// </summary>
 	public AndroidViewType AndroidViewType { get; init; } = MediaElementOptions.DefaultAndroidViewType;
 
-	/// <summary>
-	/// Gets or sets whether the Android Foreground Service is enabled.
-	/// </summary>
-	public bool IsAndroidForegroundServiceEnabled { get; init; } = MediaElementOptions.IsAndroidForegroundServiceEnabled;
+	internal bool IsAndroidForegroundServiceEnabled { get; init; } = MediaElementOptions.IsAndroidForegroundServiceEnabled;
 
 	/// <summary>
 	/// Gets or sets whether the media should start playing as soon as it's loaded.

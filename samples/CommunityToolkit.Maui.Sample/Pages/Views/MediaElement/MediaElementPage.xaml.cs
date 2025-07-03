@@ -275,7 +275,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		var popupMediaElement = new MediaElement
 		{
 			AndroidViewType = AndroidViewType.SurfaceView,
-			IsAndroidForegroundServiceEnabled = false,
 			Source = source,
 			MetadataArtworkUrl = "dotnet_bot.png",
 			ShouldAutoPlay = true,
