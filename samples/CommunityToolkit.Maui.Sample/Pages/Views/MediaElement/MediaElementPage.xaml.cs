@@ -302,17 +302,19 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 		var popupMediaElement = new MediaElement
 		{
+			WidthRequest = 600,
+			HeightRequest = 400,
 			AndroidViewType = AndroidViewType.SurfaceView,
 			Source = source,
-			MetadataArtworkUrl = "dotnet_bot.png",
+			MetadataArtworkUrl = botImageUrl,
 			ShouldAutoPlay = true,
 			ShouldShowPlaybackControls = true,
 		};
 
 		await this.ShowPopupAsync(popupMediaElement);
 
-		popupMediaElement.Stop();
-		popupMediaElement.Source = null;
+			popupMediaElement.Stop();
+			popupMediaElement.Source = null;
 	}
 }
 
