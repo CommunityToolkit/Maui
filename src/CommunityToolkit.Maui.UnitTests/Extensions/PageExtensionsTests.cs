@@ -1,9 +1,8 @@
 ﻿using CommunityToolkit.Maui.Extensions;
-using CommunityToolkit.Maui.UnitTests.Mocks;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Extensions;
-public class PageExtensionsTests : BaseHandlerTest
+public class PageExtensionsTests : BaseTest
 {
 	[Fact]
 	public void GetCurrentPage_ReturnsModalPage_WhenModalStackIsNotEmpty()
