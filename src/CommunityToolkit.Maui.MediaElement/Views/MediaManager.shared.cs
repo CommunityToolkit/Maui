@@ -47,7 +47,7 @@ public partial class MediaManager
 
 
 	/// <summary>
-	/// 
+	/// Handles changes to the full screen state.
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
