@@ -581,7 +581,7 @@ This guide provides a set of best practices and coding standards for writing C# 
 
 ### Element Positioning
 
-Please adhere to [Style Cop SA1201](https://docs.github.com/en/copilot/using-github-copilot/code-review/configuring-coding-guidelines#creating-a-coding-guideline) for organizing code in a file.
+Please adhere to [Style Cop SA1201](https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1201.md) for organizing code in a file.
 
 Elements at the file root level or within a namespace should be positioned in the following order:
 

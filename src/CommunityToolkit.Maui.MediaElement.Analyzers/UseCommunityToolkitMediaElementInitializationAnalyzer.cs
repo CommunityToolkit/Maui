@@ -36,20 +36,37 @@ public class UseCommunityToolkitMediaElementInitializationAnalyzer : DiagnosticA
 			&& invocationExpression.Expression is MemberAccessExpressionSyntax memberAccessExpression
 			&& memberAccessExpression.Name.Identifier.ValueText == useMauiAppMethodName)
 		{
-			var root = invocationExpression.SyntaxTree.GetRoot();
-			var methodDeclaration = root.FindNode(invocationExpression.FullSpan)
+			var methodDeclaration = invocationExpression
 				.Ancestors()
 				.OfType<MethodDeclarationSyntax>()
 				.FirstOrDefault();
 
-			if (methodDeclaration is not null
-				&& !methodDeclaration.DescendantNodes().OfType<InvocationExpressionSyntax>().Any(static n =>
-					n.Expression is MemberAccessExpressionSyntax m &&
-					m.Name.Identifier.ValueText == useMauiCommunityToolkitMediaElementMethodName))
+			if (methodDeclaration is not null && !HasUseMauiCommunityToolkitMediaElementCall(methodDeclaration))
 			{
 				var diagnostic = Diagnostic.Create(rule, invocationExpression.GetLocation());
 				context.ReportDiagnostic(diagnostic);
 			}
 		}
+	}
+
+	static bool HasUseMauiCommunityToolkitMediaElementCall(MethodDeclarationSyntax methodDeclaration)
+	{
+		// Check syntax nodes first (handles active code)
+		var hasInSyntaxTree = methodDeclaration
+			.DescendantNodes()
+			.OfType<InvocationExpressionSyntax>()
+			.Any(static invocation => invocation.Expression is MemberAccessExpressionSyntax memberAccess
+				&& memberAccess.Name.Identifier.ValueText == useMauiCommunityToolkitMediaElementMethodName);
+
+		if (hasInSyntaxTree)
+		{
+			return true;
+		}
+
+		// Check trivia (comments, preprocessor directives, disabled code)
+		return methodDeclaration
+			.DescendantTrivia()
+			.Any(static trivia => trivia.IsKind(SyntaxKind.DisabledTextTrivia)
+				&& trivia.ToString().Contains(useMauiCommunityToolkitMediaElementMethodName, StringComparison.Ordinal));
 	}
 }
