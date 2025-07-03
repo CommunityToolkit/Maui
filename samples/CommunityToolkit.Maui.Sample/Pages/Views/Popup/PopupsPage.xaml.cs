@@ -147,7 +147,7 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		};
 		complexPopupOptions.SetBinding<PopupsViewModel, Color>(PopupOptions.PageOverlayColorProperty, static x => x.PageOverlayBackgroundColor);
 
-		var popupResultTask = popupService.ShowPopupAsync<ComplexPopup, string>(Navigation, complexPopupOptions);
+		var popupResultTask = popupService.ShowPopupAsync<ComplexPopup, string>(Navigation, complexPopupOptions, CancellationToken.None);
 
 		// Trigger Command in ViewModel to Rotate PopupOptions.PageOverlayColorProperty
 		BindingContext.ComplexPopupOpenedCommand.Execute(complexPopupOpenedCancellationTokenSource.Token);
@@ -158,7 +158,7 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		if (!popupResult.WasDismissedByTappingOutsideOfPopup)
 		{
 			// Display Popup Result as a Toast
-			await Toast.Make($"You entered {popupResult.Result}").Show();
+			await Toast.Make($"You entered {popupResult.Result}").Show(CancellationToken.None);
 		}
 
 	}
