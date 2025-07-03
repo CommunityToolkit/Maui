@@ -26,21 +26,30 @@ public partial class Popup : ContentView
 	/// Bindable property to set the vertical position of the <see cref="Popup"/> when displayed on screen
 	/// </summary>
 	public static new readonly BindableProperty VerticalOptionsProperty = View.VerticalOptionsProperty;
-
+	
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="CanBeDismissedByTappingOutsideOfPopup"/> property.
 	/// </summary>
 	public static readonly BindableProperty CanBeDismissedByTappingOutsideOfPopupProperty = BindableProperty.Create(nameof(CanBeDismissedByTappingOutsideOfPopup), typeof(bool), typeof(Popup), PopupDefaults.CanBeDismissedByTappingOutsideOfPopup);
 
+	static Style DefaultStyle { get; } = new Style(typeof(Popup))
+	{
+		ApplyToDerivedTypes = true,
+		Setters =
+		{
+			new Setter { Property = Popup.HorizontalOptionsProperty, Value = PopupDefaults.HorizontalOptions },
+			new Setter { Property = Popup.VerticalOptionsProperty, Value = PopupDefaults.VerticalOptions },
+			new Setter { Property = Popup.MarginProperty, Value = PopupDefaults.Margin },
+			new Setter { Property = Popup.PaddingProperty, Value = PopupDefaults.Padding }
+		}
+	};
+	
 	/// <summary>
 	/// Initializes Popup
 	/// </summary>
 	public Popup()
 	{
-		Margin = PopupDefaults.Margin;
-		Padding = PopupDefaults.Padding;
-		HorizontalOptions = PopupDefaults.HorizontalOptions;
-		VerticalOptions = PopupDefaults.VerticalOptions;
+		Resources.Add(DefaultStyle);
 	}
 
 	/// <summary>
