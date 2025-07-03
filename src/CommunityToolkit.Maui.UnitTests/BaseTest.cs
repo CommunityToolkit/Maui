@@ -84,6 +84,8 @@ public abstract class BaseTest : IDisposable, IAsyncDisposable
 		options.SetShouldSuppressExceptionsInAnimations(false);
 		options.SetShouldSuppressExceptionsInBehaviors(false);
 		options.SetShouldSuppressExceptionsInConverters(false);
+		options.SetPopupDefaults(new DefaultPopupSettings());
+		options.SetPopupOptionsDefaults(new DefaultPopupOptionsSettings());
 
 		// Restore default MediaElementOptions
 		var mediaElementOptions = new MediaElementOptions();
