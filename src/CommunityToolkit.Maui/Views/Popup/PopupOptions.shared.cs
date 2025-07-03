@@ -10,27 +10,27 @@ public partial class PopupOptions : BindableObject, IPopupOptions
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="CanBeDismissedByTappingOutsideOfPopup"/> property.
 	/// </summary>
-	public static readonly BindableProperty CanBeDismissedByTappingOutsideOfPopupProperty = BindableProperty.Create(nameof(CanBeDismissedByTappingOutsideOfPopup), typeof(bool), typeof(PopupOptions), PopupOptionsDefaults.CanBeDismissedByTappingOutsideOfPopup);
+	public static readonly BindableProperty CanBeDismissedByTappingOutsideOfPopupProperty = BindableProperty.Create(nameof(CanBeDismissedByTappingOutsideOfPopup), typeof(bool), typeof(PopupOptions), Options.DefaultPopupOptionsSettings.CanBeDismissedByTappingOutsideOfPopup);
 
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="OnTappingOutsideOfPopup"/> property.
 	/// </summary>
-	public static readonly BindableProperty OnTappingOutsideOfPopupProperty = BindableProperty.Create(nameof(OnTappingOutsideOfPopup), typeof(Action), typeof(PopupOptions), PopupOptionsDefaults.OnTappingOutsideOfPopup);
+	public static readonly BindableProperty OnTappingOutsideOfPopupProperty = BindableProperty.Create(nameof(OnTappingOutsideOfPopup), typeof(Action), typeof(PopupOptions), Options.DefaultPopupOptionsSettings.OnTappingOutsideOfPopup);
 
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="PageOverlayColor"/> property.
 	/// </summary>
-	public static readonly BindableProperty PageOverlayColorProperty = BindableProperty.Create(nameof(PageOverlayColor), typeof(Color), typeof(PopupOptions), PopupOptionsDefaults.PageOverlayColor);
+	public static readonly BindableProperty PageOverlayColorProperty = BindableProperty.Create(nameof(PageOverlayColor), typeof(Color), typeof(PopupOptions), Options.DefaultPopupOptionsSettings.PageOverlayColor);
 
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="Shape"/> property.
 	/// </summary>
-	public static readonly BindableProperty ShapeProperty = BindableProperty.Create(nameof(Shape), typeof(Shape), typeof(PopupOptions), PopupOptionsDefaults.Shape);
+	public static readonly BindableProperty ShapeProperty = BindableProperty.Create(nameof(Shape), typeof(Shape), typeof(PopupOptions), Options.DefaultPopupOptionsSettings.Shape);
 
 	/// <summary>
 	///  Backing BindableProperty for the <see cref="Shadow"/> property.
 	/// </summary>
-	public static readonly BindableProperty ShadowProperty = BindableProperty.Create(nameof(Shadow), typeof(Shadow), typeof(PopupOptions), PopupOptionsDefaults.Shadow);
+	public static readonly BindableProperty ShadowProperty = BindableProperty.Create(nameof(Shadow), typeof(Shadow), typeof(PopupOptions), Options.DefaultPopupOptionsSettings.Shadow);
 
 	/// <summary>
 	/// An empty instance of <see cref="IPopupOptions"/> containing default values.
