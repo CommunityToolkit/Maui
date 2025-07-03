@@ -55,6 +55,8 @@ public static class MauiProgram
 								.UseMauiCommunityToolkit(static options =>
 								{
 									options.SetShouldEnableSnackbarOnWindows(true);
+									options.SetPopupDefaults(new DefaultPopupSettings());
+									options.SetPopupOptionsDefaults(new DefaultPopupOptionsSettings());
 								})
 #else
 								.UseMauiCommunityToolkit(static options =>
