@@ -53,6 +53,24 @@ partial class CameraManager(
 	public Task StartCameraPreview(CancellationToken token) => PlatformStartCameraPreview(token);
 
 	/// <summary>
+	/// Starts the video recording.
+	/// </summary>
+	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
+	public Task StartVideoRecording(CancellationToken token) => PlatformStartVideoRecording(token);
+
+
+	/// <summary>
+	/// Starts the video recording.
+	/// </summary>
+	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
+	public async Task<Stream> StopVideoRecording(CancellationToken token)
+	{
+		var stream = await PlatformStopVideoRecording(token);
+		stream.Position = 0;
+		return stream;
+	}
+
+	/// <summary>
 	/// Stops the camera preview.
 	/// </summary>
 	public void StopCameraPreview() => PlatformStopCameraPreview();
@@ -131,4 +149,8 @@ partial class CameraManager(
 	/// Stops the preview from the camera, at the platform-specific level.
 	/// </summary>
 	protected virtual partial void PlatformStopCameraPreview();
+
+	protected virtual partial Task PlatformStartVideoRecording(CancellationToken token);
+
+	protected virtual partial Task<Stream> PlatformStopVideoRecording(CancellationToken token);
 }

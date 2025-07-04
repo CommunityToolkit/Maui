@@ -2,35 +2,59 @@
 using Android.Content;
 using Android.Views;
 using AndroidX.Camera.Core;
-using AndroidX.Camera.Core.Impl.Utils.Futures;
 using AndroidX.Camera.Core.ResolutionSelector;
+using AndroidX.Camera.Extensions;
 using AndroidX.Camera.Lifecycle;
+using AndroidX.Camera.Video;
 using AndroidX.Core.Content;
+using AndroidX.Core.Util;
 using AndroidX.Lifecycle;
 using CommunityToolkit.Maui.Extensions;
 using Java.Lang;
 using Java.Util.Concurrent;
-using static Android.Media.Image;
+using Image = Android.Media.Image;
 using Math = System.Math;
+using Object = Java.Lang.Object;
 
 namespace CommunityToolkit.Maui.Core;
 
 [SupportedOSPlatform("android21.0")]
 partial class CameraManager
 {
-	readonly Context context = mauiContext.Context ?? throw new CameraException($"Unable to retrieve {nameof(Context)}");
+	readonly Context context =
+		mauiContext.Context ?? throw new CameraException($"Unable to retrieve {nameof(Context)}");
 
 	NativePlatformCameraPreviewView? previewView;
 	IExecutorService? cameraExecutor;
 	ProcessCameraProvider? processCameraProvider;
 	ImageCapture? imageCapture;
 	ImageCallBack? imageCallback;
+	VideoCapture? videoCapture;
+	Recorder? videoRecorder;
+	Recording? videoRecording;
 	ICamera? camera;
 	ICameraControl? cameraControl;
 	Preview? cameraPreview;
 	ResolutionSelector? resolutionSelector;
 	ResolutionFilter? resolutionFilter;
 	OrientationListener? orientationListener;
+	Java.IO.File? videoRecordingFile;
+	int extensionMode = ExtensionMode.Auto;
+
+	public async Task SetExtensionMode(int mode)
+	{
+		extensionMode = mode;
+		if (cameraView.SelectedCamera is null || processCameraProvider is null || cameraPreview is null ||
+		    imageCapture is null || videoCapture is null)
+		{
+			return;
+		}
+
+		var cameraSelector = await EnableModes(cameraView.SelectedCamera);
+		camera = RebindCamera(processCameraProvider, cameraSelector, cameraPreview, imageCapture, videoCapture);
+
+		cameraControl = camera.CameraControl;
+	}
 
 	public void Dispose()
 	{
@@ -47,7 +71,9 @@ partial class CameraManager
 		{
 			previewView.SetScaleType(NativePlatformCameraPreviewView.ScaleType.FitCenter);
 		}
-		cameraExecutor = Executors.NewSingleThreadExecutor() ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
+
+		cameraExecutor = Executors.NewSingleThreadExecutor() ??
+		                 throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
 		orientationListener = new OrientationListener(SetImageCaptureTargetRotation, context);
 		orientationListener.Enable();
 
@@ -74,7 +100,7 @@ partial class CameraManager
 		if (resolutionFilter is not null)
 		{
 			if (Math.Abs(resolutionFilter.TargetSize.Width - resolution.Width) < double.Epsilon &&
-				Math.Abs(resolutionFilter.TargetSize.Height - resolution.Height) < double.Epsilon)
+			    Math.Abs(resolutionFilter.TargetSize.Height - resolution.Height) < double.Epsilon)
 			{
 				return;
 			}
@@ -94,9 +120,9 @@ partial class CameraManager
 		resolutionSelector?.Dispose();
 
 		resolutionSelector = new ResolutionSelector.Builder()
-		.SetAllowedResolutionMode(ResolutionSelector.PreferHigherResolutionOverCaptureRate)
-		.SetResolutionFilter(resolutionFilter)
-		.Build();
+			.SetAllowedResolutionMode(ResolutionSelector.PreferHigherResolutionOverCaptureRate)
+			.SetResolutionFilter(resolutionFilter)
+			.Build();
 
 		if (IsInitialized)
 		{
@@ -122,6 +148,9 @@ partial class CameraManager
 
 			imageCapture?.Dispose();
 			imageCapture = null;
+
+			videoCapture?.Dispose();
+			videoCapture = null;
 
 			imageCallback?.Dispose();
 			imageCallback = null;
@@ -156,7 +185,9 @@ partial class CameraManager
 
 		cameraProviderFuture.AddListener(new Runnable(async () =>
 		{
-			processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new CameraException($"Unable to retrieve {nameof(ProcessCameraProvider)}"));
+			processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ??
+			                                                throw new CameraException(
+				                                                $"Unable to retrieve {nameof(ProcessCameraProvider)}"));
 
 			if (cameraProvider.AvailableCameras is null)
 			{
@@ -171,7 +202,6 @@ partial class CameraManager
 			await StartUseCase(token);
 
 			cameraProviderTCS.SetResult();
-
 		}), ContextCompat.GetMainExecutor(context));
 
 		await cameraProviderTCS.Task.WaitAsync(token);
@@ -193,9 +223,15 @@ partial class CameraManager
 		cameraPreview.SetSurfaceProvider(cameraExecutor, previewView?.SurfaceProvider);
 
 		imageCapture = new ImageCapture.Builder()
-		.SetCaptureMode(ImageCapture.CaptureModeMaximizeQuality)
-		.SetResolutionSelector(resolutionSelector)
-		.Build();
+			.SetCaptureMode(ImageCapture.CaptureModeMaximizeQuality)
+			.SetResolutionSelector(resolutionSelector)
+			.Build();
+
+		videoRecorder = new Recorder.Builder()
+			.SetExecutor(cameraExecutor)
+			.SetQualitySelector(QualitySelector.From(Quality.Highest!))
+			.Build();
+		videoCapture = VideoCapture.WithOutput(videoRecorder);
 
 		await StartCameraPreview(token);
 	}
@@ -214,19 +250,17 @@ partial class CameraManager
 				await cameraProvider.RefreshAvailableCameras(token);
 			}
 
-			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
+			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ??
+			                            throw new CameraException("No camera available on device");
 		}
 
-		var cameraSelector = cameraView.SelectedCamera.CameraSelector ?? throw new CameraException($"Unable to retrieve {nameof(CameraSelector)}");
-
-		var owner = (ILifecycleOwner)context;
-		camera = processCameraProvider.BindToLifecycle(owner, cameraSelector, cameraPreview, imageCapture);
-
+		var cameraSelector = await EnableModes(cameraView.SelectedCamera);
+		camera = RebindCamera(processCameraProvider, cameraSelector, cameraPreview, imageCapture);
 		cameraControl = camera.CameraControl;
 
-		//start the camera with AutoFocus
-		MeteringPoint point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
-		FocusMeteringAction action = new FocusMeteringAction.Builder(point).Build();
+		var point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f,
+			0.1f);
+		var action = new FocusMeteringAction.Builder(point).Build();
 		camera.CameraControl.StartFocusAndMetering(action);
 
 		IsInitialized = true;
@@ -246,7 +280,6 @@ partial class CameraManager
 
 	protected virtual partial void PlatformDisconnect()
 	{
-
 	}
 
 	protected virtual partial ValueTask PlatformTakePicture(CancellationToken token)
@@ -256,6 +289,101 @@ partial class CameraManager
 
 		imageCapture?.TakePicture(cameraExecutor, imageCallback);
 		return ValueTask.CompletedTask;
+	}
+
+	protected virtual async partial Task PlatformStartVideoRecording(CancellationToken token)
+	{
+		if (previewView is null || processCameraProvider is null || cameraPreview is null || videoCapture is null ||
+		    videoRecorder is null)
+		{
+			return;
+		}
+
+		if (cameraView.SelectedCamera is null)
+		{
+			if (cameraProvider.AvailableCameras is null)
+			{
+				await cameraProvider.RefreshAvailableCameras(token);
+			}
+
+			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ??
+			                            throw new CameraException("No camera available on device");
+		}
+
+
+		var cameraSelector = await EnableModes(cameraView.SelectedCamera);
+		camera = RebindCamera(processCameraProvider, cameraSelector, cameraPreview, videoCapture);
+
+		cameraControl = camera.CameraControl;
+
+		videoRecordingFile = new Java.IO.File(context.CacheDir, $"{DateTime.UtcNow.Ticks}.mp4");
+		videoRecordingFile.CreateNewFile();
+		videoRecordingFile.DeleteOnExit();
+
+		var outputOptions = new FileOutputOptions.Builder(videoRecordingFile).Build();
+
+		var captureListener = new CameraConsumer();
+		videoRecording = videoRecorder
+			.PrepareRecording(context, outputOptions)
+			.WithAudioEnabled()
+			.Start(ContextCompat.GetMainExecutor(context), captureListener);
+	}
+
+	protected virtual async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
+	{
+		ArgumentNullException.ThrowIfNull(cameraExecutor);
+		if (videoRecording is null || videoRecordingFile is null)
+		{
+			return Stream.Null;
+		}
+
+		videoRecording.Stop();
+
+		await using var inputStream = new FileStream(videoRecordingFile.AbsolutePath, FileMode.Open);
+		var memoryStream = new MemoryStream();
+		await inputStream.CopyToAsync(memoryStream, token);
+		memoryStream.Position = 0;
+		return memoryStream;
+	}
+
+	async Task<CameraSelector> EnableModes(CameraInfo selectedCamera)
+	{
+		var cameraFutureCts = new TaskCompletionSource();
+		var cameraSelector = selectedCamera.CameraSelector ?? throw new CameraException($"Unable to retrieve {nameof(CameraSelector)}");
+		var cameraProviderFuture = ProcessCameraProvider.GetInstance(context) ?? throw new CameraException($"Unable to retrieve {nameof(ProcessCameraProvider)}");
+		cameraProviderFuture.AddListener(new Runnable(() =>
+		{
+			var cameraProviderInstance = cameraProviderFuture.Get();
+			if (cameraProviderInstance is not AndroidX.Camera.Core.ICameraProvider androidCameraProvider)
+			{
+				cameraFutureCts.SetResult();
+				return;
+			}
+			
+			var extensionsManagerFuture = ExtensionsManager.GetInstanceAsync(context, androidCameraProvider);
+			extensionsManagerFuture.AddListener(new Runnable(() =>
+			{
+				var extensionsManager = (ExtensionsManager)extensionsManagerFuture.Get()!;
+				if (extensionsManager.IsExtensionAvailable(cameraSelector, extensionMode))
+				{
+					cameraSelector = extensionsManager.GetExtensionEnabledCameraSelector(cameraSelector, extensionMode);
+				}
+				
+				cameraFutureCts.SetResult();
+			}), ContextCompat.GetMainExecutor(context));
+		}), ContextCompat.GetMainExecutor(context));
+		
+		await cameraFutureCts.Task;
+		return cameraSelector;
+	}
+
+	ICamera RebindCamera(ProcessCameraProvider provider, CameraSelector cameraSelector, params UseCase[] useCases)
+	{
+		provider.UnbindAll();
+		return provider.BindToLifecycle(
+			(ILifecycleOwner)context,
+			cameraSelector,
+			useCases);
 	}
 
 	void SetImageCaptureTargetRotation(int rotation)
@@ -269,19 +397,6 @@ partial class CameraManager
 				>= 225 and < 315 => (int)SurfaceOrientation.Rotation90,
 				_ => (int)SurfaceOrientation.Rotation0
 			};
-		}
-	}
-
-	sealed class FutureCallback(Action<Java.Lang.Object?> action, Action<Throwable?> failure) : Java.Lang.Object, IFutureCallback
-	{
-		public void OnSuccess(Java.Lang.Object? value)
-		{
-			action.Invoke(value);
-		}
-
-		public void OnFailure(Throwable? throwable)
-		{
-			failure.Invoke(throwable);
 		}
 	}
 
@@ -324,7 +439,7 @@ partial class CameraManager
 				image.Close();
 			}
 
-			static Plane? GetFirstPlane(Plane[]? planes)
+			static Image.Plane? GetFirstPlane(Image.Plane[]? planes)
 			{
 				if (planes is null || planes.Length is 0)
 				{
@@ -342,33 +457,22 @@ partial class CameraManager
 		}
 	}
 
-	sealed class ResolutionFilter(Android.Util.Size size) : Java.Lang.Object, IResolutionFilter
+	sealed class ResolutionFilter(Android.Util.Size size) : Object, IResolutionFilter
 	{
 		public Android.Util.Size TargetSize { get; set; } = size;
 
 		public IList<Android.Util.Size> Filter(IList<Android.Util.Size> supportedSizes, int rotationDegrees)
 		{
-			var filteredList = supportedSizes.Where(size => size.Width <= TargetSize.Width && size.Height <= TargetSize.Height)
+			var filteredList = supportedSizes
+				.Where(size => size.Width <= TargetSize.Width && size.Height <= TargetSize.Height)
 				.OrderByDescending(size => size.Width * size.Height).ToList();
 
 			return filteredList.Count is 0 ? supportedSizes : filteredList;
 		}
 	}
 
-	sealed class Observer(Action<Java.Lang.Object?> action) : Java.Lang.Object, IObserver
-	{
-		readonly Action<Java.Lang.Object?> observerAction = action;
-
-		public void OnChanged(Java.Lang.Object? value)
-		{
-			observerAction.Invoke(value);
-		}
-	}
-
 	sealed class OrientationListener(Action<int> callback, Context context) : OrientationEventListener(context)
 	{
-		readonly Action<int> callback = callback;
-
 		public override void OnOrientationChanged(int orientation)
 		{
 			if (orientation == OrientationUnknown)
@@ -378,5 +482,12 @@ partial class CameraManager
 
 			callback.Invoke(orientation);
 		}
+	}
+}
+
+public class CameraConsumer : Object, IConsumer
+{
+	public void Accept(Object? videoRecordEvent)
+	{
 	}
 }
