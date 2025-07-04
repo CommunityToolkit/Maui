@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Sample.Pages.Views.Popup;
@@ -129,5 +130,36 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		await Task.Delay(TimeSpan.FromSeconds(2));
 
 		await this.ClosePopupAsync();
+	}
+
+	async void HandleComplexPopupClicked(object? sender, EventArgs e)
+	{
+		var complexPopupOpenedCancellationTokenSource = new CancellationTokenSource();
+		var complexPopupOptions = new PopupOptions
+		{
+			BindingContext = this.BindingContext,
+			Shape = new RoundRectangle
+			{
+				CornerRadius = new CornerRadius(4),
+				StrokeThickness = 12,
+				Stroke = Colors.Orange
+			}
+		};
+		complexPopupOptions.SetBinding<PopupsViewModel, Color>(PopupOptions.PageOverlayColorProperty, static x => x.PageOverlayBackgroundColor);
+
+		var popupResultTask = popupService.ShowPopupAsync<ComplexPopup, string>(Navigation, complexPopupOptions, CancellationToken.None);
+
+		// Trigger Command in ViewModel to Rotate PopupOptions.PageOverlayColorProperty
+		BindingContext.ComplexPopupOpenedCommand.Execute(complexPopupOpenedCancellationTokenSource.Token);
+
+		var popupResult = await popupResultTask;
+		await complexPopupOpenedCancellationTokenSource.CancelAsync();
+
+		if (!popupResult.WasDismissedByTappingOutsideOfPopup)
+		{
+			// Display Popup Result as a Toast
+			await Toast.Make($"You entered {popupResult.Result}").Show(CancellationToken.None);
+		}
+
 	}
 }
