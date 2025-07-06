@@ -191,8 +191,46 @@ partial class CameraManager
 	{
 	}
 
-	protected virtual partial Task PlatformStartVideoRecording(CancellationToken token) => throw new NotSupportedException("notSupportedMessage");
-	protected virtual partial Task<Stream> PlatformStopVideoRecording(CancellationToken token) => throw new NotSupportedException("notSupportedMessage");
+	protected virtual partial async Task PlatformStartVideoRecording(CancellationToken token)
+	{
+		var isPermissionGranted = await AVCaptureDevice.RequestAccessForMediaTypeAsync(AVAuthorizationMediaType.Video);
+		if (!isPermissionGranted)
+		{
+			throw new CameraException("Camera permission is not granted. Please enable it in the app settings.");
+		}
+
+		if (captureSession is null)
+		{
+			throw new CameraException("Capture session is not initialized. Call ConnectCamera first.");
+		}
+
+		var videoDevice = AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Video) ?? throw new CameraException("Unable to get video device");
+
+		var videoInput = new AVCaptureDeviceInput(videoDevice, out NSError? error);
+
+		if (!captureSession.CanAddInput(videoInput))
+		{
+			throw new CameraException("Unable to add video input to capture session.");
+		}
+
+		captureSession.AddInput(videoInput);
+
+		var videoOutput = new AVCaptureMovieFileOutput();
+		
+		if (!captureSession.CanAddOutput(videoOutput))
+		{
+			throw new CameraException("Unable to add video output to capture session.");
+		}
+
+		captureSession.AddOutput(videoOutput);
+		captureSession.StartRunning();
+		//videoOutput.StartRecordingToOutputFile(new NSUrl("video.mp4"));
+	}
+
+	protected virtual partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
+	{
+		captureSession?.StopRunning();
+	}
 
 
 	protected virtual async partial ValueTask PlatformTakePicture(CancellationToken token)
