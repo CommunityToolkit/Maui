@@ -77,23 +77,19 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// Backing BindableProperty for the <see cref="StopCameraPreviewCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty StopCameraPreviewCommandProperty =
-<<<<<<< feature/camera-video-recording -- Incoming Change
-		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(ICommand), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopCameraPreviewCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(ICommand), typeof(CameraView), null, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopCameraPreviewCommand).BindableProperty;
 	
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="StartCameraPreviewCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty StartVideoRecordingCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(StartVideoRecordingCommand), typeof(ICommand), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStartVideoRecordingCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(StartVideoRecordingCommand), typeof(ICommand), typeof(CameraView), null, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStartVideoRecordingCommand).BindableProperty;
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="StopCameraPreviewCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty StopVideoRecordingCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(StopVideoRecordingCommand), typeof(Command<Stream>), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopVideoRecordingCommand).BindableProperty;
-=======
 		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(ICommand), typeof(CameraView), null, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopCameraPreviewCommand).BindableProperty;
->>>>>>> main -- Current Change
 
 
 	readonly SemaphoreSlim captureImageSemaphoreSlim = new(1, 1);
@@ -295,15 +291,14 @@ public partial class CameraView : View, ICameraView, IDisposable
 	public void StopCameraPreview() =>
 		Handler.CameraManager.StopCameraPreview();
 
-<<<<<<< feature/camera-video-recording -- Incoming Change
-	/// <inheritdoc cref="ICameraView.StartCameraPreview"/>
+	/// <inheritdoc cref="ICameraView.StartVideoRecording"/>
 	public Task StartVideoRecording(CancellationToken token) =>
 		Handler.CameraManager.StartVideoRecording(token);
 
-	/// <inheritdoc cref="ICameraView.StopCameraPreview"/>
+	/// <inheritdoc cref="ICameraView.StopVideoRecording"/>
 	public Task<Stream> StopVideoRecording(CancellationToken token) =>
 		Handler.CameraManager.StopVideoRecording(token);
-=======
+
 	/// <inheritdoc/>
 	protected virtual void Dispose(bool disposing)
 	{
@@ -317,7 +312,6 @@ public partial class CameraView : View, ICameraView, IDisposable
 			isDisposed = true;
 		}
 	}
->>>>>>> main -- Current Change
 
 	void ICameraView.OnMediaCaptured(Stream imageData)
 	{

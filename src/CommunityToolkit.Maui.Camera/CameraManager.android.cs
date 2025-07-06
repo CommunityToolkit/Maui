@@ -326,7 +326,7 @@ partial class CameraManager
 		videoRecording = videoRecorder
 			.PrepareRecording(context, outputOptions)
 			.WithAudioEnabled()
-			.Start(ContextCompat.GetMainExecutor(context), captureListener);
+			.Start(ContextCompat.GetMainExecutor(context)!, captureListener);
 	}
 
 	protected virtual async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)

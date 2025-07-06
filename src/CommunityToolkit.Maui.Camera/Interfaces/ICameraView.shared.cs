@@ -76,6 +76,16 @@ public interface ICameraView : IView
 	void StopCameraPreview();
 
 	/// <summary>
+	/// Starts the video recording.
+	/// </summary>
+	Task StartVideoRecording(CancellationToken token);
+
+	/// <summary>
+	/// Stops the video recording.
+	/// </summary>
+	Task<Stream> StopVideoRecording(CancellationToken token);
+
+	/// <summary>
 	/// Retrieves the cameras available on the current device.
 	/// </summary>
 	/// <param name="token"></param>
