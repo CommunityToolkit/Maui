@@ -39,6 +39,7 @@ partial class CameraManager
 	ResolutionFilter? resolutionFilter;
 	OrientationListener? orientationListener;
 	Java.IO.File? videoRecordingFile;
+	TaskCompletionSource? videoRecordingFinalizeTcs;
 	int extensionMode = ExtensionMode.Auto;
 
 	public async Task SetExtensionMode(int mode)
@@ -294,7 +295,7 @@ partial class CameraManager
 	protected virtual async partial Task PlatformStartVideoRecording(CancellationToken token)
 	{
 		if (previewView is null || processCameraProvider is null || cameraPreview is null || videoCapture is null ||
-		    videoRecorder is null)
+		    videoRecorder is null || videoRecordingFile is not null)
 		{
 			return;
 		}
@@ -310,7 +311,6 @@ partial class CameraManager
 			                            throw new CameraException("No camera available on device");
 		}
 
-
 		var cameraSelector = await EnableModes(cameraView.SelectedCamera);
 		camera = RebindCamera(processCameraProvider, cameraSelector, cameraPreview, videoCapture);
 
@@ -318,11 +318,11 @@ partial class CameraManager
 
 		videoRecordingFile = new Java.IO.File(context.CacheDir, $"{DateTime.UtcNow.Ticks}.mp4");
 		videoRecordingFile.CreateNewFile();
-		videoRecordingFile.DeleteOnExit();
 
 		var outputOptions = new FileOutputOptions.Builder(videoRecordingFile).Build();
 
-		var captureListener = new CameraConsumer();
+		videoRecordingFinalizeTcs = new TaskCompletionSource();
+		var captureListener = new CameraConsumer(videoRecordingFinalizeTcs);
 		videoRecording = videoRecorder
 			.PrepareRecording(context, outputOptions)
 			.WithAudioEnabled()
@@ -332,17 +332,22 @@ partial class CameraManager
 	protected virtual async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
 	{
 		ArgumentNullException.ThrowIfNull(cameraExecutor);
-		if (videoRecording is null || videoRecordingFile is null)
+		if (videoRecording is null || videoRecordingFile is null || videoRecordingFinalizeTcs is null)
 		{
 			return Stream.Null;
 		}
 
 		videoRecording.Stop();
+		await videoRecordingFinalizeTcs.Task.WaitAsync(token);
 
 		await using var inputStream = new FileStream(videoRecordingFile.AbsolutePath, FileMode.Open);
 		var memoryStream = new MemoryStream();
 		await inputStream.CopyToAsync(memoryStream, token);
 		memoryStream.Position = 0;
+		videoRecordingFile.Delete();
+		videoRecording.Dispose();
+		videoRecording = null;
+		videoRecordingFinalizeTcs = null;
 		return memoryStream;
 	}
 
@@ -485,9 +490,15 @@ partial class CameraManager
 	}
 }
 
-public class CameraConsumer : Object, IConsumer
+public class CameraConsumer(TaskCompletionSource finalizeTcs) : Object, IConsumer
 {
+	readonly TaskCompletionSource? finalizeTcs = finalizeTcs;
+
 	public void Accept(Object? videoRecordEvent)
 	{
+		if (videoRecordEvent is VideoRecordEvent and VideoRecordEvent.Finalize)
+		{
+			finalizeTcs?.SetResult();
+		}
 	}
 }
