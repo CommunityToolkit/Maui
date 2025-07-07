@@ -6,11 +6,13 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class CameraViewPage : BasePage<CameraViewViewModel>
 {
+	readonly CameraViewViewModel viewModel;
 	readonly string imagePath;
 	int pageCount;
 
 	public CameraViewPage(CameraViewViewModel viewModel, IFileSystem fileSystem) : base(viewModel)
 	{
+		this.viewModel = viewModel;
 		InitializeComponent();
 
 		imagePath = Path.Combine(fileSystem.CacheDirectory, "camera-view-image.jpg");
@@ -102,5 +104,11 @@ public partial class CameraViewPage : BasePage<CameraViewViewModel>
 #else
 await Task.CompletedTask;
 #endif
+	}
+
+	async void StartCameraRecording(object? sender, EventArgs e)
+	{
+		viewModel.Stream = new MemoryStream();
+		await Camera.StartVideoRecording(viewModel.Stream, CancellationToken.None);
 	}
 }

@@ -191,7 +191,7 @@ partial class CameraManager
 	{
 	}
 
-	protected virtual async partial Task PlatformStartVideoRecording(CancellationToken token)
+	protected virtual async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
 	{
 		var isPermissionGranted = await AVCaptureDevice.RequestAccessForMediaTypeAsync(AVAuthorizationMediaType.Video);
 		if (!isPermissionGranted)
@@ -227,10 +227,10 @@ partial class CameraManager
 		//videoOutput.StartRecordingToOutputFile(new NSUrl("video.mp4"));
 	}
 
-	protected virtual partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
+	protected virtual partial Task PlatformStopVideoRecording(CancellationToken token)
 	{
 		captureSession?.StopRunning();
-		return Task.FromResult(Stream.Null);
+		return Task.CompletedTask;
 	}
 
 

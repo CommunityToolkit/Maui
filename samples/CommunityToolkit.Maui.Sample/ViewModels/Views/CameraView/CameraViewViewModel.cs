@@ -12,7 +12,7 @@ public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseV
 
 	public CancellationToken Token => CancellationToken.None;
 
-	public Stream Stream { get; } = new MemoryStream();
+	public Stream Stream { get; set; } = new MemoryStream();
 
 	public ICollection<CameraFlashMode> FlashModes { get; } = Enum.GetValues<CameraFlashMode>();
 

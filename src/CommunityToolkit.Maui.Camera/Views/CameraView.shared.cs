@@ -83,13 +83,13 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// Backing BindableProperty for the <see cref="StartVideoRecordingCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty StartVideoRecordingCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(StartVideoRecordingCommand), typeof(ICommand), typeof(CameraView), null, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStartVideoRecordingCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(StartVideoRecordingCommand), typeof(Command<Stream>), typeof(CameraView), null, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStartVideoRecordingCommand).BindableProperty;
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="StopVideoRecordingCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty StopVideoRecordingCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(StopVideoRecordingCommand), typeof(Command<Stream>), typeof(CameraView), null, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopVideoRecordingCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(StopVideoRecordingCommand), typeof(Command<CancellationToken>), typeof(CameraView), null, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopVideoRecordingCommand).BindableProperty;
 
 
 	readonly SemaphoreSlim captureImageSemaphoreSlim = new(1, 1);
@@ -145,19 +145,19 @@ public partial class CameraView : View, ICameraView, IDisposable
 	public Command<CancellationToken> StartCameraPreviewCommand => (Command<CancellationToken>)GetValue(StartCameraPreviewCommandProperty);
 	
 	/// <summary>
-	/// 
-	/// </summary>
-	public ICommand StartVideoRecordingCommand => (ICommand)GetValue(StartVideoRecordingCommandProperty);
-
-	/// <summary>
 	/// Gets the Command that stops the camera preview.
 	/// </summary>
 	public ICommand StopCameraPreviewCommand => (ICommand)GetValue(StopCameraPreviewCommandProperty);
+
+	/// <summary>
+	/// 
+	/// </summary>
+	public Command<Stream> StartVideoRecordingCommand => (Command<Stream>)GetValue(StartVideoRecordingCommandProperty);
 	
 	/// <summary>
 	/// 
 	/// </summary>
-	public Command<Stream> StopVideoRecordingCommand => (Command<Stream>)GetValue(StopVideoRecordingCommandProperty);
+	public Command<CancellationToken> StopVideoRecordingCommand => (Command<CancellationToken>)GetValue(StopVideoRecordingCommandProperty);
 
 	/// <summary>
 	/// Gets or sets the <see cref="CameraFlashMode"/>.
@@ -292,11 +292,11 @@ public partial class CameraView : View, ICameraView, IDisposable
 		Handler.CameraManager.StopCameraPreview();
 
 	/// <inheritdoc cref="ICameraView.StartVideoRecording"/>
-	public Task StartVideoRecording(CancellationToken token) =>
-		Handler.CameraManager.StartVideoRecording(token);
+	public Task StartVideoRecording(Stream stream, CancellationToken token) =>
+		Handler.CameraManager.StartVideoRecording(stream, token);
 
 	/// <inheritdoc cref="ICameraView.StopVideoRecording"/>
-	public Task<Stream> StopVideoRecording(CancellationToken token) =>
+	public Task StopVideoRecording(CancellationToken token) =>
 		Handler.CameraManager.StopVideoRecording(token);
 
 	/// <inheritdoc/>

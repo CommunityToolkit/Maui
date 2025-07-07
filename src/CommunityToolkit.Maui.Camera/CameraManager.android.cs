@@ -40,6 +40,7 @@ partial class CameraManager
 	OrientationListener? orientationListener;
 	Java.IO.File? videoRecordingFile;
 	TaskCompletionSource? videoRecordingFinalizeTcs;
+	Stream? videoRecordingStream;
 	int extensionMode = ExtensionMode.Auto;
 
 	public async Task SetExtensionMode(int mode)
@@ -292,13 +293,15 @@ partial class CameraManager
 		return ValueTask.CompletedTask;
 	}
 
-	protected virtual async partial Task PlatformStartVideoRecording(CancellationToken token)
+	protected virtual async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
 	{
 		if (previewView is null || processCameraProvider is null || cameraPreview is null || videoCapture is null ||
 		    videoRecorder is null || videoRecordingFile is not null)
 		{
 			return;
 		}
+
+		videoRecordingStream = stream;
 
 		if (cameraView.SelectedCamera is null)
 		{
@@ -329,26 +332,23 @@ partial class CameraManager
 			.Start(ContextCompat.GetMainExecutor(context)!, captureListener);
 	}
 
-	protected virtual async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
+	protected virtual async partial Task PlatformStopVideoRecording(CancellationToken token)
 	{
 		ArgumentNullException.ThrowIfNull(cameraExecutor);
-		if (videoRecording is null || videoRecordingFile is null || videoRecordingFinalizeTcs is null)
+		if (videoRecording is null || videoRecordingFile is null || videoRecordingFinalizeTcs is null || videoRecordingStream is null)
 		{
-			return Stream.Null;
+			return;
 		}
 
 		videoRecording.Stop();
 		await videoRecordingFinalizeTcs.Task.WaitAsync(token);
 
 		await using var inputStream = new FileStream(videoRecordingFile.AbsolutePath, FileMode.Open);
-		var memoryStream = new MemoryStream();
-		await inputStream.CopyToAsync(memoryStream, token);
-		memoryStream.Position = 0;
+		await inputStream.CopyToAsync(videoRecordingStream, token);
 		videoRecordingFile.Delete();
 		videoRecording.Dispose();
 		videoRecording = null;
 		videoRecordingFinalizeTcs = null;
-		return memoryStream;
 	}
 
 	async Task<CameraSelector> EnableModes(CameraInfo selectedCamera)
