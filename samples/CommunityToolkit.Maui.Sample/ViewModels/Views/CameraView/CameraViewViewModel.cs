@@ -8,8 +8,6 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseViewModel
 {
-	readonly ICameraProvider cameraProvider = cameraProvider;
-
 	public IReadOnlyList<CameraInfo> Cameras => cameraProvider.AvailableCameras ?? [];
 
 	public CancellationToken Token => CancellationToken.None;

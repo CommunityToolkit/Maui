@@ -56,7 +56,17 @@ partial class CameraManager(
 	/// Starts the video recording.
 	/// </summary>
 	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
-	public Task StartVideoRecording(CancellationToken token) => PlatformStartVideoRecording(token);
+	public async Task StartVideoRecording(CancellationToken token)
+	{
+		var cameraRequest = await Permissions.RequestAsync<Permissions.Camera>();
+		var microphoneRequest = await Permissions.RequestAsync<Permissions.Microphone>();
+		if (cameraRequest != PermissionStatus.Granted || microphoneRequest != PermissionStatus.Granted)
+		{
+			throw new CameraException("Camera and/or Microphone permissions are not granted.");
+		}
+
+		await PlatformStartVideoRecording(token);
+	}
 
 
 	/// <summary>
