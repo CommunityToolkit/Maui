@@ -113,17 +113,17 @@ jobs:
 
       - name: Set NuGet Version to Tag Number for Camera
         if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-camera')
-        run: echo "NugetPackageVersionCamera=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        run: echo "NugetPackageVersionCamera=${GITHUB_REF#refs/tags/}" | sed 's/-camera$//' >> $GITHUB_ENV
         shell: bash
 
       - name: Set NuGet Version to Tag Number for MediaElement
         if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-mediaelement')
-        run: echo "NugetPackageVersionMediaElement=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        run: echo "NugetPackageVersionMediaElement=${GITHUB_REF#refs/tags/}" | sed 's/-mediaelement$//' >> $GITHUB_ENV
         shell: bash
 
       - name: Set NuGet Version to Tag Number for Maps
         if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-maps')
-        run: echo "NugetPackageVersionMaps=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        run: echo "NugetPackageVersionMaps=${GITHUB_REF#refs/tags/}" | sed 's/-maps$//' >> $GITHUB_ENV
         shell: bash
 
       - name: Set NuGet Version to PR Version
@@ -355,7 +355,7 @@ jobs:
 
       -  name: Upload artifact
          if: github.event_name != 'pull_request'
-         run: |
+         run: >
            dotnet nuget push
            **/*.nupkg
            --source "https://nuget.pkg.github.com/CommunityToolkit/index.json"
