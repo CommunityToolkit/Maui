@@ -20,7 +20,7 @@ https://learn.microsoft.com/dotnet/communitytoolkit/maui/get-started
 
 ## Installation
 
-The release versions of .NET MAUI Community Toolkit are available at Nuget.org as NuGet packagez. You can install them using the following commands in your terminal or Package Manager Console:
+The release versions of .NET MAUI Community Toolkit are available at Nuget.org as NuGet packages. You can install them using the following commands in your terminal or Package Manager Console:
 
 ```bash
 dotnet add package CommunityToolkit.Maui
