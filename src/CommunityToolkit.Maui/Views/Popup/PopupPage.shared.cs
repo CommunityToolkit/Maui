@@ -200,6 +200,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 				BackgroundColor = popupContent.BackgroundColor ??= Options.DefaultPopupSettings.BackgroundColor,
 				Content = popupContent
 			};
+			
+			// Currently .NET MAUI allows for the TapGestureRecognizer added to the BoxView behind this Border to be triggered with a tap on Android.
+			PopupBorder.GestureRecognizers.Add(new TapGestureRecognizer());
 
 			// Bind `Popup` values through to Border using OneWay Bindings 
 			PopupBorder.SetBinding(Border.MarginProperty, static (Popup popup) => popup.Margin, source: popupContent, mode: BindingMode.OneWay, converter: new MarginConverter());
