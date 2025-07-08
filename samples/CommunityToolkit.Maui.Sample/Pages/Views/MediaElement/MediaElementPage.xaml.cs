@@ -324,7 +324,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			HeightRequest = 400,
 			AndroidViewType = AndroidViewType.SurfaceView,
 			Source = source,
-			MetadataArtworkUrl = botImageUrl,
+			MetadataArtworkSource = botImageUrl,
 			ShouldAutoPlay = true,
 			ShouldShowPlaybackControls = true,
 		};
