@@ -102,7 +102,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 	protected override bool OnBackButtonPressed()
 	{
-		if (tapOutsideOfPopupCommand?.CanExecute(null) is true)
+		// When the Android Back Button is tapped, we only close the Popup if the tapOutsideOfPopupCommand can execute
+		// In other words, we'll only close the Popup when CanBeDismissedByTappingOutsideOfPopup is true
+		if (tapOutsideOfPopupCommand.CanExecute(null))
 		{
 			tapOutsideOfPopupCommand.Execute(null);
 		}
