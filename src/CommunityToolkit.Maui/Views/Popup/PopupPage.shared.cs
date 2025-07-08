@@ -24,7 +24,6 @@ sealed partial class PopupPage<T>(Popup<T> popup, IPopupOptions popupOptions)
 partial class PopupPage : ContentPage, IQueryAttributable
 {
 	readonly Popup popup;
-	readonly IPopupOptions popupOptions;
 	readonly Command tapOutsideOfPopupCommand;
 
 	public PopupPage(View view, IPopupOptions popupOptions)
@@ -39,7 +38,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		ArgumentNullException.ThrowIfNull(popupOptions);
 
 		this.popup = popup;
-		this.popupOptions = popupOptions;
 
 		tapOutsideOfPopupCommand = new Command(async () =>
 		{
