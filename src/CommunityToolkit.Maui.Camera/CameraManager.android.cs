@@ -1,4 +1,4 @@
-﻿using System.Runtime.Versioning;
+using System.Runtime.Versioning;
 using Android.Content;
 using Android.Views;
 using AndroidX.Camera.Core;
@@ -343,12 +343,14 @@ partial class CameraManager
 		videoRecording.Stop();
 		await videoRecordingFinalizeTcs.Task.WaitAsync(token);
 
-		await using var inputStream = new FileStream(videoRecordingFile.AbsolutePath, FileMode.Open);
+		await using var inputStream = new FileStream(videoRecordingFile.AbsolutePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 		await inputStream.CopyToAsync(videoRecordingStream, token);
+		await videoRecordingStream.FlushAsync(token);
 		videoRecordingFile.Delete();
 		videoRecording.Dispose();
 		videoRecording = null;
 		videoRecordingFinalizeTcs = null;
+		videoRecordingFile = null;
 	}
 
 	async Task<CameraSelector> EnableModes(CameraInfo selectedCamera)
@@ -496,7 +498,7 @@ public class CameraConsumer(TaskCompletionSource finalizeTcs) : Object, IConsume
 
 	public void Accept(Object? videoRecordEvent)
 	{
-		if (videoRecordEvent is VideoRecordEvent and VideoRecordEvent.Finalize)
+		if (videoRecordEvent is VideoRecordEvent.Finalize)
 		{
 			finalizeTcs?.SetResult();
 		}
