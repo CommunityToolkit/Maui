@@ -15,13 +15,6 @@ public partial class MediaElementMultipleWindowsPage : BasePage<MediaElementMult
 
 	public MediaElementMultipleWindowsPage(MediaElementMultipleWindowsViewModel viewModel) : base(viewModel)
 	{
-		if(DeviceInfo.Current.Idiom == DeviceIdiom.Phone && DeviceInfo.Current.Platform == DevicePlatform.iOS)
-		{
-			Content = new Label()
-		.Text("This sample is only testable on MacCatalyst and Windows")
-		.TextCenter();
-			return;
-		}
 		secondWindow = new Window(new ContentPage
 		{
 			Content = new MediaElement
