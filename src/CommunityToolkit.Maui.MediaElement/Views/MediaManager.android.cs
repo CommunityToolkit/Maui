@@ -312,6 +312,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			throw new InvalidOperationException($"{nameof(IExoPlayer)} is not yet initialized");
 		}
+		
+		if(!Player.IsCurrentMediaItemSeekable)
+		{
+			Logger.LogInformation("The current media item is not seekable. Seek operation will be ignored.");
+			return;
+		}
 
 		await seekToSemaphoreSlim.WaitAsync(token);
 
