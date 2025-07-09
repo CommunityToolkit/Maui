@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class LazyViewTests : BaseHandlerTest
+public class LazyViewTests : BaseViewTest
 {
 	[Fact]
 	public void CheckHasLoadedFalseAfterConstruction()

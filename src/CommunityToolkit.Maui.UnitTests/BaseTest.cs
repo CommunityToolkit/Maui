@@ -1,11 +1,12 @@
 ﻿using System.Globalization;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
 [Collection("CommunityToolkit.UnitTests")]
-public abstract class BaseTest : IDisposable
+public abstract class BaseTest : IDisposable, IAsyncDisposable
 {
 	readonly CultureInfo defaultCulture, defaultUiCulture;
 	protected readonly MockAppInfo mockAppInfo;
@@ -15,9 +16,15 @@ public abstract class BaseTest : IDisposable
 
 	protected enum TestDuration
 	{
-		Short = 2000,
-		Medium = 5000,
-		Long = 10000
+#if DEBUG
+		Short = 20_000,
+		Medium = 50_000,
+		Long = 100_000
+#else
+		Short = 2_000,
+		Medium = 5_000,
+		Long = 10_000
+#endif
 	}
 
 	protected BaseTest()
@@ -38,10 +45,23 @@ public abstract class BaseTest : IDisposable
 
 	~BaseTest() => Dispose(false);
 
+	public async ValueTask DisposeAsync()
+	{
+		await DisposeAsyncCore().ConfigureAwait(false);
+
+		Dispose(false);
+		GC.SuppressFinalize(this);
+	}
+
 	public void Dispose()
 	{
 		Dispose(true);
 		GC.SuppressFinalize(this);
+	}
+
+	protected virtual ValueTask DisposeAsyncCore()
+	{
+		return ValueTask.CompletedTask;
 	}
 
 	protected virtual void Dispose(bool isDisposing)
@@ -64,6 +84,12 @@ public abstract class BaseTest : IDisposable
 		options.SetShouldSuppressExceptionsInAnimations(false);
 		options.SetShouldSuppressExceptionsInBehaviors(false);
 		options.SetShouldSuppressExceptionsInConverters(false);
+		options.SetPopupDefaults(new DefaultPopupSettings());
+		options.SetPopupOptionsDefaults(new DefaultPopupOptionsSettings());
+
+		// Restore default MediaElementOptions
+		var mediaElementOptions = new MediaElementOptions();
+		mediaElementOptions.SetDefaultAndroidViewType(AndroidViewType.SurfaceView);
 
 		isDisposed = true;
 	}

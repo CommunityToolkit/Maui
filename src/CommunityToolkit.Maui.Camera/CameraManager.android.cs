@@ -1,4 +1,5 @@
-﻿using Android.Content;
+﻿using System.Runtime.Versioning;
+using Android.Content;
 using Android.Views;
 using AndroidX.Camera.Core;
 using AndroidX.Camera.Core.Impl.Utils.Futures;
@@ -6,11 +7,9 @@ using AndroidX.Camera.Core.ResolutionSelector;
 using AndroidX.Camera.Lifecycle;
 using AndroidX.Core.Content;
 using AndroidX.Lifecycle;
-using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Extensions;
 using Java.Lang;
 using Java.Util.Concurrent;
-using System.Runtime.Versioning;
 using static Android.Media.Image;
 using Math = System.Math;
 

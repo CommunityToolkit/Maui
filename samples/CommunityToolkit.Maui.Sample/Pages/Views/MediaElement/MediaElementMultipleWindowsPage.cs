@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
@@ -9,6 +10,10 @@ public partial class MediaElementMultipleWindowsPage : BasePage<MediaElementMult
 	const string buckBunnyMp4Url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
 	const string elephantsDreamMp4Url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4";
 	readonly Window? secondWindow;
+#if WINDOWS || MACCATALYST
+	readonly Window secondWindow;
+#endif
+
 	public MediaElementMultipleWindowsPage(MediaElementMultipleWindowsViewModel viewModel) : base(viewModel)
 	{
 		if(DeviceInfo.Current.Idiom == DeviceIdiom.Phone && DeviceInfo.Current.Platform == DevicePlatform.iOS)
@@ -22,14 +27,16 @@ public partial class MediaElementMultipleWindowsPage : BasePage<MediaElementMult
 		{
 			Content = new MediaElement
 			{
-				Source = elephantsDreamMp4Url,
+				AndroidViewType= AndroidViewType.SurfaceView,
+				Source = StreamingVideoUrls.ElephantsDream,
 				ShouldAutoPlay = true
 			}
 		});
 
 		Content = new MediaElement
 		{
-			Source = buckBunnyMp4Url,
+			AndroidViewType= AndroidViewType.SurfaceView,
+			Source = StreamingVideoUrls.BuckBunny,
 			ShouldAutoPlay = true
 		};
 	}

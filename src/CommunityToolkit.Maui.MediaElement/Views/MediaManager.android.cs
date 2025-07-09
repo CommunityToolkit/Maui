@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Android.Content;
 using Android.Views;
 using Android.Widget;
@@ -8,7 +9,6 @@ using AndroidX.Media3.Common.Util;
 using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.Session;
 using AndroidX.Media3.UI;
-using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
@@ -130,21 +130,51 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
 	/// <exception cref="NullReferenceException">Thrown when <see cref="Context"/> is <see langword="null"/> or when the platform view could not be created.</exception>
 	[MemberNotNull(nameof(Player), nameof(PlayerView), nameof(session))]
-	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView()
+	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView(AndroidViewType androidViewType)
 	{
 		Player = new ExoPlayerBuilder(MauiContext.Context).Build() ?? throw new InvalidOperationException("Player cannot be null");
 		Player.AddListener(this);
-		PlayerView = new PlayerView(MauiContext.Context)
+
+		if (androidViewType is AndroidViewType.SurfaceView)
 		{
-			Player = Player,
-			UseController = false,
-			ControllerAutoShow = false,
-			LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
-		};
-		string randomId = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8];
-		var mediaSessionWRandomId = new MediaSession.Builder(Platform.AppContext, Player);
-		mediaSessionWRandomId.SetId(randomId);
-		session ??= mediaSessionWRandomId.Build() ?? throw new InvalidOperationException("Session cannot be null");
+			PlayerView = new PlayerView(MauiContext.Context)
+			{
+				Player = Player,
+				UseController = false,
+				ControllerAutoShow = false,
+				LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
+			};
+		}
+		else if (androidViewType is AndroidViewType.TextureView)
+		{
+			if (MauiContext.Context?.Resources is null)
+			{
+				throw new InvalidOperationException("Unable to retrieve Android Resources");
+			}
+
+			var resources = MauiContext.Context.Resources;
+			var xmlResource = resources.GetXml(Microsoft.Maui.Resource.Layout.textureview);
+			xmlResource.Read();
+
+			var attributes = Android.Util.Xml.AsAttributeSet(xmlResource)!;
+
+			PlayerView = new PlayerView(MauiContext.Context, attributes)
+			{
+				Player = Player,
+				UseController = false,
+				ControllerAutoShow = false,
+				LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
+			};
+		}
+		else
+		{
+			throw new NotSupportedException($"{androidViewType} is not yet supported");
+		}
+
+		var mediaSession = new MediaSession.Builder(Platform.AppContext, Player);
+		mediaSession.SetId(Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8]);
+
+		session ??= mediaSession.Build() ?? throw new InvalidOperationException("Session cannot be null");
 		ArgumentNullException.ThrowIfNull(session.Id);
 
 		return (Player, PlayerView);
@@ -460,7 +490,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			return;
 		}
 
-		// We're going to mute state. Capture current volume first so we can restore later.
+		// We're going to mute state. Capture the current volume first so we can restore later.
 		if (MediaElement.ShouldMute)
 		{
 			volumeBeforeMute = Player.Volume;
@@ -507,27 +537,97 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 	}
 
-	static async Task<byte[]> GetBytesFromMetadataArtworkUrl(string? url, CancellationToken cancellationToken = default)
+	static async Task<byte[]> GetBytesFromMetadataArtworkUrl(string url, CancellationToken cancellationToken = default)
 	{
-		byte[] artworkData = [];
+		if (string.IsNullOrWhiteSpace(url))
+		{
+			return [];
+		}
+
+		Stream? stream = null;
+		Uri.TryCreate(url, UriKind.Absolute, out var uri);
+
 		try
 		{
-			var response = await client.GetAsync(url, cancellationToken).ConfigureAwait(false);
-			var stream = response.IsSuccessStatusCode ? await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false) : null;
+			byte[] artworkData = [];
+			long? contentLength = null;
 
-			if (stream is null)
+			// HTTP or HTTPS URL
+			if (uri is not null &&
+				(uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
 			{
-				return artworkData;
+				var request = new HttpRequestMessage(HttpMethod.Head, url);
+				var contentLengthResponse = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+				contentLength = contentLengthResponse.Content.Headers.ContentLength ?? 0;
+
+				var response = await client.GetAsync(url, HttpCompletionOption.ResponseContentRead, cancellationToken).ConfigureAwait(false);
+				stream = response.IsSuccessStatusCode ? await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false) : null;
+			}
+			// Absolute File Path
+			else if (uri is not null && uri.Scheme == Uri.UriSchemeFile)
+			{
+				var normalizedFilePath = NormalizeFilePath(url);
+
+				stream = File.Open(normalizedFilePath, FileMode.Create);
+				contentLength = await GetByteCountFromStream(stream, cancellationToken);
+			}
+			// Relative File Path
+			else if (Uri.TryCreate(url, UriKind.Relative, out _))
+			{
+				var normalizedFilePath = NormalizeFilePath(url);
+
+				stream = Platform.AppContext.Assets?.Open(normalizedFilePath) ?? throw new InvalidOperationException("Assets cannot be null");
+				contentLength = await GetByteCountFromStream(stream, cancellationToken);
 			}
 
-			using var memoryStream = new MemoryStream();
-			await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
-			var bytes = memoryStream.ToArray();
-			return bytes;
-		}
-		catch
-		{
+			if (stream is not null)
+			{
+				if (!contentLength.HasValue)
+				{
+					throw new InvalidOperationException($"{nameof(contentLength)} must be set when {nameof(stream)} is not null");
+				}
+
+				artworkData = new byte[contentLength.Value];
+				using var memoryStream = new MemoryStream(artworkData);
+				await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+			}
+
 			return artworkData;
+		}
+		catch (Exception e)
+		{
+			Trace.WriteLine($"Unable to retrieve {nameof(MediaElement.MetadataArtworkUrl)} for {url}.{e}\n");
+			return [];
+		}
+		finally
+		{
+			if (stream is not null)
+			{
+				stream.Close();
+				await stream.DisposeAsync();
+			}
+		}
+
+		static string NormalizeFilePath(string filePath) => filePath.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
+
+		static async ValueTask<long> GetByteCountFromStream(Stream stream, CancellationToken token)
+		{
+			if (stream.CanSeek)
+			{
+				return stream.Length;
+			}
+
+			long countedStreamBytes = 0;
+
+			var buffer = new byte[8192];
+			int bytesRead;
+
+			while ((bytesRead = await stream.ReadAsync(buffer, token)) > 0)
+			{
+				countedStreamBytes += bytesRead;
+			}
+
+			return countedStreamBytes;
 		}
 	}
 
@@ -607,7 +707,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
 		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
 		var data = await GetBytesFromMetadataArtworkUrl(MediaElement.MetadataArtworkUrl, cancellationToken).ConfigureAwait(true);
-		mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);
+		if (data is not null && data.Length > 0)
+		{
+			mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);
+		}
 
 		mediaItem = new MediaItem.Builder();
 		mediaItem.SetUri(url);
@@ -616,6 +719,35 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		return mediaItem;
 	}
+
+	#region PlayerListener implementation method stubs
+	public void OnAudioAttributesChanged(AudioAttributes? audioAttributes) { }
+	public void OnAvailableCommandsChanged(PlayerCommands? player) { }
+	public void OnCues(CueGroup? cues) { }
+	public void OnDeviceInfoChanged(DeviceInfo? deviceInfo) { }
+	public void OnDeviceVolumeChanged(int volume, bool muted) { }
+	public void OnEvents(IPlayer? player, PlayerEvents? playerEvents) { }
+	public void OnIsLoadingChanged(bool isLoading) { }
+	public void OnIsPlayingChanged(bool isPlaying) { }
+	public void OnLoadingChanged(bool isLoading) { }
+	public void OnMaxSeekToPreviousPositionChanged(long maxSeekToPreviousPositionMs) { }
+	public void OnMediaItemTransition(MediaItem? mediaItem, int reason) { }
+	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata) { }
+	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason) { }
+	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
+	public void OnPlayerErrorChanged(PlaybackException? error) { }
+	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }
+	public void OnRenderedFirstFrame() { }
+	public void OnRepeatModeChanged(int repeatMode) { }
+	public void OnSeekBackIncrementChanged(long seekBackIncrementMs) { }
+	public void OnSeekForwardIncrementChanged(long seekForwardIncrementMs) { }
+	public void OnShuffleModeEnabledChanged(bool shuffleModeEnabled) { }
+	public void OnSkipSilenceEnabledChanged(bool skipSilenceEnabled) { }
+	public void OnSurfaceSizeChanged(int width, int height) { }
+	public void OnTimelineChanged(Timeline? timeline, int reason) { }
+	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters) { }
+	public void OnTracksChanged(Tracks? tracks) { }
+	#endregion
 
 	static class PlaybackState
 	{
@@ -633,4 +765,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		public const int StateStopped = 1;
 		public const int StateError = 7;
 	}
+
+
 }

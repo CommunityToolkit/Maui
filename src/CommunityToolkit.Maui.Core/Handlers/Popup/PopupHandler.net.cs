@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.Core.Handlers;
+namespace CommunityToolkit.Maui.Core.Handlers;
 
 public partial class PopupHandler : Microsoft.Maui.Handlers.ElementHandler<IPopup, object>
 {

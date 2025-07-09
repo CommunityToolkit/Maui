@@ -16,11 +16,17 @@
     <NuGetAuditMode>all</NuGetAuditMode>
 
     <!-- MAUI Specific -->
-    <MauiPackageVersion>9.0.50</MauiPackageVersion>
+    <MauiPackageVersion>9.0.80</MauiPackageVersion>
     <NextMauiPackageVersion>10.0.0</NextMauiPackageVersion>
     <MauiStrictXamlCompilation>true</MauiStrictXamlCompilation>
     <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+
+    <!-- WindowsAppSDK
+      We should keep this in sync with .NET MAUI https://github.com/dotnet/maui/blob/8ee00e00f603cd8a420a3467daddaf3935c8c587/Directory.Build.props#L142 
+      This will prevent transitive dependencies from causing conflicts when they're not aligned.
+    -->
+    <WindowsSdkPackageVersion>10.0.19041.44</WindowsSdkPackageVersion>
 
     <!-- https://learn.microsoft.com/dotnet/core/deploying/native-aot/?tabs=net8plus%2Cwindows -->
     <StripSymbols>false</StripSymbols>
@@ -170,9 +176,11 @@
      xUnit3002: Classes which are JSON serializable should not be tested for their concrete type
      XC0045: Binding: Property not found
      XC0103: Consider attributing the markup extension with [RequireService] or [AcceptEmptyServiceProvider] if it doesn't require any
+     XC0618: Property, Property setter or BindableProperty "BackgroundColor" is deprecated
      IL2***: Trim Warnings     
      IL3***: AOT Warnings     
-     RS2007: Analyzer release file 'AnalyzerReleases.Shipped.md' has a missing or invalid release header-->
+     RS1038: Compiler extensions should be implemented in assemblies with compiler-provided references
+     RS2007: Analyzer release file 'AnalyzerReleases.Shipped.md' has a missing or invalid release header -->
     <WarningsAsErrors>
       nullable,
       CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1580,CS1581,CS1584,CS1587,CS1589,CS1590,CS1591,CS1592,CS1598,CS1658,CS1710,CS1711,CS1712,CS1723,CS1734,
@@ -182,7 +190,7 @@
       xUnit1000,xUnit1001,xUnit1002,xUnit1003,xUnit1004,xUnit1005,xUnit1006,xUnit1007,xUnit1008,xUnit1009,xUnit1010,xUnit1011,xUnit1012,xUnit1013,xUnit1014,xUnit1015,xUnit1016,xUnit1017,xUnit1018,xUnit1019,xUnit1020,xUnit1021,xUnit1022,xUnit1023,xUnit1024,xUnit1025,xUnit1026,xUnit1027,xUnit1028,xUnit1029,xUnit1030,xUnit1031,xUnit1032,xUnit1033,xUnit1034,xUnit1035,xUnit1036,xUnit1037,xUnit1038,xUnit1039,xUnit1040,xUnit1041,xUnit1042,xUnit1043,xUnit1048,xUnit1049,xUnit1050,xUnit1051,
       xUnit2000,xUnit2001,xUnit2002,xUnit2003,xUnit2004,xUnit2005,xUnit2006,xUnit2007,xUnit2008,xUnit2009,xUnit2010,xUnit2011,xUnit2012,xUnit2013,xUnit2014,xUnit2015,xUnit2016,xUnit2017,xUnit2018,xUnit2019,xUnit2020,xUnit2021,xUnit2022,xUnit2023,xUnit2024,xUnit2025,xUnit2026,xUnit2027,xUnit2028,xUnit2029,xUnit2030,xUnit2031,xUnit2032,
       xUnit3000,xUnit3001,xUnit3002,
-      XC0045,XC0103,
+      XC0045,XC0103,XC0618,
       IL2001,IL2002,IL2003,IL2004,IL2005,IL2006,IL2007,IL2008,IL2009,
       IL2010,IL2011,IL2012,IL2013,IL2014,IL2015,IL2016,IL2017,IL2018,IL2019,
       IL2020,IL2021,IL2022,IL2023,IL2024,IL2025,IL2026,IL2027,IL2028,IL2029,
@@ -197,8 +205,15 @@
       IL2110,IL2111,IL2112,IL2113,IL2114,IL2115,IL2116,IL2117,IL2118,IL2119,
       IL2120,IL2121,IL2122,
       IL3050,IL3051,IL3052,IL3053,IL3054,IL3055,IL3056,
-      RS2007
+      RS1038,RS2007
     </WarningsAsErrors>
+
+    <!--
+      Once the repo moves to .NET 10 SDK, TestingPlatformDotnetTestSupport should be
+      replaced by dotnet.config that opts in the new dotnet test experience for Microsoft.Testing.Platform
+    -->
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
   </PropertyGroup>
 
   <!-- Required for NuGet Source Link -->
