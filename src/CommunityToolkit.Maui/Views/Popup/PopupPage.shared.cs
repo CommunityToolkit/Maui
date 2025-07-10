@@ -182,8 +182,12 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 	internal sealed partial class PopupPageLayout : Grid
 	{
+		readonly TapGestureRecognizer backgroundTapGestureRecognizer;
+		readonly ICommand tapOutsideOfPopupCommand;
+
 		public PopupPageLayout(in Popup popupContent, in IPopupOptions options, in ICommand tapOutsideOfPopupCommand)
 		{
+			this.tapOutsideOfPopupCommand = tapOutsideOfPopupCommand;
 			Background = BackgroundColor = null;
 
 			var tappableBackground = new BoxView
@@ -192,17 +196,17 @@ partial class PopupPage : ContentPage, IQueryAttributable
 				HorizontalOptions = LayoutOptions.Fill,
 				VerticalOptions = LayoutOptions.Fill
 			};
-			tappableBackground.GestureRecognizers.Add(new TapGestureRecognizer { Command = tapOutsideOfPopupCommand });
-			Children.Add(tappableBackground); // Add the Tappable Background to the PopupPageLayout Grid before adding the Border to ensure the Border is displayed on top
+			backgroundTapGestureRecognizer = new TapGestureRecognizer();
+			backgroundTapGestureRecognizer.Tapped += BackgroundTapGestureRecognizerOnTapped;
+
+			tappableBackground.GestureRecognizers.Add(backgroundTapGestureRecognizer);
+			Children.Add(tappableBackground);
 
 			PopupBorder = new Border
 			{
 				BackgroundColor = popupContent.BackgroundColor ??= Options.DefaultPopupSettings.BackgroundColor,
 				Content = popupContent
 			};
-			
-			// Currently .NET MAUI allows for the TapGestureRecognizer added to the BoxView behind this Border to be triggered with a tap on Android.
-			PopupBorder.GestureRecognizers.Add(new TapGestureRecognizer());
 
 			// Bind `Popup` values through to Border using OneWay Bindings 
 			PopupBorder.SetBinding(Border.MarginProperty, static (Popup popup) => popup.Margin, source: popupContent, mode: BindingMode.OneWay, converter: new MarginConverter());
@@ -218,6 +222,22 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			PopupBorder.SetBinding(Border.StrokeThicknessProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay, converter: new BorderStrokeThicknessConverter());
 
 			Children.Add(PopupBorder);
+		}
+		
+		void BackgroundTapGestureRecognizerOnTapped(object? sender, TappedEventArgs e)
+		{
+			var position = e.GetPosition(this);
+
+			if (position is null)
+			{
+				return;
+			}
+
+			if (PopupBorder.Bounds.Contains(position.Value) is false &&
+			    tapOutsideOfPopupCommand.CanExecute(null))
+			{
+				tapOutsideOfPopupCommand.Execute(null);
+			}
 		}
 
 		public Border PopupBorder { get; }
