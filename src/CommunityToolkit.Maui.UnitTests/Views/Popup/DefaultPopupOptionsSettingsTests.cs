@@ -282,6 +282,6 @@ public class DefaultPopupOptionsSettingsTests : BaseViewTest
 
 
 	static TapGestureRecognizer GetTapOutsideGestureRecognizer(PopupPage popupPage) =>
-		(TapGestureRecognizer)popupPage.Content.Children.OfType<BoxView>().Single().GestureRecognizers[0];
+		(TapGestureRecognizer)popupPage.Content.GestureRecognizers.Single();
 }
 #pragma warning restore CA1416

@@ -146,6 +146,17 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		return popup;
 	}
+	
+	internal bool TryExecuteTapOutsideOfPopupCommand()
+	{
+		if (!tapOutsideOfPopupCommand.CanExecute(null))
+		{
+			return false;
+		}
+
+		tapOutsideOfPopupCommand.Execute(null);
+		return true;
+	}
 
 	// Only dismiss when a user taps outside Popup when **both** Popup.CanBeDismissedByTappingOutsideOfPopup and PopupOptions.CanBeDismissedByTappingOutsideOfPopup are true
 	// If either value is false, do not dismiss Popup
@@ -197,17 +208,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		{
 			TryExecuteTapOutsideOfPopupCommand();
 		}
-	}
-
-	bool TryExecuteTapOutsideOfPopupCommand()
-	{
-		if (!tapOutsideOfPopupCommand.CanExecute(null))
-		{
-			return false;
-		}
-
-		tapOutsideOfPopupCommand.Execute(null);
-		return true;
 	}
 
 	internal sealed partial class PopupPageLayout : Grid
