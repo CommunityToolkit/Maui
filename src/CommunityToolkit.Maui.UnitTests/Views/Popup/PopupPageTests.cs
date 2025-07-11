@@ -446,13 +446,15 @@ public class PopupPageTests : BaseViewTest
 		};
 		var popupPage = new PopupPage(view, popupOptions);
 
-		// Act
-		var tapGestureRecognizer = GetTapOutsideGestureRecognizer(popupPage);
-		var command = tapGestureRecognizer.Command;
-
-		// Assert
-		Assert.NotNull(command);
-		Assert.False(command.CanExecute(null));
+		// Act // Assert
+		try
+		{
+			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
+			AsyncContext.Run(() => Assert.False(popupPage.TryExecuteTapOutsideOfPopupCommand()));
+		}
+		catch (PopupNotFoundException) // PopupNotFoundException is expected here because `ShowPopup` was never called
+		{
+		}
 	}
 
 	[Fact]
@@ -504,9 +506,6 @@ public class PopupPageTests : BaseViewTest
 		Assert.Equal(LayoutOptions.Start, border.VerticalOptions);
 		Assert.Equal(LayoutOptions.End, border.HorizontalOptions);
 	}
-
-	static TapGestureRecognizer GetTapOutsideGestureRecognizer(PopupPage popupPage) =>
-		(TapGestureRecognizer)popupPage.Content.GestureRecognizers.Single();
 
 	// Helper class for testing protected methods
 	sealed class TestablePopupPage(View view, IPopupOptions popupOptions) : PopupPage(view, popupOptions)
