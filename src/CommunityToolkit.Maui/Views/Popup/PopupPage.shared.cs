@@ -88,7 +88,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 
 		if (Navigation.ModalStack[^1] is Microsoft.Maui.Controls.Page currentVisibleModalPage
-		    && currentVisibleModalPage != popupPageToClose)
+			&& currentVisibleModalPage != popupPageToClose)
 		{
 			throw new PopupBlockedException(currentVisibleModalPage);
 		}
@@ -146,7 +146,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		return popup;
 	}
-	
+
 	internal bool TryExecuteTapOutsideOfPopupCommand()
 	{
 		if (!tapOutsideOfPopupCommand.CanExecute(null))
