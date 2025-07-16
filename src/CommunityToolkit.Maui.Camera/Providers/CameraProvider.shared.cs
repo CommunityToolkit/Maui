@@ -16,7 +16,15 @@ partial class CameraProvider : ICameraProvider
 	/// <inheritdoc/>
 	public bool IsInitialized => refreshTask?.IsCompletedSuccessfully is true;
 
-	bool IsNotRefreshing => refreshTask is null || refreshTask.IsCompleted;
+	ValueTask GetRefreshTask(CancellationToken token)
+	{
+		if (refreshTask is null || refreshTask.IsCompleted)
+		{
+			refreshTask = PlatformRefreshAvailableCameras(token).AsTask();
+		}
+
+		return new ValueTask(refreshTask);
+	}
 
 	/// <inheritdoc/>	
 	public ValueTask InitializeAsync(CancellationToken token)
@@ -28,12 +36,7 @@ partial class CameraProvider : ICameraProvider
 				return ValueTask.CompletedTask;
 			}
 
-			if (IsNotRefreshing)
-			{
-				refreshTask = PlatformRefreshAvailableCameras(token).AsTask();
-			}
-
-			return new ValueTask(refreshTask!);
+			return GetRefreshTask(token);
 		}
 	}
 
@@ -42,12 +45,7 @@ partial class CameraProvider : ICameraProvider
 	{
 		lock (refreshLock)
 		{
-			if (IsNotRefreshing)
-			{
-				refreshTask = PlatformRefreshAvailableCameras(token).AsTask();
-			}
-
-			return new ValueTask(refreshTask!);
+			return GetRefreshTask(token);
 		}
 	}
 
