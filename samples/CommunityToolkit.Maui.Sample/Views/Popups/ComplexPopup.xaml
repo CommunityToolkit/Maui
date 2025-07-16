@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mct:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+           xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+           xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+           xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+           xmlns:system="clr-namespace:System;assembly=System.Runtime"
+           x:Class="CommunityToolkit.Maui.Sample.Views.Popups.ComplexPopup"
+           x:DataType="vm:ComplexPopupViewModel"
+           x:TypeArguments="system:String">
+
+    <mct:Popup.Resources>
+        <mct:AppThemeColor Light="Black" Dark="Black" x:Key="TextColor" />
+    </mct:Popup.Resources>
+
+    <VerticalStackLayout Spacing="12">
+        
+        <Label Text="Complex Popup"
+               TextColor="{mct:AppThemeResource TextColor}"
+               FontSize="24"
+               HorizontalTextAlignment="Center"
+               VerticalTextAlignment="Center"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               FontAttributes="Bold" />
+
+        <Label x:Name="DescriptionLabel"
+               Text="This text will change upon the Opened event firing"
+               TextColor="{mct:AppThemeResource TextColor}"
+               HorizontalTextAlignment="Center"
+               VerticalTextAlignment="Center"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               LineBreakMode="WordWrap" />
+
+        <Entry Placeholder="Enter text here then click Return"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               Text="{Binding ReturnText, Mode=OneWayToSource}" 
+               TextColor="{mct:AppThemeResource TextColor}"/>
+
+        <Button Text="Return"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                Command="{Binding ReturnButtonTappedCommand}" />
+
+    </VerticalStackLayout>
+    
+</mct:Popup>
