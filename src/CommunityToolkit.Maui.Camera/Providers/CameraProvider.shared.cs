@@ -5,8 +5,8 @@
 /// </summary>
 partial class CameraProvider : ICameraProvider
 {
-	readonly Lock initializationLock = new();
-	Task? initializationTask;
+	readonly Lock refreshLock = new();
+	Task? refreshTask;
 
 	internal partial ValueTask PlatformRefreshAvailableCameras(CancellationToken token);
 
@@ -14,14 +14,14 @@ partial class CameraProvider : ICameraProvider
 	public IReadOnlyList<CameraInfo>? AvailableCameras { get; private set; }
 
 	/// <inheritdoc/>
-	public bool IsInitialized => initializationTask?.IsCompletedSuccessfully is true;
+	public bool IsInitialized => refreshTask?.IsCompletedSuccessfully is true;
 
-	bool IsNotRefreshing => initializationTask is null || initializationTask.IsCompleted;
+	bool IsNotRefreshing => refreshTask is null || refreshTask.IsCompleted;
 
 	/// <inheritdoc/>	
 	public ValueTask InitializeAsync(CancellationToken token)
 	{
-		lock (initializationLock)
+		lock (refreshLock)
 		{
 			if (IsInitialized)
 			{
@@ -30,24 +30,24 @@ partial class CameraProvider : ICameraProvider
 
 			if (IsNotRefreshing)
 			{
-				initializationTask = PlatformRefreshAvailableCameras(token).AsTask();
+				refreshTask = PlatformRefreshAvailableCameras(token).AsTask();
 			}
 
-			return new ValueTask(initializationTask!);
+			return new ValueTask(refreshTask!);
 		}
 	}
 
 	/// <inheritdoc/>
 	public ValueTask RefreshAvailableCameras(CancellationToken token)
 	{
-		lock (initializationLock)
+		lock (refreshLock)
 		{
 			if (IsNotRefreshing)
 			{
-				initializationTask = PlatformRefreshAvailableCameras(token).AsTask();
+				refreshTask = PlatformRefreshAvailableCameras(token).AsTask();
 			}
 
-			return new ValueTask(initializationTask!);
+			return new ValueTask(refreshTask!);
 		}
 	}
 
