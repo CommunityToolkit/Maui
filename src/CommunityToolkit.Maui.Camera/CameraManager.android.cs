@@ -1,5 +1,7 @@
 using System.Runtime.Versioning;
 using Android.Content;
+using Android.Provider;
+using Android.Runtime;
 using Android.Views;
 using AndroidX.Camera.Core;
 using AndroidX.Camera.Core.ResolutionSelector;
@@ -322,6 +324,10 @@ partial class CameraManager
 		videoRecordingFile = new Java.IO.File(context.CacheDir, $"{DateTime.UtcNow.Ticks}.mp4");
 		videoRecordingFile.CreateNewFile();
 
+		var name = $"CameraX-recording-{DateTime.UtcNow.Ticks}.mp4";
+        var contentValues = new ContentValues();
+		contentValues.Put(MediaStore.IMediaColumns.DisplayName, name);
+
 		var outputOptions = new FileOutputOptions.Builder(videoRecordingFile).Build();
 
 		videoRecordingFinalizeTcs = new TaskCompletionSource();
@@ -360,14 +366,13 @@ partial class CameraManager
 		var cameraProviderFuture = ProcessCameraProvider.GetInstance(context) ?? throw new CameraException($"Unable to retrieve {nameof(ProcessCameraProvider)}");
 		cameraProviderFuture.AddListener(new Runnable(() =>
 		{
-			var cameraProviderInstance = cameraProviderFuture.Get();
-			if (cameraProviderInstance is not AndroidX.Camera.Core.ICameraProvider androidCameraProvider)
+			var cameraProviderInstance = cameraProviderFuture.Get().JavaCast<AndroidX.Camera.Core.ICameraProvider>();
+			if (cameraProviderInstance is null)
 			{
-				cameraFutureCts.SetResult();
 				return;
 			}
-			
-			var extensionsManagerFuture = ExtensionsManager.GetInstanceAsync(context, androidCameraProvider);
+
+			var extensionsManagerFuture = ExtensionsManager.GetInstanceAsync(context, cameraProviderInstance);
 			extensionsManagerFuture.AddListener(new Runnable(() =>
 			{
 				var extensionsManager = (ExtensionsManager)extensionsManagerFuture.Get()!;
