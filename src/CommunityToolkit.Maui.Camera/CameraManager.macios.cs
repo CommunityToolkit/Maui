@@ -23,6 +23,12 @@ partial class CameraManager
 	PreviewView? previewView;
 	AVCaptureVideoOrientation videoOrientation;
 
+	AVCaptureDeviceInput? videoInput;
+	AVCaptureMovieFileOutput? videoOutput;
+	TaskCompletionSource? videoRecordingFinalizeTcs;
+	Stream? videoRecordingStream;
+	string? videoRecordingFile;
+
 	// IN the future change the return type to be an alias
 	public UIView CreatePlatformView()
 	{
@@ -204,35 +210,108 @@ partial class CameraManager
 			throw new CameraException("Capture session is not initialized. Call ConnectCamera first.");
 		}
 
+		CleanupVideoRecordingResources();
+
 		var videoDevice = AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Video) ?? throw new CameraException("Unable to get video device");
 
-		var videoInput = new AVCaptureDeviceInput(videoDevice, out NSError? error);
+		videoInput = new AVCaptureDeviceInput(videoDevice, out NSError? error);
+		if (error is not null)
+		{
+			throw new CameraException($"Error creating video input: {error.LocalizedDescription}");
+		}
 
 		if (!captureSession.CanAddInput(videoInput))
 		{
+			videoInput?.Dispose();
 			throw new CameraException("Unable to add video input to capture session.");
 		}
 
+		captureSession.BeginConfiguration();
 		captureSession.AddInput(videoInput);
 
-		var videoOutput = new AVCaptureMovieFileOutput();
-		
+		videoOutput = new AVCaptureMovieFileOutput();
+
 		if (!captureSession.CanAddOutput(videoOutput))
 		{
+			captureSession.RemoveInput(videoInput);
+			videoInput?.Dispose();
+			videoOutput?.Dispose();
+			captureSession.CommitConfiguration();
 			throw new CameraException("Unable to add video output to capture session.");
 		}
 
 		captureSession.AddOutput(videoOutput);
-		captureSession.StartRunning();
-		//videoOutput.StartRecordingToOutputFile(new NSUrl("video.mp4"));
+		captureSession.CommitConfiguration();
+
+		videoRecordingStream = stream;
+		videoRecordingFinalizeTcs = new TaskCompletionSource();
+		videoRecordingFile = Path.GetTempFileName();
+
+		if (!captureSession.Running)
+		{
+			captureSession.StartRunning();
+		}
+
+		var outputUrl = NSUrl.FromFilename(videoRecordingFile);
+		videoOutput.StartRecordingToOutputFile(outputUrl, new AVCaptureMovieFileOutputRecordingDelegate(videoRecordingFinalizeTcs));
 	}
 
-	protected virtual partial Task PlatformStopVideoRecording(CancellationToken token)
+	protected virtual async partial Task PlatformStopVideoRecording(CancellationToken token)
 	{
-		captureSession?.StopRunning();
-		return Task.CompletedTask;
+		if (captureSession is null || videoRecordingFile is null || videoInput is null || videoOutput is null || videoRecordingStream is null || videoRecordingFinalizeTcs is null)
+		{
+			return;
+		}
+
+		videoOutput.StopRecording();
+		await videoRecordingFinalizeTcs.Task.WaitAsync(token);
+
+		if (File.Exists(videoRecordingFile))
+		{
+			await using var inputStream = new FileStream(videoRecordingFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+			await inputStream.CopyToAsync(videoRecordingStream, token);
+			await videoRecordingStream.FlushAsync(token);
+		}
+		CleanupVideoRecordingResources();
 	}
 
+	void CleanupVideoRecordingResources()
+	{
+		if (captureSession is not null)
+		{
+			captureSession.BeginConfiguration();
+
+			if (videoInput is not null)
+			{
+				captureSession.RemoveInput(videoInput);
+				videoInput.Dispose();
+				videoInput = null;
+			}
+
+			if (videoOutput is not null)
+			{
+				captureSession.RemoveOutput(videoOutput);
+				videoOutput.Dispose();
+				videoOutput = null;
+			}
+
+			captureSession.CommitConfiguration();
+		}
+
+		// Clean up temporary file
+		if (videoRecordingFile is not null)
+		{
+			if (File.Exists(videoRecordingFile))
+			{
+				File.Delete(videoRecordingFile);
+			}
+
+			videoRecordingFile = null;
+		}
+
+		videoRecordingFinalizeTcs = null;
+		videoRecordingStream = null;
+	}
 
 	protected virtual async partial ValueTask PlatformTakePicture(CancellationToken token)
 	{
@@ -293,6 +372,8 @@ partial class CameraManager
 	{
 		if (disposing)
 		{
+			CleanupVideoRecordingResources();
+
 			captureSession?.StopRunning();
 			captureSession?.Dispose();
 			captureSession = null;
@@ -300,11 +381,15 @@ partial class CameraManager
 			captureInput?.Dispose();
 			captureInput = null;
 
+			captureDevice = null;
+
 			orientationDidChangeObserver?.Dispose();
 			orientationDidChangeObserver = null;
 
 			photoOutput?.Dispose();
 			photoOutput = null;
+
+			previewView = null;
 		}
 	}
 
@@ -392,5 +477,14 @@ partial class CameraManager
 				PreviewLayer.Connection.VideoOrientation = videoOrientation;
 			}
 		}
+	}
+}
+
+class AVCaptureMovieFileOutputRecordingDelegate(TaskCompletionSource taskCompletionSource) : AVCaptureFileOutputRecordingDelegate
+{
+	public override void FinishedRecording(AVCaptureFileOutput captureOutput, NSUrl outputFileUrl, NSObject[] connections, NSError? error)
+	{
+		base.FinishedRecording(captureOutput, outputFileUrl, connections, error);
+		taskCompletionSource.SetResult();
 	}
 }

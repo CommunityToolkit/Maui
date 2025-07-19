@@ -49,13 +49,12 @@ partial class CameraManager
 	{
 		extensionMode = mode;
 		if (cameraView.SelectedCamera is null || processCameraProvider is null || cameraPreview is null ||
-		    imageCapture is null || videoCapture is null)
+			imageCapture is null || videoCapture is null)
 		{
 			return;
 		}
 
-		var cameraSelector = await EnableModes(cameraView.SelectedCamera);
-		camera = RebindCamera(processCameraProvider, cameraSelector, cameraPreview, imageCapture, videoCapture);
+		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, cameraPreview, imageCapture, videoCapture);
 
 		cameraControl = camera.CameraControl;
 	}
@@ -77,7 +76,7 @@ partial class CameraManager
 		}
 
 		cameraExecutor = Executors.NewSingleThreadExecutor() ??
-		                 throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
+						 throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
 		orientationListener = new OrientationListener(SetImageCaptureTargetRotation, context);
 		orientationListener.Enable();
 
@@ -104,7 +103,7 @@ partial class CameraManager
 		if (resolutionFilter is not null)
 		{
 			if (Math.Abs(resolutionFilter.TargetSize.Width - resolution.Width) < double.Epsilon &&
-			    Math.Abs(resolutionFilter.TargetSize.Height - resolution.Height) < double.Epsilon)
+				Math.Abs(resolutionFilter.TargetSize.Height - resolution.Height) < double.Epsilon)
 			{
 				return;
 			}
@@ -138,6 +137,8 @@ partial class CameraManager
 	{
 		if (disposing)
 		{
+			CleanupVideoRecordingResources();
+
 			camera?.Dispose();
 			camera = null;
 
@@ -190,8 +191,8 @@ partial class CameraManager
 		cameraProviderFuture.AddListener(new Runnable(async () =>
 		{
 			processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ??
-			                                                throw new CameraException(
-				                                                $"Unable to retrieve {nameof(ProcessCameraProvider)}"));
+															throw new CameraException(
+																$"Unable to retrieve {nameof(ProcessCameraProvider)}"));
 
 			if (cameraProvider.AvailableCameras is null)
 			{
@@ -223,6 +224,9 @@ partial class CameraManager
 		cameraPreview?.Dispose();
 		imageCapture?.Dispose();
 
+		videoCapture?.Dispose();
+		videoRecorder?.Dispose();
+
 		cameraPreview = new Preview.Builder().SetResolutionSelector(resolutionSelector).Build();
 		cameraPreview.SetSurfaceProvider(cameraExecutor, previewView?.SurfaceProvider);
 
@@ -242,7 +246,7 @@ partial class CameraManager
 
 	protected virtual async partial Task PlatformStartCameraPreview(CancellationToken token)
 	{
-		if (previewView is null || processCameraProvider is null || cameraPreview is null || imageCapture is null)
+		if (previewView is null || processCameraProvider is null || cameraPreview is null || imageCapture is null || videoCapture is null)
 		{
 			return;
 		}
@@ -255,11 +259,10 @@ partial class CameraManager
 			}
 
 			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ??
-			                            throw new CameraException("No camera available on device");
+										throw new CameraException("No camera available on device");
 		}
 
-		var cameraSelector = await EnableModes(cameraView.SelectedCamera);
-		camera = RebindCamera(processCameraProvider, cameraSelector, cameraPreview, imageCapture);
+		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, cameraPreview, imageCapture, videoCapture);
 		cameraControl = camera.CameraControl;
 
 		var point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f,
@@ -297,8 +300,8 @@ partial class CameraManager
 
 	protected virtual async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
 	{
-		if (previewView is null || processCameraProvider is null || cameraPreview is null || videoCapture is null ||
-		    videoRecorder is null || videoRecordingFile is not null)
+		if (previewView is null || processCameraProvider is null || cameraPreview is null || imageCapture is null || videoCapture is null ||
+			videoRecorder is null || videoRecordingFile is not null)
 		{
 			return;
 		}
@@ -313,19 +316,20 @@ partial class CameraManager
 			}
 
 			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ??
-			                            throw new CameraException("No camera available on device");
+										throw new CameraException("No camera available on device");
 		}
 
-		var cameraSelector = await EnableModes(cameraView.SelectedCamera);
-		camera = RebindCamera(processCameraProvider, cameraSelector, cameraPreview, videoCapture);
-
-		cameraControl = camera.CameraControl;
+		if (camera is null || !IsVideoCaptureAlreadyBound())
+		{
+			camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, cameraPreview, imageCapture, videoCapture);
+			cameraControl = camera.CameraControl;
+		}
 
 		videoRecordingFile = new Java.IO.File(context.CacheDir, $"{DateTime.UtcNow.Ticks}.mp4");
 		videoRecordingFile.CreateNewFile();
 
 		var name = $"CameraX-recording-{DateTime.UtcNow.Ticks}.mp4";
-        var contentValues = new ContentValues();
+		var contentValues = new ContentValues();
 		contentValues.Put(MediaStore.IMediaColumns.DisplayName, name);
 
 		var outputOptions = new FileOutputOptions.Builder(videoRecordingFile).Build();
@@ -352,11 +356,32 @@ partial class CameraManager
 		await using var inputStream = new FileStream(videoRecordingFile.AbsolutePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 		await inputStream.CopyToAsync(videoRecordingStream, token);
 		await videoRecordingStream.FlushAsync(token);
-		videoRecordingFile.Delete();
-		videoRecording.Dispose();
+		CleanupVideoRecordingResources();
+		await StartCameraPreview(token);
+	}
+
+	bool IsVideoCaptureAlreadyBound()
+	{
+		return processCameraProvider is not null && videoCapture is not null && processCameraProvider.IsBound(videoCapture);
+	}
+
+	void CleanupVideoRecordingResources()
+	{
+		videoRecording?.Dispose();
 		videoRecording = null;
+
+		if (videoRecordingFile is not null)
+		{
+			if (videoRecordingFile.Exists())
+			{
+				videoRecordingFile.Delete();
+			}
+
+			videoRecordingFile = null;
+		}
+
 		videoRecordingFinalizeTcs = null;
-		videoRecordingFile = null;
+		videoRecordingStream = null;
 	}
 
 	async Task<CameraSelector> EnableModes(CameraInfo selectedCamera)
@@ -380,17 +405,18 @@ partial class CameraManager
 				{
 					cameraSelector = extensionsManager.GetExtensionEnabledCameraSelector(cameraSelector, extensionMode);
 				}
-				
+
 				cameraFutureCts.SetResult();
 			}), ContextCompat.GetMainExecutor(context));
 		}), ContextCompat.GetMainExecutor(context));
-		
+
 		await cameraFutureCts.Task;
 		return cameraSelector;
 	}
 
-	ICamera RebindCamera(ProcessCameraProvider provider, CameraSelector cameraSelector, params UseCase[] useCases)
+	async Task<ICamera> RebindCamera(ProcessCameraProvider provider, CameraInfo cameraInfo, params UseCase[] useCases)
 	{
+		var cameraSelector = await EnableModes(cameraInfo);
 		provider.UnbindAll();
 		return provider.BindToLifecycle(
 			(ILifecycleOwner)context,
