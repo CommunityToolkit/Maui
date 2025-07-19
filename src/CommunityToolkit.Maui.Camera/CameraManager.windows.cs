@@ -205,7 +205,6 @@ partial class CameraManager
 		}
 	}
 
-	MemoryStream? recordingStream;
 	protected virtual async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
 	{
 		if (!IsInitialized || mediaCapture is null || mediaElement is null)
@@ -213,7 +212,6 @@ partial class CameraManager
 			return;
 		}
 
-		recordingStream = new MemoryStream();
 		MediaEncodingProfile profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto);
 		mediaRecording = await mediaCapture.PrepareLowLagRecordToStreamAsync(profile, stream.AsRandomAccessStream());
 

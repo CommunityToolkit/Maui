@@ -65,7 +65,7 @@ public static class CameraViewDefaults
 	internal static Command<Stream> CreateStartVideoRecordingCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;
-		return new Command<Stream>(async stream => await cameraView.StartVideoRecording(stream, CancellationToken.None).ConfigureAwait(false));
+		return new Command<Stream>(async stream => await cameraView.StartVideoRecording(stream).ConfigureAwait(false));
 	}
 
 	internal static Command<CancellationToken> CreateStopVideoRecordingCommand(BindableObject bindable)

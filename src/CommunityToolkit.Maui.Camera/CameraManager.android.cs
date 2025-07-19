@@ -23,8 +23,7 @@ namespace CommunityToolkit.Maui.Core;
 [SupportedOSPlatform("android21.0")]
 partial class CameraManager
 {
-	readonly Context context =
-		mauiContext.Context ?? throw new CameraException($"Unable to retrieve {nameof(Context)}");
+	readonly Context context = mauiContext.Context ?? throw new CameraException($"Unable to retrieve {nameof(Context)}");
 
 	NativePlatformCameraPreviewView? previewView;
 	IExecutorService? cameraExecutor;
@@ -75,8 +74,7 @@ partial class CameraManager
 			previewView.SetScaleType(NativePlatformCameraPreviewView.ScaleType.FitCenter);
 		}
 
-		cameraExecutor = Executors.NewSingleThreadExecutor() ??
-						 throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
+		cameraExecutor = Executors.NewSingleThreadExecutor() ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
 		orientationListener = new OrientationListener(SetImageCaptureTargetRotation, context);
 		orientationListener.Enable();
 
@@ -190,9 +188,7 @@ partial class CameraManager
 
 		cameraProviderFuture.AddListener(new Runnable(async () =>
 		{
-			processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ??
-															throw new CameraException(
-																$"Unable to retrieve {nameof(ProcessCameraProvider)}"));
+			processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new CameraException($"Unable to retrieve {nameof(ProcessCameraProvider)}"));
 
 			if (cameraProvider.AvailableCameras is null)
 			{
@@ -258,15 +254,13 @@ partial class CameraManager
 				await cameraProvider.RefreshAvailableCameras(token);
 			}
 
-			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ??
-										throw new CameraException("No camera available on device");
+			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 		}
 
 		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, cameraPreview, imageCapture, videoCapture);
 		cameraControl = camera.CameraControl;
 
-		var point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f,
-			0.1f);
+		var point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
 		var action = new FocusMeteringAction.Builder(point).Build();
 		camera.CameraControl.StartFocusAndMetering(action);
 
@@ -315,8 +309,7 @@ partial class CameraManager
 				await cameraProvider.RefreshAvailableCameras(token);
 			}
 
-			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ??
-										throw new CameraException("No camera available on device");
+			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 		}
 
 		if (camera is null || !IsVideoCaptureAlreadyBound())
@@ -413,10 +406,7 @@ partial class CameraManager
 	{
 		var cameraSelector = await EnableModes(cameraInfo);
 		provider.UnbindAll();
-		return provider.BindToLifecycle(
-			(ILifecycleOwner)context,
-			cameraSelector,
-			useCases);
+		return provider.BindToLifecycle((ILifecycleOwner)context, cameraSelector, useCases);
 	}
 
 	void SetImageCaptureTargetRotation(int rotation)

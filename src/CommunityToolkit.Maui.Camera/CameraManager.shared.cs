@@ -52,10 +52,14 @@ partial class CameraManager(
 	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
 	public Task StartCameraPreview(CancellationToken token) => PlatformStartCameraPreview(token);
 
+
 	/// <summary>
 	/// Starts the video recording.
 	/// </summary>
-	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
+	/// <param name="stream">The output stream for video recording</param>
+	/// <param name="token"><see cref="CancellationToken"/></param>
+	/// <returns>A <see cref="Task"/> that can be awaited.</returns>
+	/// <exception cref="CameraException"></exception>
 	public async Task StartVideoRecording(Stream stream, CancellationToken token)
 	{
 		var cameraRequest = await Permissions.RequestAsync<Permissions.Camera>();
@@ -70,9 +74,10 @@ partial class CameraManager(
 
 
 	/// <summary>
-	/// Starts the video recording.
+	/// Stops the video recording.
 	/// </summary>
-	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
+	/// <param name="token"><see cref="CancellationToken"/></param>
+	/// <returns>A <see cref="Task"/> that can be awaited.</returns>
 	public Task StopVideoRecording(CancellationToken token)
 	{
 		return PlatformStopVideoRecording(token);
@@ -158,7 +163,22 @@ partial class CameraManager(
 	/// </summary>
 	protected virtual partial void PlatformStopCameraPreview();
 
+	/// <summary>
+	/// Starts video recording and writes the recorded data to the specified stream.
+	/// </summary>
+	/// <remarks>This method is platform-specific and should be overridden in a derived class to provide the actual
+	/// implementation. Ensure that the stream remains open and writable for the duration of the recording.</remarks>
+	/// <param name="stream">The stream to which the video data will be written. Must be writable and not null.</param>
+	/// <param name="token">A cancellation token that can be used to cancel the video recording operation.</param>
+	/// <returns>A task that represents the asynchronous video recording operation.</returns>
 	protected virtual partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token);
 
+	/// <summary>
+	/// Stops the video recording process asynchronously.
+	/// </summary>
+	/// <remarks>This method is platform-specific and should be overridden in a derived class to implement the stop
+	/// functionality.</remarks>
+	/// <param name="token">A cancellation token that can be used to cancel the stop operation.</param>
+	/// <returns>A task that represents the asynchronous stop operation.</returns>
 	protected virtual partial Task PlatformStopVideoRecording(CancellationToken token);
 }

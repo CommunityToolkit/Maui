@@ -76,14 +76,25 @@ public interface ICameraView : IView
 	void StopCameraPreview();
 
 	/// <summary>
-	/// Starts the video recording.
+	/// Starts recording video and writes the output to the specified stream.
 	/// </summary>
-	Task StartVideoRecording(Stream stream, CancellationToken token);
+	/// <remarks>Ensure that the stream is properly disposed of after the recording is complete. The recording will
+	/// stop if the cancellation token is triggered.</remarks>
+	/// <param name="stream">The stream to which the video data will be written. The stream must be writable and remain open for the duration of
+	/// the recording.</param>
+	/// <param name="token">A cancellation token that can be used to cancel the video recording operation.</param>
+	/// <returns>A task that represents the asynchronous video recording operation.</returns>
+	Task StartVideoRecording(Stream stream, CancellationToken token = default);
 
 	/// <summary>
-	/// Stops the video recording.
+	/// Stops the ongoing video recording operation.
 	/// </summary>
-	Task StopVideoRecording(CancellationToken token);
+	/// <remarks>This method should be called to terminate the video recording process. Ensure that the recording
+	/// has been started before invoking this method. The operation can be cancelled by passing a  cancellation
+	/// token.</remarks>
+	/// <param name="token">A cancellation token that can be used to cancel the stop operation.</param>
+	/// <returns>A task that represents the asynchronous stop operation.</returns>
+	Task StopVideoRecording(CancellationToken token = default);
 
 	/// <summary>
 	/// Retrieves the cameras available on the current device.
