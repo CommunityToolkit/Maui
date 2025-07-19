@@ -5,6 +5,7 @@ using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.UnitTests.Services;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
+using Nito.AsyncEx;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Extensions;
@@ -1162,8 +1163,14 @@ public class PopupExtensionsTests : BaseViewTest
 		var popupPage = (PopupPage)navigation.ModalStack[0];
 		popupPage.PopupClosed += HandlePopupClosed;
 
-		var tapGestureRecognizer = GetTapOutsideGestureRecognizer(popupPage);
-		tapGestureRecognizer.Command?.Execute(null);
+		try
+		{
+			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
+			AsyncContext.Run(() => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
+		}
+		catch (PopupNotFoundException) // PopupNotFoundException is expected here because `ShowPopup` was never called
+		{
+		}
 
 		var popupClosedResult = await popupClosedTCS.Task;
 		var showPopupResult = await showPopupTask;
@@ -1197,8 +1204,14 @@ public class PopupExtensionsTests : BaseViewTest
 		var popupPage = (PopupPage)shellNavigation.ModalStack[0];
 		popupPage.PopupClosed += HandlePopupClosed;
 
-		var tapGestureRecognizer = GetTapOutsideGestureRecognizer(popupPage);
-		tapGestureRecognizer.Command?.Execute(null);
+		try
+		{
+			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
+			AsyncContext.Run(() => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
+		}
+		catch (PopupNotFoundException) // PopupNotFoundException is expected here because `ShowPopup` was never called
+		{
+		}
 
 		var popupClosedResult = await popupClosedTCS.Task;
 		var showPopupResult = await showPopupTask;
@@ -1225,8 +1238,14 @@ public class PopupExtensionsTests : BaseViewTest
 		var popupPage = (PopupPage)navigation.ModalStack[0];
 		popupPage.PopupClosed += HandlePopupClosed;
 
-		var tapGestureRecognizer = GetTapOutsideGestureRecognizer(popupPage);
-		tapGestureRecognizer.Command?.Execute(null);
+		try
+		{
+			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
+			AsyncContext.Run(() => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
+		}
+		catch (PopupNotFoundException) // PopupNotFoundException is expected here because `ShowPopup` was never called
+		{
+		}
 
 		var popupClosedResult = await popupClosedTCS.Task;
 		var showPopupResult = await showPopupTask;
@@ -1260,8 +1279,14 @@ public class PopupExtensionsTests : BaseViewTest
 		var popupPage = (PopupPage)shellNavigation.ModalStack[0];
 		popupPage.PopupClosed += HandlePopupClosed;
 
-		var tapGestureRecognizer = GetTapOutsideGestureRecognizer(popupPage);
-		tapGestureRecognizer.Command?.Execute(null);
+		try
+		{
+			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
+			AsyncContext.Run(() => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
+		}
+		catch (PopupNotFoundException) // PopupNotFoundException is expected here because `ShowPopup` was never called
+		{
+		}
 
 		var popupClosedResult = await popupClosedTCS.Task;
 		var showPopupResult = await showPopupTask;
@@ -1288,8 +1313,14 @@ public class PopupExtensionsTests : BaseViewTest
 		var popupPage = (PopupPage)navigation.ModalStack[0];
 		popupPage.PopupClosed += HandlePopupClosed;
 
-		var tapGestureRecognizer = GetTapOutsideGestureRecognizer(popupPage);
-		tapGestureRecognizer.Command?.Execute(null);
+		try
+		{
+			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
+			AsyncContext.Run(() => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
+		}
+		catch (PopupNotFoundException) // PopupNotFoundException is expected here because `ShowPopup` was never called
+		{
+		}
 
 		var popupClosedResult = await popupClosedTCS.Task;
 		var showPopupResult = await showPopupTask;
@@ -1324,8 +1355,14 @@ public class PopupExtensionsTests : BaseViewTest
 		var popupPage = (PopupPage)shellNavigation.ModalStack[0];
 		popupPage.PopupClosed += HandlePopupClosed;
 
-		var tapGestureRecognizer = GetTapOutsideGestureRecognizer(popupPage);
-		tapGestureRecognizer.Command?.Execute(null);
+		try
+		{
+			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
+			AsyncContext.Run(() => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
+		}
+		catch (PopupNotFoundException) // PopupNotFoundException is expected here because `ShowPopup` was never called
+		{
+		}
 
 		var popupClosedResult = await popupClosedTCS.Task;
 		var showPopupResult = await showPopupTask;
@@ -1472,9 +1509,6 @@ public class PopupExtensionsTests : BaseViewTest
 		Assert.Equal(expectedResult, popupResult.Result);
 		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
 	}
-
-	static TapGestureRecognizer GetTapOutsideGestureRecognizer(PopupPage popupPage) =>
-		(TapGestureRecognizer)popupPage.Content.Children.OfType<BoxView>().Single().GestureRecognizers[0];
 }
 
 sealed class ViewWithIQueryAttributable : Button, IQueryAttributable
