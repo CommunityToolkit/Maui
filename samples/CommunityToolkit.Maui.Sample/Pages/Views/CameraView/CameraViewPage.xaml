@@ -67,15 +67,14 @@
                     ItemsSource="{Binding FlashModes}"
                     SelectedItem="{Binding FlashMode}" />
 
-                <Button Command="{Binding CaptureImageCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}" 
-                        CommandParameter="{Binding Token}"
-                        Text="Capture Image"/>
                 <Button Command="{Binding StartCameraPreviewCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}"
                         CommandParameter="{Binding Token}"
                         Text="StartCameraPreview" />
 
                 <Button Command="{Binding StopCameraPreviewCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}" 
                         Text="StopCameraPreview" />
+
+
                 <Button Clicked="StartCameraRecording"
                         Text="StartVideoRecording" />
 
@@ -83,7 +82,12 @@
                          CommandParameter="{Binding Token}"
                          Text="StopVideoRecording" />
 
-                <Button Command="{Binding SaveVideoCommand}" Text="GetStream" />
+                <Button Command="{Binding SaveVideoCommand}" Text="Save Video Recording" />
+
+                <Button Command="{Binding CaptureImageCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}" 
+                        CommandParameter="{Binding Token}"
+                        Text="Capture Image"/>
+
                 <Button Clicked="SetNightMode" Text="Set Night Mode (Android)" />
 
             </FlexLayout>

@@ -328,10 +328,6 @@ partial class CameraManager
 		videoRecordingFile = new Java.IO.File(context.CacheDir, $"{DateTime.UtcNow.Ticks}.mp4");
 		videoRecordingFile.CreateNewFile();
 
-		var name = $"CameraX-recording-{DateTime.UtcNow.Ticks}.mp4";
-		var contentValues = new ContentValues();
-		contentValues.Put(MediaStore.IMediaColumns.DisplayName, name);
-
 		var outputOptions = new FileOutputOptions.Builder(videoRecordingFile).Build();
 
 		videoRecordingFinalizeTcs = new TaskCompletionSource();
@@ -357,7 +353,6 @@ partial class CameraManager
 		await inputStream.CopyToAsync(videoRecordingStream, token);
 		await videoRecordingStream.FlushAsync(token);
 		CleanupVideoRecordingResources();
-		await StartCameraPreview(token);
 	}
 
 	bool IsVideoCaptureAlreadyBound()

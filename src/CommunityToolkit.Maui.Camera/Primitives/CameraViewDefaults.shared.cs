@@ -71,6 +71,6 @@ public static class CameraViewDefaults
 	internal static Command<CancellationToken> CreateStopVideoRecordingCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;
-		return new Command<CancellationToken>(token => cameraView.StopVideoRecording(token).ConfigureAwait(false));
+		return new Command<CancellationToken>(async token => await cameraView.StopVideoRecording(token).ConfigureAwait(false));
 	}
 }
