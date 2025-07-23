@@ -27,19 +27,25 @@ public class DefaultPopupOptionsSettingsTests : BaseViewTest
 		var popupPage = new PopupPage(new Popup(), null);
 		var popupBorder = popupPage.Content.PopupBorder;
 
-		var tapGestureRecognizer = GetTapOutsideGestureRecognizer(popupPage);
-
 		// Assert
-		Assert.True(tapGestureRecognizer.Command?.CanExecute(null));
+		try
+		{
+			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
+			AsyncContext.Run(() => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
+		}
+		catch (PopupNotFoundException) // PopupNotFoundException is expected here because `ShowPopup` was never called
+		{
+		}
+
 		Assert.Equal(2, popupBorder.StrokeThickness);
 		Assert.Equal(Colors.LightGray, popupBorder.Stroke);
 		Assert.Equal(Colors.Black.WithAlpha(0.3f), popupPage.BackgroundColor);
-		
+
 		Assert.Equal(Colors.Black, popupBorder.Shadow.Brush);
 		Assert.Equal(new(20, 20), popupBorder.Shadow.Offset);
 		Assert.Equal(40, popupBorder.Shadow.Radius);
 		Assert.Equal(0.8f, popupBorder.Shadow.Opacity);
-		
+
 		Assert.Equal(new CornerRadius(20, 20, 20, 20), ((RoundRectangle?)popupBorder.StrokeShape)?.CornerRadius);
 		Assert.Equal(2, ((RoundRectangle?)popupBorder.StrokeShape)?.StrokeThickness);
 		Assert.Equal(Colors.LightGray, ((RoundRectangle?)popupBorder.StrokeShape)?.Stroke);
@@ -52,19 +58,25 @@ public class DefaultPopupOptionsSettingsTests : BaseViewTest
 		var popupPage = new PopupPage(new Popup(), PopupOptions.Empty);
 		var popupBorder = popupPage.Content.PopupBorder;
 
-		var tapGestureRecognizer = GetTapOutsideGestureRecognizer(popupPage);
-
 		// Assert
-		Assert.True(tapGestureRecognizer.Command?.CanExecute(null));
+		try
+		{
+			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
+			AsyncContext.Run(() => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
+		}
+		catch (PopupNotFoundException) // PopupNotFoundException is expected here because `ShowPopup` was never called
+		{
+		}
+
 		Assert.Equal(2, popupBorder.StrokeThickness);
 		Assert.Equal(Colors.LightGray, popupBorder.Stroke);
 		Assert.Equal(Colors.Black.WithAlpha(0.3f), popupPage.BackgroundColor);
-		
+
 		Assert.Equal(Colors.Black, popupBorder.Shadow.Brush);
 		Assert.Equal(new(20, 20), popupBorder.Shadow.Offset);
 		Assert.Equal(40, popupBorder.Shadow.Radius);
 		Assert.Equal(0.8f, popupBorder.Shadow.Opacity);
-		
+
 		Assert.Equal(new CornerRadius(20, 20, 20, 20), ((RoundRectangle?)popupBorder.StrokeShape)?.CornerRadius);
 		Assert.Equal(2, ((RoundRectangle?)popupBorder.StrokeShape)?.StrokeThickness);
 		Assert.Equal(Colors.LightGray, ((RoundRectangle?)popupBorder.StrokeShape)?.Stroke);
@@ -90,20 +102,18 @@ public class DefaultPopupOptionsSettingsTests : BaseViewTest
 
 		var popupPage = new PopupPage(new Popup(), null);
 		var popupBorder = popupPage.Content.PopupBorder;
-		var tapGestureRecognizer = GetTapOutsideGestureRecognizer(popupPage);
 
 		// Act
 		try
 		{
 			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
-			AsyncContext.Run(() => { tapGestureRecognizer.Command?.Execute(null); });
+			AsyncContext.Run(() => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
 		}
 		catch (PopupNotFoundException) // PopupNotFoundException is expected here because `ShowPopup` was never called
 		{
 		}
 
-		// // Assert
-		Assert.True(tapGestureRecognizer.Command?.CanExecute(null));
+		// Assert
 		Assert.True(hasOnTappingOutsideOfPopupExecuted);
 		Assert.Equal(defaultPopupSettings.PageOverlayColor, popupPage.BackgroundColor);
 		Assert.Equal(defaultPopupSettings.Shadow, popupBorder.Shadow);
@@ -130,20 +140,18 @@ public class DefaultPopupOptionsSettingsTests : BaseViewTest
 
 		var popupPage = new PopupPage(new Popup(), defaultPopupSettings);
 		var popupBorder = popupPage.Content.PopupBorder;
-		var tapGestureRecognizer = GetTapOutsideGestureRecognizer(popupPage);
 
 		// Act
 		try
 		{
 			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
-			AsyncContext.Run(() => { tapGestureRecognizer.Command?.Execute(null); });
+			AsyncContext.Run(() => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
 		}
 		catch (PopupNotFoundException) // PopupNotFoundException is expected here because `ShowPopup` was never called
 		{
 		}
 
 		// // Assert
-		Assert.True(tapGestureRecognizer.Command?.CanExecute(null));
 		Assert.True(hasOnTappingOutsideOfPopupExecuted);
 		Assert.Equal(defaultPopupSettings.PageOverlayColor, popupPage.BackgroundColor);
 		Assert.Equal(defaultPopupSettings.Shadow, popupBorder.Shadow);
@@ -157,19 +165,25 @@ public class DefaultPopupOptionsSettingsTests : BaseViewTest
 		var popupPage = new PopupPage(new View(), null);
 		var popupBorder = popupPage.Content.PopupBorder;
 
-		var tapGestureRecognizer = GetTapOutsideGestureRecognizer(popupPage);
-
 		// Assert
-		Assert.True(tapGestureRecognizer.Command?.CanExecute(null));
+		try
+		{
+			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
+			AsyncContext.Run(() => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
+		}
+		catch (PopupNotFoundException) // PopupNotFoundException is expected here because `ShowPopup` was never called
+		{
+		}
+
 		Assert.Equal(2, popupBorder.StrokeThickness);
 		Assert.Equal(Colors.LightGray, popupBorder.Stroke);
 		Assert.Equal(Colors.Black.WithAlpha(0.3f), popupPage.BackgroundColor);
-		
+
 		Assert.Equal(Colors.Black, popupBorder.Shadow.Brush);
 		Assert.Equal(new(20, 20), popupBorder.Shadow.Offset);
 		Assert.Equal(40, popupBorder.Shadow.Radius);
 		Assert.Equal(0.8f, popupBorder.Shadow.Opacity);
-		
+
 		Assert.Equal(new CornerRadius(20, 20, 20, 20), ((RoundRectangle?)popupBorder.StrokeShape)?.CornerRadius);
 		Assert.Equal(2, ((RoundRectangle?)popupBorder.StrokeShape)?.StrokeThickness);
 		Assert.Equal(Colors.LightGray, ((RoundRectangle?)popupBorder.StrokeShape)?.Stroke);
@@ -182,19 +196,24 @@ public class DefaultPopupOptionsSettingsTests : BaseViewTest
 		var popupPage = new PopupPage(new View(), PopupOptions.Empty);
 		var popupBorder = popupPage.Content.PopupBorder;
 
-		var tapGestureRecognizer = GetTapOutsideGestureRecognizer(popupPage);
-
-// Assert
-		Assert.True(tapGestureRecognizer.Command?.CanExecute(null));
+		// Assert
+		try
+		{
+			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
+			AsyncContext.Run(() => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
+		}
+		catch (PopupNotFoundException) // PopupNotFoundException is expected here because `ShowPopup` was never called
+		{
+		}
 		Assert.Equal(2, popupBorder.StrokeThickness);
 		Assert.Equal(Colors.LightGray, popupBorder.Stroke);
 		Assert.Equal(Colors.Black.WithAlpha(0.3f), popupPage.BackgroundColor);
-		
+
 		Assert.Equal(Colors.Black, popupBorder.Shadow.Brush);
 		Assert.Equal(new(20, 20), popupBorder.Shadow.Offset);
 		Assert.Equal(40, popupBorder.Shadow.Radius);
 		Assert.Equal(0.8f, popupBorder.Shadow.Opacity);
-		
+
 		Assert.Equal(new CornerRadius(20, 20, 20, 20), ((RoundRectangle?)popupBorder.StrokeShape)?.CornerRadius);
 		Assert.Equal(2, ((RoundRectangle?)popupBorder.StrokeShape)?.StrokeThickness);
 		Assert.Equal(Colors.LightGray, ((RoundRectangle?)popupBorder.StrokeShape)?.Stroke);
@@ -220,20 +239,18 @@ public class DefaultPopupOptionsSettingsTests : BaseViewTest
 
 		var popupPage = new PopupPage(new View(), null);
 		var popupBorder = popupPage.Content.PopupBorder;
-		var tapGestureRecognizer = GetTapOutsideGestureRecognizer(popupPage);
 
 		// Act
 		try
 		{
 			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
-			AsyncContext.Run(() => { tapGestureRecognizer.Command?.Execute(null); });
+			AsyncContext.Run(() => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
 		}
 		catch (PopupNotFoundException) // PopupNotFoundException is expected here because `ShowPopup` was never called
 		{
 		}
 
-		// // Assert
-		Assert.True(tapGestureRecognizer.Command?.CanExecute(null));
+		// Assert
 		Assert.True(hasOnTappingOutsideOfPopupExecuted);
 		Assert.Equal(defaultPopupSettings.PageOverlayColor, popupPage.BackgroundColor);
 		Assert.Equal(defaultPopupSettings.Shadow, popupBorder.Shadow);
@@ -260,28 +277,21 @@ public class DefaultPopupOptionsSettingsTests : BaseViewTest
 
 		var popupPage = new PopupPage(new View(), defaultPopupSettings);
 		var popupBorder = popupPage.Content.PopupBorder;
-		var tapGestureRecognizer = GetTapOutsideGestureRecognizer(popupPage);
 
-		// Act
+		// // Assert
 		try
 		{
 			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
-			AsyncContext.Run(() => { tapGestureRecognizer.Command?.Execute(null); });
+			AsyncContext.Run(() => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
 		}
 		catch (PopupNotFoundException) // PopupNotFoundException is expected here because `ShowPopup` was never called
 		{
 		}
 
-		// // Assert
-		Assert.True(tapGestureRecognizer.Command?.CanExecute(null));
 		Assert.True(hasOnTappingOutsideOfPopupExecuted);
 		Assert.Equal(defaultPopupSettings.PageOverlayColor, popupPage.BackgroundColor);
 		Assert.Equal(defaultPopupSettings.Shadow, popupBorder.Shadow);
 		Assert.Equal(defaultPopupSettings.Shape, popupBorder.StrokeShape);
 	}
-
-
-	static TapGestureRecognizer GetTapOutsideGestureRecognizer(PopupPage popupPage) =>
-		(TapGestureRecognizer)popupPage.Content.Children.OfType<BoxView>().Single().GestureRecognizers[0];
 }
 #pragma warning restore CA1416
