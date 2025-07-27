@@ -231,10 +231,15 @@ partial class CameraManager
 			.SetResolutionSelector(resolutionSelector)
 			.Build();
 
-		videoRecorder = new Recorder.Builder()
-			.SetExecutor(cameraExecutor)
-			.SetQualitySelector(QualitySelector.From(Quality.Highest!))
-			.Build();
+		var videoRecorderBuilder = new Recorder.Builder()
+			.SetExecutor(cameraExecutor);
+
+		if (Quality.Highest is not null)
+		{
+			videoRecorderBuilder = videoRecorderBuilder.SetQualitySelector(QualitySelector.From(Quality.Highest));
+		}
+
+		videoRecorder = videoRecorderBuilder.Build();
 		videoCapture = VideoCapture.WithOutput(videoRecorder);
 
 		await StartCameraPreview(token);
@@ -325,10 +330,11 @@ partial class CameraManager
 
 		videoRecordingFinalizeTcs = new TaskCompletionSource();
 		var captureListener = new CameraConsumer(videoRecordingFinalizeTcs);
+		var executor = ContextCompat.GetMainExecutor(context) ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
 		videoRecording = videoRecorder
 			.PrepareRecording(context, outputOptions)
 			.WithAudioEnabled()
-			.Start(ContextCompat.GetMainExecutor(context)!, captureListener);
+			.Start(executor, captureListener);
 	}
 
 	protected virtual async partial Task PlatformStopVideoRecording(CancellationToken token)
@@ -388,8 +394,8 @@ partial class CameraManager
 			var extensionsManagerFuture = ExtensionsManager.GetInstanceAsync(context, cameraProviderInstance);
 			extensionsManagerFuture.AddListener(new Runnable(() =>
 			{
-				var extensionsManager = (ExtensionsManager)extensionsManagerFuture.Get()!;
-				if (extensionsManager.IsExtensionAvailable(cameraSelector, extensionMode))
+				var extensionsManager = (ExtensionsManager?)extensionsManagerFuture.Get();
+				if (extensionsManager is not null && extensionsManager.IsExtensionAvailable(cameraSelector, extensionMode))
 				{
 					cameraSelector = extensionsManager.GetExtensionEnabledCameraSelector(cameraSelector, extensionMode);
 				}

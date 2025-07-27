@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.Versioning;
+﻿using System.Runtime.Versioning;
 using CommunityToolkit.Maui.Extensions;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Media.Capture;
@@ -9,7 +8,7 @@ using Windows.Media.MediaProperties;
 
 namespace CommunityToolkit.Maui.Core;
 
-[SupportedOSPlatform("windows10.0.10240.0")]
+[SupportedOSPlatform("windows10.0.16299.0")]
 partial class CameraManager
 {
 	MediaPlayerElement? mediaElement;
@@ -212,18 +211,19 @@ partial class CameraManager
 			return;
 		}
 
-		MediaEncodingProfile profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto);
+		var profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto);
 		mediaRecording = await mediaCapture.PrepareLowLagRecordToStreamAsync(profile, stream.AsRandomAccessStream());
 
 		frameSource = mediaCapture.FrameSources.FirstOrDefault(source =>
-			source.Value.Info.MediaStreamType == MediaStreamType.VideoRecord
-			&& source.Value.Info.SourceKind == MediaFrameSourceKind.Color).Value;
-		if (frameSource != null)
+			source.Value.Info.MediaStreamType == MediaStreamType.VideoRecord && 
+			source.Value.Info.SourceKind == MediaFrameSourceKind.Color).Value;
+		if (frameSource is not null)
 		{
 			var frameFormat = frameSource.SupportedFormats
-					.OrderByDescending(f => f.VideoFormat.Width * f.VideoFormat.Height).FirstOrDefault();
+					.OrderByDescending(f => f.VideoFormat.Width * f.VideoFormat.Height)
+					.FirstOrDefault();
 
-			if (frameFormat != null)
+			if (frameFormat is not null)
 			{
 				await frameSource.SetFormatAsync(frameFormat);
 				mediaElement.AutoPlay = true;
