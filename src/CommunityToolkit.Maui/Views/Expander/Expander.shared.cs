@@ -33,7 +33,7 @@ public partial class Expander : ContentView, IExpander
 	/// Gets or sets the content to be expanded or collapsed.
 	/// </summary>
 	[BindableProperty<IView>(PropertyChangedMethodName = nameof(OnContentPropertyChanged))]
-	public new partial IView Content { get; set; }
+	public partial IView Content { get; set; }
 
 	/// <summary>
 	/// Gets or sets the header view of the expander.
