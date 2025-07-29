@@ -198,11 +198,8 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		var bindablePropertyModels = new List<BindablePropertyModel>(context.Attributes.Length);
 
-		for (var index = 0; index < context.Attributes.Length; index++)
-		{
-			var attributeData = context.Attributes[index];
-			bindablePropertyModels.Add(GetAttributeValues(attributeData, propertySymbol.ToString() ?? string.Empty, propertySymbol.Name));
-		}
+		var attributeData = context.Attributes[0];
+		bindablePropertyModels.Add(GetAttributeValues(attributeData, propertySymbol.ToString() ?? string.Empty, propertySymbol.Name));
 
 		return new(propertyInfo, bindablePropertyModels.ToImmutableArray());
 	}
