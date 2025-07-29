@@ -58,7 +58,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		if (!Debugger.IsAttached)
 		{
-			// To debug this SG, unccoment the line below and rebuild the SourceGenerator project.
+			// To debug this SG, uncomment the line below and rebuild the SourceGenerator project.
 
 			//Debugger.Launch();
 		}
