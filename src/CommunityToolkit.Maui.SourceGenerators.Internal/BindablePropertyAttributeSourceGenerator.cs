@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using CommunityToolkit.Maui.SourceGenerators.Helpers;
@@ -26,10 +27,10 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		#nullable enable
 		namespace CommunityToolkit.Maui;
 
-		[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+		[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
 		sealed partial class BindablePropertyAttribute<TReturnType> : Attribute
 		{
-			public string PropertyName { get; } = string.Empty;
+			public string? PropertyName { get; }
 			public Type? DeclaringType { get; set; }
 			public object? DefaultValue { get; set; }
 			public string DefaultBindingMode { get; set; } = string.Empty;
@@ -43,29 +44,66 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			{
 				PropertyName = propertyName;
 			}
+
+			public BindablePropertyAttribute()
+			{
+			}
 		}
 		""";
 
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
+
+#if DEBUG
+
+		if (!Debugger.IsAttached)
+		{
+			// To debug this SG, unccoment the line below and rebuild the SourceGenerator project.
+
+			//Debugger.Launch();
+		}
+#endif
+
 		context.RegisterPostInitializationOutput(ctx => ctx.AddSource("BindablePropertyAttribute.g.cs", SourceText.From(bpAttribute, Encoding.UTF8)));
 
 		var provider = context.SyntaxProvider.ForAttributeWithMetadataName("CommunityToolkit.Maui.BindablePropertyAttribute`1",
 				SyntaxPredicate, SemanticTransform)
 			.Where(static x => x.ClassInformation != default || !x.BindableProperties.IsEmpty)
-			.Collect()
-			.SelectMany(static (types, _) => types);
+			.Collect();
 
 
-		context.RegisterSourceOutput(provider, Execute);
+		context.RegisterSourceOutput(provider, ExecuteAllValues);
 	}
 
-	static void Execute(SourceProductionContext context, SemanticValues semanticValues)
+	static void ExecuteAllValues(SourceProductionContext context, ImmutableArray<SemanticValues> semanticValues)
 	{
-		var source = GenerateSource(semanticValues);
-		SourceStringService.FormatText(ref source);
-		context.AddSource($"{semanticValues.ClassInformation.ClassName}.g.cs", SourceText.From(source, Encoding.UTF8));
+		var groupedValues = semanticValues
+		.GroupBy(sv => (sv.ClassInformation.ClassName, sv.ClassInformation.ContainingNamespace))
+		.ToDictionary(d => d.Key, d => d.ToArray());
+
+		foreach (var kvp in groupedValues)
+		{
+			var (className, containingNamespace) = kvp.Key;
+			var values = kvp.Value;
+
+			if (values.Length is 0 || string.IsNullOrEmpty(className) || string.IsNullOrEmpty(containingNamespace))
+			{
+				continue;
+			}
+
+			var bindableProperties = values.SelectMany(x => x.BindableProperties).ToImmutableArray();
+
+			var classAccessibility = values[0].ClassInformation.DeclaredAccessibility;
+
+			var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace);
+			var combinedValues = new SemanticValues(combinedClassInfo, bindableProperties);
+
+			var source = GenerateSource(combinedValues);
+			SourceStringService.FormatText(ref source);
+			context.AddSource($"{className}.g.cs", SourceText.From(source, Encoding.UTF8));
+		}
 	}
+
 
 	static string GenerateSource(SemanticValues value)
 	{
@@ -124,17 +162,12 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		static void GenerateProperty(StringBuilder sb, BindablePropertyModel info)
 		{
-			/*
-			/// <inheritdoc />
-			*/
-			sb.AppendLine("/// <inheritdoc />");
-
-			//public string Text
+			//public partial string Text
 			//{
 			//	get => (string)GetValue(TextProperty);
 			//	set => SetValue(TextProperty, value);
 			//}
-			sb.AppendLine($"public {info.ReturnType} {info.PropertyName}")
+			sb.AppendLine($"public partial {info.ReturnType} {info.PropertyName}")
 				.AppendLine("{")
 				.Append("get => (")
 				.Append(info.ReturnType)
@@ -148,30 +181,33 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 	static SemanticValues SemanticTransform(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
 	{
-		var classDeclarationSyntax = Unsafe.As<ClassDeclarationSyntax>(context.TargetNode);
+		var propertyDeclarationSyntax = Unsafe.As<PropertyDeclarationSyntax>(context.TargetNode);
 		var semanticModel = context.SemanticModel;
-		var classSymbol = (ITypeSymbol?)semanticModel.GetDeclaredSymbol(classDeclarationSyntax, cancellationToken);
+		var propertySymbol = (IPropertySymbol?)semanticModel.GetDeclaredSymbol(propertyDeclarationSyntax, cancellationToken);
 
-		if (classSymbol is null)
+		if (propertySymbol is null)
 		{
 			return emptySemanticValues;
 		}
 
-		var classInfo = new ClassInformation(classSymbol.Name, classSymbol.DeclaredAccessibility.ToString().ToLower(), classSymbol.ContainingNamespace.ToDisplayString());
+		var @namespace = propertySymbol.ContainingNamespace.ToDisplayString();
+		var className = propertySymbol.ContainingType.Name;
+		var classAccessibility = propertySymbol.ContainingSymbol.DeclaredAccessibility.ToString().ToLower();
 
+		var propertyInfo = new ClassInformation(className, classAccessibility, @namespace);
 
 		var bindablePropertyModels = new List<BindablePropertyModel>(context.Attributes.Length);
 
 		for (var index = 0; index < context.Attributes.Length; index++)
 		{
 			var attributeData = context.Attributes[index];
-			bindablePropertyModels.Add(GetAttributeValues(attributeData, classSymbol?.ToString() ?? string.Empty));
+			bindablePropertyModels.Add(GetAttributeValues(attributeData, propertySymbol.ToString() ?? string.Empty, propertySymbol.Name));
 		}
 
-		return new(classInfo, bindablePropertyModels.ToImmutableArray());
+		return new(propertyInfo, bindablePropertyModels.ToImmutableArray());
 	}
 
-	static BindablePropertyModel GetAttributeValues(in AttributeData attributeData, in string declaringTypeString)
+	static BindablePropertyModel GetAttributeValues(in AttributeData attributeData, in string declaringTypeString, in string defaultName)
 	{
 		if (attributeData.AttributeClass is null)
 		{
@@ -186,7 +222,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var declaringType = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DeclaringType), declaringTypeString);
 		var propertyChangedMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.PropertyChangedMethodName));
 		var propertyChangingMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.PropertyChangingMethodName));
-		var propertyName = attributeData.GetConstructorArgumentsAttributeValueByNameAsString();
+		var propertyName = attributeData.GetConstructorArgumentsAttributeValueByNameAsString(defaultName);
 		var validateValueMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.ValidateValueMethodName));
 
 		return new BindablePropertyModel
@@ -205,5 +241,5 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	}
 
 	static bool SyntaxPredicate(SyntaxNode node, CancellationToken cancellationToken) =>
-		node is ClassDeclarationSyntax { AttributeLists.Count: > 0 };
+		node is PropertyDeclarationSyntax { AttributeLists.Count: > 0 };
 }
