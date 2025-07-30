@@ -24,7 +24,7 @@ public class PopupOptionsTests : BaseTest
 	public void Shadow_DefaultValue_ShouldBeTrue()
 	{
 		var popupOptions = new PopupOptions();
-		
+
 		Assert.Equal(Colors.Black, popupOptions.Shadow?.Brush);
 		Assert.Equal(new(20, 20), popupOptions.Shadow?.Offset);
 		Assert.Equal(40, popupOptions.Shadow?.Radius);

@@ -7,7 +7,7 @@ public partial class ComplexPopupViewModel(IPopupService popupService) : Observa
 {
 	readonly IPopupService popupService = popupService;
 	readonly INavigation navigation = Application.Current?.Windows[0].Page?.Navigation ?? throw new InvalidOperationException("Unable to locate INavigation");
-	
+
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ReturnButtonTappedCommand))]
 	public partial string ReturnText { get; set; } = string.Empty;
 

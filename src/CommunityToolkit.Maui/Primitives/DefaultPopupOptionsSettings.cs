@@ -9,20 +9,20 @@ namespace CommunityToolkit.Maui;
 public record DefaultPopupOptionsSettings : IPopupOptions
 {
 	/// <inheritdoc cref="IPopupOptions.CanBeDismissedByTappingOutsideOfPopup"/>
-	public bool CanBeDismissedByTappingOutsideOfPopup { get; init; }= PopupOptionsDefaults.CanBeDismissedByTappingOutsideOfPopup;
+	public bool CanBeDismissedByTappingOutsideOfPopup { get; init; } = PopupOptionsDefaults.CanBeDismissedByTappingOutsideOfPopup;
 
 	/// <inheritdoc cref="IPopupOptions.OnTappingOutsideOfPopup"/>
-	public Action? OnTappingOutsideOfPopup { get; init;} = PopupOptionsDefaults.OnTappingOutsideOfPopup;
+	public Action? OnTappingOutsideOfPopup { get; init; } = PopupOptionsDefaults.OnTappingOutsideOfPopup;
 
 	/// <inheritdoc cref="IPopupOptions.PageOverlayColor"/>
-	public Color PageOverlayColor { get;init; } =  PopupOptionsDefaults.PageOverlayColor;
+	public Color PageOverlayColor { get; init; } = PopupOptionsDefaults.PageOverlayColor;
 
 	/// <inheritdoc cref="IPopupOptions.Shape"/>
 	public Shape? Shape { get; init; } = PopupOptionsDefaults.Shape;
 
 	/// <inheritdoc cref="IPopupOptions.Shadow"/>
-	public Shadow? Shadow { get; init; } = PopupOptionsDefaults.Shadow; 
-	
+	public Shadow? Shadow { get; init; } = PopupOptionsDefaults.Shadow;
+
 	/// <summary>
 	/// Default Values for <see cref="PopupOptions"/>
 	/// </summary>
