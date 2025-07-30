@@ -581,7 +581,12 @@ This guide provides a set of best practices and coding standards for writing C# 
 
 ### Element Positioning
 
-Please adhere to [Style Cop SA1201](https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1201.md) for organizing code in a file.
+Please adhere to the following Style Cop rules for organizing code in a file:
+- [Style Cop SA1201](https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1201.md)
+- [Style Cop SA1202](https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1202.md)
+- [Style Cop SA1204](https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1204.md)
+- [Style Cop SA1214](https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1214.md)
+- [Style Cop SA1215](https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1215.md)
 
 Elements at the file root level or within a namespace should be positioned in the following order:
 
