@@ -1,7 +1,7 @@
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Converters;
-using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Views;
 #if WINDOWS
 using Microsoft.Maui.LifecycleEvents;
 #endif
@@ -124,7 +124,7 @@ public class Options : Core.Options
 	{
 		DefaultPopupSettings = globalPopupSettings;
 	}
-	
+
 	/// <summary>
 	/// Sets the default settings for <see cref="PopupOptions"/>
 	/// </summary>
