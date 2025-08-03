@@ -157,7 +157,7 @@ public partial class MauiMediaElement : Grid, IDisposable
 
 	static AppWindow GetAppWindowForCurrentWindow()
 	{
-		var windowHandle = GetForegroundWindow();
+		var windowHandle = TryGetForegroundWindow() ?? throw new InvalidOperationException("No foreground window found.");
 		var id = Win32Interop.GetWindowIdFromWindow(windowHandle);
 		return AppWindow.GetFromWindowId(id);
 	}
