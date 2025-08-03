@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+                xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+                xmlns:sample="clr-namespace:CommunityToolkit.Maui.Sample"
+                Title="Barcode Scanning"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Views.BarcodeScanningPage"
+                x:TypeArguments="viewModels:BarcodeScanningViewModel"
+                x:DataType="viewModels:BarcodeScanningViewModel">
+
+    <Grid RowDefinitions="200,*,Auto,Auto" ColumnDefinitions="3*,*">
+        <toolkit:CameraView
+            x:Name="Camera"
+            Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Grid.RowSpan="3">
+            <toolkit:CameraView.Scenarios>
+                <sample:PlatformBarcodeScanningScenario Command="{Binding CodeDetectedCommand}" />
+            </toolkit:CameraView.Scenarios>
+        </toolkit:CameraView>
+    </Grid>
+</pages:BasePage>

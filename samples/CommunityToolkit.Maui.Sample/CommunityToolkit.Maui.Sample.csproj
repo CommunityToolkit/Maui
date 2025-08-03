@@ -89,6 +89,22 @@
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Maps\CommunityToolkit.Maui.Maps.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <MauiXaml Update="Pages\Views\CameraView\BarcodeScanningPage.xaml">
+      <SubType>Designer</SubType>
+    </MauiXaml>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Pages\Views\CameraView\BarcodeScanningPage.xaml.cs">
+      <DependentUpon>BarcodeScanningViewPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Platforms\iOS\PlatformBarcodeScanningScenario.cs">
+      <ExcludeFromCurrentConfiguration>true</ExcludeFromCurrentConfiguration>
+    </Compile>
+  </ItemGroup>
+
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='windows' and $(Configuration) == 'Release'">
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>

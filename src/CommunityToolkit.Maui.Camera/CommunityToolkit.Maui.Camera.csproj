@@ -69,4 +69,10 @@
     <None Include="..\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Microsoft.MacCatalyst">
+      <HintPath>..\..\..\..\..\..\..\..\..\..\..\usr\local\share\dotnet\packs\Microsoft.MacCatalyst.Ref.net9.0_18.5\18.5.9199\ref\net9.0\Microsoft.MacCatalyst.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
