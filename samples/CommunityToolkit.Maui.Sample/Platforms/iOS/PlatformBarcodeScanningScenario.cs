@@ -1,3 +1,4 @@
+using System.Windows.Input;
 using AVFoundation;
 using CoreFoundation;
 
@@ -8,23 +9,30 @@ namespace CommunityToolkit.Maui.Sample;
 /// </summary>
 public partial class PlatformBarcodeScanningScenario
 {
-	protected override AVCaptureOutput CreateOutput()
+	readonly Lazy<AVCaptureMetadataOutput> lazyOutput;
+	
+	public PlatformBarcodeScanningScenario()
 	{
-		var output = new AVCaptureMetadataOutput();
-		
-		output.SetDelegate(new BarcodeDetectionDelegate(Command), DispatchQueue.MainQueue);
-		output.MetadataObjectTypes =
-			AVMetadataObjectType.QRCode | AVMetadataObjectType.EAN13Code;
-		
-		return output;
+		lazyOutput = new Lazy<AVCaptureMetadataOutput>(() =>
+		{
+			var output = new AVCaptureMetadataOutput();
+			
+			output.SetDelegate(new BarcodeDetectionDelegate(Command), DispatchQueue.MainQueue);
+			output.MetadataObjectTypes =
+				AVMetadataObjectType.QRCode | AVMetadataObjectType.EAN13Code;
+			
+			return output;
+		});
 	}
+
+	public override AVCaptureOutput Output => lazyOutput.Value;
 }
 
 sealed class BarcodeDetectionDelegate : AVCaptureMetadataOutputObjectsDelegate
 {
-	readonly ICommand command;
+	readonly ICommand? command;
 
-	public BarcodeDetectionDelegate(ICommand command)
+	public BarcodeDetectionDelegate(ICommand? command)
 	{
 		this.command = command;
 	}
@@ -42,7 +50,7 @@ sealed class BarcodeDetectionDelegate : AVCaptureMetadataOutputObjectsDelegate
 					
 				Console.WriteLine($"Metadata object {code} at {string.Join(",", readableObject.Corners?? [])}");
 
-				if (this.command.CanExecute(readableObject.StringValue))
+				if (this.command?.CanExecute(readableObject.StringValue) is true)
 				{
 					this.command.Execute(readableObject.StringValue);
 				}

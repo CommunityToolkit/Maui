@@ -11,5 +11,5 @@ partial class PlatformCameraScenario : CameraScenario
 	/// 
 	/// </summary>
 	/// <returns></returns>
-	protected abstract UseCase CreateUseCase();
+	public abstract UseCase UseCase { get; }
 }

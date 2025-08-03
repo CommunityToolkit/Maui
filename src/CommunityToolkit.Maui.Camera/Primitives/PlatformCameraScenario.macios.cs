@@ -10,6 +10,5 @@ partial class PlatformCameraScenario : CameraScenario
 	/// <summary>
 	/// 
 	/// </summary>
-	/// <returns></returns>
-	protected abstract AVCaptureOutput CreateOutput();
+	public abstract AVCaptureOutput Output { get; }
 }

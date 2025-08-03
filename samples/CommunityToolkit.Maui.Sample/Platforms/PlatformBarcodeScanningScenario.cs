@@ -3,7 +3,10 @@ using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Sample;
 
+/// <summary>
+/// 
+/// </summary>
 public partial class PlatformBarcodeScanningScenario : PlatformCameraScenario
 {
-	public ICommand Command { get; set; }
+	public ICommand? Command { get; set; }
 }
