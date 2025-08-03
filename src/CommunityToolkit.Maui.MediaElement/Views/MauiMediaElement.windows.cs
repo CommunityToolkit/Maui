@@ -23,6 +23,14 @@ public partial class MauiMediaElement : Grid, IDisposable
 	[LibraryImport("user32.dll")]
 	internal static partial IntPtr GetForegroundWindow();
 
+	/// <summary>
+	/// Safely gets the foreground window handle, returning null if no foreground window exists.
+	/// </summary>
+	internal static IntPtr? TryGetForegroundWindow()
+	{
+		var hwnd = GetForegroundWindow();
+		return hwnd == IntPtr.Zero ? null : hwnd;
+	}
 	readonly Popup popup = new();
 	readonly Grid fullScreenGrid = new();
 	readonly MediaPlayerElement mediaPlayerElement;
