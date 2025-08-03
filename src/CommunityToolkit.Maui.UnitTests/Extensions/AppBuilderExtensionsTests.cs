@@ -110,7 +110,7 @@ public class AppBuilderExtensionsTests : BaseTest
 			Shadow = null,
 			Shape = null
 		};
-		
+
 		Core.AppBuilderExtensions.ShouldUseStatusBarBehaviorOnAndroidModalPageOptionCompleted += HandleShouldUseStatusBarBehaviorOnAndroidModalPageOptionCompleted;
 
 		// Act
