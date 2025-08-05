@@ -1,10 +1,13 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public partial class BarcodeScanningViewModel() : BaseViewModel
+public partial class BarcodeScanningViewModel(ICameraProvider cameraProvider) : BaseViewModel
 {
+	readonly ICameraProvider cameraProvider = cameraProvider;
+	
 	[ObservableProperty]
 	public partial string DetectedCode { get; set; }
 	
@@ -13,4 +16,7 @@ public partial class BarcodeScanningViewModel() : BaseViewModel
 	{
 		DetectedCode = code;
 	}
+	
+	[RelayCommand]
+	async Task RefreshCameras(CancellationToken token) => await cameraProvider.RefreshAvailableCameras(token);
 }

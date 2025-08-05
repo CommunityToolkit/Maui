@@ -3,7 +3,7 @@ namespace CommunityToolkit.Maui.Core;
 /// <summary>
 /// Base class for output based processing for camera related activities.
 /// </summary>
-public abstract class CameraScenario
+public abstract class CameraScenario : BindableObject
 {
 	/// <summary>
 	/// Gets whether the scenario has been initialized.

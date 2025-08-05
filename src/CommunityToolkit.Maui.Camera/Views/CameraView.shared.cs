@@ -19,7 +19,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 	static readonly BindablePropertyKey isAvailablePropertyKey =
 		BindableProperty.CreateReadOnly(nameof(IsAvailable), typeof(bool), typeof(CameraView), CameraViewDefaults.IsAvailable);
 
-	internal static readonly BindablePropertyKey CameraScenarioPropertyKey = BindableProperty.CreateReadOnly(nameof(Scenarios), typeof(IList<CameraScenario>), typeof(CameraView), default(IList<CameraScenario>),
+	internal static readonly BindablePropertyKey ScenariosPropertyKey = BindableProperty.CreateReadOnly(nameof(Scenarios), typeof(IList<CameraScenario>), typeof(CameraView), default(IList<CameraScenario>),
 		defaultValueCreator: bindable =>
 		{
 			var collection = new ObservableCollection<CameraScenario>();
@@ -27,14 +27,14 @@ public partial class CameraView : View, ICameraView, IDisposable
 		});
 
 	/// <summary>Bindable property for <see cref="CameraScenario"/>.</summary>
-	public static readonly BindableProperty CameraScenarioProperty = CameraScenarioPropertyKey.BindableProperty;
+	public static readonly BindableProperty ScenariosProperty = ScenariosPropertyKey.BindableProperty;
 	
 	/// <summary>
 	/// 
 	/// </summary>
 	public IList<CameraScenario> Scenarios
 	{
-		get { return (IList<CameraScenario>)GetValue(BehaviorsProperty); }
+		get { return (IList<CameraScenario>)GetValue(ScenariosProperty); }
 	}
 	
 	/// <summary>

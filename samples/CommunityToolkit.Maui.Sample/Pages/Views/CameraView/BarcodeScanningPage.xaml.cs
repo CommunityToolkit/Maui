@@ -8,4 +8,12 @@ public partial class BarcodeScanningPage : BasePage<BarcodeScanningViewModel>
 	{
 		InitializeComponent();
 	}
+	
+	protected override async void OnAppearing()
+	{
+		base.OnAppearing();
+
+		var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+		await BindingContext.RefreshCamerasCommand.ExecuteAsync(cancellationTokenSource.Token);
+	}
 }
