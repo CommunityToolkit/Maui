@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Android.Content;
+using Android.Graphics;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Media3.Common;
@@ -13,7 +14,6 @@ using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
-using AudioAttributes = AndroidX.Media3.Common.AudioAttributes;
 using DeviceInfo = AndroidX.Media3.Common.DeviceInfo;
 using MediaMetadata = AndroidX.Media3.Common.MediaMetadata;
 
@@ -596,7 +596,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 		catch (Exception e)
 		{
-			Trace.WriteLine($"Unable to retrieve {nameof(MediaElement.MetadataArtworkUrl)} for {url}.{e}\n");
+			Trace.WriteLine($"Unable to retrieve {nameof(MediaElement.MetadataArtworkSource)} for {url}.{e}\n");
 			return [];
 		}
 		finally
@@ -608,7 +608,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			}
 		}
 
-		static string NormalizeFilePath(string filePath) => filePath.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
+		static string NormalizeFilePath(string filePath) => filePath.Replace('\\', System.IO.Path.DirectorySeparatorChar).Replace('/', System.IO.Path.DirectorySeparatorChar);
 
 		static async ValueTask<long> GetByteCountFromStream(Stream stream, CancellationToken token)
 		{
@@ -688,7 +688,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 					var path = resourceMediaSource.Path;
 					if (!string.IsNullOrWhiteSpace(path))
 					{
-						var assetFilePath = $"asset://{package}{Path.PathSeparator}{path}";
+						var assetFilePath = $"asset://{package}{System.IO.Path.PathSeparator}{path}";
 						return await CreateMediaItem(assetFilePath, cancellationToken).ConfigureAwait(false);
 					}
 
@@ -706,11 +706,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaMetadata.Builder mediaMetaData = new();
 		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
 		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
-		var data = await GetBytesFromMetadataArtworkUrl(MediaElement.MetadataArtworkUrl, cancellationToken).ConfigureAwait(true);
-		if (data is not null && data.Length > 0)
-		{
-			mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);
-		}
+		var data = await GetImageFromMediaSource(MediaElement.MetadataArtworkSource, cancellationToken).ConfigureAwait(true) ?? BlankByteArray();
+		mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);
 
 		mediaItem = new MediaItem.Builder();
 		mediaItem.SetUri(url);
@@ -748,23 +745,104 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters) { }
 	public void OnTracksChanged(Tracks? tracks) { }
 	#endregion
-
-	static class PlaybackState
+	static async Task<byte[]?> GetImageFromMediaSource(MediaSource? mediaSource, CancellationToken cancellationToken = default)
 	{
-		public const int StateBuffering = 6;
-		public const int StateConnecting = 8;
-		public const int StateFailed = 7;
-		public const int StateFastForwarding = 4;
-		public const int StateNone = 0;
-		public const int StatePaused = 2;
-		public const int StatePlaying = 3;
-		public const int StateRewinding = 5;
-		public const int StateSkippingToNext = 10;
-		public const int StateSkippingToPrevious = 9;
-		public const int StateSkippingToQueueItem = 11;
-		public const int StateStopped = 1;
-		public const int StateError = 7;
+		if (mediaSource is null)
+		{
+			return null;
+		}
+		var artworkUrl = mediaSource;
+		if (artworkUrl is UriMediaSource uriMediaSource)
+		{
+			var uri = uriMediaSource.Uri;
+			if (string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
+			{
+				System.Diagnostics.Trace.TraceInformation("Arkwork Uri is null or empty");
+				return null;
+			}
+			return await GetBytesFromMetadataArtworkUrl(uri.AbsoluteUri, cancellationToken).ConfigureAwait(false);
+		}
+		else if (artworkUrl is FileMediaSource fileMediaSource)
+		{
+			var filePath = fileMediaSource.Path;
+			if(string.IsNullOrWhiteSpace(filePath))
+			{
+				System.Diagnostics.Trace.TraceInformation("Arkwork File path is null or empty");
+				return null;
+			}
+			return await GetByteArrayFromFile(filePath, cancellationToken).ConfigureAwait(false);
+		}
+		else if (artworkUrl is ResourceMediaSource resourceMediaSource)
+		{
+			var path = resourceMediaSource.Path;
+			var item = path?[(path.LastIndexOf('/') + 1)..];
+			if (string.IsNullOrWhiteSpace(item))
+			{
+				System.Diagnostics.Trace.TraceInformation("Arkwork Resource path is null or empty");
+				return null;
+			}
+			return await GetByteArrayFromResource(item).ConfigureAwait(false);
+		}
+		return null;
+	}
+	
+	static async Task<byte[]?> GetByteArrayFromResource(string resource)
+	{
+		// Android file system does not report size of file so we need to use a buffer for the stream.
+		using var stream = await FileSystem.Current.OpenAppPackageFileAsync(resource);
+		if(stream is null)
+		{
+			return null;
+		}
+		using var memoryStream = new MemoryStream();
+		await stream.CopyToAsync(memoryStream, CancellationToken.None).ConfigureAwait(false);
+		var bytes = memoryStream.ToArray();
+		return bytes;
 	}
 
+	static async Task<byte[]?> GetByteArrayFromFile(string filePath, CancellationToken cancellationToken = default)
+	{
+		if(!File.Exists(filePath))
+		{
+			System.Diagnostics.Trace.TraceInformation("Arkwork File does not exist");
+			return null;
+		}
+		var stream = File.OpenRead(filePath);
+		var memoryStream = new MemoryStream();
+		await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+		var bytes = memoryStream.ToArray();
+		return bytes;
+	}
+	static byte[] BlankByteArray()
+	{
+		var bitmapConfig = Bitmap.Config.Argb8888 ?? throw new InvalidOperationException("Bitmap config cannot be null");
+		var bitmap = Bitmap.CreateBitmap(1024, 768, bitmapConfig, true);
 
+		Canvas canvas = new();
+		canvas.SetBitmap(bitmap);
+		canvas.DrawColor(Android.Graphics.Color.Transparent);
+		canvas.Save();
+
+		MemoryStream stream = new();
+		var format = Bitmap.CompressFormat.Png ?? throw new InvalidOperationException("Bitmap format cannot be null");
+		bitmap.Compress(format, 100, stream);
+		stream.Position = 0;
+		return stream.ToArray();
+	}
+}
+static class PlaybackState
+{
+	public const int StateBuffering = 6;
+	public const int StateConnecting = 8;
+	public const int StateFailed = 7;
+	public const int StateFastForwarding = 4;
+	public const int StateNone = 0;
+	public const int StatePaused = 2;
+	public const int StatePlaying = 3;
+	public const int StateRewinding = 5;
+	public const int StateSkippingToNext = 10;
+	public const int StateSkippingToPrevious = 9;
+	public const int StateSkippingToQueueItem = 11;
+	public const int StateStopped = 1;
+	public const int StateError = 7;
 }
