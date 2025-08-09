@@ -14,31 +14,31 @@ public partial class Expander : ContentView, IExpander
 	/// <summary>
 	/// Gets or sets the command to execute when the expander is expanded or collapsed.
 	/// </summary>
-	[BindableProperty<ICommand>()]
+	[BindableProperty]
 	public partial ICommand Command { get; set; }
 
 	/// <summary>
 	/// Gets or sets the parameter to pass to the <see cref="Command"/> property.
 	/// </summary>
-	[BindableProperty<object>()]
+	[BindableProperty]
 	public partial object CommandParameter { get; set; }
 
 	/// <summary>
 	/// Gets or sets a value indicating whether the expander is expanded.
 	/// </summary>
-	[BindableProperty<bool>(PropertyChangedMethodName = nameof(OnIsExpandedPropertyChanged))]
+	[BindableProperty(PropertyChangedMethodName = nameof(OnIsExpandedPropertyChanged))]
 	public partial bool IsExpanded { get; set; }
 
 	/// <summary>
 	/// Gets or sets the content to be expanded or collapsed.
 	/// </summary>
-	[BindableProperty<IView>(PropertyChangedMethodName = nameof(OnContentPropertyChanged))]
+	[BindableProperty(PropertyChangedMethodName = nameof(OnContentPropertyChanged))]
 	public partial IView Content { get; set; }
 
 	/// <summary>
 	/// Gets or sets the header view of the expander.
 	/// </summary>
-	[BindableProperty<IView>(PropertyChangedMethodName = nameof(OnHeaderPropertyChanged))]
+	[BindableProperty(PropertyChangedMethodName = nameof(OnHeaderPropertyChanged))]
 	public partial IView Header { get; set; }
 
 	/// <summary>

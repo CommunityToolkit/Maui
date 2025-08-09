@@ -28,7 +28,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		namespace CommunityToolkit.Maui;
 
 		[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-		sealed partial class BindablePropertyAttribute<TReturnType> : Attribute
+		sealed partial class BindablePropertyAttribute : Attribute
 		{
 			public string? PropertyName { get; }
 			public Type? DeclaringType { get; set; }
@@ -66,7 +66,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		context.RegisterPostInitializationOutput(ctx => ctx.AddSource("BindablePropertyAttribute.g.cs", SourceText.From(bpAttribute, Encoding.UTF8)));
 
-		var provider = context.SyntaxProvider.ForAttributeWithMetadataName("CommunityToolkit.Maui.BindablePropertyAttribute`1",
+		var provider = context.SyntaxProvider.ForAttributeWithMetadataName("CommunityToolkit.Maui.BindablePropertyAttribute",
 				SyntaxPredicate, SemanticTransform)
 			.Where(static x => x.ClassInformation != default || !x.BindableProperties.IsEmpty)
 			.Collect();
@@ -193,25 +193,25 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var @namespace = propertySymbol.ContainingNamespace.ToDisplayString();
 		var className = propertySymbol.ContainingType.Name;
 		var classAccessibility = propertySymbol.ContainingSymbol.DeclaredAccessibility.ToString().ToLower();
+		var returnType = propertySymbol.Type;
 
 		var propertyInfo = new ClassInformation(className, classAccessibility, @namespace);
 
 		var bindablePropertyModels = new List<BindablePropertyModel>(context.Attributes.Length);
 
 		var attributeData = context.Attributes[0];
-		bindablePropertyModels.Add(GetAttributeValues(attributeData, propertySymbol.Type.ToDisplayString(), propertySymbol.Name));
+		bindablePropertyModels.Add(CreateBindablePropertyModel(attributeData, propertySymbol.Type.ToDisplayString(), propertySymbol.Name, returnType));
 
 		return new(propertyInfo, bindablePropertyModels.ToImmutableArray());
 	}
 
-	static BindablePropertyModel GetAttributeValues(in AttributeData attributeData, in string declaringTypeString, in string defaultName)
+	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in string declaringTypeString, in string defaultName, in ITypeSymbol returnType)
 	{
 		if (attributeData.AttributeClass is null)
 		{
 			throw new ArgumentException($"{nameof(attributeData.AttributeClass)} Cannot Be Null", nameof(attributeData.AttributeClass));
 		}
 
-		var bpType = attributeData.AttributeClass.TypeArguments[0];
 		var defaultValue = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DefaultValue));
 		var coerceValueMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.CoerceValueMethodName));
 		var defaultBindingMode = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DefaultBindingMode), "BindingMode.OneWay");
@@ -232,7 +232,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			PropertyChangedMethodName = propertyChangedMethodName,
 			PropertyChangingMethodName = propertyChangingMethodName,
 			PropertyName = propertyName,
-			ReturnType = bpType,
+			ReturnType = returnType,
 			ValidateValueMethodName = validateValueMethodName
 		};
 	}
