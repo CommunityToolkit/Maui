@@ -276,13 +276,13 @@ jobs:
           dotnet-quality: 'ga'
 
       - name: Download NuGet List
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: nuget-list
           path: ./
 
       - name: Download Package List
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: packages
           path: ./packages
@@ -348,7 +348,7 @@ jobs:
           dotnet-quality: 'ga'
 
       - name: Download signed packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: signed-packages
           path: ./packages
@@ -376,7 +376,7 @@ jobs:
           dotnet-quality: 'ga'
 
       - name: Download signed packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: signed-packages
           path: ./packages
