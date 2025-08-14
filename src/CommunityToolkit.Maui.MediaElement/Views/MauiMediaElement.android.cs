@@ -6,6 +6,7 @@ using Android.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using AndroidX.Media3.UI;
+using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
 
 [assembly: UsesPermission(Android.Manifest.Permission.ForegroundServiceMediaPlayback)]
@@ -125,12 +126,14 @@ public class MauiMediaElement : CoordinatorLayout
 			isFullScreen = true;
 			RemoveView(relativeLayout);
 			layout?.AddView(relativeLayout);
+			MediaManager.FullScreenEvents.OnFullScreenStateChanged(this, new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
 		}
 		else
 		{
 			isFullScreen = false;
 			layout?.RemoveView(relativeLayout);
 			AddView(relativeLayout);
+			MediaManager.FullScreenEvents.OnFullScreenStateChanged(this , new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
 		}
 		// Hide/Show the SystemBars and Status bar
 		SetSystemBarsVisibility();
