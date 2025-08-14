@@ -11,6 +11,8 @@ partial class CameraManager
 {
 	// TODO: Check if we really need this
 	readonly NSDictionary<NSString, NSObject> codecSettings = new([AVVideo.CodecKey], [new NSString("jpeg")]);
+	
+	readonly IList<AVCaptureOutput> additionalCaptureOutputs = [];
 
 	AVCaptureSession? captureSession;
 	AVCapturePhotoOutput? photoOutput;
@@ -157,6 +159,11 @@ partial class CameraManager
 		captureDevice = cameraView.SelectedCamera.CaptureDevice ?? throw new CameraException($"No Camera found");
 		captureInput = new AVCaptureDeviceInput(captureDevice, out _);
 		captureSession.AddInput(captureInput);
+		
+		foreach (var output in additionalCaptureOutputs)
+		{
+			captureSession.AddOutput(output);
+		}
 
 		if (photoOutput is null)
 		{
@@ -263,6 +270,26 @@ partial class CameraManager
 			photoOutput?.Dispose();
 			photoOutput = null;
 		}
+	}
+
+	internal virtual partial void AddPlatformScenario(PlatformCameraScenario scenario)
+	{
+		AddOutput(scenario.Output);
+	}
+	
+	internal virtual partial void RemovePlatformScenario(PlatformCameraScenario scenario)
+	{
+		RemoveOutput(scenario.Output);
+	}
+	
+	internal void AddOutput(AVCaptureOutput captureOutput)
+	{
+		additionalCaptureOutputs.Add(captureOutput);
+	}
+
+	internal void RemoveOutput(AVCaptureOutput captureOutput)
+	{
+		additionalCaptureOutputs.Remove(captureOutput);
 	}
 
 	static AVCaptureVideoOrientation GetVideoOrientation()
