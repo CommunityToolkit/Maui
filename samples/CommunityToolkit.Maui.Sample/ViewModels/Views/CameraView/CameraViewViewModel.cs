@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -9,7 +8,8 @@ public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseV
 {
 	readonly ICameraProvider cameraProvider = cameraProvider;
 
-	public IReadOnlyList<CameraInfo> Cameras => cameraProvider.AvailableCameras ?? [];
+	[ObservableProperty]
+	public partial IReadOnlyList<CameraInfo> Cameras { get; set; }
 
 	public CancellationToken Token => CancellationToken.None;
 
@@ -42,6 +42,12 @@ public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseV
 	[ObservableProperty]
 	public partial string ResolutionText { get; set; } = string.Empty;
 
+	public async Task InitializeAsync()
+	{
+		await cameraProvider.InitializeAsync(CancellationToken.None);
+		Cameras = cameraProvider.AvailableCameras ?? [];
+	}
+
 	[RelayCommand]
 	async Task RefreshCameras(CancellationToken token) => await cameraProvider.RefreshAvailableCameras(token);
 
@@ -58,6 +64,22 @@ public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseV
 	partial void OnSelectedResolutionChanged(Size value)
 	{
 		UpdateResolutionText();
+	}
+
+	partial void OnSelectedCameraChanged(CameraInfo? oldValue, CameraInfo? newValue)
+	{
+		UpdateCameraInfoText();
+	}
+
+	void UpdateCameraInfoText()
+	{
+		if (SelectedCamera is null)
+		{
+			return;
+		}
+		CameraNameText = $"{SelectedCamera.Name}";
+		ZoomRangeText = $"Min Zoom: {SelectedCamera.MinimumZoomFactor}, Max Zoom: {SelectedCamera.MaximumZoomFactor}";
+		UpdateFlashModeText();
 	}
 
 	void UpdateFlashModeText()
