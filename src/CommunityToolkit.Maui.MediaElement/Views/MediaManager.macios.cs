@@ -1,5 +1,7 @@
 ﻿using AVFoundation;
 using AVKit;
+using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
 using CoreFoundation;
 using CoreGraphics;
@@ -14,6 +16,9 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MediaManager : IDisposable
 {
 	Metadata? metaData;
+	SubtitleExtensions? subtitleExtensions;
+	readonly CancellationTokenSource subTitlesCancellationTokenSource = new();
+	Task? startSubtitles;
 
 	// Media would still start playing when Speed was set although ShouldAutoPlay=False
 	// This field was added to overcome that.
@@ -70,6 +75,7 @@ public partial class MediaManager : IDisposable
 	/// The default <see cref="NSKeyValueObservingOptions"/> flags used in the iOS and macOS observers.
 	/// </summary>
 	protected NSKeyValueObservingOptions ValueObserverOptions => NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.New;
+
 
 	/// <summary>
 	/// Observer that tracks when an error has occurred in the playback of the current item.
@@ -213,8 +219,10 @@ public partial class MediaManager : IDisposable
 	protected virtual partial ValueTask PlatformUpdateSource()
 	{
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
-
+		
 		AVAsset? asset = null;
+		subtitleExtensions?.StopSubtitleDisplay();
+
 		if (Player is null)
 		{
 			return ValueTask.CompletedTask;
@@ -269,7 +277,6 @@ public partial class MediaManager : IDisposable
 		CurrentItemErrorObserver?.Dispose();
 
 		Player.ReplaceCurrentItemWithPlayerItem(PlayerItem);
-
 		CurrentItemErrorObserver = PlayerItem?.AddObserver("error",
 			ValueObserverOptions, (NSObservedChange change) =>
 			{
@@ -298,6 +305,8 @@ public partial class MediaManager : IDisposable
 				Player.Play();
 			}
 
+			CancellationToken token = subTitlesCancellationTokenSource.Token;
+			startSubtitles = LoadSubtitles(token);
 			SetPoster();
 		}
 		else if (PlayerItem is null)
@@ -316,13 +325,11 @@ public partial class MediaManager : IDisposable
 		{
 			return;
 		}
-
 		var videoTrack = PlayerItem.Asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant()).FirstOrDefault();
 		if (videoTrack is not null)
 		{
 			return;
 		}
-
 		if (PlayerItem.Asset.Tracks.Length == 0)
 		{
 			// No video track found and no tracks found. This is likely an audio file. So we can't set a poster.
@@ -352,6 +359,17 @@ public partial class MediaManager : IDisposable
 				imageView.WidthAnchor.ConstraintEqualTo(imageView.HeightAnchor, image.Size.Width / image.Size.Height)
 			]);
 		}
+	}
+
+	async Task LoadSubtitles(CancellationToken cancellationToken = default)
+	{
+		if (subtitleExtensions is null || string.IsNullOrEmpty(MediaElement.SubtitleUrl))
+		{
+			System.Diagnostics.Trace.TraceError("SubtitleExtensions is null or SubtitleUrl is null or empty.");
+			return;
+		}
+		await subtitleExtensions.LoadSubtitles(MediaElement, cancellationToken).ConfigureAwait(false);
+		subtitleExtensions.StartSubtitleDisplay();
 	}
 
 	protected virtual partial void PlatformUpdateSpeed()
@@ -435,7 +453,6 @@ public partial class MediaManager : IDisposable
 		{
 			return;
 		}
-
 		UIApplication.SharedApplication.IdleTimerDisabled = MediaElement.ShouldKeepScreenOn;
 	}
 
@@ -459,6 +476,7 @@ public partial class MediaManager : IDisposable
 	/// Releases the unmanaged resources used by the <see cref="MediaManager"/> and optionally releases the managed resources.
 	/// </summary>
 	/// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
+	
 	protected virtual void Dispose(bool disposing)
 	{
 		if (disposing)
@@ -466,7 +484,10 @@ public partial class MediaManager : IDisposable
 			if (Player is not null)
 			{
 				Player.Pause();
-				Player.InvokeOnMainThread(() => { UIApplication.SharedApplication.EndReceivingRemoteControlEvents(); });
+				Player.InvokeOnMainThread(() =>
+				{ 
+					UIApplication.SharedApplication.EndReceivingRemoteControlEvents(); 
+				});
 				// disable the idle timer so screen turns off when media is not playing
 				UIApplication.SharedApplication.IdleTimerDisabled = false;
 				var audioSession = AVAudioSession.SharedInstance();
@@ -474,29 +495,29 @@ public partial class MediaManager : IDisposable
 
 				DestroyErrorObservers();
 				DestroyPlayedToEndObserver();
-
-				RateObserver?.Dispose();
-				RateObserver = null;
-
-				CurrentItemErrorObserver?.Dispose();
-				CurrentItemErrorObserver = null;
-
+				subtitleExtensions?.StopSubtitleDisplay();
 				Player.ReplaceCurrentItemWithPlayerItem(null);
 
+				subtitleExtensions?.Dispose();
+				subTitlesCancellationTokenSource.Dispose();
+				RateObserver?.Dispose();
+				startSubtitles?.Dispose();
+				CurrentItemErrorObserver?.Dispose();
 				MutedObserver?.Dispose();
-				MutedObserver = null;
-
 				VolumeObserver?.Dispose();
-				VolumeObserver = null;
-
 				StatusObserver?.Dispose();
-				StatusObserver = null;
-
 				TimeControlStatusObserver?.Dispose();
-				TimeControlStatusObserver = null;
-
 				Player.Dispose();
+
+				startSubtitles = null;
+				subtitleExtensions = null;
 				Player = null;
+				CurrentItemErrorObserver = null;
+				MutedObserver = null;
+				RateObserver = null;
+				TimeControlStatusObserver = null;
+				StatusObserver = null;
+				VolumeObserver = null;
 			}
 
 			PlayerViewController?.Dispose();
@@ -718,3 +739,15 @@ public partial class MediaManager : IDisposable
 		}
 	}
 }
+
+sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
+{
+	public override void WillBeginFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
+	{
+		MediaManager.FullScreenEvents.OnFullScreenStateChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
+	}
+	public override void WillEndFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
+	{
+		MediaManager.FullScreenEvents.OnFullScreenStateChanged(new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
+	}
+ }
