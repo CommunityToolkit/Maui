@@ -23,6 +23,8 @@ public static class AppBuilderExtensions
 	/// <returns><see cref="MauiAppBuilder"/> initialized for <see cref="MediaElement"/>.</returns>
 	public static MauiAppBuilder UseMauiCommunityToolkitMediaElement(this MauiAppBuilder builder, Action<MediaElementOptions>? options = null)
 	{
+		var importedFonts = FontHelper.GetExportedFonts();
+		
 		// Update the default MediaElementOptions for MediaElement if Action is not null
 		options?.Invoke(new MediaElementOptions(builder));
 
@@ -30,6 +32,13 @@ public static class AppBuilderExtensions
 		builder.ConfigureMauiHandlers(h =>
 		{
 			h.AddHandler<MediaElement, MediaElementHandler>();
+		})
+		.ConfigureFonts(fonts =>
+		{
+			foreach (var (FontFileName, Alias) in importedFonts)
+			{
+				fonts.AddFont(FontFileName, Alias);
+			}
 		});
 
 #if ANDROID

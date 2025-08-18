@@ -10,6 +10,12 @@ namespace CommunityToolkit.Maui.Views;
 public partial class MediaElement : View, IMediaElement, IDisposable
 {
 	/// <summary>
+	/// Backing store for the <see cref="CustomSubtitleParser"/> property.
+	/// </summary>
+	public static readonly BindableProperty ParserProperty = 
+		BindableProperty.Create(nameof(CustomSubtitleParser), typeof(IParser), typeof(MediaElement), null);
+	
+	/// <summary>
 	/// Backing store for the <see cref="Aspect"/> property.
 	/// </summary>
 	public static readonly BindableProperty AspectProperty =
@@ -72,6 +78,21 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	public static readonly BindableProperty SourceProperty =
 		BindableProperty.Create(nameof(Source), typeof(MediaSource), typeof(MediaElement),
 			propertyChanging: OnSourcePropertyChanging, propertyChanged: OnSourcePropertyChanged);
+
+	/// <summary>
+	/// Backing store for the <see cref="SubtitleFont"/> property.
+	/// </summary>
+	public static readonly BindableProperty SubtitleFontProperty = BindableProperty.Create(nameof(SubtitleFont), typeof(string), typeof(MediaElement), string.Empty);
+	
+	/// <summary>
+	/// Backing store for the <see cref="SubtitleFontSize"/> property.
+	/// </summary>
+	public static readonly BindableProperty SubtitleFontSizeProperty = BindableProperty.Create(nameof(SubtitleFontSize), typeof(double), typeof(MediaElement), 16.0);
+
+	/// <summary>
+	/// Backing store for the <see cref="SubtitleUrl"/> property.
+	/// </summary>
+	public static readonly BindableProperty SubtitleProperty = BindableProperty.Create(nameof(SubtitleUrl), typeof(string), typeof(MediaElement), string.Empty);
 
 	/// <summary>
 	/// Backing store for the <see cref="Speed"/> property.
@@ -210,6 +231,15 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	}
 
 	/// <summary>
+	/// Custom parser for subtitles.
+	/// </summary>
+	public IParser? CustomSubtitleParser
+	{
+		get => (IParser)GetValue(ParserProperty);
+		set => SetValue(ParserProperty, value);
+	}
+
+	/// <summary>
 	/// The current position of the playing media. This is a bindable property.
 	/// </summary>
 	public TimeSpan Position => (TimeSpan)GetValue(PositionProperty);
@@ -289,6 +319,33 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	{
 		get => (MediaSource)GetValue(SourceProperty);
 		set => SetValue(SourceProperty, value);
+	}
+
+	/// <summary>
+	/// Gets or sets the URL of the subtitle file to display.
+	/// </summary>
+	public string SubtitleUrl
+	{
+		get => (string)GetValue(SubtitleProperty);
+		set => SetValue(SubtitleProperty, value);
+	}
+
+	/// <summary>
+	/// Gets or sets the font to use for the subtitle text.
+	/// </summary>
+	public string SubtitleFont
+	{
+		get => (string)GetValue(SubtitleFontProperty);
+		set => SetValue(SubtitleFontProperty, value);
+	}
+
+	/// <summary>
+	/// Gets or sets the font size of the subtitle text.
+	/// </summary>
+	public double SubtitleFontSize
+	{
+		get => (double)GetValue(SubtitleFontSizeProperty);
+		set => SetValue(SubtitleFontSizeProperty, value);
 	}
 
 	/// <summary>
