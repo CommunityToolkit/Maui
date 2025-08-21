@@ -40,11 +40,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		this.popup = popup;
 		this.popupOptions = popupOptions ??= Options.DefaultPopupOptionsSettings;
 
-		tapOutsideOfPopupCommand = new Command(async () =>
-		{
-			popupOptions.OnTappingOutsideOfPopup?.Invoke();
-			await CloseAsync(new PopupResult(true));
-		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
+		tapOutsideOfPopupCommand = new Command(async () => await TapOutsideCommand(), () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
 
 		var pageTapGestureRecognizer = new TapGestureRecognizer();
 		pageTapGestureRecognizer.Tapped += HandleTapGestureRecognizerTapped;
@@ -66,6 +62,13 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		Shell.SetPresentationMode(this, PresentationMode.ModalNotAnimated);
 		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
 	}
+
+	async Task TapOutsideCommand()
+	{
+		popupOptions.OnTappingOutsideOfPopup?.Invoke();
+		await CloseAsync(new PopupResult(true));
+	}
+
 
 	public event EventHandler<IPopupResult>? PopupClosed;
 
@@ -115,6 +118,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
 	{
 		popup.NotifyPopupIsClosed();
+		base.Content.GestureRecognizers.Clear();
+		popup.PropertyChanged -= HandlePopupPropertyChanged;
 		base.OnNavigatedFrom(args);
 	}
 
