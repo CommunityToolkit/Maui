@@ -59,7 +59,7 @@ jobs:
         os: [windows-latest, macos-15]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set Latest Xcode Version
         if: runner.os == 'macOS'
@@ -104,7 +104,7 @@ jobs:
         os: [windows-latest, macos-15]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set NuGet Version to Tag Number
         if: startsWith(github.ref, 'refs/tags/') && (!endsWith(github.ref, '-mediaelement') && !endsWith(github.ref, '-camera') && !endsWith(github.ref, '-maps'))
@@ -276,13 +276,13 @@ jobs:
           dotnet-quality: 'ga'
 
       - name: Download NuGet List
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: nuget-list
           path: ./
 
       - name: Download Package List
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: packages
           path: ./packages
@@ -348,7 +348,7 @@ jobs:
           dotnet-quality: 'ga'
 
       - name: Download signed packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: signed-packages
           path: ./packages
@@ -376,7 +376,7 @@ jobs:
           dotnet-quality: 'ga'
 
       - name: Download signed packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: signed-packages
           path: ./packages
