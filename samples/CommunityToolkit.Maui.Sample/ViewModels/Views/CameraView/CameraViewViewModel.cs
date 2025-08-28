@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -8,10 +9,9 @@ public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseV
 {
 	readonly ICameraProvider cameraProvider = cameraProvider;
 
-	[ObservableProperty]
-	public partial IReadOnlyList<CameraInfo> Cameras { get; set; }
-
 	public CancellationToken Token => CancellationToken.None;
+	
+	public ObservableCollection<CameraInfo> Cameras { get; } = [];
 
 	public ICollection<CameraFlashMode> FlashModes { get; } = Enum.GetValues<CameraFlashMode>();
 
@@ -45,7 +45,10 @@ public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseV
 	public async Task InitializeAsync()
 	{
 		await cameraProvider.InitializeAsync(CancellationToken.None);
-		Cameras = cameraProvider.AvailableCameras ?? [];
+		foreach (var camera in cameraProvider.AvailableCameras ?? [])
+		{
+			Cameras.Add(camera);
+		}
 	}
 
 	[RelayCommand]
