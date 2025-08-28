@@ -174,7 +174,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			//		set => SetValue(TextProperty, value);
 			//	}
 			//
-			
+
 			sb.AppendLine($"public partial {info.ReturnType} {info.PropertyName}")
 				.AppendLine("{")
 				.Append("get => (")
