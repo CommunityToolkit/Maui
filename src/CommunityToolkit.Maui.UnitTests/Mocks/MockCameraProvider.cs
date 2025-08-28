@@ -8,17 +8,16 @@ public class MockCameraProvider : ICameraProvider
 
 	public bool IsInitialized { get; private set; }
 
-	public ValueTask InitializeAsync(CancellationToken token)
+	public async ValueTask InitializeAsync(CancellationToken token)
 	{
-		if (IsInitialized)
+		if (!IsInitialized)
 		{
-			return ValueTask.CompletedTask;
+			await RefreshAvailableCameras(token);
+			IsInitialized = true;
 		}
-		IsInitialized = true;
-		return RefreshAvailableCameras(token);
 	}
 
-	public ValueTask RefreshAvailableCameras(CancellationToken token)
+	public Task RefreshAvailableCameras(CancellationToken token)
 	{
 		AvailableCameras =
 		[
@@ -33,6 +32,6 @@ public class MockCameraProvider : ICameraProvider
 				])
 		];
 
-		return ValueTask.CompletedTask;
+		return Task.CompletedTask;
 	}
 }

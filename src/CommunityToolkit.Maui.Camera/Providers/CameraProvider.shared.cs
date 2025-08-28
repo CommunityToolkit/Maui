@@ -3,50 +3,67 @@
 /// <summary>
 /// Implementation that provides the ability to discover cameras that are attached to the current device.
 /// </summary>
-partial class CameraProvider : ICameraProvider
+partial class CameraProvider : ICameraProvider, IDisposable
 {
-	readonly Lock refreshLock = new();
-	Task? refreshTask;
+	readonly SemaphoreSlim refreshAvailableCamerasSemaphore = new(1, 1);
+	Task? refreshAvailableCamerasTask;
 
-	internal partial ValueTask PlatformRefreshAvailableCameras(CancellationToken token);
+	~CameraProvider()
+	{
+		Dispose(false);
+	}
+
+	/// <inheritdoc/>
+	public bool IsInitialized => refreshAvailableCamerasTask?.IsCompletedSuccessfully is true;
 
 	/// <inheritdoc/>
 	public IReadOnlyList<CameraInfo>? AvailableCameras { get; private set; }
 
-	/// <inheritdoc/>
-	public bool IsInitialized => refreshTask?.IsCompletedSuccessfully is true;
-
-	ValueTask GetRefreshTask(CancellationToken token)
+	public void Dispose()
 	{
-		if (refreshTask is null || refreshTask.IsCompleted)
-		{
-			refreshTask = PlatformRefreshAvailableCameras(token).AsTask();
-		}
-
-		return new ValueTask(refreshTask);
+		Dispose(true);
+		GC.SuppressFinalize(this);
 	}
 
 	/// <inheritdoc/>	
-	public ValueTask InitializeAsync(CancellationToken token)
+	public async ValueTask InitializeAsync(CancellationToken token)
 	{
-		lock (refreshLock)
+		if (!IsInitialized)
 		{
-			if (IsInitialized)
-			{
-				return ValueTask.CompletedTask;
-			}
-
-			return GetRefreshTask(token);
+			await RefreshAvailableCameras(token);
 		}
 	}
 
 	/// <inheritdoc/>
-	public ValueTask RefreshAvailableCameras(CancellationToken token)
+	public async Task RefreshAvailableCameras(CancellationToken token)
 	{
-		lock (refreshLock)
+		await refreshAvailableCamerasSemaphore.WaitAsync(token);
+		
+		try
 		{
-			return GetRefreshTask(token);
+			if (refreshAvailableCamerasTask is null || refreshAvailableCamerasTask.IsCompleted)
+			{
+				refreshAvailableCamerasTask = PlatformRefreshAvailableCameras(token).AsTask();
+			}
+
+			await refreshAvailableCamerasTask;
+		}
+		finally
+		{
+			refreshAvailableCamerasSemaphore.Release();
 		}
 	}
 
+	void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			refreshAvailableCamerasSemaphore.Dispose();
+
+			refreshAvailableCamerasTask?.Dispose();
+			refreshAvailableCamerasTask = null;
+		}
+	}
+	
+	private partial ValueTask PlatformRefreshAvailableCameras(CancellationToken token);
 }

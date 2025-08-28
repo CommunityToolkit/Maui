@@ -16,7 +16,7 @@ partial class CameraProvider
 {
 	readonly Context context = Android.App.Application.Context;
 
-	internal async partial ValueTask PlatformRefreshAvailableCameras(CancellationToken token)
+	private async partial ValueTask PlatformRefreshAvailableCameras(CancellationToken token)
 	{
 		var cameraProviderFuture = ProcessCameraProvider.GetInstance(context);
 

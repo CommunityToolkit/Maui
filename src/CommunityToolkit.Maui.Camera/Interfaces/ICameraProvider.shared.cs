@@ -14,6 +14,11 @@ public interface ICameraProvider
 	/// List is initialized using <see cref="InitializeAsync"/>, and can be refreshed using <see cref="RefreshAvailableCameras(CancellationToken)"/>
 	/// </remarks>
 	IReadOnlyList<CameraInfo>? AvailableCameras { get; }
+	
+	/// <summary>
+	/// Gets a value indicating whether the camera provider has been successfully initialized.
+	/// </summary>
+	bool IsInitialized { get; }
 
 	/// <summary>
 	/// Refreshes <see cref="AvailableCameras"/> with the cameras available on device.
@@ -21,12 +26,7 @@ public interface ICameraProvider
 	/// <param name="token"></param>
 	/// <returns></returns>
 	[MemberNotNull(nameof(AvailableCameras))]
-	ValueTask RefreshAvailableCameras(CancellationToken token);
-
-	/// <summary>
-	/// Gets a value indicating whether the camera provider has been successfully initialized.
-	/// </summary>
-	bool IsInitialized { get; }
+	Task RefreshAvailableCameras(CancellationToken token);
 
 	/// <summary>
 	/// Initialize the camera provider by refreshing the <see cref="AvailableCameras"/>. 

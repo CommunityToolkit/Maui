@@ -42,12 +42,15 @@ public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseV
 	[ObservableProperty]
 	public partial string ResolutionText { get; set; } = string.Empty;
 
-	public async Task InitializeAsync()
+	public async ValueTask InitializeAsync()
 	{
-		await cameraProvider.InitializeAsync(CancellationToken.None);
-		foreach (var camera in cameraProvider.AvailableCameras ?? [])
+		if (!cameraProvider.IsInitialized)
 		{
-			Cameras.Add(camera);
+			await cameraProvider.InitializeAsync(CancellationToken.None);
+			foreach (var camera in cameraProvider.AvailableCameras ?? [])
+			{
+				Cameras.Add(camera);
+			}
 		}
 	}
 
