@@ -21,8 +21,11 @@ public interface ICameraProvider
 	bool IsInitialized { get; }
 
 	/// <summary>
-	/// Refreshes <see cref="AvailableCameras"/> with the cameras available on device.
+	/// Refreshes the <see cref="AvailableCameras"/> on device, regardless of the current initialization state.
 	/// </summary>
+	/// <remarks>
+	/// This ensures the list is up to date if available cameras have changed after initialization.
+	/// </remarks>
 	/// <param name="token"></param>
 	/// <returns></returns>
 	[MemberNotNull(nameof(AvailableCameras))]
@@ -30,10 +33,10 @@ public interface ICameraProvider
 
 	/// <summary>
 	/// Initialize the camera provider by refreshing the <see cref="AvailableCameras"/>. 
+	/// This performs a one-time discovery of available cameras. Subsequent calls are no-ops unless initialization failed previously.
 	/// </summary>
 	/// <remarks>
-	/// If the provider is already initialized, the <see cref="AvailableCameras"/> will not be refreshed again until <see cref="RefreshAvailableCameras(CancellationToken)"/> is called,
-	/// and this method will return a <see cref="ValueTask.CompletedTask"/>.
+	/// To force a refresh after the provider is initialized, call <see cref="RefreshAvailableCameras(CancellationToken)"/>.
 	/// </remarks>
 	ValueTask InitializeAsync(CancellationToken token);
 

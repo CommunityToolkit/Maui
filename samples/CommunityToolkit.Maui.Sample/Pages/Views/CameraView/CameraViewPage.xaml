@@ -5,7 +5,6 @@
                 xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                 xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
                 Title="CameraView"
-                Unloaded="OnUnloaded"
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Views.CameraViewPage"
                 x:TypeArguments="viewModels:CameraViewViewModel"
                 x:DataType="viewModels:CameraViewViewModel">

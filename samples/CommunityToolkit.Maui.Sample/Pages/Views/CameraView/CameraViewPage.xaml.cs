@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 
@@ -7,7 +6,6 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 public partial class CameraViewPage : BasePage<CameraViewViewModel>
 {
 	readonly string imagePath;
-	int pageCount;
 
 	public CameraViewPage(CameraViewViewModel viewModel, IFileSystem fileSystem) : base(viewModel)
 	{
@@ -16,11 +14,6 @@ public partial class CameraViewPage : BasePage<CameraViewViewModel>
 		imagePath = Path.Combine(fileSystem.CacheDirectory, "camera-view-image.jpg");
 
 		Camera.MediaCaptured += OnMediaCaptured;
-
-		Loaded += (s, e) =>
-		{
-			pageCount = Navigation.NavigationStack.Count;
-		};
 	}
 
 	protected override async void OnAppearing()
@@ -30,15 +23,11 @@ public partial class CameraViewPage : BasePage<CameraViewViewModel>
 		await BindingContext.InitializeAsync();
 	}
 
-	// https://github.com/dotnet/maui/issues/16697
-	// https://github.com/dotnet/maui/issues/15833
 	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
 	{
 		base.OnNavigatedFrom(args);
 
-		Debug.WriteLine($"< < OnNavigatedFrom {pageCount} {Navigation.NavigationStack.Count}");
-
-		if (Navigation.NavigationStack.Count < pageCount)
+		if (!Shell.Current.Navigation.NavigationStack.Contains(this))
 		{
 			Cleanup();
 		}
@@ -56,12 +45,6 @@ public partial class CameraViewPage : BasePage<CameraViewViewModel>
 	void Cleanup()
 	{
 		Camera.MediaCaptured -= OnMediaCaptured;
-		Camera.Handler?.DisconnectHandler();
-	}
-
-	void OnUnloaded(object? sender, EventArgs e)
-	{
-		//Cleanup();
 	}
 
 	void OnMediaCaptured(object? sender, MediaCapturedEventArgs e)

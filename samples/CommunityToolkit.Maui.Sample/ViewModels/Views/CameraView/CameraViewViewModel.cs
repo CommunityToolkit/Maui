@@ -9,8 +9,10 @@ public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseV
 {
 	readonly ICameraProvider cameraProvider = cameraProvider;
 
+	bool isInitialized = false;
+
 	public CancellationToken Token => CancellationToken.None;
-	
+
 	public ObservableCollection<CameraInfo> Cameras { get; } = [];
 
 	public ICollection<CameraFlashMode> FlashModes { get; } = Enum.GetValues<CameraFlashMode>();
@@ -44,14 +46,18 @@ public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseV
 
 	public async ValueTask InitializeAsync()
 	{
-		if (!cameraProvider.IsInitialized)
+		if (isInitialized)
 		{
-			await cameraProvider.InitializeAsync(CancellationToken.None);
-			foreach (var camera in cameraProvider.AvailableCameras ?? [])
-			{
-				Cameras.Add(camera);
-			}
+			return;
 		}
+
+		await cameraProvider.InitializeAsync(CancellationToken.None);
+		foreach (var camera in cameraProvider.AvailableCameras ?? [])
+		{
+			Cameras.Add(camera);
+		}
+
+		isInitialized = true;
 	}
 
 	[RelayCommand]
