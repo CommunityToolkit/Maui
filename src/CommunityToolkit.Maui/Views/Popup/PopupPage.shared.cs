@@ -46,13 +46,12 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			await CloseAsync(new PopupResult(true));
 		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
 
-
-		var pageTapGestureRecognizer = new TapGestureRecognizer();
-		pageTapGestureRecognizer.Tapped += HandleTapGestureRecognizerTapped;
+		var pagePointerGestureRecognizer = new PointerGestureRecognizer();
+		pagePointerGestureRecognizer.PointerReleased += HandleTapGestureRecognizerTapped;
 
 		base.Content = new PopupPageLayout(popup, popupOptions)
 		{
-			GestureRecognizers = { pageTapGestureRecognizer }
+			GestureRecognizers = { pagePointerGestureRecognizer }
 		};
 
 		popup.PropertyChanged += HandlePopupPropertyChanged;
@@ -193,8 +192,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			popupContentIQueryAttributable.ApplyQueryAttributes(query);
 		}
 	}
-
-	void HandleTapGestureRecognizerTapped(object? sender, TappedEventArgs e)
+	
+	void HandleTapGestureRecognizerTapped(object? sender, PointerEventArgs e)
 	{
 		ArgumentNullException.ThrowIfNull(sender);
 

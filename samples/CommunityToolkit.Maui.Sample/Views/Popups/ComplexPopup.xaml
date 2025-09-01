@@ -33,10 +33,51 @@
                VerticalOptions="Center"
                LineBreakMode="WordWrap" />
 
+        <CollectionView HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                        WidthRequest="250"
+                        SelectionMode="Single"
+                        SelectedItem="{Binding SelectedTitle}"
+                        SelectionChangedCommand="{Binding TitleSelectedCommand}">
+            <CollectionView.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                    <x:String>Welcome, Program.</x:String>
+                    <x:String>Initiating lightcycle…</x:String>
+                    <x:String>End of line.</x:String>
+                </x:Array>
+            </CollectionView.ItemsSource>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                    <Border BackgroundColor="LightGray"
+                            StrokeShape="RoundRectangle 8"
+                            Padding="8"
+                            Margin="4"
+                            HorizontalOptions="Fill"
+                            VerticalOptions="Center">
+                
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup Name="CommonStates">
+                                <VisualState Name="Normal" />
+                                <VisualState Name="Selected">
+                                    <VisualState.Setters>
+                                        <Setter Property="BackgroundColor" Value="{StaticResource Blue100Accent}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+
+                        <Label Text="{Binding .}"
+                               TextColor="Black"
+                               FontSize="16" HorizontalOptions="Center"/>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
         <Entry Placeholder="Enter text here then click Return"
                HorizontalOptions="Center"
                VerticalOptions="Center"
-               Text="{Binding ReturnText, Mode=OneWayToSource}" 
+               Text="{Binding ReturnText, Mode=TwoWay}" 
                TextColor="{mct:AppThemeResource TextColor}"/>
 
         <Button Text="Return"
