@@ -25,12 +25,31 @@ partial class CameraProvider : ICameraProvider, IDisposable
 		GC.SuppressFinalize(this);
 	}
 
+	Task GetRefreshTask(CancellationToken token)
+	{
+		if (refreshAvailableCamerasTask is null || refreshAvailableCamerasTask.IsCompleted)
+		{
+			refreshAvailableCamerasTask = PlatformRefreshAvailableCameras(token).AsTask();
+		}
+
+		return refreshAvailableCamerasTask;
+	}
+
 	/// <inheritdoc/>	
 	public async ValueTask InitializeAsync(CancellationToken token)
 	{
-		if (!IsInitialized)
+		await refreshAvailableCamerasSemaphore.WaitAsync(token);
+
+		try
 		{
-			await RefreshAvailableCameras(token);
+			if (!IsInitialized)
+			{
+				await GetRefreshTask(token);
+			}
+		}
+		finally
+		{
+			refreshAvailableCamerasSemaphore.Release();
 		}
 	}
 
@@ -38,15 +57,10 @@ partial class CameraProvider : ICameraProvider, IDisposable
 	public async Task RefreshAvailableCameras(CancellationToken token)
 	{
 		await refreshAvailableCamerasSemaphore.WaitAsync(token);
-		
+
 		try
 		{
-			if (refreshAvailableCamerasTask is null || refreshAvailableCamerasTask.IsCompleted)
-			{
-				refreshAvailableCamerasTask = PlatformRefreshAvailableCameras(token).AsTask();
-			}
-
-			await refreshAvailableCamerasTask;
+			await GetRefreshTask(token);
 		}
 		finally
 		{
@@ -64,6 +78,6 @@ partial class CameraProvider : ICameraProvider, IDisposable
 			refreshAvailableCamerasTask = null;
 		}
 	}
-	
+
 	private partial ValueTask PlatformRefreshAvailableCameras(CancellationToken token);
 }

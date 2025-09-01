@@ -14,7 +14,7 @@ public interface ICameraProvider
 	/// List is initialized using <see cref="InitializeAsync"/>, and can be refreshed using <see cref="RefreshAvailableCameras(CancellationToken)"/>
 	/// </remarks>
 	IReadOnlyList<CameraInfo>? AvailableCameras { get; }
-	
+
 	/// <summary>
 	/// Gets a value indicating whether the camera provider has been successfully initialized.
 	/// </summary>
