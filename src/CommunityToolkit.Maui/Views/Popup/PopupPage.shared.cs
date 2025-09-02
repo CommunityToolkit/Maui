@@ -36,7 +36,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	public PopupPage(Popup popup, IPopupOptions? popupOptions)
 	{
 		ArgumentNullException.ThrowIfNull(popup);
-		
+
 		this.popup = popup;
 		this.popupOptions = popupOptions ??= Options.DefaultPopupOptionsSettings;
 
@@ -46,8 +46,14 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			await CloseAsync(new PopupResult(true));
 		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
 
-		// Only set the content if the parent constructor hasn't set the content already; don't override content if it already exists
-		base.Content = new PopupPageLayout(popup, popupOptions, tapOutsideOfPopupCommand);
+
+		var pageTapGestureRecognizer = new TapGestureRecognizer();
+		pageTapGestureRecognizer.Tapped += HandleTapGestureRecognizerTapped;
+
+		base.Content = new PopupPageLayout(popup, popupOptions)
+		{
+			GestureRecognizers = { pageTapGestureRecognizer }
+		};
 
 		popup.PropertyChanged += HandlePopupPropertyChanged;
 		if (popupOptions is BindableObject bindablePopupOptions)
@@ -101,11 +107,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 	protected override bool OnBackButtonPressed()
 	{
-		// Only close the Popup if CanBeDismissedByTappingOutsideOfPopup is true
-		if (GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions))
-		{
-			CloseAsync(new PopupResult(true), CancellationToken.None).SafeFireAndForget();
-		}
+		TryExecuteTapOutsideOfPopupCommand();
 
 		// Always return true to let the Android Operating System know that we are manually handling the Navigation request from the Android Back Button
 		return true;
@@ -114,6 +116,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
 	{
 		popup.NotifyPopupIsClosed();
+		base.Content.GestureRecognizers.Clear();
+		popup.PropertyChanged -= HandlePopupPropertyChanged;
 		base.OnNavigatedFrom(args);
 	}
 
@@ -144,6 +148,17 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 
 		return popup;
+	}
+
+	internal bool TryExecuteTapOutsideOfPopupCommand()
+	{
+		if (!tapOutsideOfPopupCommand.CanExecute(null))
+		{
+			return false;
+		}
+
+		tapOutsideOfPopupCommand.Execute(null);
+		return true;
 	}
 
 	// Only dismiss when a user taps outside Popup when **both** Popup.CanBeDismissedByTappingOutsideOfPopup and PopupOptions.CanBeDismissedByTappingOutsideOfPopup are true
@@ -179,20 +194,30 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 	}
 
+	void HandleTapGestureRecognizerTapped(object? sender, TappedEventArgs e)
+	{
+		ArgumentNullException.ThrowIfNull(sender);
+
+		var popupPageLayout = (PopupPageLayout)sender;
+		var position = e.GetPosition(Content);
+
+		if (position is null)
+		{
+			return;
+		}
+
+		// Execute tapOutsideOfPopupCommand only if tap occurred outside the PopupBorder 
+		if (popupPageLayout.PopupBorder.Bounds.Contains(position.Value) is false)
+		{
+			TryExecuteTapOutsideOfPopupCommand();
+		}
+	}
+
 	internal sealed partial class PopupPageLayout : Grid
 	{
-		public PopupPageLayout(in Popup popupContent, in IPopupOptions options, in ICommand tapOutsideOfPopupCommand)
+		public PopupPageLayout(in Popup popupContent, in IPopupOptions options)
 		{
 			Background = BackgroundColor = null;
-
-			var tappableBackground = new BoxView
-			{
-				BackgroundColor = Colors.Transparent,
-				HorizontalOptions = LayoutOptions.Fill,
-				VerticalOptions = LayoutOptions.Fill
-			};
-			tappableBackground.GestureRecognizers.Add(new TapGestureRecognizer { Command = tapOutsideOfPopupCommand });
-			Children.Add(tappableBackground); // Add the Tappable Background to the PopupPageLayout Grid before adding the Border to ensure the Border is displayed on top
 
 			PopupBorder = new Border
 			{
@@ -231,7 +256,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 			public override Brush? ConvertFrom(Shape? value, CultureInfo? culture) => value?.Stroke;
 		}
-		
+
 		sealed partial class HorizontalOptionsConverter : BaseConverterOneWay<LayoutOptions, LayoutOptions>
 		{
 			public override LayoutOptions DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.HorizontalOptions;
@@ -245,7 +270,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 			public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? Options.DefaultPopupSettings.VerticalOptions : value;
 		}
-	
+
 		sealed partial class BackgroundColorConverter : BaseConverterOneWay<Color?, Color>
 		{
 			public override Color DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.BackgroundColor;
@@ -260,7 +285,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value == default ? Options.DefaultPopupSettings.Padding : value;
 	}
-	
+
 	sealed partial class MarginConverter : BaseConverterOneWay<Thickness, Thickness>
 	{
 		public override Thickness DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.Margin;

@@ -118,7 +118,7 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 
 					new ExampleLabel()
 						.Row(Row.StringExample3).Column(Column.Input)
-						.Text("String Commpare Less Than or Equal To \"Community\""),
+						.Text("String Compare Less Than or Equal To \"Community\""),
 
 					new Label()
 						.Row(Row.StringExample3).Column(Column.Result)
