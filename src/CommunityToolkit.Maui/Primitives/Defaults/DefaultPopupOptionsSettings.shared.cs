@@ -11,8 +11,17 @@ public record DefaultPopupOptionsSettings : IPopupOptions
 	/// <inheritdoc cref="IPopupOptions.CanBeDismissedByTappingOutsideOfPopup"/>
 	public bool CanBeDismissedByTappingOutsideOfPopup { get; init; } = PopupOptionsDefaults.CanBeDismissedByTappingOutsideOfPopup;
 
+	/// <inheritdoc cref="IPopupOptions.CanBeDismissedByBackButtonPressed"/>
+	public bool CanBeDismissedByBackButtonPressed { get; init; } = PopupOptionsDefaults.CanBeDismissedByBackButtonPressed;
+
 	/// <inheritdoc cref="IPopupOptions.OnTappingOutsideOfPopup"/>
 	public Action? OnTappingOutsideOfPopup { get; init; } = PopupOptionsDefaults.OnTappingOutsideOfPopup;
+
+	/// <inheritdoc cref="IPopupOptions.OnBackButtonPressed"/>
+	public Action? OnBackButtonPressed { get; init; } = PopupOptionsDefaults.OnBackButtonPressed;
+
+	/// <inheritdoc cref="IPopupOptions.OnDismiss"/>
+	public Action? OnDismiss { get; init; } = PopupOptionsDefaults.OnDismiss;
 
 	/// <inheritdoc cref="IPopupOptions.PageOverlayColor"/>
 	public Color PageOverlayColor { get; init; } = PopupOptionsDefaults.PageOverlayColor;
@@ -39,9 +48,24 @@ public record DefaultPopupOptionsSettings : IPopupOptions
 		public const bool CanBeDismissedByTappingOutsideOfPopup = true;
 
 		/// <summary>
+		/// Default value for <see cref="PopupOptions.CanBeDismissedByBackButtonPressed"/>
+		/// </summary>
+		public const bool CanBeDismissedByBackButtonPressed = true;
+
+		/// <summary>
 		/// Default value for <see cref="PopupOptions.OnTappingOutsideOfPopup"/> 
 		/// </summary>
 		public static Action? OnTappingOutsideOfPopup { get; } = null;
+
+		/// <summary>
+		/// Default value for <see cref="PopupOptions.OnBackButtonPressed"/> 
+		/// </summary>
+		public static Action? OnBackButtonPressed { get; } = null;
+
+		/// <summary>
+		/// Default value for <see cref="PopupOptions.OnDismiss"/> 
+		/// </summary>
+		public static Action? OnDismiss { get; } = null;
 
 		/// <summary>
 		/// Default value for <see cref="PopupOptions.PageOverlayColor"/> 

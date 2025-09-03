@@ -35,6 +35,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	readonly Popup popup;
 	readonly IPopupOptions popupOptions;
 	readonly Command tapOutsideOfPopupCommand;
+	readonly Command backButtonPressCommand;
 
 	NavigationPage? navigationPageObservedForDismissal;
 	Window? windowObservedForDismissal;
@@ -61,6 +62,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		{
 			popupOptions.OnTappingOutsideOfPopup?.Invoke();
 
+			popupOptions.OnDismiss?.Invoke();
+
 			try
 			{
 				await CloseAsync(new PopupResult(true));
@@ -75,6 +78,13 @@ partial class PopupPage : ContentPage, IQueryAttributable
 				// The popup is still open and a later tap can close it; the command runs as async void, so an exception here would crash the app
 			}
 		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
+
+		backButtonPressCommand = new Command(async () =>
+		{
+			popupOptions.OnBackButtonPressed?.Invoke();
+			popupOptions.OnDismiss?.Invoke();
+			await CloseAsync(new PopupResult(true));
+		}, () => GetCanBeDismissedByBackButtonPressed(popup, popupOptions));
 
 		var popupPageLayout = new PopupPageLayout(popup, popupOptions, () => TryExecuteTapOutsideOfPopupCommand());
 		base.Content = popupPageLayout;
@@ -300,6 +310,17 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		return true;
 	}
 
+	internal bool TryExecuteBackButtonPressCommand()
+	{
+		if (!backButtonPressCommand.CanExecute(null))
+		{
+			return false;
+		}
+
+		backButtonPressCommand.Execute(null);
+		return true;
+	}
+
 	protected static T CreatePopupFromView<T>(in View view) where T : Popup, new()
 	{
 		ArgumentNullException.ThrowIfNull(view);
@@ -325,7 +346,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 	protected override bool OnBackButtonPressed()
 	{
-		TryExecuteTapOutsideOfPopupCommand();
+		TryExecuteBackButtonPressCommand();
 
 		// Always return true to let the Android Operating System know that we are manually handling the Navigation request from the Android Back Button
 		return true;
@@ -574,11 +595,18 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		return true;
 	}
 
+	static bool GetCanBeDismissedByBackButtonPressed(in Popup popup, in IPopupOptions popupOptions) => popup.CanBeDismissedByBackButtonPressed & popupOptions.CanBeDismissedByBackButtonPressed;
+
 	void HandlePopupOptionsPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (e.PropertyName == nameof(IPopupOptions.CanBeDismissedByTappingOutsideOfPopup))
 		{
 			tapOutsideOfPopupCommand.ChangeCanExecute();
+		}
+
+		if (e.PropertyName == nameof(IPopupOptions.CanBeDismissedByBackButtonPressed))
+		{
+			backButtonPressCommand.ChangeCanExecute();
 		}
 	}
 
