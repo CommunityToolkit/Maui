@@ -33,8 +33,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 	readonly Popup popup;
 	readonly IPopupOptions popupOptions;
-	readonly Command tapOutsideOfPopupCommand;
-	readonly Command backButtonPressCommand;
+	readonly Command dismissCommand;
 
 
 	public PopupPage(View view, IPopupOptions? popupOptions)
@@ -52,28 +51,14 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		this.popup = popup;
 		this.popupOptions = popupOptions ??= Options.DefaultPopupOptionsSettings;
 
-		tapOutsideOfPopupCommand = new Command(async () =>
+		dismissCommand = new Command(async () =>
 		{
-			popupOptions.OnTappingOutsideOfPopup?.Invoke();
 			popupOptions.OnDismiss?.Invoke();
 			await CloseAsync(new PopupResult(true));
-		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
-
-		backButtonPressCommand = new Command(async () =>
-		{
-			popupOptions.OnBackButtonPressed?.Invoke();
-			popupOptions.OnDismiss?.Invoke();
-			await CloseAsync(new PopupResult(true));
-		}, () => GetCanBeDismissedByBackButtonPressed(popup, popupOptions));
+		});
 
 		var popupPageLayout = new PopupPageLayout(popup, popupOptions, () => TryExecuteTapOutsideOfPopupCommand());
 		base.Content = popupPageLayout;
-
-		popup.PropertyChanged += HandlePopupPropertyChanged;
-		if (popupOptions is BindableObject bindablePopupOptions)
-		{
-			bindablePopupOptions.PropertyChanged += HandlePopupOptionsPropertyChanged;
-		}
 
 		this.SetBinding(BindingContextProperty, static (Popup x) => x.BindingContext, source: popup, mode: BindingMode.OneWay);
 		this.SetBinding(BackgroundColorProperty, static (IPopupOptions options) => options.PageOverlayColor, source: popupOptions, mode: BindingMode.OneWay);
@@ -189,11 +174,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 				// Clean up Popup resources
 				Content.TapGestureGestureOverlay.GestureRecognizers.Clear();
-				popup.PropertyChanged -= HandlePopupPropertyChanged;
-				if (popupOptions is BindableObject bindablePopupOptions)
-				{
-					bindablePopupOptions.PropertyChanged -= HandlePopupOptionsPropertyChanged;
-				}
 
 				// Wait for MAUI to confirm the PopupPage has been popped before invoking the PopupClosed event and notifying the Popup that it may invoke its `Popup.Closed` event.
 				// This guarantees the Popup has been removed from MAUI's ModalStack
@@ -257,24 +237,27 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 	internal bool TryExecuteTapOutsideOfPopupCommand()
 	{
-		if (!tapOutsideOfPopupCommand.CanExecute(null))
+		popupOptions.OnTappingOutsideOfPopup?.Invoke();
+
+		if (GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions))
 		{
-			return false;
+			dismissCommand.Execute(null);
+			return true;
 		}
 
-		tapOutsideOfPopupCommand.Execute(null);
-		return true;
+		return false;
 	}
-
 	internal bool TryExecuteBackButtonPressCommand()
 	{
-		if (!backButtonPressCommand.CanExecute(null))
+		popupOptions.OnBackButtonPressed?.Invoke();
+
+		if (GetCanBeDismissedByBackButtonPressed(popup, popupOptions))
 		{
-			return false;
+			dismissCommand.Execute(null);
+			return true;
 		}
 
-		backButtonPressCommand.Execute(null);
-		return true;
+		return false;
 	}
 
 	protected static T CreatePopupFromView<T>(in View view) where T : Popup, new()
@@ -310,6 +293,17 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		// Always return true to let the Android Operating System know that we are manually handling the Navigation request from the Android Back Button
 		return true;
 	}
+	//		popupOptions.OnTappingOutsideOfPopup?.Invoke();
+
+	//		if (GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions))
+	//		{
+	//			dismissCommand.Execute(null);
+	//			return true;
+	//		}
+
+	//		return false;
+	//>>>>>>> theirs
+	//}
 
 	protected override void OnNavigatedTo(NavigatedToEventArgs args)
 	{
@@ -317,32 +311,19 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		popup.NotifyPopupIsOpened();
 	}
 
-	// Only dismiss when a user taps outside Popup when **both** Popup.CanBeDismissedByTappingOutsideOfPopup and PopupOptions.CanBeDismissedByTappingOutsideOfPopup are true
-	// If either value is false, do not dismiss Popup
+
+	/// <summary>
+	/// Only dismiss when a user taps outside Popup when **both** Popup.CanBeDismissedByTappingOutsideOfPopup and PopupOptions.CanBeDismissedByTappingOutsideOfPopup are true
+	/// If either value is false, do not dismiss Popup
+	/// </summary>
 	static bool GetCanBeDismissedByTappingOutsideOfPopup(in Popup popup, in IPopupOptions popupOptions) => popup.CanBeDismissedByTappingOutsideOfPopup & popupOptions.CanBeDismissedByTappingOutsideOfPopup;
 
+
+	/// <summary>
+	/// Only dismiss when a user presses a back button when **both** Popup.CanBeDismissedByBackButtonPressed and PopupOptions.CanBeDismissedByBackButtonPressed are true
+	/// If either value is false, do not dismiss Popup
+	/// </summary>
 	static bool GetCanBeDismissedByBackButtonPressed(in Popup popup, in IPopupOptions popupOptions) => popup.CanBeDismissedByBackButtonPressed & popupOptions.CanBeDismissedByBackButtonPressed;
-
-	void HandlePopupOptionsPropertyChanged(object? sender, PropertyChangedEventArgs e)
-	{
-		if (e.PropertyName == nameof(IPopupOptions.CanBeDismissedByTappingOutsideOfPopup))
-		{
-			tapOutsideOfPopupCommand.ChangeCanExecute();
-		}
-
-		if (e.PropertyName == nameof(IPopupOptions.CanBeDismissedByBackButtonPressed))
-		{
-			backButtonPressCommand.ChangeCanExecute();
-		}
-	}
-
-	void HandlePopupPropertyChanged(object? sender, PropertyChangedEventArgs e)
-	{
-		if (e.PropertyName == Popup.CanBeDismissedByTappingOutsideOfPopupProperty.PropertyName)
-		{
-			tapOutsideOfPopupCommand.ChangeCanExecute();
-		}
-	}
 
 	internal sealed partial class PopupGestureOverlay : BoxView
 	{

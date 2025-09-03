@@ -538,9 +538,9 @@ public class PopupPageTests : BaseViewTest
 	}
 
 	[Theory(Timeout = (int)TestDuration.Short)]
-	[InlineData(false, false, 0, 0, 0)]
-	[InlineData(false, true, 0, 1, 1)]
-	[InlineData(true, false, 1, 0, 1)]
+	[InlineData(false, false, 1, 1, 0)]
+	[InlineData(false, true, 1, 1, 1)]
+	[InlineData(true, false, 1, 1, 1)]
 	[InlineData(true, true, 1, 1, 2)]
 	public async Task PopupPage_ShouldCallCorrectCallbacksDependingOnCanBeDismissedFlags(bool dismissByTap, bool dismissByBack, int expectedNumberCallsToOnTappingOutsideOfPopup, int expectedNumberCallsToOnBackButtonPressed, int expectedNumberCallsToOnDismiss)
 	{
