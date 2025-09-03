@@ -207,7 +207,7 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 				PopupOptions.Empty,
 				CancellationToken.None);
 
-			if (!popupResult.WasDismissedByTappingOutsideOfPopup)
+			if (!popupResult.WasDismissed)
 			{
 				// Display Popup Result as a Toast
 				await Toast.Make($"You selected {popupResult.Result}").Show(CancellationToken.None);
@@ -240,7 +240,7 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 			var popupResult = await popupResultTask;
 			BindingContext.ComplexPopupOpenedCommand.Cancel();
 
-			if (!popupResult.WasDismissedByTappingOutsideOfPopup)
+			if (!popupResult.WasDismissed)
 			{
 				// Display Popup Result as a Toast
 				await Toast.Make($"You entered {popupResult.Result}").Show(CancellationToken.None);
