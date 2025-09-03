@@ -932,6 +932,8 @@ public class ColorConversionExtensionsTests : BaseTest
 			float expectedAvgColor, bool expectedIsDark, bool expectedIsDarkForEye,
 			Color expectedToBlackOrWhite, Color expectedToBlackOrWhiteForText)
 		{
+			var culture = new System.Globalization.CultureInfo("en-US");
+
 			R = r;
 			G = g;
 			B = b;
@@ -956,17 +958,17 @@ public class ColorConversionExtensionsTests : BaseTest
 			ExpectedGreyScale = new Color(expectedAvgColor, expectedAvgColor, expectedAvgColor);
 			ExpectedInverse = new Color(expectedInverseR, expectedInverseG, expectedInverseB);
 			ExpectedRgb = $"RGB({expectedByteR},{expectedByteG},{expectedByteB})";
-			ExpectedRgba = $"RGBA({expectedByteR},{expectedByteG},{expectedByteB},{A})";
+			ExpectedRgba = $"RGBA({expectedByteR},{expectedByteG},{expectedByteB},{A.ToString(culture)})";
 			ExpectedHexrgb = $"#{expectedByteR:X2}{expectedByteG:X2}{expectedByteB:X2}";
 			ExpectedHexrgba = $"#{expectedByteR:X2}{expectedByteG:X2}{expectedByteB:X2}{expectedByteA:X2}";
 			ExpectedHexargb = $"#{expectedByteA:X2}{expectedByteR:X2}{expectedByteG:X2}{expectedByteB:X2}";
-			ExpectedCmyk = $"CMYK({expectedPctCyan:P0},{expectedPctMagenta:P0},{expectedPctYellow:P0},{expectedPctBlack:P0})";
-			ExpectedCmyka = $"CMYKA({expectedPctCyan:P0},{expectedPctMagenta:P0},{expectedPctYellow:P0},{expectedPctBlack:P0},{a})";
+			ExpectedCmyk = $"CMYK({expectedPctCyan.ToString("P0", culture)},{expectedPctMagenta.ToString("P0", culture)},{expectedPctYellow.ToString("P0", culture)},{expectedPctBlack.ToString("P0", culture)})";
+			ExpectedCmyka = $"CMYKA({expectedPctCyan.ToString("P0", culture)},{expectedPctMagenta.ToString("P0", culture)},{expectedPctYellow.ToString("P0", culture)},{expectedPctBlack.ToString("P0", culture)},{a.ToString(culture)})";
 
 			Color = new Color(r, g, b, a);
 			ExpectedDegreeHue = Color.GetHue() * 360;
-			ExpectedHslString = $"HSL({ExpectedDegreeHue:0},{Color.GetSaturation():P0},{Color.GetLuminosity():P0})";
-			ExpectedHslaString = $"HSLA({ExpectedDegreeHue:0},{Color.GetSaturation():P0},{Color.GetLuminosity():P0},{a})";
+			ExpectedHslString = $"HSL({ExpectedDegreeHue:0},{Color.GetSaturation().ToString("P0", culture)},{Color.GetLuminosity().ToString("P0", culture)})";
+			ExpectedHslaString = $"HSLA({ExpectedDegreeHue:0},{Color.GetSaturation().ToString("P0", culture)},{Color.GetLuminosity().ToString("P0", culture)},{a.ToString(culture)})";
 		}
 
 		internal float R { get; }
