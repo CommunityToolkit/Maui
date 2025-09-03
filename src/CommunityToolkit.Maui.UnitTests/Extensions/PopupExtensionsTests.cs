@@ -1013,7 +1013,7 @@ public class PopupExtensionsTests : BaseViewTest
 
 		// Assert
 		Assert.Same(mockPopup.Result, result.Result);
-		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(result.WasDismissed);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Medium)]
@@ -1028,7 +1028,7 @@ public class PopupExtensionsTests : BaseViewTest
 
 		// Assert
 		Assert.Same(mockPopup.Result, result.Result);
-		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(result.WasDismissed);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Medium)]
@@ -1050,7 +1050,7 @@ public class PopupExtensionsTests : BaseViewTest
 
 		// Assert
 		Assert.Same(mockPopup.Result, result.Result);
-		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(result.WasDismissed);
 		Assert.Equal(shellParameterBackgroundColorValue, selfClosingPopup.BackgroundColor);
 	}
 
@@ -1073,7 +1073,7 @@ public class PopupExtensionsTests : BaseViewTest
 
 		// Assert
 		Assert.Same(expectedPopupResult, actualPopupResult);
-		Assert.False(expectedPopupResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(expectedPopupResult.WasDismissed);
 		Assert.Equal(popupResultValue, expectedPopupResult.Result);
 	}
 
@@ -1103,7 +1103,7 @@ public class PopupExtensionsTests : BaseViewTest
 
 		// Assert
 		Assert.Same(expectedPopupResult, actualPopupResult);
-		Assert.False(expectedPopupResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(expectedPopupResult.WasDismissed);
 		Assert.Equal(popupResultValue, expectedPopupResult.Result);
 	}
 
@@ -1181,7 +1181,7 @@ public class PopupExtensionsTests : BaseViewTest
 
 		// Assert
 		Assert.Null(result.Result);
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -1205,7 +1205,7 @@ public class PopupExtensionsTests : BaseViewTest
 
 		// Assert
 		Assert.Null(result.Result);
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -1232,9 +1232,9 @@ public class PopupExtensionsTests : BaseViewTest
 		var showPopupResult = await showPopupTask;
 
 		// Assert
-		Assert.True(popupClosedResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(popupClosedResult.WasDismissed);
 		Assert.Null(showPopupResult.Result);
-		Assert.True(showPopupResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(showPopupResult.WasDismissed);
 
 		void HandlePopupClosed(object? sender, IPopupResult e)
 		{
@@ -1273,9 +1273,9 @@ public class PopupExtensionsTests : BaseViewTest
 		var showPopupResult = await showPopupTask;
 
 		// Assert
-		Assert.True(popupClosedResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(popupClosedResult.WasDismissed);
 		Assert.Null(showPopupResult.Result);
-		Assert.True(showPopupResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(showPopupResult.WasDismissed);
 
 		void HandlePopupClosed(object? sender, IPopupResult e)
 		{
@@ -1307,9 +1307,9 @@ public class PopupExtensionsTests : BaseViewTest
 		var showPopupResult = await showPopupTask;
 
 		// Assert
-		Assert.True(popupClosedResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(popupClosedResult.WasDismissed);
 		Assert.Null(showPopupResult.Result);
-		Assert.True(showPopupResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(showPopupResult.WasDismissed);
 
 		void HandlePopupClosed(object? sender, IPopupResult e)
 		{
@@ -1348,9 +1348,9 @@ public class PopupExtensionsTests : BaseViewTest
 		var showPopupResult = await showPopupTask;
 
 		// Assert
-		Assert.True(popupClosedResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(popupClosedResult.WasDismissed);
 		Assert.Null(showPopupResult.Result);
-		Assert.True(showPopupResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(showPopupResult.WasDismissed);
 
 		void HandlePopupClosed(object? sender, IPopupResult e)
 		{
@@ -1382,8 +1382,8 @@ public class PopupExtensionsTests : BaseViewTest
 		var showPopupResult = await showPopupTask;
 
 		// Assert
-		Assert.True(popupClosedResult.WasDismissedByTappingOutsideOfPopup);
-		Assert.True(showPopupResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(popupClosedResult.WasDismissed);
+		Assert.True(showPopupResult.WasDismissed);
 		Assert.ThrowsAny<PopupResultException>(() => (bool?)showPopupResult.Result);
 		Assert.ThrowsAny<InvalidCastException>(() => (bool?)showPopupResult.Result);
 
@@ -1424,8 +1424,8 @@ public class PopupExtensionsTests : BaseViewTest
 		var showPopupResult = await showPopupTask;
 
 		// Assert
-		Assert.True(popupClosedResult.WasDismissedByTappingOutsideOfPopup);
-		Assert.True(showPopupResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(popupClosedResult.WasDismissed);
+		Assert.True(showPopupResult.WasDismissed);
 		Assert.ThrowsAny<PopupResultException>(() => (bool?)showPopupResult.Result);
 		Assert.ThrowsAny<InvalidCastException>(() => (bool?)showPopupResult.Result);
 
@@ -1457,7 +1457,7 @@ public class PopupExtensionsTests : BaseViewTest
 
 		// Assert
 		Assert.Empty(page.Navigation.ModalStack);
-		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(popupResult.WasDismissed);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -1481,7 +1481,7 @@ public class PopupExtensionsTests : BaseViewTest
 
 		// Assert
 		Assert.Empty(page.Navigation.ModalStack);
-		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(popupResult.WasDismissed);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -1507,7 +1507,7 @@ public class PopupExtensionsTests : BaseViewTest
 		// Assert
 		Assert.Empty(page.Navigation.ModalStack);
 		Assert.Equal(expectedResult, popupResult.Result);
-		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(popupResult.WasDismissed);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -1534,7 +1534,7 @@ public class PopupExtensionsTests : BaseViewTest
 		// Assert
 		Assert.Empty(page.Navigation.ModalStack);
 		Assert.Equal(expectedResult, popupResult.Result);
-		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(popupResult.WasDismissed);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -1563,7 +1563,7 @@ public class PopupExtensionsTests : BaseViewTest
 		// Assert
 		Assert.Empty(page.Navigation.ModalStack);
 		Assert.Equal(expectedResult, popupResult.Result);
-		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(popupResult.WasDismissed);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
