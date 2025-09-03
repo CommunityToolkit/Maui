@@ -885,8 +885,11 @@ public class PopupPageTests : BaseViewTest
 	sealed class MockPopupOptions : IPopupOptions
 	{
 		public bool CanBeDismissedByTappingOutsideOfPopup { get; set; }
+		public bool CanBeDismissedByBackButtonPressed { get; set; }
 		public Color PageOverlayColor { get; set; } = Colors.Transparent;
 		public Action? OnTappingOutsideOfPopup { get; set; }
+		public Action? OnBackButtonPressed  { get; set; }
+		public Action? OnDismiss { get; set; }
 		public Shape? Shape { get; set; }
 		public Shadow? Shadow { get; set; } = null;
 	}

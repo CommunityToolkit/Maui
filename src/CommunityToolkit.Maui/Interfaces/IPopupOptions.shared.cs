@@ -11,6 +11,10 @@ public interface IPopupOptions
 	/// Indicates whether the popup can be dismissed by tapping outside the Popup.
 	/// </summary>
 	bool CanBeDismissedByTappingOutsideOfPopup { get; }
+	/// <summary>
+	/// Indicates whether the popup can be dismissed by pressing the back button.
+	/// </summary>
+	bool CanBeDismissedByBackButtonPressed { get; }
 
 	/// <summary>
 	/// Color of the overlay behind the Popup
@@ -21,6 +25,15 @@ public interface IPopupOptions
 	/// Action to be executed when the user taps outside the Popup.
 	/// </summary>
 	Action? OnTappingOutsideOfPopup { get; }
+
+	/// <summary>
+	/// Action to be executed when the user presses the back button.
+	/// </summary>
+	Action? OnBackButtonPressed { get; }
+	/// <summary>
+	/// Action to be executed when the user dismisses the Popup.
+	/// </summary>
+	Action? OnDismiss { get; }
 
 	/// <summary>
 	/// Popup border shape.
