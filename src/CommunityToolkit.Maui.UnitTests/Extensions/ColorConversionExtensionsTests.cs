@@ -288,7 +288,7 @@ public class ColorConversionExtensionsTests : BaseTest
 		new ColorTestDefinition(1, 1, 1, (float)0.84705883, 255, 255, 255, 216, 0, 0, 0, 0, 0, 0, 0, 1, false, false, Colors.White, Colors.Black)
 	];
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void ToRgbString(ColorTestDefinition testDef)
 	{
@@ -305,7 +305,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void ToRgbaString(ColorTestDefinition testDef)
 	{
@@ -322,7 +322,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void ToCmykString(ColorTestDefinition testDef)
 	{
@@ -339,7 +339,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void ToCmykaString(ColorTestDefinition testDef)
 	{
@@ -356,7 +356,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void ToHslString(ColorTestDefinition testDef)
 	{
@@ -373,7 +373,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void ToHslaString(ColorTestDefinition testDef)
 	{
@@ -390,7 +390,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void GetByteRed(ColorTestDefinition testDef)
 	{
@@ -407,7 +407,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void GetByteGreen(ColorTestDefinition testDef)
 	{
@@ -424,7 +424,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void GetByteBlue(ColorTestDefinition testDef)
 	{
@@ -441,7 +441,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void GetByteAlpha(ColorTestDefinition testDef)
 	{
@@ -458,7 +458,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void GetPctBlackKey(ColorTestDefinition def)
 	{
@@ -475,7 +475,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void GetDegreeHue(ColorTestDefinition def)
 	{
@@ -492,7 +492,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void GetPctCyan(ColorTestDefinition testDef)
 	{
@@ -509,7 +509,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void GetPctMagenta(ColorTestDefinition testDef)
 	{
@@ -526,7 +526,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void GetPctYellow(ColorTestDefinition testDef)
 	{
@@ -543,7 +543,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void ToInverseColor(ColorTestDefinition testDef)
 	{
@@ -564,7 +564,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void ToGrayScale(ColorTestDefinition testDef)
 	{
@@ -585,7 +585,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void IsDark(ColorTestDefinition testDef)
 	{
@@ -602,7 +602,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void IsDarkForTheEye(ColorTestDefinition testDef)
 	{
@@ -643,7 +643,7 @@ public class ColorConversionExtensionsTests : BaseTest
 		Assert.True(true);
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void ToBlackOrWhite(ColorTestDefinition testDef)
 	{
@@ -660,7 +660,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void ToBlackOrWhiteForText(ColorTestDefinition testDef)
 	{
@@ -677,7 +677,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void WithRed_Double(ColorTestDefinition testDef)
 	{
@@ -713,7 +713,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void WithGreen_Double(ColorTestDefinition testDef)
 	{
@@ -749,7 +749,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void WithBlue_Double(ColorTestDefinition testDef)
 	{
@@ -787,7 +787,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void WithRed_Byte(ColorTestDefinition testDef)
 	{
@@ -797,7 +797,7 @@ public class ColorConversionExtensionsTests : BaseTest
 		Assert.Equal(red, result.GetByteRed());
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void WithGreen_Byte(ColorTestDefinition testDef)
 	{
@@ -807,7 +807,7 @@ public class ColorConversionExtensionsTests : BaseTest
 		Assert.Equal(green, result.GetByteGreen());
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void WithBlue_Byte(ColorTestDefinition testDef)
 	{
@@ -817,7 +817,7 @@ public class ColorConversionExtensionsTests : BaseTest
 		Assert.Equal(blue, result.GetByteBlue());
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void WithCyan(ColorTestDefinition testDef)
 	{
@@ -840,7 +840,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void WithMagenta(ColorTestDefinition testDef)
 	{
@@ -863,7 +863,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void WithYellow(ColorTestDefinition testDef)
 	{
@@ -886,7 +886,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ColorTestData))]
 	public void WithBlackKey(ColorTestDefinition testDef)
 	{
