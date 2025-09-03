@@ -394,71 +394,78 @@ public class PopupPageTests : BaseViewTest
 		var popupPage = new PopupPage(view, popupOptions);
 
 		// Assert
-
-		try
-		{
-			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
-			AsyncContext.Run(() => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
-		}
-		catch (PopupNotFoundException) // PopupNotFoundException is expected because we did not call ShowPopup()
-		{
-		}
+		RunPopupSafe(() => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
 
 		// Act
 		view.CanBeDismissedByTappingOutsideOfPopup = false;
 		popupOptions.CanBeDismissedByTappingOutsideOfPopup = false;
 
 		// Assert
-		try
-		{
-			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
-			AsyncContext.Run(() => Assert.False(popupPage.TryExecuteTapOutsideOfPopupCommand()));
-		}
-		catch (PopupNotFoundException) // PopupNotFoundException is expected because we did not call ShowPopup()
-		{
-		}
+		RunPopupSafe(() => Assert.False(popupPage.TryExecuteTapOutsideOfPopupCommand()));
 
 		// Act
 		view.CanBeDismissedByTappingOutsideOfPopup = true;
 		popupOptions.CanBeDismissedByTappingOutsideOfPopup = false;
 
 		// Assert
-		try
-		{
-			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
-			AsyncContext.Run(() => Assert.False(popupPage.TryExecuteTapOutsideOfPopupCommand()));
-		}
-		catch (PopupNotFoundException) // PopupNotFoundException is expected because we did not call ShowPopup()
-		{
-		}
+		RunPopupSafe(() => Assert.False(popupPage.TryExecuteTapOutsideOfPopupCommand()));
 
 		// Act
 		view.CanBeDismissedByTappingOutsideOfPopup = false;
 		popupOptions.CanBeDismissedByTappingOutsideOfPopup = true;
 
 		// Assert
-		try
-		{
-			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
-			AsyncContext.Run(() => Assert.False(popupPage.TryExecuteTapOutsideOfPopupCommand()));
-		}
-		catch (PopupNotFoundException) // PopupNotFoundException is expected because we did not call ShowPopup()
-		{
-		}
+		RunPopupSafe(() => Assert.False(popupPage.TryExecuteTapOutsideOfPopupCommand()));
 
 		// Act
 		view.CanBeDismissedByTappingOutsideOfPopup = true;
 		popupOptions.CanBeDismissedByTappingOutsideOfPopup = true;
 
 		// Assert
-		try
-		{
-			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
-			AsyncContext.Run(() => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
-		}
-		catch (PopupNotFoundException) // PopupNotFoundException is expected because we did not call ShowPopup()
-		{
-		}
+		RunPopupSafe(() => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
+	}
+
+
+	[Fact]
+	public void TapGestureRecognizer_VerifyCanBeDismissedByBackButtonPressed_ShouldNotExecuteWhenEitherFalse()
+	{
+		// Arrange
+		var view = new Popup();
+		var popupOptions = new PopupOptions();
+
+		// Act
+		var popupPage = new PopupPage(view, popupOptions);
+
+		// Assert
+		RunPopupSafe(() => Assert.True(popupPage.TryExecuteBackButtonPressCommand()));
+
+		// Act
+		view.CanBeDismissedByBackButtonPressed = false;
+		popupOptions.CanBeDismissedByBackButtonPressed = false;
+
+		// Assert
+		RunPopupSafe(() => Assert.False(popupPage.TryExecuteBackButtonPressCommand()));
+
+		// Act
+		view.CanBeDismissedByBackButtonPressed = true;
+		popupOptions.CanBeDismissedByBackButtonPressed = false;
+
+		// Assert
+		RunPopupSafe(() => Assert.False(popupPage.TryExecuteBackButtonPressCommand()));
+
+		// Act
+		view.CanBeDismissedByBackButtonPressed = false;
+		popupOptions.CanBeDismissedByBackButtonPressed = true;
+
+		// Assert
+		RunPopupSafe(() => Assert.False(popupPage.TryExecuteBackButtonPressCommand()));
+
+		// Act
+		view.CanBeDismissedByBackButtonPressed = true;
+		popupOptions.CanBeDismissedByBackButtonPressed = true;
+
+		// Assert
+		RunPopupSafe(() => Assert.True(popupPage.TryExecuteBackButtonPressCommand()));
 	}
 
 	[Fact]
@@ -528,6 +535,53 @@ public class PopupPageTests : BaseViewTest
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		Assert.Throws<ArgumentNullException>(() => new PopupPage((Popup?)null, popupOptions));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[InlineData(false, false, 0, 0, 0)]
+	[InlineData(false, true, 0, 1, 1)]
+	[InlineData(true, false, 1, 0, 1)]
+	[InlineData(true, true, 1, 1, 2)]
+	public async Task PopupPage_ShouldCallCorrectCallbacksDependingOnCanBeDismissedFlags(bool dismissByTap, bool dismissByBack, int expectedNumberCallsToOnTappingOutsideOfPopup, int expectedNumberCallsToOnBackButtonPressed, int expectedNumberCallsToOnDismiss)
+	{
+		// Arrange
+		int expectedTotalCalls = expectedNumberCallsToOnTappingOutsideOfPopup + expectedNumberCallsToOnBackButtonPressed + expectedNumberCallsToOnDismiss;
+		int backButtonInvoked = 0;
+		int tapInvoked = 0;
+		int dismissInvoked = 0;
+		var view = new Popup();
+		var popupOptions = new PopupOptions
+		{
+			CanBeDismissedByTappingOutsideOfPopup = dismissByTap,
+			CanBeDismissedByBackButtonPressed = dismissByBack,
+			OnTappingOutsideOfPopup = () => {
+				tapInvoked++;
+			},
+			OnBackButtonPressed = () =>
+			{
+				backButtonInvoked++;
+			},
+			OnDismiss = () =>
+			{
+				dismissInvoked++;
+			}
+		};
+		var popupPage = new PopupPage(view, popupOptions);
+
+		// Act & Assert
+		RunPopupSafe(() => Assert.Equal(dismissByTap, popupPage.TryExecuteTapOutsideOfPopupCommand()));
+		RunPopupSafe(() => Assert.Equal(dismissByBack, popupPage.TryExecuteBackButtonPressCommand()));
+
+
+		while (expectedTotalCalls > backButtonInvoked + tapInvoked + dismissInvoked)
+		{
+			await Task.Delay(10, TestContext.Current.CancellationToken);
+		}
+		await Task.Delay(100, TestContext.Current.CancellationToken);
+
+		Assert.Equal(expectedNumberCallsToOnTappingOutsideOfPopup, tapInvoked);
+		Assert.Equal(expectedNumberCallsToOnBackButtonPressed, backButtonInvoked);
+		Assert.Equal(expectedNumberCallsToOnDismiss, dismissInvoked);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -847,6 +901,21 @@ public class PopupPageTests : BaseViewTest
 
 		// Assert
 		Assert.Null(exception);
+	}
+
+	/// <summary>
+	/// Helper to call <see cref="PopupPage.TryExecuteBackButtonPressCommand"/> and <see cref="PopupPage.TryExecuteTapOutsideOfPopupCommand"/> in a safe way without using ShowPopup()
+	/// </summary>
+	/// <param name="action"></param>
+	void RunPopupSafe( Action action) {
+		try
+		{
+			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
+			AsyncContext.Run(action);
+		}
+		catch (PopupNotFoundException) // PopupNotFoundException is expected because we did not call ShowPopup()
+		{
+		}
 	}
 
 	// Helper class for testing protected methods
