@@ -25,7 +25,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 								Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
 
 		var mediaPlatform = MediaManager.CreatePlatformView();
-		return new(mediaPlatform);
+		return new(mediaPlatform, MediaManager);
 	}
 
 	/// <inheritdoc/>

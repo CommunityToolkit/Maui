@@ -25,7 +25,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 								Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
 
 		var (_, playerView) = MediaManager.CreatePlatformView(VirtualView.AndroidViewType);
-		return new(Context, playerView);
+		return new(Context, playerView, MediaManager);
 	}
 
 	protected override void DisconnectHandler(MauiMediaElement platformView)

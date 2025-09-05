@@ -11,7 +11,6 @@ global using PlatformMediaElement = Microsoft.UI.Xaml.Controls.MediaPlayerElemen
 global using PlatformMediaElement = CommunityToolkit.Maui.Core.Views.TizenPlayer;
 #endif
 
-using CommunityToolkit.Maui.Primitives;
 using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -21,10 +20,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public partial class MediaManager
 {
-	/// <summary>
-	/// The <see cref="IMediaElement"/> instance that is managed through this class.
-	/// </summary>
-	public static readonly FullScreenEvents FullScreenEvents = new();
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MediaManager"/> class.
 	/// </summary>
@@ -42,25 +37,15 @@ public partial class MediaManager
 		MediaElement = mediaElement;
 
 		Logger = MauiContext.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(MediaManager));
-		FullScreenEvents.WindowsChanged += OnFullScreenStatusChanged;
 	}
 
-
 	/// <summary>
-	/// Handles changes to the full screen state.
+	/// Update the full screen state on the associated MediaElement.
 	/// </summary>
-	/// <param name="sender"></param>
-	/// <param name="e"></param>
-	protected void OnFullScreenStatusChanged(object? sender, FullScreenStateChangedEventArgs e)
+	/// <param name="newState">The new full screen state.</param>
+	internal void UpdateFullScreenState(MediaElementScreenState newState)
 	{
-		if (MediaElement is not null)
-		{
-			MediaElement.FullScreenChanged(e.NewState);
-		}
-		else
-		{
-			Logger?.LogWarning("MediaElement is null");
-		}
+		MediaElement.FullScreenChanged(newState);
 	}
 
 	/// <summary>

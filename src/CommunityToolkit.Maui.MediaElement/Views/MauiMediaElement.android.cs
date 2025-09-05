@@ -6,7 +6,6 @@ using Android.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using AndroidX.Media3.UI;
-using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
 
 [assembly: UsesPermission(Android.Manifest.Permission.ForegroundServiceMediaPlayback)]
@@ -23,6 +22,7 @@ public class MauiMediaElement : CoordinatorLayout
 {
 	readonly RelativeLayout relativeLayout;
 	readonly PlayerView playerView;
+	readonly MediaManager mediaManager;
 
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
@@ -42,9 +42,11 @@ public class MauiMediaElement : CoordinatorLayout
 	/// </summary>
 	/// <param name="context">The application's <see cref="Context"/>.</param>
 	/// <param name="playerView">The <see cref="PlayerView"/> that acts as the platform media player.</param>
-	public MauiMediaElement(Context context, PlayerView playerView) : base(context)
+	/// <param name="mediaManager">The <see cref="mediaManager"/> that is managing the <see cref="MediaElement"/> instance.</param>
+	public MauiMediaElement(Context context, PlayerView playerView, MediaManager mediaManager) : base(context)
 	{
 		this.playerView = playerView;
+		this.mediaManager = mediaManager ?? throw new ArgumentNullException(nameof(mediaManager));
 		this.playerView.SetBackgroundColor(Android.Graphics.Color.Black);
 		playerView.FullscreenButtonClick += OnFullscreenButtonClick;
 		var layout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
@@ -126,14 +128,14 @@ public class MauiMediaElement : CoordinatorLayout
 			isFullScreen = true;
 			RemoveView(relativeLayout);
 			layout?.AddView(relativeLayout);
-			MediaManager.FullScreenEvents.OnFullScreenStateChanged(this, new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
+			mediaManager.UpdateFullScreenState(MediaElementScreenState.FullScreen);
 		}
 		else
 		{
 			isFullScreen = false;
 			layout?.RemoveView(relativeLayout);
 			AddView(relativeLayout);
-			MediaManager.FullScreenEvents.OnFullScreenStateChanged(this , new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
+			mediaManager.UpdateFullScreenState(MediaElementScreenState.Default);
 		}
 		// Hide/Show the SystemBars and Status bar
 		SetSystemBarsVisibility();

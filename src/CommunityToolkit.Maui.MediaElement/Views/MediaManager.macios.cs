@@ -29,7 +29,7 @@ public partial class MediaManager : IDisposable
 		PlayerViewController = new()
 		{
 			Player = Player,
-			Delegate = new MediaManagerDelegate()
+			Delegate = new MediaManagerDelegate(this)
 		};
 
 		// Pre-initialize Volume and Muted properties to the player object
@@ -720,14 +720,16 @@ public partial class MediaManager : IDisposable
 	}
 }
 
-sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
+sealed class MediaManagerDelegate(MediaManager mediaManager) : AVPlayerViewControllerDelegate
 {
+	readonly MediaManager mediaManager = mediaManager;
+
 	public override void WillBeginFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
 	{
-		MediaManager.FullScreenEvents.OnFullScreenStateChanged(this, new FullScreenStateChangedEventArgs(MediaElementScreenState.Default, MediaElementScreenState.FullScreen));
+		mediaManager.UpdateFullScreenState(MediaElementScreenState.FullScreen);
 	}
 	public override void WillEndFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
 	{
-		MediaManager.FullScreenEvents.OnFullScreenStateChanged(this, new FullScreenStateChangedEventArgs(MediaElementScreenState.FullScreen, MediaElementScreenState.Default));
+		mediaManager.UpdateFullScreenState(MediaElementScreenState.Default);
 	}
 }
