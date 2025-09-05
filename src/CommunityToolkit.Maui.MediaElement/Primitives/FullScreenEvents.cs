@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Primitives;
 
@@ -8,14 +7,22 @@ namespace CommunityToolkit.Maui.Primitives;
 /// </summary>
 public class FullScreenEvents
 {
+	readonly WeakEventManager eventManager = new();
+
 	/// <summary>
-	/// An event that is raised when the full screen state of the media element has changed.
+	/// Raised when the full screen state of the media element changes.
 	/// </summary>
-	public event EventHandler<FullScreenStateChangedEventArgs>? WindowsChanged;
+	public event EventHandler<FullScreenStateChangedEventArgs> WindowsChanged
+	{
+		add => eventManager.AddEventHandler(value);
+		remove => eventManager.RemoveEventHandler(value);
+	}
+
 	/// <summary>
-	/// An event that is raised when the full screen state of the media element has changed.
+	/// Triggers the <see cref="WindowsChanged"/> event.
 	/// </summary>
-	/// <param name="sender"></param>
-	/// <param name="e"></param>
-	public void OnFullScreenStateChanged(object? sender, FullScreenStateChangedEventArgs e) => WindowsChanged?.Invoke(sender, e);
+	/// <param name="sender">Origin of the event.</param>
+	/// <param name="e">Full screen state change arguments.</param>
+	public void OnFullScreenStateChanged(object? sender, FullScreenStateChangedEventArgs e) =>
+		eventManager.HandleEvent(sender, e, nameof(WindowsChanged));
 }
