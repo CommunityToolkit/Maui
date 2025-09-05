@@ -555,11 +555,11 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 
 	static void OnFullScreenPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		var MediaElement = (MediaElement)bindable;
+		var mediaElement = (MediaElement)bindable;
 		var previousState = (MediaElementScreenState)oldValue;
 		var newState = (MediaElementScreenState)newValue;
 
-		MediaElement.OnFullScreenChanged(new FullScreenStateChangedEventArgs(previousState, newState));
+		mediaElement.OnFullScreenChanged(new FullScreenStateChangedEventArgs(previousState, newState));
 	}
 
 	static void OnCurrentStatePropertyChanged(BindableObject bindable, object oldValue, object newValue)
