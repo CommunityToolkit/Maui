@@ -16,7 +16,8 @@ public static class ColorConversionExtensions
 	/// <returns></returns>
 	static string ToPercentage(this float percentage)
 	{
-		return Math.Round(percentage, 2, MidpointRounding.ToEven).ToString("0%");
+		var toEvenRounded = Math.Round(percentage, 2, MidpointRounding.ToEven);
+		return FormattableString.Invariant($"{toEvenRounded:0%}");
 	}
 
 	/// <summary>
