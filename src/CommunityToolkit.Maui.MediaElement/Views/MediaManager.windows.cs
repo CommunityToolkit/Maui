@@ -302,7 +302,7 @@ partial class MediaManager : IDisposable
 		}
 		else if (MediaElement.Source is ResourceMediaSource resourceMediaSource)
 		{
-			if(string.IsNullOrWhiteSpace(resourceMediaSource.Path))
+			if (string.IsNullOrWhiteSpace(resourceMediaSource.Path))
 			{
 				Logger.LogInformation("ResourceMediaSource Path is null or empty");
 				return;
@@ -315,7 +315,7 @@ partial class MediaManager : IDisposable
 			}
 		}
 	}
-	
+
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()
 	{
 		if (Player is null)
@@ -366,7 +366,7 @@ partial class MediaManager : IDisposable
 		var normalizedFilename = NormalizePath(filename);
 		return Path.Combine(AppPackageService.FullAppPackageFilePath, normalizedFilename);
 
-		static string NormalizePath(string filename) =>  filename.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
+		static string NormalizePath(string filename) => filename.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
 	}
 
 	static bool IsZero<TValue>(TValue numericValue) where TValue : INumber<TValue>
