@@ -308,8 +308,7 @@ partial class MediaManager : IDisposable
 				return;
 			}
 
-			// To test this run app as unpackaged and packaged.
-			string path = FileSystemUtils.PlatformGetFullAppPackageFilePath(resourceMediaSource.Path);
+			string path = GetFullAppPackageFilePath(resourceMediaSource.Path);
 			if (!string.IsNullOrWhiteSpace(path))
 			{
 				Player.Source = WinMediaSource.CreateFromUri(new Uri(path));
@@ -358,6 +357,16 @@ partial class MediaManager : IDisposable
 				}
 			}
 		}
+	}
+
+	static string GetFullAppPackageFilePath(in string filename)
+	{
+		ArgumentNullException.ThrowIfNull(filename);
+
+		var normalizedFilename = NormalizePath(filename);
+		return Path.Combine(AppPackageService.FullAppPackageFilePath, normalizedFilename);
+
+		static string NormalizePath(string filename) =>  filename.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
 	}
 
 	static bool IsZero<TValue>(TValue numericValue) where TValue : INumber<TValue>
