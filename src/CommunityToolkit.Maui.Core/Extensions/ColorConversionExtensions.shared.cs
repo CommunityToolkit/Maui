@@ -45,7 +45,8 @@ public static class ColorConversionExtensions
 	/// and <b>alpha</b> is a value between 0 and 1. (e.g. <c>RGBA(255,0,0,1)</c> for <see cref="Colors.Red"/>).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
-	[Obsolete("Dont use CultureInfo this method should be culture invariant")]
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Obsolete("Do not use CultureInfo, this method should be culture invariant.")]
 	public static string ToRgbaString(this Color color, CultureInfo? cultureInfo) => ToRgbaString(color);
 
 
@@ -90,7 +91,8 @@ public static class ColorConversionExtensions
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
 
-	[Obsolete("Dont use CultureInfo this method should be culture invariant")]
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Obsolete("Do not use CultureInfo, this method should be culture invariant.")]
 	public static string ToCmykaString(this Color color, CultureInfo? cultureInfo) => ToCmykaString(color);
 
 	/// <summary>
@@ -133,7 +135,8 @@ public static class ColorConversionExtensions
 	/// will be a value between 0% and 100%, and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>HSLA(0,100%,50%,1)</c> for <see cref="Colors.Red"/>).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
-	[Obsolete("Dont use CultureInfo this method should be culture invariant")]
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Obsolete("Do not use CultureInfo, this method should be culture invariant.")]
 	public static string ToHslaString(this Color color, CultureInfo? cultureInfo) => ToHslaString(color);
 
 	/// <summary>
