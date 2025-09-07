@@ -173,6 +173,9 @@ partial class CameraManager
 			orientationListener?.Disable();
 			orientationListener?.Dispose();
 			orientationListener = null;
+			
+			videoRecordingStream?.Dispose();
+			videoRecordingStream = null;
 		}
 	}
 
@@ -377,9 +380,6 @@ partial class CameraManager
 
 		videoRecorder?.Dispose();
 		videoRecorder = null;
-		
-		videoRecordingStream?.Dispose();
-		videoRecordingStream = null;
 		
 		videoCapture?.Dispose();
 		videoCapture = null;

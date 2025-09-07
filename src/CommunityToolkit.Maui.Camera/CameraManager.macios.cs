@@ -310,9 +310,6 @@ partial class CameraManager
 		}
 
 		videoRecordingFinalizeTcs = null;
-		
-		videoRecordingStream?.Dispose();
-		videoRecordingStream = null;
 	}
 
 	protected virtual async partial ValueTask PlatformTakePicture(CancellationToken token)
@@ -393,6 +390,9 @@ partial class CameraManager
 
 			previewView?.Dispose();
 			previewView = null;
+			
+			videoRecordingStream?.Dispose();
+			videoRecordingStream = null;
 		}
 	}
 
