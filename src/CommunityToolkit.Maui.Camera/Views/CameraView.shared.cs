@@ -301,8 +301,8 @@ public partial class CameraView : View, ICameraView, IDisposable
 		Handler.CameraManager.StopCameraPreview();
 
 	/// <inheritdoc cref="ICameraView.StartVideoRecording"/>
-	public Task StartVideoRecording(Stream stream, CancellationToken token = default) =>
-		Handler.CameraManager.StartVideoRecording(stream, token);
+	public Task<Stream> StartVideoRecording(CancellationToken token = default) =>
+		Handler.CameraManager.StartVideoRecording(token);
 
 	/// <inheritdoc cref="ICameraView.StopVideoRecording"/>
 	public Task StopVideoRecording(CancellationToken token = default) =>

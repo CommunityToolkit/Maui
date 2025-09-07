@@ -62,15 +62,15 @@ public static class CameraViewDefaults
 		return new Command(_ => cameraView.StopCameraPreview());
 	}
 
-	internal static Command<Stream> CreateStartVideoRecordingCommand(BindableObject bindable)
+	internal static Command<CancellationToken> CreateStartVideoRecordingCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;
-		return new Command<Stream>(async stream => await cameraView.StartVideoRecording(stream).ConfigureAwait(false));
+		return new(async token => await cameraView.StartVideoRecording(token).ConfigureAwait(false));
 	}
 
 	internal static Command<CancellationToken> CreateStopVideoRecordingCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;
-		return new Command<CancellationToken>(async token => await cameraView.StopVideoRecording(token).ConfigureAwait(false));
+		return new(async token => await cameraView.StopVideoRecording(token).ConfigureAwait(false));
 	}
 }

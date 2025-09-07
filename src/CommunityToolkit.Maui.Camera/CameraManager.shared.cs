@@ -58,11 +58,10 @@ partial class CameraManager(
 	/// <summary>
 	/// Starts the video recording.
 	/// </summary>
-	/// <param name="stream">The output stream for video recording</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>A <see cref="Task"/> that can be awaited.</returns>
 	/// <exception cref="CameraException"></exception>
-	public async Task StartVideoRecording(Stream stream, CancellationToken token)
+	public async Task<Stream> StartVideoRecording(CancellationToken token)
 	{
 		var cameraRequest = await Permissions.RequestAsync<Permissions.Camera>();
 		var microphoneRequest = await Permissions.RequestAsync<Permissions.Microphone>();
@@ -76,7 +75,10 @@ partial class CameraManager(
 			Trace.TraceInformation("Microphone permission is not granted.");
 		}
 
+		var stream = new MemoryStream();
 		await PlatformStartVideoRecording(stream, token);
+
+		return stream;
 	}
 
 

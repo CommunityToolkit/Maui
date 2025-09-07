@@ -10,7 +10,7 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>, IDis
 	readonly IFileSaver fileSaver;
 	readonly string imagePath;
 
-	MemoryStream videoRecordingStream = new();
+	Stream videoRecordingStream = Stream.Null;
 	int pageCount;
 
 	public CameraViewPage(CameraViewViewModel viewModel, IFileSystem fileSystem, IFileSaver fileSaver) : base(viewModel)
@@ -113,8 +113,7 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>, IDis
 
 	async void StartCameraRecording(object? sender, EventArgs e)
 	{
-		videoRecordingStream = new MemoryStream();
-		await Camera.StartVideoRecording(videoRecordingStream, CancellationToken.None);
+		videoRecordingStream = await Camera.StartVideoRecording(CancellationToken.None);
 	}
 	
 	async void SaveVideo(object? sender, EventArgs e)
