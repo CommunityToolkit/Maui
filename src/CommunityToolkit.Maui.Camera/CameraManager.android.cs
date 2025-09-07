@@ -48,7 +48,7 @@ partial class CameraManager
 	{
 		extensionMode = mode;
 		if (cameraView.SelectedCamera is null || processCameraProvider is null || cameraPreview is null ||
-			imageCapture is null || videoCapture is null)
+		    imageCapture is null || videoCapture is null)
 		{
 			return;
 		}
@@ -101,7 +101,7 @@ partial class CameraManager
 		if (resolutionFilter is not null)
 		{
 			if (Math.Abs(resolutionFilter.TargetSize.Width - resolution.Width) < double.Epsilon &&
-				Math.Abs(resolutionFilter.TargetSize.Height - resolution.Height) < double.Epsilon)
+			    Math.Abs(resolutionFilter.TargetSize.Height - resolution.Height) < double.Epsilon)
 			{
 				return;
 			}
@@ -300,7 +300,7 @@ partial class CameraManager
 	protected virtual async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
 	{
 		if (previewView is null || processCameraProvider is null || cameraPreview is null || imageCapture is null || videoCapture is null ||
-			videoRecorder is null || videoRecordingFile is not null)
+		    videoRecorder is null || videoRecordingFile is not null)
 		{
 			return;
 		}
@@ -371,11 +371,20 @@ partial class CameraManager
 				videoRecordingFile.Delete();
 			}
 
+			videoRecordingFile.Dispose();
 			videoRecordingFile = null;
 		}
 
-		videoRecordingFinalizeTcs = null;
+		videoRecorder?.Dispose();
+		videoRecorder = null;
+		
+		videoRecordingStream?.Dispose();
 		videoRecordingStream = null;
+		
+		videoCapture?.Dispose();
+		videoCapture = null;
+		
+		videoRecordingFinalizeTcs = null;
 	}
 
 	async Task<CameraSelector> EnableModes(CameraInfo selectedCamera)

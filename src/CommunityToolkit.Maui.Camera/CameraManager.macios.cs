@@ -27,7 +27,7 @@ partial class CameraManager
 	AVCaptureMovieFileOutput? videoOutput;
 	TaskCompletionSource? videoRecordingFinalizeTcs;
 	Stream? videoRecordingStream;
-	string? videoRecordingFile;
+	string? videoRecordingFileName;
 
 	// IN the future change the return type to be an alias
 	public UIView CreatePlatformView()
@@ -245,20 +245,20 @@ partial class CameraManager
 
 		videoRecordingStream = stream;
 		videoRecordingFinalizeTcs = new TaskCompletionSource();
-		videoRecordingFile = Path.GetTempFileName();
+		videoRecordingFileName = Path.GetTempFileName();
 
 		if (!captureSession.Running)
 		{
 			captureSession.StartRunning();
 		}
 
-		var outputUrl = NSUrl.FromFilename(videoRecordingFile);
+		var outputUrl = NSUrl.FromFilename(videoRecordingFileName);
 		videoOutput.StartRecordingToOutputFile(outputUrl, new AVCaptureMovieFileOutputRecordingDelegate(videoRecordingFinalizeTcs));
 	}
 
 	protected virtual async partial Task PlatformStopVideoRecording(CancellationToken token)
 	{
-		if (captureSession is null || videoRecordingFile is null || videoInput is null || videoOutput is null || videoRecordingStream is null || videoRecordingFinalizeTcs is null)
+		if (captureSession is null || videoRecordingFileName is null || videoInput is null || videoOutput is null || videoRecordingStream is null || videoRecordingFinalizeTcs is null)
 		{
 			return;
 		}
@@ -266,9 +266,9 @@ partial class CameraManager
 		videoOutput.StopRecording();
 		await videoRecordingFinalizeTcs.Task.WaitAsync(token);
 
-		if (File.Exists(videoRecordingFile))
+		if (File.Exists(videoRecordingFileName))
 		{
-			await using var inputStream = new FileStream(videoRecordingFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+			await using var inputStream = new FileStream(videoRecordingFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
 			await inputStream.CopyToAsync(videoRecordingStream, token);
 			await videoRecordingStream.FlushAsync(token);
 		}
@@ -299,17 +299,19 @@ partial class CameraManager
 		}
 
 		// Clean up temporary file
-		if (videoRecordingFile is not null)
+		if (videoRecordingFileName is not null)
 		{
-			if (File.Exists(videoRecordingFile))
+			if (File.Exists(videoRecordingFileName))
 			{
-				File.Delete(videoRecordingFile);
+				File.Delete(videoRecordingFileName);
 			}
-
-			videoRecordingFile = null;
+			
+			videoRecordingFileName = null;
 		}
 
 		videoRecordingFinalizeTcs = null;
+		
+		videoRecordingStream?.Dispose();
 		videoRecordingStream = null;
 	}
 
@@ -389,6 +391,7 @@ partial class CameraManager
 			photoOutput?.Dispose();
 			photoOutput = null;
 
+			previewView?.Dispose();
 			previewView = null;
 		}
 	}
