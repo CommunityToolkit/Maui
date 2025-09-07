@@ -1,6 +1,4 @@
 ﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Primitives;
-using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -11,8 +9,6 @@ public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseV
 	public IReadOnlyList<CameraInfo> Cameras => cameraProvider.AvailableCameras ?? [];
 
 	public CancellationToken Token => CancellationToken.None;
-
-	public Stream Stream { get; set; } = new MemoryStream();
 
 	public ICollection<CameraFlashMode> FlashModes { get; } = Enum.GetValues<CameraFlashMode>();
 
@@ -78,11 +74,5 @@ public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseV
 	void UpdateResolutionText()
 	{
 		ResolutionText = $"Selected Resolution: {SelectedResolution.Width} x {SelectedResolution.Height}";
-	}
-
-	[RelayCommand]
-	async Task SaveVideo()
-	{
-		await FileSaver.SaveAsync("recording.mp4", Stream);
 	}
 }

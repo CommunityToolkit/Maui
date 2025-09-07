@@ -1,23 +1,33 @@
 using System.Diagnostics;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
+using CommunityToolkit.Maui.Storage;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-public partial class CameraViewPage : BasePage<CameraViewViewModel>
+public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>, IDisposable
 {
+	readonly IFileSaver fileSaver;
 	readonly string imagePath;
+
+	MemoryStream videoRecordingStream = new();
 	int pageCount;
 
-	public CameraViewPage(CameraViewViewModel viewModel, IFileSystem fileSystem) : base(viewModel)
+	public CameraViewPage(CameraViewViewModel viewModel, IFileSystem fileSystem, IFileSaver fileSaver) : base(viewModel)
 	{
 		InitializeComponent();
-
+		
+		this.fileSaver = fileSaver;
 		imagePath = Path.Combine(fileSystem.CacheDirectory, "camera-view-image.jpg");
 
 		Camera.MediaCaptured += OnMediaCaptured;
 
 		Loaded += (s, e) => { pageCount = Navigation.NavigationStack.Count; };
+	}
+	
+	public void Dispose()
+	{
+		videoRecordingStream.Dispose();
 	}
 
 	protected override async void OnAppearing()
@@ -103,7 +113,12 @@ public partial class CameraViewPage : BasePage<CameraViewViewModel>
 
 	async void StartCameraRecording(object? sender, EventArgs e)
 	{
-		BindingContext.Stream = new MemoryStream();
-		await Camera.StartVideoRecording(BindingContext.Stream, CancellationToken.None);
+		videoRecordingStream = new MemoryStream();
+		await Camera.StartVideoRecording(videoRecordingStream, CancellationToken.None);
+	}
+	
+	async void SaveVideo(object? sender, EventArgs e)
+	{
+		await fileSaver.SaveAsync("recording.mp4", videoRecordingStream);
 	}
 }

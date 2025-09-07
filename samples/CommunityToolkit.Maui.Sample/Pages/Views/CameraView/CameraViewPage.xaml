@@ -82,7 +82,7 @@
                          CommandParameter="{Binding Token}"
                          Text="StopVideoRecording" />
 
-                <Button Command="{Binding SaveVideoCommand}" Text="Save Video Recording" />
+                <Button Clicked="SaveVideo" Text="Save Video Recording" />
 
                 <Button Command="{Binding CaptureImageCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}" 
                         CommandParameter="{Binding Token}"
