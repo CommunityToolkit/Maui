@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Core;
+﻿using System.Diagnostics;
+
+namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// A class that manages the camera functionality.
@@ -64,9 +66,14 @@ partial class CameraManager(
 	{
 		var cameraRequest = await Permissions.RequestAsync<Permissions.Camera>();
 		var microphoneRequest = await Permissions.RequestAsync<Permissions.Microphone>();
-		if (cameraRequest != PermissionStatus.Granted || microphoneRequest != PermissionStatus.Granted)
+		if (cameraRequest is not PermissionStatus.Granted)
 		{
-			throw new CameraException("Camera and/or Microphone permissions are not granted.");
+			Trace.TraceInformation("Camera permission is not granted.");
+		}
+		
+		if (microphoneRequest is not PermissionStatus.Granted)
+		{
+			Trace.TraceInformation("Microphone permission is not granted.");
 		}
 
 		await PlatformStartVideoRecording(stream, token);

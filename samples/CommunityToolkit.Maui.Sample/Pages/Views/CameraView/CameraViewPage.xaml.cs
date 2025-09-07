@@ -6,23 +6,18 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class CameraViewPage : BasePage<CameraViewViewModel>
 {
-	readonly CameraViewViewModel viewModel;
 	readonly string imagePath;
 	int pageCount;
 
 	public CameraViewPage(CameraViewViewModel viewModel, IFileSystem fileSystem) : base(viewModel)
 	{
-		this.viewModel = viewModel;
 		InitializeComponent();
 
 		imagePath = Path.Combine(fileSystem.CacheDirectory, "camera-view-image.jpg");
 
 		Camera.MediaCaptured += OnMediaCaptured;
 
-		Loaded += (s, e) =>
-		{
-			pageCount = Navigation.NavigationStack.Count;
-		};
+		Loaded += (s, e) => { pageCount = Navigation.NavigationStack.Count; };
 	}
 
 	protected override async void OnAppearing()
@@ -53,6 +48,7 @@ public partial class CameraViewPage : BasePage<CameraViewViewModel>
 		{
 			return;
 		}
+
 		await Navigation.PushAsync(new ImageViewPage(imagePath));
 	}
 
@@ -84,7 +80,6 @@ public partial class CameraViewPage : BasePage<CameraViewViewModel>
 
 			debugText.Text = $"Image saved to {imagePath}";
 		});
-
 	}
 
 	void ZoomIn(object? sender, EventArgs e)
@@ -102,13 +97,13 @@ public partial class CameraViewPage : BasePage<CameraViewViewModel>
 #if ANDROID
 		await Camera.SetExtensionMode(AndroidX.Camera.Extensions.ExtensionMode.Night);
 #else
-await Task.CompletedTask;
+		await Task.CompletedTask;
 #endif
 	}
 
 	async void StartCameraRecording(object? sender, EventArgs e)
 	{
-		viewModel.Stream = new MemoryStream();
-		await Camera.StartVideoRecording(viewModel.Stream, CancellationToken.None);
+		BindingContext.Stream = new MemoryStream();
+		await Camera.StartVideoRecording(BindingContext.Stream, CancellationToken.None);
 	}
 }
