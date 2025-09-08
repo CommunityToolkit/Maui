@@ -8,6 +8,19 @@ namespace CommunityToolkit.Maui.Core.Extensions;
 public static class ColorConversionExtensions
 {
 	/// <summary>
+	/// Converts the value to percentage.
+	/// Uses <see cref="MidpointRounding.ToEven"/> and "0%" format string to emulate the behavior of "en-US" locale.
+	/// If only "0%" is used to get rid of the space between the value and the percent sign, 0.625f would become 63% instead of 62%.
+	/// </summary>
+	/// <param name="percentage">percentage</param>
+	/// <returns></returns>
+	static string ToPercentage(this float percentage)
+	{
+		var toEvenRounded = Math.Round(percentage, 2, MidpointRounding.ToEven);
+		return FormattableString.Invariant($"{toEvenRounded:0%}");
+	}
+
+	/// <summary>
 	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the red, green and blue components.
 	/// </summary>
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
@@ -19,7 +32,7 @@ public static class ColorConversionExtensions
 	public static string ToRgbString(this Color color)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return $"RGB({color.GetByteRed()},{color.GetByteGreen()},{color.GetByteBlue()})";
+		return FormattableString.Invariant($"RGB({color.GetByteRed()},{color.GetByteGreen()},{color.GetByteBlue()})");
 	}
 
 	/// <summary>
@@ -32,10 +45,24 @@ public static class ColorConversionExtensions
 	/// and <b>alpha</b> is a value between 0 and 1. (e.g. <c>RGBA(255,0,0,1)</c> for <see cref="Colors.Red"/>).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
-	public static string ToRgbaString(this Color color, CultureInfo? cultureInfo = null)
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Obsolete("Do not use CultureInfo, this method should be culture invariant.")]
+	public static string ToRgbaString(this Color color, CultureInfo? cultureInfo) => ToRgbaString(color);
+
+
+	/// <summary>
+	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the red, green, blue and alpha components.
+	/// </summary>
+	/// <param name="color">The <see cref="Color"/> to convert.</param>
+	/// <returns>
+	/// A <see cref="string"/> in the format: <c>RGBA(red,green,blue,alpha)</c> where <b>red</b>, <b>green</b> and <b>blue</b> will be a value between 0 and 255,
+	/// and <b>alpha</b> is a value between 0 and 1. (e.g. <c>RGBA(255,0,0,1)</c> for <see cref="Colors.Red"/>).
+	/// </returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
+	public static string ToRgbaString(this Color color)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return $"RGBA({color.GetByteRed()},{color.GetByteGreen()},{color.GetByteBlue()},{color.Alpha.ToString(cultureInfo)})";
+		return FormattableString.Invariant($"RGBA({color.GetByteRed()},{color.GetByteGreen()},{color.GetByteBlue()},{color.Alpha})");
 	}
 
 	/// <summary>
@@ -50,7 +77,7 @@ public static class ColorConversionExtensions
 	public static string ToCmykString(this Color color)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return $"CMYK({color.GetPercentCyan():P0},{color.GetPercentMagenta():P0},{color.GetPercentYellow():P0},{color.GetPercentBlackKey():P0})";
+		return FormattableString.Invariant($"CMYK({color.GetPercentCyan().ToPercentage()},{color.GetPercentMagenta().ToPercentage()},{color.GetPercentYellow().ToPercentage()},{color.GetPercentBlackKey().ToPercentage()})");
 	}
 
 	/// <summary>
@@ -63,10 +90,24 @@ public static class ColorConversionExtensions
 	/// 0% and 100% and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>CMYKA(100%,100%,0%,100%,1)</c> for <see cref="Colors.Red"/>).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
-	public static string ToCmykaString(this Color color, CultureInfo? cultureInfo = null)
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Obsolete("Do not use CultureInfo, this method should be culture invariant.")]
+	public static string ToCmykaString(this Color color, CultureInfo? cultureInfo) => ToCmykaString(color);
+
+	/// <summary>
+	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the cyan, magenta, yellow, key and alpha components.
+	/// </summary>
+	/// <param name="color">The <see cref="Color"/> to convert.</param>
+	/// <returns>
+	/// A <see cref="string"/> in the format: <c>CMYKA(cyan,magenta,yellow,key,alpha)</c> where <b>cyan</b>, <b>magenta</b>, <b>yellow </b>and <b>key</b> will be a value between
+	/// 0% and 100% and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>CMYKA(100%,100%,0%,100%,1)</c> for <see cref="Colors.Red"/>).
+	/// </returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
+	public static string ToCmykaString(this Color color)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return $"CMYKA({color.GetPercentCyan():P0},{color.GetPercentMagenta():P0},{color.GetPercentYellow():P0},{color.GetPercentBlackKey():P0},{color.Alpha.ToString(cultureInfo)})";
+		return FormattableString.Invariant($"CMYKA({color.GetPercentCyan().ToPercentage()},{color.GetPercentMagenta().ToPercentage()},{color.GetPercentYellow().ToPercentage()},{color.GetPercentBlackKey().ToPercentage()},{color.Alpha})");
 	}
 
 	/// <summary>
@@ -81,7 +122,7 @@ public static class ColorConversionExtensions
 	public static string ToHslString(this Color color)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return $"HSL({color.GetDegreeHue():0},{color.GetSaturation():P0},{color.GetLuminosity():P0})";
+		return FormattableString.Invariant($"HSL({color.GetDegreeHue():0},{color.GetSaturation().ToPercentage()},{color.GetLuminosity().ToPercentage()})");
 	}
 
 	/// <summary>
@@ -94,10 +135,23 @@ public static class ColorConversionExtensions
 	/// will be a value between 0% and 100%, and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>HSLA(0,100%,50%,1)</c> for <see cref="Colors.Red"/>).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
-	public static string ToHslaString(this Color color, CultureInfo? cultureInfo = null)
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Obsolete("Do not use CultureInfo, this method should be culture invariant.")]
+	public static string ToHslaString(this Color color, CultureInfo? cultureInfo) => ToHslaString(color);
+
+	/// <summary>
+	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the hue, saturation, lightness and alpha components.
+	/// </summary>
+	/// <param name="color">The <see cref="Color"/> to convert.</param>
+	/// <returns>
+	/// A <see cref="string"/> in the format: <c>HSLA(hue,saturation,lightness,alpha)</c> where <b>hue</b> will be a value between 0 and 360, <b>saturation</b> and <b>lightness</b>
+	/// will be a value between 0% and 100%, and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>HSLA(0,100%,50%,1)</c> for <see cref="Colors.Red"/>).
+	/// </returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
+	public static string ToHslaString(this Color color)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return $"HSLA({color.GetDegreeHue():0},{color.GetSaturation():P0},{color.GetLuminosity():P0},{color.Alpha.ToString(cultureInfo)})";
+		return FormattableString.Invariant($"HSLA({color.GetDegreeHue():0},{color.GetSaturation().ToPercentage()},{color.GetLuminosity().ToPercentage()},{color.Alpha})");
 	}
 
 	/// <summary>

@@ -133,15 +133,15 @@ public class ColorToHslStringConverterTests : BaseOneWayConverterTest<ColorToHsl
 		},
 	};
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
 	[MemberData(nameof(ValidInputData))]
 	public void ColorToHslStringConverterValidInputTest(float red, float green, float blue, float alpha, string expectedResult)
 	{
 		var converter = new ColorToHslStringConverter();
 		var color = new Color(red, green, blue, alpha);
 
-		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, null);
-		var resultConvertFrom = converter.ConvertFrom(color);
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, Thread.CurrentThread.CurrentCulture);
+		var resultConvertFrom = converter.ConvertFrom(color, Thread.CurrentThread.CurrentCulture);
 
 		Assert.Equal(expectedResult, resultConvert);
 		Assert.Equal(expectedResult, resultConvertFrom);
