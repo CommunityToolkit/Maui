@@ -87,10 +87,7 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	protected override async void ConnectHandler(NativePlatformCameraPreviewView platformView)
 	{
 		base.ConnectHandler(platformView);
-
-		await CameraManager.ArePermissionsGranted();
 		await CameraManager.ConnectCamera(CancellationToken.None);
-		await cameraProvider.RefreshAvailableCameras(CancellationToken.None);
 	}
 
 	/// <inheritdoc/>

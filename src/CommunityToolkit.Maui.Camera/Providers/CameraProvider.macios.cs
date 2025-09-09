@@ -9,7 +9,7 @@ partial class CameraProvider
 {
 	static readonly AVCaptureDeviceType[] captureDevices = InitializeCaptureDevices();
 
-	public partial ValueTask RefreshAvailableCameras(CancellationToken token)
+	private partial ValueTask PlatformRefreshAvailableCameras(CancellationToken token)
 	{
 		var discoverySession = AVCaptureDeviceDiscoverySession.Create(captureDevices, AVMediaTypes.Video, AVCaptureDevicePosition.Unspecified);
 		var availableCameras = new List<CameraInfo>();
