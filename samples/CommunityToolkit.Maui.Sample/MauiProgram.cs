@@ -41,6 +41,8 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.Maui.Platform;
 #endif
 
+[assembly: ExportFont("Poppins-Regular.ttf", Alias = "Poppins")]
+[assembly: ExportFont("PlaywriteSK-Regular.ttf", Alias = "PlaywriteSK")]
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
 namespace CommunityToolkit.Maui.Sample;
