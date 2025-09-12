@@ -1,8 +1,9 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using AVFoundation;
 using CommunityToolkit.Maui.Extensions;
 using CoreMedia;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Core;
@@ -11,26 +12,33 @@ partial class CameraManager
 {
 	// TODO: Check if we really need this
 	readonly NSDictionary<NSString, NSObject> codecSettings = new([AVVideo.CodecKey], [new NSString("jpeg")]);
+	AVCaptureDeviceInput? audioInput;
+	AVCaptureDevice? captureDevice;
+	AVCaptureInput? captureInput;
 
 	AVCaptureSession? captureSession;
-	AVCapturePhotoOutput? photoOutput;
-	AVCaptureInput? captureInput;
-	AVCaptureDevice? captureDevice;
 
 	AVCaptureFlashMode flashMode;
 
 	IDisposable? orientationDidChangeObserver;
+	AVCapturePhotoOutput? photoOutput;
 	PreviewView? previewView;
-	AVCaptureVideoOrientation videoOrientation;
 
 	AVCaptureDeviceInput? videoInput;
+	AVCaptureVideoOrientation videoOrientation;
 	AVCaptureMovieFileOutput? videoOutput;
+	string? videoRecordingFileName;
 	TaskCompletionSource? videoRecordingFinalizeTcs;
 	Stream? videoRecordingStream;
-	string? videoRecordingFileName;
 
-	// IN the future change the return type to be an alias
-	public UIView CreatePlatformView()
+	/// <inheritdoc />
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	public NativePlatformCameraPreviewView CreatePlatformView()
 	{
 		captureSession = new AVCaptureSession
 		{
@@ -46,13 +54,6 @@ partial class CameraManager
 		UpdateVideoOrientation();
 
 		return previewView;
-	}
-
-	/// <inheritdoc/>
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
 	}
 
 	public partial void UpdateFlashMode(CameraFlashMode flashMode)
@@ -229,11 +230,40 @@ partial class CameraManager
 		captureSession.BeginConfiguration();
 		captureSession.AddInput(videoInput);
 
+		try
+		{
+			var audioDevice = AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Audio);
+			if (audioDevice is not null)
+			{
+				audioInput = new AVCaptureDeviceInput(audioDevice, out var audioError);
+				if (audioError is null && captureSession.CanAddInput(audioInput))
+				{
+					captureSession.AddInput(audioInput);
+				}
+				else
+				{
+					audioInput?.Dispose();
+					audioInput = null;
+				}
+			}
+		}
+		catch
+		{
+			// Ignore audio configuration issues; proceed with video-only recording
+		}
+
 		videoOutput = new AVCaptureMovieFileOutput();
 
 		if (!captureSession.CanAddOutput(videoOutput))
 		{
 			captureSession.RemoveInput(videoInput);
+			if (audioInput is not null)
+			{
+				captureSession.RemoveInput(audioInput);
+				audioInput.Dispose();
+				audioInput = null;
+			}
+
 			videoInput?.Dispose();
 			videoOutput?.Dispose();
 			captureSession.CommitConfiguration();
@@ -245,12 +275,7 @@ partial class CameraManager
 
 		videoRecordingStream = stream;
 		videoRecordingFinalizeTcs = new TaskCompletionSource();
-		videoRecordingFileName = Path.GetTempFileName();
-
-		if (!captureSession.Running)
-		{
-			captureSession.StartRunning();
-		}
+		videoRecordingFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.mov");
 
 		var outputUrl = NSUrl.FromFilename(videoRecordingFileName);
 		videoOutput.StartRecordingToOutputFile(outputUrl, new AVCaptureMovieFileOutputRecordingDelegate(videoRecordingFinalizeTcs));
@@ -271,7 +296,12 @@ partial class CameraManager
 			await using var inputStream = new FileStream(videoRecordingFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
 			await inputStream.CopyToAsync(videoRecordingStream, token);
 			await videoRecordingStream.FlushAsync(token);
+			if (videoRecordingStream.CanSeek)
+			{
+				videoRecordingStream.Position = 0;
+			}
 		}
+
 		CleanupVideoRecordingResources();
 	}
 
@@ -281,22 +311,26 @@ partial class CameraManager
 		{
 			captureSession.BeginConfiguration();
 
-			if (videoInput is not null)
+			foreach (var input in captureSession.Inputs)
 			{
-				captureSession.RemoveInput(videoInput);
-				videoInput.Dispose();
-				videoInput = null;
+				captureSession.RemoveInput(input);
+				input.Dispose();
 			}
 
-			if (videoOutput is not null)
+			foreach (var output in captureSession.Outputs)
 			{
-				captureSession.RemoveOutput(videoOutput);
-				videoOutput.Dispose();
-				videoOutput = null;
+				captureSession.RemoveOutput(output);
+				output.Dispose();
 			}
 
+			// Restore to photo preset for preview after video recording
+			captureSession.SessionPreset = AVCaptureSession.PresetPhoto;
 			captureSession.CommitConfiguration();
 		}
+
+		videoOutput = null;
+		videoInput = null;
+		audioInput = null;
 
 		// Clean up temporary file
 		if (videoRecordingFileName is not null)
@@ -305,7 +339,7 @@ partial class CameraManager
 			{
 				File.Delete(videoRecordingFileName);
 			}
-			
+
 			videoRecordingFileName = null;
 		}
 
@@ -390,7 +424,7 @@ partial class CameraManager
 
 			previewView?.Dispose();
 			previewView = null;
-			
+
 			videoRecordingStream?.Dispose();
 			videoRecordingStream = null;
 		}
@@ -446,17 +480,11 @@ partial class CameraManager
 		public NSError? Error { get; init; }
 	}
 
-	sealed class PreviewView : UIView
+	sealed class PreviewView : NativePlatformCameraPreviewView
 	{
 		public PreviewView()
 		{
 			PreviewLayer.VideoGravity = AVLayerVideoGravity.ResizeAspectFill;
-		}
-
-		[Export("layerClass")]
-		public static ObjCRuntime.Class GetLayerClass()
-		{
-			return new ObjCRuntime.Class(typeof(AVCaptureVideoPreviewLayer));
 		}
 
 		public AVCaptureSession? Session
@@ -466,6 +494,12 @@ partial class CameraManager
 		}
 
 		AVCaptureVideoPreviewLayer PreviewLayer => (AVCaptureVideoPreviewLayer)Layer;
+
+		[Export("layerClass")]
+		public static Class GetLayerClass()
+		{
+			return new Class(typeof(AVCaptureVideoPreviewLayer));
+		}
 
 		public override void LayoutSubviews()
 		{
@@ -487,7 +521,6 @@ class AVCaptureMovieFileOutputRecordingDelegate(TaskCompletionSource taskComplet
 {
 	public override void FinishedRecording(AVCaptureFileOutput captureOutput, NSUrl outputFileUrl, NSObject[] connections, NSError? error)
 	{
-		base.FinishedRecording(captureOutput, outputFileUrl, connections, error);
 		taskCompletionSource.SetResult();
 	}
 }
