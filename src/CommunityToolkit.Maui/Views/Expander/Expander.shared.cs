@@ -48,6 +48,10 @@ public partial class Expander : ContentView, IExpander
 		= BindableProperty.Create(nameof(Direction), typeof(ExpandDirection), typeof(Expander), ExpandDirection.Down, propertyChanged: OnDirectionPropertyChanged);
 
 	readonly WeakEventManager tappedEventManager = new();
+	readonly Grid contentGrid;
+	readonly ContentView headerContentView;
+	readonly VerticalStackLayout bodyLayout;
+	internal ContentView BodyContentView;
 
 	/// <summary>
 	/// Initialize a new instance of <see cref="Expander"/>.
@@ -57,14 +61,59 @@ public partial class Expander : ContentView, IExpander
 		HandleHeaderTapped = ResizeExpanderInItemsView;
 		HeaderTapGestureRecognizer.Tapped += OnHeaderTapGestureRecognizerTapped;
 
-		base.Content = new Grid
+		base.Content = contentGrid = new Grid
 		{
 			RowDefinitions =
 			{
 				new RowDefinition(GridLength.Auto),
 				new RowDefinition(GridLength.Auto)
+			},
+			Children =
+			{
+				(headerContentView = new ContentView()),
+				(bodyLayout = new VerticalStackLayout()
+				{
+					HeightRequest = 1,
+					Padding = new Thickness(0, 1, 0, 0),
+					Children = { (BodyContentView = new ContentView()) }
+				})
 			}
 		};
+
+		contentGrid.SetRow(headerContentView, 0);
+		contentGrid.SetRow(bodyLayout, 1);
+
+		#region Special case for bubbling height from nested Expanders
+		BodyContentView.PropertyChanged += (s, e) =>
+		{
+			if (e.PropertyName == nameof(Height))
+			{
+				if (IsExpanded)
+				{
+					ContentHeight = BodyContentView.Height;
+				}
+			}
+		};
+		#endregion
+
+		headerContentView.GestureRecognizers.Add(HeaderTapGestureRecognizer);
+	}
+
+	/// <summary>
+	/// Controls the visibility of the content inside the <see cref="Expander"/>.
+	/// </summary>
+	public double ContentHeight
+	{
+		get => bodyLayout.HeightRequest;
+		set
+		{
+			double newHeight = Math.Max(Math.Min(value, BodyContentView.Height + 1.0), 1.0);
+			if (bodyLayout.Height != newHeight)
+			{
+				bodyLayout.HeightRequest = newHeight;
+			}
+			OnPropertyChanged(nameof(ContentHeight));
+		}
 	}
 
 	/// <summary>
@@ -102,23 +151,12 @@ public partial class Expander : ContentView, IExpander
 		}
 	}
 
-	Grid ContentGrid => (Grid)base.Content;
-
 	static void OnContentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var expander = (Expander)bindable;
 		if (newValue is View view)
 		{
-			view.SetBinding(IsVisibleProperty, new Binding(nameof(IsExpanded), source: expander));
-
-			expander.ContentGrid.Remove(oldValue);
-			expander.ContentGrid.Add(newValue);
-			expander.ContentGrid.SetRow(view, expander.Direction switch
-			{
-				ExpandDirection.Down => 1,
-				ExpandDirection.Up => 0,
-				_ => throw new NotSupportedException($"{nameof(ExpandDirection)} {expander.Direction} is not yet supported")
-			});
+			expander.BodyContentView.Content = view;
 		}
 	}
 
@@ -127,17 +165,7 @@ public partial class Expander : ContentView, IExpander
 		var expander = (Expander)bindable;
 		if (newValue is View view)
 		{
-			expander.SetHeaderGestures(view);
-
-			expander.ContentGrid.Remove(oldValue);
-			expander.ContentGrid.Add(newValue);
-
-			expander.ContentGrid.SetRow(view, expander.Direction switch
-			{
-				ExpandDirection.Down => 0,
-				ExpandDirection.Up => 1,
-				_ => throw new NotSupportedException($"{nameof(ExpandDirection)} {expander.Direction} is not yet supported")
-			});
+			expander.headerContentView.Content = view;
 		}
 	}
 
@@ -151,33 +179,21 @@ public partial class Expander : ContentView, IExpander
 
 	void HandleDirectionChanged(ExpandDirection expandDirection)
 	{
-		if (Header is null || Content is null)
-		{
-			return;
-		}
-
 		switch (expandDirection)
 		{
 			case ExpandDirection.Down:
-				ContentGrid.SetRow(Header, 0);
-				ContentGrid.SetRow(Content, 1);
+				contentGrid.SetRow(headerContentView, 0);
+				contentGrid.SetRow(bodyLayout, 1);
 				break;
 
 			case ExpandDirection.Up:
-				ContentGrid.SetRow(Header, 1);
-				ContentGrid.SetRow(Content, 0);
+				contentGrid.SetRow(headerContentView, 1);
+				contentGrid.SetRow(bodyLayout, 0);
 				break;
 
 			default:
 				throw new NotSupportedException($"{nameof(ExpandDirection)} {expandDirection} is not yet supported");
 		}
-	}
-
-	void SetHeaderGestures(in IView header)
-	{
-		var headerView = (View)header;
-		headerView.GestureRecognizers.Remove(HeaderTapGestureRecognizer);
-		headerView.GestureRecognizers.Add(HeaderTapGestureRecognizer);
 	}
 
 	void OnHeaderTapGestureRecognizerTapped(object? sender, TappedEventArgs tappedEventArgs)
@@ -226,6 +242,15 @@ public partial class Expander : ContentView, IExpander
 
 	void IExpander.ExpandedChanged(bool isExpanded)
 	{
+		if (isExpanded)
+		{
+			ContentHeight = BodyContentView.Height + 1.0;
+		}
+		else
+		{
+			ContentHeight = 1.0;
+		}
+
 		if (Command?.CanExecute(CommandParameter) is true)
 		{
 			Command.Execute(CommandParameter);
