@@ -29,7 +29,23 @@ partial class CameraManager(
 	/// </summary>
 	/// <returns>Returns <c>true</c> if permission has been granted, <c>false</c> otherwise.</returns>
 	public async Task<bool> ArePermissionsGranted()
-		=> await Permissions.RequestAsync<Permissions.Camera>() is PermissionStatus.Granted;
+	{
+		var cameraRequest = await Permissions.RequestAsync<Permissions.Camera>();
+		var microphoneRequest = await Permissions.RequestAsync<Permissions.Microphone>();
+		if (cameraRequest is not PermissionStatus.Granted)
+		{
+			Trace.TraceInformation("Camera permission is not granted.");
+			return false;
+		}
+
+		if (microphoneRequest is not PermissionStatus.Granted)
+		{
+			Trace.TraceInformation("Microphone permission is not granted.");
+			return false;
+		}
+
+		return true;
+	}
 
 	/// <summary>
 	/// Connects to the camera.
@@ -62,21 +78,9 @@ partial class CameraManager(
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>A <see cref="Task"/> that can be awaited.</returns>
 	/// <exception cref="CameraException"></exception>
-	public async Task StartVideoRecording(Stream stream, CancellationToken token)
+	public Task StartVideoRecording(Stream stream, CancellationToken token)
 	{
-		var cameraRequest = await Permissions.RequestAsync<Permissions.Camera>();
-		var microphoneRequest = await Permissions.RequestAsync<Permissions.Microphone>();
-		if (cameraRequest is not PermissionStatus.Granted)
-		{
-			Trace.TraceInformation("Camera permission is not granted.");
-		}
-		
-		if (microphoneRequest is not PermissionStatus.Granted)
-		{
-			Trace.TraceInformation("Microphone permission is not granted.");
-		}
-
-		await PlatformStartVideoRecording(stream, token);
+		return PlatformStartVideoRecording(stream, token);
 	}
 
 
