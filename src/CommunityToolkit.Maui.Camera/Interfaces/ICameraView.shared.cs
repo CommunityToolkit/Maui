@@ -80,9 +80,11 @@ public interface ICameraView : IView
 	/// </summary>
 	/// <remarks>Ensure that the stream is properly disposed of after the recording is complete. The recording will
 	/// stop if the cancellation token is triggered.</remarks>
+	/// <param name="stream">The stream to which the video data will be written. The stream must be writable and remain open for the duration of
+	/// the recording.</param>
 	/// <param name="token">A cancellation token that can be used to cancel the video recording operation.</param>
-	/// <returns>A <see cref="Task"/> of type <see cref="Stream"/> where the recording will be saved in memory as the video records.</returns>
-	Task<Stream> StartVideoRecording(CancellationToken token = default);
+	/// <returns>A task that represents the asynchronous video recording operation.</returns>
+	Task StartVideoRecording(Stream stream, CancellationToken token = default);
 
 	/// <summary>
 	/// Stops the ongoing video recording operation.
