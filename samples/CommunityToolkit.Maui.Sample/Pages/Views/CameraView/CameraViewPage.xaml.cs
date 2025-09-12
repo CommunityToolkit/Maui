@@ -1,26 +1,33 @@
 using System.Diagnostics;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
+using CommunityToolkit.Maui.Storage;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-public partial class CameraViewPage : BasePage<CameraViewViewModel>
+public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>, IDisposable
 {
+	readonly IFileSaver fileSaver;
 	readonly string imagePath;
+
+	MemoryStream videoRecordingStream = new();
 	int pageCount;
 
-	public CameraViewPage(CameraViewViewModel viewModel, IFileSystem fileSystem) : base(viewModel)
+	public CameraViewPage(CameraViewViewModel viewModel, IFileSystem fileSystem, IFileSaver fileSaver) : base(viewModel)
 	{
 		InitializeComponent();
-
+		
+		this.fileSaver = fileSaver;
 		imagePath = Path.Combine(fileSystem.CacheDirectory, "camera-view-image.jpg");
 
 		Camera.MediaCaptured += OnMediaCaptured;
 
-		Loaded += (s, e) =>
-		{
-			pageCount = Navigation.NavigationStack.Count;
-		};
+		Loaded += (s, e) => { pageCount = Navigation.NavigationStack.Count; };
+	}
+	
+	public void Dispose()
+	{
+		videoRecordingStream.Dispose();
 	}
 
 	protected override async void OnAppearing()
@@ -51,6 +58,7 @@ public partial class CameraViewPage : BasePage<CameraViewViewModel>
 		{
 			return;
 		}
+
 		await Navigation.PushAsync(new ImageViewPage(imagePath));
 	}
 
@@ -82,7 +90,6 @@ public partial class CameraViewPage : BasePage<CameraViewViewModel>
 
 			debugText.Text = $"Image saved to {imagePath}";
 		});
-
 	}
 
 	void ZoomIn(object? sender, EventArgs e)
@@ -93,5 +100,25 @@ public partial class CameraViewPage : BasePage<CameraViewViewModel>
 	void ZoomOut(object? sender, EventArgs e)
 	{
 		Camera.ZoomFactor -= 1.0f;
+	}
+
+	async void SetNightMode(object? sender, EventArgs e)
+	{
+#if ANDROID
+		await Camera.SetExtensionMode(AndroidX.Camera.Extensions.ExtensionMode.Night);
+#else
+		await Task.CompletedTask;
+#endif
+	}
+
+	async void StartCameraRecording(object? sender, EventArgs e)
+	{
+		videoRecordingStream = new MemoryStream();
+		await Camera.StartVideoRecording(videoRecordingStream, CancellationToken.None);
+	}
+	
+	async void SaveVideo(object? sender, EventArgs e)
+	{
+		await fileSaver.SaveAsync("recording.mp4", videoRecordingStream);
 	}
 }

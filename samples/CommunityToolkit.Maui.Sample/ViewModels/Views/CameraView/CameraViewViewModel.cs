@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -7,8 +6,6 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseViewModel
 {
-	readonly ICameraProvider cameraProvider = cameraProvider;
-
 	public IReadOnlyList<CameraInfo> Cameras => cameraProvider.AvailableCameras ?? [];
 
 	public CancellationToken Token => CancellationToken.None;
