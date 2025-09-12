@@ -85,8 +85,12 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 			Text = text
 		};
 		entry.Behaviors.Add(behavior);
+		
+		//Act
+		await behavior.ForceValidate(TestContext.Current.CancellationToken);
 
-		await Assert.ThrowsAsync<ArgumentNullException>(async () => await behavior.ForceValidate(TestContext.Current.CancellationToken));
+		// Assert
+		Assert.False(behavior.IsValid);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
