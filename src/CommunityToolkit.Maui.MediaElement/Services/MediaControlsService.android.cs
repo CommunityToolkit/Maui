@@ -1,13 +1,14 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Runtime.Versioning;
+﻿using System.Runtime.Versioning;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.OS;
 using AndroidX.Core.App;
+using AndroidX.Media3.Common;
+using AndroidX.Media3.DataSource;
+using AndroidX.Media3.ExoPlayer;
+using AndroidX.Media3.ExoPlayer.TrackSelection;
 using AndroidX.Media3.Session;
-using AndroidX.Media3.UI;
-using CommunityToolkit.Maui.Services;
+using Java.Util;
 using Resource = Microsoft.Maui.Controls.Resource;
 
 namespace CommunityToolkit.Maui.Media.Services;
@@ -15,166 +16,95 @@ namespace CommunityToolkit.Maui.Media.Services;
 [SupportedOSPlatform("Android26.0")]
 [IntentFilter(["androidx.media3.session.MediaSessionService"])]
 [Service(Exported = false, Enabled = true, Name = "communityToolkit.maui.media.services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
-sealed partial class MediaControlsService : Service
+sealed partial class MediaControlsService : MediaSessionService
 {
-	readonly WeakEventManager taskRemovedEventManager = new();
+	static readonly string cHANNEL_ID = "media_playback_channel";
+	static readonly int nOTIFICATION_ID = 1001;
 
-	bool isDisposed;
-
-	PlayerNotificationManager? playerNotificationManager;
-	NotificationCompat.Builder? notificationBuilder;
-
-	public event EventHandler TaskRemoved
-	{
-		add => taskRemovedEventManager.AddEventHandler(value);
-		remove => taskRemovedEventManager.RemoveEventHandler(value);
-	}
-
-	public BoundServiceBinder? Binder { get; private set; }
-	public NotificationManager? NotificationManager { get; private set; }
-
-	public override IBinder? OnBind(Intent? intent)
-	{
-		Binder = new BoundServiceBinder(this);
-		return Binder;
-	}
-
-	public override void OnCreate()
-	{
-		base.OnCreate();
-		StartForegroundServices();
-	}
-
-	public override StartCommandResult OnStartCommand(Intent? intent, StartCommandFlags flags, int startId)
-		=> StartCommandResult.NotSticky;
+	MediaSession? mediaSession;
+	public IExoPlayer? ExoPlayer;
 
 	public override void OnTaskRemoved(Intent? rootIntent)
 	{
 		base.OnTaskRemoved(rootIntent);
-		taskRemovedEventManager.HandleEvent(this, EventArgs.Empty, nameof(TaskRemoved));
+		PauseAllPlayersAndStopSelf();
+	}
 
-		playerNotificationManager?.SetPlayer(null);
-		NotificationManager?.CancelAll();
+	public NotificationManager? NotificationManager { get; set; }
+
+
+	public override void OnCreate()
+	{
+		base.OnCreate();
+		CreateNotificationChannel();
+
+		StartForeground(nOTIFICATION_ID, CreateNotification());
+
+		var trackSelector = new DefaultTrackSelector(this);
+		var trackSelectionParameters = trackSelector.BuildUponParameters()?
+			.SetPreferredAudioLanguage("en")?
+			.SetPreferredTextLanguage("en")?
+			.SetIgnoredTextSelectionFlags(C.SelectionFlagAutoselect);
+		trackSelector.SetParameters((DefaultTrackSelector.Parameters.Builder?)trackSelectionParameters);
+
+		var loadControlBuilder = new DefaultLoadControl.Builder();
+		loadControlBuilder.SetBufferDurationsMs(
+			minBufferMs: 15000,
+			maxBufferMs: 50000,
+			bufferForPlaybackMs: 2500,
+			bufferForPlaybackAfterRebufferMs: 5000);
+
+		var builder = new ExoPlayerBuilder(this) ?? throw new InvalidOperationException("ExoPlayerBuilder.Build() returned null");
+		builder.SetTrackSelector(trackSelector);
+		builder.SetLoadControl(loadControlBuilder.Build());
+		ExoPlayer = builder.Build() ?? throw new InvalidOperationException("ExoPlayerBuilder.Build() returned null");
+	
+		var mediaSessionBuilder = new MediaSession.Builder(this, ExoPlayer);
+		UUID sessionId = UUID.RandomUUID() ?? throw new InvalidOperationException("UUID.RandomUUID() returned null");
+		mediaSessionBuilder.SetId(sessionId.ToString());
+
+		var dataSourceBitmapFactory = new DataSourceBitmapLoader(this);
+		mediaSessionBuilder.SetBitmapLoader(dataSourceBitmapFactory);
+		mediaSession = mediaSessionBuilder.Build() ?? throw new InvalidOperationException("MediaSession.Builder.Build() returned null");
 	}
 
 	public override void OnDestroy()
 	{
 		base.OnDestroy();
-
-		playerNotificationManager?.SetPlayer(null);
-		NotificationManager?.CancelAll();
-		if (!OperatingSystem.IsAndroidVersionAtLeast(33))
-		{
-			StopForeground(true);
-		}
-
-		StopSelf();
+		PauseAllPlayersAndStopSelf();
 	}
 
 	public override void OnRebind(Intent? intent)
 	{
 		base.OnRebind(intent);
-		StartForegroundServices();
 	}
-
-	[MemberNotNull(nameof(NotificationManager), nameof(notificationBuilder))]
-	public void UpdateNotifications(in MediaSession session, in PlatformMediaElement mediaElement)
+	void CreateNotificationChannel()
 	{
-		ArgumentNullException.ThrowIfNull(notificationBuilder);
-		ArgumentNullException.ThrowIfNull(NotificationManager);
-
-		var style = new MediaStyleNotificationHelper.MediaStyle(session);
-		if (!OperatingSystem.IsAndroidVersionAtLeast(33))
+		var channel = new Android.App.NotificationChannel(cHANNEL_ID, "Media Playback", NotificationImportance.Low)
 		{
-			SetLegacyNotifications(session, mediaElement);
-		}
-
-		notificationBuilder.SetStyle(style);
-		NotificationManagerCompat.From(Platform.AppContext)?.Notify(1, notificationBuilder.Build());
+			Description = "Media playback controls",
+			Name = "Media Playback"
+		};
+		channel.SetShowBadge(false);
+		channel.LockscreenVisibility = NotificationVisibility.Public;
+		NotificationManager manager = GetSystemService(NotificationService) as NotificationManager ?? throw new InvalidOperationException($"{nameof(NotificationManager)} cannot be null");
+		manager.CreateNotificationChannel(channel);
 	}
 
-	[MemberNotNull(nameof(playerNotificationManager))]
-	public void SetLegacyNotifications(in MediaSession session, in PlatformMediaElement mediaElement)
+	static Notification CreateNotification()
 	{
-		ArgumentNullException.ThrowIfNull(session);
-		playerNotificationManager ??= new PlayerNotificationManager.Builder(Platform.AppContext, 1, "1").Build()
-									  ?? throw new InvalidOperationException("PlayerNotificationManager cannot be null");
-
-		playerNotificationManager.SetUseFastForwardAction(true);
-		playerNotificationManager.SetUseFastForwardActionInCompactView(true);
-		playerNotificationManager.SetUseRewindAction(true);
-		playerNotificationManager.SetUseRewindActionInCompactView(true);
-		playerNotificationManager.SetUseNextAction(true);
-		playerNotificationManager.SetUseNextActionInCompactView(true);
-		playerNotificationManager.SetUsePlayPauseActions(true);
-		playerNotificationManager.SetUsePreviousAction(true);
-		playerNotificationManager.SetColor(Resource.Color.abc_primary_text_material_dark);
-		playerNotificationManager.SetUsePreviousActionInCompactView(true);
-		playerNotificationManager.SetVisibility(NotificationCompat.VisibilityPublic);
-		playerNotificationManager.SetMediaSessionToken(session.SessionCompatToken);
-		playerNotificationManager.SetPlayer(mediaElement);
-		playerNotificationManager.SetColorized(true);
-		playerNotificationManager.SetShowPlayButtonIfPlaybackIsSuppressed(true);
-		playerNotificationManager.SetSmallIcon(Resource.Drawable.media3_notification_small_icon);
-		playerNotificationManager.SetPriority(NotificationCompat.PriorityDefault);
-		playerNotificationManager.SetUseChronometer(true);
+		return new NotificationCompat.Builder(Platform.AppContext ?? throw new InvalidOperationException("AppContext cannot be null"), cHANNEL_ID)
+			.SetContentTitle("Playing Media")?
+			.SetContentText("Artist")?
+			.SetSmallIcon(Resource.Drawable.notification_bg_low)?
+			.SetVisibility((int)NotificationVisibility.Public)?
+			.SetOngoing(true)?
+			.Build() ?? throw new InvalidOperationException("Notification cannot be null");
 	}
 
-	protected override void Dispose(bool disposing)
+	public override MediaSession? OnGetSession(MediaSession.ControllerInfo? p0)
 	{
-		if (!isDisposed)
-		{
-			if (disposing)
-			{
-				NotificationManager?.Dispose();
-				NotificationManager = null;
-
-				playerNotificationManager?.Dispose();
-				playerNotificationManager = null;
-
-				if (!OperatingSystem.IsAndroidVersionAtLeast(33))
-				{
-					StopForeground(true);
-				}
-
-				StopSelf();
-			}
-
-			isDisposed = true;
-		}
-
-		base.Dispose(disposing);
+		return mediaSession;
 	}
 
-	static void CreateNotificationChannel(in NotificationManager notificationMnaManager)
-	{
-		var channel = new NotificationChannel("1", "1", NotificationImportance.Low);
-		notificationMnaManager.CreateNotificationChannel(channel);
-	}
-
-	[MemberNotNull(nameof(notificationBuilder), nameof(NotificationManager))]
-	void StartForegroundServices()
-	{
-		NotificationManager ??= GetSystemService(NotificationService) as NotificationManager ?? throw new InvalidOperationException($"{nameof(NotificationManager)} cannot be null");
-		notificationBuilder ??= new NotificationCompat.Builder(Platform.AppContext, "1");
-
-		notificationBuilder.SetSmallIcon(Resource.Drawable.media3_notification_small_icon);
-		notificationBuilder.SetAutoCancel(false);
-		notificationBuilder.SetForegroundServiceBehavior(NotificationCompat.ForegroundServiceImmediate);
-		notificationBuilder.SetVisibility(NotificationCompat.VisibilityPublic);
-
-		CreateNotificationChannel(NotificationManager);
-
-		if (OperatingSystem.IsAndroidVersionAtLeast(29))
-		{
-			if (notificationBuilder.Build() is Notification notification)
-			{
-				StartForeground(1, notification, ForegroundService.TypeMediaPlayback);
-			}
-		}
-		else
-		{
-			StartForeground(1, notificationBuilder.Build());
-		}
-	}
 }
