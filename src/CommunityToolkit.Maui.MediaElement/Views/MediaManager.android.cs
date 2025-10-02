@@ -395,7 +395,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		if (Player is null)
 		{
-			System.Diagnostics.Debug.WriteLine("IExoPlayer is null, cannot update source");
+			System.Diagnostics.Trace.WriteLine("IExoPlayer is null, cannot update source");
 			return ValueTask.CompletedTask;
 		}
 
