@@ -175,7 +175,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		return PlayerView;
 	}
 
-	public async Task<AndroidX.Media3.Session.MediaController> CreateMediaController()
+	public async Task<AndroidX.Media3.Session.MediaController> CreateMediaController(CancellationToken cancellationToken = default)
 	{
 		var tcs = new TaskCompletionSource();
 		var future = new MediaController.Builder(Platform.AppContext, new SessionToken(Platform.AppContext, new ComponentName(Platform.AppContext, Java.Lang.Class.FromType(typeof(MediaControlsService))))).BuildAsync();
@@ -208,7 +208,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				Trace.WriteLine($"Error creating MediaController: {ex}");
 			}
 		}), ContextCompat.GetMainExecutor(Platform.AppContext));
-		await tcs.Task.WaitAsync(CancellationToken.None);
+		await tcs.Task.WaitAsync(cancellationToken);
 		return Player ?? throw new InvalidOperationException("MediaController is null");
 	}
 
