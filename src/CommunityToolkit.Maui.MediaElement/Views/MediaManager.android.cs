@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Android.Content;
-using Android.Views;
 using AndroidX.Core.Content;
 using AndroidX.Media3.Common;
 using AndroidX.Media3.Common.Text;
@@ -118,6 +117,23 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaElement.CurrentStateChanged(newState);
 	}
 
+	public void OnTracksChanged(Tracks? tracks) 
+	{ 
+		if (tracks is null || tracks.IsEmpty)
+		{
+			return;
+		}
+		tracks.IsTypeSelected(C.TrackTypeText);
+		if(tracks.IsTypeSupported(C.TrackTypeText))
+		{
+			PlayerView?.SetShowSubtitleButton(true);
+		}
+		else
+		{
+			PlayerView?.SetShowSubtitleButton(false);
+		}
+	}
+
 	/// <summary>
 	/// Creates the corresponding platform view of <see cref="MediaElement"/> on Android.
 	/// </summary>
@@ -132,7 +148,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			{
 				UseController = false,
 				ControllerAutoShow = false,
-				LayoutParameters = new Android.Widget.RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 			};
 		}
 		else if (androidViewType is AndroidViewType.TextureView)
@@ -152,7 +167,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			{
 				UseController = false,
 				ControllerAutoShow = false,
-				LayoutParameters = new Android.Widget.RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 			};
 		}
 		else
@@ -619,7 +633,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		mediaItem.SetUri(url);
 		mediaItem.SetMediaId(url);
 		mediaItem.SetMediaMetadata(mediaMetaData.Build());
-
 		return mediaItem;
 	}
 
@@ -648,25 +661,5 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnSurfaceSizeChanged(int width, int height) { }
 	public void OnTimelineChanged(Timeline? timeline, int reason) { }
 	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters) { }
-	public void OnTracksChanged(Tracks? tracks) { }
 	#endregion
-
-	static class PlaybackState
-	{
-		public const int StateBuffering = 6;
-		public const int StateConnecting = 8;
-		public const int StateFailed = 7;
-		public const int StateFastForwarding = 4;
-		public const int StateNone = 0;
-		public const int StatePaused = 2;
-		public const int StatePlaying = 3;
-		public const int StateRewinding = 5;
-		public const int StateSkippingToNext = 10;
-		public const int StateSkippingToPrevious = 9;
-		public const int StateSkippingToQueueItem = 11;
-		public const int StateStopped = 1;
-		public const int StateError = 7;
-	}
-
-
 }

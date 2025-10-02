@@ -1,5 +1,6 @@
 ﻿using Android.App;
 using Android.Content;
+using Android.Graphics.Drawables;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
@@ -20,7 +21,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiMediaElement : CoordinatorLayout
 {
-	readonly RelativeLayout relativeLayout;
+	readonly FrameLayout frameLayout;
 	readonly PlayerView playerView;
 
 	int defaultSystemUiVisibility;
@@ -44,30 +45,30 @@ public class MauiMediaElement : CoordinatorLayout
 	public MauiMediaElement(Context context, PlayerView playerView) : base(context)
 	{
 		this.playerView = playerView;
+		playerView.Background = new ColorDrawable(Android.Graphics.Color.Black);
+		playerView.SetBackgroundColor(Android.Graphics.Color.Black);
 		playerView.FullscreenButtonClick += OnFullscreenButtonClick;
+		playerView.SetShowBuffering(PlayerView.ShowBufferingAlways);
+		playerView.Alpha = 1.0f;
+		playerView.ArtworkDisplayMode = PlayerView.ArtworkDisplayModeFit;
+		playerView.DefaultArtwork = new ColorDrawable(Android.Graphics.Color.Black);
 
-		var layout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
-		layout.AddRule(LayoutRules.CenterInParent);
-		layout.AddRule(LayoutRules.CenterVertical);
-		layout.AddRule(LayoutRules.CenterHorizontal);
-
-		relativeLayout = new RelativeLayout(Platform.AppContext)
+		var containerLayoutParams = new CoordinatorLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent);
+		frameLayout = new FrameLayout(Platform.AppContext)
 		{
-			LayoutParameters = layout,
+			Background = new ColorDrawable(Android.Graphics.Color.Black),
+			LayoutParameters = containerLayoutParams
 		};
-		SetBackgroundColor(Android.Graphics.Color.Black);
-		this.playerView.SetBackgroundColor(Android.Graphics.Color.Black);
-		relativeLayout.SetBackgroundColor(Android.Graphics.Color.Black);
+
+		playerView.LayoutParameters = new FrameLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent, GravityFlags.Center);
+		SetBackgroundResource(Android.Resource.Color.Black);
 	}
 
 	public void SetView(AndroidX.Media3.Session.MediaController mediaController)
 	{
 		playerView.Player = mediaController;
-		relativeLayout.AddView(playerView);
-		SetBackgroundColor(Android.Graphics.Color.Black);
-		playerView.SetBackgroundColor(Android.Graphics.Color.Black);
-		relativeLayout.SetBackgroundColor(Android.Graphics.Color.Black);
-		AddView(relativeLayout);
+		frameLayout.AddView(playerView);
+		AddView(frameLayout);
 	}
 
 	public override void OnDetachedFromWindow()
@@ -106,14 +107,14 @@ public class MauiMediaElement : CoordinatorLayout
 		if (e.P0)
 		{
 			isFullScreen = true;
-			RemoveView(relativeLayout);
-			layout?.AddView(relativeLayout);
+			RemoveView(frameLayout);
+			layout?.AddView(frameLayout);
 		}
 		else
 		{
 			isFullScreen = false;
-			layout?.RemoveView(relativeLayout);
-			AddView(relativeLayout);
+			layout?.RemoveView(frameLayout);
+			AddView(frameLayout);
 		}
 		// Hide/Show the SystemBars and Status bar
 		SetSystemBarsVisibility();

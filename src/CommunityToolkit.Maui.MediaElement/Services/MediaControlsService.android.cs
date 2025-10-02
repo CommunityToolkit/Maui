@@ -18,8 +18,8 @@ namespace CommunityToolkit.Maui.Media.Services;
 [Service(Exported = false, Enabled = true, Name = "communityToolkit.maui.media.services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
 sealed partial class MediaControlsService : MediaSessionService
 {
-	static readonly string cHANNEL_ID = "media_playback_channel";
-	static readonly int nOTIFICATION_ID = 1001;
+	const string cHANNEL_ID = "media_playback_channel";
+	const int nOTIFICATION_ID = 1001;
 
 	MediaSession? mediaSession;
 	public IExoPlayer? ExoPlayer;
@@ -40,22 +40,29 @@ sealed partial class MediaControlsService : MediaSessionService
 
 		StartForeground(nOTIFICATION_ID, CreateNotification());
 
+		var audioAttribute = new AndroidX.Media3.Common.AudioAttributes.Builder()?
+			.SetContentType(C.AudioContentTypeMusic)? // When phonecalls come in, music is paused
+			.SetUsage(C.UsageMedia)?
+			.Build();
+
 		var trackSelector = new DefaultTrackSelector(this);
 		var trackSelectionParameters = trackSelector.BuildUponParameters()?
-			.SetPreferredAudioLanguage("en")?
-			.SetPreferredTextLanguage("en")?
-			.SetIgnoredTextSelectionFlags(C.SelectionFlagAutoselect);
-		trackSelector.SetParameters((DefaultTrackSelector.Parameters.Builder?)trackSelectionParameters);
+			.SetPreferredAudioLanguage(C.LanguageUndetermined)? // Fallback to system language if no preferred language found
+			.SetPreferredTextLanguage(C.LanguageUndetermined)? // Fallback to system language if no preferred language found
+			.SetIgnoredTextSelectionFlags(C.SelectionReasonUnknown); // Ignore text tracks that are not explicitly selected by the user
+		trackSelector.SetParameters((DefaultTrackSelector.Parameters.Builder?)trackSelectionParameters); // Allows us to select tracks based on user preferences
 
 		var loadControlBuilder = new DefaultLoadControl.Builder();
 		loadControlBuilder.SetBufferDurationsMs(
 			minBufferMs: 15000,
 			maxBufferMs: 50000,
 			bufferForPlaybackMs: 2500,
-			bufferForPlaybackAfterRebufferMs: 5000);
+			bufferForPlaybackAfterRebufferMs: 5000); // Custom buffering strategy
 
 		var builder = new ExoPlayerBuilder(this) ?? throw new InvalidOperationException("ExoPlayerBuilder.Build() returned null");
 		builder.SetTrackSelector(trackSelector);
+		builder.SetAudioAttributes(audioAttribute, true);
+		builder.SetHandleAudioBecomingNoisy(true); // Unplugging headphones will pause playback
 		builder.SetLoadControl(loadControlBuilder.Build());
 		ExoPlayer = builder.Build() ?? throw new InvalidOperationException("ExoPlayerBuilder.Build() returned null");
 	
