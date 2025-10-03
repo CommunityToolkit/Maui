@@ -8,6 +8,7 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Views;
+using RelativeLayout = Android.Widget.RelativeLayout;
 
 [assembly: UsesPermission(Android.Manifest.Permission.ForegroundServiceMediaPlayback)]
 [assembly: UsesPermission(Android.Manifest.Permission.ForegroundService)]
@@ -21,7 +22,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiMediaElement : CoordinatorLayout
 {
-	readonly FrameLayout frameLayout;
+	readonly RelativeLayout relativeLayout;
 	readonly PlayerView playerView;
 
 	int defaultSystemUiVisibility;
@@ -53,22 +54,22 @@ public class MauiMediaElement : CoordinatorLayout
 		playerView.ArtworkDisplayMode = PlayerView.ArtworkDisplayModeFit;
 		playerView.DefaultArtwork = new ColorDrawable(Android.Graphics.Color.Black);
 
-		var containerLayoutParams = new CoordinatorLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent);
-		frameLayout = new FrameLayout(Platform.AppContext)
+		var layout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
+		layout.AddRule(LayoutRules.CenterInParent);
+		layout.AddRule(LayoutRules.CenterVertical);
+		layout.AddRule(LayoutRules.CenterHorizontal);
+		relativeLayout = new RelativeLayout(Platform.AppContext)
 		{
-			Background = new ColorDrawable(Android.Graphics.Color.Black),
-			LayoutParameters = containerLayoutParams
+			LayoutParameters = layout
 		};
-
-		playerView.LayoutParameters = new FrameLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent, GravityFlags.Center);
 		SetBackgroundResource(Android.Resource.Color.Black);
 	}
 
 	public void SetView(AndroidX.Media3.Session.MediaController mediaController)
 	{
 		playerView.Player = mediaController;
-		frameLayout.AddView(playerView);
-		AddView(frameLayout);
+		relativeLayout.AddView(playerView);
+		AddView(relativeLayout);
 	}
 
 	public override void OnDetachedFromWindow()
@@ -107,14 +108,14 @@ public class MauiMediaElement : CoordinatorLayout
 		if (e.P0)
 		{
 			isFullScreen = true;
-			RemoveView(frameLayout);
-			layout?.AddView(frameLayout);
+			RemoveView(relativeLayout);
+			layout?.AddView(relativeLayout);
 		}
 		else
 		{
 			isFullScreen = false;
-			layout?.RemoveView(frameLayout);
-			AddView(frameLayout);
+			layout?.RemoveView(relativeLayout);
+			AddView(relativeLayout);
 		}
 		// Hide/Show the SystemBars and Status bar
 		SetSystemBarsVisibility();

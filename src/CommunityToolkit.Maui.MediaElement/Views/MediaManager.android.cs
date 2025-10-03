@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Android.Content;
+using Android.Views;
+using Android.Widget;
 using AndroidX.Core.Content;
 using AndroidX.Media3.Common;
 using AndroidX.Media3.Common.Text;
@@ -147,6 +149,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			{
 				UseController = false,
 				ControllerAutoShow = false,
+				LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 			};
 		}
 		else if (androidViewType is AndroidViewType.TextureView)
@@ -166,6 +169,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			{
 				UseController = false,
 				ControllerAutoShow = false,
+				LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 			};
 		}
 		else
