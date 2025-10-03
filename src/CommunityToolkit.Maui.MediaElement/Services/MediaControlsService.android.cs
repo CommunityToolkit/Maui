@@ -49,7 +49,7 @@ sealed partial class MediaControlsService : MediaSessionService
 		var trackSelectionParameters = trackSelector.BuildUponParameters()?
 			.SetPreferredAudioLanguage(C.LanguageUndetermined)? // Fallback to system language if no preferred language found
 			.SetPreferredTextLanguage(C.LanguageUndetermined)? // Fallback to system language if no preferred language found
-			.SetIgnoredTextSelectionFlags(C.SelectionReasonUnknown); // Ignore text tracks that are not explicitly selected by the user
+			.SetIgnoredTextSelectionFlags(C.SelectionFlagAutoselect); // Ignore text tracks that are not explicitly selected by the user
 		trackSelector.SetParameters((DefaultTrackSelector.Parameters.Builder?)trackSelectionParameters); // Allows us to select tracks based on user preferences
 
 		var loadControlBuilder = new DefaultLoadControl.Builder();
