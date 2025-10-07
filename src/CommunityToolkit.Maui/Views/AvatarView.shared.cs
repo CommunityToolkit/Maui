@@ -2,6 +2,7 @@ using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
+using ILineHeightElement = Microsoft.Maui.Controls.ILineHeightElement;
 
 namespace CommunityToolkit.Maui.Views;
 

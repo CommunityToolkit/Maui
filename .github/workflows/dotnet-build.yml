@@ -22,8 +22,8 @@ env:
   NugetPackageVersionCamera: '99.0.0-preview${{ github.run_number }}'
   NugetPackageVersionMediaElement: '99.0.0-preview${{ github.run_number }}'
   NugetPackageVersionMaps: '99.0.0-preview${{ github.run_number }}'
-  TOOLKIT_NET_VERSION: '9.0.300'
-  LATEST_NET_VERSION: '9.0.x'
+  TOOLKIT_NET_VERSION: '10.0.x'
+  LATEST_NET_VERSION: '10.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
   PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
@@ -43,7 +43,7 @@ env:
   PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestProjectDirectory: 'src/CommunityToolkit.Maui.Analyzers.UnitTests'
   PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
-  CommunityToolkitLibrary_Xcode_Version: '16.2'
+  CommunityToolkitLibrary_Xcode_Version: '16.4'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -71,7 +71,7 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.LATEST_NET_VERSION }}
-          dotnet-quality: 'ga'
+          dotnet-quality: 'preview'
 
       - uses: actions/setup-java@v5
         with:
@@ -145,7 +145,7 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
-          dotnet-quality: 'ga'
+          dotnet-quality: 'preview'
 
       - uses: actions/setup-java@v5
         with:
@@ -273,7 +273,7 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
-          dotnet-quality: 'ga'
+          dotnet-quality: 'preview'
 
       - name: Download NuGet List
         uses: actions/download-artifact@v5
@@ -345,7 +345,7 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
-          dotnet-quality: 'ga'
+          dotnet-quality: 'preview'
 
       - name: Download signed packages
         uses: actions/download-artifact@v5
@@ -373,7 +373,7 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
-          dotnet-quality: 'ga'
+          dotnet-quality: 'preview'
 
       - name: Download signed packages
         uses: actions/download-artifact@v5

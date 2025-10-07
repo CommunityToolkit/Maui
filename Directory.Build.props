@@ -2,8 +2,8 @@
 <Project>
   <PropertyGroup>
     <Nullable>enable</Nullable>
-    <NoWarn>NETSDK1023</NoWarn>
-    <NetVersion>net9.0</NetVersion>
+    <NoWarn>NETSDK1023;XCODE_26_0_PREVIEW</NoWarn>
+    <NetVersion>net10.0</NetVersion>
     <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
@@ -16,8 +16,8 @@
     <NuGetAuditMode>all</NuGetAuditMode>
 
     <!-- MAUI Specific -->
-    <MauiPackageVersion>9.0.110</MauiPackageVersion>
-    <NextMauiPackageVersion>10.0.0</NextMauiPackageVersion>
+    <MauiPackageVersion>10.0.0-rc.1.25452.6</MauiPackageVersion>
+    <NextMauiPackageVersion>11.0.0</NextMauiPackageVersion>
     <MauiStrictXamlCompilation>true</MauiStrictXamlCompilation>
     <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
