@@ -9,19 +9,6 @@ namespace CommunityToolkit.Maui.Core.Extensions;
 public static class ColorConversionExtensions
 {
 	/// <summary>
-	/// Converts the value to percentage.
-	/// Uses <see cref="MidpointRounding.ToEven"/> and "0%" format string to emulate the behavior of "en-US" locale.
-	/// If only "0%" is used to get rid of the space between the value and the percent sign, 0.625f would become 63% instead of 62%.
-	/// </summary>
-	/// <param name="percentage">percentage</param>
-	/// <returns></returns>
-	static string ToPercentage(this float percentage)
-	{
-		var toEvenRounded = Math.Round(percentage, 2, MidpointRounding.ToEven);
-		return FormattableString.Invariant($"{toEvenRounded:0%}");
-	}
-
-	/// <summary>
 	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the red, green and blue components.
 	/// </summary>
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
@@ -78,7 +65,7 @@ public static class ColorConversionExtensions
 	public static string ToCmykString(this Color color)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return FormattableString.Invariant($"CMYK({color.GetPercentCyan().ToPercentage()},{color.GetPercentMagenta().ToPercentage()},{color.GetPercentYellow().ToPercentage()},{color.GetPercentBlackKey().ToPercentage()})");
+		return FormattableString.Invariant($"CMYK({color.GetPercentCyan():0%},{color.GetPercentMagenta():0%},{color.GetPercentYellow():0%},{color.GetPercentBlackKey():0%})");
 	}
 
 	/// <summary>
@@ -108,7 +95,7 @@ public static class ColorConversionExtensions
 	public static string ToCmykaString(this Color color)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return FormattableString.Invariant($"CMYKA({color.GetPercentCyan().ToPercentage()},{color.GetPercentMagenta().ToPercentage()},{color.GetPercentYellow().ToPercentage()},{color.GetPercentBlackKey().ToPercentage()},{color.Alpha})");
+		return FormattableString.Invariant($"CMYKA({color.GetPercentCyan():0%},{color.GetPercentMagenta():0%},{color.GetPercentYellow():0%},{color.GetPercentBlackKey():0%},{color.Alpha})");
 	}
 
 	/// <summary>
@@ -123,7 +110,7 @@ public static class ColorConversionExtensions
 	public static string ToHslString(this Color color)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return FormattableString.Invariant($"HSL({color.GetDegreeHue():0},{color.GetSaturation().ToPercentage()},{color.GetLuminosity().ToPercentage()})");
+		return FormattableString.Invariant($"HSL({color.GetDegreeHue():0},{color.GetSaturation():0%},{color.GetLuminosity():0%})");
 	}
 
 	/// <summary>
@@ -152,7 +139,7 @@ public static class ColorConversionExtensions
 	public static string ToHslaString(this Color color)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return FormattableString.Invariant($"HSLA({color.GetDegreeHue():0},{color.GetSaturation().ToPercentage()},{color.GetLuminosity().ToPercentage()},{color.Alpha})");
+		return FormattableString.Invariant($"HSLA({color.GetDegreeHue():0},{color.GetSaturation():0%},{color.GetLuminosity():0%},{color.Alpha})");
 	}
 
 	/// <summary>
