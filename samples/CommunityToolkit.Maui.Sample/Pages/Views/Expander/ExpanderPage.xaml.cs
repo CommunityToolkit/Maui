@@ -4,8 +4,6 @@ using CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-[RequiresUnreferencedCode("Expander is not trim safe")]
-[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 public partial class ExpanderPage : BasePage<ExpanderViewModel>
 {
 	public ExpanderPage(ExpanderViewModel viewModel) : base(viewModel)
@@ -19,6 +17,7 @@ public partial class ExpanderPage : BasePage<ExpanderViewModel>
 		await Toast.Make($"Expander is {collapsedText}").Show(CancellationToken.None);
 	}
 
+	[RequiresUnreferencedCode("Calls CommunityToolkit.Maui.Sample.Pages.Views.ExpanderPageCS.ExpanderPageCS()")]
 	async void GoToCSharpSampleClicked(object sender, EventArgs e)
 	{
 		await Navigation.PushAsync(new ExpanderPageCS());

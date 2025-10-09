@@ -5,10 +5,9 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-[RequiresUnreferencedCode("Expander is not trim safe")]
-[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 public partial class ExpanderPageCS : ContentPage
 {
+	[RequiresUnreferencedCode("Expander is not Trimmer safe")]
 	public ExpanderPageCS()
 	{
 		const string dotnetBotUrl = "https://avatars.githubusercontent.com/u/9011267?v=4";
