@@ -22,7 +22,7 @@ env:
   NugetPackageVersionCamera: '99.0.0-preview${{ github.run_number }}'
   NugetPackageVersionMediaElement: '99.0.0-preview${{ github.run_number }}'
   NugetPackageVersionMaps: '99.0.0-preview${{ github.run_number }}'
-  TOOLKIT_NET_VERSION: '9.0.300'
+  TOOLKIT_NET_VERSION: '9.0.305'
   LATEST_NET_VERSION: '9.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
@@ -43,7 +43,7 @@ env:
   PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestProjectDirectory: 'src/CommunityToolkit.Maui.Analyzers.UnitTests'
   PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
-  CommunityToolkitLibrary_Xcode_Version: '16.2'
+  CommunityToolkitLibrary_Xcode_Version: '16.4'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -61,7 +61,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Set Latest Xcode Version
+      - name: Set Xcode Version
         if: runner.os == 'macOS'
         uses: maxim-lobanov/setup-xcode@v1
         with:
