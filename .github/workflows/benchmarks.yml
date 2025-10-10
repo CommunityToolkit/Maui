@@ -39,7 +39,7 @@ jobs:
           xcode-version: latest-stable
 
       - name: Install Latest Version of .NET, v${{ env.LATEST_NET_VERSION }}
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.LATEST_NET_VERSION }}
           dotnet-quality: 'ga'
