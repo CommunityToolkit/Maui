@@ -145,7 +145,6 @@ public class MauiMediaElement : CoordinatorLayout
 			if (hidden)
 			{
 				window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
-				window.AddFlags(WindowManagerFlags.Fullscreen);
 				window.SetFlags(WindowManagerFlags.Fullscreen, WindowManagerFlags.Fullscreen);
 				insetsController.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
 				insetsController.Hide(WindowInsetsCompat.Type.SystemBars());
