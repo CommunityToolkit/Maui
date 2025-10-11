@@ -7,6 +7,8 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Views;
+using View = Android.Views.View;
+using Window = Android.Views.Window;
 
 [assembly: UsesPermission(Android.Manifest.Permission.ForegroundServiceMediaPlayback)]
 [assembly: UsesPermission(Android.Manifest.Permission.ForegroundService)]
@@ -20,9 +22,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiMediaElement : CoordinatorLayout
 {
-	static Android.Views.Window window => Platform.CurrentActivity?.Window ?? throw new InvalidOperationException("Current activity is null");
-	static Android.Views.View decorView => window.DecorView ?? throw new InvalidOperationException("DecorView is null");
-	static AndroidX.Core.View.WindowInsetsControllerCompat insetsController => WindowCompat.GetInsetsController(window, decorView) ?? throw new InvalidOperationException("InsetsController is null");
 	readonly RelativeLayout relativeLayout;
 	readonly PlayerView playerView;
 
@@ -140,6 +139,9 @@ public class MauiMediaElement : CoordinatorLayout
 
 	public static void SetStatusBarsHidden(bool hidden)
 	{
+		Window window = Platform.CurrentActivity?.Window ?? throw new InvalidOperationException("Current activity is null");
+		View decorView = window.DecorView ?? throw new InvalidOperationException("DecorView is null");
+		AndroidX.Core.View.WindowInsetsControllerCompat insetsController = WindowCompat.GetInsetsController(window, decorView) ?? throw new InvalidOperationException("InsetsController is null");
 		if (OperatingSystem.IsAndroidVersionAtLeast(26))
 		{
 			if (hidden)
