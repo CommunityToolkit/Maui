@@ -18,6 +18,10 @@ partial class CameraManager(
 	ICameraProvider cameraProvider,
 	Action onLoaded) : IDisposable
 {
+	readonly IList<CameraScenario> scenarios = [];
+	
+	protected IReadOnlyList<CameraScenario> Scenarios => scenarios.AsReadOnly();
+	
 	internal Action OnLoaded { get; } = onLoaded;
 
 	internal bool IsInitialized { get; private set; }
@@ -131,4 +135,28 @@ partial class CameraManager(
 	/// Stops the preview from the camera, at the platform-specific level.
 	/// </summary>
 	protected virtual partial void PlatformStopCameraPreview();
+
+	internal void AddScenario(CameraScenario scenario)
+	{
+		this.scenarios.Add(scenario);
+		
+		if (scenario is PlatformCameraScenario platformScenario)
+		{
+			AddPlatformScenario(platformScenario);
+		}
+	}
+	
+	internal void RemoveScenario(CameraScenario scenario)
+	{
+		this.scenarios.Remove(scenario);
+		
+		if (scenario is PlatformCameraScenario platformScenario)
+		{
+			RemovePlatformScenario(platformScenario);
+		}
+	}
+	
+	internal virtual partial void AddPlatformScenario(PlatformCameraScenario scenario);
+	
+	internal virtual partial void RemovePlatformScenario(PlatformCameraScenario scenario);
 }
