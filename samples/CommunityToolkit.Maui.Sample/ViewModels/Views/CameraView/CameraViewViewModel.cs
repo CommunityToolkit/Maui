@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -60,13 +61,36 @@ public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseV
 		UpdateResolutionText();
 	}
 
+	partial void OnSelectedCameraChanged(CameraInfo? oldValue, CameraInfo? newValue)
+	{
+		UpdateCameraInfoText();
+	}
+
+	void UpdateCameraInfoText()
+	{
+		if (SelectedCamera is null)
+		{
+			CameraNameText = string.Empty;
+			ZoomRangeText = string.Empty;
+		}
+		else
+		{
+			CameraNameText = $"{SelectedCamera.Name}";
+			ZoomRangeText = $"Min Zoom: {SelectedCamera.MinimumZoomFactor}, Max Zoom: {SelectedCamera.MaximumZoomFactor}";
+			UpdateFlashModeText();
+		}
+	}
+
 	void UpdateFlashModeText()
 	{
 		if (SelectedCamera is null)
 		{
-			return;
+			FlashModeText = string.Empty;
 		}
-		FlashModeText = $"{(SelectedCamera.IsFlashSupported ? $"Flash mode: {FlashMode}" : "Flash not supported")}";
+		else
+		{
+			FlashModeText = $"{(SelectedCamera.IsFlashSupported ? $"Flash mode: {FlashMode}" : "Flash not supported")}";
+		}
 	}
 
 	void UpdateCurrentZoomText()
