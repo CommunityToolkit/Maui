@@ -87,12 +87,15 @@ public class CameraInfo(
 #endif
 
 	/// <inheritdoc cref="Equals(object)"/>
+	/// <remarks>Equality is determined using <see cref="DeviceId"/></remarks>
 	public override bool Equals(object? obj) => Equals(obj as CameraInfo);
 
 	/// <inheritdoc cref="GetHashCode"/>
-	public override int GetHashCode() => HashCode.Combine(Name, DeviceId, Position, IsFlashSupported, MinimumZoomFactor, MaximumZoomFactor, SupportedResolutions);
+	/// <remarks>Uses the <see cref="DeviceId"/></remarks>
+	public override int GetHashCode() => DeviceId.GetHashCode();
 
 	/// <inheritdoc cref="IEquatable{T}.Equals(T)"/>
+	/// <remarks>Equality is determined using <see cref="DeviceId"/></remarks>
 	public bool Equals(CameraInfo? other)
 	{
 		if (other is null)
