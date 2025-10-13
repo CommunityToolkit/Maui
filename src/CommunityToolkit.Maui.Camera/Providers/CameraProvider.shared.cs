@@ -30,7 +30,7 @@ partial class CameraProvider : ICameraProvider
 	/// <inheritdoc/>
 	public partial ValueTask RefreshAvailableCameras(CancellationToken token);
 
-	static bool AreCameraInfoListsEqual(in IReadOnlyList<CameraInfo>? cameraInfoList1, in IReadOnlyList<CameraInfo>? cameraInfoList2)
+	internal static bool AreCameraInfoListsEqual(in IReadOnlyList<CameraInfo>? cameraInfoList1, in IReadOnlyList<CameraInfo>? cameraInfoList2)
 	{
 		if (cameraInfoList1 is null && cameraInfoList2 is null)
 		{
