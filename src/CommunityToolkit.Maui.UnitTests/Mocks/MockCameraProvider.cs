@@ -5,7 +5,20 @@ namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
 public class MockCameraProvider : ICameraProvider
 {
-	public IReadOnlyList<CameraInfo>? AvailableCameras { get; private set; }
+	public event EventHandler<IReadOnlyList<CameraInfo>?>? AvailableCamerasChanged;
+
+	public IReadOnlyList<CameraInfo>? AvailableCameras
+	{
+		get;
+		private set
+		{
+			if (!CameraProvider.AreCameraInfoListsEqual(field, value))
+			{
+				field = value;
+				AvailableCamerasChanged?.Invoke(this, value);
+			}
+		}
+	}
 
 	public ValueTask RefreshAvailableCameras(CancellationToken token)
 	{
