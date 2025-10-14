@@ -4,8 +4,17 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseViewModel
+public partial class CameraViewViewModel : BaseViewModel
 {
+	readonly ICameraProvider cameraProvider;
+
+	public CameraViewViewModel(ICameraProvider cameraProvider)
+	{
+		this.cameraProvider = cameraProvider;
+
+		cameraProvider.AvailableCamerasChanged += HandleAvailableCamerasChanged;
+	}
+
 	public IReadOnlyList<CameraInfo> Cameras => cameraProvider.AvailableCameras ?? [];
 
 	public CancellationToken Token => CancellationToken.None;
@@ -74,5 +83,10 @@ public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseV
 	void UpdateResolutionText()
 	{
 		ResolutionText = $"Selected Resolution: {SelectedResolution.Width} x {SelectedResolution.Height}";
+	}
+	
+	void HandleAvailableCamerasChanged(object? sender, IReadOnlyList<CameraInfo>? e)
+	{
+		OnPropertyChanged(nameof(Cameras));
 	}
 }
