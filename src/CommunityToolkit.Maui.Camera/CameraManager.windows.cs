@@ -15,6 +15,7 @@ partial class CameraManager
 	MediaCapture? mediaCapture;
 	MediaFrameSource? frameSource;
 	LowLagMediaRecording? mediaRecording;
+	Stream? videoCaptureStream;
 
 	public MediaPlayerElement CreatePlatformView()
 	{
@@ -211,6 +212,8 @@ partial class CameraManager
 			return;
 		}
 
+		videoCaptureStream = stream;
+
 		var profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto);
 		mediaRecording = await mediaCapture.PrepareLowLagRecordToStreamAsync(profile, stream.AsRandomAccessStream());
 
@@ -235,12 +238,12 @@ partial class CameraManager
 
 	protected virtual async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
 	{
-		if (!IsInitialized || mediaElement is null || mediaRecording is null)
+		if (!IsInitialized || mediaElement is null || mediaRecording is null || videoCaptureStream is null)
 		{
 			return Stream.Null;
 		}
 		
 		await mediaRecording.StopAsync();
-		return mediaRecording
+		return videoCaptureStream;
 	}
 }
