@@ -61,7 +61,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Set Latest Xcode Version
+      - name: Set Xcode Version
         if: runner.os == 'macOS'
         uses: maxim-lobanov/setup-xcode@v1
         with:
