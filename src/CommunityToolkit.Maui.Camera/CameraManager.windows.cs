@@ -233,16 +233,14 @@ partial class CameraManager
 		}
 	}
 
-	protected virtual async partial Task PlatformStopVideoRecording(CancellationToken token)
+	protected virtual async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
 	{
-		if (!IsInitialized || mediaElement is null)
+		if (!IsInitialized || mediaElement is null || mediaRecording is null)
 		{
-			return;
+			return Stream.Null;
 		}
-
-		if (mediaRecording != null)
-		{
-			await mediaRecording.StopAsync();
-		}
+		
+		await mediaRecording.StopAsync();
+		return mediaRecording
 	}
 }

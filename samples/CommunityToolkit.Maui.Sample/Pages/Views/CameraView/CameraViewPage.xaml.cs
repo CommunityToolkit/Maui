@@ -5,13 +5,13 @@ using CommunityToolkit.Maui.Storage;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>, IDisposable
+public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 {
 	readonly IFileSaver fileSaver;
 	readonly string imagePath;
 
-	MemoryStream videoRecordingStream = new();
 	int pageCount;
+	Stream videoRecordingStream = Stream.Null;
 
 	public CameraViewPage(CameraViewViewModel viewModel, IFileSystem fileSystem, IFileSaver fileSaver) : base(viewModel)
 	{
@@ -23,11 +23,6 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>, IDis
 		Camera.MediaCaptured += OnMediaCaptured;
 
 		Loaded += (s, e) => { pageCount = Navigation.NavigationStack.Count; };
-	}
-	
-	public void Dispose()
-	{
-		videoRecordingStream.Dispose();
 	}
 
 	protected override async void OnAppearing()
@@ -113,12 +108,25 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>, IDis
 
 	async void StartCameraRecording(object? sender, EventArgs e)
 	{
-		videoRecordingStream = new MemoryStream();
-		await Camera.StartVideoRecording(videoRecordingStream, CancellationToken.None);
+		await Camera.StartVideoRecording(CancellationToken.None);
+	}
+	
+	async void StopCameraRecording(object? sender, EventArgs e)
+	{
+		videoRecordingStream = await Camera.StopVideoRecording(CancellationToken.None);
 	}
 	
 	async void SaveVideo(object? sender, EventArgs e)
 	{
-		await fileSaver.SaveAsync("recording.mp4", videoRecordingStream);
+		if (videoRecordingStream == Stream.Null)
+		{
+			await DisplayAlert("Unable to Save Video", "Stream is null", "OK");
+		}
+		else
+		{
+			await fileSaver.SaveAsync("recording.mp4", videoRecordingStream);
+			await videoRecordingStream.DisposeAsync();
+			videoRecordingStream = Stream.Null;
+		}
 	}
 }

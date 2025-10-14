@@ -69,18 +69,18 @@
 
                 <Button Command="{Binding StartCameraPreviewCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}"
                         CommandParameter="{Binding Token}"
-                        Text="StartCameraPreview" />
+                        Text="Start Camera Preview" />
 
                 <Button Command="{Binding StopCameraPreviewCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}" 
-                        Text="StopCameraPreview" />
+                        Text="Stop Camera Preview" />
 
 
                 <Button Clicked="StartCameraRecording"
-                        Text="StartVideoRecording" />
+                        Text="Start Video Recording" />
 
-                <Button  Command="{Binding StopVideoRecordingCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}"
+                <Button  Clicked="StopCameraRecording"
                          CommandParameter="{Binding Token}"
-                         Text="StopVideoRecording" />
+                         Text="Stop Video Recording" />
 
                 <Button Clicked="SaveVideo" Text="Save Video Recording" />
 

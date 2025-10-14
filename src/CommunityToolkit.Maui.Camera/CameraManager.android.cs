@@ -1,4 +1,4 @@
-using System.Runtime.Versioning;
+﻿using System.Runtime.Versioning;
 using Android.Content;
 using Android.Provider;
 using Android.Runtime;
@@ -340,12 +340,12 @@ partial class CameraManager
 			.Start(executor, captureListener);
 	}
 
-	protected virtual async partial Task PlatformStopVideoRecording(CancellationToken token)
+	protected virtual async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
 	{
 		ArgumentNullException.ThrowIfNull(cameraExecutor);
 		if (videoRecording is null || videoRecordingFile is null || videoRecordingFinalizeTcs is null || videoRecordingStream is null)
 		{
-			return;
+			return Stream.Null;
 		}
 
 		videoRecording.Stop();
@@ -355,6 +355,8 @@ partial class CameraManager
 		await inputStream.CopyToAsync(videoRecordingStream, token);
 		await videoRecordingStream.FlushAsync(token);
 		CleanupVideoRecordingResources();
+
+		return videoRecordingStream;
 	}
 
 	bool IsVideoCaptureAlreadyBound()

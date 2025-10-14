@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using AVFoundation;
 using CommunityToolkit.Maui.Extensions;
 using CoreMedia;
@@ -281,11 +281,11 @@ partial class CameraManager
 		videoOutput.StartRecordingToOutputFile(outputUrl, new AVCaptureMovieFileOutputRecordingDelegate(videoRecordingFinalizeTcs));
 	}
 
-	protected virtual async partial Task PlatformStopVideoRecording(CancellationToken token)
+	protected virtual async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
 	{
 		if (captureSession is null || videoRecordingFileName is null || videoInput is null || videoOutput is null || videoRecordingStream is null || videoRecordingFinalizeTcs is null)
 		{
-			return;
+			return Stream.Null;
 		}
 
 		videoOutput.StopRecording();
@@ -303,6 +303,8 @@ partial class CameraManager
 		}
 
 		CleanupVideoRecordingResources();
+
+		return videoRecordingStream;
 	}
 
 	void CleanupVideoRecordingResources()

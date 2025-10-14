@@ -89,10 +89,7 @@ partial class CameraManager(
 	/// </summary>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>A <see cref="Task"/> that can be awaited.</returns>
-	public Task StopVideoRecording(CancellationToken token)
-	{
-		return PlatformStopVideoRecording(token);
-	}
+	public Task<Stream> StopVideoRecording(CancellationToken token) => PlatformStopVideoRecording(token);
 
 	/// <summary>
 	/// Stops the camera preview.
@@ -191,5 +188,5 @@ partial class CameraManager(
 	/// functionality.</remarks>
 	/// <param name="token">A cancellation token that can be used to cancel the stop operation.</param>
 	/// <returns>A task that represents the asynchronous stop operation.</returns>
-	protected virtual partial Task PlatformStopVideoRecording(CancellationToken token);
+	protected virtual partial Task<Stream> PlatformStopVideoRecording(CancellationToken token);
 }
