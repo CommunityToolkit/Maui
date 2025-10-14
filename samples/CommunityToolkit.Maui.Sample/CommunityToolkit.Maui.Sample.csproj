@@ -31,8 +31,8 @@
 
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     
-    <!-- Remove this NoWarn once XamlTypeInfo Generator (owned by .NET MAUI Engineering Team) implements a partial class-->
-    <NoWarn>CsWinRT1028</NoWarn>
+    <!-- Remove NoWarn CsWinRT1028 once XamlTypeInfo Generator (owned by .NET MAUI Engineering Team) implements a partial class-->
+    <NoWarn>CsWinRT1028;IL2026</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'
