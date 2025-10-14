@@ -16,7 +16,7 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 	public CameraViewPage(CameraViewViewModel viewModel, IFileSystem fileSystem, IFileSaver fileSaver) : base(viewModel)
 	{
 		InitializeComponent();
-		
+
 		this.fileSaver = fileSaver;
 		imagePath = Path.Combine(fileSystem.CacheDirectory, "camera-view-image.jpg");
 
@@ -110,12 +110,12 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 	{
 		await Camera.StartVideoRecording(CancellationToken.None);
 	}
-	
+
 	async void StopCameraRecording(object? sender, EventArgs e)
 	{
 		videoRecordingStream = await Camera.StopVideoRecording(CancellationToken.None);
 	}
-	
+
 	async void SaveVideo(object? sender, EventArgs e)
 	{
 		if (videoRecordingStream == Stream.Null)

@@ -92,7 +92,7 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		{
 			return;
 		}
-		
+
 		await CameraManager.ConnectCamera(CancellationToken.None);
 		await cameraProvider.RefreshAvailableCameras(CancellationToken.None);
 	}

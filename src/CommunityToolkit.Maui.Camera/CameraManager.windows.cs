@@ -216,7 +216,7 @@ partial class CameraManager
 		mediaRecording = await mediaCapture.PrepareLowLagRecordToStreamAsync(profile, stream.AsRandomAccessStream());
 
 		frameSource = mediaCapture.FrameSources.FirstOrDefault(source =>
-			source.Value.Info.MediaStreamType == MediaStreamType.VideoRecord && 
+			source.Value.Info.MediaStreamType == MediaStreamType.VideoRecord &&
 			source.Value.Info.SourceKind == MediaFrameSourceKind.Color).Value;
 		if (frameSource is not null)
 		{
@@ -240,7 +240,7 @@ partial class CameraManager
 		{
 			return Stream.Null;
 		}
-		
+
 		await mediaRecording.StopAsync();
 		return videoCaptureStream;
 	}
