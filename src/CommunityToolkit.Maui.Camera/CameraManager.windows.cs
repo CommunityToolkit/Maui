@@ -1,5 +1,4 @@
-﻿using System.Runtime.Versioning;
-using CommunityToolkit.Maui.Extensions;
+﻿using CommunityToolkit.Maui.Extensions;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Media.Capture;
 using Windows.Media.Capture.Frames;
@@ -8,7 +7,6 @@ using Windows.Media.MediaProperties;
 
 namespace CommunityToolkit.Maui.Core;
 
-[SupportedOSPlatform("windows10.0.16299.0")]
 partial class CameraManager
 {
 	MediaPlayerElement? mediaElement;
