@@ -6,7 +6,8 @@
 partial class CameraProvider : ICameraProvider
 {
 	readonly WeakEventManager availableCamerasChangedEventManager = new();
-	
+	Task? refreshAvailableCamerasTask;
+
 	public event EventHandler<IReadOnlyList<CameraInfo>?> AvailableCamerasChanged
 	{
 		add => availableCamerasChangedEventManager.AddEventHandler(value);
@@ -22,13 +23,23 @@ partial class CameraProvider : ICameraProvider
 			if (!AreCameraInfoListsEqual(field, value))
 			{
 				field = value;
-				availableCamerasChangedEventManager.HandleEvent(this, value, nameof(AvailableCamerasChanged));	
+				availableCamerasChangedEventManager.HandleEvent(this, value, nameof(AvailableCamerasChanged));
 			}
 		}
 	}
 
+	private partial ValueTask PlatformRefreshAvailableCameras(CancellationToken token);
+
 	/// <inheritdoc/>
-	public partial ValueTask RefreshAvailableCameras(CancellationToken token);
+	public async ValueTask RefreshAvailableCameras(CancellationToken token)
+	{
+		if (refreshAvailableCamerasTask is null || refreshAvailableCamerasTask.IsCompleted)
+		{
+			refreshAvailableCamerasTask = PlatformRefreshAvailableCameras(token).AsTask();
+		}
+
+		await refreshAvailableCamerasTask;
+	}
 
 	internal static bool AreCameraInfoListsEqual(in IReadOnlyList<CameraInfo>? cameraInfoList1, in IReadOnlyList<CameraInfo>? cameraInfoList2)
 	{

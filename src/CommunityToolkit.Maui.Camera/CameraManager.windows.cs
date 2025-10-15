@@ -119,16 +119,6 @@ partial class CameraManager
 
 	protected virtual async partial Task PlatformConnectCamera(CancellationToken token)
 	{
-		if (cameraProvider.AvailableCameras is null)
-		{
-			await cameraProvider.RefreshAvailableCameras(token);
-
-			if (cameraProvider.AvailableCameras is null)
-			{
-				throw new CameraException("Unable to refresh cameras");
-			}
-		}
-
 		await StartCameraPreview(token);
 	}
 
@@ -139,13 +129,9 @@ partial class CameraManager
 			return;
 		}
 
-		mediaCapture = new MediaCapture();
+		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
-		if (cameraView.SelectedCamera is null)
-		{
-			await cameraProvider.RefreshAvailableCameras(token);
-			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
-		}
+		mediaCapture = new MediaCapture();
 
 		await mediaCapture.InitializeCameraForCameraView(cameraView.SelectedCamera.DeviceId, token);
 
@@ -180,22 +166,17 @@ partial class CameraManager
 
 	protected async Task PlatformUpdateResolution(Size resolution, CancellationToken token)
 	{
-		if (!IsInitialized || mediaCapture is null)
+		if (!IsInitialized || mediaCapture is null || cameraView.SelectedCamera is null)
 		{
 			return;
 		}
 
-		if (cameraView.SelectedCamera is null)
-		{
-			await cameraProvider.RefreshAvailableCameras(token);
-			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
-		}
-
 		var filteredPropertiesList = cameraView.SelectedCamera.ImageEncodingProperties.Where(p => p.Width <= resolution.Width && p.Height <= resolution.Height).ToList();
 
-		filteredPropertiesList = filteredPropertiesList.Count is not 0
-			? filteredPropertiesList
-			: [.. cameraView.SelectedCamera.ImageEncodingProperties.OrderByDescending(p => p.Width * p.Height)];
+		if (filteredPropertiesList.Count is 0)
+		{
+			filteredPropertiesList = [.. cameraView.SelectedCamera.ImageEncodingProperties.OrderByDescending(p => p.Width * p.Height)];
+		}
 
 		if (filteredPropertiesList.Count is not 0)
 		{
