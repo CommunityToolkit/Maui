@@ -14,6 +14,8 @@ partial class CameraManager
 
 	public partial ValueTask UpdateCaptureResolution(Size resolution, CancellationToken token) => throw new NotSupportedException(notSupportedMessage);
 
+	protected virtual partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token) => throw new NotSupportedException(notSupportedMessage);
+	protected virtual partial Task<Stream> PlatformStopVideoRecording(CancellationToken token) => throw new NotSupportedException(notSupportedMessage);
 	protected virtual partial Task PlatformStartCameraPreview(CancellationToken token) => throw new NotSupportedException(notSupportedMessage);
 
 	protected virtual partial void PlatformStopCameraPreview() => throw new NotSupportedException(notSupportedMessage);

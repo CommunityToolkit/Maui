@@ -107,7 +107,7 @@ public partial class CameraViewViewModel : BaseViewModel
 	{
 		ResolutionText = $"Selected Resolution: {SelectedResolution.Width} x {SelectedResolution.Height}";
 	}
-	
+
 	void HandleAvailableCamerasChanged(object? sender, IReadOnlyList<CameraInfo>? e)
 	{
 		OnPropertyChanged(nameof(Cameras));

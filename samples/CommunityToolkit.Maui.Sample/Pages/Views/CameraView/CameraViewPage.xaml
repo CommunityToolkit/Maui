@@ -57,7 +57,7 @@
             <Button Clicked="ZoomIn" Text="Zoom +" Grid.Column="2"/>
         </Grid>
 
-        <Grid Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3" BackgroundColor="#80CCCCCC">
+        <Grid Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="5" BackgroundColor="#80CCCCCC">
 
             <FlexLayout Margin="5" JustifyContent="SpaceBetween" Wrap="Wrap">
 
@@ -73,15 +73,28 @@
                     ItemsSource="{Binding FlashModes}"
                     SelectedItem="{Binding FlashMode}" />
 
+                <Button Command="{Binding StartCameraPreviewCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}"
+                        CommandParameter="{Binding Token}"
+                        Text="Start Camera Preview" />
+
+                <Button Command="{Binding StopCameraPreviewCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}" 
+                        Text="Stop Camera Preview" />
+
+
+                <Button Clicked="StartCameraRecording"
+                        Text="Start Video Recording" />
+
+                <Button  Clicked="StopCameraRecording"
+                         CommandParameter="{Binding Token}"
+                         Text="Stop Video Recording" />
+
+                <Button Clicked="SaveVideo" Text="Save Video Recording" />
+
                 <Button Command="{Binding CaptureImageCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}" 
                         CommandParameter="{Binding Token}"
                         Text="Capture Image"/>
-                <Button Command="{Binding StartCameraPreviewCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}"
-                        CommandParameter="{Binding Token}"
-                        Text="StartCameraPreview" />
 
-                <Button Command="{Binding StopCameraPreviewCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}" 
-                        Text="StopCameraPreview" />
+                <Button Clicked="SetNightMode" Text="Set Night Mode (Android)" />
 
             </FlexLayout>
         </Grid>
