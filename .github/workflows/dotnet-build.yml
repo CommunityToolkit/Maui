@@ -22,7 +22,7 @@ env:
   NugetPackageVersionCamera: '99.0.0-preview${{ github.run_number }}'
   NugetPackageVersionMediaElement: '99.0.0-preview${{ github.run_number }}'
   NugetPackageVersionMaps: '99.0.0-preview${{ github.run_number }}'
-  TOOLKIT_NET_VERSION: '9.0.300'
+  TOOLKIT_NET_VERSION: '9.0.306'
   LATEST_NET_VERSION: '9.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
@@ -43,7 +43,7 @@ env:
   PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestProjectDirectory: 'src/CommunityToolkit.Maui.Analyzers.UnitTests'
   PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
-  CommunityToolkitLibrary_Xcode_Version: '16.2'
+  CommunityToolkitLibrary_Xcode_Version: '26.0.1'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -59,7 +59,7 @@ jobs:
         os: [windows-latest, macos-15]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set Latest Xcode Version
         if: runner.os == 'macOS'
@@ -68,12 +68,12 @@ jobs:
           xcode-version: latest-stable
 
       - name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.LATEST_NET_VERSION }}
           dotnet-quality: 'ga'
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: 'microsoft'
           java-version: '17'
@@ -104,7 +104,7 @@ jobs:
         os: [windows-latest, macos-15]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set NuGet Version to Tag Number
         if: startsWith(github.ref, 'refs/tags/') && (!endsWith(github.ref, '-mediaelement') && !endsWith(github.ref, '-camera') && !endsWith(github.ref, '-maps'))
@@ -142,12 +142,12 @@ jobs:
           xcode-version: ${{ env.CommunityToolkitLibrary_Xcode_Version }}
 
       - name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
           dotnet-quality: 'ga'
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: 'microsoft'
           java-version: '17'
@@ -270,19 +270,19 @@ jobs:
 
     steps:
       - name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
           dotnet-quality: 'ga'
 
       - name: Download NuGet List
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: nuget-list
           path: ./
 
       - name: Download Package List
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: packages
           path: ./packages
@@ -342,13 +342,13 @@ jobs:
 
     steps:
       - name: Install .NET SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
           dotnet-quality: 'ga'
 
       - name: Download signed packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: signed-packages
           path: ./packages
@@ -370,13 +370,13 @@ jobs:
 
     steps:
       - name: Install .NET SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
           dotnet-quality: 'ga'
 
       - name: Download signed packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: signed-packages
           path: ./packages

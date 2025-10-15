@@ -46,6 +46,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			await CloseAsync(new PopupResult(true));
 		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
 
+
 		var pageTapGestureRecognizer = new TapGestureRecognizer();
 		pageTapGestureRecognizer.Tapped += HandleTapGestureRecognizerTapped;
 
@@ -115,6 +116,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
 	{
 		popup.NotifyPopupIsClosed();
+		base.Content.GestureRecognizers.Clear();
+		popup.PropertyChanged -= HandlePopupPropertyChanged;
 		base.OnNavigatedFrom(args);
 	}
 

@@ -6,16 +6,41 @@ using CommunityToolkit.Maui.Core;
 namespace CommunityToolkit.Maui.Views;
 
 /// <inheritdoc cref="IExpander"/>
-[BindableProperty<IView>("Header", PropertyChangedMethodName = nameof(OnHeaderPropertyChanged))]
-[BindableProperty<IView>("Content", PropertyChangedMethodName = nameof(OnContentPropertyChanged))]
-[BindableProperty<bool>("IsExpanded", PropertyChangedMethodName = nameof(OnIsExpandedPropertyChanged))]
-[BindableProperty<object>("CommandParameter")]
-[BindableProperty<ICommand>("Command")]
 [ContentProperty(nameof(Content))]
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 [RequiresUnreferencedCode("Calls Microsoft.Maui.Controls.Binding.Binding(String, BindingMode, IValueConverter, Object, String, Object)")]
 public partial class Expander : ContentView, IExpander
 {
+	/// <summary>
+	/// Gets or sets the command to execute when the expander is expanded or collapsed.
+	/// </summary>
+	[BindableProperty]
+	public partial ICommand Command { get; set; }
+
+	/// <summary>
+	/// Gets or sets the parameter to pass to the <see cref="Command"/> property.
+	/// </summary>
+	[BindableProperty]
+	public partial object CommandParameter { get; set; }
+
+	/// <summary>
+	/// Gets or sets a value indicating whether the expander is expanded.
+	/// </summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnIsExpandedPropertyChanged))]
+	public partial bool IsExpanded { get; set; }
+
+	/// <summary>
+	/// Gets or sets the content to be expanded or collapsed.
+	/// </summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnContentPropertyChanged))]
+	public partial IView Content { get; set; }
+
+	/// <summary>
+	/// Gets or sets the header view of the expander.
+	/// </summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnHeaderPropertyChanged))]
+	public partial IView Header { get; set; }
+
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Direction"/> property.
 	/// </summary>
@@ -43,7 +68,7 @@ public partial class Expander : ContentView, IExpander
 	}
 
 	/// <summary>
-	///	Triggered when the value of <see cref="IsExpanded"/> changes
+	/// Triggered when the value of <see cref="IsExpanded"/> changes.
 	/// </summary>
 	public event EventHandler<ExpandedChangedEventArgs> ExpandedChanged
 	{
