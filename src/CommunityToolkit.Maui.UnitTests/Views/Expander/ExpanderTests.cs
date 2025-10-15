@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class ExpanderTests : BaseHandlerTest
+public class ExpanderTests : BaseViewTest
 {
 	readonly Maui.Views.Expander expander = new();
 

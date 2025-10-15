@@ -28,14 +28,20 @@ public partial class Popup : ContentView
 	public static new readonly BindableProperty VerticalOptionsProperty = View.VerticalOptionsProperty;
 
 	/// <summary>
+	///  Backing BindableProperty for the <see cref="CanBeDismissedByTappingOutsideOfPopup"/> property.
+	/// </summary>
+	public static readonly BindableProperty CanBeDismissedByTappingOutsideOfPopupProperty = BindableProperty.Create(nameof(CanBeDismissedByTappingOutsideOfPopup), typeof(bool), typeof(Popup), Options.DefaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup);
+
+	/// <summary>
 	/// Initializes Popup
 	/// </summary>
 	public Popup()
 	{
-		Margin = PopupDefaults.Margin;
-		Padding = PopupDefaults.Padding;
-		HorizontalOptions = PopupDefaults.HorizontalOptions;
-		VerticalOptions = PopupDefaults.VerticalOptions;
+		Margin = Options.DefaultPopupSettings.Margin;
+		Padding = Options.DefaultPopupSettings.Padding;
+		HorizontalOptions = Options.DefaultPopupSettings.HorizontalOptions;
+		VerticalOptions = Options.DefaultPopupSettings.VerticalOptions;
+		BackgroundColor = Options.DefaultPopupSettings.BackgroundColor;
 	}
 
 	/// <summary>
@@ -82,6 +88,17 @@ public partial class Popup : ContentView
 	{
 		get => base.VerticalOptions;
 		set => base.VerticalOptions = value;
+	}
+
+	/// <inheritdoc cref="IPopupOptions.CanBeDismissedByTappingOutsideOfPopup"/> />
+	/// <remarks>
+	/// When true and the user taps outside the popup, it will dismiss.
+	/// On Android - when false the hardware back button is disabled.
+	/// </remarks>
+	public bool CanBeDismissedByTappingOutsideOfPopup
+	{
+		get => (bool)GetValue(CanBeDismissedByTappingOutsideOfPopupProperty);
+		set => SetValue(CanBeDismissedByTappingOutsideOfPopupProperty, value);
 	}
 
 	/// <summary>

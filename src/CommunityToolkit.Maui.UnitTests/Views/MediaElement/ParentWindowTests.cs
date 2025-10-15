@@ -5,7 +5,7 @@ using ParentWindow = CommunityToolkit.Maui.Extensions.PageExtensions.ParentWindo
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class ParentWindowTests : BaseHandlerTest
+public class ParentWindowTests : BaseViewTest
 {
 	[Fact]
 	public void Exists_WhenParentWindowIsNull_ReturnsFalse()

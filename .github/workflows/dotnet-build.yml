@@ -22,7 +22,7 @@ env:
   NugetPackageVersionCamera: '99.0.0-preview${{ github.run_number }}'
   NugetPackageVersionMediaElement: '99.0.0-preview${{ github.run_number }}'
   NugetPackageVersionMaps: '99.0.0-preview${{ github.run_number }}'
-  TOOLKIT_NET_VERSION: '9.0.300'
+  TOOLKIT_NET_VERSION: '9.0.306'
   LATEST_NET_VERSION: '9.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
@@ -43,7 +43,7 @@ env:
   PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
   PathToCommunityToolkitAnalyzersUnitTestProjectDirectory: 'src/CommunityToolkit.Maui.Analyzers.UnitTests'
   PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
-  CommunityToolkitLibrary_Xcode_Version: '16.2'
+  CommunityToolkitLibrary_Xcode_Version: '26.0.1'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -59,7 +59,7 @@ jobs:
         os: [windows-latest, macos-15]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set Latest Xcode Version
         if: runner.os == 'macOS'
@@ -68,12 +68,12 @@ jobs:
           xcode-version: latest-stable
 
       - name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.LATEST_NET_VERSION }}
           dotnet-quality: 'ga'
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: 'microsoft'
           java-version: '17'
@@ -104,7 +104,7 @@ jobs:
         os: [windows-latest, macos-15]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set NuGet Version to Tag Number
         if: startsWith(github.ref, 'refs/tags/') && (!endsWith(github.ref, '-mediaelement') && !endsWith(github.ref, '-camera') && !endsWith(github.ref, '-maps'))
@@ -113,17 +113,17 @@ jobs:
 
       - name: Set NuGet Version to Tag Number for Camera
         if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-camera')
-        run: echo "NugetPackageVersionCamera=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        run: echo "NugetPackageVersionCamera=${GITHUB_REF#refs/tags/}" | sed 's/-camera$//' >> $GITHUB_ENV
         shell: bash
 
       - name: Set NuGet Version to Tag Number for MediaElement
         if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-mediaelement')
-        run: echo "NugetPackageVersionMediaElement=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        run: echo "NugetPackageVersionMediaElement=${GITHUB_REF#refs/tags/}" | sed 's/-mediaelement$//' >> $GITHUB_ENV
         shell: bash
 
       - name: Set NuGet Version to Tag Number for Maps
         if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-maps')
-        run: echo "NugetPackageVersionMaps=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        run: echo "NugetPackageVersionMaps=${GITHUB_REF#refs/tags/}" | sed 's/-maps$//' >> $GITHUB_ENV
         shell: bash
 
       - name: Set NuGet Version to PR Version
@@ -142,12 +142,12 @@ jobs:
           xcode-version: ${{ env.CommunityToolkitLibrary_Xcode_Version }}
 
       - name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
           dotnet-quality: 'ga'
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: 'microsoft'
           java-version: '17'
@@ -191,13 +191,13 @@ jobs:
         run: dotnet build ${{ env.PathToCommunityToolkitSourceGeneratorsInternalCsproj }} -c Release
 
       - name: 'Build CommunityToolkit.Maui.Camera'
-        run: dotnet build ${{ env.PathToCommunityToolkitCameraCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionCamera }} -p:Version=${{ env.NugetPackageVersion }}
+        run: dotnet build ${{ env.PathToCommunityToolkitCameraCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionCamera }} -p:Version=${{ env.NugetPackageVersionCamera }}
 
       - name: 'Build CommunityToolkit.Maui.MediaElement'
-        run: dotnet build ${{ env.PathToCommunityToolkitMediaElementCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionMediaElement }} -p:Version=${{ env.NugetPackageVersion }}
+        run: dotnet build ${{ env.PathToCommunityToolkitMediaElementCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionMediaElement }} -p:Version=${{ env.NugetPackageVersionMediaElement }}
 
       - name: 'Build CommunityToolkit.Maui.Maps'
-        run: dotnet build ${{ env.PathToCommunityToolkitMapsCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionMaps }} -p:Version=${{ env.NugetPackageVersion }}
+        run: dotnet build ${{ env.PathToCommunityToolkitMapsCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionMaps }} -p:Version=${{ env.NugetPackageVersionMaps }}
 
       - name: 'Build CommunityToolkit.Maui.Core'
         run: dotnet build ${{ env.PathToCommunityToolkitCoreCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }}
@@ -224,19 +224,19 @@ jobs:
         shell: bash
 
       - name: Pack CommunityToolkit.Maui.Core NuGet
-        run: dotnet pack -c Release ${{ env.PathToCommunityToolkitCoreCsproj }} -p:PackageVersion=${{ env.NugetPackageVersion }}
+        run: dotnet pack -c Release ${{ env.PathToCommunityToolkitCoreCsproj }} -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }}
 
       - name: Pack CommunityToolkit.Maui NuGet
-        run: dotnet pack -c Release ${{ env.PathToCommunityToolkitCsproj }} -p:PackageVersion=${{ env.NugetPackageVersion }}
+        run: dotnet pack -c Release ${{ env.PathToCommunityToolkitCsproj }} -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }}
 
       - name: Pack CommunityToolkit.Maui.Camera NuGet
-        run: dotnet pack -c Release ${{ env.PathToCommunityToolkitCameraCsproj }} -p:PackageVersion=${{ env.NugetPackageVersionCamera }}
+        run: dotnet pack -c Release ${{ env.PathToCommunityToolkitCameraCsproj }} -p:PackageVersion=${{ env.NugetPackageVersionCamera }} -p:Version=${{ env.NugetPackageVersionCamera }}
 
       - name: Pack CommunityToolkit.Maui.MediaElement NuGet
-        run: dotnet pack -c Release ${{ env.PathToCommunityToolkitMediaElementCsproj }} -p:PackageVersion=${{ env.NugetPackageVersionMediaElement }}
+        run: dotnet pack -c Release ${{ env.PathToCommunityToolkitMediaElementCsproj }} -p:PackageVersion=${{ env.NugetPackageVersionMediaElement }} -p:Version=${{ env.NugetPackageVersionMediaElement }}
 
       - name: Pack CommunityToolkit.Maui.Maps NuGet
-        run: dotnet pack -c Release ${{ env.PathToCommunityToolkitMapsCsproj }} -p:PackageVersion=${{ env.NugetPackageVersionMaps }}
+        run: dotnet pack -c Release ${{ env.PathToCommunityToolkitMapsCsproj }} -p:PackageVersion=${{ env.NugetPackageVersionMaps }} -p:Version=${{ env.NugetPackageVersionMaps }}
 
       - name: Copy NuGet Packages to Staging Directory
         if: ${{ runner.os == 'Windows' }} && !startsWith(github.ref, 'refs/tags/')
@@ -263,26 +263,26 @@ jobs:
 
   sign:
     needs: [build_library]
-    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    if: ${{ startsWith(github.ref, 'refs/tags/') || (github.event_name != 'pull_request') }}
     runs-on: windows-latest
     permissions:
       id-token: write # Required for requesting the JWT
 
     steps:
       - name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
           dotnet-quality: 'ga'
 
       - name: Download NuGet List
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: nuget-list
           path: ./
 
       - name: Download Package List
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: packages
           path: ./packages
@@ -335,7 +335,34 @@ jobs:
           path: |
             ${{ github.workspace }}/packages/**/*.nupkg
 
-  release:
+  release-main:
+    if: ${{ github.event_name != 'pull_request' && !startsWith(github.ref, 'refs/tags/') }}
+    needs: [sign]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+          dotnet-quality: 'ga'
+
+      - name: Download signed packages
+        uses: actions/download-artifact@v5
+        with:
+          name: signed-packages
+          path: ./packages
+
+      -  name: Upload artifact
+         if: github.event_name != 'pull_request'
+         run: >
+           dotnet nuget push
+           **/*.nupkg
+           --source "https://nuget.pkg.github.com/CommunityToolkit/index.json"
+           --api-key ${{ secrets.GITHUB_TOKEN }}
+           --skip-duplicate
+
+  release-nuget:
     if: ${{ startsWith(github.ref, 'refs/tags/') }}
     needs: [sign]
     environment: nuget-release-gate # This gates this job until manually approved
@@ -343,13 +370,13 @@ jobs:
 
     steps:
       - name: Install .NET SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
           dotnet-quality: 'ga'
 
       - name: Download signed packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: signed-packages
           path: ./packages

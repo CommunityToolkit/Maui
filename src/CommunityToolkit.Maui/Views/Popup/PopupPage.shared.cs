@@ -10,10 +10,10 @@ using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Views;
 
-sealed partial class PopupPage<T>(Popup<T> popup, IPopupOptions popupOptions)
+sealed partial class PopupPage<T>(Popup<T> popup, IPopupOptions? popupOptions)
 	: PopupPage(popup, popupOptions)
 {
-	public PopupPage(View view, IPopupOptions popupOptions)
+	public PopupPage(View view, IPopupOptions? popupOptions)
 		: this(view as Popup<T> ?? CreatePopupFromView<Popup<T>>(view), popupOptions)
 	{
 	}
@@ -26,34 +26,39 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	readonly Popup popup;
 	readonly IPopupOptions popupOptions;
 	readonly Command tapOutsideOfPopupCommand;
-	readonly WeakEventManager popupClosedEventManager = new();
 
-	public PopupPage(View view, IPopupOptions popupOptions)
+	public PopupPage(View view, IPopupOptions? popupOptions)
 		: this(view as Popup ?? CreatePopupFromView<Popup>(view), popupOptions)
 	{
 		ArgumentNullException.ThrowIfNull(view);
 	}
 
-	public PopupPage(Popup popup, IPopupOptions popupOptions)
+	public PopupPage(Popup popup, IPopupOptions? popupOptions)
 	{
 		ArgumentNullException.ThrowIfNull(popup);
-		ArgumentNullException.ThrowIfNull(popupOptions);
 
 		this.popup = popup;
-		this.popupOptions = popupOptions;
+		this.popupOptions = popupOptions ??= Options.DefaultPopupOptionsSettings;
 
 		tapOutsideOfPopupCommand = new Command(async () =>
 		{
 			popupOptions.OnTappingOutsideOfPopup?.Invoke();
 			await CloseAsync(new PopupResult(true));
-		}, () => popupOptions.CanBeDismissedByTappingOutsideOfPopup);
+		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
 
-		// Only set the content if the parent constructor hasn't set the content already; don't override content if it already exists
-		base.Content = new PopupPageLayout(popup, popupOptions, tapOutsideOfPopupCommand);
 
+		var pageTapGestureRecognizer = new TapGestureRecognizer();
+		pageTapGestureRecognizer.Tapped += HandleTapGestureRecognizerTapped;
+
+		base.Content = new PopupPageLayout(popup, popupOptions)
+		{
+			GestureRecognizers = { pageTapGestureRecognizer }
+		};
+
+		popup.PropertyChanged += HandlePopupPropertyChanged;
 		if (popupOptions is BindableObject bindablePopupOptions)
 		{
-			bindablePopupOptions.PropertyChanged += HandlePopupPropertyChanged;
+			bindablePopupOptions.PropertyChanged += HandlePopupOptionsPropertyChanged;
 		}
 
 		this.SetBinding(BindingContextProperty, static (Popup x) => x.BindingContext, source: popup, mode: BindingMode.OneWay);
@@ -63,11 +68,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
 	}
 
-	public event EventHandler<IPopupResult> PopupClosed
-	{
-		add => popupClosedEventManager.AddEventHandler(value);
-		remove => popupClosedEventManager.RemoveEventHandler(value);
-	}
+	public event EventHandler<IPopupResult>? PopupClosed;
 
 	// Prevent Content from being set by external class
 	// Casts `PopupPage.Content` to return typeof(PopupPageLayout)
@@ -101,16 +102,12 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		token.ThrowIfCancellationRequested();
 		await Navigation.PopModalAsync(false).WaitAsync(token);
 
-		popupClosedEventManager.HandleEvent(this, result, nameof(PopupClosed));
+		PopupClosed?.Invoke(this, result);
 	}
 
 	protected override bool OnBackButtonPressed()
 	{
-		// Only close the Popup if PopupOptions.CanBeDismissedByTappingOutsideOfPopup is true
-		if (popupOptions.CanBeDismissedByTappingOutsideOfPopup)
-		{
-			CloseAsync(new PopupResult(true), CancellationToken.None).SafeFireAndForget();
-		}
+		TryExecuteTapOutsideOfPopupCommand();
 
 		// Always return true to let the Android Operating System know that we are manually handling the Navigation request from the Android Back Button
 		return true;
@@ -119,6 +116,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
 	{
 		popup.NotifyPopupIsClosed();
+		base.Content.GestureRecognizers.Clear();
+		popup.PropertyChanged -= HandlePopupPropertyChanged;
 		base.OnNavigatedFrom(args);
 	}
 
@@ -134,15 +133,14 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		var popup = new T
 		{
-			BackgroundColor = view.BackgroundColor ??= PopupDefaults.BackgroundColor,
 			Content = view
 		};
 		popup.SetBinding(BackgroundProperty, static (View view) => view.Background, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(BindingContextProperty, static (View view) => view.BindingContext, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(BackgroundColorProperty, static (View view) => view.BackgroundColor, source: view, mode: BindingMode.OneWay);
-		popup.SetBinding(Popup.MarginProperty, static (View view) => view.Margin, source: view, mode: BindingMode.OneWay);
-		popup.SetBinding(Popup.VerticalOptionsProperty, static (View view) => view.VerticalOptions, source: view, mode: BindingMode.OneWay, converter: new VerticalOptionsConverter());
-		popup.SetBinding(Popup.HorizontalOptionsProperty, static (View view) => view.HorizontalOptions, source: view, mode: BindingMode.OneWay, converter: new HorizontalOptionsConverter());
+		popup.SetBinding(Popup.MarginProperty, static (View view) => view.Margin, source: view, mode: BindingMode.OneWay, converter: new MarginConverter());
+		popup.SetBinding(Popup.VerticalOptionsProperty, static (View view) => view.VerticalOptions, source: view, mode: BindingMode.OneWay);
+		popup.SetBinding(Popup.HorizontalOptionsProperty, static (View view) => view.HorizontalOptions, source: view, mode: BindingMode.OneWay);
 
 		if (view is IPaddingElement paddingElement)
 		{
@@ -152,9 +150,32 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		return popup;
 	}
 
-	void HandlePopupPropertyChanged(object? sender, PropertyChangedEventArgs e)
+	internal bool TryExecuteTapOutsideOfPopupCommand()
+	{
+		if (!tapOutsideOfPopupCommand.CanExecute(null))
+		{
+			return false;
+		}
+
+		tapOutsideOfPopupCommand.Execute(null);
+		return true;
+	}
+
+	// Only dismiss when a user taps outside Popup when **both** Popup.CanBeDismissedByTappingOutsideOfPopup and PopupOptions.CanBeDismissedByTappingOutsideOfPopup are true
+	// If either value is false, do not dismiss Popup
+	static bool GetCanBeDismissedByTappingOutsideOfPopup(in Popup popup, in IPopupOptions popupOptions) => popup.CanBeDismissedByTappingOutsideOfPopup & popupOptions.CanBeDismissedByTappingOutsideOfPopup;
+
+	void HandlePopupOptionsPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (e.PropertyName == nameof(IPopupOptions.CanBeDismissedByTappingOutsideOfPopup))
+		{
+			tapOutsideOfPopupCommand.ChangeCanExecute();
+		}
+	}
+
+	void HandlePopupPropertyChanged(object? sender, PropertyChangedEventArgs e)
+	{
+		if (e.PropertyName == Popup.CanBeDismissedByTappingOutsideOfPopupProperty.PropertyName)
 		{
 			tapOutsideOfPopupCommand.ChangeCanExecute();
 		}
@@ -173,40 +194,49 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 	}
 
+	void HandleTapGestureRecognizerTapped(object? sender, TappedEventArgs e)
+	{
+		ArgumentNullException.ThrowIfNull(sender);
+
+		var popupPageLayout = (PopupPageLayout)sender;
+		var position = e.GetPosition(Content);
+
+		if (position is null)
+		{
+			return;
+		}
+
+		// Execute tapOutsideOfPopupCommand only if tap occurred outside the PopupBorder 
+		if (popupPageLayout.PopupBorder.Bounds.Contains(position.Value) is false)
+		{
+			TryExecuteTapOutsideOfPopupCommand();
+		}
+	}
+
 	internal sealed partial class PopupPageLayout : Grid
 	{
-		public PopupPageLayout(in Popup popupContent, in IPopupOptions options, in ICommand tapOutsideOfPopupCommand)
+		public PopupPageLayout(in Popup popupContent, in IPopupOptions options)
 		{
 			Background = BackgroundColor = null;
 
-			var tappableBackground = new BoxView
-			{
-				BackgroundColor = Colors.Transparent,
-				HorizontalOptions = LayoutOptions.Fill,
-				VerticalOptions = LayoutOptions.Fill
-			};
-			tappableBackground.GestureRecognizers.Add(new TapGestureRecognizer { Command = tapOutsideOfPopupCommand });
-			Children.Add(tappableBackground); // Add the Tappable Background to the PopupPageLayout Grid before adding the Border to ensure the Border is displayed on top
-
 			PopupBorder = new Border
 			{
-				BackgroundColor = popupContent.BackgroundColor ??= PopupDefaults.BackgroundColor,
+				BackgroundColor = popupContent.BackgroundColor ??= Options.DefaultPopupSettings.BackgroundColor,
 				Content = popupContent
 			};
 
 			// Bind `Popup` values through to Border using OneWay Bindings 
-			PopupBorder.SetBinding(Border.MarginProperty, static (Popup popup) => popup.Margin, source: popupContent, mode: BindingMode.OneWay);
-			PopupBorder.SetBinding(Border.PaddingProperty, static (Popup popup) => popup.Padding, source: popupContent, mode: BindingMode.OneWay);
+			PopupBorder.SetBinding(Border.MarginProperty, static (Popup popup) => popup.Margin, source: popupContent, mode: BindingMode.OneWay, converter: new MarginConverter());
 			PopupBorder.SetBinding(Border.BackgroundProperty, static (Popup popup) => popup.Background, source: popupContent, mode: BindingMode.OneWay);
-			PopupBorder.SetBinding(Border.BackgroundColorProperty, static (Popup popup) => popup.BackgroundColor, source: popupContent, mode: BindingMode.OneWay);
-			PopupBorder.SetBinding(Border.VerticalOptionsProperty, static (Popup popup) => popup.VerticalOptions, source: popupContent, mode: BindingMode.OneWay);
-			PopupBorder.SetBinding(Border.HorizontalOptionsProperty, static (Popup popup) => popup.HorizontalOptions, source: popupContent, mode: BindingMode.OneWay);
+			PopupBorder.SetBinding(Border.BackgroundColorProperty, static (Popup popup) => popup.BackgroundColor, source: popupContent, mode: BindingMode.OneWay, converter: new BackgroundColorConverter());
+			PopupBorder.SetBinding(Border.VerticalOptionsProperty, static (Popup popup) => popup.VerticalOptions, source: popupContent, mode: BindingMode.OneWay, converter: new VerticalOptionsConverter());
+			PopupBorder.SetBinding(Border.HorizontalOptionsProperty, static (Popup popup) => popup.HorizontalOptions, source: popupContent, mode: BindingMode.OneWay, converter: new HorizontalOptionsConverter());
 
 			// Bind `PopupOptions` values through to Border using OneWay Bindings
 			PopupBorder.SetBinding(Border.ShadowProperty, static (IPopupOptions options) => options.Shadow, source: options, mode: BindingMode.OneWay);
-			PopupBorder.SetBinding(Border.StrokeProperty, static (IPopupOptions options) => options.Shape, source: options, converter: new BorderStrokeConverter(), mode: BindingMode.OneWay);
+			PopupBorder.SetBinding(Border.StrokeProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay, converter: new BorderStrokeConverter());
 			PopupBorder.SetBinding(Border.StrokeShapeProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay);
-			PopupBorder.SetBinding(Border.StrokeThicknessProperty, static (IPopupOptions options) => options.Shape, source: options, converter: new BorderStrokeThicknessConverter(), mode: BindingMode.OneWay);
+			PopupBorder.SetBinding(Border.StrokeThicknessProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay, converter: new BorderStrokeThicknessConverter());
 
 			Children.Add(PopupBorder);
 		}
@@ -215,37 +245,51 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		sealed partial class BorderStrokeThicknessConverter : BaseConverterOneWay<Shape?, double>
 		{
-			public override double DefaultConvertReturnValue { get; set; } = PopupOptionsDefaults.BorderStrokeThickness;
+			public override double DefaultConvertReturnValue { get; set; } = Options.DefaultPopupOptionsSettings.Shape?.StrokeThickness ?? 0;
 
 			public override double ConvertFrom(Shape? value, CultureInfo? culture) => value?.StrokeThickness ?? 0;
 		}
 
 		sealed partial class BorderStrokeConverter : BaseConverterOneWay<Shape?, Brush?>
 		{
-			public override Brush? DefaultConvertReturnValue { get; set; } = PopupOptionsDefaults.BorderStroke;
+			public override Brush? DefaultConvertReturnValue { get; set; } = Options.DefaultPopupOptionsSettings.Shape?.Stroke;
 
 			public override Brush? ConvertFrom(Shape? value, CultureInfo? culture) => value?.Stroke;
+		}
+
+		sealed partial class HorizontalOptionsConverter : BaseConverterOneWay<LayoutOptions, LayoutOptions>
+		{
+			public override LayoutOptions DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.HorizontalOptions;
+
+			public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? Options.DefaultPopupSettings.HorizontalOptions : value;
+		}
+
+		sealed partial class VerticalOptionsConverter : BaseConverterOneWay<LayoutOptions, LayoutOptions>
+		{
+			public override LayoutOptions DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.VerticalOptions;
+
+			public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? Options.DefaultPopupSettings.VerticalOptions : value;
+		}
+
+		sealed partial class BackgroundColorConverter : BaseConverterOneWay<Color?, Color>
+		{
+			public override Color DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.BackgroundColor;
+
+			public override Color ConvertFrom(Color? value, CultureInfo? culture) => value ?? Options.DefaultPopupSettings.BackgroundColor;
 		}
 	}
 
 	sealed partial class PaddingConverter : BaseConverterOneWay<Thickness, Thickness>
 	{
-		public override Thickness DefaultConvertReturnValue { get; set; } = PopupDefaults.Padding;
+		public override Thickness DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.Padding;
 
-		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value == default ? PopupDefaults.Padding : value;
+		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value == default ? Options.DefaultPopupSettings.Padding : value;
 	}
 
-	sealed partial class HorizontalOptionsConverter : BaseConverterOneWay<LayoutOptions, LayoutOptions>
+	sealed partial class MarginConverter : BaseConverterOneWay<Thickness, Thickness>
 	{
-		public override LayoutOptions DefaultConvertReturnValue { get; set; } = PopupDefaults.HorizontalOptions;
+		public override Thickness DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.Margin;
 
-		public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? PopupDefaults.HorizontalOptions : value;
-	}
-
-	sealed partial class VerticalOptionsConverter : BaseConverterOneWay<LayoutOptions, LayoutOptions>
-	{
-		public override LayoutOptions DefaultConvertReturnValue { get; set; } = PopupDefaults.VerticalOptions;
-
-		public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? PopupDefaults.VerticalOptions : value;
+		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value == default ? Options.DefaultPopupSettings.Margin : value;
 	}
 }

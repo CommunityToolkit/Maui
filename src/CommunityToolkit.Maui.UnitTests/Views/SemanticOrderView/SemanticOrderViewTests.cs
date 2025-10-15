@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class SemanticOrderViewTests : BaseHandlerTest
+public class SemanticOrderViewTests : BaseViewTest
 {
 	readonly ISemanticOrderView semanticOrderView = new MockSemanticOrderView();
 

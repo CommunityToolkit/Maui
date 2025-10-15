@@ -9,7 +9,7 @@ using Xunit;
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
 [Collection(nameof(DrawingViewTests)), CollectionDefinition(nameof(DrawingViewTests), DisableParallelization = true)]
-public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerTest
+public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseViewTest
 {
 	[Fact]
 	public void DrawingViewShouldBeAssignedToIDrawingView()

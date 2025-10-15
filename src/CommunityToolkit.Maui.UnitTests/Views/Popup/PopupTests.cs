@@ -7,19 +7,27 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class PopupTests : BaseHandlerTest
+public class PopupTests : BaseViewTest
 {
 	[Fact]
 	public void PopupBackgroundColor_DefaultValue_ShouldBeWhite()
 	{
-		Assert.Equal(PopupDefaults.BackgroundColor, Colors.White);
+		var popup = new Popup();
+		Assert.Equal(Colors.White, popup.BackgroundColor);
+	}
+
+	[Fact]
+	public void CanBeDismissedByTappingOutsideOfPopup_DefaultValue_ShouldBeTrue()
+	{
+		var popup = new Popup();
+		Assert.True(popup.CanBeDismissedByTappingOutsideOfPopup);
 	}
 
 	[Fact]
 	public void Margin_DefaultValue_ShouldBeDefaultThickness()
 	{
 		var popup = new Popup();
-		Assert.Equal(PopupDefaults.Margin, popup.Margin);
+		Assert.Equal(new Thickness(30), popup.Margin);
 	}
 
 	[Fact]
@@ -35,7 +43,7 @@ public class PopupTests : BaseHandlerTest
 	public void Padding_DefaultValue_ShouldBeDefaultThickness()
 	{
 		var popup = new Popup();
-		Assert.Equal(PopupDefaults.Padding, popup.Padding);
+		Assert.Equal(new Thickness(15), popup.Padding);
 	}
 
 	[Fact]
@@ -51,7 +59,7 @@ public class PopupTests : BaseHandlerTest
 	public void VerticalOptions_DefaultValue_ShouldBeDefaultLayoutOptions()
 	{
 		var popup = new Popup();
-		Assert.Equal(PopupDefaults.VerticalOptions, popup.VerticalOptions);
+		Assert.Equal(LayoutOptions.Center, popup.VerticalOptions);
 	}
 
 	[Fact]
@@ -67,7 +75,7 @@ public class PopupTests : BaseHandlerTest
 	public void HorizontalOptions_DefaultValue_ShouldBeDefaultLayoutOptions()
 	{
 		var popup = new Popup();
-		Assert.Equal(PopupDefaults.HorizontalOptions, popup.HorizontalOptions);
+		Assert.Equal(LayoutOptions.Center, popup.HorizontalOptions);
 	}
 
 	[Fact]
@@ -151,7 +159,7 @@ public class PopupTests : BaseHandlerTest
 		await popup.CloseAsync(TestContext.Current.CancellationToken);
 		await popup.CloseAsync("Hello", TestContext.Current.CancellationToken);
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_TaskShouldCompleteWhenPopupCloseAsyncIsCalled()
 	{
