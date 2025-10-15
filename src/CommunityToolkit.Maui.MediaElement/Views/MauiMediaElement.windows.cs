@@ -149,7 +149,17 @@ public partial class MauiMediaElement : Grid, IDisposable
 
 		if (disposing)
 		{
+			mediaPlayerElement.MediaPlayer.Pause();
+			
+			if(mediaPlayerElement.MediaPlayer.Source is Windows.Media.Core.MediaSource mediaSource)
+			{
+				// Dispose the MediaSource to release the resources
+				// https://learn.microsoft.com/en-us/windows/uwp/audio-video-camera/play-audio-and-video-with-mediaplayer Shows how to dispose the MediaSource
+				mediaSource.Dispose();
+			}
+			mediaPlayerElement.MediaPlayer.Source = null;
 			mediaPlayerElement.MediaPlayer.Dispose();
+			mediaPlayerElement.SetMediaPlayer(null);
 		}
 
 		isDisposed = true;
