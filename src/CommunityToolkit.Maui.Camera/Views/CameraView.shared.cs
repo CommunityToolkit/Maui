@@ -253,9 +253,9 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// Set Extension Mode
 	/// </summary>
 	/// <param name="mode">mode</param>
-	public Task SetExtensionMode(int mode)
+	public Task SetExtensionMode(int mode, CancellationToken token = default)
 	{
-		return Handler.CameraManager.SetExtensionMode(mode);
+		return Handler.CameraManager.SetExtensionMode(mode, token);
 	}
 #endif
 

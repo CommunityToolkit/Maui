@@ -44,7 +44,7 @@ partial class CameraManager
 	Stream? videoRecordingStream;
 	int extensionMode = ExtensionMode.Auto;
 
-	public async Task SetExtensionMode(int mode)
+	public async Task SetExtensionMode(int mode, CancellationToken token)
 	{
 		extensionMode = mode;
 		if (cameraView.SelectedCamera is null
@@ -56,7 +56,7 @@ partial class CameraManager
 			return;
 		}
 
-		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, cameraPreview, imageCapture, videoCapture);
+		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, token, cameraPreview, imageCapture, videoCapture);
 
 		cameraControl = camera.CameraControl;
 	}
@@ -268,7 +268,7 @@ partial class CameraManager
 			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 		}
 
-		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, cameraPreview, imageCapture, videoCapture);
+		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, token, cameraPreview, imageCapture, videoCapture);
 		cameraControl = camera.CameraControl;
 
 		var point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
