@@ -5,8 +5,6 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-[RequiresUnreferencedCode("Expander is not trim safe")]
-[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 public partial class ExpanderPageCS : ContentPage
 {
 	public ExpanderPageCS()

@@ -31,18 +31,15 @@
 
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     
-    <!-- Remove this NoWarn once XamlTypeInfo Generator (owned by .NET MAUI Engineering Team) implements a partial class-->
-    <NoWarn>CsWinRT1028</NoWarn>
+    <NoWarn>IL2026</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'
-                              AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'tizen'
-                              AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'android'
-                              AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
-    <!-- Ahead-of-time compilation is not yet supported net8.0-tizen -->
-    <!-- Cross-OS native compilation is not supported net8.0-android -->
-    <!-- Only iOS + MacCatalyst support AOT in .NET 9 -->
-    <PublishAot>true</PublishAot>
+      AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
+    <!-- Windows error NETSDK1102: Optimizing assemblies for size is not supported for the selected publish configuration. -->
+    <PublishAot>false</PublishAot>
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
   </PropertyGroup>
 
   <ItemGroup>    
@@ -67,7 +64,7 @@
     <PackageReference Include="CommunityToolkit.Maui.Markup" Version="6.0.1" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="9.10.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0-rc.2.25502.107" />
   </ItemGroup>
 
   <PropertyGroup>

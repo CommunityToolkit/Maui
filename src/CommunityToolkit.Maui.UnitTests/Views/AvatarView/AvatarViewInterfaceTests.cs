@@ -296,7 +296,7 @@ public class AvatarViewInterfaceTests : BaseViewTest
 	{
 		// For code coverage
 		var avatarView = new Maui.Views.AvatarView();
-		((Microsoft.Maui.Controls.Internals.ILineHeightElement)avatarView).OnLineHeightChanged(0.0, 3.7);
+		((ILineHeightElement)avatarView).OnLineHeightChanged(0.0, 3.7);
 		avatarView.Text.Should().Be("?");
 	}
 }
