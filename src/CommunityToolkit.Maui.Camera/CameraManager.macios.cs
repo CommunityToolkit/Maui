@@ -200,7 +200,7 @@ partial class CameraManager
 
 	protected virtual async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
 	{
-		var isPermissionGranted = await AVCaptureDevice.RequestAccessForMediaTypeAsync(AVAuthorizationMediaType.Video);
+		var isPermissionGranted = await AVCaptureDevice.RequestAccessForMediaTypeAsync(AVAuthorizationMediaType.Video).WaitAsync(token);
 		if (!isPermissionGranted)
 		{
 			throw new CameraException("Camera permission is not granted. Please enable it in the app settings.");
@@ -235,7 +235,7 @@ partial class CameraManager
 			var audioDevice = AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Audio);
 			if (audioDevice is not null)
 			{
-				audioInput = new AVCaptureDeviceInput(audioDevice, out var audioError);
+				audioInput = new AVCaptureDeviceInput(audioDevice, out NSError? audioError);
 				if (audioError is null && captureSession.CanAddInput(audioInput))
 				{
 					captureSession.AddInput(audioInput);
@@ -283,7 +283,12 @@ partial class CameraManager
 
 	protected virtual async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
 	{
-		if (captureSession is null || videoRecordingFileName is null || videoInput is null || videoOutput is null || videoRecordingStream is null || videoRecordingFinalizeTcs is null)
+		if (captureSession is null 
+		    || videoRecordingFileName is null 
+		    || videoInput is null 
+		    || videoOutput is null 
+		    || videoRecordingStream is null 
+		    || videoRecordingFinalizeTcs is null)
 		{
 			return Stream.Null;
 		}
