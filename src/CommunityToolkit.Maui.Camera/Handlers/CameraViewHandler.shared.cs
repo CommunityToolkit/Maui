@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
@@ -88,11 +89,7 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	{
 		base.ConnectHandler(platformView);
 
-		if (!await CameraManager.ArePermissionsGranted())
-		{
-			return;
-		}
-
+		await CameraManager.ArePermissionsGranted();
 		await CameraManager.ConnectCamera(CancellationToken.None);
 		await cameraProvider.RefreshAvailableCameras(CancellationToken.None);
 	}
