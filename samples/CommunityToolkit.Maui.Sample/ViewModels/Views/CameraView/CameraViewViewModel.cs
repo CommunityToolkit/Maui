@@ -66,13 +66,36 @@ public partial class CameraViewViewModel : BaseViewModel
 		UpdateResolutionText();
 	}
 
+	partial void OnSelectedCameraChanged(CameraInfo? oldValue, CameraInfo? newValue)
+	{
+		UpdateCameraInfoText();
+	}
+
+	void UpdateCameraInfoText()
+	{
+		if (SelectedCamera is null)
+		{
+			CameraNameText = string.Empty;
+			ZoomRangeText = string.Empty;
+		}
+		else
+		{
+			CameraNameText = $"{SelectedCamera.Name}";
+			ZoomRangeText = $"Min Zoom: {SelectedCamera.MinimumZoomFactor}, Max Zoom: {SelectedCamera.MaximumZoomFactor}";
+			UpdateFlashModeText();
+		}
+	}
+
 	void UpdateFlashModeText()
 	{
 		if (SelectedCamera is null)
 		{
-			return;
+			FlashModeText = string.Empty;
 		}
-		FlashModeText = $"{(SelectedCamera.IsFlashSupported ? $"Flash mode: {FlashMode}" : "Flash not supported")}";
+		else
+		{
+			FlashModeText = $"{(SelectedCamera.IsFlashSupported ? $"Flash mode: {FlashMode}" : "Flash not supported")}";
+		}
 	}
 
 	void UpdateCurrentZoomText()
