@@ -207,14 +207,8 @@ public partial class CameraView : View, ICameraView, IDisposable
 		if (CameraProvider.AvailableCameras is null)
 		{
 			await CameraProvider.RefreshAvailableCameras(token);
-
-			if (CameraProvider.AvailableCameras is null)
-			{
-				throw new CameraException("Unable to refresh available cameras");
-			}
 		}
-
-		return CameraProvider.AvailableCameras;
+		return CameraProvider.AvailableCameras ?? throw new CameraException("No camera available on device");
 	}
 
 	/// <inheritdoc cref="ICameraView.CaptureImage"/>

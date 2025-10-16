@@ -77,24 +77,18 @@ partial class CameraManager
 		captureDevice.UnlockForConfiguration();
 	}
 
-	public async partial ValueTask UpdateCaptureResolution(Size resolution, CancellationToken token)
+	public partial ValueTask UpdateCaptureResolution(Size resolution, CancellationToken token)
 	{
-		if (captureDevice is null)
+		if (captureDevice is null || cameraView.SelectedCamera is null)
 		{
-			return;
+			return ValueTask.CompletedTask;
 		}
 
 		captureDevice.LockForConfiguration(out NSError? error);
 		if (error is not null)
 		{
 			Trace.WriteLine(error);
-			return;
-		}
-
-		if (cameraView.SelectedCamera is null)
-		{
-			await cameraProvider.RefreshAvailableCameras(token);
-			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
+			return ValueTask.CompletedTask;
 		}
 
 		var filteredFormatList = cameraView.SelectedCamera.SupportedFormats.Where(f =>
@@ -116,20 +110,11 @@ partial class CameraManager
 		}
 
 		captureDevice.UnlockForConfiguration();
+		return ValueTask.CompletedTask;
 	}
 
 	protected virtual async partial Task PlatformConnectCamera(CancellationToken token)
 	{
-		if (cameraProvider.AvailableCameras is null)
-		{
-			await cameraProvider.RefreshAvailableCameras(token);
-
-			if (cameraProvider.AvailableCameras is null)
-			{
-				throw new CameraException("Unable to refresh cameras");
-			}
-		}
-
 		await PlatformStartCameraPreview(token);
 	}
 
@@ -148,11 +133,7 @@ partial class CameraManager
 			input.Dispose();
 		}
 
-		if (cameraView.SelectedCamera is null)
-		{
-			await cameraProvider.RefreshAvailableCameras(token);
-			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
-		}
+		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
 		captureDevice = cameraView.SelectedCamera.CaptureDevice ?? throw new CameraException($"No Camera found");
 		captureInput = new AVCaptureDeviceInput(captureDevice, out _);
