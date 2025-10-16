@@ -10,23 +10,22 @@ static class PageExtensions
 		{
 			return modal;
 		}
-
-		if (currentPage is FlyoutPage flyoutPage)
+		else if (currentPage is FlyoutPage fp)
 		{
-			return GetCurrentPage(flyoutPage.Detail);
+			return GetCurrentPage(fp.Detail);
 		}
-
-		if (currentPage is Shell { CurrentItem.CurrentItem: IShellSectionController shellSectionController })
+		else if (currentPage is Shell shell && shell.CurrentItem?.CurrentItem is IShellSectionController ssc)
 		{
-			return shellSectionController.PresentedPage;
+			return ssc.PresentedPage;
 		}
-
-		if (currentPage is IPageContainer<Page> paigeContainer)
+		else if (currentPage is IPageContainer<Page> pc)
 		{
-			return GetCurrentPage(paigeContainer.CurrentPage);
+			return GetCurrentPage(pc.CurrentPage);
 		}
-
-		return currentPage;
+		else
+		{
+			return currentPage;
+		}
 	}
 
 	internal record struct ParentWindow
