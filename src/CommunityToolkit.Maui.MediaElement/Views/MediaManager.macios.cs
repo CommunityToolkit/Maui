@@ -318,7 +318,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		var videoTrack = PlayerItem.Asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant()).FirstOrDefault();
+		var videoTrack = PlayerItem.Asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant() ?? "0").FirstOrDefault();
 		if (videoTrack is not null)
 		{
 			return;
@@ -513,7 +513,7 @@ public partial class MediaManager : IDisposable
 		var asset = avPlayerItem.Asset;
 
 		// Retrieve the video track
-		var videoTrack = asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant()).FirstOrDefault();
+		var videoTrack = asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant() ?? "0").FirstOrDefault();
 
 		if (videoTrack is not null)
 		{
