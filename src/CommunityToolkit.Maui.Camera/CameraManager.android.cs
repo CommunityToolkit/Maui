@@ -19,6 +19,8 @@ namespace CommunityToolkit.Maui.Core;
 partial class CameraManager
 {
 	readonly Context context = mauiContext.Context ?? throw new CameraException($"Unable to retrieve {nameof(Context)}");
+	
+	readonly IList<UseCase> additionalUseCases = [];
 
 	NativePlatformCameraPreviewView? previewView;
 	IExecutorService? cameraExecutor;
@@ -220,7 +222,14 @@ partial class CameraManager
 		var cameraSelector = cameraView.SelectedCamera.CameraSelector ?? throw new CameraException($"Unable to retrieve {nameof(CameraSelector)}");
 
 		var owner = (ILifecycleOwner)context;
-		camera = processCameraProvider.BindToLifecycle(owner, cameraSelector, cameraPreview, imageCapture);
+		camera = processCameraProvider.BindToLifecycle(
+			owner, 
+			cameraSelector, 
+			[
+				.. additionalUseCases,
+				cameraPreview,
+				imageCapture
+			]);
 
 		cameraControl = camera.CameraControl;
 
@@ -256,6 +265,26 @@ partial class CameraManager
 
 		imageCapture?.TakePicture(cameraExecutor, imageCallback);
 		return ValueTask.CompletedTask;
+	}
+	
+	internal virtual partial void AddPlatformScenario(PlatformCameraScenario scenario)
+	{
+		AddUseCase(scenario.UseCase);
+	}
+	
+	internal virtual partial void RemovePlatformScenario(PlatformCameraScenario scenario)
+	{
+		RemoveUseCase(scenario.UseCase);
+	}
+	
+	internal void AddUseCase(UseCase useCase)
+	{
+		additionalUseCases.Add(useCase);
+	}
+
+	internal void RemoveUseCase(UseCase useCase)
+	{
+		additionalUseCases.Remove(useCase);
 	}
 
 	void SetImageCaptureTargetRotation(int rotation)

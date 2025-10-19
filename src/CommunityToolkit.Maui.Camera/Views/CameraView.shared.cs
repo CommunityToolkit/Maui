@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Runtime.Versioning;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
@@ -18,6 +19,24 @@ public partial class CameraView : View, ICameraView, IDisposable
 	static readonly BindablePropertyKey isAvailablePropertyKey =
 		BindableProperty.CreateReadOnly(nameof(IsAvailable), typeof(bool), typeof(CameraView), CameraViewDefaults.IsAvailable);
 
+	internal static readonly BindablePropertyKey ScenariosPropertyKey = BindableProperty.CreateReadOnly(nameof(Scenarios), typeof(IList<CameraScenario>), typeof(CameraView), default(IList<CameraScenario>),
+		defaultValueCreator: bindable =>
+		{
+			var collection = new ObservableCollection<CameraScenario>();
+			return collection;
+		});
+
+	/// <summary>Bindable property for <see cref="CameraScenario"/>.</summary>
+	public static readonly BindableProperty ScenariosProperty = ScenariosPropertyKey.BindableProperty;
+	
+	/// <summary>
+	/// 
+	/// </summary>
+	public IList<CameraScenario> Scenarios
+	{
+		get { return (IList<CameraScenario>)GetValue(ScenariosProperty); }
+	}
+	
 	/// <summary>
 	/// Backing <see cref="BindableProperty"/> for the <see cref="CameraFlashMode"/> property.
 	/// </summary>
@@ -251,12 +270,26 @@ public partial class CameraView : View, ICameraView, IDisposable
 	}
 
 	/// <inheritdoc cref="ICameraView.StartCameraPreview"/>
-	public Task StartCameraPreview(CancellationToken token) =>
-		Handler.CameraManager.StartCameraPreview(token);
+	public Task StartCameraPreview(CancellationToken token)
+	{
+		foreach (var scenario in Scenarios)
+		{
+			Handler.CameraManager.AddScenario(scenario);			
+		}
+		
+		return Handler.CameraManager.StartCameraPreview(token);
+	}
 
 	/// <inheritdoc cref="ICameraView.StopCameraPreview"/>
-	public void StopCameraPreview() =>
+	public void StopCameraPreview()
+	{
+		foreach (var scenario in Scenarios)
+		{
+			Handler.CameraManager.RemoveScenario(scenario);			
+		}
+		
 		Handler.CameraManager.StopCameraPreview();
+	}
 
 	/// <inheritdoc/>
 	protected virtual void Dispose(bool disposing)
