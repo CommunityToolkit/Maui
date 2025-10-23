@@ -12,5 +12,5 @@ public static class NavigatedToEventArgsExtensions
 	/// </summary>
 	/// <param name="args">The current <see cref="NavigatedToEventArgs"/>.</param>
 	/// <returns>A boolean indicating whether the previous page was a Community Toolkit <see cref="Popup"/>.</returns>
-	public static bool WasPreviousPageAToolkitPopup(this NavigatedToEventArgs args) => args.PreviousPage is PopupPage;
+	public static bool WasPreviousPageACommunityToolkitPopupPage(this NavigatedToEventArgs args) => args.PreviousPage is PopupPage;
 }
