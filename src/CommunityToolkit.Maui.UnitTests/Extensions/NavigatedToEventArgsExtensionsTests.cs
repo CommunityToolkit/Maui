@@ -13,7 +13,6 @@ public class NavigatedToEventArgsExtensionsTests : BaseViewTest
 		// Arrange
 		TaskCompletionSource<bool?> wasPreviousPageACommunityToolkitPopupPageTCS = new();
 		var application = (MockApplication)ServiceProvider.GetRequiredService<IApplication>();
-		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>();
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 
 		var shell = (Shell)(application.Windows[0].Page ?? throw new InvalidOperationException("Unable to retrieve Shell"));
@@ -50,19 +49,11 @@ public class NavigatedToEventArgsExtensionsTests : BaseViewTest
 		// Arrange
 		TaskCompletionSource<bool?> wasPreviousPageACommunityToolkitPopupPageTCS = new();
 		var application = (MockApplication)ServiceProvider.GetRequiredService<IApplication>();
-		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>();
-		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 
 		var shell = (Shell)(application.Windows[0].Page ?? throw new InvalidOperationException("Unable to retrieve Shell"));
 		var mainPage = shell.CurrentPage;
 		var shellContentPage = new ShellContentPage();
 		shellContentPage.NavigatedToEventArgsReceived += HandleNavigatedToEventArgsReceived;
-
-		var shellParameters = new Dictionary<string, object>
-		{
-			{ nameof(ContentPage.BackgroundColor), Colors.Orange }
-		};
-
 
 		// Act
 		await mainPage.Navigation.PushAsync(shellContentPage);
