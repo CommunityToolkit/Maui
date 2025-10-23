@@ -11,7 +11,7 @@ public interface ICameraProvider
 	/// Event fires when the contents <see cref="AvailableCameras"/> has changed
 	/// </summary>
 	event EventHandler<IReadOnlyList<CameraInfo>?> AvailableCamerasChanged;
-	
+
 	/// <summary>
 	/// Cameras available on device
 	/// </summary>

@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.InteropServices;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
@@ -8,7 +9,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Markup;
-using WinRT.Interop;
 using Application = Microsoft.Maui.Controls.Application;
 using Grid = Microsoft.UI.Xaml.Controls.Grid;
 using Page = Microsoft.Maui.Controls.Page;
@@ -20,7 +20,17 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public partial class MauiMediaElement : Grid, IDisposable
 {
-	static readonly AppWindow appWindow = GetAppWindowForCurrentWindow();
+	[LibraryImport("user32.dll")]
+	internal static partial IntPtr GetForegroundWindow();
+
+	/// <summary>
+	/// Safely gets the foreground window handle, returning null if no foreground window exists.
+	/// </summary>
+	internal static IntPtr? TryGetForegroundWindow()
+	{
+		var hwnd = GetForegroundWindow();
+		return hwnd == IntPtr.Zero ? null : hwnd;
+	}
 	readonly Popup popup = new();
 	readonly Grid fullScreenGrid = new();
 	readonly MediaPlayerElement mediaPlayerElement;
@@ -139,7 +149,17 @@ public partial class MauiMediaElement : Grid, IDisposable
 
 		if (disposing)
 		{
+			mediaPlayerElement.MediaPlayer.Pause();
+			
+			if(mediaPlayerElement.MediaPlayer.Source is Windows.Media.Core.MediaSource mediaSource)
+			{
+				// Dispose the MediaSource to release the resources
+				// https://learn.microsoft.com/en-us/windows/uwp/audio-video-camera/play-audio-and-video-with-mediaplayer Shows how to dispose the MediaSource
+				mediaSource.Dispose();
+			}
+			mediaPlayerElement.MediaPlayer.Source = null;
 			mediaPlayerElement.MediaPlayer.Dispose();
+			mediaPlayerElement.SetMediaPlayer(null);
 		}
 
 		isDisposed = true;
@@ -147,24 +167,16 @@ public partial class MauiMediaElement : Grid, IDisposable
 
 	static AppWindow GetAppWindowForCurrentWindow()
 	{
-		// let's cache the CurrentPage here, since the user can navigate or background the app
-		// while this method is running
-		var currentPage = CurrentPage;
-
-		if (currentPage?.GetParentWindow().Handler.PlatformView is not MauiWinUIWindow window)
-		{
-			throw new InvalidOperationException($"{nameof(window)} cannot be null.");
-		}
-
-		var handle = WindowNative.GetWindowHandle(window);
-		var id = Win32Interop.GetWindowIdFromWindow(handle);
-
+		var windowHandle = TryGetForegroundWindow() ?? throw new InvalidOperationException("No foreground window found.");
+		var id = Win32Interop.GetWindowIdFromWindow(windowHandle);
 		return AppWindow.GetFromWindowId(id);
 	}
 
 	void OnFullScreenButtonClick(object sender, RoutedEventArgs e)
 	{
 		var currentPage = CurrentPage;
+		var appWindow = GetAppWindowForCurrentWindow();
+
 		if (appWindow.Presenter.Kind is AppWindowPresenterKind.FullScreen)
 		{
 			appWindow.SetPresenter(AppWindowPresenterKind.Default);

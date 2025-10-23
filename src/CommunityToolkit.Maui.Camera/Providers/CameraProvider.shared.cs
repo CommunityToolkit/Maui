@@ -6,7 +6,7 @@
 partial class CameraProvider : ICameraProvider
 {
 	readonly WeakEventManager availableCamerasChangedEventManager = new();
-	
+
 	public event EventHandler<IReadOnlyList<CameraInfo>?> AvailableCamerasChanged
 	{
 		add => availableCamerasChangedEventManager.AddEventHandler(value);
@@ -22,7 +22,7 @@ partial class CameraProvider : ICameraProvider
 			if (!AreCameraInfoListsEqual(field, value))
 			{
 				field = value;
-				availableCamerasChangedEventManager.HandleEvent(this, value, nameof(AvailableCamerasChanged));	
+				availableCamerasChangedEventManager.HandleEvent(this, value, nameof(AvailableCamerasChanged));
 			}
 		}
 	}
