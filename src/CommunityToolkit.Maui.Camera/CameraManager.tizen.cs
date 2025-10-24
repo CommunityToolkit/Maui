@@ -23,4 +23,7 @@ partial class CameraManager
 	protected virtual partial void PlatformDisconnect() => throw new NotSupportedException(notSupportedMessage);
 
 	protected virtual partial ValueTask PlatformTakePicture(CancellationToken token) => throw new NotSupportedException(notSupportedMessage);
+	protected virtual partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token) => throw new NotSupportedException(notSupportedMessage);
+	protected virtual partial Task<Stream> PlatformStopVideoRecording(CancellationToken token) => throw new NotSupportedException(notSupportedMessage);
+
 }
