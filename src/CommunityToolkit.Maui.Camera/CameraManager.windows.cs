@@ -1,5 +1,4 @@
-﻿using System.Runtime.Versioning;
-using CommunityToolkit.Maui.Extensions;
+﻿using CommunityToolkit.Maui.Extensions;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Media.Capture;
 using Windows.Media.Capture.Frames;
@@ -8,12 +7,13 @@ using Windows.Media.MediaProperties;
 
 namespace CommunityToolkit.Maui.Core;
 
-[SupportedOSPlatform("windows10.0.10240.0")]
 partial class CameraManager
 {
 	MediaPlayerElement? mediaElement;
 	MediaCapture? mediaCapture;
 	MediaFrameSource? frameSource;
+	LowLagMediaRecording? mediaRecording;
+	Stream? videoCaptureStream;
 
 	public MediaPlayerElement CreatePlatformView()
 	{
@@ -201,5 +201,47 @@ partial class CameraManager
 		{
 			await mediaCapture.VideoDeviceController.SetMediaStreamPropertiesAsync(MediaStreamType.Photo, filteredPropertiesList.First()).AsTask(token);
 		}
+	}
+
+	protected virtual async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
+	{
+		if (!IsInitialized || mediaCapture is null || mediaElement is null)
+		{
+			return;
+		}
+
+		videoCaptureStream = stream;
+
+		var profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto);
+		mediaRecording = await mediaCapture.PrepareLowLagRecordToStreamAsync(profile, stream.AsRandomAccessStream());
+
+		frameSource = mediaCapture.FrameSources.FirstOrDefault(source =>
+			source.Value.Info.MediaStreamType == MediaStreamType.VideoRecord &&
+			source.Value.Info.SourceKind == MediaFrameSourceKind.Color).Value;
+		if (frameSource is not null)
+		{
+			var frameFormat = frameSource.SupportedFormats
+					.OrderByDescending(f => f.VideoFormat.Width * f.VideoFormat.Height)
+					.FirstOrDefault();
+
+			if (frameFormat is not null)
+			{
+				await frameSource.SetFormatAsync(frameFormat);
+				mediaElement.AutoPlay = true;
+				mediaElement.Source = MediaSource.CreateFromMediaFrameSource(frameSource);
+				await mediaRecording.StartAsync();
+			}
+		}
+	}
+
+	protected virtual async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
+	{
+		if (!IsInitialized || mediaElement is null || mediaRecording is null || videoCaptureStream is null)
+		{
+			return Stream.Null;
+		}
+
+		await mediaRecording.StopAsync();
+		return videoCaptureStream;
 	}
 }

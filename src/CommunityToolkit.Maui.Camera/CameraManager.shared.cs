@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Core;
+﻿using System.Diagnostics;
+
+namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// A class that manages the camera functionality.
@@ -27,7 +29,23 @@ partial class CameraManager(
 	/// </summary>
 	/// <returns>Returns <c>true</c> if permission has been granted, <c>false</c> otherwise.</returns>
 	public async Task<bool> ArePermissionsGranted()
-		=> await Permissions.RequestAsync<Permissions.Camera>() is PermissionStatus.Granted;
+	{
+		var cameraRequest = await Permissions.RequestAsync<Permissions.Camera>();
+		var microphoneRequest = await Permissions.RequestAsync<Permissions.Microphone>();
+		if (cameraRequest is not PermissionStatus.Granted)
+		{
+			Trace.TraceInformation("Camera permission is not granted.");
+			return false;
+		}
+
+		if (microphoneRequest is not PermissionStatus.Granted)
+		{
+			Trace.TraceInformation("Microphone permission is not granted.");
+			return false;
+		}
+
+		return true;
+	}
 
 	/// <summary>
 	/// Connects to the camera.
@@ -51,6 +69,27 @@ partial class CameraManager(
 	/// </summary>
 	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
 	public Task StartCameraPreview(CancellationToken token) => PlatformStartCameraPreview(token);
+
+
+	/// <summary>
+	/// Starts the video recording.
+	/// </summary>
+	/// <param name="stream">The output stream for video recording</param>
+	/// <param name="token"><see cref="CancellationToken"/></param>
+	/// <returns>A <see cref="Task"/> that can be awaited.</returns>
+	/// <exception cref="CameraException"></exception>
+	public Task StartVideoRecording(Stream stream, CancellationToken token)
+	{
+		return PlatformStartVideoRecording(stream, token);
+	}
+
+
+	/// <summary>
+	/// Stops the video recording.
+	/// </summary>
+	/// <param name="token"><see cref="CancellationToken"/></param>
+	/// <returns>A <see cref="Task"/> that can be awaited.</returns>
+	public Task<Stream> StopVideoRecording(CancellationToken token) => PlatformStopVideoRecording(token);
 
 	/// <summary>
 	/// Stops the camera preview.
@@ -131,4 +170,23 @@ partial class CameraManager(
 	/// Stops the preview from the camera, at the platform-specific level.
 	/// </summary>
 	protected virtual partial void PlatformStopCameraPreview();
+
+	/// <summary>
+	/// Starts video recording and writes the recorded data to the specified stream.
+	/// </summary>
+	/// <remarks>This method is platform-specific and should be overridden in a derived class to provide the actual
+	/// implementation. Ensure that the stream remains open and writable for the duration of the recording.</remarks>
+	/// <param name="stream">The stream to which the video data will be written. Must be writable and not null.</param>
+	/// <param name="token">A cancellation token that can be used to cancel the video recording operation.</param>
+	/// <returns>A task that represents the asynchronous video recording operation.</returns>
+	protected virtual partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token);
+
+	/// <summary>
+	/// Stops the video recording process asynchronously.
+	/// </summary>
+	/// <remarks>This method is platform-specific and should be overridden in a derived class to implement the stop
+	/// functionality.</remarks>
+	/// <param name="token">A cancellation token that can be used to cancel the stop operation.</param>
+	/// <returns>A task that represents the asynchronous stop operation.</returns>
+	protected virtual partial Task<Stream> PlatformStopVideoRecording(CancellationToken token);
 }
