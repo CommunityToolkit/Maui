@@ -12,6 +12,8 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
 		{
 #if NET9
 			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net90;
+#elif NET10
+			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net10;
 #else
 #error ReferenceAssemblies must be updated to current version of .NET
 #endif
