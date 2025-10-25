@@ -61,6 +61,22 @@ public class CameraViewTests : BaseViewTest
 		Assert.True(eventRaised);
 	}
 
+	[Fact]
+	public async Task StartVideoRecording_ShouldThrowException()
+	{
+		var imageData = new MemoryStream();
+
+		await Assert.ThrowsAsync<InvalidOperationException>(() => cameraView.StartVideoRecording(imageData, TestContext.Current.CancellationToken));
+	}
+
+	[Fact]
+	public async Task StopVideoRecording_ShouldThrowException()
+	{
+		var imageData = new MemoryStream();
+
+		await Assert.ThrowsAsync<InvalidOperationException>(() => cameraView.StopVideoRecording(TestContext.Current.CancellationToken));
+	}
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task OnMediaCapturedFailed_RaisesMediaCaptureFailedEvent()
 	{
