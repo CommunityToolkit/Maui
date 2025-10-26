@@ -28,7 +28,7 @@ partial class CameraProvider : ICameraProvider
 		}
 	}
 
-	private partial ValueTask PlatformRefreshAvailableCameras(CancellationToken token);
+	internal partial ValueTask PlatformRefreshAvailableCameras(CancellationToken token);
 
 	/// <inheritdoc/>
 	public async ValueTask RefreshAvailableCameras(CancellationToken token)
