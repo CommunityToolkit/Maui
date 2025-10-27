@@ -1,6 +1,9 @@
 ﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui;
+using Microsoft.Maui.Dispatching;
 
 namespace CommunityToolkit.Maui.Views;
 

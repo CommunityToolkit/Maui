@@ -1,4 +1,8 @@
-﻿namespace CommunityToolkit.Maui.Core;
+﻿using Microsoft.Maui;
+using Microsoft.Maui.Hosting;
+using CommunityToolkit.Maui.Core.Views;
+
+namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// Construction options for MediaElement, for example, to create an Android SurfaceView or TextureView

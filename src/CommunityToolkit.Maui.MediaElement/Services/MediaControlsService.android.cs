@@ -111,7 +111,7 @@ sealed partial class MediaControlsService : Service
 		playerNotificationManager.SetColor(Resource.Color.abc_primary_text_material_dark);
 		playerNotificationManager.SetUsePreviousActionInCompactView(true);
 		playerNotificationManager.SetVisibility(NotificationCompat.VisibilityPublic);
-		playerNotificationManager.SetMediaSessionToken(session.SessionCompatToken);
+		playerNotificationManager.SetMediaSessionToken(session.PlatformToken);
 		playerNotificationManager.SetPlayer(mediaElement);
 		playerNotificationManager.SetColorized(true);
 		playerNotificationManager.SetShowPlayButtonIfPlaybackIsSuppressed(true);

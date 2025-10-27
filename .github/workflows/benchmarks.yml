@@ -13,7 +13,7 @@ on:
       - '*'
 
 env:
-  LATEST_NET_VERSION: '9.0.x'
+  LATEST_NET_VERSION: '10.0.x'
   PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
 
 concurrency:
@@ -42,7 +42,7 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.LATEST_NET_VERSION }}
-          dotnet-quality: 'ga'
+          dotnet-quality: 'preview'
 
       - name: Install .NET MAUI Workload
         run: |

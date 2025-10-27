@@ -7,7 +7,6 @@ namespace CommunityToolkit.Maui.Views;
 
 /// <inheritdoc cref="IExpander"/>
 [ContentProperty(nameof(Content))]
-[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 [RequiresUnreferencedCode("Calls Microsoft.Maui.Controls.Binding.Binding(String, BindingMode, IValueConverter, Object, String, Object)")]
 public partial class Expander : ContentView, IExpander
 {

@@ -6,12 +6,14 @@ namespace CommunityToolkit.Maui.Analyzers.UnitTests;
 public static partial class CSharpAnalyzerVerifier<TAnalyzer>
 	where TAnalyzer : DiagnosticAnalyzer, new()
 {
-	public class Test : CSharpAnalyzerTest<TAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>
+	class Test : CSharpAnalyzerTest<TAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>
 	{
 		public Test(params ReadOnlySpan<Type> assembliesUnderTest)
 		{
-#if NET9_0
+#if NET9
 			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net90;
+#elif NET10
+			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net10;
 #else
 #error ReferenceAssemblies must be updated to current version of .NET
 #endif
