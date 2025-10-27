@@ -18,6 +18,10 @@
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
     <RootNamespace>CommunityToolkit.Maui</RootNamespace>
     <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
+    <!-- Update this to latest released version.
+	     When updating this, make sure to delete PackageValidationSuppression.txt files -->
+    <PackageValidationBaselineVersion>6.1.2</PackageValidationBaselineVersion>
+    <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
 
   <PropertyGroup>
