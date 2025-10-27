@@ -18,4 +18,16 @@ public partial class ComplexPopupViewModel(IPopupService popupService) : Observa
 	{
 		await popupService.ClosePopupAsync<string>(navigation, ReturnText, token);
 	}
+	
+	[ObservableProperty]
+	public partial string? SelectedTitle { get; set; }
+	
+	[RelayCommand]
+	void OnTitleSelected()
+	{
+		if (SelectedTitle is not null)
+		{
+			ReturnText = SelectedTitle;
+		}
+	}
 }
