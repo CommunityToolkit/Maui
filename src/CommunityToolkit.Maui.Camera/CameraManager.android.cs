@@ -123,9 +123,9 @@ partial class CameraManager
 
 		resolutionSelector?.Dispose();
 
-		resolutionSelector = new ResolutionSelector.Builder()
-			.SetAllowedResolutionMode(ResolutionSelector.PreferHigherResolutionOverCaptureRate)
-			.SetResolutionFilter(resolutionFilter)
+		resolutionSelector = new ResolutionSelector.Builder()?
+			.SetAllowedResolutionMode(ResolutionSelector.PreferHigherResolutionOverCaptureRate)?
+			.SetResolutionFilter(resolutionFilter)?
 			.Build();
 
 		if (IsInitialized)
@@ -229,12 +229,12 @@ partial class CameraManager
 		videoCapture?.Dispose();
 		videoRecorder?.Dispose();
 
-		cameraPreview = new Preview.Builder().SetResolutionSelector(resolutionSelector).Build();
-		cameraPreview.SetSurfaceProvider(cameraExecutor, previewView?.SurfaceProvider);
+		cameraPreview = new Preview.Builder().SetResolutionSelector(resolutionSelector)?.Build();
+		cameraPreview?.SetSurfaceProvider(cameraExecutor, previewView?.SurfaceProvider);
 
-		imageCapture = new ImageCapture.Builder()
-			.SetCaptureMode(ImageCapture.CaptureModeMaximizeQuality)
-			.SetResolutionSelector(resolutionSelector)
+		imageCapture = new ImageCapture.Builder()?
+			.SetCaptureMode(ImageCapture.CaptureModeMaximizeQuality)?
+			.SetResolutionSelector(resolutionSelector)?
 			.Build();
 
 		var videoRecorderBuilder = new Recorder.Builder()
@@ -242,10 +242,10 @@ partial class CameraManager
 
 		if (Quality.Highest is not null)
 		{
-			videoRecorderBuilder = videoRecorderBuilder.SetQualitySelector(QualitySelector.From(Quality.Highest));
+			videoRecorderBuilder = videoRecorderBuilder?.SetQualitySelector(QualitySelector.From(Quality.Highest));
 		}
 
-		videoRecorder = videoRecorderBuilder.Build();
+		videoRecorder = videoRecorderBuilder?.Build();
 		videoCapture = VideoCapture.WithOutput(videoRecorder);
 
 		await StartCameraPreview(token);
@@ -271,9 +271,9 @@ partial class CameraManager
 		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, token, cameraPreview, imageCapture, videoCapture);
 		cameraControl = camera.CameraControl;
 
-		var point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
+		var point = previewView.MeteringPointFactory?.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
 		var action = new FocusMeteringAction.Builder(point).Build();
-		camera.CameraControl.StartFocusAndMetering(action);
+		camera.CameraControl?.StartFocusAndMetering(action);
 
 		IsInitialized = true;
 		OnLoaded.Invoke();
@@ -342,8 +342,8 @@ partial class CameraManager
 		videoRecordingFinalizeTcs = new TaskCompletionSource();
 		var captureListener = new CameraConsumer(videoRecordingFinalizeTcs);
 		var executor = ContextCompat.GetMainExecutor(context) ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
-		videoRecording = videoRecorder
-			.PrepareRecording(context, outputOptions)
+		videoRecording = videoRecorder?
+			.PrepareRecording(context, outputOptions)?
 			.WithAudioEnabled()
 			.Start(executor, captureListener);
 	}
@@ -416,7 +416,7 @@ partial class CameraManager
 			}
 
 			var extensionsManagerFuture = ExtensionsManager.GetInstanceAsync(context, cameraProviderInstance);
-			extensionsManagerFuture.AddListener(new Runnable(() =>
+			extensionsManagerFuture?.AddListener(new Runnable(() =>
 			{
 				var extensionsManager = (ExtensionsManager?)extensionsManagerFuture.Get();
 				if (extensionsManager is not null && extensionsManager.IsExtensionAvailable(cameraSelector, extensionMode))
@@ -455,10 +455,10 @@ partial class CameraManager
 
 	sealed class ImageCallBack(ICameraView cameraView) : ImageCapture.OnImageCapturedCallback
 	{
-		public override void OnCaptureSuccess(IImageProxy image)
+		public override void OnCaptureSuccess(IImageProxy? image)
 		{
 			base.OnCaptureSuccess(image);
-			var img = image.Image;
+			var img = image?.Image;
 
 			if (img is null)
 			{
@@ -471,7 +471,7 @@ partial class CameraManager
 			if (buffer is null)
 			{
 				cameraView.OnMediaCapturedFailed("Unable to obtain a buffer for the image plane.");
-				image.Close();
+				image?.Close();
 				return;
 			}
 
@@ -489,7 +489,7 @@ partial class CameraManager
 			}
 			finally
 			{
-				image.Close();
+				image?.Close();
 			}
 
 			static Image.Plane? GetFirstPlane(Image.Plane[]? planes)
@@ -503,10 +503,10 @@ partial class CameraManager
 			}
 		}
 
-		public override void OnError(ImageCaptureException exception)
+		public override void OnError(ImageCaptureException? exception)
 		{
 			base.OnError(exception);
-			cameraView.OnMediaCapturedFailed(exception.Message ?? "An unknown error occurred.");
+			cameraView.OnMediaCapturedFailed(exception?.Message ?? "An unknown error occurred.");
 		}
 	}
 
@@ -514,13 +514,13 @@ partial class CameraManager
 	{
 		public Android.Util.Size TargetSize { get; set; } = size;
 
-		public IList<Android.Util.Size> Filter(IList<Android.Util.Size> supportedSizes, int rotationDegrees)
+		public IList<Android.Util.Size> Filter(IList<Android.Util.Size>? supportedSizes, int rotationDegrees)
 		{
-			var filteredList = supportedSizes
+			var filteredList = supportedSizes?
 				.Where(size => size.Width <= TargetSize.Width && size.Height <= TargetSize.Height)
 				.OrderByDescending(size => size.Width * size.Height).ToList();
 
-			return filteredList.Count is 0 ? supportedSizes : filteredList;
+			return filteredList?.Count is 0 ? supportedSizes ?? [] : filteredList ?? [];
 		}
 	}
 

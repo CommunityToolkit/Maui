@@ -43,7 +43,7 @@ partial class CameraProvider
 
 				if (CameraCharacteristics.ScalerStreamConfigurationMap is not null)
 				{
-					var streamConfigMap = camera2Info.GetCameraCharacteristic(CameraCharacteristics.ScalerStreamConfigurationMap) as StreamConfigurationMap;
+					var streamConfigMap = camera2Info?.GetCameraCharacteristic(CameraCharacteristics.ScalerStreamConfigurationMap) as StreamConfigurationMap;
 
 					if (OperatingSystem.IsAndroidVersionAtLeast(23))
 					{
@@ -68,13 +68,13 @@ partial class CameraProvider
 				}
 
 				var cameraInfo = new CameraInfo(name,
-					camera2Info.CameraId,
+					camera2Info?.CameraId ?? string.Empty,
 					position,
 					cameraXInfo.HasFlashUnit,
-					(cameraXInfo.ZoomState.Value as IZoomState)?.MinZoomRatio ?? 1.0f,
-					(cameraXInfo.ZoomState.Value as IZoomState)?.MaxZoomRatio ?? 1.0f,
+					(cameraXInfo.ZoomState?.Value as IZoomState)?.MinZoomRatio ?? 1.0f,
+					(cameraXInfo.ZoomState?.Value as IZoomState)?.MaxZoomRatio ?? 1.0f,
 					supportedResolutions,
-					cameraXInfo.CameraSelector);
+					cameraXInfo?.CameraSelector ?? throw new InvalidOperationException("CameraSelector cannot be null"));
 
 				availableCameras.Add(cameraInfo);
 			}
