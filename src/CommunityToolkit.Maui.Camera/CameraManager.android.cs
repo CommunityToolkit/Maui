@@ -123,7 +123,7 @@ partial class CameraManager
 
 		resolutionSelector?.Dispose();
 
-		resolutionSelector = new ResolutionSelector.Builder()?
+		resolutionSelector = new ResolutionSelector.Builder()
 			.SetAllowedResolutionMode(ResolutionSelector.PreferHigherResolutionOverCaptureRate)?
 			.SetResolutionFilter(resolutionFilter)?
 			.Build();
@@ -232,7 +232,7 @@ partial class CameraManager
 		cameraPreview = new Preview.Builder().SetResolutionSelector(resolutionSelector)?.Build();
 		cameraPreview?.SetSurfaceProvider(cameraExecutor, previewView?.SurfaceProvider);
 
-		imageCapture = new ImageCapture.Builder()?
+		imageCapture = new ImageCapture.Builder()
 			.SetCaptureMode(ImageCapture.CaptureModeMaximizeQuality)?
 			.SetResolutionSelector(resolutionSelector)?
 			.Build();
@@ -342,7 +342,7 @@ partial class CameraManager
 		videoRecordingFinalizeTcs = new TaskCompletionSource();
 		var captureListener = new CameraConsumer(videoRecordingFinalizeTcs);
 		var executor = ContextCompat.GetMainExecutor(context) ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
-		videoRecording = videoRecorder?
+		videoRecording = videoRecorder
 			.PrepareRecording(context, outputOptions)?
 			.WithAudioEnabled()
 			.Start(executor, captureListener);
