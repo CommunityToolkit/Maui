@@ -520,7 +520,7 @@ partial class CameraManager
 				.Where(size => size.Width <= TargetSize.Width && size.Height <= TargetSize.Height)
 				.OrderByDescending(size => size.Width * size.Height).ToList();
 
-			return filteredList?.Count is 0 ? supportedSizes ?? [] : filteredList ?? [];
+			return filteredList is null || filteredList.Count is 0 ? supportedSizes ?? [] : filteredList;
 		}
 	}
 
