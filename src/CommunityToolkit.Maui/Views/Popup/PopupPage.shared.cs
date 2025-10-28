@@ -1,9 +1,7 @@
 using System.ComponentModel;
 using System.Globalization;
-using System.Windows.Input;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.Shapes;
@@ -66,6 +64,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		Shell.SetPresentationMode(this, PresentationMode.ModalNotAnimated);
 		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
+		Microsoft.Maui.Controls.NavigationPage.SetHasNavigationBar(this, false);
 	}
 
 	public event EventHandler<IPopupResult>? PopupClosed;
@@ -85,7 +84,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		if (popupPageToClose is null)
 		{
-			throw new PopupNotFoundException();
+			await Navigation.PopModalAsync();
+			return;
 		}
 
 		if (Navigation.ModalStack[^1] is Microsoft.Maui.Controls.Page currentVisibleModalPage
