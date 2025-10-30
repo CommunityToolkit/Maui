@@ -63,7 +63,7 @@ jobs:
 
       - name: Publish Benchmarks
         if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: Benchmarks
           path: |
