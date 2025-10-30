@@ -1,6 +1,5 @@
 ﻿using System.Runtime.Versioning;
 using Android.Content;
-using Android.Provider;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.Camera.Core;
@@ -48,10 +47,10 @@ partial class CameraManager
 	{
 		extensionMode = mode;
 		if (cameraView.SelectedCamera is null
-		    || processCameraProvider is null
-		    || cameraPreview is null
-		    || imageCapture is null
-		    || videoCapture is null)
+			|| processCameraProvider is null
+			|| cameraPreview is null
+			|| imageCapture is null
+			|| videoCapture is null)
 		{
 			return;
 		}
@@ -104,7 +103,7 @@ partial class CameraManager
 		if (resolutionFilter is not null)
 		{
 			if (Math.Abs(resolutionFilter.TargetSize.Width - resolution.Width) < double.Epsilon &&
-			    Math.Abs(resolutionFilter.TargetSize.Height - resolution.Height) < double.Epsilon)
+				Math.Abs(resolutionFilter.TargetSize.Height - resolution.Height) < double.Epsilon)
 			{
 				return;
 			}
@@ -164,6 +163,7 @@ partial class CameraManager
 			previewView?.Dispose();
 			previewView = null;
 
+			processCameraProvider?.UnbindAll();
 			processCameraProvider?.Dispose();
 			processCameraProvider = null;
 
@@ -195,16 +195,6 @@ partial class CameraManager
 		cameraProviderFuture.AddListener(new Runnable(async () =>
 		{
 			processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new CameraException($"Unable to retrieve {nameof(ProcessCameraProvider)}"));
-
-			if (cameraProvider.AvailableCameras is null)
-			{
-				await cameraProvider.RefreshAvailableCameras(token);
-
-				if (cameraProvider.AvailableCameras is null)
-				{
-					throw new CameraException("Unable to refresh available cameras");
-				}
-			}
 
 			await StartUseCase(token);
 
@@ -258,15 +248,7 @@ partial class CameraManager
 			return;
 		}
 
-		if (cameraView.SelectedCamera is null)
-		{
-			if (cameraProvider.AvailableCameras is null)
-			{
-				await cameraProvider.RefreshAvailableCameras(token);
-			}
-
-			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
-		}
+		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
 		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, token, cameraPreview, imageCapture, videoCapture);
 		cameraControl = camera.CameraControl;
@@ -306,27 +288,19 @@ partial class CameraManager
 	protected virtual async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
 	{
 		if (previewView is null
-		    || processCameraProvider is null
-		    || cameraPreview is null
-		    || imageCapture is null
-		    || videoCapture is null
-		    || videoRecorder is null
-		    || videoRecordingFile is not null)
+			|| processCameraProvider is null
+			|| cameraPreview is null
+			|| imageCapture is null
+			|| videoCapture is null
+			|| videoRecorder is null
+			|| videoRecordingFile is not null)
 		{
 			return;
 		}
 
 		videoRecordingStream = stream;
 
-		if (cameraView.SelectedCamera is null)
-		{
-			if (cameraProvider.AvailableCameras is null)
-			{
-				await cameraProvider.RefreshAvailableCameras(token);
-			}
-
-			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
-		}
+		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
 		if (camera is null || !IsVideoCaptureAlreadyBound())
 		{
@@ -352,9 +326,9 @@ partial class CameraManager
 	{
 		ArgumentNullException.ThrowIfNull(cameraExecutor);
 		if (videoRecording is null
-		    || videoRecordingFile is null
-		    || videoRecordingFinalizeTcs is null
-		    || videoRecordingStream is null)
+			|| videoRecordingFile is null
+			|| videoRecordingFinalizeTcs is null
+			|| videoRecordingStream is null)
 		{
 			return Stream.Null;
 		}
@@ -373,8 +347,8 @@ partial class CameraManager
 	bool IsVideoCaptureAlreadyBound()
 	{
 		return processCameraProvider is not null
-		       && videoCapture is not null
-		       && processCameraProvider.IsBound(videoCapture);
+			   && videoCapture is not null
+			   && processCameraProvider.IsBound(videoCapture);
 	}
 
 	void CleanupVideoRecordingResources()

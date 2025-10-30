@@ -5,12 +5,11 @@
                 xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                 xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
                 Title="CameraView"
-                Unloaded="OnUnloaded"
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Views.CameraViewPage"
                 x:TypeArguments="viewModels:CameraViewViewModel"
                 x:DataType="viewModels:CameraViewViewModel">
 
-    <Grid RowDefinitions="200,*,Auto,Auto" ColumnDefinitions="3*,*">
+    <Grid RowDefinitions="Auto,*,Auto,Auto" ColumnDefinitions="3*,*">
         <toolkit:CameraView
             x:Name="Camera"
             Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Grid.RowSpan="3"
