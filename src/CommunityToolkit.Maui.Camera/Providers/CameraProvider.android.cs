@@ -76,7 +76,7 @@ partial class CameraProvider
 				}
 
 				var cameraInfo = new CameraInfo(name,
-					camera2Info.CameraId,
+					camera2Info.CameraId ?? throw new InvalidOperationException("Unable to retrieve Camera ID"),
 					position,
 					cameraXInfo.HasFlashUnit,
 					(cameraXInfo.ZoomState?.Value as IZoomState)?.MinZoomRatio ?? 1.0f,
