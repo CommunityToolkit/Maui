@@ -1,12 +1,12 @@
 using System.ComponentModel;
 using System.Globalization;
-using System.Windows.Input;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.Shapes;
+using NavigationPage = Microsoft.Maui.Controls.NavigationPage;
+using Page = Microsoft.Maui.Controls.Page;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -66,6 +66,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		Shell.SetPresentationMode(this, PresentationMode.ModalNotAnimated);
 		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
+		NavigationPage.SetHasNavigationBar(this, false);
 	}
 
 	public event EventHandler<IPopupResult>? PopupClosed;
@@ -85,7 +86,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		if (popupPageToClose is null)
 		{
-			throw new PopupNotFoundException();
+			await FindPopupPage();
+			return;
 		}
 
 		if (Navigation.ModalStack[^1] is Microsoft.Maui.Controls.Page currentVisibleModalPage
@@ -211,6 +213,32 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		{
 			TryExecuteTapOutsideOfPopupCommand();
 		}
+	}
+
+	Task<Page> FindPopupPage()
+	{
+		var stack = Navigation.ModalStack;
+
+		if (stack.Count is 0)
+		{
+			throw new PopupNotFoundException();
+		}
+
+		var page = stack[^1];
+
+		switch (page)
+		{
+			case IPageContainer<Page> container:
+				if (container.CurrentPage is not PopupPage)
+				{
+					throw new PopupNotFoundException();
+				}
+				break;
+			case not PopupPage:
+				throw new PopupNotFoundException();
+		}
+
+		return Navigation.PopModalAsync(false);
 	}
 
 	internal sealed partial class PopupPageLayout : Grid
