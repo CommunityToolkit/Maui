@@ -125,8 +125,12 @@ partial class CameraManager
 
 		resolutionSelector = new ResolutionSelector.Builder()
 			.SetAllowedResolutionMode(ResolutionSelector.PreferHigherResolutionOverCaptureRate)?
-			.SetResolutionFilter(resolutionFilter)?
-			.Build();
+			.SetResolutionFilter(resolutionFilter)
+			?.Build() ?? throw new InvalidOperationException("Unable to Set Resolution Filter");
+		
+		// `.SetResolutionFilter()` should never return null
+		// According to the Android docs, `ResolutionSelector.Builder.setResolutionFilter(ResolutionFilter)` returns a `NonNull` object
+		// `ResolutionSelector.Builder.SetResolutionFilter(ResolutionFilter)` returning a nullable object in .NET for Android is likely a C# Binding mistake
 
 		if (IsInitialized)
 		{
@@ -234,11 +238,21 @@ partial class CameraManager
 
 		imageCapture = new ImageCapture.Builder()
 			.SetCaptureMode(ImageCapture.CaptureModeMaximizeQuality)?
-			.SetResolutionSelector(resolutionSelector)?
-			.Build();
+			.SetResolutionSelector(resolutionSelector)
+			?.Build() ?? throw new InvalidOperationException("Unable to set resolution selector");
+		
+		// `.SetResolutionFilter()` should never return null
+		// According to the Android docs, `ResolutionSelector.Builder.SetResolutionFilter(ResolutionFilter)` returns a `NonNull` object
+		// `ResolutionSelector.Builder.SetResolutionFilter(ResolutionFilter)` returning a nullable object in .NET for Android is likely a C# Binding mistake
+		// https://developer.android.com/reference/androidx/camera/core/resolutionselector/ResolutionSelector.Builder#setResolutionFilter(androidx.camera.core.resolutionselector.ResolutionFilter)
 
 		var videoRecorderBuilder = new Recorder.Builder()
-			.SetExecutor(cameraExecutor);
+			.SetExecutor(cameraExecutor) ?? throw new InvalidOperationException("Unable to set video recorder executor");
+		
+		// `.SetExecutor()` should never return null
+		// According to the Android docs, `ResolutionSelector.Builder.setExecutor(ResolutionFilter)` returns a `NonNull` object
+		// `ResolutionSelector.Builder.SetExecutor(ResolutionFilter)` returning a nullable object in .NET for Android is likely a C# Binding mistake
+		// https://developer.android.com/reference/androidx/camera/video/Recorder.Builder#setExecutor(java.util.concurrent.Executor)
 
 		if (Quality.Highest is not null)
 		{
@@ -343,9 +357,14 @@ partial class CameraManager
 		var captureListener = new CameraConsumer(videoRecordingFinalizeTcs);
 		var executor = ContextCompat.GetMainExecutor(context) ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
 		videoRecording = videoRecorder
-			.PrepareRecording(context, outputOptions)?
-			.WithAudioEnabled()
-			.Start(executor, captureListener);
+			.PrepareRecording(context, outputOptions)
+			?.WithAudioEnabled()
+			.Start(executor, captureListener) ?? throw new InvalidOperationException("Unable to prepare recording");
+		
+		// `.PrepareRecording()` should never return null
+		// According to the Android docs, `Recorder.prepareRecording(Context, eMediaSoreOutputOptions)` returns a `NonNull` object
+		// `Recorder.PrepareRecording(Context, eMediaSoreOutputOptions)` returning a nullable object in .NET for Android is likely a C# Binding mistake
+		// https://developer.android.com/reference/androidx/camera/video/Recorder#prepareRecording(android.content.Context,androidx.camera.video.MediaStoreOutputOptions)
 	}
 
 	protected virtual async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
@@ -415,8 +434,10 @@ partial class CameraManager
 				return;
 			}
 
-			var extensionsManagerFuture = ExtensionsManager.GetInstanceAsync(context, cameraProviderInstance);
-			extensionsManagerFuture?.AddListener(new Runnable(() =>
+			var extensionsManagerFuture = ExtensionsManager.GetInstanceAsync(context, cameraProviderInstance) 
+			                              ?? throw new InvalidOperationException("Unable to get listenable future for camera provider");;
+			
+			extensionsManagerFuture.AddListener(new Runnable(() =>
 			{
 				var extensionsManager = (ExtensionsManager?)extensionsManagerFuture.Get();
 				if (extensionsManager is not null && extensionsManager.IsExtensionAvailable(cameraSelector, extensionMode))
@@ -520,7 +541,9 @@ partial class CameraManager
 				.Where(size => size.Width <= TargetSize.Width && size.Height <= TargetSize.Height)
 				.OrderByDescending(size => size.Width * size.Height).ToList();
 
-			return filteredList is null || filteredList.Count is 0 ? supportedSizes ?? [] : filteredList;
+			return filteredList is null || filteredList.Count is 0 
+				? supportedSizes ?? [] 
+				: filteredList;
 		}
 	}
 

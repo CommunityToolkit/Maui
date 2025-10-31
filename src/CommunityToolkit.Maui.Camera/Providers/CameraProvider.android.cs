@@ -34,7 +34,7 @@ partial class CameraProvider
 				{
 					// `Camera2CameraInfo.From` should never return `null`
 					// According to the Android Docs, `Camera2CameraInfo.From` returns a `NonNull`
-					// `Camera2CameraInfo.From` returning a nullable `Camera2CameraInfo` object is likely just a C# binding mistake
+					// `Camera2CameraInfo.From` returning a nullable `Camera2CameraInfo` object is likely a C# binding mistake
 					// https://developer.android.com/reference/androidx/camera/camera2/interop/Camera2CameraInfo
 					continue;
 				}
