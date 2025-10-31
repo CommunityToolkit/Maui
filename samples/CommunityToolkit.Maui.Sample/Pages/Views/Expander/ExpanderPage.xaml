@@ -28,6 +28,10 @@
                         <Label Text="Item 2"/>
                     </VerticalStackLayout>
                 </mct:Expander.Content>
+
+                <mct:Expander.Behaviors>
+                    <mct:ExpanderAnimationBehavior CollapsingLength="250" ExpandingLength="250"/>
+                </mct:Expander.Behaviors>
             </mct:Expander>
 
             <Label Text="Multi-level expander" FontSize="24" FontAttributes="Bold"/>
@@ -44,8 +48,14 @@
                         <mct:Expander.Content>
                             <Label Text="Item 1" />
                         </mct:Expander.Content>
+                        <mct:Expander.Behaviors>
+                            <mct:ExpanderAnimationBehavior CollapsingLength="250" ExpandingLength="250"/>
+                        </mct:Expander.Behaviors>
                     </mct:Expander>
                 </mct:Expander.Content>
+                <mct:Expander.Behaviors>
+                    <mct:ExpanderAnimationBehavior CollapsingLength="250" ExpandingLength="250"/>
+                </mct:Expander.Behaviors>
             </mct:Expander>
 
             <Label Text="Expander in ListView" FontSize="24" FontAttributes="Bold"/>
@@ -68,6 +78,9 @@
                                                HeightRequest="100"/>
                                     </VerticalStackLayout>
                                 </mct:Expander.Content>
+                                <mct:Expander.Behaviors>
+                                    <mct:ExpanderAnimationBehavior CollapsingLength="250" ExpandingLength="250"/>
+                                </mct:Expander.Behaviors>
                             </mct:Expander>
                         </ViewCell>
                     </DataTemplate>
@@ -92,6 +105,9 @@
                                                HeightRequest="100"/>
                                 </VerticalStackLayout>
                             </mct:Expander.Content>
+                            <mct:Expander.Behaviors>
+                                <mct:ExpanderAnimationBehavior CollapsingLength="250" ExpandingLength="250"/>
+                            </mct:Expander.Behaviors>
                         </mct:Expander>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
@@ -121,6 +137,9 @@
                                            HeightRequest="100"/>
                                 </VerticalStackLayout>
                             </mct:Expander.Content>
+                            <mct:Expander.Behaviors>
+                                <mct:ExpanderAnimationBehavior CollapsingLength="250" ExpandingLength="250"/>
+                            </mct:Expander.Behaviors>
                         </mct:Expander>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
