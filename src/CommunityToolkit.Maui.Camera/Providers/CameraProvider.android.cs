@@ -30,6 +30,14 @@ partial class CameraProvider
 			foreach (var cameraXInfo in processCameraProvider.AvailableCameraInfos)
 			{
 				var camera2Info = Camera2CameraInfo.From(cameraXInfo);
+				if (camera2Info is null)
+				{
+					// `Camera2CameraInfo.From` should never return `null`
+					// According to the Android Docs, `Camera2CameraInfo.From` returns a `NonNull`
+					// `Camera2CameraInfo.From` returning a nullable `Camera2CameraInfo` object is likely just a C# binding mistake
+					// https://developer.android.com/reference/androidx/camera/camera2/interop/Camera2CameraInfo
+					continue;
+				}
 
 				var (name, position) = cameraXInfo.LensFacing switch
 				{
@@ -43,7 +51,7 @@ partial class CameraProvider
 
 				if (CameraCharacteristics.ScalerStreamConfigurationMap is not null)
 				{
-					var streamConfigMap = camera2Info?.GetCameraCharacteristic(CameraCharacteristics.ScalerStreamConfigurationMap) as StreamConfigurationMap;
+					var streamConfigMap = camera2Info.GetCameraCharacteristic(CameraCharacteristics.ScalerStreamConfigurationMap) as StreamConfigurationMap;
 
 					if (OperatingSystem.IsAndroidVersionAtLeast(23))
 					{
@@ -68,13 +76,13 @@ partial class CameraProvider
 				}
 
 				var cameraInfo = new CameraInfo(name,
-					camera2Info?.CameraId ?? string.Empty,
+					camera2Info.CameraId,
 					position,
 					cameraXInfo.HasFlashUnit,
 					(cameraXInfo.ZoomState?.Value as IZoomState)?.MinZoomRatio ?? 1.0f,
 					(cameraXInfo.ZoomState?.Value as IZoomState)?.MaxZoomRatio ?? 1.0f,
 					supportedResolutions,
-					cameraXInfo?.CameraSelector ?? throw new InvalidOperationException("CameraSelector cannot be null"));
+					cameraXInfo.CameraSelector ?? throw new InvalidOperationException($"Unable to retrieve {nameof(ICameraInfo.CameraSelector)}"));
 
 				availableCameras.Add(cameraInfo);
 			}
