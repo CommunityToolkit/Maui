@@ -203,7 +203,7 @@ jobs:
         run: dotnet build ${{ env.PathToCommunityToolkitCoreCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }}
 
       - name: 'Build CommunityToolkit.Maui'
-        run: dotnet build ${{ env.PathToLibrarySolution }} -c Release -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }} 
+        run: dotnet build ${{ env.PathToCommunityToolkitCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }} 
 
       - name: Run CommunityToolkit Analyzers UnitTests
         run: |
