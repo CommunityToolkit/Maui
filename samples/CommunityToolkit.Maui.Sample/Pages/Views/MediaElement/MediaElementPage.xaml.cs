@@ -44,14 +44,14 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	void OnMediaOpened(object? sender, EventArgs e) => logger.LogInformation("Media opened.");
+	void OnMediaOpened(object? sender, EventArgs? e) => logger.LogInformation("Media opened.");
 
 	void OnStateChanged(object? sender, MediaStateChangedEventArgs e) =>
 		logger.LogInformation("Media State Changed. Old State: {PreviousState}, New State: {NewState}", e.PreviousState, e.NewState);
 
 	void OnMediaFailed(object? sender, MediaFailedEventArgs e) => logger.LogInformation("Media failed. Error: {ErrorMessage}", e.ErrorMessage);
 
-	void OnMediaEnded(object? sender, EventArgs e) => logger.LogInformation("Media ended.");
+	void OnMediaEnded(object? sender, EventArgs? e) => logger.LogInformation("Media ended.");
 
 	void OnPositionChanged(object? sender, MediaPositionChangedEventArgs e)
 	{
@@ -59,9 +59,9 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		PositionSlider.Value = e.Position.TotalSeconds;
 	}
 
-	void OnSeekCompleted(object? sender, EventArgs e) => logger.LogInformation("Seek completed.");
+	void OnSeekCompleted(object? sender, EventArgs? e) => logger.LogInformation("Seek completed.");
 
-	void OnSpeedMinusClicked(object? sender, EventArgs e)
+	void OnSpeedMinusClicked(object? sender, EventArgs? e)
 	{
 		if (MediaElement.Speed >= 1)
 		{
@@ -69,7 +69,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	void OnSpeedPlusClicked(object? sender, EventArgs e)
+	void OnSpeedPlusClicked(object? sender, EventArgs? e)
 	{
 		if (MediaElement.Speed < 10)
 		{
@@ -77,7 +77,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	void OnVolumeMinusClicked(object? sender, EventArgs e)
+	void OnVolumeMinusClicked(object? sender, EventArgs? e)
 	{
 		if (MediaElement.Volume >= 0)
 		{
@@ -92,7 +92,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	void OnVolumePlusClicked(object? sender, EventArgs e)
+	void OnVolumePlusClicked(object? sender, EventArgs? e)
 	{
 		if (MediaElement.Volume < 1)
 		{
@@ -107,22 +107,22 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	void OnPlayClicked(object? sender, EventArgs e)
+	void OnPlayClicked(object? sender, EventArgs? e)
 	{
 		MediaElement.Play();
 	}
 
-	void OnPauseClicked(object? sender, EventArgs e)
+	void OnPauseClicked(object? sender, EventArgs? e)
 	{
 		MediaElement.Pause();
 	}
 
-	void OnStopClicked(object? sender, EventArgs e)
+	void OnStopClicked(object? sender, EventArgs? e)
 	{
 		MediaElement.Stop();
 	}
 
-	void OnMuteClicked(object? sender, EventArgs e)
+	void OnMuteClicked(object? sender, EventArgs? e)
 	{
 		MediaElement.ShouldMute = !MediaElement.ShouldMute;
 	}
@@ -134,7 +134,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.Handler?.DisconnectHandler();
 	}
 
-	async void Slider_DragCompleted(object? sender, EventArgs e)
+	async void Slider_DragCompleted(object? sender, EventArgs? e)
 	{
 		ArgumentNullException.ThrowIfNull(sender);
 
@@ -144,12 +144,12 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.Play();
 	}
 
-	void Slider_DragStarted(object sender, EventArgs e)
+	void Slider_DragStarted(object? sender, EventArgs? e)
 	{
 		MediaElement.Pause();
 	}
 
-	void Button_Clicked(object? sender, EventArgs e)
+	void Button_Clicked(object? sender, EventArgs? e)
 	{
 		if (string.IsNullOrWhiteSpace(CustomSourceEntry.Text))
 		{
@@ -163,7 +163,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.Source = MediaSource.FromUri(CustomSourceEntry.Text);
 	}
 
-	async void ChangeSourceClicked(Object sender, EventArgs e)
+	async void ChangeSourceClicked(object? sender, EventArgs? e)
 	{
 		var result = await DisplayActionSheet("Choose a source", "Cancel", null,
 			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadMusic);
@@ -224,7 +224,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	async void ChangeAspectClicked(object? sender, EventArgs e)
+	async void ChangeAspectClicked(object? sender, EventArgs? e)
 	{
 		const string cancel = "Cancel";
 
@@ -251,7 +251,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.Aspect = (Aspect)aspectEnum;
 	}
 
-	async void DisplayPopup(object sender, EventArgs e)
+	async void DisplayPopup(object? sender, EventArgs? e)
 	{
 		MediaElement.Pause();
 
