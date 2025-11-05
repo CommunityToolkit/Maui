@@ -64,7 +64,7 @@
                 <Picker 
                     Title="Cameras" 
                     ItemsSource="{Binding Cameras}"
-                    ItemDisplayBinding="{Binding Name}" 
+                    ItemDisplayBinding="{Binding Name, x:DataType={x:Null}}" 
                     SelectedItem="{Binding SelectedCamera}" />
 
                 <Picker 

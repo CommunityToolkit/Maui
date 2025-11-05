@@ -84,12 +84,12 @@ public class MauiMediaElement : UIView
 
 				// The Controller we need is a `protected internal` property called ItemsViewController in the ItemsViewHandler2 class: https://github.com/dotnet/maui/blob/70e8ddfd4bd494bc71aa7afb812cc09161cf0c72/src/Controls/src/Core/Handlers/Items2/ItemsViewHandler2.iOS.cs#L64
 				// In this method, we must use reflection to get the value of its backing field 
-				static ItemsViewController<TItemsView> GetInternalControllerForItemsView2<TItemsView>(ItemsViewHandler2<TItemsView> handler) where TItemsView : ItemsView
+				static ItemsViewController2<TItemsView> GetInternalControllerForItemsView2<TItemsView>(ItemsViewHandler2<TItemsView> handler) where TItemsView : ItemsView
 				{
 					var nonPublicInstanceFields = typeof(ItemsViewHandler2<TItemsView>).GetFields(BindingFlags.NonPublic | BindingFlags.Instance);
 
 					var controllerProperty = nonPublicInstanceFields.Single(x => x.FieldType == typeof(ItemsViewController2<TItemsView>));
-					return (ItemsViewController<TItemsView>)(controllerProperty.GetValue(handler) ?? throw new InvalidOperationException($"Unable to get the value for the Controller property on {handler.GetType()}"));
+					return (ItemsViewController2<TItemsView>)(controllerProperty.GetValue(handler) ?? throw new InvalidOperationException($"Unable to get the value for the Controller property on {handler.GetType()}"));
 				}
 			}
 			// If we don't find an ItemsView, default to the current UIViewController
