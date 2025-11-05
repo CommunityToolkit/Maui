@@ -60,8 +60,8 @@
 
   <ItemGroup Condition="$(TargetFramework.Contains('-tizen'))">
     <PackageReference Include="Microsoft.Maui.Graphics.Skia" Version="$(MauiPackageVersion)" />
-    <PackageReference Include="SkiaSharp.Views.Maui.Controls" />
-    <PackageReference Include="Tizen.UIExtensions.NUI" />
+    <PackageReference Include="SkiaSharp.Views.Maui.Controls" Version="*" />
+    <PackageReference Include="Tizen.UIExtensions.NUI" Version="*" />
   </ItemGroup>
 
 </Project>
