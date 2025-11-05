@@ -239,7 +239,7 @@ sealed class FileFolderDialog : Popup<string>
 		return content;
 	}
 
-	async void OnNewFolderButtonClicked(object? sender, ClickedEventArgs e)
+	async void OnNewFolderButtonClicked(object? sender, Tizen.NUI.Components.ClickedEventArgs e)
 	{
 		try
 		{
@@ -264,12 +264,12 @@ sealed class FileFolderDialog : Popup<string>
 		}
 	}
 
-	void OnCancelButtonClicked(object? sender, ClickedEventArgs e)
+	void OnCancelButtonClicked(object? sender, Tizen.NUI.Components.ClickedEventArgs e)
 	{
 		SendCancel();
 	}
 
-	void OnOkButtonClicked(object? sender, ClickedEventArgs e)
+	void OnOkButtonClicked(object? sender, Tizen.NUI.Components.ClickedEventArgs e)
 	{
 		if (isFileSelectionMode)
 		{
