@@ -1,4 +1,4 @@
-﻿public using System;
+﻿using System;
 using Microsoft.Maui.Platform;
 using SkiaSharp;
 using Tizen.UIExtensions.Common;
