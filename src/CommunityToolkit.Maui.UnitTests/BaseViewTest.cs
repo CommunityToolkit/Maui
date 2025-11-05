@@ -84,15 +84,17 @@ public abstract class BaseViewTest : BaseTest
 		var mauiApp = appBuilder.Build();
 		serviceProvider = mauiApp.Services;
 
-		var page = new ContentPage();
+		var shell = new Shell();
+		shell.Items.Add(new ContentPage());
+
 		var application = (MockApplication)mauiApp.Services.GetRequiredService<IApplication>();
-		application.AddWindow(new Window { Page = page });
+		application.AddWindow(new Window { Page = shell });
 
 		IPlatformApplication.Current = application;
 
 		application.Handler = new ApplicationHandlerStub();
 		application.Handler.SetMauiContext(new HandlersContextStub(serviceProvider));
 
-		CreateViewHandler<MockPageHandler>(page);
+		CreateViewHandler<MockPageHandler>(shell);
 	}
 }
