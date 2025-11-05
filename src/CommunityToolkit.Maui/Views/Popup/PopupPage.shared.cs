@@ -81,19 +81,29 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		// This ensures we throw the correct `OperationCanceledException` in the rare scenario where a developer cancels the token, then manually calls `Navigation.PopModalAsync()` before calling `Popup.CloseAsync()`
 		// It may feel a bit redundant, given that we again call `ThrowIfCancellationRequested` later in this method, however, this ensures we propagate the correct Exception to the developer.
 		token.ThrowIfCancellationRequested();
-
-		var popupPageToClose = Navigation.ModalStack.OfType<PopupPage>().LastOrDefault(popupPage => popupPage.Content == Content);
-
-		if (popupPageToClose is null)
+		
+		// Handle edge case where a Popup was pushed inside a custom IPageContainer (e.g. a NavigationPage) on the Modal Stack
+		var customPageContainer = Navigation.ModalStack.OfType<IPageContainer<Page>>().LastOrDefault();
+		if (customPageContainer is not null && customPageContainer.CurrentPage is not PopupPage)
 		{
-			await FindPopupPage();
-			return;
+			throw new PopupNotFoundException();
 		}
+		
+		var popupPageToClose = customPageContainer?.CurrentPage as PopupPage
+		                       ?? Navigation.ModalStack.OfType<PopupPage>().LastOrDefault()
+		                       ?? throw new PopupNotFoundException();
 
-		if (Navigation.ModalStack[^1] is Microsoft.Maui.Controls.Page currentVisibleModalPage
-			&& currentVisibleModalPage != popupPageToClose)
+		// PopupModalAsync will pop the last (top) page from the ModalStack
+		// Ensure that the PopupPage that the user is attempting to close is the last (top) page on the Modal stack before calling Navigation.PopModalAsync
+		if (Navigation.ModalStack[^1] is IPageContainer<Page> { CurrentPage: PopupPage visiblePopupPageInCustomPageContainer } 
+		     && visiblePopupPageInCustomPageContainer.Content != Content)
 		{
-			throw new PopupBlockedException(currentVisibleModalPage);
+			throw new PopupBlockedException(popupPageToClose);
+		}
+		else if (Navigation.ModalStack[^1] is ContentPage currentVisibleModalPage
+		         && currentVisibleModalPage.Content != Content)
+		{
+			throw new PopupBlockedException(popupPageToClose);
 		}
 
 		// We call `.ThrowIfCancellationRequested()` again to avoid a race condition where a developer cancels the CancellationToken after we check for an InvalidOperationException
@@ -213,32 +223,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		{
 			TryExecuteTapOutsideOfPopupCommand();
 		}
-	}
-
-	Task<Page> FindPopupPage()
-	{
-		var stack = Navigation.ModalStack;
-
-		if (stack.Count is 0)
-		{
-			throw new PopupNotFoundException();
-		}
-
-		var page = stack[^1];
-
-		switch (page)
-		{
-			case IPageContainer<Page> container:
-				if (container.CurrentPage is not PopupPage)
-				{
-					throw new PopupNotFoundException();
-				}
-				break;
-			case not PopupPage:
-				throw new PopupNotFoundException();
-		}
-
-		return Navigation.PopModalAsync(false);
 	}
 
 	internal sealed partial class PopupPageLayout : Grid
