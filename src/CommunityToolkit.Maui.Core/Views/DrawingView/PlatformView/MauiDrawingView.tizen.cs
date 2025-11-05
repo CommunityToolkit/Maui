@@ -1,4 +1,5 @@
 using Microsoft.Maui.Platform;
+using Tizen.UIExtensions.Common;
 using NPointStateType = Tizen.NUI.PointStateType;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -37,7 +38,8 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 
 	bool OnTouch(object source, TouchEventArgs e)
 	{
-		var point = new PointF(e.Touch.GetLocalPosition(0).X.ToScaledDP(), e.Touch.GetLocalPosition(0).Y.ToScaledDP());
+		var point = new PointF(e.Touch.GetLocalPosition(0).X / (float)Tizen.UIExtensions.Common.DeviceInfo.ScalingFactor,
+				e.Touch.GetLocalPosition(0).Y / (float)Tizen.UIExtensions.Common.DeviceInfo.ScalingFactor);
 		var pointStateType = e.Touch.GetState(0);
 
 		switch (pointStateType)
