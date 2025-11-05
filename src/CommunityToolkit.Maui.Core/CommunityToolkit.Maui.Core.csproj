@@ -58,4 +58,10 @@
     <PackageReference Include="System.Speech" Version="9.0.5" Condition="'$(TargetFramework)' == '$(NetVersion)-windows10.0.19041.0'" />
   </ItemGroup>
 
+  <ItemGroup Condition="$(TargetFramework.Contains('-tizen'))">
+    <PackageReference Include="Microsoft.Maui.Graphics.Skia" Version="$(MauiPackageVersion)" />
+    <PackageReference Include="SkiaSharp.Views.Maui.Controls" />
+    <PackageReference Include="Tizen.UIExtensions.NUI" />
+  </ItemGroup>
+
 </Project>
