@@ -9,6 +9,7 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 public class EventToCommandBehaviorGenericTests() : BaseBehaviorTest<EventToCommandBehavior<Coffee>, VisualElement>(new EventToCommandBehavior<Coffee>(), new View())
 {
 	[Fact]
+	[Obsolete]
 	public void ArgumentExceptionIfSpecifiedEventDoesNotExist()
 	{
 		var listView = new ListView();
@@ -20,6 +21,7 @@ public class EventToCommandBehaviorGenericTests() : BaseBehaviorTest<EventToComm
 	}
 
 	[Fact]
+	[Obsolete]
 	public void NoExceptionIfSpecifiedEventExists()
 	{
 		var listView = new ListView();
@@ -42,6 +44,7 @@ public class EventToCommandBehaviorGenericTests() : BaseBehaviorTest<EventToComm
 	}
 
 	[Fact]
+	[Obsolete]
 	public void NoExceptionWhenTheEventArgsAreNotNull()
 	{
 		var vm = new ViewModelCoffee();
@@ -71,6 +74,7 @@ public class EventToCommandBehaviorGenericTests() : BaseBehaviorTest<EventToComm
 	}
 
 	[Fact]
+	[Obsolete]
 	public void NoExceptionWhenTheEventArgsAreNotNull_InheritedType()
 	{
 		var vm = new ViewModelCoffee();
@@ -100,6 +104,7 @@ public class EventToCommandBehaviorGenericTests() : BaseBehaviorTest<EventToComm
 	}
 
 	[Fact]
+	[Obsolete]
 	public void ParameterOfTypeInt()
 	{
 		var vm = new ViewModelCoffee();
@@ -119,6 +124,7 @@ public class EventToCommandBehaviorGenericTests() : BaseBehaviorTest<EventToComm
 	}
 
 	[Fact]
+	[Obsolete]
 	public void NoExceptionWhenTheSelectedItemIsNull()
 	{
 		var vm = new ViewModelCoffee();
@@ -142,6 +148,7 @@ public class EventToCommandBehaviorGenericTests() : BaseBehaviorTest<EventToComm
 	}
 
 	[Fact]
+	[Obsolete]
 	public void HappilyUsesIValueConverterImplementation()
 	{
 		var vm = new ViewModelCoffee();

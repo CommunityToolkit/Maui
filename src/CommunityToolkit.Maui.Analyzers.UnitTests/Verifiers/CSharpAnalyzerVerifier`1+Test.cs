@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace CommunityToolkit.Maui.Analyzers.UnitTests;
+
 public static partial class CSharpAnalyzerVerifier<TAnalyzer>
 	where TAnalyzer : DiagnosticAnalyzer, new()
 {

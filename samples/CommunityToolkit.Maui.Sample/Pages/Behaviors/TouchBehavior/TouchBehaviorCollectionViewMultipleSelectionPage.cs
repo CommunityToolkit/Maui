@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 public partial class TouchBehaviorCollectionViewMultipleSelectionPage : BasePage<TouchBehaviorCollectionViewMultipleSelectionViewModel>
 {
 	readonly CollectionView collectionView;
-	
+
 	public TouchBehaviorCollectionViewMultipleSelectionPage(TouchBehaviorCollectionViewMultipleSelectionViewModel viewModel) : base(viewModel)
 	{
 		Content = new VerticalStackLayout
@@ -36,7 +36,7 @@ public partial class TouchBehaviorCollectionViewMultipleSelectionPage : BasePage
 	{
 		await Toast.Make($"Number of Creators Selected: {collectionView.SelectedItems?.Count ?? 0}").Show();
 	}
-	
+
 	sealed class CreatorsDataTemplate(TouchBehaviorCollectionViewMultipleSelectionViewModel viewModel) : DataTemplate(() => CreateLayout(viewModel))
 	{
 		static VerticalStackLayout CreateLayout(TouchBehaviorCollectionViewMultipleSelectionViewModel viewModel) => new VerticalStackLayout

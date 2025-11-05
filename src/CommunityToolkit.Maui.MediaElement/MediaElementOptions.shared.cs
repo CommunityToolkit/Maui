@@ -1,6 +1,6 @@
-﻿using Microsoft.Maui;
+﻿using CommunityToolkit.Maui.Core.Views;
+using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
-using CommunityToolkit.Maui.Core.Views;
 
 namespace CommunityToolkit.Maui.Core;
 

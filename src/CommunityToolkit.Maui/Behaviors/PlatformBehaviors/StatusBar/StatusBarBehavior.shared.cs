@@ -78,6 +78,7 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 
 	/// <inheritdoc /> 
 #if IOS
+	[Obsolete]
 	protected override void OnAttachedTo(Page page, UIKit.UIView platformView)
 #elif ANDROID
 	protected override void OnAttachedTo(Page page, Android.Views.View platformView)
@@ -121,6 +122,7 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 	}
 
 #if IOS
+	[Obsolete]
 	static void OnPageSizeChanged(object? sender, EventArgs e)
 	{
 		ArgumentNullException.ThrowIfNull(sender);

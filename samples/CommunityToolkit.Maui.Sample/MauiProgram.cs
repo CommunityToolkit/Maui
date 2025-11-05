@@ -134,7 +134,7 @@ public static class MauiProgram
 
 		return builder.Build();
 	}
-	
+
 	static void RegisterViewsAndViewModels(in IServiceCollection services)
 	{
 		// Add Gallery Pages + ViewModels

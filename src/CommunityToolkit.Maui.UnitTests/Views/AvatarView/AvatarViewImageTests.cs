@@ -45,6 +45,7 @@ public class AvatarViewImageTests : BaseViewTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void ImageSourceBackgroundColor()
 	{
 		var source = new UriImageSource()
@@ -119,6 +120,7 @@ public class AvatarViewImageTests : BaseViewTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void ImageSourceParentSize_WhenStrokeShapeNotSet()
 	{
 		const int borderWidth = 5;
@@ -154,6 +156,7 @@ public class AvatarViewImageTests : BaseViewTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void ImageSourceParentSize_WhenStrokeShapeSet()
 	{
 		const int borderWidth = 5;

@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 
 namespace CommunityToolkit.Maui.Analyzers.UnitTests;
+
 public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
 	where TAnalyzer : DiagnosticAnalyzer, new()
 	where TCodeFix : CodeFixProvider, new()

@@ -62,6 +62,7 @@ public class GravatarImageSourceTests : BaseViewTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void Default404Image()
 	{
 		Image testControl = new()
@@ -122,6 +123,7 @@ public class GravatarImageSourceTests : BaseViewTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void IsDisposedDisposeTokenSource()
 	{
 		Image testControl = new()
@@ -190,6 +192,7 @@ public class GravatarImageSourceTests : BaseViewTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void TestControlButton()
 	{
 		Button testControl = new()
@@ -202,6 +205,7 @@ public class GravatarImageSourceTests : BaseViewTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void TestControlButtonWithEmail()
 	{
 		Button testControl = new()
@@ -214,6 +218,7 @@ public class GravatarImageSourceTests : BaseViewTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void TestControlImage()
 	{
 		Image testControl = new()
@@ -226,6 +231,7 @@ public class GravatarImageSourceTests : BaseViewTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void TestControlImageButton()
 	{
 		ImageButton testControl = new()
@@ -238,6 +244,7 @@ public class GravatarImageSourceTests : BaseViewTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void TestControlImageButtonWithEmail()
 	{
 		ImageButton testControl = new()
@@ -250,6 +257,7 @@ public class GravatarImageSourceTests : BaseViewTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void TestControlImageButtonWithoutEmail()
 	{
 		ImageButton testControl = new()
@@ -262,6 +270,7 @@ public class GravatarImageSourceTests : BaseViewTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void TestControlImageWithEmail()
 	{
 		Image testControl = new()
@@ -277,6 +286,7 @@ public class GravatarImageSourceTests : BaseViewTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void TestControlImageWithEmailAndImage()
 	{
 		Image testControl = new()
@@ -293,6 +303,7 @@ public class GravatarImageSourceTests : BaseViewTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void TestControlPage()
 	{
 		Page testControl = new()
@@ -305,6 +316,7 @@ public class GravatarImageSourceTests : BaseViewTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void TestControlShell()
 	{
 		Shell testControl = new()
@@ -320,6 +332,7 @@ public class GravatarImageSourceTests : BaseViewTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void TestControlSlider()
 	{
 		Slider testControl = new()
@@ -384,6 +397,7 @@ public class GravatarImageSourceTests : BaseViewTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void TestElementImageCell()
 	{
 		ImageCell testControl = new()

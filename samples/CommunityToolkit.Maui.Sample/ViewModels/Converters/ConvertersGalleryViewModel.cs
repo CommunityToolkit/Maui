@@ -3,6 +3,7 @@ using CommunityToolkit.Maui.Sample.Models;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
+[Obsolete]
 public partial class ConvertersGalleryViewModel() : BaseGalleryViewModel(
 [
 	SectionModel.Create<BoolToObjectConverterViewModel>(nameof(BoolToObjectConverter), "A converter that allows users to convert a bool value binding to a specific object."),

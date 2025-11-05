@@ -131,6 +131,7 @@ public class DockLayoutTests : BaseTest
 	#region Arrange
 
 	[Fact]
+	[Obsolete]
 	public void ArrangeConstrainedUndersized()
 	{
 		var widthLimit = 180;
@@ -147,6 +148,7 @@ public class DockLayoutTests : BaseTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void ArrangeConstrainedOversized()
 	{
 		var measuredSize = dockLayout.CrossPlatformMeasure(500, 500);
@@ -160,6 +162,7 @@ public class DockLayoutTests : BaseTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void ArrangeNotConstrained()
 	{
 		var measuredSize = dockLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
@@ -173,6 +176,7 @@ public class DockLayoutTests : BaseTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void ArrangeConstrainedUndersizedWithPadding()
 	{
 		var widthLimit = 180;
@@ -190,6 +194,7 @@ public class DockLayoutTests : BaseTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void ArrangeNotConstrainedWithPadding()
 	{
 		dockLayout.Padding = new Thickness(10, 20);
@@ -205,6 +210,7 @@ public class DockLayoutTests : BaseTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void ArrangeConstrainedWithPaddingAndSpacing()
 	{
 		var widthLimit = 180;
@@ -224,6 +230,7 @@ public class DockLayoutTests : BaseTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void ArrangeNotConstrainedWithPaddingAndSpacing()
 	{
 		dockLayout.Padding = new Thickness(10, 20);

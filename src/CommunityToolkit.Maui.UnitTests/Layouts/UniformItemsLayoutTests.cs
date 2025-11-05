@@ -97,6 +97,7 @@ public class UniformItemsLayoutTests : BaseTest
 	}
 
 	[Fact]
+	[Obsolete]
 	public void ArrangeChildrenUniformItemsLayout()
 	{
 		var childSize = new Size(childWidth, childHeight);

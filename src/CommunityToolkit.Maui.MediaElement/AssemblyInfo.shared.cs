@@ -1,5 +1,5 @@
 ﻿
-[assembly:Microsoft.Maui.Controls.XmlnsDefinition(Constants.XamlNamespace, Constants.CommunityToolkitNamespacePrefix + nameof(CommunityToolkit.Maui.Converters))]
+[assembly: Microsoft.Maui.Controls.XmlnsDefinition(Constants.XamlNamespace, Constants.CommunityToolkitNamespacePrefix + nameof(CommunityToolkit.Maui.Converters))]
 [assembly: Microsoft.Maui.Controls.XmlnsDefinition(Constants.XamlNamespace, Constants.CommunityToolkitNamespacePrefix + nameof(CommunityToolkit.Maui.Core))]
 [assembly: Microsoft.Maui.Controls.XmlnsDefinition(Constants.XamlNamespace, Constants.CommunityToolkitNamespacePrefix + nameof(CommunityToolkit.Maui.Core.Handlers))]
 [assembly: Microsoft.Maui.Controls.XmlnsDefinition(Constants.XamlNamespace, Constants.CommunityToolkitNamespacePrefix + nameof(CommunityToolkit.Maui.Core.Views))]

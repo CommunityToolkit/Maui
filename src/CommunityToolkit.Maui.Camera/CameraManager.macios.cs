@@ -283,12 +283,12 @@ partial class CameraManager
 
 	protected virtual async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
 	{
-		if (captureSession is null 
-		    || videoRecordingFileName is null 
-		    || videoInput is null 
-		    || videoOutput is null 
-		    || videoRecordingStream is null 
-		    || videoRecordingFinalizeTcs is null)
+		if (captureSession is null
+			|| videoRecordingFileName is null
+			|| videoInput is null
+			|| videoOutput is null
+			|| videoRecordingStream is null
+			|| videoRecordingFinalizeTcs is null)
 		{
 			return Stream.Null;
 		}

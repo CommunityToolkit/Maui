@@ -22,7 +22,7 @@ public class Options : Core.Options
 
 	internal Options()
 	{
-		
+
 	}
 
 	internal static bool ShouldSuppressExceptionsInAnimations { get; private set; }
