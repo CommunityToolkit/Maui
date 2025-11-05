@@ -81,27 +81,27 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		// This ensures we throw the correct `OperationCanceledException` in the rare scenario where a developer cancels the token, then manually calls `Navigation.PopModalAsync()` before calling `Popup.CloseAsync()`
 		// It may feel a bit redundant, given that we again call `ThrowIfCancellationRequested` later in this method, however, this ensures we propagate the correct Exception to the developer.
 		token.ThrowIfCancellationRequested();
-		
+
 		// Handle edge case where a Popup was pushed inside a custom IPageContainer (e.g. a NavigationPage) on the Modal Stack
 		var customPageContainer = Navigation.ModalStack.OfType<IPageContainer<Page>>().LastOrDefault();
 		if (customPageContainer is not null && customPageContainer.CurrentPage is not PopupPage)
 		{
 			throw new PopupNotFoundException();
 		}
-		
+
 		var popupPageToClose = customPageContainer?.CurrentPage as PopupPage
-		                       ?? Navigation.ModalStack.OfType<PopupPage>().LastOrDefault()
-		                       ?? throw new PopupNotFoundException();
+							   ?? Navigation.ModalStack.OfType<PopupPage>().LastOrDefault()
+							   ?? throw new PopupNotFoundException();
 
 		// PopupModalAsync will pop the last (top) page from the ModalStack
 		// Ensure that the PopupPage that the user is attempting to close is the last (top) page on the Modal stack before calling Navigation.PopModalAsync
-		if (Navigation.ModalStack[^1] is IPageContainer<Page> { CurrentPage: PopupPage visiblePopupPageInCustomPageContainer } 
-		     && visiblePopupPageInCustomPageContainer.Content != Content)
+		if (Navigation.ModalStack[^1] is IPageContainer<Page> { CurrentPage: PopupPage visiblePopupPageInCustomPageContainer }
+			 && visiblePopupPageInCustomPageContainer.Content != Content)
 		{
 			throw new PopupBlockedException(popupPageToClose);
 		}
 		else if (Navigation.ModalStack[^1] is ContentPage currentVisibleModalPage
-		         && currentVisibleModalPage.Content != Content)
+				 && currentVisibleModalPage.Content != Content)
 		{
 			throw new PopupBlockedException(popupPageToClose);
 		}
