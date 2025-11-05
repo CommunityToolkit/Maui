@@ -85,7 +85,7 @@ public class ContentViewGroup : ViewGroup, IMeasurable
 
 	void OnLayoutUpdated(object? sender, LayoutEventArgs e)
 	{
-		if (CrossPlatformArrange == null || CrossPlatformMeasure == null)
+		if (CrossPlatformArrange is null || CrossPlatformMeasure is null)
 		{
 			return;
 		}
