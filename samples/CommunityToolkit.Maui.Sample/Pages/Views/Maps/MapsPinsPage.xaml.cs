@@ -104,13 +104,13 @@ public partial class MapsPinsPage : BasePage<MapsPinsViewModel>
 
 		microsoftPin.MarkerClicked += (s, a) =>
 		{
-			DisplayAlert("Marker", "OK", "OK");
+			DisplayAlertAsync("Marker", "OK", "OK");
 			a.HideInfoWindow = true;
 		};
 
 		microsoftPin.InfoWindowClicked += (s, a) =>
 		{
-			DisplayAlert("Info", "OK", "OK");
+			DisplayAlertAsync("Info", "OK", "OK");
 		};
 
 		PinsMap.Pins.Add(microsoftPin);
@@ -118,6 +118,6 @@ public partial class MapsPinsPage : BasePage<MapsPinsViewModel>
 
 	void PinsMap_MapClicked(object? sender, MapClickedEventArgs? e)
 	{
-		DisplayAlert("Map Clicked", $"Location {e?.Location.Latitude}, {e?.Location.Longitude}", "OK");
+		DisplayAlertAsync("Map Clicked", $"Location {e?.Location.Latitude}, {e?.Location.Longitude}", "OK");
 	}
 }

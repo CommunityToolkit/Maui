@@ -153,7 +153,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	{
 		if (string.IsNullOrWhiteSpace(CustomSourceEntry.Text))
 		{
-			DisplayAlert("Error Loading URL Source", "No value was found to load as a media source. " +
+			DisplayAlertAsync("Error Loading URL Source", "No value was found to load as a media source. " +
 				"When you do enter a value, make sure it's a valid URL. No additional validation is done.",
 				"OK");
 
@@ -165,7 +165,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 	async void ChangeSourceClicked(object? sender, EventArgs? e)
 	{
-		var result = await DisplayActionSheet("Choose a source", "Cancel", null,
+		var result = await DisplayActionSheetAsync("Choose a source", "Cancel", null,
 			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadMusic);
 
 		MediaElement.Stop();
@@ -228,7 +228,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	{
 		const string cancel = "Cancel";
 
-		var resultAspect = await DisplayActionSheet(
+		var resultAspect = await DisplayActionSheetAsync(
 			"Choose aspect ratio",
 			cancel,
 			null,
@@ -243,7 +243,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 		if (!Enum.TryParse(typeof(Aspect), resultAspect, true, out var aspectEnum))
 		{
-			await DisplayAlert("Error", "There was an error determining the selected aspect", "OK");
+			await DisplayAlertAsync("Error", "There was an error determining the selected aspect", "OK");
 
 			return;
 		}

@@ -91,7 +91,7 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 	{
 		var result = await popupService.ShowPopupAsync<ReturnResultPopup, string>(Navigation);
 
-		await DisplayAlert("Pop Result Returned", $"Result: {result.Result ?? "Closed by tapping outside"}", "OK");
+		await DisplayAlertAsync("Pop Result Returned", $"Result: {result.Result ?? "Closed by tapping outside"}", "OK");
 	}
 
 	async void HandleXamlBindingPopupPopupButtonClicked(object? sender, EventArgs e)

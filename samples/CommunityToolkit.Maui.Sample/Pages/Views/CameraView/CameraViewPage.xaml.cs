@@ -120,7 +120,7 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 	{
 		if (videoRecordingStream == Stream.Null)
 		{
-			await DisplayAlert("Unable to Save Video", "Stream is null", "OK");
+			await DisplayAlertAsync("Unable to Save Video", "Stream is null", "OK");
 		}
 		else
 		{
