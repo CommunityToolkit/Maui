@@ -98,7 +98,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		if (Navigation.ModalStack[^1] is IPageContainer<Page> { CurrentPage: PopupPage visiblePopupPageInCustomPageContainer }
 			 && visiblePopupPageInCustomPageContainer.Content != Content)
 		{
-			throw new PopupBlockedException(popupPageToClose);
+			throw new PopupBlockedException(visiblePopupPageInCustomPageContainer);
 		}
 		else if (Navigation.ModalStack[^1] is ContentPage currentVisibleModalPage
 				 && currentVisibleModalPage.Content != Content)
