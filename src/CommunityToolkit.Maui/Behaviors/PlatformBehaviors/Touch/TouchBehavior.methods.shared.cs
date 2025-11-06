@@ -165,9 +165,9 @@ public partial class TouchBehavior : IDisposable
 		view.InputTransparent = IsEnabled;
 	}
 
-	async Task RaiseCurrentTouchStateChanged(CancellationToken token)
+	async Task RaiseCurrentTouchStateChanged()
 	{
-		await Task.WhenAll(ForceUpdateState(token), HandleLongPress(token));
+		await Task.WhenAll(ForceUpdateState(CancellationToken.None), HandleLongPress(CancellationToken.None));
 		weakEventManager.HandleEvent(this, new TouchStateChangedEventArgs(CurrentTouchState), nameof(CurrentTouchStateChanged));
 	}
 
@@ -177,14 +177,47 @@ public partial class TouchBehavior : IDisposable
 	void RaiseCurrentTouchStatusChanged()
 		=> weakEventManager.HandleEvent(this, new TouchStatusChangedEventArgs(CurrentTouchStatus), nameof(CurrentTouchStatusChanged));
 
-	async Task RaiseHoverStateChanged(CancellationToken token)
+	async Task RaiseHoverStateChanged()
 	{
-		await ForceUpdateState(token);
+		await ForceUpdateState(CancellationToken.None);
 		weakEventManager.HandleEvent(this, new HoverStateChangedEventArgs(CurrentHoverState), nameof(HoverStateChanged));
 	}
 
 	void RaiseHoverStatusChanged()
 		=> weakEventManager.HandleEvent(this, new HoverStatusChangedEventArgs(CurrentHoverStatus), nameof(HoverStatusChanged));
+
+	void HandleDefaultOpacityChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		switch (newValue)
+		{
+			case < 0:
+				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(DefaultOpacity)} must be greater than 0");
+			case > 1:
+				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(DefaultOpacity)} must be less than 1");
+		}
+	}
+	
+	void HandleHoveredOpacityChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		switch (newValue)
+		{
+			case < 0:
+				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(HoveredOpacity)} must be greater than 0");
+			case > 1:
+				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(HoveredOpacity)} must be less than 1");
+		}
+	}
+	
+	void HandlePressedOpacityChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		switch (newValue)
+		{
+			case < 0:
+				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(PressedOpacity)} must be greater than 0");
+			case > 1:
+				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(PressedOpacity)} must be less than 1");
+		}
+	}
 
 	partial void PlatformDispose();
 }

@@ -38,7 +38,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		  	public string? PropertyName { get; }
 		  	public Type? DeclaringType { get; set; }
 		  	public object? DefaultValue { get; set; }
-		  	public string DefaultBindingMode { get; set; } = string.Empty;
+		  	public BindingMode DefaultBindingMode { get; set; } = string.Empty;
 		  	public string ValidateValueMethodName { get; set; } = string.Empty;
 		  	public string PropertyChangedMethodName { get; set; } = string.Empty;
 		  	public string PropertyChangingMethodName { get; set; } = string.Empty;
