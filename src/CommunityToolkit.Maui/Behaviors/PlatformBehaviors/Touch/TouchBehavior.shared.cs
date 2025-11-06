@@ -186,19 +186,19 @@ public partial class TouchBehavior : BasePlatformBehavior<VisualElement>
 	/// Gets or sets the opacity of the element when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
 	/// </summary>
 	/// <exception cref="ArgumentOutOfRangeException"></exception>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.DefaultOpacity, PropertyChangingMethodName = nameof(HandleDefaultOpacityChanged))]
+	[BindableProperty(DefaultValue = TouchBehaviorDefaults.DefaultOpacity, PropertyChangingMethodName = nameof(HandleDefaultOpacityChanging))]
 	public partial double DefaultOpacity { get; set; }
 
 	/// <summary>
 	/// Gets or sets the opacity of the element when the <see cref="HoverState" /> is <see cref="HoverState.Hovered" />.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.HoveredOpacity, PropertyChangingMethodName = nameof(HandleHoveredOpacityChanged))]
+	[BindableProperty(DefaultValue = TouchBehaviorDefaults.HoveredOpacity, PropertyChangingMethodName = nameof(HandleHoveredOpacityChanging))]
 	public partial double HoveredOpacity { get; set; }
 
 	/// <summary>
 	/// Gets or sets the opacity of the element when the <see cref="TouchState" /> is <see cref="TouchState.Pressed" />.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.PressedOpacity, PropertyChangingMethodName = nameof(HandlePressedOpacityChanged))]
+	[BindableProperty(DefaultValue = TouchBehaviorDefaults.PressedOpacity, PropertyChangingMethodName = nameof(HandlePressedOpacityChanging))]
 	public partial double PressedOpacity { get; set; }
 
 	/// <summary>
