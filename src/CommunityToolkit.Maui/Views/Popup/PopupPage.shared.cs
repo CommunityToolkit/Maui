@@ -93,8 +93,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 							   ?? Navigation.ModalStack.OfType<PopupPage>().LastOrDefault()
 							   ?? throw new PopupNotFoundException();
 
-		// PopupModalAsync will pop the last (top) page from the ModalStack
-		// Ensure that the PopupPage that the user is attempting to close is the last (top) page on the Modal stack before calling Navigation.PopModalAsync
+		// PopModalAsync will pop the last (top) page from the ModalStack
+		// Ensure that the PopupPage the user is attempting to close is the last (top) page on the Modal stack before calling Navigation.PopModalAsync
 		if (Navigation.ModalStack[^1] is IPageContainer<Page> { CurrentPage: PopupPage visiblePopupPageInCustomPageContainer }
 			 && visiblePopupPageInCustomPageContainer.Content != Content)
 		{
