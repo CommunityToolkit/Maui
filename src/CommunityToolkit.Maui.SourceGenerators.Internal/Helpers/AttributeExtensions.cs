@@ -14,17 +14,19 @@ static class AttributeExtensions
 	{
 		var data = attribute.NamedArguments.SingleOrDefault(kvp => kvp.Key == name).Value;
 
-		if (data.Value is null)
+		if (data.Type is null)
 		{
 			return placeholder;
 		}
 
-		var enumType = data.Type ?? throw new InvalidOperationException("Type cannot be null");
+		if(data.Value is null)
+		{
+			return placeholder;
+		}
 
-		var fullyQualifiedEnumType = enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-		var members = enumType.GetMembers();
+		var members = data.Type.GetMembers();
 
-		return $"{fullyQualifiedEnumType}.{members[(int)data.Value]}";
+		return members[(int)data.Value].ToString();
 	}
 
 	public static string GetNamedArgumentsAttributeValueByNameAsString(this AttributeData attribute, string name, string placeholder = "null")

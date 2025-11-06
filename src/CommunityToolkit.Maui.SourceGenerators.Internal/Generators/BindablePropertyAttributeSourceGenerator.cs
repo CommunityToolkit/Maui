@@ -226,7 +226,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		var defaultValue = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DefaultValue));
 		var coerceValueMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.CoerceValueMethodName));
-		var defaultBindingMode = attributeData.GetEnumValueByNameAsString(nameof(BindablePropertyModel.DefaultBindingMode), "BindingMode.OneWay");
+		var defaultBindingMode = attributeData.GetEnumValueByNameAsString(nameof(BindablePropertyModel.DefaultBindingMode), "Microsoft.Maui.Controls.BindingMode.OneWay");
 		var defaultValueCreatorMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DefaultValueCreatorMethodName));
 		var declaringType = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DeclaringType), declaringTypeString);
 		var propertyChangedMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.PropertyChangedMethodName));
