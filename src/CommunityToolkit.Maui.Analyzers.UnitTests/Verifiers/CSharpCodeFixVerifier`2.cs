@@ -31,7 +31,7 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
 		};
 
 		test.ExpectedDiagnostics.AddRange(expected);
-		await test.RunAsync(CancellationToken.None);
+		await test.RunAsync(TestContext.Current.CancellationToken);
 	}
 
 	/// <inheritdoc cref="CodeFixVerifier{TAnalyzer, TCodeFix, TTest, TVerifier}.VerifyCodeFixAsync(string, string)"/>
@@ -52,6 +52,6 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
 		};
 
 		test.ExpectedDiagnostics.AddRange(expected);
-		await test.RunAsync(CancellationToken.None);
+		await test.RunAsync(TestContext.Current.CancellationToken);
 	}
 }

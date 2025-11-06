@@ -29,6 +29,6 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
 		};
 
 		test.ExpectedDiagnostics.AddRange(expected);
-		await test.RunAsync(CancellationToken.None);
+		await test.RunAsync(TestContext.Current.CancellationToken);
 	}
 }
