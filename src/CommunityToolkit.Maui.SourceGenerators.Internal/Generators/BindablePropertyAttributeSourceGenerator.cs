@@ -18,7 +18,6 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	static readonly SemanticValues emptySemanticValues = new(default, []);
 
 	const string bpFullName = "global::Microsoft.Maui.Controls.BindableProperty";
-	const string bindingModeFullName = "global::Microsoft.Maui.Controls.";
 
 	const string bpAttribute =
 		/* language=C#-test */
@@ -38,7 +37,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		  	public string? PropertyName { get; }
 		  	public Type? DeclaringType { get; set; }
 		  	public object? DefaultValue { get; set; }
-		  	public BindingMode DefaultBindingMode { get; set; } = string.Empty;
+		  	public BindingMode DefaultBindingMode { get; set; }
 		  	public string ValidateValueMethodName { get; set; } = string.Empty;
 		  	public string PropertyChangedMethodName { get; set; } = string.Empty;
 		  	public string PropertyChangingMethodName { get; set; } = string.Empty;
@@ -157,7 +156,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 				.Append($"typeof({info.ReturnType}), ")
 				.Append($"typeof({info.DeclaringType}), ")
 				.Append($"{info.DefaultValue}, ")
-				.Append($"{bindingModeFullName}{info.DefaultBindingMode}, ")
+				.Append($"{info.DefaultBindingMode}, ")
 				.Append($"{info.ValidateValueMethodName}, ")
 				.Append($"{info.PropertyChangedMethodName}, ")
 				.Append($"{info.PropertyChangingMethodName}, ")
@@ -227,7 +226,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		var defaultValue = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DefaultValue));
 		var coerceValueMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.CoerceValueMethodName));
-		var defaultBindingMode = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DefaultBindingMode), "BindingMode.OneWay");
+		var defaultBindingMode = attributeData.GetEnumValueByNameAsString(nameof(BindablePropertyModel.DefaultBindingMode), "BindingMode.OneWay");
 		var defaultValueCreatorMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DefaultValueCreatorMethodName));
 		var declaringType = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DeclaringType), declaringTypeString);
 		var propertyChangedMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.PropertyChangedMethodName));
