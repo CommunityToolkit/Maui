@@ -103,7 +103,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		else if (Navigation.ModalStack[^1] is ContentPage currentVisibleModalPage
 				 && currentVisibleModalPage.Content != Content)
 		{
-			throw new PopupBlockedException(popupPageToClose);
+			throw new PopupBlockedException(currentVisibleModalPage);
 		}
 
 		// We call `.ThrowIfCancellationRequested()` again to avoid a race condition where a developer cancels the CancellationToken after we check for an InvalidOperationException
