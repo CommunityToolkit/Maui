@@ -20,6 +20,15 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		InitializeComponent();
 	}
 
+	protected override async void OnNavigatedTo(NavigatedToEventArgs args)
+	{
+		base.OnNavigatedTo(args);
+		if (args.WasPreviousPageACommunityToolkitPopupPage())
+		{
+			await Toast.Make("Popup Closed").Show();
+		}
+	}
+
 	async void HandleSimplePopupButtonClicked(object sender, EventArgs e)
 	{
 		var queryAttributes = new Dictionary<string, object>
@@ -160,6 +169,29 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 			// Display Popup Result as a Toast
 			await Toast.Make($"You entered {popupResult.Result}").Show(CancellationToken.None);
 		}
+	}
 
+	async void HandleModalPopupInCustomNavigationPage(object? sender, EventArgs eventArgs)
+	{
+		var modalPopupPage = new ContentPage
+		{
+			Content = new VerticalStackLayout
+			{
+				Spacing = 24,
+				Children =
+				{
+					new Button()
+						.Text("Show Popup")
+						.Invoke(button => button.Command = new Command(async () => await popupService.ShowPopupAsync<ButtonPopup>(Shell.Current))),
+
+					new Button()
+						.Text("Back")
+						.Invoke(button => button.Command = new Command(async () => await Navigation.PopModalAsync()))
+				}
+			}.Center()
+		};
+
+		var customNavigationPage = new NavigationPage(modalPopupPage);
+		await Shell.Current.Navigation.PushModalAsync(customNavigationPage, true);
 	}
 }
