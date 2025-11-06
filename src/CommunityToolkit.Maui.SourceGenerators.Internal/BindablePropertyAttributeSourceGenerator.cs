@@ -236,17 +236,31 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var validateValueMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.ValidateValueMethodName));
 		var newKeywordText = doesContainNewKeyword ? "new " : string.Empty;
 
-		
-		// Sanitize the Return Type because Nullable Reference Types cannot be used in the `typeof()` operator
-		var sanitizedReturnType = returnType switch
+
+		// Sanitize the Return Type and Declaring Type because Nullable Reference Types cannot be used in the `typeof()` operator
+		var sanitizedReturnType = GetNonNullableType(returnType);
+		var sanitizedDeclaringType = declaringType[^1] is '?' ? declaringType[..^1] : declaringType;
+
+		return new BindablePropertyModel(propertyName, sanitizedReturnType, sanitizedDeclaringType, defaultValue, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText);
+	}
+
+	static ITypeSymbol GetNonNullableType(ITypeSymbol typeSymbol)
+	{
+		// Check for Nullable<T>
+		if (typeSymbol is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.IsGenericType && namedTypeSymbol.ConstructedFrom.SpecialType is SpecialType.System_Nullable_T)
 		{
-			// If `returnType` is `Nullable<T>`, remove the ?
-			// E.g. ImageSource? -> ImageSource
-			INamedTypeSymbol { IsGenericType: true, ConstructedFrom.SpecialType: SpecialType.System_Nullable_T } namedTypeSymbol => namedTypeSymbol.TypeArguments[0],
-			_ => returnType
-		};
-		
-		return new BindablePropertyModel(propertyName, sanitizedReturnType, declaringType, defaultValue, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText);
+			return typeSymbol;
+		}
+
+		// Check for Nullable Reference Type
+		if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated)
+		{
+			// For reference types, NullableAnnotation.None indicates non-nullable.
+			return typeSymbol.WithNullableAnnotation(NullableAnnotation.None);
+		}
+
+		// Handle other cases if necessary (e.g., NotAnnotated, which might depend on context)
+		return typeSymbol;
 	}
 
 	static bool SyntaxPredicate(SyntaxNode node, CancellationToken cancellationToken) =>
