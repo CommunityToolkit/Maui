@@ -29,49 +29,22 @@ public enum StatusBarApplyOn
 public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 {
 	/// <summary>
-	/// <see cref="BindableProperty"/> that manages the StatusBarColor property.
+	/// Property that holds the value of the Status bar color. 
 	/// </summary>
-	public static readonly BindableProperty StatusBarColorProperty =
-		BindableProperty.Create(nameof(StatusBarColor), typeof(Color), typeof(StatusBarBehavior), Colors.Transparent);
-
-	/// <summary>
-	/// <see cref="BindableProperty"/> that manages the StatusBarColor property.
-	/// </summary>
-	public static readonly BindableProperty StatusBarStyleProperty =
-		BindableProperty.Create(nameof(StatusBarStyle), typeof(StatusBarStyle), typeof(StatusBarBehavior), StatusBarStyle.Default);
-
-	/// <summary>
-	/// <see cref="BindableProperty"/> that manages the ApplyOn property.
-	/// </summary>
-	public static readonly BindableProperty ApplyOnProperty =
-		BindableProperty.Create(nameof(ApplyOn), typeof(StatusBarApplyOn), typeof(StatusBarBehavior), StatusBarApplyOn.OnBehaviorAttachedTo);
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(StatusBarColorValueCreator))]
+	public partial Color StatusBarColor { get; set; }
 
 	/// <summary>
 	/// Property that holds the value of the Status bar color. 
 	/// </summary>
-	public Color StatusBarColor
-	{
-		get => (Color)GetValue(StatusBarColorProperty);
-		set => SetValue(StatusBarColorProperty, value);
-	}
-
-	/// <summary>
-	/// Property that holds the value of the Status bar color. 
-	/// </summary>
-	public StatusBarStyle StatusBarStyle
-	{
-		get => (StatusBarStyle)GetValue(StatusBarStyleProperty);
-		set => SetValue(StatusBarStyleProperty, value);
-	}
+	[BindableProperty(DefaultValue = StatusBarStyle.Default)]
+	public partial StatusBarStyle StatusBarStyle { get; set; }
 
 	/// <summary>
 	/// When the status bar color and style should be applied.
 	/// </summary>
-	public StatusBarApplyOn ApplyOn
-	{
-		get => (StatusBarApplyOn)GetValue(ApplyOnProperty);
-		set => SetValue(ApplyOnProperty, value);
-	}
+	[BindableProperty(DefaultValue = StatusBarApplyOn.OnBehaviorAttachedTo)]
+	public partial StatusBarApplyOn ApplyOn { get; set; }
 
 
 #if !(WINDOWS || MACCATALYST || TIZEN)
@@ -164,4 +137,6 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 		}
 	}
 #endif
+	
+	static Color StatusBarColorValueCreator() => Colors.Transparent;
 }
