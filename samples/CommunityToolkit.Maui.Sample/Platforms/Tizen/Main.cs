@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
+using Tizen.Applications;
 
 namespace CommunityToolkit.Maui.Sample;
 
