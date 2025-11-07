@@ -140,6 +140,9 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		static void GenerateBindableProperty(StringBuilder sb, BindablePropertyModel info)
 		{
+			// Sanitize the Return Type and Declaring Type because Nullable Reference Types cannot be used in the `typeof()` operator
+			var sanitizedReturnType = GetNonNullableType(info.ReturnType);
+
 			/*
 			/// <summary>
 			/// Backing BindableProperty for the <see cref="PropertyName"/> property.
@@ -153,7 +156,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			sb.AppendLine($"public static readonly {bpFullName} {info.PropertyName}Property = ")
 				.Append($"{bpFullName}.Create(")
 				.Append($"\"{info.PropertyName}\", ")
-				.Append($"typeof({info.ReturnType}), ")
+				.Append($"typeof({sanitizedReturnType}), ")
 				.Append($"typeof({info.DeclaringType}), ")
 				.Append($"{info.DefaultValue}, ")
 				.Append($"{info.DefaultBindingMode}, ")
@@ -234,11 +237,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var validateValueMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.ValidateValueMethodName));
 		var newKeywordText = doesContainNewKeyword ? "new " : string.Empty;
 
-		// Sanitize the Return Type and Declaring Type because Nullable Reference Types cannot be used in the `typeof()` operator
-		var sanitizedReturnType = GetNonNullableType(returnType);
-		var sanitizedDeclaringType = GetNonNullableType(declaringType);
-
-		return new BindablePropertyModel(propertyName, sanitizedReturnType, sanitizedDeclaringType, defaultValue, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText);
+		return new BindablePropertyModel(propertyName, returnType, declaringType, defaultValue, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText);
 	}
 
 	static ITypeSymbol GetNonNullableType(ITypeSymbol typeSymbol)
