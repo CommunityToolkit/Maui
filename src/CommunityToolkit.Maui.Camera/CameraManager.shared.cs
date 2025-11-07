@@ -25,29 +25,6 @@ partial class CameraManager(
 	internal bool IsInitialized { get; private set; }
 
 	/// <summary>
-	/// Whether the user has granted the required permissions through the use of the <see cref="Permissions"/> API.
-	/// </summary>
-	/// <returns>Returns <c>true</c> if permission has been granted, <c>false</c> otherwise.</returns>
-	public async Task<bool> ArePermissionsGranted()
-	{
-		var cameraRequest = await Permissions.RequestAsync<Permissions.Camera>();
-		var microphoneRequest = await Permissions.RequestAsync<Permissions.Microphone>();
-		if (cameraRequest is not PermissionStatus.Granted)
-		{
-			Trace.TraceInformation("Camera permission is not granted.");
-			return false;
-		}
-
-		if (microphoneRequest is not PermissionStatus.Granted)
-		{
-			Trace.TraceInformation("Microphone permission is not granted.");
-			return false;
-		}
-
-		return true;
-	}
-
-	/// <summary>
 	/// Connects to the camera.
 	/// </summary>
 	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>

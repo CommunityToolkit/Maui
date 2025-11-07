@@ -14,6 +14,7 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 	[RelayCommand]
 	async Task SaveFile(CancellationToken cancellationToken)
 	{
+		await RequestPermissions();
 		using var stream = new MemoryStream(Encoding.Default.GetBytes("Hello from the Community Toolkit!"));
 		try
 		{
@@ -32,6 +33,7 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 	[RelayCommand]
 	async Task SaveFileStatic(CancellationToken cancellationToken)
 	{
+		await RequestPermissions();
 		using var stream = new MemoryStream(Encoding.Default.GetBytes("Hello from the Community Toolkit!"));
 		var fileSaveResult = await FileSaver.SaveAsync("DCIM", "test.txt", stream, cancellationToken);
 		if (fileSaveResult.IsSuccessful)
@@ -47,6 +49,7 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 	[RelayCommand]
 	async Task SaveFileInstance(CancellationToken cancellationToken)
 	{
+		await RequestPermissions();
 		using var client = new HttpClient();
 
 		const string communityToolkitNuGetUrl = "https://www.nuget.org/api/v2/package/CommunityToolkit.Maui/5.0.0";
@@ -66,5 +69,11 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 		{
 			await Toast.Make($"File is not saved, {ex.Message}").Show(cancellationToken);
 		}
+	}
+
+	async Task RequestPermissions()
+	{
+		await Permissions.RequestAsync<Permissions.StorageRead>();
+		await Permissions.RequestAsync<Permissions.StorageWrite>();
 	}
 }

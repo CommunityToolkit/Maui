@@ -17,6 +17,7 @@ public partial class FolderPickerViewModel : BaseViewModel
 	[RelayCommand]
 	async Task PickFolder(CancellationToken cancellationToken)
 	{
+		await RequestPermissions();
 		var folderPickerResult = await folderPicker.PickAsync(cancellationToken);
 		if (folderPickerResult.IsSuccessful)
 		{
@@ -31,6 +32,7 @@ public partial class FolderPickerViewModel : BaseViewModel
 	[RelayCommand]
 	async Task PickFolderStatic(CancellationToken cancellationToken)
 	{
+		await RequestPermissions();
 		var folderResult = await FolderPicker.PickAsync("DCIM", cancellationToken);
 		if (folderResult.IsSuccessful)
 		{
@@ -46,6 +48,7 @@ public partial class FolderPickerViewModel : BaseViewModel
 	[RelayCommand]
 	async Task PickFolderInstance(CancellationToken cancellationToken)
 	{
+		await RequestPermissions();
 		var folderPickerInstance = new FolderPickerImplementation();
 		try
 		{
@@ -61,5 +64,11 @@ public partial class FolderPickerViewModel : BaseViewModel
 		{
 			await Toast.Make($"Folder is not picked, {e.Message}").Show(cancellationToken);
 		}
+	}
+	
+	async Task RequestPermissions()
+	{
+		await Permissions.RequestAsync<Permissions.StorageRead>();
+		await Permissions.RequestAsync<Permissions.StorageWrite>();
 	}
 }

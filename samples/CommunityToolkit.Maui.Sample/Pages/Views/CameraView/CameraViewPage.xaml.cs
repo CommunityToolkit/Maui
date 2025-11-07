@@ -28,7 +28,20 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 	protected override async void OnAppearing()
 	{
 		base.OnAppearing();
+		var cameraRequest = await Permissions.RequestAsync<Permissions.Camera>();
+		var microphoneRequest = await Permissions.RequestAsync<Permissions.Microphone>();
+		if (cameraRequest is not PermissionStatus.Granted)
+		{
+			Trace.TraceInformation("Camera permission is not granted.");
+			return;
+		}
 
+		if (microphoneRequest is not PermissionStatus.Granted)
+		{
+			Trace.TraceInformation("Microphone permission is not granted.");
+			return;
+		}
+		
 		var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(3));
 		await BindingContext.RefreshCamerasCommand.ExecuteAsync(cancellationTokenSource.Token);
 	}
@@ -124,6 +137,12 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 		}
 		else
 		{
+			var status = await Permissions.RequestAsync<Permissions.StorageRead>();
+			if (status is not PermissionStatus.Granted)
+			{
+				throw new PermissionException("Storage permission is not granted.");
+			}
+			
 			await fileSaver.SaveAsync("recording.mp4", videoRecordingStream);
 			await videoRecordingStream.DisposeAsync();
 			videoRecordingStream = Stream.Null;

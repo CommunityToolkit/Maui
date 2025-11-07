@@ -85,7 +85,7 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 		CanStartListenExecute = false;
 		CanStopListenExecute = true;
 
-		var isGranted = await speechToText.RequestPermissions(CancellationToken.None);
+		var isGranted = await RequestPermissions();
 		if (!isGranted)
 		{
 			await Toast.Make("Permission not granted").Show(CancellationToken.None);
@@ -150,5 +150,12 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 	public async ValueTask DisposeAsync()
 	{
 		await speechToText.DisposeAsync();
+	}
+	
+	async Task<bool> RequestPermissions()
+	{
+		var microphoneGranted = await Permissions.RequestAsync<Permissions.Microphone>();
+		var recognitionGranted = await SpeechToText.RequestPermissions(CancellationToken.None);
+		return microphoneGranted == PermissionStatus.Granted && recognitionGranted;
 	}
 }

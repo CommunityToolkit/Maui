@@ -27,7 +27,7 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 	[RelayCommand]
 	async Task StartListen()
 	{
-		var isGranted = await speechToText.RequestPermissions(CancellationToken.None);
+		var isGranted = await RequestPermissions();
 		if (!isGranted)
 		{
 			await Toast.Make("Permission not granted").Show(CancellationToken.None);
@@ -73,5 +73,12 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 	void HandleSpeechToTextStateChanged(object? sender, SpeechToTextStateChangedEventArgs e)
 	{
 		OnPropertyChanged(nameof(State));
+	}
+	
+	async Task<bool> RequestPermissions()
+	{
+		var microphoneGranted = await Permissions.RequestAsync<Permissions.Microphone>();
+		var recognitionGranted = await SpeechToText.RequestPermissions(CancellationToken.None);
+		return microphoneGranted == PermissionStatus.Granted && recognitionGranted;
 	}
 }
