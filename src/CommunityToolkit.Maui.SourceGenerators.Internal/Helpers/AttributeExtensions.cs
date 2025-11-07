@@ -27,18 +27,13 @@ static class AttributeExtensions
 			return members[(int)data.Value].ToString();
 		}
 
-		// Ensure floating point types include a decimal point in their string, otherwise runtime will interpret them as integers and throw a TypeException
-		if (data.Type?.SpecialType is SpecialType.System_Double or SpecialType.System_Single or SpecialType.System_Decimal)
+		// Do not include a cast when the type is a Delegate (e.g. OnPropertyChanged)
+		if (data.Type?.TypeKind is TypeKind.Delegate)
 		{
-			var text = data.Value?.ToString() ?? throw new InvalidOperationException("Value of a primitive type cannot be null");
-			if (!text.Contains("."))
-			{
-				text += ".0";
-			}
-			return text;
+			return data.Value is null ? placeholder : data.Value.ToString();
 		}
 
-		return data.Value is null ? placeholder : data.Value.ToString();
+		return data.Value is null ? placeholder : $"({data.Type}){data.Value}";
 	}
 
 	public static string GetConstructorArgumentsAttributeValueByNameAsString(this AttributeData attribute, string placeholder)
