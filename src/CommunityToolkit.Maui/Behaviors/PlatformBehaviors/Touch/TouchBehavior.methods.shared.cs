@@ -146,7 +146,8 @@ public partial class TouchBehavior : IDisposable
 
 	static void HandleDefaultOpacityChanging(BindableObject bindable, object oldValue, object newValue)
 	{
-		switch (newValue)
+		var defaultOpacity = (double)newValue;
+		switch (defaultOpacity)
 		{
 			case < 0:
 				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(DefaultOpacity)} must be greater than 0");
@@ -157,7 +158,8 @@ public partial class TouchBehavior : IDisposable
 
 	static void HandleHoveredOpacityChanging(BindableObject bindable, object oldValue, object newValue)
 	{
-		switch (newValue)
+		var hoveredOpacity = (double)newValue;
+		switch (hoveredOpacity)
 		{
 			case < 0:
 				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(HoveredOpacity)} must be greater than 0");
@@ -168,7 +170,8 @@ public partial class TouchBehavior : IDisposable
 
 	static void HandlePressedOpacityChanging(BindableObject bindable, object oldValue, object newValue)
 	{
-		switch (newValue)
+		var pressedOpacity = (double)newValue;
+		switch (pressedOpacity)
 		{
 			case < 0:
 				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(PressedOpacity)} must be greater than 0");

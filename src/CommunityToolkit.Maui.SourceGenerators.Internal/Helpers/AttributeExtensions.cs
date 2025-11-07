@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Internal.Helpers;
 

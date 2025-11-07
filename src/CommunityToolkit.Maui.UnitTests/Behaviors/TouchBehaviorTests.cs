@@ -858,14 +858,36 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		touchBehavior.BindingContext = viewModel;
 
 		touchBehavior.SetBinding(TouchBehavior.HoveredOpacityProperty, nameof(TouchBehaviorViewModel.HoveredOpacity), mode: BindingMode.TwoWay);
-
-		Assert.Throws<ArgumentOutOfRangeException>(() => touchBehavior.HoveredOpacity = 1.01);
-		Assert.Throws<ArgumentOutOfRangeException>(() => touchBehavior.HoveredOpacity = -0.01);
+		
 		Assert.Equal(default, viewModel.HoveredOpacity);
 
 		touchBehavior.HoveredOpacity = hoveredOpacity;
 
 		Assert.Equal(hoveredOpacity, viewModel.HoveredOpacity);
+	}
+	
+	[Fact]
+	public void SetHoveredOpacityAbove1Test()
+	{
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
+
+		touchBehavior.SetBinding(TouchBehavior.HoveredOpacityProperty, nameof(TouchBehaviorViewModel.HoveredOpacity), mode: BindingMode.TwoWay);
+
+		Assert.Throws<ArgumentOutOfRangeException>(() => touchBehavior.HoveredOpacity = 1.01);
+		Assert.Equal(default, viewModel.HoveredOpacity);
+	}
+	
+	[Fact]
+	public void SetHoveredOpacityBelow0Test()
+	{
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
+
+		touchBehavior.SetBinding(TouchBehavior.HoveredOpacityProperty, nameof(TouchBehaviorViewModel.HoveredOpacity), mode: BindingMode.TwoWay);
+		
+		Assert.Throws<ArgumentOutOfRangeException>(() => touchBehavior.HoveredOpacity = -0.01);
+		Assert.Equal(default, viewModel.HoveredOpacity);
 	}
 
 	[Fact]
@@ -876,16 +898,38 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		touchBehavior.BindingContext = viewModel;
 
 		touchBehavior.SetBinding(TouchBehavior.PressedOpacityProperty, nameof(TouchBehaviorViewModel.PressedOpacity), mode: BindingMode.TwoWay);
-
-		Assert.Throws<ArgumentOutOfRangeException>(() => touchBehavior.PressedOpacity = 1.01);
-		Assert.Throws<ArgumentOutOfRangeException>(() => touchBehavior.PressedOpacity = -0.01);
 		Assert.Equal(default, viewModel.PressedOpacity);
 
 		touchBehavior.PressedOpacity = pressedOpacity;
 
 		Assert.Equal(pressedOpacity, viewModel.PressedOpacity);
 	}
+	
+	[Fact]
+	public void SetPressedOpacityAbove1Test()
+	{
+		const double pressedOpacity = 0.2;
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
 
+		touchBehavior.SetBinding(TouchBehavior.PressedOpacityProperty, nameof(TouchBehaviorViewModel.PressedOpacity), mode: BindingMode.TwoWay);
+
+		Assert.Throws<ArgumentOutOfRangeException>(() => touchBehavior.PressedOpacity = 1.01);
+		Assert.Equal(default, viewModel.PressedOpacity);
+	}
+	
+	[Fact]
+	public void SetPressedOpacityBelow0Test()
+	{
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
+
+		touchBehavior.SetBinding(TouchBehavior.PressedOpacityProperty, nameof(TouchBehaviorViewModel.PressedOpacity), mode: BindingMode.TwoWay);
+		
+		Assert.Throws<ArgumentOutOfRangeException>(() => touchBehavior.PressedOpacity = -0.01);
+		Assert.Equal(default, viewModel.PressedOpacity);
+	}
+	
 	[Fact]
 	public void SetDefaultOpacityTest()
 	{
@@ -895,13 +939,33 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 
 		touchBehavior.SetBinding(TouchBehavior.DefaultOpacityProperty, nameof(TouchBehaviorViewModel.DefaultOpacity), mode: BindingMode.TwoWay);
 
-		Assert.Throws<ArgumentOutOfRangeException>(() => touchBehavior.DefaultOpacity = 1.01);
-		Assert.Throws<ArgumentOutOfRangeException>(() => touchBehavior.DefaultOpacity = -0.01);
-		Assert.Equal(default, viewModel.DefaultOpacity);
-
 		touchBehavior.DefaultOpacity = defaultOpacity;
 
 		Assert.Equal(defaultOpacity, viewModel.DefaultOpacity);
+	}
+
+	[Fact]
+	public void SetDefaultOpacityAbove1Test()
+	{
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
+
+		touchBehavior.SetBinding(TouchBehavior.DefaultOpacityProperty, nameof(TouchBehaviorViewModel.DefaultOpacity), mode: BindingMode.TwoWay);
+
+		Assert.Throws<ArgumentOutOfRangeException>(() => touchBehavior.DefaultOpacity = 1.01);
+		Assert.Equal(default, viewModel.DefaultOpacity);
+	}
+	
+	[Fact]
+	public void SetDefaultOpacityBelow0Test()
+	{
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
+
+		touchBehavior.SetBinding(TouchBehavior.DefaultOpacityProperty, nameof(TouchBehaviorViewModel.DefaultOpacity), mode: BindingMode.TwoWay);
+		
+		Assert.Throws<ArgumentOutOfRangeException>(() => touchBehavior.DefaultOpacity = -0.01);
+		Assert.Equal(default, viewModel.DefaultOpacity);
 	}
 
 	[Fact]
