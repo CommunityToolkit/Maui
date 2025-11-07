@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Globalization;
+using Microsoft.CodeAnalysis;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Internal.Helpers;
 
@@ -25,6 +26,17 @@ static class AttributeExtensions
 			var members = data.Type.GetMembers();
 
 			return members[(int)data.Value].ToString();
+		}
+
+		// Ensure floating point types include a decimal point in their string, otherwise runtime will interpret them as integers and throw a TypeException
+		if (data.Type?.SpecialType is SpecialType.System_Double or SpecialType.System_Single or SpecialType.System_Decimal)
+		{
+			var text = data.Value?.ToString() ?? throw new InvalidOperationException("Value of a primitive type cannot be null");
+			if (!text.Contains("."))
+			{
+				text += ".0";
+			}
+			return text;
 		}
 
 		return data.Value is null ? placeholder : data.Value.ToString();
