@@ -139,8 +139,8 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		static void GenerateBindableProperty(StringBuilder sb, BindablePropertyModel info)
 		{
-			// Sanitize the Return Type and Declaring Type because Nullable Reference Types cannot be used in the `typeof()` operator
-			var sanitizedReturnType = GetNonNullableType(info.ReturnType);
+			// Sanitize the Return Type because Nullable Reference Types cannot be used in the `typeof()` operator
+			var nonNullableReturnType = GetNonNullableType(info.ReturnType);
 
 			/*
 			/// <summary>
@@ -155,7 +155,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			sb.AppendLine($"public static readonly {bpFullName} {info.BindablePropertyName} = ")
 				.Append($"{bpFullName}.Create(")
 				.Append($"\"{info.PropertyName}\", ")
-				.Append($"typeof({sanitizedReturnType}), ")
+				.Append($"typeof({nonNullableReturnType}), ")
 				.Append($"typeof({info.DeclaringType}), ")
 				.Append($"{info.DefaultValue}, ")
 				.Append($"{info.DefaultBindingMode}, ")
