@@ -137,7 +137,7 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 		}
 		else
 		{
-			var status = await Permissions.RequestAsync<Permissions.StorageRead>();
+			var status = await Permissions.RequestAsync<Permissions.StorageWrite>();
 			if (status is not PermissionStatus.Granted)
 			{
 				throw new PermissionException("Storage permission is not granted.");
