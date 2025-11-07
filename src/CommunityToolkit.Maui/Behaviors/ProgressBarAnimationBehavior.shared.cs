@@ -22,7 +22,7 @@ public partial class ProgressBarAnimationBehavior : BaseBehavior<ProgressBar>
 	/// <summary>
 	/// Value of <see cref="ProgressBar.Progress"/>, clamped to a minimum value of 0 and a maximum value of 1
 	/// </summary>
-	[BindableProperty(DefaultValue = ProgressBarAnimationBehaviorDefaults.Progress, PropertyChangedMethodName = nameof(OnAnimateProgressPropertyChanged))]
+	[BindableProperty(DefaultValue = ProgressBarAnimationBehaviorDefaults.Progress, PropertyChangingMethodName = nameof(OnAnimateProgressPropertyChanging), PropertyChangedMethodName = nameof(OnAnimateProgressPropertyChanged))]
 	public partial double Progress { get; set; }
 
 	/// <summary>
@@ -52,7 +52,20 @@ public partial class ProgressBarAnimationBehavior : BaseBehavior<ProgressBar>
 			progressBarAnimationBehavior.OnAnimationCompleted();
 		}
 	}
-	
+
+	static void OnAnimateProgressPropertyChanging(BindableObject bindable, object oldValue, object newValue)
+	{
+		var progress = (double)newValue;
+		switch(progress)
+		{
+			case < 0:
+				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(Progress)} must be greater than 0");
+			case > 1:
+				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(Progress)} must be less than 1");
+		}
+	}
+
+
 	static Easing EasingValueCreator(BindableObject bindable) => ProgressBarAnimationBehaviorDefaults.Easing;
 
 	static Task AnimateProgress(in ProgressBar progressBar, in double progress, in uint animationLength, in Easing animationEasing, in CancellationToken token)

@@ -47,12 +47,6 @@ static class AttributeExtensions
 
 		var data = attribute.ConstructorArguments[0];
 
-		// true.ToString() => "True" and false.ToString() => "False", but we want "true" and "false"
-		if (data.Kind is TypedConstantKind.Primitive && data.Type?.SpecialType is SpecialType.System_Boolean)
-		{
-			return data.Value is null ? placeholder : data.Value.ToString().ToLowerInvariant();
-		}
-
 		return data.Value is null ? placeholder : data.Value.ToString();
 	}
 
