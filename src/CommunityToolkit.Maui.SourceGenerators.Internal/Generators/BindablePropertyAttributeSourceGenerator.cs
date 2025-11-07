@@ -242,7 +242,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	static ITypeSymbol GetNonNullableType(ITypeSymbol typeSymbol)
 	{
 		// Check for Nullable<T>
-		if (typeSymbol is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.IsGenericType && namedTypeSymbol.ConstructedFrom.SpecialType is SpecialType.System_Nullable_T)
+		if (typeSymbol is INamedTypeSymbol { IsGenericType: true, ConstructedFrom.SpecialType: SpecialType.System_Nullable_T })
 		{
 			return typeSymbol;
 		}
