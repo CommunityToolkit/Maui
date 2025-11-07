@@ -226,14 +226,14 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			throw new ArgumentException($"{nameof(attributeData.AttributeClass)} Cannot Be Null", nameof(attributeData.AttributeClass));
 		}
 
-		var defaultValue = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DefaultValue));
-		var coerceValueMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.CoerceValueMethodName));
-		var defaultBindingMode = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DefaultBindingMode), "Microsoft.Maui.Controls.BindingMode.OneWay");
-		var defaultValueCreatorMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DefaultValueCreatorMethodName));
-		var propertyChangedMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.PropertyChangedMethodName));
-		var propertyChangingMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.PropertyChangingMethodName));
+		var defaultValue = attributeData.GetNamedTypeArgumentsAttributeValueByNameAsCastedString(nameof(BindablePropertyModel.DefaultValue));
+		var coerceValueMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.CoerceValueMethodName));
+		var defaultBindingMode = attributeData.GetNamedTypeArgumentsAttributeValueByNameAsCastedString(nameof(BindablePropertyModel.DefaultBindingMode), "Microsoft.Maui.Controls.BindingMode.OneWay");
+		var defaultValueCreatorMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DefaultValueCreatorMethodName));
+		var propertyChangedMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.PropertyChangedMethodName));
+		var propertyChangingMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.PropertyChangingMethodName));
 		var propertyName = attributeData.GetConstructorArgumentsAttributeValueByNameAsString(defaultName);
-		var validateValueMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.ValidateValueMethodName));
+		var validateValueMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.ValidateValueMethodName));
 		var newKeywordText = doesContainNewKeyword ? "new " : string.Empty;
 
 		return new BindablePropertyModel(propertyName, returnType, declaringType, defaultValue, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText);

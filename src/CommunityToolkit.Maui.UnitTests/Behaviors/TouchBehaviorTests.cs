@@ -550,7 +550,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task TestRaiseTouchGestureCompletedEvent()
 	{
-		object? completedTouchGestureCompletedCommandParameter = null, canceledTouchGestureCompletedCommandParameter = null;
+		object? completedTouchGestureCompletedCommandParameter = null;
 		TouchState? startedTouchStateChanged = null, completedTouchStateChanged = null, canceledTouchStateChanged = null;
 
 		const bool commandParameter = true;
@@ -908,7 +908,6 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 	[Fact]
 	public void SetPressedOpacityAbove1Test()
 	{
-		const double pressedOpacity = 0.2;
 		var viewModel = new TouchBehaviorViewModel();
 		touchBehavior.BindingContext = viewModel;
 
