@@ -11,12 +11,6 @@ public partial class ProgressBarAnimationBehavior : BaseBehavior<ProgressBar>
 	readonly WeakEventManager animationCompletedEventManager = new();
 
 	/// <summary>
-	/// BindableProperty for the <see cref="Easing"/> property
-	/// </summary>
-	public static readonly BindableProperty EasingProperty =
-		BindableProperty.CreateAttached(nameof(Easing), typeof(Easing), typeof(ProgressBarAnimationBehavior), );
-
-	/// <summary>
 	/// Event that is triggered when the ProgressBar.ProgressTo() animation completes
 	/// </summary>
 	public event EventHandler AnimationCompleted

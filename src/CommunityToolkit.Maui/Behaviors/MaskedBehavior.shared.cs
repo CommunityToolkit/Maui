@@ -32,12 +32,8 @@ public partial class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 	/// If you wish to include 'X' in your <see cref="Mask"/> then you could set this <see cref="UnmaskedCharacter"/> to something else
 	/// e.g. '0' and then use a <see cref="Mask"/> of "00X00X00" which would then display "12X34X56".
 	/// </summary>
-	[BindableProperty(DefaultValue = 'X', PropertyChangedMethodName = nameof(OnUnmaskedCharacterPropertyChanged))]
-	public char UnmaskedCharacter
-	{
-		get => (char)GetValue(UnmaskedCharacterProperty);
-		set => SetValue(UnmaskedCharacterProperty, value);
-	}
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(UnmaskedCharacterValueCreator), PropertyChangedMethodName = nameof(OnUnmaskedCharacterPropertyChanged))]
+	public partial char UnmaskedCharacter { get; set; }
 
 	/// <inheritdoc/>
 	public void Dispose()
@@ -73,6 +69,8 @@ public partial class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 		}
 	}
 
+	static object UnmaskedCharacterValueCreator(BindableObject bindable) => 'X';
+
 	static void OnMaskPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var mask = (string?)newValue;
@@ -90,7 +88,7 @@ public partial class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 	Task OnTextPropertyChanged(CancellationToken token)
 	{
 		// Android does not play well when we update the Text inside the TextChanged event. 
-		// Therefore if we dispatch the mechanism of updating the Text property it solves the issue of the caret position being updated incorrectly.
+		// Therefore, if we dispatch the mechanism of updating the Text property it solves the issue of the caret position being updated incorrectly.
 		// https://github.com/CommunityToolkit/Maui/issues/460
 		return View?.Dispatcher.DispatchAsync(() => ApplyMask(View?.Text, token)) ?? Task.CompletedTask;
 	}
