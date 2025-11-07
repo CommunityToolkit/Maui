@@ -248,7 +248,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		}
 
 		// Check for Nullable Reference Type
-		if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated)
+		if (typeSymbol.NullableAnnotation is NullableAnnotation.Annotated)
 		{
 			// For reference types, NullableAnnotation.None indicates non-nullable.
 			return typeSymbol.WithNullableAnnotation(NullableAnnotation.None);
