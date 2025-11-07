@@ -212,12 +212,12 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var doesContainNewKeyword = propertyDeclarationSyntax.Modifiers.Any(static x => x.IsKind(SyntaxKind.NewKeyword));
 
 		var attributeData = context.Attributes[0];
-		bindablePropertyModels.Add(CreateBindablePropertyModel(attributeData, propertySymbol.Type.ToDisplayString(), propertySymbol.Name, returnType, doesContainNewKeyword));
+		bindablePropertyModels.Add(CreateBindablePropertyModel(attributeData, propertySymbol.ContainingType, propertySymbol.Name, returnType, doesContainNewKeyword));
 
 		return new(propertyInfo, bindablePropertyModels.ToImmutableArray());
 	}
 
-	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in string declaringTypeString, in string defaultName, in ITypeSymbol returnType, in bool doesContainNewKeyword)
+	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string defaultName, in ITypeSymbol returnType, in bool doesContainNewKeyword)
 	{
 		if (attributeData.AttributeClass is null)
 		{
@@ -228,17 +228,15 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var coerceValueMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.CoerceValueMethodName));
 		var defaultBindingMode = attributeData.GetEnumValueByNameAsString(nameof(BindablePropertyModel.DefaultBindingMode), "Microsoft.Maui.Controls.BindingMode.OneWay");
 		var defaultValueCreatorMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DefaultValueCreatorMethodName));
-		var declaringType = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DeclaringType), declaringTypeString);
 		var propertyChangedMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.PropertyChangedMethodName));
 		var propertyChangingMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.PropertyChangingMethodName));
 		var propertyName = attributeData.GetConstructorArgumentsAttributeValueByNameAsString(defaultName);
 		var validateValueMethodName = attributeData.GetNamedArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.ValidateValueMethodName));
 		var newKeywordText = doesContainNewKeyword ? "new " : string.Empty;
 
-
 		// Sanitize the Return Type and Declaring Type because Nullable Reference Types cannot be used in the `typeof()` operator
 		var sanitizedReturnType = GetNonNullableType(returnType);
-		var sanitizedDeclaringType = declaringType[^1] is '?' ? declaringType[..^1] : declaringType;
+		var sanitizedDeclaringType = GetNonNullableType(declaringType);
 
 		return new BindablePropertyModel(propertyName, sanitizedReturnType, sanitizedDeclaringType, defaultValue, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText);
 	}
