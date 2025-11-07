@@ -109,7 +109,7 @@ public partial class TouchBehavior : BasePlatformBehavior<VisualElement>
 	/// </summary>
 	[BindableProperty(DefaultValue = null)]
 	public partial ICommand? Command { get; set; }
-	
+
 	/// <summary>
 	/// Gets or sets the parameter to pass to the <see cref="Command"/> property.
 	/// </summary>
@@ -131,7 +131,7 @@ public partial class TouchBehavior : BasePlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets or sets the duration required to trigger the long press gesture.
 	/// </summary>
-	[BindableProperty(DefaultValue =TouchBehaviorDefaults.LongPressDuration)]
+	[BindableProperty(DefaultValue = TouchBehaviorDefaults.LongPressDuration)]
 	public partial int LongPressDuration { get; set; }
 
 	/// <summary>
@@ -336,7 +336,7 @@ public partial class TouchBehavior : BasePlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets or sets the duration of the animation when the <see cref="HoverState" /> is <see cref="HoverState.Hovered" />.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.HoveredAnimationDuration)] 
+	[BindableProperty(DefaultValue = TouchBehaviorDefaults.HoveredAnimationDuration)]
 	public partial int HoveredAnimationDuration { get; set; }
 
 	/// <summary>

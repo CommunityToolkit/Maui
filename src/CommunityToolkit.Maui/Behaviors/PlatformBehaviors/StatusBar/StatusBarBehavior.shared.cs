@@ -137,6 +137,6 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 		}
 	}
 #endif
-	
+
 	static Color StatusBarColorValueCreator(BindableObject bindable) => Colors.Transparent;
 }

@@ -253,7 +253,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			// For reference types, NullableAnnotation.None indicates non-nullable.
 			return typeSymbol.WithNullableAnnotation(NullableAnnotation.None);
 		}
-		
+
 		return typeSymbol;
 	}
 

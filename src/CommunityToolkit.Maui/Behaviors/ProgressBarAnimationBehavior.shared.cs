@@ -56,7 +56,7 @@ public partial class ProgressBarAnimationBehavior : BaseBehavior<ProgressBar>
 	static void OnAnimateProgressPropertyChanging(BindableObject bindable, object oldValue, object newValue)
 	{
 		var progress = (double)newValue;
-		switch(progress)
+		switch (progress)
 		{
 			case < 0:
 				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(Progress)} must be greater than 0");

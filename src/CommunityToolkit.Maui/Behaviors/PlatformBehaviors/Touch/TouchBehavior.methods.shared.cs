@@ -112,7 +112,7 @@ public partial class TouchBehavior : IDisposable
 	static async void RaiseCurrentTouchStateChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var touchBehavior = (TouchBehavior)bindable;
-		
+
 		await Task.WhenAll(touchBehavior.ForceUpdateState(CancellationToken.None), touchBehavior.HandleLongPress(CancellationToken.None));
 		touchBehavior.weakEventManager.HandleEvent(touchBehavior, new TouchStateChangedEventArgs(touchBehavior.CurrentTouchState), nameof(CurrentTouchStateChanged));
 	}
@@ -132,7 +132,7 @@ public partial class TouchBehavior : IDisposable
 	static async void RaiseHoverStateChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var touchBehavior = (TouchBehavior)bindable;
-		
+
 		await touchBehavior.ForceUpdateState(CancellationToken.None);
 		touchBehavior.weakEventManager.HandleEvent(touchBehavior, new HoverStateChangedEventArgs(touchBehavior.CurrentHoverState), nameof(HoverStateChanged));
 	}
@@ -140,9 +140,9 @@ public partial class TouchBehavior : IDisposable
 	static void RaiseHoverStatusChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var touchBehavior = (TouchBehavior)bindable;
-		
-		touchBehavior.weakEventManager.HandleEvent(touchBehavior, new HoverStatusChangedEventArgs(touchBehavior.CurrentHoverStatus), nameof(HoverStatusChanged));	
-	} 
+
+		touchBehavior.weakEventManager.HandleEvent(touchBehavior, new HoverStatusChangedEventArgs(touchBehavior.CurrentHoverStatus), nameof(HoverStatusChanged));
+	}
 
 	static void HandleDefaultOpacityChanging(BindableObject bindable, object oldValue, object newValue)
 	{
