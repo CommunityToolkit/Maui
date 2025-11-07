@@ -120,7 +120,6 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 			  #pragma warning disable
 			  #nullable enable
-			  // Test2 : {{DateTime.Now}}
 
 			  namespace {{value.ClassInformation.ContainingNamespace}};
 
@@ -153,7 +152,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 				.AppendLine("/// </summary>");
 
 			// public static readonly BindableProperty TextProperty = BindableProperty.Create(...);
-			sb.AppendLine($"public static readonly {bpFullName} {info.PropertyName}Property = ")
+			sb.AppendLine($"public static readonly {bpFullName} {info.BindablePropertyName} = ")
 				.Append($"{bpFullName}.Create(")
 				.Append($"\"{info.PropertyName}\", ")
 				.Append($"typeof({sanitizedReturnType}), ")
@@ -185,9 +184,9 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 				.Append("get => (")
 				.Append(info.ReturnType)
 				.Append(")GetValue(")
-				.AppendLine($"{info.PropertyName}Property);")
+				.AppendLine($"{info.BindablePropertyName});")
 				.Append("set => SetValue(")
-				.AppendLine($"{info.PropertyName}Property, value);")
+				.AppendLine($"{info.BindablePropertyName}, value);")
 				.AppendLine("}");
 		}
 	}
