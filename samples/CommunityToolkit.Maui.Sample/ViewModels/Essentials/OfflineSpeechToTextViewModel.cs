@@ -78,7 +78,7 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 	async Task<bool> RequestPermissions()
 	{
 		var microphoneGranted = await Permissions.RequestAsync<Permissions.Microphone>();
-		var recognitionGranted = await SpeechToText.RequestPermissions(CancellationToken.None);
+		var recognitionGranted = await speechToText.RequestPermissions(CancellationToken.None);
 		return microphoneGranted == PermissionStatus.Granted && recognitionGranted;
 	}
 }

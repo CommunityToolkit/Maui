@@ -32,13 +32,13 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 		var microphoneRequest = await Permissions.RequestAsync<Permissions.Microphone>();
 		if (cameraRequest is not PermissionStatus.Granted)
 		{
-			Trace.TraceInformation("Camera permission is not granted.");
+			await Shell.Current.CurrentPage.DisplayAlert("Camera permission is not granted.", "Please grant the permission to use this feature.", "OK");
 			return;
 		}
 
 		if (microphoneRequest is not PermissionStatus.Granted)
 		{
-			Trace.TraceInformation("Microphone permission is not granted.");
+			await Shell.Current.CurrentPage.DisplayAlert("Microphone permission is not granted.", "Please grant the permission to use this feature.", "OK");
 			return;
 		}
 		
@@ -140,7 +140,8 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 			var status = await Permissions.RequestAsync<Permissions.StorageWrite>();
 			if (status is not PermissionStatus.Granted)
 			{
-				throw new PermissionException("Storage permission is not granted.");
+				await Shell.Current.CurrentPage.DisplayAlert("Storage permission is not granted.", "Please grant the permission to use this feature.", "OK");
+				return;
 			}
 			
 			await fileSaver.SaveAsync("recording.mp4", videoRecordingStream);

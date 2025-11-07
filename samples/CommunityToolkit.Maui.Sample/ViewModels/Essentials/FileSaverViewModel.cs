@@ -14,7 +14,11 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 	[RelayCommand]
 	async Task SaveFile(CancellationToken cancellationToken)
 	{
-		await RequestPermissions();
+		if (!await RequestPermissions())
+		{
+			return;
+		}
+		
 		using var stream = new MemoryStream(Encoding.Default.GetBytes("Hello from the Community Toolkit!"));
 		try
 		{
@@ -33,7 +37,11 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 	[RelayCommand]
 	async Task SaveFileStatic(CancellationToken cancellationToken)
 	{
-		await RequestPermissions();
+		if (!await RequestPermissions())
+		{
+			return;
+		}
+		
 		using var stream = new MemoryStream(Encoding.Default.GetBytes("Hello from the Community Toolkit!"));
 		var fileSaveResult = await FileSaver.SaveAsync("DCIM", "test.txt", stream, cancellationToken);
 		if (fileSaveResult.IsSuccessful)
@@ -49,7 +57,11 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 	[RelayCommand]
 	async Task SaveFileInstance(CancellationToken cancellationToken)
 	{
-		await RequestPermissions();
+		if (!await RequestPermissions())
+		{
+			return;
+		}
+		
 		using var client = new HttpClient();
 
 		const string communityToolkitNuGetUrl = "https://www.nuget.org/api/v2/package/CommunityToolkit.Maui/5.0.0";
@@ -71,9 +83,16 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 		}
 	}
 
-	async Task RequestPermissions()
+	async Task<bool> RequestPermissions()
 	{
-		await Permissions.RequestAsync<Permissions.StorageRead>();
-		await Permissions.RequestAsync<Permissions.StorageWrite>();
+		var read = await Permissions.RequestAsync<Permissions.StorageRead>();
+		var write = await Permissions.RequestAsync<Permissions.StorageWrite>();
+		var areGranted = read == PermissionStatus.Granted && write == PermissionStatus.Granted;
+		if (!areGranted)
+		{
+			await Shell.Current.CurrentPage.DisplayAlert("Storage permission is not granted.", "Please grant the permission to use this feature.", "OK");
+		}
+		
+		return areGranted;
 	}
 }

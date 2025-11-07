@@ -17,7 +17,11 @@ public partial class FolderPickerViewModel : BaseViewModel
 	[RelayCommand]
 	async Task PickFolder(CancellationToken cancellationToken)
 	{
-		await RequestPermissions();
+		if (!await RequestPermissions())
+		{
+			return;
+		}
+		
 		var folderPickerResult = await folderPicker.PickAsync(cancellationToken);
 		if (folderPickerResult.IsSuccessful)
 		{
@@ -32,7 +36,11 @@ public partial class FolderPickerViewModel : BaseViewModel
 	[RelayCommand]
 	async Task PickFolderStatic(CancellationToken cancellationToken)
 	{
-		await RequestPermissions();
+		if (!await RequestPermissions())
+		{
+			return;
+		}
+		
 		var folderResult = await FolderPicker.PickAsync("DCIM", cancellationToken);
 		if (folderResult.IsSuccessful)
 		{
@@ -48,7 +56,11 @@ public partial class FolderPickerViewModel : BaseViewModel
 	[RelayCommand]
 	async Task PickFolderInstance(CancellationToken cancellationToken)
 	{
-		await RequestPermissions();
+		if (!await RequestPermissions())
+		{
+			return;
+		}
+		
 		var folderPickerInstance = new FolderPickerImplementation();
 		try
 		{
@@ -66,9 +78,16 @@ public partial class FolderPickerViewModel : BaseViewModel
 		}
 	}
 	
-	async Task RequestPermissions()
+	async Task<bool> RequestPermissions()
 	{
-		await Permissions.RequestAsync<Permissions.StorageRead>();
-		await Permissions.RequestAsync<Permissions.StorageWrite>();
+		var read = await Permissions.RequestAsync<Permissions.StorageRead>();
+		var write = await Permissions.RequestAsync<Permissions.StorageWrite>();
+		var areGranted = read == PermissionStatus.Granted && write == PermissionStatus.Granted;
+		if (!areGranted)
+		{
+			await Shell.Current.CurrentPage.DisplayAlert("Storage permission is not granted.", "Please grant the permission to use this feature.", "OK");
+		}
+		
+		return areGranted;
 	}
 }
