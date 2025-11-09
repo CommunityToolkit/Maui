@@ -10,10 +10,15 @@ namespace CommunityToolkit.Maui.Views;
 public sealed partial class ResourceMediaSource : MediaSource
 {
 	/// <summary>
-	/// Backing store for the <see cref="Path"/> property.
+	/// Gets or sets the full path to the resource file to use as a media source.
+	/// This is a bindable property.
 	/// </summary>
-	public static readonly BindableProperty PathProperty
-		= BindableProperty.Create(nameof(Path), typeof(string), typeof(ResourceMediaSource), propertyChanged: OnResourceMediaSourceMediaSourceChanged);
+	/// <remarks>
+	/// Path is relative to the application's resources folder.
+	/// It can only be just a filename if the resource file is in the root of the resources folder.
+	/// </remarks>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnResourceMediaSourceMediaSourceChanged))]
+	public partial string? Path { get; set; }
 
 	/// <summary>
 	/// An implicit operator to convert a string value into a <see cref="ResourceMediaSource"/>.
@@ -26,20 +31,6 @@ public sealed partial class ResourceMediaSource : MediaSource
 	/// </summary>
 	/// <param name="resourceMediaSource">A <see cref="ResourceMediaSource"/> instance to convert to a string value.</param>
 	public static implicit operator string?(ResourceMediaSource? resourceMediaSource) => resourceMediaSource?.Path;
-
-	/// <summary>
-	/// Gets or sets the full path to the resource file to use as a media source.
-	/// This is a bindable property.
-	/// </summary>
-	/// <remarks>
-	/// Path is relative to the application's resources folder.
-	/// It can only be just a filename if the resource file is in the root of the resources folder.
-	/// </remarks>
-	public string? Path
-	{
-		get => (string?)GetValue(PathProperty);
-		set => SetValue(PathProperty, value);
-	}
 
 	/// <inheritdoc/>
 	public override string ToString() => $"Resource: {Path}";

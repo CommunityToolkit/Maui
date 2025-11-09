@@ -9,10 +9,13 @@ namespace CommunityToolkit.Maui.Views;
 public sealed partial class UriMediaSource : MediaSource
 {
 	/// <summary>
-	/// Backing store for the <see cref="Uri"/> property.
+	/// Gets or sets the URI to use as a media source.
+	/// This is a bindable property.
 	/// </summary>
-	public static readonly BindableProperty UriProperty =
-		BindableProperty.Create(nameof(Uri), typeof(Uri), typeof(UriMediaSource), propertyChanged: OnUriSourceChanged, validateValue: UriValueValidator);
+	/// <remarks>The URI has to be absolute.</remarks>
+	[TypeConverter(typeof(UriTypeConverter))]
+	[BindableProperty(PropertyChangedMethodName = nameof(OnUriSourceChanged), ValidateValueMethodName = nameof(UriValueValidator))]
+	public partial Uri? Uri { get; set; }
 
 	/// <summary>
 	/// An implicit operator to convert a string value into a <see cref="UriMediaSource"/>.
@@ -25,18 +28,6 @@ public sealed partial class UriMediaSource : MediaSource
 	/// </summary>
 	/// <param name="uriMediaSource">A <see cref="UriMediaSource"/> instance to convert to a string value.</param>
 	public static implicit operator string?(UriMediaSource? uriMediaSource) => uriMediaSource?.Uri?.ToString();
-
-	/// <summary>
-	/// Gets or sets the URI to use as a media source.
-	/// This is a bindable property.
-	/// </summary>
-	/// <remarks>The URI has to be absolute.</remarks>
-	[TypeConverter(typeof(UriTypeConverter))]
-	public Uri? Uri
-	{
-		get => (Uri?)GetValue(UriProperty);
-		set => SetValue(UriProperty, value);
-	}
 
 	/// <inheritdoc/>
 	public override string ToString() => $"Uri: {Uri}";
