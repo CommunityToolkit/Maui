@@ -286,7 +286,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 					bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.PressedImageAspect);
 				}
 
-				if (imageTouchBehavior.IsSet(ImageTouchBehavior.PressedBackgroundImageSourceProperty))
+				if (imageTouchBehavior.IsSet(ImageTouchBehavior.PressedImageSourceProperty))
 				{
 					bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.PressedImageSource);
 				}
@@ -302,7 +302,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 					bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.DefaultImageAspect);
 				}
 
-				if (imageTouchBehavior.IsSet(ImageTouchBehavior.HoveredBackgroundImageSourceProperty))
+				if (imageTouchBehavior.IsSet(ImageTouchBehavior.HoveredImageSourceProperty))
 				{
 					bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.HoveredImageSource);
 				}

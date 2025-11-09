@@ -11,34 +11,16 @@ public partial class MaxLengthReachedBehavior : BaseBehavior<InputView>
 	readonly WeakEventManager maxLengthReachedEventManager = new();
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="Command"/> property.
-	/// </summary>
-	public static readonly BindableProperty CommandProperty
-		= BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(MaxLengthReachedBehavior));
-
-	/// <summary>
 	/// Command that is triggered when the value configured in <see cref="InputView.MaxLength" /> is reached. Both the <see cref="MaxLengthReached"/> event and this command are triggered. This is a bindable property.
 	/// </summary>
-	public ICommand? Command
-	{
-		get => (ICommand?)GetValue(CommandProperty);
-		set => SetValue(CommandProperty, value);
-	}
+	[BindableProperty]
+	public partial ICommand? Command { get; set; }
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="ShouldDismissKeyboardAutomatically"/> property.
+	/// Indicates whether the keyboard should be dismissed automatically after the maximum length is reached. This is a bindable property.
 	/// </summary>
-	public static readonly BindableProperty ShouldDismissKeyboardAutomaticallyProperty
-		= BindableProperty.Create(nameof(ShouldDismissKeyboardAutomatically), typeof(bool), typeof(MaxLengthReachedBehavior), false);
-
-	/// <summary>
-	/// Indicates whether or not the keyboard should be dismissed automatically after the maximum length is reached. This is a bindable property.
-	/// </summary>
-	public bool ShouldDismissKeyboardAutomatically
-	{
-		get => (bool)GetValue(ShouldDismissKeyboardAutomaticallyProperty);
-		set => SetValue(ShouldDismissKeyboardAutomaticallyProperty, value);
-	}
+	[BindableProperty(DefaultValue = false)]
+	public partial bool ShouldDismissKeyboardAutomatically { get; set; }
 
 	/// <summary>
 	/// Event that is triggered when the value configured in <see cref="InputView.MaxLength" /> is reached. Both the <see cref="Command"/> and this event are triggered. This is a bindable property.
