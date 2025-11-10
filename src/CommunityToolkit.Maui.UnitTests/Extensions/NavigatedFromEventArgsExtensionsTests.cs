@@ -36,10 +36,7 @@ public class NavigatedFromEventArgsExtensionsTests : BaseViewTest
 
 		void HandleNavigatedFromEventArgsReceived(object? sender, NavigatedFromEventArgs e)
 		{
-			//if (e.DestinationPage != mainPage)
-			//{
-				isDestinationPageACommunityToolkitPopupPageTCS.SetResult(e.IsDestinationPageACommunityToolkitPopupPage());
-			//}
+			isDestinationPageACommunityToolkitPopupPageTCS.SetResult(e.IsDestinationPageACommunityToolkitPopupPage());
 		}
 	}
 
