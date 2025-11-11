@@ -6,7 +6,6 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 public class EventToCommandBehaviorTests() : BaseBehaviorTest<EventToCommandBehavior, VisualElement>(new EventToCommandBehavior(), new View())
 {
 	[Fact]
-	[Obsolete]
 	public void ArgumentExceptionIfSpecifiedEventDoesNotExist()
 	{
 		var listView = new ListView();
@@ -18,7 +17,6 @@ public class EventToCommandBehaviorTests() : BaseBehaviorTest<EventToCommandBeha
 	}
 
 	[Fact]
-	[Obsolete]
 	public void NoExceptionIfSpecifiedEventExists()
 	{
 		var listView = new ListView();
@@ -41,7 +39,6 @@ public class EventToCommandBehaviorTests() : BaseBehaviorTest<EventToCommandBeha
 	}
 
 	[Fact]
-	[Obsolete]
 	public void ListView_ItemSelected_Test()
 	{
 		bool didEventToCommandBehaviorFire = false;
