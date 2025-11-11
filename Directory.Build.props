@@ -238,6 +238,7 @@
   </ItemGroup>
 
   <PropertyGroup Condition="('$(TF_BUILD)' == 'true' OR '$(GITHUB_ACTIONS)' == 'true') and $([MSBuild]::IsOSPlatform('windows')) == 'true'">
-    <IncludeTizenTargetFrameworks>true</IncludeTizenTargetFrameworks>
+    <!-- Re-enable Tizen once it includes support for .NET 10 -->
+    <IncludeTizenTargetFrameworks>false</IncludeTizenTargetFrameworks>
   </PropertyGroup>
 </Project>
