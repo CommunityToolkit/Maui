@@ -25,6 +25,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--Fix vulnerabilities-->
+    <PackageReference Include="System.Formats.Asn1" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\CommunityToolkit.Maui.Analyzers.CodeFixes\CommunityToolkit.Maui.Analyzers.CodeFixes.csproj" />
     <ProjectReference Include="..\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.csproj" />
     <ProjectReference Include="..\CommunityToolkit.Maui.Camera\CommunityToolkit.Maui.Camera.csproj" />
