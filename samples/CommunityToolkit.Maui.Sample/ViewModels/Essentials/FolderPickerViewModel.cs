@@ -9,7 +9,7 @@ public partial class FolderPickerViewModel(IFolderPicker folderPicker) : BaseVie
 {
 	readonly IFolderPicker folderPicker = folderPicker;
 
-	static async Task<bool> RequestPermissions()
+	static async Task<bool> ArePermissionsGranted()
 	{
 		var readPermissionStatus = await Permissions.RequestAsync<Permissions.StorageRead>();
 		var writePermissionStatus = await Permissions.RequestAsync<Permissions.StorageWrite>();
@@ -28,7 +28,7 @@ public partial class FolderPickerViewModel(IFolderPicker folderPicker) : BaseVie
 	[RelayCommand]
 	async Task PickFolder(CancellationToken cancellationToken)
 	{
-		if (!await RequestPermissions())
+		if (!await ArePermissionsGranted())
 		{
 			return;
 		}
@@ -47,7 +47,7 @@ public partial class FolderPickerViewModel(IFolderPicker folderPicker) : BaseVie
 	[RelayCommand]
 	async Task PickFolderStatic(CancellationToken cancellationToken)
 	{
-		if (!await RequestPermissions())
+		if (!await ArePermissionsGranted())
 		{
 			return;
 		}
@@ -67,7 +67,7 @@ public partial class FolderPickerViewModel(IFolderPicker folderPicker) : BaseVie
 	[RelayCommand]
 	async Task PickFolderInstance(CancellationToken cancellationToken)
 	{
-		if (!await RequestPermissions())
+		if (!await ArePermissionsGranted())
 		{
 			return;
 		}

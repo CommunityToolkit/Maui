@@ -11,7 +11,7 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 	[ObservableProperty]
 	public partial double Progress { get; set; }
 
-	static async Task<bool> RequestPermissions()
+	static async Task<bool> ArePermissionsGranted()
 	{
 		var readPermissionStatus = await Permissions.RequestAsync<Permissions.StorageRead>();
 		var writePermissionStatus = await Permissions.RequestAsync<Permissions.StorageWrite>();
@@ -29,7 +29,7 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 	[RelayCommand]
 	async Task SaveFile(CancellationToken cancellationToken)
 	{
-		if (!await RequestPermissions())
+		if (!await ArePermissionsGranted())
 		{
 			return;
 		}
@@ -52,7 +52,7 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 	[RelayCommand]
 	async Task SaveFileStatic(CancellationToken cancellationToken)
 	{
-		if (!await RequestPermissions())
+		if (!await ArePermissionsGranted())
 		{
 			return;
 		}
@@ -72,7 +72,7 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 	[RelayCommand]
 	async Task SaveFileInstance(CancellationToken cancellationToken)
 	{
-		if (!await RequestPermissions())
+		if (!await ArePermissionsGranted())
 		{
 			return;
 		}

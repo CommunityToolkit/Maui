@@ -24,7 +24,7 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 	[ObservableProperty]
 	public partial string? RecognitionText { get; set; } = "Welcome to .NET MAUI Community Toolkit!";
 
-	static async Task<bool> RequestPermissions(ISpeechToText speechToText)
+	static async Task<bool> ArePermissionsGranted(ISpeechToText speechToText)
 	{
 		var microphonePermissionStatus = await Permissions.RequestAsync<Permissions.Microphone>();
 		var isSpeechToTextRequestPermissionsGranted = await speechToText.RequestPermissions(CancellationToken.None);
@@ -36,7 +36,7 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 	[RelayCommand]
 	async Task StartListen()
 	{
-		var isGranted = await RequestPermissions(speechToText);
+		var isGranted = await ArePermissionsGranted(speechToText);
 		if (!isGranted)
 		{
 			await Toast.Make("Permission not granted").Show(CancellationToken.None);
