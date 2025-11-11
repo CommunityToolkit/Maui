@@ -22,7 +22,7 @@ env:
   NugetPackageVersionCamera: '99.0.0-preview${{ github.run_number }}'
   NugetPackageVersionMediaElement: '99.0.0-preview${{ github.run_number }}'
   NugetPackageVersionMaps: '99.0.0-preview${{ github.run_number }}'
-  TOOLKIT_NET_VERSION: '10.0.x'
+  TOOLKIT_NET_VERSION: '10.0.100'
   LATEST_NET_VERSION: '10.0.x'
   PathToLibrarySolution: 'src/CommunityToolkit.Maui.slnx'
   PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.slnx'
