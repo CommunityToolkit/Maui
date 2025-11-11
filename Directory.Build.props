@@ -4,7 +4,7 @@
     <Nullable>enable</Nullable>
     <NoWarn>NETSDK1023;XCODE_26_0_PREVIEW</NoWarn>
     <NetVersion>net10.0</NetVersion>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
