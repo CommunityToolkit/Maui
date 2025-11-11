@@ -71,7 +71,7 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.LATEST_NET_VERSION }}
-          dotnet-quality: 'preview'
+          dotnet-quality: 'ga'
 
       - uses: actions/setup-java@v5
         with:
@@ -145,7 +145,7 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
-          dotnet-quality: 'preview'
+          dotnet-quality: 'ga'
 
       - uses: actions/setup-java@v5
         with:
@@ -274,7 +274,7 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
-          dotnet-quality: 'preview'
+          dotnet-quality: 'ga'
 
       - name: Download NuGet List
         uses: actions/download-artifact@v6
@@ -346,7 +346,7 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
-          dotnet-quality: 'preview'
+          dotnet-quality: 'ga'
 
       - name: Download signed packages
         uses: actions/download-artifact@v6
@@ -374,7 +374,7 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
-          dotnet-quality: 'preview'
+          dotnet-quality: 'ga'
 
       - name: Download signed packages
         uses: actions/download-artifact@v6
