@@ -149,11 +149,11 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.Pause();
 	}
 
-	void Button_Clicked(object? sender, EventArgs? e)
+	async void Button_Clicked(object? sender, EventArgs? e)
 	{
 		if (string.IsNullOrWhiteSpace(CustomSourceEntry.Text))
 		{
-			DisplayAlertAsync("Error Loading URL Source", "No value was found to load as a media source. " +
+			await DisplayAlertAsync("Error Loading URL Source", "No value was found to load as a media source. " +
 				"When you do enter a value, make sure it's a valid URL. No additional validation is done.",
 				"OK");
 
