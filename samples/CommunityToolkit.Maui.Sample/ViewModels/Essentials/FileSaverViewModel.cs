@@ -10,6 +10,21 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 {
 	[ObservableProperty]
 	public partial double Progress { get; set; }
+	
+	static async Task<bool> RequestPermissions()
+	{
+		var readPermissionStatus = await Permissions.RequestAsync<Permissions.StorageRead>();
+		var writePermissionStatus = await Permissions.RequestAsync<Permissions.StorageWrite>();
+
+		if (readPermissionStatus is PermissionStatus.Granted
+		    && writePermissionStatus is PermissionStatus.Granted)
+		{
+			return true;
+		}
+
+		await Shell.Current.CurrentPage.DisplayAlertAsync("Storage permission is not granted.", "Please grant the permission to use this feature.", "OK");
+		return false;
+	}
 
 	[RelayCommand]
 	async Task SaveFile(CancellationToken cancellationToken)
@@ -81,18 +96,5 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 		{
 			await Toast.Make($"File is not saved, {ex.Message}").Show(cancellationToken);
 		}
-	}
-
-	async Task<bool> RequestPermissions()
-	{
-		var read = await Permissions.RequestAsync<Permissions.StorageRead>();
-		var write = await Permissions.RequestAsync<Permissions.StorageWrite>();
-		var areGranted = read == PermissionStatus.Granted && write == PermissionStatus.Granted;
-		if (!areGranted)
-		{
-			await Shell.Current.CurrentPage.DisplayAlert("Storage permission is not granted.", "Please grant the permission to use this feature.", "OK");
-		}
-		
-		return areGranted;
 	}
 }
