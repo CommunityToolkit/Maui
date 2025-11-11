@@ -21,7 +21,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" Version="1.1.2" />
     <PackageReference Include="xunit.v3" Version="3.2.0" />
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.1.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.0.0-2.final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" />
   </ItemGroup>
 
   <ItemGroup>
