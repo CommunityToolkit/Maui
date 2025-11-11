@@ -4,7 +4,6 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-[Obsolete]
 public class ItemTappedEventArgsConverterTests : BaseOneWayConverterTest<ItemTappedEventArgsConverter>
 {
 	public static TheoryData<ItemTappedEventArgs?, object?> Data { get; } = new()
@@ -25,7 +24,6 @@ public class ItemTappedEventArgsConverterTests : BaseOneWayConverterTest<ItemTap
 
 	[Theory]
 	[MemberData(nameof(Data))]
-	[Obsolete]
 	public void ItemTappedEventArgsConverter(ItemTappedEventArgs? value, object? expectedResult)
 	{
 		var itemTappedEventArgsConverter = new ItemTappedEventArgsConverter();
@@ -42,7 +40,6 @@ public class ItemTappedEventArgsConverterTests : BaseOneWayConverterTest<ItemTap
 	[InlineData('c')]
 	[InlineData(true)]
 	[InlineData("abc")]
-	[Obsolete]
 	public void InvalidConverterValuesThrowArgumentException(object value)
 	{
 		var itemTappedEventArgsConverter = new ItemTappedEventArgsConverter();
@@ -50,7 +47,6 @@ public class ItemTappedEventArgsConverterTests : BaseOneWayConverterTest<ItemTap
 	}
 
 	[Fact]
-	[Obsolete]
 	public void ItemTappedEventArgsConverterNullInputTest()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
