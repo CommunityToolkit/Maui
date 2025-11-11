@@ -27,7 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-15]
+        os: [windows-latest, macos-26]
 
     steps:
       - name: Checkout code
