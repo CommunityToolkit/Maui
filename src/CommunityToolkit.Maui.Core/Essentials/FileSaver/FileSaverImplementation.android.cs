@@ -23,7 +23,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		}
 
 		AndroidUri? filePath = null;
-		
+
 		if (Android.OS.Environment.ExternalStorageDirectory is not null)
 		{
 			initialPath = initialPath.Replace(Android.OS.Environment.ExternalStorageDirectory.AbsolutePath, string.Empty, StringComparison.InvariantCulture);

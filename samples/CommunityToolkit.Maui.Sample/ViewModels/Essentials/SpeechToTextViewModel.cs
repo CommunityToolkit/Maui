@@ -40,19 +40,19 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StopListenCommand))]
 	public partial bool CanStopListenExecute { get; set; } = false;
-	
+
 	public async ValueTask DisposeAsync()
 	{
 		await speechToText.DisposeAsync();
 	}
-	
+
 	static async Task<bool> RequestPermissions(ISpeechToText speechToText)
 	{
 		var microphonePermissionStatus = await Permissions.RequestAsync<Permissions.Microphone>();
 		var isSpeechToTextPermissionsGranted = await speechToText.RequestPermissions(CancellationToken.None);
-		
-		return microphonePermissionStatus is PermissionStatus.Granted 
-		       && isSpeechToTextPermissionsGranted;
+
+		return microphonePermissionStatus is PermissionStatus.Granted
+			   && isSpeechToTextPermissionsGranted;
 	}
 
 	[RelayCommand]

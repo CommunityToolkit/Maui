@@ -15,7 +15,7 @@ public partial class FolderPickerViewModel(IFolderPicker folderPicker) : BaseVie
 		var writePermissionStatus = await Permissions.RequestAsync<Permissions.StorageWrite>();
 
 		if (readPermissionStatus is PermissionStatus.Granted
-		    && writePermissionStatus is PermissionStatus.Granted)
+			&& writePermissionStatus is PermissionStatus.Granted)
 		{
 			return true;
 		}
