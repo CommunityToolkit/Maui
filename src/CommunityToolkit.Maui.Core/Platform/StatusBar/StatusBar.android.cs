@@ -38,7 +38,16 @@ static partial class StatusBar
 		if (Activity.Window is not null)
 		{
 			var platformColor = color.ToPlatform();
-			Activity.Window.SetStatusBarColor(platformColor);
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(35))
+			{
+				var window = Activity.GetCurrentWindow();
+				window.DecorView.SetBackgroundColor(platformColor);
+			}
+			else
+			{
+				Activity.Window.SetStatusBarColor(platformColor);
+			}
 
 			bool isColorTransparent = platformColor == PlatformColor.Transparent;
 			if (isColorTransparent)
@@ -54,7 +63,6 @@ static partial class StatusBar
 
 			WindowCompat.SetDecorFitsSystemWindows(Activity.Window, !isColorTransparent);
 		}
-
 	}
 
 	static void PlatformSetStyle(StatusBarStyle style)
