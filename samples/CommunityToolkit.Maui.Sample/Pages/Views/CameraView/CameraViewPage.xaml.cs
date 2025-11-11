@@ -43,7 +43,7 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 			await Shell.Current.CurrentPage.DisplayAlertAsync("Microphone permission is not granted.", "Please grant the permission to use this feature.", "OK");
 			return;
 		}
-		
+
 		var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(3));
 		await BindingContext.RefreshCamerasCommand.ExecuteAsync(cancellationTokenSource.Token);
 	}
@@ -145,7 +145,7 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 				await Shell.Current.CurrentPage.DisplayAlert("Storage permission is not granted.", "Please grant the permission to use this feature.", "OK");
 				return;
 			}
-			
+
 			await fileSaver.SaveAsync("recording.mp4", videoRecordingStream);
 			await videoRecordingStream.DisposeAsync();
 			videoRecordingStream = Stream.Null;
