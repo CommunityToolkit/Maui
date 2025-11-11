@@ -6,11 +6,7 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 /// <summary>
 /// Handler definition for the <see cref="ICameraView"/> implementation on each platform.
 /// </summary>
-#if TIZEN
-public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>
-#else
 public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>, IDisposable
-#endif
 {
 	/// <summary>
 	/// The currently defined mappings between properties on the <see cref="ICameraView"/> and

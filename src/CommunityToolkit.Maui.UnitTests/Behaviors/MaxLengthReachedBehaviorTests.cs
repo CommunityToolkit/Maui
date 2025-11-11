@@ -139,7 +139,7 @@ public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReached
 		// assert
 		Assert.True(entry.IsFocused);
 	}
-
+	
 	static Entry CreateEntry(int? maxLength = 2,
 							  bool shouldDismissKeyboardAutomatically = false,
 							  ICommand? command = null,

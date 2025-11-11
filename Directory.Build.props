@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Nullable>enable</Nullable>
     <NoWarn>NETSDK1023</NoWarn>
-    <NetVersion>net9.0</NetVersion>
+    <NetVersion>net10.0</NetVersion>
     <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
@@ -16,10 +16,11 @@
     <NuGetAuditMode>all</NuGetAuditMode>
 
     <!-- MAUI Specific -->
-    <MauiPackageVersion>9.0.120</MauiPackageVersion>
+    <MauiPackageVersion>10.0.0</MauiPackageVersion>
     <MauiStrictXamlCompilation>true</MauiStrictXamlCompilation>
     <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+    <MauiXamlInflator>SourceGen</MauiXamlInflator>
 
     <!-- WindowsAppSDK
       We should keep this in sync with .NET MAUI https://github.com/dotnet/maui/blob/8ee00e00f603cd8a420a3467daddaf3935c8c587/Directory.Build.props#L142 
@@ -202,7 +203,7 @@
       IL2090,IL2091,IL2092,IL2093,IL2094,IL2095,IL2096,IL2097,IL2098,IL2099,
       IL2100,IL2101,IL2102,IL2103,IL2104,IL2105,IL2106,IL2107,IL2108,IL2109,
       IL2110,IL2111,IL2112,IL2113,IL2114,IL2115,IL2116,IL2117,IL2118,IL2119,
-      IL2120,IL2121,IL2122,
+      IL2120,IL2121,IL2122,IL2123,
       IL3050,IL3051,IL3052,IL3053,IL3054,IL3055,IL3056,
       RS1038,RS2007
     </WarningsAsErrors>
@@ -237,6 +238,7 @@
   </ItemGroup>
 
   <PropertyGroup Condition="('$(TF_BUILD)' == 'true' OR '$(GITHUB_ACTIONS)' == 'true') and $([MSBuild]::IsOSPlatform('windows')) == 'true'">
-    <IncludeTizenTargetFrameworks>true</IncludeTizenTargetFrameworks>
+    <!-- Re-enable Tizen once it includes support for .NET 10 -->
+    <IncludeTizenTargetFrameworks>false</IncludeTizenTargetFrameworks>
   </PropertyGroup>
 </Project>
