@@ -15,9 +15,11 @@ sealed record MathToken(MathTokenType Type, string Text, object? Value);
 
 sealed partial class MathExpression
 {
+	CultureInfo culture { get; init; } = CultureInfo.InvariantCulture;
+
 	readonly IReadOnlyList<MathOperator> operators;
 
-	internal MathExpression(in string expression, in IReadOnlyList<object?> arguments)
+	internal MathExpression(in string expression, in IReadOnlyList<object?> arguments, CultureInfo culture)
 	{
 		ArgumentException.ThrowIfNullOrEmpty(expression, "Expression can't be null or empty.");
 		ArgumentNullException.ThrowIfNull(arguments, "Arguments cannot be null.");
@@ -96,6 +98,7 @@ sealed partial class MathExpression
 		}
 
 		this.operators = operators;
+		this.culture = culture;
 	}
 
 	static ReadOnlyDictionary<string, string> BinaryMappingDictionary { get; } = new Dictionary<string, string>
@@ -223,7 +226,7 @@ sealed partial class MathExpression
 	[GeneratedRegex("""^(\-|\!)""")]
 	private static partial Regex EvaluateUnaryOperators();
 
-	[GeneratedRegex("""^(\-?\d+\.\d+|\-?\d+)""")]
+	[GeneratedRegex("""^(\-?\d+[\.,]\d+| \-?\d+)""")]
 	private static partial Regex EvaluateNumberPattern();
 
 	[GeneratedRegex("""^["]([^"]*)["]""")]
@@ -241,20 +244,20 @@ sealed partial class MathExpression
 	[GeneratedRegex("""^\s*""")]
 	private static partial Regex EvaluateWhitespace();
 
-	static bool ConvertToBoolean(object? b) => b switch
+	bool ConvertToBoolean(object? b) => b switch
 	{
 		bool x => x,
 		null => false,
 		double doubleValue => doubleValue != 0 && !double.IsNaN(doubleValue),
 		string stringValue => !string.IsNullOrEmpty(stringValue),
-		_ => Convert.ToBoolean(b, CultureInfo.InvariantCulture)
+		_ => Convert.ToBoolean(b, culture)
 	};
 
-	static double ConvertToDouble(object? x) => Convert.ToDouble(x, CultureInfo.InvariantCulture);
+	double ConvertToDouble(object? x) => Convert.ToDouble(x, culture);
 
-	static int ConvertToInt32(object? x) => Convert.ToInt32(x, CultureInfo.InvariantCulture);
+	int ConvertToInt32(object? x) => Convert.ToInt32(x, culture);
 
-	static string? ConvertToString(object? x) => Convert.ToString(x, CultureInfo.InvariantCulture);
+	string? ConvertToString(object? x) => Convert.ToString(x, culture);
 
 	bool ParsePattern(Regex regex)
 	{
@@ -367,7 +370,7 @@ sealed partial class MathExpression
 		if (ParsePattern(EvaluateNumberPattern()))
 		{
 			string _number = PatternMatch.Groups[1].Value;
-			RPN.Add(new MathToken(MathTokenType.Value, _number, double.Parse(_number, CultureInfo.InvariantCulture)));
+			RPN.Add(new MathToken(MathTokenType.Value, _number, double.Parse(_number, culture)));
 			return true;
 		}
 

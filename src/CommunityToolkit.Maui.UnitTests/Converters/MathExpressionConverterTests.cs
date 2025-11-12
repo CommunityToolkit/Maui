@@ -284,4 +284,33 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 		Assert.True(result is not null);
 		Assert.Equal(expectedResult, result);
 	}
+
+	[Theory]
+	[InlineData("", "-12.34 + 56.78", 44.44)]
+	[InlineData("en-US", "-12.34 + 56.78", 44.44)]
+	[InlineData("fr-FR", "-12,34 + 56,78", 44.44)]
+	public void MathExpressionConverter_CultureInfoProperty_HandlesDoubleParsing(string cultureName, string expression, double expectedResult)
+	{
+		CultureInfo culture = !string.IsNullOrEmpty(cultureName) ? new CultureInfo(cultureName) : CultureInfo.InvariantCulture;
+		var mathExpressionConverter = new MultiMathExpressionConverter
+		{
+			Culture = culture
+		};
+		var result = mathExpressionConverter.Convert(new object?[] { }, mathExpressionTargetType, expression);
+		Assert.True(result is not null);
+		Assert.Equal(expectedResult, result);
+	}
+
+	[Theory]
+	[InlineData("ar-SA", "-12.34 + 56.78")]
+	[InlineData("ar-SA", "-12,34 + 56.78")]
+	public void MathExpressionConverter_ArabicCulture_ThrowsException(string cultureName, string expression)
+	{
+		CultureInfo culture = !string.IsNullOrEmpty(cultureName) ? new CultureInfo(cultureName) : CultureInfo.InvariantCulture;
+		var mathExpressionConverter = new MultiMathExpressionConverter
+		{
+			Culture = culture
+		};
+		Assert.Throws<FormatException>(() => mathExpressionConverter.Convert(new object?[] { }, mathExpressionTargetType, expression));
+	}
 }
