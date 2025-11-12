@@ -19,10 +19,10 @@
             <Label Text="The IsEqualConverter is a converter that allows users to convert any value binding to a bool depending on whether or not it is equal to a different value. The initial binding contains the object that will be compared and the ConverterParameter contains the object to compare it to."/>
             <Entry Margin="0"
                     Text="{Binding InputValue}" 
-                    HorizontalOptions="FillAndExpand"/>
+                    HorizontalOptions="Fill"/>
             <Label Text="Does the entry text equal &quot;MAUI&quot;?"/>
-            <Label FontSize="Large" 
-                    HorizontalOptions="FillAndExpand"
+            <Label FontSize="24" 
+                    HorizontalOptions="Fill"
                     Text="Yes, it does!"
                     TextColor="Green">
                 <Label.Triggers>

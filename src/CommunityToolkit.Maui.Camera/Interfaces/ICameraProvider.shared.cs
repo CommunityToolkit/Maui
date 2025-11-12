@@ -8,6 +8,11 @@ namespace CommunityToolkit.Maui.Core;
 public interface ICameraProvider
 {
 	/// <summary>
+	/// Event fires when the contents <see cref="AvailableCameras"/> has changed
+	/// </summary>
+	event EventHandler<IReadOnlyList<CameraInfo>?> AvailableCamerasChanged;
+
+	/// <summary>
 	/// Cameras available on device
 	/// </summary>
 	/// <remarks>

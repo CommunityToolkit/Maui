@@ -1,13 +1,19 @@
 ﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseViewModel
+public partial class CameraViewViewModel : BaseViewModel
 {
-	readonly ICameraProvider cameraProvider = cameraProvider;
+	readonly ICameraProvider cameraProvider;
+
+	public CameraViewViewModel(ICameraProvider cameraProvider)
+	{
+		this.cameraProvider = cameraProvider;
+
+		cameraProvider.AvailableCamerasChanged += HandleAvailableCamerasChanged;
+	}
 
 	public IReadOnlyList<CameraInfo> Cameras => cameraProvider.AvailableCameras ?? [];
 
@@ -60,13 +66,36 @@ public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseV
 		UpdateResolutionText();
 	}
 
+	partial void OnSelectedCameraChanged(CameraInfo? oldValue, CameraInfo? newValue)
+	{
+		UpdateCameraInfoText();
+	}
+
+	void UpdateCameraInfoText()
+	{
+		if (SelectedCamera is null)
+		{
+			CameraNameText = string.Empty;
+			ZoomRangeText = string.Empty;
+		}
+		else
+		{
+			CameraNameText = $"{SelectedCamera.Name}";
+			ZoomRangeText = $"Min Zoom: {SelectedCamera.MinimumZoomFactor}, Max Zoom: {SelectedCamera.MaximumZoomFactor}";
+			UpdateFlashModeText();
+		}
+	}
+
 	void UpdateFlashModeText()
 	{
 		if (SelectedCamera is null)
 		{
-			return;
+			FlashModeText = string.Empty;
 		}
-		FlashModeText = $"{(SelectedCamera.IsFlashSupported ? $"Flash mode: {FlashMode}" : "Flash not supported")}";
+		else
+		{
+			FlashModeText = $"{(SelectedCamera.IsFlashSupported ? $"Flash mode: {FlashMode}" : "Flash not supported")}";
+		}
 	}
 
 	void UpdateCurrentZoomText()
@@ -77,5 +106,10 @@ public partial class CameraViewViewModel(ICameraProvider cameraProvider) : BaseV
 	void UpdateResolutionText()
 	{
 		ResolutionText = $"Selected Resolution: {SelectedResolution.Width} x {SelectedResolution.Height}";
+	}
+
+	void HandleAvailableCamerasChanged(object? sender, IReadOnlyList<CameraInfo>? e)
+	{
+		OnPropertyChanged(nameof(Cameras));
 	}
 }

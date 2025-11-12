@@ -1,12 +1,12 @@
 using System.ComponentModel;
 using System.Globalization;
-using System.Windows.Input;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.Shapes;
+using NavigationPage = Microsoft.Maui.Controls.NavigationPage;
+using Page = Microsoft.Maui.Controls.Page;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -65,6 +65,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		Shell.SetPresentationMode(this, PresentationMode.ModalNotAnimated);
 		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
+		NavigationPage.SetHasNavigationBar(this, false);
 	}
 
 	public event EventHandler<IPopupResult>? PopupClosed;
@@ -80,15 +81,26 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		// It may feel a bit redundant, given that we again call `ThrowIfCancellationRequested` later in this method, however, this ensures we propagate the correct Exception to the developer.
 		token.ThrowIfCancellationRequested();
 
-		var popupPageToClose = Navigation.ModalStack.OfType<PopupPage>().LastOrDefault(popupPage => popupPage.Content == Content);
-
-		if (popupPageToClose is null)
+		// Handle edge case where a Popup was pushed inside a custom IPageContainer (e.g. a NavigationPage) on the Modal Stack
+		var customPageContainer = Navigation.ModalStack.OfType<IPageContainer<Page>>().LastOrDefault();
+		if (customPageContainer is not null && customPageContainer.CurrentPage is not PopupPage)
 		{
 			throw new PopupNotFoundException();
 		}
 
-		if (Navigation.ModalStack[^1] is Microsoft.Maui.Controls.Page currentVisibleModalPage
-			&& currentVisibleModalPage != popupPageToClose)
+		var popupPageToClose = customPageContainer?.CurrentPage as PopupPage
+							   ?? Navigation.ModalStack.OfType<PopupPage>().LastOrDefault()
+							   ?? throw new PopupNotFoundException();
+
+		// PopModalAsync will pop the last (top) page from the ModalStack
+		// Ensure that the PopupPage the user is attempting to close is the last (top) page on the Modal stack before calling Navigation.PopModalAsync
+		if (Navigation.ModalStack[^1] is IPageContainer<Page> { CurrentPage: PopupPage visiblePopupPageInCustomPageContainer }
+			 && visiblePopupPageInCustomPageContainer.Content != Content)
+		{
+			throw new PopupBlockedException(visiblePopupPageInCustomPageContainer);
+		}
+		else if (Navigation.ModalStack[^1] is ContentPage currentVisibleModalPage
+				 && currentVisibleModalPage.Content != Content)
 		{
 			throw new PopupBlockedException(currentVisibleModalPage);
 		}
