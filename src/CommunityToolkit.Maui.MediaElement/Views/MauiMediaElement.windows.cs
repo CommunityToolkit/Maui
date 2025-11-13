@@ -36,6 +36,7 @@ public partial class MauiMediaElement : Grid, IDisposable
 	readonly Popup popup = new();
 	readonly Grid fullScreenGrid = new();
 	readonly MediaPlayerElement mediaPlayerElement;
+	readonly MediaManager mediaManager;
 	readonly CustomTransportControls? customTransportControls;
 	bool doesNavigationBarExistBeforeFullScreen;
 	bool isDisposed;
@@ -44,9 +45,11 @@ public partial class MauiMediaElement : Grid, IDisposable
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
 	/// </summary>
 	/// <param name="mediaPlayerElement"></param>
-	public MauiMediaElement(MediaPlayerElement mediaPlayerElement)
+	/// <param name="mediaManager"></param>
+	public MauiMediaElement(MediaPlayerElement mediaPlayerElement, MediaManager mediaManager)
 	{
 		LoadResourceDictionary();
+		this.mediaManager = mediaManager;
 		this.mediaPlayerElement = mediaPlayerElement;
 		customTransportControls = SetTransportControls();
 		Children.Add(this.mediaPlayerElement);
@@ -195,6 +198,7 @@ public partial class MauiMediaElement : Grid, IDisposable
 			var parent = mediaPlayerElement.Parent as FrameworkElement;
 			mediaPlayerElement.Width = parent?.Width ?? mediaPlayerElement.Width;
 			mediaPlayerElement.Height = parent?.Height ?? mediaPlayerElement.Height;
+			mediaManager.UpdateFullScreenState(MediaElementScreenState.Default);
 		}
 		else
 		{
@@ -221,6 +225,7 @@ public partial class MauiMediaElement : Grid, IDisposable
 			{
 				popup.IsOpen = true;
 			}
+			mediaManager.UpdateFullScreenState(MediaElementScreenState.FullScreen);
 		}
 	}
 }
