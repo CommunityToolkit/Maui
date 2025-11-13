@@ -2,6 +2,7 @@ using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
+using ILineHeightElement = Microsoft.Maui.Controls.ILineHeightElement;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -270,7 +271,7 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 
 	void IImageElement.RaiseImageSourcePropertyChanged() => ((IImageElement)avatarImage).RaiseImageSourcePropertyChanged();
 
-	string ITextElement.UpdateFormsText(string original, TextTransform transform) => TextTransformUtilites.GetTransformedText(original, transform);
+	string ITextElement.UpdateFormsText(string original, TextTransform transform) => TextTransformUtilities.GetTransformedText(original, transform);
 
 	void IImageSourcePart.UpdateIsLoading(bool isLoading)
 	{

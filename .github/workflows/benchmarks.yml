@@ -13,7 +13,7 @@ on:
       - '*'
 
 env:
-  LATEST_NET_VERSION: '9.0.x'
+  LATEST_NET_VERSION: '10.0.x'
   PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
 
 concurrency:
@@ -27,7 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-15]
+        os: [windows-latest, macos-26]
 
     steps:
       - name: Checkout code
@@ -63,7 +63,7 @@ jobs:
 
       - name: Publish Benchmarks
         if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: Benchmarks
           path: |

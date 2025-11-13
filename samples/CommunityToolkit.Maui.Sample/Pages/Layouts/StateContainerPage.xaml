@@ -43,7 +43,7 @@
             <Button Command="{Binding CycleStatesCommand}" Text="Cycle States Without Animation" />
             <Label Text="This will show several states at an interval of 2 seconds." />
             <Label
-                FontSize="Small"
+                FontSize="8"
                 Text="{Binding CurrentState, StringFormat='Current State: {0}'}"
                 VerticalTextAlignment="Center" />
 
