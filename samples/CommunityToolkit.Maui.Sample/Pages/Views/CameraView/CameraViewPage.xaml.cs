@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Storage;
@@ -9,6 +8,7 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 {
 	readonly IFileSaver fileSaver;
 	readonly string imagePath;
+	bool isInitialized = false;
 
 	int pageCount;
 	Stream videoRecordingStream = Stream.Null;
@@ -21,8 +21,6 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 		imagePath = Path.Combine(fileSystem.CacheDirectory, "camera-view-image.jpg");
 
 		Camera.MediaCaptured += OnMediaCaptured;
-
-		Loaded += (s, e) => { pageCount = Navigation.NavigationStack.Count; };
 	}
 
 	protected override async void OnAppearing()
@@ -44,19 +42,21 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 			return;
 		}
 
+		if (isInitialized)
+		{
+			return;
+		}
+
 		var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(3));
 		await BindingContext.RefreshCamerasCommand.ExecuteAsync(cancellationTokenSource.Token);
+		isInitialized = true;
 	}
 
-	// https://github.com/dotnet/maui/issues/16697
-	// https://github.com/dotnet/maui/issues/15833
 	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
 	{
 		base.OnNavigatedFrom(args);
 
-		Debug.WriteLine($"< < OnNavigatedFrom {pageCount} {Navigation.NavigationStack.Count}");
-
-		if (Navigation.NavigationStack.Count < pageCount)
+		if (!Shell.Current.Navigation.NavigationStack.Contains(this))
 		{
 			Cleanup();
 		}
@@ -75,12 +75,6 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 	void Cleanup()
 	{
 		Camera.MediaCaptured -= OnMediaCaptured;
-		Camera.Handler?.DisconnectHandler();
-	}
-
-	void OnUnloaded(object? sender, EventArgs? e)
-	{
-		//Cleanup();
 	}
 
 	void OnMediaCaptured(object? sender, MediaCapturedEventArgs e)
@@ -93,7 +87,7 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 		{
 			// workaround for https://github.com/dotnet/maui/issues/13858
 #if ANDROID
-            image.Source = ImageSource.FromStream(() => File.OpenRead(imagePath));
+			image.Source = ImageSource.FromStream(() => File.OpenRead(imagePath));
 #else
 			image.Source = ImageSource.FromFile(imagePath);
 #endif

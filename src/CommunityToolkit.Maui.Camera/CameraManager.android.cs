@@ -1,6 +1,5 @@
 ﻿using System.Runtime.Versioning;
 using Android.Content;
-using Android.Provider;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.Camera.Core;
@@ -168,6 +167,7 @@ partial class CameraManager
 			previewView?.Dispose();
 			previewView = null;
 
+			processCameraProvider?.UnbindAll();
 			processCameraProvider?.Dispose();
 			processCameraProvider = null;
 
@@ -199,16 +199,6 @@ partial class CameraManager
 		cameraProviderFuture.AddListener(new Runnable(async () =>
 		{
 			processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new CameraException($"Unable to retrieve {nameof(ProcessCameraProvider)}"));
-
-			if (cameraProvider.AvailableCameras is null)
-			{
-				await cameraProvider.RefreshAvailableCameras(token);
-
-				if (cameraProvider.AvailableCameras is null)
-				{
-					throw new CameraException("Unable to refresh available cameras");
-				}
-			}
 
 			await StartUseCase(token);
 
@@ -272,15 +262,7 @@ partial class CameraManager
 			return;
 		}
 
-		if (cameraView.SelectedCamera is null)
-		{
-			if (cameraProvider.AvailableCameras is null)
-			{
-				await cameraProvider.RefreshAvailableCameras(token);
-			}
-
-			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
-		}
+		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
 		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, token, cameraPreview, imageCapture, videoCapture);
 		cameraControl = camera.CameraControl;
@@ -332,15 +314,7 @@ partial class CameraManager
 
 		videoRecordingStream = stream;
 
-		if (cameraView.SelectedCamera is null)
-		{
-			if (cameraProvider.AvailableCameras is null)
-			{
-				await cameraProvider.RefreshAvailableCameras(token);
-			}
-
-			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
-		}
+		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
 		if (camera is null || !IsVideoCaptureAlreadyBound())
 		{

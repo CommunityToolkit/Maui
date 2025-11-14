@@ -85,7 +85,6 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		base.ConnectHandler(platformView);
 
 		await CameraManager.ConnectCamera(CancellationToken.None);
-		await cameraProvider.RefreshAvailableCameras(CancellationToken.None);
 	}
 
 	/// <inheritdoc/>
