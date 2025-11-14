@@ -226,7 +226,7 @@ sealed partial class MathExpression
 	[GeneratedRegex("""^(\-|\!)""")]
 	private static partial Regex EvaluateUnaryOperators();
 
-	[GeneratedRegex("""^(\-?\d+[\.,]\d+| \-?\d+)""")]
+	[GeneratedRegex("""^(\-?\d+[\.,]\d+|\-?\d+)""")]
 	private static partial Regex EvaluateNumberPattern();
 
 	[GeneratedRegex("""^["]([^"]*)["]""")]
