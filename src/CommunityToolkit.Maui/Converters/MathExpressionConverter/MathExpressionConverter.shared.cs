@@ -27,6 +27,6 @@ public partial class MathExpressionConverter : BaseConverterOneWay<object?, obje
 	{
 		ArgumentNullException.ThrowIfNull(parameter);
 
-		return new MathExpression(parameter, [inputValue], Culture).CalculateResult();
+		return new MathExpression(parameter, [inputValue], this.Culture).CalculateResult();
 	}
 }
