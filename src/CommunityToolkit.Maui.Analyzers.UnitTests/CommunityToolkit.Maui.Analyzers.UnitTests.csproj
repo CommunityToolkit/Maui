@@ -33,4 +33,9 @@
     <ProjectReference Include="..\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!--Fix vulnerabilities-->
+    <PackageReference Include="System.Formats.Asn1" Version="10.0.0" />
+  </ItemGroup>
+  
 </Project>
