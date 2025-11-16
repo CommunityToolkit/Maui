@@ -138,6 +138,8 @@ public class AvatarViewImageTests : BaseViewTest
 				Uri = new Uri("https://aka.ms/campus.jpg"),
 			}
 		};
+		avatarView.Arrange(new Rect(0, 0, 73, 73));
+		
 		avatarView.ImageSource.Should().NotBeNull();
 		avatarView.Content.Should().BeOfType<Image>();
 		if (avatarView.Content is not Image avatarImage)
@@ -174,6 +176,8 @@ public class AvatarViewImageTests : BaseViewTest
 		};
 		avatarView.ImageSource.Should().NotBeNull();
 		avatarView.Content.Should().BeOfType<Image>();
+		
+		avatarView.Arrange(new Rect(0, 0, 73, 73));
 
 		if (avatarView.Content is not Image avatarImage)
 		{
