@@ -470,6 +470,7 @@ public partial class MediaManager : IDisposable
 
 		if (videoTrack is null)
 		{
+			// HLS doesn't have tracks, try to get the dimensions this way
 			return !avPlayerItem.PresentationSize.IsEmpty
 				? ((int)avPlayerItem.PresentationSize.Width, (int)avPlayerItem.PresentationSize.Height)
 				// If all else fails, just return 0, 0
@@ -486,8 +487,6 @@ public partial class MediaManager : IDisposable
 		var height = Math.Abs(transformedSize.Height);
 
 		return ((int)width, (int)height);
-
-		// HLS doesn't have tracks, try to get the dimensions this way
 	}
 
 	static async Task<AVAssetTrack?> GetTrack(AVAsset asset)
