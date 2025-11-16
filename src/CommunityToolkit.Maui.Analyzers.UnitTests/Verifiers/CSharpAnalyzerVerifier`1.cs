@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
+using Xunit;
 
 namespace CommunityToolkit.Maui.Analyzers.UnitTests;
 

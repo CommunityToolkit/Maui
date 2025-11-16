@@ -58,7 +58,7 @@ public class AvatarViewImageTests : BaseViewTest
 			ImageSource = source,
 			BackgroundColor = Colors.Azure,
 		};
-		avatarView.Layout(new Rect(0, 0, 73, 73));
+		avatarView.Arrange(new Rect(0, 0, 73, 73));
 		avatarView.ImageSource.Should().NotBeNull();
 		avatarView.Content.Should().BeOfType<Image>();
 		if (avatarView.Content is Image avatarImage)
