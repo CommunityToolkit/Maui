@@ -138,7 +138,7 @@ public class AvatarViewImageTests : BaseViewTest
 				Uri = new Uri("https://aka.ms/campus.jpg"),
 			}
 		};
-		avatarView.Layout(new Rect(0, 0, layoutDiameter, layoutDiameter));
+		avatarView.Arrange(new Rect(0, 0, layoutDiameter, layoutDiameter));
 
 		avatarView.ImageSource.Should().NotBeNull();
 		avatarView.Content.Should().BeOfType<Image>();
@@ -177,7 +177,7 @@ public class AvatarViewImageTests : BaseViewTest
 				Clip = new RectangleGeometry()
 			}
 		};
-		avatarView.Layout(new Rect(0, 0, 73, 73));
+		avatarView.Arrange(new Rect(0, 0, 73, 73));
 		avatarView.ImageSource.Should().NotBeNull();
 		avatarView.Content.Should().BeOfType<Image>();
 
