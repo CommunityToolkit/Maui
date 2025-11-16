@@ -70,7 +70,7 @@ public class PopupServiceTests : BaseViewTest
 		// Arrange
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 
-		if (Application.Current?.Windows[0].Page is not { } page)
+		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
 		}
@@ -103,7 +103,7 @@ public class PopupServiceTests : BaseViewTest
 		// Arrange
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 
-		if (Application.Current?.Windows[0].Page is not { } page)
+		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
 		}
@@ -186,7 +186,7 @@ public class PopupServiceTests : BaseViewTest
 		// Arrange
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 
-		if (Application.Current?.Windows[0].Page is not { } page)
+		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
 		}
@@ -205,7 +205,7 @@ public class PopupServiceTests : BaseViewTest
 		// Act
 		await Task.Delay(100, TestContext.Current.CancellationToken);
 
-		if (Application.Current?.Windows[0].Page is not { } page)
+		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
 		}
@@ -235,7 +235,7 @@ public class PopupServiceTests : BaseViewTest
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 		var popupInstance = ServiceProvider.GetRequiredService<LongLivedSelfClosingPopup>();
 
-		if (Application.Current?.Windows[0].Page is not { } page)
+		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
 		}
@@ -256,7 +256,7 @@ public class PopupServiceTests : BaseViewTest
 		var mockPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>();
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 
-		if (Application.Current?.Windows[0].Page is not { } page)
+		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
 		}
@@ -275,7 +275,7 @@ public class PopupServiceTests : BaseViewTest
 		// Arrange
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 
-		if (Application.Current?.Windows[0].Page is not { } page)
+		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
 		}
@@ -377,7 +377,7 @@ public class PopupServiceTests : BaseViewTest
 		// Arrange
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 
-		if (Application.Current?.Windows[0].Page is not { } page)
+		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
 		}
@@ -393,7 +393,7 @@ public class PopupServiceTests : BaseViewTest
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 		var mockPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>();
 
-		if (Application.Current?.Windows[0].Page is not { } page)
+		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
 		}
@@ -412,7 +412,7 @@ public class PopupServiceTests : BaseViewTest
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 
 
-		if (Application.Current?.Windows[0].Page is not { } page)
+		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
 		}
@@ -439,7 +439,7 @@ public class PopupServiceTests : BaseViewTest
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 
 
-		if (Application.Current?.Windows[0].Page is not { } page)
+		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
 		}
@@ -466,7 +466,7 @@ public class PopupServiceTests : BaseViewTest
 		const int expectedResult = 2;
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 
-		if (Application.Current?.Windows[0].Page is not { } page)
+		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
 		}
@@ -494,7 +494,7 @@ public class PopupServiceTests : BaseViewTest
 		const int expectedResult = 2;
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 
-		if (Application.Current?.Windows[0].Page is not { } page)
+		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
 		}
