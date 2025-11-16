@@ -24,15 +24,6 @@ public sealed partial class FileSaverImplementation : IFileSaver
 
 		AndroidUri? filePath = null;
 
-		if (!OperatingSystem.IsAndroidVersionAtLeast(33))
-		{
-			var status = await Permissions.RequestAsync<Permissions.StorageWrite>().WaitAsync(cancellationToken).ConfigureAwait(false);
-			if (status is not PermissionStatus.Granted)
-			{
-				throw new PermissionException("Storage permission is not granted.");
-			}
-		}
-
 		if (Android.OS.Environment.ExternalStorageDirectory is not null)
 		{
 			initialPath = initialPath.Replace(Android.OS.Environment.ExternalStorageDirectory.AbsolutePath, string.Empty, StringComparison.InvariantCulture);

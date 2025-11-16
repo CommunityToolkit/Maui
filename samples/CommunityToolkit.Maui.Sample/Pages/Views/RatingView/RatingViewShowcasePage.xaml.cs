@@ -12,9 +12,9 @@ public partial class RatingViewShowcasePage : BasePage<RatingViewShowcaseViewMod
 		InitializeComponent();
 	}
 
-	void ReviewSummaryRatingChanged(object sender, RatingChangedEventArgs e)
+	void ReviewSummaryRatingChanged(object? sender, RatingChangedEventArgs? e)
 	{
-		ratings.Add(e.Rating);
+		ratings.Add(e?.Rating ?? 0);
 		if (BindingContext is RatingViewShowcaseViewModel viewModel)
 		{
 			viewModel.ReviewSummaryCount = ratings.Count;

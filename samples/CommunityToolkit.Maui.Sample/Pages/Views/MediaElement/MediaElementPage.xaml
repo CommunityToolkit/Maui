@@ -92,7 +92,7 @@
                 <Button Text="Change Source" Clicked="ChangeSourceClicked" />
 
                 <Grid ColumnDefinitions="*, 100" ColumnSpacing="5">
-                    <Entry x:Name="CustomSourceEntry" Placeholder="Enter URL" HorizontalOptions="FillAndExpand" />
+                    <Entry x:Name="CustomSourceEntry" Placeholder="Enter URL" HorizontalOptions="Fill" />
                     <Button Grid.Column="1" Clicked="Button_Clicked" Text="Load" />
                 </Grid>
 

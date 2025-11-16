@@ -33,14 +33,14 @@
                 NullableIsVisible="{Binding LabelText, Mode=OneWay, Converter={StaticResource IsStringNullOrEmptyConverter}}" />
 
             <Entry
-                VerticalOptions="CenterAndExpand"
+                VerticalOptions="Center"
                 HorizontalOptions="Fill"
                 Text="{Binding Path=LabelText, Mode=OneWayToSource}"
                 TextColor="{StaticResource NormalLabelTextColor}" />
 
             <Label
-                VerticalOptions="CenterAndExpand"
-                HorizontalOptions="CenterAndExpand"
+                VerticalOptions="Center"
+                HorizontalOptions="Center"
                 Text="{Binding Path=LabelText, Mode=OneWay, Converter={StaticResource IsStringNullOrEmptyConverter}}" />
 
         </VerticalStackLayout>
