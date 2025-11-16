@@ -18,6 +18,7 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj" />
+    <Project Path="CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests/CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.csproj" />
     <Project Path="CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj" />
   </Folder>
   <Project Path="CommunityToolkit.Maui.Camera/CommunityToolkit.Maui.Camera.csproj" />
