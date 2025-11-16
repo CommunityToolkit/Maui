@@ -256,10 +256,10 @@ partial class CameraManager
 
 		if (Quality.Highest is not null)
 		{
-			videoRecorderBuilder = videoRecorderBuilder?.SetQualitySelector(QualitySelector.From(Quality.Highest));
+			videoRecorderBuilder = videoRecorderBuilder.SetQualitySelector(QualitySelector.From(Quality.Highest));
 		}
 
-		videoRecorder = videoRecorderBuilder?.Build();
+		videoRecorder = videoRecorderBuilder.Build();
 		videoCapture = VideoCapture.WithOutput(videoRecorder);
 
 		await StartCameraPreview(token);
@@ -285,7 +285,7 @@ partial class CameraManager
 		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, token, cameraPreview, imageCapture, videoCapture);
 		cameraControl = camera.CameraControl;
 
-		var point = previewView.MeteringPointFactory?.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
+		var point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
 		var action = new FocusMeteringAction.Builder(point).Build();
 		camera.CameraControl?.StartFocusAndMetering(action);
 
@@ -476,7 +476,7 @@ partial class CameraManager
 
 	sealed class ImageCallBack(ICameraView cameraView) : ImageCapture.OnImageCapturedCallback
 	{
-		public override void OnCaptureSuccess(IImageProxy? image)
+		public override void OnCaptureSuccess(IImageProxy image)
 		{
 			base.OnCaptureSuccess(image);
 			var img = image?.Image;
@@ -524,7 +524,7 @@ partial class CameraManager
 			}
 		}
 
-		public override void OnError(ImageCaptureException? exception)
+		public override void OnError(ImageCaptureException exception)
 		{
 			base.OnError(exception);
 			cameraView.OnMediaCapturedFailed(exception?.Message ?? "An unknown error occurred.");

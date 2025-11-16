@@ -48,32 +48,6 @@
                 </mct:Expander.Content>
             </mct:Expander>
 
-            <Label Text="Expander in ListView" FontSize="24" FontAttributes="Bold"/>
-
-            <ListView ItemsSource="{Binding ContentCreators}"
-                      HasUnevenRows="True">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <ViewCell>
-                            <mct:Expander x:DataType="sample:ContentCreator"
-                                          ExpandedChanged="Expander_ExpandedChanged">
-                                <mct:Expander.Header>
-                                    <Label Text="{Binding Name}"/>
-                                </mct:Expander.Header>
-                                <mct:Expander.Content>
-                                    <VerticalStackLayout>
-                                        <Label Text="{Binding Resource}"/>
-                                        <Image Source="{Binding Image}"
-                                               WidthRequest="100"
-                                               HeightRequest="100"/>
-                                    </VerticalStackLayout>
-                                </mct:Expander.Content>
-                            </mct:Expander>
-                        </ViewCell>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-
             <Label Text="Expander in CollectionView with LinearItemsLayout" FontSize="24" FontAttributes="Bold"/>
 
             <CollectionView ItemsSource="{Binding ContentCreators}">
