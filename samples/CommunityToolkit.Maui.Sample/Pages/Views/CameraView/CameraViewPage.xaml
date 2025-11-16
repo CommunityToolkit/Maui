@@ -29,7 +29,7 @@
                 <Label Text="{Binding ResolutionText}" />
                 <Picker 
                     Title="Available Resolutions"
-                    ItemsSource="{Binding SelectedCamera.SupportedResolutions, FallbackValue=''}"
+                    ItemsSource="{Binding SelectedCamera.SupportedResolutions, FallbackValue='', x:DataType={x:Null}}"
                     SelectedItem="{Binding SelectedResolution}" />
                 <Label x:Name="debugText"/>
 
@@ -51,8 +51,8 @@
             <Slider 
                 x:Name="slider" Grid.Column="1"
                 Value="{Binding CurrentZoom}"
-                Maximum="{Binding SelectedCamera.MaximumZoomFactor, FallbackValue=1}"
-                Minimum="{Binding SelectedCamera.MinimumZoomFactor, FallbackValue=1}"/>
+                Maximum="{Binding SelectedCamera.MaximumZoomFactor, FallbackValue=1, x:DataType={x:Null}}"
+                Minimum="{Binding SelectedCamera.MinimumZoomFactor, FallbackValue=1, x:DataType={x:Null}}"/>
 
             <Button Clicked="ZoomIn" Text="Zoom +" Grid.Column="2"/>
         </Grid>

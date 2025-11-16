@@ -31,7 +31,7 @@
     <pages:BasePage.Content>
         <VerticalStackLayout Spacing="12">
             <Label Text="EnumToBoolConverter converts an Enum to corresponding boolean value."
-                   HorizontalOptions="CenterAndExpand" />
+                   HorizontalOptions="Center" />
 
             <Label Text="👇 Change the Picker value to see the below Label Text change."/>
 

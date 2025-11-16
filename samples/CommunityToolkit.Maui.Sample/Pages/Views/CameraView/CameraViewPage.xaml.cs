@@ -28,6 +28,21 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 	protected override async void OnAppearing()
 	{
 		base.OnAppearing();
+		
+		var cameraPermissionsRequest = await Permissions.RequestAsync<Permissions.Camera>();
+		var microphonePermissionsRequest = await Permissions.RequestAsync<Permissions.Microphone>();
+		
+		if (cameraPermissionsRequest is not PermissionStatus.Granted)
+		{
+			await Shell.Current.CurrentPage.DisplayAlertAsync("Camera permission is not granted.", "Please grant the permission to use this feature.", "OK");
+			return;
+		}
+
+		if (microphonePermissionsRequest is not PermissionStatus.Granted)
+		{
+			await Shell.Current.CurrentPage.DisplayAlertAsync("Microphone permission is not granted.", "Please grant the permission to use this feature.", "OK");
+			return;
+		}
 
 		var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(3));
 		await BindingContext.RefreshCamerasCommand.ExecuteAsync(cancellationTokenSource.Token);
@@ -63,7 +78,7 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 		Camera.Handler?.DisconnectHandler();
 	}
 
-	void OnUnloaded(object? sender, EventArgs e)
+	void OnUnloaded(object? sender, EventArgs? e)
 	{
 		//Cleanup();
 	}
@@ -87,17 +102,17 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 		});
 	}
 
-	void ZoomIn(object? sender, EventArgs e)
+	void ZoomIn(object? sender, EventArgs? e)
 	{
 		Camera.ZoomFactor += 1.0f;
 	}
 
-	void ZoomOut(object? sender, EventArgs e)
+	void ZoomOut(object? sender, EventArgs? e)
 	{
 		Camera.ZoomFactor -= 1.0f;
 	}
 
-	async void SetNightMode(object? sender, EventArgs e)
+	async void SetNightMode(object? sender, EventArgs? e)
 	{
 #if ANDROID
 		await Camera.SetExtensionMode(AndroidX.Camera.Extensions.ExtensionMode.Night);
@@ -106,24 +121,31 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 #endif
 	}
 
-	async void StartCameraRecording(object? sender, EventArgs e)
+	async void StartCameraRecording(object? sender, EventArgs? e)
 	{
 		await Camera.StartVideoRecording(CancellationToken.None);
 	}
 
-	async void StopCameraRecording(object? sender, EventArgs e)
+	async void StopCameraRecording(object? sender, EventArgs? e)
 	{
 		videoRecordingStream = await Camera.StopVideoRecording(CancellationToken.None);
 	}
 
-	async void SaveVideo(object? sender, EventArgs e)
+	async void SaveVideo(object? sender, EventArgs? e)
 	{
 		if (videoRecordingStream == Stream.Null)
 		{
-			await DisplayAlert("Unable to Save Video", "Stream is null", "OK");
+			await DisplayAlertAsync("Unable to Save Video", "Stream is null", "OK");
 		}
 		else
 		{
+			var status = await Permissions.RequestAsync<Permissions.StorageWrite>();
+			if (status is not PermissionStatus.Granted)
+			{
+				await Shell.Current.CurrentPage.DisplayAlert("Storage permission is not granted.", "Please grant the permission to use this feature.", "OK");
+				return;
+			}
+
 			await fileSaver.SaveAsync("recording.mp4", videoRecordingStream);
 			await videoRecordingStream.DisposeAsync();
 			videoRecordingStream = Stream.Null;
