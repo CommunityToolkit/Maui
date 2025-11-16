@@ -441,7 +441,11 @@ public class EdgeCaseTests
             TestState =
             {
                 Sources = { source },
-                ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+#if NET10_0
+                ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.NET100,
+#else
+#error ReferenceAssemblies must be updated to current version of .NET
+#endif
                 AdditionalReferences =
                 {
                     MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.BindableObject).Assembly.Location),

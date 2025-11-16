@@ -142,7 +142,11 @@ public class IntegrationTests
 
 		var test = new CSharpSourceGeneratorTest<BindablePropertyAttributeSourceGenerator, DefaultVerifier>
 		{
-			ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+#if NET10_0
+			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.NET100,
+#else
+#error ReferenceAssemblies must be updated to current version of .NET
+#endif
 			TestCode = source
 		};
 		test.TestState.GeneratedSources.Add((typeof(BindablePropertyAttributeSourceGenerator), "BaseView.g.cs", expectedBaseGenerated));
@@ -150,28 +154,6 @@ public class IntegrationTests
 		test.TestState.GeneratedSources.Add((typeof(BindablePropertyAttributeSourceGenerator), "BindablePropertyAttribute.g.cs", expectedAttribute));
 
 		await test.RunAsync(TestContext.Current.CancellationToken);
-
-
-		// var test = new CSharpSourceGeneratorTest<BindablePropertyAttributeSourceGenerator, DefaultVerifier>
-		// {
-		//  TestCode = source,
-		//     TestState =
-		//     {
-		//         ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
-		//         AdditionalReferences =
-		//         {
-		//             MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.BindableObject).Assembly.Location),
-		//             MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.BindableProperty).Assembly.Location),
-		//         },
-		//         GeneratedSources =
-		//         {
-		//             (typeof(BindablePropertyAttributeSourceGenerator), "BaseView.g.cs", expectedBaseGenerated),
-		//             (typeof(BindablePropertyAttributeSourceGenerator), "DerivedView.g.cs", expectedDerivedGenerated)
-		//         }
-		//     }
-		// };
-
-		// await test.RunAsync(TestContext.Current.CancellationToken);
 	}
 
 	[Fact]
@@ -437,7 +419,11 @@ public class IntegrationTests
 			TestState =
 			{
 				Sources = { source },
-				ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+#if NET10_0
+				ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.NET100,
+#else
+#error ReferenceAssemblies must be updated to current version of .NET
+#endif
 				AdditionalReferences =
 				{
 					MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.BindableObject).Assembly.Location),
@@ -461,7 +447,11 @@ public class IntegrationTests
 			TestState =
 			{
 				Sources = { source },
-				ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+#if NET10_0
+				ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.NET100,
+#else
+#error ReferenceAssemblies must be updated to current version of .NET
+#endif
 				AdditionalReferences =
 				{
 					MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.BindableObject).Assembly.Location),
