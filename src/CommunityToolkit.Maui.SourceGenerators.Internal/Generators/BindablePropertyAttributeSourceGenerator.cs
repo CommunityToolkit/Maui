@@ -152,7 +152,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 				.AppendLine("/// </summary>");
 
 			// public static readonly BindableProperty TextProperty = BindableProperty.Create(...);
-			sb.AppendLine($"public static readonly {bpFullName} {info.BindablePropertyName} = ")
+			sb.AppendLine($"public {info.NewKeywordText}static readonly {bpFullName} {info.PropertyName}Property = ")
 				.Append($"{bpFullName}.Create(")
 				.Append($"\"{info.PropertyName}\", ")
 				.Append($"typeof({nonNullableReturnType}), ")
