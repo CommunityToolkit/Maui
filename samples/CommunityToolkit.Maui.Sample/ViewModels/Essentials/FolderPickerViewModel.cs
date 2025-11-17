@@ -5,18 +5,34 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Essentials;
 
-public partial class FolderPickerViewModel : BaseViewModel
+public partial class FolderPickerViewModel(IFolderPicker folderPicker) : BaseViewModel
 {
-	readonly IFolderPicker folderPicker;
+	readonly IFolderPicker folderPicker = folderPicker;
 
-	public FolderPickerViewModel(IFolderPicker folderPicker)
+	static async Task<bool> ArePermissionsGranted()
 	{
-		this.folderPicker = folderPicker;
+		var readPermissionStatus = await Permissions.RequestAsync<Permissions.StorageRead>();
+		var writePermissionStatus = await Permissions.RequestAsync<Permissions.StorageWrite>();
+
+		if (readPermissionStatus is PermissionStatus.Granted
+			&& writePermissionStatus is PermissionStatus.Granted)
+		{
+			return true;
+		}
+
+		await Shell.Current.CurrentPage.DisplayAlertAsync("Storage permission is not granted.", "Please grant the permission to use this feature.", "OK");
+
+		return false;
 	}
 
 	[RelayCommand]
 	async Task PickFolder(CancellationToken cancellationToken)
 	{
+		if (!await ArePermissionsGranted())
+		{
+			return;
+		}
+
 		var folderPickerResult = await folderPicker.PickAsync(cancellationToken);
 		if (folderPickerResult.IsSuccessful)
 		{
@@ -31,6 +47,11 @@ public partial class FolderPickerViewModel : BaseViewModel
 	[RelayCommand]
 	async Task PickFolderStatic(CancellationToken cancellationToken)
 	{
+		if (!await ArePermissionsGranted())
+		{
+			return;
+		}
+
 		var folderResult = await FolderPicker.PickAsync("DCIM", cancellationToken);
 		if (folderResult.IsSuccessful)
 		{
@@ -46,6 +67,11 @@ public partial class FolderPickerViewModel : BaseViewModel
 	[RelayCommand]
 	async Task PickFolderInstance(CancellationToken cancellationToken)
 	{
+		if (!await ArePermissionsGranted())
+		{
+			return;
+		}
+
 		var folderPickerInstance = new FolderPickerImplementation();
 		try
 		{

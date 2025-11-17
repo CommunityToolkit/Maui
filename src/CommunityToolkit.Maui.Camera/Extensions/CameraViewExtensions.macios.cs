@@ -1,5 +1,6 @@
 ﻿using AVFoundation;
 using CommunityToolkit.Maui.Core;
+using CoreMedia;
 
 namespace CommunityToolkit.Maui.Extensions;
 
@@ -30,4 +31,23 @@ static class CameraViewExtensions
 	{
 		cameraView.IsAvailable = AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Video) is not null;
 	}
+
+	extension(AVCaptureDeviceFormat avCaptureDeviceFormat)
+    {
+		/// <summary>
+        /// Gets the total resolution area in pixels (width × height) of the <see cref="AVCaptureDeviceFormat"/>.
+        /// </summary>
+        /// <value>
+        /// The total number of pixels, calculated as width multiplied by height.
+        /// </value>
+        public int ResolutionArea
+		{
+            get
+            {
+				var dimensions = ((CMVideoFormatDescription)avCaptureDeviceFormat.FormatDescription).Dimensions;
+				return dimensions.Width * dimensions.Height;
+            }
+		}
+
+    }
 }
