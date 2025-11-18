@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Storage;
@@ -10,7 +9,6 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 	readonly IFileSaver fileSaver;
 	readonly string imagePath;
 
-	int pageCount;
 	Stream videoRecordingStream = Stream.Null;
 
 	public CameraViewPage(CameraViewViewModel viewModel, IFileSystem fileSystem, IFileSaver fileSaver) : base(viewModel)
@@ -21,17 +19,15 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 		imagePath = Path.Combine(fileSystem.CacheDirectory, "camera-view-image.jpg");
 
 		Camera.MediaCaptured += OnMediaCaptured;
-
-		Loaded += (s, e) => { pageCount = Navigation.NavigationStack.Count; };
 	}
 
 	protected override async void OnAppearing()
 	{
 		base.OnAppearing();
-		
+
 		var cameraPermissionsRequest = await Permissions.RequestAsync<Permissions.Camera>();
 		var microphonePermissionsRequest = await Permissions.RequestAsync<Permissions.Microphone>();
-		
+
 		if (cameraPermissionsRequest is not PermissionStatus.Granted)
 		{
 			await Shell.Current.CurrentPage.DisplayAlertAsync("Camera permission is not granted.", "Please grant the permission to use this feature.", "OK");
@@ -43,20 +39,14 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 			await Shell.Current.CurrentPage.DisplayAlertAsync("Microphone permission is not granted.", "Please grant the permission to use this feature.", "OK");
 			return;
 		}
-
-		var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-		await BindingContext.RefreshCamerasCommand.ExecuteAsync(cancellationTokenSource.Token);
 	}
 
-	// https://github.com/dotnet/maui/issues/16697
 	// https://github.com/dotnet/maui/issues/15833
 	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
 	{
 		base.OnNavigatedFrom(args);
 
-		Debug.WriteLine($"< < OnNavigatedFrom {pageCount} {Navigation.NavigationStack.Count}");
-
-		if (Navigation.NavigationStack.Count < pageCount)
+		if (!Shell.Current.Navigation.NavigationStack.Contains(this))
 		{
 			Cleanup();
 		}
@@ -75,12 +65,6 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 	void Cleanup()
 	{
 		Camera.MediaCaptured -= OnMediaCaptured;
-		Camera.Handler?.DisconnectHandler();
-	}
-
-	void OnUnloaded(object? sender, EventArgs? e)
-	{
-		//Cleanup();
 	}
 
 	void OnMediaCaptured(object? sender, MediaCapturedEventArgs e)
@@ -93,7 +77,7 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 		{
 			// workaround for https://github.com/dotnet/maui/issues/13858
 #if ANDROID
-            image.Source = ImageSource.FromStream(() => File.OpenRead(imagePath));
+			image.Source = ImageSource.FromStream(() => File.OpenRead(imagePath));
 #else
 			image.Source = ImageSource.FromFile(imagePath);
 #endif
@@ -142,7 +126,7 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 			var status = await Permissions.RequestAsync<Permissions.StorageWrite>();
 			if (status is not PermissionStatus.Granted)
 			{
-				await Shell.Current.CurrentPage.DisplayAlert("Storage permission is not granted.", "Please grant the permission to use this feature.", "OK");
+				await Shell.Current.CurrentPage.DisplayAlertAsync("Storage permission is not granted.", "Please grant the permission to use this feature.", "OK");
 				return;
 			}
 
