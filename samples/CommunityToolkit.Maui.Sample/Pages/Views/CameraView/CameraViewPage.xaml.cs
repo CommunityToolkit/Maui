@@ -52,6 +52,7 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 		isInitialized = true;
 	}
 
+	// https://github.com/dotnet/maui/issues/15833
 	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
 	{
 		base.OnNavigatedFrom(args);
