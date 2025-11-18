@@ -1,9 +1,8 @@
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Primitives;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
-public class MockCameraProvider : ICameraProvider
+public sealed class MockCameraProvider : ICameraProvider, IDisposable
 {
 	public event EventHandler<IReadOnlyList<CameraInfo>?>? AvailableCamerasChanged;
 
@@ -18,6 +17,11 @@ public class MockCameraProvider : ICameraProvider
 				AvailableCamerasChanged?.Invoke(this, value);
 			}
 		}
+	}
+
+	public void Dispose()
+	{
+		
 	}
 
 	public Task RefreshAvailableCameras(CancellationToken token)
