@@ -13,7 +13,6 @@ public abstract class BasePage<TViewModel>(TViewModel viewModel, bool shouldUseS
 
 public abstract class BasePage : ContentPage
 {
-	[Obsolete]
 	protected BasePage(object? viewModel = null, bool shouldUseSafeArea = true)
 	{
 		BindingContext = viewModel;
