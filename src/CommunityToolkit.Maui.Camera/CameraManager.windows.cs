@@ -155,7 +155,7 @@ partial class CameraManager
 		IsInitialized = false;
 	}
 
-	protected async Task PlatformUpdateResolution(Size resolution, CancellationToken token)
+	async Task PlatformUpdateResolution(Size resolution, CancellationToken token)
 	{
 		if (!IsInitialized || mediaCapture is null)
 		{
@@ -192,9 +192,10 @@ partial class CameraManager
 		var profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto);
 		mediaRecording = await mediaCapture.PrepareLowLagRecordToStreamAsync(profile, stream.AsRandomAccessStream());
 
-		frameSource = mediaCapture.FrameSources.FirstOrDefault(source =>
-			source.Value.Info.MediaStreamType == MediaStreamType.VideoRecord &&
-			source.Value.Info.SourceKind == MediaFrameSourceKind.Color).Value;
+		frameSource = mediaCapture.FrameSources
+			.FirstOrDefault(static source => source.Value.Info.MediaStreamType is MediaStreamType.VideoRecord && source.Value.Info.SourceKind is MediaFrameSourceKind.Color)
+			.Value;
+
 		if (frameSource is not null)
 		{
 			var frameFormat = frameSource.SupportedFormats
