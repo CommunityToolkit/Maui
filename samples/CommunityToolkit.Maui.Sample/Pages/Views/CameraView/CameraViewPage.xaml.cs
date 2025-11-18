@@ -24,10 +24,10 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 	protected override async void OnAppearing()
 	{
 		base.OnAppearing();
-		
+
 		var cameraPermissionsRequest = await Permissions.RequestAsync<Permissions.Camera>();
 		var microphonePermissionsRequest = await Permissions.RequestAsync<Permissions.Microphone>();
-		
+
 		if (cameraPermissionsRequest is not PermissionStatus.Granted)
 		{
 			await Shell.Current.CurrentPage.DisplayAlertAsync("Camera permission is not granted.", "Please grant the permission to use this feature.", "OK");

@@ -91,9 +91,9 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	protected override void DisconnectHandler(NativePlatformCameraPreviewView platformView)
 	{
 		base.DisconnectHandler(platformView);
-		
+
 		CameraManager.Disconnect();
-		
+
 		Dispose();
 	}
 

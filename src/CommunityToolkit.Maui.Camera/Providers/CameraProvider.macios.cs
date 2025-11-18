@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Core;
 partial class CameraProvider
 {
 	static readonly AVCaptureDeviceType[] captureDevices = InitializeCaptureDevices();
-	
+
 	static AVCaptureDeviceType[] InitializeCaptureDevices()
 	{
 		AVCaptureDeviceType[] deviceTypes =

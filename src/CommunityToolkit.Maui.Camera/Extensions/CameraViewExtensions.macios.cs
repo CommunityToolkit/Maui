@@ -33,21 +33,21 @@ static class CameraViewExtensions
 	}
 
 	extension(AVCaptureDeviceFormat avCaptureDeviceFormat)
-    {
+	{
 		/// <summary>
-        /// Gets the total resolution area in pixels (width × height) of the <see cref="AVCaptureDeviceFormat"/>.
-        /// </summary>
-        /// <value>
-        /// The total number of pixels, calculated as width multiplied by height.
-        /// </value>
-        public int ResolutionArea
+		/// Gets the total resolution area in pixels (width × height) of the <see cref="AVCaptureDeviceFormat"/>.
+		/// </summary>
+		/// <value>
+		/// The total number of pixels, calculated as width multiplied by height.
+		/// </value>
+		public int ResolutionArea
 		{
-            get
-            {
+			get
+			{
 				var dimensions = ((CMVideoFormatDescription)avCaptureDeviceFormat.FormatDescription).Dimensions;
 				return dimensions.Width * dimensions.Height;
-            }
+			}
 		}
 
-    }
+	}
 }

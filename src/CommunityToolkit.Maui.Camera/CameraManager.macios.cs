@@ -289,11 +289,11 @@ partial class CameraManager
 	private async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
 	{
 		if (captureSession is null
-		    || videoRecordingFileName is null
-		    || videoInput is null
-		    || videoOutput is null
-		    || videoRecordingStream is null
-		    || videoRecordingFinalizeTcs is null)
+			|| videoRecordingFileName is null
+			|| videoInput is null
+			|| videoOutput is null
+			|| videoRecordingStream is null
+			|| videoRecordingFinalizeTcs is null)
 		{
 			return Stream.Null;
 		}
@@ -462,7 +462,7 @@ partial class CameraManager
 	{
 		var dimensions = ((CMVideoFormatDescription)format.FormatDescription).Dimensions;
 		return dimensions.Width <= resolution.Width
-		       && dimensions.Height <= resolution.Height;
+			   && dimensions.Height <= resolution.Height;
 	}
 
 	sealed class AVCapturePhotoCaptureDelegateWrapper : AVCapturePhotoCaptureDelegate

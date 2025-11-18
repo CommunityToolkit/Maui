@@ -39,7 +39,7 @@ sealed partial class CameraProvider : ICameraProvider
 	public async Task RefreshAvailableCameras(CancellationToken token)
 	{
 		await refreshAvailableCamerasSemaphore.WaitAsync(token);
-		
+
 		try
 		{
 			if (refreshAvailableCamerasTask is null || refreshAvailableCamerasTask.IsCompleted)

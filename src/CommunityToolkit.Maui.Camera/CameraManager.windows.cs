@@ -78,11 +78,11 @@ partial class CameraManager
 		await PlatformUpdateResolution(resolution, token);
 	}
 
-	protected virtual partial void PlatformDisconnect()
+	private partial void PlatformDisconnect()
 	{
 	}
 
-	protected virtual async partial ValueTask PlatformTakePicture(CancellationToken token)
+	private async partial ValueTask PlatformTakePicture(CancellationToken token)
 	{
 		if (mediaCapture is null)
 		{
@@ -108,12 +108,12 @@ partial class CameraManager
 		}
 	}
 
-	protected virtual async partial Task PlatformConnectCamera(CancellationToken token)
+	private async partial Task PlatformConnectCamera(CancellationToken token)
 	{
 		await StartCameraPreview(token);
 	}
 
-	protected virtual async partial Task PlatformStartCameraPreview(CancellationToken token)
+	private async partial Task PlatformStartCameraPreview(CancellationToken token)
 	{
 		if (mediaElement is null)
 		{
@@ -141,7 +141,7 @@ partial class CameraManager
 		OnLoaded.Invoke();
 	}
 
-	protected virtual partial void PlatformStopCameraPreview()
+	private partial void PlatformStopCameraPreview()
 	{
 		if (mediaElement is null)
 		{
@@ -161,7 +161,7 @@ partial class CameraManager
 		{
 			throw new CameraException($"Unable to update Capture Resolution because {nameof(ICameraView)}.{nameof(ICameraView.SelectedCamera)} is null.");
 		}
-		
+
 		if (!IsInitialized || mediaCapture is null)
 		{
 			return;
@@ -180,7 +180,7 @@ partial class CameraManager
 		}
 	}
 
-	protected virtual async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
+	private async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
 	{
 		if (!IsInitialized || mediaCapture is null || mediaElement is null)
 		{
@@ -211,7 +211,7 @@ partial class CameraManager
 		}
 	}
 
-	protected virtual async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
+	private async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
 	{
 		if (!IsInitialized || mediaElement is null || mediaRecording is null || videoCaptureStream is null)
 		{
