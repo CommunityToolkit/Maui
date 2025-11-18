@@ -8,9 +8,7 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 {
 	readonly IFileSaver fileSaver;
 	readonly string imagePath;
-	bool isInitialized = false;
 
-	int pageCount;
 	Stream videoRecordingStream = Stream.Null;
 
 	public CameraViewPage(CameraViewViewModel viewModel, IFileSystem fileSystem, IFileSaver fileSaver) : base(viewModel)
@@ -41,15 +39,6 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 			await Shell.Current.CurrentPage.DisplayAlertAsync("Microphone permission is not granted.", "Please grant the permission to use this feature.", "OK");
 			return;
 		}
-
-		if (isInitialized)
-		{
-			return;
-		}
-
-		var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-		await BindingContext.RefreshCamerasCommand.ExecuteAsync(cancellationTokenSource.Token);
-		isInitialized = true;
 	}
 
 	// https://github.com/dotnet/maui/issues/15833
@@ -137,7 +126,7 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 			var status = await Permissions.RequestAsync<Permissions.StorageWrite>();
 			if (status is not PermissionStatus.Granted)
 			{
-				await Shell.Current.CurrentPage.DisplayAlert("Storage permission is not granted.", "Please grant the permission to use this feature.", "OK");
+				await Shell.Current.CurrentPage.DisplayAlertAsync("Storage permission is not granted.", "Please grant the permission to use this feature.", "OK");
 				return;
 			}
 
