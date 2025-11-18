@@ -416,9 +416,20 @@ partial class CameraManager
 	static AVCaptureVideoOrientation GetVideoOrientation()
 	{
 		IEnumerable<UIScene> scenes = UIApplication.SharedApplication.ConnectedScenes;
-		var interfaceOrientation = scenes.FirstOrDefault() is UIWindowScene windowScene
-			? windowScene.InterfaceOrientation
-			: UIApplication.SharedApplication.StatusBarOrientation;
+
+		UIInterfaceOrientation interfaceOrientation;
+		if (!(OperatingSystem.IsMacCatalystVersionAtLeast(26) || OperatingSystem.IsIOSVersionAtLeast(26)))
+		{
+			interfaceOrientation = scenes.FirstOrDefault() is UIWindowScene windowScene
+				? windowScene.InterfaceOrientation
+				: UIApplication.SharedApplication.StatusBarOrientation;
+		}
+		else
+		{
+			interfaceOrientation = scenes.FirstOrDefault() is UIWindowScene windowScene
+				? windowScene.EffectiveGeometry.InterfaceOrientation
+				: UIApplication.SharedApplication.StatusBarOrientation;
+		}
 
 		return interfaceOrientation switch
 		{
