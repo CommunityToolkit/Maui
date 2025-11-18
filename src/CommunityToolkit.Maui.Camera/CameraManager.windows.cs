@@ -23,8 +23,8 @@ partial class CameraManager
 
 	public void Dispose()
 	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
+		PlatformStopCameraPreview();
+		mediaCapture?.Dispose();
 	}
 
 	public partial void UpdateFlashMode(CameraFlashMode flashMode)
@@ -108,15 +108,6 @@ partial class CameraManager
 		}
 	}
 
-	protected virtual void Dispose(bool disposing)
-	{
-		PlatformStopCameraPreview();
-		if (disposing)
-		{
-			mediaCapture?.Dispose();
-		}
-	}
-
 	protected virtual async partial Task PlatformConnectCamera(CancellationToken token)
 	{
 		await StartCameraPreview(token);
@@ -166,7 +157,12 @@ partial class CameraManager
 
 	protected async Task PlatformUpdateResolution(Size resolution, CancellationToken token)
 	{
-		if (!IsInitialized || mediaCapture is null || cameraView.SelectedCamera is null)
+		if (cameraView.SelectedCamera is null)
+		{
+			throw new CameraException($"Unable to update Capture Resolution because {nameof(ICameraView)}.{nameof(ICameraView.SelectedCamera)} is null.");
+		}
+		
+		if (!IsInitialized || mediaCapture is null)
 		{
 			return;
 		}

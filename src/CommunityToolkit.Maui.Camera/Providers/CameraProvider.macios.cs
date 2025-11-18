@@ -8,8 +8,40 @@ namespace CommunityToolkit.Maui.Core;
 partial class CameraProvider
 {
 	static readonly AVCaptureDeviceType[] captureDevices = InitializeCaptureDevices();
+	
+	static AVCaptureDeviceType[] InitializeCaptureDevices()
+	{
+		AVCaptureDeviceType[] deviceTypes =
+		[
+			AVCaptureDeviceType.BuiltInWideAngleCamera,
+			AVCaptureDeviceType.BuiltInTelephotoCamera,
+			AVCaptureDeviceType.BuiltInDualCamera
+		];
 
-	internal partial ValueTask PlatformRefreshAvailableCameras(CancellationToken token)
+		if (UIDevice.CurrentDevice.CheckSystemVersion(11, 1))
+		{
+			deviceTypes = [.. deviceTypes,
+				AVCaptureDeviceType.BuiltInTrueDepthCamera];
+		}
+
+		if (UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
+		{
+			deviceTypes = [.. deviceTypes,
+				AVCaptureDeviceType.BuiltInUltraWideCamera,
+				AVCaptureDeviceType.BuiltInTripleCamera,
+				AVCaptureDeviceType.BuiltInDualWideCamera];
+		}
+
+		if (UIDevice.CurrentDevice.CheckSystemVersion(15, 4))
+		{
+			deviceTypes = [.. deviceTypes,
+				AVCaptureDeviceType.BuiltInLiDarDepthCamera];
+		}
+
+		return deviceTypes;
+	}
+
+	private partial ValueTask PlatformRefreshAvailableCameras(CancellationToken token)
 	{
 		var discoverySession = AVCaptureDeviceDiscoverySession.Create(captureDevices, AVMediaTypes.Video, AVCaptureDevicePosition.Unspecified);
 		var availableCameras = new List<CameraInfo>();
@@ -62,37 +94,5 @@ partial class CameraProvider
 		AvailableCameras = availableCameras;
 
 		return ValueTask.CompletedTask;
-	}
-
-	static AVCaptureDeviceType[] InitializeCaptureDevices()
-	{
-		AVCaptureDeviceType[] deviceTypes =
-		[
-			AVCaptureDeviceType.BuiltInWideAngleCamera,
-			AVCaptureDeviceType.BuiltInTelephotoCamera,
-			AVCaptureDeviceType.BuiltInDualCamera
-		];
-
-		if (UIDevice.CurrentDevice.CheckSystemVersion(11, 1))
-		{
-			deviceTypes = [.. deviceTypes,
-				AVCaptureDeviceType.BuiltInTrueDepthCamera];
-		}
-
-		if (UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
-		{
-			deviceTypes = [.. deviceTypes,
-				AVCaptureDeviceType.BuiltInUltraWideCamera,
-				AVCaptureDeviceType.BuiltInTripleCamera,
-				AVCaptureDeviceType.BuiltInDualWideCamera];
-		}
-
-		if (UIDevice.CurrentDevice.CheckSystemVersion(15, 4))
-		{
-			deviceTypes = [.. deviceTypes,
-				AVCaptureDeviceType.BuiltInLiDarDepthCamera];
-		}
-
-		return deviceTypes;
 	}
 }

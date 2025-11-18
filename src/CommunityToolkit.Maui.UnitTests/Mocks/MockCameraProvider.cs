@@ -20,7 +20,7 @@ public class MockCameraProvider : ICameraProvider
 		}
 	}
 
-	public ValueTask RefreshAvailableCameras(CancellationToken token)
+	public Task RefreshAvailableCameras(CancellationToken token)
 	{
 		AvailableCameras =
 		[
@@ -35,6 +35,6 @@ public class MockCameraProvider : ICameraProvider
 				])
 		];
 
-		return ValueTask.CompletedTask;
+		return Task.CompletedTask;
 	}
 }

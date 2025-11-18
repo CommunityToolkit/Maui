@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Core;
 
 partial class CameraProvider
 {
-	internal async partial ValueTask PlatformRefreshAvailableCameras(CancellationToken token)
+	private async partial ValueTask PlatformRefreshAvailableCameras(CancellationToken token)
 	{
 		var deviceInfoCollection = await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture).AsTask(token);
 		var mediaFrameSourceGroup = await MediaFrameSourceGroup.FindAllAsync().AsTask(token);
@@ -67,5 +67,4 @@ partial class CameraProvider
 
 		AvailableCameras = availableCameras;
 	}
-
 }

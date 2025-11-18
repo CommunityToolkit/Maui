@@ -68,7 +68,7 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		ArgumentNullException.ThrowIfNull(MauiContext);
 		cameraManager = new(MauiContext, VirtualView, cameraProvider, () => Init(VirtualView));
 
-		return (NativePlatformCameraPreviewView)CameraManager.CreatePlatformView();
+		return CameraManager.CreatePlatformView();
 
 		// When camera is loaded(switched), map the current flash mode to the platform view,
 		// reset the zoom factor to 1
@@ -93,6 +93,7 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		base.DisconnectHandler(platformView);
 		
 		CameraManager.Disconnect();
+		
 		Dispose();
 	}
 
@@ -106,6 +107,8 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		{
 			cameraManager?.Dispose();
 			cameraManager = null;
+
+			cameraProvider.Dispose();
 		}
 	}
 

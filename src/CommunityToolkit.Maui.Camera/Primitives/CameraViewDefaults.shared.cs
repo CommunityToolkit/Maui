@@ -10,7 +10,6 @@ namespace CommunityToolkit.Maui.Core;
 [SupportedOSPlatform("android21.0")]
 [SupportedOSPlatform("ios")]
 [SupportedOSPlatform("maccatalyst")]
-[SupportedOSPlatform("tizen")]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static class CameraViewDefaults
 {
