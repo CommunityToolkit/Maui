@@ -157,14 +157,14 @@ partial class CameraManager
 
 	protected async Task PlatformUpdateResolution(Size resolution, CancellationToken token)
 	{
-		if (cameraView.SelectedCamera is null)
-		{
-			throw new CameraException($"Unable to update Capture Resolution because {nameof(ICameraView)}.{nameof(ICameraView.SelectedCamera)} is null.");
-		}
-
 		if (!IsInitialized || mediaCapture is null)
 		{
 			return;
+		}
+
+		if (cameraView.SelectedCamera is null)
+		{
+			throw new CameraException($"Unable to update Capture Resolution because {nameof(ICameraView)}.{nameof(ICameraView.SelectedCamera)} is null.");
 		}
 
 		var filteredPropertiesList = cameraView.SelectedCamera.ImageEncodingProperties.Where(p => p.Width <= resolution.Width && p.Height <= resolution.Height).ToList();
