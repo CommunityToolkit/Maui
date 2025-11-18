@@ -98,22 +98,21 @@ partial class CameraManager
 			return ValueTask.CompletedTask;
 		}
 
-		var filteredFormatList = cameraView.SelectedCamera.SupportedFormats.Where(f =>
-		{
-			var d = ((CMVideoFormatDescription)f.FormatDescription).Dimensions;
-			return d.Width <= resolution.Width && d.Height <= resolution.Height;
-		}).ToList();
+		var formatsMatchingResolution = cameraView.SelectedCamera.SupportedFormats
+			.Where(format => MatchesResolution(format, resolution))
+			.ToList();
 
-		filteredFormatList = [.. (filteredFormatList.Count is not 0 ? filteredFormatList : cameraView.SelectedCamera.SupportedFormats)
-			.OrderByDescending(f =>
-			{
-				var d = ((CMVideoFormatDescription)f.FormatDescription).Dimensions;
-				return d.Width * d.Height;
-			})];
+		var availableFormats = formatsMatchingResolution.Count is not 0
+			? formatsMatchingResolution
+			: GetPhotoCompatibleFormats(cameraView.SelectedCamera.SupportedFormats);
 
-		if (filteredFormatList.Count is not 0)
+		var selectedFormat = availableFormats
+			.OrderByDescending(f => f.ResolutionArea)
+			.FirstOrDefault();
+
+		if (selectedFormat is not null)
 		{
-			captureDevice.ActiveFormat = filteredFormatList.First();
+			captureDevice.ActiveFormat = selectedFormat;
 		}
 
 		captureDevice.UnlockForConfiguration();
@@ -439,6 +438,24 @@ partial class CameraManager
 	{
 		videoOrientation = GetVideoOrientation();
 		previewView?.UpdatePreviewVideoOrientation(videoOrientation);
+	}
+
+	IEnumerable<AVCaptureDeviceFormat> GetPhotoCompatibleFormats(IEnumerable<AVCaptureDeviceFormat> formats)
+	{
+		if (photoOutput is not null)
+		{
+			var photoPixelFormats = photoOutput.GetSupportedPhotoPixelFormatTypesForFileType(nameof(AVFileTypes.Jpeg));
+			return formats.Where(format => photoPixelFormats.Contains((NSNumber)format.FormatDescription.MediaSubType));
+		}	
+
+		return formats;
+	}
+
+	static bool MatchesResolution(AVCaptureDeviceFormat format, Size resolution)
+	{
+		var dimensions = ((CMVideoFormatDescription)format.FormatDescription).Dimensions;
+		return dimensions.Width <= resolution.Width 
+			&& dimensions.Height <= resolution.Height;
 	}
 
 	sealed class AVCapturePhotoCaptureDelegateWrapper : AVCapturePhotoCaptureDelegate

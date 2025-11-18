@@ -41,8 +41,31 @@ static partial class StatusBar
 
 			if (OperatingSystem.IsAndroidVersionAtLeast(35))
 			{
+				const string statusBarOverlayTag = "StatusBarOverlay";
+
 				var window = Activity.GetCurrentWindow();
-				window.DecorView.SetBackgroundColor(platformColor);
+
+				var decorGroup = (ViewGroup)window.DecorView;
+				var statusBarOverlay = decorGroup.FindViewWithTag(statusBarOverlayTag);
+
+				if (statusBarOverlay is null)
+				{
+					var statusBarHeight = Activity.Resources?.GetIdentifier("status_bar_height", "dimen", "android") ?? 0;
+					var statusBarPixelSize = statusBarHeight > 0 ? Activity.Resources?.GetDimensionPixelSize(statusBarHeight) ?? 0 : 0;
+
+					statusBarOverlay = new(Activity)
+					{
+						LayoutParameters = new FrameLayout.LayoutParams(Android.Views.ViewGroup.LayoutParams.MatchParent, statusBarPixelSize + 3)
+						{
+							Gravity = GravityFlags.Top
+						}
+					};
+
+					decorGroup.AddView(statusBarOverlay);
+					statusBarOverlay.SetZ(0);
+				}
+
+				statusBarOverlay.SetBackgroundColor(platformColor);
 			}
 			else
 			{
