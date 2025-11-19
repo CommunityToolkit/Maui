@@ -106,7 +106,7 @@ partial class CameraManager
 
 	public partial ValueTask UpdateCaptureResolution(Size resolution, CancellationToken token)
 	{
-		if (captureDevice is null || cameraView.SelectedCamera is null)
+		if (cameraView.SelectedCamera is null || captureDevice is null)
 		{
 			return ValueTask.CompletedTask;
 		}
