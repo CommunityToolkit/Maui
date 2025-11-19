@@ -157,7 +157,7 @@ partial class CameraManager
 
 	async Task PlatformUpdateResolution(Size resolution, CancellationToken token)
 	{
-		if (!IsInitialized || mediaCapture is null || cameraView.SelectedCamera is null)
+		if (cameraView.SelectedCamera is null || !IsInitialized || mediaCapture is null)
 		{
 			return;
 		}
