@@ -550,7 +550,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task TestRaiseTouchGestureCompletedEvent()
 	{
-		object? completedTouchGestureCompletedCommandParameter = null, canceledTouchGestureCompletedCommandParameter = null;
+		object? completedTouchGestureCompletedCommandParameter = null;
 		TouchState? startedTouchStateChanged = null, completedTouchStateChanged = null, canceledTouchStateChanged = null;
 
 		const bool commandParameter = true;
