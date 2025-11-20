@@ -27,9 +27,9 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		var playerView = MediaManager.CreatePlatformView(VirtualView.AndroidViewType);
 		return new(Context, playerView);
 	}
-	protected override async Task ConnectHandler(MauiMediaElement platformView, CancellationToken token = default)
+	protected override async void ConnectHandler(MauiMediaElement platformView)
 	{
-		await base.ConnectHandler(platformView, token);
+		base.ConnectHandler(platformView);
 		if (platformView is null)
 		{
 			throw new InvalidOperationException($"{nameof(platformView)} cannot be null");
