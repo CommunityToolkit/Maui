@@ -22,15 +22,14 @@ sealed partial class MediaControlsService : MediaSessionService
 	const int nOTIFICATION_ID = 1001;
 
 	MediaSession? mediaSession;
-	public IExoPlayer? ExoPlayer;
+	IExoPlayer? exoPlayer;
+	DefaultTrackSelector? trackSelector;
 
 	public override void OnTaskRemoved(Intent? rootIntent)
 	{
 		base.OnTaskRemoved(rootIntent);
 		PauseAllPlayersAndStopSelf();
 	}
-
-	public NotificationManager? NotificationManager { get; set; }
 
 
 	public override void OnCreate()
@@ -45,7 +44,7 @@ sealed partial class MediaControlsService : MediaSessionService
 			.SetUsage(C.UsageMedia)?
 			.Build();
 
-		var trackSelector = new DefaultTrackSelector(this);
+		trackSelector = new DefaultTrackSelector(this);
 		var trackSelectionParameters = trackSelector.BuildUponParameters()?
 			.SetPreferredAudioLanguage(C.LanguageUndetermined)? // Fallback to system language if no preferred language found
 			.SetPreferredTextLanguage(C.LanguageUndetermined)? // Fallback to system language if no preferred language found
@@ -64,9 +63,9 @@ sealed partial class MediaControlsService : MediaSessionService
 		builder.SetAudioAttributes(audioAttribute, true);
 		builder.SetHandleAudioBecomingNoisy(true); // Unplugging headphones will pause playback
 		builder.SetLoadControl(loadControlBuilder.Build());
-		ExoPlayer = builder.Build() ?? throw new InvalidOperationException("ExoPlayerBuilder.Build() returned null");
+		exoPlayer = builder.Build() ?? throw new InvalidOperationException("ExoPlayerBuilder.Build() returned null");
 	
-		var mediaSessionBuilder = new MediaSession.Builder(this, ExoPlayer);
+		var mediaSessionBuilder = new MediaSession.Builder(this, exoPlayer);
 		UUID sessionId = UUID.RandomUUID() ?? throw new InvalidOperationException("UUID.RandomUUID() returned null");
 		mediaSessionBuilder.SetId(sessionId.ToString());
 
@@ -75,6 +74,22 @@ sealed partial class MediaControlsService : MediaSessionService
 		mediaSession = mediaSessionBuilder.Build() ?? throw new InvalidOperationException("MediaSession.Builder.Build() returned null");
 	}
 
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			PauseAllPlayersAndStopSelf();
+			mediaSession?.Release();
+			mediaSession?.Dispose();
+			mediaSession = null;
+			exoPlayer?.Release();
+			exoPlayer = null;
+			trackSelector?.Dispose();
+			trackSelector = null;
+		}
+		base.Dispose(disposing);
+	}
+	
 	public override void OnDestroy()
 	{
 		base.OnDestroy();

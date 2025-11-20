@@ -29,7 +29,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	const int stateReady = 3;
 	const int stateEnded = 4;
 
-	static readonly HttpClient client = new();
+	readonly HttpClient client = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 
 	double? previousSpeed;
@@ -190,7 +190,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				var result = future.Get() ?? throw new InvalidOperationException("MediaController.Builder.BuildAsync().Get() returned null");
 				if (result is MediaController mc)
 				{
-					Player = mc ?? throw new InvalidOperationException("MediaController cannot be set on Player");
+					Player = mc;
 					Player.AddListener(this);
 					if (PlayerView is null)
 					{
@@ -198,7 +198,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 					}
 					PlayerView.SetBackgroundColor(Android.Graphics.Color.Black);
 					PlayerView.Player = Player;
-					var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
+					using var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
 					Android.App.Application.Context.StartForegroundService(intent);
 					tcs.SetResult();
 				}
