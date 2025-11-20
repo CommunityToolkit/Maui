@@ -1,6 +1,4 @@
-using System.Text.Unicode;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
@@ -57,7 +55,7 @@ public class BindablePropertyAttributeSourceGeneratorTests
 
 			namespace TestNamespace;
 
-			public partial class MyView : View
+			public partial class TestView : View
 			{
 			    [BindableProperty]
 			    public string Text { get; set; }
@@ -73,7 +71,7 @@ public class BindablePropertyAttributeSourceGeneratorTests
 			#pragma warning disable
 			#nullable enable
 			namespace TestNamespace;
-			public partial class MyView
+			public partial class TestView
 			{
 			    /// <summary>
 			    /// Backing BindableProperty for the <see cref = "Text"/> property.
@@ -83,19 +81,7 @@ public class BindablePropertyAttributeSourceGeneratorTests
 			}
 			""";
 
-		var test = new CSharpSourceGeneratorTest<BindablePropertyAttributeSourceGenerator, DefaultVerifier>
-		{
-#if NET10_0
-			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net100,
-#else
-#error ReferenceAssemblies must be updated to current version of .NET
-#endif
-			TestCode = source
-		};
-		test.TestState.GeneratedSources.Add((typeof(BindablePropertyAttributeSourceGenerator), "BindablePropertyAttribute.g.cs", expectedAttribute));
-		test.TestState.GeneratedSources.Add((typeof(BindablePropertyAttributeSourceGenerator), "MyView.g.cs", expectedGenerated));
-
-		await test.RunAsync(TestContext.Current.CancellationToken);
+		await VerifySourceGeneratorAsync(source, expectedGenerated, expectedAttribute);
 	}
 
 	[Fact]
