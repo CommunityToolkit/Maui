@@ -39,7 +39,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 			throw new InvalidOperationException($"{nameof(MediaManager)} cannot be null");
 		}
 		var mediaController = await MediaManager.CreateMediaController();
-		platformView?.SetView(mediaController);
+		platformView.SetView(mediaController);
 		await MediaManager.UpdateSource();
 	}
 	protected override void DisconnectHandler(MauiMediaElement platformView)
