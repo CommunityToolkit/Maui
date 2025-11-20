@@ -37,7 +37,7 @@
                     TargetType="mct:AvatarView">
                     <Setter Property="BorderColor" Value="{AppThemeBinding Dark=White, Light=Black}" />
                     <Setter Property="CornerRadius" Value="12" />
-                    <Setter Property="FontSize" Value="Default" />
+                    <Setter Property="FontSize" Value="14" />
                     <Setter Property="WidthRequest" Value="48" />
                     <Setter Property="HeightRequest" Value="48" />
                 </Style>

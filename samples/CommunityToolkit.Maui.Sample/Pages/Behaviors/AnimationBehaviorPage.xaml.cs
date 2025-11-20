@@ -15,8 +15,8 @@ partial class SampleScaleAnimation : BaseAnimation
 {
 	public override async Task Animate(VisualElement view, CancellationToken token)
 	{
-		await view.ScaleTo(1.2, Length, Easing).WaitAsync(token);
-		await view.ScaleTo(1, Length, Easing).WaitAsync(token);
+		await view.ScaleToAsync(1.2, Length, Easing).WaitAsync(token);
+		await view.ScaleToAsync(1, Length, Easing).WaitAsync(token);
 	}
 }
 
@@ -25,5 +25,5 @@ partial class SampleScaleToAnimation : BaseAnimation
 	public double Scale { get; set; }
 
 	public override Task Animate(VisualElement view, CancellationToken token)
-		=> view.ScaleTo(Scale, Length, Easing).WaitAsync(token);
+		=> view.ScaleToAsync(Scale, Length, Easing).WaitAsync(token);
 }

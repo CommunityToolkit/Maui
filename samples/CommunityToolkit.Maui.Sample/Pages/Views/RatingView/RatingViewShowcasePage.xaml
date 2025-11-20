@@ -33,7 +33,7 @@
             <Grid ColumnDefinitions="*" RowDefinitions="*,*,*">
                 <Label
                     Grid.Row="0"
-                    FontSize="Medium"
+                    FontSize="12"
                     Text=".NET MAUI Community Toolkit" />
                 <Label Grid.Row="1">
                     <Label.FormattedText>

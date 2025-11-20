@@ -9,10 +9,6 @@ namespace CommunityToolkit.Maui.Views;
 /// <summary>
 /// A visual element that provides the ability to show a camera preview and capture images.
 /// </summary>
-[SupportedOSPlatform("windows10.0.10240.0")]
-[SupportedOSPlatform("android21.0")]
-[SupportedOSPlatform("ios")]
-[SupportedOSPlatform("maccatalyst")]
 public partial class CameraView : View, ICameraView, IDisposable
 {
 	static readonly BindablePropertyKey isAvailablePropertyKey =
@@ -238,14 +234,8 @@ public partial class CameraView : View, ICameraView, IDisposable
 		if (CameraProvider.AvailableCameras is null)
 		{
 			await CameraProvider.RefreshAvailableCameras(token);
-
-			if (CameraProvider.AvailableCameras is null)
-			{
-				throw new CameraException("Unable to refresh available cameras");
-			}
 		}
-
-		return CameraProvider.AvailableCameras;
+		return CameraProvider.AvailableCameras ?? throw new CameraException("No camera available on device");
 	}
 
 #if ANDROID
