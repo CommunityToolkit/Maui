@@ -29,7 +29,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	const int stateReady = 3;
 	const int stateEnded = 4;
 
-	readonly HttpClient client = new();
+	static readonly HttpClient client = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 
 	double? previousSpeed;
