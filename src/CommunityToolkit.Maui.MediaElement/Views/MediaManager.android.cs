@@ -125,7 +125,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return;
 		}
-		if(tracks.IsTypeSupported(C.TrackTypeText))
+		if (tracks.IsTypeSupported(C.TrackTypeText))
 		{
 			PlayerView?.SetShowSubtitleButton(true);
 		}
