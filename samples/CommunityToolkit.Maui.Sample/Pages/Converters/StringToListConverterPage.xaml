@@ -20,7 +20,7 @@
             Text="Enter some text separated by ',' or '.' or ';'" />
 
         <Entry
-            FontSize="Medium"
+            FontSize="12"
             Placeholder="Enter some text separated by ',' or '.' or ';'"
             Text="{Binding LabelText, Mode=OneWayToSource}" />
 
@@ -28,7 +28,7 @@
             ItemsSource="{Binding LabelText, Mode=OneWay, Converter={StaticResource StringToListConverter}}">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="x:String">
-                    <Label FontSize="Medium" Text="{Binding .}" TextColor="{StaticResource NormalLabelTextColor}" />
+                    <Label FontSize="12" Text="{Binding .}" TextColor="{StaticResource NormalLabelTextColor}" />
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

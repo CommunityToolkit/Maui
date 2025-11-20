@@ -10,7 +10,7 @@ public partial class KeyboardExtensionsPage : BasePage<KeyboardExtensionsViewMod
 		InitializeComponent();
 	}
 
-	void OnEntryFocused(System.Object sender, Microsoft.Maui.Controls.FocusEventArgs e)
+	void OnEntryFocused(object? sender, FocusEventArgs e)
 	{
 #if IOS || MACCATALYST
 		// Currently .NET MAUI will auto close the keyboard on iOS if you click outside of the entry

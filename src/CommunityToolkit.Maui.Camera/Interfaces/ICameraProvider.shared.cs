@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.Core;
 /// <summary>
 /// Interface to retrieve available cameras
 /// </summary>
-public interface ICameraProvider
+public interface ICameraProvider : IDisposable
 {
 	/// <summary>
 	/// Event fires when the contents <see cref="AvailableCameras"/> has changed
@@ -26,5 +26,5 @@ public interface ICameraProvider
 	/// <param name="token"></param>
 	/// <returns></returns>
 	[MemberNotNull(nameof(AvailableCameras))]
-	ValueTask RefreshAvailableCameras(CancellationToken token);
+	Task RefreshAvailableCameras(CancellationToken token);
 }

@@ -11,9 +11,29 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 	[ObservableProperty]
 	public partial double Progress { get; set; }
 
+	static async Task<bool> ArePermissionsGranted()
+	{
+		var readPermissionStatus = await Permissions.RequestAsync<Permissions.StorageRead>();
+		var writePermissionStatus = await Permissions.RequestAsync<Permissions.StorageWrite>();
+
+		if (readPermissionStatus is PermissionStatus.Granted
+			&& writePermissionStatus is PermissionStatus.Granted)
+		{
+			return true;
+		}
+
+		await Shell.Current.CurrentPage.DisplayAlertAsync("Storage permission is not granted.", "Please grant the permission to use this feature.", "OK");
+		return false;
+	}
+
 	[RelayCommand]
 	async Task SaveFile(CancellationToken cancellationToken)
 	{
+		if (!await ArePermissionsGranted())
+		{
+			return;
+		}
+
 		using var stream = new MemoryStream(Encoding.Default.GetBytes("Hello from the Community Toolkit!"));
 		try
 		{
@@ -32,6 +52,11 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 	[RelayCommand]
 	async Task SaveFileStatic(CancellationToken cancellationToken)
 	{
+		if (!await ArePermissionsGranted())
+		{
+			return;
+		}
+
 		using var stream = new MemoryStream(Encoding.Default.GetBytes("Hello from the Community Toolkit!"));
 		var fileSaveResult = await FileSaver.SaveAsync("DCIM", "test.txt", stream, cancellationToken);
 		if (fileSaveResult.IsSuccessful)
@@ -47,6 +72,11 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 	[RelayCommand]
 	async Task SaveFileInstance(CancellationToken cancellationToken)
 	{
+		if (!await ArePermissionsGranted())
+		{
+			return;
+		}
+
 		using var client = new HttpClient();
 
 		const string communityToolkitNuGetUrl = "https://www.nuget.org/api/v2/package/CommunityToolkit.Maui/5.0.0";
