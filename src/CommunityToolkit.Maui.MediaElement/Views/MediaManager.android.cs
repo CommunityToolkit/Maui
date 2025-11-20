@@ -574,7 +574,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			Player = null;
 			PlayerView?.Dispose();
 			PlayerView = null;
-			client.Dispose();
 			var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
 			Android.App.Application.Context.StopService(serviceIntent);
 		}
