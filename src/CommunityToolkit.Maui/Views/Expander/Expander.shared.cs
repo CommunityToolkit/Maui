@@ -7,7 +7,6 @@ namespace CommunityToolkit.Maui.Views;
 
 /// <inheritdoc cref="IExpander"/>
 [ContentProperty(nameof(Content))]
-[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 [RequiresUnreferencedCode("Calls Microsoft.Maui.Controls.Binding.Binding(String, BindingMode, IValueConverter, Object, String, Object)")]
 public partial class Expander : ContentView, IExpander
 {
@@ -33,7 +32,7 @@ public partial class Expander : ContentView, IExpander
 	/// Gets or sets the content to be expanded or collapsed.
 	/// </summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnContentPropertyChanged))]
-	public partial IView Content { get; set; }
+	public new partial IView Content { get; set; }
 
 	/// <summary>
 	/// Gets or sets the header view of the expander.

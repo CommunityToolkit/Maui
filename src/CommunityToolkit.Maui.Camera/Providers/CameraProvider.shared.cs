@@ -3,14 +3,22 @@
 /// <summary>
 /// Implementation that provides the ability to discover cameras that are attached to the current device.
 /// </summary>
-partial class CameraProvider : ICameraProvider
+sealed partial class CameraProvider : ICameraProvider
 {
 	readonly WeakEventManager availableCamerasChangedEventManager = new();
+	readonly SemaphoreSlim refreshAvailableCamerasSemaphore = new(1, 1);
+
+	Task? refreshAvailableCamerasTask;
 
 	public event EventHandler<IReadOnlyList<CameraInfo>?> AvailableCamerasChanged
 	{
 		add => availableCamerasChangedEventManager.AddEventHandler(value);
 		remove => availableCamerasChangedEventManager.RemoveEventHandler(value);
+	}
+
+	public void Dispose()
+	{
+		refreshAvailableCamerasSemaphore.Dispose();
 	}
 
 	/// <inheritdoc/>
@@ -28,7 +36,24 @@ partial class CameraProvider : ICameraProvider
 	}
 
 	/// <inheritdoc/>
-	public partial ValueTask RefreshAvailableCameras(CancellationToken token);
+	public async Task RefreshAvailableCameras(CancellationToken token)
+	{
+		await refreshAvailableCamerasSemaphore.WaitAsync(token);
+
+		try
+		{
+			if (refreshAvailableCamerasTask is null || refreshAvailableCamerasTask.IsCompleted)
+			{
+				refreshAvailableCamerasTask = PlatformRefreshAvailableCameras(token).AsTask();
+			}
+		}
+		finally
+		{
+			refreshAvailableCamerasSemaphore.Release();
+		}
+
+		await refreshAvailableCamerasTask.WaitAsync(token);
+	}
 
 	internal static bool AreCameraInfoListsEqual(in IReadOnlyList<CameraInfo>? cameraInfoList1, in IReadOnlyList<CameraInfo>? cameraInfoList2)
 	{
@@ -47,4 +72,6 @@ partial class CameraProvider : ICameraProvider
 
 		return cameraInfosInList1ButNotInList2.Count is 0 && cameraInfosInList2ButNotInList1.Count is 0;
 	}
+
+	private partial ValueTask PlatformRefreshAvailableCameras(CancellationToken token);
 }
