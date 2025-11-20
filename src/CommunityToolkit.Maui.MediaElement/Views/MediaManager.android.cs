@@ -29,13 +29,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	const int stateReady = 3;
 	const int stateEnded = 4;
 
-	static readonly HttpClient client = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 
 	double? previousSpeed;
 	float volumeBeforeMute = 1;
 	TaskCompletionSource? seekToTaskCompletionSource;
-	CancellationTokenSource? cancellationTokenSource;
 	MediaItem.Builder? mediaItem;
 	
 	/// <summary>
@@ -562,9 +560,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		if (disposing)
 		{
-			cancellationTokenSource?.Dispose();
-			cancellationTokenSource = null;
-
 			seekToSemaphoreSlim?.Dispose();
 			Player?.Stop();
 			Player?.ClearMediaItems();
@@ -574,7 +569,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			Player = null;
 			PlayerView?.Dispose();
 			PlayerView = null;
-			var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
+			using var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
 			Android.App.Application.Context.StopService(serviceIntent);
 		}
 	}
