@@ -279,7 +279,7 @@ public partial class MediaManager : IDisposable
 				}
 
 				var message = $"{Player.CurrentItem?.Error?.LocalizedDescription} - " +
-				              $"{Player.CurrentItem?.Error?.LocalizedFailureReason}";
+							  $"{Player.CurrentItem?.Error?.LocalizedFailureReason}";
 
 				MediaElement.MediaFailed(
 					new MediaFailedEventArgs(message));
@@ -492,7 +492,7 @@ public partial class MediaManager : IDisposable
 	static async Task<AVAssetTrack?> GetTrack(AVAsset asset)
 	{
 		if (!(OperatingSystem.IsMacCatalystVersionAtLeast(18)
-		      || OperatingSystem.IsIOSVersionAtLeast(18)))
+			  || OperatingSystem.IsIOSVersionAtLeast(18)))
 		{
 			// AVAsset.TracksWithMediaType is Obsolete on iOS 18+ and MacCatalyst 18+
 			return asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant() ?? "0").FirstOrDefault();
@@ -637,7 +637,7 @@ public partial class MediaManager : IDisposable
 	void TimeControlStatusChanged(NSObservedChange obj)
 	{
 		if (Player is null || Player.Status is AVPlayerStatus.Unknown
-		                   || Player.CurrentItem?.Error is not null)
+						   || Player.CurrentItem?.Error is not null)
 		{
 			return;
 		}
@@ -672,7 +672,7 @@ public partial class MediaManager : IDisposable
 		{
 			// Non-fatal error, just log
 			message = args.Notification?.ToString() ??
-			          "Media playback failed for an unknown reason.";
+					  "Media playback failed for an unknown reason.";
 
 			Logger?.LogWarning("{LogMessage}", message);
 		}

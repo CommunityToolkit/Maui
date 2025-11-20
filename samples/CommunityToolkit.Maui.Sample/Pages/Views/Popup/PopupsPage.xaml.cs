@@ -29,6 +29,15 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		}
 	}
 
+	protected override async void OnNavigatedFrom(NavigatedFromEventArgs args)
+	{
+		base.OnNavigatedFrom(args);
+		if (args.IsDestinationPageACommunityToolkitPopupPage())
+		{
+			await Toast.Make("Opening Popup").Show();
+		}
+	}
+
 	async void HandleSimplePopupButtonClicked(object? sender, EventArgs e)
 	{
 		var queryAttributes = new Dictionary<string, object>
