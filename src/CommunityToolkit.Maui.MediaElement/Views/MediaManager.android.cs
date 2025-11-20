@@ -564,7 +564,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			cancellationTokenSource?.Dispose();
 			cancellationTokenSource = null;
-			
+
+			seekToSemaphoreSlim?.Dispose();
 			Player?.Stop();
 			Player?.ClearMediaItems();
 			Player?.RemoveListener(this);
