@@ -632,7 +632,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	{
 		MediaMetadata.Builder mediaMetaData = new();
 		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
-		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
+		if (!string.IsNullOrWhiteSpace(MediaElement.MetadataArtworkUrl))
+		{
+			mediaMetaData.SetArtworkUri(Android.Net.Uri.Parse(MediaElement.MetadataArtworkUrl));
+		}
 		mediaMetaData.SetArtworkUri(Android.Net.Uri.Parse(MediaElement.MetadataArtworkUrl ?? ""));
 		mediaItem = new MediaItem.Builder();
 		mediaItem.SetUri(url);
