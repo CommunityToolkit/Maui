@@ -210,6 +210,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			catch (Exception ex)
 			{
 				Trace.WriteLine($"Error creating MediaController: {ex}");
+				tcs.SetException(ex);
 			}
 		}), ContextCompat.GetMainExecutor(Platform.AppContext));
 		await tcs.Task.WaitAsync(cancellationToken);
