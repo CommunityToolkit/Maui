@@ -41,6 +41,20 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StopListenCommand))]
 	public partial bool CanStopListenExecute { get; set; } = false;
 
+	public async ValueTask DisposeAsync()
+	{
+		await speechToText.DisposeAsync();
+	}
+
+	static async Task<bool> ArePermissionsGranted(ISpeechToText speechToText)
+	{
+		var microphonePermissionStatus = await Permissions.RequestAsync<Permissions.Microphone>();
+		var isSpeechToTextPermissionsGranted = await speechToText.RequestPermissions(CancellationToken.None);
+
+		return microphonePermissionStatus is PermissionStatus.Granted
+			   && isSpeechToTextPermissionsGranted;
+	}
+
 	[RelayCommand]
 	async Task SetLocales(CancellationToken token)
 	{
@@ -85,7 +99,7 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 		CanStartListenExecute = false;
 		CanStopListenExecute = true;
 
-		var isGranted = await speechToText.RequestPermissions(CancellationToken.None);
+		var isGranted = await ArePermissionsGranted(speechToText);
 		if (!isGranted)
 		{
 			await Toast.Make("Permission not granted").Show(CancellationToken.None);
@@ -145,10 +159,5 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 	void HandleLocalesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 	{
 		OnPropertyChanged(nameof(CurrentLocale));
-	}
-
-	public async ValueTask DisposeAsync()
-	{
-		await speechToText.DisposeAsync();
 	}
 }
