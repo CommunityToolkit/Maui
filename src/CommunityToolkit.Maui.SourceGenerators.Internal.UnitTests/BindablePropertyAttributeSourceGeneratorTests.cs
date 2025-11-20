@@ -86,7 +86,7 @@ public class BindablePropertyAttributeSourceGeneratorTests
 		var test = new CSharpSourceGeneratorTest<BindablePropertyAttributeSourceGenerator, DefaultVerifier>
 		{
 #if NET10_0
-			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.NET100,
+			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net100,
 #else
 #error ReferenceAssemblies must be updated to current version of .NET
 #endif
@@ -561,7 +561,7 @@ public class BindablePropertyAttributeSourceGeneratorTests
 			{
 				Sources = { source },
 #if NET10_0
-				ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.NET100,
+				ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net100,
 #else
 #error ReferenceAssemblies must be updated to current version of .NET
 #endif
