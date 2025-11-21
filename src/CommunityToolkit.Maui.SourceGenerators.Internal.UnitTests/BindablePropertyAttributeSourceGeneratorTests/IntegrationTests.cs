@@ -96,13 +96,13 @@ public class IntegrationTests : BaseBindablePropertyAttributeSourceGeneratorTest
 
 		    namespace {{defaultTestNamespace}};
 
-		    public partial class {{defaultTestClassName}}<T> : View where T : class
+		    public partial class {{defaultTestClassName}}<T,U> : View where T : class
 		    {
 		        [BindableProperty]
 		        public partial T? Value { get; set; }
 
 		        [BindableProperty]
-		        public partial string Name { get; set; }
+		        public partial U? Name { get; set; }
 		    }
 		    """;
 
@@ -115,19 +115,19 @@ public class IntegrationTests : BaseBindablePropertyAttributeSourceGeneratorTest
 		    #pragma warning disable
 		    #nullable enable
 		    namespace {{defaultTestNamespace}};
-		    public partial class {{defaultTestClassName}}<T>
+		    public partial class {{defaultTestClassName}}<T, U>
 		    {
 		        /// <summary>
 		        /// Backing BindableProperty for the <see cref = "Value"/> property.
 		        /// </summary>
-		        public static readonly global::Microsoft.Maui.Controls.BindableProperty ValueProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Value", typeof(T), typeof(TestNamespace.GenericView<T>), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
-		        public partial T? Value { get => (T?)GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
+		        public static readonly global::Microsoft.Maui.Controls.BindableProperty ValueProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Value", typeof(T), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<T, U>), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+		        public partial T? Value { get => (T? )GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
 
 		        /// <summary>
 		        /// Backing BindableProperty for the <see cref = "Name"/> property.
 		        /// </summary>
-		        public static readonly global::Microsoft.Maui.Controls.BindableProperty NameProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Name", typeof(string), typeof(TestNamespace.GenericView<T>), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
-		        public partial string Name { get => (string)GetValue(NameProperty); set => SetValue(NameProperty, value); }
+		        public static readonly global::Microsoft.Maui.Controls.BindableProperty NameProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Name", typeof(U), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<T, U>), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+		        public partial U? Name { get => (U? )GetValue(NameProperty); set => SetValue(NameProperty, value); }
 		    }
 		    """;
 

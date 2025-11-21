@@ -72,12 +72,12 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	static void ExecuteAllValues(SourceProductionContext context, ImmutableArray<SemanticValues> semanticValues)
 	{
 		var groupedValues = semanticValues
-			.GroupBy(static sv => (sv.ClassInformation.ClassName, sv.ClassInformation.ContainingNamespace, sv.ClassInformation.ContainingTypes))
+			.GroupBy(static sv => (sv.ClassInformation.ClassName, sv.ClassInformation.ContainingNamespace, sv.ClassInformation.ContainingTypes, sv.ClassInformation.GenericTypeParameters))
 			.ToDictionary(static d => d.Key, static d => d.ToArray());
 
 		foreach (var keyValuePair in groupedValues)
 		{
-			var (className, containingNamespace, containingTypes) = keyValuePair.Key;
+			var (className, containingNamespace, containingTypes, genericTypeParameters) = keyValuePair.Key;
 			var values = keyValuePair.Value;
 
 			if (values.Length is 0 || string.IsNullOrEmpty(className) || string.IsNullOrEmpty(containingNamespace))
@@ -89,7 +89,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 			var classAccessibility = values[0].ClassInformation.DeclaredAccessibility;
 
-			var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace, containingTypes);
+			var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace, containingTypes, genericTypeParameters);
 			var combinedValues = new SemanticValues(combinedClassInfo, bindableProperties);
 
 			var fileNameSuffix = string.IsNullOrEmpty(containingTypes) ? className : $"{containingTypes}.{className}";
@@ -126,13 +126,20 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			var containingTypeNames = value.ClassInformation.ContainingTypes.Split('.');
 			foreach (var typeName in containingTypeNames)
 			{
-				sb.AppendLine($"{value.ClassInformation.DeclaredAccessibility} partial class {typeName}")
+				sb.AppendLine($"partial class {typeName}")
 					.AppendLine("{")
 					.AppendLine();
 			}
 		}
 
-		sb.AppendLine($"{value.ClassInformation.DeclaredAccessibility} partial class {value.ClassInformation.ClassName}")
+		// Get the class name with generic parameters
+		var classNameWithGenerics = value.ClassInformation.ClassName;
+		if (!string.IsNullOrEmpty(value.ClassInformation.GenericTypeParameters))
+		{
+			classNameWithGenerics = $"{value.ClassInformation.ClassName}<{value.ClassInformation.GenericTypeParameters}>";
+		}
+
+		sb.AppendLine($"{value.ClassInformation.DeclaredAccessibility} partial class {classNameWithGenerics}")
 			.AppendLine("{")
 			.AppendLine();
 
@@ -237,7 +244,10 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		// Build containing types hierarchy
 		var containingTypes = GetContainingTypes(propertySymbol.ContainingType);
 
-		var propertyInfo = new ClassInformation(className, classAccessibility, @namespace, containingTypes);
+		// Extract generic type parameters
+		var genericTypeParameters = GetGenericTypeParameters(propertySymbol.ContainingType);
+
+		var propertyInfo = new ClassInformation(className, classAccessibility, @namespace, containingTypes, genericTypeParameters);
 
 		var bindablePropertyModels = new List<BindablePropertyModel>(context.Attributes.Length);
 
@@ -261,6 +271,17 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		}
 
 		return string.Join(".", types);
+	}
+
+	static string GetGenericTypeParameters(INamedTypeSymbol typeSymbol)
+	{
+		if (!typeSymbol.IsGenericType || typeSymbol.TypeParameters.IsEmpty)
+		{
+			return string.Empty;
+		}
+
+		var typeParams = typeSymbol.TypeParameters.Select(tp => tp.Name);
+		return string.Join(", ", typeParams);
 	}
 
 	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string propertyName, in ITypeSymbol returnType, in bool doesContainNewKeyword)
@@ -320,10 +341,6 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 	static string GetFormattedReturnType(ITypeSymbol typeSymbol)
 	{
-		// By default, when arrayTypeSymbol is an multidimensional array with an undefined size (e.g. `int[,]`, `bool[,,]` etc)...
-		// ... arrayTypeSymbol.ToString() out puts [*,*] which is invalid C# syntax.
-		//
-		// This code ensures that we get the proper C# syntax for undefined multidimensional arrays, e.g. `int[,]`, `bool[,,]`, etc
 		if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
 		{
 			// Get the element type name (e.g., "int")
