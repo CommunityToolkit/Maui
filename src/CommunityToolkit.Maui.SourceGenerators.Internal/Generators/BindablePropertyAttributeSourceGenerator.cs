@@ -43,15 +43,6 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		  	public string PropertyChangingMethodName { get; set; } = string.Empty;
 		  	public string CoerceValueMethodName { get; set; } = string.Empty;
 		  	public string DefaultValueCreatorMethodName { get; set; } = string.Empty;
-
-		  	public BindablePropertyAttribute(string propertyName)
-		  	{
-		  		PropertyName = propertyName;
-		  	}
-
-		  	public BindablePropertyAttribute()
-		  	{
-		  	}
 		  }
 		  """;
 
