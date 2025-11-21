@@ -1,11 +1,12 @@
 using CommunityToolkit.Maui.SourceGenerators.Internal.Models;
+using CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
-namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.Models;
+namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests;
 
-public class BindablePropertyModelTests
+public class BindablePropertyModelTests : BaseTest
 {
     [Fact]
     public void BindablePropertyName_ReturnsCorrectPropertyName()

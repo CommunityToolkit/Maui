@@ -1,12 +1,13 @@
+using CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 
-namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests;
+namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.BindablePropertyAttributeSourceGeneratorTests;
 
-public class IntegrationTests
+public class IntegrationTests : BaseBindablePropertyAttributeSourceGeneratorTest
 {
 	[Fact]
 	public async Task GenerateBindableProperty_ComplexInheritanceScenario_GeneratesCorrectCode()
@@ -246,7 +247,7 @@ public class IntegrationTests
 		                                 public partial class NestedView
 		                                 {
 		                                     /// <summary>
-		                                     /// Backing BindableProperty for the <see cref="Text"/> property.
+		                                     /// Backing BindableProperty for the <see cref = "Text"/> property.
 		                                     /// </summary>
 		                                     public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = 
 		                                     global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof(TestNamespace.OuterClass.NestedView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
@@ -426,8 +427,8 @@ public class IntegrationTests
 #endif
 				AdditionalReferences =
 				{
-					MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.BindableObject).Assembly.Location),
-					MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.BindableProperty).Assembly.Location),
+					MetadataReference.CreateFromFile(typeof(BindableObject).Assembly.Location),
+					MetadataReference.CreateFromFile(typeof(BindableProperty).Assembly.Location),
 				},
 				GeneratedSources =
 				{
@@ -454,8 +455,8 @@ public class IntegrationTests
 #endif
 				AdditionalReferences =
 				{
-					MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.BindableObject).Assembly.Location),
-					MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.BindableProperty).Assembly.Location),
+					MetadataReference.CreateFromFile(typeof(BindableObject).Assembly.Location),
+					MetadataReference.CreateFromFile(typeof(BindableProperty).Assembly.Location),
 				}
 			}
 		};
