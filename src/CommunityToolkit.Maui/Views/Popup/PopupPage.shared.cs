@@ -46,7 +46,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			await CloseAsync(new PopupResult(true));
 		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
 
-
 		var pageTapGestureRecognizer = new TapGestureRecognizer();
 		pageTapGestureRecognizer.Tapped += HandleTapGestureRecognizerTapped;
 
@@ -251,6 +250,13 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			PopupBorder.SetBinding(Border.StrokeThicknessProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay, converter: new BorderStrokeThicknessConverter());
 
 			Children.Add(PopupBorder);
+
+			// Configure accessibility: 
+			// - Exclude the overlay Grid from accessibility to hide the background dimming area
+			// - Exclude the PopupBorder from accessibility (it's just a visual container)
+			// - Popup and its inner content children will be accessible directly
+			AutomationProperties.SetIsInAccessibleTree(this, false);
+			AutomationProperties.SetIsInAccessibleTree(PopupBorder, false);
 		}
 
 		public Border PopupBorder { get; }
