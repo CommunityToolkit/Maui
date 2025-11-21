@@ -61,9 +61,9 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			/* language=C#-test */
 			//lang=csharp
 			"""			
+            using System;
             using CommunityToolkit.Maui;
             using Microsoft.Maui.Controls;
-            using System;
 
             namespace TestNamespace;
 
@@ -100,8 +100,8 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                 /// <summary>
                 /// Backing BindableProperty for the <see cref = "NullableDateTime"/> property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty NullableDateTimeProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("NullableDateTime", typeof(DateTime? ), typeof(TestNamespace.TestView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
-                public partial DateTime? NullableDateTime { get => (DateTime? )GetValue(NullableDateTimeProperty); set => SetValue(NullableDateTimeProperty, value); }
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty NullableDateTimeProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("NullableDateTime", typeof(System.DateTime? ), typeof(TestNamespace.TestView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+                public partial System.DateTime? NullableDateTime { get => (System.DateTime? )GetValue(NullableDateTimeProperty); set => SetValue(NullableDateTimeProperty, value); }
 
                 /// <summary>
                 /// Backing BindableProperty for the <see cref = "NullableBool"/> property.
@@ -159,8 +159,8 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                 /// <summary>
                 /// Backing BindableProperty for the <see cref = "MultiDimensionalArray"/> property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty MultiDimensionalArrayProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("MultiDimensionalArray", typeof(int[,]), typeof(TestNamespace.TestView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
-                public partial int[,] MultiDimensionalArray { get => (int[,])GetValue(MultiDimensionalArrayProperty); set => SetValue(MultiDimensionalArrayProperty, value); }
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty MultiDimensionalArrayProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("MultiDimensionalArray", typeof(int[, ]), typeof(TestNamespace.TestView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+                public partial int[, ] MultiDimensionalArray { get => (int[, ])GetValue(MultiDimensionalArrayProperty); set => SetValue(MultiDimensionalArrayProperty, value); }
 
                 /// <summary>
                 /// Backing BindableProperty for the <see cref = "JaggedArray"/> property.

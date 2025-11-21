@@ -155,7 +155,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			sb.AppendLine($"public {info.NewKeywordText}static readonly {bpFullName} {info.BindablePropertyName} = ")
 				.Append($"{bpFullName}.Create(")
 				.Append($"\"{sanitizedPropertyName}\", ")
-				.Append($"typeof({nonNullableReturnType}), ")
+				.Append($"typeof({GetFormattedReturnType(nonNullableReturnType)}), ")
 				.Append($"typeof({info.DeclaringType}), ")
 				.Append($"{info.DefaultValue}, ")
 				.Append($"{info.DefaultBindingMode}, ")
@@ -181,10 +181,10 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			//
 			var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? "@" + info.PropertyName : info.PropertyName;
 
-			sb.AppendLine($"public {info.NewKeywordText}partial {info.ReturnType} {sanitizedPropertyName}")
+			sb.AppendLine($"public {info.NewKeywordText}partial {GetFormattedReturnType(info.ReturnType)} {sanitizedPropertyName}")
 				.AppendLine("{")
 				.Append("get => (")
-				.Append(info.ReturnType)
+				.Append(GetFormattedReturnType(info.ReturnType))
 				.Append(")GetValue(")
 				.AppendLine($"{info.BindablePropertyName});")
 				.Append("set => SetValue(")
@@ -274,5 +274,25 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			return true;
 		}
 		return false;
+	}
+
+	static string GetFormattedReturnType(ITypeSymbol typeSymbol)
+	{
+		if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
+		{
+			// Get the element type name (e.g., "int")
+			string elementType = GetFormattedReturnType(arrayTypeSymbol.ElementType);
+
+			// Construct the correct rank syntax with commas (e.g., "[,]")
+			string rank = new(',', arrayTypeSymbol.Rank - 1);
+
+			return $"{elementType}[{rank}]";
+		}
+		else
+		{
+			// Use ToDisplayString with the correct format for the base type (e.g., "int")
+			// SymbolDisplayFormat.CSharpErrorMessageFormat often works well for standard C# names
+			return typeSymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
+		}
 	}
 }
