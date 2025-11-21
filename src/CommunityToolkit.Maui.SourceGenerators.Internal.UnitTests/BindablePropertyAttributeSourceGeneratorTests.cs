@@ -22,13 +22,13 @@ public class BindablePropertyAttributeSourceGeneratorTests
 			namespace CommunityToolkit.Maui;
 
 			[global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-			sealed partial class BindablePropertyAttribute : Attribute
+			[global::System.AttributeUsage(global::System.AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+			sealed partial class BindablePropertyAttribute : global::System.Attribute
 			{
 				public string? PropertyName { get; }
-				public Type? DeclaringType { get; set; }
+				public global::System.Type? DeclaringType { get; set; }
 				public object? DefaultValue { get; set; }
-				public BindingMode DefaultBindingMode { get; set; }
+				public global::Microsoft.Maui.Controls.BindingMode DefaultBindingMode { get; set; }
 				public string ValidateValueMethodName { get; set; } = string.Empty;
 				public string PropertyChangedMethodName { get; set; } = string.Empty;
 				public string PropertyChangingMethodName { get; set; } = string.Empty;
@@ -57,8 +57,8 @@ public class BindablePropertyAttributeSourceGeneratorTests
 
 			public partial class TestView : View
 			{
-			    [BindableProperty]
-			    public string Text { get; set; }
+			    [global::CommunityToolkit.Maui.BindablePropertyAttribute]
+			    public partial string Text { get; set; }
 			}
 			""";
 
@@ -76,7 +76,7 @@ public class BindablePropertyAttributeSourceGeneratorTests
 			    /// <summary>
 			    /// Backing BindableProperty for the <see cref = "Text"/> property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof(TestNamespace.MyView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof(TestNamespace.TestView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			    public partial string Text { get => (string)GetValue(TextProperty); set => SetValue(TextProperty, value); }
 			}
 			""";
@@ -91,15 +91,14 @@ public class BindablePropertyAttributeSourceGeneratorTests
 			/* language=C#-test */
 			//lang=csharp
 			"""
-			using CommunityToolkit.Maui;
 			using Microsoft.Maui.Controls;
 
 			namespace TestNamespace;
 
 			public partial class TestView : View
 			{
-			    [BindableProperty("CustomName")]
-			    public string Text { get; set; }
+			    [global::CommunityToolkit.Maui.BindablePropertyAttribute("CustomName")]
+			    public partial string Text { get; set; }
 			}
 			""";
 
@@ -148,8 +147,8 @@ public class BindablePropertyAttributeSourceGeneratorTests
 
 			public partial class TestView : View
 			{
-			    [BindableProperty(DefaultValue = "Hello")]
-			    public string Text { get; set; }
+			    [global::CommunityToolkit.Maui.BindablePropertyAttribute(DefaultValue = "Hello")]
+			    public partial string Text { get; set; }
 			}
 			""";
 
@@ -198,8 +197,8 @@ public class BindablePropertyAttributeSourceGeneratorTests
 
 			public partial class TestView : View
 			{
-			    [BindableProperty]
-			    public new string Text { get; set; }
+			    [global::CommunityToolkit.Maui.BindablePropertyAttribute]
+			    public new partial string Text { get; set; }
 			}
 			""";
 
@@ -248,8 +247,8 @@ public class BindablePropertyAttributeSourceGeneratorTests
 
 			public partial class TestView : View
 			{
-			    [BindableProperty]
-			    public string? Text { get; set; }
+			    [global::CommunityToolkit.Maui.BindablePropertyAttribute]
+			    public partial string? Text { get; set; }
 			}
 			""";
 
@@ -298,11 +297,11 @@ public class BindablePropertyAttributeSourceGeneratorTests
 
 			public partial class TestView : View
 			{
-			    [BindableProperty]
-			    public string Text { get; set; }
+			    [global::CommunityToolkit.Maui.BindablePropertyAttribute]
+			    public partial string Text { get; set; }
 
-			    [BindableProperty]
-			    public int Number { get; set; }
+			    [global::CommunityToolkit.Maui.BindablePropertyAttribute]
+			    public partial int Number { get; set; }
 			}
 			""";
 
@@ -363,7 +362,7 @@ public class BindablePropertyAttributeSourceGeneratorTests
 
 			public partial class TestView : View
 			{
-			    [BindableProperty(
+			    [global::CommunityToolkit.Maui.BindablePropertyAttribute(
 			        DefaultValue = 42,
 			        DefaultBindingMode = BindingMode.TwoWay,
 			        ValidateValueMethodName = "ValidateValue",
@@ -371,7 +370,7 @@ public class BindablePropertyAttributeSourceGeneratorTests
 			        PropertyChangingMethodName = "OnPropertyChanging",
 			        CoerceValueMethodName = "CoerceValue",
 			        DefaultValueCreatorMethodName = "CreateDefaultValue")]
-			    public int Value { get; set; }
+			    public partial int Value { get; set; }
 
 			    static bool ValidateValue(BindableObject bindable, object value) => true;
 			    static void OnPropertyChanged(BindableObject bindable, object oldValue, object newValue) { }
@@ -426,8 +425,8 @@ public class BindablePropertyAttributeSourceGeneratorTests
 
 			internal partial class TestView : View
 			{
-			    [BindableProperty]
-			    public string Text { get; set; }
+			    [global::CommunityToolkit.Maui.BindablePropertyAttribute]
+			    public partial string Text { get; set; }
 			}
 			""";
 
@@ -475,7 +474,7 @@ public class BindablePropertyAttributeSourceGeneratorTests
 
 			public partial class TestView : View
 			{
-			    public string Text { get; set; }
+			    public partial string Text { get; set; }
 			}
 			""";
 
@@ -495,7 +494,7 @@ public class BindablePropertyAttributeSourceGeneratorTests
 
 			public partial class TestView : View
 			{
-				[BindableProperty]
+				[global::CommunityToolkit.Maui.BindablePropertyAttribute]
 				public partial string Location { get; set; }
 			}
 			""";
@@ -512,13 +511,13 @@ public class BindablePropertyAttributeSourceGeneratorTests
 			namespace CommunityToolkit.Maui;
 
 			[global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-			sealed partial class BindablePropertyAttribute : Attribute
+			[global::System.AttributeUsage(global::System.AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+			sealed partial class BindablePropertyAttribute : global::System.Attribute
 			{
 				public string? PropertyName { get; }
-				public Type? DeclaringType { get; set; }
+				public global::System.Type? DeclaringType { get; set; }
 				public object? DefaultValue { get; set; }
-				public BindingMode DefaultBindingMode { get; set; }
+				public global::Microsoft.Maui.Controls.BindingMode DefaultBindingMode { get; set; }
 				public string ValidateValueMethodName { get; set; } = string.Empty;
 				public string PropertyChangedMethodName { get; set; } = string.Empty;
 				public string PropertyChangingMethodName { get; set; } = string.Empty;
@@ -543,30 +542,34 @@ public class BindablePropertyAttributeSourceGeneratorTests
 	{
 		var test = new CSharpSourceGeneratorTest<BindablePropertyAttributeSourceGenerator, DefaultVerifier>
 		{
-			TestState =
-			{
-				Sources = { source },
 #if NET10_0
-				ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net100,
+			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net100,
 #else
 #error ReferenceAssemblies must be updated to current version of .NET
 #endif
+			TestState =
+			{
+				Sources = { source },
+
 				AdditionalReferences =
 				{
 					MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.BindableObject).Assembly.Location),
 					MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.BindableProperty).Assembly.Location),
+					MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.BindingMode).Assembly.Location),
 				}
 			}
 		};
 
-		if (expectedAttribute != null)
+		if (expectedAttribute is not null)
 		{
-			test.TestState.GeneratedSources.Add(("CommunityToolkit.Maui.SourceGenerators.Internal/CommunityToolkit.Maui.SourceGenerators.Internal.BindablePropertyAttributeSourceGenerator/BindablePropertyAttribute.g.cs", expectedAttribute));
+			var expectedAttributeText = Microsoft.CodeAnalysis.Text.SourceText.From(expectedAttribute, System.Text.Encoding.UTF8);
+			test.TestState.GeneratedSources.Add(("CommunityToolkit.Maui.SourceGenerators.Internal\\CommunityToolkit.Maui.SourceGenerators.Internal.BindablePropertyAttributeSourceGenerator\\BindablePropertyAttribute.g.cs", expectedAttributeText));
 		}
 
 		if (!string.IsNullOrEmpty(expectedGenerated))
 		{
-			test.TestState.GeneratedSources.Add(("TestView.g.cs", expectedGenerated));
+			var expectedGeneratedText = Microsoft.CodeAnalysis.Text.SourceText.From(expectedGenerated, System.Text.Encoding.UTF8);
+			test.TestState.GeneratedSources.Add(("CommunityToolkit.Maui.SourceGenerators.Internal\\CommunityToolkit.Maui.SourceGenerators.Internal.BindablePropertyAttributeSourceGenerator\\TestView.g.cs", expectedGeneratedText));
 		}
 
 		await test.RunAsync(TestContext.Current.CancellationToken);
