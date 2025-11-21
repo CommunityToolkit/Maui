@@ -34,6 +34,11 @@ static class AttributeExtensions
 			return data.Value is null ? $"\"{placeholder}\"": $"({data.Type})\"{data.Value}\"";
 		}
 
+		if (data.Type?.SpecialType is SpecialType.System_Char)
+		{
+			return data.Value is null ? $"\"{placeholder}\"" : $"({data.Type})\'{data.Value}\'";
+		}
+
 		return data.Value is null ? placeholder : $"({data.Type}){data.Value}";
 	}
 
