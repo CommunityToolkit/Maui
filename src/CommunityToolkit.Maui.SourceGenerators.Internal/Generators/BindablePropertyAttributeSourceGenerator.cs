@@ -61,7 +61,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		context.RegisterPostInitializationOutput(static ctx => ctx.AddSource("BindablePropertyAttribute.g.cs", SourceText.From(bpAttribute, Encoding.UTF8)));
 
 		var provider = context.SyntaxProvider.ForAttributeWithMetadataName("CommunityToolkit.Maui.BindablePropertyAttribute",
-				SyntaxPredicate, SemanticTransform)
+				IsNonEmptyPropertyDeclarationSyntax, SemanticTransform)
 			.Where(static x => x.ClassInformation != default || !x.BindableProperties.IsEmpty)
 			.Collect();
 
@@ -120,20 +120,21 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		foreach (var info in value.BindableProperties)
 		{
-			GenerateBindableProperty(sb, info);
-			GenerateProperty(sb, info);
+			GenerateBindableProperty(ref sb, info);
+			GenerateProperty(ref sb, info);
 		}
 
 		sb.AppendLine().Append('}');
 		return sb.ToString();
 
-		static void GenerateBindableProperty(StringBuilder sb, BindablePropertyModel info)
+		static void GenerateBindableProperty(ref readonly StringBuilder sb, in BindablePropertyModel info)
 		{
 			// Sanitize the Return Type because Nullable Reference Types cannot be used in the `typeof()` operator
-			var nonNullableReturnType = GetNonNullableType(info.ReturnType);
-			var sanitizedPropertyName = IsKeyword(info.PropertyName) ? "@" + info.PropertyName : info.PropertyName;
+			var nonNullableReturnType = ConvertToNonNullableTypeSymbol(info.ReturnType);
+			var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? "@" + info.PropertyName : info.PropertyName;
 
 			/*
+			// The code below creates the following XML Tag:
 			/// <summary>
 			/// Backing BindableProperty for the <see cref="PropertyName"/> property.
 			/// </summary>
@@ -142,7 +143,11 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 				.AppendLine($"/// Backing BindableProperty for the <see cref=\"{sanitizedPropertyName}\"/> property.")
 				.AppendLine("/// </summary>");
 
+			/*
+			// The code below creates the following BindableProperty:
+			//
 			// public static readonly BindableProperty TextProperty = BindableProperty.Create(...);
+			*/
 			sb.AppendLine($"public {info.NewKeywordText}static readonly {bpFullName} {info.BindablePropertyName} = ")
 				.Append($"{bpFullName}.Create(")
 				.Append($"\"{sanitizedPropertyName}\", ")
@@ -160,7 +165,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			sb.AppendLine().AppendLine();
 		}
 
-		static void GenerateProperty(StringBuilder sb, BindablePropertyModel info)
+		static void GenerateProperty(ref readonly StringBuilder sb, in BindablePropertyModel info)
 		{
 			// The code below creates the following Property:
 			//
@@ -170,7 +175,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			//		set => SetValue(TextProperty, value);
 			//	}
 			//
-			var sanitizedPropertyName = IsKeyword(info.PropertyName) ? "@" + info.PropertyName : info.PropertyName;
+			var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? "@" + info.PropertyName : info.PropertyName;
 
 			sb.AppendLine($"public {info.NewKeywordText}partial {info.ReturnType} {sanitizedPropertyName}")
 				.AppendLine("{")
@@ -212,7 +217,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		return new(propertyInfo, bindablePropertyModels.ToImmutableArray());
 	}
 
-	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string defaultName, in ITypeSymbol returnType, in bool doesContainNewKeyword)
+	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string propertyName, in ITypeSymbol returnType, in bool doesContainNewKeyword)
 	{
 		if (attributeData.AttributeClass is null)
 		{
@@ -225,14 +230,13 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var defaultValueCreatorMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DefaultValueCreatorMethodName));
 		var propertyChangedMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.PropertyChangedMethodName));
 		var propertyChangingMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.PropertyChangingMethodName));
-		var propertyName = defaultName;
 		var validateValueMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.ValidateValueMethodName));
 		var newKeywordText = doesContainNewKeyword ? "new " : string.Empty;
 
 		return new BindablePropertyModel(propertyName, returnType, declaringType, defaultValue, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText);
 	}
 
-	static ITypeSymbol GetNonNullableType(ITypeSymbol typeSymbol)
+	static ITypeSymbol ConvertToNonNullableTypeSymbol(ITypeSymbol typeSymbol)
 	{
 		// Check for Nullable<T>
 		if (typeSymbol is INamedTypeSymbol { IsGenericType: true, ConstructedFrom.SpecialType: SpecialType.System_Nullable_T })
@@ -250,8 +254,12 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		return typeSymbol;
 	}
 
-	static bool SyntaxPredicate(SyntaxNode node, CancellationToken cancellationToken) =>
-		node is PropertyDeclarationSyntax { AttributeLists.Count: > 0 };
+	static bool IsNonEmptyPropertyDeclarationSyntax(SyntaxNode node, CancellationToken cancellationToken)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
 
-	static bool IsKeyword(string name) =>  SyntaxFacts.GetKeywordKind(name) is not SyntaxKind.None;
+		return node is PropertyDeclarationSyntax { AttributeLists.Count: > 0 };
+	}
+
+	static bool IsDotnetKeyword(string name) =>  SyntaxFacts.GetKeywordKind(name) is not SyntaxKind.None;
 }
