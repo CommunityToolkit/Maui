@@ -72,12 +72,12 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	static void ExecuteAllValues(SourceProductionContext context, ImmutableArray<SemanticValues> semanticValues)
 	{
 		var groupedValues = semanticValues
-			.GroupBy(static sv => (sv.ClassInformation.ClassName, sv.ClassInformation.ContainingNamespace))
+			.GroupBy(static sv => (sv.ClassInformation.ClassName, sv.ClassInformation.ContainingNamespace, sv.ClassInformation.ContainingTypes))
 			.ToDictionary(static d => d.Key, static d => d.ToArray());
 
 		foreach (var keyValuePair in groupedValues)
 		{
-			var (className, containingNamespace) = keyValuePair.Key;
+			var (className, containingNamespace, containingTypes) = keyValuePair.Key;
 			var values = keyValuePair.Value;
 
 			if (values.Length is 0 || string.IsNullOrEmpty(className) || string.IsNullOrEmpty(containingNamespace))
@@ -89,12 +89,13 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 			var classAccessibility = values[0].ClassInformation.DeclaredAccessibility;
 
-			var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace);
+			var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace, containingTypes);
 			var combinedValues = new SemanticValues(combinedClassInfo, bindableProperties);
 
+			var fileNameSuffix = string.IsNullOrEmpty(containingTypes) ? className : $"{containingTypes}.{className}";
 			var source = GenerateSource(combinedValues);
 			SourceStringService.FormatText(ref source);
-			context.AddSource($"{className}.g.cs", SourceText.From(source, Encoding.UTF8));
+			context.AddSource($"{fileNameSuffix}.g.cs", SourceText.From(source, Encoding.UTF8));
 		}
 	}
 
@@ -117,10 +118,23 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 			  {{namespaceLine}}
 
-			  {{value.ClassInformation.DeclaredAccessibility}} partial class {{value.ClassInformation.ClassName}}
-			  {
-
 			  """);
+
+		// Generate nested class hierarchy
+		if (!string.IsNullOrEmpty(value.ClassInformation.ContainingTypes))
+		{
+			var containingTypeNames = value.ClassInformation.ContainingTypes.Split('.');
+			foreach (var typeName in containingTypeNames)
+			{
+				sb.AppendLine($"{value.ClassInformation.DeclaredAccessibility} partial class {typeName}")
+					.AppendLine("{")
+					.AppendLine();
+			}
+		}
+
+		sb.AppendLine($"{value.ClassInformation.DeclaredAccessibility} partial class {value.ClassInformation.ClassName}")
+			.AppendLine("{")
+			.AppendLine();
 
 		foreach (var info in value.BindableProperties)
 		{
@@ -128,7 +142,18 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			GenerateProperty(ref sb, info);
 		}
 
-		sb.AppendLine().Append('}');
+		sb.Append('}');
+
+		// Close nested class hierarchy
+		if (!string.IsNullOrEmpty(value.ClassInformation.ContainingTypes))
+		{
+			var containingTypeNames = value.ClassInformation.ContainingTypes.Split('.');
+			for (int i = 0; i < containingTypeNames.Length; i++)
+			{
+				sb.AppendLine().Append('}');
+			}
+		}
+
 		return sb.ToString();
 
 		static void GenerateBindableProperty(ref readonly StringBuilder sb, in BindablePropertyModel info)
@@ -209,7 +234,10 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var classAccessibility = propertySymbol.ContainingSymbol.DeclaredAccessibility.ToString().ToLower();
 		var returnType = propertySymbol.Type;
 
-		var propertyInfo = new ClassInformation(className, classAccessibility, @namespace);
+		// Build containing types hierarchy
+		var containingTypes = GetContainingTypes(propertySymbol.ContainingType);
+
+		var propertyInfo = new ClassInformation(className, classAccessibility, @namespace, containingTypes);
 
 		var bindablePropertyModels = new List<BindablePropertyModel>(context.Attributes.Length);
 
@@ -219,6 +247,20 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		bindablePropertyModels.Add(CreateBindablePropertyModel(attributeData, propertySymbol.ContainingType, propertySymbol.Name, returnType, doesContainNewKeyword));
 
 		return new(propertyInfo, bindablePropertyModels.ToImmutableArray());
+	}
+
+	static string GetContainingTypes(INamedTypeSymbol typeSymbol)
+	{
+		var types = new List<string>();
+		var current = typeSymbol.ContainingType;
+
+		while (current is not null)
+		{
+			types.Insert(0, current.Name);
+			current = current.ContainingType;
+		}
+
+		return string.Join(".", types);
 	}
 
 	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string propertyName, in ITypeSymbol returnType, in bool doesContainNewKeyword)
@@ -278,6 +320,10 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 	static string GetFormattedReturnType(ITypeSymbol typeSymbol)
 	{
+		// By default, when arrayTypeSymbol is an multidimensional array with an undefined size (e.g. `int[,]`, `bool[,,]` etc)...
+		// ... arrayTypeSymbol.ToString() out puts [*,*] which is invalid C# syntax.
+		//
+		// This code ensures that we get the proper C# syntax for undefined multidimensional arrays, e.g. `int[,]`, `bool[,,]`, etc
 		if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
 		{
 			// Get the element type name (e.g., "int")

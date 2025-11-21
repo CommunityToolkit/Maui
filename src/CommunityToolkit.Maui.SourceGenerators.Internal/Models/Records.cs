@@ -10,4 +10,4 @@ record BindablePropertyModel(string PropertyName, ITypeSymbol ReturnType, ITypeS
 
 record SemanticValues(ClassInformation ClassInformation, EquatableArray<BindablePropertyModel> BindableProperties);
 
-readonly record struct ClassInformation(string ClassName, string DeclaredAccessibility, string ContainingNamespace);
+readonly record struct ClassInformation(string ClassName, string DeclaredAccessibility, string ContainingNamespace, string ContainingTypes = "");
