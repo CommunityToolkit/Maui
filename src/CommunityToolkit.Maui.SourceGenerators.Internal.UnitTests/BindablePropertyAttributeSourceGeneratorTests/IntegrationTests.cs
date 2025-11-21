@@ -146,7 +146,7 @@ public class IntegrationTests : BaseBindablePropertyAttributeSourceGeneratorTest
 
 		    namespace {{defaultTestNamespace}};
 
-		    public class OuterClass
+		    public partial class OuterClass
 		    {
 		        public partial class {{defaultTestClassName}} : View
 		        {
