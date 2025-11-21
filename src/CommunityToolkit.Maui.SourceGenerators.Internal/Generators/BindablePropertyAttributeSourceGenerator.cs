@@ -126,7 +126,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			var containingTypeNames = value.ClassInformation.ContainingTypes.Split('.');
 			foreach (var typeName in containingTypeNames)
 			{
-				sb.AppendLine($"partial class {typeName}")
+				sb.AppendLine($"{value.ClassInformation.DeclaredAccessibility} partial class {typeName}")
 					.AppendLine("{")
 					.AppendLine();
 			}
