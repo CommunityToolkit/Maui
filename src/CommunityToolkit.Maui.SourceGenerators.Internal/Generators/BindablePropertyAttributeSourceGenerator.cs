@@ -101,6 +101,10 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 	static string GenerateSource(SemanticValues value)
 	{
+		var namespaceLine = IsGlobalNamespace(value.ClassInformation)
+			? string.Empty
+			: $"namespace {value.ClassInformation.ContainingNamespace};";
+
 		var sb = new StringBuilder(
 			/* language=C#-test */
 			//lang=csharp
@@ -111,7 +115,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			  #pragma warning disable
 			  #nullable enable
 
-			  namespace {{value.ClassInformation.ContainingNamespace}};
+			  {{namespaceLine}}
 
 			  {{value.ClassInformation.DeclaredAccessibility}} partial class {{value.ClassInformation.ClassName}}
 			  {
@@ -261,5 +265,14 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		return node is PropertyDeclarationSyntax { AttributeLists.Count: > 0 };
 	}
 
-	static bool IsDotnetKeyword(in string name) =>  SyntaxFacts.GetKeywordKind(name) is not SyntaxKind.None;
+	static bool IsDotnetKeyword(in string name) => SyntaxFacts.GetKeywordKind(name) is not SyntaxKind.None;
+
+	static bool IsGlobalNamespace(in ClassInformation classInformation)
+	{
+		if (classInformation.ContainingNamespace is "<global namespace>")
+		{
+			return true;
+		}
+		return false;
+	}
 }
