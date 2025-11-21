@@ -4,10 +4,10 @@ namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.BindableProp
 
 public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 {
-    [Fact]
-    public async Task GenerateBindableProperty_PropertyWithReservedKeywords_GeneratesCorrectCode()
-    {
-        const string source =
+	[Fact]
+	public async Task GenerateBindableProperty_PropertyWithReservedKeywords_GeneratesCorrectCode()
+	{
+		const string source =
 			/* language=C#-test */
 			//lang=csharp
 			"""
@@ -26,7 +26,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
             }
             """;
 
-        const string expectedGenerated =
+		const string expectedGenerated =
 			/* language=C#-test */
 			//lang=csharp
 			"""
@@ -51,18 +51,19 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
             }
             """;
 
-        await VerifySourceGeneratorAsync(source, expectedGenerated);
-    }
+		await VerifySourceGeneratorAsync(source, expectedGenerated);
+	}
 
-    [Fact]
-    public async Task GenerateBindableProperty_NullableValueTypes_GeneratesCorrectCode()
-    {
-        const string source =
+	[Fact]
+	public async Task GenerateBindableProperty_NullableValueTypes_GeneratesCorrectCode()
+	{
+		const string source =
 			/* language=C#-test */
 			//lang=csharp
-			"""
+			"""			
             using CommunityToolkit.Maui;
             using Microsoft.Maui.Controls;
+            using System;
 
             namespace TestNamespace;
 
@@ -79,7 +80,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
             }
             """;
 
-        const string expectedGenerated =
+		const string expectedGenerated =
 			/* language=C#-test */
 			//lang=csharp
 			"""
@@ -110,13 +111,13 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
             }
             """;
 
-        await VerifySourceGeneratorAsync(source, expectedGenerated);
-    }
+		await VerifySourceGeneratorAsync(source, expectedGenerated);
+	}
 
-    [Fact]
-    public async Task GenerateBindableProperty_ArrayTypes_GeneratesCorrectCode()
-    {
-        const string source =
+	[Fact]
+	public async Task GenerateBindableProperty_ArrayTypes_GeneratesCorrectCode()
+	{
+		const string source =
 			/* language=C#-test */
 			//lang=csharp
 			"""
@@ -138,7 +139,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
             }
             """;
 
-        const string expectedGenerated =
+		const string expectedGenerated =
 			/* language=C#-test */
 			//lang=csharp
 			"""
@@ -169,13 +170,13 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
             }
             """;
 
-        await VerifySourceGeneratorAsync(source, expectedGenerated);
-    }
+		await VerifySourceGeneratorAsync(source, expectedGenerated);
+	}
 
-    [Fact]
-    public async Task GenerateBindableProperty_LongNamespaces_GeneratesCorrectCode()
-    {
-        const string source =
+	[Fact]
+	public async Task GenerateBindableProperty_LongNamespaces_GeneratesCorrectCode()
+	{
+		const string source =
 			/* language=C#-test */
 			//lang=csharp
 			"""
@@ -191,7 +192,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
             }
             """;
 
-        const string expectedGenerated =
+		const string expectedGenerated =
 			/* language=C#-test */
 			//lang=csharp
 			"""
@@ -210,13 +211,13 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
             }
             """;
 
-        await VerifySourceGeneratorAsync(source, expectedGenerated);
-    }
+		await VerifySourceGeneratorAsync(source, expectedGenerated);
+	}
 
-    [Fact]
-    public async Task GenerateBindableProperty_GlobalNamespace_GeneratesCorrectCode()
-    {
-        const string source =
+	[Fact]
+	public async Task GenerateBindableProperty_GlobalNamespace_GeneratesCorrectCode()
+	{
+		const string source =
 			/* language=C#-test */
 			//lang=csharp
 			"""
@@ -230,7 +231,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
             }
             """;
 
-        const string expectedGenerated =
+		const string expectedGenerated =
 			/* language=C#-test */
 			//lang=csharp
 			"""
@@ -248,13 +249,13 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
             }
             """;
 
-        await VerifySourceGeneratorAsync(source, expectedGenerated);
-    }
+		await VerifySourceGeneratorAsync(source, expectedGenerated);
+	}
 
-    [Fact]
-    public async Task GenerateBindableProperty_SpecialCharactersInPropertyName_GeneratesCorrectCode()
-    {
-        const string source =
+	[Fact]
+	public async Task GenerateBindableProperty_SpecialCharactersInPropertyName_GeneratesCorrectCode()
+	{
+		const string source =
 			/* language=C#-test */
 			//lang=csharp
 			"""
@@ -273,7 +274,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
             }
             """;
 
-        const string expectedGenerated =
+		const string expectedGenerated =
 			/* language=C#-test */
 			//lang=csharp
 			"""
@@ -298,8 +299,8 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
             }
             """;
 
-        await VerifySourceGeneratorAsync(source, expectedGenerated);
-    }
+		await VerifySourceGeneratorAsync(source, expectedGenerated);
+	}
 
 	[Fact]
 	public async Task GenerateBindableProperty_WithComplexDefaultValues_GeneratesCorrectCode()
