@@ -2,10 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>$(NetVersion)</TargetFramework>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GF</CompilerGeneratedFilesOutputPath>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <OutputType>Exe</OutputType>
-    
+    <RootNamespace>CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests</RootNamespace>
   </PropertyGroup>
   
   <ItemGroup>
@@ -25,10 +29,8 @@
 
   <ItemGroup>
     <!--Fix vulnerabilities-->
-    <PackageReference Include="System.Formats.Asn1" Version="9.0.10" />
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Formats.Asn1" Version="10.0.0" />
     <PackageReference Include="System.Private.Uri" Version="4.3.2" />
-    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
   </ItemGroup>
 
   <ItemGroup>
