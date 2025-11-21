@@ -236,7 +236,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		return new BindablePropertyModel(propertyName, returnType, declaringType, defaultValue, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText);
 	}
 
-	static ITypeSymbol ConvertToNonNullableTypeSymbol(ITypeSymbol typeSymbol)
+	static ITypeSymbol ConvertToNonNullableTypeSymbol(in ITypeSymbol typeSymbol)
 	{
 		// Check for Nullable<T>
 		if (typeSymbol is INamedTypeSymbol { IsGenericType: true, ConstructedFrom.SpecialType: SpecialType.System_Nullable_T })
@@ -261,5 +261,5 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		return node is PropertyDeclarationSyntax { AttributeLists.Count: > 0 };
 	}
 
-	static bool IsDotnetKeyword(string name) =>  SyntaxFacts.GetKeywordKind(name) is not SyntaxKind.None;
+	static bool IsDotnetKeyword(in string name) =>  SyntaxFacts.GetKeywordKind(name) is not SyntaxKind.None;
 }
