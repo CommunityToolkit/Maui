@@ -2,7 +2,10 @@
 
 public class BaseBindablePropertyAttributeSourceGeneratorTest : BaseTest
 {
-	const string expectedAttribute =
+	protected const string defaultTestClassName = "TestView";
+	protected const string defaultTestNamespace = "TestNamespace";
+
+	protected const string expectedAttribute =
 	/* language=C#-test */
 	//lang=csharp
 	"""
@@ -30,5 +33,5 @@ public class BaseBindablePropertyAttributeSourceGeneratorTest : BaseTest
 			""";
 
 	protected static Task VerifySourceGeneratorAsync(string source, string expectedGenerated) =>
-		VerifySourceGeneratorAsync(source, expectedGenerated, expectedAttribute);
+		VerifySourceGeneratorAsync(source, expectedAttribute, ($"{defaultTestClassName}.g.cs", expectedGenerated));
 }

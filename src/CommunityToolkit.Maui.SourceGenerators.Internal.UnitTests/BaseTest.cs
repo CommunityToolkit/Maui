@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests;
 
 public abstract class BaseTest
 {
-	protected static async Task VerifySourceGeneratorAsync(string source, string expectedGenerated, string expectedAttribute)
+	protected static async Task VerifySourceGeneratorAsync(string source, string expectedAttribute, params List<(string FileName,string GeneratedFile)> expectedGenerated)
 	{
 		var test = new CSharpSourceGeneratorTest<BindablePropertyAttributeSourceGenerator, DefaultVerifier>
 		{
@@ -32,10 +32,13 @@ public abstract class BaseTest
 		test.TestState.GeneratedSources.Add(("CommunityToolkit.Maui.SourceGenerators.Internal\\CommunityToolkit.Maui.SourceGenerators.Internal.BindablePropertyAttributeSourceGenerator\\BindablePropertyAttribute.g.cs", expectedAttributeText));
 
 
-		if (!string.IsNullOrEmpty(expectedGenerated))
+		foreach (var generatedFile in expectedGenerated)
 		{
-			var expectedGeneratedText = Microsoft.CodeAnalysis.Text.SourceText.From(expectedGenerated, System.Text.Encoding.UTF8);
-			test.TestState.GeneratedSources.Add(("CommunityToolkit.Maui.SourceGenerators.Internal\\CommunityToolkit.Maui.SourceGenerators.Internal.BindablePropertyAttributeSourceGenerator\\TestView.g.cs", expectedGeneratedText));
+			if (!string.IsNullOrEmpty(generatedFile.GeneratedFile))
+			{
+				var expectedGeneratedText = Microsoft.CodeAnalysis.Text.SourceText.From(generatedFile.GeneratedFile, System.Text.Encoding.UTF8);
+				test.TestState.GeneratedSources.Add(($"CommunityToolkit.Maui.SourceGenerators.Internal\\CommunityToolkit.Maui.SourceGenerators.Internal.BindablePropertyAttributeSourceGenerator\\{generatedFile.FileName}", expectedGeneratedText));
+			}
 		}
 
 		await test.RunAsync(TestContext.Current.CancellationToken);

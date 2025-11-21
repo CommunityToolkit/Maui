@@ -99,7 +99,7 @@ public class IntegrationTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			}
 			""";
 
-		await VerifySourceGeneratorAsync(source, expectedDerivedGenerated);
+		await VerifySourceGeneratorAsync(source, expectedAttribute, ("BaseView.g.cs", expectedBaseGenerated), ("DerivedView.g.cs", expectedDerivedGenerated));
 	}
 
 	[Fact]
