@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Internal.Helpers;
 
@@ -42,17 +43,4 @@ static class AttributeExtensions
 
 		return data.Value is null ? placeholder : data.Value.ToString();
 	}
-
-	public static string GetConstructorArgumentsAttributeValueByNameAsString(this AttributeData attribute, string placeholder)
-	{
-		if (attribute.ConstructorArguments.Length is 0)
-		{
-			return placeholder;
-		}
-
-		var data = attribute.ConstructorArguments[0];
-
-		return data.Value is null ? placeholder : data.Value.ToString();
-	}
-
 }

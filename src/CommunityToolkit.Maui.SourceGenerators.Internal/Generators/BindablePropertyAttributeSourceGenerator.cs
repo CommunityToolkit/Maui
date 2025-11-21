@@ -131,6 +131,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		{
 			// Sanitize the Return Type because Nullable Reference Types cannot be used in the `typeof()` operator
 			var nonNullableReturnType = GetNonNullableType(info.ReturnType);
+			var sanitizedPropertyName = IsKeyword(info.PropertyName) ? "@" + info.PropertyName : info.PropertyName;
 
 			/*
 			/// <summary>
@@ -138,13 +139,13 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			/// </summary>
 			*/
 			sb.AppendLine("/// <summary>")
-				.AppendLine($"/// Backing BindableProperty for the <see cref=\"{info.PropertyName}\"/> property.")
+				.AppendLine($"/// Backing BindableProperty for the <see cref=\"{sanitizedPropertyName}\"/> property.")
 				.AppendLine("/// </summary>");
 
 			// public static readonly BindableProperty TextProperty = BindableProperty.Create(...);
-			sb.AppendLine($"public {info.NewKeywordText}static readonly {bpFullName} {info.PropertyName}Property = ")
+			sb.AppendLine($"public {info.NewKeywordText}static readonly {bpFullName} {info.BindablePropertyName} = ")
 				.Append($"{bpFullName}.Create(")
-				.Append($"\"{info.PropertyName}\", ")
+				.Append($"\"{sanitizedPropertyName}\", ")
 				.Append($"typeof({nonNullableReturnType}), ")
 				.Append($"typeof({info.DeclaringType}), ")
 				.Append($"{info.DefaultValue}, ")
@@ -169,7 +170,9 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			//		set => SetValue(TextProperty, value);
 			//	}
 			//
-			sb.AppendLine($"public {info.NewKeywordText}partial {info.ReturnType} {info.PropertyName}")
+			var sanitizedPropertyName = IsKeyword(info.PropertyName) ? "@" + info.PropertyName : info.PropertyName;
+
+			sb.AppendLine($"public {info.NewKeywordText}partial {info.ReturnType} {sanitizedPropertyName}")
 				.AppendLine("{")
 				.Append("get => (")
 				.Append(info.ReturnType)
@@ -222,7 +225,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var defaultValueCreatorMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DefaultValueCreatorMethodName));
 		var propertyChangedMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.PropertyChangedMethodName));
 		var propertyChangingMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.PropertyChangingMethodName));
-		var propertyName = attributeData.GetConstructorArgumentsAttributeValueByNameAsString(defaultName);
+		var propertyName = defaultName;
 		var validateValueMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.ValidateValueMethodName));
 		var newKeywordText = doesContainNewKeyword ? "new " : string.Empty;
 
@@ -249,4 +252,6 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 	static bool SyntaxPredicate(SyntaxNode node, CancellationToken cancellationToken) =>
 		node is PropertyDeclarationSyntax { AttributeLists.Count: > 0 };
+
+	static bool IsKeyword(string name) =>  SyntaxFacts.GetKeywordKind(name) is not SyntaxKind.None;
 }
