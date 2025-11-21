@@ -33,28 +33,14 @@ public abstract class BaseTest
 			}
 		};
 
-
-		// Format as UTF 8 to match the default encoding used by Roslyn
-		var expectedAttributeText = OperatingSystem.IsWindows() switch
-		{
-			// Normalize line endings to LF to ensure consistent behavior across platforms, e.g. `<LF>` instead of `<CR><LF>`
-			false => Microsoft.CodeAnalysis.Text.SourceText.From(expectedAttribute.Replace("\r\n", "\n").Replace("\r", "\n"), System.Text.Encoding.UTF8),
-			true => Microsoft.CodeAnalysis.Text.SourceText.From(expectedAttribute, System.Text.Encoding.UTF8),
-		};
+		var expectedAttributeText = Microsoft.CodeAnalysis.Text.SourceText.From(expectedAttribute, System.Text.Encoding.UTF8);
 		var bindablePropertyAttributeFilePath = Path.Combine(sourceGeneratorNamespace, sourceGeneratorFullName, bindablePropertyAttributeGeneratedFileName);
 		test.TestState.GeneratedSources.Add((bindablePropertyAttributeFilePath, expectedAttributeText));
 
-		foreach (var (FileName, GeneratedFile) in expectedGenerated.Where(static x => !string.IsNullOrEmpty(x.GeneratedFile)))
+		foreach (var generatedFile in expectedGenerated.Where(static x => !string.IsNullOrEmpty(x.GeneratedFile)))
 		{
-			// Format as UTF 8 to match the default encoding used by Roslyn
-			var expectedGeneratedText = OperatingSystem.IsWindows() switch
-			{
-				// Normalize line endings to LF to ensure consistent behavior across platforms, e.g. `<LF>` instead of `<CR><LF>`
-				false => Microsoft.CodeAnalysis.Text.SourceText.From(GeneratedFile.Replace("\r\n", "\n").Replace("\r", "\n"), System.Text.Encoding.UTF8),
-				true => Microsoft.CodeAnalysis.Text.SourceText.From(GeneratedFile, System.Text.Encoding.UTF8)
-			};
-
-			var generatedFilePath = Path.Combine(sourceGeneratorNamespace, sourceGeneratorFullName, FileName);
+			var expectedGeneratedText = Microsoft.CodeAnalysis.Text.SourceText.From(generatedFile.GeneratedFile, System.Text.Encoding.UTF8);
+			var generatedFilePath = Path.Combine(sourceGeneratorNamespace, sourceGeneratorFullName, generatedFile.FileName);
 			test.TestState.GeneratedSources.Add((generatedFilePath, expectedGeneratedText));
 		}
 
