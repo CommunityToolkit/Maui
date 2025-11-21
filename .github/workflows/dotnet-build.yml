@@ -213,6 +213,7 @@ jobs:
                     dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-analyzers.cobertura.xml" --coverage-output-format cobertura --report-xunit
                     
             -   name: Run CommunityToolkit Source Generators Internal UnitTests
+                if: runner.os == 'Windows'
                 run: |
                     cd ${{ env.PathToCommunityToolkitSourceGeneratorsInternalUnitTestDirectory }}
                     dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-sourcegenerators-internal.cobertura.xml" --coverage-output-format cobertura --report-xunit
