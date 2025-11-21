@@ -37,7 +37,7 @@ public class BindablePropertyAttributeSourceGeneratorTests : BaseBindablePropert
 			    /// <summary>
 			    /// Backing BindableProperty for the <see cref = "Text"/> property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof(TestNamespace.TestView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			    public partial string Text { get => (string)GetValue(TextProperty); set => SetValue(TextProperty, value); }
 			}
 			""";
@@ -78,7 +78,7 @@ public class BindablePropertyAttributeSourceGeneratorTests : BaseBindablePropert
 			    /// <summary>
 			    /// Backing BindableProperty for the <see cref = "Text"/> property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof(TestNamespace.TestView), (string)"Hello", Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (string)"Hello", Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			    public partial string Text { get => (string)GetValue(TextProperty); set => SetValue(TextProperty, value); }
 			}
 			""";
@@ -119,7 +119,7 @@ public class BindablePropertyAttributeSourceGeneratorTests : BaseBindablePropert
 			    /// <summary>
 			    /// Backing BindableProperty for the <see cref = "Text"/> property.
 			    /// </summary>
-			    public new static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof(TestNamespace.TestView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			    public new static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			    public new partial string Text { get => (string)GetValue(TextProperty); set => SetValue(TextProperty, value); }
 			}
 			""";
@@ -160,7 +160,7 @@ public class BindablePropertyAttributeSourceGeneratorTests : BaseBindablePropert
 			    /// <summary>
 			    /// Backing BindableProperty for the <see cref = "Text"/> property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof(TestNamespace.TestView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			    public partial string? Text { get => (string? )GetValue(TextProperty); set => SetValue(TextProperty, value); }
 			}
 			""";
@@ -204,13 +204,13 @@ public class BindablePropertyAttributeSourceGeneratorTests : BaseBindablePropert
 			    /// <summary>
 			    /// Backing BindableProperty for the <see cref = "Text"/> property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof(TestNamespace.TestView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			    public partial string Text { get => (string)GetValue(TextProperty); set => SetValue(TextProperty, value); }
 
 			    /// <summary>
 			    /// Backing BindableProperty for the <see cref = "Number"/> property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty NumberProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Number", typeof(int), typeof(TestNamespace.TestView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty NumberProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Number", typeof(int), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			    public partial int Number { get => (int)GetValue(NumberProperty); set => SetValue(NumberProperty, value); }
 			}
 			""";
@@ -264,7 +264,7 @@ public class BindablePropertyAttributeSourceGeneratorTests : BaseBindablePropert
 			    /// <summary>
 			    /// Backing BindableProperty for the <see cref = "Value"/> property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty ValueProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Value", typeof(int), typeof(TestNamespace.TestView), (int)42, (Microsoft.Maui.Controls.BindingMode)Microsoft.Maui.Controls.BindingMode.TwoWay, ValidateValue, OnPropertyChanged, OnPropertyChanging, CoerceValue, CreateDefaultValue);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty ValueProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Value", typeof(int), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (int)42, (Microsoft.Maui.Controls.BindingMode)Microsoft.Maui.Controls.BindingMode.TwoWay, ValidateValue, OnPropertyChanged, OnPropertyChanging, CoerceValue, CreateDefaultValue);
 			    public partial int Value { get => (int)GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
 			}
 			""";
@@ -305,7 +305,7 @@ public class BindablePropertyAttributeSourceGeneratorTests : BaseBindablePropert
 			    /// <summary>
 			    /// Backing BindableProperty for the <see cref = "Text"/> property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof(TestNamespace.TestView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			    public partial string Text { get => (string)GetValue(TextProperty); set => SetValue(TextProperty, value); }
 			}
 			""";
