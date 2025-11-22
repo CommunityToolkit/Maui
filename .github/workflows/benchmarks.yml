@@ -15,6 +15,7 @@ on:
 env:
     LATEST_NET_VERSION: '10.0.x'
     PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
+    PathToCommunityToolkitSourceGeneratorsBenchmarkCsproj: 'src/CommunityToolkit.Maui.SourceGenerators.Benchmarks/CommunityToolkit.Maui.SourceGenerators.Benchmarks.csproj'
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -58,8 +59,11 @@ jobs:
             -   name: Display dotnet info
                 run: dotnet --info
 
-            -   name: Run Benchmarks
+            -   name: Run Analyzer Benchmarks
                 run: dotnet run --project ${{ env.PathToCommunityToolkitAnalyzersBenchmarkCsproj }} -c Release -- -a ${{ runner.temp }}
+
+            -   name: Run Source Generator Benchmarks
+                run: dotnet run --project ${{ env.PathToCommunityToolkitSourceGeneratorsBenchmarkCsproj }} -c Release -- -a ${{ runner.temp }}
 
             -   name: Publish Benchmarks
                 if: runner.os == 'Windows'
