@@ -24,20 +24,10 @@ concurrency:
 jobs:
     run_benchmarks:
         name: Run Benchmarks
-        runs-on: ${{ matrix.os }}
-        strategy:
-            fail-fast: false
-            matrix:
-                os: [ windows-latest, macos-26 ]
-        
+        runs-on: windows-latest            
         steps:
             -   name: Checkout code
                 uses: actions/checkout@main
-
-            -   uses: maxim-lobanov/setup-xcode@v1
-                if: runner.os == 'macOS'
-                with:
-                    xcode-version: latest-stable
 
             -   name: Install Latest Version of .NET, v${{ env.LATEST_NET_VERSION }}
                 uses: actions/setup-dotnet@v5
@@ -66,7 +56,6 @@ jobs:
                 run: dotnet run --project ${{ env.PathToCommunityToolkitSourceGeneratorsBenchmarksCsproj }} -c Release -- -a "${{ runner.temp }}/SourceGenerators"
 
             -   name: Publish Benchmarks
-                if: runner.os == 'Windows'
                 uses: actions/upload-artifact@v5
                 with:
                     name: Benchmarks
