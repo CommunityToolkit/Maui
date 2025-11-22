@@ -27,6 +27,7 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="../src/CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj" />
+    <Project Path="../src/CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests/CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.csproj" />
     <Project Path="../src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj">
       <Deploy />
     </Project>
