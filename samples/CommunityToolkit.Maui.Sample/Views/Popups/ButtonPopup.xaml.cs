@@ -12,7 +12,7 @@ public partial class ButtonPopup : Maui.Views.Popup
 		CloseAsync();
 	}
 
-	void Label_Loaded(object sender, EventArgs e)
+	void Label_Loaded(object? sender, EventArgs e)
 	{
 		if (sender is Label label)
 		{
