@@ -50,10 +50,10 @@ jobs:
                 run: dotnet --info
 
             -   name: Run Analyzer Benchmarks
-                run: dotnet run --project ${{ env.PathToCommunityToolkitAnalyzersBenchmarksCsproj }} -c Release -- -a "${{ runner.temp }}/Analyzers"
+                run: dotnet run --project ${{ env.PathToCommunityToolkitAnalyzersBenchmarksCsproj }} -c Release -- -a "${{ runner.temp }}"
 
             -   name: Run Source Generator Benchmarks
-                run: dotnet run --project ${{ env.PathToCommunityToolkitSourceGeneratorsBenchmarksCsproj }} -c Release -- -a "${{ runner.temp }}/SourceGenerators"
+                run: dotnet run --project ${{ env.PathToCommunityToolkitSourceGeneratorsBenchmarksCsproj }} -c Release -- -a "${{ runner.temp }}"
 
             -   name: Publish Benchmarks
                 uses: actions/upload-artifact@v5

@@ -4,7 +4,7 @@ using CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.BindableProperty
 namespace CommunityToolkit.Maui.SourceGenerators.Benchmarks;
 
 [MemoryDiagnoser]
-public class Benchmarks
+public class BindablePropertyAttributeSourceGeneratorBenchmarks
 {
 	static readonly CommonUsageTests commonUsageTests = new();
 	static readonly EdgeCaseTests edgeCaseTests = new();

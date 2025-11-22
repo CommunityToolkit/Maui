@@ -1,4 +1,5 @@
-﻿using BenchmarkDotNet.Running;
+﻿using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Running;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Benchmarks;
 
@@ -6,6 +7,7 @@ class Program
 {
 	public static void Main(string[] args)
 	{
-		BenchmarkRunner.Run(typeof(Program).Assembly);
+		var config = DefaultConfig.Instance;
+		BenchmarkRunner.Run<BindablePropertyAttributeSourceGeneratorBenchmarks>(config, args);
 	}
 }
