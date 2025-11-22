@@ -251,10 +251,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 			Children.Add(PopupBorder);
 
-			// Configure accessibility: 
-			// - Exclude the overlay Grid from accessibility to hide the background dimming area
-			// - Exclude the PopupBorder from accessibility (it's just a visual container)
-			// - Popup and its inner content children will be accessible directly
 			AutomationProperties.SetIsInAccessibleTree(this, false);
 			AutomationProperties.SetIsInAccessibleTree(PopupBorder, false);
 		}
