@@ -1,7 +1,7 @@
 ﻿#if !(ANDROID || IOS || WINDOWS || MACCATALYST || TIZEN)
 global using PlatformMediaElement = System.Object;
 #elif ANDROID
-global using PlatformMediaElement = AndroidX.Media3.ExoPlayer.IExoPlayer;
+global using PlatformMediaElement = AndroidX.Media3.Session.MediaController;
 #elif IOS || MACCATALYST
 global using PlatformMediaElement = AVFoundation.AVPlayer;
 #elif WINDOWS
