@@ -9,6 +9,12 @@ namespace CommunityToolkit.Maui.Views;
 /// </summary>
 public partial class MediaElement : View, IMediaElement, IDisposable
 {
+	/// <summary>
+	/// Backing store for the <see cref="Aspect"/> property.
+	/// </summary>
+	public static readonly BindableProperty AspectProperty =
+		BindableProperty.Create(nameof(Aspect), typeof(Aspect), typeof(MediaElement), Aspect.AspectFit);
+
 	static readonly BindablePropertyKey mediaHeightPropertyKey =
 		BindableProperty.CreateReadOnly(nameof(MediaHeight), typeof(int), typeof(MediaElement), 0);
 
@@ -100,12 +106,6 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// </summary>
 	[BindableProperty(DefaultValue = "")]
 	public partial string MetadataArtworkUrl { get; set; }
-
-	/// <summary>
-	/// Backing store for the <see cref="Aspect"/> property.
-	/// </summary>
-	[BindableProperty(DefaultValue = Aspect.AspectFit)]
-	public partial Aspect Aspect { get; set; }
 
 	/// <summary>
 	/// Backing store for the <see cref="CurrentState"/> property.
@@ -212,6 +212,16 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	{
 		add => eventManager.AddEventHandler(value);
 		remove => eventManager.RemoveEventHandler(value);
+	}
+
+	/// <summary>
+	/// Gets or sets how the media will be scaled to fit the display area.
+	/// Default value is <see cref="Aspect.AspectFit"/>. This is a bindable property.
+	/// </summary>
+	public Aspect Aspect
+	{
+		get => (Aspect)GetValue(AspectProperty);
+		set => SetValue(AspectProperty, value);
 	}
 
 	/// <summary>
