@@ -289,7 +289,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	int IMediaElement.MediaHeight
 	{
 		get => (int)GetValue(MediaHeightProperty);
-		set => SetValue(MediaHeightProperty, value);
+		set => SetValue(mediaHeightPropertyKey, value);
 	}
 
 	/// <inheritdoc/>
