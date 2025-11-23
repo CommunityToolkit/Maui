@@ -405,14 +405,16 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		mediaElement.OnStateChanged(new MediaStateChangedEventArgs(previousState, newState));
 	}
 
-	static void ValidateVolume(BindableObject bindable, object oldValue, object newValue)
+	static bool ValidateVolume(BindableObject bindable, object value)
 	{
-		var updatedVolume = (double)newValue;
+		var updatedVolume = (double)value;
 
 		if (updatedVolume is < 0.0 or > 1.0)
 		{
-			throw new ArgumentOutOfRangeException(nameof(newValue), $"{nameof(Volume)} can not be less than 0.0 or greater than 1.0");
+			System.Diagnostics.Trace.WriteLine("Volume must be between 0.0 and 1.0");
+			return false;
 		}
+		return true;
 	}
 
 	void OnTimerTick(object? sender, EventArgs e)
