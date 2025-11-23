@@ -171,11 +171,11 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? "@" + info.PropertyName : info.PropertyName;
 
 			/*
-		// The code below creates the following XML Tag:
-		/// <summary>
-		/// Backing BindableProperty for the <see cref="PropertyName"/> property.
-		/// </summary>
-		*/
+			// The code below creates the following XML Tag:
+			/// <summary>
+			/// Backing BindableProperty for the <see cref="PropertyName"/> property.
+			/// </summary>
+			*/
 			sb.AppendLine("/// <summary>")
 				.AppendLine($"/// Backing BindableProperty for the <see cref=\"{sanitizedPropertyName}\"/> property.")
 				.AppendLine("/// </summary>");
@@ -188,7 +188,9 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			if (shouldCreateReadOnly)
 			{
 				// Create name for the BindablePropertyKey (camel-cased first letter to follow existing pattern)
-				var propertyKeyName = $"{char.ToLower(info.PropertyName[0])}{info.PropertyName.Substring(1)}PropertyKey";
+				var propertyKeyName = !string.IsNullOrEmpty(info.PropertyName)
+					? $"{char.ToLower(info.PropertyName[0])}{info.PropertyName[1..]}PropertyKey"
+					: "propertyKeyPropertyKey";
 
 				sb.AppendLine($"static readonly {bpKeyFullName} {propertyKeyName} = ")
 					.Append($"{bpFullName}.CreateReadOnly(")
@@ -321,7 +323,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			throw new ArgumentException($"{nameof(attributeData.AttributeClass)} Cannot Be Null", nameof(attributeData.AttributeClass));
 		}
 
-		var defaultValue = attributeData.GetNamedTypeArgumentsAttributeValueByNameAsCastedString(nameof(BindablePropertyModel.DefaultValue));
+		var defaultValue = attributeData.GetNamedTypeArgumentsAttributeValueByNameAsCastedString(nameof(BindablePropertyModel.DefaultValue), returnType);
 		var coerceValueMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.CoerceValueMethodName));
 		var defaultBindingMode = attributeData.GetNamedTypeArgumentsAttributeValueByNameAsCastedString(nameof(BindablePropertyModel.DefaultBindingMode), "Microsoft.Maui.Controls.BindingMode.OneWay");
 		var defaultValueCreatorMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DefaultValueCreatorMethodName));
@@ -386,9 +388,8 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			// Use FullyQualifiedFormat to get fully qualified names with global:: prefix
 			var fullyQualified = typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 			
-			// Remove the global:: prefix to get the format expected by the tests
 			var formatted = fullyQualified.StartsWith("global::") 
-				? fullyQualified.Substring("global::".Length) 
+				? fullyQualified["global::".Length..] 
 				: fullyQualified;
 
 			// If this is a Nullable<T> (value type) do not append an extra '?'

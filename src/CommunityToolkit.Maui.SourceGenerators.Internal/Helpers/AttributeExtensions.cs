@@ -32,8 +32,38 @@ static class AttributeExtensions
 
 		if (data.Type?.SpecialType is SpecialType.System_String)
 		{
-			// Special handling for TimeSpan string representations
-			if (data.Value is string stringValue && TimeSpan.TryParse(stringValue, CultureInfo.InvariantCulture, out var timeSpanValue))
+			return data.Value is null ? $"\"{placeholder}\"" : $"({data.Type})\"{data.Value}\"";
+		}
+
+		if (data.Type?.SpecialType is SpecialType.System_Char)
+		{
+			return data.Value is null ? $"\"{placeholder}\"" : $"({data.Type})\'{data.Value}\'";
+		}
+
+		return data.Value is null ? placeholder : $"({data.Type}){data.Value}";
+	}
+
+	public static string GetNamedTypeArgumentsAttributeValueByNameAsCastedString(this AttributeData attribute, string name, ITypeSymbol propertyType, string placeholder = "null")
+	{
+		var data = attribute.NamedArguments.SingleOrDefault(kvp => kvp.Key == name).Value;
+
+		// true.ToString() => "True" and false.ToString() => "False", but we want "true" and "false"
+		if (data.Kind is TypedConstantKind.Primitive && data.Type?.SpecialType is SpecialType.System_Boolean)
+		{
+			return data.Value is null ? placeholder : $"({data.Type}){data.Value.ToString().ToLowerInvariant()}";
+		}
+
+		if (data.Kind is TypedConstantKind.Enum && data.Type is not null && data.Value is not null)
+		{
+			var members = data.Type.GetMembers();
+
+			return $"({data.Type}){members[(int)data.Value]}";
+		}
+
+		if (data.Type?.SpecialType is SpecialType.System_String)
+		{
+			// Special handling for TimeSpan string representations - only when property type is TimeSpan
+			if (data.Value is string stringValue && IsTimeSpanType(propertyType) && TimeSpan.TryParse(stringValue, CultureInfo.InvariantCulture, out var timeSpanValue))
 			{
 				// Check if it's TimeSpan.Zero
 				if (timeSpanValue == TimeSpan.Zero)
@@ -61,5 +91,18 @@ static class AttributeExtensions
 		var data = attribute.NamedArguments.SingleOrDefault(kvp => kvp.Key == name).Value;
 
 		return data.Value is null ? placeholder : data.Value.ToString();
+	}
+
+	static bool IsTimeSpanType(ITypeSymbol typeSymbol)
+	{
+		if (typeSymbol is null)
+		{
+			return false;
+		}
+
+		// Check if it's System.TimeSpan by comparing name
+		return typeSymbol.Name == "TimeSpan" && 
+		       typeSymbol.ContainingNamespace is not null &&
+		       typeSymbol.ContainingNamespace.ToDisplayString() == "System";
 	}
 }
