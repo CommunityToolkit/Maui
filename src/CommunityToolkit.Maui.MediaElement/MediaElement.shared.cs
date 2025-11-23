@@ -117,7 +117,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// <summary>
 	/// Backing store for the <see cref="Volume"/> property.
 	/// </summary>
-	[BindableProperty(DefaultValue = 1.0, PropertyChangedMethodName = nameof(ValidateVolume))]
+	[BindableProperty(DefaultValue = 1.0, ValidateValueMethodName = nameof(ValidateVolume))]
 	public partial double Volume { get; set; }
 
 	/// <summary>
