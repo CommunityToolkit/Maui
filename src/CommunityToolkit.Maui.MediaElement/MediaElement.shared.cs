@@ -110,7 +110,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// <summary>
 	/// Backing store for the <see cref="CurrentState"/> property.
 	/// </summary>
-	[BindableProperty(DefaultValue = MediaElementState.None, PropertyChangingMethodName = nameof(OnCurrentStatePropertyChanged))]
+	[BindableProperty(DefaultValue = MediaElementState.None, PropertyChangedMethodName = nameof(OnCurrentStatePropertyChanged))]
 	public partial MediaElementState CurrentState { get; set; }
 
 	/// <summary>
