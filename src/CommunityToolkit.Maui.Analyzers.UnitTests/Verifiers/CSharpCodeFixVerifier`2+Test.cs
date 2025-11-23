@@ -15,7 +15,7 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
 		public Test(params ReadOnlySpan<Type> assembliesUnderTest)
 		{
 #if NET10_0
-			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.NET100;
+			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net100;
 #else
 #error ReferenceAssemblies must be updated to current version of .NET
 #endif

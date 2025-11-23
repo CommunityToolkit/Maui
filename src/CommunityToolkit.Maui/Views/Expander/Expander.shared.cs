@@ -11,6 +11,12 @@ namespace CommunityToolkit.Maui.Views;
 public partial class Expander : ContentView, IExpander
 {
 	/// <summary>
+	/// Backing BindableProperty for the <see cref="Direction"/> property.
+	/// </summary>
+	public static readonly BindableProperty DirectionProperty
+		= BindableProperty.Create(nameof(Direction), typeof(ExpandDirection), typeof(Expander), ExpandDirection.Down, propertyChanged: OnDirectionPropertyChanged);
+
+	/// <summary>
 	/// Gets or sets the command to execute when the expander is expanded or collapsed.
 	/// </summary>
 	[BindableProperty]
@@ -39,12 +45,6 @@ public partial class Expander : ContentView, IExpander
 	/// </summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnHeaderPropertyChanged))]
 	public partial IView Header { get; set; }
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="Direction"/> property.
-	/// </summary>
-	public static readonly BindableProperty DirectionProperty
-		= BindableProperty.Create(nameof(Direction), typeof(ExpandDirection), typeof(Expander), ExpandDirection.Down, propertyChanged: OnDirectionPropertyChanged);
 
 	readonly WeakEventManager tappedEventManager = new();
 
