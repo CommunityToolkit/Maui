@@ -104,7 +104,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// <summary>
 	/// Backing store for the <see cref="Aspect"/> property.
 	/// </summary>
-	[BindableProperty]
+	[BindableProperty(DefaultValue = Aspect.AspectFit)]
 	public partial Aspect Aspect { get; set; }
 
 	/// <summary>
