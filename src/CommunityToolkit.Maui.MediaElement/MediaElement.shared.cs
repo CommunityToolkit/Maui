@@ -1,9 +1,6 @@
 ﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Dispatching;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -135,7 +132,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// <summary>
 	/// Read the MediaElementOptions set in on construction, cannot be changed after construction
 	/// </summary>
-	public AndroidViewType AndroidViewType { get; init; } = MediaElementOptions.DefaultAndroidViewType;
+	public AndroidViewType AndroidViewType { get; set; } = MediaElementOptions.DefaultAndroidViewType;
 
 	readonly WeakEventManager eventManager = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
@@ -252,7 +249,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 			}
 		}
 	}
-	
+
 	int IMediaElement.MediaWidth
 	{
 		get => (int)GetValue(MediaWidthProperty);
@@ -264,7 +261,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		get => (int)GetValue(MediaHeightProperty);
 		set => SetValue(MediaHeightProperty, value);
 	}
-	
+
 	/// <inheritdoc/>
 	TaskCompletionSource IAsynchronousMediaElementHandler.SeekCompletedTCS => seekCompletedTaskCompletionSource;
 
@@ -289,204 +286,204 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		Handler?.Invoke(nameof(PlayRequested));
 	}
 
-/// <inheritdoc cref="IMediaElement.SeekTo(TimeSpan, CancellationToken)"/>
-public async Task SeekTo(TimeSpan position, CancellationToken token = default)
-{
-	await seekToSemaphoreSlim.WaitAsync(token);
-
-	try
+	/// <inheritdoc cref="IMediaElement.SeekTo(TimeSpan, CancellationToken)"/>
+	public async Task SeekTo(TimeSpan position, CancellationToken token = default)
 	{
-		MediaSeekRequestedEventArgs args = new(position);
-		Handler?.Invoke(nameof(SeekRequested), args);
+		await seekToSemaphoreSlim.WaitAsync(token);
 
-		await seekCompletedTaskCompletionSource.Task.WaitAsync(token);
-	}
-	finally
-	{
-		seekCompletedTaskCompletionSource = new();
-		seekToSemaphoreSlim.Release();
-	}
-}
+		try
+		{
+			MediaSeekRequestedEventArgs args = new(position);
+			Handler?.Invoke(nameof(SeekRequested), args);
 
-/// <inheritdoc cref="IMediaElement.Stop"/>
-public void Stop()
-{
-	OnStopRequested();
-	Handler?.Invoke(nameof(StopRequested));
-}
-
-internal void OnMediaEnded()
-{
-	CurrentState = MediaElementState.Stopped;
-	eventManager.HandleEvent(this, EventArgs.Empty, nameof(MediaEnded));
-}
-
-internal void OnMediaFailed(MediaFailedEventArgs args)
-{
-	((IMediaElement)this).Duration = ((IMediaElement)this).Position = TimeSpan.Zero;
-
-	CurrentState = MediaElementState.Failed;
-	eventManager.HandleEvent(this, args, nameof(MediaFailed));
-}
-
-internal void OnMediaOpened()
-{
-	InitializeTimer();
-	eventManager.HandleEvent(this, EventArgs.Empty, nameof(MediaOpened));
-}
-
-/// <inheritdoc/>
-protected override void OnBindingContextChanged()
-{
-	if (Source is not null)
-	{
-		SetInheritedBindingContext(Source, BindingContext);
+			await seekCompletedTaskCompletionSource.Task.WaitAsync(token);
+		}
+		finally
+		{
+			seekCompletedTaskCompletionSource = new();
+			seekToSemaphoreSlim.Release();
+		}
 	}
 
-	base.OnBindingContextChanged();
-}
-
-/// <inheritdoc/>
-protected virtual void Dispose(bool disposing)
-{
-	if (isDisposed)
+	/// <inheritdoc cref="IMediaElement.Stop"/>
+	public void Stop()
 	{
-		return;
+		OnStopRequested();
+		Handler?.Invoke(nameof(StopRequested));
 	}
 
-	if (disposing)
+	internal void OnMediaEnded()
+	{
+		CurrentState = MediaElementState.Stopped;
+		eventManager.HandleEvent(this, EventArgs.Empty, nameof(MediaEnded));
+	}
+
+	internal void OnMediaFailed(MediaFailedEventArgs args)
+	{
+		((IMediaElement)this).Duration = ((IMediaElement)this).Position = TimeSpan.Zero;
+
+		CurrentState = MediaElementState.Failed;
+		eventManager.HandleEvent(this, args, nameof(MediaFailed));
+	}
+
+	internal void OnMediaOpened()
+	{
+		InitializeTimer();
+		eventManager.HandleEvent(this, EventArgs.Empty, nameof(MediaOpened));
+	}
+
+	/// <inheritdoc/>
+	protected override void OnBindingContextChanged()
+	{
+		if (Source is not null)
+		{
+			SetInheritedBindingContext(Source, BindingContext);
+		}
+
+		base.OnBindingContextChanged();
+	}
+
+	/// <inheritdoc/>
+	protected virtual void Dispose(bool disposing)
+	{
+		if (isDisposed)
+		{
+			return;
+		}
+
+		if (disposing)
+		{
+			ClearTimer();
+			seekToSemaphoreSlim.Dispose();
+		}
+
+		isDisposed = true;
+	}
+
+	static void OnSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
+		((MediaElement)bindable).OnSourcePropertyChanged((MediaSource?)newValue);
+
+	static void OnSourcePropertyChanging(BindableObject bindable, object oldValue, object newValue) =>
+		((MediaElement)bindable).OnSourcePropertyChanging((MediaSource?)oldValue);
+
+	static void OnCurrentStatePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var mediaElement = (MediaElement)bindable;
+		var previousState = (MediaElementState)oldValue;
+		var newState = (MediaElementState)newValue;
+
+		mediaElement.OnStateChanged(new MediaStateChangedEventArgs(previousState, newState));
+	}
+
+	static void ValidateVolume(BindableObject bindable, object oldValue, object newValue)
+	{
+		var updatedVolume = (double)newValue;
+
+		if (updatedVolume is < 0.0 or > 1.0)
+		{
+			throw new ArgumentOutOfRangeException(nameof(newValue), $"{nameof(Volume)} can not be less than 0.0 or greater than 1.0");
+		}
+	}
+
+	void OnTimerTick(object? sender, EventArgs e)
+	{
+		OnPositionRequested();
+		OnUpdateStatus();
+		Handler?.Invoke(nameof(StatusUpdated));
+	}
+
+	void InitializeTimer()
+	{
+		if (timer is not null)
+		{
+			return;
+		}
+
+		timer = Dispatcher.CreateTimer();
+		timer.Interval = TimeSpan.FromMilliseconds(200);
+		timer.Tick += OnTimerTick;
+		timer.Start();
+	}
+
+	void ClearTimer()
+	{
+		if (timer is null)
+		{
+			return;
+		}
+
+		timer.Tick -= OnTimerTick;
+		timer.Stop();
+		timer = null;
+	}
+
+	void OnSourceChanged(object? sender, EventArgs eventArgs)
+	{
+		OnPropertyChanged(SourceProperty.PropertyName);
+		InvalidateMeasure();
+	}
+
+	void OnSourcePropertyChanged(MediaSource? newValue)
 	{
 		ClearTimer();
-		seekToSemaphoreSlim.Dispose();
+
+		if (newValue is not null)
+		{
+			newValue.SourceChanged += OnSourceChanged;
+			SetInheritedBindingContext(newValue, BindingContext);
+		}
+
+		InvalidateMeasure();
+		InitializeTimer();
 	}
 
-	isDisposed = true;
-}
-
-static void OnSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
-	((MediaElement)bindable).OnSourcePropertyChanged((MediaSource?)newValue);
-
-static void OnSourcePropertyChanging(BindableObject bindable, object oldValue, object newValue) =>
-	((MediaElement)bindable).OnSourcePropertyChanging((MediaSource?)oldValue);
-
-static void OnCurrentStatePropertyChanged(BindableObject bindable, object oldValue, object newValue)
-{
-	var mediaElement = (MediaElement)bindable;
-	var previousState = (MediaElementState)oldValue;
-	var newState = (MediaElementState)newValue;
-
-	mediaElement.OnStateChanged(new MediaStateChangedEventArgs(previousState, newState));
-}
-
-static void ValidateVolume(BindableObject bindable, object oldValue, object newValue)
-{
-	var updatedVolume = (double)newValue;
-
-	if (updatedVolume is < 0.0 or > 1.0)
+	void OnSourcePropertyChanging(MediaSource? oldValue)
 	{
-		throw new ArgumentOutOfRangeException(nameof(newValue), $"{nameof(Volume)} can not be less than 0.0 or greater than 1.0");
+		if (oldValue is null)
+		{
+			return;
+		}
+
+		oldValue.SourceChanged -= OnSourceChanged;
 	}
-}
 
-void OnTimerTick(object? sender, EventArgs e)
-{
-	OnPositionRequested();
-	OnUpdateStatus();
-	Handler?.Invoke(nameof(StatusUpdated));
-}
-
-void InitializeTimer()
-{
-	if (timer is not null)
+	void IMediaElement.MediaEnded()
 	{
-		return;
+		OnMediaEnded();
 	}
 
-	timer = Dispatcher.CreateTimer();
-	timer.Interval = TimeSpan.FromMilliseconds(200);
-	timer.Tick += OnTimerTick;
-	timer.Start();
-}
-
-void ClearTimer()
-{
-	if (timer is null)
+	void IMediaElement.MediaFailed(MediaFailedEventArgs args)
 	{
-		return;
+		OnMediaFailed(args);
 	}
 
-	timer.Tick -= OnTimerTick;
-	timer.Stop();
-	timer = null;
-}
-
-void OnSourceChanged(object? sender, EventArgs eventArgs)
-{
-	OnPropertyChanged(SourceProperty.PropertyName);
-	InvalidateMeasure();
-}
-
-void OnSourcePropertyChanged(MediaSource? newValue)
-{
-	ClearTimer();
-
-	if (newValue is not null)
+	void IMediaElement.MediaOpened()
 	{
-		newValue.SourceChanged += OnSourceChanged;
-		SetInheritedBindingContext(newValue, BindingContext);
+		OnMediaOpened();
 	}
 
-	InvalidateMeasure();
-	InitializeTimer();
-}
-
-void OnSourcePropertyChanging(MediaSource? oldValue)
-{
-	if (oldValue is null)
+	void IMediaElement.SeekCompleted()
 	{
-		return;
+		OnSeekCompleted();
 	}
 
-	oldValue.SourceChanged -= OnSourceChanged;
-}
+	void IMediaElement.CurrentStateChanged(MediaElementState newState) => CurrentState = newState;
 
-void IMediaElement.MediaEnded()
-{
-	OnMediaEnded();
-}
+	void OnPositionChanged(MediaPositionChangedEventArgs mediaPositionChangedEventArgs) =>
+		eventManager.HandleEvent(this, mediaPositionChangedEventArgs, nameof(PositionChanged));
 
-void IMediaElement.MediaFailed(MediaFailedEventArgs args)
-{
-	OnMediaFailed(args);
-}
+	void OnStateChanged(MediaStateChangedEventArgs mediaStateChangedEventArgs) =>
+		eventManager.HandleEvent(this, mediaStateChangedEventArgs, nameof(StateChanged));
 
-void IMediaElement.MediaOpened()
-{
-	OnMediaOpened();
-}
+	void OnPauseRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(PauseRequested));
 
-void IMediaElement.SeekCompleted()
-{
-	OnSeekCompleted();
-}
+	void OnPlayRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(PlayRequested));
 
-void IMediaElement.CurrentStateChanged(MediaElementState newState) => CurrentState = newState;
+	void OnStopRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(StopRequested));
 
-void OnPositionChanged(MediaPositionChangedEventArgs mediaPositionChangedEventArgs) =>
-	eventManager.HandleEvent(this, mediaPositionChangedEventArgs, nameof(PositionChanged));
+	void OnSeekCompleted() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(SeekCompleted));
 
-void OnStateChanged(MediaStateChangedEventArgs mediaStateChangedEventArgs) =>
-	eventManager.HandleEvent(this, mediaStateChangedEventArgs, nameof(StateChanged));
+	void OnPositionRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(PositionRequested));
 
-void OnPauseRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(PauseRequested));
-
-void OnPlayRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(PlayRequested));
-
-void OnStopRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(StopRequested));
-
-void OnSeekCompleted() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(SeekCompleted));
-
-void OnPositionRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(PositionRequested));
-
-void OnUpdateStatus() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(StatusUpdated));
+	void OnUpdateStatus() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(StatusUpdated));
 }
