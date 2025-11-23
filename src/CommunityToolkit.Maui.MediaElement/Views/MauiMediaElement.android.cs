@@ -47,7 +47,6 @@ public class MauiMediaElement : CoordinatorLayout
 	{
 		this.playerView = playerView;
 		playerView.Background = new ColorDrawable(Android.Graphics.Color.Black);
-		playerView.SetBackgroundColor(Android.Graphics.Color.Black);
 		playerView.FullscreenButtonClick += OnFullscreenButtonClick;
 		playerView.SetShowBuffering(PlayerView.ShowBufferingAlways);
 		playerView.Alpha = 1.0f;
