@@ -80,7 +80,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// <summary>
 	/// Backing store for the <see cref="Speed"/> property.
 	/// </summary>
-	[BindableProperty]
+	[BindableProperty(DefaultValue = 1.0)]
 	public partial double Speed { get; set; }
 
 	/// <summary>
