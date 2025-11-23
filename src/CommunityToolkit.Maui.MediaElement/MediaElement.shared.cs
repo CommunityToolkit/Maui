@@ -41,7 +41,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// This is a bindable property.
 	/// </summary>
 	/// <remarks>If media is paused, stopped or has completed playing, the display will turn off.</remarks>
-	[BindableProperty(DefaultValue = true)]
+	[BindableProperty(DefaultValue = false)]
 	public partial bool ShouldKeepScreenOn { get; set; }
 
 	/// <summary>
@@ -79,41 +79,43 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	[BindableProperty]
 	public partial double Speed { get; set; }
 
-	/// <summary>
-	/// Gets the height (in pixels) of the loaded media in pixels.
-	/// This is a bindable property.
-	/// </summary>
-	/// <remarks>Not reported for non-visual media, sometimes not available for live-streamed content on iOS and macOS.</remarks>
-	[BindableProperty]
-	public partial int MediaHeight { get; set; }
+	static readonly BindablePropertyKey mediaHeightPropertyKey =
+		BindableProperty.CreateReadOnly(nameof(MediaHeight), typeof(int), typeof(MediaElement), 0);
 
 	/// <summary>
-	/// Gets the width (in pixels) of the loaded media in pixels.
-	/// This is a bindable property.
+	/// Backing store for the <see cref="MediaHeight"/> property.
 	/// </summary>
-	/// <remarks>Not reported for non-visual media, sometimes not available for live-streamed content on iOS and macOS.</remarks>
-	[BindableProperty]
-	public partial int MediaWidth { get; set; }
+	public static readonly BindableProperty MediaHeightProperty =
+		mediaHeightPropertyKey.BindableProperty;
+
+	static readonly BindablePropertyKey mediaWidthPropertyKey =
+		BindableProperty.CreateReadOnly(nameof(MediaWidth), typeof(int), typeof(MediaElement), 0);
+
+	/// <summary>
+	/// Backing store for the <see cref="MediaWidth"/> property.
+	/// </summary>
+	public static readonly BindableProperty MediaWidthProperty =
+		mediaWidthPropertyKey.BindableProperty;
 
 	/// <summary>
 	/// Gets or sets the Title of the media.
 	/// This is a bindable property.
 	/// </summary>
-	[BindableProperty]
+	[BindableProperty(DefaultValue = "")]
 	public partial string MetadataTitle { get; set; }
 
 	/// <summary>
 	/// Gets or sets the Artist of the media.
 	/// This is a bindable property.
 	/// </summary>
-	[BindableProperty]
+	[BindableProperty(DefaultValue = "")]
 	public partial string MetadataArtist { get; set; }
 
 	/// <summary>
 	/// Gets or sets the Artwork Image Url of the media.
 	/// This is a bindable property.
 	/// </summary>
-	[BindableProperty]
+	[BindableProperty(DefaultValue = "")]
 	public partial string MetadataArtworkUrl { get; set; }
 
 	/// <summary>
@@ -126,13 +128,13 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// <summary>
 	/// The current state of the <see cref="MediaElement"/>. This is a bindable property.
 	/// </summary>
-	[BindableProperty(PropertyChangingMethodName = nameof(OnCurrentStatePropertyChanged))]
+	[BindableProperty(DefaultValue =MediaElementState.None, PropertyChangingMethodName = nameof(OnCurrentStatePropertyChanged))]
 	public partial MediaElementState CurrentState { get; set; }
 
 	/// <summary>
 	/// Read the MediaElementOptions set in on construction, cannot be changed after construction
 	/// </summary>
-	public AndroidViewType AndroidViewType { get; set; } = MediaElementOptions.DefaultAndroidViewType;
+	public AndroidViewType AndroidViewType { get; init; } = MediaElementOptions.DefaultAndroidViewType;
 
 	readonly WeakEventManager eventManager = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
@@ -249,6 +251,20 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 			}
 		}
 	}
+
+	/// <summary>
+	/// Gets the height (in pixels) of the loaded media in pixels.
+	/// This is a bindable property.
+	/// </summary>
+	/// <remarks>Not reported for non-visual media, sometimes not available for live-streamed content on iOS and macOS.</remarks>
+	public int MediaHeight => (int)GetValue(MediaHeightProperty);
+
+	/// <summary>
+	/// Gets the width (in pixels) of the loaded media in pixels.
+	/// This is a bindable property.
+	/// </summary>
+	/// <remarks>Not reported for non-visual media, sometimes not available for live-streamed content on iOS and macOS.</remarks>
+	public int MediaWidth => (int)GetValue(MediaWidthProperty);
 
 	int IMediaElement.MediaWidth
 	{

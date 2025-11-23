@@ -47,6 +47,8 @@
     <Configurations>Debug;Release</Configurations>
     <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
