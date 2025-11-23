@@ -181,9 +181,9 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 				.AppendLine("/// </summary>");
 
 			// Determine if we should generate a read-only BindableProperty (BindablePropertyKey).
-			// Create a read-only bindable only when the property doesn't have a setter or has a PRIVATE setter.
-			// INTERNAL setters generate a standard public BindableProperty.
-			var shouldCreateReadOnly = !info.HasSetter || (info.HasSetter && info.SetterAccessibilityText.Equals("private ", StringComparison.Ordinal));
+			// Create a read-only bindable when the property doesn't have a setter or has a non-public setter.
+			// This ensures read-only protection is maintained.
+			var shouldCreateReadOnly = !info.HasSetter || !string.IsNullOrEmpty(info.SetterAccessibilityText);
 
 			if (shouldCreateReadOnly)
 			{
@@ -252,9 +252,13 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			{
 				if (!string.IsNullOrEmpty(info.SetterAccessibilityText))
 				{
-					// non-public setter -> set value via the BindableProperty (keep setter accessibility)
+					// non-public setter -> set value via the BindablePropertyKey (keep setter accessibility)
+					// Calculate the property key name the same way as in GenerateBindableProperty
+					var propertyKeyName = !string.IsNullOrEmpty(info.PropertyName)
+						? $"{char.ToLower(info.PropertyName[0])}{info.PropertyName[1..]}PropertyKey"
+						: "propertyKeyPropertyKey";
 					sb.Append($"{info.SetterAccessibilityText}set => SetValue(")
-						.AppendLine($"{info.BindablePropertyName}, value);");
+						.AppendLine($"{propertyKeyName}, value);");
 				}
 				else
 				{

@@ -216,7 +216,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 
 			if (currentValue != value)
 			{
-				SetValue(PositionProperty, value);
+				SetValue(positionPropertyKey, value);
 				OnPositionChanged(new(value));
 			}
 		}
