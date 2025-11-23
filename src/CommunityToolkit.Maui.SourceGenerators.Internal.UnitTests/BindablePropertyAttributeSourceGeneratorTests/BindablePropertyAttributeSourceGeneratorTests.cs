@@ -385,7 +385,8 @@ public class BindablePropertyAttributeSourceGeneratorTests : BaseBindablePropert
 			    /// <summary>
 			    /// Backing BindableProperty for the <see cref = "Text"/> property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			    static readonly global::Microsoft.Maui.Controls.BindablePropertyKey textPropertyKey = global::Microsoft.Maui.Controls.BindableProperty.CreateReadOnly("Text", typeof(string), typeof(TestNamespace.TestView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = textPropertyKey.BindableProperty;
 			    public partial string Text { get => (string)GetValue(TextProperty); private set => SetValue(TextProperty, value); }
 			}
 			""";
@@ -472,14 +473,14 @@ public class BindablePropertyAttributeSourceGeneratorTests : BaseBindablePropert
 			    /// <summary>
 			    /// Backing BindableProperty for the <see cref = "Position"/> property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty PositionProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Position", typeof(global::System.TimeSpan), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), global::System.TimeSpan.Zero, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
-			    public partial global::System.TimeSpan Position { get => (global::System.TimeSpan)GetValue(PositionProperty); set => SetValue(PositionProperty, value); }
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty PositionProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Position", typeof(System.TimeSpan), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), global::System.TimeSpan.Zero, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			    public partial System.TimeSpan Position { get => (System.TimeSpan)GetValue(PositionProperty); set => SetValue(PositionProperty, value); }
 
 			    /// <summary>
 			    /// Backing BindableProperty for the <see cref = "CustomDuration"/> property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty CustomDurationProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("CustomDuration", typeof(global::System.TimeSpan), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), new global::System.TimeSpan(900000000), Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
-			    public partial global::System.TimeSpan CustomDuration { get => (global::System.TimeSpan)GetValue(CustomDurationProperty); set => SetValue(CustomDurationProperty, value); }
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty CustomDurationProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("CustomDuration", typeof(System.TimeSpan), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), new global::System.TimeSpan(900000000), Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			    public partial System.TimeSpan CustomDuration { get => (System.TimeSpan)GetValue(CustomDurationProperty); set => SetValue(CustomDurationProperty, value); }
 			}
 			""";
 

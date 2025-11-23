@@ -19,25 +19,25 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// Backing store for the <see cref="MediaHeight"/> property.
 	/// </summary>
 	[BindableProperty(DefaultValue = 0)]
-	public partial int MediaHeight { get; internal set; }
+	public partial int MediaHeight { get; }
 
 	/// <summary>
 	/// Backing store for the <see cref="MediaWidth"/> property.
 	/// </summary>
 	[BindableProperty(DefaultValue = 0)]
-	public partial int MediaWidth { get; internal set;}
+	public partial int MediaWidth { get; }
 
 	/// <summary>
 	/// Backing store for the <see cref="Position"/> property.
 	/// </summary>
 	[BindableProperty(DefaultValue = "00:00:00")]
-	public partial TimeSpan Position { get; private set; }
+	public partial TimeSpan Position { get; set; }
 
 	/// <summary>
 	/// Backing store for the <see cref="Duration"/> property.
 	/// </summary>
 	[BindableProperty(DefaultValue = "00:00:00")]
-	public partial TimeSpan Duration { get; private set; }
+	public partial TimeSpan Duration { get; }
 
 	/// <summary>
 	/// Backing store for the <see cref="ShouldAutoPlay"/> property.
@@ -103,7 +103,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// Backing store for the <see cref="CurrentState"/> property.
 	/// </summary>
 	[BindableProperty(DefaultValue = MediaElementState.None, PropertyChangedMethodName = nameof(OnCurrentStatePropertyChanged))]
-	public partial MediaElementState CurrentState { get; private set; }
+	public partial MediaElementState CurrentState { get; internal set; }
 	
 	/// <summary>
 	/// Backing store for the <see cref="Volume"/> property.
@@ -225,19 +225,19 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	TimeSpan IMediaElement.Duration
 	{
 		get => (TimeSpan)GetValue(DurationProperty);
-		set => SetValue(DurationProperty, value);
+		set => SetValue(durationPropertyKey, value);
 	}
 
 	int IMediaElement.MediaWidth
 	{
 		get => (int)GetValue(MediaWidthProperty);
-		set => SetValue(MediaWidthProperty, value);
+		set => SetValue(mediaWidthPropertyKey, value);
 	}
 
 	int IMediaElement.MediaHeight
 	{
 		get => (int)GetValue(MediaHeightProperty);
-		set => SetValue(MediaHeightProperty, value);
+		set => SetValue(mediaHeightPropertyKey, value);
 	}
 
 	/// <inheritdoc/>
