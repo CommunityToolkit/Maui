@@ -283,7 +283,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	int IMediaElement.MediaWidth
 	{
 		get => (int)GetValue(MediaWidthProperty);
-		set => SetValue(MediaWidthProperty, value);
+		set => SetValue(mediaWidthPropertyKey, value);
 	}
 
 	int IMediaElement.MediaHeight
