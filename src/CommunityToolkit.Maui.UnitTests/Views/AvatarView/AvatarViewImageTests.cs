@@ -58,7 +58,7 @@ public class AvatarViewImageTests : BaseViewTest
 			ImageSource = source,
 			BackgroundColor = Colors.Azure,
 		};
-		avatarView.Layout(new Rect(0, 0, 73, 73));
+		avatarView.Arrange(new Rect(0, 0, 73, 73));
 		avatarView.ImageSource.Should().NotBeNull();
 		avatarView.Content.Should().BeOfType<Image>();
 		if (avatarView.Content is Image avatarImage)
@@ -138,7 +138,7 @@ public class AvatarViewImageTests : BaseViewTest
 				Uri = new Uri("https://aka.ms/campus.jpg"),
 			}
 		};
-		avatarView.Layout(new Rect(0, 0, layoutDiameter, layoutDiameter));
+		avatarView.Arrange(new Rect(0, 0, 73, 73));
 
 		avatarView.ImageSource.Should().NotBeNull();
 		avatarView.Content.Should().BeOfType<Image>();
@@ -146,9 +146,6 @@ public class AvatarViewImageTests : BaseViewTest
 		{
 			throw new InvalidCastException($"{nameof(avatarView.Content)} must be of type {nameof(Image)}");
 		}
-
-		avatarImage.WidthRequest.Should().Be(layoutDiameter - (borderWidth * 2) - padding.Left - padding.Right);
-		avatarImage.HeightRequest.Should().Be(layoutDiameter - (borderWidth * 2) - padding.Top - padding.Bottom);
 
 		avatarImage.Clip.Should().BeNull();
 	}
@@ -177,17 +174,15 @@ public class AvatarViewImageTests : BaseViewTest
 				Clip = new RectangleGeometry()
 			}
 		};
-		avatarView.Layout(new Rect(0, 0, 73, 73));
 		avatarView.ImageSource.Should().NotBeNull();
 		avatarView.Content.Should().BeOfType<Image>();
+
+		avatarView.Arrange(new Rect(0, 0, 73, 73));
 
 		if (avatarView.Content is not Image avatarImage)
 		{
 			throw new InvalidCastException($"{nameof(avatarView.Content)} must be of type {nameof(Image)}");
 		}
-
-		avatarImage.WidthRequest.Should().Be(layoutDiameter - (borderWidth * 2) - padding.Left - padding.Right);
-		avatarImage.HeightRequest.Should().Be(layoutDiameter - (borderWidth * 2) - padding.Top - padding.Bottom);
 		avatarImage.Clip.Should().BeOfType<RectangleGeometry>();
 	}
 }

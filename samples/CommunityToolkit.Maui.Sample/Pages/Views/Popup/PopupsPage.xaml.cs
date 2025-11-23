@@ -29,7 +29,16 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		}
 	}
 
-	async void HandleSimplePopupButtonClicked(object sender, EventArgs e)
+	protected override async void OnNavigatedFrom(NavigatedFromEventArgs args)
+	{
+		base.OnNavigatedFrom(args);
+		if (args.IsDestinationPageACommunityToolkitPopupPage())
+		{
+			await Toast.Make("Opening Popup").Show();
+		}
+	}
+
+	async void HandleSimplePopupButtonClicked(object? sender, EventArgs e)
 	{
 		var queryAttributes = new Dictionary<string, object>
 		{
@@ -46,17 +55,17 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		}, queryAttributes, CancellationToken.None);
 	}
 
-	async void HandleButtonPopupButtonClicked(object sender, EventArgs e)
+	async void HandleButtonPopupButtonClicked(object? sender, EventArgs e)
 	{
 		await popupService.ShowPopupAsync<ButtonPopup>(Navigation);
 	}
 
-	async void HandleMultipleButtonPopupButtonClicked(object sender, EventArgs e)
+	async void HandleMultipleButtonPopupButtonClicked(object? sender, EventArgs e)
 	{
 		await popupService.ShowPopupAsync<MultipleButtonPopup, bool>(Navigation);
 	}
 
-	async void HandleNoOutsideTapDismissPopupClicked(object sender, EventArgs e)
+	async void HandleNoOutsideTapDismissPopupClicked(object? sender, EventArgs e)
 	{
 		await popupService.ShowPopupAsync<NoOutsideTapDismissPopup>(Navigation, new PopupOptions
 		{
@@ -64,17 +73,17 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		});
 	}
 
-	async void HandleToggleSizePopupButtonClicked(object sender, EventArgs e)
+	async void HandleToggleSizePopupButtonClicked(object? sender, EventArgs e)
 	{
 		await popupService.ShowPopupAsync<ToggleSizePopup>(Navigation);
 	}
 
-	async void HandleTransparentPopupButtonClicked(object sender, EventArgs e)
+	async void HandleTransparentPopupButtonClicked(object? sender, EventArgs e)
 	{
 		await popupService.ShowPopupAsync<TransparentPopup>(Navigation);
 	}
 
-	async void HandleOpenedEventSimplePopupButtonClicked(object sender, EventArgs e)
+	async void HandleOpenedEventSimplePopupButtonClicked(object? sender, EventArgs e)
 	{
 		await popupService.ShowPopupAsync<OpenedEventSimplePopup>(Navigation, new PopupOptions
 		{
@@ -87,44 +96,44 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		});
 	}
 
-	async void HandleReturnResultPopupButtonClicked(object sender, EventArgs e)
+	async void HandleReturnResultPopupButtonClicked(object? sender, EventArgs e)
 	{
 		var result = await popupService.ShowPopupAsync<ReturnResultPopup, string>(Navigation);
 
-		await DisplayAlert("Pop Result Returned", $"Result: {result.Result ?? "Closed by tapping outside"}", "OK");
+		await DisplayAlertAsync("Pop Result Returned", $"Result: {result.Result ?? "Closed by tapping outside"}", "OK");
 	}
 
-	async void HandleXamlBindingPopupPopupButtonClicked(object sender, EventArgs e)
+	async void HandleXamlBindingPopupPopupButtonClicked(object? sender, EventArgs e)
 	{
 		await popupService.ShowPopupAsync<XamlBindingPopup>(Navigation);
 	}
 
-	async void HandlePopupPositionButtonClicked(object sender, EventArgs e)
+	async void HandlePopupPositionButtonClicked(object? sender, EventArgs e)
 	{
 		await Navigation.PushAsync(new PopupPositionPage(new PopupPositionViewModel()));
 	}
 
-	async void HandlePopupLayoutAlignmentButtonClicked(object sender, EventArgs e)
+	async void HandlePopupLayoutAlignmentButtonClicked(object? sender, EventArgs e)
 	{
 		await Navigation.PushAsync(new PopupLayoutAlignmentPage(new PopupLayoutAlignmentViewModel()));
 	}
 
-	async void HandlePopupSizingIssuesButtonClicked(object sender, EventArgs e)
+	async void HandlePopupSizingIssuesButtonClicked(object? sender, EventArgs e)
 	{
 		await Navigation.PushAsync(new PopupSizingIssuesPage(new PopupSizingIssuesViewModel()));
 	}
 
-	async void HandleShowPopupInOnAppearingButtonClicked(object sender, EventArgs e)
+	async void HandleShowPopupInOnAppearingButtonClicked(object? sender, EventArgs e)
 	{
 		await Navigation.PushAsync(new ShowPopupInOnAppearingPage(new ShowPopupInOnAppearingPageViewModel(), popupService));
 	}
 
-	async void HandleStylePopupButtonClicked(object sender, EventArgs e)
+	async void HandleStylePopupButtonClicked(object? sender, EventArgs e)
 	{
 		await Navigation.PushAsync(new StylePopupPage(new StylePopupViewModel()));
 	}
 
-	async void HandleOnDisappearingPopupClicked(object sender, EventArgs e)
+	async void HandleOnDisappearingPopupClicked(object? sender, EventArgs e)
 	{
 		await Navigation.PushModalAsync(new PopupOnDisappearingPage());
 	}

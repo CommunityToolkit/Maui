@@ -7,10 +7,15 @@ namespace CommunityToolkit.Maui.Views;
 
 /// <inheritdoc cref="IExpander"/>
 [ContentProperty(nameof(Content))]
-[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 [RequiresUnreferencedCode("Calls Microsoft.Maui.Controls.Binding.Binding(String, BindingMode, IValueConverter, Object, String, Object)")]
 public partial class Expander : ContentView, IExpander
 {
+	/// <summary>
+	/// Backing BindableProperty for the <see cref="Direction"/> property.
+	/// </summary>
+	public static readonly BindableProperty DirectionProperty
+		= BindableProperty.Create(nameof(Direction), typeof(ExpandDirection), typeof(Expander), ExpandDirection.Down, propertyChanged: OnDirectionPropertyChanged);
+
 	/// <summary>
 	/// Gets or sets the command to execute when the expander is expanded or collapsed.
 	/// </summary>
@@ -33,19 +38,13 @@ public partial class Expander : ContentView, IExpander
 	/// Gets or sets the content to be expanded or collapsed.
 	/// </summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnContentPropertyChanged))]
-	public partial IView Content { get; set; }
+	public new partial IView Content { get; set; }
 
 	/// <summary>
 	/// Gets or sets the header view of the expander.
 	/// </summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnHeaderPropertyChanged))]
 	public partial IView Header { get; set; }
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="Direction"/> property.
-	/// </summary>
-	public static readonly BindableProperty DirectionProperty
-		= BindableProperty.Create(nameof(Direction), typeof(ExpandDirection), typeof(Expander), ExpandDirection.Down, propertyChanged: OnDirectionPropertyChanged);
 
 	readonly WeakEventManager tappedEventManager = new();
 

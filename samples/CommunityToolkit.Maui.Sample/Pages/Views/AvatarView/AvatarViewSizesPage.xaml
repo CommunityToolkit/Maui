@@ -45,7 +45,7 @@
                     TargetType="mct:AvatarView">
                     <Setter Property="WidthRequest" Value="16" />
                     <Setter Property="HeightRequest" Value="16" />
-                    <Setter Property="FontSize" Value="Micro" />
+                    <Setter Property="FontSize" Value="6" />
                     <Setter Property="CornerRadius" Value="8" />
                 </Style>
                 <Style
@@ -54,7 +54,7 @@
                     TargetType="mct:AvatarView">
                     <Setter Property="WidthRequest" Value="32" />
                     <Setter Property="HeightRequest" Value="32" />
-                    <Setter Property="FontSize" Value="Small" />
+                    <Setter Property="FontSize" Value="8" />
                     <Setter Property="FontAttributes" Value="Italic" />
                     <Setter Property="CornerRadius" Value="16" />
                 </Style>
@@ -64,7 +64,7 @@
                     TargetType="mct:AvatarView">
                     <Setter Property="WidthRequest" Value="128" />
                     <Setter Property="HeightRequest" Value="128" />
-                    <Setter Property="FontSize" Value="Large" />
+                    <Setter Property="FontSize" Value="24" />
                     <Setter Property="CornerRadius" Value="64" />
                     <Setter Property="FontAttributes" Value="Bold" />
                 </Style>

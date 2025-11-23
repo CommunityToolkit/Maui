@@ -48,9 +48,6 @@ public partial class CameraViewViewModel : BaseViewModel
 	[ObservableProperty]
 	public partial string ResolutionText { get; set; } = string.Empty;
 
-	[RelayCommand]
-	async Task RefreshCameras(CancellationToken token) => await cameraProvider.RefreshAvailableCameras(token);
-
 	partial void OnFlashModeChanged(CameraFlashMode value)
 	{
 		UpdateFlashModeText();

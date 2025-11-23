@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Internal.Helpers;
 
@@ -10,7 +11,7 @@ static class AttributeExtensions
 		return x;
 	}
 
-	public static string GetNamedArgumentsAttributeValueByNameAsString(this AttributeData attribute, string name, string placeholder = "null")
+	public static string GetNamedTypeArgumentsAttributeValueByNameAsCastedString(this AttributeData attribute, string name, string placeholder = "null")
 	{
 		var data = attribute.NamedArguments.SingleOrDefault(kvp => kvp.Key == name).Value;
 		// true.ToString() => "True" and false.ToString() => "False", but we want "true" and "false"
@@ -37,17 +38,35 @@ static class AttributeExtensions
 			return members[(int)data.Value].ToString();
 		}
 
-		return data.Value is null ? placeholder : data.Value.ToString();
-	}
-
-	public static string GetConstructorArgumentsAttributeValueByNameAsString(this AttributeData attribute, string placeholder)
-	{
-		if (attribute.ConstructorArguments.Length is 0)
+		// true.ToString() => "True" and false.ToString() => "False", but we want "true" and "false"
+		if (data.Kind is TypedConstantKind.Primitive && data.Type?.SpecialType is SpecialType.System_Boolean)
 		{
-			return placeholder;
+			return data.Value is null ? placeholder : $"({data.Type}){data.Value.ToString().ToLowerInvariant()}";
 		}
 
-		var data = attribute.ConstructorArguments[0];
+		if (data.Kind is TypedConstantKind.Enum && data.Type is not null && data.Value is not null)
+		{
+			var members = data.Type.GetMembers();
+
+			return $"({data.Type}){members[(int)data.Value]}";
+		}
+
+		if(data.Type?.SpecialType is SpecialType.System_String)
+		{
+			return data.Value is null ? $"\"{placeholder}\"": $"({data.Type})\"{data.Value}\"";
+		}
+
+		if (data.Type?.SpecialType is SpecialType.System_Char)
+		{
+			return data.Value is null ? $"\"{placeholder}\"" : $"({data.Type})\'{data.Value}\'";
+		}
+
+		return data.Value is null ? placeholder : $"({data.Type}){data.Value}";
+	}
+
+	public static string GetNamedMethodGroupArgumentsAttributeValueByNameAsString(this AttributeData attribute, string name, string placeholder = "null")
+	{
+		var data = attribute.NamedArguments.SingleOrDefault(kvp => kvp.Key == name).Value;
 
 		// true.ToString() => "True" and false.ToString() => "False", but we want "true" and "false"
 		if (data.Kind is TypedConstantKind.Primitive && data.Type?.SpecialType is SpecialType.System_Boolean)
@@ -64,5 +83,4 @@ static class AttributeExtensions
 		}
 		return data.Value is null ? placeholder : data.Value.ToString();
 	}
-
 }

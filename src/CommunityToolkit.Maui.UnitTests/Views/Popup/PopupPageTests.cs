@@ -40,8 +40,8 @@ public class PopupPageTests : BaseViewTest
 		var popupPage = new PopupPage<string>(view, popupOptions);
 
 		// Act / Assert
-		await Assert.ThrowsAsync<PopupNotFoundException>(async () => await popupPage.CloseAsync(new PopupResult(false), CancellationToken.None));
-		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), CancellationToken.None));
+		await Assert.ThrowsAsync<PopupNotFoundException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
 	}
 
 	[Fact]
@@ -64,7 +64,7 @@ public class PopupPageTests : BaseViewTest
 
 		await navigation.PushModalAsync(popupPage);
 
-		await popupPage.CloseAsync(expectedResult, CancellationToken.None);
+		await popupPage.CloseAsync(expectedResult, TestContext.Current.CancellationToken);
 		var actualResult = await tcs.Task;
 
 		// Assert
@@ -135,7 +135,7 @@ public class PopupPageTests : BaseViewTest
 
 		await navigation.PushModalAsync(popupPage);
 
-		await popupPage.CloseAsync(expectedResult, CancellationToken.None);
+		await popupPage.CloseAsync(expectedResult, TestContext.Current.CancellationToken);
 		var actualResult = await taskCompletionSource.Task;
 
 		// Assert
@@ -165,9 +165,9 @@ public class PopupPageTests : BaseViewTest
 		await navigation.PushModalAsync(new ContentPage());
 
 		// Assert
-		await Assert.ThrowsAsync<PopupBlockedException>(async () => await popupPage.CloseAsync(new PopupResult(false), CancellationToken.None));
-		await Assert.ThrowsAnyAsync<InvalidPopupOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), CancellationToken.None));
-		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), CancellationToken.None));
+		await Assert.ThrowsAsync<PopupBlockedException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidPopupOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
 	}
 
 	[Fact]
@@ -192,7 +192,7 @@ public class PopupPageTests : BaseViewTest
 
 		// Act
 		await Shell.Current.Navigation.PushModalAsync(customNavigationPage, true);
-		await popupPage.CloseAsync(new PopupResult(false), CancellationToken.None);
+		await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.True(wasPopupPageClosed);
@@ -233,9 +233,9 @@ public class PopupPageTests : BaseViewTest
 		await customNavigationPage.Navigation.PushModalAsync(secondPopupPage);
 
 		// Assert
-		await Assert.ThrowsAsync<PopupBlockedException>(async () => await firstPopupPage.CloseAsync(new PopupResult(false), CancellationToken.None));
-		await Assert.ThrowsAnyAsync<InvalidPopupOperationException>(async () => await firstPopupPage.CloseAsync(new PopupResult(false), CancellationToken.None));
-		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await firstPopupPage.CloseAsync(new PopupResult(false), CancellationToken.None));
+		await Assert.ThrowsAsync<PopupBlockedException>(async () => await firstPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidPopupOperationException>(async () => await firstPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await firstPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
 		Assert.False(wasPopupPageClosed);
 
 		async void HandlePageNavigatedTo(object? sender, NavigatedToEventArgs e)
@@ -277,9 +277,9 @@ public class PopupPageTests : BaseViewTest
 		await customNavigationPage.Navigation.PushModalAsync(new ContentPage());
 
 		// Assert
-		await Assert.ThrowsAsync<PopupNotFoundException>(async () => await popupPage.CloseAsync(new PopupResult(false), CancellationToken.None));
-		await Assert.ThrowsAnyAsync<InvalidPopupOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), CancellationToken.None));
-		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), CancellationToken.None));
+		await Assert.ThrowsAsync<PopupNotFoundException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidPopupOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
 		Assert.False(wasPopupPageClosed);
 
 		async void HandlePageNavigatedTo(object? sender, NavigatedToEventArgs e)
@@ -556,7 +556,7 @@ public class PopupPageTests : BaseViewTest
 
 		var popupPage = (PopupPage)navigation.ModalStack[0];
 		popupPage.PopupClosed += (sender, args) => eventTriggered = true;
-		await popupPage.CloseAsync(new PopupResult(false), CancellationToken.None);
+		await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.True(eventTriggered);
@@ -611,7 +611,7 @@ public class PopupPageTests : BaseViewTest
 		var popupPage = new PopupPage(view, popupOptions);
 
 		// Act & Assert
-		await Assert.ThrowsAsync<PopupNotFoundException>(async () => await popupPage.CloseAsync(new PopupResult(false), CancellationToken.None));
+		await Assert.ThrowsAsync<PopupNotFoundException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
 	}
 
 	[Fact]
