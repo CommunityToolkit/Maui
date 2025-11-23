@@ -42,6 +42,8 @@ env:
     PathToCommunityToolkitCameraAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Camera.Analyzers.CodeFixes/CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.csproj'
     PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
     PathToCommunityToolkitAnalyzersUnitTestProjectDirectory: 'src/CommunityToolkit.Maui.Analyzers.UnitTests'
+    PathToCommunityToolkitSourceGeneratorsInternalUnitTestDirectory: 'src/CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests'
+    PathToCommunityToolkitSourceGeneratorsInternalUnitTestCsproj: 'src/CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests/CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.csproj'
     PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
     CommunityToolkitLibrary_Xcode_Version: '26.1'
 
@@ -209,6 +211,12 @@ jobs:
                 run: |
                     cd ${{ env.PathToCommunityToolkitAnalyzersUnitTestProjectDirectory }}
                     dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-analyzers.cobertura.xml" --coverage-output-format cobertura --report-xunit
+                    
+            -   name: Run CommunityToolkit Source Generators Internal UnitTests
+                if: runner.os == 'Windows'
+                run: |
+                    cd ${{ env.PathToCommunityToolkitSourceGeneratorsInternalUnitTestDirectory }}
+                    dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-sourcegenerators-internal.cobertura.xml" --coverage-output-format cobertura --report-xunit
 
             -   name: Run CommunityToolkit UnitTests
                 run: |
