@@ -31,7 +31,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// Backing store for the <see cref="Position"/> property.
 	/// </summary>
 	[BindableProperty(DefaultValue = "00:00:00")]
-	public partial TimeSpan Position { get; set; }
+	public partial TimeSpan Position { get; internal set; }
 
 	/// <summary>
 	/// Backing store for the <see cref="Duration"/> property.
