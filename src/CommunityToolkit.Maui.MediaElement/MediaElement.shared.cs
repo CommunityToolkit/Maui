@@ -410,8 +410,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 
 		if (updatedVolume is < 0.0 or > 1.0)
 		{
-			System.Diagnostics.Trace.WriteLine("Volume must be between 0.0 and 1.0");
-			return false;
+			throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(Volume)} can not be less than 0.0 or greater than 1.0");
 		}
 		return true;
 	}
