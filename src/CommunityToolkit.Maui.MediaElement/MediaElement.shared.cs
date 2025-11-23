@@ -110,8 +110,9 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// <summary>
 	/// Backing store for the <see cref="CurrentState"/> property.
 	/// </summary>
-	[BindableProperty(DefaultValue = MediaElementState.None, PropertyChangingMethodName = nameof(OnCurrentStatePropertyChanged))]
-	public partial MediaElementState CurrentState { get; set; }
+	public static readonly BindableProperty CurrentStateProperty =
+		BindableProperty.Create(nameof(CurrentState), typeof(MediaElementState), typeof(MediaElement),
+			MediaElementState.None, propertyChanged: OnCurrentStatePropertyChanged);
 
 	/// <summary>
 	/// Backing store for the <see cref="Volume"/> property.
@@ -222,6 +223,15 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	{
 		get => (Aspect)GetValue(AspectProperty);
 		set => SetValue(AspectProperty, value);
+	}
+
+	/// <summary>
+	/// The current state of the <see cref="MediaElement"/>. This is a bindable property.
+	/// </summary>
+	public MediaElementState CurrentState
+	{
+		get => (MediaElementState)GetValue(CurrentStateProperty);
+		private set => SetValue(CurrentStateProperty, value);
 	}
 
 	/// <summary>
