@@ -15,9 +15,10 @@ namespace CommunityToolkit.Maui.SourceGenerators.Internal;
 [Generator]
 public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 {
-	static readonly SemanticValues emptySemanticValues = new(default, []);
+	static readonly SemanticValues emptySemanticValues = new(default, []); 
 
 	const string bpFullName = "global::Microsoft.Maui.Controls.BindableProperty";
+	const string bpKeyFullName = "global::Microsoft.Maui.Controls.BindablePropertyKey";
 
 	const string bpAttribute =
 		/* language=C#-test */
@@ -170,35 +171,55 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? "@" + info.PropertyName : info.PropertyName;
 
 			/*
-			// The code below creates the following XML Tag:
-			/// <summary>
-			/// Backing BindableProperty for the <see cref="PropertyName"/> property.
-			/// </summary>
-			*/
+		// The code below creates the following XML Tag:
+		/// <summary>
+		/// Backing BindableProperty for the <see cref="PropertyName"/> property.
+		/// </summary>
+		*/
 			sb.AppendLine("/// <summary>")
 				.AppendLine($"/// Backing BindableProperty for the <see cref=\"{sanitizedPropertyName}\"/> property.")
 				.AppendLine("/// </summary>");
 
-			/*
-			// The code below creates the following BindableProperty:
-			//
-			// public static readonly BindableProperty TextProperty = BindableProperty.Create(...);
-			*/
-			sb.AppendLine($"public {info.NewKeywordText}static readonly {bpFullName} {info.BindablePropertyName} = ")
-				.Append($"{bpFullName}.Create(")
-				.Append($"\"{sanitizedPropertyName}\", ")
-				.Append($"typeof({GetFormattedReturnType(nonNullableReturnType)}), ")
-				.Append($"typeof({info.DeclaringType}), ")
-				.Append($"{info.DefaultValue}, ")
-				.Append($"{info.DefaultBindingMode}, ")
-				.Append($"{info.ValidateValueMethodName}, ")
-				.Append($"{info.PropertyChangedMethodName}, ")
-				.Append($"{info.PropertyChangingMethodName}, ")
-				.Append($"{info.CoerceValueMethodName}, ")
-				.Append($"{info.DefaultValueCreatorMethodName}")
-				.Append(");");
+			// Read-only property: emit BindablePropertyKey then a single-line BindableProperty that references the key.
+			if (!info.HasSetter)
+			{
+				// Create name for the BindablePropertyKey (camel-cased first letter to follow existing pattern)
+				var propertyKeyName = $"{char.ToLower(info.PropertyName[0])}{info.PropertyName.Substring(1)}PropertyKey";
 
-			sb.AppendLine().AppendLine();
+				sb.AppendLine($"static readonly {bpKeyFullName} {propertyKeyName} = ")
+					.Append($"{bpFullName}.CreateReadOnly(")
+					.Append($"\"{sanitizedPropertyName}\", ")
+					.Append($"typeof({GetFormattedReturnType(nonNullableReturnType)}), ")
+					.Append($"typeof({info.DeclaringType}), ")
+					.Append($"{info.DefaultValue}, ")
+					.Append($"{info.DefaultBindingMode}, ")
+					.Append($"{info.ValidateValueMethodName}, ")
+					.Append($"{info.PropertyChangedMethodName}, ")
+					.Append($"{info.PropertyChangingMethodName}, ")
+					.Append($"{info.CoerceValueMethodName}, ")
+					.Append($"{info.DefaultValueCreatorMethodName}")
+					.Append(");")
+					.AppendLine()
+					.AppendLine($"public {info.NewKeywordText}static readonly {bpFullName} {info.BindablePropertyName} = {propertyKeyName}.BindableProperty;")
+					.AppendLine();
+			}
+			else
+			{
+				sb.AppendLine($"public {info.NewKeywordText}static readonly {bpFullName} {info.BindablePropertyName} = ")
+					.Append($"{bpFullName}.Create(")
+					.Append($"\"{sanitizedPropertyName}\", ")
+					.Append($"typeof({GetFormattedReturnType(nonNullableReturnType)}), ")
+					.Append($"typeof({info.DeclaringType}), ")
+					.Append($"{info.DefaultValue}, ")
+					.Append($"{info.DefaultBindingMode}, ")
+					.Append($"{info.ValidateValueMethodName}, ")
+					.Append($"{info.PropertyChangedMethodName}, ")
+					.Append($"{info.PropertyChangingMethodName}, ")
+					.Append($"{info.CoerceValueMethodName}, ")
+					.Append($"{info.DefaultValueCreatorMethodName}")
+					.Append(");")
+					.AppendLine().AppendLine();
+			}
 		}
 
 		static void GenerateProperty(ref readonly StringBuilder sb, in BindablePropertyModel info)
@@ -218,10 +239,17 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 				.Append("get => (")
 				.Append(GetFormattedReturnType(info.ReturnType))
 				.Append(")GetValue(")
-				.AppendLine($"{info.BindablePropertyName});")
-				.Append("set => SetValue(")
-				.AppendLine($"{info.BindablePropertyName}, value);")
-				.AppendLine("}");
+				.AppendLine($"{info.BindablePropertyName});");
+
+			// Generate setter only when the original property had a setter.
+			if (info.HasSetter)
+			{
+				// Prepend accessibility text if not public (e.g. "private ")
+				sb.Append($"{info.SetterAccessibilityText}set => SetValue(")
+					.AppendLine($"{info.BindablePropertyName}, value);");
+			}
+
+			sb.AppendLine("}");
 		}
 	}
 
@@ -254,37 +282,23 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var doesContainNewKeyword = propertyDeclarationSyntax.Modifiers.Any(static x => x.IsKind(SyntaxKind.NewKeyword));
 
 		var attributeData = context.Attributes[0];
-		bindablePropertyModels.Add(CreateBindablePropertyModel(attributeData, propertySymbol.ContainingType, propertySymbol.Name, returnType, doesContainNewKeyword));
+
+		// Determine setter accessibility and presence
+		var setMethod = propertySymbol.SetMethod;
+		var hasSetter = setMethod is not null;
+		string setterAccessibilityText = string.Empty;
+		if (hasSetter && setMethod?.DeclaredAccessibility != Accessibility.Public)
+		{
+			setterAccessibilityText = setMethod?.DeclaredAccessibility.ToString().ToLower() + " ";
+		}
+
+		bindablePropertyModels.Add(CreateBindablePropertyModel(attributeData, propertySymbol.ContainingType, propertySymbol.Name, returnType, doesContainNewKeyword, hasSetter, setterAccessibilityText));
 
 		return new(propertyInfo, bindablePropertyModels.ToImmutableArray());
 	}
 
-	static string GetContainingTypes(INamedTypeSymbol typeSymbol)
-	{
-		var types = new List<string>();
-		var current = typeSymbol.ContainingType;
-
-		while (current is not null)
-		{
-			types.Insert(0, current.Name);
-			current = current.ContainingType;
-		}
-
-		return string.Join(".", types);
-	}
-
-	static string GetGenericTypeParameters(INamedTypeSymbol typeSymbol)
-	{
-		if (!typeSymbol.IsGenericType || typeSymbol.TypeParameters.IsEmpty)
-		{
-			return string.Empty;
-		}
-
-		var typeParams = typeSymbol.TypeParameters.Select(tp => tp.Name);
-		return string.Join(", ", typeParams);
-	}
-
-	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string propertyName, in ITypeSymbol returnType, in bool doesContainNewKeyword)
+	// Updated signature to accept setter info
+	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string propertyName, in ITypeSymbol returnType, in bool doesContainNewKeyword, bool hasSetter, string setterAccessibilityText)
 	{
 		if (attributeData.AttributeClass is null)
 		{
@@ -300,7 +314,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var validateValueMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.ValidateValueMethodName));
 		var newKeywordText = doesContainNewKeyword ? "new " : string.Empty;
 
-		return new BindablePropertyModel(propertyName, returnType, declaringType, defaultValue, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText);
+		return new BindablePropertyModel(propertyName, returnType, declaringType, defaultValue, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText, hasSetter, setterAccessibilityText);
 	}
 
 	static ITypeSymbol ConvertToNonNullableTypeSymbol(in ITypeSymbol typeSymbol)
@@ -343,7 +357,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	{
 		if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
 		{
-			// Get the element type name (e.g., "int")
+			// Get the element type name (e.g., "global::System.Int32")
 			string elementType = GetFormattedReturnType(arrayTypeSymbol.ElementType);
 
 			// Construct the correct rank syntax with commas (e.g., "[,]")
@@ -353,9 +367,37 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		}
 		else
 		{
-			// Use ToDisplayString with the correct format for the base type (e.g., "int")
-			// SymbolDisplayFormat.CSharpErrorMessageFormat often works well for standard C# names
-			return typeSymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
+			// Use FullyQualifiedFormat to include global:: prefix
+			return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 		}
+	}
+
+	static string GetGenericTypeParameters(INamedTypeSymbol typeSymbol)
+	{
+		if (typeSymbol is null || typeSymbol.TypeParameters.Length == 0)
+		{
+			return string.Empty;
+		}
+
+		return string.Join(", ", typeSymbol.TypeParameters.Select(tp => tp.Name));
+	}
+
+	static string GetContainingTypes(INamedTypeSymbol? typeSymbol)
+	{
+		if (typeSymbol is null || typeSymbol.ContainingType is null)
+		{
+			return string.Empty;
+		}
+
+		var containingTypes = new Stack<string>();
+		var currentType = typeSymbol.ContainingType;
+
+		while (currentType is not null)
+		{
+			containingTypes.Push(currentType.Name);
+			currentType = currentType.ContainingType;
+		}
+
+		return string.Join(".", containingTypes);
 	}
 }

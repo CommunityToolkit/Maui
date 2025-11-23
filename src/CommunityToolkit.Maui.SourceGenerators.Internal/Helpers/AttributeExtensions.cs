@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Globalization;
+using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -31,6 +32,19 @@ static class AttributeExtensions
 
 		if (data.Type?.SpecialType is SpecialType.System_String)
 		{
+			// Special handling for TimeSpan string representations
+			if (data.Value is string stringValue && TimeSpan.TryParse(stringValue, CultureInfo.InvariantCulture, out var timeSpanValue))
+			{
+				// Check if it's TimeSpan.Zero
+				if (timeSpanValue == TimeSpan.Zero)
+				{
+					return "global::System.TimeSpan.Zero";
+				}
+
+				// For other TimeSpan values, use the ticks constructor
+				return $"new global::System.TimeSpan({timeSpanValue.Ticks})";
+			}
+
 			return data.Value is null ? $"\"{placeholder}\"" : $"({data.Type})\"{data.Value}\"";
 		}
 

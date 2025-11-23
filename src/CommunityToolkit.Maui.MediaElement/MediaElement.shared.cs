@@ -12,40 +12,32 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// <summary>
 	/// Backing store for the <see cref="Aspect"/> property.
 	/// </summary>
-	public static readonly BindableProperty AspectProperty =
-		BindableProperty.Create(nameof(Aspect), typeof(Aspect), typeof(MediaElement), Aspect.AspectFit);
-
-	static readonly BindablePropertyKey mediaHeightPropertyKey =
-		BindableProperty.CreateReadOnly(nameof(MediaHeight), typeof(int), typeof(MediaElement), 0);
-
+	[BindableProperty(DefaultValue = Aspect.AspectFit)]
+	public partial Aspect Aspect { get; set; }
+	
 	/// <summary>
 	/// Backing store for the <see cref="MediaHeight"/> property.
 	/// </summary>
-	public static readonly BindableProperty MediaHeightProperty =
-		mediaHeightPropertyKey.BindableProperty;
-
-	static readonly BindablePropertyKey mediaWidthPropertyKey =
-		BindableProperty.CreateReadOnly(nameof(MediaWidth), typeof(int), typeof(MediaElement), 0);
+	[BindableProperty(DefaultValue = 0)]
+	public partial int MediaHeight { get; internal set; }
 
 	/// <summary>
 	/// Backing store for the <see cref="MediaWidth"/> property.
 	/// </summary>
-	public static readonly BindableProperty MediaWidthProperty =
-		mediaWidthPropertyKey.BindableProperty;
+	[BindableProperty(DefaultValue = 0)]
+	public partial int MediaWidth { get; internal set;}
 
 	/// <summary>
 	/// Backing store for the <see cref="Position"/> property.
 	/// </summary>
-	public static readonly BindableProperty PositionProperty =
-		BindableProperty.Create(nameof(Position), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero);
-
-	static readonly BindablePropertyKey durationPropertyKey =
-		BindableProperty.CreateReadOnly(nameof(Duration), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero);
+	[BindableProperty(DefaultValue = "00:00:00")]
+	public partial TimeSpan Position { get; private set; }
 
 	/// <summary>
 	/// Backing store for the <see cref="Duration"/> property.
 	/// </summary>
-	public static readonly BindableProperty DurationProperty = durationPropertyKey.BindableProperty;
+	[BindableProperty(DefaultValue = "00:00:00")]
+	public partial TimeSpan Duration { get; private set; }
 
 	/// <summary>
 	/// Backing store for the <see cref="ShouldAutoPlay"/> property.
@@ -110,10 +102,9 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// <summary>
 	/// Backing store for the <see cref="CurrentState"/> property.
 	/// </summary>
-	public static readonly BindableProperty CurrentStateProperty =
-		BindableProperty.Create(nameof(CurrentState), typeof(MediaElementState), typeof(MediaElement),
-			MediaElementState.None, propertyChanged: OnCurrentStatePropertyChanged);
-
+	[BindableProperty(DefaultValue = MediaElementState.None, PropertyChangedMethodName = nameof(OnCurrentStatePropertyChanged))]
+	public partial MediaElementState CurrentState { get; private set; }
+	
 	/// <summary>
 	/// Backing store for the <see cref="Volume"/> property.
 	/// </summary>
@@ -215,35 +206,6 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		remove => eventManager.RemoveEventHandler(value);
 	}
 
-	/// <summary>
-	/// Gets or sets how the media will be scaled to fit the display area.
-	/// Default value is <see cref="Aspect.AspectFit"/>. This is a bindable property.
-	/// </summary>
-	public Aspect Aspect
-	{
-		get => (Aspect)GetValue(AspectProperty);
-		set => SetValue(AspectProperty, value);
-	}
-
-	/// <summary>
-	/// The current state of the <see cref="MediaElement"/>. This is a bindable property.
-	/// </summary>
-	public MediaElementState CurrentState
-	{
-		get => (MediaElementState)GetValue(CurrentStateProperty);
-		private set => SetValue(CurrentStateProperty, value);
-	}
-
-	/// <summary>
-	/// The current position of the playing media. This is a bindable property.
-	/// </summary>
-	public TimeSpan Position => (TimeSpan)GetValue(PositionProperty);
-
-	/// <summary>
-	/// Gets total duration of the loaded media. This is a bindable property.
-	/// </summary>
-	/// <remarks>Might not be available for some types, like live streams.</remarks>
-	public TimeSpan Duration => (TimeSpan)GetValue(DurationProperty);
 
 	TimeSpan IMediaElement.Position
 	{
@@ -260,36 +222,22 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		}
 	}
 
-	/// <summary>
-	/// Gets the height (in pixels) of the loaded media in pixels.
-	/// This is a bindable property.
-	/// </summary>
-	/// <remarks>Not reported for non-visual media, sometimes not available for live-streamed content on iOS and macOS.</remarks>
-	public int MediaHeight => (int)GetValue(MediaHeightProperty);
-
-	/// <summary>
-	/// Gets the width (in pixels) of the loaded media in pixels.
-	/// This is a bindable property.
-	/// </summary>
-	/// <remarks>Not reported for non-visual media, sometimes not available for live-streamed content on iOS and macOS.</remarks>
-	public int MediaWidth => (int)GetValue(MediaWidthProperty);
-
 	TimeSpan IMediaElement.Duration
 	{
 		get => (TimeSpan)GetValue(DurationProperty);
-		set => SetValue(durationPropertyKey, value);
+		set => SetValue(DurationProperty, value);
 	}
 
 	int IMediaElement.MediaWidth
 	{
 		get => (int)GetValue(MediaWidthProperty);
-		set => SetValue(mediaWidthPropertyKey, value);
+		set => SetValue(MediaWidthProperty, value);
 	}
 
 	int IMediaElement.MediaHeight
 	{
 		get => (int)GetValue(MediaHeightProperty);
-		set => SetValue(mediaHeightPropertyKey, value);
+		set => SetValue(MediaHeightProperty, value);
 	}
 
 	/// <inheritdoc/>

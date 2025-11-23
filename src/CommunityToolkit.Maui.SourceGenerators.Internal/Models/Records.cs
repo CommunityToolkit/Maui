@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Internal.Models;
 
-record BindablePropertyModel(string PropertyName, ITypeSymbol ReturnType, ITypeSymbol DeclaringType, string DefaultValue, string DefaultBindingMode, string ValidateValueMethodName, string PropertyChangedMethodName, string PropertyChangingMethodName, string CoerceValueMethodName, string DefaultValueCreatorMethodName, string NewKeywordText)
+record BindablePropertyModel(string PropertyName, ITypeSymbol ReturnType, ITypeSymbol DeclaringType, string DefaultValue, string DefaultBindingMode, string ValidateValueMethodName, string PropertyChangedMethodName, string PropertyChangingMethodName, string CoerceValueMethodName, string DefaultValueCreatorMethodName, string NewKeywordText, bool HasSetter, string SetterAccessibilityText)
 {
 	public string BindablePropertyName => $"{PropertyName}Property";
 }

@@ -27,7 +27,10 @@ public class BindablePropertyModelTests : BaseTest
 			"null",
 			"null",
 			"null",
-			string.Empty);
+			string.Empty,
+			true, // HasSetter
+			string.Empty // SetterAccessibilityText
+		);
 
 		// Act
 		var bindablePropertyName = model.BindablePropertyName;
@@ -66,7 +69,10 @@ public class BindablePropertyModelTests : BaseTest
 			propertyChangingMethodName,
 			coerceValueMethodName,
 			defaultValueCreatorMethodName,
-			newKeywordText);
+			newKeywordText,
+			true, // HasSetter
+			string.Empty // SetterAccessibilityText
+		);
 
 		// Assert
 		Assert.Equal(propertyName, model.PropertyName);
@@ -120,7 +126,10 @@ public class BindablePropertyModelTests : BaseTest
 			"null",
 			"null",
 			"null",
-			string.Empty);
+			string.Empty,
+			true, // HasSetter
+			string.Empty // SetterAccessibilityText
+		);
 
 		var bindableProperties = new[] { bindableProperty }.ToImmutableArray();
 
