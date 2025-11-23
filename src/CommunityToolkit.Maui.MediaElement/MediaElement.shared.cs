@@ -44,7 +44,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// <summary>
 	/// Backing store for the <see cref="ShouldAutoPlay"/> property.
 	/// </summary>
-	[BindableProperty(DefaultValue = true)]
+	[BindableProperty(DefaultValue = false)]
 	public partial bool ShouldAutoPlay { get; set; }
 
 	/// <summary>
