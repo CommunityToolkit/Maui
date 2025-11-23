@@ -301,7 +301,6 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
-	
 	/// <inheritdoc cref="IMediaElement.Pause"/>
 	public void Pause()
 	{
