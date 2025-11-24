@@ -82,7 +82,7 @@ public class RatingViewTests : BaseViewTest
 	public void Defaults_ShouldHaveCorrectDefaultProperties()
 	{
 		RatingView ratingView = new();
-		ratingView.Rating.Should().Be(RatingViewDefaults.DefaultRating);
+		ratingView.Rating.Should().Be(RatingViewDefaults.Rating);
 		ratingView.EmptyShapeColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.EmptyShapeColor);
 		ratingView.FillColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.FillColor);
 		ratingView.IsReadOnly.Should().BeFalse().And.Be(RatingViewDefaults.IsReadOnly);
@@ -170,7 +170,7 @@ public class RatingViewTests : BaseViewTest
 	{
 		const double currentRating = 3.5;
 		RatingView ratingView = new();
-		ratingView.Rating.Should().Be(RatingViewDefaults.DefaultRating);
+		ratingView.Rating.Should().Be(RatingViewDefaults.Rating);
 		var signaled = false;
 		ratingView.RatingChanged += (sender, e) => signaled = true;
 		ratingView.Rating = currentRating;

@@ -1,14 +1,10 @@
-﻿// Ignore Spelling: color
-
-using System.ComponentModel;
-
-namespace CommunityToolkit.Maui.Core;
+﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>Default Values for RatingView</summary>
 static class RatingViewDefaults
 {
 	/// <summary>Default rating value.</summary>
-	public const double DefaultRating = 0.0;
+	public const double Rating = 0.0;
 
 	/// <summary>Default view element read only.</summary>
 	public const bool IsReadOnly = false;
@@ -28,20 +24,21 @@ static class RatingViewDefaults
 	/// <summary>Default spacing between ratings.</summary>
 	public const double Spacing = 10.0;
 
-	/// <summary>Default color for an empty rating.</summary>
-	public static readonly Color EmptyShapeColor = Colors.Transparent;
-
-	/// <summary>Default filled color for a rating.</summary>
-	public static readonly Color FillColor = Colors.Yellow;
-
-	/// <summary>Default rating item padding.</summary>
-	public static readonly Thickness ShapePadding = new(0);
-
 	/// <summary>Default rating shape.</summary>
 	public const RatingViewShape Shape = RatingViewShape.Star;
 
-	/// <summary>Default border color for a rating shape.</summary>
-	public static readonly Color ShapeBorderColor = Colors.Grey;
+	/// <summary>Default Fill Option</summary>
+	public const RatingViewFillOption FillWhenTapped = RatingViewFillOption.Shape;
 
-	public const RatingViewFillOption RatingviewfillOption = RatingViewFillOption.Shape;
+	/// <summary>Default color for an empty rating.</summary>
+	public static Color EmptyShapeColor { get; } = Colors.Transparent;
+
+	/// <summary>Default filled color for a rating.</summary>
+	public static Color FillColor { get; } = Colors.Yellow;
+
+	/// <summary>Default rating item padding.</summary>
+	public static Thickness ShapePadding { get; } = new(0);
+
+	/// <summary>Default border color for a rating shape.</summary>
+	public static Color ShapeBorderColor { get; } = Colors.Grey;
 }
