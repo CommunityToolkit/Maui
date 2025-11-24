@@ -28,8 +28,8 @@ public class BindablePropertyModelTests : BaseTest
 			"null",
 			"null",
 			string.Empty,
-			true, // HasSetter
-			string.Empty // SetterAccessibilityText
+			true, // IsReadOnly
+			string.Empty // SetterAccessibility
 		);
 
 		// Act
@@ -70,8 +70,8 @@ public class BindablePropertyModelTests : BaseTest
 			coerceValueMethodName,
 			defaultValueCreatorMethodName,
 			newKeywordText,
-			true, // HasSetter
-			string.Empty // SetterAccessibilityText
+			true, // IsReadOnly
+			string.Empty // SetterAccessibility
 		);
 
 		// Assert
