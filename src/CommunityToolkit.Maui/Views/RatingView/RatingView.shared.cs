@@ -117,6 +117,7 @@ public partial class RatingView : TemplatedView, IRatingView
 	/// </summary>
 	/// <remarks>Use this property to control how the rating view visually responds to user interaction. The
 	/// selected fill option determines the appearance of the rating elements when tapped.</remarks>
+	[Obsolete($"Use {nameof(FillOption)} instead")]
 	[BindableProperty(DefaultValue = RatingViewDefaults.FillWhenTapped, PropertyChangedMethodName = nameof(OnRatingColorChanged))]
 	public partial RatingViewFillOption FillWhenTapped { get; set; }
 
@@ -135,6 +136,8 @@ public partial class RatingView : TemplatedView, IRatingView
 	public partial double Spacing { get; set; }
 
 	/// <summary>Gets or sets the element to fill when a <see cref="Rating"/> is set.</summary>
+	/// <remarks>Use this property to control how the rating view visually responds to user interaction.
+	/// The selected fill option determines the appearance of the rating elements when tapped.</remarks>
 	[BindableProperty(DefaultValue = RatingViewDefaults.FillOption, PropertyChangingMethodName = nameof(OnRatingColorChanged))]
 	public partial RatingViewFillOption FillOption { get; set; }
 
