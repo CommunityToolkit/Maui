@@ -127,7 +127,7 @@ public class BindablePropertyModelTests : BaseTest
 			"null",
 			"null",
 			string.Empty,
-			true, // HasSetter
+			true, // IsReadOnly
 			string.Empty // SetterAccessibilityText
 		);
 
