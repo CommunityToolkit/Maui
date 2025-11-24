@@ -135,11 +135,8 @@ public partial class RatingView : TemplatedView, IRatingView
 	public partial double Spacing { get; set; }
 
 	/// <summary>Gets or sets the element to fill when a <see cref="Rating"/> is set.</summary>
-	public RatingViewFillOption FillOption
-	{
-		get => (RatingViewFillOption)GetValue(FillWhenTappedProperty);
-		set => SetValue(FillWhenTappedProperty, value);
-	}
+	[BindableProperty(DefaultValue = RatingViewDefaults.FillOption, PropertyChangingMethodName = nameof(OnRatingColorChanged))]
+	public partial RatingViewFillOption FillOption { get; set; }
 
 	internal HorizontalStackLayout RatingLayout { get; } = [];
 

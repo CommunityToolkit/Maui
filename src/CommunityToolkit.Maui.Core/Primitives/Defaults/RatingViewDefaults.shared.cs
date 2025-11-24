@@ -27,8 +27,11 @@ static class RatingViewDefaults
 	/// <summary>Default rating shape.</summary>
 	public const RatingViewShape Shape = RatingViewShape.Star;
 
-	/// <summary>Default Fill Option</summary>
+	/// <summary>Default Fill When Tapped</summary>
 	public const RatingViewFillOption FillWhenTapped = RatingViewFillOption.Shape;
+	
+	/// <summary>Default Fill Option</summary>
+	public const RatingViewFillOption FillOption = RatingViewFillOption.Shape;
 
 	/// <summary>Default color for an empty rating.</summary>
 	public static Color EmptyShapeColor { get; } = Colors.Transparent;

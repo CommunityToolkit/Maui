@@ -93,7 +93,8 @@ public class RatingViewTests : BaseViewTest
 		ratingView.ShapeBorderColor.Should().BeOfType<Color>().And.Be(RatingViewDefaults.ShapeBorderColor);
 		ratingView.ShapeBorderThickness.Should().Be(RatingViewDefaults.ShapeBorderThickness);
 		ratingView.Spacing.Should().Be(RatingViewDefaults.Spacing);
-		ratingView.FillOption.Should().BeOneOf(RatingViewFillOption.Shape).And.Be(RatingViewFillOption.Shape);
+		ratingView.FillWhenTapped.Should().Be(RatingViewDefaults.FillWhenTapped);
+		ratingView.FillOption.Should().BeOneOf(RatingViewDefaults.FillOption);
 		ratingView.CustomShapePath.Should().BeNull();
 	}
 
