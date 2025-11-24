@@ -29,9 +29,9 @@ static class AttributeExtensions
 			return $"({data.Type}){members[(int)data.Value]}";
 		}
 
-		if(data.Type?.SpecialType is SpecialType.System_String)
+		if (data.Type?.SpecialType is SpecialType.System_String)
 		{
-			return data.Value is null ? $"\"{placeholder}\"": $"({data.Type})\"{data.Value}\"";
+			return data.Value is null ? $"\"{placeholder}\"" : $"({data.Type})\"{data.Value}\"";
 		}
 
 		if (data.Type?.SpecialType is SpecialType.System_Char)
