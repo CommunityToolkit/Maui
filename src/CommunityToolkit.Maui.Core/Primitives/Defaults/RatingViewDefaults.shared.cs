@@ -29,17 +29,19 @@ static class RatingViewDefaults
 	public const double Spacing = 10.0;
 
 	/// <summary>Default color for an empty rating.</summary>
-	public static Color EmptyShapeColor { get; } = Colors.Transparent;
+	public static readonly Color EmptyShapeColor = Colors.Transparent;
 
 	/// <summary>Default filled color for a rating.</summary>
-	public static Color FillColor { get; } = Colors.Yellow;
+	public static readonly Color FillColor = Colors.Yellow;
 
 	/// <summary>Default rating item padding.</summary>
-	public static Thickness ShapePadding { get; } = new(0);
+	public static readonly Thickness ShapePadding = new(0);
 
 	/// <summary>Default rating shape.</summary>
-	public static RatingViewShape Shape { get; } = RatingViewShape.Star;
+	public const RatingViewShape Shape = RatingViewShape.Star;
 
 	/// <summary>Default border color for a rating shape.</summary>
-	public static Color ShapeBorderColor { get; } = Colors.Grey;
+	public static readonly Color ShapeBorderColor = Colors.Grey;
+
+	public const RatingViewFillOption RatingviewfillOption = RatingViewFillOption.Shape;
 }

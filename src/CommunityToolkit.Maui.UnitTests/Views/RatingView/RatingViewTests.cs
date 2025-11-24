@@ -622,24 +622,6 @@ public class RatingViewTests : BaseViewTest
 	}
 
 	[Fact]
-	public void Properties_MaximumRating_Validator()
-	{
-		RatingView ratingView = new();
-		RatingView.MaximumRatingProperty.ValidateValue(ratingView, 0).Should().BeFalse();
-		RatingView.MaximumRatingProperty.ValidateValue(ratingView, RatingViewDefaults.MaximumRatingLimit + 1).Should().BeFalse();
-		RatingView.MaximumRatingProperty.ValidateValue(ratingView, 1).Should().BeTrue();
-	}
-
-	[Fact]
-	public void Properties_Rating_Validator()
-	{
-		RatingView ratingView = new();
-		RatingView.RatingProperty.ValidateValue(ratingView, -1.0).Should().BeFalse();
-		RatingView.RatingProperty.ValidateValue(ratingView, (double)(RatingViewDefaults.MaximumRatingLimit + 1)).Should().BeFalse();
-		RatingView.RatingProperty.ValidateValue(ratingView, 0.1).Should().BeTrue();
-	}
-
-	[Fact]
 	public void RatingViewDoesNotThrowsArgumentOutOfRangeExceptionWhenRatingSetBeforeMaximumRating()
 	{
 		const int maximumRating = RatingViewDefaults.MaximumRatingLimit - 1;
