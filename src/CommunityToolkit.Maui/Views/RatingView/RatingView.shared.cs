@@ -111,7 +111,7 @@ public partial class RatingView : TemplatedView, IRatingView
 	/// </summary>
 	/// <remarks>The maximum rating determines the upper limit for rating inputs. Changing this value may affect
 	/// validation and display of rating controls. The value must be a positive integer.</remarks>
-	[BindableProperty(PropertyChangedMethodName = nameof(OnMaximumRatingChanged), PropertyChangingMethodName = nameof(OnMaximumRatingChanging), ValidateValueMethodName = nameof(IsMaximumRatingValid), DefaultValue = RatingViewDefaults.MaximumRating)]
+	[BindableProperty(DefaultValue = RatingViewDefaults.MaximumRating, PropertyChangedMethodName = nameof(OnMaximumRatingChanged), PropertyChangingMethodName = nameof(OnMaximumRatingChanging))]
 	public partial int MaximumRating { get; set; }
 
 	/// <summary>
@@ -127,7 +127,7 @@ public partial class RatingView : TemplatedView, IRatingView
 	/// </summary>
 	/// <remarks>The rating must be a valid value as determined by the associated validation method. Changing the
 	/// rating triggers the property changed callback, which may update related UI or logic.</remarks>
-	[BindableProperty(DefaultValue = RatingViewDefaults.Rating, PropertyChangedMethodName = nameof(OnRatingChanged), PropertyChangingMethodName = nameof(OnRatingChanging), ValidateValueMethodName = nameof(IsRatingValid))]
+	[BindableProperty(DefaultValue = RatingViewDefaults.Rating, PropertyChangedMethodName = nameof(OnRatingChanged), PropertyChangingMethodName = nameof(OnRatingChanging))]
 	public partial double Rating { get; set; }
 
 	/// <summary>
@@ -210,8 +210,6 @@ public partial class RatingView : TemplatedView, IRatingView
 
 		return result.AsReadOnly();
 	}
-
-	static bool IsMaximumRatingValid(BindableObject bindable, object value) => (int)value is >= 1 and <= RatingViewDefaults.MaximumRatingLimit;
 
 	static void OnIsReadOnlyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
@@ -317,12 +315,6 @@ public partial class RatingView : TemplatedView, IRatingView
 			new Point(0, 0), new Point(1, 0));
 	}
 
-	static bool IsRatingValid(BindableObject bindable, object value)
-	{
-		var rating = (double)value;
-		return rating is >= 0.0 and <= RatingViewDefaults.MaximumRatingLimit;
-	}
-
 	static void OnCustomShapePathPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var ratingView = (RatingView)bindable;
@@ -359,10 +351,6 @@ public partial class RatingView : TemplatedView, IRatingView
 	static void OnShapeBorderColorChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var ratingView = (RatingView)bindable;
-		if (newValue is null)
-		{
-			newValue = Colors.Transparent;
-		}
 
 		for (var element = 0; element < ratingView.RatingLayout.Count; element++)
 		{
