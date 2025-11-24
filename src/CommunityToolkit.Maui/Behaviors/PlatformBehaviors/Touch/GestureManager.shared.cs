@@ -286,7 +286,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 					bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.PressedImageAspect);
 				}
 
-				if (imageTouchBehavior.IsSet(ImageTouchBehavior.PressedBackgroundImageSourceProperty))
+				if (imageTouchBehavior.IsSet(ImageTouchBehavior.PressedImageSourceProperty))
 				{
 					bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.PressedImageSource);
 				}
@@ -302,7 +302,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 					bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.DefaultImageAspect);
 				}
 
-				if (imageTouchBehavior.IsSet(ImageTouchBehavior.HoveredBackgroundImageSourceProperty))
+				if (imageTouchBehavior.IsSet(ImageTouchBehavior.HoveredImageSourceProperty))
 				{
 					bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.HoveredImageSource);
 				}
@@ -403,7 +403,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return true;
 		}
 
-		return await element.FadeTo(updatedOpacity, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
+		return await element.FadeToAsync(updatedOpacity, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
 	}
 
 	static async Task<bool> SetScale(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
@@ -553,7 +553,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return true;
 		}
 
-		return await element.TranslateTo(updatedTranslationX, updatedTranslationY, (uint)Abs(duration.Milliseconds), easing).WaitAsync(token);
+		return await element.TranslateToAsync(updatedTranslationX, updatedTranslationY, (uint)Abs(duration.Milliseconds), easing).WaitAsync(token);
 	}
 
 	static async Task<bool> SetRotation(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
@@ -610,7 +610,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return true;
 		}
 
-		return await element.RotateTo(updatedRotation, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
+		return await element.RotateToAsync(updatedRotation, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
 	}
 
 	static async Task<bool> SetRotationX(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
@@ -667,7 +667,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return true;
 		}
 
-		return await element.RotateXTo(updatedRotationX, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
+		return await element.RotateXToAsync(updatedRotationX, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
 	}
 
 	static async Task<bool> SetRotationY(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
@@ -724,7 +724,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return true;
 		}
 
-		return await element.RotateYTo(updatedRotationY, (uint)Abs(duration.Milliseconds), easing).WaitAsync(token);
+		return await element.RotateYToAsync(updatedRotationY, (uint)Abs(duration.Milliseconds), easing).WaitAsync(token);
 	}
 
 	async Task<bool> SetBackgroundColor(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)

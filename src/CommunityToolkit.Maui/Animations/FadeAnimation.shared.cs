@@ -34,7 +34,7 @@ public partial class FadeAnimation() : BaseAnimation(300)
 
 		var originalOpacity = view.Opacity;
 
-		await view.FadeTo(Opacity, Length, Easing).WaitAsync(token);
-		await view.FadeTo(originalOpacity, Length, Easing).WaitAsync(token);
+		await view.FadeToAsync(Opacity, Length, Easing).WaitAsync(token);
+		await view.FadeToAsync(originalOpacity, Length, Easing).WaitAsync(token);
 	}
 }

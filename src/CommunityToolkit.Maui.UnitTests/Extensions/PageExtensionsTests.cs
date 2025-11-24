@@ -2,6 +2,7 @@
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Extensions;
+
 public class PageExtensionsTests : BaseTest
 {
 	[Fact]

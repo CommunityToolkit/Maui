@@ -1,6 +1,5 @@
 ﻿using System.Runtime.Versioning;
 using Android.Content;
-using Android.Provider;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.Camera.Core;
@@ -48,10 +47,10 @@ partial class CameraManager
 	{
 		extensionMode = mode;
 		if (cameraView.SelectedCamera is null
-		    || processCameraProvider is null
-		    || cameraPreview is null
-		    || imageCapture is null
-		    || videoCapture is null)
+			|| processCameraProvider is null
+			|| cameraPreview is null
+			|| imageCapture is null
+			|| videoCapture is null)
 		{
 			return;
 		}
@@ -63,8 +62,48 @@ partial class CameraManager
 
 	public void Dispose()
 	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
+		CleanupVideoRecordingResources();
+
+		camera?.Dispose();
+		camera = null;
+
+		cameraControl?.Dispose();
+		cameraControl = null;
+
+		cameraPreview?.Dispose();
+		cameraPreview = null;
+
+		cameraExecutor?.Dispose();
+		cameraExecutor = null;
+
+		imageCapture?.Dispose();
+		imageCapture = null;
+
+		videoCapture?.Dispose();
+		videoCapture = null;
+
+		imageCallback?.Dispose();
+		imageCallback = null;
+
+		previewView?.Dispose();
+		previewView = null;
+
+		processCameraProvider?.UnbindAll();
+		processCameraProvider?.Dispose();
+		processCameraProvider = null;
+
+		resolutionSelector?.Dispose();
+		resolutionSelector = null;
+
+		resolutionFilter?.Dispose();
+		resolutionFilter = null;
+
+		orientationListener?.Disable();
+		orientationListener?.Dispose();
+		orientationListener = null;
+
+		videoRecordingStream?.Dispose();
+		videoRecordingStream = null;
 	}
 
 	// IN the future change the return type to be an alias
@@ -104,7 +143,7 @@ partial class CameraManager
 		if (resolutionFilter is not null)
 		{
 			if (Math.Abs(resolutionFilter.TargetSize.Width - resolution.Width) < double.Epsilon &&
-			    Math.Abs(resolutionFilter.TargetSize.Height - resolution.Height) < double.Epsilon)
+				Math.Abs(resolutionFilter.TargetSize.Height - resolution.Height) < double.Epsilon)
 			{
 				return;
 			}
@@ -127,7 +166,7 @@ partial class CameraManager
 			.SetAllowedResolutionMode(ResolutionSelector.PreferHigherResolutionOverCaptureRate)?
 			.SetResolutionFilter(resolutionFilter)
 			?.Build() ?? throw new InvalidOperationException("Unable to Set Resolution Filter");
-		
+
 		// `.SetResolutionFilter()` should never return null
 		// According to the Android docs, `ResolutionSelector.Builder.setResolutionFilter(ResolutionFilter)` returns a `NonNull` object
 		// `ResolutionSelector.Builder.SetResolutionFilter(ResolutionFilter)` returning a nullable object in .NET for Android is likely a C# Binding mistake
@@ -138,55 +177,7 @@ partial class CameraManager
 		}
 	}
 
-	protected virtual void Dispose(bool disposing)
-	{
-		if (disposing)
-		{
-			CleanupVideoRecordingResources();
-
-			camera?.Dispose();
-			camera = null;
-
-			cameraControl?.Dispose();
-			cameraControl = null;
-
-			cameraPreview?.Dispose();
-			cameraPreview = null;
-
-			cameraExecutor?.Dispose();
-			cameraExecutor = null;
-
-			imageCapture?.Dispose();
-			imageCapture = null;
-
-			videoCapture?.Dispose();
-			videoCapture = null;
-
-			imageCallback?.Dispose();
-			imageCallback = null;
-
-			previewView?.Dispose();
-			previewView = null;
-
-			processCameraProvider?.Dispose();
-			processCameraProvider = null;
-
-			resolutionSelector?.Dispose();
-			resolutionSelector = null;
-
-			resolutionFilter?.Dispose();
-			resolutionFilter = null;
-
-			orientationListener?.Disable();
-			orientationListener?.Dispose();
-			orientationListener = null;
-
-			videoRecordingStream?.Dispose();
-			videoRecordingStream = null;
-		}
-	}
-
-	protected virtual async partial Task PlatformConnectCamera(CancellationToken token)
+	private async partial Task PlatformConnectCamera(CancellationToken token)
 	{
 		var cameraProviderFuture = ProcessCameraProvider.GetInstance(context);
 		if (previewView is null)
@@ -200,16 +191,6 @@ partial class CameraManager
 		{
 			processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new CameraException($"Unable to retrieve {nameof(ProcessCameraProvider)}"));
 
-			if (cameraProvider.AvailableCameras is null)
-			{
-				await cameraProvider.RefreshAvailableCameras(token);
-
-				if (cameraProvider.AvailableCameras is null)
-				{
-					throw new CameraException("Unable to refresh available cameras");
-				}
-			}
-
 			await StartUseCase(token);
 
 			cameraProviderTCS.SetResult();
@@ -218,7 +199,7 @@ partial class CameraManager
 		await cameraProviderTCS.Task.WaitAsync(token);
 	}
 
-	protected async Task StartUseCase(CancellationToken token)
+	async Task StartUseCase(CancellationToken token)
 	{
 		if (resolutionSelector is null || cameraExecutor is null)
 		{
@@ -240,7 +221,7 @@ partial class CameraManager
 			.SetCaptureMode(ImageCapture.CaptureModeMaximizeQuality)?
 			.SetResolutionSelector(resolutionSelector)
 			?.Build() ?? throw new InvalidOperationException("Unable to set resolution selector");
-		
+
 		// `.SetResolutionFilter()` should never return null
 		// According to the Android docs, `ResolutionSelector.Builder.SetResolutionFilter(ResolutionFilter)` returns a `NonNull` object
 		// `ResolutionSelector.Builder.SetResolutionFilter(ResolutionFilter)` returning a nullable object in .NET for Android is likely a C# Binding mistake
@@ -248,7 +229,7 @@ partial class CameraManager
 
 		var videoRecorderBuilder = new Recorder.Builder()
 			.SetExecutor(cameraExecutor) ?? throw new InvalidOperationException("Unable to set video recorder executor");
-		
+
 		// `.SetExecutor()` should never return null
 		// According to the Android docs, `ResolutionSelector.Builder.setExecutor(ResolutionFilter)` returns a `NonNull` object
 		// `ResolutionSelector.Builder.SetExecutor(ResolutionFilter)` returning a nullable object in .NET for Android is likely a C# Binding mistake
@@ -256,36 +237,28 @@ partial class CameraManager
 
 		if (Quality.Highest is not null)
 		{
-			videoRecorderBuilder = videoRecorderBuilder?.SetQualitySelector(QualitySelector.From(Quality.Highest));
+			videoRecorderBuilder = videoRecorderBuilder.SetQualitySelector(QualitySelector.From(Quality.Highest));
 		}
 
-		videoRecorder = videoRecorderBuilder?.Build();
+		videoRecorder = videoRecorderBuilder.Build();
 		videoCapture = VideoCapture.WithOutput(videoRecorder);
 
 		await StartCameraPreview(token);
 	}
 
-	protected virtual async partial Task PlatformStartCameraPreview(CancellationToken token)
+	private async partial Task PlatformStartCameraPreview(CancellationToken token)
 	{
 		if (previewView is null || processCameraProvider is null || cameraPreview is null || imageCapture is null || videoCapture is null)
 		{
 			return;
 		}
 
-		if (cameraView.SelectedCamera is null)
-		{
-			if (cameraProvider.AvailableCameras is null)
-			{
-				await cameraProvider.RefreshAvailableCameras(token);
-			}
-
-			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
-		}
+		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
 		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, token, cameraPreview, imageCapture, videoCapture);
 		cameraControl = camera.CameraControl;
 
-		var point = previewView.MeteringPointFactory?.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
+		var point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
 		var action = new FocusMeteringAction.Builder(point).Build();
 		camera.CameraControl?.StartFocusAndMetering(action);
 
@@ -293,7 +266,7 @@ partial class CameraManager
 		OnLoaded.Invoke();
 	}
 
-	protected virtual partial void PlatformStopCameraPreview()
+	private partial void PlatformStopCameraPreview()
 	{
 		if (processCameraProvider is null)
 		{
@@ -304,11 +277,11 @@ partial class CameraManager
 		IsInitialized = false;
 	}
 
-	protected virtual partial void PlatformDisconnect()
+	private partial void PlatformDisconnect()
 	{
 	}
 
-	protected virtual partial ValueTask PlatformTakePicture(CancellationToken token)
+	private partial ValueTask PlatformTakePicture(CancellationToken token)
 	{
 		ArgumentNullException.ThrowIfNull(cameraExecutor);
 		ArgumentNullException.ThrowIfNull(imageCallback);
@@ -317,30 +290,22 @@ partial class CameraManager
 		return ValueTask.CompletedTask;
 	}
 
-	protected virtual async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
+	private async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
 	{
 		if (previewView is null
-		    || processCameraProvider is null
-		    || cameraPreview is null
-		    || imageCapture is null
-		    || videoCapture is null
-		    || videoRecorder is null
-		    || videoRecordingFile is not null)
+			|| processCameraProvider is null
+			|| cameraPreview is null
+			|| imageCapture is null
+			|| videoCapture is null
+			|| videoRecorder is null
+			|| videoRecordingFile is not null)
 		{
 			return;
 		}
 
 		videoRecordingStream = stream;
 
-		if (cameraView.SelectedCamera is null)
-		{
-			if (cameraProvider.AvailableCameras is null)
-			{
-				await cameraProvider.RefreshAvailableCameras(token);
-			}
-
-			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
-		}
+		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
 		if (camera is null || !IsVideoCaptureAlreadyBound())
 		{
@@ -360,20 +325,20 @@ partial class CameraManager
 			.PrepareRecording(context, outputOptions)
 			?.WithAudioEnabled()
 			.Start(executor, captureListener) ?? throw new InvalidOperationException("Unable to prepare recording");
-		
+
 		// `.PrepareRecording()` should never return null
 		// According to the Android docs, `Recorder.prepareRecording(Context, eMediaSoreOutputOptions)` returns a `NonNull` object
 		// `Recorder.PrepareRecording(Context, eMediaSoreOutputOptions)` returning a nullable object in .NET for Android is likely a C# Binding mistake
 		// https://developer.android.com/reference/androidx/camera/video/Recorder#prepareRecording(android.content.Context,androidx.camera.video.MediaStoreOutputOptions)
 	}
 
-	protected virtual async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
+	private async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
 	{
 		ArgumentNullException.ThrowIfNull(cameraExecutor);
 		if (videoRecording is null
-		    || videoRecordingFile is null
-		    || videoRecordingFinalizeTcs is null
-		    || videoRecordingStream is null)
+			|| videoRecordingFile is null
+			|| videoRecordingFinalizeTcs is null
+			|| videoRecordingStream is null)
 		{
 			return Stream.Null;
 		}
@@ -392,8 +357,8 @@ partial class CameraManager
 	bool IsVideoCaptureAlreadyBound()
 	{
 		return processCameraProvider is not null
-		       && videoCapture is not null
-		       && processCameraProvider.IsBound(videoCapture);
+			   && videoCapture is not null
+			   && processCameraProvider.IsBound(videoCapture);
 	}
 
 	void CleanupVideoRecordingResources()
@@ -434,9 +399,9 @@ partial class CameraManager
 				return;
 			}
 
-			var extensionsManagerFuture = ExtensionsManager.GetInstanceAsync(context, cameraProviderInstance) 
-			                              ?? throw new InvalidOperationException("Unable to get listenable future for camera provider");;
-			
+			var extensionsManagerFuture = ExtensionsManager.GetInstanceAsync(context, cameraProviderInstance)
+										  ?? throw new InvalidOperationException("Unable to get listenable future for camera provider"); ;
+
 			extensionsManagerFuture.AddListener(new Runnable(() =>
 			{
 				var extensionsManager = (ExtensionsManager?)extensionsManagerFuture.Get();
@@ -476,7 +441,7 @@ partial class CameraManager
 
 	sealed class ImageCallBack(ICameraView cameraView) : ImageCapture.OnImageCapturedCallback
 	{
-		public override void OnCaptureSuccess(IImageProxy? image)
+		public override void OnCaptureSuccess(IImageProxy image)
 		{
 			base.OnCaptureSuccess(image);
 			var img = image?.Image;
@@ -524,7 +489,7 @@ partial class CameraManager
 			}
 		}
 
-		public override void OnError(ImageCaptureException? exception)
+		public override void OnError(ImageCaptureException exception)
 		{
 			base.OnError(exception);
 			cameraView.OnMediaCapturedFailed(exception?.Message ?? "An unknown error occurred.");
@@ -541,8 +506,8 @@ partial class CameraManager
 				.Where(size => size.Width <= TargetSize.Width && size.Height <= TargetSize.Height)
 				.OrderByDescending(size => size.Width * size.Height).ToList();
 
-			return filteredList is null || filteredList.Count is 0 
-				? supportedSizes ?? [] 
+			return filteredList is null || filteredList.Count is 0
+				? supportedSizes ?? []
 				: filteredList;
 		}
 	}

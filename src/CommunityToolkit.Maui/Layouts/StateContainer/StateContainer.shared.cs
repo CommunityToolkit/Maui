@@ -169,14 +169,14 @@ public static class StateContainer
 		{
 			if (layout.Children.Count > 0)
 			{
-				await Task.WhenAll(layout.Children.OfType<View>().Select(view => view.FadeTo(0))).WaitAsync(token);
+				await Task.WhenAll(layout.Children.OfType<View>().Select(view => view.FadeToAsync(0))).WaitAsync(token);
 			}
 
 			ChangeState(bindable, state);
 
 			if (layout.Children.Count > 0)
 			{
-				await Task.WhenAll(layout.Children.OfType<View>().Select(view => view.FadeTo(1))).WaitAsync(token);
+				await Task.WhenAll(layout.Children.OfType<View>().Select(view => view.FadeToAsync(1))).WaitAsync(token);
 			}
 		}
 		finally
