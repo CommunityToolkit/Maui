@@ -61,7 +61,7 @@ jobs:
                 os: [ windows-latest, macos-26 ]
         steps:
             -   name: Checkout code
-                uses: actions/checkout@v5
+                uses: actions/checkout@v6
 
             -   name: Set Latest Xcode Version
                 if: runner.os == 'macOS'
@@ -106,7 +106,7 @@ jobs:
                 os: [ windows-latest, macos-26 ]
         steps:
             -   name: Checkout code
-                uses: actions/checkout@v5
+                uses: actions/checkout@v6
 
             -   name: Set NuGet Version to Tag Number
                 if: startsWith(github.ref, 'refs/tags/') && (!endsWith(github.ref, '-mediaelement') && !endsWith(github.ref, '-camera') && !endsWith(github.ref, '-maps'))
