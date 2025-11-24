@@ -10,109 +10,109 @@ namespace CommunityToolkit.Maui.Views;
 public partial class MediaElement : View, IMediaElement, IDisposable
 {
 	/// <summary>
-	/// Backing store for the <see cref="Aspect"/> property.
+	/// Gets or sets the <see cref="Aspect"/> ratio used to display the video content.
 	/// </summary>
 	[BindableProperty(DefaultValue = Aspect.AspectFit)]
 	public partial Aspect Aspect { get; set; }
 	
 	/// <summary>
-	/// Backing store for the <see cref="MediaHeight"/> property.
+	/// Gets the <see cref="MediaHeight"/> in pixels.
 	/// </summary>
 	[BindableProperty(DefaultValue = 0)]
 	public partial int MediaHeight { get; }
 
 	/// <summary>
-	/// Backing store for the <see cref="MediaWidth"/> property.
+	/// Gets the <see cref="MediaWidth"/> in pixels.
 	/// </summary>
 	[BindableProperty(DefaultValue = 0)]
 	public partial int MediaWidth { get; }
 
 	/// <summary>
-	/// Backing store for the <see cref="Position"/> property.
+	/// Gets the current <see cref="Position"/> of the media playback.
 	/// </summary>
 	[BindableProperty(DefaultValue = "00:00:00")]
 	public partial TimeSpan Position { get; internal set; }
 
 	/// <summary>
-	/// Backing store for the <see cref="Duration"/> property.
+	/// Gets the <see cref="Duration"/> of the media.
 	/// </summary>
 	[BindableProperty(DefaultValue = "00:00:00")]
 	public partial TimeSpan Duration { get; }
 
 	/// <summary>
-	/// Backing store for the <see cref="ShouldAutoPlay"/> property.
+	/// Gets or sets the <see cref="ShouldAutoPlay"/> indicating whether the media should play automatically.
 	/// </summary>
 	[BindableProperty(DefaultValue = false)]
 	public partial bool ShouldAutoPlay { get; set; }
 
 	/// <summary>
-	/// Backing store for the <see cref="ShouldLoopPlayback"/> property.
+	/// Gets or sets the <see cref="ShouldLoopPlayback"/> indicating whether the media should loop playback.
 	/// </summary>
 	[BindableProperty(DefaultValue = false)]
 	public partial bool ShouldLoopPlayback { get; set; }
 
 	/// <summary>
-	/// Backing store for the <see cref="ShouldKeepScreenOn"/> property.
+	/// Gets or sets the <see cref="ShouldKeepScreenOn"/> indicating whether the screen should be kept on during media playback.
 	/// </summary>
 	[BindableProperty(DefaultValue = false)]
 	public partial bool ShouldKeepScreenOn { get; set; }
 	/// <summary>
-	/// Backing store for the <see cref="ShouldMute"/> property.
+	/// Gets or sets the <see cref="ShouldMute"/> indicating whether the media should be muted.
 	/// </summary>
 	[BindableProperty(DefaultValue = false)]
 	public partial bool ShouldMute { get; set; }
 
 	/// <summary>
-	/// Backing store for the <see cref="ShouldShowPlaybackControls"/> property.
+	/// Gets or sets the <see cref="ShouldShowPlaybackControls"/> indicating whether playback controls should be shown.
 	/// </summary>
 	[BindableProperty(DefaultValue = true)]
 	public partial bool ShouldShowPlaybackControls { get; set; }
 
 	/// <summary>
-	/// Backing store for the <see cref="Source"/> property.
+	/// Gets or sets the <see cref="Source"/> of the media.
 	/// </summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnSourcePropertyChanged), PropertyChangingMethodName = nameof(OnSourcePropertyChanging))]
 	[TypeConverter(typeof(MediaSourceConverter))]
 	public partial MediaSource? Source { get; set; }
 
 	/// <summary>
-	/// Backing store for the <see cref="Speed"/> property.
+	/// Gets or sets the <see cref="Speed"/> of the media playback.
 	/// </summary>
 	[BindableProperty(DefaultValue = 1.0)]
 	public partial double Speed { get; set; }
 
 	/// <summary>
-	/// Backing store for the <see cref="MetadataTitle"/> property.
+	/// Gets or sets the <see cref="MetadataTitle"/> of the media.
 	/// </summary>
 	[BindableProperty(DefaultValue = "")]
 	public partial string MetadataTitle { get; set; }
 
 	/// <summary>
-	/// Backing store for the <see cref="MetadataArtist"/> property.
+	/// Gets or sets the <see cref="MetadataArtist"/> of the media.
 	/// </summary>
 	[BindableProperty(DefaultValue = "")]
 	public partial string MetadataArtist { get; set; }
 
 	/// <summary>
-	/// Backing store for the <see cref="MetadataArtworkUrl"/> property.
+	/// Gets or sets the <see cref="MetadataArtworkUrl"/> of the media.
 	/// </summary>
 	[BindableProperty(DefaultValue = "")]
 	public partial string MetadataArtworkUrl { get; set; }
 
 	/// <summary>
-	/// Backing store for the <see cref="CurrentState"/> property.
+	/// Gets or sets the <see cref="CurrentState"/> of the media.
 	/// </summary>
 	[BindableProperty(DefaultValue = MediaElementState.None, PropertyChangedMethodName = nameof(OnCurrentStatePropertyChanged))]
 	public partial MediaElementState CurrentState { get; internal set; }
 	
 	/// <summary>
-	/// Backing store for the <see cref="Volume"/> property.
+	/// Gets or sets the <see cref="Volume"/> of the media.
 	/// </summary>
 	[BindableProperty(DefaultValue = 1.0, ValidateValueMethodName = nameof(ValidateVolume))]
 	public partial double Volume { get; set; }
 
 	/// <summary>
-	/// Backing store for the <see cref="AndroidViewType"/> property.
+	/// Gets or sets the <see cref="AndroidViewType"/> of the media.
 	/// </summary>
 	public AndroidViewType AndroidViewType { get; init; } = MediaElementOptions.DefaultAndroidViewType;
 
