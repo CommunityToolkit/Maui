@@ -304,7 +304,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			// For read-only properties, use the BindablePropertyKey in the setter
 			if (!string.IsNullOrEmpty(info.SetterAccessibility))
 			{
-				// Property has a private setter
+				// Property has a non-public setter (private or internal)
 				sb.Append(info.SetterAccessibility)
 					.Append("set => SetValue(")
 					.Append(info.BindablePropertyKeyName)
