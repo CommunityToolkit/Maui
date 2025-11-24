@@ -69,7 +69,7 @@ public partial class RatingView : TemplatedView, IRatingView
 	/// </summary>
 	/// <remarks>A value of 0 indicates that no border will be rendered. Negative values are not supported and may
 	/// result in undefined behavior.</remarks>
-	[BindableProperty(DefaultValue = RatingViewDefaults.ShapeBorderThickness, PropertyChangedMethodName = nameof(OnShapeBorderThicknessChanged))]
+	[BindableProperty(DefaultValue = RatingViewDefaults.ShapeBorderThickness, PropertyChangedMethodName = nameof(OnShapeBorderThicknessChanged), PropertyChangingMethodName = nameof(OnShapeBorderThicknessChanging))]
 	public partial double ShapeBorderThickness { get; set; }
 
 	/// <summary>
@@ -360,13 +360,16 @@ public partial class RatingView : TemplatedView, IRatingView
 		}
 	}
 
-	static void OnShapeBorderThicknessChanged(BindableObject bindable, object oldValue, object newValue)
+	static void OnShapeBorderThicknessChanging(BindableObject bindable, object oldValue, object newValue)
 	{
 		if ((double)newValue < 0)
 		{
 			throw new ArgumentOutOfRangeException(nameof(newValue), $"{nameof(ShapeBorderThickness)} must be greater than 0");
 		}
+	}
 
+	static void OnShapeBorderThicknessChanged(BindableObject bindable, object oldValue, object newValue)
+	{
 		var ratingView = (RatingView)bindable;
 		for (var element = 0; element < ratingView.RatingLayout.Count; element++)
 		{
