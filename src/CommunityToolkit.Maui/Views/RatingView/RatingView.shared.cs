@@ -9,8 +9,6 @@ using Path = Microsoft.Maui.Controls.Shapes.Path;
 namespace CommunityToolkit.Maui.Views;
 
 /// <summary>Rating view control.</summary>
-[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-[RequiresUnreferencedCode("Calls Microsoft.Maui.Controls.Binding.Binding(String, BindingMode, IValueConverter, Object, String, Object)")]
 public partial class RatingView : TemplatedView, IRatingView
 {
 	readonly WeakEventManager weakEventManager = new();
