@@ -15,10 +15,9 @@ namespace CommunityToolkit.Maui.SourceGenerators.Internal;
 [Generator]
 public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 {
-	static readonly SemanticValues emptySemanticValues = new(default, []); 
+	static readonly SemanticValues emptySemanticValues = new(default, []);
 
 	const string bpFullName = "global::Microsoft.Maui.Controls.BindableProperty";
-	const string bpKeyFullName = "global::Microsoft.Maui.Controls.BindablePropertyKey";
 
 	const string bpAttribute =
 		/* language=C#-test */
@@ -72,54 +71,87 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 	static void ExecuteAllValues(SourceProductionContext context, ImmutableArray<SemanticValues> semanticValues)
 	{
-		var groupedValues = semanticValues
-			.GroupBy(static sv => (sv.ClassInformation.ClassName, sv.ClassInformation.ContainingNamespace, sv.ClassInformation.ContainingTypes, sv.ClassInformation.GenericTypeParameters))
-			.ToDictionary(static d => d.Key, static d => d.ToArray());
+		// Pre-allocate dictionary with expected capacity
+		var groupedValues = new Dictionary<(string, string, string, string), List<SemanticValues>>(semanticValues.Length);
 
-		foreach (var keyValuePair in groupedValues)
+		// Single-pass grouping without LINQ
+		foreach (var sv in semanticValues)
 		{
-			var (className, containingNamespace, containingTypes, genericTypeParameters) = keyValuePair.Key;
-			var values = keyValuePair.Value;
+			var key = (sv.ClassInformation.ClassName, sv.ClassInformation.ContainingNamespace, sv.ClassInformation.ContainingTypes, sv.ClassInformation.GenericTypeParameters);
 
-			if (values.Length is 0 || string.IsNullOrEmpty(className) || string.IsNullOrEmpty(containingNamespace))
+			if (!groupedValues.TryGetValue(key, out var list))
 			{
-				continue;
+				list = new List<SemanticValues>();
+				groupedValues[key] = list;
 			}
+			list.Add(sv);
+		}
 
-			var bindableProperties = values.SelectMany(static x => x.BindableProperties).ToImmutableArray();
+		// Use ArrayPool for temporary storage
+		var bindablePropertiesBuffer = System.Buffers.ArrayPool<BindablePropertyModel>.Shared.Rent(32);
 
-			var classAccessibility = values[0].ClassInformation.DeclaredAccessibility;
+		try
+		{
+			foreach (var keyValuePair in groupedValues)
+			{
+				var (className, containingNamespace, containingTypes, genericTypeParameters) = keyValuePair.Key;
+				var values = keyValuePair.Value;
 
-			var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace, containingTypes, genericTypeParameters);
-			var combinedValues = new SemanticValues(combinedClassInfo, bindableProperties);
+				if (values.Count is 0 || string.IsNullOrEmpty(className) || string.IsNullOrEmpty(containingNamespace))
+				{
+					continue;
+				}
 
-			var fileNameSuffix = string.IsNullOrEmpty(containingTypes) ? className : $"{containingTypes}.{className}";
-			var source = GenerateSource(combinedValues);
-			SourceStringService.FormatText(ref source);
-			context.AddSource($"{fileNameSuffix}.g.cs", SourceText.From(source, Encoding.UTF8));
+				// Flatten bindable properties without SelectMany allocation
+				var bindablePropertiesCount = 0;
+				foreach (var value in values)
+				{
+					foreach (var bp in value.BindableProperties)
+					{
+						if (bindablePropertiesCount >= bindablePropertiesBuffer.Length)
+						{
+							var newBuffer = System.Buffers.ArrayPool<BindablePropertyModel>.Shared.Rent(bindablePropertiesBuffer.Length * 2);
+							Array.Copy(bindablePropertiesBuffer, newBuffer, bindablePropertiesBuffer.Length);
+							System.Buffers.ArrayPool<BindablePropertyModel>.Shared.Return(bindablePropertiesBuffer);
+							bindablePropertiesBuffer = newBuffer;
+						}
+						bindablePropertiesBuffer[bindablePropertiesCount++] = bp;
+					}
+				}
+
+				var bindableProperties = ImmutableArray.Create(bindablePropertiesBuffer, 0, bindablePropertiesCount);
+
+				var classAccessibility = values[0].ClassInformation.DeclaredAccessibility;
+
+				var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace, containingTypes, genericTypeParameters);
+				var combinedValues = new SemanticValues(combinedClassInfo, bindableProperties);
+
+				var fileNameSuffix = string.IsNullOrEmpty(containingTypes) ? className : string.Concat(containingTypes, ".", className);
+				var source = GenerateSource(combinedValues);
+				SourceStringService.FormatText(ref source);
+				context.AddSource($"{fileNameSuffix}.g.cs", SourceText.From(source, Encoding.UTF8));
+			}
+		}
+		finally
+		{
+			System.Buffers.ArrayPool<BindablePropertyModel>.Shared.Return(bindablePropertiesBuffer);
 		}
 	}
 
 
 	static string GenerateSource(SemanticValues value)
 	{
-		var namespaceLine = IsGlobalNamespace(value.ClassInformation)
-			? string.Empty
-			: $"namespace {value.ClassInformation.ContainingNamespace};";
+		// Pre-calculate StringBuilder capacity to avoid resizing
+		var estimatedCapacity = 500 + (value.BindableProperties.Count() * 400);
+		var sb = new StringBuilder(estimatedCapacity);
 
-		var sb = new StringBuilder(
-			/* language=C#-test */
-			//lang=csharp
-			$"""
-			  // <auto-generated>
-			  // See: CommunityToolkit.Maui.SourceGenerators.Internal.BindablePropertyAttributeSourceGenerator
+		// Use string concatenation for simple cases
+		sb.Append("// <auto-generated>\n// See: CommunityToolkit.Maui.SourceGenerators.Internal.BindablePropertyAttributeSourceGenerator\n\n#pragma warning disable\n#nullable enable\n\n");
 
-			  #pragma warning disable
-			  #nullable enable
-
-			  {namespaceLine}
-
-			  """);
+		if (!IsGlobalNamespace(value.ClassInformation))
+		{
+			sb.Append("namespace ").Append(value.ClassInformation.ContainingNamespace).Append(";\n\n");
+		}
 
 		// Generate nested class hierarchy
 		if (!string.IsNullOrEmpty(value.ClassInformation.ContainingTypes))
@@ -127,9 +159,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			var containingTypeNames = value.ClassInformation.ContainingTypes.Split('.');
 			foreach (var typeName in containingTypeNames)
 			{
-				sb.AppendLine($"{value.ClassInformation.DeclaredAccessibility} partial class {typeName}")
-					.AppendLine("{")
-					.AppendLine();
+				sb.Append(value.ClassInformation.DeclaredAccessibility).Append(" partial class ").Append(typeName).Append("\n{\n\n");
 			}
 		}
 
@@ -137,17 +167,15 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var classNameWithGenerics = value.ClassInformation.ClassName;
 		if (!string.IsNullOrEmpty(value.ClassInformation.GenericTypeParameters))
 		{
-			classNameWithGenerics = $"{value.ClassInformation.ClassName}<{value.ClassInformation.GenericTypeParameters}>";
+			classNameWithGenerics = string.Concat(value.ClassInformation.ClassName, "<", value.ClassInformation.GenericTypeParameters, ">");
 		}
 
-		sb.AppendLine($"{value.ClassInformation.DeclaredAccessibility} partial class {classNameWithGenerics}")
-			.AppendLine("{")
-			.AppendLine();
+		sb.Append(value.ClassInformation.DeclaredAccessibility).Append(" partial class ").Append(classNameWithGenerics).Append("\n{\n\n");
 
 		foreach (var info in value.BindableProperties)
 		{
-			GenerateBindableProperty(ref sb, info);
-			GenerateProperty(ref sb, info);
+			GenerateBindableProperty(sb, in info);
+			GenerateProperty(sb, in info);
 		}
 
 		sb.Append('}');
@@ -158,118 +186,141 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			var containingTypeNames = value.ClassInformation.ContainingTypes.Split('.');
 			for (int i = 0; i < containingTypeNames.Length; i++)
 			{
-				sb.AppendLine().Append('}');
+				sb.Append("\n}");
 			}
 		}
 
 		return sb.ToString();
+	}
 
-		static void GenerateBindableProperty(ref readonly StringBuilder sb, in BindablePropertyModel info)
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	static void GenerateBindableProperty(StringBuilder sb, in BindablePropertyModel info)
+	{
+		// Sanitize the Return Type because Nullable Reference Types cannot be used in the `typeof()` operator
+		var nonNullableReturnType = ConvertToNonNullableTypeSymbol(info.ReturnType);
+		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
+
+		sb.Append("/// <summary>\r\n/// Backing BindableProperty for the <see cref=\"")
+			.Append(sanitizedPropertyName)
+			.Append("\"/> property.\r\n/// </summary>\r\n");
+
+		if (info.IsReadOnly)
 		{
-			// Sanitize the Return Type because Nullable Reference Types cannot be used in the `typeof()` operator
-			var nonNullableReturnType = ConvertToNonNullableTypeSymbol(info.ReturnType);
-			var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? "@" + info.PropertyName : info.PropertyName;
+			// Generate BindablePropertyKey for read-only properties
+			sb.Append("static readonly global::Microsoft.Maui.Controls.BindablePropertyKey ")
+				.Append(info.BindablePropertyKeyName)
+				.Append(" = \n")
+				.Append(bpFullName)
+				.Append(".CreateReadOnly(\"")
+				.Append(sanitizedPropertyName)
+				.Append("\", typeof(")
+				.Append(GetFormattedReturnType(nonNullableReturnType))
+				.Append("), typeof(")
+				.Append(info.DeclaringType)
+				.Append("), ")
+				.Append(info.DefaultValue)
+				.Append(", ")
+				.Append(info.DefaultBindingMode)
+				.Append(", ")
+				.Append(info.ValidateValueMethodName)
+				.Append(", ")
+				.Append(info.PropertyChangedMethodName)
+				.Append(", ")
+				.Append(info.PropertyChangingMethodName)
+				.Append(", ")
+				.Append(info.CoerceValueMethodName)
+				.Append(", ")
+				.Append(info.DefaultValueCreatorMethodName)
+				.Append(");\n");
 
-			/*
-			// The code below creates the following XML Tag:
-			/// <summary>
-			/// Backing BindableProperty for the <see cref="PropertyName"/> property.
-			/// </summary>
-			*/
-			sb.AppendLine("/// <summary>")
-				.AppendLine($"/// Backing BindableProperty for the <see cref=\"{sanitizedPropertyName}\"/> property.")
-				.AppendLine("/// </summary>");
-
-			// Determine if we should generate a read-only BindableProperty (BindablePropertyKey).
-			// Create a read-only bindable when the property doesn't have a setter or has a non-public setter.
-			// This ensures read-only protection is maintained.
-			var shouldCreateReadOnly = !info.HasSetter || !string.IsNullOrEmpty(info.SetterAccessibilityText);
-
-			if (shouldCreateReadOnly)
-			{
-				// Create name for the BindablePropertyKey (camel-cased first letter to follow existing pattern)
-				var propertyKeyName = !string.IsNullOrEmpty(info.PropertyName)
-					? $"{char.ToLower(info.PropertyName[0])}{info.PropertyName[1..]}PropertyKey"
-					: "propertyKeyPropertyKey";
-
-				sb.AppendLine($"static readonly {bpKeyFullName} {propertyKeyName} = ")
-					.Append($"{bpFullName}.CreateReadOnly(")
-					.Append($"\"{sanitizedPropertyName}\", ")
-					.Append($"typeof({GetFormattedReturnType(nonNullableReturnType)}), ")
-					.Append($"typeof({info.DeclaringType}), ")
-					.Append($"{info.DefaultValue}, ")
-					.Append($"{info.DefaultBindingMode}, ")
-					.Append($"{info.ValidateValueMethodName}, ")
-					.Append($"{info.PropertyChangedMethodName}, ")
-					.Append($"{info.PropertyChangingMethodName}, ")
-					.Append($"{info.CoerceValueMethodName}, ")
-					.Append($"{info.DefaultValueCreatorMethodName}")
-					.Append(");")
-					.AppendLine()
-					.AppendLine($"public {info.NewKeywordText}static readonly {bpFullName} {info.BindablePropertyName} = {propertyKeyName}.BindableProperty;")
-					.AppendLine();
-			}
-			else
-			{
-				sb.AppendLine($"public {info.NewKeywordText}static readonly {bpFullName} {info.BindablePropertyName} = ")
-					.Append($"{bpFullName}.Create(")
-					.Append($"\"{sanitizedPropertyName}\", ")
-					.Append($"typeof({GetFormattedReturnType(nonNullableReturnType)}), ")
-					.Append($"typeof({info.DeclaringType}), ")
-					.Append($"{info.DefaultValue}, ")
-					.Append($"{info.DefaultBindingMode}, ")
-					.Append($"{info.ValidateValueMethodName}, ")
-					.Append($"{info.PropertyChangedMethodName}, ")
-					.Append($"{info.PropertyChangingMethodName}, ")
-					.Append($"{info.CoerceValueMethodName}, ")
-					.Append($"{info.DefaultValueCreatorMethodName}")
-					.Append(");")
-					.AppendLine().AppendLine();
-			}
+			// Generate public BindableProperty from the key
+			sb.Append("public ")
+				.Append(info.NewKeywordText)
+				.Append("static readonly ")
+				.Append(bpFullName)
+				.Append(' ')
+				.Append(info.BindablePropertyName)
+				.Append(" = ")
+				.Append(info.BindablePropertyKeyName)
+				.Append(".BindableProperty;\n");
+		}
+		else
+		{
+			// Generate regular BindableProperty
+			sb.Append("public ")
+				.Append(info.NewKeywordText)
+				.Append("static readonly ")
+				.Append(bpFullName)
+				.Append(' ')
+				.Append(info.BindablePropertyName)
+				.Append(" = \n")
+				.Append(bpFullName)
+				.Append(".Create(\"")
+				.Append(sanitizedPropertyName)
+				.Append("\", typeof(")
+				.Append(GetFormattedReturnType(nonNullableReturnType))
+				.Append("), typeof(")
+				.Append(info.DeclaringType)
+				.Append("), ")
+				.Append(info.DefaultValue)
+				.Append(", ")
+				.Append(info.DefaultBindingMode)
+				.Append(", ")
+				.Append(info.ValidateValueMethodName)
+				.Append(", ")
+				.Append(info.PropertyChangedMethodName)
+				.Append(", ")
+				.Append(info.PropertyChangingMethodName)
+				.Append(", ")
+				.Append(info.CoerceValueMethodName)
+				.Append(", ")
+				.Append(info.DefaultValueCreatorMethodName)
+				.Append(");\n");
 		}
 
-		static void GenerateProperty(ref readonly StringBuilder sb, in BindablePropertyModel info)
+		sb.Append('\n');
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	static void GenerateProperty(StringBuilder sb, in BindablePropertyModel info)
+	{
+		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
+		var formattedReturnType = GetFormattedReturnType(info.ReturnType);
+
+		sb.Append("public ")
+			.Append(info.NewKeywordText)
+			.Append("partial ")
+			.Append(formattedReturnType)
+			.Append(' ')
+			.Append(sanitizedPropertyName)
+			.Append("\n{\nget => (")
+			.Append(formattedReturnType)
+			.Append(")GetValue(")
+			.Append(info.BindablePropertyName)
+			.Append(");\n");
+
+		if (info.IsReadOnly)
 		{
-			// The code below creates the following Property:
-			//
-			//	public partial string Text
-			//	{
-			//		get => (string)GetValue(TextProperty);
-			//		set => SetValue(TextProperty, value);
-			//	}
-			//
-			var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? "@" + info.PropertyName : info.PropertyName;
-
-			sb.AppendLine($"public {info.NewKeywordText}partial {GetFormattedReturnType(info.ReturnType)} {sanitizedPropertyName}")
-				.AppendLine("{")
-				.Append("get => (")
-				.Append(GetFormattedReturnType(info.ReturnType))
-				.Append(")GetValue(")
-				.AppendLine($"{info.BindablePropertyName});");
-
-			// Generate setter only when the original property had a setter.
-			if (info.HasSetter)
+			// For read-only properties, use the BindablePropertyKey in the setter
+			if (!string.IsNullOrEmpty(info.SetterAccessibility))
 			{
-				if (!string.IsNullOrEmpty(info.SetterAccessibilityText))
-				{
-					// non-public setter -> set value via the BindablePropertyKey (keep setter accessibility)
-					// Calculate the property key name the same way as in GenerateBindableProperty
-					var propertyKeyName = !string.IsNullOrEmpty(info.PropertyName)
-						? $"{char.ToLower(info.PropertyName[0])}{info.PropertyName[1..]}PropertyKey"
-						: "propertyKeyPropertyKey";
-					sb.Append($"{info.SetterAccessibilityText}set => SetValue(")
-						.AppendLine($"{propertyKeyName}, value);");
-				}
-				else
-				{
-					// public setter -> set via BindableProperty
-					sb.Append($"set => SetValue(")
-						.AppendLine($"{info.BindablePropertyName}, value);");
-				}
+				// Property has a private setter
+				sb.Append(info.SetterAccessibility)
+					.Append("set => SetValue(")
+					.Append(info.BindablePropertyKeyName)
+					.Append(", value);\n");
 			}
-
-			sb.AppendLine("}");
+			// else: get-only property, no setter
 		}
+		else
+		{
+			// Regular property with public setter
+			sb.Append("set => SetValue(")
+				.Append(info.BindablePropertyName)
+				.Append(", value);\n");
+		}
+
+		sb.Append("}\n");
 	}
 
 	static SemanticValues SemanticTransform(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
@@ -296,35 +347,117 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		var propertyInfo = new ClassInformation(className, classAccessibility, @namespace, containingTypes, genericTypeParameters);
 
-		var bindablePropertyModels = new List<BindablePropertyModel>(context.Attributes.Length);
+		// Use array instead of List to avoid resizing
+		var bindablePropertyModels = new BindablePropertyModel[context.Attributes.Length];
 
-		var doesContainNewKeyword = propertyDeclarationSyntax.Modifiers.Any(static x => x.IsKind(SyntaxKind.NewKeyword));
+		var doesContainNewKeyword = HasNewKeyword(propertyDeclarationSyntax);
+		var (isReadOnly, setterAccessibility) = GetPropertyAccessibility(propertySymbol, propertyDeclarationSyntax);
 
 		var attributeData = context.Attributes[0];
+		bindablePropertyModels[0] = CreateBindablePropertyModel(attributeData, propertySymbol.ContainingType, propertySymbol.Name, returnType, doesContainNewKeyword, isReadOnly, setterAccessibility);
 
-		// Determine setter accessibility and presence
-		var setMethod = propertySymbol.SetMethod;
-		// hasSetterAny indicates whether the property declaration included a setter (any accessibility)
-		var hasSetterAny = setMethod is not null;
-		// Keep the setter accessibility text for non-public setters ("internal ", "private ", etc.)
-		string setterAccessibilityText = string.Empty;
-		if (setMethod is not null && setMethod.DeclaredAccessibility != Accessibility.Public)
-		{
-			setterAccessibilityText = setMethod.DeclaredAccessibility.ToString().ToLower() + " ";
-		}
-
-		// Pass hasSetterAny to the model so the generated partial property includes a setter when the original declared one.
-		bindablePropertyModels.Add(CreateBindablePropertyModel(attributeData, propertySymbol.ContainingType, propertySymbol.Name, returnType, doesContainNewKeyword, hasSetterAny, setterAccessibilityText));
-
-		return new(propertyInfo, bindablePropertyModels.ToImmutableArray());
+		return new(propertyInfo, ImmutableArray.Create(bindablePropertyModels));
 	}
 
-	// Updated signature to accept setter info
-	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string propertyName, in ITypeSymbol returnType, in bool doesContainNewKeyword, bool hasSetter, string setterAccessibilityText)
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	static bool HasNewKeyword(PropertyDeclarationSyntax syntax)
+	{
+		foreach (var modifier in syntax.Modifiers)
+		{
+			if (modifier.IsKind(SyntaxKind.NewKeyword))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	static (bool IsReadOnly, string SetterAccessibility) GetPropertyAccessibility(IPropertySymbol propertySymbol, PropertyDeclarationSyntax syntax)
+	{
+		// Check if property is get-only (no setter)
+		if (propertySymbol.SetMethod is null)
+		{
+			return (true, string.Empty);
+		}
+
+		// Check if setter is private or internal (non-public)
+		if (propertySymbol.SetMethod.DeclaredAccessibility is Accessibility.Private)
+		{
+			return (true, "private ");
+		}
+
+		if (propertySymbol.SetMethod.DeclaredAccessibility is Accessibility.Internal)
+		{
+			return (true, "internal ");
+		}
+
+		return (false, string.Empty);
+	}
+
+	static string GetContainingTypes(INamedTypeSymbol typeSymbol)
+	{
+		// Use StringBuilder for efficient string building
+		var current = typeSymbol.ContainingType;
+		if (current is null)
+		{
+			return string.Empty;
+		}
+
+		var sb = new StringBuilder(100);
+		var stack = new Stack<string>(4);
+
+		while (current is not null)
+		{
+			stack.Push(current.Name);
+			current = current.ContainingType;
+		}
+
+		var first = true;
+		while (stack.Count > 0)
+		{
+			if (!first)
+			{
+				sb.Append('.');
+			}
+			sb.Append(stack.Pop());
+			first = false;
+		}
+
+		return sb.ToString();
+	}
+
+	static string GetGenericTypeParameters(INamedTypeSymbol typeSymbol)
+	{
+		if (!typeSymbol.IsGenericType || typeSymbol.TypeParameters.IsEmpty)
+		{
+			return string.Empty;
+		}
+
+		var typeParams = typeSymbol.TypeParameters;
+		if (typeParams.Length == 1)
+		{
+			return typeParams[0].Name;
+		}
+
+		var sb = new StringBuilder(typeParams.Length * 10);
+		for (int i = 0; i < typeParams.Length; i++)
+		{
+			if (i > 0)
+			{
+				sb.Append(", ");
+			}
+			sb.Append(typeParams[i].Name);
+		}
+
+		return sb.ToString();
+	}
+
+	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string propertyName, in ITypeSymbol returnType, in bool doesContainNewKeyword, in bool isReadOnly, in string setterAccessibility)
 	{
 		if (attributeData.AttributeClass is null)
 		{
-			throw new ArgumentException($"{nameof(attributeData.AttributeClass)} Cannot Be Null", nameof(attributeData.AttributeClass));
+			throw new ArgumentException($"{nameof(attributeData)}.{nameof(attributeData.AttributeClass)} Cannot Be Null", nameof(attributeData));
 		}
 
 		var defaultValue = attributeData.GetNamedTypeArgumentsAttributeValueByNameAsCastedString(nameof(BindablePropertyModel.DefaultValue), returnType);
@@ -336,9 +469,10 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var validateValueMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.ValidateValueMethodName));
 		var newKeywordText = doesContainNewKeyword ? "new " : string.Empty;
 
-		return new BindablePropertyModel(propertyName, returnType, declaringType, defaultValue, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText, hasSetter, setterAccessibilityText);
+		return new BindablePropertyModel(propertyName, returnType, declaringType, defaultValue, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText, isReadOnly, setterAccessibility);
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static ITypeSymbol ConvertToNonNullableTypeSymbol(in ITypeSymbol typeSymbol)
 	{
 		// Check for Nullable<T>
@@ -357,6 +491,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		return typeSymbol;
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static bool IsNonEmptyPropertyDeclarationSyntax(SyntaxNode node, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
@@ -364,82 +499,31 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		return node is PropertyDeclarationSyntax { AttributeLists.Count: > 0 };
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static bool IsDotnetKeyword(in string name) => SyntaxFacts.GetKeywordKind(name) is not SyntaxKind.None;
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static bool IsGlobalNamespace(in ClassInformation classInformation)
 	{
-		if (classInformation.ContainingNamespace is "<global namespace>")
-		{
-			return true;
-		}
-		return false;
+		return classInformation.ContainingNamespace is "<global namespace>";
 	}
 
 	static string GetFormattedReturnType(ITypeSymbol typeSymbol)
 	{
 		if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
 		{
-			// Get the element type name (e.g., "System.Int32")
+			// Get the element type name (e.g., "int")
 			string elementType = GetFormattedReturnType(arrayTypeSymbol.ElementType);
 
 			// Construct the correct rank syntax with commas (e.g., "[,]")
-			string rank = new(',', arrayTypeSymbol.Rank - 1);
+			var rank = arrayTypeSymbol.Rank > 1 ? new string(',', arrayTypeSymbol.Rank - 1) : string.Empty;
 
-			return $"{elementType}[{rank}]";
+			return string.Concat(elementType, "[", rank, "]");
 		}
 		else
 		{
-			// Use FullyQualifiedFormat to get fully qualified names with global:: prefix
-			var fullyQualified = typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-			
-			var formatted = fullyQualified.StartsWith("global::") 
-				? fullyQualified["global::".Length..] 
-				: fullyQualified;
-
-			// If this is a Nullable<T> (value type) do not append an extra '?'
-			if (typeSymbol is INamedTypeSymbol { IsGenericType: true, ConstructedFrom.SpecialType: SpecialType.System_Nullable_T })
-			{
-				return formatted;
-			}
-
-			// If this is a nullable reference type (annotated with ?), ToDisplayString does not include
-			// the trailing `?`, so add it explicitly. For Nullable<T> (value types) and arrays this
-			// is handled elsewhere or by the display string itself.
-			if (typeSymbol.NullableAnnotation is NullableAnnotation.Annotated)
-			{
-				formatted += "?";
-			}
-
-			return formatted;
+			// Use ToDisplayString with the correct format for the base type (e.g., "int")
+			return typeSymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
 		}
-	}
-
-	static string GetGenericTypeParameters(INamedTypeSymbol typeSymbol)
-	{
-		if (typeSymbol is null || typeSymbol.TypeParameters.Length == 0)
-		{
-			return string.Empty;
-		}
-
-		return string.Join(", ", typeSymbol.TypeParameters.Select(tp => tp.Name));
-	}
-
-	static string GetContainingTypes(INamedTypeSymbol? typeSymbol)
-	{
-		if (typeSymbol is null || typeSymbol.ContainingType is null)
-		{
-			return string.Empty;
-		}
-
-		var containingTypes = new Stack<string>();
-		var currentType = typeSymbol.ContainingType;
-
-		while (currentType is not null)
-		{
-			containingTypes.Push(currentType.Name);
-			currentType = currentType.ContainingType;
-		}
-
-		return string.Join(".", containingTypes);
 	}
 }
