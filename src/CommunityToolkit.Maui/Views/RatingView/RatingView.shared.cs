@@ -33,8 +33,8 @@ public partial class RatingView : TemplatedView, IRatingView
 
 	/// <inheritdoc cref="ControlTemplate"/>
 	public new ControlTemplate ControlTemplate => base.ControlTemplate; // Ensures the ControlTemplate is readonly, preventing users from breaking the HorizontalStackLayout
-	
-		/// <summary>
+
+	/// <summary>
 	/// Gets or sets the path data that defines a custom shape for rendering.
 	/// </summary>
 	/// <remarks>The path data should be provided in a format compatible with the rendering system, such as SVG path
@@ -47,7 +47,7 @@ public partial class RatingView : TemplatedView, IRatingView
 	/// </summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnShapePaddingPropertyChanged), DefaultValueCreatorMethodName = nameof(CreateDefaultShapePadding))]
 	public partial Thickness ShapePadding { get; set; }
-	
+
 	/// <summary>
 	/// Gets or sets the shape used to display each rating item in the view.
 	/// </summary>
@@ -59,7 +59,9 @@ public partial class RatingView : TemplatedView, IRatingView
 	/// <summary>
 	/// Gets or sets the color used to draw the border of the shape.
 	/// </summary>
-	// ShapeBorderColor: coerce null -> Transparent and ensure non-null default
+	/// <remarks>
+	/// This uses a non-nullable <see cref="Color"/>. A <see langword="null"/> value will be converted to <see cref="Colors.Transparent"/>
+	/// </remarks>
 	[AllowNull]
 	[BindableProperty(PropertyChangedMethodName = nameof(OnShapeBorderColorChanged), CoerceValueMethodName = nameof(CoerceColorToTransparent), DefaultValueCreatorMethodName = nameof(CreateDefaultShapeBorderColor))]
 	public partial Color ShapeBorderColor { get; set; }
@@ -85,15 +87,17 @@ public partial class RatingView : TemplatedView, IRatingView
 	/// This uses a non-nullable <see cref="Color"/>. A <see langword="null"/> value will be converted to <see cref="Colors.Transparent"/>
 	/// </remarks>
 	[AllowNull]
-	[BindableProperty(PropertyChangedMethodName = nameof(OnRatingColorChanged), CoerceValueMethodName = nameof(CoerceColorToTransparent),DefaultValueCreatorMethodName = nameof(CreateDefaultEmptyShapeColor))]
+	[BindableProperty(PropertyChangedMethodName = nameof(OnRatingColorChanged), CoerceValueMethodName = nameof(CoerceColorToTransparent), DefaultValueCreatorMethodName = nameof(CreateDefaultEmptyShapeColor))]
 	public partial Color EmptyShapeColor { get; set; }
 
 	/// <summary>
 	/// Gets or sets the color used to fill the rating indicator.
 	/// </summary>
-	// FillColor: coerce null -> Transparent and ensure non-null default
+	/// <remarks>
+	/// This uses a non-nullable <see cref="Color"/>. A <see langword="null"/> value will be converted to <see cref="Colors.Transparent"/>
+	/// </remarks>
 	[AllowNull]
-	[BindableProperty(PropertyChangedMethodName = nameof(OnRatingColorChanged), CoerceValueMethodName = nameof(CoerceColorToTransparent),DefaultValueCreatorMethodName = nameof(CreateDefaultFillColor))]
+	[BindableProperty(PropertyChangedMethodName = nameof(OnRatingColorChanged), CoerceValueMethodName = nameof(CoerceColorToTransparent), DefaultValueCreatorMethodName = nameof(CreateDefaultFillColor))]
 	public partial Color FillColor { get; set; }
 
 	/// <summary>
@@ -107,7 +111,7 @@ public partial class RatingView : TemplatedView, IRatingView
 	/// </summary>
 	/// <remarks>The maximum rating determines the upper limit for rating inputs. Changing this value may affect
 	/// validation and display of rating controls. The value must be a positive integer.</remarks>
-	[BindableProperty(PropertyChangedMethodName = nameof(OnMaximumRatingChange), ValidateValueMethodName = nameof(IsMaximumRatingValid), DefaultValue = RatingViewDefaults.MaximumRating)]
+	[BindableProperty(PropertyChangedMethodName = nameof(OnMaximumRatingChanged), PropertyChangingMethodName = nameof(OnMaximumRatingChanging), ValidateValueMethodName = nameof(IsMaximumRatingValid), DefaultValue = RatingViewDefaults.MaximumRating)]
 	public partial int MaximumRating { get; set; }
 
 	/// <summary>
@@ -123,7 +127,7 @@ public partial class RatingView : TemplatedView, IRatingView
 	/// </summary>
 	/// <remarks>The rating must be a valid value as determined by the associated validation method. Changing the
 	/// rating triggers the property changed callback, which may update related UI or logic.</remarks>
-	[BindableProperty(DefaultValue = RatingViewDefaults.Rating, PropertyChangedMethodName = nameof(OnRatingChanged), ValidateValueMethodName = nameof(IsRatingValid))]
+	[BindableProperty(DefaultValue = RatingViewDefaults.Rating, PropertyChangedMethodName = nameof(OnRatingChanged), PropertyChangingMethodName = nameof(OnRatingChanging), ValidateValueMethodName = nameof(IsRatingValid))]
 	public partial double Rating { get; set; }
 
 	/// <summary>
@@ -163,19 +167,20 @@ public partial class RatingView : TemplatedView, IRatingView
 			WidthRequest = itemShapeSize,
 		}
 	};
-	
-	static object CreateDefaultShapeBorderColor(BindableObject bindable) =>
-		RatingViewDefaults.ShapeBorderColor is Color c ? c : Colors.Transparent;
-	
-	static object CreateDefaultEmptyShapeColor(BindableObject bindable) =>
-		RatingViewDefaults.EmptyShapeColor is Color c ? c : Colors.Transparent;
-	
-	static object CreateDefaultFillColor(BindableObject bindable) =>
-		RatingViewDefaults.FillColor is Color c ? c : Colors.Transparent;
-	
+
+	static object CreateDefaultShapeBorderColor(BindableObject bindable) => RatingViewDefaults.ShapeBorderColor;
+
+	static object CreateDefaultEmptyShapeColor(BindableObject bindable) => RatingViewDefaults.EmptyShapeColor;
+
+	static object CreateDefaultFillColor(BindableObject bindable) => RatingViewDefaults.FillColor;
+
 	static object CreateDefaultShapePadding(BindableObject bindable) => RatingViewDefaults.ShapePadding;
-	
-	static object CoerceColorToTransparent(BindableObject bindable, object value) => value is Color c ? c : Colors.Transparent;
+
+	static object CoerceColorToTransparent(BindableObject bindable, object value)
+	{
+		var colorValue = (Color?)value;
+		return colorValue ?? Colors.Transparent;
+	}
 
 	static ReadOnlyCollection<VisualElement> GetVisualTreeDescendantsWithBorderAndShape(VisualElement root, bool isShapeFill)
 	{
@@ -206,20 +211,7 @@ public partial class RatingView : TemplatedView, IRatingView
 		return result.AsReadOnly();
 	}
 
-	static bool IsMaximumRatingValid(BindableObject bindable, object value)
-	{
-		if (value == null || (int)value <= 0)
-		{
-			throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(MaximumRating)} must be >= 1");
-		}
-
-		if ((int)value > RatingViewDefaults.MaximumRatingLimit)
-		{
-			throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(MaximumRating)} cannot be greater than {nameof(RatingViewDefaults.MaximumRatingLimit)}");
-		}
-
-		return (int)value is >= 1 and <= RatingViewDefaults.MaximumRatingLimit;
-	}
+	static bool IsMaximumRatingValid(BindableObject bindable, object value) => (int)value is >= 1 and <= RatingViewDefaults.MaximumRatingLimit;
 
 	static void OnIsReadOnlyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
@@ -238,18 +230,37 @@ public partial class RatingView : TemplatedView, IRatingView
 		}
 	}
 
-	static void OnMaximumRatingChange(BindableObject bindable, object oldValue, object newValue)
+	static void OnRatingChanging(BindableObject bindable, object oldValue, object newValue)
 	{
-		switch (newValue)
+		var ratingView = (RatingView)bindable;
+		var rating = (double)newValue;
+
+		if (rating < 0)
+		{
+			throw new ArgumentOutOfRangeException(nameof(newValue), $"{nameof(Rating)} cannot be less than 0");
+		}
+
+		if (rating > ratingView.MaximumRating)
+		{
+			throw new ArgumentOutOfRangeException(nameof(newValue), $"{nameof(Rating)} cannot be greater than {nameof(MaximumRating)}");
+		}
+	}
+
+	static void OnMaximumRatingChanging(BindableObject bindable, object oldValue, object newValue)
+	{
+		var maximumRating = (int)newValue;
+
+		switch (maximumRating)
 		{
 			case <= 0:
 				throw new ArgumentOutOfRangeException(nameof(newValue), $"{nameof(MaximumRating)} must be greater than 0");
 			case > RatingViewDefaults.MaximumRatingLimit:
 				throw new ArgumentOutOfRangeException(nameof(newValue), $"{nameof(MaximumRating)} cannot be greater than {nameof(RatingViewDefaults.MaximumRatingLimit)}");
-			default:
-				break;
 		}
+	}
 
+	static void OnMaximumRatingChanged(BindableObject bindable, object oldValue, object newValue)
+	{
 		var ratingView = (RatingView)bindable;
 		var layout = ratingView.RatingLayout;
 		var newMaximumRatingValue = (int)newValue;
@@ -278,15 +289,6 @@ public partial class RatingView : TemplatedView, IRatingView
 	{
 		var ratingView = (RatingView)bindable;
 		var newRating = (double)newValue;
-
-		if ((double)newValue < 0)
-		{
-			throw new ArgumentOutOfRangeException(nameof(newValue), $"{nameof(Rating)} cannot be less than 0");
-		}
-		if ((double)newValue > ratingView.MaximumRating)
-		{
-			throw new ArgumentOutOfRangeException(nameof(newValue), $"{nameof(Rating)} cannot be greater than {nameof(MaximumRating)}");
-		}
 
 		ratingView.UpdateShapeFills(ratingView.FillOption);
 		ratingView.OnRatingChangedEvent(new RatingChangedEventArgs(newRating));
@@ -317,17 +319,8 @@ public partial class RatingView : TemplatedView, IRatingView
 
 	static bool IsRatingValid(BindableObject bindable, object value)
 	{
-		if (value == null || (double)value < 0)
-		{
-			throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(Rating)} must be greater than 0");
-		}
-
-		if ((double)value > ((RatingView)bindable).MaximumRating)
-		{
-			throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(Rating)} cannot be greater than {nameof(MaximumRating)}");
-		}
-
-		return (double)value is >= 0.0 and <= RatingViewDefaults.MaximumRatingLimit;
+		var rating = (double)value;
+		return rating is >= 0.0 and <= RatingViewDefaults.MaximumRatingLimit;
 	}
 
 	static void OnCustomShapePathPropertyChanged(BindableObject bindable, object oldValue, object newValue)
