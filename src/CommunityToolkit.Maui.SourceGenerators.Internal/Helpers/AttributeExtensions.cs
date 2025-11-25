@@ -26,8 +26,10 @@ static class AttributeExtensions
 		if (data.Kind is TypedConstantKind.Enum && data.Type is not null && data.Value is not null)
 		{
 			var members = data.Type.GetMembers();
+			var memberName = members[(int)data.Value].Name;
 
-			return $"({data.Type}){members[(int)data.Value]}";
+			// Return fully-qualified enum member (e.g. (Namespace.EnumType)Namespace.EnumType.Member)
+			return $"({data.Type}){data.Type}.{memberName}";
 		}
 
 		if (data.Type?.SpecialType is SpecialType.System_String)
@@ -56,8 +58,10 @@ static class AttributeExtensions
 		if (data.Kind is TypedConstantKind.Enum && data.Type is not null && data.Value is not null)
 		{
 			var members = data.Type.GetMembers();
+			var memberName = members[(int)data.Value].Name;
 
-			return $"({data.Type}){members[(int)data.Value]}";
+			// Return fully qualified enum member name (e.g. Namespace.EnumType.Member)
+			return $"({data.Type}){data.Type}.{memberName}";
 		}
 
 		if (data.Type?.SpecialType is SpecialType.System_String)

@@ -174,7 +174,14 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		foreach (var info in value.BindableProperties)
 		{
-			GenerateBindableProperty(sb, in info);
+			if (info.IsReadOnly)
+			{
+				GenerateBindablePropertyReadOnly(sb, in info);
+			}
+			else
+			{
+				GenerateBindableProperty(sb, in info);
+			}
 			GenerateProperty(sb, in info);
 		}
 
@@ -194,6 +201,58 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	static void GenerateBindablePropertyReadOnly(StringBuilder sb, in BindablePropertyModel info)
+	{
+		// Sanitize the Return Type because Nullable Reference Types cannot be used in the `typeof()` operator
+		var nonNullableReturnType = ConvertToNonNullableTypeSymbol(info.ReturnType);
+		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
+
+		sb.Append("/// <summary>\r\n/// Backing BindableProperty for the <see cref=\"")
+			.Append(sanitizedPropertyName)
+			.Append("\"/> property.\r\n/// </summary>\r\n");
+
+		// Generate BindablePropertyKey for read-only properties
+		sb.Append("static readonly global::Microsoft.Maui.Controls.BindablePropertyKey ")
+			.Append(info.BindablePropertyKeyName)
+			.Append(" = \n")
+			.Append(bpFullName)
+			.Append(".CreateReadOnly(\"")
+			.Append(sanitizedPropertyName)
+			.Append("\", typeof(")
+			.Append(GetFormattedReturnType(nonNullableReturnType))
+			.Append("), typeof(")
+			.Append(info.DeclaringType)
+			.Append("), ")
+			.Append(info.DefaultValue)
+			.Append(", ")
+			.Append(info.DefaultBindingMode)
+			.Append(", ")
+			.Append(info.ValidateValueMethodName)
+			.Append(", ")
+			.Append(info.PropertyChangedMethodName)
+			.Append(", ")
+			.Append(info.PropertyChangingMethodName)
+			.Append(", ")
+			.Append(info.CoerceValueMethodName)
+			.Append(", ")
+			.Append(info.DefaultValueCreatorMethodName)
+			.Append(");\n");
+
+		// Generate public BindableProperty from the key
+		sb.Append("public ")
+			.Append(info.NewKeywordText)
+			.Append("static readonly ")
+			.Append(bpFullName)
+			.Append(' ')
+			.Append(info.BindablePropertyName)
+			.Append(" = ")
+			.Append(info.BindablePropertyKeyName)
+			.Append(".BindableProperty;\n");
+
+		sb.Append('\n');
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static void GenerateBindableProperty(StringBuilder sb, in BindablePropertyModel info)
 	{
 		// Sanitize the Return Type because Nullable Reference Types cannot be used in the `typeof()` operator
@@ -204,79 +263,36 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(sanitizedPropertyName)
 			.Append("\"/> property.\r\n/// </summary>\r\n");
 
-		if (info.IsReadOnly)
-		{
-			// Generate BindablePropertyKey for read-only properties
-			sb.Append("static readonly global::Microsoft.Maui.Controls.BindablePropertyKey ")
-				.Append(info.BindablePropertyKeyName)
-				.Append(" = \n")
-				.Append(bpFullName)
-				.Append(".CreateReadOnly(\"")
-				.Append(sanitizedPropertyName)
-				.Append("\", typeof(")
-				.Append(GetFormattedReturnType(nonNullableReturnType))
-				.Append("), typeof(")
-				.Append(info.DeclaringType)
-				.Append("), ")
-				.Append(info.DefaultValue)
-				.Append(", ")
-				.Append(info.DefaultBindingMode)
-				.Append(", ")
-				.Append(info.ValidateValueMethodName)
-				.Append(", ")
-				.Append(info.PropertyChangedMethodName)
-				.Append(", ")
-				.Append(info.PropertyChangingMethodName)
-				.Append(", ")
-				.Append(info.CoerceValueMethodName)
-				.Append(", ")
-				.Append(info.DefaultValueCreatorMethodName)
-				.Append(");\n");
-
-			// Generate public BindableProperty from the key
-			sb.Append("public ")
-				.Append(info.NewKeywordText)
-				.Append("static readonly ")
-				.Append(bpFullName)
-				.Append(' ')
-				.Append(info.BindablePropertyName)
-				.Append(" = ")
-				.Append(info.BindablePropertyKeyName)
-				.Append(".BindableProperty;\n");
-		}
-		else
-		{
-			// Generate regular BindableProperty
-			sb.Append("public ")
-				.Append(info.NewKeywordText)
-				.Append("static readonly ")
-				.Append(bpFullName)
-				.Append(' ')
-				.Append(info.BindablePropertyName)
-				.Append(" = \n")
-				.Append(bpFullName)
-				.Append(".Create(\"")
-				.Append(sanitizedPropertyName)
-				.Append("\", typeof(")
-				.Append(GetFormattedReturnType(nonNullableReturnType))
-				.Append("), typeof(")
-				.Append(info.DeclaringType)
-				.Append("), ")
-				.Append(info.DefaultValue)
-				.Append(", ")
-				.Append(info.DefaultBindingMode)
-				.Append(", ")
-				.Append(info.ValidateValueMethodName)
-				.Append(", ")
-				.Append(info.PropertyChangedMethodName)
-				.Append(", ")
-				.Append(info.PropertyChangingMethodName)
-				.Append(", ")
-				.Append(info.CoerceValueMethodName)
-				.Append(", ")
-				.Append(info.DefaultValueCreatorMethodName)
-				.Append(");\n");
-		}
+		// Generate regular BindableProperty
+		sb.Append("public ")
+			.Append(info.NewKeywordText)
+			.Append("static readonly ")
+			.Append(bpFullName)
+			.Append(' ')
+			.Append(info.BindablePropertyName)
+			.Append(" = \n")
+			.Append(bpFullName)
+			.Append(".Create(\"")
+			.Append(sanitizedPropertyName)
+			.Append("\", typeof(")
+			.Append(GetFormattedReturnType(nonNullableReturnType))
+			.Append("), typeof(")
+			.Append(info.DeclaringType)
+			.Append("), ")
+			.Append(info.DefaultValue)
+			.Append(", ")
+			.Append(info.DefaultBindingMode)
+			.Append(", ")
+			.Append(info.ValidateValueMethodName)
+			.Append(", ")
+			.Append(info.PropertyChangedMethodName)
+			.Append(", ")
+			.Append(info.PropertyChangingMethodName)
+			.Append(", ")
+			.Append(info.CoerceValueMethodName)
+			.Append(", ")
+			.Append(info.DefaultValueCreatorMethodName)
+			.Append(");\n");
 
 		sb.Append('\n');
 	}
