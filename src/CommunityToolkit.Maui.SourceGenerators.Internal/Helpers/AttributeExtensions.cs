@@ -1,7 +1,5 @@
 ﻿using System.Globalization;
-using System.Reflection;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Internal.Helpers;
 
@@ -26,10 +24,8 @@ static class AttributeExtensions
 		if (data.Kind is TypedConstantKind.Enum && data.Type is not null && data.Value is not null)
 		{
 			var members = data.Type.GetMembers();
-			var memberName = members[(int)data.Value].Name;
 
-			// Return fully-qualified enum member (e.g. (Namespace.EnumType)Namespace.EnumType.Member)
-			return $"({data.Type}){data.Type}.{memberName}";
+			return $"({data.Type}){members[(int)data.Value]}";
 		}
 
 		if (data.Type?.SpecialType is SpecialType.System_String)
@@ -58,10 +54,8 @@ static class AttributeExtensions
 		if (data.Kind is TypedConstantKind.Enum && data.Type is not null && data.Value is not null)
 		{
 			var members = data.Type.GetMembers();
-			var memberName = members[(int)data.Value].Name;
 
-			// Return fully qualified enum member name (e.g. Namespace.EnumType.Member)
-			return $"({data.Type}){data.Type}.{memberName}";
+			return $"({data.Type}){members[(int)data.Value]}";
 		}
 
 		if (data.Type?.SpecialType is SpecialType.System_String)
@@ -89,7 +83,7 @@ static class AttributeExtensions
 
 		return data.Value is null ? placeholder : $"({data.Type}){data.Value}";
 	}
-
+	
 	public static string GetNamedMethodGroupArgumentsAttributeValueByNameAsString(this AttributeData attribute, string name, string placeholder = "null")
 	{
 		var data = attribute.NamedArguments.SingleOrDefault(kvp => kvp.Key == name).Value;
