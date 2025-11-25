@@ -274,17 +274,17 @@ public partial class MediaManager : IDisposable
 			{
 				// Create a custom URL scheme for the stream
 				var streamUrl = new NSUrl("stream://media");
-				
+
 				// Create an AVURLAsset with the custom scheme
 				var urlAsset = new AVUrlAsset(streamUrl);
-				
+
 				// Create and set up the resource loader
 				streamResourceLoader?.Dispose();
 				streamResourceLoader = new StreamAssetResourceLoader(streamMediaSource.Stream, GetStreamContentType(streamMediaSource.Stream));
-				
+
 				// Assign the resource loader delegate
 				urlAsset.ResourceLoader.SetDelegate(streamResourceLoader, DispatchQueue.MainQueue);
-				
+
 				asset = urlAsset;
 			}
 		}
@@ -491,12 +491,44 @@ public partial class MediaManager : IDisposable
 
 	static string GetStreamContentType(Stream stream)
 	{
-		// Default to a generic media type
-		// In a more sophisticated implementation, you could:
-		// 1. Read magic bytes from the stream to detect type
-		// 2. Accept content type as a parameter on StreamMediaSource
-		// 3. Use file extension if available
-		return "video/mp4"; // Default assumption
+		// Try to detect content type from magic bytes
+		if (stream.CanSeek && stream.Length > 12)
+		{
+			var originalPosition = stream.Position;
+			try
+			{
+				stream.Position = 0;
+				var buffer = new byte[12];
+				var bytesRead = stream.Read(buffer, 0, 12);
+
+				if (bytesRead >= 12)
+				{
+					// Check for MP4/M4V/MOV signature (ftyp box at offset 4)
+					if (buffer[4] == 0x66 && buffer[5] == 0x74 && buffer[6] == 0x79 && buffer[7] == 0x70)
+					{
+						// Check specific brand
+						var brand = System.Text.Encoding.ASCII.GetString(buffer, 8, 4);
+
+						// Most iOS videos will be either mp4, m4v, or qt (QuickTime)
+						// For AVFoundation, we should use UTI: "public.mpeg-4" or "com.apple.quicktime-movie"
+						if (brand.StartsWith("qt", StringComparison.Ordinal))
+						{
+							return "com.apple.quicktime-movie";
+						}
+
+						return "public.mpeg-4";
+					}
+				}
+			}
+			finally
+			{
+				stream.Position = originalPosition;
+			}
+		}
+
+		// Default to MPEG-4 (MP4) - covers most cases
+		// Using UTI format for iOS/macOS
+		return "public.mpeg-4";
 	}
 
 	static TimeSpan ConvertTime(CMTime cmTime) => TimeSpan.FromSeconds(double.IsNaN(cmTime.Seconds) ? 0 : cmTime.Seconds);

@@ -11,7 +11,7 @@ sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 	readonly Stream stream;
 	readonly string contentType;
 
-	public StreamAssetResourceLoader(Stream stream, string contentType = "application/octet-stream")
+	public StreamAssetResourceLoader(Stream stream, string contentType = "public.mpeg-4")
 	{
 		ArgumentNullException.ThrowIfNull(stream);
 		this.stream = stream;
