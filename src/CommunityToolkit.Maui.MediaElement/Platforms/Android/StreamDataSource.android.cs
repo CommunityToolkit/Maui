@@ -101,7 +101,7 @@ sealed class StreamDataSource : Java.Lang.Object, IDataSource
 		base.Dispose(disposing);
 	}
 
-	public IDictionary<string, IList<string>>? ResponseHeaders => null;
+	public IDictionary<string, IList<string>>? ResponseHeaders => new Dictionary<string, IList<string>>();
 }
 
 /// <summary>
