@@ -1,38 +1,28 @@
 using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
-using CommunityToolkit.Maui.Sample.Constants;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-public partial class MediaElementFromStreamPage : BasePage<MediaElementFromStreamViewModel>
+public partial class MediaElementFromStreamPage : BasePage<MediaElementFromStreamViewModel>, IDisposable
 {
-    const string loadOnlineMp4 = "Load Online MP4";
-    const string loadHls = "Load HTTP Live Stream (HLS)";
-    const string loadLocalResource = "Load Local Resource";
-    const string resetSource = "Reset Source to null";
-    const string loadMusic = "Load Music";
-
     const string botImageUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
-    const string hlsStreamTestUrl = "https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8";
-    const string hal9000AudioUrl = "https://github.com/prof3ssorSt3v3/media-sample-files/raw/master/hal-9000.mp3";
 
     readonly ILogger logger;
     readonly IDeviceInfo deviceInfo;
-    readonly IFileSystem fileSystem;
 
-    MemoryStream sourceStream;
+    MemoryStream? sourceStream;
+    bool disposed;
 
-    public MediaElementFromStreamPage(MediaElementFromStreamViewModel viewModel, IFileSystem fileSystem, IDeviceInfo deviceInfo, ILogger<MediaElementPage> logger) : base(viewModel)
+    public MediaElementFromStreamPage(MediaElementFromStreamViewModel viewModel, IDeviceInfo deviceInfo, ILogger<MediaElementPage> logger) : base(viewModel)
     {
         InitializeComponent();
 
         this.logger = logger;
         this.deviceInfo = deviceInfo;
-        this.fileSystem = fileSystem;
         MediaElement.PropertyChanged += MediaElement_PropertyChanged;
     }
 
@@ -275,5 +265,33 @@ public partial class MediaElementFromStreamPage : BasePage<MediaElementFromStrea
 
         popupMediaElement.Stop();
         popupMediaElement.Source = null;
+    }
+
+	protected override void OnDisappearing()
+	{
+		base.OnDisappearing();
+        sourceStream?.Dispose();
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        if (disposing)
+        {
+            return;
+        }
+
+        disposed = true;
+        sourceStream?.Dispose();
     }
 }
