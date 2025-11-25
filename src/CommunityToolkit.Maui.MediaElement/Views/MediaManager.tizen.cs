@@ -186,6 +186,13 @@ public partial class MediaManager : IDisposable
 				IsUriStreaming = false;
 			}
 		}
+		else if (MediaElement.Source is StreamMediaSource streamMediaSource)
+		{
+			if (streamMediaSource.Stream is not null)
+			{
+				throw new NotSupportedException($"{nameof(StreamMediaSource)} is not yet supported on Tizen. Consider using a FileMediaSource or UriMediaSource instead.");
+			}
+		}
 
 		if (Player.IsSourceSet)
 		{

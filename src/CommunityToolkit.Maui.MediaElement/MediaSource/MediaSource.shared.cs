@@ -58,6 +58,13 @@ public abstract class MediaSource : Element
 	public static MediaSource FromFile(string? path) => new FileMediaSource { Path = path };
 
 	/// <summary>
+	/// Creates a <see cref="StreamMediaSource"/> from a <see cref="Stream"/>.
+	/// </summary>
+	/// <param name="stream">The stream to use as a media source.</param>
+	/// <returns>A <see cref="StreamMediaSource"/> instance.</returns>
+	public static StreamMediaSource FromStream(Stream stream) => new StreamMediaSource { Stream = stream };
+
+	/// <summary>
 	/// Creates a <see cref="UriMediaSource"/> from an absolute URI.
 	/// </summary>
 	/// <param name="uri">Absolute URI to load.</param>

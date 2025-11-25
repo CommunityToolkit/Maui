@@ -8,6 +8,7 @@ using Android.Widget;
 using AndroidX.Media3.Common;
 using AndroidX.Media3.Common.Text;
 using AndroidX.Media3.Common.Util;
+using AndroidX.Media3.DataSource;
 using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.Session;
 using AndroidX.Media3.UI;
@@ -39,6 +40,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	MediaSession? session;
 	MediaItem.Builder? mediaItem;
 	BoundServiceConnection? connection;
+	StreamDataSourceFactory? currentStreamDataSourceFactory;
 
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
@@ -366,7 +368,17 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			MediaElement.Duration = TimeSpan.Zero;
 			MediaElement.CurrentStateChanged(MediaElementState.None);
 
+			currentStreamDataSourceFactory?.Dispose();
+			currentStreamDataSourceFactory = null;
+
 			return;
+		}
+
+		// Clear previous stream data source if switching sources
+		if (MediaElement.Source is not StreamMediaSource)
+		{
+			currentStreamDataSourceFactory?.Dispose();
+			currentStreamDataSourceFactory = null;
 		}
 
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
@@ -378,7 +390,18 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		if (item?.MediaMetadata is not null)
 		{
-			Player.SetMediaItem(item);
+			// If we have a custom stream data source, we need to set the media source differently
+			if (currentStreamDataSourceFactory is not null && MediaElement.Source is StreamMediaSource)
+			{
+				var mediaSource = new AndroidX.Media3.ExoPlayer.Source.ProgressiveMediaSource.Factory(currentStreamDataSourceFactory)
+					.CreateMediaSource(item);
+				Player.SetMediaSource(mediaSource);
+			}
+			else
+			{
+				Player.SetMediaItem(item);
+			}
+			
 			Player.Prepare();
 			hasSetSource = true;
 		}
@@ -541,6 +564,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				connection = null;
 			}
 
+			currentStreamDataSourceFactory?.Dispose();
+			currentStreamDataSourceFactory = null;
+
 			client.Dispose();
 		}
 	}
@@ -697,7 +723,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 					break;
 				}
-			case ResourceMediaSource resourceMediaSource:
+				case ResourceMediaSource resourceMediaSource:
 				{
 					var package = PlayerView?.Context?.PackageName ?? "";
 					var path = resourceMediaSource.Path;
@@ -705,6 +731,15 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 					{
 						var assetFilePath = $"asset://{package}{Path.PathSeparator}{path}";
 						return await CreateMediaItem(assetFilePath, cancellationToken).ConfigureAwait(false);
+					}
+
+					break;
+				}
+			case StreamMediaSource streamMediaSource:
+				{
+					if (streamMediaSource.Stream is not null)
+					{
+						return await CreateMediaItemFromStream(streamMediaSource.Stream, cancellationToken).ConfigureAwait(false);
 					}
 
 					break;
@@ -731,6 +766,30 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		mediaItem.SetUri(url);
 		mediaItem.SetMediaId(url);
 		mediaItem.SetMediaMetadata(mediaMetaData.Build());
+
+		return mediaItem;
+	}
+
+	async Task<MediaItem.Builder> CreateMediaItemFromStream(Stream stream, CancellationToken cancellationToken = default)
+	{
+		MediaMetadata.Builder mediaMetaData = new();
+		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
+		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
+		var data = await GetBytesFromMetadataArtworkUrl(MediaElement.MetadataArtworkUrl, cancellationToken).ConfigureAwait(true);
+		if (data is not null && data.Length > 0)
+		{
+			mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);
+		}
+
+		// Create MediaItem with metadata
+		// The stream will be handled via custom data source factory when needed
+		mediaItem = new MediaItem.Builder();
+		mediaItem.SetUri("stream://media");
+		mediaItem.SetMediaId("stream://media");
+		mediaItem.SetMediaMetadata(mediaMetaData.Build());
+
+		// Store the stream for later use with custom MediaSource
+		currentStreamDataSourceFactory = new StreamDataSourceFactory(stream);
 
 		return mediaItem;
 	}

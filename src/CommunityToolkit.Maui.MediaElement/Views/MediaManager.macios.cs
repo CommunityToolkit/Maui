@@ -14,6 +14,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MediaManager : IDisposable
 {
 	Metadata? metaData;
+	StreamAssetResourceLoader? streamResourceLoader;
 
 	// Media would still start playing when Speed was set although ShouldAutoPlay=False
 	// This field was added to overcome that.
@@ -220,6 +221,13 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
+		// Clean up previous stream resource loader if switching sources
+		if (MediaElement.Source is not StreamMediaSource)
+		{
+			streamResourceLoader?.Dispose();
+			streamResourceLoader = null;
+		}
+
 		metaData ??= new(Player);
 		Metadata.ClearNowPlaying();
 		PlayerViewController?.ContentOverlayView?.Subviews.FirstOrDefault()?.RemoveFromSuperview();
@@ -258,6 +266,26 @@ public partial class MediaManager : IDisposable
 			else
 			{
 				Logger.LogWarning("Invalid file path for ResourceMediaSource.");
+			}
+		}
+		else if (MediaElement.Source is StreamMediaSource streamMediaSource)
+		{
+			if (streamMediaSource.Stream is not null)
+			{
+				// Create a custom URL scheme for the stream
+				var streamUrl = new NSUrl("stream://media");
+				
+				// Create an AVURLAsset with the custom scheme
+				var urlAsset = new AVUrlAsset(streamUrl);
+				
+				// Create and set up the resource loader
+				streamResourceLoader?.Dispose();
+				streamResourceLoader = new StreamAssetResourceLoader(streamMediaSource.Stream, GetStreamContentType(streamMediaSource.Stream));
+				
+				// Assign the resource loader delegate
+				urlAsset.ResourceLoader.SetDelegate(streamResourceLoader, DispatchQueue.MainQueue);
+				
+				asset = urlAsset;
 			}
 		}
 
@@ -453,9 +481,22 @@ public partial class MediaManager : IDisposable
 				Player = null;
 			}
 
+			streamResourceLoader?.Dispose();
+			streamResourceLoader = null;
+
 			PlayerViewController?.Dispose();
 			PlayerViewController = null;
 		}
+	}
+
+	static string GetStreamContentType(Stream stream)
+	{
+		// Default to a generic media type
+		// In a more sophisticated implementation, you could:
+		// 1. Read magic bytes from the stream to detect type
+		// 2. Accept content type as a parameter on StreamMediaSource
+		// 3. Use file extension if available
+		return "video/mp4"; // Default assumption
 	}
 
 	static TimeSpan ConvertTime(CMTime cmTime) => TimeSpan.FromSeconds(double.IsNaN(cmTime.Seconds) ? 0 : cmTime.Seconds);
