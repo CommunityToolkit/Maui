@@ -122,9 +122,9 @@ public partial class Popup : ContentView
 
 		while (parent is not null)
 		{
-			if (parent.Parent is PopupPage popuppage)
+			if (parent.Parent is PopupPage popupPage)
 			{
-				return popuppage;
+				return popupPage;
 			}
 
 			parent = parent.Parent;
