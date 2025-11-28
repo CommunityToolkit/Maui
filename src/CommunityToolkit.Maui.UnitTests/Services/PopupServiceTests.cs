@@ -550,13 +550,12 @@ class ShortLivedSelfClosingPopup : MockSelfClosingPopup
 	}
 }
 
-#pragma warning disable CA1001
-class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
-#pragma warning restore CA1001
+class MockSelfClosingPopup : Popup<object?>, IQueryAttributable, IDisposable
 {
 	readonly TimeSpan displayDuration;
-	CancellationTokenSource? cancellationTokenSource;
 	readonly TaskCompletionSource popupClosedTCS = new();
+	
+	CancellationTokenSource? cancellationTokenSource;
 
 	public MockSelfClosingPopup(MockPageViewModel viewModel, TimeSpan displayDuration, object? result = null)
 	{
@@ -568,9 +567,20 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
 		Closed += HandlePopupClosed;
 	}
 	
+	~MockSelfClosingPopup()
+	{
+		Dispose(false);
+	}
+	
 	public object? Result { get; }
 
 	public static Color DefaultBackgroundColor { get; } = Colors.White;
+	
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
 	
 	public Task WaitForPopupToCloseAsync() => popupClosedTCS.Task;
 
@@ -606,6 +616,14 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
 			$@"{DateTime.Now:O} Closed {BindingContext.GetType().Name} - {Application.Current?.Windows[0].Page?.Navigation.ModalStack.Count}");
 		
 		popupClosedTCS.SetResult();
+	}
+	
+	protected virtual void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			cancellationTokenSource?.Dispose();
+		}
 	}
 
 	void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
