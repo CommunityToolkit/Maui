@@ -235,6 +235,7 @@
     <SupportedPlatform Include="Tizen" />
     <InternalsVisibleTo Include="CommunityToolkit.Maui.UnitTests"/>
     <InternalsVisibleTo Include="CommunityToolkit.Maui.Analyzers.UnitTests"/>
+    <InternalsVisibleTo Include="CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests"/>
   </ItemGroup>
 
   <PropertyGroup Condition="('$(TF_BUILD)' == 'true' OR '$(GITHUB_ACTIONS)' == 'true') and $([MSBuild]::IsOSPlatform('windows')) == 'true'">

@@ -9,6 +9,10 @@
     <Project Path="CommunityToolkit.Maui.SourceGenerators.Internal/CommunityToolkit.Maui.SourceGenerators.Internal.csproj" />
     <Project Path="CommunityToolkit.Maui.SourceGenerators/CommunityToolkit.Maui.SourceGenerators.csproj" />
   </Folder>
+  <Folder Name="/Benchmarks/">
+    <Project Path="CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj" />
+    <Project Path="CommunityToolkit.Maui.SourceGenerators.Benchmarks/CommunityToolkit.Maui.SourceGenerators.Benchmarks.csproj" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path="../.editorconfig" />
     <File Path="../.github/workflows/benchmarks.yml" />
@@ -18,6 +22,7 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj" />
+    <Project Path="CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests/CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.csproj" />
     <Project Path="CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj" />
   </Folder>
   <Project Path="CommunityToolkit.Maui.Camera/CommunityToolkit.Maui.Camera.csproj" />

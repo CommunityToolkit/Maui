@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using CommunityToolkit.Maui.Core;
+
 namespace CommunityToolkit.Maui.Behaviors;
 
 public partial class TouchBehavior : IDisposable
@@ -108,6 +109,77 @@ public partial class TouchBehavior : IDisposable
 		isDisposed = true;
 	}
 
+	static async void RaiseCurrentTouchStateChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var touchBehavior = (TouchBehavior)bindable;
+
+		await Task.WhenAll(touchBehavior.ForceUpdateState(CancellationToken.None), touchBehavior.HandleLongPress(CancellationToken.None));
+		touchBehavior.weakEventManager.HandleEvent(touchBehavior, new TouchStateChangedEventArgs(touchBehavior.CurrentTouchState), nameof(CurrentTouchStateChanged));
+	}
+
+	static void RaiseInteractionStatusChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var touchBehavior = (TouchBehavior)bindable;
+		touchBehavior.weakEventManager.HandleEvent(touchBehavior, new TouchInteractionStatusChangedEventArgs(touchBehavior.CurrentInteractionStatus), nameof(InteractionStatusChanged));
+	}
+
+	static void RaiseCurrentTouchStatusChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var touchBehavior = (TouchBehavior)bindable;
+		touchBehavior.weakEventManager.HandleEvent(touchBehavior, new TouchStatusChangedEventArgs(touchBehavior.CurrentTouchStatus), nameof(CurrentTouchStatusChanged));
+	}
+
+	static async void RaiseHoverStateChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var touchBehavior = (TouchBehavior)bindable;
+
+		await touchBehavior.ForceUpdateState(CancellationToken.None);
+		touchBehavior.weakEventManager.HandleEvent(touchBehavior, new HoverStateChangedEventArgs(touchBehavior.CurrentHoverState), nameof(HoverStateChanged));
+	}
+
+	static void RaiseHoverStatusChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var touchBehavior = (TouchBehavior)bindable;
+
+		touchBehavior.weakEventManager.HandleEvent(touchBehavior, new HoverStatusChangedEventArgs(touchBehavior.CurrentHoverStatus), nameof(HoverStatusChanged));
+	}
+
+	static void HandleDefaultOpacityChanging(BindableObject bindable, object oldValue, object newValue)
+	{
+		var defaultOpacity = (double)newValue;
+		switch (defaultOpacity)
+		{
+			case < 0:
+				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(DefaultOpacity)} must be greater than 0");
+			case > 1:
+				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(DefaultOpacity)} must be less than 1");
+		}
+	}
+
+	static void HandleHoveredOpacityChanging(BindableObject bindable, object oldValue, object newValue)
+	{
+		var hoveredOpacity = (double)newValue;
+		switch (hoveredOpacity)
+		{
+			case < 0:
+				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(HoveredOpacity)} must be greater than 0");
+			case > 1:
+				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(HoveredOpacity)} must be less than 1");
+		}
+	}
+
+	static void HandlePressedOpacityChanging(BindableObject bindable, object oldValue, object newValue)
+	{
+		var pressedOpacity = (double)newValue;
+		switch (pressedOpacity)
+		{
+			case < 0:
+				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(PressedOpacity)} must be greater than 0");
+			case > 1:
+				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(PressedOpacity)} must be less than 1");
+		}
+	}
+
 	async Task HandleLongPress(CancellationToken token)
 	{
 		if (Element is null)
@@ -164,27 +236,6 @@ public partial class TouchBehavior : IDisposable
 
 		view.InputTransparent = IsEnabled;
 	}
-
-	async Task RaiseCurrentTouchStateChanged(CancellationToken token)
-	{
-		await Task.WhenAll(ForceUpdateState(token), HandleLongPress(token));
-		weakEventManager.HandleEvent(this, new TouchStateChangedEventArgs(CurrentTouchState), nameof(CurrentTouchStateChanged));
-	}
-
-	void RaiseInteractionStatusChanged()
-		=> weakEventManager.HandleEvent(this, new TouchInteractionStatusChangedEventArgs(CurrentInteractionStatus), nameof(InteractionStatusChanged));
-
-	void RaiseCurrentTouchStatusChanged()
-		=> weakEventManager.HandleEvent(this, new TouchStatusChangedEventArgs(CurrentTouchStatus), nameof(CurrentTouchStatusChanged));
-
-	async Task RaiseHoverStateChanged(CancellationToken token)
-	{
-		await ForceUpdateState(token);
-		weakEventManager.HandleEvent(this, new HoverStateChangedEventArgs(CurrentHoverState), nameof(HoverStateChanged));
-	}
-
-	void RaiseHoverStatusChanged()
-		=> weakEventManager.HandleEvent(this, new HoverStatusChangedEventArgs(CurrentHoverStatus), nameof(HoverStatusChanged));
 
 	partial void PlatformDispose();
 }
