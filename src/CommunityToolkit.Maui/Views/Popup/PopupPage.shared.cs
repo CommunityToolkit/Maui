@@ -115,6 +115,11 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		await Navigation.PopModalAsync(false).WaitAsync(token);
 
 		PopupClosed?.Invoke(this, result);
+		popup.NotifyPopupIsClosed();
+		
+		// Clean up Popup resources
+		base.Content.GestureRecognizers.Clear();
+		popup.PropertyChanged -= HandlePopupPropertyChanged;
 	}
 
 	protected override bool OnBackButtonPressed()
@@ -123,24 +128,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		// Always return true to let the Android Operating System know that we are manually handling the Navigation request from the Android Back Button
 		return true;
-	}
-
-	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
-	{
-		popup.NotifyPopupIsClosed();
-		// We use the correct ModalStack (with or without Shell)
-		var modalStack = Shell.Current is null
-			? Navigation.ModalStack
-			: Shell.Current.Navigation.ModalStack;
-
-		// Only clean when the Popup is ACTUALLY closing
-		if (!modalStack.Contains(this))
-		{
-			base.Content.GestureRecognizers.Clear();
-			popup.PropertyChanged -= HandlePopupPropertyChanged;
-		}
-
-		base.OnNavigatedFrom(args);
 	}
 
 	protected override void OnNavigatedTo(NavigatedToEventArgs args)
