@@ -114,12 +114,12 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		token.ThrowIfCancellationRequested();
 		await Navigation.PopModalAsync(false).WaitAsync(token);
 
-		PopupClosed?.Invoke(this, result);
-		popup.NotifyPopupIsClosed();
-
 		// Clean up Popup resources
 		base.Content.GestureRecognizers.Clear();
 		popup.PropertyChanged -= HandlePopupPropertyChanged;
+		
+		PopupClosed?.Invoke(this, result);
+		popup.NotifyPopupIsClosed();
 	}
 
 	protected override bool OnBackButtonPressed()
