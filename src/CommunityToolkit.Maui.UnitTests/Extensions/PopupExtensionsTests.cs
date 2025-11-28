@@ -269,7 +269,7 @@ public class PopupExtensionsTests : BaseViewTest
 		// Assert
 		Assert.Empty(shellNavigation.ModalStack);
 		Assert.Equal(shellParameterBackgroundColorValue, selfClosingPopup.BackgroundColor);
-		
+
 		// Clean up
 		await selfClosingPopup.WaitForPopupToCloseAsync();
 		await longLivedSelfClosingPopup.WaitForPopupToCloseAsync();
@@ -287,7 +287,7 @@ public class PopupExtensionsTests : BaseViewTest
 
 		// Assert
 		Assert.Single(navigation.ModalStack);
-		
+
 		// Clean up
 		await selfClosingPopup.WaitForPopupToCloseAsync();
 	}
@@ -372,7 +372,7 @@ public class PopupExtensionsTests : BaseViewTest
 
 		// Assert
 		Assert.Equal(2, navigation.ModalStack.Count);
-		
+
 		// Clean up
 		await selfClosingPopup.WaitForPopupToCloseAsync();
 		await longLivedSelfClosingPopup.WaitForPopupToCloseAsync();
@@ -399,7 +399,7 @@ public class PopupExtensionsTests : BaseViewTest
 		// Assert
 		Assert.Equal(2, shellNavigation.ModalStack.Count);
 		Assert.Equal(shellParameterBackgroundColorValue, selfClosingPopup.BackgroundColor);
-		
+
 		// Clean up
 		await selfClosingPopup.WaitForPopupToCloseAsync();
 		await longLivedSelfClosingPopup.WaitForPopupToCloseAsync();
@@ -505,7 +505,7 @@ public class PopupExtensionsTests : BaseViewTest
 
 		// Verify PopupPage Bindings to PopupOptions
 		Assert.Equal(options.PageOverlayColor, popupPage.BackgroundColor);
-		
+
 		// Clean up
 		await selfClosingPopup.WaitForPopupToCloseAsync();
 	}
@@ -582,7 +582,7 @@ public class PopupExtensionsTests : BaseViewTest
 
 		// Verify IQueryAttributable Propagates through Popup
 		Assert.Equal(shellParameterBackgroundColorValue, selfClosingPopup.BackgroundColor);
-		
+
 		// Clean up
 		await selfClosingPopup.WaitForPopupToCloseAsync();
 	}
@@ -900,7 +900,7 @@ public class PopupExtensionsTests : BaseViewTest
 		// Assert
 		Assert.NotNull(popupInstance.BindingContext);
 		Assert.IsType<ShortLivedMockPageViewModel>(popupInstance.BindingContext);
-		
+
 		// Clean up
 		await selfClosingPopup.WaitForPopupToCloseAsync();
 	}
@@ -926,7 +926,7 @@ public class PopupExtensionsTests : BaseViewTest
 		Assert.NotNull(popupInstance.BindingContext);
 		Assert.IsType<ShortLivedMockPageViewModel>(popupInstance.BindingContext);
 		Assert.Equal(shellParameterBackgroundColorValue, selfClosingPopup.BackgroundColor);
-		
+
 		// Clean up
 		await selfClosingPopup.WaitForPopupToCloseAsync();
 	}
@@ -993,7 +993,7 @@ public class PopupExtensionsTests : BaseViewTest
 		// Assert
 		Assert.Same(mockPopup.Result, result.Result);
 		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
-		
+
 		// Clean up
 		await selfClosingPopup.WaitForPopupToCloseAsync();
 	}
@@ -1011,7 +1011,7 @@ public class PopupExtensionsTests : BaseViewTest
 		// Assert
 		Assert.Same(mockPopup.Result, result.Result);
 		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
-		
+
 		// Clean up
 		await selfClosingPopup.WaitForPopupToCloseAsync();
 	}
@@ -1037,7 +1037,7 @@ public class PopupExtensionsTests : BaseViewTest
 		Assert.Same(mockPopup.Result, result.Result);
 		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
 		Assert.Equal(shellParameterBackgroundColorValue, selfClosingPopup.BackgroundColor);
-		
+
 		// Clean up
 		await selfClosingPopup.WaitForPopupToCloseAsync();
 	}

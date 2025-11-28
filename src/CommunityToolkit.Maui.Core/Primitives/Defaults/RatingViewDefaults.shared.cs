@@ -29,7 +29,7 @@ static class RatingViewDefaults
 
 	/// <summary>Default Fill When Tapped</summary>
 	public const RatingViewFillOption FillWhenTapped = RatingViewFillOption.Shape;
-	
+
 	/// <summary>Default Fill Option</summary>
 	public const RatingViewFillOption FillOption = RatingViewFillOption.Shape;
 

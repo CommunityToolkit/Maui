@@ -116,7 +116,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		PopupClosed?.Invoke(this, result);
 		popup.NotifyPopupIsClosed();
-		
+
 		// Clean up Popup resources
 		base.Content.GestureRecognizers.Clear();
 		popup.PropertyChanged -= HandlePopupPropertyChanged;
