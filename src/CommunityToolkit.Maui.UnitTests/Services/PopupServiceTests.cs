@@ -534,21 +534,9 @@ class GarbageCollectionHeavySelfClosingPopup(MockPageViewModel viewModel, object
 	}
 }
 
-class LongLivedSelfClosingPopup : MockSelfClosingPopup
-{
-	public LongLivedSelfClosingPopup(LongLivedMockPageViewModel viewModel)
-		: base(viewModel, TimeSpan.FromMilliseconds(1500), "Long Lived")
-	{
-	}
-}
+sealed class LongLivedSelfClosingPopup(LongLivedMockPageViewModel viewModel) : MockSelfClosingPopup(viewModel, TimeSpan.FromMilliseconds(1500), "Long Lived");
 
-class ShortLivedSelfClosingPopup : MockSelfClosingPopup
-{
-	public ShortLivedSelfClosingPopup(ShortLivedMockPageViewModel viewModel)
-		: base(viewModel, TimeSpan.FromMilliseconds(500), "Short Lived")
-	{
-	}
-}
+sealed class ShortLivedSelfClosingPopup(ShortLivedMockPageViewModel viewModel) : MockSelfClosingPopup(viewModel, TimeSpan.FromMilliseconds(500), "Short Lived");
 
 class MockSelfClosingPopup : Popup<object?>, IQueryAttributable, IDisposable
 {
@@ -557,7 +545,7 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable, IDisposable
 	
 	CancellationTokenSource? cancellationTokenSource;
 
-	public MockSelfClosingPopup(MockPageViewModel viewModel, TimeSpan displayDuration, object? result = null)
+	protected MockSelfClosingPopup(MockPageViewModel viewModel, TimeSpan displayDuration, object? result = null)
 	{
 		this.displayDuration = displayDuration;
 		BackgroundColor = DefaultBackgroundColor;
