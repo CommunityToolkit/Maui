@@ -556,6 +556,7 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
 {
 	readonly TimeSpan displayDuration;
 	CancellationTokenSource? cancellationTokenSource;
+	readonly TaskCompletionSource popupClosedTCS = new();
 
 	public MockSelfClosingPopup(MockPageViewModel viewModel, TimeSpan displayDuration, object? result = null)
 	{
@@ -566,8 +567,12 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
 		Opened += HandlePopupOpened;
 		Closed += HandlePopupClosed;
 	}
+	
+	public object? Result { get; }
 
 	public static Color DefaultBackgroundColor { get; } = Colors.White;
+	
+	public Task WaitForPopupToCloseAsync() => popupClosedTCS.Task;
 
 	protected virtual void HandlePopupClosed(object? sender, EventArgs e)
 	{
@@ -599,9 +604,9 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
 
 		Console.WriteLine(
 			$@"{DateTime.Now:O} Closed {BindingContext.GetType().Name} - {Application.Current?.Windows[0].Page?.Navigation.ModalStack.Count}");
+		
+		popupClosedTCS.SetResult();
 	}
-
-	public object? Result { get; }
 
 	void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
 	{
