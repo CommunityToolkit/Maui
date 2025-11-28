@@ -545,8 +545,8 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable, IDisposable
 
 	protected MockSelfClosingPopup(MockPageViewModel viewModel, TimeSpan displayDuration, object? result = null)
 	{
-		this.DisplayDuration = displayDuration;
 		BackgroundColor = DefaultBackgroundColor;
+		DisplayDuration = displayDuration;
 		BindingContext = viewModel;
 		Result = result;
 		Opened += HandlePopupOpened;
