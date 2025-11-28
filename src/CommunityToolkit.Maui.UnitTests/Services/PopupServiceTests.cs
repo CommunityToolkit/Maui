@@ -569,8 +569,6 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable, IDisposable
 		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
-	
-	public Task WaitForPopupToCloseAsync() => popupClosedTCS.Task;
 
 	protected virtual void HandlePopupClosed(object? sender, EventArgs e)
 	{
