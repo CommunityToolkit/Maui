@@ -128,8 +128,18 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
 	{
 		popup.NotifyPopupIsClosed();
-		base.Content.GestureRecognizers.Clear();
-		popup.PropertyChanged -= HandlePopupPropertyChanged;
+		// We use the correct ModalStack (with or without Shell)
+		var modalStack = Shell.Current is null
+			? Navigation.ModalStack
+			: Shell.Current.Navigation.ModalStack;
+
+		// Only clean when the Popup is ACTUALLY closing
+		if (!modalStack.Contains(this))
+		{
+			base.Content.GestureRecognizers.Clear();
+			popup.PropertyChanged -= HandlePopupPropertyChanged;
+		}
+
 		base.OnNavigatedFrom(args);
 	}
 
