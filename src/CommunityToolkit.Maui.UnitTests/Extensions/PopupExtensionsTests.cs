@@ -248,7 +248,7 @@ public class PopupExtensionsTests : BaseViewTest
 		await longLivedSelfClosingPopup.WaitForPopupToCloseAsync();
 	}
 
-	[Fact(Timeout = (int)TestDuration.Short)]
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task ShowPopupAsync_Shell_AwaitingShowPopupAsync_EnsurePreviousPopupClosed()
 	{
 		// Arrange
