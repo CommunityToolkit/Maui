@@ -21,9 +21,6 @@ public sealed partial class ResourceMediaSource : MediaSource
 	/// </summary>
 	/// <param name="resourceMediaSource">A <see cref="ResourceMediaSource"/> instance to convert to a string value.</param>
 	public static implicit operator string?(ResourceMediaSource? resourceMediaSource) => resourceMediaSource?.Path;
-
-	/// <inheritdoc/>
-	public override string ToString() => $"Resource: {Path}";
 	
 	/// <summary>
 	/// Gets or sets the full path to the resource file to use as a media source.
@@ -35,6 +32,9 @@ public sealed partial class ResourceMediaSource : MediaSource
 	/// </remarks>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnResourceMediaSourceMediaSourceChanged))]
 	public partial string? Path { get; set; }
+	
+	/// <inheritdoc/>
+	public override string ToString() => $"Resource: {Path}";
 
 	static void OnResourceMediaSourceMediaSourceChanged(BindableObject bindable, object oldValue, object newValue) =>
 		((ResourceMediaSource)bindable).OnSourceChanged();
