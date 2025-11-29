@@ -11,13 +11,6 @@ namespace CommunityToolkit.Maui.Views;
 public sealed partial class FileMediaSource : MediaSource
 {
 	/// <summary>
-	/// Gets or sets the full path to the local file to use as a media source.
-	/// This is a bindable property.
-	/// </summary>
-	[BindableProperty(PropertyChangedMethodName = nameof(OnFileMediaSourceChanged))]
-	public partial string? Path { get; set; }
-
-	/// <summary>
 	/// An implicit operator to convert a string value into a <see cref="FileMediaSource"/>.
 	/// </summary>
 	/// <param name="path">Full path to the local file. Can be a relative or absolute path.</param>
@@ -31,6 +24,13 @@ public sealed partial class FileMediaSource : MediaSource
 
 	/// <inheritdoc/>
 	public override string ToString() => $"File: {Path}";
+	
+	/// <summary>
+	/// Gets or sets the full path to the local file to use as a media source.
+	/// This is a bindable property.
+	/// </summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnFileMediaSourceChanged))]
+	public partial string? Path { get; set; }
 
 	static void OnFileMediaSourceChanged(BindableObject bindable, object oldValue, object newValue) =>
 		((FileMediaSource)bindable).OnSourceChanged();
