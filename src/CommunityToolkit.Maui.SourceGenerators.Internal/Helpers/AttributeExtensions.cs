@@ -21,11 +21,23 @@ static class AttributeExtensions
 			return data.Value is null ? placeholder : $"({data.Type}){data.Value.ToString().ToLowerInvariant()}";
 		}
 
-		if (data.Kind is TypedConstantKind.Enum && data.Type is not null && data.Value is not null)
+		if (data.Kind is TypedConstantKind.Enum && data is { Type: INamedTypeSymbol namedTypeSymbol, Value: not null })
 		{
+			var underlyingType = namedTypeSymbol.EnumUnderlyingType ?? throw new InvalidOperationException($"Unable to determine underlying type for enum");
 			var members = data.Type.GetMembers();
 
-			return $"({data.Type}){members[(int)data.Value]}";
+			return underlyingType.SpecialType switch
+			{
+				SpecialType.System_Byte => $"({data.Type}){members[(byte)data.Value]}",
+				SpecialType.System_SByte => $"({data.Type}){members[(sbyte)data.Value]}",
+				SpecialType.System_Int16 => $"({data.Type}){members[(short)data.Value]}",
+				SpecialType.System_UInt16 => $"({data.Type}){members[(ushort)data.Value]}",
+				SpecialType.System_Int32 => $"({data.Type}){members[(int)data.Value]}",
+				// SpecialType.System_UInt32 => $"({data.Type}){members[(uint)data.Value]}",
+				// SpecialType.System_Int64 => $"({data.Type}){members[(long)data.Value]}",
+				SpecialType.System_UInt64 => $"({data.Type}){members[(ushort)data.Value]}",
+				_ => throw new NotSupportedException("The enum type is not yet supported")
+			};
 		}
 
 		if (data.Type?.SpecialType is SpecialType.System_String)
@@ -99,8 +111,7 @@ static class AttributeExtensions
 		}
 
 		// Check if it's System.TimeSpan by comparing name
-		return typeSymbol.Name == "TimeSpan" && 
-		       typeSymbol.ContainingNamespace is not null &&
-		       typeSymbol.ContainingNamespace.ToDisplayString() == "System";
+		return typeSymbol is { Name: "TimeSpan", ContainingNamespace: not null } 
+		       && typeSymbol.ContainingNamespace.ToDisplayString() == "System";
 	}
 }
