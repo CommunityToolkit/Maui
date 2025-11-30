@@ -10,12 +10,6 @@ namespace CommunityToolkit.Maui.Views;
 public sealed partial class UriMediaSource : MediaSource
 {
 	/// <summary>
-	/// Backing store for the <see cref="Uri"/> property.
-	/// </summary>
-	public static readonly BindableProperty UriProperty =
-		BindableProperty.Create(nameof(Uri), typeof(Uri), typeof(UriMediaSource), propertyChanged: OnUriSourceChanged, validateValue: UriValueValidator);
-
-	/// <summary>
 	/// An implicit operator to convert a string value into a <see cref="UriMediaSource"/>.
 	/// </summary>
 	/// <param name="uri">Full path to the resource file, relative to the application's resources folder.</param>
@@ -26,19 +20,16 @@ public sealed partial class UriMediaSource : MediaSource
 	/// </summary>
 	/// <param name="uriMediaSource">A <see cref="UriMediaSource"/> instance to convert to a string value.</param>
 	public static implicit operator string?(UriMediaSource? uriMediaSource) => uriMediaSource?.Uri?.ToString();
-
+	
 	/// <summary>
 	/// Gets or sets the URI to use as a media source.
 	/// This is a bindable property.
 	/// </summary>
 	/// <remarks>The URI has to be absolute.</remarks>
 	[TypeConverter(typeof(UriTypeConverter))]
-	public Uri? Uri
-	{
-		get => (Uri?)GetValue(UriProperty);
-		set => SetValue(UriProperty, value);
-	}
-
+	[BindableProperty(PropertyChangedMethodName = nameof(OnUriSourceChanged), ValidateValueMethodName = nameof(UriValueValidator))]
+	public partial Uri? Uri { get; set; }
+	
 	/// <inheritdoc/>
 	public override string ToString() => $"Uri: {Uri}";
 
