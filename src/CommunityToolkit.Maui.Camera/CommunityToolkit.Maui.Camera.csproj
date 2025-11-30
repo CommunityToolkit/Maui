@@ -51,6 +51,10 @@
     <None Include="ReadMe.txt" pack="true" PackagePath="." />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CommunityToolkit.Maui.SourceGenerators.Internal\CommunityToolkit.Maui.SourceGenerators.Internal.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  
   <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
     <!-- Required NuGet Packages -->
     <PackageReference Include="Xamarin.AndroidX.Camera.Camera2" Version="1.4.2.3" />
