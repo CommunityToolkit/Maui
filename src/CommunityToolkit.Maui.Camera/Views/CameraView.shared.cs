@@ -12,73 +12,73 @@ namespace CommunityToolkit.Maui.Views;
 public partial class CameraView : View, ICameraView, IDisposable
 {
 	/// <summary>
-	/// Gets or sets a value indicating whether the camera defaults is available on the current device.
+	/// Gets or sets a <see cref="BindableProperty"/> indicating whether the <see cref="IsAvailable"/> is available on the current device.
 	/// </summary>
 	[BindableProperty(DefaultValue = CameraViewDefaults.IsAvailable)]
 	public partial bool IsAvailable { get; }
 
 	/// <summary>
-	/// Gets or sets the <see cref="CameraFlashMode"/>.
+	/// Gets or sets the <see cref="CameraFlashMode"/> property.
 	/// </summary>
 	[BindableProperty(DefaultValue = nameof(CameraViewDefaults.CameraFlashMode))]
 	public partial CameraFlashMode CameraFlashMode { get; set; }
 
 	/// <summary>
-	/// Gets or sets a value indicating whether the torch is on.
+	/// Gets or sets the <see cref="BindableProperty"/> for the <see cref="IsTorchOn"/> property.
 	/// </summary>
 	[BindableProperty(DefaultValue = CameraViewDefaults.IsTorchOn)]
 	public partial bool IsTorchOn { get; set; }
 
 	/// <summary>
-	/// Gets or sets a value indicating whether the camera is busy.
+	/// Gets or sets the <see cref="BindableProperty"/> for the <see cref="IsCameraBusy"/> property.
 	/// </summary>
 	[BindableProperty(DefaultValue = CameraViewDefaults.IsCameraBusy)]
 	public partial bool IsCameraBusy { get; }
 
 	/// <summary>
-	/// Gets or sets the selected camera.
+	/// Gets or sets the <see cref="BindableProperty"/> for the <see cref="SelectedCamera"/> property.
 	/// </summary>
 	[BindableProperty(DefaultBindingMode = BindingMode.TwoWay)]
 	public partial CameraInfo? SelectedCamera { get; set; }
 	
 	/// <summary>
-	/// Gets or sets the zoom factor for the camera.
+	/// Gets or sets the <see cref="BindableProperty"/> for the <see cref="ZoomFactor"/> property.
 	/// </summary>
 	[BindableProperty(DefaultValue = CameraViewDefaults.ZoomFactor, DefaultBindingMode = BindingMode.TwoWay, CoerceValueMethodName = nameof(CoerceZoom))]
 	public partial float ZoomFactor { get; set; }
 
 	/// <summary>
-	/// Gets or sets the image capture resolution.
+	/// Gets or sets the <see cref="BindableProperty"/> for the <see cref="ImageCaptureResolution"/> property.
 	/// </summary>
 	[BindableProperty(DefaultValue = nameof(CameraViewDefaults.ImageCaptureResolution), DefaultBindingMode = BindingMode.TwoWay)]
 	public partial Size ImageCaptureResolution { get; set; }
 
 	/// <summary>
-	/// Gets or sets the command to capture an image.
+	/// Gets or sets the <see cref="BindableProperty"/> for the <see cref="CaptureImageCommand"/> property.
 	/// </summary>
 	[BindableProperty(DefaultValue = nameof(CameraViewDefaults.CreateCaptureImageCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<CancellationToken> CaptureImageCommand { get; }
 
 	/// <summary>
-	/// Gets the command to start the camera preview.
+	/// Gets the <see cref="BindableProperty"/> for the <see cref="StartCameraPreviewCommand"/> property.
 	/// </summary>
 	[BindableProperty(DefaultValue = nameof(CameraViewDefaults.CreateStartCameraPreviewCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<CancellationToken> StartCameraPreviewCommand { get; }
 
 	/// <summary>
-	/// Gets the command to stop the camera preview.
+	/// Gets the <see cref="BindableProperty"/> for the <see cref="StopCameraPreviewCommand"/> property.
 	/// </summary>
 	[BindableProperty(DefaultValue = nameof(CameraViewDefaults.CreateStopCameraPreviewCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<CancellationToken> StopCameraPreviewCommand { get; }
 
 	/// <summary>
-	/// Gets the command to start video recording.
+	/// Gets the <see cref="BindableProperty"/> for the <see cref="StartVideoRecordingCommand"/> property.
 	/// </summary>
 	[BindableProperty(DefaultValue = nameof(CameraViewDefaults.CreateStartVideoRecordingCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<Stream> StartVideoRecordingCommand { get; }
 
 	/// <summary>
-	/// Gets the command to stop video recording.
+	/// Gets the <see cref="BindableProperty"/> for the <see cref="StopVideoRecordingCommand"/> property.
 	/// </summary>
 	[BindableProperty(DefaultValue = nameof(CameraViewDefaults.CreateStopVideoRecordingCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<CancellationToken> StopVideoRecordingCommand { get; }
