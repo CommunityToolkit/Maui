@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.Core;
 
 /// <summary>Default Values for <see cref="ICameraView"/></summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
-static class CameraViewDefaults
+public static class CameraViewDefaults
 {
 	/// <summary>
 	/// Default value for <see cref="ICameraView.IsAvailable"/>
