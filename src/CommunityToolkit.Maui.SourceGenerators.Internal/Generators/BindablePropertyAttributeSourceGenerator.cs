@@ -316,7 +316,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(info.BindablePropertyName)
 			.Append(");\n");
 
-		if (!string.IsNullOrEmpty(info.SetterAccessibility))
+		if (info.SetterAccessibility is not null)
 		{
 			sb.Append(info.SetterAccessibility)
 				.Append("set => SetValue(")
