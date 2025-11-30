@@ -10,6 +10,7 @@
     <IsTestProject>true</IsTestProject>
     <OutputType>Exe</OutputType>
     <RootNamespace>CommunityToolkit.Maui.Analyzers.UnitTests</RootNamespace>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>

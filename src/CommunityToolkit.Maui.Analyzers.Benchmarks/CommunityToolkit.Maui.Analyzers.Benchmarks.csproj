@@ -3,6 +3,7 @@
     <TargetFramework>$(NetVersion)</TargetFramework>
     <OutputType>Exe</OutputType>
     <StartupObject>CommunityToolkit.Maui.Analyzers.Benchmarks.Program</StartupObject>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
   <PropertyGroup>
     <PlatformTarget>AnyCPU</PlatformTarget>
