@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Views;
 public partial class CameraView : View, ICameraView, IDisposable
 {
 	/// <summary>
-	/// Gets or sets a <see cref="BindableProperty"/> indicating whether the <see cref="IsAvailable"/> is available on the current device.
+	/// Gets the <see cref="BindableProperty"/> indicating whether the <see cref="IsAvailable"/> is available on the current device.
 	/// </summary>
 	[BindableProperty(DefaultValue = CameraViewDefaults.IsAvailable)]
 	public partial bool IsAvailable { get; }
@@ -28,7 +28,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 	public partial bool IsTorchOn { get; set; }
 
 	/// <summary>
-	/// Gets or sets the <see cref="BindableProperty"/> for the <see cref="IsCameraBusy"/> property.
+	/// Gets the <see cref="BindableProperty"/> for the <see cref="IsCameraBusy"/> property.
 	/// </summary>
 	[BindableProperty(DefaultValue = CameraViewDefaults.IsCameraBusy)]
 	public partial bool IsCameraBusy { get; }
@@ -52,7 +52,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 	public partial Size ImageCaptureResolution { get; set; }
 
 	/// <summary>
-	/// Gets or sets the <see cref="BindableProperty"/> for the <see cref="CaptureImageCommand"/> property.
+	/// Gets the <see cref="BindableProperty"/> for the <see cref="CaptureImageCommand"/> property.
 	/// </summary>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(CameraViewDefaults.CreateCaptureImageCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<CancellationToken> CaptureImageCommand { get; }
