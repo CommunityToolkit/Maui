@@ -10,6 +10,7 @@
 
     <!-- Avoid ID conflicts with the package project. -->
     <PackageId>*$(MSBuildProjectFile)*</PackageId>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>

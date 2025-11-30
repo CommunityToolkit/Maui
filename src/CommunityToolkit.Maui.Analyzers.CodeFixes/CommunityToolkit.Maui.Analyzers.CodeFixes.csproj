@@ -5,6 +5,7 @@
     <IsPackable>false</IsPackable>
     <IsRoslynComponent>true</IsRoslynComponent>
     <RootNamespace>CommunityToolkit.Maui.Analyzers</RootNamespace>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>

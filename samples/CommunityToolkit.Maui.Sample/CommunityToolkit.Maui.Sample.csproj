@@ -34,6 +34,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     
     <NoWarn>IL2026</NoWarn>
+    
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'

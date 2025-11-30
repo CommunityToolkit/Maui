@@ -4,6 +4,7 @@
     <TargetFramework>$(NetVersion)</TargetFramework>
     <OutputType>Exe</OutputType>
     <StartupObject>CommunityToolkit.Maui.SourceGenerators.Benchmarks.Program</StartupObject>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
