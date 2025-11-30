@@ -1,6 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Runtime.Versioning;
-using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
 
@@ -56,19 +54,19 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// <summary>
 	/// Gets or sets the <see cref="BindableProperty"/> for the <see cref="CaptureImageCommand"/> property.
 	/// </summary>
-	[BindableProperty(DefaultValue = nameof(CameraViewDefaults.CreateCaptureImageCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CameraViewDefaults.CreateCaptureImageCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<CancellationToken> CaptureImageCommand { get; }
 
 	/// <summary>
 	/// Gets the <see cref="BindableProperty"/> for the <see cref="StartCameraPreviewCommand"/> property.
 	/// </summary>
-	[BindableProperty(DefaultValue = nameof(CameraViewDefaults.CreateStartCameraPreviewCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CameraViewDefaults.CreateStartCameraPreviewCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<CancellationToken> StartCameraPreviewCommand { get; }
 
 	/// <summary>
 	/// Gets the <see cref="BindableProperty"/> for the <see cref="StopCameraPreviewCommand"/> property.
 	/// </summary>
-	[BindableProperty(DefaultValue = nameof(CameraViewDefaults.CreateStopCameraPreviewCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CameraViewDefaults.CreateStopCameraPreviewCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<CancellationToken> StopCameraPreviewCommand { get; }
 
 	/// <summary>
