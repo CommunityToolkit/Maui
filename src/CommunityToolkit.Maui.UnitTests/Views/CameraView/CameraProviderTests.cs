@@ -2,7 +2,7 @@ using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using Xunit;
 
-namespace CommunityToolkit.Maui.UnitTests;
+namespace CommunityToolkit.Maui.UnitTests.Views;
 
 /// <summary>
 /// Comprehensive unit tests for CameraProvider.AreCameraInfoListsEqual method
