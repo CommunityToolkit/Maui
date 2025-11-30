@@ -28,7 +28,7 @@ public class BindablePropertyModelTests : BaseTest
 			"null",
 			"null",
 			string.Empty,
-			true, // IsReadOnly
+			true, // IsReadOnlyBindableProperty
 			string.Empty // SetterAccessibility
 		);
 
@@ -70,7 +70,7 @@ public class BindablePropertyModelTests : BaseTest
 			coerceValueMethodName,
 			defaultValueCreatorMethodName,
 			newKeywordText,
-			true, // IsReadOnly
+			true, // IsReadOnlyBindableProperty
 			string.Empty // SetterAccessibility
 		);
 
@@ -127,7 +127,7 @@ public class BindablePropertyModelTests : BaseTest
 			"null",
 			"null",
 			string.Empty,
-			true, // IsReadOnly
+			true, // IsReadOnlyBindableProperty
 			string.Empty // SetterAccessibilityText
 		);
 
