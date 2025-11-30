@@ -456,7 +456,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		return sb.ToString();
 	}
 
-	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string propertyName, in ITypeSymbol returnType, in bool doesContainNewKeyword, in bool isReadOnly, in string setterAccessibility)
+	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string propertyName, in ITypeSymbol returnType, in bool doesContainNewKeyword, in bool isReadOnly, in string? setterAccessibility)
 	{
 		if (attributeData.AttributeClass is null)
 		{
