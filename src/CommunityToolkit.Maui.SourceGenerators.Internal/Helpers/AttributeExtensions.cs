@@ -52,9 +52,7 @@ static class AttributeExtensions
 
 		if (data.Kind is TypedConstantKind.Enum && data.Type is not null && data.Value is not null)
 		{
-			var members = data.Type.GetMembers();
-
-			return $"({data.Type}){members[(int)data.Value]}";
+			return $"({data.Type}){data.Value}";
 		}
 
 		if (data.Type?.SpecialType is SpecialType.System_String)

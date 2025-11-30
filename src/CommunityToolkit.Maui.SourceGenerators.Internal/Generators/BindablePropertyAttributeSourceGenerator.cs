@@ -81,7 +81,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 			if (!groupedValues.TryGetValue(key, out var list))
 			{
-				list = new List<SemanticValues>();
+				list = [];
 				groupedValues[key] = list;
 			}
 			list.Add(sv);

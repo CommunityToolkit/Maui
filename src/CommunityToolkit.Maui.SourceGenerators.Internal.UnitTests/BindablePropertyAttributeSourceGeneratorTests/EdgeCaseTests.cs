@@ -55,7 +55,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 	}
 	
 	[Fact]
-	public async Task GenerateBindableProperty_PropertyIsBbyteEnum_GeneratesCorrectCode()
+	public async Task GenerateBindableProperty_PropertyIsByteEnum_GeneratesCorrectCode()
 	{
 		const string source =
 			/* language=C#-test */
@@ -68,7 +68,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 
             public partial class {{defaultTestClassName}} : View
             {
-                [BindableProperty]
+                [BindableProperty(DefaultValue = Status.Approved)]
                 public partial Status InvoiceStatus { get; set; }
             }
             
@@ -94,7 +94,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                 /// <summary>
                 /// Backing BindableProperty for the <see cref = "InvoiceStatus"/> property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty InvoiceStatusProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("InvoiceStatus", typeof(TestNamespace.Status), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty InvoiceStatusProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("InvoiceStatus", typeof(TestNamespace.Status), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (TestNamespace.Status)1, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
                 public partial TestNamespace.Status InvoiceStatus { get => (TestNamespace.Status)GetValue(InvoiceStatusProperty); set => SetValue(InvoiceStatusProperty, value); }
             }
             """;
@@ -116,7 +116,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 
             public partial class {{defaultTestClassName}} : View
             {
-                [BindableProperty]
+                [BindableProperty(DefaultValue = Status.Rejected)]
                 public partial Status InvoiceStatus { get; set; }
             }
             
@@ -124,7 +124,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
             {
                 Pending = 0,
                 Approved = 1,
-                Rejected = 2
+                Rejected = long.MaxValue
             }
             """;
 
@@ -142,7 +142,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                 /// <summary>
                 /// Backing BindableProperty for the <see cref = "InvoiceStatus"/> property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty InvoiceStatusProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("InvoiceStatus", typeof(TestNamespace.Status), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty InvoiceStatusProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("InvoiceStatus", typeof(TestNamespace.Status), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (TestNamespace.Status)9223372036854775807, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
                 public partial TestNamespace.Status InvoiceStatus { get => (TestNamespace.Status)GetValue(InvoiceStatusProperty); set => SetValue(InvoiceStatusProperty, value); }
             }
             """;
