@@ -10,6 +10,7 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 {
 	UIDocumentPickerViewController? documentPickerViewController;
 	TaskCompletionSource<string>? taskCompetedSource;
+	NSUrl? tempDirectoryPath;
 
 	/// <inheritdoc />
 	public void Dispose()
@@ -21,7 +22,7 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 		var fileManager = NSFileManager.DefaultManager;
-		var tempDirectoryPath = fileManager.GetTemporaryDirectory().Append(Guid.NewGuid().ToString(), true);
+		tempDirectoryPath = fileManager.GetTemporaryDirectory().Append(Guid.NewGuid().ToString(), true);
 		var isDirectoryCreated = fileManager.CreateDirectory(tempDirectoryPath, true, null, out var error);
 		if (!isDirectoryCreated)
 		{
@@ -63,6 +64,7 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 	void DocumentPickerViewControllerOnWasCancelled(object? sender, EventArgs e)
 	{
 		taskCompetedSource?.TrySetException(new FileSaveException("Operation cancelled."));
+		CleanupTempDirectory();
 		InternalDispose();
 	}
 
@@ -74,9 +76,20 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 		}
 		finally
 		{
+			CleanupTempDirectory();
 			InternalDispose();
 		}
 	}
+	
+	void CleanupTempDirectory()
+	{
+		if (tempDirectoryPath is not null)
+		{
+			var fileManager = NSFileManager.DefaultManager;
+			fileManager.Remove(tempDirectoryPath, out var _);
+		}
+	}
+
 
 	void InternalDispose()
 	{
