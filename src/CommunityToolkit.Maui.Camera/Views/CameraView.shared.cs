@@ -38,75 +38,76 @@ public partial class CameraView : View, ICameraView, IDisposable
 
 	static ICameraProvider CameraProvider => IPlatformApplication.Current?.Services.GetRequiredService<ICameraProvider>() ?? throw new CameraException("Unable to retrieve CameraProvider");
 
-	/// <summary>
-	/// Gets the <see cref="BindableProperty"/> indicating whether the <see cref="IsAvailable"/> is available on the current device.
-	/// </summary>
+	/// <inheritdoc cref="ICameraView.IsAvailable"/>
 	[BindableProperty(DefaultValue = CameraViewDefaults.IsAvailable)]
 	public partial bool IsAvailable { get; }
 
-	/// <summary>
-	/// Gets the <see cref="BindableProperty"/> for the <see cref="IsCameraBusy"/> property.
-	/// </summary>
+	/// <inheritdoc cref="ICameraView.IsBusy"/>
 	[BindableProperty(DefaultValue = CameraViewDefaults.IsCameraBusy)]
-	public partial bool IsCameraBusy { get; }
+	public partial bool IsBusy { get; }
 
 	/// <summary>
-	/// Gets the <see cref="BindableProperty"/> for the <see cref="CaptureImageCommand"/> property.
+	/// Gets the <see cref="Command{CancellationToken}"/> that triggers an image capture.
 	/// </summary>
+	/// <remarks>
+	/// <see cref="CaptureImageCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter
+	/// </remarks>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateCaptureImageCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<CancellationToken> CaptureImageCommand { get; }
 
 	/// <summary>
-	/// Gets the <see cref="BindableProperty"/> for the <see cref="StartCameraPreviewCommand"/> property.
+	/// Gets the <see cref="Command{CancellationToken}"/> that starts the camera preview.
 	/// </summary>
+	/// <remarks>
+	/// <see cref="StartCameraPreviewCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter
+	/// </remarks>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateStartCameraPreviewCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<CancellationToken> StartCameraPreviewCommand { get; }
 
 	/// <summary>
-	/// Gets the <see cref="BindableProperty"/> for the <see cref="StopCameraPreviewCommand"/> property.
+	/// Gets the <see cref="Command{CancellationToken}"/> that stops the camera preview.
 	/// </summary>
+	/// <remarks>
+	/// <see cref="StopCameraPreviewCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter
+	/// </remarks>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateStopCameraPreviewCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<CancellationToken> StopCameraPreviewCommand { get; }
 
 	/// <summary>
-	/// Gets the <see cref="BindableProperty"/> for the <see cref="StartVideoRecordingCommand"/> property.
+	/// Gets the <see cref="Command{Stream}"/> that starts video recording.
 	/// </summary>
+	/// <remarks>
+	/// <see cref="StopCameraPreviewCommand"/> has a <see cref="Type"/> of Command&lt;Stream&gt; which requires a <see cref="Stream"/> as a CommandParameter. See <see cref="Command{Stream}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="Stream"/> into <see cref="Command{T}"/> as a CommandParameter
+	/// </remarks>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateStartVideoRecordingCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<Stream> StartVideoRecordingCommand { get; }
 
 	/// <summary>
-	/// Gets the <see cref="BindableProperty"/> for the <see cref="StopVideoRecordingCommand"/> property.
+	/// Gets the <see cref="Command{CancellationToken}"/> that stops video recording.
 	/// </summary>
+	/// <remarks>
+	/// <see cref="StopVideoRecordingCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter
+	/// </remarks>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateStopVideoRecordingCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<CancellationToken> StopVideoRecordingCommand { get; }
 
-	/// <summary>
-	/// Gets or sets the <see cref="CameraFlashMode"/> property.
-	/// </summary>
+	/// <inheritdoc cref="ICameraView.CameraFlashMode"/>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateCameraFlashMode))]
 	public partial CameraFlashMode CameraFlashMode { get; set; }
 
-	/// <summary>
-	/// Gets or sets the <see cref="BindableProperty"/> for the <see cref="IsTorchOn"/> property.
-	/// </summary>
+	/// <inheritdoc cref="ICameraView.IsTorchOn"/>
 	[BindableProperty(DefaultValue = CameraViewDefaults.IsTorchOn)]
 	public partial bool IsTorchOn { get; set; }
 
-	/// <summary>
-	/// Gets or sets the <see cref="BindableProperty"/> for the <see cref="SelectedCamera"/> property.
-	/// </summary>
+	/// <inheritdoc cref="ICameraView.SelectedCamera"/>
 	[BindableProperty(DefaultBindingMode = BindingMode.TwoWay)]
 	public partial CameraInfo? SelectedCamera { get; set; }
 
-	/// <summary>
-	/// Gets or sets the <see cref="BindableProperty"/> for the <see cref="ZoomFactor"/> property.
-	/// </summary>
+	/// <inheritdoc cref="ICameraView.ZoomFactor"/>
 	[BindableProperty(DefaultValue = CameraViewDefaults.ZoomFactor, DefaultBindingMode = BindingMode.TwoWay, CoerceValueMethodName = nameof(CoerceZoom))]
 	public partial float ZoomFactor { get; set; }
-
-	/// <summary>
-	/// Gets or sets the <see cref="BindableProperty"/> for the <see cref="ImageCaptureResolution"/> property.
-	/// </summary>
+	
+	/// <inheritdoc cref="ICameraView.ImageCaptureResolution"/>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateImageCaptureResolution), DefaultBindingMode = BindingMode.TwoWay)]
 	public partial Size ImageCaptureResolution { get; set; }
 
@@ -120,8 +121,8 @@ public partial class CameraView : View, ICameraView, IDisposable
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	bool ICameraView.IsBusy
 	{
-		get => IsCameraBusy;
-		set => SetValue(isCameraBusyPropertyKey, value);
+		get => IsBusy;
+		set => SetValue(isBusyPropertyKey, value);
 	}
 
 	new CameraViewHandler Handler => (CameraViewHandler)(base.Handler ?? throw new InvalidOperationException("Unable to retrieve Handler"));
