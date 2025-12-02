@@ -10,6 +10,34 @@ namespace CommunityToolkit.Maui.Views;
 /// </summary>
 public partial class CameraView : View, ICameraView, IDisposable
 {
+	readonly SemaphoreSlim captureImageSemaphoreSlim = new(1, 1);
+	readonly WeakEventManager weakEventManager = new();
+
+	bool isDisposed;
+
+	/// <summary>
+	/// Event that is raised when the camera capture fails.
+	/// </summary>
+	public event EventHandler<MediaCaptureFailedEventArgs> MediaCaptureFailed
+	{
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
+	}
+
+	/// <summary>
+	/// Event that is raised when the camera captures an image.
+	/// </summary>
+	/// <remarks>
+	/// The <see cref="MediaCapturedEventArgs"/> contains the captured image data.
+	/// </remarks>
+	public event EventHandler<MediaCapturedEventArgs> MediaCaptured
+	{
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
+	}
+
+	static ICameraProvider CameraProvider => IPlatformApplication.Current?.Services.GetRequiredService<ICameraProvider>() ?? throw new CameraException("Unable to retrieve CameraProvider");
+	
 	/// <summary>
 	/// Gets the <see cref="BindableProperty"/> indicating whether the <see cref="IsAvailable"/> is available on the current device.
 	/// </summary>
@@ -81,34 +109,6 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// </summary>
 	[BindableProperty(DefaultValue = nameof(CreateStopVideoRecordingCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<CancellationToken> StopVideoRecordingCommand { get; }
-
-	readonly SemaphoreSlim captureImageSemaphoreSlim = new(1, 1);
-	readonly WeakEventManager weakEventManager = new();
-
-	bool isDisposed;
-
-	/// <summary>
-	/// Event that is raised when the camera capture fails.
-	/// </summary>
-	public event EventHandler<MediaCaptureFailedEventArgs> MediaCaptureFailed
-	{
-		add => weakEventManager.AddEventHandler(value);
-		remove => weakEventManager.RemoveEventHandler(value);
-	}
-
-	/// <summary>
-	/// Event that is raised when the camera captures an image.
-	/// </summary>
-	/// <remarks>
-	/// The <see cref="MediaCapturedEventArgs"/> contains the captured image data.
-	/// </remarks>
-	public event EventHandler<MediaCapturedEventArgs> MediaCaptured
-	{
-		add => weakEventManager.AddEventHandler(value);
-		remove => weakEventManager.RemoveEventHandler(value);
-	}
-
-	static ICameraProvider CameraProvider => IPlatformApplication.Current?.Services.GetRequiredService<ICameraProvider>() ?? throw new CameraException("Unable to retrieve CameraProvider");
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	bool ICameraView.IsAvailable
@@ -242,7 +242,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 		return new(async token => await cameraView.StartCameraPreview(token).ConfigureAwait(false));
 	}
 
-	static CCommand CreateStopCameraPreviewCommand(BindableObject bindable)
+	static Command CreateStopCameraPreviewCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;
 		return new Command(_ => cameraView.StopCameraPreview());
