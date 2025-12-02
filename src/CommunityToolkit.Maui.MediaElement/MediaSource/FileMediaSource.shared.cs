@@ -21,14 +21,14 @@ public sealed partial class FileMediaSource : MediaSource
 	/// </summary>
 	/// <param name="fileMediaSource">A <see cref="FileMediaSource"/> instance to convert to a string value.</param>
 	public static implicit operator string?(FileMediaSource? fileMediaSource) => fileMediaSource?.Path;
-	
+
 	/// <summary>
 	/// Gets or sets the full path to the local file to use as a media source.
 	/// This is a bindable property.
 	/// </summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnFileMediaSourceChanged))]
 	public partial string? Path { get; set; }
-	
+
 	/// <inheritdoc/>
 	public override string ToString() => $"File: {Path}";
 
