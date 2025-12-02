@@ -81,7 +81,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 			if (!groupedValues.TryGetValue(key, out var list))
 			{
-				list = new List<SemanticValues>();
+				list = [];
 				groupedValues[key] = list;
 			}
 			list.Add(sv);
@@ -174,7 +174,15 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		foreach (var info in value.BindableProperties)
 		{
-			GenerateBindableProperty(sb, in info);
+			if (info.IsReadOnlyBindableProperty)
+			{
+				GenerateReadOnlyBindableProperty(sb, in info);
+			}
+			else
+			{
+				GenerateBindableProperty(sb, in info);
+			}
+
 			GenerateProperty(sb, in info);
 		}
 
@@ -194,6 +202,58 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	static void GenerateReadOnlyBindableProperty(StringBuilder sb, in BindablePropertyModel info)
+	{
+		// Sanitize the Return Type because Nullable Reference Types cannot be used in the `typeof()` operator
+		var nonNullableReturnType = ConvertToNonNullableTypeSymbol(info.ReturnType);
+		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
+
+		sb.Append("/// <summary>\r\n/// Backing BindableProperty for the <see cref=\"")
+			.Append(sanitizedPropertyName)
+			.Append("\"/> property.\r\n/// </summary>\r\n");
+
+		// Generate BindablePropertyKey for read-only properties
+		sb.Append("static readonly global::Microsoft.Maui.Controls.BindablePropertyKey ")
+			.Append(info.BindablePropertyKeyName)
+			.Append(" = \n")
+			.Append(bpFullName)
+			.Append(".CreateReadOnly(\"")
+			.Append(sanitizedPropertyName)
+			.Append("\", typeof(")
+			.Append(GetFormattedReturnType(nonNullableReturnType))
+			.Append("), typeof(")
+			.Append(info.DeclaringType)
+			.Append("), ")
+			.Append(info.DefaultValue)
+			.Append(", ")
+			.Append(info.DefaultBindingMode)
+			.Append(", ")
+			.Append(info.ValidateValueMethodName)
+			.Append(", ")
+			.Append(info.PropertyChangedMethodName)
+			.Append(", ")
+			.Append(info.PropertyChangingMethodName)
+			.Append(", ")
+			.Append(info.CoerceValueMethodName)
+			.Append(", ")
+			.Append(info.DefaultValueCreatorMethodName)
+			.Append(");\n");
+
+		// Generate public BindableProperty from the key
+		sb.Append("public ")
+			.Append(info.NewKeywordText)
+			.Append("static readonly ")
+			.Append(bpFullName)
+			.Append(' ')
+			.Append(info.BindablePropertyName)
+			.Append(" = ")
+			.Append(info.BindablePropertyKeyName)
+			.Append(".BindableProperty;\n");
+
+		sb.Append('\n');
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static void GenerateBindableProperty(StringBuilder sb, in BindablePropertyModel info)
 	{
 		// Sanitize the Return Type because Nullable Reference Types cannot be used in the `typeof()` operator
@@ -204,6 +264,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(sanitizedPropertyName)
 			.Append("\"/> property.\r\n/// </summary>\r\n");
 
+		// Generate regular BindableProperty
 		sb.Append("public ")
 			.Append(info.NewKeywordText)
 			.Append("static readonly ")
@@ -232,7 +293,9 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(info.CoerceValueMethodName)
 			.Append(", ")
 			.Append(info.DefaultValueCreatorMethodName)
-			.Append(");\n\n");
+			.Append(");\n");
+
+		sb.Append('\n');
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -251,9 +314,18 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(formattedReturnType)
 			.Append(")GetValue(")
 			.Append(info.BindablePropertyName)
-			.Append(");\nset => SetValue(")
-			.Append(info.BindablePropertyName)
-			.Append(", value);\n}\n");
+			.Append(");\n");
+
+		if (info.SetterAccessibility is not null)
+		{
+			sb.Append(info.SetterAccessibility)
+				.Append("set => SetValue(")
+				.Append(info.IsReadOnlyBindableProperty ? info.BindablePropertyKeyName : info.BindablePropertyName)
+				.Append(", value);\n");
+		}
+		// else Do not create a Setter because the property is read-only
+
+		sb.Append("}\n");
 	}
 
 	static SemanticValues SemanticTransform(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
@@ -284,9 +356,10 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var bindablePropertyModels = new BindablePropertyModel[context.Attributes.Length];
 
 		var doesContainNewKeyword = HasNewKeyword(propertyDeclarationSyntax);
+		var (isReadOnlyBindableProperty, setterAccessibility) = GetPropertyAccessibility(propertySymbol, propertyDeclarationSyntax);
 
 		var attributeData = context.Attributes[0];
-		bindablePropertyModels[0] = CreateBindablePropertyModel(attributeData, propertySymbol.ContainingType, propertySymbol.Name, returnType, doesContainNewKeyword);
+		bindablePropertyModels[0] = CreateBindablePropertyModel(attributeData, propertySymbol.ContainingType, propertySymbol.Name, returnType, doesContainNewKeyword, isReadOnlyBindableProperty, setterAccessibility);
 
 		return new(propertyInfo, ImmutableArray.Create(bindablePropertyModels));
 	}
@@ -304,9 +377,30 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		return false;
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	static (bool IsReadOnlyBindableProperty, string? SetterAccessibility) GetPropertyAccessibility(IPropertySymbol propertySymbol, PropertyDeclarationSyntax syntax)
+	{
+		// Check if property is get-only (no setter)
+		if (propertySymbol.SetMethod is null)
+		{
+			return (true, null);
+		}
+
+		return propertySymbol.SetMethod.DeclaredAccessibility switch
+		{
+			Accessibility.NotApplicable => throw new NotSupportedException($"The setter type for {propertySymbol.Name} is not yet supported"),
+			Accessibility.Private => (true, "private "),
+			Accessibility.ProtectedAndInternal => (true, "private protected "),
+			Accessibility.Protected => (true, "protected "),
+			Accessibility.Internal => (false, "internal "),
+			Accessibility.ProtectedOrInternal => (false, "protected internal "),
+			Accessibility.Public => (false, " "), // Keep the SetterAccessibility empty because the Property is public and the setter will inherit that accessbility modified, e.g. `public string Test { get; set; }`
+			_ => throw new NotSupportedException($"The setter type for {propertySymbol.Name} is not yet supported"),
+		};
+	}
+
 	static string GetContainingTypes(INamedTypeSymbol typeSymbol)
 	{
-		// Use StringBuilder for efficient string building
 		var current = typeSymbol.ContainingType;
 		if (current is null)
 		{
@@ -362,23 +456,23 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		return sb.ToString();
 	}
 
-	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string propertyName, in ITypeSymbol returnType, in bool doesContainNewKeyword)
+	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string propertyName, in ITypeSymbol returnType, in bool doesContainNewKeyword, in bool isReadOnly, in string? setterAccessibility)
 	{
 		if (attributeData.AttributeClass is null)
 		{
-			throw new ArgumentException($"{nameof(attributeData.AttributeClass)} Cannot Be Null", nameof(attributeData.AttributeClass));
+			throw new ArgumentException($"{nameof(attributeData)}.{nameof(attributeData.AttributeClass)} Cannot Be Null", nameof(attributeData));
 		}
 
-		var defaultValue = attributeData.GetNamedTypeArgumentsAttributeValueByNameAsCastedString(nameof(BindablePropertyModel.DefaultValue));
+		var defaultValue = attributeData.GetNamedTypeArgumentsAttributeValueByNameAsCastedString(nameof(BindablePropertyModel.DefaultValue), returnType);
 		var coerceValueMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.CoerceValueMethodName));
-		var defaultBindingMode = attributeData.GetNamedTypeArgumentsAttributeValueByNameAsCastedString(nameof(BindablePropertyModel.DefaultBindingMode), "Microsoft.Maui.Controls.BindingMode.OneWay");
+		var defaultBindingMode = attributeData.GetNamedTypeArgumentsAttributeValueForDefaultBindingMode(nameof(BindablePropertyModel.DefaultBindingMode), "Microsoft.Maui.Controls.BindingMode.OneWay");
 		var defaultValueCreatorMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DefaultValueCreatorMethodName));
 		var propertyChangedMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.PropertyChangedMethodName));
 		var propertyChangingMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.PropertyChangingMethodName));
 		var validateValueMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.ValidateValueMethodName));
 		var newKeywordText = doesContainNewKeyword ? "new " : string.Empty;
 
-		return new BindablePropertyModel(propertyName, returnType, declaringType, defaultValue, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText);
+		return new BindablePropertyModel(propertyName, returnType, declaringType, defaultValue, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText, isReadOnly, setterAccessibility);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
