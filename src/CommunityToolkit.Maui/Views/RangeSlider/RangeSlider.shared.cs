@@ -79,7 +79,7 @@ public partial class RangeSlider : ContentView
 		MaximumTrackColor = Colors.Transparent,
 	};
 
-	bool clampValues = false;
+	bool isClampingEnabled = false;
 
 	/// <summary>Initializes a new instance of the <see cref="RangeSlider"/> class.</summary>
 	public RangeSlider()
@@ -107,26 +107,28 @@ public partial class RangeSlider : ContentView
 			},
 		};
 
-		Dispatcher.Dispatch(() =>
-		{
-			clampValues = true;
-			CoerceValue(LowerValueProperty);
-			CoerceValue(UpperValueProperty);
-			lowerSlider.DragStarted += HandleLowerSliderDragStarted;
-			lowerSlider.DragCompleted += HandleLowerSliderDragCompleted;
-			lowerSlider.PropertyChanged += HandleLowerSliderPropertyChanged;
-			lowerSlider.Focused += HandlerLowerSliderFocused;
-			upperSlider.DragStarted += HandleUpperSliderDragStarted;
-			upperSlider.DragCompleted += HandleUpperSliderDragCompleted;
-			upperSlider.PropertyChanged += HandleUpperSliderPropertyChanged;
-			upperSlider.Focused += HandlerUpperSliderFocused;
-			UpdateSliderRanges();
-			UpdateLowerSliderValue();
-			UpdateUpperSliderValue();
-			UpdateFocusedSliderLayout();
-			UpdateOuterTrackLayout();
-			UpdateInnerTrackLayout();
-		});
+		Dispatcher.Dispatch(FinalizeInitialization);
+	}
+
+	void FinalizeInitialization()
+	{
+		isClampingEnabled = true;
+		CoerceValue(LowerValueProperty);
+		CoerceValue(UpperValueProperty);
+		lowerSlider.DragStarted += HandleLowerSliderDragStarted;
+		lowerSlider.DragCompleted += HandleLowerSliderDragCompleted;
+		lowerSlider.PropertyChanged += HandleLowerSliderPropertyChanged;
+		lowerSlider.Focused += HandlerLowerSliderFocused;
+		upperSlider.DragStarted += HandleUpperSliderDragStarted;
+		upperSlider.DragCompleted += HandleUpperSliderDragCompleted;
+		upperSlider.PropertyChanged += HandleUpperSliderPropertyChanged;
+		upperSlider.Focused += HandlerUpperSliderFocused;
+		UpdateSliderRanges();
+		UpdateLowerSliderValue();
+		UpdateUpperSliderValue();
+		UpdateFocusedSliderLayout();
+		UpdateOuterTrackLayout();
+		UpdateInnerTrackLayout();
 	}
 
 	static object CoerceLowerValue(BindableObject bindable, object value)
@@ -134,7 +136,7 @@ public partial class RangeSlider : ContentView
 		var rangeSlider = (RangeSlider)bindable;
 		var input = (double)value;
 
-		if (rangeSlider.clampValues)
+		if (rangeSlider.isClampingEnabled)
 		{
 			if (rangeSlider.MinimumValue <= rangeSlider.MaximumValue)
 			{
@@ -154,7 +156,7 @@ public partial class RangeSlider : ContentView
 		var rangeSlider = (RangeSlider)bindable;
 		var input = (double)value;
 
-		if (rangeSlider.clampValues)
+		if (rangeSlider.isClampingEnabled)
 		{
 			if (rangeSlider.MinimumValue <= rangeSlider.MaximumValue)
 			{
@@ -283,10 +285,12 @@ public partial class RangeSlider : ContentView
 			_ => (lowerSlider.Value + upperSlider.Value) / 2,
 		};
 
-		if (upperSlider.Maximum - lowerSlider.Minimum != 0)
+		double range = upperSlider.Maximum - lowerSlider.Minimum;
+		double trackWidth = Width - PlatformThumbSize;
+		if (range != 0)
 		{
-			lowerSlider.WidthRequest = (Width - PlatformThumbSize) * (lowerSlider.Maximum - lowerSlider.Minimum) / (upperSlider.Maximum - lowerSlider.Minimum) + PlatformThumbSize;
-			upperSlider.WidthRequest = (Width - PlatformThumbSize) * (upperSlider.Maximum - upperSlider.Minimum) / (upperSlider.Maximum - lowerSlider.Minimum) + PlatformThumbSize;
+			lowerSlider.WidthRequest = trackWidth * (lowerSlider.Maximum - lowerSlider.Minimum) / range + PlatformThumbSize;
+			upperSlider.WidthRequest = trackWidth * (upperSlider.Maximum - upperSlider.Minimum) / range + PlatformThumbSize;
 		}
 	}
 

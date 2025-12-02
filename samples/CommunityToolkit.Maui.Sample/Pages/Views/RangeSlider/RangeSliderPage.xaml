@@ -89,7 +89,7 @@
                 </Border>
                 <Label
                     Grid.Column="2"
-                    Text="{Binding LowerValueDescending, StringFormat='{}{0:F1}'}"
+                    Text="{Binding UpperValueDescending, StringFormat='{}{0:F1}'}"
                     VerticalOptions="Center" />
             </Grid>
 

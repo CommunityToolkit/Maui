@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using CommunityToolkit.Maui.Alerts;
-using CommunityToolkit.Maui.Sample.ViewModels.Views;
+﻿using CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 

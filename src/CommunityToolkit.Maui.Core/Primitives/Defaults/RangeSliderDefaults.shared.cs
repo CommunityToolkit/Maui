@@ -1,7 +1,7 @@
 ﻿namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
-/// Default Values for RangeSlider />
+/// Default Values for RangeSlider
 /// </summary>
 public static class RangeSliderDefaults
 {
