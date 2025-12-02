@@ -6,7 +6,7 @@ using CommunityToolkit.Maui.Core.Handlers;
 namespace CommunityToolkit.Maui.Views;
 
 /// <summary>
-/// A visual element that provides the ability to show a camera preview and capture images.
+/// A <see cref="View"/> that provides the ability to show a camera preview and capture images and record video.
 /// </summary>
 public partial class CameraView : View, ICameraView, IDisposable
 {
@@ -37,7 +37,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 	}
 
 	static ICameraProvider CameraProvider => IPlatformApplication.Current?.Services.GetRequiredService<ICameraProvider>() ?? throw new CameraException("Unable to retrieve CameraProvider");
-	
+
 	/// <summary>
 	/// Gets the <see cref="BindableProperty"/> indicating whether the <see cref="IsAvailable"/> is available on the current device.
 	/// </summary>
@@ -45,40 +45,10 @@ public partial class CameraView : View, ICameraView, IDisposable
 	public partial bool IsAvailable { get; }
 
 	/// <summary>
-	/// Gets or sets the <see cref="CameraFlashMode"/> property.
-	/// </summary>
-	[BindableProperty(DefaultValue = nameof(CameraViewDefaults.CameraFlashMode))]
-	public partial CameraFlashMode CameraFlashMode { get; set; }
-
-	/// <summary>
-	/// Gets or sets the <see cref="BindableProperty"/> for the <see cref="IsTorchOn"/> property.
-	/// </summary>
-	[BindableProperty(DefaultValue = CameraViewDefaults.IsTorchOn)]
-	public partial bool IsTorchOn { get; set; }
-
-	/// <summary>
 	/// Gets the <see cref="BindableProperty"/> for the <see cref="IsCameraBusy"/> property.
 	/// </summary>
 	[BindableProperty(DefaultValue = CameraViewDefaults.IsCameraBusy)]
 	public partial bool IsCameraBusy { get; }
-
-	/// <summary>
-	/// Gets or sets the <see cref="BindableProperty"/> for the <see cref="SelectedCamera"/> property.
-	/// </summary>
-	[BindableProperty(DefaultBindingMode = BindingMode.TwoWay)]
-	public partial CameraInfo? SelectedCamera { get; set; }
-	
-	/// <summary>
-	/// Gets or sets the <see cref="BindableProperty"/> for the <see cref="ZoomFactor"/> property.
-	/// </summary>
-	[BindableProperty(DefaultValue = CameraViewDefaults.ZoomFactor, DefaultBindingMode = BindingMode.TwoWay, CoerceValueMethodName = nameof(CoerceZoom))]
-	public partial float ZoomFactor { get; set; }
-
-	/// <summary>
-	/// Gets or sets the <see cref="BindableProperty"/> for the <see cref="ImageCaptureResolution"/> property.
-	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateImageCaptureResolution), DefaultBindingMode = BindingMode.TwoWay)]
-	public partial Microsoft.Maui.Graphics.Size ImageCaptureResolution { get; set; }
 
 	/// <summary>
 	/// Gets the <see cref="BindableProperty"/> for the <see cref="CaptureImageCommand"/> property.
@@ -101,14 +71,44 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// <summary>
 	/// Gets the <see cref="BindableProperty"/> for the <see cref="StartVideoRecordingCommand"/> property.
 	/// </summary>
-	[BindableProperty(DefaultValue = nameof(CreateStartVideoRecordingCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateStartVideoRecordingCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<Stream> StartVideoRecordingCommand { get; }
 
 	/// <summary>
 	/// Gets the <see cref="BindableProperty"/> for the <see cref="StopVideoRecordingCommand"/> property.
 	/// </summary>
-	[BindableProperty(DefaultValue = nameof(CreateStopVideoRecordingCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateStopVideoRecordingCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<CancellationToken> StopVideoRecordingCommand { get; }
+
+	/// <summary>
+	/// Gets or sets the <see cref="CameraFlashMode"/> property.
+	/// </summary>
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateCameraFlashMode))]
+	public partial CameraFlashMode CameraFlashMode { get; set; }
+
+	/// <summary>
+	/// Gets or sets the <see cref="BindableProperty"/> for the <see cref="IsTorchOn"/> property.
+	/// </summary>
+	[BindableProperty(DefaultValue = CameraViewDefaults.IsTorchOn)]
+	public partial bool IsTorchOn { get; set; }
+
+	/// <summary>
+	/// Gets or sets the <see cref="BindableProperty"/> for the <see cref="SelectedCamera"/> property.
+	/// </summary>
+	[BindableProperty(DefaultBindingMode = BindingMode.TwoWay)]
+	public partial CameraInfo? SelectedCamera { get; set; }
+
+	/// <summary>
+	/// Gets or sets the <see cref="BindableProperty"/> for the <see cref="ZoomFactor"/> property.
+	/// </summary>
+	[BindableProperty(DefaultValue = CameraViewDefaults.ZoomFactor, DefaultBindingMode = BindingMode.TwoWay, CoerceValueMethodName = nameof(CoerceZoom))]
+	public partial float ZoomFactor { get; set; }
+
+	/// <summary>
+	/// Gets or sets the <see cref="BindableProperty"/> for the <see cref="ImageCaptureResolution"/> property.
+	/// </summary>
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateImageCaptureResolution), DefaultBindingMode = BindingMode.TwoWay)]
+	public partial Size ImageCaptureResolution { get; set; }
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	bool ICameraView.IsAvailable
@@ -140,6 +140,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 		{
 			await CameraProvider.RefreshAvailableCameras(token);
 		}
+
 		return CameraProvider.AvailableCameras ?? throw new CameraException("No camera available on device");
 	}
 
@@ -230,6 +231,8 @@ public partial class CameraView : View, ICameraView, IDisposable
 
 	static object CreateImageCaptureResolution(BindableObject bindable) => CameraViewDefaults.ImageCaptureResolution;
 
+	static object CreateCameraFlashMode(BindableObject bindable) => CameraViewDefaults.CameraFlashMode;
+
 	static Command<CancellationToken> CreateCaptureImageCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;
@@ -245,21 +248,21 @@ public partial class CameraView : View, ICameraView, IDisposable
 	static Command CreateStopCameraPreviewCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;
-		return new Command(_ => cameraView.StopCameraPreview());
+		return new(_ => cameraView.StopCameraPreview());
 	}
 
 	static Command<Stream> CreateStartVideoRecordingCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;
-		return new Command<Stream>(async stream => await cameraView.StartVideoRecording(stream).ConfigureAwait(false));
+		return new(async stream => await cameraView.StartVideoRecording(stream).ConfigureAwait(false));
 	}
 
 	static Command<CancellationToken> CreateStopVideoRecordingCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;
-		return new Command<CancellationToken>(async token => await cameraView.StopVideoRecording(token).ConfigureAwait(false));
+		return new(async token => await cameraView.StopVideoRecording(token).ConfigureAwait(false));
 	}
-	
+
 	static object CoerceZoom(BindableObject bindable, object value)
 	{
 		var cameraView = (CameraView)bindable;
@@ -281,7 +284,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 
 		return input;
 	}
-	
+
 	void ICameraView.OnMediaCaptured(Stream imageData)
 	{
 		weakEventManager.HandleEvent(this, new MediaCapturedEventArgs(imageData), nameof(MediaCaptured));
