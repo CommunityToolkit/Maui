@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
 
@@ -48,37 +49,37 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// <summary>
 	/// Gets or sets the <see cref="BindableProperty"/> for the <see cref="ImageCaptureResolution"/> property.
 	/// </summary>
-	[BindableProperty(DefaultValue = nameof(CameraViewDefaults.ImageCaptureResolution), DefaultBindingMode = BindingMode.TwoWay)]
-	public partial Size ImageCaptureResolution { get; set; }
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateImageCaptureResolution), DefaultBindingMode = BindingMode.TwoWay)]
+	public partial Microsoft.Maui.Graphics.Size ImageCaptureResolution { get; set; }
 
 	/// <summary>
 	/// Gets the <see cref="BindableProperty"/> for the <see cref="CaptureImageCommand"/> property.
 	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CameraViewDefaults.CreateCaptureImageCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateCaptureImageCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<CancellationToken> CaptureImageCommand { get; }
 
 	/// <summary>
 	/// Gets the <see cref="BindableProperty"/> for the <see cref="StartCameraPreviewCommand"/> property.
 	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CameraViewDefaults.CreateStartCameraPreviewCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateStartCameraPreviewCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<CancellationToken> StartCameraPreviewCommand { get; }
 
 	/// <summary>
 	/// Gets the <see cref="BindableProperty"/> for the <see cref="StopCameraPreviewCommand"/> property.
 	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CameraViewDefaults.CreateStopCameraPreviewCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateStopCameraPreviewCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<CancellationToken> StopCameraPreviewCommand { get; }
 
 	/// <summary>
 	/// Gets the <see cref="BindableProperty"/> for the <see cref="StartVideoRecordingCommand"/> property.
 	/// </summary>
-	[BindableProperty(DefaultValue = nameof(CameraViewDefaults.CreateStartVideoRecordingCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
+	[BindableProperty(DefaultValue = nameof(CreateStartVideoRecordingCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<Stream> StartVideoRecordingCommand { get; }
 
 	/// <summary>
 	/// Gets the <see cref="BindableProperty"/> for the <see cref="StopVideoRecordingCommand"/> property.
 	/// </summary>
-	[BindableProperty(DefaultValue = nameof(CameraViewDefaults.CreateStopVideoRecordingCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
+	[BindableProperty(DefaultValue = nameof(CreateStopVideoRecordingCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<CancellationToken> StopVideoRecordingCommand { get; }
 
 	readonly SemaphoreSlim captureImageSemaphoreSlim = new(1, 1);
@@ -227,16 +228,38 @@ public partial class CameraView : View, ICameraView, IDisposable
 		}
 	}
 
-	void ICameraView.OnMediaCaptured(Stream imageData)
+	static object CreateImageCaptureResolution(BindableObject bindable) => CameraViewDefaults.ImageCaptureResolution;
+
+	static Command<CancellationToken> CreateCaptureImageCommand(BindableObject bindable)
 	{
-		weakEventManager.HandleEvent(this, new MediaCapturedEventArgs(imageData), nameof(MediaCaptured));
+		var cameraView = (CameraView)bindable;
+		return new(async token => await cameraView.CaptureImage(token).ConfigureAwait(false));
 	}
 
-	void ICameraView.OnMediaCapturedFailed(string failureReason)
+	static Command<CancellationToken> CreateStartCameraPreviewCommand(BindableObject bindable)
 	{
-		weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(failureReason), nameof(MediaCaptureFailed));
+		var cameraView = (CameraView)bindable;
+		return new(async token => await cameraView.StartCameraPreview(token).ConfigureAwait(false));
 	}
 
+	static CCommand CreateStopCameraPreviewCommand(BindableObject bindable)
+	{
+		var cameraView = (CameraView)bindable;
+		return new Command(_ => cameraView.StopCameraPreview());
+	}
+
+	static Command<Stream> CreateStartVideoRecordingCommand(BindableObject bindable)
+	{
+		var cameraView = (CameraView)bindable;
+		return new Command<Stream>(async stream => await cameraView.StartVideoRecording(stream).ConfigureAwait(false));
+	}
+
+	static Command<CancellationToken> CreateStopVideoRecordingCommand(BindableObject bindable)
+	{
+		var cameraView = (CameraView)bindable;
+		return new Command<CancellationToken>(async token => await cameraView.StopVideoRecording(token).ConfigureAwait(false));
+	}
+	
 	static object CoerceZoom(BindableObject bindable, object value)
 	{
 		var cameraView = (CameraView)bindable;
@@ -257,5 +280,15 @@ public partial class CameraView : View, ICameraView, IDisposable
 		}
 
 		return input;
+	}
+	
+	void ICameraView.OnMediaCaptured(Stream imageData)
+	{
+		weakEventManager.HandleEvent(this, new MediaCapturedEventArgs(imageData), nameof(MediaCaptured));
+	}
+
+	void ICameraView.OnMediaCapturedFailed(string failureReason)
+	{
+		weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(failureReason), nameof(MediaCaptureFailed));
 	}
 }
