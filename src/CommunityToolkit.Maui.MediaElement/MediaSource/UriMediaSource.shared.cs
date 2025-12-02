@@ -20,7 +20,7 @@ public sealed partial class UriMediaSource : MediaSource
 	/// </summary>
 	/// <param name="uriMediaSource">A <see cref="UriMediaSource"/> instance to convert to a string value.</param>
 	public static implicit operator string?(UriMediaSource? uriMediaSource) => uriMediaSource?.Uri?.ToString();
-	
+
 	/// <summary>
 	/// Gets or sets the URI to use as a media source.
 	/// This is a bindable property.
@@ -29,7 +29,7 @@ public sealed partial class UriMediaSource : MediaSource
 	[TypeConverter(typeof(UriTypeConverter))]
 	[BindableProperty(PropertyChangedMethodName = nameof(OnUriSourceChanged), ValidateValueMethodName = nameof(UriValueValidator))]
 	public partial Uri? Uri { get; set; }
-	
+
 	/// <inheritdoc/>
 	public override string ToString() => $"Uri: {Uri}";
 

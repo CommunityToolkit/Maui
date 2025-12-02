@@ -351,7 +351,7 @@ public class CommonUsageTests : BaseBindablePropertyAttributeSourceGeneratorTest
 
 		await VerifySourceGeneratorAsync(source, string.Empty);
 	}
-	
+
 	[Fact]
 	public async Task GenerateBindableProperty_InternalSetter_GeneratesInternalSetter()
 	{
@@ -392,7 +392,7 @@ public class CommonUsageTests : BaseBindablePropertyAttributeSourceGeneratorTest
 
 		await VerifySourceGeneratorAsync(source, expectedGenerated);
 	}
-	
+
 	[Fact]
 	public async Task GenerateBindableProperty_PrivateProtectedSetter_GeneratesPrivateProtectedSetter()
 	{

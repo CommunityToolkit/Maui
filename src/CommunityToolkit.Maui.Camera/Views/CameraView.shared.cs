@@ -77,7 +77,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// Gets the <see cref="Command{Stream}"/> that starts video recording.
 	/// </summary>
 	/// <remarks>
-	/// <see cref="StopCameraPreviewCommand"/> has a <see cref="Type"/> of Command&lt;Stream&gt; which requires a <see cref="Stream"/> as a CommandParameter. See <see cref="Command{Stream}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="Stream"/> into <see cref="Command{T}"/> as a CommandParameter
+	/// <see cref="StartVideoRecordingCommand"/> has a <see cref="Type"/> of Command&lt;Stream&gt; which requires a <see cref="Stream"/> as a CommandParameter. See <see cref="Command{Stream}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="Stream"/> into <see cref="Command{T}"/> as a CommandParameter
 	/// </remarks>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateStartVideoRecordingCommand), DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial Command<Stream> StartVideoRecordingCommand { get; }
@@ -95,10 +95,6 @@ public partial class CameraView : View, ICameraView, IDisposable
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateCameraFlashMode))]
 	public partial CameraFlashMode CameraFlashMode { get; set; }
 
-	/// <inheritdoc cref="ICameraView.IsTorchOn"/>
-	[BindableProperty(DefaultValue = CameraViewDefaults.IsTorchOn)]
-	public partial bool IsTorchOn { get; set; }
-
 	/// <inheritdoc cref="ICameraView.SelectedCamera"/>
 	[BindableProperty(DefaultBindingMode = BindingMode.TwoWay)]
 	public partial CameraInfo? SelectedCamera { get; set; }
@@ -106,10 +102,16 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// <inheritdoc cref="ICameraView.ZoomFactor"/>
 	[BindableProperty(DefaultValue = CameraViewDefaults.ZoomFactor, DefaultBindingMode = BindingMode.TwoWay, CoerceValueMethodName = nameof(CoerceZoom))]
 	public partial float ZoomFactor { get; set; }
-	
+
 	/// <inheritdoc cref="ICameraView.ImageCaptureResolution"/>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateImageCaptureResolution), DefaultBindingMode = BindingMode.TwoWay)]
 	public partial Size ImageCaptureResolution { get; set; }
+
+	/// <inheritdoc cref="ICameraView.IsTorchOn"/>
+	[BindableProperty(DefaultValue = CameraViewDefaults.IsTorchOn)]
+	public partial bool IsTorchOn { get; set; }
+
+	new CameraViewHandler Handler => (CameraViewHandler)(base.Handler ?? throw new InvalidOperationException("Unable to retrieve Handler"));
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	bool ICameraView.IsAvailable
@@ -124,8 +126,6 @@ public partial class CameraView : View, ICameraView, IDisposable
 		get => IsBusy;
 		set => SetValue(isBusyPropertyKey, value);
 	}
-
-	new CameraViewHandler Handler => (CameraViewHandler)(base.Handler ?? throw new InvalidOperationException("Unable to retrieve Handler"));
 
 	/// <inheritdoc/>
 	public void Dispose()

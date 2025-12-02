@@ -17,9 +17,9 @@ public class MediaElementTests : BaseViewTest
 	{
 		// Arrange
 		MediaElement mediaElement = new();
-		
+
 		// Act 
-		
+
 		// Assert
 		Assert.Equal(MediaElementDefaults.MediaHeight, mediaElement.MediaHeight);
 		Assert.Equal(MediaElementDefaults.Aspect, mediaElement.Aspect);
