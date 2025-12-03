@@ -279,10 +279,11 @@ public partial class RangeSlider : ContentView
 	void UpdateSliderRanges()
 	{
 		double unit = GetUnit();
+		double maxValue = (MaximumValue - MinimumValue) / unit;
 		lowerSlider.Minimum = 0;
-		lowerSlider.Maximum = (MaximumValue - MinimumValue) / unit;
+		lowerSlider.Maximum = maxValue;
 		upperSlider.Minimum = 0;
-		upperSlider.Maximum = (MaximumValue - MinimumValue) / unit;
+		upperSlider.Maximum = maxValue;
 	}
 
 	void UpdateLowerSliderValue()
