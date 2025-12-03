@@ -375,12 +375,12 @@ public partial class RangeSlider : ContentView
 	internal static readonly BindablePropertyKey FocusModePropertyKey = BindableProperty.CreateReadOnly(nameof(FocusMode), typeof(RangeSliderFocusMode), typeof(RangeSlider), RangeSliderDefaults.FocusMode);
 
 	/// <summary>
-	/// This is a read-only <see cref="FocusMode"/> that indicates when the view is loaded.
+	/// This is a read-only <see cref="FocusMode"/> property that represents the focus state of the slider thumbs.
 	/// </summary>
 	public static readonly BindableProperty FocusModeProperty = FocusModePropertyKey.BindableProperty;
 
 	/// <summary>
-	/// This is a read-only property that indicates when the view is loaded.
+	/// Gets the current focus state of the slider thumbs.
 	/// </summary>
 	public RangeSliderFocusMode FocusMode => (RangeSliderFocusMode)GetValue(FocusModeProperty);
 
