@@ -304,8 +304,12 @@ public partial class RangeSlider : ContentView
 
 	void UpdateInnerTrackLayout()
 	{
-		innerTrack.TranslationX = (Width - PlatformThumbSize) * (lowerSlider.Value - lowerSlider.Minimum) / (upperSlider.Maximum - lowerSlider.Minimum) + PlatformThumbSize / 2 - InnerTrackSize / 2;
-		innerTrack.WidthRequest = (Width - PlatformThumbSize) * (upperSlider.Value - lowerSlider.Value) / (upperSlider.Maximum - lowerSlider.Minimum) + InnerTrackSize;
+		double range = upperSlider.Maximum - lowerSlider.Minimum;
+		if (range != 0)
+		{
+			innerTrack.TranslationX = (Width - PlatformThumbSize) * (lowerSlider.Value - lowerSlider.Minimum) / range + PlatformThumbSize / 2 - InnerTrackSize / 2;
+			innerTrack.WidthRequest = (Width - PlatformThumbSize) * (upperSlider.Value - lowerSlider.Value) / range + InnerTrackSize;
+		}
 	}
 
 	/// <summary>

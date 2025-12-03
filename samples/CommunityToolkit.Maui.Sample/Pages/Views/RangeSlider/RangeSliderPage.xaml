@@ -111,7 +111,7 @@
                 </Border>
                 <Label
                     Grid.Column="2"
-                    Text="{Binding LowerValueDescendingWithStep, StringFormat='{}{0:F1}'}"
+                    Text="{Binding UpperValueDescendingWithStep, StringFormat='{}{0:F1}'}"
                     VerticalOptions="Center" />
             </Grid>
 
