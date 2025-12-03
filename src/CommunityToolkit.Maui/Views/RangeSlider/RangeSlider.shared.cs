@@ -403,7 +403,9 @@ public partial class RangeSlider : ContentView
 	/// <param name="focusMode">The new focus mode</param>
 	protected void SetFocusMode(RangeSliderFocusMode focusMode) => SetValue(FocusModePropertyKey, focusMode);
 
-	/// <summary>Gets the platform-specific thumb size</summary>
+	/// <summary>
+	/// Gets the platform-specific thumb size
+	/// </summary>
 #if WINDOWS
 	public const double PlatformThumbSize = 17.5;
 #else
