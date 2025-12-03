@@ -140,9 +140,9 @@ public partial class RangeSlider : ContentView
 	};
 
 	/// <summary>
-	/// Defer clamping until initialization completes so all bindable properties, bindings, and default values settle before coercion runs.
+	/// Internal property used to defer clamping until initialization completes so all bindable properties, bindings, and default values settle before coercion runs.
 	/// </summary>
-	bool isClampingEnabled;
+	internal bool IsClampingEnabled { get; set; } = true;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="RangeSlider"/> class
@@ -160,6 +160,7 @@ public partial class RangeSlider : ContentView
 		innerTrack.SetBinding(RoundRectangle.CornerRadiusProperty, BindingBase.Create<RangeSlider, CornerRadius>(static p => p.InnerTrackCornerRadius, BindingMode.OneWay, source: this));
 		lowerSlider.SetBinding(Slider.ThumbColorProperty, BindingBase.Create<RangeSlider, Color>(static p => p.LowerThumbColor, BindingMode.OneWay, source: this));
 		upperSlider.SetBinding(Slider.ThumbColorProperty, BindingBase.Create<RangeSlider, Color>(static p => p.UpperThumbColor, BindingMode.OneWay, source: this));
+		Loaded += FinalizeInitialization;
 
 		Content = new Grid
 		{
@@ -171,8 +172,6 @@ public partial class RangeSlider : ContentView
 				upperSlider,
 			},
 		};
-
-		Dispatcher.Dispatch(FinalizeInitialization);
 	}
 
 	/// <summary>
@@ -180,9 +179,9 @@ public partial class RangeSlider : ContentView
 	/// Once initialization completes, coerces <see cref="LowerValue"/> and <see cref="UpperValue"/> into valid, clamped ranges,
 	/// wires up event handlers, and updates slider ranges, values, focus state, and track layouts.
 	/// </summary>
-	void FinalizeInitialization()
+	void FinalizeInitialization(object? sender, EventArgs e)
 	{
-		isClampingEnabled = true;
+		IsClampingEnabled = true;
 		CoerceValue(LowerValueProperty);
 		CoerceValue(UpperValueProperty);
 		lowerSlider.DragStarted += HandleLowerSliderDragStarted;
@@ -212,7 +211,7 @@ public partial class RangeSlider : ContentView
 		var rangeSlider = (RangeSlider)bindable;
 		var input = (double)value;
 
-		if (rangeSlider.isClampingEnabled)
+		if (rangeSlider.IsClampingEnabled)
 		{
 			if (rangeSlider.MinimumValue <= rangeSlider.MaximumValue)
 			{
@@ -232,7 +231,7 @@ public partial class RangeSlider : ContentView
 		var rangeSlider = (RangeSlider)bindable;
 		var input = (double)value;
 
-		if (rangeSlider.isClampingEnabled)
+		if (rangeSlider.IsClampingEnabled)
 		{
 			if (rangeSlider.MinimumValue <= rangeSlider.MaximumValue)
 			{
