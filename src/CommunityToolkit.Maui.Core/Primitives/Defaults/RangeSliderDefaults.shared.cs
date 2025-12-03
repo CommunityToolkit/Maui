@@ -58,7 +58,7 @@ public static class RangeSliderDefaults
 	/// <summary>
 	/// Default value for Inner Track Radius
 	/// </summary>
-	public static CornerRadius InnerTrackCornerRadius = 3;
+	public static CornerRadius InnerTrackCornerRadius { get; } = new(3);
 
 	/// <summary>
 	/// Default value for Outer Track Color
@@ -73,7 +73,7 @@ public static class RangeSliderDefaults
 	/// <summary>
 	/// Default value for Outer Track Radius
 	/// </summary>
-	public static CornerRadius OuterTrackCornerRadius = 3;
+	public static CornerRadius OuterTrackCornerRadius { get; } = new(3);
 
 	/// <summary>
 	/// Default value for Focus Mode
