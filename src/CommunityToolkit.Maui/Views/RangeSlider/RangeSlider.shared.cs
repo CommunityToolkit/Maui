@@ -10,6 +10,105 @@ namespace CommunityToolkit.Maui.Views;
 /// </summary>
 public partial class RangeSlider : ContentView
 {
+	/// <summary>
+	/// Gets or sets the minimum value
+	/// </summary>
+	[BindableProperty(DefaultValue = RangeSliderDefaults.MinimumValue)]
+	public partial double MinimumValue { get; set; }
+
+	/// <summary>
+	/// Gets or sets the maximum value
+	/// </summary>
+	[BindableProperty(DefaultValue = RangeSliderDefaults.MaximumValue)]
+	public partial double MaximumValue { get; set; }
+
+	/// <summary>
+	/// Gets or sets the lower value
+	/// </summary>
+	[BindableProperty(DefaultValue = RangeSliderDefaults.LowerValue, CoerceValueMethodName = nameof(CoerceLowerValue))]
+	public partial double LowerValue { get; set; }
+
+	/// <summary>
+	/// Gets or sets the upper value
+	/// </summary>
+	[BindableProperty(DefaultValue = RangeSliderDefaults.UpperValue, CoerceValueMethodName = nameof(CoerceUpperValue))]
+	public partial double UpperValue { get; set; }
+
+	/// <summary>
+	/// Gets or sets the step size
+	/// </summary>
+	[BindableProperty(DefaultValue = RangeSliderDefaults.StepSize)]
+	public partial double StepSize { get; set; }
+
+	/// <summary>
+	/// Gets or sets the lower thumb color
+	/// </summary>
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultLowerThumbColor))]
+	public partial Color LowerThumbColor { get; set; }
+
+	/// <summary>
+	/// Gets or sets the upper thumb color
+	/// </summary>
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultUpperThumbColor))]
+	public partial Color UpperThumbColor { get; set; }
+
+	/// <summary>
+	/// Gets or sets the inner track color
+	/// </summary>
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultInnerTrackColor))]
+	public partial Color InnerTrackColor { get; set; }
+
+	/// <summary>
+	/// Gets or sets the inner track size
+	/// </summary>
+	[BindableProperty(DefaultValue = RangeSliderDefaults.InnerTrackSize)]
+	public partial double InnerTrackSize { get; set; }
+
+	/// <summary>
+	/// Gets or sets the inner track corner radius
+	/// </summary>
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultInnerTrackCornerRadius))]
+	public partial CornerRadius InnerTrackCornerRadius { get; set; }
+
+	/// <summary>
+	/// Gets or sets the outer track color
+	/// </summary>
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultOuterTrackColor))]
+	public partial Color OuterTrackColor { get; set; }
+
+	/// <summary>
+	/// Gets or sets the outer track size
+	/// </summary>
+	[BindableProperty(DefaultValue = RangeSliderDefaults.OuterTrackSize)]
+	public partial double OuterTrackSize { get; set; }
+
+	/// <summary>
+	/// Gets or sets the outer track corner radius
+	/// </summary>
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultOuterTrackCornerRadius))]
+	public partial CornerRadius OuterTrackCornerRadius { get; set; }
+
+	internal static readonly BindablePropertyKey FocusModePropertyKey = BindableProperty.CreateReadOnly(nameof(FocusMode), typeof(RangeSliderFocusMode), typeof(RangeSlider), RangeSliderDefaults.FocusMode);
+
+	/// <summary>
+	/// This is a read-only <see cref="FocusMode"/> property that represents the focus state of the slider thumbs.
+	/// </summary>
+	public static readonly BindableProperty FocusModeProperty = FocusModePropertyKey.BindableProperty;
+
+	/// <summary>
+	/// Gets the current focus state of the slider thumbs.
+	/// </summary>
+	public RangeSliderFocusMode FocusMode => (RangeSliderFocusMode)GetValue(FocusModeProperty);
+
+	/// <summary>
+	/// Gets the platform-specific thumb size
+	/// </summary>
+#if WINDOWS
+	public const double PlatformThumbSize = 17.5;
+#else
+	public const double PlatformThumbSize = 31.5;
+#endif
+
 	readonly RoundRectangle outerTrack = new()
 	{
 		HorizontalOptions = LayoutOptions.Start,
@@ -102,6 +201,12 @@ public partial class RangeSlider : ContentView
 		UpdateInnerTrackLayout();
 	}
 
+	/// <summary>
+	/// This method changes the value of the <see cref="FocusMode"/> property.
+	/// </summary>
+	/// <param name="focusMode">The new focus mode</param>
+	protected void SetFocusMode(RangeSliderFocusMode focusMode) => SetValue(FocusModePropertyKey, focusMode);
+
 	static object CoerceLowerValue(BindableObject bindable, object value)
 	{
 		var rangeSlider = (RangeSlider)bindable;
@@ -192,6 +297,25 @@ public partial class RangeSlider : ContentView
 		UpdateFocusedSliderLayout();
 	}
 
+	/// <summary>
+	/// Computes the effective unit used for slider value calculations.
+	/// </summary>
+	/// <remarks>
+	/// The returned unit is derived from <see cref="StepSize"/> and corrected for the sign of the range:
+	/// - If <see cref="StepSize"/> is 0, defaults to 1 (no stepping).
+	/// - Otherwise uses the absolute value of <see cref="StepSize"/>.
+	/// - If <see cref="MinimumValue"/> is greater than <see cref="MaximumValue"/>, the unit is negated to match a descending range.
+	/// This ensures consistent mapping between slider positions and <see cref="LowerValue"/>/<see cref="UpperValue"/> across ascending and descending ranges.
+	/// </remarks>
+	/// <returns>
+	/// A positive unit for ascending ranges or a negative unit for descending ranges. Defaults to 1 or -1 when <see cref="StepSize"/> is 0.
+	/// </returns>
+	double GetUnit()
+	{
+		double unit = StepSize == 0 ? 1 : Math.Abs(StepSize);
+		return MinimumValue <= MaximumValue ? unit : -unit;
+	}
+
 	void HandleLowerSliderPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (string.IsNullOrWhiteSpace(e.PropertyName))
@@ -270,12 +394,6 @@ public partial class RangeSlider : ContentView
 		}
 	}
 
-	double GetUnit()
-	{
-		double unit = StepSize == 0 ? 1 : Math.Abs(StepSize);
-		return MinimumValue <= MaximumValue ? unit : -unit;
-	}
-
 	void UpdateSliderRanges()
 	{
 		double unit = GetUnit();
@@ -311,111 +429,6 @@ public partial class RangeSlider : ContentView
 			innerTrack.WidthRequest = (Width - PlatformThumbSize) * (upperSlider.Value - lowerSlider.Value) / range + InnerTrackSize;
 		}
 	}
-
-	/// <summary>
-	/// Gets or sets the minimum value
-	/// </summary>
-	[BindableProperty(DefaultValue = RangeSliderDefaults.MinimumValue)]
-	public partial double MinimumValue { get; set; }
-
-	/// <summary>
-	/// Gets or sets the maximum value
-	/// </summary>
-	[BindableProperty(DefaultValue = RangeSliderDefaults.MaximumValue)]
-	public partial double MaximumValue { get; set; }
-
-	/// <summary>
-	/// Gets or sets the lower value
-	/// </summary>
-	[BindableProperty(DefaultValue = RangeSliderDefaults.LowerValue, CoerceValueMethodName = nameof(CoerceLowerValue))]
-	public partial double LowerValue { get; set; }
-
-	/// <summary>
-	/// Gets or sets the upper value
-	/// </summary>
-	[BindableProperty(DefaultValue = RangeSliderDefaults.UpperValue, CoerceValueMethodName = nameof(CoerceUpperValue))]
-	public partial double UpperValue { get; set; }
-
-	/// <summary>
-	/// Gets or sets the step size
-	/// </summary>
-	[BindableProperty(DefaultValue = RangeSliderDefaults.StepSize)]
-	public partial double StepSize { get; set; }
-
-	/// <summary>
-	/// Gets or sets the lower thumb color
-	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultLowerThumbColor))]
-	public partial Color LowerThumbColor { get; set; }
-
-	/// <summary>
-	/// Gets or sets the upper thumb color
-	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultUpperThumbColor))]
-	public partial Color UpperThumbColor { get; set; }
-
-	/// <summary>
-	/// Gets or sets the inner track color
-	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultInnerTrackColor))]
-	public partial Color InnerTrackColor { get; set; }
-
-	/// <summary>
-	/// Gets or sets the inner track size
-	/// </summary>
-	[BindableProperty(DefaultValue = RangeSliderDefaults.InnerTrackSize)]
-	public partial double InnerTrackSize { get; set; }
-
-	/// <summary>
-	/// Gets or sets the inner track corner radius
-	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultInnerTrackCornerRadius))]
-	public partial CornerRadius InnerTrackCornerRadius { get; set; }
-
-	/// <summary>
-	/// Gets or sets the outer track color
-	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultOuterTrackColor))]
-	public partial Color OuterTrackColor { get; set; }
-
-	/// <summary>
-	/// Gets or sets the outer track size
-	/// </summary>
-	[BindableProperty(DefaultValue = RangeSliderDefaults.OuterTrackSize)]
-	public partial double OuterTrackSize { get; set; }
-
-	/// <summary>
-	/// Gets or sets the outer track corner radius
-	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultOuterTrackCornerRadius))]
-	public partial CornerRadius OuterTrackCornerRadius { get; set; }
-
-	internal static readonly BindablePropertyKey FocusModePropertyKey = BindableProperty.CreateReadOnly(nameof(FocusMode), typeof(RangeSliderFocusMode), typeof(RangeSlider), RangeSliderDefaults.FocusMode);
-
-	/// <summary>
-	/// This is a read-only <see cref="FocusMode"/> property that represents the focus state of the slider thumbs.
-	/// </summary>
-	public static readonly BindableProperty FocusModeProperty = FocusModePropertyKey.BindableProperty;
-
-	/// <summary>
-	/// Gets the current focus state of the slider thumbs.
-	/// </summary>
-	public RangeSliderFocusMode FocusMode => (RangeSliderFocusMode)GetValue(FocusModeProperty);
-
-	/// <summary>
-	/// This method changes the value of the <see cref="FocusMode"/> property.
-	/// </summary>
-	/// <param name="focusMode">The new focus mode</param>
-	protected void SetFocusMode(RangeSliderFocusMode focusMode) => SetValue(FocusModePropertyKey, focusMode);
-
-	/// <summary>
-	/// Gets the platform-specific thumb size
-	/// </summary>
-#if WINDOWS
-	public const double PlatformThumbSize = 17.5;
-#else
-	public const double PlatformThumbSize = 31.5;
-#endif
 
 	static object CreateDefaultLowerThumbColor(BindableObject bindable) => RangeSliderDefaults.LowerThumbColor;
 
