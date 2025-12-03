@@ -89,11 +89,11 @@ public partial class RangeSlider : ContentView
 		lowerSlider.DragStarted += HandleLowerSliderDragStarted;
 		lowerSlider.DragCompleted += HandleLowerSliderDragCompleted;
 		lowerSlider.PropertyChanged += HandleLowerSliderPropertyChanged;
-		lowerSlider.Focused += HandlerLowerSliderFocused;
+		lowerSlider.Focused += HandleLowerSliderFocused;
 		upperSlider.DragStarted += HandleUpperSliderDragStarted;
 		upperSlider.DragCompleted += HandleUpperSliderDragCompleted;
 		upperSlider.PropertyChanged += HandleUpperSliderPropertyChanged;
-		upperSlider.Focused += HandlerUpperSliderFocused;
+		upperSlider.Focused += HandleUpperSliderFocused;
 		UpdateSliderRanges();
 		UpdateLowerSliderValue();
 		UpdateUpperSliderValue();
@@ -207,7 +207,7 @@ public partial class RangeSlider : ContentView
 		}
 	}
 
-	void HandlerLowerSliderFocused(object? sender, FocusEventArgs e)
+	void HandleLowerSliderFocused(object? sender, FocusEventArgs e)
 	{
 		SetFocusMode(RangeSliderFocusMode.Lower);
 		UpdateFocusedSliderLayout();
@@ -240,7 +240,7 @@ public partial class RangeSlider : ContentView
 		}
 	}
 
-	void HandlerUpperSliderFocused(object? sender, FocusEventArgs e)
+	void HandleUpperSliderFocused(object? sender, FocusEventArgs e)
 	{
 		SetFocusMode(RangeSliderFocusMode.Upper);
 		UpdateFocusedSliderLayout();
