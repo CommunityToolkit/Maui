@@ -40,9 +40,14 @@ public partial class RangeSlider : ContentView
 		MaximumTrackColor = Colors.Transparent,
 	};
 
-	bool isClampingEnabled = false;
+	/// <summary>
+	/// Defer clamping until initialization completes so all bindable properties, bindings, and default values settle before coercion runs.
+	/// </summary>
+	bool isClampingEnabled;
 
-	/// <summary>Initializes a new instance of the <see cref="RangeSlider"/> class.</summary>
+	/// <summary>
+	/// Initializes a new instance of the <see cref="RangeSlider"/> class
+	/// </summary>
 	public RangeSlider()
 	{
 		PropertyChanged += HandlePropertyChanged;
@@ -71,6 +76,11 @@ public partial class RangeSlider : ContentView
 		Dispatcher.Dispatch(FinalizeInitialization);
 	}
 
+	/// <summary>
+	/// Enables clamping and finalizes setup after all bindable properties, bindings, and defaults have been initialized.
+	/// Once initialization completes, coerces <see cref="LowerValue"/> and <see cref="UpperValue"/> into valid, clamped ranges,
+	/// wires up event handlers, and updates slider ranges, values, focus state, and track layouts.
+	/// </summary>
 	void FinalizeInitialization()
 	{
 		isClampingEnabled = true;
@@ -239,14 +249,17 @@ public partial class RangeSlider : ContentView
 	void UpdateFocusedSliderLayout()
 	{
 		double unit = GetUnit();
-		lowerSlider.Minimum = upperSlider.Minimum = 0;
-		lowerSlider.Maximum = upperSlider.Maximum = (MaximumValue - MinimumValue) / unit;
-		lowerSlider.Maximum = upperSlider.Minimum = FocusMode switch
+		double maxValue = (MaximumValue - MinimumValue) / unit;
+		double middleValue = FocusMode switch
 		{
 			RangeSliderFocusMode.Lower => upperSlider.Value,
 			RangeSliderFocusMode.Upper => lowerSlider.Value,
 			_ => (lowerSlider.Value + upperSlider.Value) / 2,
 		};
+		lowerSlider.Minimum = 0;
+		lowerSlider.Maximum = middleValue;
+		upperSlider.Minimum = middleValue;
+		upperSlider.Maximum = maxValue;
 
 		double range = upperSlider.Maximum - lowerSlider.Minimum;
 		double trackWidth = Width - PlatformThumbSize;
