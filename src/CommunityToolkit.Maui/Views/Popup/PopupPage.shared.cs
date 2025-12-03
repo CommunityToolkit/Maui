@@ -46,7 +46,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			await CloseAsync(new PopupResult(true));
 		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
 
-
 		var pageTapGestureRecognizer = new TapGestureRecognizer();
 		pageTapGestureRecognizer.Tapped += HandleTapGestureRecognizerTapped;
 
@@ -248,6 +247,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			PopupBorder.SetBinding(Border.StrokeThicknessProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay, converter: new BorderStrokeThicknessConverter());
 
 			Children.Add(PopupBorder);
+
+			AutomationProperties.SetIsInAccessibleTree(this, false);
+			AutomationProperties.SetIsInAccessibleTree(PopupBorder, false);
 		}
 
 		public Border PopupBorder { get; }
