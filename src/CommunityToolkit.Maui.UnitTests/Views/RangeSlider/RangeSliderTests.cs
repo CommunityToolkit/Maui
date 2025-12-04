@@ -35,12 +35,11 @@ public class RangeSliderTests : BaseViewTest
 	[InlineData(200, 100)]
 	public void MinimumMaximumValues_ShowStickToContract(double min, double max)
 	{
-		RangeSlider rangeSlider = new()
+		RangeSlider rangeSlider = new(true)
 		{
 			MinimumValue = min,
 			MaximumValue = max,
 		};
-		//rangeSlider.FinalizeInitialization(rangeSlider, EventArgs.Empty);
 		rangeSlider.IsClampingEnabled.Should().BeTrue();
 		rangeSlider.MinimumValue.Should().Be(min);
 		rangeSlider.MaximumValue.Should().Be(max);
@@ -51,20 +50,21 @@ public class RangeSliderTests : BaseViewTest
 	[InlineData(0, 100, 70, 80, 70)]
 	[InlineData(0, 100, 170, 80, 80)]
 	[InlineData(0, 100, 170, 180, 100)]
-	public async Task LowerValue_ShouldBeClampedToBounds(double min, double max, double upper, double lower, double expectedLower)
+	public void LowerValue_ShouldBeClampedToBounds(double min, double max, double upper, double lower, double expectedLower)
 	{
-		RangeSlider rangeSlider = new()
+		RangeSlider rangeSlider = new(true)
 		{
 			MinimumValue = min,
 			MaximumValue = max,
-			LowerValue = min,
 			UpperValue = max,
+			LowerValue = min,
 		};
 		rangeSlider.IsClampingEnabled.Should().BeTrue();
 		rangeSlider.UpperValue = upper;
 		rangeSlider.LowerValue = lower;
 		rangeSlider.MinimumValue.Should().Be(min);
 		rangeSlider.MaximumValue.Should().Be(max);
+		rangeSlider.UpperValue.Should().Be(Math.Min(upper, max));
 		rangeSlider.LowerValue.Should().Be(expectedLower);
 	}
 
@@ -72,9 +72,9 @@ public class RangeSliderTests : BaseViewTest
 	[InlineData(0, 100, 30, 70, 70)]
 	[InlineData(0, 100, 30, 0, 30)]
 	[InlineData(0, 100, 30, 170, 100)]
-	public async Task UpperValue_ShouldBeClampedToBounds(double min, double max, double lower, double upper, double expectedUpper)
+	public void UpperValue_ShouldBeClampedToBounds(double min, double max, double lower, double upper, double expectedUpper)
 	{
-		RangeSlider rangeSlider = new()
+		RangeSlider rangeSlider = new(true)
 		{
 			MinimumValue = min,
 			MaximumValue = max,
@@ -86,6 +86,7 @@ public class RangeSliderTests : BaseViewTest
 		rangeSlider.UpperValue = upper;
 		rangeSlider.MinimumValue.Should().Be(min);
 		rangeSlider.MaximumValue.Should().Be(max);
+		rangeSlider.LowerValue.Should().Be(Math.Max(lower, min));
 		rangeSlider.UpperValue.Should().Be(expectedUpper);
 	}
 }

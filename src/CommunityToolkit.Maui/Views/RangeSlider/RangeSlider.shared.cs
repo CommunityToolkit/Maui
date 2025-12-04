@@ -172,7 +172,16 @@ public partial class RangeSlider : ContentView
 			},
 		};
 
-		Dispatcher.Dispatch(() => FinalizeInitialization(this, EventArgs.Empty));
+		Loaded += FinalizeInitialization;
+	}
+
+	/// <summary>
+	/// Initializes a new instance of the RangeSlider class for unit testing purposes.
+	/// </summary>
+	/// <param name="unitTest">The value is irrelevant - passing this parameter enables the class for unit testing scenarios.</param>
+	internal RangeSlider(bool unitTest) : this()
+	{
+		FinalizeInitialization(this, EventArgs.Empty);
 	}
 
 	/// <summary>
@@ -387,7 +396,7 @@ public partial class RangeSlider : ContentView
 
 		double range = upperSlider.Maximum - lowerSlider.Minimum;
 		double trackWidth = Width - PlatformThumbSize;
-		if (range != 0)
+		if (range != 0 && trackWidth > 0)
 		{
 			lowerSlider.WidthRequest = trackWidth * (lowerSlider.Maximum - lowerSlider.Minimum) / range + PlatformThumbSize;
 			upperSlider.WidthRequest = trackWidth * (upperSlider.Maximum - upperSlider.Minimum) / range + PlatformThumbSize;
@@ -423,10 +432,11 @@ public partial class RangeSlider : ContentView
 	void UpdateInnerTrackLayout()
 	{
 		double range = upperSlider.Maximum - lowerSlider.Minimum;
-		if (range != 0)
+		double trackWidth = Width - PlatformThumbSize;
+		if (range != 0 && trackWidth > 0)
 		{
-			innerTrack.TranslationX = (Width - PlatformThumbSize) * (lowerSlider.Value - lowerSlider.Minimum) / range + PlatformThumbSize / 2 - InnerTrackSize / 2;
-			innerTrack.WidthRequest = (Width - PlatformThumbSize) * (upperSlider.Value - lowerSlider.Value) / range + InnerTrackSize;
+			innerTrack.TranslationX = trackWidth * (lowerSlider.Value - lowerSlider.Minimum) / range + PlatformThumbSize / 2 - InnerTrackSize / 2;
+			innerTrack.WidthRequest = trackWidth * (upperSlider.Value - lowerSlider.Value) / range + InnerTrackSize;
 		}
 	}
 
