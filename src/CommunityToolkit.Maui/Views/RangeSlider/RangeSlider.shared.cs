@@ -142,7 +142,7 @@ public partial class RangeSlider : ContentView
 	/// <summary>
 	/// Internal property used to defer clamping until initialization completes so all bindable properties, bindings, and default values settle before coercion runs.
 	/// </summary>
-	internal bool IsClampingEnabled { get; set; } = true;
+	internal bool IsClampingEnabled { get; set; }
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="RangeSlider"/> class
@@ -160,7 +160,6 @@ public partial class RangeSlider : ContentView
 		innerTrack.SetBinding(RoundRectangle.CornerRadiusProperty, BindingBase.Create<RangeSlider, CornerRadius>(static p => p.InnerTrackCornerRadius, BindingMode.OneWay, source: this));
 		lowerSlider.SetBinding(Slider.ThumbColorProperty, BindingBase.Create<RangeSlider, Color>(static p => p.LowerThumbColor, BindingMode.OneWay, source: this));
 		upperSlider.SetBinding(Slider.ThumbColorProperty, BindingBase.Create<RangeSlider, Color>(static p => p.UpperThumbColor, BindingMode.OneWay, source: this));
-		Loaded += FinalizeInitialization;
 
 		Content = new Grid
 		{
@@ -172,6 +171,8 @@ public partial class RangeSlider : ContentView
 				upperSlider,
 			},
 		};
+
+		Dispatcher.Dispatch(() => FinalizeInitialization(this, EventArgs.Empty));
 	}
 
 	/// <summary>
