@@ -540,7 +540,7 @@ sealed class ShortLivedSelfClosingPopup(ShortLivedMockPageViewModel viewModel) :
 class MockSelfClosingPopup : Popup<object?>, IQueryAttributable, IDisposable
 {
 	readonly TaskCompletionSource popupClosedTCS = new();
-	
+
 	CancellationTokenSource? cancellationTokenSource;
 
 	protected MockSelfClosingPopup(MockPageViewModel viewModel, TimeSpan displayDuration, object? result = null)
@@ -552,18 +552,18 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable, IDisposable
 		Opened += HandlePopupOpened;
 		Closed += HandlePopupClosed;
 	}
-	
+
 	~MockSelfClosingPopup()
 	{
 		Dispose(false);
 	}
-	
+
 	public object? Result { get; }
-	
+
 	public TimeSpan DisplayDuration { get; }
 
 	public static Color DefaultBackgroundColor { get; } = Colors.White;
-	
+
 	public void Dispose()
 	{
 		Dispose(true);
@@ -600,10 +600,10 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable, IDisposable
 
 		Console.WriteLine(
 			$@"{DateTime.Now:O} Closed {BindingContext.GetType().Name} - {Application.Current?.Windows[0].Page?.Navigation.ModalStack.Count}");
-		
+
 		popupClosedTCS.SetResult();
 	}
-	
+
 	protected virtual void Dispose(bool disposing)
 	{
 		if (disposing)
