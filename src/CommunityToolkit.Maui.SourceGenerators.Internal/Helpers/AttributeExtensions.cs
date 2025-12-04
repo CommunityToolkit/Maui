@@ -1,6 +1,5 @@
-﻿using System.Reflection;
+using System.Globalization;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Internal.Helpers;
 
@@ -12,7 +11,14 @@ static class AttributeExtensions
 		return x;
 	}
 
-	public static string GetNamedTypeArgumentsAttributeValueByNameAsCastedString(this AttributeData attribute, string name, string placeholder = "null")
+	public static string GetNamedTypeArgumentsAttributeValueForDefaultBindingMode(this AttributeData attribute, string name, string placeholder = "null")
+	{
+		var data = attribute.NamedArguments.SingleOrDefault(kvp => kvp.Key == name).Value;
+
+		return data.Value is null ? placeholder : $"({data.Type}){data.Value}";
+	}
+
+	public static string GetNamedTypeArgumentsAttributeValueByNameAsCastedString(this AttributeData attribute, string name, ITypeSymbol propertyType, string placeholder = "null")
 	{
 		var data = attribute.NamedArguments.SingleOrDefault(kvp => kvp.Key == name).Value;
 
@@ -24,14 +30,25 @@ static class AttributeExtensions
 
 		if (data.Kind is TypedConstantKind.Enum && data.Type is not null && data.Value is not null)
 		{
-			var members = data.Type.GetMembers();
-
-			return $"({data.Type}){members[(int)data.Value]}";
+			return $"({data.Type}){data.Value}";
 		}
 
-		if(data.Type?.SpecialType is SpecialType.System_String)
+		if (data.Type?.SpecialType is SpecialType.System_String)
 		{
-			return data.Value is null ? $"\"{placeholder}\"": $"({data.Type})\"{data.Value}\"";
+			// Special handling for TimeSpan string representations - only when property type is TimeSpan
+			if (data.Value is string stringValue && IsTimeSpanType(propertyType) && TimeSpan.TryParse(stringValue, CultureInfo.InvariantCulture, out var timeSpanValue))
+			{
+				// Check if it's TimeSpan.Zero
+				if (timeSpanValue == TimeSpan.Zero)
+				{
+					return "global::System.TimeSpan.Zero";
+				}
+
+				// For other TimeSpan values, use the ticks constructor
+				return $"new global::System.TimeSpan({timeSpanValue.Ticks})";
+			}
+
+			return data.Value is null ? $"\"{placeholder}\"" : $"({data.Type})\"{data.Value}\"";
 		}
 
 		if (data.Type?.SpecialType is SpecialType.System_Char)
@@ -47,5 +64,17 @@ static class AttributeExtensions
 		var data = attribute.NamedArguments.SingleOrDefault(kvp => kvp.Key == name).Value;
 
 		return data.Value is null ? placeholder : data.Value.ToString();
+	}
+
+	static bool IsTimeSpanType(ITypeSymbol typeSymbol)
+	{
+		if (typeSymbol is null)
+		{
+			return false;
+		}
+
+		// Check if it's System.TimeSpan by comparing name
+		return typeSymbol is { Name: "TimeSpan", ContainingNamespace: not null }
+			   && typeSymbol.ContainingNamespace.ToDisplayString() == "System";
 	}
 }
