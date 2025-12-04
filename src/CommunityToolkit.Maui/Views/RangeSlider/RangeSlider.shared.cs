@@ -101,7 +101,8 @@ public partial class RangeSlider : ContentView
 	public RangeSliderFocusMode FocusMode => (RangeSliderFocusMode)GetValue(FocusModeProperty);
 
 	/// <summary>
-	/// Gets the platform-specific thumb size
+	/// Gets the platform-specific thumb size measured from the underlying .NET MAUI Slider thumb.
+	/// It was observed that the thumb size differs on Windows compared to other platforms.
 	/// </summary>
 #if WINDOWS
 	public const double PlatformThumbSize = 17.5;

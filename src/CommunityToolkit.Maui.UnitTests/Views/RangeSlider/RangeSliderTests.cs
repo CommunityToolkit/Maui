@@ -33,7 +33,7 @@ public class RangeSliderTests : BaseViewTest
 	[InlineData(100, 0)]
 	[InlineData(100, 200)]
 	[InlineData(200, 100)]
-	public void MinimumMaximumValues_ShowStickToContract(double min, double max)
+	public void MinimumMaximumValues_ShouldStickToContract(double min, double max)
 	{
 		RangeSlider rangeSlider = new(true)
 		{
