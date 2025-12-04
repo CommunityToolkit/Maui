@@ -47,7 +47,10 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 			var currentViewController = Platform.GetCurrentUIViewController();
 			if (currentViewController is not null)
 			{
-				currentViewController.PresentViewController(documentPickerViewController, true, null);
+				currentViewController.PresentViewController(documentPickerViewController, true, () =>
+				{
+					fileManager.Remove(tempDirectoryPath, out _);
+				});
 			}
 			else
 			{
@@ -56,9 +59,10 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 
 			return await tcs.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
 		}
-		finally
+		catch
 		{
 			fileManager.Remove(tempDirectoryPath, out _);
+			throw;
 		}
 	}
 
