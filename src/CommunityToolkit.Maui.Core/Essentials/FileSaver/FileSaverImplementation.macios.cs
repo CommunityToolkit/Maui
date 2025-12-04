@@ -10,7 +10,6 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 {
 	UIDocumentPickerViewController? documentPickerViewController;
 	TaskCompletionSource<string>? taskCompetedSource;
-	NSUrl? tempDirectoryPath;
 
 	/// <inheritdoc />
 	public void Dispose()
@@ -22,7 +21,7 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 		var fileManager = NSFileManager.DefaultManager;
-		tempDirectoryPath = fileManager.GetTemporaryDirectory().Append(Guid.NewGuid().ToString(), true);
+		var tempDirectoryPath = fileManager.GetTemporaryDirectory().Append(Guid.NewGuid().ToString(), true);
 		var isDirectoryCreated = fileManager.CreateDirectory(tempDirectoryPath, true, null, out var error);
 		if (!isDirectoryCreated)
 		{
@@ -30,30 +29,37 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 		}
 
 		var fileUrl = tempDirectoryPath.Append(fileName, false);
-		await WriteStream(stream, fileUrl.Path ?? throw new Exception("Path cannot be null."), progress, cancellationToken);
-
-		cancellationToken.ThrowIfCancellationRequested();
-		taskCompetedSource?.TrySetCanceled(CancellationToken.None);
-		var tcs = taskCompetedSource = new(cancellationToken);
-
-		documentPickerViewController = new([fileUrl], true)
+		try
 		{
-			DirectoryUrl = NSUrl.FromString(initialPath)
-		};
-		documentPickerViewController.DidPickDocumentAtUrls += DocumentPickerViewControllerOnDidPickDocumentAtUrls;
-		documentPickerViewController.WasCancelled += DocumentPickerViewControllerOnWasCancelled;
+			await WriteStream(stream, fileUrl.Path ?? throw new Exception("Path cannot be null."), progress, cancellationToken);
 
-		var currentViewController = Platform.GetCurrentUIViewController();
-		if (currentViewController is not null)
-		{
-			currentViewController.PresentViewController(documentPickerViewController, true, null);
+			cancellationToken.ThrowIfCancellationRequested();
+			taskCompetedSource?.TrySetCanceled(CancellationToken.None);
+			var tcs = taskCompetedSource = new(cancellationToken);
+
+			documentPickerViewController = new([fileUrl], true)
+			{
+				DirectoryUrl = NSUrl.FromString(initialPath)
+			};
+			documentPickerViewController.DidPickDocumentAtUrls += DocumentPickerViewControllerOnDidPickDocumentAtUrls;
+			documentPickerViewController.WasCancelled += DocumentPickerViewControllerOnWasCancelled;
+
+			var currentViewController = Platform.GetCurrentUIViewController();
+			if (currentViewController is not null)
+			{
+				currentViewController.PresentViewController(documentPickerViewController, true, null);
+			}
+			else
+			{
+				throw new FileSaveException("Unable to get a window where to present the file saver UI.");
+			}
+
+			return await tcs.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
 		}
-		else
+		finally
 		{
-			throw new FileSaveException("Unable to get a window where to present the file saver UI.");
+			fileManager.Remove(tempDirectoryPath, out _);
 		}
-
-		return await tcs.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
 	}
 
 	Task<string> InternalSaveAsync(string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
@@ -64,7 +70,6 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 	void DocumentPickerViewControllerOnWasCancelled(object? sender, EventArgs e)
 	{
 		taskCompetedSource?.TrySetException(new FileSaveException("Operation cancelled."));
-		CleanupTempDirectory();
 		InternalDispose();
 	}
 
@@ -76,17 +81,7 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 		}
 		finally
 		{
-			CleanupTempDirectory();
 			InternalDispose();
-		}
-	}
-	
-	void CleanupTempDirectory()
-	{
-		if (tempDirectoryPath is not null)
-		{
-			var fileManager = NSFileManager.DefaultManager;
-			fileManager.Remove(tempDirectoryPath, out var _);
 		}
 	}
 
