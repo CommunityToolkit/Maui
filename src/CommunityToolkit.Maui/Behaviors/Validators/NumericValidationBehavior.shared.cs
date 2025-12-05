@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using CommunityToolkit.Maui.Core;
+
 namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>
@@ -10,64 +12,28 @@ namespace CommunityToolkit.Maui.Behaviors;
 public partial class NumericValidationBehavior : ValidationBehavior<string>
 {
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="MinimumValue"/> property.
-	/// </summary>
-	public static readonly BindableProperty MinimumValueProperty =
-		BindableProperty.Create(nameof(MinimumValue), typeof(double), typeof(NumericValidationBehavior), double.NegativeInfinity, propertyChanged: OnValidationPropertyChanged);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="MaximumValue"/> property.
-	/// </summary>
-	public static readonly BindableProperty MaximumValueProperty =
-		BindableProperty.Create(nameof(MaximumValue), typeof(double), typeof(NumericValidationBehavior), double.PositiveInfinity, propertyChanged: OnValidationPropertyChanged);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="MinimumDecimalPlaces"/> property.
-	/// </summary>
-	public static readonly BindableProperty MinimumDecimalPlacesProperty =
-		BindableProperty.Create(nameof(MinimumDecimalPlaces), typeof(int), typeof(NumericValidationBehavior), 0, propertyChanged: OnValidationPropertyChanged);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="MaximumDecimalPlaces"/> property.
-	/// </summary>
-	public static readonly BindableProperty MaximumDecimalPlacesProperty =
-		BindableProperty.Create(nameof(MaximumDecimalPlaces), typeof(int), typeof(NumericValidationBehavior), int.MaxValue, propertyChanged: OnValidationPropertyChanged);
-
-	/// <summary>
 	/// The minimum numeric value that will be allowed. This is a bindable property.
 	/// </summary>
-	public double MinimumValue
-	{
-		get => (double)GetValue(MinimumValueProperty);
-		set => SetValue(MinimumValueProperty, value);
-	}
+	[BindableProperty(DefaultValue = NumericValidationBehaviorDefaults.MinimumValue, PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial double MinimumValue { get; set; }
 
 	/// <summary>
 	/// The maximum numeric value that will be allowed. This is a bindable property.
 	/// </summary>
-	public double MaximumValue
-	{
-		get => (double)GetValue(MaximumValueProperty);
-		set => SetValue(MaximumValueProperty, value);
-	}
+	[BindableProperty(DefaultValue = NumericValidationBehaviorDefaults.MaximumValue, PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial double MaximumValue { get; set; }
 
 	/// <summary>
 	/// The minimum number of decimal places that will be allowed. This is a bindable property.
 	/// </summary>
-	public int MinimumDecimalPlaces
-	{
-		get => (int)GetValue(MinimumDecimalPlacesProperty);
-		set => SetValue(MinimumDecimalPlacesProperty, value);
-	}
+	[BindableProperty(DefaultValue = NumericValidationBehaviorDefaults.MinimumDecimalPlaces, PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial int MinimumDecimalPlaces { get; set; }
 
 	/// <summary>
 	/// The maximum number of decimal places that will be allowed. This is a bindable property.
 	/// </summary>
-	public int MaximumDecimalPlaces
-	{
-		get => (int)GetValue(MaximumDecimalPlacesProperty);
-		set => SetValue(MaximumDecimalPlacesProperty, value);
-	}
+	[BindableProperty(DefaultValue = NumericValidationBehaviorDefaults.MaximumDecimalPlaces, PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial int MaximumDecimalPlaces { get; set; }
 
 	/// <inheritdoc/>
 	protected override string? Decorate(string? value)
