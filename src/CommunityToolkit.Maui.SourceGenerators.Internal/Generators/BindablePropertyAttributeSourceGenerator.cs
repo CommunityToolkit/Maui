@@ -349,8 +349,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		{
 			sb.Append(info.SetterAccessibility)
 				.Append("set => SetValue(")
-				.Append(info.IsReadOnlyBindableProperty ? info.BindablePropertyKeyName : info.BindablePropertyName)
-				.Append(", value);\n");
+				.Append(info.IsReadOnlyBindableProperty ? info.BindablePropertyKeyName : info.BindablePropertyName);
 
 			if (info.HasInitializer)
 			{
