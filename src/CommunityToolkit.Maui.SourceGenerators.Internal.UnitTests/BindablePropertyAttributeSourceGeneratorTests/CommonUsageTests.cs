@@ -693,7 +693,7 @@ public class CommonUsageTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			    /// </summary>
 			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __createDefaultText);
 			    bool __initializingText = false;
-			    static object __createDefaultText(Microsoft.Maui.Controls.BindableObject bindable)
+			    static object __createDefaultText(global::Microsoft.Maui.Controls.BindableObject bindable)
 			    {
 			        (({{defaultTestClassName}})bindable).__initializingText = true;
 			        var defaultValue = (({{defaultTestClassName}})bindable).Text;
@@ -708,7 +708,7 @@ public class CommonUsageTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			    /// </summary>
 			    public static readonly global::Microsoft.Maui.Controls.BindableProperty CustomDurationProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("CustomDuration", typeof(System.TimeSpan), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __createDefaultCustomDuration);
 			    bool __initializingCustomDuration = false;
-			    static object __createDefaultCustomDuration(Microsoft.Maui.Controls.BindableObject bindable)
+			    static object __createDefaultCustomDuration(global::Microsoft.Maui.Controls.BindableObject bindable)
 			    {
 			        (({{defaultTestClassName}})bindable).__initializingCustomDuration = true;
 			        var defaultValue = (({{defaultTestClassName}})bindable).CustomDuration;

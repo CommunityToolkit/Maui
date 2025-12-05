@@ -607,7 +607,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		sb.Append("static object ")
 			.Append(GetDefaulteValueCreatorMethod(in info))
-			.Append("(Microsoft.Maui.Controls.BindableObject bindable)\n")
+			.Append("(global::Microsoft.Maui.Controls.BindableObject bindable)\n")
 			.Append("{\n")
 			.Append("((")
 			.Append(classNameWithGenerics)
