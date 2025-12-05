@@ -309,10 +309,13 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
 		var formattedReturnType = GetFormattedReturnType(info.ReturnType);
 
-		sb.Append("bool ")
-			.Append("__initializing")
-			.Append(info.PropertyName)
-			.Append(" = false;\n");
+		if (info.HasInitializer)
+		{
+			sb.Append("bool ")
+				.Append("__initializing")
+				.Append(info.PropertyName)
+				.Append(" = false;\n");
+		}
 
 		sb.Append("public ")
 			.Append(info.NewKeywordText)
@@ -320,22 +323,42 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(formattedReturnType)
 			.Append(' ')
 			.Append(sanitizedPropertyName)
-			.Append("\n{\nget => ")
-			.Append("__initializing")
-			.Append(info.PropertyName)
-			.Append(" ? field : ")
-			.Append("(")
-			.Append(formattedReturnType)
-			.Append(")GetValue(")
-			.Append(info.BindablePropertyName)
-			.Append(");\n");
+			.Append("\n{\nget => ");
+
+		if (info.HasInitializer)
+		{
+			sb.Append("__initializing")
+				.Append(info.PropertyName)
+				.Append(" ? field : ")
+				.Append("(")
+				.Append(formattedReturnType)
+				.Append(")GetValue(")
+				.Append(info.BindablePropertyName)
+				.Append(");\n");
+		}
+		else
+		{
+			sb.Append("(")
+				.Append(formattedReturnType)
+				.Append(")GetValue(")
+				.Append(info.BindablePropertyName)
+				.Append(");\n");
+		}
 
 		if (info.SetterAccessibility is not null)
 		{
 			sb.Append(info.SetterAccessibility)
 				.Append("set => SetValue(")
-				.Append(info.IsReadOnlyBindableProperty ? info.BindablePropertyKeyName : info.BindablePropertyName)
-				.Append(", field = value);\n");
+				.Append(info.IsReadOnlyBindableProperty ? info.BindablePropertyKeyName : info.BindablePropertyName);
+
+			if (info.HasInitializer)
+			{
+				sb.Append(", field = value);\n");
+			}
+			else
+			{
+				sb.Append(", value);\n");
+			}
 		}
 		// else Do not create a Setter because the property is read-only
 
