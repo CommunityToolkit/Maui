@@ -65,19 +65,19 @@ public partial class CharactersValidationBehavior : TextValidationBehavior
 	/// The minimum number of <see cref="CharacterType"/> required. This is a bindable property.
 	/// </summary>
 	[BindableProperty(DefaultValue = CharactersValidationBehaviorDefaults.MinimumCharacterTypeCount, PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
-	public int MinimumCharacterTypeCount { get; set; }
+	public partial int MinimumCharacterTypeCount { get; set; }
 
 	/// <summary>
 	/// The maximum number of <see cref="CharacterType"/> allowed. This is a bindable property.
 	/// </summary>
 	[BindableProperty(DefaultValue = CharactersValidationBehaviorDefaults.MaximumCharacterTypeCount, PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
-	public int MaximumCharacterTypeCount { get; set; }
+	public partial int MaximumCharacterTypeCount { get; set; }
 
 	/// <inheritdoc/>
 	protected override async ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
 		=> await base.ValidateAsync(value, token).ConfigureAwait(false) && Validate(value);
 
-	static object CreateCharacterType() => CharactersValidationBehaviorDefaults.CharacterType;
+	static object CreateCharacterType(object bindable) => CharactersValidationBehaviorDefaults.CharacterType;
 
 	static void OnCharacterTypePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
