@@ -33,6 +33,29 @@ static class AttributeExtensions
 			return $"({data.Type}){data.Value}";
 		}
 
+		if (data.Type?.SpecialType is SpecialType.System_Double or SpecialType.System_Single)
+		{
+			if (data.Value is double.PositiveInfinity)
+			{
+				return $"({data.Type})double.PositiveInfinity";
+			}
+
+			if (data.Value is double.NegativeInfinity)
+			{
+				return $"({data.Type})double.NegativeInfinity";
+			}
+
+			if (data.Value is double.Epsilon)
+			{
+				return $"({data.Type})double.Epsilon";
+			}
+
+			if (data.Value is double.NaN)
+			{
+				return 	$"({data.Type})double.NaN";
+			}
+		}
+
 		if (data.Type?.SpecialType is SpecialType.System_String)
 		{
 			// Special handling for TimeSpan string representations - only when property type is TimeSpan
