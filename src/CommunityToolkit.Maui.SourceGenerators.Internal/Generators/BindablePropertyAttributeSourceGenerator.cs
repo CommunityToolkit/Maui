@@ -184,6 +184,11 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			}
 
 			GenerateProperty(sb, in info);
+
+			if (info.HasInitializer)
+			{
+				GenerateDefaultValueMethod(sb, in info, classNameWithGenerics);
+			}
 		}
 
 		sb.Append('}');
@@ -292,7 +297,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(", ")
 			.Append(info.CoerceValueMethodName)
 			.Append(", ")
-			.Append(info.DefaultValueCreatorMethodName)
+			.Append(info.HasInitializer ? "__createDefault" + info.PropertyName : info.DefaultValueCreatorMethodName)
 			.Append(");\n");
 
 		sb.Append('\n');
@@ -304,13 +309,22 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
 		var formattedReturnType = GetFormattedReturnType(info.ReturnType);
 
+		sb.Append("bool ")
+			.Append("__initializing")
+			.Append(info.PropertyName)
+			.Append(" = false;\n");
+
 		sb.Append("public ")
 			.Append(info.NewKeywordText)
 			.Append("partial ")
 			.Append(formattedReturnType)
 			.Append(' ')
 			.Append(sanitizedPropertyName)
-			.Append("\n{\nget => (")
+			.Append("\n{\nget => ")
+			.Append("__initializing")
+			.Append(info.PropertyName)
+			.Append(" ? field : ")
+			.Append("(")
 			.Append(formattedReturnType)
 			.Append(")GetValue(")
 			.Append(info.BindablePropertyName)
@@ -321,7 +335,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			sb.Append(info.SetterAccessibility)
 				.Append("set => SetValue(")
 				.Append(info.IsReadOnlyBindableProperty ? info.BindablePropertyKeyName : info.BindablePropertyName)
-				.Append(", value);\n");
+				.Append(", field = value);\n");
 		}
 		// else Do not create a Setter because the property is read-only
 
@@ -333,6 +347,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var propertyDeclarationSyntax = Unsafe.As<PropertyDeclarationSyntax>(context.TargetNode);
 		var semanticModel = context.SemanticModel;
 		var propertySymbol = (IPropertySymbol?)ModelExtensions.GetDeclaredSymbol(semanticModel, propertyDeclarationSyntax, cancellationToken);
+		var hasInitializer = propertyDeclarationSyntax.Initializer is not null;
 
 		if (propertySymbol is null)
 		{
@@ -359,7 +374,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var (isReadOnlyBindableProperty, setterAccessibility) = GetPropertyAccessibility(propertySymbol, propertyDeclarationSyntax);
 
 		var attributeData = context.Attributes[0];
-		bindablePropertyModels[0] = CreateBindablePropertyModel(attributeData, propertySymbol.ContainingType, propertySymbol.Name, returnType, doesContainNewKeyword, isReadOnlyBindableProperty, setterAccessibility);
+		bindablePropertyModels[0] = CreateBindablePropertyModel(attributeData, propertySymbol.ContainingType, propertySymbol.Name, returnType, doesContainNewKeyword, isReadOnlyBindableProperty, setterAccessibility, hasInitializer);
 
 		return new(propertyInfo, ImmutableArray.Create(bindablePropertyModels));
 	}
@@ -456,7 +471,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		return sb.ToString();
 	}
 
-	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string propertyName, in ITypeSymbol returnType, in bool doesContainNewKeyword, in bool isReadOnly, in string? setterAccessibility)
+	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string propertyName, in ITypeSymbol returnType, in bool doesContainNewKeyword, in bool isReadOnly, in string? setterAccessibility, in bool hasInitializer)
 	{
 		if (attributeData.AttributeClass is null)
 		{
@@ -472,7 +487,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var validateValueMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.ValidateValueMethodName));
 		var newKeywordText = doesContainNewKeyword ? "new " : string.Empty;
 
-		return new BindablePropertyModel(propertyName, returnType, declaringType, defaultValue, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText, isReadOnly, setterAccessibility);
+		return new BindablePropertyModel(propertyName, returnType, declaringType, defaultValue, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText, isReadOnly, setterAccessibility, hasInitializer);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -528,5 +543,34 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			// Use ToDisplayString with the correct format for the base type (e.g., "int")
 			return typeSymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
 		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	static void GenerateDefaultValueMethod(StringBuilder sb, in BindablePropertyModel info, string classNameWithGenerics)
+	{
+		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
+
+		sb.Append("static object __createDefault")
+			.Append(info.PropertyName)
+			.Append("(Microsoft.Maui.Controls.BindableObject bindable)\n")
+			.Append("{\n")
+			.Append("((")
+			.Append(classNameWithGenerics)
+			.Append(")bindable).__initializing")
+			.Append(info.PropertyName)
+			.Append(" = true;\n")
+			.Append("var defaultValue = ")
+			.Append("((")
+			.Append(classNameWithGenerics)
+			.Append(")bindable).")
+			.Append(sanitizedPropertyName)
+			.Append(";\n")
+			.Append("((")
+			.Append(classNameWithGenerics)
+			.Append(")bindable).__initializing")
+			.Append(info.PropertyName)
+			.Append(" = false;\n")
+			.Append("return defaultValue;\n")
+			.Append("}\n");
 	}
 }

@@ -29,7 +29,8 @@ public class BindablePropertyModelTests : BaseTest
 			"null",
 			string.Empty,
 			true, // IsReadOnlyBindableProperty
-			string.Empty // SetterAccessibility
+			string.Empty, // SetterAccessibility
+			false
 		);
 
 		// Act
@@ -56,6 +57,7 @@ public class BindablePropertyModelTests : BaseTest
 		const string coerceValueMethodName = "CoerceValue";
 		const string defaultValueCreatorMethodName = "CreateDefaultValue";
 		const string newKeywordText = "new ";
+		const bool hasInitializer = false;
 
 		// Act
 		var model = new BindablePropertyModel(
@@ -71,7 +73,8 @@ public class BindablePropertyModelTests : BaseTest
 			defaultValueCreatorMethodName,
 			newKeywordText,
 			true, // IsReadOnlyBindableProperty
-			string.Empty // SetterAccessibility
+			string.Empty, // SetterAccessibility
+			hasInitializer
 		);
 
 		// Assert
@@ -86,6 +89,7 @@ public class BindablePropertyModelTests : BaseTest
 		Assert.Equal(coerceValueMethodName, model.CoerceValueMethodName);
 		Assert.Equal(defaultValueCreatorMethodName, model.DefaultValueCreatorMethodName);
 		Assert.Equal(newKeywordText, model.NewKeywordText);
+		Assert.Equal(hasInitializer, model.HasInitializer);
 		Assert.Equal("TestPropertyProperty", model.BindablePropertyName);
 	}
 
@@ -128,7 +132,8 @@ public class BindablePropertyModelTests : BaseTest
 			"null",
 			string.Empty,
 			true, // IsReadOnlyBindableProperty
-			string.Empty // SetterAccessibilityText
+			string.Empty, // SetterAccessibilityText
+			false
 		);
 
 		var bindableProperties = new[] { bindableProperty }.ToImmutableArray();
@@ -155,5 +160,57 @@ public class BindablePropertyModelTests : BaseTest
 			[syntaxTree],
 			references,
 			new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+	}
+
+	[Fact]
+	public void BindablePropertyModel_WithInitializer_GeneratesDefaultValueCreator()
+	{
+		// Arrange
+		var compilation = CreateCompilation("public class TestClass { public string TestProperty { get; set; } = \"Hello\"; }");
+		var typeSymbol = compilation.GetTypeByMetadataName("TestClass")!;
+		var propertySymbol = typeSymbol.GetMembers("TestProperty").OfType<IPropertySymbol>().First();
+
+		const string propertyName = "TestProperty";
+		const string defaultValue = "\"Hello\"";
+		const string defaultBindingMode = "Microsoft.Maui.Controls.BindingMode.TwoWay";
+		const string validateValueMethodName = "ValidateValue";
+		const string propertyChangedMethodName = "OnPropertyChanged";
+		const string propertyChangingMethodName = "OnPropertyChanging";
+		const string coerceValueMethodName = "CoerceValue";
+		const string defaultValueCreatorMethodName = "__createDefaultTestProperty";
+		const string newKeywordText = "new ";
+		const bool hasInitializer = true;
+
+		// Act
+		var model = new BindablePropertyModel(
+			propertyName,
+			propertySymbol.Type,
+			typeSymbol,
+			defaultValue,
+			defaultBindingMode,
+			validateValueMethodName,
+			propertyChangedMethodName,
+			propertyChangingMethodName,
+			coerceValueMethodName,
+			defaultValueCreatorMethodName,
+			newKeywordText,
+			true, // IsReadOnlyBindableProperty
+			string.Empty, // SetterAccessibility
+			hasInitializer);
+
+		// Assert
+		Assert.Equal(propertyName, model.PropertyName);
+		Assert.Equal(propertySymbol.Type, model.ReturnType);
+		Assert.Equal(typeSymbol, model.DeclaringType);
+		Assert.Equal(defaultValue, model.DefaultValue);
+		Assert.Equal(defaultBindingMode, model.DefaultBindingMode);
+		Assert.Equal(validateValueMethodName, model.ValidateValueMethodName);
+		Assert.Equal(propertyChangedMethodName, model.PropertyChangedMethodName);
+		Assert.Equal(propertyChangingMethodName, model.PropertyChangingMethodName);
+		Assert.Equal(coerceValueMethodName, model.CoerceValueMethodName);
+		Assert.Equal(defaultValueCreatorMethodName, model.DefaultValueCreatorMethodName);
+		Assert.Equal(newKeywordText, model.NewKeywordText);
+		Assert.Equal(hasInitializer, model.HasInitializer);
+		Assert.Equal("TestPropertyProperty", model.BindablePropertyName);
 	}
 }
