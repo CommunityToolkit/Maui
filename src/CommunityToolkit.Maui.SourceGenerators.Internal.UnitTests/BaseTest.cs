@@ -48,7 +48,7 @@ public abstract class BaseTest
 	}
 
 	// This class can be deleted once [Experimental] is removed from BindablePropertyAttribute
-	class ExperimentalBindablePropertyTest : CSharpSourceGeneratorTest<BindablePropertyAttributeSourceGenerator, DefaultVerifier>
+	sealed class ExperimentalBindablePropertyTest : CSharpSourceGeneratorTest<BindablePropertyAttributeSourceGenerator, DefaultVerifier>
 	{
 		protected override CompilationOptions CreateCompilationOptions()
 		{

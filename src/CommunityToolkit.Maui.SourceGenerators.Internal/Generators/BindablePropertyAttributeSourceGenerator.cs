@@ -16,7 +16,7 @@ namespace CommunityToolkit.Maui.SourceGenerators.Internal;
 public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 {
 	public const string BindablePropertyAttributeExperimentalDiagnosticId = "MCTEXP001";
-	
+
 	static readonly SemanticValues emptySemanticValues = new(default, []);
 
 	const string bpFullName = "global::Microsoft.Maui.Controls.BindableProperty";
