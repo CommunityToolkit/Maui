@@ -168,9 +168,6 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			      [BindableProperty(DefaultValue = double.E)]
 			      public partial double E { get; set; }
 			      
-			      [BindableProperty(DefaultValue = double.epsilon)]
-			      public partial double Epsilon { get; set; }
-			      
 			      [BindableProperty(DefaultValue = double.NaN)]
 			      public partial double NaN { get; set; }
 			      
@@ -207,12 +204,6 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			      /// </summary>
 			      public static readonly global::Microsoft.Maui.Controls.BindableProperty EProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("E", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (double)2.718281828459045, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			      public partial double E { get => (double)GetValue(EProperty); set => SetValue(EProperty, value); }
-
-			      /// <summary>
-			      /// Backing BindableProperty for the <see cref = "Epsilon"/> property.
-			      /// </summary>
-			      public static readonly global::Microsoft.Maui.Controls.BindableProperty EpsilonProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Epsilon", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (double)4.94065645841247E-324, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
-			      public partial double Epsilon { get => (double)GetValue(EpsilonProperty); set => SetValue(EpsilonProperty, value); }
 
 			      /// <summary>
 			      /// Backing BindableProperty for the <see cref = "NaN"/> property.
@@ -272,9 +263,6 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			      [BindableProperty(DefaultValue = float.E)]
 			      public partial float E { get; set; }
 			      
-			      [BindableProperty(DefaultValue = float.epsilon)]
-			      public partial float Epsilon { get; set; }
-			      
 			      [BindableProperty(DefaultValue = float.NaN)]
 			      public partial float NaN { get; set; }
 			      
@@ -311,12 +299,6 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			      /// </summary>
 			      public static readonly global::Microsoft.Maui.Controls.BindableProperty EProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("E", typeof(float), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (float)2.7182817, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			      public partial float E { get => (float)GetValue(EProperty); set => SetValue(EProperty, value); }
-
-			      /// <summary>
-			      /// Backing BindableProperty for the <see cref = "Epsilon"/> property.
-			      /// </summary>
-			      public static readonly global::Microsoft.Maui.Controls.BindableProperty EpsilonProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Epsilon", typeof(float), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (float)4.94065645841247E-324, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
-			      public partial float Epsilon { get => (float)GetValue(EpsilonProperty); set => SetValue(EpsilonProperty, value); }
 
 			      /// <summary>
 			      /// Backing BindableProperty for the <see cref = "NaN"/> property.
