@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Net.Mime;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -10,14 +11,19 @@ public enum TextDecorationFlags
 {
 	/// <summary>No text decoration will be applied.</summary>
 	None = 0,
+
 	/// <summary><see cref="string.TrimStart()"/> is applied on the value prior to validation.</summary>
 	TrimStart = 1,
+
 	/// <summary><see cref="string.TrimEnd()"/> is applied on the value prior to validation.</summary>
 	TrimEnd = 2,
+
 	/// <summary><see cref="string.Trim()"/> is applied on the value prior to validation.</summary>
 	Trim = TrimStart | TrimEnd,
+
 	/// <summary>If <see cref="ValidationBehavior.Value"/> is null, replace the value with <see cref="string.Empty"/></summary>
 	NullToEmpty = 4,
+
 	/// <summary>Excessive white space is removed from <see cref="ValidationBehavior.Value"/> prior to validation. I.e. I.e. "Hello    World" will become "Hello World". This applies to whitespace found anywhere.</summary>
 	NormalizeWhiteSpace = 8
 }
@@ -29,36 +35,6 @@ public enum TextDecorationFlags
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 public partial class TextValidationBehavior : ValidationBehavior<string>
 {
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="MinimumLength"/> property.
-	/// </summary>
-	public static readonly BindableProperty MinimumLengthProperty =
-		BindableProperty.Create(nameof(MinimumLength), typeof(int), typeof(TextValidationBehavior), 0, propertyChanged: OnValidationPropertyChanged);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="MaximumLength"/> property.
-	/// </summary>
-	public static readonly BindableProperty MaximumLengthProperty =
-		BindableProperty.Create(nameof(MaximumLength), typeof(int), typeof(TextValidationBehavior), int.MaxValue, propertyChanged: OnValidationPropertyChanged);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="DecorationFlags"/> property.
-	/// </summary>
-	public static readonly BindableProperty DecorationFlagsProperty =
-		BindableProperty.Create(nameof(DecorationFlags), typeof(TextDecorationFlags), typeof(TextValidationBehavior), TextDecorationFlags.None, propertyChanged: OnValidationPropertyChanged);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="RegexPattern"/> property.
-	/// </summary>
-	public static readonly BindableProperty RegexPatternProperty =
-		BindableProperty.Create(nameof(RegexPattern), typeof(string), typeof(TextValidationBehavior), defaultValueCreator: GetDefaultRegexPattern, propertyChanged: OnRegexPropertyChanged);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="RegexOptions"/> property.
-	/// </summary>
-	public static readonly BindableProperty RegexOptionsProperty =
-		BindableProperty.Create(nameof(RegexOptions), typeof(RegexOptions), typeof(TextValidationBehavior), defaultValueCreator: GetDefaultRegexOptions, propertyChanged: OnRegexPropertyChanged);
-
 	Regex? regex;
 
 	/// <summary>
@@ -69,57 +45,42 @@ public partial class TextValidationBehavior : ValidationBehavior<string>
 	/// <summary>
 	/// Default regex pattern
 	/// </summary>
-	protected virtual string DefaultRegexPattern { get; } = string.Empty;
+	protected virtual string DefaultRegexPattern { get; } = TextValidationBehaviorDefaults.RegexPattern;
 
 	/// <summary>
 	/// Default regex options
 	/// </summary>
-	protected virtual RegexOptions DefaultRegexOptions { get; } = RegexOptions.None;
+	protected virtual RegexOptions DefaultRegexOptions { get; } = TextValidationBehaviorDefaults.RegexOptions;
 
 	/// <summary>
 	/// The minimum length of the value that will be allowed. This is a bindable property.
 	/// </summary>
-	public int MinimumLength
-	{
-		get => (int)GetValue(MinimumLengthProperty);
-		set => SetValue(MinimumLengthProperty, value);
-	}
+	[BindableProperty(DefaultValue = TextValidationBehaviorDefaults.MinimumLength, PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial int MinimumLength { get; set; }
 
 	/// <summary>
 	/// The maximum length of the value that will be allowed. This is a bindable property.
 	/// </summary>
-	public int MaximumLength
-	{
-		get => (int)GetValue(MaximumLengthProperty);
-		set => SetValue(MaximumLengthProperty, value);
-	}
+	[BindableProperty(DefaultValue = TextValidationBehaviorDefaults.MaximumLength, PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial int MaximumLength { get; set; }
 
 	/// <summary>
 	/// Provides enumerated value to use to set how to handle white spaces. This is a bindable property.
 	/// </summary>
-	public TextDecorationFlags DecorationFlags
-	{
-		get => (TextDecorationFlags)GetValue(DecorationFlagsProperty);
-		set => SetValue(DecorationFlagsProperty, value);
-	}
+	[BindableProperty(DefaultValue = TextValidationBehaviorDefaults.DecorationFlags, PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial TextDecorationFlags DecorationFlags { get; set; }
 
 	/// <summary>
 	/// The regular expression pattern which the value will have to match before it will be allowed. This is a bindable property.
 	/// </summary>
-	public string? RegexPattern
-	{
-		get => (string?)GetValue(RegexPatternProperty);
-		set => SetValue(RegexPatternProperty, value);
-	}
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(GetDefaultRegexPattern), PropertyChangedMethodName = nameof(OnRegexPropertyChanged))]
+	public partial string? RegexPattern { get; set; }
 
 	/// <summary>
 	/// Provides enumerated values to use to set regular expression options. This is a bindable property.
 	/// </summary>
-	public RegexOptions RegexOptions
-	{
-		get => (RegexOptions)GetValue(RegexOptionsProperty);
-		set => SetValue(RegexOptionsProperty, value);
-	}
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(GetDefaultRegexOptions), PropertyChangedMethodName = nameof(OnRegexPropertyChanged))]
+	public partial RegexOptions RegexOptions { get; set; }
 
 	/// <inheritdoc/>
 	protected override string? Decorate(string? value)
