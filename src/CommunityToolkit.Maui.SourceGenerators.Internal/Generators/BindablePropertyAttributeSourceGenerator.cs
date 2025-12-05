@@ -183,12 +183,13 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 				GenerateBindableProperty(sb, in info);
 			}
 
-			GenerateProperty(sb, in info);
-
 			if (info.HasInitializer)
 			{
+				GenerateInitializingProperty(sb, in info);
 				GenerateDefaultValueMethod(sb, in info, classNameWithGenerics);
 			}
+
+			GenerateProperty(sb, in info);
 		}
 
 		sb.Append('}');
@@ -241,7 +242,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(", ")
 			.Append(info.CoerceValueMethodName)
 			.Append(", ")
-			.Append(info.DefaultValueCreatorMethodName)
+			.Append(GetDefaulteValueCreatorMethod(in info))
 			.Append(");\n");
 
 		// Generate public BindableProperty from the key
@@ -297,7 +298,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(", ")
 			.Append(info.CoerceValueMethodName)
 			.Append(", ")
-			.Append(info.HasInitializer ? "__createDefault" + info.PropertyName : info.DefaultValueCreatorMethodName)
+			.Append(GetDefaulteValueCreatorMethod(in info))
 			.Append(");\n");
 
 		sb.Append('\n');
@@ -308,14 +309,6 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	{
 		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
 		var formattedReturnType = GetFormattedReturnType(info.ReturnType);
-
-		if (info.HasInitializer)
-		{
-			sb.Append("bool ")
-				.Append("__initializing")
-				.Append(info.PropertyName)
-				.Append(" = false;\n");
-		}
 
 		sb.Append("public ")
 			.Append(info.NewKeywordText)
@@ -568,13 +561,52 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		}
 	}
 
+	/// <summary>
+	/// Determines the name of the method used to create the default value for the specified bindable property model.
+	/// </summary>
+	/// <param name="info">The bindable property model for which to retrieve the default value creator method name.</param>
+	/// <returns>A string containing the name of the method that creates the default value for the property.
+	/// If the property has an initializer, the returned name is of the generated default value method;
+	/// otherwise, the default value creator method name from the model is returned.</returns>
+	static string GetDefaulteValueCreatorMethod(in BindablePropertyModel info)
+	{
+		if (info.HasInitializer)
+		{
+			return "__createDefault" + info.PropertyName;
+		}
+
+		return info.DefaultValueCreatorMethodName;
+	}
+
+	/// <summary>
+	/// Generates the boolean initialization flag used by bindable properties with initializers to indicate that the getter
+	/// should return the backing field while the generated default value method is executing.
+	/// </summary>
+	/// <param name="sb">The StringBuilder instance to which the initialization field declaration will be appended.</param>
+	/// <param name="info">The model containing metadata about the property for which the initialization field is generated.</param>
+	static void GenerateInitializingProperty(StringBuilder sb, in BindablePropertyModel info)
+	{
+		sb.Append("bool ")
+			.Append("__initializing")
+			.Append(info.PropertyName)
+			.Append(" = false;\n");
+	}
+
+	/// <summary>
+	/// Generates the default value creator static method used by BindableProperty instances with initializers.
+	/// This method temporarily switches the property's getter to return its backing field while the default value is being computed,
+	/// ensuring that the initializer-provided value is captured and returned as the BindableProperty's default.
+	/// </summary>
+	/// <param name="sb">The StringBuilder instance to which the initialization field declaration will be appended.</param>
+	/// <param name="info">The model containing metadata for the property that requires a default value creator.</param>
+	/// <param name="classNameWithGenerics">The declaring class name including generic type parameters, if any.</param>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static void GenerateDefaultValueMethod(StringBuilder sb, in BindablePropertyModel info, string classNameWithGenerics)
 	{
 		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
 
-		sb.Append("static object __createDefault")
-			.Append(info.PropertyName)
+		sb.Append("static object ")
+			.Append(GetDefaulteValueCreatorMethod(in info))
 			.Append("(Microsoft.Maui.Controls.BindableObject bindable)\n")
 			.Append("{\n")
 			.Append("((")
