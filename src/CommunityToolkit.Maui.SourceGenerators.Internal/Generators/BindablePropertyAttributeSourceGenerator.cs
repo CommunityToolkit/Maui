@@ -322,36 +322,21 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		{
 			sb.Append("__initializing")
 				.Append(info.PropertyName)
-				.Append(" ? field : ")
-				.Append("(")
-				.Append(formattedReturnType)
-				.Append(")GetValue(")
-				.Append(info.BindablePropertyName)
-				.Append(");\n");
+				.Append(" ? field : ");
 		}
-		else
-		{
-			sb.Append("(")
-				.Append(formattedReturnType)
-				.Append(")GetValue(")
-				.Append(info.BindablePropertyName)
-				.Append(");\n");
-		}
+
+		sb.Append("(")
+			.Append(formattedReturnType)
+			.Append(")GetValue(")
+			.Append(info.BindablePropertyName)
+			.Append(");\n");
 
 		if (info.SetterAccessibility is not null)
 		{
 			sb.Append(info.SetterAccessibility)
 				.Append("set => SetValue(")
-				.Append(info.IsReadOnlyBindableProperty ? info.BindablePropertyKeyName : info.BindablePropertyName);
-
-			if (info.HasInitializer)
-			{
-				sb.Append(", field = value);\n");
-			}
-			else
-			{
-				sb.Append(", value);\n");
-			}
+				.Append(info.IsReadOnlyBindableProperty ? info.BindablePropertyKeyName : info.BindablePropertyName)
+				.Append(", value);\n");
 		}
 		// else Do not create a Setter because the property is read-only
 

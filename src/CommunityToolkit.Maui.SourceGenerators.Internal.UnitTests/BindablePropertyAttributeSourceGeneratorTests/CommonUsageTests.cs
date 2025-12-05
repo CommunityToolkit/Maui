@@ -701,7 +701,7 @@ public class CommonUsageTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			        return defaultValue;
 			    }
 
-			    public partial string Text { get => __initializingText ? field : (string)GetValue(TextProperty); set => SetValue(TextProperty, field = value); }
+			    public partial string Text { get => __initializingText ? field : (string)GetValue(TextProperty); set => SetValue(TextProperty, value); }
 
 			    /// <summary>
 			    /// Backing BindableProperty for the <see cref = "CustomDuration"/> property.
@@ -716,7 +716,7 @@ public class CommonUsageTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			        return defaultValue;
 			    }
 			
-			    public partial System.TimeSpan CustomDuration { get => __initializingCustomDuration ? field : (System.TimeSpan)GetValue(CustomDurationProperty); set => SetValue(CustomDurationProperty, field = value); }
+			    public partial System.TimeSpan CustomDuration { get => __initializingCustomDuration ? field : (System.TimeSpan)GetValue(CustomDurationProperty); set => SetValue(CustomDurationProperty, value); }
 			}
 			""";
 
