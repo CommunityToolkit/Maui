@@ -15,10 +15,11 @@ namespace CommunityToolkit.Maui.SourceGenerators.Internal;
 [Generator]
 public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 {
+	public const string BindablePropertyAttributeExperimentalDiagnosticId = "MCTEXP001";
+	
 	static readonly SemanticValues emptySemanticValues = new(default, []);
 
 	const string bpFullName = "global::Microsoft.Maui.Controls.BindableProperty";
-
 	const string bpAttribute =
 		/* language=C#-test */
 		//lang=csharp
@@ -32,6 +33,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		  [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 		  [global::System.AttributeUsage(global::System.AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+		  [global::System.Diagnostics.CodeAnalysis.Experimental("{{BindablePropertyAttributeExperimentalDiagnosticId}}")]
 		  sealed partial class BindablePropertyAttribute : global::System.Attribute
 		  {
 		  	public string? PropertyName { get; }
