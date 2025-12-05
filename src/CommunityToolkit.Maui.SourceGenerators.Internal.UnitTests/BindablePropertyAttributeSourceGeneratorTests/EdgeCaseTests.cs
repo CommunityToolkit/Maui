@@ -206,38 +206,38 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			      /// Backing BindableProperty for the <see cref = "E"/> property.
 			      /// </summary>
 			      public static readonly global::Microsoft.Maui.Controls.BindableProperty EProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("E", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (double)2.718281828459045, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
-			      public partial double E { get => (double)GetValue(EProperty); set => SetValue(EProperty, value); } 
-			      
+			      public partial double E { get => (double)GetValue(EProperty); set => SetValue(EProperty, value); }
+
 			      /// <summary>
 			      /// Backing BindableProperty for the <see cref = "Epsilon"/> property.
 			      /// </summary>
 			      public static readonly global::Microsoft.Maui.Controls.BindableProperty EpsilonProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Epsilon", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (double)4.94065645841247E-324, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
-			      public partial double Epsilon { get => (double)GetValue(EpsilonProperty); set => SetValue(EpsilonProperty, value); } 
+			      public partial double Epsilon { get => (double)GetValue(EpsilonProperty); set => SetValue(EpsilonProperty, value); }
 
 			      /// <summary>
 			      /// Backing BindableProperty for the <see cref = "NaN"/> property.
 			      /// </summary>
 			      public static readonly global::Microsoft.Maui.Controls.BindableProperty NaNProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("NaN", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (double)double.NaN, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
-			      public partial double NaN { get => (double)GetValue(NaNProperty); set => SetValue(NaNProperty, value); } 
+			      public partial double NaN { get => (double)GetValue(NaNProperty); set => SetValue(NaNProperty, value); }
 
 			      /// <summary>
 			      /// Backing BindableProperty for the <see cref = "NegativeInfinity"/> property.
 			      /// </summary>
 			      public static readonly global::Microsoft.Maui.Controls.BindableProperty NegativeInfinityProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("NegativeInfinity", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (double)double.NegativeInfinity, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			      public partial double NegativeInfinity { get => (double)GetValue(NegativeInfinityProperty); set => SetValue(NegativeInfinityProperty, value); }
-			      
+
 			      /// <summary>
-			      /// Backing BindableProperty for the <see cref = "NegativeInfinity"/> property.
+			      /// Backing BindableProperty for the <see cref = "NegativeZero"/> property.
 			      /// </summary>
-			      public static readonly global::Microsoft.Maui.Controls.BindableProperty NegativeZeroProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("NegativeZero", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (double)0, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			      public static readonly global::Microsoft.Maui.Controls.BindableProperty NegativeZeroProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("NegativeZero", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (double)-0, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			      public partial double NegativeZero { get => (double)GetValue(NegativeZeroProperty); set => SetValue(NegativeZeroProperty, value); }
-			      
+
 			      /// <summary>
-			      /// Backing BindableProperty for the <see cref = "NegativeInfinity"/> property.
+			      /// Backing BindableProperty for the <see cref = "Pi"/> property.
 			      /// </summary>
-			      public static readonly global::Microsoft.Maui.Controls.BindableProperty PiProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Pi", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (double)3.1415926535897931, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			      public static readonly global::Microsoft.Maui.Controls.BindableProperty PiProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Pi", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (double)3.141592653589793, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			      public partial double Pi { get => (double)GetValue(PiProperty); set => SetValue(PiProperty, value); }
-			      
+
 			      /// <summary>
 			      /// Backing BindableProperty for the <see cref = "PositiveInfinity"/> property.
 			      /// </summary>
@@ -245,9 +245,9 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			      public partial double PositiveInfinity { get => (double)GetValue(PositiveInfinityProperty); set => SetValue(PositiveInfinityProperty, value); }
 
 			      /// <summary>
-			      /// Backing BindableProperty for the <see cref = "PositiveInfinity"/> property.
+			      /// Backing BindableProperty for the <see cref = "Tau"/> property.
 			      /// </summary>
-			      public static readonly global::Microsoft.Maui.Controls.BindableProperty TauProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Tau", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (double)6.2831853071795862, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			      public static readonly global::Microsoft.Maui.Controls.BindableProperty TauProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Tau", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (double)6.283185307179586, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			      public partial double Tau { get => (double)GetValue(TauProperty); set => SetValue(TauProperty, value); }
 			  }
 			  """;
@@ -309,39 +309,39 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			      /// <summary>
 			      /// Backing BindableProperty for the <see cref = "E"/> property.
 			      /// </summary>
-			      public static readonly global::Microsoft.Maui.Controls.BindableProperty EProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("E", typeof(float), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (float)2.718281828459045, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
-			      public partial float E { get => (float)GetValue(EProperty); set => SetValue(EProperty, value); } 
-			      
+			      public static readonly global::Microsoft.Maui.Controls.BindableProperty EProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("E", typeof(float), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (float)2.7182817, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			      public partial float E { get => (float)GetValue(EProperty); set => SetValue(EProperty, value); }
+
 			      /// <summary>
 			      /// Backing BindableProperty for the <see cref = "Epsilon"/> property.
 			      /// </summary>
 			      public static readonly global::Microsoft.Maui.Controls.BindableProperty EpsilonProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Epsilon", typeof(float), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (float)4.94065645841247E-324, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
-			      public partial float Epsilon { get => (float)GetValue(EpsilonProperty); set => SetValue(EpsilonProperty, value); } 
+			      public partial float Epsilon { get => (float)GetValue(EpsilonProperty); set => SetValue(EpsilonProperty, value); }
 
 			      /// <summary>
 			      /// Backing BindableProperty for the <see cref = "NaN"/> property.
 			      /// </summary>
 			      public static readonly global::Microsoft.Maui.Controls.BindableProperty NaNProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("NaN", typeof(float), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (float)double.NaN, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
-			      public partial float NaN { get => (float)GetValue(NaNProperty); set => SetValue(NaNProperty, value); } 
+			      public partial float NaN { get => (float)GetValue(NaNProperty); set => SetValue(NaNProperty, value); }
 
 			      /// <summary>
 			      /// Backing BindableProperty for the <see cref = "NegativeInfinity"/> property.
 			      /// </summary>
 			      public static readonly global::Microsoft.Maui.Controls.BindableProperty NegativeInfinityProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("NegativeInfinity", typeof(float), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (float)double.NegativeInfinity, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			      public partial float NegativeInfinity { get => (float)GetValue(NegativeInfinityProperty); set => SetValue(NegativeInfinityProperty, value); }
-			      
+
 			      /// <summary>
-			      /// Backing BindableProperty for the <see cref = "NegativeInfinity"/> property.
+			      /// Backing BindableProperty for the <see cref = "NegativeZero"/> property.
 			      /// </summary>
-			      public static readonly global::Microsoft.Maui.Controls.BindableProperty NegativeZeroProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("NegativeZero", typeof(float), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (float)0, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			      public static readonly global::Microsoft.Maui.Controls.BindableProperty NegativeZeroProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("NegativeZero", typeof(float), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (float)-0, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			      public partial float NegativeZero { get => (float)GetValue(NegativeZeroProperty); set => SetValue(NegativeZeroProperty, value); }
-			      
+
 			      /// <summary>
-			      /// Backing BindableProperty for the <see cref = "NegativeInfinity"/> property.
+			      /// Backing BindableProperty for the <see cref = "Pi"/> property.
 			      /// </summary>
-			      public static readonly global::Microsoft.Maui.Controls.BindableProperty PiProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Pi", typeof(float), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (float)3.1415926535897931, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			      public static readonly global::Microsoft.Maui.Controls.BindableProperty PiProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Pi", typeof(float), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (float)3.1415927, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			      public partial float Pi { get => (float)GetValue(PiProperty); set => SetValue(PiProperty, value); }
-			      
+
 			      /// <summary>
 			      /// Backing BindableProperty for the <see cref = "PositiveInfinity"/> property.
 			      /// </summary>
@@ -349,9 +349,9 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			      public partial float PositiveInfinity { get => (float)GetValue(PositiveInfinityProperty); set => SetValue(PositiveInfinityProperty, value); }
 
 			      /// <summary>
-			      /// Backing BindableProperty for the <see cref = "PositiveInfinity"/> property.
+			      /// Backing BindableProperty for the <see cref = "Tau"/> property.
 			      /// </summary>
-			      public static readonly global::Microsoft.Maui.Controls.BindableProperty TauProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Tau", typeof(float), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (float)6.2831853071795862, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			      public static readonly global::Microsoft.Maui.Controls.BindableProperty TauProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Tau", typeof(float), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (float)6.2831855, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			      public partial float Tau { get => (float)GetValue(TauProperty); set => SetValue(TauProperty, value); }
 			  }
 			  """;

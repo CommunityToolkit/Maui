@@ -35,22 +35,22 @@ static class AttributeExtensions
 
 		if (data.Type?.SpecialType is SpecialType.System_Double or SpecialType.System_Single)
 		{
-			if (data.Value is double.PositiveInfinity)
+			if (data.Value is double.PositiveInfinity or float.PositiveInfinity)
 			{
 				return $"({data.Type})double.PositiveInfinity";
 			}
 
-			if (data.Value is double.NegativeInfinity)
+			if (data.Value is double.NegativeInfinity or float.NegativeInfinity)
 			{
 				return $"({data.Type})double.NegativeInfinity";
 			}
 
-			if (data.Value is double.Epsilon)
+			if (data.Value is double.Epsilon or float.Epsilon)
 			{
 				return $"({data.Type})double.Epsilon";
 			}
 
-			if (data.Value is double.NaN)
+			if (data.Value is double.NaN or float.NaN)
 			{
 				return 	$"({data.Type})double.NaN";
 			}
