@@ -687,15 +687,15 @@ public class CommonUsageTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			    /// <summary>
 			    /// Backing BindableProperty for the <see cref = "Text"/> property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof(TestNamespace.TestView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __createDefaultText);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __createDefaultText);
 			    bool __initializingText = false;
 			    public partial string Text { get => __initializingText ? field : (string)GetValue(TextProperty); set => SetValue(TextProperty, field = value); }
 
 			    static object __createDefaultText(Microsoft.Maui.Controls.BindableObject bindable)
 			    {
-			        ((TestView)bindable).__initializingText = true;
-			        var defaultValue = ((TestView)bindable).Text;
-			        ((TestView)bindable).__initializingText = false;
+			        (({{defaultTestClassName}})bindable).__initializingText = true;
+			        var defaultValue = (({{defaultTestClassName}})bindable).Text;
+			        (({{defaultTestClassName}})bindable).__initializingText = false;
 			        return defaultValue;
 			    }
 			}
