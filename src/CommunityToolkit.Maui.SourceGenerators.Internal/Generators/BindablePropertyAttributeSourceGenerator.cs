@@ -242,7 +242,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(", ")
 			.Append(info.CoerceValueMethodName)
 			.Append(", ")
-			.Append(GetDefaulteValueCreatorMethod(in info))
+			.Append(GetDefaultValueCreatorMethodName(in info))
 			.Append(");\n");
 
 		// Generate public BindableProperty from the key
@@ -298,7 +298,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(", ")
 			.Append(info.CoerceValueMethodName)
 			.Append(", ")
-			.Append(GetDefaulteValueCreatorMethod(in info))
+			.Append(GetDefaultValueCreatorMethodName(in info))
 			.Append(");\n");
 
 		sb.Append('\n');
@@ -568,7 +568,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	/// <returns>A string containing the name of the method that creates the default value for the property.
 	/// If the property has an initializer, the returned name is of the generated default value method;
 	/// otherwise, the default value creator method name from the model is returned.</returns>
-	static string GetDefaulteValueCreatorMethod(in BindablePropertyModel info)
+	static string GetDefaultValueCreatorMethodName(in BindablePropertyModel info)
 	{
 		if (info.HasInitializer)
 		{
@@ -606,7 +606,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
 
 		sb.Append("static object ")
-			.Append(GetDefaulteValueCreatorMethod(in info))
+			.Append(GetDefaultValueCreatorMethodName(in info))
 			.Append("(global::Microsoft.Maui.Controls.BindableObject bindable)\n")
 			.Append("{\n")
 			.Append("((")
