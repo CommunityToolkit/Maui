@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Views;
@@ -8,29 +9,38 @@ namespace CommunityToolkit.Maui.Views;
 public partial class Popup : ContentView
 {
 	/// <summary>
-	/// Bindable property to set the margin between the <see cref="Popup"/> and the edge of the window
+	/// Gets or sets the margin between the <see cref="Popup"/> and the edge of the window.
 	/// </summary>
-	public static new readonly BindableProperty MarginProperty = View.MarginProperty;
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultMargin))]
+	public partial Thickness Margin { get; set; }
+	static object CreateDefaultMargin(global::Microsoft.Maui.Controls.BindableObject? _) => View.MarginProperty;
 
 	/// <summary>
-	/// Bindable property to set the padding between the <see cref="Popup"/> border and the <see cref="Popup"/> content
+	/// Gets or sets the padding between the <see cref="Popup"/> border and the <see cref="Popup"/> content.
 	/// </summary>
-	public static new readonly BindableProperty PaddingProperty = ContentView.PaddingProperty;
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultPadding))]
+	public partial Thickness Padding { get; set; }
+	static object CreateDefaultPadding(global::Microsoft.Maui.Controls.BindableObject? _) => ContentView.PaddingProperty;
 
 	/// <summary>
-	/// Bindable property to set the horizontal position of the <see cref="Popup"/> when displayed on screen
+	/// Gets or sets the horizontal layout options used to position the <see cref="Popup"/> when displayed on screen.
 	/// </summary>
-	public static new readonly BindableProperty HorizontalOptionsProperty = View.HorizontalOptionsProperty;
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultHorizontalOptions))]
+	public partial LayoutOptions HorizontalOptions { get; set; }
+	static object CreateDefaultHorizontalOptions(global::Microsoft.Maui.Controls.BindableObject? _) => View.HorizontalOptionsProperty;
 
 	/// <summary>
-	/// Bindable property to set the vertical position of the <see cref="Popup"/> when displayed on screen
+	/// Gets or sets the vertical layout options used to position the <see cref="Popup"/> when displayed on screen.
 	/// </summary>
-	public static new readonly BindableProperty VerticalOptionsProperty = View.VerticalOptionsProperty;
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultVerticalOptions))]
+	public partial LayoutOptions VerticalOptions { get; set; }
+	static object CreateDefaultVerticalOptions(global::Microsoft.Maui.Controls.BindableObject? _) => View.VerticalOptionsProperty;
 
 	/// <summary>
-	///  Backing BindableProperty for the <see cref="CanBeDismissedByTappingOutsideOfPopup"/> property.
+	/// Gets or sets a value indicating whether the <see cref="Popup"/> can be dismissed by tapping outside of the popup.
 	/// </summary>
-	public static readonly BindableProperty CanBeDismissedByTappingOutsideOfPopupProperty = BindableProperty.Create(nameof(CanBeDismissedByTappingOutsideOfPopup), typeof(bool), typeof(Popup), Options.DefaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup);
+	[BindableProperty(DefaultValue = PopupDefaults.CanBeDismissedByTappingOutsideOfPopup)]
+	public partial bool CanBeDismissedByTappingOutsideOfPopup { get; set; }
 
 	/// <summary>
 	/// Initializes Popup
@@ -53,53 +63,6 @@ public partial class Popup : ContentView
 	/// Event occurs when <see cref="Popup"/> is closed.
 	/// </summary>
 	public event EventHandler? Closed;
-
-	/// <summary>
-	/// Sets the margin between the <see cref="Popup"/> and the edge of the window
-	/// </summary>
-	public new Thickness Margin
-	{
-		get => base.Margin;
-		set => base.Margin = value;
-	}
-
-	/// <summary>
-	/// Sets the padding between the <see cref="Popup"/> border and the <see cref="Popup"/> content
-	/// </summary>
-	public new Thickness Padding
-	{
-		get => base.Padding;
-		set => base.Padding = value;
-	}
-
-	/// <summary>
-	/// Sets the horizontal position of the <see cref="Popup"/> when displayed on screen
-	/// </summary>
-	public new LayoutOptions HorizontalOptions
-	{
-		get => base.HorizontalOptions;
-		set => base.HorizontalOptions = value;
-	}
-
-	/// <summary>
-	/// Sets the vertical position of the <see cref="Popup"/> when displayed on screen
-	/// </summary>
-	public new LayoutOptions VerticalOptions
-	{
-		get => base.VerticalOptions;
-		set => base.VerticalOptions = value;
-	}
-
-	/// <inheritdoc cref="IPopupOptions.CanBeDismissedByTappingOutsideOfPopup"/> />
-	/// <remarks>
-	/// When true and the user taps outside the popup, it will dismiss.
-	/// On Android - when false the hardware back button is disabled.
-	/// </remarks>
-	public bool CanBeDismissedByTappingOutsideOfPopup
-	{
-		get => (bool)GetValue(CanBeDismissedByTappingOutsideOfPopupProperty);
-		set => SetValue(CanBeDismissedByTappingOutsideOfPopupProperty, value);
-	}
 
 	/// <summary>
 	/// Close the Popup.
