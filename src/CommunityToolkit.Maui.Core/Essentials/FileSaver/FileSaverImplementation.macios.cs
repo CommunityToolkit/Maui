@@ -89,7 +89,6 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 		}
 	}
 
-
 	void InternalDispose()
 	{
 		if (documentPickerViewController is not null)
