@@ -53,7 +53,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 
 		await VerifySourceGeneratorAsync(source, expectedGenerated);
 	}
-	
+
 	[Fact]
 	public async Task GenerateBindableProperty_PropertyIsByteEnum_GeneratesCorrectCode()
 	{

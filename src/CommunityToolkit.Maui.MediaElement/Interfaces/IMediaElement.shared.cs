@@ -17,7 +17,7 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// Occurs when the <see cref="Position"/> changes;
 	/// </summary>
 	event EventHandler<MediaPositionChangedEventArgs> PositionChanged;
-	
+
 	/// <summary>
 	/// Gets the media aspect ratio.
 	/// </summary>
@@ -95,7 +95,7 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// </summary>
 	/// <remarks>A value of 1 indicates full volume, 0 is silence.</remarks>
 	double Volume { get; set; }
-	
+
 	/// <summary>
 	/// Gets or sets the title of the media.
 	/// </summary>

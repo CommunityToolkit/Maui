@@ -98,7 +98,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		add => eventManager.AddEventHandler(value);
 		remove => eventManager.RemoveEventHandler(value);
 	}
-	
+
 	/// <summary>
 	/// Gets the <see cref="MediaHeight"/> in pixels.
 	/// </summary>
@@ -110,13 +110,13 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// </summary>
 	[BindableProperty(DefaultValue = MediaElementDefaults.MediaWidth)]
 	public partial int MediaWidth { get; }
-	
+
 	/// <summary>
 	/// Gets the current <see cref="Position"/> of the media playback.
 	/// </summary>
 	[BindableProperty(DefaultValue = MediaElementDefaults.Position)]
 	public partial TimeSpan Position { get; }
-	
+
 	/// <summary>
 	/// Gets the <see cref="Duration"/> of the media.
 	/// </summary>
@@ -200,13 +200,13 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// </summary>
 	[BindableProperty(DefaultValue = MediaElementDefaults.Volume, DefaultBindingMode = BindingMode.TwoWay, PropertyChangingMethodName = nameof(OnVolumeChanging))]
 	public partial double Volume { get; set; }
-	
+
 	/// <summary>
 	/// Gets or sets the <see cref="CurrentState"/> of the media.
 	/// </summary>
 	[BindableProperty(DefaultValue = MediaElementDefaults.CurrentState, PropertyChangedMethodName = nameof(OnCurrentStatePropertyChanged))]
 	public partial MediaElementState CurrentState { get; private set; }
-	
+
 	/// <inheritdoc/>
 	TaskCompletionSource IAsynchronousMediaElementHandler.SeekCompletedTCS => seekCompletedTaskCompletionSource;
 
@@ -342,7 +342,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	{
 		var mediaElement = (MediaElement)bindable;
 		var source = (MediaSource?)newValue;
-		
+
 		mediaElement.ClearTimer();
 
 		if (source is not null)
@@ -381,7 +381,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 			throw new ArgumentOutOfRangeException(nameof(newValue), $"{nameof(Volume)} can not be less than 0.0 or greater than 1.0");
 		}
 	}
-	
+
 	void IMediaElement.MediaEnded() => OnMediaEnded();
 
 	void IMediaElement.MediaFailed(MediaFailedEventArgs args) => OnMediaFailed(args);
