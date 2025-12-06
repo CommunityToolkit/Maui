@@ -7,6 +7,7 @@ record BindablePropertyModel(string PropertyName, ITypeSymbol ReturnType, ITypeS
 {
 	public string BindablePropertyName => $"{PropertyName}Property";
 	public string BindablePropertyKeyName => $"{char.ToLower(PropertyName[0])}{PropertyName[1..]}PropertyKey";
+	public string EffectiveDefaultValueCreatorMethodName => HasInitializer ? $"__createDefault{PropertyName}" : DefaultValueCreatorMethodName;
 }
 
 record SemanticValues(ClassInformation ClassInformation, EquatableArray<BindablePropertyModel> BindableProperties);

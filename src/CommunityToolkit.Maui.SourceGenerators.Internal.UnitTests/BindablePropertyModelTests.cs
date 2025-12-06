@@ -91,6 +91,7 @@ public class BindablePropertyModelTests : BaseTest
 		Assert.Equal(newKeywordText, model.NewKeywordText);
 		Assert.Equal(hasInitializer, model.HasInitializer);
 		Assert.Equal("TestPropertyProperty", model.BindablePropertyName);
+		Assert.Equal(defaultValueCreatorMethodName, model.EffectiveDefaultValueCreatorMethodName);
 	}
 
 	[Fact]
@@ -160,5 +161,37 @@ public class BindablePropertyModelTests : BaseTest
 			[syntaxTree],
 			references,
 			new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+	}
+
+	[Fact]
+	public void BindablePropertyName_WithInitializer_ReturnsCorrectEffectiveDefaultValueCreatorMethodName()
+	{
+		// Arrange
+		var compilation = CreateCompilation("public class TestClass { public string TestProperty { get; set; } = \"Initial Value\"; }");
+		var typeSymbol = compilation.GetTypeByMetadataName("TestClass")!;
+		var propertySymbol = typeSymbol.GetMembers("TestProperty").OfType<IPropertySymbol>().First();
+
+		var model = new BindablePropertyModel(
+			"TestProperty",
+			propertySymbol.Type,
+			typeSymbol,
+			"null",
+			"Microsoft.Maui.Controls.BindingMode.OneWay",
+			"null",
+			"null",
+			"null",
+			"null",
+			"null",
+			string.Empty,
+			true, // IsReadOnlyBindableProperty
+			string.Empty, // SetterAccessibility
+			true
+		);
+
+		// Act
+		var effectiveDefaultValueCreatorMethodName = model.EffectiveDefaultValueCreatorMethodName;
+
+		// Assert
+		Assert.Equal("__createDefaultTestProperty", effectiveDefaultValueCreatorMethodName);
 	}
 }

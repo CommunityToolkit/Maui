@@ -242,7 +242,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(", ")
 			.Append(info.CoerceValueMethodName)
 			.Append(", ")
-			.Append(GetDefaultValueCreatorMethodName(in info))
+			.Append(info.EffectiveDefaultValueCreatorMethodName)
 			.Append(");\n");
 
 		// Generate public BindableProperty from the key
@@ -298,7 +298,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(", ")
 			.Append(info.CoerceValueMethodName)
 			.Append(", ")
-			.Append(GetDefaultValueCreatorMethodName(in info))
+			.Append(info.EffectiveDefaultValueCreatorMethodName)
 			.Append(");\n");
 
 		sb.Append('\n');
@@ -547,23 +547,6 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	}
 
 	/// <summary>
-	/// Determines the name of the method used to create the default value for the specified bindable property model.
-	/// </summary>
-	/// <param name="info">The bindable property model for which to retrieve the default value creator method name.</param>
-	/// <returns>A string containing the name of the method that creates the default value for the property.
-	/// If the property has an initializer, the returned name is of the generated default value method;
-	/// otherwise, the default value creator method name from the model is returned.</returns>
-	static string GetDefaultValueCreatorMethodName(in BindablePropertyModel info)
-	{
-		if (info.HasInitializer)
-		{
-			return "__createDefault" + info.PropertyName;
-		}
-
-		return info.DefaultValueCreatorMethodName;
-	}
-
-	/// <summary>
 	/// Generates the boolean initialization flag used by bindable properties with initializers to indicate that the getter
 	/// should return the backing field while the generated default value method is executing.
 	/// </summary>
@@ -591,7 +574,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
 
 		sb.Append("static object ")
-			.Append(GetDefaultValueCreatorMethodName(in info))
+			.Append(info.EffectiveDefaultValueCreatorMethodName)
 			.Append("(global::Microsoft.Maui.Controls.BindableObject bindable)\n")
 			.Append("{\n")
 			.Append("((")
