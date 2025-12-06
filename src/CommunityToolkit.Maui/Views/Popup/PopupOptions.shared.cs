@@ -20,7 +20,7 @@ public partial class PopupOptions : BindableObject, IPopupOptions
 	/// Default is provided by <see cref="Options.DefaultPopupOptionsSettings"/>.
 	/// </summary>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateOnTappingOutsideOfPopup))]
-	public partial Action OnTappingOutsideOfPopup { get; set; }
+	public partial Action? OnTappingOutsideOfPopup { get; set; }
 	static object? CreateOnTappingOutsideOfPopup(BindableObject? _) => Options.DefaultPopupOptionsSettings.OnTappingOutsideOfPopup;
 
 	/// <summary>
