@@ -39,8 +39,10 @@ public partial class Popup : ContentView
 	/// <summary>
 	/// Gets or sets a value indicating whether the <see cref="Popup"/> can be dismissed by tapping outside of the popup.
 	/// </summary>
-	[BindableProperty(DefaultValue = PopupDefaults.CanBeDismissedByTappingOutsideOfPopup)]
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateCanBeDismissedByTappingOutsideOfPopup))]
 	public partial bool CanBeDismissedByTappingOutsideOfPopup { get; set; }
+	static object CreateCanBeDismissedByTappingOutsideOfPopup(global::Microsoft.Maui.Controls.BindableObject? _) => Options.DefaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup;
+
 
 	/// <summary>
 	/// Initializes Popup
