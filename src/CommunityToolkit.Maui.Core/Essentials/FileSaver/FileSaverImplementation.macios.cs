@@ -29,30 +29,41 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 		}
 
 		var fileUrl = tempDirectoryPath.Append(fileName, false);
-		await WriteStream(stream, fileUrl.Path ?? throw new Exception("Path cannot be null."), progress, cancellationToken);
-
-		cancellationToken.ThrowIfCancellationRequested();
-		taskCompetedSource?.TrySetCanceled(CancellationToken.None);
-		var tcs = taskCompetedSource = new(cancellationToken);
-
-		documentPickerViewController = new([fileUrl])
+		try
 		{
-			DirectoryUrl = NSUrl.FromString(initialPath)
-		};
-		documentPickerViewController.DidPickDocumentAtUrls += DocumentPickerViewControllerOnDidPickDocumentAtUrls;
-		documentPickerViewController.WasCancelled += DocumentPickerViewControllerOnWasCancelled;
+			await WriteStream(stream, fileUrl.Path ?? throw new Exception("Path cannot be null."), progress, cancellationToken);
 
-		var currentViewController = Platform.GetCurrentUIViewController();
-		if (currentViewController is not null)
-		{
-			currentViewController.PresentViewController(documentPickerViewController, true, null);
+			cancellationToken.ThrowIfCancellationRequested();
+			taskCompetedSource?.TrySetCanceled(CancellationToken.None);
+			var tcs = taskCompetedSource = new(cancellationToken);
+
+			documentPickerViewController = new([fileUrl], true)
+			{
+				DirectoryUrl = NSUrl.FromString(initialPath)
+			};
+			documentPickerViewController.DidPickDocumentAtUrls += DocumentPickerViewControllerOnDidPickDocumentAtUrls;
+			documentPickerViewController.WasCancelled += DocumentPickerViewControllerOnWasCancelled;
+
+			var currentViewController = Platform.GetCurrentUIViewController();
+			if (currentViewController is not null)
+			{
+				currentViewController.PresentViewController(documentPickerViewController, true, () =>
+				{
+					fileManager.Remove(tempDirectoryPath, out _);
+				});
+			}
+			else
+			{
+				throw new FileSaveException("Unable to get a window where to present the file saver UI.");
+			}
+
+			return await tcs.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
 		}
-		else
+		catch
 		{
-			throw new FileSaveException("Unable to get a window where to present the file saver UI.");
+			fileManager.Remove(tempDirectoryPath, out _);
+			throw;
 		}
-
-		return await tcs.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
 	}
 
 	Task<string> InternalSaveAsync(string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
