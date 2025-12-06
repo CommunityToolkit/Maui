@@ -3,10 +3,12 @@ using Microsoft.CodeAnalysis;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Internal.Models;
 
-record BindablePropertyModel(string PropertyName, ITypeSymbol ReturnType, ITypeSymbol DeclaringType, string DefaultValue, string DefaultBindingMode, string ValidateValueMethodName, string PropertyChangedMethodName, string PropertyChangingMethodName, string CoerceValueMethodName, string DefaultValueCreatorMethodName, string NewKeywordText, bool IsReadOnlyBindableProperty, string? SetterAccessibility)
+record BindablePropertyModel(string PropertyName, ITypeSymbol ReturnType, ITypeSymbol DeclaringType, string DefaultValue, string DefaultBindingMode, string ValidateValueMethodName, string PropertyChangedMethodName, string PropertyChangingMethodName, string CoerceValueMethodName, string DefaultValueCreatorMethodName, string NewKeywordText, bool IsReadOnlyBindableProperty, string? SetterAccessibility, bool HasInitializer)
 {
 	public string BindablePropertyName => $"{PropertyName}Property";
 	public string BindablePropertyKeyName => $"{char.ToLower(PropertyName[0])}{PropertyName[1..]}PropertyKey";
+	public string EffectiveDefaultValueCreatorMethodName => HasInitializer ? $"__createDefault{PropertyName}" : DefaultValueCreatorMethodName;
+	public string InitializingPropertyName => $"__initializing{PropertyName}";
 }
 
 record SemanticValues(ClassInformation ClassInformation, EquatableArray<BindablePropertyModel> BindableProperties);

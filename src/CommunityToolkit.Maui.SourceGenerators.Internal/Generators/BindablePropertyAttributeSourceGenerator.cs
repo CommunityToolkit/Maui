@@ -183,6 +183,12 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 				GenerateBindableProperty(sb, in info);
 			}
 
+			if (info.HasInitializer)
+			{
+				GenerateInitializingProperty(sb, in info);
+				GenerateDefaultValueMethod(sb, in info, classNameWithGenerics);
+			}
+
 			GenerateProperty(sb, in info);
 		}
 
@@ -236,7 +242,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(", ")
 			.Append(info.CoerceValueMethodName)
 			.Append(", ")
-			.Append(info.DefaultValueCreatorMethodName)
+			.Append(info.EffectiveDefaultValueCreatorMethodName)
 			.Append(");\n");
 
 		// Generate public BindableProperty from the key
@@ -292,7 +298,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(", ")
 			.Append(info.CoerceValueMethodName)
 			.Append(", ")
-			.Append(info.DefaultValueCreatorMethodName)
+			.Append(info.EffectiveDefaultValueCreatorMethodName)
 			.Append(");\n");
 
 		sb.Append('\n');
@@ -310,7 +316,15 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(formattedReturnType)
 			.Append(' ')
 			.Append(sanitizedPropertyName)
-			.Append("\n{\nget => (")
+			.Append("\n{\nget => ");
+
+		if (info.HasInitializer)
+		{
+			sb.Append(info.InitializingPropertyName)
+				.Append(" ? field : ");
+		}
+
+		sb.Append("(")
 			.Append(formattedReturnType)
 			.Append(")GetValue(")
 			.Append(info.BindablePropertyName)
@@ -333,6 +347,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var propertyDeclarationSyntax = Unsafe.As<PropertyDeclarationSyntax>(context.TargetNode);
 		var semanticModel = context.SemanticModel;
 		var propertySymbol = (IPropertySymbol?)ModelExtensions.GetDeclaredSymbol(semanticModel, propertyDeclarationSyntax, cancellationToken);
+		var hasInitializer = propertyDeclarationSyntax.Initializer is not null;
 
 		if (propertySymbol is null)
 		{
@@ -359,7 +374,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var (isReadOnlyBindableProperty, setterAccessibility) = GetPropertyAccessibility(propertySymbol, propertyDeclarationSyntax);
 
 		var attributeData = context.Attributes[0];
-		bindablePropertyModels[0] = CreateBindablePropertyModel(attributeData, propertySymbol.ContainingType, propertySymbol.Name, returnType, doesContainNewKeyword, isReadOnlyBindableProperty, setterAccessibility);
+		bindablePropertyModels[0] = CreateBindablePropertyModel(attributeData, propertySymbol.ContainingType, propertySymbol.Name, returnType, doesContainNewKeyword, isReadOnlyBindableProperty, setterAccessibility, hasInitializer);
 
 		return new(propertyInfo, ImmutableArray.Create(bindablePropertyModels));
 	}
@@ -456,7 +471,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		return sb.ToString();
 	}
 
-	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string propertyName, in ITypeSymbol returnType, in bool doesContainNewKeyword, in bool isReadOnly, in string? setterAccessibility)
+	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string propertyName, in ITypeSymbol returnType, in bool doesContainNewKeyword, in bool isReadOnly, in string? setterAccessibility, in bool hasInitializer)
 	{
 		if (attributeData.AttributeClass is null)
 		{
@@ -472,7 +487,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var validateValueMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.ValidateValueMethodName));
 		var newKeywordText = doesContainNewKeyword ? "new " : string.Empty;
 
-		return new BindablePropertyModel(propertyName, returnType, declaringType, defaultValue, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText, isReadOnly, setterAccessibility);
+		return new BindablePropertyModel(propertyName, returnType, declaringType, defaultValue, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText, isReadOnly, setterAccessibility, hasInitializer);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -528,5 +543,55 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			// Use ToDisplayString with the correct format for the base type (e.g., "int")
 			return typeSymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
 		}
+	}
+
+	/// <summary>
+	/// Generates the boolean initialization flag used by bindable properties with initializers to indicate that the getter
+	/// should return the backing field while the generated default value method is executing.
+	/// </summary>
+	/// <param name="sb">The StringBuilder instance to which the initialization field declaration will be appended.</param>
+	/// <param name="info">The model containing metadata about the property for which the initialization field is generated.</param>
+	static void GenerateInitializingProperty(StringBuilder sb, in BindablePropertyModel info)
+	{
+		sb.Append("bool ")
+			.Append(info.InitializingPropertyName)
+			.Append(" = false;\n");
+	}
+
+	/// <summary>
+	/// Generates the default value creator static method used by BindableProperty instances with initializers.
+	/// This method temporarily switches the property's getter to return its backing field while the default value is being computed,
+	/// ensuring that the initializer-provided value is captured and returned as the BindableProperty's default.
+	/// </summary>
+	/// <param name="sb">The StringBuilder instance to which the initialization field declaration will be appended.</param>
+	/// <param name="info">The model containing metadata for the property that requires a default value creator.</param>
+	/// <param name="classNameWithGenerics">The declaring class name including generic type parameters, if any.</param>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	static void GenerateDefaultValueMethod(StringBuilder sb, in BindablePropertyModel info, string classNameWithGenerics)
+	{
+		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
+
+		sb.Append("static object ")
+			.Append(info.EffectiveDefaultValueCreatorMethodName)
+			.Append("(global::Microsoft.Maui.Controls.BindableObject bindable)\n")
+			.Append("{\n")
+			.Append("((")
+			.Append(classNameWithGenerics)
+			.Append(")bindable).")
+			.Append(info.InitializingPropertyName)
+			.Append(" = true;\n")
+			.Append("var defaultValue = ")
+			.Append("((")
+			.Append(classNameWithGenerics)
+			.Append(")bindable).")
+			.Append(sanitizedPropertyName)
+			.Append(";\n")
+			.Append("((")
+			.Append(classNameWithGenerics)
+			.Append(")bindable).")
+			.Append(info.InitializingPropertyName)
+			.Append(" = false;\n")
+			.Append("return defaultValue;\n")
+			.Append("}\n");
 	}
 }
