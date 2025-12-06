@@ -320,8 +320,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		if (info.HasInitializer)
 		{
-			sb.Append("__initializing")
-				.Append(info.PropertyName)
+			sb.Append(info.InitializingPropertyName)
 				.Append(" ? field : ");
 		}
 
@@ -555,8 +554,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	static void GenerateInitializingProperty(StringBuilder sb, in BindablePropertyModel info)
 	{
 		sb.Append("bool ")
-			.Append("__initializing")
-			.Append(info.PropertyName)
+			.Append(info.InitializingPropertyName)
 			.Append(" = false;\n");
 	}
 
@@ -579,8 +577,8 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append("{\n")
 			.Append("((")
 			.Append(classNameWithGenerics)
-			.Append(")bindable).__initializing")
-			.Append(info.PropertyName)
+			.Append(")bindable).")
+			.Append(info.InitializingPropertyName)
 			.Append(" = true;\n")
 			.Append("var defaultValue = ")
 			.Append("((")
@@ -590,8 +588,8 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(";\n")
 			.Append("((")
 			.Append(classNameWithGenerics)
-			.Append(")bindable).__initializing")
-			.Append(info.PropertyName)
+			.Append(")bindable).")
+			.Append(info.InitializingPropertyName)
 			.Append(" = false;\n")
 			.Append("return defaultValue;\n")
 			.Append("}\n");

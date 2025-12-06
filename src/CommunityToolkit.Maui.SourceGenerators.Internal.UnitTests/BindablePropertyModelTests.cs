@@ -92,6 +92,7 @@ public class BindablePropertyModelTests : BaseTest
 		Assert.Equal(hasInitializer, model.HasInitializer);
 		Assert.Equal("TestPropertyProperty", model.BindablePropertyName);
 		Assert.Equal(defaultValueCreatorMethodName, model.EffectiveDefaultValueCreatorMethodName);
+		Assert.Equal("__initializingTestProperty", model.InitializingPropertyName);
 	}
 
 	[Fact]
