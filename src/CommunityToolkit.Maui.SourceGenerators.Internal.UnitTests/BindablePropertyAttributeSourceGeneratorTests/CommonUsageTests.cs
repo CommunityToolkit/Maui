@@ -655,7 +655,7 @@ public class CommonUsageTests : BaseBindablePropertyAttributeSourceGeneratorTest
 
 
 	[Fact]
-	public async Task GenerateBindableProperty_WithInitializers_GeneratesCorrectCode()
+	public async Task GenerateBindableProperty_WithInitializer_GeneratesCorrectCode()
 	{
 		const string source =
 			/* language=C#-test */
