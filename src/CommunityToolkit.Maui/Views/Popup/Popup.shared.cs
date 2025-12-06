@@ -13,28 +13,28 @@ public partial class Popup : ContentView
 	/// </summary>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultMargin))]
 	public partial Thickness Margin { get; set; }
-	static object CreateDefaultMargin(global::Microsoft.Maui.Controls.BindableObject? _) => View.MarginProperty;
+	static object CreateDefaultMargin(global::Microsoft.Maui.Controls.BindableObject? _) => Options.DefaultPopupSettings.Margin;
 
 	/// <summary>
 	/// Gets or sets the padding between the <see cref="Popup"/> border and the <see cref="Popup"/> content.
 	/// </summary>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultPadding))]
 	public partial Thickness Padding { get; set; }
-	static object CreateDefaultPadding(global::Microsoft.Maui.Controls.BindableObject? _) => ContentView.PaddingProperty;
+	static object CreateDefaultPadding(global::Microsoft.Maui.Controls.BindableObject? _) => Options.DefaultPopupSettings.Padding;
 
 	/// <summary>
 	/// Gets or sets the horizontal layout options used to position the <see cref="Popup"/> when displayed on screen.
 	/// </summary>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultHorizontalOptions))]
 	public partial LayoutOptions HorizontalOptions { get; set; }
-	static object CreateDefaultHorizontalOptions(global::Microsoft.Maui.Controls.BindableObject? _) => View.HorizontalOptionsProperty;
+	static object CreateDefaultHorizontalOptions(global::Microsoft.Maui.Controls.BindableObject? _) => Options.DefaultPopupSettings.HorizontalOptions;
 
 	/// <summary>
 	/// Gets or sets the vertical layout options used to position the <see cref="Popup"/> when displayed on screen.
 	/// </summary>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultVerticalOptions))]
 	public partial LayoutOptions VerticalOptions { get; set; }
-	static object CreateDefaultVerticalOptions(global::Microsoft.Maui.Controls.BindableObject? _) => View.VerticalOptionsProperty;
+	static object CreateDefaultVerticalOptions(global::Microsoft.Maui.Controls.BindableObject? _) => Options.DefaultPopupSettings.VerticalOptions;
 
 	/// <summary>
 	/// Gets or sets a value indicating whether the <see cref="Popup"/> can be dismissed by tapping outside of the popup.
