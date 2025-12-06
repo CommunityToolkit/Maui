@@ -171,8 +171,11 @@ public class BindablePropertyModelTests : BaseTest
 		var typeSymbol = compilation.GetTypeByMetadataName("TestClass")!;
 		var propertySymbol = typeSymbol.GetMembers("TestProperty").OfType<IPropertySymbol>().First();
 
+		const string propertyName = "TestProperty";
+		const bool hasInitializer = true;
+
 		var model = new BindablePropertyModel(
-			"TestProperty",
+			propertyName,
 			propertySymbol.Type,
 			typeSymbol,
 			"null",
@@ -183,15 +186,15 @@ public class BindablePropertyModelTests : BaseTest
 			"null",
 			"null",
 			string.Empty,
-			true, // IsReadOnlyBindableProperty
-			string.Empty, // SetterAccessibility
-			true
+			true,
+			string.Empty,
+			hasInitializer
 		);
 
 		// Act
 		var effectiveDefaultValueCreatorMethodName = model.EffectiveDefaultValueCreatorMethodName;
 
 		// Assert
-		Assert.Equal("__createDefaultTestProperty", effectiveDefaultValueCreatorMethodName);
+		Assert.Equal("__createDefault" + propertyName, effectiveDefaultValueCreatorMethodName);
 	}
 }
