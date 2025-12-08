@@ -168,7 +168,10 @@ public class BindablePropertyModelTests : BaseTest
 	public void BindablePropertyName_WithInitializer_ReturnsCorrectEffectiveDefaultValueCreatorMethodName()
 	{
 		// Arrange
-		var compilation = CreateCompilation("public class TestClass { public string TestProperty { get; set; } = \"Initial Value\"; }");
+		var compilation = CreateCompilation(
+			"""
+			public class TestClass { public string TestProperty { get; set; } = "Initial Value"; }");
+			""");
 		var typeSymbol = compilation.GetTypeByMetadataName("TestClass")!;
 		var propertySymbol = typeSymbol.GetMembers("TestProperty").OfType<IPropertySymbol>().First();
 
@@ -203,7 +206,10 @@ public class BindablePropertyModelTests : BaseTest
 	public void BindablePropertyName_WithInitializerAndDefaulValueCreator_ReturnsCorrectEffectiveDefaultValueCreatorMethodName()
 	{
 		// Arrange
-		var compilation = CreateCompilation("public class TestClass { public string TestProperty { get; set; } = \"Initial Value\"; }");
+		var compilation = CreateCompilation(
+			"""
+			public class TestClass { public string TestProperty { get; set; } = "Initial Value"; }
+			""");
 		var typeSymbol = compilation.GetTypeByMetadataName("TestClass")!;
 		var propertySymbol = typeSymbol.GetMembers("TestProperty").OfType<IPropertySymbol>().First();
 
