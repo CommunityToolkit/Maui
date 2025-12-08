@@ -26,7 +26,6 @@ public class BindablePropertyModelTests : BaseTest
 			"null",
 			"null",
 			"null",
-			"null",
 			string.Empty,
 			true, // IsReadOnlyBindableProperty
 			string.Empty, // SetterAccessibility
@@ -49,7 +48,6 @@ public class BindablePropertyModelTests : BaseTest
 		var propertySymbol = typeSymbol.GetMembers("TestProperty").OfType<IPropertySymbol>().First();
 
 		const string propertyName = "TestProperty";
-		const string defaultValue = "\"Hello\"";
 		const string defaultBindingMode = "Microsoft.Maui.Controls.BindingMode.TwoWay";
 		const string validateValueMethodName = "ValidateValue";
 		const string propertyChangedMethodName = "OnPropertyChanged";
@@ -64,7 +62,6 @@ public class BindablePropertyModelTests : BaseTest
 			propertyName,
 			propertySymbol.Type,
 			typeSymbol,
-			defaultValue,
 			defaultBindingMode,
 			validateValueMethodName,
 			propertyChangedMethodName,
@@ -81,7 +78,6 @@ public class BindablePropertyModelTests : BaseTest
 		Assert.Equal(propertyName, model.PropertyName);
 		Assert.Equal(propertySymbol.Type, model.ReturnType);
 		Assert.Equal(typeSymbol, model.DeclaringType);
-		Assert.Equal(defaultValue, model.DefaultValue);
 		Assert.Equal(defaultBindingMode, model.DefaultBindingMode);
 		Assert.Equal(validateValueMethodName, model.ValidateValueMethodName);
 		Assert.Equal(propertyChangedMethodName, model.PropertyChangedMethodName);
@@ -127,7 +123,6 @@ public class BindablePropertyModelTests : BaseTest
 			typeSymbol,
 			"null",
 			"Microsoft.Maui.Controls.BindingMode.OneWay",
-			"null",
 			"null",
 			"null",
 			"null",
@@ -185,7 +180,6 @@ public class BindablePropertyModelTests : BaseTest
 			"null",
 			"null",
 			"null",
-			"null",
 			string.Empty,
 			true,
 			string.Empty,
@@ -216,7 +210,6 @@ public class BindablePropertyModelTests : BaseTest
 			typeSymbol,
 			"null",
 			"Microsoft.Maui.Controls.BindingMode.OneWay",
-			"null",
 			"null",
 			"null",
 			"null",
