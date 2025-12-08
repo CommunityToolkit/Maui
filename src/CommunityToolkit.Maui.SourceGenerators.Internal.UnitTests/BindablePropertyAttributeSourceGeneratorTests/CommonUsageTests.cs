@@ -691,32 +691,35 @@ public class CommonUsageTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			    /// <summary>
 			    /// Backing BindableProperty for the <see cref = "Text"/> property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __createDefaultText);
-			    bool __initializingText = false;
-			    static object __createDefaultText(global::Microsoft.Maui.Controls.BindableObject bindable)
-			    {
-			        (({{defaultTestClassName}})bindable).__initializingText = true;
-			        var defaultValue = (({{defaultTestClassName}})bindable).Text;
-			        (({{defaultTestClassName}})bindable).__initializingText = false;
-			        return defaultValue;
-			    }
-
-			    public partial string Text { get => __initializingText ? field : (string)GetValue(TextProperty); set => SetValue(TextProperty, value); }
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __BindablePropertyInitHelpers.CreateDefaultText);
+			    public partial string Text { get => __BindablePropertyInitHelpers.IsInitializingText ? field : (string)GetValue(TextProperty); set => SetValue(TextProperty, value); }
 
 			    /// <summary>
 			    /// Backing BindableProperty for the <see cref = "CustomDuration"/> property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty CustomDurationProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("CustomDuration", typeof(System.TimeSpan), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __createDefaultCustomDuration);
-			    bool __initializingCustomDuration = false;
-			    static object __createDefaultCustomDuration(global::Microsoft.Maui.Controls.BindableObject bindable)
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty CustomDurationProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("CustomDuration", typeof(System.TimeSpan), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __BindablePropertyInitHelpers.CreateDefaultCustomDuration);
+			    public partial System.TimeSpan CustomDuration { get => __BindablePropertyInitHelpers.IsInitializingCustomDuration ? field : (System.TimeSpan)GetValue(CustomDurationProperty); set => SetValue(CustomDurationProperty, value); }
+			}
+
+			file static class __BindablePropertyInitHelpers
+			{
+			    public static bool IsInitializingText = false;
+			    public static object CreateDefaultText(global::Microsoft.Maui.Controls.BindableObject bindable)
 			    {
-			        (({{defaultTestClassName}})bindable).__initializingCustomDuration = true;
-			        var defaultValue = (({{defaultTestClassName}})bindable).CustomDuration;
-			        (({{defaultTestClassName}})bindable).__initializingCustomDuration = false;
+			        IsInitializingText = true;
+			        var defaultValue = ((TestView)bindable).Text;
+			        IsInitializingText = false;
 			        return defaultValue;
 			    }
 			
-			    public partial System.TimeSpan CustomDuration { get => __initializingCustomDuration ? field : (System.TimeSpan)GetValue(CustomDurationProperty); set => SetValue(CustomDurationProperty, value); }
+			    public static bool IsInitializingCustomDuration = false;
+			    public static object CreateDefaultCustomDuration(global::Microsoft.Maui.Controls.BindableObject bindable)
+			    {
+			        IsInitializingCustomDuration = true;
+			        var defaultValue = ((TestView)bindable).CustomDuration;
+			        IsInitializingCustomDuration = false;
+			        return defaultValue;
+			    }
 			}
 			""";
 

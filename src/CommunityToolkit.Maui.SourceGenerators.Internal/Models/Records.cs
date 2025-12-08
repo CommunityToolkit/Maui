@@ -9,8 +9,8 @@ public record BindablePropertyModel(string PropertyName, ITypeSymbol ReturnType,
 	public bool ShouldUsePropertyInitializer => HasInitializer && DefaultValueCreatorMethodName is "null";
 	public string BindablePropertyName => $"{PropertyName}Property";
 	public string BindablePropertyKeyName => $"{char.ToLower(PropertyName[0])}{PropertyName[1..]}PropertyKey";
-	public string EffectiveDefaultValueCreatorMethodName => ShouldUsePropertyInitializer ? $"__createDefault{PropertyName}" : DefaultValueCreatorMethodName;
-	public string InitializingPropertyName => $"__initializing{PropertyName}";
+	public string EffectiveDefaultValueCreatorMethodName => ShouldUsePropertyInitializer ? $"CreateDefault{PropertyName}" : DefaultValueCreatorMethodName;
+	public string InitializingPropertyName => $"IsInitializing{PropertyName}";
 
 }
 
