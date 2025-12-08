@@ -183,7 +183,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 				GenerateBindableProperty(sb, in info);
 			}
 
-			if (info.HasInitializer)
+			if (info.ShouldUsePropertyInitializer)
 			{
 				GenerateInitializingProperty(sb, in info);
 				GenerateDefaultValueMethod(sb, in info, classNameWithGenerics);
@@ -320,8 +320,16 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		if (info.HasInitializer)
 		{
-			sb.Append(info.InitializingPropertyName)
-				.Append(" ? field : ");
+			if (info.ShouldUsePropertyInitializer)
+			{
+				sb.Append(info.InitializingPropertyName);
+			}
+			else
+			{
+				sb.Append("false");
+			}
+
+			sb.Append(" ? field : ");
 		}
 
 		sb.Append("(")
