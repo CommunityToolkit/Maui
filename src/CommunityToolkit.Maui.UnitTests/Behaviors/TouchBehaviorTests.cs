@@ -1128,7 +1128,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		var image = new Image();
 		AttachTouchBehaviorToVisualElement(image);
 
-		touchBehavior.DefaultOpacity = 1;
+		touchBehavior.DefaultOpacity = 0.4;
 		touchBehavior.PressedOpacity = 0.5;
 
 		// Verify Default is set when Hover Active but not set
@@ -1157,7 +1157,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		var image = new Image();
 		AttachTouchBehaviorToVisualElement(image);
 
-		touchBehavior.DefaultScale = 0;
+		touchBehavior.DefaultScale = 0.4;
 		touchBehavior.PressedScale = 0.5;
 
 		// Verify Default is set when Hover Active but not set
@@ -1186,8 +1186,8 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		var image = new Image();
 		AttachTouchBehaviorToVisualElement(image);
 
-		touchBehavior.DefaultTranslationX = 0;
-		touchBehavior.DefaultTranslationY = 0;
+		touchBehavior.DefaultTranslationX = 0.1;
+		touchBehavior.DefaultTranslationY = 0.2;
 		touchBehavior.PressedTranslationX = 0.3;
 		touchBehavior.PressedTranslationY = 0.4;
 
@@ -1222,7 +1222,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		var image = new Image();
 		AttachTouchBehaviorToVisualElement(image);
 
-		touchBehavior.DefaultRotation = 0;
+		touchBehavior.DefaultRotation = 0.4;
 		touchBehavior.PressedRotation = 0.5;
 
 		// Verify Default is set when Hover Active but not set
@@ -1251,7 +1251,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		var image = new Image();
 		AttachTouchBehaviorToVisualElement(image);
 
-		touchBehavior.DefaultRotationX = 0;
+		touchBehavior.DefaultRotationX = 0.4;
 		touchBehavior.PressedRotationX = 0.5;
 
 		// Verify Default is set when Hover Active but not set
@@ -1280,7 +1280,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		var image = new Image();
 		AttachTouchBehaviorToVisualElement(image);
 
-		touchBehavior.DefaultRotationY = 0;
+		touchBehavior.DefaultRotationY = 0.4;
 		touchBehavior.PressedRotationY = 0.5;
 
 		// Verify Default is set when Hover Active but not set
