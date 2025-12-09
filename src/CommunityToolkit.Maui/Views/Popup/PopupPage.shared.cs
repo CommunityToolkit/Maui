@@ -46,14 +46,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			await CloseAsync(new PopupResult(true));
 		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
 
-
-		var pageTapGestureRecognizer = new TapGestureRecognizer();
-		pageTapGestureRecognizer.Tapped += HandleTapGestureRecognizerTapped;
-
-		base.Content = new PopupPageLayout(popup, popupOptions)
-		{
-			GestureRecognizers = { pageTapGestureRecognizer }
-		};
+		var popupPageLayout = new PopupPageLayout(popup, popupOptions, () => TryExecuteTapOutsideOfPopupCommand());
+		base.Content = popupPageLayout;
 
 		popup.PropertyChanged += HandlePopupPropertyChanged;
 		if (popupOptions is BindableObject bindablePopupOptions)
@@ -203,29 +197,22 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 	}
 
-	void HandleTapGestureRecognizerTapped(object? sender, TappedEventArgs e)
+	internal class PopupOverlay : BoxView
 	{
-		ArgumentNullException.ThrowIfNull(sender);
-
-		var popupPageLayout = (PopupPageLayout)sender;
-		var position = e.GetPosition(Content);
-
-		if (position is null)
+		public PopupOverlay()
 		{
-			return;
-		}
-
-		// Execute tapOutsideOfPopupCommand only if tap occurred outside the PopupBorder 
-		if (popupPageLayout.PopupBorder.Bounds.Contains(position.Value) is false)
-		{
-			TryExecuteTapOutsideOfPopupCommand();
+			BackgroundColor = Colors.Transparent;
+			Background = Brush.Transparent;
 		}
 	}
 
 	internal sealed partial class PopupPageLayout : Grid
 	{
-		public PopupPageLayout(in Popup popupContent, in IPopupOptions options)
+		readonly Action tryExecuteTapOutsideOfPopupCommand;
+
+		public PopupPageLayout(in Popup popupContent, in IPopupOptions options, Action tryExecuteTapOutsideOfPopupCommand)
 		{
+			this.tryExecuteTapOutsideOfPopupCommand = tryExecuteTapOutsideOfPopupCommand;
 			Background = BackgroundColor = null;
 
 			PopupBorder = new Border
@@ -247,7 +234,31 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			PopupBorder.SetBinding(Border.StrokeShapeProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay);
 			PopupBorder.SetBinding(Border.StrokeThicknessProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay, converter: new BorderStrokeThicknessConverter());
 
+			var overlay = new PopupOverlay();
+			var overlayTapGestureRecognizer = new TapGestureRecognizer();
+			overlayTapGestureRecognizer.Tapped += HandleOverlayTapped;
+			overlay.GestureRecognizers.Add(overlayTapGestureRecognizer);
+			
+			Children.Add(overlay);
 			Children.Add(PopupBorder);
+		}
+		
+		void HandleOverlayTapped(object? sender, TappedEventArgs e)
+		{
+			ArgumentNullException.ThrowIfNull(sender);
+			
+			var position = e.GetPosition(this);
+
+			if (position is null)
+			{
+				return;
+			}
+
+			// Execute tapOutsideOfPopupCommand only if tap occurred outside the PopupBorder 
+			if (this.PopupBorder.Bounds.Contains(position.Value) is false)
+			{
+				this.tryExecuteTapOutsideOfPopupCommand();
+			}
 		}
 
 		public Border PopupBorder { get; }
