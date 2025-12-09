@@ -6,7 +6,7 @@
            xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
            xmlns:system="clr-namespace:System;assembly=System.Runtime"
            x:Class="CommunityToolkit.Maui.Sample.Views.Popups.CollectionViewPopup"
-           x:DataType="vm:ComplexPopupViewModel"
+           x:DataType="vm:CollectionViewPopupViewModel"
            x:TypeArguments="system:String">
 
     <mct:Popup.Resources>

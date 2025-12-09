@@ -197,7 +197,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 	}
 
-	internal class PopupOverlay : BoxView
+	internal sealed class PopupOverlay : BoxView
 	{
 		public PopupOverlay()
 		{
@@ -255,9 +255,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			}
 
 			// Execute tapOutsideOfPopupCommand only if tap occurred outside the PopupBorder 
-			if (this.PopupBorder.Bounds.Contains(position.Value) is false)
+			if (PopupBorder.Bounds.Contains(position.Value) is false)
 			{
-				this.tryExecuteTapOutsideOfPopupCommand();
+				tryExecuteTapOutsideOfPopupCommand();
 			}
 		}
 
