@@ -177,12 +177,13 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		// Prepare helper builder for file-static class members (static flags + default creators)
 		var fileStaticClassStringBuilder = new StringBuilder(256);
 		var helperNames = new HashSet<string>();
-		const string fileStaticClassName = "__BindablePropertyInitHelpers";
 
 		// Build fully-qualified declaring type name for helper method casts (include containing types)
 		var fullDeclaringType = string.IsNullOrEmpty(value.ClassInformation.ContainingTypes)
 			? classNameWithGenerics
 			: string.Concat(value.ClassInformation.ContainingTypes, ".", classNameWithGenerics);
+		
+		var fileStaticClassName = $"__{classNameWithGenerics}BindablePropertyInitHelpers";
 
 		foreach (var info in value.BindableProperties)
 		{
