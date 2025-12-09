@@ -36,7 +36,7 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 	{
 		HorizontalTextAlignment = TextAlignment.Center,
 		VerticalTextAlignment = TextAlignment.Center,
-		Text = AvatarViewDefaults.DefaultText,
+		Text = AvatarViewDefaults.Text,
 	};
 
 	bool wasImageLoading;
@@ -48,14 +48,14 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 
 		IsEnabled = true;
 		HorizontalOptions = VerticalOptions = LayoutOptions.Center;
-		HeightRequest = AvatarViewDefaults.DefaultHeightRequest;
-		WidthRequest = AvatarViewDefaults.DefaultWidthRequest;
-		Padding = AvatarViewDefaults.DefaultPadding;
-		Stroke = AvatarViewDefaults.DefaultBorderColor;
-		StrokeThickness = AvatarViewDefaults.DefaultBorderWidth;
+		HeightRequest = AvatarViewDefaults.HeightRequest;
+		WidthRequest = AvatarViewDefaults.WidthRequest;
+		Padding = AvatarViewDefaults.Padding;
+		Stroke = AvatarViewDefaults.BorderColor;
+		StrokeThickness = AvatarViewDefaults.BorderWidth;
 		StrokeShape = new RoundRectangle
 		{
-			CornerRadius = new CornerRadius(AvatarViewDefaults.DefaultCornerRadius.TopLeft, AvatarViewDefaults.DefaultCornerRadius.TopRight, AvatarViewDefaults.DefaultCornerRadius.BottomLeft, AvatarViewDefaults.DefaultCornerRadius.BottomRight),
+			CornerRadius = new CornerRadius(AvatarViewDefaults.CornerRadius.TopLeft, AvatarViewDefaults.CornerRadius.TopRight, AvatarViewDefaults.CornerRadius.BottomLeft, AvatarViewDefaults.CornerRadius.BottomRight),
 		};
 		Content = avatarLabel;
 		avatarImage.SetBinding(WidthRequestProperty, BindingBase.Create<VisualElement, double>(static p => p.WidthRequest, source: this));
@@ -101,27 +101,6 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 		set => SetValue(FontElement.FontSizeProperty, value);
 	}
 
-	/// <summary>Gets or sets a value of the control border colour.</summary>
-	[BindableProperty(PropertyChangedMethodName = nameof(OnBorderColorPropertyChanged))]
-	public partial Color BorderColor { get; set; } = AvatarViewDefaults.DefaultBorderColor;
-
-	/// <summary>Gets or sets a value of the control border width.</summary>
-	[BindableProperty(PropertyChangedMethodName = nameof(OnBorderWidthPropertyChanged))]
-	public partial double BorderWidth { get; set; } = AvatarViewDefaults.DefaultBorderWidth;
-
-	/// <summary>Gets or sets a value of the control corner radius property.</summary>
-	[BindableProperty(PropertyChangedMethodName = nameof(OnCornerRadiusPropertyChanged))]
-	public partial CornerRadius CornerRadius { get; set; } = AvatarViewDefaults.DefaultCornerRadius;
-
-	/// <summary>Gets or sets a value of the control image source property.</summary>
-	[TypeConverter(typeof(ImageSourceConverter))]
-	[BindableProperty(PropertyChangedMethodName = nameof(OnImageSourcePropertyChanged))]
-	public partial ImageSource ImageSource { get; set; }
-
-	/// <summary>Gets or sets a value of the control text property.</summary>
-	[BindableProperty(PropertyChangedMethodName = nameof(OnTextPropertyChanged))]
-	public partial string Text { get; set; } = AvatarViewDefaults.DefaultText;
-
 	/// <summary>Gets or sets a value of the control text colour property.</summary>
 	public Color TextColor
 	{
@@ -136,17 +115,38 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 		set => SetValue(TextElement.TextTransformProperty, value);
 	}
 
+	/// <summary>Gets or sets a value of the control border colour.</summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnBorderColorPropertyChanged))]
+	public partial Color BorderColor { get; set; } = AvatarViewDefaults.BorderColor;
+
+	/// <summary>Gets or sets a value of the control border width.</summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnBorderWidthPropertyChanged))]
+	public partial double BorderWidth { get; set; } = AvatarViewDefaults.BorderWidth;
+
+	/// <summary>Gets or sets a value of the control corner radius property.</summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnCornerRadiusPropertyChanged))]
+	public partial CornerRadius CornerRadius { get; set; } = AvatarViewDefaults.CornerRadius;
+
+	/// <summary>Gets or sets a value of the control image source property.</summary>
+	[TypeConverter(typeof(ImageSourceConverter))]
+	[BindableProperty(PropertyChangedMethodName = nameof(OnImageSourcePropertyChanged))]
+	public partial ImageSource? ImageSource { get; set; }
+
+	/// <summary>Gets or sets a value of the control text property.</summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnTextPropertyChanged))]
+	public partial string Text { get; set; } = AvatarViewDefaults.Text;
+
 	Aspect Microsoft.Maui.IImage.Aspect => ((IImageElement)this).Aspect;
 
 	Aspect IImageElement.Aspect => avatarImage.Aspect;
 
-	Color IBorderElement.BorderColorDefaultValue => AvatarViewDefaults.DefaultBorderColor;
+	Color IBorderElement.BorderColorDefaultValue => AvatarViewDefaults.BorderColor;
 
-	double IBorderElement.BorderWidthDefaultValue => AvatarViewDefaults.DefaultBorderWidth;
+	double IBorderElement.BorderWidthDefaultValue => AvatarViewDefaults.BorderWidth;
 
 	int IBorderElement.CornerRadius => (int)GetAverageCorderRadius(CornerRadius);
 
-	int IBorderElement.CornerRadiusDefaultValue => (int)GetAverageCorderRadius(AvatarViewDefaults.DefaultCornerRadius);
+	int IBorderElement.CornerRadiusDefaultValue => (int)GetAverageCorderRadius(AvatarViewDefaults.CornerRadius);
 
 	TextAlignment ITextAlignment.HorizontalTextAlignment => ((ITextAlignmentElement)this).HorizontalTextAlignment;
 
@@ -168,7 +168,7 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 
 	double ILineHeightElement.LineHeight => avatarLabel.LineHeight;
 
-	IImageSource IImageSourcePart.Source => ImageSource;
+	IImageSource? IImageSourcePart.Source => ImageSource;
 
 	ImageSource IImageElement.Source => avatarImage.Source;
 
