@@ -94,11 +94,11 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                 /// <summary>
                 /// Backing BindableProperty for the <see cref = "InvoiceStatus"/> property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty InvoiceStatusProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("InvoiceStatus", typeof(TestNamespace.Status), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __BindablePropertyInitHelpers.CreateDefaultInvoiceStatus);
-                public partial TestNamespace.Status InvoiceStatus { get => __BindablePropertyInitHelpers.IsInitializingInvoiceStatus ? field : (TestNamespace.Status)GetValue(InvoiceStatusProperty); set => SetValue(InvoiceStatusProperty, value); }
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty InvoiceStatusProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("InvoiceStatus", typeof(TestNamespace.Status), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultInvoiceStatus);
+                public partial TestNamespace.Status InvoiceStatus { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingInvoiceStatus ? field : (TestNamespace.Status)GetValue(InvoiceStatusProperty); set => SetValue(InvoiceStatusProperty, value); }
             }
 
-            file static class __BindablePropertyInitHelpers
+            file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
             {
                 public static bool IsInitializingInvoiceStatus = false;
                 public static object CreateDefaultInvoiceStatus(global::Microsoft.Maui.Controls.BindableObject bindable)
@@ -154,11 +154,11 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                 /// <summary>
                 /// Backing BindableProperty for the <see cref = "InvoiceStatus"/> property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty InvoiceStatusProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("InvoiceStatus", typeof(TestNamespace.Status), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __BindablePropertyInitHelpers.CreateDefaultInvoiceStatus);
-                public partial TestNamespace.Status InvoiceStatus { get => __BindablePropertyInitHelpers.IsInitializingInvoiceStatus ? field : (TestNamespace.Status)GetValue(InvoiceStatusProperty); set => SetValue(InvoiceStatusProperty, value); }
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty InvoiceStatusProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("InvoiceStatus", typeof(TestNamespace.Status), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultInvoiceStatus);
+                public partial TestNamespace.Status InvoiceStatus { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingInvoiceStatus ? field : (TestNamespace.Status)GetValue(InvoiceStatusProperty); set => SetValue(InvoiceStatusProperty, value); }
             }
 
-            file static class __BindablePropertyInitHelpers
+            file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
             {
                 public static bool IsInitializingInvoiceStatus = false;
                 public static object CreateDefaultInvoiceStatus(global::Microsoft.Maui.Controls.BindableObject bindable)
@@ -444,6 +444,18 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 
                 [BindableProperty]
                 public partial char Letter { get; set; } = 'A';
+                
+                [BindableProperty]
+                public partial TimeSpan TimeSpent { get; set; } = System.TimeSpan.Zero;
+                
+                [BindableProperty]
+                public partial double DoubleEpsilon { get; set; } = double.Epsilon;
+                
+                [BindableProperty]
+                public partial double SingleEpsilon { get; set; } = float.Epsilon;
+                
+                [BindableProperty]
+                public partial DateTimeOffset CurrentTime { get; set; } = DateTimeOffset.UtcNow;
             }
             """;
 
@@ -461,23 +473,47 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                 /// <summary>
                 /// Backing BindableProperty for the <see cref = "IsEnabled"/> property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty IsEnabledProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("IsEnabled", typeof(bool), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __BindablePropertyInitHelpers.CreateDefaultIsEnabled);
-                public partial bool IsEnabled { get => __BindablePropertyInitHelpers.IsInitializingIsEnabled ? field : (bool)GetValue(IsEnabledProperty); set => SetValue(IsEnabledProperty, value); }
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty IsEnabledProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("IsEnabled", typeof(bool), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultIsEnabled);
+                public partial bool IsEnabled { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingIsEnabled ? field : (bool)GetValue(IsEnabledProperty); set => SetValue(IsEnabledProperty, value); }
 
                 /// <summary>
                 /// Backing BindableProperty for the <see cref = "Pi"/> property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty PiProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Pi", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __BindablePropertyInitHelpers.CreateDefaultPi);
-                public partial double Pi { get => __BindablePropertyInitHelpers.IsInitializingPi ? field : (double)GetValue(PiProperty); set => SetValue(PiProperty, value); }
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty PiProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Pi", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultPi);
+                public partial double Pi { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingPi ? field : (double)GetValue(PiProperty); set => SetValue(PiProperty, value); }
 
                 /// <summary>
                 /// Backing BindableProperty for the <see cref = "Letter"/> property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty LetterProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Letter", typeof(char), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __BindablePropertyInitHelpers.CreateDefaultLetter);
-                public partial char Letter { get => __BindablePropertyInitHelpers.IsInitializingLetter ? field : (char)GetValue(LetterProperty); set => SetValue(LetterProperty, value); }
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty LetterProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Letter", typeof(char), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultLetter);
+                public partial char Letter { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingLetter ? field : (char)GetValue(LetterProperty); set => SetValue(LetterProperty, value); }
+            
+                /// <summary>
+                /// Backing BindableProperty for the <see cref = "TimeSpent"/> property.
+                /// </summary>
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty TimeSpentProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("TimeSpent", typeof(TimeSpan), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultTimeSpent);
+                public partial TimeSpan TimeSpent { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingTimeSpent ? field : (TimeSpan)GetValue(TimeSpentProperty); set => SetValue(TimeSpentProperty, value); }
+            
+                /// <summary>
+                /// Backing BindableProperty for the <see cref = "DoubleEpsilon"/> property.
+                /// </summary>
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty DoubleEpsilonProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("DoubleEpsilon", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultDoubleEpsilon);
+                public partial double DoubleEpsilon { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingDoubleEpsilon ? field : (double)GetValue(DoubleEpsilonProperty); set => SetValue(DoubleEpsilonProperty, value); }
+            
+                /// <summary>
+                /// Backing BindableProperty for the <see cref = "SingleEpsilon"/> property.
+                /// </summary>
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty SingleEpsilonProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("SingleEpsilon", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultSingleEpsilon);
+                public partial double SingleEpsilon { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingSingleEpsilon ? field : (double)GetValue(SingleEpsilonProperty); set => SetValue(SingleEpsilonProperty, value); }
+            
+                /// <summary>
+                /// Backing BindableProperty for the <see cref = "CurrentTime"/> property.
+                /// </summary>
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty CurrentTimeProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("CurrentTime", typeof(DateTimeOffset), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultCurrentTime);
+                public partial DateTimeOffset CurrentTime { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingCurrentTime ? field : (DateTimeOffset)GetValue(CurrentTimeProperty); set => SetValue(CurrentTimeProperty, value); }
             }
 
-            file static class __BindablePropertyInitHelpers
+            file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
             {
                 public static bool IsInitializingIsEnabled = false;
                 public static object CreateDefaultIsEnabled(global::Microsoft.Maui.Controls.BindableObject bindable)
@@ -503,6 +539,33 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                     IsInitializingLetter = true;
                     var defaultValue = ((TestView)bindable).Letter;
                     IsInitializingLetter = false;
+                    return defaultValue;
+                }
+
+                public static bool IsInitializingDoubleEpsilon = false;
+                public static object CreateDefaultDoubleEpsilon(global::Microsoft.Maui.Controls.BindableObject bindable)
+                {
+                    IsInitializingDoubleEpsilon = true;
+                    var defaultValue = ((TestView)bindable).DoubleEpsilon;
+                    IsInitializingDoubleEpsilon = false;
+                    return defaultValue;
+                }
+            
+                public static bool IsInitializingSingleEpsilon = false;
+                public static object CreateDefaultSingleEpsilon(global::Microsoft.Maui.Controls.BindableObject bindable)
+                {
+                    IsInitializingSingleEpsilon = true;
+                    var defaultValue = ((TestView)bindable).SingleEpsilon;
+                    IsInitializingSingleEpsilon = false;
+                    return defaultValue;
+                }
+            
+                public static bool IsInitializingCurrentTime = false;
+                public static object CreateDefaultCurrentTime(global::Microsoft.Maui.Controls.BindableObject bindable)
+                {
+                    IsInitializingCurrentTime = true;
+                    var defaultValue = ((TestView)bindable).CurrentTime;
+                    IsInitializingCurrentTime = false;
                     return defaultValue;
                 }
             }
