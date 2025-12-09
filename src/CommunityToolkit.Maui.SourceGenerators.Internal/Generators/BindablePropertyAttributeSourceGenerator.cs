@@ -174,18 +174,43 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		sb.Append(value.ClassInformation.DeclaredAccessibility).Append(" partial class ").Append(classNameWithGenerics).Append("\n{\n\n");
 
+		// Prepare helper builder for file-static class members (static flags + default creators)
+		var fileStaticClassStringBuilder = new StringBuilder(256);
+		var helperNames = new HashSet<string>();
+
+		// Build fully-qualified declaring type name for helper method casts (include containing types)
+		var fullDeclaringType = string.IsNullOrEmpty(value.ClassInformation.ContainingTypes)
+			? classNameWithGenerics
+			: string.Concat(value.ClassInformation.ContainingTypes, ".", classNameWithGenerics);
+		
+		var fileStaticClassName = $"__{classNameWithGenerics}BindablePropertyInitHelpers";
+
 		foreach (var info in value.BindableProperties)
 		{
 			if (info.IsReadOnlyBindableProperty)
 			{
-				GenerateReadOnlyBindableProperty(sb, in info);
+				GenerateReadOnlyBindableProperty(sb, in info, fileStaticClassName);
 			}
 			else
 			{
-				GenerateBindableProperty(sb, in info);
+				GenerateBindableProperty(sb, in info, fileStaticClassName);
 			}
 
-			GenerateProperty(sb, in info);
+			if (info.ShouldUsePropertyInitializer)
+			{
+				// Generate only references within the class; actual static field and creator method
+				// will be placed inside the file static helper class below.
+				if (helperNames.Add(info.InitializingPropertyName))
+				{
+					AppendHelperInitializingField(fileStaticClassStringBuilder, in info);
+				}
+				if (helperNames.Add(info.EffectiveDefaultValueCreatorMethodName))
+				{
+					AppendHelperDefaultValueMethod(fileStaticClassStringBuilder, in info, fullDeclaringType);
+				}
+			}
+
+			GenerateProperty(sb, in info, fileStaticClassName);
 		}
 
 		sb.Append('}');
@@ -200,11 +225,19 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			}
 		}
 
+		// If we generated any helper members, emit a file static class with them.
+		if (fileStaticClassStringBuilder.Length > 0)
+		{
+			sb.Append("\n\nfile static class ").Append(fileStaticClassName).Append("\n{\n");
+			sb.Append(fileStaticClassStringBuilder.ToString());
+			sb.Append("}\n");
+		}
+
 		return sb.ToString();
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	static void GenerateReadOnlyBindableProperty(StringBuilder sb, in BindablePropertyModel info)
+	static void GenerateReadOnlyBindableProperty(StringBuilder sb, in BindablePropertyModel info, in string fileStaticClassName)
 	{
 		// Sanitize the Return Type because Nullable Reference Types cannot be used in the `typeof()` operator
 		var nonNullableReturnType = ConvertToNonNullableTypeSymbol(info.ReturnType);
@@ -237,8 +270,15 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(info.PropertyChangingMethodName)
 			.Append(", ")
 			.Append(info.CoerceValueMethodName)
-			.Append(", ")
-			.Append(info.DefaultValueCreatorMethodName)
+			.Append(", ");
+
+		if (info.ShouldUsePropertyInitializer)
+		{
+			sb.Append(fileStaticClassName)
+				.Append('.');
+		}
+
+		sb.Append(info.EffectiveDefaultValueCreatorMethodName)
 			.Append(");\n");
 
 		// Generate public BindableProperty from the key
@@ -256,7 +296,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	static void GenerateBindableProperty(StringBuilder sb, in BindablePropertyModel info)
+	static void GenerateBindableProperty(StringBuilder sb, in BindablePropertyModel info, in string helperClassName)
 	{
 		// Sanitize the Return Type because Nullable Reference Types cannot be used in the `typeof()` operator
 		var nonNullableReturnType = ConvertToNonNullableTypeSymbol(info.ReturnType);
@@ -293,15 +333,21 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(info.PropertyChangingMethodName)
 			.Append(", ")
 			.Append(info.CoerceValueMethodName)
-			.Append(", ")
-			.Append(info.DefaultValueCreatorMethodName)
-			.Append(");\n");
+			.Append(", ");
 
-		sb.Append('\n');
+		if (info.ShouldUsePropertyInitializer)
+		{
+			sb.Append(helperClassName)
+			.Append('.');
+		}
+
+		sb.Append(info.EffectiveDefaultValueCreatorMethodName)
+			.Append(");\n")
+			.Append('\n');
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	static void GenerateProperty(StringBuilder sb, in BindablePropertyModel info)
+	static void GenerateProperty(StringBuilder sb, in BindablePropertyModel info, in string fileStaticClassName)
 	{
 		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
 		var formattedReturnType = GetFormattedReturnType(info.ReturnType);
@@ -312,7 +358,24 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(formattedReturnType)
 			.Append(' ')
 			.Append(sanitizedPropertyName)
-			.Append("\n{\nget => (")
+			.Append("\n{\nget => ");
+
+		if (info.HasInitializer)
+		{
+			if (info.ShouldUsePropertyInitializer)
+			{
+				// Now reference the static flag on the file static helper class
+				sb.Append(fileStaticClassName).Append(".").Append(info.InitializingPropertyName);
+			}
+			else
+			{
+				sb.Append("false");
+			}
+
+			sb.Append(" ? field : ");
+		}
+
+		sb.Append("(")
 			.Append(formattedReturnType)
 			.Append(")GetValue(")
 			.Append(info.BindablePropertyName)
@@ -335,6 +398,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var propertyDeclarationSyntax = Unsafe.As<PropertyDeclarationSyntax>(context.TargetNode);
 		var semanticModel = context.SemanticModel;
 		var propertySymbol = (IPropertySymbol?)ModelExtensions.GetDeclaredSymbol(semanticModel, propertyDeclarationSyntax, cancellationToken);
+		var hasInitializer = propertyDeclarationSyntax.Initializer is not null;
 
 		if (propertySymbol is null)
 		{
@@ -361,7 +425,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var (isReadOnlyBindableProperty, setterAccessibility) = GetPropertyAccessibility(propertySymbol, propertyDeclarationSyntax);
 
 		var attributeData = context.Attributes[0];
-		bindablePropertyModels[0] = CreateBindablePropertyModel(attributeData, propertySymbol.ContainingType, propertySymbol.Name, returnType, doesContainNewKeyword, isReadOnlyBindableProperty, setterAccessibility);
+		bindablePropertyModels[0] = CreateBindablePropertyModel(attributeData, propertySymbol.ContainingType, propertySymbol.Name, returnType, doesContainNewKeyword, isReadOnlyBindableProperty, setterAccessibility, hasInitializer);
 
 		return new(propertyInfo, ImmutableArray.Create(bindablePropertyModels));
 	}
@@ -458,7 +522,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		return sb.ToString();
 	}
 
-	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string propertyName, in ITypeSymbol returnType, in bool doesContainNewKeyword, in bool isReadOnly, in string? setterAccessibility)
+	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string propertyName, in ITypeSymbol returnType, in bool doesContainNewKeyword, in bool isReadOnly, in string? setterAccessibility, in bool hasInitializer)
 	{
 		if (attributeData.AttributeClass is null)
 		{
@@ -474,7 +538,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var validateValueMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.ValidateValueMethodName));
 		var newKeywordText = doesContainNewKeyword ? "new " : string.Empty;
 
-		return new BindablePropertyModel(propertyName, returnType, declaringType, defaultValue, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText, isReadOnly, setterAccessibility);
+		return new BindablePropertyModel(propertyName, returnType, declaringType, defaultValue, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText, isReadOnly, setterAccessibility, hasInitializer);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -530,5 +594,47 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			// Use ToDisplayString with the correct format for the base type (e.g., "int")
 			return typeSymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
 		}
+	}
+
+	/// <summary>
+	/// Appends the initializing flag into the file-static helper class.
+	/// </summary>
+	/// <param name="fileStaticClassStringBuilder">Helper StringBuilder used to collect helper members.</param>
+	/// <param name="info">Property model.</param>
+	static void AppendHelperInitializingField(StringBuilder fileStaticClassStringBuilder, in BindablePropertyModel info)
+	{
+		// Make the flag public static so it can be referenced from the generated partial class in the same file.
+		fileStaticClassStringBuilder.Append("public static bool ")
+			.Append(info.InitializingPropertyName)
+			.Append(" = false;\n");
+	}
+
+	/// <summary>
+	/// Appends a default value creator method into the file-static helper class.
+	/// The method sets the static initializing flag, reads the property's initializer value by casting the bindable
+	/// to the declaring type, then clears the flag and returns the value.
+	/// </summary>
+	/// <param name="fileStaticClassStringBuilder">Helper StringBuilder used to collect helper members.</param>
+	/// <param name="info">Property model.</param>
+	/// <param name="fullDeclaringType">Declaring type including containing types and generic parameters.</param>
+	static void AppendHelperDefaultValueMethod(StringBuilder fileStaticClassStringBuilder, in BindablePropertyModel info, string fullDeclaringType)
+	{
+		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
+
+		fileStaticClassStringBuilder.Append("public static object ")
+			.Append(info.EffectiveDefaultValueCreatorMethodName)
+			.Append("(global::Microsoft.Maui.Controls.BindableObject bindable)\n")
+			.Append("{\n")
+			.Append(info.InitializingPropertyName)
+			.Append(" = true;\n")
+			.Append("var defaultValue = ((")
+			.Append(fullDeclaringType)
+			.Append(")bindable).")
+			.Append(sanitizedPropertyName)
+			.Append(";\n")
+			.Append(info.InitializingPropertyName)
+			.Append(" = false;\n")
+			.Append("return defaultValue;\n")
+			.Append("}\n\n");
 	}
 }
