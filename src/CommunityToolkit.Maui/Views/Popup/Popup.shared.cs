@@ -1,4 +1,4 @@
-using System.ComponentModel;
+
 using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Views;
