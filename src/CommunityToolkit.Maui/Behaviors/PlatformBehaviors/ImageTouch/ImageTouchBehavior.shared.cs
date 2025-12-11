@@ -30,19 +30,19 @@ public partial class ImageTouchBehavior : TouchBehavior
 	/// Gets or sets the <see cref="ImageSource"/> <see cref="Aspect"/> when <see cref="TouchState"/> is <see cref="TouchState.Default"/>.
 	/// </summary>
 	[BindableProperty]
-	public partial Aspect DefaultImageAspect { get; set; } = ImageTouchBehaviorDefaults.DefaultBackgroundImageAspect;
+	public partial Aspect? DefaultImageAspect { get; set; }
 
 	/// <summary>
 	/// Gets or sets the <see cref="ImageSource"/> <see cref="Aspect"/> when <see cref="HoverState"/> is <see cref="HoverState.Hovered"/>.
 	/// </summary>
 	[BindableProperty]
-	public partial Aspect HoveredImageAspect { get; set; } = ImageTouchBehaviorDefaults.HoveredBackgroundImageAspect;
+	public partial Aspect? HoveredImageAspect { get; set; }
 
 	/// <summary>
 	/// Gets or sets the <see cref="ImageSource"/> <see cref="Aspect"/> when the <see cref="TouchState"/> is <see cref="TouchState.Pressed"/>
 	/// </summary>
 	[BindableProperty]
-	public partial Aspect PressedImageAspect { get; set; } = ImageTouchBehaviorDefaults.PressedBackgroundImageAspect;
+	public partial Aspect? PressedImageAspect { get; set; }
 
 	/// <summary>
 	/// Gets or sets a value indicating whether the image should be set when the animation ends.
