@@ -461,11 +461,6 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 				throw new NotSupportedException($"The combination of {nameof(TouchState)} {touchState} and {nameof(HoverState)} {hoverState} is not yet supported");
 		}
 
-		if (updatedScale is null)
-		{
-			return false;
-		}
-
 		if (duration <= TimeSpan.Zero)
 		{
 			element.AbortAnimations(nameof(SetScale));
