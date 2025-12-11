@@ -278,17 +278,20 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return;
 		}
 
+		ImageSource? updatedImageSource = imageTouchBehavior.DefaultImageSource ?? (ImageSource?)ImageTouchBehaviorDefaults.DefaultBackgroundImageSource;
+		Aspect? updatedImageAspect = imageTouchBehavior.DefaultImageAspect ?? ImageTouchBehaviorDefaults.DefaultBackgroundImageAspect;
+
 		switch (touchState, hoverState)
 		{
 			case (TouchState.Pressed, _):
 				if (imageTouchBehavior.PressedImageAspect is not null)
 				{
-					bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.PressedImageAspect);
+					updatedImageAspect = imageTouchBehavior.PressedImageAspect;
 				}
 
 				if (imageTouchBehavior.PressedImageSource is not null)
 				{
-					bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.PressedImageSource);
+					updatedImageSource = imageTouchBehavior.PressedImageSource;
 				}
 
 				break;
@@ -296,20 +299,20 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			case (TouchState.Default, HoverState.Hovered):
 				if (imageTouchBehavior.HoveredImageAspect is not null)
 				{
-					bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.HoveredImageAspect);
+					updatedImageAspect = imageTouchBehavior.HoveredImageAspect;
 				}
 				else if (imageTouchBehavior.DefaultImageAspect is not null)
 				{
-					bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.DefaultImageAspect);
+					updatedImageAspect =imageTouchBehavior.DefaultImageAspect;
 				}
 
 				if (imageTouchBehavior.HoveredImageSource is not null)
 				{
-					bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.HoveredImageSource);
+					updatedImageSource = imageTouchBehavior.HoveredImageSource;
 				}
 				else if (imageTouchBehavior.DefaultImageSource is not null)
 				{
-					bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.DefaultImageSource);
+					updatedImageSource = imageTouchBehavior.DefaultImageSource;
 				}
 
 				break;
@@ -317,12 +320,12 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			case (TouchState.Default, HoverState.Default):
 				if (imageTouchBehavior.DefaultImageAspect is not null)
 				{
-					bindable.SetValue(ImageElement.AspectProperty, imageTouchBehavior.DefaultImageAspect);
+					updatedImageAspect =imageTouchBehavior.DefaultImageAspect;
 				}
 
 				if (imageTouchBehavior.DefaultImageSource is not null)
 				{
-					bindable.SetValue(ImageElement.SourceProperty, imageTouchBehavior.DefaultImageSource);
+					updatedImageSource = imageTouchBehavior.DefaultImageSource;
 				}
 
 				break;
@@ -330,6 +333,9 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			default:
 				throw new NotSupportedException($"The combination of {nameof(TouchState)} {touchState} and {nameof(HoverState)} {hoverState} is not yet supported");
 		}
+		
+		bindable.SetValue(ImageElement.SourceProperty, updatedImageSource);
+		bindable.SetValue(ImageElement.AspectProperty, updatedImageAspect);
 	}
 
 	static void UpdateStatusAndState(in TouchBehavior touchBehavior, in TouchStatus status, in TouchState state)
