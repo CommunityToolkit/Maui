@@ -43,20 +43,22 @@ public partial class Popup : ContentView
 	public new partial Thickness Padding { get; set; } = Options.DefaultPopupSettings.Padding;
 
 	/// <summary>
-	/// Gets or sets the horizontal layout options used to position the <see cref="Popup"/> when displayed on screen.
+	/// Gets or sets the horizontal position of the <see cref="Popup"/> when displayed on screen.
 	/// </summary>
 	[BindableProperty]
 	public new partial LayoutOptions HorizontalOptions { get; set; } = Options.DefaultPopupSettings.HorizontalOptions;
 
 	/// <summary>
-	/// Gets or sets the vertical layout options used to position the <see cref="Popup"/> when displayed on screen.
+	/// Gets or sets the vertical position of the <see cref="Popup"/> when displayed on screen.
 	/// </summary>
 	[BindableProperty]
 	public new partial LayoutOptions VerticalOptions { get; set; } = Options.DefaultPopupSettings.VerticalOptions;
 
-	/// <summary>
-	/// Gets or sets a value indicating whether the <see cref="Popup"/> can be dismissed by tapping outside the popup.
-	/// </summary>
+	/// <inheritdoc cref="IPopupOptions.CanBeDismissedByTappingOutsideOfPopup"/> />
+	/// <remarks>
+	/// When true and the user taps outside the popup, it will dismiss.
+	/// On Android - when false the hardware back button is disabled.
+	/// </remarks>
 	[BindableProperty]
 	public partial bool CanBeDismissedByTappingOutsideOfPopup { get; set; } = Options.DefaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup;
 
