@@ -165,7 +165,7 @@ public class PopupServiceTests : BaseViewTest
 		var popupPage = (PopupPage)navigation.ModalStack[0];
 		var popupPageLayout = popupPage.Content;
 		var border = popupPageLayout.PopupBorder;
-		var popup = border.Content;
+		var popup = (MockPopup)(border.Content ?? throw new InvalidOperationException("Content cannot be null"));
 
 		// Assert
 		Assert.NotNull(popup);
@@ -514,7 +514,6 @@ public class PopupServiceTests : BaseViewTest
 		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
 	}
 }
-
 
 class GarbageCollectionHeavySelfClosingPopup(MockPageViewModel viewModel, object? result = null) : MockSelfClosingPopup(viewModel, TimeSpan.FromMilliseconds(500), result)
 {
