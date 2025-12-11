@@ -197,7 +197,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 	}
 
-	internal sealed class PopupOverlay : BoxView
+	internal sealed partial class PopupOverlay : BoxView
 	{
 		public PopupOverlay()
 		{
@@ -210,7 +210,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	{
 		readonly Action tryExecuteTapOutsideOfPopupCommand;
 
-		public PopupPageLayout(in Popup popupContent, in IPopupOptions options, Action tryExecuteTapOutsideOfPopupCommand)
+		public PopupPageLayout(in Popup popupContent, in IPopupOptions options, in Action tryExecuteTapOutsideOfPopupCommand)
 		{
 			this.tryExecuteTapOutsideOfPopupCommand = tryExecuteTapOutsideOfPopupCommand;
 			Background = BackgroundColor = null;
