@@ -365,7 +365,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return false;
 		}
 
-		var updatedOpacity = touchBehavior.DefaultOpacity;
+		double? updatedOpacity = touchBehavior.DefaultOpacity ?? TouchBehaviorDefaults.DefaultOpacity;
 
 		switch (touchState, hoverState)
 		{
@@ -404,15 +404,11 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		if (duration <= TimeSpan.Zero)
 		{
 			element.AbortAnimations();
-			if (updatedOpacity is not null)
-			{
-				element.Opacity = updatedOpacity.Value;
-			}
-
+			element.Opacity = updatedOpacity.Value;
 			return true;
 		}
 
-		return await element.FadeToAsync(updatedOpacity ?? element.Opacity, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
+		return await element.FadeToAsync(updatedOpacity.Value, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
 	}
 
 	static async Task<bool> SetScale(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
@@ -429,7 +425,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return false;
 		}
 
-		var updatedScale = touchBehavior.DefaultScale;
+		double? updatedScale = touchBehavior.DefaultScale ?? TouchBehaviorDefaults.DefaultScale;
 
 		switch (touchState, hoverState)
 		{
@@ -487,7 +483,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			}
 
 			element.Scale = v;
-		}, element.Scale, updatedScale ?? element.Scale, 16, (uint)Abs(duration.TotalMilliseconds), easing, (v, b) => animationCompletionSource.SetResult(b));
+		}, element.Scale, (double)updatedScale, 16, (uint)Abs(duration.TotalMilliseconds), easing, (v, b) => animationCompletionSource.SetResult(b));
 
 		return await animationCompletionSource.Task.WaitAsync(token);
 	}
@@ -509,8 +505,8 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return false;
 		}
 
-		var updatedTranslationX = touchBehavior.DefaultTranslationY;
-		var updatedTranslationY = touchBehavior.DefaultTranslationX;
+		double? updatedTranslationX = touchBehavior.DefaultTranslationY ?? TouchBehaviorDefaults.DefaultTranslationY;
+		double? updatedTranslationY = touchBehavior.DefaultTranslationX ?? TouchBehaviorDefaults.DefaultTranslationX;
 
 		switch (touchState, hoverState)
 		{
@@ -565,21 +561,16 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 				throw new NotSupportedException($"The combination of {nameof(TouchState)} {touchState} and {nameof(HoverState)} {hoverState} is not yet supported");
 		}
 
-		if (updatedTranslationY is null && updatedTranslationX is null)
-		{
-			return false;
-		}
-
 		if (duration <= TimeSpan.Zero)
 		{
 			element.AbortAnimations();
-			element.TranslationX = updatedTranslationX ?? element.TranslationX;
-			element.TranslationY = updatedTranslationY ?? element.TranslationY;
+			element.TranslationX = updatedTranslationX.Value;
+			element.TranslationY = updatedTranslationY.Value;
 
 			return true;
 		}
 
-		return await element.TranslateToAsync(updatedTranslationX ?? element.TranslationX, updatedTranslationY ?? element.TranslationY, (uint)Abs(duration.Milliseconds), easing).WaitAsync(token);
+		return await element.TranslateToAsync(updatedTranslationX.Value, updatedTranslationY.Value, (uint)Abs(duration.Milliseconds), easing).WaitAsync(token);
 	}
 
 	static async Task<bool> SetRotation(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
@@ -596,7 +587,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return false;
 		}
 
-		var updatedRotation = touchBehavior.DefaultRotation;
+		double? updatedRotation = touchBehavior.DefaultRotation ?? TouchBehaviorDefaults.DefaultRotation;
 
 		switch (touchState, hoverState)
 		{
@@ -632,11 +623,6 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 				throw new NotSupportedException($"The combination of {nameof(TouchState)} {touchState} and {nameof(HoverState)} {hoverState} is not yet supported");
 		}
 
-		if (updatedRotation is null)
-		{
-			return false;
-		}
-
 		if (duration <= TimeSpan.Zero)
 		{
 			element.AbortAnimations();
@@ -661,7 +647,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return false;
 		}
 
-		var updatedRotationX = touchBehavior.DefaultRotationX;
+		double? updatedRotationX = touchBehavior.DefaultRotationX ?? TouchBehaviorDefaults.DefaultRotationX;
 
 		switch (touchState, hoverState)
 		{
@@ -697,11 +683,6 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 				throw new NotSupportedException($"The combination of {nameof(TouchState)} {touchState} and {nameof(HoverState)} {hoverState} is not yet supported");
 		}
 
-		if (updatedRotationX is null)
-		{
-			return false;
-		}
-
 		if (duration <= TimeSpan.Zero)
 		{
 			element.AbortAnimations();
@@ -726,7 +707,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return false;
 		}
 
-		double? updatedRotationY = touchBehavior.DefaultRotationY;
+		double? updatedRotationY = touchBehavior.DefaultRotationY ?? TouchBehaviorDefaults.DefaultRotationY;
 
 		switch (touchState, hoverState)
 		{
@@ -762,11 +743,6 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 				throw new NotSupportedException($"The combination of {nameof(TouchState)} {touchState} and {nameof(HoverState)} {hoverState} is not yet supported");
 		}
 
-		if (updatedRotationY is null)
-		{
-			return false;
-		}
-
 		if (duration <= TimeSpan.Zero)
 		{
 			element.AbortAnimations();
@@ -786,7 +762,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 
 		defaultBackgroundColor ??= element.BackgroundColor;
 
-		var updatedBackgroundColor = defaultBackgroundColor;
+		var updatedBackgroundColor = defaultBackgroundColor ?? TouchBehaviorDefaults.DefaultBackgroundColor;
 
 		switch (touchState, hoverState)
 		{
@@ -822,20 +798,15 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 				throw new NotSupportedException($"The combination of {nameof(TouchState)} {touchState} and {nameof(HoverState)} {hoverState} is not yet supported");
 		}
 
-		if (updatedBackgroundColor is null)
-		{
-			return false;
-		}
-
 		if (duration <= TimeSpan.Zero)
 		{
 			element.AbortAnimations();
-			element.BackgroundColor = updatedBackgroundColor;
+			element.BackgroundColor = updatedBackgroundColor ?? Colors.Transparent;
 
 			return true;
 		}
 
-		return await element.BackgroundColorTo(updatedBackgroundColor, length: (uint)duration.TotalMilliseconds, easing: easing, token: token);
+		return await element.BackgroundColorTo(updatedBackgroundColor ?? Colors.Transparent, length: (uint)duration.TotalMilliseconds, easing: easing, token: token);
 	}
 
 	async Task<bool> RunAnimationTask(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, CancellationToken token, double? durationMultiplier = null)
