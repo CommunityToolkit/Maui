@@ -9,42 +9,6 @@ namespace CommunityToolkit.Maui.Views;
 public partial class Popup : ContentView
 {
 	/// <summary>
-	/// Gets or sets the margin between the <see cref="Popup"/> and the edge of the window.
-	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultMargin))]
-	public partial Thickness Margin { get; set; }
-	static object CreateDefaultMargin(global::Microsoft.Maui.Controls.BindableObject? _) => Options.DefaultPopupSettings.Margin;
-
-	/// <summary>
-	/// Gets or sets the padding between the <see cref="Popup"/> border and the <see cref="Popup"/> content.
-	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultPadding))]
-	public partial Thickness Padding { get; set; }
-	static object CreateDefaultPadding(global::Microsoft.Maui.Controls.BindableObject? _) => Options.DefaultPopupSettings.Padding;
-
-	/// <summary>
-	/// Gets or sets the horizontal layout options used to position the <see cref="Popup"/> when displayed on screen.
-	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultHorizontalOptions))]
-	public partial LayoutOptions HorizontalOptions { get; set; }
-	static object CreateDefaultHorizontalOptions(global::Microsoft.Maui.Controls.BindableObject? _) => Options.DefaultPopupSettings.HorizontalOptions;
-
-	/// <summary>
-	/// Gets or sets the vertical layout options used to position the <see cref="Popup"/> when displayed on screen.
-	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultVerticalOptions))]
-	public partial LayoutOptions VerticalOptions { get; set; }
-	static object CreateDefaultVerticalOptions(global::Microsoft.Maui.Controls.BindableObject? _) => Options.DefaultPopupSettings.VerticalOptions;
-
-	/// <summary>
-	/// Gets or sets a value indicating whether the <see cref="Popup"/> can be dismissed by tapping outside of the popup.
-	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateCanBeDismissedByTappingOutsideOfPopup))]
-	public partial bool CanBeDismissedByTappingOutsideOfPopup { get; set; }
-	static object CreateCanBeDismissedByTappingOutsideOfPopup(global::Microsoft.Maui.Controls.BindableObject? _) => Options.DefaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup;
-
-
-	/// <summary>
 	/// Initializes Popup
 	/// </summary>
 	public Popup()
@@ -65,6 +29,36 @@ public partial class Popup : ContentView
 	/// Event occurs when <see cref="Popup"/> is closed.
 	/// </summary>
 	public event EventHandler? Closed;
+
+	/// <summary>
+	/// Gets or sets the margin between the <see cref="Popup"/> and the edge of the window.
+	/// </summary>
+	[BindableProperty]
+	public new partial Thickness Margin { get; set; } = Options.DefaultPopupSettings.Margin;
+
+	/// <summary>
+	/// Gets or sets the padding between the <see cref="Popup"/> border and the <see cref="Popup"/> content.
+	/// </summary>
+	[BindableProperty]
+	public new partial Thickness Padding { get; set; } = Options.DefaultPopupSettings.Padding;
+
+	/// <summary>
+	/// Gets or sets the horizontal layout options used to position the <see cref="Popup"/> when displayed on screen.
+	/// </summary>
+	[BindableProperty]
+	public new partial LayoutOptions HorizontalOptions { get; set; } = Options.DefaultPopupSettings.HorizontalOptions;
+
+	/// <summary>
+	/// Gets or sets the vertical layout options used to position the <see cref="Popup"/> when displayed on screen.
+	/// </summary>
+	[BindableProperty]
+	public new partial LayoutOptions VerticalOptions { get; set; } = Options.DefaultPopupSettings.VerticalOptions;
+
+	/// <summary>
+	/// Gets or sets a value indicating whether the <see cref="Popup"/> can be dismissed by tapping outside the popup.
+	/// </summary>
+	[BindableProperty]
+	public partial bool CanBeDismissedByTappingOutsideOfPopup { get; set; } = Options.DefaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup;
 
 	/// <summary>
 	/// Close the Popup.
@@ -113,5 +107,7 @@ public partial class Popup<T> : Popup
 }
 
 sealed class PopupNotFoundException() : InvalidPopupOperationException($"Unable to close popup: could not locate {nameof(PopupPage)}. {nameof(PopupExtensions.ShowPopup)} or {nameof(PopupExtensions.ShowPopupAsync)} must be called before {nameof(Popup.CloseAsync)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Popup.CloseAsync)} method");
+
 sealed class PopupBlockedException(in Page currentVisibleModalPage) : InvalidPopupOperationException($"Unable to close Popup because it is blocked by the Modal Page {currentVisibleModalPage.GetType().FullName}. Please call `{nameof(Page.Navigation)}.{nameof(Page.Navigation.PopModalAsync)}()` to first remove {currentVisibleModalPage.GetType().FullName} from the {nameof(Page.Navigation.ModalStack)}");
+
 class InvalidPopupOperationException(in string message) : InvalidOperationException(message);
