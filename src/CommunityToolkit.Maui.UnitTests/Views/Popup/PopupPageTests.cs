@@ -422,15 +422,16 @@ public class PopupPageTests : BaseViewTest
 		Assert.Equal(PresentationMode.ModalNotAnimated, Shell.GetPresentationMode(popupPage));
 		Assert.Equal(UIModalPresentationStyle.OverFullScreen, popupPage.On<iOS>().ModalPresentationStyle());
 
-		// Verify content has tap gesture recognizer attached
-		var gestureRecognizers = popupPage.Content.GestureRecognizers;
+		// Verify content has tap gesture recognizer overlay	
+		var gestureRecognizers = popupPage.Content.TapGestureGestureOverlay.GestureRecognizers;
 		Assert.Single(gestureRecognizers);
 		Assert.IsType<TapGestureRecognizer>(gestureRecognizers[0]);
 
 		// Verify PopupPageLayout structure
 		var pageContent = popupPage.Content;
-		Assert.Single(pageContent.Children);
-		Assert.IsType<Border>(pageContent.Children.Single(), exactMatch: false);
+		Assert.Equal(2, pageContent.Children.Count);
+		Assert.IsType<Border>(pageContent.Children.OfType<Border>().Single(), exactMatch: false);
+		Assert.IsType<BoxView>(pageContent.Children.OfType<PopupPage.PopupGestureOverlay>().Single(), exactMatch: false);
 
 		// Verify content binding context is set correctly
 		Assert.Equal(view.BindingContext, pageContent.BindingContext);
