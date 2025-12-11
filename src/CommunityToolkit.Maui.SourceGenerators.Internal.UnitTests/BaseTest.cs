@@ -13,7 +13,7 @@ public abstract class BaseTest
 		const string bindablePropertyAttributeGeneratedFileName = "BindablePropertyAttribute.g.cs";
 		var sourceGeneratorFullName = typeof(BindablePropertyAttributeSourceGenerator).FullName ?? throw new InvalidOperationException("Source Generator Type Path cannot be null");
 
-		var test = new CSharpSourceGeneratorTest<BindablePropertyAttributeSourceGenerator, DefaultVerifier>
+		var test = new ExperimentalBindablePropertyTest
 		{
 #if NET10_0
 			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net100,
@@ -45,5 +45,19 @@ public abstract class BaseTest
 		}
 
 		await test.RunAsync(TestContext.Current.CancellationToken);
+	}
+
+	// This class can be deleted once [Experimental] is removed from BindablePropertyAttribute
+	sealed class ExperimentalBindablePropertyTest : CSharpSourceGeneratorTest<BindablePropertyAttributeSourceGenerator, DefaultVerifier>
+	{
+		protected override CompilationOptions CreateCompilationOptions()
+		{
+			var compilationOptions = base.CreateCompilationOptions();
+
+			return compilationOptions.WithSpecificDiagnosticOptions(new Dictionary<string, ReportDiagnostic>
+			{
+				{ BindablePropertyAttributeSourceGenerator.BindablePropertyAttributeExperimentalDiagnosticId, ReportDiagnostic.Warn }
+			});
+		}
 	}
 }
