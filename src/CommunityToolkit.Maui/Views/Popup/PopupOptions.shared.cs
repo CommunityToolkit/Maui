@@ -8,31 +8,6 @@ namespace CommunityToolkit.Maui;
 public partial class PopupOptions : BindableObject, IPopupOptions
 {
 	/// <summary>
-	///  Backing BindableProperty for the <see cref="CanBeDismissedByTappingOutsideOfPopup"/> property.
-	/// </summary>
-	public static readonly BindableProperty CanBeDismissedByTappingOutsideOfPopupProperty = BindableProperty.Create(nameof(CanBeDismissedByTappingOutsideOfPopup), typeof(bool), typeof(PopupOptions), Options.DefaultPopupOptionsSettings.CanBeDismissedByTappingOutsideOfPopup);
-
-	/// <summary>
-	///  Backing BindableProperty for the <see cref="OnTappingOutsideOfPopup"/> property.
-	/// </summary>
-	public static readonly BindableProperty OnTappingOutsideOfPopupProperty = BindableProperty.Create(nameof(OnTappingOutsideOfPopup), typeof(Action), typeof(PopupOptions), Options.DefaultPopupOptionsSettings.OnTappingOutsideOfPopup);
-
-	/// <summary>
-	///  Backing BindableProperty for the <see cref="PageOverlayColor"/> property.
-	/// </summary>
-	public static readonly BindableProperty PageOverlayColorProperty = BindableProperty.Create(nameof(PageOverlayColor), typeof(Color), typeof(PopupOptions), Options.DefaultPopupOptionsSettings.PageOverlayColor);
-
-	/// <summary>
-	///  Backing BindableProperty for the <see cref="Shape"/> property.
-	/// </summary>
-	public static readonly BindableProperty ShapeProperty = BindableProperty.Create(nameof(Shape), typeof(Shape), typeof(PopupOptions), Options.DefaultPopupOptionsSettings.Shape);
-
-	/// <summary>
-	///  Backing BindableProperty for the <see cref="Shadow"/> property.
-	/// </summary>
-	public static readonly BindableProperty ShadowProperty = BindableProperty.Create(nameof(Shadow), typeof(Shadow), typeof(PopupOptions), Options.DefaultPopupOptionsSettings.Shadow);
-
-	/// <summary>
 	/// An empty instance of <see cref="IPopupOptions"/> containing default values.
 	/// </summary>
 	public static IPopupOptions Empty { get; } = new PopupOptions();
@@ -42,37 +17,22 @@ public partial class PopupOptions : BindableObject, IPopupOptions
 	/// When true and the user taps outside the popup, it will dismiss.
 	/// On Android - when false the hardware back button is disabled.
 	/// </remarks>
-	public bool CanBeDismissedByTappingOutsideOfPopup
-	{
-		get => (bool)GetValue(CanBeDismissedByTappingOutsideOfPopupProperty);
-		set => SetValue(CanBeDismissedByTappingOutsideOfPopupProperty, value);
-	}
+	[BindableProperty]
+	public partial bool CanBeDismissedByTappingOutsideOfPopup { get; set; } = Options.DefaultPopupOptionsSettings.CanBeDismissedByTappingOutsideOfPopup;
 
 	/// <inheritdoc/>
-	public Color PageOverlayColor
-	{
-		get => (Color)GetValue(PageOverlayColorProperty);
-		set => SetValue(PageOverlayColorProperty, value);
-	}
+	[BindableProperty]
+	public partial Action? OnTappingOutsideOfPopup { get; set; } = Options.DefaultPopupOptionsSettings.OnTappingOutsideOfPopup;
 
 	/// <inheritdoc/>
-	public Action? OnTappingOutsideOfPopup
-	{
-		get => (Action?)GetValue(OnTappingOutsideOfPopupProperty);
-		set => SetValue(OnTappingOutsideOfPopupProperty, value);
-	}
+	[BindableProperty]
+	public partial Color PageOverlayColor { get; set; } = Options.DefaultPopupOptionsSettings.PageOverlayColor;
 
 	/// <inheritdoc/>
-	public Shape? Shape
-	{
-		get => (Shape?)GetValue(ShapeProperty);
-		set => SetValue(ShapeProperty, value);
-	}
+	[BindableProperty]
+	public partial Shape? Shape { get; set; } = Options.DefaultPopupOptionsSettings.Shape;
 
-	/// <inheritdoc/>
-	public Shadow? Shadow
-	{
-		get => (Shadow?)GetValue(ShadowProperty);
-		set => SetValue(ShadowProperty, value);
-	}
+	/// <inheritdoc cref="IPopupOptions.Shadow"/>
+	[BindableProperty]
+	public partial Shadow? Shadow { get; set; } = Options.DefaultPopupOptionsSettings.Shadow;
 }
