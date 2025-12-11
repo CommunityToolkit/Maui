@@ -109,7 +109,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		await Navigation.PopModalAsync(false).WaitAsync(token);
 
 		// Clean up Popup resources
-		base.Content.GestureRecognizers.Clear();
+		Content.TapGestureGestureOverlay.GestureRecognizers.Clear();
 		popup.PropertyChanged -= HandlePopupPropertyChanged;
 
 		PopupClosed?.Invoke(this, result);
@@ -197,9 +197,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 	}
 
-	internal sealed partial class PopupOverlay : BoxView
+	internal sealed partial class PopupGestureOverlay : BoxView
 	{
-		public PopupOverlay()
+		public PopupGestureOverlay()
 		{
 			BackgroundColor = Colors.Transparent;
 			Background = Brush.Transparent;
@@ -234,12 +234,12 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			PopupBorder.SetBinding(Border.StrokeShapeProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay);
 			PopupBorder.SetBinding(Border.StrokeThicknessProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay, converter: new BorderStrokeThicknessConverter());
 
-			var overlay = new PopupOverlay();
 			var overlayTapGestureRecognizer = new TapGestureRecognizer();
 			overlayTapGestureRecognizer.Tapped += HandleOverlayTapped;
-			overlay.GestureRecognizers.Add(overlayTapGestureRecognizer);
+			TapGestureGestureOverlay = new PopupGestureOverlay();
+			TapGestureGestureOverlay.GestureRecognizers.Add(overlayTapGestureRecognizer);
 			
-			Children.Add(overlay);
+			Children.Add(TapGestureGestureOverlay);
 			Children.Add(PopupBorder);
 		}
 		
@@ -262,6 +262,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 
 		public Border PopupBorder { get; }
+		public PopupGestureOverlay TapGestureGestureOverlay { get; }
 
 		sealed partial class BorderStrokeThicknessConverter : BaseConverterOneWay<Shape?, double>
 		{
