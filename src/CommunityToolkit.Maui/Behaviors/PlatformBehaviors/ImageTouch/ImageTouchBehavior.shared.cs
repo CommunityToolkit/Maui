@@ -1,6 +1,4 @@
-using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
-using IImage = Microsoft.Maui.IImage;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -56,7 +54,7 @@ public partial class ImageTouchBehavior : TouchBehavior
 		var imageTouchBehavior = (ImageTouchBehavior)bindable;
 		var updatedImageSource = (ImageSource?)newValue;
 
-		if(!GestureManager.TryGetBindableImageTouchBehaviorElement(imageTouchBehavior, out var imageElement))
+		if (!GestureManager.TryGetBindableImageTouchBehaviorElement(imageTouchBehavior, out var imageElement))
 		{
 			return;
 		}
@@ -76,7 +74,7 @@ public partial class ImageTouchBehavior : TouchBehavior
 		var imageTouchBehavior = (ImageTouchBehavior)bindable;
 		var updatedImageSource = (ImageSource?)newValue;
 
-		if(!GestureManager.TryGetBindableImageTouchBehaviorElement(imageTouchBehavior, out var imageElement))
+		if (!GestureManager.TryGetBindableImageTouchBehaviorElement(imageTouchBehavior, out var imageElement))
 		{
 			return;
 		}
@@ -95,7 +93,7 @@ public partial class ImageTouchBehavior : TouchBehavior
 		var imageTouchBehavior = (ImageTouchBehavior)bindable;
 		var updatedImageSource = (ImageSource?)newValue;
 
-		if(!GestureManager.TryGetBindableImageTouchBehaviorElement(imageTouchBehavior, out var imageElement))
+		if (!GestureManager.TryGetBindableImageTouchBehaviorElement(imageTouchBehavior, out var imageElement))
 		{
 			return;
 		}

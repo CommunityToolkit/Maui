@@ -62,9 +62,9 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		Assert.Null(touchBehavior.PressedRotationY);
 		Assert.Null(touchBehavior.DefaultRotationY);
 
-		Assert.Null( touchBehavior.DefaultAnimationDuration);
-		Assert.Null( touchBehavior.HoveredAnimationDuration);
-		Assert.Null( touchBehavior.PressedAnimationDuration);
+		Assert.Null(touchBehavior.DefaultAnimationDuration);
+		Assert.Null(touchBehavior.HoveredAnimationDuration);
+		Assert.Null(touchBehavior.PressedAnimationDuration);
 
 		Assert.Null(touchBehavior.DefaultAnimationEasing);
 		Assert.Null(touchBehavior.HoveredAnimationEasing);

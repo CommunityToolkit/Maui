@@ -181,7 +181,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var fullDeclaringType = string.IsNullOrEmpty(value.ClassInformation.ContainingTypes)
 			? classNameWithGenerics
 			: string.Concat(value.ClassInformation.ContainingTypes, ".", classNameWithGenerics);
-		
+
 		var fileStaticClassName = $"__{classNameWithGenerics}BindablePropertyInitHelpers";
 
 		foreach (var info in value.BindableProperties)

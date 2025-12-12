@@ -316,7 +316,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 				}
 				else if (imageTouchBehavior.DefaultImageAspect is not null)
 				{
-					updatedImageAspect =imageTouchBehavior.DefaultImageAspect;
+					updatedImageAspect = imageTouchBehavior.DefaultImageAspect;
 				}
 
 				if (imageTouchBehavior.HoveredImageSource is not null)
@@ -333,7 +333,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			case (TouchState.Default, HoverState.Default):
 				if (imageTouchBehavior.DefaultImageAspect is not null)
 				{
-					updatedImageAspect =imageTouchBehavior.DefaultImageAspect;
+					updatedImageAspect = imageTouchBehavior.DefaultImageAspect;
 				}
 
 				if (imageTouchBehavior.DefaultImageSource is not null)
@@ -346,7 +346,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			default:
 				throw new NotSupportedException($"The combination of {nameof(TouchState)} {touchState} and {nameof(HoverState)} {hoverState} is not yet supported");
 		}
-		
+
 		bindable.SetValue(ImageElement.SourceProperty, updatedImageSource);
 		bindable.SetValue(ImageElement.AspectProperty, updatedImageAspect);
 	}
@@ -373,8 +373,8 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 	static async Task<bool> SetOpacity(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
 		if (Abs(touchBehavior.DefaultOpacity ?? TouchBehaviorDefaults.DefaultOpacity - 1) <= double.Epsilon
-		    && Abs(touchBehavior.PressedOpacity ?? TouchBehaviorDefaults.PressedOpacity - 1) <= double.Epsilon
-		    && Abs(touchBehavior.HoveredOpacity ?? TouchBehaviorDefaults.HoveredOpacity - 1) <= double.Epsilon)
+			&& Abs(touchBehavior.PressedOpacity ?? TouchBehaviorDefaults.PressedOpacity - 1) <= double.Epsilon
+			&& Abs(touchBehavior.HoveredOpacity ?? TouchBehaviorDefaults.HoveredOpacity - 1) <= double.Epsilon)
 		{
 			return false;
 		}
@@ -433,8 +433,8 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 	static async Task<bool> SetScale(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
 		if (Abs(touchBehavior.DefaultScale ?? TouchBehaviorDefaults.DefaultScale - 1) <= double.Epsilon
-		    && Abs(touchBehavior.PressedScale ?? TouchBehaviorDefaults.PressedScale - 1) <= double.Epsilon
-		    && Abs(touchBehavior.HoveredScale ?? TouchBehaviorDefaults.HoveredScale - 1) <= double.Epsilon)
+			&& Abs(touchBehavior.PressedScale ?? TouchBehaviorDefaults.PressedScale - 1) <= double.Epsilon
+			&& Abs(touchBehavior.HoveredScale ?? TouchBehaviorDefaults.HoveredScale - 1) <= double.Epsilon)
 		{
 			return false;
 		}
@@ -505,11 +505,11 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 	static async Task<bool> SetTranslation(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
 		if (Abs(touchBehavior.DefaultTranslationX ?? TouchBehaviorDefaults.DefaultTranslationX) <= double.Epsilon
-		    && Abs(touchBehavior.PressedTranslationX ?? TouchBehaviorDefaults.PressedTranslationX) <= double.Epsilon
-		    && Abs(touchBehavior.HoveredTranslationX ?? TouchBehaviorDefaults.HoveredTranslationX) <= double.Epsilon
-		    && Abs(touchBehavior.DefaultTranslationY ?? TouchBehaviorDefaults.DefaultTranslationY) <= double.Epsilon
-		    && Abs(touchBehavior.PressedTranslationY ?? TouchBehaviorDefaults.PressedTranslationY) <= double.Epsilon
-		    && Abs(touchBehavior.HoveredTranslationY ?? TouchBehaviorDefaults.HoveredTranslationY) <= double.Epsilon)
+			&& Abs(touchBehavior.PressedTranslationX ?? TouchBehaviorDefaults.PressedTranslationX) <= double.Epsilon
+			&& Abs(touchBehavior.HoveredTranslationX ?? TouchBehaviorDefaults.HoveredTranslationX) <= double.Epsilon
+			&& Abs(touchBehavior.DefaultTranslationY ?? TouchBehaviorDefaults.DefaultTranslationY) <= double.Epsilon
+			&& Abs(touchBehavior.PressedTranslationY ?? TouchBehaviorDefaults.PressedTranslationY) <= double.Epsilon
+			&& Abs(touchBehavior.HoveredTranslationY ?? TouchBehaviorDefaults.HoveredTranslationY) <= double.Epsilon)
 		{
 			return false;
 		}
@@ -590,8 +590,8 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 	static async Task<bool> SetRotation(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
 		if (Abs(touchBehavior.DefaultRotation ?? TouchBehaviorDefaults.DefaultRotation) <= double.Epsilon
-		    && Abs(touchBehavior.PressedRotation ?? TouchBehaviorDefaults.PressedRotation) <= double.Epsilon
-		    && Abs(touchBehavior.HoveredRotation ?? TouchBehaviorDefaults.HoveredRotation) <= double.Epsilon)
+			&& Abs(touchBehavior.PressedRotation ?? TouchBehaviorDefaults.PressedRotation) <= double.Epsilon
+			&& Abs(touchBehavior.HoveredRotation ?? TouchBehaviorDefaults.HoveredRotation) <= double.Epsilon)
 		{
 			return false;
 		}
@@ -650,8 +650,8 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 	static async Task<bool> SetRotationX(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
 		if (Abs(touchBehavior.DefaultRotationX ?? TouchBehaviorDefaults.DefaultRotationX) <= double.Epsilon &&
-		    Abs(touchBehavior.PressedRotationX ?? TouchBehaviorDefaults.PressedRotationX) <= double.Epsilon &&
-		    Abs(touchBehavior.HoveredRotationX ?? TouchBehaviorDefaults.HoveredRotationX) <= double.Epsilon)
+			Abs(touchBehavior.PressedRotationX ?? TouchBehaviorDefaults.PressedRotationX) <= double.Epsilon &&
+			Abs(touchBehavior.HoveredRotationX ?? TouchBehaviorDefaults.HoveredRotationX) <= double.Epsilon)
 		{
 			return false;
 		}
@@ -710,8 +710,8 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 	static async Task<bool> SetRotationY(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
 		if (Abs(touchBehavior.DefaultRotationY ?? TouchBehaviorDefaults.DefaultRotationY) <= double.Epsilon &&
-		    Abs(touchBehavior.PressedRotationY ?? TouchBehaviorDefaults.PressedRotationY) <= double.Epsilon &&
-		    Abs(touchBehavior.HoveredRotationY ?? TouchBehaviorDefaults.HoveredRotationY) <= double.Epsilon)
+			Abs(touchBehavior.PressedRotationY ?? TouchBehaviorDefaults.PressedRotationY) <= double.Epsilon &&
+			Abs(touchBehavior.HoveredRotationY ?? TouchBehaviorDefaults.HoveredRotationY) <= double.Epsilon)
 		{
 			return false;
 		}

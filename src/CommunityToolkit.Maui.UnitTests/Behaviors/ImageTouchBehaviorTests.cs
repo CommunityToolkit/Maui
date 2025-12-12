@@ -263,7 +263,7 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 		imageTouchBehavior.DefaultImageSource = null;
 		imageTouchBehavior.HoveredImageSource = null;
 		imageTouchBehavior.PressedImageSource = null;
-		
+
 		// Verify Default Source appears when Hover Active but not set
 		imageTouchBehavior.HandleHover(HoverStatus.Entered);
 		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);

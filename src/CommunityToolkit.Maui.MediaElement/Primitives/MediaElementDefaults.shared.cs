@@ -29,7 +29,7 @@ static class MediaElementDefaults
 	public const string MetadataArtworkUrl = "";
 
 	public const MediaElementState CurrentState = MediaElementState.None;
-	
+
 	public static TimeSpan Position { get; } = TimeSpan.Zero;
 
 	public static TimeSpan Duration { get; } = TimeSpan.Zero;

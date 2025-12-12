@@ -64,7 +64,7 @@ public partial class ProgressBarAnimationBehavior : BaseBehavior<ProgressBar>
 				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(Progress)} must be less than 1");
 		}
 	}
-	
+
 
 	static Task AnimateProgress(in ProgressBar progressBar, in double progress, in uint animationLength, in Easing animationEasing, in CancellationToken token)
 	{

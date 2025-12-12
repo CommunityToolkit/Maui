@@ -238,15 +238,15 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			overlayTapGestureRecognizer.Tapped += HandleOverlayTapped;
 			TapGestureGestureOverlay = new PopupGestureOverlay();
 			TapGestureGestureOverlay.GestureRecognizers.Add(overlayTapGestureRecognizer);
-			
+
 			Children.Add(TapGestureGestureOverlay);
 			Children.Add(PopupBorder);
 		}
-		
+
 		void HandleOverlayTapped(object? sender, TappedEventArgs e)
 		{
 			ArgumentNullException.ThrowIfNull(sender);
-			
+
 			var position = e.GetPosition(this);
 
 			if (position is null)
