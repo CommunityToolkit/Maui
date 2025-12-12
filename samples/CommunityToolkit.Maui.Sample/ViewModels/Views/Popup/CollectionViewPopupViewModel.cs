@@ -14,7 +14,7 @@ public partial class CollectionViewPopupViewModel(IPopupService popupService) : 
 	{
 		await popupService.ClosePopupAsync<string>(navigation, SelectedTitle ?? string.Empty, token);
 	}
-	
+
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ReturnButtonTappedCommand))]
 	public partial string? SelectedTitle { get; set; }
 }

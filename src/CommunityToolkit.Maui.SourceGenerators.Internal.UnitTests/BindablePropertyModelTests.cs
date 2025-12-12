@@ -20,7 +20,6 @@ public class BindablePropertyModelTests : BaseTest
 			"TestProperty",
 			propertySymbol.Type,
 			typeSymbol,
-			"null",
 			"Microsoft.Maui.Controls.BindingMode.OneWay",
 			"null",
 			"null",
@@ -49,7 +48,6 @@ public class BindablePropertyModelTests : BaseTest
 		var propertySymbol = typeSymbol.GetMembers("TestProperty").OfType<IPropertySymbol>().First();
 
 		const string propertyName = "TestProperty";
-		const string defaultValue = "\"Hello\"";
 		const string defaultBindingMode = "Microsoft.Maui.Controls.BindingMode.TwoWay";
 		const string validateValueMethodName = "ValidateValue";
 		const string propertyChangedMethodName = "OnPropertyChanged";
@@ -64,7 +62,6 @@ public class BindablePropertyModelTests : BaseTest
 			propertyName,
 			propertySymbol.Type,
 			typeSymbol,
-			defaultValue,
 			defaultBindingMode,
 			validateValueMethodName,
 			propertyChangedMethodName,
@@ -81,7 +78,6 @@ public class BindablePropertyModelTests : BaseTest
 		Assert.Equal(propertyName, model.PropertyName);
 		Assert.Equal(propertySymbol.Type, model.ReturnType);
 		Assert.Equal(typeSymbol, model.DeclaringType);
-		Assert.Equal(defaultValue, model.DefaultValue);
 		Assert.Equal(defaultBindingMode, model.DefaultBindingMode);
 		Assert.Equal(validateValueMethodName, model.ValidateValueMethodName);
 		Assert.Equal(propertyChangedMethodName, model.PropertyChangedMethodName);
@@ -125,7 +121,6 @@ public class BindablePropertyModelTests : BaseTest
 			"TestProperty",
 			propertySymbol.Type,
 			typeSymbol,
-			"null",
 			"Microsoft.Maui.Controls.BindingMode.OneWay",
 			"null",
 			"null",
@@ -182,7 +177,6 @@ public class BindablePropertyModelTests : BaseTest
 			propertyName,
 			propertySymbol.Type,
 			typeSymbol,
-			"null",
 			"Microsoft.Maui.Controls.BindingMode.OneWay",
 			"null",
 			"null",
@@ -220,7 +214,6 @@ public class BindablePropertyModelTests : BaseTest
 			propertyName,
 			propertySymbol.Type,
 			typeSymbol,
-			"null",
 			"Microsoft.Maui.Controls.BindingMode.OneWay",
 			"null",
 			"null",

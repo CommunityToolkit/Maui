@@ -23,7 +23,6 @@ public class BaseBindablePropertyAttributeSourceGeneratorTest : BaseTest
 		{
 			public string? PropertyName { get; }
 			public global::System.Type? DeclaringType { get; set; }
-			public object? DefaultValue { get; set; }
 			public global::Microsoft.Maui.Controls.BindingMode DefaultBindingMode { get; set; }
 			public string ValidateValueMethodName { get; set; } = string.Empty;
 			public string PropertyChangedMethodName { get; set; } = string.Empty;

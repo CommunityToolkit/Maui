@@ -31,7 +31,7 @@ public partial class AnimationBehavior : EventToCommandBehavior
 	/// <remarks>
 	/// <see cref="AnimateCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter"
 	/// </remarks>
-	[BindableProperty(DefaultValue = null, DefaultBindingMode = BindingMode.OneWayToSource, PropertyChangingMethodName = nameof(OnAnimateCommandChanging), DefaultValueCreatorMethodName = nameof(CreateAnimateCommand))]
+	[BindableProperty(DefaultBindingMode = BindingMode.OneWayToSource, PropertyChangingMethodName = nameof(OnAnimateCommandChanging), DefaultValueCreatorMethodName = nameof(CreateAnimateCommand))]
 	public partial Command<CancellationToken> AnimateCommand
 	{
 		get;

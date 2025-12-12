@@ -149,7 +149,7 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 
 		await this.ClosePopupAsync();
 	}
-	
+
 	async void HandleCollectionViewPopupClicked(object? sender, EventArgs e)
 	{
 		var popupResult = await popupService.ShowPopupAsync<CollectionViewPopup, string>(
