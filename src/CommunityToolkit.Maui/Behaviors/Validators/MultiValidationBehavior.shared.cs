@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
-using CommunityToolkit.Maui.Core;s
+using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
