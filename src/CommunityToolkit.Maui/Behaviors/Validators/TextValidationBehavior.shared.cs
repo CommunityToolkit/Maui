@@ -55,20 +55,20 @@ public partial class TextValidationBehavior : ValidationBehavior<string>
 	/// <summary>
 	/// The minimum length of the value that will be allowed. This is a bindable property.
 	/// </summary>
-	[BindableProperty(DefaultValue = TextValidationBehaviorDefaults.MinimumLength, PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
-	public partial int MinimumLength { get; set; }
+	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial int MinimumLength { get; set; } = TextValidationBehaviorDefaults.MinimumLength;
 
 	/// <summary>
 	/// The maximum length of the value that will be allowed. This is a bindable property.
 	/// </summary>
-	[BindableProperty(DefaultValue = TextValidationBehaviorDefaults.MaximumLength, PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
-	public partial int MaximumLength { get; set; }
+	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial int MaximumLength { get; set; } = TextValidationBehaviorDefaults.MaximumLength;
 
 	/// <summary>
 	/// Provides enumerated value to use to set how to handle white spaces. This is a bindable property.
 	/// </summary>
-	[BindableProperty(DefaultValue = TextValidationBehaviorDefaults.DecorationFlags, PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
-	public partial TextDecorationFlags DecorationFlags { get; set; }
+	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial TextDecorationFlags DecorationFlags { get; set; } = TextValidationBehaviorDefaults.DecorationFlags;
 
 	/// <summary>
 	/// The regular expression pattern which the value will have to match before it will be allowed. This is a bindable property.

@@ -58,26 +58,24 @@ public partial class CharactersValidationBehavior : TextValidationBehavior
 	/// <summary>
 	/// Provides an enumerated value to use to set how to handle comparisons. This is a bindable property.
 	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateCharacterType), PropertyChangedMethodName = nameof(OnCharacterTypePropertyChanged))]
-	public partial CharacterType CharacterType { get; set; }
+	[BindableProperty(PropertyChangedMethodName = nameof(OnCharacterTypePropertyChanged))]
+	public partial CharacterType CharacterType { get; set; } = CharactersValidationBehaviorDefaults.CharacterType;
 
 	/// <summary>
 	/// The minimum number of <see cref="CharacterType"/> required. This is a bindable property.
 	/// </summary>
-	[BindableProperty(DefaultValue = CharactersValidationBehaviorDefaults.MinimumCharacterTypeCount, PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
-	public partial int MinimumCharacterTypeCount { get; set; }
+	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial int MinimumCharacterTypeCount { get; set; } = CharactersValidationBehaviorDefaults.MinimumCharacterTypeCount;
 
 	/// <summary>
 	/// The maximum number of <see cref="CharacterType"/> allowed. This is a bindable property.
 	/// </summary>
-	[BindableProperty(DefaultValue = CharactersValidationBehaviorDefaults.MaximumCharacterTypeCount, PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
-	public partial int MaximumCharacterTypeCount { get; set; }
+	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial int MaximumCharacterTypeCount { get; set; } = CharactersValidationBehaviorDefaults.MaximumCharacterTypeCount;
 
 	/// <inheritdoc/>
 	protected override async ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
 		=> await base.ValidateAsync(value, token).ConfigureAwait(false) && Validate(value);
-
-	static object CreateCharacterType(object bindable) => CharactersValidationBehaviorDefaults.CharacterType;
 
 	static void OnCharacterTypePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{

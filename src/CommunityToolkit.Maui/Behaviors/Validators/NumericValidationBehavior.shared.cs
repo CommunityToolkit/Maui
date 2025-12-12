@@ -14,26 +14,26 @@ public partial class NumericValidationBehavior : ValidationBehavior<string>
 	/// <summary>
 	/// The minimum numeric value that will be allowed. This is a bindable property.
 	/// </summary>
-	[BindableProperty(DefaultValue = NumericValidationBehaviorDefaults.MinimumValue, PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
-	public partial double MinimumValue { get; set; }
+	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial double MinimumValue { get; set; } = NumericValidationBehaviorDefaults.MinimumValue;
 
 	/// <summary>
 	/// The maximum numeric value that will be allowed. This is a bindable property.
 	/// </summary>
-	[BindableProperty(DefaultValue = NumericValidationBehaviorDefaults.MaximumValue, PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
-	public partial double MaximumValue { get; set; }
+	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial double MaximumValue { get; set; } = NumericValidationBehaviorDefaults.MaximumValue;
 
 	/// <summary>
 	/// The minimum number of decimal places that will be allowed. This is a bindable property.
 	/// </summary>
-	[BindableProperty(DefaultValue = NumericValidationBehaviorDefaults.MinimumDecimalPlaces, PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
-	public partial int MinimumDecimalPlaces { get; set; }
+	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial int MinimumDecimalPlaces { get; set; } = NumericValidationBehaviorDefaults.MinimumDecimalPlaces;
 
 	/// <summary>
 	/// The maximum number of decimal places that will be allowed. This is a bindable property.
 	/// </summary>
-	[BindableProperty(DefaultValue = NumericValidationBehaviorDefaults.MaximumDecimalPlaces, PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
-	public partial int MaximumDecimalPlaces { get; set; }
+	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial int MaximumDecimalPlaces { get; set; } = NumericValidationBehaviorDefaults.MaximumDecimalPlaces;
 
 	/// <inheritdoc/>
 	protected override string? Decorate(string? value)

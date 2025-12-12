@@ -13,8 +13,8 @@ public partial class RequiredStringValidationBehavior : ValidationBehavior<strin
 	/// <summary>
 	/// The string that will be compared to the value provided by the user. This is a bindable property.
 	/// </summary>
-	[BindableProperty(DefaultValue = RequiredStringValidationBehaviorDefaults.RequiredString)]
-	public partial string? RequiredString { get; set; }
+	[BindableProperty]
+	public partial string? RequiredString { get; set; } = RequiredStringValidationBehaviorDefaults.RequiredString;
 
 	/// <summary>
 	/// Get or sets whether the entered text must match the whole contents of the <see cref="RequiredString"/> property
@@ -22,8 +22,8 @@ public partial class RequiredStringValidationBehavior : ValidationBehavior<strin
 	/// <br/>
 	/// <c>true</c> by default. This is a bindable property.
 	/// </summary>
-	[BindableProperty(DefaultValue = RequiredStringValidationBehaviorDefaults.ExactMatch)]
-	public partial bool ExactMatch { get; set; }
+	[BindableProperty]
+	public partial bool ExactMatch { get; set; } = RequiredStringValidationBehaviorDefaults.ExactMatch;
 
 	/// <inheritdoc/>
 	protected override ValueTask<bool> ValidateAsync(string? value, CancellationToken token)

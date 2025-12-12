@@ -22,14 +22,14 @@ public partial class MultiValidationBehavior : ValidationBehavior
 	/// <summary>
 	/// Holds the errors from all the nested invalid validators in <see cref="Children"/>. This is a bindable property.
 	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateErrors))]
-	public partial List<object?>? Errors { get; set; }
+	[BindableProperty]
+	public partial List<object?>? Errors { get; set; } = MultiValidationBehaviorDefaults.Errors;
 
 	/// <summary>
 	/// Error from the property for a child behavior in <see cref="Children"/>.
 	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateError))]
-	public partial List<object?>? Error { get; }
+	[BindableProperty]
+	public partial List<object?>? Error { get; } = MultiValidationBehaviorDefaults.Error;
 
 	/// <summary>
 	/// Method to extract the error from the attached property for a child behavior in <see cref="Children"/>.
@@ -69,8 +69,4 @@ public partial class MultiValidationBehavior : ValidationBehavior
 
 		return false;
 	}
-
-	static List<object?>? CreateErrors(object bindable) => MultiValidationBehaviorDefaults.Errors;
-
-	static List<object?>? CreateError(object bindable) => MultiValidationBehaviorDefaults.Error;
 }
