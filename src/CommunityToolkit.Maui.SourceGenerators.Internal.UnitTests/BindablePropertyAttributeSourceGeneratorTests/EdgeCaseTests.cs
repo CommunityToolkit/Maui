@@ -431,6 +431,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			$$"""
             using CommunityToolkit.Maui;
             using Microsoft.Maui.Controls;
+            using System;
 
             namespace {{defaultTestNamespace}};
 
@@ -491,8 +492,8 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                 /// <summary>
                 /// Backing BindableProperty for the <see cref = "TimeSpent"/> property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty TimeSpentProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("TimeSpent", typeof(TimeSpan), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultTimeSpent);
-                public partial TimeSpan TimeSpent { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingTimeSpent ? field : (TimeSpan)GetValue(TimeSpentProperty); set => SetValue(TimeSpentProperty, value); }
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty TimeSpentProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("TimeSpent", typeof(System.TimeSpan), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultTimeSpent);
+                public partial System.TimeSpan TimeSpent { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingTimeSpent ? field : (System.TimeSpan)GetValue(TimeSpentProperty); set => SetValue(TimeSpentProperty, value); }
             
                 /// <summary>
                 /// Backing BindableProperty for the <see cref = "DoubleEpsilon"/> property.
@@ -509,8 +510,8 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                 /// <summary>
                 /// Backing BindableProperty for the <see cref = "CurrentTime"/> property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty CurrentTimeProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("CurrentTime", typeof(DateTimeOffset), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultCurrentTime);
-                public partial DateTimeOffset CurrentTime { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingCurrentTime ? field : (DateTimeOffset)GetValue(CurrentTimeProperty); set => SetValue(CurrentTimeProperty, value); }
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty CurrentTimeProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("CurrentTime", typeof(System.DateTimeOffset), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultCurrentTime);
+                public partial System.DateTimeOffset CurrentTime { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingCurrentTime ? field : (System.DateTimeOffset)GetValue(CurrentTimeProperty); set => SetValue(CurrentTimeProperty, value); }
             }
 
             file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
@@ -523,7 +524,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                     IsInitializingIsEnabled = false;
                     return defaultValue;
                 }
-            
+
                 public static bool IsInitializingPi = false;
                 public static object CreateDefaultPi(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
@@ -532,13 +533,22 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                     IsInitializingPi = false;
                     return defaultValue;
                 }
-            
+
                 public static bool IsInitializingLetter = false;
                 public static object CreateDefaultLetter(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingLetter = true;
                     var defaultValue = ((TestView)bindable).Letter;
                     IsInitializingLetter = false;
+                    return defaultValue;
+                }
+
+                public static bool IsInitializingTimeSpent = false;
+                public static object CreateDefaultTimeSpent(global::Microsoft.Maui.Controls.BindableObject bindable)
+                {
+                    IsInitializingTimeSpent = true;
+                    var defaultValue = ((TestView)bindable).TimeSpent;
+                    IsInitializingTimeSpent = false;
                     return defaultValue;
                 }
 
@@ -550,7 +560,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                     IsInitializingDoubleEpsilon = false;
                     return defaultValue;
                 }
-            
+
                 public static bool IsInitializingSingleEpsilon = false;
                 public static object CreateDefaultSingleEpsilon(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
@@ -559,7 +569,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                     IsInitializingSingleEpsilon = false;
                     return defaultValue;
                 }
-            
+
                 public static bool IsInitializingCurrentTime = false;
                 public static object CreateDefaultCurrentTime(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
