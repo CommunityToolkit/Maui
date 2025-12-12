@@ -52,6 +52,8 @@
                 
                 <Button Text="Complex Popup" Clicked="HandleComplexPopupClicked" />
                 
+                <Button Text="Collection View Popup" Clicked="HandleCollectionViewPopupClicked" />
+                
             </VerticalStackLayout>
         </ScrollView>
     </ContentPage.Content>
