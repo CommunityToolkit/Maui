@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -12,17 +13,11 @@ namespace CommunityToolkit.Maui.Behaviors;
 public partial class MultiValidationBehavior : ValidationBehavior
 {
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="Errors"/> property.
-	/// </summary>
-	public static readonly BindableProperty ErrorsProperty =
-		BindableProperty.Create(nameof(Errors), typeof(List<object?>), typeof(MultiValidationBehavior), null, BindingMode.OneWayToSource);
-
-	/// <summary>
 	/// BindableProperty for getting the error.
 	/// </summary>
 	public static readonly BindableProperty ErrorProperty =
 		BindableProperty.CreateAttached(nameof(GetError), typeof(object), typeof(MultiValidationBehavior), null);
-
+	
 	readonly ObservableCollection<ValidationBehavior> children = [];
 
 	/// <summary>
@@ -33,11 +28,8 @@ public partial class MultiValidationBehavior : ValidationBehavior
 	/// <summary>
 	/// Holds the errors from all the nested invalid validators in <see cref="Children"/>. This is a bindable property.
 	/// </summary>
-	public List<object?>? Errors
-	{
-		get => (List<object?>?)GetValue(ErrorsProperty);
-		set => SetValue(ErrorsProperty, value);
-	}
+	[BindableProperty(DefaultBindingMode = BindingMode.OneWayToSource)]
+	public partial List<object?>? Errors { get; set; } = MultiValidationBehaviorDefaults.Errors;
 
 	/// <summary>
 	/// Method to extract the error from the attached property for a child behavior in <see cref="Children"/>.
@@ -61,7 +53,7 @@ public partial class MultiValidationBehavior : ValidationBehavior
 			validationBehavior.Value = value;
 			await validationBehavior.ValidateNestedAsync(token);
 		})).ConfigureAwait(false);
-
+		
 		var errors = children.Where(static c => c.IsNotValid).Select(GetError).ToList();
 
 		if (errors.Count is 0)
