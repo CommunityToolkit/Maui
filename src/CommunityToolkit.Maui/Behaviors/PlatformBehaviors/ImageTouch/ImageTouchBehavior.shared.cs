@@ -54,10 +54,12 @@ public partial class ImageTouchBehavior : TouchBehavior
 	static void HandleDefaultImageSourceChanged(BindableObject bindable, object? oldValue, object? newValue)
 	{
 		var imageTouchBehavior = (ImageTouchBehavior)bindable;
-		var previousImageSource = (ImageSource?)oldValue;
 		var updatedImageSource = (ImageSource?)newValue;
 
-		var imageElement = GestureManager.GetBindableImageTouchBehaviorElement(imageTouchBehavior);
+		if(!GestureManager.TryGetBindableImageTouchBehaviorElement(imageTouchBehavior, out var imageElement))
+		{
+			return;
+		}
 
 		// GestureManager does not automatically toggle ImageElement.SourceProperty when currently being displayed
 		switch (imageTouchBehavior.CurrentTouchState, imageTouchBehavior.CurrentHoverState)
@@ -72,10 +74,12 @@ public partial class ImageTouchBehavior : TouchBehavior
 	static void HandlePressedImageSourceChanged(BindableObject bindable, object? oldValue, object? newValue)
 	{
 		var imageTouchBehavior = (ImageTouchBehavior)bindable;
-		var previousImageSource = (ImageSource?)oldValue;
 		var updatedImageSource = (ImageSource?)newValue;
-		
-		var imageElement = GestureManager.GetBindableImageTouchBehaviorElement(imageTouchBehavior);
+
+		if(!GestureManager.TryGetBindableImageTouchBehaviorElement(imageTouchBehavior, out var imageElement))
+		{
+			return;
+		}
 
 		// GestureManager does not automatically toggle ImageElement.SourceProperty when currently being displayed
 		switch (imageTouchBehavior.CurrentTouchState, imageTouchBehavior.CurrentHoverState)
@@ -90,8 +94,11 @@ public partial class ImageTouchBehavior : TouchBehavior
 	{
 		var imageTouchBehavior = (ImageTouchBehavior)bindable;
 		var updatedImageSource = (ImageSource?)newValue;
-		
-		var imageElement = GestureManager.GetBindableImageTouchBehaviorElement(imageTouchBehavior);
+
+		if(!GestureManager.TryGetBindableImageTouchBehaviorElement(imageTouchBehavior, out var imageElement))
+		{
+			return;
+		}
 
 		// GestureManager does not automatically toggle ImageElement.SourceProperty when currently being displayed
 		switch (imageTouchBehavior.CurrentTouchState, imageTouchBehavior.CurrentHoverState)
