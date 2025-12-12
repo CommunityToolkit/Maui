@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Maui.Core;
+
 namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>
@@ -12,7 +14,7 @@ public partial class UriValidationBehavior : TextValidationBehavior
 	/// Provides an enumerated value that specifies how to handle different URI types. This is a bindable property.
 	/// </summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
-	public partial UriKind UriKind { get; set; } = UriKind.RelativeOrAbsolute;
+	public partial UriKind UriKind { get; set; } = UriValidationBehaviorDefaults.UriKind;
 
 	/// <inheritdoc/>
 	protected override async ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
