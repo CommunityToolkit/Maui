@@ -75,8 +75,6 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 		imageTouchBehavior.DefaultImageSource = normalImageSource;
 		imageTouchBehavior.PressedImageSource = pressedImageSource;
 
-		Assert.Null(view.Source);
-
 		await imageTouchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
 		Assert.Equal(normalImageSource, view.Source);
 		Assert.Same(normalImageSource, view.Source);
@@ -180,6 +178,54 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 	}
 
 	[Fact]
+	public void VerifyImageSourceStateMachineWhenImageSourceSetToNullWhilstActive()
+	{
+		var image = new Image();
+		AttachTouchBehaviorToVisualElement(image);
+
+		// Verify Default Source appears when Hover Active but not set
+		imageTouchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);
+
+		imageTouchBehavior.DefaultImageSource = ImageSource.FromUri(new Uri("https://www.google.com/images/branding/googlelogo/2x/googlelogo_dark_color_272x92dp.png"));
+		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);
+
+		imageTouchBehavior.DefaultImageSource = null;
+		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);
+
+		// Verify Pressed Source appears when Hover + Press simultaneously active
+		imageTouchBehavior.HandleTouch(TouchStatus.Started);
+		imageTouchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(imageTouchBehavior.PressedImageSource, image.Source);
+
+		imageTouchBehavior.PressedImageSource = ImageSource.FromUri(new Uri("https://www.google.com/images/branding/googlelogo/2x/googlelogo_dark_color_272x92dp.png"));
+		Assert.Equal(imageTouchBehavior.PressedImageSource, image.Source);
+
+		imageTouchBehavior.PressedImageSource = null;
+		Assert.Equal(imageTouchBehavior.PressedImageSource, image.Source);
+
+		// Verify Hovered Source appears when Hover active
+		imageTouchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(imageTouchBehavior.HoveredImageSource, image.Source);
+
+		imageTouchBehavior.HoveredImageSource = ImageSource.FromUri(new Uri("https://www.google.com/images/branding/googlelogo/2x/googlelogo_dark_color_272x92dp.png"));
+		Assert.Equal(imageTouchBehavior.HoveredImageSource, image.Source);
+
+		imageTouchBehavior.HoveredImageSource = null;
+		Assert.Equal(imageTouchBehavior.HoveredImageSource, image.Source);
+
+		// Verify Default Source appears when neither active
+		imageTouchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);
+
+		imageTouchBehavior.DefaultImageSource = ImageSource.FromUri(new Uri("https://www.google.com/images/branding/googlelogo/2x/googlelogo_dark_color_272x92dp.png"));
+		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);
+
+		imageTouchBehavior.DefaultImageSource = null;
+		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);
+	}
+
+	[Fact]
 	public void VerifyImageSourceStateMachine()
 	{
 		var image = new Image();
@@ -195,6 +241,29 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 			Uri = new Uri("https://www.google.com/images/branding/googlelogo/2x/googlelogo_dark_color_272x92dp.png")
 		};
 
+		// Verify Default Source appears when Hover Active but not set
+		imageTouchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);
+
+		imageTouchBehavior.HoveredImageSource = ImageSource.FromUri(new Uri("https://www.google.com/images/branding/googlelogo/2x/googlelogo_dark_color_272x92dp.png"));
+
+		// Verify Pressed Source appears when Hover + Press simultaneously active
+		imageTouchBehavior.HandleTouch(TouchStatus.Started);
+		imageTouchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(imageTouchBehavior.PressedImageSource, image.Source);
+
+		// Verify Hovered Source appears when Hover active
+		imageTouchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(imageTouchBehavior.HoveredImageSource, image.Source);
+
+		// Verify Default Source appears when neither active
+		imageTouchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);
+
+		imageTouchBehavior.DefaultImageSource = null;
+		imageTouchBehavior.HoveredImageSource = null;
+		imageTouchBehavior.PressedImageSource = null;
+		
 		// Verify Default Source appears when Hover Active but not set
 		imageTouchBehavior.HandleHover(HoverStatus.Entered);
 		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);

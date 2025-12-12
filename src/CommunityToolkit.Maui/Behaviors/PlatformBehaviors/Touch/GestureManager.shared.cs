@@ -34,6 +34,17 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		longPressTokenSource = animationTokenSource = null;
 	}
 
+	internal static BindableObject GetBindableImageTouchBehaviorElement(ImageTouchBehavior imageTouchBehavior)
+	{
+		// Validate the ImageTouchBehaviorElement is both a BindableObject and IImage
+		if (imageTouchBehavior.Element is not (BindableObject bindable and Microsoft.Maui.IImage))
+		{
+			throw new InvalidOperationException($"{nameof(ImageTouchBehavior)} can only be attached to an {nameof(Microsoft.Maui.IImage)}");
+		}
+
+		return imageTouchBehavior.Element;
+	}
+
 	internal static void HandleUserInteraction(in TouchBehavior touchBehavior, in TouchInteractionStatus interactionStatus)
 	{
 		touchBehavior.CurrentInteractionStatus = interactionStatus;
@@ -261,10 +272,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return;
 		}
 
-		if (touchBehavior.Element is not (BindableObject bindable and Microsoft.Maui.IImage))
-		{
-			throw new InvalidOperationException($"{nameof(ImageTouchBehavior)} can only be attached to an {nameof(Microsoft.Maui.IImage)}");
-		}
+		var bindable = GetBindableImageTouchBehaviorElement(imageTouchBehavior);
 
 		try
 		{
