@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
-using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core;s
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -12,6 +12,12 @@ namespace CommunityToolkit.Maui.Behaviors;
 [ContentProperty(nameof(Children))]
 public partial class MultiValidationBehavior : ValidationBehavior
 {
+	/// <summary>
+	/// BindableProperty for getting the error.
+	/// </summary>
+	public static readonly BindableProperty ErrorProperty =
+		BindableProperty.CreateAttached(nameof(GetError), typeof(object), typeof(MultiValidationBehavior), null);
+	
 	readonly ObservableCollection<ValidationBehavior> children = [];
 
 	/// <summary>
@@ -22,14 +28,8 @@ public partial class MultiValidationBehavior : ValidationBehavior
 	/// <summary>
 	/// Holds the errors from all the nested invalid validators in <see cref="Children"/>. This is a bindable property.
 	/// </summary>
-	[BindableProperty]
+	[BindableProperty(DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial List<object?>? Errors { get; set; } = MultiValidationBehaviorDefaults.Errors;
-
-	/// <summary>
-	/// Error from the property for a child behavior in <see cref="Children"/>.
-	/// </summary>
-	[BindableProperty]
-	public partial List<object?>? Error { get; } = MultiValidationBehaviorDefaults.Error;
 
 	/// <summary>
 	/// Method to extract the error from the attached property for a child behavior in <see cref="Children"/>.
@@ -43,7 +43,7 @@ public partial class MultiValidationBehavior : ValidationBehavior
 	/// </summary>
 	/// <param name="bindable">The <see cref="ValidationBehavior"/> on which we set the attached Error property value</param>
 	/// <param name="value">The value to set</param>
-	public static void SetError(BindableObject bindable, object value) => bindable.SetValue(errorPropertyKey, value);
+	public static void SetError(BindableObject bindable, object value) => bindable.SetValue(ErrorProperty, value);
 
 	/// <inheritdoc/>
 	protected override async ValueTask<bool> ValidateAsync(object? value, CancellationToken token)
@@ -53,7 +53,7 @@ public partial class MultiValidationBehavior : ValidationBehavior
 			validationBehavior.Value = value;
 			await validationBehavior.ValidateNestedAsync(token);
 		})).ConfigureAwait(false);
-
+		
 		var errors = children.Where(static c => c.IsNotValid).Select(GetError).ToList();
 
 		if (errors.Count is 0)

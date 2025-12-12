@@ -129,7 +129,6 @@ public class MultiValidationBehaviorTests() : BaseBehaviorTest<MultiValidationBe
 
 		// Act // Assert
 		Assert.Equal(MultiValidationBehaviorDefaults.Errors, multiValidationBehavior.Errors);
-		Assert.Equal(MultiValidationBehaviorDefaults.Error, multiValidationBehavior.Error);
 		Assert.Equal(MultiValidationBehaviorDefaults.Error, MultiValidationBehavior.GetError(multiValidationBehavior));
 	}
 }
