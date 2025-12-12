@@ -9,19 +9,10 @@ namespace CommunityToolkit.Maui.Behaviors;
 public partial class UriValidationBehavior : TextValidationBehavior
 {
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="UriKind"/> property.
-	/// </summary>
-	public static readonly BindableProperty UriKindProperty =
-		BindableProperty.Create(nameof(UriKind), typeof(UriKind), typeof(UriValidationBehavior), UriKind.RelativeOrAbsolute, propertyChanged: OnValidationPropertyChanged);
-
-	/// <summary>
 	/// Provides an enumerated value that specifies how to handle different URI types. This is a bindable property.
 	/// </summary>
-	public UriKind UriKind
-	{
-		get => (UriKind)GetValue(UriKindProperty);
-		set => SetValue(UriKindProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial UriKind UriKind { get; set; } = UriKind.RelativeOrAbsolute;
 
 	/// <inheritdoc/>
 	protected override async ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
