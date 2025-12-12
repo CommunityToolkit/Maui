@@ -93,9 +93,9 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 
 		Assert.Equal(TouchBehaviorDefaults.CurrentInteractionStatus, touchBehavior.CurrentInteractionStatus);
 
-		Assert.Equal(TouchBehaviorDefaults.DefaultBackgroundColor, touchBehavior.DefaultBackgroundColor);
-		Assert.Equal(TouchBehaviorDefaults.HoveredBackgroundColor, touchBehavior.HoveredBackgroundColor);
-		Assert.Equal(TouchBehaviorDefaults.PressedBackgroundColor, touchBehavior.PressedBackgroundColor);
+		Assert.Null(touchBehavior.DefaultBackgroundColor);
+		Assert.Null(touchBehavior.HoveredBackgroundColor);
+		Assert.Null(touchBehavior.PressedBackgroundColor);
 	}
 
 	[Fact]
