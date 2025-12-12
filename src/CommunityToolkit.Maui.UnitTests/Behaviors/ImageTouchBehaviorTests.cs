@@ -198,7 +198,7 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 		imageTouchBehavior.HandleHover(HoverStatus.Entered);
 		Assert.Equal(imageTouchBehavior.PressedImageSource, image.Source);
 
-		imageTouchBehavior.PressedImageSource = ImageSource.FromUri(new Uri("https://www.google.com/images/branding/googlelogo/2x/googlelogo_dark_color_272x92dp.png"));
+		imageTouchBehavior.PressedImageSource = ImageSource.FromUri(new Uri("https://www.google.com/images/branding/googlelogo/2x/googlelogo_light_color_272x92dp.png"));
 		Assert.Equal(imageTouchBehavior.PressedImageSource, image.Source);
 
 		imageTouchBehavior.PressedImageSource = null;
@@ -208,7 +208,7 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 		imageTouchBehavior.HandleTouch(TouchStatus.Completed);
 		Assert.Equal(imageTouchBehavior.HoveredImageSource, image.Source);
 
-		imageTouchBehavior.HoveredImageSource = ImageSource.FromUri(new Uri("https://www.google.com/images/branding/googlelogo/2x/googlelogo_dark_color_272x92dp.png"));
+		imageTouchBehavior.HoveredImageSource = ImageSource.FromUri(new Uri("https://www.google.com/images/branding/googlelogo/1x/googlelogo_dark_color_272x92dp.png"));
 		Assert.Equal(imageTouchBehavior.HoveredImageSource, image.Source);
 
 		imageTouchBehavior.HoveredImageSource = null;
@@ -218,7 +218,7 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 		imageTouchBehavior.HandleHover(HoverStatus.Exited);
 		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);
 
-		imageTouchBehavior.DefaultImageSource = ImageSource.FromUri(new Uri("https://www.google.com/images/branding/googlelogo/2x/googlelogo_dark_color_272x92dp.png"));
+		imageTouchBehavior.DefaultImageSource = ImageSource.FromUri(new Uri("https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png"));
 		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);
 
 		imageTouchBehavior.DefaultImageSource = null;
@@ -245,7 +245,7 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 		imageTouchBehavior.HandleHover(HoverStatus.Entered);
 		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);
 
-		imageTouchBehavior.HoveredImageSource = ImageSource.FromUri(new Uri("https://www.google.com/images/branding/googlelogo/2x/googlelogo_dark_color_272x92dp.png"));
+		imageTouchBehavior.HoveredImageSource = ImageSource.FromUri(new Uri("https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png"));
 
 		// Verify Pressed Source appears when Hover + Press simultaneously active
 		imageTouchBehavior.HandleTouch(TouchStatus.Started);
