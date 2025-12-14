@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.ComponentModel;
+using System.Globalization;
 using System.Reflection;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Converters;
