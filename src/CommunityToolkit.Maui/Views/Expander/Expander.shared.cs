@@ -140,7 +140,8 @@ public partial class Expander : ContentView, IExpander
 
 	void OnIsExpandedPropertyChanged(object oldValue, object newValue)
 	{
-		((IExpander)this).ExpandedChanged(((IExpander)this).IsExpanded);
+		IExpander expander = this;
+		expander.ExpandedChanged(expander.IsExpanded);
 	}
 
 	static void OnDirectionPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
