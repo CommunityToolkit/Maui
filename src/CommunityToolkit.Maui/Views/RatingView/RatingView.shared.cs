@@ -326,7 +326,7 @@ public partial class RatingView : TemplatedView, IRatingView
 	{
 		for (var element = 0; element < RatingLayout.Count; element++)
 		{
-			((Border)this.RatingLayout.Children[element]).Padding = (Thickness)newValue;
+			((Border)RatingLayout.Children[element]).Padding = (Thickness)newValue;
 		}
 	}
 
@@ -334,7 +334,7 @@ public partial class RatingView : TemplatedView, IRatingView
 	{
 		for (var element = 0; element < RatingLayout.Count; element++)
 		{
-			var border = (Border)this.RatingLayout.Children[element];
+			var border = (Border)RatingLayout.Children[element];
 			if (border.Content is not null)
 			{
 				((Path)border.Content.GetVisualTreeDescendants()[0]).Stroke = (Color)newValue;
@@ -354,7 +354,7 @@ public partial class RatingView : TemplatedView, IRatingView
 	{
 		for (var element = 0; element < RatingLayout.Count; element++)
 		{
-			var border = (Border)this.RatingLayout.Children[element];
+			var border = (Border)RatingLayout.Children[element];
 			if (border.Content is not null)
 			{
 				((Path)border.Content.GetVisualTreeDescendants()[0]).StrokeThickness = (double)newValue;
@@ -371,7 +371,7 @@ public partial class RatingView : TemplatedView, IRatingView
 	{
 		for (var element = 0; element < RatingLayout.Count; element++)
 		{
-			var border = (Border)this.RatingLayout.Children[element];
+			var border = (Border)RatingLayout.Children[element];
 			if (border.Content is null)
 			{
 				continue;
