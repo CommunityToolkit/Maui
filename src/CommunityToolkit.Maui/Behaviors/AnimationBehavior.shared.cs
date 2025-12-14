@@ -132,7 +132,7 @@ public partial class AnimationBehavior : EventToCommandBehavior
 	{
 		if (newValue is not Command<CancellationToken>)
 		{
-			throw new InvalidOperationException($"{nameof(AnimateCommand)} must of Type {AnimateCommand.GetType().FullName}");
+			throw new InvalidOperationException($"{nameof(AnimateCommand)} must be of Type {AnimateCommand.GetType().FullName}");
 		}
 	}
 
