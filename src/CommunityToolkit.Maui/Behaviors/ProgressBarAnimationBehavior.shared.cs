@@ -37,23 +37,21 @@ public partial class ProgressBarAnimationBehavior : BaseBehavior<ProgressBar>
 	[BindableProperty]
 	public partial Easing Easing { get; set; } = ProgressBarAnimationBehaviorDefaults.Easing;
 
-	static async void OnAnimateProgressPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	async void OnAnimateProgressPropertyChanged(object oldValue, object newValue)
 	{
-		var progressBarAnimationBehavior = (ProgressBarAnimationBehavior)bindable;
-
-		if (progressBarAnimationBehavior.View is not null)
+		if (View is not null)
 		{
-			await AnimateProgress(progressBarAnimationBehavior.View,
-									progressBarAnimationBehavior.Progress,
-									progressBarAnimationBehavior.Length,
-									progressBarAnimationBehavior.Easing,
+			await AnimateProgress(View,
+									Progress,
+									Length,
+									Easing,
 									CancellationToken.None);
 
-			progressBarAnimationBehavior.OnAnimationCompleted();
+			OnAnimationCompleted();
 		}
 	}
 
-	static void OnAnimateProgressPropertyChanging(BindableObject bindable, object oldValue, object newValue)
+	void OnAnimateProgressPropertyChanging(object oldValue, object newValue)
 	{
 		var progress = (double)newValue;
 		switch (progress)

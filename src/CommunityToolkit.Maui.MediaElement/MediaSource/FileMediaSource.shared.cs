@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Converters;
-using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -32,6 +31,6 @@ public sealed partial class FileMediaSource : MediaSource
 	/// <inheritdoc/>
 	public override string ToString() => $"File: {Path}";
 
-	static void OnFileMediaSourceChanged(BindableObject bindable, object oldValue, object newValue) =>
-		((FileMediaSource)bindable).OnSourceChanged();
+	void OnFileMediaSourceChanged(object oldValue, object newValue) =>
+		OnSourceChanged();
 }

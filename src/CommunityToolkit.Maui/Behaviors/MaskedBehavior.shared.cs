@@ -69,20 +69,18 @@ public partial class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 		}
 	}
 
-	static object UnmaskedCharacterValueCreator(BindableObject bindable) => 'X';
+	object UnmaskedCharacterValueCreator() => 'X';
 
-	static void OnMaskPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnMaskPropertyChanged(object oldValue, object newValue)
 	{
 		var mask = (string?)newValue;
-		var maskedBehavior = (MaskedBehavior)bindable;
 
-		maskedBehavior.SetMaskPositions(mask);
+		SetMaskPositions(mask);
 	}
 
-	static async void OnUnmaskedCharacterPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	async void OnUnmaskedCharacterPropertyChanged(object oldValue, object newValue)
 	{
-		var maskedBehavior = (MaskedBehavior)bindable;
-		await maskedBehavior.OnMaskChanged(maskedBehavior.Mask, CancellationToken.None).ConfigureAwait(false);
+		await OnMaskChanged(Mask, CancellationToken.None).ConfigureAwait(false);
 	}
 
 	Task OnTextPropertyChanged(CancellationToken token)

@@ -200,11 +200,11 @@ public class CommonUsageTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			        DefaultValueCreatorMethodName = "CreateDefaultValue")]
 			    public partial int Value { get; set; } = 42;
 
-			    static bool ValidateValue(BindableObject bindable, object value) => true;
-			    static void OnPropertyChanged(BindableObject bindable, object oldValue, object newValue) { }
-			    static void OnPropertyChanging(BindableObject bindable, object oldValue, object newValue) { }
-			    static object CoerceValue(BindableObject bindable, object value) => value;
-			    static object CreateDefaultValue(BindableObject bindable) => 0;
+			    bool ValidateValue(object value) => true;
+			    void OnPropertyChanged(object oldValue, object newValue) { }
+			    void OnPropertyChanging(object oldValue, object newValue) { }
+			    object CoerceValue(object value) => value;
+			    object CreateDefaultValue() => 0;
 			}
 			""";
 
@@ -222,7 +222,7 @@ public class CommonUsageTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			    /// <summary>
 			    /// Backing BindableProperty for the <see cref = "Value"/> property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty ValueProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Value", typeof(int), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)1, ValidateValue, OnPropertyChanged, OnPropertyChanging, CoerceValue, CreateDefaultValue);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty ValueProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Value", typeof(int), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)1, (b, v) => (({{defaultTestNamespace}}.{{defaultTestClassName}})b).ValidateValue(v), (b, o, n) => (({{defaultTestNamespace}}.{{defaultTestClassName}})b).OnPropertyChanged(o, n), (b, o, n) => (({{defaultTestNamespace}}.{{defaultTestClassName}})b).OnPropertyChanging(o, n), (b, v) => (({{defaultTestNamespace}}.{{defaultTestClassName}})b).CoerceValue(v), (b) => (({{defaultTestNamespace}}.{{defaultTestClassName}})b).CreateDefaultValue());
 			    public partial int Value { get => false ? field : (int)GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
 			}
 			""";

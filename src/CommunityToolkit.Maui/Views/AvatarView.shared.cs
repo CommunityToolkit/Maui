@@ -256,39 +256,34 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 	static double GetAverageCorderRadius(in CornerRadius cornerRadius) =>
 		new[] { cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomLeft, cornerRadius.BottomRight }.Average();
 
-	static void OnBorderColorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnBorderColorPropertyChanged(object oldValue, object newValue)
 	{
-		AvatarView avatarView = (AvatarView)bindable;
-		avatarView.Stroke = (Color)newValue;
+		Stroke = (Color)newValue;
 	}
 
-	static void OnBorderWidthPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnBorderWidthPropertyChanged(object oldValue, object newValue)
 	{
-		AvatarView avatarView = (AvatarView)bindable;
-		avatarView.StrokeThickness = (double)newValue;
+		StrokeThickness = (double)newValue;
 	}
 
-	static void OnCornerRadiusPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnCornerRadiusPropertyChanged(object oldValue, object newValue)
 	{
-		AvatarView avatarView = (AvatarView)bindable;
 		CornerRadius corderRadius = (CornerRadius)newValue;
 
-		avatarView.StrokeShape = new RoundRectangle
+		StrokeShape = new RoundRectangle
 		{
 			CornerRadius = corderRadius
 		};
 	}
 
-	static void OnImageSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnImageSourcePropertyChanged(object oldValue, object newValue)
 	{
-		AvatarView avatarView = (AvatarView)bindable;
-		avatarView.HandleImageChanged((ImageSource?)newValue);
+		HandleImageChanged((ImageSource?)newValue);
 	}
 
-	static void OnTextPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnTextPropertyChanged(object oldValue, object newValue)
 	{
-		AvatarView avatarView = (AvatarView)bindable;
-		avatarView.avatarLabel.Text = (string)newValue;
+		avatarLabel.Text = (string)newValue;
 	}
 
 	void HandleFontChanged()

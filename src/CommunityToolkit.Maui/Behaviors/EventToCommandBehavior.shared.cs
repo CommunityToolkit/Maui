@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Reflection;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Converters;
@@ -55,8 +54,8 @@ public partial class EventToCommandBehavior : BaseBehavior<VisualElement>
 		base.OnDetachingFrom(bindable);
 	}
 
-	static void OnEventNamePropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		=> ((EventToCommandBehavior)bindable).RegisterEvent();
+	void OnEventNamePropertyChanged(object oldValue, object newValue)
+		=> RegisterEvent();
 
 	void RegisterEvent()
 	{

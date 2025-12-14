@@ -82,20 +82,15 @@ public partial class AnimationBehavior : EventToCommandBehavior
 		base.OnTriggerHandled(sender, eventArgs);
 	}
 
-	static void OnAnimateOnTapPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnAnimateOnTapPropertyChanged(object oldValue, object newValue)
 	{
-		if (bindable is not AnimationBehavior behavior)
-		{
-			return;
-		}
-
 		if ((bool)newValue)
 		{
-			behavior.AddTapGestureRecognizer();
+			AddTapGestureRecognizer();
 		}
 		else
 		{
-			behavior.RemoveTapGestureRecognizer();
+			RemoveTapGestureRecognizer();
 		}
 	}
 
@@ -128,18 +123,16 @@ public partial class AnimationBehavior : EventToCommandBehavior
 		tapGestureRecognizer = null;
 	}
 
-	static Command<CancellationToken> CreateAnimateCommand(BindableObject bindable)
+	Command<CancellationToken> CreateAnimateCommand()
 	{
-		var animationBehavior = (AnimationBehavior)bindable;
-		return new Command<CancellationToken>(async token => await animationBehavior.OnAnimate(token).ConfigureAwait(false));
+		return new Command<CancellationToken>(async token => await OnAnimate(token).ConfigureAwait(false));
 	}
 
-	static void OnAnimateCommandChanging(BindableObject bindable, object oldValue, object newValue)
+	void OnAnimateCommandChanging(object oldValue, object newValue)
 	{
 		if (newValue is not Command<CancellationToken>)
 		{
-			var animationBehavior = (AnimationBehavior)bindable;
-			throw new InvalidOperationException($"{nameof(AnimateCommand)} must of Type {animationBehavior.AnimateCommand.GetType().FullName}");
+			throw new InvalidOperationException($"{nameof(AnimateCommand)} must of Type {AnimateCommand.GetType().FullName}");
 		}
 	}
 

@@ -166,7 +166,7 @@ public partial class RatingView : TemplatedView, IRatingView
 		}
 	};
 
-	static object CoerceColorToTransparent(BindableObject bindable, object value)
+	object CoerceColorToTransparent(object value)
 	{
 		var colorValue = (Color?)value;
 		return colorValue ?? Colors.Transparent;
@@ -201,15 +201,14 @@ public partial class RatingView : TemplatedView, IRatingView
 		return result.AsReadOnly();
 	}
 
-	static void OnIsReadOnlyChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnIsReadOnlyChanged(object oldValue, object newValue)
 	{
-		var ratingView = (RatingView)bindable;
-		foreach (var child in ratingView.RatingLayout.Children.Cast<Border>())
+		foreach (var child in RatingLayout.Children.Cast<Border>())
 		{
-			if (!ratingView.IsReadOnly)
+			if (!IsReadOnly)
 			{
 				TapGestureRecognizer tapGestureRecognizer = new();
-				tapGestureRecognizer.Tapped += ratingView.OnShapeTapped;
+				tapGestureRecognizer.Tapped += OnShapeTapped;
 				child.GestureRecognizers.Add(tapGestureRecognizer);
 				continue;
 			}
@@ -218,9 +217,8 @@ public partial class RatingView : TemplatedView, IRatingView
 		}
 	}
 
-	static void OnRatingChanging(BindableObject bindable, object oldValue, object newValue)
+	void OnRatingChanging(object oldValue, object newValue)
 	{
-		var ratingView = (RatingView)bindable;
 		var rating = (double)newValue;
 
 		if (rating < 0)
@@ -228,13 +226,13 @@ public partial class RatingView : TemplatedView, IRatingView
 			throw new ArgumentOutOfRangeException(nameof(newValue), $"{nameof(Rating)} cannot be less than 0");
 		}
 
-		if (rating > ratingView.MaximumRating)
+		if (rating > MaximumRating)
 		{
 			throw new ArgumentOutOfRangeException(nameof(newValue), $"{nameof(Rating)} cannot be greater than {nameof(MaximumRating)}");
 		}
 	}
 
-	static void OnMaximumRatingChanging(BindableObject bindable, object oldValue, object newValue)
+	void OnMaximumRatingChanging(object oldValue, object newValue)
 	{
 		var maximumRating = (int)newValue;
 
@@ -247,10 +245,9 @@ public partial class RatingView : TemplatedView, IRatingView
 		}
 	}
 
-	static void OnMaximumRatingChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnMaximumRatingChanged(object oldValue, object newValue)
 	{
-		var ratingView = (RatingView)bindable;
-		var layout = ratingView.RatingLayout;
+		var layout = RatingLayout;
 		var newMaximumRatingValue = (int)newValue;
 		var oldMaximumRatingValue = (int)oldValue;
 		if (newMaximumRatingValue < oldMaximumRatingValue)
@@ -260,38 +257,35 @@ public partial class RatingView : TemplatedView, IRatingView
 				layout.RemoveAt(lastElement);
 			}
 
-			ratingView.UpdateShapeFills(ratingView.FillOption);
+			UpdateShapeFills(FillOption);
 		}
 		else if (newMaximumRatingValue > oldMaximumRatingValue)
 		{
-			ratingView.AddChildrenToLayout(oldMaximumRatingValue - 1, newMaximumRatingValue - 1);
+			AddChildrenToLayout(oldMaximumRatingValue - 1, newMaximumRatingValue - 1);
 		}
 
-		if (newMaximumRatingValue < ratingView.Rating) // Ensure Rating is never greater than MaximumRating 
+		if (newMaximumRatingValue < Rating) // Ensure Rating is never greater than MaximumRating 
 		{
-			ratingView.Rating = newMaximumRatingValue;
+			Rating = newMaximumRatingValue;
 		}
 	}
 
-	static void OnRatingChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnRatingChanged(object oldValue, object newValue)
 	{
-		var ratingView = (RatingView)bindable;
 		var newRating = (double)newValue;
 
-		ratingView.UpdateShapeFills(ratingView.FillOption);
-		ratingView.OnRatingChangedEvent(new RatingChangedEventArgs(newRating));
+		UpdateShapeFills(FillOption);
+		OnRatingChangedEvent(new RatingChangedEventArgs(newRating));
 	}
 
-	static void OnSpacingChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnSpacingChanged(object oldValue, object newValue)
 	{
-		var ratingView = (RatingView)bindable;
-		ratingView.RatingLayout.Spacing = (double)newValue;
+		RatingLayout.Spacing = (double)newValue;
 	}
 
-	static void OnRatingColorChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnRatingColorChanged(object oldValue, object newValue)
 	{
-		var ratingView = (RatingView)bindable;
-		ratingView.UpdateShapeFills(ratingView.FillOption);
+		UpdateShapeFills(FillOption);
 	}
 
 	static LinearGradientBrush GetPartialFillBrush(Color filledColor, double partialFill, Color emptyColor)
@@ -305,12 +299,11 @@ public partial class RatingView : TemplatedView, IRatingView
 			new Point(0, 0), new Point(1, 0));
 	}
 
-	static void OnCustomShapePathPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnCustomShapePathPropertyChanged(object oldValue, object newValue)
 	{
-		var ratingView = (RatingView)bindable;
 		var newShape = (string)newValue;
 
-		if (ratingView.Shape is not RatingViewShape.Custom)
+		if (Shape is not RatingViewShape.Custom)
 		{
 			return;
 		}
@@ -318,7 +311,7 @@ public partial class RatingView : TemplatedView, IRatingView
 		string newShapePathData;
 		if (string.IsNullOrEmpty(newShape))
 		{
-			ratingView.Shape = RatingViewDefaults.Shape;
+			Shape = RatingViewDefaults.Shape;
 			newShapePathData = PathShapes.Star;
 		}
 		else
@@ -326,25 +319,22 @@ public partial class RatingView : TemplatedView, IRatingView
 			newShapePathData = newShape;
 		}
 
-		ratingView.ChangeShape(newShapePathData);
+		ChangeShape(newShapePathData);
 	}
 
-	static void OnShapePaddingPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnShapePaddingPropertyChanged(object oldValue, object newValue)
 	{
-		var ratingView = (RatingView)bindable;
-		for (var element = 0; element < ratingView.RatingLayout.Count; element++)
+		for (var element = 0; element < RatingLayout.Count; element++)
 		{
-			((Border)ratingView.RatingLayout.Children[element]).Padding = (Thickness)newValue;
+			((Border)this.RatingLayout.Children[element]).Padding = (Thickness)newValue;
 		}
 	}
 
-	static void OnShapeBorderColorChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnShapeBorderColorChanged(object oldValue, object newValue)
 	{
-		var ratingView = (RatingView)bindable;
-
-		for (var element = 0; element < ratingView.RatingLayout.Count; element++)
+		for (var element = 0; element < RatingLayout.Count; element++)
 		{
-			var border = (Border)ratingView.RatingLayout.Children[element];
+			var border = (Border)this.RatingLayout.Children[element];
 			if (border.Content is not null)
 			{
 				((Path)border.Content.GetVisualTreeDescendants()[0]).Stroke = (Color)newValue;
@@ -352,7 +342,7 @@ public partial class RatingView : TemplatedView, IRatingView
 		}
 	}
 
-	static void OnShapeBorderThicknessChanging(BindableObject bindable, object oldValue, object newValue)
+	void OnShapeBorderThicknessChanging(object oldValue, object newValue)
 	{
 		if ((double)newValue < 0)
 		{
@@ -360,12 +350,11 @@ public partial class RatingView : TemplatedView, IRatingView
 		}
 	}
 
-	static void OnShapeBorderThicknessChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnShapeBorderThicknessChanged(object oldValue, object newValue)
 	{
-		var ratingView = (RatingView)bindable;
-		for (var element = 0; element < ratingView.RatingLayout.Count; element++)
+		for (var element = 0; element < RatingLayout.Count; element++)
 		{
-			var border = (Border)ratingView.RatingLayout.Children[element];
+			var border = (Border)this.RatingLayout.Children[element];
 			if (border.Content is not null)
 			{
 				((Path)border.Content.GetVisualTreeDescendants()[0]).StrokeThickness = (double)newValue;
@@ -373,18 +362,16 @@ public partial class RatingView : TemplatedView, IRatingView
 		}
 	}
 
-	static void OnShapePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnShapePropertyChanged(object oldValue, object newValue)
 	{
-		var ratingView = (RatingView)bindable;
-		ratingView.ChangeShape(ratingView.GetShapePathData((RatingViewShape)newValue));
+		ChangeShape(GetShapePathData((RatingViewShape)newValue));
 	}
 
-	static void OnShapeDiameterSizeChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnShapeDiameterSizeChanged(object oldValue, object newValue)
 	{
-		var ratingView = (RatingView)bindable;
-		for (var element = 0; element < ratingView.RatingLayout.Count; element++)
+		for (var element = 0; element < RatingLayout.Count; element++)
 		{
-			var border = (Border)ratingView.RatingLayout.Children[element];
+			var border = (Border)this.RatingLayout.Children[element];
 			if (border.Content is null)
 			{
 				continue;

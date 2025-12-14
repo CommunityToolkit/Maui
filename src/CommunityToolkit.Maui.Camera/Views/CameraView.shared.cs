@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
 
@@ -230,53 +229,47 @@ public partial class CameraView : View, ICameraView, IDisposable
 		}
 	}
 
-	static Command<CancellationToken> CreateCaptureImageCommand(BindableObject bindable)
+	Command<CancellationToken> CreateCaptureImageCommand()
 	{
-		var cameraView = (CameraView)bindable;
-		return new(async token => await cameraView.CaptureImage(token).ConfigureAwait(false));
+		return new(async token => await CaptureImage(token).ConfigureAwait(false));
 	}
 
-	static Command<CancellationToken> CreateStartCameraPreviewCommand(BindableObject bindable)
+	Command<CancellationToken> CreateStartCameraPreviewCommand()
 	{
-		var cameraView = (CameraView)bindable;
-		return new(async token => await cameraView.StartCameraPreview(token).ConfigureAwait(false));
+		return new(async token => await StartCameraPreview(token).ConfigureAwait(false));
 	}
 
-	static Command CreateStopCameraPreviewCommand(BindableObject bindable)
+	Command CreateStopCameraPreviewCommand()
 	{
-		var cameraView = (CameraView)bindable;
-		return new(_ => cameraView.StopCameraPreview());
+		return new(_ => StopCameraPreview());
 	}
 
-	static Command<Stream> CreateStartVideoRecordingCommand(BindableObject bindable)
+	Command<Stream> CreateStartVideoRecordingCommand()
 	{
-		var cameraView = (CameraView)bindable;
-		return new(async stream => await cameraView.StartVideoRecording(stream).ConfigureAwait(false));
+		return new(async stream => await StartVideoRecording(stream).ConfigureAwait(false));
 	}
 
-	static Command<CancellationToken> CreateStopVideoRecordingCommand(BindableObject bindable)
+	Command<CancellationToken> CreateStopVideoRecordingCommand()
 	{
-		var cameraView = (CameraView)bindable;
-		return new(async token => await cameraView.StopVideoRecording(token).ConfigureAwait(false));
+		return new(async token => await StopVideoRecording(token).ConfigureAwait(false));
 	}
 
-	static object CoerceZoom(BindableObject bindable, object value)
+	object CoerceZoom(object value)
 	{
-		var cameraView = (CameraView)bindable;
 		var input = (float)value;
 
-		if (cameraView.SelectedCamera is null)
+		if (SelectedCamera is null)
 		{
 			return input;
 		}
 
-		if (input < cameraView.SelectedCamera.MinimumZoomFactor)
+		if (input < SelectedCamera.MinimumZoomFactor)
 		{
-			input = cameraView.SelectedCamera.MinimumZoomFactor;
+			input = SelectedCamera.MinimumZoomFactor;
 		}
-		else if (input > cameraView.SelectedCamera.MaximumZoomFactor)
+		else if (input > SelectedCamera.MaximumZoomFactor)
 		{
-			input = cameraView.SelectedCamera.MaximumZoomFactor;
+			input = SelectedCamera.MaximumZoomFactor;
 		}
 
 		return input;

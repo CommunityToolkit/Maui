@@ -338,41 +338,38 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		isDisposed = true;
 	}
 
-	static void OnSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnSourcePropertyChanged(object oldValue, object newValue)
 	{
-		var mediaElement = (MediaElement)bindable;
 		var source = (MediaSource?)newValue;
 
-		mediaElement.ClearTimer();
+		ClearTimer();
 
 		if (source is not null)
 		{
-			source.SourceChanged += mediaElement.OnSourceChanged;
-			SetInheritedBindingContext(source, mediaElement.BindingContext);
+			source.SourceChanged += OnSourceChanged;
+			SetInheritedBindingContext(source, BindingContext);
 		}
 
-		mediaElement.InvalidateMeasure();
-		mediaElement.InitializeTimer();
+		InvalidateMeasure();
+		InitializeTimer();
 	}
 
-	static void OnSourcePropertyChanging(BindableObject bindable, object oldValue, object newValue)
+	void OnSourcePropertyChanging(object oldValue, object newValue)
 	{
-		var mediaElement = (MediaElement)bindable;
 		var oldMediaSource = (MediaSource?)oldValue;
 
-		oldMediaSource?.SourceChanged -= mediaElement.OnSourceChanged;
+		oldMediaSource?.SourceChanged -= OnSourceChanged;
 	}
 
-	static void OnCurrentStatePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnCurrentStatePropertyChanged(object oldValue, object newValue)
 	{
-		var mediaElement = (MediaElement)bindable;
 		var previousState = (MediaElementState)oldValue;
 		var newState = (MediaElementState)newValue;
 
-		mediaElement.OnStateChanged(new MediaStateChangedEventArgs(previousState, newState));
+		OnStateChanged(new MediaStateChangedEventArgs(previousState, newState));
 	}
 
-	static void OnVolumeChanging(BindableObject bindable, object oldValue, object newValue)
+	void OnVolumeChanging(object oldValue, object newValue)
 	{
 		var updatedVolume = (double)newValue;
 

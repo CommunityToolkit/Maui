@@ -87,7 +87,11 @@ public class BindablePropertyModelTests : BaseTest
 		Assert.Equal(newKeywordText, model.NewKeywordText);
 		Assert.Equal(hasInitializer, model.HasInitializer);
 		Assert.Equal("TestPropertyProperty", model.BindablePropertyName);
-		Assert.Equal(defaultValueCreatorMethodName, model.EffectiveDefaultValueCreatorMethodName);
+		Assert.Equal($"(b,v) => ((TestClass)b).{model.ValidateValueMethodName}(v)", model.EffectiveValidateValueMethodName);
+		Assert.Equal($"(b,o,n) => ((TestClass)b).{model.PropertyChangedMethodName}(o,n)", model.EffectivePropertyChangedMethodName);
+		Assert.Equal($"(b,o,n) => ((TestClass)b).{model.PropertyChangingMethodName}(o,n)", model.EffectivePropertyChangingMethodName);
+		Assert.Equal($"(b,v) => ((TestClass)b).{model.CoerceValueMethodName}(v)", model.EffectiveCoerceValueMethodName);
+		Assert.Equal($"(b) => ((TestClass)b).{defaultValueCreatorMethodName}()", model.EffectiveDefaultValueCreatorMethodName);
 		Assert.Equal("IsInitializingTestProperty", model.InitializingPropertyName);
 	}
 
@@ -230,6 +234,6 @@ public class BindablePropertyModelTests : BaseTest
 		var effectiveDefaultValueCreatorMethodName = model.EffectiveDefaultValueCreatorMethodName;
 
 		// Assert
-		Assert.Equal("CreateTextDefaultValue", effectiveDefaultValueCreatorMethodName);
+		Assert.Equal("(b) => ((TestClass)b).CreateTextDefaultValue()", effectiveDefaultValueCreatorMethodName);
 	}
 }

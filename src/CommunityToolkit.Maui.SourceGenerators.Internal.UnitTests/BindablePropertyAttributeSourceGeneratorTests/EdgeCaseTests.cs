@@ -602,7 +602,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			    [BindablePropertyAttribute(DefaultValueCreatorMethodName = nameof(CreateDefaultText))]
 			    public partial string Text { get; set; } = "Initial Value";
 
-				static string CreateDefaultText(BindableObject bindable)
+				string CreateDefaultText()
 				{
 					return "Initial Value";
 				}
@@ -623,7 +623,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			    /// <summary>
 			    /// Backing BindableProperty for the <see cref = "Text"/> property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, CreateDefaultText);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, (b) => (({{defaultTestNamespace}}.{{defaultTestClassName}})b).CreateDefaultText());
 			    public partial string Text { get => false ? field : (string)GetValue(TextProperty); set => SetValue(TextProperty, value); }
 			}
 			""";

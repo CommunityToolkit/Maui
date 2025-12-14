@@ -9,7 +9,14 @@ public record BindablePropertyModel(string PropertyName, ITypeSymbol ReturnType,
 	public bool ShouldUsePropertyInitializer => HasInitializer && DefaultValueCreatorMethodName is "null";
 	public string BindablePropertyName => $"{PropertyName}Property";
 	public string BindablePropertyKeyName => $"{char.ToLower(PropertyName[0])}{PropertyName[1..]}PropertyKey";
-	public string EffectiveDefaultValueCreatorMethodName => ShouldUsePropertyInitializer ? $"CreateDefault{PropertyName}" : DefaultValueCreatorMethodName;
+	public string EffectiveValidateValueMethodName => ValidateValueMethodName is "null" ? ValidateValueMethodName : $"(b,v) => (({DeclaringType})b).{ValidateValueMethodName}(v)";
+	public string EffectivePropertyChangedMethodName => PropertyChangedMethodName is "null" ? PropertyChangedMethodName : $"(b,o,n) => (({DeclaringType})b).{PropertyChangedMethodName}(o,n)";
+	public string EffectivePropertyChangingMethodName => PropertyChangingMethodName is "null" ? PropertyChangingMethodName : $"(b,o,n) => (({DeclaringType})b).{PropertyChangingMethodName}(o,n)";
+	public string EffectiveCoerceValueMethodName => CoerceValueMethodName is "null" ? CoerceValueMethodName : $"(b,v) => (({DeclaringType})b).{CoerceValueMethodName}(v)";
+	public string EffectiveDefaultValueCreatorMethodName
+		=> ShouldUsePropertyInitializer
+		? $"CreateDefault{PropertyName}"
+		: (DefaultValueCreatorMethodName is "null" ? DefaultValueCreatorMethodName : $"(b) => (({DeclaringType})b).{DefaultValueCreatorMethodName}()");
 	public string InitializingPropertyName => $"IsInitializing{PropertyName}";
 
 }

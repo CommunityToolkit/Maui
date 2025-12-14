@@ -103,46 +103,44 @@ public partial class Expander : ContentView, IExpander
 
 	Grid ContentGrid => (Grid)base.Content;
 
-	static void OnContentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnContentPropertyChanged(object oldValue, object newValue)
 	{
-		var expander = (Expander)bindable;
 		if (newValue is View view)
 		{
-			view.SetBinding(IsVisibleProperty, new Binding(nameof(IsExpanded), source: expander));
+			view.SetBinding(IsVisibleProperty, new Binding(nameof(IsExpanded), source: this));
 
-			expander.ContentGrid.Remove(oldValue);
-			expander.ContentGrid.Add(newValue);
-			expander.ContentGrid.SetRow(view, expander.Direction switch
+			ContentGrid.Remove(oldValue);
+			ContentGrid.Add(newValue);
+			ContentGrid.SetRow(view, Direction switch
 			{
 				ExpandDirection.Down => 1,
 				ExpandDirection.Up => 0,
-				_ => throw new NotSupportedException($"{nameof(ExpandDirection)} {expander.Direction} is not yet supported")
+				_ => throw new NotSupportedException($"{nameof(ExpandDirection)} {Direction} is not yet supported")
 			});
 		}
 	}
 
-	static void OnHeaderPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnHeaderPropertyChanged(object oldValue, object newValue)
 	{
-		var expander = (Expander)bindable;
 		if (newValue is View view)
 		{
-			expander.SetHeaderGestures(view);
+			SetHeaderGestures(view);
 
-			expander.ContentGrid.Remove(oldValue);
-			expander.ContentGrid.Add(newValue);
+			ContentGrid.Remove(oldValue);
+			ContentGrid.Add(newValue);
 
-			expander.ContentGrid.SetRow(view, expander.Direction switch
+			ContentGrid.SetRow(view, Direction switch
 			{
 				ExpandDirection.Down => 0,
 				ExpandDirection.Up => 1,
-				_ => throw new NotSupportedException($"{nameof(ExpandDirection)} {expander.Direction} is not yet supported")
+				_ => throw new NotSupportedException($"{nameof(ExpandDirection)} {Direction} is not yet supported")
 			});
 		}
 	}
 
-	static void OnIsExpandedPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	void OnIsExpandedPropertyChanged(object oldValue, object newValue)
 	{
-		((IExpander)bindable).ExpandedChanged(((IExpander)bindable).IsExpanded);
+		((IExpander)this).ExpandedChanged(((IExpander)this).IsExpanded);
 	}
 
 	static void OnDirectionPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
