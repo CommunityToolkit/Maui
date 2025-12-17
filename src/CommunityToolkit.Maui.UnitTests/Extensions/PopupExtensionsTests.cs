@@ -445,7 +445,7 @@ public class PopupExtensionsTests : BaseViewTest
 		var popupPage = (PopupPage)navigation.ModalStack[0];
 		var popupPageContent = popupPage.Content;
 		var border = popupPageContent.PopupBorder;
-		var popup = border.Content;
+		var popup = (Popup)(border.Content ?? throw new InvalidOperationException("Content cannot be null"));
 
 		// Assert
 		Assert.NotNull(popup);
@@ -516,7 +516,7 @@ public class PopupExtensionsTests : BaseViewTest
 		var popupPage = (PopupPage)shellNavigation.ModalStack[0];
 		var popupPageContent = popupPage.Content;
 		var border = popupPageContent.PopupBorder;
-		var popup = border.Content;
+		var popup = (ShortLivedSelfClosingPopup)(border.Content ?? throw new InvalidOperationException("Content cannot be null"));
 
 		// Assert
 		Assert.NotNull(popup);
