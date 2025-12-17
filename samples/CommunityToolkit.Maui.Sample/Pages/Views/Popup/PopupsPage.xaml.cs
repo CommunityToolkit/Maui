@@ -150,6 +150,20 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		await this.ClosePopupAsync();
 	}
 
+	async void HandleCollectionViewPopupClicked(object? sender, EventArgs e)
+	{
+		var popupResult = await popupService.ShowPopupAsync<CollectionViewPopup, string>(
+			Navigation,
+			PopupOptions.Empty,
+			CancellationToken.None);
+
+		if (!popupResult.WasDismissedByTappingOutsideOfPopup)
+		{
+			// Display Popup Result as a Toast
+			await Toast.Make($"You selected {popupResult.Result}").Show(CancellationToken.None);
+		}
+	}
+
 	async void HandleComplexPopupClicked(object? sender, EventArgs e)
 	{
 		var complexPopupOpenedCancellationTokenSource = new CancellationTokenSource();

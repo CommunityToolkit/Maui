@@ -38,7 +38,6 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		  {
 		  	public string? PropertyName { get; }
 		  	public global::System.Type? DeclaringType { get; set; }
-		  	public object? DefaultValue { get; set; }
 		  	public global::Microsoft.Maui.Controls.BindingMode DefaultBindingMode { get; set; }
 		  	public string ValidateValueMethodName { get; set; } = string.Empty;
 		  	public string PropertyChangedMethodName { get; set; } = string.Empty;
@@ -182,7 +181,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var fullDeclaringType = string.IsNullOrEmpty(value.ClassInformation.ContainingTypes)
 			? classNameWithGenerics
 			: string.Concat(value.ClassInformation.ContainingTypes, ".", classNameWithGenerics);
-		
+
 		var fileStaticClassName = $"__{classNameWithGenerics}BindablePropertyInitHelpers";
 
 		foreach (var info in value.BindableProperties)
@@ -258,9 +257,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(GetFormattedReturnType(nonNullableReturnType))
 			.Append("), typeof(")
 			.Append(info.DeclaringType)
-			.Append("), ")
-			.Append(info.DefaultValue)
-			.Append(", ")
+			.Append("), null, ")
 			.Append(info.DefaultBindingMode)
 			.Append(", ")
 			.Append(info.ValidateValueMethodName)
@@ -321,9 +318,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(GetFormattedReturnType(nonNullableReturnType))
 			.Append("), typeof(")
 			.Append(info.DeclaringType)
-			.Append("), ")
-			.Append(info.DefaultValue)
-			.Append(", ")
+			.Append("), null, ")
 			.Append(info.DefaultBindingMode)
 			.Append(", ")
 			.Append(info.ValidateValueMethodName)
@@ -529,7 +524,6 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			throw new ArgumentException($"{nameof(attributeData)}.{nameof(attributeData.AttributeClass)} Cannot Be Null", nameof(attributeData));
 		}
 
-		var defaultValue = attributeData.GetNamedTypeArgumentsAttributeValueByNameAsCastedString(nameof(BindablePropertyModel.DefaultValue), returnType);
 		var coerceValueMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.CoerceValueMethodName));
 		var defaultBindingMode = attributeData.GetNamedTypeArgumentsAttributeValueForDefaultBindingMode(nameof(BindablePropertyModel.DefaultBindingMode), "Microsoft.Maui.Controls.BindingMode.OneWay");
 		var defaultValueCreatorMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.DefaultValueCreatorMethodName));
@@ -538,7 +532,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var validateValueMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.ValidateValueMethodName));
 		var newKeywordText = doesContainNewKeyword ? "new " : string.Empty;
 
-		return new BindablePropertyModel(propertyName, returnType, declaringType, defaultValue, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText, isReadOnly, setterAccessibility, hasInitializer);
+		return new BindablePropertyModel(propertyName, returnType, declaringType, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText, isReadOnly, setterAccessibility, hasInitializer);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -102,26 +102,26 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// <summary>
 	/// Gets the <see cref="MediaHeight"/> in pixels.
 	/// </summary>
-	[BindableProperty(DefaultValue = MediaElementDefaults.MediaHeight)]
-	public partial int MediaHeight { get; }
+	[BindableProperty]
+	public partial int MediaHeight { get; } = MediaElementDefaults.MediaHeight;
 
 	/// <summary>
 	/// Gets the <see cref="MediaWidth"/> in pixels.
 	/// </summary>
-	[BindableProperty(DefaultValue = MediaElementDefaults.MediaWidth)]
-	public partial int MediaWidth { get; }
+	[BindableProperty]
+	public partial int MediaWidth { get; } = MediaElementDefaults.MediaWidth;
 
 	/// <summary>
 	/// Gets the current <see cref="Position"/> of the media playback.
 	/// </summary>
-	[BindableProperty(DefaultValue = MediaElementDefaults.Position)]
-	public partial TimeSpan Position { get; }
+	[BindableProperty]
+	public partial TimeSpan Position { get; } = MediaElementDefaults.Position;
 
 	/// <summary>
 	/// Gets the <see cref="Duration"/> of the media.
 	/// </summary>
-	[BindableProperty(DefaultValue = MediaElementDefaults.Duration)]
-	public partial TimeSpan Duration { get; }
+	[BindableProperty]
+	public partial TimeSpan Duration { get; } = MediaElementDefaults.Duration;
 
 	/// <summary>
 	/// Gets or sets the <see cref="AndroidViewType"/> of the media.
@@ -131,38 +131,38 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// <summary>
 	/// Gets or sets the <see cref="Aspect"/> ratio used to display the video content.
 	/// </summary>
-	[BindableProperty(DefaultValue = MediaElementDefaults.Aspect)]
-	public partial Aspect Aspect { get; set; }
+	[BindableProperty]
+	public partial Aspect Aspect { get; set; } = MediaElementDefaults.Aspect;
 
 	/// <summary>
 	/// Gets or sets the <see cref="ShouldAutoPlay"/> indicating whether the media should play automatically.
 	/// </summary>
-	[BindableProperty(DefaultValue = MediaElementDefaults.ShouldAutoPlay)]
-	public partial bool ShouldAutoPlay { get; set; }
+	[BindableProperty]
+	public partial bool ShouldAutoPlay { get; set; } = MediaElementDefaults.ShouldAutoPlay;
 
 	/// <summary>
 	/// Gets or sets the <see cref="ShouldLoopPlayback"/> indicating whether the media should loop playback.
 	/// </summary>
-	[BindableProperty(DefaultValue = MediaElementDefaults.ShouldLoopPlayback)]
-	public partial bool ShouldLoopPlayback { get; set; }
+	[BindableProperty]
+	public partial bool ShouldLoopPlayback { get; set; } = MediaElementDefaults.ShouldLoopPlayback;
 
 	/// <summary>
 	/// Gets or sets the <see cref="ShouldKeepScreenOn"/> indicating whether the screen should be kept on during media playback.
 	/// </summary>
-	[BindableProperty(DefaultValue = MediaElementDefaults.ShouldKeepScreenOn)]
-	public partial bool ShouldKeepScreenOn { get; set; }
+	[BindableProperty]
+	public partial bool ShouldKeepScreenOn { get; set; } = MediaElementDefaults.ShouldKeepScreenOn;
 
 	/// <summary>
 	/// Gets or sets the <see cref="ShouldMute"/> indicating whether the media should be muted.
 	/// </summary>
-	[BindableProperty(DefaultValue = MediaElementDefaults.ShouldMute)]
-	public partial bool ShouldMute { get; set; }
+	[BindableProperty]
+	public partial bool ShouldMute { get; set; } = MediaElementDefaults.ShouldMute;
 
 	/// <summary>
 	/// Gets or sets the <see cref="ShouldShowPlaybackControls"/> indicating whether playback controls should be shown.
 	/// </summary>
-	[BindableProperty(DefaultValue = MediaElementDefaults.ShouldShowPlaybackControls)]
-	public partial bool ShouldShowPlaybackControls { get; set; }
+	[BindableProperty]
+	public partial bool ShouldShowPlaybackControls { get; set; } = MediaElementDefaults.ShouldShowPlaybackControls;
 
 	/// <summary>
 	/// Gets or sets the <see cref="Source"/> of the media.
@@ -174,38 +174,38 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// <summary>
 	/// Gets or sets the <see cref="Speed"/> of the media playback.
 	/// </summary>
-	[BindableProperty(DefaultValue = MediaElementDefaults.Speed)]
-	public partial double Speed { get; set; }
+	[BindableProperty]
+	public partial double Speed { get; set; } = MediaElementDefaults.Speed;
 
 	/// <summary>
 	/// Gets or sets the <see cref="MetadataTitle"/> of the media.
 	/// </summary>
-	[BindableProperty(DefaultValue = MediaElementDefaults.MetadataTitle)]
-	public partial string MetadataTitle { get; set; }
+	[BindableProperty]
+	public partial string MetadataTitle { get; set; } = MediaElementDefaults.MetadataTitle;
 
 	/// <summary>
 	/// Gets or sets the <see cref="MetadataArtist"/> of the media.
 	/// </summary>
-	[BindableProperty(DefaultValue = MediaElementDefaults.MetadataArtist)]
-	public partial string MetadataArtist { get; set; }
+	[BindableProperty]
+	public partial string MetadataArtist { get; set; } = MediaElementDefaults.MetadataArtist;
 
 	/// <summary>
 	/// Gets or sets the <see cref="MetadataArtworkUrl"/> of the media.
 	/// </summary>
-	[BindableProperty(DefaultValue = MediaElementDefaults.MetadataArtworkUrl)]
-	public partial string MetadataArtworkUrl { get; set; }
+	[BindableProperty]
+	public partial string MetadataArtworkUrl { get; set; } = MediaElementDefaults.MetadataArtworkUrl;
 
 	/// <summary>
 	/// Gets or sets the <see cref="Volume"/> of the media.
 	/// </summary>
-	[BindableProperty(DefaultValue = MediaElementDefaults.Volume, DefaultBindingMode = BindingMode.TwoWay, PropertyChangingMethodName = nameof(OnVolumeChanging))]
-	public partial double Volume { get; set; }
+	[BindableProperty(DefaultBindingMode = BindingMode.TwoWay, PropertyChangingMethodName = nameof(OnVolumeChanging))]
+	public partial double Volume { get; set; } = MediaElementDefaults.Volume;
 
 	/// <summary>
 	/// Gets or sets the <see cref="CurrentState"/> of the media.
 	/// </summary>
-	[BindableProperty(DefaultValue = MediaElementDefaults.CurrentState, PropertyChangedMethodName = nameof(OnCurrentStatePropertyChanged))]
-	public partial MediaElementState CurrentState { get; private set; }
+	[BindableProperty(PropertyChangedMethodName = nameof(OnCurrentStatePropertyChanged))]
+	public partial MediaElementState CurrentState { get; private set; } = MediaElementDefaults.CurrentState;
 
 	/// <inheritdoc/>
 	TaskCompletionSource IAsynchronousMediaElementHandler.SeekCompletedTCS => seekCompletedTaskCompletionSource;
