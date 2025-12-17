@@ -39,12 +39,12 @@ public partial class CameraView : View, ICameraView, IDisposable
 	static ICameraProvider CameraProvider => IPlatformApplication.Current?.Services.GetRequiredService<ICameraProvider>() ?? throw new CameraException("Unable to retrieve CameraProvider");
 
 	/// <inheritdoc cref="ICameraView.IsAvailable"/>
-	[BindableProperty(DefaultValue = CameraViewDefaults.IsAvailable)]
-	public partial bool IsAvailable { get; }
+	[BindableProperty]
+	public partial bool IsAvailable { get; } = CameraViewDefaults.IsAvailable;
 
 	/// <inheritdoc cref="ICameraView.IsBusy"/>
-	[BindableProperty(DefaultValue = CameraViewDefaults.IsCameraBusy)]
-	public partial bool IsBusy { get; }
+	[BindableProperty]
+	public partial bool IsBusy { get; } = CameraViewDefaults.IsCameraBusy;
 
 	/// <summary>
 	/// Gets the <see cref="Command{CancellationToken}"/> that triggers an image capture.
@@ -92,24 +92,24 @@ public partial class CameraView : View, ICameraView, IDisposable
 	public partial Command<CancellationToken> StopVideoRecordingCommand { get; }
 
 	/// <inheritdoc cref="ICameraView.CameraFlashMode"/>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateCameraFlashMode))]
-	public partial CameraFlashMode CameraFlashMode { get; set; }
+	[BindableProperty]
+	public partial CameraFlashMode CameraFlashMode { get; set; } = CameraViewDefaults.CameraFlashMode;
 
 	/// <inheritdoc cref="ICameraView.SelectedCamera"/>
 	[BindableProperty(DefaultBindingMode = BindingMode.TwoWay)]
 	public partial CameraInfo? SelectedCamera { get; set; }
 
 	/// <inheritdoc cref="ICameraView.ZoomFactor"/>
-	[BindableProperty(DefaultValue = CameraViewDefaults.ZoomFactor, DefaultBindingMode = BindingMode.TwoWay, CoerceValueMethodName = nameof(CoerceZoom))]
-	public partial float ZoomFactor { get; set; }
+	[BindableProperty(DefaultBindingMode = BindingMode.TwoWay, CoerceValueMethodName = nameof(CoerceZoom))]
+	public partial float ZoomFactor { get; set; } = CameraViewDefaults.ZoomFactor;
 
 	/// <inheritdoc cref="ICameraView.ImageCaptureResolution"/>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateImageCaptureResolution), DefaultBindingMode = BindingMode.TwoWay)]
-	public partial Size ImageCaptureResolution { get; set; }
+	[BindableProperty(DefaultBindingMode = BindingMode.TwoWay)]
+	public partial Size ImageCaptureResolution { get; set; } = CameraViewDefaults.ImageCaptureResolution;
 
 	/// <inheritdoc cref="ICameraView.IsTorchOn"/>
-	[BindableProperty(DefaultValue = CameraViewDefaults.IsTorchOn)]
-	public partial bool IsTorchOn { get; set; }
+	[BindableProperty]
+	public partial bool IsTorchOn { get; set; } = CameraViewDefaults.IsTorchOn;
 
 	new CameraViewHandler Handler => (CameraViewHandler)(base.Handler ?? throw new InvalidOperationException("Unable to retrieve Handler"));
 
@@ -229,10 +229,6 @@ public partial class CameraView : View, ICameraView, IDisposable
 			isDisposed = true;
 		}
 	}
-
-	static object CreateImageCaptureResolution(BindableObject bindable) => CameraViewDefaults.ImageCaptureResolution;
-
-	static object CreateCameraFlashMode(BindableObject bindable) => CameraViewDefaults.CameraFlashMode;
 
 	static Command<CancellationToken> CreateCaptureImageCommand(BindableObject bindable)
 	{
