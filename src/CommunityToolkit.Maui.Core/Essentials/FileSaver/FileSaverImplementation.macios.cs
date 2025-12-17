@@ -31,7 +31,7 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 		var fileUrl = tempDirectoryPath.Append(fileName, false);
 		try
 		{
-			await WriteStream(stream, fileUrl.Path ?? throw new Exception("Path cannot be null."), progress, cancellationToken);
+			await WriteStream(stream, fileUrl.Path ?? throw new FileSaveException("Path cannot be null."), progress, cancellationToken);
 
 			cancellationToken.ThrowIfCancellationRequested();
 			taskCompetedSource?.TrySetCanceled(CancellationToken.None);
