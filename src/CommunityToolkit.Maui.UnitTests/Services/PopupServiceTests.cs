@@ -57,7 +57,7 @@ public class PopupServiceTests : BaseViewTest
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 
 		// Act
-		popupService.ShowPopup<ShortLivedMockPageViewModel>(navigation);
+		popupService.ShowPopup<MockPageViewModel>(navigation);
 
 		// Assert
 		Assert.Single(navigation.ModalStack);
@@ -76,14 +76,14 @@ public class PopupServiceTests : BaseViewTest
 		}
 
 		// Act
-		popupService.ShowPopup<ShortLivedSelfClosingPopup>(page);
+		popupService.ShowPopup<MockPopup>(page);
 
 		// Assert
 		Assert.Single(navigation.ModalStack);
 		Assert.IsType<PopupPage>(navigation.ModalStack[0]);
 	}
 
-	[Fact(Timeout = (int)TestDuration.Short)]
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task ShowPopupAsync_AwaitingShowPopupAsync_EnsurePreviousPopupClosed()
 	{
 		// Arrange
@@ -91,7 +91,7 @@ public class PopupServiceTests : BaseViewTest
 
 		// Act
 		await popupService.ShowPopupAsync<ShortLivedSelfClosingPopup>(navigation, PopupOptions.Empty, TestContext.Current.CancellationToken);
-		await popupService.ShowPopupAsync<ShortLivedSelfClosingPopup>(navigation, PopupOptions.Empty, TestContext.Current.CancellationToken);
+		await popupService.ShowPopupAsync<LongLivedSelfClosingPopup>(navigation, PopupOptions.Empty, TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.Empty(navigation.ModalStack);
@@ -110,7 +110,7 @@ public class PopupServiceTests : BaseViewTest
 
 		// Act
 		await popupService.ShowPopupAsync<ShortLivedMockPageViewModel>(page, PopupOptions.Empty, TestContext.Current.CancellationToken);
-		await popupService.ShowPopupAsync<ShortLivedMockPageViewModel>(page, PopupOptions.Empty, TestContext.Current.CancellationToken);
+		await popupService.ShowPopupAsync<LongLivedMockPageViewModel>(page, PopupOptions.Empty, TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.Empty(navigation.ModalStack);
@@ -124,7 +124,7 @@ public class PopupServiceTests : BaseViewTest
 		Assert.Empty(navigation.ModalStack);
 
 		// Act
-		popupService.ShowPopup<ShortLivedMockPageViewModel>(navigation, PopupOptions.Empty);
+		popupService.ShowPopup<MockPopup>(navigation, PopupOptions.Empty);
 
 		// Assert
 		Assert.Single(navigation.ModalStack);
@@ -137,8 +137,8 @@ public class PopupServiceTests : BaseViewTest
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 
 		// Act
-		popupService.ShowPopup<LongLivedMockPageViewModel>(navigation, PopupOptions.Empty);
-		popupService.ShowPopup<ShortLivedMockPageViewModel>(navigation, PopupOptions.Empty);
+		popupService.ShowPopup<MockPopup>(navigation, PopupOptions.Empty);
+		popupService.ShowPopup<MockPopup>(navigation, PopupOptions.Empty);
 
 		// Assert
 		Assert.Equal(2, navigation.ModalStack.Count);
@@ -160,12 +160,12 @@ public class PopupServiceTests : BaseViewTest
 		};
 
 		// Act
-		popupService.ShowPopup<ShortLivedSelfClosingPopup>(navigation, options);
+		popupService.ShowPopup<MockPopup>(navigation, options);
 
 		var popupPage = (PopupPage)navigation.ModalStack[0];
 		var popupPageLayout = popupPage.Content;
 		var border = popupPageLayout.PopupBorder;
-		var popup = border.Content;
+		var popup = (MockPopup)(border.Content ?? throw new InvalidOperationException("Content cannot be null"));
 
 		// Assert
 		Assert.NotNull(popup);
@@ -242,7 +242,6 @@ public class PopupServiceTests : BaseViewTest
 
 		// Act
 		await popupService.ShowPopupAsync<LongLivedMockPageViewModel, object?>(page.Navigation, PopupOptions.Empty, TestContext.Current.CancellationToken);
-
 
 		// Assert
 		Assert.NotNull(popupInstance.BindingContext);
@@ -516,7 +515,6 @@ public class PopupServiceTests : BaseViewTest
 	}
 }
 
-
 class GarbageCollectionHeavySelfClosingPopup(MockPageViewModel viewModel, object? result = null) : MockSelfClosingPopup(viewModel, TimeSpan.FromMilliseconds(500), result)
 {
 	protected override void HandlePopupOpened(object? sender, EventArgs e)
@@ -534,40 +532,42 @@ class GarbageCollectionHeavySelfClosingPopup(MockPageViewModel viewModel, object
 	}
 }
 
-class LongLivedSelfClosingPopup : MockSelfClosingPopup
-{
-	public LongLivedSelfClosingPopup(LongLivedMockPageViewModel viewModel)
-		: base(viewModel, TimeSpan.FromMilliseconds(1500), "Long Lived")
-	{
-	}
-}
+sealed class LongLivedSelfClosingPopup(LongLivedMockPageViewModel viewModel) : MockSelfClosingPopup(viewModel, TimeSpan.FromMilliseconds(1500), "Long Lived");
 
-class ShortLivedSelfClosingPopup : MockSelfClosingPopup
-{
-	public ShortLivedSelfClosingPopup(ShortLivedMockPageViewModel viewModel)
-		: base(viewModel, TimeSpan.FromMilliseconds(500), "Short Lived")
-	{
-	}
-}
+sealed class ShortLivedSelfClosingPopup(ShortLivedMockPageViewModel viewModel) : MockSelfClosingPopup(viewModel, TimeSpan.FromMilliseconds(500), "Short Lived");
 
-#pragma warning disable CA1001
-class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
-#pragma warning restore CA1001
+class MockSelfClosingPopup : Popup<object?>, IQueryAttributable, IDisposable
 {
-	readonly TimeSpan displayDuration;
+	readonly TaskCompletionSource popupClosedTCS = new();
+
 	CancellationTokenSource? cancellationTokenSource;
 
-	public MockSelfClosingPopup(MockPageViewModel viewModel, TimeSpan displayDuration, object? result = null)
+	protected MockSelfClosingPopup(MockPageViewModel viewModel, TimeSpan displayDuration, object? result = null)
 	{
-		this.displayDuration = displayDuration;
 		BackgroundColor = DefaultBackgroundColor;
+		DisplayDuration = displayDuration;
 		BindingContext = viewModel;
 		Result = result;
 		Opened += HandlePopupOpened;
 		Closed += HandlePopupClosed;
 	}
 
+	~MockSelfClosingPopup()
+	{
+		Dispose(false);
+	}
+
+	public object? Result { get; }
+
+	public TimeSpan DisplayDuration { get; }
+
 	public static Color DefaultBackgroundColor { get; } = Colors.White;
+
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
 
 	protected virtual void HandlePopupClosed(object? sender, EventArgs e)
 	{
@@ -585,7 +585,7 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
 
 		Console.WriteLine($@"{DateTime.Now:O} HandlePopupOpened {BindingContext.GetType().Name}");
 
-		await Task.Delay(displayDuration);
+		await Task.Delay(DisplayDuration);
 
 		if (cancellationTokenSource?.IsCancellationRequested is true)
 		{
@@ -599,9 +599,17 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable
 
 		Console.WriteLine(
 			$@"{DateTime.Now:O} Closed {BindingContext.GetType().Name} - {Application.Current?.Windows[0].Page?.Navigation.ModalStack.Count}");
+
+		popupClosedTCS.SetResult();
 	}
 
-	public object? Result { get; }
+	protected virtual void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			cancellationTokenSource?.Dispose();
+		}
+	}
 
 	void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
 	{
