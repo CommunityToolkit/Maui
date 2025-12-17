@@ -21,13 +21,13 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : Java.Lang.Object, IPlayerListener
 {
-	bool androidForegroundServiceEnabled;
 	const int bufferState = 2;
 	const int readyState = 3;
 	const int endedState = 4;
 
 	static readonly HttpClient client = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
+	bool isAndroidServiceEnabled = false;
 
 	double? previousSpeed;
 	float volumeBeforeMute = 1;
@@ -63,9 +63,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	public void UpdateNotifications()
 	{
-		if (connection?.Binder?.Service is null)
+		if (connection?.Binder?.Service is null || !isAndroidServiceEnabled)
 		{
-			System.Diagnostics.Trace.TraceInformation("Notification Service not running.");
 			return;
 		}
 
@@ -131,11 +130,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
 	/// <exception cref="NullReferenceException">Thrown when <see cref="Context"/> is <see langword="null"/> or when the platform view could not be created.</exception>
 	[MemberNotNull(nameof(Player), nameof(PlayerView), nameof(session))]
-	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView(AndroidViewType androidViewType, bool androidForegroundServiceEnabled)
+	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView(AndroidViewType androidViewType, bool isAndroidServiceEnabled)
 	{
 		Player = new ExoPlayerBuilder(MauiContext.Context).Build() ?? throw new InvalidOperationException("Player cannot be null");
 		Player.AddListener(this);
-		this.androidForegroundServiceEnabled = androidForegroundServiceEnabled;
+		this.isAndroidServiceEnabled = isAndroidServiceEnabled;
 		if (androidViewType is AndroidViewType.SurfaceView)
 		{
 			PlayerView = new PlayerView(MauiContext.Context)
@@ -354,7 +353,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			return;
 		}
 
-		if (connection is null && androidForegroundServiceEnabled)
+		if (connection is null && isAndroidServiceEnabled)
 		{
 			StartService();
 		}
@@ -385,6 +384,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		if (hasSetSource && Player.PlayerError is null)
 		{
 			MediaElement.MediaOpened();
+		}
+		if(hasSetSource && isAndroidServiceEnabled)
+		{
 			UpdateNotifications();
 		}
 	}
@@ -632,9 +634,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 	}
 
-	[MemberNotNull(nameof(connection))]
 	void StartService()
 	{
+		if (!isAndroidServiceEnabled)
+		{
+			return;
+		}
 		var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
 		connection = new BoundServiceConnection(this);
 		connection.MediaControlsServiceTaskRemoved += HandleMediaControlsServiceTaskRemoved;
@@ -645,6 +650,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	void StopService(in BoundServiceConnection boundServiceConnection)
 	{
+		if(!isAndroidServiceEnabled)
+		{
+			return;
+		}
 		boundServiceConnection.MediaControlsServiceTaskRemoved -= HandleMediaControlsServiceTaskRemoved;
 
 		var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));

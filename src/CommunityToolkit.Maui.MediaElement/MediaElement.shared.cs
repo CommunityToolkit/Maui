@@ -128,7 +128,10 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// </summary>
 	public AndroidViewType AndroidViewType { get; init; } = MediaElementOptions.DefaultAndroidViewType;
 
-	internal bool IsAndroidForegroundServiceEnabled { get; init; } = MediaElementOptions.IsAndroidForegroundServiceEnabled;
+	/// <summary>
+	/// Gets or sets a value indicating whether Android Foreground Service is enabled.
+	/// </summary>
+	public bool IsAndroidForegroundServiceEnabled { get; init; } = MediaElementOptions.IsAndroidForegroundServiceEnabled;
 
 	/// <summary>
 	/// Gets or sets the <see cref="Aspect"/> ratio used to display the video content.
