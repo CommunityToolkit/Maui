@@ -22,20 +22,20 @@ public partial class ProgressBarAnimationBehavior : BaseBehavior<ProgressBar>
 	/// <summary>
 	/// Value of <see cref="ProgressBar.Progress"/>, clamped to a minimum value of 0 and a maximum value of 1
 	/// </summary>
-	[BindableProperty(DefaultValue = ProgressBarAnimationBehaviorDefaults.Progress, PropertyChangingMethodName = nameof(OnAnimateProgressPropertyChanging), PropertyChangedMethodName = nameof(OnAnimateProgressPropertyChanged))]
-	public partial double Progress { get; set; }
+	[BindableProperty(PropertyChangingMethodName = nameof(OnAnimateProgressPropertyChanging), PropertyChangedMethodName = nameof(OnAnimateProgressPropertyChanged))]
+	public partial double Progress { get; set; } = ProgressBarAnimationBehaviorDefaults.Progress;
 
 	/// <summary>
 	/// Length in milliseconds of the progress bar animation
 	/// </summary>
-	[BindableProperty(DefaultValue = ProgressBarAnimationBehaviorDefaults.Length)]
-	public partial uint Length { get; set; }
+	[BindableProperty]
+	public partial uint Length { get; set; } = ProgressBarAnimationBehaviorDefaults.Length;
 
 	/// <summary>
 	/// Easing of the progress bar animation
 	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(EasingValueCreator))]
-	public partial Easing Easing { get; set; }
+	[BindableProperty]
+	public partial Easing Easing { get; set; } = ProgressBarAnimationBehaviorDefaults.Easing;
 
 	static async void OnAnimateProgressPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
@@ -65,8 +65,6 @@ public partial class ProgressBarAnimationBehavior : BaseBehavior<ProgressBar>
 		}
 	}
 
-
-	static Easing EasingValueCreator(BindableObject bindable) => ProgressBarAnimationBehaviorDefaults.Easing;
 
 	static Task AnimateProgress(in ProgressBar progressBar, in double progress, in uint animationLength, in Easing animationEasing, in CancellationToken token)
 	{

@@ -31,8 +31,7 @@ public class ProgressBarAnimationBehaviorTests() : BaseBehaviorTest<ProgressBarA
 		progressBar.Behaviors.Add(progressBarAnimationBehavior);
 
 		Assert.Equal(0.0d, progressBar.Progress);
-		Assert.Equal(0.0d, ProgressBarAnimationBehavior.ProgressProperty.DefaultValue);
-		Assert.Equal((uint)500, ProgressBarAnimationBehavior.LengthProperty.DefaultValue);
+		Assert.Equal((uint)500, progressBarAnimationBehavior.Length);
 		Assert.Equal(Easing.Linear, progressBarAnimationBehavior.Easing);
 
 		progressBarAnimationBehavior.Length = length;
