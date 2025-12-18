@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Android.Content;
+using Android.OS;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Core.Content;
@@ -30,6 +31,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	const int stateEnded = 4;
 
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
+
+	// Per-element session id used to request/create a dedicated MediaSession in the service
+	string? sessionId;
 
 	double? previousSpeed;
 	float volumeBeforeMute = 1;
@@ -180,7 +184,25 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public async Task<AndroidX.Media3.Session.MediaController> CreateMediaController(CancellationToken cancellationToken = default)
 	{
 		var tcs = new TaskCompletionSource();
-		var future = new MediaController.Builder(Platform.AppContext, new SessionToken(Platform.AppContext, new ComponentName(Platform.AppContext, Java.Lang.Class.FromType(typeof(MediaControlsService))))).BuildAsync();
+		// Ensure we have a session id for this MediaElement instance
+		sessionId ??= Java.Util.UUID.RandomUUID()?.ToString();
+		// Start service and request creation for this session id
+		using var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
+		intent.PutExtra("sessionId", sessionId);
+		Android.App.Application.Context.StartForegroundService(intent);
+
+		// Build a SessionToken that targets the service. The service creation intent contains the session id.
+		var appCtx = Platform.AppContext ?? throw new InvalidOperationException("AppContext cannot be null");
+		var serviceClass = Java.Lang.Class.FromType(typeof(MediaControlsService)) ?? throw new InvalidOperationException("Unable to resolve MediaControlsService Java class");
+		var component = new ComponentName(appCtx, serviceClass);
+		var token = new SessionToken(appCtx, component);
+
+		// Pass connection hints including our sessionId so the service can return the correct MediaSession
+		var builder = new MediaController.Builder(appCtx, token);
+		var hints = new Bundle();
+		hints.PutString("sessionId", sessionId);
+		builder.SetConnectionHints(hints);
+		var future = builder.BuildAsync();
 		future?.AddListener(new Runnable(() =>
 		{
 			try
@@ -196,6 +218,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 					}
 					PlayerView.SetBackgroundColor(Android.Graphics.Color.Black);
 					PlayerView.Player = Player;
+					PlayerView.UseController = MediaElement.ShouldShowPlaybackControls;
+					PlayerView.ControllerAutoShow = MediaElement.ShouldShowPlaybackControls;
 					using var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
 					Android.App.Application.Context.StartForegroundService(intent);
 					tcs.SetResult();
@@ -207,10 +231,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			}
 			catch (Exception ex)
 			{
-				Trace.WriteLine($"Error creating MediaController: {ex}");
+				System.Diagnostics.Trace.WriteLine($"Error creating MediaController: {ex}");
 				tcs.SetException(ex);
 			}
-		}), ContextCompat.GetMainExecutor(Platform.AppContext));
+		}), ContextCompat.GetMainExecutor(appCtx));
 		await tcs.Task.WaitAsync(cancellationToken);
 		return Player ?? throw new InvalidOperationException("MediaController is null");
 	}
@@ -569,8 +593,13 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			Player = null;
 			PlayerView?.Dispose();
 			PlayerView = null;
-			using var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
-			Android.App.Application.Context.StopService(serviceIntent);
+			// Request service to remove this element's session rather than stopping the whole service
+			if (!string.IsNullOrEmpty(sessionId))
+			{
+				using var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
+				serviceIntent.PutExtra("removeSessionId", sessionId);
+				Android.App.Application.Context.StartService(serviceIntent);
+			}
 		}
 	}
 
