@@ -218,8 +218,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 					}
 					PlayerView.SetBackgroundColor(Android.Graphics.Color.Black);
 					PlayerView.Player = Player;
-					PlayerView.UseController = MediaElement.ShouldShowPlaybackControls;
-					PlayerView.ControllerAutoShow = MediaElement.ShouldShowPlaybackControls;
 					using var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
 					Android.App.Application.Context.StartForegroundService(intent);
 					tcs.SetResult();
