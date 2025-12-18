@@ -25,12 +25,6 @@ sealed partial class MediaControlsService : MediaSessionService
 		PauseAllPlayersAndStopSelf();
 	}
 
-
-	public override void OnCreate()
-	{
-		base.OnCreate();
-	}
-
 	protected override void Dispose(bool disposing)
 	{
 		if (disposing)
@@ -51,11 +45,6 @@ sealed partial class MediaControlsService : MediaSessionService
 	{
 		base.OnDestroy();
 		PauseAllPlayersAndStopSelf();
-	}
-
-	public override void OnRebind(Intent? intent)
-	{
-		base.OnRebind(intent);
 	}
 
 	public override StartCommandResult OnStartCommand(Intent? intent, StartCommandFlags flags, int startId)
@@ -108,7 +97,7 @@ sealed partial class MediaControlsService : MediaSessionService
 			return existing;
 		}
 
-		var audioAttribute = new AndroidX.Media3.Common.AudioAttributes.Builder()?
+		var audioAttribute = new AudioAttributes.Builder()?
 			.SetContentType(C.AudioContentTypeMusic)?
 			.SetUsage(C.UsageMedia)?
 			.Build();

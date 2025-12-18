@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Android.Content;
 using Android.OS;
 using Android.Views;
@@ -181,11 +180,13 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		return PlayerView;
 	}
 
-	public async Task<AndroidX.Media3.Session.MediaController> CreateMediaController(CancellationToken cancellationToken = default)
+	public async Task<MediaController> CreateMediaController(CancellationToken cancellationToken = default)
 	{
 		var tcs = new TaskCompletionSource();
+
 		// Ensure we have a session id for this MediaElement instance
 		sessionId ??= Java.Util.UUID.RandomUUID()?.ToString();
+		
 		// Start service and request creation for this session id
 		using var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
 		intent.PutExtra("sessionId", sessionId);
@@ -193,7 +194,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		// Build a SessionToken that targets the service. The service creation intent contains the session id.
 		var appCtx = Platform.AppContext ?? throw new InvalidOperationException("AppContext cannot be null");
-		var serviceClass = Java.Lang.Class.FromType(typeof(MediaControlsService)) ?? throw new InvalidOperationException("Unable to resolve MediaControlsService Java class");
+		var serviceClass = Class.FromType(typeof(MediaControlsService)) ?? throw new InvalidOperationException("Unable to resolve MediaControlsService Java class");
 		var component = new ComponentName(appCtx, serviceClass);
 		var token = new SessionToken(appCtx, component);
 
@@ -218,8 +219,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 					}
 					PlayerView.SetBackgroundColor(Android.Graphics.Color.Black);
 					PlayerView.Player = Player;
-					using var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
-					Android.App.Application.Context.StartForegroundService(intent);
 					tcs.SetResult();
 				}
 				else
