@@ -38,6 +38,8 @@ sealed partial class MediaControlsService : MediaSessionService
 			PauseAllPlayersAndStopSelf();
 			foreach (var kv in sessions)
 			{
+				kv.Value.Session.Release();
+				kv.Value.Player.Release();
 				kv.Value.Dispose();
 			}
 			sessions.Clear();
@@ -112,12 +114,18 @@ sealed partial class MediaControlsService : MediaSessionService
 			.Build();
 
 		var trackSelector = new DefaultTrackSelector(this);
+		var trackSelectionParameters = trackSelector.BuildUponParameters()?
+			.SetPreferredAudioLanguage(C.LanguageUndetermined)? // Fallback to system language if no preferred language found
+			.SetPreferredTextLanguage(C.LanguageUndetermined)? // Fallback to system language if no preferred language found
+			.SetIgnoredTextSelectionFlags(C.SelectionFlagAutoselect); // Ignore text tracks that are not explicitly selected by the user
+		trackSelector.SetParameters((DefaultTrackSelector.Parameters.Builder?)trackSelectionParameters); // Allows us to select tracks based on user preferences
+
 		var loadControlBuilder = new DefaultLoadControl.Builder();
 		loadControlBuilder.SetBufferDurationsMs(
 			minBufferMs: 15000,
 			maxBufferMs: 50000,
 			bufferForPlaybackMs: 2500,
-			bufferForPlaybackAfterRebufferMs: 5000);
+			bufferForPlaybackAfterRebufferMs: 5000); // Custom buffering strategy
 
 		var builder = new ExoPlayerBuilder(this) ?? throw new InvalidOperationException("ExoPlayerBuilder.Build() returned null");
 		builder.SetTrackSelector(trackSelector);
@@ -130,7 +138,6 @@ sealed partial class MediaControlsService : MediaSessionService
 		
 		mediaSessionBuilder.SetId(sessionId);
 		var dataSourceBitmapFactory = new DataSourceBitmapLoader(this);
-		
 		mediaSessionBuilder.SetBitmapLoader(dataSourceBitmapFactory);
 		var mediaSession = mediaSessionBuilder.Build() ?? throw new InvalidOperationException("MediaSession.Builder.Build() returned null");
 
