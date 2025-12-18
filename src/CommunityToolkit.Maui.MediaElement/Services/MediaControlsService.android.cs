@@ -32,8 +32,6 @@ sealed partial class MediaControlsService : MediaSessionService
 			PauseAllPlayersAndStopSelf();
 			foreach (var kv in sessions)
 			{
-				kv.Value.Session.Release();
-				kv.Value.Player.Release();
 				kv.Value.Dispose();
 			}
 			sessions.Clear();
