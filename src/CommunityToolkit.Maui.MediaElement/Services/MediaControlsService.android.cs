@@ -3,13 +3,11 @@ using System.Runtime.Versioning;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using AndroidX.Core.App;
 using AndroidX.Media3.Common;
 using AndroidX.Media3.DataSource;
 using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.ExoPlayer.TrackSelection;
 using AndroidX.Media3.Session;
-using Resource = Microsoft.Maui.Controls.Resource;
 
 namespace CommunityToolkit.Maui.Media.Services;
 
@@ -18,12 +16,8 @@ namespace CommunityToolkit.Maui.Media.Services;
 [Service(Exported = false, Enabled = true, Name = "communityToolkit.maui.media.services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
 sealed partial class MediaControlsService : MediaSessionService
 {
-	const string cHANNEL_ID = "media_playback_channel";
-	const int base_NOTIFICATION_ID = 1001; // base id; per-session ids will be offsets from this
 	
-	NotificationManager? notificationManager;
 	readonly ConcurrentDictionary<string, MediaSessionWrapper> sessions = new();
-	string? currentForegroundSessionId;
 
 	public override void OnTaskRemoved(Intent? rootIntent)
 	{
@@ -35,7 +29,6 @@ sealed partial class MediaControlsService : MediaSessionService
 	public override void OnCreate()
 	{
 		base.OnCreate();
-		CreateNotificationChannel();
 	}
 
 	protected override void Dispose(bool disposing)
@@ -70,7 +63,6 @@ sealed partial class MediaControlsService : MediaSessionService
 			var sid = intent.GetStringExtra("sessionId");
 			if (!string.IsNullOrEmpty(sid))
 			{
-				// ensure session exists
 				CreateOrGetSession(sid);
 				return StartCommandResult.StickyCompatibility;
 			}
@@ -92,18 +84,6 @@ sealed partial class MediaControlsService : MediaSessionService
 
 		return base.OnStartCommand(intent, flags, startId);
 	}
-	void CreateNotificationChannel()
-	{
-		var channel = new Android.App.NotificationChannel(cHANNEL_ID, "Media Playback", NotificationImportance.Low)
-		{
-			Description = "Media playback controls",
-			Name = "Media Playback"
-		};
-		channel.SetShowBadge(false);
-		channel.LockscreenVisibility = NotificationVisibility.Public;
-		notificationManager = GetSystemService(NotificationService) as NotificationManager ?? throw new InvalidOperationException($"{nameof(NotificationManager)} cannot be null");
-		notificationManager.CreateNotificationChannel(channel);
-	}
 
 	public override MediaSession? OnGetSession(MediaSession.ControllerInfo? controllerInfo)
 	{
@@ -116,27 +96,16 @@ sealed partial class MediaControlsService : MediaSessionService
 				return wrapper.Session;
 			}
 		}
-
-		// Fallback: if there's a current foreground session return it
-		if (!string.IsNullOrEmpty(currentForegroundSessionId) && sessions.TryGetValue(currentForegroundSessionId, out var fgWrapper))
-		{
-			return fgWrapper.Session;
-		}
-		System.Diagnostics.Debug.WriteLine($"[MediaControlsService] OnGetSession: no session found to return");
-		// If no session found, return null — the platform will handle it or client should request creation first
 		return null;
 	}
 
-	// Create or get a MediaSessionWrapper for a given session id
 	MediaSessionWrapper CreateOrGetSession(string sessionId)
 	{
 		if (sessions.TryGetValue(sessionId, out var existing))
 		{
-			System.Diagnostics.Debug.WriteLine($"[MediaControlsService] Retrieved existing session for id '{sessionId}'");
 			return existing;
 		}
 
-		// Build a new ExoPlayer and MediaSession for this sessionId
 		var audioAttribute = new AndroidX.Media3.Common.AudioAttributes.Builder()?
 			.SetContentType(C.AudioContentTypeMusic)?
 			.SetUsage(C.UsageMedia)?
@@ -158,69 +127,16 @@ sealed partial class MediaControlsService : MediaSessionService
 		var exoPlayer = builder.Build() ?? throw new InvalidOperationException("ExoPlayerBuilder.Build() returned null");
 
 		var mediaSessionBuilder = new MediaSession.Builder(this, exoPlayer);
+		
 		mediaSessionBuilder.SetId(sessionId);
 		var dataSourceBitmapFactory = new DataSourceBitmapLoader(this);
+		
 		mediaSessionBuilder.SetBitmapLoader(dataSourceBitmapFactory);
 		var mediaSession = mediaSessionBuilder.Build() ?? throw new InvalidOperationException("MediaSession.Builder.Build() returned null");
 
-		var notificationId = base_NOTIFICATION_ID + Math.Abs(sessionId.GetHashCode() % 1000);
-		var wrapper = new MediaSessionWrapper(sessionId, mediaSession, exoPlayer, notificationId);
+		var wrapper = new MediaSessionWrapper(sessionId, mediaSession, exoPlayer);
 		sessions[sessionId] = wrapper;
-
-		// Listen for player's play state to enforce exclusive audio focus (pause others)
-		exoPlayer.AddListener(new MediaPlayerStateListener(sessionId, this));
-		System.Diagnostics.Debug.WriteLine($"[MediaControlsService] Created new session for id '{sessionId}'");
+		
 		return wrapper;
-	}
-	
-	internal void PromoteToForeground(string sessionId)
-	{
-		if (!sessions.TryGetValue(sessionId, out var wrapper))
-		{
-			return;
-		}
-
-		// Demote previous
-		if (!string.IsNullOrEmpty(currentForegroundSessionId) && currentForegroundSessionId != sessionId
-			&& sessions.TryGetValue(currentForegroundSessionId, out var prev) && prev is not null)
-		{
-			// Post prev as normal notification (not foreground)
-			var notifPrev = CreateNotificationForSession(prev);
-			notificationManager?.Notify(prev.NotificationId, notifPrev);
-			System.Diagnostics.Debug.WriteLine($"[MediaControlsService] Demoted session '{currentForegroundSessionId}' from foreground");
-		}
-
-		// Build notification for current session
-		var notif = CreateNotificationForSession(wrapper);
-
-		// If already in foreground, use notify() to update; otherwise StartForeground()
-		if (currentForegroundSessionId == sessionId)
-		{
-			// Already foreground, just update the notification
-			notificationManager?.Notify(wrapper.NotificationId, notif);
-		}
-		else if (string.IsNullOrEmpty(currentForegroundSessionId))
-		{
-			// First time promoting to foreground
-			StartForeground(wrapper.NotificationId, notif);
-		}
-		else
-		{
-			// Switching foreground sessions—update the existing foreground notification
-			notificationManager?.Notify(wrapper.NotificationId, notif);
-		}
-
-		currentForegroundSessionId = sessionId;
-	}
-	static Notification CreateNotificationForSession(MediaSessionWrapper wrapper)
-	{
-		System.Diagnostics.Debug.WriteLine($"[MediaControlsService] Creating notification for session '{wrapper.Id}'");
-		return new NotificationCompat.Builder(Platform.AppContext ?? throw new InvalidOperationException("AppContext cannot be null"), cHANNEL_ID)
-			.SetContentTitle("Playing Media")?
-			.SetContentText("Artist")?
-			.SetSmallIcon(Resource.Drawable.notification_bg_low)?
-			.SetVisibility((int)NotificationVisibility.Public)?
-			.SetOngoing(true)?
-			.Build() ?? throw new InvalidOperationException("Notification cannot be null");
 	}
 }
