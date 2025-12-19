@@ -12,46 +12,35 @@ namespace CommunityToolkit.Maui.Layouts;
 public partial class UniformItemsLayout : Layout, IUniformItemsLayout
 {
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="MaxRows"/> property.
+	/// Gets or sets the maximum number of rows to display or process.
 	/// </summary>
-	public static readonly BindableProperty MaxRowsProperty = BindableProperty.Create(nameof(MaxRows), typeof(int), typeof(UniformItemsLayout), int.MaxValue);
+	[BindableProperty(PropertyChangedMethodName = nameof(OnMaxRowsProperChanged))]
+	public partial int MaxRows { get; set; } = int.MaxValue;
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="MaxColumns"/> property.
+	/// Gets or sets the maximum number of columns to display in the layout.
 	/// </summary>
-	public static readonly BindableProperty MaxColumnsProperty = BindableProperty.Create(nameof(MaxColumns), typeof(int), typeof(UniformItemsLayout), int.MaxValue);
+	/// <remarks>Set this property to limit the number of columns arranged by the layout. The value must be greater
+	/// than or equal to 1. The default value is <see cref="int.MaxValue"/>, which allows an unlimited number of
+	/// columns.</remarks>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnMaxColumnsProperChanged))]
+	public partial int MaxColumns { get; set; } = int.MaxValue;
 
-	/// <summary>
-	/// Max rows
-	/// </summary>
-	public int MaxRows
+	static void OnMaxRowsProperChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		get => (int)GetValue(MaxRowsProperty);
-		set
+		var maxRows = (int)newValue;
+		if (maxRows < 1)
 		{
-			if (value < 1)
-			{
-				throw new ArgumentOutOfRangeException(nameof(value), value, $"{nameof(MaxRows)} must be greater or equal to 1.");
-			}
-
-			SetValue(MaxRowsProperty, value);
+			throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(MaxRows)} must be greater or equal to 1.");
 		}
 	}
 
-	/// <summary>
-	/// Max columns
-	/// </summary>
-	public int MaxColumns
+	static void OnMaxColumnsProperChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		get => (int)GetValue(MaxColumnsProperty);
-		set
+		var maxColumns = (int)newValue;
+		if (maxColumns < 1)
 		{
-			if (value < 1)
-			{
-				throw new ArgumentOutOfRangeException(nameof(value), value, $"{nameof(MaxColumns)} must be greater or equal to 1.");
-			}
-
-			SetValue(MaxColumnsProperty, value);
+			throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(MaxColumns)} must be greater or equal to 1.");
 		}
 	}
 

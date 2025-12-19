@@ -16,55 +16,27 @@ public partial class DockLayout : Layout, IDockLayout
 																									typeof(DockPosition),
 																									typeof(DockLayout),
 																									DockPosition.None,
-																									propertyChanged: OnDockPositionPropertyChanged);
+																							propertyChanged: OnDockPositionPropertyChanged);
 
 	/// <summary>
 	/// If true, the last child is expanded to fill the remaining space (default: true).
 	/// </summary>
-	public static readonly BindableProperty ShouldExpandLastChildProperty = BindableProperty.Create(nameof(ShouldExpandLastChild),
-																										typeof(bool),
-																										typeof(DockLayout),
-																										true,
-																										propertyChanged: OnShouldExpandLastChildPropertyChanged);
+	[BindableProperty(PropertyChangedMethodName = nameof(OnShouldExpandLastChildPropertyChanged))]
+	public partial bool ShouldExpandLastChild { get; set; } = true;
 
 	/// <summary>
-	/// Horizontal spacing between docked views.
+	/// Gets or sets the horizontal spacing between child elements.
 	/// </summary>
-	public static readonly BindableProperty HorizontalSpacingProperty = BindableProperty.Create(nameof(HorizontalSpacing),
-																									typeof(double),
-																									typeof(DockLayout),
-																									0.0d,
-																									propertyChanged: OnHorizontalSpacingPropertyChanged);
+	[BindableProperty(PropertyChangedMethodName = nameof(OnHorizontalSpacingPropertyChanged))]
+	public partial double HorizontalSpacing { get; set; } = 0.0d;
 
 	/// <summary>
-	/// Vertical spacing between docked views.
+	/// Gets or sets the vertical spacing between elements.
 	/// </summary>
-	public static readonly BindableProperty VerticalSpacingProperty = BindableProperty.Create(nameof(VerticalSpacing),
-																								typeof(double),
-																								typeof(DockLayout),
-																								0.0d,
-																								propertyChanged: OnVerticalSpacingPropertyChanged);
 
-	/// <inheritdoc/>
-	public bool ShouldExpandLastChild
-	{
-		get => (bool)GetValue(ShouldExpandLastChildProperty);
-		set => SetValue(ShouldExpandLastChildProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnVerticalSpacingPropertyChanged))]
+	public partial double VerticalSpacing { get; set; } = 0.0d;
 
-	/// <inheritdoc/>
-	public double HorizontalSpacing
-	{
-		get => (double)GetValue(HorizontalSpacingProperty);
-		set => SetValue(HorizontalSpacingProperty, value);
-	}
-
-	/// <inheritdoc/>
-	public double VerticalSpacing
-	{
-		get => (double)GetValue(VerticalSpacingProperty);
-		set => SetValue(VerticalSpacingProperty, value);
-	}
 
 	/// <summary>
 	/// Gets the docking position for a view.
