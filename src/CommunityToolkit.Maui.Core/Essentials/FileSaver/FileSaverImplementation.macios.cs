@@ -34,6 +34,13 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 			await WriteStream(stream, fileUrl.Path ?? throw new FileSaveException("Path cannot be null."), progress, cancellationToken);
 
 			cancellationToken.ThrowIfCancellationRequested();
+			
+			var currentViewController = Platform.GetCurrentUIViewController();
+			if (currentViewController is null)
+			{
+				throw new FileSaveException("Cannot present file picker: No active view controller found. Ensure the app is active with a visible window.");
+			}
+
 			taskCompetedSource?.TrySetCanceled(CancellationToken.None);
 			var tcs = taskCompetedSource = new(cancellationToken);
 
@@ -44,21 +51,18 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 			documentPickerViewController.DidPickDocumentAtUrls += DocumentPickerViewControllerOnDidPickDocumentAtUrls;
 			documentPickerViewController.WasCancelled += DocumentPickerViewControllerOnWasCancelled;
 
-			var currentViewController = Platform.GetCurrentUIViewController();
-			if (currentViewController is not null)
-			{
-				currentViewController.PresentViewController(documentPickerViewController, true, null);
-			}
-			else
-			{
-				throw new FileSaveException("Unable to get a window where to present the file saver UI.");
-			}
+			currentViewController.PresentViewController(documentPickerViewController, true, null);
 
 			return await tcs.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
 		}
+		catch
+		{
+			InternalDispose();
+			throw;
+		}
 		finally
 		{
-			fileManager.Remove(fileUrl, out _);
+			fileManager.Remove(tempDirectoryPath, out _);
 		}
 	}
 
