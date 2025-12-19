@@ -11,10 +11,20 @@ namespace CommunityToolkit.Maui.Views;
 public partial class Expander : ContentView, IExpander
 {
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="Direction"/> property.
+	/// Gets or sets the direction in which the expander expands.
 	/// </summary>
-	public static readonly BindableProperty DirectionProperty
-		= BindableProperty.Create(nameof(Direction), typeof(ExpandDirection), typeof(Expander), ExpandDirection.Down, propertyChanged: OnDirectionPropertyChanged);
+	[BindableProperty(PropertyChangingMethodName = nameof(DefaultValueExpandedDirection),PropertyChangedMethodName = nameof(OnDirectionPropertyChanged))]
+	public partial ExpandDirection Direction { get; set; } = ExpandDirection.Down;
+
+	static void DefaultValueExpandedDirection(BindableObject bindable, object oldValue, object newValue)
+	{
+		var direction = (Expander)bindable;
+		if (newValue is not ExpandDirection enumValue || !Enum.IsDefined(typeof(ExpandDirection), enumValue))
+		{
+			throw new InvalidEnumArgumentException(nameof(newValue), newValue is int intValue ? intValue : -1, typeof(ExpandDirection));
+		}
+		direction.Direction = (ExpandDirection)newValue;
+	}
 
 	/// <summary>
 	/// Gets or sets the command to execute when the expander is expanded or collapsed.
@@ -85,21 +95,6 @@ public partial class Expander : ContentView, IExpander
 	/// Warning: Overriding this <see cref="Action"/> may cause <see cref="Expander"/> to work improperly when placed inside a <see cref="CollectionView"/> and placed inside a <see cref="ListView"/>.
 	/// </remarks>
 	public Action<TappedEventArgs>? HandleHeaderTapped { get; set; }
-
-	/// <inheritdoc />
-	public ExpandDirection Direction
-	{
-		get => (ExpandDirection)GetValue(DirectionProperty);
-		set
-		{
-			if (!Enum.IsDefined(value))
-			{
-				throw new InvalidEnumArgumentException(nameof(value), (int)value, typeof(ExpandDirection));
-			}
-
-			SetValue(DirectionProperty, value);
-		}
-	}
 
 	Grid ContentGrid => (Grid)base.Content;
 

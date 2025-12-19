@@ -22,61 +22,65 @@ public partial class DrawingView : View, IDrawingView
 	}
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="DrawAction"/> property.
+	/// Gets or sets the action that allows drawing on the <see cref="IDrawingView"/>.
 	/// </summary>
-	public static readonly BindableProperty DrawActionProperty =
-		BindableProperty.Create(nameof(DrawAction), typeof(Action<ICanvas, RectF>), typeof(DrawingView));
+	[BindableProperty]
+	public partial Action<ICanvas, RectF>? DrawAction { get; set; }
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="ShouldClearOnFinish"/> property.
+	/// Gets or sets a value indicating whether the drawing surface should be cleared when the drawing operation finishes.
 	/// </summary>
-	public static readonly BindableProperty ShouldClearOnFinishProperty =
-		BindableProperty.Create(nameof(ShouldClearOnFinish), typeof(bool), typeof(DrawingView), DrawingViewDefaults.ShouldClearOnFinish);
+	[BindableProperty]
+	public partial bool ShouldClearOnFinish { get; set; } = DrawingViewDefaults.ShouldClearOnFinish;
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="IsMultiLineModeEnabled"/> property.
+	/// Gets or sets a value indicating whether multi-line mode is enabled.
 	/// </summary>
-	public static readonly BindableProperty IsMultiLineModeEnabledProperty =
-		BindableProperty.Create(nameof(IsMultiLineModeEnabled), typeof(bool), typeof(DrawingView), DrawingViewDefaults.IsMultiLineModeEnabled);
+	[BindableProperty]
+	public partial bool IsMultiLineModeEnabled { get; set; } = DrawingViewDefaults.IsMultiLineModeEnabled;
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="Lines"/> property.
+	/// Gets or sets the collection of lines that are currently on the <see cref="DrawingView"/>.
 	/// </summary>
-	public static readonly BindableProperty LinesProperty = BindableProperty.Create(
-		nameof(Lines), typeof(ObservableCollection<IDrawingLine>), typeof(DrawingView), defaultValueCreator: (_) => new ObservableCollection<IDrawingLine>(), defaultBindingMode: BindingMode.TwoWay);
+	[BindableProperty(DefaultBindingMode = BindingMode.TwoWay)]
+	public partial ObservableCollection<IDrawingLine> Lines { get; set; } = [];
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="DrawingLineCompletedCommand"/> property.
+	/// Gets or sets the command that is invoked whenever the drawing of a line on <see cref="DrawingView"/> has completed.
 	/// </summary>
-	public static readonly BindableProperty DrawingLineCompletedCommandProperty = BindableProperty.Create(nameof(DrawingLineCompletedCommand), typeof(ICommand), typeof(DrawingView));
+	[BindableProperty]
+	public partial ICommand? DrawingLineCompletedCommand { get; set; }
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="DrawingLineStartedCommand"/> property.
+	/// Gets or sets the command that is invoked whenever the drawing of a line on <see cref="DrawingView"/> has started.
 	/// </summary>
-	public static readonly BindableProperty DrawingLineStartedCommandProperty = BindableProperty.Create(nameof(DrawingLineStartedCommand), typeof(ICommand), typeof(DrawingView));
+	[BindableProperty]
+	public partial ICommand? DrawingLineStartedCommand { get; set; }
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="DrawingLineCancelledCommand"/> property.
+	/// Gets or sets the command that is invoked whenever the drawing of a line on <see cref="DrawingView"/> has canceled.
 	/// </summary>
-	public static readonly BindableProperty DrawingLineCancelledCommandProperty = BindableProperty.Create(nameof(DrawingLineCancelledCommand), typeof(ICommand), typeof(DrawingView));
+	[BindableProperty]
+	public partial ICommand? DrawingLineCancelledCommand { get; set; }
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="PointDrawnCommand"/> property.
+	/// Gets or sets the command that is invoked whenever the drawing on <see cref="DrawingView"/>.
 	/// </summary>
-	public static readonly BindableProperty PointDrawnCommandProperty = BindableProperty.Create(nameof(PointDrawnCommand), typeof(ICommand), typeof(DrawingView));
+	[BindableProperty]
+	public partial ICommand? PointDrawnCommand { get; set; }
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="LineColor"/> property.
+	/// Gets or sets the <see cref="Color"/> that is used by default to draw a line on the <see cref="DrawingView"/>.
 	/// </summary>
-	public static readonly BindableProperty LineColorProperty =
-		BindableProperty.Create(nameof(LineColor), typeof(Color), typeof(DrawingView), DrawingViewDefaults.LineColor);
+	[BindableProperty]
+	public partial Color LineColor { get; set; } = DrawingViewDefaults.LineColor;
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="LineWidth"/> property.
+	/// Gets or sets the width that is used by default to draw a line on the <see cref="DrawingView"/>.
 	/// </summary>
-	public static readonly BindableProperty LineWidthProperty =
-		BindableProperty.Create(nameof(LineWidth), typeof(float), typeof(DrawingView), DrawingViewDefaults.LineWidth);
-
+	[BindableProperty]
+	public partial float LineWidth { get; set; } = DrawingViewDefaults.LineWidth;
+	
 	/// <summary>
 	/// Event occurred when drawing line completed.
 	/// </summary>
@@ -111,105 +115,6 @@ public partial class DrawingView : View, IDrawingView
 	{
 		add => drawingViewEventManager.AddEventHandler(value);
 		remove => drawingViewEventManager.RemoveEventHandler(value);
-	}
-
-	/// <summary>
-	/// The <see cref="Color"/> that is used by default to draw a line on the <see cref="DrawingView"/>. This is a bindable property.
-	/// </summary>
-	public Color LineColor
-	{
-		get => (Color)GetValue(LineColorProperty);
-		set => SetValue(LineColorProperty, value);
-	}
-
-	/// <summary>
-	/// The width that is used by default to draw a line on the <see cref="DrawingView"/>. This is a bindable property.
-	/// </summary>
-	public float LineWidth
-	{
-		get => (float)GetValue(LineWidthProperty);
-		set => SetValue(LineWidthProperty, value);
-	}
-
-	/// <summary>
-	/// This command is invoked whenever the drawing of a line on <see cref="DrawingView"/> has completed.
-	/// Note that this is fired after the tap or click is lifted. When <see cref="IsMultiLineModeEnabled"/> is enabled
-	/// this command is fired multiple times.
-	/// This is a bindable property.
-	/// </summary>
-	public ICommand? DrawingLineCompletedCommand
-	{
-		get => (ICommand?)GetValue(DrawingLineCompletedCommandProperty);
-		set => SetValue(DrawingLineCompletedCommandProperty, value);
-	}
-
-	/// <summary>
-	/// This command is invoked whenever the drawing of a line on <see cref="DrawingView"/> has started.
-	/// </summary>
-	public ICommand? DrawingLineStartedCommand
-	{
-		get => (ICommand?)GetValue(DrawingLineStartedCommandProperty);
-		set => SetValue(DrawingLineStartedCommandProperty, value);
-	}
-
-	/// <summary>
-	/// This command is invoked whenever the drawing of a line on <see cref="DrawingView"/> has canceled.
-	/// </summary>
-	public ICommand? DrawingLineCancelledCommand
-	{
-		get => (ICommand?)GetValue(DrawingLineCancelledCommandProperty);
-		set => SetValue(DrawingLineCancelledCommandProperty, value);
-	}
-
-	/// <summary>
-	/// This command is invoked whenever the drawing on <see cref="DrawingView"/>.
-	/// </summary>
-	public ICommand? PointDrawnCommand
-	{
-		get => (ICommand?)GetValue(PointDrawnCommandProperty);
-		set => SetValue(PointDrawnCommandProperty, value);
-	}
-
-	/// <summary>
-	/// The collection of lines that are currently on the <see cref="DrawingView"/>. This is a bindable property.
-	/// </summary>
-	public ObservableCollection<IDrawingLine> Lines
-	{
-		get => (ObservableCollection<IDrawingLine>)GetValue(LinesProperty);
-		set => SetValue(LinesProperty, value);
-	}
-
-	/// <summary>
-	/// Toggles multi-line mode. When true, multiple lines can be drawn on the <see cref="DrawingView"/> while the tap/click is released in-between lines.
-	/// Note: when <see cref="ShouldClearOnFinish"/> is also enabled, the lines are cleared after the tap/click is released.
-	/// Additionally, <see cref="DrawingLineCompletedCommand"/> will be fired after each line that is drawn.
-	/// This is a bindable property.
-	/// </summary>
-	public bool IsMultiLineModeEnabled
-	{
-		get => (bool)GetValue(IsMultiLineModeEnabledProperty);
-		set => SetValue(IsMultiLineModeEnabledProperty, value);
-	}
-
-	/// <summary>
-	/// Indicates whether the <see cref="DrawingView"/> is cleared after releasing the tap/click and a line is drawn.
-	/// Note: when <see cref="IsMultiLineModeEnabled"/> is also enabled, this might cause unexpected behavior.
-	/// This is a bindable property.
-	/// </summary>
-	public bool ShouldClearOnFinish
-	{
-		get => (bool)GetValue(ShouldClearOnFinishProperty);
-		set => SetValue(ShouldClearOnFinishProperty, value);
-	}
-
-	/// <summary>
-	/// Allows drawing on the <see cref="IDrawingView"/>.
-	/// This is a bindable property.
-	/// </summary>
-	public Action<ICanvas, RectF>? DrawAction
-	{
-		get => (Action<ICanvas, RectF>?)GetValue(DrawActionProperty);
-		set => SetValue(DrawActionProperty, value);
 	}
 
 	/// <summary>

@@ -9,23 +9,71 @@ namespace CommunityToolkit.Maui.Views;
 /// <summary>AvatarView control.</summary>
 public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITextElement, IImageElement, ITextAlignmentElement, ILineHeightElement, ICornerElement
 {
-	/// <summary>The backing store for the <see cref="IFontElement.FontAttributes" /> bindable property.</summary>
-	public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
+	/// <summary>
+	/// Gets or sets the font attributes, such as bold or italic, applied to the text content.
+	/// </summary>
+	[BindableProperty]
+	public partial FontAttributes FontAttributes { get; set; }
 
-	/// <summary>The backing store for the <see cref="IFontElement.FontAutoScalingEnabled" /> bindable property.</summary>
-	public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
+	/// <summary>
+	/// Gets or sets a value indicating whether font auto-scaling is enabled for the control.
+	/// </summary>
+	[BindableProperty]
+	public partial bool FontAutoScalingEnabled { get; set; } = true;
 
-	/// <summary>The backing store for the <see cref="IFontElement.FontFamily" /> bindable property.</summary>
-	public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
+	/// <summary>
+	/// Gets or sets the font family for the control.
+	/// </summary>
+	[BindableProperty]
+	public partial string FontFamily { get; set; }
 
-	/// <summary>The backing store for the <see cref="IFontElement.FontSize" /> bindable property.</summary>
-	public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
+	/// <summary>
+	/// Gets or sets the font size for the control.
+	/// </summary>
+	[BindableProperty]
+	[TypeConverter(typeof(FontSizeConverter))]
+	public partial double FontSize { get; set; }
 
-	/// <summary>The backing store for the <see cref="ITextStyle.TextColor" /> bindable property.</summary>
-	public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
+	/// <summary>
+	/// Gets or sets the color used to render the text content.
+	/// </summary>
+	[BindableProperty]
+	public partial Color TextColor { get; set; }
 
-	/// <summary>The backing store for the <see cref="TextTransform" /> bindable property.</summary>
-	public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
+	///<summary>
+	/// Gets or sets the text transformation applied to the control's content. 
+	/// </summary>
+	[BindableProperty]
+	public partial TextTransform TextTransform { get; set; }
+
+	/// <summary>Gets or sets a value of the control border colour.</summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnBorderColorPropertyChanged))]
+	public partial Color BorderColor { get; set; } = AvatarViewDefaults.BorderColor;
+
+	/// <summary>
+	/// Gets or sets a value of the control border width.
+	/// </summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnBorderWidthPropertyChanged))]
+	public partial double BorderWidth { get; set; } = AvatarViewDefaults.BorderWidth;
+
+	/// <summary>
+	/// Gets or sets a value of the control corner radius property.
+	/// </summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnCornerRadiusPropertyChanged))]
+	public partial CornerRadius CornerRadius { get; set; } = AvatarViewDefaults.CornerRadius;
+
+	/// <summary>
+	/// Gets or sets a value of the control image source property.
+	/// </summary>
+	[TypeConverter(typeof(ImageSourceConverter))]
+	[BindableProperty(PropertyChangedMethodName = nameof(OnImageSourcePropertyChanged))]
+	public partial ImageSource? ImageSource { get; set; }
+
+	/// <summary>
+	/// Gets or sets a value of the control text property.
+	/// </summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnTextPropertyChanged))]
+	public partial string Text { get; set; } = AvatarViewDefaults.Text;
 
 	readonly Image avatarImage = new()
 	{
@@ -41,7 +89,9 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 
 	bool wasImageLoading;
 
-	/// <summary>Initializes a new instance of the <see cref="AvatarView"/> class.</summary>
+	/// <summary>
+	/// Initializes a new instance of the <see cref="AvatarView"/> class.
+	/// </summary>
 	public AvatarView()
 	{
 		PropertyChanged += HandlePropertyChanged;
@@ -62,79 +112,19 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 		avatarImage.SetBinding(HeightRequestProperty, BindingBase.Create<VisualElement, double>(static p => p.HeightRequest, source: this));
 	}
 
-	/// <summary>Gets or sets the control font.</summary>
+	/// <summary>
+	/// Gets or sets the control font.
+	/// </summary>
 	public Microsoft.Maui.Font Font { get; set; } = Microsoft.Maui.Font.SystemFontOfSize((double)FontElement.FontSizeProperty.DefaultValue);
-
-	/// <summary>Gets or sets a value of the control text character spacing property.</summary>
+	
+	/// <summary>
+	/// Gets or sets a value of the control text character spacing property.
+	/// </summary>
 	public double CharacterSpacing
 	{
 		get => (double)GetValue(TextElement.CharacterSpacingProperty);
 		set => SetValue(TextElement.CharacterSpacingProperty, value);
 	}
-
-	/// <summary>Gets or sets a value of the control font attributes property.</summary>
-	public FontAttributes FontAttributes
-	{
-		get => (FontAttributes)GetValue(FontElement.FontAttributesProperty);
-		set => SetValue(FontElement.FontAttributesProperty, value);
-	}
-
-	/// <summary>Gets or sets a value indicating whether control font auto scaling enabled property.</summary>
-	public bool FontAutoScalingEnabled
-	{
-		get => (bool)GetValue(FontElement.FontAutoScalingEnabledProperty);
-		set => SetValue(FontElement.FontAutoScalingEnabledProperty, value);
-	}
-
-	/// <summary>Gets or sets a value of the control font family property.</summary>
-	public string FontFamily
-	{
-		get => (string)GetValue(FontElement.FontFamilyProperty);
-		set => SetValue(FontElement.FontFamilyProperty, value);
-	}
-
-	/// <summary>Gets or sets a value of the control font size property.</summary>
-	[TypeConverter(typeof(FontSizeConverter))]
-	public double FontSize
-	{
-		get => (double)GetValue(FontElement.FontSizeProperty);
-		set => SetValue(FontElement.FontSizeProperty, value);
-	}
-
-	/// <summary>Gets or sets a value of the control text colour property.</summary>
-	public Color TextColor
-	{
-		get => (Color)GetValue(TextElement.TextColorProperty);
-		set => SetValue(TextElement.TextColorProperty, value);
-	}
-
-	/// <inheritdoc/>
-	public TextTransform TextTransform
-	{
-		get => (TextTransform)GetValue(TextElement.TextTransformProperty);
-		set => SetValue(TextElement.TextTransformProperty, value);
-	}
-
-	/// <summary>Gets or sets a value of the control border colour.</summary>
-	[BindableProperty(PropertyChangedMethodName = nameof(OnBorderColorPropertyChanged))]
-	public partial Color BorderColor { get; set; } = AvatarViewDefaults.BorderColor;
-
-	/// <summary>Gets or sets a value of the control border width.</summary>
-	[BindableProperty(PropertyChangedMethodName = nameof(OnBorderWidthPropertyChanged))]
-	public partial double BorderWidth { get; set; } = AvatarViewDefaults.BorderWidth;
-
-	/// <summary>Gets or sets a value of the control corner radius property.</summary>
-	[BindableProperty(PropertyChangedMethodName = nameof(OnCornerRadiusPropertyChanged))]
-	public partial CornerRadius CornerRadius { get; set; } = AvatarViewDefaults.CornerRadius;
-
-	/// <summary>Gets or sets a value of the control image source property.</summary>
-	[TypeConverter(typeof(ImageSourceConverter))]
-	[BindableProperty(PropertyChangedMethodName = nameof(OnImageSourcePropertyChanged))]
-	public partial ImageSource? ImageSource { get; set; }
-
-	/// <summary>Gets or sets a value of the control text property.</summary>
-	[BindableProperty(PropertyChangedMethodName = nameof(OnTextPropertyChanged))]
-	public partial string Text { get; set; } = AvatarViewDefaults.Text;
 
 	Aspect Microsoft.Maui.IImage.Aspect => ((IImageElement)this).Aspect;
 
