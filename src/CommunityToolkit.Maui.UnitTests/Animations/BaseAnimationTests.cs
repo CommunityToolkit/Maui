@@ -10,7 +10,7 @@ public class BaseAnimationTests
 	public void BaseAnimationT_EnsureDefaults()
 	{
 		// Arrange
-		BaseAnimation animation = new FadeAnimation();
+		BaseAnimation animation = new MockBaseAnimation();
 
 		// Act // Assert
 		Assert.Equal(BaseAnimationDefaults.Easing, animation.Easing);
@@ -21,11 +21,18 @@ public class BaseAnimationTests
 	public void BaseAnimation_EnsureDefaults()
 	{
 		// Arrange
-		BaseAnimation<VisualElement> animation = new FadeAnimation();
+		BaseAnimation<VisualElement> animation = new MockBaseAnimation();
 
 		// Act // Assert
 		Assert.Equal(BaseAnimationDefaults.Easing, animation.Easing);
 		Assert.Equal(BaseAnimationDefaults.Length, animation.Length);
 	}
 
+	class MockBaseAnimation : BaseAnimation
+	{
+		public override Task Animate(VisualElement view, CancellationToken token = default)
+		{
+			throw new NotImplementedException();
+		}
+	}
 }
