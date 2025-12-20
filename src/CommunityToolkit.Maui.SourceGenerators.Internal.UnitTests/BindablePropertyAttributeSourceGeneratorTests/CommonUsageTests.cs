@@ -610,7 +610,7 @@ public class CommonUsageTests : BaseBindablePropertyAttributeSourceGeneratorTest
 
 			file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
 			{
-			    public static bool IsInitializingText = false;
+			    public static volatile bool IsInitializingText = false;
 			    public static object CreateDefaultText(global::Microsoft.Maui.Controls.BindableObject bindable)
 			    {
 			        IsInitializingText = true;
@@ -619,7 +619,7 @@ public class CommonUsageTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			        return defaultValue;
 			    }
 			
-			    public static bool IsInitializingCustomDuration = false;
+			    public static volatile bool IsInitializingCustomDuration = false;
 			    public static object CreateDefaultCustomDuration(global::Microsoft.Maui.Controls.BindableObject bindable)
 			    {
 			        IsInitializingCustomDuration = true;
