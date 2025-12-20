@@ -182,17 +182,17 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			? classNameWithGenerics
 			: string.Concat(value.ClassInformation.ContainingTypes, ".", classNameWithGenerics);
 
-		var fileStaticClassName = $"__{value.ClassInformation.ClassName}BindablePropertyInitHelpers";
+		var bindablePropertyInitHelpersClassName = $"__{value.ClassInformation.ClassName}BindablePropertyInitHelpers";
 
 		foreach (var info in value.BindableProperties)
 		{
 			if (info.IsReadOnlyBindableProperty)
 			{
-				GenerateReadOnlyBindableProperty(sb, in info, fileStaticClassName);
+				GenerateReadOnlyBindableProperty(sb, in info, bindablePropertyInitHelpersClassName);
 			}
 			else
 			{
-				GenerateBindableProperty(sb, in info, fileStaticClassName);
+				GenerateBindableProperty(sb, in info, bindablePropertyInitHelpersClassName);
 			}
 
 			if (info.ShouldUsePropertyInitializer)
@@ -209,7 +209,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 				}
 			}
 
-			GenerateProperty(sb, in info, fileStaticClassName);
+			GenerateProperty(sb, in info, bindablePropertyInitHelpersClassName);
 		}
 
 		// If we generated any helper members and the declaring class is generic,
@@ -217,7 +217,9 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		// generic type parameters are in scope for casts used by the helper.
 		if (fileStaticClassStringBuilder.Length > 0 && !string.IsNullOrEmpty(value.ClassInformation.GenericTypeParameters))
 		{
-			sb.Append("private static class ").Append(fileStaticClassName).Append("\n{");
+			sb.Append("[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
+			sb.Append("\n");
+			sb.Append("private static class ").Append(bindablePropertyInitHelpersClassName).Append("\n{");
 			sb.Append("\n");
 			sb.Append(fileStaticClassStringBuilder.ToString());
 			sb.Append("}\n\n");
@@ -240,7 +242,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		// nested inside the class above to ensure type parameter scope.
 		if (fileStaticClassStringBuilder.Length > 0 && string.IsNullOrEmpty(value.ClassInformation.GenericTypeParameters))
 		{
-			sb.Append("\n\nfile static class ").Append(fileStaticClassName).Append("\n{\n");
+			sb.Append("\n\nfile static class ").Append(bindablePropertyInitHelpersClassName).Append("\n{\n");
 			sb.Append(fileStaticClassStringBuilder.ToString());
 			sb.Append("}\n");
 		}
