@@ -43,7 +43,7 @@ public partial class Expander : ContentView, IExpander
 	/// Gets or sets the direction in which the expander expands.
 	/// </summary>
 	[BindableProperty(PropertyChangingMethodName = nameof(DefaultValueExpandedDirection),PropertyChangedMethodName = nameof(OnDirectionPropertyChanged))]
-	public partial ExpandDirection Direction { get; set; } = ExpandDirection.Down;
+	public partial ExpandDirection Direction { get; set; } = ExpanderDefaults.ExpandedDirection;
 
 	/// <summary>
 	/// Gets or sets the command to execute when the expander is expanded or collapsed.

@@ -9,6 +9,25 @@ namespace CommunityToolkit.Maui.Views;
 /// <summary>AvatarView control.</summary>
 public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITextElement, IImageElement, ITextAlignmentElement, ILineHeightElement, ICornerElement
 {
+	/// <summary>The backing store for the <see cref="IFontElement.FontAttributes" /> bindable property.</summary>
+	public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
+
+	/// <summary>The backing store for the <see cref="IFontElement.FontAutoScalingEnabled" /> bindable property.</summary>
+	public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
+
+	/// <summary>The backing store for the <see cref="IFontElement.FontFamily" /> bindable property.</summary>
+	public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
+
+	/// <summary>The backing store for the <see cref="IFontElement.FontSize" /> bindable property.</summary>
+	public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
+
+	/// <summary>The backing store for the <see cref="ITextStyle.TextColor" /> bindable property.</summary>
+	public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
+
+	/// <summary>The backing store for the <see cref="TextTransform" /> bindable property.</summary>
+	public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
+
+
 	readonly Image avatarImage = new()
 	{
 		Aspect = Aspect.AspectFill,
@@ -59,31 +78,6 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 		get => (double)GetValue(TextElement.CharacterSpacingProperty);
 		set => SetValue(TextElement.CharacterSpacingProperty, value);
 	}
-	
-	/// <summary>
-	/// Gets or sets the font attributes, such as bold or italic, applied to the text content.
-	/// </summary>
-	[BindableProperty]
-	public partial FontAttributes FontAttributes { get; set; }
-
-	/// <summary>
-	/// Gets or sets a value indicating whether font auto-scaling is enabled for the control.
-	/// </summary>
-	[BindableProperty]
-	public partial bool FontAutoScalingEnabled { get; set; } = true;
-
-	/// <summary>
-	/// Gets or sets the font family for the control.
-	/// </summary>
-	[BindableProperty]
-	public partial string FontFamily { get; set; }
-
-	/// <summary>
-	/// Gets or sets the font size for the control.
-	/// </summary>
-	[BindableProperty]
-	[TypeConverter(typeof(FontSizeConverter))]
-	public partial double FontSize { get; set; }
 
 	/// <summary>
 	/// Gets or sets the color used to render the text content.
