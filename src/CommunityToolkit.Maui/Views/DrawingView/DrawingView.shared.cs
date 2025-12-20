@@ -82,37 +82,38 @@ public partial class DrawingView : View, IDrawingView
 	public partial ObservableCollection<IDrawingLine> Lines { get; set; } = [];
 
 	/// <summary>
-	/// Gets or sets the command that is invoked whenever the drawing of a line on <see cref="DrawingView"/> has completed.
+	/// This command is invoked whenever the drawing of a line on <see cref="DrawingView"/> has completed.
+	/// This is a bindable property.
 	/// </summary>
 	[BindableProperty]
 	public partial ICommand? DrawingLineCompletedCommand { get; set; }
 
 	/// <summary>
-	/// Gets or sets the command that is invoked whenever the drawing of a line on <see cref="DrawingView"/> has started.
+	/// This command is invoked whenever the drawing of a line on <see cref="DrawingView"/> has started.
 	/// </summary>
 	[BindableProperty]
 	public partial ICommand? DrawingLineStartedCommand { get; set; }
 
 	/// <summary>
-	/// Gets or sets the command that is invoked whenever the drawing of a line on <see cref="DrawingView"/> has canceled.
+	/// This command is invoked whenever the drawing of a line on <see cref="DrawingView"/> has canceled.
 	/// </summary>
 	[BindableProperty]
 	public partial ICommand? DrawingLineCancelledCommand { get; set; }
 
 	/// <summary>
-	/// Gets or sets the command that is invoked whenever the drawing on <see cref="DrawingView"/>.
+	/// This command is invoked whenever the drawing on <see cref="DrawingView"/>.
 	/// </summary>
 	[BindableProperty]
 	public partial ICommand? PointDrawnCommand { get; set; }
 
 	/// <summary>
-	/// Gets or sets the <see cref="Color"/> that is used by default to draw a line on the <see cref="DrawingView"/>.
+	/// The <see cref="Color"/> that is used by default to draw a line on the <see cref="DrawingView"/>. This is a bindable property.
 	/// </summary>
 	[BindableProperty]
 	public partial Color LineColor { get; set; } = DrawingViewDefaults.LineColor;
 
 	/// <summary>
-	/// Gets or sets the width that is used by default to draw a line on the <see cref="DrawingView"/>.
+	/// The width that is used by default to draw a line on the <see cref="DrawingView"/>. This is a bindable property.
 	/// </summary>
 	[BindableProperty]
 	public partial float LineWidth { get; set; } = DrawingViewDefaults.LineWidth;
