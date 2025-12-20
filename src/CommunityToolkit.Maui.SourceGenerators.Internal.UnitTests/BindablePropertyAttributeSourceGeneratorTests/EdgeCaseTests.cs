@@ -100,7 +100,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 
             file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
             {
-                public static bool IsInitializingInvoiceStatus = false;
+                public static volatile bool IsInitializingInvoiceStatus = false;
                 public static object CreateDefaultInvoiceStatus(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingInvoiceStatus = true;
@@ -160,7 +160,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 
             file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
             {
-                public static bool IsInitializingInvoiceStatus = false;
+                public static volatile bool IsInitializingInvoiceStatus = false;
                 public static object CreateDefaultInvoiceStatus(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingInvoiceStatus = true;
@@ -516,7 +516,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 
             file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
             {
-                public static bool IsInitializingIsEnabled = false;
+                public static volatile bool IsInitializingIsEnabled = false;
                 public static object CreateDefaultIsEnabled(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingIsEnabled = true;
@@ -525,7 +525,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                     return defaultValue;
                 }
 
-                public static bool IsInitializingPi = false;
+                public static volatile bool IsInitializingPi = false;
                 public static object CreateDefaultPi(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingPi = true;
@@ -534,7 +534,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                     return defaultValue;
                 }
 
-                public static bool IsInitializingLetter = false;
+                public static volatile bool IsInitializingLetter = false;
                 public static object CreateDefaultLetter(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingLetter = true;
@@ -543,7 +543,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                     return defaultValue;
                 }
 
-                public static bool IsInitializingTimeSpent = false;
+                public static volatile bool IsInitializingTimeSpent = false;
                 public static object CreateDefaultTimeSpent(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingTimeSpent = true;
@@ -552,7 +552,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                     return defaultValue;
                 }
 
-                public static bool IsInitializingDoubleEpsilon = false;
+                public static volatile bool IsInitializingDoubleEpsilon = false;
                 public static object CreateDefaultDoubleEpsilon(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingDoubleEpsilon = true;
@@ -561,7 +561,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                     return defaultValue;
                 }
 
-                public static bool IsInitializingSingleEpsilon = false;
+                public static volatile bool IsInitializingSingleEpsilon = false;
                 public static object CreateDefaultSingleEpsilon(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingSingleEpsilon = true;
@@ -570,7 +570,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                     return defaultValue;
                 }
 
-                public static bool IsInitializingCurrentTime = false;
+                public static volatile bool IsInitializingCurrentTime = false;
                 public static object CreateDefaultCurrentTime(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingCurrentTime = true;

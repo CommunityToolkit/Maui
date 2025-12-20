@@ -182,17 +182,17 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			? classNameWithGenerics
 			: string.Concat(value.ClassInformation.ContainingTypes, ".", classNameWithGenerics);
 
-		var fileStaticClassName = $"__{classNameWithGenerics}BindablePropertyInitHelpers";
+		var bindablePropertyInitHelpersClassName = $"__{value.ClassInformation.ClassName}BindablePropertyInitHelpers";
 
 		foreach (var info in value.BindableProperties)
 		{
 			if (info.IsReadOnlyBindableProperty)
 			{
-				GenerateReadOnlyBindableProperty(sb, in info, fileStaticClassName);
+				GenerateReadOnlyBindableProperty(sb, in info, bindablePropertyInitHelpersClassName);
 			}
 			else
 			{
-				GenerateBindableProperty(sb, in info, fileStaticClassName);
+				GenerateBindableProperty(sb, in info, bindablePropertyInitHelpersClassName);
 			}
 
 			if (info.ShouldUsePropertyInitializer)
@@ -209,7 +209,20 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 				}
 			}
 
-			GenerateProperty(sb, in info, fileStaticClassName);
+			GenerateProperty(sb, in info, bindablePropertyInitHelpersClassName);
+		}
+
+		// If we generated any helper members and the declaring class is generic,
+		// emit the helper class nested inside the generated partial class so
+		// generic type parameters are in scope for casts used by the helper.
+		if (fileStaticClassStringBuilder.Length > 0 && !string.IsNullOrEmpty(value.ClassInformation.GenericTypeParameters))
+		{
+			sb.Append("[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
+			sb.Append("\n");
+			sb.Append("private static class ").Append(bindablePropertyInitHelpersClassName).Append("\n{");
+			sb.Append("\n");
+			sb.Append(fileStaticClassStringBuilder.ToString());
+			sb.Append("}\n\n");
 		}
 
 		sb.Append('}');
@@ -224,10 +237,12 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			}
 		}
 
-		// If we generated any helper members, emit a file static class with them.
-		if (fileStaticClassStringBuilder.Length > 0)
+		// If we generated any helper members and the declaring class is not generic,
+		// emit a file static class with them. Generic types have their helpers emitted
+		// nested inside the class above to ensure type parameter scope.
+		if (fileStaticClassStringBuilder.Length > 0 && string.IsNullOrEmpty(value.ClassInformation.GenericTypeParameters))
 		{
-			sb.Append("\n\nfile static class ").Append(fileStaticClassName).Append("\n{\n");
+			sb.Append("\n\nfile static class ").Append(bindablePropertyInitHelpersClassName).Append("\n{\n");
 			sb.Append(fileStaticClassStringBuilder.ToString());
 			sb.Append("}\n");
 		}
@@ -598,7 +613,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	static void AppendHelperInitializingField(StringBuilder fileStaticClassStringBuilder, in BindablePropertyModel info)
 	{
 		// Make the flag public static so it can be referenced from the generated partial class in the same file.
-		fileStaticClassStringBuilder.Append("public static bool ")
+		fileStaticClassStringBuilder.Append("public static volatile bool ")
 			.Append(info.InitializingPropertyName)
 			.Append(" = false;\n");
 	}
