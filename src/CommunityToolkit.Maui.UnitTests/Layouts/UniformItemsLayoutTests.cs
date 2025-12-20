@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Layouts;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Layouts;
 using FluentAssertions;
 using Xunit;
 
@@ -107,6 +108,14 @@ public class UniformItemsLayoutTests : BaseTest
 		var actualSize = uniformItemsLayout.CrossPlatformArrange(rect);
 
 		Assert.Equal(childSize * childCount, actualSize);
+	}
+
+	[Fact]
+	public void EnsureDefaults()
+	{
+		var layout = new UniformItemsLayout();
+		Assert.Equal(UniformItemLayoutDefaults.MaxRows, layout.MaxRows);
+		Assert.Equal(UniformItemLayoutDefaults.MaxColumns, layout.MaxColumns);
 	}
 
 	class TestView : View

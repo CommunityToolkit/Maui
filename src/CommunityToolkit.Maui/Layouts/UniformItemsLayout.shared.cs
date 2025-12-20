@@ -15,7 +15,7 @@ public partial class UniformItemsLayout : Layout, IUniformItemsLayout
 	/// Gets or sets the maximum number of rows to display or process.
 	/// </summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnMaxRowsProperChanged))]
-	public partial int MaxRows { get; set; } = int.MaxValue;
+	public partial int MaxRows { get; set; } = UniformItemLayoutDefaults.MaxRows;
 
 	/// <summary>
 	/// Gets or sets the maximum number of columns to display in the layout.
@@ -24,7 +24,7 @@ public partial class UniformItemsLayout : Layout, IUniformItemsLayout
 	/// than or equal to 1. The default value is <see cref="int.MaxValue"/>, which allows an unlimited number of
 	/// columns.</remarks>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnMaxColumnsProperChanged))]
-	public partial int MaxColumns { get; set; } = int.MaxValue;
+	public partial int MaxColumns { get; set; } = UniformItemLayoutDefaults.MaxColumns;
 
 	static void OnMaxRowsProperChanged(BindableObject bindable, object oldValue, object newValue)
 	{

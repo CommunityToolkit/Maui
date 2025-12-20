@@ -22,20 +22,20 @@ public partial class DockLayout : Layout, IDockLayout
 	/// If true, the last child is expanded to fill the remaining space (default: true).
 	/// </summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnShouldExpandLastChildPropertyChanged))]
-	public partial bool ShouldExpandLastChild { get; set; } = true;
+	public partial bool ShouldExpandLastChild { get; set; } = DockLayoutDefaults.ShouldExpandLastChild;
 
 	/// <summary>
 	/// Gets or sets the horizontal spacing between child elements.
 	/// </summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnHorizontalSpacingPropertyChanged))]
-	public partial double HorizontalSpacing { get; set; } = 0.0d;
+	public partial double HorizontalSpacing { get; set; } = DockLayoutDefaults.HorizontalSpacing;
 
 	/// <summary>
 	/// Gets or sets the vertical spacing between elements.
 	/// </summary>
 
 	[BindableProperty(PropertyChangedMethodName = nameof(OnVerticalSpacingPropertyChanged))]
-	public partial double VerticalSpacing { get; set; } = 0.0d;
+	public partial double VerticalSpacing { get; set; } = DockLayoutDefaults.VerticalSpacing;
 
 
 	/// <summary>
