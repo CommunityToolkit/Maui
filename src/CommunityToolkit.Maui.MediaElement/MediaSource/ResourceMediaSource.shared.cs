@@ -36,6 +36,6 @@ public sealed partial class ResourceMediaSource : MediaSource
 	/// <inheritdoc/>
 	public override string ToString() => $"Resource: {Path}";
 
-	static void OnResourceMediaSourceMediaSourceChanged(BindableObject bindable, object oldValue, object newValue) =>
-		((ResourceMediaSource)bindable).OnSourceChanged();
+	void OnResourceMediaSourceMediaSourceChanged(object oldValue, object newValue) =>
+		OnSourceChanged();
 }

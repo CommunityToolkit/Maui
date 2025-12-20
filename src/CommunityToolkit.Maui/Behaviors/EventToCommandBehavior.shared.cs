@@ -55,8 +55,8 @@ public partial class EventToCommandBehavior : BaseBehavior<VisualElement>
 		base.OnDetachingFrom(bindable);
 	}
 
-	static void OnEventNamePropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		=> ((EventToCommandBehavior)bindable).RegisterEvent();
+	void OnEventNamePropertyChanged(object oldValue, object newValue)
+		=> RegisterEvent();
 
 	void RegisterEvent()
 	{

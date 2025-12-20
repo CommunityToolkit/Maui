@@ -275,13 +275,13 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append("), null, ")
 			.Append(info.DefaultBindingMode)
 			.Append(", ")
-			.Append(info.ValidateValueMethodName)
+			.Append(info.ValidateValueMethodExpression)
 			.Append(", ")
-			.Append(info.PropertyChangedMethodName)
+			.Append(info.PropertyChangedMethodExpression)
 			.Append(", ")
-			.Append(info.PropertyChangingMethodName)
+			.Append(info.PropertyChangingMethodExpression)
 			.Append(", ")
-			.Append(info.CoerceValueMethodName)
+			.Append(info.CoerceValueMethodExpression)
 			.Append(", ");
 
 		if (info.ShouldUsePropertyInitializer)
@@ -290,7 +290,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 				.Append('.');
 		}
 
-		sb.Append(info.EffectiveDefaultValueCreatorMethodName)
+		sb.Append(info.DefaultValueCreatorMethodExpression)
 			.Append(");\n");
 
 		// Generate public BindableProperty from the key
@@ -336,13 +336,13 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append("), null, ")
 			.Append(info.DefaultBindingMode)
 			.Append(", ")
-			.Append(info.ValidateValueMethodName)
+			.Append(info.ValidateValueMethodExpression)
 			.Append(", ")
-			.Append(info.PropertyChangedMethodName)
+			.Append(info.PropertyChangedMethodExpression)
 			.Append(", ")
-			.Append(info.PropertyChangingMethodName)
+			.Append(info.PropertyChangingMethodExpression)
 			.Append(", ")
-			.Append(info.CoerceValueMethodName)
+			.Append(info.CoerceValueMethodExpression)
 			.Append(", ");
 
 		if (info.ShouldUsePropertyInitializer)
@@ -351,7 +351,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append('.');
 		}
 
-		sb.Append(info.EffectiveDefaultValueCreatorMethodName)
+		sb.Append(info.DefaultValueCreatorMethodExpression)
 			.Append(");\n")
 			.Append('\n');
 	}

@@ -87,7 +87,12 @@ public class BindablePropertyModelTests : BaseTest
 		Assert.Equal(newKeywordText, model.NewKeywordText);
 		Assert.Equal(hasInitializer, model.HasInitializer);
 		Assert.Equal("TestPropertyProperty", model.BindablePropertyName);
-		Assert.Equal(defaultValueCreatorMethodName, model.EffectiveDefaultValueCreatorMethodName);
+		Assert.Equal(model.DefaultValueCreatorMethodName, model.EffectiveDefaultValueCreatorMethodName);
+		Assert.Equal($"(b,v) => ((TestClass)b).{model.ValidateValueMethodName}(v)", model.ValidateValueMethodExpression);
+		Assert.Equal($"(b,o,n) => ((TestClass)b).{model.PropertyChangedMethodName}(o,n)", model.PropertyChangedMethodExpression);
+		Assert.Equal($"(b,o,n) => ((TestClass)b).{model.PropertyChangingMethodName}(o,n)", model.PropertyChangingMethodExpression);
+		Assert.Equal($"(b,v) => ((TestClass)b).{model.CoerceValueMethodName}(v)", model.CoerceValueMethodExpression);
+		Assert.Equal($"(b) => ((TestClass)b).{defaultValueCreatorMethodName}()", model.DefaultValueCreatorMethodExpression);
 		Assert.Equal("IsInitializingTestProperty", model.InitializingPropertyName);
 	}
 

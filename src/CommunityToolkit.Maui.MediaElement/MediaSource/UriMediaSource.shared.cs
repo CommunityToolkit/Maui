@@ -33,9 +33,9 @@ public sealed partial class UriMediaSource : MediaSource
 	/// <inheritdoc/>
 	public override string ToString() => $"Uri: {Uri}";
 
-	static bool UriValueValidator(BindableObject bindable, object value) =>
+	bool UriValueValidator(object value) =>
 		value is null || ((Uri)value).IsAbsoluteUri;
 
-	static void OnUriSourceChanged(BindableObject bindable, object oldValue, object newValue) =>
-		((UriMediaSource)bindable).OnSourceChanged();
+	void OnUriSourceChanged(object oldValue, object newValue) =>
+		OnSourceChanged();
 }

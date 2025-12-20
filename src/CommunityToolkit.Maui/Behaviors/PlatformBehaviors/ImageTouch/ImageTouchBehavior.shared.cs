@@ -49,38 +49,36 @@ public partial class ImageTouchBehavior : TouchBehavior
 	[BindableProperty]
 	public partial bool ShouldSetImageOnAnimationEnd { get; set; } = ImageTouchBehaviorDefaults.ShouldSetImageOnAnimationEnd;
 
-	static void HandleDefaultImageSourceChanged(BindableObject bindable, object? oldValue, object? newValue)
+	void HandleDefaultImageSourceChanged(object? oldValue, object? newValue)
 	{
-		var imageTouchBehavior = (ImageTouchBehavior)bindable;
 		var updatedImageSource = (ImageSource?)newValue;
 
-		if (!GestureManager.TryGetBindableImageTouchBehaviorElement(imageTouchBehavior, out var imageElement))
+		if (!GestureManager.TryGetBindableImageTouchBehaviorElement(this, out var imageElement))
 		{
 			return;
 		}
 
 		// GestureManager does not automatically toggle ImageElement.SourceProperty when currently being displayed
-		switch (imageTouchBehavior.CurrentTouchState, imageTouchBehavior.CurrentHoverState)
+		switch (CurrentTouchState, CurrentHoverState)
 		{
-			case (TouchState.Default, HoverState.Hovered) when imageTouchBehavior.HoveredImageSource is null:
+			case (TouchState.Default, HoverState.Hovered) when HoveredImageSource is null:
 			case (TouchState.Default, HoverState.Default):
 				imageElement.SetValue(ImageElement.SourceProperty, updatedImageSource);
 				break;
 		}
 	}
 
-	static void HandlePressedImageSourceChanged(BindableObject bindable, object? oldValue, object? newValue)
+	void HandlePressedImageSourceChanged(object? oldValue, object? newValue)
 	{
-		var imageTouchBehavior = (ImageTouchBehavior)bindable;
 		var updatedImageSource = (ImageSource?)newValue;
 
-		if (!GestureManager.TryGetBindableImageTouchBehaviorElement(imageTouchBehavior, out var imageElement))
+		if (!GestureManager.TryGetBindableImageTouchBehaviorElement(this, out var imageElement))
 		{
 			return;
 		}
 
 		// GestureManager does not automatically toggle ImageElement.SourceProperty when currently being displayed
-		switch (imageTouchBehavior.CurrentTouchState, imageTouchBehavior.CurrentHoverState)
+		switch (CurrentTouchState, CurrentHoverState)
 		{
 			case (TouchState.Pressed, _):
 				imageElement.SetValue(ImageElement.SourceProperty, updatedImageSource);
@@ -88,18 +86,17 @@ public partial class ImageTouchBehavior : TouchBehavior
 		}
 	}
 
-	static void HandleHoveredImageSourceChanged(BindableObject bindable, object? oldValue, object? newValue)
+	void HandleHoveredImageSourceChanged(object? oldValue, object? newValue)
 	{
-		var imageTouchBehavior = (ImageTouchBehavior)bindable;
 		var updatedImageSource = (ImageSource?)newValue;
 
-		if (!GestureManager.TryGetBindableImageTouchBehaviorElement(imageTouchBehavior, out var imageElement))
+		if (!GestureManager.TryGetBindableImageTouchBehaviorElement(this, out var imageElement))
 		{
 			return;
 		}
 
 		// GestureManager does not automatically toggle ImageElement.SourceProperty when currently being displayed
-		switch (imageTouchBehavior.CurrentTouchState, imageTouchBehavior.CurrentHoverState)
+		switch (CurrentTouchState, CurrentHoverState)
 		{
 			case (TouchState.Default, HoverState.Hovered):
 				imageElement.SetValue(ImageElement.SourceProperty, updatedImageSource);
