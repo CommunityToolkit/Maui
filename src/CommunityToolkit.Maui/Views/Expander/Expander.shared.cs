@@ -10,21 +10,40 @@ namespace CommunityToolkit.Maui.Views;
 [RequiresUnreferencedCode("Calls Microsoft.Maui.Controls.Binding.Binding(String, BindingMode, IValueConverter, Object, String, Object)")]
 public partial class Expander : ContentView, IExpander
 {
+	readonly WeakEventManager tappedEventManager = new();
+
+	/// <summary>
+	/// Initialize a new instance of <see cref="Expander"/>.
+	/// </summary>
+	public Expander()
+	{
+		HandleHeaderTapped = ResizeExpanderInItemsView;
+		HeaderTapGestureRecognizer.Tapped += OnHeaderTapGestureRecognizerTapped;
+
+		base.Content = new Grid
+		{
+			RowDefinitions =
+			{
+				new RowDefinition(GridLength.Auto),
+				new RowDefinition(GridLength.Auto)
+			}
+		};
+	}
+
+	/// <summary>
+	/// Triggered when the value of <see cref="IsExpanded"/> changes.
+	/// </summary>
+	public event EventHandler<ExpandedChangedEventArgs> ExpandedChanged
+	{
+		add => tappedEventManager.AddEventHandler(value);
+		remove => tappedEventManager.RemoveEventHandler(value);
+	}
+	
 	/// <summary>
 	/// Gets or sets the direction in which the expander expands.
 	/// </summary>
 	[BindableProperty(PropertyChangingMethodName = nameof(DefaultValueExpandedDirection),PropertyChangedMethodName = nameof(OnDirectionPropertyChanged))]
 	public partial ExpandDirection Direction { get; set; } = ExpandDirection.Down;
-
-	static void DefaultValueExpandedDirection(BindableObject bindable, object oldValue, object newValue)
-	{
-		var direction = (Expander)bindable;
-		if (newValue is not ExpandDirection enumValue || !Enum.IsDefined(typeof(ExpandDirection), enumValue))
-		{
-			throw new InvalidEnumArgumentException(nameof(newValue), newValue is int intValue ? intValue : -1, typeof(ExpandDirection));
-		}
-		direction.Direction = (ExpandDirection)newValue;
-	}
 
 	/// <summary>
 	/// Gets or sets the command to execute when the expander is expanded or collapsed.
@@ -56,37 +75,6 @@ public partial class Expander : ContentView, IExpander
 	[BindableProperty(PropertyChangedMethodName = nameof(OnHeaderPropertyChanged))]
 	public partial IView Header { get; set; }
 
-	readonly WeakEventManager tappedEventManager = new();
-
-	/// <summary>
-	/// Initialize a new instance of <see cref="Expander"/>.
-	/// </summary>
-	public Expander()
-	{
-		HandleHeaderTapped = ResizeExpanderInItemsView;
-		HeaderTapGestureRecognizer.Tapped += OnHeaderTapGestureRecognizerTapped;
-
-		base.Content = new Grid
-		{
-			RowDefinitions =
-			{
-				new RowDefinition(GridLength.Auto),
-				new RowDefinition(GridLength.Auto)
-			}
-		};
-	}
-
-	/// <summary>
-	/// Triggered when the value of <see cref="IsExpanded"/> changes.
-	/// </summary>
-	public event EventHandler<ExpandedChangedEventArgs> ExpandedChanged
-	{
-		add => tappedEventManager.AddEventHandler(value);
-		remove => tappedEventManager.RemoveEventHandler(value);
-	}
-
-	internal TapGestureRecognizer HeaderTapGestureRecognizer { get; } = new();
-
 	/// <summary>
 	/// The Action that fires when <see cref="Header"/> is tapped.
 	/// By default, this <see cref="Action"/> runs <see cref="ResizeExpanderInItemsView(TappedEventArgs)"/>.
@@ -95,8 +83,20 @@ public partial class Expander : ContentView, IExpander
 	/// Warning: Overriding this <see cref="Action"/> may cause <see cref="Expander"/> to work improperly when placed inside a <see cref="CollectionView"/> and placed inside a <see cref="ListView"/>.
 	/// </remarks>
 	public Action<TappedEventArgs>? HandleHeaderTapped { get; set; }
+	
+	internal TapGestureRecognizer HeaderTapGestureRecognizer { get; } = new();
 
 	Grid ContentGrid => (Grid)base.Content;
+	
+	static void DefaultValueExpandedDirection(BindableObject bindable, object oldValue, object newValue)
+	{
+		var direction = (Expander)bindable;
+		if (newValue is not ExpandDirection enumValue || !Enum.IsDefined(typeof(ExpandDirection), enumValue))
+		{
+			throw new InvalidEnumArgumentException(nameof(newValue), newValue is int intValue ? intValue : -1, typeof(ExpandDirection));
+		}
+		direction.Direction = (ExpandDirection)newValue;
+	}
 
 	static void OnContentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{

@@ -20,7 +20,43 @@ public partial class DrawingView : View, IDrawingView
 		BackgroundColor = DrawingViewDefaults.BackgroundColor;
 		Unloaded += OnDrawingViewUnloaded;
 	}
+	
+	/// <summary>
+	/// Event occurred when drawing line completed.
+	/// </summary>
+	public event EventHandler<DrawingLineCompletedEventArgs> DrawingLineCompleted
+	{
+		add => drawingViewEventManager.AddEventHandler(value);
+		remove => drawingViewEventManager.RemoveEventHandler(value);
+	}
 
+	/// <summary>
+	/// Event occurred when drawing line started.
+	/// </summary>
+	public event EventHandler<DrawingLineStartedEventArgs> DrawingLineStarted
+	{
+		add => drawingViewEventManager.AddEventHandler(value);
+		remove => drawingViewEventManager.RemoveEventHandler(value);
+	}
+
+	/// <summary>
+	/// Event occurred when drawing line canceled.
+	/// </summary>
+	public event EventHandler<EventArgs> DrawingLineCancelled
+	{
+		add => drawingViewEventManager.AddEventHandler(value);
+		remove => drawingViewEventManager.RemoveEventHandler(value);
+	}
+
+	/// <summary>
+	/// Event occurred when drawing.
+	/// </summary>
+	public event EventHandler<PointDrawnEventArgs> PointDrawn
+	{
+		add => drawingViewEventManager.AddEventHandler(value);
+		remove => drawingViewEventManager.RemoveEventHandler(value);
+	}
+	
 	/// <summary>
 	/// Gets or sets the action that allows drawing on the <see cref="IDrawingView"/>.
 	/// </summary>
@@ -80,42 +116,6 @@ public partial class DrawingView : View, IDrawingView
 	/// </summary>
 	[BindableProperty]
 	public partial float LineWidth { get; set; } = DrawingViewDefaults.LineWidth;
-	
-	/// <summary>
-	/// Event occurred when drawing line completed.
-	/// </summary>
-	public event EventHandler<DrawingLineCompletedEventArgs> DrawingLineCompleted
-	{
-		add => drawingViewEventManager.AddEventHandler(value);
-		remove => drawingViewEventManager.RemoveEventHandler(value);
-	}
-
-	/// <summary>
-	/// Event occurred when drawing line started.
-	/// </summary>
-	public event EventHandler<DrawingLineStartedEventArgs> DrawingLineStarted
-	{
-		add => drawingViewEventManager.AddEventHandler(value);
-		remove => drawingViewEventManager.RemoveEventHandler(value);
-	}
-
-	/// <summary>
-	/// Event occurred when drawing line canceled.
-	/// </summary>
-	public event EventHandler<EventArgs> DrawingLineCancelled
-	{
-		add => drawingViewEventManager.AddEventHandler(value);
-		remove => drawingViewEventManager.RemoveEventHandler(value);
-	}
-
-	/// <summary>
-	/// Event occurred when drawing.
-	/// </summary>
-	public event EventHandler<PointDrawnEventArgs> PointDrawn
-	{
-		add => drawingViewEventManager.AddEventHandler(value);
-		remove => drawingViewEventManager.RemoveEventHandler(value);
-	}
 
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of the collection of <see cref="IDrawingLine"/> that is provided as a parameter.

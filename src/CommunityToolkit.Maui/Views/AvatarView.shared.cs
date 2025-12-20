@@ -9,6 +9,57 @@ namespace CommunityToolkit.Maui.Views;
 /// <summary>AvatarView control.</summary>
 public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITextElement, IImageElement, ITextAlignmentElement, ILineHeightElement, ICornerElement
 {
+	readonly Image avatarImage = new()
+	{
+		Aspect = Aspect.AspectFill,
+	};
+
+	readonly Label avatarLabel = new()
+	{
+		HorizontalTextAlignment = TextAlignment.Center,
+		VerticalTextAlignment = TextAlignment.Center,
+		Text = AvatarViewDefaults.Text,
+	};
+
+	bool wasImageLoading;
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="AvatarView"/> class.
+	/// </summary>
+	public AvatarView()
+	{
+		PropertyChanged += HandlePropertyChanged;
+
+		IsEnabled = true;
+		HorizontalOptions = VerticalOptions = LayoutOptions.Center;
+		HeightRequest = AvatarViewDefaults.HeightRequest;
+		WidthRequest = AvatarViewDefaults.WidthRequest;
+		Padding = AvatarViewDefaults.Padding;
+		Stroke = AvatarViewDefaults.BorderColor;
+		StrokeThickness = AvatarViewDefaults.BorderWidth;
+		StrokeShape = new RoundRectangle
+		{
+			CornerRadius = new CornerRadius(AvatarViewDefaults.CornerRadius.TopLeft, AvatarViewDefaults.CornerRadius.TopRight, AvatarViewDefaults.CornerRadius.BottomLeft, AvatarViewDefaults.CornerRadius.BottomRight),
+		};
+		Content = avatarLabel;
+		avatarImage.SetBinding(WidthRequestProperty, BindingBase.Create<VisualElement, double>(static p => p.WidthRequest, source: this));
+		avatarImage.SetBinding(HeightRequestProperty, BindingBase.Create<VisualElement, double>(static p => p.HeightRequest, source: this));
+	}
+
+	/// <summary>
+	/// Gets or sets the control font.
+	/// </summary>
+	public Microsoft.Maui.Font Font { get; set; } = Microsoft.Maui.Font.SystemFontOfSize((double)FontElement.FontSizeProperty.DefaultValue);
+	
+	/// <summary>
+	/// Gets or sets a value of the control text character spacing property.
+	/// </summary>
+	public double CharacterSpacing
+	{
+		get => (double)GetValue(TextElement.CharacterSpacingProperty);
+		set => SetValue(TextElement.CharacterSpacingProperty, value);
+	}
+	
 	/// <summary>
 	/// Gets or sets the font attributes, such as bold or italic, applied to the text content.
 	/// </summary>
@@ -74,57 +125,6 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 	/// </summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnTextPropertyChanged))]
 	public partial string Text { get; set; } = AvatarViewDefaults.Text;
-
-	readonly Image avatarImage = new()
-	{
-		Aspect = Aspect.AspectFill,
-	};
-
-	readonly Label avatarLabel = new()
-	{
-		HorizontalTextAlignment = TextAlignment.Center,
-		VerticalTextAlignment = TextAlignment.Center,
-		Text = AvatarViewDefaults.Text,
-	};
-
-	bool wasImageLoading;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="AvatarView"/> class.
-	/// </summary>
-	public AvatarView()
-	{
-		PropertyChanged += HandlePropertyChanged;
-
-		IsEnabled = true;
-		HorizontalOptions = VerticalOptions = LayoutOptions.Center;
-		HeightRequest = AvatarViewDefaults.HeightRequest;
-		WidthRequest = AvatarViewDefaults.WidthRequest;
-		Padding = AvatarViewDefaults.Padding;
-		Stroke = AvatarViewDefaults.BorderColor;
-		StrokeThickness = AvatarViewDefaults.BorderWidth;
-		StrokeShape = new RoundRectangle
-		{
-			CornerRadius = new CornerRadius(AvatarViewDefaults.CornerRadius.TopLeft, AvatarViewDefaults.CornerRadius.TopRight, AvatarViewDefaults.CornerRadius.BottomLeft, AvatarViewDefaults.CornerRadius.BottomRight),
-		};
-		Content = avatarLabel;
-		avatarImage.SetBinding(WidthRequestProperty, BindingBase.Create<VisualElement, double>(static p => p.WidthRequest, source: this));
-		avatarImage.SetBinding(HeightRequestProperty, BindingBase.Create<VisualElement, double>(static p => p.HeightRequest, source: this));
-	}
-
-	/// <summary>
-	/// Gets or sets the control font.
-	/// </summary>
-	public Microsoft.Maui.Font Font { get; set; } = Microsoft.Maui.Font.SystemFontOfSize((double)FontElement.FontSizeProperty.DefaultValue);
-	
-	/// <summary>
-	/// Gets or sets a value of the control text character spacing property.
-	/// </summary>
-	public double CharacterSpacing
-	{
-		get => (double)GetValue(TextElement.CharacterSpacingProperty);
-		set => SetValue(TextElement.CharacterSpacingProperty, value);
-	}
 
 	Aspect Microsoft.Maui.IImage.Aspect => ((IImageElement)this).Aspect;
 
