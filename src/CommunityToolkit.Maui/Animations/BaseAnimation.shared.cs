@@ -12,12 +12,12 @@ namespace CommunityToolkit.Maui.Animations;
 public abstract partial class BaseAnimation<TAnimatable>(uint defaultLength = BaseAnimationDefaults.Length) : BindableObject where TAnimatable : IAnimatable
 {
 	readonly uint defaultLength = defaultLength;
-	
+
 	/// <summary>
 	/// Gets or sets the time, in milliseconds, over which to animate the transition.
 	/// </summary>
-	[BindableProperty(DefaultBindingMode = BindingMode.OneWay, DefaultValueCreatorMethodName = nameof(LengthCreateDefaultValue))]
-	public partial uint Length { get; set; }
+	[BindableProperty(DefaultBindingMode = BindingMode.OneWay)]
+	public partial uint Length { get; set; } = BaseAnimationDefaults.Length;
 
 	/// <summary>
 	/// Gets or sets the easing function to use for the animation
@@ -31,8 +31,6 @@ public abstract partial class BaseAnimation<TAnimatable>(uint defaultLength = Ba
 	/// <param name="view">The view to perform the animation on.</param>
 	/// <param name="token"> <see cref="CancellationToken"/>.</param>
 	public abstract Task Animate(TAnimatable view, CancellationToken token = default);
-	
-	static object LengthCreateDefaultValue(BindableObject bindable) => ((BaseAnimation<TAnimatable>)bindable).defaultLength;
 }
 
 /// <inheritdoc/>

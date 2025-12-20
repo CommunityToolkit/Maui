@@ -212,6 +212,17 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			GenerateProperty(sb, in info, fileStaticClassName);
 		}
 
+		// If we generated any helper members and the declaring class is generic,
+		// emit the helper class nested inside the generated partial class so
+		// generic type parameters are in scope for casts used by the helper.
+		if (fileStaticClassStringBuilder.Length > 0 && !string.IsNullOrEmpty(value.ClassInformation.GenericTypeParameters))
+		{
+			sb.Append("private static class ").Append(fileStaticClassName).Append("\n{");
+			sb.Append("\n");
+			sb.Append(fileStaticClassStringBuilder.ToString());
+			sb.Append("}\n\n");
+		}
+
 		sb.Append('}');
 
 		// Close nested class hierarchy
@@ -224,8 +235,10 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			}
 		}
 
-		// If we generated any helper members, emit a file static class with them.
-		if (fileStaticClassStringBuilder.Length > 0)
+		// If we generated any helper members and the declaring class is not generic,
+		// emit a file static class with them. Generic types have their helpers emitted
+		// nested inside the class above to ensure type parameter scope.
+		if (fileStaticClassStringBuilder.Length > 0 && string.IsNullOrEmpty(value.ClassInformation.GenericTypeParameters))
 		{
 			sb.Append("\n\nfile static class ").Append(fileStaticClassName).Append("\n{\n");
 			sb.Append(fileStaticClassStringBuilder.ToString());
