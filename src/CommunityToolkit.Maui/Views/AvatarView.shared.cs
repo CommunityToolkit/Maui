@@ -79,17 +79,48 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 		set => SetValue(TextElement.CharacterSpacingProperty, value);
 	}
 
-	/// <summary>
-	/// Gets or sets the color used to render the text content.
-	/// </summary>
-	[BindableProperty]
-	public partial Color TextColor { get; set; }
+	/// <summary>Gets or sets a value of the control font attributes property.</summary>
+	public FontAttributes FontAttributes
+	{
+		get => (FontAttributes)GetValue(FontElement.FontAttributesProperty);
+		set => SetValue(FontElement.FontAttributesProperty, value);
+	}
 
-	///<summary>
-	/// Gets or sets the text transformation applied to the control's content. 
-	/// </summary>
-	[BindableProperty]
-	public partial TextTransform TextTransform { get; set; }
+	/// <summary>Gets or sets a value indicating whether control font auto scaling enabled property.</summary>
+	public bool FontAutoScalingEnabled
+	{
+		get => (bool)GetValue(FontElement.FontAutoScalingEnabledProperty);
+		set => SetValue(FontElement.FontAutoScalingEnabledProperty, value);
+	}
+
+	/// <summary>Gets or sets a value of the control font family property.</summary>
+	public string FontFamily
+	{
+		get => (string)GetValue(FontElement.FontFamilyProperty);
+		set => SetValue(FontElement.FontFamilyProperty, value);
+	}
+
+	/// <summary>Gets or sets a value of the control font size property.</summary>
+	[TypeConverter(typeof(FontSizeConverter))]
+	public double FontSize
+	{
+		get => (double)GetValue(FontElement.FontSizeProperty);
+		set => SetValue(FontElement.FontSizeProperty, value);
+	}
+
+	/// <summary>Gets or sets a value of the control text colour property.</summary>
+	public Color TextColor
+	{
+		get => (Color)GetValue(TextElement.TextColorProperty);
+		set => SetValue(TextElement.TextColorProperty, value);
+	}
+
+	/// <inheritdoc/>
+	public TextTransform TextTransform
+	{
+		get => (TextTransform)GetValue(TextElement.TextTransformProperty);
+		set => SetValue(TextElement.TextTransformProperty, value);
+	}
 
 	/// <summary>Gets or sets a value of the control border colour.</summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnBorderColorPropertyChanged))]
