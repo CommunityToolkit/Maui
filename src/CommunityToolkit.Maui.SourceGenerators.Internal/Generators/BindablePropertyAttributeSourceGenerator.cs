@@ -613,7 +613,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	static void AppendHelperInitializingField(StringBuilder fileStaticClassStringBuilder, in BindablePropertyModel info)
 	{
 		// Make the flag public static so it can be referenced from the generated partial class in the same file.
-		fileStaticClassStringBuilder.Append("public static bool ")
+		fileStaticClassStringBuilder.Append("public static volatile bool ")
 			.Append(info.InitializingPropertyName)
 			.Append(" = false;\n");
 	}
