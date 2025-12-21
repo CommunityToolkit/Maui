@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.Storage;
 [SupportedOSPlatform("MacCatalyst14.0")]
 public sealed partial class FileSaverImplementation : IFileSaver
 {
-	TaskCompletionSource<string>? taskCompetedSource;
+	TaskCompletionSource<string>? taskCompletedSource;
 
 	async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
 	{
@@ -35,8 +35,8 @@ public sealed partial class FileSaverImplementation : IFileSaver
 				throw new FileSaveException("Cannot present file picker: No active view controller found. Ensure the app is active with a visible window.");
 			}
 
-			taskCompetedSource?.TrySetCanceled(CancellationToken.None);
-			var tcs = taskCompetedSource = new(cancellationToken);
+			taskCompletedSource?.TrySetCanceled(CancellationToken.None);
+			var tcs = taskCompletedSource = new(cancellationToken);
 
 			documentPickerViewController = new([fileUrl], true)
 			{
@@ -68,11 +68,11 @@ public sealed partial class FileSaverImplementation : IFileSaver
 
 	void DocumentPickerViewControllerOnWasCancelled(object? sender, EventArgs e)
 	{
-		taskCompetedSource?.TrySetException(new FileSaveException("Operation cancelled."));
+		taskCompletedSource?.TrySetException(new FileSaveException("Operation cancelled."));
 	}
 
 	void DocumentPickerViewControllerOnDidPickDocumentAtUrls(object? sender, UIDocumentPickedAtUrlsEventArgs e)
 	{
-		taskCompetedSource?.TrySetResult(e.Urls[0].Path ?? throw new FileSaveException("Unable to retrieve the path of the saved file."));
+		taskCompletedSource?.TrySetResult(e.Urls[0].Path ?? e.Urls[0].ToString());
 	}
 }
