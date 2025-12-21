@@ -8,50 +8,40 @@ namespace CommunityToolkit.Maui.Storage;
 /// <inheritdoc cref="IFolderPicker" />
 [SupportedOSPlatform("iOS14.0")]
 [SupportedOSPlatform("MacCatalyst14.0")]
-public sealed partial class FolderPickerImplementation : IFolderPicker, IDisposable
+public sealed partial class FolderPickerImplementation : IFolderPicker
 {
-	readonly UIDocumentPickerViewController documentPickerViewController = new([UTTypes.Folder])
-	{
-		AllowsMultipleSelection = false
-	};
-
 	TaskCompletionSource<Folder>? taskCompetedSource;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="FolderPickerImplementation"/> class.
-	/// </summary>
-	public FolderPickerImplementation()
-	{
-		documentPickerViewController.DidPickDocumentAtUrls += DocumentPickerViewControllerOnDidPickDocumentAtUrls;
-		documentPickerViewController.WasCancelled += DocumentPickerViewControllerOnWasCancelled;
-	}
-
-	/// <inheritdoc />
-	public void Dispose()
-	{
-		documentPickerViewController.DidPickDocumentAtUrls -= DocumentPickerViewControllerOnDidPickDocumentAtUrls;
-		documentPickerViewController.WasCancelled -= DocumentPickerViewControllerOnWasCancelled;
-		documentPickerViewController.Dispose();
-	}
 
 	async Task<Folder> InternalPickAsync(string initialPath, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-		documentPickerViewController.DirectoryUrl = NSUrl.FromString(initialPath);
 		var currentViewController = Platform.GetCurrentUIViewController();
 
 		taskCompetedSource?.TrySetCanceled(CancellationToken.None);
 		var tcs = taskCompetedSource = new();
-		if (currentViewController is not null)
-		{
-			currentViewController.PresentViewController(documentPickerViewController, true, null);
-		}
-		else
+		if (currentViewController is null)
 		{
 			throw new FolderPickerException("Unable to get a window where to present the folder picker UI.");
 		}
 
-		return await tcs.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
+		UIDocumentPickerViewController documentPickerViewController = new([UTTypes.Folder])
+		{
+			AllowsMultipleSelection = false,
+			DirectoryUrl = NSUrl.FromString(initialPath)
+		};
+		documentPickerViewController.DidPickDocumentAtUrls += DocumentPickerViewControllerOnDidPickDocumentAtUrls;
+		documentPickerViewController.WasCancelled += DocumentPickerViewControllerOnWasCancelled;
+		try
+		{
+			currentViewController.PresentViewController(documentPickerViewController, true, null);
+			return await tcs.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
+		}
+		finally
+		{
+			documentPickerViewController.DidPickDocumentAtUrls -= DocumentPickerViewControllerOnDidPickDocumentAtUrls;
+			documentPickerViewController.WasCancelled -= DocumentPickerViewControllerOnWasCancelled;
+			documentPickerViewController.Dispose();
+		}
 	}
 
 	Task<Folder> InternalPickAsync(CancellationToken cancellationToken)
