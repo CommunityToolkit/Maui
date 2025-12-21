@@ -6,16 +6,9 @@ namespace CommunityToolkit.Maui.Storage;
 /// <inheritdoc cref="IFileSaver" />
 [SupportedOSPlatform("iOS14.0")]
 [SupportedOSPlatform("MacCatalyst14.0")]
-public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
+public sealed partial class FileSaverImplementation : IFileSaver
 {
-	UIDocumentPickerViewController? documentPickerViewController;
 	TaskCompletionSource<string>? taskCompetedSource;
-
-	/// <inheritdoc />
-	public void Dispose()
-	{
-		InternalDispose();
-	}
 
 	async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
 	{
@@ -29,6 +22,7 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 		}
 
 		var fileUrl = tempDirectoryPath.Append(fileName, false);
+		UIDocumentPickerViewController? documentPickerViewController = null;
 		try
 		{
 			await WriteStream(stream, fileUrl.Path ?? throw new FileSaveException("Path cannot be null."), progress, cancellationToken);
@@ -55,14 +49,15 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 
 			return await tcs.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
 		}
-		catch
-		{
-			InternalDispose();
-			throw;
-		}
 		finally
 		{
 			fileManager.Remove(tempDirectoryPath, out _);
+			if (documentPickerViewController is not null)
+			{
+				documentPickerViewController.DidPickDocumentAtUrls -= DocumentPickerViewControllerOnDidPickDocumentAtUrls;
+				documentPickerViewController.WasCancelled -= DocumentPickerViewControllerOnWasCancelled;
+				documentPickerViewController.Dispose();
+			}
 		}
 	}
 
@@ -74,28 +69,10 @@ public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
 	void DocumentPickerViewControllerOnWasCancelled(object? sender, EventArgs e)
 	{
 		taskCompetedSource?.TrySetException(new FileSaveException("Operation cancelled."));
-		InternalDispose();
 	}
 
 	void DocumentPickerViewControllerOnDidPickDocumentAtUrls(object? sender, UIDocumentPickedAtUrlsEventArgs e)
 	{
-		try
-		{
-			taskCompetedSource?.TrySetResult(e.Urls[0].Path ?? throw new FileSaveException("Unable to retrieve the path of the saved file."));
-		}
-		finally
-		{
-			InternalDispose();
-		}
-	}
-
-	void InternalDispose()
-	{
-		if (documentPickerViewController is not null)
-		{
-			documentPickerViewController.DidPickDocumentAtUrls -= DocumentPickerViewControllerOnDidPickDocumentAtUrls;
-			documentPickerViewController.WasCancelled -= DocumentPickerViewControllerOnWasCancelled;
-			documentPickerViewController.Dispose();
-		}
+		taskCompetedSource?.TrySetResult(e.Urls[0].Path ?? throw new FileSaveException("Unable to retrieve the path of the saved file."));
 	}
 }
