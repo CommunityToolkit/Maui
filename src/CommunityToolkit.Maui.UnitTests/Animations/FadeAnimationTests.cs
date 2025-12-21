@@ -68,7 +68,7 @@ public class FadeAnimationTests : BaseTest
 
 		label.Opacity.Should().Be(0.9);
 	}
-	
+
 	[Fact]
 	public void EnsureDefaults()
 	{

@@ -31,7 +31,7 @@ public abstract partial class BaseAnimation<TAnimatable>(uint defaultLength = Ba
 	/// <param name="view">The view to perform the animation on.</param>
 	/// <param name="token"> <see cref="CancellationToken"/>.</param>
 	public abstract Task Animate(TAnimatable view, CancellationToken token = default);
-	
+
 	static object CreateLengthDefaultValue(BindableObject bindable) => ((BaseAnimation<TAnimatable>)bindable).defaultLength;
 }
 
