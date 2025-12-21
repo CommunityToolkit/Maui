@@ -335,7 +335,7 @@ public partial class RangeSlider : ContentView
 
 		if (e.PropertyName.Is(Slider.ValueProperty))
 		{
-			LowerValue = (StepSize == 0.0 ? lowerSlider.Value : Math.Round(lowerSlider.Value)) * GetUnit() + MinimumValue;
+			LowerValue = CalculateValueFromSliderValue(lowerSlider.Value);
 			SetFocusMode(RangeSliderFocusMode.Lower);
 			UpdateInnerTrackLayout();
 		}
@@ -368,10 +368,15 @@ public partial class RangeSlider : ContentView
 
 		if (e.PropertyName.Is(Slider.ValueProperty))
 		{
-			UpperValue = (StepSize == 0.0 ? upperSlider.Value : Math.Round(upperSlider.Value)) * GetUnit() + MinimumValue;
+			UpperValue = CalculateValueFromSliderValue(upperSlider.Value);
 			SetFocusMode(RangeSliderFocusMode.Upper);
 			UpdateInnerTrackLayout();
 		}
+	}
+
+	double CalculateValueFromSliderValue(double sliderValue)
+	{
+		return (StepSize == 0.0 ? sliderValue : Math.Round(sliderValue)) * GetUnit() + MinimumValue;
 	}
 
 	void HandleUpperSliderFocused(object? sender, FocusEventArgs e)
@@ -397,7 +402,7 @@ public partial class RangeSlider : ContentView
 
 		double range = upperSlider.Maximum - lowerSlider.Minimum;
 		double trackWidth = Width - PlatformThumbSize;
-		if (range != 0 && trackWidth > 0)
+		if (IsLayoutValid(range, trackWidth))
 		{
 			lowerSlider.WidthRequest = trackWidth * (lowerSlider.Maximum - lowerSlider.Minimum) / range + PlatformThumbSize;
 			upperSlider.WidthRequest = trackWidth * (upperSlider.Maximum - upperSlider.Minimum) / range + PlatformThumbSize;
@@ -434,10 +439,15 @@ public partial class RangeSlider : ContentView
 	{
 		double range = upperSlider.Maximum - lowerSlider.Minimum;
 		double trackWidth = Width - PlatformThumbSize;
-		if (range != 0 && trackWidth > 0)
+		if (IsLayoutValid(range, trackWidth))
 		{
 			innerTrack.TranslationX = trackWidth * (lowerSlider.Value - lowerSlider.Minimum) / range + PlatformThumbSize / 2 - InnerTrackSize / 2;
 			innerTrack.WidthRequest = trackWidth * (upperSlider.Value - lowerSlider.Value) / range + InnerTrackSize;
 		}
+	}
+
+	bool IsLayoutValid(double range, double trackWidth)
+	{
+		return range != 0 && trackWidth > 0;
 	}
 }
