@@ -721,4 +721,76 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 
 		await VerifySourceGeneratorAsync(source, expectedGenerated);
 	}
+
+	[Fact]
+	public async Task GenerateBindableProperty_PrivateProperty_ThrowsNotSupportedException()
+	{
+		const string source =
+			/* language=C#-test */
+			//lang=csharp
+			$$"""
+			using CommunityToolkit.Maui;
+			using Microsoft.Maui.Controls;
+
+			namespace {{defaultTestNamespace}};
+
+			public partial class {{defaultTestClassName}} : View
+			{
+			    [BindablePropertyAttribute]
+			    private partial string Text { get; set; }
+			}
+			""";
+
+		var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await VerifySourceGeneratorAsync(source, string.Empty));
+
+		Assert.Contains("System.NotSupportedException: The property accessiblity, Private, for Text is not supported. The supported accessibility kinds are `public`, `internal` and `protected internal`.", exception.Message);
+	}
+
+	[Fact]
+	public async Task GenerateBindableProperty_ProtectedProperty_ThrowsNotSupportedException()
+	{
+		const string source =
+			/* language=C#-test */
+			//lang=csharp
+			$$"""
+			using CommunityToolkit.Maui;
+			using Microsoft.Maui.Controls;
+
+			namespace {{defaultTestNamespace}};
+
+			public partial class {{defaultTestClassName}} : View
+			{
+			    [BindablePropertyAttribute]
+			    protected partial string Text { get; set; }
+			}
+			""";
+
+		var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await VerifySourceGeneratorAsync(source, string.Empty));
+
+		Assert.Contains("System.NotSupportedException: The property accessiblity, Protected, for Text is not supported. The supported accessibility kinds are `public`, `internal` and `protected internal`.", exception.Message);
+	}
+
+	[Fact]
+	public async Task GenerateBindableProperty_PrivateProtectedProperty_ThrowsNotSupportedException()
+	{
+		const string source =
+			/* language=C#-test */
+			//lang=csharp
+			$$"""
+			using CommunityToolkit.Maui;
+			using Microsoft.Maui.Controls;
+
+			namespace {{defaultTestNamespace}};
+
+			public partial class {{defaultTestClassName}} : View
+			{
+			    [BindablePropertyAttribute]
+			    private protected partial string Text { get; set; }
+			}
+			""";
+
+		var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await VerifySourceGeneratorAsync(source, string.Empty));
+
+		Assert.Contains("System.NotSupportedException: The property accessiblity, ProtectedAndInternal, for Text is not supported. The supported accessibility kinds are `public`, `internal` and `protected internal`.", exception.Message);
+	}
 }

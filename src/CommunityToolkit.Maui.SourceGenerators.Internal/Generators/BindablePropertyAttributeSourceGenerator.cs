@@ -488,7 +488,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		Accessibility.Internal => "internal",
 		Accessibility.ProtectedOrInternal => "protected internal",
 		Accessibility.Public => "public",
-		_ => throw new NotSupportedException($"The property accessiblity, {propertySymbol.DeclaredAccessibility}, for {propertySymbol.Name} is not supported. The supported accessibility kinds are `public`, `internal` and `protected internal`"),
+		_ => throw new NotSupportedException($"The property accessiblity, {propertySymbol.DeclaredAccessibility}, for {propertySymbol.Name} is not supported. The supported accessibility kinds are `public`, `internal` and `protected internal`."),
 	};
 
 	static string GetContainingTypes(INamedTypeSymbol typeSymbol)
