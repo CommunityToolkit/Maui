@@ -115,6 +115,6 @@ public class ExpanderTests : BaseViewTest
 	public void EnsureDefaults()
 	{
 		var expander = new Maui.Views.Expander();
-		Assert.Equal(ExpanderDefaults.ExpandedDirection, expander.Direction);
+		Assert.Equal(ExpanderDefaults.Direction, expander.Direction);
 	}
 }

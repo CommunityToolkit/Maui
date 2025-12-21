@@ -3,5 +3,5 @@
 
 static class ExpanderDefaults
 {
-	public const ExpandDirection ExpandedDirection = ExpandDirection.Down;
+	public const ExpandDirection Direction = ExpandDirection.Down;
 }

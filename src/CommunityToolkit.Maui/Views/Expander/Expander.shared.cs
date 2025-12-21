@@ -38,24 +38,24 @@ public partial class Expander : ContentView, IExpander
 		add => tappedEventManager.AddEventHandler(value);
 		remove => tappedEventManager.RemoveEventHandler(value);
 	}
-	
+
 	/// <summary>
 	/// Gets or sets the direction in which the expander expands.
 	/// </summary>
-	[BindableProperty(PropertyChangingMethodName = nameof(DefaultValueExpandedDirection),PropertyChangedMethodName = nameof(OnDirectionPropertyChanged))]
-	public partial ExpandDirection Direction { get; set; } = ExpanderDefaults.ExpandedDirection;
+	[BindableProperty(PropertyChangingMethodName = nameof(OnExpandDirectionChanging), PropertyChangedMethodName = nameof(OnDirectionPropertyChanged))]
+	public partial ExpandDirection Direction { get; set; } = ExpanderDefaults.Direction;
 
 	/// <summary>
 	/// Gets or sets the command to execute when the expander is expanded or collapsed.
 	/// </summary>
 	[BindableProperty]
-	public partial ICommand Command { get; set; }
+	public partial ICommand? Command { get; set; }
 
 	/// <summary>
 	/// Gets or sets the parameter to pass to the <see cref="Command"/> property.
 	/// </summary>
 	[BindableProperty]
-	public partial object CommandParameter { get; set; }
+	public partial object? CommandParameter { get; set; }
 
 	/// <summary>
 	/// Gets or sets a value indicating whether the expander is expanded.
@@ -83,19 +83,20 @@ public partial class Expander : ContentView, IExpander
 	/// Warning: Overriding this <see cref="Action"/> may cause <see cref="Expander"/> to work improperly when placed inside a <see cref="CollectionView"/> and placed inside a <see cref="ListView"/>.
 	/// </remarks>
 	public Action<TappedEventArgs>? HandleHeaderTapped { get; set; }
-	
+
 	internal TapGestureRecognizer HeaderTapGestureRecognizer { get; } = new();
 
 	Grid ContentGrid => (Grid)base.Content;
-	
-	static void DefaultValueExpandedDirection(BindableObject bindable, object oldValue, object newValue)
+
+	static void OnExpandDirectionChanging(BindableObject bindable, object oldValue, object newValue)
 	{
 		var direction = (Expander)bindable;
-		if (newValue is not ExpandDirection enumValue || !Enum.IsDefined(typeof(ExpandDirection), enumValue))
+		if (newValue is not ExpandDirection enumValue || !Enum.IsDefined(enumValue))
 		{
 			throw new InvalidEnumArgumentException(nameof(newValue), newValue is int intValue ? intValue : -1, typeof(ExpandDirection));
 		}
-		direction.Direction = (ExpandDirection)newValue;
+
+		direction.Direction = enumValue;
 	}
 
 	static void OnContentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
