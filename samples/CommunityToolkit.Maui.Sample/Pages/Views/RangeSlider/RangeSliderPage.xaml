@@ -1,0 +1,149 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:BasePage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Views.RangeSliderPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:sample="clr-namespace:CommunityToolkit.Maui.Sample"
+    xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+    Title="RangeSlider"
+    Padding="12,12,12,0"
+    x:DataType="viewModels:RangeSliderViewModel"
+    x:TypeArguments="viewModels:RangeSliderViewModel">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="10">
+            <VerticalStackLayout.Resources>
+                <ResourceDictionary>
+                    <Style x:Key="Heading" TargetType="Label">
+                        <Setter Property="VerticalTextAlignment" Value="Center" />
+                        <Setter Property="HorizontalTextAlignment" Value="Center" />
+                        <Setter Property="FontSize" Value="12" />
+                        <Setter Property="HorizontalOptions" Value="Center" />
+                        <Setter Property="LineBreakMode" Value="WordWrap" />
+                        <Setter Property="Margin" Value="10" />
+                    </Style>
+                    <Style x:Key="HR" TargetType="Line">
+                        <Setter Property="Stroke" Value="{AppThemeBinding Light=Black, Dark=White}" />
+                        <Setter Property="X2" Value="300" />
+                        <Setter Property="HorizontalOptions" Value="Center" />
+                    </Style>
+                </ResourceDictionary>
+            </VerticalStackLayout.Resources>
+
+            <Label Style="{StaticResource Heading}" Text="Simple RangeSlider" />
+
+            <Grid ColumnDefinitions="50,*,50" ColumnSpacing="10">
+                <Label Text="{Binding SimpleLowerValue, StringFormat='{}{0:F1}'}" VerticalOptions="Center" />
+                <mct:RangeSlider
+                    Grid.Column="1"
+                    HorizontalOptions="Fill"
+                    LowerValue="{Binding SimpleLowerValue, Mode=TwoWay}"
+                    MaximumValue="200"
+                    MinimumValue="100"
+                    UpperValue="{Binding SimpleUpperValue, Mode=TwoWay}"
+                    WidthRequest="-1" />
+                <Label
+                    Grid.Column="2"
+                    Text="{Binding SimpleUpperValue, StringFormat='{}{0:F1}'}"
+                    VerticalOptions="Center" />
+            </Grid>
+
+            <Line Style="{StaticResource HR}" />
+
+            <Label Style="{StaticResource Heading}" Text="RangeSlider with StepSize" />
+
+            <Grid ColumnDefinitions="50,*,50" ColumnSpacing="10">
+                <Label Text="{Binding LowerValueWithStep, StringFormat='{}{0:F1}'}" VerticalOptions="Center" />
+                <Border Grid.Column="1" HorizontalOptions="Fill">
+                    <mct:RangeSlider
+                        HorizontalOptions="Fill"
+                        LowerValue="{Binding LowerValueWithStep, Mode=TwoWay}"
+                        MaximumValue="200"
+                        MinimumValue="100"
+                        StepSize="5"
+                        UpperValue="{Binding UpperValueWithStep, Mode=TwoWay}"
+                        WidthRequest="-1" />
+                </Border>
+                <Label
+                    Grid.Column="2"
+                    Text="{Binding UpperValueWithStep, StringFormat='{}{0:F1}'}"
+                    VerticalOptions="Center" />
+            </Grid>
+
+            <Line Style="{StaticResource HR}" />
+
+            <Label Style="{StaticResource Heading}" Text="RangeSlider with Minimum/Maximum swapped for descending behavior" />
+
+            <Grid ColumnDefinitions="50,*,50" ColumnSpacing="10">
+                <Label Text="{Binding LowerValueDescending, StringFormat='{}{0:F1}'}" VerticalOptions="Center" />
+                <Border Grid.Column="1" HorizontalOptions="Fill">
+                    <mct:RangeSlider
+                        HorizontalOptions="Fill"
+                        LowerValue="{Binding LowerValueDescending, Mode=TwoWay}"
+                        MaximumValue="100"
+                        MinimumValue="200"
+                        UpperValue="{Binding UpperValueDescending, Mode=TwoWay}"
+                        WidthRequest="-1" />
+                </Border>
+                <Label
+                    Grid.Column="2"
+                    Text="{Binding UpperValueDescending, StringFormat='{}{0:F1}'}"
+                    VerticalOptions="Center" />
+            </Grid>
+
+            <Line Style="{StaticResource HR}" />
+
+            <Label Style="{StaticResource Heading}" Text="RangeSlider with Minimum/Maximum swapped for descending with step behavior" />
+
+            <Grid ColumnDefinitions="50,*,50" ColumnSpacing="10">
+                <Label Text="{Binding LowerValueDescendingWithStep, StringFormat='{}{0:F1}'}" VerticalOptions="Center" />
+                <Border Grid.Column="1" HorizontalOptions="Fill">
+                    <mct:RangeSlider
+                        HorizontalOptions="Fill"
+                        LowerValue="{Binding LowerValueDescendingWithStep, Mode=TwoWay}"
+                        MaximumValue="100"
+                        MinimumValue="200"
+                        StepSize="5"
+                        UpperValue="{Binding UpperValueDescendingWithStep, Mode=TwoWay}"
+                        WidthRequest="-1" />
+                </Border>
+                <Label
+                    Grid.Column="2"
+                    Text="{Binding UpperValueDescendingWithStep, StringFormat='{}{0:F1}'}"
+                    VerticalOptions="Center" />
+            </Grid>
+
+            <Line Style="{StaticResource HR}" />
+
+            <Label Style="{StaticResource Heading}" Text="RangeSlider with custom thumb and track colors" />
+
+            <Grid ColumnDefinitions="50,*,50" ColumnSpacing="10">
+                <Label Text="{Binding LowerValueWithCustomStyle, StringFormat='{}{0:F1}'}" VerticalOptions="Center" />
+                <Border Grid.Column="1" HorizontalOptions="Fill">
+                    <mct:RangeSlider
+                        HorizontalOptions="Fill"
+                        InnerTrackColor="Orange"
+                        InnerTrackCornerRadius="5"
+                        InnerTrackSize="10"
+                        LowerThumbColor="Red"
+                        LowerValue="{Binding LowerValueWithCustomStyle, Mode=TwoWay}"
+                        MaximumValue="200"
+                        MinimumValue="100"
+                        OuterTrackColor="DarkGray"
+                        OuterTrackCornerRadius="7"
+                        OuterTrackSize="14"
+                        UpperThumbColor="Green"
+                        UpperValue="{Binding UpperValueWithCustomStyle, Mode=TwoWay}"
+                        WidthRequest="-1" />
+                </Border>
+                <Label
+                    Grid.Column="2"
+                    Text="{Binding UpperValueWithCustomStyle, StringFormat='{}{0:F1}'}"
+                    VerticalOptions="Center" />
+            </Grid>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</pages:BasePage>
