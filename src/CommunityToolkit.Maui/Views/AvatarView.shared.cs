@@ -69,7 +69,7 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 	/// Gets or sets the control font.
 	/// </summary>
 	public Microsoft.Maui.Font Font { get; set; } = Microsoft.Maui.Font.SystemFontOfSize((double)FontElement.FontSizeProperty.DefaultValue);
-	
+
 	/// <summary>
 	/// Gets or sets a value of the control text character spacing property.
 	/// </summary>

@@ -20,7 +20,7 @@ public partial class DrawingView : View, IDrawingView
 		BackgroundColor = DrawingViewDefaults.BackgroundColor;
 		Unloaded += OnDrawingViewUnloaded;
 	}
-	
+
 	/// <summary>
 	/// Event occurred when drawing line completed.
 	/// </summary>
@@ -56,7 +56,7 @@ public partial class DrawingView : View, IDrawingView
 		add => drawingViewEventManager.AddEventHandler(value);
 		remove => drawingViewEventManager.RemoveEventHandler(value);
 	}
-	
+
 	/// <summary>
 	/// Gets or sets the action that allows drawing on the <see cref="IDrawingView"/>.
 	/// </summary>
