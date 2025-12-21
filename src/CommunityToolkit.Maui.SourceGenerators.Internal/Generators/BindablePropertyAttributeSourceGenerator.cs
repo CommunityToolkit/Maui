@@ -294,7 +294,8 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(");\n");
 
 		// Generate public BindableProperty from the key
-		sb.Append("public ")
+		sb.Append(info.PropertyAccessibility)
+			.Append(" ")
 			.Append(info.NewKeywordText)
 			.Append("static readonly ")
 			.Append(bpFullName)
@@ -319,7 +320,8 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append("\"/> property.\r\n/// </summary>\r\n");
 
 		// Generate regular BindableProperty
-		sb.Append("public ")
+		sb.Append(info.PropertyAccessibility)
+			.Append(" ")
 			.Append(info.NewKeywordText)
 			.Append("static readonly ")
 			.Append(bpFullName)
@@ -357,12 +359,13 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	static void GenerateProperty(StringBuilder sb, in BindablePropertyModel info, in string fileStaticClassName)
+	static void GenerateProperty(StringBuilder sb, in BindablePropertyModel info, in string bindablePropertyInitHelpersClassName)
 	{
 		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
 		var formattedReturnType = GetFormattedReturnType(info.ReturnType);
 
-		sb.Append("public ")
+		sb.Append(info.PropertyAccessibility)
+			.Append(" ")
 			.Append(info.NewKeywordText)
 			.Append("partial ")
 			.Append(formattedReturnType)
@@ -375,7 +378,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			if (info.ShouldUsePropertyInitializer)
 			{
 				// Now reference the static flag on the file static helper class
-				sb.Append(fileStaticClassName).Append(".").Append(info.InitializingPropertyName);
+				sb.Append(bindablePropertyInitHelpersClassName).Append(".").Append(info.InitializingPropertyName);
 			}
 			else
 			{
@@ -432,10 +435,12 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var bindablePropertyModels = new BindablePropertyModel[context.Attributes.Length];
 
 		var doesContainNewKeyword = HasNewKeyword(propertyDeclarationSyntax);
-		var (isReadOnlyBindableProperty, setterAccessibility) = GetPropertyAccessibility(propertySymbol, propertyDeclarationSyntax);
+		var (isReadOnlyBindableProperty, setterAccessibility) = GetSetterAccessibility(propertySymbol, propertyDeclarationSyntax);
+		
+		var propertyAccessibility = propertySymbol.DeclaredAccessibility.ToString().ToLower();
 
 		var attributeData = context.Attributes[0];
-		bindablePropertyModels[0] = CreateBindablePropertyModel(attributeData, propertySymbol.ContainingType, propertySymbol.Name, returnType, doesContainNewKeyword, isReadOnlyBindableProperty, setterAccessibility, hasInitializer);
+		bindablePropertyModels[0] = CreateBindablePropertyModel(attributeData, propertySymbol.ContainingType, propertySymbol.Name, returnType, doesContainNewKeyword, isReadOnlyBindableProperty, setterAccessibility, hasInitializer, propertyAccessibility);
 
 		return new(propertyInfo, ImmutableArray.Create(bindablePropertyModels));
 	}
@@ -454,7 +459,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	static (bool IsReadOnlyBindableProperty, string? SetterAccessibility) GetPropertyAccessibility(IPropertySymbol propertySymbol, PropertyDeclarationSyntax syntax)
+	static (bool IsReadOnlyBindableProperty, string? SetterAccessibility) GetSetterAccessibility(IPropertySymbol propertySymbol, PropertyDeclarationSyntax syntax)
 	{
 		// Check if property is get-only (no setter)
 		if (propertySymbol.SetMethod is null)
@@ -532,7 +537,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		return sb.ToString();
 	}
 
-	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string propertyName, in ITypeSymbol returnType, in bool doesContainNewKeyword, in bool isReadOnly, in string? setterAccessibility, in bool hasInitializer)
+	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string propertyName, in ITypeSymbol returnType, in bool doesContainNewKeyword, in bool isReadOnly, in string? setterAccessibility, in bool hasInitializer, in string? propertyAccessibility)
 	{
 		if (attributeData.AttributeClass is null)
 		{
@@ -547,7 +552,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var validateValueMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.ValidateValueMethodName));
 		var newKeywordText = doesContainNewKeyword ? "new " : string.Empty;
 
-		return new BindablePropertyModel(propertyName, returnType, declaringType, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText, isReadOnly, setterAccessibility, hasInitializer);
+		return new BindablePropertyModel(propertyName, returnType, declaringType, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText, isReadOnly, setterAccessibility, hasInitializer, propertyAccessibility);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
