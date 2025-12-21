@@ -257,10 +257,6 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var nonNullableReturnType = ConvertToNonNullableTypeSymbol(info.ReturnType);
 		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
 
-		sb.Append("/// <summary>\r\n/// Backing BindableProperty for the <see cref=\"")
-			.Append(sanitizedPropertyName)
-			.Append("\"/> property.\r\n/// </summary>\r\n");
-
 		// Generate BindablePropertyKey for read-only properties
 		sb.Append("static readonly global::Microsoft.Maui.Controls.BindablePropertyKey ")
 			.Append(info.BindablePropertyKeyName)
@@ -292,6 +288,10 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		sb.Append(info.EffectiveDefaultValueCreatorMethodName)
 			.Append(");\n");
+
+		sb.Append("/// <summary>\r\n/// Backing BindableProperty for the <see cref=\"")
+			.Append(sanitizedPropertyName)
+			.Append("\"/> property.\r\n/// </summary>\r\n");
 
 		// Generate public BindableProperty from the key
 		sb.Append(info.PropertyAccessibility)
