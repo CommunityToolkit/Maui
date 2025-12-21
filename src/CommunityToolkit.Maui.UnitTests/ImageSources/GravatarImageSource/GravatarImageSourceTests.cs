@@ -113,30 +113,6 @@ public class GravatarImageSourceTests : BaseViewTest
 	}
 
 	[Fact]
-	public void IsDisposed()
-	{
-		var gravatarImageSource = new GravatarImageSource();
-		Assert.False(gravatarImageSource.IsDisposed);
-		gravatarImageSource.Dispose();
-		Assert.True(gravatarImageSource.IsDisposed);
-	}
-
-	[Fact]
-	public void IsDisposedDisposeTokenSource()
-	{
-		Image testControl = new()
-		{
-			Source = new GravatarImageSource()
-		};
-		Assert.True(testControl.Source is GravatarImageSource);
-		testControl.Arrange(new Rect(0, 0, 37, 73));
-
-		Assert.False(((GravatarImageSource)testControl.Source).IsDisposed);
-		((GravatarImageSource)testControl.Source).Dispose();
-		Assert.True(((GravatarImageSource)testControl.Source).IsDisposed);
-	}
-
-	[Fact]
 	public void IsEmpty()
 	{
 		var gravatarImageSource = new GravatarImageSource();
