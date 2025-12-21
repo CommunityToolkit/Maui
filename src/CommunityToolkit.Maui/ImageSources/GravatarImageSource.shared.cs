@@ -5,9 +5,6 @@ namespace CommunityToolkit.Maui.ImageSources;
 /// <remarks>Note that <see cref="UriImageSource"/> is sealed and can't be used as a parent!</remarks>
 public partial class GravatarImageSource : StreamImageSource
 {
-	/// <summary>The backing store for the <see cref="ParentWidth" /> bindable property.</summary>
-	internal static readonly BindableProperty ParentWidthProperty = BindableProperty.Create(nameof(ParentWidth), typeof(int), typeof(GravatarImageSource), defaultValue: GravatarImageSourceDefaults.ParentWidth, propertyChanged: OnSizePropertyChanged);
-
 	static readonly Lazy<HttpClient> singletonHttpClientHolder = new();
 
 	readonly TimeSpan cancellationTokenSourceTimeout = TimeSpan.FromMilliseconds(737);
@@ -48,7 +45,8 @@ public partial class GravatarImageSource : StreamImageSource
 	internal partial int ParentHeight { get; } = GravatarImageSourceDefaults.ParentHeight;  
 
 	/// <summary>Gets the parent width.</summary>
-	internal int ParentWidth => (int)GetValue(ParentWidthProperty);
+	[BindableProperty(PropertyChangedMethodName = nameof(OnSizePropertyChanged))]
+	internal partial int ParentWidth { get; } = GravatarImageSourceDefaults.ParentWidth;  
 
 	/// <summary>Gets or sets the image size.</summary>
 	/// <remarks>
