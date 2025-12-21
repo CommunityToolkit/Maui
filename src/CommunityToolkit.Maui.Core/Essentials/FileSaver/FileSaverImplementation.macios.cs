@@ -66,6 +66,12 @@ public sealed partial class FileSaverImplementation : IFileSaver
 
 	void DocumentPickerViewControllerOnDidPickDocumentAtUrls(object? sender, UIDocumentPickedAtUrlsEventArgs e)
 	{
+		if (e.Urls.Length == 0)
+		{
+			taskCompletedSource?.TrySetException(new FileSaveException("No file was selected."));
+			return;
+		}
+		
 		taskCompletedSource?.TrySetResult(e.Urls[0].Path ?? e.Urls[0].ToString());
 	}
 }

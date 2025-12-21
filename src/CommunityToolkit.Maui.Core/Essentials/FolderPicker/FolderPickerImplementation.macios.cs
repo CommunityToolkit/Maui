@@ -56,6 +56,12 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 
 	void DocumentPickerViewControllerOnDidPickDocumentAtUrls(object? sender, UIDocumentPickedAtUrlsEventArgs e)
 	{
+		if (e.Urls.Length == 0)
+		{
+			taskCompetedSource?.TrySetException(new FolderPickerException("No folder was selected."));
+			return;
+		}
+		
 		var path = e.Urls[0].Path ?? throw new FolderPickerException("Path cannot be null.");
 		taskCompetedSource?.TrySetResult(new Folder(path, new DirectoryInfo(path).Name));
 	}
