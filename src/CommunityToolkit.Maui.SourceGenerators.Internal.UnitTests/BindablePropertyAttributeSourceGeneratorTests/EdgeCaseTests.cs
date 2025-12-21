@@ -100,7 +100,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 
             file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
             {
-                public static bool IsInitializingInvoiceStatus = false;
+                public static volatile bool IsInitializingInvoiceStatus = false;
                 public static object CreateDefaultInvoiceStatus(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingInvoiceStatus = true;
@@ -160,7 +160,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 
             file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
             {
-                public static bool IsInitializingInvoiceStatus = false;
+                public static volatile bool IsInitializingInvoiceStatus = false;
                 public static object CreateDefaultInvoiceStatus(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingInvoiceStatus = true;
@@ -516,7 +516,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 
             file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
             {
-                public static bool IsInitializingIsEnabled = false;
+                public static volatile bool IsInitializingIsEnabled = false;
                 public static object CreateDefaultIsEnabled(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingIsEnabled = true;
@@ -525,7 +525,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                     return defaultValue;
                 }
 
-                public static bool IsInitializingPi = false;
+                public static volatile bool IsInitializingPi = false;
                 public static object CreateDefaultPi(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingPi = true;
@@ -534,7 +534,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                     return defaultValue;
                 }
 
-                public static bool IsInitializingLetter = false;
+                public static volatile bool IsInitializingLetter = false;
                 public static object CreateDefaultLetter(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingLetter = true;
@@ -543,7 +543,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                     return defaultValue;
                 }
 
-                public static bool IsInitializingTimeSpent = false;
+                public static volatile bool IsInitializingTimeSpent = false;
                 public static object CreateDefaultTimeSpent(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingTimeSpent = true;
@@ -552,7 +552,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                     return defaultValue;
                 }
 
-                public static bool IsInitializingDoubleEpsilon = false;
+                public static volatile bool IsInitializingDoubleEpsilon = false;
                 public static object CreateDefaultDoubleEpsilon(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingDoubleEpsilon = true;
@@ -561,7 +561,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                     return defaultValue;
                 }
 
-                public static bool IsInitializingSingleEpsilon = false;
+                public static volatile bool IsInitializingSingleEpsilon = false;
                 public static object CreateDefaultSingleEpsilon(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingSingleEpsilon = true;
@@ -570,7 +570,7 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
                     return defaultValue;
                 }
 
-                public static bool IsInitializingCurrentTime = false;
+                public static volatile bool IsInitializingCurrentTime = false;
                 public static object CreateDefaultCurrentTime(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingCurrentTime = true;
@@ -629,5 +629,168 @@ public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			""";
 
 		await VerifySourceGeneratorAsync(source, expectedGenerated);
+	}
+
+	[Fact]
+	public async Task GenerateBindableProperty_InternalProperty_GeneratesCorrectCode()
+	{
+		const string source =
+			/* language=C#-test */
+			//lang=csharp
+			$$"""
+			using CommunityToolkit.Maui;
+			using Microsoft.Maui.Controls;
+			using System;
+
+			namespace {{defaultTestNamespace}};
+
+			public partial class {{defaultTestClassName}} : View
+			{
+			    [BindablePropertyAttribute]
+			    internal partial string Text { get; set; } = "Initial Value";
+
+				[BindablePropertyAttribute]
+			    protected internal partial string Time { get; set; } = string.Empty;
+
+			    [BindablePropertyAttribute]
+			    internal partial TimeSpan CustomDuration { get; private set; } = TimeSpan.FromSeconds(30);
+			}
+			""";
+
+		const string expectedGenerated =
+			/* language=C#-test */
+			//lang=csharp
+			$$"""
+			// <auto-generated>
+			// See: CommunityToolkit.Maui.SourceGenerators.Internal.BindablePropertyAttributeSourceGenerator
+			#pragma warning disable
+			#nullable enable
+			namespace {{defaultTestNamespace}};
+			public partial class {{defaultTestClassName}}
+			{
+			    /// <summary>
+			    /// Backing BindableProperty for the <see cref = "Text"/> property.
+			    /// </summary>
+			    internal static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultText);
+			    internal partial string Text { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingText ? field : (string)GetValue(TextProperty); set => SetValue(TextProperty, value); }
+
+			    /// <summary>
+			    /// Backing BindableProperty for the <see cref = "Time"/> property.
+			    /// </summary>
+			    protected internal static readonly global::Microsoft.Maui.Controls.BindableProperty TimeProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Time", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultTime);
+			    protected internal partial string Time { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingTime ? field : (string)GetValue(TimeProperty); set => SetValue(TimeProperty, value); }
+
+			    static readonly global::Microsoft.Maui.Controls.BindablePropertyKey customDurationPropertyKey = global::Microsoft.Maui.Controls.BindableProperty.CreateReadOnly("CustomDuration", typeof(System.TimeSpan), typeof(TestNamespace.TestView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __TestViewBindablePropertyInitHelpers.CreateDefaultCustomDuration);
+			    /// <summary>
+			    /// Backing BindableProperty for the <see cref = "CustomDuration"/> property.
+			    /// </summary>
+			    internal static readonly global::Microsoft.Maui.Controls.BindableProperty CustomDurationProperty = customDurationPropertyKey.BindableProperty;
+			    internal partial System.TimeSpan CustomDuration { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingCustomDuration ? field : (System.TimeSpan)GetValue(CustomDurationProperty); private set => SetValue(customDurationPropertyKey, value); }
+			}
+
+			file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
+			{
+			    public static volatile bool IsInitializingText = false;
+			    public static object CreateDefaultText(global::Microsoft.Maui.Controls.BindableObject bindable)
+			    {
+			        IsInitializingText = true;
+			        var defaultValue = ((TestView)bindable).Text;
+			        IsInitializingText = false;
+			        return defaultValue;
+			    }
+
+			    public static volatile bool IsInitializingTime = false;
+			    public static object CreateDefaultTime(global::Microsoft.Maui.Controls.BindableObject bindable)
+			    {
+			        IsInitializingTime = true;
+			        var defaultValue = ((TestView)bindable).Time;
+			        IsInitializingTime = false;
+			        return defaultValue;
+			    }
+			
+			    public static volatile bool IsInitializingCustomDuration = false;
+			    public static object CreateDefaultCustomDuration(global::Microsoft.Maui.Controls.BindableObject bindable)
+			    {
+			        IsInitializingCustomDuration = true;
+			        var defaultValue = ((TestView)bindable).CustomDuration;
+			        IsInitializingCustomDuration = false;
+			        return defaultValue;
+			    }
+			}
+			""";
+
+		await VerifySourceGeneratorAsync(source, expectedGenerated);
+	}
+
+	[Fact]
+	public async Task GenerateBindableProperty_PrivateProperty_ThrowsNotSupportedException()
+	{
+		const string source =
+			/* language=C#-test */
+			//lang=csharp
+			$$"""
+			using CommunityToolkit.Maui;
+			using Microsoft.Maui.Controls;
+
+			namespace {{defaultTestNamespace}};
+
+			public partial class {{defaultTestClassName}} : View
+			{
+			    [BindablePropertyAttribute]
+			    private partial string Text { get; set; }
+			}
+			""";
+
+		var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await VerifySourceGeneratorAsync(source, string.Empty));
+
+		Assert.Contains("System.NotSupportedException: The property accessiblity, Private, for Text is not supported. The supported accessibility kinds are `public`, `internal` and `protected internal`.", exception.Message);
+	}
+
+	[Fact]
+	public async Task GenerateBindableProperty_ProtectedProperty_ThrowsNotSupportedException()
+	{
+		const string source =
+			/* language=C#-test */
+			//lang=csharp
+			$$"""
+			using CommunityToolkit.Maui;
+			using Microsoft.Maui.Controls;
+
+			namespace {{defaultTestNamespace}};
+
+			public partial class {{defaultTestClassName}} : View
+			{
+			    [BindablePropertyAttribute]
+			    protected partial string Text { get; set; }
+			}
+			""";
+
+		var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await VerifySourceGeneratorAsync(source, string.Empty));
+
+		Assert.Contains("System.NotSupportedException: The property accessiblity, Protected, for Text is not supported. The supported accessibility kinds are `public`, `internal` and `protected internal`.", exception.Message);
+	}
+
+	[Fact]
+	public async Task GenerateBindableProperty_PrivateProtectedProperty_ThrowsNotSupportedException()
+	{
+		const string source =
+			/* language=C#-test */
+			//lang=csharp
+			$$"""
+			using CommunityToolkit.Maui;
+			using Microsoft.Maui.Controls;
+
+			namespace {{defaultTestNamespace}};
+
+			public partial class {{defaultTestClassName}} : View
+			{
+			    [BindablePropertyAttribute]
+			    private protected partial string Text { get; set; }
+			}
+			""";
+
+		var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await VerifySourceGeneratorAsync(source, string.Empty));
+
+		Assert.Contains("System.NotSupportedException: The property accessiblity, ProtectedAndInternal, for Text is not supported. The supported accessibility kinds are `public`, `internal` and `protected internal`.", exception.Message);
 	}
 }
