@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Extensions;
+
 namespace CommunityToolkit.Maui.ImageSources;
 
 /// <summary>Gravatar image source.</summary>
@@ -42,11 +43,11 @@ public partial class GravatarImageSource : StreamImageSource
 
 	/// <summary>Gets the parent height.</summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnSizePropertyChanged))]
-	internal partial int ParentHeight { get; } = GravatarImageSourceDefaults.ParentHeight;  
+	internal partial int ParentHeight { get; set; } = GravatarImageSourceDefaults.ParentHeight;
 
 	/// <summary>Gets the parent width.</summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnSizePropertyChanged))]
-	internal partial int ParentWidth { get; } = GravatarImageSourceDefaults.ParentWidth;  
+	internal partial int ParentWidth { get; set; } = GravatarImageSourceDefaults.ParentWidth;
 
 	/// <summary>Gets or sets the image size.</summary>
 	/// <remarks>
