@@ -81,35 +81,49 @@ public class GravatarImageSourceTests : BaseViewTest
 	public void DefaultCacheValidity()
 	{
 		var gravatarImageSource = new GravatarImageSource();
-		Assert.Equal(new TimeSpan(1, 0, 0, 0), gravatarImageSource.CacheValidity);
+		Assert.Equal(GravatarImageSourceDefaults.CacheValidity, gravatarImageSource.CacheValidity);
 	}
 
 	[Fact]
 	public void DefaultCachingEnabled()
 	{
 		var gravatarImageSource = new GravatarImageSource();
-		Assert.True(gravatarImageSource.CachingEnabled);
+		Assert.Equal(GravatarImageSourceDefaults.CachingEnabled, gravatarImageSource.CachingEnabled);
 	}
 
 	[Fact]
 	public void DefaultDefaultImage()
 	{
 		var gravatarImageSource = new GravatarImageSource();
-		Assert.Equal(DefaultImage.MysteryPerson, gravatarImageSource.Image);
+		Assert.Equal(GravatarImageSourceDefaults.Image, gravatarImageSource.Image);
 	}
 
 	[Fact]
 	public void DefaultEmail()
 	{
 		var gravatarImageSource = new GravatarImageSource();
-		Assert.Null(gravatarImageSource.Email);
+		Assert.Equal(GravatarImageSourceDefaults.Email, gravatarImageSource.Email);
 	}
 
 	[Fact]
 	public void DefaultUri()
 	{
 		var gravatarImageSource = new GravatarImageSource();
-		Assert.Equal(new Uri("https://www.gravatar.com/avatar/"), gravatarImageSource.Uri);
+		Assert.Equal(GravatarImageSourceDefaults.Uri, gravatarImageSource.Uri);
+	}
+	
+	[Fact]
+	public void DefaultParentHeight()
+	{
+		var gravatarImageSource = new GravatarImageSource();
+		Assert.Equal(GravatarImageSourceDefaults.ParentHeight, gravatarImageSource.ParentHeight);
+	}
+	
+	[Fact]
+	public void DefaultParentWidth()
+	{
+		var gravatarImageSource = new GravatarImageSource();
+		Assert.Equal(GravatarImageSourceDefaults.ParentWidth, gravatarImageSource.ParentWidth);
 	}
 
 	[Fact]
