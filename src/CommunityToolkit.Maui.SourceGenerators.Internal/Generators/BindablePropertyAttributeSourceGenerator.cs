@@ -436,8 +436,8 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		var doesContainNewKeyword = HasNewKeyword(propertyDeclarationSyntax);
 		var (isReadOnlyBindableProperty, setterAccessibility) = GetSetterAccessibility(propertySymbol, propertyDeclarationSyntax);
-		
-		var propertyAccessibility = propertySymbol.DeclaredAccessibility.ToString().ToLower();
+
+		var propertyAccessibility = GetPropertyAccessibility(propertySymbol);
 
 		var attributeData = context.Attributes[0];
 		bindablePropertyModels[0] = CreateBindablePropertyModel(attributeData, propertySymbol.ContainingType, propertySymbol.Name, returnType, doesContainNewKeyword, isReadOnlyBindableProperty, setterAccessibility, hasInitializer, propertyAccessibility);
@@ -467,18 +467,29 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			return (true, null);
 		}
 
-		return propertySymbol.SetMethod.DeclaredAccessibility switch
+		return (propertySymbol.DeclaredAccessibility, propertySymbol.SetMethod.DeclaredAccessibility) switch
 		{
-			Accessibility.NotApplicable => throw new NotSupportedException($"The setter type for {propertySymbol.Name} is not yet supported"),
-			Accessibility.Private => (true, "private "),
-			Accessibility.ProtectedAndInternal => (true, "private protected "),
-			Accessibility.Protected => (true, "protected "),
-			Accessibility.Internal => (false, "internal "),
-			Accessibility.ProtectedOrInternal => (false, "protected internal "),
-			Accessibility.Public => (false, " "), // Keep the SetterAccessibility empty because the Property is public and the setter will inherit that accessbility modified, e.g. `public string Test { get; set; }`
+			(_, Accessibility.NotApplicable) => throw new NotSupportedException($"The setter type for {propertySymbol.Name} is not yet supported"),
+			(_, Accessibility.Private) => (true, "private "),
+			(_, Accessibility.ProtectedAndInternal) => (true, "private protected "),
+			(_, Accessibility.Protected) => (true, "protected "),
+			(Accessibility.Internal, Accessibility.Internal) => (false, " "), // Keep the SetterAccessibility empty because the Property is Internal and the setter will inherit that accessbility modified, e.g. `internal string Test { get; set; }`
+			(_, Accessibility.Internal) => (false, "internal "),
+			(Accessibility.ProtectedOrInternal, Accessibility.ProtectedOrInternal) => (false, " "), // Keep the SetterAccessibility empty because the Property is protected internal and the setter will inherit that accessbility modified, e.g. `protected internal string Test { get; set; }`
+			(_, Accessibility.ProtectedOrInternal) => (false, "protected internal "),
+			(_, Accessibility.Public) => (false, " "), // Keep the SetterAccessibility empty because the Property is public and the setter will inherit that accessbility modified, e.g. `public string Test { get; set; }`
 			_ => throw new NotSupportedException($"The setter type for {propertySymbol.Name} is not yet supported"),
 		};
 	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	static string GetPropertyAccessibility(IPropertySymbol propertySymbol) => propertySymbol.DeclaredAccessibility switch
+	{
+		Accessibility.Internal => "internal",
+		Accessibility.ProtectedOrInternal => "protected internal",
+		Accessibility.Public => "public",
+		_ => throw new NotSupportedException($"The property accessiblity, {propertySymbol.DeclaredAccessibility}, for {propertySymbol.Name} is not supported. The supported accessibility kinds are `public`, `internal` and `protected internal`"),
+	};
 
 	static string GetContainingTypes(INamedTypeSymbol typeSymbol)
 	{
