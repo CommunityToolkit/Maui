@@ -12,6 +12,11 @@ public partial class MathExpressionConverter : BaseConverterOneWay<object?, obje
 	public override object? DefaultConvertReturnValue { get; set; } = 0.0d;
 
 	/// <summary>
+	/// Get or set the culture to use in the converter.
+	/// </summary>
+	public CultureInfo Culture { get; set; } = CultureInfo.InvariantCulture;
+
+	/// <summary>
 	/// Calculate the incoming expression string with one variable.
 	/// </summary>
 	/// <param name="inputValue">The variable X for an expression</param>
@@ -22,6 +27,6 @@ public partial class MathExpressionConverter : BaseConverterOneWay<object?, obje
 	{
 		ArgumentNullException.ThrowIfNull(parameter);
 
-		return new MathExpression(parameter, [inputValue]).CalculateResult();
+		return new MathExpression(parameter, [inputValue], this.Culture).CalculateResult();
 	}
 }
