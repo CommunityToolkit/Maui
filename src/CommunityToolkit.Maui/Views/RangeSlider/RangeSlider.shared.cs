@@ -13,80 +13,80 @@ public partial class RangeSlider : ContentView
 	/// <summary>
 	/// Gets or sets the minimum value
 	/// </summary>
-	[BindableProperty(DefaultValue = RangeSliderDefaults.MinimumValue)]
-	public partial double MinimumValue { get; set; }
+	[BindableProperty]
+	public partial double MinimumValue { get; set; } = RangeSliderDefaults.MinimumValue;
 
 	/// <summary>
 	/// Gets or sets the maximum value
 	/// </summary>
-	[BindableProperty(DefaultValue = RangeSliderDefaults.MaximumValue)]
-	public partial double MaximumValue { get; set; }
+	[BindableProperty]
+	public partial double MaximumValue { get; set; } = RangeSliderDefaults.MaximumValue;
 
 	/// <summary>
 	/// Gets or sets the lower value
 	/// </summary>
-	[BindableProperty(DefaultValue = RangeSliderDefaults.LowerValue, CoerceValueMethodName = nameof(CoerceLowerValue))]
-	public partial double LowerValue { get; set; }
+	[BindableProperty(CoerceValueMethodName = nameof(CoerceLowerValue))]
+	public partial double LowerValue { get; set; } = RangeSliderDefaults.LowerValue;
 
 	/// <summary>
 	/// Gets or sets the upper value
 	/// </summary>
-	[BindableProperty(DefaultValue = RangeSliderDefaults.UpperValue, CoerceValueMethodName = nameof(CoerceUpperValue))]
-	public partial double UpperValue { get; set; }
+	[BindableProperty(CoerceValueMethodName = nameof(CoerceUpperValue))]
+	public partial double UpperValue { get; set; } = RangeSliderDefaults.UpperValue;
 
 	/// <summary>
 	/// Gets or sets the step size
 	/// </summary>
-	[BindableProperty(DefaultValue = RangeSliderDefaults.StepSize)]
-	public partial double StepSize { get; set; }
+	[BindableProperty]
+	public partial double StepSize { get; set; } = RangeSliderDefaults.StepSize;
 
 	/// <summary>
 	/// Gets or sets the lower thumb color
 	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultLowerThumbColor))]
-	public partial Color LowerThumbColor { get; set; }
+	[BindableProperty]
+	public partial Color LowerThumbColor { get; set; } = RangeSliderDefaults.LowerThumbColor;
 
 	/// <summary>
 	/// Gets or sets the upper thumb color
 	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultUpperThumbColor))]
-	public partial Color UpperThumbColor { get; set; }
+	[BindableProperty]
+	public partial Color UpperThumbColor { get; set; } = RangeSliderDefaults.UpperThumbColor;
 
 	/// <summary>
 	/// Gets or sets the inner track color
 	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultInnerTrackColor))]
-	public partial Color InnerTrackColor { get; set; }
+	[BindableProperty]
+	public partial Color InnerTrackColor { get; set; } = RangeSliderDefaults.InnerTrackColor;
 
 	/// <summary>
 	/// Gets or sets the inner track size
 	/// </summary>
-	[BindableProperty(DefaultValue = RangeSliderDefaults.InnerTrackSize)]
-	public partial double InnerTrackSize { get; set; }
+	[BindableProperty]
+	public partial double InnerTrackSize { get; set; } = RangeSliderDefaults.InnerTrackSize;
 
 	/// <summary>
 	/// Gets or sets the inner track corner radius
 	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultInnerTrackCornerRadius))]
-	public partial CornerRadius InnerTrackCornerRadius { get; set; }
+	[BindableProperty]
+	public partial CornerRadius InnerTrackCornerRadius { get; set; } = RangeSliderDefaults.InnerTrackCornerRadius;
 
 	/// <summary>
 	/// Gets or sets the outer track color
 	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultOuterTrackColor))]
-	public partial Color OuterTrackColor { get; set; }
+	[BindableProperty]
+	public partial Color OuterTrackColor { get; set; } = RangeSliderDefaults.OuterTrackColor;
 
 	/// <summary>
 	/// Gets or sets the outer track size
 	/// </summary>
-	[BindableProperty(DefaultValue = RangeSliderDefaults.OuterTrackSize)]
-	public partial double OuterTrackSize { get; set; }
+	[BindableProperty]
+	public partial double OuterTrackSize { get; set; } = RangeSliderDefaults.OuterTrackSize;
 
 	/// <summary>
 	/// Gets or sets the outer track corner radius
 	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultOuterTrackCornerRadius))]
-	public partial CornerRadius OuterTrackCornerRadius { get; set; }
+	[BindableProperty]
+	public partial CornerRadius OuterTrackCornerRadius { get; set; } = RangeSliderDefaults.OuterTrackCornerRadius;
 
 	internal static readonly BindablePropertyKey FocusModePropertyKey = BindableProperty.CreateReadOnly(nameof(FocusMode), typeof(RangeSliderFocusMode), typeof(RangeSlider), RangeSliderDefaults.FocusMode);
 
@@ -440,16 +440,4 @@ public partial class RangeSlider : ContentView
 			innerTrack.WidthRequest = trackWidth * (upperSlider.Value - lowerSlider.Value) / range + InnerTrackSize;
 		}
 	}
-
-	static object CreateDefaultLowerThumbColor(BindableObject bindable) => RangeSliderDefaults.LowerThumbColor;
-
-	static object CreateDefaultUpperThumbColor(BindableObject bindable) => RangeSliderDefaults.UpperThumbColor;
-
-	static object CreateDefaultInnerTrackColor(BindableObject bindable) => RangeSliderDefaults.InnerTrackColor;
-
-	static object CreateDefaultInnerTrackCornerRadius(BindableObject bindable) => RangeSliderDefaults.InnerTrackCornerRadius;
-
-	static object CreateDefaultOuterTrackColor(BindableObject bindable) => RangeSliderDefaults.OuterTrackColor;
-
-	static object CreateDefaultOuterTrackCornerRadius(BindableObject bindable) => RangeSliderDefaults.OuterTrackCornerRadius;
 }
