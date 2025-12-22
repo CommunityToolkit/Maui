@@ -11,7 +11,9 @@ public abstract class BaseTest
 	{
 		const string sourceGeneratorNamespace = "CommunityToolkit.Maui.SourceGenerators.Internal";
 		const string bindablePropertyAttributeGeneratedFileName = "BindablePropertyAttribute.g.cs";
-		var sourceGeneratorFullName = typeof(BindablePropertyAttributeSourceGenerator).FullName ?? throw new InvalidOperationException("Source Generator Type Path cannot be null");
+		const string attachedBindablePropertyAttributeGeneratedFileName = "AttachedBindablePropertyAttribute.g.cs";
+		var bindableSourceGeneratorFullName = typeof(BindablePropertyAttributeSourceGenerator).FullName ?? throw new InvalidOperationException("Source Generator Type Path cannot be null");
+		var attachedSourceGeneratorFullName = typeof(AttachedBindablePropertySourceGenerator).FullName ?? throw new InvalidOperationException("Source Generator Type Path cannot be null");
 
 		var test = new ExperimentalBindablePropertyTest
 		{
@@ -34,13 +36,16 @@ public abstract class BaseTest
 		};
 
 		var expectedAttributeText = Microsoft.CodeAnalysis.Text.SourceText.From(expectedAttribute, System.Text.Encoding.UTF8);
-		var bindablePropertyAttributeFilePath = Path.Combine(sourceGeneratorNamespace, sourceGeneratorFullName, bindablePropertyAttributeGeneratedFileName);
+		var bindablePropertyAttributeFilePath = Path.Combine(sourceGeneratorNamespace, bindableSourceGeneratorFullName, bindablePropertyAttributeGeneratedFileName);
 		test.TestState.GeneratedSources.Add((bindablePropertyAttributeFilePath, expectedAttributeText));
 
 		foreach (var generatedFile in expectedGenerated.Where(static x => !string.IsNullOrEmpty(x.GeneratedFile)))
 		{
 			var expectedGeneratedText = Microsoft.CodeAnalysis.Text.SourceText.From(generatedFile.GeneratedFile, System.Text.Encoding.UTF8);
-			var generatedFilePath = Path.Combine(sourceGeneratorNamespace, sourceGeneratorFullName, generatedFile.FileName);
+			var generatorFullName = generatedFile.FileName == attachedBindablePropertyAttributeGeneratedFileName
+				? attachedSourceGeneratorFullName
+				: bindableSourceGeneratorFullName;
+			var generatedFilePath = Path.Combine(sourceGeneratorNamespace, generatorFullName, generatedFile.FileName);
 			test.TestState.GeneratedSources.Add((generatedFilePath, expectedGeneratedText));
 		}
 

@@ -8,6 +8,8 @@
     <IsTestProject>true</IsTestProject>
     <OutputType>Exe</OutputType>
     <RootNamespace>CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests</RootNamespace>
+	<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
   
   <ItemGroup>
