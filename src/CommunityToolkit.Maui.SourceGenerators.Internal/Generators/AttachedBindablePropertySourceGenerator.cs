@@ -388,10 +388,7 @@ public class AttachedBindablePropertySourceGenerator : IIncrementalGenerator
 
 		if (info.SetterAccessibility is not null)
 		{
-			var propAccessTrim = (info.PropertyAccessibility ?? string.Empty).Trim();
-			var setterAccessTrim = (info.SetterAccessibility ?? string.Empty).Trim();
-
-			if (string.IsNullOrEmpty(setterAccessTrim) || propAccessTrim == "private" || propAccessTrim == setterAccessTrim)
+			if (string.IsNullOrEmpty(info.SetterAccessibility))
 			{
 				sb.Append("set => SetValue(")
 					.Append(info.IsReadOnlyBindableProperty ? info.BindablePropertyKeyName : info.BindablePropertyName)
