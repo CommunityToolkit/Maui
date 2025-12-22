@@ -258,7 +258,8 @@ public class AttachedBindablePropertySourceGenerator : IIncrementalGenerator
 			.Append(info.BindablePropertyKeyName)
 			.Append(" = \n")
 			.Append(bpFullName)
-			.Append(".CreateReadOnlyAttached(\"")
+			.Append(".CreateReadOnly(")
+			.Append("\"")
 			.Append(sanitizedPropertyName)
 			.Append("\", typeof(")
 			.Append(GetFormattedReturnType(nonNullableReturnType))
@@ -283,7 +284,7 @@ public class AttachedBindablePropertySourceGenerator : IIncrementalGenerator
 		}
 
 		sb.Append(info.EffectiveDefaultValueCreatorMethodName)
-			.Append(");\n");
+			.Append(");\n\n");
 
 		// Generate BindableProperty from the key with the same accessibility as the property
 		sb.Append(info.PropertyAccessibility)
@@ -369,7 +370,7 @@ public class AttachedBindablePropertySourceGenerator : IIncrementalGenerator
 			if (info.ShouldUsePropertyInitializer)
 			{
 				// Now reference the static flag on the file static helper class
-				sb.Append(fileStaticClassName).Append(".").Append(info.InitializingPropertyName);
+				sb.Append(fileStaticClassName).Append('.').Append(info.InitializingPropertyName);
 			}
 			else
 			{
@@ -387,13 +388,24 @@ public class AttachedBindablePropertySourceGenerator : IIncrementalGenerator
 
 		if (info.SetterAccessibility is not null)
 		{
-			sb.Append(info.SetterAccessibility)
-				.Append("set => SetValue(")
-				.Append(info.IsReadOnlyBindableProperty ? info.BindablePropertyKeyName : info.BindablePropertyName)
-				.Append(", value);\n");
-		}
-		// else Do not create a Setter because the property is read-only
+			var propAccessTrim = (info.PropertyAccessibility ?? string.Empty).Trim();
+			var setterAccessTrim = (info.SetterAccessibility ?? string.Empty).Trim();
 
+			if (string.IsNullOrEmpty(setterAccessTrim) || propAccessTrim == "private" || propAccessTrim == setterAccessTrim)
+			{
+				sb.Append("set => SetValue(")
+					.Append(info.IsReadOnlyBindableProperty ? info.BindablePropertyKeyName : info.BindablePropertyName)
+					.Append(", value);\n");
+			}
+			else
+			{
+				sb.Append(info.SetterAccessibility)
+					.Append("set => SetValue(")
+					.Append(info.IsReadOnlyBindableProperty ? info.BindablePropertyKeyName : info.BindablePropertyName)
+					.Append(", value);\n");
+			}
+		}
+		
 		sb.Append("}\n");
 	}
 
@@ -448,8 +460,34 @@ public class AttachedBindablePropertySourceGenerator : IIncrementalGenerator
 		var doesContainNewKeyword = HasNewKeyword(propertyDeclarationSyntax);
 		var (isReadOnlyBindableProperty, setterAccessibility, propertyAccessibility) = GetPropertyAccessibility(propertySymbol, propertyDeclarationSyntax);
 
+		// Determine how to emit the setter accessibility:
+		// - null => no setter (get-only)
+		// - empty string => emit setter without explicit accessibility modifier (matching source that had none)
+		// - non-empty string => emit that explicit modifier (e.g., "internal ")
+		string? setterAccessibilityText;
+		if (propertyDeclarationSyntax.AccessorList is not null)
+		{
+			var setAccessor = propertyDeclarationSyntax.AccessorList.Accessors.FirstOrDefault(a => a.Kind() == SyntaxKind.SetAccessorDeclaration);
+			if (setAccessor is null)
+			{
+				setterAccessibilityText = null;
+			}
+			else if (setAccessor.Modifiers.Count == 0)
+			{
+				setterAccessibilityText = string.Empty; // emit setter but no explicit modifier
+			}
+			else
+			{
+				setterAccessibilityText = setterAccessibility;
+			}
+		}
+		else
+		{
+			setterAccessibilityText = setterAccessibility;
+		}
+
 		var attributeData = context.Attributes[0];
-		bindablePropertyModels[0] = CreateBindablePropertyModel(attributeData, propertySymbol.ContainingType, propertySymbol.Name, returnType, doesContainNewKeyword, isReadOnlyBindableProperty, setterAccessibility, hasInitializer, propertyAccessibility);
+		bindablePropertyModels[0] = CreateBindablePropertyModel(attributeData, propertySymbol.ContainingType, propertySymbol.Name, returnType, doesContainNewKeyword, isReadOnlyBindableProperty, setterAccessibilityText, hasInitializer, propertyAccessibility);
 
 		return new(propertyInfo, ImmutableArray.Create(bindablePropertyModels));
 	}
