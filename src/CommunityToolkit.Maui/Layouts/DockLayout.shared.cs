@@ -65,7 +65,7 @@ public partial class DockLayout : Layout, IDockLayout
 		get => (double)GetValue(VerticalSpacingProperty);
 		set => SetValue(VerticalSpacingProperty, value);
 	}
-	
+
 	/// <summary>
 	/// Gets the docking position for a view.
 	/// </summary>
@@ -81,7 +81,7 @@ public partial class DockLayout : Layout, IDockLayout
 	{
 		view.SetValue(DockPositionProperty, value);
 	}
-	
+
 	/// <inheritdoc/>
 	public DockPosition GetDockPosition(IView view)
 	{
