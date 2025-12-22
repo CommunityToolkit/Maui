@@ -9,7 +9,6 @@ namespace CommunityToolkit.Maui.Layouts;
 /// </summary>
 public partial class DockLayout : Layout, IDockLayout
 {
-	/*
 	/// <summary>
 	/// Docking position for a view.
 	/// </summary>
@@ -18,13 +17,7 @@ public partial class DockLayout : Layout, IDockLayout
 																									typeof(DockLayout),
 																									DockPosition.None,
 																									propertyChanged: OnDockPositionPropertyChanged);
-	*/
 
-	/// <summary>
-	/// Getting the docking position for a view.
-	/// </summary>
-	[AttachedBindableProperty(PropertyChangedMethodName = nameof(OnDockPositionPropertyChanged))]
-	public partial DockPosition DockPosition { get; set; } = DockPosition.None;
 	/// <summary>
 	/// If true, the last child is expanded to fill the remaining space (default: true).
 	/// </summary>
@@ -72,7 +65,7 @@ public partial class DockLayout : Layout, IDockLayout
 		get => (double)GetValue(VerticalSpacingProperty);
 		set => SetValue(VerticalSpacingProperty, value);
 	}
-	/*
+	
 	/// <summary>
 	/// Gets the docking position for a view.
 	/// </summary>
@@ -88,7 +81,7 @@ public partial class DockLayout : Layout, IDockLayout
 	{
 		view.SetValue(DockPositionProperty, value);
 	}
-	*/
+	
 	/// <inheritdoc/>
 	public DockPosition GetDockPosition(IView view)
 	{
