@@ -16,6 +16,13 @@ public record FolderPickerResult(Folder? Folder, Exception? Exception)
 	[MemberNotNullWhen(true, nameof(Folder))]
 	[MemberNotNullWhen(false, nameof(Exception))]
 	public bool IsSuccessful => Exception is null;
+	
+	/// <summary>
+	/// Check if the operation was cancelled.
+	/// </summary>
+	[MemberNotNullWhen(false, nameof(Folder))]
+	[MemberNotNullWhen(true, nameof(Exception))]
+	public bool IsCancelled => Exception is OperationCanceledException;
 
 	/// <summary>
 	/// Check if operation was successful.

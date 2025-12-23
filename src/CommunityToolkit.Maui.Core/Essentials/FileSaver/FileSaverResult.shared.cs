@@ -15,6 +15,13 @@ public record FileSaverResult(string? FilePath, Exception? Exception)
 	[MemberNotNullWhen(true, nameof(FilePath))]
 	[MemberNotNullWhen(false, nameof(Exception))]
 	public bool IsSuccessful => Exception is null;
+	
+	/// <summary>
+	/// Check if the operation was cancelled.
+	/// </summary>
+	[MemberNotNullWhen(false, nameof(FilePath))]
+	[MemberNotNullWhen(true, nameof(Exception))]
+	public bool IsCancelled => Exception is OperationCanceledException;
 
 	/// <summary>
 	/// Check if the operation was successful.
