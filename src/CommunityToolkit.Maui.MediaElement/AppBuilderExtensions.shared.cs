@@ -33,10 +33,6 @@ public static class AppBuilderExtensions
 			h.AddHandler<MediaElement, MediaElementHandler>();
 		});
 
-#if ANDROID
-		builder.Services.AddSingleton<Media.Services.MediaControlsService>();
-#endif
-
 		return builder;
 	}
 }
