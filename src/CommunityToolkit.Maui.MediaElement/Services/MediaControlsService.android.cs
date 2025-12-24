@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Runtime.Versioning;
+﻿using System.Runtime.Versioning;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
@@ -8,16 +7,18 @@ using AndroidX.Media3.DataSource;
 using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.ExoPlayer.TrackSelection;
 using AndroidX.Media3.Session;
+using Java.Util;
 
 namespace CommunityToolkit.Maui.Media.Services;
 
 [SupportedOSPlatform("Android26.0")]
-[IntentFilter(["androidx.media3.session.MediaSessionService"])] 
+[IntentFilter(["androidx.media3.session.MediaSessionService"])]
 [Service(Exported = false, Enabled = true, Name = "communityToolkit.maui.media.services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
 sealed partial class MediaControlsService : MediaSessionService
 {
-	
-	readonly ConcurrentDictionary<string, MediaSessionWrapper> sessions = new();
+	MediaSession? mediaSession;
+	IExoPlayer? exoPlayer;
+	DefaultTrackSelector? trackSelector;
 
 	public override void OnTaskRemoved(Intent? rootIntent)
 	{
@@ -25,82 +26,16 @@ sealed partial class MediaControlsService : MediaSessionService
 		PauseAllPlayersAndStopSelf();
 	}
 
-	protected override void Dispose(bool disposing)
+	public override void OnCreate()
 	{
-		if (disposing)
-		{
-			PauseAllPlayersAndStopSelf();
-			foreach (var kv in sessions)
-			{
-				kv.Value.Dispose();
-			}
-			sessions.Clear();
-		}
-		base.Dispose(disposing);
-	}
-	
-	public override void OnDestroy()
-	{
-		base.OnDestroy();
-		PauseAllPlayersAndStopSelf();
-	}
+		base.OnCreate();
 
-	public override StartCommandResult OnStartCommand(Intent? intent, StartCommandFlags flags, int startId)
-	{
-		if (intent is not null)
-		{
-			var sid = intent.GetStringExtra("sessionId");
-			if (!string.IsNullOrEmpty(sid))
-			{
-				CreateOrGetSession(sid);
-				return StartCommandResult.StickyCompatibility;
-			}
-
-			var removeSid = intent.GetStringExtra("removeSessionId");
-			if (!string.IsNullOrEmpty(removeSid))
-			{
-				if (sessions.TryRemove(removeSid, out var wrapper))
-				{
-					wrapper.Dispose();
-				}
-				if (sessions.IsEmpty)
-				{
-					StopSelf();
-				}
-				return StartCommandResult.NotSticky;
-			}
-		}
-
-		return base.OnStartCommand(intent, flags, startId);
-	}
-
-	public override MediaSession? OnGetSession(MediaSession.ControllerInfo? controllerInfo)
-	{
-		var hints = controllerInfo?.ConnectionHints;
-		if (hints is not null)
-		{
-			var sid = hints.GetString("sessionId");
-			if (!string.IsNullOrEmpty(sid) && sessions.TryGetValue(sid, out var wrapper))
-			{
-				return wrapper.Session;
-			}
-		}
-		return null;
-	}
-
-	MediaSessionWrapper CreateOrGetSession(string sessionId)
-	{
-		if (sessions.TryGetValue(sessionId, out var existing))
-		{
-			return existing;
-		}
-
-		var audioAttribute = new AudioAttributes.Builder()?
-			.SetContentType(C.AudioContentTypeMusic)?
+		var audioAttribute = new AndroidX.Media3.Common.AudioAttributes.Builder()?
+			.SetContentType(C.AudioContentTypeMusic)? // When phonecalls come in, music is paused
 			.SetUsage(C.UsageMedia)?
 			.Build();
 
-		var trackSelector = new DefaultTrackSelector(this);
+		trackSelector = new DefaultTrackSelector(this);
 		var trackSelectionParameters = trackSelector.BuildUponParameters()?
 			.SetPreferredAudioLanguage(C.LanguageUndetermined)? // Fallback to system language if no preferred language found
 			.SetPreferredTextLanguage(C.LanguageUndetermined)? // Fallback to system language if no preferred language found
@@ -114,23 +49,46 @@ sealed partial class MediaControlsService : MediaSessionService
 			bufferForPlaybackMs: 2500,
 			bufferForPlaybackAfterRebufferMs: 5000); // Custom buffering strategy
 
-		var builder = new ExoPlayerBuilder(this) ?? throw new InvalidOperationException("ExoPlayerBuilder.Build() returned null");
+		var builder = new ExoPlayerBuilder(this) ?? throw new InvalidOperationException("ExoPlayerBuilder returned null");
 		builder.SetTrackSelector(trackSelector);
 		builder.SetAudioAttributes(audioAttribute, true);
-		builder.SetHandleAudioBecomingNoisy(true);
+		builder.SetHandleAudioBecomingNoisy(true); // Unplugging headphones will pause playback
 		builder.SetLoadControl(loadControlBuilder.Build());
-		var exoPlayer = builder.Build() ?? throw new InvalidOperationException("ExoPlayerBuilder.Build() returned null");
-
+		exoPlayer = builder.Build() ?? throw new InvalidOperationException("ExoPlayerBuilder.Build() returned null");
+	
 		var mediaSessionBuilder = new MediaSession.Builder(this, exoPlayer);
-		
-		mediaSessionBuilder.SetId(sessionId);
+		UUID sessionId = UUID.RandomUUID() ?? throw new InvalidOperationException("UUID.RandomUUID() returned null");
+		mediaSessionBuilder.SetId(sessionId.ToString());
+
 		var dataSourceBitmapFactory = new DataSourceBitmapLoader(this);
 		mediaSessionBuilder.SetBitmapLoader(dataSourceBitmapFactory);
-		var mediaSession = mediaSessionBuilder.Build() ?? throw new InvalidOperationException("MediaSession.Builder.Build() returned null");
+		mediaSession = mediaSessionBuilder.Build() ?? throw new InvalidOperationException("MediaSession.Builder.Build() returned null");
+	}
 
-		var wrapper = new MediaSessionWrapper(sessionId, mediaSession, exoPlayer);
-		sessions[sessionId] = wrapper;
-		
-		return wrapper;
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			PauseAllPlayersAndStopSelf();
+			mediaSession?.Release();
+			mediaSession?.Dispose();
+			mediaSession = null;
+			exoPlayer?.Release();
+			exoPlayer = null;
+			trackSelector?.Dispose();
+			trackSelector = null;
+		}
+		base.Dispose(disposing);
+	}
+	
+	public override void OnDestroy()
+	{
+		base.OnDestroy();
+		PauseAllPlayersAndStopSelf();
+	}
+
+	public override MediaSession? OnGetSession(MediaSession.ControllerInfo? p0)
+	{
+		return mediaSession;
 	}
 }
