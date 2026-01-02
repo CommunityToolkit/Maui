@@ -128,11 +128,11 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Edg
                 /// <summary>
                 /// Gets InvoiceStatus for the <paramref = "bindable"/> child element.
                 /// </summary>
-                public static string GetInvoiceStatus(BindableObject bindable) => (string)bindable.GetValue(InvoiceStatus);
+                public static {{defaultTestNamespace}}.Status GetInvoiceStatus(BindableObject bindable) => ({{defaultTestNamespace}}.Status)bindable.GetValue(InvoiceStatusProperty);
                 /// <summary>
                 /// Sets InvoiceStatus for the <paramref = "bindable"/> child element.
                 /// </summary>
-                public static void SetInvoiceStatus(BindableObject bindable, {{defaultTestNamespace}}.Status value) => bindable.SetValue(InvoiceStatus, value);
+                public static void SetInvoiceStatus(BindableObject bindable, {{defaultTestNamespace}}.Status value) => bindable.SetValue(InvoiceStatusProperty, value);
             }
             """;
 
@@ -182,7 +182,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Edg
                 /// <summary>
                 /// Gets InvoiceStatus for the <paramref = "bindable"/> child element.
                 /// </summary>
-                public static string GetInvoiceStatus(BindableObject bindable) => (string)bindable.GetValue(InvoiceStatusProperty);
+                public static {{defaultTestNamespace}}.Status GetInvoiceStatus(BindableObject bindable) => ({{defaultTestNamespace}}.Status)bindable.GetValue(InvoiceStatusProperty);
                 /// <summary>
                 /// Sets InvoiceStatus for the <paramref = "bindable"/> child element.
                 /// </summary>
@@ -325,7 +325,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Edg
                 /// <summary>
                 /// Sets StringArray for the <paramref = "bindable"/> child element.
                 /// </summary>
-                public static void SetStringArray(BindableObject bindable, string[] value) => bindable.SetValue(StringArray, value);
+                public static void SetStringArray(BindableObject bindable, string[] value) => bindable.SetValue(StringArrayProperty, value);
                 /// <summary>
                 /// Sets MultiDimensionalArray for the <paramref = "bindable"/> child element.
                 /// </summary>
@@ -565,7 +565,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Edg
                 /// <summary>
                 /// Gets Letter for the <paramref = "bindable"/> child element.
                 /// </summary>
-                public static char GetLetter(BindableObject bindable) => (char)bindable.GetValue(TextProperty);
+                public static char GetLetter(BindableObject bindable) => (char)bindable.GetValue(LetterProperty);
                 /// <summary>
                 /// Gets TimeSpent for the <paramref = "bindable"/> child element.
                 /// </summary>
@@ -577,7 +577,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Edg
                 /// <summary>
                 /// Gets SingleEpsilon for the <paramref = "bindable"/> child element.
                 /// </summary>
-                public static double GetSingleEpsilon(BindableObject bindable) => (float)bindable.GetValue(SingleEpsilonProperty);
+                public static float GetSingleEpsilon(BindableObject bindable) => (float)bindable.GetValue(SingleEpsilonProperty);
                 /// <summary>
                 /// Gets CurrentTime for the <paramref = "bindable"/> child element.
                 /// </summary>
@@ -585,7 +585,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Edg
                 /// <summary>
                 /// Sets IsEnabled for the <paramref = "bindable"/> child element.
                 /// </summary>
-                public static void SetIsEnabled(BindableObject bindable, ool value) => bindable.SetValue(IsEnabledProperty, value);
+                public static void SetIsEnabled(BindableObject bindable, bool value) => bindable.SetValue(IsEnabledProperty, value);
                 /// <summary>
                 /// Sets Pi for the <paramref = "bindable"/> child element.
                 /// </summary>
@@ -609,7 +609,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Edg
                 /// <summary>
                 /// Sets CurrentTime for the <paramref = "bindable"/> child element.
                 /// </summary>
-                public static void SetCurrentTime(BindableObject bindable) => bindable.SetValue(CurrentTimeProperty, value);
+                public static void SetCurrentTime(BindableObject bindable, global::System.DateTime) => bindable.SetValue(CurrentTimeProperty, value);
             }
             """;
 

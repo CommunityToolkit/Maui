@@ -230,7 +230,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			namespace {{defaultTestNamespace}};
 
 			[AttachedBindableProperty<string>("Text")]
-			internal partial class TestView : View
+			internal partial class {{defaultTestClassName}} : View
 			{
 			}
 			""";
@@ -244,7 +244,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			#pragma warning disable
 			#nullable enable
 			namespace {{defaultTestNamespace}};
-			internal partial class TestView
+			internal partial class {{defaultTestClassName}}
 			{
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.

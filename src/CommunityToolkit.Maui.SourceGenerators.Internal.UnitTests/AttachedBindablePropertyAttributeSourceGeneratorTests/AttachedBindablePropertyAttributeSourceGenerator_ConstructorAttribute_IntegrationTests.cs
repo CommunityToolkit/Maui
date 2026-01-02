@@ -384,7 +384,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty SecondTextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("SecondText", typeof(string), typeof({{defaultTestNamespace}}.FirstView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty SecondTextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("SecondText", typeof(string), typeof({{defaultTestNamespace}}.SecondView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets SecondText for the <paramref = "bindable"/> child element.
 			    /// </summary>
