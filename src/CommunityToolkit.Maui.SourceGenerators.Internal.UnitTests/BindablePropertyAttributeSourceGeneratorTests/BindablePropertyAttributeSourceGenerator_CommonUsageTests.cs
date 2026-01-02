@@ -394,7 +394,7 @@ public class BindablePropertyAttributeSourceGenerator_CommonUsageTests : BaseBin
 	}
 
 	[Fact]
-	public async Task GenerateBindableProperty_ProtectedInternalSetter_GeneratesPrivateProtectedSetter()
+	public async Task GenerateBindableProperty_ProtectedInternalSetter_GeneratesProtectedInternalSetter()
 	{
 		const string source =
 			/* language=C#-test */

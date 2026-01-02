@@ -252,7 +252,7 @@ public class BindablePropertyAttributeSourceGenerator_EdgeCaseTests : BaseBindab
                 public partial string[] StringArray { get; set; }
 
                 [BindableProperty]
-                public partial int[,] MultiDimensionalArray { get; set; }
+                public partial int[, ] MultiDimensionalArray { get; set; }
 
                 [BindableProperty]
                 public partial byte[][] JaggedArray { get; set; }
