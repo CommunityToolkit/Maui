@@ -2,7 +2,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.AttachedBindablePropertyAttributeSourceGeneratorTests;
 
-public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_CommonUsageTests : BaseBindablePropertyAttributeSourceGeneratorTest
+public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribute_CommonUsageTests : BaseBindablePropertyAttributeSourceGeneratorTest
 {
 	[Fact]
 	public async Task GenerateAttachedBindableProperty_SimpleExample_GeneratesCorrectCode()
@@ -16,9 +16,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			namespace {{defaultTestNamespace}};
 
-			[AttachedBindableProperty<string>("Text")]
 			public partial class {{defaultTestClassName}} : View
 			{
+				[AttachedBindableProperty<string>("Text")]
+				public {{defaultTestClassName}}()
+				{
+				}
 			}
 			""";
 
@@ -63,9 +66,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			namespace {{defaultTestNamespace}};
 
-			[AttachedBindableProperty<string?>("Text")]
 			public partial class {{defaultTestClassName}} : View
 			{
+				[AttachedBindableProperty<string?>("Text")]
+				public {{defaultTestClassName}}()
+				{
+				}
 			}
 			""";
 
@@ -110,10 +116,13 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			namespace {{defaultTestNamespace}};
 
-			[AttachedBindableProperty<string>("Text")]
-			[AttachedBindableProperty<int>("Number")]
 			public partial class {{defaultTestClassName}} : View
 			{
+				[AttachedBindableProperty<string>("Text")]
+				[AttachedBindableProperty<int>("Number")]
+				public {{defaultTestClassName}}()
+				{
+				}
 			}
 			""";
 
@@ -170,7 +179,9 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			namespace {{defaultTestNamespace}};
 
-			[AttachedBindablePropertyAttribute<int>("Value",
+			public partial class {{defaultTestClassName}} : View
+			{
+				[AttachedBindablePropertyAttribute<int>("Value",
 			        DefaultValue = 7,
 			        DefaultBindingMode = BindingMode.TwoWay,
 			        ValidateValueMethodName = nameof(ValidateValue),
@@ -178,8 +189,10 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			        PropertyChangingMethodName = nameof(OnPropertyChanging),
 			        CoerceValueMethodName = nameof(CoerceValue),
 			        DefaultValueCreatorMethodName = nameof(CreateDefaultValue))]
-			public partial class {{defaultTestClassName}} : View
-			{
+				public {{defaultTestClassName}}()
+				{
+				}
+
 			    static bool ValidateValue(BindableObject bindable, object value) => true;
 			    static void OnPropertyChanged(BindableObject bindable, object oldValue, object newValue) { }
 			    static void OnPropertyChanging(BindableObject bindable, object oldValue, object newValue) { }
@@ -229,9 +242,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			namespace {{defaultTestNamespace}};
 
-			[AttachedBindableProperty<string>("Text")]
 			internal partial class TestView : View
 			{
+				[AttachedBindableProperty<string>("Text")]
+				public {{defaultTestClassName}}()
+				{
+				}
 			}
 			""";
 
@@ -277,6 +293,10 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			public partial class {{defaultTestClassName}} : View
 			{
+				public {{defaultTestClassName}}()
+				{
+				}
+
 			    public string Text { get; set; }
 			}
 			""";
@@ -297,6 +317,9 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			public partial class {{defaultTestClassName}} : View
 			{
+				public {{defaultTestClassName}}()
+				{
+				}
 			}
 			""";
 
@@ -315,9 +338,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			  namespace {{defaultTestNamespace}};
 
-			  [AttachedBindableProperty<string>("Text", SetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Public)]
 			  public partial class {{defaultTestClassName}} : View
 			  {
+			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Public)]
+			  	public {{defaultTestClassName}}()
+			  	{
+			  	}
 			  }
 			  """;
 
@@ -362,9 +388,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			  namespace {{defaultTestNamespace}};
 
-			  [AttachedBindableProperty<string>("Text", SetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Internal)]
 			  public partial class {{defaultTestClassName}} : View
 			  {
+			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Internal)]
+			  	public {{defaultTestClassName}}()
+			  	{
+			  	}
 			  }
 			  """;
 
@@ -409,9 +438,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			  namespace {{defaultTestNamespace}};
 
-			  [AttachedBindableProperty<string>("Text", SetterAccessibility = Microsoft.CodeAnalysis.Accessibility.ProtectedAndInternal)]
 			  public partial class {{defaultTestClassName}} : View
 			  {
+			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = Microsoft.CodeAnalysis.Accessibility.ProtectedAndInternal)]
+			  	public {{defaultTestClassName}}()
+			  	{
+			  	}
 			  }
 			  """;
 
@@ -456,10 +488,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			  namespace {{defaultTestNamespace}};
 
-			  [AttachedBindableProperty<string>("Text", SetterAccessibility = Microsoft.CodeAnalysis.Accessibility.ProtectedOrInternal)]
 			  public partial class {{defaultTestClassName}} : View
 			  {
-
+			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = Microsoft.CodeAnalysis.Accessibility.ProtectedOrInternal)]
+			  	public {{defaultTestClassName}}()
+			  	{
+			  	}
 			  }
 			  """;
 
@@ -504,10 +538,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			  namespace {{defaultTestNamespace}};
 
-			  [AttachedBindableProperty<string>("Text", SetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Protected)]
 			  public partial class {{defaultTestClassName}} : View
 			  {
-
+			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Protected)]
+			  	public {{defaultTestClassName}}()
+			  	{
+			  	}
 			  }
 			  """;
 
@@ -552,10 +588,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			  namespace {{defaultTestNamespace}};
 
-			  [AttachedBindableProperty<string>("Text", SetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Private)]
 			  public partial class {{defaultTestClassName}} : View
 			  {
-
+			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Private)]
+			  	public {{defaultTestClassName}}()
+			  	{
+			  	}
 			  }
 			  """;
 
@@ -600,10 +638,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			  namespace {{defaultTestNamespace}};
 
-			  [AttachedBindableProperty<string>("Text", SetterAccessibility = Microsoft.CodeAnalysis.Accessibility.NotApplicable)]
 			  public partial class {{defaultTestClassName}} : View
 			  {
-
+			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = Microsoft.CodeAnalysis.Accessibility.NotApplicable)]
+			  	public {{defaultTestClassName}}()
+			  	{
+			  	}
 			  }
 			  """;
 
@@ -644,9 +684,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			  namespace {{defaultTestNamespace}};
 
-			  [AttachedBindableProperty<string>("Text", GetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Public)]
 			  public partial class {{defaultTestClassName}} : View
 			  {
+			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Public)]
+			  	public {{defaultTestClassName}}()
+			  	{
+			  	}
 			  }
 			  """;
 
@@ -691,9 +734,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			  namespace {{defaultTestNamespace}};
 
-			  [AttachedBindableProperty<string>("Text", GetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Internal)]
 			  public partial class {{defaultTestClassName}} : View
 			  {
+			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Internal)]
+			  	public {{defaultTestClassName}}()
+			  	{
+			  	}
 			  }
 			  """;
 
@@ -738,9 +784,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			  namespace {{defaultTestNamespace}};
 
-			  [AttachedBindableProperty<string>("Text", GetterAccessibility = Microsoft.CodeAnalysis.Accessibility.ProtectedAndInternal)]
 			  public partial class {{defaultTestClassName}} : View
 			  {
+			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = Microsoft.CodeAnalysis.Accessibility.ProtectedAndInternal)]
+			  	public {{defaultTestClassName}}()
+			  	{
+			  	}
 			  }
 			  """;
 
@@ -785,10 +834,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			  namespace {{defaultTestNamespace}};
 
-			  [AttachedBindableProperty<string>("Text", GetterAccessibility = Microsoft.CodeAnalysis.Accessibility.ProtectedOrInternal)]
 			  public partial class {{defaultTestClassName}} : View
 			  {
-
+			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = Microsoft.CodeAnalysis.Accessibility.ProtectedOrInternal)]
+			  	public {{defaultTestClassName}}()
+			  	{
+			  	}
 			  }
 			  """;
 
@@ -833,10 +884,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			  namespace {{defaultTestNamespace}};
 
-			  [AttachedBindableProperty<string>("Text", GetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Protected)]
 			  public partial class {{defaultTestClassName}} : View
 			  {
-
+			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Protected)]
+			  	public {{defaultTestClassName}}()
+			  	{
+			  	}
 			  }
 			  """;
 
@@ -881,10 +934,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			  namespace {{defaultTestNamespace}};
 
-			  [AttachedBindableProperty<string>("Text", GetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Private)]
 			  public partial class {{defaultTestClassName}} : View
 			  {
-
+			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Private)]
+			  	public {{defaultTestClassName}}()
+			  	{
+			  	}
 			  }
 			  """;
 
@@ -929,10 +984,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			  namespace {{defaultTestNamespace}};
 
-			  [AttachedBindableProperty<string>("Text", GetterAccessibility = Microsoft.CodeAnalysis.Accessibility.NotApplicable)]
 			  public partial class {{defaultTestClassName}} : View
 			  {
-
+			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = Microsoft.CodeAnalysis.Accessibility.NotApplicable)]
+			  	public {{defaultTestClassName}}()
+			  	{
+			  	}
 			  }
 			  """;
 
@@ -973,9 +1030,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			namespace {{defaultTestNamespace}};
 
-			[AttachedBindableProperty<string>("Text")]
 			public partial class {{defaultTestClassName}}<T> : View
 			{
+				[AttachedBindableProperty<string>("Text")]
+			    public {{defaultTestClassName}}()
+			    {
+			    }
 			}
 			""";
 
