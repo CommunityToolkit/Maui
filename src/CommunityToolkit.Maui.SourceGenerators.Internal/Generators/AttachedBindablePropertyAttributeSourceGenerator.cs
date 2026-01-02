@@ -17,7 +17,8 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 {
 	static readonly AttachedBindablePropertySemanticValues emptyAttachedBindablePropertySemanticValues = new(default, []);
 
-	const string bpFullName = "global::Microsoft.Maui.Controls.BindableProperty";
+	const string bindablePropertyFullName = "global::Microsoft.Maui.Controls.BindableProperty";
+	const string bindableObjectFullName = "global::Microsoft.Maui.Controls.BindableObject";
 	const string attachedBpAttribute =
 		/* language=C#-test */
 		//lang=csharp
@@ -226,11 +227,11 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			.Append(" property.\r\n/// </summary>\r\n");
 
 		sb.Append("public static readonly ")
-			.Append(bpFullName)
+			.Append(bindablePropertyFullName)
 			.Append(" ")
 			.Append(info.BindablePropertyName)
 			.Append(" = ")
-			.Append(bpFullName)
+			.Append(bindablePropertyFullName)
 			.Append(".CreateAttached(\"")
 			.Append(sanitizedPropertyName)
 			.Append("\", typeof(")
@@ -265,7 +266,9 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 				.Append(formattedReturnType)
 				.Append(" Get")
 				.Append(info.PropertyName)
-				.Append("(BindableObject bindable) => (")
+				.Append("(")
+				.Append(bindableObjectFullName)
+				.Append(" bindable) => (")
 				.Append(formattedReturnType)
 				.Append(")bindable.GetValue(")
 				.Append(info.BindablePropertyName)
@@ -282,7 +285,9 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			sb.Append(info.SetterAccessibility)
 				.Append("static void Set")
 				.Append(info.PropertyName)
-				.Append("(BindableObject bindable, ")
+				.Append("(")
+				.Append(bindableObjectFullName)
+				.Append(" bindable, ")
 				.Append(formattedReturnType)
 				.Append(" value) => bindable.SetValue(")
 				.Append(info.BindablePropertyName)
@@ -460,15 +465,15 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			return defaultValue;
 		}
 
-		return ((int)accessibility.Value) switch
+		return (Accessibility)accessibility.Value switch
 		{
-			0 => "NotApplicable",
-			1 => "public ",
-			2 => "private ",
-			3 => "protected ",
-			4 => "internal ",
-			5 => "protected internal ",
-			6 => "private protected ",
+			Accessibility.NotApplicable => "NotApplicable",
+			Accessibility.Public => "public ",
+			Accessibility.Private => "private ",
+			Accessibility.Protected => "protected ",
+			Accessibility.Internal => "internal ",
+			Accessibility.ProtectedOrInternal => "protected internal ",
+			Accessibility.ProtectedAndInternal => "private protected ",
 			_ => defaultValue
 		};
 	}
