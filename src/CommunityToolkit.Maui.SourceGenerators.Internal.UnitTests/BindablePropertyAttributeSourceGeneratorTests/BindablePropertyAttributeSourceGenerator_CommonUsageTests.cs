@@ -645,7 +645,7 @@ public class BindablePropertyAttributeSourceGenerator_CommonUsageTests : BaseBin
 
 			namespace {{defaultTestNamespace}};
 
-			public partial class {{defaultTestClassName}}<TSourceGenerator> : View
+			public partial class {{defaultTestClassName}}<T> : View
 			{
 			    [BindablePropertyAttribute]
 			    public partial string Text { get; set; }
@@ -661,12 +661,12 @@ public class BindablePropertyAttributeSourceGenerator_CommonUsageTests : BaseBin
 			#pragma warning disable
 			#nullable enable
 			namespace {{defaultTestNamespace}};
-			public partial class {{defaultTestClassName}}<TSourceGenerator>
+			public partial class {{defaultTestClassName}}<T>
 			{
 			    /// <summary>
 			    /// BindableProperty for the <see cref = "Text"/> property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<TSourceGenerator>), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<T>), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			    public partial string Text { get => (string)GetValue(TextProperty); set => SetValue(TextProperty, value); }
 			}
 			""";

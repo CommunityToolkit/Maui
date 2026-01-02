@@ -1030,7 +1030,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			namespace {{defaultTestNamespace}};
 
-			public partial class {{defaultTestClassName}}<TSourceGenerator> : View
+			public partial class {{defaultTestClassName}}<T> : View
 			{
 				[AttachedBindableProperty<string>("Text")]
 			    public {{defaultTestClassName}}()
@@ -1048,12 +1048,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 			#pragma warning disable
 			#nullable enable
 			namespace {{defaultTestNamespace}};
-			public partial class {{defaultTestClassName}}<TSourceGenerator>
+			public partial class {{defaultTestClassName}}<T>
 			{
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<TSourceGenerator>), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<T>), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref = "bindable"/> child element.
 			    /// </summary>
