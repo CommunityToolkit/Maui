@@ -13,7 +13,7 @@ public abstract class BaseTest
 		const string sourceGeneratorNamespace = "CommunityToolkit.Maui.SourceGenerators.Internal";
 		var sourceGeneratorFullName = typeof(TSourceGenerator).FullName ?? throw new InvalidOperationException("Source Generator Type Path cannot be null");
 
-		var test = new ExperimentalBindablePropertyTest
+		var test = new ExperimentalBindablePropertyTest<TSourceGenerator>
 		{
 #if NET10_0
 			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net100,
@@ -28,7 +28,8 @@ public abstract class BaseTest
 				{
 					MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.BindableObject).Assembly.Location),
 					MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.BindableProperty).Assembly.Location),
-					MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.BindingMode).Assembly.Location)
+					MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.BindingMode).Assembly.Location),
+					MetadataReference.CreateFromFile(typeof(Microsoft.CodeAnalysis.Accessibility).Assembly.Location),
 				}
 			}
 		};
@@ -48,7 +49,8 @@ public abstract class BaseTest
 	}
 
 	// This class can be deleted once [Experimental] is removed from BindablePropertyAttribute
-	sealed class ExperimentalBindablePropertyTest : CSharpSourceGeneratorTest<BindablePropertyAttributeSourceGenerator, DefaultVerifier>
+	sealed class ExperimentalBindablePropertyTest<TSourceGenerator> : CSharpSourceGeneratorTest<TSourceGenerator, DefaultVerifier>
+		where TSourceGenerator : IIncrementalGenerator, new()
 	{
 		protected override CompilationOptions CreateCompilationOptions()
 		{
