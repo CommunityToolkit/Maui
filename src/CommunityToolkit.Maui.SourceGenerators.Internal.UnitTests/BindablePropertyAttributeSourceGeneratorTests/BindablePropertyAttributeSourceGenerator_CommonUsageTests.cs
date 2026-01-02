@@ -2,7 +2,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.BindablePropertyAttributeSourceGeneratorTests;
 
-public class CommonUsageTests : BaseBindablePropertyAttributeSourceGeneratorTest
+public class BindablePropertyAttributeSourceGenerator_CommonUsageTests : BaseBindablePropertyAttributeSourceGeneratorTest
 {
 	[Fact]
 	public async Task GenerateBindableProperty_SimpleExample_GeneratesCorrectCode()

@@ -2,7 +2,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.BindablePropertyAttributeSourceGeneratorTests;
 
-public class EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
+public class BindablePropertyAttributeSourceGenerator_EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
 {
 	[Fact]
 	public async Task GenerateBindableProperty_PropertyWithReservedKeywords_GeneratesCorrectCode()
