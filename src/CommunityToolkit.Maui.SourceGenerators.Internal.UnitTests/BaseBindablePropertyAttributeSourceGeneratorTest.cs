@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.BindablePropertyAttributeSourceGeneratorTests;
+﻿namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests;
 
 public class BaseBindablePropertyAttributeSourceGeneratorTest : BaseTest
 {
@@ -18,7 +18,7 @@ public class BaseBindablePropertyAttributeSourceGeneratorTest : BaseTest
 
 		[global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 		[global::System.AttributeUsage(global::System.AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-		[global::System.Diagnostics.CodeAnalysis.Experimental("{{BindablePropertyAttributeSourceGenerator.BindablePropertyAttributeExperimentalDiagnosticId}}")]
+		[global::System.Diagnostics.CodeAnalysis.Experimental("{{BindablePropertyDiagnostic.BindablePropertyAttributeExperimentalDiagnosticId}}")]
 		sealed partial class BindablePropertyAttribute : global::System.Attribute
 		{
 			public string? PropertyName { get; }

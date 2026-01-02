@@ -56,7 +56,7 @@ public abstract class BaseTest
 
 			return compilationOptions.WithSpecificDiagnosticOptions(new Dictionary<string, ReportDiagnostic>
 			{
-				{ BindablePropertyAttributeSourceGenerator.BindablePropertyAttributeExperimentalDiagnosticId, ReportDiagnostic.Warn }
+				{ BindablePropertyDiagnostic.BindablePropertyAttributeExperimentalDiagnosticId, ReportDiagnostic.Warn }
 			});
 		}
 	}

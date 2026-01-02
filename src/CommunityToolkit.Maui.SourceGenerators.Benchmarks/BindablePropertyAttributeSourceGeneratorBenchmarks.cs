@@ -7,8 +7,8 @@ namespace CommunityToolkit.Maui.SourceGenerators.Benchmarks;
 public class BindablePropertyAttributeSourceGeneratorBenchmarks
 {
 	static readonly CommonUsageTests commonUsageTests = new();
-	static readonly BindablePropertyAttributeSourceGenerator_EdgeCaseTests edgeCaseTests = new();
-	static readonly BindablePropertyAttributeSourceGenerator_IntegrationTests integrationTests = new();
+	static readonly AttachedBindablePropertyAttributeSourceGenerator_EdgeCaseTests edgeCaseTests = new();
+	static readonly AttachedBindablePropertyAttributeSourceGenerator_IntegrationTests integrationTests = new();
 
 	[Benchmark]
 	public Task GenerateBindableProperty_SimpleExample_GeneratesCorrectCode()

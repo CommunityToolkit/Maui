@@ -15,8 +15,6 @@ namespace CommunityToolkit.Maui.SourceGenerators.Internal;
 [Generator]
 public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 {
-	public const string BindablePropertyAttributeExperimentalDiagnosticId = "MCTEXP001";
-
 	static readonly SemanticValues emptySemanticValues = new(default, []);
 
 	const string bpFullName = "global::Microsoft.Maui.Controls.BindableProperty";
@@ -33,7 +31,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		  [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 		  [global::System.AttributeUsage(global::System.AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-		  [global::System.Diagnostics.CodeAnalysis.Experimental("{{BindablePropertyAttributeExperimentalDiagnosticId}}")]
+		  [global::System.Diagnostics.CodeAnalysis.Experimental("{{BindablePropertyDiagnostic.BindablePropertyAttributeExperimentalDiagnosticId}}")]
 		  sealed partial class BindablePropertyAttribute : global::System.Attribute
 		  {
 		  	public string? PropertyName { get; }
@@ -289,7 +287,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		sb.Append(info.EffectiveDefaultValueCreatorMethodName)
 			.Append(");\n");
 
-		sb.Append("/// <summary>\r\n/// Backing BindableProperty for the <see cref=\"")
+		sb.Append("/// <summary>\r\n/// BindableProperty for the <see cref=\"")
 			.Append(sanitizedPropertyName)
 			.Append("\"/> property.\r\n/// </summary>\r\n");
 
@@ -315,7 +313,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var nonNullableReturnType = ConvertToNonNullableTypeSymbol(info.ReturnType);
 		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
 
-		sb.Append("/// <summary>\r\n/// Backing BindableProperty for the <see cref=\"")
+		sb.Append("/// <summary>\r\n/// BindableProperty for the <see cref=\"")
 			.Append(sanitizedPropertyName)
 			.Append("\"/> property.\r\n/// </summary>\r\n");
 
