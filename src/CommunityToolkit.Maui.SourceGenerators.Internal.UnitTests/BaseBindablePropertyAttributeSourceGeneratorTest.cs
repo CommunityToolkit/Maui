@@ -22,13 +22,13 @@ public class BaseBindablePropertyAttributeSourceGeneratorTest : BaseTest
 		sealed partial class BindablePropertyAttribute : global::System.Attribute
 		{
 			public string? PropertyName { get; }
-			public global::System.Type? DeclaringType { get; set; }
-			public global::Microsoft.Maui.Controls.BindingMode DefaultBindingMode { get; set; }
-			public string ValidateValueMethodName { get; set; } = string.Empty;
-			public string PropertyChangedMethodName { get; set; } = string.Empty;
-			public string PropertyChangingMethodName { get; set; } = string.Empty;
-			public string CoerceValueMethodName { get; set; } = string.Empty;
-			public string DefaultValueCreatorMethodName { get; set; } = string.Empty;
+			public global::System.Type? DeclaringType { get; init; }
+			public global::Microsoft.Maui.Controls.BindingMode DefaultBindingMode { get; init; }
+			public string ValidateValueMethodName { get; init; } = string.Empty;
+			public string PropertyChangedMethodName { get; init; } = string.Empty;
+			public string PropertyChangingMethodName { get; init; } = string.Empty;
+			public string CoerceValueMethodName { get; init; } = string.Empty;
+			public string DefaultValueCreatorMethodName { get; init; } = string.Empty;
 		}
 		""";
 

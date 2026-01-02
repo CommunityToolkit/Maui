@@ -292,7 +292,7 @@ public class BindablePropertyAttributeSourceGenerator_CommonUsageTests : BaseBin
 	}
 
 	[Fact]
-	public async Task GenerateBindableProperty_EmptyClass_GeneratesAttributeOnly()
+	public async Task GenerateBindableProperty_EmptyClass_GeneratesNoCode()
 	{
 		const string source =
 			/* language=C#-test */
