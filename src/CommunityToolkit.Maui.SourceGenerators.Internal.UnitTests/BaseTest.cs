@@ -7,11 +7,11 @@ namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests;
 
 public abstract class BaseTest
 {
-	protected static async Task VerifySourceGeneratorAsync(string source, string expectedAttribute, params List<(string FileName, string GeneratedFile)> expectedGenerated)
+	protected static async Task VerifySourceGeneratorAsync<TSourceGenerator>(string source, string expectedAttribute, string bindablePropertyAttributeGeneratedFileName, params List<(string FileName, string GeneratedFile)> expectedGenerated)
+		where TSourceGenerator : IIncrementalGenerator, new()
 	{
 		const string sourceGeneratorNamespace = "CommunityToolkit.Maui.SourceGenerators.Internal";
-		const string bindablePropertyAttributeGeneratedFileName = "BindablePropertyAttribute.g.cs";
-		var sourceGeneratorFullName = typeof(BindablePropertyAttributeSourceGenerator).FullName ?? throw new InvalidOperationException("Source Generator Type Path cannot be null");
+		var sourceGeneratorFullName = typeof(TSourceGenerator).FullName ?? throw new InvalidOperationException("Source Generator Type Path cannot be null");
 
 		var test = new ExperimentalBindablePropertyTest
 		{

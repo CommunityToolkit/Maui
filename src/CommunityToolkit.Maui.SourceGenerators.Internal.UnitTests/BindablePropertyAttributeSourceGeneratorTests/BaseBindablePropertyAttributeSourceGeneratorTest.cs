@@ -1,9 +1,10 @@
-﻿namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests;
+﻿namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.BindablePropertyAttributeSourceGeneratorTests;
 
 public class BaseBindablePropertyAttributeSourceGeneratorTest : BaseTest
 {
 	protected const string defaultTestClassName = "TestView";
 	protected const string defaultTestNamespace = "TestNamespace";
+	protected const string generatedBindablePropertyAttributeFileName = "BindablePropertyAttribute.g.cs";
 
 	protected const string expectedAttribute =
 		/* language=C#-test */
@@ -32,6 +33,9 @@ public class BaseBindablePropertyAttributeSourceGeneratorTest : BaseTest
 		}
 		""";
 
+	protected static Task VerifySourceGeneratorAsync(string source, string expectedAttribute, params List<(string FileName, string GeneratedFile)> expectedGenerated) =>
+		VerifySourceGeneratorAsync<BindablePropertyAttributeSourceGenerator>(source, expectedAttribute, generatedBindablePropertyAttributeFileName, expectedGenerated);
+
 	protected static Task VerifySourceGeneratorAsync(string source, string expectedGenerated) =>
-		VerifySourceGeneratorAsync(source, expectedAttribute, ($"{defaultTestClassName}.g.cs", expectedGenerated));
+		VerifySourceGeneratorAsync<BindablePropertyAttributeSourceGenerator>(source, expectedAttribute, generatedBindablePropertyAttributeFileName, ($"{defaultTestClassName}.g.cs", expectedGenerated));
 }

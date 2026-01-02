@@ -91,10 +91,10 @@ public class BindablePropertyAttributeSourceGenerator_IntegrationTests : BaseBin
 
 		    namespace {{defaultTestNamespace}};
 
-		    public partial class {{defaultTestClassName}}<T,U> : View where T : class
+		    public partial class {{defaultTestClassName}}<TSourceGenerator,U> : View where TSourceGenerator : class
 		    {
 		        [BindableProperty]
-		        public partial T? Value { get; set; }
+		        public partial TSourceGenerator? Value { get; set; }
 
 		        [BindableProperty]
 		        public partial U? Name { get; set; }
@@ -110,18 +110,18 @@ public class BindablePropertyAttributeSourceGenerator_IntegrationTests : BaseBin
 		    #pragma warning disable
 		    #nullable enable
 		    namespace {{defaultTestNamespace}};
-		    public partial class {{defaultTestClassName}}<T, U>
+		    public partial class {{defaultTestClassName}}<TSourceGenerator, U>
 		    {
 		        /// <summary>
 		        /// BindableProperty for the <see cref = "Value"/> property.
 		        /// </summary>
-		        public static readonly global::Microsoft.Maui.Controls.BindableProperty ValueProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Value", typeof(T), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<T, U>), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
-		        public partial T? Value { get => (T? )GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
+		        public static readonly global::Microsoft.Maui.Controls.BindableProperty ValueProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Value", typeof(TSourceGenerator), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<TSourceGenerator, U>), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+		        public partial TSourceGenerator? Value { get => (TSourceGenerator? )GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
 
 		        /// <summary>
 		        /// BindableProperty for the <see cref = "Name"/> property.
 		        /// </summary>
-		        public static readonly global::Microsoft.Maui.Controls.BindableProperty NameProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Name", typeof(U), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<T, U>), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+		        public static readonly global::Microsoft.Maui.Controls.BindableProperty NameProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Name", typeof(U), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<TSourceGenerator, U>), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 		        public partial U? Name { get => (U? )GetValue(NameProperty); set => SetValue(NameProperty, value); }
 		    }
 		    """;
@@ -141,10 +141,10 @@ public class BindablePropertyAttributeSourceGenerator_IntegrationTests : BaseBin
 
 		namespace {{defaultTestNamespace}};
 
-		public partial class {{defaultTestClassName}}<T,U> : View where T : class
+		public partial class {{defaultTestClassName}}<TSourceGenerator,U> : View where TSourceGenerator : class
 		{
 		    [BindableProperty]
-		    public partial T? Value { get; set; } = default;
+		    public partial TSourceGenerator? Value { get; set; } = default;
 		}
 		""";
 
@@ -157,13 +157,13 @@ public class BindablePropertyAttributeSourceGenerator_IntegrationTests : BaseBin
 		#pragma warning disable
 		#nullable enable
 		namespace {{defaultTestNamespace}};
-		public partial class {{defaultTestClassName}}<T, U>
+		public partial class {{defaultTestClassName}}<TSourceGenerator, U>
 		{
 		    /// <summary>
 		    /// BindableProperty for the <see cref = "Value"/> property.
 		    /// </summary>
-		    public static readonly global::Microsoft.Maui.Controls.BindableProperty ValueProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Value", typeof(T), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<T, U>), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultValue);
-		    public partial T? Value { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingValue ? field : (T? )GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
+		    public static readonly global::Microsoft.Maui.Controls.BindableProperty ValueProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Value", typeof(TSourceGenerator), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<TSourceGenerator, U>), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultValue);
+		    public partial TSourceGenerator? Value { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingValue ? field : (TSourceGenerator? )GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
 
 		    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 		    private static class __{{defaultTestClassName}}BindablePropertyInitHelpers
@@ -172,7 +172,7 @@ public class BindablePropertyAttributeSourceGenerator_IntegrationTests : BaseBin
 		        public static object CreateDefaultValue(global::Microsoft.Maui.Controls.BindableObject bindable)
 		        {
 		            IsInitializingValue = true;
-		            var defaultValue = (({{defaultTestClassName}}<T, U>)bindable).Value;
+		            var defaultValue = (({{defaultTestClassName}}<TSourceGenerator, U>)bindable).Value;
 		            IsInitializingValue = false;
 		            return defaultValue;
 		        }

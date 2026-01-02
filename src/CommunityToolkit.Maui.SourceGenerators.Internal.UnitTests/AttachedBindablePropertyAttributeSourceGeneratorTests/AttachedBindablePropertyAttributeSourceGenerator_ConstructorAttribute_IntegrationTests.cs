@@ -2,7 +2,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.AttachedBindablePropertyAttributeSourceGeneratorTests;
 
-public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribute_IntegrationTests : BaseBindablePropertyAttributeSourceGeneratorTest
+public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribute_IntegrationTests : BaseAttachedBindablePropertyAttributeSourceGeneratorTest
 {
 	[Fact]
 	public async Task GenerateAttachedBindableProperty_ComplexInheritanceScenario_GeneratesCorrectCode()
@@ -100,7 +100,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 		    namespace {{defaultTestNamespace}};
 
-		    public partial class {{defaultTestClassName}}<T,U> : View where T : class
+		    public partial class {{defaultTestClassName}}<TSourceGenerator,U> : View where TSourceGenerator : class
 		    {
 		    	[AttachedBindablePropertyAttribute<string>("Text")]
 		    	public {{defaultTestClassName}}()
@@ -118,12 +118,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 			#pragma warning disable
 			#nullable enable
 			namespace {{defaultTestNamespace}};
-			public partial class {{defaultTestClassName}}<T, U>
+			public partial class {{defaultTestClassName}}<TSourceGenerator, U>
 			{
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<T, U>), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<TSourceGenerator, U>), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref = "bindable"/> child element.
 			    /// </summary>

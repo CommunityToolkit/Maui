@@ -15,7 +15,7 @@ namespace CommunityToolkit.Maui.SourceGenerators.Internal;
 [Generator]
 public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 {
-	static readonly SemanticValues emptySemanticValues = new(default, []);
+	static readonly BindablePropertySemanticValues emptyBindablePropertySemanticValues = new(default, []);
 
 	const string bpFullName = "global::Microsoft.Maui.Controls.BindableProperty";
 	const string bpAttribute =
@@ -68,10 +68,10 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		context.RegisterSourceOutput(provider, ExecuteAllValues);
 	}
 
-	static void ExecuteAllValues(SourceProductionContext context, ImmutableArray<SemanticValues> semanticValues)
+	static void ExecuteAllValues(SourceProductionContext context, ImmutableArray<BindablePropertySemanticValues> semanticValues)
 	{
 		// Pre-allocate dictionary with expected capacity
-		var groupedValues = new Dictionary<(string, string, string, string), List<SemanticValues>>(semanticValues.Length);
+		var groupedValues = new Dictionary<(string, string, string, string), List<BindablePropertySemanticValues>>(semanticValues.Length);
 
 		// Single-pass grouping without LINQ
 		foreach (var sv in semanticValues)
@@ -123,7 +123,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 				var classAccessibility = values[0].ClassInformation.DeclaredAccessibility;
 
 				var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace, containingTypes, genericTypeParameters);
-				var combinedValues = new SemanticValues(combinedClassInfo, bindableProperties);
+				var combinedValues = new BindablePropertySemanticValues(combinedClassInfo, bindableProperties);
 
 				var fileNameSuffix = string.IsNullOrEmpty(containingTypes) ? className : string.Concat(containingTypes, ".", className);
 				var source = GenerateSource(combinedValues);
@@ -138,7 +138,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	}
 
 
-	static string GenerateSource(SemanticValues value)
+	static string GenerateSource(BindablePropertySemanticValues value)
 	{
 		// Pre-calculate StringBuilder capacity to avoid resizing
 		var estimatedCapacity = 500 + (value.BindableProperties.Count() * 400);
@@ -404,7 +404,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		sb.Append("}\n");
 	}
 
-	static SemanticValues SemanticTransform(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
+	static BindablePropertySemanticValues SemanticTransform(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
 	{
 		var propertyDeclarationSyntax = Unsafe.As<PropertyDeclarationSyntax>(context.TargetNode);
 		var semanticModel = context.SemanticModel;
@@ -413,7 +413,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		if (propertySymbol is null)
 		{
-			return emptySemanticValues;
+			return emptyBindablePropertySemanticValues;
 		}
 
 		var @namespace = propertySymbol.ContainingNamespace.ToDisplayString();

@@ -2,7 +2,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.AttachedBindablePropertyAttributeSourceGeneratorTests;
 
-public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_EdgeCaseTests : BaseBindablePropertyAttributeSourceGeneratorTest
+public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_EdgeCaseTests : BaseAttachedBindablePropertyAttributeSourceGeneratorTest
 {
 	[Fact]
 	public async Task GenerateAttachedBindableProperty_LowercasePropertyName_ThrowsNotSupportedException()

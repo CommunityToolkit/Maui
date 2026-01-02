@@ -141,7 +141,7 @@ public class BindablePropertyModelTests : BaseTest
 		var bindableProperties = new[] { bindableProperty }.ToImmutableArray();
 
 		// Act
-		var semanticValues = new SemanticValues(classInfo, bindableProperties);
+		var semanticValues = new BindablePropertySemanticValues(classInfo, bindableProperties);
 
 		// Assert
 		Assert.Equal(classInfo, semanticValues.ClassInformation);

@@ -14,6 +14,13 @@ public record BindablePropertyModel(string PropertyName, ITypeSymbol ReturnType,
 
 }
 
-public record SemanticValues(ClassInformation ClassInformation, EquatableArray<BindablePropertyModel> BindableProperties);
+public record AttachedBindablePropertyModel(string PropertyName, ITypeSymbol ReturnType, ITypeSymbol DeclaringType, string DefaultValue, string DefaultBindingMode, string ValidateValueMethodName, string PropertyChangedMethodName, string PropertyChangingMethodName, string CoerceValueMethodName, string DefaultValueCreatorMethodName, string GetterAccessibility, string SetterAccessibility)
+{
+	public string BindablePropertyName => $"{PropertyName}Property";
+}
+
+public record BindablePropertySemanticValues(ClassInformation ClassInformation, EquatableArray<BindablePropertyModel> BindableProperties);
+
+public record AttachedBindablePropertySemanticValues(ClassInformation ClassInformation, EquatableArray<AttachedBindablePropertyModel> BindableProperties);
 
 public readonly record struct ClassInformation(string ClassName, string DeclaredAccessibility, string ContainingNamespace, string ContainingTypes = "", string GenericTypeParameters = "");
