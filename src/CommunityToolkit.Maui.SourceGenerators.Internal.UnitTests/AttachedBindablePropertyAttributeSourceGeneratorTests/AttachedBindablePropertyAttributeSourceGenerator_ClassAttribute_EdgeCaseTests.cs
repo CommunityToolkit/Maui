@@ -22,7 +22,8 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Edg
             }
             """;
 
-		await Assert.ThrowsAsync<NotSupportedException>(() => VerifySourceGeneratorAsync(source, string.Empty));
+		var invalidOperationException = await Assert.ThrowsAsync<InvalidOperationException>(() => VerifySourceGeneratorAsync(source, string.Empty));
+		Assert.Contains("NotSupportedException", invalidOperationException.Message);
 	}
 
 	[Fact]
@@ -230,33 +231,33 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Edg
                 /// </summary>
                 public static readonly global::Microsoft.Maui.Controls.BindableProperty NullableIntProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("NullableInt", typeof(int), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
                 /// <summary>
-                /// Attached BindableProperty for the NullableDateTime property.
-                /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty NullableDateTimeProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("NullableDateTime", typeof(DateTime), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
-                /// <summary>
-                /// Attached BindableProperty for the NullableBool property.
-                /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty NullableBoolProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("NullableBool", typeof(bool), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
-                /// <summary>
                 /// Gets NullableInt for the <paramref =  " bindable " /> child element.
                 /// </summary>
-                public static int? GetNullableInt(global::Microsoft.Maui.Controls.BindableObject bindable) => (int?)bindable.GetValue(NullableIntProperty);
-                /// <summary>
-                /// Gets NullableDateTime for the <paramref =  " bindable " /> child element.
-                /// </summary>
-                public static DateTime? GetNullableDateTime(global::Microsoft.Maui.Controls.BindableObject bindable) => (DateTime?)bindable.GetValue(NullableDateTimeProperty);
-                /// <summary>
-                /// Gets NullableBool for the <paramref =  " bindable " /> child element.
-                /// </summary>
-                public static bool? GetNullableBool(global::Microsoft.Maui.Controls.BindableObject bindable) => (bool?)bindable.GetValue(NullableBoolProperty);
+                public static int? GetNullableInt(global::Microsoft.Maui.Controls.BindableObject bindable) => (int? )bindable.GetValue(NullableIntProperty);
                 /// <summary>
                 /// Sets NullableInt for the <paramref =  " bindable " /> child element.
                 /// </summary>
                 public static void SetNullableInt(global::Microsoft.Maui.Controls.BindableObject bindable, int? value) => bindable.SetValue(NullableIntProperty, value);
                 /// <summary>
+                /// Attached BindableProperty for the NullableDateTime property.
+                /// </summary>
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty NullableDateTimeProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("NullableDateTime", typeof(global::System.DateTime), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+                /// <summary>
+                /// Gets NullableDateTime for the <paramref =  " bindable " /> child element.
+                /// </summary>
+                public static DateTime? GetNullableDateTime(global::Microsoft.Maui.Controls.BindableObject bindable) => (global::System.DateTime? )bindable.GetValue(NullableDateTimeProperty);
+                /// <summary>
                 /// Sets NullableDateTime for the <paramref =  " bindable " /> child element.
                 /// </summary>
-                public static void SetNullableDateTime(global::Microsoft.Maui.Controls.BindableObject bindable, DateTime? value) => bindable.SetValue(NullableDateTimeProperty, value);
+                public static void SetNullableDateTime(global::Microsoft.Maui.Controls.BindableObject bindable, global::System.DateTime? value) => bindable.SetValue(NullableDateTimeProperty, value);
+                /// <summary>
+                /// Attached BindableProperty for the NullableBool property.
+                /// </summary>
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty NullableBoolProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("NullableBool", typeof(bool), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+                /// <summary>
+                /// Gets NullableBool for the <paramref =  " bindable " /> child element.
+                /// </summary>
+                public static bool? GetNullableBool(global::Microsoft.Maui.Controls.BindableObject bindable) => (bool? )bindable.GetValue(NullableBoolProperty);
                 /// <summary>
                 /// Sets NullableBool for the <paramref =  " bindable " /> child element.
                 /// </summary>
@@ -303,33 +304,33 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Edg
                 /// </summary>
                 public static readonly global::Microsoft.Maui.Controls.BindableProperty StringArrayProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("StringArray", typeof(string[]), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
                 /// <summary>
-                /// Attached BindableProperty for the MultiDimensionalArray property.
-                /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty MultiDimensionalArrayProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("MultiDimensionalArray", typeof(int[,]), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
-                /// <summary>
-                /// Attached BindableProperty for the JaggedArray property.
-                /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty JaggedArrayProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("JaggedArray", byte[][], typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
-                /// <summary>
                 /// Gets StringArray for the <paramref =  " bindable " /> child element.
                 /// </summary>
                 public static string[] GetStringArray(global::Microsoft.Maui.Controls.BindableObject bindable) => (string[])bindable.GetValue(StringArrayProperty);
-                /// <summary>
-                /// Gets MultiDimensionalArray for the <paramref =  " bindable " /> child element.
-                /// </summary>
-                public static int[,] GetMultiDimensionalArray(global::Microsoft.Maui.Controls.BindableObject bindable) => (int[,])bindable.GetValue(MultiDimensionalArrayProperty);
-                /// <summary>
-                /// Gets JaggedArray for the <paramref =  " bindable " /> child element.
-                /// </summary>
-                public static byte[][] GetJaggedArray(global::Microsoft.Maui.Controls.BindableObject bindable) => (byte[][])bindable.GetValue(JaggedArrayProperty);
                 /// <summary>
                 /// Sets StringArray for the <paramref =  " bindable " /> child element.
                 /// </summary>
                 public static void SetStringArray(global::Microsoft.Maui.Controls.BindableObject bindable, string[] value) => bindable.SetValue(StringArrayProperty, value);
                 /// <summary>
+                /// Attached BindableProperty for the MultiDimensionalArray property.
+                /// </summary>
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty MultiDimensionalArrayProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("MultiDimensionalArray", typeof(int[, ]), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+                /// <summary>
+                /// Gets MultiDimensionalArray for the <paramref =  " bindable " /> child element.
+                /// </summary>
+                public static int[, ] GetMultiDimensionalArray(global::Microsoft.Maui.Controls.BindableObject bindable) => (int[,])bindable.GetValue(MultiDimensionalArrayProperty);
+                /// <summary>
                 /// Sets MultiDimensionalArray for the <paramref =  " bindable " /> child element.
                 /// </summary>
-                public static void SetMultiDimensionalArray(global::Microsoft.Maui.Controls.BindableObject bindable, int[,] value) => bindable.SetValue(MultiDimensionalArrayProperty, value);
+                public static void SetMultiDimensionalArray(global::Microsoft.Maui.Controls.BindableObject bindable, int[, ] value) => bindable.SetValue(MultiDimensionalArrayProperty, value);
+                /// <summary>
+                /// Attached BindableProperty for the JaggedArray property.
+                /// </summary>
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty JaggedArrayProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("JaggedArray", typeof(byte[][]), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+                /// <summary>
+                /// Gets JaggedArray for the <paramref =  " bindable " /> child element.
+                /// </summary>
+                public static byte[][] GetJaggedArray(global::Microsoft.Maui.Controls.BindableObject bindable) => (byte[][])bindable.GetValue(JaggedArrayProperty);
                 /// <summary>
                 /// Sets JaggedArray for the <paramref =  " bindable " /> child element.
                 /// </summary>
