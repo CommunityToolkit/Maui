@@ -587,7 +587,14 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		{
 			var innerType = nullableType.TypeArguments[0];
 			var formattedInner = GetFormattedReturnType(innerType);
-			return $"{formattedInner}? ";
+			return $"{formattedInner}?";
+		}
+
+		// Handle Nullable Reference Types (annotated)
+		if (typeSymbol.NullableAnnotation is NullableAnnotation.Annotated)
+		{
+			var baseType = typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+			return $"{baseType}?";
 		}
 
 		return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
