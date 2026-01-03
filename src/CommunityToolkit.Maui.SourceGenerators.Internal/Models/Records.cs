@@ -14,7 +14,7 @@ public record BindablePropertyModel(string PropertyName, ITypeSymbol ReturnType,
 
 }
 
-public record AttachedBindablePropertyModel(string PropertyName, ITypeSymbol ReturnType, ITypeSymbol DeclaringType, string DefaultValue, string DefaultBindingMode, string ValidateValueMethodName, string PropertyChangedMethodName, string PropertyChangingMethodName, string CoerceValueMethodName, string DefaultValueCreatorMethodName, string GetterAccessibility, string SetterAccessibility)
+public record AttachedBindablePropertyModel(string PropertyName, ITypeSymbol ReturnType, ITypeSymbol DeclaringType, string DefaultValue, string DefaultBindingMode, string ValidateValueMethodName, string PropertyChangedMethodName, string PropertyChangingMethodName, string CoerceValueMethodName, string DefaultValueCreatorMethodName, string GetterAccessibility, string SetterAccessibility, bool isDeclaringTypeNullable)
 {
 	public string BindablePropertyName => $"{PropertyName}Property";
 }

@@ -33,10 +33,11 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		  [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 		  [global::System.AttributeUsage(global::System.AttributeTargets.Class | global::System.AttributeTargets.Constructor, AllowMultiple = true, Inherited = false)]
 		  [global::System.Diagnostics.CodeAnalysis.Experimental("{{BindablePropertyDiagnostic.BindablePropertyAttributeExperimentalDiagnosticId}}")]
-		  sealed partial class AttachedBindablePropertyAttribute<T>(string propertyName) : global::System.Attribute
+		  sealed partial class AttachedBindablePropertyAttribute<T>(string propertyName, bool isNullable = false) : global::System.Attribute where T : notnull
 		  {
-		  	public string? PropertyName { get; } = propertyName;
-		  	public global::System.Type? DeclaringType { get; init; }
+		  	public string PropertyName { get; } = propertyName;
+		  	public bool DeclaringTypeIsNullable { get; } = isNullable;
+		  	public T DefaultValue { get; init; }
 		  	public global::Microsoft.Maui.Controls.BindingMode DefaultBindingMode { get; init; }
 		  	public string ValidateValueMethodName { get; init; } = string.Empty;
 		  	public string PropertyChangedMethodName { get; init; } = string.Empty;
@@ -218,7 +219,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		// Sanitize the Return Type because Nullable Reference Types cannot be used in the `typeof()` operator
 		var nonNullableReturnType = ConvertToNonNullableTypeSymbol(info.ReturnType);
 		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
-		var formattedReturnType = GetFormattedReturnType(info.ReturnType);
+		var formattedReturnType = GetFormattedReturnType(info.ReturnType, info.isDeclaringTypeNullable);
 		var nonNullableFormattedType = GetFormattedTypeForTypeOf(nonNullableReturnType);
 
 		// Generate BindableProperty
@@ -367,14 +368,11 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		}
 
 		// Get the generic type argument (the T in AttachedBindableProperty<T>)
-		var typeArg = (attributeData.AttributeClass as INamedTypeSymbol)?.TypeArguments.FirstOrDefault();
-		if (typeArg is null)
-		{
-			throw new InvalidOperationException("Could not determine property type from attribute");
-		}
+		var typeArg = (attributeData.AttributeClass?.TypeArguments.FirstOrDefault()) ?? throw new InvalidOperationException("Could not determine property type from attribute");
+		var isDeclaringTypeNullable = (bool)(attributeData.ConstructorArguments[1].Value ?? throw new InvalidOperationException("DeclaringTypeIsNullable cannot be null"));
 
-		var defaultValue = GetDefaultValueString(attributeData, typeArg);
-		var defaultBindingMode = attributeData.GetNamedTypeArgumentsAttributeValueForDefaultBindingMode("DefaultBindingMode", "Microsoft.Maui.Controls.BindingMode.OneWay");
+		var defaultValue = GetDefaultValueString(attributeData, typeArg, isDeclaringTypeNullable);
+		var defaultBindingMode = attributeData.GetNamedTypeArgumentsAttributeValueForDefaultBindingMode("DefaultBindingMode", "(Microsoft.Maui.Controls.BindingMode)0");
 		var validateValueMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString("ValidateValueMethodName");
 		var propertyChangedMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString("PropertyChangedMethodName");
 		var propertyChangingMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString("PropertyChangingMethodName");
@@ -396,11 +394,14 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			coerceValueMethodName,
 			defaultValueCreatorMethodName,
 			getterAccessibility,
-			setterAccessibility
+			setterAccessibility,
+			isDeclaringTypeNullable
 		);
 	}
 
-	static string GetDefaultValueString(AttributeData attributeData, ITypeSymbol typeArg)
+	// DefaultValue can only be a primitive type, enum, typeof expression or array
+	// In C#, attribute arguments are limited to compile-time constants, typeof expressions, and single-dimensional arrays
+	static string GetDefaultValueString(AttributeData attributeData, ITypeSymbol typeArg, bool isDeclaringTypeNullable)
 	{
 		var defaultValueArg = attributeData.NamedArguments
 			.FirstOrDefault(x => x.Key == "DefaultValue");
@@ -412,45 +413,30 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 
 		var value = defaultValueArg.Value;
 
+		// Handle Arrays
+		if (typeArg.TypeKind == TypeKind.Array)
+		{
+			return GetFormattedArrayValue(value, GetFormattedReturnType(typeArg, isDeclaringTypeNullable));
+		}
+
 		// Handle null values
 		if (value.Value is null)
 		{
 			return "null";
 		}
 
-		// Format based on the value type
-		var typeSymbol = GetFormattedReturnType(typeArg);
+		var typeSymbol = GetFormattedReturnType(typeArg, isDeclaringTypeNullable);
 
 		return value.Value switch
 		{
-			// Primitive types with casting
-			true => $"(bool)true",
-			false => $"(bool)false",
-			int intVal => $"({typeSymbol}){intVal}",
-			long longVal => $"({typeSymbol}){longVal}",
-			double doubleVal => doubleVal switch
-			{
-				double.NaN => "(double)double.NaN",
-				double.PositiveInfinity => "(double)double.PositiveInfinity",
-				double.NegativeInfinity => "(double)double.NegativeInfinity",
-				double.Epsilon => "(double)double.Epsilon",
-				double.MaxValue => "(double)double.MaxValue",
-				double.MinValue => "(double)double.MinValue",
-				_ => $"({typeSymbol}){doubleVal:G17}"
-			},
-			float floatVal => floatVal switch
-			{
-				float.NaN => "(float)float.NaN",
-				float.PositiveInfinity => "(float)float.PositiveInfinity",
-				float.NegativeInfinity => "(float)float.NegativeInfinity",
-				float.Epsilon => "(float)float.Epsilon",
-				float.MaxValue => "(float)float.MaxValue",
-				float.MinValue => "(float)float.MinValue",
-				_ => $"({typeSymbol}){floatVal:G9}"
-			},
+			// Handle char
 			char charVal => $"({typeSymbol})'{charVal}'",
-			string stringVal => $"({typeSymbol})\"{stringVal}\"",
-			_ => "null"
+
+			// Handle string
+			string stringVal => $"({typeSymbol})\"{GetEscapedString(stringVal)}\"",
+
+			// Handle enums and all remaining compile-time constants
+			_ => $"({typeSymbol}){GetFormattedConstantValue(value)}"
 		};
 	}
 
@@ -573,31 +559,11 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		return typeSymbol;
 	}
 
-	static string GetFormattedReturnType(ITypeSymbol typeSymbol)
+	static string GetFormattedReturnType(ITypeSymbol typeSymbol, bool isDeclaringTypeNullable)
 	{
-		if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
-		{
-			string elementType = GetFormattedReturnType(arrayTypeSymbol.ElementType);
-			var rank = arrayTypeSymbol.Rank > 1 ? new string(',', arrayTypeSymbol.Rank - 1) : string.Empty;
-			return string.Concat(elementType, "[", rank, "]");
-		}
+		var formattedType = GetFormattedTypeForTypeOf(typeSymbol);
 
-		// Handle Nullable<T> - display as T?
-		if (typeSymbol is INamedTypeSymbol { IsGenericType: true, ConstructedFrom.SpecialType: SpecialType.System_Nullable_T } nullableType)
-		{
-			var innerType = nullableType.TypeArguments[0];
-			var formattedInner = GetFormattedReturnType(innerType);
-			return $"{formattedInner}?";
-		}
-
-		// Handle Nullable Reference Types (annotated)
-		if (typeSymbol.NullableAnnotation is NullableAnnotation.Annotated)
-		{
-			var baseType = typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-			return $"{baseType}?";
-		}
-
-		return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+		return isDeclaringTypeNullable ? $"{formattedType}?" : formattedType;
 	}
 
 	static string GetFormattedTypeForTypeOf(ITypeSymbol typeSymbol)
@@ -610,5 +576,86 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		}
 
 		return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+	}
+
+	static string GetEscapedString(string value)
+	{
+		return value
+			.Replace("\\", "\\\\")
+			.Replace("\"", "\\\"")
+			.Replace("\n", "\\n")
+			.Replace("\r", "\\r")
+			.Replace("\t", "\\t");
+	}
+
+	static string GetFormattedArrayValue(TypedConstant arrayConstant, string typeSymbol)
+	{
+		if (arrayConstant.Values.Length == 0)
+		{
+			return $"({typeSymbol})[]";
+		}
+
+		// Single-dimensional array
+		var sb = new StringBuilder();
+		sb.Append("(").Append(typeSymbol).Append(")new[] { ");
+
+		for (int i = 0; i < arrayConstant.Values.Length; i++)
+		{
+			if (i > 0)
+			{
+				sb.Append(", ");
+			}
+
+			var element = arrayConstant.Values[i];
+			sb.Append(GetFormattedConstantValue(element));
+		}
+
+		sb.Append(" }");
+		return sb.ToString();
+	}
+
+	static string GetFormattedConstantValue(TypedConstant constant)
+	{
+		if (constant.IsNull)
+		{
+			return "null";
+		}
+
+		return constant.Value switch
+		{
+			true => "true",
+			false => "false",
+			int intVal => intVal.ToString(),
+			byte byteVal => byteVal.ToString(),
+			sbyte sbyteVal => sbyteVal.ToString(),
+			short shortVal => shortVal.ToString(),
+			ushort ushortVal => ushortVal.ToString(),
+			long longVal => $"{longVal}L",
+			uint uintVal => $"{uintVal}U",
+			ulong ulongVal => $"{ulongVal}UL",
+			double doubleVal => doubleVal switch
+			{
+				double.NaN => "double.NaN",
+				double.PositiveInfinity => "double.PositiveInfinity",
+				double.NegativeInfinity => "double.NegativeInfinity",
+				double.Epsilon => "double.Epsilon",
+				double.MaxValue => "double.MaxValue",
+				double.MinValue => "double.MinValue",
+				_ => doubleVal.ToString("G17")
+			},
+			float floatVal => floatVal switch
+			{
+				float.NaN => "float.NaN",
+				float.PositiveInfinity => "float.PositiveInfinity",
+				float.NegativeInfinity => "float.NegativeInfinity",
+				float.Epsilon => "float.Epsilon",
+				float.MaxValue => "float.MaxValue",
+				float.MinValue => "float.MinValue",
+				_ => $"{floatVal:G9}f"
+			},
+			char charVal => $"'{charVal}'",
+			string stringVal => $"\"{GetEscapedString(stringVal)}\"",
+			_ => "null"
+		};
 	}
 }
