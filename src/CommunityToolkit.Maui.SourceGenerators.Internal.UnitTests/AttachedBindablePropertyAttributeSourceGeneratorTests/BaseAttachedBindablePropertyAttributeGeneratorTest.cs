@@ -2,9 +2,6 @@
 
 public abstract class BaseAttachedBindablePropertyAttributeSourceGeneratorTest : BaseTest
 {
-	protected const string defaultTestClassName = "TestView";
-	protected const string defaultTestNamespace = "TestNamespace";
-
 	const string generatedBindablePropertyAttributeFileName = "AttachedBindablePropertyAttribute.g.cs";
 	const string expectedAttribute =
 		/* language=C#-test */

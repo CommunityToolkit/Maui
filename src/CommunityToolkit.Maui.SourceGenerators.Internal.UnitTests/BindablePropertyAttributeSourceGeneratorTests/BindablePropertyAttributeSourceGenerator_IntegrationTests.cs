@@ -76,7 +76,7 @@ public class BindablePropertyAttributeSourceGenerator_IntegrationTests : BaseBin
 			}
 			""";
 
-		await VerifySourceGeneratorAsync(source, expectedAttribute, ("BaseView.g.cs", expectedBaseGenerated), ("DerivedView.g.cs", expectedDerivedGenerated));
+		await VerifySourceGeneratorAsync(source, ("BaseView.g.cs", expectedBaseGenerated), ("DerivedView.g.cs", expectedDerivedGenerated));
 	}
 
 	[Fact]
@@ -229,7 +229,7 @@ public class BindablePropertyAttributeSourceGenerator_IntegrationTests : BaseBin
 			}
 			""";
 
-		await VerifySourceGeneratorAsync(source, expectedAttribute, ($"{outerClassName}.{defaultTestClassName}.g.cs", expectedGenerated));
+		await VerifySourceGeneratorAsync(source, ($"{outerClassName}.{defaultTestClassName}.g.cs", expectedGenerated));
 	}
 
 	[Fact]
@@ -361,6 +361,6 @@ public class BindablePropertyAttributeSourceGenerator_IntegrationTests : BaseBin
 		    """;
 
 
-		await VerifySourceGeneratorAsync(source, expectedAttribute, ("FirstView.g.cs", expectedFirstGenerated), ("SecondView.g.cs", expectedSecondGenerated));
+		await VerifySourceGeneratorAsync(source, ("FirstView.g.cs", expectedFirstGenerated), ("SecondView.g.cs", expectedSecondGenerated));
 	}
 }

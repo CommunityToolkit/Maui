@@ -2,11 +2,8 @@
 
 public abstract class BaseBindablePropertyAttributeSourceGeneratorTest : BaseTest
 {
-	protected const string defaultTestClassName = "TestView";
-	protected const string defaultTestNamespace = "TestNamespace";
-	protected const string generatedBindablePropertyAttributeFileName = "BindablePropertyAttribute.g.cs";
-
-	protected const string expectedAttribute =
+	const string generatedBindablePropertyAttributeFileName = "BindablePropertyAttribute.g.cs";
+	const string expectedAttribute =
 		/* language=C#-test */
 		//lang=csharp
 		$$"""
@@ -33,7 +30,7 @@ public abstract class BaseBindablePropertyAttributeSourceGeneratorTest : BaseTes
 		}
 		""";
 
-	protected static Task VerifySourceGeneratorAsync(string source, string expectedAttribute, params List<(string FileName, string GeneratedFile)> expectedGeneratedFilesList)
+	protected static Task VerifySourceGeneratorAsync(string source, params List<(string FileName, string GeneratedFile)> expectedGeneratedFilesList)
 	{
 		expectedGeneratedFilesList.Add((generatedBindablePropertyAttributeFileName, expectedAttribute));
 		return VerifySourceGeneratorAsync<BindablePropertyAttributeSourceGenerator>(source, expectedGeneratedFilesList);

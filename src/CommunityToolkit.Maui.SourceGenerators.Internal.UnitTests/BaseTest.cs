@@ -7,6 +7,9 @@ namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests;
 
 public abstract class BaseTest
 {
+	protected const string defaultTestClassName = "TestView";
+	protected const string defaultTestNamespace = "TestNamespace";
+
 	protected static async Task VerifySourceGeneratorAsync<TSourceGenerator>(string source, params List<(string FileName, string GeneratedFile)> expectedGeneratedFilesList)
 		where TSourceGenerator : IIncrementalGenerator, new()
 	{
