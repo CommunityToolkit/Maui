@@ -125,7 +125,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Edg
                 /// <summary>
                 /// Attached BindableProperty for the InvoiceStatus property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty InvoiceStatusProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("InvoiceStatus", typeof({{defaultTestNamespace}}.Status), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), ({{defaultTestNamespace}}.Status){{defaultTestNamespace}}.Status.Approved, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty InvoiceStatusProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("InvoiceStatus", typeof(global::{{defaultTestNamespace}}.Status), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), ({{defaultTestNamespace}}.Status){{defaultTestNamespace}}.Status.Approved, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
                 /// <summary>
                 /// Gets InvoiceStatus for the <paramref =  " bindable " /> child element.
                 /// </summary>
@@ -245,7 +245,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Edg
                 /// <summary>
                 /// Gets NullableDateTime for the <paramref =  " bindable " /> child element.
                 /// </summary>
-                public static DateTime? GetNullableDateTime(global::Microsoft.Maui.Controls.BindableObject bindable) => (global::System.DateTime? )bindable.GetValue(NullableDateTimeProperty);
+                public static global::System.DateTime? GetNullableDateTime(global::Microsoft.Maui.Controls.BindableObject bindable) => (global::System.DateTime? )bindable.GetValue(NullableDateTimeProperty);
                 /// <summary>
                 /// Sets NullableDateTime for the <paramref =  " bindable " /> child element.
                 /// </summary>
@@ -318,7 +318,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Edg
                 /// <summary>
                 /// Gets MultiDimensionalArray for the <paramref =  " bindable " /> child element.
                 /// </summary>
-                public static int[, ] GetMultiDimensionalArray(global::Microsoft.Maui.Controls.BindableObject bindable) => (int[,])bindable.GetValue(MultiDimensionalArrayProperty);
+                public static int[, ] GetMultiDimensionalArray(global::Microsoft.Maui.Controls.BindableObject bindable) => (int[, ])bindable.GetValue(MultiDimensionalArrayProperty);
                 /// <summary>
                 /// Sets MultiDimensionalArray for the <paramref =  " bindable " /> child element.
                 /// </summary>
@@ -507,7 +507,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Edg
             [AttachedBindableProperty<bool>("IsEnabled", DefaultValue = true)]
             [AttachedBindableProperty<double>("Pi", DefaultValue = 3.14)]
             [AttachedBindableProperty<char>("Letter", DefaultValue = 'A')]
-            [AttachedBindableProperty<TimeSpan>("TimeSpent", DefaultValue = System.TimeSpan.Zero)]
+            [AttachedBindableProperty<TimeSpan>("TimeSpent", DefaultValue = global::System.TimeSpan.Zero)]
             [AttachedBindableProperty<double>("DoubleEpsilon", DefaultValue = double.Epsilon)]
             [AttachedBindableProperty<float>("SingleEpsilon", DefaultValue = float.Epsilon)]
             [AttachedBindableProperty<DateTimeOffset>("CurrentTime", DefaultValue = DateTimeOffset.UtcNow)]
@@ -542,7 +542,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Edg
                 /// <summary>
                 /// Attached BindableProperty for the TimeSpent property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty TimeSpentProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("TimeSpent", typeof(TimeSpan), typeof({{defaultTestClassName}}), (global::System.TimeSpan)System.TimeSpan.Zero, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty TimeSpentProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("TimeSpent", typeof(TimeSpan), typeof({{defaultTestClassName}}), (global::System.TimeSpan)global::System.TimeSpan.Zero, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
                 /// <summary>
                 /// Attached BindableProperty for the DoubleEpsilon property.
                 /// </summary>

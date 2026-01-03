@@ -219,7 +219,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		var nonNullableReturnType = ConvertToNonNullableTypeSymbol(info.ReturnType);
 		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
 		var formattedReturnType = GetFormattedReturnType(info.ReturnType);
-		var nonNullableFormattedType = GetFormattedReturnType(nonNullableReturnType);
+		var nonNullableFormattedType = GetFormattedTypeForTypeOf(nonNullableReturnType);
 
 		// Generate BindableProperty
 		sb.Append("/// <summary>\r\n/// Attached BindableProperty for the ")
@@ -559,9 +559,9 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 	static ITypeSymbol ConvertToNonNullableTypeSymbol(in ITypeSymbol typeSymbol)
 	{
 		// Check for Nullable<T>
-		if (typeSymbol is INamedTypeSymbol { IsGenericType: true, ConstructedFrom.SpecialType: SpecialType.System_Nullable_T })
+		if (typeSymbol is INamedTypeSymbol { IsGenericType: true, ConstructedFrom.SpecialType: SpecialType.System_Nullable_T } nullableType)
 		{
-			return typeSymbol;
+			return nullableType.TypeArguments[0];
 		}
 
 		// Check for Nullable Reference Type
@@ -582,6 +582,26 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			return string.Concat(elementType, "[", rank, "]");
 		}
 
-		return typeSymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
+		// Handle Nullable<T> - display as T?
+		if (typeSymbol is INamedTypeSymbol { IsGenericType: true, ConstructedFrom.SpecialType: SpecialType.System_Nullable_T } nullableType)
+		{
+			var innerType = nullableType.TypeArguments[0];
+			var formattedInner = GetFormattedReturnType(innerType);
+			return $"{formattedInner}? ";
+		}
+
+		return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+	}
+
+	static string GetFormattedTypeForTypeOf(ITypeSymbol typeSymbol)
+	{
+		if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
+		{
+			string elementType = GetFormattedTypeForTypeOf(arrayTypeSymbol.ElementType);
+			var rank = arrayTypeSymbol.Rank > 1 ? new string(',', arrayTypeSymbol.Rank - 1) : string.Empty;
+			return string.Concat(elementType, "[", rank, "]");
+		}
+
+		return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 	}
 }
