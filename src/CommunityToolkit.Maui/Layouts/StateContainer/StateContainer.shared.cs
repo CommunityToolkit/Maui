@@ -4,7 +4,10 @@
 /// The <see cref="StateContainer"/> attached properties enable any <see cref="Layout"/> inheriting element to become state-aware.
 /// States are defined in the <see cref="StateViewsProperty"/> with <see cref="StateView"/> attached properties.
 /// </summary>
-public static class StateContainer
+[AttachedBindableProperty<IList<View>>(stateViewsPropertyName, DefaultValueCreatorMethodName = nameof(CreateDefaultStateViewsProperty))]
+[AttachedBindableProperty<string>(currentStatePropertyName, true, PropertyChangingMethodName = nameof(OnCurrentStateChanging))]
+[AttachedBindableProperty<bool>(canStateChangePropertyName, DefaultValue = true, DefaultBindingMode = BindingMode.OneWayToSource, SetterAccessibility = Accessibility.Private)]
+public static partial class StateContainer
 {
 	const string stateViewsPropertyName = "StateViews";
 	const string currentStatePropertyName = "CurrentState";
@@ -13,55 +16,18 @@ public static class StateContainer
 
 	internal static readonly BindableProperty LayoutControllerProperty
 		= BindableProperty.CreateAttached(layoutControllerPropertyName, typeof(StateContainerController), typeof(StateContainer), default(StateContainerController), defaultValueCreator: ContainerControllerCreator);
-
-	/// <summary>
-	/// Backing <see cref="BindableProperty"/> for the <see cref="GetStateViews"/> and <see cref="SetStateViews"/> methods.
-	/// </summary>
-	public static readonly BindableProperty StateViewsProperty
-		= BindableProperty.CreateAttached(stateViewsPropertyName, typeof(IList<View>), typeof(StateContainer), default(IList<View>), defaultValueCreator: _ => new List<View>());
-
+	
+	#if RELEASE
+	#error Add XML Comments to Attached Bindable Properties
 	/// <summary>
 	/// Backing <see cref="BindableProperty"/> for the <see cref="GetCurrentState"/> and <see cref="SetCurrentState"/> methods.
 	/// To ensure <see cref="StateContainer"/> does not throw a <see cref="StateContainerException"/> due to active animations, first verify <see cref="CanStateChangeProperty"/> is <see langword="true"/> before changing <see cref="CurrentStateProperty"/>
 	/// </summary>
-	public static readonly BindableProperty CurrentStateProperty
-		= BindableProperty.CreateAttached(currentStatePropertyName, typeof(string), typeof(StateContainer), default(string), propertyChanging: OnCurrentStateChanging);
 
 	/// <summary>
 	/// Backing <see cref="BindableProperty"/> for the <see cref="GetCanStateChange"/> method.
 	/// </summary>
-	public static readonly BindableProperty CanStateChangeProperty
-		= BindableProperty.CreateAttached(canStateChangePropertyName, typeof(bool), typeof(StateContainer), true, BindingMode.OneWayToSource);
-
-	/// <summary>
-	/// Set the StateViews property
-	/// </summary>
-	public static void SetStateViews(BindableObject b, IList<View> value)
-		=> b.SetValue(StateViewsProperty, value);
-
-	/// <summary>
-	/// Get the CanStateChange property
-	/// </summary>
-	public static bool GetCanStateChange(BindableObject b)
-		=> (bool)b.GetValue(CanStateChangeProperty);
-
-	/// <summary>
-	/// Get the StateViews property
-	/// </summary>
-	public static IList<View> GetStateViews(BindableObject b)
-		=> (IList<View>)b.GetValue(StateViewsProperty);
-
-	/// <summary>
-	/// Set the CurrentState property
-	/// </summary>
-	public static void SetCurrentState(BindableObject b, string? value)
-		=> b.SetValue(CurrentStateProperty, value);
-
-	/// <summary>
-	/// Get the CurrentState property
-	/// </summary>
-	public static string GetCurrentState(BindableObject b)
-		=> (string)b.GetValue(CurrentStateProperty);
+	#endif
 
 	/// <summary>
 	/// Change state with custom animation.
@@ -189,9 +155,6 @@ public static class StateContainer
 	internal static StateContainerController GetContainerController(BindableObject b) =>
 		(StateContainerController)b.GetValue(LayoutControllerProperty);
 
-	static void SetCanStateChange(BindableObject b, bool value)
-		=> b.SetValue(CanStateChangeProperty, value);
-
 	static void OnCurrentStateChanging(BindableObject bindable, object oldValue, object newValue)
 	{
 		if (oldValue == newValue)
@@ -236,6 +199,8 @@ public static class StateContainer
 			throw new StateContainerException($"{canStateChangePropertyName} is false. {currentStatePropertyName} cannot be changed while a state change is in progress. To avoid this exception, first verify {canStateChangePropertyName} is {true} before changing {currentStatePropertyName}.");
 		}
 	}
+	
+	static object CreateDefaultStateViewsProperty(BindableObject bindable) => new List<View>(); 
 }
 
 /// <summary>
