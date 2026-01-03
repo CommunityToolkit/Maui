@@ -61,21 +61,21 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Edg
                 /// </summary>
                 public static readonly global::Microsoft.Maui.Controls.BindableProperty ClassProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Class", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
                 /// <summary>
-                /// Attached BindableProperty for the Namespace property.
-                /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty NamespaceProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Namespace", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
-                /// <summary>
                 /// Gets Class for the <paramref =  " bindable " /> child element.
                 /// </summary>
                 public static string GetClass(global::Microsoft.Maui.Controls.BindableObject bindable) => (string)bindable.GetValue(ClassProperty);
                 /// <summary>
-                /// Gets Namespace for the <paramref =  " bindable " /> child element.
-                /// </summary>
-                public static string GetNamespace(global::Microsoft.Maui.Controls.BindableObject bindable) => (string)bindable.GetValue(NamespaceProperty);
-                /// <summary>
                 /// Sets Class for the <paramref =  " bindable " /> child element.
                 /// </summary>
                 public static void SetClass(global::Microsoft.Maui.Controls.BindableObject bindable, string value) => bindable.SetValue(ClassProperty, value);
+                /// <summary>
+                /// Attached BindableProperty for the Namespace property.
+                /// </summary>
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty NamespaceProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Namespace", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+                /// <summary>
+                /// Gets Namespace for the <paramref =  " bindable " /> child element.
+                /// </summary>
+                public static string GetNamespace(global::Microsoft.Maui.Controls.BindableObject bindable) => (string)bindable.GetValue(NamespaceProperty);
                 /// <summary>
                 /// Sets Namespace for the <paramref =  " bindable " /> child element.
                 /// </summary>
@@ -125,15 +125,15 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Edg
                 /// <summary>
                 /// Attached BindableProperty for the InvoiceStatus property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty InvoiceStatusProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("InvoiceStatus", typeof(global::{{defaultTestNamespace}}.Status), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), ({{defaultTestNamespace}}.Status){{defaultTestNamespace}}.Status.Approved, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty InvoiceStatusProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("InvoiceStatus", typeof(global::{{defaultTestNamespace}}.Status), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (global::{{defaultTestNamespace}}.Status)1, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
                 /// <summary>
                 /// Gets InvoiceStatus for the <paramref =  " bindable " /> child element.
                 /// </summary>
-                public static {{defaultTestNamespace}}.Status GetInvoiceStatus(global::Microsoft.Maui.Controls.BindableObject bindable) => ({{defaultTestNamespace}}.Status)bindable.GetValue(InvoiceStatusProperty);
+                public static global::{{defaultTestNamespace}}.Status GetInvoiceStatus(global::Microsoft.Maui.Controls.BindableObject bindable) => (global::{{defaultTestNamespace}}.Status)bindable.GetValue(InvoiceStatusProperty);
                 /// <summary>
                 /// Sets InvoiceStatus for the <paramref =  " bindable " /> child element.
                 /// </summary>
-                public static void SetInvoiceStatus(global::Microsoft.Maui.Controls.BindableObject bindable, {{defaultTestNamespace}}.Status value) => bindable.SetValue(InvoiceStatusProperty, value);
+                public static void SetInvoiceStatus(global::Microsoft.Maui.Controls.BindableObject bindable, global::{{defaultTestNamespace}}.Status value) => bindable.SetValue(InvoiceStatusProperty, value);
             }
             """;
 
@@ -177,17 +177,17 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Edg
             public partial class {{defaultTestClassName}}
             {
                 /// <summary>
-                /// Attached BindableProperty for the Status property.
+                /// Attached BindableProperty for the InvoiceStatus property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty InvoiceStatusProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("InvoiceStatus", typeof({{defaultTestNamespace}}.Status), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), ({{defaultTestNamespace}}.Status){{defaultTestNamespace}}.Status.Rejected, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty InvoiceStatusProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("InvoiceStatus", typeof(global::{{defaultTestNamespace}}.Status), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (global::{{defaultTestNamespace}}.Status)9223372036854775807L, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
                 /// <summary>
                 /// Gets InvoiceStatus for the <paramref =  " bindable " /> child element.
                 /// </summary>
-                public static {{defaultTestNamespace}}.Status GetInvoiceStatus(global::Microsoft.Maui.Controls.BindableObject bindable) => ({{defaultTestNamespace}}.Status)bindable.GetValue(InvoiceStatusProperty);
+                public static global::{{defaultTestNamespace}}.Status GetInvoiceStatus(global::Microsoft.Maui.Controls.BindableObject bindable) => (global::{{defaultTestNamespace}}.Status)bindable.GetValue(InvoiceStatusProperty);
                 /// <summary>
                 /// Sets InvoiceStatus for the <paramref =  " bindable " /> child element.
                 /// </summary>
-                public static void SetInvoiceStatus(global::Microsoft.Maui.Controls.BindableObject bindable, {{defaultTestNamespace}}.Status value) => bindable.SetValue(InvoiceStatusProperty, value);
+                public static void SetInvoiceStatus(global::Microsoft.Maui.Controls.BindableObject bindable, global::{{defaultTestNamespace}}.Status value) => bindable.SetValue(InvoiceStatusProperty, value);
             }
             """;
 
@@ -459,28 +459,29 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Edg
 			// See: CommunityToolkit.Maui.SourceGenerators.Internal.AttachedBindablePropertyAttributeSourceGenerator
 			#pragma warning disable
 			#nullable enable
+			namespace {{defaultTestNamespace}};
 			public partial class {{defaultTestClassName}}
 			{
 			    /// <summary>
 			    /// Attached BindableProperty for the Property_With_Underscores property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty Property_With_UnderscoresProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Property_With_Underscores", typeof(string), typeof({{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
-			    /// <summary>
-			    /// Attached BindableProperty for the Property123WithNumbers property.
-			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty Property123WithNumbersProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Property123WithNumbers", typeof(string), typeof({{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty Property_With_UnderscoresProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Property_With_Underscores", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Property_With_Underscores for the <paramref =  " bindable " /> child element.
 			    /// </summary>
 			    public static string GetProperty_With_Underscores(global::Microsoft.Maui.Controls.BindableObject bindable) => (string)bindable.GetValue(Property_With_UnderscoresProperty);
 			    /// <summary>
-			    /// Gets Property123WithNumbers for the <paramref =  " bindable " /> child element.
-			    /// </summary>
-			    public static string GetProperty123WithNumbers(global::Microsoft.Maui.Controls.BindableObject bindable) => (string)bindable.GetValue(Property123WithNumbersProperty);
-			    /// <summary>
 			    /// Sets Property_With_Underscores for the <paramref =  " bindable " /> child element.
 			    /// </summary>
 			    public static void SetProperty_With_Underscores(global::Microsoft.Maui.Controls.BindableObject bindable, string value) => bindable.SetValue(Property_With_UnderscoresProperty, value);
+			    /// <summary>
+			    /// Attached BindableProperty for the Property123WithNumbers property.
+			    /// </summary>
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty Property123WithNumbersProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Property123WithNumbers", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    /// <summary>
+			    /// Gets Property123WithNumbers for the <paramref =  " bindable " /> child element.
+			    /// </summary>
+			    public static string GetProperty123WithNumbers(global::Microsoft.Maui.Controls.BindableObject bindable) => (string)bindable.GetValue(Property123WithNumbersProperty);
 			    /// <summary>
 			    /// Sets Property123WithNumbers for the <paramref =  " bindable " /> child element.
 			    /// </summary>
@@ -507,10 +508,8 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Edg
             [AttachedBindableProperty<bool>("IsEnabled", DefaultValue = true)]
             [AttachedBindableProperty<double>("Pi", DefaultValue = 3.14)]
             [AttachedBindableProperty<char>("Letter", DefaultValue = 'A')]
-            [AttachedBindableProperty<TimeSpan>("TimeSpent", DefaultValue = global::System.TimeSpan.Zero)]
             [AttachedBindableProperty<double>("DoubleEpsilon", DefaultValue = double.Epsilon)]
             [AttachedBindableProperty<float>("SingleEpsilon", DefaultValue = float.Epsilon)]
-            [AttachedBindableProperty<DateTimeOffset>("CurrentTime", DefaultValue = DateTimeOffset.UtcNow)]
             public partial class {{defaultTestClassName}} : View
             {
             }
@@ -530,87 +529,63 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Edg
                 /// <summary>
                 /// Attached BindableProperty for the IsEnabled property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty IsEnabledProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("IsEnabled", typeof(bool), typeof({{defaultTestClassName}}), (bool)true, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
-                /// <summary>
-                /// Attached BindableProperty for the Pi property.
-                /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty PiProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Pi", typeof(double), typeof({{defaultTestClassName}}), (double)double.Pi, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
-                /// <summary>
-                /// Attached BindableProperty for the Letter property.
-                /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty LetterProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Letter", typeof(char), typeof({{defaultTestClassName}}), (char)'A', (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
-                /// <summary>
-                /// Attached BindableProperty for the TimeSpent property.
-                /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty TimeSpentProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("TimeSpent", typeof(TimeSpan), typeof({{defaultTestClassName}}), (global::System.TimeSpan)global::System.TimeSpan.Zero, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
-                /// <summary>
-                /// Attached BindableProperty for the DoubleEpsilon property.
-                /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty DoubleEpsilonProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("DoubleEpsilon", typeof(double), typeof({{defaultTestClassName}}), (double)double.Epsilon, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
-                /// <summary>
-                /// Attached BindableProperty for the SingleEpsilon property.
-                /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty SingleEpsilonProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("SingleEpsilon", typeof(float), typeof({{defaultTestClassName}}), (float)float.Epsilon, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
-                /// <summary>
-                /// Attached BindableProperty for the CurrentTime property.
-                /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty CurrentTimeProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("CurrentTime", typeof(global::System.DateTime), typeof({{defaultTestClassName}}), (global::System.DateTime)DateTimeOffset.UtcNow, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty IsEnabledProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("IsEnabled", typeof(bool), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (bool)true, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
                 /// <summary>
                 /// Gets IsEnabled for the <paramref =  " bindable " /> child element.
                 /// </summary>
                 public static bool GetIsEnabled(global::Microsoft.Maui.Controls.BindableObject bindable) => (bool)bindable.GetValue(IsEnabledProperty);
                 /// <summary>
-                /// Gets Pi for the <paramref =  " bindable " /> child element.
-                /// </summary>
-                public static double GetPi(global::Microsoft.Maui.Controls.BindableObject bindable) => (double)bindable.GetValue(PiProperty);
-                /// <summary>
-                /// Gets Letter for the <paramref =  " bindable " /> child element.
-                /// </summary>
-                public static char GetLetter(global::Microsoft.Maui.Controls.BindableObject bindable) => (char)bindable.GetValue(LetterProperty);
-                /// <summary>
-                /// Gets TimeSpent for the <paramref =  " bindable " /> child element.
-                /// </summary>
-                public static global::System.TimeSpan GetTimeSpent(global::Microsoft.Maui.Controls.BindableObject bindable) => (global::System.TimeSpan)bindable.GetValue(TimeSpentProperty);
-                /// <summary>
-                /// Gets DoubleEpsilon for the <paramref =  " bindable " /> child element.
-                /// </summary>
-                public static double GetDoubleEpsilon(global::Microsoft.Maui.Controls.BindableObject bindable) => (double)bindable.GetValue(DoubleEpsilonProperty);
-                /// <summary>
-                /// Gets SingleEpsilon for the <paramref =  " bindable " /> child element.
-                /// </summary>
-                public static float GetSingleEpsilon(global::Microsoft.Maui.Controls.BindableObject bindable) => (float)bindable.GetValue(SingleEpsilonProperty);
-                /// <summary>
-                /// Gets CurrentTime for the <paramref =  " bindable " /> child element.
-                /// </summary>
-                public static global::System.DateTime GetCurrentTime(global::Microsoft.Maui.Controls.BindableObject bindable) => (global::System.DateTime)bindable.GetValue(CurrentTimeProperty);
-                /// <summary>
                 /// Sets IsEnabled for the <paramref =  " bindable " /> child element.
                 /// </summary>
                 public static void SetIsEnabled(global::Microsoft.Maui.Controls.BindableObject bindable, bool value) => bindable.SetValue(IsEnabledProperty, value);
+                /// <summary>
+                /// Attached BindableProperty for the Pi property.
+                /// </summary>
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty PiProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Pi", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (double)3.1400000000000001, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+                /// <summary>
+                /// Gets Pi for the <paramref =  " bindable " /> child element.
+                /// </summary>
+                public static double GetPi(global::Microsoft.Maui.Controls.BindableObject bindable) => (double)bindable.GetValue(PiProperty);
                 /// <summary>
                 /// Sets Pi for the <paramref =  " bindable " /> child element.
                 /// </summary>
                 public static void SetPi(global::Microsoft.Maui.Controls.BindableObject bindable, double value) => bindable.SetValue(PiProperty, value);
                 /// <summary>
+                /// Attached BindableProperty for the Letter property.
+                /// </summary>
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty LetterProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Letter", typeof(char), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (char)'A', (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+                /// <summary>
+                /// Gets Letter for the <paramref =  " bindable " /> child element.
+                /// </summary>
+                public static char GetLetter(global::Microsoft.Maui.Controls.BindableObject bindable) => (char)bindable.GetValue(LetterProperty);
+                /// <summary>
                 /// Sets Letter for the <paramref =  " bindable " /> child element.
                 /// </summary>
                 public static void SetLetter(global::Microsoft.Maui.Controls.BindableObject bindable, char value) => bindable.SetValue(LetterProperty, value);
                 /// <summary>
-                /// Sets TimeSpent for the <paramref =  " bindable " /> child element.
+                /// Attached BindableProperty for the DoubleEpsilon property.
                 /// </summary>
-                public static void SetTimeSpent(global::Microsoft.Maui.Controls.BindableObject bindable, global::System.TimeSpan value) => bindable.SetValue(TimeSpentProperty, value);
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty DoubleEpsilonProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("DoubleEpsilon", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (double)double.Epsilon, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+                /// <summary>
+                /// Gets DoubleEpsilon for the <paramref =  " bindable " /> child element.
+                /// </summary>
+                public static double GetDoubleEpsilon(global::Microsoft.Maui.Controls.BindableObject bindable) => (double)bindable.GetValue(DoubleEpsilonProperty);
                 /// <summary>
                 /// Sets DoubleEpsilon for the <paramref =  " bindable " /> child element.
                 /// </summary>
                 public static void SetDoubleEpsilon(global::Microsoft.Maui.Controls.BindableObject bindable, double value) => bindable.SetValue(DoubleEpsilonProperty, value);
                 /// <summary>
+                /// Attached BindableProperty for the SingleEpsilon property.
+                /// </summary>
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty SingleEpsilonProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("SingleEpsilon", typeof(float), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (float)float.Epsilon, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+                /// <summary>
+                /// Gets SingleEpsilon for the <paramref =  " bindable " /> child element.
+                /// </summary>
+                public static float GetSingleEpsilon(global::Microsoft.Maui.Controls.BindableObject bindable) => (float)bindable.GetValue(SingleEpsilonProperty);
+                /// <summary>
                 /// Sets SingleEpsilon for the <paramref =  " bindable " /> child element.
                 /// </summary>
                 public static void SetSingleEpsilon(global::Microsoft.Maui.Controls.BindableObject bindable, float value) => bindable.SetValue(SingleEpsilonProperty, value);
-                /// <summary>
-                /// Sets CurrentTime for the <paramref =  " bindable " /> child element.
-                /// </summary>
-                public static void SetCurrentTime(global::Microsoft.Maui.Controls.BindableObject bindable, global::System.DateTime) => bindable.SetValue(CurrentTimeProperty, value);
             }
             """;
 
