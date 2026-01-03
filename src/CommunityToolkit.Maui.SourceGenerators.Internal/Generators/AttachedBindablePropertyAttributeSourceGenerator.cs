@@ -219,7 +219,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		// Sanitize the Return Type because Nullable Reference Types cannot be used in the `typeof()` operator
 		var nonNullableReturnType = ConvertToNonNullableTypeSymbol(info.ReturnType);
 		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
-		var formattedReturnType = GetFormattedReturnType(info.ReturnType, info.isDeclaringTypeNullable);
+		var formattedReturnType = GetFormattedReturnType(info.ReturnType, info.ShouldPostpendNullable);
 		var nonNullableFormattedType = GetFormattedTypeForTypeOf(nonNullableReturnType);
 
 		// Generate BindableProperty
@@ -371,7 +371,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		var typeArg = (attributeData.AttributeClass?.TypeArguments.FirstOrDefault()) ?? throw new InvalidOperationException("Could not determine property type from attribute");
 		var isDeclaringTypeNullable = (bool)(attributeData.ConstructorArguments[1].Value ?? throw new InvalidOperationException("DeclaringTypeIsNullable cannot be null"));
 
-		var defaultValue = GetDefaultValueString(attributeData, typeArg, isDeclaringTypeNullable);
+		var defaultValue = GetDefaultValueString(attributeData, typeArg, isDeclaringTypeNullable && !typeArg.IsValueType);
 		var defaultBindingMode = attributeData.GetNamedTypeArgumentsAttributeValueForDefaultBindingMode("DefaultBindingMode", "(Microsoft.Maui.Controls.BindingMode)0");
 		var validateValueMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString("ValidateValueMethodName");
 		var propertyChangedMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString("PropertyChangedMethodName");
@@ -401,7 +401,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 
 	// DefaultValue can only be a primitive type, enum, typeof expression or array
 	// In C#, attribute arguments are limited to compile-time constants, typeof expressions, and single-dimensional arrays
-	static string GetDefaultValueString(AttributeData attributeData, ITypeSymbol typeArg, bool isDeclaringTypeNullable)
+	static string GetDefaultValueString(AttributeData attributeData, ITypeSymbol typeArg, bool shouldPostpendNullableSymbol)
 	{
 		var defaultValueArg = attributeData.NamedArguments
 			.FirstOrDefault(x => x.Key == "DefaultValue");
@@ -416,7 +416,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		// Handle Arrays
 		if (typeArg.TypeKind == TypeKind.Array)
 		{
-			return GetFormattedArrayValue(value, GetFormattedReturnType(typeArg, isDeclaringTypeNullable));
+			return GetFormattedArrayValue(value, GetFormattedReturnType(typeArg, shouldPostpendNullableSymbol));
 		}
 
 		// Handle null values
@@ -425,7 +425,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			return "null";
 		}
 
-		var typeSymbol = GetFormattedReturnType(typeArg, isDeclaringTypeNullable);
+		var typeSymbol = GetFormattedReturnType(typeArg, shouldPostpendNullableSymbol);
 
 		return value.Value switch
 		{
@@ -559,11 +559,11 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		return typeSymbol;
 	}
 
-	static string GetFormattedReturnType(ITypeSymbol typeSymbol, bool isDeclaringTypeNullable)
+	static string GetFormattedReturnType(ITypeSymbol typeSymbol, bool shouldPostpendNullableSymbol)
 	{
 		var formattedType = GetFormattedTypeForTypeOf(typeSymbol);
 
-		return isDeclaringTypeNullable ? $"{formattedType}?" : formattedType;
+		return shouldPostpendNullableSymbol ? $"{formattedType}?" : formattedType;
 	}
 
 	static string GetFormattedTypeForTypeOf(ITypeSymbol typeSymbol)
