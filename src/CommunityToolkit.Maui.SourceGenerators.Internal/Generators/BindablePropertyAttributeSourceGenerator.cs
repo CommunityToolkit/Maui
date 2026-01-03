@@ -17,8 +17,8 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 {
 	static readonly BindablePropertySemanticValues emptyBindablePropertySemanticValues = new(default, []);
 
-	const string bpFullName = "global::Microsoft.Maui.Controls.BindableProperty";
-	const string bpAttribute =
+	const string bindablePropertyFullName = "global::Microsoft.Maui.Controls.BindableProperty";
+	const string bindablePropertyAttributeSource =
 		/* language=C#-test */
 		//lang=csharp
 		$$"""
@@ -57,7 +57,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		}
 #endif
 
-		context.RegisterPostInitializationOutput(static ctx => ctx.AddSource("BindablePropertyAttribute.g.cs", SourceText.From(bpAttribute, Encoding.UTF8)));
+		context.RegisterPostInitializationOutput(static ctx => ctx.AddSource("BindablePropertyAttribute.g.cs", SourceText.From(bindablePropertyAttributeSource, Encoding.UTF8)));
 
 		var provider = context.SyntaxProvider.ForAttributeWithMetadataName("CommunityToolkit.Maui.BindablePropertyAttribute",
 				IsNonEmptyPropertyDeclarationSyntax, SemanticTransform)
@@ -259,7 +259,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		sb.Append("static readonly global::Microsoft.Maui.Controls.BindablePropertyKey ")
 			.Append(info.BindablePropertyKeyName)
 			.Append(" = \n")
-			.Append(bpFullName)
+			.Append(bindablePropertyFullName)
 			.Append(".CreateReadOnly(\"")
 			.Append(sanitizedPropertyName)
 			.Append("\", typeof(")
@@ -296,7 +296,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(" ")
 			.Append(info.NewKeywordText)
 			.Append("static readonly ")
-			.Append(bpFullName)
+			.Append(bindablePropertyFullName)
 			.Append(' ')
 			.Append(info.BindablePropertyName)
 			.Append(" = ")
@@ -322,11 +322,11 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(" ")
 			.Append(info.NewKeywordText)
 			.Append("static readonly ")
-			.Append(bpFullName)
+			.Append(bindablePropertyFullName)
 			.Append(' ')
 			.Append(info.BindablePropertyName)
 			.Append(" = \n")
-			.Append(bpFullName)
+			.Append(bindablePropertyFullName)
 			.Append(".Create(\"")
 			.Append(sanitizedPropertyName)
 			.Append("\", typeof(")

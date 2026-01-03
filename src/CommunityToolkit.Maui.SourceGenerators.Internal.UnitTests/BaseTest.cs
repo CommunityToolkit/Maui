@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests;
 
 public abstract class BaseTest
 {
-	protected static async Task VerifySourceGeneratorAsync<TSourceGenerator>(string source, string expectedAttribute, string bindablePropertyAttributeGeneratedFileName, params List<(string FileName, string GeneratedFile)> expectedGenerated)
+	protected static async Task VerifySourceGeneratorAsync<TSourceGenerator>(string source, params List<(string FileName, string GeneratedFile)> expectedGeneratedFilesList)
 		where TSourceGenerator : IIncrementalGenerator, new()
 	{
 		const string sourceGeneratorNamespace = "CommunityToolkit.Maui.SourceGenerators.Internal";
@@ -34,11 +34,7 @@ public abstract class BaseTest
 			}
 		};
 
-		var expectedAttributeText = Microsoft.CodeAnalysis.Text.SourceText.From(expectedAttribute, System.Text.Encoding.UTF8);
-		var bindablePropertyAttributeFilePath = Path.Combine(sourceGeneratorNamespace, sourceGeneratorFullName, bindablePropertyAttributeGeneratedFileName);
-		test.TestState.GeneratedSources.Add((bindablePropertyAttributeFilePath, expectedAttributeText));
-
-		foreach (var generatedFile in expectedGenerated.Where(static x => !string.IsNullOrEmpty(x.GeneratedFile)))
+		foreach (var generatedFile in expectedGeneratedFilesList.Where(static x => !string.IsNullOrEmpty(x.GeneratedFile)))
 		{
 			var expectedGeneratedText = Microsoft.CodeAnalysis.Text.SourceText.From(generatedFile.GeneratedFile, System.Text.Encoding.UTF8);
 			var generatedFilePath = Path.Combine(sourceGeneratorNamespace, sourceGeneratorFullName, generatedFile.FileName);

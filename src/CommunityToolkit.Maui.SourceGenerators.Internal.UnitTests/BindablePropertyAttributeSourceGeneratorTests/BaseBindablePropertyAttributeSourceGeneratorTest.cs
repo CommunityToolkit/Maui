@@ -1,6 +1,6 @@
 ﻿namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.BindablePropertyAttributeSourceGeneratorTests;
 
-public class BaseBindablePropertyAttributeSourceGeneratorTest : BaseTest
+public abstract class BaseBindablePropertyAttributeSourceGeneratorTest : BaseTest
 {
 	protected const string defaultTestClassName = "TestView";
 	protected const string defaultTestNamespace = "TestNamespace";
@@ -33,9 +33,20 @@ public class BaseBindablePropertyAttributeSourceGeneratorTest : BaseTest
 		}
 		""";
 
-	protected static Task VerifySourceGeneratorAsync(string source, string expectedAttribute, params List<(string FileName, string GeneratedFile)> expectedGenerated) =>
-		VerifySourceGeneratorAsync<BindablePropertyAttributeSourceGenerator>(source, expectedAttribute, generatedBindablePropertyAttributeFileName, expectedGenerated);
+	protected static Task VerifySourceGeneratorAsync(string source, string expectedAttribute, params List<(string FileName, string GeneratedFile)> expectedGeneratedFilesList)
+	{
+		expectedGeneratedFilesList.Add((generatedBindablePropertyAttributeFileName, expectedAttribute));
+		return VerifySourceGeneratorAsync<BindablePropertyAttributeSourceGenerator>(source, expectedGeneratedFilesList);
+	}
 
-	protected static Task VerifySourceGeneratorAsync(string source, string expectedGenerated) =>
-		VerifySourceGeneratorAsync<BindablePropertyAttributeSourceGenerator>(source, expectedAttribute, generatedBindablePropertyAttributeFileName, ($"{defaultTestClassName}.g.cs", expectedGenerated));
+	protected static Task VerifySourceGeneratorAsync(string source, string expectedGeneratedFile)
+	{
+		List<(string FileName, string GeneratedFile)> expectedGeneratedFilesList =
+		[
+			(generatedBindablePropertyAttributeFileName, expectedAttribute),
+			($"{defaultTestClassName}.g.cs", expectedGeneratedFile)
+		];
+
+		return VerifySourceGeneratorAsync<BindablePropertyAttributeSourceGenerator>(source, expectedGeneratedFilesList);
+	}
 }

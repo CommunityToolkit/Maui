@@ -79,7 +79,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Int
 			}
 			""";
 
-		await VerifySourceGeneratorAsync(source, expectedAttribute, ("BaseView.g.cs", expectedBaseGenerated), ("DerivedView.g.cs", expectedDerivedGenerated));
+		await VerifySourceGeneratorAsync(source, ("BaseView.g.cs", expectedBaseGenerated), ("DerivedView.g.cs", expectedDerivedGenerated));
 	}
 
 	[Fact]
@@ -181,7 +181,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Int
 			}
 			"""";
 
-		await VerifySourceGeneratorAsync(source, expectedAttribute, ($"{outerClassName}.{defaultTestClassName}.g.cs", expectedGenerated));
+		await VerifySourceGeneratorAsync(source, ($"{outerClassName}.{defaultTestClassName}.g.cs", expectedGenerated));
 	}
 
 	[Fact]
@@ -233,7 +233,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Int
 			}
 			"""";
 
-		await VerifySourceGeneratorAsync(source, expectedAttribute, ($"{outerClassName}.g.cs", expectedGenerated));
+		await VerifySourceGeneratorAsync(source, ($"{outerClassName}.g.cs", expectedGenerated));
 	}
 
 	[Fact]
@@ -365,6 +365,6 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Int
 			""";
 
 
-		await VerifySourceGeneratorAsync(source, expectedAttribute, ("FirstView.g.cs", expectedFirstGenerated), ("SecondView.g.cs", expectedSecondGenerated));
+		await VerifySourceGeneratorAsync(source, ("FirstView.g.cs", expectedFirstGenerated), ("SecondView.g.cs", expectedSecondGenerated));
 	}
 }

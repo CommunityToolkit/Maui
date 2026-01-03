@@ -440,7 +440,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Public)]
+			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = CommunityToolkit.Maui.Accessibility.Public)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -490,7 +490,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Internal)]
+			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = CommunityToolkit.Maui.Accessibility.Internal)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -527,7 +527,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 	}
 
 	[Fact]
-	public async Task GenerateAttachedBindableProperty_PrivateAndInternalSetterAccessibility_GeneratesPrivateProtectedSetter()
+	public async Task GenerateAttachedBindableProperty_PrivateProtectedSetterAccessibility_GeneratesPrivateProtectedSetter()
 	{
 		const string source =
 			/* language=C#-test */
@@ -540,7 +540,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = Microsoft.CodeAnalysis.Accessibility.ProtectedAndInternal)]
+			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = CommunityToolkit.Maui.Accessibility.PrivateProtected)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -577,7 +577,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 	}
 
 	[Fact]
-	public async Task GenerateAttachedBindableProperty_ProtectedOrInternalSetterAccessibility_GeneratesProtectedInternalSetter()
+	public async Task GenerateAttachedBindableProperty_ProtectedInternalSetterAccessibility_GeneratesProtectedInternalSetter()
 	{
 		const string source =
 			/* language=C#-test */
@@ -590,7 +590,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = Microsoft.CodeAnalysis.Accessibility.ProtectedOrInternal)]
+			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = CommunityToolkit.Maui.Accessibility.ProtectedInternal)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -640,7 +640,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Protected)]
+			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = CommunityToolkit.Maui.Accessibility.Protected)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -690,7 +690,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Private)]
+			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = CommunityToolkit.Maui.Accessibility.Private)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -727,7 +727,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 	}
 
 	[Fact]
-	public async Task GenerateAttachedBindableProperty_NotApplicableSetterAccessibility_GeneratesNoSetter()
+	public async Task GenerateAttachedBindableProperty_NoneSetterAccessibility_GeneratesNoSetter()
 	{
 		const string source =
 			/* language=C#-test */
@@ -740,7 +740,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = Microsoft.CodeAnalysis.Accessibility.NotApplicable)]
+			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = CommunityToolkit.Maui.Accessibility.None)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -786,7 +786,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Public)]
+			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = CommunityToolkit.Maui.Accessibility.Public)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -836,7 +836,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Internal)]
+			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = CommunityToolkit.Maui.Accessibility.Internal)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -873,7 +873,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 	}
 
 	[Fact]
-	public async Task GenerateAttachedBindableProperty_PrivateAndInternalGetterAccessibility_GeneratesPrivateProtectedGetter()
+	public async Task GenerateAttachedBindableProperty_PrivateProtectedGetterAccessibility_GeneratesPrivateProtectedGetter()
 	{
 		const string source =
 			/* language=C#-test */
@@ -886,7 +886,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = Microsoft.CodeAnalysis.Accessibility.ProtectedAndInternal)]
+			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = CommunityToolkit.Maui.Accessibility.PrivateProtected)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -923,7 +923,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 	}
 
 	[Fact]
-	public async Task GenerateAttachedBindableProperty_ProtectedOrInternalGetterAccessibility_GeneratesProtectedInternalGetter()
+	public async Task GenerateAttachedBindableProperty_ProtectedInternalGetterAccessibility_GeneratesProtectedInternalGetter()
 	{
 		const string source =
 			/* language=C#-test */
@@ -936,7 +936,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = Microsoft.CodeAnalysis.Accessibility.ProtectedOrInternal)]
+			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = CommunityToolkit.Maui.Accessibility.ProtectedInternal)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -986,7 +986,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Protected)]
+			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = CommunityToolkit.Maui.Accessibility.Protected)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -1036,7 +1036,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = Microsoft.CodeAnalysis.Accessibility.Private)]
+			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = CommunityToolkit.Maui.Accessibility.Private)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -1073,7 +1073,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 	}
 
 	[Fact]
-	public async Task GenerateAttachedBindableProperty_NotApplicableGetterAccessibility_GeneratesNoGetter()
+	public async Task GenerateAttachedBindableProperty_NoneGetterAccessibility_GeneratesNoGetter()
 	{
 		const string source =
 			/* language=C#-test */
@@ -1086,7 +1086,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = Microsoft.CodeAnalysis.Accessibility.NotApplicable)]
+			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = CommunityToolkit.Maui.Accessibility.None)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
