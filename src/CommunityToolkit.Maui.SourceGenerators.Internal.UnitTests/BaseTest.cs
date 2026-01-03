@@ -7,13 +7,13 @@ namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests;
 
 public abstract class BaseTest
 {
-	protected static async Task VerifySourceGeneratorAsync(string source, string expectedAttribute, params List<(string FileName, string GeneratedFile)> expectedGenerated)
+	protected static async Task VerifySourceGeneratorAsync<TSourceGenerator>(string source, string expectedAttribute, string bindablePropertyAttributeGeneratedFileName, params List<(string FileName, string GeneratedFile)> expectedGenerated)
+		where TSourceGenerator : IIncrementalGenerator, new()
 	{
 		const string sourceGeneratorNamespace = "CommunityToolkit.Maui.SourceGenerators.Internal";
-		const string bindablePropertyAttributeGeneratedFileName = "BindablePropertyAttribute.g.cs";
-		var sourceGeneratorFullName = typeof(BindablePropertyAttributeSourceGenerator).FullName ?? throw new InvalidOperationException("Source Generator Type Path cannot be null");
+		var sourceGeneratorFullName = typeof(TSourceGenerator).FullName ?? throw new InvalidOperationException("Source Generator Type Path cannot be null");
 
-		var test = new ExperimentalBindablePropertyTest
+		var test = new ExperimentalBindablePropertyTest<TSourceGenerator>
 		{
 #if NET10_0
 			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net100,
@@ -28,7 +28,8 @@ public abstract class BaseTest
 				{
 					MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.BindableObject).Assembly.Location),
 					MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.BindableProperty).Assembly.Location),
-					MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.BindingMode).Assembly.Location)
+					MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.BindingMode).Assembly.Location),
+					MetadataReference.CreateFromFile(typeof(Microsoft.CodeAnalysis.Accessibility).Assembly.Location),
 				}
 			}
 		};
@@ -48,7 +49,8 @@ public abstract class BaseTest
 	}
 
 	// This class can be deleted once [Experimental] is removed from BindablePropertyAttribute
-	sealed class ExperimentalBindablePropertyTest : CSharpSourceGeneratorTest<BindablePropertyAttributeSourceGenerator, DefaultVerifier>
+	sealed class ExperimentalBindablePropertyTest<TSourceGenerator> : CSharpSourceGeneratorTest<TSourceGenerator, DefaultVerifier>
+		where TSourceGenerator : IIncrementalGenerator, new()
 	{
 		protected override CompilationOptions CreateCompilationOptions()
 		{
@@ -56,7 +58,7 @@ public abstract class BaseTest
 
 			return compilationOptions.WithSpecificDiagnosticOptions(new Dictionary<string, ReportDiagnostic>
 			{
-				{ BindablePropertyAttributeSourceGenerator.BindablePropertyAttributeExperimentalDiagnosticId, ReportDiagnostic.Warn }
+				{ BindablePropertyDiagnostic.BindablePropertyAttributeExperimentalDiagnosticId, ReportDiagnostic.Warn }
 			});
 		}
 	}
