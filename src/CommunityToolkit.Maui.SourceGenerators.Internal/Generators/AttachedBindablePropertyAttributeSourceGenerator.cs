@@ -223,6 +223,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		return sb.ToString();
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static string BuildFullyQualifiedTypeName(ClassInformation classInfo, string classNameWithGenerics)
 	{
 		if (IsGlobalNamespace(classInfo))
@@ -320,6 +321,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		}
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static AttachedBindablePropertySemanticValues SemanticTransform(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
 	{
 		var classDeclarationSyntax = (ClassDeclarationSyntax)context.TargetNode;
@@ -334,6 +336,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		return ExtractAttachedBindableProperties(classSymbol, context.Attributes, cancellationToken);
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static AttachedBindablePropertySemanticValues SemanticTransformConstructor(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
 	{
 		var constructorDeclarationSyntax = (ConstructorDeclarationSyntax)context.TargetNode;
@@ -348,6 +351,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		return ExtractAttachedBindableProperties(constructorSymbol.ContainingType, context.Attributes, cancellationToken);
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static AttachedBindablePropertySemanticValues ExtractAttachedBindableProperties(INamedTypeSymbol classSymbol, ImmutableArray<AttributeData> attributes, CancellationToken cancellationToken)
 	{
 		var @namespace = classSymbol.ContainingNamespace.ToDisplayString();
@@ -374,6 +378,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		return new(classInfo, ImmutableArray.Create(attachedBindablePropertyModels).AsEquatableArray());
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static AttachedBindablePropertyModel CreateAttachedBindablePropertyModel(AttributeData attributeData, INamedTypeSymbol declaringType)
 	{
 		if (attributeData.AttributeClass is null || attributeData.ConstructorArguments.Length == 0)
@@ -425,6 +430,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 
 	// DefaultValue can only be a primitive type, enum, typeof expression or array
 	// In C#, attribute arguments are limited to compile-time constants, typeof expressions, and single-dimensional arrays
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static string GetDefaultValueString(AttributeData attributeData, ITypeSymbol typeArg, bool shouldPostpendNullableSymbol)
 	{
 		var defaultValueArg = attributeData.NamedArguments
@@ -464,6 +470,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		};
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static string? GetAccessibilityString(AttributeData attributeData, string parameterName)
 	{
 		var accessibility = attributeData.NamedArguments
@@ -510,6 +517,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static bool IsGlobalNamespace(in ClassInformation classInformation) => classInformation.ContainingNamespace is "<global namespace>" or "";
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static string GetContainingTypes(INamedTypeSymbol typeSymbol)
 	{
 		var current = typeSymbol.ContainingType;
@@ -541,6 +549,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		return sb.ToString();
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static string GetGenericTypeParameters(INamedTypeSymbol typeSymbol)
 	{
 		if (!typeSymbol.IsGenericType || typeSymbol.TypeParameters.IsEmpty)
@@ -585,6 +594,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		return typeSymbol;
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static string GetFormattedReturnType(ITypeSymbol typeSymbol, bool shouldPostpendNullableSymbol)
 	{
 		var formattedType = GetFormattedTypeForTypeOf(typeSymbol);
@@ -592,6 +602,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		return shouldPostpendNullableSymbol ? $"{formattedType}?" : formattedType;
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static string GetFormattedTypeForTypeOf(ITypeSymbol typeSymbol)
 	{
 		if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
@@ -604,6 +615,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static string GetEscapedString(string value)
 	{
 		return value
@@ -614,6 +626,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			.Replace("\t", "\\t");
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static string GetFormattedArrayValue(TypedConstant arrayConstant, string typeSymbol)
 	{
 		if (arrayConstant.Values.Length == 0)
@@ -640,6 +653,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		return sb.ToString();
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static string GetFormattedConstantValue(TypedConstant constant)
 	{
 		if (constant.IsNull)
