@@ -44,6 +44,9 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		  	public string PropertyChangingMethodName { get; init; } = string.Empty;
 		  	public string CoerceValueMethodName { get; init; } = string.Empty;
 		  	public string DefaultValueCreatorMethodName { get; init; } = string.Empty;
+		  	public string? BindablePropertyXmlDocumentation { get; init; }
+		  	public string? GetterMethodXmlDocumentation { get; init; }
+		  	public string? SetterMethodXmlDocumentation { get; init; }
 		  	public global::CommunityToolkit.Maui.Accessibility BindablePropertyAccessibility { get; init; } = global::CommunityToolkit.Maui.Accessibility.Public;
 		  	public global::CommunityToolkit.Maui.Accessibility GetterAccessibility { get; init; } = global::CommunityToolkit.Maui.Accessibility.Public;
 		  	public global::CommunityToolkit.Maui.Accessibility SetterAccessibility { get; init; } = global::CommunityToolkit.Maui.Accessibility.Public;
@@ -249,9 +252,17 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		var nonNullableFormattedType = GetFormattedTypeForTypeOf(nonNullableReturnType);
 
 		// Generate BindableProperty
-		sb.Append("/// <summary>\r\n/// Attached BindableProperty for the ")
-			.Append(sanitizedPropertyName)
-			.Append(" property.\r\n/// </summary>\r\n");
+		if (info.BindablePropertyXMLDocumentation is not null)
+		{
+			sb.Append(info.BindablePropertyXMLDocumentation)
+				.Append("\r\n");
+		}
+		else
+		{
+			sb.Append("/// <summary>\r\n/// Attached BindableProperty for the ")
+				.Append(sanitizedPropertyName)
+				.Append(" property.\r\n/// </summary>\r\n");
+		}
 
 		sb.Append(info.BindablePropertyAccessibility)
 			.Append("static readonly ")
@@ -285,9 +296,18 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		// Generate Get method
 		if (info.GetterAccessibility is not null)
 		{
-			sb.Append("/// <summary>\r\n/// Gets ")
-				.Append(sanitizedPropertyName)
-				.Append(" for the <paramref = \"bindable\"/> child element.\r\n/// </summary>\r\n");
+
+			if (info.GetterMethodXMLDocumentation is not null)
+			{
+				sb.Append(info.GetterMethodXMLDocumentation)
+					.Append("\r\n");
+			}
+			else
+			{
+				sb.Append("/// <summary>\r\n/// Gets ")
+					.Append(sanitizedPropertyName)
+					.Append(" for the <paramref = \"bindable\"/> child element.\r\n/// </summary>\r\n");
+			}
 
 			sb.Append(info.GetterAccessibility)
 				.Append("static ")
@@ -306,9 +326,17 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		// Generate Set method
 		if (info.SetterAccessibility is not null)
 		{
-			sb.Append("/// <summary>\r\n/// Sets ")
-				.Append(sanitizedPropertyName)
-				.Append(" for the <paramref = \"bindable\"/> child element.\r\n/// </summary>\r\n");
+			if (info.SetterMethodXMLDocumentation is not null)
+			{
+				sb.Append(info.SetterMethodXMLDocumentation)
+					.Append("\r\n");
+			}
+			else
+			{
+				sb.Append("/// <summary>\r\n/// Sets ")
+					.Append(sanitizedPropertyName)
+					.Append(" for the <paramref = \"bindable\"/> child element.\r\n/// </summary>\r\n");
+			}
 
 			sb.Append(info.SetterAccessibility)
 				.Append("static void Set")
@@ -415,6 +443,10 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		var bindablePropertyAccessibility = GetAccessibilityString(attributeData, "BindablePropertyAccessibility")
 			?? throw new InvalidOperationException("Bindable Property Accessibilty Cannot be null");
 
+		var getterMethodXMLDocumentation = GetXMLDocumenation(attributeData, "GetterMethodXmlDocumentation");
+		var setterMethodXMLDocumentation = GetXMLDocumenation(attributeData, "SetterMethodXmlDocumentation");
+		var bindablePropertyXMLDocumentation = GetXMLDocumenation(attributeData, "BindablePropertyXmlDocumentation");
+
 		return new AttachedBindablePropertyModel(
 			propertyName,
 			typeArg,
@@ -429,10 +461,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			getterAccessibility,
 			setterAccessibility,
 			bindablePropertyAccessibility,
-			isDeclaringTypeNullable
+			isDeclaringTypeNullable,
+			bindablePropertyXMLDocumentation,
+			getterMethodXMLDocumentation,
+			setterMethodXMLDocumentation
 		);
 	}
-
 	// DefaultValue can only be a primitive type, enum, typeof expression or array
 	// In C#, attribute arguments are limited to compile-time constants, typeof expressions, and single-dimensional arrays
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -473,6 +507,21 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			// Handle enums and all remaining compile-time constants
 			_ => $"({typeSymbol}){GetFormattedConstantValue(value)}"
 		};
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	static string? GetXMLDocumenation(AttributeData attributeData, string parameterName)
+	{
+		var xmlDocumentation = attributeData.NamedArguments
+			.FirstOrDefault(x => x.Key == parameterName)
+			.Value;
+
+		if (xmlDocumentation.IsNull || xmlDocumentation.Value is null)
+		{
+			return null;
+		}
+
+		return xmlDocumentation.Value.ToString();
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
