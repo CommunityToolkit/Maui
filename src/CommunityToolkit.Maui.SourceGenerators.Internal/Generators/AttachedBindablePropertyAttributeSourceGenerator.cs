@@ -33,7 +33,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		  [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 		  [global::System.AttributeUsage(global::System.AttributeTargets.Class | global::System.AttributeTargets.Constructor, AllowMultiple = true, Inherited = false)]
 		  [global::System.Diagnostics.CodeAnalysis.Experimental("{{BindablePropertyDiagnostic.BindablePropertyAttributeExperimentalDiagnosticId}}")]
-		  sealed partial class AttachedBindablePropertyAttribute<T>(string propertyName, bool isNullable = false) : global::System.Attribute where T : notnull
+		  public sealed partial class AttachedBindablePropertyAttribute<T>(string propertyName, bool isNullable = false) : global::System.Attribute where T : notnull
 		  {
 		  	public string PropertyName { get; } = propertyName;
 		  	public bool DeclaringTypeIsNullable { get; } = isNullable;
@@ -47,9 +47,9 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		  	public string? BindablePropertyXmlDocumentation { get; init; }
 		  	public string? GetterMethodXmlDocumentation { get; init; }
 		  	public string? SetterMethodXmlDocumentation { get; init; }
-		  	public global::CommunityToolkit.Maui.Accessibility BindablePropertyAccessibility { get; init; } = global::CommunityToolkit.Maui.Accessibility.Public;
-		  	public global::CommunityToolkit.Maui.Accessibility GetterAccessibility { get; init; } = global::CommunityToolkit.Maui.Accessibility.Public;
-		  	public global::CommunityToolkit.Maui.Accessibility SetterAccessibility { get; init; } = global::CommunityToolkit.Maui.Accessibility.Public;
+		  	public global::CommunityToolkit.Maui.Accessibility BindablePropertyAccessibility { get; init; } = global::CommunityToolkit.Maui.AccessModifier.Public;
+		  	public global::CommunityToolkit.Maui.Accessibility GetterAccessibility { get; init; } = global::CommunityToolkit.Maui.AccessModifier.Public;
+		  	public global::CommunityToolkit.Maui.Accessibility SetterAccessibility { get; init; } = global::CommunityToolkit.Maui.AccessModifier.Public;
 		  }
 		  """;
 
@@ -64,7 +64,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		  #nullable enable
 		  namespace CommunityToolkit.Maui;
 
-		  enum Accessibility
+		  public enum AccessModifier
 		  {
 		  	Public = 0,
 		  	Internal = 1,
@@ -87,7 +87,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 #endif
 
 		context.RegisterPostInitializationOutput(static ctx => ctx.AddSource("AttachedBindablePropertyAttribute.g.cs", SourceText.From(attachedBindablePropertyAttributeSource, Encoding.UTF8)));
-		context.RegisterPostInitializationOutput(static ctx => ctx.AddSource("Accessibility.g.cs", SourceText.From(accessibilityEnumSource, Encoding.UTF8)));
+		context.RegisterPostInitializationOutput(static ctx => ctx.AddSource("AccessModifier.g.cs", SourceText.From(accessibilityEnumSource, Encoding.UTF8)));
 
 		var classProvider = context.SyntaxProvider.ForAttributeWithMetadataName("CommunityToolkit.Maui.AttachedBindablePropertyAttribute`1",
 				IsNonEmptyClassDeclarationSyntax, SemanticTransform)
@@ -386,7 +386,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 	{
 		var @namespace = classSymbol.ContainingNamespace.ToDisplayString();
 		var className = classSymbol.Name;
-		var classAccessibility = classSymbol.DeclaredAccessibility.ToString().ToLower();
+		var classAccessibility = classSymbol.DeclaredAccessModifier.ToString().ToLower();
 
 		// Build containing types hierarchy
 		var containingTypes = GetContainingTypes(classSymbol);

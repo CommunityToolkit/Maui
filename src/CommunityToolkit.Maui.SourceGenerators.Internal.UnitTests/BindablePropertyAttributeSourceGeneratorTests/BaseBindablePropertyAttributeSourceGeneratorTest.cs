@@ -17,7 +17,7 @@ public abstract class BaseBindablePropertyAttributeSourceGeneratorTest : BaseTes
 		[global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 		[global::System.AttributeUsage(global::System.AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
 		[global::System.Diagnostics.CodeAnalysis.Experimental("{{BindablePropertyDiagnostic.BindablePropertyAttributeExperimentalDiagnosticId}}")]
-		sealed partial class BindablePropertyAttribute : global::System.Attribute
+		public sealed partial class BindablePropertyAttribute : global::System.Attribute
 		{
 			public string? PropertyName { get; }
 			public global::System.Type? DeclaringType { get; init; }

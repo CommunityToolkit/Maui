@@ -440,7 +440,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = CommunityToolkit.Maui.Accessibility.Public)]
+			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = CommunityToolkit.Maui.AccessModifier.Public)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -490,7 +490,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = CommunityToolkit.Maui.Accessibility.Internal)]
+			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = CommunityToolkit.Maui.AccessModifier.Internal)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -540,7 +540,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = CommunityToolkit.Maui.Accessibility.PrivateProtected)]
+			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = CommunityToolkit.Maui.AccessModifier.PrivateProtected)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -590,7 +590,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = CommunityToolkit.Maui.Accessibility.ProtectedInternal)]
+			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = CommunityToolkit.Maui.AccessModifier.ProtectedInternal)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -640,7 +640,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = CommunityToolkit.Maui.Accessibility.Protected)]
+			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = CommunityToolkit.Maui.AccessModifier.Protected)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -690,7 +690,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = CommunityToolkit.Maui.Accessibility.Private)]
+			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = CommunityToolkit.Maui.AccessModifier.Private)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -740,7 +740,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = CommunityToolkit.Maui.Accessibility.None)]
+			  	[AttachedBindableProperty<string>("Text", SetterAccessibility = CommunityToolkit.Maui.AccessModifier.None)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -786,7 +786,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = CommunityToolkit.Maui.Accessibility.Public)]
+			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = CommunityToolkit.Maui.AccessModifier.Public)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -836,7 +836,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = CommunityToolkit.Maui.Accessibility.Internal)]
+			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = CommunityToolkit.Maui.AccessModifier.Internal)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -886,7 +886,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = CommunityToolkit.Maui.Accessibility.PrivateProtected)]
+			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = CommunityToolkit.Maui.AccessModifier.PrivateProtected)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -936,7 +936,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = CommunityToolkit.Maui.Accessibility.ProtectedInternal)]
+			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = CommunityToolkit.Maui.AccessModifier.ProtectedInternal)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -986,7 +986,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = CommunityToolkit.Maui.Accessibility.Protected)]
+			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = CommunityToolkit.Maui.AccessModifier.Protected)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -1036,7 +1036,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = CommunityToolkit.Maui.Accessibility.Private)]
+			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = CommunityToolkit.Maui.AccessModifier.Private)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -1086,7 +1086,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			  public partial class {{defaultTestClassName}} : View
 			  {
-			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = CommunityToolkit.Maui.Accessibility.None)]
+			  	[AttachedBindableProperty<string>("Text", GetterAccessibility = CommunityToolkit.Maui.AccessModifier.None)]
 			  	public {{defaultTestClassName}}()
 			  	{
 			  	}
@@ -1132,7 +1132,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			public partial class {{defaultTestClassName}} : View
 			{
-			    [AttachedBindableProperty<string>("Text", BindablePropertyAccessibility = CommunityToolkit.Maui.Accessibility.Public)]
+			    [AttachedBindableProperty<string>("Text", BindablePropertyAccessibility = CommunityToolkit.Maui.AccessModifier.Public)]
 			    public {{defaultTestClassName}}()
 				{
 				}
@@ -1182,7 +1182,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			public partial class {{defaultTestClassName}} : View
 			{
-			    [AttachedBindableProperty<string>("Text", BindablePropertyAccessibility = CommunityToolkit.Maui.Accessibility.Internal)]
+			    [AttachedBindableProperty<string>("Text", BindablePropertyAccessibility = CommunityToolkit.Maui.AccessModifier.Internal)]
 			    public {{defaultTestClassName}}()
 				{
 				}
@@ -1232,7 +1232,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			public partial class {{defaultTestClassName}} : View
 			{
-			    [AttachedBindableProperty<string>("Text", BindablePropertyAccessibility = CommunityToolkit.Maui.Accessibility.ProtectedInternal)]
+			    [AttachedBindableProperty<string>("Text", BindablePropertyAccessibility = CommunityToolkit.Maui.AccessModifier.ProtectedInternal)]
 			    public {{defaultTestClassName}}()
 				{
 				}
@@ -1282,7 +1282,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			public partial class {{defaultTestClassName}} : View
 			{
-			    [AttachedBindableProperty<string>("Text", BindablePropertyAccessibility = CommunityToolkit.Maui.Accessibility.Protected)]
+			    [AttachedBindableProperty<string>("Text", BindablePropertyAccessibility = CommunityToolkit.Maui.AccessModifier.Protected)]
 			    public {{defaultTestClassName}}()
 				{
 				}
@@ -1332,7 +1332,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			public partial class {{defaultTestClassName}} : View
 			{
-			    [AttachedBindableProperty<string>("Text", BindablePropertyAccessibility = CommunityToolkit.Maui.Accessibility.PrivateProtected)]
+			    [AttachedBindableProperty<string>("Text", BindablePropertyAccessibility = CommunityToolkit.Maui.AccessModifier.PrivateProtected)]
 			    public {{defaultTestClassName}}()
 				{
 				}
@@ -1382,7 +1382,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			public partial class {{defaultTestClassName}} : View
 			{
-			    [AttachedBindableProperty<string>("Text", BindablePropertyAccessibility = CommunityToolkit.Maui.Accessibility.Private)]
+			    [AttachedBindableProperty<string>("Text", BindablePropertyAccessibility = CommunityToolkit.Maui.AccessModifier.Private)]
 			    public {{defaultTestClassName}}()
 				{
 				}
@@ -1430,7 +1430,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			namespace {{defaultTestNamespace}};
 
-			[AttachedBindableProperty<string>("Text", BindablePropertyAccessibility = CommunityToolkit.Maui.Accessibility.None)]
+			[AttachedBindableProperty<string>("Text", BindablePropertyAccessibility = CommunityToolkit.Maui.AccessModifier.None)]
 			public partial class {{defaultTestClassName}} : View
 			{
 			}

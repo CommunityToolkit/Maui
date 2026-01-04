@@ -4,10 +4,10 @@
 /// The <see cref="StateContainer"/> attached properties enable any <see cref="Layout"/> inheriting element to become state-aware.
 /// States are defined in the <see cref="StateViewsProperty"/> with <see cref="StateView"/> attached properties.
 /// </summary>
-[AttachedBindableProperty<StateContainerController>(layoutControllerPropertyName, DefaultValueCreatorMethodName = nameof(ContainerControllerCreator), BindablePropertyAccessibility = Accessibility.Internal, GetterAccessibility = Accessibility.Internal, SetterAccessibility = Accessibility.None)]
+[AttachedBindableProperty<StateContainerController>(layoutControllerPropertyName, DefaultValueCreatorMethodName = nameof(ContainerControllerCreator), BindablePropertyAccessibility = AccessModifier.Internal, GetterAccessibility = AccessModifier.Internal, SetterAccessibility = AccessModifier.None)]
 [AttachedBindableProperty<IList<View>>(stateViewsPropertyName, DefaultValueCreatorMethodName = nameof(CreateDefaultStateViewsProperty))]
 [AttachedBindableProperty<string>(currentStatePropertyName, true, PropertyChangingMethodName = nameof(OnCurrentStateChanging), BindablePropertyXmlDocumentation = "/// <summary>Backing <see cref=\"BindableProperty\"/> for the <see cref=\"GetCurrentState\"/> and <see cref=\"SetCurrentState\"/> methods.\r\n///To ensure <see cref=\"StateContainer\"/> does not throw a <see cref=\"StateContainerException\"/> due to active animations, first verify <see cref=\"CanStateChangeProperty\"/> is <see langword=\"true\"/> before changing <see cref=\"CurrentStateProperty\"/>\r\n///</summary>")]
-[AttachedBindableProperty<bool>(canStateChangePropertyName, DefaultValue = true, DefaultBindingMode = BindingMode.OneWayToSource, SetterAccessibility = Accessibility.Private)]
+[AttachedBindableProperty<bool>(canStateChangePropertyName, DefaultValue = true, DefaultBindingMode = BindingMode.OneWayToSource, SetterAccessibility = AccessModifier.Private)]
 public static partial class StateContainer
 {
 	const string stateViewsPropertyName = "StateViews";

@@ -17,7 +17,7 @@ public abstract class BaseAttachedBindablePropertyAttributeSourceGeneratorTest :
 		  [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 		  [global::System.AttributeUsage(global::System.AttributeTargets.Class | global::System.AttributeTargets.Constructor, AllowMultiple = true, Inherited = false)]
 		  [global::System.Diagnostics.CodeAnalysis.Experimental("{{BindablePropertyDiagnostic.BindablePropertyAttributeExperimentalDiagnosticId}}")]
-		  sealed partial class AttachedBindablePropertyAttribute<T>(string propertyName, bool isNullable = false) : global::System.Attribute where T : notnull
+		  public sealed partial class AttachedBindablePropertyAttribute<T>(string propertyName, bool isNullable = false) : global::System.Attribute where T : notnull
 		  {
 		  	public string PropertyName { get; } = propertyName;
 		  	public bool DeclaringTypeIsNullable { get; } = isNullable;
@@ -31,13 +31,13 @@ public abstract class BaseAttachedBindablePropertyAttributeSourceGeneratorTest :
 		  	public string? BindablePropertyXmlDocumentation { get; init; }
 		  	public string? GetterMethodXmlDocumentation { get; init; }
 		  	public string? SetterMethodXmlDocumentation { get; init; }
-		  	public global::CommunityToolkit.Maui.Accessibility BindablePropertyAccessibility { get; init; } = global::CommunityToolkit.Maui.Accessibility.Public;
-		  	public global::CommunityToolkit.Maui.Accessibility GetterAccessibility { get; init; } = global::CommunityToolkit.Maui.Accessibility.Public;
-		  	public global::CommunityToolkit.Maui.Accessibility SetterAccessibility { get; init; } = global::CommunityToolkit.Maui.Accessibility.Public;
+		  	public global::CommunityToolkit.Maui.Accessibility BindablePropertyAccessibility { get; init; } = global::CommunityToolkit.Maui.AccessModifier.Public;
+		  	public global::CommunityToolkit.Maui.Accessibility GetterAccessibility { get; init; } = global::CommunityToolkit.Maui.AccessModifier.Public;
+		  	public global::CommunityToolkit.Maui.Accessibility SetterAccessibility { get; init; } = global::CommunityToolkit.Maui.AccessModifier.Public;
 		  }
 		  """;
 
-	const string generatedEnumFileName = "Accessibility.g.cs";
+	const string generatedEnumFileName = "AccessModifier.g.cs";
 	const string expectedEnum =
 		/* language=C#-test */
 		//lang=csharp
