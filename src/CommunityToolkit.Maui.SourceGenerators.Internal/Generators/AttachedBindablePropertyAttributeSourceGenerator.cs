@@ -386,7 +386,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 	{
 		var @namespace = classSymbol.ContainingNamespace.ToDisplayString();
 		var className = classSymbol.Name;
-		var classAccessibility = classSymbol.DeclaredAccessModifier.ToString().ToLower();
+		var classAccessibility = classSymbol.DeclaredAccessibility.ToString().ToLower();
 
 		// Build containing types hierarchy
 		var containingTypes = GetContainingTypes(classSymbol);
