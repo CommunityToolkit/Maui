@@ -306,7 +306,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			{
 				sb.Append("/// <summary>\r\n/// Gets ")
 					.Append(sanitizedPropertyName)
-					.Append(" for the <paramref = \"bindable\"/> child element.\r\n/// </summary>\r\n");
+					.Append(" for the <paramref name=\"bindable\"/> child element.\r\n/// </summary>\r\n");
 			}
 
 			sb.Append(info.GetterAccessibility)
@@ -335,7 +335,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			{
 				sb.Append("/// <summary>\r\n/// Sets ")
 					.Append(sanitizedPropertyName)
-					.Append(" for the <paramref = \"bindable\"/> child element.\r\n/// </summary>\r\n");
+					.Append(" for the <paramref name=\"bindable\"/> child element.\r\n/// </summary>\r\n");
 			}
 
 			sb.Append(info.SetterAccessibility)
