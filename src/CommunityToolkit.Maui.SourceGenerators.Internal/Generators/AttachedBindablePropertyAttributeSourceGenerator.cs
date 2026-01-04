@@ -44,6 +44,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		  	public string PropertyChangingMethodName { get; init; } = string.Empty;
 		  	public string CoerceValueMethodName { get; init; } = string.Empty;
 		  	public string DefaultValueCreatorMethodName { get; init; } = string.Empty;
+		  	public global::CommunityToolkit.Maui.Accessibility BindablePropertyAccessibility { get; init; } = global::CommunityToolkit.Maui.Accessibility.Public;
 		  	public global::CommunityToolkit.Maui.Accessibility GetterAccessibility { get; init; } = global::CommunityToolkit.Maui.Accessibility.Public;
 		  	public global::CommunityToolkit.Maui.Accessibility SetterAccessibility { get; init; } = global::CommunityToolkit.Maui.Accessibility.Public;
 		  }
@@ -252,7 +253,8 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			.Append(sanitizedPropertyName)
 			.Append(" property.\r\n/// </summary>\r\n");
 
-		sb.Append("public static readonly ")
+		sb.Append(info.BindablePropertyAccessibility)
+			.Append("static readonly ")
 			.Append(bindablePropertyFullName)
 			.Append(" ")
 			.Append(info.BindablePropertyName)
@@ -410,6 +412,8 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 
 		var getterAccessibility = GetAccessibilityString(attributeData, "GetterAccessibility");
 		var setterAccessibility = GetAccessibilityString(attributeData, "SetterAccessibility");
+		var bindablePropertyAccessibility = GetAccessibilityString(attributeData, "BindablePropertyAccessibility")
+			?? throw new InvalidOperationException("Bindable Property Accessibilty Cannot be null");
 
 		return new AttachedBindablePropertyModel(
 			propertyName,
@@ -424,6 +428,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			defaultValueCreatorMethodName,
 			getterAccessibility,
 			setterAccessibility,
+			bindablePropertyAccessibility,
 			isDeclaringTypeNullable
 		);
 	}

@@ -28,6 +28,7 @@ public abstract class BaseAttachedBindablePropertyAttributeSourceGeneratorTest :
 			public string PropertyChangingMethodName { get; init; } = string.Empty;
 			public string CoerceValueMethodName { get; init; } = string.Empty;
 			public string DefaultValueCreatorMethodName { get; init; } = string.Empty;
+			public global::CommunityToolkit.Maui.Accessibility BindablePropertyAccessibility { get; init; } = global::CommunityToolkit.Maui.Accessibility.Public;
 			public global::CommunityToolkit.Maui.Accessibility GetterAccessibility { get; init; } = global::CommunityToolkit.Maui.Accessibility.Public;
 			public global::CommunityToolkit.Maui.Accessibility SetterAccessibility { get; init; } = global::CommunityToolkit.Maui.Accessibility.Public;
 		}
