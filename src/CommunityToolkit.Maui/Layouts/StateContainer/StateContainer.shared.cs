@@ -4,30 +4,16 @@
 /// The <see cref="StateContainer"/> attached properties enable any <see cref="Layout"/> inheriting element to become state-aware.
 /// States are defined in the <see cref="StateViewsProperty"/> with <see cref="StateView"/> attached properties.
 /// </summary>
+[AttachedBindableProperty<StateContainerController>(layoutControllerPropertyName, DefaultValueCreatorMethodName = nameof(ContainerControllerCreator), BindablePropertyAccessibility = Accessibility.Internal, GetterAccessibility = Accessibility.Internal, SetterAccessibility = Accessibility.None)]
 [AttachedBindableProperty<IList<View>>(stateViewsPropertyName, DefaultValueCreatorMethodName = nameof(CreateDefaultStateViewsProperty))]
-[AttachedBindableProperty<string>(currentStatePropertyName, true, PropertyChangingMethodName = nameof(OnCurrentStateChanging))]
-[AttachedBindableProperty<bool>(canStateChangePropertyName, DefaultValue = true, DefaultBindingMode = BindingMode.OneWayToSource, SetterAccessibility = Accessibility.Private)]
+[AttachedBindableProperty<string>(currentStatePropertyName, true, PropertyChangingMethodName = nameof(OnCurrentStateChanging), BindablePropertyXmlDocumentation = "/// <summary>Backing <see cref=\"BindableProperty\"/> for the <see cref=\"GetCurrentState\"/> and <see cref=\"SetCurrentState\"/> methods.\\r\\nTo ensure <see cref=\"StateContainer\"/> does not throw a <see cref=\"StateContainerException\"/> due to active animations, first verify <see cref=\"CanStateChangeProperty\"/> is <see langword=\"true\"/> before changing <see cref=\"CurrentStateProperty\"/></summary>")]
+[AttachedBindableProperty<bool>(canStateChangePropertyName, DefaultValue = true, DefaultBindingMode = BindingMode.OneWayToSource, SetterAccessibility = Accessibility.Private, BindablePropertyXmlDocumentation = "/// <summary>Backing <see cref=\"BindableProperty\"/> for the <see cref=\"GetCanStateChange\"/> method.</summary>")]
 public static partial class StateContainer
 {
 	const string stateViewsPropertyName = "StateViews";
 	const string currentStatePropertyName = "CurrentState";
 	const string canStateChangePropertyName = "CanStateChange";
 	const string layoutControllerPropertyName = "LayoutController";
-
-	internal static readonly BindableProperty LayoutControllerProperty
-		= BindableProperty.CreateAttached(layoutControllerPropertyName, typeof(StateContainerController), typeof(StateContainer), default(StateContainerController), defaultValueCreator: ContainerControllerCreator);
-	
-	#if RELEASE
-	#error Add XML Comments to Attached Bindable Properties
-	/// <summary>
-	/// Backing <see cref="BindableProperty"/> for the <see cref="GetCurrentState"/> and <see cref="SetCurrentState"/> methods.
-	/// To ensure <see cref="StateContainer"/> does not throw a <see cref="StateContainerException"/> due to active animations, first verify <see cref="CanStateChangeProperty"/> is <see langword="true"/> before changing <see cref="CurrentStateProperty"/>
-	/// </summary>
-
-	/// <summary>
-	/// Backing <see cref="BindableProperty"/> for the <see cref="GetCanStateChange"/> method.
-	/// </summary>
-	#endif
 
 	/// <summary>
 	/// Change state with custom animation.
@@ -48,7 +34,7 @@ public static partial class StateContainer
 		ValidateCanStateChange(bindable);
 		SetCanStateChange(bindable, false);
 
-		var layout = GetContainerController(bindable).GetLayout();
+		var layout = GetLayoutController(bindable).GetLayout();
 
 		try
 		{
@@ -96,7 +82,7 @@ public static partial class StateContainer
 		ValidateCanStateChange(bindable);
 		SetCanStateChange(bindable, false);
 
-		var layout = GetContainerController(bindable).GetLayout();
+		var layout = GetLayoutController(bindable).GetLayout();
 
 		try
 		{
@@ -129,7 +115,7 @@ public static partial class StateContainer
 		ValidateCanStateChange(bindable);
 		SetCanStateChange(bindable, false);
 
-		var layout = GetContainerController(bindable).GetLayout();
+		var layout = GetLayoutController(bindable).GetLayout();
 
 		try
 		{
@@ -152,9 +138,6 @@ public static partial class StateContainer
 		}
 	}
 
-	internal static StateContainerController GetContainerController(BindableObject b) =>
-		(StateContainerController)b.GetValue(LayoutControllerProperty);
-
 	static void OnCurrentStateChanging(BindableObject bindable, object oldValue, object newValue)
 	{
 		if (oldValue == newValue)
@@ -171,11 +154,11 @@ public static partial class StateContainer
 	{
 		if (string.IsNullOrEmpty(state))
 		{
-			GetContainerController(bindable).SwitchToContent();
+			GetLayoutController(bindable).SwitchToContent();
 		}
 		else
 		{
-			GetContainerController(bindable).SwitchToState(state);
+			GetLayoutController(bindable).SwitchToState(state);
 		}
 	}
 
@@ -200,20 +183,14 @@ public static partial class StateContainer
 		}
 	}
 	
-	static object CreateDefaultStateViewsProperty(BindableObject bindable) => new List<View>(); 
+	static IList<View> CreateDefaultStateViewsProperty(BindableObject bindable) => []; 
 }
 
 /// <summary>
 /// An <see cref="InvalidOperationException"/> thrown when <see cref="StateContainer"/> enters an invalid state
 /// </summary>
-public sealed class StateContainerException : InvalidOperationException
-{
-	/// <summary>
-	/// Constructor for <see cref="StateContainerException"/>
-	/// </summary>
-	/// <param name="message"><see cref="Exception.Message"/></param>
-	public StateContainerException(string message) : base(message)
-	{
-
-	}
-}
+/// <remarks>
+/// Constructor for <see cref="StateContainerException"/>
+/// </remarks>
+/// <param name="message"><see cref="Exception.Message"/></param>
+public sealed class StateContainerException(string message) : InvalidOperationException(message);
