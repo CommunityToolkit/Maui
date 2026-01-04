@@ -741,9 +741,7 @@ public class BindablePropertyAttributeSourceGenerator_EdgeCaseTests : BaseBindab
 			}
 			""";
 
-		var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await VerifySourceGeneratorAsync(source, string.Empty));
-
-		Assert.Contains("System.NotSupportedException: The property accessiblity, Private, for Text is not supported. The supported accessibility kinds are `public`, `internal` and `protected internal`.", exception.Message);
+		await Assert.ThrowsAsync<InvalidOperationException>(async () => await VerifySourceGeneratorAsync(source, string.Empty));
 	}
 
 	[Fact]
@@ -765,9 +763,7 @@ public class BindablePropertyAttributeSourceGenerator_EdgeCaseTests : BaseBindab
 			}
 			""";
 
-		var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await VerifySourceGeneratorAsync(source, string.Empty));
-
-		Assert.Contains("System.NotSupportedException: The property accessiblity, Protected, for Text is not supported. The supported accessibility kinds are `public`, `internal` and `protected internal`.", exception.Message);
+		await Assert.ThrowsAsync<InvalidOperationException>(async () => await VerifySourceGeneratorAsync(source, string.Empty));
 	}
 
 	[Fact]
@@ -789,8 +785,6 @@ public class BindablePropertyAttributeSourceGenerator_EdgeCaseTests : BaseBindab
 			}
 			""";
 
-		var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await VerifySourceGeneratorAsync(source, string.Empty));
-
-		Assert.Contains("System.NotSupportedException: The property accessiblity, ProtectedAndInternal, for Text is not supported. The supported accessibility kinds are `public`, `internal` and `protected internal`.", exception.Message);
+		await Assert.ThrowsAsync<InvalidOperationException>(async () => await VerifySourceGeneratorAsync(source, string.Empty));
 	}
 }

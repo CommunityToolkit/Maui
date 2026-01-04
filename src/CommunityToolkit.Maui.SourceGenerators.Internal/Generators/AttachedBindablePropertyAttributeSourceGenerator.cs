@@ -47,9 +47,9 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		  	public string? BindablePropertyXmlDocumentation { get; init; }
 		  	public string? GetterMethodXmlDocumentation { get; init; }
 		  	public string? SetterMethodXmlDocumentation { get; init; }
-		  	public global::CommunityToolkit.Maui.Accessibility BindablePropertyAccessibility { get; init; } = global::CommunityToolkit.Maui.AccessModifier.Public;
-		  	public global::CommunityToolkit.Maui.Accessibility GetterAccessibility { get; init; } = global::CommunityToolkit.Maui.AccessModifier.Public;
-		  	public global::CommunityToolkit.Maui.Accessibility SetterAccessibility { get; init; } = global::CommunityToolkit.Maui.AccessModifier.Public;
+		  	public global::CommunityToolkit.Maui.AccessModifier BindablePropertyAccessibility { get; init; } = global::CommunityToolkit.Maui.AccessModifier.Public;
+		  	public global::CommunityToolkit.Maui.AccessModifier GetterAccessibility { get; init; } = global::CommunityToolkit.Maui.AccessModifier.Public;
+		  	public global::CommunityToolkit.Maui.AccessModifier SetterAccessibility { get; init; } = global::CommunityToolkit.Maui.AccessModifier.Public;
 		  }
 		  """;
 
