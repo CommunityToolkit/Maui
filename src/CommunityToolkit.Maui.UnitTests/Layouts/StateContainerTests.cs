@@ -506,7 +506,7 @@ public class StateContainerTests : BaseTest
 	[Fact]
 	public void StateContainer_CreatesControllerWithLayout()
 	{
-		var containerController = StateContainer.GetContainerController(layout);
+		var containerController = StateContainer.GetLayoutController(layout);
 
 		Assert.NotNull(containerController);
 		Assert.IsType<VerticalStackLayout>(containerController.GetLayout());
