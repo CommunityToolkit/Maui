@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.ExceptionServices;
 
 namespace CommunityToolkit.Maui.Storage;
 
@@ -29,7 +30,7 @@ public record FileSaverResult(string? FilePath, Exception? Exception)
 	{
 		if (!IsSuccessful)
 		{
-			throw Exception;
+			ExceptionDispatchInfo.Throw(Exception);
 		}
 	}
 }
