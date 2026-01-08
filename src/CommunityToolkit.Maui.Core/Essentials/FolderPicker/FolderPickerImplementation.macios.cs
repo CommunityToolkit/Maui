@@ -27,15 +27,27 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 
 		await using var registration = cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
 
-		var picker = new UIDocumentPickerViewController([UTTypes.Folder])
-		{
-			AllowsMultipleSelection = false,
-			DirectoryUrl = NSUrl.FromString(initialPath)
-		};
+		using var picker = new UIDocumentPickerViewController([UTTypes.Folder]);
+		picker.AllowsMultipleSelection = false;
+		picker.DirectoryUrl = NSUrl.FromString(initialPath);
 
+		picker.DidPickDocumentAtUrls += OnPicked;
+		picker.WasCancelled += OnCancelled;
+
+		try
+		{
+			currentViewController.PresentViewController(picker, true, null);
+			return await tcs.Task.WaitAsync(cancellationToken);
+		}
+		finally
+		{
+			picker.DidPickDocumentAtUrls -= OnPicked;
+			picker.WasCancelled -= OnCancelled;
+		}
+		
 		void OnPicked(object? sender, UIDocumentPickedAtUrlsEventArgs e)
 		{
-			if (e.Urls.Length == 0)
+			if (e.Urls.Length is 0)
 			{
 				tcs.TrySetException(new FolderPickerException("No folder was selected."));
 				return;
@@ -44,7 +56,7 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 			var path = e.Urls[0].Path;
 			if (path is null)
 			{
-				tcs.TrySetException(new FileSaveException("Path cannot be null."));
+				tcs.TrySetException(new FileSaveException("File path cannot be null."));
 				return;
 			}
 
@@ -53,22 +65,7 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 
 		void OnCancelled(object? sender, EventArgs e)
 		{
-			tcs.TrySetCanceled(CancellationToken.None);
-		}
-
-		picker.DidPickDocumentAtUrls += OnPicked;
-		picker.WasCancelled += OnCancelled;
-
-		try
-		{
-			currentViewController.PresentViewController(picker, true, null);
-			return await tcs.Task.ConfigureAwait(false);
-		}
-		finally
-		{
-			picker.DidPickDocumentAtUrls -= OnPicked;
-			picker.WasCancelled -= OnCancelled;
-			picker.Dispose();
+			tcs.TrySetCanceled(cancellationToken);
 		}
 	}
 }
