@@ -51,33 +51,8 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		await using var registration = cancellationToken.Register(() =>
 			tcs.TrySetCanceled(cancellationToken));
 
-		var picker = new UIDocumentPickerViewController([fileUrl], true)
-		{
-			DirectoryUrl = NSUrl.FromString(initialPath)
-		};
-
-		void OnPicked(object? sender, UIDocumentPickedAtUrlsEventArgs e)
-		{
-			if (e.Urls.Length == 0)
-			{
-				tcs.TrySetException(new FileSaveException("No file was selected."));
-				return;
-			}
-			
-			var path = e.Urls[0].Path;
-			if (path is null)
-			{
-				tcs.TrySetException(new FileSaveException("Path cannot be null."));
-				return;
-			}
-			
-			tcs.TrySetResult(path);
-		}
-
-		void OnCancelled(object? sender, EventArgs e)
-		{
-			tcs.TrySetCanceled(CancellationToken.None);
-		}
+		using var picker = new UIDocumentPickerViewController([fileUrl], true);
+		picker.DirectoryUrl = NSUrl.FromString(initialPath);
 
 		picker.DidPickDocumentAtUrls += OnPicked;
 		picker.WasCancelled += OnCancelled;
@@ -87,7 +62,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 			cancellationToken.ThrowIfCancellationRequested();
 			currentViewController.PresentViewController(picker, true, null);
 
-			return await tcs.Task.ConfigureAwait(false);
+			return await tcs.Task.WaitAsync(cancellationToken);
 		}
 		finally
 		{
@@ -95,7 +70,29 @@ public sealed partial class FileSaverImplementation : IFileSaver
 
 			picker.DidPickDocumentAtUrls -= OnPicked;
 			picker.WasCancelled -= OnCancelled;
-			picker.Dispose();
+		}
+		
+		void OnPicked(object? sender, UIDocumentPickedAtUrlsEventArgs e)
+		{
+			if (e.Urls.Length is 0)
+			{
+				tcs.TrySetException(new FileSaveException("No file was selected."));
+				return;
+			}
+			
+			var path = e.Urls[0].Path;
+			if (path is null)
+			{
+				tcs.TrySetException(new FileSaveException("File path cannot be null."));
+				return;
+			}
+			
+			tcs.TrySetResult(path);
+		}
+
+		void OnCancelled(object? sender, EventArgs e)
+		{
+			tcs.TrySetCanceled(cancellationToken);
 		}
 	}
 }
