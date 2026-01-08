@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.ExceptionServices;
 using CommunityToolkit.Maui.Core.Primitives;
 
 namespace CommunityToolkit.Maui.Storage;
@@ -16,12 +17,10 @@ public record FolderPickerResult(Folder? Folder, Exception? Exception)
 	[MemberNotNullWhen(true, nameof(Folder))]
 	[MemberNotNullWhen(false, nameof(Exception))]
 	public bool IsSuccessful => Exception is null;
-	
+
 	/// <summary>
 	/// Check if the operation was cancelled.
 	/// </summary>
-	[MemberNotNullWhen(false, nameof(Folder))]
-	[MemberNotNullWhen(true, nameof(Exception))]
 	public bool IsCancelled => Exception is OperationCanceledException;
 
 	/// <summary>
@@ -32,7 +31,7 @@ public record FolderPickerResult(Folder? Folder, Exception? Exception)
 	{
 		if (!IsSuccessful)
 		{
-			throw Exception;
+			ExceptionDispatchInfo.Throw(Exception);
 		}
 	}
 }
