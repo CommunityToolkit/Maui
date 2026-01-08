@@ -19,8 +19,6 @@ public record FileSaverResult(string? FilePath, Exception? Exception)
 	/// <summary>
 	/// Check if the operation was cancelled.
 	/// </summary>
-	[MemberNotNullWhen(false, nameof(FilePath))]
-	[MemberNotNullWhen(true, nameof(Exception))]
 	public bool IsCancelled => Exception is OperationCanceledException;
 
 	/// <summary>
