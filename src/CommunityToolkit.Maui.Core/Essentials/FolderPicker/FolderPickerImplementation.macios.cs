@@ -56,7 +56,7 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 			var path = e.Urls[0].Path;
 			if (path is null)
 			{
-				tcs.TrySetException(new FileSaveException("File path cannot be null."));
+				tcs.TrySetException(new FolderPickerException("File path cannot be null."));
 				return;
 			}
 
