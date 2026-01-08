@@ -268,17 +268,17 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			namespace {{defaultTestNamespace}};
 
-			[AttachedBindablePropertyAttribute<int>("Value", true
+			[AttachedBindablePropertyAttribute<int>("Value", true,
 			        DefaultValue = 7,
 			        DefaultBindingMode = BindingMode.TwoWay,
 			        ValidateValueMethodName = nameof(ValidateValue),
 			        PropertyChangedMethodName = nameof(OnPropertyChanged),
 			        PropertyChangingMethodName = nameof(OnPropertyChanging),
 			        CoerceValueMethodName = nameof(CoerceValue),
-			        DefaultValueCreatorMethodName = nameof(CreateDefaultValue))],
-			        BindablePropertyXmlDocumentation = {{bindablePropertyXmlDocumentation}},
-			        GetterMethodXmlDocumentation = {{getterMethodXmlDocumentation}},
-			        SetterMethodXmlDocumentation = {{setterMethodXmlDocumentation}},
+			        DefaultValueCreatorMethodName = nameof(CreateDefaultValue),
+			        BindablePropertyXmlDocumentation = "{{bindablePropertyXmlDocumentation}}",
+			        GetterMethodXmlDocumentation = "{{getterMethodXmlDocumentation}}",
+			        SetterMethodXmlDocumentation = "{{setterMethodXmlDocumentation}}",
 			        BindablePropertyAccessibility = AccessModifier.Internal,
 			        GetterAccessibility = AccessModifier.Internal,
 			        SetterAccessibility = AccessModifier.Internal)]

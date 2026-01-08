@@ -411,7 +411,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static AttachedBindablePropertyModel CreateAttachedBindablePropertyModel(AttributeData attributeData, INamedTypeSymbol declaringType)
 	{
-		if (attributeData.AttributeClass is null || attributeData.ConstructorArguments.Length == 0)
+		if (attributeData.AttributeClass is null || attributeData.ConstructorArguments.Length is 0)
 		{
 			throw new ArgumentException("Invalid attribute data");
 		}
@@ -430,7 +430,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		var typeArg = (attributeData.AttributeClass?.TypeArguments.FirstOrDefault()) ?? throw new InvalidOperationException("Could not determine property type from attribute");
 		var isDeclaringTypeNullable = (bool)(attributeData.ConstructorArguments[1].Value ?? throw new InvalidOperationException("DeclaringTypeIsNullable cannot be null"));
 
-		var defaultValue = GetDefaultValueString(attributeData, typeArg, isDeclaringTypeNullable && !typeArg.IsValueType);
+		var defaultValue = GetDefaultValueString(attributeData, typeArg, isDeclaringTypeNullable && typeArg.OriginalDefinition.SpecialType is not SpecialType.System_Nullable_T);
 		var defaultBindingMode = attributeData.GetNamedTypeArgumentsAttributeValueForDefaultBindingMode("DefaultBindingMode", "(Microsoft.Maui.Controls.BindingMode)0");
 		var validateValueMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString("ValidateValueMethodName");
 		var propertyChangedMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString("PropertyChangedMethodName");
@@ -473,7 +473,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 	static string GetDefaultValueString(AttributeData attributeData, ITypeSymbol typeArg, bool shouldPostpendNullableSymbol)
 	{
 		var defaultValueArg = attributeData.NamedArguments
-			.FirstOrDefault(x => x.Key == "DefaultValue");
+			.FirstOrDefault(x => x.Key is "DefaultValue");
 
 		if (defaultValueArg.Value.IsNull)
 		{
@@ -483,7 +483,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		var value = defaultValueArg.Value;
 
 		// Handle Arrays
-		if (typeArg.TypeKind == TypeKind.Array)
+		if (typeArg.TypeKind is TypeKind.Array)
 		{
 			return GetFormattedArrayValue(value, GetFormattedReturnType(typeArg, shouldPostpendNullableSymbol));
 		}
@@ -612,7 +612,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		}
 
 		var typeParams = typeSymbol.TypeParameters;
-		if (typeParams.Length == 1)
+		if (typeParams.Length is 1)
 		{
 			return typeParams[0].Name;
 		}
@@ -683,7 +683,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static string GetFormattedArrayValue(TypedConstant arrayConstant, string typeSymbol)
 	{
-		if (arrayConstant.Values.Length == 0)
+		if (arrayConstant.Values.Length is 0)
 		{
 			return $"({typeSymbol})[]";
 		}

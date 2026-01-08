@@ -17,7 +17,7 @@ public record BindablePropertyModel(string PropertyName, ITypeSymbol ReturnType,
 public record AttachedBindablePropertyModel(string PropertyName, ITypeSymbol ReturnType, ITypeSymbol DeclaringType, string DefaultValue, string DefaultBindingMode, string ValidateValueMethodName, string PropertyChangedMethodName, string PropertyChangingMethodName, string CoerceValueMethodName, string DefaultValueCreatorMethodName, string? GetterAccessibility, string? SetterAccessibility, string BindablePropertyAccessibility, bool isDeclaringTypeNullable, string? BindablePropertyXMLDocumentation, string? GetterMethodXMLDocumentation, string? SetterMethodXMLDocumentation)
 {
 	public string BindablePropertyName => $"{PropertyName}Property";
-	public bool ShouldPostpendNullable => isDeclaringTypeNullable && !ReturnType.IsValueType;
+	public bool ShouldPostpendNullable => isDeclaringTypeNullable && ReturnType.OriginalDefinition.SpecialType is not SpecialType.System_Nullable_T;
 }
 
 public record BindablePropertySemanticValues(ClassInformation ClassInformation, EquatableArray<BindablePropertyModel> BindableProperties);

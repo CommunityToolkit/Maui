@@ -285,17 +285,17 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			public partial class {{defaultTestClassName}} : View
 			{
-				[AttachedBindablePropertyAttribute<int>("Value", true
+				[AttachedBindablePropertyAttribute<int>("Value", true,
 			        DefaultValue = 7,
 			        DefaultBindingMode = BindingMode.TwoWay,
 			        ValidateValueMethodName = nameof(ValidateValue),
 			        PropertyChangedMethodName = nameof(OnPropertyChanged),
 			        PropertyChangingMethodName = nameof(OnPropertyChanging),
 			        CoerceValueMethodName = nameof(CoerceValue),
-			        DefaultValueCreatorMethodName = nameof(CreateDefaultValue))]
-			        BindablePropertyXmlDocumentation = {{bindablePropertyXmlDocumentation}},
-			        GetterMethodXmlDocumentation = {{getterMethodXmlDocumentation}},
-			        SetterMethodXmlDocumentation = {{setterMethodXmlDocumentation}},
+			        DefaultValueCreatorMethodName = nameof(CreateDefaultValue),
+			        BindablePropertyXmlDocumentation = "{{bindablePropertyXmlDocumentation}}",
+			        GetterMethodXmlDocumentation = "{{getterMethodXmlDocumentation}}",
+			        SetterMethodXmlDocumentation = "{{setterMethodXmlDocumentation}}",
 			        BindablePropertyAccessibility = AccessModifier.Internal,
 			        GetterAccessibility = AccessModifier.Internal,
 			        SetterAccessibility = AccessModifier.Internal)]
@@ -323,11 +323,11 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 			public partial class {{defaultTestClassName}}
 			{
 			    {{bindablePropertyXmlDocumentation}}
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty ValueProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Value", typeof(int), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (int)7, (Microsoft.Maui.Controls.BindingMode)1, ValidateValue, OnPropertyChanged, OnPropertyChanging, CoerceValue, CreateDefaultValue);
+			    internal static readonly global::Microsoft.Maui.Controls.BindableProperty ValueProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Value", typeof(int), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (int? )7, (Microsoft.Maui.Controls.BindingMode)1, ValidateValue, OnPropertyChanged, OnPropertyChanging, CoerceValue, CreateDefaultValue);
 			    {{getterMethodXmlDocumentation}}
-			    public static int GetValue(global::Microsoft.Maui.Controls.BindableObject bindable) => (int)bindable.GetValue(ValueProperty);
+			    internal static int? GetValue(global::Microsoft.Maui.Controls.BindableObject bindable) => (int? )bindable.GetValue(ValueProperty);
 			    {{setterMethodXmlDocumentation}}
-			    public static void SetValue(global::Microsoft.Maui.Controls.BindableObject bindable, int value) => bindable.SetValue(ValueProperty, value);
+			    internal static void SetValue(global::Microsoft.Maui.Controls.BindableObject bindable, int? value) => bindable.SetValue(ValueProperty, value);
 			}
 			""";
 

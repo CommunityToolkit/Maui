@@ -367,8 +367,8 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Int
 
 		await VerifySourceGeneratorAsync(source, ("FirstView.g.cs", expectedFirstGenerated), ("SecondView.g.cs", expectedSecondGenerated));
 	}
-	
-		[Fact]
+
+	[Fact]
 	public async Task GenerateAttachedBindableProperty_CustomXmlDocumentation_GeneratesCorrectCode()
 	{
 		const string bindablePropertyXmlDocumentation = "///<summary>This is the custom XML documentation for the TextProperty</summary>";
