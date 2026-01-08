@@ -270,6 +270,10 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 	[Fact]
 	public async Task GenerateAttachedBindableProperty_WithAllParameters_GeneratesCorrectCode()
 	{
+		const string bindablePropertyXmlDocumentation = "///<summary>This is the custom XML documentation for the TextProperty</summary>";
+		const string getterMethodXmlDocumentation = "///<summary>This is the custom XML documentation for the GetText method.</summary>";
+		const string setterMethodXmlDocumentation = "///<summary>This is the custom XML documentation for the SetText method.</summary>";
+		
 		const string source =
 			/* language=C#-test */
 			//lang=csharp
@@ -281,7 +285,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 			public partial class {{defaultTestClassName}} : View
 			{
-				[AttachedBindablePropertyAttribute<int>("Value",
+				[AttachedBindablePropertyAttribute<int>("Value", true
 			        DefaultValue = 7,
 			        DefaultBindingMode = BindingMode.TwoWay,
 			        ValidateValueMethodName = nameof(ValidateValue),
@@ -289,6 +293,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 			        PropertyChangingMethodName = nameof(OnPropertyChanging),
 			        CoerceValueMethodName = nameof(CoerceValue),
 			        DefaultValueCreatorMethodName = nameof(CreateDefaultValue))]
+			        BindablePropertyXmlDocumentation = {{bindablePropertyXmlDocumentation}},
+			        GetterMethodXmlDocumentation = {{getterMethodXmlDocumentation}},
+			        SetterMethodXmlDocumentation = {{setterMethodXmlDocumentation}},
+			        BindablePropertyAccessibility = AccessModifier.Internal,
+			        GetterAccessibility = AccessModifier.Internal,
+			        SetterAccessibility = AccessModifier.Internal)]
 				public {{defaultTestClassName}}()
 				{
 				}
@@ -312,17 +322,11 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 			namespace {{defaultTestNamespace}};
 			public partial class {{defaultTestClassName}}
 			{
-			    /// <summary>
-			    /// Attached BindableProperty for the Value property.
-			    /// </summary>
+			    {{bindablePropertyXmlDocumentation}}
 			    public static readonly global::Microsoft.Maui.Controls.BindableProperty ValueProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Value", typeof(int), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (int)7, (Microsoft.Maui.Controls.BindingMode)1, ValidateValue, OnPropertyChanged, OnPropertyChanging, CoerceValue, CreateDefaultValue);
-			    /// <summary>
-			    /// Gets Value for the <paramref name = "bindable"/> child element.
-			    /// </summary>
+			    {{getterMethodXmlDocumentation}}
 			    public static int GetValue(global::Microsoft.Maui.Controls.BindableObject bindable) => (int)bindable.GetValue(ValueProperty);
-			    /// <summary>
-			    /// Sets Value for the <paramref name = "bindable"/> child element.
-			    /// </summary>
+			    {{setterMethodXmlDocumentation}}
 			    public static void SetValue(global::Microsoft.Maui.Controls.BindableObject bindable, int value) => bindable.SetValue(ValueProperty, value);
 			}
 			""";

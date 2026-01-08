@@ -255,6 +255,10 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 	[Fact]
 	public async Task GenerateAttachedBindableProperty_WithAllParameters_GeneratesCorrectCode()
 	{
+		const string bindablePropertyXmlDocumentation = "///<summary>This is the custom XML documentation for the TextProperty</summary>";
+		const string getterMethodXmlDocumentation = "///<summary>This is the custom XML documentation for the GetText method.</summary>";
+		const string setterMethodXmlDocumentation = "///<summary>This is the custom XML documentation for the SetText method.</summary>";
+		
 		const string source =
 			/* language=C#-test */
 			//lang=csharp
@@ -264,12 +268,20 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			namespace {{defaultTestNamespace}};
 
+			[AttachedBindablePropertyAttribute<int>("Value", true
 			        DefaultValue = 7,
 			        DefaultBindingMode = BindingMode.TwoWay,
 			        ValidateValueMethodName = nameof(ValidateValue),
 			        PropertyChangedMethodName = nameof(OnPropertyChanged),
 			        PropertyChangingMethodName = nameof(OnPropertyChanging),
 			        CoerceValueMethodName = nameof(CoerceValue),
+			        DefaultValueCreatorMethodName = nameof(CreateDefaultValue))],
+			        BindablePropertyXmlDocumentation = {{bindablePropertyXmlDocumentation}},
+			        GetterMethodXmlDocumentation = {{getterMethodXmlDocumentation}},
+			        SetterMethodXmlDocumentation = {{setterMethodXmlDocumentation}},
+			        BindablePropertyAccessibility = AccessModifier.Internal,
+			        GetterAccessibility = AccessModifier.Internal,
+			        SetterAccessibility = AccessModifier.Internal)]
 			public partial class {{defaultTestClassName}} : View
 			{
 			    static bool ValidateValue(global::Microsoft.Maui.Controls.BindableObject bindable, object value) => true;
@@ -291,15 +303,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			namespace {{defaultTestNamespace}};
 			public partial class {{defaultTestClassName}}
 			{
-			    /// <summary>
-			    /// Attached BindableProperty for the Value property.
-			    /// </summary>
-			    /// <summary>
-			    /// Gets Value for the <paramref name = "bindable"/> child element.
-			    /// </summary>
-			    /// <summary>
-			    /// Sets Value for the <paramref name = "bindable"/> child element.
-			    /// </summary>
+			    {{bindablePropertyXmlDocumentation}}
+			    internal static readonly global::Microsoft.Maui.Controls.BindableProperty ValueProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Value", typeof(int), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (int? )7, (Microsoft.Maui.Controls.BindingMode)1, ValidateValue, OnPropertyChanged, OnPropertyChanging, CoerceValue, CreateDefaultValue);
+			    {{getterMethodXmlDocumentation}}
+			    internal static int? GetValue(global::Microsoft.Maui.Controls.BindableObject bindable) => (int? )bindable.GetValue(ValueProperty);
+			    {{setterMethodXmlDocumentation}}
+			    internal static void SetValue(global::Microsoft.Maui.Controls.BindableObject bindable, int? value) => bindable.SetValue(ValueProperty, value);
 			}
 			""";
 
