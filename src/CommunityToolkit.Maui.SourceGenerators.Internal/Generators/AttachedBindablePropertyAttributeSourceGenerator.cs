@@ -458,7 +458,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		// Validate property name starts with uppercase
 		if (string.IsNullOrEmpty(propertyName) || char.IsLower(propertyName[0]))
 		{
-			throw new NotSupportedException($"Property name '{propertyName}' must start with an uppercase letter");
+			throw new NotSupportedException($"Property name '{propertyName}' must start with an uppercase letter cannot be empty");
 		}
 
 		// Get the generic type argument (the T in AttachedBindableProperty<T>)
