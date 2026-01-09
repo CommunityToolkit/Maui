@@ -279,7 +279,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 
 		    public partial class {{defaultTestClassName}} : View
 		    {
-		        [AttachedBindablePropertyAttribute<CustomModel>("Model", true)]
+		        [AttachedBindablePropertyAttribute<CustomModel>("Model", IsNullable = true)]
 		    	public {{defaultTestClassName}}()
 		    	{
 		    	}

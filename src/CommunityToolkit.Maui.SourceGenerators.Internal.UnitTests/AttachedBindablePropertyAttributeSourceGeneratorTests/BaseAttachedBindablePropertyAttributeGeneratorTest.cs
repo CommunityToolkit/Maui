@@ -17,10 +17,10 @@ public abstract class BaseAttachedBindablePropertyAttributeSourceGeneratorTest :
 		  [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 		  [global::System.AttributeUsage(global::System.AttributeTargets.Class | global::System.AttributeTargets.Constructor, AllowMultiple = true, Inherited = false)]
 		  [global::System.Diagnostics.CodeAnalysis.Experimental("{{BindablePropertyDiagnostic.BindablePropertyAttributeExperimentalDiagnosticId}}")]
-		  public sealed partial class AttachedBindablePropertyAttribute<T>(string propertyName, bool isNullable = false) : global::System.Attribute where T : notnull
+		  public sealed partial class AttachedBindablePropertyAttribute<T>(string propertyName) : global::System.Attribute where T : notnull
 		  {
 		  	public string PropertyName { get; } = propertyName;
-		  	public bool DeclaringTypeIsNullable { get; } = isNullable;
+		  	public bool IsNullable { get; init; }
 		  	public T DefaultValue { get; init; }
 		  	public global::Microsoft.Maui.Controls.BindingMode DefaultBindingMode { get; init; }
 		  	public string ValidateValueMethodName { get; init; } = string.Empty;

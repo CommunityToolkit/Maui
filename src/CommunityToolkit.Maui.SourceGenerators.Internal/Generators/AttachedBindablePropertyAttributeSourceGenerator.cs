@@ -1,7 +1,9 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Xml.Linq;
 using CommunityToolkit.Maui.SourceGenerators.Helpers;
 using CommunityToolkit.Maui.SourceGenerators.Internal.Helpers;
 using CommunityToolkit.Maui.SourceGenerators.Internal.Models;
@@ -33,10 +35,10 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		  [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 		  [global::System.AttributeUsage(global::System.AttributeTargets.Class | global::System.AttributeTargets.Constructor, AllowMultiple = true, Inherited = false)]
 		  [global::System.Diagnostics.CodeAnalysis.Experimental("{{BindablePropertyDiagnostic.BindablePropertyAttributeExperimentalDiagnosticId}}")]
-		  public sealed partial class AttachedBindablePropertyAttribute<T>(string propertyName, bool isNullable = false) : global::System.Attribute where T : notnull
+		  public sealed partial class AttachedBindablePropertyAttribute<T>(string propertyName) : global::System.Attribute where T : notnull
 		  {
 		  	public string PropertyName { get; } = propertyName;
-		  	public bool DeclaringTypeIsNullable { get; } = isNullable;
+		  	public bool IsNullable { get; init; }
 		  	public T DefaultValue { get; init; }
 		  	public global::Microsoft.Maui.Controls.BindingMode DefaultBindingMode { get; init; }
 		  	public string ValidateValueMethodName { get; init; } = string.Empty;
@@ -428,9 +430,9 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 
 		// Get the generic type argument (the T in AttachedBindableProperty<T>)
 		var typeArg = (attributeData.AttributeClass?.TypeArguments.FirstOrDefault()) ?? throw new InvalidOperationException("Could not determine property type from attribute");
-		var isDeclaringTypeNullable = (bool)(attributeData.ConstructorArguments[1].Value ?? throw new InvalidOperationException("DeclaringTypeIsNullable cannot be null"));
+		var isDeclaringTypeNullable = (bool)(attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == "IsNullable").Value.Value ?? false);
 
-		var defaultValue = GetDefaultValueString(attributeData, typeArg, isDeclaringTypeNullable && typeArg.OriginalDefinition.SpecialType is not SpecialType.System_Nullable_T);
+		var defaultValue = GetDefaultValueString(attributeData, typeArg, AttachedBindablePropertyModel.ShouldPostpendNullableToType(typeArg, isDeclaringTypeNullable));
 		var defaultBindingMode = attributeData.GetNamedTypeArgumentsAttributeValueForDefaultBindingMode("DefaultBindingMode", "(Microsoft.Maui.Controls.BindingMode)0");
 		var validateValueMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString("ValidateValueMethodName");
 		var propertyChangedMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString("PropertyChangedMethodName");

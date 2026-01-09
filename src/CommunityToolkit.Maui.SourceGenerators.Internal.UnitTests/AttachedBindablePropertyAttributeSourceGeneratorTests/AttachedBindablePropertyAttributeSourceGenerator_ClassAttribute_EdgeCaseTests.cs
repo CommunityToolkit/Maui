@@ -207,9 +207,9 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Edg
 
             namespace {{defaultTestNamespace}};
 
-            [AttachedBindableProperty<int?>("NullableInt", true)]
-            [AttachedBindableProperty<DateTime?>("NullableDateTime", true)]
-            [AttachedBindableProperty<bool?>("NullableBool", true)]
+            [AttachedBindableProperty<int?>("NullableInt", IsNullable = true)]
+            [AttachedBindableProperty<DateTime?>("NullableDateTime", IsNullable = true)]
+            [AttachedBindableProperty<bool?>("NullableBool", IsNullable = true)]
             public partial class {{defaultTestClassName}} : View
             {
             }

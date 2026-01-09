@@ -157,7 +157,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			namespace {{defaultTestNamespace}};
 
-			[AttachedBindableProperty<string>("Text", true)]
+			[AttachedBindableProperty<string>("Text", IsNullable = true)]
 			public partial class {{defaultTestClassName}} : View
 			{
 			}
@@ -268,7 +268,8 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 
 			namespace {{defaultTestNamespace}};
 
-			[AttachedBindablePropertyAttribute<int>("Value", true,
+			[AttachedBindablePropertyAttribute<int>("Value",
+			        IsNullable = true,        
 			        DefaultValue = 7,
 			        DefaultBindingMode = BindingMode.TwoWay,
 			        ValidateValueMethodName = nameof(ValidateValue),
