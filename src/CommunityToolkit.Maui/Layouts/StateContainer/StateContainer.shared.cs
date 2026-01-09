@@ -4,16 +4,26 @@
 /// The <see cref="StateContainer"/> attached properties enable any <see cref="Layout"/> inheriting element to become state-aware.
 /// States are defined in the <see cref="StateViewsProperty"/> with <see cref="StateView"/> attached properties.
 /// </summary>
-[AttachedBindableProperty<StateContainerController>(layoutControllerPropertyName, DefaultValueCreatorMethodName = nameof(ContainerControllerCreator), BindablePropertyAccessibility = AccessModifier.Internal, GetterAccessibility = AccessModifier.Internal, SetterAccessibility = AccessModifier.None)]
 [AttachedBindableProperty<IList<View>>(stateViewsPropertyName, DefaultValueCreatorMethodName = nameof(CreateDefaultStateViewsProperty))]
-[AttachedBindableProperty<string>(currentStatePropertyName, IsNullable = true, PropertyChangingMethodName = nameof(OnCurrentStateChanging), BindablePropertyXmlDocumentation = "/// <summary>Backing <see cref=\"BindableProperty\"/> for the <see cref=\"GetCurrentState\"/> and <see cref=\"SetCurrentState\"/> methods.\r\n///To ensure <see cref=\"StateContainer\"/> does not throw a <see cref=\"StateContainerException\"/> due to active animations, first verify <see cref=\"CanStateChangeProperty\"/> is <see langword=\"true\"/> before changing <see cref=\"CurrentStateProperty\"/>\r\n///</summary>")]
-[AttachedBindableProperty<bool>(canStateChangePropertyName, DefaultValue = true, DefaultBindingMode = BindingMode.OneWayToSource, SetterAccessibility = AccessModifier.Private)]
+[AttachedBindableProperty<string>(currentStatePropertyName, IsNullable = true, DefaultValue = StateContainerDefaults.CurrentState, PropertyChangingMethodName = nameof(OnCurrentStateChanging), BindablePropertyXmlDocumentation = currentStateBindablePropertyXmlDocumentation)]
+[AttachedBindableProperty<bool>(canStateChangePropertyName, DefaultValue = StateContainerDefaults.CanStateChange, DefaultBindingMode = BindingMode.OneWayToSource, SetterAccessibility = AccessModifier.Private)]
+[AttachedBindableProperty<StateContainerController>(layoutControllerPropertyName, DefaultValueCreatorMethodName = nameof(ContainerControllerCreator), BindablePropertyAccessibility = AccessModifier.Internal, GetterAccessibility = AccessModifier.Internal, SetterAccessibility = AccessModifier.None)]
 public static partial class StateContainer
 {
 	const string stateViewsPropertyName = "StateViews";
 	const string currentStatePropertyName = "CurrentState";
 	const string canStateChangePropertyName = "CanStateChange";
 	const string layoutControllerPropertyName = "LayoutController";
+
+	const string currentStateBindablePropertyXmlDocumentation =
+		/* language=C#-test */
+		//lang=csharp
+		"""
+		/// <summary>
+		/// Backing <see cref="BindableProperty"/> for the <see cref="GetCurrentState"/> and <see cref="SetCurrentState"/> methods.
+		/// To ensure <see cref="StateContainer"/> does not throw a <see cref="StateContainerException"/> due to active animations, first verify <see cref="CanStateChangeProperty"/> is <see langword="true"/> before changing <see cref="CurrentStateProperty"/>
+		/// </summary>
+		""";
 
 	/// <summary>
 	/// Change state with custom animation.
@@ -97,7 +107,6 @@ public static partial class StateContainer
 			{
 				await afterStateChange.Invoke(layout, cancellationToken).WaitAsync(cancellationToken);
 			}
-
 		}
 		finally
 		{
@@ -182,8 +191,8 @@ public static partial class StateContainer
 			throw new StateContainerException($"{canStateChangePropertyName} is false. {currentStatePropertyName} cannot be changed while a state change is in progress. To avoid this exception, first verify {canStateChangePropertyName} is {true} before changing {currentStatePropertyName}.");
 		}
 	}
-	
-	static IList<View> CreateDefaultStateViewsProperty(BindableObject bindable) => []; 
+
+	static IList<View> CreateDefaultStateViewsProperty(BindableObject bindable) => StateContainerDefaults.StateViews;
 }
 
 /// <summary>

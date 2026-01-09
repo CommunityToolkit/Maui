@@ -33,7 +33,7 @@ public abstract class BaseAttachedBindablePropertyAttributeSourceGeneratorTest :
 		  	///<summary>Should generate a nullable type for T</summary>
 		  	public bool IsNullable { get; init; }
 		  	///<summary>The default value for the property</summary>
-		  	public T DefaultValue { get; init; }
+		  	public T? DefaultValue { get; init; }
 		  	///<summary>The BindingMode to use on SetBinding() if no BindingMode is given. Default is <see cref="Microsoft.Maui.Controls.BindableProperty.Default"/></summary>
 		  	public global::Microsoft.Maui.Controls.BindingMode DefaultBindingMode { get; init; } = global::Microsoft.Maui.Controls.BindingMode.Default;
 		  	///<summary>Method name for <see cref="Microsoft.Maui.Controls.ValidateValueDelegate"/> to be run when a value is set. Default value is null</summary>

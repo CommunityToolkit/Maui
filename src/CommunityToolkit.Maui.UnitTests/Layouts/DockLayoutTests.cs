@@ -243,6 +243,16 @@ public class DockLayoutTests : BaseTest
 
 	#endregion
 
+	[Fact]
+	public void EnsureDefaults()
+	{
+		// Arrange
+		var view = new View();
+
+		// Act Assert
+		Assert.Equal(DockLayoutDefaults.DockPosition, DockLayout.GetDockPosition(view));
+	}
+
 	class TestView : View
 	{
 		readonly Size size;

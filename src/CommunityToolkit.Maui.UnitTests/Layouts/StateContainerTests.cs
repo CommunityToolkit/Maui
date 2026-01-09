@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Layouts;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
@@ -584,6 +585,19 @@ public class StateContainerTests : BaseTest
 
 		Assert.Equal(Grid.GetColumnSpan(view), grid.ColumnDefinitions.Count);
 		Assert.Equal(Grid.GetRowSpan(view), grid.RowDefinitions.Count);
+	}
+
+	[Fact]
+	public void EnsureDefaults()
+	{
+		// Arrange
+		var stackLayout = new StackLayout();
+		
+		// Act Assert
+		Assert.Equal(StateContainerDefaults.StateViews, StateContainer.GetStateViews(stackLayout));
+		Assert.Equal(StateContainerDefaults.CurrentState, StateContainer.GetCurrentState(stackLayout));
+		Assert.Equal(StateContainerDefaults.CanStateChange, StateContainer.GetCanStateChange(stackLayout));
+		Assert.Equal(StateViewDefaults.StateKey, StateView.GetStateKey(stackLayout));
 	}
 
 	class ViewModel : INotifyPropertyChanged
