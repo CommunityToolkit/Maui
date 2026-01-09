@@ -36,7 +36,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -83,7 +83,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Day property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty DayProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Day", typeof(global::System.DayOfWeek), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (global::System.DayOfWeek)1, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty DayProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Day", typeof(global::System.DayOfWeek), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (global::System.DayOfWeek)1, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Day for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -130,7 +130,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Numbers property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty NumbersProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Numbers", typeof(int[]), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (int[])new[] { 1, 2, 3 }, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty NumbersProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Numbers", typeof(int[]), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (int[])new[] { 1, 2, 3 }, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Numbers for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -177,7 +177,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -225,7 +225,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -237,7 +237,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Number property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty NumberProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Number", typeof(int), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty NumberProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Number", typeof(int), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Number for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -348,7 +348,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -434,7 +434,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -481,7 +481,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -528,7 +528,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -575,7 +575,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -622,7 +622,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -669,7 +669,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -716,7 +716,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -759,7 +759,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -806,7 +806,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -853,7 +853,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -900,7 +900,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -947,7 +947,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -994,7 +994,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -1041,7 +1041,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Sets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -1084,7 +1084,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -1131,7 +1131,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    internal static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    internal static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -1178,7 +1178,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    protected internal static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    protected internal static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -1225,7 +1225,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    protected static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    protected static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -1272,7 +1272,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    private protected static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    private protected static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -1319,7 +1319,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    private static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    private static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -1387,7 +1387,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Text property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<T>), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<T>), null, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Text for the <paramref name = "bindable"/> child element.
 			    /// </summary>

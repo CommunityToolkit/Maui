@@ -466,7 +466,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		var isDeclaringTypeNullable = (bool)(attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == "IsNullable").Value.Value ?? false);
 
 		var defaultValue = GetDefaultValueString(attributeData, typeArg, AttachedBindablePropertyModel.ShouldPostpendNullableToType(typeArg, isDeclaringTypeNullable));
-		var defaultBindingMode = attributeData.GetNamedTypeArgumentsAttributeValueForDefaultBindingMode("DefaultBindingMode", "(Microsoft.Maui.Controls.BindingMode)0");
+		var defaultBindingMode = attributeData.GetNamedTypeArgumentsAttributeValueForDefaultBindingMode("DefaultBindingMode", "(global::Microsoft.Maui.Controls.BindingMode)0");
 		var validateValueMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString("ValidateValueMethodName");
 		var propertyChangedMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString("PropertyChangedMethodName");
 		var propertyChangingMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString("PropertyChangingMethodName");
