@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Core;
+using Microsoft.Maui.Hosting.Internal;
 
 namespace CommunityToolkit.Maui.Alerts;
 
@@ -8,6 +9,7 @@ public partial class Snackbar : ISnackbar
 	static readonly WeakEventManager weakEventManager = new();
 
 	bool isDisposed;
+	WeakReference<IView>? weakView;
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="Snackbar"/>
@@ -57,7 +59,20 @@ public partial class Snackbar : ISnackbar
 	public Action? Action { get; init; }
 
 	/// <inheritdoc/>
-	public IView? Anchor { get; init; }
+	public IView? Anchor
+	{
+		get => weakView?.GetTargetOrDefault();
+		init
+		{
+			if (value is null)
+			{
+				weakView = null;
+				return;
+			}
+
+			weakView = new(value);
+		}
+	}
 
 	/// <summary>
 	/// Occurs when <see cref="IsShown"/> changes.
@@ -141,7 +156,7 @@ public partial class Snackbar : ISnackbar
 }
 
 /// <summary>
-/// Extension methods for <see cref="VisualElement"/>.
+/// Extension methods for <see cref="VisualElement"/> .
 /// </summary>
 public static class SnackbarVisualElementExtension
 {
