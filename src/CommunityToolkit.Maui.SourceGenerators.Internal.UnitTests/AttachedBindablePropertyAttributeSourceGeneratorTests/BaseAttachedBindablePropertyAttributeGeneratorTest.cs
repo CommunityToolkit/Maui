@@ -58,14 +58,14 @@ public abstract class BaseAttachedBindablePropertyAttributeSourceGeneratorTest :
 		  	///<summary>Custom XML Comments added to <c>Get{PropertyName}(BindableProperty bindable)</c></summary>
 		  	///<remarks>Must be the entire XML string, including <c>///</c></remarks>
 		  	public string? GetterMethodXmlDocumentation { get; init; }
-		  	///<summary>Custom XML Comments added to <c>Set{PropertyName}(BindableProperty bindable, T value)</c><br/></summary>
+		  	///<summary>Custom XML Comments added to <c>Set{PropertyName}(BindableProperty bindable, T value)</c></summary>
 		  	///<remarks>Must be the entire XML string, including <c>///</c></remarks>
 		  	public string? SetterMethodXmlDocumentation { get; init; }
-		  	///<summary>The access modifier applied to the generated field <see cref="Microsoft.Maui.Controls.BindableProperty"/>/></summary>
+		  	///<summary>The access modifier applied to the generated field <see cref="Microsoft.Maui.Controls.BindableProperty"/></summary>
 		  	public global::CommunityToolkit.Maui.AccessModifier BindablePropertyAccessibility { get; init; } = global::CommunityToolkit.Maui.AccessModifier.Public;
 		  	///<summary>The access modifier applied to the generated method <c>Get{PropertyName}(BindableProperty bindable)</c></summary>
 		  	public global::CommunityToolkit.Maui.AccessModifier GetterAccessibility { get; init; } = global::CommunityToolkit.Maui.AccessModifier.Public;
-		  	///<summary>The access modifier applied to the generated method <c>Set{PropertyName}(BindableProperty bindable, T value)</c><br/></summary>
+		  	///<summary>The access modifier applied to the generated method <c>Set{PropertyName}(BindableProperty bindable, T value)</c></summary>
 		  	public global::CommunityToolkit.Maui.AccessModifier SetterAccessibility { get; init; } = global::CommunityToolkit.Maui.AccessModifier.Public;
 		  }
 		  """;
