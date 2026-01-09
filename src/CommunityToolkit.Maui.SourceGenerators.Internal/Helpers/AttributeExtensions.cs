@@ -11,7 +11,7 @@ static class AttributeExtensions
 		return x;
 	}
 
-	public static string GetNamedTypeArgumentsAttributeValueForDefaultBindingMode(this AttributeData attribute, string name, string placeholder = "null")
+	public static string GetNamedTypeArgumentsAttributeValueForDefaultBindingMode(this AttributeData attribute, string name, string placeholder)
 	{
 		var data = attribute.NamedArguments.SingleOrDefault(kvp => kvp.Key == name).Value;
 

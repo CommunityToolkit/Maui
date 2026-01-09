@@ -35,22 +35,55 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		  [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 		  [global::System.AttributeUsage(global::System.AttributeTargets.Class | global::System.AttributeTargets.Constructor, AllowMultiple = true, Inherited = false)]
 		  [global::System.Diagnostics.CodeAnalysis.Experimental("{{BindablePropertyDiagnostic.BindablePropertyAttributeExperimentalDiagnosticId}}")]
+		  ///<summary> Source generater that creates an Attached <see cref="Microsoft.Maui.Controls.BindableProperty"/> and two <see langword="static"/> methods: <c>Get{PropertyName}(BindableProperty bindable)</c> and <c>Set{PropertyName}(BindableProperty bindable, T value)</c></summary>
+		  ///<typeparam name="T">Type of the Attached Bindable Property. Set <see cref="AttachedBindablePropertyAttribute.IsNullable"/> to <see langword="true"/> to generate a nullable type for <typeparamref name="T"/></typeparam>
+		  ///<param name="propertyName">Name of the Attached Property</param>
+		  ///<remarks> 
+		  ///* Generates a <see langword="readonly"/> <see langword="static"/> <see cref="Microsoft.Maui.Controls.BindableProperty"/> field using <see cref="Microsoft.Maui.Controls.BindableProperty.CreateAttached(string, Type, Type, object, BindingMode, BindableProperty.ValidateValueDelegate, BindableProperty.BindingPropertyChangedDelegate, BindableProperty.BindingPropertyChangingDelegate, BindableProperty.CoerceValueDelegate, BindableProperty.BindablePropertyBindingChanging, bool, BindableProperty.CreateDefaultValueDelegate)"/><br/>
+		  ///* Generates <see langword="static"/> <c>Get{PropertyName}(BindableProperty bindable)</c><br/>
+		  ///* Generates <see langword="static"/> <c>Set{PropertyName}(BindableProperty bindable, T value)</c><br/>
+		  ///* The property type <typeparamref name="T"/> will be treated as non-nullable unless <see cref="AttachedBindablePropertyAttribute.IsNullable"/> is set to <see langword="true"/>
+		  ///</remarks>
 		  public sealed partial class AttachedBindablePropertyAttribute<T>(string propertyName) : global::System.Attribute where T : notnull
 		  {
+		  	///<summary>Name of the Attached Property</summary>
 		  	public string PropertyName { get; } = propertyName;
+		  	///<summary>Should generate a nullable type for T</summary>
 		  	public bool IsNullable { get; init; }
+		  	///<summary>The default value for the property</summary>
 		  	public T DefaultValue { get; init; }
-		  	public global::Microsoft.Maui.Controls.BindingMode DefaultBindingMode { get; init; }
+		  	///<summary>The BindingMode to use on SetBinding() if no BindingMode is given. Default is <see cref="Microsoft.Maui.Controls.BindableProperty.Default"/></summary>
+		  	public global::Microsoft.Maui.Controls.BindingMode DefaultBindingMode { get; init; } = global::Microsoft.Maui.Controls.BindingMode.Default;
+		  	///<summary>Method name for <see cref="Microsoft.Maui.Controls.ValidateValueDelegate"/> to be run when a value is set. Default value is null</summary>
+		  	///<remarks>The referenced method must be <see cref="Microsoft.Maui.Controls.ValidateValueDelegate"/></remarks>
 		  	public string? ValidateValueMethodName { get; init; }
+		  	///<summary>Method name for <see cref="Microsoft.Maui.Controls.BindingPropertyChangedDelegate"/> to be run when a value has changed. Default value is null</summary>
+		  	///<remarks>The referenced method must be <see cref="Microsoft.Maui.Controls.BindingPropertyChangedDelegate"/></remarks>
 		  	public string? PropertyChangedMethodName { get; init; }
+		  	///<summary>Method name for <see cref="Microsoft.Maui.Controls.BindingPropertyChangingDelegate"/> to be run when a value is set. Default value is null</summary>
+		  	///<remarks>The referenced method must be <see cref="Microsoft.Maui.Controls.BindingPropertyChangingDelegate"/></remarks>
 		  	public string? PropertyChangingMethodName { get; init; }
+		  	///<summary>Method name for <see cref="Microsoft.Maui.Controls.CoerceValueDelegate"/> used to coerce the range of a value. Default value is null</summary>
+		  	///<remarks>The referenced method must be <see cref="Microsoft.Maui.Controls.CoerceValueDelegate"/></remarks>
 		  	public string? CoerceValueMethodName { get; init; }
+		  	///<summary>Method name for <see cref="Microsoft.Maui.Controls.CreateDefaultValueDelegate"/> used to initialize default value for reference types. Default value is null</summary>
+		  	///<remarks>The referenced method must be <see cref="Microsoft.Maui.Controls.CreateDefaultValueDelegate"/></remarks>
 		  	public string? DefaultValueCreatorMethodName { get; init; }
+		  	///<summary>Custom XML Comments added to BindableProperty</summary>
+		  	///<remarks>Must be the entire XML string, including <c>///</c>
+		  	///</remarks>
 		  	public string? BindablePropertyXmlDocumentation { get; init; }
+		  	///<summary>Custom XML Comments added to <c>Get{PropertyName}(BindableProperty bindable)</c></summary>
+		  	///<remarks>Must be the entire XML string, including <c>///</c></remarks>
 		  	public string? GetterMethodXmlDocumentation { get; init; }
+		  	///<summary>Custom XML Comments added to <c>Set{PropertyName}(BindableProperty bindable, T value)</c><br/></summary>
+		  	///<remarks>Must be the entire XML string, including <c>///</c></remarks>
 		  	public string? SetterMethodXmlDocumentation { get; init; }
+		  	///<summary>The access modifier applied to the generated field <see cref="Microsoft.Maui.Controls.BindableProperty"/>/></summary>
 		  	public global::CommunityToolkit.Maui.AccessModifier BindablePropertyAccessibility { get; init; } = global::CommunityToolkit.Maui.AccessModifier.Public;
+		  	///<summary>The access modifier applied to the generated method <c>Get{PropertyName}(BindableProperty bindable)</c></summary>
 		  	public global::CommunityToolkit.Maui.AccessModifier GetterAccessibility { get; init; } = global::CommunityToolkit.Maui.AccessModifier.Public;
+		  	///<summary>The access modifier applied to the generated method <c>Set{PropertyName}(BindableProperty bindable, T value)</c><br/></summary>
 		  	public global::CommunityToolkit.Maui.AccessModifier SetterAccessibility { get; init; } = global::CommunityToolkit.Maui.AccessModifier.Public;
 		  }
 		  """;
