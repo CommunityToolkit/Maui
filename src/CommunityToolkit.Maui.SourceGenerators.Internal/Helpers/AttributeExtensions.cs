@@ -18,10 +18,10 @@ static class AttributeExtensions
 		return data.Value is null ? placeholder : $"({data.Type}){data.Value}";
 	}
 
-	public static string GetNamedMethodGroupArgumentsAttributeValueByNameAsString(this AttributeData attribute, string name, string placeholder = "null")
+	public static string GetNamedMethodGroupArgumentsAttributeValueByNameAsString(this AttributeData attribute, string name)
 	{
 		var data = attribute.NamedArguments.SingleOrDefault(kvp => kvp.Key == name).Value;
 
-		return data.Value is null ? placeholder : data.Value.ToString();
+		return data.Value?.ToString() ?? "null";
 	}
 }

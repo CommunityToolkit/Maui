@@ -23,11 +23,11 @@ public abstract class BaseAttachedBindablePropertyAttributeSourceGeneratorTest :
 		  	public bool IsNullable { get; init; }
 		  	public T DefaultValue { get; init; }
 		  	public global::Microsoft.Maui.Controls.BindingMode DefaultBindingMode { get; init; }
-		  	public string ValidateValueMethodName { get; init; } = string.Empty;
-		  	public string PropertyChangedMethodName { get; init; } = string.Empty;
-		  	public string PropertyChangingMethodName { get; init; } = string.Empty;
-		  	public string CoerceValueMethodName { get; init; } = string.Empty;
-		  	public string DefaultValueCreatorMethodName { get; init; } = string.Empty;
+		  	public string? ValidateValueMethodName { get; init; }
+		  	public string? PropertyChangedMethodName { get; init; }
+		  	public string? PropertyChangingMethodName { get; init; }
+		  	public string? CoerceValueMethodName { get; init; }
+		  	public string? DefaultValueCreatorMethodName { get; init; }
 		  	public string? BindablePropertyXmlDocumentation { get; init; }
 		  	public string? GetterMethodXmlDocumentation { get; init; }
 		  	public string? SetterMethodXmlDocumentation { get; init; }
