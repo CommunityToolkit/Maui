@@ -155,7 +155,7 @@ public partial class Snackbar : ISnackbar
 }
 
 /// <summary>
-/// Extension methods for <see cref="VisualElement"/> .
+/// Extension methods for <see cref="VisualElement"/>.
 /// </summary>
 public static class SnackbarVisualElementExtension
 {
