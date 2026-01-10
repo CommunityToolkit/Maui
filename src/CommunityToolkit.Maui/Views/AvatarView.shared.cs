@@ -27,6 +27,7 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 	/// <summary>The backing store for the <see cref="TextTransform" /> bindable property.</summary>
 	public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
 
+
 	readonly Image avatarImage = new()
 	{
 		Aspect = Aspect.AspectFill,
@@ -41,7 +42,9 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 
 	bool wasImageLoading;
 
-	/// <summary>Initializes a new instance of the <see cref="AvatarView"/> class.</summary>
+	/// <summary>
+	/// Initializes a new instance of the <see cref="AvatarView"/> class.
+	/// </summary>
 	public AvatarView()
 	{
 		PropertyChanged += HandlePropertyChanged;
@@ -62,10 +65,14 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 		avatarImage.SetBinding(HeightRequestProperty, BindingBase.Create<VisualElement, double>(static p => p.HeightRequest, source: this));
 	}
 
-	/// <summary>Gets or sets the control font.</summary>
+	/// <summary>
+	/// Gets or sets the control font.
+	/// </summary>
 	public Microsoft.Maui.Font Font { get; set; } = Microsoft.Maui.Font.SystemFontOfSize((double)FontElement.FontSizeProperty.DefaultValue);
 
-	/// <summary>Gets or sets a value of the control text character spacing property.</summary>
+	/// <summary>
+	/// Gets or sets a value of the control text character spacing property.
+	/// </summary>
 	public double CharacterSpacing
 	{
 		get => (double)GetValue(TextElement.CharacterSpacingProperty);
@@ -119,20 +126,28 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 	[BindableProperty(PropertyChangedMethodName = nameof(OnBorderColorPropertyChanged))]
 	public partial Color BorderColor { get; set; } = AvatarViewDefaults.BorderColor;
 
-	/// <summary>Gets or sets a value of the control border width.</summary>
+	/// <summary>
+	/// Gets or sets a value of the control border width.
+	/// </summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnBorderWidthPropertyChanged))]
 	public partial double BorderWidth { get; set; } = AvatarViewDefaults.BorderWidth;
 
-	/// <summary>Gets or sets a value of the control corner radius property.</summary>
+	/// <summary>
+	/// Gets or sets a value of the control corner radius property.
+	/// </summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnCornerRadiusPropertyChanged))]
 	public partial CornerRadius CornerRadius { get; set; } = AvatarViewDefaults.CornerRadius;
 
-	/// <summary>Gets or sets a value of the control image source property.</summary>
+	/// <summary>
+	/// Gets or sets a value of the control image source property.
+	/// </summary>
 	[TypeConverter(typeof(ImageSourceConverter))]
 	[BindableProperty(PropertyChangedMethodName = nameof(OnImageSourcePropertyChanged))]
 	public partial ImageSource? ImageSource { get; set; }
 
-	/// <summary>Gets or sets a value of the control text property.</summary>
+	/// <summary>
+	/// Gets or sets a value of the control text property.
+	/// </summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnTextPropertyChanged))]
 	public partial string Text { get; set; } = AvatarViewDefaults.Text;
 

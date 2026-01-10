@@ -349,4 +349,17 @@ public class AvatarViewTests : BaseViewTest
 		avatarView.TextTransform.Should().Be(TextTransform.Lowercase);
 		signaled.Should().BeTrue();
 	}
+
+	[Fact]
+	public void EnsureDefaults()
+	{
+		var avatarView = new Maui.Views.AvatarView();
+		Assert.Equal(AvatarViewDefaults.BorderColor, avatarView.BorderColor);
+		Assert.Equal(AvatarViewDefaults.BorderWidth, avatarView.BorderWidth);
+		Assert.Equal(AvatarViewDefaults.CornerRadius, avatarView.CornerRadius);
+		Assert.Equal(AvatarViewDefaults.Text, avatarView.Text);
+		Assert.Equal(AvatarViewDefaults.Padding, avatarView.Padding);
+		Assert.Equal(AvatarViewDefaults.HeightRequest, avatarView.HeightRequest);
+		Assert.Equal(AvatarViewDefaults.WidthRequest, avatarView.WidthRequest);
+	}
 }

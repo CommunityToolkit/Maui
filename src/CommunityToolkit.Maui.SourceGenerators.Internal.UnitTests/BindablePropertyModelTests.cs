@@ -29,7 +29,8 @@ public class BindablePropertyModelTests : BaseTest
 			string.Empty,
 			true, // IsReadOnlyBindableProperty
 			string.Empty, // SetterAccessibility
-			false
+			false,
+			"null"
 		);
 
 		// Act
@@ -56,6 +57,7 @@ public class BindablePropertyModelTests : BaseTest
 		const string defaultValueCreatorMethodName = "CreateDefaultValue";
 		const string newKeywordText = "new ";
 		const bool hasInitializer = false;
+		const string propertyAccessibility = "public";
 
 		// Act
 		var model = new BindablePropertyModel(
@@ -71,7 +73,8 @@ public class BindablePropertyModelTests : BaseTest
 			newKeywordText,
 			true, // IsReadOnlyBindableProperty
 			string.Empty, // SetterAccessibility
-			hasInitializer
+			hasInitializer,
+			propertyAccessibility
 		);
 
 		// Assert
@@ -89,6 +92,7 @@ public class BindablePropertyModelTests : BaseTest
 		Assert.Equal("TestPropertyProperty", model.BindablePropertyName);
 		Assert.Equal(defaultValueCreatorMethodName, model.EffectiveDefaultValueCreatorMethodName);
 		Assert.Equal("IsInitializingTestProperty", model.InitializingPropertyName);
+		Assert.Equal(propertyAccessibility, model.PropertyAccessibility);
 	}
 
 	[Fact]
@@ -130,7 +134,8 @@ public class BindablePropertyModelTests : BaseTest
 			string.Empty,
 			true, // IsReadOnlyBindableProperty
 			string.Empty, // SetterAccessibilityText
-			false
+			false,
+			"public"
 		);
 
 		var bindableProperties = new[] { bindableProperty }.ToImmutableArray();
@@ -164,6 +169,8 @@ public class BindablePropertyModelTests : BaseTest
 	{
 		// Arrange
 		var compilation = CreateCompilation(
+			/* language=C#-test */
+			//lang=csharp
 			"""
 			public class TestClass { public string TestProperty { get; set; } = "Initial Value"; }");
 			""");
@@ -186,7 +193,8 @@ public class BindablePropertyModelTests : BaseTest
 			string.Empty,
 			true,
 			string.Empty,
-			hasInitializer
+			hasInitializer,
+			"public"
 		);
 
 		// Act
@@ -201,6 +209,8 @@ public class BindablePropertyModelTests : BaseTest
 	{
 		// Arrange
 		var compilation = CreateCompilation(
+			/* language=C#-test */
+			//lang=csharp
 			"""
 			public class TestClass { public string TestProperty { get; set; } = "Initial Value"; }
 			""");
@@ -223,7 +233,8 @@ public class BindablePropertyModelTests : BaseTest
 			string.Empty,
 			true,
 			string.Empty,
-			hasInitializer
+			hasInitializer,
+			"public"
 		);
 
 		// Act

@@ -1,31 +1,11 @@
 ﻿using CommunityToolkit.Maui.Extensions;
+
 namespace CommunityToolkit.Maui.ImageSources;
 
 /// <summary>Gravatar image source.</summary>
 /// <remarks>Note that <see cref="UriImageSource"/> is sealed and can't be used as a parent!</remarks>
-public partial class GravatarImageSource : StreamImageSource, IDisposable
+public partial class GravatarImageSource : StreamImageSource
 {
-	/// <summary>The backing store for the <see cref="CacheValidity" /> bindable property.</summary>
-	public static readonly BindableProperty CacheValidityProperty = BindableProperty.Create(nameof(CacheValidity), typeof(TimeSpan), typeof(GravatarImageSource), TimeSpan.FromDays(1));
-
-	/// <summary>The backing store for the <see cref="CachingEnabled" /> bindable property.</summary>
-	public static readonly BindableProperty CachingEnabledProperty = BindableProperty.Create(nameof(CachingEnabled), typeof(bool), typeof(GravatarImageSource), true);
-
-	/// <summary>The backing store for the <see cref="Email" /> bindable property.</summary>
-	public static readonly BindableProperty EmailProperty = BindableProperty.Create(nameof(Email), typeof(string), typeof(GravatarImageSource), defaultValue: null, propertyChanged: OnEmailPropertyChanged);
-
-	/// <summary>The backing store for the <see cref="Image" /> bindable property.</summary>
-	public static readonly BindableProperty ImageProperty = BindableProperty.Create(nameof(Image), typeof(DefaultImage), typeof(GravatarImageSource), defaultValue: DefaultImage.MysteryPerson, propertyChanged: OnDefaultImagePropertyChanged);
-
-	/// <summary>The backing store for the <see cref="ParentHeight" /> bindable property.</summary>
-	internal static readonly BindableProperty ParentHeightProperty = BindableProperty.Create(nameof(ParentHeight), typeof(int), typeof(GravatarImageSource), defaultValue: defaultSize, propertyChanged: OnSizePropertyChanged);
-
-	/// <summary>The backing store for the <see cref="ParentWidth" /> bindable property.</summary>
-	internal static readonly BindableProperty ParentWidthProperty = BindableProperty.Create(nameof(ParentWidth), typeof(int), typeof(GravatarImageSource), defaultValue: defaultSize, propertyChanged: OnSizePropertyChanged);
-
-	const string defaultGravatarImageAddress = "https://www.gravatar.com/avatar/";
-	const int defaultSize = 80;
-
 	static readonly Lazy<HttpClient> singletonHttpClientHolder = new();
 
 	readonly TimeSpan cancellationTokenSourceTimeout = TimeSpan.FromMilliseconds(737);
@@ -35,7 +15,6 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 	/// <summary>Initializes a new instance of the <see cref="GravatarImageSource"/> class.</summary>
 	public GravatarImageSource()
 	{
-		Uri = new Uri(defaultGravatarImageAddress);
 		Stream = cancellationToken => SingletonHttpClient.DownloadStreamAsync(Uri, cancellationToken);
 	}
 
@@ -43,45 +22,32 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 	public override bool IsEmpty => string.IsNullOrEmpty(Email);
 
 	/// <summary>Gets or sets a <see cref="TimeSpan"/> structure that indicates the length of time after which the image cache becomes invalid.</summary>
-	public TimeSpan CacheValidity
-	{
-		get => (TimeSpan)GetValue(CacheValidityProperty);
-		set => SetValue(CacheValidityProperty, value);
-	}
+	[BindableProperty]
+	public partial TimeSpan CacheValidity { get; set; } = GravatarImageSourceDefaults.CacheValidity;
 
 	/// <summary>Gets or sets a Boolean value that indicates whether caching is enabled on this <see cref="GravatarImageSource"/> object.</summary>
-	public bool CachingEnabled
-	{
-		get => (bool)GetValue(CachingEnabledProperty);
-		set => SetValue(CachingEnabledProperty, value);
-	}
-
-	/// <summary>Gets or sets a value indicating whether <see cref="GravatarImageSource"/> has been disposed.</summary>
-	public bool IsDisposed { get; set; }
+	[BindableProperty]
+	public partial bool CachingEnabled { get; set; } = GravatarImageSourceDefaults.CachingEnabled;
 
 	/// <summary>Gets or sets the email address.</summary>
-	public string? Email
-	{
-		get => (string)GetValue(EmailProperty);
-		set => SetValue(EmailProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnEmailPropertyChanged))]
+	public partial string? Email { get; set; } = GravatarImageSourceDefaults.Email;
 
 	/// <summary>Gets or sets the default image.</summary>
-	public DefaultImage Image
-	{
-		get => (DefaultImage)GetValue(ImageProperty);
-		set => SetValue(ImageProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnDefaultImagePropertyChanged))]
+	public partial DefaultImage Image { get; set; } = GravatarImageSourceDefaults.Image;
 
 	/// <summary>Gets or sets the URI for the image to get.</summary>
 	[System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.UriTypeConverter))]
-	public Uri Uri { get; set; }
+	public Uri Uri { get; set; } = GravatarImageSourceDefaults.Uri;
 
 	/// <summary>Gets the parent height.</summary>
-	internal int ParentHeight => (int)GetValue(ParentHeightProperty);
+	[BindableProperty(PropertyChangedMethodName = nameof(OnSizePropertyChanged))]
+	internal partial int ParentHeight { get; set; } = GravatarImageSourceDefaults.ParentHeight;
 
 	/// <summary>Gets the parent width.</summary>
-	internal int ParentWidth => (int)GetValue(ParentWidthProperty);
+	[BindableProperty(PropertyChangedMethodName = nameof(OnSizePropertyChanged))]
+	internal partial int ParentWidth { get; set; } = GravatarImageSourceDefaults.ParentWidth;
 
 	/// <summary>Gets or sets the image size.</summary>
 	/// <remarks>
@@ -106,28 +72,11 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 
 	static HttpClient SingletonHttpClient => singletonHttpClientHolder.Value;
 
-	/// <summary>Dispose <see cref="GravatarImageSource"/>.</summary>
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
-	}
-
 	/// <summary>Returns the Uri as a string.</summary>
 	/// <returns>String of the URI.</returns>
 	public override string ToString()
 	{
 		return $"Uri: {Uri}\nEmail: {Email}\nSize: {GravatarSize}\nImage: {DefaultGravatarName(Image)}\nCacheValidity: {CacheValidity}\nCachingEnabled: {CachingEnabled}";
-	}
-
-	/// <summary>Dispose <see cref="GravatarImageSource"/>.</summary>
-	/// <param name="isDisposing">Is disposing.</param>
-	protected virtual void Dispose(bool isDisposing)
-	{
-		if (!IsDisposed)
-		{
-			IsDisposed = true;
-		}
 	}
 
 	/// <summary>On parent set.</summary>
@@ -137,7 +86,7 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 
 		if (Parent is not VisualElement parentElement)
 		{
-			GravatarSize = defaultSize;
+			GravatarSize = GravatarImageSourceDefaults.GravatarSize;
 			return;
 		}
 
@@ -190,8 +139,8 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 		}
 
 		Uri = IsEmpty
-			? new Uri($"{defaultGravatarImageAddress}?s={GravatarSize}")
-			: new Uri($"{defaultGravatarImageAddress}{email?.GetMd5Hash(string.Empty).ToLowerInvariant()}?s={GravatarSize}&d={DefaultGravatarName(image)}");
+			? new Uri($"{GravatarImageSourceDefaults.Url}?s={GravatarSize}")
+			: new Uri($"{GravatarImageSourceDefaults.Url}{email?.GetMd5Hash(string.Empty).ToLowerInvariant()}?s={GravatarSize}&d={DefaultGravatarName(image)}");
 
 		return OnUriChanged(token);
 	}

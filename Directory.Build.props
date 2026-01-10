@@ -22,7 +22,7 @@ https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitati
     <NuGetAuditMode>all</NuGetAuditMode>
 
     <!-- MAUI Specific -->
-    <MauiPackageVersion>10.0.10</MauiPackageVersion>
+    <MauiPackageVersion>10.0.20</MauiPackageVersion>
     <MauiStrictXamlCompilation>true</MauiStrictXamlCompilation>
     <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
