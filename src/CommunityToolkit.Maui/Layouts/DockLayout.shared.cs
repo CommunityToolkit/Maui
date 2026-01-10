@@ -33,7 +33,6 @@ public partial class DockLayout : Layout, IDockLayout
 	/// <summary>
 	/// Gets or sets the vertical spacing between elements.
 	/// </summary>
-
 	[BindableProperty(PropertyChangedMethodName = nameof(OnVerticalSpacingPropertyChanged))]
 	public partial double VerticalSpacing { get; set; } = DockLayoutDefaults.VerticalSpacing;
 

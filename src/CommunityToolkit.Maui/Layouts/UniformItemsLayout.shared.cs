@@ -14,19 +14,24 @@ public partial class UniformItemsLayout : Layout, IUniformItemsLayout
 	/// <summary>
 	/// Gets or sets the maximum number of rows to display or process.
 	/// </summary>
-	[BindableProperty(PropertyChangedMethodName = nameof(OnMaxRowsProperChanged))]
+	[BindableProperty(PropertyChangingMethodName = nameof(OnMaxRowsPropertyChanging))]
 	public partial int MaxRows { get; set; } = UniformItemLayoutDefaults.MaxRows;
 
 	/// <summary>
 	/// Gets or sets the maximum number of columns to display in the layout.
 	/// </summary>
-	/// <remarks>Set this property to limit the number of columns arranged by the layout. The value must be greater
+	/// <remarks>
+	/// Set this property to limit the number of columns arranged by the layout. The value must be greater
 	/// than or equal to 1. The default value is <see cref="int.MaxValue"/>, which allows an unlimited number of
-	/// columns.</remarks>
-	[BindableProperty(PropertyChangedMethodName = nameof(OnMaxColumnsProperChanged))]
+	/// columns.
+	/// </remarks>
+	[BindableProperty(PropertyChangingMethodName = nameof(OnMaxColumnsPropertyChanging))]
 	public partial int MaxColumns { get; set; } = UniformItemLayoutDefaults.MaxColumns;
+	
+	/// <inheritdoc	/>
+	protected override ILayoutManager CreateLayoutManager() => new UniformItemsLayoutManager(this);
 
-	static void OnMaxRowsProperChanged(BindableObject bindable, object oldValue, object newValue)
+	static void OnMaxRowsPropertyChanging(BindableObject bindable, object oldValue, object newValue)
 	{
 		var maxRows = (int)newValue;
 		if (maxRows < 1)
@@ -35,7 +40,7 @@ public partial class UniformItemsLayout : Layout, IUniformItemsLayout
 		}
 	}
 
-	static void OnMaxColumnsProperChanged(BindableObject bindable, object oldValue, object newValue)
+	static void OnMaxColumnsPropertyChanging(BindableObject bindable, object oldValue, object newValue)
 	{
 		var maxColumns = (int)newValue;
 		if (maxColumns < 1)
@@ -43,7 +48,4 @@ public partial class UniformItemsLayout : Layout, IUniformItemsLayout
 			throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(MaxColumns)} must be greater or equal to 1.");
 		}
 	}
-
-	/// <inheritdoc	/>
-	protected override ILayoutManager CreateLayoutManager() => new UniformItemsLayoutManager(this);
 }
