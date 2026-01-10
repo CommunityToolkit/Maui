@@ -273,17 +273,8 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		var nonNullableFormattedType = GetFormattedTypeForTypeOf(nonNullableReturnType);
 
 		// Generate BindableProperty
-		if (info.BindablePropertyXMLDocumentation is not null)
-		{
-			sb.Append(info.BindablePropertyXMLDocumentation)
-				.Append("\r\n");
-		}
-		else
-		{
-			sb.Append("/// <summary>\r\n/// Attached BindableProperty for the ")
-				.Append(sanitizedPropertyName)
-				.Append(" property.\r\n/// </summary>\r\n");
-		}
+		sb.Append(info.EffectiveBindablePropertyXmlDocumentation)
+			.Append("\r\n");
 
 		sb.Append(info.BindablePropertyAccessibility)
 			.Append("static readonly ")
@@ -317,17 +308,8 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		// Generate Get method
 		if (info.GetterAccessibility is not null)
 		{
-			if (info.GetterMethodXMLDocumentation is not null)
-			{
-				sb.Append(info.GetterMethodXMLDocumentation)
-					.Append("\r\n");
-			}
-			else
-			{
-				sb.Append("/// <summary>\r\n/// Gets ")
-					.Append(sanitizedPropertyName)
-					.Append(" for the <paramref name=\"bindable\"/> child element.\r\n/// </summary>\r\n");
-			}
+			sb.Append(info.EffectiveGetterMethodXmlDocumentation)
+				.Append("\r\n");
 
 			sb.Append(info.GetterAccessibility)
 				.Append("static ")
@@ -346,17 +328,8 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		// Generate Set method
 		if (info.SetterAccessibility is not null)
 		{
-			if (info.SetterMethodXMLDocumentation is not null)
-			{
-				sb.Append(info.SetterMethodXMLDocumentation)
-					.Append("\r\n");
-			}
-			else
-			{
-				sb.Append("/// <summary>\r\n/// Sets ")
-					.Append(sanitizedPropertyName)
-					.Append(" for the <paramref name=\"bindable\"/> child element.\r\n/// </summary>\r\n");
-			}
+			sb.Append(info.EffectiveSetterMethodXmlDocumentation)
+				.Append("\r\n");
 
 			sb.Append(info.SetterAccessibility)
 				.Append("static void Set")
