@@ -12,7 +12,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 	{
 		return InternalSaveAsync("/", fileName, stream, progress, cancellationToken);
 	}
-	
+
 	async Task<string> InternalSaveAsync(
 		string initialPath,
 		string fileName,
@@ -23,8 +23,8 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		cancellationToken.ThrowIfCancellationRequested();
 
 		var currentViewController = Platform.GetCurrentUIViewController()
-		                            ?? throw new FileSaveException(
-			                            "Cannot present file picker: No active view controller found. Ensure the app is active with a visible window.");
+									?? throw new FileSaveException(
+										"Cannot present file picker: No active view controller found. Ensure the app is active with a visible window.");
 
 		var fileManager = NSFileManager.DefaultManager;
 
@@ -71,7 +71,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 			picker.DidPickDocumentAtUrls -= OnPicked;
 			picker.WasCancelled -= OnCancelled;
 		}
-		
+
 		void OnPicked(object? sender, UIDocumentPickedAtUrlsEventArgs e)
 		{
 			if (e.Urls.Length is 0)
@@ -79,14 +79,14 @@ public sealed partial class FileSaverImplementation : IFileSaver
 				tcs.TrySetException(new FileSaveException("No file was selected."));
 				return;
 			}
-			
+
 			var path = e.Urls[0].Path;
 			if (path is null)
 			{
 				tcs.TrySetException(new FileSaveException("File path cannot be null."));
 				return;
 			}
-			
+
 			tcs.TrySetResult(path);
 		}
 

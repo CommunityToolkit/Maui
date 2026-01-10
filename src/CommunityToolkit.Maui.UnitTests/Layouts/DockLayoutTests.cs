@@ -41,6 +41,15 @@ public class DockLayoutTests : BaseTest
 		DockLayout.SetDockPosition(childBottomView, DockPosition.Bottom);
 	}
 
+	[Fact]
+	public void EnsureDefaults()
+	{
+		var layout = new DockLayout();
+		Assert.Equal(DockLayoutDefaults.ShouldExpandLastChild, layout.ShouldExpandLastChild);
+		Assert.Equal(DockLayoutDefaults.HorizontalSpacing, layout.HorizontalSpacing);
+		Assert.Equal(DockLayoutDefaults.VerticalSpacing, layout.VerticalSpacing);
+	}
+
 	#region Measure
 
 	[Fact]
