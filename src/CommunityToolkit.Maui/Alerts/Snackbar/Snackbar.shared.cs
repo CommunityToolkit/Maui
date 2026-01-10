@@ -1,5 +1,4 @@
 using CommunityToolkit.Maui.Core;
-using Microsoft.Maui.Hosting.Internal;
 
 namespace CommunityToolkit.Maui.Alerts;
 
