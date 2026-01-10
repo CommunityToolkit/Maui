@@ -111,14 +111,14 @@ public class GravatarImageSourceTests : BaseViewTest
 		var gravatarImageSource = new GravatarImageSource();
 		Assert.Equal(GravatarImageSourceDefaults.Uri, gravatarImageSource.Uri);
 	}
-	
+
 	[Fact]
 	public void DefaultParentHeight()
 	{
 		var gravatarImageSource = new GravatarImageSource();
 		Assert.Equal(GravatarImageSourceDefaults.ParentHeight, gravatarImageSource.ParentHeight);
 	}
-	
+
 	[Fact]
 	public void DefaultParentWidth()
 	{

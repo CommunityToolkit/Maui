@@ -14,13 +14,13 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 	{
 		return InternalPickAsync("/", cancellationToken);
 	}
-	
+
 	async Task<Folder> InternalPickAsync(string initialPath, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 
 		var currentViewController = Platform.GetCurrentUIViewController()
-		                            ?? throw new FolderPickerException("Unable to get a window where to present the folder picker UI.");
+									?? throw new FolderPickerException("Unable to get a window where to present the folder picker UI.");
 
 		var tcs = new TaskCompletionSource<Folder>(
 			TaskCreationOptions.RunContinuationsAsynchronously);
@@ -44,7 +44,7 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 			picker.DidPickDocumentAtUrls -= OnPicked;
 			picker.WasCancelled -= OnCancelled;
 		}
-		
+
 		void OnPicked(object? sender, UIDocumentPickedAtUrlsEventArgs e)
 		{
 			if (e.Urls.Length is 0)
