@@ -25,9 +25,9 @@
 
             <Label Text="Enter text into the Entry, below. If the text is not null or white space, the value will be true." TextColor="{StaticResource NormalLabelTextColor}" FontAttributes="Bold" />
 
-            <Entry VerticalOptions="CenterAndExpand" HorizontalOptions="Fill" Text="{Binding Path=LabelText, Mode=OneWayToSource}" TextColor="{StaticResource NormalLabelTextColor}" />
+            <Entry VerticalOptions="Center" HorizontalOptions="Fill" Text="{Binding Path=LabelText, Mode=OneWayToSource}" TextColor="{StaticResource NormalLabelTextColor}" />
 
-            <Label VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" Text="{Binding Path=LabelText, Mode=OneWay, Converter={StaticResource IsStringNotNullOrWhiteSpaceConverter}}" />
+            <Label VerticalOptions="Center" HorizontalOptions="Center" Text="{Binding Path=LabelText, Mode=OneWay, Converter={StaticResource IsStringNotNullOrWhiteSpaceConverter}}" />
 
         </VerticalStackLayout>
     </pages:BasePage.Content>

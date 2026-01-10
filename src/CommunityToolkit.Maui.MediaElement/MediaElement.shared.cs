@@ -9,116 +9,6 @@ namespace CommunityToolkit.Maui.Views;
 /// </summary>
 public partial class MediaElement : View, IMediaElement, IDisposable
 {
-	/// <summary>
-	/// Backing store for the <see cref="Aspect"/> property.
-	/// </summary>
-	public static readonly BindableProperty AspectProperty =
-		BindableProperty.Create(nameof(Aspect), typeof(Aspect), typeof(MediaElement), Aspect.AspectFit);
-
-	/// <summary>
-	/// Backing store for the <see cref="CurrentState"/> property.
-	/// </summary>
-	public static readonly BindableProperty CurrentStateProperty =
-		BindableProperty.Create(nameof(CurrentState), typeof(MediaElementState), typeof(MediaElement),
-			MediaElementState.None, propertyChanged: OnCurrentStatePropertyChanged);
-
-	static readonly BindablePropertyKey durationPropertyKey =
-		BindableProperty.CreateReadOnly(nameof(Duration), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero);
-
-	/// <summary>
-	/// Backing store for the <see cref="Duration"/> property.
-	/// </summary>
-	public static readonly BindableProperty DurationProperty = durationPropertyKey.BindableProperty;
-
-	/// <summary>
-	/// Backing store for the <see cref="ShouldAutoPlay"/> property.
-	/// </summary>
-	public static readonly BindableProperty ShouldAutoPlayProperty =
-		BindableProperty.Create(nameof(ShouldAutoPlay), typeof(bool), typeof(MediaElement), false);
-
-	/// <summary>
-	/// Backing store for the <see cref="ShouldLoopPlayback"/> property.
-	/// </summary>
-	public static readonly BindableProperty ShouldLoopPlaybackProperty =
-		BindableProperty.Create(nameof(ShouldLoopPlayback), typeof(bool), typeof(MediaElement), false);
-
-	/// <summary>
-	/// Backing store for the <see cref="ShouldKeepScreenOn"/> property.
-	/// </summary>
-	public static readonly BindableProperty ShouldKeepScreenOnProperty =
-		BindableProperty.Create(nameof(ShouldKeepScreenOn), typeof(bool), typeof(MediaElement), false);
-
-	/// <summary>
-	/// Backing store for the <see cref="ShouldMute"/> property.
-	/// </summary>
-	public static readonly BindableProperty ShouldMuteProperty =
-		BindableProperty.Create(nameof(ShouldMute), typeof(bool), typeof(MediaElement), false);
-
-	/// <summary>
-	/// Backing store for the <see cref="Position"/> property.
-	/// </summary>
-	public static readonly BindableProperty PositionProperty =
-		BindableProperty.Create(nameof(Position), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero);
-
-	/// <summary>
-	/// Backing store for the <see cref="ShouldShowPlaybackControls"/> property.
-	/// </summary>
-	public static readonly BindableProperty ShowsPlaybackControlsProperty =
-		BindableProperty.Create(nameof(ShouldShowPlaybackControls), typeof(bool), typeof(MediaElement), true);
-
-	/// <summary>
-	/// Backing store for the <see cref="Source"/> property.
-	/// </summary>
-	public static readonly BindableProperty SourceProperty =
-		BindableProperty.Create(nameof(Source), typeof(MediaSource), typeof(MediaElement),
-			propertyChanging: OnSourcePropertyChanging, propertyChanged: OnSourcePropertyChanged);
-
-	/// <summary>
-	/// Backing store for the <see cref="Speed"/> property.
-	/// </summary>
-	public static readonly BindableProperty SpeedProperty =
-		BindableProperty.Create(nameof(Speed), typeof(double), typeof(MediaElement), 1.0);
-
-	static readonly BindablePropertyKey mediaHeightPropertyKey =
-		BindableProperty.CreateReadOnly(nameof(MediaHeight), typeof(int), typeof(MediaElement), 0);
-
-	/// <summary>
-	/// Backing store for the <see cref="MediaHeight"/> property.
-	/// </summary>
-	public static readonly BindableProperty MediaHeightProperty =
-		mediaHeightPropertyKey.BindableProperty;
-
-	static readonly BindablePropertyKey mediaWidthPropertyKey =
-		BindableProperty.CreateReadOnly(nameof(MediaWidth), typeof(int), typeof(MediaElement), 0);
-
-	/// <summary>
-	/// Backing store for the <see cref="MediaWidth"/> property.
-	/// </summary>
-	public static readonly BindableProperty MediaWidthProperty =
-		mediaWidthPropertyKey.BindableProperty;
-
-	/// <summary>
-	/// Backing store for the <see cref="Volume"/> property.
-	/// </summary>
-	public static readonly BindableProperty VolumeProperty =
-		BindableProperty.Create(nameof(Volume), typeof(double), typeof(MediaElement), 1.0,
-			BindingMode.TwoWay, propertyChanging: ValidateVolume);
-
-	/// <summary>
-	/// Backing store for the <see cref="MetadataTitle"/> property.
-	/// </summary>
-	public static readonly BindableProperty MetadataTitleProperty = BindableProperty.Create(nameof(MetadataTitle), typeof(string), typeof(MediaElement), string.Empty);
-
-	/// <summary>
-	/// Backing store for the <see cref="MetadataArtist"/> property.
-	/// </summary>
-	public static readonly BindableProperty MetadataArtistProperty = BindableProperty.Create(nameof(MetadataArtist), typeof(string), typeof(MediaElement), string.Empty);
-
-	/// <summary>
-	/// Backing store for the <see cref="MetadataArtworkUrl"/> property.
-	/// </summary>
-	public static readonly BindableProperty MetadataArtworkUrlProperty = BindableProperty.Create(nameof(MetadataArtworkUrl), typeof(string), typeof(MediaElement), string.Empty);
-
 	readonly WeakEventManager eventManager = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 
@@ -210,188 +100,115 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	}
 
 	/// <summary>
-	/// The current position of the playing media. This is a bindable property.
+	/// Gets the <see cref="MediaHeight"/> in pixels.
 	/// </summary>
-	public TimeSpan Position => (TimeSpan)GetValue(PositionProperty);
+	[BindableProperty]
+	public partial int MediaHeight { get; } = MediaElementDefaults.MediaHeight;
 
 	/// <summary>
-	/// Gets total duration of the loaded media. This is a bindable property.
+	/// Gets the <see cref="MediaWidth"/> in pixels.
 	/// </summary>
-	/// <remarks>Might not be available for some types, like live streams.</remarks>
-	public TimeSpan Duration => (TimeSpan)GetValue(DurationProperty);
+	[BindableProperty]
+	public partial int MediaWidth { get; } = MediaElementDefaults.MediaWidth;
 
 	/// <summary>
-	/// Read the MediaElementOptions set in on construction, cannot be changed after construction
+	/// Gets the current <see cref="Position"/> of the media playback.
+	/// </summary>
+	[BindableProperty]
+	public partial TimeSpan Position { get; } = MediaElementDefaults.Position;
+
+	/// <summary>
+	/// Gets the <see cref="Duration"/> of the media.
+	/// </summary>
+	[BindableProperty]
+	public partial TimeSpan Duration { get; } = MediaElementDefaults.Duration;
+
+	/// <summary>
+	/// Gets or sets the <see cref="AndroidViewType"/> of the media.
 	/// </summary>
 	public AndroidViewType AndroidViewType { get; init; } = MediaElementOptions.DefaultAndroidViewType;
 
 	/// <summary>
-	/// Gets or sets whether the media should start playing as soon as it's loaded.
-	/// Default is <see langword="false"/>. This is a bindable property.
+	/// Gets or sets the <see cref="Aspect"/> ratio used to display the video content.
 	/// </summary>
-	public bool ShouldAutoPlay
-	{
-		get => (bool)GetValue(ShouldAutoPlayProperty);
-		set => SetValue(ShouldAutoPlayProperty, value);
-	}
+	[BindableProperty]
+	public partial Aspect Aspect { get; set; } = MediaElementDefaults.Aspect;
 
 	/// <summary>
-	/// Gets or sets if the video plays when reaches the end.
-	/// Default is <see langword="false"/>. This is a bindable property.
+	/// Gets or sets the <see cref="ShouldAutoPlay"/> indicating whether the media should play automatically.
 	/// </summary>
-	public bool ShouldLoopPlayback
-	{
-		get => (bool)GetValue(ShouldLoopPlaybackProperty);
-		set => SetValue(ShouldLoopPlaybackProperty, value);
-	}
+	[BindableProperty]
+	public partial bool ShouldAutoPlay { get; set; } = MediaElementDefaults.ShouldAutoPlay;
 
 	/// <summary>
-	/// Gets or sets if media playback prevents the device display from going to sleep.
-	/// This is a bindable property.
+	/// Gets or sets the <see cref="ShouldLoopPlayback"/> indicating whether the media should loop playback.
 	/// </summary>
-	/// <remarks>If media is paused, stopped or has completed playing, the display will turn off.</remarks>
-	public bool ShouldKeepScreenOn
-	{
-		get => (bool)GetValue(ShouldKeepScreenOnProperty);
-		set => SetValue(ShouldKeepScreenOnProperty, value);
-	}
+	[BindableProperty]
+	public partial bool ShouldLoopPlayback { get; set; } = MediaElementDefaults.ShouldLoopPlayback;
 
 	/// <summary>
-	/// Gets or sets if audio should be muted. This is a bindable property.
+	/// Gets or sets the <see cref="ShouldKeepScreenOn"/> indicating whether the screen should be kept on during media playback.
 	/// </summary>
-	/// <remarks>
-	/// When <see cref="ShouldMute"/> is <see langword="true" />, changes to <see cref="Volume"/> are ignored.
-	/// The new volume will be applied when <see cref="ShouldMute"/> is set to <see langword="false" /> again.
-	/// When the user uses the platform player controls to influence the volume, it might still unmute.
-	/// </remarks>
-	public bool ShouldMute
-	{
-		get => (bool)GetValue(ShouldMuteProperty);
-		set => SetValue(ShouldMuteProperty, value);
-	}
+	[BindableProperty]
+	public partial bool ShouldKeepScreenOn { get; set; } = MediaElementDefaults.ShouldKeepScreenOn;
 
 	/// <summary>
-	/// Gets or sets whether the player should show the platform playback controls.
-	/// This is a bindable property.
+	/// Gets or sets the <see cref="ShouldMute"/> indicating whether the media should be muted.
 	/// </summary>
-	public bool ShouldShowPlaybackControls
-	{
-		get => (bool)GetValue(ShowsPlaybackControlsProperty);
-		set => SetValue(ShowsPlaybackControlsProperty, value);
-	}
+	[BindableProperty]
+	public partial bool ShouldMute { get; set; } = MediaElementDefaults.ShouldMute;
 
 	/// <summary>
-	/// Gets or sets the source of the media to play.
-	/// This is a bindable property.
+	/// Gets or sets the <see cref="ShouldShowPlaybackControls"/> indicating whether playback controls should be shown.
 	/// </summary>
+	[BindableProperty]
+	public partial bool ShouldShowPlaybackControls { get; set; } = MediaElementDefaults.ShouldShowPlaybackControls;
+
+	/// <summary>
+	/// Gets or sets the <see cref="Source"/> of the media.
+	/// </summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnSourcePropertyChanged), PropertyChangingMethodName = nameof(OnSourcePropertyChanging))]
 	[TypeConverter(typeof(MediaSourceConverter))]
-	public MediaSource? Source
-	{
-		get => (MediaSource)GetValue(SourceProperty);
-		set => SetValue(SourceProperty, value);
-	}
+	public partial MediaSource? Source { get; set; }
 
 	/// <summary>
-	/// Gets or sets the volume of the audio for the media.
+	/// Gets or sets the <see cref="Speed"/> of the media playback.
 	/// </summary>
-	/// <remarks>
-	/// <para>A value of 1 indicates full-volume, 0 is silence.</para>
-	/// <para>When <see cref="ShouldMute"/> is <see langword="true" />, changes to <see cref="Volume"/> are ignored.
-	/// The new volume will be applied when <see cref="ShouldMute"/> is set to <see langword="false" /> again.
-	/// When the user uses the platform player controls to influence the volume, it might still unmute.</para>
-	/// </remarks>
-	public double Volume
-	{
-		get => (double)GetValue(VolumeProperty);
-		set
-		{
-			switch (value)
-			{
-				case > 1:
-					throw new ArgumentOutOfRangeException(nameof(value), value, $"The value of {nameof(Volume)} cannot be greater than {1}");
-				case < 0:
-					throw new ArgumentOutOfRangeException(nameof(value), value, $"The value of {nameof(Volume)} cannot be less than {0}");
-				default:
-					SetValue(VolumeProperty, value);
-					break;
-			}
-		}
-	}
+	[BindableProperty]
+	public partial double Speed { get; set; } = MediaElementDefaults.Speed;
 
 	/// <summary>
-	/// Gets or sets the speed with which the media should be played.
-	/// This is a bindable property.
+	/// Gets or sets the <see cref="MetadataTitle"/> of the media.
 	/// </summary>
-	/// <remarks>A value of 1 means normal speed.
-	/// Anything more than 1 is faster speed, anything less than 1 is slower speed.</remarks>
-	public double Speed
-	{
-		get => (double)GetValue(SpeedProperty);
-		set => SetValue(SpeedProperty, value);
-	}
+	[BindableProperty]
+	public partial string MetadataTitle { get; set; } = MediaElementDefaults.MetadataTitle;
 
 	/// <summary>
-	/// Gets the height (in pixels) of the loaded media in pixels.
-	/// This is a bindable property.
+	/// Gets or sets the <see cref="MetadataArtist"/> of the media.
 	/// </summary>
-	/// <remarks>Not reported for non-visual media, sometimes not available for live-streamed content on iOS and macOS.</remarks>
-	public int MediaHeight => (int)GetValue(MediaHeightProperty);
+	[BindableProperty]
+	public partial string MetadataArtist { get; set; } = MediaElementDefaults.MetadataArtist;
 
 	/// <summary>
-	/// Gets the width (in pixels) of the loaded media in pixels.
-	/// This is a bindable property.
+	/// Gets or sets the <see cref="MetadataArtworkUrl"/> of the media.
 	/// </summary>
-	/// <remarks>Not reported for non-visual media, sometimes not available for live-streamed content on iOS and macOS.</remarks>
-	public int MediaWidth => (int)GetValue(MediaWidthProperty);
+	[BindableProperty]
+	public partial string MetadataArtworkUrl { get; set; } = MediaElementDefaults.MetadataArtworkUrl;
 
 	/// <summary>
-	/// Gets or sets the Title of the media.
-	/// This is a bindable property.
+	/// Gets or sets the <see cref="Volume"/> of the media.
 	/// </summary>
-	public string MetadataTitle
-	{
-		get => (string)GetValue(MetadataTitleProperty);
-		set => SetValue(MetadataTitleProperty, value);
-	}
+	[BindableProperty(DefaultBindingMode = BindingMode.TwoWay, PropertyChangingMethodName = nameof(OnVolumeChanging))]
+	public partial double Volume { get; set; } = MediaElementDefaults.Volume;
 
 	/// <summary>
-	/// Gets or sets the Artist of the media.
-	/// This is a bindable property.
+	/// Gets or sets the <see cref="CurrentState"/> of the media.
 	/// </summary>
-	public string MetadataArtist
-	{
-		get => (string)GetValue(MetadataArtistProperty);
-		set => SetValue(MetadataArtistProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnCurrentStatePropertyChanged))]
+	public partial MediaElementState CurrentState { get; private set; } = MediaElementDefaults.CurrentState;
 
-	/// <summary>
-	/// Gets or sets the Artwork Image Url of the media.
-	/// This is a bindable property.
-	/// </summary>
-	public string MetadataArtworkUrl
-	{
-		get => (string)GetValue(MetadataArtworkUrlProperty);
-		set => SetValue(MetadataArtworkUrlProperty, value);
-	}
-
-	/// <summary>
-	/// Gets or sets how the media will be scaled to fit the display area.
-	/// Default value is <see cref="Aspect.AspectFit"/>. This is a bindable property.
-	/// </summary>
-	public Aspect Aspect
-	{
-		get => (Aspect)GetValue(AspectProperty);
-		set => SetValue(AspectProperty, value);
-	}
-
-	/// <summary>
-	/// The current state of the <see cref="MediaElement"/>. This is a bindable property.
-	/// </summary>
-	public MediaElementState CurrentState
-	{
-		get => (MediaElementState)GetValue(CurrentStateProperty);
-		private set => SetValue(CurrentStateProperty, value);
-	}
+	/// <inheritdoc/>
+	TaskCompletionSource IAsynchronousMediaElementHandler.SeekCompletedTCS => seekCompletedTaskCompletionSource;
 
 	TimeSpan IMediaElement.Position
 	{
@@ -402,7 +219,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 
 			if (currentValue != value)
 			{
-				SetValue(PositionProperty, value);
+				SetValue(positionPropertyKey, value);
 				OnPositionChanged(new(value));
 			}
 		}
@@ -425,9 +242,6 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		get => (int)GetValue(MediaHeightProperty);
 		set => SetValue(mediaHeightPropertyKey, value);
 	}
-
-	/// <inheritdoc/>
-	TaskCompletionSource IAsynchronousMediaElementHandler.SeekCompletedTCS => seekCompletedTaskCompletionSource;
 
 	/// <inheritdoc/>
 	public void Dispose()
@@ -524,11 +338,30 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		isDisposed = true;
 	}
 
-	static void OnSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
-		((MediaElement)bindable).OnSourcePropertyChanged((MediaSource?)newValue);
+	static void OnSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var mediaElement = (MediaElement)bindable;
+		var source = (MediaSource?)newValue;
 
-	static void OnSourcePropertyChanging(BindableObject bindable, object oldValue, object newValue) =>
-		((MediaElement)bindable).OnSourcePropertyChanging((MediaSource?)oldValue);
+		mediaElement.ClearTimer();
+
+		if (source is not null)
+		{
+			source.SourceChanged += mediaElement.OnSourceChanged;
+			SetInheritedBindingContext(source, mediaElement.BindingContext);
+		}
+
+		mediaElement.InvalidateMeasure();
+		mediaElement.InitializeTimer();
+	}
+
+	static void OnSourcePropertyChanging(BindableObject bindable, object oldValue, object newValue)
+	{
+		var mediaElement = (MediaElement)bindable;
+		var oldMediaSource = (MediaSource?)oldValue;
+
+		oldMediaSource?.SourceChanged -= mediaElement.OnSourceChanged;
+	}
 
 	static void OnCurrentStatePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
@@ -539,7 +372,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		mediaElement.OnStateChanged(new MediaStateChangedEventArgs(previousState, newState));
 	}
 
-	static void ValidateVolume(BindableObject bindable, object oldValue, object newValue)
+	static void OnVolumeChanging(BindableObject bindable, object oldValue, object newValue)
 	{
 		var updatedVolume = (double)newValue;
 
@@ -548,6 +381,16 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 			throw new ArgumentOutOfRangeException(nameof(newValue), $"{nameof(Volume)} can not be less than 0.0 or greater than 1.0");
 		}
 	}
+
+	void IMediaElement.MediaEnded() => OnMediaEnded();
+
+	void IMediaElement.MediaFailed(MediaFailedEventArgs args) => OnMediaFailed(args);
+
+	void IMediaElement.MediaOpened() => OnMediaOpened();
+
+	void IMediaElement.SeekCompleted() => OnSeekCompleted();
+
+	void IMediaElement.CurrentStateChanged(MediaElementState newState) => CurrentState = newState;
 
 	void OnTimerTick(object? sender, EventArgs e)
 	{
@@ -586,52 +429,6 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		OnPropertyChanged(SourceProperty.PropertyName);
 		InvalidateMeasure();
 	}
-
-	void OnSourcePropertyChanged(MediaSource? newValue)
-	{
-		ClearTimer();
-
-		if (newValue is not null)
-		{
-			newValue.SourceChanged += OnSourceChanged;
-			SetInheritedBindingContext(newValue, BindingContext);
-		}
-
-		InvalidateMeasure();
-		InitializeTimer();
-	}
-
-	void OnSourcePropertyChanging(MediaSource? oldValue)
-	{
-		if (oldValue is null)
-		{
-			return;
-		}
-
-		oldValue.SourceChanged -= OnSourceChanged;
-	}
-
-	void IMediaElement.MediaEnded()
-	{
-		OnMediaEnded();
-	}
-
-	void IMediaElement.MediaFailed(MediaFailedEventArgs args)
-	{
-		OnMediaFailed(args);
-	}
-
-	void IMediaElement.MediaOpened()
-	{
-		OnMediaOpened();
-	}
-
-	void IMediaElement.SeekCompleted()
-	{
-		OnSeekCompleted();
-	}
-
-	void IMediaElement.CurrentStateChanged(MediaElementState newState) => CurrentState = newState;
 
 	void OnPositionChanged(MediaPositionChangedEventArgs mediaPositionChangedEventArgs) =>
 		eventManager.HandleEvent(this, mediaPositionChangedEventArgs, nameof(PositionChanged));

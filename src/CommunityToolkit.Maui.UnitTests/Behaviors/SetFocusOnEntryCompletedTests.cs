@@ -42,6 +42,8 @@ public class SetFocusOnEntryCompletedTests() : BaseBehaviorTest<SetFocusOnEntryC
 		// We simulate Focus/Unfocus behavior ourselves
 		// because unit tests doesn't have "platform-specific" part
 		// where IsFocused is controlled in the real app
+		entry.Focused += (s, e) => entry.SetValue(VisualElement.IsFocusedPropertyKey, true);
+		entry.Unfocused += (s, e) => entry.SetValue(VisualElement.IsFocusedPropertyKey, false);
 		entry.FocusChangeRequested += (s, e) => entry.SetValue(VisualElement.IsFocusedPropertyKey, e.Focus);
 
 		if (nextElement != null)

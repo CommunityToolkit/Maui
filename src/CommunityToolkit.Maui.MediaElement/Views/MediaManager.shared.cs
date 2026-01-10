@@ -11,6 +11,11 @@ global using PlatformMediaElement = CommunityToolkit.Maui.Core.Views.TizenPlayer
 #endif
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui;
+using System;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Controls;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -25,7 +30,7 @@ public partial class MediaManager
 	/// <param name="context">This application's <see cref="IMauiContext"/>.</param>
 	/// <param name="mediaElement">The <see cref="IMediaElement"/> instance that is managed through this class.</param>
 	/// <param name="dispatcher">The <see cref="IDispatcher"/> instance that allows propagation to the main thread.</param>
-	public MediaManager(IMauiContext context, IMediaElement mediaElement, IDispatcher dispatcher)
+	public MediaManager(Microsoft.Maui.IMauiContext context, IMediaElement mediaElement, IDispatcher dispatcher)
 	{
 		ArgumentNullException.ThrowIfNull(context);
 		ArgumentNullException.ThrowIfNull(mediaElement);
@@ -46,12 +51,12 @@ public partial class MediaManager
 	/// <summary>
 	/// The <see cref="IMauiContext"/> used by this class.
 	/// </summary>
-	protected IMauiContext MauiContext { get; }
+	protected Microsoft.Maui.IMauiContext MauiContext { get; }
 
 	/// <summary>
 	/// The <see cref="IDispatcher"/> that allows propagation to the main thread
 	/// </summary>
-	protected IDispatcher Dispatcher { get; }
+	protected Microsoft.Maui.Dispatching.IDispatcher Dispatcher { get; }
 
 	/// <summary>
 	/// Gets the <see cref="ILogger"/> instance for logging purposes.

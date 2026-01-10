@@ -6,11 +6,7 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 /// <summary>
 /// Handler definition for the <see cref="ICameraView"/> implementation on each platform.
 /// </summary>
-#if TIZEN
-public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>
-#else
 public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>, IDisposable
-#endif
 {
 	/// <summary>
 	/// The currently defined mappings between properties on the <see cref="ICameraView"/> and
@@ -72,7 +68,7 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		ArgumentNullException.ThrowIfNull(MauiContext);
 		cameraManager = new(MauiContext, VirtualView, cameraProvider, () => Init(VirtualView));
 
-		return (NativePlatformCameraPreviewView)CameraManager.CreatePlatformView();
+		return CameraManager.CreatePlatformView();
 
 		// When camera is loaded(switched), map the current flash mode to the platform view,
 		// reset the zoom factor to 1
@@ -88,15 +84,16 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	{
 		base.ConnectHandler(platformView);
 
-		await CameraManager.ArePermissionsGranted();
 		await CameraManager.ConnectCamera(CancellationToken.None);
-		await cameraProvider.RefreshAvailableCameras(CancellationToken.None);
 	}
 
 	/// <inheritdoc/>
 	protected override void DisconnectHandler(NativePlatformCameraPreviewView platformView)
 	{
 		base.DisconnectHandler(platformView);
+
+		CameraManager.Disconnect();
+
 		Dispose();
 	}
 

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Microsoft.Maui.Controls;
 using UriTypeConverter = Microsoft.Maui.Controls.UriTypeConverter;
 
 namespace CommunityToolkit.Maui.Views;
@@ -8,12 +9,6 @@ namespace CommunityToolkit.Maui.Views;
 /// </summary>
 public sealed partial class UriMediaSource : MediaSource
 {
-	/// <summary>
-	/// Backing store for the <see cref="Uri"/> property.
-	/// </summary>
-	public static readonly BindableProperty UriProperty =
-		BindableProperty.Create(nameof(Uri), typeof(Uri), typeof(UriMediaSource), propertyChanged: OnUriSourceChanged, validateValue: UriValueValidator);
-
 	/// <summary>
 	/// An implicit operator to convert a string value into a <see cref="UriMediaSource"/>.
 	/// </summary>
@@ -32,11 +27,8 @@ public sealed partial class UriMediaSource : MediaSource
 	/// </summary>
 	/// <remarks>The URI has to be absolute.</remarks>
 	[TypeConverter(typeof(UriTypeConverter))]
-	public Uri? Uri
-	{
-		get => (Uri?)GetValue(UriProperty);
-		set => SetValue(UriProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnUriSourceChanged), ValidateValueMethodName = nameof(UriValueValidator))]
+	public partial Uri? Uri { get; set; }
 
 	/// <inheritdoc/>
 	public override string ToString() => $"Uri: {Uri}";

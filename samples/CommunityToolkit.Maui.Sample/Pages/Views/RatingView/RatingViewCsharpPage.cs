@@ -10,7 +10,7 @@ using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
+public partial class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 {
 	public RatingViewCsharpPage(RatingViewCsharpViewModel viewModel) : base(viewModel)
 	{
@@ -798,7 +798,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 		await Toast.Make($"New Rating: {ratingView.Rating:F2}").Show(CancellationToken.None);
 	}
 
-	sealed class SectionHeader : Grid
+	sealed partial class SectionHeader : Grid
 	{
 		public const int RequestedHeight = (separatorRowHeight * 2) + titleHeight;
 		const int separatorRowHeight = 8;
@@ -827,7 +827,7 @@ public class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 		}.Center().AppThemeBinding(Line.StrokeProperty, Colors.Black, Colors.White);
 	}
 
-	sealed class TitleLabel : Label
+	sealed partial class TitleLabel : Label
 	{
 		public TitleLabel(in string text)
 		{

@@ -6,13 +6,8 @@ using CommunityToolkit.Maui.Views;
 namespace CommunityToolkit.Maui.Core;
 
 /// <summary>Default Values for <see cref="ICameraView"/></summary>
-[SupportedOSPlatform("windows10.0.10240.0")]
-[SupportedOSPlatform("android21.0")]
-[SupportedOSPlatform("ios")]
-[SupportedOSPlatform("maccatalyst")]
-[SupportedOSPlatform("tizen")]
 [EditorBrowsable(EditorBrowsableState.Never)]
-public static class CameraViewDefaults
+static class CameraViewDefaults
 {
 	/// <summary>
 	/// Default value for <see cref="ICameraView.IsAvailable"/>
@@ -43,22 +38,4 @@ public static class CameraViewDefaults
 	/// Default value for <see cref="ICameraView.CameraFlashMode"/>
 	/// </summary>
 	public static CameraFlashMode CameraFlashMode { get; } = CameraFlashMode.Off;
-
-	internal static Command<CancellationToken> CreateCaptureImageCommand(BindableObject bindable)
-	{
-		var cameraView = (CameraView)bindable;
-		return new(async token => await cameraView.CaptureImage(token).ConfigureAwait(false));
-	}
-
-	internal static Command<CancellationToken> CreateStartCameraPreviewCommand(BindableObject bindable)
-	{
-		var cameraView = (CameraView)bindable;
-		return new(async token => await cameraView.StartCameraPreview(token).ConfigureAwait(false));
-	}
-
-	internal static ICommand CreateStopCameraPreviewCommand(BindableObject bindable)
-	{
-		var cameraView = (CameraView)bindable;
-		return new Command(_ => cameraView.StopCameraPreview());
-	}
 }

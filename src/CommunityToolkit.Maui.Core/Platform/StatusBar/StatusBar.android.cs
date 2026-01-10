@@ -38,7 +38,39 @@ static partial class StatusBar
 		if (Activity.Window is not null)
 		{
 			var platformColor = color.ToPlatform();
-			Activity.Window.SetStatusBarColor(platformColor);
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(35))
+			{
+				const string statusBarOverlayTag = "StatusBarOverlay";
+
+				var window = Activity.GetCurrentWindow();
+
+				var decorGroup = (ViewGroup)window.DecorView;
+				var statusBarOverlay = decorGroup.FindViewWithTag(statusBarOverlayTag);
+
+				if (statusBarOverlay is null)
+				{
+					var statusBarHeight = Activity.Resources?.GetIdentifier("status_bar_height", "dimen", "android") ?? 0;
+					var statusBarPixelSize = statusBarHeight > 0 ? Activity.Resources?.GetDimensionPixelSize(statusBarHeight) ?? 0 : 0;
+
+					statusBarOverlay = new(Activity)
+					{
+						LayoutParameters = new FrameLayout.LayoutParams(Android.Views.ViewGroup.LayoutParams.MatchParent, statusBarPixelSize + 3)
+						{
+							Gravity = GravityFlags.Top
+						}
+					};
+
+					decorGroup.AddView(statusBarOverlay);
+					statusBarOverlay.SetZ(0);
+				}
+
+				statusBarOverlay.SetBackgroundColor(platformColor);
+			}
+			else
+			{
+				Activity.Window.SetStatusBarColor(platformColor);
+			}
 
 			bool isColorTransparent = platformColor == PlatformColor.Transparent;
 			if (isColorTransparent)
@@ -54,7 +86,6 @@ static partial class StatusBar
 
 			WindowCompat.SetDecorFitsSystemWindows(Activity.Window, !isColorTransparent);
 		}
-
 	}
 
 	static void PlatformSetStyle(StatusBarStyle style)

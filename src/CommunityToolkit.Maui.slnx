@@ -1,0 +1,33 @@
+<Solution>
+  <Folder Name="/Analyzers/">
+    <Project Path="CommunityToolkit.Maui.Analyzers.CodeFixes/CommunityToolkit.Maui.Analyzers.CodeFixes.csproj" />
+    <Project Path="CommunityToolkit.Maui.Analyzers/CommunityToolkit.Maui.Analyzers.csproj" />
+    <Project Path="CommunityToolkit.Maui.Camera.Analyzers.CodeFixes/CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.csproj" />
+    <Project Path="CommunityToolkit.Maui.Camera.Analyzers/CommunityToolkit.Maui.Camera.Analyzers.csproj" />
+    <Project Path="CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj" />
+    <Project Path="CommunityToolkit.Maui.MediaElement.Analyzers/CommunityToolkit.Maui.MediaElement.Analyzers.csproj" />
+    <Project Path="CommunityToolkit.Maui.SourceGenerators.Internal/CommunityToolkit.Maui.SourceGenerators.Internal.csproj" />
+    <Project Path="CommunityToolkit.Maui.SourceGenerators/CommunityToolkit.Maui.SourceGenerators.csproj" />
+  </Folder>
+  <Folder Name="/Benchmarks/">
+    <Project Path="CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj" />
+    <Project Path="CommunityToolkit.Maui.SourceGenerators.Benchmarks/CommunityToolkit.Maui.SourceGenerators.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="../.editorconfig" />
+    <File Path="../.github/workflows/benchmarks.yml" />
+    <File Path="../Directory.Build.props" />
+    <File Path="../Directory.Build.targets" />
+    <File Path="../global.json" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj" />
+    <Project Path="CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests/CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.csproj" />
+    <Project Path="CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj" />
+  </Folder>
+  <Project Path="CommunityToolkit.Maui.Camera/CommunityToolkit.Maui.Camera.csproj" />
+  <Project Path="CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj" />
+  <Project Path="CommunityToolkit.Maui.Maps/CommunityToolkit.Maui.Maps.csproj" />
+  <Project Path="CommunityToolkit.Maui.MediaElement/CommunityToolkit.Maui.MediaElement.csproj" />
+  <Project Path="CommunityToolkit.Maui/CommunityToolkit.Maui.csproj" />
+</Solution>

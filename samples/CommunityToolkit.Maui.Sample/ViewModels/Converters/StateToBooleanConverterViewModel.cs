@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
+
 public partial class StateToBooleanConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]

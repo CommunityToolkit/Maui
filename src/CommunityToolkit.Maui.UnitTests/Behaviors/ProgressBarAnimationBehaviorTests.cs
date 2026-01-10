@@ -31,9 +31,8 @@ public class ProgressBarAnimationBehaviorTests() : BaseBehaviorTest<ProgressBarA
 		progressBar.Behaviors.Add(progressBarAnimationBehavior);
 
 		Assert.Equal(0.0d, progressBar.Progress);
-		Assert.Equal(0.0d, ProgressBarAnimationBehavior.ProgressProperty.DefaultValue);
-		Assert.Equal((uint)500, ProgressBarAnimationBehavior.LengthProperty.DefaultValue);
-		Assert.Equal(Easing.Linear, ProgressBarAnimationBehavior.EasingProperty.DefaultValue);
+		Assert.Equal((uint)500, progressBarAnimationBehavior.Length);
+		Assert.Equal(Easing.Linear, progressBarAnimationBehavior.Easing);
 
 		progressBarAnimationBehavior.Length = length;
 		progressBarAnimationBehavior.Easing = easing;
@@ -59,19 +58,20 @@ public class ProgressBarAnimationBehaviorTests() : BaseBehaviorTest<ProgressBarA
 	}
 
 	[Theory]
-	[InlineData(double.MinValue, 0)]
-	[InlineData(-1, 0)]
-	[InlineData(-0.0000000000001, 0)]
-	[InlineData(1.0000000000001, 1)]
-	[InlineData(double.MaxValue, 1)]
-	public void InvalidProgressValuesTest(double inputProgressValue, double expectedProgressValue)
+	[InlineData(double.MinValue)]
+	[InlineData(-1)]
+	[InlineData(-0.0000000000001)]
+	[InlineData(1.0000000000001)]
+	[InlineData(double.MaxValue)]
+	public void InvalidProgressValuesTest(double inputProgressValue)
 	{
-		var progressBarAnimationBehavior = new ProgressBarAnimationBehavior
+		Assert.Throws<ArgumentOutOfRangeException>(() =>
 		{
-			Progress = inputProgressValue
-		};
-
-		Assert.Equal(expectedProgressValue, progressBarAnimationBehavior.Progress);
+			new ProgressBarAnimationBehavior
+			{
+				Progress = inputProgressValue
+			};
+		});
 	}
 
 	[Fact]

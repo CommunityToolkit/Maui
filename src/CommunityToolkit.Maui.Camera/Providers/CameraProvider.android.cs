@@ -16,7 +16,7 @@ partial class CameraProvider
 {
 	readonly Context context = Android.App.Application.Context;
 
-	public async partial ValueTask RefreshAvailableCameras(CancellationToken token)
+	private async partial ValueTask PlatformRefreshAvailableCameras(CancellationToken token)
 	{
 		var cameraProviderFuture = ProcessCameraProvider.GetInstance(context);
 
@@ -30,6 +30,14 @@ partial class CameraProvider
 			foreach (var cameraXInfo in processCameraProvider.AvailableCameraInfos)
 			{
 				var camera2Info = Camera2CameraInfo.From(cameraXInfo);
+				if (camera2Info is null)
+				{
+					// `Camera2CameraInfo.From` should never return `null`
+					// According to the Android Docs, `Camera2CameraInfo.From` returns a `NonNull`
+					// `Camera2CameraInfo.From` returning a nullable `Camera2CameraInfo` object is likely a C# binding mistake
+					// https://developer.android.com/reference/androidx/camera/camera2/interop/Camera2CameraInfo
+					continue;
+				}
 
 				var (name, position) = cameraXInfo.LensFacing switch
 				{
@@ -68,13 +76,13 @@ partial class CameraProvider
 				}
 
 				var cameraInfo = new CameraInfo(name,
-					camera2Info.CameraId,
+					camera2Info.CameraId ?? throw new InvalidOperationException("Unable to retrieve Camera ID"),
 					position,
 					cameraXInfo.HasFlashUnit,
-					(cameraXInfo.ZoomState.Value as IZoomState)?.MinZoomRatio ?? 1.0f,
-					(cameraXInfo.ZoomState.Value as IZoomState)?.MaxZoomRatio ?? 1.0f,
+					(cameraXInfo.ZoomState?.Value as IZoomState)?.MinZoomRatio ?? 1.0f,
+					(cameraXInfo.ZoomState?.Value as IZoomState)?.MaxZoomRatio ?? 1.0f,
 					supportedResolutions,
-					cameraXInfo.CameraSelector);
+					cameraXInfo.CameraSelector ?? throw new InvalidOperationException($"Unable to retrieve {nameof(ICameraInfo.CameraSelector)}"));
 
 				availableCameras.Add(cameraInfo);
 			}

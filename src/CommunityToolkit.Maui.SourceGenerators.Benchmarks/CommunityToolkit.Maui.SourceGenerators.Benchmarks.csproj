@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(NetVersion)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <StartupObject>CommunityToolkit.Maui.SourceGenerators.Benchmarks.Program</StartupObject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.15.8" />
+    
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests\CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.csproj" />
+    <ProjectReference Include="..\CommunityToolkit.Maui.SourceGenerators\CommunityToolkit.Maui.SourceGenerators.csproj" />
+  </ItemGroup>
+</Project>

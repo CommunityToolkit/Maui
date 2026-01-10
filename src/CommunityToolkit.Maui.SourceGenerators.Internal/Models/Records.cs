@@ -3,20 +3,17 @@ using Microsoft.CodeAnalysis;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Internal.Models;
 
-record BindablePropertyModel
+public record BindablePropertyModel(string PropertyName, ITypeSymbol ReturnType, ITypeSymbol DeclaringType, string DefaultBindingMode, string ValidateValueMethodName, string PropertyChangedMethodName, string PropertyChangingMethodName, string CoerceValueMethodName, string DefaultValueCreatorMethodName, string NewKeywordText, bool IsReadOnlyBindableProperty, string? SetterAccessibility, bool HasInitializer, string? PropertyAccessibility)
 {
-	public string PropertyName { get; set; } = string.Empty;
-	public ITypeSymbol? ReturnType { get; set; }
-	public string DeclaringType { get; set; } = string.Empty;
-	public string DefaultValue { get; set; } = string.Empty;
-	public string DefaultBindingMode { get; set; } = string.Empty;
-	public string ValidateValueMethodName { get; set; } = string.Empty;
-	public string PropertyChangedMethodName { get; set; } = string.Empty;
-	public string PropertyChangingMethodName { get; set; } = string.Empty;
-	public string CoerceValueMethodName { get; set; } = string.Empty;
-	public string DefaultValueCreatorMethodName { get; set; } = string.Empty;
+	// When both a DefaultValueCreatorMethodName and an initializer are provided, we implement the DefaultValueCreator method and the ignore the partial Property initializer
+	public bool ShouldUsePropertyInitializer => HasInitializer && DefaultValueCreatorMethodName is "null";
+	public string BindablePropertyName => $"{PropertyName}Property";
+	public string BindablePropertyKeyName => $"{char.ToLower(PropertyName[0])}{PropertyName[1..]}PropertyKey";
+	public string EffectiveDefaultValueCreatorMethodName => ShouldUsePropertyInitializer ? $"CreateDefault{PropertyName}" : DefaultValueCreatorMethodName;
+	public string InitializingPropertyName => $"IsInitializing{PropertyName}";
+
 }
 
-record SemanticValues(ClassInformation ClassInformation, EquatableArray<BindablePropertyModel> BindableProperties);
+public record SemanticValues(ClassInformation ClassInformation, EquatableArray<BindablePropertyModel> BindableProperties);
 
-readonly record struct ClassInformation(string ClassName, string DeclaredAccessibility, string ContainingNamespace);
+public readonly record struct ClassInformation(string ClassName, string DeclaredAccessibility, string ContainingNamespace, string ContainingTypes = "", string GenericTypeParameters = "");

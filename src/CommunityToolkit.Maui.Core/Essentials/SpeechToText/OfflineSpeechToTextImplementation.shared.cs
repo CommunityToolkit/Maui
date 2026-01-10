@@ -35,13 +35,6 @@ public sealed partial class OfflineSpeechToTextImplementation : ISpeechToText
 	public async Task StartListenAsync(SpeechToTextOptions options, CancellationToken cancellationToken = default)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-
-		var isPermissionGranted = await IsSpeechPermissionAuthorized(cancellationToken).ConfigureAwait(false);
-		if (!isPermissionGranted)
-		{
-			throw new PermissionException($"{nameof(Permissions)}.{nameof(Permissions.Microphone)} Not Granted");
-		}
-
 		await InternalStartListening(options, cancellationToken);
 	}
 
@@ -73,12 +66,6 @@ public sealed partial class OfflineSpeechToTextImplementation : ISpeechToText
 	public async Task<bool> RequestPermissions(CancellationToken cancellationToken = default)
 	{
 		var status = await Permissions.RequestAsync<Permissions.Microphone>().WaitAsync(cancellationToken).ConfigureAwait(false);
-		return status is PermissionStatus.Granted;
-	}
-
-	static async Task<bool> IsSpeechPermissionAuthorized(CancellationToken cancellationToken)
-	{
-		var status = await Permissions.CheckStatusAsync<Permissions.Microphone>().WaitAsync(cancellationToken).ConfigureAwait(false);
 		return status is PermissionStatus.Granted;
 	}
 #endif

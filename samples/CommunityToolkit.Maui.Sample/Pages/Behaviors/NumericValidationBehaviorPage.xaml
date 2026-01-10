@@ -21,7 +21,7 @@
 
     <VerticalStackLayout Padding="{StaticResource ContentPadding}"
                  Spacing="24"
-                 VerticalOptions="StartAndExpand">
+                 VerticalOptions="Start">
 
         <Label Text="The NumericValidationBehavior is a behavior that allows the user to determine if text input is a valid numeric value. For example, an Entry control can be styled differently depending on whether a valid or an invalid numeric input is provided. Additional properties handling validation are inherited from ValidationBehavior"
                TextColor="{StaticResource NormalLabelTextColor}" />

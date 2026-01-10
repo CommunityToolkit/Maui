@@ -103,7 +103,7 @@ public class UniformItemsLayoutTests : BaseTest
 		uniformChild = new TestView(childSize);
 		uniformItemsLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
 		var rect = new Rect(0, 0, childWidth * childCount, childHeight * childCount);
-		uniformItemsLayout.Layout(rect);
+		uniformItemsLayout.Arrange(rect);
 		var actualSize = uniformItemsLayout.CrossPlatformArrange(rect);
 
 		Assert.Equal(childSize * childCount, actualSize);

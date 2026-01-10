@@ -51,7 +51,7 @@
                             </GradientStopCollection>
                         </LinearGradientBrush>
                     </Setter>
-                    <Setter Property="FontSize" Value="Default" />
+                    <Setter Property="FontSize" Value="14" />
                     <Setter Property="TextColor" Value="Silver" />
                 </Style>
             </ResourceDictionary>

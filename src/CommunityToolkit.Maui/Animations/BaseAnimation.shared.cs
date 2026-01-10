@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Animations;
+﻿using CommunityToolkit.Maui.Core;
+
+namespace CommunityToolkit.Maui.Animations;
 /// <summary>
 /// Abstract class for animation types to inherit.
 /// </summary>
@@ -7,40 +9,21 @@
 /// Initialize BaseAnimation
 /// </remarks>
 /// <param name="defaultLength">The default time, in milliseconds, over which to animate the transition</param>
-public abstract class BaseAnimation<TAnimatable>(uint defaultLength = 250u) : BindableObject where TAnimatable : IAnimatable
+public abstract partial class BaseAnimation<TAnimatable>(uint defaultLength = BaseAnimationDefaults.Length) : BindableObject where TAnimatable : IAnimatable
 {
 	readonly uint defaultLength = defaultLength;
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="Length"/> property.
+	/// Gets or sets the time, in milliseconds, over which to animate the transition.
 	/// </summary>
-	public static readonly BindableProperty LengthProperty =
-		BindableProperty.Create(nameof(Length), typeof(uint), typeof(BaseAnimation<TAnimatable>), 250u,
-			BindingMode.OneWay, defaultValueCreator: bindable => ((BaseAnimation<TAnimatable>)bindable).defaultLength);
+	[BindableProperty(DefaultBindingMode = BindingMode.OneWay, DefaultValueCreatorMethodName = nameof(CreateLengthDefaultValue))]
+	public partial uint Length { get; set; }
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="Easing"/> property.
+	/// Gets or sets the easing function to use for the animation
 	/// </summary>
-	public static readonly BindableProperty EasingProperty =
-		BindableProperty.Create(nameof(Easing), typeof(Easing), typeof(BaseAnimation<TAnimatable>), Easing.Linear, BindingMode.OneWay);
-
-	/// <summary>
-	/// The time, in milliseconds, over which to animate the transition.
-	/// </summary>
-	public uint Length
-	{
-		get => (uint)GetValue(LengthProperty);
-		set => SetValue(LengthProperty, value);
-	}
-
-	/// <summary>
-	/// The easing function to use for the animation
-	/// </summary>
-	public Easing Easing
-	{
-		get => (Easing)GetValue(EasingProperty);
-		set => SetValue(EasingProperty, value);
-	}
+	[BindableProperty(DefaultBindingMode = BindingMode.OneWay)]
+	public partial Easing Easing { get; set; } = BaseAnimationDefaults.Easing;
 
 	/// <summary>
 	/// Performs the animation on the View
@@ -48,6 +31,8 @@ public abstract class BaseAnimation<TAnimatable>(uint defaultLength = 250u) : Bi
 	/// <param name="view">The view to perform the animation on.</param>
 	/// <param name="token"> <see cref="CancellationToken"/>.</param>
 	public abstract Task Animate(TAnimatable view, CancellationToken token = default);
+
+	static object CreateLengthDefaultValue(BindableObject bindable) => ((BaseAnimation<TAnimatable>)bindable).defaultLength;
 }
 
 /// <inheritdoc/>
@@ -55,6 +40,6 @@ public abstract class BaseAnimation<TAnimatable>(uint defaultLength = 250u) : Bi
 /// Initialize BaseAnimation
 /// </summary>
 /// <param name="defaultLength">The default time, in milliseconds, over which to animate the transition</param>
-public abstract class BaseAnimation(uint defaultLength = 250u) : BaseAnimation<VisualElement>(defaultLength)
+public abstract class BaseAnimation(uint defaultLength = BaseAnimationDefaults.Length) : BaseAnimation<VisualElement>(defaultLength)
 {
 }

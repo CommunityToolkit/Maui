@@ -7,46 +7,9 @@ namespace CommunityToolkit.Maui.Views;
 
 /// <inheritdoc cref="IExpander"/>
 [ContentProperty(nameof(Content))]
-[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 [RequiresUnreferencedCode("Calls Microsoft.Maui.Controls.Binding.Binding(String, BindingMode, IValueConverter, Object, String, Object)")]
 public partial class Expander : ContentView, IExpander
 {
-	/// <summary>
-	/// Gets or sets the command to execute when the expander is expanded or collapsed.
-	/// </summary>
-	[BindableProperty]
-	public partial ICommand Command { get; set; }
-
-	/// <summary>
-	/// Gets or sets the parameter to pass to the <see cref="Command"/> property.
-	/// </summary>
-	[BindableProperty]
-	public partial object CommandParameter { get; set; }
-
-	/// <summary>
-	/// Gets or sets a value indicating whether the expander is expanded.
-	/// </summary>
-	[BindableProperty(PropertyChangedMethodName = nameof(OnIsExpandedPropertyChanged))]
-	public partial bool IsExpanded { get; set; }
-
-	/// <summary>
-	/// Gets or sets the content to be expanded or collapsed.
-	/// </summary>
-	[BindableProperty(PropertyChangedMethodName = nameof(OnContentPropertyChanged))]
-	public partial IView Content { get; set; }
-
-	/// <summary>
-	/// Gets or sets the header view of the expander.
-	/// </summary>
-	[BindableProperty(PropertyChangedMethodName = nameof(OnHeaderPropertyChanged))]
-	public partial IView Header { get; set; }
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="Direction"/> property.
-	/// </summary>
-	public static readonly BindableProperty DirectionProperty
-		= BindableProperty.Create(nameof(Direction), typeof(ExpandDirection), typeof(Expander), ExpandDirection.Down, propertyChanged: OnDirectionPropertyChanged);
-
 	readonly WeakEventManager tappedEventManager = new();
 
 	/// <summary>
@@ -76,7 +39,41 @@ public partial class Expander : ContentView, IExpander
 		remove => tappedEventManager.RemoveEventHandler(value);
 	}
 
-	internal TapGestureRecognizer HeaderTapGestureRecognizer { get; } = new();
+	/// <summary>
+	/// Gets or sets the direction in which the expander expands.
+	/// </summary>
+	[BindableProperty(PropertyChangingMethodName = nameof(OnExpandDirectionChanging), PropertyChangedMethodName = nameof(OnDirectionPropertyChanged))]
+	public partial ExpandDirection Direction { get; set; } = ExpanderDefaults.Direction;
+
+	/// <summary>
+	/// Gets or sets the command to execute when the expander is expanded or collapsed.
+	/// </summary>
+	[BindableProperty]
+	public partial ICommand? Command { get; set; }
+
+	/// <summary>
+	/// Gets or sets the parameter to pass to the <see cref="Command"/> property.
+	/// </summary>
+	[BindableProperty]
+	public partial object? CommandParameter { get; set; }
+
+	/// <summary>
+	/// Gets or sets a value indicating whether the expander is expanded.
+	/// </summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnIsExpandedPropertyChanged))]
+	public partial bool IsExpanded { get; set; }
+
+	/// <summary>
+	/// Gets or sets the content to be expanded or collapsed.
+	/// </summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnContentPropertyChanged))]
+	public new partial IView Content { get; set; }
+
+	/// <summary>
+	/// Gets or sets the header view of the expander.
+	/// </summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnHeaderPropertyChanged))]
+	public partial IView Header { get; set; }
 
 	/// <summary>
 	/// The Action that fires when <see cref="Header"/> is tapped.
@@ -87,22 +84,20 @@ public partial class Expander : ContentView, IExpander
 	/// </remarks>
 	public Action<TappedEventArgs>? HandleHeaderTapped { get; set; }
 
-	/// <inheritdoc />
-	public ExpandDirection Direction
-	{
-		get => (ExpandDirection)GetValue(DirectionProperty);
-		set
-		{
-			if (!Enum.IsDefined(value))
-			{
-				throw new InvalidEnumArgumentException(nameof(value), (int)value, typeof(ExpandDirection));
-			}
-
-			SetValue(DirectionProperty, value);
-		}
-	}
+	internal TapGestureRecognizer HeaderTapGestureRecognizer { get; } = new();
 
 	Grid ContentGrid => (Grid)base.Content;
+
+	static void OnExpandDirectionChanging(BindableObject bindable, object oldValue, object newValue)
+	{
+		var direction = (Expander)bindable;
+		if (newValue is not ExpandDirection enumValue || !Enum.IsDefined(enumValue))
+		{
+			throw new InvalidEnumArgumentException(nameof(newValue), newValue is int intValue ? intValue : -1, typeof(ExpandDirection));
+		}
+
+		direction.Direction = enumValue;
+	}
 
 	static void OnContentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{

@@ -45,7 +45,7 @@
                     TargetType="mct:AvatarView">
                     <Setter Property="WidthRequest" Value="32" />
                     <Setter Property="HeightRequest" Value="32" />
-                    <Setter Property="FontSize" Value="Small" />
+                    <Setter Property="FontSize" Value="8" />
                     <Setter Property="CornerRadius" Value="16" />
                 </Style>
                 <Style
@@ -54,7 +54,7 @@
                     TargetType="mct:AvatarView">
                     <Setter Property="WidthRequest" Value="64" />
                     <Setter Property="HeightRequest" Value="64" />
-                    <Setter Property="FontSize" Value="Large" />
+                    <Setter Property="FontSize" Value="24" />
                     <Setter Property="CornerRadius" Value="32" />
                 </Style>
                 <Style

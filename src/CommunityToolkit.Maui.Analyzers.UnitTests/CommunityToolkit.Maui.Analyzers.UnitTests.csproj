@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>$(NetVersion)</TargetFramework>
-    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GF</CompilerGeneratedFilesOutputPath>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
-
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
     <OutputType>Exe</OutputType>
     <RootNamespace>CommunityToolkit.Maui.Analyzers.UnitTests</RootNamespace>
   </PropertyGroup>
@@ -19,17 +19,15 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="1.1.2" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" Version="1.1.2" />
-    <PackageReference Include="xunit.v3" Version="3.1.0" />
-    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.0.4" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" />
+    <PackageReference Include="xunit.v3.mtp-v2" Version="3.2.0" />
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.1.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <!--Fix vulnerabilities-->
-    <PackageReference Include="System.Formats.Asn1" Version="9.0.9" />
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Formats.Asn1" Version="10.0.0" />
     <PackageReference Include="System.Private.Uri" Version="4.3.2" />
-    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,5 +38,5 @@
     <ProjectReference Include="..\CommunityToolkit.Maui.MediaElement\CommunityToolkit.Maui.MediaElement.csproj" />
     <ProjectReference Include="..\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
   </ItemGroup>
-
+  
 </Project>

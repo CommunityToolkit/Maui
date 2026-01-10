@@ -1,5 +1,4 @@
-﻿using System.Runtime.Versioning;
-using CommunityToolkit.Maui.Extensions;
+﻿using CommunityToolkit.Maui.Extensions;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Media.Capture;
 using Windows.Media.Capture.Frames;
@@ -8,12 +7,13 @@ using Windows.Media.MediaProperties;
 
 namespace CommunityToolkit.Maui.Core;
 
-[SupportedOSPlatform("windows10.0.10240.0")]
 partial class CameraManager
 {
 	MediaPlayerElement? mediaElement;
 	MediaCapture? mediaCapture;
 	MediaFrameSource? frameSource;
+	LowLagMediaRecording? mediaRecording;
+	Stream? videoCaptureStream;
 
 	public MediaPlayerElement CreatePlatformView()
 	{
@@ -23,8 +23,8 @@ partial class CameraManager
 
 	public void Dispose()
 	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
+		PlatformStopCameraPreview();
+		mediaCapture?.Dispose();
 	}
 
 	public partial void UpdateFlashMode(CameraFlashMode flashMode)
@@ -78,11 +78,11 @@ partial class CameraManager
 		await PlatformUpdateResolution(resolution, token);
 	}
 
-	protected virtual partial void PlatformDisconnect()
+	private partial void PlatformDisconnect()
 	{
 	}
 
-	protected virtual async partial ValueTask PlatformTakePicture(CancellationToken token)
+	private async partial ValueTask PlatformTakePicture(CancellationToken token)
 	{
 		if (mediaCapture is null)
 		{
@@ -108,44 +108,21 @@ partial class CameraManager
 		}
 	}
 
-	protected virtual void Dispose(bool disposing)
+	private async partial Task PlatformConnectCamera(CancellationToken token)
 	{
-		PlatformStopCameraPreview();
-		if (disposing)
-		{
-			mediaCapture?.Dispose();
-		}
-	}
-
-	protected virtual async partial Task PlatformConnectCamera(CancellationToken token)
-	{
-		if (cameraProvider.AvailableCameras is null)
-		{
-			await cameraProvider.RefreshAvailableCameras(token);
-
-			if (cameraProvider.AvailableCameras is null)
-			{
-				throw new CameraException("Unable to refresh cameras");
-			}
-		}
-
 		await StartCameraPreview(token);
 	}
 
-	protected virtual async partial Task PlatformStartCameraPreview(CancellationToken token)
+	private async partial Task PlatformStartCameraPreview(CancellationToken token)
 	{
 		if (mediaElement is null)
 		{
 			return;
 		}
 
-		mediaCapture = new MediaCapture();
+		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
-		if (cameraView.SelectedCamera is null)
-		{
-			await cameraProvider.RefreshAvailableCameras(token);
-			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
-		}
+		mediaCapture = new MediaCapture();
 
 		await mediaCapture.InitializeCameraForCameraView(cameraView.SelectedCamera.DeviceId, token);
 
@@ -164,7 +141,7 @@ partial class CameraManager
 		OnLoaded.Invoke();
 	}
 
-	protected virtual partial void PlatformStopCameraPreview()
+	private partial void PlatformStopCameraPreview()
 	{
 		if (mediaElement is null)
 		{
@@ -178,28 +155,66 @@ partial class CameraManager
 		IsInitialized = false;
 	}
 
-	protected async Task PlatformUpdateResolution(Size resolution, CancellationToken token)
+	async Task PlatformUpdateResolution(Size resolution, CancellationToken token)
 	{
-		if (!IsInitialized || mediaCapture is null)
+		if (cameraView.SelectedCamera is null || !IsInitialized || mediaCapture is null)
 		{
 			return;
 		}
 
-		if (cameraView.SelectedCamera is null)
-		{
-			await cameraProvider.RefreshAvailableCameras(token);
-			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
-		}
-
 		var filteredPropertiesList = cameraView.SelectedCamera.ImageEncodingProperties.Where(p => p.Width <= resolution.Width && p.Height <= resolution.Height).ToList();
 
-		filteredPropertiesList = filteredPropertiesList.Count is not 0
-			? filteredPropertiesList
-			: [.. cameraView.SelectedCamera.ImageEncodingProperties.OrderByDescending(p => p.Width * p.Height)];
+		if (filteredPropertiesList.Count is 0)
+		{
+			filteredPropertiesList = [.. cameraView.SelectedCamera.ImageEncodingProperties.OrderByDescending(p => p.Width * p.Height)];
+		}
 
 		if (filteredPropertiesList.Count is not 0)
 		{
 			await mediaCapture.VideoDeviceController.SetMediaStreamPropertiesAsync(MediaStreamType.Photo, filteredPropertiesList.First()).AsTask(token);
 		}
+	}
+
+	private async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
+	{
+		if (!IsInitialized || mediaCapture is null || mediaElement is null)
+		{
+			return;
+		}
+
+		videoCaptureStream = stream;
+
+		var profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto);
+		mediaRecording = await mediaCapture.PrepareLowLagRecordToStreamAsync(profile, stream.AsRandomAccessStream());
+
+		frameSource = mediaCapture.FrameSources
+			.FirstOrDefault(static source => source.Value.Info.MediaStreamType is MediaStreamType.VideoRecord && source.Value.Info.SourceKind is MediaFrameSourceKind.Color)
+			.Value;
+
+		if (frameSource is not null)
+		{
+			var frameFormat = frameSource.SupportedFormats
+					.OrderByDescending(f => f.VideoFormat.Width * f.VideoFormat.Height)
+					.FirstOrDefault();
+
+			if (frameFormat is not null)
+			{
+				await frameSource.SetFormatAsync(frameFormat);
+				mediaElement.AutoPlay = true;
+				mediaElement.Source = MediaSource.CreateFromMediaFrameSource(frameSource);
+				await mediaRecording.StartAsync();
+			}
+		}
+	}
+
+	private async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
+	{
+		if (!IsInitialized || mediaElement is null || mediaRecording is null || videoCaptureStream is null)
+		{
+			return Stream.Null;
+		}
+
+		await mediaRecording.StopAsync();
+		return videoCaptureStream;
 	}
 }

@@ -11,18 +11,18 @@ namespace CommunityToolkit.Maui;
 /// <summary>
 /// .NET MAUI Community Toolkit Options.
 /// </summary>
-#if NET9_0
-public class Options() : Core.Options
-#elif NET10_OR_GREATER
-#error Remove .NET 9 code now that we're upgrading to .NET 10; Options should not have a public constructor, only public methods. Having a public constructor allows developers to override the values set when using AppBuilderExtensions    
 public class Options : Core.Options
-#endif
 {
 	readonly MauiAppBuilder? builder;
 
 	internal Options(in MauiAppBuilder builder) : this()
 	{
 		this.builder = builder;
+	}
+
+	internal Options()
+	{
+
 	}
 
 	internal static bool ShouldSuppressExceptionsInAnimations { get; private set; }

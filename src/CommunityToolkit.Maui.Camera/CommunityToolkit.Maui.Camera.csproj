@@ -43,30 +43,38 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>dotnet,maui,toolkit,kit,communitytoolkit,dotnetcommunitytoolkit,cameraview,camera,photo</PackageTags>
     <Configurations>Debug;Release</Configurations>
+    <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true"/>
-    <None Include="ReadMe.txt" pack="true" PackagePath="."/>
+    <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
+    <None Include="ReadMe.txt" pack="true" PackagePath="." />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CommunityToolkit.Maui.SourceGenerators.Internal\CommunityToolkit.Maui.SourceGenerators.Internal.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  
   <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
     <!-- Required NuGet Packages -->
-    <PackageReference Include="Xamarin.AndroidX.Camera.Camera2" Version="1.4.1" />
-    <PackageReference Include="Xamarin.AndroidX.Camera.View" Version="1.4.1" />
+    <PackageReference Include="Xamarin.AndroidX.Camera.Camera2" Version="1.4.2.3" />
+    <PackageReference Include="Xamarin.AndroidX.Camera.View" Version="1.4.2.3" />
+    <PackageReference Include="Xamarin.AndroidX.Camera.Extensions" Version="1.4.2.3" />
 
+    <PackageReference Include="Xamarin.AndroidX.Activity.Ktx" Version="1.10.1.3" />
+    
     <!--  Ensure Linker does not remove required libraries -->
     <None Include="linker.xml" Pack="true" PackagePath="build\$(PackageId).LinkerConfigurationFile.xml" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Maui.Controls" Version="[$(MauiPackageVersion),$(NextMauiPackageVersion))"/>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiPackageVersion)" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" Condition=" '$(Configuration)'=='Release' " PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\CommunityToolkit.Maui.Camera.Analyzers\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.Camera.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
-    <None Include="..\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+    <None Include="..\CommunityToolkit.Maui.Camera.Analyzers\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.Camera.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="..\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
 
 </Project>

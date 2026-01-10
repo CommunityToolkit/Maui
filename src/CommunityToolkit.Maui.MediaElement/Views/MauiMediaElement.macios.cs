@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using AVKit;
 using CommunityToolkit.Maui.Extensions;
@@ -84,12 +84,12 @@ public class MauiMediaElement : UIView
 
 				// The Controller we need is a `protected internal` property called ItemsViewController in the ItemsViewHandler2 class: https://github.com/dotnet/maui/blob/70e8ddfd4bd494bc71aa7afb812cc09161cf0c72/src/Controls/src/Core/Handlers/Items2/ItemsViewHandler2.iOS.cs#L64
 				// In this method, we must use reflection to get the value of its backing field 
-				static ItemsViewController<TItemsView> GetInternalControllerForItemsView2<TItemsView>(ItemsViewHandler2<TItemsView> handler) where TItemsView : ItemsView
+				static ItemsViewController2<TItemsView> GetInternalControllerForItemsView2<TItemsView>(ItemsViewHandler2<TItemsView> handler) where TItemsView : ItemsView
 				{
 					var nonPublicInstanceFields = typeof(ItemsViewHandler2<TItemsView>).GetFields(BindingFlags.NonPublic | BindingFlags.Instance);
 
 					var controllerProperty = nonPublicInstanceFields.Single(x => x.FieldType == typeof(ItemsViewController2<TItemsView>));
-					return (ItemsViewController<TItemsView>)(controllerProperty.GetValue(handler) ?? throw new InvalidOperationException($"Unable to get the value for the Controller property on {handler.GetType()}"));
+					return (ItemsViewController2<TItemsView>)(controllerProperty.GetValue(handler) ?? throw new InvalidOperationException($"Unable to get the value for the Controller property on {handler.GetType()}"));
 				}
 			}
 			// If we don't find an ItemsView, default to the current UIViewController
@@ -152,36 +152,11 @@ public class MauiMediaElement : UIView
 			// TODO: Add support for MediaElement in an ItemsView in a multi-window application
 			throw new NotSupportedException("MediaElement is not currently supported in multi-window applications");
 		}
-
-		var window = Application.Current.Windows[0];
-
-		// If using Shell, return the current page
-		if (window.Page is Shell { CurrentPage: not null } shell)
+		if (Application.Current.Windows[0].Page is Page page)
 		{
-			currentPage = shell.CurrentPage;
+			currentPage = PageExtensions.GetCurrentPage(page);
 			return true;
 		}
-
-		// If not using Shell, use the ModelNavigationStack to check for any pages displayed modally
-		if (TryGetModalPage(window, out var modalPage))
-		{
-			currentPage = modalPage;
-			return true;
-		}
-
-		// If not using Shell or a Modal Page, return the visible page in the (non-modal) NavigationStack
-		if (window.Navigation.NavigationStack.LastOrDefault() is Page page)
-		{
-			currentPage = page;
-			return true;
-		}
-
 		return false;
-
-		static bool TryGetModalPage(Window window, [NotNullWhen(true)] out Page? page)
-		{
-			page = window.Navigation.ModalStack.LastOrDefault();
-			return page is not null;
-		}
 	}
 }
