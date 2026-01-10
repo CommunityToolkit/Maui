@@ -600,7 +600,7 @@ public class StateContainerTests : BaseTest
 		Assert.Equal(StateViewDefaults.StateKey, StateView.GetStateKey(stackLayout));
 	}
 
-	class ViewModel : INotifyPropertyChanged
+	sealed class ViewModel : INotifyPropertyChanged
 	{
 		public bool CanChangeState
 		{

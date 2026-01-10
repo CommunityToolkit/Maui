@@ -230,7 +230,14 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 
 		foreach (var info in value.BindableProperties.AsImmutableArray())
 		{
-			GenerateAttachedBindableProperty(sb, in info, fullDeclaringType);
+			if (info.IsReadOnlyBindableProperty)
+			{
+				GenerateAttachedReadOnlyBindableProperty(sb, in info, fullDeclaringType);
+			}
+			else
+			{
+				GenerateAttachedBindableProperty(sb, in info, fullDeclaringType);
+			}
 		}
 
 		sb.Append('}');
@@ -264,6 +271,69 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	static void GenerateAttachedReadOnlyBindableProperty(StringBuilder sb, in AttachedBindablePropertyModel info, in string fullDeclaringType)
+	{
+		// Sanitize the Return Type because Nullable Reference Types cannot be used in the `typeof()` operator
+		var nonNullableReturnType = ConvertToNonNullableTypeSymbol(info.ReturnType);
+		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
+		var formattedReturnType = GetFormattedReturnType(info.ReturnType, info.ShouldPostpendNullable);
+		var nonNullableFormattedType = GetFormattedTypeForTypeOf(nonNullableReturnType);
+
+		// Generate BindablePropertyKey for read-only properties
+		sb.Append("static readonly global::Microsoft.Maui.Controls.BindablePropertyKey ")
+			.Append(info.BindablePropertyKeyName)
+			.Append(" = \n")
+			.Append(bindablePropertyFullName)
+			.Append(".CreateAttachedReadOnly(\"")
+			.Append(sanitizedPropertyName)
+			.Append("\", typeof(")
+			.Append(nonNullableReturnType)
+			.Append("), typeof(")
+			.Append(fullDeclaringType)
+			.Append("),")
+			.Append(info.DefaultValue)
+			.Append(", ")
+			.Append(info.DefaultBindingMode)
+			.Append(", ")
+			.Append(info.ValidateValueMethodName)
+			.Append(", ")
+			.Append(info.PropertyChangedMethodName)
+			.Append(", ")
+			.Append(info.PropertyChangingMethodName)
+			.Append(", ")
+			.Append(info.CoerceValueMethodName)
+			.Append(", ");
+
+		sb.Append(info.DefaultValueCreatorMethodName)
+			.Append(");\n");
+
+		sb.Append(info.EffectiveBindablePropertyXmlDocumentation)
+			.Append("\r\n");
+
+		// Generate public BindableProperty from the key
+		sb.Append(info.BindablePropertyAccessibility)
+			.Append("static readonly ")
+			.Append(bindablePropertyFullName)
+			.Append(' ')
+			.Append(info.BindablePropertyName)
+			.Append(" = ")
+			.Append(info.BindablePropertyKeyName)
+			.Append(".BindableProperty;\n");
+
+		// Generate Get method
+		if (info.GetterAccessibility is not null)
+		{
+			GenerateGetter(sb, info.EffectiveGetterMethodXmlDocumentation, info.GetterAccessibility, formattedReturnType, info.PropertyName, info.BindablePropertyName);
+		}
+
+		// Generate Set method
+		if (info.SetterAccessibility is not null)
+		{
+			GenerateSetter(sb, info.EffectiveSetterMethodXmlDocumentation, info.SetterAccessibility, formattedReturnType, info.PropertyName, info.BindablePropertyName, info.BindablePropertyKeyName, info.IsReadOnlyBindableProperty);
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static void GenerateAttachedBindableProperty(StringBuilder sb, in AttachedBindablePropertyModel info, string fullDeclaringType)
 	{
 		// Sanitize the Return Type because Nullable Reference Types cannot be used in the `typeof()` operator
@@ -279,7 +349,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		sb.Append(info.BindablePropertyAccessibility)
 			.Append("static readonly ")
 			.Append(bindablePropertyFullName)
-			.Append(" ")
+			.Append(' ')
 			.Append(info.BindablePropertyName)
 			.Append(" = ")
 			.Append(bindablePropertyFullName)
@@ -308,40 +378,62 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		// Generate Get method
 		if (info.GetterAccessibility is not null)
 		{
-			sb.Append(info.EffectiveGetterMethodXmlDocumentation)
-				.Append("\r\n");
 
-			sb.Append(info.GetterAccessibility)
-				.Append("static ")
-				.Append(formattedReturnType)
-				.Append(" Get")
-				.Append(info.PropertyName)
-				.Append("(")
-				.Append(bindableObjectFullName)
-				.Append(" bindable) => (")
-				.Append(formattedReturnType)
-				.Append(")bindable.GetValue(")
-				.Append(info.BindablePropertyName)
-				.Append(");\n\n");
+			GenerateGetter(sb, info.EffectiveGetterMethodXmlDocumentation, info.GetterAccessibility, formattedReturnType, info.PropertyName, info.BindablePropertyName);
 		}
 
 		// Generate Set method
 		if (info.SetterAccessibility is not null)
 		{
-			sb.Append(info.EffectiveSetterMethodXmlDocumentation)
-				.Append("\r\n");
-
-			sb.Append(info.SetterAccessibility)
-				.Append("static void Set")
-				.Append(info.PropertyName)
-				.Append("(")
-				.Append(bindableObjectFullName)
-				.Append(" bindable, ")
-				.Append(formattedReturnType)
-				.Append(" value) => bindable.SetValue(")
-				.Append(info.BindablePropertyName)
-				.Append(", value);\n\n");
+			GenerateSetter(sb, info.EffectiveSetterMethodXmlDocumentation, info.SetterAccessibility, formattedReturnType, info.PropertyName, info.BindablePropertyName, info.BindablePropertyKeyName, info.IsReadOnlyBindableProperty);
 		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	static void GenerateGetter(in StringBuilder sb, in string getterMethodXmlDocumentation, in string getterAccessibility, in string returnType, in string propertyName, in string bindablePropertyName)
+	{
+		sb.Append(getterMethodXmlDocumentation)
+			.Append("\r\n");
+
+		sb.Append(getterAccessibility)
+			.Append("static ")
+			.Append(returnType)
+			.Append(" Get")
+			.Append(propertyName)
+			.Append("(")
+			.Append(bindableObjectFullName)
+			.Append(" bindable) => (")
+			.Append(returnType)
+			.Append(")bindable.GetValue(")
+			.Append(bindablePropertyName)
+			.Append(");\n\n");
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	static void GenerateSetter(in StringBuilder sb, in string setterMethodXmlDocumentation, in string setterAccessibility, in string returnType, in string propertyName, in string bindablePropertyName, in string bindablePropertyKeyName, in bool isReadyOnlyBindableProperty)
+	{
+		sb.Append(setterMethodXmlDocumentation)
+			.Append("\r\n");
+
+		sb.Append(setterAccessibility)
+			.Append("static void Set")
+			.Append(propertyName)
+			.Append("(")
+			.Append(bindableObjectFullName)
+			.Append(" bindable, ")
+			.Append(returnType)
+			.Append(" value) => bindable.SetValue(");
+
+		if (isReadyOnlyBindableProperty)
+		{
+			sb.Append(bindablePropertyKeyName);
+		}
+		else
+		{
+			sb.Append(bindablePropertyName);
+		}
+
+		sb.Append(", value);\n\n");
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -440,6 +532,8 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		var setterMethodXMLDocumentation = GetXMLDocumenation(attributeData, "SetterMethodXmlDocumentation");
 		var bindablePropertyXMLDocumentation = GetXMLDocumenation(attributeData, "BindablePropertyXmlDocumentation");
 
+		var isReadOnly = GetIsReadOnlyBindableProperty(attributeData);
+
 		return new AttachedBindablePropertyModel(
 			propertyName,
 			typeArg,
@@ -457,7 +551,8 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			isDeclaringTypeNullable,
 			bindablePropertyXMLDocumentation,
 			getterMethodXMLDocumentation,
-			setterMethodXMLDocumentation
+			setterMethodXMLDocumentation,
+			isReadOnly
 		);
 	}
 
@@ -516,6 +611,32 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		}
 
 		return xmlDocumentation.Value.ToString();
+	}
+
+	static bool GetIsReadOnlyBindableProperty(AttributeData attributeData)
+	{
+		var accessibility = attributeData.NamedArguments
+			.FirstOrDefault(x => x.Key == "SetterAccessibility")
+			.Value;
+
+		if (accessibility.IsNull || accessibility.Value is null)
+		{
+			return false;
+		}
+
+		var enumValue = (int)accessibility.Value;
+
+		return enumValue switch
+		{
+			0 => false, // Public
+			1 => false, // Internal
+			2 => false, // ProtectedInternal
+			3 => true, // Protected
+			4 => true, // PrivateProtected
+			5 => true, // Private
+			6 => true, // null
+			_ => throw new NotSupportedException($"{accessibility.Value} is not yet supported")
+		};
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
