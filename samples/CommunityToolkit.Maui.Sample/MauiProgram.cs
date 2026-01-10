@@ -270,6 +270,7 @@ public static class MauiProgram
 		// Add Popups
 		services.AddTransientPopup<ApplyToDerivedTypesPopup>();
 		services.AddTransientPopup<ButtonPopup>();
+		services.AddTransientPopup<CollectionViewPopup, CollectionViewPopupViewModel>();
 		services.AddTransientPopup<ComplexPopup, ComplexPopupViewModel>();
 		services.AddTransientPopup<CsharpBindingPopup, CsharpBindingPopupViewModel>();
 		services.AddTransientPopup<DynamicStyleInheritancePopup>();

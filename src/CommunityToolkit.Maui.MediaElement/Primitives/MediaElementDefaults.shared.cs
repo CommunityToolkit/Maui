@@ -8,10 +8,6 @@ static class MediaElementDefaults
 
 	public const int MediaWidth = 0;
 
-	public const string Position = "00:00:00";
-
-	public const string Duration = "00:00:00";
-
 	public const bool ShouldAutoPlay = false;
 
 	public const bool ShouldLoopPlayback = false;
@@ -33,4 +29,8 @@ static class MediaElementDefaults
 	public const string MetadataArtworkUrl = "";
 
 	public const MediaElementState CurrentState = MediaElementState.None;
+
+	public static TimeSpan Position { get; } = TimeSpan.Zero;
+
+	public static TimeSpan Duration { get; } = TimeSpan.Zero;
 }

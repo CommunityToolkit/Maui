@@ -31,20 +31,20 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 	/// <summary>
 	/// Property that holds the value of the Status bar color. 
 	/// </summary>
-	[BindableProperty(DefaultValueCreatorMethodName = nameof(StatusBarColorValueCreator))]
-	public partial Color StatusBarColor { get; set; }
+	[BindableProperty]
+	public partial Color StatusBarColor { get; set; } = StatusBarBehaviorDefaults.StatusBarColor;
 
 	/// <summary>
 	/// Property that holds the value of the Status bar color. 
 	/// </summary>
-	[BindableProperty(DefaultValue = StatusBarStyle.Default)]
-	public partial StatusBarStyle StatusBarStyle { get; set; }
+	[BindableProperty]
+	public partial StatusBarStyle StatusBarStyle { get; set; } = StatusBarBehaviorDefaults.StatusBarStyle;
 
 	/// <summary>
 	/// When the status bar color and style should be applied.
 	/// </summary>
-	[BindableProperty(DefaultValue = StatusBarApplyOn.OnBehaviorAttachedTo)]
-	public partial StatusBarApplyOn ApplyOn { get; set; }
+	[BindableProperty]
+	public partial StatusBarApplyOn ApplyOn { get; set; } = StatusBarBehaviorDefaults.ApplyOn;
 
 
 #if !(WINDOWS || MACCATALYST || TIZEN)
@@ -137,6 +137,4 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 		}
 	}
 #endif
-
-	static Color StatusBarColorValueCreator(BindableObject bindable) => Colors.Transparent;
 }

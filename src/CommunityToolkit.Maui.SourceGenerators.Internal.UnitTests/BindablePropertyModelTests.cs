@@ -20,7 +20,6 @@ public class BindablePropertyModelTests : BaseTest
 			"TestProperty",
 			propertySymbol.Type,
 			typeSymbol,
-			"null",
 			"Microsoft.Maui.Controls.BindingMode.OneWay",
 			"null",
 			"null",
@@ -30,7 +29,8 @@ public class BindablePropertyModelTests : BaseTest
 			string.Empty,
 			true, // IsReadOnlyBindableProperty
 			string.Empty, // SetterAccessibility
-			false
+			false,
+			"null"
 		);
 
 		// Act
@@ -49,7 +49,6 @@ public class BindablePropertyModelTests : BaseTest
 		var propertySymbol = typeSymbol.GetMembers("TestProperty").OfType<IPropertySymbol>().First();
 
 		const string propertyName = "TestProperty";
-		const string defaultValue = "\"Hello\"";
 		const string defaultBindingMode = "Microsoft.Maui.Controls.BindingMode.TwoWay";
 		const string validateValueMethodName = "ValidateValue";
 		const string propertyChangedMethodName = "OnPropertyChanged";
@@ -58,13 +57,13 @@ public class BindablePropertyModelTests : BaseTest
 		const string defaultValueCreatorMethodName = "CreateDefaultValue";
 		const string newKeywordText = "new ";
 		const bool hasInitializer = false;
+		const string propertyAccessibility = "public";
 
 		// Act
 		var model = new BindablePropertyModel(
 			propertyName,
 			propertySymbol.Type,
 			typeSymbol,
-			defaultValue,
 			defaultBindingMode,
 			validateValueMethodName,
 			propertyChangedMethodName,
@@ -74,14 +73,14 @@ public class BindablePropertyModelTests : BaseTest
 			newKeywordText,
 			true, // IsReadOnlyBindableProperty
 			string.Empty, // SetterAccessibility
-			hasInitializer
+			hasInitializer,
+			propertyAccessibility
 		);
 
 		// Assert
 		Assert.Equal(propertyName, model.PropertyName);
 		Assert.Equal(propertySymbol.Type, model.ReturnType);
 		Assert.Equal(typeSymbol, model.DeclaringType);
-		Assert.Equal(defaultValue, model.DefaultValue);
 		Assert.Equal(defaultBindingMode, model.DefaultBindingMode);
 		Assert.Equal(validateValueMethodName, model.ValidateValueMethodName);
 		Assert.Equal(propertyChangedMethodName, model.PropertyChangedMethodName);
@@ -93,6 +92,7 @@ public class BindablePropertyModelTests : BaseTest
 		Assert.Equal("TestPropertyProperty", model.BindablePropertyName);
 		Assert.Equal(defaultValueCreatorMethodName, model.EffectiveDefaultValueCreatorMethodName);
 		Assert.Equal("IsInitializingTestProperty", model.InitializingPropertyName);
+		Assert.Equal(propertyAccessibility, model.PropertyAccessibility);
 	}
 
 	[Fact]
@@ -125,7 +125,6 @@ public class BindablePropertyModelTests : BaseTest
 			"TestProperty",
 			propertySymbol.Type,
 			typeSymbol,
-			"null",
 			"Microsoft.Maui.Controls.BindingMode.OneWay",
 			"null",
 			"null",
@@ -135,7 +134,8 @@ public class BindablePropertyModelTests : BaseTest
 			string.Empty,
 			true, // IsReadOnlyBindableProperty
 			string.Empty, // SetterAccessibilityText
-			false
+			false,
+			"public"
 		);
 
 		var bindableProperties = new[] { bindableProperty }.ToImmutableArray();
@@ -169,6 +169,8 @@ public class BindablePropertyModelTests : BaseTest
 	{
 		// Arrange
 		var compilation = CreateCompilation(
+			/* language=C#-test */
+			//lang=csharp
 			"""
 			public class TestClass { public string TestProperty { get; set; } = "Initial Value"; }");
 			""");
@@ -182,7 +184,6 @@ public class BindablePropertyModelTests : BaseTest
 			propertyName,
 			propertySymbol.Type,
 			typeSymbol,
-			"null",
 			"Microsoft.Maui.Controls.BindingMode.OneWay",
 			"null",
 			"null",
@@ -192,7 +193,8 @@ public class BindablePropertyModelTests : BaseTest
 			string.Empty,
 			true,
 			string.Empty,
-			hasInitializer
+			hasInitializer,
+			"public"
 		);
 
 		// Act
@@ -207,6 +209,8 @@ public class BindablePropertyModelTests : BaseTest
 	{
 		// Arrange
 		var compilation = CreateCompilation(
+			/* language=C#-test */
+			//lang=csharp
 			"""
 			public class TestClass { public string TestProperty { get; set; } = "Initial Value"; }
 			""");
@@ -220,7 +224,6 @@ public class BindablePropertyModelTests : BaseTest
 			propertyName,
 			propertySymbol.Type,
 			typeSymbol,
-			"null",
 			"Microsoft.Maui.Controls.BindingMode.OneWay",
 			"null",
 			"null",
@@ -230,7 +233,8 @@ public class BindablePropertyModelTests : BaseTest
 			string.Empty,
 			true,
 			string.Empty,
-			hasInitializer
+			hasInitializer,
+			"public"
 		);
 
 		// Act

@@ -46,6 +46,7 @@ env:
     PathToCommunityToolkitSourceGeneratorsInternalUnitTestCsproj: 'src/CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests/CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.csproj'
     PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
     CommunityToolkitLibrary_Xcode_Version: '26.1'
+    CommunityToolkitSample_Xcode_Version: '26.2'
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -67,7 +68,7 @@ jobs:
                 if: runner.os == 'macOS'
                 uses: maxim-lobanov/setup-xcode@v1
                 with:
-                    xcode-version: ${{ env.CommunityToolkitLibrary_Xcode_Version }}
+                    xcode-version: ${{ env.CommunityToolkitSample_Xcode_Version }}
 
             -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
                 uses: actions/setup-dotnet@v5
@@ -254,7 +255,7 @@ jobs:
                 shell: pwsh
 
             -   name: Upload Package List
-                uses: actions/upload-artifact@v5
+                uses: actions/upload-artifact@v6
                 if: ${{ runner.os == 'Windows' }}
                 with:
                     name: nuget-list
@@ -264,7 +265,7 @@ jobs:
 
             -   name: Publish Packages
                 if: ${{ runner.os == 'Windows' }}
-                uses: actions/upload-artifact@v5
+                uses: actions/upload-artifact@v6
                 with:
                     name: packages
                     path: ${{ github.workspace }}/nuget/
@@ -284,13 +285,13 @@ jobs:
                     dotnet-quality: 'ga'
 
             -   name: Download NuGet List
-                uses: actions/download-artifact@v6
+                uses: actions/download-artifact@v7
                 with:
                     name: nuget-list
                     path: ./
 
             -   name: Download Package List
-                uses: actions/download-artifact@v6
+                uses: actions/download-artifact@v7
                 with:
                     name: packages
                     path: ./packages
@@ -336,7 +337,7 @@ jobs:
                     --verbosity Information
 
             -   name: Publish Packages
-                uses: actions/upload-artifact@v5
+                uses: actions/upload-artifact@v6
                 with:
                     name: signed-packages
                     if-no-files-found: error
@@ -356,7 +357,7 @@ jobs:
                     dotnet-quality: 'ga'
 
             -   name: Download signed packages
-                uses: actions/download-artifact@v6
+                uses: actions/download-artifact@v7
                 with:
                     name: signed-packages
                     path: ./packages
@@ -384,7 +385,7 @@ jobs:
                     dotnet-quality: 'ga'
 
             -   name: Download signed packages
-                uses: actions/download-artifact@v6
+                uses: actions/download-artifact@v7
                 with:
                     name: signed-packages
                     path: ./packages

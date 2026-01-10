@@ -24,11 +24,11 @@ public class MediaElementTests : BaseViewTest
 		Assert.Equal(MediaElementDefaults.MediaHeight, mediaElement.MediaHeight);
 		Assert.Equal(MediaElementDefaults.Aspect, mediaElement.Aspect);
 		Assert.Equal(MediaElementDefaults.CurrentState, mediaElement.CurrentState);
-		Assert.Equal(TimeSpan.Parse(MediaElementDefaults.Duration), mediaElement.Duration);
+		Assert.Equal(MediaElementDefaults.Duration, mediaElement.Duration);
 		Assert.Equal(MediaElementDefaults.MediaWidth, mediaElement.MediaWidth);
 		Assert.Equal(MediaElementDefaults.MetadataArtist, mediaElement.MetadataArtist);
 		Assert.Equal(MediaElementDefaults.MetadataArtworkUrl, mediaElement.MetadataArtworkUrl);
-		Assert.Equal(TimeSpan.Parse(MediaElementDefaults.Position), mediaElement.Position);
+		Assert.Equal(MediaElementDefaults.Position, mediaElement.Position);
 		Assert.Equal(MediaElementDefaults.ShouldAutoPlay, mediaElement.ShouldAutoPlay);
 		Assert.Equal(MediaElementDefaults.ShouldKeepScreenOn, mediaElement.ShouldKeepScreenOn);
 		Assert.Equal(MediaElementDefaults.ShouldLoopPlayback, mediaElement.ShouldLoopPlayback);

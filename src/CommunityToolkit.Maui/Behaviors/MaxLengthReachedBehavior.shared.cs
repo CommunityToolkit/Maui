@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Windows.Input;
+using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -14,13 +15,13 @@ public partial class MaxLengthReachedBehavior : BaseBehavior<InputView>
 	/// Command that is triggered when the value configured in <see cref="InputView.MaxLength" /> is reached. Both the <see cref="MaxLengthReached"/> event and this command are triggered. This is a bindable property.
 	/// </summary>
 	[BindableProperty]
-	public partial ICommand? Command { get; set; }
+	public partial ICommand? Command { get; set; } = MaxLengthReachedBehaviorDefaults.Command;
 
 	/// <summary>
 	/// Indicates whether the keyboard should be dismissed automatically after the maximum length is reached. This is a bindable property.
 	/// </summary>
-	[BindableProperty(DefaultValue = false)]
-	public partial bool ShouldDismissKeyboardAutomatically { get; set; }
+	[BindableProperty]
+	public partial bool ShouldDismissKeyboardAutomatically { get; set; } = MaxLengthReachedBehaviorDefaults.ShouldDismissKeyboardAutomatically;
 
 	/// <summary>
 	/// Event that is triggered when the value configured in <see cref="InputView.MaxLength" /> is reached. Both the <see cref="Command"/> and this event are triggered. This is a bindable property.
