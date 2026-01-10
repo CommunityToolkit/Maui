@@ -45,9 +45,12 @@ public class DockLayoutTests : BaseTest
 	public void EnsureDefaults()
 	{
 		var layout = new DockLayout();
+		var view = new View();
+		
 		Assert.Equal(DockLayoutDefaults.ShouldExpandLastChild, layout.ShouldExpandLastChild);
 		Assert.Equal(DockLayoutDefaults.HorizontalSpacing, layout.HorizontalSpacing);
 		Assert.Equal(DockLayoutDefaults.VerticalSpacing, layout.VerticalSpacing);
+		Assert.Equal(DockLayoutDefaults.DockPosition, DockLayout.GetDockPosition(view));
 	}
 
 	#region Measure
@@ -251,16 +254,6 @@ public class DockLayoutTests : BaseTest
 	}
 
 	#endregion
-
-	[Fact]
-	public void EnsureDefaults()
-	{
-		// Arrange
-		var view = new View();
-
-		// Act Assert
-		Assert.Equal(DockLayoutDefaults.DockPosition, DockLayout.GetDockPosition(view));
-	}
 
 	class TestView : View
 	{
