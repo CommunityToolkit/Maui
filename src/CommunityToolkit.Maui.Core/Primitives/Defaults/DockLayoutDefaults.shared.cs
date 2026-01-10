@@ -1,4 +1,5 @@
 ﻿namespace CommunityToolkit.Maui.Core;
+
 static class DockLayoutDefaults
 {
 	public const bool ShouldExpandLastChild = true;

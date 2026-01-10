@@ -85,7 +85,7 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 			Text = text
 		};
 		entry.Behaviors.Add(behavior);
-		
+
 		//Act
 		await behavior.ForceValidate(TestContext.Current.CancellationToken);
 

@@ -27,7 +27,7 @@ public partial class UniformItemsLayout : Layout, IUniformItemsLayout
 	/// </remarks>
 	[BindableProperty(PropertyChangingMethodName = nameof(OnMaxColumnsPropertyChanging))]
 	public partial int MaxColumns { get; set; } = UniformItemLayoutDefaults.MaxColumns;
-	
+
 	/// <inheritdoc	/>
 	protected override ILayoutManager CreateLayoutManager() => new UniformItemsLayoutManager(this);
 
