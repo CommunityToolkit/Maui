@@ -21,6 +21,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 
 	const string bindablePropertyFullName = "global::Microsoft.Maui.Controls.BindableProperty";
 	const string bindableObjectFullName = "global::Microsoft.Maui.Controls.BindableObject";
+
 	const string attachedBindablePropertyAttributeSource =
 		/* language=C#-test */
 		//lang=csharp
@@ -140,57 +141,42 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 
 	static void ExecuteAllValues(SourceProductionContext context, ImmutableArray<AttachedBindablePropertySemanticValues> semanticValues)
 	{
-		// Pre-allocate dictionary with expected capacity
-		var groupedValues = new Dictionary<(string, string, string, string), List<AttachedBindablePropertySemanticValues>>(semanticValues.Length);
-
-		// Single-pass grouping without LINQ
-		foreach (var sv in semanticValues)
-		{
-			var key = (sv.ClassInformation.ClassName, sv.ClassInformation.ContainingNamespace, sv.ClassInformation.ContainingTypes, sv.ClassInformation.GenericTypeParameters);
-
-			if (!groupedValues.TryGetValue(key, out var list))
-			{
-				list = [];
-				groupedValues[key] = list;
-			}
-			list.Add(sv);
-		}
-
 		// Use ArrayPool for temporary storage
 		var attachedBindablePropertiesBuffer = System.Buffers.ArrayPool<AttachedBindablePropertyModel>.Shared.Rent(32);
 
 		try
 		{
-			foreach (var keyValuePair in groupedValues)
+			foreach (var attachedBindablePropertySemanticValues in semanticValues)
 			{
-				var (className, containingNamespace, containingTypes, genericTypeParameters) = keyValuePair.Key;
-				var values = keyValuePair.Value;
+				var className = attachedBindablePropertySemanticValues.ClassInformation.ClassName;
+				var containingNamespace = attachedBindablePropertySemanticValues.ClassInformation.ContainingNamespace;
+				var containingTypes = attachedBindablePropertySemanticValues.ClassInformation.ContainingTypes;
+				var genericTypeParameters = attachedBindablePropertySemanticValues.ClassInformation.GenericTypeParameters;
 
-				if (values.Count is 0 || string.IsNullOrEmpty(className) || string.IsNullOrEmpty(containingNamespace))
+				if (string.IsNullOrEmpty(className) || string.IsNullOrEmpty(containingNamespace))
 				{
 					continue;
 				}
 
 				// Flatten attached bindable properties without SelectMany allocation
 				var attachedBindablePropertiesCount = 0;
-				foreach (var value in values)
+
+				foreach (var abp in attachedBindablePropertySemanticValues.BindableProperties.AsImmutableArray())
 				{
-					foreach (var abp in value.BindableProperties.AsImmutableArray())
+					if (attachedBindablePropertiesCount >= attachedBindablePropertiesBuffer.Length)
 					{
-						if (attachedBindablePropertiesCount >= attachedBindablePropertiesBuffer.Length)
-						{
-							var newBuffer = System.Buffers.ArrayPool<AttachedBindablePropertyModel>.Shared.Rent(attachedBindablePropertiesBuffer.Length * 2);
-							Array.Copy(attachedBindablePropertiesBuffer, newBuffer, attachedBindablePropertiesBuffer.Length);
-							System.Buffers.ArrayPool<AttachedBindablePropertyModel>.Shared.Return(attachedBindablePropertiesBuffer);
-							attachedBindablePropertiesBuffer = newBuffer;
-						}
-						attachedBindablePropertiesBuffer[attachedBindablePropertiesCount++] = abp;
+						var newBuffer = System.Buffers.ArrayPool<AttachedBindablePropertyModel>.Shared.Rent(attachedBindablePropertiesBuffer.Length * 2);
+						Array.Copy(attachedBindablePropertiesBuffer, newBuffer, attachedBindablePropertiesBuffer.Length);
+						System.Buffers.ArrayPool<AttachedBindablePropertyModel>.Shared.Return(attachedBindablePropertiesBuffer);
+						attachedBindablePropertiesBuffer = newBuffer;
 					}
+
+					attachedBindablePropertiesBuffer[attachedBindablePropertiesCount++] = abp;
 				}
 
 				var attachedBindableProperties = ImmutableArray.Create(attachedBindablePropertiesBuffer, 0, attachedBindablePropertiesCount);
 
-				var classAccessibility = values[0].ClassInformation.DeclaredAccessibility;
+				var classAccessibility = attachedBindablePropertySemanticValues.ClassInformation.DeclaredAccessibility;
 
 				var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace, containingTypes, genericTypeParameters);
 				var combinedValues = new AttachedBindablePropertySemanticValues(combinedClassInfo, attachedBindableProperties.AsEquatableArray());
@@ -331,7 +317,6 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		// Generate Get method
 		if (info.GetterAccessibility is not null)
 		{
-
 			if (info.GetterMethodXMLDocumentation is not null)
 			{
 				sb.Append(info.GetterMethodXMLDocumentation)
@@ -476,7 +461,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		var getterAccessibility = GetAccessibilityString(attributeData, "GetterAccessibility");
 		var setterAccessibility = GetAccessibilityString(attributeData, "SetterAccessibility");
 		var bindablePropertyAccessibility = GetAccessibilityString(attributeData, "BindablePropertyAccessibility")
-			?? throw new InvalidOperationException("Bindable Property Accessibilty Cannot be null");
+											?? throw new InvalidOperationException("Bindable Property Accessibilty Cannot be null");
 
 		var getterMethodXMLDocumentation = GetXMLDocumenation(attributeData, "GetterMethodXmlDocumentation");
 		var setterMethodXMLDocumentation = GetXMLDocumenation(attributeData, "SetterMethodXmlDocumentation");
@@ -502,6 +487,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			setterMethodXMLDocumentation
 		);
 	}
+
 	// DefaultValue can only be a primitive type, enum, typeof expression or array
 	// In C#, attribute arguments are limited to compile-time constants, typeof expressions, and single-dimensional arrays
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -631,6 +617,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			{
 				sb.Append('.');
 			}
+
 			sb.Append(stack.Pop());
 			first = false;
 		}
@@ -659,6 +646,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			{
 				sb.Append(", ");
 			}
+
 			sb.Append(typeParams[i].Name);
 		}
 
