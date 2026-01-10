@@ -25,13 +25,13 @@ public partial class DockLayout : Layout, IDockLayout
 	public partial bool ShouldExpandLastChild { get; set; } = DockLayoutDefaults.ShouldExpandLastChild;
 
 	/// <summary>
-	/// Gets or sets the horizontal spacing between child elements.
+	/// Gets or sets the horizontal spacing between docked views.
 	/// </summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnHorizontalSpacingPropertyChanged))]
 	public partial double HorizontalSpacing { get; set; } = DockLayoutDefaults.HorizontalSpacing;
 
 	/// <summary>
-	/// Gets or sets the vertical spacing between elements.
+	/// Gets or sets the vertical spacing between docked views.
 	/// </summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnVerticalSpacingPropertyChanged))]
 	public partial double VerticalSpacing { get; set; } = DockLayoutDefaults.VerticalSpacing;
