@@ -76,8 +76,6 @@ public partial class NumericValidationBehavior : ValidationBehavior<string>
 	/// <inheritdoc/>
 	protected override ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
 	{
-		ArgumentNullException.ThrowIfNull(value);
-
 		if (!(double.TryParse(value, out var numeric)
 			&& numeric >= MinimumValue
 			&& numeric <= MaximumValue))
