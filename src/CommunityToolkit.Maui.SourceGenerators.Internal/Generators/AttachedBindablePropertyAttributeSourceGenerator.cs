@@ -174,12 +174,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 					attachedBindablePropertiesBuffer[attachedBindablePropertiesCount++] = abp;
 				}
 
-				var attachedBindableProperties = ImmutableArray.Create(attachedBindablePropertiesBuffer, 0, attachedBindablePropertiesCount);
+				var attachedBindablePropertiesArray = EquatableArray<AttachedBindablePropertyModel>.FromImmutableArray(ImmutableArray.Create(attachedBindablePropertiesBuffer, 0, attachedBindablePropertiesCount));
 
 				var classAccessibility = attachedBindablePropertySemanticValues.ClassInformation.DeclaredAccessibility;
 
 				var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace, containingTypes, genericTypeParameters);
-				var combinedValues = new AttachedBindablePropertySemanticValues(combinedClassInfo, attachedBindableProperties.AsEquatableArray());
+				var combinedValues = new AttachedBindablePropertySemanticValues(combinedClassInfo, attachedBindablePropertiesArray);
 
 				var fileNameSuffix = string.IsNullOrEmpty(containingTypes) ? className : string.Concat(containingTypes, ".", className);
 				var source = GenerateSource(combinedValues);
