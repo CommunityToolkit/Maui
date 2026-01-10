@@ -42,16 +42,6 @@ public partial class TextValidationBehavior : ValidationBehavior<string>
 	public TextValidationBehavior() => OnRegexPropertyChanged(RegexPattern, RegexOptions);
 
 	/// <summary>
-	/// Default regex pattern
-	/// </summary>
-	protected virtual string DefaultRegexPattern { get; } = TextValidationBehaviorDefaults.RegexPattern;
-
-	/// <summary>
-	/// Default regex options
-	/// </summary>
-	protected virtual RegexOptions DefaultRegexOptions { get; } = TextValidationBehaviorDefaults.RegexOptions;
-
-	/// <summary>
 	/// The minimum length of the value that will be allowed. This is a bindable property.
 	/// </summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
@@ -80,6 +70,16 @@ public partial class TextValidationBehavior : ValidationBehavior<string>
 	/// </summary>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(GetDefaultRegexOptions), PropertyChangedMethodName = nameof(OnRegexPropertyChanged))]
 	public partial RegexOptions RegexOptions { get; set; }
+
+	/// <summary>
+	/// Default regex pattern
+	/// </summary>
+	protected virtual string DefaultRegexPattern { get; } = TextValidationBehaviorDefaults.RegexPattern;
+
+	/// <summary>
+	/// Default regex options
+	/// </summary>
+	protected virtual RegexOptions DefaultRegexOptions { get; } = TextValidationBehaviorDefaults.RegexOptions;
 
 	/// <inheritdoc/>
 	protected override string? Decorate(string? value)
