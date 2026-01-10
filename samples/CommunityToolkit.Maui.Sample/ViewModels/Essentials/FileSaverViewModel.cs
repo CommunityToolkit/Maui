@@ -88,9 +88,6 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 			fileSaverResult.EnsureSuccess();
 
 			await Toast.Make($"File is saved: {fileSaverResult.FilePath}").Show(cancellationToken);
-#if IOS || MACCATALYST
-			fileSaverInstance.Dispose();
-#endif
 		}
 		catch (Exception ex)
 		{
