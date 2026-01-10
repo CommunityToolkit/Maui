@@ -90,7 +90,7 @@ public class TextValidationBehaviorTests() : BaseBehaviorTest<TextValidationBeha
 	{
 		// Arrange
 		var textValidationBehavior = new TextValidationBehavior();
-		
+
 		// Act Assert
 		Assert.Equal(TextValidationBehaviorDefaults.DecorationFlags, textValidationBehavior.DecorationFlags);
 		Assert.Equal(TextValidationBehaviorDefaults.MaximumLength, textValidationBehavior.MaximumLength);

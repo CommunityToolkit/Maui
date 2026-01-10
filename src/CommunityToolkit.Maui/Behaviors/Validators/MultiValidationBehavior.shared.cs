@@ -17,7 +17,7 @@ public partial class MultiValidationBehavior : ValidationBehavior
 	/// </summary>
 	public static readonly BindableProperty ErrorProperty =
 		BindableProperty.CreateAttached(nameof(GetError), typeof(object), typeof(MultiValidationBehavior), null);
-	
+
 	readonly ObservableCollection<ValidationBehavior> children = [];
 
 	/// <summary>
@@ -53,7 +53,7 @@ public partial class MultiValidationBehavior : ValidationBehavior
 			validationBehavior.Value = value;
 			await validationBehavior.ValidateNestedAsync(token);
 		})).ConfigureAwait(false);
-		
+
 		var errors = children.Where(static c => c.IsNotValid).Select(GetError).ToList();
 
 		if (errors.Count is 0)

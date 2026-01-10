@@ -164,7 +164,7 @@ public class RequiredStringValidationBehaviorTests() : BaseBehaviorTest<Required
 	{
 		// Arrange
 		var requiredStringValidationBehavior = new RequiredStringValidationBehavior();
-		
+
 		// Act Assert
 		Assert.Equal(RequiredStringValidationBehaviorDefaults.ExactMatch, requiredStringValidationBehavior.ExactMatch);
 		Assert.Equal(RequiredStringValidationBehaviorDefaults.RequiredString, requiredStringValidationBehavior.RequiredString);

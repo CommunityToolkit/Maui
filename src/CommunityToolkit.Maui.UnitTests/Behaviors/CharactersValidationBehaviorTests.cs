@@ -131,7 +131,7 @@ public class CharactersValidationBehaviorTests() : BaseBehaviorTest<CharactersVa
 	public void VerifyDefaults()
 	{
 		var charactersValidationBehavior = new CharactersValidationBehavior();
-		
+
 		Assert.Equal(CharactersValidationBehaviorDefaults.CharacterType, charactersValidationBehavior.CharacterType);
 		Assert.Equal(CharactersValidationBehaviorDefaults.MaximumCharacterTypeCount, charactersValidationBehavior.MaximumCharacterTypeCount);
 		Assert.Equal(CharactersValidationBehaviorDefaults.MinimumCharacterTypeCount, charactersValidationBehavior.MinimumCharacterTypeCount);

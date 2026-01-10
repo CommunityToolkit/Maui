@@ -10,7 +10,7 @@ static class ValidationBehaviorDefaults
 	public const Style? ValidStyle = null;
 	public const Style? InvalidStyle = null;
 	public const object? Value = null;
-	
+
 	public static string ValuePropertyName { get; } = Entry.TextProperty.PropertyName;
 	public static ValidationFlags Flags { get; } = ValidationFlags.ValidateOnUnfocused | ValidationFlags.ForceMakeValidWhenFocused;
 }
