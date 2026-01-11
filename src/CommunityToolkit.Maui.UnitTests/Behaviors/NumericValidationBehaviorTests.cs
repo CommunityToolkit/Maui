@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using CommunityToolkit.Maui.Behaviors;
+using CommunityToolkit.Maui.Core;
 using FluentAssertions;
 using Xunit;
 
@@ -85,7 +86,7 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 			Text = text
 		};
 		entry.Behaviors.Add(behavior);
-		
+
 		//Act
 		await behavior.ForceValidate(TestContext.Current.CancellationToken);
 
@@ -162,5 +163,18 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 			await cts.CancelAsync();
 			await behavior.ForceValidate(cts.Token);
 		});
+	}
+
+	[Fact]
+	public void VerifyDefaults()
+	{
+		// Arrange
+		var numericValidationBehavior = new NumericValidationBehavior();
+
+		// Act Assert
+		Assert.Equal(NumericValidationBehaviorDefaults.MaximumDecimalPlaces, numericValidationBehavior.MaximumDecimalPlaces);
+		Assert.Equal(NumericValidationBehaviorDefaults.MaximumValue, numericValidationBehavior.MaximumValue);
+		Assert.Equal(NumericValidationBehaviorDefaults.MinimumDecimalPlaces, numericValidationBehavior.MinimumDecimalPlaces);
+		Assert.Equal(NumericValidationBehaviorDefaults.MinimumValue, numericValidationBehavior.MinimumValue);
 	}
 }
