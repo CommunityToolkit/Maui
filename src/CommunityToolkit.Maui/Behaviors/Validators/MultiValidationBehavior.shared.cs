@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -34,12 +35,6 @@ public partial class MultiValidationBehavior : ValidationBehavior
 		/// <param name="value">The value to set</param>
 		""";
 
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="Errors"/> property.
-	/// </summary>
-	public static readonly BindableProperty ErrorsProperty =
-		BindableProperty.Create(nameof(Errors), typeof(List<object?>), typeof(MultiValidationBehavior), null, BindingMode.OneWayToSource);
-
 	readonly ObservableCollection<ValidationBehavior> children = [];
 
 	/// <summary>
@@ -50,11 +45,8 @@ public partial class MultiValidationBehavior : ValidationBehavior
 	/// <summary>
 	/// Holds the errors from all the nested invalid validators in <see cref="Children"/>. This is a bindable property.
 	/// </summary>
-	public List<object?>? Errors
-	{
-		get => (List<object?>?)GetValue(ErrorsProperty);
-		set => SetValue(ErrorsProperty, value);
-	}
+	[BindableProperty(DefaultBindingMode = BindingMode.OneWayToSource)]
+	public partial List<object?>? Errors { get; set; } = MultiValidationBehaviorDefaults.Errors;
 
 	/// <inheritdoc/>
 	protected override async ValueTask<bool> ValidateAsync(object? value, CancellationToken token)

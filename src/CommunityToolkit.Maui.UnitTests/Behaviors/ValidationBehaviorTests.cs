@@ -245,6 +245,24 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 
 		Assert.Empty(view.Behaviors);
 	}
+
+	[Fact]
+	public void VerifyDefaults()
+	{
+		// Arrange
+		var behavior = new MockValidationBehavior();
+
+		// Act Assert
+		Assert.Equal(ValidationBehaviorDefaults.IsNotValid, behavior.IsNotValid);
+		Assert.Equal(ValidationBehaviorDefaults.IsValid, behavior.IsValid);
+		Assert.Equal(ValidationBehaviorDefaults.IsRunning, behavior.IsRunning);
+		Assert.Equal(ValidationBehaviorDefaults.ValidStyle, behavior.ValidStyle);
+		Assert.Equal(ValidationBehaviorDefaults.InvalidStyle, behavior.InvalidStyle);
+		Assert.Equal(ValidationBehaviorDefaults.Value, behavior.Value);
+		Assert.Equal(ValidationBehaviorDefaults.ValuePropertyName, behavior.ValuePropertyName);
+		Assert.Equal(ValidationBehaviorDefaults.Flags, behavior.Flags);
+
+	}
 }
 
 public class StyleSetterComparer(ITestOutputHelper testOutputHelper) : IEqualityComparer<Setter>
