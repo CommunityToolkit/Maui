@@ -1,13 +1,8 @@
-using CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Testing;
-using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.BindablePropertyAttributeSourceGeneratorTests;
 
-public class IntegrationTests : BaseBindablePropertyAttributeSourceGeneratorTest
+public class BindablePropertyAttributeSourceGenerator_IntegrationTests : BaseBindablePropertyAttributeSourceGeneratorTest
 {
 	[Fact]
 	public async Task GenerateBindableProperty_ComplexInheritanceScenario_GeneratesCorrectCode()
@@ -49,7 +44,7 @@ public class IntegrationTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			public partial class BaseView
 			{
 			    /// <summary>
-			    /// Backing BindableProperty for the <see cref = "BaseText"/> property.
+			    /// BindableProperty for the <see cref = "BaseText"/> property.
 			    /// </summary>
 			    public static readonly global::Microsoft.Maui.Controls.BindableProperty BaseTextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("BaseText", typeof(string), typeof(TestNamespace.BaseView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			    public partial string BaseText { get => (string)GetValue(BaseTextProperty); set => SetValue(BaseTextProperty, value); }
@@ -68,20 +63,20 @@ public class IntegrationTests : BaseBindablePropertyAttributeSourceGeneratorTest
 			public partial class DerivedView
 			{
 			    /// <summary>
-			    /// Backing BindableProperty for the <see cref = "DerivedText"/> property.
+			    /// BindableProperty for the <see cref = "DerivedText"/> property.
 			    /// </summary>
 			    public static readonly global::Microsoft.Maui.Controls.BindableProperty DerivedTextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("DerivedText", typeof(string), typeof(TestNamespace.DerivedView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			    public partial string DerivedText { get => (string)GetValue(DerivedTextProperty); set => SetValue(DerivedTextProperty, value); }
 
 			    /// <summary>
-			    /// Backing BindableProperty for the <see cref = "BaseText"/> property.
+			    /// BindableProperty for the <see cref = "BaseText"/> property.
 			    /// </summary>
 			    public new static readonly global::Microsoft.Maui.Controls.BindableProperty BaseTextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("BaseText", typeof(string), typeof(TestNamespace.DerivedView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 			    public new partial string BaseText { get => (string)GetValue(BaseTextProperty); set => SetValue(BaseTextProperty, value); }
 			}
 			""";
 
-		await VerifySourceGeneratorAsync(source, expectedAttribute, ("BaseView.g.cs", expectedBaseGenerated), ("DerivedView.g.cs", expectedDerivedGenerated));
+		await VerifySourceGeneratorAsync(source, ("BaseView.g.cs", expectedBaseGenerated), ("DerivedView.g.cs", expectedDerivedGenerated));
 	}
 
 	[Fact]
@@ -118,13 +113,13 @@ public class IntegrationTests : BaseBindablePropertyAttributeSourceGeneratorTest
 		    public partial class {{defaultTestClassName}}<T, U>
 		    {
 		        /// <summary>
-		        /// Backing BindableProperty for the <see cref = "Value"/> property.
+		        /// BindableProperty for the <see cref = "Value"/> property.
 		        /// </summary>
 		        public static readonly global::Microsoft.Maui.Controls.BindableProperty ValueProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Value", typeof(T), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<T, U>), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 		        public partial T? Value { get => (T? )GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
 
 		        /// <summary>
-		        /// Backing BindableProperty for the <see cref = "Name"/> property.
+		        /// BindableProperty for the <see cref = "Name"/> property.
 		        /// </summary>
 		        public static readonly global::Microsoft.Maui.Controls.BindableProperty NameProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Name", typeof(U), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<T, U>), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 		        public partial U? Name { get => (U? )GetValue(NameProperty); set => SetValue(NameProperty, value); }
@@ -165,7 +160,7 @@ public class IntegrationTests : BaseBindablePropertyAttributeSourceGeneratorTest
 		public partial class {{defaultTestClassName}}<T, U>
 		{
 		    /// <summary>
-		    /// Backing BindableProperty for the <see cref = "Value"/> property.
+		    /// BindableProperty for the <see cref = "Value"/> property.
 		    /// </summary>
 		    public static readonly global::Microsoft.Maui.Controls.BindableProperty ValueProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Value", typeof(T), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<T, U>), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultValue);
 		    public partial T? Value { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingValue ? field : (T? )GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
@@ -213,28 +208,28 @@ public class IntegrationTests : BaseBindablePropertyAttributeSourceGeneratorTest
 		    """;
 
 		const string expectedGenerated =
-/* language=C#-test */
-//lang=csharp
-$$"""
-// <auto-generated>
-// See: CommunityToolkit.Maui.SourceGenerators.Internal.BindablePropertyAttributeSourceGenerator
-#pragma warning disable
-#nullable enable
-namespace {{defaultTestNamespace}};
-public partial class {{outerClassName}}
-{
-    public partial class {{defaultTestClassName}}
-    {
-        /// <summary>
-        /// Backing BindableProperty for the <see cref = "Text"/> property.
-        /// </summary>
-        public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{outerClassName}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
-        public partial string Text { get => (string)GetValue(TextProperty); set => SetValue(TextProperty, value); }
-    }
-}
-""";
+			/* language=C#-test */
+			//lang=csharp
+			$$"""
+			// <auto-generated>
+			// See: CommunityToolkit.Maui.SourceGenerators.Internal.BindablePropertyAttributeSourceGenerator
+			#pragma warning disable
+			#nullable enable
+			namespace {{defaultTestNamespace}};
+			public partial class {{outerClassName}}
+			{
+			    public partial class {{defaultTestClassName}}
+			    {
+			        /// <summary>
+			        /// BindableProperty for the <see cref = "Text"/> property.
+			        /// </summary>
+			        public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{outerClassName}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
+			        public partial string Text { get => (string)GetValue(TextProperty); set => SetValue(TextProperty, value); }
+			    }
+			}
+			""";
 
-		await VerifySourceGeneratorAsync(source, expectedAttribute, ($"{outerClassName}.{defaultTestClassName}.g.cs", expectedGenerated));
+		await VerifySourceGeneratorAsync(source, ($"{outerClassName}.{defaultTestClassName}.g.cs", expectedGenerated));
 	}
 
 	[Fact]
@@ -280,19 +275,19 @@ public partial class {{outerClassName}}
 		    public partial class {{defaultTestClassName}}
 		    {
 		        /// <summary>
-		        /// Backing BindableProperty for the <see cref = "Model"/> property.
+		        /// BindableProperty for the <see cref = "Model"/> property.
 		        /// </summary>
 		        public static readonly global::Microsoft.Maui.Controls.BindableProperty ModelProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Model", typeof(TestNamespace.CustomModel), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 		        public partial {{defaultTestNamespace}}.CustomModel Model { get => ({{defaultTestNamespace}}.CustomModel)GetValue(ModelProperty); set => SetValue(ModelProperty, value); }
 
 		        /// <summary>
-		        /// Backing BindableProperty for the <see cref = "Items"/> property.
+		        /// BindableProperty for the <see cref = "Items"/> property.
 		        /// </summary>
 		        public static readonly global::Microsoft.Maui.Controls.BindableProperty ItemsProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Items", typeof(System.Collections.Generic.List<string>), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 		        public partial System.Collections.Generic.List<string> Items { get => (System.Collections.Generic.List<string>)GetValue(ItemsProperty); set => SetValue(ItemsProperty, value); }
 
 		        /// <summary>
-		        /// Backing BindableProperty for the <see cref = "Properties"/> property.
+		        /// BindableProperty for the <see cref = "Properties"/> property.
 		        /// </summary>
 		        public static readonly global::Microsoft.Maui.Controls.BindableProperty PropertiesProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Properties", typeof(System.Collections.Generic.Dictionary<string, object>), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 		        public partial System.Collections.Generic.Dictionary<string, object> Properties { get => (System.Collections.Generic.Dictionary<string, object>)GetValue(PropertiesProperty); set => SetValue(PropertiesProperty, value); }
@@ -339,7 +334,7 @@ public partial class {{outerClassName}}
 		    public partial class FirstView
 		    {
 		        /// <summary>
-		        /// Backing BindableProperty for the <see cref = "FirstText"/> property.
+		        /// BindableProperty for the <see cref = "FirstText"/> property.
 		        /// </summary>
 		        public static readonly global::Microsoft.Maui.Controls.BindableProperty FirstTextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("FirstText", typeof(string), typeof(TestNamespace.FirstView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 		        public partial string FirstText { get => (string)GetValue(FirstTextProperty); set => SetValue(FirstTextProperty, value); }
@@ -358,7 +353,7 @@ public partial class {{outerClassName}}
 		    public partial class SecondView
 		    {
 		        /// <summary>
-		        /// Backing BindableProperty for the <see cref = "SecondText"/> property.
+		        /// BindableProperty for the <see cref = "SecondText"/> property.
 		        /// </summary>
 		        public static readonly global::Microsoft.Maui.Controls.BindableProperty SecondTextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("SecondText", typeof(string), typeof(TestNamespace.SecondView), null, Microsoft.Maui.Controls.BindingMode.OneWay, null, null, null, null, null);
 		        public partial string SecondText { get => (string)GetValue(SecondTextProperty); set => SetValue(SecondTextProperty, value); }
@@ -366,6 +361,6 @@ public partial class {{outerClassName}}
 		    """;
 
 
-		await VerifySourceGeneratorAsync(source, expectedAttribute, ("FirstView.g.cs", expectedFirstGenerated), ("SecondView.g.cs", expectedSecondGenerated));
+		await VerifySourceGeneratorAsync(source, ("FirstView.g.cs", expectedFirstGenerated), ("SecondView.g.cs", expectedSecondGenerated));
 	}
 }

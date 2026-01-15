@@ -9,5 +9,6 @@ class Program
 	{
 		var config = DefaultConfig.Instance;
 		BenchmarkRunner.Run<BindablePropertyAttributeSourceGeneratorBenchmarks>(config, args);
+		BenchmarkRunner.Run<AttachedBindablePropertyAttributeSourceGeneratorBenchmarks>(config, args);
 	}
 }
