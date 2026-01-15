@@ -330,15 +330,24 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 
 		if (view is not null)
 		{
-			UpdateStyle(view, IsValid);
+			TryUpdateStyle(view, IsValid);
 		}
 	}
 
-	void UpdateStyle(in VisualElement view, bool isValid)
+	bool TryUpdateStyle(in VisualElement view, bool isValid)
 	{
-		VisualStateManager.GoToState(view, isValid ? ValidVisualState : InvalidVisualState);
+		try
+		{
+			VisualStateManager.GoToState(view, isValid ? ValidVisualState : InvalidVisualState);
 
-		view.Style = (isValid ? ValidStyle : InvalidStyle) ?? view.Style;
+			view.Style = (isValid ? ValidStyle : InvalidStyle) ?? view.Style;
+
+			return true;
+		}
+		catch (ArgumentException)
+		{
+			return false;
+		}
 	}
 
 	void ResetValidationTokenSource(CancellationTokenSource? newTokenSource)
