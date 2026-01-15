@@ -50,10 +50,6 @@
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
     <None Include="ReadMe.txt" pack="true" PackagePath="." />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\CommunityToolkit.Maui.SourceGenerators.Internal\CommunityToolkit.Maui.SourceGenerators.Internal.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-  </ItemGroup>
   
   <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
     <!-- Required NuGet Packages -->
@@ -73,6 +69,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\CommunityToolkit.Maui.SourceGenerators\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.SourceGenerators.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="..\CommunityToolkit.Maui.Camera.Analyzers\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.Camera.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="..\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>

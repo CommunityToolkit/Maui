@@ -1,5 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
-using CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.BindablePropertyAttributeSourceGeneratorTests;
+using CommunityToolkit.Maui.SourceGenerators.UnitTests.BindablePropertyAttributeSourceGeneratorTests;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Benchmarks;
 
