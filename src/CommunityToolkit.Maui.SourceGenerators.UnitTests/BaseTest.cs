@@ -13,7 +13,7 @@ public abstract class BaseTest
 	protected static async Task VerifySourceGeneratorAsync<TSourceGenerator>(string source, params List<(string FileName, string GeneratedFile)> expectedGeneratedFilesList)
 		where TSourceGenerator : IIncrementalGenerator, new()
 	{
-		const string sourceGeneratorNamespace = "CommunityToolkit.Maui.SourceGenerators.";
+		const string sourceGeneratorNamespace = "CommunityToolkit.Maui.SourceGenerators";
 		var sourceGeneratorFullName = typeof(TSourceGenerator).FullName ?? throw new InvalidOperationException("Source Generator Type Path cannot be null");
 
 		var test = new ExperimentalBindablePropertyTest<TSourceGenerator>

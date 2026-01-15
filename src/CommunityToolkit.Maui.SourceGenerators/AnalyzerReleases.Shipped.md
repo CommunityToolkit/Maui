@@ -28,11 +28,3 @@ MCT001  | Usage    | Warning  | Global namespace is not support for this Source 
 MCT002  | Usage    | Error    | Was not possible to find Microsoft.Maui.ITextStyle and or Microsoft.Maui.IAnimatable
 MCT003  | Usage    | Info     | Was not possible to get information from the Class
 MCT004  | Usage    | Info     | Class marked with invalid modifier access
-
-## Release 13.0.0
-
-### New Rules
-
-Rule ID | Category | Severity | Notes                                               
---------|----------|----------|-----------------------------------------------------
-MCTEXP001  | Usage    | Error    | Bindable Property Source Generators are experimental

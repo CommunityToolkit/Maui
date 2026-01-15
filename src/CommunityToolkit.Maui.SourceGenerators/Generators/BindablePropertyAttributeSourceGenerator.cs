@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using CommunityToolkit.Maui.SourceGenerators.Helpers;
-using CommunityToolkit.Maui.SourceGenerators.Helpers;
 using CommunityToolkit.Maui.SourceGenerators.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;

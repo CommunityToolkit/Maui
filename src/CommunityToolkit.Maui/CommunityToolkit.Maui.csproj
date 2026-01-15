@@ -49,9 +49,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\CommunityToolkit.Maui.SourceGenerators\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.SourceGenerators.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="..\CommunityToolkit.Maui.Analyzers\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="..\CommunityToolkit.Maui.Analyzers.CodeFixes\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.Analyzers.CodeFixes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="..\CommunityToolkit.Maui.SourceGenerators\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.SourceGenerators.dll" OutputItemType="Analyzer" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="..\CommunityToolkit.Maui.Analyzers\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.Analyzers.dll" OutputItemType="Analyzer" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="..\CommunityToolkit.Maui.Analyzers.CodeFixes\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.Analyzers.CodeFixes.dll" OutputItemType="Analyzer" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>
