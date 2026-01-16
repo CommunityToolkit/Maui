@@ -1,6 +1,10 @@
+using System;
 using System.Diagnostics;
 using CommunityToolkit.Maui.Core.Primitives;
-using Windows.Storage.Pickers;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.UI;
+using Microsoft.Windows.AppLifecycle;
+using Microsoft.Windows.Storage.Pickers;
 
 namespace CommunityToolkit.Maui.Storage;
 
@@ -10,12 +14,18 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 	async Task<Folder> InternalPickAsync(string initialPath, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-		var folderPicker = new Windows.Storage.Pickers.FolderPicker()
+		var window = IPlatformApplication.Current?.Application.Windows[0].Handler?.PlatformView as MauiWinUIWindow;
+		if (window is null)
 		{
-			SuggestedStartLocation = PickerLocationId.DocumentsLibrary
+			throw new FolderPickerException(
+				"Cannot present folder picker: No active window found. Ensure the app is active with a visible window.");
+		}
+		var folderPicker = new Microsoft.Windows.Storage.Pickers.FolderPicker(window.AppWindow.Id)
+		{
+			SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+			SuggestedFolder = initialPath
 		};
-		WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, Process.GetCurrentProcess().MainWindowHandle);
-		folderPicker.FileTypeFilter.Add("*");
+
 		var folderPickerOperation = folderPicker.PickSingleFolderAsync();
 
 		void CancelFolderPickerOperation()
@@ -27,10 +37,15 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 		var folder = await folderPickerOperation;
 		if (folder is null)
 		{
-			throw new FolderPickerException("Operation cancelled or Folder doesn't exist.");
+			throw new OperationCanceledException("Operation cancelled.");
 		}
 
-		return new Folder(folder.Path, folder.Name);
+		if (string.IsNullOrEmpty(folder.Path))
+		{
+			throw new FolderPickerException("Folder doesn't exist.");
+		}
+
+		return new Folder(folder.Path, new DirectoryInfo(folder.Path).Name);
 	}
 
 	Task<Folder> InternalPickAsync(CancellationToken cancellationToken)

@@ -33,7 +33,8 @@ public partial class FolderPickerViewModel(IFolderPicker folderPicker) : BaseVie
 			return;
 		}
 
-		var folderPickerResult = await folderPicker.PickAsync(cancellationToken);
+		var initialFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+		var folderPickerResult = await folderPicker.PickAsync(initialFolder, cancellationToken);
 		if (folderPickerResult.IsSuccessful)
 		{
 			await Toast.Make($"Folder picked: Name - {folderPickerResult.Folder.Name}, Path - {folderPickerResult.Folder.Path}", ToastDuration.Long).Show(cancellationToken);

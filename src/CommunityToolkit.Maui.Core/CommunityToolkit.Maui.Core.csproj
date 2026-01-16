@@ -55,13 +55,17 @@
     <PackageReference Include="Microsoft.Maui.Core" Version="$(MauiPackageVersion)" />
     <PackageReference Include="Microsoft.Maui.Essentials" Version="$(MauiPackageVersion)" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" Condition=" '$(Configuration)'=='Release' " PrivateAssets="All" />
-    <PackageReference Include="System.Speech" Version="10.0.0" Condition="'$(TargetFramework)' == '$(NetVersion)-windows10.0.19041.0'" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework.Contains('-tizen'))">
     <PackageReference Include="Microsoft.Maui.Graphics.Skia" Version="$(MauiPackageVersion)" />
     <PackageReference Include="SkiaSharp.Views.Maui.Controls" Version="*" />
     <PackageReference Include="Tizen.UIExtensions.NUI" Version="*" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.19041.0'">
+    <PackageReference Include="System.Speech" Version="10.0.1" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.0.0-experimental3" />
   </ItemGroup>
 
 </Project>
