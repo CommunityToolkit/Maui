@@ -18,6 +18,8 @@
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
     <RootNamespace>CommunityToolkit.Maui</RootNamespace>
     <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
+
+    <DisableTextColorToGenerator>true</DisableTextColorToGenerator>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -78,6 +80,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <CompilerVisibleProperty Include="DisableTextColorToGenerator" />
     <ProjectReference Include="..\CommunityToolkit.Maui.SourceGenerators\CommunityToolkit.Maui.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
