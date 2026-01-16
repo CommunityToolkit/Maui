@@ -1,4 +1,4 @@
-﻿namespace CommunityToolkit.Maui.SourceGenerators.Internal;
+﻿namespace CommunityToolkit.Maui.SourceGenerators;
 
 public static class BindablePropertyDiagnostic
 {

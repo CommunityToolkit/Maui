@@ -1,10 +1,10 @@
-using CommunityToolkit.Maui.SourceGenerators.Internal.Models;
-using CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests;
+using CommunityToolkit.Maui.SourceGenerators.Models;
+using CommunityToolkit.Maui.SourceGenerators.UnitTests;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
-namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests;
+namespace CommunityToolkit.Maui.SourceGenerators.UnitTests;
 
 public class BindablePropertyModelTests : BaseTest
 {

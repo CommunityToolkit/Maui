@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Runtime.Versioning;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Views;
 
