@@ -15,12 +15,10 @@ namespace CommunityToolkit.Maui.SourceGenerators.Internal;
 [Generator]
 public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 {
-	public const string BindablePropertyAttributeExperimentalDiagnosticId = "MCTEXP001";
+	static readonly BindablePropertySemanticValues emptyBindablePropertySemanticValues = new(default, []);
 
-	static readonly SemanticValues emptySemanticValues = new(default, []);
-
-	const string bpFullName = "global::Microsoft.Maui.Controls.BindableProperty";
-	const string bpAttribute =
+	const string bindablePropertyFullName = "global::Microsoft.Maui.Controls.BindableProperty";
+	const string bindablePropertyAttributeSource =
 		/* language=C#-test */
 		//lang=csharp
 		$$"""
@@ -33,17 +31,17 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		  [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 		  [global::System.AttributeUsage(global::System.AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-		  [global::System.Diagnostics.CodeAnalysis.Experimental("{{BindablePropertyAttributeExperimentalDiagnosticId}}")]
-		  sealed partial class BindablePropertyAttribute : global::System.Attribute
+		  [global::System.Diagnostics.CodeAnalysis.Experimental("{{BindablePropertyDiagnostic.BindablePropertyAttributeExperimentalDiagnosticId}}")]
+		  public sealed partial class BindablePropertyAttribute : global::System.Attribute
 		  {
 		  	public string? PropertyName { get; }
-		  	public global::System.Type? DeclaringType { get; set; }
-		  	public global::Microsoft.Maui.Controls.BindingMode DefaultBindingMode { get; set; }
-		  	public string ValidateValueMethodName { get; set; } = string.Empty;
-		  	public string PropertyChangedMethodName { get; set; } = string.Empty;
-		  	public string PropertyChangingMethodName { get; set; } = string.Empty;
-		  	public string CoerceValueMethodName { get; set; } = string.Empty;
-		  	public string DefaultValueCreatorMethodName { get; set; } = string.Empty;
+		  	public global::System.Type? DeclaringType { get; init; }
+		  	public global::Microsoft.Maui.Controls.BindingMode DefaultBindingMode { get; init; }
+		  	public string ValidateValueMethodName { get; init; } = string.Empty;
+		  	public string PropertyChangedMethodName { get; init; } = string.Empty;
+		  	public string PropertyChangingMethodName { get; init; } = string.Empty;
+		  	public string CoerceValueMethodName { get; init; } = string.Empty;
+		  	public string DefaultValueCreatorMethodName { get; init; } = string.Empty;
 		  }
 		  """;
 
@@ -59,7 +57,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		}
 #endif
 
-		context.RegisterPostInitializationOutput(static ctx => ctx.AddSource("BindablePropertyAttribute.g.cs", SourceText.From(bpAttribute, Encoding.UTF8)));
+		context.RegisterPostInitializationOutput(static ctx => ctx.AddSource("BindablePropertyAttribute.g.cs", SourceText.From(bindablePropertyAttributeSource, Encoding.UTF8)));
 
 		var provider = context.SyntaxProvider.ForAttributeWithMetadataName("CommunityToolkit.Maui.BindablePropertyAttribute",
 				IsNonEmptyPropertyDeclarationSyntax, SemanticTransform)
@@ -70,10 +68,10 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		context.RegisterSourceOutput(provider, ExecuteAllValues);
 	}
 
-	static void ExecuteAllValues(SourceProductionContext context, ImmutableArray<SemanticValues> semanticValues)
+	static void ExecuteAllValues(SourceProductionContext context, ImmutableArray<BindablePropertySemanticValues> semanticValues)
 	{
 		// Pre-allocate dictionary with expected capacity
-		var groupedValues = new Dictionary<(string, string, string, string), List<SemanticValues>>(semanticValues.Length);
+		var groupedValues = new Dictionary<(string, string, string, string), List<BindablePropertySemanticValues>>(semanticValues.Length);
 
 		// Single-pass grouping without LINQ
 		foreach (var sv in semanticValues)
@@ -125,7 +123,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 				var classAccessibility = values[0].ClassInformation.DeclaredAccessibility;
 
 				var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace, containingTypes, genericTypeParameters);
-				var combinedValues = new SemanticValues(combinedClassInfo, bindableProperties);
+				var combinedValues = new BindablePropertySemanticValues(combinedClassInfo, bindableProperties);
 
 				var fileNameSuffix = string.IsNullOrEmpty(containingTypes) ? className : string.Concat(containingTypes, ".", className);
 				var source = GenerateSource(combinedValues);
@@ -140,7 +138,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	}
 
 
-	static string GenerateSource(SemanticValues value)
+	static string GenerateSource(BindablePropertySemanticValues value)
 	{
 		// Pre-calculate StringBuilder capacity to avoid resizing
 		var estimatedCapacity = 500 + (value.BindableProperties.Count() * 400);
@@ -261,7 +259,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		sb.Append("static readonly global::Microsoft.Maui.Controls.BindablePropertyKey ")
 			.Append(info.BindablePropertyKeyName)
 			.Append(" = \n")
-			.Append(bpFullName)
+			.Append(bindablePropertyFullName)
 			.Append(".CreateReadOnly(\"")
 			.Append(sanitizedPropertyName)
 			.Append("\", typeof(")
@@ -289,7 +287,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		sb.Append(info.EffectiveDefaultValueCreatorMethodName)
 			.Append(");\n");
 
-		sb.Append("/// <summary>\r\n/// Backing BindableProperty for the <see cref=\"")
+		sb.Append("/// <summary>\r\n/// BindableProperty for the <see cref=\"")
 			.Append(sanitizedPropertyName)
 			.Append("\"/> property.\r\n/// </summary>\r\n");
 
@@ -298,7 +296,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(" ")
 			.Append(info.NewKeywordText)
 			.Append("static readonly ")
-			.Append(bpFullName)
+			.Append(bindablePropertyFullName)
 			.Append(' ')
 			.Append(info.BindablePropertyName)
 			.Append(" = ")
@@ -315,7 +313,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var nonNullableReturnType = ConvertToNonNullableTypeSymbol(info.ReturnType);
 		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
 
-		sb.Append("/// <summary>\r\n/// Backing BindableProperty for the <see cref=\"")
+		sb.Append("/// <summary>\r\n/// BindableProperty for the <see cref=\"")
 			.Append(sanitizedPropertyName)
 			.Append("\"/> property.\r\n/// </summary>\r\n");
 
@@ -324,11 +322,11 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(" ")
 			.Append(info.NewKeywordText)
 			.Append("static readonly ")
-			.Append(bpFullName)
+			.Append(bindablePropertyFullName)
 			.Append(' ')
 			.Append(info.BindablePropertyName)
 			.Append(" = \n")
-			.Append(bpFullName)
+			.Append(bindablePropertyFullName)
 			.Append(".Create(\"")
 			.Append(sanitizedPropertyName)
 			.Append("\", typeof(")
@@ -406,7 +404,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		sb.Append("}\n");
 	}
 
-	static SemanticValues SemanticTransform(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
+	static BindablePropertySemanticValues SemanticTransform(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
 	{
 		var propertyDeclarationSyntax = Unsafe.As<PropertyDeclarationSyntax>(context.TargetNode);
 		var semanticModel = context.SemanticModel;
@@ -415,7 +413,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		if (propertySymbol is null)
 		{
-			return emptySemanticValues;
+			return emptyBindablePropertySemanticValues;
 		}
 
 		var @namespace = propertySymbol.ContainingNamespace.ToDisplayString();
@@ -488,7 +486,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		Accessibility.Internal => "internal",
 		Accessibility.ProtectedOrInternal => "protected internal",
 		Accessibility.Public => "public",
-		_ => throw new NotSupportedException($"The property accessiblity, {propertySymbol.DeclaredAccessibility}, for {propertySymbol.Name} is not supported. The supported accessibility kinds are `public`, `internal` and `protected internal`."),
+		_ => throw new NotSupportedException($"The property accessibility, {propertySymbol.DeclaredAccessibility}, for {propertySymbol.Name} is not supported. The supported accessibility kinds are `public`, `internal` and `protected internal`."),
 	};
 
 	static string GetContainingTypes(INamedTypeSymbol typeSymbol)
