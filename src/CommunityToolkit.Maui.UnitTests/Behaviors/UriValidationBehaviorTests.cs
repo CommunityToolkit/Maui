@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Behaviors;
+using CommunityToolkit.Maui.Core;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
@@ -74,5 +75,15 @@ public class UriValidationBehaviorTests() : BaseBehaviorTest<UriValidationBehavi
 			await cts.CancelAsync();
 			await behavior.ForceValidate(cts.Token);
 		});
+	}
+
+	[Fact]
+	public void VerifyDefaults()
+	{
+		// Arrange
+		var behavior = new UriValidationBehavior();
+
+		// Act Assert
+		Assert.Equal(UriValidationBehaviorDefaults.UriKind, behavior.UriKind);
 	}
 }

@@ -80,9 +80,6 @@ public partial class FolderPickerViewModel(IFolderPicker folderPicker) : BaseVie
 			folderPickerResult.EnsureSuccess();
 
 			await Toast.Make($"Folder picked: Name - {folderPickerResult.Folder.Name}, Path - {folderPickerResult.Folder.Path}", ToastDuration.Long).Show(cancellationToken);
-#if IOS || MACCATALYST
-			folderPickerInstance.Dispose();
-#endif
 		}
 		catch (Exception e)
 		{
