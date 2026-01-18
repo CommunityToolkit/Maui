@@ -1,11 +1,9 @@
 ﻿namespace CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.BindablePropertyAttributeSourceGeneratorTests;
 
-public class BaseBindablePropertyAttributeSourceGeneratorTest : BaseTest
+public abstract class BaseBindablePropertyAttributeSourceGeneratorTest : BaseTest
 {
-	protected const string defaultTestClassName = "TestView";
-	protected const string defaultTestNamespace = "TestNamespace";
-
-	protected const string expectedAttribute =
+	const string generatedBindablePropertyAttributeFileName = "BindablePropertyAttribute.g.cs";
+	const string expectedAttribute =
 		/* language=C#-test */
 		//lang=csharp
 		$$"""
@@ -18,20 +16,34 @@ public class BaseBindablePropertyAttributeSourceGeneratorTest : BaseTest
 
 		[global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 		[global::System.AttributeUsage(global::System.AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-		[global::System.Diagnostics.CodeAnalysis.Experimental("{{BindablePropertyAttributeSourceGenerator.BindablePropertyAttributeExperimentalDiagnosticId}}")]
-		sealed partial class BindablePropertyAttribute : global::System.Attribute
+		[global::System.Diagnostics.CodeAnalysis.Experimental("{{BindablePropertyDiagnostic.BindablePropertyAttributeExperimentalDiagnosticId}}")]
+		public sealed partial class BindablePropertyAttribute : global::System.Attribute
 		{
 			public string? PropertyName { get; }
-			public global::System.Type? DeclaringType { get; set; }
-			public global::Microsoft.Maui.Controls.BindingMode DefaultBindingMode { get; set; }
-			public string ValidateValueMethodName { get; set; } = string.Empty;
-			public string PropertyChangedMethodName { get; set; } = string.Empty;
-			public string PropertyChangingMethodName { get; set; } = string.Empty;
-			public string CoerceValueMethodName { get; set; } = string.Empty;
-			public string DefaultValueCreatorMethodName { get; set; } = string.Empty;
+			public global::System.Type? DeclaringType { get; init; }
+			public global::Microsoft.Maui.Controls.BindingMode DefaultBindingMode { get; init; }
+			public string ValidateValueMethodName { get; init; } = string.Empty;
+			public string PropertyChangedMethodName { get; init; } = string.Empty;
+			public string PropertyChangingMethodName { get; init; } = string.Empty;
+			public string CoerceValueMethodName { get; init; } = string.Empty;
+			public string DefaultValueCreatorMethodName { get; init; } = string.Empty;
 		}
 		""";
 
-	protected static Task VerifySourceGeneratorAsync(string source, string expectedGenerated) =>
-		VerifySourceGeneratorAsync(source, expectedAttribute, ($"{defaultTestClassName}.g.cs", expectedGenerated));
+	protected static Task VerifySourceGeneratorAsync(string source, params List<(string FileName, string GeneratedFile)> expectedGeneratedFilesList)
+	{
+		expectedGeneratedFilesList.Add((generatedBindablePropertyAttributeFileName, expectedAttribute));
+		return VerifySourceGeneratorAsync<BindablePropertyAttributeSourceGenerator>(source, expectedGeneratedFilesList);
+	}
+
+	protected static Task VerifySourceGeneratorAsync(string source, string expectedGeneratedFile)
+	{
+		List<(string FileName, string GeneratedFile)> expectedGeneratedFilesList =
+		[
+			(generatedBindablePropertyAttributeFileName, expectedAttribute),
+			($"{defaultTestClassName}.g.cs", expectedGeneratedFile)
+		];
+
+		return VerifySourceGeneratorAsync<BindablePropertyAttributeSourceGenerator>(source, expectedGeneratedFilesList);
+	}
 }

@@ -9,38 +9,10 @@ namespace CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;
 /// Provides platform-specific configuration properties for the Android navigation bar.
 /// </summary>
 [SupportedOSPlatform("Android23.0")]
+[AttachedBindableProperty<Color>("Color", DefaultValueCreatorMethodName = nameof(CreateColorDefaultValue))]
+[AttachedBindableProperty<NavigationBarStyle>("Style", DefaultValue = NavigationBarStyle.Default)]
 public static partial class NavigationBar
 {
-	/// <summary>
-	/// Identifies the Color bindable property.
-	/// </summary>
-	public static readonly BindableProperty ColorProperty = BindableProperty.CreateAttached("Color", typeof(Color), typeof(NavigationBar), Colors.Transparent);
-
-	/// <summary>
-	/// Identifies the Style bindable property.
-	/// </summary>
-	public static readonly BindableProperty StyleProperty = BindableProperty.CreateAttached("Style", typeof(NavigationBarStyle), typeof(NavigationBar), NavigationBarStyle.Default);
-
-	/// <summary>
-	/// Gets the color of the navigation bar.
-	/// </summary>
-	/// <param name="element">The bindable object.</param>
-	/// <returns>The color of the navigation bar.</returns>
-	public static Color GetColor(BindableObject element)
-	{
-		return (Color)element.GetValue(ColorProperty);
-	}
-
-	/// <summary>
-	/// Sets the color of the navigation bar.
-	/// </summary>
-	/// <param name="element">The bindable object.</param>
-	/// <param name="value">The color to set.</param>
-	public static void SetColor(BindableObject element, Color value)
-	{
-		element.SetValue(ColorProperty, value);
-	}
-
 	/// <summary>
 	/// Sets the color of the navigation bar.
 	/// </summary>
@@ -61,26 +33,6 @@ public static partial class NavigationBar
 	public static Color GetColor(this IPlatformElementConfiguration<MAndroid, MauiElement> config)
 	{
 		return GetColor(config.Element);
-	}
-
-	/// <summary>
-	/// Sets the style of the navigation bar.
-	/// </summary>
-	/// <param name="element">The bindable object.</param>
-	/// <param name="value">The style to set.</param>
-	public static void SetStyle(BindableObject element, NavigationBarStyle value)
-	{
-		element.SetValue(StyleProperty, value);
-	}
-
-	/// <summary>
-	/// Gets the style of the navigation bar.
-	/// </summary>
-	/// <param name="element">The bindable object.</param>
-	/// <returns>The style of the navigation bar.</returns>
-	public static NavigationBarStyle GetStyle(BindableObject element)
-	{
-		return (NavigationBarStyle)element.GetValue(StyleProperty);
 	}
 
 	/// <summary>
@@ -113,4 +65,6 @@ public static partial class NavigationBar
 
 	}
 #endif
+
+	static Color CreateColorDefaultValue(BindableObject bindable) => Colors.Transparent;
 }
