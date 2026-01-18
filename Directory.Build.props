@@ -236,6 +236,10 @@ https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitati
     <!-- Embed symbols containing Source Link in the main file (exe/dll) -->
     <DebugType>embedded</DebugType>
   </PropertyGroup>
+  
+  <PropertyGroup Label="PackageValidation">
+      <CompatibilitySuppressionFilePath Condition="('$(GenerateCompatibilitySuppressionFile)'=='true') OR Exists('$(MSBuildProjectDirectory)\PackageValidationSuppression.txt')">PackageValidationSuppression.txt</CompatibilitySuppressionFilePath>
+  </PropertyGroup>
 
   <ItemGroup>
     <SupportedPlatform Include="Tizen" />
