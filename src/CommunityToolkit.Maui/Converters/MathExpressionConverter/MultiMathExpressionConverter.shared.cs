@@ -11,6 +11,11 @@ namespace CommunityToolkit.Maui.Converters;
 public class MultiMathExpressionConverter : MultiValueConverterExtension, ICommunityToolkitMultiValueConverter
 {
 	/// <summary>
+	/// Get or set the culture to use in the converter.
+	/// </summary>
+	public CultureInfo Culture { get; set; } = CultureInfo.InvariantCulture;
+
+	/// <summary>
 	/// Calculate the incoming expression string with variables.
 	/// </summary>
 	/// <param name="values">The array of variables for an expression</param>
@@ -30,7 +35,7 @@ public class MultiMathExpressionConverter : MultiValueConverterExtension, ICommu
 
 		return values is null
 			? null
-			: new MathExpression(expression, values).CalculateResult();
+			: new MathExpression(expression, values, this.Culture).CalculateResult();
 	}
 
 	/// <summary>
