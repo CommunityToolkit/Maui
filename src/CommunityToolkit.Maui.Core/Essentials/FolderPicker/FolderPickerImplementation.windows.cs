@@ -1,5 +1,3 @@
-using System;
-using System.Diagnostics;
 using CommunityToolkit.Maui.Core.Primitives;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.UI;
@@ -14,12 +12,12 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 	async Task<Folder> InternalPickAsync(string initialPath, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-		var window = IPlatformApplication.Current?.Application.Windows[0].Handler?.PlatformView as MauiWinUIWindow;
-		if (window is null)
+		if (IPlatformApplication.Current?.Application.Windows[0].Handler?.PlatformView is not MauiWinUIWindow window)
 		{
 			throw new FolderPickerException(
 				"Cannot present folder picker: No active window found. Ensure the app is active with a visible window.");
 		}
+
 		var folderPicker = new Microsoft.Windows.Storage.Pickers.FolderPicker(window.AppWindow.Id)
 		{
 			SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
