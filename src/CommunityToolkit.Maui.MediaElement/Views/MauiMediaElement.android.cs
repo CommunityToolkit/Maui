@@ -1,5 +1,6 @@
 ﻿using Android.App;
 using Android.Content;
+using Android.Graphics.Drawables;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
@@ -7,6 +8,7 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Views;
+using RelativeLayout = Android.Widget.RelativeLayout;
 
 [assembly: UsesPermission(Android.Manifest.Permission.ForegroundServiceMediaPlayback)]
 [assembly: UsesPermission(Android.Manifest.Permission.ForegroundService)]
@@ -40,22 +42,32 @@ public class MauiMediaElement : CoordinatorLayout
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
 	/// </summary>
 	/// <param name="context">The application's <see cref="Context"/>.</param>
-	/// <param name="playerView">The <see cref="PlayerView"/> that acts as the platform media player.</param>
+	/// <param name="playerView">The <see cref="AndroidX.Media3.UI.PlayerView"/> that acts as the platform media player.</param>
 	public MauiMediaElement(Context context, PlayerView playerView) : base(context)
 	{
 		this.playerView = playerView;
-		this.playerView.SetBackgroundColor(Android.Graphics.Color.Black);
+		playerView.Background = new ColorDrawable(Android.Graphics.Color.Black);
 		playerView.FullscreenButtonClick += OnFullscreenButtonClick;
+		playerView.SetShowBuffering(PlayerView.ShowBufferingAlways);
+		playerView.Alpha = 1.0f;
+		playerView.ArtworkDisplayMode = PlayerView.ArtworkDisplayModeFit;
+		playerView.DefaultArtwork = new ColorDrawable(Android.Graphics.Color.Black);
+
 		var layout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
 		layout.AddRule(LayoutRules.CenterInParent);
 		layout.AddRule(LayoutRules.CenterVertical);
 		layout.AddRule(LayoutRules.CenterHorizontal);
 		relativeLayout = new RelativeLayout(Platform.AppContext)
 		{
-			LayoutParameters = layout,
+			LayoutParameters = layout
 		};
-		relativeLayout.AddView(playerView);
+		SetBackgroundResource(Android.Resource.Color.Black);
+	}
 
+	public void SetView(AndroidX.Media3.Session.MediaController mediaController)
+	{
+		playerView.Player = mediaController;
+		relativeLayout.AddView(playerView);
 		AddView(relativeLayout);
 	}
 
@@ -80,34 +92,6 @@ public class MauiMediaElement : CoordinatorLayout
 		{
 			SetSystemBarsVisibility();
 		}
-	}
-
-	/// <summary>
-	/// Releases the unmanaged resources used by the <see cref="MediaElement"/> and optionally releases the managed resources.
-	/// </summary>
-	/// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
-	protected override void Dispose(bool disposing)
-	{
-		if (disposing)
-		{
-			try
-			{
-				if (playerView.Player is not null)
-				{
-					playerView.Player.PlayWhenReady = false;
-				}
-				// https://github.com/google/ExoPlayer/issues/1855#issuecomment-251041500
-				playerView.Player?.Release();
-				playerView.Player?.Dispose();
-				playerView.Dispose();
-			}
-			catch (ObjectDisposedException)
-			{
-				// playerView already disposed
-			}
-		}
-
-		base.Dispose(disposing);
 	}
 
 	void OnFullscreenButtonClick(object? sender, PlayerView.FullscreenButtonClickEventArgs e)

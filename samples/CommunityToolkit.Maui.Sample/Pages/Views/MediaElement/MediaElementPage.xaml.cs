@@ -12,14 +12,15 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 {
 	const string loadOnlineMp4 = "Load Online MP4";
 	const string loadHls = "Load HTTP Live Stream (HLS)";
+	const string loadDASH = "Load MPEG-DASH (not supported on iOS/MacCatalyst)";
 	const string loadLocalResource = "Load Local Resource";
 	const string resetSource = "Reset Source to null";
 	const string loadMusic = "Load Music";
 
 	const string botImageUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
 	const string hlsStreamTestUrl = "https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8";
+	const string dashTestUrl = "https://livesim.dashif.org/dash/vod/testpic_2s/multi_subs.mpd";
 	const string hal9000AudioUrl = "https://github.com/prof3ssorSt3v3/media-sample-files/raw/master/hal-9000.mp3";
-
 
 	readonly ILogger logger;
 	readonly IDeviceInfo deviceInfo;
@@ -166,7 +167,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	async void ChangeSourceClicked(object? sender, EventArgs? e)
 	{
 		var result = await DisplayActionSheetAsync("Choose a source", "Cancel", null,
-			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadMusic);
+			loadOnlineMp4, loadHls, loadDASH, loadLocalResource, resetSource, loadMusic);
 
 		MediaElement.Stop();
 		MediaElement.Source = null;
@@ -188,6 +189,12 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.Source = MediaSource.FromUri(hlsStreamTestUrl);
 				return;
 
+			case loadDASH:
+				MediaElement.MetadataArtist = "DASH Album";
+				MediaElement.MetadataArtworkUrl = botImageUrl;
+				MediaElement.MetadataTitle = "DASH Title";
+				MediaElement.Source = MediaSource.FromUri(dashTestUrl);
+				return;
 			case resetSource:
 				MediaElement.MetadataArtworkUrl = string.Empty;
 				MediaElement.MetadataTitle = string.Empty;
