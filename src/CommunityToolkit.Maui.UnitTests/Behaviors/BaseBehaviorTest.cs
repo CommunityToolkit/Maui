@@ -66,8 +66,17 @@ public abstract class BaseBehaviorTest<TBehavior, TView> : BaseTest
 		Assert.True(wasSuccessful);
 		Assert.Equal(view.BindingContext, attachedBehavior.BindingContext);
 	}
+	
+	protected override void Dispose(bool isDisposing)
+	{
+		base.Dispose(isDisposing);
+		
+		view.Behaviors.Clear();
+	}
 
-	protected class MockValidationBehavior : ValidationBehavior<string>
+	sealed class MockViewModel;
+	
+	protected sealed class MockValidationBehavior : ValidationBehavior<string>
 	{
 		public string? ExpectedValue { get; init; }
 		public bool SimulateValidationDelay { get; init; } = false;
@@ -81,10 +90,5 @@ public abstract class BaseBehaviorTest<TBehavior, TView> : BaseTest
 
 			return value == ExpectedValue;
 		}
-	}
-
-	class MockViewModel
-	{
-
 	}
 }
