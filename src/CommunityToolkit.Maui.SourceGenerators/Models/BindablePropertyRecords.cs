@@ -1,7 +1,7 @@
-﻿using CommunityToolkit.Maui.SourceGenerators.Internal.Helpers;
+﻿using CommunityToolkit.Maui.SourceGenerators.Helpers;
 using Microsoft.CodeAnalysis;
 
-namespace CommunityToolkit.Maui.SourceGenerators.Internal.Models;
+namespace CommunityToolkit.Maui.SourceGenerators.Models;
 
 public record BindablePropertyModel(string PropertyName, ITypeSymbol ReturnType, ITypeSymbol DeclaringType, string DefaultBindingMode, string ValidateValueMethodName, string PropertyChangedMethodName, string PropertyChangingMethodName, string CoerceValueMethodName, string DefaultValueCreatorMethodName, string NewKeywordText, bool IsReadOnlyBindableProperty, string? SetterAccessibility, bool HasInitializer, string? PropertyAccessibility)
 {
@@ -20,31 +20,31 @@ public record AttachedBindablePropertyModel(string PropertyName, ITypeSymbol Ret
 	public string BindablePropertyKeyName => $"{char.ToLower(PropertyName[0])}{PropertyName[1..]}PropertyKey";
 
 	public string EffectiveBindablePropertyXmlDocumentation => BindablePropertyXmlDocumentation ??
-		/* language=C#-test */
-		//lang=csharp
-		$"""
-		/// <summary>
-		/// Attached BindableProperty for the {PropertyName} property.
-		/// </summary>
-		""";
+	                                                    /* language=C#-test */
+	                                                    //lang=csharp
+	                                                    $"""
+	                                                     /// <summary>
+	                                                     /// Attached BindableProperty for the {PropertyName} property.
+	                                                     /// </summary>
+	                                                     """;
 
 	public string EffectiveGetterMethodXmlDocumentation => GetterMethodXmlDocumentation ??
-		/* language=C#-test */
-		//lang=csharp
-		$"""
-		/// <summary>
-		/// Gets {PropertyName} for the <paramref name = "bindable"/> child element.
-		/// </summary>
-		""";
+	                                                /* language=C#-test */
+	                                                //lang=csharp
+	                                                $"""
+	                                                 /// <summary>
+	                                                 /// Gets {PropertyName} for the <paramref name = "bindable"/> child element.
+	                                                 /// </summary>
+	                                                 """;
 
 	public string EffectiveSetterMethodXmlDocumentation => SetterMethodXmlDocumentation ??
-		/* language=C#-test */
-		//lang=csharp
-		$"""
-		/// <summary>
-		/// Sets {PropertyName} for the <paramref name = "bindable"/> child element.
-		/// </summary>
-		""";
+	                                                       /* language=C#-test */
+	                                                       //lang=csharp
+	                                                       $"""
+	                                                        /// <summary>
+	                                                        /// Sets {PropertyName} for the <paramref name = "bindable"/> child element.
+	                                                        /// </summary>
+	                                                        """;
 
 	internal static bool ShouldPostpendNullableToType(ITypeSymbol typeSymbol, bool isDeclaringTypeNullable)
 		=> isDeclaringTypeNullable && typeSymbol.OriginalDefinition.SpecialType is not SpecialType.System_Nullable_T;
