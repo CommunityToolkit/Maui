@@ -11,14 +11,19 @@ public enum ValidationFlags
 {
 	/// <summary> No validation</summary>
 	None = 0,
+
 	/// <summary>Validate on attaching</summary>
 	ValidateOnAttaching = 1,
+
 	/// <summary> Validate on focusing</summary>
 	ValidateOnFocused = 2,
+
 	/// <summary>Validate on unfocus</summary>
 	ValidateOnUnfocused = 4,
+
 	/// <summary>Validate upon value changed</summary>
 	ValidateOnValueChanged = 8,
+
 	/// <summary>Force make valid when focused</summary>
 	ForceMakeValidWhenFocused = 16
 }
@@ -28,7 +33,7 @@ public enum ValidationFlags
 /// </summary>
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 [RequiresUnreferencedCode($"{nameof(ValidationBehavior)} is not trim safe because it uses bindings with string paths.")]
-public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposable
+public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, IDisposable
 {
 	/// <summary>
 	/// Valid visual state
@@ -39,60 +44,6 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 	/// Invalid visual state
 	/// </summary>
 	public const string InvalidVisualState = "Invalid";
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="IsNotValid"/> property.
-	/// </summary>
-	public static readonly BindableProperty IsNotValidProperty =
-		BindableProperty.Create(nameof(IsNotValid), typeof(bool), typeof(ValidationBehavior), false, BindingMode.OneWayToSource);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="IsValid"/> property.
-	/// </summary>
-	public static readonly BindableProperty IsValidProperty =
-		BindableProperty.Create(nameof(IsValid), typeof(bool), typeof(ValidationBehavior), true, BindingMode.OneWayToSource, propertyChanged: OnIsValidPropertyChanged);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="IsRunning"/> property.
-	/// </summary>
-	public static readonly BindableProperty IsRunningProperty =
-		BindableProperty.Create(nameof(IsRunning), typeof(bool), typeof(ValidationBehavior), false, BindingMode.OneWayToSource);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="ValidStyle"/> property.
-	/// </summary>
-	public static readonly BindableProperty ValidStyleProperty =
-		BindableProperty.Create(nameof(ValidStyle), typeof(Style), typeof(ValidationBehavior), propertyChanged: OnValidationPropertyChanged);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="InvalidStyle"/> property.
-	/// </summary>
-	public static readonly BindableProperty InvalidStyleProperty =
-		BindableProperty.Create(nameof(InvalidStyle), typeof(Style), typeof(ValidationBehavior), propertyChanged: OnValidationPropertyChanged);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="Flags"/> property.
-	/// </summary>
-	public static readonly BindableProperty FlagsProperty =
-		BindableProperty.Create(nameof(Flags), typeof(ValidationFlags), typeof(ValidationBehavior), ValidationFlags.ValidateOnUnfocused | ValidationFlags.ForceMakeValidWhenFocused, propertyChanged: OnValidationPropertyChanged);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="Value"/> property.
-	/// </summary>
-	public static readonly BindableProperty ValueProperty =
-		BindableProperty.Create(nameof(Value), typeof(object), typeof(ValidationBehavior), propertyChanged: OnValuePropertyChanged);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="ValuePropertyName"/> property.
-	/// </summary>
-	public static readonly BindableProperty ValuePropertyNameProperty =
-		BindableProperty.Create(nameof(ValuePropertyName), typeof(string), typeof(ValidationBehavior), defaultValueCreator: GetDefaultValuePropertyName, propertyChanged: OnValuePropertyNamePropertyChanged);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="ForceValidateCommand"/> property.
-	/// </summary>
-	public static readonly BindableProperty ForceValidateCommandProperty =
-		BindableProperty.Create(nameof(ForceValidateCommand), typeof(ICommand), typeof(ValidationBehavior), defaultValueCreator: GetDefaultForceValidateCommand, defaultBindingMode: BindingMode.OneWayToSource);
 
 	readonly SemaphoreSlim isAttachingSemaphoreSlim = new(1, 1);
 
@@ -121,74 +72,50 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 	/// <summary>
 	/// Indicates whether the current value is considered valid. This is a bindable property.
 	/// </summary>
-	public bool IsValid
-	{
-		get => (bool)GetValue(IsValidProperty);
-		set => SetValue(IsValidProperty, value);
-	}
+	[BindableProperty(DefaultBindingMode = BindingMode.OneWayToSource, PropertyChangedMethodName = nameof(OnIsValidPropertyChanged))]
+	public partial bool IsValid { get; set; } = ValidationBehaviorDefaults.IsValid;
 
 	/// <summary>
 	/// Indicates whether the validation is in progress now (waiting for an asynchronous call is finished).
 	/// </summary>
-	public bool IsRunning
-	{
-		get => (bool)GetValue(IsRunningProperty);
-		set => SetValue(IsRunningProperty, value);
-	}
+	[BindableProperty(DefaultBindingMode = BindingMode.OneWayToSource)]
+	public partial bool IsRunning { get; set; } = ValidationBehaviorDefaults.IsRunning;
 
 	/// <summary>
 	/// Indicates whether the current value is considered not valid. This is a bindable property.
 	/// </summary>
-	public bool IsNotValid
-	{
-		get => (bool)GetValue(IsNotValidProperty);
-		set => SetValue(IsNotValidProperty, value);
-	}
+	[BindableProperty(DefaultBindingMode = BindingMode.OneWayToSource)]
+	public partial bool IsNotValid { get; set; } = ValidationBehaviorDefaults.IsNotValid;
 
 	/// <summary>
 	/// The <see cref="Style"/> to apply to the element when validation is successful. This is a bindable property.
 	/// </summary>
-	public Style? ValidStyle
-	{
-		get => (Style?)GetValue(ValidStyleProperty);
-		set => SetValue(ValidStyleProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial Style? ValidStyle { get; set; } = ValidationBehaviorDefaults.ValidStyle;
 
 	/// <summary>
 	/// The <see cref="Style"/> to apply to the element when validation fails. This is a bindable property.
 	/// </summary>
-	public Style? InvalidStyle
-	{
-		get => (Style?)GetValue(InvalidStyleProperty);
-		set => SetValue(InvalidStyleProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial Style? InvalidStyle { get; set; } = ValidationBehaviorDefaults.InvalidStyle;
 
 	/// <summary>
 	/// Provides an enumerated value that specifies how to handle validation. This is a bindable property.
 	/// </summary>
-	public ValidationFlags Flags
-	{
-		get => (ValidationFlags)GetValue(FlagsProperty);
-		set => SetValue(FlagsProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial ValidationFlags Flags { get; set; } = ValidationBehaviorDefaults.Flags;
 
 	/// <summary>
 	/// The value to validate. This is a bindable property.
 	/// </summary>
-	public object? Value
-	{
-		get => (object?)GetValue(ValueProperty);
-		set => SetValue(ValueProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnValuePropertyChanged))]
+	public partial object? Value { get; set; } = ValidationBehaviorDefaults.Value;
 
 	/// <summary>
 	/// Allows the user to override the property that will be used as the value to validate. This is a bindable property.
 	/// </summary>
-	public string? ValuePropertyName
-	{
-		get => (string?)GetValue(ValuePropertyNameProperty);
-		set => SetValue(ValuePropertyNameProperty, value);
-	}
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(GetDefaultValuePropertyName), PropertyChangedMethodName = nameof(OnValuePropertyNamePropertyChanged))]
+	public partial string? ValuePropertyName { get; set; }
 
 	/// <summary>
 	/// Allows the user to provide a custom <see cref="ICommand"/> that handles forcing validation. This is a bindable property.
@@ -196,16 +123,13 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 	/// <remarks>
 	/// The Default Value for <see cref="ForceValidateCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter"
 	/// </remarks>
-	public ICommand ForceValidateCommand
-	{
-		get => (ICommand)GetValue(ForceValidateCommandProperty);
-		set => SetValue(ForceValidateCommandProperty, value);
-	}
+	[BindableProperty(DefaultBindingMode = BindingMode.OneWayToSource, DefaultValueCreatorMethodName = nameof(GetDefaultForceValidateCommand))]
+	public partial ICommand ForceValidateCommand { get; set; }
 
 	/// <summary>
 	/// Default value property name
 	/// </summary>
-	protected virtual string DefaultValuePropertyName { get; } = Entry.TextProperty.PropertyName;
+	protected virtual string DefaultValuePropertyName { get; } = ValidationBehaviorDefaults.ValuePropertyName;
 
 	/// <summary>
 	/// Default force validate command
@@ -406,15 +330,24 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 
 		if (view is not null)
 		{
-			UpdateStyle(view, IsValid);
+			TryUpdateStyle(view, IsValid);
 		}
 	}
 
-	void UpdateStyle(in VisualElement view, bool isValid)
+	bool TryUpdateStyle(in VisualElement view, bool isValid)
 	{
-		VisualStateManager.GoToState(view, isValid ? ValidVisualState : InvalidVisualState);
+		try
+		{
+			VisualStateManager.GoToState(view, isValid ? ValidVisualState : InvalidVisualState);
 
-		view.Style = (isValid ? ValidStyle : InvalidStyle) ?? view.Style;
+			view.Style = (isValid ? ValidStyle : InvalidStyle) ?? view.Style;
+
+			return true;
+		}
+		catch (ArgumentException)
+		{
+			return false;
+		}
 	}
 
 	void ResetValidationTokenSource(CancellationTokenSource? newTokenSource)
@@ -424,7 +357,9 @@ public abstract class ValidationBehavior : BaseBehavior<VisualElement>, IDisposa
 			validationTokenSource?.Cancel();
 			validationTokenSource?.Dispose();
 		}
-		catch (ObjectDisposedException) { }
+		catch (ObjectDisposedException)
+		{
+		}
 		finally
 		{
 			validationTokenSource = newTokenSource;

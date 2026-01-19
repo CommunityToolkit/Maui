@@ -291,7 +291,7 @@ partial class MediaManager : IDisposable
 			var uri = uriMediaSource.Uri?.AbsoluteUri;
 			if (!string.IsNullOrWhiteSpace(uri))
 			{
-				Player.Source = WinMediaSource.CreateFromUri(new Uri(uri));
+				Player.MediaPlayer.SetUriSource(new Uri(uri));
 			}
 		}
 		else if (MediaElement.Source is FileMediaSource fileMediaSource)
@@ -300,7 +300,7 @@ partial class MediaManager : IDisposable
 			if (!string.IsNullOrWhiteSpace(filename))
 			{
 				StorageFile storageFile = await StorageFile.GetFileFromPathAsync(filename);
-				Player.Source = WinMediaSource.CreateFromStorageFile(storageFile);
+				Player.MediaPlayer.SetFileSource(storageFile);
 			}
 		}
 		else if (MediaElement.Source is ResourceMediaSource resourceMediaSource)
@@ -314,7 +314,7 @@ partial class MediaManager : IDisposable
 			string path = GetFullAppPackageFilePath(resourceMediaSource.Path);
 			if (!string.IsNullOrWhiteSpace(path))
 			{
-				Player.Source = WinMediaSource.CreateFromUri(new Uri(path));
+				Player.MediaPlayer.SetUriSource(new Uri(path));
 			}
 		}
 	}
