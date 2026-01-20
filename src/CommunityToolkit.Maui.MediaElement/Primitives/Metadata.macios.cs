@@ -1,4 +1,5 @@
 ﻿using AVFoundation;
+using CoreGraphics;
 using CoreMedia;
 using Foundation;
 using MediaPlayer;
@@ -76,6 +77,8 @@ sealed class Metadata
 			Metadata.ClearNowPlaying();
 			return;
 		}
+		
+		var proxy = new RequestHandlerProxy(mediaElement.MetadataArtworkUrl);
 
 		NowPlayingInfo.Title = mediaElement.MetadataTitle;
 		NowPlayingInfo.Artist = mediaElement.MetadataArtist;
@@ -83,25 +86,28 @@ sealed class Metadata
 		NowPlayingInfo.IsLiveStream = false;
 		NowPlayingInfo.PlaybackRate = mediaElement.Speed;
 		NowPlayingInfo.ElapsedPlaybackTime = playerItem?.CurrentTime.Seconds ?? 0;
-		NowPlayingInfo.Artwork = new(boundsSize: new(320, 240), requestHandler: _ => GetImage(mediaElement.MetadataArtworkUrl));
+		NowPlayingInfo.Artwork = new(new(320, 240), proxy.RequestHandler);
 		MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = NowPlayingInfo;
 	}
 
-	static UIImage GetImage(string imageUri)
-	{
-		try
-		{
-			if (imageUri.StartsWith(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
-			{
-				return UIImage.LoadFromData(NSData.FromUrl(new NSUrl(imageUri))) ?? defaultUIImage;
-			}
-			return defaultUIImage;
-		}
-		catch
-		{
-			return defaultUIImage;
-		}
-	}
+	sealed class RequestHandlerProxy(string metadataArtworkUrl)
+    {
+    	public UIImage RequestHandler(CGSize size)
+    	{
+    		try
+    		{
+    			if (metadataArtworkUrl.StartsWith(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
+    			{
+    				return UIImage.LoadFromData(NSData.FromUrl(new NSUrl(metadataArtworkUrl))) ?? defaultUIImage;
+    			}
+    			return defaultUIImage;
+    		}
+    		catch
+    		{
+    			return defaultUIImage;
+    		}
+    	}
+    }
 
 	MPRemoteCommandHandlerStatus SeekCommand(MPRemoteCommandEvent? commandEvent)
 	{
