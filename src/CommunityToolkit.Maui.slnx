@@ -6,7 +6,6 @@
     <Project Path="CommunityToolkit.Maui.Camera.Analyzers/CommunityToolkit.Maui.Camera.Analyzers.csproj" />
     <Project Path="CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj" />
     <Project Path="CommunityToolkit.Maui.MediaElement.Analyzers/CommunityToolkit.Maui.MediaElement.Analyzers.csproj" />
-    <Project Path="CommunityToolkit.Maui.SourceGenerators.Internal/CommunityToolkit.Maui.SourceGenerators.Internal.csproj" />
     <Project Path="CommunityToolkit.Maui.SourceGenerators/CommunityToolkit.Maui.SourceGenerators.csproj" />
   </Folder>
   <Folder Name="/Benchmarks/">
@@ -22,7 +21,7 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj" />
-    <Project Path="CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests/CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.csproj" />
+    <Project Path="CommunityToolkit.Maui.SourceGenerators.UnitTests/CommunityToolkit.Maui.SourceGenerators.UnitTests.csproj" />
     <Project Path="CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj" />
   </Folder>
   <Project Path="CommunityToolkit.Maui.Camera/CommunityToolkit.Maui.Camera.csproj" />
