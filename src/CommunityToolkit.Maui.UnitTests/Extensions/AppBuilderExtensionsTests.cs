@@ -181,8 +181,7 @@ public class AppBuilderExtensionsTests : BaseTest
 		var builder = MauiApp.CreateBuilder();
 		builder.UseMauiCommunityToolkitMediaElement(static options =>
 		{
-			options.EnableAndroidForegroundService(false);
-		});
+		}, enableForegroundService: false);
 		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(false);
 	}
 }
