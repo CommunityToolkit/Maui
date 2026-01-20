@@ -172,7 +172,7 @@ public class AppBuilderExtensionsTests : BaseTest
 	{
 		var builder = MauiApp.CreateBuilder();
 		builder.UseMauiCommunityToolkitMediaElement();
-		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(true);
+		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(false);
 	}
 
 	[Fact]
@@ -181,7 +181,7 @@ public class AppBuilderExtensionsTests : BaseTest
 		var builder = MauiApp.CreateBuilder();
 		builder.UseMauiCommunityToolkitMediaElement(static options =>
 		{
-			options.SetDefaultAndroidForegroundServiceEnabled(false);
+			options.EnableAndroidForegroundService(false);
 		});
 		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(false);
 	}

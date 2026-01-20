@@ -23,16 +23,16 @@ public class MediaElementOptionsTests : BaseViewTest
 
 		try
 		{
-			optionsInstance.SetDefaultAndroidForegroundServiceEnabled(false);
+			optionsInstance.EnableAndroidForegroundService(false);
 			MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().BeFalse();
 
-			optionsInstance.SetDefaultAndroidForegroundServiceEnabled(true);
+			optionsInstance.EnableAndroidForegroundService(true);
 			MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().BeTrue();
 		}
 		finally
 		{
 			// restore original state to avoid test pollution
-			optionsInstance.SetDefaultAndroidForegroundServiceEnabled(original);
+			optionsInstance.EnableAndroidForegroundService(original);
 		}
 	}
 
@@ -68,7 +68,7 @@ public class MediaElementOptionsTests : BaseViewTest
 		{
 			// change defaults then create a new MediaElement and verify it picked them up
 			optionsInstance.SetDefaultAndroidViewType(AndroidViewType.TextureView);
-			optionsInstance.SetDefaultAndroidForegroundServiceEnabled(false);
+			optionsInstance.EnableAndroidForegroundService(false);
 
 			var mediaElement = new MediaElement();
 
@@ -79,7 +79,7 @@ public class MediaElementOptionsTests : BaseViewTest
 		{
 			// restore original state
 			optionsInstance.SetDefaultAndroidViewType(originalViewType);
-			optionsInstance.SetDefaultAndroidForegroundServiceEnabled(originalForegroundEnabled);
+			optionsInstance.EnableAndroidForegroundService(originalForegroundEnabled);
 		}
 	}
 }
