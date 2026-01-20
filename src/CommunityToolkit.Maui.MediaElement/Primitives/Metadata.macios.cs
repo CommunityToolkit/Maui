@@ -91,23 +91,23 @@ sealed class Metadata
 	}
 
 	sealed class RequestHandlerProxy(string metadataArtworkUrl)
-    {
-    	public UIImage RequestHandler(CGSize size)
-    	{
-    		try
-    		{
-    			if (metadataArtworkUrl.StartsWith(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
-    			{
-    				return UIImage.LoadFromData(NSData.FromUrl(new NSUrl(metadataArtworkUrl))) ?? defaultUIImage;
-    			}
-    			return defaultUIImage;
-    		}
-    		catch
-    		{
-    			return defaultUIImage;
-    		}
-    	}
-    }
+	{
+		public UIImage RequestHandler(CGSize size)
+		{
+			try
+			{
+				if (metadataArtworkUrl.StartsWith(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
+				{
+					return UIImage.LoadFromData(NSData.FromUrl(new NSUrl(metadataArtworkUrl))) ?? defaultUIImage;
+				}
+				return defaultUIImage;
+			}
+			catch
+			{
+				return defaultUIImage;
+			}
+		}
+	}
 
 	MPRemoteCommandHandlerStatus SeekCommand(MPRemoteCommandEvent? commandEvent)
 	{
