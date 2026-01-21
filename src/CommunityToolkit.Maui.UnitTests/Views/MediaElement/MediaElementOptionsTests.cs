@@ -16,7 +16,7 @@ public class MediaElementOptionsTests : BaseViewTest
 	}
 
 	[Fact]
-	public void SetDefaultAndroidForegroundServiceEnabled_Updates_StaticDefault()
+	public void EnableAndroidForegroundService_Updates_StaticDefault()
 	{
 		var optionsInstance = (MediaElementOptions)Activator.CreateInstance(typeof(MediaElementOptions), nonPublic: true)!;
 		var original = MediaElementOptions.IsAndroidForegroundServiceEnabled;
