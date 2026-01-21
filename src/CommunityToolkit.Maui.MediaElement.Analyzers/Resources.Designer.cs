@@ -62,5 +62,23 @@ namespace CommunityToolkit.Maui.MediaElement.Analyzers {
                 return ResourceManager.GetString("InitializationErrorTitle", resourceCulture);
             }
         }
+        
+        internal static string EnableForegroundServiceErrorTitle {
+            get {
+                return ResourceManager.GetString("EnableForegroundServiceErrorTitle", resourceCulture);
+            }
+        }
+        
+        internal static string EnableForegroundServiceMessageFormat {
+            get {
+                return ResourceManager.GetString("EnableForegroundServiceMessageFormat", resourceCulture);
+            }
+        }
+        
+        internal static string EnableForegroundServiceErrorMessage {
+            get {
+                return ResourceManager.GetString("EnableForegroundServiceErrorMessage", resourceCulture);
+            }
+        }
     }
 }

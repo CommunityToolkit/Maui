@@ -69,11 +69,11 @@ public static class MauiProgram
 								.UseMauiCommunityToolkitMarkup()
 								.UseMauiCommunityToolkitCamera()
 								.UseMauiCommunityToolkitMediaElement(
+									enableForegroundService: true,
 									static options =>
 									{
 										options.SetDefaultAndroidViewType(AndroidViewType.TextureView);
-									},
-									enableForegroundService: true)
+									})
 								.ConfigureMauiHandlers(static handlers =>
 								{
 #if IOS || MACCATALYST

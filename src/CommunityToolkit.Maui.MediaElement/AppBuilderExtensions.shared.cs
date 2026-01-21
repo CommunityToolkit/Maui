@@ -23,7 +23,7 @@ public static class AppBuilderExtensions
 	/// <param name="options"><see cref="MediaElementOptions"/>.</param>
 	/// <param name="enableForegroundService">Enable Android Foreground Service for MediaElement.</param>
 	/// <returns><see cref="MauiAppBuilder"/> initialized for <see cref="MediaElement"/>.</returns>
-	public static MauiAppBuilder UseMauiCommunityToolkitMediaElement(this MauiAppBuilder builder, Action<MediaElementOptions>? options = null, bool enableForegroundService = false)
+	public static MauiAppBuilder UseMauiCommunityToolkitMediaElement(this MauiAppBuilder builder, bool enableForegroundService, Action<MediaElementOptions>? options = null)
 	{
 		// Create MediaElementOptions and set the foreground service setting
 		var mediaElementOptions = new MediaElementOptions(builder);
