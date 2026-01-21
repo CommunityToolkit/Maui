@@ -21,13 +21,4 @@
   <data name="InitializationErrorTitle" xml:space="preserve">
     <value>`.UseMauiCommunityToolkitMediaElement()` Not Found on MauiAppBuilder</value>
   </data>
-  <data name="EnableForegroundServiceErrorTitle" xml:space="preserve">
-    <value>`enableForegroundService` parameter is required for `.UseMauiCommunityToolkitMediaElement()`</value>
-  </data>
-  <data name="EnableForegroundServiceMessageFormat" xml:space="preserve">
-    <value>`.UseMauiCommunityToolkitMediaElement()` requires the `enableForegroundService` parameter to be explicitly specified</value>
-  </data>
-  <data name="EnableForegroundServiceErrorMessage" xml:space="preserve">
-    <value>The `enableForegroundService` parameter must be provided when calling `.UseMauiCommunityToolkitMediaElement()` to explicitly configure Android foreground service support.</value>
-  </data>
 </root>
