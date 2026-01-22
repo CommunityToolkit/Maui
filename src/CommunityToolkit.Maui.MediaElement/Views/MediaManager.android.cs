@@ -383,11 +383,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		if (hasSetSource)
 		{
-			if(Player.PlayerError is null)
+			if (Player.PlayerError is null)
 			{
 				MediaElement.MediaOpened();
 			}
-			if(isAndroidServiceEnabled)
+			if (isAndroidServiceEnabled)
 			{
 				UpdateNotifications();
 			}
