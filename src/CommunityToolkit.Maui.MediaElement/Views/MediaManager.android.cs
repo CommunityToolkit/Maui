@@ -381,7 +381,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			hasSetSource = true;
 		}
 
-		if(hasSetSource)
+		if (hasSetSource)
 		{
 			if(Player.PlayerError is null)
 			{
@@ -653,7 +653,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	void StopService(in BoundServiceConnection boundServiceConnection)
 	{
-		if(!isAndroidServiceEnabled)
+		if (!isAndroidServiceEnabled)
 		{
 			return;
 		}
