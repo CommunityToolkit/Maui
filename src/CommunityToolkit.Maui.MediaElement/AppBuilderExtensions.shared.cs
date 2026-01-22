@@ -30,7 +30,7 @@ public static class AppBuilderExtensions
 	{
 		// Create MediaElementOptions and set the foreground service setting
 		var mediaElementOptions = new MediaElementOptions(builder);
-		mediaElementOptions.EnableAndroidForegroundService(enableForegroundService);
+		mediaElementOptions.SetAndroidForegroundServiceEnabled(enableForegroundService);
 		
 		// Update the default MediaElementOptions for MediaElement if Action is not null
 		options?.Invoke(mediaElementOptions);
