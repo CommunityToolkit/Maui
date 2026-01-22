@@ -23,7 +23,7 @@ public static class AppBuilderExtensions
 	/// <param name="options"><see cref="MediaElementOptions"/>.</param>
 	/// <param name="enableForegroundService"> Enable Android Foreground Service for MediaElement.
 	/// When providing <c>true</c> the required permissions and service must be included in android manifest.
-	/// For more information, see the <see href=" https://learn.microsoft.com/en-us/dotnet/communitytoolkit/maui/views/mediaelement?tabs=android">MediaElement Documentation.</see> for details.
+	/// For more information, see the <see href="https://learn.microsoft.com/dotnet/communitytoolkit/maui/views/mediaelement?tabs=android">MediaElement Documentation.</see> for details.
 	/// </param>
 	/// <returns><see cref="MauiAppBuilder"/> initialized for <see cref="MediaElement"/>.</returns>
 	public static MauiAppBuilder UseMauiCommunityToolkitMediaElement(this MauiAppBuilder builder, bool enableForegroundService, Action<MediaElementOptions>? options = null)
