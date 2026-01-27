@@ -58,6 +58,7 @@
   <ItemGroup>
     <None Include="..\CommunityToolkit.Maui.MediaElement.Analyzers\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.MediaElement.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="..\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="..\CommunityToolkit.Maui.MediaElement.SourceGenerators\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.MediaElement.SourceGenerators.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
@@ -82,6 +83,7 @@
   <ItemGroup>
     <CompilerVisibleProperty Include="DisableTextColorToGenerator" />
     <ProjectReference Include="..\CommunityToolkit.Maui.SourceGenerators\CommunityToolkit.Maui.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\CommunityToolkit.Maui.MediaElement.SourceGenerators\CommunityToolkit.Maui.MediaElement.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>

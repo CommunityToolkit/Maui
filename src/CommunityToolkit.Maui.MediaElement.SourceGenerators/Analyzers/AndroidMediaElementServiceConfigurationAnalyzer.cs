@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace CommunityToolkit.Maui.SourceGenerators.Analyzers;
+namespace CommunityToolkit.Maui.MediaElement.SourceGenerators;
 
 /// <summary>
 /// Analyzer that detects when Android Foreground Service is enabled for MediaElement
@@ -21,8 +21,8 @@ public class AndroidMediaElementServiceConfigurationAnalyzer : DiagnosticAnalyze
 
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
 		ImmutableArray.Create(
-			Diagnostics.AndroidMediaElementServiceDiagnostics.MissingAndroidManifestConfigurationDescriptor,
-			Diagnostics.AndroidMediaElementServiceDiagnostics.AndroidServiceNotConfiguredDescriptor);
+			AndroidMediaElementServiceDiagnostics.MissingAndroidManifestConfigurationDescriptor,
+			AndroidMediaElementServiceDiagnostics.AndroidServiceNotConfiguredDescriptor);
 
 	public override void Initialize(AnalysisContext context)
 	{
@@ -63,7 +63,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer : DiagnosticAnalyze
 		if (hasPropertyInitializer)
 		{
 			var diagnostic = Diagnostic.Create(
-				Diagnostics.AndroidMediaElementServiceDiagnostics.AndroidServiceNotConfiguredDescriptor,
+				AndroidMediaElementServiceDiagnostics.AndroidServiceNotConfiguredDescriptor,
 				property.Locations[0]);
 
 			context.ReportDiagnostic(diagnostic);
@@ -91,8 +91,8 @@ public class AndroidMediaElementServiceConfigurationAnalyzer : DiagnosticAnalyze
 			if (firstArg.Kind() == SyntaxKind.TrueLiteralExpression)
 			{
 				var diagnostic = Diagnostic.Create(
-					Diagnostics.AndroidMediaElementServiceDiagnostics.MissingAndroidManifestConfigurationDescriptor,
-					invocation.GetLocation());
+					AndroidMediaElementServiceDiagnostics.MissingAndroidManifestConfigurationDescriptor,
+					firstArg.GetLocation());
 
 				context.ReportDiagnostic(diagnostic);
 			}

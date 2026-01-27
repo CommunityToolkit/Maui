@@ -7,7 +7,7 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <OutputType>Exe</OutputType>
-    <RootNamespace>CommunityToolkit.Maui.SourceGenerators.UnitTests</RootNamespace>
+    <RootNamespace>CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests</RootNamespace>
   </PropertyGroup>
   
   <ItemGroup>
@@ -33,7 +33,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj" />
-     <ProjectReference Include="..\CommunityToolkit.Maui.SourceGenerators\CommunityToolkit.Maui.SourceGenerators.csproj" OutputItemType="Analyzer" SetTargetFramework="TargetFramework=netstandard2.0" />    
+    <ProjectReference Include="..\CommunityToolkit.Maui.MediaElement\CommunityToolkit.Maui.MediaElement.csproj" />
+    <ProjectReference Include="..\CommunityToolkit.Maui.MediaElement.SourceGenerators\CommunityToolkit.Maui.MediaElement.SourceGenerators.csproj" OutputItemType="Analyzer" SetTargetFramework="TargetFramework=netstandard2.0" /> 
   </ItemGroup>
 
 </Project>

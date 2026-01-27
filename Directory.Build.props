@@ -241,6 +241,7 @@ https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitati
     <SupportedPlatform Include="Tizen" />
     <InternalsVisibleTo Include="CommunityToolkit.Maui.UnitTests"/>
     <InternalsVisibleTo Include="CommunityToolkit.Maui.Analyzers.UnitTests"/>
+    <InternalsVisibleTo Include="CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests"/>
   </ItemGroup>
 
   <PropertyGroup Condition="('$(TF_BUILD)' == 'true' OR '$(GITHUB_ACTIONS)' == 'true') and $([MSBuild]::IsOSPlatform('windows')) == 'true'">

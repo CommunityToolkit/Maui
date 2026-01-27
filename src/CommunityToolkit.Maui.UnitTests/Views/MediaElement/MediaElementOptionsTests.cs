@@ -12,7 +12,7 @@ public class MediaElementOptionsTests : BaseViewTest
 	{
 		// Assert defaults on the options class
 		MediaElementOptions.DefaultAndroidViewType.Should().Be(AndroidViewType.SurfaceView);
-		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().BeTrue();
+		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().BeFalse();
 	}
 
 	[Fact]

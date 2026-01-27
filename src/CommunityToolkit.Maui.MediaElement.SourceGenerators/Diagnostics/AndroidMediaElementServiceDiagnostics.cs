@@ -2,7 +2,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;
 
-namespace CommunityToolkit.Maui.SourceGenerators.Diagnostics;
+namespace CommunityToolkit.Maui.MediaElement.SourceGenerators;
 
 /// <summary>
 /// Diagnostic definitions for Android MediaElement Service configuration.
@@ -24,7 +24,7 @@ public static class AndroidMediaElementServiceDiagnostics
 			id: MissingAndroidManifestConfigurationId,
 			title: "Missing Android Manifest Configuration for MediaElement Service",
 			messageFormat: "Android service is enabled for MediaElement, but the required manifest configuration is missing. " +
-						   "Please ensure your AndroidManifest.xml contains the service declaration and required permissions.",
+						   "The Toolkit auto-generates the AndroidManifest entries for this service; ensure the generated manifest is included in your Android build output.",
 			category: "CommunityToolkit.Maui.MediaElement",
 			defaultSeverity: DiagnosticSeverity.Warning,
 			isEnabledByDefault: true,
