@@ -22,14 +22,15 @@ public class MediaElementOptions
 	}
 
 	/// <summary>
+	/// Set Android Foreground Service for MediaElement on construction
+	/// </summary>
+	internal static bool IsAndroidForegroundServiceEnabled { get; private set; } = true;
+
+	/// <summary>
 	/// Set Android View type for MediaElement as SurfaceView or TextureView on construction
 	/// </summary>
 	internal static AndroidViewType DefaultAndroidViewType { get; private set; } = AndroidViewType.SurfaceView;
 
-	/// <summary>
-	/// Set whether Android Foreground Service is enabled for MediaElement
-	/// </summary>
-	internal static bool IsAndroidForegroundServiceEnabled { get; private set; }
 
 	/// <summary>
 	/// Set Android View type for MediaElement as SurfaceView or TextureView on construction
@@ -37,8 +38,8 @@ public class MediaElementOptions
 	public void SetDefaultAndroidViewType(AndroidViewType androidViewType) => DefaultAndroidViewType = androidViewType;
 
 	/// <summary>
-	/// Enable Android Foreground Service for MediaElement
+	/// Set Android Foreground Service for MediaElement on construction
 	/// </summary>
-	/// <param name="enabled">True to enable foreground service, false to disable</param>
-	internal void SetAndroidForegroundServiceEnabled(bool enabled) => IsAndroidForegroundServiceEnabled = enabled;
+	/// <param name="isEnabled"></param>
+	public void SetDefaultAndroidForegroundServiceEnabled(bool isEnabled) => IsAndroidForegroundServiceEnabled = isEnabled;
 }

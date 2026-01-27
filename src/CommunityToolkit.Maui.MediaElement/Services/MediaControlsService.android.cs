@@ -13,7 +13,6 @@ using Resource = Microsoft.Maui.Controls.Resource;
 namespace CommunityToolkit.Maui.Media.Services;
 
 [SupportedOSPlatform("Android26.0")]
-[Service(Exported = false, Enabled = true, Name = "communityToolkit.maui.media.services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
 sealed partial class MediaControlsService : Service
 {
 	readonly WeakEventManager taskRemovedEventManager = new();

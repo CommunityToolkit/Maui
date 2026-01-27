@@ -90,7 +90,7 @@ public abstract class BaseTest : IDisposable, IAsyncDisposable
 		// Restore default MediaElementOptions
 		var mediaElementOptions = new MediaElementOptions();
 		mediaElementOptions.SetDefaultAndroidViewType(AndroidViewType.SurfaceView);
-		mediaElementOptions.SetAndroidForegroundServiceEnabled(false);
+		mediaElementOptions.SetDefaultAndroidForegroundServiceEnabled(false);
 		isDisposed = true;
 	}
 

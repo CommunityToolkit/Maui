@@ -39,7 +39,7 @@ public class MauiMediaElement : CoordinatorLayout
 	public MauiMediaElement(Context context, PlayerView playerView) : base(context)
 	{
 		this.playerView = playerView;
-		this.playerView.SetBackgroundColor(Android.Graphics.Color.Black);
+		this.playerView.SetBackgroundColor(global::Android.Graphics.Color.Black);
 		playerView.FullscreenButtonClick += OnFullscreenButtonClick;
 		var layout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
 		layout.AddRule(LayoutRules.CenterInParent);
@@ -68,7 +68,7 @@ public class MauiMediaElement : CoordinatorLayout
 	/// </summary>
 	/// <param name="changedView"></param>
 	/// <param name="visibility"></param>
-	protected override void OnVisibilityChanged(Android.Views.View changedView, [GeneratedEnum] ViewStates visibility)
+	protected override void OnVisibilityChanged(global::Android.Views.View changedView, [GeneratedEnum] ViewStates visibility)
 	{
 		base.OnVisibilityChanged(changedView, visibility);
 		if (isFullScreen && visibility is ViewStates.Visible)
@@ -215,7 +215,7 @@ public class MauiMediaElement : CoordinatorLayout
 			}
 		}
 
-		public static Android.Views.Window CurrentWindow
+		public static global::Android.Views.Window CurrentWindow
 		{
 			get
 			{

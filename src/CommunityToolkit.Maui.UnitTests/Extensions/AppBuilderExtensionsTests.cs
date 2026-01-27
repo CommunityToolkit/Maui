@@ -148,7 +148,7 @@ public class AppBuilderExtensionsTests : BaseTest
 	public void UseMauiCommunityToolkitMediaElement_ShouldUseSurfaceViewByDefault()
 	{
 		var builder = MauiApp.CreateBuilder();
-		builder.UseMauiCommunityToolkitMediaElement(enableForegroundService: true);
+		builder.UseMauiCommunityToolkitMediaElement();
 
 		MediaElementOptions.DefaultAndroidViewType.Should().Be(AndroidViewType.SurfaceView);
 	}
@@ -159,28 +159,12 @@ public class AppBuilderExtensionsTests : BaseTest
 		MediaElementOptions.DefaultAndroidViewType.Should().Be(AndroidViewType.SurfaceView);
 
 		var builder = MauiApp.CreateBuilder();
-		builder.UseMauiCommunityToolkitMediaElement(enableForegroundService: true, static options =>
+		builder.UseMauiCommunityToolkitMediaElement(static options =>
 		{
 			options.SetDefaultAndroidViewType(AndroidViewType.TextureView);
 		});
 
 		MediaElementOptions.DefaultAndroidViewType.Should().Be(AndroidViewType.TextureView);
-	}
-
-	[Fact]
-	public void UseMauiCommunityToolkitMediaElement_ShouldSetAndroidServiceByDefault()
-	{
-		var builder = MauiApp.CreateBuilder();
-		builder.UseMauiCommunityToolkitMediaElement(enableForegroundService: true);
-		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(true);
-	}
-
-	[Fact]
-	public void UseMauiCommunityToolkitMediaElement_ServiceCanBeDisabled()
-	{
-		var builder = MauiApp.CreateBuilder();
-		builder.UseMauiCommunityToolkitMediaElement(enableForegroundService: false);
-		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(false);
 	}
 }
 #pragma warning restore CA1416

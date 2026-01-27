@@ -12,26 +12,27 @@ public class MediaElementOptionsTests : BaseViewTest
 	{
 		// Assert defaults on the options class
 		MediaElementOptions.DefaultAndroidViewType.Should().Be(AndroidViewType.SurfaceView);
+		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().BeTrue();
 	}
 
 	[Fact]
-	public void EnableAndroidForegroundService_Updates_StaticDefault()
+	public void SetDefaultAndroidForegroundServiceEnabled_Updates_StaticDefault()
 	{
 		var optionsInstance = (MediaElementOptions)Activator.CreateInstance(typeof(MediaElementOptions), nonPublic: true)!;
 		var original = MediaElementOptions.IsAndroidForegroundServiceEnabled;
 
 		try
 		{
-			optionsInstance.SetAndroidForegroundServiceEnabled(false);
+			optionsInstance.SetDefaultAndroidForegroundServiceEnabled(false);
 			MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().BeFalse();
 
-			optionsInstance.SetAndroidForegroundServiceEnabled(true);
+			optionsInstance.SetDefaultAndroidForegroundServiceEnabled(true);
 			MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().BeTrue();
 		}
 		finally
 		{
 			// restore original state to avoid test pollution
-			optionsInstance.SetAndroidForegroundServiceEnabled(original);
+			optionsInstance.SetDefaultAndroidForegroundServiceEnabled(original);
 		}
 	}
 
@@ -67,7 +68,7 @@ public class MediaElementOptionsTests : BaseViewTest
 		{
 			// change defaults then create a new MediaElement and verify it picked them up
 			optionsInstance.SetDefaultAndroidViewType(AndroidViewType.TextureView);
-			optionsInstance.SetAndroidForegroundServiceEnabled(false);
+			optionsInstance.SetDefaultAndroidForegroundServiceEnabled(false);
 
 			var mediaElement = new MediaElement();
 
@@ -78,7 +79,7 @@ public class MediaElementOptionsTests : BaseViewTest
 		{
 			// restore original state
 			optionsInstance.SetDefaultAndroidViewType(originalViewType);
-			optionsInstance.SetAndroidForegroundServiceEnabled(originalForegroundEnabled);
+			optionsInstance.SetDefaultAndroidForegroundServiceEnabled(originalForegroundEnabled);
 		}
 	}
 }
