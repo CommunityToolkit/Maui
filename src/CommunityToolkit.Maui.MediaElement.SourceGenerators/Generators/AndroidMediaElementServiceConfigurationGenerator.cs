@@ -17,7 +17,7 @@ public class AndroidMediaElementServiceConfigurationGenerator : IIncrementalGene
 {
 	const string mediaElementOptionsClassName = "MediaElementOptions";
 	const string isAndroidForegroundServiceEnabledProperty = "IsAndroidForegroundServiceEnabled";
-	const string setDefaultAndroidForegroundServiceEnabledMethod = "SetDefaultAndroidForegroundServiceEnabled";
+	const string setDefaultAndroidForegroundServiceEnabledMethod = "SetIsAndroidForegroundServiceEnabled";
 
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{

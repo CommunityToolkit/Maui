@@ -94,7 +94,7 @@ public class AndroidMediaElementServiceConfigurationGenerator_IntegrationTests :
 			{
 				internal static bool IsAndroidForegroundServiceEnabled { get; private set; } = false;
 
-				public void SetDefaultAndroidForegroundServiceEnabled(bool isEnabled)
+				public void SetIsAndroidForegroundServiceEnabled(bool isEnabled)
 				{
 					IsAndroidForegroundServiceEnabled = isEnabled;
 				}
@@ -105,7 +105,7 @@ public class AndroidMediaElementServiceConfigurationGenerator_IntegrationTests :
 				public static MauiAppBuilder ConfigureMediaElement(this MauiAppBuilder builder)
 				{
 					var options = new MediaElementOptions();
-					options.SetDefaultAndroidForegroundServiceEnabled(true);
+					options.SetIsAndroidForegroundServiceEnabled(true);
 					return builder;
 				}
 			}
@@ -176,7 +176,7 @@ public class AndroidMediaElementServiceConfigurationGenerator_IntegrationTests :
 			{
 				internal static bool IsAndroidForegroundServiceEnabled { get; private set; } = false;
 
-				public void SetDefaultAndroidForegroundServiceEnabled(bool isEnabled)
+				public void SetIsAndroidForegroundServiceEnabled(bool isEnabled)
 				{
 					IsAndroidForegroundServiceEnabled = isEnabled;
 				}
@@ -187,7 +187,7 @@ public class AndroidMediaElementServiceConfigurationGenerator_IntegrationTests :
 				public void Configure()
 				{
 					var options = new MediaElementOptions();
-					options.SetDefaultAndroidForegroundServiceEnabled(false);
+					options.SetIsAndroidForegroundServiceEnabled(false);
 				}
 			}
 
@@ -196,7 +196,7 @@ public class AndroidMediaElementServiceConfigurationGenerator_IntegrationTests :
 				public void Configure()
 				{
 					var options = new MediaElementOptions();
-					options.SetDefaultAndroidForegroundServiceEnabled(true);
+					options.SetIsAndroidForegroundServiceEnabled(true);
 				}
 			}
 			""";

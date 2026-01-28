@@ -137,7 +137,7 @@ public class AndroidMediaElementServiceConfigurationGenerator_EdgeCaseTests : Ba
 			{
 				internal static bool IsAndroidForegroundServiceEnabled { get; private set; } = true;
 
-				public void SetDefaultAndroidForegroundServiceEnabled(bool isEnabled)
+				public void SetIsAndroidForegroundServiceEnabled(bool isEnabled)
 				{
 					IsAndroidForegroundServiceEnabled = isEnabled;
 				}
@@ -148,7 +148,7 @@ public class AndroidMediaElementServiceConfigurationGenerator_EdgeCaseTests : Ba
 				public void Configure()
 				{
 					var options = new MediaElementOptions();
-					options.SetDefaultAndroidForegroundServiceEnabled(true);
+					options.SetIsAndroidForegroundServiceEnabled(true);
 				}
 			}
 			""";

@@ -78,7 +78,7 @@ public class AndroidMediaElementServiceConfigurationGenerator_OutputTests : Base
 			{
 				internal static bool IsAndroidForegroundServiceEnabled { get; private set; } = false;
 
-				public void SetDefaultAndroidForegroundServiceEnabled(bool isEnabled)
+				public void SetIsAndroidForegroundServiceEnabled(bool isEnabled)
 				{
 					IsAndroidForegroundServiceEnabled = isEnabled;
 				}
@@ -89,7 +89,7 @@ public class AndroidMediaElementServiceConfigurationGenerator_OutputTests : Base
 				public void Configure()
 				{
 					var options = new MediaElementOptions();
-					options.SetDefaultAndroidForegroundServiceEnabled(true);
+					options.SetIsAndroidForegroundServiceEnabled(true);
 				}
 			}
 			""";
@@ -168,7 +168,7 @@ public class AndroidMediaElementServiceConfigurationGenerator_OutputTests : Base
 			{
 				internal static bool IsAndroidForegroundServiceEnabled { get; private set; } = false;
 
-				public void SetDefaultAndroidForegroundServiceEnabled(bool isEnabled)
+				public void SetIsAndroidForegroundServiceEnabled(bool isEnabled)
 				{
 					IsAndroidForegroundServiceEnabled = isEnabled;
 				}
@@ -179,7 +179,7 @@ public class AndroidMediaElementServiceConfigurationGenerator_OutputTests : Base
 				public void Configure()
 				{
 					var options = new MediaElementOptions();
-					options.SetDefaultAndroidForegroundServiceEnabled(false);
+					options.SetIsAndroidForegroundServiceEnabled(false);
 				}
 			}
 			""";

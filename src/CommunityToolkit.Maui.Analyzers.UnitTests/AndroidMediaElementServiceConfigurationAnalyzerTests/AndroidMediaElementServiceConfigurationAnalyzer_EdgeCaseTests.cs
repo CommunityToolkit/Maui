@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.MediaElement.Analyzers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
@@ -22,7 +23,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_EdgeCaseTests : Bas
 			}
 			""";
 
-		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementServiceDiagnostics.MissingAndroidManifestConfigurationDescriptor)
+		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
 			.WithLocation(0)
 			.WithSeverity(DiagnosticSeverity.Info);
 
@@ -66,7 +67,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_EdgeCaseTests : Bas
 			}
 			""";
 
-		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementServiceDiagnostics.MissingAndroidManifestConfigurationDescriptor)
+		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
 			.WithLocation(0)
 			.WithSeverity(DiagnosticSeverity.Info);
 
@@ -87,7 +88,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_EdgeCaseTests : Bas
 			{
 				internal static bool IsAndroidForegroundServiceEnabled { get; private set; } = false;
 
-				public void SetDefaultAndroidForegroundServiceEnabled(bool isEnabled)
+				public void SetIsAndroidForegroundServiceEnabled(bool isEnabled)
 				{
 					IsAndroidForegroundServiceEnabled = isEnabled;
 				}
@@ -98,17 +99,17 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_EdgeCaseTests : Bas
 				public void Configure()
 				{
 					var options = new MediaElementOptions();
-					options.SetDefaultAndroidForegroundServiceEnabled({|#0:true|});
-					options.SetDefaultAndroidForegroundServiceEnabled({|#1:true|});
+					options.SetIsAndroidForegroundServiceEnabled({|#0:true|});
+					options.SetIsAndroidForegroundServiceEnabled({|#1:true|});
 				}
 			}
 			""";
 
-		var expectedDiagnostic1 = new DiagnosticResult(AndroidMediaElementServiceDiagnostics.MissingAndroidManifestConfigurationDescriptor)
+		var expectedDiagnostic1 = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
 			.WithLocation(0)
 			.WithSeverity(DiagnosticSeverity.Info);
 
-		var expectedDiagnostic2 = new DiagnosticResult(AndroidMediaElementServiceDiagnostics.MissingAndroidManifestConfigurationDescriptor)
+		var expectedDiagnostic2 = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
 			.WithLocation(1)
 			.WithSeverity(DiagnosticSeverity.Info);
 
@@ -136,7 +137,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_EdgeCaseTests : Bas
 			}
 			""";
 
-		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementServiceDiagnostics.MissingAndroidManifestConfigurationDescriptor)
+		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
 			.WithLocation(0)
 			.WithSeverity(DiagnosticSeverity.Info);
 
@@ -157,7 +158,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_EdgeCaseTests : Bas
 			{
 				internal static bool IsAndroidForegroundServiceEnabled { get; private set; } = false;
 
-				public void SetDefaultAndroidForegroundServiceEnabled(bool isEnabled)
+				public void SetIsAndroidForegroundServiceEnabled(bool isEnabled)
 				{
 					IsAndroidForegroundServiceEnabled = isEnabled;
 				}
@@ -168,7 +169,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_EdgeCaseTests : Bas
 				public void Configure()
 				{
 					var options = new OtherOptions();
-					options.SetDefaultAndroidForegroundServiceEnabled(true);
+					options.SetIsAndroidForegroundServiceEnabled(true);
 				}
 			}
 			""";
@@ -211,7 +212,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_EdgeCaseTests : Bas
 			}
 			""";
 
-		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementServiceDiagnostics.MissingAndroidManifestConfigurationDescriptor)
+		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
 			.WithLocation(0)
 			.WithSeverity(DiagnosticSeverity.Info);
 

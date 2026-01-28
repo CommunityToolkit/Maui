@@ -41,5 +41,5 @@ public class MediaElementOptions
 	/// Set Android Foreground Service for MediaElement on construction
 	/// </summary>
 	/// <param name="isEnabled"></param>
-	public void SetDefaultAndroidForegroundServiceEnabled(bool isEnabled) => IsAndroidForegroundServiceEnabled = isEnabled;
+	public void SetIsAndroidForegroundServiceEnabled(bool isEnabled) => IsAndroidForegroundServiceEnabled = isEnabled;
 }

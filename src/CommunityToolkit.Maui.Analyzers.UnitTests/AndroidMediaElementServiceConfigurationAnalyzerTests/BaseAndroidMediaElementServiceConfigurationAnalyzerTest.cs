@@ -2,11 +2,15 @@ using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis;
 using Xunit;
+using CommunityToolkit.Maui.MediaElement.Analyzers;
 
 namespace CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests.AndroidMediaElementServiceConfigurationAnalyzerTests;
 
-public abstract class BaseAndroidMediaElementServiceConfigurationAnalyzerTest : BaseTest
+public abstract class BaseAndroidMediaElementServiceConfigurationAnalyzerTest
 {
+	protected const string defaultTestClassName = "TestView";
+	protected const string defaultTestNamespace = "TestNamespace";
+
 	protected static async Task VerifyAnalyzerAsync(string source, params DiagnosticResult[] expectedDiagnostics)
 	{
 		var test = new CSharpAnalyzerTest<AndroidMediaElementServiceConfigurationAnalyzer, DefaultVerifier>
