@@ -25,7 +25,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_CommonUsageTests : 
 
 		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
 			.WithLocation(0)
-			.WithSeverity(DiagnosticSeverity.Info);
+			.WithSeverity(DiagnosticSeverity.Error);
 
 		await VerifyAnalyzerAsync(source, expectedDiagnostic);
 	}
@@ -62,7 +62,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_CommonUsageTests : 
 
 		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
 			.WithLocation(0)
-			.WithSeverity(DiagnosticSeverity.Info);
+			.WithSeverity(DiagnosticSeverity.Error);
 
 		await VerifyAnalyzerAsync(source, expectedDiagnostic);
 	}
@@ -210,7 +210,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_CommonUsageTests : 
 
 		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
 			.WithLocation(0)
-			.WithSeverity(DiagnosticSeverity.Info);
+			.WithSeverity(DiagnosticSeverity.Error);
 
 		await VerifyAnalyzerAsync(source, expectedDiagnostic);
 	}

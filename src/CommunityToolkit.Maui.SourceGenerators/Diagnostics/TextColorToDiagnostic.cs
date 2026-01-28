@@ -27,7 +27,7 @@ static class TextColorToDiagnostic
 		   "Was not possible to get information from the Class",
 		   "Please make sure that the code inside '{0}' has not error, the TextColorTo methods will not be generated for this file",
 		   category,
-		   DiagnosticSeverity.Info,
+		   DiagnosticSeverity.Error,
 		   true);
 
 	public static readonly DiagnosticDescriptor InvalidModifierAccess = new(
@@ -35,7 +35,7 @@ static class TextColorToDiagnostic
 		   "Class marked with invalid modifier access",
 		   "TextColorTo only supports public and internal classes inheriting from ITextStyle, please fix '{0}'",
 		   category,
-		   DiagnosticSeverity.Info,
+		   DiagnosticSeverity.Error,
 		   true);
 
 }

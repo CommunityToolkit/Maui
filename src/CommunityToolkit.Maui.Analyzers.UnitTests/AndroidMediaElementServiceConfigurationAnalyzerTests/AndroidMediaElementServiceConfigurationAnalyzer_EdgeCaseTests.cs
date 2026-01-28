@@ -25,7 +25,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_EdgeCaseTests : Bas
 
 		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
 			.WithLocation(0)
-			.WithSeverity(DiagnosticSeverity.Info);
+			.WithSeverity(DiagnosticSeverity.Error);
 
 		await VerifyAnalyzerAsync(source, expectedDiagnostic);
 	}
@@ -69,7 +69,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_EdgeCaseTests : Bas
 
 		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
 			.WithLocation(0)
-			.WithSeverity(DiagnosticSeverity.Info);
+			.WithSeverity(DiagnosticSeverity.Error);
 
 		await VerifyAnalyzerAsync(source, expectedDiagnostic);
 	}
@@ -107,11 +107,11 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_EdgeCaseTests : Bas
 
 		var expectedDiagnostic1 = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
 			.WithLocation(0)
-			.WithSeverity(DiagnosticSeverity.Info);
+			.WithSeverity(DiagnosticSeverity.Error);
 
 		var expectedDiagnostic2 = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
 			.WithLocation(1)
-			.WithSeverity(DiagnosticSeverity.Info);
+			.WithSeverity(DiagnosticSeverity.Error);
 
 		await VerifyAnalyzerAsync(source, expectedDiagnostic1, expectedDiagnostic2);
 	}
@@ -139,7 +139,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_EdgeCaseTests : Bas
 
 		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
 			.WithLocation(0)
-			.WithSeverity(DiagnosticSeverity.Info);
+			.WithSeverity(DiagnosticSeverity.Error);
 
 		await VerifyAnalyzerAsync(source, expectedDiagnostic);
 	}
@@ -214,7 +214,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_EdgeCaseTests : Bas
 
 		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
 			.WithLocation(0)
-			.WithSeverity(DiagnosticSeverity.Info);
+			.WithSeverity(DiagnosticSeverity.Error);
 
 		await VerifyAnalyzerAsync(source, expectedDiagnostic);
 	}
