@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests\CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests.csproj" />
     <ProjectReference Include="..\CommunityToolkit.Maui.SourceGenerators.UnitTests\CommunityToolkit.Maui.SourceGenerators.UnitTests.csproj" />
-    <ProjectReference Include="..\CommunityToolkit.Maui.SourceGenerators\CommunityToolkit.Maui.SourceGenerators.csproj" />
   </ItemGroup>
 </Project>

@@ -1,8 +1,10 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Android.Content;
 using Android.Views;
 using Android.Widget;
+using Android.Util;
+using Android.App;
 using AndroidX.Media3.Common;
 using AndroidX.Media3.Common.Text;
 using AndroidX.Media3.Common.Util;
@@ -27,6 +29,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	static readonly HttpClient client = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
+	bool isAndroidForegroundServiceEnabled = false;
 
 	double? previousSpeed;
 	float volumeBeforeMute = 1;
@@ -62,9 +65,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	public void UpdateNotifications()
 	{
-		if (connection?.Binder?.Service is null)
+		if (connection?.Binder?.Service is null || !isAndroidForegroundServiceEnabled)
 		{
-			System.Diagnostics.Trace.TraceInformation("Notification Service not running.");
 			return;
 		}
 
@@ -130,11 +132,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
 	/// <exception cref="NullReferenceException">Thrown when <see cref="Context"/> is <see langword="null"/> or when the platform view could not be created.</exception>
 	[MemberNotNull(nameof(Player), nameof(PlayerView), nameof(session))]
-	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView(AndroidViewType androidViewType)
+	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView(AndroidViewType androidViewType, bool isAndroidServiceEnabled)
 	{
 		Player = new ExoPlayerBuilder(MauiContext.Context).Build() ?? throw new InvalidOperationException("Player cannot be null");
 		Player.AddListener(this);
-
+		this.isAndroidForegroundServiceEnabled = isAndroidServiceEnabled;
 		if (androidViewType is AndroidViewType.SurfaceView)
 		{
 			PlayerView = new PlayerView(MauiContext.Context)
@@ -156,7 +158,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			var xmlResource = resources.GetXml(Microsoft.Maui.Resource.Layout.textureview);
 			xmlResource.Read();
 
-			var attributes = Android.Util.Xml.AsAttributeSet(xmlResource)!;
+			var attributes = Xml.AsAttributeSet(xmlResource)!;
 
 			PlayerView = new PlayerView(MauiContext.Context, attributes)
 			{
@@ -353,7 +355,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			return;
 		}
 
-		if (connection is null)
+		if (connection is null && isAndroidForegroundServiceEnabled)
 		{
 			StartService();
 		}
@@ -381,10 +383,16 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			hasSetSource = true;
 		}
 
-		if (hasSetSource && Player.PlayerError is null)
+		if (hasSetSource)
 		{
-			MediaElement.MediaOpened();
-			UpdateNotifications();
+			if (Player.PlayerError is null)
+			{
+				MediaElement.MediaOpened();
+			}
+			if (isAndroidForegroundServiceEnabled)
+			{
+				UpdateNotifications();
+			}
 		}
 	}
 
@@ -631,23 +639,30 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 	}
 
-	[MemberNotNull(nameof(connection))]
 	void StartService()
 	{
-		var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
+		if (!isAndroidForegroundServiceEnabled)
+		{
+			return;
+		}
+		var intent = new Intent(global::Android.App.Application.Context, typeof(MediaControlsService));
 		connection = new BoundServiceConnection(this);
 		connection.MediaControlsServiceTaskRemoved += HandleMediaControlsServiceTaskRemoved;
 
-		Android.App.Application.Context.StartForegroundService(intent);
-		Android.App.Application.Context.ApplicationContext?.BindService(intent, connection, Bind.AutoCreate);
+		global::Android.App.Application.Context.StartForegroundService(intent);
+		global::Android.App.Application.Context.ApplicationContext?.BindService(intent, connection, Bind.AutoCreate);
 	}
 
 	void StopService(in BoundServiceConnection boundServiceConnection)
 	{
+		if (!isAndroidForegroundServiceEnabled)
+		{
+			return;
+		}
 		boundServiceConnection.MediaControlsServiceTaskRemoved -= HandleMediaControlsServiceTaskRemoved;
 
 		var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
-		Android.App.Application.Context.StopService(serviceIntent);
+		global::Android.App.Application.Context.StopService(serviceIntent);
 		Platform.AppContext.UnbindService(boundServiceConnection);
 	}
 

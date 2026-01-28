@@ -1,0 +1,67 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using BenchmarkDotNet.Attributes;
+using CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests.AndroidMediaElementServiceConfigurationGeneratorTests;
+using CommunityToolkit.Maui.SourceGenerators.UnitTests.AttachedBindablePropertyAttributeSourceGeneratorTests;
+
+namespace CommunityToolkit.Maui.SourceGenerators.Benchmarks;
+
+[MemoryDiagnoser]
+public class AndroidMediaElementForegroundServiceConfigurationBenchmarks
+{
+	static readonly AndroidMediaElementForegroundServiceConfigurationGenerator_OutputTests outputTests = new();
+	static readonly AndroidMediaElementForegroundServiceConfigurationGenerator_EdgeCaseTests edgeCaseTests = new();
+	static readonly AndroidMediaElementForegroundServiceConfigurationGenerator_IntegrationTests integrationTests = new();
+	static readonly AndroidMediaElementForegroundServiceConfigurationGenerator_UseMauiCommunityToolkitMediaElementTests useMauiCommunityToolkitMediaElementTests = new();
+
+	[Benchmark]
+	public Task GenerateConfiguration_WhenPropertySetToTrue_GeneratesCorrectCode()
+		=> outputTests.GenerateConfiguration_WhenPropertySetToTrue_GeneratesCorrectCode();
+
+	[Benchmark]
+	public Task GenerateConfiguration_WhenNoMediaElementOptions_GeneratesNoCode()
+		=> outputTests.GenerateConfiguration_WhenNoMediaElementOptions_GeneratesNoCode();
+
+	[Benchmark]
+	public Task GenerateConfiguration_WhenMethodSetToTrue_GeneratesCorrectCode()
+		=> outputTests.GenerateConfiguration_WhenMethodSetToTrue_GeneratesCorrectCode();
+
+	[Benchmark]
+	public Task GenerateConfiguration_RealWorldScenarioWithMauiProgram_GeneratesCorrectCode()
+		=> integrationTests.GenerateConfiguration_RealWorldScenarioWithMauiProgram_GeneratesCorrectCode();
+
+	[Benchmark]
+	public Task GenerateConfiguration_PropertyAndMethodCombination_GeneratesCorrectly()
+		=> integrationTests.GenerateConfiguration_PropertyAndMethodCombination_GeneratesCorrectly();
+
+	[Benchmark]
+	public Task GenerateConfiguration_ComplexAppWithMultipleFiles_GeneratesCorrectly()
+		=> integrationTests.GenerateConfiguration_ComplexAppWithMultipleFiles_GeneratesCorrectly();
+
+	[Benchmark]
+	public Task GenerateConfiguration_WithNestedNamespace_GeneratesCorrectCode()
+		=> edgeCaseTests.GenerateConfiguration_WithNestedNamespace_GeneratesCorrectCode();
+
+	[Benchmark]
+	public Task GenerateConfiguration_WithEmptySource_GeneratesNoCode()
+		=> edgeCaseTests.GenerateConfiguration_WithEmptySource_GeneratesNoCode();
+
+	[Benchmark]
+	public Task GenerateConfiguration_WithMultipleMediaElementOptionsClasses_GeneratesOnce()
+		=> edgeCaseTests.GenerateConfiguration_WithMultipleMediaElementOptionsClasses_GeneratesOnce();
+
+	[Benchmark]
+	public Task GenerateConfiguration_WhenCombinedWithPropertyAndMethodAndExtensionMethodTrue_GeneratesCorrectCode()
+		=> useMauiCommunityToolkitMediaElementTests.GenerateConfiguration_WhenCombinedWithPropertyAndMethodAndExtensionMethodTrue_GeneratesCorrectCode();
+
+	[Benchmark]
+	public Task GenerateConfiguration_WhenMultipleUseMauiCommunityToolkitMediaElementCallsWithTrue_GeneratesCorrectCode()
+		=> useMauiCommunityToolkitMediaElementTests.GenerateConfiguration_WhenMultipleUseMauiCommunityToolkitMediaElementCallsWithTrue_GeneratesCorrectCode();
+
+	[Benchmark]
+	public Task GenerateConfiguration_WhenUseMauiCommunityToolkitMediaElementCalledWithFalse_GeneratesNoCode()
+		=> useMauiCommunityToolkitMediaElementTests.GenerateConfiguration_WhenUseMauiCommunityToolkitMediaElementCalledWithFalse_GeneratesNoCode();
+
+
+}
