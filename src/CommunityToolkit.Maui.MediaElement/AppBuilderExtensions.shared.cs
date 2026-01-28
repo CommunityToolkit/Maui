@@ -1,4 +1,4 @@
-using System.Runtime.Versioning;
+﻿using System.Runtime.Versioning;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Views;
@@ -30,7 +30,7 @@ public static class AppBuilderExtensions
 		// Update the default MediaElementOptions for MediaElement if Action is not null
 		var mediaElementOptions = new MediaElementOptions(builder);
 		options?.Invoke(mediaElementOptions);
-		mediaElementOptions.SetIsAndroidForegroundServiceEnabled(isAndroidForegroundServiceEnabled);
+		mediaElementOptions.UpdateIsAndroidForegroundServiceEnabledWithUseMauiCommunityToolkitMediaElementParameter(isAndroidForegroundServiceEnabled);
 
 		// Perform Handler configuration
 		builder.ConfigureMauiHandlers(h =>
