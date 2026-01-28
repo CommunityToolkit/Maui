@@ -142,7 +142,7 @@ public class AndroidMediaElementServiceConfigurationGenerator : IIncrementalGene
 		}
 
 		// Verify the second parameter is a boolean
-		var secondParam = methodSymbol.Parameters[1];
+		var secondParam = methodSymbol.Parameters[0];
 		if (secondParam.Type.SpecialType != SpecialType.System_Boolean)
 		{
 			return false;
