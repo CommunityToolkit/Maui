@@ -21,8 +21,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer : DiagnosticAnalyze
 	const string useMauiCommunityToolkitMediaElement = "UseMauiCommunityToolkitMediaElement";
 
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-		ImmutableArray.Create(
-			AndroidMediaElementServiceDiagnostics.MissingAndroidManifestConfigurationDescriptor);
+		[AndroidMediaElementServiceDiagnostics.MissingAndroidManifestConfigurationDescriptor];
 
 	public override void Initialize(AnalysisContext context)
 	{
@@ -39,19 +38,16 @@ public class AndroidMediaElementServiceConfigurationAnalyzer : DiagnosticAnalyze
 
 	static void AnalyzeClass(SymbolAnalysisContext context)
 	{
-		var namedType = context.Symbol as INamedTypeSymbol;
-
-		if (namedType is null ||
+		if (context.Symbol is not INamedTypeSymbol namedType ||
 			!namedType.Name.Contains(mediaElementOptionsClassName, StringComparison.Ordinal))
 		{
 			return;
 		}
 
 		// Check if the class has the IsAndroidForegroundServiceEnabled property
-		var property = namedType.GetMembers(isAndroidForegroundServiceEnabledProperty)
-			.FirstOrDefault() as IPropertySymbol;
 
-		if (property is null)
+		if (namedType.GetMembers(isAndroidForegroundServiceEnabledProperty)
+			.FirstOrDefault() is not IPropertySymbol property)
 		{
 			return;
 		}

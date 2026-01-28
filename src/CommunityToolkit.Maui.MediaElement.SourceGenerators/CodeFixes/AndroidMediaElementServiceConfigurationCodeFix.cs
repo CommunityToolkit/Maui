@@ -21,9 +21,11 @@ public static class AndroidMediaElementServiceConfigurationCodeFixDocumentation
 	/// <summary>
 	/// Diagnostic IDs that this code fix provider would handle.
 	/// </summary>
-	public static ImmutableArray<string> HandledDiagnosticIds => ImmutableArray.Create(
+	public static ImmutableArray<string> HandledDiagnosticIds =>
+	[
 		AndroidMediaElementServiceDiagnostics.MissingAndroidManifestConfigurationId,
-		AndroidMediaElementServiceDiagnostics.AndroidServiceNotConfiguredId);
+		AndroidMediaElementServiceDiagnostics.AndroidServiceNotConfiguredId,
+	];
 
 	/// <summary>
 	/// Required Android manifest permissions.

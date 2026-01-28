@@ -43,6 +43,5 @@ public static class AndroidMediaElementServiceDiagnostics
 	/// Gets all diagnostic descriptors.
 	/// </summary>
 	public static ImmutableArray<DiagnosticDescriptor> GetAllDiagnosticDescriptors() =>
-		ImmutableArray.Create(
-			MissingAndroidManifestConfigurationDescriptor);
+		[MissingAndroidManifestConfigurationDescriptor];
 }
