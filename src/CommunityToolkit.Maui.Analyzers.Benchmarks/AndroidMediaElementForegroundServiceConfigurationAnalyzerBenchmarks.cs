@@ -1,0 +1,27 @@
+﻿using BenchmarkDotNet.Attributes;
+using CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests.AndroidMediaElementServiceConfigurationAnalyzerTests;
+
+namespace CommunityToolkit.Maui.Analyzers.Benchmarks;
+
+public class AndroidMediaElementForegroundServiceConfigurationAnalyzerBenchmarks
+{
+	static readonly AndroidMediaElementForegroundServiceConfigurationAnalyzer_CommonUsageTests androidMediaElementForegroundServiceConfigurationAnalyzerCommonUsageTests = new();
+
+	[Benchmark]
+	public Task WhenNoMediaElementOptions_ReportsNoDiagnostic()
+	{
+		return androidMediaElementForegroundServiceConfigurationAnalyzerCommonUsageTests.Analyzer_WhenNoMediaElementOptions_ReportsNoDiagnostic();
+	}
+
+	[Benchmark]
+	public Task WhenMethodInvokedWithTrue_ReportsDiagnostic()
+	{
+		return androidMediaElementForegroundServiceConfigurationAnalyzerCommonUsageTests.Analyzer_WhenMethodInvokedWithTrue_ReportsDiagnostic();
+	}
+
+	[Benchmark]
+	public Task WhenMultiplePropertiesSetToTrue_ReportsSingleDiagnostic()
+	{
+		return androidMediaElementForegroundServiceConfigurationAnalyzerCommonUsageTests.Analyzer_WhenMultiplePropertiesSetToTrue_ReportsSingleDiagnostic();
+	}
+}

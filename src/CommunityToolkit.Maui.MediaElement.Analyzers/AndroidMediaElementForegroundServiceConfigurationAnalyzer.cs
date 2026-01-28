@@ -11,7 +11,7 @@ namespace CommunityToolkit.Maui.MediaElement.Analyzers;
 /// and reports missing AndroidManifest.xml configuration.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class AndroidMediaElementServiceConfigurationAnalyzer : DiagnosticAnalyzer
+public class AndroidMediaElementForegroundServiceConfigurationAnalyzer : DiagnosticAnalyzer
 {
 	public const string DiagnosticId = $"MCTME002";
 

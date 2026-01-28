@@ -13,7 +13,7 @@ public abstract class BaseAndroidMediaElementServiceConfigurationAnalyzerTest
 
 	protected static async Task VerifyAnalyzerAsync(string source, params DiagnosticResult[] expectedDiagnostics)
 	{
-		var test = new CSharpAnalyzerTest<AndroidMediaElementServiceConfigurationAnalyzer, DefaultVerifier>
+		var test = new CSharpAnalyzerTest<AndroidMediaElementForegroundServiceConfigurationAnalyzer, DefaultVerifier>
 		{
 #if NET10_0
 			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net100,

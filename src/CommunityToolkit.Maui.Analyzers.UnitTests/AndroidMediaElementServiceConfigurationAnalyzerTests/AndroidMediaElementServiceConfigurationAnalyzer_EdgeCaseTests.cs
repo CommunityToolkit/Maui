@@ -23,7 +23,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_EdgeCaseTests : Bas
 			}
 			""";
 
-		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
+		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementForegroundServiceConfigurationAnalyzer.Rule)
 			.WithLocation(0)
 			.WithSeverity(DiagnosticSeverity.Error);
 
@@ -67,7 +67,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_EdgeCaseTests : Bas
 			}
 			""";
 
-		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
+		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementForegroundServiceConfigurationAnalyzer.Rule)
 			.WithLocation(0)
 			.WithSeverity(DiagnosticSeverity.Error);
 
@@ -105,11 +105,11 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_EdgeCaseTests : Bas
 			}
 			""";
 
-		var expectedDiagnostic1 = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
+		var expectedDiagnostic1 = new DiagnosticResult(AndroidMediaElementForegroundServiceConfigurationAnalyzer.Rule)
 			.WithLocation(0)
 			.WithSeverity(DiagnosticSeverity.Error);
 
-		var expectedDiagnostic2 = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
+		var expectedDiagnostic2 = new DiagnosticResult(AndroidMediaElementForegroundServiceConfigurationAnalyzer.Rule)
 			.WithLocation(1)
 			.WithSeverity(DiagnosticSeverity.Error);
 
@@ -137,7 +137,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_EdgeCaseTests : Bas
 			}
 			""";
 
-		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
+		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementForegroundServiceConfigurationAnalyzer.Rule)
 			.WithLocation(0)
 			.WithSeverity(DiagnosticSeverity.Error);
 
@@ -212,7 +212,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_EdgeCaseTests : Bas
 			}
 			""";
 
-		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
+		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementForegroundServiceConfigurationAnalyzer.Rule)
 			.WithLocation(0)
 			.WithSeverity(DiagnosticSeverity.Error);
 

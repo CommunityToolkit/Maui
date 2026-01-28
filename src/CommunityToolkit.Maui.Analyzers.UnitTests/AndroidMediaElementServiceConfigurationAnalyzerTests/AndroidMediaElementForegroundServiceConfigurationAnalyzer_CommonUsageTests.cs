@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests.AndroidMediaElementServiceConfigurationAnalyzerTests;
 
-public class AndroidMediaElementServiceConfigurationAnalyzer_CommonUsageTests : BaseAndroidMediaElementServiceConfigurationAnalyzerTest
+public class AndroidMediaElementForegroundServiceConfigurationAnalyzer_CommonUsageTests : BaseAndroidMediaElementServiceConfigurationAnalyzerTest
 {
 	[Fact]
 	public async Task Analyzer_WhenPropertySetToTrue_ReportsDiagnostic()
@@ -23,7 +23,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_CommonUsageTests : 
 			}
 			""";
 
-		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
+		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementForegroundServiceConfigurationAnalyzer.Rule)
 			.WithLocation(0)
 			.WithSeverity(DiagnosticSeverity.Error);
 
@@ -60,7 +60,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_CommonUsageTests : 
 			}
 			""";
 
-		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
+		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementForegroundServiceConfigurationAnalyzer.Rule)
 			.WithLocation(0)
 			.WithSeverity(DiagnosticSeverity.Error);
 
@@ -208,7 +208,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer_CommonUsageTests : 
 			}
 			""";
 
-		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementServiceConfigurationAnalyzer.Rule)
+		var expectedDiagnostic = new DiagnosticResult(AndroidMediaElementForegroundServiceConfigurationAnalyzer.Rule)
 			.WithLocation(0)
 			.WithSeverity(DiagnosticSeverity.Error);
 
