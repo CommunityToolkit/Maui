@@ -3,7 +3,7 @@ using CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests.AndroidMedia
 
 namespace CommunityToolkit.Maui.Analyzers.Benchmarks;
 
-class AndroidMediaElementServiceConfigurationAnalyzerBenchmarks
+public class AndroidMediaElementServiceConfigurationAnalyzerBenchmarks
 {
 	static readonly AndroidMediaElementServiceConfigurationAnalyzer_CommonUsageTests androidMediaElementServiceConfigurationAnalyzer_CommonUsageTests = new();
 
