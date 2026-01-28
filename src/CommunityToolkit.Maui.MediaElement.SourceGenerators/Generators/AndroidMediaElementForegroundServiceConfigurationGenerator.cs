@@ -11,7 +11,7 @@ namespace CommunityToolkit.Maui.MediaElement.SourceGenerators;
 /// and generates the required assembly-level permissions.
 /// </summary>
 [Generator]
-public class AndroidMediaElementServiceConfigurationGenerator : IIncrementalGenerator
+public class AndroidMediaElementForegroundServiceConfigurationGenerator : IIncrementalGenerator
 {
 	const string mediaElementOptionsClassName = "MediaElementOptions";
 	const string isAndroidForegroundServiceEnabledProperty = "IsAndroidForegroundServiceEnabled";

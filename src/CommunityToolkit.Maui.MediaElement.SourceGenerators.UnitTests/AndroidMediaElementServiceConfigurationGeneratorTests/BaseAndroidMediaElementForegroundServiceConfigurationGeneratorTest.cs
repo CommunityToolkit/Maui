@@ -9,12 +9,12 @@ public abstract class BaseAndroidMediaElementForegroundServiceConfigurationGener
 			("AndroidMediaElementServiceConfiguration.g.cs", expectedGeneratedFile)
 		];
 
-		return VerifySourceGeneratorAsync<AndroidMediaElementServiceConfigurationGenerator>(source, expectedGeneratedFilesList);
+		return VerifySourceGeneratorAsync<AndroidMediaElementForegroundServiceConfigurationGenerator>(source, expectedGeneratedFilesList);
 	}
 
 	protected static Task VerifySourceGeneratorAsync(string source)
 	{
 		List<(string FileName, string GeneratedFile)> expectedGeneratedFilesList = [];
-		return VerifySourceGeneratorAsync<AndroidMediaElementServiceConfigurationGenerator>(source, expectedGeneratedFilesList);
+		return VerifySourceGeneratorAsync<AndroidMediaElementForegroundServiceConfigurationGenerator>(source, expectedGeneratedFilesList);
 	}
 }
