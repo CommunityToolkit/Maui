@@ -70,7 +70,7 @@ namespace CommunityToolkit.Maui.MediaElement.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Android Foreground Service is enabled for MediaElement, but the required manifest configuration is missing. CommunityToolkit.Maui.MediaElement auto-generates the AndroidManifest entries for this service; ensure the generated manifest is included in your Android build output..
+        ///   Looks up a localized string similar to When IsAndroidForegroundServiceEnabled is set to true, the AndroidManifest.xml file must include the service declaration for CommunityToolkit.Maui.Media.Services and the following permissions: FOREGROUND_SERVICE, POST_NOTIFICATIONS, FOREGROUND_SERVICE_MEDIA_PLAYBACK, and MEDIA_CONTENT_CONTROL..
         /// </summary>
         internal static string AndroidMediaElementServiceConfigurationFormat {
             get {
@@ -79,7 +79,7 @@ namespace CommunityToolkit.Maui.MediaElement.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Missing Android Manifest Configuration for MediaElement Service.
+        ///   Looks up a localized string similar to Missing Required AndroidManifest.xml Permissions for MediaElement Foreground Service.
         /// </summary>
         internal static string AndroidMediaElementServiceConfigurationTitle {
             get {

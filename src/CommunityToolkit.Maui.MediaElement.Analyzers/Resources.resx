@@ -121,10 +121,10 @@
     <value>When IsAndroidForegroundServiceEnabled is set to true, the AndroidManifest.xml file must include the service declaration for CommunityToolkit.Maui.Media.Services and the following permissions: FOREGROUND_SERVICE, POST_NOTIFICATIONS, FOREGROUND_SERVICE_MEDIA_PLAYBACK, and MEDIA_CONTENT_CONTROL.</value>
   </data>
   <data name="AndroidMediaElementServiceConfigurationFormat" xml:space="preserve">
-    <value>Android Foreground Service is enabled for MediaElement, but the required manifest configuration is missing. CommunityToolkit.Maui.MediaElement auto-generates the AndroidManifest entries for this service; ensure the generated manifest is included in your Android build output.</value>
+    <value>When IsAndroidForegroundServiceEnabled is set to true, the AndroidManifest.xml file must include the service declaration for CommunityToolkit.Maui.Media.Services and the following permissions: FOREGROUND_SERVICE, POST_NOTIFICATIONS, FOREGROUND_SERVICE_MEDIA_PLAYBACK, and MEDIA_CONTENT_CONTROL.</value>
   </data>
   <data name="AndroidMediaElementServiceConfigurationTitle" xml:space="preserve">
-    <value>Missing Android Manifest Configuration for MediaElement Service</value>
+    <value>Missing Required AndroidManifest.xml Permissions for MediaElement Foreground Service</value>
   </data>
   <data name="InitalizationMessageFormat" xml:space="preserve">
     <value>`.UseMauiCommunityToolkitMediaElement()` must be chained to `.UseMauiApp&lt;T&gt;()`</value>

@@ -22,11 +22,11 @@ https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitati
     <NuGetAuditMode>all</NuGetAuditMode>
 
     <!-- MAUI Specific -->
+    <MauiXamlInflator>SourceGen</MauiXamlInflator>
     <MauiPackageVersion>10.0.30</MauiPackageVersion>
     <MauiStrictXamlCompilation>true</MauiStrictXamlCompilation>
     <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
-    <MauiXamlInflator>SourceGen</MauiXamlInflator>
 
     <!-- WindowsAppSDK
       We should keep this in sync with .NET MAUI https://github.com/dotnet/maui/blob/8ee00e00f603cd8a420a3467daddaf3935c8c587/Directory.Build.props#L142 
