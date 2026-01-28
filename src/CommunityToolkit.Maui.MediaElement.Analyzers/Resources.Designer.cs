@@ -61,7 +61,7 @@ namespace CommunityToolkit.Maui.MediaElement.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to When IsAndroidForegroundServiceEnabled is set to true, the AndroidManifest.xml file must include following permissions: FOREGROUND_SERVICE, POST_NOTIFICATIONS, FOREGROUND_SERVICE_MEDIA_PLAYBACK, and MEDIA_CONTENT_CONTROL..
+        ///   Looks up a localized string similar to When IsAndroidForegroundServiceEnabled is set to true, the AndroidManifest.xml file must include following permissions: FOREGROUND_SERVICE, POST_NOTIFICATIONS, FOREGROUND_SERVICE_MEDIA_PLAYBACK, and MEDIA_CONTENT_CONTROL.
         /// </summary>
         internal static string AndroidMediaElementServiceConfigurationErrorMessage {
             get {
@@ -70,7 +70,7 @@ namespace CommunityToolkit.Maui.MediaElement.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to When IsAndroidForegroundServiceEnabled is set to true, the AndroidManifest.xml file must include following permissions: FOREGROUND_SERVICE, POST_NOTIFICATIONS, FOREGROUND_SERVICE_MEDIA_PLAYBACK, and MEDIA_CONTENT_CONTROL..
+        ///   Looks up a localized string similar to When IsAndroidForegroundServiceEnabled is set to true, the AndroidManifest.xml file must include following permissions: FOREGROUND_SERVICE, POST_NOTIFICATIONS, FOREGROUND_SERVICE_MEDIA_PLAYBACK, and MEDIA_CONTENT_CONTROL.
         /// </summary>
         internal static string AndroidMediaElementServiceConfigurationFormat {
             get {
