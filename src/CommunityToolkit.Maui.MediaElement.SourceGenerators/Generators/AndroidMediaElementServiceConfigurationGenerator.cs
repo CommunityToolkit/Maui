@@ -16,6 +16,7 @@ public class AndroidMediaElementServiceConfigurationGenerator : IIncrementalGene
 	const string mediaElementOptionsClassName = "MediaElementOptions";
 	const string isAndroidForegroundServiceEnabledProperty = "IsAndroidForegroundServiceEnabled";
 	const string setDefaultAndroidForegroundServiceEnabledMethod = "SetIsAndroidForegroundServiceEnabled";
+	const string useMauiCommunityToolkitMediaElementMethod = "UseMauiCommunityToolkitMediaElement";
 
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
@@ -40,9 +41,18 @@ public class AndroidMediaElementServiceConfigurationGenerator : IIncrementalGene
 			.Collect()
 			.Select((results, _) => results.Any());
 
+		var isEnabledFromMediaElementInvocation = context.SyntaxProvider
+			.CreateSyntaxProvider(
+				predicate: (syntax, _) => IsUseMauiCommunityToolkitMediaElementInvocation(syntax),
+				transform: (ctx, _) => GetForegroundServiceEnabledFromMediaElementInvocation(ctx))
+			.Where(isEnabled => isEnabled)
+			.Collect()
+			.Select((results, _) => results.Any());
+
 		var isForegroundServiceEnabled = isEnabledFromOptions
 			.Combine(isEnabledFromInvocation)
-			.Select((pair, _) => pair.Left || pair.Right);
+			.Combine(isEnabledFromMediaElementInvocation)
+			.Select((pair, _) => pair.Left.Left || pair.Left.Right || pair.Right);
 
 		context.RegisterSourceOutput(isForegroundServiceEnabled, (spc, isEnabled) =>
 		{
@@ -63,6 +73,12 @@ public class AndroidMediaElementServiceConfigurationGenerator : IIncrementalGene
 	{
 		return node is InvocationExpressionSyntax invocation &&
 			GetInvocationMethodName(invocation) == setDefaultAndroidForegroundServiceEnabledMethod;
+	}
+
+	static bool IsUseMauiCommunityToolkitMediaElementInvocation(SyntaxNode node)
+	{
+		return node is InvocationExpressionSyntax invocation &&
+			GetInvocationMethodName(invocation) == useMauiCommunityToolkitMediaElementMethod;
 	}
 
 	static bool GetForegroundServiceEnabledFromInvocation(GeneratorSyntaxContext context)
@@ -91,6 +107,55 @@ public class AndroidMediaElementServiceConfigurationGenerator : IIncrementalGene
 			return false;
 		}
 
+		var firstArg = invocation.ArgumentList.Arguments[0].Expression;
+		var constantValue = semanticModel.GetConstantValue(firstArg);
+
+		return constantValue.HasValue && constantValue.Value is true;
+	}
+
+	static bool GetForegroundServiceEnabledFromMediaElementInvocation(GeneratorSyntaxContext context)
+	{
+		if (context.Node is not InvocationExpressionSyntax invocation)
+		{
+			return false;
+		}
+
+		var semanticModel = context.SemanticModel;
+		var symbolInfo = semanticModel.GetSymbolInfo(invocation);
+		var methodSymbol = symbolInfo.Symbol as IMethodSymbol ?? symbolInfo.CandidateSymbols.OfType<IMethodSymbol>().FirstOrDefault();
+
+		if (methodSymbol is null || methodSymbol.Name != useMauiCommunityToolkitMediaElementMethod)
+		{
+			return false;
+		}
+
+		// Verify this is an extension method
+		if (!methodSymbol.IsExtensionMethod)
+		{
+			return false;
+		}
+
+		// Check if it has at least 2 parameters (this MauiAppBuilder, bool isAndroidForegroundServiceEnabled)
+		if (methodSymbol.Parameters.Length < 2)
+		{
+			return false;
+		}
+
+		// Verify the second parameter is a boolean
+		var secondParam = methodSymbol.Parameters[1];
+		if (secondParam.Type.SpecialType != SpecialType.System_Boolean)
+		{
+			return false;
+		}
+
+		// Get the second argument (first argument is the builder via extension method call)
+		if (invocation.ArgumentList.Arguments.Count < 1)
+		{
+			return false;
+		}
+
+		// In an extension method call like builder.UseMauiCommunityToolkitMediaElement(true, ...)
+		// The first argument in ArgumentList corresponds to the second parameter in the method signature
 		var firstArg = invocation.ArgumentList.Arguments[0].Expression;
 		var constantValue = semanticModel.GetConstantValue(firstArg);
 
@@ -179,7 +244,9 @@ public class AndroidMediaElementServiceConfigurationGenerator : IIncrementalGene
 		sb.AppendLine("/// </summary>");
 		sb.AppendLine("/// <remarks>");
 		sb.AppendLine("/// This file is auto-generated and provides assembly-level permissions");
-		sb.AppendLine("/// for MediaElement when <see cref=\"CommunityToolkit.Maui.Core.MediaElementOptions.IsAndroidForegroundServiceEnabled\"/> is enabled.");
+		sb.AppendLine("/// for MediaElement when <see cref=\"CommunityToolkit.Maui.Core.MediaElementOptions.IsAndroidForegroundServiceEnabled\"/> is enabled");
+		sb.AppendLine("/// or when <see cref=\"UseMauiCommunityToolkitMediaElement(Microsoft.Maui.MauiAppBuilder, bool, System.Action{CommunityToolkit.Maui.Core.MediaElementOptions})\"/>");
+		sb.AppendLine("/// is called with <c>isAndroidForegroundServiceEnabled</c> set to <c>true</c>.");
 		sb.AppendLine("/// </remarks>");
 		sb.AppendLine("internal static class AndroidMediaElementServiceConfiguration");
 		sb.AppendLine("{");
