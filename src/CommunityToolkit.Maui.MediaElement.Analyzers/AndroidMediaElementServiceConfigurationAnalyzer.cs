@@ -1,12 +1,10 @@
-using System;
 using System.Collections.Immutable;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace CommunityToolkit.Maui.MediaElement.SourceGenerators;
+namespace CommunityToolkit.Maui.MediaElement.Analyzers;
 
 /// <summary>
 /// Analyzer that detects when Android Foreground Service is enabled for MediaElement

@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 
-namespace CommunityToolkit.Maui.MediaElement.SourceGenerators;
+namespace CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes;
 
 /// <summary>
 /// Code fix provider that adds the required Android manifest configuration when the 
@@ -24,7 +24,6 @@ public static class AndroidMediaElementServiceConfigurationCodeFixDocumentation
 	public static ImmutableArray<string> HandledDiagnosticIds =>
 	[
 		AndroidMediaElementServiceDiagnostics.MissingAndroidManifestConfigurationId,
-		AndroidMediaElementServiceDiagnostics.AndroidServiceNotConfiguredId,
 	];
 
 	/// <summary>
