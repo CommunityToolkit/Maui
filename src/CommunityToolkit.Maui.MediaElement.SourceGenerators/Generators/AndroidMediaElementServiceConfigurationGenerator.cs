@@ -10,30 +10,47 @@ namespace CommunityToolkit.Maui.MediaElement.SourceGenerators;
 
 /// <summary>
 /// Source generator that detects when Android Foreground Service is enabled for MediaElement
-/// and generates the required assembly-level permissions and service attributes.
+/// and generates the required assembly-level permissions.
 /// </summary>
 [Generator]
 public class AndroidMediaElementServiceConfigurationGenerator : IIncrementalGenerator
 {
 	const string mediaElementOptionsClassName = "MediaElementOptions";
 	const string isAndroidForegroundServiceEnabledProperty = "IsAndroidForegroundServiceEnabled";
+	const string setDefaultAndroidForegroundServiceEnabledMethod = "SetDefaultAndroidForegroundServiceEnabled";
 
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
-		// Detect calls to SetDefaultAndroidForegroundServiceEnabled to determine if it's enabled
+		// Detect MediaElementOptions to determine if Android Foreground Service is enabled
 		var mediaElementProvider = context.SyntaxProvider
 			.CreateSyntaxProvider(
-				predicate: (syntax, _) => IsMediaElementOptionsClass(syntax) || IsMediaControlsServiceClass(syntax),
+				predicate: (syntax, _) => IsMediaElementOptionsClass(syntax),
 				transform: (ctx, _) => GetConfigurationInfo(ctx))
 			.Where(info => info is not null)
 			.Collect();
 
-		context.RegisterSourceOutput(mediaElementProvider, (spc, configs) =>
+		var isEnabledFromOptions = mediaElementProvider
+			.Select((configs, _) => configs.Where(c => c is not null)
+				.Cast<ConfigurationInfo>()
+				.Any(c => c.IsForegroundServiceEnabled));
+
+		var isEnabledFromInvocation = context.SyntaxProvider
+			.CreateSyntaxProvider(
+				predicate: (syntax, _) => IsSetDefaultAndroidForegroundServiceEnabledInvocation(syntax),
+				transform: (ctx, _) => GetForegroundServiceEnabledFromInvocation(ctx))
+			.Where(isEnabled => isEnabled)
+			.Collect()
+			.Select((results, _) => results.Any());
+
+		var isForegroundServiceEnabled = isEnabledFromOptions
+			.Combine(isEnabledFromInvocation)
+			.Select((pair, _) => pair.Left || pair.Right);
+
+		context.RegisterSourceOutput(isForegroundServiceEnabled, (spc, isEnabled) =>
 		{
-			var nonNullConfigs = configs.Where(c => c is not null).Cast<ConfigurationInfo>().ToList();
-			if (nonNullConfigs.Any(c => c.IsForegroundServiceEnabled))
+			if (isEnabled)
 			{
-				GenerateAndroidPermissionsAndAttributes(spc, nonNullConfigs.First(c => c.IsForegroundServiceEnabled));
+				GeneratePermissions(spc);
 			}
 		});
 	}
@@ -44,10 +61,57 @@ public class AndroidMediaElementServiceConfigurationGenerator : IIncrementalGene
 			   classDecl.Identifier.Text.Contains(mediaElementOptionsClassName);
 	}
 
-	static bool IsMediaControlsServiceClass(SyntaxNode node)
+	static bool IsSetDefaultAndroidForegroundServiceEnabledInvocation(SyntaxNode node)
 	{
-		return node is ClassDeclarationSyntax classDecl &&
-			   classDecl.Identifier.Text.Contains("MediaControlsService");
+		return node is InvocationExpressionSyntax invocation &&
+			GetInvocationMethodName(invocation) == setDefaultAndroidForegroundServiceEnabledMethod;
+	}
+
+	static bool GetForegroundServiceEnabledFromInvocation(GeneratorSyntaxContext context)
+	{
+		if (context.Node is not InvocationExpressionSyntax invocation)
+		{
+			return false;
+		}
+
+		var semanticModel = context.SemanticModel;
+		var symbolInfo = semanticModel.GetSymbolInfo(invocation);
+		var methodSymbol = symbolInfo.Symbol as IMethodSymbol ?? symbolInfo.CandidateSymbols.OfType<IMethodSymbol>().FirstOrDefault();
+
+		if (methodSymbol is null || methodSymbol.Name != setDefaultAndroidForegroundServiceEnabledMethod)
+		{
+			return false;
+		}
+
+		if (methodSymbol.ContainingType?.Name != mediaElementOptionsClassName)
+		{
+			return false;
+		}
+
+		if (invocation.ArgumentList.Arguments.Count == 0)
+		{
+			return false;
+		}
+
+		var firstArg = invocation.ArgumentList.Arguments[0].Expression;
+		var constantValue = semanticModel.GetConstantValue(firstArg);
+
+		return constantValue.HasValue && constantValue.Value is true;
+	}
+
+	static string? GetInvocationMethodName(InvocationExpressionSyntax invocation)
+	{
+		if (invocation.Expression is MemberAccessExpressionSyntax memberAccess)
+		{
+			return memberAccess.Name.Identifier.Text;
+		}
+
+		if (invocation.Expression is IdentifierNameSyntax identifier)
+		{
+			return identifier.Identifier.Text;
+		}
+
+		return null;
 	}
 
 	static ConfigurationInfo? GetConfigurationInfo(GeneratorSyntaxContext context)
@@ -71,10 +135,11 @@ public class AndroidMediaElementServiceConfigurationGenerator : IIncrementalGene
 				return null;
 			}
 
-			// Check if the property is initialized to true
-			var isEnabled = propertyDecl.Initializer.Value.Kind() == SyntaxKind.TrueLiteralExpression;
-
+			// Use semantic analysis to get the constant value
 			var semanticModel = context.SemanticModel;
+			var constantValue = semanticModel.GetConstantValue(propertyDecl.Initializer.Value);
+			var isEnabled = constantValue.HasValue && constantValue.Value is true;
+
 			var symbol = semanticModel.GetDeclaredSymbol(classDecl) as INamedTypeSymbol;
 
 			return new ConfigurationInfo
@@ -85,24 +150,11 @@ public class AndroidMediaElementServiceConfigurationGenerator : IIncrementalGene
 				ClassType = "MediaElementOptions"
 			};
 		}
-		else if (className.Contains("MediaControlsService"))
-		{
-			var semanticModel = context.SemanticModel;
-			var symbol = semanticModel.GetDeclaredSymbol(classDecl) as INamedTypeSymbol;
-
-			return new ConfigurationInfo
-			{
-				ClassName = className,
-				Namespace = symbol?.ContainingNamespace.ToDisplayString() ?? "",
-				IsForegroundServiceEnabled = true,
-				ClassType = "MediaControlsService"
-			};
-		}
 
 		return null;
 	}
 
-	static void GenerateAndroidPermissionsAndAttributes(SourceProductionContext context, ConfigurationInfo config)
+	static void GeneratePermissions(SourceProductionContext context)
 	{
 		var sb = new StringBuilder();
 
@@ -138,45 +190,10 @@ public class AndroidMediaElementServiceConfigurationGenerator : IIncrementalGene
 		sb.AppendLine("\t/// </summary>");
 		sb.AppendLine("\tpublic const bool IsRequired = true;");
 		sb.AppendLine("}");
-		sb.AppendLine("#endif");
+		sb.Append("#endif");
 
 		var source = sb.ToString();
 		context.AddSource("AndroidMediaElementServiceConfiguration.g.cs", SourceText.From(source, Encoding.UTF8));
-
-		// Generate service attributes for MediaControlsService
-		GenerateServiceAttributes(context);
-	}
-
-	static void GenerateServiceAttributes(SourceProductionContext context)
-	{
-		var sb = new StringBuilder();
-
-		sb.AppendLine("// <auto-generated>");
-		sb.AppendLine("// See: CommunityToolkit.Maui.MediaElement.SourceGenerators.AndroidMediaElementServiceConfigurationGenerator");
-		sb.AppendLine("// This file provides service attributes for MediaControlsService");
-		sb.AppendLine("// when Android Foreground Service is enabled.");
-		sb.AppendLine("");
-		sb.AppendLine("#pragma warning disable");
-		sb.AppendLine("#nullable enable");
-		sb.AppendLine("");
-		sb.AppendLine("#if ANDROID");
-		sb.AppendLine("using Android.App;");
-		sb.AppendLine("using Android.Content.PM;");
-		sb.AppendLine("");
-		sb.AppendLine("namespace CommunityToolkit.Maui.Media.Services;");
-		sb.AppendLine("");
-		sb.AppendLine("/// <summary>");
-		sb.AppendLine("/// Partial class providing generated attributes for MediaControlsService");
-		sb.AppendLine("/// </summary>");
-		sb.AppendLine("[IntentFilter([\"androidx.media3.session.MediaSessionService\"])]");
-		sb.AppendLine("[Service(Exported = false, Enabled = true, Name = \"communityToolkit.maui.media.services\", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]");
-		sb.AppendLine("partial class MediaControlsService");
-		sb.AppendLine("{");
-		sb.AppendLine("}");
-		sb.AppendLine("#endif");
-
-		var source = sb.ToString();
-		context.AddSource("MediaControlsService.Attributes.g.cs", SourceText.From(source, Encoding.UTF8));
 	}
 
 	sealed class ConfigurationInfo

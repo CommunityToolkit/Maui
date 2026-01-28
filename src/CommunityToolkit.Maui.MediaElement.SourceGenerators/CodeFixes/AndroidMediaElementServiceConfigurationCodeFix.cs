@@ -26,18 +26,6 @@ public static class AndroidMediaElementServiceConfigurationCodeFixDocumentation
 		AndroidMediaElementServiceDiagnostics.AndroidServiceNotConfiguredId);
 
 	/// <summary>
-	/// Required Android manifest configuration for service declaration.
-	/// </summary>
-	public const string ServiceDeclarationXml = """
-		<service android:name="communityToolkit.maui.media.services" android:stopWithTask="true" android:exported="false" android:enabled="true"
-		         android:foregroundServiceType="mediaPlayback">
-		    <intent-filter>
-		        <action android:name="androidx.media3.session.MediaSessionService"/>
-		    </intent-filter>
-		</service>
-		""";
-
-	/// <summary>
 	/// Required Android manifest permissions.
 	/// </summary>
 	public const string RequiredPermissions = """

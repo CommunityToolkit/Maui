@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -21,8 +22,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer : DiagnosticAnalyze
 
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
 		ImmutableArray.Create(
-			AndroidMediaElementServiceDiagnostics.MissingAndroidManifestConfigurationDescriptor,
-			AndroidMediaElementServiceDiagnostics.AndroidServiceNotConfiguredDescriptor);
+			AndroidMediaElementServiceDiagnostics.MissingAndroidManifestConfigurationDescriptor);
 
 	public override void Initialize(AnalysisContext context)
 	{
@@ -41,7 +41,8 @@ public class AndroidMediaElementServiceConfigurationAnalyzer : DiagnosticAnalyze
 	{
 		var namedType = context.Symbol as INamedTypeSymbol;
 
-		if (namedType?.Name != mediaElementOptionsClassName)
+		if (namedType is null ||
+			!namedType.Name.Contains(mediaElementOptionsClassName, StringComparison.Ordinal))
 		{
 			return;
 		}
@@ -55,6 +56,12 @@ public class AndroidMediaElementServiceConfigurationAnalyzer : DiagnosticAnalyze
 			return;
 		}
 
+		// Only static property initializers should trigger the diagnostic
+		if (!property.IsStatic)
+		{
+			return;
+		}
+
 		// Check if the property has an initializer with true value
 		var hasPropertyInitializer = namedType.DeclaringSyntaxReferences
 			.SelectMany(syntaxRef => GetPropertyInitializers(syntaxRef))
@@ -63,7 +70,7 @@ public class AndroidMediaElementServiceConfigurationAnalyzer : DiagnosticAnalyze
 		if (hasPropertyInitializer)
 		{
 			var diagnostic = Diagnostic.Create(
-				AndroidMediaElementServiceDiagnostics.AndroidServiceNotConfiguredDescriptor,
+				AndroidMediaElementServiceDiagnostics.MissingAndroidManifestConfigurationDescriptor,
 				property.Locations[0]);
 
 			context.ReportDiagnostic(diagnostic);
@@ -79,6 +86,14 @@ public class AndroidMediaElementServiceConfigurationAnalyzer : DiagnosticAnalyze
 
 		if (methodName != setDefaultAndroidForegroundServiceEnabled &&
 			methodName != useMauiCommunityToolkitMediaElement)
+		{
+			return;
+		}
+
+		var methodSymbol = context.SemanticModel.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
+
+		if (methodName == setDefaultAndroidForegroundServiceEnabled &&
+			methodSymbol?.ContainingType?.Name != mediaElementOptionsClassName)
 		{
 			return;
 		}
