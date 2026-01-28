@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests.AndroidM
 /// correctly detects when UseMauiCommunityToolkitMediaElement is called with isAndroidForegroundServiceEnabled set to true
 /// and generates the appropriate AndroidMediaElementServiceConfiguration.g.cs file.
 /// </summary>
-public class AndroidMediaElementServiceConfigurationGenerator_UseMauiCommunityToolkitMediaElementTests : BaseAndroidMediaElementServiceConfigurationGeneratorTest
+public class AndroidMediaElementForegroundServiceConfigurationGenerator_UseMauiCommunityToolkitMediaElementTests : BaseAndroidMediaElementForegroundServiceConfigurationGeneratorTest
 {
 	[Fact]
 	public async Task GenerateConfiguration_WhenUseMauiCommunityToolkitMediaElementCalledWithTrue_GeneratesCorrectCode()

@@ -2,7 +2,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests.AndroidMediaElementServiceConfigurationGeneratorTests;
 
-public class AndroidMediaElementServiceConfigurationGenerator_EdgeCaseTests : BaseAndroidMediaElementServiceConfigurationGeneratorTest
+public class AndroidMediaElementForegroundServiceConfigurationGenerator_EdgeCaseTests : BaseAndroidMediaElementForegroundServiceConfigurationGeneratorTest
 {
 	[Fact]
 	public async Task GenerateConfiguration_WithMultipleMediaElementOptionsClasses_GeneratesOnce()

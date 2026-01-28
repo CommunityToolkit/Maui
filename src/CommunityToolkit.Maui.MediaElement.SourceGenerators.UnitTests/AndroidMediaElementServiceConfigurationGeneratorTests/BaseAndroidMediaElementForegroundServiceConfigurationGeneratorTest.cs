@@ -1,6 +1,6 @@
 namespace CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests.AndroidMediaElementServiceConfigurationGeneratorTests;
 
-public abstract class BaseAndroidMediaElementServiceConfigurationGeneratorTest : BaseTest
+public abstract class BaseAndroidMediaElementForegroundServiceConfigurationGeneratorTest : BaseTest
 {
 	protected static Task VerifySourceGeneratorAsync(string source, string expectedGeneratedFile)
 	{
