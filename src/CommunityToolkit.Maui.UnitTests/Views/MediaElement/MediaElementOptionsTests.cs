@@ -18,68 +18,98 @@ public class MediaElementOptionsTests : BaseViewTest
 	[Fact]
 	public void SetDefaultAndroidForegroundServiceEnabled_Updates_StaticDefault()
 	{
-		var optionsInstance = (MediaElementOptions)Activator.CreateInstance(typeof(MediaElementOptions), nonPublic: true)!;
-		var original = MediaElementOptions.IsAndroidForegroundServiceEnabled;
+		var options = new MediaElementOptions();
+		
+		options.SetIsAndroidForegroundServiceEnabled(false);
+		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().BeFalse();
 
-		try
-		{
-			optionsInstance.SetIsAndroidForegroundServiceEnabled(false);
-			MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().BeFalse();
-
-			optionsInstance.SetIsAndroidForegroundServiceEnabled(true);
-			MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().BeTrue();
-		}
-		finally
-		{
-			// restore original state to avoid test pollution
-			optionsInstance.SetIsAndroidForegroundServiceEnabled(original);
-		}
+		options.SetIsAndroidForegroundServiceEnabled(true);
+		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().BeTrue();
 	}
 
 	[Fact]
 	public void SetDefaultAndroidViewType_Updates_StaticDefault()
 	{
-		var optionsInstance = (MediaElementOptions)Activator.CreateInstance(typeof(MediaElementOptions), nonPublic: true)!;
-		var original = MediaElementOptions.DefaultAndroidViewType;
+		var options = new MediaElementOptions();
 
-		try
-		{
-			optionsInstance.SetDefaultAndroidViewType(AndroidViewType.TextureView);
-			MediaElementOptions.DefaultAndroidViewType.Should().Be(AndroidViewType.TextureView);
+		options.SetDefaultAndroidViewType(AndroidViewType.TextureView);
+		MediaElementOptions.DefaultAndroidViewType.Should().Be(AndroidViewType.TextureView);
 
-			optionsInstance.SetDefaultAndroidViewType(AndroidViewType.SurfaceView);
-			MediaElementOptions.DefaultAndroidViewType.Should().Be(AndroidViewType.SurfaceView);
-		}
-		finally
-		{
-			// restore original state to avoid test pollution
-			optionsInstance.SetDefaultAndroidViewType(original);
-		}
+		options.SetDefaultAndroidViewType(AndroidViewType.SurfaceView);
+		MediaElementOptions.DefaultAndroidViewType.Should().Be(AndroidViewType.SurfaceView);
 	}
 
 	[Fact]
-	public void MediaElement_Initializes_From_MediaElementOptions_Defaults()
+	public void InitializesFromMediaElementOptionsDefaults()
 	{
-		var optionsInstance = (MediaElementOptions)Activator.CreateInstance(typeof(MediaElementOptions), nonPublic: true)!;
-		var originalViewType = MediaElementOptions.DefaultAndroidViewType;
-		var originalForegroundEnabled = MediaElementOptions.IsAndroidForegroundServiceEnabled;
+		var options = new MediaElementOptions();
 
-		try
-		{
-			// change defaults then create a new MediaElement and verify it picked them up
-			optionsInstance.SetDefaultAndroidViewType(AndroidViewType.TextureView);
-			optionsInstance.SetIsAndroidForegroundServiceEnabled(false);
+		// change defaults then create a new MediaElement and verify it picked them up
+		options.SetDefaultAndroidViewType(AndroidViewType.TextureView);
+		options.SetIsAndroidForegroundServiceEnabled(false);
 
-			var mediaElement = new MediaElement();
+		var mediaElement = new MediaElement();
 
-			mediaElement.AndroidViewType.Should().Be(AndroidViewType.TextureView);
-			mediaElement.IsAndroidForegroundServiceEnabled.Should().BeFalse();
-		}
-		finally
-		{
-			// restore original state
-			optionsInstance.SetDefaultAndroidViewType(originalViewType);
-			optionsInstance.SetIsAndroidForegroundServiceEnabled(originalForegroundEnabled);
-		}
+		mediaElement.AndroidViewType.Should().Be(AndroidViewType.TextureView);
+		mediaElement.IsAndroidForegroundServiceEnabled.Should().BeFalse();
+	}
+	
+	[Fact]
+	public void MediaElementOptions_UpdateIsAndroidForegroundServiceEnabledWithUseMauiCommunityToolkitMediaElementParameterTrue_ShouldBeTrue()
+	{
+		var options = new MediaElementOptions();
+
+		// change defaults then create a new MediaElement and verify it picked them up
+		options.SetDefaultAndroidViewType(AndroidViewType.TextureView);
+		options.SetIsAndroidForegroundServiceEnabled(false);
+		options.UpdateIsAndroidForegroundServiceEnabledWithUseMauiCommunityToolkitMediaElementParameter(true);
+
+		var mediaElement = new MediaElement();
+
+		mediaElement.AndroidViewType.Should().Be(AndroidViewType.TextureView);
+		mediaElement.IsAndroidForegroundServiceEnabled.Should().BeTrue();
+	}
+	
+	[Fact]
+	public void MediaElementOptions_UpdateIsAndroidForegroundServiceEnabledWithUseMauiCommunityToolkitMediaElementParameterFalse_ShouldBeTrue()
+	{
+		var options = new MediaElementOptions();
+
+		// change defaults then create a new MediaElement and verify it picked them up
+		options.SetDefaultAndroidViewType(AndroidViewType.TextureView);
+		options.SetIsAndroidForegroundServiceEnabled(true);
+		options.UpdateIsAndroidForegroundServiceEnabledWithUseMauiCommunityToolkitMediaElementParameter(false);
+
+		var mediaElement = new MediaElement();
+
+		mediaElement.AndroidViewType.Should().Be(AndroidViewType.TextureView);
+		mediaElement.IsAndroidForegroundServiceEnabled.Should().BeTrue();
+	}
+	
+	[Fact]
+	public void MediaElementOptions_UpdateIsAndroidForegroundServiceEnabledWithUseMauiCommunityToolkitMediaElementParameterFalse_ShouldBeFalse()
+	{
+		var options = new MediaElementOptions();
+
+		// change defaults then create a new MediaElement and verify it picked them up
+		options.SetDefaultAndroidViewType(AndroidViewType.TextureView);
+		options.SetIsAndroidForegroundServiceEnabled(false);
+		options.UpdateIsAndroidForegroundServiceEnabledWithUseMauiCommunityToolkitMediaElementParameter(false);
+
+		var mediaElement = new MediaElement();
+
+		mediaElement.AndroidViewType.Should().Be(AndroidViewType.TextureView);
+		mediaElement.IsAndroidForegroundServiceEnabled.Should().BeFalse();
+	}
+
+	protected override void Dispose(bool isDisposing)
+	{
+		base.Dispose(isDisposing);
+
+		var options = new MediaElementOptions();
+
+		// restore original state
+		options.SetDefaultAndroidViewType(MediaElementOptions.DefaultAndroidViewType);
+		options.SetIsAndroidForegroundServiceEnabled(false);
 	}
 }
