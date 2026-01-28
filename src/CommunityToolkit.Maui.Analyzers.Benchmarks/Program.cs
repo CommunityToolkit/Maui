@@ -11,6 +11,5 @@ public class Program
 		BenchmarkRunner.Run<UseMauiCommunityToolkitAnalyzerBenchmarks>(config, args);
 		BenchmarkRunner.Run<UseMauiCommunityToolkitCameraAnalyzerBenchmarks>(config, args);
 		BenchmarkRunner.Run<UseMauiCommunityToolkitMediaElementInitializationAnalyzerBenchmarks>(config, args);
-		BenchmarkRunner.Run<AndroidMediaElementForegroundServiceConfigurationAnalyzerBenchmarks>(config, args);
 	}
 }

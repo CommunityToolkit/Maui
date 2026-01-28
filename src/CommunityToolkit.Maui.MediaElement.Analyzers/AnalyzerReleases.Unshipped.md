@@ -2,7 +2,6 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|--------------------
-MCTME002 | Usage | Error | AndroidMediaElementServiceConfigurationAnalyzer
 
 ### Changed Rules
 

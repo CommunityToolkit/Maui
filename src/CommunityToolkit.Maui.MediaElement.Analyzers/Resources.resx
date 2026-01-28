@@ -117,15 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AndroidMediaElementServiceConfigurationErrorMessage" xml:space="preserve">
-    <value>When IsAndroidForegroundServiceEnabled is set to true, the AndroidManifest.xml file must include following permissions: FOREGROUND_SERVICE, POST_NOTIFICATIONS, FOREGROUND_SERVICE_MEDIA_PLAYBACK, and MEDIA_CONTENT_CONTROL</value>
-  </data>
-  <data name="AndroidMediaElementServiceConfigurationFormat" xml:space="preserve">
-    <value>When IsAndroidForegroundServiceEnabled is set to true, the AndroidManifest.xml file must include following permissions: FOREGROUND_SERVICE, POST_NOTIFICATIONS, FOREGROUND_SERVICE_MEDIA_PLAYBACK, and MEDIA_CONTENT_CONTROL</value>
-  </data>
-  <data name="AndroidMediaElementServiceConfigurationTitle" xml:space="preserve">
-    <value>Missing Required AndroidManifest.xml Permissions for MediaElement Foreground Service</value>
-  </data>
   <data name="InitalizationMessageFormat" xml:space="preserve">
     <value>`.UseMauiCommunityToolkitMediaElement()` must be chained to `.UseMauiApp&lt;T&gt;()`</value>
   </data>

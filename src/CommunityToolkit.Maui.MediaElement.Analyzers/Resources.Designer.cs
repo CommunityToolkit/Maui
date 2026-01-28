@@ -61,33 +61,6 @@ namespace CommunityToolkit.Maui.MediaElement.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to When IsAndroidForegroundServiceEnabled is set to true, the AndroidManifest.xml file must include following permissions: FOREGROUND_SERVICE, POST_NOTIFICATIONS, FOREGROUND_SERVICE_MEDIA_PLAYBACK, and MEDIA_CONTENT_CONTROL.
-        /// </summary>
-        internal static string AndroidMediaElementServiceConfigurationErrorMessage {
-            get {
-                return ResourceManager.GetString("AndroidMediaElementServiceConfigurationErrorMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to When IsAndroidForegroundServiceEnabled is set to true, the AndroidManifest.xml file must include following permissions: FOREGROUND_SERVICE, POST_NOTIFICATIONS, FOREGROUND_SERVICE_MEDIA_PLAYBACK, and MEDIA_CONTENT_CONTROL.
-        /// </summary>
-        internal static string AndroidMediaElementServiceConfigurationFormat {
-            get {
-                return ResourceManager.GetString("AndroidMediaElementServiceConfigurationFormat", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Missing Required AndroidManifest.xml Permissions for MediaElement Foreground Service.
-        /// </summary>
-        internal static string AndroidMediaElementServiceConfigurationTitle {
-            get {
-                return ResourceManager.GetString("AndroidMediaElementServiceConfigurationTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to `.UseMauiCommunityToolkitMediaElement()` must be chained to `.UseMauiApp&lt;T&gt;()`.
         /// </summary>
         internal static string InitalizationMessageFormat {
