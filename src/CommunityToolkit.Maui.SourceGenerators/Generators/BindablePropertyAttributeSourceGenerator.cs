@@ -34,7 +34,6 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		  public sealed partial class BindablePropertyAttribute : global::System.Attribute
 		  {
 		  	public string? PropertyName { get; }
-		  	public global::System.Type? DeclaringType { get; init; }
 		  	public global::Microsoft.Maui.Controls.BindingMode DefaultBindingMode { get; init; }
 		  	public string ValidateValueMethodName { get; init; } = string.Empty;
 		  	public string PropertyChangedMethodName { get; init; } = string.Empty;
