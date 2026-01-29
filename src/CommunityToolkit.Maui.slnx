@@ -11,7 +11,7 @@
   </Folder>
   <Folder Name="/Benchmarks/">
     <Project Path="CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj" />
-    <Project Path="CommunityToolkit.Maui.SourceGenerators.Benchmarks/CommunityToolkit.Maui.SourceGenerators.Benchmarks.csproj" Id="cc195bb1-9cac-410e-81fe-23665f99f294" />
+    <Project Path="CommunityToolkit.Maui.SourceGenerators.Benchmarks/CommunityToolkit.Maui.SourceGenerators.Benchmarks.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="../.editorconfig" />
