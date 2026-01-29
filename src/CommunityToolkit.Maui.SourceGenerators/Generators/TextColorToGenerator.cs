@@ -107,14 +107,14 @@ class TextColorToGenerator : IIncrementalGenerator
 			.SelectMany(static (x, _) => Deduplicate(x.Left, x.Right).ToImmutableArray())
 			.Combine(shouldDisableTextColorToGenerator)
 			.Select(static (x, _) => GenerateMetadata(x.Left, x.Right));
-			
+
 
 		context.RegisterSourceOutput(inputs, Execution);
 	}
 
 	static void Execution(SourceProductionContext context, TextStyleClassMetadata textStyleClassMetadata)
 	{
-		if(textStyleClassMetadata.ShouldDisableTextColorToGenerator)
+		if (textStyleClassMetadata.ShouldDisableTextColorToGenerator)
 		{
 			return;
 		}

@@ -1,10 +1,10 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Android.App;
 using Android.Content;
+using Android.Util;
 using Android.Views;
 using Android.Widget;
-using Android.Util;
-using Android.App;
 using AndroidX.Media3.Common;
 using AndroidX.Media3.Common.Text;
 using AndroidX.Media3.Common.Util;

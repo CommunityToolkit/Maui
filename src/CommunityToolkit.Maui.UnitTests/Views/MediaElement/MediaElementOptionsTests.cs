@@ -19,7 +19,7 @@ public class MediaElementOptionsTests : BaseViewTest
 	public void SetDefaultAndroidForegroundServiceEnabled_Updates_StaticDefault()
 	{
 		var options = new MediaElementOptions();
-		
+
 		options.SetIsAndroidForegroundServiceEnabled(false);
 		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().BeFalse();
 
@@ -53,7 +53,7 @@ public class MediaElementOptionsTests : BaseViewTest
 		mediaElement.AndroidViewType.Should().Be(AndroidViewType.TextureView);
 		mediaElement.IsAndroidForegroundServiceEnabled.Should().BeFalse();
 	}
-	
+
 	[Fact]
 	public void MediaElementOptions_UpdateIsAndroidForegroundServiceEnabledWithUseMauiCommunityToolkitMediaElementParameterTrue_ShouldBeTrue()
 	{
@@ -69,7 +69,7 @@ public class MediaElementOptionsTests : BaseViewTest
 		mediaElement.AndroidViewType.Should().Be(AndroidViewType.TextureView);
 		mediaElement.IsAndroidForegroundServiceEnabled.Should().BeTrue();
 	}
-	
+
 	[Fact]
 	public void MediaElementOptions_UpdateIsAndroidForegroundServiceEnabledWithUseMauiCommunityToolkitMediaElementParameterFalse_ShouldBeTrue()
 	{
@@ -85,7 +85,7 @@ public class MediaElementOptionsTests : BaseViewTest
 		mediaElement.AndroidViewType.Should().Be(AndroidViewType.TextureView);
 		mediaElement.IsAndroidForegroundServiceEnabled.Should().BeTrue();
 	}
-	
+
 	[Fact]
 	public void MediaElementOptions_UpdateIsAndroidForegroundServiceEnabledWithUseMauiCommunityToolkitMediaElementParameterFalse_ShouldBeFalse()
 	{

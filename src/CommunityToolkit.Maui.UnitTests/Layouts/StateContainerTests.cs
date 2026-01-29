@@ -592,7 +592,7 @@ public class StateContainerTests : BaseTest
 	{
 		// Arrange
 		var stackLayout = new StackLayout();
-		
+
 		// Act Assert
 		Assert.Equal(StateContainerDefaults.StateViews, StateContainer.GetStateViews(stackLayout));
 		Assert.Equal(StateContainerDefaults.CurrentState, StateContainer.GetCurrentState(stackLayout));

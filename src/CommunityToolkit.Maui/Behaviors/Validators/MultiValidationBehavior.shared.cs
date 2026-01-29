@@ -23,7 +23,7 @@ public partial class MultiValidationBehavior : ValidationBehavior
 		/// <param name="bindable">The <see cref="ValidationBehavior"/> that we extract the attached Error property</param>
 		/// <returns>Object containing error information</returns>
 		""";
-	
+
 	const string setErrorMethodXmlDocumentation =
 		/* language=C#-test */
 		//lang=csharp
