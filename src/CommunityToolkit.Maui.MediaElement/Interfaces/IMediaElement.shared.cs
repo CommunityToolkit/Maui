@@ -112,11 +112,6 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	string MetadataArtist { get; set; }
 
 	/// <summary>
-	/// Gets or sets the artwork Image Url.
-	/// </summary>
-	string MetadataArtworkUrl { get; set; }
-
-	/// <summary>
 	/// Occurs when the media has ended playing successfully.
 	/// </summary>
 	/// <remarks>This does not trigger when the media has failed during playback.</remarks>

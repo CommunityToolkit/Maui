@@ -15,9 +15,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string loadLocalResource = "Load Local Resource";
 	const string resetSource = "Reset Source to null";
 	const string loadMusic = "Load Music";
-	const string loadCustomMediaSource = "Load Custom Image Source";
-	static readonly string saveDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
-	const string buckBunnyMp4Url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
 	const string botImageUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
 	const string hlsStreamTestUrl = "https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8";
 	const string hal9000AudioUrl = "https://github.com/prof3ssorSt3v3/media-sample-files/raw/master/hal-9000.mp3";
@@ -167,14 +164,17 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 	async void ChangeSourceClicked(object? sender, EventArgs? e)
 	{
-		var result = await DisplayActionSheet("Choose a source", "Cancel", null,
-			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadMusic, loadCustomMediaSource);
+		var result = await DisplayActionSheetAsync("Choose a source", "Cancel", null,
+			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadMusic);
+
+		MediaElement.Stop();
+		MediaElement.Source = null;
 
 		switch (result)
 		{
 			case loadOnlineMp4:
 				MediaElement.MetadataTitle = "Big Buck Bunny";
-				MediaElement.MetadataArtworkSource = MediaSource.FromUri(botImageUrl);
+				MediaElement.MetadataArtworkSource = botImageUrl;
 				MediaElement.MetadataArtist = "Big Buck Bunny Album";
 				MediaElement.Source =
 					MediaSource.FromUri(StreamingVideoUrls.BuckBunny);
@@ -195,7 +195,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				return;
 
 			case loadLocalResource:
-				MediaElement.MetadataArtworkSource = MediaSource.FromResource("robot.jpg");
+				MediaElement.MetadataArtworkSource = botImageUrl;
 				MediaElement.MetadataTitle = "Local Resource Title";
 				MediaElement.MetadataArtist = "Local Resource Album";
 
@@ -220,57 +220,10 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataArtworkSource = botImageUrl;
 				MediaElement.Source = MediaSource.FromUri(hal9000AudioUrl);
 				return;
-			case loadCustomMediaSource:
-				var fileresult = await PickAndShow(new PickOptions
-				{
-					PickerTitle = "Pick a media file",
-					FileTypes = FilePickerFileType.Images,
-				});
-				var fileName = await Savefile(fileresult);
-				if (fileName is not null)
-				{
-					MediaElement.MetadataArtworkSource = MediaSource.FromFile(fileName);
-					MediaElement.MetadataTitle = "Big Buck Bunny";
-					MediaElement.MetadataArtist = "Big Buck Bunny Album";
-					MediaElement.Source =
-						MediaSource.FromUri(buckBunnyMp4Url);
-				}
-
-				return;
 		}
-	}
-	static async Task<string?> Savefile(FileResult? fileresult)
-	{
-		if (fileresult is null)
-		{
-			System.Diagnostics.Trace.WriteLine("File result is null");
-			return null;
-		}
-		try
-		{
-			using Stream fileStream = await fileresult.OpenReadAsync();
-			using StreamReader reader = new(fileStream);
-			var fileName = GetFileName(fileresult.FileName);
-			using FileStream output = File.Create(fileName);
-			await fileStream.CopyToAsync(output);
-			fileStream.Seek(0, SeekOrigin.Begin);
-			FileStream.Synchronized(output);
-			return fileName;
-		}
-		catch (Exception ex)
-		{
-			System.Diagnostics.Trace.WriteLine(ex.Message);
-			return null;
-		}
-		
-	}
-	static string GetFileName(string name)
-	{
-		var filename = Path.GetFileName(name);
-		return Path.Combine(saveDirectory, filename);
 	}
 
-	async void ChangeAspectClicked(object? sender, EventArgs e)
+	async void ChangeAspectClicked(object? sender, EventArgs? e)
 	{
 		const string cancel = "Cancel";
 
@@ -333,25 +286,5 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 		popupMediaElement.Stop();
 		popupMediaElement.Source = null;
-	}
-	static async Task<FileResult?> PickAndShow(PickOptions options)
-	{
-		try
-		{
-			var result = await FilePicker.Default.PickAsync(options);
-			if (result is not null)
-			{
-				using var stream = await result.OpenReadAsync();
-				var image = ImageSource.FromStream(() => stream);
-			}
-
-			return result;
-		}
-		catch (Exception ex)
-		{
-			System.Diagnostics.Debug.WriteLine(ex.Message);
-		}
-
-		return null;
 	}
 }

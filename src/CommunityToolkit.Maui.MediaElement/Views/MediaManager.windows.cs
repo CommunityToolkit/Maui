@@ -1,4 +1,5 @@
 using System.Numerics;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui;
@@ -283,39 +284,75 @@ partial class MediaManager : IDisposable
 		MediaElement.Duration = TimeSpan.Zero;
 		Player.AutoPlay = MediaElement.ShouldAutoPlay;
 
-		if (MediaElement.Source is UriMediaSource uriMediaSource)
-		{
-			var uri = uriMediaSource.Uri?.AbsoluteUri;
-			if (!string.IsNullOrWhiteSpace(uri))
-			{
-				Player.MediaPlayer.SetUriSource(new Uri(uri));
-			}
-		}
-		else if (MediaElement.Source is FileMediaSource fileMediaSource)
-		{
-			var filename = fileMediaSource.Path;
-			if (!string.IsNullOrWhiteSpace(filename))
-			{
-				StorageFile storageFile = await StorageFile.GetFileFromPathAsync(filename);
-				Player.MediaPlayer.SetFileSource(storageFile);
-			}
-		}
-		else if (MediaElement.Source is ResourceMediaSource resourceMediaSource)
-		{
-			if (string.IsNullOrWhiteSpace(resourceMediaSource.Path))
-			{
-				Logger.LogInformation("ResourceMediaSource Path is null or empty");
-				return;
-			}
+		var source = GetSource(MediaElement.Source);
 
-			string path = GetFullAppPackageFilePath(resourceMediaSource.Path);
+		if (MediaElement.Source is UriMediaSource)
+		{
+			Player.MediaPlayer.SetUriSource(new Uri(source));
+		}
+		else if (MediaElement.Source is FileMediaSource)
+		{
+			StorageFile storageFile = await StorageFile.GetFileFromPathAsync(source);
+			Player.MediaPlayer.SetFileSource(storageFile);
+		}
+		else if (MediaElement.Source is ResourceMediaSource)
+		{
+			string path = GetFullAppPackageFilePath(source);
 			if (!string.IsNullOrWhiteSpace(path))
 			{
 				Player.MediaPlayer.SetUriSource(new Uri(path));
 			}
 		}
 	}
+	/// <summary>
+	/// Gets the string representation of the specified media source, such as a URI, file path, or resource path.
+	/// </summary>
+	/// <remarks>The returned value depends on the concrete type of the provided media source. For a URI media
+	/// source, the absolute URI is returned. For a file media source, the file path is returned. For a resource media
+	/// source, the full application package file path is returned if available. If the source does not contain a valid
+	/// path or is not recognized, an empty string is returned.</remarks>
+	/// <param name="source">The media source to retrieve the string representation for. Can be a URI, file, or resource media source. If null,
+	/// an empty string is returned.</param>
+	/// <returns>A string containing the URI, file path, or resource path of the media source. Returns an empty string if the source
+	/// is null or does not contain a valid path.</returns>
+	public string GetSource(MediaSource? source)
+	{
+		if (source == null)
+		{
+			return string.Empty;
+		}
+		if (source is UriMediaSource uriMediaSource)
+		{
+			var uri = uriMediaSource.Uri?.AbsoluteUri;
+			if (!string.IsNullOrWhiteSpace(uri))
+			{
+				return uri;
+			}
+		}
+		else if (source is FileMediaSource fileMediaSource)
+		{
+			var filename = fileMediaSource.Path;
+			if (!string.IsNullOrWhiteSpace(filename))
+			{
+				return filename;
+			}
+		}
+		else if (source is ResourceMediaSource resourceMediaSource)
+		{
+			if (string.IsNullOrWhiteSpace(resourceMediaSource.Path))
+			{
+				Logger.LogInformation("ResourceMediaSource Path is null or empty");
+				return string.Empty;
+			}
 
+			string path = GetFullAppPackageFilePath(resourceMediaSource.Path);
+			if (!string.IsNullOrWhiteSpace(path))
+			{
+				return path;
+			}
+		}
+		return string.Empty;
+	}
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()
 	{
 		if (Player is null)

@@ -223,44 +223,11 @@ public partial class MediaManager : IDisposable
 		metaData ??= new(Player);
 		Metadata.ClearNowPlaying();
 		PlayerViewController?.ContentOverlayView?.Subviews.FirstOrDefault()?.RemoveFromSuperview();
-
-		if (MediaElement.Source is UriMediaSource uriMediaSource)
+		var source = GetSource(MediaElement.Source);
+		if (!string.IsNullOrWhiteSpace(source))
 		{
-			var uri = uriMediaSource.Uri;
-			if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
-			{
-				asset = AVAsset.FromUrl(new NSUrl(uri.AbsoluteUri));
-			}
+			asset = AVAsset.FromUrl(new NSUrl(source));
 		}
-		else if (MediaElement.Source is FileMediaSource fileMediaSource)
-		{
-			var uri = fileMediaSource.Path;
-
-			if (!string.IsNullOrWhiteSpace(uri))
-			{
-				asset = AVAsset.FromUrl(NSUrl.CreateFileUrl(uri));
-			}
-		}
-		else if (MediaElement.Source is ResourceMediaSource resourceMediaSource)
-		{
-			var path = resourceMediaSource.Path;
-
-			if (!string.IsNullOrWhiteSpace(path) && Path.HasExtension(path))
-			{
-				string directory = Path.GetDirectoryName(path) ?? "";
-				string filename = Path.GetFileNameWithoutExtension(path);
-				string extension = Path.GetExtension(path)[1..];
-				var url = NSBundle.MainBundle.GetUrlForResource(filename,
-					extension, directory);
-
-				asset = AVAsset.FromUrl(url);
-			}
-			else
-			{
-				Logger.LogWarning("Invalid file path for ResourceMediaSource.");
-			}
-		}
-
 		PlayerItem = asset is not null
 			? new AVPlayerItem(asset)
 			: null;
@@ -459,6 +426,48 @@ public partial class MediaManager : IDisposable
 
 	static TimeSpan ConvertTime(CMTime cmTime) => TimeSpan.FromSeconds(double.IsNaN(cmTime.Seconds) ? 0 : cmTime.Seconds);
 
+	string? GetSource(MediaSource? source)
+	{
+		if (source is UriMediaSource uriMediaSource)
+		{
+			var uri = uriMediaSource.Uri;
+			if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
+			{
+				return uri.AbsoluteUri;
+			}
+		}
+		else if (source is FileMediaSource fileMediaSource)
+		{
+			var uri = fileMediaSource.Path;
+
+			if (!string.IsNullOrWhiteSpace(uri))
+			{
+				return uri;
+			}
+		}
+		else if (source is ResourceMediaSource resourceMediaSource)
+		{
+			var path = resourceMediaSource.Path;
+
+			if (!string.IsNullOrWhiteSpace(path) && Path.HasExtension(path))
+			{
+				string directory = Path.GetDirectoryName(path) ?? "";
+				string filename = Path.GetFileNameWithoutExtension(path);
+				string extension = Path.GetExtension(path)[1..];
+				var url = NSBundle.MainBundle.GetUrlForResource(filename,
+					extension, directory);
+				if (string.IsNullOrEmpty(url.AbsoluteString))
+				{
+					return url.AbsoluteString;
+				}
+			}
+			else
+			{
+				Logger.LogWarning("Invalid file path for ResourceMediaSource.");
+			}
+		}
+		return null;
+	}
 	static async Task<(int Width, int Height)> GetVideoDimensions(AVPlayerItem avPlayerItem)
 	{
 		// Create an AVAsset instance with the video file URL
@@ -497,55 +506,8 @@ public partial class MediaManager : IDisposable
 			return asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant() ?? "0").FirstOrDefault();
 		}
 
-			// If all else fails, just return 0, 0
-			return (0, 0);
-		}
-	}
-
-	async ValueTask SetPoster(CancellationToken cancellationToken = default)
-	{
-		if (PlayerItem is null || metaData is null || MediaElement is null)
-		{
-			return;
-		}
-		var artwork = await Metadata.MetadataArtworkUrl(MediaElement.MetadataArtworkSource, cancellationToken).ConfigureAwait(false);
-		if (artwork is null)
-		{
-			System.Diagnostics.Trace.TraceInformation($"{artwork} is null.");
-			return;
-		}
-		var videoTrack = PlayerItem.Asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant()).FirstOrDefault();
-		if (videoTrack is not null)
-		{
-			return;
-		}
-		if (PlayerItem.Asset.Tracks.Length == 0)
-		{
-			// No video track found and no tracks found. This is likely an audio file. So we can't set a poster.
-			return;
-		}
-		if (PlayerViewController?.View is not null && PlayerViewController.ContentOverlayView is not null)
-		{
-			var imageView = new UIImageView(artwork)
-			{
-				ContentMode = UIViewContentMode.ScaleAspectFit,
-				TranslatesAutoresizingMaskIntoConstraints = false,
-				ClipsToBounds = true,
-				AutoresizingMask = UIViewAutoresizing.FlexibleDimensions
-			};
-
-			PlayerViewController.ContentOverlayView.AddSubview(imageView);
-			NSLayoutConstraint.ActivateConstraints(
-			[
-				imageView.CenterXAnchor.ConstraintEqualTo(PlayerViewController.ContentOverlayView.CenterXAnchor),
-				imageView.CenterYAnchor.ConstraintEqualTo(PlayerViewController.ContentOverlayView.CenterYAnchor),
-				imageView.WidthAnchor.ConstraintLessThanOrEqualTo(PlayerViewController.ContentOverlayView.WidthAnchor),
-				imageView.HeightAnchor.ConstraintLessThanOrEqualTo(PlayerViewController.ContentOverlayView.HeightAnchor),
-
-				// Maintain the aspect ratio
-				imageView.WidthAnchor.ConstraintEqualTo(imageView.HeightAnchor, artwork.Size.Width / artwork.Size.Height)
-			]);
-		}
+		// On iOS 18+ and MacCatalyst 18+, use the new API or return null if not available
+		return null;
 	}
 
 	void AddStatusObservers()
@@ -569,21 +531,47 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		var videoTrack = await GetTrack(PlayerItem.Asset);
+		AVAssetTrack? videoTrack = null;
+		if (PlayerItem.Asset is not null)
+		{
+#if IOS || MACCATALYST
+			// Use the non-obsolete API for iOS 18+ and MacCatalyst 18+
+			if (OperatingSystem.IsIOSVersionAtLeast(18) || OperatingSystem.IsMacCatalystVersionAtLeast(18))
+			{
+				// On iOS 18+ and MacCatalyst 18+, AVAsset.TracksWithMediaType is obsolete.
+				// Instead, use the Tracks property and filter for video tracks.
+				videoTrack = PlayerItem.Asset.Tracks.FirstOrDefault(t => t.MediaType == AVMediaTypes.Video.GetConstant());
+			}
+			else
+#endif
+			{
+				// For earlier versions, use the existing API, but check for null
+				var videoMediaType = AVMediaTypes.Video.GetConstant();
+				if (videoMediaType is not null)
+				{
+					videoTrack = PlayerItem.Asset.TracksWithMediaType(videoMediaType).FirstOrDefault();
+				}
+			}
+		}
 		if (videoTrack is not null)
 		{
 			return;
 		}
 
-		if (PlayerItem.Asset.Tracks.Length == 0)
+		if (PlayerItem.Asset?.Tracks.Length == 0)
 		{
 			// No video track found and no tracks found. This is likely an audio file. So we can't set a poster.
 			return;
 		}
 
-		if (PlayerViewController?.View is not null && PlayerViewController.ContentOverlayView is not null && !string.IsNullOrEmpty(MediaElement.MetadataArtworkUrl))
+		if (PlayerViewController?.View is not null && PlayerViewController.ContentOverlayView is not null)
 		{
-			var image = UIImage.LoadFromData(NSData.FromUrl(new NSUrl(MediaElement.MetadataArtworkUrl))) ?? new UIImage();
+			var source = GetSource(MediaElement.MetadataArtworkSource);
+			if (string.IsNullOrWhiteSpace(source))
+			{
+				return;
+			}
+			var image = UIImage.LoadFromData(NSData.FromUrl(new NSUrl(source))) ?? new UIImage();
 			var imageView = new UIImageView(image)
 			{
 				ContentMode = UIViewContentMode.ScaleAspectFit,
@@ -677,7 +665,6 @@ public partial class MediaManager : IDisposable
 
 		MediaElement.CurrentStateChanged(newState);
 	}
-
 
 	void TimeControlStatusChanged(NSObservedChange obj)
 	{

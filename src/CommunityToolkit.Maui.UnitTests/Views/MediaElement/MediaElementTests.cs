@@ -17,7 +17,7 @@ public class MediaElementTests : BaseViewTest
 	{
 		// Arrange
 		MediaElement mediaElement = new();
-
+		
 		// Act 
 
 		// Assert
@@ -27,7 +27,7 @@ public class MediaElementTests : BaseViewTest
 		Assert.Equal(MediaElementDefaults.Duration, mediaElement.Duration);
 		Assert.Equal(MediaElementDefaults.MediaWidth, mediaElement.MediaWidth);
 		Assert.Equal(MediaElementDefaults.MetadataArtist, mediaElement.MetadataArtist);
-		Assert.Equal(MediaElementDefaults.MetadataArtworkUrl, mediaElement.MetadataArtworkUrl);
+		Assert.Equal(MediaElementDefaults.MetadataArtworkSource, mediaElement.MetadataArtworkSource);
 		Assert.Equal(MediaElementDefaults.Position, mediaElement.Position);
 		Assert.Equal(MediaElementDefaults.ShouldAutoPlay, mediaElement.ShouldAutoPlay);
 		Assert.Equal(MediaElementDefaults.ShouldKeepScreenOn, mediaElement.ShouldKeepScreenOn);
@@ -38,7 +38,7 @@ public class MediaElementTests : BaseViewTest
 		Assert.Equal(MediaElementDefaults.Volume, mediaElement.Volume);
 		Assert.Equal(MediaElementDefaults.MetadataTitle, mediaElement.MetadataTitle);
 	}
-
+	
 	[Fact]
 	public void PosterIsNotStringEmptyOrNull()
 	{

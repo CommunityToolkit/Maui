@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Dispatching;
+﻿using CommunityToolkit.Maui.Core.Views;
+using Microsoft.Maui.Dispatching;
 using Windows.Media;
 
 namespace CommunityToolkit.Maui.Core.Primitives;
@@ -54,17 +55,18 @@ sealed class Metadata
 	/// <summary>
 	/// Sets the metadata for the given MediaElement.
 	/// </summary>
-	public void SetMetadata(IMediaElement mp)
+	public void SetMetadata(IMediaElement mp, MediaManager mediaManager)
 	{
-		if (systemMediaControls is null || mediaElement is null)
+		if (systemMediaControls is null || mediaElement is null || mp is null)
 		{
 			return;
 		}
-
-		if (!string.IsNullOrEmpty(mp.MetadataArtworkUrl))
+		var source = mediaManager.GetSource(mp.MetadataArtworkSource);
+		if (!string.IsNullOrEmpty(source))
 		{
-			systemMediaControls.DisplayUpdater.Thumbnail = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromUri(new Uri(mp.MetadataArtworkUrl ?? string.Empty));
+			systemMediaControls.DisplayUpdater.Thumbnail = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromUri(new Uri(source));
 		}
+
 		systemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Music;
 		systemMediaControls.DisplayUpdater.MusicProperties.Artist = mp.MetadataTitle;
 		systemMediaControls.DisplayUpdater.MusicProperties.Title = mp.MetadataArtist;
