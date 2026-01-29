@@ -15,6 +15,7 @@ using TColor = Tizen.UIExtensions.Common.Color;
 using View = Tizen.NUI.BaseComponents.View;
 using VerticalAlignment = Tizen.NUI.VerticalAlignment;
 using Window = Tizen.NUI.Window;
+using DeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
 
 namespace CommunityToolkit.Maui.Storage;
 
@@ -105,16 +106,16 @@ sealed class FileFolderDialog : Popup<string>
 			VerticalAlignment = VerticalAlignment.Center,
 			HorizontalAlignment = HorizontalAlignment.Center
 		};
-		BackgroundColor = new TColor(0.1f, 0.1f, 0.1f, 0.5f).ToNative();
+		BackgroundColor = new Tizen.NUI.Color(255.0f * 0.1f, 255.0f * 0.1f, 255.0f * 0.1f, 255.0f * 0.5f);
 
-		var margin1 = (ushort)20d.ToPixel();
-		var margin2 = (ushort)10d.ToPixel();
-		var radius = 8d.ToPixel();
+		var margin1 = (ushort)(20d * DeviceInfo.DPI / 160.0);
+		var margin2 = (ushort)(10d * DeviceInfo.DPI / 160.0);
+		int radius = (ushort)(8d * DeviceInfo.DPI / 160.0);
 
 		content = new View
 		{
 			CornerRadius = radius,
-			BoxShadow = new Shadow(20d.ToPixel(), TColor.Black.ToNative()),
+			BoxShadow = new Shadow((20f * DeviceInfo.DPI / 160.0f), TColor.Black.ToNative()),
 			Layout = new LinearLayout
 			{
 				VerticalAlignment = VerticalAlignment.Center,
@@ -134,13 +135,13 @@ sealed class FileFolderDialog : Popup<string>
 			VerticalTextAlignment = Tizen.UIExtensions.Common.TextAlignment.Center,
 			FontAttributes = Tizen.UIExtensions.Common.FontAttributes.Bold,
 			TextColor = TColor.Black,
-			PixelSize = 21d.ToPixel(),
+			PixelSize = 21f * DeviceInfo.DPI / 160.0f,
 		});
 
 		content.Add(new View
 		{
 			BackgroundColor = TColor.FromHex("#cccccc").ToNative(),
-			SizeHeight = 1.5d.ToPixel(),
+			SizeHeight = 1.5f * DeviceInfo.DPI / 160.0f,
 			WidthSpecification = LayoutParamPolicies.MatchParent,
 		});
 
@@ -161,7 +162,7 @@ sealed class FileFolderDialog : Popup<string>
 		content.Add(new View
 		{
 			BackgroundColor = TColor.FromHex("#cccccc").ToNative(),
-			SizeHeight = 1.5d.ToPixel(),
+			SizeHeight = 1.5f * DeviceInfo.DPI / 160.0f,
 			WidthSpecification = LayoutParamPolicies.MatchParent,
 		});
 
@@ -191,7 +192,7 @@ sealed class FileFolderDialog : Popup<string>
 			var underline = new PropertyMap();
 			underline.Add("enable", new PropertyValue("True"));
 			fileNameEntry.Underline = underline;
-			fileNameEntry.PixelSize = 15d.ToPixel();
+			fileNameEntry.PixelSize = 15f * DeviceInfo.DPI / 160.0f;
 			content.Add(fileNameEntry);
 		}
 
@@ -216,8 +217,8 @@ sealed class FileFolderDialog : Popup<string>
 			TextColor = TColor.Black,
 			BackgroundColor = TColor.Transparent.ToNative(),
 		};
-		cancelButton.TextLabel.PixelSize = 15d.ToPixel();
-		cancelButton.SizeWidth = cancelButton.TextLabel.NaturalSize.Width + 15d.ToPixel() * 2;
+		cancelButton.TextLabel.PixelSize = 15f * DeviceInfo.DPI / 160.0f;
+		cancelButton.SizeWidth = cancelButton.TextLabel.NaturalSize.Width + 15f * DeviceInfo.DPI / 160.0f * 2;
 		cancelButton.Clicked += OnCancelButtonClicked;
 		horizontalLayout.Add(cancelButton);
 
@@ -228,8 +229,8 @@ sealed class FileFolderDialog : Popup<string>
 			TextColor = TColor.Black,
 			BackgroundColor = TColor.Transparent.ToNative(),
 		};
-		okButton.TextLabel.PixelSize = 15d.ToPixel();
-		okButton.SizeWidth = okButton.TextLabel.NaturalSize.Width + 15d.ToPixel() * 2;
+		okButton.TextLabel.PixelSize = 15f * DeviceInfo.DPI / 160.0f;
+		okButton.SizeWidth = okButton.TextLabel.NaturalSize.Width + 15f * DeviceInfo.DPI / 160.0f * 2;
 		okButton.Clicked += OnOkButtonClicked;
 		horizontalLayout.Add(okButton);
 
@@ -238,7 +239,7 @@ sealed class FileFolderDialog : Popup<string>
 		return content;
 	}
 
-	async void OnNewFolderButtonClicked(object? sender, ClickedEventArgs e)
+	async void OnNewFolderButtonClicked(object? sender, Tizen.NUI.Components.ClickedEventArgs e)
 	{
 		try
 		{
@@ -263,12 +264,12 @@ sealed class FileFolderDialog : Popup<string>
 		}
 	}
 
-	void OnCancelButtonClicked(object? sender, ClickedEventArgs e)
+	void OnCancelButtonClicked(object? sender, Tizen.NUI.Components.ClickedEventArgs e)
 	{
 		SendCancel();
 	}
 
-	void OnOkButtonClicked(object? sender, ClickedEventArgs e)
+	void OnOkButtonClicked(object? sender, Tizen.NUI.Components.ClickedEventArgs e)
 	{
 		if (isFileSelectionMode)
 		{
@@ -292,13 +293,13 @@ sealed class FileFolderDialog : Popup<string>
 	{
 		if (content is not null)
 		{
-			content.SizeWidth = Window.Instance.WindowSize.Width * (IsHorizontal() ? 0.5f : 0.8f);
+			content.SizeWidth = Window.Default.WindowSize.Width * (IsHorizontal() ? 0.5f : 0.8f);
 		}
 	}
 
 	static bool IsHorizontal()
 	{
-		return Window.Instance.WindowSize.Width > Window.Instance.WindowSize.Height;
+		return Window.Default.WindowSize.Width > Window.Default.WindowSize.Height;
 	}
 
 	static bool CreateSubDirectory(string newDirectory)
@@ -368,10 +369,10 @@ sealed class FileFolderDialog : Popup<string>
 				Text = item,
 				Focusable = true,
 				HorizontalTextAlignment = Tizen.UIExtensions.Common.TextAlignment.Start,
-				PixelSize = 16d.ToPixel(),
+				PixelSize = 16f * DeviceInfo.DPI / 160.0f,
 				WidthSpecification = LayoutParamPolicies.MatchParent,
 				HeightSpecification = LayoutParamPolicies.WrapContent,
-				Margin = new Extents(0, 0, (ushort)5d.ToPixel(), (ushort)5d.ToPixel()),
+				Margin = new Extents(0, 0, (ushort)(5f * DeviceInfo.DPI / 160.0f), (ushort)(5f * DeviceInfo.DPI / 160.0f)),
 			};
 			itemLabel.TouchEvent += (_, e) =>
 			{
@@ -397,7 +398,7 @@ sealed class FileFolderDialog : Popup<string>
 			directoryScrollView.ContentContainer.Add(itemLabel);
 			directoryViews.Add(itemLabel);
 		}
-		directoryScrollView.SizeHeight = 30d.ToPixel() * Math.Min(listItems.Count, 5);
+		directoryScrollView.SizeHeight = (30f * DeviceInfo.DPI / 160.0f) * Math.Min(listItems.Count, 5);
 	}
 
 	IReadOnlyList<string> GetDirectories(string path)

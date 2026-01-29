@@ -12,7 +12,7 @@ namespace CommunityToolkit.Maui;
 [SupportedOSPlatform("android21.0")]
 [SupportedOSPlatform("ios15.0")]
 [SupportedOSPlatform("maccatalyst15.0")]
-[SupportedOSPlatform("tizen6.5")]
+[UnsupportedOSPlatform("tizen")]
 public static class AppBuilderExtensions
 {
 	/// <summary>
@@ -23,7 +23,7 @@ public static class AppBuilderExtensions
 	public static MauiAppBuilder UseMauiCommunityToolkitCamera(this MauiAppBuilder builder)
 	{
 		builder.Services.AddSingleton<ICameraProvider, CameraProvider>();
-		builder.ConfigureMauiHandlers(h => h.AddHandler<CameraView, CameraViewHandler>());
+		builder.ConfigureMauiHandlers(static h => h.AddHandler<CameraView, CameraViewHandler>());
 
 		return builder;
 	}

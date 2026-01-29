@@ -11,7 +11,7 @@ public partial class PopupLayoutAlignmentPage : BasePage<PopupLayoutAlignmentVie
 		InitializeComponent();
 	}
 
-	void ShowPopupButtonClicked(object sender, EventArgs e)
+	void ShowPopupButtonClicked(object? sender, EventArgs? e)
 	{
 		LayoutOptions verticalOptions, horizontalOptions;
 

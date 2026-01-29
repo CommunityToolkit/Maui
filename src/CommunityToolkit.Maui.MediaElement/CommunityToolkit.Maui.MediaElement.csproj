@@ -7,7 +7,9 @@
     <SingleProject>true</SingleProject>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsAotCompatible>true</IsAotCompatible>
-
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
+    
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">26.0</SupportedOSPlatformVersion>
@@ -16,6 +18,8 @@
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
     <RootNamespace>CommunityToolkit.Maui</RootNamespace>
     <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
+
+    <DisableTextColorToGenerator>true</DisableTextColorToGenerator>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -50,20 +54,20 @@
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
     <None Include="ReadMe.txt" pack="true" PackagePath="." />
   </ItemGroup>
-
+  
   <ItemGroup>
     <None Include="..\CommunityToolkit.Maui.MediaElement.Analyzers\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.MediaElement.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="..\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
-    <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer" Version="1.5.0" />
-    <PackageReference Include="Xamarin.AndroidX.Media3.Common" Version="1.5.0" />
-    <PackageReference Include="Xamarin.AndroidX.Media3.UI" Version="1.5.0" />
-    <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Rtsp" Version="1.5.0" />
-    <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Hls" Version="1.5.0" />
-    <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Dash" Version="1.5.0" />
-    <PackageReference Include="Xamarin.AndroidX.Media3.Session" Version="1.5.0" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer" Version="1.8.0" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.Common" Version="1.8.0" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.UI" Version="1.8.0" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Rtsp" Version="1.8.0" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Hls" Version="1.8.0" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.ExoPlayer.Dash" Version="1.8.0" />
+    <PackageReference Include="Xamarin.AndroidX.Media3.Session" Version="1.8.0" />
 
     <!--include the textureview.xml needed for creating textureview in android-->
     <Folder Include="Platforms\Android\Resources\layout\" />
@@ -71,8 +75,13 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.Maui.Controls" Version="[$(MauiPackageVersion),$(NextMauiPackageVersion))" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiPackageVersion)" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" Condition=" '$(Configuration)'=='Release' " PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <CompilerVisibleProperty Include="DisableTextColorToGenerator" />
+    <ProjectReference Include="..\CommunityToolkit.Maui.SourceGenerators\CommunityToolkit.Maui.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>

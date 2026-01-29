@@ -18,24 +18,6 @@ public partial class AnimationBehavior : EventToCommandBehavior
 		behavior.SetBinding(AnimationBehavior.AnimateCommandProperty, nameof(ViewModel.TriggerAnimationCommand));
 		""";
 
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="AnimationType"/> property.
-	/// </summary>
-	public static readonly BindableProperty AnimationTypeProperty =
-		BindableProperty.Create(nameof(AnimationType), typeof(BaseAnimation), typeof(AnimationBehavior));
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="AnimateCommand"/> property.
-	/// </summary>
-	public static readonly BindableProperty AnimateCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(AnimateCommand), typeof(Command<CancellationToken>), typeof(AnimationBehavior), default, BindingMode.OneWayToSource, propertyChanging: OnAnimateCommandChanging, defaultValueCreator: CreateAnimateCommand).BindableProperty;
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="AnimateOnTap"/> property.
-	/// </summary>
-	public static readonly BindableProperty AnimateOnTapProperty =
-		BindableProperty.Create(nameof(AnimateOnTap), typeof(bool), typeof(AnimationBehavior), propertyChanged: OnAnimateOnTapPropertyChanged);
-
 	TapGestureRecognizer? tapGestureRecognizer;
 
 	/// <summary>
@@ -49,35 +31,25 @@ public partial class AnimationBehavior : EventToCommandBehavior
 	/// <remarks>
 	/// <see cref="AnimateCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter"
 	/// </remarks>
-	public Command<CancellationToken> AnimateCommand
+	[BindableProperty(DefaultBindingMode = BindingMode.OneWayToSource, PropertyChangingMethodName = nameof(OnAnimateCommandChanging), DefaultValueCreatorMethodName = nameof(CreateAnimateCommand))]
+	public partial Command<CancellationToken> AnimateCommand
 	{
-		get => (Command<CancellationToken>)GetValue(AnimateCommandProperty);
-
+		get;
 		[Obsolete(animateCommandSetterWarning), EditorBrowsable(EditorBrowsableState.Never)]
-		set
-		{
-			Trace.WriteLine(animateCommandSetterWarning);
-			SetValue(AnimateCommandProperty, value);
-		}
+		set;
 	}
 
 	/// <summary>
 	/// The type of animation to perform.
 	/// </summary>
-	public BaseAnimation? AnimationType
-	{
-		get => (BaseAnimation?)GetValue(AnimationTypeProperty);
-		set => SetValue(AnimationTypeProperty, value);
-	}
+	[BindableProperty]
+	public partial BaseAnimation? AnimationType { get; set; }
 
 	/// <summary>
 	/// Whether a TapGestureRecognizer is added to the control or not
 	/// </summary>
-	public bool AnimateOnTap
-	{
-		get => (bool)GetValue(AnimateOnTapProperty);
-		set => SetValue(AnimateOnTapProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnAnimateOnTapPropertyChanged))]
+	public partial bool AnimateOnTap { get; set; }
 
 	/// <inheritdoc/>
 	protected override void OnAttachedTo(VisualElement bindable)

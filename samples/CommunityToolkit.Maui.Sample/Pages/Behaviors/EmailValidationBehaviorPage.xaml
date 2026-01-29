@@ -20,11 +20,11 @@
 
     <VerticalStackLayout Padding="{StaticResource ContentPadding}"
             Spacing="24"
-            VerticalOptions="StartAndExpand">
+            VerticalOptions="Start">
         <Label Text="The EmailValidationBehavior is a behavior that allows users to determine whether or not text input is a valid e-mail address. " TextColor="{StaticResource NormalLabelTextColor}" />
         <Label Text="Text color will change accordingly to the style that is configured when a invalid value (email address) is entered." />
         <Entry Placeholder="Email"
-               HorizontalOptions="FillAndExpand"
+               HorizontalOptions="Fill"
                VerticalOptions="Center">
             <Entry.Behaviors>
                 <mct:EmailValidationBehavior

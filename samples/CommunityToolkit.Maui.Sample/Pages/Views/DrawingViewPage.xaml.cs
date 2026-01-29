@@ -19,7 +19,7 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 	static double GetSide(double value) =>
 		double.IsNaN(value) || value <= 1 ? 200 : value;
 
-	void LoadPointsButtonClicked(object sender, EventArgs e)
+	void LoadPointsButtonClicked(object? sender, EventArgs? e)
 	{
 		DrawingViewControl.Lines.Clear();
 		foreach (var line in GenerateLines(2))
@@ -28,7 +28,7 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 		}
 	}
 
-	async void GetCurrentDrawingViewImageClicked(object sender, EventArgs e)
+	async void GetCurrentDrawingViewImageClicked(object? sender, EventArgs? e)
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 		var stream = await DrawingViewControl.GetImageStream(GestureImage.Width, GestureImage.Height, DrawingViewOutputOption.Lines, cts.Token);
@@ -36,7 +36,7 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 		GestureImage.Source = ImageSource.FromStream(() => stream);
 	}
 
-	async void GenerateImageButtonClicked(object sender, EventArgs e)
+	async void GenerateImageButtonClicked(object? sender, EventArgs? e)
 	{
 		var lines = GenerateLines(2);
 
@@ -76,7 +76,7 @@ public partial class DrawingViewPage : BasePage<DrawingViewViewModel>
 		}
 	}
 
-	async void OnDrawingLineCompleted(object sender, DrawingLineCompletedEventArgs e)
+	async void OnDrawingLineCompleted(object? sender, DrawingLineCompletedEventArgs e)
 	{
 		var width = GetSide(GestureImage.Width);
 		var height = GetSide(GestureImage.Height);

@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Views;
+using Microsoft.Maui;
 
 namespace CommunityToolkit.Maui.Core;
 
@@ -8,14 +9,14 @@ namespace CommunityToolkit.Maui.Core;
 public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 {
 	/// <summary>
-	/// Gets or sets the title of the media.
+	/// Occurs when <see cref="CurrentState"/> changed.
 	/// </summary>
-	string MetadataTitle { get; set; }
+	event EventHandler<MediaStateChangedEventArgs> StateChanged;
 
 	/// <summary>
-	/// Gets or sets the artist of the media.
+	/// Occurs when the <see cref="Position"/> changes;
 	/// </summary>
-	string MetadataArtist { get; set; }
+	event EventHandler<MediaPositionChangedEventArgs> PositionChanged;
 
 	/// <summary>
 	/// Gets or sets the artwork Image source.
@@ -97,18 +98,23 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// <summary>
 	/// Gets or sets the volume of the audio for the media.
 	/// </summary>
-	/// <remarks>A value of 1 means full volume, 0 is silence.</remarks>
+	/// <remarks>A value of 1 indicates full volume, 0 is silence.</remarks>
 	double Volume { get; set; }
 
 	/// <summary>
-	/// Occurs when <see cref="CurrentState"/> changed.
+	/// Gets or sets the title of the media.
 	/// </summary>
-	event EventHandler<MediaStateChangedEventArgs> StateChanged;
+	string MetadataTitle { get; set; }
 
 	/// <summary>
-	/// Occurs when the <see cref="Position"/> changes;
+	/// Gets or sets the artist of the media.
 	/// </summary>
-	event EventHandler<MediaPositionChangedEventArgs> PositionChanged;
+	string MetadataArtist { get; set; }
+
+	/// <summary>
+	/// Gets or sets the artwork Image Url.
+	/// </summary>
+	string MetadataArtworkUrl { get; set; }
 
 	/// <summary>
 	/// Occurs when the media has ended playing successfully.

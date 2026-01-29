@@ -4,16 +4,16 @@ namespace CommunityToolkit.Maui.Core.Platform;
 
 public static partial class KeyboardExtensions
 {
-	static bool HideKeyboard(this View view) => SetKeyInputFocus(view, false);
+	static bool HideKeyboard(this Tizen.NUI.BaseComponents.View view) => SetKeyInputFocus(view, false);
 
-	static bool ShowKeyboard(this View view) => SetKeyInputFocus(view, true);
+	static bool ShowKeyboard(this Tizen.NUI.BaseComponents.View view) => SetKeyInputFocus(view, true);
 
-	static bool IsSoftKeyboardShowing(this View view)
+	static bool IsSoftKeyboardShowing(this Tizen.NUI.BaseComponents.View view)
 	{
 		return view.KeyInputFocus;
 	}
 
-	static bool SetKeyInputFocus(View view, bool isShow)
+	static bool SetKeyInputFocus(Tizen.NUI.BaseComponents.View view, bool isShow)
 	{
 		view.KeyInputFocus = isShow;
 

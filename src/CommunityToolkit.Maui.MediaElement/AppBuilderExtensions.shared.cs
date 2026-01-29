@@ -2,6 +2,7 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Views;
+using Microsoft.Maui.Hosting;
 
 namespace CommunityToolkit.Maui;
 

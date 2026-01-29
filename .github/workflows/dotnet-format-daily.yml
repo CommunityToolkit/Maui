@@ -10,7 +10,7 @@ jobs:
         run: dotnet tool install -g dotnet-format
 
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.head_ref }}
 
@@ -31,7 +31,7 @@ jobs:
           git commit -a -m 'Automated dotnet-format update'
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           title: '[housekeeping] Automated PR to fix formatting errors'
           body: |

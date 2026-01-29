@@ -111,7 +111,7 @@ sealed partial class MediaControlsService : Service
 		playerNotificationManager.SetColor(Resource.Color.abc_primary_text_material_dark);
 		playerNotificationManager.SetUsePreviousActionInCompactView(true);
 		playerNotificationManager.SetVisibility(NotificationCompat.VisibilityPublic);
-		playerNotificationManager.SetMediaSessionToken(session.SessionCompatToken);
+		playerNotificationManager.SetMediaSessionToken(session.PlatformToken);
 		playerNotificationManager.SetPlayer(mediaElement);
 		playerNotificationManager.SetColorized(true);
 		playerNotificationManager.SetShowPlayButtonIfPlaybackIsSuppressed(true);
@@ -157,11 +157,12 @@ sealed partial class MediaControlsService : Service
 	{
 		NotificationManager ??= GetSystemService(NotificationService) as NotificationManager ?? throw new InvalidOperationException($"{nameof(NotificationManager)} cannot be null");
 		notificationBuilder ??= new NotificationCompat.Builder(Platform.AppContext, "1");
-
+		var pendingIntent = CreateActivityPendingIntent();
 		notificationBuilder.SetSmallIcon(Resource.Drawable.media3_notification_small_icon);
 		notificationBuilder.SetAutoCancel(false);
 		notificationBuilder.SetForegroundServiceBehavior(NotificationCompat.ForegroundServiceImmediate);
 		notificationBuilder.SetVisibility(NotificationCompat.VisibilityPublic);
+		notificationBuilder.SetContentIntent(pendingIntent);
 
 		CreateNotificationChannel(NotificationManager);
 
@@ -176,5 +177,18 @@ sealed partial class MediaControlsService : Service
 		{
 			StartForeground(1, notificationBuilder.Build());
 		}
+	}
+
+	static PendingIntent CreateActivityPendingIntent()
+	{
+		var packageName = Platform.AppContext.PackageName ?? throw new InvalidOperationException("PackageName cannot be null");
+		var packageManager = Platform.AppContext.PackageManager ?? throw new InvalidOperationException("PackageManager cannot be null");
+		var launchIntent = packageManager.GetLaunchIntentForPackage(packageName) ?? throw new InvalidOperationException("Launch intent cannot be null");
+
+		launchIntent.SetFlags(ActivityFlags.ClearTop | ActivityFlags.SingleTop);
+
+		var flags = PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable;
+		return PendingIntent.GetActivity(Platform.AppContext, 0, launchIntent, flags)
+			   ?? throw new InvalidOperationException("PendingIntent cannot be null");
 	}
 }

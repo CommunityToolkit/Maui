@@ -1,390 +1,395 @@
 name: Build
 
 on:
-  push:
-    branches:
-      - main
-    tags:
-      - '*'
-    paths-ignore:
-      - README.md
-  pull_request:
-    branches:
-      - main
-    paths-ignore:
-      - README.md
+    push:
+        branches:
+            - main
+        tags:
+            - '*'
+        paths-ignore:
+            - README.md
+    pull_request:
+        branches:
+            - main
+        paths-ignore:
+            - README.md
 
 env:
-  CurrentSemanticVersionBase: '99.0.0'
-  PreviewNumber: ${{ github.run_number }}
-  CurrentSemanticVersion: '99.0.0-preview${{ github.run_number }}'
-  NugetPackageVersion: '99.0.0-preview${{ github.run_number }}'
-  NugetPackageVersionCamera: '99.0.0-preview${{ github.run_number }}'
-  NugetPackageVersionMediaElement: '99.0.0-preview${{ github.run_number }}'
-  NugetPackageVersionMaps: '99.0.0-preview${{ github.run_number }}'
-  TOOLKIT_NET_VERSION: '9.0.300'
-  LATEST_NET_VERSION: '9.0.x'
-  PathToLibrarySolution: 'src/CommunityToolkit.Maui.sln'
-  PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.sln'
-  PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
-  PathToCommunityToolkitCoreCsproj: 'src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj'
-  PathToCommunityToolkitCameraCsproj: 'src/CommunityToolkit.Maui.Camera/CommunityToolkit.Maui.Camera.csproj'
-  PathToCommunityToolkitMediaElementCsproj: 'src/CommunityToolkit.Maui.MediaElement/CommunityToolkit.Maui.MediaElement.csproj'
-  PathToCommunityToolkitMapsCsproj: 'src/CommunityToolkit.Maui.Maps/CommunityToolkit.Maui.Maps.csproj'
-  PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
-  PathToCommunityToolkitUnitTestProjectDirectory: 'src/CommunityToolkit.Maui.UnitTests'
-  PathToCommunityToolkitAnalyzersCsproj: 'src/CommunityToolkit.Maui.Analyzers/CommunityToolkit.Maui.Analyzers.csproj'
-  PathToCommunityToolkitCameraAnalyzersCsproj: 'src/CommunityToolkit.Maui.Camera.Analyzers/CommunityToolkit.Maui.Camera.Analyzers.csproj'
-  PathToCommunityToolkitMediaElementAnalyzersCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers/CommunityToolkit.Maui.MediaElement.Analyzers.csproj'
-  PathToCommunityToolkitSourceGeneratorsCsproj: 'src/CommunityToolkit.Maui.SourceGenerators/CommunityToolkit.Maui.SourceGenerators.csproj'
-  PathToCommunityToolkitSourceGeneratorsInternalCsproj: 'src/CommunityToolkit.Maui.SourceGenerators.Internal/CommunityToolkit.Maui.SourceGenerators.Internal.csproj'
-  PathToCommunityToolkitAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Analyzers.CodeFixes/CommunityToolkit.Maui.Analyzers.CodeFixes.csproj'
-  PathToCommunityToolkitCameraAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Camera.Analyzers.CodeFixes/CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.csproj'
-  PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
-  PathToCommunityToolkitAnalyzersUnitTestProjectDirectory: 'src/CommunityToolkit.Maui.Analyzers.UnitTests'
-  PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
-  CommunityToolkitLibrary_Xcode_Version: '16.2'
+    CurrentSemanticVersionBase: '99.0.0'
+    PreviewNumber: ${{ github.run_number }}
+    CurrentSemanticVersion: '99.0.0-preview${{ github.run_number }}'
+    NugetPackageVersion: '99.0.0-preview${{ github.run_number }}'
+    NugetPackageVersionCamera: '99.0.0-preview${{ github.run_number }}'
+    NugetPackageVersionMediaElement: '99.0.0-preview${{ github.run_number }}'
+    NugetPackageVersionMaps: '99.0.0-preview${{ github.run_number }}'
+    TOOLKIT_NET_VERSION: '10.0.100'
+    LATEST_NET_VERSION: '10.0.x'
+    PathToLibrarySolution: 'src/CommunityToolkit.Maui.slnx'
+    PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.slnx'
+    PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
+    PathToCommunityToolkitCoreCsproj: 'src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj'
+    PathToCommunityToolkitCameraCsproj: 'src/CommunityToolkit.Maui.Camera/CommunityToolkit.Maui.Camera.csproj'
+    PathToCommunityToolkitMediaElementCsproj: 'src/CommunityToolkit.Maui.MediaElement/CommunityToolkit.Maui.MediaElement.csproj'
+    PathToCommunityToolkitMapsCsproj: 'src/CommunityToolkit.Maui.Maps/CommunityToolkit.Maui.Maps.csproj'
+    PathToCommunityToolkitSampleCsproj: 'samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj'
+    PathToCommunityToolkitUnitTestProjectDirectory: 'src/CommunityToolkit.Maui.UnitTests'
+    PathToCommunityToolkitAnalyzersCsproj: 'src/CommunityToolkit.Maui.Analyzers/CommunityToolkit.Maui.Analyzers.csproj'
+    PathToCommunityToolkitCameraAnalyzersCsproj: 'src/CommunityToolkit.Maui.Camera.Analyzers/CommunityToolkit.Maui.Camera.Analyzers.csproj'
+    PathToCommunityToolkitMediaElementAnalyzersCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers/CommunityToolkit.Maui.MediaElement.Analyzers.csproj'
+    PathToCommunityToolkitSourceGeneratorsCsproj: 'src/CommunityToolkit.Maui.SourceGenerators/CommunityToolkit.Maui.SourceGenerators.csproj'
+    PathToCommunityToolkitAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Analyzers.CodeFixes/CommunityToolkit.Maui.Analyzers.CodeFixes.csproj'
+    PathToCommunityToolkitCameraAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Camera.Analyzers.CodeFixes/CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.csproj'
+    PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
+    PathToCommunityToolkitAnalyzersUnitTestProjectDirectory: 'src/CommunityToolkit.Maui.Analyzers.UnitTests'
+    PathToCommunityToolkitSourceGeneratorsUnitTestDirectory: 'src/CommunityToolkit.Maui.SourceGenerators.UnitTests'
+    PathToCommunityToolkitSourceGeneratorsUnitTestCsproj: 'src/CommunityToolkit.Maui.SourceGenerators.UnitTests/CommunityToolkit.Maui.SourceGenerators.UnitTests.csproj'
+    PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
+    CommunityToolkitLibrary_Xcode_Version: '26.1'
+    CommunityToolkitSample_Xcode_Version: '26.2'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
 
 jobs:
-  build_sample:
-    name: Build Sample App using Latest .NET SDK
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, macos-15]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    build_sample:
+        name: Build Sample App using Latest .NET SDK
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ windows-latest, macos-26 ]
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@v6
 
-      - name: Set Latest Xcode Version
-        if: runner.os == 'macOS'
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
+            -   name: Set Latest Xcode Version
+                if: runner.os == 'macOS'
+                uses: maxim-lobanov/setup-xcode@v1
+                with:
+                    xcode-version: ${{ env.CommunityToolkitSample_Xcode_Version }}
 
-      - name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.LATEST_NET_VERSION }}
-          dotnet-quality: 'ga'
+            -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
+                uses: actions/setup-dotnet@v5
+                with:
+                    dotnet-version: ${{ env.LATEST_NET_VERSION }}
+                    dotnet-quality: 'ga'
 
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'microsoft'
-          java-version: '17'
+            -   uses: actions/setup-java@v5
+                with:
+                    distribution: 'microsoft'
+                    java-version: '21'
 
-      - name: Install .NET MAUI Workload
-        run: |
-          dotnet workload install maui
-          dotnet workload update
+            -   name: Install .NET MAUI Workload
+                run: |
+                    dotnet workload install maui
+                    dotnet workload update
 
-      - name: Install Tizen Workload
-        run: |
-          Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
-          .\workload-install.ps1
-        shell: pwsh
+            -   name: Install Tizen Workload
+                run: |
+                    Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
+                    .\workload-install.ps1
+                shell: pwsh
 
-      - name: Display dotnet info
-        run: dotnet --info
+            -   name: Display dotnet info
+                run: dotnet --info
 
-      - name: Build Community Toolkit Sample
-        run: dotnet build -c Release ${{ env.PathToCommunityToolkitSampleCsproj }}
+            -   name: Build Community Toolkit Sample
+                run: dotnet build -c Release ${{ env.PathToCommunityToolkitSampleCsproj }}
+    
+    build_library:
+        name: Build Library
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ windows-latest, macos-26 ]
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@v6
 
-  build_library:
-    name: Build Library
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, macos-15]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+            -   name: Set NuGet Version to Tag Number
+                if: startsWith(github.ref, 'refs/tags/') && (!endsWith(github.ref, '-mediaelement') && !endsWith(github.ref, '-camera') && !endsWith(github.ref, '-maps'))
+                run: echo "NugetPackageVersion=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+                shell: bash
 
-      - name: Set NuGet Version to Tag Number
-        if: startsWith(github.ref, 'refs/tags/') && (!endsWith(github.ref, '-mediaelement') && !endsWith(github.ref, '-camera') && !endsWith(github.ref, '-maps'))
-        run: echo "NugetPackageVersion=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-        shell: bash
+            -   name: Set NuGet Version to Tag Number for Camera
+                if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-camera')
+                run: echo "NugetPackageVersionCamera=${GITHUB_REF#refs/tags/}" | sed 's/-camera$//' >> $GITHUB_ENV
+                shell: bash
 
-      - name: Set NuGet Version to Tag Number for Camera
-        if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-camera')
-        run: echo "NugetPackageVersionCamera=${GITHUB_REF#refs/tags/}" | sed 's/-camera$//' >> $GITHUB_ENV
-        shell: bash
+            -   name: Set NuGet Version to Tag Number for MediaElement
+                if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-mediaelement')
+                run: echo "NugetPackageVersionMediaElement=${GITHUB_REF#refs/tags/}" | sed 's/-mediaelement$//' >> $GITHUB_ENV
+                shell: bash
 
-      - name: Set NuGet Version to Tag Number for MediaElement
-        if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-mediaelement')
-        run: echo "NugetPackageVersionMediaElement=${GITHUB_REF#refs/tags/}" | sed 's/-mediaelement$//' >> $GITHUB_ENV
-        shell: bash
+            -   name: Set NuGet Version to Tag Number for Maps
+                if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-maps')
+                run: echo "NugetPackageVersionMaps=${GITHUB_REF#refs/tags/}" | sed 's/-maps$//' >> $GITHUB_ENV
+                shell: bash
 
-      - name: Set NuGet Version to Tag Number for Maps
-        if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-maps')
-        run: echo "NugetPackageVersionMaps=${GITHUB_REF#refs/tags/}" | sed 's/-maps$//' >> $GITHUB_ENV
-        shell: bash
+            -   name: Set NuGet Version to PR Version
+                if: ${{ github.event_name == 'pull_request' }}
+                run: |
+                    echo "NugetPackageVersion=${{ env.CurrentSemanticVersionBase }}-build-${{ github.event.pull_request.number }}.${{ github.run_number }}+${{ github.sha }}"
+                    echo "NugetPackageVersionCamera=${{ env.CurrentSemanticVersionBase }}-build-${{ github.event.pull_request.number }}.${{ github.run_number }}+${{ github.sha }}"
+                    echo "NugetPackageVersionMediaElement=${{ env.CurrentSemanticVersionBase }}-build-${{ github.event.pull_request.number }}.${{ github.run_number }}+${{ github.sha }}"
+                    echo "NugetPackageVersionMaps=${{ env.CurrentSemanticVersionBase }}-build-${{ github.event.pull_request.number }}.${{ github.run_number }}+${{ github.sha }}"
+                shell: bash
 
-      - name: Set NuGet Version to PR Version
-        if: ${{ github.event_name == 'pull_request' }}
-        run: |
-          echo "NugetPackageVersion=${{ env.CurrentSemanticVersionBase }}-build-${{ github.event.pull_request.number }}.${{ github.run_number }}+${{ github.sha }}"
-          echo "NugetPackageVersionCamera=${{ env.CurrentSemanticVersionBase }}-build-${{ github.event.pull_request.number }}.${{ github.run_number }}+${{ github.sha }}"
-          echo "NugetPackageVersionMediaElement=${{ env.CurrentSemanticVersionBase }}-build-${{ github.event.pull_request.number }}.${{ github.run_number }}+${{ github.sha }}"
-          echo "NugetPackageVersionMaps=${{ env.CurrentSemanticVersionBase }}-build-${{ github.event.pull_request.number }}.${{ github.run_number }}+${{ github.sha }}"
-        shell: bash
+            -   name: Set Xcode Version
+                if: runner.os == 'macOS'
+                uses: maxim-lobanov/setup-xcode@v1
+                with:
+                    xcode-version: ${{ env.CommunityToolkitLibrary_Xcode_Version }}
 
-      - name: Set Xcode Version
-        if: runner.os == 'macOS'
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: ${{ env.CommunityToolkitLibrary_Xcode_Version }}
+            -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
+                uses: actions/setup-dotnet@v5
+                with:
+                    dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+                    dotnet-quality: 'ga'
 
-      - name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
-          dotnet-quality: 'ga'
+            -   uses: actions/setup-java@v5
+                with:
+                    distribution: 'microsoft'
+                    java-version: '17'
 
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'microsoft'
-          java-version: '17'
+            -   name: Install .NET MAUI Workload
+                run: |
+                    dotnet workload install maui
+                    dotnet workload update
 
-      - name: Install .NET MAUI Workload
-        run: |
-          dotnet workload install maui
-          dotnet workload update
+            -   name: Install Tizen Workload
+                run: |
+                    Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
+                    .\workload-install.ps1
+                shell: pwsh
 
-      - name: Install Tizen Workload
-        run: |
-          Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
-          .\workload-install.ps1
-        shell: pwsh
+            -   name: Display dotnet info
+                run: dotnet --info
 
-      - name: Display dotnet info
-        run: dotnet --info
+            -   name: 'Build CommunityToolkit.Maui.Analyzers'
+                run: dotnet build ${{ env.PathToCommunityToolkitAnalyzersCsproj }} -c Release
 
-      - name: 'Build CommunityToolkit.Maui.Analyzers'
-        run: dotnet build ${{ env.PathToCommunityToolkitAnalyzersCsproj }} -c Release
+            -   name: 'Build CommunityToolkit.Maui.Analyzers.CodeFixes'
+                run: dotnet build ${{ env.PathToCommunityToolkitAnalyzersCodeFixCsproj }} -c Release
 
-      - name: 'Build CommunityToolkit.Maui.Analyzers.CodeFixes'
-        run: dotnet build ${{ env.PathToCommunityToolkitAnalyzersCodeFixCsproj }} -c Release
+            -   name: 'Build CommunityToolkit.Maui.Camera.Analyzers'
+                run: dotnet build ${{ env.PathToCommunityToolkitCameraAnalyzersCsproj }} -c Release
 
-      - name: 'Build CommunityToolkit.Maui.Camera.Analyzers'
-        run: dotnet build ${{ env.PathToCommunityToolkitCameraAnalyzersCsproj }} -c Release
+            -   name: 'Build CommunityToolkit.Maui.Camera.Analyzers.CodeFixes'
+                run: dotnet build ${{ env.PathToCommunityToolkitCameraAnalyzersCodeFixCsproj }} -c Release
 
-      - name: 'Build CommunityToolkit.Maui.Camera.Analyzers.CodeFixes'
-        run: dotnet build ${{ env.PathToCommunityToolkitCameraAnalyzersCodeFixCsproj }} -c Release
+            -   name: 'Build CommunityToolkit.Maui.MediaElement.Analyzers'
+                run: dotnet build ${{ env.PathToCommunityToolkitMediaElementAnalyzersCsproj }} -c Release
 
-      - name: 'Build CommunityToolkit.Maui.MediaElement.Analyzers'
-        run: dotnet build ${{ env.PathToCommunityToolkitMediaElementAnalyzersCsproj }} -c Release
+            -   name: 'Build CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes'
+                run: dotnet build ${{ env.PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj }} -c Release
 
-      - name: 'Build CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes'
-        run: dotnet build ${{ env.PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj }} -c Release
+            -   name: 'Build CommunityToolkit.Maui.SourceGenerators'
+                run: dotnet build ${{ env.PathToCommunityToolkitSourceGeneratorsCsproj }} -c Release
 
-      - name: 'Build CommunityToolkit.Maui.SourceGenerators'
-        run: dotnet build ${{ env.PathToCommunityToolkitSourceGeneratorsCsproj }} -c Release
+            -   name: 'Build CommunityToolkit.Maui.Camera'
+                run: dotnet build ${{ env.PathToCommunityToolkitCameraCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionCamera }} -p:Version=${{ env.NugetPackageVersionCamera }}
 
-      - name: 'Build CommunityToolkit.SourceGenerators.Internal'
-        run: dotnet build ${{ env.PathToCommunityToolkitSourceGeneratorsInternalCsproj }} -c Release
+            -   name: 'Build CommunityToolkit.Maui.MediaElement'
+                run: dotnet build ${{ env.PathToCommunityToolkitMediaElementCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionMediaElement }} -p:Version=${{ env.NugetPackageVersionMediaElement }}
 
-      - name: 'Build CommunityToolkit.Maui.Camera'
-        run: dotnet build ${{ env.PathToCommunityToolkitCameraCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionCamera }} -p:Version=${{ env.NugetPackageVersionCamera }}
+            -   name: 'Build CommunityToolkit.Maui.Maps'
+                run: dotnet build ${{ env.PathToCommunityToolkitMapsCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionMaps }} -p:Version=${{ env.NugetPackageVersionMaps }}
 
-      - name: 'Build CommunityToolkit.Maui.MediaElement'
-        run: dotnet build ${{ env.PathToCommunityToolkitMediaElementCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionMediaElement }} -p:Version=${{ env.NugetPackageVersionMediaElement }}
+            -   name: 'Build CommunityToolkit.Maui.Core'
+                run: dotnet build ${{ env.PathToCommunityToolkitCoreCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }}
 
-      - name: 'Build CommunityToolkit.Maui.Maps'
-        run: dotnet build ${{ env.PathToCommunityToolkitMapsCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionMaps }} -p:Version=${{ env.NugetPackageVersionMaps }}
+            -   name: 'Build CommunityToolkit.Maui'
+                run: dotnet build ${{ env.PathToCommunityToolkitCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }}
 
-      - name: 'Build CommunityToolkit.Maui.Core'
-        run: dotnet build ${{ env.PathToCommunityToolkitCoreCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }}
+            -   name: Run CommunityToolkit Analyzers UnitTests
+                run: |
+                    cd ${{ env.PathToCommunityToolkitAnalyzersUnitTestProjectDirectory }}
+                    dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-analyzers.cobertura.xml" --coverage-output-format cobertura --report-xunit
+                    
+            -   name: Run CommunityToolkit Source Generators UnitTests
+                if: runner.os == 'Windows'
+                run: |
+                    cd ${{ env.PathToCommunityToolkitSourceGeneratorsUnitTestDirectory }}
+                    dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-sourcegenerators.cobertura.xml" --coverage-output-format cobertura --report-xunit
 
-      - name: 'Build CommunityToolkit.Maui'
-        run: dotnet build ${{ env.PathToLibrarySolution }} -c Release -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }} 
+            -   name: Run CommunityToolkit UnitTests
+                run: |
+                    cd ${{ env.PathToCommunityToolkitUnitTestProjectDirectory }}
+                    dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut.cobertura.xml" --coverage-output-format cobertura --report-xunit
 
-      - name: Run CommunityToolkit Analyzers UnitTests
-        run: |
-           cd ${{ env.PathToCommunityToolkitAnalyzersUnitTestProjectDirectory }}
-           dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-analyzers.cobertura.xml" --coverage-output-format cobertura --report-xunit
+            -   name: Create code coverage report
+                if: ${{ runner.os == 'Windows' && (success() || failure()) }}
+                run: |
+                    dotnet tool install -g dotnet-reportgenerator-globaltool
+                    reportgenerator -reports:'${{ runner.temp }}\*cobertura.xml' -targetdir:CodeCoverage -reporttypes:'MarkdownSummaryGithub'
+                    cat CodeCoverage/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+                shell: bash
 
-      - name: Run CommunityToolkit UnitTests
-        run: |
-           cd ${{ env.PathToCommunityToolkitUnitTestProjectDirectory }}
-           dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut.cobertura.xml" --coverage-output-format cobertura --report-xunit
+            -   name: Pack CommunityToolkit.Maui.Core NuGet
+                run: dotnet pack -c Release ${{ env.PathToCommunityToolkitCoreCsproj }} -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }}
 
-      - name: Create code coverage report
-        if: ${{ runner.os == 'Windows' && (success() || failure()) }}
-        run: |
-          dotnet tool install -g dotnet-reportgenerator-globaltool
-          reportgenerator -reports:'${{ runner.temp }}\*cobertura.xml' -targetdir:CodeCoverage -reporttypes:'MarkdownSummaryGithub'
-          cat CodeCoverage/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
-        shell: bash
+            -   name: Pack CommunityToolkit.Maui NuGet
+                run: dotnet pack -c Release ${{ env.PathToCommunityToolkitCsproj }} -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }}
 
-      - name: Pack CommunityToolkit.Maui.Core NuGet
-        run: dotnet pack -c Release ${{ env.PathToCommunityToolkitCoreCsproj }} -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }}
+            -   name: Pack CommunityToolkit.Maui.Camera NuGet
+                run: dotnet pack -c Release ${{ env.PathToCommunityToolkitCameraCsproj }} -p:PackageVersion=${{ env.NugetPackageVersionCamera }} -p:Version=${{ env.NugetPackageVersionCamera }}
 
-      - name: Pack CommunityToolkit.Maui NuGet
-        run: dotnet pack -c Release ${{ env.PathToCommunityToolkitCsproj }} -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }}
+            -   name: Pack CommunityToolkit.Maui.MediaElement NuGet
+                run: dotnet pack -c Release ${{ env.PathToCommunityToolkitMediaElementCsproj }} -p:PackageVersion=${{ env.NugetPackageVersionMediaElement }} -p:Version=${{ env.NugetPackageVersionMediaElement }}
 
-      - name: Pack CommunityToolkit.Maui.Camera NuGet
-        run: dotnet pack -c Release ${{ env.PathToCommunityToolkitCameraCsproj }} -p:PackageVersion=${{ env.NugetPackageVersionCamera }} -p:Version=${{ env.NugetPackageVersionCamera }}
+            -   name: Pack CommunityToolkit.Maui.Maps NuGet
+                run: dotnet pack -c Release ${{ env.PathToCommunityToolkitMapsCsproj }} -p:PackageVersion=${{ env.NugetPackageVersionMaps }} -p:Version=${{ env.NugetPackageVersionMaps }}
 
-      - name: Pack CommunityToolkit.Maui.MediaElement NuGet
-        run: dotnet pack -c Release ${{ env.PathToCommunityToolkitMediaElementCsproj }} -p:PackageVersion=${{ env.NugetPackageVersionMediaElement }} -p:Version=${{ env.NugetPackageVersionMediaElement }}
+            -   name: Copy NuGet Packages to Staging Directory
+                if: ${{ runner.os == 'Windows' }} && !startsWith(github.ref, 'refs/tags/')
+                run: |
+                    mkdir -p ${{ github.workspace }}/nuget
+                    Get-ChildItem -Path "./src" -Recurse | Where-Object { $_.Extension -match "nupkg" } | Copy-Item -Destination "${{ github.workspace }}/nuget"
+                shell: pwsh
 
-      - name: Pack CommunityToolkit.Maui.Maps NuGet
-        run: dotnet pack -c Release ${{ env.PathToCommunityToolkitMapsCsproj }} -p:PackageVersion=${{ env.NugetPackageVersionMaps }} -p:Version=${{ env.NugetPackageVersionMaps }}
+            -   name: Upload Package List
+                uses: actions/upload-artifact@v6
+                if: ${{ runner.os == 'Windows' }}
+                with:
+                    name: nuget-list
+                    if-no-files-found: error
+                    path: |
+                        ${{ github.workspace }}/.github/workflows/SignClientFileList.txt
 
-      - name: Copy NuGet Packages to Staging Directory
-        if: ${{ runner.os == 'Windows' }} && !startsWith(github.ref, 'refs/tags/')
-        run: |
-          mkdir -p ${{ github.workspace }}/nuget
-          Get-ChildItem -Path "./src" -Recurse | Where-Object { $_.Extension -match "nupkg" } | Copy-Item -Destination "${{ github.workspace }}/nuget"
-        shell: pwsh
+            -   name: Publish Packages
+                if: ${{ runner.os == 'Windows' }}
+                uses: actions/upload-artifact@v6
+                with:
+                    name: packages
+                    path: ${{ github.workspace }}/nuget/
+    
+    sign:
+        needs: [ build_library ]
+        if: ${{ startsWith(github.ref, 'refs/tags/') || (github.event_name != 'pull_request') }}
+        runs-on: windows-latest
+        permissions:
+            id-token: write # Required for requesting the JWT
+        
+        steps:
+            -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
+                uses: actions/setup-dotnet@v5
+                with:
+                    dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+                    dotnet-quality: 'ga'
 
-      - name: Upload Package List
-        uses: actions/upload-artifact@v4
-        if: ${{ runner.os == 'Windows' }}
-        with:
-          name: nuget-list
-          if-no-files-found: error
-          path: |
-            ${{ github.workspace }}/.github/workflows/SignClientFileList.txt
+            -   name: Download NuGet List
+                uses: actions/download-artifact@v7
+                with:
+                    name: nuget-list
+                    path: ./
 
-      - name: Publish Packages
-        if: ${{ runner.os == 'Windows' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: packages
-          path: ${{ github.workspace }}/nuget/
+            -   name: Download Package List
+                uses: actions/download-artifact@v7
+                with:
+                    name: packages
+                    path: ./packages
 
-  sign:
-    needs: [build_library]
-    if: ${{ startsWith(github.ref, 'refs/tags/') || (github.event_name != 'pull_request') }}
-    runs-on: windows-latest
-    permissions:
-      id-token: write # Required for requesting the JWT
+            -   name: Remove packages for MediaElement-only release
+                if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-mediaelement')
+                run: |
+                    Get-ChildItem -Path "${{ github.workspace }}/packages" -Recurse -Filter "*.nupkg" | Where-Object { $_.Name -notmatch "CommunityToolkit\.Maui\.MediaElement" } | Remove-Item -Force
 
-    steps:
-      - name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
-          dotnet-quality: 'ga'
+            -   name: Remove packages for Camera-only release
+                if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-camera')
+                run: |
+                    Get-ChildItem -Path "${{ github.workspace }}/packages" -Recurse -Filter "*.nupkg" | Where-Object { $_.Name -notmatch "CommunityToolkit\.Maui\.Camera" } | Remove-Item -Force
 
-      - name: Download NuGet List
-        uses: actions/download-artifact@v4
-        with:
-          name: nuget-list
-          path: ./
+            -   name: Remove packages for Maps-only release
+                if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-maps')
+                run: |
+                    Get-ChildItem -Path "${{ github.workspace }}/packages" -Recurse -Filter "*.nupkg" | Where-Object { $_.Name -notmatch "CommunityToolkit\.Maui\.Maps" } | Remove-Item -Force
 
-      - name: Download Package List
-        uses: actions/download-artifact@v4
-        with:
-          name: packages
-          path: ./packages
-      
-      - name: Remove packages for MediaElement-only release
-        if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-mediaelement')
-        run: |
-          Get-ChildItem -Path "${{ github.workspace }}/packages" -Recurse -Filter "*.nupkg" | Where-Object { $_.Name -notmatch "CommunityToolkit\.Maui\.MediaElement" } | Remove-Item -Force
+            -   name: Remove packages for Core & Main release
+                if: startsWith(github.ref, 'refs/tags/') && (!endsWith(github.ref, '-mediaelement') && !endsWith(github.ref, '-camera') && !endsWith(github.ref, '-maps'))
+                run: |
+                    Get-ChildItem -Path "${{ github.workspace }}/packages" -Recurse -Filter "*.nupkg" | Where-Object { $_.Name -match "CommunityToolkit\.Maui\.(Camera|MediaElement|Maps)" } | Remove-Item -Force
 
-      - name: Remove packages for Camera-only release
-        if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-camera')
-        run: |
-          Get-ChildItem -Path "${{ github.workspace }}/packages" -Recurse -Filter "*.nupkg" | Where-Object { $_.Name -notmatch "CommunityToolkit\.Maui\.Camera" } | Remove-Item -Force
+            -   name: Install Signing Tool
+                run: dotnet tool install --tool-path ./tools sign --version 0.9.1-beta.23356.1
 
-      - name: Remove packages for Maps-only release
-        if: startsWith(github.ref, 'refs/tags/') && endsWith(github.ref, '-maps')
-        run: |
-          Get-ChildItem -Path "${{ github.workspace }}/packages" -Recurse -Filter "*.nupkg" | Where-Object { $_.Name -notmatch "CommunityToolkit\.Maui\.Maps" } | Remove-Item -Force
+            -   name: Sign Packages
+                run: >
+                    ./tools/sign code azure-key-vault
+                    **/*.nupkg
+                    --base-directory "${{ github.workspace }}/packages"
+                    --file-list "${{ github.workspace }}/SignClientFileList.txt"
+                    --timestamp-url "http://timestamp.digicert.com"
+                    --publisher-name ".NET Foundation"
+                    --description ".NET MAUI Community Toolkit"
+                    --description-url "https://github.com/CommunityToolkit/Maui"
+                    --azure-key-vault-url "${{ secrets.SIGN_KEY_VAULT_URL }}"
+                    --azure-key-vault-client-id ${{ secrets.SIGN_CLIENT_ID }}
+                    --azure-key-vault-client-secret "${{ secrets.SIGN_CLIENT_SECRET }}"
+                    --azure-key-vault-tenant-id ${{ secrets.SIGN_TENANT_ID }}
+                    --azure-key-vault-certificate "${{ secrets.SIGN_CERTIFICATE }}"
+                    --verbosity Information
 
-      - name: Remove packages for Core & Main release
-        if: startsWith(github.ref, 'refs/tags/') && (!endsWith(github.ref, '-mediaelement') && !endsWith(github.ref, '-camera') && !endsWith(github.ref, '-maps'))
-        run: |
-          Get-ChildItem -Path "${{ github.workspace }}/packages" -Recurse -Filter "*.nupkg" | Where-Object { $_.Name -match "CommunityToolkit\.Maui\.(Camera|MediaElement|Maps)" } | Remove-Item -Force
+            -   name: Publish Packages
+                uses: actions/upload-artifact@v6
+                with:
+                    name: signed-packages
+                    if-no-files-found: error
+                    path: |
+                        ${{ github.workspace }}/packages/**/*.nupkg
+    
+    release-main:
+        if: ${{ github.event_name != 'pull_request' && !startsWith(github.ref, 'refs/tags/') }}
+        needs: [ sign ]
+        runs-on: ubuntu-latest
+        
+        steps:
+            -   name: Install .NET SDK
+                uses: actions/setup-dotnet@v5
+                with:
+                    dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+                    dotnet-quality: 'ga'
 
-      - name: Install Signing Tool
-        run: dotnet tool install --tool-path ./tools sign --version 0.9.1-beta.23356.1
+            -   name: Download signed packages
+                uses: actions/download-artifact@v7
+                with:
+                    name: signed-packages
+                    path: ./packages
 
-      - name: Sign Packages
-        run: >
-          ./tools/sign code azure-key-vault
-          **/*.nupkg
-          --base-directory "${{ github.workspace }}/packages"
-          --file-list "${{ github.workspace }}/SignClientFileList.txt"
-          --timestamp-url "http://timestamp.digicert.com"
-          --publisher-name ".NET Foundation"
-          --description ".NET MAUI Community Toolkit"
-          --description-url "https://github.com/CommunityToolkit/Maui"
-          --azure-key-vault-url "${{ secrets.SIGN_KEY_VAULT_URL }}"
-          --azure-key-vault-client-id ${{ secrets.SIGN_CLIENT_ID }}
-          --azure-key-vault-client-secret "${{ secrets.SIGN_CLIENT_SECRET }}"
-          --azure-key-vault-tenant-id ${{ secrets.SIGN_TENANT_ID }}
-          --azure-key-vault-certificate "${{ secrets.SIGN_CERTIFICATE }}"
-          --verbosity Information
+            -   name: Upload artifact
+                if: github.event_name != 'pull_request'
+                run: >
+                    dotnet nuget push
+                    **/*.nupkg
+                    --source "https://nuget.pkg.github.com/CommunityToolkit/index.json"
+                    --api-key ${{ secrets.GITHUB_TOKEN }}
+                    --skip-duplicate
+    
+    release-nuget:
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        needs: [ sign ]
+        environment: nuget-release-gate # This gates this job until manually approved
+        runs-on: ubuntu-latest
+        
+        steps:
+            -   name: Install .NET SDK
+                uses: actions/setup-dotnet@v5
+                with:
+                    dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+                    dotnet-quality: 'ga'
 
-      - name: Publish Packages
-        uses: actions/upload-artifact@v4
-        with:
-          name: signed-packages
-          if-no-files-found: error
-          path: |
-            ${{ github.workspace }}/packages/**/*.nupkg
+            -   name: Download signed packages
+                uses: actions/download-artifact@v7
+                with:
+                    name: signed-packages
+                    path: ./packages
 
-  release-main:
-    if: ${{ github.event_name != 'pull_request' && !startsWith(github.ref, 'refs/tags/') }}
-    needs: [sign]
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Install .NET SDK
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
-          dotnet-quality: 'ga'
-
-      - name: Download signed packages
-        uses: actions/download-artifact@v4
-        with:
-          name: signed-packages
-          path: ./packages
-
-      -  name: Upload artifact
-         if: github.event_name != 'pull_request'
-         run: >
-           dotnet nuget push
-           **/*.nupkg
-           --source "https://nuget.pkg.github.com/CommunityToolkit/index.json"
-           --api-key ${{ secrets.GITHUB_TOKEN }}
-           --skip-duplicate
-
-  release-nuget:
-    if: ${{ startsWith(github.ref, 'refs/tags/') }}
-    needs: [sign]
-    environment: nuget-release-gate # This gates this job until manually approved
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Install .NET SDK
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
-          dotnet-quality: 'ga'
-
-      - name: Download signed packages
-        uses: actions/download-artifact@v4
-        with:
-          name: signed-packages
-          path: ./packages
-
-      - name: Push to NuGet.org
-        run: >
-          dotnet nuget push
-          **/*.nupkg
-          --source https://api.nuget.org/v3/index.json
-          --api-key ${{ secrets.NUGET_PACKAGE_PUSH_TOKEN }}
-          --skip-duplicate
+            -   name: Push to NuGet.org
+                run: >
+                    dotnet nuget push
+                    **/*.nupkg
+                    --source https://api.nuget.org/v3/index.json
+                    --api-key ${{ secrets.NUGET_PACKAGE_PUSH_TOKEN }}
+                    --skip-duplicate

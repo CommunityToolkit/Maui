@@ -20,7 +20,7 @@
                     <Style x:Key="Heading" TargetType="Label">
                         <Setter Property="VerticalTextAlignment" Value="Center" />
                         <Setter Property="HorizontalTextAlignment" Value="Center" />
-                        <Setter Property="FontSize" Value="Medium" />
+                        <Setter Property="FontSize" Value="12" />
                         <Setter Property="HorizontalOptions" Value="Center"/>
                         <Setter Property="LineBreakMode" Value="WordWrap" />
                         <Setter Property="Margin" Value="10" />

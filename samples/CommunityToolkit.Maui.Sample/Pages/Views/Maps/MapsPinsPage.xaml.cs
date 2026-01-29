@@ -54,12 +54,12 @@ public partial class MapsPinsPage : BasePage<MapsPinsViewModel>
 		InitializeComponent();
 	}
 
-	void AddPin_Clicked(object sender, EventArgs e)
+	void AddPin_Clicked(object? sender, EventArgs? e)
 	{
 		AddPin();
 	}
 
-	void RemovePin_Clicked(object sender, EventArgs e)
+	void RemovePin_Clicked(object? sender, EventArgs? e)
 	{
 		if (PinsMap.Pins.Count > 0)
 		{
@@ -68,7 +68,7 @@ public partial class MapsPinsPage : BasePage<MapsPinsViewModel>
 		}
 	}
 
-	void Add10Pins_Clicked(object sender, EventArgs e)
+	void Add10Pins_Clicked(object? sender, EventArgs? e)
 	{
 		for (int i = 0; i <= 10; i++)
 		{
@@ -85,7 +85,7 @@ public partial class MapsPinsPage : BasePage<MapsPinsViewModel>
 		});
 	}
 
-	void InitRegion_OnClicked(object? sender, EventArgs e)
+	void InitRegion_OnClicked(object? sender, EventArgs? e)
 	{
 		var microsoftLocation = new Location(47.64232, -122.13684);
 		PinsMap.MoveToRegion(MapSpan.FromCenterAndRadius(microsoftLocation, Distance.FromKilometers(1)));
@@ -104,20 +104,20 @@ public partial class MapsPinsPage : BasePage<MapsPinsViewModel>
 
 		microsoftPin.MarkerClicked += (s, a) =>
 		{
-			DisplayAlert("Marker", "OK", "OK");
+			DisplayAlertAsync("Marker", "OK", "OK");
 			a.HideInfoWindow = true;
 		};
 
 		microsoftPin.InfoWindowClicked += (s, a) =>
 		{
-			DisplayAlert("Info", "OK", "OK");
+			DisplayAlertAsync("Info", "OK", "OK");
 		};
 
 		PinsMap.Pins.Add(microsoftPin);
 	}
 
-	void PinsMap_MapClicked(object sender, MapClickedEventArgs e)
+	void PinsMap_MapClicked(object? sender, MapClickedEventArgs? e)
 	{
-		DisplayAlert("Map Clicked", $"Location {e.Location.Latitude}, {e.Location.Longitude}", "OK");
+		DisplayAlertAsync("Map Clicked", $"Location {e?.Location.Latitude}, {e?.Location.Longitude}", "OK");
 	}
 }

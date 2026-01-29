@@ -7,6 +7,7 @@ using NView = Tizen.NUI.BaseComponents.View;
 using TButton = Tizen.UIExtensions.NUI.Button;
 using TLabel = Tizen.UIExtensions.NUI.Label;
 using TPopup = Tizen.UIExtensions.NUI.Popup;
+using DeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
 
 namespace CommunityToolkit.Maui.Alerts;
 
@@ -60,11 +61,11 @@ public partial class Snackbar
 
 		var content = new NView
 		{
-			Margin = new Extents((ushort)10d.ToScaledPixel()),
+			Margin = new Extents((ushort)(10 * DeviceInfo.ScalingFactor)),
 			WidthSpecification = LayoutParamPolicies.MatchParent,
 			HeightSpecification = LayoutParamPolicies.WrapContent,
 
-			BackgroundColor = VisualOptions.BackgroundColor.ToNUIColor(),
+			BackgroundColor = new Tizen.NUI.Color(VisualOptions.BackgroundColor.Red, VisualOptions.BackgroundColor.Green, VisualOptions.BackgroundColor.Blue, VisualOptions.BackgroundColor.Alpha),
 			CornerRadius = new Vector4(10, 10, 10, 10),
 			Layout = new NLinearLayout
 			{
@@ -73,7 +74,7 @@ public partial class Snackbar
 			}
 		};
 
-		var margin = (ushort)10d.ToScaledPixel();
+		var margin = (ushort)(10 * DeviceInfo.ScalingFactor);
 
 		var message = new TLabel()
 		{
@@ -81,9 +82,8 @@ public partial class Snackbar
 			Margin = margin,
 			WidthSpecification = LayoutParamPolicies.MatchParent,
 			Text = Text,
-			TextColor = VisualOptions.TextColor.ToPlatform(),
-			PixelSize = VisualOptions.Font.Size.ToPixel(),
-			FontAttributes = LabelExtensions.GetFontAttributes(VisualOptions.Font),
+			TextColor = new Tizen.UIExtensions.Common.Color(VisualOptions.TextColor.Red, VisualOptions.TextColor.Green, VisualOptions.TextColor.Blue, VisualOptions.TextColor.Alpha),
+			PixelSize = (float)VisualOptions.Font.Size * DeviceInfo.DPI / 160.0f,
 		};
 		content.Add(message);
 
@@ -92,11 +92,11 @@ public partial class Snackbar
 			Margin = margin,
 			WidthSpecification = LayoutParamPolicies.WrapContent,
 			BackgroundColor = Tizen.NUI.Color.Transparent,
-			TextColor = VisualOptions.ActionButtonTextColor.ToPlatform(),
+			TextColor = new Tizen.UIExtensions.Common.Color(VisualOptions.ActionButtonTextColor.Red, VisualOptions.ActionButtonTextColor.Green, VisualOptions.ActionButtonTextColor.Blue, VisualOptions.ActionButtonTextColor.Alpha),
 			Text = ActionButtonText,
 		};
-		actionButton.TextLabel.PixelSize = 15d.ToPixel();
-		actionButton.SizeWidth = actionButton.TextLabel.NaturalSize.Width + 15d.ToPixel() * 2;
+		actionButton.TextLabel.PixelSize = (15 * DeviceInfo.DPI / 160.0f);
+		actionButton.SizeWidth = actionButton.TextLabel.NaturalSize.Width + (15 * DeviceInfo.DPI / 160.0f) * 2;
 		actionButton.Clicked += (s, e) =>
 		{
 			if (Action is not null)
@@ -114,10 +114,10 @@ public partial class Snackbar
 
 		if (Anchor is not null)
 		{
-			var anchorPlatformView = Anchor.ToPlatform();
+			var anchorPlatformView = (Tizen.NUI.BaseComponents.View)Anchor.ToPlatform();
 
 			// can't measure height of content on NUI
-			var maximumHeight = 100d.ToScaledPixel();
+			var maximumHeight = (float)(100 * DeviceInfo.ScalingFactor);
 			popup.SizeHeight = maximumHeight;
 
 			if (maximumHeight < anchorPlatformView.ScreenPosition.Y)
