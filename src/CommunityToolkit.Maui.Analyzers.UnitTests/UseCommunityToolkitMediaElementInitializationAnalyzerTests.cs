@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.MediaElement.Analyzers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
@@ -34,7 +34,7 @@ public class UseCommunityToolkitMediaElementInitializationAnalyzerTests
 					{
 						var builder = MauiApp.CreateBuilder();
 						builder.UseMauiApp<Microsoft.Maui.Controls.Application>()
-							.UseMauiCommunityToolkitMediaElement()
+							.UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: false)
 							.ConfigureFonts(fonts =>
 							{
 								fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -69,7 +69,7 @@ public class UseCommunityToolkitMediaElementInitializationAnalyzerTests
 					{
 						var builder = MauiApp.CreateBuilder ();
 						builder.UseMauiApp<Microsoft.Maui.Controls.Application> ()
-							.UseMauiCommunityToolkitMediaElement ()
+							.UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: false)
 							.ConfigureFonts(fonts =>
 							{
 								fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -139,7 +139,7 @@ public class UseCommunityToolkitMediaElementInitializationAnalyzerTests
 						var builder = MauiApp.CreateBuilder();
 						builder.UseMauiApp<Microsoft.Maui.Controls.Application>()
 						#if ANDROID || IOS
-							.UseMauiCommunityToolkitMediaElement()
+							.UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: false)
 					    #endif
 							.ConfigureFonts(fonts =>
 							{
