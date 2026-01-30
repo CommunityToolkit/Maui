@@ -63,7 +63,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	{
 		if (connection?.Binder?.Service is null || !isAndroidForegroundServiceEnabled)
 		{
-			System.Diagnostics.Trace.TraceInformation("Notification Service not running.");
 			return;
 		}
 
