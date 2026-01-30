@@ -428,43 +428,39 @@ public partial class MediaManager : IDisposable
 
 	string? GetSource(MediaSource? source)
 	{
-		if (source is UriMediaSource uriMediaSource)
+		switch (source)
 		{
-			var uri = uriMediaSource.Uri;
-			if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
-			{
-				return uri.AbsoluteUri;
-			}
-		}
-		else if (source is FileMediaSource fileMediaSource)
-		{
-			var uri = fileMediaSource.Path;
-
-			if (!string.IsNullOrWhiteSpace(uri))
-			{
-				return uri;
-			}
-		}
-		else if (source is ResourceMediaSource resourceMediaSource)
-		{
-			var path = resourceMediaSource.Path;
-
-			if (!string.IsNullOrWhiteSpace(path) && Path.HasExtension(path))
-			{
-				string directory = Path.GetDirectoryName(path) ?? "";
-				string filename = Path.GetFileNameWithoutExtension(path);
-				string extension = Path.GetExtension(path)[1..];
-				var url = NSBundle.MainBundle.GetUrlForResource(filename,
-					extension, directory);
-				if (string.IsNullOrEmpty(url.AbsoluteString))
+			case UriMediaSource uriMediaSource: 
+				var uri = uriMediaSource.Uri;
+				if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
 				{
-					return url.AbsoluteString;
+					return uri.AbsoluteUri;
 				}
-			}
-			else
-			{
-				Logger.LogWarning("Invalid file path for ResourceMediaSource.");
-			}
+				break;
+			case FileMediaSource fileMediaSource:
+					var uriPath = fileMediaSource.Path;
+				if (!string.IsNullOrWhiteSpace(uriPath))
+				{
+					return uriPath;
+				}
+				break;
+			case ResourceMediaSource resourceMediaSource:
+				var path = resourceMediaSource.Path;
+				if (!string.IsNullOrWhiteSpace(path) && Path.HasExtension(path))
+				{
+					string directory = Path.GetDirectoryName(path) ?? "";
+					string filename = Path.GetFileNameWithoutExtension(path);
+					string extension = Path.GetExtension(path)[1..];
+					var url = NSBundle.MainBundle.GetUrlForResource(filename,
+						extension, directory);
+					if (!string.IsNullOrEmpty(url.AbsoluteString))
+					{
+						return url.AbsoluteString;
+					}
+				}
+				break;
+			case null:
+				return null;
 		}
 		return null;
 	}

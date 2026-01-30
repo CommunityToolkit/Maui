@@ -452,13 +452,6 @@ partial class MediaManager : IDisposable
 		}
 	}
 	
-	static async Task<BitmapImage> LoadBitmapImageAsync(StorageFile artwork)
-	{
-		var bitmap = new BitmapImage();
-		using var randomAccessStream = await artwork.OpenReadAsync();
-		await bitmap.SetSourceAsync(randomAccessStream);
-		return bitmap;
-	}
 	async void OnMediaElementMediaOpened(WindowsMediaElement sender, object args)
 	{
 		if (Player is null)
