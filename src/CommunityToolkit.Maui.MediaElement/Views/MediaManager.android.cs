@@ -632,7 +632,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		return mediaItem;
 	}
 
-	static async Task<byte[]?> GetArtworkFromMediasource(MediaSource? mediaSource)
+	static async Task<byte[]?> GetArtworkFromMediasource(MediaSource? mediaSource, CancellationToken cancellationToken = default)
 	{
 		if (mediaSource is null)
 		{
@@ -647,7 +647,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				{
 					return null;
 				}
-				return await GetByteArrayFromFile(filePath).ConfigureAwait(false);
+				return await GetByteArrayFromFile(filePath, cancellationToken).ConfigureAwait(false);
 			}
 			case ResourceMediaSource resourceMediaSource:
 			{
@@ -656,7 +656,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				{
 					return null;
 				}
-				return await GetMauiAssetBytes(resource).ConfigureAwait(false);
+				return await GetMauiAssetBytes(resource, cancellationToken).ConfigureAwait(false);
 			}
 			case UriMediaSource uriMediaSource:
 			{
@@ -665,7 +665,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				{
 					return null;
 				}
-				return await GetBytesFromMetadataArtworkUrl(url, CancellationToken.None).ConfigureAwait(false);
+				return await GetBytesFromMetadataArtworkUrl(url, cancellationToken).ConfigureAwait(false);
 			}
 			default: return null;
 		}
