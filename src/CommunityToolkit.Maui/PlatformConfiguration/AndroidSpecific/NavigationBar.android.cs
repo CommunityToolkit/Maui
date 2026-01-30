@@ -98,19 +98,19 @@ static partial class NavigationBar
 
 		if (OperatingSystem.IsAndroidVersionAtLeast(35))
 		{
-			const string navigationBarOverlay = "NavigationBarOverlay";
+			const string navigationBarOverlayTag = "NavigationBarOverlay";
 			
 			WindowCompat.SetDecorFitsSystemWindows(window, false);
 
 			var decorGroup = (ViewGroup)window.DecorView;
-			var statusBarOverlay = decorGroup.FindViewWithTag(navigationBarOverlay);
+			var navigationBarOverlay = decorGroup.FindViewWithTag(navigationBarOverlayTag);
 
-			if (statusBarOverlay is null)
+			if (navigationBarOverlay is null)
 			{
 				var navigationBarHeight = activity.Resources?.GetIdentifier("navigation_bar_height", "dimen", "android") ?? 0;
 				var navigationBarPixelSize = navigationBarHeight > 0 ? activity.Resources?.GetDimensionPixelSize(navigationBarHeight) ?? 0 : 0;
 
-				statusBarOverlay = new(activity)
+				navigationBarOverlay = new(activity)
 				{
 					LayoutParameters = new FrameLayout.LayoutParams(Android.Views.ViewGroup.LayoutParams.MatchParent, navigationBarPixelSize + 3)
 					{
@@ -118,11 +118,11 @@ static partial class NavigationBar
 					}
 				};
 
-				decorGroup.AddView(statusBarOverlay);
-				statusBarOverlay.SetZ(0);
+				decorGroup.AddView(navigationBarOverlay);
+				navigationBarOverlay.SetZ(0);
 			}
 
-			statusBarOverlay.SetBackgroundColor(color);
+			navigationBarOverlay.SetBackgroundColor(color);
 		}
 		else if (OperatingSystem.IsAndroidVersionAtLeast(23))
 		{
