@@ -29,6 +29,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	double? previousSpeed;
 	float volumeBeforeMute = 1;
 
+	bool isAndroidForegroundServiceEnabled = false;
 	TaskCompletionSource? seekToTaskCompletionSource;
 	CancellationTokenSource? cancellationTokenSource;
 	MediaSession? session;
@@ -60,7 +61,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	public void UpdateNotifications()
 	{
-		if (connection?.Binder?.Service is null)
+		if (connection?.Binder?.Service is null || !isAndroidForegroundServiceEnabled)
 		{
 			System.Diagnostics.Trace.TraceInformation("Notification Service not running.");
 			return;
@@ -128,10 +129,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
 	/// <exception cref="NullReferenceException">Thrown when <see cref="Context"/> is <see langword="null"/> or when the platform view could not be created.</exception>
 	[MemberNotNull(nameof(Player), nameof(PlayerView), nameof(session))]
-	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView(AndroidViewType androidViewType)
+	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView(AndroidViewType androidViewType, bool isAndroidServiceEnabled)
 	{
 		Player = new ExoPlayerBuilder(MauiContext.Context).Build() ?? throw new InvalidOperationException("Player cannot be null");
 		Player.AddListener(this);
+		this.isAndroidForegroundServiceEnabled = isAndroidServiceEnabled;
 
 		if (androidViewType is AndroidViewType.SurfaceView)
 		{
@@ -351,7 +353,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			return;
 		}
 
-		if (connection is null)
+		if (connection is null && isAndroidForegroundServiceEnabled)
 		{
 			StartService();
 		}
