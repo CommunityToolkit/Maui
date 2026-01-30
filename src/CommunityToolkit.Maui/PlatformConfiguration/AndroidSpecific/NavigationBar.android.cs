@@ -100,7 +100,6 @@ static partial class NavigationBar
 		{
 			const string navigationBarOverlay = "NavigationBarOverlay";
 			
-			// Enable edge-to-edge (system bars become transparent)
 			WindowCompat.SetDecorFitsSystemWindows(window, false);
 
 			var decorGroup = (ViewGroup)window.DecorView;
