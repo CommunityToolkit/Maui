@@ -405,8 +405,15 @@ partial class MediaManager : IDisposable
 		switch (MediaElement.MetadataArtworkSource)
 		{
 			case UriMediaSource:
-				stream = RandomAccessStreamReference.CreateFromUri(new Uri(source));
-				uri = new(source);
+				if (!string.IsNullOrWhiteSpace(source) && Uri.TryCreate(source, UriKind.Absolute, out var artworkUri))
+				{
+					stream = RandomAccessStreamReference.CreateFromUri(artworkUri);
+					uri = artworkUri;
+				}
+				else
+				{
+					Logger?.LogWarning("UriMediaSource metadata artwork source is null, empty, or invalid.");
+				}
 				break;
 			case FileMediaSource:
 				if (File.Exists(source))
