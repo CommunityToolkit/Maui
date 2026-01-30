@@ -389,10 +389,16 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			hasSetSource = true;
 		}
 
-		if (hasSetSource && Player.PlayerError is null)
+		if (hasSetSource)
 		{
-			MediaElement.MediaOpened();
-			UpdateNotifications();
+			if (Player.PlayerError is null)
+			{
+				MediaElement.MediaOpened();
+			}
+			if (isAndroidForegroundServiceEnabled)
+			{
+				UpdateNotifications();
+			}
 		}
 	}
 
