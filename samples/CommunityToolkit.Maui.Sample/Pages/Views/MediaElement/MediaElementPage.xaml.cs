@@ -234,7 +234,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 					MediaElement.MetadataArtworkSource = botImageUrl;
 					MediaElement.Source = MediaSource.FromFile(fileResult.FullPath);
 				}
-			return;
+				return;
 		}
 	}
 
