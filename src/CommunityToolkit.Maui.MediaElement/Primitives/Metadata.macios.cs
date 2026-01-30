@@ -175,21 +175,19 @@ sealed class Metadata
 
 	public static async Task<UIImage?> MetadataArtworkMediaSource(MediaSource? artworkUrl, CancellationToken cancellationToken = default)
 	{
-		if (artworkUrl is UriMediaSource uriMediaSource)
+		switch(artworkUrl)
 		{
-			var uri = uriMediaSource.Uri;
-			return GetBitmapFromUrl(uri?.AbsoluteUri);
-		}
-		else if (artworkUrl is FileMediaSource fileMediaSource)
-		{
-			var uri = fileMediaSource.Path;
-
-			return await GetBitmapFromFile(uri, cancellationToken).ConfigureAwait(false);
-		}
-		else if (artworkUrl is ResourceMediaSource resourceMediaSource)
-		{
-			var path = resourceMediaSource.Path;
-			return await GetBitmapFromResource(path, cancellationToken).ConfigureAwait(false);
+			case UriMediaSource uriMediaSource:
+				var uri = uriMediaSource.Uri;
+				return GetBitmapFromUrl(uri?.AbsoluteUri);
+			case FileMediaSource fileMediaSource:
+				var uriFile = fileMediaSource.Path;
+				return await GetBitmapFromFile(uriFile, cancellationToken).ConfigureAwait(false);
+			case ResourceMediaSource resourceMediaSource:
+				var path = resourceMediaSource.Path;
+				return await GetBitmapFromResource(path, cancellationToken).ConfigureAwait(false);
+			case null:
+				return null;
 		}
 		return null;
 	}

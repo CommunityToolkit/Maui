@@ -616,12 +616,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 		return null;
 	}
-	async Task<MediaItem.Builder> CreateMediaItem(string? url)
+	async Task<MediaItem.Builder> CreateMediaItem(string? url, CancellationToken cancellationToken = default)
 	{
 		MediaMetadata.Builder mediaMetaData = new();
 		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
 		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
-		var data = await GetArtworkFromMediasource(MediaElement.MetadataArtworkSource);
+		var data = await GetArtworkFromMediasource(MediaElement.MetadataArtworkSource, cancellationToken);
 		mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);
 
 		mediaItem = new MediaItem.Builder();
