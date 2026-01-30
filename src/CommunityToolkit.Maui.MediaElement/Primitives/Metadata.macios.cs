@@ -225,7 +225,7 @@ sealed class Metadata
 		using var memoryStream = new MemoryStream();
 		if (inputStream is null)
 		{
-			System.Diagnostics.Trace.TraceInformation($"{inputStream} is null.");
+			System.Diagnostics.Trace.WriteLine($"{inputStream} is null.");
 			return null;
 		}
 		await inputStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);

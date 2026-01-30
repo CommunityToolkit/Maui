@@ -281,13 +281,22 @@ partial class MediaManager : IDisposable
 		Player.AutoPlay = MediaElement.ShouldAutoPlay;
 
 		var source = GetSource(MediaElement.Source);
-
+		if (string.IsNullOrWhiteSpace(source))
+		{
+			Logger.LogWarning("MediaElement Source is null or empty.");
+			return;
+		}
 		if (MediaElement.Source is UriMediaSource)
 		{
 			Player.MediaPlayer.SetUriSource(new Uri(source));
 		}
 		else if (MediaElement.Source is FileMediaSource)
 		{
+			if (!File.Exists(source))
+			{
+				Logger.LogWarning("FileMediaSource file not found: {FilePath}", source);
+				return;
+			}
 			StorageFile storageFile = await StorageFile.GetFileFromPathAsync(source);
 			Player.MediaPlayer.SetFileSource(storageFile);
 		}
@@ -398,7 +407,9 @@ partial class MediaManager : IDisposable
 		{
 			return;
 		}
+
 		var source = GetSource(MediaElement.MetadataArtworkSource);
+		
 		RandomAccessStreamReference? stream = null;
 		StorageFile? file = null;
 		Uri? uri = null;
@@ -446,7 +457,6 @@ partial class MediaManager : IDisposable
 		{
 			systemMediaControls.DisplayUpdater.Thumbnail = stream;
 			Dispatcher.Dispatch(() => Player.PosterSource = new BitmapImage(uri));
-			systemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Music;
 		}
 
 		systemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Music;

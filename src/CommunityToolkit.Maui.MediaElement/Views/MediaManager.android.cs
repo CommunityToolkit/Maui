@@ -564,6 +564,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	void StopService(in BoundServiceConnection boundServiceConnection)
 	{
+		if (!isAndroidForegroundServiceEnabled)
+		{
+			return;
+		}
 		boundServiceConnection.MediaControlsServiceTaskRemoved -= HandleMediaControlsServiceTaskRemoved;
 
 		var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
@@ -773,7 +777,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		return memoryStream.ToArray();
 	}
 
-	static async Task<byte[]?> GetMauiAssetBytes(string? fileName)
+	static async Task<byte[]?> GetMauiAssetBytes(string? fileName, CancellationToken cancellationToken = default)
 	{
 		if (fileName is null || string.IsNullOrEmpty(fileName))
 		{
@@ -782,7 +786,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		fileName = System.IO.Path.GetFileName(fileName);
 		using Stream stream = await FileSystem.OpenAppPackageFileAsync(fileName);
 		using MemoryStream memoryStream = new();
-		await stream.CopyToAsync(memoryStream);
+		await stream.CopyToAsync(memoryStream, cancellationToken);
 		return memoryStream.ToArray();
 	}
 
