@@ -767,11 +767,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return null;
 		}
-		var stream = File.OpenRead(filePath);
-		var memoryStream = new MemoryStream();
+		using var stream = File.OpenRead(filePath);
+		using var memoryStream = new MemoryStream();
 		await stream.CopyToAsync(memoryStream, cancellationToken);
-		var bytes = memoryStream.ToArray();
-		return bytes;
+		return memoryStream.ToArray();
 	}
 
 	static async Task<byte[]?> GetMauiAssetBytes(string? fileName)
@@ -783,7 +782,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		fileName = System.IO.Path.GetFileName(fileName);
 		using Stream stream = await FileSystem.OpenAppPackageFileAsync(fileName);
 		using MemoryStream memoryStream = new();
-		stream.CopyTo(memoryStream);
+		await stream.CopyToAsync(memoryStream);
 		return memoryStream.ToArray();
 	}
 
