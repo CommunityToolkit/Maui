@@ -443,8 +443,8 @@ partial class MediaManager : IDisposable
 		}
 
 		systemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Music;
-		systemMediaControls.DisplayUpdater.MusicProperties.Artist = MediaElement.MetadataTitle;
-		systemMediaControls.DisplayUpdater.MusicProperties.Title = MediaElement.MetadataArtist;
+		systemMediaControls.DisplayUpdater.MusicProperties.Artist = MediaElement.MetadataArtist;
+		systemMediaControls.DisplayUpdater.MusicProperties.Title = MediaElement.MetadataTitle;
 		systemMediaControls.DisplayUpdater.Update();
 	}
 	
