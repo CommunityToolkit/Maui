@@ -2,9 +2,6 @@ using System.Numerics;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Media;
@@ -14,7 +11,6 @@ using Windows.Storage.Streams;
 using Windows.System.Display;
 using ParentWindow = CommunityToolkit.Maui.Extensions.PageExtensions.ParentWindow;
 using WindowsMediaElement = Windows.Media.Playback.MediaPlayer;
-using WinMediaSource = Windows.Media.Core.MediaSource;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -276,7 +272,7 @@ partial class MediaManager : IDisposable
 			MediaElement.MediaWidth = MediaElement.MediaHeight = 0;
 
 			MediaElement.CurrentStateChanged(MediaElementState.None);
-
+			await UpdateMetadata();
 			return;
 		}
 
@@ -305,15 +301,15 @@ partial class MediaManager : IDisposable
 		}
 	}
 	/// <summary>
-	/// Gets the string representation of the specified media source, such as a URI, file path, or resource path.
+	/// Gets the string representation of the specified media source, such as a URI, stream path, or resource path.
 	/// </summary>
 	/// <remarks>The returned value depends on the concrete type of the provided media source. For a URI media
-	/// source, the absolute URI is returned. For a file media source, the file path is returned. For a resource media
-	/// source, the full application package file path is returned if available. If the source does not contain a valid
+	/// source, the absolute URI is returned. For a stream media source, the stream path is returned. For a resource media
+	/// source, the full application package stream path is returned if available. If the source does not contain a valid
 	/// path or is not recognized, an empty string is returned.</remarks>
-	/// <param name="source">The media source to retrieve the string representation for. Can be a URI, file, or resource media source. If null,
+	/// <param name="source">The media source to retrieve the string representation for. Can be a URI, stream, or resource media source. If null,
 	/// an empty string is returned.</param>
-	/// <returns>A string containing the URI, file path, or resource path of the media source. Returns an empty string if the source
+	/// <returns>A string containing the URI, stream path, or resource path of the media source. Returns an empty string if the source
 	/// is null or does not contain a valid path.</returns>
 	public string GetSource(MediaSource? source)
 	{
@@ -344,12 +340,7 @@ partial class MediaManager : IDisposable
 				Logger.LogInformation("ResourceMediaSource Path is null or empty");
 				return string.Empty;
 			}
-
-			string path = GetFullAppPackageFilePath(resourceMediaSource.Path);
-			if (!string.IsNullOrWhiteSpace(path))
-			{
-				return path;
-			}
+			return resourceMediaSource.Path;
 		}
 		return string.Empty;
 	}
@@ -410,60 +401,57 @@ partial class MediaManager : IDisposable
 	{
 		return TValue.IsZero(numericValue);
 	}
-
+	
 	async ValueTask UpdateMetadata()
 	{
-		if (systemMediaControls is null || Player is null || MediaElement.MetadataArtworkSource is null)
+		if (systemMediaControls is null || Player is null)
 		{
 			return;
 		}
-
-		if (MediaElement.MetadataArtworkSource is UriMediaSource uriMediaSource)
+		var source = GetSource(MediaElement.MetadataArtworkSource);
+		RandomAccessStreamReference? stream = null;
+		StorageFile? file = null;
+		Uri? uri = null;
+		switch (MediaElement.MetadataArtworkSource)
 		{
-			var artwork = uriMediaSource.Uri?.AbsoluteUri ?? string.Empty;
-			var file = RandomAccessStreamReference.CreateFromUri(new Uri(artwork));
-			if (file is not null)
-			{
-				systemMediaControls.DisplayUpdater.Thumbnail = file;
-				systemMediaControls.DisplayUpdater.Update();
-				Uri uri = new(artwork);
-				Dispatcher.Dispatch(() => Player.PosterSource = new BitmapImage(uri));
-			}
-		}
-
-		if (MediaElement.MetadataArtworkSource is FileMediaSource fileMediaSource)
-		{
-			var artwork = fileMediaSource.Path;
-			if (File.Exists(artwork))
-			{
-				StorageFile ImageFile = await StorageFile.GetFileFromPathAsync(artwork);
-				Dispatcher.Dispatch(async () =>
+			case UriMediaSource:
+				stream = RandomAccessStreamReference.CreateFromUri(new Uri(source));
+				uri = new(source);
+				break;
+			case FileMediaSource:
+				if (File.Exists(source))
 				{
-					var bitmap = await LoadBitmapImageAsync(ImageFile);
-					Player.PosterSource = bitmap;
-				});
-				systemMediaControls.DisplayUpdater.Thumbnail = RandomAccessStreamReference.CreateFromFile(ImageFile);
-
-			}
-		}
-		if (MediaElement.MetadataArtworkSource is ResourceMediaSource resourceMediaSource)
-		{
-			var artwork = "ms-appx:///" + resourceMediaSource.Path;
-			var file = RandomAccessStreamReference.CreateFromUri(new Uri(artwork));
-			if (file is not null)
-			{
-				systemMediaControls.DisplayUpdater.Thumbnail = file;
+					file = await StorageFile.GetFileFromPathAsync(source);
+					stream = RandomAccessStreamReference.CreateFromFile(file);
+					uri = new(source);
+				}
+				break;
+			case ResourceMediaSource:
+				string path = GetFullAppPackageFilePath(source);
+				file = await StorageFile.GetFileFromPathAsync(path);
+				stream = RandomAccessStreamReference.CreateFromFile(file);
+				uri = new(file.Path);
+				break;
+			case null:
+				systemMediaControls.DisplayUpdater.Thumbnail = null;
+				Dispatcher.Dispatch(() => Player.PosterSource = new BitmapImage());
+				systemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Music;
+				systemMediaControls.DisplayUpdater.MusicProperties.Artist = MediaElement.MetadataTitle;
+				systemMediaControls.DisplayUpdater.MusicProperties.Title = MediaElement.MetadataArtist;
 				systemMediaControls.DisplayUpdater.Update();
-				Uri uri = new(artwork);
-				Dispatcher.Dispatch(() => Player.PosterSource = new BitmapImage(uri));
-			}
+				break;
 		}
-
-		systemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Music;
-		systemMediaControls.DisplayUpdater.MusicProperties.Artist = MediaElement.MetadataTitle;
-		systemMediaControls.DisplayUpdater.MusicProperties.Title = MediaElement.MetadataArtist;
-		systemMediaControls.DisplayUpdater.Update();
+		if (source is not null)
+		{
+			systemMediaControls.DisplayUpdater.Thumbnail = stream;
+			Dispatcher.Dispatch(() => Player.PosterSource = new BitmapImage(uri));
+			systemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Music;
+			systemMediaControls.DisplayUpdater.MusicProperties.Artist = MediaElement.MetadataTitle;
+			systemMediaControls.DisplayUpdater.MusicProperties.Title = MediaElement.MetadataArtist;
+			systemMediaControls.DisplayUpdater.Update();
+		}
 	}
+	
 	static async Task<BitmapImage> LoadBitmapImageAsync(StorageFile artwork)
 	{
 		var bitmap = new BitmapImage();

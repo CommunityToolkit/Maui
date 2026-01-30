@@ -15,6 +15,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string loadLocalResource = "Load Local Resource";
 	const string resetSource = "Reset Source to null";
 	const string loadMusic = "Load Music";
+	const string loadFromFile = "Load from File";
 	const string botImageUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
 	const string hlsStreamTestUrl = "https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8";
 	const string hal9000AudioUrl = "https://github.com/prof3ssorSt3v3/media-sample-files/raw/master/hal-9000.mp3";
@@ -165,7 +166,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	async void ChangeSourceClicked(object? sender, EventArgs? e)
 	{
 		var result = await DisplayActionSheetAsync("Choose a source", "Cancel", null,
-			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadMusic);
+			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadMusic, loadFromFile);
 
 		MediaElement.Stop();
 		MediaElement.Source = null;
@@ -188,14 +189,14 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				return;
 
 			case resetSource:
-				MediaElement.MetadataArtworkSource = string.Empty;
+				MediaElement.MetadataArtworkSource = null;
 				MediaElement.MetadataTitle = string.Empty;
 				MediaElement.MetadataArtist = string.Empty;
 				MediaElement.Source = null;
 				return;
 
 			case loadLocalResource:
-				MediaElement.MetadataArtworkSource = botImageUrl;
+				MediaElement.MetadataArtworkSource = MediaSource.FromResource("robot.jpg");
 				MediaElement.MetadataTitle = "Local Resource Title";
 				MediaElement.MetadataArtist = "Local Resource Album";
 
@@ -220,6 +221,20 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataArtworkSource = botImageUrl;
 				MediaElement.Source = MediaSource.FromUri(hal9000AudioUrl);
 				return;
+			case loadFromFile:
+				var fileResult = await PickAndShow(new PickOptions
+				{
+					FileTypes = FilePickerFileType.Videos,
+					PickerTitle = "Please select a video file"
+				});
+				if (fileResult is not null) 
+				{
+					MediaElement.MetadataTitle = fileResult.FileName;
+					MediaElement.MetadataArtist = "From File Album";
+					MediaElement.MetadataArtworkSource = botImageUrl;
+					MediaElement.Source = MediaSource.FromFile(fileResult.FullPath);
+				}
+			return;
 		}
 	}
 
@@ -286,5 +301,21 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 		popupMediaElement.Stop();
 		popupMediaElement.Source = null;
+	}
+
+	public async Task<FileResult?> PickAndShow(PickOptions options)
+	{
+		try
+		{
+			var result = await FilePicker.Default.PickAsync(options);
+			return result;
+		}
+		catch (Exception ex)
+		{
+			// The user canceled or something went wrong
+			logger.LogError(ex, "Error picking file");
+		}
+
+		return null;
 	}
 }
