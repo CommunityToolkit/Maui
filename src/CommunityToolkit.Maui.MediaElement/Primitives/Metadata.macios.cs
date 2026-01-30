@@ -77,7 +77,7 @@ sealed class Metadata
 			return;
 		}
 		ClearNowPlaying();
-		var artwork = await MetadataArtworkUrl(mediaElement.MetadataArtworkSource).ConfigureAwait(false);
+		var artwork = await MetadataArtworkMediaSource(mediaElement.MetadataArtworkSource).ConfigureAwait(false);
 
 		if (artwork is UIImage image)
 		{
@@ -173,7 +173,7 @@ sealed class Metadata
 		return MPRemoteCommandHandlerStatus.Success;
 	}
 
-	public static async Task<UIImage?> MetadataArtworkUrl(MediaSource? artworkUrl, CancellationToken cancellationToken = default)
+	public static async Task<UIImage?> MetadataArtworkMediaSource(MediaSource? artworkUrl, CancellationToken cancellationToken = default)
 	{
 		if (artworkUrl is UriMediaSource uriMediaSource)
 		{
