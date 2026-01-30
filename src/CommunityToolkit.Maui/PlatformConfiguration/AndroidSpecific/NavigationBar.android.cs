@@ -118,6 +118,7 @@ static partial class NavigationBar
 					}
 				};
 
+				navigationBarOverlay.Tag = navigationBarOverlayTag;
 				decorGroup.AddView(navigationBarOverlay);
 				navigationBarOverlay.SetZ(0);
 			}
