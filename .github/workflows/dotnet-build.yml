@@ -37,11 +37,13 @@ env:
     PathToCommunityToolkitCameraAnalyzersCsproj: 'src/CommunityToolkit.Maui.Camera.Analyzers/CommunityToolkit.Maui.Camera.Analyzers.csproj'
     PathToCommunityToolkitMediaElementAnalyzersCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers/CommunityToolkit.Maui.MediaElement.Analyzers.csproj'
     PathToCommunityToolkitSourceGeneratorsCsproj: 'src/CommunityToolkit.Maui.SourceGenerators/CommunityToolkit.Maui.SourceGenerators.csproj'
+    PathToCommunityToolkitMediaElementSourceGeneratorsCsproj: 'src/CommunityToolkit.Maui.MediaElement.SourceGenerators/CommunityToolkit.Maui.MediaElement.SourceGenerators.csproj'
     PathToCommunityToolkitAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Analyzers.CodeFixes/CommunityToolkit.Maui.Analyzers.CodeFixes.csproj'
     PathToCommunityToolkitCameraAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.Camera.Analyzers.CodeFixes/CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.csproj'
     PathToCommunityToolkitMediaElementAnalyzersCodeFixCsproj: 'src/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj'
     PathToCommunityToolkitAnalyzersUnitTestProjectDirectory: 'src/CommunityToolkit.Maui.Analyzers.UnitTests'
     PathToCommunityToolkitSourceGeneratorsUnitTestDirectory: 'src/CommunityToolkit.Maui.SourceGenerators.UnitTests'
+    PathToCommunityToolkitMediaElementSourceGeneratorsUnitTestDirectory: 'src/CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests'
     PathToCommunityToolkitSourceGeneratorsUnitTestCsproj: 'src/CommunityToolkit.Maui.SourceGenerators.UnitTests/CommunityToolkit.Maui.SourceGenerators.UnitTests.csproj'
     PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
     CommunityToolkitLibrary_Xcode_Version: '26.1'
@@ -189,6 +191,9 @@ jobs:
             -   name: 'Build CommunityToolkit.Maui.SourceGenerators'
                 run: dotnet build ${{ env.PathToCommunityToolkitSourceGeneratorsCsproj }} -c Release
 
+            -   name: 'Build CommunityToolkit.Maui.MediaElement.SourceGenerators'
+                run: dotnet build ${{ env.PathToCommunityToolkitMediaElementSourceGeneratorsCsproj }} -c Release
+
             -   name: 'Build CommunityToolkit.Maui.Camera'
                 run: dotnet build ${{ env.PathToCommunityToolkitCameraCsproj }} -c Release -p:PackageVersion=${{ env.NugetPackageVersionCamera }} -p:Version=${{ env.NugetPackageVersionCamera }}
 
@@ -214,6 +219,12 @@ jobs:
                 run: |
                     cd ${{ env.PathToCommunityToolkitSourceGeneratorsUnitTestDirectory }}
                     dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-sourcegenerators.cobertura.xml" --coverage-output-format cobertura --report-xunit
+
+            -   name: Run CommunityToolkit MediaElement Source Generators UnitTests
+                if: runner.os == 'Windows'
+                run: |
+                    cd ${{ env.PathToCommunityToolkitMediaElementSourceGeneratorsUnitTestDirectory }}
+                    dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-mediaelement-sourcegenerators.cobertura.xml" --coverage-output-format cobertura --report-xunit
 
             -   name: Run CommunityToolkit UnitTests
                 run: |

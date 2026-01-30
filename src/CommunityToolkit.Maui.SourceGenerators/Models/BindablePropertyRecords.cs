@@ -20,27 +20,27 @@ public record AttachedBindablePropertyModel(string PropertyName, ITypeSymbol Ret
 	public string BindablePropertyKeyName => $"{char.ToLower(PropertyName[0])}{PropertyName[1..]}PropertyKey";
 
 	public string EffectiveBindablePropertyXmlDocumentation => BindablePropertyXmlDocumentation ??
-	                                                    /* language=C#-test */
-	                                                    //lang=csharp
-	                                                    $"""
+														/* language=C#-test */
+														//lang=csharp
+														$"""
 	                                                     /// <summary>
 	                                                     /// Attached BindableProperty for the {PropertyName} property.
 	                                                     /// </summary>
 	                                                     """;
 
 	public string EffectiveGetterMethodXmlDocumentation => GetterMethodXmlDocumentation ??
-	                                                /* language=C#-test */
-	                                                //lang=csharp
-	                                                $"""
+													/* language=C#-test */
+													//lang=csharp
+													$"""
 	                                                 /// <summary>
 	                                                 /// Gets {PropertyName} for the <paramref name = "bindable"/> child element.
 	                                                 /// </summary>
 	                                                 """;
 
 	public string EffectiveSetterMethodXmlDocumentation => SetterMethodXmlDocumentation ??
-	                                                       /* language=C#-test */
-	                                                       //lang=csharp
-	                                                       $"""
+														   /* language=C#-test */
+														   //lang=csharp
+														   $"""
 	                                                        /// <summary>
 	                                                        /// Sets {PropertyName} for the <paramref name = "bindable"/> child element.
 	                                                        /// </summary>

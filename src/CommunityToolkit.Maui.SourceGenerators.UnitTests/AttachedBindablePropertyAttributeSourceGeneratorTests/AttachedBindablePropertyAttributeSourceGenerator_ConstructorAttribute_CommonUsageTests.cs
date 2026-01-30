@@ -273,7 +273,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 		const string bindablePropertyXmlDocumentation = "///<summary>This is the custom XML documentation for the TextProperty</summary>";
 		const string getterMethodXmlDocumentation = "///<summary>This is the custom XML documentation for the GetText method.</summary>";
 		const string setterMethodXmlDocumentation = "///<summary>This is the custom XML documentation for the SetText method.</summary>";
-		
+
 		const string source =
 			/* language=C#-test */
 			//lang=csharp
