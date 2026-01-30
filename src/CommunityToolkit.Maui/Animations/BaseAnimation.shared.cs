@@ -40,6 +40,4 @@ public abstract partial class BaseAnimation<TAnimatable>(uint defaultLength = Ba
 /// Initialize BaseAnimation
 /// </summary>
 /// <param name="defaultLength">The default time, in milliseconds, over which to animate the transition</param>
-public abstract class BaseAnimation(uint defaultLength = BaseAnimationDefaults.Length) : BaseAnimation<VisualElement>(defaultLength)
-{
-}
+public abstract class BaseAnimation(uint defaultLength = BaseAnimationDefaults.Length) : BaseAnimation<VisualElement>(defaultLength);

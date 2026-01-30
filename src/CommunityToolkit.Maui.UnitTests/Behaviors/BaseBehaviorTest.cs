@@ -66,16 +66,16 @@ public abstract class BaseBehaviorTest<TBehavior, TView> : BaseTest
 		Assert.True(wasSuccessful);
 		Assert.Equal(view.BindingContext, attachedBehavior.BindingContext);
 	}
-	
+
 	protected override void Dispose(bool isDisposing)
 	{
 		base.Dispose(isDisposing);
-		
+
 		view.Behaviors.Clear();
 	}
 
 	sealed class MockViewModel;
-	
+
 	protected sealed class MockValidationBehavior : ValidationBehavior<string>
 	{
 		public string? ExpectedValue { get; init; }

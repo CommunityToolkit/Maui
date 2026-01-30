@@ -23,6 +23,8 @@
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
 
+    <!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
+    <WindowsPackageType>None</WindowsPackageType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     
     <NoWarn>IL2026</NoWarn>
@@ -71,9 +73,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\CommunityToolkit.Maui.MediaElement.SourceGenerators\CommunityToolkit.Maui.MediaElement.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.SourceGenerators\CommunityToolkit.Maui.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Analyzers\CommunityToolkit.Maui.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Analyzers.CodeFixes\CommunityToolkit.Maui.Analyzers.CodeFixes.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\src\CommunityToolkit.Maui.MediaElement.Analyzers\CommunityToolkit.Maui.MediaElement.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\src\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.MediaElement\CommunityToolkit.Maui.MediaElement.csproj" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Camera\CommunityToolkit.Maui.Camera.csproj" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
