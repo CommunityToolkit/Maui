@@ -1,5 +1,6 @@
 ﻿using Android.App;
 using Android.Views;
+using Android.Widget;
 using AndroidX.Core.View;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Extensions;
@@ -95,7 +96,36 @@ static partial class NavigationBar
 
 		var color = GetColor(page).ToPlatform();
 
-		if (OperatingSystem.IsAndroidVersionAtLeast(23))
+		if (OperatingSystem.IsAndroidVersionAtLeast(35))
+		{
+			const string navigationBarOverlay = "NavigationBarOverlay";
+			
+			// Enable edge-to-edge (system bars become transparent)
+			WindowCompat.SetDecorFitsSystemWindows(window, false);
+
+			var decorGroup = (ViewGroup)window.DecorView;
+			var statusBarOverlay = decorGroup.FindViewWithTag(navigationBarOverlay);
+
+			if (statusBarOverlay is null)
+			{
+				var navigationBarHeight = activity.Resources?.GetIdentifier("navigation_bar_height", "dimen", "android") ?? 0;
+				var navigationBarPixelSize = navigationBarHeight > 0 ? activity.Resources?.GetDimensionPixelSize(navigationBarHeight) ?? 0 : 0;
+
+				statusBarOverlay = new(activity)
+				{
+					LayoutParameters = new FrameLayout.LayoutParams(Android.Views.ViewGroup.LayoutParams.MatchParent, navigationBarPixelSize + 3)
+					{
+						Gravity = GravityFlags.Bottom
+					}
+				};
+
+				decorGroup.AddView(statusBarOverlay);
+				statusBarOverlay.SetZ(0);
+			}
+
+			statusBarOverlay.SetBackgroundColor(color);
+		}
+		else if (OperatingSystem.IsAndroidVersionAtLeast(23))
 		{
 			window.SetNavigationBarColor(color);
 		}
