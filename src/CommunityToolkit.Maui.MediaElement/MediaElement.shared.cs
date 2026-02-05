@@ -195,10 +195,11 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	public partial string MetadataArtist { get; set; } = MediaElementDefaults.MetadataArtist;
 
 	/// <summary>
-	/// Gets or sets the <see cref="MetadataArtworkUrl"/> of the media.
+	/// Gets or sets the <see cref="MetadataArtworkSource"/> of the media.
 	/// </summary>
 	[BindableProperty]
-	public partial string MetadataArtworkUrl { get; set; } = MediaElementDefaults.MetadataArtworkUrl;
+	[TypeConverter(typeof(MediaSourceConverter))]
+	public partial MediaSource? MetadataArtworkSource { get; set; } = MediaElementDefaults.MetadataArtworkSource;
 
 	/// <summary>
 	/// Gets or sets the <see cref="Volume"/> of the media.
@@ -428,7 +429,6 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		timer.Stop();
 		timer = null;
 	}
-
 	void OnSourceChanged(object? sender, EventArgs eventArgs)
 	{
 		OnPropertyChanged(SourceProperty.PropertyName);
