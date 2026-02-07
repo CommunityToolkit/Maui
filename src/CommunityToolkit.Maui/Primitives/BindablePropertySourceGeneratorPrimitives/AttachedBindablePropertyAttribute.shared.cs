@@ -38,7 +38,7 @@ public sealed partial class AttachedBindablePropertyAttribute<T>(string property
 	/// The name of the method to call to validate the value of the <see cref="BindableProperty"/>. 
 	/// </summary>
 	/// <remarks>
-	/// The method must be <see langword="static"/> and have the following signature: <c>static bool [MethodName](object value)</c>.
+	/// The method must be <see langword="static"/> and have the following signature: <c>static bool [MethodName](BindableObject bindable, object value)</c>.
 	/// </remarks>
 	public string? ValidateValueMethodName { get; init; }
 
