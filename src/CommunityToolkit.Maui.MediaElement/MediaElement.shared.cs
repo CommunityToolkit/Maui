@@ -301,7 +301,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	[TypeConverter(typeof(MediaSourceConverter))]
 	public MediaSource? Source
 	{
-		get => (MediaSource)GetValue(SourceProperty);
+		get => (MediaSource?)GetValue(SourceProperty);
 		set => SetValue(SourceProperty, value);
 	}
 
