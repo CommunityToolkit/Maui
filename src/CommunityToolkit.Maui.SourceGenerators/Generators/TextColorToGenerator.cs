@@ -99,17 +99,11 @@ class TextColorToGenerator : IIncrementalGenerator
 			.SelectMany(static (x, _) => Deduplicate(x.Left, x.Right).ToImmutableArray())
 			.Select(static (x, _) => GenerateMetadata(x));
 
-
 		context.RegisterSourceOutput(inputs, Execution);
 	}
 
 	static void Execution(SourceProductionContext context, TextStyleClassMetadata textStyleClassMetadata)
 	{
-		if (textStyleClassMetadata.ShouldDisableTextColorToGenerator)
-		{
-			return;
-		}
-
 		var className = typeof(TextColorToGenerator).FullName;
 		var assemblyVersion = typeof(TextColorToGenerator).Assembly.GetName().Version.ToString();
 
@@ -211,7 +205,7 @@ class TextColorToGenerator : IIncrementalGenerator
 			? "internal"
 			: GetClassAccessModifier(namedTypeSymbol);
 
-		return new(namedTypeSymbol.Name, accessModifier, namedTypeSymbol.ContainingNamespace.ToDisplayString(), namedTypeSymbol.TypeArguments.GetGenericTypeArgumentsString(), namedTypeSymbol.GetGenericTypeConstraintsAsString(), shouldGenerateTextColorTo);
+		return new(namedTypeSymbol.Name, accessModifier, namedTypeSymbol.ContainingNamespace.ToDisplayString(), namedTypeSymbol.TypeArguments.GetGenericTypeArgumentsString(), namedTypeSymbol.GetGenericTypeConstraintsAsString());
 	}
 
 	static IEnumerable<INamedTypeSymbol> Deduplicate(ImmutableArray<INamedTypeSymbol?> left, IEnumerable<INamedTypeSymbol> right)
@@ -251,5 +245,5 @@ class TextColorToGenerator : IIncrementalGenerator
 		_ => string.Empty
 	};
 
-	record TextStyleClassMetadata(string ClassName, string ClassAccessModifier, string Namespace, string GenericArguments, string GenericConstraints, bool ShouldDisableTextColorToGenerator);
+	record TextStyleClassMetadata(string ClassName, string ClassAccessModifier, string Namespace, string GenericArguments, string GenericConstraints);
 }
