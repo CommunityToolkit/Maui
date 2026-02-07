@@ -142,7 +142,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// <remarks>
 	/// <see cref="StopCameraPreviewCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter
 	/// </remarks>
-	public ICommand StopCameraPreviewCommand => (ICommand)GetValue(StopCameraPreviewCommandProperty);
+	public Command<CancellationToken> StopCameraPreviewCommand => (Command<CancellationToken>)GetValue(StopCameraPreviewCommandProperty);
 
 	/// <summary>
 	/// Gets the <see cref="Command{Stream}"/> that starts video recording.
