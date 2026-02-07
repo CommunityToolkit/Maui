@@ -16,8 +16,6 @@
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
-
-    <DisableTextColorToGenerator>true</DisableTextColorToGenerator>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -47,7 +45,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <CompilerVisibleProperty Include="DisableTextColorToGenerator" />
     <ProjectReference Include="..\CommunityToolkit.Maui.SourceGenerators\CommunityToolkit.Maui.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj" />
   </ItemGroup>
