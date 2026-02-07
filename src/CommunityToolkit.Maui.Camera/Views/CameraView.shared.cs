@@ -41,7 +41,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// <summary>
 	/// Backing <see cref="BindableProperty"/> for the <see cref="SelectedCamera"/> property.
 	/// </summary>
-	public static readonly BindableProperty? SelectedCameraProperty = BindableProperty.Create(nameof(SelectedCamera),
+	public static readonly BindableProperty SelectedCameraProperty = BindableProperty.Create(nameof(SelectedCamera),
 		typeof(CameraInfo), typeof(CameraView), null, defaultBindingMode: BindingMode.TwoWay);
 
 	/// <summary>
