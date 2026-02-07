@@ -67,7 +67,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// <summary>
 	/// Bindable property for the <see cref="ShouldShowPlaybackControls"/> property.
 	/// </summary>
-	public static readonly BindableProperty ShowsPlaybackControlsProperty =
+	public static readonly BindableProperty ShouldShowPlaybackControlsProperty =
 		BindableProperty.Create(nameof(ShouldShowPlaybackControls), typeof(bool), typeof(MediaElement), MediaElementDefaults.ShouldShowPlaybackControls);
 
 	/// <summary>
