@@ -1,6 +1,6 @@
 ﻿namespace CommunityToolkit.Maui;
 
-/// <summary> Source generater that creates an Attached <see cref="Microsoft.Maui.Controls.BindableProperty"/> and two <see langword="static"/> methods: <c>Get{PropertyName}(BindableProperty bindable)</c> and <c>Set{PropertyName}(BindableProperty bindable, T value)</c></summary>
+/// <summary> Source generator that creates an Attached <see cref="Microsoft.Maui.Controls.BindableProperty"/> and two <see langword="static"/> methods: <c>Get{PropertyName}(BindableProperty bindable)</c> and <c>Set{PropertyName}(BindableProperty bindable, T value)</c></summary>
 /// <typeparam name="T">Type of the Attached Bindable Property. Set <see cref="AttachedBindablePropertyAttribute{T}.IsNullable"/> to <see langword="true"/> to generate a nullable type for <typeparamref name="T"/></typeparam>
 /// <param name="propertyName">Name of the Attached Property</param>
 /// <remarks> 
