@@ -46,7 +46,7 @@ public sealed partial class AttachedBindablePropertyAttribute<T>(string property
 	/// Gets the name of the method to invoke when the <see cref="BindableProperty"/> value changes.
 	/// </summary>
 	/// <remarks>
-	/// The method must be <see langword="static"/> and have the following signature: <c>static void [MethodName](BindableObject binable, object oldValue, object newValue)</c>.
+	/// The method must be <see langword="static"/> and have the following signature: <c>static void [MethodName](BindableObject bindable, object oldValue, object newValue)</c>.
 	/// </remarks>
 	public string? PropertyChangedMethodName { get; init; }
 
@@ -54,7 +54,7 @@ public sealed partial class AttachedBindablePropertyAttribute<T>(string property
 	/// Gets the name of the method that is invoked when the <see cref="BindableProperty"/> is about to change.
 	/// </summary>
 	/// <remarks>
-	/// The method must be <see langword="static"/> and have the following signature: <c>static void [MethodName](BindableObject binable, object oldValue, object newValue)</c>.
+	/// The method must be <see langword="static"/> and have the following signature: <c>static void [MethodName](BindableObject bindable, object oldValue, object newValue)</c>.
 	/// </remarks>
 	public string? PropertyChangingMethodName { get; init; }
 
@@ -62,7 +62,7 @@ public sealed partial class AttachedBindablePropertyAttribute<T>(string property
 	/// Gets the name of the method used to coerce the value of the <see cref="BindableProperty"/>.
 	/// </summary>
 	/// <remarks>
-	/// The method must be <see langword="static"/> and have the following signature: <c>static object [MethodName](BindableObject binable, object value)</c>.
+	/// The method must be <see langword="static"/> and have the following signature: <c>static object [MethodName](BindableObject bindable, object value)</c>.
 	/// </remarks>
 	public string? CoerceValueMethodName { get; init; }
 
