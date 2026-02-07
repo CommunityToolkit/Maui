@@ -72,7 +72,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// Bindable property for the <see cref="StopCameraPreviewCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty StopCameraPreviewCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(ICommand), typeof(CameraView), null, BindingMode.OneWayToSource, defaultValueCreator: CreateStopCameraPreviewCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(Command<CancellationToken>), typeof(CameraView), null, BindingMode.OneWayToSource, defaultValueCreator: CreateStopCameraPreviewCommand).BindableProperty;
 
 	/// <summary>
 	/// Bindable property for the <see cref="StartVideoRecordingCommand"/> property.
