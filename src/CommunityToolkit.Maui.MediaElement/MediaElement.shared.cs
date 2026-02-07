@@ -291,8 +291,8 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// </summary>
 	public bool ShouldShowPlaybackControls
 	{
-		get => (bool)GetValue(ShowsPlaybackControlsProperty);
-		set => SetValue(ShowsPlaybackControlsProperty, value);
+		get => (bool)GetValue(ShouldShowPlaybackControlsProperty);
+		set => SetValue(ShouldShowPlaybackControlsProperty, value);
 	}
 
 	/// <summary>
