@@ -13,7 +13,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// Bindable property for the <see cref="Aspect"/> property.
 	/// </summary>
 	public static readonly BindableProperty AspectProperty =
-		BindableProperty.Create(nameof(Aspect), typeof(Aspect), typeof(MediaElement), Aspect.AspectFit);
+		BindableProperty.Create(nameof(Aspect), typeof(Aspect), typeof(MediaElement), MediaElementDefaults.Aspect);
 
 
 	static readonly BindablePropertyKey currentStatePropertyKey = BindableProperty.CreateReadOnly(nameof(CurrentState), typeof(MediaElementState), typeof(MediaElement),
@@ -25,7 +25,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	public static readonly BindableProperty CurrentStateProperty = currentStatePropertyKey.BindableProperty;
 
 	static readonly BindablePropertyKey durationPropertyKey =
-		BindableProperty.CreateReadOnly(nameof(Duration), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero);
+		BindableProperty.CreateReadOnly(nameof(Duration), typeof(TimeSpan), typeof(MediaElement), MediaElementDefaults.Duration);
 
 	/// <summary>
 	/// Bindable property for the <see cref="Duration"/> property.
@@ -36,25 +36,25 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// Bindable property for the <see cref="ShouldAutoPlay"/> property.
 	/// </summary>
 	public static readonly BindableProperty ShouldAutoPlayProperty =
-		BindableProperty.Create(nameof(ShouldAutoPlay), typeof(bool), typeof(MediaElement), false);
+		BindableProperty.Create(nameof(ShouldAutoPlay), typeof(bool), typeof(MediaElement), MediaElementDefaults.ShouldAutoPlay);
 
 	/// <summary>
 	/// Bindable property for the <see cref="ShouldLoopPlayback"/> property.
 	/// </summary>
 	public static readonly BindableProperty ShouldLoopPlaybackProperty =
-		BindableProperty.Create(nameof(ShouldLoopPlayback), typeof(bool), typeof(MediaElement), false);
+		BindableProperty.Create(nameof(ShouldLoopPlayback), typeof(bool), typeof(MediaElement), MediaElementDefaults.ShouldLoopPlayback);
 
 	/// <summary>
 	/// Bindable property for the <see cref="ShouldKeepScreenOn"/> property.
 	/// </summary>
 	public static readonly BindableProperty ShouldKeepScreenOnProperty =
-		BindableProperty.Create(nameof(ShouldKeepScreenOn), typeof(bool), typeof(MediaElement), false);
+		BindableProperty.Create(nameof(ShouldKeepScreenOn), typeof(bool), typeof(MediaElement), MediaElementDefaults.ShouldKeepScreenOn);
 
 	/// <summary>
 	/// Bindable property for the <see cref="ShouldMute"/> property.
 	/// </summary>
 	public static readonly BindableProperty ShouldMuteProperty =
-		BindableProperty.Create(nameof(ShouldMute), typeof(bool), typeof(MediaElement), false);
+		BindableProperty.Create(nameof(ShouldMute), typeof(bool), typeof(MediaElement), MediaElementDefaults.ShouldMute);
 
 
 	static readonly BindablePropertyKey positionPropertyKey = BindableProperty.CreateReadOnly(nameof(Position), typeof(TimeSpan), typeof(MediaElement), TimeSpan.Zero);
@@ -68,7 +68,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// Bindable property for the <see cref="ShouldShowPlaybackControls"/> property.
 	/// </summary>
 	public static readonly BindableProperty ShowsPlaybackControlsProperty =
-		BindableProperty.Create(nameof(ShouldShowPlaybackControls), typeof(bool), typeof(MediaElement), true);
+		BindableProperty.Create(nameof(ShouldShowPlaybackControls), typeof(bool), typeof(MediaElement), MediaElementDefaults.ShouldShowPlaybackControls);
 
 	/// <summary>
 	/// Bindable property for the <see cref="Source"/> property.
@@ -81,10 +81,10 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// Bindable property for the <see cref="Speed"/> property.
 	/// </summary>
 	public static readonly BindableProperty SpeedProperty =
-		BindableProperty.Create(nameof(Speed), typeof(double), typeof(MediaElement), 1.0);
+		BindableProperty.Create(nameof(Speed), typeof(double), typeof(MediaElement), MediaElementDefaults.Speed);
 
 	static readonly BindablePropertyKey mediaHeightPropertyKey =
-		BindableProperty.CreateReadOnly(nameof(MediaHeight), typeof(int), typeof(MediaElement), 0);
+		BindableProperty.CreateReadOnly(nameof(MediaHeight), typeof(int), typeof(MediaElement), MediaElementDefaults.MediaHeight);
 
 	/// <summary>
 	/// Bindable property for the <see cref="MediaHeight"/> property.
@@ -93,34 +93,33 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		mediaHeightPropertyKey.BindableProperty;
 
 	static readonly BindablePropertyKey mediaWidthPropertyKey =
-		BindableProperty.CreateReadOnly(nameof(MediaWidth), typeof(int), typeof(MediaElement), 0);
+		BindableProperty.CreateReadOnly(nameof(MediaWidth), typeof(int), typeof(MediaElement), MediaElementDefaults.MediaWidth);
 
 	/// <summary>
 	/// Bindable property for the <see cref="MediaWidth"/> property.
 	/// </summary>
-	public static readonly BindableProperty MediaWidthProperty =
-		mediaWidthPropertyKey.BindableProperty;
+	public static readonly BindableProperty MediaWidthProperty = mediaWidthPropertyKey.BindableProperty;
 
 	/// <summary>
 	/// Bindable property for the <see cref="Volume"/> property.
 	/// </summary>
 	public static readonly BindableProperty VolumeProperty =
-		BindableProperty.Create(nameof(Volume), typeof(double), typeof(MediaElement), 1.0, BindingMode.TwoWay);
+		BindableProperty.Create(nameof(Volume), typeof(double), typeof(MediaElement), MediaElementDefaults.Volume, BindingMode.TwoWay);
 
 	/// <summary>
 	/// Bindable property for the <see cref="MetadataTitle"/> property.
 	/// </summary>
-	public static readonly BindableProperty MetadataTitleProperty = BindableProperty.Create(nameof(MetadataTitle), typeof(string), typeof(MediaElement), string.Empty);
+	public static readonly BindableProperty MetadataTitleProperty = BindableProperty.Create(nameof(MetadataTitle), typeof(string), typeof(MediaElement), MediaElementDefaults.MetadataTitle);
 
 	/// <summary>
 	/// Bindable property for the <see cref="MetadataArtist"/> property.
 	/// </summary>
-	public static readonly BindableProperty MetadataArtistProperty = BindableProperty.Create(nameof(MetadataArtist), typeof(string), typeof(MediaElement), string.Empty);
+	public static readonly BindableProperty MetadataArtistProperty = BindableProperty.Create(nameof(MetadataArtist), typeof(string), typeof(MediaElement), MediaElementDefaults.MetadataArtist);
 
 	/// <summary>
 	/// Bindable property for the <see cref="MetadataArtworkUrl"/> property.
 	/// </summary>
-	public static readonly BindableProperty MetadataArtworkUrlProperty = BindableProperty.Create(nameof(MetadataArtworkUrl), typeof(string), typeof(MediaElement), string.Empty);
+	public static readonly BindableProperty MetadataArtworkUrlProperty = BindableProperty.Create(nameof(MetadataArtworkUrl), typeof(string), typeof(MediaElement), MediaElementDefaults.MetadataArtworkUrl);
 
 	readonly WeakEventManager eventManager = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
