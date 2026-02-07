@@ -536,16 +536,6 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		mediaElement.OnStateChanged(new MediaStateChangedEventArgs(previousState, newState));
 	}
 
-	static void OnVolumeChanging(BindableObject bindable, object oldValue, object newValue)
-	{
-		var updatedVolume = (double)newValue;
-
-		if (updatedVolume is < 0.0 or > 1.0)
-		{
-			throw new ArgumentOutOfRangeException(nameof(newValue), $"{nameof(Volume)} can not be less than 0.0 or greater than 1.0");
-		}
-	}
-
 	void IMediaElement.MediaEnded() => OnMediaEnded();
 
 	void IMediaElement.MediaFailed(MediaFailedEventArgs args) => OnMediaFailed(args);
