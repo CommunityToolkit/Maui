@@ -1,8 +1,6 @@
+using System.Diagnostics;
 using CommunityToolkit.Maui.Core.Primitives;
-using Microsoft.Maui.ApplicationModel;
-using Microsoft.UI;
-using Microsoft.Windows.AppLifecycle;
-using Microsoft.Windows.Storage.Pickers;
+using Windows.Storage.Pickers;
 
 namespace CommunityToolkit.Maui.Storage;
 
@@ -12,18 +10,12 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 	async Task<Folder> InternalPickAsync(string initialPath, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-		if (IPlatformApplication.Current?.Application.Windows[0].Handler?.PlatformView is not MauiWinUIWindow window)
+		var folderPicker = new Windows.Storage.Pickers.FolderPicker()
 		{
-			throw new FolderPickerException(
-				"Cannot present folder picker: No active window found. Ensure the app is active with a visible window.");
-		}
-
-		var folderPicker = new Microsoft.Windows.Storage.Pickers.FolderPicker(window.AppWindow.Id)
-		{
-			SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
-			SuggestedFolder = initialPath
+			SuggestedStartLocation = PickerLocationId.DocumentsLibrary
 		};
-
+		WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, Process.GetCurrentProcess().MainWindowHandle);
+		folderPicker.FileTypeFilter.Add("*");
 		var folderPickerOperation = folderPicker.PickSingleFolderAsync();
 
 		void CancelFolderPickerOperation()
@@ -35,15 +27,10 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 		var folder = await folderPickerOperation;
 		if (folder is null)
 		{
-			throw new OperationCanceledException("Operation cancelled.");
+			throw new FolderPickerException("Operation cancelled or Folder doesn't exist.");
 		}
 
-		if (string.IsNullOrEmpty(folder.Path))
-		{
-			throw new FolderPickerException("Folder doesn't exist.");
-		}
-
-		return new Folder(folder.Path, new DirectoryInfo(folder.Path).Name);
+		return new Folder(folder.Path, folder.Name);
 	}
 
 	Task<Folder> InternalPickAsync(CancellationToken cancellationToken)

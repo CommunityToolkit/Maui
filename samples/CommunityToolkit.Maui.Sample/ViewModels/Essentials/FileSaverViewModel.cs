@@ -38,8 +38,7 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 		try
 		{
 			var fileName = Application.Current?.Windows[0].Page?.DisplayPromptAsync("FileSaver", "Choose filename") ?? Task.FromResult("test.txt");
-			var initialFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-			var fileLocationResult = await fileSaver.SaveAsync(initialFolder, await fileName, stream, cancellationToken);
+			var fileLocationResult = await fileSaver.SaveAsync(await fileName, stream, cancellationToken);
 			fileLocationResult.EnsureSuccess();
 
 			await Toast.Make($"File is saved: {fileLocationResult.FilePath}").Show(cancellationToken);
