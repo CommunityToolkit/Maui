@@ -18,6 +18,7 @@ public partial class Popup : ContentView
 		HorizontalOptions = Options.DefaultPopupSettings.HorizontalOptions;
 		VerticalOptions = Options.DefaultPopupSettings.VerticalOptions;
 		BackgroundColor = Options.DefaultPopupSettings.BackgroundColor;
+		CanBeDismissedByTappingOutsideOfPopup = Options.DefaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup;
 	}
 
 	/// <summary>
@@ -34,25 +35,25 @@ public partial class Popup : ContentView
 	/// Gets or sets the margin between the <see cref="Popup"/> and the edge of the window.
 	/// </summary>
 	[BindableProperty]
-	public new partial Thickness Margin { get; set; } = Options.DefaultPopupSettings.Margin;
+	public new partial Thickness Margin { get; set; }
 
 	/// <summary>
 	/// Gets or sets the padding between the <see cref="Popup"/> border and the <see cref="Popup"/> content.
 	/// </summary>
 	[BindableProperty]
-	public new partial Thickness Padding { get; set; } = Options.DefaultPopupSettings.Padding;
+	public new partial Thickness Padding { get; set; }
 
 	/// <summary>
 	/// Gets or sets the horizontal position of the <see cref="Popup"/> when displayed on screen.
 	/// </summary>
 	[BindableProperty]
-	public new partial LayoutOptions HorizontalOptions { get; set; } = Options.DefaultPopupSettings.HorizontalOptions;
+	public new partial LayoutOptions HorizontalOptions { get; set; }
 
 	/// <summary>
 	/// Gets or sets the vertical position of the <see cref="Popup"/> when displayed on screen.
 	/// </summary>
 	[BindableProperty]
-	public new partial LayoutOptions VerticalOptions { get; set; } = Options.DefaultPopupSettings.VerticalOptions;
+	public new partial LayoutOptions VerticalOptions { get; set; }
 
 	/// <inheritdoc cref="IPopupOptions.CanBeDismissedByTappingOutsideOfPopup"/> />
 	/// <remarks>
@@ -60,7 +61,7 @@ public partial class Popup : ContentView
 	/// On Android - when false the hardware back button is disabled.
 	/// </remarks>
 	[BindableProperty]
-	public partial bool CanBeDismissedByTappingOutsideOfPopup { get; set; } = Options.DefaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup;
+	public partial bool CanBeDismissedByTappingOutsideOfPopup { get; set; }
 
 	/// <summary>
 	/// Close the Popup.
