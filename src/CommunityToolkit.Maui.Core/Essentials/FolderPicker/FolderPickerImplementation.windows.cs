@@ -21,7 +21,7 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 		var folderPicker = new Microsoft.Windows.Storage.Pickers.FolderPicker(window.AppWindow.Id)
 		{
 			SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
-			// SuggestedFolder = initialPath // TODO uncomment with WindowsSDK 2.0
+			SuggestedFolder = initialPath
 		};
 
 		var folderPickerOperation = folderPicker.PickSingleFolderAsync();
