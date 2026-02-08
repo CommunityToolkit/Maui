@@ -17,7 +17,7 @@ public sealed partial class BindablePropertyAttribute : global::System.Attribute
 	/// The name of the method to call to validate the value of the <see cref="BindableProperty"/>. 
 	/// </summary>
 	/// <remarks>
-	/// The method must be <see langword="static"/> and have the following signature: <c>static bool [MethodName](BindableObject bindable, object value)</c>.
+	/// The method must be <see langword="static"/> and have the following signature: <c>static bool {MethodName}(BindableObject bindable, object value)</c>.
 	/// </remarks>
 	public string? ValidateValueMethodName { get; init; }
 
@@ -25,7 +25,7 @@ public sealed partial class BindablePropertyAttribute : global::System.Attribute
 	/// Gets the name of the method to invoke when the <see cref="BindableProperty"/> value changes.
 	/// </summary>
 	/// <remarks>
-	/// The method must be <see langword="static"/> and have the following signature: <c>static void [MethodName](BindableObject bindable, object oldValue, object newValue)</c>.
+	/// The method must be <see langword="static"/> and have the following signature: <c>static void {MethodName}(BindableObject bindable, object oldValue, object newValue)</c>.
 	/// </remarks>
 	public string? PropertyChangedMethodName { get; init; }
 
@@ -33,7 +33,7 @@ public sealed partial class BindablePropertyAttribute : global::System.Attribute
 	/// Gets the name of the method that is invoked when the <see cref="BindableProperty"/> is about to change.
 	/// </summary>
 	/// <remarks>
-	/// The method must be <see langword="static"/> and have the following signature: <c>static void [MethodName](BindableObject bindable, object oldValue, object newValue)</c>.
+	/// The method must be <see langword="static"/> and have the following signature: <c>static void {MethodName}(BindableObject bindable, object oldValue, object newValue)</c>.
 	/// </remarks>
 	public string? PropertyChangingMethodName { get; init; }
 
@@ -41,7 +41,7 @@ public sealed partial class BindablePropertyAttribute : global::System.Attribute
 	/// Gets the name of the method used to coerce the value of the <see cref="BindableProperty"/>.
 	/// </summary>
 	/// <remarks>
-	/// The method must be <see langword="static"/> and have the following signature: <c>static object [MethodName](BindableObject bindable, object value)</c>.
+	/// The method must be <see langword="static"/> and have the following signature: <c>static object {MethodName}(BindableObject bindable, object value)</c>.
 	/// </remarks>
 	public string? CoerceValueMethodName { get; init; }
 
@@ -49,7 +49,7 @@ public sealed partial class BindablePropertyAttribute : global::System.Attribute
 	/// Gets the name of the method used to create the default value for the <see cref="BindableProperty"/>.
 	/// </summary>
 	/// <remarks>
-	/// The method must be <see langword="static"/> and have the following signature: <c>static object [MethodName](BindableObject bindable)</c>.
+	/// The method must be <see langword="static"/> and have the following signature: <c>static object {MethodName}(BindableObject bindable)</c>.
 	/// </remarks>
 	public string? DefaultValueCreatorMethodName { get; init; }
 }
