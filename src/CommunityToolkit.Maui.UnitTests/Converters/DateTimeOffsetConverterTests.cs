@@ -95,10 +95,10 @@ public class DateTimeOffsetConverterTests : BaseConverterTest<DateTimeOffsetConv
 			testDateTimeUnspecified, testDateTimeOffsetUnspecified, CultureInfo.CurrentCulture
 		},
 		{
-			new(2026, 03, 15, 13, 37, 00, DateTimeKind.Local), new(2026, 03, 15, 13, 37, 00, new TimeSpan(2,0,0)), new CultureInfo("uk-UA")
+			new(2026, 03, 15, 13, 37, 00, DateTimeKind.Local), new(2026, 03, 15, 13, 37, 00, TimeZoneInfo.Local.GetUtcOffset(new(2026, 03, 15, 13, 37, 00))), CultureInfo.CurrentCulture
 		},
 		{
-			new(2026, 07, 15, 13, 37, 00, DateTimeKind.Local), new(2026, 07, 15, 13, 37, 00, new TimeSpan(3,0,0)), new CultureInfo("uk-UA")
+			new(2026, 07, 15, 13, 37, 00, DateTimeKind.Local), new(2026, 07, 15, 13, 37, 00, TimeZoneInfo.Local.GetUtcOffset(new(2026, 07, 15, 13, 37, 00))), CultureInfo.CurrentCulture
 		},
 	};
 
