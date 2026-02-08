@@ -62,8 +62,8 @@ public partial class Popup : ContentView
 	/// </summary>
 	public new Thickness Padding
 	{
-		get => (Thickness)GetValue(PaddingProperty);
-		set => SetValue(PaddingProperty, value);
+		get => base.Padding;
+		set => base.Padding = value;
 	}
 
 	/// <summary>
