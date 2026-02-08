@@ -81,11 +81,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <CompilerVisibleProperty Include="DisableTextColorToGenerator" />
-    <ProjectReference Include="..\CommunityToolkit.Maui.SourceGenerators\CommunityToolkit.Maui.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="ResourceDictionary.windows.xaml">
       <LogicalName>ResourceDictionary.windows.xaml</LogicalName>
     </EmbeddedResource>
