@@ -1,10 +1,10 @@
+#pragma warning disable CA1416
 using CommunityToolkit.Maui.UnitTests.Services;
 using CommunityToolkit.Maui.Views;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-#pragma warning disable CA1416
 public class DefaultPopupSettingsTests : BaseViewTest
 {
 	[Fact]
@@ -133,6 +133,7 @@ public class DefaultPopupSettingsTests : BaseViewTest
 
 		var popupBorder = popupPage.Content.PopupBorder;
 		var popup = (Popup)(popupBorder.Content ?? throw new InvalidOperationException("PopupBorder Content cannot be null"));
+		var underlyingContentView = (ContentView)popup;
 
 		// Assert
 		Assert.Equal(defaultPopupSettings.BackgroundColor, popup.BackgroundColor);
@@ -141,6 +142,10 @@ public class DefaultPopupSettingsTests : BaseViewTest
 		Assert.Equal(defaultPopupSettings.VerticalOptions, popupBorder.VerticalOptions);
 		Assert.Equal(defaultPopupSettings.HorizontalOptions, popupBorder.HorizontalOptions);
 		Assert.Equal(defaultPopupSettings.Padding, popup.Padding);
+		Assert.Equal(defaultPopupSettings.Padding, underlyingContentView.Padding);
+		Assert.Equal(Thickness.Zero, underlyingContentView.Margin);
+		Assert.Equal(LayoutOptions.Fill, underlyingContentView.HorizontalOptions);
+		Assert.Equal(LayoutOptions.Fill, underlyingContentView.VerticalOptions);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Medium)]
@@ -177,6 +182,7 @@ public class DefaultPopupSettingsTests : BaseViewTest
 
 		var popupBorder = popupPage.Content.PopupBorder;
 		var popup = (Popup)(popupBorder.Content ?? throw new InvalidOperationException("PopupBorder Content cannot be null"));
+		var underlyingContentView = (ContentView)popup;
 
 		// Assert
 		Assert.Equal(defaultPopupSettings.BackgroundColor, popup.BackgroundColor);
@@ -185,6 +191,10 @@ public class DefaultPopupSettingsTests : BaseViewTest
 		Assert.Equal(defaultPopupSettings.VerticalOptions, popupBorder.VerticalOptions);
 		Assert.Equal(defaultPopupSettings.HorizontalOptions, popupBorder.HorizontalOptions);
 		Assert.Equal(defaultPopupSettings.Padding, popup.Padding);
+		Assert.Equal(defaultPopupSettings.Padding, underlyingContentView.Padding);
+		Assert.Equal(Thickness.Zero, underlyingContentView.Margin);
+		Assert.Equal(LayoutOptions.Fill, underlyingContentView.HorizontalOptions);
+		Assert.Equal(LayoutOptions.Fill, underlyingContentView.VerticalOptions);
 	}
 }
 #pragma warning restore CA1416
