@@ -304,13 +304,13 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	{
 		public override Thickness DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.Padding;
 
-		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value == default ? Options.DefaultPopupSettings.Padding : value;
+		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value.IsEmpty || value.IsNaN ? Options.DefaultPopupSettings.Padding : value;
 	}
 
 	sealed partial class MarginConverter : BaseConverterOneWay<Thickness, Thickness>
 	{
 		public override Thickness DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.Margin;
 
-		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value == default ? Options.DefaultPopupSettings.Margin : value;
+		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value.IsEmpty || value.IsNaN ? Options.DefaultPopupSettings.Margin : value;
 	}
 }
