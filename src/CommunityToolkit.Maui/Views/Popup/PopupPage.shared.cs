@@ -84,18 +84,18 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 
 		var popupPageToClose = customPageContainer?.CurrentPage as PopupPage
-							   ?? Navigation.ModalStack.OfType<PopupPage>().LastOrDefault()
-							   ?? throw new PopupNotFoundException();
+		                       ?? Navigation.ModalStack.OfType<PopupPage>().LastOrDefault()
+		                       ?? throw new PopupNotFoundException();
 
 		// PopModalAsync will pop the last (top) page from the ModalStack
 		// Ensure that the PopupPage the user is attempting to close is the last (top) page on the Modal stack before calling Navigation.PopModalAsync
 		if (Navigation.ModalStack[^1] is IPageContainer<Page> { CurrentPage: PopupPage visiblePopupPageInCustomPageContainer }
-			 && visiblePopupPageInCustomPageContainer.Content != Content)
+		    && visiblePopupPageInCustomPageContainer.Content != Content)
 		{
 			throw new PopupBlockedException(visiblePopupPageInCustomPageContainer);
 		}
 		else if (Navigation.ModalStack[^1] is ContentPage currentVisibleModalPage
-				 && currentVisibleModalPage.Content != Content)
+		         && currentVisibleModalPage.Content != Content)
 		{
 			throw new PopupBlockedException(currentVisibleModalPage);
 		}
@@ -166,7 +166,13 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 	// Only dismiss when a user taps outside Popup when **both** Popup.CanBeDismissedByTappingOutsideOfPopup and PopupOptions.CanBeDismissedByTappingOutsideOfPopup are true
 	// If either value is false, do not dismiss Popup
-	static bool GetCanBeDismissedByTappingOutsideOfPopup(in Popup popup, in IPopupOptions popupOptions) => popup.CanBeDismissedByTappingOutsideOfPopup & popupOptions.CanBeDismissedByTappingOutsideOfPopup;
+	static bool GetCanBeDismissedByTappingOutsideOfPopup(in Popup popup, in IPopupOptions popupOptions) => (popup.CanBeDismissedByTappingOutsideOfPopup, popupOptions.CanBeDismissedByTappingOutsideOfPopup) switch
+	{
+		(null, _) => popupOptions.CanBeDismissedByTappingOutsideOfPopup,
+		(true, _) => true,
+		(not null, true) => true,
+		(false, false) => false
+	};
 
 	void HandlePopupOptionsPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
@@ -300,11 +306,11 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 	}
 
-	sealed partial class PaddingConverter : BaseConverterOneWay<Thickness?, Thickness>
+	sealed partial class PaddingConverter : BaseConverterOneWay<Thickness, Thickness>
 	{
 		public override Thickness DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.Padding;
 
-		public override Thickness ConvertFrom(Thickness? value, CultureInfo? culture) => value ?? DefaultConvertReturnValue;
+		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value.IsEmpty || value.IsNaN ? DefaultConvertReturnValue : value;
 	}
 
 	sealed partial class MarginConverter : BaseConverterOneWay<Thickness?, Thickness>
