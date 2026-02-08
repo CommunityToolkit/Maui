@@ -35,8 +35,8 @@ public partial class DateTimeOffsetConverter : BaseConverter<DateTimeOffset, Dat
 	{
 		var offset = value.Kind switch
 		{
-			DateTimeKind.Local => DateTimeOffset.Now.Offset,
-			DateTimeKind.Utc => DateTimeOffset.UtcNow.Offset,
+			DateTimeKind.Local => TimeZoneInfo.Local.GetUtcOffset(value),
+			DateTimeKind.Utc => TimeZoneInfo.Utc.GetUtcOffset(value),
 			_ => TimeSpan.Zero,
 		};
 
