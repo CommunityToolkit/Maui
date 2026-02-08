@@ -38,12 +38,6 @@ public partial class Popup : ContentView
 	public new partial Thickness Margin { get; set; }
 
 	/// <summary>
-	/// Gets or sets the padding between the <see cref="Popup"/> border and the <see cref="Popup"/> content.
-	/// </summary>
-	[BindableProperty]
-	public new partial Thickness Padding { get; set; }
-
-	/// <summary>
 	/// Gets or sets the horizontal position of the <see cref="Popup"/> when displayed on screen.
 	/// </summary>
 	[BindableProperty]
@@ -62,6 +56,15 @@ public partial class Popup : ContentView
 	/// </remarks>
 	[BindableProperty]
 	public partial bool CanBeDismissedByTappingOutsideOfPopup { get; set; }
+	
+	/// <summary>
+	/// Gets or sets the padding between the <see cref="Popup"/> border and the <see cref="Popup"/> content.
+	/// </summary>
+	public new Thickness Padding
+	{
+		get => (Thickness)GetValue(PaddingProperty);
+		set => SetValue(PaddingProperty, value);
+	}
 
 	/// <summary>
 	/// Close the Popup.
