@@ -172,7 +172,8 @@ public class DateTimeOffsetConverterTests : BaseConverterTest<DateTimeOffsetConv
 			       && x.Minute == y.Minute
 			       && x.Second == y.Second
 			       && x.Millisecond == y.Millisecond
-			       && x.Microsecond == y.Microsecond;
+			       && x.Microsecond == y.Microsecond
+			       && x.Offset == y.Offset;
 		}
 
 		public int GetHashCode(DateTimeOffset obj)
@@ -185,7 +186,7 @@ public class DateTimeOffsetConverterTests : BaseConverterTest<DateTimeOffsetConv
 				obj.Minute,
 				obj.Second,
 				obj.Millisecond,
-				obj.Microsecond);
+				HashCode.Combine(obj.Microsecond, obj.Offset));
 		}
 	}
 }
