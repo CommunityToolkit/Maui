@@ -1,5 +1,4 @@
 
-using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Views;
@@ -36,19 +35,19 @@ public partial class Popup : ContentView
 	/// Gets or sets the margin between the <see cref="Popup"/> and the edge of the window.
 	/// </summary>
 	[BindableProperty]
-	public new partial Thickness? Margin { get; set; }
+	public new partial Thickness Margin { get; set; }
 
 	/// <summary>
 	/// Gets or sets the horizontal position of the <see cref="Popup"/> when displayed on screen.
 	/// </summary>
 	[BindableProperty]
-	public new partial LayoutOptions? HorizontalOptions { get; set; }
+	public new partial LayoutOptions HorizontalOptions { get; set; }
 
 	/// <summary>
 	/// Gets or sets the vertical position of the <see cref="Popup"/> when displayed on screen.
 	/// </summary>
 	[BindableProperty]
-	public new partial LayoutOptions? VerticalOptions { get; set; }
+	public new partial LayoutOptions VerticalOptions { get; set; }
 
 	/// <inheritdoc cref="IPopupOptions.CanBeDismissedByTappingOutsideOfPopup"/> />
 	/// <remarks>
@@ -61,17 +60,10 @@ public partial class Popup : ContentView
 	/// <summary>
 	/// Gets or sets the padding between the <see cref="Popup"/> border and the <see cref="Popup"/> content.
 	/// </summary>
-	public new Thickness? Padding
+	public new Thickness Padding
 	{
-		get => field is not null ? base.Padding : field;
-		set
-		{
-			field = value;
-			if (value is not null)
-			{
-				base.Padding = value.Value;
-			}
-		}
+		get => base.Padding;
+		set => base.Padding = value;
 	}
 
 	/// <summary>

@@ -278,39 +278,39 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			public override Brush? ConvertFrom(Shape? value, CultureInfo? culture) => value?.Stroke;
 		}
 
-		sealed partial class HorizontalOptionsConverter : BaseConverterOneWay<LayoutOptions?, LayoutOptions>
+		sealed partial class HorizontalOptionsConverter : BaseConverterOneWay<LayoutOptions, LayoutOptions>
 		{
 			public override LayoutOptions DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.HorizontalOptions;
 
-			public override LayoutOptions ConvertFrom(LayoutOptions? value, CultureInfo? culture) => value ?? DefaultConvertReturnValue;
+			public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? Options.DefaultPopupSettings.HorizontalOptions : value;
 		}
 
-		sealed partial class VerticalOptionsConverter : BaseConverterOneWay<LayoutOptions?, LayoutOptions>
+		sealed partial class VerticalOptionsConverter : BaseConverterOneWay<LayoutOptions, LayoutOptions>
 		{
 			public override LayoutOptions DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.VerticalOptions;
 
-			public override LayoutOptions ConvertFrom(LayoutOptions? value, CultureInfo? culture) => value ?? DefaultConvertReturnValue;
+			public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? Options.DefaultPopupSettings.VerticalOptions : value;
 		}
 
 		sealed partial class BackgroundColorConverter : BaseConverterOneWay<Color?, Color>
 		{
 			public override Color DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.BackgroundColor;
 
-			public override Color ConvertFrom(Color? value, CultureInfo? culture) => value ?? DefaultConvertReturnValue;
+			public override Color ConvertFrom(Color? value, CultureInfo? culture) => value ?? Options.DefaultPopupSettings.BackgroundColor;
 		}
 	}
 
-	sealed partial class PaddingConverter : BaseConverterOneWay<Thickness?, Thickness>
+	sealed partial class PaddingConverter : BaseConverterOneWay<Thickness, Thickness>
 	{
 		public override Thickness DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.Padding;
 
-		public override Thickness ConvertFrom(Thickness? value, CultureInfo? culture) => value ?? DefaultConvertReturnValue;
+		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value.IsEmpty || value.IsNaN ? Options.DefaultPopupSettings.Padding : value;
 	}
 
-	sealed partial class MarginConverter : BaseConverterOneWay<Thickness?, Thickness>
+	sealed partial class MarginConverter : BaseConverterOneWay<Thickness, Thickness>
 	{
 		public override Thickness DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.Margin;
 
-		public override Thickness ConvertFrom(Thickness? value, CultureInfo? culture) => value ?? DefaultConvertReturnValue;
+		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value.IsEmpty || value.IsNaN ? Options.DefaultPopupSettings.Margin : value;
 	}
 }
