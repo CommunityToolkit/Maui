@@ -165,12 +165,27 @@ public class DateTimeOffsetConverterTests : BaseConverterTest<DateTimeOffsetConv
 	{
 		public bool Equals(DateTimeOffset x, DateTimeOffset y)
 		{
-			return x.Year == y.Year && x.Month == y.Month && x.Day == y.Day && x.Hour == y.Hour && x.Minute == y.Minute && x.Second == y.Second && x.Offset == y.Offset;
+			return x.Year == y.Year
+			       && x.Month == y.Month
+			       && x.Day == y.Day
+			       && x.Hour == y.Hour
+			       && x.Minute == y.Minute
+			       && x.Second == y.Second
+			       && x.Millisecond == y.Millisecond
+			       && x.Microsecond == y.Microsecond;
 		}
 
 		public int GetHashCode(DateTimeOffset obj)
 		{
-			return HashCode.Combine(obj.Year, obj.Month, obj.Day, obj.Hour, obj.Minute, obj.Second, obj.Offset);
+			return HashCode.Combine(
+				obj.Year,
+				obj.Month,
+				obj.Day,
+				obj.Hour,
+				obj.Minute,
+				obj.Second,
+				obj.Millisecond,
+				obj.Microsecond);
 		}
 	}
 }

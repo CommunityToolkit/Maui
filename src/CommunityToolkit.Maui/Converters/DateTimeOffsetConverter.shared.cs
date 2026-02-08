@@ -40,9 +40,8 @@ public partial class DateTimeOffsetConverter : BaseConverter<DateTimeOffset, Dat
 			_ => TimeSpan.Zero,
 		};
 
-		return culture is null ?
-			value.Kind == DateTimeKind.Local ? new DateTimeOffset(value) : new DateTimeOffset(value, offset) :
-			new DateTimeOffset(value.Year, value.Month, value.Day, value.Hour, value.Minute, value.Second, value.Millisecond, culture.Calendar, offset);
-
+		return culture is null
+			? value.Kind == DateTimeKind.Local ? new DateTimeOffset(value) : new DateTimeOffset(value, offset)
+			: new DateTimeOffset(value.Year, value.Month, value.Day, value.Hour, value.Minute, value.Second, value.Millisecond, value.Microsecond, culture.Calendar, offset);
 	}
 }
