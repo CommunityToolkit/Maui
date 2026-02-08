@@ -37,8 +37,47 @@ public class BindablePropertyAttributeSourceGenerator_CommonUsageTests : BaseBin
 			    /// <summary>
 			    /// BindableProperty for the <see cref = "Text"/> property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, __{{defaultTestClassName}}BindablePropertyInitHelpers.OnTextValidateValue, __{{defaultTestClassName}}BindablePropertyInitHelpers.OnTextPropertyChanged, __{{defaultTestClassName}}BindablePropertyInitHelpers.OnTextPropertyChanging, __{{defaultTestClassName}}BindablePropertyInitHelpers.OnTextCoerceValue, __{{defaultTestClassName}}BindablePropertyInitHelpers);
 			    public partial string Text { get => (string)GetValue(TextProperty); set => SetValue(TextProperty, value); }
+
+				private partial bool OnTextValidateValue(string value);
+				private partial void OnTextPropertyChanged(string oldValue, string newValue);
+				private partial void OnTextPropertyChanging(string oldValue, string newValue);
+				private partial void OnTextCoerceValue(string value);
+				private partial string OnTextCoerceValue(string value);
+
+				file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
+				{
+					static bool OnTextValidateValue(global::Microsoft.Maui.Controls.BindableObject bindable, object value)
+					{
+						var typedBindable = ({{defaultTestNamespace}}.{{defaultTestClassName}})bindable;
+						return typedBindable.OnValidateValue((string)value);
+					}
+
+					static void OnTextPropertyChanged(global::Microsoft.Maui.Controls.BindableObject bindable, object oldValue, object newValue)
+					{
+						var typedBindable = ({{defaultTestNamespace}}.{{defaultTestClassName}})bindable;
+						typedBindable.OnTextPropertyChanged((string)oldValue, (string)newValue);
+					}
+
+					static void OnTextPropertyChanging(global::Microsoft.Maui.Controls.BindableObject bindable, object oldValue, object newValue)
+					{
+						var typedBindable = ({{defaultTestNamespace}}.{{defaultTestClassName}})bindable;
+						typedBindable.OnTextPropertyChanging((string)oldValue, (string)newValue);
+					}
+
+					static void OnTextCoerceValue(global::Microsoft.Maui.Controls.BindableObject bindable, object value)
+					{
+						var typedBindable = ({{defaultTestNamespace}}.{{defaultTestClassName}})bindable;
+						typedBindable.OnTextCoerceValue((string)value);
+					}
+
+					static string OnTextCoerceValue(global::Microsoft.Maui.Controls.BindableObject bindable)
+					{
+						var typedBindable = ({{defaultTestNamespace}}.{{defaultTestClassName}})bindable;
+						typedBindable.OnTextCoerceValue((string)value);
+					}
+				}
 			}
 			""";
 
