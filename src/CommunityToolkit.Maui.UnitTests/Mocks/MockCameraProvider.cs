@@ -1,13 +1,30 @@
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Primitives;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
-public class MockCameraProvider : ICameraProvider
+public sealed class MockCameraProvider : ICameraProvider, IDisposable
 {
-	public IReadOnlyList<CameraInfo>? AvailableCameras { get; private set; }
+	public event EventHandler<IReadOnlyList<CameraInfo>?>? AvailableCamerasChanged;
 
-	public ValueTask RefreshAvailableCameras(CancellationToken token)
+	public IReadOnlyList<CameraInfo>? AvailableCameras
+	{
+		get;
+		private set
+		{
+			if (!CameraProvider.AreCameraInfoListsEqual(field, value))
+			{
+				field = value;
+				AvailableCamerasChanged?.Invoke(this, value);
+			}
+		}
+	}
+
+	public void Dispose()
+	{
+
+	}
+
+	public Task RefreshAvailableCameras(CancellationToken token)
 	{
 		AvailableCameras =
 		[
@@ -22,6 +39,6 @@ public class MockCameraProvider : ICameraProvider
 				])
 		];
 
-		return ValueTask.CompletedTask;
+		return Task.CompletedTask;
 	}
 }

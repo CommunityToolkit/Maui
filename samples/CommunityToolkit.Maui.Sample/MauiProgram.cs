@@ -47,7 +47,6 @@ namespace CommunityToolkit.Maui.Sample;
 
 public static class MauiProgram
 {
-	[RequiresUnreferencedCode($"{nameof(CommunityToolkit.Maui.Views.Expander)} and  {nameof(TouchBehaviorCollectionViewMultipleSelectionPage)} are not type safe")]
 	public static MauiApp CreateMauiApp()
 	{
 		var builder = MauiApp.CreateBuilder()
@@ -69,7 +68,7 @@ public static class MauiProgram
 #endif
 								.UseMauiCommunityToolkitMarkup()
 								.UseMauiCommunityToolkitCamera()
-								.UseMauiCommunityToolkitMediaElement(static options =>
+								.UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: true, static options =>
 								{
 									options.SetDefaultAndroidViewType(AndroidViewType.TextureView);
 								})
@@ -136,7 +135,6 @@ public static class MauiProgram
 		return builder.Build();
 	}
 
-	[RequiresUnreferencedCode("Calls CommunityToolkit.Maui.Sample.MauiProgram.AddTransientWithShellRoute<TPage, TViewModel>()")]
 	static void RegisterViewsAndViewModels(in IServiceCollection services)
 	{
 		// Add Gallery Pages + ViewModels
@@ -271,6 +269,7 @@ public static class MauiProgram
 		// Add Popups
 		services.AddTransientPopup<ApplyToDerivedTypesPopup>();
 		services.AddTransientPopup<ButtonPopup>();
+		services.AddTransientPopup<CollectionViewPopup, CollectionViewPopupViewModel>();
 		services.AddTransientPopup<ComplexPopup, ComplexPopupViewModel>();
 		services.AddTransientPopup<CsharpBindingPopup, CsharpBindingPopupViewModel>();
 		services.AddTransientPopup<DynamicStyleInheritancePopup>();

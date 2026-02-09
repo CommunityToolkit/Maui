@@ -36,12 +36,12 @@
                 HorizontalOptions="Fill"
                 Text="{Binding Path=LabelText, Mode=OneWayToSource}"
                 TextColor="{StaticResource NormalLabelTextColor}"
-                VerticalOptions="CenterAndExpand" />
+                VerticalOptions="Center" />
 
             <Label
-                HorizontalOptions="CenterAndExpand"
+                HorizontalOptions="Center"
                 Text="{Binding Path=LabelText, Mode=OneWay, Converter={StaticResource IsStringNotNullOrEmptyConverter}}"
-                VerticalOptions="CenterAndExpand" />
+                VerticalOptions="Center" />
 
         </VerticalStackLayout>
     </pages:BasePage.Content>

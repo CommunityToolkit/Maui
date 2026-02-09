@@ -31,8 +31,8 @@ public partial class StateContainerPage : BasePage<StateContainerViewModel>
 		{
 			await StateContainer.ChangeStateWithAnimation(GridWithAnimation,
 															null,
-															(element, token) => element.ScaleTo(0, 100, Easing.SpringIn).WaitAsync(token),
-															(element, token) => element.ScaleTo(1, 250, Easing.SpringOut).WaitAsync(token),
+															(element, token) => element.ScaleToAsync(0, 100, Easing.SpringIn).WaitAsync(token),
+															(element, token) => element.ScaleToAsync(1, 250, Easing.SpringOut).WaitAsync(token),
 															CancellationToken.None);
 		}
 
@@ -40,8 +40,8 @@ public partial class StateContainerPage : BasePage<StateContainerViewModel>
 		{
 			await StateContainer.ChangeStateWithAnimation(GridWithAnimation,
 															"ReplaceGrid",
-															(element, token) => element.ScaleTo(0, 100, Easing.SpringIn).WaitAsync(token),
-															(element, token) => element.ScaleTo(1, 250, Easing.SpringOut).WaitAsync(token),
+															(element, token) => element.ScaleToAsync(0, 100, Easing.SpringIn).WaitAsync(token),
+															(element, token) => element.ScaleToAsync(1, 250, Easing.SpringOut).WaitAsync(token),
 															CancellationToken.None);
 		}
 	}

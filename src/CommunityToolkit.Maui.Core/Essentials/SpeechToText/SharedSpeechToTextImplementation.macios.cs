@@ -41,12 +41,6 @@ public sealed partial class SpeechToTextImplementation
 		return taskResult.Task.WaitAsync(cancellationToken);
 	}
 
-	static Task<bool> IsSpeechPermissionAuthorized(CancellationToken cancellationToken)
-	{
-		cancellationToken.ThrowIfCancellationRequested();
-		return Task.FromResult(SFSpeechRecognizer.AuthorizationStatus is SFSpeechRecognizerAuthorizationStatus.Authorized);
-	}
-
 	static void InitializeAvAudioSession(out AVAudioSession sharedAvAudioSession)
 	{
 		sharedAvAudioSession = AVAudioSession.SharedInstance();

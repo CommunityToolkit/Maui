@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Maui.Core;
+
 namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>
@@ -9,25 +11,10 @@ namespace CommunityToolkit.Maui.Behaviors;
 public partial class RequiredStringValidationBehavior : ValidationBehavior<string>
 {
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="RequiredString"/> property.
-	/// </summary>
-	public static readonly BindableProperty RequiredStringProperty
-		= BindableProperty.Create(nameof(RequiredString), typeof(string), typeof(RequiredStringValidationBehavior));
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="ExactMatch"/> property.
-	/// </summary>
-	public static readonly BindableProperty ExactMatchProperty
-		= BindableProperty.Create(nameof(ExactMatch), typeof(bool), typeof(RequiredStringValidationBehavior), true);
-
-	/// <summary>
 	/// The string that will be compared to the value provided by the user. This is a bindable property.
 	/// </summary>
-	public string? RequiredString
-	{
-		get => (string?)GetValue(RequiredStringProperty);
-		set => SetValue(RequiredStringProperty, value);
-	}
+	[BindableProperty]
+	public partial string? RequiredString { get; set; } = RequiredStringValidationBehaviorDefaults.RequiredString;
 
 	/// <summary>
 	/// Get or sets whether the entered text must match the whole contents of the <see cref="RequiredString"/> property
@@ -35,11 +22,8 @@ public partial class RequiredStringValidationBehavior : ValidationBehavior<strin
 	/// <br/>
 	/// <c>true</c> by default. This is a bindable property.
 	/// </summary>
-	public bool ExactMatch
-	{
-		get => (bool)GetValue(ExactMatchProperty);
-		set => SetValue(ExactMatchProperty, value);
-	}
+	[BindableProperty]
+	public partial bool ExactMatch { get; set; } = RequiredStringValidationBehaviorDefaults.ExactMatch;
 
 	/// <inheritdoc/>
 	protected override ValueTask<bool> ValidateAsync(string? value, CancellationToken token)

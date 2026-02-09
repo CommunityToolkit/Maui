@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views.Popup;
 
-public class PopupOnDisappearingPage : ContentPage
+public partial class PopupOnDisappearingPage : ContentPage
 {
 	public PopupOnDisappearingPage()
 	{

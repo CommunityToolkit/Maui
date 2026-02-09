@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace CommunityToolkit.Maui.Analyzers.UnitTests;
+
 static class CSharpVerifierHelper
 {
 	/// <summary>

@@ -2,6 +2,7 @@
 
 #if IOS || MACCATALYST
 using AVFoundation;
+
 #elif ANDROID
 using AndroidX.Camera.Core;
 #elif WINDOWS
@@ -23,18 +24,18 @@ public class CameraInfo(
 	float maximumZoomFactor,
 	IEnumerable<Size> supportedResolutions
 #if ANDROID
-,
+	,
 	CameraSelector cameraSelector
 #elif IOS || MACCATALYST
-,
+	,
 	AVCaptureDevice captureDevice,
 	IEnumerable<AVCaptureDeviceFormat> supportedFormats
 #elif WINDOWS
-,
+	,
     MediaFrameSourceGroup frameSourceGroup,
 	IEnumerable<ImageEncodingProperties> imageEncodingProperties
 #endif
-)
+) : IEquatable<CameraInfo>
 {
 	/// <summary>
 	/// Gets the name of the camera device.
@@ -82,8 +83,28 @@ public class CameraInfo(
 
 #if WINDOWS
     internal MediaFrameSourceGroup FrameSourceGroup { get; } = frameSourceGroup;
-	internal IReadOnlyList<ImageEncodingProperties> ImageEncodingProperties { get; } =  [.. imageEncodingProperties];
+	internal IReadOnlyList<ImageEncodingProperties> ImageEncodingProperties { get; } = [.. imageEncodingProperties];
 #endif
+
+	/// <inheritdoc cref="Equals(object)"/>
+	/// <remarks>Equality is determined using <see cref="DeviceId"/></remarks>
+	public override bool Equals(object? obj) => Equals(obj as CameraInfo);
+
+	/// <inheritdoc cref="GetHashCode"/>
+	/// <remarks>Uses the <see cref="DeviceId"/></remarks>
+	public override int GetHashCode() => DeviceId.GetHashCode();
+
+	/// <inheritdoc cref="IEquatable{T}.Equals(T)"/>
+	/// <remarks>Equality is determined using <see cref="DeviceId"/></remarks>
+	public bool Equals(CameraInfo? other)
+	{
+		if (other is null)
+		{
+			return false;
+		}
+
+		return DeviceId == other.DeviceId;
+	}
 
 	/// <inheritdoc cref="object.ToString" />
 	public override string ToString()

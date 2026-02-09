@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Microsoft.Maui.Controls;
 using UriTypeConverter = Microsoft.Maui.Controls.UriTypeConverter;
 
 namespace CommunityToolkit.Maui.Views;
@@ -9,7 +10,7 @@ namespace CommunityToolkit.Maui.Views;
 public sealed partial class UriMediaSource : MediaSource
 {
 	/// <summary>
-	/// Backing store for the <see cref="Uri"/> property.
+	/// Bindable property for the <see cref="Uri"/> property.
 	/// </summary>
 	public static readonly BindableProperty UriProperty =
 		BindableProperty.Create(nameof(Uri), typeof(Uri), typeof(UriMediaSource), propertyChanged: OnUriSourceChanged, validateValue: UriValueValidator);

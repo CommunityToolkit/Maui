@@ -15,21 +15,21 @@ public class AvatarViewInterfaceTests : BaseViewTest
 	public void IBorderElementBorderColorDefaultValue()
 	{
 		var avatarView = new Maui.Views.AvatarView();
-		((IBorderElement)avatarView).BorderColorDefaultValue.Should().Be(AvatarViewDefaults.DefaultBorderColor);
+		((IBorderElement)avatarView).BorderColorDefaultValue.Should().Be(AvatarViewDefaults.BorderColor);
 	}
 
 	[Fact]
 	public void IBorderElementBorderWidthDefaultValue()
 	{
 		var avatarView = new Maui.Views.AvatarView();
-		((IBorderElement)avatarView).BorderWidthDefaultValue.Should().Be(AvatarViewDefaults.DefaultBorderWidth);
+		((IBorderElement)avatarView).BorderWidthDefaultValue.Should().Be(AvatarViewDefaults.BorderWidth);
 	}
 
 	[Fact]
 	public void IBorderElementCornerRadius()
 	{
 		var avatarView = new Maui.Views.AvatarView();
-		int average = (int)(new[] { AvatarViewDefaults.DefaultCornerRadius.TopLeft, AvatarViewDefaults.DefaultCornerRadius.TopRight, AvatarViewDefaults.DefaultCornerRadius.BottomLeft, AvatarViewDefaults.DefaultCornerRadius.BottomRight }).Average();
+		int average = (int)(new[] { AvatarViewDefaults.CornerRadius.TopLeft, AvatarViewDefaults.CornerRadius.TopRight, AvatarViewDefaults.CornerRadius.BottomLeft, AvatarViewDefaults.CornerRadius.BottomRight }).Average();
 		((IBorderElement)avatarView).CornerRadius.Should().Be(average);
 		CornerRadius cornerRadius = new(3, 7, 37, 73);
 		average = (int)(new[] { cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomLeft, cornerRadius.BottomRight }).Average();
@@ -41,7 +41,7 @@ public class AvatarViewInterfaceTests : BaseViewTest
 	public void IBorderElementCornerRadiusDefaultValue()
 	{
 		var avatarView = new Maui.Views.AvatarView();
-		int average = (int)(new[] { AvatarViewDefaults.DefaultCornerRadius.TopLeft, AvatarViewDefaults.DefaultCornerRadius.TopRight, AvatarViewDefaults.DefaultCornerRadius.BottomLeft, AvatarViewDefaults.DefaultCornerRadius.BottomRight }).Average();
+		int average = (int)(new[] { AvatarViewDefaults.CornerRadius.TopLeft, AvatarViewDefaults.CornerRadius.TopRight, AvatarViewDefaults.CornerRadius.BottomLeft, AvatarViewDefaults.CornerRadius.BottomRight }).Average();
 		((IBorderElement)avatarView).CornerRadiusDefaultValue.Should().Be(average);
 	}
 
@@ -235,7 +235,7 @@ public class AvatarViewInterfaceTests : BaseViewTest
 	public void IBorderElementOnBorderColorPropertyChanged()
 	{
 		var avatarView = new Maui.Views.AvatarView();
-		avatarView.Stroke.Should().Be((SolidColorBrush)AvatarViewDefaults.DefaultBorderColor);
+		avatarView.Stroke.Should().Be((SolidColorBrush)AvatarViewDefaults.BorderColor);
 		((IBorderElement)avatarView).OnBorderColorPropertyChanged(Colors.AliceBlue, Colors.Azure);
 		avatarView.Stroke.Should().Be((SolidColorBrush)Colors.Azure);
 	}
@@ -296,7 +296,7 @@ public class AvatarViewInterfaceTests : BaseViewTest
 	{
 		// For code coverage
 		var avatarView = new Maui.Views.AvatarView();
-		((Microsoft.Maui.Controls.Internals.ILineHeightElement)avatarView).OnLineHeightChanged(0.0, 3.7);
+		((ILineHeightElement)avatarView).OnLineHeightChanged(0.0, 3.7);
 		avatarView.Text.Should().Be("?");
 	}
 }

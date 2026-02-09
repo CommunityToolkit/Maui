@@ -1,8 +1,12 @@
 using System.Diagnostics;
 using System.Numerics;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Media;
@@ -287,7 +291,7 @@ partial class MediaManager : IDisposable
 			var uri = uriMediaSource.Uri?.AbsoluteUri;
 			if (!string.IsNullOrWhiteSpace(uri))
 			{
-				Player.Source = WinMediaSource.CreateFromUri(new Uri(uri));
+				Player.MediaPlayer.SetUriSource(new Uri(uri));
 			}
 		}
 		else if (MediaElement.Source is FileMediaSource fileMediaSource)
@@ -296,15 +300,21 @@ partial class MediaManager : IDisposable
 			if (!string.IsNullOrWhiteSpace(filename))
 			{
 				StorageFile storageFile = await StorageFile.GetFileFromPathAsync(filename);
-				Player.Source = WinMediaSource.CreateFromStorageFile(storageFile);
+				Player.MediaPlayer.SetFileSource(storageFile);
 			}
 		}
 		else if (MediaElement.Source is ResourceMediaSource resourceMediaSource)
 		{
-			string path = "ms-appx:///" + resourceMediaSource.Path;
+			if (string.IsNullOrWhiteSpace(resourceMediaSource.Path))
+			{
+				Logger.LogInformation("ResourceMediaSource Path is null or empty");
+				return;
+			}
+
+			string path = GetFullAppPackageFilePath(resourceMediaSource.Path);
 			if (!string.IsNullOrWhiteSpace(path))
 			{
-				Player.Source = WinMediaSource.CreateFromUri(new Uri(path));
+				Player.MediaPlayer.SetUriSource(new Uri(path));
 			}
 		}
 	}
@@ -350,6 +360,16 @@ partial class MediaManager : IDisposable
 				}
 			}
 		}
+	}
+
+	static string GetFullAppPackageFilePath(in string filename)
+	{
+		ArgumentNullException.ThrowIfNull(filename);
+
+		var normalizedFilename = NormalizePath(filename);
+		return Path.Combine(AppPackageService.FullAppPackageFilePath, normalizedFilename);
+
+		static string NormalizePath(string filename) => filename.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
 	}
 
 	static bool IsZero<TValue>(TValue numericValue) where TValue : INumber<TValue>

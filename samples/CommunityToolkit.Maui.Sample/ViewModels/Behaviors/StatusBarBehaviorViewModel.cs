@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
+
 public partial class StatusBarBehaviorViewModel : BaseViewModel
 {
 	[ObservableProperty]

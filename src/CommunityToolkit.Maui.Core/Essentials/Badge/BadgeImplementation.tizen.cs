@@ -9,7 +9,7 @@ public class BadgeImplementation : IBadge
 	/// <inheritdoc />
 	public void SetCount(uint count)
 	{
-		var appId = Application.Current.ApplicationInfo.ApplicationId;
+		var appId = Tizen.Applications.Application.Current.ApplicationInfo.ApplicationId;
 		if (count is 0)
 		{
 			BadgeControl.Remove(appId);

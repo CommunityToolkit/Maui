@@ -1,12 +1,12 @@
 using System.ComponentModel;
 using System.Globalization;
-using System.Windows.Input;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.Shapes;
+using NavigationPage = Microsoft.Maui.Controls.NavigationPage;
+using Page = Microsoft.Maui.Controls.Page;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -46,14 +46,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			await CloseAsync(new PopupResult(true));
 		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
 
-
-		var pageTapGestureRecognizer = new TapGestureRecognizer();
-		pageTapGestureRecognizer.Tapped += HandleTapGestureRecognizerTapped;
-
-		base.Content = new PopupPageLayout(popup, popupOptions)
-		{
-			GestureRecognizers = { pageTapGestureRecognizer }
-		};
+		var popupPageLayout = new PopupPageLayout(popup, popupOptions, () => TryExecuteTapOutsideOfPopupCommand());
+		base.Content = popupPageLayout;
 
 		popup.PropertyChanged += HandlePopupPropertyChanged;
 		if (popupOptions is BindableObject bindablePopupOptions)
@@ -67,6 +61,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		Shell.SetPresentationMode(this, PresentationMode.ModalNotAnimated);
 		Shell.SetNavBarIsVisible(this, false);
 		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
+		NavigationPage.SetHasNavigationBar(this, false);
 	}
 
 	public event EventHandler<IPopupResult>? PopupClosed;
@@ -82,15 +77,26 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		// It may feel a bit redundant, given that we again call `ThrowIfCancellationRequested` later in this method, however, this ensures we propagate the correct Exception to the developer.
 		token.ThrowIfCancellationRequested();
 
-		var popupPageToClose = Navigation.ModalStack.OfType<PopupPage>().LastOrDefault(popupPage => popupPage.Content == Content);
-
-		if (popupPageToClose is null)
+		// Handle edge case where a Popup was pushed inside a custom IPageContainer (e.g. a NavigationPage) on the Modal Stack
+		var customPageContainer = Navigation.ModalStack.OfType<IPageContainer<Page>>().LastOrDefault();
+		if (customPageContainer is not null && customPageContainer.CurrentPage is not PopupPage)
 		{
 			throw new PopupNotFoundException();
 		}
 
-		if (Navigation.ModalStack[^1] is Microsoft.Maui.Controls.Page currentVisibleModalPage
-			&& currentVisibleModalPage != popupPageToClose)
+		var popupPageToClose = customPageContainer?.CurrentPage as PopupPage
+							   ?? Navigation.ModalStack.OfType<PopupPage>().LastOrDefault()
+							   ?? throw new PopupNotFoundException();
+
+		// PopModalAsync will pop the last (top) page from the ModalStack
+		// Ensure that the PopupPage the user is attempting to close is the last (top) page on the Modal stack before calling Navigation.PopModalAsync
+		if (Navigation.ModalStack[^1] is IPageContainer<Page> { CurrentPage: PopupPage visiblePopupPageInCustomPageContainer }
+			 && visiblePopupPageInCustomPageContainer.Content != Content)
+		{
+			throw new PopupBlockedException(visiblePopupPageInCustomPageContainer);
+		}
+		else if (Navigation.ModalStack[^1] is ContentPage currentVisibleModalPage
+				 && currentVisibleModalPage.Content != Content)
 		{
 			throw new PopupBlockedException(currentVisibleModalPage);
 		}
@@ -103,7 +109,12 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		token.ThrowIfCancellationRequested();
 		await Navigation.PopModalAsync(false).WaitAsync(token);
 
+		// Clean up Popup resources
+		Content.TapGestureGestureOverlay.GestureRecognizers.Clear();
+		popup.PropertyChanged -= HandlePopupPropertyChanged;
+
 		PopupClosed?.Invoke(this, result);
+		popup.NotifyPopupIsClosed();
 	}
 
 	protected override bool OnBackButtonPressed()
@@ -112,14 +123,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		// Always return true to let the Android Operating System know that we are manually handling the Navigation request from the Android Back Button
 		return true;
-	}
-
-	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
-	{
-		popup.NotifyPopupIsClosed();
-		base.Content.GestureRecognizers.Clear();
-		popup.PropertyChanged -= HandlePopupPropertyChanged;
-		base.OnNavigatedFrom(args);
 	}
 
 	protected override void OnNavigatedTo(NavigatedToEventArgs args)
@@ -195,29 +198,22 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 	}
 
-	void HandleTapGestureRecognizerTapped(object? sender, TappedEventArgs e)
+	internal sealed partial class PopupGestureOverlay : BoxView
 	{
-		ArgumentNullException.ThrowIfNull(sender);
-
-		var popupPageLayout = (PopupPageLayout)sender;
-		var position = e.GetPosition(Content);
-
-		if (position is null)
+		public PopupGestureOverlay()
 		{
-			return;
-		}
-
-		// Execute tapOutsideOfPopupCommand only if tap occurred outside the PopupBorder 
-		if (popupPageLayout.PopupBorder.Bounds.Contains(position.Value) is false)
-		{
-			TryExecuteTapOutsideOfPopupCommand();
+			BackgroundColor = Colors.Transparent;
+			Background = Brush.Transparent;
 		}
 	}
 
 	internal sealed partial class PopupPageLayout : Grid
 	{
-		public PopupPageLayout(in Popup popupContent, in IPopupOptions options)
+		readonly Action tryExecuteTapOutsideOfPopupCommand;
+
+		public PopupPageLayout(in Popup popupContent, in IPopupOptions options, in Action tryExecuteTapOutsideOfPopupCommand)
 		{
+			this.tryExecuteTapOutsideOfPopupCommand = tryExecuteTapOutsideOfPopupCommand;
 			Background = BackgroundColor = null;
 
 			PopupBorder = new Border
@@ -239,10 +235,35 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			PopupBorder.SetBinding(Border.StrokeShapeProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay);
 			PopupBorder.SetBinding(Border.StrokeThicknessProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay, converter: new BorderStrokeThicknessConverter());
 
+			var overlayTapGestureRecognizer = new TapGestureRecognizer();
+			overlayTapGestureRecognizer.Tapped += HandleOverlayTapped;
+			TapGestureGestureOverlay = new PopupGestureOverlay();
+			TapGestureGestureOverlay.GestureRecognizers.Add(overlayTapGestureRecognizer);
+
+			Children.Add(TapGestureGestureOverlay);
 			Children.Add(PopupBorder);
 		}
 
+		void HandleOverlayTapped(object? sender, TappedEventArgs e)
+		{
+			ArgumentNullException.ThrowIfNull(sender);
+
+			var position = e.GetPosition(this);
+
+			if (position is null)
+			{
+				return;
+			}
+
+			// Execute tapOutsideOfPopupCommand only if tap occurred outside the PopupBorder 
+			if (PopupBorder.Bounds.Contains(position.Value) is false)
+			{
+				tryExecuteTapOutsideOfPopupCommand();
+			}
+		}
+
 		public Border PopupBorder { get; }
+		public PopupGestureOverlay TapGestureGestureOverlay { get; }
 
 		sealed partial class BorderStrokeThicknessConverter : BaseConverterOneWay<Shape?, double>
 		{
@@ -262,21 +283,21 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		{
 			public override LayoutOptions DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.HorizontalOptions;
 
-			public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? Options.DefaultPopupSettings.HorizontalOptions : value;
+			public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? DefaultConvertReturnValue : value;
 		}
 
 		sealed partial class VerticalOptionsConverter : BaseConverterOneWay<LayoutOptions, LayoutOptions>
 		{
 			public override LayoutOptions DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.VerticalOptions;
 
-			public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? Options.DefaultPopupSettings.VerticalOptions : value;
+			public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? DefaultConvertReturnValue : value;
 		}
 
 		sealed partial class BackgroundColorConverter : BaseConverterOneWay<Color?, Color>
 		{
 			public override Color DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.BackgroundColor;
 
-			public override Color ConvertFrom(Color? value, CultureInfo? culture) => value ?? Options.DefaultPopupSettings.BackgroundColor;
+			public override Color ConvertFrom(Color? value, CultureInfo? culture) => value ?? DefaultConvertReturnValue;
 		}
 	}
 
@@ -284,13 +305,13 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	{
 		public override Thickness DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.Padding;
 
-		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value == default ? Options.DefaultPopupSettings.Padding : value;
+		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value.IsEmpty || value.IsNaN ? DefaultConvertReturnValue : value;
 	}
 
 	sealed partial class MarginConverter : BaseConverterOneWay<Thickness, Thickness>
 	{
 		public override Thickness DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.Margin;
 
-		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value == default ? Options.DefaultPopupSettings.Margin : value;
+		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value.IsEmpty || value.IsNaN ? DefaultConvertReturnValue : value;
 	}
 }

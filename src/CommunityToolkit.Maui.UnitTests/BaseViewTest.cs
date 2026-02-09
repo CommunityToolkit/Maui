@@ -15,22 +15,6 @@ public abstract class BaseViewTest : BaseTest
 
 	protected IServiceProvider ServiceProvider { get; }
 
-	protected override async ValueTask DisposeAsyncCore()
-	{
-		await base.DisposeAsyncCore();
-
-		#region Cleanup Popup Tests
-
-		Application.Current.Should().NotBeNull();
-		var navigation = Application.Current.Windows[0].Page?.Navigation ?? throw new InvalidOperationException("Unable to locate Navigation Stack");
-
-		while (navigation.ModalStack.Any())
-		{
-			await navigation.PopModalAsync();
-		}
-		#endregion
-	}
-
 	protected static TElementHandler CreateElementHandler<TElementHandler>(IElement view, bool doesRequireMauiContext = true)
 		where TElementHandler : IElementHandler, new()
 	{
@@ -77,22 +61,28 @@ public abstract class BaseViewTest : BaseTest
 		appBuilder.Services.AddTransientPopup<LongLivedSelfClosingPopup, LongLivedMockPageViewModel>();
 		appBuilder.Services.AddTransientPopup<ShortLivedSelfClosingPopup, ShortLivedMockPageViewModel>();
 		appBuilder.Services.AddTransientPopup<GarbageCollectionHeavySelfClosingPopup, MockPageViewModel>();
-
+		appBuilder.Services.AddTransientPopup<SingleConstructionPopup, SingleConstructionViewModel>();
+		appBuilder.Services.AddTransientPopup<CustomButton>();
+		
 		appBuilder.Services.AddTransientPopup<MockPopup>();
 		#endregion
 
 		var mauiApp = appBuilder.Build();
 		serviceProvider = mauiApp.Services;
 
-		var page = new ContentPage();
+		var shell = new Shell();
+		shell.Items.Add(new ContentPage());
+
 		var application = (MockApplication)mauiApp.Services.GetRequiredService<IApplication>();
-		application.AddWindow(new Window { Page = page });
+		application.AddWindow(new Window { Page = shell });
 
 		IPlatformApplication.Current = application;
 
 		application.Handler = new ApplicationHandlerStub();
 		application.Handler.SetMauiContext(new HandlersContextStub(serviceProvider));
 
-		CreateViewHandler<MockPageHandler>(page);
+		CreateViewHandler<MockPageHandler>(shell);
 	}
+
+	protected sealed class CustomButton : Button;
 }

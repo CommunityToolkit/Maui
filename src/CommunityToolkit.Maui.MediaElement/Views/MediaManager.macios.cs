@@ -210,14 +210,14 @@ public partial class MediaManager : IDisposable
 		};
 	}
 
-	protected virtual partial ValueTask PlatformUpdateSource()
+	protected virtual async partial ValueTask PlatformUpdateSource()
 	{
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 
 		AVAsset? asset = null;
 		if (Player is null)
 		{
-			return ValueTask.CompletedTask;
+			return;
 		}
 
 		metaData ??= new(Player);
@@ -291,66 +291,20 @@ public partial class MediaManager : IDisposable
 		{
 			MediaElement.MediaOpened();
 
-			(MediaElement.MediaWidth, MediaElement.MediaHeight) = GetVideoDimensions(PlayerItem);
+			(MediaElement.MediaWidth, MediaElement.MediaHeight) = await GetVideoDimensions(PlayerItem);
 
 			if (MediaElement.ShouldAutoPlay)
 			{
 				Player.Play();
 			}
 
-			SetPoster();
+			await SetPoster();
 		}
 		else if (PlayerItem is null)
 		{
 			MediaElement.MediaWidth = MediaElement.MediaHeight = 0;
 
 			MediaElement.CurrentStateChanged(MediaElementState.None);
-		}
-
-		return ValueTask.CompletedTask;
-	}
-
-	void SetPoster()
-	{
-		if (PlayerItem is null || metaData is null)
-		{
-			return;
-		}
-
-		var videoTrack = PlayerItem.Asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant()).FirstOrDefault();
-		if (videoTrack is not null)
-		{
-			return;
-		}
-
-		if (PlayerItem.Asset.Tracks.Length == 0)
-		{
-			// No video track found and no tracks found. This is likely an audio file. So we can't set a poster.
-			return;
-		}
-
-		if (PlayerViewController?.View is not null && PlayerViewController.ContentOverlayView is not null && !string.IsNullOrEmpty(MediaElement.MetadataArtworkUrl))
-		{
-			var image = UIImage.LoadFromData(NSData.FromUrl(new NSUrl(MediaElement.MetadataArtworkUrl))) ?? new UIImage();
-			var imageView = new UIImageView(image)
-			{
-				ContentMode = UIViewContentMode.ScaleAspectFit,
-				TranslatesAutoresizingMaskIntoConstraints = false,
-				ClipsToBounds = true,
-				AutoresizingMask = UIViewAutoresizing.FlexibleDimensions
-			};
-
-			PlayerViewController.ContentOverlayView.AddSubview(imageView);
-			NSLayoutConstraint.ActivateConstraints(
-			[
-				imageView.CenterXAnchor.ConstraintEqualTo(PlayerViewController.ContentOverlayView.CenterXAnchor),
-				imageView.CenterYAnchor.ConstraintEqualTo(PlayerViewController.ContentOverlayView.CenterYAnchor),
-				imageView.WidthAnchor.ConstraintLessThanOrEqualTo(PlayerViewController.ContentOverlayView.WidthAnchor),
-				imageView.HeightAnchor.ConstraintLessThanOrEqualTo(PlayerViewController.ContentOverlayView.HeightAnchor),
-
-				// Maintain the aspect ratio
-				imageView.WidthAnchor.ConstraintEqualTo(imageView.HeightAnchor, image.Size.Width / image.Size.Height)
-			]);
 		}
 	}
 
@@ -506,40 +460,48 @@ public partial class MediaManager : IDisposable
 
 	static TimeSpan ConvertTime(CMTime cmTime) => TimeSpan.FromSeconds(double.IsNaN(cmTime.Seconds) ? 0 : cmTime.Seconds);
 
-	static (int Width, int Height) GetVideoDimensions(AVPlayerItem avPlayerItem)
+	static async Task<(int Width, int Height)> GetVideoDimensions(AVPlayerItem avPlayerItem)
 	{
 		// Create an AVAsset instance with the video file URL
 		var asset = avPlayerItem.Asset;
 
 		// Retrieve the video track
-		var videoTrack = asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant()).FirstOrDefault();
+		var videoTrack = await GetTrack(asset);
 
-		if (videoTrack is not null)
-		{
-			// Get the natural size of the video
-			var size = videoTrack.NaturalSize;
-			var preferredTransform = videoTrack.PreferredTransform;
-
-			// Apply the preferred transform to get the correct dimensions
-			var transformedSize = CGAffineTransform.CGRectApplyAffineTransform(new CGRect(CGPoint.Empty, size), preferredTransform);
-			var width = Math.Abs(transformedSize.Width);
-			var height = Math.Abs(transformedSize.Height);
-
-			return ((int)width, (int)height);
-		}
-		else
+		if (videoTrack is null)
 		{
 			// HLS doesn't have tracks, try to get the dimensions this way
-			if (!avPlayerItem.PresentationSize.IsEmpty)
-			{
-				return ((int)avPlayerItem.PresentationSize.Width, (int)avPlayerItem.PresentationSize.Height);
-			}
-
-			// If all else fails, just return 0, 0
-			return (0, 0);
+			return !avPlayerItem.PresentationSize.IsEmpty
+				? ((int)avPlayerItem.PresentationSize.Width, (int)avPlayerItem.PresentationSize.Height)
+				// If all else fails, just return 0, 0
+				: (0, 0);
 		}
+
+		// Get the natural size of the video
+		var size = videoTrack.NaturalSize;
+		var preferredTransform = videoTrack.PreferredTransform;
+
+		// Apply the preferred transform to get the correct dimensions
+		var transformedSize = CGAffineTransform.CGRectApplyAffineTransform(new CGRect(CGPoint.Empty, size), preferredTransform);
+		var width = Math.Abs(transformedSize.Width);
+		var height = Math.Abs(transformedSize.Height);
+
+		return ((int)width, (int)height);
 	}
 
+	static async Task<AVAssetTrack?> GetTrack(AVAsset asset)
+	{
+		if (!(OperatingSystem.IsMacCatalystVersionAtLeast(18)
+			  || OperatingSystem.IsIOSVersionAtLeast(18)))
+		{
+			// AVAsset.TracksWithMediaType is Obsolete on iOS 18+ and MacCatalyst 18+
+			return asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant() ?? "0").FirstOrDefault();
+		}
+
+		var tracks = await asset.LoadTracksWithMediaTypeAsync(AVMediaTypes.Video.GetConstant() ?? "0");
+
+		return tracks.Count <= 0 ? null : tracks[0];
+	}
 
 	void AddStatusObservers()
 	{
@@ -555,6 +517,49 @@ public partial class MediaManager : IDisposable
 		RateObserver = AVPlayer.Notifications.ObserveRateDidChange(RateChanged);
 	}
 
+	async Task SetPoster()
+	{
+		if (PlayerItem is null || metaData is null)
+		{
+			return;
+		}
+
+		var videoTrack = await GetTrack(PlayerItem.Asset);
+		if (videoTrack is not null)
+		{
+			return;
+		}
+
+		if (PlayerItem.Asset.Tracks.Length == 0)
+		{
+			// No video track found and no tracks found. This is likely an audio file. So we can't set a poster.
+			return;
+		}
+
+		if (PlayerViewController?.View is not null && PlayerViewController.ContentOverlayView is not null && !string.IsNullOrEmpty(MediaElement.MetadataArtworkUrl))
+		{
+			var image = UIImage.LoadFromData(NSData.FromUrl(new NSUrl(MediaElement.MetadataArtworkUrl))) ?? new UIImage();
+			var imageView = new UIImageView(image)
+			{
+				ContentMode = UIViewContentMode.ScaleAspectFit,
+				TranslatesAutoresizingMaskIntoConstraints = false,
+				ClipsToBounds = true,
+				AutoresizingMask = UIViewAutoresizing.FlexibleDimensions
+			};
+
+			PlayerViewController.ContentOverlayView.AddSubview(imageView);
+			NSLayoutConstraint.ActivateConstraints(
+			[
+				imageView.CenterXAnchor.ConstraintEqualTo(PlayerViewController.ContentOverlayView.CenterXAnchor),
+				imageView.CenterYAnchor.ConstraintEqualTo(PlayerViewController.ContentOverlayView.CenterYAnchor),
+				imageView.WidthAnchor.ConstraintLessThanOrEqualTo(PlayerViewController.ContentOverlayView.WidthAnchor),
+				imageView.HeightAnchor.ConstraintLessThanOrEqualTo(PlayerViewController.ContentOverlayView.HeightAnchor),
+
+				// Maintain the aspect ratio
+				imageView.WidthAnchor.ConstraintEqualTo(imageView.HeightAnchor, image.Size.Width / image.Size.Height)
+			]);
+		}
+	}
 
 	void VolumeChanged(NSObservedChange e)
 	{

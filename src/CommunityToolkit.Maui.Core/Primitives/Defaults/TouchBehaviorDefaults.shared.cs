@@ -190,15 +190,15 @@ static class TouchBehaviorDefaults
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="DefaultBackgroundColor"/>
 	/// </summary>
-	public const Color? DefaultBackgroundColor = null;
+	public static Color DefaultBackgroundColor { get; } = Colors.Transparent;
 
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="HoveredBackgroundColor"/>
 	/// </summary>
-	public const Color? HoveredBackgroundColor = null;
+	public static Color HoveredBackgroundColor { get; } = Colors.Transparent;
 
 	/// <summary>
 	/// Default Value for TouchBehavior <see cref="PressedBackgroundColor"/>
 	/// </summary>
-	public const Color? PressedBackgroundColor = null;
+	public static Color PressedBackgroundColor { get; } = Colors.Transparent;
 }

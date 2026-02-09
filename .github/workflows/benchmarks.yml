@@ -1,70 +1,63 @@
 name: Benchmarks
 
 on:
-  push:
-    branches:
-      - main
-    tags:
-      - '*'
-    paths-ignore:
-      - README.md
-  pull_request:
-    branches:
-      - '*'
+    push:
+        branches:
+            - main
+        tags:
+            - '*'
+        paths-ignore:
+            - README.md
+    pull_request:
+        branches:
+            - '*'
 
 env:
-  LATEST_NET_VERSION: '9.0.x'
-  PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
+    LATEST_NET_VERSION: '10.0.x'
+    PathToCommunityToolkitAnalyzersBenchmarksCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
+    PathToCommunityToolkitSourceGeneratorsBenchmarksCsproj: 'src/CommunityToolkit.Maui.SourceGenerators.Benchmarks/CommunityToolkit.Maui.SourceGenerators.Benchmarks.csproj'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
 
 jobs:
-  run_benchmarks:
-    name: Run Benchmarks
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, macos-15]
+    run_benchmarks:
+        name: Run Benchmarks
+        runs-on: windows-latest            
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@main
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@main
+            -   name: Install Latest Version of .NET, v${{ env.LATEST_NET_VERSION }}
+                uses: actions/setup-dotnet@v5
+                with:
+                    dotnet-version: ${{ env.LATEST_NET_VERSION }}
+                    dotnet-quality: 'ga'
 
-      - uses: maxim-lobanov/setup-xcode@v1
-        if: runner.os == 'macOS'
-        with:
-          xcode-version: latest-stable
+            -   name: Install .NET MAUI Workload
+                run: |
+                    dotnet workload install maui
+                    dotnet workload update
 
-      - name: Install Latest Version of .NET, v${{ env.LATEST_NET_VERSION }}
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.LATEST_NET_VERSION }}
-          dotnet-quality: 'ga'
+            -   name: Install Tizen Workload
+                run: |
+                    Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
+                    .\workload-install.ps1
+                shell: pwsh
 
-      - name: Install .NET MAUI Workload
-        run: |
-          dotnet workload install maui
-          dotnet workload update
+            -   name: Display dotnet info
+                run: dotnet --info
 
-      - name: Install Tizen Workload
-        run: |
-          Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
-          .\workload-install.ps1
-        shell: pwsh
+            -   name: Run Analyzer Benchmarks
+                run: dotnet run --project ${{ env.PathToCommunityToolkitAnalyzersBenchmarksCsproj }} -c Release -- -a "${{ runner.temp }}"
 
-      - name: Display dotnet info
-        run: dotnet --info
+            -   name: Run Source Generator Benchmarks
+                run: dotnet run --project ${{ env.PathToCommunityToolkitSourceGeneratorsBenchmarksCsproj }} -c Release -- -a "${{ runner.temp }}"
 
-      - name: Run Benchmarks
-        run: dotnet run --project ${{ env.PathToCommunityToolkitAnalyzersBenchmarkCsproj }} -c Release -- -a ${{ runner.temp }}
-
-      - name: Publish Benchmarks
-        if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
-        with:
-          name: Benchmarks
-          path: |
-            ${{ runner.temp }}/**/*.md
+            -   name: Publish Benchmarks
+                uses: actions/upload-artifact@v6
+                with:
+                    name: Benchmarks
+                    path: |
+                        ${{ runner.temp }}/**/*.md

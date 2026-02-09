@@ -14,8 +14,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.15.0" />
-    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.15.0" />
+    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.15.7" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommunityToolkit.Maui.Analyzers.UnitTests\CommunityToolkit.Maui.Analyzers.UnitTests.csproj" />

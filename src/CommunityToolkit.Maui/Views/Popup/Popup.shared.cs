@@ -1,3 +1,4 @@
+
 using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Views;
@@ -8,31 +9,6 @@ namespace CommunityToolkit.Maui.Views;
 public partial class Popup : ContentView
 {
 	/// <summary>
-	/// Bindable property to set the margin between the <see cref="Popup"/> and the edge of the window
-	/// </summary>
-	public static new readonly BindableProperty MarginProperty = View.MarginProperty;
-
-	/// <summary>
-	/// Bindable property to set the padding between the <see cref="Popup"/> border and the <see cref="Popup"/> content
-	/// </summary>
-	public static new readonly BindableProperty PaddingProperty = ContentView.PaddingProperty;
-
-	/// <summary>
-	/// Bindable property to set the horizontal position of the <see cref="Popup"/> when displayed on screen
-	/// </summary>
-	public static new readonly BindableProperty HorizontalOptionsProperty = View.HorizontalOptionsProperty;
-
-	/// <summary>
-	/// Bindable property to set the vertical position of the <see cref="Popup"/> when displayed on screen
-	/// </summary>
-	public static new readonly BindableProperty VerticalOptionsProperty = View.VerticalOptionsProperty;
-
-	/// <summary>
-	///  Backing BindableProperty for the <see cref="CanBeDismissedByTappingOutsideOfPopup"/> property.
-	/// </summary>
-	public static readonly BindableProperty CanBeDismissedByTappingOutsideOfPopupProperty = BindableProperty.Create(nameof(CanBeDismissedByTappingOutsideOfPopup), typeof(bool), typeof(Popup), Options.DefaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup);
-
-	/// <summary>
 	/// Initializes Popup
 	/// </summary>
 	public Popup()
@@ -42,6 +18,7 @@ public partial class Popup : ContentView
 		HorizontalOptions = Options.DefaultPopupSettings.HorizontalOptions;
 		VerticalOptions = Options.DefaultPopupSettings.VerticalOptions;
 		BackgroundColor = Options.DefaultPopupSettings.BackgroundColor;
+		CanBeDismissedByTappingOutsideOfPopup = Options.DefaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup;
 	}
 
 	/// <summary>
@@ -55,50 +32,38 @@ public partial class Popup : ContentView
 	public event EventHandler? Closed;
 
 	/// <summary>
-	/// Sets the margin between the <see cref="Popup"/> and the edge of the window
+	/// Gets or sets the margin between the <see cref="Popup"/> and the edge of the window.
 	/// </summary>
-	public new Thickness Margin
-	{
-		get => base.Margin;
-		set => base.Margin = value;
-	}
+	[BindableProperty]
+	public new partial Thickness Margin { get; set; }
 
 	/// <summary>
-	/// Sets the padding between the <see cref="Popup"/> border and the <see cref="Popup"/> content
+	/// Gets or sets the horizontal position of the <see cref="Popup"/> when displayed on screen.
 	/// </summary>
-	public new Thickness Padding
-	{
-		get => base.Padding;
-		set => base.Padding = value;
-	}
+	[BindableProperty]
+	public new partial LayoutOptions HorizontalOptions { get; set; }
 
 	/// <summary>
-	/// Sets the horizontal position of the <see cref="Popup"/> when displayed on screen
+	/// Gets or sets the vertical position of the <see cref="Popup"/> when displayed on screen.
 	/// </summary>
-	public new LayoutOptions HorizontalOptions
-	{
-		get => base.HorizontalOptions;
-		set => base.HorizontalOptions = value;
-	}
-
-	/// <summary>
-	/// Sets the vertical position of the <see cref="Popup"/> when displayed on screen
-	/// </summary>
-	public new LayoutOptions VerticalOptions
-	{
-		get => base.VerticalOptions;
-		set => base.VerticalOptions = value;
-	}
+	[BindableProperty]
+	public new partial LayoutOptions VerticalOptions { get; set; }
 
 	/// <inheritdoc cref="IPopupOptions.CanBeDismissedByTappingOutsideOfPopup"/> />
 	/// <remarks>
 	/// When true and the user taps outside the popup, it will dismiss.
 	/// On Android - when false the hardware back button is disabled.
 	/// </remarks>
-	public bool CanBeDismissedByTappingOutsideOfPopup
+	[BindableProperty]
+	public partial bool CanBeDismissedByTappingOutsideOfPopup { get; set; }
+	
+	/// <summary>
+	/// Gets or sets the padding between the <see cref="Popup"/> border and the <see cref="Popup"/> content.
+	/// </summary>
+	public new Thickness Padding
 	{
-		get => (bool)GetValue(CanBeDismissedByTappingOutsideOfPopupProperty);
-		set => SetValue(CanBeDismissedByTappingOutsideOfPopupProperty, value);
+		get => base.Padding;
+		set => base.Padding = value;
 	}
 
 	/// <summary>
@@ -122,9 +87,9 @@ public partial class Popup : ContentView
 
 		while (parent is not null)
 		{
-			if (parent.Parent is PopupPage popuppage)
+			if (parent.Parent is PopupPage popupPage)
 			{
-				return popuppage;
+				return popupPage;
 			}
 
 			parent = parent.Parent;
@@ -148,5 +113,7 @@ public partial class Popup<T> : Popup
 }
 
 sealed class PopupNotFoundException() : InvalidPopupOperationException($"Unable to close popup: could not locate {nameof(PopupPage)}. {nameof(PopupExtensions.ShowPopup)} or {nameof(PopupExtensions.ShowPopupAsync)} must be called before {nameof(Popup.CloseAsync)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Popup.CloseAsync)} method");
+
 sealed class PopupBlockedException(in Page currentVisibleModalPage) : InvalidPopupOperationException($"Unable to close Popup because it is blocked by the Modal Page {currentVisibleModalPage.GetType().FullName}. Please call `{nameof(Page.Navigation)}.{nameof(Page.Navigation.PopModalAsync)}()` to first remove {currentVisibleModalPage.GetType().FullName} from the {nameof(Page.Navigation.ModalStack)}");
+
 class InvalidPopupOperationException(in string message) : InvalidOperationException(message);

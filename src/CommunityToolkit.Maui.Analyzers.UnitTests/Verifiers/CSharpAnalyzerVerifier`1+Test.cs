@@ -3,15 +3,16 @@ using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace CommunityToolkit.Maui.Analyzers.UnitTests;
+
 public static partial class CSharpAnalyzerVerifier<TAnalyzer>
 	where TAnalyzer : DiagnosticAnalyzer, new()
 {
-	public class Test : CSharpAnalyzerTest<TAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>
+	class Test : CSharpAnalyzerTest<TAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>
 	{
 		public Test(params ReadOnlySpan<Type> assembliesUnderTest)
 		{
-#if NET9_0
-			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net90;
+#if NET10_0
+			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net100;
 #else
 #error ReferenceAssemblies must be updated to current version of .NET
 #endif
