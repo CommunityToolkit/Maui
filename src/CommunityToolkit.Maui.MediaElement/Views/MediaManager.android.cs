@@ -369,7 +369,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			return;
 		}
 
-		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 		Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
 		cancellationTokenSource ??= new();
 		// ConfigureAwait(true) is required to prevent crash on startup
@@ -378,6 +377,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		if (item?.MediaMetadata is not null)
 		{
+			MediaElement.CurrentStateChanged(MediaElementState.Opening);
 			Player.SetMediaItem(item);
 			Player.Prepare();
 			hasSetSource = true;
