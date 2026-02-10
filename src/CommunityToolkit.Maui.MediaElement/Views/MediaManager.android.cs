@@ -355,13 +355,13 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
 		cancellationTokenSource ??= new();
+		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 		// ConfigureAwait(true) is required to prevent crash on startup
 		var result = await SetPlayerData(cancellationTokenSource.Token).ConfigureAwait(true);
 		var item = result?.Build();
 
 		if (item is not null)
 		{
-			MediaElement.CurrentStateChanged(MediaElementState.Opening);
 			Player.SetMediaItem(item);
 			Player.Prepare();
 			hasSetSource = true;
