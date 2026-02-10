@@ -360,7 +360,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		var result = await SetPlayerData(cancellationTokenSource.Token).ConfigureAwait(true);
 		var item = result?.Build();
 
-		if (item?.MediaMetadata is not null)
+		if (item is not null)
 		{
 			MediaElement.CurrentStateChanged(MediaElementState.Opening);
 			Player.SetMediaItem(item);
