@@ -140,8 +140,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return;
 		}
-		MediaElement.MediaFailed(new MediaFailedEventArgs($"Media failed:{error.Cause?.Message}"));
-		MediaElement.CurrentStateChanged(MediaElementState.Failed);
+		OnPlayerError(error);
 	}
 
 	/// <summary>
