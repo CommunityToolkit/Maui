@@ -115,11 +115,15 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				_ => MediaElementState.None,
 			};
 
-			if (playbackState ==BasePlayer.InterfaceConsts.StateReady)
+			if (playbackState == BasePlayer.InterfaceConsts.StateReady)
 			{
 				seekToTaskCompletionSource?.TrySetResult();
 			}
 
+			if (playbackState == BasePlayer.InterfaceConsts.StateEnded)
+			{
+				MediaElement.MediaEnded();
+			}
 			MediaElement.CurrentStateChanged(newState);
 
 			if (playbackState == BasePlayer.InterfaceConsts.StateReady)
