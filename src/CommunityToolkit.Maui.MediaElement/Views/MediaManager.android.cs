@@ -22,10 +22,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : Java.Lang.Object, IPlayerListener
 {
-	const int bufferState = 2;
-	const int readyState = 3;
-	const int endedState = 4;
-
 	static readonly HttpClient client = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 	bool isAndroidForegroundServiceEnabled = false;
@@ -106,14 +102,14 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			var playbackState = player.PlaybackState;
 			var playWhenReady = player.PlayWhenReady;
 
-			var newState = playbackState switch
-			{
-				BasePlayer.InterfaceConsts.StateBuffering => MediaElementState.Buffering,
-				BasePlayer.InterfaceConsts.StateReady => playWhenReady ? MediaElementState.Playing : MediaElementState.Paused,
-				BasePlayer.InterfaceConsts.StateEnded => MediaElementState.Stopped,
-				BasePlayer.InterfaceConsts.StateIdle => MediaElement.CurrentState is MediaElementState.None or MediaElementState.Failed ? MediaElement.CurrentState : MediaElementState.Stopped,
-				_ => MediaElementState.None,
-			};
+            var newState = playbackState switch
+            {
+                BasePlayer.InterfaceConsts.StateBuffering => MediaElementState.Buffering,
+                BasePlayer.InterfaceConsts.StateReady => playWhenReady ? MediaElementState.Playing : MediaElementState.Paused,
+                BasePlayer.InterfaceConsts.StateEnded => MediaElementState.Stopped,
+                BasePlayer.InterfaceConsts.StateIdle => MediaElement.CurrentState is MediaElementState.None or MediaElementState.Failed or MediaElementState.Opening ? MediaElement.CurrentState : MediaElementState.Stopped,
+                _ => MediaElementState.None,
+            };
 
 			if (playbackState == BasePlayer.InterfaceConsts.StateReady)
 			{
@@ -144,6 +140,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return;
 		}
+		MediaElement.MediaFailed(new MediaFailedEventArgs($"Media failed:{error.Cause?.Message}"));
 		MediaElement.CurrentStateChanged(MediaElementState.Failed);
 	}
 
@@ -754,23 +751,4 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters) { }
 	public void OnTracksChanged(Tracks? tracks) { }
 	#endregion
-
-	static class PlaybackState
-	{
-		public const int StateBuffering = 6;
-		public const int StateConnecting = 8;
-		public const int StateFailed = 7;
-		public const int StateFastForwarding = 4;
-		public const int StateNone = 0;
-		public const int StatePaused = 2;
-		public const int StatePlaying = 3;
-		public const int StateRewinding = 5;
-		public const int StateSkippingToNext = 10;
-		public const int StateSkippingToPrevious = 9;
-		public const int StateSkippingToQueueItem = 11;
-		public const int StateStopped = 1;
-		public const int StateError = 7;
-	}
-
-
 }
