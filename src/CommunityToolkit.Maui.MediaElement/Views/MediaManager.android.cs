@@ -111,7 +111,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				BasePlayer.InterfaceConsts.StateBuffering => MediaElementState.Buffering,
 				BasePlayer.InterfaceConsts.StateReady => playWhenReady ? MediaElementState.Playing : MediaElementState.Paused,
 				BasePlayer.InterfaceConsts.StateEnded => MediaElementState.Stopped,
-				BasePlayer.InterfaceConsts.StateIdle => MediaElement.CurrentState == MediaElementState.None ? MediaElementState.None : MediaElementState.Stopped,
+				BasePlayer.InterfaceConsts.StateIdle => MediaElement.CurrentState is MediaElementState.None or MediaElementState.Failed ? MediaElement.CurrentState : MediaElementState.Stopped,
 				_ => MediaElementState.None,
 			};
 
