@@ -94,32 +94,17 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		var newState = playbackState switch
 		{
-			PlaybackState.StateFastForwarding
-				or PlaybackState.StateRewinding
-				or PlaybackState.StateSkippingToNext
-				or PlaybackState.StateSkippingToPrevious
-				or PlaybackState.StateSkippingToQueueItem
-				or PlaybackState.StatePlaying => playWhenReady
-					? MediaElementState.Playing
-					: MediaElementState.Paused,
-
-			PlaybackState.StatePaused => MediaElementState.Paused,
-
-			PlaybackState.StateConnecting
-				or PlaybackState.StateBuffering => MediaElementState.Buffering,
-
-			PlaybackState.StateNone => MediaElementState.None,
-			PlaybackState.StateStopped => MediaElement.CurrentState is not MediaElementState.Failed
-				? MediaElementState.Stopped
-				: MediaElementState.Failed,
-
-			PlaybackState.StateError => MediaElementState.Failed,
-
+			BasePlayer.InterfaceConsts.StateBuffering => MediaElementState.Buffering,
+			BasePlayer.InterfaceConsts.StateReady => playWhenReady ? MediaElementState.Playing : MediaElementState.Paused,
+			BasePlayer.InterfaceConsts.StateEnded => MediaElementState.Stopped,
+			BasePlayer.InterfaceConsts.StateIdle => MediaElementState.None,
+			BasePlayer.InterfaceConsts.EventPlayerError => MediaElementState.Failed,
 			_ => MediaElementState.None,
 		};
 
 		MediaElement.CurrentStateChanged(newState);
-		if (playbackState is readyState)
+
+		if (playbackState == BasePlayer.InterfaceConsts.StateReady)
 		{
 			MediaElement.Duration = TimeSpan.FromMilliseconds(Player.Duration < 0 ? 0 : Player.Duration);
 			MediaElement.Position = TimeSpan.FromMilliseconds(Player.CurrentPosition < 0 ? 0 : Player.CurrentPosition);
