@@ -136,6 +136,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// <param name="error">The playback error that occurred, or null if the error state has been cleared.</param>
 	public void OnPlayerErrorChanged(PlaybackException? error)
 	{
+		if (error is null)
+		{
+			return;
+		}
 		MediaElement.CurrentStateChanged(MediaElementState.Failed);
 	}
 
