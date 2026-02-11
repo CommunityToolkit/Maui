@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Android.App;
 using Android.Content;
 using Android.Util;
 using Android.Views;
@@ -23,10 +22,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : Java.Lang.Object, IPlayerListener
 {
-	const int bufferState = 2;
-	const int readyState = 3;
-	const int endedState = 4;
-
 	static readonly HttpClient client = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 	bool isAndroidForegroundServiceEnabled = false;
@@ -77,53 +72,80 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	}
 
 	/// <summary>
-	/// Occurs when ExoPlayer changes the player state.
+	/// Handles player event notifications and updates the media element state accordingly.
 	/// </summary>
-	/// <paramref name="playWhenReady">Indicates whether the player should start playing the media whenever the media is ready.</paramref>
-	/// <paramref name="playbackState">The state that the player has transitioned to.</paramref>
-	/// <remarks>
-	/// This is part of the <see cref="IPlayerListener"/> implementation.
-	/// While this method does not seem to have any references, it's invoked at runtime.
-	/// </remarks>
-	public void OnPlayerStateChanged(bool playWhenReady, int playbackState)
+	/// <remarks>This method updates the media element's state and position in response to playback-related events
+	/// from the player. If a player error is present, it is handled before any state updates. No action is taken if either
+	/// the player, the media source, or the event set is null.</remarks>
+	/// <param name="player">The player instance that raised the events. If null, the method does nothing.</param>
+	/// <param name="playerEvents">The set of player events to process. If null, the method does nothing.</param>
+	public void OnEvents(IPlayer? player, PlayerEvents? playerEvents)
 	{
-		if (Player is null || MediaElement.Source is null)
+		if (player is null || MediaElement.Source is null || playerEvents is null)
 		{
 			return;
 		}
 
-		var newState = playbackState switch
+		// If there's a player error, bubble it through the existing error handler
+		if (player.PlayerError is not null)
 		{
-			PlaybackState.StateFastForwarding
-				or PlaybackState.StateRewinding
-				or PlaybackState.StateSkippingToNext
-				or PlaybackState.StateSkippingToPrevious
-				or PlaybackState.StateSkippingToQueueItem
-				or PlaybackState.StatePlaying => playWhenReady
-					? MediaElementState.Playing
-					: MediaElementState.Paused,
-
-			PlaybackState.StatePaused => MediaElementState.Paused,
-
-			PlaybackState.StateConnecting
-				or PlaybackState.StateBuffering => MediaElementState.Buffering,
-
-			PlaybackState.StateNone => MediaElementState.None,
-			PlaybackState.StateStopped => MediaElement.CurrentState is not MediaElementState.Failed
-				? MediaElementState.Stopped
-				: MediaElementState.Failed,
-
-			PlaybackState.StateError => MediaElementState.Failed,
-
-			_ => MediaElementState.None,
-		};
-
-		MediaElement.CurrentStateChanged(newState);
-		if (playbackState is readyState)
-		{
-			MediaElement.Duration = TimeSpan.FromMilliseconds(Player.Duration < 0 ? 0 : Player.Duration);
-			MediaElement.Position = TimeSpan.FromMilliseconds(Player.CurrentPosition < 0 ? 0 : Player.CurrentPosition);
+			OnPlayerError(player.PlayerError);
+			return;
 		}
+
+		// If playback state or playWhenReady changed, update UI together using values from the player
+		var playbackStateEvent = BasePlayer.InterfaceConsts.EventPlaybackStateChanged;
+		var playWhenReadyEvent = BasePlayer.InterfaceConsts.EventPlayWhenReadyChanged;
+
+		if (playerEvents.Contains(playbackStateEvent) || playerEvents.Contains(playWhenReadyEvent))
+		{
+			var playbackState = player.PlaybackState;
+			var playWhenReady = player.PlayWhenReady;
+
+            var newState = playbackState switch
+            {
+                BasePlayer.InterfaceConsts.StateBuffering => MediaElementState.Buffering,
+                BasePlayer.InterfaceConsts.StateReady => playWhenReady ? MediaElementState.Playing : MediaElementState.Paused,
+                BasePlayer.InterfaceConsts.StateEnded => MediaElementState.Stopped,
+                BasePlayer.InterfaceConsts.StateIdle => MediaElement.CurrentState is MediaElementState.None or MediaElementState.Failed or MediaElementState.Opening ? MediaElement.CurrentState : MediaElementState.Stopped,
+                _ => MediaElementState.None,
+            };
+
+			if (playbackState == BasePlayer.InterfaceConsts.StateReady)
+			{
+				seekToTaskCompletionSource?.TrySetResult();
+				if (Player is not null)
+				{
+					newState = Player.PlayWhenReady ? MediaElementState.Playing : MediaElementState.Paused;
+				}
+				MediaElement.MediaOpened();
+			}
+
+			if (playbackState == BasePlayer.InterfaceConsts.StateEnded)
+			{
+				MediaElement.MediaEnded();
+			}
+			MediaElement.CurrentStateChanged(newState);
+
+			if (playbackState == BasePlayer.InterfaceConsts.StateReady)
+			{
+				MediaElement.Duration = TimeSpan.FromMilliseconds(player.Duration < 0 ? 0 : player.Duration);
+				MediaElement.Position = TimeSpan.FromMilliseconds(player.CurrentPosition < 0 ? 0 : player.CurrentPosition);
+			}
+		}
+	}
+
+	/// <summary>
+	/// Handles changes to the player error state by updating the media element's state to indicate a failure.
+	/// </summary>
+	/// <param name="error">The playback error that occurred, or null if the error state has been cleared.</param>
+	public void OnPlayerErrorChanged(PlaybackException? error)
+	{
+		if (error is null)
+		{
+			return;
+		}
+		OnPlayerError(error);
 	}
 
 	/// <summary>
@@ -183,47 +205,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	}
 
 	/// <summary>
-	/// Occurs when ExoPlayer changes the playback state.
-	/// </summary>
-	/// <paramref name="playbackState">The state that the player has transitioned to.</paramref>
-	/// <remarks>
-	/// This is part of the <see cref="IPlayerListener"/> implementation.
-	/// While this method does not seem to have any references, it's invoked at runtime.
-	/// </remarks>
-	public void OnPlaybackStateChanged(int playbackState)
-	{
-		if (MediaElement.Source is null)
-		{
-			return;
-		}
-
-		MediaElementState newState = MediaElement.CurrentState;
-		switch (playbackState)
-		{
-			case bufferState:
-				newState = MediaElementState.Buffering;
-				break;
-			case endedState:
-				newState = MediaElementState.Stopped;
-				MediaElement.MediaEnded();
-				break;
-			case readyState:
-				seekToTaskCompletionSource?.TrySetResult();
-				// If player is in failed state and we get to ready state, we should update the state 
-				// to either paused or playing based on the PlayWhenReady value or else events are 
-				// broken and the user will be stuck in failed state.
-				if (Player is not null)
-				{
-					newState = Player.PlayWhenReady ? MediaElementState.Playing : MediaElementState.Paused;
-				}
-				MediaElement.MediaOpened();
-				break;
-		}
-
-		MediaElement.CurrentStateChanged(newState);
-	}
-
-	/// <summary>
 	/// Occurs when ExoPlayer encounters an error.
 	/// </summary>
 	/// <paramref name="error">An instance of <seealso cref="PlaybackException"/> containing details of the error.</paramref>
@@ -260,7 +241,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}.Where(static s => !string.IsNullOrEmpty(s)));
 
 		MediaElement.MediaFailed(new MediaFailedEventArgs(message));
-
+		MediaElement.CurrentStateChanged(MediaElementState.Failed);
 		Logger.LogError("{LogMessage}", message);
 	}
 
@@ -377,9 +358,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			return;
 		}
 
-		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 		Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
 		cancellationTokenSource ??= new();
+		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 		// ConfigureAwait(true) is required to prevent crash on startup
 		var result = await SetPlayerData(cancellationTokenSource.Token).ConfigureAwait(true);
 		var item = result?.Build();
@@ -750,7 +731,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnCues(CueGroup? cues) { }
 	public void OnDeviceInfoChanged(DeviceInfo? deviceInfo) { }
 	public void OnDeviceVolumeChanged(int volume, bool muted) { }
-	public void OnEvents(IPlayer? player, PlayerEvents? playerEvents) { }
 	public void OnIsLoadingChanged(bool isLoading) { }
 	public void OnIsPlayingChanged(bool isPlaying) { }
 	public void OnLoadingChanged(bool isLoading) { }
@@ -758,10 +738,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnMediaItemTransition(MediaItem? mediaItem, int reason) { }
 	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata) { }
 	public void OnMetadata(Metadata? metadata) { }
+	public void OnPlaybackStateChanged(int playbackState) { }
 	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason) { }
 	public void OnPositionDiscontinuity(PlayerPositionInfo? oldPosition, PlayerPositionInfo? newPosition, int reason) { }
 	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
-	public void OnPlayerErrorChanged(PlaybackException? error) { }
+	public void OnPlayerStateChanged(bool playWhenReady, int playbackState) { }
 	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }
 	public void OnRenderedFirstFrame() { }
 	public void OnRepeatModeChanged(int repeatMode) { }
@@ -774,23 +755,4 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters) { }
 	public void OnTracksChanged(Tracks? tracks) { }
 	#endregion
-
-	static class PlaybackState
-	{
-		public const int StateBuffering = 6;
-		public const int StateConnecting = 8;
-		public const int StateFailed = 7;
-		public const int StateFastForwarding = 4;
-		public const int StateNone = 0;
-		public const int StatePaused = 2;
-		public const int StatePlaying = 3;
-		public const int StateRewinding = 5;
-		public const int StateSkippingToNext = 10;
-		public const int StateSkippingToPrevious = 9;
-		public const int StateSkippingToQueueItem = 11;
-		public const int StateStopped = 1;
-		public const int StateError = 7;
-	}
-
-
 }
