@@ -241,7 +241,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}.Where(static s => !string.IsNullOrEmpty(s)));
 
 		MediaElement.MediaFailed(new MediaFailedEventArgs(message));
-		MediaElement.CurrentStateChanged(MediaElementState.Failed);
 		Logger.LogError("{LogMessage}", message);
 	}
 
@@ -372,16 +371,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			hasSetSource = true;
 		}
 
-		if (hasSetSource)
+		if (hasSetSource && isAndroidForegroundServiceEnabled)
 		{
-			if (Player.PlayerError is null)
-			{
-				MediaElement.MediaOpened();
-			}
-			if (isAndroidForegroundServiceEnabled)
-			{
-				UpdateNotifications();
-			}
+			UpdateNotifications();
 		}
 	}
 
