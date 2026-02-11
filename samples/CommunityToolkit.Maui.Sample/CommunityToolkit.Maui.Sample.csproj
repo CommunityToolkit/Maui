@@ -60,7 +60,7 @@
     <PackageReference Include="CommunityToolkit.Maui.Markup" Version="7.0.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.3.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.3" />
   </ItemGroup>
 
   <PropertyGroup>
