@@ -15,22 +15,6 @@ public abstract class BaseViewTest : BaseTest
 
 	protected IServiceProvider ServiceProvider { get; }
 
-	protected override async ValueTask DisposeAsyncCore()
-	{
-		await base.DisposeAsyncCore();
-
-		#region Cleanup Popup Tests
-
-		Application.Current.Should().NotBeNull();
-		var navigation = Application.Current.Windows[0].Page?.Navigation ?? throw new InvalidOperationException("Unable to locate Navigation Stack");
-
-		while (navigation.ModalStack.Any())
-		{
-			await navigation.PopModalAsync();
-		}
-		#endregion
-	}
-
 	protected static TElementHandler CreateElementHandler<TElementHandler>(IElement view, bool doesRequireMauiContext = true)
 		where TElementHandler : IElementHandler, new()
 	{
@@ -77,7 +61,9 @@ public abstract class BaseViewTest : BaseTest
 		appBuilder.Services.AddTransientPopup<LongLivedSelfClosingPopup, LongLivedMockPageViewModel>();
 		appBuilder.Services.AddTransientPopup<ShortLivedSelfClosingPopup, ShortLivedMockPageViewModel>();
 		appBuilder.Services.AddTransientPopup<GarbageCollectionHeavySelfClosingPopup, MockPageViewModel>();
-
+		appBuilder.Services.AddTransientPopup<SingleConstructionPopup, SingleConstructionViewModel>();
+		appBuilder.Services.AddTransientPopup<CustomButton>();
+		
 		appBuilder.Services.AddTransientPopup<MockPopup>();
 		#endregion
 
@@ -97,4 +83,6 @@ public abstract class BaseViewTest : BaseTest
 
 		CreateViewHandler<MockPageHandler>(shell);
 	}
+
+	protected sealed class CustomButton : Button;
 }

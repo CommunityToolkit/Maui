@@ -28,6 +28,11 @@
     <Style TargetType="VerticalStackLayout" ApplyToDerivedTypes="true">
         <Setter Property="Spacing" Value="0" />
     </Style>
+    
+    <!-- Highlights that this style will not be inherited by a popup -->
+    <Style TargetType="BoxView" ApplyToDerivedTypes="True">
+        <Setter Property="BackgroundColor" Value="Yellow" />
+    </Style>
 
     <Style TargetType="Button">
         <Setter Property="BackgroundColor" Value="{StaticResource NormalButtonBackgroundColor}" />

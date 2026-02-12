@@ -31,20 +31,20 @@ public partial class UserStoppedTypingBehavior : BaseBehavior<InputView>, IDispo
 	/// <summary>
 	/// The time of inactivity in milliseconds after which <see cref="Command"/> will be executed. If <see cref="MinimumLengthThreshold"/> is also set, the condition there also needs to be met. This is a bindable property.
 	/// </summary>
-	[BindableProperty(DefaultValue = UserStoppedTypingBehaviorDefaults.StoppedTypingTimeThreshold)]
-	public partial int StoppedTypingTimeThreshold { get; set; }
+	[BindableProperty]
+	public partial int StoppedTypingTimeThreshold { get; set; } = UserStoppedTypingBehaviorDefaults.StoppedTypingTimeThreshold;
 
 	/// <summary>
 	/// The minimum length of the input value required before <see cref="Command"/> will be executed but only after <see cref="StoppedTypingTimeThreshold"/> has passed. This is a bindable property.
 	/// </summary>
-	[BindableProperty(DefaultValue = UserStoppedTypingBehaviorDefaults.MinimumLengthThreshold)]
-	public partial int MinimumLengthThreshold { get; set; }
+	[BindableProperty]
+	public partial int MinimumLengthThreshold { get; set; } = UserStoppedTypingBehaviorDefaults.MinimumLengthThreshold;
 
 	/// <summary>
 	/// Indicates whether the keyboard should be dismissed automatically after the user stopped typing. This is a bindable property.
 	/// </summary>
-	[BindableProperty(DefaultValue = UserStoppedTypingBehaviorDefaults.ShouldDismissKeyboardAutomatically)]
-	public partial bool ShouldDismissKeyboardAutomatically { get; set; }
+	[BindableProperty]
+	public partial bool ShouldDismissKeyboardAutomatically { get; set; } = UserStoppedTypingBehaviorDefaults.ShouldDismissKeyboardAutomatically;
 
 	/// <inheritdoc />
 	public void Dispose()

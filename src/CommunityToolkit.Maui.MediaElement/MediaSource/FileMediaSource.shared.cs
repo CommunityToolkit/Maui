@@ -11,7 +11,7 @@ namespace CommunityToolkit.Maui.Views;
 public sealed partial class FileMediaSource : MediaSource
 {
 	/// <summary>
-	/// Backing store for the <see cref="Path"/> property.
+	/// Bindable Property for the <see cref="Path"/> property.
 	/// </summary>
 	public static readonly BindableProperty PathProperty
 		= BindableProperty.Create(nameof(Path), typeof(string), typeof(FileMediaSource), propertyChanged: OnFileMediaSourceChanged);

@@ -95,261 +95,261 @@ public partial class TouchBehavior : BasePlatformBehavior<VisualElement>
 	/// <summary>
 	/// Gets or sets a value indicating whether the behavior is enabled.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.IsEnabled)]
-	public partial bool IsEnabled { get; set; }
+	[BindableProperty]
+	public partial bool IsEnabled { get; set; } = TouchBehaviorDefaults.IsEnabled;
 
 	/// <summary>
 	/// Gets or sets a value indicating whether the children of the element should be made input transparent.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.ShouldMakeChildrenInputTransparent)]
-	public partial bool ShouldMakeChildrenInputTransparent { get; set; }
+	[BindableProperty]
+	public partial bool ShouldMakeChildrenInputTransparent { get; set; } = TouchBehaviorDefaults.ShouldMakeChildrenInputTransparent;
 
 	/// <summary>
 	/// Gets or sets the <see cref="ICommand"/> to invoke when the user has completed a touch gesture.
 	/// </summary>
-	[BindableProperty(DefaultValue = null)]
+	[BindableProperty]
 	public partial ICommand? Command { get; set; }
 
 	/// <summary>
 	/// Gets or sets the parameter to pass to the <see cref="Command"/> property.
 	/// </summary>
-	[BindableProperty(DefaultValue = null)]
+	[BindableProperty]
 	public partial object? CommandParameter { get; set; }
 
 	/// <summary>
 	/// Gets or sets the <see cref="ICommand"/> to invoke when the user has completed a long press.
 	/// </summary>
-	[BindableProperty(DefaultValue = null)]
+	[BindableProperty]
 	public partial ICommand? LongPressCommand { get; set; }
 
 	/// <summary>
 	/// Gets or sets the parameter to pass to the <see cref="LongPressCommand"/> property.
 	/// </summary>
-	[BindableProperty(DefaultValue = null)]
+	[BindableProperty]
 	public partial object? LongPressCommandParameter { get; set; }
 
 	/// <summary>
 	/// Gets or sets the duration required to trigger the long press gesture.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.LongPressDuration)]
-	public partial int LongPressDuration { get; set; }
+	[BindableProperty]
+	public partial int LongPressDuration { get; set; } = TouchBehaviorDefaults.LongPressDuration;
 
 	/// <summary>
 	/// Gets the current <see cref="TouchStatus"/> of the behavior.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.CurrentTouchStatus, PropertyChangedMethodName = nameof(RaiseCurrentTouchStatusChanged), DefaultBindingMode = BindingMode.OneWayToSource)]
-	public partial TouchStatus CurrentTouchStatus { get; set; }
+	[BindableProperty(PropertyChangedMethodName = nameof(RaiseCurrentTouchStatusChanged), DefaultBindingMode = BindingMode.OneWayToSource)]
+	public partial TouchStatus CurrentTouchStatus { get; set; } = TouchBehaviorDefaults.CurrentTouchStatus;
 
 	/// <summary>
 	/// Gets the current <see cref="TouchState"/> of the behavior.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.CurrentTouchState, DefaultBindingMode = BindingMode.OneWayToSource, PropertyChangedMethodName = nameof(RaiseCurrentTouchStateChanged))]
-	public partial TouchState CurrentTouchState { get; set; }
+	[BindableProperty(DefaultBindingMode = BindingMode.OneWayToSource, PropertyChangedMethodName = nameof(RaiseCurrentTouchStateChanged))]
+	public partial TouchState CurrentTouchState { get; set; } = TouchBehaviorDefaults.CurrentTouchState;
 
 	/// <summary>
 	/// Gets the current <see cref="TouchInteractionStatus"/> of the behavior.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.CurrentInteractionStatus, DefaultBindingMode = BindingMode.OneWayToSource, PropertyChangedMethodName = nameof(RaiseInteractionStatusChanged))]
-	public partial TouchInteractionStatus CurrentInteractionStatus { get; set; }
+	[BindableProperty(DefaultBindingMode = BindingMode.OneWayToSource, PropertyChangedMethodName = nameof(RaiseInteractionStatusChanged))]
+	public partial TouchInteractionStatus CurrentInteractionStatus { get; set; } = TouchBehaviorDefaults.CurrentInteractionStatus;
 
 	/// <summary>
 	/// Gets the current <see cref="HoverStatus"/> of the behavior.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.CurrentHoverStatus, DefaultBindingMode = BindingMode.OneWayToSource, PropertyChangedMethodName = nameof(RaiseHoverStatusChanged))]
-	public partial HoverStatus CurrentHoverStatus { get; set; }
+	[BindableProperty(DefaultBindingMode = BindingMode.OneWayToSource, PropertyChangedMethodName = nameof(RaiseHoverStatusChanged))]
+	public partial HoverStatus CurrentHoverStatus { get; set; } = TouchBehaviorDefaults.CurrentHoverStatus;
 
 	/// <summary>
 	/// Gets the current <see cref="HoverState"/> of the behavior.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.CurrentHoverState, DefaultBindingMode = BindingMode.OneWayToSource, PropertyChangedMethodName = nameof(RaiseHoverStateChanged))]
-	public partial HoverState CurrentHoverState { get; set; }
+	[BindableProperty(DefaultBindingMode = BindingMode.OneWayToSource, PropertyChangedMethodName = nameof(RaiseHoverStateChanged))]
+	public partial HoverState CurrentHoverState { get; set; } = TouchBehaviorDefaults.CurrentHoverState;
 
 	/// <summary>
 	/// Gets or sets the background color of the element when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.DefaultBackgroundColor)]
+	[BindableProperty]
 	public partial Color? DefaultBackgroundColor { get; set; }
 
 	/// <summary>
 	/// Gets or sets the background color of the element when the <see cref="HoverState" /> is <see cref="HoverState.Hovered" />.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.HoveredBackgroundColor)]
+	[BindableProperty]
 	public partial Color? HoveredBackgroundColor { get; set; }
 
 	/// <summary>
 	/// Gets or sets the background color of the element when the <see cref="TouchState" /> is <see cref="TouchState.Pressed" />.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.PressedBackgroundColor)]
+	[BindableProperty]
 	public partial Color? PressedBackgroundColor { get; set; }
 
 	/// <summary>
 	/// Gets or sets the opacity of the element when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
 	/// </summary>
 	/// <exception cref="ArgumentOutOfRangeException"></exception>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.DefaultOpacity, PropertyChangingMethodName = nameof(HandleDefaultOpacityChanging))]
-	public partial double DefaultOpacity { get; set; }
+	[BindableProperty(PropertyChangingMethodName = nameof(HandleDefaultOpacityChanging))]
+	public partial double? DefaultOpacity { get; set; }
 
 	/// <summary>
 	/// Gets or sets the opacity of the element when the <see cref="HoverState" /> is <see cref="HoverState.Hovered" />.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.HoveredOpacity, PropertyChangingMethodName = nameof(HandleHoveredOpacityChanging))]
-	public partial double HoveredOpacity { get; set; }
+	[BindableProperty(PropertyChangingMethodName = nameof(HandleHoveredOpacityChanging))]
+	public partial double? HoveredOpacity { get; set; }
 
 	/// <summary>
 	/// Gets or sets the opacity of the element when the <see cref="TouchState" /> is <see cref="TouchState.Pressed" />.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.PressedOpacity, PropertyChangingMethodName = nameof(HandlePressedOpacityChanging))]
-	public partial double PressedOpacity { get; set; }
+	[BindableProperty(PropertyChangingMethodName = nameof(HandlePressedOpacityChanging))]
+	public partial double? PressedOpacity { get; set; }
 
 	/// <summary>
 	/// Gets or sets the scale of the element when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.DefaultScale)]
-	public partial double DefaultScale { get; set; }
+	[BindableProperty]
+	public partial double? DefaultScale { get; set; }
 
 	/// <summary>
 	/// Gets or sets the scale of the element when the <see cref="HoverState" /> is <see cref="HoverState.Hovered" />.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.HoveredScale)]
-	public partial double HoveredScale { get; set; }
+	[BindableProperty]
+	public partial double? HoveredScale { get; set; }
 
 	/// <summary>
 	/// Gets or sets the scale of the element when the <see cref="TouchState"/> is <see cref="TouchState.Pressed"/>.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.PressedScale)]
-	public partial double PressedScale { get; set; }
+	[BindableProperty]
+	public partial double? PressedScale { get; set; }
 
 	/// <summary>
 	/// Gets or sets the translation X of the element when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.DefaultTranslationX)]
-	public partial double DefaultTranslationX { get; set; }
+	[BindableProperty]
+	public partial double? DefaultTranslationX { get; set; }
 
 	/// <summary>
 	/// Gets or sets the translation X of the element when the <see cref="HoverState" /> is <see cref="HoverState.Hovered" />.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.HoveredTranslationX)]
-	public partial double HoveredTranslationX { get; set; }
+	[BindableProperty]
+	public partial double? HoveredTranslationX { get; set; }
 
 	/// <summary>
 	/// Gets or sets the translation X of the element when the <see cref="TouchState"/> is <see cref="TouchState.Pressed"/>.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.PressedTranslationX)]
-	public partial double PressedTranslationX { get; set; }
+	[BindableProperty]
+	public partial double? PressedTranslationX { get; set; }
 
 	/// <summary>
 	/// Gets or sets the translation Y of the element when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.DefaultTranslationY)]
-	public partial double DefaultTranslationY { get; set; }
+	[BindableProperty]
+	public partial double? DefaultTranslationY { get; set; }
 
 	/// <summary>
 	/// Gets or sets the translation Y of the element when the <see cref="HoverState" /> is <see cref="HoverState.Hovered" />.
 	/// </summary>
-	[BindableProperty(DefaultValue = 0.0)]
-	public partial double HoveredTranslationY { get; set; }
+	[BindableProperty]
+	public partial double? HoveredTranslationY { get; set; }
 
 	/// <summary>
 	/// Gets or sets the translation Y of the element when the <see cref="TouchState"/> is <see cref="TouchState.Pressed"/>.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.PressedTranslationY)]
-	public partial double PressedTranslationY { get; set; }
+	[BindableProperty]
+	public partial double? PressedTranslationY { get; set; }
 
 	/// <summary>
 	/// Gets or sets the rotation of the element when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.DefaultRotation)]
-	public partial double DefaultRotation { get; set; }
+	[BindableProperty]
+	public partial double? DefaultRotation { get; set; }
 
 	/// <summary>
 	/// Gets or sets the rotation of the element when the <see cref="HoverState" /> is <see cref="HoverState.Hovered" />.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.HoveredRotation)]
-	public partial double HoveredRotation { get; set; }
+	[BindableProperty]
+	public partial double? HoveredRotation { get; set; }
 
 	/// <summary>
 	/// Gets or sets the rotation of the element when the <see cref="TouchState"/> is <see cref="TouchState.Pressed"/>.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.PressedRotation)]
-	public partial double PressedRotation { get; set; }
+	[BindableProperty]
+	public partial double? PressedRotation { get; set; }
 
 	/// <summary>
 	/// Gets or sets the rotation X of the element when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.DefaultRotationX)]
-	public partial double DefaultRotationX { get; set; }
+	[BindableProperty]
+	public partial double? DefaultRotationX { get; set; }
 
 	/// <summary>
 	/// Gets or sets the rotation X of the element when the <see cref="HoverState" /> is <see cref="HoverState.Hovered" />.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.HoveredRotationX)]
-	public partial double HoveredRotationX { get; set; }
+	[BindableProperty]
+	public partial double? HoveredRotationX { get; set; }
 
 	/// <summary>
 	/// Gets or sets the rotation X of the element when the <see cref="TouchState"/> is <see cref="TouchState.Pressed"/>.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.PressedRotationX)]
-	public partial double PressedRotationX { get; set; }
+	[BindableProperty]
+	public partial double? PressedRotationX { get; set; }
 
 	/// <summary>
 	/// Gets or sets the rotation Y of the element when the <see cref="TouchState" /> is <see cref="TouchState.Default" />.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.DefaultRotationY)]
-	public partial double DefaultRotationY { get; set; }
+	[BindableProperty]
+	public partial double? DefaultRotationY { get; set; }
 
 	/// <summary>
 	/// Gets or sets the rotation Y of the element when the <see cref="HoverState" /> is <see cref="HoverState.Hovered" />.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.HoveredRotationY)]
-	public partial double HoveredRotationY { get; set; }
+	[BindableProperty]
+	public partial double? HoveredRotationY { get; set; }
 
 	/// <summary>
 	/// Gets or sets the rotation Y of the element when the <see cref="TouchState"/> is <see cref="TouchState.Pressed"/>.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.PressedRotationY)]
-	public partial double PressedRotationY { get; set; }
+	[BindableProperty]
+	public partial double? PressedRotationY { get; set; }
 
 	/// <summary>
 	/// Gets or sets the duration of the animation when the <see cref="TouchState"/> is <see cref="TouchState.Pressed"/>.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.PressedAnimationDuration)]
-	public partial int PressedAnimationDuration { get; set; }
+	[BindableProperty]
+	public partial int? PressedAnimationDuration { get; set; }
 
 	/// <summary>
 	/// Gets or sets the easing of the animation when the <see cref="TouchState"/> is <see cref="TouchState.Pressed"/>.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.PressedAnimationEasing)]
+	[BindableProperty]
 	public partial Easing? PressedAnimationEasing { get; set; }
 
 	/// <summary>
 	/// Gets or sets the duration of the animation when <see cref="TouchState"/> is <see cref="TouchState.Default"/>.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.DefaultAnimationDuration)]
-	public partial int DefaultAnimationDuration { get; set; }
+	[BindableProperty]
+	public partial int? DefaultAnimationDuration { get; set; }
 
 	/// <summary>
 	/// Gets or sets the <see cref="Easing"/> of the animation when <see cref="TouchState"/> is <see cref="TouchState.Default"/>.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.DefaultAnimationEasing)]
+	[BindableProperty]
 	public partial Easing? DefaultAnimationEasing { get; set; }
 
 	/// <summary>
 	/// Gets or sets the duration of the animation when the <see cref="HoverState" /> is <see cref="HoverState.Hovered" />.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.HoveredAnimationDuration)]
-	public partial int HoveredAnimationDuration { get; set; }
+	[BindableProperty]
+	public partial int? HoveredAnimationDuration { get; set; }
 
 	/// <summary>
 	/// Gets or sets the easing of the animation when the <see cref="HoverState" /> is <see cref="HoverState.Hovered" />.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.HoveredAnimationEasing)]
+	[BindableProperty]
 	public partial Easing? HoveredAnimationEasing { get; set; }
 
 	/// <summary>
 	/// Gets or sets the threshold for disallowing touch.
 	/// </summary>
-	[BindableProperty(DefaultValue = TouchBehaviorDefaults.DisallowTouchThreshold)]
-	public partial int DisallowTouchThreshold { get; set; }
+	[BindableProperty]
+	public partial int DisallowTouchThreshold { get; set; } = TouchBehaviorDefaults.DisallowTouchThreshold;
 
 	internal bool CanExecute => IsEnabled
 		&& Element?.IsEnabled is true

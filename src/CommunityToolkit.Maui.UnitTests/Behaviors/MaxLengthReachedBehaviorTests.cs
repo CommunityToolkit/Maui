@@ -1,5 +1,6 @@
 ﻿using System.Windows.Input;
 using CommunityToolkit.Maui.Behaviors;
+using CommunityToolkit.Maui.Core;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
@@ -173,5 +174,16 @@ public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReached
 		entry.FocusChangeRequested += (s, e) => entry.SetValue(VisualElement.IsFocusedPropertyKey, e.Focus);
 
 		return entry;
+	}
+
+	[Fact]
+	public void VerifyDefaults()
+	{
+		// Arrange
+		var behavior = new MaxLengthReachedBehavior();
+
+		// Act Assert
+		Assert.Equal(MaxLengthReachedBehaviorDefaults.Command, behavior.Command);
+		Assert.Equal(MaxLengthReachedBehaviorDefaults.ShouldDismissKeyboardAutomatically, behavior.ShouldDismissKeyboardAutomatically);
 	}
 }

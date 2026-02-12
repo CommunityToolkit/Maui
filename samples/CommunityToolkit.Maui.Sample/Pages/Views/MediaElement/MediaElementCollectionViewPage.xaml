@@ -10,39 +10,39 @@
                 Padding="0, 20, 0, 0"
             Title="MediaElement in CollectionView">
     <ScrollView>
-    <VerticalStackLayout Spacing="12">
-    <Label HorizontalTextAlignment="Center"
+        <VerticalStackLayout Spacing="12">
+            <Label HorizontalTextAlignment="Center"
             VerticalTextAlignment="Center"
             HorizontalOptions="Center"
             VerticalOptions="Center"
             Text="This page demonstrates that the MediaElement can be used inside of a DataTemplate" 
             Margin="12,0,12,0"/>
-    <CollectionView HeightRequest="850" ItemsSource="{Binding ItemSource}">
-            
-        <CollectionView.ItemsLayout>
-            <GridItemsLayout Orientation="Vertical"
+            <CollectionView HeightRequest="850" ItemsSource="{Binding ItemSource}">
+
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical"
                                 Span="1"
                                 SnapPointsAlignment="Center"
                                 SnapPointsType="MandatorySingle" />
-        </CollectionView.ItemsLayout>
+                </CollectionView.ItemsLayout>
 
-        <CollectionView.ItemTemplate>
-            <DataTemplate x:DataType="viewModels:MediaElementDataSource">
-                <Border
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:MediaElementDataSource">
+                        <Border
                     x:Name="CollectionViewBorder"
                     BackgroundColor="Black"
                     Padding="5">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="4" />
-                    </Border.StrokeShape>
-                    <VerticalStackLayout Spacing="6" HeightRequest="250">
-                        <toolkit:MediaElement
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="4" />
+                            </Border.StrokeShape>
+                            <VerticalStackLayout Spacing="6" HeightRequest="250">
+                                <toolkit:MediaElement
                             HeightRequest="200"
                             x:Name="MediaElement"
                             ShouldAutoPlay="True"
                             ShouldShowPlaybackControls="True"
                             Source="{Binding Source, Mode=OneTime}" />
-                        <Label TextColor="White"
+                                <Label TextColor="White"
                                 HorizontalOptions="Center"
                                 VerticalOptions="Center"
                                 HorizontalTextAlignment="Center"
@@ -50,15 +50,15 @@
                                 FontAttributes="Bold"
                                 FontSize="18"
                                 Text="{Binding Name, Mode=OneTime}"/>
-                    </VerticalStackLayout>
-                </Border>
-            </DataTemplate>
-        </CollectionView.ItemTemplate>
-            
-    </CollectionView>
-        
-    </VerticalStackLayout>
-        
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
+
+        </VerticalStackLayout>
+
     </ScrollView>
-    
+
 </pages:BasePage>

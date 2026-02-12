@@ -106,12 +106,7 @@ partial class CameraManager
 
 	public partial ValueTask UpdateCaptureResolution(Size resolution, CancellationToken token)
 	{
-		if (cameraView.SelectedCamera is null)
-		{
-			throw new CameraException($"Unable to update Capture Resolution because {nameof(ICameraView)}.{nameof(ICameraView.SelectedCamera)} is null.");
-		}
-
-		if (captureDevice is null)
+		if (cameraView.SelectedCamera is null || captureDevice is null)
 		{
 			return ValueTask.CompletedTask;
 		}

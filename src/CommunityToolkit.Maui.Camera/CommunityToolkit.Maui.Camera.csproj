@@ -17,6 +17,8 @@
     <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>CommunityToolkit.Maui</RootNamespace>
     <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
+
+    <DisableTextColorToGenerator>true</DisableTextColorToGenerator>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -50,7 +52,7 @@
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
     <None Include="ReadMe.txt" pack="true" PackagePath="." />
   </ItemGroup>
-
+  
   <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
     <!-- Required NuGet Packages -->
     <PackageReference Include="Xamarin.AndroidX.Camera.Camera2" Version="1.4.2.3" />

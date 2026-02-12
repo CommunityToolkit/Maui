@@ -13,7 +13,6 @@ global using PlatformMediaElement = CommunityToolkit.Maui.Core.Views.TizenPlayer
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui;
-using System;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Controls;
 using Microsoft.Extensions.DependencyInjection;

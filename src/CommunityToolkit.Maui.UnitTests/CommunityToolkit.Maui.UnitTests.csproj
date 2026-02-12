@@ -2,9 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(NetVersion)</TargetFramework>
-    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GF</CompilerGeneratedFilesOutputPath>
-
     <OutputType>Exe</OutputType>
     <RootNamespace>CommunityToolkit.Maui.UnitTests</RootNamespace>
   </PropertyGroup>

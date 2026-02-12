@@ -8,11 +8,6 @@ using AndroidX.Core.View;
 using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Views;
 
-[assembly: UsesPermission(Android.Manifest.Permission.ForegroundServiceMediaPlayback)]
-[assembly: UsesPermission(Android.Manifest.Permission.ForegroundService)]
-[assembly: UsesPermission(Android.Manifest.Permission.MediaContentControl)]
-[assembly: UsesPermission(Android.Manifest.Permission.PostNotifications)]
-
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
@@ -22,7 +17,6 @@ public class MauiMediaElement : CoordinatorLayout
 {
 	readonly RelativeLayout relativeLayout;
 	readonly PlayerView playerView;
-	readonly MediaManager mediaManager;
 
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
@@ -42,12 +36,10 @@ public class MauiMediaElement : CoordinatorLayout
 	/// </summary>
 	/// <param name="context">The application's <see cref="Context"/>.</param>
 	/// <param name="playerView">The <see cref="PlayerView"/> that acts as the platform media player.</param>
-	/// <param name="mediaManager">The <see cref="mediaManager"/> that is managing the <see cref="MediaElement"/> instance.</param>
-	public MauiMediaElement(Context context, PlayerView playerView, MediaManager mediaManager) : base(context)
+	public MauiMediaElement(Context context, PlayerView playerView) : base(context)
 	{
 		this.playerView = playerView;
-		this.mediaManager = mediaManager ?? throw new ArgumentNullException(nameof(mediaManager));
-		this.playerView.SetBackgroundColor(Android.Graphics.Color.Black);
+		this.playerView.SetBackgroundColor(global::Android.Graphics.Color.Black);
 		playerView.FullscreenButtonClick += OnFullscreenButtonClick;
 		var layout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
 		layout.AddRule(LayoutRules.CenterInParent);
@@ -76,7 +68,7 @@ public class MauiMediaElement : CoordinatorLayout
 	/// </summary>
 	/// <param name="changedView"></param>
 	/// <param name="visibility"></param>
-	protected override void OnVisibilityChanged(Android.Views.View changedView, [GeneratedEnum] ViewStates visibility)
+	protected override void OnVisibilityChanged(global::Android.Views.View changedView, [GeneratedEnum] ViewStates visibility)
 	{
 		base.OnVisibilityChanged(changedView, visibility);
 		if (isFullScreen && visibility is ViewStates.Visible)
@@ -225,7 +217,7 @@ public class MauiMediaElement : CoordinatorLayout
 			}
 		}
 
-		public static Android.Views.Window CurrentWindow
+		public static global::Android.Views.Window CurrentWindow
 		{
 			get
 			{

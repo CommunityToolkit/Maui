@@ -10,7 +10,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
     
-
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">26.0</SupportedOSPlatformVersion>
@@ -19,6 +18,8 @@
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
     <RootNamespace>CommunityToolkit.Maui</RootNamespace>
     <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
+
+    <DisableTextColorToGenerator>true</DisableTextColorToGenerator>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -53,10 +54,11 @@
     <None Include="..\..\build\nuget.png" PackagePath="icon.png" Pack="true" />
     <None Include="ReadMe.txt" pack="true" PackagePath="." />
   </ItemGroup>
-
+  
   <ItemGroup>
     <None Include="..\CommunityToolkit.Maui.MediaElement.Analyzers\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.MediaElement.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="..\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="..\CommunityToolkit.Maui.MediaElement.SourceGenerators\bin\$(Configuration)\netstandard2.0\CommunityToolkit.Maui.MediaElement.SourceGenerators.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">

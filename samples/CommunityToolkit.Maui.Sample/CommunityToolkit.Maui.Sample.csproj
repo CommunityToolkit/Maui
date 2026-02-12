@@ -23,14 +23,8 @@
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
 
-    <!--
-    Uncomment the lines below if you need to debug the SG code
-    If you see any LongPath issue on Windows, check this doc
-    https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd#enable-long-paths-in-windows-10-version-1607-and-later
-    -->
-    <!--<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath> -->
-
+    <!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
+    <WindowsPackageType>None</WindowsPackageType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     
     <NoWarn>IL2026</NoWarn>
@@ -65,8 +59,8 @@
     <PackageReference Include="Microsoft.Maui.Controls" Version="*" />
     <PackageReference Include="CommunityToolkit.Maui.Markup" Version="7.0.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.3.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.3" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -79,9 +73,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\CommunityToolkit.Maui.MediaElement.SourceGenerators\CommunityToolkit.Maui.MediaElement.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.SourceGenerators\CommunityToolkit.Maui.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Analyzers\CommunityToolkit.Maui.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Analyzers.CodeFixes\CommunityToolkit.Maui.Analyzers.CodeFixes.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\src\CommunityToolkit.Maui.MediaElement.Analyzers\CommunityToolkit.Maui.MediaElement.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\src\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes\CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.MediaElement\CommunityToolkit.Maui.MediaElement.csproj" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Camera\CommunityToolkit.Maui.Camera.csproj" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />

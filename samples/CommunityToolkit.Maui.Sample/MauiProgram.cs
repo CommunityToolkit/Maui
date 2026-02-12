@@ -68,7 +68,7 @@ public static class MauiProgram
 #endif
 								.UseMauiCommunityToolkitMarkup()
 								.UseMauiCommunityToolkitCamera()
-								.UseMauiCommunityToolkitMediaElement(static options =>
+								.UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: true, static options =>
 								{
 									options.SetDefaultAndroidViewType(AndroidViewType.TextureView);
 								})
@@ -269,6 +269,7 @@ public static class MauiProgram
 		// Add Popups
 		services.AddTransientPopup<ApplyToDerivedTypesPopup>();
 		services.AddTransientPopup<ButtonPopup>();
+		services.AddTransientPopup<CollectionViewPopup, CollectionViewPopupViewModel>();
 		services.AddTransientPopup<ComplexPopup, ComplexPopupViewModel>();
 		services.AddTransientPopup<CsharpBindingPopup, CsharpBindingPopupViewModel>();
 		services.AddTransientPopup<DynamicStyleInheritancePopup>();

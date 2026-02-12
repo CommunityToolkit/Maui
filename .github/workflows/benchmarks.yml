@@ -56,7 +56,7 @@ jobs:
                 run: dotnet run --project ${{ env.PathToCommunityToolkitSourceGeneratorsBenchmarksCsproj }} -c Release -- -a "${{ runner.temp }}"
 
             -   name: Publish Benchmarks
-                uses: actions/upload-artifact@v5
+                uses: actions/upload-artifact@v6
                 with:
                     name: Benchmarks
                     path: |

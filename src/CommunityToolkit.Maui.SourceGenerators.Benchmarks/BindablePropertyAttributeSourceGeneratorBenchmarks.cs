@@ -1,14 +1,14 @@
 ﻿using BenchmarkDotNet.Attributes;
-using CommunityToolkit.Maui.SourceGenerators.Internal.UnitTests.BindablePropertyAttributeSourceGeneratorTests;
+using CommunityToolkit.Maui.SourceGenerators.UnitTests.BindablePropertyAttributeSourceGeneratorTests;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Benchmarks;
 
 [MemoryDiagnoser]
 public class BindablePropertyAttributeSourceGeneratorBenchmarks
 {
-	static readonly CommonUsageTests commonUsageTests = new();
-	static readonly EdgeCaseTests edgeCaseTests = new();
-	static readonly IntegrationTests integrationTests = new();
+	static readonly BindablePropertyAttributeSourceGenerator_CommonUsageTests commonUsageTests = new();
+	static readonly BindablePropertyAttributeSourceGenerator_EdgeCaseTests edgeCaseTests = new();
+	static readonly BindablePropertyAttributeSourceGenerator_IntegrationTests integrationTests = new();
 
 	[Benchmark]
 	public Task GenerateBindableProperty_SimpleExample_GeneratesCorrectCode()

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Layouts;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
@@ -506,7 +507,7 @@ public class StateContainerTests : BaseTest
 	[Fact]
 	public void StateContainer_CreatesControllerWithLayout()
 	{
-		var containerController = StateContainer.GetContainerController(layout);
+		var containerController = StateContainer.GetLayoutController(layout);
 
 		Assert.NotNull(containerController);
 		Assert.IsType<VerticalStackLayout>(containerController.GetLayout());
@@ -586,7 +587,20 @@ public class StateContainerTests : BaseTest
 		Assert.Equal(Grid.GetRowSpan(view), grid.RowDefinitions.Count);
 	}
 
-	class ViewModel : INotifyPropertyChanged
+	[Fact]
+	public void EnsureDefaults()
+	{
+		// Arrange
+		var stackLayout = new StackLayout();
+
+		// Act Assert
+		Assert.Equal(StateContainerDefaults.StateViews, StateContainer.GetStateViews(stackLayout));
+		Assert.Equal(StateContainerDefaults.CurrentState, StateContainer.GetCurrentState(stackLayout));
+		Assert.Equal(StateContainerDefaults.CanStateChange, StateContainer.GetCanStateChange(stackLayout));
+		Assert.Equal(StateViewDefaults.StateKey, StateView.GetStateKey(stackLayout));
+	}
+
+	sealed class ViewModel : INotifyPropertyChanged
 	{
 		public bool CanChangeState
 		{

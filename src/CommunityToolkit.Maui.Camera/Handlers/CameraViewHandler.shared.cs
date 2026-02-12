@@ -107,8 +107,6 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		{
 			cameraManager?.Dispose();
 			cameraManager = null;
-
-			cameraProvider.Dispose();
 		}
 	}
 
