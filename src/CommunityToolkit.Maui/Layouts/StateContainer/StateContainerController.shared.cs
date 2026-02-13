@@ -6,7 +6,7 @@
 /// <remarks>
 /// Initialize <see cref="StateContainerController"/> with a <see cref="Layout"/>
 /// </remarks>
-/// <param name="layout"></param>
+/// <param name="layout">The layout that this controller manages.</param>
 sealed class StateContainerController(Layout layout)
 {
 	readonly WeakReference<Layout> layoutWeakReference = new(layout);
