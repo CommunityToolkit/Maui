@@ -56,12 +56,12 @@ public class StateContainerTests : BaseTest
 
 		controller = new StateContainerController(layout)
 		{
-			StateViews = StateContainer.GetStateViews(layout)
+			StateViews = [..StateContainer.GetStateViews(layout)]
 		};
 
 		gridController = new StateContainerController(grid)
 		{
-			StateViews = StateContainer.GetStateViews(grid)
+			StateViews = [..StateContainer.GetStateViews(grid)]
 		};
 	}
 
@@ -594,10 +594,35 @@ public class StateContainerTests : BaseTest
 		var stackLayout = new StackLayout();
 
 		// Act Assert
-		Assert.Equal(StateContainerDefaults.StateViews, StateContainer.GetStateViews(stackLayout));
+		Assert.Equal([], StateContainer.GetStateViews(stackLayout));
+		Assert.Empty(StateContainer.GetStateViews(stackLayout));
 		Assert.Equal(StateContainerDefaults.CurrentState, StateContainer.GetCurrentState(stackLayout));
 		Assert.Equal(StateContainerDefaults.CanStateChange, StateContainer.GetCanStateChange(stackLayout));
 		Assert.Equal(StateViewDefaults.StateKey, StateView.GetStateKey(stackLayout));
+	}
+
+	[Fact]
+	public void EnsureLayoutControllerIsUniquePerLayout()
+	{
+		// Arrange
+		var grid1 = new Grid();
+		var grid2 = new Grid();
+		
+		// Act
+
+		StateContainer.SetStateViews(grid1, stateViews);
+		StateContainer.SetStateViews(grid2, 
+		[
+			new Label() { Text = "Test" },
+		]);
+		
+		var grid1StateViews = StateContainer.GetStateViews(grid1);
+		var grid2StateViews = StateContainer.GetStateViews(grid2);
+
+		// Assert
+		Assert.NotEqual(grid1StateViews, grid2StateViews);
+		Assert.Equal(stateViews.Count, grid1StateViews.Count);
+		Assert.Single(StateContainer.GetStateViews(grid2));
 	}
 
 	sealed class ViewModel : INotifyPropertyChanged
