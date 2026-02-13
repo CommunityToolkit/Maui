@@ -532,7 +532,7 @@ public class StateContainerTests : BaseTest
 		StateContainer.SetStateViews(stackLayout, [label, button]);
 		
 		// Assert
-		var exception= Assert.Throws<StateContainerException>(() => StateContainer.SetCurrentState(stackLayout, StateKey.Anything));
+		var exception = Assert.Throws<StateContainerException>(() => StateContainer.SetCurrentState(stackLayout, StateKey.Anything));
 		Assert.IsType<InvalidOperationException>(exception.InnerException);
 		exception.Message.Should().Contain("multiple");
 	}
