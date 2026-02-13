@@ -17,7 +17,7 @@ sealed class StateContainerController(Layout layout)
 	/// <summary>
 	/// The StateViews defined in the StateContainer.
 	/// </summary>
-	public required IReadOnlyList<View> StateViews { get; init; }
+	public required IList<View> StateViews { get; init; }
 
 	/// <summary>
 	/// Display the default content.
