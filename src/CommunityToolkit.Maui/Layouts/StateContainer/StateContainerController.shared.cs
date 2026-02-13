@@ -89,7 +89,7 @@ sealed class StateContainerController(Layout layout)
 		}
 		catch (InvalidOperationException e)
 		{
-			throw new StateContainerException($"Unable to determine {nameof(StateView)} for State: {state}. This State has been assigned to multiple {nameof(StateView)}s. Ensure each {nameof(StateView)} has a unique StateKey");
+			throw new StateContainerException($"Unable to determine {nameof(StateView)} for State: {state}. This State has been assigned to multiple {nameof(StateView)}s. Ensure each {nameof(StateView)} has a unique StateKey", e);
 		}
 	}
 }
