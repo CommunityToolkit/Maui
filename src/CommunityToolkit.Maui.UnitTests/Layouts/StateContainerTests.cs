@@ -518,7 +518,7 @@ public class StateContainerTests : BaseTest
 	{
 		Assert.Throws<StateContainerException>(() => controller.SwitchToState("InvalidStateKey"));
 	}
-	
+
 	[Fact]
 	public void Controller_ThrowsStateContainerExceptionOnDuplicateStateKey()
 	{
@@ -526,15 +526,16 @@ public class StateContainerTests : BaseTest
 		var stackLayout = new StackLayout();
 		var label = new Label();
 		var button = new Button();
-		
+
 		StateView.SetStateKey(label, StateKey.Anything);
 		StateView.SetStateKey(button, StateKey.Anything);
 		StateContainer.SetStateViews(stackLayout, [label, button]);
-		
+
 		// Assert
 		var exception = Assert.Throws<StateContainerException>(() => StateContainer.SetCurrentState(stackLayout, StateKey.Anything));
 		Assert.IsType<InvalidOperationException>(exception.InnerException);
 		exception.Message.Should().Contain("multiple");
+		exception.InnerException.Message.Should().Contain("Sequence contains more than one matching element");
 	}
 
 	[Fact]
@@ -625,7 +626,7 @@ public class StateContainerTests : BaseTest
 		// Arrange
 		var grid1 = new Grid();
 		var grid2 = new Grid();
-		
+
 		// Act
 		var grid1StateViews = StateContainer.GetStateViews(grid1);
 		var grid2StateViews = StateContainer.GetStateViews(grid2);
@@ -633,7 +634,7 @@ public class StateContainerTests : BaseTest
 		{
 			Text = "Test",
 		});
-		
+
 		// Assert
 		Assert.NotSame(grid1StateViews, grid2StateViews);
 		Assert.Single(grid1StateViews);
