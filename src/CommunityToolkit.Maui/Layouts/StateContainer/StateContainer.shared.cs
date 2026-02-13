@@ -180,7 +180,7 @@ public static partial class StateContainer
 
 		return new StateContainerController(layoutView)
 		{
-			StateViews = [..GetStateViews(layoutView)]
+			StateViews = GetStateViews(layoutView)
 		};
 	}
 
