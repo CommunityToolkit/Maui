@@ -82,7 +82,14 @@ sealed class StateContainerController(Layout layout)
 
 	View GetViewForState(string state)
 	{
-		var view = StateViews.FirstOrDefault(x => StateView.GetStateKey(x) == state);
-		return view ?? throw new StateContainerException($"View for {state} not defined.");
+		try
+		{
+			var view = StateViews.SingleOrDefault(x => StateView.GetStateKey(x) == state);
+			return view ?? throw new StateContainerException($"{nameof(StateView)} for {state} not defined.");
+		}
+		catch (InvalidOperationException e)
+		{
+			throw new StateContainerException($"Unable to determine {nameof(StateView)} for State: {state}. This State has been assigned to multiple {nameof(StateView)}s. Ensure each {nameof(StateView)} has a unique StateKey");
+		}
 	}
 }

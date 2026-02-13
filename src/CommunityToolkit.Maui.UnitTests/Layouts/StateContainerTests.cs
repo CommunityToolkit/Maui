@@ -514,9 +514,25 @@ public class StateContainerTests : BaseTest
 	}
 
 	[Fact]
-	public void Controller_ReturnsErrorLabelOnInvalidState()
+	public void Controller_ThrowsStateContainerExceptionInvalidStateKey()
 	{
 		Assert.Throws<StateContainerException>(() => controller.SwitchToState("InvalidStateKey"));
+	}
+	
+	[Fact]
+	public void Controller_ThrowsStateContainerExceptionOnDuplicateStateKey()
+	{
+		// Arrange
+		var stackLayout = new StackLayout();
+		var label = new Label();
+		var button = new Button();
+		
+		StateView.SetStateKey(label, StateKey.Anything);
+		StateView.SetStateKey(button, StateKey.Anything);
+		StateContainer.SetStateViews(stackLayout, [label, button]);
+		
+		// Assert
+		Assert.Throws<StateContainerException>(() => StateContainer.SetCurrentState(stackLayout, StateKey.Anything));
 	}
 
 	[Fact]
@@ -609,20 +625,17 @@ public class StateContainerTests : BaseTest
 		var grid2 = new Grid();
 		
 		// Act
-
-		StateContainer.SetStateViews(grid1, stateViews);
-		StateContainer.SetStateViews(grid2, 
-		[
-			new Label() { Text = "Test" },
-		]);
-		
 		var grid1StateViews = StateContainer.GetStateViews(grid1);
 		var grid2StateViews = StateContainer.GetStateViews(grid2);
-
+		grid1StateViews.Add(new Label
+		{
+			Text = "Test",
+		});
+		
 		// Assert
-		Assert.NotEqual(grid1StateViews, grid2StateViews);
-		Assert.Equal(stateViews.Count, grid1StateViews.Count);
-		Assert.Single(StateContainer.GetStateViews(grid2));
+		Assert.NotSame(grid1StateViews, grid2StateViews);
+		Assert.Single(grid1StateViews);
+		Assert.Empty(grid2StateViews);
 	}
 
 	sealed class ViewModel : INotifyPropertyChanged
