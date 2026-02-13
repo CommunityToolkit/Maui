@@ -56,12 +56,12 @@ public class StateContainerTests : BaseTest
 
 		controller = new StateContainerController(layout)
 		{
-			StateViews = [..StateContainer.GetStateViews(layout)]
+			StateViews = StateContainer.GetStateViews(layout)
 		};
 
 		gridController = new StateContainerController(grid)
 		{
-			StateViews = [..StateContainer.GetStateViews(grid)]
+			StateViews = StateContainer.GetStateViews(grid)
 		};
 	}
 
