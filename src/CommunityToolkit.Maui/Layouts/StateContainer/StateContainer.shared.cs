@@ -180,7 +180,7 @@ public static partial class StateContainer
 
 		return new StateContainerController(layoutView)
 		{
-			StateViews = GetStateViews(layoutView)
+			StateViews = [..GetStateViews(layoutView)]
 		};
 	}
 
@@ -192,7 +192,7 @@ public static partial class StateContainer
 		}
 	}
 
-	static IList<View> CreateDefaultStateViewsProperty(BindableObject bindable) => StateContainerDefaults.StateViews;
+	static IList<View> CreateDefaultStateViewsProperty(BindableObject bindable) => [];
 }
 
 /// <summary>
