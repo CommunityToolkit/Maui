@@ -86,5 +86,32 @@ namespace CommunityToolkit.Maui.Analyzers {
                 return ResourceManager.GetString("InitializationErrorTitle", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to DefaultValueCreatorMethodName methods must return a new instance, not a static readonly field or property, to ensure each BindableObject receives a unique instance.
+        /// </summary>
+        internal static string AttachedBindablePropertyDefaultValueCreatorErrorMessage {
+            get {
+                return ResourceManager.GetString("AttachedBindablePropertyDefaultValueCreatorErrorMessage", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to DefaultValueCreatorMethodName Returns Shared Static Instance.
+        /// </summary>
+        internal static string AttachedBindablePropertyDefaultValueCreatorErrorTitle {
+            get {
+                return ResourceManager.GetString("AttachedBindablePropertyDefaultValueCreatorErrorTitle", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Method '{0}' returns a static readonly field or property. This will cause all instances to share the same reference. Return a new instance instead.
+        /// </summary>
+        internal static string AttachedBindablePropertyDefaultValueCreatorMessageFormat {
+            get {
+                return ResourceManager.GetString("AttachedBindablePropertyDefaultValueCreatorMessageFormat", resourceCulture);
+            }
+        }
     }
 }
