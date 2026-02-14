@@ -33,14 +33,14 @@ public class BindablePropertyDefaultValueCreatorAnalyzerBenchmarks
 	}
 	
 	[Benchmark]
-	public Task BindablePropertyDefaultValueCreatorAnalyzerTests_VerifyNoErrorWhenAttributeIsNotBindableProperty()
+	public Task BindablePropertyDefaultValueCreatorAnalyzerTests_VerifyNoErrorWhenDefaultValueCreatorMethodHasBlockBodyReturningNewInstance()
 	{
-		return bindablePropertyDefaultValueCreatorAnalyzerTests.VerifyNoErrorWhenAttributeIsNotBindableProperty();
+		return bindablePropertyDefaultValueCreatorAnalyzerTests.VerifyNoErrorWhenDefaultValueCreatorMethodHasBlockBodyReturningNewInstance();
 	}
 	
 	[Benchmark]
-	public Task AttachedBindablePropertyDefaultValueCreatorAnalyzerTests_VerifyNoErrorWhenAttributeIsNotBindableProperty()
+	public Task AttachedBindablePropertyDefaultValueCreatorAnalyzerTests_VerifyNoErrorWhenDefaultValueCreatorMethodHasBlockBodyReturningNewInstance()
 	{
-		return attachedBindablePropertyDefaultValueCreatorAnalyzerTests.VerifyNoErrorWhenAttributeIsNotBindableProperty();
+		return attachedBindablePropertyDefaultValueCreatorAnalyzerTests.VerifyNoErrorWhenDefaultValueCreatorMethodHasBlockBodyReturningNewInstance();
 	}
 }
