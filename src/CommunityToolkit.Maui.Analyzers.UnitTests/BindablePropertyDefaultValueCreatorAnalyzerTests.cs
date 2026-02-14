@@ -231,7 +231,7 @@ public class BindablePropertyDefaultValueCreatorAnalyzerTests
 		await VerifyAnalyzerAsync(
 			source,
 			Diagnostic()
-				.WithSpan(16, 3, 16, 92)
+				.WithSpan(17, 3, 17, 92)
 				.WithSeverity(DiagnosticSeverity.Warning)
 				.WithArguments("CreateDefaultStateViews"));
 	}
@@ -273,7 +273,7 @@ public class BindablePropertyDefaultValueCreatorAnalyzerTests
 		await VerifyAnalyzerAsync(
 			source,
 			Diagnostic()
-				.WithSpan(16, 3, 16, 92)
+				.WithSpan(17, 3, 17, 92)
 				.WithSeverity(DiagnosticSeverity.Warning)
 				.WithArguments("CreateDefaultStateViews"));
 	}
@@ -318,7 +318,7 @@ public class BindablePropertyDefaultValueCreatorAnalyzerTests
 		await VerifyAnalyzerAsync(
 			source,
 			Diagnostic()
-				.WithSpan(14, 3, 14, 99)
+				.WithSpan(15, 3, 15, 99)
 				.WithSeverity(DiagnosticSeverity.Warning)
 				.WithArguments("CreateDefaultStateViews"));
 	}
@@ -411,7 +411,7 @@ public class BindablePropertyDefaultValueCreatorAnalyzerTests
 		await VerifyAnalyzerAsync(
 			source,
 			Diagnostic()
-				.WithSpan(16, 3, 23, 4)
+				.WithSpan(17, 3, 24, 4)
 				.WithSeverity(DiagnosticSeverity.Warning)
 				.WithArguments("CreateDefaultStateViews"));
 	}
@@ -452,7 +452,7 @@ public class BindablePropertyDefaultValueCreatorAnalyzerTests
 		await VerifyAnalyzerAsync(
 			source,
 			Diagnostic()
-				.WithSpan(15, 3, 15, 75)
+				.WithSpan(16, 3, 16, 75)
 				.WithSeverity(DiagnosticSeverity.Warning)
 				.WithArguments("CreateDefaultText"));
 	}
@@ -604,7 +604,7 @@ public class BindablePropertyDefaultValueCreatorAnalyzerTests
 		await VerifyAnalyzerAsync(
 			source,
 			Diagnostic()
-				.WithSpan(16, 3, 16, 120)
+				.WithSpan(17, 3, 17, 120)
 				.WithSeverity(DiagnosticSeverity.Warning)
 				.WithArguments("CreateDefaultStateViews"));
 	}
