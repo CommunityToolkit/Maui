@@ -15,9 +15,9 @@ public class BindablePropertyDefaultValueCreatorAnalyzer : DiagnosticAnalyzer
 	const string attachedBindablePropertyAttributeName = "AttachedBindablePropertyAttribute";
 	const string defaultValueCreatorMethodNameProperty = "DefaultValueCreatorMethodName";
 
-	static readonly LocalizableString title = new LocalizableResourceString(nameof(Resources.AttachedBindablePropertyDefaultValueCreatorErrorTitle), Resources.ResourceManager, typeof(Resources));
-	static readonly LocalizableString messageFormat = new LocalizableResourceString(nameof(Resources.AttachedBindablePropertyDefaultValueCreatorMessageFormat), Resources.ResourceManager, typeof(Resources));
-	static readonly LocalizableString description = new LocalizableResourceString(nameof(Resources.AttachedBindablePropertyDefaultValueCreatorErrorMessage), Resources.ResourceManager, typeof(Resources));
+	static readonly LocalizableString title = new LocalizableResourceString(nameof(Resources.BindablePropertyDefaultValueCreatorErrorTitle), Resources.ResourceManager, typeof(Resources));
+	static readonly LocalizableString messageFormat = new LocalizableResourceString(nameof(Resources.BindablePropertyDefaultValueCreatorMessageFormat), Resources.ResourceManager, typeof(Resources));
+	static readonly LocalizableString description = new LocalizableResourceString(nameof(Resources.BindablePropertyDefaultValueCreatorErrorMessage), Resources.ResourceManager, typeof(Resources));
 	static readonly DiagnosticDescriptor rule = new(DiagnosticId, title, messageFormat, category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: description);
 
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = [rule];
