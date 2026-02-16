@@ -8,9 +8,9 @@ namespace CommunityToolkit.Maui.Extensions;
 public static class NavigatedFromEventArgsExtensions
 {
 	/// <summary>
-	/// Determines whether the previous page was a Community Toolkit <see cref="Popup"/>.
+	/// Determines if the destination page is a Community Toolkit <see cref="Popup"/>.
 	/// </summary>
 	/// <param name="args">The current <see cref="NavigatedFromEventArgs"/>.</param>
-	/// <returns>A boolean indicating whether the previous page was a Community Toolkit <see cref="Popup"/>.</returns>
+	/// <returns>A boolean indicating if the destination page is a Community Toolkit <see cref="Popup"/>.</returns>
 	public static bool IsDestinationPageACommunityToolkitPopupPage(this NavigatedFromEventArgs args) => args.DestinationPage is PopupPage;
 }
