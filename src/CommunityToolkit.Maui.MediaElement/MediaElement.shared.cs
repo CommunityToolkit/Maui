@@ -616,8 +616,6 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		InvalidateMeasure();
 	}
 
-	void IMediaElement.CurrentStateChanged(MediaElementState newState) => CurrentState = newState;
-
 	void IMediaElement.FullScreenChanged(MediaElementScreenState newState) => FullScreenState = newState;
 
 	void OnPositionChanged(MediaPositionChangedEventArgs mediaPositionChangedEventArgs) =>
