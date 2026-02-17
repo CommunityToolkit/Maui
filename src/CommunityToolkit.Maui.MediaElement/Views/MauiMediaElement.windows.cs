@@ -20,13 +20,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public partial class MauiMediaElement : Grid, IDisposable
 {
-	/// <summary>
-	/// Occurs when the full screen button is clicked, providing information about the new full screen state.
-	/// </summary>
-	/// <remarks>Subscribe to this event to be notified when the user toggles the full screen mode. The event
-	/// provides details about the resulting state through the <see cref="FullScreenStateChangedEventArgs"/>
-	/// parameter.</remarks>
-	public event EventHandler<FullScreenStateChangedEventArgs>? FullScreenButtonClicked;
 	[LibraryImport("user32.dll")]
 	internal static partial IntPtr GetForegroundWindow();
 
@@ -38,12 +31,20 @@ public partial class MauiMediaElement : Grid, IDisposable
 		var hwnd = GetForegroundWindow();
 		return hwnd == IntPtr.Zero ? null : hwnd;
 	}
+
+	readonly WeakEventManager fullScreenEventManager = new();
 	readonly Popup popup = new();
 	readonly Grid fullScreenGrid = new();
 	readonly MediaPlayerElement mediaPlayerElement;
 	readonly CustomTransportControls? customTransportControls;
 	bool doesNavigationBarExistBeforeFullScreen;
 	bool isDisposed;
+
+	internal event EventHandler<FullScreenStateChangedEventArgs> FullScreenButtonClicked
+	{
+		add => fullScreenEventManager.AddEventHandler(value);
+		remove => fullScreenEventManager.RemoveEventHandler(value);
+	}
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
@@ -235,6 +236,6 @@ public partial class MauiMediaElement : Grid, IDisposable
 		}
 		var newState = mediaElementState.Value;
 		var oldState = newState == MediaElementScreenState.FullScreen ? MediaElementScreenState.Default : MediaElementScreenState.FullScreen;
-		FullScreenButtonClicked?.Invoke(this, new FullScreenStateChangedEventArgs(oldState, newState));
+		fullScreenEventManager.HandleEvent(this, new FullScreenStateChangedEventArgs(oldState, newState), nameof(FullScreenButtonClicked));
 	}
 }

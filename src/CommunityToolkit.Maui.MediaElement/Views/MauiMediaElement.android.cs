@@ -17,17 +17,16 @@ public class MauiMediaElement : CoordinatorLayout
 {
 	readonly RelativeLayout relativeLayout;
 	readonly PlayerView playerView;
-	/// <summary>
-	/// Occurs when the full screen button is clicked, providing information about the new full screen state.
-	/// </summary>
-	/// <remarks>Subscribe to this event to be notified when the user toggles the full screen mode. The event
-	/// provides details about the resulting state through the <see cref="FullScreenStateChangedEventArgs"/>
-	/// parameter.</remarks>
-	public event EventHandler<FullScreenStateChangedEventArgs>? FullScreenButtonClicked;
-
+	readonly WeakEventManager fullScreenEventManager = new();
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
 	bool isFullScreen;
+
+	internal event EventHandler<FullScreenStateChangedEventArgs> FullScreenButtonClicked
+	{
+		add => fullScreenEventManager.AddEventHandler(value);
+		remove => fullScreenEventManager.RemoveEventHandler(value);
+	}
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -139,7 +138,7 @@ public class MauiMediaElement : CoordinatorLayout
 
 		var newState = e.P0 ? MediaElementScreenState.FullScreen : MediaElementScreenState.Default;
 		var oldState = e.P0 ? MediaElementScreenState.Default : MediaElementScreenState.FullScreen;
-		FullScreenButtonClicked?.Invoke(this, new FullScreenStateChangedEventArgs(oldState, newState));
+		fullScreenEventManager.HandleEvent(this, new FullScreenStateChangedEventArgs(oldState, newState), nameof(FullScreenButtonClicked));
 	}
 
 	void SetSystemBarsVisibility()

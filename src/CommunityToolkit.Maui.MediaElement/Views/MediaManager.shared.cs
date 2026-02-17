@@ -12,10 +12,6 @@ global using PlatformMediaElement = CommunityToolkit.Maui.Core.Views.TizenPlayer
 #endif
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui;
-using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.Controls;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
