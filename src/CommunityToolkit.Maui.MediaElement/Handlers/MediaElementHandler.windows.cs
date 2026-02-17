@@ -26,7 +26,25 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 								Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
 
 		var mediaPlatform = MediaManager.CreatePlatformView();
-		return new(mediaPlatform, MediaManager);
+		
+		return new(mediaPlatform);
+	}
+
+	/// <summary>
+	/// Establishes a connection between the handler and the specified platform-specific media element view.
+	/// </summary>
+	/// <remarks>Overrides the base implementation to provide custom connection logic for the media element on the
+	/// Windows platform.</remarks>
+	/// <param name="platformView">The platform-specific media element view to connect to the handler. Cannot be null.</param>
+	protected override void ConnectHandler(MauiMediaElement platformView)
+	{
+		platformView.FullScreenButtonClicked += HandleFullScreenButtonClicked;
+		base.ConnectHandler(platformView);
+	}
+
+	void HandleFullScreenButtonClicked(object? sender, FullScreenStateChangedEventArgs e)
+	{
+		MediaManager?.UpdateFullScreenState(e.NewState);
 	}
 
 	/// <inheritdoc/>
@@ -37,11 +55,12 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		base.DisconnectHandler(platformView);
 	}
 
-	static void UnloadPlatformView(MauiMediaElement platformView)
+	void UnloadPlatformView(MauiMediaElement platformView)
 	{
 		if (platformView.IsLoaded)
 		{
 			platformView.Unloaded += OnPlatformViewUnloaded;
+			platformView.FullScreenButtonClicked -= HandleFullScreenButtonClicked;
 		}
 		else
 		{

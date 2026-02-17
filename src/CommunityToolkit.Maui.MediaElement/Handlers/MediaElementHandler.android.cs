@@ -25,11 +25,23 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 								Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
 
 		var (_, playerView) = MediaManager.CreatePlatformView(VirtualView.AndroidViewType, VirtualView.IsAndroidForegroundServiceEnabled);
+		VirtualView.FullScreenStateChanged += HandleFullScreenButtonClicked;
 		return new(Context, playerView);
 	}
 
+	protected override void ConnectHandler(MauiMediaElement platformView)
+	{
+		platformView.FullScreenButtonClicked += HandleFullScreenButtonClicked;
+		base.ConnectHandler(platformView);
+	}
+
+	void HandleFullScreenButtonClicked(object? sender, FullScreenStateChangedEventArgs e)
+	{
+		MediaManager?.UpdateFullScreenState(e.NewState);
+	}
 	protected override void DisconnectHandler(MauiMediaElement platformView)
 	{
+		platformView.FullScreenButtonClicked -= HandleFullScreenButtonClicked;
 		platformView.Dispose();
 		Dispose();
 		base.DisconnectHandler(platformView);

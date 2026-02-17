@@ -3,8 +3,6 @@ using System.Runtime.InteropServices;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Devices;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -22,6 +20,13 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public partial class MauiMediaElement : Grid, IDisposable
 {
+	/// <summary>
+	/// Occurs when the full screen button is clicked, providing information about the new full screen state.
+	/// </summary>
+	/// <remarks>Subscribe to this event to be notified when the user toggles the full screen mode. The event
+	/// provides details about the resulting state through the <see cref="FullScreenStateChangedEventArgs"/>
+	/// parameter.</remarks>
+	public event EventHandler<FullScreenStateChangedEventArgs>? FullScreenButtonClicked;
 	[LibraryImport("user32.dll")]
 	internal static partial IntPtr GetForegroundWindow();
 
@@ -36,7 +41,6 @@ public partial class MauiMediaElement : Grid, IDisposable
 	readonly Popup popup = new();
 	readonly Grid fullScreenGrid = new();
 	readonly MediaPlayerElement mediaPlayerElement;
-	readonly MediaManager mediaManager;
 	readonly CustomTransportControls? customTransportControls;
 	bool doesNavigationBarExistBeforeFullScreen;
 	bool isDisposed;
@@ -45,11 +49,9 @@ public partial class MauiMediaElement : Grid, IDisposable
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
 	/// </summary>
 	/// <param name="mediaPlayerElement"></param>
-	/// <param name="mediaManager"></param>
-	public MauiMediaElement(MediaPlayerElement mediaPlayerElement, MediaManager mediaManager)
+	public MauiMediaElement(MediaPlayerElement mediaPlayerElement)
 	{
 		LoadResourceDictionary();
-		this.mediaManager = mediaManager;
 		this.mediaPlayerElement = mediaPlayerElement;
 		customTransportControls = SetTransportControls();
 		Children.Add(this.mediaPlayerElement);
@@ -181,7 +183,7 @@ public partial class MauiMediaElement : Grid, IDisposable
 	{
 		var currentPage = CurrentPage;
 		var appWindow = GetAppWindowForCurrentWindow();
-
+		MediaElementScreenState? mediaElementState = null;
 		if (appWindow.Presenter.Kind is AppWindowPresenterKind.FullScreen)
 		{
 			appWindow.SetPresenter(AppWindowPresenterKind.Default);
@@ -198,7 +200,7 @@ public partial class MauiMediaElement : Grid, IDisposable
 			var parent = mediaPlayerElement.Parent as FrameworkElement;
 			mediaPlayerElement.Width = parent?.Width ?? mediaPlayerElement.Width;
 			mediaPlayerElement.Height = parent?.Height ?? mediaPlayerElement.Height;
-			mediaManager.UpdateFullScreenState(MediaElementScreenState.Default);
+			mediaElementState = MediaElementScreenState.Default;
 		}
 		else
 		{
@@ -225,7 +227,14 @@ public partial class MauiMediaElement : Grid, IDisposable
 			{
 				popup.IsOpen = true;
 			}
-			mediaManager.UpdateFullScreenState(MediaElementScreenState.FullScreen);
+			mediaElementState = MediaElementScreenState.FullScreen;
 		}
+		if (mediaElementState is null)
+		{
+			return;
+		}
+		var newState = mediaElementState.Value;
+		var oldState = newState == MediaElementScreenState.FullScreen ? MediaElementScreenState.Default : MediaElementScreenState.FullScreen;
+		FullScreenButtonClicked?.Invoke(this, new FullScreenStateChangedEventArgs(oldState, newState));
 	}
 }

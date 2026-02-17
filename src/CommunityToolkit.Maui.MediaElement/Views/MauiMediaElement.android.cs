@@ -17,6 +17,13 @@ public class MauiMediaElement : CoordinatorLayout
 {
 	readonly RelativeLayout relativeLayout;
 	readonly PlayerView playerView;
+	/// <summary>
+	/// Occurs when the full screen button is clicked, providing information about the new full screen state.
+	/// </summary>
+	/// <remarks>Subscribe to this event to be notified when the user toggles the full screen mode. The event
+	/// provides details about the resulting state through the <see cref="FullScreenStateChangedEventArgs"/>
+	/// parameter.</remarks>
+	public event EventHandler<FullScreenStateChangedEventArgs>? FullScreenButtonClicked;
 
 	int defaultSystemUiVisibility;
 	bool isSystemBarVisible;
@@ -120,17 +127,19 @@ public class MauiMediaElement : CoordinatorLayout
 			isFullScreen = true;
 			RemoveView(relativeLayout);
 			layout?.AddView(relativeLayout);
-			mediaManager.UpdateFullScreenState(MediaElementScreenState.FullScreen);
 		}
 		else
 		{
 			isFullScreen = false;
 			layout?.RemoveView(relativeLayout);
 			AddView(relativeLayout);
-			mediaManager.UpdateFullScreenState(MediaElementScreenState.Default);
 		}
 		// Hide/Show the SystemBars and Status bar
 		SetSystemBarsVisibility();
+
+		var newState = e.P0 ? MediaElementScreenState.FullScreen : MediaElementScreenState.Default;
+		var oldState = e.P0 ? MediaElementScreenState.Default : MediaElementScreenState.FullScreen;
+		FullScreenButtonClicked?.Invoke(this, new FullScreenStateChangedEventArgs(oldState, newState));
 	}
 
 	void SetSystemBarsVisibility()
