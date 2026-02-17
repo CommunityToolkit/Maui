@@ -51,13 +51,13 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	protected override void DisconnectHandler(MauiMediaElement platformView)
 	{
 		Dispose();
+		platformView.FullScreenButtonClicked -= OnFullScreenStateChanged;
 		UnloadPlatformView(platformView);
 		base.DisconnectHandler(platformView);
 	}
 
-	void UnloadPlatformView(MauiMediaElement platformView)
+	static void UnloadPlatformView(MauiMediaElement platformView)
 	{
-		platformView.FullScreenButtonClicked -= OnFullScreenStateChanged;
 		if (platformView.IsLoaded)
 		{
 			platformView.Unloaded += OnPlatformViewUnloaded;
