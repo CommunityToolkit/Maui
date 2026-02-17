@@ -6,12 +6,12 @@
 public enum MediaElementScreenState
 {
 	/// <summary>
-	/// Full screen.
-	/// </summary>
-	FullScreen,
-
-	/// <summary>
 	/// The default state.
 	/// </summary>
-	Default,
+	Default = 0,
+
+	/// <summary>
+	/// Full screen.
+	/// </summary>
+	FullScreen = 1,
 }

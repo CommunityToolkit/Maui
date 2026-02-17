@@ -57,10 +57,10 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 
 	void UnloadPlatformView(MauiMediaElement platformView)
 	{
+		platformView.FullScreenButtonClicked -= OnFullScreenStateChanged;
 		if (platformView.IsLoaded)
 		{
 			platformView.Unloaded += OnPlatformViewUnloaded;
-			platformView.FullScreenButtonClicked -= OnFullScreenStateChanged;
 		}
 		else
 		{

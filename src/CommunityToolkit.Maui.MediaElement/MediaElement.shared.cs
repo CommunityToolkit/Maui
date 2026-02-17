@@ -32,12 +32,13 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// </summary>
 	public static readonly BindableProperty DurationProperty = durationPropertyKey.BindableProperty;
 
+	static readonly BindablePropertyKey fullScreenPropertyKey =
+		BindableProperty.CreateReadOnly(nameof(FullScreenState), typeof(MediaElementScreenState), typeof(MediaElement),
+			MediaElementScreenState.Default, propertyChanged: OnFullScreenPropertyChanged);
 	/// <summary>
 	/// Backing store for the <see cref="FullScreenState"/> property.
 	/// </summary>
-	public static readonly BindableProperty FullScreenProperty =
-		BindableProperty.Create(nameof(FullScreenState), typeof(MediaElementScreenState), typeof(MediaElement), 
-			MediaElementScreenState.Default, propertyChanged: OnFullScreenPropertyChanged);
+	public static readonly BindableProperty FullScreenProperty = fullScreenPropertyKey.BindableProperty;
 
 	/// <summary>
 	/// Backing store for the <see cref="ShouldAutoPlay"/> property.
@@ -391,7 +392,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	public MediaElementScreenState FullScreenState
 	{
 		get => (MediaElementScreenState)GetValue(FullScreenProperty);
-		private set => SetValue(FullScreenProperty, value);
+		private set => SetValue(fullScreenPropertyKey, value);
 	}
 
 	/// <inheritdoc/>
