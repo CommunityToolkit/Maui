@@ -32,7 +32,7 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// <summary>
 	/// Gets the full screen state of the media element.
 	/// </summary>
-	MediaElementScreenState FullScreenState { get;}
+	MediaElementScreenState FullScreenState { get; }
 
 	/// <summary>
 	/// Gets the height (in pixels) of the loaded media in pixels.
