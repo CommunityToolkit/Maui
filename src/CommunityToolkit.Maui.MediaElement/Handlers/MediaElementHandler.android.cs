@@ -38,6 +38,11 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	{
 		MediaManager?.UpdateFullScreenState(e.NewState);
 	}
+	/// <summary>
+	/// Disconnects the handler from the platform-specific <see cref="MauiMediaElement"/> and
+	/// unsubscribes from related events, disposing the platform view and handler resources.
+	/// </summary>
+	/// <param name="platformView">The platform-specific <see cref="MauiMediaElement"/> instance to disconnect.</param>
 	protected override void DisconnectHandler(MauiMediaElement platformView)
 	{
 		platformView.FullScreenButtonClicked -= OnFullScreenStateChanged;
