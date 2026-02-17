@@ -25,7 +25,6 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 								Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
 
 		var (_, playerView) = MediaManager.CreatePlatformView(VirtualView.AndroidViewType, VirtualView.IsAndroidForegroundServiceEnabled);
-		VirtualView.FullScreenStateChanged += OnFullScreenStateChanged;
 		return new(Context, playerView);
 	}
 
