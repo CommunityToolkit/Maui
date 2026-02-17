@@ -173,8 +173,8 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	internal void CurrentStateChanged(MediaElementState newState);
 
 	/// <summary>
-	/// Triggers a <see cref="FullScreenState"/> change.
+	/// Triggers a <see cref="FullScreenState"/> change. Intended to be called by platform-specific handlers or managers when the fullscreen state changes.
 	/// </summary>
-	/// <param name="newState"></param>
+	/// <param name="newState">The new fullscreen state the <see cref="MediaElement"/> transitioned to.</param>
 	internal void FullScreenChanged(MediaElementScreenState newState);
 }
