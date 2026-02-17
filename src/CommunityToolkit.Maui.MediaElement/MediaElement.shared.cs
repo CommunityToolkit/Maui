@@ -32,13 +32,13 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// </summary>
 	public static readonly BindableProperty DurationProperty = durationPropertyKey.BindableProperty;
 
-	static readonly BindablePropertyKey fullScreenPropertyKey =
+	static readonly BindablePropertyKey screenStatePropertyKey =
 		BindableProperty.CreateReadOnly(nameof(FullScreenState), typeof(MediaElementScreenState), typeof(MediaElement),
 			MediaElementScreenState.Default, propertyChanged: OnFullScreenPropertyChanged);
 	/// <summary>
 	/// Backing store for the <see cref="FullScreenState"/> property.
 	/// </summary>
-	public static readonly BindableProperty FullScreenProperty = fullScreenPropertyKey.BindableProperty;
+	public static readonly BindableProperty ScreenStateProperty = screenStatePropertyKey.BindableProperty;
 
 	/// <summary>
 	/// Backing store for the <see cref="ShouldAutoPlay"/> property.
@@ -169,8 +169,8 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		remove => eventManager.RemoveEventHandler(value);
 	}
 
-	/// <inheritdoc cref="IMediaElement.FullScreenStateChanged"/>
-	public event EventHandler<FullScreenStateChangedEventArgs> FullScreenStateChanged
+	/// <inheritdoc cref="IMediaElement.ScreenStateChanged"/>
+	public event EventHandler<ScreenStateChangedEventArgs> ScreenStateChanged
 	{
 		add => eventManager.AddEventHandler(value);
 		remove => eventManager.RemoveEventHandler(value);
@@ -391,8 +391,8 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// </summary>
 	public MediaElementScreenState FullScreenState
 	{
-		get => (MediaElementScreenState)GetValue(FullScreenProperty);
-		private set => SetValue(fullScreenPropertyKey, value);
+		get => (MediaElementScreenState)GetValue(ScreenStateProperty);
+		private set => SetValue(screenStatePropertyKey, value);
 	}
 
 	/// <inheritdoc/>
@@ -557,7 +557,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		var previousState = (MediaElementScreenState)oldValue;
 		var newState = (MediaElementScreenState)newValue;
 
-		mediaElement.OnFullScreenChanged(new FullScreenStateChangedEventArgs(previousState, newState));
+		mediaElement.OnFullScreenChanged(new ScreenStateChangedEventArgs(previousState, newState));
 	}
 
 	static void OnCurrentStatePropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -625,8 +625,8 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	void OnStateChanged(MediaStateChangedEventArgs mediaStateChangedEventArgs) =>
 		eventManager.HandleEvent(this, mediaStateChangedEventArgs, nameof(StateChanged));
 
-	void OnFullScreenChanged(FullScreenStateChangedEventArgs fullScreenStateChangedEventArgs) =>
-		eventManager.HandleEvent(this, fullScreenStateChangedEventArgs, nameof(FullScreenStateChanged));
+	void OnFullScreenChanged(ScreenStateChangedEventArgs fullScreenStateChangedEventArgs) =>
+		eventManager.HandleEvent(this, fullScreenStateChangedEventArgs, nameof(ScreenStateChanged));
 
 	void OnPauseRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(PauseRequested));
 

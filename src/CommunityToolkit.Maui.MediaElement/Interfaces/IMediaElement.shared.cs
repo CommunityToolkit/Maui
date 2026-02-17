@@ -119,7 +119,7 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// <summary>
 	/// Occurs when the <see cref="FullScreenState"/> changes.
 	/// </summary>
-	event EventHandler<FullScreenStateChangedEventArgs> FullScreenStateChanged;
+	event EventHandler<ScreenStateChangedEventArgs> ScreenStateChanged;
 
 	/// <summary>
 	/// Occurs when the media has ended playing successfully.

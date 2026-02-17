@@ -4,11 +4,11 @@
 /// Event data for when the full screen state of the media element has changed.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the <see cref="FullScreenStateChangedEventArgs"/> class.
+/// Initializes a new instance of the <see cref="ScreenStateChangedEventArgs"/> class.
 /// </remarks>
 /// <param name="previousState"></param>
 /// <param name="newState"></param>
-public sealed class FullScreenStateChangedEventArgs(MediaElementScreenState previousState, MediaElementScreenState newState) : EventArgs
+public sealed class ScreenStateChangedEventArgs(MediaElementScreenState previousState, MediaElementScreenState newState) : EventArgs
 {
 
 	/// <summary>

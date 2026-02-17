@@ -152,9 +152,9 @@ public class MediaElementTests : BaseViewTest
 	{
 		// Arrange
 		var media = new MediaElement();
-		var captured = new List<FullScreenStateChangedEventArgs>();
+		var captured = new List<ScreenStateChangedEventArgs>();
 
-		media.FullScreenStateChanged += (_, e) => captured.Add(e);
+		media.ScreenStateChanged += (_, e) => captured.Add(e);
 
 		var imedia = (IMediaElement)media;
 
@@ -176,9 +176,9 @@ public class MediaElementTests : BaseViewTest
 	{
 		// Arrange
 		var media = new MediaElement();
-		var captured = new List<FullScreenStateChangedEventArgs>();
+		var captured = new List<ScreenStateChangedEventArgs>();
 
-		media.FullScreenStateChanged += (_, e) => captured.Add(e);
+		media.ScreenStateChanged += (_, e) => captured.Add(e);
 
 		var imedia = (IMediaElement)media;
 
@@ -203,14 +203,14 @@ public class MediaElementTests : BaseViewTest
 	{
 		// Arrange
 		var media = new MediaElement();
-		var captured = new List<FullScreenStateChangedEventArgs>();
+		var captured = new List<ScreenStateChangedEventArgs>();
 
-		media.FullScreenStateChanged += (_, e) => captured.Add(e);
+		media.ScreenStateChanged += (_, e) => captured.Add(e);
 
-		// Act - FullScreenProperty is read-only; attempting to set via BindableProperty may throw
+		// Act - ScreenStateProperty is read-only; attempting to set via BindableProperty may throw
 		try
 		{
-			media.SetValue(MediaElement.FullScreenProperty, MediaElementScreenState.FullScreen);
+			media.SetValue(MediaElement.ScreenStateProperty, MediaElementScreenState.FullScreen);
 		}
 		catch (System.Exception ex)
 		{

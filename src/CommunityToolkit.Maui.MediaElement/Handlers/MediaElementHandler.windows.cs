@@ -38,11 +38,11 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	/// <param name="platformView">The platform-specific media element view to connect to the handler. Cannot be null.</param>
 	protected override void ConnectHandler(MauiMediaElement platformView)
 	{
-		platformView.FullScreenStateChanged += OnFullScreenStateChanged;
+		platformView.FullScreenStateChanged += OnScreenStateChanged;
 		base.ConnectHandler(platformView);
 	}
 
-	void OnFullScreenStateChanged(object? sender, FullScreenStateChangedEventArgs e)
+	void OnScreenStateChanged(object? sender, ScreenStateChangedEventArgs e)
 	{
 		MediaManager?.UpdateFullScreenState(e.NewState);
 	}
@@ -51,7 +51,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	protected override void DisconnectHandler(MauiMediaElement platformView)
 	{
 		Dispose();
-		platformView.FullScreenStateChanged -= OnFullScreenStateChanged;
+		platformView.FullScreenStateChanged -= OnScreenStateChanged;
 		UnloadPlatformView(platformView);
 		base.DisconnectHandler(platformView);
 	}

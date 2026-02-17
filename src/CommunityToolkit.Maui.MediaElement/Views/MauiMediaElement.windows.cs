@@ -40,7 +40,7 @@ public partial class MauiMediaElement : Grid, IDisposable
 	bool doesNavigationBarExistBeforeFullScreen;
 	bool isDisposed;
 
-	internal event EventHandler<FullScreenStateChangedEventArgs> FullScreenStateChanged
+	internal event EventHandler<ScreenStateChangedEventArgs> FullScreenStateChanged
 	{
 		add => fullScreenEventManager.AddEventHandler(value);
 		remove => fullScreenEventManager.RemoveEventHandler(value);
@@ -236,6 +236,6 @@ public partial class MauiMediaElement : Grid, IDisposable
 		}
 		var newState = mediaElementState.Value;
 		var oldState = newState == MediaElementScreenState.FullScreen ? MediaElementScreenState.Default : MediaElementScreenState.FullScreen;
-		fullScreenEventManager.HandleEvent(this, new FullScreenStateChangedEventArgs(oldState, newState), nameof(FullScreenStateChanged));
+		fullScreenEventManager.HandleEvent(this, new ScreenStateChangedEventArgs(oldState, newState), nameof(FullScreenStateChanged));
 	}
 }

@@ -27,7 +27,7 @@ public partial class MediaManager : IDisposable
 	{
 		Player = new();
 		fullScreenDelegate = new MediaManagerDelegate();
-		fullScreenDelegate.FullScreenStateChanged += OnFullScreenStateChanged;
+		fullScreenDelegate.ScreenStateChanged += OnScreenStateChanged;
 
 		PlayerViewController = new()
 		{
@@ -61,7 +61,7 @@ public partial class MediaManager : IDisposable
 		return (Player, PlayerViewController);
 	}
 
-	void OnFullScreenStateChanged(object? sender, FullScreenStateChangedEventArgs e)
+	void OnScreenStateChanged(object? sender, ScreenStateChangedEventArgs e)
 	{
 		UpdateFullScreenState(e.NewState);
 	}
@@ -434,7 +434,7 @@ public partial class MediaManager : IDisposable
 				UIApplication.SharedApplication.IdleTimerDisabled = false;
 				var audioSession = AVAudioSession.SharedInstance();
 				audioSession.SetActive(false);
-				fullScreenDelegate?.FullScreenStateChanged -= OnFullScreenStateChanged;
+				fullScreenDelegate?.ScreenStateChanged -= OnScreenStateChanged;
 				DestroyErrorObservers();
 				DestroyPlayedToEndObserver();
 
@@ -736,7 +736,7 @@ public partial class MediaManager : IDisposable
 sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
 {
 	readonly WeakEventManager fullScreenEventManager = new();
-	internal event EventHandler<FullScreenStateChangedEventArgs> FullScreenStateChanged
+	internal event EventHandler<ScreenStateChangedEventArgs> ScreenStateChanged
 	{
 		add => fullScreenEventManager.AddEventHandler(value);
 		remove => fullScreenEventManager.RemoveEventHandler(value);
@@ -746,12 +746,12 @@ sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
 	{
 		var oldState = MediaElementScreenState.Default;
 		var newState = MediaElementScreenState.FullScreen;
-		fullScreenEventManager.HandleEvent(this, new FullScreenStateChangedEventArgs(oldState, newState), nameof(FullScreenStateChanged));
+		fullScreenEventManager.HandleEvent(this, new ScreenStateChangedEventArgs(oldState, newState), nameof(ScreenStateChanged));
 	}
 	public override void WillEndFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
 	{
 		var oldState = MediaElementScreenState.FullScreen;
 		var newState = MediaElementScreenState.Default;
-		fullScreenEventManager.HandleEvent(this, new FullScreenStateChangedEventArgs(oldState, newState), nameof(FullScreenStateChanged));
+		fullScreenEventManager.HandleEvent(this, new ScreenStateChangedEventArgs(oldState, newState), nameof(ScreenStateChanged));
 	}
 }
