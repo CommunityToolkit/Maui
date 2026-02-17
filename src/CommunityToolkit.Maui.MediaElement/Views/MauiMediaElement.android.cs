@@ -22,7 +22,7 @@ public class MauiMediaElement : CoordinatorLayout
 	bool isSystemBarVisible;
 	bool isFullScreen;
 
-	internal event EventHandler<FullScreenStateChangedEventArgs> FullScreenButtonClicked
+	internal event EventHandler<FullScreenStateChangedEventArgs> FullScreenStateChanged
 	{
 		add => fullScreenEventManager.AddEventHandler(value);
 		remove => fullScreenEventManager.RemoveEventHandler(value);
@@ -138,7 +138,7 @@ public class MauiMediaElement : CoordinatorLayout
 
 		var newState = e.P0 ? MediaElementScreenState.FullScreen : MediaElementScreenState.Default;
 		var oldState = e.P0 ? MediaElementScreenState.Default : MediaElementScreenState.FullScreen;
-		fullScreenEventManager.HandleEvent(this, new FullScreenStateChangedEventArgs(oldState, newState), nameof(FullScreenButtonClicked));
+		fullScreenEventManager.HandleEvent(this, new FullScreenStateChangedEventArgs(oldState, newState), nameof(FullScreenStateChanged));
 	}
 
 	void SetSystemBarsVisibility()
