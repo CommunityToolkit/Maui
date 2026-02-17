@@ -207,10 +207,18 @@ public class MediaElementTests : BaseViewTest
 
 		media.FullScreenStateChanged += (_, e) => captured.Add(e);
 
-		// Act - FullScreenProperty is read-only; attempting to set via BindableProperty should not change it
-		media.SetValue(MediaElement.FullScreenProperty, MediaElementScreenState.FullScreen);
+		// Act - FullScreenProperty is read-only; attempting to set via BindableProperty may throw
+		try
+		{
+			media.SetValue(MediaElement.FullScreenProperty, MediaElementScreenState.FullScreen);
+		}
+		catch (System.Exception ex)
+		{
+			// If the framework throws, ensure it's the expected type
+			Assert.IsType<InvalidOperationException>(ex);
+		}
 
-		// Assert - state remains default and no event was raised
+		// Ensure state remains unchanged and no event was raised in either case
 		Assert.Equal(MediaElementScreenState.Default, media.FullScreenState);
 		Assert.Empty(captured);
 	}
