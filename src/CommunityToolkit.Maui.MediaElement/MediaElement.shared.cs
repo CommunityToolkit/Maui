@@ -119,7 +119,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// <summary>
 	/// Bindable property for the <see cref="MetadataArtworkSource"/> property.
 	/// </summary>
-	public static readonly BindableProperty MetadataArtworkSourceProperty = BindableProperty.Create(nameof(MetadataArtworkSource), typeof(string), typeof(MediaElement), MediaElementDefaults.MetadataArtworkSource);
+	public static readonly BindableProperty MetadataArtworkSourceProperty = BindableProperty.Create(nameof(MetadataArtworkSource), typeof(MediaSource), typeof(MediaElement), MediaElementDefaults.MetadataArtworkSource);
 
 	readonly WeakEventManager eventManager = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);

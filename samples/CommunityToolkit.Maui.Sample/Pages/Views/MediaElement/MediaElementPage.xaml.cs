@@ -224,14 +224,23 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			case loadFromFile:
 				var fileResult = await PickAndShow(new PickOptions
 				{
+					FileTypes = FilePickerFileType.Images,
+					PickerTitle = "Please select a Image file"
+				});
+				if (fileResult is not null)
+				{
+					MediaElement.MetadataArtworkSource = MediaSource.FromFile(fileResult.FullPath);
+				}
+				MediaElement.MetadataTitle = "Downloaded file";
+				MediaElement.MetadataArtist = "From File Album";
+
+				fileResult = await PickAndShow(new PickOptions
+				{
 					FileTypes = FilePickerFileType.Videos,
 					PickerTitle = "Please select a video file"
 				});
 				if (fileResult is not null) 
 				{
-					MediaElement.MetadataTitle = fileResult.FileName;
-					MediaElement.MetadataArtist = "From File Album";
-					MediaElement.MetadataArtworkSource = botImageUrl;
 					MediaElement.Source = MediaSource.FromFile(fileResult.FullPath);
 				}
 				return;

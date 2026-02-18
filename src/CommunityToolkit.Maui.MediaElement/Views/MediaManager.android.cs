@@ -370,7 +370,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 		Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
 		var source = GetSource(MediaElement.Source);
-		var result = await CreateMediaItem(source).ConfigureAwait(false);
+		var result = await CreateMediaItem(source);
 		var item = result.Build();
 
 		if (item?.MediaMetadata is not null)
