@@ -156,7 +156,7 @@ sealed class Metadata
 
 	MPRemoteCommandHandlerStatus ToggleCommand(MPRemoteCommandEvent? commandEvent)
 	{
-		if (commandEvent is not null)
+		if (commandEvent is null)
 		{
 			return MPRemoteCommandHandlerStatus.CommandFailed;
 		}

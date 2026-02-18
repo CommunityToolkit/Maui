@@ -223,10 +223,19 @@ public partial class MediaManager : IDisposable
 		metaData ??= new(Player);
 		Metadata.ClearNowPlaying();
 		PlayerViewController?.ContentOverlayView?.Subviews.FirstOrDefault()?.RemoveFromSuperview();
-		var source = GetSource(MediaElement.Source);
+		string? source = string.Empty;
+		bool isFileSource = false;
+		(source, isFileSource) = GetSource(MediaElement.Source);
 		if (!string.IsNullOrWhiteSpace(source))
 		{
-			asset = AVAsset.FromUrl(new NSUrl(source));
+			if (isFileSource)
+			{
+				asset = AVAsset.FromUrl(NSUrl.FromFilename(source));
+			}
+			else
+			{
+				asset = AVAsset.FromUrl(new NSUrl(source));
+			}
 		}
 		PlayerItem = asset is not null
 			? new AVPlayerItem(asset)
@@ -426,7 +435,7 @@ public partial class MediaManager : IDisposable
 
 	static TimeSpan ConvertTime(CMTime cmTime) => TimeSpan.FromSeconds(double.IsNaN(cmTime.Seconds) ? 0 : cmTime.Seconds);
 
-	string? GetSource(MediaSource? source)
+	(string?, bool isFileSource) GetSource(MediaSource? source)
 	{
 		switch (source)
 		{
@@ -434,14 +443,14 @@ public partial class MediaManager : IDisposable
 				var uri = uriMediaSource.Uri;
 				if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
 				{
-					return uri.AbsoluteUri;
+					return (uri.AbsoluteUri, false);
 				}
 				break;
 			case FileMediaSource fileMediaSource:
 					var uriPath = fileMediaSource.Path;
 				if (!string.IsNullOrWhiteSpace(uriPath))
 				{
-					return uriPath;
+					return (uriPath, true);
 				}
 				break;
 			case ResourceMediaSource resourceMediaSource:
@@ -455,14 +464,14 @@ public partial class MediaManager : IDisposable
 						extension, directory);
 					if (!string.IsNullOrEmpty(url.AbsoluteString))
 					{
-						return url.AbsoluteString;
+						return (url.AbsoluteString, false);
 					}
 				}
 				break;
 			case null:
-				return null;
+				return (null, false);
 		}
-		return null;
+		return (null, false);
 	}
 	static async Task<(int Width, int Height)> GetVideoDimensions(AVPlayerItem avPlayerItem)
 	{
@@ -562,12 +571,22 @@ public partial class MediaManager : IDisposable
 
 		if (PlayerViewController?.View is not null && PlayerViewController.ContentOverlayView is not null)
 		{
-			var source = GetSource(MediaElement.MetadataArtworkSource);
+			string? source = null;
+			bool isFileSource = false;
+			(source, isFileSource) = GetSource(MediaElement.MetadataArtworkSource);
 			if (string.IsNullOrWhiteSpace(source))
 			{
 				return;
 			}
-			var image = UIImage.LoadFromData(NSData.FromUrl(new NSUrl(source))) ?? new UIImage();
+			UIImage? image = null;
+			if (isFileSource)
+			{
+				image = UIImage.FromFile(source) ?? new UIImage();
+			}
+			else
+			{
+				image = UIImage.LoadFromData(NSData.FromUrl(new NSUrl(source))) ?? new UIImage();
+			}
 			var imageView = new UIImageView(image)
 			{
 				ContentMode = UIViewContentMode.ScaleAspectFit,

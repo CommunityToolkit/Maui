@@ -225,7 +225,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				var fileResult = await PickAndShow(new PickOptions
 				{
 					FileTypes = FilePickerFileType.Images,
-					PickerTitle = "Please select a Image file"
+					PickerTitle = "Please select an image file"
 				});
 				if (fileResult is not null)
 				{
@@ -312,7 +312,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		popupMediaElement.Source = null;
 	}
 
-	public async Task<FileResult?> PickAndShow(PickOptions options)
+	async Task<FileResult?> PickAndShow(PickOptions options)
 	{
 		try
 		{
