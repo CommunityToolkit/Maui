@@ -681,10 +681,10 @@ public partial class MediaManager : IDisposable
 		MediaElement.CurrentStateChanged(newState);
 	}
 
-	void TimeControlStatusChanged(NSObservedChange obj)
+	async void TimeControlStatusChanged(NSObservedChange obj)
 	{
 		if (Player is null || Player.Status is AVPlayerStatus.Unknown
-						   || Player.CurrentItem?.Error is not null)
+						   || Player.CurrentItem?.Error is not null || metaData is null)
 		{
 			return;
 		}
@@ -696,8 +696,8 @@ public partial class MediaManager : IDisposable
 			AVPlayerTimeControlStatus.WaitingToPlayAtSpecifiedRate => MediaElementState.Buffering,
 			_ => MediaElement.CurrentState
 		};
-
-		metaData?.SetMetadata(PlayerItem, MediaElement);
+		CancellationToken cancellationToken = new();
+		await metaData.SetMetadata(PlayerItem, MediaElement, cancellationToken);
 
 		MediaElement.CurrentStateChanged(newState);
 	}

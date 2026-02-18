@@ -195,17 +195,32 @@ sealed class Metadata
 
 	static async Task<UIImage?> GetBitmapFromFile(string? resource, CancellationToken cancellationToken = default)
 	{
-		if (string.IsNullOrWhiteSpace(resource))
+		if (!File.Exists(resource))
 		{
+			System.Diagnostics.Trace.WriteLine($"Metadata artwork file not found: '{resource}'.");
 			return null;
 		}
-		using var fileStream = File.OpenRead(resource);
-		using var memoryStream = new MemoryStream();
-		await fileStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
-		memoryStream.Position = 0;
-		NSData temp = NSData.FromStream(memoryStream) ?? new NSData();
-		return UIImage.LoadFromData(temp);
+		try
+		{
+			using var fileStream = File.OpenRead(resource);
+			using var memoryStream = new MemoryStream();
+			await fileStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+			memoryStream.Position = 0;
+			NSData temp = NSData.FromStream(memoryStream) ?? new NSData();
+			return UIImage.LoadFromData(temp);
+		}
+		catch (IOException ex)
+		{
+			System.Diagnostics.Trace.WriteLine($"Error reading metadata artwork file '{resource}': {ex}");
+			return null;
+		}
+		catch (UnauthorizedAccessException ex)
+		{
+			System.Diagnostics.Trace.WriteLine($"Access denied reading metadata artwork file '{resource}': {ex}");
+			return null;
+		}
 	}
+
 	static UIImage? GetBitmapFromUrl(string? resource)
 	{
 		if (string.IsNullOrEmpty(resource))
