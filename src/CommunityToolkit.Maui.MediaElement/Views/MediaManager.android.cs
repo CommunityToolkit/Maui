@@ -543,9 +543,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 	}
 
-	[MemberNotNull(nameof(connection))]
 	void StartService()
 	{
+		if (!isAndroidForegroundServiceEnabled)
+		{
+			return;
+		}
 		var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
 		connection = new BoundServiceConnection(this);
 		connection.MediaControlsServiceTaskRemoved += HandleMediaControlsServiceTaskRemoved;
