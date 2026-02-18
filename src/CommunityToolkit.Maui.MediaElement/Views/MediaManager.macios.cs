@@ -435,7 +435,7 @@ public partial class MediaManager : IDisposable
 
 	static TimeSpan ConvertTime(CMTime cmTime) => TimeSpan.FromSeconds(double.IsNaN(cmTime.Seconds) ? 0 : cmTime.Seconds);
 
-	(string?, bool isFileSource) GetSource(MediaSource? source)
+	static (string?, bool isFileSource) GetSource(MediaSource? source)
 	{
 		switch (source)
 		{

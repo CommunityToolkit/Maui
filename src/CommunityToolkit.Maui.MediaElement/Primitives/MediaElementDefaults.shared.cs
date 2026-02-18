@@ -28,7 +28,7 @@ static class MediaElementDefaults
 
 	public const string MetadataArtist = "";
 
-	public static MediaSource? MetadataArtworkSource { get; } = null;
+	public static MediaSource? MetadataArtworkSource => null;
 
 	public const MediaElementState CurrentState = MediaElementState.None;
 

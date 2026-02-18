@@ -400,7 +400,7 @@ partial class MediaManager : IDisposable
 	{
 		return TValue.IsZero(numericValue);
 	}
-	
+
 	async ValueTask UpdateMetadata()
 	{
 		if (systemMediaControls is null || Player is null)
@@ -437,6 +437,11 @@ partial class MediaManager : IDisposable
 			case ResourceMediaSource:
 				try
 				{
+					if (string.IsNullOrEmpty(source))
+					{
+						Logger?.LogWarning("ResourceMediaSource metadata artwork source path is null or empty.");
+						return;
+					}
 					string path = GetFullAppPackageFilePath(source);
 					file = await StorageFile.GetFileFromPathAsync(path);
 					stream = RandomAccessStreamReference.CreateFromFile(file);
@@ -444,7 +449,7 @@ partial class MediaManager : IDisposable
 				}
 				catch (FileNotFoundException e)
 				{
-					Logger?.LogWarning("ResourceMediaSource file not found: {message}", e.Message);
+					Logger?.LogWarning("ResourceMediaSource file not found: {Message}", e.Message);
 				}
 				break;
 			case null:

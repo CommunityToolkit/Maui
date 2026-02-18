@@ -370,7 +370,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 		Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
 		var source = GetSource(MediaElement.Source);
-		var result = await CreateMediaItem(source);
+		cancellationTokenSource = new CancellationTokenSource();
+		var result = await CreateMediaItem(source, cancellationTokenSource.Token);
 		var item = result.Build();
 
 		if (item?.MediaMetadata is not null)
@@ -601,7 +602,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 		return null;
 	}
-	async Task<MediaItem.Builder> CreateMediaItem(string? url, CancellationToken cancellationToken = default)
+	async Task<MediaItem.Builder> CreateMediaItem(string? url, CancellationToken cancellationToken)
 	{
 		MediaMetadata.Builder mediaMetaData = new();
 		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
@@ -687,7 +688,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			{
 				var normalizedFilePath = NormalizeFilePath(url);
 
-				stream = File.Open(normalizedFilePath, FileMode.Create);
+				stream = File.Open(normalizedFilePath, FileMode.Open);
 				contentLength = await GetByteCountFromStream(stream, cancellationToken);
 			}
 			// Relative File Path
