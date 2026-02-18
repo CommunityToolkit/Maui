@@ -33,10 +33,10 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	public static readonly BindableProperty DurationProperty = durationPropertyKey.BindableProperty;
 
 	static readonly BindablePropertyKey screenStatePropertyKey =
-		BindableProperty.CreateReadOnly(nameof(FullScreenState), typeof(MediaElementScreenState), typeof(MediaElement),
+		BindableProperty.CreateReadOnly(nameof(ScreenState), typeof(MediaElementScreenState), typeof(MediaElement),
 			MediaElementScreenState.Default, propertyChanged: OnFullScreenPropertyChanged);
 	/// <summary>
-	/// Backing store for the <see cref="FullScreenState"/> property.
+	/// Backing store for the <see cref="ScreenState"/> property.
 	/// </summary>
 	public static readonly BindableProperty ScreenStateProperty = screenStatePropertyKey.BindableProperty;
 
@@ -389,7 +389,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// <summary>
 	/// Gets the full screen state of the media element.
 	/// </summary>
-	public MediaElementScreenState FullScreenState
+	public MediaElementScreenState ScreenState
 	{
 		get => (MediaElementScreenState)GetValue(ScreenStateProperty);
 		private set => SetValue(screenStatePropertyKey, value);
@@ -617,7 +617,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		InvalidateMeasure();
 	}
 
-	void IMediaElement.FullScreenChanged(MediaElementScreenState newState) => FullScreenState = newState;
+	void IMediaElement.FullScreenChanged(MediaElementScreenState newState) => ScreenState = newState;
 
 	void OnPositionChanged(MediaPositionChangedEventArgs mediaPositionChangedEventArgs) =>
 		eventManager.HandleEvent(this, mediaPositionChangedEventArgs, nameof(PositionChanged));

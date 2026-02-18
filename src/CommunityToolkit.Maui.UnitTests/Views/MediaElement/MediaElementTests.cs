@@ -159,13 +159,13 @@ public class MediaElementTests : BaseViewTest
 		var imedia = (IMediaElement)media;
 
 		// Pre-assert default
-		Assert.Equal(MediaElementScreenState.Default, media.FullScreenState);
+		Assert.Equal(MediaElementScreenState.Default, media.ScreenState);
 
 		// Act
 		imedia.FullScreenChanged(MediaElementScreenState.FullScreen);
 
 		// Assert
-		Assert.Equal(MediaElementScreenState.FullScreen, media.FullScreenState);
+		Assert.Equal(MediaElementScreenState.FullScreen, media.ScreenState);
 		Assert.Single(captured);
 		Assert.Equal(MediaElementScreenState.Default, captured[0].PreviousState);
 		Assert.Equal(MediaElementScreenState.FullScreen, captured[0].NewState);
@@ -184,7 +184,7 @@ public class MediaElementTests : BaseViewTest
 
 		// Set to full screen first
 		imedia.FullScreenChanged(MediaElementScreenState.FullScreen);
-		Assert.Equal(MediaElementScreenState.FullScreen, media.FullScreenState);
+		Assert.Equal(MediaElementScreenState.FullScreen, media.ScreenState);
 
 		captured.Clear();
 
@@ -192,7 +192,7 @@ public class MediaElementTests : BaseViewTest
 		imedia.FullScreenChanged(MediaElementScreenState.Default);
 
 		// Assert
-		Assert.Equal(MediaElementScreenState.Default, media.FullScreenState);
+		Assert.Equal(MediaElementScreenState.Default, media.ScreenState);
 		Assert.Single(captured);
 		Assert.Equal(MediaElementScreenState.FullScreen, captured[0].PreviousState);
 		Assert.Equal(MediaElementScreenState.Default, captured[0].NewState);
@@ -219,7 +219,7 @@ public class MediaElementTests : BaseViewTest
 		}
 
 		// Ensure state remains unchanged and no event was raised in either case
-		Assert.Equal(MediaElementScreenState.Default, media.FullScreenState);
+		Assert.Equal(MediaElementScreenState.Default, media.ScreenState);
 		Assert.Empty(captured);
 	}
 }
