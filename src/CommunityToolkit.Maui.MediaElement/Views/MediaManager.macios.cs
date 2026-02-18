@@ -230,7 +230,7 @@ public partial class MediaManager : IDisposable
 		{
 			if (isFileSource)
 			{
-				asset = AVAsset.FromUrl(NSUrl.FromFilename(source));
+				asset = AVAsset.FromUrl(NSUrl.CreateFileUrl(source));
 			}
 			else
 			{
