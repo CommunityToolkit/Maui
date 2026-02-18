@@ -594,7 +594,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 					break;
 				}
 			default:
-				throw new NotSupportedException($"{MediaElement.Source?.GetType().FullName} is not yet supported for {nameof(MediaElement.Source)}");
+				throw new NotSupportedException($"{mediaSource?.GetType().FullName} is not a supported MediaSource type");
 		}
 		return null;
 	}
