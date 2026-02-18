@@ -696,8 +696,7 @@ public partial class MediaManager : IDisposable
 			AVPlayerTimeControlStatus.WaitingToPlayAtSpecifiedRate => MediaElementState.Buffering,
 			_ => MediaElement.CurrentState
 		};
-		var cancellationToken = CancellationToken.None;
-		await metaData.SetMetadata(PlayerItem, MediaElement, cancellationToken);
+		await metaData.SetMetadata(PlayerItem, MediaElement);
 
 		MediaElement.CurrentStateChanged(newState);
 	}
