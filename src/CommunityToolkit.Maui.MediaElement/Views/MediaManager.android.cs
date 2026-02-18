@@ -23,7 +23,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	const int readyState = 3;
 	const int endedState = 4;
 
-	static readonly HttpClient client = new();
+	readonly HttpClient client = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 
 	double? previousSpeed;
@@ -617,7 +617,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		return mediaItem;
 	}
 
-	static async Task<byte[]?> GetArtworkFromMediasource(MediaSource? mediaSource, CancellationToken cancellationToken = default)
+	async Task<byte[]?> GetArtworkFromMediasource(MediaSource? mediaSource, CancellationToken cancellationToken = default)
 	{
 		if (mediaSource is null)
 		{
@@ -650,7 +650,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 	}
 
-	static async Task<byte[]?> GetBytesFromMetadataArtworkUrl(string url, CancellationToken cancellationToken = default)
+	async Task<byte[]?> GetBytesFromMetadataArtworkUrl(string url, CancellationToken cancellationToken = default)
 	{
 		if (string.IsNullOrWhiteSpace(url))
 		{
