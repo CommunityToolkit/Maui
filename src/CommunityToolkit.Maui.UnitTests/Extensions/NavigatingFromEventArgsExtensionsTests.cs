@@ -10,22 +10,18 @@ public class NavigatingFromEventArgsExtensionsTests : BaseViewTest
 	public async Task NavigatingFromEventArgsExtensions_IsDestinationPageACommunityToolkitPopupPage_ShouldReturnTrue()
 	{
 		// Arrange
-		MockApplication application = (MockApplication)ServiceProvider.GetRequiredService<IApplication>();
-		IPopupService popupService = ServiceProvider.GetRequiredService<IPopupService>();
+		TaskCompletionSource<bool?> isDestinationPageACommunityToolkitPopupPageTCS = new();
+		var application = (MockApplication)ServiceProvider.GetRequiredService<IApplication>();
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 
-		Shell shell = (Shell)(application.Windows[0].Page ?? throw new InvalidOperationException("Unable to retrieve Shell"));
-		Page mainPage = shell.CurrentPage;
-		ShellContentPage shellContentPage = new();
+		var shell = (Shell)(application.Windows[0].Page ?? throw new InvalidOperationException("Unable to retrieve Shell"));
+		var mainPage = shell.CurrentPage;
+		var shellContentPage = new ShellContentPage();
+		shellContentPage.NavigatingFromEventArgsReceived += HandleNavigatingFromEventArgsReceived;
 
-		Dictionary<string, object> shellParameters = new()
+		var shellParameters = new Dictionary<string, object>
 		{
 			{ nameof(ContentPage.BackgroundColor), Colors.Orange }
-		};
-
-		TaskCompletionSource<bool?> isDestinationPageACommunityToolkitPopupPageTCS = new();
-		shellContentPage.NavigatingFromEventArgsReceived += (sender, args) =>
-		{
-			isDestinationPageACommunityToolkitPopupPageTCS.SetResult(args.IsDestinationPageACommunityToolkitPopupPage());
 		};
 
 		// Act
@@ -35,6 +31,17 @@ public class NavigatingFromEventArgsExtensionsTests : BaseViewTest
 
 		// Assert
 		Assert.True(isDestinationPageACommunityToolkitPopupPage);
+
+		void HandleNavigatingFromEventArgsReceived(object? sender, NavigatingFromEventArgs e)
+		{
+			ArgumentNullException.ThrowIfNull(sender);
+
+			if (sender is not ShellContentPage)
+			{
+				shellContentPage.NavigatingFromEventArgsReceived -= HandleNavigatingFromEventArgsReceived;
+				isDestinationPageACommunityToolkitPopupPageTCS.SetResult(e.IsDestinationPageACommunityToolkitPopupPage());
+			}
+		}
 	}
 
 	[Fact]
@@ -51,10 +58,7 @@ public class NavigatingFromEventArgsExtensionsTests : BaseViewTest
 		ShellContentPage anotherShellContentPage = new();
 
 		TaskCompletionSource<bool?> isDestinationPageACommunityToolkitPopupPageTCS = new();
-		shellContentPage.NavigatingFromEventArgsReceived += (sender, args) =>
-		{
-			isDestinationPageACommunityToolkitPopupPageTCS.SetResult(args.IsDestinationPageACommunityToolkitPopupPage());
-		};
+		shellContentPage.NavigatingFromEventArgsReceived += HandleNavigatingFromEventArgsReceived;
 
 		// Act
 		await mainPage.Navigation.PushAsync(shellContentPage);
@@ -63,6 +67,14 @@ public class NavigatingFromEventArgsExtensionsTests : BaseViewTest
 
 		// Assert
 		Assert.False(isDestinationPageACommunityToolkitPopupPage);
+
+		void HandleNavigatingFromEventArgsReceived(object? sender, NavigatingFromEventArgs e)
+		{
+			ArgumentNullException.ThrowIfNull(sender);
+
+			shellContentPage.NavigatingFromEventArgsReceived -= HandleNavigatingFromEventArgsReceived;
+			isDestinationPageACommunityToolkitPopupPageTCS.SetResult(e.IsDestinationPageACommunityToolkitPopupPage());
+		}
 	}
 
 	sealed class ShellContentPage : ContentPage
