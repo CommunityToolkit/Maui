@@ -362,25 +362,16 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			Player.ClearMediaItems();
 			MediaElement.Duration = TimeSpan.Zero;
 			MediaElement.CurrentStateChanged(MediaElementState.None);
-			MediaMetadata.Builder mediaMetaData = new();
-			mediaMetaData.SetArtist(string.Empty);
-			mediaMetaData.SetTitle(string.Empty);
-			mediaMetaData.SetDescription(string.Empty);
-			mediaMetaData.SetArtworkUri(null);
-			mediaMetaData.SetArtworkData(null, null);
-			mediaItem = new MediaItem.Builder();
-			mediaItem.SetMediaId(string.Empty);
-			mediaItem.SetUri(string.Empty);
-			mediaItem.SetMediaMetadata(mediaMetaData.Build());
-			Player.SetMediaItem(mediaItem.Build());
+			Player.SetMediaItem(null);
 			UpdateNotifications();
 			return;
 		}
 
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 		Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
-		var result = await SetPlayerData(MediaElement.Source).ConfigureAwait(true);
-		var item = result?.Build();
+		var source = GetSource(MediaElement.Source);
+		var result = await CreateMediaItem(source).ConfigureAwait(false);
+		var item = result.Build();
 
 		if (item?.MediaMetadata is not null)
 		{
@@ -576,12 +567,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	}
 
 	void HandleMediaControlsServiceTaskRemoved(object? sender, EventArgs e) => Player?.Stop();
-
-	async Task<MediaItem.Builder?> SetPlayerData(MediaSource? mediaSource)
-	{
-		var source = GetSource(mediaSource);
-		return await CreateMediaItem(source).ConfigureAwait(false);
-	}
 
 	string? GetSource(MediaSource? mediaSource)
 	{

@@ -117,9 +117,9 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	public static readonly BindableProperty MetadataArtistProperty = BindableProperty.Create(nameof(MetadataArtist), typeof(string), typeof(MediaElement), MediaElementDefaults.MetadataArtist);
 
 	/// <summary>
-	/// Bindable property for the <see cref="MetadataArtworkUrl"/> property.
+	/// Bindable property for the <see cref="MetadataArtworkSource"/> property.
 	/// </summary>
-	public static readonly BindableProperty MetadataArtworkUrlProperty = BindableProperty.Create(nameof(MetadataArtworkUrl), typeof(string), typeof(MediaElement), MediaElementDefaults.MetadataArtworkUrl);
+	public static readonly BindableProperty MetadataArtworkSourceProperty = BindableProperty.Create(nameof(MetadataArtworkSource), typeof(string), typeof(MediaElement), MediaElementDefaults.MetadataArtworkSource);
 
 	readonly WeakEventManager eventManager = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
@@ -335,10 +335,12 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// <summary>
 	/// Gets or sets the <see cref="MetadataArtworkSource"/> of the media.
 	/// </summary>
-	[BindableProperty]
 	[TypeConverter(typeof(MediaSourceConverter))]
-	public partial MediaSource? MetadataArtworkSource { get; set; } = MediaElementDefaults.MetadataArtworkSource;
-
+	public MediaSource? MetadataArtworkSource
+	{
+		get => (MediaSource?)GetValue(MetadataArtworkSourceProperty);
+		set => SetValue(MetadataArtworkSourceProperty, value);
+	}
 	/// <summary>
 	/// Gets or sets the <see cref="Volume"/> of the media.
 	/// </summary>
