@@ -579,13 +579,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		switch (mediaSource)
 		{
 			case UriMediaSource uriMediaSource:
-				{
-					return uriMediaSource.Uri?.AbsoluteUri;
-				}
+				return uriMediaSource.Uri?.AbsoluteUri;
 			case FileMediaSource fileMediaSource:
-				{
-					return fileMediaSource.Path;
-				}
+				return fileMediaSource.Path;
 			case ResourceMediaSource resourceMediaSource:
 				{
 					var package = PlayerView?.Context?.PackageName ?? "";
