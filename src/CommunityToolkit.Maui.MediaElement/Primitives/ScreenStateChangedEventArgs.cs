@@ -12,12 +12,12 @@ public sealed class ScreenStateChangedEventArgs(MediaElementScreenState previous
 {
 
 	/// <summary>
-	/// Gets the previous state that the <see cref="Core.IMediaElement"/> instance is transitioning from.
+	/// Gets the previous state that the <see cref="IMediaElement"/> instance is transitioning from.
 	/// </summary>
 	public MediaElementScreenState PreviousState { get; } = previousState;
 
 	/// <summary>
-	/// Gets the new state that the <see cref="Core.IMediaElement"/> instance is transitioning to.
+	/// Gets the new state that the <see cref="IMediaElement"/> instance is transitioning to.
 	/// </summary>
 	public MediaElementScreenState NewState { get; } = newState;
 }

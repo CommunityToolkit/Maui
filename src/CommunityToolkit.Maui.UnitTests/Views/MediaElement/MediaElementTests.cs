@@ -1,8 +1,8 @@
 ﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using FluentAssertions;
-using Xunit;
 using System.Collections.Generic;
+using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 

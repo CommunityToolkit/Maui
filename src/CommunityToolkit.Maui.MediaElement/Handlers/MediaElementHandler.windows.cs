@@ -26,7 +26,6 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 								Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
 
 		var mediaPlatform = MediaManager.CreatePlatformView();
-		
 		return new(mediaPlatform);
 	}
 
@@ -50,8 +49,8 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	/// <inheritdoc/>
 	protected override void DisconnectHandler(MauiMediaElement platformView)
 	{
-		Dispose();
 		platformView.FullScreenStateChanged -= OnScreenStateChanged;
+		Dispose();
 		UnloadPlatformView(platformView);
 		base.DisconnectHandler(platformView);
 	}
