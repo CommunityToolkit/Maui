@@ -62,7 +62,6 @@ partial class MediaManager : IDisposable
 
 		Player.MediaPlayer.SystemMediaTransportControls.IsEnabled = false;
 		systemMediaControls = Player.MediaPlayer.SystemMediaTransportControls;
-		
 		return Player;
 	}
 
