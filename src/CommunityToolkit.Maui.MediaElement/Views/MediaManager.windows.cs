@@ -423,7 +423,7 @@ partial class MediaManager : IDisposable
 				}
 				else
 				{
-					Logger?.LogWarning("UriMediaSource metadata artwork source is null, empty, or invalid.");
+					Logger.LogWarning("UriMediaSource metadata artwork source is null, empty, or invalid.");
 				}
 				break;
 			case FileMediaSource:
@@ -439,7 +439,7 @@ partial class MediaManager : IDisposable
 				{
 					if (string.IsNullOrEmpty(source))
 					{
-						Logger?.LogWarning("ResourceMediaSource metadata artwork source path is null or empty.");
+						Logger.LogWarning("ResourceMediaSource metadata artwork source path is null or empty.");
 						return;
 					}
 					string path = GetFullAppPackageFilePath(source);
@@ -449,12 +449,8 @@ partial class MediaManager : IDisposable
 				}
 				catch (FileNotFoundException e)
 				{
-					Logger?.LogWarning("ResourceMediaSource file not found: {Message}", e.Message);
+					Logger.LogWarning("ResourceMediaSource file not found: {Message}", e.Message);
 				}
-				break;
-			case null:
-				systemMediaControls.DisplayUpdater.Thumbnail = null;
-				Dispatcher.Dispatch(() => Player.PosterSource = new BitmapImage());
 				break;
 		}
 		
@@ -462,6 +458,12 @@ partial class MediaManager : IDisposable
 		{
 			systemMediaControls.DisplayUpdater.Thumbnail = stream;
 			Dispatcher.Dispatch(() => Player.PosterSource = new BitmapImage(uri));
+		}
+
+		else
+		{
+			systemMediaControls.DisplayUpdater.Thumbnail = null;
+			Dispatcher.Dispatch(() => Player.PosterSource = new BitmapImage());
 		}
 
 		systemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Music;
