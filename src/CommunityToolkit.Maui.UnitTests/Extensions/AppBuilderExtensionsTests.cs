@@ -168,7 +168,7 @@ public class AppBuilderExtensionsTests : BaseTest
 	}
 	
 	[Fact]
-	public void isAndroidForegroundServiceEnabled_isAndroidForegroundServiceEnabledParameterFalse_IgnoreIsAndroidForegroundServiceEnabled_ShouldEnableAndroidForegroundService()
+	public void UseMauiCommunityToolkitMediaElement_isAndroidForegroundServiceEnabledParameterFalse_IgnoreIsAndroidForegroundServiceEnabled_AndroidForegroundServiceShouldRemainDisabled()
 	{
 		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(false);
 
@@ -182,7 +182,7 @@ public class AppBuilderExtensionsTests : BaseTest
 	}
 	
 	[Fact]
-	public void isAndroidForegroundServiceEnabled_isAndroidForegroundServiceEnabledParameterTrue_IgnoreIsAndroidForegroundServiceEnabled_ShouldEnableAndroidForegroundService()
+	public void UseMauiCommunityToolkitMediaElement_isAndroidForegroundServiceEnabledParameterTrue_IgnoreIsAndroidForegroundServiceEnabled_ShouldEnableAndroidForegroundService()
 	{
 		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(false);
 
@@ -196,7 +196,7 @@ public class AppBuilderExtensionsTests : BaseTest
 	}
 	
 	[Fact]
-	public void isAndroidForegroundServiceEnabled_isAndroidForegroundServiceEnabledParameterFalse_SetIsAndroidForegroundServiceEnabledFalse_ShouldEnableAndroidForegroundService()
+	public void UseMauiCommunityToolkitMediaElement_isAndroidForegroundServiceEnabledParameterFalse_SetIsAndroidForegroundServiceEnabledFalse_AndroidForegroundServiceShouldRemainDisabled()
 	{
 		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(false);
 
@@ -211,7 +211,7 @@ public class AppBuilderExtensionsTests : BaseTest
 	}
 	
 	[Fact]
-	public void isAndroidForegroundServiceEnabled_isAndroidForegroundServiceEnabledParameterTrue_SetIsAndroidForegroundServiceEnabledTrue_ShouldEnableAndroidForegroundService()
+	public void UseMauiCommunityToolkitMediaElement_isAndroidForegroundServiceEnabledParameterTrue_SetIsAndroidForegroundServiceEnabledTrue_ShouldEnableAndroidForegroundService()
 	{
 		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(false);
 
@@ -226,7 +226,7 @@ public class AppBuilderExtensionsTests : BaseTest
 	}
 	
 	[Fact]
-	public void isAndroidForegroundServiceEnabled_isAndroidForegroundServiceEnabledParameterFalse_SetIsAndroidForegroundServiceEnabledTrue_ShouldEnableAndroidForegroundService()
+	public void UseMauiCommunityToolkitMediaElement_isAndroidForegroundServiceEnabledParameterFalse_SetIsAndroidForegroundServiceEnabledTrue_ShouldEnableAndroidForegroundService()
 	{
 		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(false);
 
@@ -241,7 +241,7 @@ public class AppBuilderExtensionsTests : BaseTest
 	}
 	
 	[Fact]
-	public void isAndroidForegroundServiceEnabled_isAndroidForegroundServiceEnabledParameterTrue_SetIsAndroidForegroundServiceEnabledFalse_ShouldEnableAndroidForegroundService()
+	public void UseMauiCommunityToolkitMediaElement_isAndroidForegroundServiceEnabledParameterTrue_SetIsAndroidForegroundServiceEnabledFalse_ShouldEnableAndroidForegroundService()
 	{
 		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(false);
 
