@@ -623,32 +623,26 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		switch (mediaSource)
 		{
 			case FileMediaSource fileMediaSource:
-			{
 				var filePath = fileMediaSource.Path;
 				if (filePath is null || string.IsNullOrWhiteSpace(filePath))
 				{
 					return null;
 				}
 				return await GetByteArrayFromFile(filePath, cancellationToken).ConfigureAwait(false);
-			}
 			case ResourceMediaSource resourceMediaSource:
-			{
 				var resource = resourceMediaSource.Path;
 				if (resource is null || string.IsNullOrWhiteSpace(resource))
 				{
 					return null;
 				}
 				return await GetMauiAssetBytes(resource, cancellationToken).ConfigureAwait(false);
-			}
 			case UriMediaSource uriMediaSource:
-			{
 				var url = uriMediaSource.Uri?.AbsoluteUri;
 				if (url is null || string.IsNullOrWhiteSpace(url))
 				{
 					return null;
 				}
 				return await GetBytesFromMetadataArtworkUrl(url, cancellationToken).ConfigureAwait(false);
-			}
 			default: return null;
 		}
 	}
