@@ -223,7 +223,7 @@ public partial class MediaManager : IDisposable
 		metaData ??= new(Player);
 		Metadata.ClearNowPlaying();
 		PlayerViewController?.ContentOverlayView?.Subviews.FirstOrDefault()?.RemoveFromSuperview();
-		string? source = string.Empty;
+		string? source;
 		bool isFileSource = false;
 		(source, isFileSource) = GetSource(MediaElement.Source);
 		if (!string.IsNullOrWhiteSpace(source))
@@ -602,7 +602,7 @@ public partial class MediaManager : IDisposable
 				imageView.CenterYAnchor.ConstraintEqualTo(PlayerViewController.ContentOverlayView.CenterYAnchor),
 				imageView.WidthAnchor.ConstraintLessThanOrEqualTo(PlayerViewController.ContentOverlayView.WidthAnchor),
 				imageView.HeightAnchor.ConstraintLessThanOrEqualTo(PlayerViewController.ContentOverlayView.HeightAnchor),
-
+				
 				// Maintain the aspect ratio
 				imageView.WidthAnchor.ConstraintEqualTo(imageView.HeightAnchor, image.Size.Width / image.Size.Height)
 			]);

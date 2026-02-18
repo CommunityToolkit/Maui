@@ -70,14 +70,15 @@ sealed class Metadata
 	/// </summary>
 	/// <param name="playerItem"></param>
 	/// <param name="mediaElement"></param>
-	public async Task SetMetadata(AVPlayerItem? playerItem, IMediaElement? mediaElement)
+	/// <param name="cancellationToken"></param>
+	public async Task SetMetadata(AVPlayerItem? playerItem, IMediaElement? mediaElement, CancellationToken cancellationToken = default)
 	{
 		if (mediaElement is null)
 		{
 			return;
 		}
 		ClearNowPlaying();
-		var artwork = await MetadataArtworkMediaSource(mediaElement.MetadataArtworkSource).ConfigureAwait(false);
+		var artwork = await MetadataArtworkMediaSource(mediaElement.MetadataArtworkSource, cancellationToken).ConfigureAwait(false);
 
 		if (artwork is UIImage image)
 		{
