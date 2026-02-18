@@ -11,6 +11,12 @@ namespace CommunityToolkit.Maui.Views;
 public sealed partial class ResourceMediaSource : MediaSource
 {
 	/// <summary>
+	/// Bindable Property for the <see cref="Path"/> property.
+	/// </summary>
+	public static readonly BindableProperty PathProperty
+		= BindableProperty.Create(nameof(Path), typeof(string), typeof(ResourceMediaSource), propertyChanged: OnResourceMediaSourceMediaSourceChanged);
+
+	/// <summary>
 	/// An implicit operator to convert a string value into a <see cref="ResourceMediaSource"/>.
 	/// </summary>
 	/// <param name="path">Full path to the resource file, relative to the application's resources folder.</param>
@@ -30,8 +36,11 @@ public sealed partial class ResourceMediaSource : MediaSource
 	/// Path is relative to the application's resources folder.
 	/// It can only be just a filename if the resource file is in the root of the resources folder.
 	/// </remarks>
-	[BindableProperty(PropertyChangedMethodName = nameof(OnResourceMediaSourceMediaSourceChanged))]
-	public partial string? Path { get; set; }
+	public string? Path
+	{
+		get => (string?)GetValue(PathProperty);
+		set => SetValue(PathProperty, value);
+	}
 
 	/// <inheritdoc/>
 	public override string ToString() => $"Resource: {Path}";
