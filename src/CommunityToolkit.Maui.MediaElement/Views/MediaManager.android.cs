@@ -676,22 +676,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				var response = await client.GetAsync(url, HttpCompletionOption.ResponseContentRead, cancellationToken).ConfigureAwait(false);
 				stream = response.IsSuccessStatusCode ? await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false) : null;
 			}
-			// Absolute File Path
-			else if (uri is not null && uri.Scheme == Uri.UriSchemeFile)
-			{
-				var normalizedFilePath = NormalizeFilePath(url);
-
-				stream = File.Open(normalizedFilePath, FileMode.Open);
-				contentLength = await GetByteCountFromStream(stream, cancellationToken);
-			}
-			// Relative File Path
-			else if (Uri.TryCreate(url, UriKind.Relative, out _))
-			{
-				var normalizedFilePath = NormalizeFilePath(url);
-
-				stream = Platform.AppContext.Assets?.Open(normalizedFilePath) ?? throw new InvalidOperationException("Assets cannot be null");
-				contentLength = await GetByteCountFromStream(stream, cancellationToken);
-			}
 
 			if (stream is not null)
 			{
@@ -719,28 +703,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				stream.Close();
 				await stream.DisposeAsync();
 			}
-		}
-
-		static string NormalizeFilePath(string filePath) => filePath.Replace('\\', System.IO.Path.DirectorySeparatorChar).Replace('/', System.IO.Path.DirectorySeparatorChar);
-
-		static async ValueTask<long> GetByteCountFromStream(Stream stream, CancellationToken token)
-		{
-			if (stream.CanSeek)
-			{
-				return stream.Length;
-			}
-
-			long countedStreamBytes = 0;
-
-			var buffer = new byte[8192];
-			int bytesRead;
-
-			while ((bytesRead = await stream.ReadAsync(buffer, token)) > 0)
-			{
-				countedStreamBytes += bytesRead;
-			}
-
-			return countedStreamBytes;
 		}
 	}
 

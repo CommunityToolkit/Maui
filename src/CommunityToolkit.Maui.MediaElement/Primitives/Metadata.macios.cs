@@ -157,7 +157,7 @@ sealed class Metadata
 
 	MPRemoteCommandHandlerStatus ToggleCommand(MPRemoteCommandEvent? commandEvent)
 	{
-		if (commandEvent is null)
+		if (commandEvent is not null)
 		{
 			return MPRemoteCommandHandlerStatus.CommandFailed;
 		}
@@ -247,7 +247,7 @@ sealed class Metadata
 		NSData? nsdata = NSData.FromStream(memoryStream);
 		if (nsdata is null)
 		{
-			System.Diagnostics.Trace.TraceInformation($"{nsdata} is null.");
+			System.Diagnostics.Trace.TraceInformation($"NSData create from stream: {nsdata} is null.");
 			return null;
 		}
 		return UIImage.LoadFromData(nsdata);
