@@ -322,7 +322,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		catch (Exception ex)
 		{
 			// The user canceled or something went wrong
-			logger.LogError(ex, "Error picking file{Ex}", ex);
+			logger.LogError(ex, "Error picking file");
 		}
 
 		return null;
