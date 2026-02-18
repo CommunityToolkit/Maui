@@ -12,7 +12,6 @@ public class MediaElementOptionsTests : BaseViewTest
 	{
 		// Assert defaults on the options class
 		MediaElementOptions.DefaultAndroidViewType.Should().Be(AndroidViewType.SurfaceView);
-		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().BeFalse();
 	}
 
 	[Fact]
@@ -46,44 +45,10 @@ public class MediaElementOptionsTests : BaseViewTest
 
 		// change defaults then create a new MediaElement and verify it picked them up
 		options.SetDefaultAndroidViewType(AndroidViewType.TextureView);
-		options.SetIsAndroidForegroundServiceEnabled(false);
 
 		var mediaElement = new MediaElement();
 
 		mediaElement.AndroidViewType.Should().Be(AndroidViewType.TextureView);
-		mediaElement.IsAndroidForegroundServiceEnabled.Should().BeFalse();
-	}
-
-	[Fact]
-	public void MediaElementOptions_UpdateIsAndroidForegroundServiceEnabledWithUseMauiCommunityToolkitMediaElementParameterTrue_ShouldBeTrue()
-	{
-		var options = new MediaElementOptions();
-
-		// change defaults then create a new MediaElement and verify it picked them up
-		options.SetDefaultAndroidViewType(AndroidViewType.TextureView);
-		options.SetIsAndroidForegroundServiceEnabled(false);
-		options.UpdateIsAndroidForegroundServiceEnabledWithUseMauiCommunityToolkitMediaElementParameter(true);
-
-		var mediaElement = new MediaElement();
-
-		mediaElement.AndroidViewType.Should().Be(AndroidViewType.TextureView);
-		mediaElement.IsAndroidForegroundServiceEnabled.Should().BeTrue();
-	}
-
-	[Fact]
-	public void MediaElementOptions_UpdateIsAndroidForegroundServiceEnabledWithUseMauiCommunityToolkitMediaElementParameterFalse_ShouldBeTrue()
-	{
-		var options = new MediaElementOptions();
-
-		// change defaults then create a new MediaElement and verify it picked them up
-		options.SetDefaultAndroidViewType(AndroidViewType.TextureView);
-		options.SetIsAndroidForegroundServiceEnabled(true);
-		options.UpdateIsAndroidForegroundServiceEnabledWithUseMauiCommunityToolkitMediaElementParameter(false);
-
-		var mediaElement = new MediaElement();
-
-		mediaElement.AndroidViewType.Should().Be(AndroidViewType.TextureView);
-		mediaElement.IsAndroidForegroundServiceEnabled.Should().BeTrue();
 	}
 
 	[Fact]
@@ -94,7 +59,6 @@ public class MediaElementOptionsTests : BaseViewTest
 		// change defaults then create a new MediaElement and verify it picked them up
 		options.SetDefaultAndroidViewType(AndroidViewType.TextureView);
 		options.SetIsAndroidForegroundServiceEnabled(false);
-		options.UpdateIsAndroidForegroundServiceEnabledWithUseMauiCommunityToolkitMediaElementParameter(false);
 
 		var mediaElement = new MediaElement();
 
@@ -102,6 +66,20 @@ public class MediaElementOptionsTests : BaseViewTest
 		mediaElement.IsAndroidForegroundServiceEnabled.Should().BeFalse();
 	}
 
+	[Fact]
+	public void MediaElementOptions_UpdateIsAndroidForegroundServiceEnabledWithUseMauiCommunityToolkitMediaElementParameterFalse_ShouldBeTrue()
+	{
+		var options = new MediaElementOptions();
+
+		// change defaults then create a new MediaElement and verify it picked them up
+		options.SetDefaultAndroidViewType(AndroidViewType.TextureView);
+		options.SetIsAndroidForegroundServiceEnabled(true);
+
+		var mediaElement = new MediaElement();
+
+		mediaElement.AndroidViewType.Should().Be(AndroidViewType.TextureView);
+		mediaElement.IsAndroidForegroundServiceEnabled.Should().BeTrue();
+	}
 	protected override void Dispose(bool isDisposing)
 	{
 		base.Dispose(isDisposing);

@@ -29,8 +29,8 @@ public static class AppBuilderExtensions
 	{
 		// Update the default MediaElementOptions for MediaElement if Action is not null
 		var mediaElementOptions = new MediaElementOptions(builder);
+		mediaElementOptions.SetIsAndroidForegroundServiceEnabled(isAndroidForegroundServiceEnabled);
 		options?.Invoke(mediaElementOptions);
-		mediaElementOptions.UpdateIsAndroidForegroundServiceEnabledWithUseMauiCommunityToolkitMediaElementParameter(isAndroidForegroundServiceEnabled);
 
 		// Perform Handler configuration
 		builder.ConfigureMauiHandlers(h =>
