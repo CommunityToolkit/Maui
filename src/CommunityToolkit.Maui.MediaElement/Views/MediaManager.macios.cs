@@ -462,7 +462,7 @@ public partial class MediaManager : IDisposable
 					string extension = Path.GetExtension(path)[1..];
 					var url = NSBundle.MainBundle.GetUrlForResource(filename,
 						extension, directory);
-					if (!string.IsNullOrEmpty(url.AbsoluteString))
+					if (!string.IsNullOrEmpty(url?.AbsoluteString))
 					{
 						return (url.AbsoluteString, false);
 					}
