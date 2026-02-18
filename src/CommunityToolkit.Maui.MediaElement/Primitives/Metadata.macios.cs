@@ -227,7 +227,30 @@ sealed class Metadata
 		{
 			return null;
 		}
-		return UIImage.LoadFromData(NSData.FromUrl(new NSUrl(resource)));
+
+		try
+		{
+			var nsUrl = new NSUrl(resource);
+			NSData? data = NSData.FromUrl(nsUrl);
+			if (data is null)
+			{
+				System.Diagnostics.Trace.WriteLine($"Failed to load metadata artwork from URL: '{resource}' - NSData.FromUrl returned null.");
+				return null;
+			}
+
+			UIImage? image = UIImage.LoadFromData(data);
+			if (image is null)
+			{
+				System.Diagnostics.Trace.WriteLine($"Failed to create UIImage from URL: '{resource}' - UIImage.LoadFromData returned null.");
+			}
+
+			return image;
+		}
+		catch (Exception ex)
+		{
+			System.Diagnostics.Trace.WriteLine($"Error loading metadata artwork from URL '{resource}': {ex}");
+			return null;
+		}
 	}
 	static async Task<UIImage?> GetBitmapFromResource(string? resource, CancellationToken cancellationToken = default)
 	{
