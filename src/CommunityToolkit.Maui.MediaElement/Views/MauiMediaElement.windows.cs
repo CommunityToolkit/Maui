@@ -184,7 +184,7 @@ public partial class MauiMediaElement : Grid, IDisposable
 	{
 		var currentPage = CurrentPage;
 		var appWindow = GetAppWindowForCurrentWindow();
-		MediaElementScreenState? mediaElementState = null;
+		var mediaElementState = MediaElementScreenState.Default;
 		if (appWindow.Presenter.Kind is AppWindowPresenterKind.FullScreen)
 		{
 			appWindow.SetPresenter(AppWindowPresenterKind.Default);
