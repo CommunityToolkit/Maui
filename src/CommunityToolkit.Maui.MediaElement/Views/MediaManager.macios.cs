@@ -34,7 +34,6 @@ public partial class MediaManager : IDisposable
 			Player = Player,
 			Delegate = fullScreenDelegate,
 		};
-		
 		// Pre-initialize Volume and Muted properties to the player object
 		Player.Muted = MediaElement.ShouldMute;
 		var volumeDiff = Math.Abs(Player.Volume - MediaElement.Volume);
