@@ -60,6 +60,7 @@ https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitati
      CS1712: Type parameter has no matching typeparam tag in the XML comment
      CS1723: XML comment has cref attribute that refers to a type parameter
      CS1734: XML comment has a paramref tag, but there is no parameter by that name
+     MCT003: DefaultValueCreatorMethodName methods must return a new instance, not a static readonly field or property, to ensure each BindableObject receives a unique instance.
      MVVMTK0001: Cannot apply [INotifyPropertyChanged] to a type that already declares the INotifyPropertyChanged interface
      MVVMTK0002: Cannot apply [ObservableObject] to a type that already declares the INotifyPropertyChanged interface
      MVVMTK0003: Cannot apply [ObservableObject] to a type that already declares the INotifyPropertyChanging interface.
@@ -191,6 +192,7 @@ https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitati
       nullable,
       CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1580,CS1581,CS1584,CS1587,CS1589,CS1590,CS1591,CS1592,CS1598,CS1658,CS1710,CS1711,CS1712,CS1723,CS1734,
       CsWinRT1028,CsWinRT1030,
+      MCT003,
       MVVMTK0001,MVVMTK0002,MVVMTK0003,MVVMTK0009,MVVMTK0010,MVVMTK0011,MVVMTK0012,MVVMTK0013,MVVMTK0017,MVVMTK0018,MVVMTK0019,MVVMTK0020,MVVMTK0023,MVVMTK0024,MVVMTK0032,MVVMTK0033,MVVMTK0034,MVVMTK0035,MVVMTK0036,MVVMTK0039,MVVMTK0042,MVVMTK0049,MVVMTK0050,MVVMTK0052,MVVMTK0053,MVVMTK0054,MVVMTK0055,MVVMTK0056,
       NU1900,NU1901,NU1902,NU1903,NU1904,NU1905,
       xUnit1000,xUnit1001,xUnit1002,xUnit1003,xUnit1004,xUnit1005,xUnit1006,xUnit1007,xUnit1008,xUnit1009,xUnit1010,xUnit1011,xUnit1012,xUnit1013,xUnit1014,xUnit1015,xUnit1016,xUnit1017,xUnit1018,xUnit1019,xUnit1020,xUnit1021,xUnit1022,xUnit1023,xUnit1024,xUnit1025,xUnit1026,xUnit1027,xUnit1028,xUnit1029,xUnit1030,xUnit1031,xUnit1032,xUnit1033,xUnit1034,xUnit1035,xUnit1036,xUnit1037,xUnit1038,xUnit1039,xUnit1040,xUnit1041,xUnit1042,xUnit1043,xUnit1048,xUnit1049,xUnit1050,xUnit1051,
