@@ -36,6 +36,7 @@ public class NavigatedFromEventArgsExtensionsTests : BaseViewTest
 
 		void HandleNavigatedFromEventArgsReceived(object? sender, NavigatedFromEventArgs e)
 		{
+			shellContentPage.NavigatedFromEventArgsReceived -= HandleNavigatedFromEventArgsReceived;
 			isDestinationPageACommunityToolkitPopupPageTCS.SetResult(e.IsDestinationPageACommunityToolkitPopupPage());
 		}
 	}
