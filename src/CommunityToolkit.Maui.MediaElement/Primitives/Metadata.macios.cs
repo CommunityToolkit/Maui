@@ -195,6 +195,11 @@ sealed class Metadata
 
 	static async Task<UIImage?> GetBitmapFromFile(string? resource, CancellationToken cancellationToken = default)
 	{
+		if (string.IsNullOrEmpty(resource))
+		{
+			System.Diagnostics.Trace.WriteLine("Metadata artwork file path is null or empty.");
+			return null;
+		}
 		if (!File.Exists(resource))
 		{
 			System.Diagnostics.Trace.WriteLine($"Metadata artwork file not found: '{resource}'.");
