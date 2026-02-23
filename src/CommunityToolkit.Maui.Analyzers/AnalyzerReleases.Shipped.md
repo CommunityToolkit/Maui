@@ -20,4 +20,4 @@ MCT002  | Usage    | Error    | The value of MaximumRating must be between 1 and
 
 Rule ID | Category | Severity | Notes                                               
 --------|----------|----------|-----------------------------------------------------
-MCT003  | Usage    | Warning  | To ensure each BindableObject receives a unique instance, DefaultValueCreatorMethodName methods must return a new instance, not a static readonly field or property. 
+MCT003  | Usage    | Warning  | To ensure each BindableObject receives a unique instance, DefaultValueCreatorMethodName methods must return a new instance, not a static field or property. 
