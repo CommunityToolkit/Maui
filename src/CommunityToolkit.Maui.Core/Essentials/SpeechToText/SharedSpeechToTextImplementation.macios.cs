@@ -7,8 +7,8 @@ namespace CommunityToolkit.Maui.Media;
 
 public sealed partial class SpeechToTextImplementation
 {
-	readonly IDispatcherTimer? silenceTimer = Dispatcher.GetForCurrentThread()?.CreateTimer();
 	readonly AVAudioEngine audioEngine = new();
+	IDispatcherTimer? silenceTimer;
 	SFSpeechRecognizer? speechRecognizer;
 	SFSpeechRecognitionTask? recognitionTask;
 	SFSpeechAudioBufferRecognitionRequest? liveSpeechRequest;
@@ -123,9 +123,13 @@ public sealed partial class SpeechToTextImplementation
 
 	void InitSilenceTimer(SpeechToTextOptions options)
 	{
-		silenceTimer?.Tick += OnSilenceTimerTick;
-		silenceTimer?.Interval = options.AutoStopSilenceTimeout;
-		silenceTimer?.Start();
+		if (options.AutoStopSilenceTimeout < TimeSpan.MaxValue && options.AutoStopSilenceTimeout > TimeSpan.Zero)
+		{
+			silenceTimer = Dispatcher.GetForCurrentThread()?.CreateTimer();
+			silenceTimer.Tick += OnSilenceTimerTick;
+			silenceTimer.Interval = options.AutoStopSilenceTimeout;
+			silenceTimer.Start();
+		}
 	}
 	
 	void RestartTimer()

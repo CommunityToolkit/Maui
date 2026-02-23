@@ -53,8 +53,12 @@ public sealed partial class OfflineSpeechToTextImplementation
 		intent.PutExtra(RecognizerIntent.ExtraLanguage, javaLocale);
 		intent.PutExtra(RecognizerIntent.ExtraLanguagePreference, javaLocale);
 		intent.PutExtra(RecognizerIntent.ExtraOnlyReturnLanguagePreference, javaLocale);
-		intent.PutExtra(RecognizerIntent.ExtraSpeechInputCompleteSilenceLengthMillis, options.AutoStopSilenceTimeout.TotalMilliseconds);
-		intent.PutExtra(RecognizerIntent.ExtraSpeechInputPossiblyCompleteSilenceLengthMillis, options.AutoStopSilenceTimeout.TotalMilliseconds);
+		if (options.AutoStopSilenceTimeout < TimeSpan.MaxValue && options.AutoStopSilenceTimeout > TimeSpan.Zero)
+		{
+			intent.PutExtra(RecognizerIntent.ExtraSpeechInputCompleteSilenceLengthMillis, (long)options.AutoStopSilenceTimeout.TotalMilliseconds);
+			intent.PutExtra(RecognizerIntent.ExtraSpeechInputPossiblyCompleteSilenceLengthMillis, (long)options.AutoStopSilenceTimeout.TotalMilliseconds);
+		}
+		
 		return intent;
 	}
 
