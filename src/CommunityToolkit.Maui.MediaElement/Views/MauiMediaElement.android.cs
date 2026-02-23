@@ -1,4 +1,5 @@
-﻿using Android.App;
+﻿using System.Diagnostics.CodeAnalysis;
+using Android.App;
 using Android.Content;
 using Android.Runtime;
 using Android.Views;
@@ -24,6 +25,7 @@ public class MauiMediaElement : CoordinatorLayout
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 #pragma warning disable IDE0060 // Remove unused parameter
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
 	public MauiMediaElement(nint ptr, JniHandleOwnership jni) : base(Platform.AppContext)
 	{
 		//Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/pull/1692#issuecomment-1955099758
@@ -36,6 +38,7 @@ public class MauiMediaElement : CoordinatorLayout
 	/// </summary>
 	/// <param name="context">The application's <see cref="Context"/>.</param>
 	/// <param name="playerView">The <see cref="PlayerView"/> that acts as the platform media player.</param>
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
 	public MauiMediaElement(Context context, PlayerView playerView) : base(context)
 	{
 		this.playerView = playerView;
