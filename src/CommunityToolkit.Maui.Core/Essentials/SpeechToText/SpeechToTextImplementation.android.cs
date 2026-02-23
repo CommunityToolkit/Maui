@@ -49,7 +49,8 @@ public sealed partial class SpeechToTextImplementation
 		intent.PutExtra(RecognizerIntent.ExtraLanguage, javaLocale);
 		intent.PutExtra(RecognizerIntent.ExtraLanguagePreference, javaLocale);
 		intent.PutExtra(RecognizerIntent.ExtraOnlyReturnLanguagePreference, javaLocale);
-
+		intent.PutExtra(RecognizerIntent.ExtraSpeechInputCompleteSilenceLengthMillis, options.AutoStopSilenceTimeout.TotalMilliseconds);
+		intent.PutExtra(RecognizerIntent.ExtraSpeechInputPossiblyCompleteSilenceLengthMillis, options.AutoStopSilenceTimeout.TotalMilliseconds);
 		return intent;
 	}
 

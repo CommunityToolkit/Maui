@@ -40,7 +40,7 @@ public sealed partial class SpeechToTextImplementation
 	{
 		await Initialize(options, cancellationToken);
 
-		speechRecognizer.ContinuousRecognitionSession.AutoStopSilenceTimeout = TimeSpan.MaxValue;
+		speechRecognizer.ContinuousRecognitionSession.AutoStopSilenceTimeout = options.AutoStopSilenceTimeout;
 		speechRecognizer.ContinuousRecognitionSession.ResultGenerated += ResultGenerated;
 		speechRecognizer.ContinuousRecognitionSession.Completed += OnCompleted;
 		try

@@ -1,11 +1,13 @@
 ﻿using AVFoundation;
+using Microsoft.Maui.Dispatching;
 using Speech;
 
 namespace CommunityToolkit.Maui.Media;
 
 public sealed partial class OfflineSpeechToTextImplementation
 {
-	AVAudioEngine? audioEngine;
+	readonly IDispatcherTimer? silenceTimer = Dispatcher.GetForCurrentThread()?.CreateTimer();
+	readonly AVAudioEngine audioEngine = new();
 	SFSpeechRecognizer? speechRecognizer;
 	SFSpeechRecognitionTask? recognitionTask;
 	SFSpeechAudioBufferRecognitionRequest? liveSpeechRequest;
@@ -19,12 +21,11 @@ public sealed partial class OfflineSpeechToTextImplementation
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()
 	{
-		audioEngine?.Dispose();
+		audioEngine.Dispose();
 		speechRecognizer?.Dispose();
 		liveSpeechRequest?.Dispose();
 		recognitionTask?.Dispose();
 
-		audioEngine = null;
 		speechRecognizer = null;
 		liveSpeechRequest = null;
 		recognitionTask = null;
@@ -39,12 +40,6 @@ public sealed partial class OfflineSpeechToTextImplementation
 		SFSpeechRecognizer.RequestAuthorization(status => taskResult.SetResult(status is SFSpeechRecognizerAuthorizationStatus.Authorized));
 
 		return taskResult.Task.WaitAsync(cancellationToken);
-	}
-
-	static Task<bool> IsSpeechPermissionAuthorized(CancellationToken cancellationToken)
-	{
-		cancellationToken.ThrowIfCancellationRequested();
-		return Task.FromResult(SFSpeechRecognizer.AuthorizationStatus is SFSpeechRecognizerAuthorizationStatus.Authorized);
 	}
 
 	static void InitializeAvAudioSession(out AVAudioSession sharedAvAudioSession)
@@ -62,10 +57,72 @@ public sealed partial class OfflineSpeechToTextImplementation
 
 	void InternalStopListening()
 	{
-		audioEngine?.InputNode.RemoveTapOnBus(0);
-		audioEngine?.Stop();
+		silenceTimer?.Tick -= OnSilenceTimerTick;
+		silenceTimer?.Stop();
 		liveSpeechRequest?.EndAudio();
-		recognitionTask?.Cancel();
+		recognitionTask?.Finish();
+		audioEngine.Stop();
+		audioEngine.InputNode.RemoveTapOnBus(0);
+		
 		OnSpeechToTextStateChanged(CurrentState);
+		
+		recognitionTask?.Dispose();
+		speechRecognizer?.Dispose();
+		liveSpeechRequest?.Dispose();
+
+		speechRecognizer = null;
+		liveSpeechRequest = null;
+		recognitionTask = null;
+	}
+
+	void OnSilenceTimerTick(object? sender, EventArgs e)
+	{
+		InternalStopListening();
+	}
+
+	SFSpeechRecognitionTask CreateSpeechRecognizerTask(SFSpeechRecognizer sfSpeechRecognizer, SFSpeechAudioBufferRecognitionRequest sfSpeechAudioBufferRecognitionRequest)
+	{
+		int currentIndex = 0;
+		return sfSpeechRecognizer.GetRecognitionTask(sfSpeechAudioBufferRecognitionRequest, (result, err) =>
+		{
+			if (err is not null)
+			{
+				currentIndex = 0;
+				InternalStopListening();
+				OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception(err.LocalizedDescription)));
+			}
+			else
+			{
+				if (result.Final)
+				{
+					currentIndex = 0;
+					InternalStopListening();
+					OnRecognitionResultCompleted(SpeechToTextResult.Success(result.BestTranscription.FormattedString));
+				}
+				else
+				{
+					RestartTimer();
+					if (currentIndex <= 0)
+					{
+						OnSpeechToTextStateChanged(CurrentState);
+					}
+
+					OnRecognitionResultUpdated(result.BestTranscription.FormattedString);
+				}
+			}
+		});
+	}
+
+	void InitSilenceTimer(SpeechToTextOptions options)
+	{
+		silenceTimer?.Tick += OnSilenceTimerTick;
+		silenceTimer?.Interval = options.AutoStopSilenceTimeout;
+		silenceTimer?.Start();
+	}
+	
+	void RestartTimer()
+	{
+		silenceTimer?.Stop();
+		silenceTimer?.Start();
 	}
 }

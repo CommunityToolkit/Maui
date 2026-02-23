@@ -16,4 +16,9 @@ public class SpeechToTextOptions
 	/// Include partial recognition results.
 	/// </summary>
 	public bool ShouldReportPartialResults { get; init; } = true;
+	
+	/// <summary>
+	/// Silence Duration.
+	/// </summary>
+	public TimeSpan AutoStopSilenceTimeout { get; init; } = TimeSpan.MaxValue;
 }
