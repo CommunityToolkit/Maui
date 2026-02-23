@@ -115,6 +115,7 @@ public sealed partial class SpeechToTextImplementation
 						OnSpeechToTextStateChanged(CurrentState);
 					}
 
+					currentIndex++;
 					OnRecognitionResultUpdated(result.BestTranscription.FormattedString);
 				}
 			}

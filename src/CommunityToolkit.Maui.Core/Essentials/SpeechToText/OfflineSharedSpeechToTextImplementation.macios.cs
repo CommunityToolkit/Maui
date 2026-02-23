@@ -107,6 +107,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 						OnSpeechToTextStateChanged(CurrentState);
 					}
 
+					currentIndex++;
 					OnRecognitionResultUpdated(result.BestTranscription.FormattedString);
 				}
 			}
