@@ -246,6 +246,37 @@ public class AttachedBindablePropertyDefaultValueCreatorAnalyzerTests
 	}
 
 	[Fact]
+	public async Task VerifyErrorWhenDefaultValueCreatorMethodReturnsCreateDefaultValueDelegateThatReturnsAStaticInstance()
+	{
+		const string source =
+			/* language=C#-test */
+			//lang=csharp
+			"""
+			#nullable enable
+			#pragma warning disable MCTEXP001
+			using System.Collections.Generic;
+			using CommunityToolkit.Maui;
+			using Microsoft.Maui.Controls;
+
+			namespace CommunityToolkit.Maui.UnitTests
+			{
+				[AttachedBindableProperty<IList<View>>("StateViews", DefaultValueCreatorMethodName = nameof(CreateStateViewsDelegate))]
+				public static partial class TestContainer
+				{
+					static readonly BindableProperty.CreateDefaultValueDelegate CreateStateViewsDelegate = _ => StateViewList;
+
+					static List<View> StateViewList { get; } = [];
+				}
+			}
+			""";
+
+		await VerifyAnalyzerAsync(source,
+			Diagnostic()
+				.WithSeverity(DiagnosticSeverity.Warning)
+				.WithArguments("CreateDefaultStateViews"));
+	}
+
+	[Fact]
 	public async Task VerifyErrorWhenDefaultValueCreatorMethodReturnsStaticReadonlyPropertyFromDifferentClass()
 	{
 		const string source =
@@ -583,6 +614,32 @@ public class AttachedBindablePropertyDefaultValueCreatorAnalyzerTests
 				public static partial class TestContainer
 				{
 					static IList<View>? CreateDefaultStateViews(BindableObject bindable) => null;
+				}
+			}
+			""";
+
+		await VerifyAnalyzerAsync(source);
+	}
+
+	[Fact]
+	public async Task VerifyNoErrorWhenDefaultValueCreatorMethodReturnsCreateDefaultValueDelegateThatReturnsANewInstance()
+	{
+		const string source =
+			/* language=C#-test */
+			//lang=csharp
+			"""
+			#nullable enable
+			#pragma warning disable MCTEXP001
+			using System.Collections.Generic;
+			using CommunityToolkit.Maui;
+			using Microsoft.Maui.Controls;
+
+			namespace CommunityToolkit.Maui.UnitTests
+			{
+				[AttachedBindableProperty<IList<View>>("StateViews", DefaultValueCreatorMethodName = nameof(CreateStateViewsDelegate))]
+				public static partial class TestContainer
+				{
+					static readonly BindableProperty.CreateDefaultValueDelegate CreateStateViewsDelegate = (x) => new List<View>();
 				}
 			}
 			""";
