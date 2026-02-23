@@ -97,7 +97,7 @@ namespace CommunityToolkit.Maui.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to `.UseMauiCommunityToolkit()` is required to initalize .NET MAUI Community Toolkit..
+        ///   Looks up a localized string similar to `.UseMauiCommunityToolkit()` is required to initialize .NET MAUI Community Toolkit.
         /// </summary>
         internal static string InitializationErrorMessage {
             get {
