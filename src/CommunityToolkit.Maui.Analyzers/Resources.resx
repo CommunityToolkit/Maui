@@ -127,10 +127,10 @@
     <value>`.UseMauiCommunityToolkit()` Not Found on MauiAppBuilder</value>
   </data>
   <data name="BindablePropertyDefaultValueCreatorMessageFormat" xml:space="preserve">
-    <value>Method '{0}' returns a static readonly field or property. This will cause all instances to share the same reference. Return a new instance instead.</value>
+    <value>Method '{0}' returns a static field or property. This will cause all instances to share the same reference. Return a new instance instead.</value>
   </data>
   <data name="BindablePropertyDefaultValueCreatorErrorMessage" xml:space="preserve">
-    <value>To ensure each BindableObject receives a unique instance, DefaultValueCreatorMethodName methods must return a new instance, not a static readonly field or property.</value>
+    <value>To ensure each BindableObject receives a unique instance, DefaultValueCreatorMethodName methods must return a new instance, not a static field or property.</value>
   </data>
   <data name="BindablePropertyDefaultValueCreatorErrorTitle" xml:space="preserve">
     <value>DefaultValueCreatorMethodName Returns Shared Static Instance</value>

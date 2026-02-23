@@ -793,6 +793,41 @@ public class BindablePropertyDefaultValueCreatorAnalyzerTests
 		await VerifyAnalyzerAsync(source);
 	}
 
+	[Fact]
+	public async Task VerifyNoErrorWhenDefaultValueCreatorMethodReturnsAConst()
+	{
+		const string source =
+			/* language=C#-test */
+			//lang=csharp
+			"""
+			#nullable enable
+			#pragma warning disable MCTEXP001
+			using System.Collections.Generic;
+			using CommunityToolkit.Maui;
+			using Microsoft.Maui.Controls;
+
+			namespace CommunityToolkit.Maui.UnitTests
+			{
+				public partial class TestControl : View
+				{
+					[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateStateViewsDelegate))]
+					public partial bool StateViews { get; set; }
+
+					const bool trueConstant = true;
+					static bool CreateStateViewsDelegate() => trueConstant;
+				}
+
+				public partial class TestControl
+				{
+					public static readonly global::Microsoft.Maui.Controls.BindableProperty? StateViewsProperty;
+					public partial bool StateViews { get => false ? field : (bool)GetValue(StateViewsProperty); set => SetValue(StateViewsProperty, value); }
+				}
+			}
+			""";
+
+		await VerifyAnalyzerAsync(source);
+	}
+
 	static Task VerifyAnalyzerAsync(string source, params IReadOnlyList<DiagnosticResult> expected)
 	{
 		return CSharpAnalyzerVerifier<BindablePropertyDefaultValueCreatorAnalyzer>
