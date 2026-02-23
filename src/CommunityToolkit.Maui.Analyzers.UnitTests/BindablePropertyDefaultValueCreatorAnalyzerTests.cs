@@ -458,35 +458,6 @@ public class BindablePropertyDefaultValueCreatorAnalyzerTests
 	}
 
 	[Fact]
-	public async Task VerifyNoErrorWhenAttributeIsNotBindableProperty()
-	{
-		const string source =
-			/* language=C#-test */
-			//lang=csharp
-			"""
-			#nullable enable
-			#pragma warning disable MCTEXP001
-			#pragma warning disable CS9248
-			using System;
-			using System.Collections.Generic;
-			using Microsoft.Maui.Controls;
-
-			namespace CommunityToolkit.Maui.UnitTests
-			{
-				[Obsolete("Test")]
-				public partial class TestControl : View
-				{
-					static readonly IList<View> DefaultStateViews = new List<View>();
-					
-					static IList<View> CreateDefaultStateViews(BindableObject bindable) => DefaultStateViews;
-				}
-			}
-			""";
-
-		await VerifyAnalyzerAsync(source);
-	}
-
-	[Fact]
 	public async Task VerifyNoErrorWhenDefaultValueCreatorMethodReturnsStaticNonReadonlyProperty()
 	{
 		const string source =
@@ -516,6 +487,40 @@ public class BindablePropertyDefaultValueCreatorAnalyzerTests
 				{
 					public static readonly global::Microsoft.Maui.Controls.BindableProperty? StateViewsProperty;
 					public partial IList<View> StateViews { get => false ? field : (IList<View>)GetValue(StateViewsProperty); set => SetValue(StateViewsProperty, value); }
+				}
+			}
+			""";
+
+		await VerifyAnalyzerAsync(
+			source,
+			Diagnostic()
+				.WithSpan(17, 3, 17, 92)
+				.WithSeverity(DiagnosticSeverity.Warning)
+				.WithArguments("CreateDefaultStateViews"));
+	}
+
+	[Fact]
+	public async Task VerifyNoErrorWhenAttributeIsNotBindableProperty()
+	{
+		const string source =
+			/* language=C#-test */
+			//lang=csharp
+			"""
+			#nullable enable
+			#pragma warning disable MCTEXP001
+			#pragma warning disable CS9248
+			using System;
+			using System.Collections.Generic;
+			using Microsoft.Maui.Controls;
+
+			namespace CommunityToolkit.Maui.UnitTests
+			{
+				[Obsolete("Test")]
+				public partial class TestControl : View
+				{
+					static readonly IList<View> DefaultStateViews = new List<View>();
+					
+					static IList<View> CreateDefaultStateViews(BindableObject bindable) => DefaultStateViews;
 				}
 			}
 			""";
@@ -610,6 +615,47 @@ public class BindablePropertyDefaultValueCreatorAnalyzerTests
 	}
 
 	[Fact]
+	public async Task VerifyErrorWhenDefaultValueCreatorMethodReturnsCreateDefaultValueDelegateThatReturnsAStaticMember()
+	{
+		const string source =
+			/* language=C#-test */
+			//lang=csharp
+			"""
+			#nullable enable
+			#pragma warning disable MCTEXP001
+			using System.Collections.Generic;
+			using CommunityToolkit.Maui;
+			using Microsoft.Maui.Controls;
+
+			namespace CommunityToolkit.Maui.UnitTests
+			{
+				public partial class TestControl : View
+				{
+					[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateStateViewsDelegate))]
+					public partial IList<View>? StateViews { get; set; }
+
+					static readonly BindableProperty.CreateDefaultValueDelegate CreateStateViewsDelegate = _ => StateViewsList;
+
+					static List<View> StateViewsList { get; } = [];
+				}
+
+				public partial class TestControl
+				{
+					public static readonly global::Microsoft.Maui.Controls.BindableProperty? StateViewsProperty;
+					public partial IList<View> StateViews { get => false ? field : (IList<View>)GetValue(StateViewsProperty); set => SetValue(StateViewsProperty, value); }
+				}
+			}
+			""";
+
+		await VerifyAnalyzerAsync(
+			source,
+			Diagnostic()
+				.WithSpan(14, 3, 14, 110)
+				.WithSeverity(DiagnosticSeverity.Warning)
+				.WithArguments("CreateStateViewsDelegate"));
+	}
+
+	[Fact]
 	public async Task VerifyNoErrorWhenDefaultValueCreatorMethodReturnsLiteral()
 	{
 		const string source =
@@ -700,6 +746,40 @@ public class BindablePropertyDefaultValueCreatorAnalyzerTests
 					public partial IList<View>? StateViews { get; set; }
 					
 					static IList<View>? CreateDefaultStateViews(BindableObject bindable) => null;
+				}
+
+				public partial class TestControl
+				{
+					public static readonly global::Microsoft.Maui.Controls.BindableProperty? StateViewsProperty;
+					public partial IList<View> StateViews { get => false ? field : (IList<View>)GetValue(StateViewsProperty); set => SetValue(StateViewsProperty, value); }
+				}
+			}
+			""";
+
+		await VerifyAnalyzerAsync(source);
+	}
+
+	[Fact]
+	public async Task VerifyNoErrorWhenDefaultValueCreatorMethodReturnsCreateDefaultValueDelegateThatReturnsANewInstance()
+	{
+		const string source =
+			/* language=C#-test */
+			//lang=csharp
+			"""
+			#nullable enable
+			#pragma warning disable MCTEXP001
+			using System.Collections.Generic;
+			using CommunityToolkit.Maui;
+			using Microsoft.Maui.Controls;
+
+			namespace CommunityToolkit.Maui.UnitTests
+			{
+				public partial class TestControl : View
+				{
+					[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateStateViewsDelegate))]
+					public partial IList<View>? StateViews { get; set; }
+
+					static readonly BindableProperty.CreateDefaultValueDelegate CreateStateViewsDelegate = (x) => new List<View>();
 				}
 
 				public partial class TestControl

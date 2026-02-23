@@ -63,15 +63,25 @@ public class BindablePropertyDefaultValueCreatorAnalyzer : DiagnosticAnalyzer
 
 		var methodDeclaration = FindMethodInType(containingType, defaultValueCreatorMethodName);
 
-		if (methodDeclaration is null)
+		if (methodDeclaration is not null)
 		{
+			if (DoesReturnStaticReadOnlyFieldOrProperty(methodDeclaration, context.SemanticModel, context.CancellationToken))
+			{
+				var diagnostic = Diagnostic.Create(rule, methodDeclaration.GetLocation(), defaultValueCreatorMethodName);
+				context.ReportDiagnostic(diagnostic);
+			}
 			return;
 		}
 
-		if (ReturnsStaticReadOnlyFieldOrProperty(methodDeclaration, context.SemanticModel, context.CancellationToken))
+		var fieldOrPropertyDeclaration = FindFieldOrPropertyInType(containingType, defaultValueCreatorMethodName);
+
+		if (fieldOrPropertyDeclaration is not null)
 		{
-			var diagnostic = Diagnostic.Create(rule, methodDeclaration.GetLocation(), defaultValueCreatorMethodName);
-			context.ReportDiagnostic(diagnostic);
+			if (DoesDelegateInitializerReturnStaticReadOnlyMember(fieldOrPropertyDeclaration, context.SemanticModel, context.CancellationToken))
+			{
+				var diagnostic = Diagnostic.Create(rule, fieldOrPropertyDeclaration.GetLocation(), defaultValueCreatorMethodName);
+				context.ReportDiagnostic(diagnostic);
+			}
 		}
 	}
 
@@ -138,7 +148,27 @@ public class BindablePropertyDefaultValueCreatorAnalyzer : DiagnosticAnalyzer
 			.FirstOrDefault(method => method.Identifier.ValueText == methodName);
 	}
 
-	static bool ReturnsStaticReadOnlyFieldOrProperty(MethodDeclarationSyntax methodDeclaration, SemanticModel semanticModel, CancellationToken cancellationToken)
+	static SyntaxNode? FindFieldOrPropertyInType(TypeDeclarationSyntax typeDeclaration, string memberName)
+	{
+		var fieldDeclaration = typeDeclaration
+			.DescendantNodes()
+			.OfType<FieldDeclarationSyntax>()
+			.FirstOrDefault(field => field.Declaration.Variables.Any(v => v.Identifier.ValueText == memberName));
+
+		if (fieldDeclaration is not null)
+		{
+			return fieldDeclaration;
+		}
+
+		var propertyDeclaration = typeDeclaration
+			.DescendantNodes()
+			.OfType<PropertyDeclarationSyntax>()
+			.FirstOrDefault(prop => prop.Identifier.ValueText == memberName);
+
+		return propertyDeclaration;
+	}
+
+	static bool DoesReturnStaticReadOnlyFieldOrProperty(MethodDeclarationSyntax methodDeclaration, SemanticModel semanticModel, CancellationToken cancellationToken)
 	{
 		var returnStatements = methodDeclaration
 			.DescendantNodes()
@@ -151,7 +181,7 @@ public class BindablePropertyDefaultValueCreatorAnalyzer : DiagnosticAnalyzer
 				continue;
 			}
 
-			if (IsStaticReadOnlyMemberAccess(returnStatement.Expression, semanticModel, cancellationToken))
+			if (IsStaticFieldOrProperty(returnStatement.Expression, semanticModel, cancellationToken))
 			{
 				return true;
 			}
@@ -159,21 +189,93 @@ public class BindablePropertyDefaultValueCreatorAnalyzer : DiagnosticAnalyzer
 
 		if (methodDeclaration.ExpressionBody is not null)
 		{
-			return IsStaticReadOnlyMemberAccess(methodDeclaration.ExpressionBody.Expression, semanticModel, cancellationToken);
+			return IsStaticFieldOrProperty(methodDeclaration.ExpressionBody.Expression, semanticModel, cancellationToken);
 		}
 
 		return false;
 	}
 
-	static bool IsStaticReadOnlyMemberAccess(ExpressionSyntax expression, SemanticModel semanticModel, CancellationToken cancellationToken)
+	static bool DoesDelegateInitializerReturnStaticReadOnlyMember(SyntaxNode memberDeclaration, SemanticModel semanticModel, CancellationToken cancellationToken)
+	{
+		if (memberDeclaration is FieldDeclarationSyntax fieldDeclaration)
+		{
+			foreach (var variable in fieldDeclaration.Declaration.Variables)
+			{
+				if (variable.Initializer?.Value is null)
+				{
+					continue;
+				}
+
+				if (DoesLambdaOrDelegateInitializerReturnStaticMember(variable.Initializer.Value, semanticModel, cancellationToken))
+				{
+					return true;
+				}
+			}
+		}
+		else if (memberDeclaration is PropertyDeclarationSyntax propertyDeclaration)
+		{
+			if (propertyDeclaration.Initializer?.Value is not null)
+			{
+				return DoesLambdaOrDelegateInitializerReturnStaticMember(propertyDeclaration.Initializer.Value, semanticModel, cancellationToken);
+			}
+		}
+
+		return false;
+	}
+
+	static bool DoesLambdaOrDelegateInitializerReturnStaticMember(ExpressionSyntax expression, SemanticModel semanticModel, CancellationToken cancellationToken)
+	{
+		if (expression is ParenthesizedLambdaExpressionSyntax parenthesizedLambda)
+		{
+			if (parenthesizedLambda.ExpressionBody is not null)
+			{
+				return IsStaticFieldOrProperty(parenthesizedLambda.ExpressionBody, semanticModel, cancellationToken);
+			}
+
+			if (parenthesizedLambda.Block is not null)
+			{
+				var returnStatements = parenthesizedLambda.Block.DescendantNodes().OfType<ReturnStatementSyntax>();
+				foreach (var returnStatement in returnStatements)
+				{
+					if (returnStatement.Expression is not null && IsStaticFieldOrProperty(returnStatement.Expression, semanticModel, cancellationToken))
+					{
+						return true;
+					}
+				}
+			}
+		}
+		else if (expression is SimpleLambdaExpressionSyntax simpleLambda)
+		{
+			if (simpleLambda.ExpressionBody is not null)
+			{
+				return IsStaticFieldOrProperty(simpleLambda.ExpressionBody, semanticModel, cancellationToken);
+			}
+
+			if (simpleLambda.Block is not null)
+			{
+				var returnStatements = simpleLambda.Block.DescendantNodes().OfType<ReturnStatementSyntax>();
+				foreach (var returnStatement in returnStatements)
+				{
+					if (returnStatement.Expression is not null && IsStaticFieldOrProperty(returnStatement.Expression, semanticModel, cancellationToken))
+					{
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
+	static bool IsStaticFieldOrProperty(ExpressionSyntax expression, SemanticModel semanticModel, CancellationToken cancellationToken)
 	{
 		// Handle conditional expressions (ternary operator)
 		// e.g., condition ? DefaultStateViews : []
 		if (expression is ConditionalExpressionSyntax conditionalExpression)
 		{
 			// Check if either branch returns a static readonly member
-			return IsStaticReadOnlyMemberAccess(conditionalExpression.WhenTrue, semanticModel, cancellationToken)
-				|| IsStaticReadOnlyMemberAccess(conditionalExpression.WhenFalse, semanticModel, cancellationToken);
+			return IsStaticFieldOrProperty(conditionalExpression.WhenTrue, semanticModel, cancellationToken)
+				|| IsStaticFieldOrProperty(conditionalExpression.WhenFalse, semanticModel, cancellationToken);
 		}
 
 		// Handle binary expressions (e.g., null coalescing operator ??)
@@ -181,8 +283,8 @@ public class BindablePropertyDefaultValueCreatorAnalyzer : DiagnosticAnalyzer
 		if (expression is BinaryExpressionSyntax binaryExpression)
 		{
 			// Check if either side returns a static readonly member
-			return IsStaticReadOnlyMemberAccess(binaryExpression.Left, semanticModel, cancellationToken)
-				|| IsStaticReadOnlyMemberAccess(binaryExpression.Right, semanticModel, cancellationToken);
+			return IsStaticFieldOrProperty(binaryExpression.Left, semanticModel, cancellationToken)
+				|| IsStaticFieldOrProperty(binaryExpression.Right, semanticModel, cancellationToken);
 		}
 
 		// Handle switch expressions
@@ -192,7 +294,7 @@ public class BindablePropertyDefaultValueCreatorAnalyzer : DiagnosticAnalyzer
 			// Check if any arm returns a static readonly member
 			foreach (var arm in switchExpression.Arms)
 			{
-				if (IsStaticReadOnlyMemberAccess(arm.Expression, semanticModel, cancellationToken))
+				if (IsStaticFieldOrProperty(arm.Expression, semanticModel, cancellationToken))
 				{
 					return true;
 				}
@@ -204,14 +306,14 @@ public class BindablePropertyDefaultValueCreatorAnalyzer : DiagnosticAnalyzer
 		// e.g., (DefaultStateViews)
 		if (expression is ParenthesizedExpressionSyntax parenthesizedExpression)
 		{
-			return IsStaticReadOnlyMemberAccess(parenthesizedExpression.Expression, semanticModel, cancellationToken);
+			return IsStaticFieldOrProperty(parenthesizedExpression.Expression, semanticModel, cancellationToken);
 		}
 
 		// Handle cast expressions
 		// e.g., (IList<View>)DefaultStateViews
 		if (expression is CastExpressionSyntax castExpression)
 		{
-			return IsStaticReadOnlyMemberAccess(castExpression.Expression, semanticModel, cancellationToken);
+			return IsStaticFieldOrProperty(castExpression.Expression, semanticModel, cancellationToken);
 		}
 
 		// Check if the expression itself is a static readonly member
@@ -224,8 +326,8 @@ public class BindablePropertyDefaultValueCreatorAnalyzer : DiagnosticAnalyzer
 
 		return symbolInfo.Symbol switch
 		{
-			IFieldSymbol fieldSymbol => fieldSymbol.IsStatic && fieldSymbol.IsReadOnly,
-			IPropertySymbol propertySymbol => propertySymbol.IsStatic && propertySymbol.IsReadOnly,
+			IFieldSymbol fieldSymbol => fieldSymbol.IsStatic,
+			IPropertySymbol propertySymbol => propertySymbol.IsStatic,
 			_ => false
 		};
 	}
