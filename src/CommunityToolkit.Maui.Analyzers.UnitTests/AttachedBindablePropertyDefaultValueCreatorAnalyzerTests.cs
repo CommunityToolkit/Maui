@@ -272,8 +272,9 @@ public class AttachedBindablePropertyDefaultValueCreatorAnalyzerTests
 
 		await VerifyAnalyzerAsync(source,
 			Diagnostic()
+				.WithSpan(12, 3, 12, 109)
 				.WithSeverity(DiagnosticSeverity.Warning)
-				.WithArguments("CreateDefaultStateViews"));
+				.WithArguments("CreateStateViewsDelegate"));
 	}
 
 	[Fact]
@@ -421,6 +422,39 @@ public class AttachedBindablePropertyDefaultValueCreatorAnalyzerTests
 	}
 
 	[Fact]
+	public async Task VerifyErrorWhenDefaultValueCreatorMethodReturnsStaticNonReadonlyProperty()
+	{
+		const string source =
+			/* language=C#-test */
+			//lang=csharp
+			"""
+			#nullable enable
+			#pragma warning disable MCTEXP001
+			using System.Collections.Generic;
+			using CommunityToolkit.Maui;
+			using Microsoft.Maui.Controls;
+
+			namespace CommunityToolkit.Maui.UnitTests
+			{
+				[AttachedBindableProperty<IList<View>>("StateViews", DefaultValueCreatorMethodName = nameof(CreateDefaultStateViews))]
+				public static partial class TestContainer
+				{
+					static IList<View> DefaultStateViews { get; set; } = new List<View>();
+					
+					static IList<View> CreateDefaultStateViews(BindableObject bindable) => DefaultStateViews;
+				}
+			}
+			""";
+
+		await VerifyAnalyzerAsync(
+			source,
+			Diagnostic()
+				.WithSpan(14, 3, 14, 92)
+				.WithSeverity(DiagnosticSeverity.Warning)
+				.WithArguments("CreateDefaultStateViews"));
+	}
+
+	[Fact]
 	public async Task VerifyNoErrorWhenAttributeIsNotAttachedBindableProperty()
 	{
 		const string source =
@@ -439,34 +473,6 @@ public class AttachedBindablePropertyDefaultValueCreatorAnalyzerTests
 				public static partial class TestContainer
 				{
 					static readonly IList<View> DefaultStateViews = new List<View>();
-					
-					static IList<View> CreateDefaultStateViews(BindableObject bindable) => DefaultStateViews;
-				}
-			}
-			""";
-
-		await VerifyAnalyzerAsync(source);
-	}
-
-	[Fact]
-	public async Task VerifyNoErrorWhenDefaultValueCreatorMethodReturnsStaticNonReadonlyProperty()
-	{
-		const string source =
-			/* language=C#-test */
-			//lang=csharp
-			"""
-			#nullable enable
-			#pragma warning disable MCTEXP001
-			using System.Collections.Generic;
-			using CommunityToolkit.Maui;
-			using Microsoft.Maui.Controls;
-
-			namespace CommunityToolkit.Maui.UnitTests
-			{
-				[AttachedBindableProperty<IList<View>>("StateViews", DefaultValueCreatorMethodName = nameof(CreateDefaultStateViews))]
-				public static partial class TestContainer
-				{
-					static IList<View> DefaultStateViews { get; set; } = new List<View>();
 					
 					static IList<View> CreateDefaultStateViews(BindableObject bindable) => DefaultStateViews;
 				}
