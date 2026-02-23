@@ -458,7 +458,7 @@ public class BindablePropertyDefaultValueCreatorAnalyzerTests
 	}
 
 	[Fact]
-	public async Task VerifyNoErrorWhenDefaultValueCreatorMethodReturnsStaticNonReadonlyProperty()
+	public async Task VerifyErrorWhenDefaultValueCreatorMethodReturnsStaticNonReadonlyProperty()
 	{
 		const string source =
 			/* language=C#-test */
