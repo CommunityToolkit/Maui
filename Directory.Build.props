@@ -60,7 +60,7 @@ https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitati
      CS1712: Type parameter has no matching typeparam tag in the XML comment
      CS1723: XML comment has cref attribute that refers to a type parameter
      CS1734: XML comment has a paramref tag, but there is no parameter by that name
-     MCT003: DefaultValueCreatorMethodName methods must return a new instance, not a static readonly field or property, to ensure each BindableObject receives a unique instance.
+     MCT003: DefaultValueCreatorMethodName methods must return a new instance, not a static field or property, to ensure each BindableObject receives a unique instance.
      MVVMTK0001: Cannot apply [INotifyPropertyChanged] to a type that already declares the INotifyPropertyChanged interface
      MVVMTK0002: Cannot apply [ObservableObject] to a type that already declares the INotifyPropertyChanged interface
      MVVMTK0003: Cannot apply [ObservableObject] to a type that already declares the INotifyPropertyChanging interface.
