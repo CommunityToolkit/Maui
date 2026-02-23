@@ -319,14 +319,9 @@ public class BindablePropertyDefaultValueCreatorAnalyzer : DiagnosticAnalyzer
 		// Check if the expression itself is a static readonly member
 		var symbolInfo = semanticModel.GetSymbolInfo(expression, cancellationToken);
 
-		if (symbolInfo.Symbol is null)
-		{
-			return false;
-		}
-
 		return symbolInfo.Symbol switch
 		{
-			IFieldSymbol fieldSymbol => fieldSymbol.IsStatic,
+			IFieldSymbol fieldSymbol when !fieldSymbol.IsConst => fieldSymbol.IsStatic,
 			IPropertySymbol propertySymbol => propertySymbol.IsStatic,
 			_ => false
 		};
