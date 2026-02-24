@@ -57,6 +57,7 @@ public class MauiMediaElement : CoordinatorLayout
 		AddView(relativeLayout);
 	}
 
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
 	public override void OnDetachedFromWindow()
 	{
 		if (isFullScreen)
