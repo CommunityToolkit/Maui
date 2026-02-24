@@ -127,9 +127,9 @@ public sealed partial class SpeechToTextImplementation
 		if (options.AutoStopSilenceTimeout < TimeSpan.MaxValue && options.AutoStopSilenceTimeout > TimeSpan.Zero)
 		{
 			silenceTimer = Dispatcher.GetForCurrentThread()?.CreateTimer();
-			silenceTimer.Tick += OnSilenceTimerTick;
-			silenceTimer.Interval = options.AutoStopSilenceTimeout;
-			silenceTimer.Start();
+			silenceTimer?.Tick += OnSilenceTimerTick;
+			silenceTimer?.Interval = options.AutoStopSilenceTimeout;
+			silenceTimer?.Start();
 		}
 	}
 	
