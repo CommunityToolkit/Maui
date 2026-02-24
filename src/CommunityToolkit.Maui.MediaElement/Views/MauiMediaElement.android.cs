@@ -26,7 +26,24 @@ public class MauiMediaElement : CoordinatorLayout
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 #pragma warning disable IDE0060 // Remove unused parameter
 	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
-	public MauiMediaElement(nint ptr, JniHandleOwnership jni) : base(Platform.AppContext)
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+	protected MauiMediaElement(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+	{
+	}
+
+	public MauiMediaElement(Context? context) : base(context)
+	{
+	}
+
+	public MauiMediaElement(Context? context, IAttributeSet? attrs) : base(context, attrs)
+	{
+	}
+
+	public MauiMediaElement(Context? context, IAttributeSet? attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
+	{
+	}
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+
 	{
 		//Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/pull/1692#issuecomment-1955099758
 	}
