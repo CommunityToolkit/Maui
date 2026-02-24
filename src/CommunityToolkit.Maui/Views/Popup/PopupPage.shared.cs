@@ -61,6 +61,11 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		Shell.SetPresentationMode(this, PresentationMode.ModalNotAnimated);
 		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
 		NavigationPage.SetHasNavigationBar(this, false);
+
+		#if NET10_0_OR_GREATER
+		// On .NET 10.0 and greater, configure safe area edges to respect the keyboard and system UI while keeping the popup content within safe boundaries
+		this.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container, SafeAreaRegions.Container, SafeAreaRegions.Container, SafeAreaRegions.SoftInput);
+		#endif
 	}
 
 	public event EventHandler<IPopupResult>? PopupClosed;
@@ -221,7 +226,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 				Content = popupContent
 			};
 
-			// Bind `Popup` values through to Border using OneWay Bindings 
+			// Bind `Popup` values through to Border using OneWay Bindings
 			PopupBorder.SetBinding(Border.MarginProperty, static (Popup popup) => popup.Margin, source: popupContent, mode: BindingMode.OneWay, converter: new MarginConverter());
 			PopupBorder.SetBinding(Border.BackgroundProperty, static (Popup popup) => popup.Background, source: popupContent, mode: BindingMode.OneWay);
 			PopupBorder.SetBinding(Border.BackgroundColorProperty, static (Popup popup) => popup.BackgroundColor, source: popupContent, mode: BindingMode.OneWay, converter: new BackgroundColorConverter());
@@ -254,7 +259,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 				return;
 			}
 
-			// Execute tapOutsideOfPopupCommand only if tap occurred outside the PopupBorder 
+			// Execute tapOutsideOfPopupCommand only if tap occurred outside the PopupBorder
 			if (PopupBorder.Bounds.Contains(position.Value) is false)
 			{
 				tryExecuteTapOutsideOfPopupCommand();
