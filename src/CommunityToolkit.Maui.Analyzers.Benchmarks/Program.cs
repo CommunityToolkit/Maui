@@ -11,5 +11,6 @@ public class Program
 		BenchmarkRunner.Run<UseMauiCommunityToolkitAnalyzerBenchmarks>(config, args);
 		BenchmarkRunner.Run<UseMauiCommunityToolkitCameraAnalyzerBenchmarks>(config, args);
 		BenchmarkRunner.Run<UseMauiCommunityToolkitMediaElementInitializationAnalyzerBenchmarks>(config, args);
+		BenchmarkRunner.Run<BindablePropertyDefaultValueCreatorAnalyzerBenchmarks>(config, args);
 	}
 }
