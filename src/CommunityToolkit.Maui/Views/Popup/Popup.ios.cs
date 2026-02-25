@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Foundation;
 using UIKit;
 
@@ -63,6 +64,8 @@ public partial class Popup
 
 		if (viewController is null)
 		{
+			Trace.WriteLine("Failed to retrieve the presented view controller.");
+
 			return;
 		}
 
