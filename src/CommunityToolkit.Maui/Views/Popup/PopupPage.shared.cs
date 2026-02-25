@@ -62,10 +62,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
 		NavigationPage.SetHasNavigationBar(this, false);
 
-		#if NET10_0_OR_GREATER
-		// On .NET 10.0 and greater, configure safe area edges to respect the keyboard and system UI while keeping the popup content within safe boundaries
 		this.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container, SafeAreaRegions.Container, SafeAreaRegions.Container, SafeAreaRegions.SoftInput);
-		#endif
 	}
 
 	public event EventHandler<IPopupResult>? PopupClosed;

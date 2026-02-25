@@ -1,11 +1,5 @@
 
 using CommunityToolkit.Maui.Extensions;
-#if ANDROID
-using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
-#elif IOS  && !NET10_0_OR_GREATER
-using Foundation;
-using UIKit;
-#endif
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -77,65 +71,18 @@ public partial class Popup : ContentView
 	/// </summary>
 	public virtual Task CloseAsync(CancellationToken token = default) => GetPopupPage().CloseAsync(new PopupResult(false), token);
 
-	#if IOS  && !NET10_0_OR_GREATER
-	/// <summary>
-	/// Stores the keyboard will show notification observer to manage keyboard lifecycle.
-	/// </summary>
-	NSObject? willShow;
-
-	/// <summary>
-	/// Stores the keyboard will hide notification observer to manage keyboard lifecycle.
-	/// </summary>
-	NSObject? willHide;
-
-	/// <summary>
-	/// Stores the native platform view to adjust safe area insets when keyboard appears.
-	/// </summary>
-	UIView? popupNativeView;
-
-	/// <summary>
-	/// Stores the view controller associated with the popup to adjust safe area insets.
-	/// </summary>
-	UIViewController? viewController;
-	#endif
-
 	internal void NotifyPopupIsOpened()
 	{
 		Opened?.Invoke(this, EventArgs.Empty);
 
-		#if ANDROID
-		// On Android, configure the window soft input mode to resize when the keyboard appears
-		Microsoft.Maui.Controls.Application.Current?.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().UseWindowSoftInputModeAdjust(WindowSoftInputModeAdjust.Resize);
-		#elif IOS  && !NET10_0_OR_GREATER
-		// On iOS, store the native view and subscribe to keyboard events to adjust safe area insets
-		if (Handler?.PlatformView is UIView view)
-		{
-			popupNativeView = view;
-		}
-
-		willShow = UIKeyboard.Notifications.ObserveWillShow((_, args) => HandleKeyboard(args));
-
-		willHide = UIKeyboard.Notifications.ObserveWillHide((_, args) => ResetSafeArea());
-		#endif
+		OnPlatformPopupOpened();
 	}
 
 	internal void NotifyPopupIsClosed()
 	{
 		Closed?.Invoke(this, EventArgs.Empty);
 
-		#if ANDROID
-		// On Android, reset the window soft input mode to unspecified when the popup closes
-		Microsoft.Maui.Controls.Application.Current?.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().UseWindowSoftInputModeAdjust(WindowSoftInputModeAdjust.Unspecified);
-		#elif IOS  && !NET10_0_OR_GREATER
-		// On iOS, dispose of keyboard event observers and clean up stored references
-		willShow?.Dispose();
-		willHide?.Dispose();
-
-		willShow = willHide = null;
-
-		popupNativeView = null;
-		viewController = null;
-		#endif
+		OnPlatformPopupClosed();
 	}
 
 	private protected PopupPage GetPopupPage()
@@ -155,41 +102,9 @@ public partial class Popup : ContentView
 		throw new PopupNotFoundException();
 	}
 
-	#if IOS && !NET10_0_OR_GREATER
-	/// <summary>
-	/// Adjusts the safe area insets when the keyboard appears on iOS.
-	/// </summary>
-	/// <param name="args">The keyboard event arguments containing the keyboard frame.</param>
-	void HandleKeyboard(UIKeyboardEventArgs args)
-	{
-		if (popupNativeView is null)
-		{
-			return;
-		}
+	partial void OnPlatformPopupOpened();
 
-		// Get the view controller associated with the popup's native view
-		viewController ??= popupNativeView.Window?.RootViewController?.PresentedViewController;
-
-		if (viewController is null)
-		{
-			return;
-		}
-
-		// Adjust the bottom safe area inset to account for keyboard height
-		viewController.AdditionalSafeAreaInsets = new UIEdgeInsets(0, 0, args.FrameEnd.Height, 0);
-	}
-
-	/// <summary>
-	/// Resets the safe area insets when the keyboard is hidden on iOS.
-	/// </summary>
-	void ResetSafeArea()
-	{
-		if (viewController is not null)
-		{
-			viewController.AdditionalSafeAreaInsets = UIEdgeInsets.Zero;
-		}
-	}
-	#endif
+	partial void OnPlatformPopupClosed();
 }
 
 /// <summary>
