@@ -513,19 +513,19 @@ public class PopupServiceTests : BaseViewTest
 		Assert.Equal(expectedResult, popupResult.Result);
 		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
 	}
-	
+
 	[Fact]
 	public void ShowPopup_WithRegisteredPopup_ShouldOnlyConstructViewModelOnce()
 	{
 		// Arrange
 		SingleConstructionViewModel.ConstructorCallCount = 0;
 		Assert.Equal(0, SingleConstructionViewModel.ConstructorCallCount);
-		
+
 		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
 		}
-		
+
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 
 		// Act
@@ -541,12 +541,12 @@ public class PopupServiceTests : BaseViewTest
 		// Arrange
 		SingleConstructionViewModel.ConstructorCallCount = 0;
 		Assert.Equal(0, SingleConstructionViewModel.ConstructorCallCount);
-		
+
 		if (Application.Current?.Windows[0].Page is not Page page)
 		{
 			throw new InvalidOperationException("Page cannot be null");
 		}
-		
+
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
 
 		// Act

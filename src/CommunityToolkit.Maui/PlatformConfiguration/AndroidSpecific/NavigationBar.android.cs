@@ -99,7 +99,7 @@ static partial class NavigationBar
 		if (OperatingSystem.IsAndroidVersionAtLeast(35))
 		{
 			const string navigationBarOverlayTag = "NavigationBarOverlay";
-			
+
 			WindowCompat.SetDecorFitsSystemWindows(window, false);
 
 			var decorGroup = (ViewGroup)window.DecorView;
