@@ -59,6 +59,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		this.SetBinding(BackgroundColorProperty, static (IPopupOptions options) => options.PageOverlayColor, source: popupOptions, mode: BindingMode.OneWay);
 
 		Shell.SetPresentationMode(this, PresentationMode.ModalNotAnimated);
+		Shell.SetNavBarIsVisible(this, false);
 		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
 		NavigationPage.SetHasNavigationBar(this, false);
 	}
