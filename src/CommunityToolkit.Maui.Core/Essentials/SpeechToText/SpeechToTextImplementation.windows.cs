@@ -23,7 +23,9 @@ public sealed partial class SpeechToTextImplementation
 		{
 			return speechRecognizer?.State switch
 			{
-				SpeechRecognizerState.Capturing or SpeechRecognizerState.SoundStarted or SpeechRecognizerState.SpeechDetected or SpeechRecognizerState.Processing => SpeechToTextState.Listening,
+				SpeechRecognizerState.Capturing or SpeechRecognizerState.SoundStarted
+					or SpeechRecognizerState.SpeechDetected
+					or SpeechRecognizerState.Processing => SpeechToTextState.Listening,
 				SpeechRecognizerState.SoundEnded => SpeechToTextState.Silence,
 				_ => SpeechToTextState.Stopped,
 			};
@@ -40,7 +42,7 @@ public sealed partial class SpeechToTextImplementation
 	{
 		await Initialize(options, cancellationToken);
 
-		speechRecognizer.ContinuousRecognitionSession.AutoStopSilenceTimeout = TimeSpan.MaxValue;
+		speechRecognizer.ContinuousRecognitionSession.AutoStopSilenceTimeout = options.AutoStopSilenceTimeout;
 		speechRecognizer.ContinuousRecognitionSession.ResultGenerated += ResultGenerated;
 		speechRecognizer.ContinuousRecognitionSession.Completed += OnCompleted;
 		try
@@ -65,7 +67,8 @@ public sealed partial class SpeechToTextImplementation
 				OnRecognitionResultCompleted(SpeechToTextResult.Success(recognitionText));
 				break;
 			case SpeechRecognitionResultStatus.UserCanceled:
-				OnRecognitionResultCompleted(new SpeechToTextResult(recognitionText, new TaskCanceledException("Operation cancelled")));
+				OnRecognitionResultCompleted(new SpeechToTextResult(recognitionText,
+					new TaskCanceledException("Operation cancelled")));
 				break;
 			default:
 				OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception(args.Status.ToString())));
@@ -73,7 +76,8 @@ public sealed partial class SpeechToTextImplementation
 		}
 	}
 
-	void ResultGenerated(SpeechContinuousRecognitionSession sender, SpeechContinuousRecognitionResultGeneratedEventArgs args)
+	void ResultGenerated(SpeechContinuousRecognitionSession sender,
+		SpeechContinuousRecognitionResultGeneratedEventArgs args)
 	{
 		recognitionText += args.Result.Text;
 		if (speechToTextOptions?.ShouldReportPartialResults == true)
@@ -117,6 +121,11 @@ public sealed partial class SpeechToTextImplementation
 		speechToTextOptions = options;
 		recognitionText = string.Empty;
 		speechRecognizer = new SpeechRecognizer(new Language(options.Culture.IetfLanguageTag));
+		
+		speechRecognizer.UIOptions.AudiblePrompt = string.Empty;
+		speechRecognizer.UIOptions.IsReadBackEnabled = false;
+		speechRecognizer.UIOptions.ShowConfirmation = false;
+
 		speechRecognizer.StateChanged += SpeechRecognizer_StateChanged;
 		cancellationToken.ThrowIfCancellationRequested();
 		await speechRecognizer.CompileConstraintsAsync().AsTask(cancellationToken);
