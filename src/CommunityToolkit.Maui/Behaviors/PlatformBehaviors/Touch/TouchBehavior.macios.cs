@@ -203,6 +203,16 @@ public partial class TouchBehavior
 				return;
 			}
 
+			// We MUST implement the Apple state machine. This ensures that the interaction
+			// between multiple simultaneous touch recognizers works correctly.
+			// https://developer.apple.com/documentation/uikit/touches_presses_and_gestures/implementing_a_custom_gesture_recognizer/about_the_gesture_recognizer_state_machine?language=objc
+			State = status switch
+			{
+				TouchStatus.Canceled => UIGestureRecognizerState.Failed,
+				TouchStatus.Completed => UIGestureRecognizerState.Recognized,
+				_ => UIGestureRecognizerState.Possible,
+			};
+
 			if (interactionStatus is TouchInteractionStatus.Started)
 			{
 				behavior.HandleUserInteraction(TouchInteractionStatus.Started);
@@ -231,19 +241,10 @@ public partial class TouchBehavior
 				{
 					touchGesture.HandleTouch(TouchStatus.Canceled, TouchInteractionStatus.Completed);
 					touchGesture.isCanceled = true;
-				}
-
-				return true;
-			}
-
-			public override bool ShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
-			{
-				if (recognizer.View.IsDescendantOfView(touch.View))
-				{
 					return true;
 				}
 
-				return touch.View.IsDescendantOfView(recognizer.View) && (touch.View.GestureRecognizers is null || touch.View.GestureRecognizers.Length == 0);
+				return false;
 			}
 		}
 	}
