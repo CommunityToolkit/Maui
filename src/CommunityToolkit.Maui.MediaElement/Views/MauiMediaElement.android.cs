@@ -7,6 +7,8 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Views;
+using View = Android.Views.View;
+using Window = Android.Views.Window;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -18,8 +20,6 @@ public class MauiMediaElement : CoordinatorLayout
 	readonly RelativeLayout relativeLayout;
 	readonly PlayerView playerView;
 
-	int defaultSystemUiVisibility;
-	bool isSystemBarVisible;
 	bool isFullScreen;
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
@@ -73,7 +73,7 @@ public class MauiMediaElement : CoordinatorLayout
 		base.OnVisibilityChanged(changedView, visibility);
 		if (isFullScreen && visibility is ViewStates.Visible)
 		{
-			SetSystemBarsVisibility();
+			SetStatusBarsHidden(isFullScreen);
 		}
 	}
 
@@ -126,77 +126,33 @@ public class MauiMediaElement : CoordinatorLayout
 			isFullScreen = false;
 			layout?.RemoveView(relativeLayout);
 			AddView(relativeLayout);
+			relativeLayout.Invalidate();
 		}
 		// Hide/Show the SystemBars and Status bar
-		SetSystemBarsVisibility();
+		SetStatusBarsHidden(isFullScreen);
 	}
 
-	void SetSystemBarsVisibility()
+	public static void SetStatusBarsHidden(bool hidden)
 	{
-		var currentWindow = CurrentPlatformContext.CurrentWindow;
-		var windowInsetsControllerCompat = WindowCompat.GetInsetsController(currentWindow, currentWindow.DecorView);
-
-		var barTypes = WindowInsetsCompat.Type.StatusBars()
-			| WindowInsetsCompat.Type.SystemBars()
-			| WindowInsetsCompat.Type.NavigationBars();
-
-		if (isFullScreen)
+		Window window = Platform.CurrentActivity?.Window ?? throw new InvalidOperationException("Current activity is null");
+		View decorView = window.DecorView ?? throw new InvalidOperationException("DecorView is null");
+		AndroidX.Core.View.WindowInsetsControllerCompat insetsController = WindowCompat.GetInsetsController(window, decorView) ?? throw new InvalidOperationException("InsetsController is null");
+		if (OperatingSystem.IsAndroidVersionAtLeast(26))
 		{
-			WindowCompat.SetDecorFitsSystemWindows(currentWindow, false);
-			if (OperatingSystem.IsAndroidVersionAtLeast(30))
+			if (hidden)
 			{
-				var windowInsets = currentWindow.DecorView.RootWindowInsets;
-				if (windowInsets is not null)
-				{
-					isSystemBarVisible = windowInsets.IsVisible(WindowInsetsCompat.Type.NavigationBars()) || windowInsets.IsVisible(WindowInsetsCompat.Type.StatusBars());
-
-					if (isSystemBarVisible)
-					{
-						currentWindow.InsetsController?.Hide(WindowInsets.Type.SystemBars());
-					}
-				}
+				window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
+				window.SetFlags(WindowManagerFlags.Fullscreen, WindowManagerFlags.Fullscreen);
+				insetsController.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
+				insetsController.Hide(WindowInsetsCompat.Type.SystemBars());
 			}
 			else
 			{
-				defaultSystemUiVisibility = (int)currentWindow.DecorView.SystemUiFlags;
-
-				currentWindow.DecorView.SystemUiFlags = currentWindow.DecorView.SystemUiFlags
-					| SystemUiFlags.LayoutStable
-					| SystemUiFlags.LayoutHideNavigation
-					| SystemUiFlags.LayoutFullscreen
-					| SystemUiFlags.HideNavigation
-					| SystemUiFlags.Fullscreen
-					| SystemUiFlags.Immersive;
+				window.ClearFlags(WindowManagerFlags.Fullscreen);
+				window.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
+				insetsController.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorDefault;
+				insetsController.Show(WindowInsetsCompat.Type.SystemBars());
 			}
-
-			if (windowInsetsControllerCompat is not null)
-			{
-				windowInsetsControllerCompat.Hide(barTypes);
-				windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
-			}
-
-		}
-		else
-		{
-			if (OperatingSystem.IsAndroidVersionAtLeast(30))
-			{
-				if (isSystemBarVisible)
-				{
-					currentWindow.InsetsController?.Show(WindowInsets.Type.SystemBars());
-				}
-			}
-			else
-			{
-				currentWindow.DecorView.SystemUiFlags = (SystemUiFlags)defaultSystemUiVisibility;
-			}
-
-			if (windowInsetsControllerCompat is not null)
-			{
-				windowInsetsControllerCompat.Show(barTypes);
-				windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorDefault;
-			}
-
-			WindowCompat.SetDecorFitsSystemWindows(currentWindow, true);
 		}
 	}
 
