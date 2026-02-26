@@ -38,6 +38,7 @@ public class NavigatedToEventArgsExtensionsTests : BaseViewTest
 		{
 			if (e.PreviousPage != mainPage)
 			{
+				shellContentPage.NavigatedToEventArgsReceived -= HandleNavigatedToEventArgsReceived;
 				wasPreviousPageACommunityToolkitPopupPageTCS.SetResult(e.WasPreviousPageACommunityToolkitPopupPage());
 			}
 		}
