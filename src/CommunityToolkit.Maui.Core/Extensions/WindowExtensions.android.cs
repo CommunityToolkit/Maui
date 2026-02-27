@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Android.Views;
+﻿using Android.Views;
 using Microsoft.Maui.Platform;
 using Activity = Android.App.Activity;
 using DialogFragment = AndroidX.Fragment.App.DialogFragment;
