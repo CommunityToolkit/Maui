@@ -166,7 +166,7 @@ public class AppBuilderExtensionsTests : BaseTest
 
 		MediaElementOptions.DefaultAndroidViewType.Should().Be(AndroidViewType.TextureView);
 	}
-	
+
 	[Fact]
 	public void UseMauiCommunityToolkitMediaElement_isAndroidForegroundServiceEnabledParameterFalse_IgnoreIsAndroidForegroundServiceEnabled_AndroidForegroundServiceShouldRemainDisabled()
 	{
@@ -180,7 +180,7 @@ public class AppBuilderExtensionsTests : BaseTest
 
 		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(false);
 	}
-	
+
 	[Fact]
 	public void UseMauiCommunityToolkitMediaElement_isAndroidForegroundServiceEnabledParameterTrue_IgnoreIsAndroidForegroundServiceEnabled_ShouldEnableAndroidForegroundService()
 	{
@@ -194,7 +194,7 @@ public class AppBuilderExtensionsTests : BaseTest
 
 		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(true);
 	}
-	
+
 	[Fact]
 	public void UseMauiCommunityToolkitMediaElement_isAndroidForegroundServiceEnabledParameterFalse_SetIsAndroidForegroundServiceEnabledFalse_AndroidForegroundServiceShouldRemainDisabled()
 	{
@@ -209,7 +209,7 @@ public class AppBuilderExtensionsTests : BaseTest
 
 		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(false);
 	}
-	
+
 	[Fact]
 	public void UseMauiCommunityToolkitMediaElement_isAndroidForegroundServiceEnabledParameterTrue_SetIsAndroidForegroundServiceEnabledTrue_ShouldEnableAndroidForegroundService()
 	{
@@ -224,7 +224,7 @@ public class AppBuilderExtensionsTests : BaseTest
 
 		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(true);
 	}
-	
+
 	[Fact]
 	public void UseMauiCommunityToolkitMediaElement_isAndroidForegroundServiceEnabledParameterFalse_SetIsAndroidForegroundServiceEnabledTrue_ShouldEnableAndroidForegroundService()
 	{
@@ -239,7 +239,7 @@ public class AppBuilderExtensionsTests : BaseTest
 
 		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(true);
 	}
-	
+
 	[Fact]
 	public void UseMauiCommunityToolkitMediaElement_isAndroidForegroundServiceEnabledParameterTrue_SetIsAndroidForegroundServiceEnabledFalse_ShouldEnableAndroidForegroundService()
 	{
