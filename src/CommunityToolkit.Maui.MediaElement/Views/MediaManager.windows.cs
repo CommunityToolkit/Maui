@@ -1,27 +1,21 @@
-using System.Diagnostics;
 using System.Numerics;
-using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Media;
 using Windows.Media.Playback;
 using Windows.Storage;
+using Windows.Storage.Streams;
 using Windows.System.Display;
 using ParentWindow = CommunityToolkit.Maui.Extensions.PageExtensions.ParentWindow;
 using WindowsMediaElement = Windows.Media.Playback.MediaPlayer;
-using WinMediaSource = Windows.Media.Core.MediaSource;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
 partial class MediaManager : IDisposable
 {
-	Metadata? metadata;
 	SystemMediaTransportControls? systemMediaControls;
 
 	// States that allow changing position
@@ -278,7 +272,7 @@ partial class MediaManager : IDisposable
 			MediaElement.MediaWidth = MediaElement.MediaHeight = 0;
 
 			MediaElement.CurrentStateChanged(MediaElementState.None);
-
+			await UpdateMetadata();
 			return;
 		}
 
@@ -286,39 +280,69 @@ partial class MediaManager : IDisposable
 		MediaElement.Duration = TimeSpan.Zero;
 		Player.AutoPlay = MediaElement.ShouldAutoPlay;
 
-		if (MediaElement.Source is UriMediaSource uriMediaSource)
+		var source = GetSource(MediaElement.Source);
+		if (string.IsNullOrWhiteSpace(source))
 		{
-			var uri = uriMediaSource.Uri?.AbsoluteUri;
-			if (!string.IsNullOrWhiteSpace(uri))
-			{
-				Player.MediaPlayer.SetUriSource(new Uri(uri));
-			}
+			Logger.LogWarning("MediaElement Source is null or empty.");
+			return;
 		}
-		else if (MediaElement.Source is FileMediaSource fileMediaSource)
+		if (MediaElement.Source is UriMediaSource)
 		{
-			var filename = fileMediaSource.Path;
-			if (!string.IsNullOrWhiteSpace(filename))
-			{
-				StorageFile storageFile = await StorageFile.GetFileFromPathAsync(filename);
-				Player.MediaPlayer.SetFileSource(storageFile);
-			}
+			Player.MediaPlayer.SetUriSource(new Uri(source));
 		}
-		else if (MediaElement.Source is ResourceMediaSource resourceMediaSource)
+		else if (MediaElement.Source is FileMediaSource)
 		{
-			if (string.IsNullOrWhiteSpace(resourceMediaSource.Path))
+			if (!File.Exists(source))
 			{
-				Logger.LogInformation("ResourceMediaSource Path is null or empty");
+				Logger.LogWarning("FileMediaSource file not found: {FilePath}", source);
 				return;
 			}
-
-			string path = GetFullAppPackageFilePath(resourceMediaSource.Path);
+			StorageFile storageFile = await StorageFile.GetFileFromPathAsync(source);
+			Player.MediaPlayer.SetFileSource(storageFile);
+		}
+		else if (MediaElement.Source is ResourceMediaSource)
+		{
+			string path = GetFullAppPackageFilePath(source);
 			if (!string.IsNullOrWhiteSpace(path))
 			{
 				Player.MediaPlayer.SetUriSource(new Uri(path));
 			}
 		}
 	}
-
+	
+	string GetSource(MediaSource? source)
+	{
+		if (source == null)
+		{
+			return string.Empty;
+		}
+		if (source is UriMediaSource uriMediaSource)
+		{
+			var uri = uriMediaSource.Uri?.AbsoluteUri;
+			if (!string.IsNullOrWhiteSpace(uri))
+			{
+				return uri;
+			}
+		}
+		else if (source is FileMediaSource fileMediaSource)
+		{
+			var filename = fileMediaSource.Path;
+			if (!string.IsNullOrWhiteSpace(filename))
+			{
+				return filename;
+			}
+		}
+		else if (source is ResourceMediaSource resourceMediaSource)
+		{
+			if (string.IsNullOrWhiteSpace(resourceMediaSource.Path))
+			{
+				Logger.LogInformation("ResourceMediaSource Path is null or empty");
+				return string.Empty;
+			}
+			return resourceMediaSource.Path;
+		}
+		return string.Empty;
+	}
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()
 	{
 		if (Player is null)
@@ -384,33 +408,70 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
-		metadata ??= new(systemMediaControls, MediaElement, Dispatcher);
-		metadata.SetMetadata(MediaElement);
-		if (string.IsNullOrEmpty(MediaElement.MetadataArtworkUrl))
+		var source = GetSource(MediaElement.MetadataArtworkSource);
+		
+		RandomAccessStreamReference? stream = null;
+		StorageFile? file = null;
+		Uri? uri = null;
+		switch (MediaElement.MetadataArtworkSource)
 		{
-			return;
+			case UriMediaSource:
+				if (!string.IsNullOrWhiteSpace(source) && Uri.TryCreate(source, UriKind.Absolute, out var artworkUri))
+				{
+					stream = RandomAccessStreamReference.CreateFromUri(artworkUri);
+					uri = artworkUri;
+				}
+				else
+				{
+					Logger.LogWarning("UriMediaSource metadata artwork source is null, empty, or invalid.");
+				}
+				break;
+			case FileMediaSource:
+				if (File.Exists(source))
+				{
+					file = await StorageFile.GetFileFromPathAsync(source);
+					stream = RandomAccessStreamReference.CreateFromFile(file);
+					uri = new(source);
+				}
+				break;
+			case ResourceMediaSource:
+				try
+				{
+					if (string.IsNullOrEmpty(source))
+					{
+						Logger.LogWarning("ResourceMediaSource metadata artwork source path is null or empty.");
+						return;
+					}
+					string path = GetFullAppPackageFilePath(source);
+					file = await StorageFile.GetFileFromPathAsync(path);
+					stream = RandomAccessStreamReference.CreateFromFile(file);
+					uri = new(file.Path);
+				}
+				catch (FileNotFoundException e)
+				{
+					Logger.LogWarning("ResourceMediaSource file not found: {Message}", e.Message);
+				}
+				break;
 		}
-		if (!Uri.TryCreate(MediaElement.MetadataArtworkUrl, UriKind.RelativeOrAbsolute, out var metadataArtworkUri))
+		
+		if (source is not null && stream is not null && uri is not null)
 		{
-			Trace.TraceError($"{nameof(MediaElement)} unable to update artwork because {nameof(MediaElement.MetadataArtworkUrl)} is not a valid URI");
-			return;
+			systemMediaControls.DisplayUpdater.Thumbnail = stream;
+			Dispatcher.Dispatch(() => Player.PosterSource = new BitmapImage(uri));
 		}
 
-		if (Dispatcher.IsDispatchRequired)
-		{
-			await Dispatcher.DispatchAsync(() => UpdatePosterSource(Player, metadataArtworkUri));
-		}
 		else
 		{
-			UpdatePosterSource(Player, metadataArtworkUri);
+			systemMediaControls.DisplayUpdater.Thumbnail = null;
+			Dispatcher.Dispatch(() => Player.PosterSource = new BitmapImage());
 		}
 
-		static void UpdatePosterSource(in MediaPlayerElement player, in Uri metadataArtworkUri)
-		{
-			player.PosterSource = new BitmapImage(metadataArtworkUri);
-		}
+		systemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Music;
+		systemMediaControls.DisplayUpdater.MusicProperties.Artist = MediaElement.MetadataArtist;
+		systemMediaControls.DisplayUpdater.MusicProperties.Title = MediaElement.MetadataTitle;
+		systemMediaControls.DisplayUpdater.Update();
 	}
-
+	
 	async void OnMediaElementMediaOpened(WindowsMediaElement sender, object args)
 	{
 		if (Player is null)
@@ -525,7 +586,7 @@ partial class MediaManager : IDisposable
 			});
 		}
 	}
-
+	
 	void OnPlaybackSessionSeekCompleted(MediaPlaybackSession sender, object args)
 	{
 		MediaElement?.SeekCompleted();

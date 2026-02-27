@@ -19,6 +19,11 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	event EventHandler<MediaPositionChangedEventArgs> PositionChanged;
 
 	/// <summary>
+	/// Gets or sets the artwork Image source.
+	/// </summary>
+	MediaSource? MetadataArtworkSource { get; set; }
+
+	/// <summary>
 	/// Gets the media aspect ratio.
 	/// </summary>
 	/// <remarks>Not functional for non-visual media.</remarks>
@@ -105,11 +110,6 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// Gets or sets the artist of the media.
 	/// </summary>
 	string MetadataArtist { get; set; }
-
-	/// <summary>
-	/// Gets or sets the artwork Image Url.
-	/// </summary>
-	string MetadataArtworkUrl { get; set; }
 
 	/// <summary>
 	/// Occurs when the media has ended playing successfully.

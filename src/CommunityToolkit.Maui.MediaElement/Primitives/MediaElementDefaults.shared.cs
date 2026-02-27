@@ -1,3 +1,5 @@
+using CommunityToolkit.Maui.Views;
+
 namespace CommunityToolkit.Maui.Core;
 
 static class MediaElementDefaults
@@ -26,7 +28,7 @@ static class MediaElementDefaults
 
 	public const string MetadataArtist = "";
 
-	public const string MetadataArtworkUrl = "";
+	public static MediaSource? MetadataArtworkSource => null;
 
 	public const MediaElementState CurrentState = MediaElementState.None;
 
