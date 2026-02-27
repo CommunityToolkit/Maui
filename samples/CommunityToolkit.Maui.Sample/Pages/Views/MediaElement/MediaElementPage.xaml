@@ -39,7 +39,8 @@
                 MediaOpened="OnMediaOpened"
                 PositionChanged="OnPositionChanged"
                 StateChanged="OnStateChanged"
-                SeekCompleted="OnSeekCompleted"/>
+                SeekCompleted="OnSeekCompleted"
+                ScreenStateChanged="MediaElement_FullScreenStateChanged"/>
             <HorizontalStackLayout Grid.Row="1" Padding="0,0,0,15">
                 <Label HorizontalOptions="Center" x:DataType="toolkit:MediaElement">
                     <Label.Text>

@@ -30,6 +30,11 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	MediaElementState CurrentState { get; }
 
 	/// <summary>
+	/// Gets the full screen state of the media element.
+	/// </summary>
+	MediaElementScreenState ScreenState { get; }
+
+	/// <summary>
 	/// Gets the height (in pixels) of the loaded media in pixels.
 	/// </summary>
 	/// <remarks>Not reported for non-visual media.</remarks>
@@ -112,6 +117,11 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	string MetadataArtworkUrl { get; set; }
 
 	/// <summary>
+	/// Occurs when the <see cref="ScreenState"/> changes.
+	/// </summary>
+	event EventHandler<ScreenStateChangedEventArgs> ScreenStateChanged;
+
+	/// <summary>
 	/// Occurs when the media has ended playing successfully.
 	/// </summary>
 	/// <remarks>This does not trigger when the media has failed during playback.</remarks>
@@ -161,4 +171,10 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// </summary>
 	/// <param name="newState">The new state the <see cref="MediaElement"/> transitioned to.</param>
 	internal void CurrentStateChanged(MediaElementState newState);
+
+	/// <summary>
+	/// Triggers a <see cref="ScreenState"/> change. Intended to be called by platform-specific handlers or managers when the fullscreen state changes.
+	/// </summary>
+	/// <param name="newState">The new fullscreen state the <see cref="MediaElement"/> transitioned to.</param>
+	internal void FullScreenChanged(MediaElementScreenState newState);
 }
