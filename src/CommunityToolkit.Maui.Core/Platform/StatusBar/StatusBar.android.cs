@@ -35,57 +35,57 @@ static partial class StatusBar
 			return;
 		}
 
-		if (Activity.Window is not null)
+		if (GetCurrentWindow() is not Window { DecorView.RootView: not null } window)
 		{
-			var platformColor = color.ToPlatform();
-
-			if (OperatingSystem.IsAndroidVersionAtLeast(35))
-			{
-				const string statusBarOverlayTag = "StatusBarOverlay";
-
-				var window = Activity.GetCurrentWindow();
-
-				var decorGroup = (ViewGroup)window.DecorView;
-				var statusBarOverlay = decorGroup.FindViewWithTag(statusBarOverlayTag);
-
-				if (statusBarOverlay is null)
-				{
-					var statusBarHeight = Activity.Resources?.GetIdentifier("status_bar_height", "dimen", "android") ?? 0;
-					var statusBarPixelSize = statusBarHeight > 0 ? Activity.Resources?.GetDimensionPixelSize(statusBarHeight) ?? 0 : 0;
-
-					statusBarOverlay = new(Activity)
-					{
-						LayoutParameters = new FrameLayout.LayoutParams(Android.Views.ViewGroup.LayoutParams.MatchParent, statusBarPixelSize + 3)
-						{
-							Gravity = GravityFlags.Top
-						}
-					};
-
-					decorGroup.AddView(statusBarOverlay);
-					statusBarOverlay.SetZ(0);
-				}
-
-				statusBarOverlay.SetBackgroundColor(platformColor);
-			}
-			else
-			{
-				Activity.Window.SetStatusBarColor(platformColor);
-			}
-
-			bool isColorTransparent = platformColor == PlatformColor.Transparent;
-			if (isColorTransparent)
-			{
-				Activity.Window.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
-				Activity.Window.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
-			}
-			else
-			{
-				Activity.Window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
-				Activity.Window.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
-			}
-
-			WindowCompat.SetDecorFitsSystemWindows(Activity.Window, !isColorTransparent);
+			return;
 		}
+
+		var platformColor = color.ToPlatform();
+
+		if (OperatingSystem.IsAndroidVersionAtLeast(35))
+		{
+			const string statusBarOverlayTag = "StatusBarOverlay";
+
+			var decorGroup = (ViewGroup)window.DecorView.RootView;
+			var statusBarOverlay = decorGroup.FindViewWithTag(statusBarOverlayTag);
+
+			if (statusBarOverlay is null)
+			{
+				var statusBarHeight = Activity.Resources?.GetIdentifier("status_bar_height", "dimen", "android") ?? 0;
+				var statusBarPixelSize = statusBarHeight > 0 ? Activity.Resources?.GetDimensionPixelSize(statusBarHeight) ?? 0 : 0;
+
+				statusBarOverlay = new(Activity)
+				{
+					LayoutParameters = new FrameLayout.LayoutParams(Android.Views.ViewGroup.LayoutParams.MatchParent, statusBarPixelSize + 3)
+					{
+						Gravity = GravityFlags.Top
+					}
+				};
+
+				decorGroup.AddView(statusBarOverlay);
+				statusBarOverlay.SetZ(0);
+			}
+
+			statusBarOverlay.SetBackgroundColor(platformColor);
+		}
+		else
+		{
+			window.SetStatusBarColor(platformColor);
+		}
+
+		bool isColorTransparent = platformColor == PlatformColor.Transparent;
+		if (isColorTransparent)
+		{
+			window.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
+			window.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
+		}
+		else
+		{
+			window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
+			window.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
+		}
+
+		WindowCompat.SetDecorFitsSystemWindows(window, !isColorTransparent);
 	}
 
 	static void PlatformSetStyle(StatusBarStyle style)
@@ -98,12 +98,12 @@ static partial class StatusBar
 		switch (style)
 		{
 			case StatusBarStyle.DarkContent:
-				SetStatusBarAppearance(Activity, true);
+				SetStatusBarAppearance(true);
 				break;
 
 			case StatusBarStyle.Default:
 			case StatusBarStyle.LightContent:
-				SetStatusBarAppearance(Activity, false);
+				SetStatusBarAppearance(false);
 				break;
 
 			default:
@@ -111,12 +111,19 @@ static partial class StatusBar
 		}
 	}
 
-	static void SetStatusBarAppearance(Activity activity, bool isLightStatusBars)
+	static void SetStatusBarAppearance(bool isLightStatusBars)
 	{
-		var window = activity.GetCurrentWindow();
-		if (WindowCompat.GetInsetsController(window, window.DecorView) is WindowInsetsControllerCompat windowController)
+		if(GetCurrentWindow() is Window window 
+		   && WindowCompat.GetInsetsController(window, window.DecorView) is WindowInsetsControllerCompat windowController)
 		{
 			windowController.AppearanceLightStatusBars = isLightStatusBars;
 		}
+	}
+
+	// Check if a modal DialogFragment is active and use its window
+	static Window? GetCurrentWindow()
+	{
+		var dialogFragment = Activity.GetFragmentManager()?.Fragments.OfType<AndroidX.Fragment.App.DialogFragment>().LastOrDefault();
+		return dialogFragment?.Dialog?.Window ?? Activity.Window; // Fall back to the Activity window for non-modal pages
 	}
 }
