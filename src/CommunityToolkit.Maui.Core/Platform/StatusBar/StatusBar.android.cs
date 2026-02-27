@@ -5,7 +5,6 @@ using AndroidX.Core.View;
 using CommunityToolkit.Maui.Core.Extensions;
 using Microsoft.Maui.Platform;
 using Activity = Android.App.Activity;
-using DialogFragment = AndroidX.Fragment.App.DialogFragment;
 using PlatformColor = Android.Graphics.Color;
 
 namespace CommunityToolkit.Maui.Core.Platform;
@@ -36,7 +35,7 @@ static partial class StatusBar
 			return;
 		}
 
-		if (GetCurrentWindow() is not Window { DecorView.RootView: not null } window)
+		if (Activity.GetCurrentWindow() is not Window { DecorView.RootView: not null } window)
 		{
 			return;
 		}
@@ -115,31 +114,10 @@ static partial class StatusBar
 
 	static void SetStatusBarAppearance(bool isLightStatusBars)
 	{
-		if (GetCurrentWindow() is Window window
-			&& WindowCompat.GetInsetsController(window, window.DecorView) is WindowInsetsControllerCompat windowController)
+		if (Activity.GetCurrentWindow() is Window window
+		    && WindowCompat.GetInsetsController(window, window.DecorView) is WindowInsetsControllerCompat windowController)
 		{
 			windowController.AppearanceLightStatusBars = isLightStatusBars;
 		}
-	}
-
-	// Check if a modal DialogFragment is active and use its window
-	static Window? GetCurrentWindow()
-	{
-		var fragmentManager = Activity.GetFragmentManager();
-		if (fragmentManager is null || !fragmentManager.Fragments.OfType<DialogFragment>().Any())
-		{
-			return Activity.Window; // Fall back to the Activity window for non-modal pages
-		}
-
-		var fragments = fragmentManager.Fragments;
-		for (var i = fragments.Count - 1; i >= 0; i--)
-		{
-			if (fragments[i] is DialogFragment { Dialog: { IsShowing: true, Window: not null }, IsVisible: true } dialogFragment)
-			{
-				return dialogFragment.Dialog.Window;
-			}
-		}
-
-		return Activity.Window; // Fall back to the Activity window for non-modal pages
 	}
 }
