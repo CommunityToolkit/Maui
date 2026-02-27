@@ -62,6 +62,7 @@ static partial class StatusBar
 					}
 				};
 
+				statusBarOverlay.Tag = statusBarOverlayTag;
 				decorGroup.AddView(statusBarOverlay);
 				statusBarOverlay.SetZ(0);
 			}
