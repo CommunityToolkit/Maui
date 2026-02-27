@@ -30,6 +30,7 @@ public static class AndroidWindowExtensions
 				if (fragments[i] is DialogFragment { Dialog: { IsShowing: true, Window: not null }, IsVisible: true } dialogFragment)
 				{
 					currentWindow = dialogFragment.Dialog.Window;
+					break;
 				}
 			}
 		}
