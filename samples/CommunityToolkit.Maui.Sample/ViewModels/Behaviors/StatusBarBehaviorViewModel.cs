@@ -24,7 +24,7 @@ public partial class StatusBarBehaviorViewModel : BaseViewModel
 				return StatusBarStyle.DarkContent;
 			}
 
-			throw new NotSupportedException($"{nameof(StatusBarStyle)} {StatusBarStyle} is not supported.");
+			throw new NotSupportedException($"{nameof(StatusBarStyle)} type is not supported.");
 		}
 	}
 
