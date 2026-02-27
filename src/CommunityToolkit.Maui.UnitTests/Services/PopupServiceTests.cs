@@ -513,9 +513,51 @@ public class PopupServiceTests : BaseViewTest
 		Assert.Equal(expectedResult, popupResult.Result);
 		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
 	}
+
+	[Fact]
+	public void ShowPopup_WithRegisteredPopup_ShouldOnlyConstructViewModelOnce()
+	{
+		// Arrange
+		SingleConstructionViewModel.ConstructorCallCount = 0;
+		Assert.Equal(0, SingleConstructionViewModel.ConstructorCallCount);
+
+		if (Application.Current?.Windows[0].Page is not Page page)
+		{
+			throw new InvalidOperationException("Page cannot be null");
+		}
+
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+
+		// Act
+		popupService.ShowPopup<SingleConstructionViewModel>(page.Navigation);
+
+		// Assert
+		Assert.Equal(1, SingleConstructionViewModel.ConstructorCallCount);
+	}
+
+	[Fact]
+	public async Task ShowPopupAsync_WithRegisteredPopup_ShouldOnlyConstructViewModelOnce()
+	{
+		// Arrange
+		SingleConstructionViewModel.ConstructorCallCount = 0;
+		Assert.Equal(0, SingleConstructionViewModel.ConstructorCallCount);
+
+		if (Application.Current?.Windows[0].Page is not Page page)
+		{
+			throw new InvalidOperationException("Page cannot be null");
+		}
+
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+
+		// Act
+		await popupService.ShowPopupAsync<SingleConstructionViewModel>(page.Navigation, cancellationToken: TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.Equal(1, SingleConstructionViewModel.ConstructorCallCount);
+	}
 }
 
-class GarbageCollectionHeavySelfClosingPopup(MockPageViewModel viewModel, object? result = null) : MockSelfClosingPopup(viewModel, TimeSpan.FromMilliseconds(500), result)
+sealed class GarbageCollectionHeavySelfClosingPopup(MockPageViewModel viewModel, object? result = null) : MockSelfClosingPopup(viewModel, TimeSpan.FromMilliseconds(500), result)
 {
 	protected override void HandlePopupOpened(object? sender, EventArgs e)
 	{
@@ -530,6 +572,24 @@ class GarbageCollectionHeavySelfClosingPopup(MockPageViewModel viewModel, object
 
 		GC.Collect(); // Run Garbage collection again after closing the Popup
 	}
+}
+
+file class PopupViewModel : INotifyPropertyChanged
+{
+	public event PropertyChangedEventHandler? PropertyChanged;
+
+	public Color? Color
+	{
+		get;
+		set
+		{
+			if (!Equals(value, field))
+			{
+				field = value;
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Color)));
+			}
+		}
+	} = new();
 }
 
 sealed class LongLivedSelfClosingPopup(LongLivedMockPageViewModel viewModel) : MockSelfClosingPopup(viewModel, TimeSpan.FromMilliseconds(1500), "Long Lived");
@@ -619,20 +679,20 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable, IDisposable
 
 sealed class MockPopup : Popup;
 
-sealed file class PopupViewModel : INotifyPropertyChanged
+sealed class SingleConstructionViewModel : MockPageViewModel
 {
-	public event PropertyChangedEventHandler? PropertyChanged;
+	public static int ConstructorCallCount { get; set; }
 
-	public Color? Color
+	public SingleConstructionViewModel()
 	{
-		get;
-		set
-		{
-			if (!Equals(value, field))
-			{
-				field = value;
-				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Color)));
-			}
-		}
-	} = new();
+		ConstructorCallCount++;
+	}
+}
+
+sealed class SingleConstructionPopup : MockSelfClosingPopup
+{
+	public SingleConstructionPopup(SingleConstructionViewModel viewModel) : base(viewModel, TimeSpan.FromSeconds(2))
+	{
+		BindingContext = viewModel;
+	}
 }

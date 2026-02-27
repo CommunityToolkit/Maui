@@ -192,7 +192,7 @@ public static partial class StateContainer
 		}
 	}
 
-	static IList<View> CreateDefaultStateViewsProperty(BindableObject bindable) => StateContainerDefaults.StateViews;
+	static IList<View> CreateDefaultStateViewsProperty(BindableObject bindable) => [];
 }
 
 /// <summary>
@@ -201,5 +201,6 @@ public static partial class StateContainer
 /// <remarks>
 /// Constructor for <see cref="StateContainerException"/>
 /// </remarks>
-/// <param name="message"><see cref="Exception.Message"/></param>
-public sealed class StateContainerException(string message) : InvalidOperationException(message);
+/// <param name="message">The error message that explains the reason for the exception.</param>
+/// <param name="innerException">The exception that is the cause of the current exception. If the <paramref name="innerException" /> parameter is not a null reference (<see langword="Nothing" /> in Visual Basic), the current exception is raised in a <see langword="catch" /> block that handles the inner exception.</param>
+public sealed class StateContainerException(string message, Exception? innerException = null) : InvalidOperationException(message, innerException);
