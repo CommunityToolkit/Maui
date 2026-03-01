@@ -22,6 +22,10 @@
                     <Label Text="Simple Expander (Tap Me)" FontSize="16" FontAttributes="Bold"/>
                 </mct:Expander.Header>
 
+                <mct:Expander.Behaviors>
+                    <mct:ExpanderAnimationBehavior />
+                </mct:Expander.Behaviors>
+
                 <mct:Expander.Content>
                     <VerticalStackLayout>
                         <Label Text="Item 1"/>
@@ -36,11 +40,21 @@
                 <mct:Expander.Header>
                     <Label Text="Multi-Level Expander (Tap Me)" FontSize="16" FontAttributes="Bold"/>
                 </mct:Expander.Header>
+
+                <mct:Expander.Behaviors>
+                    <mct:ExpanderAnimationBehavior />
+                </mct:Expander.Behaviors>
+
                 <mct:Expander.Content>
                     <mct:Expander Direction="Down" BackgroundColor="LightGray">
                         <mct:Expander.Header>
                             <Label Text="Nested Expander (Tap Me)" FontSize="14" FontAttributes="Bold"/>
                         </mct:Expander.Header>
+
+                        <mct:Expander.Behaviors>
+                            <mct:ExpanderAnimationBehavior />
+                        </mct:Expander.Behaviors>
+
                         <mct:Expander.Content>
                             <Label Text="Item 1" />
                         </mct:Expander.Content>
@@ -54,10 +68,16 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <mct:Expander x:DataType="sample:ContentCreator"
+                                      ExpandedChanging="Expander_ExpandedChanging"
                                       ExpandedChanged="Expander_ExpandedChanged">
                             <mct:Expander.Header>
                                 <Label Text="{Binding Name}"/>
                             </mct:Expander.Header>
+
+                            <mct:Expander.Behaviors>
+                                <mct:ExpanderAnimationBehavior />
+                            </mct:Expander.Behaviors>
+
                             <mct:Expander.Content>
                                 <VerticalStackLayout>
                                     <Label Text="{Binding Resource}" HorizontalOptions="Center"/>
@@ -83,6 +103,8 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <mct:Expander x:DataType="sample:ContentCreator"
+                                      HeightRequest="180"
+                                      ExpandedChanging="Expander_ExpandedChanging"
                                       ExpandedChanged="Expander_ExpandedChanged">
                             <mct:Expander.Header>
                                 <Label Text="{Binding Name}"/>

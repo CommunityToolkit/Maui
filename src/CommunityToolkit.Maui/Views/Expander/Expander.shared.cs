@@ -10,7 +10,8 @@ namespace CommunityToolkit.Maui.Views;
 [RequiresUnreferencedCode("Calls Microsoft.Maui.Controls.Binding.Binding(String, BindingMode, IValueConverter, Object, String, Object)")]
 public partial class Expander : ContentView, IExpander
 {
-	readonly WeakEventManager tappedEventManager = new();
+	readonly WeakEventManager expandedChangingEventManager = new();
+	readonly WeakEventManager expandedChangedEventManager = new();
 
 	/// <summary>
 	/// Initialize a new instance of <see cref="Expander"/>.
@@ -31,12 +32,21 @@ public partial class Expander : ContentView, IExpander
 	}
 
 	/// <summary>
+	/// Triggered when the expander is about to change
+	/// </summary>
+	public event EventHandler<ExpandedChangingEventArgs> ExpandedChanging
+	{
+		add => expandedChangingEventManager.AddEventHandler(value);
+		remove => expandedChangingEventManager.RemoveEventHandler(value);
+	}
+
+	/// <summary>
 	/// Triggered when the value of <see cref="IsExpanded"/> changes.
 	/// </summary>
 	public event EventHandler<ExpandedChangedEventArgs> ExpandedChanged
 	{
-		add => tappedEventManager.AddEventHandler(value);
-		remove => tappedEventManager.RemoveEventHandler(value);
+		add => expandedChangedEventManager.AddEventHandler(value);
+		remove => expandedChangedEventManager.RemoveEventHandler(value);
 	}
 
 	/// <summary>
@@ -76,6 +86,13 @@ public partial class Expander : ContentView, IExpander
 	public partial IView Header { get; set; }
 
 	/// <summary>
+	/// Gets or sets the component that performs the expansion and collapse
+	/// logic for this expander, including any optional animations.
+	/// </summary>
+	[BindableProperty]
+	public partial IExpansionController ExpansionController { get; set; } = InstantExpansionController.Instance;
+
+	/// <summary>
 	/// The Action that fires when <see cref="Header"/> is tapped.
 	/// By default, this <see cref="Action"/> runs <see cref="ResizeExpanderInItemsView(TappedEventArgs)"/>.
 	/// </summary>
@@ -87,6 +104,12 @@ public partial class Expander : ContentView, IExpander
 	internal TapGestureRecognizer HeaderTapGestureRecognizer { get; } = new();
 
 	Grid ContentGrid => (Grid)base.Content;
+
+	/// <summary>
+	/// Gets the <see cref="ContentView"/> that hosts the expander's content,
+	/// which can be used to apply animation or transition effects during expansion and collapse.
+	/// </summary>
+	public ContentView? ContentHost { get; internal set; }
 
 	static void OnExpandDirectionChanging(BindableObject bindable, object oldValue, object newValue)
 	{
@@ -104,11 +127,13 @@ public partial class Expander : ContentView, IExpander
 		var expander = (Expander)bindable;
 		if (newValue is View view)
 		{
-			view.SetBinding(IsVisibleProperty, new Binding(nameof(IsExpanded), source: expander));
-
-			expander.ContentGrid.Remove(oldValue);
-			expander.ContentGrid.Add(newValue);
-			expander.ContentGrid.SetRow(view, expander.Direction switch
+			if (expander.ContentHost is not null)
+			{
+				expander.ContentGrid.Remove(expander.ContentHost);
+			}
+			expander.ContentHost = new ContentView { Content = view, IsClippedToBounds = true, HeightRequest = 0 };
+			expander.ContentGrid.Add(expander.ContentHost);
+			expander.ContentGrid.SetRow(expander.ContentHost, expander.Direction switch
 			{
 				ExpandDirection.Down => 1,
 				ExpandDirection.Up => 0,
@@ -181,7 +206,19 @@ public partial class Expander : ContentView, IExpander
 		HandleHeaderTapped?.Invoke(tappedEventArgs);
 	}
 
+	TaskCompletionSource resizeTCS = new();
+
 	void ResizeExpanderInItemsView(TappedEventArgs tappedEventArgs)
+	{
+		_ = Dispatcher.Dispatch(async () =>
+		{
+			resizeTCS = new();
+			await resizeTCS.Task;
+			ResizeExpanderInItemsView2(tappedEventArgs);
+		});
+	}
+
+	void ResizeExpanderInItemsView2(TappedEventArgs tappedEventArgs)
 	{
 		if (Header is null)
 		{
@@ -211,7 +248,6 @@ public partial class Expander : ContentView, IExpander
 			else if (element is CollectionView collectionView)
 			{
 				var tapLocation = tappedEventArgs.GetPosition(collectionView);
-				ForceUpdateCellSize(collectionView, size, tapLocation);
 			}
 #endif
 
@@ -221,11 +257,43 @@ public partial class Expander : ContentView, IExpander
 
 	void IExpander.ExpandedChanged(bool isExpanded)
 	{
+		_ = Dispatcher.Dispatch(async () => await ExpandedChangedAsync(!isExpanded, isExpanded));
+	}
+
+	async Task ExpandedChangedAsync(bool wasExpanded, bool isExpanded)
+	{
+		expandedChangingEventManager.HandleEvent(this, new ExpandedChangingEventArgs(wasExpanded, isExpanded), nameof(ExpandedChanging));
+
+		if (ContentHost is ContentView host && Content is View view)
+		{
+			if (!wasExpanded && isExpanded)
+			{
+				view.IsVisible = true;
+				await ExpansionController.OnExpandingAsync(this);
+				host.HeightRequest = -1;
+			}
+			else
+			{
+				await ExpansionController.OnCollapsingAsync(this);
+				host.HeightRequest = 0;
+				view.IsVisible = false;
+			}
+		}
+
+		resizeTCS.TrySetResult();
+
 		if (Command?.CanExecute(CommandParameter) is true)
 		{
 			Command.Execute(CommandParameter);
 		}
 
-		tappedEventManager.HandleEvent(this, new ExpandedChangedEventArgs(isExpanded), nameof(ExpandedChanged));
+		expandedChangedEventManager.HandleEvent(this, new ExpandedChangedEventArgs(isExpanded), nameof(ExpandedChanged));
 	}
+}
+
+class InstantExpansionController : IExpansionController
+{
+	public static InstantExpansionController Instance { get; } = new();
+	public Task OnExpandingAsync(Expander expander) => Task.CompletedTask;
+	public Task OnCollapsingAsync(Expander expander) => Task.CompletedTask;
 }
