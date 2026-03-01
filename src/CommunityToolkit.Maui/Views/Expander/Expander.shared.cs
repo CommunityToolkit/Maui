@@ -131,7 +131,16 @@ public partial class Expander : ContentView, IExpander
 			{
 				expander.ContentGrid.Remove(expander.ContentHost);
 			}
-			expander.ContentHost = new ContentView { Content = view, IsClippedToBounds = true, HeightRequest = 0 };
+
+			// Initialize content visibility and height based on the current expansion state
+			view.IsVisible = expander.IsExpanded;
+			expander.ContentHost = new ContentView
+			{
+				Content = view,
+				IsClippedToBounds = true,
+				HeightRequest = expander.IsExpanded ? -1 : 0
+			};
+
 			expander.ContentGrid.Add(expander.ContentHost);
 			expander.ContentGrid.SetRow(expander.ContentHost, expander.Direction switch
 			{
@@ -171,7 +180,7 @@ public partial class Expander : ContentView, IExpander
 
 	void HandleDirectionChanged(ExpandDirection expandDirection)
 	{
-		if (Header is null || Content is null)
+		if (Header is null || ContentHost is null)
 		{
 			return;
 		}
@@ -180,12 +189,12 @@ public partial class Expander : ContentView, IExpander
 		{
 			case ExpandDirection.Down:
 				ContentGrid.SetRow(Header, 0);
-				ContentGrid.SetRow(Content, 1);
+				ContentGrid.SetRow(ContentHost, 1);
 				break;
 
 			case ExpandDirection.Up:
 				ContentGrid.SetRow(Header, 1);
-				ContentGrid.SetRow(Content, 0);
+				ContentGrid.SetRow(ContentHost, 0);
 				break;
 
 			default:
@@ -244,10 +253,6 @@ public partial class Expander : ContentView, IExpander
 			if (element.Parent is ListView listView && element is Cell cell)
 			{
 				cell.ForceUpdateSize();
-			}
-			else if (element is CollectionView collectionView)
-			{
-				var tapLocation = tappedEventArgs.GetPosition(collectionView);
 			}
 #endif
 

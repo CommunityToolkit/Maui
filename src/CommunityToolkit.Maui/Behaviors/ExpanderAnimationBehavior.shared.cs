@@ -1,5 +1,4 @@
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -43,16 +42,6 @@ public partial class ExpanderAnimationBehavior : BaseBehavior<Views.Expander>, I
 	}
 
 	/// <summary>
-	/// Detaches the behavior from the specified Expander control and resets its expansion controller to the shared instance.
-	/// </summary>
-	/// <param name="bindable">The Expander control from which the behavior is being detached from.</param>
-	protected override void OnDetachingFrom(Views.Expander bindable)
-	{
-		base.OnDetachingFrom(bindable);
-		bindable.ExpansionController = InstantExpansionController.Instance;
-	}
-
-	/// <summary>
 	/// Performs the animation that runs when the expander transitions from a collapsed to an expanded state.
 	/// </summary>
 	/// <param name="expander">The Expander control that is expanding.</param>
@@ -63,8 +52,8 @@ public partial class ExpanderAnimationBehavior : BaseBehavior<Views.Expander>, I
 			var tcs = new TaskCompletionSource();
 			var size = view.Measure(host.Width, double.PositiveInfinity);
 			var animation = new Animation(v => host.HeightRequest = v, 0, size.Height);
-			animation.Commit(expander, "ExpandingAnimation", 16, ExpandingLength, ExpandingEasing, (v, c) => tcs.TrySetResult());
-			host.HeightRequest = -1;
+			animation.Commit(expander, "ExpanderAnimation", 16, ExpandingLength, ExpandingEasing,
+				(v, c) => { tcs.TrySetResult(); host.HeightRequest = -1; });
 			await tcs.Task;
 		}
 	}
@@ -80,8 +69,8 @@ public partial class ExpanderAnimationBehavior : BaseBehavior<Views.Expander>, I
 			var tcs = new TaskCompletionSource();
 			var size = view.Measure(host.Width, double.PositiveInfinity);
 			var animation = new Animation(v => host.HeightRequest = v, size.Height, 0);
-			animation.Commit(expander, "CollapsingAnimation", 16, CollapsingLength, CollapsingEasing, (v, c) => tcs.TrySetResult());
-			host.HeightRequest = 0;
+			animation.Commit(expander, "ExpanderAnimation", 16, CollapsingLength, CollapsingEasing,
+				(v, c) => { tcs.TrySetResult(); host.HeightRequest = 0; });
 			await tcs.Task;
 		}
 	}
