@@ -121,7 +121,7 @@ public class ExpanderTests : BaseViewTest
 		Assert.Equal(ExpanderDefaults.Direction, expander.Direction);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ExpanderRaisesEventsInCorrectOrderWhenExpanding()
 	{
 		TaskCompletionSource tcs = new();
@@ -140,7 +140,7 @@ public class ExpanderTests : BaseViewTest
 		Assert.Equal("changing,controllerExpanding,changed,", callOrder.ToString());
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ExpanderCallsCorrectControllerMethod()
 	{
 		TaskCompletionSource tcs = new();
@@ -156,7 +156,7 @@ public class ExpanderTests : BaseViewTest
 		Assert.Equal(0, controller.CollapsingCount);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ExpanderExpandsContentBecomesVisibleHeightRestored()
 	{
 		var tcs = new TaskCompletionSource();
@@ -174,7 +174,7 @@ public class ExpanderTests : BaseViewTest
 		Assert.Equal(-1, expander.ContentHost.HeightRequest);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ExpanderCollapseContentHiddenHeightZero()
 	{
 		var expander = new Maui.Views.Expander();
@@ -193,7 +193,7 @@ public class ExpanderTests : BaseViewTest
 		Assert.Equal(0, expander.ContentHost.HeightRequest);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ExpanderIsExpandedSetBeforeContentAssignedInitialStateCorrect()
 	{
 		var expander = new Maui.Views.Expander();
@@ -208,7 +208,7 @@ public class ExpanderTests : BaseViewTest
 	}
 
 	[Fact]
-	public async Task AttachingAnimationBehaviorSetsExpansionController()
+	public void AttachingAnimationBehaviorSetsExpansionController()
 	{
 		var expander = new Maui.Views.Expander();
 		var behavior = new ExpanderAnimationBehavior();
@@ -219,7 +219,7 @@ public class ExpanderTests : BaseViewTest
 		Assert.Same(behavior, expander.ExpansionController);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task OnExpandingAsyncAnimatesHeightCorrectly()
 	{
 		var tcs = new TaskCompletionSource();

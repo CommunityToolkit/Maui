@@ -104,7 +104,6 @@
                     <DataTemplate>
                         <mct:Expander x:DataType="sample:ContentCreator"
                                       HeightRequest="180"
-                                      ExpandedChanging="Expander_ExpandedChanging"
                                       ExpandedChanged="Expander_ExpandedChanged">
                             <mct:Expander.Header>
                                 <Label Text="{Binding Name}"/>

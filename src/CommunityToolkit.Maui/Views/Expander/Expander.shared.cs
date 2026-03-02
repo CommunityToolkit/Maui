@@ -215,14 +215,24 @@ public partial class Expander : ContentView, IExpander
 		HandleHeaderTapped?.Invoke(tappedEventArgs);
 	}
 
-	TaskCompletionSource resizeTCS = new();
+	TaskCompletionSource expansionGate = new();
+
+	Task WaitForExpandedChangedAsync()
+	{
+		if (!expansionGate.Task.IsCompleted)
+		{
+			return expansionGate.Task;
+		}
+
+		expansionGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+		return expansionGate.Task;
+	}
 
 	void ResizeExpanderInItemsView(TappedEventArgs tappedEventArgs)
 	{
 		_ = Dispatcher.Dispatch(async () =>
 		{
-			resizeTCS = new();
-			await resizeTCS.Task;
+			await WaitForExpandedChangedAsync();
 			ResizeExpanderInItemsView2(tappedEventArgs);
 		});
 	}
@@ -269,23 +279,28 @@ public partial class Expander : ContentView, IExpander
 	{
 		expandedChangingEventManager.HandleEvent(this, new ExpandedChangingEventArgs(wasExpanded, isExpanded), nameof(ExpandedChanging));
 
-		if (ContentHost is ContentView host && Content is View view)
+		try
 		{
-			if (!wasExpanded && isExpanded)
+			if (ContentHost is ContentView host && Content is View view)
 			{
-				view.IsVisible = true;
-				await ExpansionController.OnExpandingAsync(this);
-				host.HeightRequest = -1;
-			}
-			else
-			{
-				await ExpansionController.OnCollapsingAsync(this);
-				host.HeightRequest = 0;
-				view.IsVisible = false;
+				if (!wasExpanded && isExpanded)
+				{
+					view.IsVisible = true;
+					await ExpansionController.OnExpandingAsync(this);
+					host.HeightRequest = -1;
+				}
+				else
+				{
+					await ExpansionController.OnCollapsingAsync(this);
+					host.HeightRequest = 0;
+					view.IsVisible = false;
+				}
 			}
 		}
-
-		resizeTCS.TrySetResult();
+		finally
+		{
+			expansionGate.TrySetResult();
+		}
 
 		if (Command?.CanExecute(CommandParameter) is true)
 		{

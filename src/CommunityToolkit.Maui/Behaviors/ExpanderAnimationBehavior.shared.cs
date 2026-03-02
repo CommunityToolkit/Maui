@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -31,6 +32,8 @@ public partial class ExpanderAnimationBehavior : BaseBehavior<Views.Expander>, I
 	[BindableProperty]
 	public partial uint ExpandingLength { get; set; } = ExpanderAnimationBehaviorDefaults.ExpandingLength;
 
+	IExpansionController previousController = InstantExpansionController.Instance;
+
 	/// <summary>
 	/// Attaches the behavior to the specified expander and assigns it as the controller responsible for handling expansion animations.
 	/// </summary>
@@ -38,7 +41,21 @@ public partial class ExpanderAnimationBehavior : BaseBehavior<Views.Expander>, I
 	protected override void OnAttachedTo(Views.Expander bindable)
 	{
 		base.OnAttachedTo(bindable);
+		previousController = bindable.ExpansionController ?? InstantExpansionController.Instance;
 		bindable.ExpansionController = this;
+	}
+
+	/// <summary>
+	/// Detaches the behavior from the specified Expander control and restores its previous expansion controller.
+	/// </summary>
+	/// <param name="bindable">The Expander control from which the behavior is being detached.</param>
+	protected override void OnDetachingFrom(Views.Expander bindable)
+	{
+		base.OnDetachingFrom(bindable);
+		if (bindable.ExpansionController == this)
+		{
+			bindable.ExpansionController = previousController;
+		}
 	}
 
 	/// <summary>
