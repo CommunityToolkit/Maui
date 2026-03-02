@@ -262,7 +262,7 @@ jobs:
                 shell: pwsh
 
             -   name: Upload Package List
-                uses: actions/upload-artifact@v6
+                uses: actions/upload-artifact@v7
                 if: ${{ runner.os == 'Windows' }}
                 with:
                     name: nuget-list
@@ -272,7 +272,7 @@ jobs:
 
             -   name: Publish Packages
                 if: ${{ runner.os == 'Windows' }}
-                uses: actions/upload-artifact@v6
+                uses: actions/upload-artifact@v7
                 with:
                     name: packages
                     path: ${{ github.workspace }}/nuget/
@@ -344,7 +344,7 @@ jobs:
                     --verbosity Information
 
             -   name: Publish Packages
-                uses: actions/upload-artifact@v6
+                uses: actions/upload-artifact@v7
                 with:
                     name: signed-packages
                     if-no-files-found: error
