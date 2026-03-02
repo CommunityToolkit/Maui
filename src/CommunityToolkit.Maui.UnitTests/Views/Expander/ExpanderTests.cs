@@ -241,12 +241,12 @@ public class ExpanderTests : BaseViewTest
 	}
 
 	[Fact]
-	public async Task ExpanderContentHostIsUnsetWhenContentIsRemoved()
+	public void ExpanderContentHostIsUnsetWhenContentIsRemoved()
 	{
 		var expander = new Expander();
 		expander.Content = new Label { Text = "Hello" };
 		Assert.NotNull(expander.ContentHost);
-		expander.Content = (IView)null!;
+		expander.SetValue(Expander.ContentProperty, null);
 		Assert.Null(expander.ContentHost);
 	}
 

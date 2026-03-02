@@ -68,9 +68,9 @@ public partial class ExpanderAnimationBehavior : BaseBehavior<Views.Expander>, I
 			var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			var size = view.Measure(host.Width, double.PositiveInfinity);
 			var animation = new Animation(v => host.HeightRequest = v, 0, size.Height);
-			animation.Commit(expander, "ExpanderAnimation", 16, ExpandingLength, ExpandingEasing,
-				(v, c) => { tcs.TrySetResult(); host.HeightRequest = -1; });
+			animation.Commit(expander, "ExpanderAnimation", 16, ExpandingLength, ExpandingEasing, (v, c) => tcs.TrySetResult());
 			await tcs.Task;
+			host.HeightRequest = -1;
 		}
 	}
 
@@ -85,9 +85,9 @@ public partial class ExpanderAnimationBehavior : BaseBehavior<Views.Expander>, I
 			var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			var size = view.Measure(host.Width, double.PositiveInfinity);
 			var animation = new Animation(v => host.HeightRequest = v, size.Height, 0);
-			animation.Commit(expander, "ExpanderAnimation", 16, CollapsingLength, CollapsingEasing,
-				(v, c) => { tcs.TrySetResult(); host.HeightRequest = 0; });
+			animation.Commit(expander, "ExpanderAnimation", 16, CollapsingLength, CollapsingEasing, (v, c) => tcs.TrySetResult());
 			await tcs.Task;
+			host.HeightRequest = 0;
 		}
 	}
 }
