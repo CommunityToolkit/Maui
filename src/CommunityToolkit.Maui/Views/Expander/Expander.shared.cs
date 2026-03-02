@@ -243,11 +243,6 @@ public partial class Expander : ContentView, IExpander
 		}
 
 		Element element = this;
-#if WINDOWS
-		var size = IsExpanded
-					? Measure(double.PositiveInfinity, double.PositiveInfinity)
-					: Header.Measure(double.PositiveInfinity, double.PositiveInfinity);
-#endif
 		while (element is not null)
 		{
 #if IOS || MACCATALYST
