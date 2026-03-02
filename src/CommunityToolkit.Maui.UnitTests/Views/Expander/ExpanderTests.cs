@@ -1,5 +1,8 @@
 ﻿using System.ComponentModel;
+using System.Text;
+using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Views;
 using FluentAssertions;
 using Xunit;
 
@@ -116,5 +119,147 @@ public class ExpanderTests : BaseViewTest
 	{
 		var expander = new Maui.Views.Expander();
 		Assert.Equal(ExpanderDefaults.Direction, expander.Direction);
+	}
+
+	[Fact]
+	public async Task ExpanderRaisesEventsInCorrectOrderWhenExpanding()
+	{
+		TaskCompletionSource tcs = new();
+		var expander = new Maui.Views.Expander();
+		StringBuilder callOrder = new();
+		expander.ExpandedChanging += (_, _) => callOrder.Append("changing,");
+		expander.ExpandedChanged += (_, _) => { callOrder.Append("changed,"); tcs.TrySetResult(); };
+		var controller = new MockExpansionController();
+		controller.Expanding += (_, _) => callOrder.Append("controllerExpanding,");
+		controller.Collapsing += (_, _) => callOrder.Append("controllerCollapsing,");
+		expander.ExpansionController = controller;
+		expander.Header = new Label { Text = "Header" };
+		expander.Content = new Label { Text = "Hello" };
+		expander.IsExpanded = true;
+		await tcs.Task;
+		Assert.Equal("changing,controllerExpanding,changed,", callOrder.ToString());
+	}
+
+	[Fact]
+	public async Task ExpanderCallsCorrectControllerMethod()
+	{
+		TaskCompletionSource tcs = new();
+		var expander = new Maui.Views.Expander();
+		expander.ExpandedChanged += (_, _) => tcs.TrySetResult();
+		var controller = new MockExpansionController();
+		expander.ExpansionController = controller;
+		expander.Header = new Label { Text = "Header" };
+		expander.Content = new Label { Text = "Hello" };
+		expander.IsExpanded = true;
+		await tcs.Task;
+		Assert.Equal(1, controller.ExpandingCount);
+		Assert.Equal(0, controller.CollapsingCount);
+	}
+
+	[Fact]
+	public async Task ExpanderExpandsContentBecomesVisibleHeightRestored()
+	{
+		var tcs = new TaskCompletionSource();
+		var expander = new Maui.Views.Expander();
+		expander.ExpandedChanged += (_, _) => tcs.TrySetResult();
+		expander.Header = new Label { Text = "Header" };
+		expander.Content = new Label { Text = "Hello" };
+		expander.IsExpanded = true;
+		await tcs.Task;
+		var element = expander.Content as VisualElement;
+		Assert.NotNull(expander.ContentHost);
+		Assert.NotNull(expander.Content);
+		Assert.NotNull(element);
+		Assert.True(element.IsVisible);
+		Assert.Equal(-1, expander.ContentHost.HeightRequest);
+	}
+
+	[Fact]
+	public async Task ExpanderCollapseContentHiddenHeightZero()
+	{
+		var expander = new Maui.Views.Expander();
+		expander.IsExpanded = true;
+		var tcs = new TaskCompletionSource();
+		expander.ExpandedChanged += (_, _) => tcs.TrySetResult();
+		expander.Header = new Label { Text = "Header" };
+		expander.Content = new Label { Text = "Hello" };
+		expander.IsExpanded = false;
+		await tcs.Task;
+		var element = expander.Content as VisualElement;
+		Assert.NotNull(expander.ContentHost);
+		Assert.NotNull(expander.Content);
+		Assert.NotNull(element);
+		Assert.False(element.IsVisible);
+		Assert.Equal(0, expander.ContentHost.HeightRequest);
+	}
+
+	[Fact]
+	public async Task ExpanderIsExpandedSetBeforeContentAssignedInitialStateCorrect()
+	{
+		var expander = new Maui.Views.Expander();
+		expander.IsExpanded = true;
+		expander.Header = new Label { Text = "Header" };
+		expander.Content = new Label { Text = "Hello" };
+		var element = expander.Content as VisualElement;
+		Assert.NotNull(expander.ContentHost);
+		Assert.NotNull(element);
+		Assert.True(element.IsVisible);
+		Assert.Equal(-1, expander.ContentHost.HeightRequest);
+	}
+
+	[Fact]
+	public async Task AttachingAnimationBehaviorSetsExpansionController()
+	{
+		var expander = new Maui.Views.Expander();
+		var behavior = new ExpanderAnimationBehavior();
+		expander.Behaviors.Add(behavior);
+		Assert.IsType<ExpanderAnimationBehavior>(expander.Behaviors[0]);
+		Assert.IsType<ExpanderAnimationBehavior>(behavior);
+		Assert.IsType<ExpanderAnimationBehavior>(expander.ExpansionController);
+		Assert.Same(behavior, expander.ExpansionController);
+	}
+
+	[Fact]
+	public async Task OnExpandingAsyncAnimatesHeightCorrectly()
+	{
+		var tcs = new TaskCompletionSource();
+		var expander = new Maui.Views.Expander();
+		expander.ExpandedChanged += (_, _) => tcs.TrySetResult();
+		var behavior = new ExpanderAnimationBehavior();
+		expander.Behaviors.Add(behavior);
+		expander.Header = new Label { Text = "Header" };
+		expander.Content = new Label { Text = "Hello" };
+		Assert.NotNull(expander.ContentHost);
+		expander.ContentHost.HeightRequest = 0;
+		expander.IsExpanded = true;
+		await tcs.Task;
+		var element = expander.Content as VisualElement;
+		Assert.True(expander.IsExpanded);
+		Assert.Equal(-1, expander.ContentHost.HeightRequest);
+		Assert.NotNull(element);
+		Assert.True(element.IsVisible);
+	}
+
+	class MockExpansionController : IExpansionController
+	{
+		public event EventHandler? Expanding;
+		public event EventHandler? Collapsing;
+
+		public int ExpandingCount { get; private set; } = 0;
+		public int CollapsingCount { get; private set; } = 0;
+
+		public async Task OnExpandingAsync(Expander expander)
+		{
+			await Task.Yield();
+			ExpandingCount++;
+			Expanding?.Invoke(this, EventArgs.Empty);
+		}
+
+		public async Task OnCollapsingAsync(Expander expander)
+		{
+			await Task.Yield();
+			CollapsingCount++;
+			Collapsing?.Invoke(this, EventArgs.Empty);
+		}
 	}
 }
