@@ -1,5 +1,4 @@
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -32,7 +31,7 @@ public partial class ExpanderAnimationBehavior : BaseBehavior<Views.Expander>, I
 	[BindableProperty]
 	public partial uint ExpandingLength { get; set; } = ExpanderAnimationBehaviorDefaults.ExpandingLength;
 
-	IExpansionController previousController = InstantExpansionController.Instance;
+	IExpansionController? previousController;
 
 	/// <summary>
 	/// Attaches the behavior to the specified expander and assigns it as the controller responsible for handling expansion animations.
@@ -41,7 +40,7 @@ public partial class ExpanderAnimationBehavior : BaseBehavior<Views.Expander>, I
 	protected override void OnAttachedTo(Views.Expander bindable)
 	{
 		base.OnAttachedTo(bindable);
-		previousController = bindable.ExpansionController ?? InstantExpansionController.Instance;
+		previousController = bindable.ExpansionController;
 		bindable.ExpansionController = this;
 	}
 
@@ -66,7 +65,7 @@ public partial class ExpanderAnimationBehavior : BaseBehavior<Views.Expander>, I
 	{
 		if (expander.ContentHost is ContentView host && expander.Content is View view)
 		{
-			var tcs = new TaskCompletionSource();
+			var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			var size = view.Measure(host.Width, double.PositiveInfinity);
 			var animation = new Animation(v => host.HeightRequest = v, 0, size.Height);
 			animation.Commit(expander, "ExpanderAnimation", 16, ExpandingLength, ExpandingEasing,
@@ -83,7 +82,7 @@ public partial class ExpanderAnimationBehavior : BaseBehavior<Views.Expander>, I
 	{
 		if (expander.ContentHost is ContentView host && expander.Content is View view)
 		{
-			var tcs = new TaskCompletionSource();
+			var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			var size = view.Measure(host.Width, double.PositiveInfinity);
 			var animation = new Animation(v => host.HeightRequest = v, size.Height, 0);
 			animation.Commit(expander, "ExpanderAnimation", 16, CollapsingLength, CollapsingEasing,

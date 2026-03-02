@@ -70,7 +70,7 @@ public partial class Expander : ContentView, IExpander
 	/// <summary>
 	/// Gets or sets a value indicating whether the expander is expanded.
 	/// </summary>
-	[BindableProperty(PropertyChangedMethodName = nameof(OnIsExpandedPropertyChanged))]
+	[BindableProperty(PropertyChangingMethodName = nameof(OnIsExpandedPropertyChanging), PropertyChangedMethodName = nameof(OnIsExpandedPropertyChanged))]
 	public partial bool IsExpanded { get; set; }
 
 	/// <summary>
@@ -90,7 +90,7 @@ public partial class Expander : ContentView, IExpander
 	/// logic for this expander, including any optional animations.
 	/// </summary>
 	[BindableProperty]
-	public partial IExpansionController ExpansionController { get; set; } = InstantExpansionController.Instance;
+	public partial IExpansionController? ExpansionController { get; set; }
 
 	/// <summary>
 	/// The Action that fires when <see cref="Header"/> is tapped.
@@ -168,6 +168,12 @@ public partial class Expander : ContentView, IExpander
 				_ => throw new NotSupportedException($"{nameof(ExpandDirection)} {expander.Direction} is not yet supported")
 			});
 		}
+	}
+
+	static void OnIsExpandedPropertyChanging(BindableObject bindable, object oldValue, object newValue)
+	{
+		Expander expander = (Expander)bindable;
+		expander.expandedChangingEventManager.HandleEvent(expander, new ExpandedChangingEventArgs((bool)oldValue, (bool)newValue), nameof(ExpandedChanging));
 	}
 
 	static void OnIsExpandedPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -277,21 +283,20 @@ public partial class Expander : ContentView, IExpander
 
 	async Task ExpandedChangedAsync(bool wasExpanded, bool isExpanded)
 	{
-		expandedChangingEventManager.HandleEvent(this, new ExpandedChangingEventArgs(wasExpanded, isExpanded), nameof(ExpandedChanging));
-
 		try
 		{
 			if (ContentHost is ContentView host && Content is View view)
 			{
+				IExpansionController controller = ExpansionController ?? InstantExpansionController.Instance;
 				if (!wasExpanded && isExpanded)
 				{
 					view.IsVisible = true;
-					await ExpansionController.OnExpandingAsync(this);
+					await controller.OnExpandingAsync(this);
 					host.HeightRequest = -1;
 				}
 				else
 				{
-					await ExpansionController.OnCollapsingAsync(this);
+					await controller.OnCollapsingAsync(this);
 					host.HeightRequest = 0;
 					view.IsVisible = false;
 				}

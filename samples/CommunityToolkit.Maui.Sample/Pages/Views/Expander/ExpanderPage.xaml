@@ -68,7 +68,6 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <mct:Expander x:DataType="sample:ContentCreator"
-                                      ExpandedChanging="Expander_ExpandedChanging"
                                       ExpandedChanged="Expander_ExpandedChanged">
                             <mct:Expander.Header>
                                 <Label Text="{Binding Name}"/>
