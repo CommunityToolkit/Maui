@@ -173,6 +173,7 @@ public partial class Expander : ContentView, IExpander
 	static void OnIsExpandedPropertyChanging(BindableObject bindable, object oldValue, object newValue)
 	{
 		Expander expander = (Expander)bindable;
+		expander.expansionGate = new();
 		expander.expandedChangingEventManager.HandleEvent(expander, new ExpandedChangingEventArgs((bool)oldValue, (bool)newValue), nameof(ExpandedChanging));
 	}
 
@@ -223,22 +224,11 @@ public partial class Expander : ContentView, IExpander
 
 	TaskCompletionSource expansionGate = new();
 
-	Task WaitForExpandedChangedAsync()
-	{
-		if (!expansionGate.Task.IsCompleted)
-		{
-			return expansionGate.Task;
-		}
-
-		expansionGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
-		return expansionGate.Task;
-	}
-
 	void ResizeExpanderInItemsView(TappedEventArgs tappedEventArgs)
 	{
 		_ = Dispatcher.Dispatch(async () =>
 		{
-			await WaitForExpandedChangedAsync();
+			await expansionGate.Task;
 			ResizeExpanderInItemsView2(tappedEventArgs);
 		});
 	}
