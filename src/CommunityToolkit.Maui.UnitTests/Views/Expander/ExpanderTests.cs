@@ -240,6 +240,16 @@ public class ExpanderTests : BaseViewTest
 		Assert.True(element.IsVisible);
 	}
 
+	[Fact]
+	public async Task ExpanderContentHostIsUnsetWhenContentIsRemoved()
+	{
+		var expander = new Expander();
+		expander.Content = new Label { Text = "Hello" };
+		Assert.NotNull(expander.ContentHost);
+		expander.Content = (IView)null!;
+		Assert.Null(expander.ContentHost);
+	}
+
 	class MockExpansionController : IExpansionController
 	{
 		public event EventHandler? Expanding;

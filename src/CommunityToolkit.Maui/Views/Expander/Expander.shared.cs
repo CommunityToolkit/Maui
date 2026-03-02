@@ -125,13 +125,15 @@ public partial class Expander : ContentView, IExpander
 	static void OnContentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var expander = (Expander)bindable;
+
+		if (expander.ContentHost is not null)
+		{
+			expander.ContentGrid.Remove(expander.ContentHost);
+			expander.ContentHost = null;
+		}
+
 		if (newValue is View view)
 		{
-			if (expander.ContentHost is not null)
-			{
-				expander.ContentGrid.Remove(expander.ContentHost);
-			}
-
 			// Initialize content visibility and height based on the current expansion state
 			view.IsVisible = expander.IsExpanded;
 			expander.ContentHost = new ContentView
@@ -173,7 +175,7 @@ public partial class Expander : ContentView, IExpander
 	static void OnIsExpandedPropertyChanging(BindableObject bindable, object oldValue, object newValue)
 	{
 		Expander expander = (Expander)bindable;
-		expander.expansionGate = new();
+		expander.expansionGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
 		expander.expandedChangingEventManager.HandleEvent(expander, new ExpandedChangingEventArgs((bool)oldValue, (bool)newValue), nameof(ExpandedChanging));
 	}
 
