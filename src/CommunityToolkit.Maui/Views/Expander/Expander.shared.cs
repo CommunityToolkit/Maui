@@ -311,9 +311,10 @@ public partial class Expander : ContentView, IExpander
 	}
 }
 
-class InstantExpansionController : IExpansionController
+sealed class InstantExpansionController : IExpansionController
 {
 	public static InstantExpansionController Instance { get; } = new();
+	InstantExpansionController() { }
 	public Task OnExpandingAsync(Expander expander) => Task.CompletedTask;
 	public Task OnCollapsingAsync(Expander expander) => Task.CompletedTask;
 }
