@@ -112,8 +112,17 @@ public partial class Popup<T> : Popup
 	public virtual Task CloseAsync(T result, CancellationToken token = default) => GetPopupPage().CloseAsync(new PopupResult<T>(result, false), token);
 }
 
-sealed class PopupNotFoundException() : InvalidPopupOperationException($"Unable to close popup: could not locate {nameof(PopupPage)}. {nameof(PopupExtensions.ShowPopup)} or {nameof(PopupExtensions.ShowPopupAsync)} must be called before {nameof(Popup.CloseAsync)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Popup.CloseAsync)} method");
+/// <summary>
+/// An <see cref="InvalidOperationException"/> thrown when attempting to close a <see cref="Popup"/> that cannot locate its associated <see cref="PopupPage"/>.
+/// </summary>
+public sealed class PopupNotFoundException() : InvalidPopupOperationException($"Unable to close popup: could not locate {nameof(PopupPage)}. {nameof(PopupExtensions.ShowPopup)} or {nameof(PopupExtensions.ShowPopupAsync)} must be called before {nameof(Popup.CloseAsync)}. If using a custom implementation of {nameof(Popup)}, override the {nameof(Popup.CloseAsync)} method");
 
-sealed class PopupBlockedException(in Page currentVisibleModalPage) : InvalidPopupOperationException($"Unable to close Popup because it is blocked by the Modal Page {currentVisibleModalPage.GetType().FullName}. Please call `{nameof(Page.Navigation)}.{nameof(Page.Navigation.PopModalAsync)}()` to first remove {currentVisibleModalPage.GetType().FullName} from the {nameof(Page.Navigation.ModalStack)}");
+/// <summary>
+/// An <see cref="InvalidOperationException"/> thrown when attempting to close a <see cref="Popup"/> that is blocked by a visible modal page.
+/// </summary>
+public sealed class PopupBlockedException(in Page currentVisibleModalPage) : InvalidPopupOperationException($"Unable to close Popup because it is blocked by the Modal Page {currentVisibleModalPage.GetType().FullName}. Please call `{nameof(Page.Navigation)}.{nameof(Page.Navigation.PopModalAsync)}()` to first remove {currentVisibleModalPage.GetType().FullName} from the {nameof(Page.Navigation.ModalStack)}");
 
-class InvalidPopupOperationException(in string message) : InvalidOperationException(message);
+/// <summary>
+/// An <see cref="InvalidOperationException"/> thrown when an invalid operation is performed on a <see cref="Popup"/>.
+/// </summary>
+public class InvalidPopupOperationException(in string message) : InvalidOperationException(message);
