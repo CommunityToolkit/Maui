@@ -56,7 +56,7 @@ public partial class Popup : ContentView
 	/// </remarks>
 	[BindableProperty]
 	public partial bool CanBeDismissedByTappingOutsideOfPopup { get; set; }
-	
+
 	/// <summary>
 	/// Gets or sets the padding between the <see cref="Popup"/> border and the <see cref="Popup"/> content.
 	/// </summary>
