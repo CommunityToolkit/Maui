@@ -34,11 +34,11 @@ public class EnumDescriptionConverterTests : BaseOneWayConverterTest<EnumDescrip
 	}
 
   [Fact]
-	public void ConvertFrom_ThrowsArgumentNullException_WhenNull()
-	{
-		var converter = new EnumDescriptionConverter();
-		Assert.Throws<ArgumentNullException>(() => converter.ConvertFrom(null!));
-	}
+  public void ConvertFrom_ThrowsArgumentNullException_WhenNull()
+  {
+	var converter = (ICommunityToolkitValueConverter)new EnumDescriptionConverter();
+	Assert.Throws<ArgumentNullException>(() => converter.Convert(null, typeof(string), null, null));
+  }
 
 	[Fact]
 	public void ConvertFrom_FallbackToValueToString_WhenInvalidEnumValue()
