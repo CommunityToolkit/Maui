@@ -106,4 +106,86 @@ public class EnumDescriptionConverterTests
 		var result = converter.ConvertFrom(MultiAttributeEnum.EmptyDescription);
 		Assert.Equal("EmptyDescription", result);
 	}
+
+	#region DisplayAttribute Localization & Edge Cases
+
+	public class TestResources
+	{
+		public static string LocalizedDisplay => "Localized Display";
+		public static int NonStringResource => 42;
+	}
+
+	enum LocalizedEnum
+	{
+		[Display(Name = "LocalizedDisplay", ResourceType = typeof(TestResources))]
+		Localized,
+		[Display(Name = "MissingResource", ResourceType = typeof(TestResources))]
+		MissingResource,
+		[Display(Name = null)]
+		NullName,
+		[Display(Name = " ")]
+		WhitespaceName,
+		[Display(Name = "NonStringResource", ResourceType = typeof(TestResources))]
+		NonStringResource,
+	}
+
+	[Fact]
+	public void ConvertFrom_ReturnsLocalizedDisplay_WhenResourceTypeSet()
+	{
+		var converter = new EnumDescriptionConverter();
+		var result = converter.ConvertFrom(LocalizedEnum.Localized);
+		Assert.Equal("Localized Display", result);
+	}
+
+	[Fact]
+	public void ConvertFrom_FallbackToName_WhenResourceMissing()
+	{
+		var converter = new EnumDescriptionConverter();
+		var result = converter.ConvertFrom(LocalizedEnum.MissingResource);
+		Assert.Equal("MissingResource", result);
+	}
+
+	[Fact]
+	public void ConvertFrom_FallbackToEnumName_WhenDisplayNameNull()
+	{
+		var converter = new EnumDescriptionConverter();
+		var result = converter.ConvertFrom(LocalizedEnum.NullName);
+		Assert.Equal("NullName", result);
+	}
+
+	[Fact]
+	public void ConvertFrom_FallbackToEnumName_WhenDisplayNameWhitespace()
+	{
+		var converter = new EnumDescriptionConverter();
+		var result = converter.ConvertFrom(LocalizedEnum.WhitespaceName);
+		Assert.Equal("WhitespaceName", result);
+	}
+
+	[Fact]
+	public void ConvertFrom_FallbackToEnumName_WhenGetNameThrows()
+	{
+		var converter = new EnumDescriptionConverter();
+		var result = converter.ConvertFrom(LocalizedEnum.NonStringResource);
+		Assert.Equal("NonStringResource", result);
+	}
+
+	#endregion
+
+	#region DescriptionAttribute Edge Cases
+
+	enum DescriptionEdgeEnum
+	{
+		[Description("")]
+		EmptyDescription,
+	}
+
+	[Fact]
+	public void ConvertFrom_FallbackToEnumName_WhenDescriptionEmptyEdge()
+	{
+		var converter = new EnumDescriptionConverter();
+		var result = converter.ConvertFrom(DescriptionEdgeEnum.EmptyDescription);
+		Assert.Equal("EmptyDescription", result);
+	}
+
+	#endregion
 }
