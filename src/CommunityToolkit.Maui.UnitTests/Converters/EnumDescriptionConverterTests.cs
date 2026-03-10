@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
-public class EnumDescriptionConverterTests
+public class EnumDescriptionConverterTests : BaseOneWayConverterTest<EnumDescriptionConverter>
 {
    enum TestEnum
 	{
