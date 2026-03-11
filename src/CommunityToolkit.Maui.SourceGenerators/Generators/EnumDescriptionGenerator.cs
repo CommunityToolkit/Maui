@@ -124,7 +124,7 @@ public class EnumDescriptionGenerator : IIncrementalGenerator
 		AttributeData? descAttr = member.GetAttributes()
 			.FirstOrDefault(attr => attr.AttributeClass?.ToDisplayString() == descriptionAttributeName);
 
-		if (descAttr != null && descAttr.ConstructorArguments.Length > 0)
+		if (descAttr is not null && descAttr.ConstructorArguments.Length > 0)
 		{
          if (descAttr.ConstructorArguments[0].Value is string description && !string.IsNullOrWhiteSpace(description))
 			{
