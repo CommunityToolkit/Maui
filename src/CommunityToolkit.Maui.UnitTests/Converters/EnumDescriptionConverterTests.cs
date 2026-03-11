@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class EnumDescriptionConverterTests : BaseOneWayConverterTest<EnumDescriptionConverter>
 {
-   enum TestEnum
+    public enum TestEnum
 	{
 		[Display(Name = "Display Name")]
 		WithDisplay,
@@ -18,7 +18,7 @@ public class EnumDescriptionConverterTests : BaseOneWayConverterTest<EnumDescrip
 		NoAttribute
 	}
 
-	enum MultiAttributeEnum
+ public enum MultiAttributeEnum
 	{
 		[Display(Name = "Display Name")]
 		[Description("Description Text")]
@@ -115,7 +115,7 @@ public class EnumDescriptionConverterTests : BaseOneWayConverterTest<EnumDescrip
 		public static int NonStringResource => 42;
 	}
 
-	enum LocalizedEnum
+  public enum LocalizedEnum
 	{
 		[Display(Name = "LocalizedDisplay", ResourceType = typeof(TestResources))]
 		Localized,
@@ -173,7 +173,7 @@ public class EnumDescriptionConverterTests : BaseOneWayConverterTest<EnumDescrip
 
 	#region DescriptionAttribute Edge Cases
 
-	enum DescriptionEdgeEnum
+    public enum DescriptionEdgeEnum
 	{
 		[Description("")]
 		EmptyDescription,
