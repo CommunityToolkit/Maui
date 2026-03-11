@@ -27,7 +27,7 @@ public class MauiMediaElement : CoordinatorLayout
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 #pragma warning disable IDE0060 // Remove unused parameter
 	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
-	protected MauiMediaElement(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+	public MauiMediaElement(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 	{
 		// Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/issues/3114
 	}
