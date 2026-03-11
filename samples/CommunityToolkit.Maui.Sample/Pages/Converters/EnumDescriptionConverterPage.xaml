@@ -1,12 +1,58 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.EnumDescriptionConverterPage"
-             Title="EnumDescriptionConverter">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
-</ContentPage>
+<pages:BasePage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.EnumDescriptionConverterPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
+    Title="EnumDescriptionConverter"
+    x:DataType="vm:EnumDescriptionConverterViewModel"
+    x:TypeArguments="vm:EnumDescriptionConverterViewModel">
+
+    <pages:BasePage.Resources>
+        <ResourceDictionary>
+            <toolkit:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
+        </ResourceDictionary>
+    </pages:BasePage.Resources>
+
+    <pages:BasePage.Content>
+        <VerticalStackLayout Padding="20" Spacing="20">
+            <Label VerticalOptions="Center">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="The" />
+                        <Span FontAttributes="Bold" Text=" EnumDescriptionConverter " />
+                        <Span Text="converts Enum values into readable text so they display nicely in the UI." />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <Label Text="When an Enum value is passed in, the converter looks for attributes that provide a more user-friendly name. If one is found, it uses that value; otherwise it simply uses the Enum’s name.. " VerticalOptions="Center" />
+            <Label Text="This ensures that Enum values can be displayed clearly while still working correctly even when no attributes are defined. " VerticalOptions="Center" />
+            <Label Text="There is no description needed for one word enum members that are spelled the way you want to display them." />
+
+
+            <Border
+                Margin="0,20,0,0"
+                Padding="10"
+                Background="LightGray">
+                <HorizontalStackLayout Spacing="10">
+                    <Label FontSize="16" Text="Without Converter:" />
+                    <Label
+                        FontAttributes="Bold"
+                        FontSize="16"
+                        Text="{Binding SelectedMode}" />
+                </HorizontalStackLayout>
+            </Border>
+            <Border Padding="10" Background="LightGray">
+                <HorizontalStackLayout Spacing="10">
+                    <Label FontSize="16" Text="With Converter:" />
+                    <Label
+                        FontAttributes="Bold"
+                        FontSize="16"
+                        Text="{Binding SelectedMode, Converter={StaticResource EnumDescriptionConverter}}" />
+                </HorizontalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </pages:BasePage.Content>
+</pages:BasePage>
