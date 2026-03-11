@@ -34,23 +34,35 @@
 
             <Border
                 Margin="0,20,0,0"
-                Padding="10"
-                Background="LightGray">
+                Padding="15,10"
+                Background="LightGray"
+                StrokeShape="RoundRectangle 8">
                 <HorizontalStackLayout Spacing="10">
-                    <Label FontSize="16" Text="Without Converter:" />
+                    <Label
+                        FontSize="16"
+                        Text="Without Converter:"
+                        TextColor="DarkRed" />
                     <Label
                         FontAttributes="Bold"
                         FontSize="16"
-                        Text="{Binding SelectedMode}" />
+                        Text="{Binding SelectedMode}"
+                        TextColor="DarkRed" />
                 </HorizontalStackLayout>
             </Border>
-            <Border Padding="10" Background="LightGray">
+            <Border
+                Padding="15,10"
+                Background="LightGray"
+                StrokeShape="RoundRectangle 8">
                 <HorizontalStackLayout Spacing="10">
-                    <Label FontSize="16" Text="With Converter:" />
+                    <Label
+                        FontSize="16"
+                        Text="With Converter:"
+                        TextColor="DarkRed" />
                     <Label
                         FontAttributes="Bold"
                         FontSize="16"
-                        Text="{Binding SelectedMode, Converter={StaticResource EnumDescriptionConverter}}" />
+                        Text="{Binding SelectedMode, Converter={StaticResource EnumDescriptionConverter}}"
+                        TextColor="DarkRed" />
                 </HorizontalStackLayout>
             </Border>
         </VerticalStackLayout>
