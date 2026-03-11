@@ -118,7 +118,10 @@ public static partial class KeyboardExtensions
 		return true;
 	}
 
-	sealed class SoftKeyboardException(string message) : Exception(message)
+	/// <summary>
+	/// An <see cref="Exception"/> thrown when unable to retrieve the platform view to determine soft keyboard status.
+	/// </summary>
+	public sealed class SoftKeyboardException(string message) : Exception(message)
 	{
 	}
 }
