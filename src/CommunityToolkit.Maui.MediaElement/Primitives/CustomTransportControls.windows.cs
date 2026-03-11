@@ -6,7 +6,6 @@ sealed partial class CustomTransportControls : MediaTransportControls
 {
 	public event EventHandler<EventArgs>? OnTemplateLoaded;
 	public AppBarButton FullScreenButton = new();
-	bool isFullScreen = false;
 
 	public CustomTransportControls()
 	{
@@ -22,21 +21,6 @@ sealed partial class CustomTransportControls : MediaTransportControls
 			FullScreenButton = appBarButton;
 			FullScreenButton.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
 			OnTemplateLoaded?.Invoke(this, EventArgs.Empty);
-			FullScreenButton.Click += FullScreenButton_Click;
-		}
-	}
-
-	void FullScreenButton_Click(object sender, RoutedEventArgs e)
-	{
-		if (isFullScreen)
-		{
-			FullScreenButton.Icon = new FontIcon { Glyph = "\uE740" };
-			isFullScreen = false;
-		}
-		else
-		{
-			FullScreenButton.Icon = new SymbolIcon(Symbol.BackToWindow);
-			isFullScreen = true;
 		}
 	}
 }
