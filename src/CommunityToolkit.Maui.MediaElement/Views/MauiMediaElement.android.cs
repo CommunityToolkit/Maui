@@ -29,25 +29,25 @@ public class MauiMediaElement : CoordinatorLayout
 	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
 	protected MauiMediaElement(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 	{
-		//Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/issues/3114
+		// Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/issues/3114
 	}
 
 	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
 	public MauiMediaElement(Context? context) : base(context)
 	{
-		//Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/issues/3114
+		// Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/issues/3114
 	}
 
 	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
 	public MauiMediaElement(Context? context, IAttributeSet? attrs) : base(context, attrs)
 	{
-		//Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/issues/3114
+		// Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/issues/3114
 	}
 
 	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
 	public MauiMediaElement(Context? context, IAttributeSet? attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 	{
-		//Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/pull/1692#issuecomment-1955099758
+		// Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/pull/1692#issuecomment-1955099758
 	}
 #pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 #pragma warning restore IDE0060 // Remove unused parameter
