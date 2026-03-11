@@ -1,4 +1,4 @@
-﻿// CommunityToolkit.Maui.Analyzers/EnumDescriptionGenerator.cs
+// CommunityToolkit.Maui.Analyzers/EnumDescriptionGenerator.cs
 using System;
 using System.Collections.Generic;
 using System.Linq;
