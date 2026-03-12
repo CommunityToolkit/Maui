@@ -7,7 +7,7 @@
     <NetVersion>net10.0</NetVersion>
     <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
-    <CodeAnalysisVersion>5.0.0</CodeAnalysisVersion>
+    <CodeAnalysisVersion>5.3.0</CodeAnalysisVersion>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
