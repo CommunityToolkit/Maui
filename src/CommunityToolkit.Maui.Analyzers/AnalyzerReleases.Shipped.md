@@ -12,4 +12,12 @@ MCT001  | Usage    | Error    | `.UseMauiCommunityToolkit()` Not Found on MauiAp
 
 Rule ID | Category | Severity | Notes                                               
 --------|----------|----------|-----------------------------------------------------
-MCT002  | Usage    | Error    | The value of MaximumRating must be between 1 and 10 
+MCT002  | Usage    | Error    | The value of MaximumRating must be between 1 and 10
+
+## Release 14.0.1
+
+### New Rules
+
+Rule ID | Category | Severity | Notes                                               
+--------|----------|----------|-----------------------------------------------------
+MCT003  | Usage    | Warning  | To ensure each BindableObject receives a unique instance, DefaultValueCreatorMethodName methods must return a new instance, not a static field or property. 
