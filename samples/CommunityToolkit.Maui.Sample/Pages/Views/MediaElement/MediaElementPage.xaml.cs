@@ -15,7 +15,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string loadLocalResource = "Load Local Resource";
 	const string resetSource = "Reset Source to null";
 	const string loadMusic = "Load Music";
-
+	const string loadFromFile = "Load from File";
 	const string botImageUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
 	const string hlsStreamTestUrl = "https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8";
 	const string hal9000AudioUrl = "https://github.com/prof3ssorSt3v3/media-sample-files/raw/master/hal-9000.mp3";
@@ -166,7 +166,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	async void ChangeSourceClicked(object? sender, EventArgs? e)
 	{
 		var result = await DisplayActionSheetAsync("Choose a source", "Cancel", null,
-			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadMusic);
+			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadMusic, loadFromFile);
 
 		MediaElement.Stop();
 		MediaElement.Source = null;
@@ -175,7 +175,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		{
 			case loadOnlineMp4:
 				MediaElement.MetadataTitle = "Big Buck Bunny";
-				MediaElement.MetadataArtworkUrl = botImageUrl;
+				MediaElement.MetadataArtworkSource = botImageUrl;
 				MediaElement.MetadataArtist = "Big Buck Bunny Album";
 				MediaElement.Source =
 					MediaSource.FromUri(StreamingVideoUrls.BuckBunny);
@@ -183,20 +183,20 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 			case loadHls:
 				MediaElement.MetadataArtist = "HLS Album";
-				MediaElement.MetadataArtworkUrl = botImageUrl;
+				MediaElement.MetadataArtworkSource = botImageUrl;
 				MediaElement.MetadataTitle = "HLS Title";
 				MediaElement.Source = MediaSource.FromUri(hlsStreamTestUrl);
 				return;
 
 			case resetSource:
-				MediaElement.MetadataArtworkUrl = string.Empty;
+				MediaElement.MetadataArtworkSource = null;
 				MediaElement.MetadataTitle = string.Empty;
 				MediaElement.MetadataArtist = string.Empty;
 				MediaElement.Source = null;
 				return;
 
 			case loadLocalResource:
-				MediaElement.MetadataArtworkUrl = botImageUrl;
+				MediaElement.MetadataArtworkSource = MediaSource.FromResource("robot.jpg");
 				MediaElement.MetadataTitle = "Local Resource Title";
 				MediaElement.MetadataArtist = "Local Resource Album";
 
@@ -218,8 +218,31 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			case loadMusic:
 				MediaElement.MetadataTitle = "HAL 9000";
 				MediaElement.MetadataArtist = "HAL 9000 Album";
-				MediaElement.MetadataArtworkUrl = botImageUrl;
+				MediaElement.MetadataArtworkSource = botImageUrl;
 				MediaElement.Source = MediaSource.FromUri(hal9000AudioUrl);
+				return;
+			case loadFromFile:
+				var fileResult = await PickAndShow(new PickOptions
+				{
+					FileTypes = FilePickerFileType.Images,
+					PickerTitle = "Please select an image file"
+				});
+				if (fileResult is not null)
+				{
+					MediaElement.MetadataArtworkSource = MediaSource.FromFile(fileResult.FullPath);
+				}
+				MediaElement.MetadataTitle = "Downloaded file";
+				MediaElement.MetadataArtist = "From File Album";
+
+				fileResult = await PickAndShow(new PickOptions
+				{
+					FileTypes = FilePickerFileType.Videos,
+					PickerTitle = "Please select a video file"
+				});
+				if (fileResult is not null) 
+				{
+					MediaElement.Source = MediaSource.FromFile(fileResult.FullPath);
+				}
 				return;
 		}
 	}
@@ -278,7 +301,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			HeightRequest = 400,
 			AndroidViewType = AndroidViewType.SurfaceView,
 			Source = source,
-			MetadataArtworkUrl = botImageUrl,
+			MetadataArtworkSource = botImageUrl,
 			ShouldAutoPlay = true,
 			ShouldShowPlaybackControls = true,
 		};
@@ -287,5 +310,21 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 		popupMediaElement.Stop();
 		popupMediaElement.Source = null;
+	}
+
+	async Task<FileResult?> PickAndShow(PickOptions options)
+	{
+		try
+		{
+			var result = await FilePicker.Default.PickAsync(options);
+			return result;
+		}
+		catch (Exception ex)
+		{
+			// The user canceled or something went wrong
+			logger.LogError(ex, "Error picking file");
+		}
+
+		return null;
 	}
 }
