@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions;
 
 public class NavigatedFromEventArgsExtensionsTests : BaseViewTest
 {
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task NavigatedFromEventArgsExtensions_IsDestinationPageACommunityToolkitPopupPage_ShouldReturnTrue()
 	{
 		// Arrange
@@ -41,7 +41,7 @@ public class NavigatedFromEventArgsExtensionsTests : BaseViewTest
 		}
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task NavigatedFromEventArgsExtensions_IsDestinationPageACommunityToolkitPopupPage_ShouldReturnFalse()
 	{
 		// Arrange
