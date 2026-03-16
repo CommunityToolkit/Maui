@@ -7,6 +7,7 @@
     <NetVersion>net10.0</NetVersion>
     <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
+    <CodeAnalysisVersion>5.0.0</CodeAnalysisVersion>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
@@ -23,7 +24,7 @@ https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitati
 
     <!-- MAUI Specific -->
     <MauiXamlInflator>SourceGen</MauiXamlInflator>
-    <MauiPackageVersion>10.0.30</MauiPackageVersion>
+    <MauiPackageVersion>10.0.41</MauiPackageVersion>
     <MauiStrictXamlCompilation>true</MauiStrictXamlCompilation>
     <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>

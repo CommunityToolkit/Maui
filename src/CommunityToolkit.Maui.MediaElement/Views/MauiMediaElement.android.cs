@@ -1,6 +1,8 @@
-﻿using Android.App;
+﻿using System.Diagnostics.CodeAnalysis;
+using Android.App;
 using Android.Content;
 using Android.Runtime;
+using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.CoordinatorLayout.Widget;
@@ -24,9 +26,28 @@ public class MauiMediaElement : CoordinatorLayout
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 #pragma warning disable IDE0060 // Remove unused parameter
-	public MauiMediaElement(nint ptr, JniHandleOwnership jni) : base(Platform.AppContext)
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
+	public MauiMediaElement(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 	{
-		//Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/pull/1692#issuecomment-1955099758
+		// Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/issues/3114
+	}
+
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
+	public MauiMediaElement(Context? context) : base(context)
+	{
+		// Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/issues/3114
+	}
+
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
+	public MauiMediaElement(Context? context, IAttributeSet? attrs) : base(context, attrs)
+	{
+		// Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/issues/3114
+	}
+
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
+	public MauiMediaElement(Context? context, IAttributeSet? attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
+	{
+		// Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/pull/1692#issuecomment-1955099758
 	}
 #pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 #pragma warning restore IDE0060 // Remove unused parameter
@@ -36,6 +57,7 @@ public class MauiMediaElement : CoordinatorLayout
 	/// </summary>
 	/// <param name="context">The application's <see cref="Context"/>.</param>
 	/// <param name="playerView">The <see cref="PlayerView"/> that acts as the platform media player.</param>
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
 	public MauiMediaElement(Context context, PlayerView playerView) : base(context)
 	{
 		this.playerView = playerView;
@@ -54,6 +76,7 @@ public class MauiMediaElement : CoordinatorLayout
 		AddView(relativeLayout);
 	}
 
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
 	public override void OnDetachedFromWindow()
 	{
 		if (isFullScreen)

@@ -98,7 +98,7 @@ public class DefaultPopupSettingsTests : BaseViewTest
 		Assert.Equal(defaultPopupSettings.VerticalOptions, popupBorder.VerticalOptions);
 		Assert.Equal(defaultPopupSettings.HorizontalOptions, popupBorder.HorizontalOptions);
 	}
-	
+
 	[Fact(Timeout = (int)TestDuration.Medium)]
 	public void PopupService_View_SetPopupDefaultsCalled_UsesDefaultPopupSettings()
 	{
