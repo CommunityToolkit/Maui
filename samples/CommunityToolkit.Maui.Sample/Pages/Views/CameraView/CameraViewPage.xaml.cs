@@ -28,7 +28,7 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 		var packagingModel = AppInfo.Current.PackagingModel;
 		PermissionStatus microphonePermissionsRequest;
 		PermissionStatus cameraPermissionsRequest;
-		if (packagingModel == AppPackagingModel.Packaged || OperatingSystem.IsAndroid() || OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst())
+		if (packagingModel == AppPackagingModel.Packaged || !OperatingSystem.IsWindows())
 		{
 			cameraPermissionsRequest = await Permissions.RequestAsync<Permissions.Camera>();
 			microphonePermissionsRequest = await Permissions.RequestAsync<Permissions.Microphone>();
