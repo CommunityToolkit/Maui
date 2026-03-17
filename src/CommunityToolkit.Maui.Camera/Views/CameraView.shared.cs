@@ -326,7 +326,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 		return new(async token => await cameraView.StartCameraPreview(token).ConfigureAwait(false));
 	}
 
-	static Command CreateStopCameraPreviewCommand(BindableObject bindable)
+	static Command<CancellationToken> CreateStopCameraPreviewCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;
 		return new(_ => cameraView.StopCameraPreview());
