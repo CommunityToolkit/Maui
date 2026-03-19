@@ -79,6 +79,9 @@ partial class CameraManager
 		imageCapture?.Dispose();
 		imageCapture = null;
 
+		videoRecorder?.Dispose();
+		videoRecorder = null;
+
 		videoCapture?.Dispose();
 		videoCapture = null;
 
@@ -117,7 +120,7 @@ partial class CameraManager
 		}
 
 		cameraExecutor = Executors.NewSingleThreadExecutor() ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
-		orientationListener = new OrientationListener(SetImageCaptureTargetRotation, context);
+		orientationListener = new OrientationListener(OnOrientationChanged, context);
 		orientationListener.Enable();
 
 		return previewView;
@@ -292,6 +295,11 @@ partial class CameraManager
 
 	private async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
 	{
+		if (videoCapture is null || videoRecorder is null)
+		{
+			await StartUseCase(token);
+		}
+
 		if (previewView is null
 			|| processCameraProvider is null
 			|| cameraPreview is null
@@ -377,12 +385,6 @@ partial class CameraManager
 			videoRecordingFile = null;
 		}
 
-		videoRecorder?.Dispose();
-		videoRecorder = null;
-
-		videoCapture?.Dispose();
-		videoCapture = null;
-
 		videoRecordingFinalizeTcs = null;
 	}
 
@@ -425,19 +427,22 @@ partial class CameraManager
 		return provider.BindToLifecycle((ILifecycleOwner)context, cameraSelector, useCases);
 	}
 
-	void SetImageCaptureTargetRotation(int rotation)
+	void OnOrientationChanged(int rotation)
 	{
-		if (imageCapture is not null)
-		{
-			imageCapture.TargetRotation = rotation switch
-			{
-				>= 45 and < 135 => (int)SurfaceOrientation.Rotation270,
-				>= 135 and < 225 => (int)SurfaceOrientation.Rotation180,
-				>= 225 and < 315 => (int)SurfaceOrientation.Rotation90,
-				_ => (int)SurfaceOrientation.Rotation0
-			};
-		}
+		var targetRotation = GetSurfaceRotation(rotation);
+
+		imageCapture?.TargetRotation = targetRotation;
+		videoCapture?.TargetRotation = targetRotation;
+		cameraPreview?.TargetRotation = targetRotation;
 	}
+
+	static int GetSurfaceRotation(int orientationDegrees) => orientationDegrees switch
+	{
+		>= 45 and < 135 => (int)SurfaceOrientation.Rotation270,
+		>= 135 and < 225 => (int)SurfaceOrientation.Rotation180,
+		>= 225 and < 315 => (int)SurfaceOrientation.Rotation90,
+		_ => (int)SurfaceOrientation.Rotation0
+	};
 
 	sealed class ImageCallBack(ICameraView cameraView) : ImageCapture.OnImageCapturedCallback
 	{
