@@ -28,6 +28,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     
     <NoWarn>IL2026</NoWarn>
+
+    <WindowsSdkPackageVersion>10.0.19041.56</WindowsSdkPackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'
