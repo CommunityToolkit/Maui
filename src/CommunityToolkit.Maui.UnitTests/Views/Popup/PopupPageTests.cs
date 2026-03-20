@@ -643,6 +643,50 @@ public class PopupPageTests : BaseViewTest
 		// Act & Assert
 		await Assert.ThrowsAsync<PopupNotFoundException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
 	}
+	
+	[Fact]
+	public async Task CloseAsync_ShouldThrowPopupBlockedException_WhenPopupIsBehindModalNavigationPage()
+	{
+		// Arrange
+		if (Application.Current?.Windows[0].Page?.Navigation is not INavigation navigation)
+		{
+			throw new InvalidOperationException("Unable to locate Navigation page");
+		}
+
+		bool wasPopupPageClosed = false;
+
+		var popupPage = new PopupPage<string>(new ContentView(), new MockPopupOptions());
+		popupPage.PopupClosed += HandlePopupPageClosed;
+
+		var modalNavigationPage = new NavigationPage(new ContentPage());
+
+		// Act
+		
+		// Push popup, then push a modal NavigationPage on top
+		// Modal stack: [PopupPage, NavigationPage(ContentPage)]
+		await navigation.PushModalAsync(popupPage);
+		await navigation.PushModalAsync(modalNavigationPage);
+
+		// Assert
+		
+		// When the top of the modal stack is an IPageContainer whose CurrentPage is NOT a PopupPage,
+		// CloseAsync should throw PopupBlockedException because PopModalAsync would pop the
+		// visible NavigationPage instead of the PopupPage, leaving the PopupPage stranded on the
+		// modal stack while still incorrectly firing PopupClosed/NotifyPopupIsClosed.
+		await Assert.ThrowsAsync<PopupBlockedException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidPopupOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+
+		// Verify popup was NOT closed — it should still be on the modal stack
+		Assert.False(wasPopupPageClosed);
+		Assert.Contains(popupPage, navigation.ModalStack);
+
+		void HandlePopupPageClosed(object? sender, IPopupResult e)
+		{
+			wasPopupPageClosed = true;
+			popupPage.PopupClosed -= HandlePopupPageClosed;
+		}
+	}
 
 	[Fact]
 	public async Task CloseAsync_ShouldThrowPopupBlockedException_WhenPopupIsHiddenBehindAnotherPopupAndNavigationPage()
