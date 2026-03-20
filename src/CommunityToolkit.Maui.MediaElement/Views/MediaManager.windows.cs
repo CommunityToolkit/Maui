@@ -11,8 +11,13 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Media;
 using Windows.Media.Playback;
+using Windows.Media.Streaming.Adaptive;
 using Windows.Storage;
+using Windows.Storage.Streams;
 using Windows.System.Display;
+using HttpClient = Windows.Web.Http.HttpClient;
+using HttpMethod = Windows.Web.Http.HttpMethod;
+using HttpRequestMessage = Windows.Web.Http.HttpRequestMessage;
 using ParentWindow = CommunityToolkit.Maui.Extensions.PageExtensions.ParentWindow;
 using WindowsMediaElement = Windows.Media.Playback.MediaPlayer;
 using WinMediaSource = Windows.Media.Core.MediaSource;
@@ -291,7 +296,15 @@ partial class MediaManager : IDisposable
 			var uri = uriMediaSource.Uri?.AbsoluteUri;
 			if (!string.IsNullOrWhiteSpace(uri))
 			{
-				Player.MediaPlayer.SetUriSource(new Uri(uri));
+				var headers = uriMediaSource.HttpHeaders;
+				if (headers is { Count: > 0 })
+				{
+					await SetUriSourceWithHeaders(new Uri(uri), headers).ConfigureAwait(true);
+				}
+				else
+				{
+					Player.MediaPlayer.SetUriSource(new Uri(uri));
+				}
 			}
 		}
 		else if (MediaElement.Source is FileMediaSource fileMediaSource)
@@ -316,6 +329,78 @@ partial class MediaManager : IDisposable
 			{
 				Player.MediaPlayer.SetUriSource(new Uri(path));
 			}
+		}
+	}
+
+	async Task SetUriSourceWithHeaders(Uri uri, IDictionary<string, string> headers)
+	{
+		if (Player is null)
+		{
+			return;
+		}
+
+		var httpClient = new HttpClient();
+		Trace.WriteLine($"MediaElement [Windows]: Applying {headers.Count} custom HTTP header(s) to media request.");
+		foreach (var header in headers)
+		{
+			Trace.WriteLine($"MediaElement [Windows]: Header '{header.Key}' set.");
+			httpClient.DefaultRequestHeaders.TryAppendWithoutValidation(header.Key, header.Value);
+		}
+
+		var adaptiveResult = await AdaptiveMediaSource.CreateFromUriAsync(uri, httpClient);
+		Trace.WriteLine($"MediaElement [Windows]: AdaptiveMediaSource status: {adaptiveResult.Status}");
+
+		if (adaptiveResult.Status is AdaptiveMediaSourceCreationStatus.Success && adaptiveResult.MediaSource is not null)
+		{
+			var adaptiveSource = adaptiveResult.MediaSource;
+			adaptiveSource.DownloadRequested += async (sender, args) =>
+			{
+				var deferral = args.GetDeferral();
+				try
+				{
+					using var request = new HttpRequestMessage(HttpMethod.Get, args.ResourceUri);
+					using var response = await httpClient.SendRequestAsync(request).AsTask().ConfigureAwait(false);
+					response.EnsureSuccessStatusCode();
+					args.Result.InputStream = await response.Content.ReadAsInputStreamAsync().AsTask().ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					Trace.WriteLine($"MediaElement [Windows]: DownloadRequested failed for {args.ResourceUri}: {ex.Message}");
+				}
+				finally
+				{
+					deferral.Complete();
+				}
+			};
+
+			var mediaSource = WinMediaSource.CreateFromAdaptiveMediaSource(adaptiveSource);
+			await Dispatcher.DispatchAsync(() =>
+			{
+				Player.AutoPlay = MediaElement.ShouldAutoPlay;
+				Player.Source = mediaSource;
+			});
+			Trace.WriteLine("MediaElement [Windows]: AdaptiveMediaSource with DownloadRequested handler set successfully.");
+			return;
+		}
+
+		Trace.WriteLine($"MediaElement [Windows]: AdaptiveMediaSource failed, falling back to HttpRandomAccessStream.");
+		try
+		{
+			var stream = await HttpRandomAccessStream.CreateAsync(httpClient, uri).ConfigureAwait(false);
+			await Dispatcher.DispatchAsync(() =>
+			{
+				Player.AutoPlay = MediaElement.ShouldAutoPlay;
+				Player.Source = WinMediaSource.CreateFromStream(stream, string.Empty);
+			});
+			Trace.WriteLine("MediaElement [Windows]: HttpRandomAccessStream set successfully.");
+		}
+		catch (Exception ex)
+		{
+			Trace.WriteLine($"MediaElement [Windows]: HttpRandomAccessStream failed ({ex.Message}), falling back to SetUriSource without headers.");
+			await Dispatcher.DispatchAsync(() =>
+			{
+				Player.MediaPlayer.SetUriSource(uri);
+			});
 		}
 	}
 
