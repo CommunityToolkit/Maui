@@ -1,4 +1,5 @@
-﻿using AVFoundation;
+﻿using System.Diagnostics;
+using AVFoundation;
 using AVKit;
 using CommunityToolkit.Maui.Views;
 using CoreFoundation;
@@ -233,6 +234,12 @@ public partial class MediaManager : IDisposable
 				var headers = uriMediaSource.HttpHeaders;
 				if (headers is { Count: > 0 })
 				{
+					Trace.WriteLine($"MediaElement [iOS/macCatalyst]: Applying {headers.Count} custom HTTP header(s) to AVUrlAsset.");
+					foreach (var header in headers)
+					{
+						Trace.WriteLine($"MediaElement [iOS/macCatalyst]: Header '{header.Key}' set.");
+					}
+
 					var nativeHeaders = NSDictionary.FromObjectsAndKeys(
 						headers.Values.ToArray(),
 						headers.Keys.ToArray());

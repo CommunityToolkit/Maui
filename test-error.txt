@@ -1,0 +1,11 @@
+Unhandled exception. System.ArgumentException: An item with the same key has already been added. Key: Microsoft.Maui.Controls.BindableProperty
+   at System.Collections.Generic.Dictionary`2.TryInsert(TKey key, TValue value, InsertionBehavior behavior)
+   at Microsoft.Maui.Controls.BindableObject.GetValue(BindableProperty property)
+   at CommunityToolkit.Maui.Behaviors.ValidationBehavior.get_IsValid() in C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui\obj\Debug\net10.0\CommunityToolkit.Maui.SourceGenerators\CommunityToolkit.Maui.SourceGenerators.BindablePropertyAttributeSourceGenerator\ValidationBehavior.g.cs:line 12
+   at CommunityToolkit.Maui.Behaviors.ValidationBehavior.UpdateStateAsync(VisualElement view, ValidationFlags flags, Boolean isForced, Nullable`1 parentToken) in C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui\Behaviors\Validators\ValidationBehavior.shared.cs:line 333
+   at CommunityToolkit.Maui.Behaviors.ValidationBehavior.OnValidationPropertyChanged(BindableObject bindable, Object oldValue, Object newValue) in C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui\Behaviors\Validators\ValidationBehavior.shared.cs:line 237
+   at System.Threading.Tasks.Task.<>c.<ThrowAsync>b__124_1(Object state)
+   at System.Threading.QueueUserWorkItemCallback.Execute()
+   at System.Threading.ThreadPoolWorkQueue.Dispatch()
+   at System.Threading.PortableThreadPool.WorkerThread.WorkerThreadStart()
+   at System.Threading.Thread.StartCallback()

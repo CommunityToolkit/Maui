@@ -1,6 +1,10 @@
+using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Storage.Streams;
-using Windows.Web.Http;
+using HttpClient = Windows.Web.Http.HttpClient;
+using HttpRequestMessage = Windows.Web.Http.HttpRequestMessage;
+using HttpMethod = Windows.Web.Http.HttpMethod;
+using HttpCompletionOption = Windows.Web.Http.HttpCompletionOption;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -8,7 +12,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// An <see cref="IRandomAccessStream"/> implementation backed by HTTP Range requests,
 /// enabling progressive streaming of media content with custom HTTP headers without buffering the entire file in memory.
 /// </summary>
-sealed class HttpRandomAccessStream : IRandomAccessStream
+sealed partial class HttpRandomAccessStream : IRandomAccessStream
 {
 	readonly HttpClient httpClient;
 	readonly Uri requestUri;

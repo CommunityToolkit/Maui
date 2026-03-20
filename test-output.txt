@@ -1,0 +1,374 @@
+xUnit.net v3 Microsoft.Testing.Platform v2 Runner v3.2.0+9e422989c1 (64-bit .NET 10.0.4)
+
+     Warning:
+     The component "Fluent Assertions" is governed by the rules defined in the Xceed License Agreement and
+     the Xceed Fluent Assertions Community License. You may use Fluent Assertions free of charge for
+     non-commercial use only. An active subscription is required to use Fluent Assertions for commercial use.
+
+     Please contact Xceed Sales mailto:sales@xceed.com to acquire a subscription at a very low cost.
+
+     A paid commercial license supports the development and continued increasing support of
+     Fluent Assertions users under both commercial and community licenses. Help us
+     keep Fluent Assertions at the forefront of unit testing.
+
+     For more information, visit https://xceed.com/products/unit-testing/fluent-assertions/
+[+144/x0/?0] CommunityToolkit.Maui.UnitTests.dll (net10.0|x64) - CommunityToolkit.Maui.UnitTests.Layouts.StateContainerTests.StateContainer_DefaultAnimation (2s)
+
+[+154/x0/?0] CommunityToolkit.Maui.UnitTests.dll (net10.0|x64) - CommunityToolkit.Maui.UnitTests.Layouts.StateContainerTests.StateContainer_FuncAnimation (5s)
+
+[+212/x0/?0] CommunityToolkit.Maui.UnitTests.dll (net10.0|x64) - CommunityToolkit.Maui.UnitTests.Extensions.TextColorToTests.InternalTextColorTo_VerifyColorChanged (9s)
+
+[+512/x0/?0] CommunityToolkit.Maui.UnitTests.dll (net10.0|x64) - CommunityToolkit.Maui.UnitTests.Behaviors.ProgressBarAnimationBehaviorTests.ValidPropertiesTests(progress: 1, length: 500, easing: Easing { }) (12s)
+
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: -2,14748365E+09, green: -2,14748365E+09, blue: -2,14748365E+09, alpha: -2,14748365E+09, expectedResult: "HSL(0,0%,0%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(0,0%,0%)
+  Actual:   HSL(0,0 %,0 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+    sur System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0, green: 0, blue: 0, alpha: -2,14748365E+09, expectedResult: "HSL(0,0%,0%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(0,0%,0%)
+  Actual:   HSL(0,0 %,0 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0, green: 0, blue: 0, alpha: -0,5, expectedResult: "HSL(0,0%,0%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(0,0%,0%)
+  Actual:   HSL(0,0 %,0 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0, green: 0, blue: 0, alpha: 0, expectedResult: "HSL(0,0%,0%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(0,0%,0%)
+  Actual:   HSL(0,0 %,0 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0, green: 0, blue: 0, alpha: 0,5, expectedResult: "HSL(0,0%,0%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(0,0%,0%)
+  Actual:   HSL(0,0 %,0 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0, green: 0, blue: 0, alpha: 2,14748365E+09, expectedResult: "HSL(0,0%,0%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(0,0%,0%)
+  Actual:   HSL(0,0 %,0 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 2,14748365E+09, green: 2,14748365E+09, blue: 2,14748365E+09, alpha: -2,14748365E+09, expectedResult: "HSL(0,0%,100%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(0,0%,100%)
+  Actual:   HSL(0,0 %,100 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 2,14748365E+09, green: 2,14748365E+09, blue: 2,14748365E+09, alpha: 2,14748365E+09, expectedResult: "HSL(0,0%,100%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(0,0%,100%)
+  Actual:   HSL(0,0 %,100 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0, green: 0, blue: 0, alpha: 1, expectedResult: "HSL(0,0%,0%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(0,0%,0%)
+  Actual:   HSL(0,0 %,0 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0, green: 0, blue: 1, alpha: 0, expectedResult: "HSL(240,100%,50%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(240,100%,50%)
+  Actual:   HSL(240,100 %,50 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0, green: 0, blue: 1, alpha: 1, expectedResult: "HSL(240,100%,50%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(240,100%,50%)
+  Actual:   HSL(240,100 %,50 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0, green: 1, blue: 0, alpha: 0, expectedResult: "HSL(120,100%,50%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(120,100%,50%)
+  Actual:   HSL(120,100 %,50 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0, green: 1, blue: 0, alpha: 1, expectedResult: "HSL(120,100%,50%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(120,100%,50%)
+  Actual:   HSL(120,100 %,50 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0, green: 1, blue: 1, alpha: 0, expectedResult: "HSL(180,100%,50%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(180,100%,50%)
+  Actual:   HSL(180,100 %,50 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0, green: 1, blue: 1, alpha: 1, expectedResult: "HSL(180,100%,50%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(180,100%,50%)
+  Actual:   HSL(180,100 %,50 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 1, green: 0, blue: 0, alpha: 0, expectedResult: "HSL(360,100%,50%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(360,100%,50%)
+  Actual:   HSL(360,100 %,50 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 1, green: 0, blue: 0, alpha: 1, expectedResult: "HSL(360,100%,50%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(360,100%,50%)
+  Actual:   HSL(360,100 %,50 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 1, green: 0, blue: 1, alpha: 0, expectedResult: "HSL(300,100%,50%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(300,100%,50%)
+  Actual:   HSL(300,100 %,50 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 1, green: 0, blue: 1, alpha: 1, expectedResult: "HSL(300,100%,50%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(300,100%,50%)
+  Actual:   HSL(300,100 %,50 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 1, green: 1, blue: 0, alpha: 0, expectedResult: "HSL(60,100%,50%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(60,100%,50%)
+  Actual:   HSL(60,100 %,50 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 1, green: 1, blue: 0, alpha: 1, expectedResult: "HSL(60,100%,50%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(60,100%,50%)
+  Actual:   HSL(60,100 %,50 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 1, green: 1, blue: 1, alpha: 0, expectedResult: "HSL(0,0%,100%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(0,0%,100%)
+  Actual:   HSL(0,0 %,100 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 1, green: 1, blue: 1, alpha: 1, expectedResult: "HSL(0,0%,100%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(0,0%,100%)
+  Actual:   HSL(0,0 %,100 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+2026-03-20T15:55:51.7045134+01:00 HandlePopupOpened ShortLivedMockPageViewModel
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0,5, green: 0, blue: 0, alpha: 1, expectedResult: "HSL(360,100%,25%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(360,100%,25%)
+  Actual:   HSL(360,100 %,25 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0,5, green: 0, blue: 0, alpha: 0, expectedResult: "HSL(360,100%,25%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(360,100%,25%)
+  Actual:   HSL(360,100 %,25 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0, green: 0,5, blue: 0, alpha: 1, expectedResult: "HSL(120,100%,25%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(120,100%,25%)
+  Actual:   HSL(120,100 %,25 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0, green: 0,5, blue: 0, alpha: 0, expectedResult: "HSL(120,100%,25%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(120,100%,25%)
+  Actual:   HSL(120,100 %,25 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0, green: 0, blue: 0,5, alpha: 1, expectedResult: "HSL(240,100%,25%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(240,100%,25%)
+  Actual:   HSL(240,100 %,25 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0, green: 0, blue: 0,5, alpha: 0, expectedResult: "HSL(240,100%,25%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(240,100%,25%)
+  Actual:   HSL(240,100 %,25 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0,5, green: 0,5, blue: 0,5, alpha: 1, expectedResult: "HSL(0,0%,50%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(0,0%,50%)
+  Actual:   HSL(0,0 %,50 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0,5, green: 0,5, blue: 0,5, alpha: 0, expectedResult: "HSL(0,0%,50%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(0,0%,50%)
+  Actual:   HSL(0,0 %,50 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0,25, green: 0,25, blue: 0,25, alpha: 1, expectedResult: "HSL(0,0%,25%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(0,0%,25%)
+  Actual:   HSL(0,0 %,25 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0,25, green: 0,25, blue: 0,25, alpha: 0, expectedResult: "HSL(0,0%,25%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(0,0%,25%)
+  Actual:   HSL(0,0 %,25 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0,25, green: 0,25, blue: 1, alpha: 1, expectedResult: "HSL(240,100%,62%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(240,100%,62%)
+  Actual:   HSL(240,100 %,62 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0,25, green: 0,25, blue: 1, alpha: 0, expectedResult: "HSL(240,100%,62%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(240,100%,62%)
+  Actual:   HSL(240,100 %,62 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0,25, green: 1, blue: 0,25, alpha: 1, expectedResult: "HSL(120,100%,62%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(120,100%,62%)
+  Actual:   HSL(120,100 %,62 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0,25, green: 1, blue: 0,25, alpha: 0, expectedResult: "HSL(120,100%,62%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(120,100%,62%)
+  Actual:   HSL(120,100 %,62 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0,75, green: 1, blue: 0,25, alpha: 1, expectedResult: "HSL(80,100%,62%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(80,100%,62%)
+  Actual:   HSL(80,100 %,62 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0,75, green: 1, blue: 0,25, alpha: 0, expectedResult: "HSL(80,100%,62%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(80,100%,62%)
+  Actual:   HSL(80,100 %,62 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0,75, green: 0, blue: 1, alpha: 1, expectedResult: "HSL(285,100%,50%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(285,100%,50%)
+  Actual:   HSL(285,100 %,50 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+‚chec CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(red: 0,75, green: 0, blue: 1, alpha: 0, expectedResult: "HSL(285,100%,50%)") (0ms)
+  Assert.Equal() Failure: Values differ
+  Expected: HSL(285,100%,50%)
+  Actual:   HSL(285,100 %,50 %)
+    sur CommunityToolkit.Maui.UnitTests.Converters.ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Single red, Single green, Single blue, Single alpha, String expectedResult) dans C:\Users\Kaybi\Documents\Workspace\Maui\src\CommunityToolkit.Maui.UnitTests\Converters\ColorToHslStringConverterTests.cs:146
+    sur InvokeStub_ColorToHslStringConverterTests.ColorToHslStringConverterValidInputTest(Object, Span`1)
+    sur System.Reflection.MethodBaseInvoker.InvokeWithManyArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+2026-03-20T15:55:52.2096826+01:00 Closing ShortLivedMockPageViewModel - 1
+2026-03-20T15:55:52.2182075+01:00 Closed ShortLivedMockPageViewModel - 0
+2026-03-20T15:55:52.3658224+01:00 HandlePopupOpened ShortLivedMockPageViewModel
+2026-03-20T15:55:52.6007395+01:00 HandlePopupOpened LongLivedMockPageViewModel
+2026-03-20T15:55:52.8692317+01:00 Closing ShortLivedMockPageViewModel - 1
+2026-03-20T15:55:52.8708417+01:00 Closed ShortLivedMockPageViewModel - 1
+[+9548/x41/?0] CommunityToolkit.Maui.UnitTests.dll (net10.0|x64) - CommunityToolkit.Maui.UnitTests.Extensions.PopupExtensionsTests.ShowPopupAsync_Shell_AwaitingShowPopupAsync_EnsurePreviousPopupClosed (15s)
+
+2026-03-20T15:55:54.1057167+01:00 Closing LongLivedMockPageViewModel - 1
+2026-03-20T15:55:54.1100716+01:00 Closed LongLivedMockPageViewModel - 0
+2026-03-20T15:55:54.1106580+01:00 HandlePopupOpened ShortLivedMockPageViewModel
+2026-03-20T15:55:54.6125977+01:00 Closing ShortLivedMockPageViewModel - 1
+2026-03-20T15:55:54.6168742+01:00 Closed ShortLivedMockPageViewModel - 0
+2026-03-20T15:55:54.6198640+01:00 HandlePopupOpened LongLivedMockPageViewModel
+2026-03-20T15:55:54.6200900+01:00 HandlePopupOpened ShortLivedMockPageViewModel
+2026-03-20T15:55:54.6235239+01:00 HandlePopupOpened ShortLivedMockPageViewModel
+2026-03-20T15:55:54.6259047+01:00 HandlePopupOpened ShortLivedMockPageViewModel
+2026-03-20T15:55:55.1264633+01:00 Closing ShortLivedMockPageViewModel - 1
+2026-03-20T15:55:55.1264735+01:00 Closing ShortLivedMockPageViewModel - 1
+2026-03-20T15:55:55.1277474+01:00 HandlePopupOpened LongLivedMockPageViewModel
+2026-03-20T15:55:55.1279553+01:00 Closed ShortLivedMockPageViewModel - 0
+2026-03-20T15:55:55.1280065+01:00 Closed ShortLivedMockPageViewModel - 0
+2026-03-20T15:55:55.1292460+01:00 HandlePopupOpened LongLivedMockPageViewModel
+2026-03-20T15:55:55.1295616+01:00 HandlePopupOpened ShortLivedMockPageViewModel
+2026-03-20T15:55:55.2466104+01:00 HandlePopupOpened ShortLivedMockPageViewModel
+2026-03-20T15:55:55.6333959+01:00 Closing ShortLivedMockPageViewModel - 1
+2026-03-20T15:55:55.6351311+01:00 HandlePopupOpened LongLivedMockPageViewModel
+2026-03-20T15:55:55.6352829+01:00 Closed ShortLivedMockPageViewModel - 1
+2026-03-20T15:55:55.7516805+01:00 Closing ShortLivedMockPageViewModel - 1
+2026-03-20T15:55:55.7530714+01:00 Closed ShortLivedMockPageViewModel - 0
+2026-03-20T15:55:55.7597568+01:00 HandlePopupOpened ShortLivedMockPageViewModel
+[+9569/x41/?0] CommunityToolkit.Maui.UnitTests.dll (net10.0|x64) - CommunityToolkit.Maui.UnitTests.Extensions.PopupExtensionsTests.ShowPopupAsync_Shell_ShouldReturnResultOnceClosed (18s)
+
+2026-03-20T15:55:56.1264771+01:00 Closing LongLivedMockPageViewModel - 1
+2026-03-20T15:55:56.1268580+01:00 Closed LongLivedMockPageViewModel - 1
+2026-03-20T15:55:56.2587063+01:00 Closing ShortLivedMockPageViewModel - 1
+2026-03-20T15:55:56.2603291+01:00 Closed ShortLivedMockPageViewModel - 0
+2026-03-20T15:55:56.2849159+01:00 HandlePopupOpened MockPageViewModel
+2026-03-20T15:55:56.6265406+01:00 Closing LongLivedMockPageViewModel - 1
+2026-03-20T15:55:56.6308583+01:00 Closed LongLivedMockPageViewModel - 1
+2026-03-20T15:55:56.7932843+01:00 Closing MockPageViewModel - 1
+2026-03-20T15:55:56.8025511+01:00 Closed MockPageViewModel - 0
+2026-03-20T15:55:56.8086103+01:00 HandlePopupOpened ShortLivedMockPageViewModel
+2026-03-20T15:55:56.8131035+01:00 HandlePopupOpened LongLivedMockPageViewModel
+2026-03-20T15:55:57.3178221+01:00 Closing ShortLivedMockPageViewModel - 1
+2026-03-20T15:55:57.3195725+01:00 Closed ShortLivedMockPageViewModel - 1
+2026-03-20T15:55:58.3138535+01:00 Closing LongLivedMockPageViewModel - 1
+2026-03-20T15:55:58.3153752+01:00 Closed LongLivedMockPageViewModel - 0
+2026-03-20T15:55:58.3156674+01:00 HandlePopupOpened ShortLivedMockPageViewModel
+2026-03-20T15:55:58.8139911+01:00 Closing ShortLivedMockPageViewModel - 1
+2026-03-20T15:55:58.8198549+01:00 Closed ShortLivedMockPageViewModel - 0
+2026-03-20T15:55:58.8308472+01:00 HandlePopupOpened ShortLivedMockPageViewModel
+2026-03-20T15:55:58.8323974+01:00 HandlePopupOpened ShortLivedMockPageViewModel
+[+9596/x41/?0] CommunityToolkit.Maui.UnitTests.dll (net10.0|x64) - CommunityToolkit.Maui.UnitTests.Extensions.PopupExtensionsTests.ShowPopupAsync_ShouldValidateProperBindingContext (21s)
+
+2026-03-20T15:55:59.3296826+01:00 Closing ShortLivedMockPageViewModel - 1
+2026-03-20T15:55:59.3296929+01:00 Closing ShortLivedMockPageViewModel - 1
+2026-03-20T15:55:59.3334185+01:00 Closed ShortLivedMockPageViewModel - 0
+2026-03-20T15:55:59.3334198+01:00 Closed ShortLivedMockPageViewModel - 0
+[+9622/x41/?0] CommunityToolkit.Maui.UnitTests.dll (net10.0|x64) - CommunityToolkit.Maui.UnitTests.Behaviors.UserStoppedTypingBehaviorTests.ShouldExecuteCommandWhenMinimumLengthThresholdHasBeenReached (24s)
+
+[+9821/x41/?0] CommunityToolkit.Maui.UnitTests.dll (net10.0|x64) - CommunityToolkit.Maui.UnitTests.ImageSources.GravatarImageSourceTests.TestDefaultStream (27s)
+
