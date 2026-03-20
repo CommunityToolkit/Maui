@@ -79,6 +79,28 @@ public abstract class MediaSource : Element
 	}
 
 	/// <summary>
+	/// Creates a <see cref="UriMediaSource"/> from an absolute URI with custom HTTP headers.
+	/// </summary>
+	/// <param name="uri">Absolute URI to load.</param>
+	/// <param name="httpHeaders">HTTP headers to include in the request (e.g. Authorization).</param>
+	/// <returns>A <see cref="UriMediaSource"/> instance.</returns>
+	/// <exception cref="ArgumentException">Thrown if <paramref name="uri"/> is not an absolute URI.</exception>
+	public static MediaSource? FromUri(Uri? uri, IDictionary<string, string>? httpHeaders)
+	{
+		if (uri is null)
+		{
+			return null;
+		}
+
+		if (!uri.IsAbsoluteUri)
+		{
+			throw new ArgumentException("Uri must be absolute", nameof(uri));
+		}
+
+		return new UriMediaSource { Uri = uri, HttpHeaders = httpHeaders ?? new Dictionary<string, string>() };
+	}
+
+	/// <summary>
 	/// Triggers the <see cref="SourceChanged"/> event.
 	/// </summary>
 	protected void OnSourceChanged() => weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(SourceChanged));

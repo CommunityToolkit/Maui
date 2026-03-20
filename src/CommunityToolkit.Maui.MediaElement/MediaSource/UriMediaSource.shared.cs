@@ -9,6 +9,8 @@ namespace CommunityToolkit.Maui.Views;
 /// </summary>
 public sealed partial class UriMediaSource : MediaSource
 {
+	IDictionary<string, string>? httpHeaders;
+
 	/// <summary>
 	/// Bindable property for the <see cref="Uri"/> property.
 	/// </summary>
@@ -37,6 +39,24 @@ public sealed partial class UriMediaSource : MediaSource
 	{
 		get => (Uri?)GetValue(UriProperty);
 		set => SetValue(UriProperty, value);
+	}
+
+	/// <summary>
+	/// Gets or sets the HTTP headers to include in the request when loading the media from <see cref="Uri"/>.
+	/// </summary>
+	/// <remarks>
+	/// Use this to provide authentication tokens (e.g. <c>Authorization: Bearer &lt;token&gt;</c>) or other custom HTTP headers.
+	/// Setting this property triggers a source update on the underlying platform player.
+	/// Not supported on Tizen.
+	/// </remarks>
+	public IDictionary<string, string> HttpHeaders
+	{
+		get => httpHeaders ??= new Dictionary<string, string>();
+		set
+		{
+			httpHeaders = value;
+			OnSourceChanged();
+		}
 	}
 
 	/// <inheritdoc/>
