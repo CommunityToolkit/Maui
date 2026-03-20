@@ -51,7 +51,7 @@ public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 		// Fallback to root object ResourceDictionary (e.g. page-level or application-level resources)
 		var rootProvider = serviceProvider.GetService(typeof(IRootObjectProvider)) as IRootObjectProvider;
 		var root = rootProvider?.RootObject;
-		// bug fix 2761 - handle the case where the root object is a ResourceDictionary (e.g. app.xaml resources) or an IResourcesProvider (e.g. page-level resources)
+
 		switch (root)
 		{
 			case IResourcesProvider { IsResourcesCreated: true } rootResources1 when rootResources1.Resources.TryGetValue(Key, out resource):

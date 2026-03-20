@@ -28,10 +28,4 @@
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Resources\Styles\AppThemeResourceDictionary.xaml.cs">
-      <DependentUpon>AppThemeResourceDictionary.xaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
 </Project>
