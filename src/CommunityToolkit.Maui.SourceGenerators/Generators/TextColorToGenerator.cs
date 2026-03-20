@@ -249,7 +249,8 @@ class TextColorToGenerator : IIncrementalGenerator
 
 	static IEnumerable<INamedTypeSymbol> GetMauiInterfaceImplementors(IAssemblySymbol mauiControlsAssemblySymbolProvider, INamedTypeSymbol iAnimatableSymbol, INamedTypeSymbol itextStyleSymbol)
 	{
-		return mauiControlsAssemblySymbolProvider.GlobalNamespace.GetNamedTypeSymbols().Where(x => x.AllInterfaces.Contains(itextStyleSymbol, SymbolEqualityComparer.Default)
+		return mauiControlsAssemblySymbolProvider.GlobalNamespace.GetNamedTypeSymbols().Where(x => x.DeclaredAccessibility == Accessibility.Public
+			&& x.AllInterfaces.Contains(itextStyleSymbol, SymbolEqualityComparer.Default)
 			&& x.AllInterfaces.Contains(iAnimatableSymbol, SymbolEqualityComparer.Default));
 	}
 
