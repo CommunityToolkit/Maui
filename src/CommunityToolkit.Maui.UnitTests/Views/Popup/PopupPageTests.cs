@@ -300,7 +300,7 @@ public class PopupPageTests : BaseViewTest
 	public async Task ShowPopupAsync_FromModalNavigationPage_ShouldCloseSuccessfully()
 	{
 		// Remove shell navigation
-		var rootPage  = new ContentPage { Title = "Root" };
+		var rootPage = new ContentPage { Title = "Root" };
 		Application.Current?.Windows[0].Page = rootPage;
 
 		var modalNavigationPage = new NavigationPage(new ContentPage { Title = "Modal Navigation Page" });
@@ -643,7 +643,7 @@ public class PopupPageTests : BaseViewTest
 		// Act & Assert
 		await Assert.ThrowsAsync<PopupNotFoundException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
 	}
-	
+
 	[Fact]
 	public async Task CloseAsync_ShouldThrowPopupBlockedException_WhenPopupIsBehindModalNavigationPage()
 	{
@@ -661,14 +661,14 @@ public class PopupPageTests : BaseViewTest
 		var modalNavigationPage = new NavigationPage(new ContentPage());
 
 		// Act
-		
+
 		// Push popup, then push a modal NavigationPage on top
 		// Modal stack: [PopupPage, NavigationPage(ContentPage)]
 		await navigation.PushModalAsync(popupPage);
 		await navigation.PushModalAsync(modalNavigationPage);
 
 		// Assert
-		
+
 		// When the top of the modal stack is an IPageContainer whose CurrentPage is NOT a PopupPage,
 		// CloseAsync should throw PopupBlockedException because PopModalAsync would pop the
 		// visible NavigationPage instead of the PopupPage, leaving the PopupPage stranded on the
@@ -706,7 +706,7 @@ public class PopupPageTests : BaseViewTest
 		var navigationPageOnTop = new NavigationPage(new ContentPage());
 
 		// Act
-		
+
 		// Push first popup, second popup, then NavigationPage on top
 		await navigation.PushModalAsync(firstPopupPage);
 		await navigation.PushModalAsync(secondPopupPage);

@@ -84,8 +84,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 
 		var popupPageToClose = navigationPageOnModalStackContainingPopupPage?.CurrentPage as PopupPage
-		                       ?? Navigation.ModalStack.OfType<PopupPage>().LastOrDefault()
-		                       ?? throw new PopupNotFoundException();
+							   ?? Navigation.ModalStack.OfType<PopupPage>().LastOrDefault()
+							   ?? throw new PopupNotFoundException();
 
 		// PopModalAsync will pop the last (top) page from the ModalStack
 		// Ensure that the PopupPage the user is attempting to close is the last (top) page on the Modal stack before calling Navigation.PopModalAsync
@@ -94,12 +94,12 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			// Handle the edge case where the visible modal page is a navigation page containing a Popup that is not the Popup to be closed 
 			case IPageContainer<Page> { CurrentPage: PopupPage visiblePopupPageInCustomPageContainer } when visiblePopupPageInCustomPageContainer.Content != Content:
 				throw new PopupBlockedException(visiblePopupPageInCustomPageContainer);
-			
+
 			// Handle edge case where the top of the modal stack is an IPageContainer whose CurrentPage is NOT a PopupPage
 			// (e.g. a modal NavigationPage pushed after showing a popup).
 			case IPageContainer<Page> { CurrentPage: not PopupPage }:
 				throw new PopupBlockedException(Navigation.ModalStack[^1]);
-			
+
 			// Handle edge case where the visible modal page is not the Popup to be closed 
 			case ContentPage currentVisibleModalPage when currentVisibleModalPage.Content != Content:
 				throw new PopupBlockedException(currentVisibleModalPage);
