@@ -300,10 +300,10 @@ public class PopupPageTests : BaseViewTest
 	public async Task ShowPopupAsync_FromModalNavigationPage_ShouldCloseSuccessfully()
 	{
 		// Remove shell navigation
-		Application.Current?.Windows[0].Page = new ContentPage() { Title = "Root" };
-		var rootPage = Application.Current?.Windows[0].Page as ContentPage ?? throw new InvalidOperationException("Root page must be a ContentPage");
+		var rootPage  = new ContentPage { Title = "Root" };
+		Application.Current?.Windows[0].Page = rootPage;
 
-		var modalNavigationPage = new NavigationPage(new ContentPage() { Title = "Modal Navigation Page" });
+		var modalNavigationPage = new NavigationPage(new ContentPage { Title = "Modal Navigation Page" });
 		var popup = new Popup<string>();
 
 		// Act - Push modal navigation page

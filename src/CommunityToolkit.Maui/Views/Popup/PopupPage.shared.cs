@@ -77,15 +77,15 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		token.ThrowIfCancellationRequested();
 
 		// Handle edge case where a Popup was pushed inside a custom IPageContainer (e.g. a NavigationPage) on the Modal Stack
-		var customPageContainer = Navigation.ModalStack.OfType<IPageContainer<Page>>().LastOrDefault();
-		if (customPageContainer is not null && customPageContainer.CurrentPage is not PopupPage)
+		var navigationPageOnModalStackContainingPopupPage = Navigation.ModalStack.OfType<IPageContainer<Page>>().LastOrDefault();
+		if (navigationPageOnModalStackContainingPopupPage is not null && navigationPageOnModalStackContainingPopupPage.CurrentPage is not PopupPage)
 		{
-			customPageContainer = null;
+			navigationPageOnModalStackContainingPopupPage = null;
 		}
 
-		var popupPageToClose = customPageContainer?.CurrentPage as PopupPage
-							   ?? Navigation.ModalStack.OfType<PopupPage>().LastOrDefault()
-							   ?? throw new PopupNotFoundException();
+		var popupPageToClose = navigationPageOnModalStackContainingPopupPage?.CurrentPage as PopupPage
+		                       ?? Navigation.ModalStack.OfType<PopupPage>().LastOrDefault()
+		                       ?? throw new PopupNotFoundException();
 
 		// PopModalAsync will pop the last (top) page from the ModalStack
 		// Ensure that the PopupPage the user is attempting to close is the last (top) page on the Modal stack before calling Navigation.PopModalAsync
@@ -94,10 +94,16 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		{
 			throw new PopupBlockedException(visiblePopupPageInCustomPageContainer);
 		}
-		else if (Navigation.ModalStack[^1] is ContentPage currentVisibleModalPage
+		
+		if (Navigation.ModalStack[^1] is ContentPage currentVisibleModalPage
 				 && currentVisibleModalPage.Content != Content)
 		{
 			throw new PopupBlockedException(currentVisibleModalPage);
+		}
+
+		if (popupPageToClose.Content != Content)
+		{
+			throw new PopupBlockedException(popupPageToClose);
 		}
 
 		// We call `.ThrowIfCancellationRequested()` again to avoid a race condition where a developer cancels the CancellationToken after we check for an InvalidOperationException
