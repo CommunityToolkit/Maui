@@ -645,6 +645,43 @@ public class PopupPageTests : BaseViewTest
 	}
 
 	[Fact]
+	public async Task CloseAsync_ShouldThrowPopupBlockedException_WhenPopupIsHiddenBehindAnotherPopupAndNavigationPage()
+	{
+		// Arrange
+		if (Application.Current?.Windows[0].Page?.Navigation is not INavigation navigation)
+		{
+			throw new InvalidOperationException("Unable to locate Navigation page");
+		}
+
+		bool wasPopupPageClosed = false;
+
+		var firstPopupPage = new PopupPage<string>(new ContentView(), new MockPopupOptions());
+		firstPopupPage.PopupClosed += HandlePopupPageClosed;
+
+		var secondPopupPage = new PopupPage<string>(new Button(), new MockPopupOptions());
+		var navigationPageOnTop = new NavigationPage(new ContentPage());
+
+		// Act
+		
+		// Push first popup, second popup, then NavigationPage on top
+		await navigation.PushModalAsync(firstPopupPage);
+		await navigation.PushModalAsync(secondPopupPage);
+		await navigation.PushModalAsync(navigationPageOnTop);
+
+		// Assert
+		await Assert.ThrowsAsync<PopupBlockedException>(async () => await firstPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidPopupOperationException>(async () => await firstPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await firstPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		Assert.False(wasPopupPageClosed);
+
+		void HandlePopupPageClosed(object? sender, IPopupResult e)
+		{
+			wasPopupPageClosed = true;
+			firstPopupPage.PopupClosed -= HandlePopupPageClosed;
+		}
+	}
+
+	[Fact]
 	public void PopupPage_ShouldRespectLayoutOptions()
 	{
 		// Arrange
