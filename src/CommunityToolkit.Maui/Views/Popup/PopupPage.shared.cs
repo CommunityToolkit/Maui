@@ -80,7 +80,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		var customPageContainer = Navigation.ModalStack.OfType<IPageContainer<Page>>().LastOrDefault();
 		if (customPageContainer is not null && customPageContainer.CurrentPage is not PopupPage)
 		{
-			throw new PopupNotFoundException();
+			customPageContainer = null;
 		}
 
 		var popupPageToClose = customPageContainer?.CurrentPage as PopupPage

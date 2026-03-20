@@ -92,11 +92,6 @@ public partial class Popup : ContentView
 				return popupPage;
 			}
 
-			if (parent is IPageContainer<Page> customPageContainer && customPageContainer.CurrentPage is PopupPage pageContainerPopupPage)
-			{
-				return pageContainerPopupPage;
-			}
-
 			parent = parent.Parent;
 		}
 

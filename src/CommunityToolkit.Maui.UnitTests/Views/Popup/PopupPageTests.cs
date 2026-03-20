@@ -297,6 +297,35 @@ public class PopupPageTests : BaseViewTest
 	}
 
 	[Fact]
+	public async Task ShowPopupAsync_FromModalNavigationPage_ShouldCloseSuccessfully()
+	{
+		// Remove shell navigation
+		Application.Current?.Windows[0].Page = new ContentPage() { Title = "Root" };
+		var rootPage = Application.Current?.Windows[0].Page as ContentPage ?? throw new InvalidOperationException("Root page must be a ContentPage");
+
+		var modalNavigationPage = new NavigationPage(new ContentPage() { Title = "Modal Navigation Page" });
+		var popup = new Popup<string>();
+
+		// Act - Push modal navigation page
+		await rootPage.Navigation.PushModalAsync(modalNavigationPage, false);
+
+		// Assert - Verify modal stack has the modal navigation page
+		Assert.Single(rootPage.Navigation.ModalStack);
+		Assert.Same(modalNavigationPage, rootPage.Navigation.ModalStack[0]);
+
+		// Act
+		var showPopupAsyncTask = modalNavigationPage.ShowPopupAsync<string>(popup, token: TestContext.Current.CancellationToken);
+		await popup.CloseAsync("Hello", TestContext.Current.CancellationToken);
+		var result = await showPopupAsyncTask;
+
+		// Assert
+		result.Result.Should().Be("Hello");
+
+		// Cleanup
+		await rootPage.Navigation.PopModalAsync(false);
+	}
+
+	[Fact]
 	public void PopupPageT_Close_ShouldThrowOperationCanceledException_WhenTokenIsCancelled()
 	{
 		// Arrange
