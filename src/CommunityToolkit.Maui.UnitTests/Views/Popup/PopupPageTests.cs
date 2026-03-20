@@ -301,8 +301,18 @@ public class PopupPageTests : BaseViewTest
 	{
 		// Remove shell navigation
 		var rootPage = new ContentPage { Title = "Root" };
-		Application.Current?.Windows[0].Page = rootPage;
 
+		if (Application.Current is null)
+		{
+			throw new InvalidOperationException("Application.Current is null. Unable to set the root page.");
+		}
+
+		if (Application.Current.Windows.Count == 0)
+		{
+			throw new InvalidOperationException("No application windows found. Unable to set the root page.");
+		}
+
+		Application.Current.Windows[0].Page = rootPage;
 		var modalNavigationPage = new NavigationPage(new ContentPage { Title = "Modal Navigation Page" });
 		var popup = new Popup<string>();
 
