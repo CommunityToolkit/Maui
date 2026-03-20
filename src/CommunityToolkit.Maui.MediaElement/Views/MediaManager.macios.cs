@@ -229,7 +229,20 @@ public partial class MediaManager : IDisposable
 			var uri = uriMediaSource.Uri;
 			if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
 			{
-				asset = AVAsset.FromUrl(new NSUrl(uri.AbsoluteUri));
+				var nsUrl = new NSUrl(uri.AbsoluteUri);
+				var headers = uriMediaSource.HttpHeaders;
+				if (headers is { Count: > 0 })
+				{
+					var nativeHeaders = NSDictionary.FromObjectsAndKeys(
+						headers.Values.ToArray(),
+						headers.Keys.ToArray());
+					var options = new NSDictionary("AVURLAssetHTTPHeaderFieldsKey", nativeHeaders);
+					asset = new AVUrlAsset(nsUrl, new AVUrlAssetOptions(options));
+				}
+				else
+				{
+					asset = AVAsset.FromUrl(nsUrl);
+				}
 			}
 		}
 		else if (MediaElement.Source is FileMediaSource fileMediaSource)
