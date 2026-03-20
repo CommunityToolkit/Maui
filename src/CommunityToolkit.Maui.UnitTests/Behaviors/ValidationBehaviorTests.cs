@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Behaviors;
+﻿using System.Threading.Tasks;
+using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using Xunit;
 using Xunit.v3;
@@ -8,7 +9,7 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseBehaviorTest<ValidationBehavior, VisualElement>(new MockValidationBehavior(), new View())
 {
 	[Fact]
-	public void ValidateOnValueChanged()
+	public async Task ValidateOnValueChanged()
 	{
 		// Arrange
 		var entry = new Entry
@@ -18,6 +19,7 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 		var behavior = new MockValidationBehavior()
 		{
 			ExpectedValue = "321",
+			SimulateValidationDelay = false,
 			Flags = ValidationFlags.ValidateOnValueChanged
 		};
 
@@ -25,6 +27,9 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 
 		// Act
 		entry.Text = "321";
+
+		// Fails sometimes randomly without delay
+		await Task.Delay(10, TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.True(behavior.IsValid);
