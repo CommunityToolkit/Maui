@@ -8,7 +8,9 @@ using Android.Widget;
 using AndroidX.Media3.Common;
 using AndroidX.Media3.Common.Text;
 using AndroidX.Media3.Common.Util;
+using AndroidX.Media3.DataSource;
 using AndroidX.Media3.ExoPlayer;
+using AndroidX.Media3.ExoPlayer.Source;
 using AndroidX.Media3.Session;
 using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Media.Services;
@@ -378,7 +380,22 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		if (item?.MediaMetadata is not null)
 		{
-			Player.SetMediaItem(item);
+			var headers = (MediaElement.Source as UriMediaSource)?.HttpHeaders;
+			if (headers is { Count: > 0 })
+			{
+				var httpDataSourceFactory = new DefaultHttpDataSource.Factory();
+				httpDataSourceFactory.SetDefaultRequestProperties(headers);
+
+				var mediaSourceFactory = new DefaultMediaSourceFactory(httpDataSourceFactory);
+				var mediaSource = mediaSourceFactory.CreateMediaSource(item);
+
+				Player.SetMediaSource(mediaSource);
+			}
+			else
+			{
+				Player.SetMediaItem(item);
+			}
+
 			Player.Prepare();
 			hasSetSource = true;
 		}
