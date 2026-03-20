@@ -79,11 +79,11 @@ partial class CameraManager
 		imageCapture?.Dispose();
 		imageCapture = null;
 
-		videoRecorder?.Dispose();
-		videoRecorder = null;
-
 		videoCapture?.Dispose();
 		videoCapture = null;
+
+		videoRecorder?.Dispose();
+		videoRecorder = null;
 
 		imageCallback?.Dispose();
 		imageCallback = null;
