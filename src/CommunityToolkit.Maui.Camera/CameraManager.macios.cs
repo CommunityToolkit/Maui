@@ -79,7 +79,7 @@ partial class CameraManager
 			Session = captureSession
 		};
 
-		// use CMMotionManager to get device orientation on iOS 16 or lower, since AVCaptureDeviceRotationCoordinator is unavialable
+		// use CMMotionManager to get device orientation on iOS 16 or lower, since AVCaptureDeviceRotationCoordinator is unavailable
 		if (!UIDevice.CurrentDevice.CheckSystemVersion(17, 0))
 		{
 			motionManager ??= new();
@@ -182,6 +182,13 @@ partial class CameraManager
 		{
 			throw new CameraException($"Error creating capture device input: {error.LocalizedDescription}");
 		}
+
+		if (!captureSession.CanAddInput(captureInput))
+		{
+			captureInput.Dispose();
+			throw new CameraException("Unable to add capture device input to capture session.");
+		}
+
 		captureSession.AddInput(captureInput);
 
 		// On iOS 17+, create a new instance of AVCaptureDeviceRotationCoordinator when switching to a new camera
@@ -327,7 +334,7 @@ partial class CameraManager
 		if (captureSession is not null)
 		{
 			captureSession.BeginConfiguration();
-			
+
 			if (audioInput is not null)
 			{
 				captureSession.RemoveInput(audioInput);
@@ -444,18 +451,18 @@ partial class CameraManager
 	}
 
 	static AVCaptureVideoOrientation GetVideoOrientationFromAccelerometer(double x, double y)
-    {
-        // Absolute values help determine which axis is dominant
-        if (Math.Abs(y) >= Math.Abs(x))
-        {
-            return y > 0 ? AVCaptureVideoOrientation.PortraitUpsideDown : AVCaptureVideoOrientation.Portrait;
-        }
-        else
-        {
-            // x > 0 is LandscapeRight for device, which is LandscapeLeft for Video
-            return x > 0 ? AVCaptureVideoOrientation.LandscapeLeft : AVCaptureVideoOrientation.LandscapeRight;
-        }
-    }
+	{
+		// Absolute values help determine which axis is dominant
+		if (Math.Abs(y) >= Math.Abs(x))
+		{
+			return y > 0 ? AVCaptureVideoOrientation.PortraitUpsideDown : AVCaptureVideoOrientation.Portrait;
+		}
+		else
+		{
+			// x > 0 is LandscapeRight for device, which is LandscapeLeft for Video
+			return x > 0 ? AVCaptureVideoOrientation.LandscapeLeft : AVCaptureVideoOrientation.LandscapeRight;
+		}
+	}
 
 	static AVCaptureVideoOrientation GetVideoOrientation()
 	{
