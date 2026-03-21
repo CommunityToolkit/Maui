@@ -441,10 +441,10 @@ partial class CameraManager
 					}
 				}
 
-				if (cameraView.SelectedCamera?.Position is CameraPosition.Front && captureConnection.SupportsVideoMirroring)
+				if (captureConnection.SupportsVideoMirroring)
 				{
 					captureConnection.AutomaticallyAdjustsVideoMirroring = false;
-					captureConnection.VideoMirrored = true;
+					captureConnection.VideoMirrored = cameraView.SelectedCamera?.Position is CameraPosition.Front;
 				}
 			}
 		}
