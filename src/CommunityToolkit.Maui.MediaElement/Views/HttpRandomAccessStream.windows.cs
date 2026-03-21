@@ -66,6 +66,11 @@ sealed partial class HttpRandomAccessStream : IRandomAccessStream
 	{
 		return AsyncInfo.Run<IBuffer, uint>(async (cancellationToken, _) =>
 		{
+			if (count is 0)
+			{
+				return buffer;
+			}
+
 			using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
 			var rangeEnd = Position + count - 1;
 			request.Headers.TryAppendWithoutValidation("Range", $"bytes={Position}-{rangeEnd}");

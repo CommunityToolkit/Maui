@@ -86,8 +86,7 @@ public class UriMediaSourceTests : BaseViewTest
 
 		var source = MediaSource.FromUri(uri, headers);
 
-		source.Should().BeOfType<UriMediaSource>();
-		var uriSource = (UriMediaSource)source!;
+		var uriSource = source.Should().BeOfType<UriMediaSource>().Which;
 		uriSource.Uri.Should().Be(uri);
 		uriSource.HttpHeaders.Should().HaveCount(1);
 		uriSource.HttpHeaders["Authorization"].Should().Be("Bearer abc123");
@@ -100,8 +99,7 @@ public class UriMediaSourceTests : BaseViewTest
 
 		var source = MediaSource.FromUri(uri, null);
 
-		source.Should().BeOfType<UriMediaSource>();
-		var uriSource = (UriMediaSource)source!;
+		var uriSource = source.Should().BeOfType<UriMediaSource>().Which;
 		uriSource.HttpHeaders.Should().NotBeNull();
 		uriSource.HttpHeaders.Should().BeEmpty();
 	}

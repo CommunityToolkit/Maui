@@ -52,7 +52,7 @@ public sealed partial class UriMediaSource : MediaSource
 		get => field ??= new Dictionary<string, string>();
 		set
 		{
-			field = value;
+			field = value ?? new Dictionary<string, string>();
 			OnSourceChanged();
 		}
 	}

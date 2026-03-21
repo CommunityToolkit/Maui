@@ -240,9 +240,10 @@ public partial class MediaManager : IDisposable
 						Trace.WriteLine($"MediaElement [iOS/macCatalyst]: Header '{header.Key}' set.");
 					}
 
+					var pairs = headers.ToArray();
 					var nativeHeaders = NSDictionary.FromObjectsAndKeys(
-						headers.Values.ToArray(),
-						headers.Keys.ToArray());
+						pairs.Select(p => p.Value).ToArray(),
+						pairs.Select(p => p.Key).ToArray());
 					var options = new NSDictionary("AVURLAssetHTTPHeaderFieldsKey", nativeHeaders);
 					asset = new AVUrlAsset(nsUrl, new AVUrlAssetOptions(options));
 				}
