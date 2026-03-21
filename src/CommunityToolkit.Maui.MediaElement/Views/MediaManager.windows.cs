@@ -28,6 +28,8 @@ partial class MediaManager : IDisposable
 {
 	Metadata? metadata;
 	SystemMediaTransportControls? systemMediaControls;
+	HttpClient? headerHttpClient;
+	AdaptiveMediaSource? adaptiveMediaSource;
 
 	// States that allow changing position
 	readonly IReadOnlyList<MediaElementState> allowUpdatePositionStates =
@@ -275,6 +277,12 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
+		if (adaptiveMediaSource is not null)
+		{
+			adaptiveMediaSource.DownloadRequested -= OnAdaptiveMediaSourceDownloadRequested;
+			adaptiveMediaSource = null;
+		}
+
 		await Dispatcher.DispatchAsync(() => Player.PosterSource = new BitmapImage());
 
 		if (MediaElement.Source is null)
@@ -339,41 +347,29 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
-		var httpClient = new HttpClient();
+		headerHttpClient ??= new HttpClient();
+		headerHttpClient.DefaultRequestHeaders.Clear();
+
 		Trace.WriteLine($"MediaElement [Windows]: Applying {headers.Count} custom HTTP header(s) to media request.");
 		foreach (var header in headers)
 		{
+			if (!headerHttpClient.DefaultRequestHeaders.TryAppendWithoutValidation(header.Key, header.Value))
+			{
+				throw new InvalidOperationException($"Failed to append HTTP header '{header.Key}'. The header name may be empty or contain invalid characters.");
+			}
+
 			Trace.WriteLine($"MediaElement [Windows]: Header '{header.Key}' set.");
-			httpClient.DefaultRequestHeaders.TryAppendWithoutValidation(header.Key, header.Value);
 		}
 
-		var adaptiveResult = await AdaptiveMediaSource.CreateFromUriAsync(uri, httpClient);
+		var adaptiveResult = await AdaptiveMediaSource.CreateFromUriAsync(uri, headerHttpClient);
 		Trace.WriteLine($"MediaElement [Windows]: AdaptiveMediaSource status: {adaptiveResult.Status}");
 
 		if (adaptiveResult.Status is AdaptiveMediaSourceCreationStatus.Success && adaptiveResult.MediaSource is not null)
 		{
-			var adaptiveSource = adaptiveResult.MediaSource;
-			adaptiveSource.DownloadRequested += async (sender, args) =>
-			{
-				var deferral = args.GetDeferral();
-				try
-				{
-					using var request = new HttpRequestMessage(HttpMethod.Get, args.ResourceUri);
-					using var response = await httpClient.SendRequestAsync(request).AsTask().ConfigureAwait(false);
-					response.EnsureSuccessStatusCode();
-					args.Result.InputStream = await response.Content.ReadAsInputStreamAsync().AsTask().ConfigureAwait(false);
-				}
-				catch (Exception ex)
-				{
-					Trace.WriteLine($"MediaElement [Windows]: DownloadRequested failed for {args.ResourceUri}: {ex.Message}");
-				}
-				finally
-				{
-					deferral.Complete();
-				}
-			};
+			adaptiveMediaSource = adaptiveResult.MediaSource;
+			adaptiveMediaSource.DownloadRequested += OnAdaptiveMediaSourceDownloadRequested;
 
-			var mediaSource = WinMediaSource.CreateFromAdaptiveMediaSource(adaptiveSource);
+			var mediaSource = WinMediaSource.CreateFromAdaptiveMediaSource(adaptiveMediaSource);
 			await Dispatcher.DispatchAsync(() =>
 			{
 				Player.AutoPlay = MediaElement.ShouldAutoPlay;
@@ -384,23 +380,37 @@ partial class MediaManager : IDisposable
 		}
 
 		Trace.WriteLine($"MediaElement [Windows]: AdaptiveMediaSource failed, falling back to HttpRandomAccessStream.");
+		var stream = await HttpRandomAccessStream.CreateAsync(headerHttpClient, uri).ConfigureAwait(false);
+		await Dispatcher.DispatchAsync(() =>
+		{
+			Player.AutoPlay = MediaElement.ShouldAutoPlay;
+			Player.Source = WinMediaSource.CreateFromStream(stream, string.Empty);
+		});
+		Trace.WriteLine("MediaElement [Windows]: HttpRandomAccessStream set successfully.");
+	}
+
+	async void OnAdaptiveMediaSourceDownloadRequested(AdaptiveMediaSource sender, AdaptiveMediaSourceDownloadRequestedEventArgs args)
+	{
+		if (headerHttpClient is null)
+		{
+			return;
+		}
+
+		var deferral = args.GetDeferral();
 		try
 		{
-			var stream = await HttpRandomAccessStream.CreateAsync(httpClient, uri).ConfigureAwait(false);
-			await Dispatcher.DispatchAsync(() =>
-			{
-				Player.AutoPlay = MediaElement.ShouldAutoPlay;
-				Player.Source = WinMediaSource.CreateFromStream(stream, string.Empty);
-			});
-			Trace.WriteLine("MediaElement [Windows]: HttpRandomAccessStream set successfully.");
+			using var request = new HttpRequestMessage(HttpMethod.Get, args.ResourceUri);
+			using var response = await headerHttpClient.SendRequestAsync(request).AsTask().ConfigureAwait(false);
+			response.EnsureSuccessStatusCode();
+			args.Result.InputStream = await response.Content.ReadAsInputStreamAsync().AsTask().ConfigureAwait(false);
 		}
 		catch (Exception ex)
 		{
-			Trace.WriteLine($"MediaElement [Windows]: HttpRandomAccessStream failed ({ex.Message}), falling back to SetUriSource without headers.");
-			await Dispatcher.DispatchAsync(() =>
-			{
-				Player.MediaPlayer.SetUriSource(uri);
-			});
+			Trace.WriteLine($"MediaElement [Windows]: DownloadRequested failed for {args.ResourceUri}: {ex.Message}");
+		}
+		finally
+		{
+			deferral.Complete();
 		}
 	}
 
@@ -422,6 +432,15 @@ partial class MediaManager : IDisposable
 	{
 		if (disposing)
 		{
+			if (adaptiveMediaSource is not null)
+			{
+				adaptiveMediaSource.DownloadRequested -= OnAdaptiveMediaSourceDownloadRequested;
+				adaptiveMediaSource = null;
+			}
+
+			headerHttpClient?.Dispose();
+			headerHttpClient = null;
+
 			if (Player?.MediaPlayer is not null)
 			{
 				if (displayActiveRequested)

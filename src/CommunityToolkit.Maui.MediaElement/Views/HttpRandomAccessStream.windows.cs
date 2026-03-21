@@ -18,8 +18,6 @@ sealed partial class HttpRandomAccessStream : IRandomAccessStream
 	readonly Uri requestUri;
 	readonly ulong size;
 
-	ulong currentPosition;
-
 	HttpRandomAccessStream(HttpClient httpClient, Uri requestUri, ulong size)
 	{
 		this.httpClient = httpClient;
@@ -35,7 +33,7 @@ sealed partial class HttpRandomAccessStream : IRandomAccessStream
 	}
 
 	/// <inheritdoc/>
-	public ulong Position => currentPosition;
+	public ulong Position { get; private set; }
 
 	/// <inheritdoc/>
 	public bool CanRead => true;
@@ -69,8 +67,8 @@ sealed partial class HttpRandomAccessStream : IRandomAccessStream
 		return AsyncInfo.Run<IBuffer, uint>(async (cancellationToken, _) =>
 		{
 			using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
-			var rangeEnd = currentPosition + count - 1;
-			request.Headers.TryAppendWithoutValidation("Range", $"bytes={currentPosition}-{rangeEnd}");
+			var rangeEnd = Position + count - 1;
+			request.Headers.TryAppendWithoutValidation("Range", $"bytes={Position}-{rangeEnd}");
 
 			using var response = await httpClient.SendRequestAsync(request, HttpCompletionOption.ResponseHeadersRead).AsTask(cancellationToken).ConfigureAwait(false);
 			response.EnsureSuccessStatusCode();
@@ -78,13 +76,13 @@ sealed partial class HttpRandomAccessStream : IRandomAccessStream
 			var inputStream = await response.Content.ReadAsInputStreamAsync().AsTask(cancellationToken).ConfigureAwait(false);
 			var result = await inputStream.ReadAsync(buffer, count, options).AsTask(cancellationToken).ConfigureAwait(false);
 
-			currentPosition += result.Length;
+			Position += result.Length;
 			return result;
 		});
 	}
 
 	/// <inheritdoc/>
-	public void Seek(ulong position) => currentPosition = position;
+	public void Seek(ulong position) => Position = position;
 
 	/// <inheritdoc/>
 	public IRandomAccessStream CloneStream() => throw new NotSupportedException();
@@ -92,7 +90,7 @@ sealed partial class HttpRandomAccessStream : IRandomAccessStream
 	/// <inheritdoc/>
 	public IInputStream GetInputStreamAt(ulong position)
 	{
-		currentPosition = position;
+		Position = position;
 		return this;
 	}
 

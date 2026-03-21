@@ -9,8 +9,6 @@ namespace CommunityToolkit.Maui.Views;
 /// </summary>
 public sealed partial class UriMediaSource : MediaSource
 {
-	IDictionary<string, string>? httpHeaders;
-
 	/// <summary>
 	/// Bindable property for the <see cref="Uri"/> property.
 	/// </summary>
@@ -51,10 +49,10 @@ public sealed partial class UriMediaSource : MediaSource
 	/// </remarks>
 	public IDictionary<string, string> HttpHeaders
 	{
-		get => httpHeaders ??= new Dictionary<string, string>();
+		get => field ??= new Dictionary<string, string>();
 		set
 		{
-			httpHeaders = value;
+			field = value;
 			OnSourceChanged();
 		}
 	}
