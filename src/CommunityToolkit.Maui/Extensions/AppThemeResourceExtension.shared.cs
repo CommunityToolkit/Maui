@@ -48,22 +48,32 @@ public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 			}
 		}
 
-		// Fallback to root object ResourceDictionary (e.g. page-level resources)
+		// Fallback to root object ResourceDictionary (e.g. page-level or application-level resources)
 		var rootProvider = serviceProvider.GetService(typeof(IRootObjectProvider)) as IRootObjectProvider;
 		var root = rootProvider?.RootObject;
-		if (root is IResourcesProvider { IsResourcesCreated: true } rootResources
-			&& rootResources.Resources.TryGetValue(Key, out resource))
+
+		switch (root)
 		{
-			switch (resource)
-			{
-				case AppThemeColor rootColor:
-					return rootColor.GetBinding();
-				case AppThemeObject rootTheme:
-					return rootTheme.GetBinding();
-				default:
-					var info = (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) as IXmlLineInfoProvider)?.XmlLineInfo;
-					throw new XamlParseException($"Resource found for key {Key} is not a valid AppTheme resource.", info);
-			}
+			case IResourcesProvider { IsResourcesCreated: true } rootResources1 when rootResources1.Resources.TryGetValue(Key, out resource):
+				// page level?
+				switch (resource)
+				{
+					case AppThemeColor rootColor:
+						return rootColor.GetBinding();
+					case AppThemeObject rootTheme:
+						return rootTheme.GetBinding();
+				}
+				break;
+			case ResourceDictionary rootDictionary1 when rootDictionary1.TryGetValue(Key, out resource):
+				// application level?
+				switch (resource)
+				{
+					case AppThemeColor rootColor:
+						return rootColor.GetBinding();
+					case AppThemeObject rootTheme:
+						return rootTheme.GetBinding();
+				}
+				break;
 		}
 
 		if (Application.Current?.Resources.TryGetValueAndSource(Key, out resource, out _) is true)
