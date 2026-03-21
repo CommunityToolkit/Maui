@@ -16,6 +16,8 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string resetSource = "Reset Source to null";
 	const string loadMusic = "Load Music";
 
+	Dictionary<string, string>? customHeaders;
+
 	const string botImageUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
 	const string hlsStreamTestUrl = "https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8";
 	const string hal9000AudioUrl = "https://github.com/prof3ssorSt3v3/media-sample-files/raw/master/hal-9000.mp3";
@@ -160,7 +162,69 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			return;
 		}
 
-		MediaElement.Source = MediaSource.FromUri(CustomSourceEntry.Text);
+		var customSource = new UriMediaSource { Uri = new Uri(CustomSourceEntry.Text) };
+		ApplyCustomHeaders(customSource);
+		MediaElement.Source = customSource;
+	}
+
+	void AddHeaderClicked(object? sender, EventArgs? e)
+	{
+		var name = HeaderNameEntry.Text?.Trim();
+		var value = HeaderValueEntry.Text?.Trim();
+
+		if (string.IsNullOrWhiteSpace(name))
+		{
+			return;
+		}
+
+		customHeaders ??= new Dictionary<string, string>();
+		customHeaders[name] = value ?? string.Empty;
+
+		HeaderNameEntry.Text = string.Empty;
+		HeaderValueEntry.Text = string.Empty;
+		UpdateHeadersSummary();
+		logger.LogInformation("Custom HTTP header added: {HeaderName}", name);
+	}
+
+	void ClearHeadersClicked(object? sender, EventArgs? e)
+	{
+		customHeaders = null;
+		UpdateHeadersSummary();
+		logger.LogInformation("Custom HTTP headers cleared.");
+	}
+
+	void CustomHeadersToggled(object? sender, ToggledEventArgs e)
+	{
+		HeadersPanel.IsVisible = e.Value;
+		if (!e.Value)
+		{
+			customHeaders = null;
+			UpdateHeadersSummary();
+		}
+	}
+
+	void UpdateHeadersSummary()
+	{
+		if (customHeaders is not { Count: > 0 })
+		{
+			HeadersSummaryLabel.Text = "No headers defined";
+			return;
+		}
+
+		HeadersSummaryLabel.Text = string.Join(", ", customHeaders.Keys);
+	}
+
+	void ApplyCustomHeaders(UriMediaSource source)
+	{
+		if (customHeaders is not { Count: > 0 })
+		{
+			return;
+		}
+
+		foreach (var header in customHeaders)
+		{
+			source.HttpHeaders[header.Key] = header.Value;
+		}
 	}
 
 	async void ChangeSourceClicked(object? sender, EventArgs? e)
@@ -177,15 +241,18 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataTitle = "Big Buck Bunny";
 				MediaElement.MetadataArtworkUrl = botImageUrl;
 				MediaElement.MetadataArtist = "Big Buck Bunny Album";
-				MediaElement.Source =
-					MediaSource.FromUri(StreamingVideoUrls.BuckBunny);
+				var mp4Source = new UriMediaSource { Uri = new Uri(StreamingVideoUrls.BuckBunny) };
+				ApplyCustomHeaders(mp4Source);
+				MediaElement.Source = mp4Source;
 				return;
 
 			case loadHls:
 				MediaElement.MetadataArtist = "HLS Album";
 				MediaElement.MetadataArtworkUrl = botImageUrl;
 				MediaElement.MetadataTitle = "HLS Title";
-				MediaElement.Source = MediaSource.FromUri(hlsStreamTestUrl);
+				var hlsSource = new UriMediaSource { Uri = new Uri(hlsStreamTestUrl) };
+				ApplyCustomHeaders(hlsSource);
+				MediaElement.Source = hlsSource;
 				return;
 
 			case resetSource:
@@ -219,7 +286,9 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataTitle = "HAL 9000";
 				MediaElement.MetadataArtist = "HAL 9000 Album";
 				MediaElement.MetadataArtworkUrl = botImageUrl;
-				MediaElement.Source = MediaSource.FromUri(hal9000AudioUrl);
+				var musicSource = new UriMediaSource { Uri = new Uri(hal9000AudioUrl) };
+				ApplyCustomHeaders(musicSource);
+				MediaElement.Source = musicSource;
 				return;
 		}
 	}

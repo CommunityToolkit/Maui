@@ -39,6 +39,24 @@ public sealed partial class UriMediaSource : MediaSource
 		set => SetValue(UriProperty, value);
 	}
 
+	/// <summary>
+	/// Gets or sets the HTTP headers to include in the request when loading the media from <see cref="Uri"/>.
+	/// </summary>
+	/// <remarks>
+	/// Use this to provide authentication tokens (e.g. <c>Authorization: Bearer &lt;token&gt;</c>) or other custom HTTP headers.
+	/// Setting this property triggers a source update on the underlying platform player.
+	/// Not supported on Tizen.
+	/// </remarks>
+	public IDictionary<string, string> HttpHeaders
+	{
+		get => field ??= new Dictionary<string, string>();
+		set
+		{
+			field = value ?? new Dictionary<string, string>();
+			OnSourceChanged();
+		}
+	}
+
 	/// <inheritdoc/>
 	public override string ToString() => $"Uri: {Uri}";
 

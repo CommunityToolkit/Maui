@@ -1,4 +1,5 @@
-﻿using AVFoundation;
+﻿using System.Diagnostics;
+using AVFoundation;
 using AVKit;
 using CommunityToolkit.Maui.Views;
 using CoreFoundation;
@@ -229,7 +230,27 @@ public partial class MediaManager : IDisposable
 			var uri = uriMediaSource.Uri;
 			if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
 			{
-				asset = AVAsset.FromUrl(new NSUrl(uri.AbsoluteUri));
+				var nsUrl = new NSUrl(uri.AbsoluteUri);
+				var headers = uriMediaSource.HttpHeaders;
+				if (headers is { Count: > 0 })
+				{
+					Trace.WriteLine($"MediaElement [iOS/macCatalyst]: Applying {headers.Count} custom HTTP header(s) to AVUrlAsset.");
+					foreach (var header in headers)
+					{
+						Trace.WriteLine($"MediaElement [iOS/macCatalyst]: Header '{header.Key}' set.");
+					}
+
+					var pairs = headers.ToArray();
+					var nativeHeaders = NSDictionary.FromObjectsAndKeys(
+						pairs.Select(p => p.Value).ToArray(),
+						pairs.Select(p => p.Key).ToArray());
+					var options = new NSDictionary("AVURLAssetHTTPHeaderFieldsKey", nativeHeaders);
+					asset = new AVUrlAsset(nsUrl, new AVUrlAssetOptions(options));
+				}
+				else
+				{
+					asset = AVAsset.FromUrl(nsUrl);
+				}
 			}
 		}
 		else if (MediaElement.Source is FileMediaSource fileMediaSource)
