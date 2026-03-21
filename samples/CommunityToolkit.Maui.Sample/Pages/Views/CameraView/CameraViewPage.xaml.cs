@@ -25,9 +25,20 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 	{
 		base.OnAppearing();
 
-		var cameraPermissionsRequest = await Permissions.RequestAsync<Permissions.Camera>();
-		var microphonePermissionsRequest = await Permissions.RequestAsync<Permissions.Microphone>();
-
+		var packagingModel = AppInfo.Current.PackagingModel;
+		PermissionStatus microphonePermissionsRequest;
+		PermissionStatus cameraPermissionsRequest;
+		if (packagingModel == AppPackagingModel.Packaged || !OperatingSystem.IsWindows())
+		{
+			cameraPermissionsRequest = await Permissions.RequestAsync<Permissions.Camera>();
+			microphonePermissionsRequest = await Permissions.RequestAsync<Permissions.Microphone>();
+		}
+		else
+		{
+			// Permissions are automatically granted for unpackaged apps, so we can just set them to Granted.
+			microphonePermissionsRequest = PermissionStatus.Granted;
+			cameraPermissionsRequest = PermissionStatus.Granted;
+		}
 		if (cameraPermissionsRequest is not PermissionStatus.Granted)
 		{
 			await Shell.Current.CurrentPage.DisplayAlertAsync("Camera permission is not granted.", "Please grant the permission to use this feature.", "OK");
