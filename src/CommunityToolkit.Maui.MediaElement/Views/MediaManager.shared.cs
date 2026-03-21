@@ -1,4 +1,4 @@
-﻿#if !(ANDROID || IOS || WINDOWS || MACCATALYST || TIZEN)
+#if !(ANDROID || IOS || WINDOWS || MACCATALYST || TIZEN)
 global using PlatformMediaElement = System.Object;
 #elif ANDROID
 global using PlatformMediaElement = AndroidX.Media3.ExoPlayer.IExoPlayer;
@@ -11,10 +11,6 @@ global using PlatformMediaElement = CommunityToolkit.Maui.Core.Views.TizenPlayer
 #endif
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui;
-using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.Controls;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -40,6 +36,15 @@ public partial class MediaManager
 		MediaElement = mediaElement;
 
 		Logger = MauiContext.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(MediaManager));
+	}
+
+	/// <summary>
+	/// Update the full screen state on the associated MediaElement.
+	/// </summary>
+	/// <param name="newState">The new full screen state.</param>
+	internal void UpdateFullScreenState(MediaElementScreenState newState)
+	{
+		MediaElement.FullScreenChanged(newState);
 	}
 
 	/// <summary>
