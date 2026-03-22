@@ -115,6 +115,7 @@ partial class CameraManager
 
 	private async partial Task PlatformStartCameraPreview(CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
 		if (mediaElement is null)
 		{
 			return;
@@ -157,6 +158,8 @@ partial class CameraManager
 
 	async Task PlatformUpdateResolution(Size resolution, CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
+
 		if (cameraView.SelectedCamera is null || !IsInitialized || mediaCapture is null)
 		{
 			return;

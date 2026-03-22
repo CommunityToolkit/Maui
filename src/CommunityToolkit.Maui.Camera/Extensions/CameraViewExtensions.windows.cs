@@ -15,6 +15,7 @@ static class CameraViewExtensions
 
 	public static Task InitializeCameraForCameraView(this MediaCapture mediaCapture, string deviceId, CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
 		try
 		{
 			return mediaCapture.InitializeAsync(new MediaCaptureInitializationSettings

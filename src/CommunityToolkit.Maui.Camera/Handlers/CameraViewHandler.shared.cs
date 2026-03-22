@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Extensions;
+﻿using System.Diagnostics;
+using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
@@ -8,6 +9,9 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 /// </summary>
 public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>, IDisposable
 {
+	CancellationTokenSource? cts;
+	bool isDisposed;
+
 	/// <summary>
 	/// The currently defined mappings between properties on the <see cref="ICameraView"/> and
 	/// properties on the <see cref="NativePlatformCameraPreviewView"/>. 
@@ -74,6 +78,7 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		// reset the zoom factor to 1
 		void Init(ICameraView view)
 		{
+			Trace.WriteLine("- - - - - Camera view initialized - - - - -");
 			MapCameraFlashMode(this, view);
 			view.ZoomFactor = 1.0f;
 		}
@@ -82,9 +87,34 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	/// <inheritdoc/>
 	protected override async void ConnectHandler(NativePlatformCameraPreviewView platformView)
 	{
-		base.ConnectHandler(platformView);
+		cts?.Cancel();
+		cts = new();
+		try
+		{
+			//Trace.WriteLine($"> > > > > ConnectHandler {this.GetHashCode()}");
+			base.ConnectHandler(platformView);
+			await CameraManager.ConnectCamera(cts.Token);
+		}
+		catch (OperationCanceledException)
+		{
+			// If the operation was canceled, we should dispose the camera manager
+			// and set it to null to avoid further operations on it.
+			//cameraManager?.Dispose();
+			//cameraManager = null;
+			//return;
 
-		await CameraManager.ConnectCamera(CancellationToken.None);
+			Trace.WriteLine($"< < < < < OperationCanceledException {this.GetHashCode()}");
+		}
+		catch (Exception ex) //when (ex is not OperationCanceledException && !isDisposed)
+		{
+			//// If the connection fails, we should dispose the camera manager
+			//// and set it to null to avoid further operations on it.
+			//cameraManager?.Dispose();
+			//cameraManager = null;
+			//// Rethrow the exception to notify the user of the failure.
+			//throw new CameraException("Failed to connect to camera", ex);
+		}
+
 	}
 
 	/// <inheritdoc/>
@@ -103,11 +133,21 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	/// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
 	protected virtual void Dispose(bool disposing)
 	{
+		if (isDisposed)
+		{
+			return;
+		}
 		if (disposing)
 		{
+			cts?.Cancel();
+			cts?.Dispose();
+			cts = null;
+
 			cameraManager?.Dispose();
 			cameraManager = null;
 		}
+
+		isDisposed = true;
 	}
 
 #if WINDOWS
