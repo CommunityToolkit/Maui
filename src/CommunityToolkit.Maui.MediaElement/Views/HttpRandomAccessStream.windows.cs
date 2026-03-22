@@ -54,7 +54,7 @@ sealed partial class HttpRandomAccessStream : IRandomAccessStream
 		ArgumentNullException.ThrowIfNull(uri);
 
 		using var request = new HttpRequestMessage(HttpMethod.Head, uri);
-		using var response = await httpClient.SendRequestAsync(request).AsTask(cancellationToken).ConfigureAwait(false);
+		using var response = await httpClient.SendRequestAsync(request).AsTask(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
 		response.EnsureSuccessStatusCode();
 
 		var contentLength = response.Content.Headers.ContentLength ?? 0;
@@ -75,11 +75,11 @@ sealed partial class HttpRandomAccessStream : IRandomAccessStream
 			var rangeEnd = Position + count - 1;
 			request.Headers.TryAppendWithoutValidation("Range", $"bytes={Position}-{rangeEnd}");
 
-			using var response = await httpClient.SendRequestAsync(request, HttpCompletionOption.ResponseHeadersRead).AsTask(cancellationToken).ConfigureAwait(false);
+			using var response = await httpClient.SendRequestAsync(request, HttpCompletionOption.ResponseHeadersRead).AsTask(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
 			response.EnsureSuccessStatusCode();
 
-			var inputStream = await response.Content.ReadAsInputStreamAsync().AsTask(cancellationToken).ConfigureAwait(false);
-			var result = await inputStream.ReadAsync(buffer, count, options).AsTask(cancellationToken).ConfigureAwait(false);
+			var inputStream = await response.Content.ReadAsInputStreamAsync().AsTask(cancellationToken);
+			var result = await inputStream.ReadAsync(buffer, count, options).AsTask(cancellationToken);
 
 			Position += result.Length;
 			return result;

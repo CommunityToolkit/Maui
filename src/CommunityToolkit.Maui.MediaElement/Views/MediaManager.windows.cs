@@ -307,7 +307,7 @@ partial class MediaManager : IDisposable
 				var headers = uriMediaSource.HttpHeaders;
 				if (headers is { Count: > 0 })
 				{
-					await SetUriSourceWithHeaders(new Uri(uri), headers).ConfigureAwait(true);
+					await SetUriSourceWithHeaders(new Uri(uri), headers);
 				}
 				else
 				{
@@ -361,7 +361,7 @@ partial class MediaManager : IDisposable
 			Trace.WriteLine($"MediaElement [Windows]: Header '{header.Key}' set.");
 		}
 
-		var adaptiveResult = await AdaptiveMediaSource.CreateFromUriAsync(uri, headerHttpClient);
+		var adaptiveResult = await AdaptiveMediaSource.CreateFromUriAsync(uri, headerHttpClient).AsTask().ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
 		Trace.WriteLine($"MediaElement [Windows]: AdaptiveMediaSource status: {adaptiveResult.Status}");
 
 		if (adaptiveResult.Status is AdaptiveMediaSourceCreationStatus.Success && adaptiveResult.MediaSource is not null)
@@ -380,7 +380,7 @@ partial class MediaManager : IDisposable
 		}
 
 		Trace.WriteLine($"MediaElement [Windows]: AdaptiveMediaSource failed, falling back to HttpRandomAccessStream.");
-		var stream = await HttpRandomAccessStream.CreateAsync(headerHttpClient, uri).ConfigureAwait(false);
+		var stream = await HttpRandomAccessStream.CreateAsync(headerHttpClient, uri);
 		await Dispatcher.DispatchAsync(() =>
 		{
 			Player.AutoPlay = MediaElement.ShouldAutoPlay;
@@ -400,9 +400,9 @@ partial class MediaManager : IDisposable
 		try
 		{
 			using var request = new HttpRequestMessage(HttpMethod.Get, args.ResourceUri);
-			using var response = await headerHttpClient.SendRequestAsync(request).AsTask().ConfigureAwait(false);
+			using var response = await headerHttpClient.SendRequestAsync(request).AsTask().ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
 			response.EnsureSuccessStatusCode();
-			args.Result.InputStream = await response.Content.ReadAsInputStreamAsync().AsTask().ConfigureAwait(false);
+			args.Result.InputStream = await response.Content.ReadAsInputStreamAsync().AsTask();
 		}
 		catch (Exception ex)
 		{
