@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using CommunityToolkit.Maui.Extensions;
+﻿using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
@@ -78,7 +77,6 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		// reset the zoom factor to 1
 		void Init(ICameraView view)
 		{
-			Trace.WriteLine("- - - - - Camera view initialized - - - - -");
 			MapCameraFlashMode(this, view);
 			view.ZoomFactor = 1.0f;
 		}
@@ -88,33 +86,23 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	protected override async void ConnectHandler(NativePlatformCameraPreviewView platformView)
 	{
 		cts?.Cancel();
+		cts?.Dispose();
 		cts = new();
 		try
 		{
-			//Trace.WriteLine($"> > > > > ConnectHandler {this.GetHashCode()}");
 			base.ConnectHandler(platformView);
 			await CameraManager.ConnectCamera(cts.Token);
 		}
-		catch (OperationCanceledException)
+		catch (OperationCanceledException) when (cts.IsCancellationRequested)
 		{
-			// If the operation was canceled, we should dispose the camera manager
-			// and set it to null to avoid further operations on it.
-			//cameraManager?.Dispose();
-			//cameraManager = null;
-			//return;
-
-			Trace.WriteLine($"< < < < < OperationCanceledException {this.GetHashCode()}");
+			// Catch and ignore the OperationCanceledException if it was caused by our own cancellation token,
+			// e.g. the handler is disconnected before the camera connection process completes.
 		}
-		catch (Exception ex) //when (ex is not OperationCanceledException && !isDisposed)
+		catch (Exception)
 		{
-			//// If the connection fails, we should dispose the camera manager
-			//// and set it to null to avoid further operations on it.
-			//cameraManager?.Dispose();
-			//cameraManager = null;
-			//// Rethrow the exception to notify the user of the failure.
-			//throw new CameraException("Failed to connect to camera", ex);
+			DisconnectHandler(platformView);
+			throw;
 		}
-
 	}
 
 	/// <inheritdoc/>
