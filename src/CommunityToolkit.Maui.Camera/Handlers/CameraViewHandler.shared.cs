@@ -86,14 +86,13 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	protected override async void ConnectHandler(NativePlatformCameraPreviewView platformView)
 	{
 		cts?.Cancel();
-		cts?.Dispose();
-		cts = new();
+		using var newCts = cts = new();
 		try
 		{
 			base.ConnectHandler(platformView);
-			await CameraManager.ConnectCamera(cts.Token);
+			await CameraManager.ConnectCamera(newCts.Token);
 		}
-		catch (OperationCanceledException) when (cts.IsCancellationRequested)
+		catch (OperationCanceledException) when (newCts.IsCancellationRequested)
 		{
 			// Catch and ignore the OperationCanceledException if it was caused by our own cancellation token,
 			// e.g. the handler is disconnected before the camera connection process completes.
@@ -101,7 +100,13 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		catch (Exception)
 		{
 			DisconnectHandler(platformView);
-			throw;
+		}
+		finally
+		{
+			if (cts == newCts)
+			{
+				cts = null;
+			}
 		}
 	}
 
@@ -128,7 +133,6 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		if (disposing)
 		{
 			cts?.Cancel();
-			cts?.Dispose();
 			cts = null;
 
 			cameraManager?.Dispose();
