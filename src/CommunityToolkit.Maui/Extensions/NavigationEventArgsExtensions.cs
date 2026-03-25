@@ -3,7 +3,7 @@ using CommunityToolkit.Maui.Views;
 namespace CommunityToolkit.Maui.Extensions;
 
 /// <summary>
-/// Extension methods for <see cref="NavigatedFromEventArgs"/>, <see cref="NavigatedToEventArgs"/>, <see cref="NavigatingFromEventArgs"/> and <see cref="NavigatedFromEventArgs"/>.
+/// Extension methods for <see cref="NavigatedFromEventArgs"/>, <see cref="NavigatedToEventArgs"/> and <see cref="NavigatingFromEventArgs"/>.
 /// </summary>
 public static class NavigationEventArgsExtensions
 {
