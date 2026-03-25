@@ -49,7 +49,6 @@ public class NavigatingFromEventArgsExtensionsTests : BaseViewTest
 	{
 		// Arrange
 		MockApplication application = (MockApplication)ServiceProvider.GetRequiredService<IApplication>();
-		IPopupService popupService = ServiceProvider.GetRequiredService<IPopupService>();
 
 		Shell shell = (Shell)(application.Windows[0].Page ?? throw new InvalidOperationException("Unable to retrieve Shell"));
 		Page mainPage = shell.CurrentPage;
