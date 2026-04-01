@@ -262,7 +262,7 @@ jobs:
                 shell: pwsh
 
             -   name: Upload Package List
-                uses: actions/upload-artifact@v6
+                uses: actions/upload-artifact@v7
                 if: ${{ runner.os == 'Windows' }}
                 with:
                     name: nuget-list
@@ -272,7 +272,7 @@ jobs:
 
             -   name: Publish Packages
                 if: ${{ runner.os == 'Windows' }}
-                uses: actions/upload-artifact@v6
+                uses: actions/upload-artifact@v7
                 with:
                     name: packages
                     path: ${{ github.workspace }}/nuget/
@@ -292,13 +292,13 @@ jobs:
                     dotnet-quality: 'ga'
 
             -   name: Download NuGet List
-                uses: actions/download-artifact@v7
+                uses: actions/download-artifact@v8
                 with:
                     name: nuget-list
                     path: ./
 
             -   name: Download Package List
-                uses: actions/download-artifact@v7
+                uses: actions/download-artifact@v8
                 with:
                     name: packages
                     path: ./packages
@@ -344,7 +344,7 @@ jobs:
                     --verbosity Information
 
             -   name: Publish Packages
-                uses: actions/upload-artifact@v6
+                uses: actions/upload-artifact@v7
                 with:
                     name: signed-packages
                     if-no-files-found: error
@@ -364,7 +364,7 @@ jobs:
                     dotnet-quality: 'ga'
 
             -   name: Download signed packages
-                uses: actions/download-artifact@v7
+                uses: actions/download-artifact@v8
                 with:
                     name: signed-packages
                     path: ./packages
@@ -392,7 +392,7 @@ jobs:
                     dotnet-quality: 'ga'
 
             -   name: Download signed packages
-                uses: actions/download-artifact@v7
+                uses: actions/download-artifact@v8
                 with:
                     name: signed-packages
                     path: ./packages

@@ -7,6 +7,7 @@
     <NetVersion>net10.0</NetVersion>
     <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
+    <CodeAnalysisVersion>5.0.0</CodeAnalysisVersion>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
@@ -242,6 +243,7 @@ https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitati
     <InternalsVisibleTo Include="CommunityToolkit.Maui.UnitTests"/>
     <InternalsVisibleTo Include="CommunityToolkit.Maui.Analyzers.UnitTests"/>
     <InternalsVisibleTo Include="CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests"/>
+    <InternalsVisibleTo Include="CommunityToolkit.Maui.SourceGenerators.UnitTests"/>
   </ItemGroup>
 
   <PropertyGroup Condition="('$(TF_BUILD)' == 'true' OR '$(GITHUB_ACTIONS)' == 'true') and $([MSBuild]::IsOSPlatform('windows')) == 'true'">
