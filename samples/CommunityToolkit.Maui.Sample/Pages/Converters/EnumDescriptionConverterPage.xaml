@@ -27,7 +27,7 @@
                     </FormattedString>
                 </Label.FormattedText>
             </Label>
-            <Label Text="When an Enum value is passed in, the converter looks for attributes that provide a more user-friendly name. If one is found, it uses that value; otherwise it simply uses the Enum’s name.. " VerticalOptions="Center" />
+            <Label Text="When an Enum value is passed in, the converter looks for attributes that provide a more user-friendly name. If one is found, it uses that value; otherwise it simply uses the Enum’s name." VerticalOptions="Center" />
             <Label Text="This ensures that Enum values can be displayed clearly while still working correctly even when no attributes are defined. " VerticalOptions="Center" />
             <Label Text="There is no description needed for one word enum members that are spelled the way you want to display them." />
 
