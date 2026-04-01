@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
 using CommunityToolkit.Maui.ApplicationModel;
-using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Media;
