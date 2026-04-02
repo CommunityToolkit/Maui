@@ -277,11 +277,8 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
-		if (adaptiveMediaSource is not null)
-		{
-			adaptiveMediaSource.DownloadRequested -= OnAdaptiveMediaSourceDownloadRequested;
-			adaptiveMediaSource = null;
-		}
+		adaptiveMediaSource?.DownloadRequested -= OnAdaptiveMediaSourceDownloadRequested;
+		adaptiveMediaSource = null;
 
 		await Dispatcher.DispatchAsync(() => Player.PosterSource = new BitmapImage());
 
@@ -305,7 +302,7 @@ partial class MediaManager : IDisposable
 			if (!string.IsNullOrWhiteSpace(uri))
 			{
 				var headers = uriMediaSource.HttpHeaders;
-				if (headers is { Count: > 0 })
+				if (headers.Count > 0)
 				{
 					await SetUriSourceWithHeaders(new Uri(uri), headers);
 				}
@@ -371,15 +368,16 @@ partial class MediaManager : IDisposable
 				Player.AutoPlay = MediaElement.ShouldAutoPlay;
 				Player.Source = mediaSource;
 			});
-			return;
 		}
-
-		var stream = await HttpRandomAccessStream.CreateAsync(headerHttpClient, uri);
-		await Dispatcher.DispatchAsync(() =>
+		else
 		{
-			Player.AutoPlay = MediaElement.ShouldAutoPlay;
-			Player.Source = WinMediaSource.CreateFromStream(stream, string.Empty);
-		});
+			var stream = await HttpRandomAccessStream.CreateAsync(headerHttpClient, uri);
+			await Dispatcher.DispatchAsync(() =>
+			{
+				Player.AutoPlay = MediaElement.ShouldAutoPlay;
+				Player.Source = WinMediaSource.CreateFromStream(stream, string.Empty);
+			});
+		}
 	}
 
 	async void OnAdaptiveMediaSourceDownloadRequested(AdaptiveMediaSource sender, AdaptiveMediaSourceDownloadRequestedEventArgs args)
@@ -425,11 +423,8 @@ partial class MediaManager : IDisposable
 	{
 		if (disposing)
 		{
-			if (adaptiveMediaSource is not null)
-			{
-				adaptiveMediaSource.DownloadRequested -= OnAdaptiveMediaSourceDownloadRequested;
-				adaptiveMediaSource = null;
-			}
+			adaptiveMediaSource?.DownloadRequested -= OnAdaptiveMediaSourceDownloadRequested;
+			adaptiveMediaSource = null;
 
 			headerHttpClient?.Dispose();
 			headerHttpClient = null;
