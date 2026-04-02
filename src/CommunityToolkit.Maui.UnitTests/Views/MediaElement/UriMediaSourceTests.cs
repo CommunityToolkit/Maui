@@ -68,8 +68,9 @@ public class UriMediaSourceTests : BaseViewTest
 		};
 
 		source.HttpHeaders["Authorization"] = "Bearer test-token";
+		source.HttpHeaders["X-Test-Header"] = "Test";
 
-		sourceChangedCount.Should().Be(0, "mutating the dictionary in-place should not trigger SourceChanged; reassign the property instead");
+		sourceChangedCount.Should().Be(2);
 	}
 
 	[Fact]
