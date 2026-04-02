@@ -69,21 +69,37 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 
 	void OnMediaCaptured(object? sender, MediaCapturedEventArgs e)
 	{
-		using var localFileStream = File.Create(imagePath);
-
-		e.Media.CopyTo(localFileStream);
-
-		Dispatcher.Dispatch(() =>
+		try
 		{
-			// workaround for https://github.com/dotnet/maui/issues/13858
-#if ANDROID
-			image.Source = ImageSource.FromStream(() => File.OpenRead(imagePath));
-#else
-			image.Source = ImageSource.FromFile(imagePath);
-#endif
+			if (e.Media.CanSeek)
+			{
+				e.Media.Position = 0;
+			}
 
-			debugText.Text = $"Image saved to {imagePath}";
-		});
+			using var capturedImageStream = new MemoryStream();
+			e.Media.CopyTo(capturedImageStream);
+
+			var imageBytes = capturedImageStream.ToArray();
+
+			using (var localFileStream = new FileStream(imagePath, FileMode.Create, FileAccess.Write, FileShare.Read))
+			{
+				localFileStream.Write(imageBytes, 0, imageBytes.Length);
+				localFileStream.Flush(flushToDisk: true);
+			}
+
+			Dispatcher.Dispatch(() =>
+			{
+				image.Source = ImageSource.FromStream(() => new MemoryStream(imageBytes));
+				debugText.Text = $"Image saved to {imagePath}";
+			});
+		}
+		catch (Exception ex)
+		{
+			Dispatcher.Dispatch(() =>
+			{
+				debugText.Text = $"Failed to save image: {ex.Message}";
+			});
+		}
 	}
 
 	void ZoomIn(object? sender, EventArgs? e)

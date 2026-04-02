@@ -519,9 +519,9 @@ partial class CameraManager
 		return provider.BindToLifecycle((ILifecycleOwner)context, cameraSelector, useCases);
 	}
 
-	void OnOrientationChanged(int rotation)
+	void OnOrientationChanged(int orientationDegrees)
 	{
-		var targetRotation = GetSurfaceRotation(rotation);
+		var targetRotation = GetSurfaceRotation(orientationDegrees);
 
 		imageCapture?.TargetRotation = targetRotation;
 		videoCapture?.TargetRotation = targetRotation;
