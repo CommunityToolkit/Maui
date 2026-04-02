@@ -216,7 +216,7 @@ partial class CameraManager
 
 		await mediaRecording.StopAsync();
 
-		if(videoCaptureStream.CanSeek)
+		if (videoCaptureStream.CanSeek)
 		{
 			videoCaptureStream.Position = 0;
 		}

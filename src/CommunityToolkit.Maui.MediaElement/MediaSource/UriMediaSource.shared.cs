@@ -67,7 +67,7 @@ public sealed partial class UriMediaSource : MediaSource
 
 	static void OnUriSourceChanged(BindableObject bindable, object oldValue, object newValue) =>
 		((UriMediaSource)bindable).OnSourceChanged();
-	
+
 	void HandleHeadersContentsChanged(object? sender, EventArgs e)
 	{
 		OnSourceChanged();
@@ -81,7 +81,7 @@ public sealed partial class UriMediaSource : MediaSource
 
 		public int Count => innerDictionary.Count;
 		public bool IsReadOnly => false;
-		
+
 		public V this[K key]
 		{
 			get => innerDictionary[key];

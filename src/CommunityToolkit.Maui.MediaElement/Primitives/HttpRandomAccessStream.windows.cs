@@ -2,9 +2,9 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Storage.Streams;
 using HttpClient = Windows.Web.Http.HttpClient;
-using HttpRequestMessage = Windows.Web.Http.HttpRequestMessage;
-using HttpMethod = Windows.Web.Http.HttpMethod;
 using HttpCompletionOption = Windows.Web.Http.HttpCompletionOption;
+using HttpMethod = Windows.Web.Http.HttpMethod;
+using HttpRequestMessage = Windows.Web.Http.HttpRequestMessage;
 
 namespace CommunityToolkit.Maui.Core;
 

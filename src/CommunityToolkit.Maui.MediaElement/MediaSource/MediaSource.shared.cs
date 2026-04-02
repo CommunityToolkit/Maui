@@ -92,7 +92,7 @@ public abstract class MediaSource : Element
 		{
 			uriMediaSource.HttpHeaders.Add(httpHeader.Key, httpHeader.Value);
 		}
-		
+
 		return uriMediaSource;
 	}
 

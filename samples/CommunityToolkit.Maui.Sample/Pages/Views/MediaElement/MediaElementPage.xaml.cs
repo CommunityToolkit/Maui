@@ -151,7 +151,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		if (string.IsNullOrWhiteSpace(CustomSourceEntry.Text))
 		{
 			await DisplayAlertAsync("Error Loading URL Source", "No value was found to load as a media source. " +
-			                                                    "When you do enter a value, make sure it's a valid URL. No additional validation is done.",
+																"When you do enter a value, make sure it's a valid URL. No additional validation is done.",
 				"OK");
 
 			return;
@@ -205,7 +205,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	{
 		uriMediaSource.HttpHeaders.Clear();
 		UpdateHeadersSummary(uriMediaSource);
-		
+
 		logger.LogInformation("Custom HTTP headers cleared.");
 	}
 
@@ -255,7 +255,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataArtist = "Local Resource Album";
 
 				if (DeviceInfo.Platform == DevicePlatform.MacCatalyst
-				    || DeviceInfo.Platform == DevicePlatform.iOS)
+					|| DeviceInfo.Platform == DevicePlatform.iOS)
 				{
 					MediaElement.Source = MediaSource.FromResource("AppleVideo.mp4");
 				}
@@ -318,8 +318,8 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			source = MediaSource.FromResource("AndroidVideo.mp4");
 		}
 		else if (deviceInfo.Platform == DevicePlatform.MacCatalyst
-		         || deviceInfo.Platform == DevicePlatform.iOS
-		         || deviceInfo.Platform == DevicePlatform.macOS)
+				 || deviceInfo.Platform == DevicePlatform.iOS
+				 || deviceInfo.Platform == DevicePlatform.macOS)
 		{
 			source = MediaSource.FromResource("AppleVideo.mp4");
 		}
