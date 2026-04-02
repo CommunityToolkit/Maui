@@ -23,7 +23,7 @@ public partial class MediaElementMultipleWindowsPage : BasePage<MediaElementMult
 			Content = new MediaElement
 			{
 				AndroidViewType= AndroidViewType.SurfaceView,
-				Source = StreamingVideoUrls.ElephantsDream,
+				Source = StreamingVideoUrls.Jellyfish,
 				ShouldAutoPlay = true
 			}
 		});

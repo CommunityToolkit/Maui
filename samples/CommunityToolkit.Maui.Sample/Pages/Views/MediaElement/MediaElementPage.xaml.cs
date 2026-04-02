@@ -16,16 +16,15 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string resetSource = "Reset Source to null";
 	const string loadMusic = "Load Music";
 
-	Dictionary<string, string>? customHeaders;
-
 	const string botImageUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
 	const string hlsStreamTestUrl = "https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8";
 	const string hal9000AudioUrl = "https://github.com/prof3ssorSt3v3/media-sample-files/raw/master/hal-9000.mp3";
 
-
 	readonly ILogger logger;
 	readonly IDeviceInfo deviceInfo;
 	readonly IFileSystem fileSystem;
+
+	readonly Dictionary<string, string> customHeaders = new();
 
 	public MediaElementPage(MediaElementViewModel viewModel, IFileSystem fileSystem, IDeviceInfo deviceInfo, ILogger<MediaElementPage> logger) : base(viewModel)
 	{
@@ -156,7 +155,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		if (string.IsNullOrWhiteSpace(CustomSourceEntry.Text))
 		{
 			await DisplayAlertAsync("Error Loading URL Source", "No value was found to load as a media source. " +
-				"When you do enter a value, make sure it's a valid URL. No additional validation is done.",
+			                                                    "When you do enter a value, make sure it's a valid URL. No additional validation is done.",
 				"OK");
 
 			return;
@@ -177,18 +176,18 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			return;
 		}
 
-		customHeaders ??= new Dictionary<string, string>();
 		customHeaders[name] = value ?? string.Empty;
 
 		HeaderNameEntry.Text = string.Empty;
 		HeaderValueEntry.Text = string.Empty;
 		UpdateHeadersSummary();
+
 		logger.LogInformation("Custom HTTP header added: {HeaderName}", name);
 	}
 
 	void ClearHeadersClicked(object? sender, EventArgs? e)
 	{
-		customHeaders = null;
+		customHeaders.Clear();
 		UpdateHeadersSummary();
 		logger.LogInformation("Custom HTTP headers cleared.");
 	}
@@ -198,14 +197,14 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		HeadersPanel.IsVisible = e.Value;
 		if (!e.Value)
 		{
-			customHeaders = null;
+			customHeaders.Clear();
 			UpdateHeadersSummary();
 		}
 	}
 
 	void UpdateHeadersSummary()
 	{
-		if (customHeaders is not { Count: > 0 })
+		if (customHeaders.Count <= 0)
 		{
 			HeadersSummaryLabel.Text = "No headers defined";
 			return;
@@ -216,14 +215,15 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 	void ApplyCustomHeaders(UriMediaSource source)
 	{
-		if (customHeaders is not { Count: > 0 })
+		if (customHeaders.Count <= 0)
 		{
 			return;
 		}
 
+		source.HttpHeaders.Clear();
 		foreach (var header in customHeaders)
 		{
-			source.HttpHeaders[header.Key] = header.Value;
+			source.HttpHeaders.Add(header.Key, header.Value);
 		}
 	}
 
@@ -268,7 +268,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataArtist = "Local Resource Album";
 
 				if (DeviceInfo.Platform == DevicePlatform.MacCatalyst
-					|| DeviceInfo.Platform == DevicePlatform.iOS)
+				    || DeviceInfo.Platform == DevicePlatform.iOS)
 				{
 					MediaElement.Source = MediaSource.FromResource("AppleVideo.mp4");
 				}
@@ -280,6 +280,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				{
 					MediaElement.Source = MediaSource.FromResource("WindowsVideo.mp4");
 				}
+
 				return;
 
 			case loadMusic:
@@ -331,8 +332,8 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			source = MediaSource.FromResource("AndroidVideo.mp4");
 		}
 		else if (deviceInfo.Platform == DevicePlatform.MacCatalyst
-				 || deviceInfo.Platform == DevicePlatform.iOS
-				 || deviceInfo.Platform == DevicePlatform.macOS)
+		         || deviceInfo.Platform == DevicePlatform.iOS
+		         || deviceInfo.Platform == DevicePlatform.macOS)
 		{
 			source = MediaSource.FromResource("AppleVideo.mp4");
 		}
