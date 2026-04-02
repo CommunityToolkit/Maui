@@ -98,7 +98,7 @@ partial class CameraManager
 
 	public partial void UpdateZoom(float zoomLevel)
 	{
-		if (!IsInitialized || captureDevice is null)
+		if (!isInitialized || captureDevice is null)
 		{
 			return;
 		}
@@ -212,8 +212,8 @@ partial class CameraManager
 
 		captureSession.CommitConfiguration();
 		captureSession.StartRunning();
-		IsInitialized = true;
-		OnLoaded.Invoke();
+		isInitialized = true;
+		onLoaded.Invoke();
 	}
 
 	private partial void PlatformStopCameraPreview()
@@ -228,7 +228,7 @@ partial class CameraManager
 			captureSession.StopRunning();
 		}
 
-		IsInitialized = false;
+		isInitialized = false;
 	}
 
 	private partial void PlatformDisconnect()
