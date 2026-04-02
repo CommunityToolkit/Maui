@@ -18,14 +18,14 @@ public class UriMediaSourceTests : BaseViewTest
 	[Fact]
 	public void HttpHeaders_SetAndGetRoundtrip()
 	{
-		var source = new UriMediaSource();
-		var headers = new Dictionary<string, string>
+		var source = new UriMediaSource
 		{
-			["Authorization"] = "Bearer test-token",
-			["X-Custom-Header"] = "custom-value"
+			HttpHeaders = new Dictionary<string, string>
+			{
+				["Authorization"] = "Bearer test-token",
+				["X-Custom-Header"] = "custom-value"
+			}
 		};
-
-		source.HttpHeaders = headers;
 
 		source.HttpHeaders.Should().HaveCount(2);
 		source.HttpHeaders["Authorization"].Should().Be("Bearer test-token");
@@ -46,12 +46,9 @@ public class UriMediaSourceTests : BaseViewTest
 				sourceChangedFired = true;
 			}
 		};
-
-		source.HttpHeaders = new Dictionary<string, string>
-		{
-			["Authorization"] = "Bearer test-token"
-		};
-
+		
+		source.HttpHeaders.Add("Authorization", "Bearer abc123");
+		
 		sourceChangedFired.Should().BeTrue();
 	}
 
@@ -97,24 +94,11 @@ public class UriMediaSourceTests : BaseViewTest
 	{
 		var uri = new Uri("https://example.com/video.mp4");
 
-		var source = MediaSource.FromUri(uri, null);
+		var source = MediaSource.FromUri(uri);
 
 		var uriSource = source.Should().BeOfType<UriMediaSource>().Which;
 		uriSource.HttpHeaders.Should().NotBeNull();
 		uriSource.HttpHeaders.Should().BeEmpty();
-	}
-
-	[Fact]
-	public void FromUri_WithHeaders_NullUri_ReturnsNull()
-	{
-		var headers = new Dictionary<string, string>
-		{
-			["Authorization"] = "Bearer abc123"
-		};
-
-		var source = MediaSource.FromUri(null, headers);
-
-		source.Should().BeNull();
 	}
 
 	[Fact]
