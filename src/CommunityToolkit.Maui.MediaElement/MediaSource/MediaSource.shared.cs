@@ -22,8 +22,8 @@ public abstract class MediaSource : Element
 	/// An implicit operator to convert a string value into a <see cref="MediaSource"/>.
 	/// </summary>
 	/// <param name="source">Full path to a local file (starting with <c>file://</c>) or an absolute URI.</param>
-	public static implicit operator MediaSource(string? source) =>
-		Uri.TryCreate(source, UriKind.Absolute, out var uri) && uri.Scheme != "file"
+	public static implicit operator MediaSource(string source) =>
+		Uri.TryCreate(source, UriKind.Absolute, out var uri) && uri.Scheme != Uri.UriSchemeFile
 			? FromUri(uri)
 			: FromFile(source);
 
@@ -38,7 +38,7 @@ public abstract class MediaSource : Element
 	/// </summary>
 	/// <param name="path">Full path to the resource file, relative to the application's resources folder.</param>
 	/// <returns>A <see cref="ResourceMediaSource"/> instance.</returns>
-	public static MediaSource FromResource(string? path) => new ResourceMediaSource { Path = isAndroid ? $"Assets/{path}" : path };
+	public static MediaSource FromResource(string path) => new ResourceMediaSource { Path = isAndroid ? $"Assets/{path}" : path };
 
 	/// <summary>
 	/// Creates a <see cref="UriMediaSource"/> from a string that contains an absolute URI.
@@ -53,7 +53,7 @@ public abstract class MediaSource : Element
 	/// </summary>
 	/// <param name="path">Full path to the file to load.</param>
 	/// <returns>A <see cref="FileMediaSource"/> instance.</returns>
-	public static MediaSource FromFile(string? path) => new FileMediaSource { Path = path };
+	public static MediaSource FromFile(string path) => new FileMediaSource { Path = path };
 
 	/// <summary>
 	/// Creates a <see cref="UriMediaSource"/> from an absolute URI.
