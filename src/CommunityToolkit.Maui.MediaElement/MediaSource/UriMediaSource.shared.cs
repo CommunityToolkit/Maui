@@ -45,7 +45,7 @@ public sealed partial class UriMediaSource : MediaSource
 	/// Setting this property triggers a source update on the underlying platform player.
 	/// Not supported on Tizen.
 	/// </remarks>
-	public IDictionary<string, string> HttpHeaders { get; init; } = new ObservableDictionary<string, string>();
+	public IDictionary<string, string> HttpHeaders { get; } = new ObservableDictionary<string, string>();
 
 	/// <summary>
 	/// Gets or sets the URI to use as a media source.

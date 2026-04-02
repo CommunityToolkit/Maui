@@ -18,18 +18,18 @@ public class UriMediaSourceTests : BaseViewTest
 	[Fact]
 	public void HttpHeaders_SetAndGetRoundtrip()
 	{
-		var source = new UriMediaSource
-		{
-			HttpHeaders = new Dictionary<string, string>
-			{
-				["Authorization"] = "Bearer test-token",
-				["X-Custom-Header"] = "custom-value"
-			}
-		};
+		const string authHeaderName = "Authorization";
+		const string authHeaderValue = "Bearer abc123";
+		const string customHeaderName = "X-Custom-Header";
+		const string customHeaderValue = "custom-value";
+
+		var source = new UriMediaSource();
+		source.HttpHeaders.Add(authHeaderName, authHeaderValue);
+		source.HttpHeaders.Add(customHeaderName, customHeaderValue);
 
 		source.HttpHeaders.Should().HaveCount(2);
-		source.HttpHeaders["Authorization"].Should().Be("Bearer test-token");
-		source.HttpHeaders["X-Custom-Header"].Should().Be("custom-value");
+		source.HttpHeaders[authHeaderName].Should().Be(authHeaderValue);
+		source.HttpHeaders[customHeaderName].Should().Be(customHeaderValue);
 	}
 
 	[Fact]
@@ -46,9 +46,9 @@ public class UriMediaSourceTests : BaseViewTest
 				sourceChangedFired = true;
 			}
 		};
-		
+
 		source.HttpHeaders.Add("Authorization", "Bearer abc123");
-		
+
 		sourceChangedFired.Should().BeTrue();
 	}
 

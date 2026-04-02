@@ -82,9 +82,18 @@ public abstract class MediaSource : Element
 		ArgumentNullException.ThrowIfNull(uri);
 		ArgumentNullException.ThrowIfNull(httpHeaders);
 
-		return uri.IsAbsoluteUri
-			? new UriMediaSource { Uri = uri, HttpHeaders = httpHeaders }
-			: throw new ArgumentException("Uri must be absolute", nameof(uri));
+		if (!uri.IsAbsoluteUri)
+		{
+			throw new ArgumentException("Uri must be absolute", nameof(uri));
+		}
+
+		var uriMediaSource = new UriMediaSource { Uri = uri };
+		foreach (var httpHeader in httpHeaders)
+		{
+			uriMediaSource.HttpHeaders.Add(httpHeader.Key, httpHeader.Value);
+		}
+		
+		return uriMediaSource;
 	}
 
 	/// <summary>
