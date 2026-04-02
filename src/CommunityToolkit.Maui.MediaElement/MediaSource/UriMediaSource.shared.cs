@@ -113,7 +113,7 @@ public sealed partial class UriMediaSource : MediaSource
 
 		public bool Remove(KeyValuePair<K, V> item)
 		{
-			var isRemoved = innerDictionary.Remove(item.Key);
+			var isRemoved = innerDictionary.Remove(item);
 			if (isRemoved)
 			{
 				ContentsChanged?.Invoke(this, EventArgs.Empty);
