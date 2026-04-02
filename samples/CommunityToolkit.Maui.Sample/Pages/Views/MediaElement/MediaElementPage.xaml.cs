@@ -173,7 +173,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				return;
 			}
 
-			uriMediaSource.HttpHeaders.Add(name, value);
+			uriMediaSource.HttpHeaders[name] = value;
 			UpdateHeadersSummary(uriMediaSource);
 		}
 
