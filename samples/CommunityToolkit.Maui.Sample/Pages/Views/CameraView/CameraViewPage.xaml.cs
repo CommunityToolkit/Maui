@@ -77,11 +77,6 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 	{
 		try
 		{
-			if (e.Media.CanSeek)
-			{
-				e.Media.Position = 0;
-			}
-
 			using var capturedImageStream = new MemoryStream();
 			e.Media.CopyTo(capturedImageStream);
 
