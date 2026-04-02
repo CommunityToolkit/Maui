@@ -28,7 +28,7 @@ public sealed partial class UriMediaSource : MediaSource
 	/// <summary>
 	/// An implicit operator to convert a string value into a <see cref="UriMediaSource"/>.
 	/// </summary>
-	/// <param name="uri">Full path to the resource file, relative to the application's resources folder.</param>
+	/// <param name="uri">The URI string to convert into a <see cref="UriMediaSource"/>.</param>
 	public static implicit operator UriMediaSource(string uri) => (UriMediaSource)FromUri(uri);
 
 	/// <summary>
