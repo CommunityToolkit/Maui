@@ -44,7 +44,7 @@ partial class CameraManager
 	int extensionMode = ExtensionMode.Auto;
 	CaptureSessionMode currentSessionMode = CaptureSessionMode.Photo;
 	bool IsCapturePhotoSession => currentSessionMode is CaptureSessionMode.Photo;
-	
+
 	enum CaptureSessionMode { Photo, Video }
 
 	public async Task SetExtensionMode(int mode, CancellationToken token)
