@@ -490,7 +490,7 @@ partial class CameraManager
 			}
 
 			var extensionsManagerFuture = ExtensionsManager.GetInstanceAsync(context, cameraProviderInstance)
-									  ?? throw new InvalidOperationException("Unable to get listenable future for camera provider"); ;
+									  ?? throw new InvalidOperationException("Unable to get listenable future for camera provider");
 
 			extensionsManagerFuture.AddListener(new Runnable(() =>
 			{
