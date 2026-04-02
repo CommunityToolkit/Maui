@@ -22,12 +22,6 @@ namespace CommunityToolkit.Maui.Core;
 [SupportedOSPlatform("android21.0")]
 partial class CameraManager
 {
-	enum CaptureSessionMode
-	{
-		Photo,
-		Video
-	}
-
 	readonly Context context = mauiContext.Context ?? throw new CameraException($"Unable to retrieve {nameof(Context)}");
 
 	NativePlatformCameraPreviewView? previewView;
@@ -50,6 +44,8 @@ partial class CameraManager
 	int extensionMode = ExtensionMode.Auto;
 	CaptureSessionMode currentSessionMode = CaptureSessionMode.Photo;
 	bool IsCapturePhotoSession => currentSessionMode is CaptureSessionMode.Photo;
+	
+	enum CaptureSessionMode { Photo, Video }
 
 	public async Task SetExtensionMode(int mode, CancellationToken token)
 	{
