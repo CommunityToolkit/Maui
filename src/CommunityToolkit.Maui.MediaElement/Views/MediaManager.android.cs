@@ -380,8 +380,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		if (item?.MediaMetadata is not null)
 		{
-			var headers = (MediaElement.Source as UriMediaSource)?.HttpHeaders;
-			if (headers is { Count: > 0 })
+			var headers = ((UriMediaSource)MediaElement.Source).HttpHeaders;
+			if (headers.Count > 0)
 			{
 				Trace.WriteLine($"MediaElement [Android]: Applying {headers.Count} custom HTTP header(s) to media source.");
 				foreach (var header in headers)
