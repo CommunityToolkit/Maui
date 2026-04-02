@@ -53,7 +53,7 @@ public class UriMediaSourceTests : BaseViewTest
 	}
 
 	[Fact]
-	public void HttpHeaders_MutatingExistingDictionaryDoesNotTriggerSourceChanged()
+	public void HttpHeaders_MutatingExistingDictionaryTriggersSourceChanged()
 	{
 		var source = new UriMediaSource();
 		var sourceChangedCount = 0;
@@ -91,7 +91,7 @@ public class UriMediaSourceTests : BaseViewTest
 	}
 
 	[Fact]
-	public void FromUri_WithNullHeaders_CreatesUriMediaSourceWithEmptyHeaders()
+	public void FromUri_WithNoHeaders_CreatesUriMediaSourceWithEmptyHeaders()
 	{
 		var uri = new Uri("https://example.com/video.mp4");
 
