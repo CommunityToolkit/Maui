@@ -85,7 +85,16 @@ public sealed partial class UriMediaSource : MediaSource
 		public V this[K key]
 		{
 			get => innerDictionary[key];
-			set => innerDictionary[key] = value;
+			set
+			{
+				if (innerDictionary.TryGetValue(key, out var existingValue) && EqualityComparer<V>.Default.Equals(existingValue, value))
+				{
+					return;
+				}
+
+				innerDictionary[key] = value;
+				ContentsChanged?.Invoke(this, EventArgs.Empty);
+			}
 		}
 
 		public ICollection<K> Keys => innerDictionary.Keys;
