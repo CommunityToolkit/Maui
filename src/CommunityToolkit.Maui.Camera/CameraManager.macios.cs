@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using AuthenticationServices;
 using AVFoundation;
 using CommunityToolkit.Maui.Extensions;
 using CoreMedia;
