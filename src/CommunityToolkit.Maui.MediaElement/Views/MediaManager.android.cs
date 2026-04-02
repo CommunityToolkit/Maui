@@ -383,12 +383,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			var headers = ((UriMediaSource)MediaElement.Source).HttpHeaders;
 			if (headers.Count > 0)
 			{
-				Trace.WriteLine($"MediaElement [Android]: Applying {headers.Count} custom HTTP header(s) to media source.");
-				foreach (var header in headers)
-				{
-					Trace.WriteLine($"MediaElement [Android]: Header '{header.Key}' set.");
-				}
-
 				var httpDataSourceFactory = new DefaultHttpDataSource.Factory();
 				httpDataSourceFactory.SetDefaultRequestProperties(headers);
 
