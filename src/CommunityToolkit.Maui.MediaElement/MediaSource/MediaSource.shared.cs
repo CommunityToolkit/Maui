@@ -1,7 +1,5 @@
 ﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Converters;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -24,7 +22,7 @@ public abstract class MediaSource : Element
 	/// An implicit operator to convert a string value into a <see cref="MediaSource"/>.
 	/// </summary>
 	/// <param name="source">Full path to a local file (starting with <c>file://</c>) or an absolute URI.</param>
-	public static implicit operator MediaSource?(string? source) =>
+	public static implicit operator MediaSource(string? source) =>
 		Uri.TryCreate(source, UriKind.Absolute, out var uri) && uri.Scheme != "file"
 			? FromUri(uri)
 			: FromFile(source);
@@ -33,7 +31,7 @@ public abstract class MediaSource : Element
 	/// An implicit operator to convert a <see cref="Uri"/> object into a <see cref="UriMediaSource"/>.
 	/// </summary>
 	/// <param name="uri">Absolute URI to load.</param>
-	public static implicit operator MediaSource?(Uri? uri) => FromUri(uri);
+	public static implicit operator MediaSource(Uri uri) => FromUri(uri);
 
 	/// <summary>
 	/// Creates a <see cref="ResourceMediaSource"/> from an absolute URI.
@@ -48,7 +46,7 @@ public abstract class MediaSource : Element
 	/// <param name="uri">String representation or an absolute URI to load.</param>
 	/// <returns>A <see cref="UriMediaSource"/> instance.</returns>
 	/// <exception cref="ArgumentException">Thrown if <paramref name="uri"/> is not an absolute URI.</exception>
-	public static MediaSource? FromUri(string uri) => FromUri(new Uri(uri));
+	public static MediaSource FromUri(string uri) => FromUri(new Uri(uri));
 
 	/// <summary>
 	/// Creates a <see cref="FileMediaSource"/> from a local path.
@@ -63,19 +61,13 @@ public abstract class MediaSource : Element
 	/// <param name="uri">Absolute URI to load.</param>
 	/// <returns>A <see cref="UriMediaSource"/> instance.</returns>
 	/// <exception cref="ArgumentException">Thrown if <paramref name="uri"/> is not an absolute URI.</exception>
-	public static MediaSource? FromUri(Uri? uri)
+	public static MediaSource FromUri(Uri uri)
 	{
-		if (uri is null)
-		{
-			return null;
-		}
+		ArgumentNullException.ThrowIfNull(uri);
 
-		if (!uri.IsAbsoluteUri)
-		{
-			throw new ArgumentException("Uri must be absolute", nameof(uri));
-		}
-
-		return new UriMediaSource { Uri = uri };
+		return uri.IsAbsoluteUri
+			? new UriMediaSource { Uri = uri }
+			: throw new ArgumentException("Uri must be absolute", nameof(uri));
 	}
 
 	/// <summary>
@@ -85,19 +77,14 @@ public abstract class MediaSource : Element
 	/// <param name="httpHeaders">HTTP headers to include in the request (e.g. Authorization).</param>
 	/// <returns>A <see cref="UriMediaSource"/> instance.</returns>
 	/// <exception cref="ArgumentException">Thrown if <paramref name="uri"/> is not an absolute URI.</exception>
-	public static MediaSource? FromUri(Uri? uri, IDictionary<string, string>? httpHeaders)
+	public static MediaSource FromUri(Uri uri, IDictionary<string, string> httpHeaders)
 	{
-		if (uri is null)
-		{
-			return null;
-		}
+		ArgumentNullException.ThrowIfNull(uri);
+		ArgumentNullException.ThrowIfNull(httpHeaders);
 
-		if (!uri.IsAbsoluteUri)
-		{
-			throw new ArgumentException("Uri must be absolute", nameof(uri));
-		}
-
-		return new UriMediaSource { Uri = uri, HttpHeaders = httpHeaders ?? new Dictionary<string, string>() };
+		return uri.IsAbsoluteUri
+			? new UriMediaSource { Uri = uri, HttpHeaders = httpHeaders }
+			: throw new ArgumentException("Uri must be absolute", nameof(uri));
 	}
 
 	/// <summary>
