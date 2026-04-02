@@ -115,7 +115,7 @@ static partial class StatusBar
 	static void SetStatusBarAppearance(bool isLightStatusBars)
 	{
 		if (Activity.GetCurrentWindow() is Window window
-		    && WindowCompat.GetInsetsController(window, window.DecorView) is WindowInsetsControllerCompat windowController)
+			&& WindowCompat.GetInsetsController(window, window.DecorView) is WindowInsetsControllerCompat windowController)
 		{
 			windowController.AppearanceLightStatusBars = isLightStatusBars;
 		}

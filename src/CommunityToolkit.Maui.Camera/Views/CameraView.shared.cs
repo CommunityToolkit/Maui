@@ -72,7 +72,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// Bindable property for the <see cref="StopCameraPreviewCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty StopCameraPreviewCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(Command<CancellationToken>), typeof(CameraView), null, BindingMode.OneWayToSource, defaultValueCreator: CreateStopCameraPreviewCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(ICommand), typeof(CameraView), null, BindingMode.OneWayToSource, defaultValueCreator: CreateStopCameraPreviewCommand).BindableProperty;
 
 	/// <summary>
 	/// Bindable property for the <see cref="StartVideoRecordingCommand"/> property.
@@ -137,12 +137,9 @@ public partial class CameraView : View, ICameraView, IDisposable
 	public Command<CancellationToken> StartCameraPreviewCommand => (Command<CancellationToken>)GetValue(StartCameraPreviewCommandProperty);
 
 	/// <summary>
-	/// Gets the <see cref="Command{CancellationToken}"/> that stops the camera preview.
+	/// Gets the <see cref="ICommand"/> that stops the camera preview.
 	/// </summary>
-	/// <remarks>
-	/// <see cref="StopCameraPreviewCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter
-	/// </remarks>
-	public Command<CancellationToken> StopCameraPreviewCommand => (Command<CancellationToken>)GetValue(StopCameraPreviewCommandProperty);
+	public ICommand StopCameraPreviewCommand => (ICommand)GetValue(StopCameraPreviewCommandProperty);
 
 	/// <summary>
 	/// Gets the <see cref="Command{Stream}"/> that starts video recording.
@@ -326,10 +323,10 @@ public partial class CameraView : View, ICameraView, IDisposable
 		return new(async token => await cameraView.StartCameraPreview(token).ConfigureAwait(false));
 	}
 
-	static Command CreateStopCameraPreviewCommand(BindableObject bindable)
+	static ICommand CreateStopCameraPreviewCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;
-		return new(_ => cameraView.StopCameraPreview());
+		return new Command(cameraView.StopCameraPreview);
 	}
 
 	static Command<Stream> CreateStartVideoRecordingCommand(BindableObject bindable)

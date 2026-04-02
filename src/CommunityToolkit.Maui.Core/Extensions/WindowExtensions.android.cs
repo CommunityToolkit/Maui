@@ -38,7 +38,7 @@ public static class AndroidWindowExtensions
 
 		currentWindow.ClearFlags(WindowManagerFlags.TranslucentStatus);
 		currentWindow.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
-		
+
 		return currentWindow;
 	}
 }
