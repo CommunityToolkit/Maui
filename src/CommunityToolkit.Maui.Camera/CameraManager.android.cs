@@ -174,7 +174,7 @@ partial class CameraManager
 		// According to the Android docs, `ResolutionSelector.Builder.setResolutionFilter(ResolutionFilter)` returns a `NonNull` object
 		// `ResolutionSelector.Builder.SetResolutionFilter(ResolutionFilter)` returning a nullable object in .NET for Android is likely a C# Binding mistake
 
-		if (IsInitialized && IsCapturePhotoSession)
+		if (isInitialized && IsCapturePhotoSession)
 		{
 			RebuildCameraPreview();
 			RebuildImageCapture();
@@ -356,8 +356,8 @@ partial class CameraManager
 		var action = new FocusMeteringAction.Builder(point).Build();
 		camera?.CameraControl?.StartFocusAndMetering(action);
 
-		IsInitialized = true;
-		OnLoaded.Invoke();
+		isInitialized = true;
+		onLoaded.Invoke();
 	}
 
 	private partial void PlatformStopCameraPreview()
@@ -368,7 +368,7 @@ partial class CameraManager
 		}
 
 		processCameraProvider.UnbindAll();
-		IsInitialized = false;
+		isInitialized = false;
 	}
 
 	private partial void PlatformDisconnect()
