@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using AVFoundation;
+﻿using AVFoundation;
 using AVKit;
 using CommunityToolkit.Maui.Views;
 using CoreFoundation;
