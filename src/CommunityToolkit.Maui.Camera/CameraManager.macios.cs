@@ -467,17 +467,17 @@ partial class CameraManager
 			_ => AVCaptureVideoOrientation.Portrait
 		};
 	}
-	
+
 	bool TryConfigureAVCaptureConnection(in AVCaptureOutput captureOutput, [NotNullWhen(false)] out string? errorMessage)
 	{
 		errorMessage = null;
-		
+
 		if (AVMediaTypes.Video.GetConstant() is not NSString avMediaTypeVideo)
 		{
 			errorMessage = "Unable to determine video format.";
 			return false;
 		}
-		
+
 		if (captureOutput.ConnectionFromMediaType(avMediaTypeVideo) is not AVCaptureConnection captureConnection)
 		{
 			errorMessage = "Unable to determine video connection from media type.";
