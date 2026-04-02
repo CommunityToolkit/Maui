@@ -26,18 +26,24 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 		base.OnAppearing();
 
 		var cameraPermissionsRequest = await Permissions.RequestAsync<Permissions.Camera>();
-		var microphonePermissionsRequest = await Permissions.RequestAsync<Permissions.Microphone>();
-
 		if (cameraPermissionsRequest is not PermissionStatus.Granted)
 		{
 			await Shell.Current.CurrentPage.DisplayAlertAsync("Camera permission is not granted.", "Please grant the permission to use this feature.", "OK");
 			return;
 		}
 
-		if (microphonePermissionsRequest is not PermissionStatus.Granted)
+		try
 		{
-			await Shell.Current.CurrentPage.DisplayAlertAsync("Microphone permission is not granted.", "Please grant the permission to use this feature.", "OK");
-			return;
+			var microphonePermissionsRequest = await Permissions.RequestAsync<Permissions.Microphone>();
+			if (microphonePermissionsRequest is not PermissionStatus.Granted)
+			{
+				await Shell.Current.CurrentPage.DisplayAlertAsync("Microphone permission is not granted.", "Please grant the permission to use this feature.", "OK");
+				return;
+			}
+		}
+		catch (FileNotFoundException) when (OperatingSystem.IsWindows()) // Unpackaged Windows Apps do not generate the required file AppxManifest.xml 
+		{
+			await Shell.Current.CurrentPage.DisplayAlertAsync("Unable to access AppxManifest.xml", "Publish using a Packaged .NET MAUI app on Windows to enable Microphone.", "OK");
 		}
 	}
 
