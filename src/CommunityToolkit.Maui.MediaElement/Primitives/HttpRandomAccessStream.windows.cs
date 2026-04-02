@@ -53,8 +53,19 @@ sealed partial class HttpRandomAccessStream : IRandomAccessStream
 
 			using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
 			var requestedPosition = Position;
+
+			if (Size > 0 && requestedPosition >= Size)
+			{
+				buffer.Length = 0;
+				return buffer;
+			}
+
 			var rangeEnd = requestedPosition + count - 1;
 
+			if (Size > 0 && rangeEnd >= Size)
+			{
+				rangeEnd = Size - 1;
+			}
 			request.Headers.TryAppendWithoutValidation("Range", $"bytes={requestedPosition}-{rangeEnd}");
 
 			using var response = await httpClient.SendRequestAsync(request, HttpCompletionOption.ResponseHeadersRead).AsTask(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
