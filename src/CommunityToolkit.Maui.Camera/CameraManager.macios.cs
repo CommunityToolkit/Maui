@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using AuthenticationServices;
 using AVFoundation;
 using CommunityToolkit.Maui.Extensions;
 using CoreMedia;
@@ -293,7 +295,10 @@ partial class CameraManager
 		captureSession.AddOutput(videoOutput);
 		captureSession.CommitConfiguration();
 
-		ConfigureAVCaptureConnection(videoOutput);
+		if (!TryConfigureAVCaptureConnection(videoOutput, out var error))
+		{
+			Trace.TraceWarning(error);
+		}
 
 		videoRecordingStream = stream;
 		videoRecordingFinalizeTcs = new TaskCompletionSource();
@@ -378,7 +383,10 @@ partial class CameraManager
 		var capturePhotoSettings = AVCapturePhotoSettings.FromFormat(codecSettings);
 		capturePhotoSettings.FlashMode = photoOutput.SupportedFlashModes.Contains(flashMode) ? flashMode : photoOutput.SupportedFlashModes.First();
 
-		ConfigureAVCaptureConnection(photoOutput);
+		if (!TryConfigureAVCaptureConnection(photoOutput, out var errorMessage))
+		{
+			Trace.TraceWarning(errorMessage);
+		}
 
 		var wrapper = new AVCapturePhotoCaptureDelegateWrapper();
 
@@ -416,41 +424,6 @@ partial class CameraManager
 		else
 		{
 			cameraView.OnMediaCaptured(imageData);
-		}
-	}
-
-	void ConfigureAVCaptureConnection(AVCaptureOutput captureOutput)
-	{
-		if (AVMediaTypes.Video.GetConstant() is NSString avMediaTypeVideo)
-		{
-			var captureConnection = captureOutput.ConnectionFromMediaType(avMediaTypeVideo);
-			if (captureConnection is not null)
-			{
-				// use AVCaptureDeviceRotationCoordinator to set captured photo and video orientation on iOS 17+
-				if (UIDevice.CurrentDevice.CheckSystemVersion(17, 0))
-				{
-					if (rotationCoordinator is not null)
-					{
-						captureConnection.VideoRotationAngle = rotationCoordinator.VideoRotationAngleForHorizonLevelCapture;
-					}
-				}
-				// use CMMotionManager to set captured photo and video orientation on iOS 16 and lower
-				else
-				{
-					var data = motionManager?.AccelerometerData;
-					if (data is not null)
-					{
-						var orientation = GetVideoOrientationFromAccelerometer(data.Acceleration.X, data.Acceleration.Y);
-						captureConnection.VideoOrientation = orientation;
-					}
-				}
-
-				if (captureConnection.SupportsVideoMirroring)
-				{
-					captureConnection.AutomaticallyAdjustsVideoMirroring = false;
-					captureConnection.VideoMirrored = cameraView.SelectedCamera?.Position is CameraPosition.Front;
-				}
-			}
 		}
 	}
 
@@ -494,6 +467,50 @@ partial class CameraManager
 			UIInterfaceOrientation.LandscapeLeft => AVCaptureVideoOrientation.LandscapeLeft,
 			_ => AVCaptureVideoOrientation.Portrait
 		};
+	}
+	
+	bool TryConfigureAVCaptureConnection(in AVCaptureOutput captureOutput, [NotNullWhen(false)] out string? errorMessage)
+	{
+		errorMessage = null;
+		
+		if (AVMediaTypes.Video.GetConstant() is not NSString avMediaTypeVideo)
+		{
+			errorMessage = "Unable to determine video format.";
+			return false;
+		}
+		
+		if (captureOutput.ConnectionFromMediaType(avMediaTypeVideo) is not AVCaptureConnection captureConnection)
+		{
+			errorMessage = "Unable to determine video connection from media type.";
+			return false;
+		}
+
+		// use AVCaptureDeviceRotationCoordinator to set captured photo and video orientation on iOS 17+
+		if (UIDevice.CurrentDevice.CheckSystemVersion(17, 0))
+		{
+			if (rotationCoordinator is not null)
+			{
+				captureConnection.VideoRotationAngle = rotationCoordinator.VideoRotationAngleForHorizonLevelCapture;
+			}
+		}
+		// use CMMotionManager to set captured photo and video orientation on iOS 16 and lower
+		else
+		{
+			var data = motionManager?.AccelerometerData;
+			if (data is not null)
+			{
+				var orientation = GetVideoOrientationFromAccelerometer(data.Acceleration.X, data.Acceleration.Y);
+				captureConnection.VideoOrientation = orientation;
+			}
+		}
+
+		if (captureConnection.SupportsVideoMirroring)
+		{
+			captureConnection.AutomaticallyAdjustsVideoMirroring = false;
+			captureConnection.VideoMirrored = cameraView.SelectedCamera?.Position is CameraPosition.Front;
+		}
+
+		return true;
 	}
 
 	void UpdateVideoOrientation()
