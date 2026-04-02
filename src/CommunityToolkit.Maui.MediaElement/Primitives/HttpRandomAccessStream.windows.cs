@@ -6,7 +6,7 @@ using HttpRequestMessage = Windows.Web.Http.HttpRequestMessage;
 using HttpMethod = Windows.Web.Http.HttpMethod;
 using HttpCompletionOption = Windows.Web.Http.HttpCompletionOption;
 
-namespace CommunityToolkit.Maui.Core.Views;
+namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// An <see cref="IRandomAccessStream"/> implementation backed by HTTP Range requests,
@@ -41,26 +41,6 @@ sealed partial class HttpRandomAccessStream : IRandomAccessStream
 	/// <inheritdoc/>
 	public bool CanWrite => false;
 
-	/// <summary>
-	/// Creates an <see cref="HttpRandomAccessStream"/> by issuing a HEAD request to determine the content length.
-	/// </summary>
-	/// <param name="httpClient">The <see cref="HttpClient"/> configured with the desired HTTP headers.</param>
-	/// <param name="uri">The URI of the media resource.</param>
-	/// <param name="cancellationToken"><see cref="CancellationToken"/>.</param>
-	/// <returns>A new <see cref="HttpRandomAccessStream"/> instance.</returns>
-	internal static async Task<HttpRandomAccessStream> CreateAsync(HttpClient httpClient, Uri uri, CancellationToken cancellationToken = default)
-	{
-		ArgumentNullException.ThrowIfNull(httpClient);
-		ArgumentNullException.ThrowIfNull(uri);
-
-		using var request = new HttpRequestMessage(HttpMethod.Head, uri);
-		using var response = await httpClient.SendRequestAsync(request).AsTask(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
-		response.EnsureSuccessStatusCode();
-
-		var contentLength = response.Content.Headers.ContentLength ?? 0;
-		return new HttpRandomAccessStream(httpClient, uri, contentLength);
-	}
-
 	/// <inheritdoc/>
 	public IAsyncOperationWithProgress<IBuffer, uint> ReadAsync(IBuffer buffer, uint count, InputStreamOptions options)
 	{
@@ -72,11 +52,23 @@ sealed partial class HttpRandomAccessStream : IRandomAccessStream
 			}
 
 			using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
-			var rangeEnd = Position + count - 1;
-			request.Headers.TryAppendWithoutValidation("Range", $"bytes={Position}-{rangeEnd}");
+			var requestedPosition = Position;
+			var rangeEnd = requestedPosition + count - 1;
+
+			request.Headers.TryAppendWithoutValidation("Range", $"bytes={requestedPosition}-{rangeEnd}");
 
 			using var response = await httpClient.SendRequestAsync(request, HttpCompletionOption.ResponseHeadersRead).AsTask(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
 			response.EnsureSuccessStatusCode();
+
+			if (response.StatusCode is not Windows.Web.Http.HttpStatusCode.PartialContent)
+			{
+				throw new InvalidOperationException("The server did not honor the HTTP Range request.");
+			}
+			if (!response.Content.Headers.TryGetValue("Content-Range", out var contentRangeHeader) ||
+				!contentRangeHeader.StartsWith($"bytes {requestedPosition}-", StringComparison.OrdinalIgnoreCase))
+			{
+				throw new InvalidOperationException("The server returned an unexpected Content-Range header.");
+			}
 
 			var inputStream = await response.Content.ReadAsInputStreamAsync().AsTask(cancellationToken);
 			var result = await inputStream.ReadAsync(buffer, count, options).AsTask(cancellationToken);
@@ -112,5 +104,25 @@ sealed partial class HttpRandomAccessStream : IRandomAccessStream
 	public void Dispose()
 	{
 		// HttpClient is owned by the caller; do not dispose it here.
+	}
+
+	/// <summary>
+	/// Creates an <see cref="HttpRandomAccessStream"/> by issuing a HEAD request to determine the content length.
+	/// </summary>
+	/// <param name="httpClient">The <see cref="HttpClient"/> configured with the desired HTTP headers.</param>
+	/// <param name="uri">The URI of the media resource.</param>
+	/// <param name="cancellationToken"><see cref="CancellationToken"/>.</param>
+	/// <returns>A new <see cref="HttpRandomAccessStream"/> instance.</returns>
+	internal static async Task<HttpRandomAccessStream> CreateAsync(HttpClient httpClient, Uri uri, CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(httpClient);
+		ArgumentNullException.ThrowIfNull(uri);
+
+		using var request = new HttpRequestMessage(HttpMethod.Head, uri);
+		using var response = await httpClient.SendRequestAsync(request).AsTask(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+		response.EnsureSuccessStatusCode();
+
+		var contentLength = response.Content.Headers.ContentLength ?? 0;
+		return new HttpRandomAccessStream(httpClient, uri, contentLength);
 	}
 }
