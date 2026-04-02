@@ -380,11 +380,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		if (item?.MediaMetadata is not null)
 		{
-			var headers = ((UriMediaSource)MediaElement.Source).HttpHeaders;
-			if (headers.Count > 0)
+			if (MediaElement.Source is UriMediaSource uriMediaSource && uriMediaSource.HttpHeaders.Count > 0)
 			{
 				var httpDataSourceFactory = new DefaultHttpDataSource.Factory();
-				httpDataSourceFactory.SetDefaultRequestProperties(headers);
+				httpDataSourceFactory.SetDefaultRequestProperties(uriMediaSource.HttpHeaders);
 
 				var mediaSourceFactory = new DefaultMediaSourceFactory(httpDataSourceFactory);
 				var mediaSource = mediaSourceFactory.CreateMediaSource(item);
