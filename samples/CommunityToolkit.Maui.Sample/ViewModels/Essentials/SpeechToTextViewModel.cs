@@ -43,6 +43,9 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 
 	public async ValueTask DisposeAsync()
 	{
+		Locales.CollectionChanged -= HandleLocalesCollectionChanged;
+		this.speechToText.StateChanged -= HandleSpeechToTextStateChanged;
+		this.speechToText.RecognitionResultCompleted -= HandleRecognitionResultCompleted;
 		await speechToText.DisposeAsync();
 	}
 
@@ -116,13 +119,14 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 
 		RecognitionText = beginSpeakingPrompt;
 
-		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
 
 		await speechToText.StartListenAsync(new SpeechToTextOptions()
 		{
 			Culture = CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage),
+			AutoStopSilenceTimeout = TimeSpan.FromSeconds(5),
 			ShouldReportPartialResults = true
 		}, CancellationToken.None);
+		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
 
 		if (RecognitionText is beginSpeakingPrompt)
 		{
@@ -143,7 +147,7 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 
 	void HandleRecognitionResultUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs e)
 	{
-		RecognitionText += e.RecognitionResult;
+		RecognitionText += $" {e.RecognitionResult}";
 	}
 
 	void HandleRecognitionResultCompleted(object? sender, SpeechToTextRecognitionResultCompletedEventArgs e)

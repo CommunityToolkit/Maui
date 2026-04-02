@@ -21,5 +21,13 @@ public class SpeechToTextOptions
 	/// The duration of continuous silence after which speech recognition will automatically stop.
 	/// Use <see cref="TimeSpan.MaxValue"/> (the default) to indicate that auto-stop based on silence is disabled.
 	/// </summary>
-	public TimeSpan AutoStopSilenceTimeout { get; init; } = TimeSpan.MaxValue;
+	public TimeSpan AutoStopSilenceTimeout
+	{
+		get;
+		init
+		{
+			ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value.TotalMilliseconds);
+			field = value;
+		}
+	} = TimeSpan.MaxValue;
 }

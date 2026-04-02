@@ -116,7 +116,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 
 	void InitSilenceTimer(SpeechToTextOptions options)
 	{
-		if (options.AutoStopSilenceTimeout < TimeSpan.MaxValue && options.AutoStopSilenceTimeout > TimeSpan.Zero)
+		if (options.AutoStopSilenceTimeout < TimeSpan.MaxValue)
 		{
 			silenceTimer = Dispatcher.GetForCurrentThread()?.CreateTimer();
 			silenceTimer?.Tick += OnSilenceTimerTick;
