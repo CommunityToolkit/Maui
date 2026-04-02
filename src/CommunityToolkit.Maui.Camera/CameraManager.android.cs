@@ -454,6 +454,11 @@ partial class CameraManager
 		RebuildImageCapture();
 		await BindPhotoSessionAsync(token);
 
+		if (videoRecordingStream.CanSeek)
+		{
+			videoRecordingStream.Position = 0;
+		}
+
 		return videoRecordingStream;
 	}
 
