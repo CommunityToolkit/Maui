@@ -178,18 +178,22 @@ partial class CameraManager
 
 		captureDevice = cameraView.SelectedCamera.CaptureDevice ?? throw new CameraException($"No Camera found");
 		captureInput = new AVCaptureDeviceInput(captureDevice, out NSError? error);
-		if (error is not null)
-		{
-			throw new CameraException($"Error creating capture device input: {error.LocalizedDescription}");
-		}
 
-		if (!captureSession.CanAddInput(captureInput))
+		if (error is null && captureSession.CanAddInput(captureInput))
 		{
+			captureSession.AddInput(captureInput);
+		}
+		else
+		{
+			var errorMessage = error is not null
+				? $"Error creating capture device input: {error.LocalizedDescription}"
+				: "Unable to add capture device input to capture session.";
+
 			captureInput.Dispose();
-			throw new CameraException("Unable to add capture device input to capture session.");
+			captureInput = null;
+			captureSession.CommitConfiguration();
+			throw new CameraException(errorMessage);
 		}
-
-		captureSession.AddInput(captureInput);
 
 		// On iOS 17+, create a new instance of AVCaptureDeviceRotationCoordinator when switching to a new camera
 		if (UIDevice.CurrentDevice.CheckSystemVersion(17, 0))
