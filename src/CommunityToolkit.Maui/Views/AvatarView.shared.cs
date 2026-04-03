@@ -337,7 +337,7 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 		     || e.PropertyName == CornerRadiusProperty.PropertyName
 		     || e.PropertyName == StrokeThicknessProperty.PropertyName)
 		    && Height >= 0 // The default value of Height (before the view is drawn onto the page) is -1
-		    && Width >= 0 // The default value of Y (before the view is drawn onto the page) is -1
+		    && Width >= 0 // The default value of Width (before the view is drawn onto the page) is -1
 		    && avatarImage.Source is not null)
 		{
 			RefreshAvatarImage();
