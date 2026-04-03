@@ -32,7 +32,8 @@
     <WindowsSdkPackageVersion>10.0.19041.56</WindowsSdkPackageVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'&#xD;&#xA;      AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'
+        AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
     <!-- Windows error NETSDK1102: Optimizing assemblies for size is not supported for the selected publish configuration. -->
     <PublishAot>false</PublishAot>
     <PublishTrimmed>true</PublishTrimmed>
