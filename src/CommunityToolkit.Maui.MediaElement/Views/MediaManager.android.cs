@@ -781,7 +781,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		return mediaItem;
 	}
 
-	async Task<MediaItem.Builder> CreateMediaItemFromStream(Stream stream, CancellationToken cancellationToken = default)
+	async Task<MediaItem.Builder> CreateMediaItemFromStream(Stream stream, CancellationToken cancellationToken)
 	{
 		MediaMetadata.Builder mediaMetaData = new();
 		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
