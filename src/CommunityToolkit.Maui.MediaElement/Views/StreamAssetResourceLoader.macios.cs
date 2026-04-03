@@ -8,8 +8,12 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 {
+	const int MaxBufferSize = 64 * 1024;
+
 	readonly Stream stream;
 	readonly string contentType;
+
+	long nonSeekableStreamPosition;
 
 	public StreamAssetResourceLoader(Stream stream, string contentType = "public.mpeg-4")
 	{
@@ -27,7 +31,11 @@ sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 
 		if (loadingRequest.DataRequest is not null)
 		{
-			FillDataRequest(loadingRequest.DataRequest);
+			if (!FillDataRequest(loadingRequest.DataRequest))
+			{
+				loadingRequest.FinishLoading(new NSError(new NSString("NSCocoaErrorDomain"), -1));
+				return false;
+			}
 		}
 
 		loadingRequest.FinishLoading();
@@ -41,7 +49,7 @@ sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 		contentInformationRequest.ByteRangeAccessSupported = stream.CanSeek;
 	}
 
-	void FillDataRequest(AVAssetResourceLoadingDataRequest dataRequest)
+	bool FillDataRequest(AVAssetResourceLoadingDataRequest dataRequest)
 	{
 		try
 		{
@@ -54,26 +62,49 @@ sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 				requestedOffset = dataRequest.CurrentOffset;
 			}
 
+			// Non-seekable streams cannot satisfy requests at arbitrary offsets
+			if (!stream.CanSeek && requestedOffset != nonSeekableStreamPosition)
+			{
+				System.Diagnostics.Trace.WriteLine($"Cannot seek non-seekable stream to offset {requestedOffset} (current position: {nonSeekableStreamPosition})");
+				return false;
+			}
+
 			// Seek to the requested position if the stream supports seeking
 			if (stream.CanSeek && stream.Position != requestedOffset)
 			{
 				stream.Seek(requestedOffset, SeekOrigin.Begin);
 			}
 
-			// Read the requested data
-			var buffer = new byte[requestedLength];
-			var bytesRead = stream.Read(buffer, 0, requestedLength);
+			// Read and respond in bounded chunks to avoid large allocations
+			var buffer = new byte[Math.Min(requestedLength, MaxBufferSize)];
+			var totalBytesRead = 0;
 
-			if (bytesRead > 0)
+			while (totalBytesRead < requestedLength)
 			{
-				var data = NSData.FromArray(buffer[..bytesRead]);
+				var bytesToRead = Math.Min(requestedLength - totalBytesRead, buffer.Length);
+				var bytesRead = stream.Read(buffer, 0, bytesToRead);
+
+				if (bytesRead is 0)
+				{
+					break;
+				}
+
+				using var data = NSData.FromArray(buffer[..bytesRead]);
 				dataRequest.Respond(data);
+				totalBytesRead += bytesRead;
 			}
+
+			if (!stream.CanSeek)
+			{
+				nonSeekableStreamPosition += totalBytesRead;
+			}
+
+			return true;
 		}
 		catch (Exception ex)
 		{
-			// Log error but don't throw - let AVFoundation handle it
-			System.Diagnostics.Debug.WriteLine($"Error reading stream data: {ex.Message}");
+			System.Diagnostics.Trace.WriteLine($"Error reading stream data: {ex.Message}");
+			return false;
 		}
 	}
 
