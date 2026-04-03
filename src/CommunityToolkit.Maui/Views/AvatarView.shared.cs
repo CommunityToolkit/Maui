@@ -317,8 +317,8 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 		avatarImage.Source = newValue;
 		if (newValue is not null)
 		{
-			Content = avatarImage;
 			RefreshAvatarImage();
+			Content = avatarImage;
 		}
 		else
 		{
@@ -329,16 +329,13 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 	void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		// Ensure avatarImage is clipped to the bounds of the AvatarView whenever its Height, Width, CornerRadius and Padding properties change
-		if ((e.PropertyName == HeightProperty.PropertyName
-		     || e.PropertyName == WidthProperty.PropertyName
-		     || e.PropertyName == PaddingProperty.PropertyName
-		     || e.PropertyName == ImageSourceProperty.PropertyName
-		     || e.PropertyName == BorderWidthProperty.PropertyName
-		     || e.PropertyName == CornerRadiusProperty.PropertyName
-		     || e.PropertyName == StrokeThicknessProperty.PropertyName)
-		    && Height >= 0 // The default value of Height (before the view is drawn onto the page) is -1
-		    && Width >= 0 // The default value of Width (before the view is drawn onto the page) is -1
-		    && avatarImage.Source is not null)
+		if (e.PropertyName == HeightProperty.PropertyName
+		    || e.PropertyName == WidthProperty.PropertyName
+		    || e.PropertyName == PaddingProperty.PropertyName
+		    || e.PropertyName == BorderWidthProperty.PropertyName
+		    || e.PropertyName == CornerRadiusProperty.PropertyName
+		    || e.PropertyName == StrokeThicknessProperty.PropertyName
+		   )
 		{
 			RefreshAvatarImage();
 		}
@@ -346,37 +343,42 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 
 	void RefreshAvatarImage()
 	{
-		Geometry? avatarImageClipGeometry = null;
+		if (Height >= 0 // The default value of Height (before the view is drawn onto the page) is -1
+		    && Width >= 0 // The default value of Width (before the view is drawn onto the page) is -1
+		    && avatarImage.Source is not null)
+		{
+			Geometry? avatarImageClipGeometry = null;
 #if WINDOWS
 			double offsetX = 0;
 			double offsetY = 0;
 #else
-		double offsetX = StrokeThickness + Padding.Left;
-		double offsetY = StrokeThickness + Padding.Top;
+			double offsetX = StrokeThickness + Padding.Left;
+			double offsetY = StrokeThickness + Padding.Top;
 #endif
-		double imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
-		double imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
-		avatarImage.WidthRequest = imageWidth;
-		avatarImage.HeightRequest = imageHeight;
+			double imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
+			double imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
+			avatarImage.WidthRequest = imageWidth;
+			avatarImage.HeightRequest = imageHeight;
 
-		if (!OperatingSystem.IsIOS() && !OperatingSystem.IsMacCatalyst() && !OperatingSystem.IsMacOS())
-		{
-			avatarImageClipGeometry = new RoundRectangleGeometry
+			if (!OperatingSystem.IsIOS() && !OperatingSystem.IsMacCatalyst() && !OperatingSystem.IsMacOS())
 			{
-				CornerRadius = CornerRadius,
-				Rect = new(offsetX, offsetY, imageWidth, imageHeight)
+				avatarImageClipGeometry = new RoundRectangleGeometry
+				{
+					CornerRadius = CornerRadius,
+					Rect = new(offsetX, offsetY, imageWidth, imageHeight)
+				};
+			}
+
+			avatarImage.Clip = StrokeShape switch
+			{
+				Polyline polyLine => polyLine.Clip,
+				Ellipse ellipse => ellipse.Clip,
+				Microsoft.Maui.Controls.Shapes.Path path => path.Clip,
+				Polygon polygon => polygon.Clip,
+				Rectangle rectangle => rectangle.Clip,
+				RoundRectangle roundRectangle => roundRectangle.Clip,
+				_ => avatarImageClipGeometry
 			};
 		}
-
-		avatarImage.Clip = StrokeShape switch
-		{
-			Polyline polyLine => polyLine.Clip,
-			Ellipse ellipse => ellipse.Clip,
-			Microsoft.Maui.Controls.Shapes.Path path => path.Clip,
-			Polygon polygon => polygon.Clip,
-			Rectangle rectangle => rectangle.Clip,
-			RoundRectangle roundRectangle => roundRectangle.Clip,
-			_ => avatarImageClipGeometry
-		};
 	}
 }
