@@ -41,73 +41,85 @@ static partial class StatusBar
 		}
 
 		var platformColor = color.ToPlatform();
+		var decorGroup = (ViewGroup)window.DecorView.RootView;
 
-		if (OperatingSystem.IsAndroidVersionAtLeast(35))
+		void ApplyWindowFlags()
 		{
-			const string statusBarOverlayTag = "StatusBarOverlay";
+			bool isTransparent = platformColor == PlatformColor.Transparent;
 
-			var decorGroup = (ViewGroup)window.DecorView.RootView;
-			var statusBarOverlay = decorGroup.FindViewWithTag(statusBarOverlayTag);
-
-			if (statusBarOverlay is null)
+			if (isTransparent)
 			{
-				void SetupStatusBarOverlay(int statusBarPixelSize)
-				{
-					statusBarOverlay = new(Activity)
-					{
-						LayoutParameters =
-							new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent,
-								statusBarPixelSize + 3)
-							{
-								Gravity = GravityFlags.Top
-							}
-					};
+				window.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
+				window.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
+			}
+			else
+			{
+				window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
+				window.SetFlags(
+					WindowManagerFlags.DrawsSystemBarBackgrounds,
+					WindowManagerFlags.DrawsSystemBarBackgrounds);
+			}
 
-					statusBarOverlay.Tag = statusBarOverlayTag;
-					decorGroup.AddView(statusBarOverlay);
-					statusBarOverlay.SetZ(0);
-					statusBarOverlay.SetBackgroundColor(platformColor);
-				}
+			WindowCompat.SetDecorFitsSystemWindows(window, !isTransparent);
+		}
 
-				if (OperatingSystem.IsAndroidVersionAtLeast(36))
+		if (!OperatingSystem.IsAndroidVersionAtLeast(35))
+		{
+			window.SetStatusBarColor(platformColor);
+			ApplyWindowFlags();
+			return;
+		}
+
+		const string tag = "StatusBarOverlay";
+		var statusBarOverlay = decorGroup.FindViewWithTag(tag);
+
+		if (statusBarOverlay is null)
+		{
+			void CreateOverlay(int height)
+			{
+				statusBarOverlay = new View(Activity)
 				{
-					window.DecorView.Post(() =>
+					LayoutParameters = new FrameLayout.LayoutParams(
+						ViewGroup.LayoutParams.MatchParent,
+						height + 3)
 					{
-						var insets = window.DecorView.RootWindowInsets;
-						var top = insets?.GetInsets(WindowInsets.Type.StatusBars()).Top ?? 0;
-						
-						SetupStatusBarOverlay(top);
-					});
-				}
-				else
+						Gravity = GravityFlags.Top
+					},
+					Tag = tag
+				};
+
+				decorGroup.AddView(statusBarOverlay);
+				statusBarOverlay.SetZ(0);
+				statusBarOverlay.SetBackgroundColor(platformColor);
+			}
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(36))
+			{
+				window.DecorView.Post(() =>
 				{
-					var statusBarHeight = Activity.Resources?.GetIdentifier("status_bar_height", "dimen", "android") ?? 0;
-					var statusBarPixelSize = statusBarHeight > 0
-						? Activity.Resources?.GetDimensionPixelSize(statusBarHeight) ?? 0
-						: 0;
-					
-					SetupStatusBarOverlay(statusBarPixelSize);
-				}
+					var insets = window.DecorView.RootWindowInsets;
+					var height = insets?.GetInsets(WindowInsets.Type.StatusBars()).Top ?? 0;
+
+					CreateOverlay(height);
+					ApplyWindowFlags();
+				});
+			}
+			else
+			{
+				var resId = Activity.Resources?.GetIdentifier("status_bar_height", "dimen", "android") ?? 0;
+				var height = resId > 0
+					? Activity.Resources?.GetDimensionPixelSize(resId) ?? 0
+					: 0;
+
+				CreateOverlay(height);
+				ApplyWindowFlags();
 			}
 		}
 		else
 		{
-			window.SetStatusBarColor(platformColor);
+			statusBarOverlay.SetBackgroundColor(platformColor);
+			ApplyWindowFlags();
 		}
-
-		bool isColorTransparent = platformColor == PlatformColor.Transparent;
-		if (isColorTransparent)
-		{
-			window.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
-			window.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
-		}
-		else
-		{
-			window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
-			window.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
-		}
-
-		WindowCompat.SetDecorFitsSystemWindows(window, !isColorTransparent);
 	}
 
 	static void PlatformSetStyle(StatusBarStyle style)
