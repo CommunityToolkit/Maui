@@ -51,38 +51,12 @@ static partial class StatusBar
 
 			if (statusBarOverlay is null)
 			{
-				if (OperatingSystem.IsAndroidVersionAtLeast(36))
+				void SetupStatusBarOverlay(int statusBarPixelSize)
 				{
-					window.DecorView.Post(() =>
-					{
-						var insets = window.DecorView.RootWindowInsets;
-						var top = insets?.GetInsets(WindowInsets.Type.StatusBars()).Top ?? 0;
-						statusBarOverlay = new(Activity)
-						{
-							LayoutParameters =
-								new FrameLayout.LayoutParams(Android.Views.ViewGroup.LayoutParams.MatchParent,top)
-								{
-									Gravity = GravityFlags.Top
-								}
-						};
-
-						statusBarOverlay.Tag = statusBarOverlayTag;
-						decorGroup.AddView(statusBarOverlay);
-						statusBarOverlay.SetZ(0);
-						statusBarOverlay.SetBackgroundColor(platformColor);
-					});
-				}
-				else
-				{
-					var statusBarHeight = Activity.Resources?.GetIdentifier("status_bar_height", "dimen", "android") ?? 0;
-					var statusBarPixelSize = statusBarHeight > 0
-						? Activity.Resources?.GetDimensionPixelSize(statusBarHeight) ?? 0
-						: 0;
-					
 					statusBarOverlay = new(Activity)
 					{
 						LayoutParameters =
-							new FrameLayout.LayoutParams(Android.Views.ViewGroup.LayoutParams.MatchParent,
+							new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent,
 								statusBarPixelSize + 3)
 							{
 								Gravity = GravityFlags.Top
@@ -94,9 +68,27 @@ static partial class StatusBar
 					statusBarOverlay.SetZ(0);
 					statusBarOverlay.SetBackgroundColor(platformColor);
 				}
-			}
 
-			statusBarOverlay.SetBackgroundColor(platformColor);
+				if (OperatingSystem.IsAndroidVersionAtLeast(36))
+				{
+					window.DecorView.Post(() =>
+					{
+						var insets = window.DecorView.RootWindowInsets;
+						var top = insets?.GetInsets(WindowInsets.Type.StatusBars()).Top ?? 0;
+						
+						SetupStatusBarOverlay(top);
+					});
+				}
+				else
+				{
+					var statusBarHeight = Activity.Resources?.GetIdentifier("status_bar_height", "dimen", "android") ?? 0;
+					var statusBarPixelSize = statusBarHeight > 0
+						? Activity.Resources?.GetDimensionPixelSize(statusBarHeight) ?? 0
+						: 0;
+					
+					SetupStatusBarOverlay(statusBarPixelSize);
+				}
+			}
 		}
 		else
 		{
