@@ -328,7 +328,7 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 
 	void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		// Ensure avatarImage is clipped to the bounds of the AvatarView whenever its Height, Width, CornerRadius and Padding properties change
+		// Ensure avatarImage is clipped to the bounds of the AvatarView whenever its Height, Width, CornerRadius, Border, StrokeThickness and Padding properties change
 		if (e.PropertyName == HeightProperty.PropertyName
 		    || e.PropertyName == WidthProperty.PropertyName
 		    || e.PropertyName == PaddingProperty.PropertyName
