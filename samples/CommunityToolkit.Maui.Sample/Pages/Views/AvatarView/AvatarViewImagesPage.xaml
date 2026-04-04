@@ -94,7 +94,7 @@
         <HorizontalStackLayout HorizontalOptions="Center" Spacing="12">
             <Button
                 Margin="10"
-                Clicked="Button_OnClicked"
+                Clicked="SetImageSourceButtonClicked"
                 Text="Press me" />
 
             <mct:AvatarView
@@ -102,7 +102,7 @@
                 HeightRequest="32"
                 Text="AV"
                 WidthRequest="32"
-                x:Name="buggyImage" />
+                x:Name="DelayedImageSourceImage" />
         </HorizontalStackLayout>
 
         <Grid
