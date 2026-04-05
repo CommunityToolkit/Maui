@@ -42,7 +42,11 @@ public sealed partial class SpeechToTextImplementation
 
 		var node = audioEngine.InputNode;
 		var recordingFormat = node.GetBusOutputFormat(0);
-		node.InstallTapOnBus(audioEngineBusTap, 1024, recordingFormat, (buffer, _) => liveSpeechRequest.Append(buffer));
+		node.InstallTapOnBus(audioEngineBusTap, 1024, recordingFormat, (buffer, _) =>
+		{
+			liveSpeechRequest.Append(buffer);
+			RestartTimer();
+		});
 
 		audioEngine.Prepare();
 		audioEngine.StartAndReturnError(out var error);

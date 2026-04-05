@@ -35,7 +35,11 @@ public sealed partial class OfflineSpeechToTextImplementation
 
 		var node = audioEngine.InputNode;
 		var recordingFormat = node.GetBusOutputFormat(audioEngineBusTap);
-		node.InstallTapOnBus(audioEngineBusTap, 1024, recordingFormat, (buffer, _) => liveSpeechRequest.Append(buffer));
+		node.InstallTapOnBus(audioEngineBusTap, 1024, recordingFormat, (buffer, _) =>
+		{
+			liveSpeechRequest.Append(buffer);
+			RestartTimer();
+		});
 
 		audioEngine.Prepare();
 		audioEngine.StartAndReturnError(out var error);
