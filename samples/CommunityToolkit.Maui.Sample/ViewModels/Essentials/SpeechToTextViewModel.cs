@@ -44,7 +44,7 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 	public async ValueTask DisposeAsync()
 	{
 		GC.SuppressFinalize(this);
-		
+
 		Locales.CollectionChanged -= HandleLocalesCollectionChanged;
 		this.speechToText.StateChanged -= HandleSpeechToTextStateChanged;
 		this.speechToText.RecognitionResultUpdated -= HandleRecognitionResultUpdated;
@@ -58,7 +58,7 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 		var isSpeechToTextPermissionsGranted = await speechToText.RequestPermissions(CancellationToken.None);
 
 		return microphonePermissionStatus is PermissionStatus.Granted
-			   && isSpeechToTextPermissionsGranted;
+		       && isSpeechToTextPermissionsGranted;
 	}
 
 	[RelayCommand]
@@ -66,14 +66,17 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 	{
 		Locales.Clear();
 
-		var locales = await textToSpeech.GetLocalesAsync().WaitAsync(token);
+		IReadOnlyList<Locale> locales = [.. await textToSpeech.GetLocalesAsync().WaitAsync(token)];
 
 		foreach (var locale in locales.OrderBy(x => x.Language).ThenBy(x => x.Name))
 		{
 			Locales.Add(locale);
 		}
 
-		CurrentLocale = Locales.First(x => x.Language == CultureInfo.CurrentUICulture.Name);
+		var currentLocale = locales.FirstOrDefault(l => l.Language.Equals(CultureInfo.CurrentUICulture.Name, StringComparison.OrdinalIgnoreCase))
+		                    ?? locales.FirstOrDefault(l => l.Language.Equals(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, StringComparison.OrdinalIgnoreCase));
+
+		CurrentLocale = currentLocale ?? locales[0];
 	}
 
 	[RelayCommand]
@@ -121,7 +124,7 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 		const string beginSpeakingPrompt = "Begin speaking...";
 
 		RecognitionText = beginSpeakingPrompt;
-		
+
 		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
 		await speechToText.StartListenAsync(new SpeechToTextOptions
 		{
