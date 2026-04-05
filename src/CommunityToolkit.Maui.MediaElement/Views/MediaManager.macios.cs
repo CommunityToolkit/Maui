@@ -296,8 +296,9 @@ public partial class MediaManager : IDisposable
 				streamResourceLoader?.Dispose();
 				streamResourceLoader = new StreamAssetResourceLoader(streamMediaSource.Stream, GetStreamContentType(streamMediaSource.Stream));
 
-				// Assign the resource loader delegate
-				urlAsset.ResourceLoader.SetDelegate(streamResourceLoader, DispatchQueue.MainQueue);
+				// Assign the resource loader delegate to a serial background queue to avoid blocking the UI thread
+				var resourceLoaderQueue = new DispatchQueue("CommunityToolkit.Maui.MediaElement.StreamResourceLoader");
+				urlAsset.ResourceLoader.SetDelegate(streamResourceLoader, resourceLoaderQueue);
 
 				asset = urlAsset;
 			}
