@@ -38,8 +38,18 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 		{
 			return;
 		}
-		
-		await InternalStartListeningAsync(options, cancellationToken).ConfigureAwait(false);
+
+		try
+		{
+			await InternalStartListeningAsync(options, cancellationToken).ConfigureAwait(false);
+		}
+		catch (Exception)
+		{
+			// Use `CancellationToken.None` to ensure `InternalStopListeningAsync` completes
+			// This prevents `InternalStopListeningAsync` from throwing a OperationCancelledException if `cancellationToken` has been canceled
+			await StopListenAsync(CancellationToken.None).ConfigureAwait(false);
+			throw;
+		}
 	}
 
 	/// <inheritdoc/>
