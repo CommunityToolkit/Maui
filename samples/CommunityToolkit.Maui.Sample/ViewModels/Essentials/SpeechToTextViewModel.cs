@@ -22,6 +22,7 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 
 		Locales.CollectionChanged += HandleLocalesCollectionChanged;
 		this.speechToText.StateChanged += HandleSpeechToTextStateChanged;
+		this.speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
 		this.speechToText.RecognitionResultCompleted += HandleRecognitionResultCompleted;
 	}
 
@@ -112,12 +113,16 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 		if (!isGranted)
 		{
 			await Toast.Make("Permission not granted").Show(cancellationToken);
+			CanStartListenExecute = true;
+			CanStopListenExecute = false;
 			return;
 		}
 
 		if (Connectivity.NetworkAccess is not NetworkAccess.Internet)
 		{
 			await Toast.Make("Internet connection is required").Show(cancellationToken);
+			CanStartListenExecute = true;
+			CanStopListenExecute = false;
 			return;
 		}
 
@@ -125,17 +130,27 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 
 		RecognitionText = beginSpeakingPrompt;
 
-		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
-		await speechToText.StartListenAsync(new SpeechToTextOptions
+		try
 		{
-			Culture = CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage),
-			AutoStopSilenceTimeout = TimeSpan.FromSeconds(5),
-			ShouldReportPartialResults = true
-		}, cancellationToken);
 
-		if (RecognitionText is beginSpeakingPrompt)
+			await speechToText.StartListenAsync(new SpeechToTextOptions
+			{
+				Culture = CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage),
+				AutoStopSilenceTimeout = TimeSpan.FromSeconds(5),
+				ShouldReportPartialResults = true
+			}, cancellationToken);
+
+			if (RecognitionText is beginSpeakingPrompt)
+			{
+				RecognitionText = string.Empty;
+			}
+		}
+		catch
 		{
-			RecognitionText = string.Empty;
+			CanStartListenExecute = true;
+			CanStopListenExecute = false;
+			
+			throw;
 		}
 	}
 

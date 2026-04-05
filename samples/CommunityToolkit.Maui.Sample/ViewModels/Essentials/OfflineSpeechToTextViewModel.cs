@@ -16,6 +16,7 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 		speechToText = OfflineSpeechToText.Default;
 
 		speechToText.StateChanged += HandleSpeechToTextStateChanged;
+		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
 		speechToText.RecognitionResultCompleted += HandleRecognitionResultCompleted;
 	}
 
@@ -23,7 +24,7 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 
 	[ObservableProperty]
 	public partial string? RecognitionText { get; set; } = "Welcome to .NET MAUI Community Toolkit!";
-	
+
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StartListenCommand))]
 	public partial bool CanStartListenExecute { get; set; } = true;
 
@@ -36,7 +37,7 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 		var isSpeechToTextRequestPermissionsGranted = await speechToText.RequestPermissions(CancellationToken.None);
 
 		return microphonePermissionStatus is PermissionStatus.Granted
-			   && isSpeechToTextRequestPermissionsGranted;
+		       && isSpeechToTextRequestPermissionsGranted;
 	}
 
 	[RelayCommand(CanExecute = nameof(CanStartListenExecute))]
@@ -44,11 +45,13 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 	{
 		CanStartListenExecute = false;
 		CanStopListenExecute = true;
-		
+
 		var isGranted = await ArePermissionsGranted(speechToText);
 		if (!isGranted)
 		{
 			await Toast.Make("Permission not granted").Show(token);
+			CanStartListenExecute = true;
+			CanStopListenExecute = false;
 			return;
 		}
 
@@ -56,18 +59,26 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 
 		RecognitionText = beginSpeakingPrompt;
 
-		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
-
-		await speechToText.StartListenAsync(new SpeechToTextOptions
+		try
 		{
-			AutoStopSilenceTimeout =  TimeSpan.FromSeconds(5),
-			Culture = CultureInfo.CurrentCulture,
-			ShouldReportPartialResults = true
-		}, token);
+			await speechToText.StartListenAsync(new SpeechToTextOptions
+			{
+				AutoStopSilenceTimeout = TimeSpan.FromSeconds(5),
+				Culture = CultureInfo.CurrentCulture,
+				ShouldReportPartialResults = true
+			}, token);
 
-		if (RecognitionText is beginSpeakingPrompt)
+			if (RecognitionText is beginSpeakingPrompt)
+			{
+				RecognitionText = string.Empty;
+			}
+		}
+		catch
 		{
-			RecognitionText = string.Empty;
+			CanStartListenExecute = true;
+			CanStopListenExecute = false;
+
+			throw;
 		}
 	}
 
@@ -76,7 +87,7 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 	{
 		CanStartListenExecute = true;
 		CanStopListenExecute = false;
-		
+
 		speechToText.RecognitionResultUpdated -= HandleRecognitionResultUpdated;
 
 		return speechToText.StopListenAsync(token);
