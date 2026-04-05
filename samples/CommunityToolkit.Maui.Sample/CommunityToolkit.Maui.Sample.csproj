@@ -30,7 +30,6 @@
     <NoWarn>IL2026</NoWarn>
 
     <WindowsSdkPackageVersion>10.0.19041.56</WindowsSdkPackageVersion>
-    <ValidateXcodeVersion>false</ValidateXcodeVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'
