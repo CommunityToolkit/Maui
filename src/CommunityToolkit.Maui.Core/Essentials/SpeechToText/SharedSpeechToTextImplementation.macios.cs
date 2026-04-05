@@ -61,13 +61,13 @@ public sealed partial class SpeechToTextImplementation
 	{
 		silenceTimer?.Tick -= OnSilenceTimerTick;
 		silenceTimer?.Stop();
+		
 		liveSpeechRequest?.EndAudio();
 		recognitionTask?.Finish();
+		
 		audioEngine.Stop();
 		audioEngine.InputNode.RemoveTapOnBus(audioEngineBusTap);
-
-		OnSpeechToTextStateChanged(CurrentState);
-
+		
 		recognitionTask?.Dispose();
 		speechRecognizer?.Dispose();
 		liveSpeechRequest?.Dispose();
@@ -75,6 +75,9 @@ public sealed partial class SpeechToTextImplementation
 		speechRecognizer = null;
 		liveSpeechRequest = null;
 		recognitionTask = null;
+		
+		// Dispose all IDisposables before calling `OnSpeechToTextStateChanged`
+		OnSpeechToTextStateChanged(CurrentState);
 	}
 
 	Task InternalStopListeningAsync(CancellationToken cancellationToken)
