@@ -45,6 +45,7 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 	{
 		Locales.CollectionChanged -= HandleLocalesCollectionChanged;
 		this.speechToText.StateChanged -= HandleSpeechToTextStateChanged;
+		this.speechToText.RecognitionResultUpdated -= HandleRecognitionResultUpdated;
 		this.speechToText.RecognitionResultCompleted -= HandleRecognitionResultCompleted;
 		await speechToText.DisposeAsync();
 	}
