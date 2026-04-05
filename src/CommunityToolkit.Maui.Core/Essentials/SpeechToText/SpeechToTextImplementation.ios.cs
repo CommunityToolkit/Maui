@@ -16,7 +16,7 @@ public sealed partial class SpeechToTextImplementation
 			throw new ArgumentException("Speech recognizer is not available");
 		}
 
-		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest()
+		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest
 		{
 			ShouldReportPartialResults = options.ShouldReportPartialResults
 		};
@@ -24,7 +24,7 @@ public sealed partial class SpeechToTextImplementation
 		InitializeAvAudioSession(out _);
 
 		var node = audioEngine.InputNode;
-		var recordingFormat = node.GetBusOutputFormat(0);
+		var recordingFormat = node.GetBusOutputFormat(audioEngineBusTap);
 		node.InstallTapOnBus(audioEngineBusTap, 1024, recordingFormat, (buffer, _) => liveSpeechRequest.Append(buffer));
 
 		audioEngine.Prepare();
