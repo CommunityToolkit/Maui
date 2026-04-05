@@ -160,8 +160,6 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 		CanStartListenExecute = true;
 		CanStopListenExecute = false;
 
-		speechToText.RecognitionResultUpdated -= HandleRecognitionResultUpdated;
-
 		return speechToText.StopListenAsync(cancellationToken);
 	}
 

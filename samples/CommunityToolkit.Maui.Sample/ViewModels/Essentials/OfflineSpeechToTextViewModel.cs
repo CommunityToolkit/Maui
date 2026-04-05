@@ -88,8 +88,6 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 		CanStartListenExecute = true;
 		CanStopListenExecute = false;
 
-		speechToText.RecognitionResultUpdated -= HandleRecognitionResultUpdated;
-
 		return speechToText.StopListenAsync(token);
 	}
 
