@@ -112,7 +112,7 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 			return;
 		}
 
-		if (Connectivity.NetworkAccess != NetworkAccess.Internet)
+		if (Connectivity.NetworkAccess is not NetworkAccess.Internet)
 		{
 			await Toast.Make("Internet connection is required").Show(cancellationToken);
 			return;
