@@ -59,12 +59,12 @@ public sealed partial class OfflineSpeechToTextImplementation
 	{
 		silenceTimer?.Tick -= OnSilenceTimerTick;
 		silenceTimer?.Stop();
+		
 		liveSpeechRequest?.EndAudio();
 		recognitionTask?.Finish();
+		
 		audioEngine.Stop();
 		audioEngine.InputNode.RemoveTapOnBus(0);
-		
-		OnSpeechToTextStateChanged(CurrentState);
 		
 		recognitionTask?.Dispose();
 		speechRecognizer?.Dispose();
@@ -73,6 +73,9 @@ public sealed partial class OfflineSpeechToTextImplementation
 		speechRecognizer = null;
 		liveSpeechRequest = null;
 		recognitionTask = null;
+		
+		// Dispose all IDisposables before calling `OnSpeechToTextStateChanged` to ensure CurrentState == SpeechToTextState.Stopped
+		OnSpeechToTextStateChanged(CurrentState);
 	}
 
 	void OnSilenceTimerTick(object? sender, EventArgs e)

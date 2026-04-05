@@ -77,7 +77,7 @@ public sealed partial class SpeechToTextImplementation
 		liveSpeechRequest = null;
 		recognitionTask = null;
 		
-		// Dispose all IDisposables before calling `OnSpeechToTextStateChanged`
+		// Dispose all IDisposables before calling `OnSpeechToTextStateChanged` to ensure CurrentState == SpeechToTextState.Stopped
 		OnSpeechToTextStateChanged(CurrentState);
 	}
 
