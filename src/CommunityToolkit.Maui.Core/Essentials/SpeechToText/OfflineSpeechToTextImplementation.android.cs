@@ -63,7 +63,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 			intent.PutExtra(RecognizerIntent.ExtraSpeechInputCompleteSilenceLengthMillis, autoStopSilenceTimeoutInMilliseconds);
 			intent.PutExtra(RecognizerIntent.ExtraSpeechInputPossiblyCompleteSilenceLengthMillis, autoStopSilenceTimeoutInMilliseconds);
 		}
-		
+
 		return intent;
 	}
 

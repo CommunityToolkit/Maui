@@ -59,7 +59,7 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 		var isSpeechToTextPermissionsGranted = await speechToText.RequestPermissions(CancellationToken.None);
 
 		return microphonePermissionStatus is PermissionStatus.Granted
-		       && isSpeechToTextPermissionsGranted;
+			   && isSpeechToTextPermissionsGranted;
 	}
 
 	[RelayCommand]
@@ -75,7 +75,7 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 		}
 
 		var currentLocale = locales.FirstOrDefault(l => l.Language.Equals(CultureInfo.CurrentUICulture.Name, StringComparison.OrdinalIgnoreCase))
-		                    ?? locales.FirstOrDefault(l => l.Language.Equals(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, StringComparison.OrdinalIgnoreCase));
+							?? locales.FirstOrDefault(l => l.Language.Equals(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, StringComparison.OrdinalIgnoreCase));
 
 		CurrentLocale = currentLocale ?? locales[0];
 	}
@@ -149,7 +149,7 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 		{
 			CanStartListenExecute = true;
 			CanStopListenExecute = false;
-			
+
 			throw;
 		}
 	}

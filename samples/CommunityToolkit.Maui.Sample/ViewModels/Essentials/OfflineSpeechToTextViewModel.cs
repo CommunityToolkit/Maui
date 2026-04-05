@@ -37,7 +37,7 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 		var isSpeechToTextRequestPermissionsGranted = await speechToText.RequestPermissions(CancellationToken.None);
 
 		return microphonePermissionStatus is PermissionStatus.Granted
-		       && isSpeechToTextRequestPermissionsGranted;
+			   && isSpeechToTextRequestPermissionsGranted;
 	}
 
 	[RelayCommand(CanExecute = nameof(CanStartListenExecute))]

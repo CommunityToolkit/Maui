@@ -59,7 +59,7 @@ public sealed partial class SpeechToTextImplementation
 			intent.PutExtra(RecognizerIntent.ExtraSpeechInputCompleteSilenceLengthMillis, autoStopSilenceTimeoutInMilliseconds);
 			intent.PutExtra(RecognizerIntent.ExtraSpeechInputPossiblyCompleteSilenceLengthMillis, autoStopSilenceTimeoutInMilliseconds);
 		}
-		
+
 		return intent;
 	}
 

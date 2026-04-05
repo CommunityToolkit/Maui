@@ -121,7 +121,7 @@ public sealed partial class SpeechToTextImplementation
 		speechToTextOptions = options;
 		recognitionText = string.Empty;
 		speechRecognizer = new SpeechRecognizer(new Language(options.Culture.IetfLanguageTag));
-		
+
 		speechRecognizer.UIOptions.AudiblePrompt = string.Empty;
 		speechRecognizer.UIOptions.IsReadBackEnabled = false;
 		speechRecognizer.UIOptions.ShowConfirmation = false;

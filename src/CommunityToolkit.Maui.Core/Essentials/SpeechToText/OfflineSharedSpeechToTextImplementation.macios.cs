@@ -9,9 +9,9 @@ namespace CommunityToolkit.Maui.Media;
 public sealed partial class OfflineSpeechToTextImplementation
 {
 	const nuint audioEngineBusTap = 0;
-	
+
 	readonly AVAudioEngine audioEngine = new();
-	
+
 	IDispatcherTimer? silenceTimer;
 	SFSpeechRecognizer? speechRecognizer;
 	SFSpeechRecognitionTask? recognitionTask;
@@ -64,13 +64,13 @@ public sealed partial class OfflineSpeechToTextImplementation
 	{
 		silenceTimer?.Tick -= OnSilenceTimerTick;
 		silenceTimer?.Stop();
-		
+
 		liveSpeechRequest?.EndAudio();
 		recognitionTask?.Finish();
-		
+
 		audioEngine.Stop();
 		audioEngine.InputNode.RemoveTapOnBus(audioEngineBusTap);
-		
+
 		recognitionTask?.Dispose();
 		speechRecognizer?.Dispose();
 		liveSpeechRequest?.Dispose();
@@ -78,7 +78,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 		speechRecognizer = null;
 		liveSpeechRequest = null;
 		recognitionTask = null;
-		
+
 		// Dispose all IDisposables before calling `OnSpeechToTextStateChanged` to ensure CurrentState == SpeechToTextState.Stopped
 		OnSpeechToTextStateChanged(CurrentState);
 	}
@@ -125,7 +125,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 	async Task<IDispatcherTimer> CreateSilenceTimer(SpeechToTextOptions options, CancellationToken cancellationToken)
 	{
 		var timer = await MainThread.InvokeOnMainThreadAsync(() => Dispatcher.GetForCurrentThread()?.CreateTimer()
-		                                                           ?? throw new InvalidOperationException($"{nameof(IDispatcherTimer)} must be retrieved from the main UI Thread"))
+																   ?? throw new InvalidOperationException($"{nameof(IDispatcherTimer)} must be retrieved from the main UI Thread"))
 															.WaitAsync(cancellationToken);
 
 		if (options.AutoStopSilenceTimeout >= SpeechToTextOptionsDefaults.AutoStopSilenceTimeout)
@@ -136,10 +136,10 @@ public sealed partial class OfflineSpeechToTextImplementation
 		timer.Tick += OnSilenceTimerTick;
 		timer.Interval = options.AutoStopSilenceTimeout;
 		timer.Start();
-		
+
 		return timer;
 	}
-	
+
 	void RestartTimer()
 	{
 		silenceTimer?.Stop();
