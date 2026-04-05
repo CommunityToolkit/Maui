@@ -29,7 +29,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	const int readyState = 3;
 	const int endedState = 4;
 
-	static readonly HttpClient client = new();
+	readonly HttpClient client = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 	bool isAndroidForegroundServiceEnabled = false;
 
