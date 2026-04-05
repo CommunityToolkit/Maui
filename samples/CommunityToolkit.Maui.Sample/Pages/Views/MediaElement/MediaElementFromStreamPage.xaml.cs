@@ -162,6 +162,7 @@ public partial class MediaElementFromStreamPage : BasePage<MediaElementFromStrea
 
             await using var stream = await videoFile.OpenReadAsync();
 
+            ReleaseSourceStream();
             sourceStream = new MemoryStream();
             await stream.CopyToAsync(sourceStream);
 
@@ -179,22 +180,23 @@ public partial class MediaElementFromStreamPage : BasePage<MediaElementFromStrea
     {
         try
         {
-            var photoResult = await MediaPicker.Default.CaptureVideoAsync(new MediaPickerOptions
+            var videoResult = await MediaPicker.Default.CaptureVideoAsync(new MediaPickerOptions
             {
                 Title = "Capture Video"
             });
 
-            if (photoResult is null)
+            if (videoResult is null)
             {
                 return;
             }
             
-            await using var stream = await photoResult.OpenReadAsync();
-            var memoryStream = new MemoryStream();
-            await stream.CopyToAsync(memoryStream);
-            memoryStream.Position = 0;
+            await using var stream = await videoResult.OpenReadAsync();
+            ReleaseSourceStream();
+            sourceStream = new MemoryStream();
+            await stream.CopyToAsync(sourceStream);
+            sourceStream.Position = 0;
             
-            MediaElement.Source = MediaSource.FromStream(memoryStream);
+            MediaElement.Source = MediaSource.FromStream(sourceStream);
         }
         catch (Exception ex)
         {
@@ -270,8 +272,18 @@ public partial class MediaElementFromStreamPage : BasePage<MediaElementFromStrea
 	protected override void OnDisappearing()
 	{
 		base.OnDisappearing();
-        sourceStream?.Dispose();
-    }
+		
+		// In production, consider warning the user before navigating away
+        // if an unsaved stream is loaded (e.g. after video capture).
+        // Here we simply release the stream on disappearing for simplicity.
+		ReleaseSourceStream();
+	}
+
+	void ReleaseSourceStream()
+	{
+		sourceStream?.Dispose();
+		sourceStream = null;
+	}
 
     public void Dispose()
     {
@@ -286,12 +298,7 @@ public partial class MediaElementFromStreamPage : BasePage<MediaElementFromStrea
             return;
         }
 
-        if (disposing)
-        {
-            return;
-        }
-
         disposed = true;
-        sourceStream?.Dispose();
+        ReleaseSourceStream();
     }
 }
