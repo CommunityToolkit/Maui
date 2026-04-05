@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.Media;
 /// <inheritdoc />
 public sealed partial class OfflineSpeechToTextImplementation
 {
-	[MemberNotNull(nameof(recognitionTask), nameof(liveSpeechRequest), nameof(silenceTimer))]
+	[MemberNotNull(nameof(liveSpeechRequest))]
 	async Task InternalStartListening(SpeechToTextOptions options, CancellationToken token = default)
 	{
 		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(options.Culture.Name));
