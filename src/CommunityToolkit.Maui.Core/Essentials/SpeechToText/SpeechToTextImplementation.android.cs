@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Android.Content;
 using Android.Runtime;
 using Android.Speech;
+using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.ApplicationModel;
 
 namespace CommunityToolkit.Maui.Media;
@@ -49,7 +50,7 @@ public sealed partial class SpeechToTextImplementation
 		intent.PutExtra(RecognizerIntent.ExtraLanguage, javaLocale);
 		intent.PutExtra(RecognizerIntent.ExtraLanguagePreference, javaLocale);
 		intent.PutExtra(RecognizerIntent.ExtraOnlyReturnLanguagePreference, javaLocale);
-		if (options.AutoStopSilenceTimeout < TimeSpan.MaxValue)
+		if (options.AutoStopSilenceTimeout < SpeechToTextOptionsDefaults.AutoStopSilenceTimeout)
 		{
 			long autoStopSilenceTimeoutInMilliseconds = options.AutoStopSilenceTimeout.TotalMilliseconds >= long.MaxValue
 				? long.MaxValue

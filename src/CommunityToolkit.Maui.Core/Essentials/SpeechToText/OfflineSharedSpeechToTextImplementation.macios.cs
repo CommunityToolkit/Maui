@@ -1,4 +1,5 @@
 ﻿using AVFoundation;
+using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Dispatching;
 using Speech;
@@ -127,7 +128,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 		                                                           ?? throw new InvalidOperationException("IDispatchTimer must be retrieved from the main UI Thread"))
 															.WaitAsync(cancellationToken);
 
-		if (options.AutoStopSilenceTimeout > TimeSpan.MaxValue)
+		if (options.AutoStopSilenceTimeout > SpeechToTextOptionsDefaults.AutoStopSilenceTimeout)
 		{
 			return timer;
 		}

@@ -1,7 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Runtime.Versioning;
-using AVFoundation;
 using Speech;
 
 namespace CommunityToolkit.Maui.Media;
@@ -9,7 +7,7 @@ namespace CommunityToolkit.Maui.Media;
 /// <inheritdoc />
 public sealed partial class OfflineSpeechToTextImplementation
 {
-	[MemberNotNull(nameof(recognitionTask), nameof(liveSpeechRequest), nameof(silenceTimer))]
+	[MemberNotNull(nameof(liveSpeechRequest))]
 	[SupportedOSPlatform("ios13.0")]
 	[SupportedOSPlatform("maccatalyst")]
 	async Task InternalStartListening(SpeechToTextOptions options, CancellationToken token = default)
