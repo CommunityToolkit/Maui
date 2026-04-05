@@ -44,6 +44,8 @@ public sealed partial class OfflineSpeechToTextImplementation
 		{
 			throw new NSErrorException(error);
 		}
+		
+		token.ThrowIfCancellationRequested();
 
 		silenceTimer = await CreateSilenceTimer(options,  token);
 		recognitionTask = CreateSpeechRecognizerTask(speechRecognizer, liveSpeechRequest);
