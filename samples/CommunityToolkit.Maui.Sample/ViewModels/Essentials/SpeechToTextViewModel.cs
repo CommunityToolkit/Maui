@@ -100,7 +100,7 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 	}
 
 	[RelayCommand(CanExecute = nameof(CanStartListenExecute))]
-	async Task StartListen()
+	async Task StartListen(CancellationToken cancellationToken)
 	{
 		CanStartListenExecute = false;
 		CanStopListenExecute = true;
@@ -108,28 +108,27 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 		var isGranted = await ArePermissionsGranted(speechToText);
 		if (!isGranted)
 		{
-			await Toast.Make("Permission not granted").Show(CancellationToken.None);
+			await Toast.Make("Permission not granted").Show(cancellationToken);
 			return;
 		}
 
 		if (Connectivity.NetworkAccess != NetworkAccess.Internet)
 		{
-			await Toast.Make("Internet connection is required").Show(CancellationToken.None);
+			await Toast.Make("Internet connection is required").Show(cancellationToken);
 			return;
 		}
 
 		const string beginSpeakingPrompt = "Begin speaking...";
 
 		RecognitionText = beginSpeakingPrompt;
-
-
-		await speechToText.StartListenAsync(new SpeechToTextOptions()
+		
+		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
+		await speechToText.StartListenAsync(new SpeechToTextOptions
 		{
 			Culture = CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage),
 			AutoStopSilenceTimeout = TimeSpan.FromSeconds(5),
 			ShouldReportPartialResults = true
-		}, CancellationToken.None);
-		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
+		}, cancellationToken);
 
 		if (RecognitionText is beginSpeakingPrompt)
 		{
@@ -138,14 +137,14 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 	}
 
 	[RelayCommand(CanExecute = nameof(CanStopListenExecute))]
-	Task StopListen()
+	Task StopListen(CancellationToken cancellationToken)
 	{
 		CanStartListenExecute = true;
 		CanStopListenExecute = false;
 
 		speechToText.RecognitionResultUpdated -= HandleRecognitionResultUpdated;
 
-		return speechToText.StopListenAsync(CancellationToken.None);
+		return speechToText.StopListenAsync(cancellationToken);
 	}
 
 	void HandleRecognitionResultUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs e)
