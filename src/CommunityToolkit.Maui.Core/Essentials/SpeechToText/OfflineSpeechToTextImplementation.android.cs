@@ -55,8 +55,12 @@ public sealed partial class OfflineSpeechToTextImplementation
 		intent.PutExtra(RecognizerIntent.ExtraOnlyReturnLanguagePreference, javaLocale);
 		if (options.AutoStopSilenceTimeout < TimeSpan.MaxValue)
 		{
-			intent.PutExtra(RecognizerIntent.ExtraSpeechInputCompleteSilenceLengthMillis, (long)options.AutoStopSilenceTimeout.TotalMilliseconds);
-			intent.PutExtra(RecognizerIntent.ExtraSpeechInputPossiblyCompleteSilenceLengthMillis, (long)options.AutoStopSilenceTimeout.TotalMilliseconds);
+			long autoStopSilenceTimeoutInMilliseconds = options.AutoStopSilenceTimeout.TotalMilliseconds >= long.MaxValue
+				? long.MaxValue
+				: checked((long)options.AutoStopSilenceTimeout.TotalMilliseconds);
+
+			intent.PutExtra(RecognizerIntent.ExtraSpeechInputCompleteSilenceLengthMillis, autoStopSilenceTimeoutInMilliseconds);
+			intent.PutExtra(RecognizerIntent.ExtraSpeechInputPossiblyCompleteSilenceLengthMillis, autoStopSilenceTimeoutInMilliseconds);
 		}
 		
 		return intent;
