@@ -73,7 +73,7 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 			Locales.Add(locale);
 		}
 
-		CurrentLocale = Locales.FirstOrDefault();
+		CurrentLocale = Locales.First(x => x.Language == CultureInfo.CurrentUICulture.Name);
 	}
 
 	[RelayCommand]
