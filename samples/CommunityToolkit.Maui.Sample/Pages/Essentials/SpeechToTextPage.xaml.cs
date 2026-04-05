@@ -15,7 +15,7 @@ public partial class SpeechToTextPage : BasePage<SpeechToTextViewModel>
 	{
 		base.OnAppearing();
 
-		await BindingContext.SetLocalesCommand.ExecuteAsync(null);
+		await BindingContext.SetLocalesCommand.ExecuteAsync(CancellationToken.None);
 	}
 }
 
