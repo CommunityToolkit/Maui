@@ -31,13 +31,13 @@ public sealed partial class SpeechToTextImplementation
 		audioSession.SetMode(mode, out var audioSessionError);
 		if (audioSessionError is not null)
 		{
-			throw new Exception(audioSessionError.LocalizedDescription);
+			throw new NSErrorException(audioSessionError);
 		}
 
 		audioSession.SetActive(true, AVAudioSessionSetActiveOptions.NotifyOthersOnDeactivation, out audioSessionError);
 		if (audioSessionError is not null)
 		{
-			throw new Exception(audioSessionError.LocalizedDescription);
+			throw new NSErrorException(audioSessionError);
 		}
 
 		var node = audioEngine.InputNode;
@@ -49,7 +49,7 @@ public sealed partial class SpeechToTextImplementation
 
 		if (error is not null)
 		{
-			throw new InvalidOperationException(error.LocalizedDescription);
+			throw new NSErrorException(error);
 		}
 
 		cancellationToken.ThrowIfCancellationRequested();

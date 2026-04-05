@@ -32,7 +32,7 @@ public sealed partial class SpeechToTextImplementation
 
 		if (error is not null)
 		{
-			throw new InvalidOperationException("Error starting audio engine - " + error.LocalizedDescription);
+			throw new NSErrorException(error);
 		}
 
 		cancellationToken.ThrowIfCancellationRequested();

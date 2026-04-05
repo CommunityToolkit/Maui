@@ -15,7 +15,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 
 		if (!speechRecognizer.Available)
 		{
-			throw new ArgumentException("Speech recognizer is not available");
+			throw new InvalidOperationException("Speech recognizer is not available");
 		}
 
 		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest()
@@ -33,13 +33,13 @@ public sealed partial class OfflineSpeechToTextImplementation
 		audioSession.SetMode(mode, out var audioSessionError);
 		if (audioSessionError is not null)
 		{
-			throw new Exception(audioSessionError.LocalizedDescription);
+			throw new NSErrorException(audioSessionError);
 		}
 
 		audioSession.SetActive(true, AVAudioSessionSetActiveOptions.NotifyOthersOnDeactivation, out audioSessionError);
 		if (audioSessionError is not null)
 		{
-			throw new Exception(audioSessionError.LocalizedDescription);
+			throw new NSErrorException(audioSessionError);
 		}
 
 		var node = audioEngine.InputNode;
@@ -51,7 +51,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 
 		if (error is not null)
 		{
-			throw new Exception(error.LocalizedDescription);
+			throw new NSErrorException(error);
 		}
 
 		InitSilenceTimer(options);

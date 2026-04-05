@@ -24,7 +24,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 
 		if (!speechRecognizer.Available)
 		{
-			throw new ArgumentException("Speech recognizer is not available");
+			throw new InvalidOperationException("Speech recognizer is not available");
 		}
 
 		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest()
@@ -44,7 +44,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 
 		if (error is not null)
 		{
-			throw new ArgumentException("Error starting audio engine - " + error.LocalizedDescription);
+			throw new NSErrorException(error);
 		}
 
 		InitSilenceTimer(options);
