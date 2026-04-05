@@ -35,12 +35,21 @@ public sealed partial class OfflineSpeechToTextImplementation : ISpeechToText
 	public async Task StartListenAsync(SpeechToTextOptions options, CancellationToken cancellationToken = default)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-		if (CurrentState != SpeechToTextState.Stopped)
+		if (CurrentState is not SpeechToTextState.Stopped)
 		{
 			return;
 		}
-		
-		await InternalStartListening(options, cancellationToken);
+
+		try
+		{
+			await InternalStartListening(options, cancellationToken);
+		}
+		catch (Exception)
+		{
+			// Use CancellationToken.None to ensure StopListenAsync completes successfully even when `cancellationToken` has been cancelled
+			await StopListenAsync(CancellationToken.None).ConfigureAwait(false);
+			throw;
+		}
 	}
 
 	/// <inheritdoc/>
