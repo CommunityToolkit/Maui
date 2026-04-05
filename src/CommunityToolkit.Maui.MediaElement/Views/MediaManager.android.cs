@@ -396,8 +396,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			{
 				var mediaSource = new AndroidX.Media3.ExoPlayer.Source.ProgressiveMediaSource.Factory(currentStreamDataSourceFactory)
 					.CreateMediaSource(item);
-          Player.SetMediaSource(mediaSource);
-      }
+				Player.SetMediaSource(mediaSource); 
+			}
 			else if (MediaElement.Source is UriMediaSource uriMediaSource && uriMediaSource.HttpHeaders.Count > 0)
 			{
 				var httpDataSourceFactory = new DefaultHttpDataSource.Factory();

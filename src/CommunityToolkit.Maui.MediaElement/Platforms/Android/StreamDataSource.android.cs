@@ -38,13 +38,17 @@ sealed class StreamDataSource : Java.Lang.Object, IDataSource
 
 		uri = dataSpec.Uri;
 
-		if (stream.CanSeek && dataSpec.Position > 0)
+		if (stream.CanSeek)
 		{
 			stream.Seek(dataSpec.Position, SeekOrigin.Begin);
 		}
-
-		bytesRemaining = dataSpec.Length != C.LengthUnset 
-			? dataSpec.Length 
+		else if (dataSpec.Position > 0)
+		{
+			throw new InvalidOperationException("Cannot open a non-seekable stream at a non-zero position.");
+		}
+		
+		bytesRemaining = dataSpec.Length != C.LengthUnset
+			? dataSpec.Length
 			: (length != C.LengthUnset ? length - dataSpec.Position : C.LengthUnset);
 
 		return bytesRemaining;
