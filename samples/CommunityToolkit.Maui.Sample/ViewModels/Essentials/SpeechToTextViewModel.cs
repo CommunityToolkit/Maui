@@ -43,6 +43,8 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 
 	public async ValueTask DisposeAsync()
 	{
+		GC.SuppressFinalize(this);
+		
 		Locales.CollectionChanged -= HandleLocalesCollectionChanged;
 		this.speechToText.StateChanged -= HandleSpeechToTextStateChanged;
 		this.speechToText.RecognitionResultUpdated -= HandleRecognitionResultUpdated;
