@@ -1,4 +1,5 @@
 ﻿using AVFoundation;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Dispatching;
 using Speech;
 
@@ -126,17 +127,18 @@ public sealed partial class SpeechToTextImplementation
 		});
 	}
 
-	IDispatcherTimer? CreateSilenceTimer(SpeechToTextOptions options)
+	async Task<IDispatcherTimer> CreateSilenceTimer(SpeechToTextOptions options)
 	{
-		var timer = Dispatcher.GetForCurrentThread()?.CreateTimer();
+		var timer = await MainThread.InvokeOnMainThreadAsync(() => Dispatcher.GetForCurrentThread()?.CreateTimer()
+																	?? throw new InvalidOperationException("IDispatchTimer must be retrieved from the main UI Thread"));
 		if (options.AutoStopSilenceTimeout >= TimeSpan.MaxValue)
 		{
 			return timer;
 		}
 
-		timer?.Tick += OnSilenceTimerTick;
-		timer?.Interval = options.AutoStopSilenceTimeout;
-		timer?.Start();
+		timer.Tick += OnSilenceTimerTick;
+		timer.Interval = options.AutoStopSilenceTimeout;
+		timer.Start();
 
 		return timer;
 	}

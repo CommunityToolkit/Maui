@@ -7,8 +7,8 @@ namespace CommunityToolkit.Maui.Media;
 /// <inheritdoc />
 public sealed partial class SpeechToTextImplementation
 {
-	[MemberNotNull(nameof(recognitionTask), nameof(liveSpeechRequest))]
-	Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
+	[MemberNotNull(nameof(recognitionTask), nameof(liveSpeechRequest), nameof(silenceTimer))]
+	async Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
 	{
 		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(options.Culture.Name));
 
@@ -54,9 +54,7 @@ public sealed partial class SpeechToTextImplementation
 
 		cancellationToken.ThrowIfCancellationRequested();
 
-		silenceTimer = CreateSilenceTimer(options);
+		silenceTimer = await CreateSilenceTimer(options);
 		recognitionTask = CreateSpeechRecognizerTask(speechRecognizer, liveSpeechRequest);
-
-		return Task.CompletedTask;
 	}
 }
