@@ -125,10 +125,10 @@ public sealed partial class OfflineSpeechToTextImplementation
 	async Task<IDispatcherTimer> CreateSilenceTimer(SpeechToTextOptions options, CancellationToken cancellationToken)
 	{
 		var timer = await MainThread.InvokeOnMainThreadAsync(() => Dispatcher.GetForCurrentThread()?.CreateTimer()
-		                                                           ?? throw new InvalidOperationException("IDispatchTimer must be retrieved from the main UI Thread"))
+		                                                           ?? throw new InvalidOperationException($"{nameof(IDispatcherTimer)} must be retrieved from the main UI Thread"))
 															.WaitAsync(cancellationToken);
 
-		if (options.AutoStopSilenceTimeout > SpeechToTextOptionsDefaults.AutoStopSilenceTimeout)
+		if (options.AutoStopSilenceTimeout >= SpeechToTextOptionsDefaults.AutoStopSilenceTimeout)
 		{
 			return timer;
 		}
