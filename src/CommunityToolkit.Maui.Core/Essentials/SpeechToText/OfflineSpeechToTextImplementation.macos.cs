@@ -7,8 +7,8 @@ namespace CommunityToolkit.Maui.Media;
 /// <inheritdoc />
 public sealed partial class OfflineSpeechToTextImplementation
 {
-	[MemberNotNull(nameof(recognitionTask), nameof(liveSpeechRequest))]
-	Task InternalStartListening(SpeechToTextOptions options, CancellationToken token = default)
+	[MemberNotNull(nameof(recognitionTask), nameof(liveSpeechRequest), nameof(silenceTimer))]
+	async Task InternalStartListening(SpeechToTextOptions options, CancellationToken token = default)
 	{
 		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(options.Culture.Name));
 		speechRecognizer.SupportsOnDeviceRecognition = true;
@@ -18,7 +18,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 			throw new InvalidOperationException("Speech recognizer is not available");
 		}
 
-		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest()
+		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest
 		{
 			ShouldReportPartialResults = options.ShouldReportPartialResults,
 			RequiresOnDeviceRecognition = true
@@ -43,8 +43,8 @@ public sealed partial class OfflineSpeechToTextImplementation
 		}
 
 		var node = audioEngine.InputNode;
-		var recordingFormat = node.GetBusOutputFormat(0);
-		node.InstallTapOnBus(0, 1024, recordingFormat, (buffer, _) => liveSpeechRequest.Append(buffer));
+		var recordingFormat = node.GetBusOutputFormat(audioEngineBusTap);
+		node.InstallTapOnBus(audioEngineBusTap, 1024, recordingFormat, (buffer, _) => liveSpeechRequest.Append(buffer));
 
 		audioEngine.Prepare();
 		audioEngine.StartAndReturnError(out var error);
@@ -54,9 +54,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 			throw new NSErrorException(error);
 		}
 
-		InitSilenceTimer(options);
+		silenceTimer = await CreateSilenceTimer(options, token);
 		recognitionTask = CreateSpeechRecognizerTask(speechRecognizer, liveSpeechRequest);
-
-		return Task.CompletedTask;
 	}
 }

@@ -9,10 +9,10 @@ namespace CommunityToolkit.Maui.Media;
 /// <inheritdoc />
 public sealed partial class OfflineSpeechToTextImplementation
 {
-	[MemberNotNull(nameof(recognitionTask), nameof(liveSpeechRequest))]
+	[MemberNotNull(nameof(recognitionTask), nameof(liveSpeechRequest), nameof(silenceTimer))]
 	[SupportedOSPlatform("ios13.0")]
 	[SupportedOSPlatform("maccatalyst")]
-	Task InternalStartListening(SpeechToTextOptions options, CancellationToken token = default)
+	async Task InternalStartListening(SpeechToTextOptions options, CancellationToken token = default)
 	{
 		if (!UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
 		{
@@ -36,8 +36,8 @@ public sealed partial class OfflineSpeechToTextImplementation
 		InitializeAvAudioSession(out _);
 
 		var node = audioEngine.InputNode;
-		var recordingFormat = node.GetBusOutputFormat(0);
-		node.InstallTapOnBus(0, 1024, recordingFormat, (buffer, _) => liveSpeechRequest.Append(buffer));
+		var recordingFormat = node.GetBusOutputFormat(audioEngineBusTap);
+		node.InstallTapOnBus(audioEngineBusTap, 1024, recordingFormat, (buffer, _) => liveSpeechRequest.Append(buffer));
 
 		audioEngine.Prepare();
 		audioEngine.StartAndReturnError(out var error);
@@ -47,9 +47,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 			throw new NSErrorException(error);
 		}
 
-		InitSilenceTimer(options);
+		silenceTimer = await CreateSilenceTimer(options,  token);
 		recognitionTask = CreateSpeechRecognizerTask(speechRecognizer, liveSpeechRequest);
-		
-		return Task.CompletedTask;
 	}
 }

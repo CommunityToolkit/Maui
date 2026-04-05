@@ -1,4 +1,5 @@
 ﻿using AVFoundation;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Dispatching;
 using Speech;
 
@@ -6,7 +7,10 @@ namespace CommunityToolkit.Maui.Media;
 
 public sealed partial class OfflineSpeechToTextImplementation
 {
+	const nuint audioEngineBusTap = 0;
+	
 	readonly AVAudioEngine audioEngine = new();
+	
 	IDispatcherTimer? silenceTimer;
 	SFSpeechRecognizer? speechRecognizer;
 	SFSpeechRecognitionTask? recognitionTask;
@@ -64,7 +68,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 		recognitionTask?.Finish();
 		
 		audioEngine.Stop();
-		audioEngine.InputNode.RemoveTapOnBus(0);
+		audioEngine.InputNode.RemoveTapOnBus(audioEngineBusTap);
 		
 		recognitionTask?.Dispose();
 		speechRecognizer?.Dispose();
@@ -117,15 +121,22 @@ public sealed partial class OfflineSpeechToTextImplementation
 		});
 	}
 
-	void InitSilenceTimer(SpeechToTextOptions options)
+	async Task<IDispatcherTimer> CreateSilenceTimer(SpeechToTextOptions options, CancellationToken cancellationToken)
 	{
-		if (options.AutoStopSilenceTimeout < TimeSpan.MaxValue)
+		var timer = await MainThread.InvokeOnMainThreadAsync(() => Dispatcher.GetForCurrentThread()?.CreateTimer()
+		                                                           ?? throw new InvalidOperationException("IDispatchTimer must be retrieved from the main UI Thread"))
+															.WaitAsync(cancellationToken);
+
+		if (options.AutoStopSilenceTimeout > TimeSpan.MaxValue)
 		{
-			silenceTimer = Dispatcher.GetForCurrentThread()?.CreateTimer();
-			silenceTimer?.Tick += OnSilenceTimerTick;
-			silenceTimer?.Interval = options.AutoStopSilenceTimeout;
-			silenceTimer?.Start();
+			return timer;
 		}
+
+		timer.Tick += OnSilenceTimerTick;
+		timer.Interval = options.AutoStopSilenceTimeout;
+		timer.Start();
+		
+		return timer;
 	}
 	
 	void RestartTimer()
