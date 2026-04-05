@@ -23,6 +23,12 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 
 	[ObservableProperty]
 	public partial string? RecognitionText { get; set; } = "Welcome to .NET MAUI Community Toolkit!";
+	
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StartListenCommand))]
+	public partial bool CanStartListenExecute { get; set; } = true;
+
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StopListenCommand))]
+	public partial bool CanStopListenExecute { get; set; } = false;
 
 	static async Task<bool> ArePermissionsGranted(ISpeechToText speechToText)
 	{
@@ -33,13 +39,16 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 			   && isSpeechToTextRequestPermissionsGranted;
 	}
 
-	[RelayCommand]
-	async Task StartListen()
+	[RelayCommand(CanExecute = nameof(CanStartListenExecute))]
+	async Task StartListen(CancellationToken token)
 	{
+		CanStartListenExecute = false;
+		CanStopListenExecute = true;
+		
 		var isGranted = await ArePermissionsGranted(speechToText);
 		if (!isGranted)
 		{
-			await Toast.Make("Permission not granted").Show(CancellationToken.None);
+			await Toast.Make("Permission not granted").Show(token);
 			return;
 		}
 
@@ -51,9 +60,10 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 
 		await speechToText.StartListenAsync(new SpeechToTextOptions
 		{
+			AutoStopSilenceTimeout =  TimeSpan.FromSeconds(5),
 			Culture = CultureInfo.CurrentCulture,
 			ShouldReportPartialResults = true
-		}, CancellationToken.None);
+		}, token);
 
 		if (RecognitionText is beginSpeakingPrompt)
 		{
@@ -61,12 +71,15 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 		}
 	}
 
-	[RelayCommand]
-	Task StopListen()
+	[RelayCommand(CanExecute = nameof(CanStopListenExecute))]
+	Task StopListen(CancellationToken token)
 	{
+		CanStartListenExecute = true;
+		CanStopListenExecute = false;
+		
 		speechToText.RecognitionResultUpdated -= HandleRecognitionResultUpdated;
 
-		return speechToText.StopListenAsync(CancellationToken.None);
+		return speechToText.StopListenAsync(token);
 	}
 
 	void HandleRecognitionResultUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs e)
