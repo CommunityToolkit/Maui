@@ -25,14 +25,14 @@ public sealed partial class SpeechToTextImplementation
 
 		var node = audioEngine.InputNode;
 		var recordingFormat = node.GetBusOutputFormat(0);
-		node.InstallTapOnBus(0, 1024, recordingFormat, (buffer, _) => liveSpeechRequest.Append(buffer));
+		node.InstallTapOnBus(audioEngineBusTap, 1024, recordingFormat, (buffer, _) => liveSpeechRequest.Append(buffer));
 
 		audioEngine.Prepare();
 		audioEngine.StartAndReturnError(out var error);
 
 		if (error is not null)
 		{
-			throw new ArgumentException("Error starting audio engine - " + error.LocalizedDescription);
+			throw new InvalidOperationException("Error starting audio engine - " + error.LocalizedDescription);
 		}
 
 		cancellationToken.ThrowIfCancellationRequested();

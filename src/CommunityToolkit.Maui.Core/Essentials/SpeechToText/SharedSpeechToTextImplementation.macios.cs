@@ -6,6 +6,8 @@ namespace CommunityToolkit.Maui.Media;
 
 public sealed partial class SpeechToTextImplementation
 {
+	const nuint audioEngineBusTap = 0;
+	
 	readonly AVAudioEngine audioEngine = new();
 
 	IDispatcherTimer? silenceTimer;
@@ -62,7 +64,7 @@ public sealed partial class SpeechToTextImplementation
 		liveSpeechRequest?.EndAudio();
 		recognitionTask?.Finish();
 		audioEngine.Stop();
-		audioEngine.InputNode.RemoveTapOnBus(0);
+		audioEngine.InputNode.RemoveTapOnBus(audioEngineBusTap);
 
 		OnSpeechToTextStateChanged(CurrentState);
 
