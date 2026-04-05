@@ -17,7 +17,7 @@ public partial class MediaElementFromStreamPage : BasePage<MediaElementFromStrea
     MemoryStream? sourceStream;
     bool disposed;
 
-    public MediaElementFromStreamPage(MediaElementFromStreamViewModel viewModel, IDeviceInfo deviceInfo, ILogger<MediaElementPage> logger) : base(viewModel)
+    public MediaElementFromStreamPage(MediaElementFromStreamViewModel viewModel, IDeviceInfo deviceInfo, ILogger<MediaElementFromStreamPage> logger) : base(viewModel)
     {
         InitializeComponent();
 
