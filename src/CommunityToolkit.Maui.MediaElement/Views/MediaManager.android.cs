@@ -582,7 +582,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 	}
 
-	static async Task<byte[]> GetBytesFromMetadataArtworkUrl(string url, CancellationToken cancellationToken = default)
+	async Task<byte[]> GetBytesFromMetadataArtworkUrl(string url, CancellationToken cancellationToken = default)
 	{
 		if (string.IsNullOrWhiteSpace(url))
 		{
@@ -613,7 +613,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			{
 				var normalizedFilePath = NormalizeFilePath(url);
 
-				stream = File.Open(normalizedFilePath, FileMode.Create);
+				stream = File.Open(normalizedFilePath, FileMode.Open);
 				contentLength = await GetByteCountFromStream(stream, cancellationToken);
 			}
 			// Relative File Path
