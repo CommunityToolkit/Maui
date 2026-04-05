@@ -17,7 +17,7 @@ public sealed partial class SpeechToTextImplementation
 			throw new ArgumentException("Speech recognizer is not available");
 		}
 
-		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest()
+		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest
 		{
 			ShouldReportPartialResults = options.ShouldReportPartialResults
 		};
@@ -54,7 +54,7 @@ public sealed partial class SpeechToTextImplementation
 
 		cancellationToken.ThrowIfCancellationRequested();
 
-		InitSilenceTimer(options);
+		silenceTimer = CreateSilenceTimer(options);
 		recognitionTask = CreateSpeechRecognizerTask(speechRecognizer, liveSpeechRequest);
 
 		return Task.CompletedTask;

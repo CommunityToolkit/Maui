@@ -37,7 +37,7 @@ public sealed partial class SpeechToTextImplementation
 
 		cancellationToken.ThrowIfCancellationRequested();
 
-		InitSilenceTimer(options);
+		silenceTimer = CreateSilenceTimer(options);
 		recognitionTask = CreateSpeechRecognizerTask(speechRecognizer, liveSpeechRequest);
 
 		return Task.CompletedTask;

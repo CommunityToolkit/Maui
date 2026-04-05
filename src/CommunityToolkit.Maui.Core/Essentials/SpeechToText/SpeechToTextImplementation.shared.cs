@@ -1,4 +1,3 @@
-using System.Globalization;
 using Microsoft.Maui.ApplicationModel;
 
 namespace CommunityToolkit.Maui.Media;
@@ -35,7 +34,7 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 	public async Task StartListenAsync(SpeechToTextOptions options, CancellationToken cancellationToken = default)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-		if (CurrentState != SpeechToTextState.Stopped)
+		if (CurrentState is not SpeechToTextState.Stopped)
 		{
 			return;
 		}

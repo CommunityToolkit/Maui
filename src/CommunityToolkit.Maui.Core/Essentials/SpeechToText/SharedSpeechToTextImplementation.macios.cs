@@ -7,6 +7,7 @@ namespace CommunityToolkit.Maui.Media;
 public sealed partial class SpeechToTextImplementation
 {
 	readonly AVAudioEngine audioEngine = new();
+
 	IDispatcherTimer? silenceTimer;
 	SFSpeechRecognizer? speechRecognizer;
 	SFSpeechRecognitionTask? recognitionTask;
@@ -14,9 +15,8 @@ public sealed partial class SpeechToTextImplementation
 
 	/// <inheritdoc/>
 	public SpeechToTextState CurrentState => recognitionTask?.State is SFSpeechRecognitionTaskState.Running
-												? SpeechToTextState.Listening
-												: SpeechToTextState.Stopped;
-
+		? SpeechToTextState.Listening
+		: SpeechToTextState.Stopped;
 
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()
@@ -63,9 +63,9 @@ public sealed partial class SpeechToTextImplementation
 		recognitionTask?.Finish();
 		audioEngine.Stop();
 		audioEngine.InputNode.RemoveTapOnBus(0);
-		
+
 		OnSpeechToTextStateChanged(CurrentState);
-		
+
 		recognitionTask?.Dispose();
 		speechRecognizer?.Dispose();
 		liveSpeechRequest?.Dispose();
@@ -121,17 +121,21 @@ public sealed partial class SpeechToTextImplementation
 		});
 	}
 
-	void InitSilenceTimer(SpeechToTextOptions options)
+	IDispatcherTimer? CreateSilenceTimer(SpeechToTextOptions options)
 	{
-		if (options.AutoStopSilenceTimeout < TimeSpan.MaxValue)
+		var timer = Dispatcher.GetForCurrentThread()?.CreateTimer();
+		if (options.AutoStopSilenceTimeout >= TimeSpan.MaxValue)
 		{
-			silenceTimer = Dispatcher.GetForCurrentThread()?.CreateTimer();
-			silenceTimer?.Tick += OnSilenceTimerTick;
-			silenceTimer?.Interval = options.AutoStopSilenceTimeout;
-			silenceTimer?.Start();
+			return timer;
 		}
+
+		timer?.Tick += OnSilenceTimerTick;
+		timer?.Interval = options.AutoStopSilenceTimeout;
+		timer?.Start();
+
+		return timer;
 	}
-	
+
 	void RestartTimer()
 	{
 		silenceTimer?.Stop();
