@@ -610,22 +610,36 @@ public class BindablePropertyAttributeSourceGenerator_CommonUsageTests : BaseBin
 
 			file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
 			{
-			    public static volatile bool IsInitializingText = false;
+			    [global::System.ThreadStatic]
+			    public static bool IsInitializingText;
 			    public static object CreateDefaultText(global::Microsoft.Maui.Controls.BindableObject bindable)
 			    {
 			        IsInitializingText = true;
-			        var defaultValue = ((TestView)bindable).Text;
-			        IsInitializingText = false;
-			        return defaultValue;
+			        try
+			        {
+			            var defaultValue = ((TestView)bindable).Text;
+			            return defaultValue;
+			        }
+			        finally
+			        {
+			            IsInitializingText = false;
+			        }
 			    }
 			
-			    public static volatile bool IsInitializingCustomDuration = false;
+			    [global::System.ThreadStatic]
+			    public static bool IsInitializingCustomDuration;
 			    public static object CreateDefaultCustomDuration(global::Microsoft.Maui.Controls.BindableObject bindable)
 			    {
 			        IsInitializingCustomDuration = true;
-			        var defaultValue = ((TestView)bindable).CustomDuration;
-			        IsInitializingCustomDuration = false;
-			        return defaultValue;
+			        try
+			        {
+			            var defaultValue = ((TestView)bindable).CustomDuration;
+			            return defaultValue;
+			        }
+			        finally
+			        {
+			            IsInitializingCustomDuration = false;
+			        }
 			    }
 			}
 			""";

@@ -100,13 +100,20 @@ public class BindablePropertyAttributeSourceGenerator_EdgeCaseTests : BaseBindab
 
             file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
             {
-                public static volatile bool IsInitializingInvoiceStatus = false;
+                [global::System.ThreadStatic]
+                public static bool IsInitializingInvoiceStatus;
                 public static object CreateDefaultInvoiceStatus(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingInvoiceStatus = true;
-                    var defaultValue = ((TestView)bindable).InvoiceStatus;
-                    IsInitializingInvoiceStatus = false;
-                    return defaultValue;
+                    try
+                    {
+                        var defaultValue = ((TestView)bindable).InvoiceStatus;
+                        return defaultValue;
+                    }
+                    finally
+                    {
+                        IsInitializingInvoiceStatus = false;
+                    }
                 }
             }
             """;
@@ -160,13 +167,20 @@ public class BindablePropertyAttributeSourceGenerator_EdgeCaseTests : BaseBindab
 
             file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
             {
-                public static volatile bool IsInitializingInvoiceStatus = false;
+                [global::System.ThreadStatic]
+                public static bool IsInitializingInvoiceStatus;
                 public static object CreateDefaultInvoiceStatus(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingInvoiceStatus = true;
-                    var defaultValue = ((TestView)bindable).InvoiceStatus;
-                    IsInitializingInvoiceStatus = false;
-                    return defaultValue;
+                    try
+                    {
+                        var defaultValue = ((TestView)bindable).InvoiceStatus;
+                        return defaultValue;
+                    }
+                    finally
+                    {
+                        IsInitializingInvoiceStatus = false;
+                    }
                 }
             }
             """;
@@ -516,67 +530,116 @@ public class BindablePropertyAttributeSourceGenerator_EdgeCaseTests : BaseBindab
 
             file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
             {
-                public static volatile bool IsInitializingIsEnabled = false;
+                [global::System.ThreadStatic]
+                public static bool IsInitializingIsEnabled;
                 public static object CreateDefaultIsEnabled(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingIsEnabled = true;
-                    var defaultValue = ((TestView)bindable).IsEnabled;
-                    IsInitializingIsEnabled = false;
-                    return defaultValue;
+                    try
+                    {
+                        var defaultValue = ((TestView)bindable).IsEnabled;
+                        return defaultValue;
+                    }
+                    finally
+                    {
+                        IsInitializingIsEnabled = false;
+                    }
                 }
 
-                public static volatile bool IsInitializingPi = false;
+                [global::System.ThreadStatic]
+                public static bool IsInitializingPi;
                 public static object CreateDefaultPi(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingPi = true;
-                    var defaultValue = ((TestView)bindable).Pi;
-                    IsInitializingPi = false;
-                    return defaultValue;
+                    try
+                    {
+                        var defaultValue = ((TestView)bindable).Pi;
+                        return defaultValue;
+                    }
+                    finally
+                    {
+                        IsInitializingPi = false;
+                    }
                 }
 
-                public static volatile bool IsInitializingLetter = false;
+                [global::System.ThreadStatic]
+                public static bool IsInitializingLetter;
                 public static object CreateDefaultLetter(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingLetter = true;
-                    var defaultValue = ((TestView)bindable).Letter;
-                    IsInitializingLetter = false;
-                    return defaultValue;
+                    try
+                    {
+                        var defaultValue = ((TestView)bindable).Letter;
+                        return defaultValue;
+                    }
+                    finally
+                    {
+                        IsInitializingLetter = false;
+                    }
                 }
 
-                public static volatile bool IsInitializingTimeSpent = false;
+                [global::System.ThreadStatic]
+                public static bool IsInitializingTimeSpent;
                 public static object CreateDefaultTimeSpent(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingTimeSpent = true;
-                    var defaultValue = ((TestView)bindable).TimeSpent;
-                    IsInitializingTimeSpent = false;
-                    return defaultValue;
+                    try
+                    {
+                        var defaultValue = ((TestView)bindable).TimeSpent;
+                        return defaultValue;
+                    }
+                    finally
+                    {
+                        IsInitializingTimeSpent = false;
+                    }
                 }
 
-                public static volatile bool IsInitializingDoubleEpsilon = false;
+                [global::System.ThreadStatic]
+                public static bool IsInitializingDoubleEpsilon;
                 public static object CreateDefaultDoubleEpsilon(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingDoubleEpsilon = true;
-                    var defaultValue = ((TestView)bindable).DoubleEpsilon;
-                    IsInitializingDoubleEpsilon = false;
-                    return defaultValue;
+                    try
+                    {
+                        var defaultValue = ((TestView)bindable).DoubleEpsilon;
+                        return defaultValue;
+                    }
+                    finally
+                    {
+                        IsInitializingDoubleEpsilon = false;
+                    }
                 }
 
-                public static volatile bool IsInitializingSingleEpsilon = false;
+                [global::System.ThreadStatic]
+                public static bool IsInitializingSingleEpsilon;
                 public static object CreateDefaultSingleEpsilon(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingSingleEpsilon = true;
-                    var defaultValue = ((TestView)bindable).SingleEpsilon;
-                    IsInitializingSingleEpsilon = false;
-                    return defaultValue;
+                    try
+                    {
+                        var defaultValue = ((TestView)bindable).SingleEpsilon;
+                        return defaultValue;
+                    }
+                    finally
+                    {
+                        IsInitializingSingleEpsilon = false;
+                    }
                 }
 
-                public static volatile bool IsInitializingCurrentTime = false;
+                [global::System.ThreadStatic]
+                public static bool IsInitializingCurrentTime;
                 public static object CreateDefaultCurrentTime(global::Microsoft.Maui.Controls.BindableObject bindable)
                 {
                     IsInitializingCurrentTime = true;
-                    var defaultValue = ((TestView)bindable).CurrentTime;
-                    IsInitializingCurrentTime = false;
-                    return defaultValue;
+                    try
+                    {
+                        var defaultValue = ((TestView)bindable).CurrentTime;
+                        return defaultValue;
+                    }
+                    finally
+                    {
+                        IsInitializingCurrentTime = false;
+                    }
                 }
             }
             """;
@@ -690,31 +753,52 @@ public class BindablePropertyAttributeSourceGenerator_EdgeCaseTests : BaseBindab
 
 			file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
 			{
-			    public static volatile bool IsInitializingText = false;
+			    [global::System.ThreadStatic]
+			    public static bool IsInitializingText;
 			    public static object CreateDefaultText(global::Microsoft.Maui.Controls.BindableObject bindable)
 			    {
 			        IsInitializingText = true;
-			        var defaultValue = ((TestView)bindable).Text;
-			        IsInitializingText = false;
-			        return defaultValue;
+			        try
+			        {
+			            var defaultValue = ((TestView)bindable).Text;
+			            return defaultValue;
+			        }
+			        finally
+			        {
+			            IsInitializingText = false;
+			        }
 			    }
 
-			    public static volatile bool IsInitializingTime = false;
+			    [global::System.ThreadStatic]
+			    public static bool IsInitializingTime;
 			    public static object CreateDefaultTime(global::Microsoft.Maui.Controls.BindableObject bindable)
 			    {
 			        IsInitializingTime = true;
-			        var defaultValue = ((TestView)bindable).Time;
-			        IsInitializingTime = false;
-			        return defaultValue;
+			        try
+			        {
+			            var defaultValue = ((TestView)bindable).Time;
+			            return defaultValue;
+			        }
+			        finally
+			        {
+			            IsInitializingTime = false;
+			        }
 			    }
 			
-			    public static volatile bool IsInitializingCustomDuration = false;
+			    [global::System.ThreadStatic]
+			    public static bool IsInitializingCustomDuration;
 			    public static object CreateDefaultCustomDuration(global::Microsoft.Maui.Controls.BindableObject bindable)
 			    {
 			        IsInitializingCustomDuration = true;
-			        var defaultValue = ((TestView)bindable).CustomDuration;
-			        IsInitializingCustomDuration = false;
-			        return defaultValue;
+			        try
+			        {
+			            var defaultValue = ((TestView)bindable).CustomDuration;
+			            return defaultValue;
+			        }
+			        finally
+			        {
+			            IsInitializingCustomDuration = false;
+			        }
 			    }
 			}
 			""";
