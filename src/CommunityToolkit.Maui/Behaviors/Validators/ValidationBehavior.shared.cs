@@ -238,9 +238,9 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 			var validationBehavior = (ValidationBehavior)bindable;
 			await validationBehavior.UpdateStateAsync(validationBehavior.View, validationBehavior.Flags, false);
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (Options.ShouldSuppressExceptionsInBehaviors)
 		{
-			Trace.WriteLine(ex);
+			Trace.TraceInformation("{0}", ex);
 		}
 	}
 
