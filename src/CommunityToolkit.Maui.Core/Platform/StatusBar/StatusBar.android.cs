@@ -126,6 +126,19 @@ static partial class StatusBar
 	{
 		bool isTransparent = platformColor == PlatformColor.Transparent;
 
+		if (OperatingSystem.IsAndroidVersionAtLeast(30))
+		{
+			ApplyAndroidApi30(window);
+		}
+		else
+		{
+			ApplyAndroidApiLessThan30(window, isTransparent);
+		}
+	}
+
+	[SupportedOSPlatform("android"), UnsupportedOSPlatform("android30.0")]
+	static void ApplyAndroidApiLessThan30(Window window, bool isTransparent)
+	{
 		if (isTransparent)
 		{
 			window.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
@@ -140,6 +153,12 @@ static partial class StatusBar
 		}
 
 		WindowCompat.SetDecorFitsSystemWindows(window, !isTransparent);
+	}
+
+	[SupportedOSPlatform("android"), SupportedOSPlatform("android30.0")]
+	static void ApplyAndroidApi30(Window window)
+	{
+		WindowCompat.SetDecorFitsSystemWindows(window, false);
 	}
 
 	static void PlatformSetStyle(StatusBarStyle style)
