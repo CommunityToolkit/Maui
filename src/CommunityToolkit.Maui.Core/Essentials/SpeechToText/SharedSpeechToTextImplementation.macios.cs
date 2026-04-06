@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Media;
 public sealed partial class SpeechToTextImplementation
 {
 	const nuint audioEngineBusTap = 0;
-	
+
 	readonly AVAudioEngine audioEngine = new();
 
 	IDispatcherTimer? silenceTimer;
@@ -63,13 +63,13 @@ public sealed partial class SpeechToTextImplementation
 	{
 		silenceTimer?.Tick -= OnSilenceTimerTick;
 		silenceTimer?.Stop();
-		
+
 		liveSpeechRequest?.EndAudio();
 		recognitionTask?.Finish();
-		
+
 		audioEngine.Stop();
 		audioEngine.InputNode.RemoveTapOnBus(audioEngineBusTap);
-		
+
 		recognitionTask?.Dispose();
 		speechRecognizer?.Dispose();
 		liveSpeechRequest?.Dispose();
@@ -77,7 +77,7 @@ public sealed partial class SpeechToTextImplementation
 		speechRecognizer = null;
 		liveSpeechRequest = null;
 		recognitionTask = null;
-		
+
 		// Dispose all IDisposables before calling `OnSpeechToTextStateChanged` to ensure CurrentState == SpeechToTextState.Stopped
 		OnSpeechToTextStateChanged(CurrentState);
 	}
@@ -133,7 +133,7 @@ public sealed partial class SpeechToTextImplementation
 		var timer = await MainThread.InvokeOnMainThreadAsync(() => Dispatcher.GetForCurrentThread()?.CreateTimer()
 																	?? throw new InvalidOperationException($"{nameof(IDispatcherTimer)} must be retrieved from the main UI Thread"))
 															.WaitAsync(cancellationToken);
-		
+
 		if (options.AutoStopSilenceTimeout >= SpeechToTextOptionsDefaults.AutoStopSilenceTimeout)
 		{
 			return timer;
