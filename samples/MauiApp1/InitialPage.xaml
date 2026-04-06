@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MauiApp1.InitialPage"
+             Title="InitialPage">
+
+    <Shell.TitleView >
+        <Grid BackgroundColor="Yellow">
+            <Label Text="TITLE VIEW" HorizontalOptions="Center" />
+
+        </Grid>
+    </Shell.TitleView>
+    
+    
+    <VerticalStackLayout>
+        <Label 
+            Text="Welcome to .NET MAUI!"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center" />
+    </VerticalStackLayout>
+</ContentPage>

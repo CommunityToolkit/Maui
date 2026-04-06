@@ -17,6 +17,7 @@
     <Project Path="CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj">
       <Deploy />
     </Project>
+    <Project Path="MauiApp1/MauiApp1.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="../.editorconfig" />

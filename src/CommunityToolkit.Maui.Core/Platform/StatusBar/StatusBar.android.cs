@@ -21,12 +21,14 @@ static partial class StatusBar
 			return true;
 		}
 
-		System.Diagnostics.Trace.WriteLine($"{nameof(StatusBar)} Color + Style functionality is not supported on this version of the Android operating system. Minimum supported Android API is {BuildVersionCodes.M}");
+		System.Diagnostics.Trace.WriteLine(
+			$"{nameof(StatusBar)} Color + Style functionality is not supported on this version of the Android operating system. Minimum supported Android API is {BuildVersionCodes.M}");
 
 		return false;
 	});
 
-	static Activity Activity => Microsoft.Maui.ApplicationModel.Platform.CurrentActivity ?? throw new InvalidOperationException("Android Activity can't be null.");
+	static Activity Activity => Microsoft.Maui.ApplicationModel.Platform.CurrentActivity ??
+	                            throw new InvalidOperationException("Android Activity can't be null.");
 
 	static bool IsSupported => isSupportedHolder.Value;
 
@@ -139,20 +141,10 @@ static partial class StatusBar
 	[SupportedOSPlatform("android"), UnsupportedOSPlatform("android30.0")]
 	static void ApplyAndroidApiLessThan30(Window window, bool isTransparent)
 	{
-		if (isTransparent)
-		{
-			window.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
-			window.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
-		}
-		else
-		{
-			window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
-			window.SetFlags(
-				WindowManagerFlags.DrawsSystemBarBackgrounds,
-				WindowManagerFlags.DrawsSystemBarBackgrounds);
-		}
-
-		WindowCompat.SetDecorFitsSystemWindows(window, !isTransparent);
+		window.SetFlags(
+			WindowManagerFlags.DrawsSystemBarBackgrounds,
+			WindowManagerFlags.DrawsSystemBarBackgrounds);
+		WindowCompat.SetDecorFitsSystemWindows(window, false);
 	}
 
 	[SupportedOSPlatform("android"), SupportedOSPlatform("android30.0")]
@@ -187,7 +179,8 @@ static partial class StatusBar
 	static void SetStatusBarAppearance(bool isLightStatusBars)
 	{
 		if (Activity.GetCurrentWindow() is Window window
-			&& WindowCompat.GetInsetsController(window, window.DecorView) is WindowInsetsControllerCompat windowController)
+		    && WindowCompat.GetInsetsController(window, window.DecorView) is WindowInsetsControllerCompat
+			    windowController)
 		{
 			windowController.AppearanceLightStatusBars = isLightStatusBars;
 		}
