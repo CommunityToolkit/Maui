@@ -597,15 +597,16 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	/// <param name="info">Property model.</param>
 	static void AppendHelperInitializingField(StringBuilder fileStaticClassStringBuilder, in BindablePropertyModel info)
 	{
-		// Make the flag public static so it can be referenced from the generated partial class in the same file.
-		fileStaticClassStringBuilder.Append("public static volatile bool ")
+		// Use [ThreadStatic] so each thread has its own flag, preventing cross-thread
+		// interference when multiple instances resolve default values concurrently.
+		fileStaticClassStringBuilder.Append("[global::System.ThreadStatic]\npublic static bool ")
 			.Append(info.InitializingPropertyName)
-			.Append(" = false;\n");
+			.Append(";\n");
 	}
 
 	/// <summary>
 	/// Appends a default value creator method into the file-static helper class.
-	/// The method sets the static initializing flag, reads the property's initializer value by casting the bindable
+	/// The method sets the thread-static initializing flag, reads the property's initializer value by casting the bindable
 	/// to the declaring type, then clears the flag and returns the value.
 	/// </summary>
 	/// <param name="fileStaticClassStringBuilder">Helper StringBuilder used to collect helper members.</param>
@@ -621,14 +622,17 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append("{\n")
 			.Append(info.InitializingPropertyName)
 			.Append(" = true;\n")
+			.Append("try\n{\n")
 			.Append("var defaultValue = ((")
 			.Append(fullDeclaringType)
 			.Append(")bindable).")
 			.Append(sanitizedPropertyName)
 			.Append(";\n")
+			.Append("return defaultValue;\n")
+			.Append("}\nfinally\n{\n")
 			.Append(info.InitializingPropertyName)
 			.Append(" = false;\n")
-			.Append("return defaultValue;\n")
+			.Append("}\n")
 			.Append("}\n\n");
 	}
 }
