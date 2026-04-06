@@ -49,11 +49,16 @@ jobs:
             -   name: Display dotnet info
                 run: dotnet --info
 
+            -   name: Build Benchmarks
+                run: |
+                    dotnet build ${{ env.PathToCommunityToolkitAnalyzersBenchmarksCsproj }} -c Release
+                    dotnet build ${{ env.PathToCommunityToolkitSourceGeneratorsBenchmarksCsproj }} -c Release
+
             -   name: Run Analyzer Benchmarks
-                run: dotnet run --project ${{ env.PathToCommunityToolkitAnalyzersBenchmarksCsproj }} -c Release -- -a "${{ runner.temp }}"
+                run: dotnet run --project ${{ env.PathToCommunityToolkitAnalyzersBenchmarksCsproj }} -c Release --no-build -- -a "${{ runner.temp }}"
 
             -   name: Run Source Generator Benchmarks
-                run: dotnet run --project ${{ env.PathToCommunityToolkitSourceGeneratorsBenchmarksCsproj }} -c Release -- -a "${{ runner.temp }}"
+                run: dotnet run --project ${{ env.PathToCommunityToolkitSourceGeneratorsBenchmarksCsproj }} -c Release --no-build -- -a "${{ runner.temp }}"
 
             -   name: Publish Benchmarks
                 uses: actions/upload-artifact@v7
