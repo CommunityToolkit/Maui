@@ -234,7 +234,7 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 	protected static async void OnValidationPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var validationBehavior = (ValidationBehavior)bindable;
-		await validationBehavior.UpdateStateAsync(validationBehavior.View, validationBehavior.Flags, false).ConfigureAwait(false);
+		await validationBehavior.UpdateStateAsync(validationBehavior.View, validationBehavior.Flags, false);
 	}
 
 	static void OnIsValidPropertyChanged(BindableObject bindable, object oldValue, object newValue)
