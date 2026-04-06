@@ -46,9 +46,7 @@
   <PropertyGroup Condition="!$([MSBuild]::IsOSPlatform('osx')) AND !$([MSBuild]::IsOSPlatform('windows')) AND ($(TargetFrameworks.Contains('-ios')) OR $(TargetFrameworks.Contains('-maccatalyst')))">
      <TargetFrameworks>$(NetVersion);$(NetVersion)-android</TargetFrameworks>
      <TargetFrameworks Condition="'$(OutputType)' == 'Exe'">$(NetVersion)-android</TargetFrameworks>
-    <TargetFrameworks>$(NetVersion);$(NetVersion)-android</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OutputType)' == 'Exe'">$(NetVersion)-android</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">$(TargetFrameworks);$(NetVersion)-tizen</TargetFrameworks>
+     <TargetFrameworks Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">$(TargetFrameworks);$(NetVersion)-tizen</TargetFrameworks>
   </PropertyGroup>
 
 </Project>
