@@ -39,5 +39,7 @@
 		<string>bluetooth-central</string>
 		<string>audio</string>
 	</array>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>PhotosAddOnly</string>
 </dict>
 </plist>
