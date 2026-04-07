@@ -126,20 +126,18 @@ static partial class StatusBar
 
 	static void ApplyWindowFlags(Window window, PlatformColor platformColor)
 	{
-		bool isTransparent = platformColor == PlatformColor.Transparent;
-
 		if (OperatingSystem.IsAndroidVersionAtLeast(30))
 		{
 			ApplyAndroidApi30(window);
 		}
 		else
 		{
-			ApplyAndroidApiLessThan30(window, isTransparent);
+			ApplyAndroidApiLessThan30(window);
 		}
 	}
 
 	[SupportedOSPlatform("android"), UnsupportedOSPlatform("android30.0")]
-	static void ApplyAndroidApiLessThan30(Window window, bool isTransparent)
+	static void ApplyAndroidApiLessThan30(Window window)
 	{
 		window.SetFlags(
 			WindowManagerFlags.DrawsSystemBarBackgrounds,
