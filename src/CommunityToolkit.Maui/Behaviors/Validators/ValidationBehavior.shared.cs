@@ -233,15 +233,19 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 	/// <param name="newValue"></param>
 	protected static async void OnValidationPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		try
-		{
-			var validationBehavior = (ValidationBehavior)bindable;
-			await validationBehavior.UpdateStateAsync(validationBehavior.View, validationBehavior.Flags, false);
-		}
-		catch (Exception ex)
-		{
-			Trace.WriteLine(ex);
-		}
+		// try
+		// {
+		// 	var validationBehavior = (ValidationBehavior)bindable;
+		// 	await validationBehavior.UpdateStateAsync(validationBehavior.View, validationBehavior.Flags, false);
+		// }
+		// catch (Exception ex)
+		// {
+		// 	Trace.WriteLine(ex);
+		// }
+
+		// Temporarily reverting to original behaviour to validate removal of ConfiugreAwait(false) as well as ThredStatic in source generator
+		var validationBehavior = (ValidationBehavior)bindable;
+		await validationBehavior.UpdateStateAsync(validationBehavior.View, validationBehavior.Flags, false).ConfigureAwait(false);
 	}
 
 	static void OnIsValidPropertyChanged(BindableObject bindable, object oldValue, object newValue)

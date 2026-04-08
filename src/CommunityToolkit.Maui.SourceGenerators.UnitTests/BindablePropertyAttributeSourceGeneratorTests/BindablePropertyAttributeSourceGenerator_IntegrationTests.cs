@@ -173,15 +173,9 @@ public class BindablePropertyAttributeSourceGenerator_IntegrationTests : BaseBin
 		        public static object CreateDefaultValue(global::Microsoft.Maui.Controls.BindableObject bindable)
 		        {
 		            IsInitializingValue = true;
-		            try
-		            {
-		                var defaultValue = (({{defaultTestClassName}}<T, U>)bindable).Value;
-		                return defaultValue;
-		            }
-		            finally
-		            {
-		                IsInitializingValue = false;
-		            }
+		            var defaultValue = (({{defaultTestClassName}}<T, U>)bindable).Value;
+		            IsInitializingValue = false;
+		            return defaultValue;
 		        }
 		    }
 		}

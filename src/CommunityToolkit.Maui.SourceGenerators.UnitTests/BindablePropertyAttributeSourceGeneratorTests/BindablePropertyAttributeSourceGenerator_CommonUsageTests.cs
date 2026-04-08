@@ -612,34 +612,51 @@ public class BindablePropertyAttributeSourceGenerator_CommonUsageTests : BaseBin
 			{
 			    [global::System.ThreadStatic]
 			    public static bool IsInitializingText;
-			    public static object CreateDefaultText(global::Microsoft.Maui.Controls.BindableObject bindable)
+			    // public static object CreateDefaultText(global::Microsoft.Maui.Controls.BindableObject bindable)
+			    // {
+			    //     IsInitializingText = true;
+			    //     try
+			    //     {
+			    //         var defaultValue = ((TestView)bindable).Text;
+			    //         return defaultValue;
+			    //     }
+			    //     finally
+			    //     {
+			    //         IsInitializingText = false;
+			    //     }
+			    // }
+				// original:
+				public static object CreateDefaultText(global::Microsoft.Maui.Controls.BindableObject bindable)
 			    {
 			        IsInitializingText = true;
-			        try
-			        {
-			            var defaultValue = ((TestView)bindable).Text;
-			            return defaultValue;
-			        }
-			        finally
-			        {
-			            IsInitializingText = false;
-			        }
+			        var defaultValue = ((TestView)bindable).Text;
+			        IsInitializingText = false;
+			        return defaultValue;
 			    }
 			
 			    [global::System.ThreadStatic]
 			    public static bool IsInitializingCustomDuration;
-			    public static object CreateDefaultCustomDuration(global::Microsoft.Maui.Controls.BindableObject bindable)
+			    // public static object CreateDefaultCustomDuration(global::Microsoft.Maui.Controls.BindableObject bindable)
+			    // {
+			    //     IsInitializingCustomDuration = true;
+			    //     try
+			    //     {
+			    //         var defaultValue = ((TestView)bindable).CustomDuration;
+			    //         return defaultValue;
+			    //     }
+			    //     finally
+			    //     {
+			    //         IsInitializingCustomDuration = false;
+			    //     }
+			    // }
+
+				// original:
+				public static object CreateDefaultCustomDuration(global::Microsoft.Maui.Controls.BindableObject bindable)
 			    {
 			        IsInitializingCustomDuration = true;
-			        try
-			        {
-			            var defaultValue = ((TestView)bindable).CustomDuration;
-			            return defaultValue;
-			        }
-			        finally
-			        {
-			            IsInitializingCustomDuration = false;
-			        }
+			        var defaultValue = ((TestView)bindable).CustomDuration;
+			        IsInitializingCustomDuration = false;
+			        return defaultValue;
 			    }
 			}
 			""";
