@@ -10,11 +10,9 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 {
 	readonly ISpeechToText speechToText;
 
-	public OfflineSpeechToTextViewModel()
+	public OfflineSpeechToTextViewModel([FromKeyedServices("Offline")] ISpeechToText offlineTextToSpeech)
 	{
-		// For demo purposes. You can resolve dependency from the DI container,
-		speechToText = OfflineSpeechToText.Default;
-
+		speechToText = offlineTextToSpeech;
 		speechToText.StateChanged += HandleSpeechToTextStateChanged;
 		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
 		speechToText.RecognitionResultCompleted += HandleRecognitionResultCompleted;
