@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using CommunityToolkit.Maui.Behaviors;
+using CommunityToolkit.Maui.Core;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
@@ -156,5 +157,16 @@ public class RequiredStringValidationBehaviorTests() : BaseBehaviorTest<Required
 
 		// Assert
 		Assert.False(confirmPasswordBehavior.IsValid);
+	}
+
+	[Fact]
+	public void VerifyDefaults()
+	{
+		// Arrange
+		var requiredStringValidationBehavior = new RequiredStringValidationBehavior();
+
+		// Act Assert
+		Assert.Equal(RequiredStringValidationBehaviorDefaults.ExactMatch, requiredStringValidationBehavior.ExactMatch);
+		Assert.Equal(RequiredStringValidationBehaviorDefaults.RequiredString, requiredStringValidationBehavior.RequiredString);
 	}
 }

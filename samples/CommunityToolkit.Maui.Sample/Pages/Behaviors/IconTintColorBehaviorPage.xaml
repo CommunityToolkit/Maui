@@ -100,13 +100,13 @@
             <Label
 				Grid.Row="5"
 				Grid.Column="2"
-				FontSize="Micro"
+				FontSize="6"
 				FontAttributes="Italic"
 				Text="This ImageButton uses Bindings to change the TintColor. Click it!"/>
             <Label
 				Grid.Row="5"
 				Grid.Column="1"
-				FontSize="Micro"
+				FontSize="6"
 				FontAttributes="Italic"
 				Text="This ImageButton uses Bindings to change the ImageSource. Click it!"/>
 
@@ -182,7 +182,7 @@
                 Grid.ColumnSpan="3"
                 Margin="0"
                 Padding="0"
-                FontSize="Micro"
+                FontSize="6"
                 FontAttributes="Italic"
                 HorizontalOptions="Center"
                 VerticalOptions="Start"

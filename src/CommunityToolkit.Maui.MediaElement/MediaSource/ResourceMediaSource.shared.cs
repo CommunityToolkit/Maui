@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Converters;
+using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -10,7 +11,7 @@ namespace CommunityToolkit.Maui.Views;
 public sealed partial class ResourceMediaSource : MediaSource
 {
 	/// <summary>
-	/// Backing store for the <see cref="Path"/> property.
+	/// Bindable Property for the <see cref="Path"/> property.
 	/// </summary>
 	public static readonly BindableProperty PathProperty
 		= BindableProperty.Create(nameof(Path), typeof(string), typeof(ResourceMediaSource), propertyChanged: OnResourceMediaSourceMediaSourceChanged);

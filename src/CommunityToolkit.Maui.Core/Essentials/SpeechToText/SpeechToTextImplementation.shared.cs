@@ -1,4 +1,3 @@
-using System.Globalization;
 using Microsoft.Maui.ApplicationModel;
 
 namespace CommunityToolkit.Maui.Media;
@@ -35,14 +34,22 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 	public async Task StartListenAsync(SpeechToTextOptions options, CancellationToken cancellationToken = default)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-
-		var isPermissionGranted = await IsSpeechPermissionAuthorized(cancellationToken).ConfigureAwait(false);
-		if (!isPermissionGranted)
+		if (CurrentState is not SpeechToTextState.Stopped)
 		{
-			throw new PermissionException($"{nameof(Permissions)}.{nameof(Permissions.Microphone)} Not Granted");
+			return;
 		}
 
-		await InternalStartListeningAsync(options, cancellationToken).ConfigureAwait(false);
+		try
+		{
+			await InternalStartListeningAsync(options, cancellationToken).ConfigureAwait(false);
+		}
+		catch (Exception)
+		{
+			// Use `CancellationToken.None` to ensure `InternalStopListeningAsync` completes
+			// This prevents `InternalStopListeningAsync` from throwing a OperationCancelledException if `cancellationToken` has been canceled
+			await StopListenAsync(CancellationToken.None).ConfigureAwait(false);
+			throw;
+		}
 	}
 
 	/// <inheritdoc/>
@@ -68,12 +75,6 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 	public async Task<bool> RequestPermissions(CancellationToken cancellationToken = default)
 	{
 		var status = await Permissions.RequestAsync<Permissions.Microphone>().WaitAsync(cancellationToken).ConfigureAwait(false);
-		return status is PermissionStatus.Granted;
-	}
-
-	static async Task<bool> IsSpeechPermissionAuthorized(CancellationToken cancellationToken)
-	{
-		var status = await Permissions.CheckStatusAsync<Permissions.Microphone>().WaitAsync(cancellationToken).ConfigureAwait(false);
 		return status is PermissionStatus.Granted;
 	}
 #endif

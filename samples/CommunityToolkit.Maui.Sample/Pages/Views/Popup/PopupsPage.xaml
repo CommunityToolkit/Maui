@@ -35,6 +35,8 @@
                 <Button Text="Updating Popup" Command="{Binding UpdatingPopupCommand}" />
 
                 <Button Text="Show Popup content" Command="{Binding ShowPopupContentCommand}" />
+                
+                <Button Text="Show Popup in a Modal Page in a Custom Navigation Page" Clicked="HandleModalPopupInCustomNavigationPage" />
 
                 <Button Text="Custom Positioning Popup" Clicked="HandlePopupPositionButtonClicked" />
 
@@ -49,6 +51,8 @@
                 <Button Text="OnDisappearing Popup" Clicked="HandleOnDisappearingPopupClicked" />
                 
                 <Button Text="Complex Popup" Clicked="HandleComplexPopupClicked" />
+                
+                <Button Text="Collection View Popup" Clicked="HandleCollectionViewPopupClicked" />
                 
             </VerticalStackLayout>
         </ScrollView>

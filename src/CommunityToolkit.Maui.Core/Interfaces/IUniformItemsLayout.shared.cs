@@ -3,7 +3,7 @@
 /// <summary>
 /// Uniform Items Layout Control
 /// </summary>
-public interface IUniformItemsLayout : ILayout
+public interface IUniformItemsLayout : Microsoft.Maui.ILayout
 {
 	/// <summary>
 	/// Max rows

@@ -1,14 +1,23 @@
 using System.Diagnostics;
 using System.Numerics;
 using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Media;
 using Windows.Media.Playback;
+using Windows.Media.Streaming.Adaptive;
 using Windows.Storage;
+using Windows.Storage.Streams;
 using Windows.System.Display;
+using HttpClient = Windows.Web.Http.HttpClient;
+using HttpMethod = Windows.Web.Http.HttpMethod;
+using HttpRequestMessage = Windows.Web.Http.HttpRequestMessage;
 using ParentWindow = CommunityToolkit.Maui.Extensions.PageExtensions.ParentWindow;
 using WindowsMediaElement = Windows.Media.Playback.MediaPlayer;
 using WinMediaSource = Windows.Media.Core.MediaSource;
@@ -19,6 +28,8 @@ partial class MediaManager : IDisposable
 {
 	Metadata? metadata;
 	SystemMediaTransportControls? systemMediaControls;
+	HttpClient? headerHttpClient;
+	AdaptiveMediaSource? adaptiveMediaSource;
 
 	// States that allow changing position
 	readonly IReadOnlyList<MediaElementState> allowUpdatePositionStates =
@@ -266,6 +277,9 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
+		adaptiveMediaSource?.DownloadRequested -= OnAdaptiveMediaSourceDownloadRequested;
+		adaptiveMediaSource = null;
+
 		await Dispatcher.DispatchAsync(() => Player.PosterSource = new BitmapImage());
 
 		if (MediaElement.Source is null)
@@ -287,7 +301,15 @@ partial class MediaManager : IDisposable
 			var uri = uriMediaSource.Uri?.AbsoluteUri;
 			if (!string.IsNullOrWhiteSpace(uri))
 			{
-				Player.Source = WinMediaSource.CreateFromUri(new Uri(uri));
+				var headers = uriMediaSource.HttpHeaders;
+				if (headers.Count > 0)
+				{
+					await SetUriSourceWithHeaders(new Uri(uri), headers);
+				}
+				else
+				{
+					Player.MediaPlayer.SetUriSource(new Uri(uri));
+				}
 			}
 		}
 		else if (MediaElement.Source is FileMediaSource fileMediaSource)
@@ -296,16 +318,90 @@ partial class MediaManager : IDisposable
 			if (!string.IsNullOrWhiteSpace(filename))
 			{
 				StorageFile storageFile = await StorageFile.GetFileFromPathAsync(filename);
-				Player.Source = WinMediaSource.CreateFromStorageFile(storageFile);
+				Player.MediaPlayer.SetFileSource(storageFile);
 			}
 		}
 		else if (MediaElement.Source is ResourceMediaSource resourceMediaSource)
 		{
-			string path = "ms-appx:///" + resourceMediaSource.Path;
+			if (string.IsNullOrWhiteSpace(resourceMediaSource.Path))
+			{
+				Logger.LogInformation("ResourceMediaSource Path is null or empty");
+				return;
+			}
+
+			string path = GetFullAppPackageFilePath(resourceMediaSource.Path);
 			if (!string.IsNullOrWhiteSpace(path))
 			{
-				Player.Source = WinMediaSource.CreateFromUri(new Uri(path));
+				Player.MediaPlayer.SetUriSource(new Uri(path));
 			}
+		}
+	}
+
+	async Task SetUriSourceWithHeaders(Uri uri, IDictionary<string, string> headers)
+	{
+		if (Player is null)
+		{
+			return;
+		}
+
+		headerHttpClient ??= new HttpClient();
+		headerHttpClient.DefaultRequestHeaders.Clear();
+
+		foreach (var header in headers)
+		{
+			if (!headerHttpClient.DefaultRequestHeaders.TryAppendWithoutValidation(header.Key, header.Value))
+			{
+				throw new InvalidOperationException($"Failed to append HTTP header '{header.Key}'. The header name may be empty or contain invalid characters.");
+			}
+		}
+
+		var adaptiveResult = await AdaptiveMediaSource.CreateFromUriAsync(uri, headerHttpClient).AsTask().ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+
+		if (adaptiveResult.Status is AdaptiveMediaSourceCreationStatus.Success && adaptiveResult.MediaSource is not null)
+		{
+			adaptiveMediaSource = adaptiveResult.MediaSource;
+			adaptiveMediaSource.DownloadRequested += OnAdaptiveMediaSourceDownloadRequested;
+
+			var mediaSource = WinMediaSource.CreateFromAdaptiveMediaSource(adaptiveMediaSource);
+			await Dispatcher.DispatchAsync(() =>
+			{
+				Player.AutoPlay = MediaElement.ShouldAutoPlay;
+				Player.Source = mediaSource;
+			});
+		}
+		else
+		{
+			var stream = await HttpRandomAccessStream.CreateAsync(headerHttpClient, uri);
+			await Dispatcher.DispatchAsync(() =>
+			{
+				Player.AutoPlay = MediaElement.ShouldAutoPlay;
+				Player.Source = WinMediaSource.CreateFromStream(stream, string.Empty);
+			});
+		}
+	}
+
+	async void OnAdaptiveMediaSourceDownloadRequested(AdaptiveMediaSource sender, AdaptiveMediaSourceDownloadRequestedEventArgs args)
+	{
+		if (headerHttpClient is null)
+		{
+			return;
+		}
+
+		var deferral = args.GetDeferral();
+		try
+		{
+			using var request = new HttpRequestMessage(HttpMethod.Get, args.ResourceUri);
+			using var response = await headerHttpClient.SendRequestAsync(request).AsTask().ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+			response.EnsureSuccessStatusCode();
+			args.Result.InputStream = await response.Content.ReadAsInputStreamAsync().AsTask();
+		}
+		catch (Exception ex)
+		{
+			Trace.WriteLine($"MediaElement [Windows]: DownloadRequested failed for {args.ResourceUri}: {ex.Message}");
+		}
+		finally
+		{
+			deferral.Complete();
 		}
 	}
 
@@ -327,6 +423,12 @@ partial class MediaManager : IDisposable
 	{
 		if (disposing)
 		{
+			adaptiveMediaSource?.DownloadRequested -= OnAdaptiveMediaSourceDownloadRequested;
+			adaptiveMediaSource = null;
+
+			headerHttpClient?.Dispose();
+			headerHttpClient = null;
+
 			if (Player?.MediaPlayer is not null)
 			{
 				if (displayActiveRequested)
@@ -350,6 +452,16 @@ partial class MediaManager : IDisposable
 				}
 			}
 		}
+	}
+
+	static string GetFullAppPackageFilePath(in string filename)
+	{
+		ArgumentNullException.ThrowIfNull(filename);
+
+		var normalizedFilename = NormalizePath(filename);
+		return Path.Combine(AppPackageService.FullAppPackageFilePath, normalizedFilename);
+
+		static string NormalizePath(string filename) => filename.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
 	}
 
 	static bool IsZero<TValue>(TValue numericValue) where TValue : INumber<TValue>

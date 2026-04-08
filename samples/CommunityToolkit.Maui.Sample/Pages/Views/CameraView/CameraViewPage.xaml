@@ -5,12 +5,11 @@
                 xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                 xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
                 Title="CameraView"
-                Unloaded="OnUnloaded"
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Views.CameraViewPage"
                 x:TypeArguments="viewModels:CameraViewViewModel"
                 x:DataType="viewModels:CameraViewViewModel">
 
-    <Grid RowDefinitions="200,*,Auto,Auto" ColumnDefinitions="3*,*">
+    <Grid RowDefinitions="Auto,*,Auto,Auto" ColumnDefinitions="3*,*">
         <toolkit:CameraView
             x:Name="Camera"
             Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Grid.RowSpan="3"
@@ -29,7 +28,7 @@
                 <Label Text="{Binding ResolutionText}" />
                 <Picker 
                     Title="Available Resolutions"
-                    ItemsSource="{Binding SelectedCamera.SupportedResolutions, FallbackValue=''}"
+                    ItemsSource="{Binding SelectedCamera.SupportedResolutions, FallbackValue='', x:DataType={x:Null}}"
                     SelectedItem="{Binding SelectedResolution}" />
                 <Label x:Name="debugText"/>
 
@@ -51,15 +50,21 @@
             <Slider 
                 x:Name="slider" Grid.Column="1"
                 Value="{Binding CurrentZoom}"
-                Maximum="{Binding SelectedCamera.MaximumZoomFactor, FallbackValue=1}"
-                Minimum="{Binding SelectedCamera.MinimumZoomFactor, FallbackValue=1}"/>
+                Maximum="{Binding SelectedCamera.MaximumZoomFactor, FallbackValue=1, x:DataType={x:Null}}"
+                Minimum="{Binding SelectedCamera.MinimumZoomFactor, FallbackValue=1, x:DataType={x:Null}}"/>
 
             <Button Clicked="ZoomIn" Text="Zoom +" Grid.Column="2"/>
         </Grid>
 
-        <Grid Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3" BackgroundColor="#80CCCCCC">
+        <Grid Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="5" BackgroundColor="#80CCCCCC">
 
             <FlexLayout Margin="5" JustifyContent="SpaceBetween" Wrap="Wrap">
+
+                <Picker 
+                    Title="Cameras" 
+                    ItemsSource="{Binding Cameras}"
+                    ItemDisplayBinding="{Binding Name, x:DataType={x:Null}}" 
+                    SelectedItem="{Binding SelectedCamera}" />
 
                 <Picker 
                     Title="Flash"
@@ -67,15 +72,28 @@
                     ItemsSource="{Binding FlashModes}"
                     SelectedItem="{Binding FlashMode}" />
 
+                <Button Command="{Binding StartCameraPreviewCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}"
+                        CommandParameter="{Binding Token}"
+                        Text="Start Camera Preview" />
+
+                <Button Command="{Binding StopCameraPreviewCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}" 
+                        Text="Stop Camera Preview" />
+
+
+                <Button Clicked="StartCameraRecording"
+                        Text="Start Video Recording" />
+
+                <Button  Clicked="StopCameraRecording"
+                         CommandParameter="{Binding Token}"
+                         Text="Stop Video Recording" />
+
+                <Button Clicked="SaveVideo" Text="Save Video Recording" />
+
                 <Button Command="{Binding CaptureImageCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}" 
                         CommandParameter="{Binding Token}"
                         Text="Capture Image"/>
-                <Button Command="{Binding StartCameraPreviewCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}"
-                        CommandParameter="{Binding Token}"
-                        Text="StartCameraPreview" />
 
-                <Button Command="{Binding StopCameraPreviewCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}" 
-                        Text="StopCameraPreview" />
+                <Button Clicked="SetNightMode" Text="Set Night Mode (Android)" />
 
             </FlexLayout>
         </Grid>

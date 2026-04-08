@@ -8,128 +8,102 @@ namespace CommunityToolkit.Maui.Behaviors;
 public partial class ImageTouchBehavior : TouchBehavior
 {
 	/// <summary>
-	/// Bindable property for <see cref="DefaultImageSource"/>
-	/// </summary>
-	public static readonly BindableProperty DefaultImageSourceProperty = BindableProperty.Create(
-		nameof(DefaultImageSource),
-		typeof(ImageSource),
-		typeof(TouchBehavior),
-		ImageTouchBehaviorDefaults.DefaultBackgroundImageSource);
-
-	/// <summary>
-	/// Bindable property for <see cref="HoveredImageSource"/>
-	/// </summary>
-	public static readonly BindableProperty HoveredBackgroundImageSourceProperty = BindableProperty.Create(
-		nameof(HoveredImageSource),
-		typeof(ImageSource),
-		typeof(TouchBehavior),
-		ImageTouchBehaviorDefaults.HoveredBackgroundImageSource);
-
-	/// <summary>
-	/// Bindable property for <see cref="PressedImageSource"/>
-	/// </summary>
-	public static readonly BindableProperty PressedBackgroundImageSourceProperty = BindableProperty.Create(
-		nameof(PressedImageSource),
-		typeof(ImageSource),
-		typeof(TouchBehavior),
-		ImageTouchBehaviorDefaults.PressedBackgroundImageSource);
-
-	/// <summary>
-	/// Bindable property for <see cref="DefaultImageAspect"/>
-	/// </summary>
-	public static readonly BindableProperty DefaultImageAspectProperty = BindableProperty.Create(
-		nameof(DefaultImageAspect),
-		typeof(Aspect),
-		typeof(TouchBehavior),
-		ImageTouchBehaviorDefaults.DefaultBackgroundImageAspect);
-
-	/// <summary>
-	/// Bindable property for <see cref="HoveredImageAspect"/>
-	/// </summary>
-	public static readonly BindableProperty HoveredImageAspectProperty = BindableProperty.Create(
-		nameof(HoveredImageAspect),
-		typeof(Aspect),
-		typeof(TouchBehavior),
-		ImageTouchBehaviorDefaults.HoveredBackgroundImageAspect);
-
-	/// <summary>
-	/// Bindable property for <see cref="PressedImageAspect"/>
-	/// </summary>
-	public static readonly BindableProperty PressedImageAspectProperty = BindableProperty.Create(
-		nameof(PressedImageAspect),
-		typeof(Aspect),
-		typeof(TouchBehavior),
-		ImageTouchBehaviorDefaults.PressedBackgroundImageAspect);
-
-	/// <summary>
-	/// Bindable property for <see cref="ShouldSetImageOnAnimationEnd"/>
-	/// </summary>
-	public static readonly BindableProperty ShouldSetImageOnAnimationEndProperty = BindableProperty.Create(
-		nameof(ShouldSetImageOnAnimationEnd),
-		typeof(bool),
-		typeof(TouchBehavior),
-		ImageTouchBehaviorDefaults.ShouldSetImageOnAnimationEnd);
-
-	/// <summary>
 	/// Gets or sets the <see cref="ImageSource"/> when <see cref="TouchState"/> is <see cref="TouchState.Default"/>.
 	/// </summary>
-	public ImageSource? DefaultImageSource
-	{
-		get => (ImageSource?)GetValue(DefaultImageSourceProperty);
-		set => SetValue(DefaultImageSourceProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(HandleDefaultImageSourceChanged))]
+	public partial ImageSource? DefaultImageSource { get; set; }
 
 	/// <summary>
 	/// Gets or sets the <see cref="ImageSource"/> when the <see cref="HoverState"/> is <see cref="HoverState.Hovered"/>
 	/// </summary>
-	public ImageSource? HoveredImageSource
-	{
-		get => (ImageSource?)GetValue(HoveredBackgroundImageSourceProperty);
-		set => SetValue(HoveredBackgroundImageSourceProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(HandleHoveredImageSourceChanged))]
+	public partial ImageSource? HoveredImageSource { get; set; }
 
 	/// <summary>
 	/// Gets or sets the <see cref="ImageSource"/> when the <see cref="TouchState"/> is <see cref="TouchState.Pressed"/>
 	/// </summary>
-	public ImageSource? PressedImageSource
-	{
-		get => (ImageSource?)GetValue(PressedBackgroundImageSourceProperty);
-		set => SetValue(PressedBackgroundImageSourceProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(HandlePressedImageSourceChanged))]
+	public partial ImageSource? PressedImageSource { get; set; }
 
 	/// <summary>
 	/// Gets or sets the <see cref="ImageSource"/> <see cref="Aspect"/> when <see cref="TouchState"/> is <see cref="TouchState.Default"/>.
 	/// </summary>
-	public Aspect DefaultImageAspect
-	{
-		get => (Aspect)GetValue(DefaultImageAspectProperty);
-		set => SetValue(DefaultImageAspectProperty, value);
-	}
+	[BindableProperty]
+	public partial Aspect? DefaultImageAspect { get; set; }
 
 	/// <summary>
 	/// Gets or sets the <see cref="ImageSource"/> <see cref="Aspect"/> when <see cref="HoverState"/> is <see cref="HoverState.Hovered"/>.
 	/// </summary>
-	public Aspect HoveredImageAspect
-	{
-		get => (Aspect)GetValue(HoveredImageAspectProperty);
-		set => SetValue(HoveredImageAspectProperty, value);
-	}
+	[BindableProperty]
+	public partial Aspect? HoveredImageAspect { get; set; }
 
 	/// <summary>
 	/// Gets or sets the <see cref="ImageSource"/> <see cref="Aspect"/> when the <see cref="TouchState"/> is <see cref="TouchState.Pressed"/>
 	/// </summary>
-	public Aspect PressedImageAspect
-	{
-		get => (Aspect)GetValue(PressedImageAspectProperty);
-		set => SetValue(PressedImageAspectProperty, value);
-	}
+	[BindableProperty]
+	public partial Aspect? PressedImageAspect { get; set; }
 
 	/// <summary>
 	/// Gets or sets a value indicating whether the image should be set when the animation ends.
 	/// </summary>
-	public bool ShouldSetImageOnAnimationEnd
+	[BindableProperty]
+	public partial bool ShouldSetImageOnAnimationEnd { get; set; } = ImageTouchBehaviorDefaults.ShouldSetImageOnAnimationEnd;
+
+	static void HandleDefaultImageSourceChanged(BindableObject bindable, object? oldValue, object? newValue)
 	{
-		get => (bool)GetValue(ShouldSetImageOnAnimationEndProperty);
-		set => SetValue(ShouldSetImageOnAnimationEndProperty, value);
+		var imageTouchBehavior = (ImageTouchBehavior)bindable;
+		var updatedImageSource = (ImageSource?)newValue;
+
+		if (!GestureManager.TryGetBindableImageTouchBehaviorElement(imageTouchBehavior, out var imageElement))
+		{
+			return;
+		}
+
+		// GestureManager does not automatically toggle ImageElement.SourceProperty when currently being displayed
+		switch (imageTouchBehavior.CurrentTouchState, imageTouchBehavior.CurrentHoverState)
+		{
+			case (TouchState.Default, HoverState.Hovered) when imageTouchBehavior.HoveredImageSource is null:
+			case (TouchState.Default, HoverState.Default):
+				imageElement.SetValue(ImageElement.SourceProperty, updatedImageSource);
+				break;
+		}
+	}
+
+	static void HandlePressedImageSourceChanged(BindableObject bindable, object? oldValue, object? newValue)
+	{
+		var imageTouchBehavior = (ImageTouchBehavior)bindable;
+		var updatedImageSource = (ImageSource?)newValue;
+
+		if (!GestureManager.TryGetBindableImageTouchBehaviorElement(imageTouchBehavior, out var imageElement))
+		{
+			return;
+		}
+
+		// GestureManager does not automatically toggle ImageElement.SourceProperty when currently being displayed
+		switch (imageTouchBehavior.CurrentTouchState, imageTouchBehavior.CurrentHoverState)
+		{
+			case (TouchState.Pressed, _):
+				imageElement.SetValue(ImageElement.SourceProperty, updatedImageSource);
+				break;
+		}
+	}
+
+	static void HandleHoveredImageSourceChanged(BindableObject bindable, object? oldValue, object? newValue)
+	{
+		var imageTouchBehavior = (ImageTouchBehavior)bindable;
+		var updatedImageSource = (ImageSource?)newValue;
+
+		if (!GestureManager.TryGetBindableImageTouchBehaviorElement(imageTouchBehavior, out var imageElement))
+		{
+			return;
+		}
+
+		// GestureManager does not automatically toggle ImageElement.SourceProperty when currently being displayed
+		switch (imageTouchBehavior.CurrentTouchState, imageTouchBehavior.CurrentHoverState)
+		{
+			case (TouchState.Default, HoverState.Hovered):
+				imageElement.SetValue(ImageElement.SourceProperty, updatedImageSource);
+				break;
+		}
 	}
 }

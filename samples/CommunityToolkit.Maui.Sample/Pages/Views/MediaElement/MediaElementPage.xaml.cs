@@ -17,9 +17,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string loadMusic = "Load Music";
 
 	const string botImageUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
-	const string hlsStreamTestUrl = "https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8";
-	const string hal9000AudioUrl = "https://github.com/prof3ssorSt3v3/media-sample-files/raw/master/hal-9000.mp3";
-
 
 	readonly ILogger logger;
 	readonly IDeviceInfo deviceInfo;
@@ -44,14 +41,14 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	void OnMediaOpened(object? sender, EventArgs e) => logger.LogInformation("Media opened.");
+	void OnMediaOpened(object? sender, EventArgs? e) => logger.LogInformation("Media opened.");
 
 	void OnStateChanged(object? sender, MediaStateChangedEventArgs e) =>
 		logger.LogInformation("Media State Changed. Old State: {PreviousState}, New State: {NewState}", e.PreviousState, e.NewState);
 
 	void OnMediaFailed(object? sender, MediaFailedEventArgs e) => logger.LogInformation("Media failed. Error: {ErrorMessage}", e.ErrorMessage);
 
-	void OnMediaEnded(object? sender, EventArgs e) => logger.LogInformation("Media ended.");
+	void OnMediaEnded(object? sender, EventArgs? e) => logger.LogInformation("Media ended.");
 
 	void OnPositionChanged(object? sender, MediaPositionChangedEventArgs e)
 	{
@@ -59,9 +56,9 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		PositionSlider.Value = e.Position.TotalSeconds;
 	}
 
-	void OnSeekCompleted(object? sender, EventArgs e) => logger.LogInformation("Seek completed.");
+	void OnSeekCompleted(object? sender, EventArgs? e) => logger.LogInformation("Seek completed.");
 
-	void OnSpeedMinusClicked(object? sender, EventArgs e)
+	void OnSpeedMinusClicked(object? sender, EventArgs? e)
 	{
 		if (MediaElement.Speed >= 1)
 		{
@@ -69,7 +66,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	void OnSpeedPlusClicked(object? sender, EventArgs e)
+	void OnSpeedPlusClicked(object? sender, EventArgs? e)
 	{
 		if (MediaElement.Speed < 10)
 		{
@@ -77,7 +74,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	void OnVolumeMinusClicked(object? sender, EventArgs e)
+	void OnVolumeMinusClicked(object? sender, EventArgs? e)
 	{
 		if (MediaElement.Volume >= 0)
 		{
@@ -92,7 +89,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	void OnVolumePlusClicked(object? sender, EventArgs e)
+	void OnVolumePlusClicked(object? sender, EventArgs? e)
 	{
 		if (MediaElement.Volume < 1)
 		{
@@ -107,22 +104,22 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		}
 	}
 
-	void OnPlayClicked(object? sender, EventArgs e)
+	void OnPlayClicked(object? sender, EventArgs? e)
 	{
 		MediaElement.Play();
 	}
 
-	void OnPauseClicked(object? sender, EventArgs e)
+	void OnPauseClicked(object? sender, EventArgs? e)
 	{
 		MediaElement.Pause();
 	}
 
-	void OnStopClicked(object? sender, EventArgs e)
+	void OnStopClicked(object? sender, EventArgs? e)
 	{
 		MediaElement.Stop();
 	}
 
-	void OnMuteClicked(object? sender, EventArgs e)
+	void OnMuteClicked(object? sender, EventArgs? e)
 	{
 		MediaElement.ShouldMute = !MediaElement.ShouldMute;
 	}
@@ -134,7 +131,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.Handler?.DisconnectHandler();
 	}
 
-	async void Slider_DragCompleted(object? sender, EventArgs e)
+	async void Slider_DragCompleted(object? sender, EventArgs? e)
 	{
 		ArgumentNullException.ThrowIfNull(sender);
 
@@ -144,28 +141,84 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.Play();
 	}
 
-	void Slider_DragStarted(object sender, EventArgs e)
+	void Slider_DragStarted(object? sender, EventArgs? e)
 	{
 		MediaElement.Pause();
 	}
 
-	void Button_Clicked(object? sender, EventArgs e)
+	async void CustomUrlLoadButtonClicked(object? sender, EventArgs? e)
 	{
 		if (string.IsNullOrWhiteSpace(CustomSourceEntry.Text))
 		{
-			DisplayAlert("Error Loading URL Source", "No value was found to load as a media source. " +
-				"When you do enter a value, make sure it's a valid URL. No additional validation is done.",
+			await DisplayAlertAsync("Error Loading URL Source", "No value was found to load as a media source. " +
+																"When you do enter a value, make sure it's a valid URL. No additional validation is done.",
 				"OK");
 
 			return;
 		}
 
-		MediaElement.Source = MediaSource.FromUri(CustomSourceEntry.Text);
+		var customSource = new UriMediaSource { Uri = new Uri(CustomSourceEntry.Text) };
+		MediaElement.Source = customSource;
 	}
 
-	async void ChangeSourceClicked(Object sender, EventArgs e)
+	void AddHeaderClicked(object? sender, EventArgs? e)
 	{
-		var result = await DisplayActionSheet("Choose a source", "Cancel", null,
+		if (MediaElement.Source is UriMediaSource uriMediaSource)
+		{
+			var name = HeaderNameEntry.Text?.Trim();
+			var value = HeaderValueEntry.Text?.Trim();
+
+			if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(value))
+			{
+				return;
+			}
+
+			uriMediaSource.HttpHeaders[name] = value;
+			UpdateHeadersSummary(uriMediaSource);
+		}
+
+		HeaderNameEntry.Text = string.Empty;
+		HeaderValueEntry.Text = string.Empty;
+	}
+
+	void ClearHeadersClicked(object? sender, EventArgs? e)
+	{
+		if (MediaElement.Source is UriMediaSource uriMediaSource)
+		{
+			ClearHeaders(uriMediaSource);
+		}
+	}
+
+	void CustomHeadersToggled(object? sender, ToggledEventArgs e)
+	{
+		HeadersPanel.IsVisible = e.Value;
+		if (!e.Value)
+		{
+			if (MediaElement.Source is UriMediaSource uriMediaSource)
+			{
+				ClearHeaders(uriMediaSource);
+			}
+		}
+	}
+
+	void ClearHeaders(in UriMediaSource uriMediaSource)
+	{
+		uriMediaSource.HttpHeaders.Clear();
+		UpdateHeadersSummary(uriMediaSource);
+
+		logger.LogInformation("Custom HTTP headers cleared.");
+	}
+
+	void UpdateHeadersSummary(in UriMediaSource uriMediaSource)
+	{
+		HeadersSummaryLabel.Text = uriMediaSource.HttpHeaders.Count <= 0
+			? "No headers defined"
+			: string.Join(", ", uriMediaSource.HttpHeaders.Keys);
+	}
+
+	async void ChangeSourceClicked(object? sender, EventArgs? e)
+	{
+		var result = await DisplayActionSheetAsync("Choose a source", "Cancel", null,
 			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadMusic);
 
 		MediaElement.Stop();
@@ -177,15 +230,16 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataTitle = "Big Buck Bunny";
 				MediaElement.MetadataArtworkUrl = botImageUrl;
 				MediaElement.MetadataArtist = "Big Buck Bunny Album";
-				MediaElement.Source =
-					MediaSource.FromUri(StreamingVideoUrls.BuckBunny);
+				var mp4Source = new UriMediaSource { Uri = new Uri(StreamingUrls.BuckBunny) };
+				MediaElement.Source = mp4Source;
 				return;
 
 			case loadHls:
 				MediaElement.MetadataArtist = "HLS Album";
 				MediaElement.MetadataArtworkUrl = botImageUrl;
 				MediaElement.MetadataTitle = "HLS Title";
-				MediaElement.Source = MediaSource.FromUri(hlsStreamTestUrl);
+				var hlsSource = new UriMediaSource { Uri = new Uri(StreamingUrls.HlsTestStream) };
+				MediaElement.Source = hlsSource;
 				return;
 
 			case resetSource:
@@ -213,22 +267,24 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				{
 					MediaElement.Source = MediaSource.FromResource("WindowsVideo.mp4");
 				}
+
 				return;
 
 			case loadMusic:
 				MediaElement.MetadataTitle = "HAL 9000";
 				MediaElement.MetadataArtist = "HAL 9000 Album";
 				MediaElement.MetadataArtworkUrl = botImageUrl;
-				MediaElement.Source = MediaSource.FromUri(hal9000AudioUrl);
+				var musicSource = new UriMediaSource { Uri = new Uri(StreamingUrls.Hal9000Audio) };
+				MediaElement.Source = musicSource;
 				return;
 		}
 	}
 
-	async void ChangeAspectClicked(object? sender, EventArgs e)
+	async void ChangeAspectClicked(object? sender, EventArgs? e)
 	{
 		const string cancel = "Cancel";
 
-		var resultAspect = await DisplayActionSheet(
+		var resultAspect = await DisplayActionSheetAsync(
 			"Choose aspect ratio",
 			cancel,
 			null,
@@ -243,7 +299,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 		if (!Enum.TryParse(typeof(Aspect), resultAspect, true, out var aspectEnum))
 		{
-			await DisplayAlert("Error", "There was an error determining the selected aspect", "OK");
+			await DisplayAlertAsync("Error", "There was an error determining the selected aspect", "OK");
 
 			return;
 		}
@@ -251,7 +307,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.Aspect = (Aspect)aspectEnum;
 	}
 
-	async void DisplayPopup(object sender, EventArgs e)
+	async void DisplayPopup(object? sender, EventArgs? e)
 	{
 		MediaElement.Pause();
 

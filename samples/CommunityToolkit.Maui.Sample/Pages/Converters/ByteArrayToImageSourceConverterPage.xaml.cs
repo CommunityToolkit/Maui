@@ -18,6 +18,6 @@ public partial class ByteArrayToImageSourceConverterPage : BasePage<ByteArrayToI
 	async void HandleImageDownloadFailed(object? sender, string e)
 	{
 		ArgumentNullException.ThrowIfNull(sender);
-		await dispatcher.DispatchAsync(() => DisplayAlert("Image Download Failed", e, "OK"));
+		await dispatcher.DispatchAsync(() => DisplayAlertAsync("Image Download Failed", e, "OK"));
 	}
 }

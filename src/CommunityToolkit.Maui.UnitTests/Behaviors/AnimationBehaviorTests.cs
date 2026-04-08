@@ -233,7 +233,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 
 			AnimationStarted?.Invoke(this, EventArgs.Empty);
 
-			await element.RotateTo(70).WaitAsync(token);
+			await element.RotateToAsync(70).WaitAsync(token);
 
 			HasAnimated = true;
 

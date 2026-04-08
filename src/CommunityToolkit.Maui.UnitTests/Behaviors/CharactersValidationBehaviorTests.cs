@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Behaviors;
+using CommunityToolkit.Maui.Core;
 using Nito.AsyncEx;
 using Xunit;
 
@@ -124,5 +125,15 @@ public class CharactersValidationBehaviorTests() : BaseBehaviorTest<CharactersVa
 				};
 			});
 		});
+	}
+
+	[Fact]
+	public void VerifyDefaults()
+	{
+		var charactersValidationBehavior = new CharactersValidationBehavior();
+
+		Assert.Equal(CharactersValidationBehaviorDefaults.CharacterType, charactersValidationBehavior.CharacterType);
+		Assert.Equal(CharactersValidationBehaviorDefaults.MaximumCharacterTypeCount, charactersValidationBehavior.MaximumCharacterTypeCount);
+		Assert.Equal(CharactersValidationBehaviorDefaults.MinimumCharacterTypeCount, charactersValidationBehavior.MinimumCharacterTypeCount);
 	}
 }

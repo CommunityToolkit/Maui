@@ -18,21 +18,21 @@
                     <mct:MaskedBehavior Mask="XX-XX-XX" />
                 </Entry.Behaviors>
             </Entry>
-            <Label Padding="10,0,10,50" FontSize="Small" Text="e.g. Sort code 'XX-XX-XX'" />
+            <Label Padding="10,0,10,50" FontSize="8" Text="e.g. Sort code 'XX-XX-XX'" />
 
             <Entry Keyboard="Numeric">
                 <Entry.Behaviors>
                     <mct:MaskedBehavior Mask="AA-AA-AA" UnmaskedCharacter="A" />
                 </Entry.Behaviors>
             </Entry>
-            <Label Padding="10,0,10,50" FontSize="Small" Text="e.g. Sort code 'AA-AA-AA'" />
+            <Label Padding="10,0,10,50" FontSize="8" Text="e.g. Sort code 'AA-AA-AA'" />
 
             <Entry Keyboard="Numeric">
                 <Entry.Behaviors>
                     <mct:MaskedBehavior Mask="XXXX XXXX XXXX XXXX" />
                 </Entry.Behaviors>
             </Entry>
-            <Label Padding="10,0,10,50" FontSize="Small">
+            <Label Padding="10,0,10,50" FontSize="8">
                 <Label.FormattedText>
                     <FormattedString>
                         <Span Text="e.g. Credit Card Number 'XXXX XXXX XXXX XXXX'" />
@@ -46,14 +46,14 @@
                     <mct:MaskedBehavior Mask="XX/XX/XXXX" />
                 </Entry.Behaviors>
             </Entry>
-            <Label Padding="10,0,10,50" FontSize="Small" Text="e.g. Date 'XX/XX/XXXX'" />
+            <Label Padding="10,0,10,50" FontSize="8" Text="e.g. Date 'XX/XX/XXXX'" />
 
             <Entry Keyboard="Numeric" Placeholder="hh:mm">
                 <Entry.Behaviors>
                     <mct:MaskedBehavior Mask="XX:XX" />
                 </Entry.Behaviors>
             </Entry>
-            <Label Padding="10,0,10,50" FontSize="Small">
+            <Label Padding="10,0,10,50" FontSize="8">
                 <Label.FormattedText>
                     <FormattedString>
                         <Span Text="e.g. Time 'XX:XX'" />
@@ -67,14 +67,14 @@
                     <mct:MaskedBehavior Mask="XXX-XX-XXXX" />
                 </Entry.Behaviors>
             </Entry>
-            <Label Padding="10,0,10,50" FontSize="Small" Text="e.g. Social Security Number 'XXX-XX-XXXX'" />
+            <Label Padding="10,0,10,50" FontSize="8" Text="e.g. Social Security Number 'XXX-XX-XXXX'" />
 
             <Entry Keyboard="Numeric">
                 <Entry.Behaviors>
                     <mct:MaskedBehavior Mask="(XXX) XXX-XXXX" />
                 </Entry.Behaviors>
             </Entry>
-            <Label Padding="10,0,10,50" FontSize="Small" Text="e.g. Phone Number '(XXX) XXX-XXXX'" />
+            <Label Padding="10,0,10,50" FontSize="8" Text="e.g. Phone Number '(XXX) XXX-XXXX'" />
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>

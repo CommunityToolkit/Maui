@@ -35,14 +35,13 @@ public partial class DateTimeOffsetConverter : BaseConverter<DateTimeOffset, Dat
 	{
 		var offset = value.Kind switch
 		{
-			DateTimeKind.Local => DateTimeOffset.Now.Offset,
-			DateTimeKind.Utc => DateTimeOffset.UtcNow.Offset,
+			DateTimeKind.Local => TimeZoneInfo.Local.GetUtcOffset(value),
+			DateTimeKind.Utc => TimeZoneInfo.Utc.GetUtcOffset(value),
 			_ => TimeSpan.Zero,
 		};
 
-		return culture is null ?
-			value.Kind == DateTimeKind.Local ? new DateTimeOffset(value) : new DateTimeOffset(value, offset) :
-			new DateTimeOffset(value.Year, value.Month, value.Day, value.Hour, value.Minute, value.Second, value.Millisecond, culture.Calendar, offset);
-
+		return culture is null
+			? value.Kind is DateTimeKind.Local ? new DateTimeOffset(value) : new DateTimeOffset(value, offset)
+			: new DateTimeOffset(value.Year, value.Month, value.Day, value.Hour, value.Minute, value.Second, value.Millisecond, value.Microsecond, culture.Calendar, offset);
 	}
 }

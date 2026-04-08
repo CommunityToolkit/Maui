@@ -7,31 +7,31 @@ public partial class AvatarViewGesturesPage : BasePage<AvatarViewGesturesViewMod
 {
 	public AvatarViewGesturesPage(AvatarViewGesturesViewModel avatarViewGesturesViewModel) : base(avatarViewGesturesViewModel) => InitializeComponent();
 
-	async void DragGestureRecognizer_DragStarting(object sender, DragStartingEventArgs e)
+	async void DragGestureRecognizer_DragStarting(object? sender, DragStartingEventArgs? e)
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 		await ShowToastGestureMessage("AvatarView drag gesture recognizer, drag starting.", cts.Token);
 	}
 
-	async void PanGestureRecognizer_PanUpdated(object sender, PanUpdatedEventArgs e)
+	async void PanGestureRecognizer_PanUpdated(object? sender, PanUpdatedEventArgs? e)
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 		await ShowToastGestureMessage("AvatarView pan gesture recognizer, pan updated.", cts.Token);
 	}
 
-	async void PinchGestureRecognizer_PinchUpdated(object sender, PinchGestureUpdatedEventArgs e)
+	async void PinchGestureRecognizer_PinchUpdated(object? sender, PinchGestureUpdatedEventArgs? e)
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 		await ShowToastGestureMessage("AvatarView pinch gesture recognizer, pinch updated.", cts.Token);
 	}
 
-	async void SwipeGestureRecognizer_Swiped(object sender, SwipedEventArgs e)
+	async void SwipeGestureRecognizer_Swiped(object? sender, SwipedEventArgs e)
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 		await ShowToastGestureMessage("AvatarView swipe gesture recognizer, swiped.", cts.Token);
 	}
 
-	async void TapGestureRecognizer_Tapped(object sender, EventArgs e)
+	async void TapGestureRecognizer_Tapped(object? sender, EventArgs? e)
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 		await ShowToastGestureMessage("AvatarView Tap Gesture Recognizer, tapped.", cts.Token);

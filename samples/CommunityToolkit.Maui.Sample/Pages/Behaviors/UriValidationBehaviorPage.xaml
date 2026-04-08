@@ -20,7 +20,7 @@
 
     <VerticalStackLayout Padding="{StaticResource ContentPadding}"
                  Spacing="50"
-                 VerticalOptions="StartAndExpand">
+                 VerticalOptions="Start">
 
         <Label Text="The UriValidationBehavior is a behavior that allows users to determine whether or not text input is a valid URI. For example, an Entry control can be styled differently depending on whether a valid or an invalid URI is provided. Additional properties handling validation are inherited from ValidationBehavior"
                TextColor="{StaticResource NormalLabelTextColor}" />

@@ -9,6 +9,7 @@ using PlatformView = Android.Views.View;
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif TIZEN
 using PlatformView = Tizen.NUI.BaseComponents.View;
+using IPlatformViewHandler = Microsoft.Maui.IViewHandler;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 using IPlatformViewHandler = Microsoft.Maui.IViewHandler;
@@ -117,7 +118,10 @@ public static partial class KeyboardExtensions
 		return true;
 	}
 
-	sealed class SoftKeyboardException(string message) : Exception(message)
+	/// <summary>
+	/// An <see cref="Exception"/> thrown when unable to retrieve the platform view to determine soft keyboard status.
+	/// </summary>
+	public sealed class SoftKeyboardException(string message) : Exception(message)
 	{
 	}
 }

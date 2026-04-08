@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>The allowed character types used to determine if a value is valid in the <see cref="CharactersValidationBehavior"/>. Since this is a flag, multiple flags cane be combined.</summary>
@@ -47,25 +48,7 @@ public enum CharacterType
 [RequiresUnreferencedCode($"{nameof(CharactersValidationBehavior)} is not trim safe because it uses bindings with string paths.")]
 public partial class CharactersValidationBehavior : TextValidationBehavior
 {
-	List<Predicate<char>> characterPredicates = Enumerable.Empty<Predicate<char>>().ToList();
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="CharacterType"/> property.
-	/// </summary>
-	public static readonly BindableProperty CharacterTypeProperty =
-		BindableProperty.Create(nameof(CharacterType), typeof(CharacterType), typeof(CharactersValidationBehavior), CharacterType.Any, propertyChanged: OnCharacterTypePropertyChanged);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="MinimumCharacterTypeCount"/> property.
-	/// </summary>
-	public static readonly BindableProperty MinimumCharacterTypeCountProperty =
-		BindableProperty.Create(nameof(MinimumCharacterTypeCount), typeof(int), typeof(CharactersValidationBehavior), 0, propertyChanged: OnValidationPropertyChanged);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="MaximumCharacterTypeCount"/> property.
-	/// </summary>
-	public static readonly BindableProperty MaximumCharacterTypeCountProperty =
-		BindableProperty.Create(nameof(MaximumCharacterTypeCount), typeof(int), typeof(CharactersValidationBehavior), int.MaxValue, propertyChanged: OnValidationPropertyChanged);
+	List<Predicate<char>> characterPredicates = [];
 
 	/// <summary>
 	/// Constructor for this behavior
@@ -75,29 +58,20 @@ public partial class CharactersValidationBehavior : TextValidationBehavior
 	/// <summary>
 	/// Provides an enumerated value to use to set how to handle comparisons. This is a bindable property.
 	/// </summary>
-	public CharacterType CharacterType
-	{
-		get => (CharacterType)GetValue(CharacterTypeProperty);
-		set => SetValue(CharacterTypeProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnCharacterTypePropertyChanged))]
+	public partial CharacterType CharacterType { get; set; } = CharactersValidationBehaviorDefaults.CharacterType;
 
 	/// <summary>
 	/// The minimum number of <see cref="CharacterType"/> required. This is a bindable property.
 	/// </summary>
-	public int MinimumCharacterTypeCount
-	{
-		get => (int)GetValue(MinimumCharacterTypeCountProperty);
-		set => SetValue(MinimumCharacterTypeCountProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial int MinimumCharacterTypeCount { get; set; } = CharactersValidationBehaviorDefaults.MinimumCharacterTypeCount;
 
 	/// <summary>
 	/// The maximum number of <see cref="CharacterType"/> allowed. This is a bindable property.
 	/// </summary>
-	public int MaximumCharacterTypeCount
-	{
-		get => (int)GetValue(MaximumCharacterTypeCountProperty);
-		set => SetValue(MaximumCharacterTypeCountProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial int MaximumCharacterTypeCount { get; set; } = CharactersValidationBehaviorDefaults.MaximumCharacterTypeCount;
 
 	/// <inheritdoc/>
 	protected override async ValueTask<bool> ValidateAsync(string? value, CancellationToken token)

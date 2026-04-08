@@ -63,7 +63,6 @@ public class MaskedBehaviorTests() : BaseBehaviorTest<MaskedBehavior, InputView>
 		IReadOnlyList<VisualElement> invalidVisualElements =
 		[
 			new Button(),
-			new Frame(),
 			new Label(),
 			new ProgressBar(),
 			new VisualElement(),

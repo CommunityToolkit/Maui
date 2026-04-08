@@ -229,21 +229,22 @@ public class PopupExtensionsTests : BaseViewTest
 		Assert.Equal(shellParameterViewModelTextValue, viewWithQueryable.BindingContext.Text);
 	}
 
-	[Fact(Timeout = (int)TestDuration.Short)]
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task ShowPopupAsync_AwaitingShowPopupAsync_EnsurePreviousPopupClosed()
 	{
 		// Arrange
 		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var longLivedSelfClosingPopup = ServiceProvider.GetRequiredService<LongLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
 
 		// Act
-		await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+		await navigation.ShowPopupAsync<object?>(longLivedSelfClosingPopup, PopupOptions.Empty, TestContext.Current.CancellationToken);
 		await navigation.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.Empty(navigation.ModalStack);
 	}
 
-	[Fact(Timeout = (int)TestDuration.Short)]
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task ShowPopupAsync_Shell_AwaitingShowPopupAsync_EnsurePreviousPopupClosed()
 	{
 		// Arrange
@@ -255,9 +256,10 @@ public class PopupExtensionsTests : BaseViewTest
 
 		var shellNavigation = Shell.Current.Navigation;
 		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var longLivedSelfClosingPopup = ServiceProvider.GetRequiredService<LongLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
 
 		// Act
-		await shell.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, shellParameters, TestContext.Current.CancellationToken);
+		await shell.ShowPopupAsync<object?>(longLivedSelfClosingPopup, PopupOptions.Empty, shellParameters, TestContext.Current.CancellationToken);
 		await shell.ShowPopupAsync<object?>(selfClosingPopup, PopupOptions.Empty, shellParameters, TestContext.Current.CancellationToken);
 
 		// Assert
@@ -351,9 +353,10 @@ public class PopupExtensionsTests : BaseViewTest
 	{
 		// Arrange
 		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var longLivedSelfClosingPopup = ServiceProvider.GetRequiredService<LongLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
 
 		// Act
-		navigation.ShowPopup(selfClosingPopup, PopupOptions.Empty);
+		navigation.ShowPopup(longLivedSelfClosingPopup, PopupOptions.Empty);
 		navigation.ShowPopup(selfClosingPopup, PopupOptions.Empty);
 
 		// Assert
@@ -365,6 +368,7 @@ public class PopupExtensionsTests : BaseViewTest
 	{
 		// Arrange
 		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
+		var longLivedSelfClosingPopup = ServiceProvider.GetRequiredService<LongLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
 		var shell = new Shell();
 		shell.Items.Add(new MockPage(new MockPageViewModel()));
 
@@ -374,7 +378,7 @@ public class PopupExtensionsTests : BaseViewTest
 		var shellNavigation = Shell.Current.Navigation;
 
 		// Act
-		shell.ShowPopup(selfClosingPopup, PopupOptions.Empty, shellParameters);
+		shell.ShowPopup(longLivedSelfClosingPopup, PopupOptions.Empty, shellParameters);
 		shell.ShowPopup(selfClosingPopup, PopupOptions.Empty, shellParameters);
 
 		// Assert
@@ -441,7 +445,7 @@ public class PopupExtensionsTests : BaseViewTest
 		var popupPage = (PopupPage)navigation.ModalStack[0];
 		var popupPageContent = popupPage.Content;
 		var border = popupPageContent.PopupBorder;
-		var popup = border.Content;
+		var popup = (Popup)(border.Content ?? throw new InvalidOperationException("Content cannot be null"));
 
 		// Assert
 		Assert.NotNull(popup);
@@ -512,7 +516,7 @@ public class PopupExtensionsTests : BaseViewTest
 		var popupPage = (PopupPage)shellNavigation.ModalStack[0];
 		var popupPageContent = popupPage.Content;
 		var border = popupPageContent.PopupBorder;
-		var popup = border.Content;
+		var popup = (ShortLivedSelfClosingPopup)(border.Content ?? throw new InvalidOperationException("Content cannot be null"));
 
 		// Assert
 		Assert.NotNull(popup);

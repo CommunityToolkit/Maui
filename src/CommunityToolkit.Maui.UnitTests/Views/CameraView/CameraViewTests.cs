@@ -21,7 +21,7 @@ public class CameraViewTests : BaseViewTest
 	{
 		Assert.Equal(CameraViewDefaults.IsAvailable, cameraView.IsAvailable);
 		Assert.Equal(CameraViewDefaults.IsTorchOn, cameraView.IsTorchOn);
-		Assert.Equal(CameraViewDefaults.IsCameraBusy, cameraView.IsCameraBusy);
+		Assert.Equal(CameraViewDefaults.IsCameraBusy, cameraView.IsBusy);
 		Assert.Equal(CameraViewDefaults.ZoomFactor, cameraView.ZoomFactor);
 		Assert.Equal(CameraViewDefaults.ImageCaptureResolution, cameraView.ImageCaptureResolution);
 		Assert.Equal(CameraViewDefaults.CameraFlashMode, cameraView.CameraFlashMode);
@@ -59,6 +59,22 @@ public class CameraViewTests : BaseViewTest
 		((ICameraView)cameraView).OnMediaCaptured(imageData);
 
 		Assert.True(eventRaised);
+	}
+
+	[Fact]
+	public async Task StartVideoRecording_ShouldThrowException()
+	{
+		var imageData = new MemoryStream();
+
+		await Assert.ThrowsAsync<InvalidOperationException>(() => cameraView.StartVideoRecording(imageData, TestContext.Current.CancellationToken));
+	}
+
+	[Fact]
+	public async Task StopVideoRecording_ShouldThrowException()
+	{
+		var imageData = new MemoryStream();
+
+		await Assert.ThrowsAsync<InvalidOperationException>(() => cameraView.StopVideoRecording(TestContext.Current.CancellationToken));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]

@@ -84,4 +84,18 @@ public class TextValidationBehaviorTests() : BaseBehaviorTest<TextValidationBeha
 			await behavior.ForceValidate(cts.Token);
 		});
 	}
+
+	[Fact]
+	public void VerifyDefaults()
+	{
+		// Arrange
+		var textValidationBehavior = new TextValidationBehavior();
+
+		// Act Assert
+		Assert.Equal(TextValidationBehaviorDefaults.DecorationFlags, textValidationBehavior.DecorationFlags);
+		Assert.Equal(TextValidationBehaviorDefaults.MaximumLength, textValidationBehavior.MaximumLength);
+		Assert.Equal(TextValidationBehaviorDefaults.MinimumLength, textValidationBehavior.MinimumLength);
+		Assert.Equal(TextValidationBehaviorDefaults.RegexOptions, textValidationBehavior.RegexOptions);
+		Assert.Equal(TextValidationBehaviorDefaults.RegexPattern, textValidationBehavior.RegexPattern);
+	}
 }

@@ -441,4 +441,14 @@ public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseViewTest
 
 		currentPoint.Should().BeEquivalentTo(expectedPoint);
 	}
+	[Fact]
+	public void EnsureDefaults()
+	{
+		var drawingView = new DrawingView();
+		Assert.Equal(DrawingViewDefaults.LineWidth, drawingView.LineWidth);
+		Assert.Equal(DrawingViewDefaults.LineColor, drawingView.LineColor);
+		Assert.Equal(DrawingViewDefaults.IsMultiLineModeEnabled, drawingView.IsMultiLineModeEnabled);
+		Assert.Equal(DrawingViewDefaults.ShouldClearOnFinish, drawingView.ShouldClearOnFinish);
+		Assert.Equal(DrawingViewDefaults.BackgroundColor, drawingView.BackgroundColor);
+	}
 }

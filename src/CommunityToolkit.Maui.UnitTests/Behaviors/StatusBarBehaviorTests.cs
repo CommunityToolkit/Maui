@@ -12,8 +12,9 @@ public class StatusBarBehaviorTests() : BaseBehaviorTest<StatusBarBehavior, Page
 	{
 		var statusBarBehavior = new StatusBarBehavior();
 
-		Assert.Equal(Colors.Transparent, statusBarBehavior.StatusBarColor);
-		Assert.Equal(StatusBarStyle.Default, statusBarBehavior.StatusBarStyle);
+		Assert.Equal(StatusBarBehaviorDefaults.StatusBarColor, statusBarBehavior.StatusBarColor);
+		Assert.Equal(StatusBarBehaviorDefaults.StatusBarStyle, statusBarBehavior.StatusBarStyle);
+		Assert.Equal(StatusBarBehaviorDefaults.ApplyOn, statusBarBehavior.ApplyOn);
 	}
 
 	[Fact]
