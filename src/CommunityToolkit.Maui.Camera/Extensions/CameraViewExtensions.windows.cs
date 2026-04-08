@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core;
 using Windows.Devices.Enumeration;
+using Windows.Media;
 using Windows.Media.Capture;
 
 namespace CommunityToolkit.Maui.Extensions;
@@ -13,20 +14,44 @@ static class CameraViewExtensions
 		cameraView.IsAvailable = videoCaptureDevices.Count > 0;
 	}
 
-	public static Task InitializeCameraForCameraView(this MediaCapture mediaCapture, string deviceId, CancellationToken token)
+	public static async Task InitializeCameraForCameraView(this MediaCapture mediaCapture, string deviceId, CancellationToken token)
 	{
 		try
 		{
-			return mediaCapture.InitializeAsync(new MediaCaptureInitializationSettings
+			var settings = new MediaCaptureInitializationSettings
 			{
 				VideoDeviceId = deviceId,
 				PhotoCaptureSource = PhotoCaptureSource.Auto
-			}).AsTask(token);
+			};
+
+			PermissionStatus microphonePermissionStatus = PermissionStatus.Unknown;
+			var isMicrophoneCapable = Permissions.IsCapabilityDeclared("microphone");
+
+			if (isMicrophoneCapable)
+			{
+				microphonePermissionStatus = await Permissions.CheckStatusAsync<Permissions.Microphone>();
+			}
+
+			if (!isMicrophoneCapable || microphonePermissionStatus != PermissionStatus.Granted)
+			{
+				settings.StreamingCaptureMode = StreamingCaptureMode.Video;
+				settings.MediaCategory = MediaCategory.Media;
+				settings.AudioProcessing = AudioProcessing.Default;
+			}
+
+			var cameraPermissionStatus = await Permissions.CheckStatusAsync<Permissions.Camera>();
+			if (cameraPermissionStatus == PermissionStatus.Granted)
+			{
+				await mediaCapture.InitializeAsync(settings).AsTask(token);
+			}
+			else
+			{
+				throw new CameraException("Camera permission is not granted.");
+			}
 		}
 		catch (System.Runtime.InteropServices.COMException)
 		{
 			// Camera already initialized
-			return Task.CompletedTask;
 		}
 	}
 }
