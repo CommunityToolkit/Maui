@@ -1,10 +1,10 @@
 ﻿namespace CommunityToolkit.Maui.Sample.Pages.Behaviors.StatusBarBehavior;
 
-public partial class MainPage : ContentPage
+public partial class OverflowingTitleViewPage : ContentPage
 {
 	int count = 0;
 
-	public MainPage()
+	public OverflowingTitleViewPage()
 	{
 		InitializeComponent();
 	}

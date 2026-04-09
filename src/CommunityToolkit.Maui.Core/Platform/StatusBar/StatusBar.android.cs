@@ -21,14 +21,11 @@ static partial class StatusBar
 			return true;
 		}
 
-		System.Diagnostics.Trace.WriteLine(
-			$"{nameof(StatusBar)} Color + Style functionality is not supported on this version of the Android operating system. Minimum supported Android API is {BuildVersionCodes.M}");
-
+		System.Diagnostics.Trace.WriteLine($"{nameof(StatusBar)} Color + Style functionality is not supported on this version of the Android operating system. Minimum supported Android API is {BuildVersionCodes.M}");
 		return false;
 	});
 
-	static Activity Activity => Microsoft.Maui.ApplicationModel.Platform.CurrentActivity ??
-	                            throw new InvalidOperationException("Android Activity can't be null.");
+	static Activity Activity => Microsoft.Maui.ApplicationModel.Platform.CurrentActivity ?? throw new InvalidOperationException("Android Activity can't be null.");
 
 	static bool IsSupported => isSupportedHolder.Value;
 
@@ -68,13 +65,13 @@ static partial class StatusBar
 				var height = insets?.GetInsets(WindowInsets.Type.StatusBars()).Top ?? 0;
 
 				ApplyStatusBarOverlay(height, platformColor, decorGroup);
-				ApplyWindowFlags(window, platformColor);
+				ApplyWindowFlags(window);
 			});
 		}
 		else
 		{
 			statusBarOverlay.SetBackgroundColor(platformColor);
-			ApplyWindowFlags(window, platformColor);
+			ApplyWindowFlags(window);
 		}
 	}
 
@@ -96,14 +93,14 @@ static partial class StatusBar
 			statusBarOverlay.SetBackgroundColor(platformColor);
 		}
 
-		ApplyWindowFlags(window, platformColor);
+		ApplyWindowFlags(window);
 	}
 
 	[SupportedOSPlatform("android"), UnsupportedOSPlatform("android35.0")]
 	static void PlatformSetColor_AndroidApiLessThan35(in Window window, in PlatformColor platformColor)
 	{
 		window.SetStatusBarColor(platformColor);
-		ApplyWindowFlags(window, platformColor);
+		ApplyWindowFlags(window);
 	}
 
 	static void ApplyStatusBarOverlay(int height, PlatformColor platformColor, ViewGroup decorGroup)
@@ -124,7 +121,7 @@ static partial class StatusBar
 		statusBarOverlay.SetBackgroundColor(platformColor);
 	}
 
-	static void ApplyWindowFlags(Window window, PlatformColor platformColor)
+	static void ApplyWindowFlags(Window window)
 	{
 		if (OperatingSystem.IsAndroidVersionAtLeast(30))
 		{

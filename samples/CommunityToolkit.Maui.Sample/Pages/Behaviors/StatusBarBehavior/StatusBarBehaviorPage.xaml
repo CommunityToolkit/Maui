@@ -3,7 +3,7 @@
 <pages:BasePage
     Title="StatusBarBehavior"
     ios:Page.UseSafeArea="True"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.StatusBarBehavior.StatusBarBehaviorPage"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.StatusBarBehaviorPage"
     x:DataType="vm:StatusBarBehaviorViewModel"
     x:Name="Page"
     x:TypeArguments="vm:StatusBarBehaviorViewModel"
@@ -13,7 +13,6 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
-
     <ContentPage.Resources>
         <ControlTemplate x:Key="RadioButtonTemplate">
             <Border
@@ -175,9 +174,9 @@
                 x:Name="ModalPageButton" />
 
             <Button
-                Clicked="Button_OnClicked"
+                Clicked="OnBrokenShellButtonClicked"
                 HorizontalOptions="Center"
-                Text="Go to Broken Shel.TitleView Shell"
+                Text="Go to Broken Shell.TitleView"
                 VerticalOptions="Center" />
         </VerticalStackLayout>
     </ScrollView>
