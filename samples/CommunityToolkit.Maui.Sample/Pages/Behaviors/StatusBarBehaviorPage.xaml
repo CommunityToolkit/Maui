@@ -1,72 +1,72 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 
 <pages:BasePage
-    Title="StatusBarBehavior"
-    ios:Page.UseSafeArea="True"
     x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.StatusBarBehaviorPage"
-    x:DataType="vm:StatusBarBehaviorViewModel"
-    x:Name="Page"
-    x:TypeArguments="vm:StatusBarBehaviorViewModel"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+    ios:Page.UseSafeArea="True"
+    Title="StatusBarBehavior"
+    x:DataType="vm:StatusBarBehaviorViewModel"
+    x:TypeArguments="vm:StatusBarBehaviorViewModel"
+    x:Name="Page">
+
     <ContentPage.Resources>
         <ControlTemplate x:Key="RadioButtonTemplate">
-            <Border
-                BackgroundColor="#F3F2F1"
-                HeightRequest="90"
-                HorizontalOptions="Start"
-                Stroke="#F3F2F1"
-                StrokeShape="RoundRectangle 10"
-                StrokeThickness="2"
-                VerticalOptions="Start"
-                WidthRequest="90">
-                <Grid
-                    BackgroundColor="Transparent"
-                    Margin="4"
-                    WidthRequest="90">
-                    <Grid
-                        HeightRequest="18"
-                        HorizontalOptions="End"
-                        Margin="0,0,4,0"
-                        VerticalOptions="Start"
-                        WidthRequest="18">
-                        <Ellipse
-                            Fill="White"
-                            HeightRequest="16"
-                            HorizontalOptions="Center"
-                            Stroke="Blue"
-                            VerticalOptions="Center"
-                            WidthRequest="16" />
-                        <Ellipse
-                            Fill="Blue"
-                            HeightRequest="8"
-                            HorizontalOptions="Center"
-                            VerticalOptions="Center"
-                            WidthRequest="8"
-                            x:Name="check" />
-                    </Grid>
-                    <ContentPresenter />
-                </Grid>
+            <Border Stroke="#F3F2F1"
+                    StrokeThickness="2"
+                    StrokeShape="RoundRectangle 10"
+                    BackgroundColor="#F3F2F1"
+                    HeightRequest="90"
+                    WidthRequest="90"
+                    HorizontalOptions="Start"
+                    VerticalOptions="Start">
                 <VisualStateManager.VisualStateGroups>
                     <VisualStateGroupList>
                         <VisualStateGroup x:Name="CheckedStates">
                             <VisualState x:Name="Checked">
                                 <VisualState.Setters>
-                                    <Setter Property="Opacity" TargetName="check" Value="1" />
+                                    <Setter TargetName="check"
+                                            Property="Opacity"
+                                            Value="1" />
                                 </VisualState.Setters>
                             </VisualState>
                             <VisualState x:Name="Unchecked">
                                 <VisualState.Setters>
-                                    <Setter Property="Opacity" TargetName="check" Value="0" />
+                                    <Setter TargetName="check"
+                                            Property="Opacity"
+                                            Value="0" />
                                 </VisualState.Setters>
                             </VisualState>
                         </VisualStateGroup>
                     </VisualStateGroupList>
                 </VisualStateManager.VisualStateGroups>
+                <Grid Margin="4"
+                      WidthRequest="90"
+                      BackgroundColor="Transparent">
+                    <Grid Margin="0,0,4,0"
+                          WidthRequest="18"
+                          HeightRequest="18"
+                          HorizontalOptions="End"
+                          VerticalOptions="Start">
+                        <Ellipse Stroke="Blue"
+                                 Fill="White"
+                                 WidthRequest="16"
+                                 HeightRequest="16"
+                                 HorizontalOptions="Center"
+                                 VerticalOptions="Center" />
+                        <Ellipse x:Name="check"
+                                 Fill="Blue"
+                                 WidthRequest="8"
+                                 HeightRequest="8"
+                                 HorizontalOptions="Center"
+                                 VerticalOptions="Center" />
+                    </Grid>
+                    <ContentPresenter />
+                </Grid>
             </Border>
         </ControlTemplate>
 
@@ -84,10 +84,7 @@
 
     <ScrollView Padding="{StaticResource ContentPadding}">
 
-        <VerticalStackLayout
-            IgnoreSafeArea="False"
-            Padding="15,0"
-            Spacing="30">
+        <VerticalStackLayout Padding="15,0" Spacing="30" IgnoreSafeArea="False">
 
             <Label Text="Slide to change StatusBar color" />
 
@@ -127,16 +124,17 @@
 
             <Stepper
                 HorizontalOptions="Start"
-                Increment="0.1"
                 Margin="20,0"
                 Maximum="1"
+                Increment="0.1"
                 Minimum="0"
                 Value="{Binding AlphaSliderValue}" />
 
             <Label Text="Select StatusBar and NavigationBar style" />
 
             <HorizontalStackLayout Spacing="15">
-                <RadioButton IsChecked="{Binding IsDefaultChecked}" VerticalOptions="Center">
+                <RadioButton IsChecked="{Binding IsDefaultChecked}"
+                             VerticalOptions="Center">
                     <RadioButton.Content>
                         <Label
                             Margin="10,0,0,0"
@@ -146,7 +144,8 @@
                     </RadioButton.Content>
                 </RadioButton>
 
-                <RadioButton IsChecked="{Binding IsLightContentChecked}" VerticalOptions="Center">
+                <RadioButton IsChecked="{Binding IsLightContentChecked}"
+                             VerticalOptions="Center">
                     <RadioButton.Content>
                         <Label
                             Margin="10,0,0,0"
@@ -156,7 +155,8 @@
                     </RadioButton.Content>
                 </RadioButton>
 
-                <RadioButton IsChecked="{Binding IsDarkContentChecked}" VerticalOptions="Center">
+                <RadioButton IsChecked="{Binding IsDarkContentChecked}"
+                             VerticalOptions="Center">
                     <RadioButton.Content>
                         <Label
                             Margin="10,0,0,0"
@@ -169,11 +169,10 @@
             </HorizontalStackLayout>
 
             <Button
+                x:Name="ModalPageButton"
                 HorizontalOptions="Center"
-                VerticalOptions="Center"
-                x:Name="ModalPageButton" />
-
-            <Button
+                VerticalOptions="Center" />
+             <Button
                 Clicked="OnBrokenShellButtonClicked"
                 HorizontalOptions="Center"
                 Text="Go to Broken Shell.TitleView"
