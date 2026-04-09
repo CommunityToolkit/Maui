@@ -22,6 +22,7 @@ static partial class StatusBar
 		}
 
 		System.Diagnostics.Trace.WriteLine($"{nameof(StatusBar)} Color + Style functionality is not supported on this version of the Android operating system. Minimum supported Android API is {BuildVersionCodes.M}");
+		
 		return false;
 	});
 
@@ -174,8 +175,7 @@ static partial class StatusBar
 	static void SetStatusBarAppearance(bool isLightStatusBars)
 	{
 		if (Activity.GetCurrentWindow() is Window window
-		    && WindowCompat.GetInsetsController(window, window.DecorView) is WindowInsetsControllerCompat
-			    windowController)
+		    && WindowCompat.GetInsetsController(window, window.DecorView) is WindowInsetsControllerCompat windowController)
 		{
 			windowController.AppearanceLightStatusBars = isLightStatusBars;
 		}
