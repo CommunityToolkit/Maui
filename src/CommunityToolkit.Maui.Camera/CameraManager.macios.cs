@@ -567,7 +567,7 @@ partial class CameraManager
 	{
 		public PreviewView()
 		{
-			PreviewLayer.VideoGravity = AVLayerVideoGravity.ResizeAspectFill;
+			PreviewLayer.VideoGravity = AVLayerVideoGravity.ResizeAspect;
 		}
 
 		public AVCaptureSession? Session
