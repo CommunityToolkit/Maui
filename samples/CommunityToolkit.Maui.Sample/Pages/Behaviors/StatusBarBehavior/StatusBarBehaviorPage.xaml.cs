@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
-namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
+namespace CommunityToolkit.Maui.Sample.Pages.Behaviors.StatusBarBehavior;
 
 public partial class StatusBarBehaviorPage : BasePage<StatusBarBehaviorViewModel>
 {
@@ -67,5 +67,11 @@ public partial class StatusBarBehaviorPage : BasePage<StatusBarBehaviorViewModel
 		}
 
 		return false;
+	}
+
+	void Button_OnClicked(object? sender, EventArgs e)
+	{
+		Application.Current?.MainPage = new BrokenTitleViewShell();
+
 	}
 }

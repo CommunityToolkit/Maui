@@ -87,6 +87,19 @@
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Maps\CommunityToolkit.Maui.Maps.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <MauiXaml Update="Pages\Behaviors\StatusBarBehavior\StatusBarBehaviorPage.xaml">
+      <SubType>Designer</SubType>
+    </MauiXaml>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Pages\Behaviors\StatusBarBehavior\StatusBarBehaviorPage.xaml.cs">
+      <DependentUpon>StatusBarBehaviorPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='windows' and $(Configuration) == 'Release'">
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
