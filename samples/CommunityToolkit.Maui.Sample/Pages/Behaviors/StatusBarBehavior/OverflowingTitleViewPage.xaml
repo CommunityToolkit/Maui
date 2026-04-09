@@ -31,7 +31,7 @@
                 Text="Welcome to &#10;.NET Multi-platform App UI" />
 
             <Button
-                Clicked="OnCounterClicked"
+                Clicked="OnCounterButtonClicked"
                 HorizontalOptions="Fill"
                 SemanticProperties.Hint="Counts the number of times you click"
                 Text="Click me"

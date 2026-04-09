@@ -14,16 +14,16 @@
     </Shell.Behaviors>
 
     <ShellContent
-        ContentTemplate="{DataTemplate statusBarBehavior:MainPage}"
+        ContentTemplate="{DataTemplate statusBarBehavior:OverflowingTitleViewPage}"
         Route="MainPage"
         Title="Home" />
 
     <TabBar Route="Tabbar">
         <Tab Title="Tab 1">
-            <ShellContent ContentTemplate="{DataTemplate statusBarBehavior:MainPage}" Title="Tab 1" />
+            <ShellContent ContentTemplate="{DataTemplate statusBarBehavior:OverflowingTitleViewPage}" Title="Tab 1" />
         </Tab>
         <Tab Title="Tab 2">
-            <ShellContent ContentTemplate="{DataTemplate statusBarBehavior:MainPage}" Title="Tab 1" />
+            <ShellContent ContentTemplate="{DataTemplate statusBarBehavior:OverflowingTitleViewPage}" Title="Tab 1" />
         </Tab>
     </TabBar>
 </Shell>
