@@ -9,7 +9,7 @@ public partial class OverflowingTitleViewPage : ContentPage
 		InitializeComponent();
 	}
 
-	void OnCounterClicked(object? sender, EventArgs e)
+	void OnCounterButtonClicked(object? sender, EventArgs e)
 	{
 		MainThread.BeginInvokeOnMainThread(async () => { await Shell.Current.GoToAsync("//MainPage"); });
 	}
