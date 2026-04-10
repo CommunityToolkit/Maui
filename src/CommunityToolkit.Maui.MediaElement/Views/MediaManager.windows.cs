@@ -335,6 +335,14 @@ partial class MediaManager : IDisposable
 				Player.MediaPlayer.SetUriSource(new Uri(path));
 			}
 		}
+		else if (MediaElement.Source is StreamMediaSource streamMediaSource)
+		{
+			if (streamMediaSource.Stream is not null)
+			{
+				var randomAccessStream = streamMediaSource.Stream.AsRandomAccessStream();
+				Player.Source = WinMediaSource.CreateFromStream(randomAccessStream, streamMediaSource.Stream.GetMimeType());
+			}
+		}
 	}
 
 	async Task SetUriSourceWithHeaders(Uri uri, IDictionary<string, string> headers)
