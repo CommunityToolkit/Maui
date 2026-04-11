@@ -191,7 +191,7 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 			currentStatus = ValidationFlags.ValidateOnAttaching;
 
 			OnValuePropertyNamePropertyChanged();
-			await UpdateStateAsync(View, Flags, false).ConfigureAwait(false);
+			await UpdateStateAsync(View, Flags, false);
 		}
 		finally
 		{
@@ -221,7 +221,7 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 				false => ValidationFlags.ValidateOnUnfocused
 			};
 
-			await UpdateStateAsync(View, Flags, false).ConfigureAwait(false);
+			await UpdateStateAsync(View, Flags, false);
 		}
 	}
 
