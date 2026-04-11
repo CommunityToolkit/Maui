@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Shell
+    Shell.FlyoutBehavior="Disabled"
+    Title="MauiApp1"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.StatusBarBehavior.BrokenTitleViewShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:statusBarBehavior="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Behaviors.StatusBarBehavior"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:xct="clr-namespace:CommunityToolkit.Maui.Behaviors;assembly=CommunityToolkit.Maui">
+
+    <Shell.Behaviors>
+        <xct:StatusBarBehavior StatusBarStyle="LightContent" />
+    </Shell.Behaviors>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate statusBarBehavior:OverflowingTitleViewPage}"
+        Route="MainPage"
+        Title="Home" />
+
+    <TabBar Route="Tabbar">
+        <Tab Title="Tab 1">
+            <ShellContent ContentTemplate="{DataTemplate statusBarBehavior:OverflowingTitleViewPage}" Title="Tab 1" />
+        </Tab>
+        <Tab Title="Tab 2">
+            <ShellContent ContentTemplate="{DataTemplate statusBarBehavior:OverflowingTitleViewPage}" Title="Tab 1" />
+        </Tab>
+    </TabBar>
+</Shell>
