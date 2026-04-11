@@ -11,6 +11,7 @@ public partial class ConvertersGalleryViewModel() : BaseGalleryViewModel(
 	SectionModel.Create<CompareConverterViewModel>(nameof(CompareConverter), "A converter that compares two IComparable objects and returns a boolean value or one of two specified objects."),
 	SectionModel.Create<DateTimeOffsetConverterViewModel>(nameof(DateTimeOffsetConverter), "A converter that allows to convert from a DateTimeOffset type to a DateTime type"),
 	SectionModel.Create<DoubleToIntConverterViewModel>(nameof(DoubleToIntConverter), "A converter that allows users to convert an incoming double value to an int."),
+	SectionModel.Create<EnumDescriptionConverterViewModel>(nameof(EnumDescriptionConverter), "A converter that converts Enum values into readable text so they display nicely in the UI"),
 	SectionModel.Create<EnumToBoolConverterViewModel>(nameof(EnumToBoolConverter), "A converter that allows you to convert an Enum to boolean value"),
 	SectionModel.Create<EnumToIntConverterViewModel>(nameof(EnumToIntConverter), "A converter that allows you to convert an Enum to its underlying int value"),
 	SectionModel.Create<IndexToArrayItemConverterViewModel>(nameof(IndexToArrayItemConverter), "A converter that allows users to convert a int value binding to an item in an array."),

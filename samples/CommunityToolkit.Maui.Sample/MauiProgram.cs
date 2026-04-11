@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+
 using CommunityToolkit.Maui.ApplicationModel;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Markup;
@@ -27,9 +28,11 @@ using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.Views.Popups;
 using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Maui.Views;
+
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.LifecycleEvents;
+
 using Polly;
 
 #if WINDOWS10_0_17763_0_OR_GREATER
@@ -193,6 +196,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<CompareConverterPage, CompareConverterViewModel>();
 		services.AddTransientWithShellRoute<DateTimeOffsetConverterPage, DateTimeOffsetConverterViewModel>();
 		services.AddTransientWithShellRoute<DoubleToIntConverterPage, DoubleToIntConverterViewModel>();
+		services.AddTransientWithShellRoute<EnumDescriptionConverterPage, EnumDescriptionConverterViewModel>();
 		services.AddTransientWithShellRoute<EnumToBoolConverterPage, EnumToBoolConverterViewModel>();
 		services.AddTransientWithShellRoute<EnumToIntConverterPage, EnumToIntConverterViewModel>();
 		services.AddTransientWithShellRoute<ImageResourceConverterPage, ImageResourceConverterViewModel>();
