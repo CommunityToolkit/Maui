@@ -10,7 +10,7 @@ public record BindablePropertyModel(string PropertyName, ITypeSymbol ReturnType,
 	public string BindablePropertyName => $"{PropertyName}Property";
 	public string BindablePropertyKeyName => $"{char.ToLower(PropertyName[0])}{PropertyName[1..]}PropertyKey";
 	public string EffectiveDefaultValueCreatorMethodName => ShouldUsePropertyInitializer ? $"CreateDefault{PropertyName}" : DefaultValueCreatorMethodName;
-	public string InitializingPropertyName => $"IsInitializing{PropertyName}";
+	public string InitializingPropertyName => $"__isInitializing{PropertyName}";
 }
 
 public record AttachedBindablePropertyModel(string PropertyName, ITypeSymbol ReturnType, ITypeSymbol DeclaringType, string DefaultValue, string DefaultBindingMode, string ValidateValueMethodName, string PropertyChangedMethodName, string PropertyChangingMethodName, string CoerceValueMethodName, string DefaultValueCreatorMethodName, string? GetterAccessibility, string? SetterAccessibility, string BindablePropertyAccessibility, bool IsDeclaringTypeNullable, string? BindablePropertyXmlDocumentation, string? GetterMethodXmlDocumentation, string? SetterMethodXmlDocumentation, bool IsReadOnlyBindableProperty)

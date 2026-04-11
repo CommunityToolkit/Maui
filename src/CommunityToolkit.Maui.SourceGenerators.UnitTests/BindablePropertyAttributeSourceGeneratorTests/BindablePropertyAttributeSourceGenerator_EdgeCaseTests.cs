@@ -91,22 +91,24 @@ public class BindablePropertyAttributeSourceGenerator_EdgeCaseTests : BaseBindab
             namespace {{defaultTestNamespace}};
             public partial class {{defaultTestClassName}}
             {
+                [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+                bool __isInitializingInvoiceStatus;
                 /// <summary>
                 /// BindableProperty for the <see cref = "InvoiceStatus"/> property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty InvoiceStatusProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("InvoiceStatus", typeof(TestNamespace.Status), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultInvoiceStatus);
-                public partial TestNamespace.Status InvoiceStatus { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingInvoiceStatus ? field : (TestNamespace.Status)GetValue(InvoiceStatusProperty); set => SetValue(InvoiceStatusProperty, value); }
-            }
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty InvoiceStatusProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("InvoiceStatus", typeof(TestNamespace.Status), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __BindablePropertyInitHelpers.CreateDefaultInvoiceStatus);
+                public partial TestNamespace.Status InvoiceStatus { get => __isInitializingInvoiceStatus ? field : (TestNamespace.Status)GetValue(InvoiceStatusProperty); set => SetValue(InvoiceStatusProperty, value); }
 
-            file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
-            {
-                public static volatile bool IsInitializingInvoiceStatus = false;
-                public static object CreateDefaultInvoiceStatus(global::Microsoft.Maui.Controls.BindableObject bindable)
+                [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+                static class __BindablePropertyInitHelpers
                 {
-                    IsInitializingInvoiceStatus = true;
-                    var defaultValue = ((TestView)bindable).InvoiceStatus;
-                    IsInitializingInvoiceStatus = false;
-                    return defaultValue;
+                    public static object CreateDefaultInvoiceStatus(global::Microsoft.Maui.Controls.BindableObject bindable)
+                    {
+                        (({{defaultTestClassName}})bindable).__isInitializingInvoiceStatus = true;
+                        var defaultValue = (({{defaultTestClassName}})bindable).InvoiceStatus;
+                        (({{defaultTestClassName}})bindable).__isInitializingInvoiceStatus = false;
+                        return defaultValue;
+                    }
                 }
             }
             """;
@@ -151,22 +153,24 @@ public class BindablePropertyAttributeSourceGenerator_EdgeCaseTests : BaseBindab
             namespace {{defaultTestNamespace}};
             public partial class {{defaultTestClassName}}
             {
+                [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+                bool __isInitializingInvoiceStatus;
                 /// <summary>
                 /// BindableProperty for the <see cref = "InvoiceStatus"/> property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty InvoiceStatusProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("InvoiceStatus", typeof(TestNamespace.Status), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultInvoiceStatus);
-                public partial TestNamespace.Status InvoiceStatus { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingInvoiceStatus ? field : (TestNamespace.Status)GetValue(InvoiceStatusProperty); set => SetValue(InvoiceStatusProperty, value); }
-            }
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty InvoiceStatusProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("InvoiceStatus", typeof(TestNamespace.Status), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __BindablePropertyInitHelpers.CreateDefaultInvoiceStatus);
+                public partial TestNamespace.Status InvoiceStatus { get => __isInitializingInvoiceStatus ? field : (TestNamespace.Status)GetValue(InvoiceStatusProperty); set => SetValue(InvoiceStatusProperty, value); }
 
-            file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
-            {
-                public static volatile bool IsInitializingInvoiceStatus = false;
-                public static object CreateDefaultInvoiceStatus(global::Microsoft.Maui.Controls.BindableObject bindable)
+                [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+                static class __BindablePropertyInitHelpers
                 {
-                    IsInitializingInvoiceStatus = true;
-                    var defaultValue = ((TestView)bindable).InvoiceStatus;
-                    IsInitializingInvoiceStatus = false;
-                    return defaultValue;
+                    public static object CreateDefaultInvoiceStatus(global::Microsoft.Maui.Controls.BindableObject bindable)
+                    {
+                        (({{defaultTestClassName}})bindable).__isInitializingInvoiceStatus = true;
+                        var defaultValue = (({{defaultTestClassName}})bindable).InvoiceStatus;
+                        (({{defaultTestClassName}})bindable).__isInitializingInvoiceStatus = false;
+                        return defaultValue;
+                    }
                 }
             }
             """;
@@ -471,112 +475,120 @@ public class BindablePropertyAttributeSourceGenerator_EdgeCaseTests : BaseBindab
             namespace {{defaultTestNamespace}};
             public partial class {{defaultTestClassName}}
             {
+                [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+                bool __isInitializingIsEnabled;
                 /// <summary>
                 /// BindableProperty for the <see cref = "IsEnabled"/> property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty IsEnabledProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("IsEnabled", typeof(bool), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultIsEnabled);
-                public partial bool IsEnabled { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingIsEnabled ? field : (bool)GetValue(IsEnabledProperty); set => SetValue(IsEnabledProperty, value); }
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty IsEnabledProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("IsEnabled", typeof(bool), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __BindablePropertyInitHelpers.CreateDefaultIsEnabled);
+                public partial bool IsEnabled { get => __isInitializingIsEnabled ? field : (bool)GetValue(IsEnabledProperty); set => SetValue(IsEnabledProperty, value); }
 
+                [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+                bool __isInitializingPi;
                 /// <summary>
                 /// BindableProperty for the <see cref = "Pi"/> property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty PiProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Pi", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultPi);
-                public partial double Pi { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingPi ? field : (double)GetValue(PiProperty); set => SetValue(PiProperty, value); }
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty PiProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Pi", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __BindablePropertyInitHelpers.CreateDefaultPi);
+                public partial double Pi { get => __isInitializingPi ? field : (double)GetValue(PiProperty); set => SetValue(PiProperty, value); }
 
+                [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+                bool __isInitializingLetter;
                 /// <summary>
                 /// BindableProperty for the <see cref = "Letter"/> property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty LetterProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Letter", typeof(char), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultLetter);
-                public partial char Letter { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingLetter ? field : (char)GetValue(LetterProperty); set => SetValue(LetterProperty, value); }
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty LetterProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Letter", typeof(char), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __BindablePropertyInitHelpers.CreateDefaultLetter);
+                public partial char Letter { get => __isInitializingLetter ? field : (char)GetValue(LetterProperty); set => SetValue(LetterProperty, value); }
             
+                [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+                bool __isInitializingTimeSpent;
                 /// <summary>
                 /// BindableProperty for the <see cref = "TimeSpent"/> property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty TimeSpentProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("TimeSpent", typeof(System.TimeSpan), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultTimeSpent);
-                public partial System.TimeSpan TimeSpent { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingTimeSpent ? field : (System.TimeSpan)GetValue(TimeSpentProperty); set => SetValue(TimeSpentProperty, value); }
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty TimeSpentProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("TimeSpent", typeof(System.TimeSpan), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __BindablePropertyInitHelpers.CreateDefaultTimeSpent);
+                public partial System.TimeSpan TimeSpent { get => __isInitializingTimeSpent ? field : (System.TimeSpan)GetValue(TimeSpentProperty); set => SetValue(TimeSpentProperty, value); }
             
+                [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+                bool __isInitializingDoubleEpsilon;
                 /// <summary>
                 /// BindableProperty for the <see cref = "DoubleEpsilon"/> property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty DoubleEpsilonProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("DoubleEpsilon", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultDoubleEpsilon);
-                public partial double DoubleEpsilon { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingDoubleEpsilon ? field : (double)GetValue(DoubleEpsilonProperty); set => SetValue(DoubleEpsilonProperty, value); }
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty DoubleEpsilonProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("DoubleEpsilon", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __BindablePropertyInitHelpers.CreateDefaultDoubleEpsilon);
+                public partial double DoubleEpsilon { get => __isInitializingDoubleEpsilon ? field : (double)GetValue(DoubleEpsilonProperty); set => SetValue(DoubleEpsilonProperty, value); }
             
+                [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+                bool __isInitializingSingleEpsilon;
                 /// <summary>
                 /// BindableProperty for the <see cref = "SingleEpsilon"/> property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty SingleEpsilonProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("SingleEpsilon", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultSingleEpsilon);
-                public partial double SingleEpsilon { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingSingleEpsilon ? field : (double)GetValue(SingleEpsilonProperty); set => SetValue(SingleEpsilonProperty, value); }
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty SingleEpsilonProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("SingleEpsilon", typeof(double), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __BindablePropertyInitHelpers.CreateDefaultSingleEpsilon);
+                public partial double SingleEpsilon { get => __isInitializingSingleEpsilon ? field : (double)GetValue(SingleEpsilonProperty); set => SetValue(SingleEpsilonProperty, value); }
             
+                [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+                bool __isInitializingCurrentTime;
                 /// <summary>
                 /// BindableProperty for the <see cref = "CurrentTime"/> property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty CurrentTimeProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("CurrentTime", typeof(System.DateTimeOffset), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultCurrentTime);
-                public partial System.DateTimeOffset CurrentTime { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingCurrentTime ? field : (System.DateTimeOffset)GetValue(CurrentTimeProperty); set => SetValue(CurrentTimeProperty, value); }
-            }
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty CurrentTimeProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("CurrentTime", typeof(System.DateTimeOffset), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __BindablePropertyInitHelpers.CreateDefaultCurrentTime);
+                public partial System.DateTimeOffset CurrentTime { get => __isInitializingCurrentTime ? field : (System.DateTimeOffset)GetValue(CurrentTimeProperty); set => SetValue(CurrentTimeProperty, value); }
 
-            file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
-            {
-                public static volatile bool IsInitializingIsEnabled = false;
-                public static object CreateDefaultIsEnabled(global::Microsoft.Maui.Controls.BindableObject bindable)
+                [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+                static class __BindablePropertyInitHelpers
                 {
-                    IsInitializingIsEnabled = true;
-                    var defaultValue = ((TestView)bindable).IsEnabled;
-                    IsInitializingIsEnabled = false;
-                    return defaultValue;
-                }
+                    public static object CreateDefaultIsEnabled(global::Microsoft.Maui.Controls.BindableObject bindable)
+                    {
+                        (({{defaultTestClassName}})bindable).__isInitializingIsEnabled = true;
+                        var defaultValue = (({{defaultTestClassName}})bindable).IsEnabled;
+                        (({{defaultTestClassName}})bindable).__isInitializingIsEnabled = false;
+                        return defaultValue;
+                    }
 
-                public static volatile bool IsInitializingPi = false;
-                public static object CreateDefaultPi(global::Microsoft.Maui.Controls.BindableObject bindable)
-                {
-                    IsInitializingPi = true;
-                    var defaultValue = ((TestView)bindable).Pi;
-                    IsInitializingPi = false;
-                    return defaultValue;
-                }
+                    public static object CreateDefaultPi(global::Microsoft.Maui.Controls.BindableObject bindable)
+                    {
+                        (({{defaultTestClassName}})bindable).__isInitializingPi = true;
+                        var defaultValue = (({{defaultTestClassName}})bindable).Pi;
+                        (({{defaultTestClassName}})bindable).__isInitializingPi = false;
+                        return defaultValue;
+                    }
 
-                public static volatile bool IsInitializingLetter = false;
-                public static object CreateDefaultLetter(global::Microsoft.Maui.Controls.BindableObject bindable)
-                {
-                    IsInitializingLetter = true;
-                    var defaultValue = ((TestView)bindable).Letter;
-                    IsInitializingLetter = false;
-                    return defaultValue;
-                }
+                    public static object CreateDefaultLetter(global::Microsoft.Maui.Controls.BindableObject bindable)
+                    {
+                        (({{defaultTestClassName}})bindable).__isInitializingLetter = true;
+                        var defaultValue = (({{defaultTestClassName}})bindable).Letter;
+                        (({{defaultTestClassName}})bindable).__isInitializingLetter = false;
+                        return defaultValue;
+                    }
 
-                public static volatile bool IsInitializingTimeSpent = false;
-                public static object CreateDefaultTimeSpent(global::Microsoft.Maui.Controls.BindableObject bindable)
-                {
-                    IsInitializingTimeSpent = true;
-                    var defaultValue = ((TestView)bindable).TimeSpent;
-                    IsInitializingTimeSpent = false;
-                    return defaultValue;
-                }
+                    public static object CreateDefaultTimeSpent(global::Microsoft.Maui.Controls.BindableObject bindable)
+                    {
+                        (({{defaultTestClassName}})bindable).__isInitializingTimeSpent = true;
+                        var defaultValue = (({{defaultTestClassName}})bindable).TimeSpent;
+                        (({{defaultTestClassName}})bindable).__isInitializingTimeSpent = false;
+                        return defaultValue;
+                    }
 
-                public static volatile bool IsInitializingDoubleEpsilon = false;
-                public static object CreateDefaultDoubleEpsilon(global::Microsoft.Maui.Controls.BindableObject bindable)
-                {
-                    IsInitializingDoubleEpsilon = true;
-                    var defaultValue = ((TestView)bindable).DoubleEpsilon;
-                    IsInitializingDoubleEpsilon = false;
-                    return defaultValue;
-                }
+                    public static object CreateDefaultDoubleEpsilon(global::Microsoft.Maui.Controls.BindableObject bindable)
+                    {
+                        (({{defaultTestClassName}})bindable).__isInitializingDoubleEpsilon = true;
+                        var defaultValue = (({{defaultTestClassName}})bindable).DoubleEpsilon;
+                        (({{defaultTestClassName}})bindable).__isInitializingDoubleEpsilon = false;
+                        return defaultValue;
+                    }
 
-                public static volatile bool IsInitializingSingleEpsilon = false;
-                public static object CreateDefaultSingleEpsilon(global::Microsoft.Maui.Controls.BindableObject bindable)
-                {
-                    IsInitializingSingleEpsilon = true;
-                    var defaultValue = ((TestView)bindable).SingleEpsilon;
-                    IsInitializingSingleEpsilon = false;
-                    return defaultValue;
-                }
+                    public static object CreateDefaultSingleEpsilon(global::Microsoft.Maui.Controls.BindableObject bindable)
+                    {
+                        (({{defaultTestClassName}})bindable).__isInitializingSingleEpsilon = true;
+                        var defaultValue = (({{defaultTestClassName}})bindable).SingleEpsilon;
+                        (({{defaultTestClassName}})bindable).__isInitializingSingleEpsilon = false;
+                        return defaultValue;
+                    }
 
-                public static volatile bool IsInitializingCurrentTime = false;
-                public static object CreateDefaultCurrentTime(global::Microsoft.Maui.Controls.BindableObject bindable)
-                {
-                    IsInitializingCurrentTime = true;
-                    var defaultValue = ((TestView)bindable).CurrentTime;
-                    IsInitializingCurrentTime = false;
-                    return defaultValue;
+                    public static object CreateDefaultCurrentTime(global::Microsoft.Maui.Controls.BindableObject bindable)
+                    {
+                        (({{defaultTestClassName}})bindable).__isInitializingCurrentTime = true;
+                        var defaultValue = (({{defaultTestClassName}})bindable).CurrentTime;
+                        (({{defaultTestClassName}})bindable).__isInitializingCurrentTime = false;
+                        return defaultValue;
+                    }
                 }
             }
             """;
@@ -668,53 +680,57 @@ public class BindablePropertyAttributeSourceGenerator_EdgeCaseTests : BaseBindab
 			namespace {{defaultTestNamespace}};
 			public partial class {{defaultTestClassName}}
 			{
+			    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+			    bool __isInitializingText;
 			    /// <summary>
 			    /// BindableProperty for the <see cref = "Text"/> property.
 			    /// </summary>
-			    internal static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultText);
-			    internal partial string Text { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingText ? field : (string)GetValue(TextProperty); set => SetValue(TextProperty, value); }
+			    internal static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __BindablePropertyInitHelpers.CreateDefaultText);
+			    internal partial string Text { get => __isInitializingText ? field : (string)GetValue(TextProperty); set => SetValue(TextProperty, value); }
 
+			    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+			    bool __isInitializingTime;
 			    /// <summary>
 			    /// BindableProperty for the <see cref = "Time"/> property.
 			    /// </summary>
-			    protected internal static readonly global::Microsoft.Maui.Controls.BindableProperty TimeProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Time", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultTime);
-			    protected internal partial string Time { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingTime ? field : (string)GetValue(TimeProperty); set => SetValue(TimeProperty, value); }
+			    protected internal static readonly global::Microsoft.Maui.Controls.BindableProperty TimeProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Time", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __BindablePropertyInitHelpers.CreateDefaultTime);
+			    protected internal partial string Time { get => __isInitializingTime ? field : (string)GetValue(TimeProperty); set => SetValue(TimeProperty, value); }
 
-			    static readonly global::Microsoft.Maui.Controls.BindablePropertyKey customDurationPropertyKey = global::Microsoft.Maui.Controls.BindableProperty.CreateReadOnly("CustomDuration", typeof(System.TimeSpan), typeof(TestNamespace.TestView), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __TestViewBindablePropertyInitHelpers.CreateDefaultCustomDuration);
+			    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+			    bool __isInitializingCustomDuration;
+			    static readonly global::Microsoft.Maui.Controls.BindablePropertyKey customDurationPropertyKey = global::Microsoft.Maui.Controls.BindableProperty.CreateReadOnly("CustomDuration", typeof(System.TimeSpan), typeof(TestNamespace.TestView), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __BindablePropertyInitHelpers.CreateDefaultCustomDuration);
 			    /// <summary>
 			    /// BindableProperty for the <see cref = "CustomDuration"/> property.
 			    /// </summary>
 			    internal static readonly global::Microsoft.Maui.Controls.BindableProperty CustomDurationProperty = customDurationPropertyKey.BindableProperty;
-			    internal partial System.TimeSpan CustomDuration { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingCustomDuration ? field : (System.TimeSpan)GetValue(CustomDurationProperty); private set => SetValue(customDurationPropertyKey, value); }
-			}
+			    internal partial System.TimeSpan CustomDuration { get => __isInitializingCustomDuration ? field : (System.TimeSpan)GetValue(CustomDurationProperty); private set => SetValue(customDurationPropertyKey, value); }
 
-			file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
-			{
-			    public static volatile bool IsInitializingText = false;
-			    public static object CreateDefaultText(global::Microsoft.Maui.Controls.BindableObject bindable)
+			    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+			    static class __BindablePropertyInitHelpers
 			    {
-			        IsInitializingText = true;
-			        var defaultValue = ((TestView)bindable).Text;
-			        IsInitializingText = false;
-			        return defaultValue;
-			    }
+			        public static object CreateDefaultText(global::Microsoft.Maui.Controls.BindableObject bindable)
+			        {
+			            (({{defaultTestClassName}})bindable).__isInitializingText = true;
+			            var defaultValue = (({{defaultTestClassName}})bindable).Text;
+			            (({{defaultTestClassName}})bindable).__isInitializingText = false;
+			            return defaultValue;
+			        }
 
-			    public static volatile bool IsInitializingTime = false;
-			    public static object CreateDefaultTime(global::Microsoft.Maui.Controls.BindableObject bindable)
-			    {
-			        IsInitializingTime = true;
-			        var defaultValue = ((TestView)bindable).Time;
-			        IsInitializingTime = false;
-			        return defaultValue;
-			    }
-			
-			    public static volatile bool IsInitializingCustomDuration = false;
-			    public static object CreateDefaultCustomDuration(global::Microsoft.Maui.Controls.BindableObject bindable)
-			    {
-			        IsInitializingCustomDuration = true;
-			        var defaultValue = ((TestView)bindable).CustomDuration;
-			        IsInitializingCustomDuration = false;
-			        return defaultValue;
+			        public static object CreateDefaultTime(global::Microsoft.Maui.Controls.BindableObject bindable)
+			        {
+			            (({{defaultTestClassName}})bindable).__isInitializingTime = true;
+			            var defaultValue = (({{defaultTestClassName}})bindable).Time;
+			            (({{defaultTestClassName}})bindable).__isInitializingTime = false;
+			            return defaultValue;
+			        }
+
+			        public static object CreateDefaultCustomDuration(global::Microsoft.Maui.Controls.BindableObject bindable)
+			        {
+			            (({{defaultTestClassName}})bindable).__isInitializingCustomDuration = true;
+			            var defaultValue = (({{defaultTestClassName}})bindable).CustomDuration;
+			            (({{defaultTestClassName}})bindable).__isInitializingCustomDuration = false;
+			            return defaultValue;
+			        }
 			    }
 			}
 			""";

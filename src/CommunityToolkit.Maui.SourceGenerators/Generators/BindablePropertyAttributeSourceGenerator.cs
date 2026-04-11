@@ -142,8 +142,8 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		sb.Append(value.ClassInformation.DeclaredAccessibility).Append(" partial class ").Append(classNameWithGenerics).Append("\n{\n\n");
 
-		// Prepare helper builder for file-static class members (static flags + default creators)
-		var fileStaticClassStringBuilder = new StringBuilder(256);
+		// Prepare helper builder for nested static class members (default value creators only)
+		var helperClassStringBuilder = new StringBuilder(256);
 		var helperNames = new HashSet<string>();
 
 		// Build fully-qualified declaring type name for helper method casts (include containing types)
@@ -151,10 +151,19 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			? classNameWithGenerics
 			: string.Concat(value.ClassInformation.ContainingTypes, ".", classNameWithGenerics);
 
-		var bindablePropertyInitHelpersClassName = $"__{value.ClassInformation.ClassName}BindablePropertyInitHelpers";
+		var bindablePropertyInitHelpersClassName = "__BindablePropertyInitHelpers";
 
 		foreach (var info in value.BindableProperties)
 		{
+			if (info.ShouldUsePropertyInitializer)
+			{
+				// Emit the initializing flag as an instance field on the partial class
+				if (helperNames.Add(info.InitializingPropertyName))
+				{
+					AppendInstanceInitializingField(sb, in info);
+				}
+			}
+
 			if (info.IsReadOnlyBindableProperty)
 			{
 				GenerateReadOnlyBindableProperty(sb, in info, bindablePropertyInitHelpersClassName);
@@ -164,33 +173,26 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 				GenerateBindableProperty(sb, in info, bindablePropertyInitHelpersClassName);
 			}
 
+			GenerateProperty(sb, in info, bindablePropertyInitHelpersClassName);
+
 			if (info.ShouldUsePropertyInitializer)
 			{
-				// Generate only references within the class; actual static field and creator method
-				// will be placed inside the file static helper class below.
-				if (helperNames.Add(info.InitializingPropertyName))
-				{
-					AppendHelperInitializingField(fileStaticClassStringBuilder, in info);
-				}
+				// Collect the CreateDefault method for the nested helper class
 				if (helperNames.Add(info.EffectiveDefaultValueCreatorMethodName))
 				{
-					AppendHelperDefaultValueMethod(fileStaticClassStringBuilder, in info, fullDeclaringType);
+					AppendHelperDefaultValueMethod(helperClassStringBuilder, in info, fullDeclaringType);
 				}
 			}
-
-			GenerateProperty(sb, in info, bindablePropertyInitHelpersClassName);
 		}
 
-		// If we generated any helper members and the declaring class is generic,
-		// emit the helper class nested inside the generated partial class so
-		// generic type parameters are in scope for casts used by the helper.
-		if (fileStaticClassStringBuilder.Length > 0 && !string.IsNullOrEmpty(value.ClassInformation.GenericTypeParameters))
+		// Always emit the helper class nested inside the partial class
+		if (helperClassStringBuilder.Length > 0)
 		{
 			sb.Append("[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
 			sb.Append("\n");
-			sb.Append("private static class ").Append(bindablePropertyInitHelpersClassName).Append("\n{");
+			sb.Append("static class ").Append(bindablePropertyInitHelpersClassName).Append("\n{");
 			sb.Append("\n");
-			sb.Append(fileStaticClassStringBuilder.ToString());
+			sb.Append(helperClassStringBuilder.ToString());
 			sb.Append("}\n\n");
 		}
 
@@ -206,15 +208,6 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			}
 		}
 
-		// If we generated any helper members and the declaring class is not generic,
-		// emit a file static class with them. Generic types have their helpers emitted
-		// nested inside the class above to ensure type parameter scope.
-		if (fileStaticClassStringBuilder.Length > 0 && string.IsNullOrEmpty(value.ClassInformation.GenericTypeParameters))
-		{
-			sb.Append("\n\nfile static class ").Append(bindablePropertyInitHelpersClassName).Append("\n{\n");
-			sb.Append(fileStaticClassStringBuilder.ToString());
-			sb.Append("}\n");
-		}
 
 		return sb.ToString();
 	}
@@ -346,8 +339,8 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		{
 			if (info.ShouldUsePropertyInitializer)
 			{
-				// Now reference the static flag on the file static helper class
-				sb.Append(bindablePropertyInitHelpersClassName).Append(".").Append(info.InitializingPropertyName);
+				// Reference the instance field directly on the partial class
+				sb.Append(info.InitializingPropertyName);
 			}
 			else
 			{
@@ -591,34 +584,39 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	}
 
 	/// <summary>
-	/// Appends the initializing flag into the file-static helper class.
+	/// Appends the initializing flag as an instance field on the generated partial class.
+	/// Using an instance field avoids cross-thread / cross-instance interference that
+	/// occurred when the flag was static.
 	/// </summary>
-	/// <param name="fileStaticClassStringBuilder">Helper StringBuilder used to collect helper members.</param>
+	/// <param name="sb">StringBuilder for the partial class body.</param>
 	/// <param name="info">Property model.</param>
-	static void AppendHelperInitializingField(StringBuilder fileStaticClassStringBuilder, in BindablePropertyModel info)
+	static void AppendInstanceInitializingField(StringBuilder sb, in BindablePropertyModel info)
 	{
-		// Make the flag public static so it can be referenced from the generated partial class in the same file.
-		fileStaticClassStringBuilder.Append("public static volatile bool ")
+		sb.Append("[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n")
+			.Append("bool ")
 			.Append(info.InitializingPropertyName)
-			.Append(" = false;\n");
+			.Append(";\n");
 	}
 
 	/// <summary>
-	/// Appends a default value creator method into the file-static helper class.
-	/// The method sets the static initializing flag, reads the property's initializer value by casting the bindable
-	/// to the declaring type, then clears the flag and returns the value.
+	/// Appends a default value creator method into the nested helper class.
+	/// The method sets the instance-level initializing flag on the bindable object, reads the property's initializer value
+	/// by casting the bindable to the declaring type, then clears the flag and returns the value.
 	/// </summary>
-	/// <param name="fileStaticClassStringBuilder">Helper StringBuilder used to collect helper members.</param>
+	/// <param name="helperClassStringBuilder">Helper StringBuilder used to collect helper methods.</param>
 	/// <param name="info">Property model.</param>
 	/// <param name="fullDeclaringType">Declaring type including containing types and generic parameters.</param>
-	static void AppendHelperDefaultValueMethod(StringBuilder fileStaticClassStringBuilder, in BindablePropertyModel info, string fullDeclaringType)
+	static void AppendHelperDefaultValueMethod(StringBuilder helperClassStringBuilder, in BindablePropertyModel info, string fullDeclaringType)
 	{
 		var sanitizedPropertyName = IsDotnetKeyword(info.PropertyName) ? string.Concat("@", info.PropertyName) : info.PropertyName;
 
-		fileStaticClassStringBuilder.Append("public static object ")
+		helperClassStringBuilder.Append("public static object ")
 			.Append(info.EffectiveDefaultValueCreatorMethodName)
 			.Append("(global::Microsoft.Maui.Controls.BindableObject bindable)\n")
 			.Append("{\n")
+			.Append("((")
+			.Append(fullDeclaringType)
+			.Append(")bindable).")
 			.Append(info.InitializingPropertyName)
 			.Append(" = true;\n")
 			.Append("var defaultValue = ((")
@@ -626,6 +624,9 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(")bindable).")
 			.Append(sanitizedPropertyName)
 			.Append(";\n")
+			.Append("((")
+			.Append(fullDeclaringType)
+			.Append(")bindable).")
 			.Append(info.InitializingPropertyName)
 			.Append(" = false;\n")
 			.Append("return defaultValue;\n")
