@@ -1,4 +1,4 @@
-namespace CommunityToolkit.Maui.Core.Primitives;
+namespace CommunityToolkit.Maui.Core.Extensions;
 
 /// <summary>
 /// Extension methods for <see cref="Stream"/> on Windows platform.

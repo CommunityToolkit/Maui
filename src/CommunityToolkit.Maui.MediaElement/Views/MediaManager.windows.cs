@@ -3,7 +3,7 @@ using System.Numerics;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
-using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Core.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
