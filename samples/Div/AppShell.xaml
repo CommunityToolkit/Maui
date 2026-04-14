@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pages ="clr-namespace:DivStart"
+             x:Class="DivStart.AppShell"
+             Title="RootPage"
+             BackgroundColor="Gray">
+    <TabBar>
+        <ShellContent Title="Splash Page" ContentTemplate="{DataTemplate pages:SplashPage}" Route="SplashPage"/>
+    </TabBar>
+    <ShellContent Title="Functional Page" ContentTemplate="{DataTemplate pages:FunctionalPage}" Route="FunctionalPage"/>
+    <ShellContent Title="Page 2" ContentTemplate="{DataTemplate pages:Page2}" Route="Page2"/>
+    <MenuItem     Text ="Go to SplashPage" Clicked="OnGo"/>
+</Shell>

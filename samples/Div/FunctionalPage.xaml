@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    BackgroundColor="Orange"
+    Shell.FlyoutBehavior="Disabled"
+    Shell.NavBarIsVisible="False"
+    Title="FunctionalPage"
+    x:Class="DivStart.FunctionalPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    <ContentPage.Behaviors>
+        <toolkit:StatusBarBehavior StatusBarColor="Magenta" StatusBarStyle="{AppThemeBinding Default=LightContent, Light=DarkContent}" />
+    </ContentPage.Behaviors>
+    <Grid>
+        <Label HorizontalOptions="Center" VerticalOptions="Start">
+            This is the top of the page (line 1)
+            Line 2
+            Line 3
+            Line 4
+        </Label>
+        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center">
+            <Label HorizontalOptions="Center" x:Name="ColorLabel" />
+            <Button
+                Clicked="OnChangeColor"
+                HorizontalOptions="Center"
+                Text="Change Status bar Color"
+                x:Name="ColorButton" />
+        </VerticalStackLayout>
+        <Label
+            HorizontalOptions="Center"
+            Text="This is the bottom of the page"
+            VerticalOptions="End" />
+    </Grid>
+</ContentPage>
