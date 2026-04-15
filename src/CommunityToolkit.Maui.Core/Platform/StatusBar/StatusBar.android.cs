@@ -66,6 +66,8 @@ static partial class StatusBar
 
 				if (existingOverlay is not null)
 				{
+					existingOverlay.SetBackgroundColor(platformColor);
+					ApplyWindowFlags(window, platformColor);
 					return;
 				}
 
