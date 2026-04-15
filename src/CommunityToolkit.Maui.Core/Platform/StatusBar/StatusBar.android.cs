@@ -152,7 +152,7 @@ static partial class StatusBar
 		WindowCompat.SetDecorFitsSystemWindows(window, false);
 	}
 
-	[SupportedOSPlatform("android"), SupportedOSPlatform("android30.0")]
+	[SupportedOSPlatform("android30.0")]
 	static void ApplyAndroidApi30(Window window)
 	{
 		WindowCompat.SetDecorFitsSystemWindows(window, false);
