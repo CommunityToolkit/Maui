@@ -217,4 +217,9 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		var customNavigationPage = new NavigationPage(modalPopupPage);
 		await Shell.Current.Navigation.PushModalAsync(customNavigationPage, true);
 	}
+
+	async void HandleSoftInputKeyboardPopupClicked(object? sender, EventArgs eventArgs)
+	{
+		await popupService.ShowPopupAsync<SoftInputKeyboardPopup>(Navigation);
+	}
 }

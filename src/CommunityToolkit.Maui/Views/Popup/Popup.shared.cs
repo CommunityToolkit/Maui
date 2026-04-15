@@ -74,11 +74,15 @@ public partial class Popup : ContentView
 	internal void NotifyPopupIsOpened()
 	{
 		Opened?.Invoke(this, EventArgs.Empty);
+
+		OnPlatformPopupOpened();
 	}
 
 	internal void NotifyPopupIsClosed()
 	{
 		Closed?.Invoke(this, EventArgs.Empty);
+
+		OnPlatformPopupClosed();
 	}
 
 	private protected PopupPage GetPopupPage()
@@ -97,6 +101,10 @@ public partial class Popup : ContentView
 
 		throw new PopupNotFoundException();
 	}
+
+	partial void OnPlatformPopupOpened();
+
+	partial void OnPlatformPopupClosed();
 }
 
 /// <summary>
