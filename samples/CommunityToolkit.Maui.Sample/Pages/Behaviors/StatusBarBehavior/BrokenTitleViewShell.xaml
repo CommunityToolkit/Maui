@@ -3,9 +3,9 @@
 <Shell
     Shell.FlyoutBehavior="Disabled"
     Title="MauiApp1"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.StatusBarBehavior.BrokenTitleViewShell"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.BrokenTitleViewShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:statusBarBehavior="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Behaviors.StatusBarBehavior"
+    xmlns:statusBarBehavior="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Behaviors"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:xct="clr-namespace:CommunityToolkit.Maui.Behaviors;assembly=CommunityToolkit.Maui">
 

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.StatusBarBehavior.OverflowingTitleViewPage"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.OverflowingTitleViewPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
@@ -31,9 +31,9 @@
                 Text="Welcome to &#10;.NET Multi-platform App UI" />
 
             <Button
-                Clicked="OnCounterButtonClicked"
+                Clicked="OnNavigateToMainPageButtonClicked"
                 HorizontalOptions="Fill"
-                SemanticProperties.Hint="Counts the number of times you click"
+                SemanticProperties.Hint="Navigate to MainPage"
                 Text="Click me"
                 x:Name="CounterBtn" />
         </VerticalStackLayout>

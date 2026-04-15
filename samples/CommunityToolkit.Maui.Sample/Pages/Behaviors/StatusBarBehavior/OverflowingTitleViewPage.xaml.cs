@@ -1,15 +1,13 @@
-﻿namespace CommunityToolkit.Maui.Sample.Pages.Behaviors.StatusBarBehavior;
+﻿namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
 public partial class OverflowingTitleViewPage : ContentPage
 {
-	int count = 0;
-
 	public OverflowingTitleViewPage()
 	{
 		InitializeComponent();
 	}
 
-	void OnCounterButtonClicked(object? sender, EventArgs e)
+	void OnNavigateToMainPageButtonClicked(object? sender, EventArgs e)
 	{
 		MainThread.BeginInvokeOnMainThread(async () => { await Shell.Current.GoToAsync("//MainPage"); });
 	}
