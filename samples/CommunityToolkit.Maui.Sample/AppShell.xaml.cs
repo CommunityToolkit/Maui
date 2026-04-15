@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+
 using CommunityToolkit.Maui.Sample.Pages;
 using CommunityToolkit.Maui.Sample.Pages.Alerts;
 using CommunityToolkit.Maui.Sample.Pages.Behaviors;
@@ -58,6 +59,7 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<CompareConverterPage, CompareConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<DateTimeOffsetConverterPage, DateTimeOffsetConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<DoubleToIntConverterPage, DoubleToIntConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
+		CreateViewModelMapping<EnumDescriptionConverterPage, EnumDescriptionConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<EnumToBoolConverterPage, EnumToBoolConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<EnumToIntConverterPage, EnumToIntConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
 		CreateViewModelMapping<ImageResourceConverterPage, ImageResourceConverterViewModel, ConvertersGalleryPage, ConvertersGalleryViewModel>(),
