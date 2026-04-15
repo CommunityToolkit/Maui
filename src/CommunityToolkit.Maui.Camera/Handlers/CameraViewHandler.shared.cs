@@ -8,6 +8,9 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 /// </summary>
 public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>, IDisposable
 {
+	CancellationTokenSource? cts;
+	bool isDisposed;
+
 	/// <summary>
 	/// The currently defined mappings between properties on the <see cref="ICameraView"/> and
 	/// properties on the <see cref="NativePlatformCameraPreviewView"/>. 
@@ -82,9 +85,29 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	/// <inheritdoc/>
 	protected override async void ConnectHandler(NativePlatformCameraPreviewView platformView)
 	{
-		base.ConnectHandler(platformView);
-
-		await CameraManager.ConnectCamera(CancellationToken.None);
+		cts?.Cancel();
+		using var newCts = cts = new();
+		try
+		{
+			base.ConnectHandler(platformView);
+			await CameraManager.ConnectCamera(newCts.Token);
+		}
+		catch (OperationCanceledException) when (newCts.IsCancellationRequested)
+		{
+			// Catch and ignore the OperationCanceledException if it was caused by our own cancellation token,
+			// e.g. the handler is disconnected before the camera connection process completes.
+		}
+		catch (Exception)
+		{
+			DisconnectHandler(platformView);
+		}
+		finally
+		{
+			if (cts == newCts)
+			{
+				cts = null;
+			}
+		}
 	}
 
 	/// <inheritdoc/>
@@ -103,11 +126,20 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	/// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
 	protected virtual void Dispose(bool disposing)
 	{
+		if (isDisposed)
+		{
+			return;
+		}
 		if (disposing)
 		{
+			cts?.Cancel();
+			cts = null;
+
 			cameraManager?.Dispose();
 			cameraManager = null;
 		}
+
+		isDisposed = true;
 	}
 
 #if WINDOWS
