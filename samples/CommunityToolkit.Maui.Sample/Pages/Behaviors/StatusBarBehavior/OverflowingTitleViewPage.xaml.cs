@@ -7,8 +7,8 @@ public partial class OverflowingTitleViewPage : ContentPage
 		InitializeComponent();
 	}
 
-	void OnNavigateToMainPageButtonClicked(object? sender, EventArgs e)
+	async void OnNavigateToMainPageButtonClicked(object? sender, EventArgs e)
 	{
-		MainThread.BeginInvokeOnMainThread(async () => { await Shell.Current.GoToAsync("//MainPage"); });
+		await Shell.Current.GoToAsync("//MainPage");
 	}
 }
