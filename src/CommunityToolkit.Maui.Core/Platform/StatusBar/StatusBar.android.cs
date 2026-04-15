@@ -146,6 +146,7 @@ static partial class StatusBar
 	[SupportedOSPlatform("android"), UnsupportedOSPlatform("android30.0")]
 	static void ApplyAndroidApiLessThan30(Window window)
 	{
+		window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
 		window.SetFlags(
 			WindowManagerFlags.DrawsSystemBarBackgrounds,
 			WindowManagerFlags.DrawsSystemBarBackgrounds);
