@@ -62,6 +62,15 @@ static partial class StatusBar
 		{
 			window.DecorView.Post(() =>
 			{
+				var existingOverlay = decorGroup.FindViewWithTag(statusBarOverlayTag);
+
+				if (existingOverlay is not null)
+				{
+					existingOverlay.SetBackgroundColor(platformColor);
+					ApplyWindowFlags(window, platformColor);
+					return;
+				}
+
 				var insets = window.DecorView.RootWindowInsets;
 				var height = insets?.GetInsets(WindowInsets.Type.StatusBars()).Top ?? 0;
 
