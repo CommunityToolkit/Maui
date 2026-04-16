@@ -38,4 +38,13 @@ public class MediaSourceTests : BaseTest
 
 		mediaSource.Should().BeAssignableTo<FileMediaSource>();
 	}
+
+	[Fact]
+	public void MediaSourceFromStreamShouldBeStreamMediaSource()
+	{
+		var stream = new System.IO.MemoryStream();
+		var mediaSource = MediaSource.FromStream(stream);
+
+		mediaSource.Should().BeAssignableTo<StreamMediaSource>();
+	}
 }

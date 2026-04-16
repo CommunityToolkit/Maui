@@ -3,6 +3,7 @@ using System.Numerics;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
+using CommunityToolkit.Maui.Core.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
@@ -333,6 +334,14 @@ partial class MediaManager : IDisposable
 			if (!string.IsNullOrWhiteSpace(path))
 			{
 				Player.MediaPlayer.SetUriSource(new Uri(path));
+			}
+		}
+		else if (MediaElement.Source is StreamMediaSource streamMediaSource)
+		{
+			if (streamMediaSource.Stream is not null)
+			{
+				var randomAccessStream = streamMediaSource.Stream.AsRandomAccessStream();
+				Player.Source = WinMediaSource.CreateFromStream(randomAccessStream, streamMediaSource.Stream.GetMimeType());
 			}
 		}
 	}

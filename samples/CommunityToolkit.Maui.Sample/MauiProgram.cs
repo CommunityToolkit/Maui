@@ -252,6 +252,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<LazyViewPage, LazyViewViewModel>();
 		services.AddTransientWithShellRoute<MapsPinsPage, MapsPinsViewModel>();
 		services.AddTransientWithShellRoute<MediaElementPage, MediaElementViewModel>();
+		services.AddTransientWithShellRoute<MediaElementFromStreamPage, MediaElementFromStreamViewModel>();
 		services.AddTransientWithShellRoute<MediaElementCarouselViewPage, MediaElementCarouselViewViewModel>();
 		services.AddTransientWithShellRoute<MediaElementCollectionViewPage, MediaElementCollectionViewViewModel>();
 		services.AddTransientWithShellRoute<MediaElementMultipleWindowsPage, MediaElementMultipleWindowsViewModel>();
