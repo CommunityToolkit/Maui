@@ -159,21 +159,22 @@ public class BindablePropertyAttributeSourceGenerator_IntegrationTests : BaseBin
 		namespace {{defaultTestNamespace}};
 		public partial class {{defaultTestClassName}}<T, U>
 		{
+		    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+		    bool __isInitializingValue;
 		    /// <summary>
 		    /// BindableProperty for the <see cref = "Value"/> property.
 		    /// </summary>
-		    public static readonly global::Microsoft.Maui.Controls.BindableProperty ValueProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Value", typeof(T), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<T, U>), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultValue);
-		    public partial T? Value { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingValue ? field : (T? )GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
+		    public static readonly global::Microsoft.Maui.Controls.BindableProperty ValueProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Value", typeof(T), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<T, U>), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __BindablePropertyInitHelpers.CreateDefaultValue);
+		    public partial T? Value { get => __isInitializingValue ? field : (T? )GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
 
 		    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-		    private static class __{{defaultTestClassName}}BindablePropertyInitHelpers
+		    static class __BindablePropertyInitHelpers
 		    {
-		        public static volatile bool IsInitializingValue = false;
 		        public static object CreateDefaultValue(global::Microsoft.Maui.Controls.BindableObject bindable)
 		        {
-		            IsInitializingValue = true;
+		            (({{defaultTestClassName}}<T, U>)bindable).__isInitializingValue = true;
 		            var defaultValue = (({{defaultTestClassName}}<T, U>)bindable).Value;
-		            IsInitializingValue = false;
+		            (({{defaultTestClassName}}<T, U>)bindable).__isInitializingValue = false;
 		            return defaultValue;
 		        }
 		    }
