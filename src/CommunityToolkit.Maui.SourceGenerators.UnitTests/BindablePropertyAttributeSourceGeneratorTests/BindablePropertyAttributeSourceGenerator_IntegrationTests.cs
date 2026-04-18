@@ -162,7 +162,7 @@ public class BindablePropertyAttributeSourceGenerator_IntegrationTests : BaseBin
 		    /// <summary>
 		    /// BindableProperty for the <see cref = "Value"/> property.
 		    /// </summary>
-		    public static readonly global::Microsoft.Maui.Controls.BindableProperty ValueProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Value", typeof(T), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<T, U>), default, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+		    public static readonly global::Microsoft.Maui.Controls.BindableProperty ValueProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Value", typeof(T), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}<T, U>), default(T), (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 		    public partial T? Value { get => false ? field : (T? )GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
 		}
 		""";
