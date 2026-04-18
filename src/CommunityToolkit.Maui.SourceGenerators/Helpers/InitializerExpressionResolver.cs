@@ -188,46 +188,6 @@ static class InitializerExpressionResolver
 		return null;
 	}
 
-	static string? TryResolveInvocation(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
-	{
-		var methodExpr = TryResolveExpression(invocation.Expression, semanticModel);
-		if (methodExpr is null)
-		{
-			return null;
-		}
-
-		// Resolve type arguments if present
-		var symbolInfo = semanticModel.GetSymbolInfo(invocation);
-		if (symbolInfo.Symbol is IMethodSymbol methodSymbol && methodSymbol.IsGenericMethod)
-		{
-			var typeArgs = string.Join(", ", methodSymbol.TypeArguments.Select(
-				t => t.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)));
-			// Replace the method name with the generic version
-			var lastDot = methodExpr.LastIndexOf('.');
-			if (lastDot >= 0)
-			{
-				methodExpr = $"{methodExpr[..lastDot]}.{methodSymbol.Name}<{typeArgs}>";
-			}
-			else
-			{
-				methodExpr = $"{methodSymbol.Name}<{typeArgs}>";
-			}
-		}
-
-		var args = new List<string>(invocation.ArgumentList.Arguments.Count);
-		foreach (var arg in invocation.ArgumentList.Arguments)
-		{
-			var resolved = TryResolveExpression(arg.Expression, semanticModel);
-			if (resolved is null)
-			{
-				return null;
-			}
-			args.Add(resolved);
-		}
-
-		return $"{methodExpr}({string.Join(", ", args)})";
-	}
-
 	static string? TryResolveObjectCreation(ObjectCreationExpressionSyntax objectCreation, SemanticModel semanticModel)
 	{
 		var typeInfo = semanticModel.GetTypeInfo(objectCreation);
