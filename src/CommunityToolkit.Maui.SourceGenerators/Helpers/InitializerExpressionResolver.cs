@@ -254,7 +254,7 @@ static class InitializerExpressionResolver
 		float f => float.IsPositiveInfinity(f) ? "float.PositiveInfinity"
 			: float.IsNegativeInfinity(f) ? "float.NegativeInfinity"
 			: float.IsNaN(f) ? "float.NaN"
-			: $"{f}f",
+			: global::System.FormattableString.Invariant($"{f}f"),
 		double d => double.IsPositiveInfinity(d) ? "double.PositiveInfinity"
 			: double.IsNegativeInfinity(d) ? "double.NegativeInfinity"
 			: double.IsNaN(d) ? "double.NaN"
