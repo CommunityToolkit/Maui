@@ -39,6 +39,14 @@ static class InitializerExpressionResolver
 		switch (expression)
 		{
 			case LiteralExpressionSyntax literal:
+				if (literal.IsKind(SyntaxKind.DefaultLiteralExpression))
+				{
+					var defaultLiteralType = semanticModel.GetTypeInfo(literal).Type;
+					if (defaultLiteralType is not null)
+					{
+						return $"default({defaultLiteralType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})";
+					}
+				}
 				return literal.Token.Text;
 
 			case PrefixUnaryExpressionSyntax prefixUnary:
