@@ -602,12 +602,24 @@ public class BindablePropertyAttributeSourceGenerator_EdgeCaseTests : BaseBindab
 			    protected internal static readonly global::Microsoft.Maui.Controls.BindableProperty TimeProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Time", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), string.Empty, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    protected internal partial string Time { get => false ? field : (string)GetValue(TimeProperty); set => SetValue(TimeProperty, value); }
 
-			    static readonly global::Microsoft.Maui.Controls.BindablePropertyKey customDurationPropertyKey = global::Microsoft.Maui.Controls.BindableProperty.CreateReadOnly("CustomDuration", typeof(System.TimeSpan), typeof(TestNamespace.TestView), global::System.TimeSpan.FromSeconds(30), (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    static readonly global::Microsoft.Maui.Controls.BindablePropertyKey customDurationPropertyKey = global::Microsoft.Maui.Controls.BindableProperty.CreateReadOnly("CustomDuration", typeof(System.TimeSpan), typeof(TestNamespace.TestView), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultCustomDuration);
 			    /// <summary>
 			    /// BindableProperty for the <see cref = "CustomDuration"/> property.
 			    /// </summary>
 			    internal static readonly global::Microsoft.Maui.Controls.BindableProperty CustomDurationProperty = customDurationPropertyKey.BindableProperty;
-			    internal partial System.TimeSpan CustomDuration { get => false ? field : (System.TimeSpan)GetValue(CustomDurationProperty); private set => SetValue(customDurationPropertyKey, value); }
+			    internal partial System.TimeSpan CustomDuration { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingCustomDuration ? field : (System.TimeSpan)GetValue(CustomDurationProperty); private set => SetValue(customDurationPropertyKey, value); }
+			}
+
+			file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
+			{
+			    public static volatile bool IsInitializingCustomDuration = false;
+			    public static object CreateDefaultCustomDuration(global::Microsoft.Maui.Controls.BindableObject bindable)
+			    {
+			        IsInitializingCustomDuration = true;
+			        var defaultValue = (({{defaultTestClassName}})bindable).CustomDuration;
+			        IsInitializingCustomDuration = false;
+			        return defaultValue;
+			    }
 			}
 			""";
 
