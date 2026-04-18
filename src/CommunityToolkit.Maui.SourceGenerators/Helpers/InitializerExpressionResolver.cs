@@ -105,8 +105,10 @@ static class InitializerExpressionResolver
 				}
 				return "default";
 
-			case InvocationExpressionSyntax invocation:
-				return TryResolveInvocation(invocation, semanticModel);
+			case InvocationExpressionSyntax:
+				// Invocations (e.g. Guid.NewGuid(), TimeSpan.FromSeconds(5)) may return different
+				// values per call; resolve only if GetConstantValue can fold them (e.g. nameof()).
+				return null;
 
 			case ObjectCreationExpressionSyntax objectCreation:
 				var objectCreationType = semanticModel.GetTypeInfo(objectCreation).Type;
@@ -124,6 +126,24 @@ static class InitializerExpressionResolver
 
 	static string? TryResolveMemberAccess(MemberAccessExpressionSyntax memberAccess, SemanticModel semanticModel)
 	{
+		// Only resolve member accesses that are provably safe to evaluate once and share
+		// across all instances (type/namespace navigation, const fields, static readonly fields).
+		// Reject static properties (e.g. DateTimeOffset.UtcNow) which may return different
+		// values per call or have side effects.
+		var symbol = semanticModel.GetSymbolInfo(memberAccess).Symbol;
+		switch (symbol)
+		{
+			case INamedTypeSymbol:
+			case INamespaceSymbol:
+				break; // Type/namespace navigation, always safe
+			case IFieldSymbol { IsConst: true }:
+				break; // Compile-time constants (including enum members)
+			case IFieldSymbol { IsStatic: true, IsReadOnly: true }:
+				break; // Static readonly fields (e.g. TimeSpan.Zero)
+			default:
+				return null; // Reject properties, non-readonly fields, methods, etc.
+		}
+
 		var receiver = TryResolveExpression(memberAccess.Expression, semanticModel);
 		if (receiver is null)
 		{
@@ -155,8 +175,8 @@ static class InitializerExpressionResolver
 			return namespaceSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 		}
 
-		// For static field/property references used as standalone identifiers
-		if (symbol is IFieldSymbol { IsStatic: true } or IPropertySymbol { IsStatic: true })
+		// For const or static readonly field references used as standalone identifiers
+		if (symbol is IFieldSymbol { IsConst: true } or IFieldSymbol { IsStatic: true, IsReadOnly: true })
 		{
 			var containingType = symbol.ContainingType;
 			if (containingType is not null)

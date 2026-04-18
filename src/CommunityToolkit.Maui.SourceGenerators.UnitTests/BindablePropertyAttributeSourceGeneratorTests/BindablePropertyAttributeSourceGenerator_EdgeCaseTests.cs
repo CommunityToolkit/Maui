@@ -486,8 +486,20 @@ public class BindablePropertyAttributeSourceGenerator_EdgeCaseTests : BaseBindab
                 /// <summary>
                 /// BindableProperty for the <see cref = "CurrentTime"/> property.
                 /// </summary>
-                public static readonly global::Microsoft.Maui.Controls.BindableProperty CurrentTimeProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("CurrentTime", typeof(System.DateTimeOffset), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), global::System.DateTimeOffset.UtcNow, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
-                public partial System.DateTimeOffset CurrentTime { get => false ? field : (System.DateTimeOffset)GetValue(CurrentTimeProperty); set => SetValue(CurrentTimeProperty, value); }
+                public static readonly global::Microsoft.Maui.Controls.BindableProperty CurrentTimeProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("CurrentTime", typeof(System.DateTimeOffset), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultCurrentTime);
+                public partial System.DateTimeOffset CurrentTime { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingCurrentTime ? field : (System.DateTimeOffset)GetValue(CurrentTimeProperty); set => SetValue(CurrentTimeProperty, value); }
+            }
+
+            file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
+            {
+                public static volatile bool IsInitializingCurrentTime = false;
+                public static object CreateDefaultCurrentTime(global::Microsoft.Maui.Controls.BindableObject bindable)
+                {
+                    IsInitializingCurrentTime = true;
+                    var defaultValue = (({{defaultTestClassName}})bindable).CurrentTime;
+                    IsInitializingCurrentTime = false;
+                    return defaultValue;
+                }
             }
             """;
 
