@@ -3,10 +3,11 @@ using Microsoft.CodeAnalysis;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Models;
 
-public record BindablePropertyModel(string PropertyName, ITypeSymbol ReturnType, ITypeSymbol DeclaringType, string DefaultBindingMode, string ValidateValueMethodName, string PropertyChangedMethodName, string PropertyChangingMethodName, string CoerceValueMethodName, string DefaultValueCreatorMethodName, string NewKeywordText, bool IsReadOnlyBindableProperty, string? SetterAccessibility, bool HasInitializer, string? PropertyAccessibility)
+public record BindablePropertyModel(string PropertyName, ITypeSymbol ReturnType, ITypeSymbol DeclaringType, string DefaultBindingMode, string ValidateValueMethodName, string PropertyChangedMethodName, string PropertyChangingMethodName, string CoerceValueMethodName, string DefaultValueCreatorMethodName, string NewKeywordText, bool IsReadOnlyBindableProperty, string? SetterAccessibility, bool HasInitializer, string? PropertyAccessibility, string? ResolvedInitializerExpression = null)
 {
 	// When both a DefaultValueCreatorMethodName and an initializer are provided, we implement the DefaultValueCreator method and the ignore the partial Property initializer
-	public bool ShouldUsePropertyInitializer => HasInitializer && DefaultValueCreatorMethodName is "null";
+	public bool ShouldUsePropertyInitializer => HasInitializer && DefaultValueCreatorMethodName is "null" && ResolvedInitializerExpression is null;
+	public bool ShouldUseDirectDefaultValue => ResolvedInitializerExpression is not null;
 	public string BindablePropertyName => $"{PropertyName}Property";
 	public string BindablePropertyKeyName => $"{char.ToLower(PropertyName[0])}{PropertyName[1..]}PropertyKey";
 	public string EffectiveDefaultValueCreatorMethodName => ShouldUsePropertyInitializer ? $"CreateDefault{PropertyName}" : DefaultValueCreatorMethodName;
