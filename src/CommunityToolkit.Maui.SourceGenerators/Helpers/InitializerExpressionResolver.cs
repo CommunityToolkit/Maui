@@ -101,6 +101,11 @@ static class InitializerExpressionResolver
 				return TryResolveInvocation(invocation, semanticModel);
 
 			case ObjectCreationExpressionSyntax objectCreation:
+				var objectCreationType = semanticModel.GetTypeInfo(objectCreation).Type;
+				if (objectCreationType is null || !objectCreationType.IsValueType)
+				{
+					return null;
+				}
 				return TryResolveObjectCreation(objectCreation, semanticModel);
 
 			default:
