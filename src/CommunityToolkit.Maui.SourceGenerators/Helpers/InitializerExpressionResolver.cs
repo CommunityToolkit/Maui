@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -14,13 +15,13 @@ static class InitializerExpressionResolver
 	/// Attempts to resolve an initializer expression to a fully qualified C# expression string.
 	/// Returns <c>null</c> if the expression cannot be resolved (e.g. collection expressions, complex lambdas).
 	/// </summary>
-	public static string? TryResolve(ExpressionSyntax expression, SemanticModel semanticModel)
+	public static bool TryResolve(ExpressionSyntax expression, SemanticModel semanticModel, [NotNullWhen(true)] out string? resolvedExpressionString)
 	{
 		// Try symbolic resolution first, preserves readable identifiers like float.Epsilon
-		var resolved = TryResolveExpression(expression, semanticModel);
-		if (resolved is not null)
+		if (TryResolveExpression(expression, semanticModel, out var resolved))
 		{
-			return resolved;
+			resolvedExpressionString = resolved;
+			return true;
 		}
 
 		// Fall back to constant folding, handles nameof(), some compiler-reduced expressions
@@ -28,13 +29,15 @@ static class InitializerExpressionResolver
 		if (constantValue.HasValue)
 		{
 			var typeInfo = semanticModel.GetTypeInfo(expression);
-			return FormatConstantValue(constantValue.Value, typeInfo.Type);
+			resolvedExpressionString = FormatConstantValue(constantValue.Value, typeInfo.Type);
+			return true;
 		}
 
-		return null;
+		resolvedExpressionString = null;
+		return false;
 	}
 
-	static string? TryResolveExpression(ExpressionSyntax expression, SemanticModel semanticModel)
+	static bool TryResolveExpression(ExpressionSyntax expression, SemanticModel semanticModel, [NotNullWhen(true)] out string? resolvedExpressionString)
 	{
 		switch (expression)
 		{
@@ -44,55 +47,73 @@ static class InitializerExpressionResolver
 					var defaultLiteralType = semanticModel.GetTypeInfo(literal).Type;
 					if (defaultLiteralType is not null)
 					{
-						return $"default({defaultLiteralType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})";
+						resolvedExpressionString = $"default({defaultLiteralType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})";
+						return true;
 					}
 				}
-				return literal.Token.Text;
+
+				resolvedExpressionString = literal.Token.Text;
+				return true;
 
 			case PrefixUnaryExpressionSyntax prefixUnary:
-				var operand = TryResolveExpression(prefixUnary.Operand, semanticModel);
-				if (operand is null)
+				if (!TryResolveExpression(prefixUnary.Operand, semanticModel, out var operand))
 				{
-					return null;
+					resolvedExpressionString = null;
+					return false;
 				}
-				return $"{prefixUnary.OperatorToken.Text}{operand}";
+
+				resolvedExpressionString = $"{prefixUnary.OperatorToken.Text}{operand}";
+				return true;
 
 			case MemberAccessExpressionSyntax memberAccess:
-				return TryResolveMemberAccess(memberAccess, semanticModel);
+				return TryResolveMemberAccess(memberAccess, semanticModel, out resolvedExpressionString);
 
 			case IdentifierNameSyntax identifier:
-				return TryResolveIdentifier(identifier, semanticModel);
+				return TryResolveIdentifier(identifier, semanticModel, out resolvedExpressionString);
 
 			case PredefinedTypeSyntax:
 				// Keywords like int, double, string, valid as-is in generated code
-				return expression.ToString();
+				resolvedExpressionString = expression.ToString();
+				return true;
 
 			case CastExpressionSyntax castExpression:
-				var innerExpr = TryResolveExpression(castExpression.Expression, semanticModel);
-				if (innerExpr is null)
+				if (!TryResolveExpression(castExpression.Expression, semanticModel, out var innerExpression))
 				{
-					return null;
+					resolvedExpressionString = null;
+					return false;
 				}
+
 				var castType = semanticModel.GetTypeInfo(castExpression.Type).Type;
 				if (castType is null)
 				{
-					return null;
+					resolvedExpressionString = null;
+					return false;
 				}
+
 				var qualifiedCastType = castType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-				return $"({qualifiedCastType}){innerExpr}";
+				resolvedExpressionString = $"({qualifiedCastType}){innerExpression}";
+
+				return true;
 
 			case ParenthesizedExpressionSyntax paren:
-				var inner = TryResolveExpression(paren.Expression, semanticModel);
-				return inner is not null ? $"({inner})" : null;
+				if (!TryResolveExpression(paren.Expression, semanticModel, out var inner))
+				{
+					resolvedExpressionString = null;
+					return false;
+				}
+
+				resolvedExpressionString = $"({inner})";
+				return true;
 
 			case BinaryExpressionSyntax binary:
-				var left = TryResolveExpression(binary.Left, semanticModel);
-				var right = TryResolveExpression(binary.Right, semanticModel);
-				if (left is null || right is null)
+				if (!TryResolveExpression(binary.Left, semanticModel, out var left) || !TryResolveExpression(binary.Right, semanticModel, out var right))
 				{
-					return null;
+					resolvedExpressionString = null;
+					return false;
 				}
-				return $"{left} {binary.OperatorToken.Text} {right}";
+
+				resolvedExpressionString = $"{left} {binary.OperatorToken.Text} {right}";
+				return true;
 
 			case DefaultExpressionSyntax defaultExpr:
 				if (defaultExpr.Type is not null)
@@ -100,38 +121,47 @@ static class InitializerExpressionResolver
 					var defType = semanticModel.GetTypeInfo(defaultExpr.Type).Type;
 					if (defType is not null)
 					{
-						return $"default({defType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})";
+						resolvedExpressionString = $"default({defType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})";
+						return true;
 					}
 				}
-				return "default";
+
+				resolvedExpressionString = "default";
+				return true;
 
 			case InvocationExpressionSyntax:
 				// Invocations (e.g. Guid.NewGuid(), TimeSpan.FromSeconds(5)) may return different
 				// values per call; resolve only if GetConstantValue can fold them (e.g. nameof()).
-				return null;
+				resolvedExpressionString = null;
+				return false;
 
 			case ObjectCreationExpressionSyntax objectCreation:
 				var objectCreationType = semanticModel.GetTypeInfo(objectCreation).Type;
 				if (objectCreationType is null || !objectCreationType.IsValueType)
 				{
-					return null;
+					resolvedExpressionString = null;
+					return false;
 				}
+
 				// Could incorrectly drop the initializer block if present, so early exit in that case
 				// to avoid this. If required can add a traversal to resolve the initializer block,
 				// but probably a rare case so not worth the complexity for now.
 				if (objectCreation.Initializer is not null)
 				{
-					return null;
+					resolvedExpressionString = null;
+					return false;
 				}
-				return TryResolveObjectCreation(objectCreation, semanticModel);
+
+				return TryResolveObjectCreation(objectCreation, semanticModel, out resolvedExpressionString);
 
 			default:
 				// Collection expressions, lambdas, etc., cannot resolve
-				return null;
+				resolvedExpressionString = null;
+				return false;
 		}
 	}
 
-	static string? TryResolveMemberAccess(MemberAccessExpressionSyntax memberAccess, SemanticModel semanticModel)
+	static bool TryResolveMemberAccess(MemberAccessExpressionSyntax memberAccess, SemanticModel semanticModel, [NotNullWhen(true)] out string? memberAccessString)
 	{
 		// Only resolve member accesses that are provably safe to evaluate once and share
 		// across all instances (type/namespace navigation, const fields, static readonly fields).
@@ -148,38 +178,43 @@ static class InitializerExpressionResolver
 			case IFieldSymbol { IsStatic: true, IsReadOnly: true }:
 				break; // Static readonly fields (e.g. TimeSpan.Zero)
 			default:
-				return null; // Reject properties, non-readonly fields, methods, etc.
+				memberAccessString = null;
+				return false; // Reject properties, non-readonly fields, methods, etc.
 		}
 
-		var receiver = TryResolveExpression(memberAccess.Expression, semanticModel);
-		if (receiver is null)
+		if (!TryResolveExpression(memberAccess.Expression, semanticModel, out var receiver))
 		{
-			return null;
+			memberAccessString = null;
+			return false;
 		}
 
-		return $"{receiver}.{memberAccess.Name.Identifier.Text}";
+		memberAccessString = $"{receiver}.{memberAccess.Name.Identifier.Text}";
+		return true;
 	}
 
-	static string? TryResolveIdentifier(IdentifierNameSyntax identifier, SemanticModel semanticModel)
+	static bool TryResolveIdentifier(IdentifierNameSyntax identifier, SemanticModel semanticModel, [NotNullWhen(true)] out string? identifierString)
 	{
 		var symbolInfo = semanticModel.GetSymbolInfo(identifier);
 		var symbol = symbolInfo.Symbol;
 
 		if (symbol is null)
 		{
-			return null;
+			identifierString = null;
+			return false;
 		}
 
 		// For type references (e.g. the "ValidationBehaviorDefaults" in "ValidationBehaviorDefaults.Flags")
 		if (symbol is INamedTypeSymbol typeSymbol)
 		{
-			return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+			identifierString = typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+			return true;
 		}
 
 		// For namespace references (e.g. "System" in "System.TimeSpan.Zero")
 		if (symbol is INamespaceSymbol namespaceSymbol)
 		{
-			return namespaceSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+			identifierString = namespaceSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+			return true;
 		}
 
 		// For const or static readonly field references used as standalone identifiers
@@ -188,40 +223,48 @@ static class InitializerExpressionResolver
 			var containingType = symbol.ContainingType;
 			if (containingType is not null)
 			{
-				return $"{containingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}.{symbol.Name}";
+				identifierString = $"{containingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}.{symbol.Name}";
+				return true;
 			}
 		}
 
-		return null;
+		identifierString = null;
+		return false;
 	}
 
-	static string? TryResolveObjectCreation(ObjectCreationExpressionSyntax objectCreation, SemanticModel semanticModel)
+	static bool TryResolveObjectCreation(ObjectCreationExpressionSyntax objectCreation, SemanticModel semanticModel, [NotNullWhen(true)] out string? objectCreationString)
 	{
 		var typeInfo = semanticModel.GetTypeInfo(objectCreation);
 		if (typeInfo.Type is null)
 		{
-			return null;
+			objectCreationString = null;
+			return false;
 		}
 
 		var qualifiedTypeName = typeInfo.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
 		if (objectCreation.ArgumentList is null || objectCreation.ArgumentList.Arguments.Count is 0)
 		{
-			return $"new {qualifiedTypeName}()";
+			objectCreationString = $"new {qualifiedTypeName}()";
+			return true;
 		}
 
 		var args = new List<string>(objectCreation.ArgumentList.Arguments.Count);
 		foreach (var arg in objectCreation.ArgumentList.Arguments)
 		{
-			var resolved = TryResolveExpression(arg.Expression, semanticModel);
-			if (resolved is null)
+			if (TryResolveExpression(arg.Expression, semanticModel, out var resolved))
 			{
-				return null;
+				args.Add(resolved);
 			}
-			args.Add(resolved);
+			else
+			{
+				objectCreationString = null;
+				return false;
+			}
 		}
 
-		return $"new {qualifiedTypeName}({string.Join(", ", args)})";
+		objectCreationString = $"new {qualifiedTypeName}({string.Join(", ", args)})";
+		return true;
 	}
 
 	static string FormatConstantValue(object? value, ITypeSymbol? typeSymbol)
