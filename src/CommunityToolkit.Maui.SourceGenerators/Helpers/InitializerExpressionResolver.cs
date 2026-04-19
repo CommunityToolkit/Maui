@@ -116,6 +116,13 @@ static class InitializerExpressionResolver
 				{
 					return null;
 				}
+				// Could incorrectly drop the initializer block if present, so early exit in that case
+				// to avoid this. If required can add a traversal to resolve the initializer block,
+				// but probably a rare case so not worth the complexity for now.
+				if (objectCreation.Initializer is not null)
+				{
+					return null;
+				}
 				return TryResolveObjectCreation(objectCreation, semanticModel);
 
 			default:
