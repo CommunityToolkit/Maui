@@ -237,7 +237,9 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(GetFormattedReturnType(nonNullableReturnType))
 			.Append("), typeof(")
 			.Append(info.DeclaringType)
-			.Append("), ").Append(info.ResolvedInitializerExpression ?? "null").Append(", ")
+			.Append("), ")
+			.Append(info.ResolvedInitializerExpression ?? "null")
+			.Append(", ")
 			.Append(info.DefaultBindingMode)
 			.Append(", ")
 			.Append(info.ValidateValueMethodName)
@@ -304,7 +306,9 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(GetFormattedReturnType(nonNullableReturnType))
 			.Append("), typeof(")
 			.Append(info.DeclaringType)
-			.Append("), ").Append(info.ResolvedInitializerExpression ?? "null").Append(", ")
+			.Append("), ")
+			.Append(info.ResolvedInitializerExpression ?? "null")
+			.Append(", ")
 			.Append(info.DefaultBindingMode)
 			.Append(", ")
 			.Append(info.ValidateValueMethodName)
@@ -412,8 +416,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		string? resolvedInitializer = null;
 		if (hasInitializer && propertyDeclarationSyntax.Initializer is not null)
 		{
-			resolvedInitializer = Helpers.InitializerExpressionResolver.TryResolve(
-				propertyDeclarationSyntax.Initializer.Value, semanticModel);
+			InitializerExpressionResolver.TryResolve(propertyDeclarationSyntax.Initializer.Value, semanticModel, out resolvedInitializer);
 		}
 
 		var attributeData = context.Attributes[0];
