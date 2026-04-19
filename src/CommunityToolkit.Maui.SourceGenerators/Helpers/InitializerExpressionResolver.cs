@@ -182,13 +182,13 @@ static class InitializerExpressionResolver
 				return false; // Reject properties, non-readonly fields, methods, etc.
 		}
 
-		if (!TryResolveExpression(memberAccess.Expression, semanticModel, out var receiver))
+		if (!TryResolveExpression(memberAccess.Expression, semanticModel, out _))
 		{
 			memberAccessString = null;
 			return false;
 		}
 
-		memberAccessString = $"{receiver}.{memberAccess.Name.Identifier.Text}";
+		memberAccessString = symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 		return true;
 	}
 
