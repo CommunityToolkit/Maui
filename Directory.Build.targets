@@ -43,6 +43,7 @@
     <None Include="**\net\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
   <!-- iOS and macCatalyst workloads are only available on macOS/Windows -->
+    <!-- The following PropertyGroup ensures no build errors on Linux  -->
   <PropertyGroup Condition="!$([MSBuild]::IsOSPlatform('osx')) AND !$([MSBuild]::IsOSPlatform('windows')) AND ($(TargetFrameworks.Contains('-ios')) OR $(TargetFrameworks.Contains('-maccatalyst')))">
      <TargetFrameworks>$(NetVersion);$(NetVersion)-android</TargetFrameworks>
      <TargetFrameworks Condition="'$(OutputType)' == 'Exe'">$(NetVersion)-android</TargetFrameworks>
