@@ -191,7 +191,7 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 			currentStatus = ValidationFlags.ValidateOnAttaching;
 
 			OnValuePropertyNamePropertyChanged();
-			await UpdateStateAsync(View, Flags, false).ConfigureAwait(false);
+			await UpdateStateAsync(View, Flags, false);
 		}
 		finally
 		{
@@ -221,7 +221,7 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 				false => ValidationFlags.ValidateOnUnfocused
 			};
 
-			await UpdateStateAsync(View, Flags, false).ConfigureAwait(false);
+			await UpdateStateAsync(View, Flags, false);
 		}
 	}
 
@@ -233,8 +233,15 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 	/// <param name="newValue"></param>
 	protected static async void OnValidationPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		var validationBehavior = (ValidationBehavior)bindable;
-		await validationBehavior.UpdateStateAsync(validationBehavior.View, validationBehavior.Flags, false).ConfigureAwait(false);
+		try
+		{
+			var validationBehavior = (ValidationBehavior)bindable;
+			await validationBehavior.UpdateStateAsync(validationBehavior.View, validationBehavior.Flags, false);
+		}
+		catch (Exception ex) when (Options.ShouldSuppressExceptionsInBehaviors)
+		{
+			Trace.TraceInformation("{0}", ex);
+		}
 	}
 
 	static void OnIsValidPropertyChanged(BindableObject bindable, object oldValue, object newValue)

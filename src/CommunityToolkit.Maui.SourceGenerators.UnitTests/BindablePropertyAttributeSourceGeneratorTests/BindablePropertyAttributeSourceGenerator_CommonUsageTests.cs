@@ -598,8 +598,8 @@ public class BindablePropertyAttributeSourceGenerator_CommonUsageTests : BaseBin
 			    /// <summary>
 			    /// BindableProperty for the <see cref = "Text"/> property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), null, (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, __{{defaultTestClassName}}BindablePropertyInitHelpers.CreateDefaultText);
-			    public partial string Text { get => __{{defaultTestClassName}}BindablePropertyInitHelpers.IsInitializingText ? field : (string)GetValue(TextProperty); set => SetValue(TextProperty, value); }
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty TextProperty = global::Microsoft.Maui.Controls.BindableProperty.Create("Text", typeof(string), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), "Initial Value", (Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public partial string Text { get => false ? field : (string)GetValue(TextProperty); set => SetValue(TextProperty, value); }
 
 			    /// <summary>
 			    /// BindableProperty for the <see cref = "CustomDuration"/> property.
@@ -610,20 +610,11 @@ public class BindablePropertyAttributeSourceGenerator_CommonUsageTests : BaseBin
 
 			file static class __{{defaultTestClassName}}BindablePropertyInitHelpers
 			{
-			    public static volatile bool IsInitializingText = false;
-			    public static object CreateDefaultText(global::Microsoft.Maui.Controls.BindableObject bindable)
-			    {
-			        IsInitializingText = true;
-			        var defaultValue = ((TestView)bindable).Text;
-			        IsInitializingText = false;
-			        return defaultValue;
-			    }
-			
 			    public static volatile bool IsInitializingCustomDuration = false;
 			    public static object CreateDefaultCustomDuration(global::Microsoft.Maui.Controls.BindableObject bindable)
 			    {
 			        IsInitializingCustomDuration = true;
-			        var defaultValue = ((TestView)bindable).CustomDuration;
+			        var defaultValue = (({{defaultTestClassName}})bindable).CustomDuration;
 			        IsInitializingCustomDuration = false;
 			        return defaultValue;
 			    }

@@ -566,3 +566,16 @@ Within a class, struct, or interface, elements should be positioned in the follo
 11. Records
 12. Structs
 13. Classes
+
+### Try Pattern
+
+When a method name begins with `Try` and returns a variable, ensure it adheres to the Try Pattern.
+
+Here Key Components of the Try Pattern:
+1. Method Name: Begins with Try (e.g., TryParse, TryGetValue).
+2. Return Type: bool (indicating success or failure).
+3. Out Parameter: An out parameter to return the result if successful.
+4. Null Analysis Attribute: [NotNullWhen(true)] (or [MaybeNullWhen(false)]) informs the compiler that if the method returns true, the out parameter is guaranteed to be non-null. 
+
+This pattern allows for high-performance retrieval or parsing without throwing exceptions for expected failures. It also allows cleaner call sites by eliminating the need for null-checking the output variable within the if block, as seen in Dictionary<TKey, TValue>.TryGetValue. 
+```

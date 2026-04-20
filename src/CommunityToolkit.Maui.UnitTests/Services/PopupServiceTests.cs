@@ -653,12 +653,12 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable, IDisposable
 		}
 
 		Console.WriteLine(
-			$@"{DateTime.Now:O} Closing {BindingContext.GetType().Name} - {Application.Current?.Windows[0].Page?.Navigation.ModalStack.Count}");
+			$@"{DateTime.Now:O} Closing {BindingContext.GetType().Name} - {Application.Current?.Windows.FirstOrDefault()?.Page?.Navigation.ModalStack.Count}");
 
 		await CloseAsync(Result, cancellationTokenSource?.Token ?? TestContext.Current.CancellationToken);
 
 		Console.WriteLine(
-			$@"{DateTime.Now:O} Closed {BindingContext.GetType().Name} - {Application.Current?.Windows[0].Page?.Navigation.ModalStack.Count}");
+			$@"{DateTime.Now:O} Closed {BindingContext.GetType().Name} - {Application.Current?.Windows.FirstOrDefault()?.Page?.Navigation.ModalStack.Count}");
 
 		popupClosedTCS.SetResult();
 	}
