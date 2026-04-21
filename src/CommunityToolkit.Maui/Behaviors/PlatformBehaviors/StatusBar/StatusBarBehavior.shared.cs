@@ -29,6 +29,14 @@ public enum StatusBarApplyOn
 public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 {
 	/// <summary>
+	/// Initialize <see cref="StatusBarBehavior"/>
+	/// </summary>
+	public StatusBarBehavior()
+	{
+		DeviceDisplay.Current.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
+	}
+
+	/// <summary>
 	/// Property that holds the value of the Status bar color. 
 	/// </summary>
 	[BindableProperty]
@@ -48,7 +56,6 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 
 
 #if !(WINDOWS || MACCATALYST || TIZEN)
-
 	/// <inheritdoc /> 
 #if IOS
 	protected override void OnAttachedTo(Page page, UIKit.UIView platformView)
@@ -93,23 +100,6 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 		page.NavigatedTo -= OnPageNavigatedTo;
 	}
 
-#if IOS
-	static void OnPageSizeChanged(object? sender, EventArgs e)
-	{
-		ArgumentNullException.ThrowIfNull(sender);
-		StatusBar.SetBarSize(Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetUseSafeArea((Page)sender));
-	}
-#endif
-
-	void OnPageNavigatedTo(object? sender, NavigatedToEventArgs e)
-	{
-		if (ApplyOn is StatusBarApplyOn.OnPageNavigatedTo)
-		{
-			StatusBar.SetColor(StatusBarColor);
-			StatusBar.SetStyle(StatusBarStyle);
-		}
-	}
-
 	/// <inheritdoc /> 
 	protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
 	{
@@ -137,4 +127,37 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 		}
 	}
 #endif
+
+#if IOS
+	static void OnPageSizeChanged(object? sender, EventArgs e)
+	{
+		ArgumentNullException.ThrowIfNull(sender);
+		StatusBar.SetBarSize(Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetUseSafeArea((Page)sender));
+	}
+#endif
+
+	void OnPageNavigatedTo(object? sender, NavigatedToEventArgs e)
+	{
+		if (ApplyOn is StatusBarApplyOn.OnPageNavigatedTo)
+		{
+			StatusBar.SetColor(StatusBarColor);
+			StatusBar.SetStyle(StatusBarStyle);
+		}
+	}
+
+	void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
+	{
+#if IOS
+		if (View is null)
+		{
+			throw new InvalidOperationException("Attached View cannot be null.");
+		}
+
+		StatusBar.SetBarSize(Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetUseSafeArea(View));
+#elif ANDROID
+		StatusBar.UpdateBarSize();
+#else
+		throw new NotSupportedException("StatusBarBehavior is not supported on the current platform.");
+#endif
+	}
 }
