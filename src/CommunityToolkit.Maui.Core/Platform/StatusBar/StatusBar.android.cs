@@ -222,9 +222,9 @@ static partial class StatusBar
 		}
 		else
 		{
-			var resId = Activity.Resources?.GetIdentifier("status_bar_height", "dimen", "android") ?? 0;
-			return resId > 0
-				? Activity.Resources?.GetDimensionPixelSize(resId) ?? 0
+			var resId = Activity.Resources?.GetIdentifier("status_bar_height", "dimen", "android");
+			return resId is not null
+				? Activity.Resources?.GetDimensionPixelSize(resId.Value) ?? 0
 				: 0;
 		}
 	}
