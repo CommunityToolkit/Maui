@@ -29,14 +29,6 @@ public enum StatusBarApplyOn
 public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 {
 	/// <summary>
-	/// Initialize <see cref="StatusBarBehavior"/>
-	/// </summary>
-	public StatusBarBehavior()
-	{
-		DeviceDisplay.Current.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
-	}
-
-	/// <summary>
 	/// Property that holds the value of the Status bar color. 
 	/// </summary>
 	[BindableProperty]
@@ -66,6 +58,8 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 #endif
 	{
 		base.OnAttachedTo(page, platformView);
+		
+		DeviceDisplay.Current.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
 
 		if (ApplyOn is StatusBarApplyOn.OnBehaviorAttachedTo)
 		{
@@ -98,6 +92,7 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 		base.OnDetachedFrom(page, platformView);
 
 		page.NavigatedTo -= OnPageNavigatedTo;
+		DeviceDisplay.Current.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
 	}
 
 	/// <inheritdoc /> 
