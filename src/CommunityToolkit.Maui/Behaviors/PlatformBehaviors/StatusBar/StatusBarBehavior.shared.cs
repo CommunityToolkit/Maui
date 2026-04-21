@@ -58,7 +58,7 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 #endif
 	{
 		base.OnAttachedTo(page, platformView);
-		
+
 		DeviceDisplay.Current.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
 
 		if (ApplyOn is StatusBarApplyOn.OnBehaviorAttachedTo)

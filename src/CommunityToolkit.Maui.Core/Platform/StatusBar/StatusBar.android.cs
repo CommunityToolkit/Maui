@@ -31,7 +31,7 @@ static partial class StatusBar
 	static Activity Activity => Microsoft.Maui.ApplicationModel.Platform.CurrentActivity ?? throw new InvalidOperationException("Android Activity can't be null.");
 
 	static bool IsSupported => isSupportedHolder.Value;
-	
+
 	/// <summary>
 	/// Update the status bar size
 	/// </summary>
@@ -186,7 +186,7 @@ static partial class StatusBar
 	static void SetStatusBarAppearance(bool isLightStatusBars)
 	{
 		if (Activity.GetCurrentWindow() is Window window
-		    && WindowCompat.GetInsetsController(window, window.DecorView) is WindowInsetsControllerCompat windowController)
+			&& WindowCompat.GetInsetsController(window, window.DecorView) is WindowInsetsControllerCompat windowController)
 		{
 			windowController.AppearanceLightStatusBars = isLightStatusBars;
 		}
