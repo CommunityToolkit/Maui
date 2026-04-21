@@ -145,7 +145,7 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 #if IOS
 		if (View is null)
 		{
-			throw new InvalidOperationException("Attached View cannot be null.");
+			return;
 		}
 
 		StatusBar.SetBarSize(Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetUseSafeArea(View));
