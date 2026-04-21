@@ -44,7 +44,7 @@ static partial class StatusBar
 		}
 
 		var statusBarOverlay = decorGroup.FindViewWithTag(statusBarOverlayTag);
-		statusBarOverlay?.LayoutParameters?.Height = GetStatusBarOverlayHeight(window) + statusBarHeightPadding;
+		statusBarOverlay?.LayoutParameters?.Height = GetStatusBarHeight(window) + statusBarHeightPadding;
 	}
 
 	static void PlatformSetColor(Color color)
@@ -128,7 +128,7 @@ static partial class StatusBar
 		{
 			LayoutParameters = new FrameLayout.LayoutParams(
 				ViewGroup.LayoutParams.MatchParent,
-				GetStatusBarOverlayHeight(window) + statusBarHeightPadding)
+				GetStatusBarHeight(window) + statusBarHeightPadding)
 			{
 				Gravity = GravityFlags.Top
 			},
@@ -208,7 +208,7 @@ static partial class StatusBar
 	}
 
 	[SupportedOSPlatform("android35.0")]
-	static int GetStatusBarOverlayHeight(in Window window)
+	static int GetStatusBarHeight(in Window window)
 	{
 		if (!OperatingSystem.IsAndroidVersionAtLeast(35))
 		{
