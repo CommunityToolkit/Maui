@@ -1,7 +1,5 @@
-﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
-using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
 using AndroidX.Core.View;
