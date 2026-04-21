@@ -212,7 +212,7 @@ static partial class StatusBar
 	{
 		if (!OperatingSystem.IsAndroidVersionAtLeast(35))
 		{
-			throw new NotSupportedException("StatusBar overlay is not supported on the current version of Android.");
+			throw new NotSupportedException("StatusBar overlay is only supported on Android API 35+");
 		}
 
 		if (OperatingSystem.IsAndroidVersionAtLeast(36))
