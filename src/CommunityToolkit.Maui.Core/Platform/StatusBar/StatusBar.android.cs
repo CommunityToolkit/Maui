@@ -15,6 +15,7 @@ namespace CommunityToolkit.Maui.Core.Platform;
 [SupportedOSPlatform("Android23.0")] // StatusBar is only supported on Android 23.0+
 static partial class StatusBar
 {
+	const int statusBarHeightPadding = 3;
 	const string statusBarOverlayTag = "StatusBarOverlay";
 
 	static readonly Lazy<bool> isSupportedHolder = new(() =>
@@ -45,7 +46,7 @@ static partial class StatusBar
 		}
 
 		var statusBarOverlay = decorGroup.FindViewWithTag(statusBarOverlayTag);
-		statusBarOverlay?.LayoutParameters?.Height = GetStatusBarOverlayHeight(window);
+		statusBarOverlay?.LayoutParameters?.Height = GetStatusBarOverlayHeight(window) + statusBarHeightPadding;
 	}
 
 	static void PlatformSetColor(Color color)
@@ -129,7 +130,7 @@ static partial class StatusBar
 		{
 			LayoutParameters = new FrameLayout.LayoutParams(
 				ViewGroup.LayoutParams.MatchParent,
-				GetStatusBarOverlayHeight(window) + 3)
+				GetStatusBarOverlayHeight(window) + statusBarHeightPadding)
 			{
 				Gravity = GravityFlags.Top
 			},
