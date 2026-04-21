@@ -155,7 +155,10 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 
 		StatusBar.SetBarSize(Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetUseSafeArea(View));
 #elif ANDROID
-		StatusBar.UpdateBarSize();
+		if (OperatingSystem.IsAndroidVersionAtLeast(35))
+		{
+			StatusBar.UpdateBarSize();
+		}
 #else
 		throw new NotSupportedException("StatusBarBehavior is not supported on the current platform.");
 #endif

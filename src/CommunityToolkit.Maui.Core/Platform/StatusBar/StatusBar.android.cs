@@ -213,7 +213,7 @@ static partial class StatusBar
 	{
 		if (!OperatingSystem.IsAndroidVersionAtLeast(35))
 		{
-			throw new NotSupportedException("StatusBar height is not supported on the current version of Android.");
+			throw new NotSupportedException("StatusBar overlay is not supported on the current version of Android.");
 		}
 
 		if (OperatingSystem.IsAndroidVersionAtLeast(36))
@@ -221,10 +221,12 @@ static partial class StatusBar
 			var insets = window.DecorView.RootWindowInsets;
 			return insets?.GetInsets(WindowInsets.Type.StatusBars()).Top ?? 0;
 		}
-
-		var resId = Activity.Resources?.GetIdentifier("status_bar_height", "dimen", "android") ?? 0;
-		return resId > 0
-			? Activity.Resources?.GetDimensionPixelSize(resId) ?? 0
-			: 0;
+		else
+		{
+			var resId = Activity.Resources?.GetIdentifier("status_bar_height", "dimen", "android") ?? 0;
+			return resId > 0
+				? Activity.Resources?.GetDimensionPixelSize(resId) ?? 0
+				: 0;
+		}
 	}
 }
