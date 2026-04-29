@@ -26,18 +26,24 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 		base.OnAppearing();
 
 		var cameraPermissionsRequest = await Permissions.RequestAsync<Permissions.Camera>();
-		var microphonePermissionsRequest = await Permissions.RequestAsync<Permissions.Microphone>();
-
 		if (cameraPermissionsRequest is not PermissionStatus.Granted)
 		{
 			await Shell.Current.CurrentPage.DisplayAlertAsync("Camera permission is not granted.", "Please grant the permission to use this feature.", "OK");
 			return;
 		}
 
-		if (microphonePermissionsRequest is not PermissionStatus.Granted)
+		try
 		{
-			await Shell.Current.CurrentPage.DisplayAlertAsync("Microphone permission is not granted.", "Please grant the permission to use this feature.", "OK");
-			return;
+			var microphonePermissionsRequest = await Permissions.RequestAsync<Permissions.Microphone>();
+			if (microphonePermissionsRequest is not PermissionStatus.Granted)
+			{
+				await Shell.Current.CurrentPage.DisplayAlertAsync("Microphone permission is not granted.", "Please grant the permission to use this feature.", "OK");
+				return;
+			}
+		}
+		catch (FileNotFoundException) when (OperatingSystem.IsWindows()) // Unpackaged Windows Apps do not generate the required file AppxManifest.xml 
+		{
+			await Shell.Current.CurrentPage.DisplayAlertAsync("Unable to access AppxManifest.xml", "Publish using a Packaged .NET MAUI app on Windows to enable Microphone.", "OK");
 		}
 	}
 
@@ -69,21 +75,32 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 
 	void OnMediaCaptured(object? sender, MediaCapturedEventArgs e)
 	{
-		using var localFileStream = File.Create(imagePath);
-
-		e.Media.CopyTo(localFileStream);
-
-		Dispatcher.Dispatch(() =>
+		try
 		{
-			// workaround for https://github.com/dotnet/maui/issues/13858
-#if ANDROID
-			image.Source = ImageSource.FromStream(() => File.OpenRead(imagePath));
-#else
-			image.Source = ImageSource.FromFile(imagePath);
-#endif
+			using var capturedImageStream = new MemoryStream();
+			e.Media.CopyTo(capturedImageStream);
 
-			debugText.Text = $"Image saved to {imagePath}";
-		});
+			var imageBytes = capturedImageStream.ToArray();
+
+			using (var localFileStream = new FileStream(imagePath, FileMode.Create, FileAccess.Write, FileShare.Read))
+			{
+				localFileStream.Write(imageBytes, 0, imageBytes.Length);
+				localFileStream.Flush(flushToDisk: true);
+			}
+
+			Dispatcher.Dispatch(() =>
+			{
+				image.Source = ImageSource.FromStream(() => new MemoryStream(imageBytes));
+				debugText.Text = $"Image saved to {imagePath}";
+			});
+		}
+		catch (Exception ex)
+		{
+			Dispatcher.Dispatch(() =>
+			{
+				debugText.Text = $"Failed to save image: {ex.Message}";
+			});
+		}
 	}
 
 	void ZoomIn(object? sender, EventArgs? e)

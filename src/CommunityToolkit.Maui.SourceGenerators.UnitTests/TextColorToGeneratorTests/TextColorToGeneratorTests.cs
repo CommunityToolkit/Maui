@@ -1,7 +1,7 @@
 using System.IO;
+using CommunityToolkit.Maui.SourceGenerators.Generators;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using CommunityToolkit.Maui.SourceGenerators.Generators;
 using Xunit;
 
 namespace CommunityToolkit.Maui.SourceGenerators.UnitTests;

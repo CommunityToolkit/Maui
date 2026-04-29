@@ -42,22 +42,22 @@ partial class CameraManager
 	TaskCompletionSource? videoRecordingFinalizeTcs;
 	Stream? videoRecordingStream;
 	int extensionMode = ExtensionMode.Auto;
+	CaptureSessionMode currentSessionMode = CaptureSessionMode.Photo;
+	bool IsCapturePhotoSession => currentSessionMode is CaptureSessionMode.Photo;
+
+	enum CaptureSessionMode { Photo, Video }
 
 	public async Task SetExtensionMode(int mode, CancellationToken token)
 	{
 		extensionMode = mode;
 		if (cameraView.SelectedCamera is null
 			|| processCameraProvider is null
-			|| cameraPreview is null
-			|| imageCapture is null
-			|| videoCapture is null)
+			|| cameraPreview is null)
 		{
 			return;
 		}
 
-		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, token, cameraPreview, imageCapture, videoCapture);
-
-		cameraControl = camera.CameraControl;
+		await RebindCurrentSessionAsync(token);
 	}
 
 	public void Dispose()
@@ -81,6 +81,9 @@ partial class CameraManager
 
 		videoCapture?.Dispose();
 		videoCapture = null;
+
+		videoRecorder?.Dispose();
+		videoRecorder = null;
 
 		imageCallback?.Dispose();
 		imageCallback = null;
@@ -117,7 +120,7 @@ partial class CameraManager
 		}
 
 		cameraExecutor = Executors.NewSingleThreadExecutor() ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
-		orientationListener = new OrientationListener(SetImageCaptureTargetRotation, context);
+		orientationListener = new OrientationListener(OnOrientationChanged, context);
 		orientationListener.Enable();
 
 		return previewView;
@@ -171,9 +174,11 @@ partial class CameraManager
 		// According to the Android docs, `ResolutionSelector.Builder.setResolutionFilter(ResolutionFilter)` returns a `NonNull` object
 		// `ResolutionSelector.Builder.SetResolutionFilter(ResolutionFilter)` returning a nullable object in .NET for Android is likely a C# Binding mistake
 
-		if (IsInitialized)
+		if (isInitialized && IsCapturePhotoSession)
 		{
-			await StartUseCase(token);
+			RebuildCameraPreview();
+			RebuildImageCapture();
+			await PlatformStartCameraPreview(token);
 		}
 	}
 
@@ -191,7 +196,8 @@ partial class CameraManager
 		{
 			processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new CameraException($"Unable to retrieve {nameof(ProcessCameraProvider)}"));
 
-			await StartUseCase(token);
+			InitializeUseCases();
+			await PlatformStartCameraPreview(token);
 
 			cameraProviderTCS.SetResult();
 		}), ContextCompat.GetMainExecutor(context));
@@ -199,71 +205,159 @@ partial class CameraManager
 		await cameraProviderTCS.Task.WaitAsync(token);
 	}
 
-	async Task StartUseCase(CancellationToken token)
+	void InitializeUseCases()
 	{
-		if (resolutionSelector is null || cameraExecutor is null)
+		RebuildCameraPreview();
+		RebuildImageCapture();
+		RebuildVideoCapture();
+	}
+
+	void RebuildCameraPreview()
+	{
+		ArgumentNullException.ThrowIfNull(cameraExecutor);
+		ArgumentNullException.ThrowIfNull(resolutionSelector);
+
+		if (cameraPreview is not null)
 		{
-			return;
+			processCameraProvider?.Unbind(cameraPreview);
+			cameraPreview.Dispose();
+		}
+		cameraPreview = new Preview.Builder().SetResolutionSelector(resolutionSelector).Build();
+		cameraPreview.SetSurfaceProvider(cameraExecutor, previewView?.SurfaceProvider);
+	}
+
+	void RebuildImageCapture()
+	{
+		ArgumentNullException.ThrowIfNull(resolutionSelector);
+
+		var imageCaptureMode = currentSessionMode switch
+		{
+			CaptureSessionMode.Video => ImageCapture.CaptureModeMinimizeLatency,
+			_ => ImageCapture.CaptureModeMaximizeQuality
+		};
+
+		if (imageCapture is not null)
+		{
+			processCameraProvider?.Unbind(imageCapture);
+			imageCapture.Dispose();
 		}
 
-		PlatformStopCameraPreview();
+		imageCapture = new ImageCapture.Builder()
+			.SetCaptureMode(imageCaptureMode)
+			.SetResolutionSelector(resolutionSelector)
+			.Build();
+	}
 
-		cameraPreview?.Dispose();
-		imageCapture?.Dispose();
+	void RebuildVideoCapture()
+	{
+		ArgumentNullException.ThrowIfNull(cameraExecutor);
 
-		videoCapture?.Dispose();
+		if (videoCapture is not null)
+		{
+			processCameraProvider?.Unbind(videoCapture);
+			videoCapture.Dispose();
+		}
 		videoRecorder?.Dispose();
 
-		cameraPreview = new Preview.Builder().SetResolutionSelector(resolutionSelector)?.Build();
-		cameraPreview?.SetSurfaceProvider(cameraExecutor, previewView?.SurfaceProvider);
-
-		imageCapture = new ImageCapture.Builder()
-			.SetCaptureMode(ImageCapture.CaptureModeMaximizeQuality)?
-			.SetResolutionSelector(resolutionSelector)
-			?.Build() ?? throw new InvalidOperationException("Unable to set resolution selector");
-
-		// `.SetResolutionFilter()` should never return null
-		// According to the Android docs, `ResolutionSelector.Builder.SetResolutionFilter(ResolutionFilter)` returns a `NonNull` object
-		// `ResolutionSelector.Builder.SetResolutionFilter(ResolutionFilter)` returning a nullable object in .NET for Android is likely a C# Binding mistake
-		// https://developer.android.com/reference/androidx/camera/core/resolutionselector/ResolutionSelector.Builder#setResolutionFilter(androidx.camera.core.resolutionselector.ResolutionFilter)
-
 		var videoRecorderBuilder = new Recorder.Builder()
-			.SetExecutor(cameraExecutor) ?? throw new InvalidOperationException("Unable to set video recorder executor");
-
-		// `.SetExecutor()` should never return null
-		// According to the Android docs, `ResolutionSelector.Builder.setExecutor(ResolutionFilter)` returns a `NonNull` object
-		// `ResolutionSelector.Builder.SetExecutor(ResolutionFilter)` returning a nullable object in .NET for Android is likely a C# Binding mistake
-		// https://developer.android.com/reference/androidx/camera/video/Recorder.Builder#setExecutor(java.util.concurrent.Executor)
+			.SetExecutor(cameraExecutor);
 
 		if (Quality.Highest is not null)
 		{
 			videoRecorderBuilder = videoRecorderBuilder.SetQualitySelector(QualitySelector.From(Quality.Highest));
 		}
-
 		videoRecorder = videoRecorderBuilder.Build();
 		videoCapture = VideoCapture.WithOutput(videoRecorder);
+	}
 
-		await StartCameraPreview(token);
+	async Task BindPhotoSessionAsync(CancellationToken token)
+	{
+		if (processCameraProvider is null
+			|| cameraView.SelectedCamera is null
+			|| cameraPreview is null
+			|| imageCapture is null)
+		{
+			return;
+		}
+		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, token, cameraPreview, imageCapture);
+		cameraControl = camera.CameraControl;
+	}
+
+	async Task BindVideoSessionAsync(CancellationToken token)
+	{
+		if (processCameraProvider is null
+			|| cameraView.SelectedCamera is null
+			|| cameraPreview is null
+			|| imageCapture is null
+			|| videoCapture is null)
+		{
+			return;
+		}
+		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, token, cameraPreview, imageCapture, videoCapture);
+		cameraControl = camera.CameraControl;
+	}
+
+	Task RebindCurrentSessionAsync(CancellationToken token)
+	{
+		return currentSessionMode switch
+		{
+			CaptureSessionMode.Video => BindVideoSessionAsync(token),
+			_ => BindPhotoSessionAsync(token)
+		};
+	}
+
+	bool IsPhotoSessionBound()
+	{
+		return IsSessionBound(CaptureSessionMode.Photo);
+	}
+
+	bool IsVideoSessionBound()
+	{
+		return IsSessionBound(CaptureSessionMode.Video);
+	}
+
+	bool IsSessionBound(CaptureSessionMode mode)
+	{
+		if (processCameraProvider is null || cameraPreview is null)
+		{
+			return false;
+		}
+
+		UseCase? useCase = mode switch
+		{
+			CaptureSessionMode.Video => videoCapture,
+			_ => imageCapture
+		};
+
+		if (useCase is null)
+		{
+			return false;
+		}
+
+		return processCameraProvider.IsBound(cameraPreview)
+			&& processCameraProvider.IsBound(useCase);
 	}
 
 	private async partial Task PlatformStartCameraPreview(CancellationToken token)
 	{
-		if (previewView is null || processCameraProvider is null || cameraPreview is null || imageCapture is null || videoCapture is null)
+		if (previewView is null || processCameraProvider is null || cameraPreview is null || imageCapture is null)
 		{
 			return;
 		}
 
 		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
-		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, token, cameraPreview, imageCapture, videoCapture);
-		cameraControl = camera.CameraControl;
+		if (camera is null || !IsPhotoSessionBound())
+		{
+			await BindPhotoSessionAsync(token);
+		}
 
 		var point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
 		var action = new FocusMeteringAction.Builder(point).Build();
-		camera.CameraControl?.StartFocusAndMetering(action);
+		camera?.CameraControl?.StartFocusAndMetering(action);
 
-		IsInitialized = true;
-		OnLoaded.Invoke();
+		isInitialized = true;
+		onLoaded.Invoke();
 	}
 
 	private partial void PlatformStopCameraPreview()
@@ -274,7 +368,7 @@ partial class CameraManager
 		}
 
 		processCameraProvider.UnbindAll();
-		IsInitialized = false;
+		isInitialized = false;
 	}
 
 	private partial void PlatformDisconnect()
@@ -295,7 +389,6 @@ partial class CameraManager
 		if (previewView is null
 			|| processCameraProvider is null
 			|| cameraPreview is null
-			|| imageCapture is null
 			|| videoCapture is null
 			|| videoRecorder is null
 			|| videoRecordingFile is not null)
@@ -307,10 +400,14 @@ partial class CameraManager
 
 		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
-		if (camera is null || !IsVideoCaptureAlreadyBound())
+		// Rebuild the ImageCapture use case with the CaptureModeMinimizeLatency capture mode
+		// to optimize for latency during video recording sessions
+		currentSessionMode = CaptureSessionMode.Video;
+		RebuildImageCapture();
+
+		if (camera is null || !IsVideoSessionBound())
 		{
-			camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, token, cameraPreview, imageCapture, videoCapture);
-			cameraControl = camera.CameraControl;
+			await BindVideoSessionAsync(token);
 		}
 
 		videoRecordingFile = new Java.IO.File(context.CacheDir, $"{DateTime.UtcNow.Ticks}.mp4");
@@ -351,14 +448,18 @@ partial class CameraManager
 		await videoRecordingStream.FlushAsync(token);
 		CleanupVideoRecordingResources();
 
-		return videoRecordingStream;
-	}
+		// Rebuild the ImageCapture use case with the CaptureModeMaximizeQuality capture mode
+		// to optimize for quality during photo capture sessions
+		currentSessionMode = CaptureSessionMode.Photo;
+		RebuildImageCapture();
+		await BindPhotoSessionAsync(token);
 
-	bool IsVideoCaptureAlreadyBound()
-	{
-		return processCameraProvider is not null
-			   && videoCapture is not null
-			   && processCameraProvider.IsBound(videoCapture);
+		if (videoRecordingStream.CanSeek)
+		{
+			videoRecordingStream.Position = 0;
+		}
+
+		return videoRecordingStream;
 	}
 
 	void CleanupVideoRecordingResources()
@@ -377,12 +478,6 @@ partial class CameraManager
 			videoRecordingFile = null;
 		}
 
-		videoRecorder?.Dispose();
-		videoRecorder = null;
-
-		videoCapture?.Dispose();
-		videoCapture = null;
-
 		videoRecordingFinalizeTcs = null;
 	}
 
@@ -400,7 +495,7 @@ partial class CameraManager
 			}
 
 			var extensionsManagerFuture = ExtensionsManager.GetInstanceAsync(context, cameraProviderInstance)
-										  ?? throw new InvalidOperationException("Unable to get listenable future for camera provider"); ;
+									  ?? throw new InvalidOperationException("Unable to get listenable future for camera provider");
 
 			extensionsManagerFuture.AddListener(new Runnable(() =>
 			{
@@ -425,19 +520,22 @@ partial class CameraManager
 		return provider.BindToLifecycle((ILifecycleOwner)context, cameraSelector, useCases);
 	}
 
-	void SetImageCaptureTargetRotation(int rotation)
+	void OnOrientationChanged(int orientationDegrees)
 	{
-		if (imageCapture is not null)
-		{
-			imageCapture.TargetRotation = rotation switch
-			{
-				>= 45 and < 135 => (int)SurfaceOrientation.Rotation270,
-				>= 135 and < 225 => (int)SurfaceOrientation.Rotation180,
-				>= 225 and < 315 => (int)SurfaceOrientation.Rotation90,
-				_ => (int)SurfaceOrientation.Rotation0
-			};
-		}
+		var targetRotation = GetSurfaceRotation(orientationDegrees);
+
+		imageCapture?.TargetRotation = targetRotation;
+		videoCapture?.TargetRotation = targetRotation;
+		cameraPreview?.TargetRotation = targetRotation;
 	}
+
+	static int GetSurfaceRotation(int orientationDegrees) => orientationDegrees switch
+	{
+		>= 45 and < 135 => (int)SurfaceOrientation.Rotation270,
+		>= 135 and < 225 => (int)SurfaceOrientation.Rotation180,
+		>= 225 and < 315 => (int)SurfaceOrientation.Rotation90,
+		_ => (int)SurfaceOrientation.Rotation0
+	};
 
 	sealed class ImageCallBack(ICameraView cameraView) : ImageCapture.OnImageCapturedCallback
 	{

@@ -18,9 +18,9 @@ sealed partial class CameraManager(
 	ICameraProvider cameraProvider,
 	Action onLoaded) : IDisposable
 {
-	internal Action OnLoaded { get; } = onLoaded;
+	readonly Action onLoaded = onLoaded;
 
-	internal bool IsInitialized { get; private set; }
+	bool isInitialized;
 
 	/// <summary>
 	/// Connects to the camera.
@@ -94,7 +94,7 @@ sealed partial class CameraManager(
 			return;
 		}
 
-		if (IsInitialized)
+		if (isInitialized)
 		{
 			PlatformStopCameraPreview();
 			await PlatformStartCameraPreview(token);

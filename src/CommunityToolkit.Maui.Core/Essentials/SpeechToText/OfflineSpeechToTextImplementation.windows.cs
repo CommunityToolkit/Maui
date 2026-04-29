@@ -37,8 +37,8 @@ public sealed partial class OfflineSpeechToTextImplementation
 
 		offlineSpeechRecognizer.AudioStateChanged += OfflineSpeechRecognizer_StateChanged;
 
-		offlineSpeechRecognizer.InitialSilenceTimeout = TimeSpan.MaxValue;
-		offlineSpeechRecognizer.BabbleTimeout = TimeSpan.MaxValue;
+		offlineSpeechRecognizer.InitialSilenceTimeout = options.AutoStopSilenceTimeout;
+		offlineSpeechRecognizer.BabbleTimeout = options.AutoStopSilenceTimeout;
 
 		offlineSpeechRecognizer.SetInputToDefaultAudioDevice();
 

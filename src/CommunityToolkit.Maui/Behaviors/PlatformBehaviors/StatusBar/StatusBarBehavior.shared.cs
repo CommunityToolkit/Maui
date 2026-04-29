@@ -48,7 +48,6 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 
 
 #if !(WINDOWS || MACCATALYST || TIZEN)
-
 	/// <inheritdoc /> 
 #if IOS
 	protected override void OnAttachedTo(Page page, UIKit.UIView platformView)
@@ -59,6 +58,8 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 #endif
 	{
 		base.OnAttachedTo(page, platformView);
+
+		DeviceDisplay.Current.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
 
 		if (ApplyOn is StatusBarApplyOn.OnBehaviorAttachedTo)
 		{
@@ -91,23 +92,7 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 		base.OnDetachedFrom(page, platformView);
 
 		page.NavigatedTo -= OnPageNavigatedTo;
-	}
-
-#if IOS
-	static void OnPageSizeChanged(object? sender, EventArgs e)
-	{
-		ArgumentNullException.ThrowIfNull(sender);
-		StatusBar.SetBarSize(Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetUseSafeArea((Page)sender));
-	}
-#endif
-
-	void OnPageNavigatedTo(object? sender, NavigatedToEventArgs e)
-	{
-		if (ApplyOn is StatusBarApplyOn.OnPageNavigatedTo)
-		{
-			StatusBar.SetColor(StatusBarColor);
-			StatusBar.SetStyle(StatusBarStyle);
-		}
+		DeviceDisplay.Current.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
 	}
 
 	/// <inheritdoc /> 
@@ -137,4 +122,40 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 		}
 	}
 #endif
+
+#if IOS
+	static void OnPageSizeChanged(object? sender, EventArgs e)
+	{
+		ArgumentNullException.ThrowIfNull(sender);
+		StatusBar.SetBarSize(Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetUseSafeArea((Page)sender));
+	}
+#endif
+
+	void OnPageNavigatedTo(object? sender, NavigatedToEventArgs e)
+	{
+		if (ApplyOn is StatusBarApplyOn.OnPageNavigatedTo)
+		{
+			StatusBar.SetColor(StatusBarColor);
+			StatusBar.SetStyle(StatusBarStyle);
+		}
+	}
+
+	void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
+	{
+#if IOS
+		if (View is null)
+		{
+			return;
+		}
+
+		StatusBar.SetBarSize(Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetUseSafeArea(View));
+#elif ANDROID
+		if (OperatingSystem.IsAndroidVersionAtLeast(35))
+		{
+			StatusBar.UpdateBarSize();
+		}
+#else
+		throw new NotSupportedException("StatusBarBehavior is not supported on the current platform.");
+#endif
+	}
 }
