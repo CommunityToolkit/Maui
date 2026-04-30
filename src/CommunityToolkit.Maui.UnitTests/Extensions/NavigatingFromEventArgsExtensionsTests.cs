@@ -36,11 +36,8 @@ public class NavigatingFromEventArgsExtensionsTests : BaseViewTest
 		{
 			ArgumentNullException.ThrowIfNull(sender);
 
-			if (sender is not ShellContentPage)
-			{
-				shellContentPage.NavigatingFromEventArgsReceived -= HandleNavigatingFromEventArgsReceived;
-				isDestinationPageACommunityToolkitPopupPageTCS.SetResult(e.IsDestinationPageACommunityToolkitPopupPage());
-			}
+			shellContentPage.NavigatingFromEventArgsReceived -= HandleNavigatingFromEventArgsReceived;
+			isDestinationPageACommunityToolkitPopupPageTCS.SetResult(e.IsDestinationPageACommunityToolkitPopupPage());
 		}
 	}
 
