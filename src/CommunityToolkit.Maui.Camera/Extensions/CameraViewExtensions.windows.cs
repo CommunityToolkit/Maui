@@ -39,15 +39,7 @@ static class CameraViewExtensions
 				settings.AudioProcessing = AudioProcessing.Default;
 			}
 
-			var cameraPermissionStatus = await Permissions.CheckStatusAsync<Permissions.Camera>();
-			if (cameraPermissionStatus == PermissionStatus.Granted)
-			{
-				await mediaCapture.InitializeAsync(settings).AsTask(token);
-			}
-			else
-			{
-				throw new CameraException("Camera permission is not granted.");
-			}
+			await mediaCapture.InitializeAsync(settings).AsTask(token);
 		}
 		catch (System.Runtime.InteropServices.COMException)
 		{
