@@ -191,7 +191,7 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 			currentStatus = ValidationFlags.ValidateOnAttaching;
 
 			OnValuePropertyNamePropertyChanged();
-			await UpdateStateAsync(View, Flags, false).ConfigureAwait(false);
+			await UpdateStateAsync(View, Flags, false);
 		}
 		finally
 		{
@@ -221,7 +221,7 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 				false => ValidationFlags.ValidateOnUnfocused
 			};
 
-			await UpdateStateAsync(View, Flags, false).ConfigureAwait(false);
+			await UpdateStateAsync(View, Flags, false);
 		}
 	}
 
@@ -238,9 +238,9 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 			var validationBehavior = (ValidationBehavior)bindable;
 			await validationBehavior.UpdateStateAsync(validationBehavior.View, validationBehavior.Flags, false);
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (Options.ShouldSuppressExceptionsInBehaviors)
 		{
-			System.Diagnostics.Trace.WriteLine(ex);
+			Trace.TraceInformation("{0}", ex);
 		}
 	}
 

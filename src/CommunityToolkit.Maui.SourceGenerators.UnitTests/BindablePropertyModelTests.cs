@@ -30,7 +30,8 @@ public class BindablePropertyModelTests : BaseTest
 			true, // IsReadOnlyBindableProperty
 			string.Empty, // SetterAccessibility
 			false,
-			"null"
+			"null",
+			null
 		);
 
 		// Act
@@ -74,7 +75,8 @@ public class BindablePropertyModelTests : BaseTest
 			true, // IsReadOnlyBindableProperty
 			string.Empty, // SetterAccessibility
 			hasInitializer,
-			propertyAccessibility
+			propertyAccessibility,
+			null
 		);
 
 		// Assert
@@ -135,7 +137,8 @@ public class BindablePropertyModelTests : BaseTest
 			true, // IsReadOnlyBindableProperty
 			string.Empty, // SetterAccessibilityText
 			false,
-			"public"
+			"public",
+			null
 		);
 
 		var bindableProperties = new[] { bindableProperty }.ToImmutableArray();
@@ -194,7 +197,8 @@ public class BindablePropertyModelTests : BaseTest
 			true,
 			string.Empty,
 			hasInitializer,
-			"public"
+			"public",
+			null
 		);
 
 		// Act
@@ -234,7 +238,8 @@ public class BindablePropertyModelTests : BaseTest
 			true,
 			string.Empty,
 			hasInitializer,
-			"public"
+			"public",
+			null
 		);
 
 		// Act

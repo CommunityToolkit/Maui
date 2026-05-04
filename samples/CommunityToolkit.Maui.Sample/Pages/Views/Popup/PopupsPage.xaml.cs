@@ -34,6 +34,15 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		base.OnNavigatedFrom(args);
 		if (args.IsDestinationPageACommunityToolkitPopupPage())
 		{
+			await Toast.Make("Popup Opened").Show();
+		}
+	}
+	
+	protected override async void OnNavigatingFrom(NavigatingFromEventArgs args)
+	{
+		base.OnNavigatingFrom(args);
+		if (args.IsDestinationPageACommunityToolkitPopupPage())
+		{
 			await Toast.Make("Opening Popup").Show();
 		}
 	}
