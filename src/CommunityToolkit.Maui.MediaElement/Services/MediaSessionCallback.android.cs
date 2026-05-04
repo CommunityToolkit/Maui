@@ -27,23 +27,40 @@ sealed partial class MediaSessionCallback(MediaControlsService mediaControlsServ
 
 	public global::Google.Common.Util.Concurrent.IListenableFuture? OnCustomCommand(MediaSession? session, MediaSession.ControllerInfo? controller, SessionCommand? customCommand, Bundle? args)
 	{
-		var future = ResolvableFuture.Create() ?? throw new InvalidOperationException("Failed to create ResolvableFuture.");
+        return CallbackToFutureAdapter.GetFuture(new FutureResolver(mediaControlsService, controller, customCommand, args));
+	}
 
-		try
+	sealed class FutureResolver(
+		MediaControlsService mediaControlsService,
+		MediaSession.ControllerInfo? controller,
+		SessionCommand? customCommand,
+		Bundle? args) : Java.Lang.Object, CallbackToFutureAdapter.IResolver
+	{
+		readonly Bundle? args = args;
+		readonly SessionCommand? customCommand = customCommand;
+		readonly MediaSession.ControllerInfo? controller = controller;
+		readonly MediaControlsService mediaControlsService = mediaControlsService;
+
+		public Java.Lang.Object? AttachCompleter(CallbackToFutureAdapter.Completer? completer)
 		{
-			if (customCommand?.CustomAction?.Equals(ReleasePlayer, StringComparison.Ordinal) == true)
+			ArgumentNullException.ThrowIfNull(completer);
+
+			try
 			{
-				var playerId = args?.GetString(PlayerIdKey) ?? controller?.ConnectionHints?.GetString(PlayerIdKey);
-				mediaControlsService.ReleasePlayer(playerId);
+				if (customCommand?.CustomAction?.Equals(ReleasePlayer, StringComparison.Ordinal) == true)
+				{
+					var playerId = args?.GetString(PlayerIdKey) ?? controller?.ConnectionHints?.GetString(PlayerIdKey);
+					mediaControlsService.ReleasePlayer(playerId);
+				}
+
+				completer.Set(new SessionResult(SessionResult.ResultSuccess));
+			}
+			catch (InvalidOperationException exception)
+			{
+				completer.SetException(new Java.Lang.RuntimeException(exception.Message));
 			}
 
-			future.Set(new SessionResult(SessionResult.ResultSuccess));
+			return customCommand?.CustomAction ?? ReleasePlayer;
 		}
-		catch (InvalidOperationException exception)
-		{
-			future.SetException(new Java.Lang.RuntimeException(exception.Message));
-		}
-
-		return future;
 	}
 }
