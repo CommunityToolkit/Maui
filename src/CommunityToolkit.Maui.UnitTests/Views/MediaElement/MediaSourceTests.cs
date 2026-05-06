@@ -42,7 +42,7 @@ public class MediaSourceTests : BaseTest
 	[Fact]
 	public void MediaSourceFromStreamShouldBeStreamMediaSource()
 	{
-		var stream = new System.IO.MemoryStream();
+		using var stream = new System.IO.MemoryStream();
 		var mediaSource = MediaSource.FromStream(stream);
 
 		mediaSource.Should().BeAssignableTo<StreamMediaSource>();
