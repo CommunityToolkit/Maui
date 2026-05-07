@@ -58,7 +58,8 @@ partial class CameraManager
 
 	public partial void UpdateIsTorchOn(bool isTorchOn)
 	{
-		if (mediaCapture is null ||
+		if (!isInitialized ||
+			mediaCapture is null ||
 			!(mediaCapture.VideoDeviceController?.TorchControl?.Supported ?? false))
 		{
 			return;
