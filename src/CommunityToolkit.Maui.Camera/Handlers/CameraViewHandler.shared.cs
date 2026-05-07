@@ -76,6 +76,7 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		void Init(ICameraView view)
 		{
 			MapCameraFlashMode(this, view);
+			MapIsTorchOn(this, view);
 			view.ZoomFactor = 1.0f;
 		}
 	}
