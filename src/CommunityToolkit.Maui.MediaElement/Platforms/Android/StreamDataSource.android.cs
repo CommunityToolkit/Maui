@@ -13,8 +13,6 @@ sealed class StreamDataSource : Java.Lang.Object, IDataSource
 	Android.Net.Uri? uri;
 	long bytesRemaining;
 	
-	static readonly IDictionary<string, IList<string>> emptyHeaders = new Dictionary<string, IList<string>>();
-
 	public StreamDataSource(Stream stream)
 	{
 		ArgumentNullException.ThrowIfNull(stream);
@@ -107,7 +105,7 @@ sealed class StreamDataSource : Java.Lang.Object, IDataSource
 		base.Dispose(disposing);
 	}
 
-	public IDictionary<string, IList<string>>? ResponseHeaders => emptyHeaders;
+	public IDictionary<string, IList<string>>? ResponseHeaders { get; } = new Dictionary<string, IList<string>>();
 }
 
 /// <summary>
