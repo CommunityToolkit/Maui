@@ -51,6 +51,12 @@ sealed class StreamDataSource : Java.Lang.Object, IDataSource
 			? dataSpec.Length
 			: (length != C.LengthUnset ? length - dataSpec.Position : C.LengthUnset);
 
+		if (bytesRemaining < 0)
+		{
+			throw new ArgumentOutOfRangeException(nameof(dataSpec), 
+				$"Position {dataSpec.Position} exceeds stream length {length}.");
+		}
+
 		return bytesRemaining;
 	}
 
