@@ -613,7 +613,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			{
 				var normalizedFilePath = NormalizeFilePath(url);
 
-				stream = File.Open(normalizedFilePath, FileMode.Open);
+				stream = File.OpenRead(normalizedFilePath);
 				contentLength = await GetByteCountFromStream(stream, cancellationToken);
 			}
 			// Relative File Path
