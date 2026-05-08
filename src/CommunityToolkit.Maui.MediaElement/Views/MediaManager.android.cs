@@ -798,6 +798,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		mediaItem.SetUri("stream://media");
 		mediaItem.SetMediaId("stream://media");
 		mediaItem.SetMediaMetadata(mediaMetaData.Build());
+		currentStreamDataSourceFactory?.Dispose();
+		currentStreamDataSourceFactory = null;
 
 		// Store the stream for later use with custom MediaSource
 		currentStreamDataSourceFactory = new StreamDataSourceFactory(stream);
