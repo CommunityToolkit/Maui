@@ -97,6 +97,31 @@ partial class CameraManager
 		this.flashMode = flashMode.ToPlatform();
 	}
 
+	public partial void UpdateIsTorchOn(bool isTorchOn)
+	{
+		if (!isInitialized ||
+			captureDevice is null ||
+			!captureDevice.TorchAvailable)
+		{
+			return;
+		}
+
+		bool isCurrentlyOn = captureDevice.TorchActive;
+
+		if (isCurrentlyOn != isTorchOn)
+		{
+			captureDevice.LockForConfiguration(out NSError? error);
+			if (error is not null)
+			{
+				Trace.WriteLine(error);
+				return;
+			}
+
+			captureDevice.TorchMode = isTorchOn ? AVCaptureTorchMode.On : AVCaptureTorchMode.Off;
+			captureDevice.UnlockForConfiguration();
+		}
+	}
+
 	public partial void UpdateZoom(float zoomLevel)
 	{
 		if (!isInitialized || captureDevice is null)
