@@ -136,6 +136,16 @@ partial class CameraManager
 		imageCapture.FlashMode = flashMode.ToPlatform();
 	}
 
+	public partial void UpdateIsTorchOn(bool isTorchOn)
+	{
+		if (cameraControl is null)
+		{
+			return;
+		}
+
+		cameraControl.EnableTorch(isTorchOn);
+	}
+
 	public partial void UpdateZoom(float zoomLevel)
 	{
 		cameraControl?.SetZoomRatio(zoomLevel);
