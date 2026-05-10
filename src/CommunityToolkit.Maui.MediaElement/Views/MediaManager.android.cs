@@ -68,53 +68,15 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaElement.Speed = playbackParameters.Speed;
 	}
 
-	/// <summary>
-	/// Occurs when ExoPlayer changes the player state.
-	/// </summary>
-	/// <paramref name="playWhenReady">Indicates whether the player should start playing the media whenever the media is ready.</paramref>
-	/// <paramref name="playbackState">The state that the player has transitioned to.</paramref>
-	/// <remarks>
-	/// This is part of the <see cref="IPlayerListener"/> implementation.
-	/// While this method does not seem to have any references, it's invoked at runtime.
-	/// </remarks>
-	public void OnPlayerStateChanged(bool playWhenReady, int playbackState)
+
+	public void OnIsPlayingChanged(bool isPlaying)
 	{
 		if (Player is null || MediaElement.Source is null)
 		{
 			return;
 		}
 
-		var newState = playbackState switch
-		{
-			stateBuffering => MediaElementState.Buffering,
-			stateEnded => MediaElementState.Stopped,
-			stateReady => playWhenReady
-				? MediaElementState.Playing
-				: MediaElementState.Paused,
-			stateIdle => MediaElementState.None,
-			_ => MediaElementState.None,
-		};
-
-		MediaElement.CurrentStateChanged(newState);
-
-		if (playbackState is stateReady)
-		{
-			MediaElement.Duration = TimeSpan.FromMilliseconds(
-				Player.Duration < 0 ? 0 : Player.Duration
-			);
-			MediaElement.Position = TimeSpan.FromMilliseconds(
-				Player.CurrentPosition < 0 ? 0 : Player.CurrentPosition
-			);
-		}
-		else if (playbackState is stateEnded)
-		{
-			MediaElement.MediaEnded();
-		}
-	}
-
-	public void OnIsPlayingChanged(bool isPlaying)
-	{
-		if (Player is null || MediaElement.Source is null)
+		if (Player.PlaybackState is not stateReady)
 		{
 			return;
 		}
@@ -333,8 +295,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				break;
 			case stateEnded:
 				newState = MediaElementState.Stopped;
+				MediaElement.CurrentStateChanged(newState);
 				MediaElement.MediaEnded();
-				break;
+				return;
 			case stateReady:
 				seekToTaskCompletionSource?.TrySetResult();
 				// Update duration and position when ready
@@ -346,6 +309,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 					MediaElement.Position = TimeSpan.FromMilliseconds(
 						Player.CurrentPosition < 0 ? 0 : Player.CurrentPosition
 					);
+					newState = Player.IsPlaying
+						? MediaElementState.Playing
+						: MediaElementState.Paused;
 				}
 				break;
 			case stateIdle:
@@ -434,7 +400,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			return;
 		}
 
-		Player.Prepare();
+		if (Player.PlaybackState is stateIdle)
+		{
+			Player.Prepare();
+		}
+
 		Player.Play();
 	}
 
@@ -482,8 +452,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			return;
 		}
 
-		Player.SeekTo(0);
 		Player.Stop();
+		Player.SeekTo(0);
 		MediaElement.Position = TimeSpan.Zero;
 	}
 
@@ -494,7 +464,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		if (Player is null)
 		{
 			hasPendingSourceUpdate = true;
-			System.Diagnostics.Trace.WriteLine("IExoPlayer is null, cannot update source");
 			return;
 		}
 
@@ -666,13 +635,14 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	protected override void Dispose(bool disposing)
 	{
-		base.Dispose(disposing);
-
 		if (disposing)
 		{
 			seekToSemaphoreSlim?.Dispose();
-			ReleasePlayerRegistration();
+			
 			Player?.RemoveListener(this);
+			PlayerView?.Player = null;
+
+			ReleasePlayerRegistration();
 
 			if (Player is IExoPlayer exoPlayer)
 			{
@@ -686,12 +656,13 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			}
 
 			Player = null;
-			PlayerView?.Player = null;
 			PlayerView?.Dispose();
 			PlayerView = null;
 			localTrackSelector?.Dispose();
 			localTrackSelector = null;
 		}
+
+		base.Dispose(disposing);
 	}
 
 	void ReleasePlayerRegistration()
@@ -900,6 +871,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnPositionDiscontinuity(PlayerPositionInfo? oldPosition, PlayerPositionInfo? newPosition, int reason) { }
 	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
 	public void OnPlayerErrorChanged(PlaybackException? error) { }
+	public void OnPlayerStateChanged(bool playWhenReady, int playbackState) { }
 	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }
 	public void OnRenderedFirstFrame() { }
 	public void OnRepeatModeChanged(int repeatMode) { }

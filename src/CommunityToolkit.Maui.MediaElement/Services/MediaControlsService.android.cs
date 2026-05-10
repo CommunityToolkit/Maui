@@ -21,8 +21,8 @@ sealed partial class MediaControlsService : MediaSessionService
 
 	public override void OnTaskRemoved(Intent? rootIntent)
 	{
-		base.OnTaskRemoved(rootIntent);
 		PauseAllPlayersAndStopSelf();
+		base.OnTaskRemoved(rootIntent);
 	}
 
 	public override void OnCreate()
@@ -34,7 +34,6 @@ sealed partial class MediaControlsService : MediaSessionService
 	{
 		if (disposing)
 		{
-			PauseAllPlayersAndStopSelf();
 			ReleaseAllPlayers();
 		}
 		base.Dispose(disposing);
@@ -44,7 +43,6 @@ sealed partial class MediaControlsService : MediaSessionService
 	{
 		ReleaseAllPlayers();
 		base.OnDestroy();
-		PauseAllPlayersAndStopSelf();
 	}
 
 	public override MediaSession? OnGetSession(MediaSession.ControllerInfo? p0)
