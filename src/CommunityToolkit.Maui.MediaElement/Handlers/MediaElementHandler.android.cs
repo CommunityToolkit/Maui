@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Views;
+﻿using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Handlers;
 
@@ -53,8 +52,8 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	}
 	protected override void DisconnectHandler(MauiMediaElement platformView)
 	{
-		platformView.Dispose();
 		Dispose();
+		platformView.Dispose();
 		base.DisconnectHandler(platformView);
 	}
 }

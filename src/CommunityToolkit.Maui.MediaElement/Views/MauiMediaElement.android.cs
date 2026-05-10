@@ -84,8 +84,23 @@ public class MauiMediaElement : CoordinatorLayout
 	public void SetView(AndroidX.Media3.Common.IPlayer player)
 	{
 		playerView.Player = player;
-		relativeLayout.AddView(playerView);
-		AddView(relativeLayout);
+
+		if (playerView.Parent is ViewGroup playerViewParent && playerViewParent != relativeLayout)
+		{
+			playerViewParent.RemoveView(playerView);
+		}
+		if (playerView.Parent is null)
+		{
+			relativeLayout.AddView(playerView);
+		}
+		if (relativeLayout.Parent is ViewGroup relativeLayoutParent && relativeLayoutParent != this)
+		{
+			relativeLayoutParent.RemoveView(relativeLayout);
+		}
+		if (relativeLayout.Parent is null)
+		{
+			AddView(relativeLayout);
+		}
 	}
 
 	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
@@ -96,6 +111,29 @@ public class MauiMediaElement : CoordinatorLayout
 			OnFullscreenButtonClick(this, new PlayerView.FullscreenButtonClickEventArgs(!isFullScreen));
 		}
 		base.OnDetachedFromWindow();
+	}
+
+	/// <inheritdoc/>
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			playerView.FullscreenButtonClick -= OnFullscreenButtonClick;
+
+			if (playerView.Parent is ViewGroup playerParent)
+			{
+				playerParent.RemoveView(playerView);
+			}
+
+			if (relativeLayout.Parent is ViewGroup relativeParent)
+			{
+				relativeParent.RemoveView(relativeLayout);
+			}
+
+			relativeLayout.Dispose();
+		}
+
+		base.Dispose(disposing);
 	}
 
 	/// <summary>

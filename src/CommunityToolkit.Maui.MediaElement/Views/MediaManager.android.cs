@@ -34,6 +34,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	const int stateReady = 3;
 	const int stateEnded = 4;
 
+	CancellationTokenSource? sourceCancellationToken;
 	static readonly HttpClient client = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 	bool isAndroidForegroundServiceEnabled = false;
@@ -460,7 +461,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	protected virtual async partial ValueTask PlatformUpdateSource()
 	{
 		var hasSetSource = false;
-
+		
 		if (Player is null)
 		{
 			hasPendingSourceUpdate = true;
@@ -480,7 +481,31 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 		Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
-		var result = await SetPlayerData().ConfigureAwait(true);
+		if (sourceCancellationToken is not null)
+		{
+			await sourceCancellationToken.CancelAsync();
+			sourceCancellationToken.Dispose();
+			sourceCancellationToken = null;
+		}
+		sourceCancellationToken = new();
+
+		MediaItem.Builder? result;
+		try
+		{
+			result = await SetPlayerData(sourceCancellationToken.Token).ConfigureAwait(true);
+		}
+		catch (OperationCanceledException)
+		{
+			// Source was updated again before this completed — return early
+			return;
+		}
+
+		// Guard against cancellation or disposal that occurred while awaiting
+		if (sourceCancellationToken?.IsCancellationRequested is true)
+		{
+			return;
+		}
+
 		var item = result?.Build();
 
 		if (item?.MediaMetadata is not null)
@@ -638,9 +663,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		if (disposing)
 		{
 			seekToSemaphoreSlim?.Dispose();
-			
+
+			Player?.Stop();
 			Player?.RemoveListener(this);
-			PlayerView?.Player = null;
 
 			ReleasePlayerRegistration();
 
@@ -655,11 +680,15 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				mediaController.Dispose();
 			}
 
+			PlayerView?.Player = null;
+
 			Player = null;
-			PlayerView?.Dispose();
 			PlayerView = null;
 			localTrackSelector?.Dispose();
 			localTrackSelector = null;
+			sourceCancellationToken?.Cancel();
+			sourceCancellationToken?.Dispose();
+			sourceCancellationToken = null;
 		}
 
 		base.Dispose(disposing);
@@ -692,7 +721,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}), ContextCompat.GetMainExecutor(Platform.AppContext));
 	}
 
-	async Task<MediaItem.Builder?> SetPlayerData()
+	async Task<MediaItem.Builder?> SetPlayerData(CancellationToken cancellationToken = default)
 	{
 		if (MediaElement.Source is null)
 		{
@@ -706,7 +735,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 					var uri = uriMediaSource.Uri;
 					if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
 					{
-						return await CreateMediaItem(uri.AbsoluteUri).ConfigureAwait(true);
+						return await CreateMediaItem(uri.AbsoluteUri, cancellationToken).ConfigureAwait(true);
 					}
 
 					break;
@@ -716,7 +745,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 					var filePath = fileMediaSource.Path;
 					if (!string.IsNullOrWhiteSpace(filePath))
 					{
-						return await CreateMediaItem(filePath).ConfigureAwait(true);
+						return await CreateMediaItem(filePath, cancellationToken).ConfigureAwait(true);
 					}
 
 					break;
@@ -728,7 +757,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 					if (!string.IsNullOrWhiteSpace(path))
 					{
 						var assetFilePath = $"asset://{package}{Path.PathSeparator}{path}";
-						return await CreateMediaItem(assetFilePath).ConfigureAwait(true);
+						return await CreateMediaItem(assetFilePath, cancellationToken).ConfigureAwait(true);
 					}
 
 					break;
