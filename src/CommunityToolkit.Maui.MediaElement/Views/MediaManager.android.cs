@@ -709,7 +709,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			try
 			{
-				_ = commandResult.Get() ?? throw new InvalidOperationException("MediaController.SendCustomCommand().Get() returned null");
+				if (commandResult.Get() is null)
+				{
+					throw new InvalidOperationException("MediaController.SendCustomCommand().Get() cannot be null");
+				}
 			}
 			catch (Exception ex)
 			{
