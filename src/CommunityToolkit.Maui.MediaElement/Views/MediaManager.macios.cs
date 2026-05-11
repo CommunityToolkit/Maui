@@ -507,7 +507,7 @@ public partial class MediaManager : IDisposable
 	static string GetStreamContentType(Stream stream)
 	{
 		const string defaultContentType = "public.mpeg-4";
-		
+
 		// Try to detect content type from magic bytes
 		if (stream is not { CanSeek: true, Length: > 12 })
 		{
@@ -531,8 +531,8 @@ public partial class MediaManager : IDisposable
 
 					// Most iOS videos will be either mp4, m4v, or qt (QuickTime)
 					// For AVFoundation, we should use UTI: "public.mpeg-4" or "com.apple.quicktime-movie"
-					return brand.StartsWith("qt", StringComparison.Ordinal) 
-						? "com.apple.quicktime-movie" 
+					return brand.StartsWith("qt", StringComparison.Ordinal)
+						? "com.apple.quicktime-movie"
 						: defaultContentType;
 				}
 			}

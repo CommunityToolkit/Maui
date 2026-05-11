@@ -600,7 +600,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 			// HTTP or HTTPS URL
 			if (uri is not null &&
-			    (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+				(uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
 			{
 				var request = new HttpRequestMessage(HttpMethod.Head, url);
 				var contentLengthResponse = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
@@ -718,46 +718,46 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		switch (MediaElement.Source)
 		{
 			case UriMediaSource uriMediaSource:
-			{
-				var uri = uriMediaSource.Uri;
-				if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
 				{
-					return await CreateMediaItem(uri.AbsoluteUri, cancellationToken).ConfigureAwait(false);
-				}
+					var uri = uriMediaSource.Uri;
+					if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
+					{
+						return await CreateMediaItem(uri.AbsoluteUri, cancellationToken).ConfigureAwait(false);
+					}
 
-				break;
-			}
+					break;
+				}
 			case FileMediaSource fileMediaSource:
-			{
-				var filePath = fileMediaSource.Path;
-				if (!string.IsNullOrWhiteSpace(filePath))
 				{
-					return await CreateMediaItem(filePath, cancellationToken).ConfigureAwait(false);
-				}
+					var filePath = fileMediaSource.Path;
+					if (!string.IsNullOrWhiteSpace(filePath))
+					{
+						return await CreateMediaItem(filePath, cancellationToken).ConfigureAwait(false);
+					}
 
-				break;
-			}
+					break;
+				}
 			case ResourceMediaSource resourceMediaSource:
-			{
-				var package = PlayerView?.Context?.PackageName ?? "";
-				var path = resourceMediaSource.Path;
-				if (!string.IsNullOrWhiteSpace(path))
 				{
-					var assetFilePath = $"asset://{package}{Path.PathSeparator}{path}";
-					return await CreateMediaItem(assetFilePath, cancellationToken).ConfigureAwait(false);
-				}
+					var package = PlayerView?.Context?.PackageName ?? "";
+					var path = resourceMediaSource.Path;
+					if (!string.IsNullOrWhiteSpace(path))
+					{
+						var assetFilePath = $"asset://{package}{Path.PathSeparator}{path}";
+						return await CreateMediaItem(assetFilePath, cancellationToken).ConfigureAwait(false);
+					}
 
-				break;
-			}
+					break;
+				}
 			case StreamMediaSource streamMediaSource:
-			{
-				if (streamMediaSource.Stream is not null)
 				{
-					return await CreateMediaItemFromStream(streamMediaSource.Stream, cancellationToken).ConfigureAwait(false);
-				}
+					if (streamMediaSource.Stream is not null)
+					{
+						return await CreateMediaItemFromStream(streamMediaSource.Stream, cancellationToken).ConfigureAwait(false);
+					}
 
-				break;
-			}
+					break;
+				}
 			default:
 				throw new NotSupportedException($"{MediaElement.Source.GetType().FullName} is not yet supported for {nameof(MediaElement.Source)}");
 		}

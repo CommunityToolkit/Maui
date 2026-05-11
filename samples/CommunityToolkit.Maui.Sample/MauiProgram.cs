@@ -122,7 +122,7 @@ public static class MauiProgram
 
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>()
 						.AddStandardResilienceHandler(static options => options.Retry = new MobileHttpRetryStrategyOptions());
-		
+
 		builder.Services.AddHttpClient<MediaElementFromStreamPage>()
 			.AddStandardResilienceHandler(static options => options.Retry = new MobileHttpRetryStrategyOptions());
 

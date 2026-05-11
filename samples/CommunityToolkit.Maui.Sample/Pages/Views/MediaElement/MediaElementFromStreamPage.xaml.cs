@@ -256,7 +256,7 @@ public sealed partial class MediaElementFromStreamPage : BasePage<MediaElementFr
 		{
 			return;
 		}
-		
+
 		try
 		{
 			await sourceStreamSemaphore.WaitAsync();
