@@ -396,7 +396,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			{
 				var mediaSource = new AndroidX.Media3.ExoPlayer.Source.ProgressiveMediaSource.Factory(currentStreamDataSourceFactory)
 					.CreateMediaSource(item);
-				Player.SetMediaSource(mediaSource); 
+				Player.SetMediaSource(mediaSource);
 			}
 			else if (MediaElement.Source is UriMediaSource uriMediaSource && uriMediaSource.HttpHeaders.Count > 0)
 			{
@@ -423,6 +423,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			{
 				MediaElement.MediaOpened();
 			}
+
 			if (isAndroidForegroundServiceEnabled)
 			{
 				UpdateNotifications();
@@ -599,7 +600,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 			// HTTP or HTTPS URL
 			if (uri is not null &&
-				(uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+			    (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
 			{
 				var request = new HttpRequestMessage(HttpMethod.Head, url);
 				var contentLengthResponse = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
@@ -682,6 +683,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return;
 		}
+
 		var intent = new Intent(global::Android.App.Application.Context, typeof(MediaControlsService));
 		connection = new BoundServiceConnection(this);
 		connection.MediaControlsServiceTaskRemoved += HandleMediaControlsServiceTaskRemoved;
@@ -696,6 +698,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return;
 		}
+
 		boundServiceConnection.MediaControlsServiceTaskRemoved -= HandleMediaControlsServiceTaskRemoved;
 
 		var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
@@ -715,46 +718,46 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		switch (MediaElement.Source)
 		{
 			case UriMediaSource uriMediaSource:
+			{
+				var uri = uriMediaSource.Uri;
+				if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
 				{
-					var uri = uriMediaSource.Uri;
-					if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
-					{
-						return await CreateMediaItem(uri.AbsoluteUri, cancellationToken).ConfigureAwait(false);
-					}
-
-					break;
+					return await CreateMediaItem(uri.AbsoluteUri, cancellationToken).ConfigureAwait(false);
 				}
+
+				break;
+			}
 			case FileMediaSource fileMediaSource:
+			{
+				var filePath = fileMediaSource.Path;
+				if (!string.IsNullOrWhiteSpace(filePath))
 				{
-					var filePath = fileMediaSource.Path;
-					if (!string.IsNullOrWhiteSpace(filePath))
-					{
-						return await CreateMediaItem(filePath, cancellationToken).ConfigureAwait(false);
-					}
-
-					break;
+					return await CreateMediaItem(filePath, cancellationToken).ConfigureAwait(false);
 				}
-				case ResourceMediaSource resourceMediaSource:
+
+				break;
+			}
+			case ResourceMediaSource resourceMediaSource:
+			{
+				var package = PlayerView?.Context?.PackageName ?? "";
+				var path = resourceMediaSource.Path;
+				if (!string.IsNullOrWhiteSpace(path))
 				{
-					var package = PlayerView?.Context?.PackageName ?? "";
-					var path = resourceMediaSource.Path;
-					if (!string.IsNullOrWhiteSpace(path))
-					{
-						var assetFilePath = $"asset://{package}{Path.PathSeparator}{path}";
-						return await CreateMediaItem(assetFilePath, cancellationToken).ConfigureAwait(false);
-					}
-
-					break;
+					var assetFilePath = $"asset://{package}{Path.PathSeparator}{path}";
+					return await CreateMediaItem(assetFilePath, cancellationToken).ConfigureAwait(false);
 				}
+
+				break;
+			}
 			case StreamMediaSource streamMediaSource:
+			{
+				if (streamMediaSource.Stream is not null)
 				{
-					if (streamMediaSource.Stream is not null)
-					{
-						return await CreateMediaItemFromStream(streamMediaSource.Stream, cancellationToken).ConfigureAwait(false);
-					}
-
-					break;
+					return await CreateMediaItemFromStream(streamMediaSource.Stream, cancellationToken).ConfigureAwait(false);
 				}
+
+				break;
+			}
 			default:
 				throw new NotSupportedException($"{MediaElement.Source.GetType().FullName} is not yet supported for {nameof(MediaElement.Source)}");
 		}
@@ -808,35 +811,122 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	}
 
 	#region PlayerListener implementation method stubs
-	public void OnAudioAttributesChanged(AudioAttributes? audioAttributes) { }
-	public void OnAudioSessionIdChanged(int audioSessionId) { }
-	public void OnAvailableCommandsChanged(PlayerCommands? player) { }
-	public void OnCues(CueGroup? cues) { }
-	public void OnDeviceInfoChanged(DeviceInfo? deviceInfo) { }
-	public void OnDeviceVolumeChanged(int volume, bool muted) { }
-	public void OnEvents(IPlayer? player, PlayerEvents? playerEvents) { }
-	public void OnIsLoadingChanged(bool isLoading) { }
-	public void OnIsPlayingChanged(bool isPlaying) { }
-	public void OnLoadingChanged(bool isLoading) { }
-	public void OnMaxSeekToPreviousPositionChanged(long maxSeekToPreviousPositionMs) { }
-	public void OnMediaItemTransition(MediaItem? mediaItem, int reason) { }
-	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata) { }
-	public void OnMetadata(Metadata? metadata) { }
-	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason) { }
-	public void OnPositionDiscontinuity(PlayerPositionInfo? oldPosition, PlayerPositionInfo? newPosition, int reason) { }
-	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
-	public void OnPlayerErrorChanged(PlaybackException? error) { }
-	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }
-	public void OnRenderedFirstFrame() { }
-	public void OnRepeatModeChanged(int repeatMode) { }
-	public void OnSeekBackIncrementChanged(long seekBackIncrementMs) { }
-	public void OnSeekForwardIncrementChanged(long seekForwardIncrementMs) { }
-	public void OnShuffleModeEnabledChanged(bool shuffleModeEnabled) { }
-	public void OnSkipSilenceEnabledChanged(bool skipSilenceEnabled) { }
-	public void OnSurfaceSizeChanged(int width, int height) { }
-	public void OnTimelineChanged(Timeline? timeline, int reason) { }
-	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters) { }
-	public void OnTracksChanged(Tracks? tracks) { }
+
+	public void OnAudioAttributesChanged(AudioAttributes? audioAttributes)
+	{
+	}
+
+	public void OnAudioSessionIdChanged(int audioSessionId)
+	{
+	}
+
+	public void OnAvailableCommandsChanged(PlayerCommands? player)
+	{
+	}
+
+	public void OnCues(CueGroup? cues)
+	{
+	}
+
+	public void OnDeviceInfoChanged(DeviceInfo? deviceInfo)
+	{
+	}
+
+	public void OnDeviceVolumeChanged(int volume, bool muted)
+	{
+	}
+
+	public void OnEvents(IPlayer? player, PlayerEvents? playerEvents)
+	{
+	}
+
+	public void OnIsLoadingChanged(bool isLoading)
+	{
+	}
+
+	public void OnIsPlayingChanged(bool isPlaying)
+	{
+	}
+
+	public void OnLoadingChanged(bool isLoading)
+	{
+	}
+
+	public void OnMaxSeekToPreviousPositionChanged(long maxSeekToPreviousPositionMs)
+	{
+	}
+
+	public void OnMediaItemTransition(MediaItem? mediaItem, int reason)
+	{
+	}
+
+	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata)
+	{
+	}
+
+	public void OnMetadata(Metadata? metadata)
+	{
+	}
+
+	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason)
+	{
+	}
+
+	public void OnPositionDiscontinuity(PlayerPositionInfo? oldPosition, PlayerPositionInfo? newPosition, int reason)
+	{
+	}
+
+	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason)
+	{
+	}
+
+	public void OnPlayerErrorChanged(PlaybackException? error)
+	{
+	}
+
+	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata)
+	{
+	}
+
+	public void OnRenderedFirstFrame()
+	{
+	}
+
+	public void OnRepeatModeChanged(int repeatMode)
+	{
+	}
+
+	public void OnSeekBackIncrementChanged(long seekBackIncrementMs)
+	{
+	}
+
+	public void OnSeekForwardIncrementChanged(long seekForwardIncrementMs)
+	{
+	}
+
+	public void OnShuffleModeEnabledChanged(bool shuffleModeEnabled)
+	{
+	}
+
+	public void OnSkipSilenceEnabledChanged(bool skipSilenceEnabled)
+	{
+	}
+
+	public void OnSurfaceSizeChanged(int width, int height)
+	{
+	}
+	public void OnTimelineChanged(Timeline? timeline, int reason)
+	{
+	}
+
+	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters)
+	{
+	}
+
+	public void OnTracksChanged(Tracks? tracks)
+	{
+	}
+
 	#endregion
 
 	static class PlaybackState
@@ -855,6 +945,4 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		public const int StateStopped = 1;
 		public const int StateError = 7;
 	}
-
-
 }
