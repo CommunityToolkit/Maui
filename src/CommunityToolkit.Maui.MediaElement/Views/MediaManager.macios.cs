@@ -506,39 +506,40 @@ public partial class MediaManager : IDisposable
 
 	static string GetStreamContentType(Stream stream)
 	{
+		const string defaultContentType = "public.mpeg-4";
+		
 		// Try to detect content type from magic bytes
-		if (stream.CanSeek && stream.Length > 12)
+		if (stream is not { CanSeek: true, Length: > 12 })
 		{
-			var originalPosition = stream.Position;
-			try
+			return defaultContentType;
+		}
+
+		var originalPosition = stream.Position;
+		try
+		{
+			stream.Position = 0;
+			var buffer = new byte[12];
+			var bytesRead = stream.Read(buffer, 0, 12);
+
+			if (bytesRead >= 12)
 			{
-				stream.Position = 0;
-				var buffer = new byte[12];
-				var bytesRead = stream.Read(buffer, 0, 12);
-
-				if (bytesRead >= 12)
+				// Check for MP4/M4V/MOV signature (ftyp box at offset 4)
+				if (buffer[4] == 0x66 && buffer[5] == 0x74 && buffer[6] == 0x79 && buffer[7] == 0x70)
 				{
-					// Check for MP4/M4V/MOV signature (ftyp box at offset 4)
-					if (buffer[4] == 0x66 && buffer[5] == 0x74 && buffer[6] == 0x79 && buffer[7] == 0x70)
-					{
-						// Check specific brand
-						var brand = System.Text.Encoding.ASCII.GetString(buffer, 8, 4);
+					// Check specific brand
+					var brand = System.Text.Encoding.ASCII.GetString(buffer, 8, 4);
 
-						// Most iOS videos will be either mp4, m4v, or qt (QuickTime)
-						// For AVFoundation, we should use UTI: "public.mpeg-4" or "com.apple.quicktime-movie"
-						if (brand.StartsWith("qt", StringComparison.Ordinal))
-						{
-							return "com.apple.quicktime-movie";
-						}
-
-						return "public.mpeg-4";
-					}
+					// Most iOS videos will be either mp4, m4v, or qt (QuickTime)
+					// For AVFoundation, we should use UTI: "public.mpeg-4" or "com.apple.quicktime-movie"
+					return brand.StartsWith("qt", StringComparison.Ordinal) 
+						? "com.apple.quicktime-movie" 
+						: defaultContentType;
 				}
 			}
-			finally
-			{
-				stream.Position = originalPosition;
-			}
+		}
+		finally
+		{
+			stream.Position = originalPosition;
 		}
 
 		// Default to MPEG-4 (MP4) - covers most cases
