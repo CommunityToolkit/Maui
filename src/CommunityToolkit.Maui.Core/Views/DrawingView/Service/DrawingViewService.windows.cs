@@ -156,7 +156,7 @@ public static partial class DrawingViewService
 		return offscreen;
 	}
 
-	static readonly CanvasStrokeStyle defaultCanvasStrokeStyle = new()
+	static readonly CanvasStrokeStyle roundStartEndCapCanvasStrokeStyle = new()
 	{
 		StartCap = CanvasCapStyle.Round,
 		EndCap = CanvasCapStyle.Round,
@@ -175,7 +175,7 @@ public static partial class DrawingViewService
 					new Vector2((float)currentPoint.X, (float)currentPoint.Y),
 					new Vector2((float)nextPoint.X, (float)nextPoint.Y),
 					stroke.DrawingAttributes.Color, (float)stroke.DrawingAttributes.Size.Width,
-					defaultCanvasStrokeStyle);
+					roundStartEndCapCanvasStrokeStyle);
 			}
 		}
 	}
