@@ -506,12 +506,10 @@ public partial class MediaManager : IDisposable
 
 	static string GetStreamContentType(Stream stream)
 	{
-		const string defaultContentType = "public.mpeg-4";
-
 		// Try to detect content type from magic bytes
 		if (stream is not { CanSeek: true, Length: > 12 })
 		{
-			return defaultContentType;
+			return StreamAssetResourceLoader.DefaultContentType;
 		}
 
 		var originalPosition = stream.Position;
@@ -533,7 +531,7 @@ public partial class MediaManager : IDisposable
 					// For AVFoundation, we should use UTI: "public.mpeg-4" or "com.apple.quicktime-movie"
 					return brand.StartsWith("qt", StringComparison.Ordinal)
 						? "com.apple.quicktime-movie"
-						: defaultContentType;
+						: StreamAssetResourceLoader.DefaultContentType;
 				}
 			}
 		}

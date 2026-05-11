@@ -1,17 +1,19 @@
 using AVFoundation;
 using Foundation;
 
-namespace CommunityToolkit.Maui.Core.Views;
+namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
 /// Custom AVAssetResourceLoader that provides data from a .NET Stream.
 /// </summary>
 sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 {
+	public const string DefaultContentType = "public.mpeg-4";
+	
 	readonly Stream stream;
 	readonly string contentType;
 
-	public StreamAssetResourceLoader(Stream stream, string contentType = "public.mpeg-4")
+	public StreamAssetResourceLoader(Stream stream, string contentType = DefaultContentType)
 	{
 		ArgumentNullException.ThrowIfNull(stream);
 		this.stream = stream;
