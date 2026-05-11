@@ -235,6 +235,28 @@ This guide provides a set of best practices and coding standards for writing C# 
 	}
 	```
 
+## Argument Validation:
+
+- Prefer `ArgumentNullException.ThrowIfNull` over manual null checks:
+	```csharp
+	// Good: Concise null validation
+	public void Write(byte[] buffer)
+	{
+		ArgumentNullException.ThrowIfNull(buffer);
+		// Use buffer safely here
+	}
+
+	// Avoid: Verbose manual null check
+	public void Write(byte[] buffer)
+	{
+		if (buffer is null)
+		{
+			throw new ArgumentNullException(nameof(buffer));
+		}
+		// Use buffer safely here
+	}
+	```
+
 ## Safe Operations:
 
 - Use Try methods for safer operations:
@@ -578,4 +600,4 @@ Here Key Components of the Try Pattern:
 4. Null Analysis Attribute: [NotNullWhen(true)] (or [MaybeNullWhen(false)]) informs the compiler that if the method returns true, the out parameter is guaranteed to be non-null. 
 
 This pattern allows for high-performance retrieval or parsing without throwing exceptions for expected failures. It also allows cleaner call sites by eliminating the need for null-checking the output variable within the if block, as seen in Dictionary<TKey, TValue>.TryGetValue. 
-```
+

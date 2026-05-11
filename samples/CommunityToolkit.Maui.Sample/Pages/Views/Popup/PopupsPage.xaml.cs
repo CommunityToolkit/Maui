@@ -37,7 +37,7 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 			await Toast.Make("Popup Opened").Show();
 		}
 	}
-	
+
 	protected override async void OnNavigatingFrom(NavigatingFromEventArgs args)
 	{
 		base.OnNavigatingFrom(args);
