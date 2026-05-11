@@ -915,6 +915,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnSurfaceSizeChanged(int width, int height)
 	{
 	}
+
 	public void OnTimelineChanged(Timeline? timeline, int reason)
 	{
 	}
