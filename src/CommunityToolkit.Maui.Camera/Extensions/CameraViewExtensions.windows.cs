@@ -25,7 +25,11 @@ static class CameraViewExtensions
 			};
 
 			PermissionStatus microphonePermissionStatus = PermissionStatus.Unknown;
-			var isMicrophoneCapable = Permissions.IsCapabilityDeclared("microphone");
+			
+			// unpackaged apps always have the capability
+			var isMicrophoneCapable =
+				AppInfo.PackagingModel != AppPackagingModel.Packaged ||
+				Permissions.IsCapabilityDeclared("microphone");
 
 			if (isMicrophoneCapable)
 			{
