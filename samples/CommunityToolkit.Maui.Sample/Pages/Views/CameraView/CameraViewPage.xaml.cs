@@ -37,7 +37,7 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 			var microphonePermissionsRequest = await Permissions.RequestAsync<Permissions.Microphone>();
 			if (microphonePermissionsRequest is not PermissionStatus.Granted)
 			{
-				 await Shell.Current.CurrentPage.DisplayAlertAsync("Microphone permission is not granted.", "Video capturing will not be available without the Microphone permission.", "OK");				
+				await Shell.Current.CurrentPage.DisplayAlertAsync("Microphone permission is not granted.", "Video capturing will not be available without the Microphone permission.", "OK");
 			}
 		}
 		catch (FileNotFoundException) when (OperatingSystem.IsWindows()) // Unpackaged Windows Apps do not generate the required file AppxManifest.xml 
