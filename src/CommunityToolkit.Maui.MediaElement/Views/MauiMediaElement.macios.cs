@@ -40,6 +40,14 @@ public class MauiMediaElement : UIView
 	{
 		base.LayoutSubviews();
 		playerView.Frame = Bounds;
+		TryAttachToParentViewController();
+	}
+
+	/// <inheritdoc/>
+	public override void MovedToSuperview()
+	{
+		base.MovedToSuperview();
+		TryAttachToParentViewController();
 	}
 
 	/// <inheritdoc/>
@@ -81,13 +89,6 @@ public class MauiMediaElement : UIView
 	bool TryGetParentViewController([NotNullWhen(true)] out UIViewController? viewController)
 	{
 		viewController = GetViewControllerFromResponderChain();
-
-		if (viewController is not null)
-		{
-			return true;
-		}
-
-		viewController = Platform.GetCurrentUIViewController();
 		return viewController is not null;
 	}
 
