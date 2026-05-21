@@ -57,7 +57,36 @@ public class MauiMediaElement : UIView
 		TryAttachToParentViewController();
 	}
 
-	void TryAttachToParentViewController()
+	/// <summary>
+	/// Forces AVKit to rebuild the player view hierarchy after playback controls are enabled.
+	/// </summary>
+	/// <param name="shouldShowPlaybackControls"><see langword="true"/> when playback controls should be visible.</param>
+	public void RefreshPlaybackControlsVisibility(bool shouldShowPlaybackControls)
+	{
+		if (!shouldShowPlaybackControls)
+		{
+			return;
+		}
+
+		BeginInvokeOnMainThread(() =>
+		{
+			SetNeedsLayout();
+			LayoutIfNeeded();
+			playerView.SetNeedsLayout();
+			playerView.LayoutIfNeeded();
+			playerView.SetNeedsDisplay();
+
+			TryAttachToParentViewController(forceReattach: true);
+
+			SetNeedsLayout();
+			LayoutIfNeeded();
+			playerView.SetNeedsLayout();
+			playerView.LayoutIfNeeded();
+			playerView.SetNeedsDisplay();
+		});
+	}
+
+	void TryAttachToParentViewController(bool forceReattach = false)
 	{
 #if IOS16_0_OR_GREATER || MACCATALYST16_1_OR_GREATER
 		if (!TryGetParentViewController(out var viewController) || viewController.View is not UIView parentView)
@@ -65,13 +94,20 @@ public class MauiMediaElement : UIView
 			return;
 		}
 
-		if (ReferenceEquals(playerViewController.ParentViewController, viewController))
+		if (!forceReattach && ReferenceEquals(playerViewController.ParentViewController, viewController))
 		{
 			return;
 		}
 
 		if (playerViewController.ParentViewController is UIViewController previousParent)
 		{
+			if (playerViewController.View is UIView attachedView)
+			{
+				attachedView.RemoveFromSuperview();
+			}
+
+			AddSubview(playerView);
+			playerView.Frame = Bounds;
 			playerViewController.WillMoveToParentViewController(null);
 			playerViewController.RemoveFromParentViewController();
 		}
