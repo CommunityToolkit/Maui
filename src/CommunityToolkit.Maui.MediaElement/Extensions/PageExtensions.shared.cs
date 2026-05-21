@@ -43,7 +43,7 @@ static class PageExtensions
 
 		if (windows.Count is 0)
 		{
-			throw new InvalidOperationException("Unable to find active Window");
+			return false;
 		}
 
 		List<Page> pages = [];
