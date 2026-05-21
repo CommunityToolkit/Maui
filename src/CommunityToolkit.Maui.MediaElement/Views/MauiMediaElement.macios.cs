@@ -14,7 +14,7 @@ public class MauiMediaElement : UIView
 	readonly AVPlayerViewController playerViewController;
 	#endif
 	readonly UIView playerView;
-
+	
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
 	/// </summary>
@@ -68,22 +68,13 @@ public class MauiMediaElement : UIView
 			return;
 		}
 
-		BeginInvokeOnMainThread(() =>
-		{
-			SetNeedsLayout();
-			LayoutIfNeeded();
-			playerView.SetNeedsLayout();
-			playerView.LayoutIfNeeded();
-			playerView.SetNeedsDisplay();
+		TryAttachToParentViewController(forceReattach: true);
 
-			TryAttachToParentViewController(forceReattach: true);
-
-			SetNeedsLayout();
-			LayoutIfNeeded();
-			playerView.SetNeedsLayout();
-			playerView.LayoutIfNeeded();
-			playerView.SetNeedsDisplay();
-		});
+		SetNeedsLayout();
+		LayoutIfNeeded();
+		playerView.SetNeedsLayout();
+		playerView.LayoutIfNeeded();
+		playerView.SetNeedsDisplay();
 	}
 
 	void TryAttachToParentViewController(bool forceReattach = false)
