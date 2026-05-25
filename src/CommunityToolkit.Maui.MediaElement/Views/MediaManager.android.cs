@@ -35,7 +35,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	const int stateEnded = 4;
 
 	CancellationTokenSource? sourceCancellationToken;
-	static readonly HttpClient client = new();
+	readonly HttpClient client = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 	bool isAndroidForegroundServiceEnabled = false;
 	bool hasPendingSourceUpdate;
@@ -45,6 +45,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	float volumeBeforeMute = 1;
 	TaskCompletionSource? seekToTaskCompletionSource;
 	MediaItem.Builder? mediaItem;
+	StreamDataSourceFactory? currentStreamDataSourceFactory;
 
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
@@ -476,7 +477,17 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			MediaElement.Duration = TimeSpan.Zero;
 			MediaElement.CurrentStateChanged(MediaElementState.None);
 
+			currentStreamDataSourceFactory?.Dispose();
+			currentStreamDataSourceFactory = null;
+
 			return;
+		}
+
+		// Clear previous stream data source if switching sources
+		if (MediaElement.Source is not StreamMediaSource)
+		{
+			currentStreamDataSourceFactory?.Dispose();
+			currentStreamDataSourceFactory = null;
 		}
 
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
@@ -778,6 +789,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		if (data is not null && data.Length > 0)
 		{
 			mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);
+			currentStreamDataSourceFactory?.Dispose();
+			currentStreamDataSourceFactory = null;
+
+			client.Dispose();
 		}
 
 		mediaItem = new MediaItem.Builder();
@@ -788,7 +803,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		return mediaItem;
 	}
 
-	static async Task<byte[]> GetBytesFromMetadataArtworkUrl(string url, CancellationToken cancellationToken = default)
+	async Task<byte[]> GetBytesFromMetadataArtworkUrl(string url, CancellationToken cancellationToken = default)
 	{
 		if (string.IsNullOrWhiteSpace(url))
 		{
@@ -819,7 +834,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			{
 				var normalizedFilePath = NormalizeFilePath(url);
 
-				stream = File.Open(normalizedFilePath, FileMode.Create);
+				stream = File.OpenRead(normalizedFilePath);
 				contentLength = await GetByteCountFromStream(stream, cancellationToken);
 			}
 			// Relative File Path
@@ -880,6 +895,32 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 			return countedStreamBytes;
 		}
+	}
+
+	async Task<MediaItem.Builder> CreateMediaItemFromStream(Stream stream, CancellationToken cancellationToken)
+	{
+		MediaMetadata.Builder mediaMetaData = new();
+		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
+		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
+		var data = await GetBytesFromMetadataArtworkUrl(MediaElement.MetadataArtworkUrl, cancellationToken).ConfigureAwait(true);
+		if (data is not null && data.Length > 0)
+		{
+			mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);
+		}
+
+		// Create MediaItem with metadata
+		// The stream will be handled via custom data source factory when needed
+		mediaItem = new MediaItem.Builder();
+		mediaItem.SetUri("stream://media");
+		mediaItem.SetMediaId("stream://media");
+		mediaItem.SetMediaMetadata(mediaMetaData.Build());
+		currentStreamDataSourceFactory?.Dispose();
+		currentStreamDataSourceFactory = null;
+
+		// Store the stream for later use with custom MediaSource
+		currentStreamDataSourceFactory = new StreamDataSourceFactory(stream);
+
+		return mediaItem;
 	}
 
 	#region PlayerListener implementation method stubs
