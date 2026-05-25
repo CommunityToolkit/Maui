@@ -77,27 +77,37 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		token.ThrowIfCancellationRequested();
 
 		// Handle edge case where a Popup was pushed inside a custom IPageContainer (e.g. a NavigationPage) on the Modal Stack
-		var customPageContainer = Navigation.ModalStack.OfType<IPageContainer<Page>>().LastOrDefault();
-		if (customPageContainer is not null && customPageContainer.CurrentPage is not PopupPage)
+		var navigationPageOnModalStackContainingPopupPage = Navigation.ModalStack.OfType<IPageContainer<Page>>().LastOrDefault();
+		if (navigationPageOnModalStackContainingPopupPage is not null && navigationPageOnModalStackContainingPopupPage.CurrentPage is not PopupPage)
 		{
-			throw new PopupNotFoundException();
+			navigationPageOnModalStackContainingPopupPage = null;
 		}
 
-		var popupPageToClose = customPageContainer?.CurrentPage as PopupPage
+		var popupPageToClose = navigationPageOnModalStackContainingPopupPage?.CurrentPage as PopupPage
 							   ?? Navigation.ModalStack.OfType<PopupPage>().LastOrDefault()
 							   ?? throw new PopupNotFoundException();
 
 		// PopModalAsync will pop the last (top) page from the ModalStack
 		// Ensure that the PopupPage the user is attempting to close is the last (top) page on the Modal stack before calling Navigation.PopModalAsync
-		if (Navigation.ModalStack[^1] is IPageContainer<Page> { CurrentPage: PopupPage visiblePopupPageInCustomPageContainer }
-			 && visiblePopupPageInCustomPageContainer.Content != Content)
+		switch (Navigation.ModalStack[^1])
 		{
-			throw new PopupBlockedException(visiblePopupPageInCustomPageContainer);
+			// Handle the edge case where the visible modal page is a navigation page containing a Popup that is not the Popup to be closed 
+			case IPageContainer<Page> { CurrentPage: PopupPage visiblePopupPageInCustomPageContainer } when visiblePopupPageInCustomPageContainer.Content != Content:
+				throw new PopupBlockedException(visiblePopupPageInCustomPageContainer);
+
+			// Handle edge case where the top of the modal stack is an IPageContainer whose CurrentPage is NOT a PopupPage
+			// (e.g. a modal NavigationPage pushed after showing a popup).
+			case IPageContainer<Page> { CurrentPage: not PopupPage }:
+				throw new PopupBlockedException(Navigation.ModalStack[^1]);
+
+			// Handle edge case where the visible modal page is not the Popup to be closed 
+			case ContentPage currentVisibleModalPage when currentVisibleModalPage.Content != Content:
+				throw new PopupBlockedException(currentVisibleModalPage);
 		}
-		else if (Navigation.ModalStack[^1] is ContentPage currentVisibleModalPage
-				 && currentVisibleModalPage.Content != Content)
+
+		if (popupPageToClose.Content != Content)
 		{
-			throw new PopupBlockedException(currentVisibleModalPage);
+			throw new PopupBlockedException(popupPageToClose);
 		}
 
 		// We call `.ThrowIfCancellationRequested()` again to avoid a race condition where a developer cancels the CancellationToken after we check for an InvalidOperationException

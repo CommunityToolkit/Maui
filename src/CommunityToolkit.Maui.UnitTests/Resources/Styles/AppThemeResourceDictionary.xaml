@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:tk="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    x:Class="CommunityToolkit.Maui.UnitTests.Resources.Styles.AppThemeResourceDictionary">
+
+    <tk:AppThemeColor x:Key="TextColor" Light="Black"  Dark="White" />
+    <tk:AppThemeColor x:Key="TextBackgroundColor" Light="White"  Dark="Black" />
+
+    <Style TargetType="Entry">
+        <Setter Property="TextColor" Value="{tk:AppThemeResource TextColor}" />
+    </Style>
+
+</ResourceDictionary>

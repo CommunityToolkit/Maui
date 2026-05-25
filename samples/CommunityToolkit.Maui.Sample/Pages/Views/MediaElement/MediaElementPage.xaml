@@ -30,7 +30,7 @@
             <toolkit:MediaElement
                 x:Name="MediaElement"
                 ShouldAutoPlay="True"
-                Source="{x:Static constants:StreamingVideoUrls.BuckBunny}"
+                Source="{x:Static constants:StreamingUrls.BuckBunny}"
                 MetadataArtworkUrl="https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm"
                 MetadataTitle="Big Buck Bunny"
                 MetadataArtist="Blender Foundation"
@@ -94,7 +94,7 @@
 
                 <Grid ColumnDefinitions="*, 100" ColumnSpacing="5">
                     <Entry x:Name="CustomSourceEntry" Placeholder="Enter URL" HorizontalOptions="Fill" />
-                    <Button Grid.Column="1" Clicked="Button_Clicked" Text="Load" />
+                    <Button Grid.Column="1" Clicked="CustomUrlLoadButtonClicked" Text="Load" />
                 </Grid>
 
                 <Button Text="Change Aspect" Clicked="ChangeAspectClicked" />
@@ -162,6 +162,26 @@
                         VerticalOptions="Center"
                         Text="Keep screen on" />
                 </HorizontalStackLayout>
+                <HorizontalStackLayout Padding="0,10,0,0">
+                    <Switch
+                        x:Name="CustomHeadersSwitch"
+                        Margin="0,0,5,0"
+                        ThumbColor="White"
+                        OnColor="LimeGreen"
+                        Toggled="CustomHeadersToggled" />
+                    <Label
+                        VerticalOptions="Center"
+                        Text="Custom HTTP headers" />
+                </HorizontalStackLayout>
+                <VerticalStackLayout x:Name="HeadersPanel" IsVisible="false" Padding="0,5,0,0" Spacing="5">
+                    <Grid ColumnDefinitions="*, *, 40" ColumnSpacing="5">
+                        <Entry x:Name="HeaderNameEntry" Placeholder="Header name" HorizontalOptions="Fill" />
+                        <Entry Grid.Column="1" x:Name="HeaderValueEntry" Placeholder="Header value" HorizontalOptions="Fill" />
+                        <Button Grid.Column="2" Text="+" Clicked="AddHeaderClicked" />
+                    </Grid>
+                    <Label x:Name="HeadersSummaryLabel" Text="No headers defined" FontSize="12" TextColor="Gray" />
+                    <Button Text="Clear All Headers" Clicked="ClearHeadersClicked" />
+                </VerticalStackLayout>
             </VerticalStackLayout>
         </Grid>
     </ScrollView>
