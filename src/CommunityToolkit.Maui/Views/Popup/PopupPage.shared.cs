@@ -251,6 +251,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 			Children.Add(TapGestureGestureOverlay);
 			Children.Add(PopupBorder);
+
+			AutomationProperties.SetIsInAccessibleTree(this, false);
+			AutomationProperties.SetIsInAccessibleTree(PopupBorder, false);
 		}
 
 		void HandleOverlayTapped(object? sender, TappedEventArgs e)
