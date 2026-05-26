@@ -10,13 +10,13 @@ jobs:
         run: dotnet tool install -g dotnet-format
 
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.head_ref }}
 
       - name: Run dotnet format
         id: format
-        uses: jfversluis/dotnet-format@v1.0.9
+        uses: jfversluis/dotnet-format@5742daa75ac922cd73c747d7fd31f4279aaf5a24 # v1.0.9
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           action: "fix"
@@ -31,7 +31,7 @@ jobs:
           git commit -a -m 'Automated dotnet-format update'
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v8
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
         with:
           title: '[housekeeping] Automated PR to fix formatting errors'
           body: |
