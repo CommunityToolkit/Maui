@@ -26,9 +26,9 @@ static class CameraViewExtensions
 
 			PermissionStatus microphonePermissionStatus = PermissionStatus.Unknown;
 			
-			// unpackaged apps always have the capability
+			// Permission checks require a packaged app manifest on Windows
 			var isMicrophoneCapable =
-				AppInfo.PackagingModel != AppPackagingModel.Packaged ||
+				AppInfo.PackagingModel == AppPackagingModel.Packaged &&
 				Permissions.IsCapabilityDeclared("microphone");
 
 			if (isMicrophoneCapable)
