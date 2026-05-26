@@ -16,7 +16,7 @@ public interface ICameraView : IView
 	Size ImageCaptureResolution { get; }
 
 	/// <summary>
-	/// Gets a value indicating whether the torch is on.
+	/// Gets a value indicating whether the torch (flash) is on.
 	/// </summary>
 	bool IsTorchOn { get; }
 
@@ -39,12 +39,12 @@ public interface ICameraView : IView
 	float ZoomFactor { get; internal set; }
 
 	/// <summary>
-	/// Gets whether the implementation is available.
+	/// Gets a value indicating whether the camera feature is available on the current device.
 	/// </summary>
 	bool IsAvailable { get; internal set; }
 
 	/// <summary>
-	/// Gets whether the implementation is busy.
+	/// Gets a value indicating whether the camera is currently busy.
 	/// </summary>
 	bool IsBusy { get; internal set; }
 

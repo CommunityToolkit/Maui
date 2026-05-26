@@ -110,4 +110,11 @@ public class ExpanderTests : BaseViewTest
 			didHandleHeaderTappedExecute = true;
 		}
 	}
+
+	[Fact]
+	public void EnsureDefaults()
+	{
+		var expander = new Maui.Views.Expander();
+		Assert.Equal(ExpanderDefaults.Direction, expander.Direction);
+	}
 }

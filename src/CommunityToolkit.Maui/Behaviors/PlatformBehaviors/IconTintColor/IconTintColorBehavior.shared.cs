@@ -6,17 +6,8 @@
 public partial class IconTintColorBehavior : BasePlatformBehavior<View>
 {
 	/// <summary>
-	/// Attached Bindable Property for the <see cref="TintColor"/>.
-	/// </summary>
-	public static readonly BindableProperty TintColorProperty =
-		BindableProperty.Create(nameof(TintColor), typeof(Color), typeof(IconTintColorBehavior), default);
-
-	/// <summary>
 	/// Property that represents the <see cref="Color"/> that Icon will be tinted.
 	/// </summary>
-	public Color? TintColor
-	{
-		get => (Color?)GetValue(TintColorProperty);
-		set => SetValue(TintColorProperty, value);
-	}
+	[BindableProperty]
+	public partial Color? TintColor { get; set; }
 }

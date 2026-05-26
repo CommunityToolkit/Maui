@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mct:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+           xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+           xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+           xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+           xmlns:system="clr-namespace:System;assembly=System.Runtime"
+           x:Class="CommunityToolkit.Maui.Sample.Views.Popups.CollectionViewPopup"
+           x:DataType="vm:CollectionViewPopupViewModel"
+           x:TypeArguments="system:String">
+
+    <mct:Popup.Resources>
+        <mct:AppThemeColor Light="Black" Dark="Black" x:Key="TextColor" />
+    </mct:Popup.Resources>
+
+    <VerticalStackLayout Spacing="12">
+        
+        <Label Text="Collection View Popup"
+               TextColor="{mct:AppThemeResource TextColor}"
+               FontSize="24"
+               HorizontalTextAlignment="Center"
+               VerticalTextAlignment="Center"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               FontAttributes="Bold" />
+        
+        <CollectionView HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                        WidthRequest="250"
+                        SelectionMode="Single"
+                        SelectedItem="{Binding SelectedTitle}">
+            <CollectionView.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                    <x:String>Welcome, Program.</x:String>
+                    <x:String>Initiating lightcycle…</x:String>
+                    <x:String>End of line.</x:String>
+                </x:Array>
+            </CollectionView.ItemsSource>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                    <Border BackgroundColor="LightGray"
+                            StrokeShape="RoundRectangle 8"
+                            Padding="8"
+                            Margin="4"
+                            HorizontalOptions="Fill"
+                            VerticalOptions="Center">
+
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup Name="CommonStates">
+                                <VisualState Name="Normal" />
+                                <VisualState Name="Selected">
+                                    <VisualState.Setters>
+                                        <Setter Property="BackgroundColor" Value="{StaticResource Blue100Accent}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+
+                        <Label Text="{Binding .}"
+                               TextColor="Black"
+                               FontSize="16" HorizontalOptions="Center"/>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Button Text="Return"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                Command="{Binding ReturnButtonTappedCommand}" />
+
+    </VerticalStackLayout>
+    
+</mct:Popup>

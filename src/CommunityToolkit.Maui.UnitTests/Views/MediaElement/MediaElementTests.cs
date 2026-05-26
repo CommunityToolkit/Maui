@@ -13,6 +13,33 @@ public class MediaElementTests : BaseViewTest
 	}
 
 	[Fact]
+	public void VerifyDefaults()
+	{
+		// Arrange
+		MediaElement mediaElement = new();
+
+		// Act 
+
+		// Assert
+		Assert.Equal(MediaElementDefaults.MediaHeight, mediaElement.MediaHeight);
+		Assert.Equal(MediaElementDefaults.Aspect, mediaElement.Aspect);
+		Assert.Equal(MediaElementDefaults.CurrentState, mediaElement.CurrentState);
+		Assert.Equal(MediaElementDefaults.Duration, mediaElement.Duration);
+		Assert.Equal(MediaElementDefaults.MediaWidth, mediaElement.MediaWidth);
+		Assert.Equal(MediaElementDefaults.MetadataArtist, mediaElement.MetadataArtist);
+		Assert.Equal(MediaElementDefaults.MetadataArtworkUrl, mediaElement.MetadataArtworkUrl);
+		Assert.Equal(MediaElementDefaults.Position, mediaElement.Position);
+		Assert.Equal(MediaElementDefaults.ShouldAutoPlay, mediaElement.ShouldAutoPlay);
+		Assert.Equal(MediaElementDefaults.ShouldKeepScreenOn, mediaElement.ShouldKeepScreenOn);
+		Assert.Equal(MediaElementDefaults.ShouldLoopPlayback, mediaElement.ShouldLoopPlayback);
+		Assert.Equal(MediaElementDefaults.ShouldMute, mediaElement.ShouldMute);
+		Assert.Equal(MediaElementDefaults.ShouldShowPlaybackControls, mediaElement.ShouldShowPlaybackControls);
+		Assert.Equal(MediaElementDefaults.Speed, mediaElement.Speed);
+		Assert.Equal(MediaElementDefaults.Volume, mediaElement.Volume);
+		Assert.Equal(MediaElementDefaults.MetadataTitle, mediaElement.MetadataTitle);
+	}
+
+	[Fact]
 	public void PosterIsNotStringEmptyOrNull()
 	{
 		MediaElement mediaElement = new();

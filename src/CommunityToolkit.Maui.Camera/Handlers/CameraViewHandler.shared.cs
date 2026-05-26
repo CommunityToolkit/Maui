@@ -10,11 +10,12 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 {
 	/// <summary>
 	/// The currently defined mappings between properties on the <see cref="ICameraView"/> and
-	/// properties on the <see cref="NativePlatformCameraPreviewView"/>. 
+	/// properties on the <see cref="NativePlatformCameraPreviewView"/>.
 	/// </summary>
 	public static IPropertyMapper<ICameraView, CameraViewHandler> PropertyMapper = new PropertyMapper<ICameraView, CameraViewHandler>(ViewMapper)
 	{
 		[nameof(ICameraView.CameraFlashMode)] = MapCameraFlashMode,
+		[nameof(ICameraView.IsTorchOn)] = MapIsTorchOn,
 		[nameof(ICameraView.IsAvailable)] = MapIsAvailable,
 		[nameof(ICameraView.ZoomFactor)] = MapZoomFactor,
 		[nameof(ICameraView.ImageCaptureResolution)] = MapImageCaptureResolution,
@@ -23,7 +24,7 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 
 	/// <summary>
 	/// The currently defined mappings between commands on the <see cref="ICameraView"/> and
-	/// commands on the <see cref="NativePlatformCameraPreviewView"/>. 
+	/// commands on the <see cref="NativePlatformCameraPreviewView"/>.
 	/// </summary>
 	public static CommandMapper<ICameraView, CameraViewHandler> CommandMapper = new(ViewCommandMapper);
 
@@ -75,6 +76,7 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		void Init(ICameraView view)
 		{
 			MapCameraFlashMode(this, view);
+			MapIsTorchOn(this, view);
 			view.ZoomFactor = 1.0f;
 		}
 	}
@@ -107,8 +109,6 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		{
 			cameraManager?.Dispose();
 			cameraManager = null;
-
-			cameraProvider.Dispose();
 		}
 	}
 
@@ -146,6 +146,11 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	static void MapCameraFlashMode(CameraViewHandler handler, ICameraView view)
 	{
 		handler.CameraManager.UpdateFlashMode(view.CameraFlashMode);
+	}
+
+	static void MapIsTorchOn(CameraViewHandler handler, ICameraView view)
+	{
+		handler.CameraManager.UpdateIsTorchOn(view.IsTorchOn);
 	}
 
 	static void MapZoomFactor(CameraViewHandler handler, ICameraView view)

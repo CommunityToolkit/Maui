@@ -1,10 +1,11 @@
+using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class BaseBehaviorTests
+public class BaseBehaviorTests() : BaseBehaviorTest<MockBehavior, Label>(new MockBehavior(), new Label())
 {
 	[Fact]
 	public void AttachAndDetachCallsShouldCorrectlyAssignView()

@@ -34,6 +34,15 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		base.OnNavigatedFrom(args);
 		if (args.IsDestinationPageACommunityToolkitPopupPage())
 		{
+			await Toast.Make("Popup Opened").Show();
+		}
+	}
+
+	protected override async void OnNavigatingFrom(NavigatingFromEventArgs args)
+	{
+		base.OnNavigatingFrom(args);
+		if (args.IsDestinationPageACommunityToolkitPopupPage())
+		{
 			await Toast.Make("Opening Popup").Show();
 		}
 	}
@@ -148,6 +157,20 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		await Task.Delay(TimeSpan.FromSeconds(2));
 
 		await this.ClosePopupAsync();
+	}
+
+	async void HandleCollectionViewPopupClicked(object? sender, EventArgs e)
+	{
+		var popupResult = await popupService.ShowPopupAsync<CollectionViewPopup, string>(
+			Navigation,
+			PopupOptions.Empty,
+			CancellationToken.None);
+
+		if (!popupResult.WasDismissedByTappingOutsideOfPopup)
+		{
+			// Display Popup Result as a Toast
+			await Toast.Make($"You selected {popupResult.Result}").Show(CancellationToken.None);
+		}
 	}
 
 	async void HandleComplexPopupClicked(object? sender, EventArgs e)

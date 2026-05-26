@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using CommunityToolkit.Maui.Converters;
+using CommunityToolkit.Maui.Core;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
@@ -551,5 +552,18 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 
 		object convertFromResult = isInRangeConverter.ConvertFrom(value, CultureInfo.CurrentCulture);
 		Assert.Equal(expectedResult, convertFromResult);
+	}
+
+	[Fact]
+	public void VerifyDefaultValues()
+	{
+		// Arrange
+		var converter = new IsInRangeConverter();
+
+		// Act Assert
+		Assert.Null(converter.FalseObject);
+		Assert.Null(converter.TrueObject);
+		Assert.Null(converter.MinValue);
+		Assert.Null(converter.MaxValue);
 	}
 }

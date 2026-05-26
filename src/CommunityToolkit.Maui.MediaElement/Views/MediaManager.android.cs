@@ -1,12 +1,16 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Android.App;
 using Android.Content;
+using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Media3.Common;
 using AndroidX.Media3.Common.Text;
 using AndroidX.Media3.Common.Util;
+using AndroidX.Media3.DataSource;
 using AndroidX.Media3.ExoPlayer;
+using AndroidX.Media3.ExoPlayer.Source;
 using AndroidX.Media3.Session;
 using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Media.Services;
@@ -25,8 +29,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	const int readyState = 3;
 	const int endedState = 4;
 
-	static readonly HttpClient client = new();
+	readonly HttpClient client = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
+	bool isAndroidForegroundServiceEnabled = false;
 
 	double? previousSpeed;
 	float volumeBeforeMute = 1;
@@ -36,6 +41,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	MediaSession? session;
 	MediaItem.Builder? mediaItem;
 	BoundServiceConnection? connection;
+	StreamDataSourceFactory? currentStreamDataSourceFactory;
 
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
@@ -62,9 +68,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	public void UpdateNotifications()
 	{
-		if (connection?.Binder?.Service is null)
+		if (connection?.Binder?.Service is null || !isAndroidForegroundServiceEnabled)
 		{
-			System.Diagnostics.Trace.TraceInformation("Notification Service not running.");
 			return;
 		}
 
@@ -130,11 +135,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
 	/// <exception cref="NullReferenceException">Thrown when <see cref="Context"/> is <see langword="null"/> or when the platform view could not be created.</exception>
 	[MemberNotNull(nameof(Player), nameof(PlayerView), nameof(session))]
-	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView(AndroidViewType androidViewType)
+	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView(AndroidViewType androidViewType, bool isAndroidServiceEnabled)
 	{
 		Player = new ExoPlayerBuilder(MauiContext.Context).Build() ?? throw new InvalidOperationException("Player cannot be null");
 		Player.AddListener(this);
-
+		this.isAndroidForegroundServiceEnabled = isAndroidServiceEnabled;
 		if (androidViewType is AndroidViewType.SurfaceView)
 		{
 			PlayerView = new PlayerView(MauiContext.Context)
@@ -156,7 +161,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			var xmlResource = resources.GetXml(Microsoft.Maui.Resource.Layout.textureview);
 			xmlResource.Read();
 
-			var attributes = Android.Util.Xml.AsAttributeSet(xmlResource)!;
+			var attributes = Xml.AsAttributeSet(xmlResource)!;
 
 			PlayerView = new PlayerView(MauiContext.Context, attributes)
 			{
@@ -353,7 +358,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			return;
 		}
 
-		if (connection is null)
+		if (connection is null && isAndroidForegroundServiceEnabled)
 		{
 			StartService();
 		}
@@ -364,7 +369,17 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			MediaElement.Duration = TimeSpan.Zero;
 			MediaElement.CurrentStateChanged(MediaElementState.None);
 
+			currentStreamDataSourceFactory?.Dispose();
+			currentStreamDataSourceFactory = null;
+
 			return;
+		}
+
+		// Clear previous stream data source if switching sources
+		if (MediaElement.Source is not StreamMediaSource)
+		{
+			currentStreamDataSourceFactory?.Dispose();
+			currentStreamDataSourceFactory = null;
 		}
 
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
@@ -376,15 +391,43 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		if (item?.MediaMetadata is not null)
 		{
-			Player.SetMediaItem(item);
+			// If we have a custom stream data source, we need to set the media source differently
+			if (currentStreamDataSourceFactory is not null && MediaElement.Source is StreamMediaSource)
+			{
+				var mediaSource = new AndroidX.Media3.ExoPlayer.Source.ProgressiveMediaSource.Factory(currentStreamDataSourceFactory)
+					.CreateMediaSource(item);
+				Player.SetMediaSource(mediaSource);
+			}
+			else if (MediaElement.Source is UriMediaSource uriMediaSource && uriMediaSource.HttpHeaders.Count > 0)
+			{
+				var httpDataSourceFactory = new DefaultHttpDataSource.Factory();
+				httpDataSourceFactory.SetDefaultRequestProperties(uriMediaSource.HttpHeaders);
+
+				var mediaSourceFactory = new DefaultMediaSourceFactory(httpDataSourceFactory);
+				var mediaSource = mediaSourceFactory.CreateMediaSource(item);
+
+				Player.SetMediaSource(mediaSource);
+			}
+			else
+			{
+				Player.SetMediaItem(item);
+			}
+
 			Player.Prepare();
 			hasSetSource = true;
 		}
 
-		if (hasSetSource && Player.PlayerError is null)
+		if (hasSetSource)
 		{
-			MediaElement.MediaOpened();
-			UpdateNotifications();
+			if (Player.PlayerError is null)
+			{
+				MediaElement.MediaOpened();
+			}
+
+			if (isAndroidForegroundServiceEnabled)
+			{
+				UpdateNotifications();
+			}
 		}
 	}
 
@@ -533,11 +576,14 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				connection = null;
 			}
 
+			currentStreamDataSourceFactory?.Dispose();
+			currentStreamDataSourceFactory = null;
+
 			client.Dispose();
 		}
 	}
 
-	static async Task<byte[]> GetBytesFromMetadataArtworkUrl(string url, CancellationToken cancellationToken = default)
+	async Task<byte[]> GetBytesFromMetadataArtworkUrl(string url, CancellationToken cancellationToken = default)
 	{
 		if (string.IsNullOrWhiteSpace(url))
 		{
@@ -568,7 +614,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			{
 				var normalizedFilePath = NormalizeFilePath(url);
 
-				stream = File.Open(normalizedFilePath, FileMode.Create);
+				stream = File.OpenRead(normalizedFilePath);
 				contentLength = await GetByteCountFromStream(stream, cancellationToken);
 			}
 			// Relative File Path
@@ -631,23 +677,32 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 	}
 
-	[MemberNotNull(nameof(connection))]
 	void StartService()
 	{
-		var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
+		if (!isAndroidForegroundServiceEnabled)
+		{
+			return;
+		}
+
+		var intent = new Intent(global::Android.App.Application.Context, typeof(MediaControlsService));
 		connection = new BoundServiceConnection(this);
 		connection.MediaControlsServiceTaskRemoved += HandleMediaControlsServiceTaskRemoved;
 
-		Android.App.Application.Context.StartForegroundService(intent);
-		Android.App.Application.Context.ApplicationContext?.BindService(intent, connection, Bind.AutoCreate);
+		global::Android.App.Application.Context.StartForegroundService(intent);
+		global::Android.App.Application.Context.ApplicationContext?.BindService(intent, connection, Bind.AutoCreate);
 	}
 
 	void StopService(in BoundServiceConnection boundServiceConnection)
 	{
+		if (!isAndroidForegroundServiceEnabled)
+		{
+			return;
+		}
+
 		boundServiceConnection.MediaControlsServiceTaskRemoved -= HandleMediaControlsServiceTaskRemoved;
 
 		var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
-		Android.App.Application.Context.StopService(serviceIntent);
+		global::Android.App.Application.Context.StopService(serviceIntent);
 		Platform.AppContext.UnbindService(boundServiceConnection);
 	}
 
@@ -694,6 +749,15 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 					break;
 				}
+			case StreamMediaSource streamMediaSource:
+				{
+					if (streamMediaSource.Stream is not null)
+					{
+						return await CreateMediaItemFromStream(streamMediaSource.Stream, cancellationToken).ConfigureAwait(false);
+					}
+
+					break;
+				}
 			default:
 				throw new NotSupportedException($"{MediaElement.Source.GetType().FullName} is not yet supported for {nameof(MediaElement.Source)}");
 		}
@@ -720,35 +784,150 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		return mediaItem;
 	}
 
+	async Task<MediaItem.Builder> CreateMediaItemFromStream(Stream stream, CancellationToken cancellationToken)
+	{
+		MediaMetadata.Builder mediaMetaData = new();
+		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
+		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
+		var data = await GetBytesFromMetadataArtworkUrl(MediaElement.MetadataArtworkUrl, cancellationToken).ConfigureAwait(true);
+		if (data is not null && data.Length > 0)
+		{
+			mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);
+		}
+
+		// Create MediaItem with metadata
+		// The stream will be handled via custom data source factory when needed
+		mediaItem = new MediaItem.Builder();
+		mediaItem.SetUri("stream://media");
+		mediaItem.SetMediaId("stream://media");
+		mediaItem.SetMediaMetadata(mediaMetaData.Build());
+		currentStreamDataSourceFactory?.Dispose();
+		currentStreamDataSourceFactory = null;
+
+		// Store the stream for later use with custom MediaSource
+		currentStreamDataSourceFactory = new StreamDataSourceFactory(stream);
+
+		return mediaItem;
+	}
+
 	#region PlayerListener implementation method stubs
-	public void OnAudioAttributesChanged(AudioAttributes? audioAttributes) { }
-	public void OnAvailableCommandsChanged(PlayerCommands? player) { }
-	public void OnCues(CueGroup? cues) { }
-	public void OnDeviceInfoChanged(DeviceInfo? deviceInfo) { }
-	public void OnDeviceVolumeChanged(int volume, bool muted) { }
-	public void OnEvents(IPlayer? player, PlayerEvents? playerEvents) { }
-	public void OnIsLoadingChanged(bool isLoading) { }
-	public void OnIsPlayingChanged(bool isPlaying) { }
-	public void OnLoadingChanged(bool isLoading) { }
-	public void OnMaxSeekToPreviousPositionChanged(long maxSeekToPreviousPositionMs) { }
-	public void OnMediaItemTransition(MediaItem? mediaItem, int reason) { }
-	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata) { }
-	public void OnMetadata(Metadata? metadata) { }
-	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason) { }
-	public void OnPositionDiscontinuity(PlayerPositionInfo? oldPosition, PlayerPositionInfo? newPosition, int reason) { }
-	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
-	public void OnPlayerErrorChanged(PlaybackException? error) { }
-	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }
-	public void OnRenderedFirstFrame() { }
-	public void OnRepeatModeChanged(int repeatMode) { }
-	public void OnSeekBackIncrementChanged(long seekBackIncrementMs) { }
-	public void OnSeekForwardIncrementChanged(long seekForwardIncrementMs) { }
-	public void OnShuffleModeEnabledChanged(bool shuffleModeEnabled) { }
-	public void OnSkipSilenceEnabledChanged(bool skipSilenceEnabled) { }
-	public void OnSurfaceSizeChanged(int width, int height) { }
-	public void OnTimelineChanged(Timeline? timeline, int reason) { }
-	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters) { }
-	public void OnTracksChanged(Tracks? tracks) { }
+
+	public void OnAudioAttributesChanged(AudioAttributes? audioAttributes)
+	{
+	}
+
+	public void OnAudioSessionIdChanged(int audioSessionId)
+	{
+	}
+
+	public void OnAvailableCommandsChanged(PlayerCommands? player)
+	{
+	}
+
+	public void OnCues(CueGroup? cues)
+	{
+	}
+
+	public void OnDeviceInfoChanged(DeviceInfo? deviceInfo)
+	{
+	}
+
+	public void OnDeviceVolumeChanged(int volume, bool muted)
+	{
+	}
+
+	public void OnEvents(IPlayer? player, PlayerEvents? playerEvents)
+	{
+	}
+
+	public void OnIsLoadingChanged(bool isLoading)
+	{
+	}
+
+	public void OnIsPlayingChanged(bool isPlaying)
+	{
+	}
+
+	public void OnLoadingChanged(bool isLoading)
+	{
+	}
+
+	public void OnMaxSeekToPreviousPositionChanged(long maxSeekToPreviousPositionMs)
+	{
+	}
+
+	public void OnMediaItemTransition(MediaItem? mediaItem, int reason)
+	{
+	}
+
+	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata)
+	{
+	}
+
+	public void OnMetadata(Metadata? metadata)
+	{
+	}
+
+	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason)
+	{
+	}
+
+	public void OnPositionDiscontinuity(PlayerPositionInfo? oldPosition, PlayerPositionInfo? newPosition, int reason)
+	{
+	}
+
+	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason)
+	{
+	}
+
+	public void OnPlayerErrorChanged(PlaybackException? error)
+	{
+	}
+
+	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata)
+	{
+	}
+
+	public void OnRenderedFirstFrame()
+	{
+	}
+
+	public void OnRepeatModeChanged(int repeatMode)
+	{
+	}
+
+	public void OnSeekBackIncrementChanged(long seekBackIncrementMs)
+	{
+	}
+
+	public void OnSeekForwardIncrementChanged(long seekForwardIncrementMs)
+	{
+	}
+
+	public void OnShuffleModeEnabledChanged(bool shuffleModeEnabled)
+	{
+	}
+
+	public void OnSkipSilenceEnabledChanged(bool skipSilenceEnabled)
+	{
+	}
+
+	public void OnSurfaceSizeChanged(int width, int height)
+	{
+	}
+
+	public void OnTimelineChanged(Timeline? timeline, int reason)
+	{
+	}
+
+	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters)
+	{
+	}
+
+	public void OnTracksChanged(Tracks? tracks)
+	{
+	}
+
 	#endregion
 
 	static class PlaybackState
@@ -767,6 +946,4 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		public const int StateStopped = 1;
 		public const int StateError = 7;
 	}
-
-
 }

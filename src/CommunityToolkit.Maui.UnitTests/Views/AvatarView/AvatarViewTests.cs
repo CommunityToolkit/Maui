@@ -14,6 +14,25 @@ public class AvatarViewTests : BaseViewTest
 	}
 
 	[Fact]
+	public void MultipleAvatarViews_BindablePropertyAttributedProperties_WithPartialPropertyInializers_UseCorrectDefaultValue()
+	{
+		// Arrange
+		var avatarView1 = new Maui.Views.AvatarView();
+		var avatarView2 = new Maui.Views.AvatarView();
+
+		// Act Assert
+		Assert.Equal(AvatarViewDefaults.BorderColor, avatarView1.BorderColor);
+		Assert.Equal(AvatarViewDefaults.BorderWidth, avatarView1.BorderWidth);
+		Assert.Equal(AvatarViewDefaults.CornerRadius, avatarView1.CornerRadius);
+		Assert.Equal(AvatarViewDefaults.Text, avatarView1.Text);
+
+		Assert.Equal(AvatarViewDefaults.BorderColor, avatarView2.BorderColor);
+		Assert.Equal(AvatarViewDefaults.BorderWidth, avatarView2.BorderWidth);
+		Assert.Equal(AvatarViewDefaults.CornerRadius, avatarView2.CornerRadius);
+		Assert.Equal(AvatarViewDefaults.Text, avatarView2.Text);
+	}
+
+	[Fact]
 	public void AvatarViewShouldBeAssignedToIAvatarView()
 	{
 		new Maui.Views.AvatarView().Should().BeAssignableTo<IAvatarView>();
@@ -164,21 +183,21 @@ public class AvatarViewTests : BaseViewTest
 	public void DefaultBorderColor()
 	{
 		var avatarView = new Maui.Views.AvatarView();
-		avatarView.BorderColor.Should().Be(AvatarViewDefaults.DefaultBorderColor);
+		avatarView.BorderColor.Should().Be(AvatarViewDefaults.BorderColor);
 	}
 
 	[Fact]
 	public void DefaultBorderWidth()
 	{
 		var avatarView = new Maui.Views.AvatarView();
-		avatarView.BorderWidth.Should().Be(AvatarViewDefaults.DefaultBorderWidth);
+		avatarView.BorderWidth.Should().Be(AvatarViewDefaults.BorderWidth);
 	}
 
 	[Fact]
 	public void DefaultCornerRadius()
 	{
 		var avatarView = new Maui.Views.AvatarView();
-		avatarView.CornerRadius.Should().Be(new CornerRadius(AvatarViewDefaults.DefaultCornerRadius.TopLeft, AvatarViewDefaults.DefaultCornerRadius.TopRight, AvatarViewDefaults.DefaultCornerRadius.BottomLeft, AvatarViewDefaults.DefaultCornerRadius.BottomRight));
+		avatarView.CornerRadius.Should().Be(new CornerRadius(AvatarViewDefaults.CornerRadius.TopLeft, AvatarViewDefaults.CornerRadius.TopRight, AvatarViewDefaults.CornerRadius.BottomLeft, AvatarViewDefaults.CornerRadius.BottomRight));
 	}
 
 	[Fact]
@@ -195,7 +214,7 @@ public class AvatarViewTests : BaseViewTest
 		CreateViewHandler<MockAvatarViewHandler>(avatarView);
 
 		Size request = avatarView.Measure(double.PositiveInfinity, double.PositiveInfinity);
-		request.Height.Should().Be(AvatarViewDefaults.DefaultHeightRequest);
+		request.Height.Should().Be(AvatarViewDefaults.HeightRequest);
 	}
 
 	[Fact]
@@ -208,7 +227,7 @@ public class AvatarViewTests : BaseViewTest
 			avatarLabel.Should().NotBeNull();
 			avatarLabel.HorizontalTextAlignment.Should().Be(TextAlignment.Center);
 			avatarLabel.VerticalTextAlignment.Should().Be(TextAlignment.Center);
-			avatarLabel.Text.Should().Be(AvatarViewDefaults.DefaultText);
+			avatarLabel.Text.Should().Be(AvatarViewDefaults.Text);
 		}
 	}
 
@@ -219,11 +238,11 @@ public class AvatarViewTests : BaseViewTest
 		avatarView.IsEnabled.Should().BeTrue();
 		avatarView.HorizontalOptions.Should().Be(LayoutOptions.Center);
 		avatarView.VerticalOptions.Should().Be(LayoutOptions.Center);
-		avatarView.HeightRequest.Should().Be(AvatarViewDefaults.DefaultHeightRequest);
-		avatarView.WidthRequest.Should().Be(AvatarViewDefaults.DefaultWidthRequest);
-		avatarView.Padding.Should().Be(AvatarViewDefaults.DefaultPadding);
-		avatarView.Stroke.Should().Be((SolidColorBrush)AvatarViewDefaults.DefaultBorderColor);
-		avatarView.StrokeThickness.Should().Be(AvatarViewDefaults.DefaultBorderWidth);
+		avatarView.HeightRequest.Should().Be(AvatarViewDefaults.HeightRequest);
+		avatarView.WidthRequest.Should().Be(AvatarViewDefaults.WidthRequest);
+		avatarView.Padding.Should().Be(AvatarViewDefaults.Padding);
+		avatarView.Stroke.Should().Be((SolidColorBrush)AvatarViewDefaults.BorderColor);
+		avatarView.StrokeThickness.Should().Be(AvatarViewDefaults.BorderWidth);
 		avatarView.StrokeShape.Should().BeOfType<RoundRectangle>();
 	}
 
@@ -234,7 +253,7 @@ public class AvatarViewTests : BaseViewTest
 		CreateViewHandler<MockAvatarViewHandler>(avatarView);
 
 		Size request = avatarView.Measure(double.PositiveInfinity, double.PositiveInfinity);
-		request.Width.Should().Be(AvatarViewDefaults.DefaultWidthRequest);
+		request.Width.Should().Be(AvatarViewDefaults.WidthRequest);
 	}
 
 	[Fact]
@@ -329,5 +348,18 @@ public class AvatarViewTests : BaseViewTest
 		avatarView.TextTransform = TextTransform.Lowercase;
 		avatarView.TextTransform.Should().Be(TextTransform.Lowercase);
 		signaled.Should().BeTrue();
+	}
+
+	[Fact]
+	public void EnsureDefaults()
+	{
+		var avatarView = new Maui.Views.AvatarView();
+		Assert.Equal(AvatarViewDefaults.BorderColor, avatarView.BorderColor);
+		Assert.Equal(AvatarViewDefaults.BorderWidth, avatarView.BorderWidth);
+		Assert.Equal(AvatarViewDefaults.CornerRadius, avatarView.CornerRadius);
+		Assert.Equal(AvatarViewDefaults.Text, avatarView.Text);
+		Assert.Equal(AvatarViewDefaults.Padding, avatarView.Padding);
+		Assert.Equal(AvatarViewDefaults.HeightRequest, avatarView.HeightRequest);
+		Assert.Equal(AvatarViewDefaults.WidthRequest, avatarView.WidthRequest);
 	}
 }

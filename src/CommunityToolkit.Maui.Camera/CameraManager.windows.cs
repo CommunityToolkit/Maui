@@ -29,7 +29,7 @@ partial class CameraManager
 
 	public partial void UpdateFlashMode(CameraFlashMode flashMode)
 	{
-		if (!IsInitialized || (mediaCapture?.VideoDeviceController.FlashControl.Supported is false))
+		if (!isInitialized || (mediaCapture?.VideoDeviceController.FlashControl.Supported is false))
 		{
 			return;
 		}
@@ -56,9 +56,26 @@ partial class CameraManager
 
 	}
 
+	public partial void UpdateIsTorchOn(bool isTorchOn)
+	{
+		if (!isInitialized ||
+			mediaCapture is null ||
+			!(mediaCapture.VideoDeviceController?.TorchControl?.Supported ?? false))
+		{
+			return;
+		}
+
+		bool isCurrentlyOn = mediaCapture.VideoDeviceController.TorchControl.Enabled;
+
+		if (isTorchOn != isCurrentlyOn)
+		{
+			mediaCapture.VideoDeviceController.TorchControl.Enabled = isTorchOn;
+		}
+	}
+
 	public partial void UpdateZoom(float zoomLevel)
 	{
-		if (!IsInitialized || mediaCapture is null || !mediaCapture.VideoDeviceController.ZoomControl.Supported)
+		if (!isInitialized || mediaCapture is null || !mediaCapture.VideoDeviceController.ZoomControl.Supported)
 		{
 			return;
 		}
@@ -134,11 +151,11 @@ partial class CameraManager
 			mediaElement.Source = MediaSource.CreateFromMediaFrameSource(frameSource);
 		}
 
-		IsInitialized = true;
+		isInitialized = true;
 
 		await PlatformUpdateResolution(cameraView.ImageCaptureResolution, token);
 
-		OnLoaded.Invoke();
+		onLoaded.Invoke();
 	}
 
 	private partial void PlatformStopCameraPreview()
@@ -152,19 +169,14 @@ partial class CameraManager
 		mediaCapture?.Dispose();
 
 		mediaCapture = null;
-		IsInitialized = false;
+		isInitialized = false;
 	}
 
 	async Task PlatformUpdateResolution(Size resolution, CancellationToken token)
 	{
-		if (!IsInitialized || mediaCapture is null)
+		if (cameraView.SelectedCamera is null || !isInitialized || mediaCapture is null)
 		{
 			return;
-		}
-
-		if (cameraView.SelectedCamera is null)
-		{
-			throw new CameraException($"Unable to update Capture Resolution because {nameof(ICameraView)}.{nameof(ICameraView.SelectedCamera)} is null.");
 		}
 
 		var filteredPropertiesList = cameraView.SelectedCamera.ImageEncodingProperties.Where(p => p.Width <= resolution.Width && p.Height <= resolution.Height).ToList();
@@ -182,7 +194,7 @@ partial class CameraManager
 
 	private async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
 	{
-		if (!IsInitialized || mediaCapture is null || mediaElement is null)
+		if (!isInitialized || mediaCapture is null || mediaElement is null)
 		{
 			return;
 		}
@@ -214,12 +226,18 @@ partial class CameraManager
 
 	private async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
 	{
-		if (!IsInitialized || mediaElement is null || mediaRecording is null || videoCaptureStream is null)
+		if (!isInitialized || mediaElement is null || mediaRecording is null || videoCaptureStream is null)
 		{
 			return Stream.Null;
 		}
 
 		await mediaRecording.StopAsync();
+
+		if (videoCaptureStream.CanSeek)
+		{
+			videoCaptureStream.Position = 0;
+		}
+
 		return videoCaptureStream;
 	}
 }

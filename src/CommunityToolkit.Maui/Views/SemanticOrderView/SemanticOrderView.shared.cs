@@ -7,15 +7,11 @@ namespace CommunityToolkit.Maui.Views;
 public partial class SemanticOrderView : ContentView, ISemanticOrderView
 {
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="ViewOrder"/> property.
+	/// Gets or sets the collection of child views that defines the visual order for accessibility and navigation purposes.
 	/// </summary>
-	public static readonly BindableProperty ViewOrderProperty =
-		BindableProperty.Create(nameof(ViewOrder), typeof(IEnumerable), typeof(SemanticOrderView), Enumerable.Empty<View>());
-
-	/// <inheritdoc />
-	public IEnumerable<IView> ViewOrder
-	{
-		get => (IEnumerable<IView>)GetValue(ViewOrderProperty);
-		set => SetValue(ViewOrderProperty, value);
-	}
+	/// <remarks>The order of views in this collection determines how assistive technologies, such as screen
+	/// readers, traverse the child elements. If not set, the default order is used. Modifying this property allows
+	/// customization of the navigation sequence for improved accessibility.</remarks>
+	[BindableProperty]
+	public partial IEnumerable<IView> ViewOrder { get; set; } = [];
 }

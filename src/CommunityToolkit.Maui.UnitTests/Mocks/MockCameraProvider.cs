@@ -21,7 +21,7 @@ public sealed class MockCameraProvider : ICameraProvider, IDisposable
 
 	public void Dispose()
 	{
-		
+
 	}
 
 	public Task RefreshAvailableCameras(CancellationToken token)

@@ -12,49 +12,40 @@ namespace CommunityToolkit.Maui.Layouts;
 public partial class UniformItemsLayout : Layout, IUniformItemsLayout
 {
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="MaxRows"/> property.
+	/// Gets or sets the maximum number of rows to display or process.
 	/// </summary>
-	public static readonly BindableProperty MaxRowsProperty = BindableProperty.Create(nameof(MaxRows), typeof(int), typeof(UniformItemsLayout), int.MaxValue);
+	[BindableProperty(PropertyChangingMethodName = nameof(OnMaxRowsPropertyChanging))]
+	public partial int MaxRows { get; set; } = UniformItemLayoutDefaults.MaxRows;
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="MaxColumns"/> property.
+	/// Gets or sets the maximum number of columns to display in the layout.
 	/// </summary>
-	public static readonly BindableProperty MaxColumnsProperty = BindableProperty.Create(nameof(MaxColumns), typeof(int), typeof(UniformItemsLayout), int.MaxValue);
-
-	/// <summary>
-	/// Max rows
-	/// </summary>
-	public int MaxRows
-	{
-		get => (int)GetValue(MaxRowsProperty);
-		set
-		{
-			if (value < 1)
-			{
-				throw new ArgumentOutOfRangeException(nameof(value), value, $"{nameof(MaxRows)} must be greater or equal to 1.");
-			}
-
-			SetValue(MaxRowsProperty, value);
-		}
-	}
-
-	/// <summary>
-	/// Max columns
-	/// </summary>
-	public int MaxColumns
-	{
-		get => (int)GetValue(MaxColumnsProperty);
-		set
-		{
-			if (value < 1)
-			{
-				throw new ArgumentOutOfRangeException(nameof(value), value, $"{nameof(MaxColumns)} must be greater or equal to 1.");
-			}
-
-			SetValue(MaxColumnsProperty, value);
-		}
-	}
+	/// <remarks>
+	/// Set this property to limit the number of columns arranged by the layout. The value must be greater
+	/// than or equal to 1. The default value is <see cref="int.MaxValue"/>, which allows an unlimited number of
+	/// columns.
+	/// </remarks>
+	[BindableProperty(PropertyChangingMethodName = nameof(OnMaxColumnsPropertyChanging))]
+	public partial int MaxColumns { get; set; } = UniformItemLayoutDefaults.MaxColumns;
 
 	/// <inheritdoc	/>
 	protected override ILayoutManager CreateLayoutManager() => new UniformItemsLayoutManager(this);
+
+	static void OnMaxRowsPropertyChanging(BindableObject bindable, object oldValue, object newValue)
+	{
+		var maxRows = (int)newValue;
+		if (maxRows < 1)
+		{
+			throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(MaxRows)} must be greater or equal to 1.");
+		}
+	}
+
+	static void OnMaxColumnsPropertyChanging(BindableObject bindable, object oldValue, object newValue)
+	{
+		var maxColumns = (int)newValue;
+		if (maxColumns < 1)
+		{
+			throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(MaxColumns)} must be greater or equal to 1.");
+		}
+	}
 }
