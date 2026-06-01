@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Android.Content;
 using Android.Runtime;
@@ -124,6 +125,12 @@ public sealed partial class SpeechToTextImplementation
 		speechRecognizer?.StopListening();
 		speechRecognizer?.Destroy();
 		CurrentState = SpeechToTextState.Stopped;
+
+		listener?.Dispose();
+		speechRecognizer?.Dispose();
+
+		listener = null;
+		speechRecognizer = null;
 	}
 
 	class SpeechRecognitionListener(SpeechToTextImplementation speechToText) : Java.Lang.Object, IRecognitionListener
@@ -172,6 +179,7 @@ public sealed partial class SpeechToTextImplementation
 
 		public void OnRmsChanged(float rmsdB)
 		{
+			Debug.WriteLine($"RMS dB: {rmsdB}");
 		}
 
 		static void SendResults(Bundle? bundle, Action<string> action)
