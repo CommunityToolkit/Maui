@@ -72,7 +72,7 @@ jobs:
                     xcode-version: ${{ env.CommunityToolkitSample_Xcode_Version }}
 
             -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
-                uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
+                uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
                 with:
                     dotnet-version: ${{ env.LATEST_NET_VERSION }}
                     dotnet-quality: 'ga'
@@ -146,7 +146,7 @@ jobs:
                     xcode-version: ${{ env.CommunityToolkitLibrary_Xcode_Version }}
 
             -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
-                uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
+                uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
                 with:
                     dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
                     dotnet-quality: 'ga'
@@ -286,7 +286,7 @@ jobs:
         
         steps:
             -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
-                uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
+                uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
                 with:
                     dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
                     dotnet-quality: 'ga'
@@ -358,7 +358,7 @@ jobs:
         
         steps:
             -   name: Install .NET SDK
-                uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
+                uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
                 with:
                     dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
                     dotnet-quality: 'ga'
@@ -386,7 +386,7 @@ jobs:
         
         steps:
             -   name: Install .NET SDK
-                uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
+                uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
                 with:
                     dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
                     dotnet-quality: 'ga'
