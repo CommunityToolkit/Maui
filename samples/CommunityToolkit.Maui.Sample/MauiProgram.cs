@@ -123,6 +123,9 @@ public static class MauiProgram
 		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>()
 						.AddStandardResilienceHandler(static options => options.Retry = new MobileHttpRetryStrategyOptions());
 
+		builder.Services.AddHttpClient<MediaElementFromStreamPage>()
+			.AddStandardResilienceHandler(static options => options.Retry = new MobileHttpRetryStrategyOptions());
+
 		builder.Services.AddSingleton<AppShell>();
 
 		RegisterViewsAndViewModels(builder.Services);
@@ -252,6 +255,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<LazyViewPage, LazyViewViewModel>();
 		services.AddTransientWithShellRoute<MapsPinsPage, MapsPinsViewModel>();
 		services.AddTransientWithShellRoute<MediaElementPage, MediaElementViewModel>();
+		services.AddTransientWithShellRoute<MediaElementFromStreamPage, MediaElementFromStreamViewModel>();
 		services.AddTransientWithShellRoute<MediaElementCarouselViewPage, MediaElementCarouselViewViewModel>();
 		services.AddTransientWithShellRoute<MediaElementCollectionViewPage, MediaElementCollectionViewViewModel>();
 		services.AddTransientWithShellRoute<MediaElementMultipleWindowsPage, MediaElementMultipleWindowsViewModel>();

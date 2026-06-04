@@ -14,6 +14,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MediaManager : IDisposable
 {
 	Metadata? metaData;
+	StreamAssetResourceLoader? streamResourceLoader;
 
 	// Media would still start playing when Speed was set although ShouldAutoPlay=False
 	// This field was added to overcome that.
@@ -220,6 +221,13 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
+		// Clean up previous stream resource loader if switching sources
+		if (MediaElement.Source is not StreamMediaSource)
+		{
+			streamResourceLoader?.Dispose();
+			streamResourceLoader = null;
+		}
+
 		metaData ??= new(Player);
 		Metadata.ClearNowPlaying();
 		PlayerViewController?.ContentOverlayView?.Subviews.FirstOrDefault()?.RemoveFromSuperview();
@@ -229,7 +237,21 @@ public partial class MediaManager : IDisposable
 			var uri = uriMediaSource.Uri;
 			if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
 			{
-				asset = AVAsset.FromUrl(new NSUrl(uri.AbsoluteUri));
+				var nsUrl = new NSUrl(uri.AbsoluteUri);
+				var headers = uriMediaSource.HttpHeaders;
+				if (headers.Count > 0)
+				{
+					var pairs = headers.ToArray();
+					var nativeHeaders = NSDictionary.FromObjectsAndKeys(
+						pairs.Select(p => p.Value).ToArray<object>(),
+						pairs.Select(p => p.Key).ToArray<object>());
+					var options = new NSDictionary("AVURLAssetHTTPHeaderFieldsKey", nativeHeaders);
+					asset = new AVUrlAsset(nsUrl, new AVUrlAssetOptions(options));
+				}
+				else
+				{
+					asset = AVAsset.FromUrl(nsUrl);
+				}
 			}
 		}
 		else if (MediaElement.Source is FileMediaSource fileMediaSource)
@@ -258,6 +280,27 @@ public partial class MediaManager : IDisposable
 			else
 			{
 				Logger.LogWarning("Invalid file path for ResourceMediaSource.");
+			}
+		}
+		else if (MediaElement.Source is StreamMediaSource streamMediaSource)
+		{
+			if (streamMediaSource.Stream is not null)
+			{
+				// Create a custom URL scheme for the stream
+				var streamUrl = new NSUrl("stream://media");
+
+				// Create an AVURLAsset with the custom scheme
+				var urlAsset = new AVUrlAsset(streamUrl);
+
+				// Create and set up the resource loader
+				streamResourceLoader?.Dispose();
+				streamResourceLoader = new StreamAssetResourceLoader(streamMediaSource.Stream, GetStreamContentType(streamMediaSource.Stream));
+
+				// Assign the resource loader delegate to a serial background queue to avoid blocking the UI thread
+				var resourceLoaderQueue = new DispatchQueue("CommunityToolkit.Maui.MediaElement.StreamResourceLoader");
+				urlAsset.ResourceLoader.SetDelegate(streamResourceLoader, resourceLoaderQueue);
+
+				asset = urlAsset;
 			}
 		}
 
@@ -453,9 +496,53 @@ public partial class MediaManager : IDisposable
 				Player = null;
 			}
 
+			streamResourceLoader?.Dispose();
+			streamResourceLoader = null;
+
 			PlayerViewController?.Dispose();
 			PlayerViewController = null;
 		}
+	}
+
+	static string GetStreamContentType(Stream stream)
+	{
+		// Try to detect content type from magic bytes
+		if (stream is not { CanSeek: true, Length: > 12 })
+		{
+			return StreamAssetResourceLoader.DefaultContentType;
+		}
+
+		var originalPosition = stream.Position;
+		try
+		{
+			stream.Position = 0;
+			var buffer = new byte[12];
+			var bytesRead = stream.Read(buffer, 0, 12);
+
+			if (bytesRead >= 12)
+			{
+				// Check for MP4/M4V/MOV signature (ftyp box at offset 4)
+				if (buffer[4] == 0x66 && buffer[5] == 0x74 && buffer[6] == 0x79 && buffer[7] == 0x70)
+				{
+					// Check specific brand
+					var brand = System.Text.Encoding.ASCII.GetString(buffer, 8, 4);
+
+					// Most iOS videos will be either mp4, m4v, or qt (QuickTime)
+					// For AVFoundation, we should use UTI: "public.mpeg-4" or "com.apple.quicktime-movie"
+					return brand.StartsWith("qt", StringComparison.Ordinal)
+						? "com.apple.quicktime-movie"
+						: StreamAssetResourceLoader.DefaultContentType;
+				}
+			}
+		}
+		finally
+		{
+			stream.Position = originalPosition;
+		}
+
+		// Default to MPEG-4 (MP4) - covers most cases
+		// Using UTI format for iOS/macOS
+		return "public.mpeg-4";
 	}
 
 	static TimeSpan ConvertTime(CMTime cmTime) => TimeSpan.FromSeconds(double.IsNaN(cmTime.Seconds) ? 0 : cmTime.Seconds);

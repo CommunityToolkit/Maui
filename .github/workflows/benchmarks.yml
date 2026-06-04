@@ -27,10 +27,10 @@ jobs:
         runs-on: windows-latest            
         steps:
             -   name: Checkout code
-                uses: actions/checkout@main
+                uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
             -   name: Install Latest Version of .NET, v${{ env.LATEST_NET_VERSION }}
-                uses: actions/setup-dotnet@v5
+                uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
                 with:
                     dotnet-version: ${{ env.LATEST_NET_VERSION }}
                     dotnet-quality: 'ga'
@@ -56,7 +56,7 @@ jobs:
                 run: dotnet run --project ${{ env.PathToCommunityToolkitSourceGeneratorsBenchmarksCsproj }} -c Release -- -a "${{ runner.temp }}"
 
             -   name: Publish Benchmarks
-                uses: actions/upload-artifact@v7
+                uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
                 with:
                     name: Benchmarks
                     path: |

@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions;
 
 public class NavigatedToEventArgsExtensionsTests : BaseViewTest
 {
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task NavigatedToEventArgsExtensions_WasPreviousPageACommunityToolkitPopupPage_ShouldReturnTrue()
 	{
 		// Arrange
@@ -38,12 +38,13 @@ public class NavigatedToEventArgsExtensionsTests : BaseViewTest
 		{
 			if (e.PreviousPage != mainPage)
 			{
+				shellContentPage.NavigatedToEventArgsReceived -= HandleNavigatedToEventArgsReceived;
 				wasPreviousPageACommunityToolkitPopupPageTCS.SetResult(e.WasPreviousPageACommunityToolkitPopupPage());
 			}
 		}
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task NavigatedToEventArgsExtensions_WasPreviousPageACommunityToolkitPopupPage_ShouldReturnFalse()
 	{
 		// Arrange
