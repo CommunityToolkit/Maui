@@ -1,108 +1,73 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<pages:BasePage
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Views.CameraViewPage"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
-    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-    xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
-    Title="CameraView"
-    x:DataType="viewModels:CameraViewViewModel"
-    x:TypeArguments="viewModels:CameraViewViewModel">
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+                xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+                Title="CameraView"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Views.CameraViewPage"
+                x:TypeArguments="viewModels:CameraViewViewModel"
+                x:DataType="viewModels:CameraViewViewModel">
 
-    <Grid ColumnDefinitions="3*,*" RowDefinitions="Auto,*,Auto,Auto">
+    <Grid RowDefinitions="Auto,*,Auto,Auto" ColumnDefinitions="3*,*">
         <toolkit:CameraView
             x:Name="Camera"
-            Grid.Row="0"
-            Grid.RowSpan="3"
-            Grid.Column="0"
-            Grid.ColumnSpan="2"
+            Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Grid.RowSpan="3"
             CameraFlashMode="{Binding FlashMode}"
-            ImageCaptureResolution="{Binding SelectedResolution}"
             IsTorchOn="{Binding IsTorchOn, Mode=TwoWay}"
-            SelectedCamera="{Binding SelectedCamera}"
-            ZoomFactor="{Binding CurrentZoom}" />
+            ZoomFactor="{Binding CurrentZoom}"
+            ImageCaptureResolution="{Binding SelectedResolution}"
+            SelectedCamera="{Binding SelectedCamera}"/>
 
-        <Grid
-            Grid.Row="0"
-            Grid.Column="0"
-            BackgroundColor="#80CCCCCC"
-            RowDefinitions="Auto">
+        <Grid Grid.Column="0" Grid.Row="0" RowDefinitions="Auto" BackgroundColor="#80CCCCCC">
 
-            <VerticalStackLayout Padding="5" Spacing="5">
+            <VerticalStackLayout Spacing="5" Padding="5" >
                 <Label Text="{Binding CameraNameText}" />
                 <Label Text="{Binding FlashModeText}" />
                 <Label Text="{Binding ZoomRangeText}" />
                 <Label Text="{Binding CurrentZoomText}" />
                 <Label Text="{Binding ResolutionText}" />
-                <Picker
+                <Picker 
                     Title="Available Resolutions"
                     ItemsSource="{Binding SelectedCamera.SupportedResolutions, FallbackValue='', x:DataType={x:Null}}"
                     SelectedItem="{Binding SelectedResolution}" />
-                <Label x:Name="debugText" />
+                <Label x:Name="debugText"/>
 
             </VerticalStackLayout>
         </Grid>
 
-        <ContentView
-            Grid.Row="0"
-            Grid.Column="1"
-            BackgroundColor="#80CCCCCC"
-            ZIndex="100">
-            <Image
-                x:Name="image"
-                HorizontalOptions="Fill"
-                VerticalOptions="Fill">
+        <ContentView Grid.Column="1" Grid.Row="0" ZIndex="100" BackgroundColor="#80CCCCCC">
+            <Image x:Name="image" VerticalOptions="Fill" HorizontalOptions="Fill">
                 <Image.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnImageTapped" />
                 </Image.GestureRecognizers>
             </Image>
         </ContentView>
 
-        <Grid
-            Grid.Row="2"
-            Grid.Column="0"
-            Grid.ColumnSpan="2"
-            Margin="10"
-            BackgroundColor="#00000000"
-            ColumnDefinitions="Auto,*,Auto"
-            ColumnSpacing="10">
-            <Button
-                Grid.Column="0"
-                Clicked="ZoomOut"
-                Text="Zoom -" />
+        <Grid ColumnDefinitions="Auto,*,Auto"  Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2" ColumnSpacing="10" Margin="10"
+              BackgroundColor="#00000000">
+            <Button Clicked="ZoomOut" Text="Zoom -" Grid.Column="0"/>
 
-            <Slider
-                x:Name="slider"
-                Grid.Column="1"
+            <Slider 
+                x:Name="slider" Grid.Column="1"
+                Value="{Binding CurrentZoom}"
                 Maximum="{Binding SelectedCamera.MaximumZoomFactor, FallbackValue=1, x:DataType={x:Null}}"
-                Minimum="{Binding SelectedCamera.MinimumZoomFactor, FallbackValue=1, x:DataType={x:Null}}"
-                Value="{Binding CurrentZoom}" />
+                Minimum="{Binding SelectedCamera.MinimumZoomFactor, FallbackValue=1, x:DataType={x:Null}}"/>
 
-            <Button
-                Grid.Column="2"
-                Clicked="ZoomIn"
-                Text="Zoom +" />
+            <Button Clicked="ZoomIn" Text="Zoom +" Grid.Column="2"/>
         </Grid>
 
-        <Grid
-            Grid.Row="5"
-            Grid.Column="0"
-            Grid.ColumnSpan="2"
-            BackgroundColor="#80CCCCCC">
+        <Grid Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="5" BackgroundColor="#80CCCCCC">
 
-            <FlexLayout
-                Margin="5"
-                JustifyContent="SpaceBetween"
-                Wrap="Wrap">
+            <FlexLayout Margin="5" JustifyContent="SpaceBetween" Wrap="Wrap">
 
-                <Picker
-                    Title="Cameras"
-                    ItemDisplayBinding="{Binding Name, x:DataType={x:Null}}"
+                <Picker 
+                    Title="Cameras" 
                     ItemsSource="{Binding Cameras}"
+                    ItemDisplayBinding="{Binding Name, x:DataType={x:Null}}" 
                     SelectedItem="{Binding SelectedCamera}" />
 
-                <Picker
+                <Picker 
                     Title="Flash"
                     IsVisible="{Binding Path=SelectedCamera.IsFlashSupported, FallbackValue=false}"
                     ItemsSource="{Binding FlashModes}"
@@ -113,27 +78,26 @@
                     <Label Text="Torch" VerticalOptions="Center" />
                 </HorizontalStackLayout>
 
-                <Button
-                    Command="{Binding StartCameraPreviewCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}"
-                    CommandParameter="{Binding Token}"
-                    Text="Start Camera Preview" />
+                <Button Command="{Binding StartCameraPreviewCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}"
+                        CommandParameter="{Binding Token}"
+                        Text="Start Camera Preview" />
 
-                <Button Command="{Binding StopCameraPreviewCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}" Text="Stop Camera Preview" />
+                <Button Command="{Binding StopCameraPreviewCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}" 
+                        Text="Stop Camera Preview" />
 
 
-                <Button Clicked="StartCameraRecording" Text="Start Video Recording" />
+                <Button Clicked="StartCameraRecording"
+                        Text="Start Video Recording" />
 
-                <Button
-                    Clicked="StopCameraRecording"
-                    CommandParameter="{Binding Token}"
-                    Text="Stop Video Recording" />
+                <Button  Clicked="StopCameraRecording"
+                         CommandParameter="{Binding Token}"
+                         Text="Stop Video Recording" />
 
                 <Button Clicked="SaveVideo" Text="Save Video Recording" />
 
-                <Button
-                    Command="{Binding CaptureImageCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}"
-                    CommandParameter="{Binding Token}"
-                    Text="Capture Image" />
+                <Button Command="{Binding CaptureImageCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}" 
+                        CommandParameter="{Binding Token}"
+                        Text="Capture Image"/>
 
                 <Button Clicked="SetNightMode" Text="Set Night Mode (Android)" />
 
