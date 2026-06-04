@@ -329,15 +329,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 	static Command<CancellationToken> CreateStopCameraPreviewCommand(BindableObject bindable)
 	{
 		var cameraView = (CameraView)bindable;
-		return new(token =>
-		{
-			if (token.IsCancellationRequested)
-			{
-				return;
-			}
-
-			cameraView.StopCameraPreview();
-		});
+		return new(token => cameraView.StopCameraPreview());
 	}
 
 	static Command<Stream> CreateStartVideoRecordingCommand(BindableObject bindable)
