@@ -151,7 +151,8 @@ public static class PopupExtensions
 
 		try
 		{
-			await navigation.PushModalAsync(popupPage, false).WaitAsync(token);
+			token.ThrowIfCancellationRequested();
+			await navigation.PushModalAsync(popupPage, false);
 		}
 		finally
 		{
@@ -200,7 +201,8 @@ public static class PopupExtensions
 			{
 				try
 				{
-					await shell.GoToAsync(popupPageRoute).WaitAsync(token);
+					token.ThrowIfCancellationRequested();
+					await shell.GoToAsync(popupPageRoute);
 				}
 				finally
 				{
@@ -211,7 +213,8 @@ public static class PopupExtensions
 			{
 				try
 				{
-					await shell.GoToAsync(popupPageRoute, shellParameters).WaitAsync(token);
+					token.ThrowIfCancellationRequested();
+					await shell.GoToAsync(popupPageRoute, shellParameters);
 				}
 				finally
 				{
