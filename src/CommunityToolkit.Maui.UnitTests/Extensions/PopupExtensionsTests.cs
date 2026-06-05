@@ -1513,6 +1513,231 @@ public class PopupExtensionsTests : BaseViewTest
 		Assert.Equal(expectedResult, popupResult.Result);
 		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
 	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public void ShowPopup_INavigation_SemaphoreReleasedAfterDisplay_AllowsAdditionalPopups()
+	{
+		// Arrange
+		Assert.Empty(navigation.ModalStack);
+
+		// Act - The first ShowPopup acquires the semaphore, pushes the popup and releases the semaphore
+		navigation.ShowPopup(new Grid());
+
+		// Assert
+		Assert.Single(navigation.ModalStack);
+
+		// Act - The second ShowPopup can only display if the semaphore was released after the first push
+		navigation.ShowPopup(new Grid());
+
+		// Assert
+		Assert.Equal(2, navigation.ModalStack.Count);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_INavigation_SemaphoreReleasedAfterPush_AllowsAdditionalPopupWhileFirstIsOpen()
+	{
+		// Arrange
+		Assert.Empty(navigation.ModalStack);
+
+		// Act - Display the first popup but do not close it; the semaphore is released after the push, not after the popup closes
+		var firstShowPopupTask = navigation.ShowPopupAsync<object?>(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.Single(navigation.ModalStack);
+
+		// Act - Display a second popup while the first is still open; this proves the semaphore was released after the first push
+		var secondShowPopupTask = navigation.ShowPopupAsync<object?>(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.Equal(2, navigation.ModalStack.Count);
+
+		// Act - Close both popups and ensure both awaiting tasks complete
+		await navigation.ClosePopupAsync(TestContext.Current.CancellationToken);
+		await secondShowPopupTask;
+		await navigation.ClosePopupAsync(TestContext.Current.CancellationToken);
+		await firstShowPopupTask;
+
+		// Assert
+		Assert.Empty(navigation.ModalStack);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public void ShowPopup_Shell_SemaphoreReleasedAfterDisplay_NullParameters_AllowsAdditionalPopups()
+	{
+		// Arrange
+		var shell = new Shell();
+		shell.Items.Add(new MockPage(new MockPageViewModel()));
+
+		Assert.NotNull(Application.Current);
+		Application.Current.Windows[0].Page = shell;
+
+		var shellNavigation = Shell.Current.Navigation;
+		Assert.Empty(shellNavigation.ModalStack);
+
+		// Act - Exercises the `shellParameters is null` branch which acquires and releases the semaphore around GoToAsync
+		shell.ShowPopup(new Popup());
+
+		// Assert
+		Assert.Single(shellNavigation.ModalStack);
+
+		// Act - The second display proves the semaphore was released by the null-parameters branch
+		shell.ShowPopup(new Popup());
+
+		// Assert
+		Assert.Equal(2, shellNavigation.ModalStack.Count);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public void ShowPopup_Shell_SemaphoreReleasedAfterDisplay_WithParameters_AllowsAdditionalPopups()
+	{
+		// Arrange
+		var shell = new Shell();
+		shell.Items.Add(new MockPage(new MockPageViewModel()));
+
+		Assert.NotNull(Application.Current);
+		Application.Current.Windows[0].Page = shell;
+
+		var shellNavigation = Shell.Current.Navigation;
+		Assert.Empty(shellNavigation.ModalStack);
+
+		var firstView = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
+		var secondView = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
+
+		// Act - Exercises the `shellParameters is not null` branch which acquires and releases the semaphore around GoToAsync
+		shell.ShowPopup(firstView, PopupOptions.Empty, shellParameters);
+
+		// Assert
+		Assert.Single(shellNavigation.ModalStack);
+
+		// Act - The second display proves the semaphore was released by the with-parameters branch
+		shell.ShowPopup(secondView, PopupOptions.Empty, shellParameters);
+
+		// Assert
+		Assert.Equal(2, shellNavigation.ModalStack.Count);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_INavigation_SemaphoreReleasedAfterCancellation_AllowsSubsequentPopup()
+	{
+		// Arrange
+		var cts = new CancellationTokenSource();
+		await cts.CancelAsync();
+
+		// Act - A canceled token forces ShowPopupAsync to throw; the semaphore must not be leaked
+		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ShowPopupAsync(new Popup(), PopupOptions.Empty, cts.Token));
+
+		// Assert - Canceling must not leave a popup on the modal stack
+		Assert.Empty(navigation.ModalStack);
+
+		// Act - A subsequent display can only succeed if the semaphore was released after cancellation
+		navigation.ShowPopup(new Grid());
+
+		// Assert
+		Assert.Single(navigation.ModalStack);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_Shell_SemaphoreReleasedAfterCancellation_WithParameters_AllowsSubsequentPopup()
+	{
+		// Arrange
+		var shell = new Shell();
+		shell.Items.Add(new MockPage(new MockPageViewModel()));
+
+		Assert.NotNull(Application.Current);
+		Application.Current.Windows[0].Page = shell;
+
+		var shellNavigation = Shell.Current.Navigation;
+		var view = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
+
+		var cts = new CancellationTokenSource();
+		await cts.CancelAsync();
+
+		// Act - A canceled token forces ShowPopupAsync to throw; the semaphore must not be leaked
+		await Assert.ThrowsAsync<OperationCanceledException>(() => shell.ShowPopupAsync(view, PopupOptions.Empty, shellParameters, cts.Token));
+
+		// Assert - Canceling must not leave a popup on the modal stack
+		Assert.Empty(shellNavigation.ModalStack);
+
+		// Act - A subsequent display can only succeed if the semaphore was released after cancellation
+		shell.ShowPopup(new Popup());
+
+		// Assert
+		Assert.Single(shellNavigation.ModalStack);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_Shell_SemaphoreReleasedAfterCancellation_NullParameters_AllowsSubsequentPopup()
+	{
+		// Arrange
+		var shell = new Shell();
+		shell.Items.Add(new MockPage(new MockPageViewModel()));
+
+		Assert.NotNull(Application.Current);
+		Application.Current.Windows[0].Page = shell;
+
+		var shellNavigation = Shell.Current.Navigation;
+		var view = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
+
+		var cts = new CancellationTokenSource();
+		await cts.CancelAsync();
+
+		// Act - A canceled token (with null shellParameters) forces ShowPopupAsync to throw; the semaphore must not be leaked
+		await Assert.ThrowsAsync<OperationCanceledException>(() => shell.ShowPopupAsync(view, PopupOptions.Empty, shellParameters: null, cts.Token));
+
+		// Assert - Canceling must not leave a popup on the modal stack
+		Assert.Empty(shellNavigation.ModalStack);
+
+		// Act - A subsequent display can only succeed if the semaphore was released after cancellation
+		shell.ShowPopup(new Popup());
+
+		// Assert
+		Assert.Single(shellNavigation.ModalStack);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_INavigation_CancellationLeavesModalStackEmptyAndSemaphoreReleased()
+	{
+		// Arrange
+		var cts = new CancellationTokenSource();
+		await cts.CancelAsync();
+
+		// Act - Cancel the awaitable display
+		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ShowPopupAsync(new Popup(), PopupOptions.Empty, cts.Token));
+
+		// Assert - The canceled call must leave a clean modal stack
+		Assert.Empty(navigation.ModalStack);
+
+		// Act - The awaitable path must also recover; the semaphore was released by the finally block
+		var showPopupTask = navigation.ShowPopupAsync<object?>(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.Single(navigation.ModalStack);
+
+		// Act - Close the popup and ensure the task completes
+		await navigation.ClosePopupAsync(TestContext.Current.CancellationToken);
+		await showPopupTask;
+
+		// Assert
+		Assert.Empty(navigation.ModalStack);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public void ShowPopup_INavigation_SemaphoreSerializesMultipleDisplays_AllDisplayed()
+	{
+		// Arrange
+		const int popupCount = 5;
+		Assert.Empty(navigation.ModalStack);
+
+		// Act - Each display must acquire the semaphore, push the popup and release the semaphore.
+		// If the semaphore were not released after each push, the later popups would never be displayed.
+		for (var i = 0; i < popupCount; i++)
+		{
+			navigation.ShowPopup(new Grid());
+		}
+
+		// Assert
+		Assert.Equal(popupCount, navigation.ModalStack.Count);
+	}
 }
 
 sealed class ViewWithIQueryAttributable : Button, IQueryAttributable
