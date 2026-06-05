@@ -157,6 +157,7 @@ public static class PopupExtensions
 		{
 			showPopupSemaphoreSlim.Release();
 		}
+
 		return await taskCompletionSource.Task.WaitAsync(token);
 
 		void HandlePopupClosed(object? sender, IPopupResult e)
@@ -193,9 +194,10 @@ public static class PopupExtensions
 
 		try
 		{
+			await showPopupSemaphoreSlim.WaitAsync(token);
+			
 			if (shellParameters is null)
 			{
-				await showPopupSemaphoreSlim.WaitAsync(token);
 				try
 				{
 					await shell.GoToAsync(popupPageRoute).WaitAsync(token);
@@ -207,7 +209,6 @@ public static class PopupExtensions
 			}
 			else
 			{
-				await showPopupSemaphoreSlim.WaitAsync(token);
 				try
 				{
 					await shell.GoToAsync(popupPageRoute, shellParameters).WaitAsync(token);
