@@ -1722,7 +1722,7 @@ public class PopupExtensionsTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public void ShowPopup_INavigation_SemaphoreSerializesMultipleDisplays_AllDisplayed()
+	public async Task ShowPopup_INavigation_SemaphoreSerializesMultipleDisplays_AllDisplayed()
 	{
 		// Arrange
 		const int popupCount = 5;
@@ -1735,8 +1735,19 @@ public class PopupExtensionsTests : BaseViewTest
 			navigation.ShowPopup(new Grid());
 		}
 
+		await WaitForModalStackCountAsync(popupCount, TestContext.Current.CancellationToken);
+
 		// Assert
 		Assert.Equal(popupCount, navigation.ModalStack.Count);
+
+		async Task WaitForModalStackCountAsync(int expectedCount, CancellationToken token)
+		{
+			while (navigation.ModalStack.Count < expectedCount)
+			{
+				token.ThrowIfCancellationRequested();
+				await Task.Delay(10, token);
+			}
+		}
 	}
 }
 
