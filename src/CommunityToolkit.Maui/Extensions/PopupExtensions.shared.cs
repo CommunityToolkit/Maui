@@ -195,7 +195,7 @@ public static class PopupExtensions
 		try
 		{
 			await showPopupSemaphoreSlim.WaitAsync(token);
-			
+
 			if (shellParameters is null)
 			{
 				try
