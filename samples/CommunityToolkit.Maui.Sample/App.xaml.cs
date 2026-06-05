@@ -1,4 +1,5 @@
-﻿using Application = Microsoft.Maui.Controls.Application;
+﻿using Popup_Repro;
+using Application = Microsoft.Maui.Controls.Application;
 
 namespace CommunityToolkit.Maui.Sample;
 
@@ -13,5 +14,5 @@ public partial class App : Application
 		this.appShell = appShell;
 	}
 
-	protected override Window CreateWindow(IActivationState? activationState) => new(appShell);
+	protected override Window CreateWindow(IActivationState? activationState) => new(new MainPage());
 }

@@ -42,8 +42,16 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		tapOutsideOfPopupCommand = new Command(async () =>
 		{
-			popupOptions.OnTappingOutsideOfPopup?.Invoke();
-			await CloseAsync(new PopupResult(true));
+			try
+			{
+				popupOptions.OnTappingOutsideOfPopup?.Invoke();
+				await CloseAsync(new PopupResult(true));
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex);
+				throw;
+			}
 		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
 
 		var popupPageLayout = new PopupPageLayout(popup, popupOptions, () => TryExecuteTapOutsideOfPopupCommand());
@@ -84,8 +92,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 
 		var popupPageToClose = navigationPageOnModalStackContainingPopupPage?.CurrentPage as PopupPage
-							   ?? Navigation.ModalStack.OfType<PopupPage>().LastOrDefault()
-							   ?? throw new PopupNotFoundException();
+		                       ?? Navigation.ModalStack.OfType<PopupPage>().LastOrDefault()
+		                       ?? throw new PopupNotFoundException();
 
 		// PopModalAsync will pop the last (top) page from the ModalStack
 		// Ensure that the PopupPage the user is attempting to close is the last (top) page on the Modal stack before calling Navigation.PopModalAsync
@@ -116,6 +124,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		// In other words, `.WaitAsync(token)` may not throw an `OperationCanceledException` as expected which is why we call `.ThrowIfCancellationRequested()` again here
 		// Here's the .NET MAUI Source code demonstrating that `Navigation.PopModalAsync()` sometimes returns `Task.FromResult()`: https://github.com/dotnet/maui/blob/e5c252ec7f430cbaf28c8a815a249e3270b49844/src/Controls/src/Core/NavigationProxy.cs#L192-L196
 		token.ThrowIfCancellationRequested();
+
 		await Navigation.PopModalAsync(false).WaitAsync(token);
 
 		// Clean up Popup resources
