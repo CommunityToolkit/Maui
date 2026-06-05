@@ -8,6 +8,8 @@ namespace CommunityToolkit.Maui.Extensions;
 /// </summary>
 public static class PopupExtensions
 {
+	static readonly SemaphoreSlim showPopupSemaphoreSlim = new(1, 1);
+
 	/// <summary>
 	/// Shows a popup with the specified options.
 	/// </summary>
@@ -36,7 +38,16 @@ public static class PopupExtensions
 
 		var popupPage = new PopupPage(view, options);
 
-		await navigation.PushModalAsync(popupPage, false);
+		await showPopupSemaphoreSlim.WaitAsync();
+
+		try
+		{
+			await navigation.PushModalAsync(popupPage, false);
+		}
+		finally
+		{
+			showPopupSemaphoreSlim.Release();
+		}
 	}
 
 	/// <summary>
@@ -136,7 +147,16 @@ public static class PopupExtensions
 		var popupPage = new PopupPage(view, options);
 		popupPage.PopupClosed += HandlePopupClosed;
 
-		await navigation.PushModalAsync(popupPage, false).WaitAsync(token);
+		await showPopupSemaphoreSlim.WaitAsync(token);
+
+		try
+		{
+			await navigation.PushModalAsync(popupPage, false).WaitAsync(token);
+		}
+		finally
+		{
+			showPopupSemaphoreSlim.Release();
+		}
 		return await taskCompletionSource.Task.WaitAsync(token);
 
 		void HandlePopupClosed(object? sender, IPopupResult e)
@@ -175,11 +195,27 @@ public static class PopupExtensions
 		{
 			if (shellParameters is null)
 			{
-				await shell.GoToAsync(popupPageRoute).WaitAsync(token);
+				await showPopupSemaphoreSlim.WaitAsync(token);
+				try
+				{
+					await shell.GoToAsync(popupPageRoute).WaitAsync(token);
+				}
+				finally
+				{
+					showPopupSemaphoreSlim.Release();
+				}
 			}
 			else
 			{
-				await shell.GoToAsync(popupPageRoute, shellParameters).WaitAsync(token);
+				await showPopupSemaphoreSlim.WaitAsync(token);
+				try
+				{
+					await shell.GoToAsync(popupPageRoute, shellParameters).WaitAsync(token);
+				}
+				finally
+				{
+					showPopupSemaphoreSlim.Release();
+				}
 			}
 
 			return await taskCompletionSource.Task.WaitAsync(token);
