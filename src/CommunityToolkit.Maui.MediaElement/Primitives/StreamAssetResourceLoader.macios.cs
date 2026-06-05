@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Core;
 sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 {
 	public const string DefaultContentType = "public.mpeg-4";
-	
+
 	readonly Stream stream;
 	readonly string contentType;
 
