@@ -29,11 +29,11 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	/// Ensures we avoid race conditions with the .NET MAUI Navigation Stack
 	/// </summary>
 	static readonly SemaphoreSlim navigationSemaphoreSlim = new(1, 1);
-	
+
 	readonly Popup popup;
 	readonly IPopupOptions popupOptions;
 	readonly Command tapOutsideOfPopupCommand;
-	
+
 
 	public PopupPage(View view, IPopupOptions? popupOptions)
 		: this(view as Popup ?? CreatePopupFromView<Popup>(view), popupOptions)
@@ -80,7 +80,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	public async Task ShowAsync(INavigation navigation, CancellationToken token = default)
 	{
 		await navigationSemaphoreSlim.WaitAsync(token);
-		
+
 		try
 		{
 			token.ThrowIfCancellationRequested();
@@ -91,11 +91,11 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			navigationSemaphoreSlim.Release();
 		}
 	}
-	
+
 	public async Task ShowAsync(Shell shell, string shellRoute, IDictionary<string, object>? shellParameters = null, CancellationToken token = default)
 	{
 		await navigationSemaphoreSlim.WaitAsync(token);
-		
+
 		try
 		{
 			token.ThrowIfCancellationRequested();
@@ -162,15 +162,23 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		try
 		{
-			// We call `.ThrowIfCancellationRequested()` again to avoid a race condition where a developer cancels the CancellationToken after we check for an InvalidOperationException
-			// At first glance, it may look redundant given that we are using `.WaitAsync(token)` in the next step,
-			// However, `Navigation.PopModalAsync()` may return a completed Task, and when a completed Task is returned, `.WaitAsync(token)` is never invoked.
-			// In other words, `.WaitAsync(token)` may not throw an `OperationCanceledException` as expected which is why we call `.ThrowIfCancellationRequested()` again here
-			// Here's the .NET MAUI Source code demonstrating that `Navigation.PopModalAsync()` sometimes returns `Task.FromResult()`: https://github.com/dotnet/maui/blob/e5c252ec7f430cbaf28c8a815a249e3270b49844/src/Controls/src/Core/NavigationProxy.cs#L192-L196
-			token.ThrowIfCancellationRequested();
-			
+
 			await navigationSemaphoreSlim.WaitAsync(token);
-			await Navigation.PopModalAsync(false).WaitAsync(token);
+
+			try
+			{
+				// We call `.ThrowIfCancellationRequested()` again to avoid a race condition where a developer cancels the CancellationToken after we check for an InvalidOperationException
+				// At first glance, it may look redundant given that we are using `.WaitAsync(token)` in the previous step,
+				// However, `Navigation.PopModalAsync()` may return a completed Task, and when a completed Task is returned, `.WaitAsync(token)` is never invoked.
+				// In other words, `.WaitAsync(token)` may not throw an `OperationCanceledException` as expected which is why we call `.ThrowIfCancellationRequested()` again here
+				// Here's the .NET MAUI Source code demonstrating that `Navigation.PopModalAsync()` sometimes returns `Task.FromResult()`: https://github.com/dotnet/maui/blob/e5c252ec7f430cbaf28c8a815a249e3270b49844/src/Controls/src/Core/NavigationProxy.cs#L192-L196
+				token.ThrowIfCancellationRequested();
+				await Navigation.PopModalAsync(false);
+			}
+			finally
+			{
+				navigationSemaphoreSlim.Release();
+			}
 
 			// Clean up Popup resources
 			Content.TapGestureGestureOverlay.GestureRecognizers.Clear();
@@ -185,7 +193,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 		finally
 		{
-			navigationSemaphoreSlim.Release();
 			parentWindow.ModalPopped -= HandleModalPagePopped;
 			NavigatedFrom -= HandleNavigatedFrom;
 		}
