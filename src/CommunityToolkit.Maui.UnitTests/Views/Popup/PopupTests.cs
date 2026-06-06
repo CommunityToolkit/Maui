@@ -187,6 +187,29 @@ public class PopupTests : BaseViewTest
 		Assert.Empty(page.Navigation.ModalStack);
 	}
 
+	[Fact]
+	public void PopupNotFoundException_Message_ShouldContainGuidance()
+	{
+		// Arrange
+		var exception = new PopupNotFoundException();
+
+		// Assert
+		Assert.Contains(nameof(PopupExtensions.ShowPopup), exception.Message);
+		Assert.Contains(nameof(Popup.CloseAsync), exception.Message);
+	}
+
+	[Fact]
+	public void PopupBlockedException_Message_ShouldContainBlockedPageType()
+	{
+		// Arrange
+		var page = new ContentPage();
+		var exception = new PopupBlockedException(page);
+
+		// Assert
+		Assert.Contains(page.GetType().FullName, exception.Message);
+		Assert.Contains(nameof(Page.Navigation), exception.Message);
+	}
+
 	sealed class PopupOverridingClose : Popup
 	{
 		public override Task CloseAsync(CancellationToken token = default) => Task.CompletedTask;

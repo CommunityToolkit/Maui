@@ -121,4 +121,25 @@ public class PopupResultTests : BaseTest
 		// Assert
 		Assert.Throws<PopupResultException>(() => act());
 	}
+
+	[Fact]
+	public void PopupResult_ShouldImplementIPopupResult()
+	{
+		// Arrange
+		IPopupResult result = new PopupResult(false);
+
+		// Assert
+		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+	}
+
+	[Fact]
+	public void PopupResultT_ShouldImplementIPopupResultT()
+	{
+		// Arrange
+		IPopupResult<int> result = new PopupResult<int>(7, false);
+
+		// Assert
+		Assert.Equal(7, result.Result);
+		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+	}
 }
