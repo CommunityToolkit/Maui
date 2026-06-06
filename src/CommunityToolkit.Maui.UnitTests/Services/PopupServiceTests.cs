@@ -88,8 +88,8 @@ public class PopupServiceTests : BaseViewTest
 		Assert.IsType<PopupPage>(navigation.ModalStack[0]);
 	}
 
-	[Fact]
-	public void ShowPopup_UsingShell_WithViewType_ShowsPopup()
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopup_UsingShell_WithViewType_ShowsPopup()
 	{
 		// Arrange
 		var shell = new Shell();
@@ -102,6 +102,11 @@ public class PopupServiceTests : BaseViewTest
 
 		// Act
 		popupService.ShowPopup<ShortLivedSelfClosingPopup>(shell, PopupOptions.Empty, shellParameters);
+
+		for (var i = 0; i < 50 && shell.Navigation.ModalStack.Count == 0; i++)
+		{
+			await Task.Delay(10, TestContext.Current.CancellationToken);
+		}
 
 		// Assert
 		Assert.Single(shell.Navigation.ModalStack);
