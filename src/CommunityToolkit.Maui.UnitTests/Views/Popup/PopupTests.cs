@@ -207,7 +207,7 @@ public class PopupTests : BaseViewTest
 
 		// Assert
 		var fullName = page.GetType().FullName;
-		
+
 		Assert.NotNull(fullName);
 		Assert.Contains(fullName, exception.Message);
 		Assert.Contains(nameof(Page.Navigation), exception.Message);
