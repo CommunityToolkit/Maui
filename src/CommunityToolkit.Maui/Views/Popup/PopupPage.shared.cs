@@ -25,8 +25,9 @@ sealed partial class PopupPage<T>(Popup<T> popup, IPopupOptions? popupOptions)
 partial class PopupPage : ContentPage, IQueryAttributable
 {
 	/// <summary>
-	/// Used by all <c>ShowPopup</c> and <c>ClosePopup</c> methods to ensure <see cref="INavigation.PushModalAsync(Page, bool)"/> and <see cref="INavigation.PopModalAsync(bool)"/> for <see cref="PopupPage"/> are queued and only occur in series, and never run in parallel simultaneously
-	/// Ensures we avoid race conditions with the .NET MAUI Navigation Stack
+	/// Used by all <c>ShowPopup</c> and <c>ClosePopup</c> flows to ensure navigation operations for <see cref="PopupPage"/>
+	/// (e.g. <see cref="INavigation.PushModalAsync(Page, bool)"/>, <see cref="INavigation.PopModalAsync(bool)"/>, and <see cref="Shell.GoToAsync(string)"/>)
+	/// are queued and never run concurrently, avoiding race conditions with the .NET MAUI navigation stack.
 	/// </summary>
 	static readonly SemaphoreSlim navigationSemaphoreSlim = new(1, 1);
 
