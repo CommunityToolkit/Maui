@@ -47,8 +47,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			await CloseAsync(new PopupResult(true));
 		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
 
-		GetParentWindow().ModalPopped += HandleModalPagePopped;
-
 		var popupPageLayout = new PopupPageLayout(popup, popupOptions, () => TryExecuteTapOutsideOfPopupCommand());
 		base.Content = popupPageLayout;
 
@@ -87,8 +85,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 
 		var popupPageToClose = navigationPageOnModalStackContainingPopupPage?.CurrentPage as PopupPage
-							   ?? Navigation.ModalStack.OfType<PopupPage>().LastOrDefault()
-							   ?? throw new PopupNotFoundException();
+		                       ?? Navigation.ModalStack.OfType<PopupPage>().LastOrDefault()
+		                       ?? throw new PopupNotFoundException();
 
 		// PopModalAsync will pop the last (top) page from the ModalStack
 		// Ensure that the PopupPage the user is attempting to close is the last (top) page on the Modal stack before calling Navigation.PopModalAsync
@@ -113,8 +111,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			throw new PopupBlockedException(popupPageToClose);
 		}
 
-		var popupClosedTCS = new TaskCompletionSource();
-		popup.Closed += HandlePopupClosed;
+		var modalPoppedTcs = new TaskCompletionSource();
+
+		GetParentWindow().ModalPopped += HandleModalPagePopped;
 
 		try
 		{
@@ -130,18 +129,23 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			Content.TapGestureGestureOverlay.GestureRecognizers.Clear();
 			popup.PropertyChanged -= HandlePopupPropertyChanged;
 
-			await popupClosedTCS.Task.WaitAsync(token);
+			await modalPoppedTcs.Task.WaitAsync(token);
 
 			PopupClosed?.Invoke(this, result);
 		}
 		finally
 		{
-			popup.Closed -= HandlePopupClosed;
 		}
 
-		void HandlePopupClosed(object? sender, EventArgs e)
+		void HandleModalPagePopped(object? sender, ModalPoppedEventArgs e)
 		{
-			popupClosedTCS.SetResult();
+			if (e.Modal == this)
+			{
+				var parentWindow = (Window?)sender;
+				parentWindow?.ModalPopped -= HandleModalPagePopped;
+
+				modalPoppedTcs.SetResult();
+			}
 		}
 	}
 
@@ -196,19 +200,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	// Only dismiss when a user taps outside Popup when **both** Popup.CanBeDismissedByTappingOutsideOfPopup and PopupOptions.CanBeDismissedByTappingOutsideOfPopup are true
 	// If either value is false, do not dismiss Popup
 	static bool GetCanBeDismissedByTappingOutsideOfPopup(in Popup popup, in IPopupOptions popupOptions) => popup.CanBeDismissedByTappingOutsideOfPopup & popupOptions.CanBeDismissedByTappingOutsideOfPopup;
-	
-	void HandleModalPagePopped(object? sender, ModalPoppedEventArgs e)
-	{
-		if (e.Modal == this)
-		{
-			ArgumentNullException.ThrowIfNull(sender);
-			
-			var window = (Window)sender;
-			window.ModalPopped -= HandleModalPagePopped;
-			
-			popup.NotifyPopupIsClosed();
-		}
-	}
 
 	void HandlePopupOptionsPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
