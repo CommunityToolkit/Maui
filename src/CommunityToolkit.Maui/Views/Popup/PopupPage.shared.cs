@@ -163,10 +163,10 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		parentWindow.ModalPopped += HandleModalPagePopped;
 		NavigatedFrom += HandleNavigatedFrom;
 
-		await navigationSemaphoreSlim.WaitAsync(token);
-		
+
 		try
 		{
+			await navigationSemaphoreSlim.WaitAsync(token);
 			await Navigation.PopModalAsync(false);
 
 			// Clean up Popup resources
@@ -187,7 +187,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		finally
 		{
 			navigationSemaphoreSlim.Release();
-			
+
 			parentWindow.ModalPopped -= HandleModalPagePopped;
 			NavigatedFrom -= HandleNavigatedFrom;
 		}
