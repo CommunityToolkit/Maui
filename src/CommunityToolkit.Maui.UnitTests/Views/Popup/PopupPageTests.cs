@@ -212,7 +212,6 @@ public class PopupPageTests : BaseViewTest
 		}
 	}
 
-	[Fact]
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task PopupPageT_CloseAfterAdditionalModalPageToCustomNavigationPage_ShouldThrowPopupBlockedException()
 	{
