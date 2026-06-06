@@ -5,6 +5,7 @@ using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Platform;
 using NavigationPage = Microsoft.Maui.Controls.NavigationPage;
 using Page = Microsoft.Maui.Controls.Page;
 
@@ -45,6 +46,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			popupOptions.OnTappingOutsideOfPopup?.Invoke();
 			await CloseAsync(new PopupResult(true));
 		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
+
+		GetParentWindow().ModalPopped += HandleModalPagePopped;
 
 		var popupPageLayout = new PopupPageLayout(popup, popupOptions, () => TryExecuteTapOutsideOfPopupCommand());
 		base.Content = popupPageLayout;
@@ -110,20 +113,36 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			throw new PopupBlockedException(popupPageToClose);
 		}
 
-		// We call `.ThrowIfCancellationRequested()` again to avoid a race condition where a developer cancels the CancellationToken after we check for an InvalidOperationException
-		// At first glance, it may look redundant given that we are using `.WaitAsync(token)` in the next step,
-		// However, `Navigation.PopModalAsync()` may return a completed Task, and when a completed Task is returned, `.WaitAsync(token)` is never invoked.
-		// In other words, `.WaitAsync(token)` may not throw an `OperationCanceledException` as expected which is why we call `.ThrowIfCancellationRequested()` again here
-		// Here's the .NET MAUI Source code demonstrating that `Navigation.PopModalAsync()` sometimes returns `Task.FromResult()`: https://github.com/dotnet/maui/blob/e5c252ec7f430cbaf28c8a815a249e3270b49844/src/Controls/src/Core/NavigationProxy.cs#L192-L196
-		token.ThrowIfCancellationRequested();
-		await Navigation.PopModalAsync(false).WaitAsync(token);
+		var popupClosedTCS = new TaskCompletionSource();
+		popup.Closed += HandlePopupClosed;
 
-		// Clean up Popup resources
-		Content.TapGestureGestureOverlay.GestureRecognizers.Clear();
-		popup.PropertyChanged -= HandlePopupPropertyChanged;
+		try
+		{
+			// We call `.ThrowIfCancellationRequested()` again to avoid a race condition where a developer cancels the CancellationToken after we check for an InvalidOperationException
+			// At first glance, it may look redundant given that we are using `.WaitAsync(token)` in the next step,
+			// However, `Navigation.PopModalAsync()` may return a completed Task, and when a completed Task is returned, `.WaitAsync(token)` is never invoked.
+			// In other words, `.WaitAsync(token)` may not throw an `OperationCanceledException` as expected which is why we call `.ThrowIfCancellationRequested()` again here
+			// Here's the .NET MAUI Source code demonstrating that `Navigation.PopModalAsync()` sometimes returns `Task.FromResult()`: https://github.com/dotnet/maui/blob/e5c252ec7f430cbaf28c8a815a249e3270b49844/src/Controls/src/Core/NavigationProxy.cs#L192-L196
+			token.ThrowIfCancellationRequested();
+			await Navigation.PopModalAsync(false).WaitAsync(token);
 
-		PopupClosed?.Invoke(this, result);
-		popup.NotifyPopupIsClosed();
+			// Clean up Popup resources
+			Content.TapGestureGestureOverlay.GestureRecognizers.Clear();
+			popup.PropertyChanged -= HandlePopupPropertyChanged;
+
+			await popupClosedTCS.Task.WaitAsync(token);
+
+			PopupClosed?.Invoke(this, result);
+		}
+		finally
+		{
+			popup.Closed -= HandlePopupClosed;
+		}
+
+		void HandlePopupClosed(object? sender, EventArgs e)
+		{
+			popupClosedTCS.SetResult();
+		}
 	}
 
 	protected override bool OnBackButtonPressed()
@@ -177,6 +196,19 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	// Only dismiss when a user taps outside Popup when **both** Popup.CanBeDismissedByTappingOutsideOfPopup and PopupOptions.CanBeDismissedByTappingOutsideOfPopup are true
 	// If either value is false, do not dismiss Popup
 	static bool GetCanBeDismissedByTappingOutsideOfPopup(in Popup popup, in IPopupOptions popupOptions) => popup.CanBeDismissedByTappingOutsideOfPopup & popupOptions.CanBeDismissedByTappingOutsideOfPopup;
+	
+	void HandleModalPagePopped(object? sender, ModalPoppedEventArgs e)
+	{
+		if (e.Modal == this)
+		{
+			ArgumentNullException.ThrowIfNull(sender);
+			
+			var window = (Window)sender;
+			window.ModalPopped -= HandleModalPagePopped;
+			
+			popup.NotifyPopupIsClosed();
+		}
+	}
 
 	void HandlePopupOptionsPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
