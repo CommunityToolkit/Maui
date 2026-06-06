@@ -1749,6 +1749,22 @@ public class PopupExtensionsTests : BaseViewTest
 			}
 		}
 	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_NonNullableValueType_ReturnsDefault_WhenClosedWithoutTypedResult()
+	{
+		// Arrange
+		var showPopupTask = navigation.ShowPopupAsync<int>(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
+		var popupPage = (PopupPage)navigation.ModalStack.Last();
+
+		// Act
+		await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
+		var result = await showPopupTask;
+
+		// Assert
+		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.Equal(default, result.Result);
+	}
 }
 
 sealed class ViewWithIQueryAttributable : Button, IQueryAttributable

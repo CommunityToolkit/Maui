@@ -93,4 +93,32 @@ public class PopupResultTests : BaseTest
 		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
 		Assert.Equal(expectedResult, result.Result);
 	}
+
+	[Fact]
+	public void PopupResultT_Constructor_UsesDefaultValueForNonNullableValueType_WhenResultIsNullAndNotDismissed()
+	{
+		// Arrange
+		object? expectedResult = null;
+		bool wasDismissedByTappingOutside = false;
+
+		// Act
+		var result = new PopupResult<int>(expectedResult, wasDismissedByTappingOutside);
+
+		// Assert
+		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.Equal(default, result.Result);
+	}
+
+	[Fact]
+	public void PopupResultT_Result_ThrowsPopupResultException_WhenDismissedAndTypeIsNonNullable()
+	{
+		// Arrange
+		var result = new PopupResult<int>(42, true);
+
+		// Act
+		Func<int?> act = () => result.Result;
+
+		// Assert
+		Assert.Throws<PopupResultException>(() => act());
+	}
 }

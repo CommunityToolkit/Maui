@@ -809,6 +809,46 @@ public class PopupPageTests : BaseViewTest
 		Assert.Equal(LayoutOptions.End, border.HorizontalOptions);
 	}
 
+	[Fact]
+	public void ApplyQueryAttributes_ShouldForwardToPopupAndPopupContent_WhenBothImplementIQueryAttributable()
+	{
+		// Arrange
+		const string popupValue = "popup";
+		const string contentValue = "content";
+		var query = new Dictionary<string, object>
+		{
+			[nameof(QueryAttributablePopup.PopupValue)] = popupValue,
+			[nameof(QueryAttributableContentView.ContentValue)] = contentValue
+		};
+		var popupContent = new QueryAttributableContentView();
+		var popup = new QueryAttributablePopup
+		{
+			Content = popupContent
+		};
+		var popupPage = new PopupPage(popup, PopupOptions.Empty);
+
+		// Act
+		((IQueryAttributable)popupPage).ApplyQueryAttributes(query);
+
+		// Assert
+		Assert.Equal(popupValue, popup.PopupValue);
+		Assert.Equal(contentValue, popupContent.ContentValue);
+	}
+
+	[Fact]
+	public void ApplyQueryAttributes_ShouldNotThrow_WhenPopupAndContentDoNotImplementIQueryAttributable()
+	{
+		// Arrange
+		var popupPage = new PopupPage(new Popup(), PopupOptions.Empty);
+		var query = new Dictionary<string, object>();
+
+		// Act
+		var exception = Record.Exception(() => ((IQueryAttributable)popupPage).ApplyQueryAttributes(query));
+
+		// Assert
+		Assert.Null(exception);
+	}
+
 	// Helper class for testing protected methods
 	sealed class TestablePopupPage(View view, IPopupOptions popupOptions) : PopupPage(view, popupOptions)
 	{
@@ -820,6 +860,26 @@ public class PopupPageTests : BaseViewTest
 
 	sealed class NonContentModalPage : Page
 	{
+	}
+
+	sealed class QueryAttributablePopup : Popup, IQueryAttributable
+	{
+		public string? PopupValue { get; private set; }
+
+		void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
+		{
+			PopupValue = (string)query[nameof(PopupValue)];
+		}
+	}
+
+	sealed class QueryAttributableContentView : ContentView, IQueryAttributable
+	{
+		public string? ContentValue { get; private set; }
+
+		void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
+		{
+			ContentValue = (string)query[nameof(ContentValue)];
+		}
 	}
 
 	sealed class MockPopupOptions : IPopupOptions
