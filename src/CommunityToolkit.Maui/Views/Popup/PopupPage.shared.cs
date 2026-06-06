@@ -6,7 +6,6 @@ using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Platform;
 using NavigationPage = Microsoft.Maui.Controls.NavigationPage;
 using Page = Microsoft.Maui.Controls.Page;
 
@@ -163,8 +162,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 			if (navigationPageOnModalStackContainingPopupPage?.CurrentPage == this)
 			{
-				// For nested custom IPageContainer scenarios, ensure this PopupPage is no longer the container's CurrentPage
-				// before considering CloseAsync complete.
+				// When `navigationPageOnModalStackContainingPopupPage.CurrentPage == this` is true,
+				// this PopupPage is still the active page in the custom IPageContainer.
+				// In other words, MAUI has not yet popped it off the ModalStack.
 				return;
 			}
 
