@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Globalization;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.Shapes;
@@ -111,36 +112,63 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			throw new PopupBlockedException(popupPageToClose);
 		}
 
-		var modalPoppedTcs = new TaskCompletionSource();
+		var popupConfirmedPoppedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var parentWindow = GetParentWindow();
+		parentWindow.ModalPopped += HandleModalPagePopped;
+		NavigatedFrom += HandleNavigatedFrom;
 
-		GetParentWindow().ModalPopped += HandleModalPagePopped;
+		try
+		{
+			// We call `.ThrowIfCancellationRequested()` again to avoid a race condition where a developer cancels the CancellationToken after we check for an InvalidOperationException
+			// At first glance, it may look redundant given that we are using `.WaitAsync(token)` in the next step,
+			// However, `Navigation.PopModalAsync()` may return a completed Task, and when a completed Task is returned, `.WaitAsync(token)` is never invoked.
+			// In other words, `.WaitAsync(token)` may not throw an `OperationCanceledException` as expected which is why we call `.ThrowIfCancellationRequested()` again here
+			// Here's the .NET MAUI Source code demonstrating that `Navigation.PopModalAsync()` sometimes returns `Task.FromResult()`: https://github.com/dotnet/maui/blob/e5c252ec7f430cbaf28c8a815a249e3270b49844/src/Controls/src/Core/NavigationProxy.cs#L192-L196
+			token.ThrowIfCancellationRequested();
+			await Navigation.PopModalAsync(false).WaitAsync(token);
 
-		// We call `.ThrowIfCancellationRequested()` again to avoid a race condition where a developer cancels the CancellationToken after we check for an InvalidOperationException
-		// At first glance, it may look redundant given that we are using `.WaitAsync(token)` in the next step,
-		// However, `Navigation.PopModalAsync()` may return a completed Task, and when a completed Task is returned, `.WaitAsync(token)` is never invoked.
-		// In other words, `.WaitAsync(token)` may not throw an `OperationCanceledException` as expected which is why we call `.ThrowIfCancellationRequested()` again here
-		// Here's the .NET MAUI Source code demonstrating that `Navigation.PopModalAsync()` sometimes returns `Task.FromResult()`: https://github.com/dotnet/maui/blob/e5c252ec7f430cbaf28c8a815a249e3270b49844/src/Controls/src/Core/NavigationProxy.cs#L192-L196
-		token.ThrowIfCancellationRequested();
-		await Navigation.PopModalAsync(false).WaitAsync(token);
+			// Clean up Popup resources
+			Content.TapGestureGestureOverlay.GestureRecognizers.Clear();
+			popup.PropertyChanged -= HandlePopupPropertyChanged;
 
-		// Clean up Popup resources
-		Content.TapGestureGestureOverlay.GestureRecognizers.Clear();
-		popup.PropertyChanged -= HandlePopupPropertyChanged;
+			// Wait for MAUI to confirm the PopupPage has been popped before invoking the PopupClosed event and notifying the Popup that it may invoke its `Popup.Closed` event.
+			// This the Popup's content is notin the visual tree when they expect it to be removed.
+			await popupConfirmedPoppedTcs.Task.WaitAsync(token);
 
-		await modalPoppedTcs.Task.WaitAsync(token);
-
-		PopupClosed?.Invoke(this, result);
-		popup.NotifyPopupIsClosed();
+			PopupClosed?.Invoke(this, result);
+			popup.NotifyPopupIsClosed();
+		}
+		finally
+		{
+			parentWindow.ModalPopped -= HandleModalPagePopped;
+			NavigatedFrom -= HandleNavigatedFrom;
+		}
 
 		void HandleModalPagePopped(object? sender, ModalPoppedEventArgs e)
 		{
 			if (e.Modal == this)
 			{
-				var parentWindow = (Window?)sender;
-				parentWindow?.ModalPopped -= HandleModalPagePopped;
-
-				modalPoppedTcs.SetResult();
+				popupConfirmedPoppedTcs.TrySetResult();
 			}
+		}
+
+		void HandleNavigatedFrom(object? sender, NavigatedFromEventArgs e)
+		{
+			if (e.IsDestinationPageACommunityToolkitPopupPage())
+			{
+				// Ignore transitions where the destination is another PopupPage
+				// that means this popup is still active in popup-navigation flows.
+				return;
+			}
+
+			if (navigationPageOnModalStackContainingPopupPage?.CurrentPage == this)
+			{
+				// For nested custom IPageContainer scenarios, ensure this PopupPage is no longer the container's CurrentPage
+				// before considering CloseAsync complete.
+				return;
+			}
+
+			popupConfirmedPoppedTcs.TrySetResult();
 		}
 	}
 
