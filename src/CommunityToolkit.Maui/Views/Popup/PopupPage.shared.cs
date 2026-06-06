@@ -79,6 +79,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 	public async Task ShowAsync(INavigation navigation, CancellationToken token = default)
 	{
+		ArgumentNullException.ThrowIfNull(navigation);
 		await navigationSemaphoreSlim.WaitAsync(token);
 
 		try
