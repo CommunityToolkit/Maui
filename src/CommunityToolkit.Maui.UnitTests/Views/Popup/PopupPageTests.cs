@@ -212,6 +212,37 @@ public class PopupPageTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task PopupPageT_CloseWhenUsingCustomNavigationPageInsideShell_ModalPoppedShouldReportContainerPage()
+	{
+		// Arrange
+		if (Application.Current?.Windows[0] is not Window window)
+		{
+			throw new InvalidOperationException("Unable to locate Window");
+		}
+
+		var popupPage = new PopupPage<string>(new ContentView(), new MockPopupOptions());
+		var customNavigationPage = new NavigationPage(new ContentPage());
+		Page? poppedModal = null;
+
+		window.ModalPopped += HandleModalPopped;
+
+		// Act
+		await Shell.Current.Navigation.PushModalAsync(customNavigationPage, true);
+		await customNavigationPage.Navigation.PushModalAsync(popupPage);
+		await window.Navigation.PopModalAsync(false);
+
+		window.ModalPopped -= HandleModalPopped;
+
+		// Assert
+		Assert.Same(customNavigationPage, poppedModal);
+
+		void HandleModalPopped(object? sender, ModalPoppedEventArgs e)
+		{
+			poppedModal = e.Modal;
+		}
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task PopupPageT_CloseAfterAdditionalModalPageToCustomNavigationPage_ShouldThrowPopupBlockedException()
 	{
 		// Arrange
@@ -735,6 +766,30 @@ public class PopupPageTests : BaseViewTest
 		}
 	}
 
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task CloseAsync_ShouldThrowPopupBlockedException_WhenResolvedPopupPageToCloseHasDifferentContent()
+	{
+		// Arrange
+		if (Application.Current?.Windows[0].Page?.Navigation is not INavigation navigation)
+		{
+			throw new InvalidOperationException("Unable to locate Navigation page");
+		}
+
+		var requestedPopupPage = new PopupPage<string>(new ContentView(), new MockPopupOptions());
+		var resolvedPopupPageToClose = new PopupPage<string>(new Button(), new MockPopupOptions());
+		var pageOnTop = new NonContentModalPage();
+
+		// Act
+		await navigation.PushModalAsync(requestedPopupPage);
+		await navigation.PushModalAsync(resolvedPopupPageToClose);
+		await navigation.PushModalAsync(pageOnTop);
+
+		// Assert
+		await Assert.ThrowsAsync<PopupBlockedException>(async () => await requestedPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidPopupOperationException>(async () => await requestedPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await requestedPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+	}
+
 	[Fact]
 	public void PopupPage_ShouldRespectLayoutOptions()
 	{
@@ -762,6 +817,10 @@ public class PopupPageTests : BaseViewTest
 		{
 			return OnBackButtonPressed();
 		}
+	}
+
+	sealed class NonContentModalPage : Page
+	{
 	}
 
 	sealed class MockPopupOptions : IPopupOptions
