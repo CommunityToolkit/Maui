@@ -31,7 +31,7 @@ public class PopupPageTests : BaseViewTest
 		act.Should().Throw<ArgumentNullException>();
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task Close_ShouldThrowInvalidOperationException_NoPopupPageFound()
 	{
 		// Arrange
@@ -44,7 +44,7 @@ public class PopupPageTests : BaseViewTest
 		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task Close_ShouldSetResultAndPopModalAsync()
 	{
 		// Arrange
@@ -115,7 +115,7 @@ public class PopupPageTests : BaseViewTest
 		act.Should().Throw<ArgumentNullException>();
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task PopupPageT_Close_ShouldSetResultAndPopModalAsync()
 	{
 		// Arrange
@@ -147,7 +147,7 @@ public class PopupPageTests : BaseViewTest
 		}
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task PopupPageT_CloseAfterAdditionalModalPage_ShouldThrowInvalidOperationException()
 	{
 		// Arrange
@@ -170,7 +170,7 @@ public class PopupPageTests : BaseViewTest
 		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task PopupPageT_CloseWhenUsingCustomNavigationPage_ShouldClose()
 	{
 		// Arrange
@@ -191,7 +191,9 @@ public class PopupPageTests : BaseViewTest
 		onAppearingPage.NavigatedTo += HandlePageNavigatedTo;
 
 		// Act
+		// wait would never complete.
 		await Shell.Current.Navigation.PushModalAsync(customNavigationPage, true);
+		await Shell.Current.Navigation.PushModalAsync(popupPage);
 		await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
 
 		// Assert
@@ -204,7 +206,6 @@ public class PopupPageTests : BaseViewTest
 				await customNavigationPage.Navigation.PushModalAsync(popupPage);
 			}
 		}
-
 		void HandlePopupPageClosed(object? sender, IPopupResult e)
 		{
 			wasPopupPageClosed = true;
@@ -212,6 +213,7 @@ public class PopupPageTests : BaseViewTest
 	}
 
 	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task PopupPageT_CloseAfterAdditionalModalPageToCustomNavigationPage_ShouldThrowPopupBlockedException()
 	{
 		// Arrange
@@ -252,7 +254,7 @@ public class PopupPageTests : BaseViewTest
 		}
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task PopupPageT_CloseAfterAdditionalModalPageToCustomNavigationPage_ShouldThrowPopupNotFound()
 	{
 		// Arrange
@@ -296,7 +298,7 @@ public class PopupPageTests : BaseViewTest
 		}
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_FromModalNavigationPage_ShouldCloseSuccessfully()
 	{
 		// Remove shell navigation
@@ -500,7 +502,7 @@ public class PopupPageTests : BaseViewTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task OnTappingOutsideOfPopup_ShouldClosePopupWhenCanBeDismissedIsTrue()
 	{
 		// Arrange
@@ -642,7 +644,7 @@ public class PopupPageTests : BaseViewTest
 		Assert.True(result);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task Close_ShouldThrowException_WhenCalledOnNonModalPopup()
 	{
 		// Arrange
@@ -654,7 +656,7 @@ public class PopupPageTests : BaseViewTest
 		await Assert.ThrowsAsync<PopupNotFoundException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task CloseAsync_ShouldThrowPopupBlockedException_WhenPopupIsBehindModalNavigationPage()
 	{
 		// Arrange
@@ -698,7 +700,7 @@ public class PopupPageTests : BaseViewTest
 		}
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task CloseAsync_ShouldThrowPopupBlockedException_WhenPopupIsHiddenBehindAnotherPopupAndNavigationPage()
 	{
 		// Arrange
