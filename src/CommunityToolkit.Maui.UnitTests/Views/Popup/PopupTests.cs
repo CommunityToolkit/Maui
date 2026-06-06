@@ -206,7 +206,10 @@ public class PopupTests : BaseViewTest
 		var exception = new PopupBlockedException(page);
 
 		// Assert
-		Assert.Contains(page.GetType().FullName, exception.Message);
+		var fullName = page.GetType().FullName;
+		
+		Assert.NotNull(fullName);
+		Assert.Contains(fullName, exception.Message);
 		Assert.Contains(nameof(Page.Navigation), exception.Message);
 	}
 
