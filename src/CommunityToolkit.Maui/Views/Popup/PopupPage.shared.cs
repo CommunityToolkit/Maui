@@ -166,28 +166,37 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		try
 		{
+			// navigationSemaphoreSlim must be in the outer try/finally block to ensure we unsubscribe ModalPopped and NavigatedFrom events when CancellationToken is canceled
+			// When CancellationToken is canceled during navigationSemaphoreSlim.WaitAsync(), the SemaphoreSlim is never acquired. We only want to release navigationSemaphoreSlim in a finally block if it has been acquired (i.e. after navigationSemaphoreSlim.WaitAsync executes successfully) 
+			// The inner try/finally block ensures we release navigationSemaphoreSlim after its acquisition if any subsequent line of code throws an exception or completes successfully
 			await navigationSemaphoreSlim.WaitAsync(token);
-			await Navigation.PopModalAsync(false);
 
-			// Clean up Popup resources
-			Content.TapGestureGestureOverlay.GestureRecognizers.Clear();
-			popup.PropertyChanged -= HandlePopupPropertyChanged;
-			if (popupOptions is BindableObject bindablePopupOptions)
+			try
 			{
-				bindablePopupOptions.PropertyChanged -= HandlePopupOptionsPropertyChanged;
+				await Navigation.PopModalAsync(false);
+
+				// Clean up Popup resources
+				Content.TapGestureGestureOverlay.GestureRecognizers.Clear();
+				popup.PropertyChanged -= HandlePopupPropertyChanged;
+				if (popupOptions is BindableObject bindablePopupOptions)
+				{
+					bindablePopupOptions.PropertyChanged -= HandlePopupOptionsPropertyChanged;
+				}
+
+				// Wait for MAUI to confirm the PopupPage has been popped before invoking the PopupClosed event and notifying the Popup that it may invoke its `Popup.Closed` event.
+				// This guarantees the Popup has been removed from MAUI's ModalStack
+				await popupConfirmedPoppedTcs.Task.WaitAsync(token);
+
+				PopupClosed?.Invoke(this, result);
+				popup.NotifyPopupIsClosed();
 			}
-
-			// Wait for MAUI to confirm the PopupPage has been popped before invoking the PopupClosed event and notifying the Popup that it may invoke its `Popup.Closed` event.
-			// This guarantees the Popup has been removed from MAUI's ModalStack
-			await popupConfirmedPoppedTcs.Task.WaitAsync(token);
-
-			PopupClosed?.Invoke(this, result);
-			popup.NotifyPopupIsClosed();
+			finally
+			{
+				navigationSemaphoreSlim.Release();
+			}
 		}
 		finally
 		{
-			navigationSemaphoreSlim.Release();
-
 			parentWindow.ModalPopped -= HandleModalPagePopped;
 			NavigatedFrom -= HandleNavigatedFrom;
 		}
