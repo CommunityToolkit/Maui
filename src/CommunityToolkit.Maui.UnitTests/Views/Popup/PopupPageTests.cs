@@ -191,7 +191,6 @@ public class PopupPageTests : BaseViewTest
 		onAppearingPage.NavigatedTo += HandlePageNavigatedTo;
 
 		// Act
-		// wait would never complete.
 		await Shell.Current.Navigation.PushModalAsync(customNavigationPage, true);
 		await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
 
