@@ -8,8 +8,6 @@ namespace CommunityToolkit.Maui.Extensions;
 /// </summary>
 public static class PopupExtensions
 {
-	static readonly SemaphoreSlim showPopupSemaphoreSlim = new(1, 1);
-
 	/// <summary>
 	/// Shows a popup with the specified options.
 	/// </summary>
@@ -38,16 +36,7 @@ public static class PopupExtensions
 
 		var popupPage = new PopupPage(view, options);
 
-		await showPopupSemaphoreSlim.WaitAsync();
-
-		try
-		{
-			await navigation.PushModalAsync(popupPage, false);
-		}
-		finally
-		{
-			showPopupSemaphoreSlim.Release();
-		}
+		await popupPage.ShowAsync(navigation);
 	}
 
 	/// <summary>
@@ -147,17 +136,7 @@ public static class PopupExtensions
 		var popupPage = new PopupPage(view, options);
 		popupPage.PopupClosed += HandlePopupClosed;
 
-		await showPopupSemaphoreSlim.WaitAsync(token);
-
-		try
-		{
-			token.ThrowIfCancellationRequested();
-			await navigation.PushModalAsync(popupPage, false);
-		}
-		finally
-		{
-			showPopupSemaphoreSlim.Release();
-		}
+		await popupPage.ShowAsync(navigation, token);
 
 		return await taskCompletionSource.Task.WaitAsync(token);
 
@@ -195,33 +174,7 @@ public static class PopupExtensions
 
 		try
 		{
-			await showPopupSemaphoreSlim.WaitAsync(token);
-
-			if (shellParameters is null)
-			{
-				try
-				{
-					token.ThrowIfCancellationRequested();
-					await shell.GoToAsync(popupPageRoute);
-				}
-				finally
-				{
-					showPopupSemaphoreSlim.Release();
-				}
-			}
-			else
-			{
-				try
-				{
-					token.ThrowIfCancellationRequested();
-					await shell.GoToAsync(popupPageRoute, shellParameters);
-				}
-				finally
-				{
-					showPopupSemaphoreSlim.Release();
-				}
-			}
-
+			await popupPage.ShowAsync(shell, popupPageRoute, shellParameters, token);
 			return await taskCompletionSource.Task.WaitAsync(token);
 		}
 		finally

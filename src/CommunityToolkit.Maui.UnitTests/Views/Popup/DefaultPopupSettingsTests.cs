@@ -8,6 +8,44 @@ namespace CommunityToolkit.Maui.UnitTests.Views;
 public class DefaultPopupSettingsTests : BaseViewTest
 {
 	[Fact]
+	public void DefaultPopupSettings_DefaultConstructor_UsesExpectedDefaults()
+	{
+		// Arrange
+		var settings = new DefaultPopupSettings();
+
+		// Assert
+		Assert.True(settings.CanBeDismissedByTappingOutsideOfPopup);
+		Assert.Equal(new Thickness(30), settings.Margin);
+		Assert.Equal(new Thickness(15), settings.Padding);
+		Assert.Equal(LayoutOptions.Center, settings.HorizontalOptions);
+		Assert.Equal(LayoutOptions.Center, settings.VerticalOptions);
+		Assert.Equal(Colors.White, settings.BackgroundColor);
+	}
+
+	[Fact]
+	public void DefaultPopupSettings_WithOverrides_UsesProvidedValues()
+	{
+		// Arrange
+		var settings = new DefaultPopupSettings
+		{
+			CanBeDismissedByTappingOutsideOfPopup = false,
+			BackgroundColor = Colors.Orange,
+			HorizontalOptions = LayoutOptions.End,
+			VerticalOptions = LayoutOptions.Start,
+			Margin = 72,
+			Padding = 4
+		};
+
+		// Assert
+		Assert.False(settings.CanBeDismissedByTappingOutsideOfPopup);
+		Assert.Equal(Colors.Orange, settings.BackgroundColor);
+		Assert.Equal(LayoutOptions.End, settings.HorizontalOptions);
+		Assert.Equal(LayoutOptions.Start, settings.VerticalOptions);
+		Assert.Equal(new Thickness(72), settings.Margin);
+		Assert.Equal(new Thickness(4), settings.Padding);
+	}
+
+	[Fact]
 	public void Popup_SetPopupDefaultsNotCalled_UsesPopupDefaults()
 	{
 		// Arrange
