@@ -123,6 +123,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 
 	readonly WeakEventManager eventManager = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
+	readonly string androidPlayerId = Guid.NewGuid().ToString("N");
 
 	bool isDisposed;
 	IDispatcherTimer? timer;
@@ -545,6 +546,8 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	void IMediaElement.SeekCompleted() => OnSeekCompleted();
 
 	void IMediaElement.CurrentStateChanged(MediaElementState newState) => CurrentState = newState;
+
+	string IMediaElement.AndroidPlayerId => androidPlayerId;
 
 	void OnTimerTick(object? sender, EventArgs e)
 	{
