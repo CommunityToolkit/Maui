@@ -31,6 +31,7 @@ public partial class MediaManager : IDisposable
 		{
 			Player = Player
 		};
+		PlayerViewController.ShowsPlaybackControls = MediaElement.ShouldShowPlaybackControls;
 
 		// Pre-initialize Volume and Muted properties to the player object
 		Player.Muted = MediaElement.ShouldMute;
