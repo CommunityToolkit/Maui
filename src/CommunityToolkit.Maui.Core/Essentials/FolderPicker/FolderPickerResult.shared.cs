@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Primitives;
 
 namespace CommunityToolkit.Maui.Storage;
 
@@ -15,6 +16,9 @@ public record FolderPickerResult(Folder? Folder, Exception? Exception): IResult
 	[MemberNotNullWhen(true, nameof(Folder))]
 	[MemberNotNullWhen(false, nameof(Exception))]
 	public bool IsSuccessful => Exception is null;
+
+	/// <inheritdoc/>
+	public bool IsCancelled => Exception is OperationCanceledException;
 
 	/// <inheritdoc/>
 	[MemberNotNull(nameof(Folder))]

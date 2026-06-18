@@ -72,7 +72,7 @@ public static class PopupExtensions
 
 	/// <summary>
 	/// Shows a popup with the specified options.
-	///
+	/// </summary>
 	/// <param name="page">The current page that provides access to the <see cref="INavigation"/> implementation.</param>
 	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
@@ -111,7 +111,7 @@ public static class PopupExtensions
 
 	/// <summary>
 	/// Shows a popup with the specified options.
-	///
+	/// </summary>
 	/// <param name="navigation">The <see cref="INavigation"/> implementation responsible for displaying the popup. Make sure to use the one associated with the <see cref="Window"/> that you wish the popup to be displayed on.</param>
 	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>

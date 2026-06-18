@@ -503,7 +503,7 @@ public class PopupServiceTests : BaseViewTest
 	{
 		// Arrange
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
-		var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await cancellationTokenSource.CancelAsync();
 
 		// Act / Assert
@@ -515,7 +515,7 @@ public class PopupServiceTests : BaseViewTest
 	{
 		// Arrange
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
-		var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await cancellationTokenSource.CancelAsync();
 
 		// Act / Assert
@@ -527,7 +527,7 @@ public class PopupServiceTests : BaseViewTest
 	{
 		// Arrange
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
-		var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await cancellationTokenSource.CancelAsync();
 
 		if (Application.Current?.Windows[0].Page is not Page page)

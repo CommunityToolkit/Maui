@@ -1620,7 +1620,7 @@ public class PopupExtensionsTests : BaseViewTest
 	public async Task TryShowPopupAsync_ShouldReturnCancelledResult_WhenTokenIsCancelled()
 	{
 		// Arrange
-		var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await cancellationTokenSource.CancelAsync();
 
 		// Act
@@ -1644,7 +1644,7 @@ public class PopupExtensionsTests : BaseViewTest
 			throw new InvalidOperationException("Page cannot be null");
 		}
 
-		var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await cancellationTokenSource.CancelAsync();
 
 		// Act
@@ -1669,7 +1669,7 @@ public class PopupExtensionsTests : BaseViewTest
 		Assert.NotNull(Application.Current);
 		Application.Current.Windows[0].Page = shell;
 
-		var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await cancellationTokenSource.CancelAsync();
 
 		// Act
@@ -1688,7 +1688,7 @@ public class PopupExtensionsTests : BaseViewTest
 	public async Task TryShowPopupAsyncT_ShouldReturnCancelledResult_WhenTokenIsCancelled()
 	{
 		// Arrange
-		var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await cancellationTokenSource.CancelAsync();
 
 		// Act
@@ -1713,7 +1713,7 @@ public class PopupExtensionsTests : BaseViewTest
 			throw new InvalidOperationException("Page cannot be null");
 		}
 
-		var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await cancellationTokenSource.CancelAsync();
 
 		// Act
@@ -1739,7 +1739,7 @@ public class PopupExtensionsTests : BaseViewTest
 		Assert.NotNull(Application.Current);
 		Application.Current.Windows[0].Page = shell;
 
-		var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await cancellationTokenSource.CancelAsync();
 
 		// Act
@@ -1936,7 +1936,7 @@ public class PopupExtensionsTests : BaseViewTest
 	public async Task TryClosePopupAsync_ShouldReturnCancelledResult_WhenTokenIsCancelled()
 	{
 		// Arrange
-		var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await cancellationTokenSource.CancelAsync();
 
 		// Act
@@ -1975,7 +1975,7 @@ public class PopupExtensionsTests : BaseViewTest
 	{
 		// Arrange
 		const int expectedInputResult = 89;
-		var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await cancellationTokenSource.CancelAsync();
 
 		// Act

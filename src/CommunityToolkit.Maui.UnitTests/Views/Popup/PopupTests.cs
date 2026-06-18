@@ -207,8 +207,8 @@ public class PopupTests : BaseViewTest
 		showPopupAsyncTask = page.ShowPopupAsync<string>(popup, token: TestContext.Current.CancellationToken);
 
 		// Assert
-		Assert.Single(page.Navigation.ModalStack);
-		Assert.IsType<PopupPage>(page.Navigation.ModalStack[0]);
+		var singleModalPage = Assert.Single(page.Navigation.ModalStack);
+		Assert.IsType<PopupPage>(singleModalPage);
 
 		// Act
 		await popup.CloseAsync(expectedResult, TestContext.Current.CancellationToken);

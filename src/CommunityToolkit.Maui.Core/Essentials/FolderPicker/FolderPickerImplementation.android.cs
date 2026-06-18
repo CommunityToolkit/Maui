@@ -4,7 +4,7 @@ using Android.Content;
 using Android.Provider;
 using CommunityToolkit.Maui.Core.Essentials;
 using CommunityToolkit.Maui.Core.Extensions;
-using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Primitives;
 using Microsoft.Maui.ApplicationModel;
 using AndroidUri = Android.Net.Uri;
 

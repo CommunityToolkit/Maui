@@ -1,4 +1,4 @@
-namespace CommunityToolkit.Maui.Core;
+namespace CommunityToolkit.Maui.Core.Primitives;
 
 /// <summary>
 /// Represents a folder in the file system.
