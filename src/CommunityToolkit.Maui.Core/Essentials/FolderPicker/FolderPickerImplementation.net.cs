@@ -1,4 +1,4 @@
-using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Storage;
 
