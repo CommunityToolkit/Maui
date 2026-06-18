@@ -5,6 +5,7 @@ namespace CommunityToolkit.Maui;
 /// <summary>
 /// Result of TryShowPopup
 /// </summary>
+/// <param name="WasDismissedByTappingOutsideOfPopup">True if Popup is closed by tapping outside popup</param>
 /// <param name="Exception">Exception if operation failed</param>
 record ShowPopupResult(bool WasDismissedByTappingOutsideOfPopup, Exception? Exception) : PopupResult(WasDismissedByTappingOutsideOfPopup), IShowPopupResult;
 
@@ -13,6 +14,9 @@ record ShowPopupResult(bool WasDismissedByTappingOutsideOfPopup, Exception? Exce
 /// </summary>
 record ShowPopupResult<T> : PopupResult<T>, IShowPopupResult<T>
 {
+	/// <param name="result">Popup result</param>
+	/// <param name="wasDismissedByTappingOutsideOfPopup">True if Popup is closed by tapping outside the popup</param>
+	/// <param name="exception">Exception if operation failed</param>
 	public ShowPopupResult(object? result, bool wasDismissedByTappingOutsideOfPopup, Exception? exception)
 		: base(result, wasDismissedByTappingOutsideOfPopup)
 	{
