@@ -187,6 +187,36 @@ public class PopupTests : BaseViewTest
 		Assert.Empty(page.Navigation.ModalStack);
 	}
 
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsyncT_TaskShouldCompleteWhenPopupTCloseAsyncWithResultIsCalled()
+	{
+		// Arrange
+		const string expectedResult = "typed-result";
+		Task<IPopupResult<string>> showPopupAsyncTask;
+		var popup = new Popup<string>();
+
+		if (Application.Current?.Windows[0].Page is not Page page)
+		{
+			throw new InvalidOperationException("Page cannot be null");
+		}
+
+		// Act
+		showPopupAsyncTask = page.ShowPopupAsync<string>(popup, token: TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.Single(page.Navigation.ModalStack);
+		Assert.IsType<PopupPage>(page.Navigation.ModalStack[0]);
+
+		// Act
+		await popup.CloseAsync(expectedResult, TestContext.Current.CancellationToken);
+		var popupResult = await showPopupAsyncTask;
+
+		// Assert
+		Assert.Empty(page.Navigation.ModalStack);
+		Assert.Equal(expectedResult, popupResult.Result);
+		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
+	}
+
 	[Fact]
 	public void PopupNotFoundException_Message_ShouldContainGuidance()
 	{

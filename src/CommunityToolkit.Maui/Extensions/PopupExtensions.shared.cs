@@ -95,11 +95,18 @@ public static class PopupExtensions
 	/// <returns>An <see cref="IShowPopupResult{TResult}"/> when the popup is closed or the <paramref name="token"/> is canceled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
 	public static async Task<IShowPopupResult<TResult>> TryShowPopupAsync<TResult>(this INavigation navigation, View view, IPopupOptions? options = null, CancellationToken token = default)
 	{
-		var result = await navigation.TryShowPopupAsync(view, options, token);
+		ArgumentNullException.ThrowIfNull(navigation);
+		ArgumentNullException.ThrowIfNull(view);
 
-		var popupResult = GetPopupResult<TResult>(result);
-
-		return new ShowPopupResult<TResult>(popupResult, result.Exception); 
+		try
+		{
+			var popupResult = await navigation.ShowPopupAsync<TResult>(view, options, token);
+			return new ShowPopupResult<TResult>(popupResult, null);
+		}
+		catch (Exception e)
+		{
+			return new ShowPopupResult<TResult>(default(TResult), false, e);
+		}
 	}
 
 	/// <summary>
@@ -128,11 +135,18 @@ public static class PopupExtensions
 	/// <returns>An <see cref="IShowPopupResult{TResult}"/> when the popup is closed or the <paramref name="token"/> is canceled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
 	public static async Task<IShowPopupResult<TResult>> TryShowPopupAsync<TResult>(this Shell shell, View view, IPopupOptions? options = null, IDictionary<string, object>? shellParameters = null, CancellationToken token = default)
 	{
-		var result = await shell.TryShowPopupAsync(view, options, shellParameters, token);
+		ArgumentNullException.ThrowIfNull(shell);
+		ArgumentNullException.ThrowIfNull(view);
 
-		var popupResult = GetPopupResult<TResult>(result);
-
-		return new ShowPopupResult<TResult>(popupResult, result.Exception); 
+		try
+		{
+			var popupResult = await shell.ShowPopupAsync<TResult>(view, options, shellParameters, token);
+			return new ShowPopupResult<TResult>(popupResult, null);
+		}
+		catch (Exception e)
+		{
+			return new ShowPopupResult<TResult>(default(TResult), false, e);
+		}
 	}
 
 	/// <summary>
