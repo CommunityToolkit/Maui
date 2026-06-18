@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
@@ -140,5 +141,30 @@ public class FolderPickerTests : BaseTest
 		Assert.Equal("name", name);
 		Assert.Equal(new Folder("path", "name"), folder);
 		Assert.Equal("other", (folder with { Name = "other" }).Name);
+	}
+
+	[Fact]
+	public void FolderPickerResult_ShouldReportCancelled_WhenOperationCancelledExceptionIsSet()
+	{
+		// Arrange
+		IResult result = new FolderPickerResult(null, new OperationCanceledException("canceled"));
+
+		// Assert
+		result.IsSuccessful.Should().BeFalse();
+		result.IsCancelled.Should().BeTrue();
+		Assert.Throws<OperationCanceledException>(result.EnsureSuccess);
+	}
+
+	[Fact]
+	public void FolderPickerResult_ShouldReportSuccessful_WhenFolderExistsAndExceptionIsNull()
+	{
+		// Arrange
+		var folder = new Folder("path/to/folder", "folder");
+		IResult result = new FolderPickerResult(folder, null);
+
+		// Assert
+		result.IsSuccessful.Should().BeTrue();
+		result.IsCancelled.Should().BeFalse();
+		result.EnsureSuccess();
 	}
 }

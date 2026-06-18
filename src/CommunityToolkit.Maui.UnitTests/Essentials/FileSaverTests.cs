@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Storage;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
@@ -142,4 +143,28 @@ public class FileSaverTests : BaseTest
 		3 => FileSaver.SaveAsync(fileName, stream, new Progress<double>(), token),
 		_ => throw new ArgumentOutOfRangeException(nameof(overload), overload, "There are four overloads.")
 	};
+
+	[Fact]
+	public void FileSaverResult_ShouldReportCancelled_WhenOperationCancelledExceptionIsSet()
+	{
+		// Arrange
+		IResult result = new FileSaverResult(null, new OperationCanceledException("canceled"));
+
+		// Assert
+		result.IsSuccessful.Should().BeFalse();
+		result.IsCancelled.Should().BeTrue();
+		Assert.Throws<OperationCanceledException>(result.EnsureSuccess);
+	}
+
+	[Fact]
+	public void FileSaverResult_ShouldReportSuccessful_WhenFilePathExistsAndExceptionIsNull()
+	{
+		// Arrange
+		IResult result = new FileSaverResult("path/to/file.txt", null);
+
+		// Assert
+		result.IsSuccessful.Should().BeTrue();
+		result.IsCancelled.Should().BeFalse();
+		result.EnsureSuccess();
+	}
 }
