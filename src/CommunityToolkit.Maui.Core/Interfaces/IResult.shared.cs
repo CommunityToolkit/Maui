@@ -10,7 +10,7 @@ public interface IResult
 {
 	/// <summary>
 	/// Exception if operation failed
-	/// /// </summary>
+	/// </summary>
 	Exception? Exception { get; }
 
 	/// <summary>
