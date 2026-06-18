@@ -318,7 +318,7 @@ public static class PopupExtensions
 	}
 
 	/// <summary>
-	/// Closes the most recent popup and returns an <see cref="IPopupResult"/> that provides details about the closure.
+	/// Closes the most recent popup and returns an <see cref="IClosePopupResult"/> that provides details about the closure.
 	/// </summary>
 	public static Task<IClosePopupResult> TryClosePopupAsync(this Page page, CancellationToken token = default)
 	{
