@@ -202,7 +202,7 @@ public static class PopupExtensions
 	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
 	/// <param name="token">A <see cref="CancellationToken"/> providing support for canceling the wait for a result to be returned. This will <b>not</b> close the popup.</param>
-	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="token"/> is canceled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
+	/// <returns>An <see cref="IShowPopupResult"/> when the popup is closed or the <paramref name="token"/> is canceled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
 	public static async Task<IShowPopupResult> TryShowPopupAsync(this INavigation navigation, View view, IPopupOptions? options, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(navigation);
@@ -318,7 +318,7 @@ public static class PopupExtensions
 	}
 
 	/// <summary>
-	/// Closes the most recent popup and returns an <see cref="IPopupResult"/> that provides details about the closure.
+	/// Closes the most recent popup and returns an <see cref="IClosePopupResult"/> that provides details about the closure.
 	/// </summary>
 	public static Task<IClosePopupResult> TryClosePopupAsync(this Page page, CancellationToken token = default)
 	{
