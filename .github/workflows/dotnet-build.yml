@@ -63,21 +63,21 @@ jobs:
                 os: [ windows-latest, macos-26 ]
         steps:
             -   name: Checkout code
-                uses: actions/checkout@v6
+                uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
             -   name: Set Latest Xcode Version
                 if: runner.os == 'macOS'
-                uses: maxim-lobanov/setup-xcode@v1
+                uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
                 with:
                     xcode-version: ${{ env.CommunityToolkitSample_Xcode_Version }}
 
             -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
-                uses: actions/setup-dotnet@v5
+                uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
                 with:
                     dotnet-version: ${{ env.LATEST_NET_VERSION }}
                     dotnet-quality: 'ga'
 
-            -   uses: actions/setup-java@v5
+            -   uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287 # v5
                 with:
                     distribution: 'microsoft'
                     java-version: '21'
@@ -108,7 +108,7 @@ jobs:
                 os: [ windows-latest, macos-26 ]
         steps:
             -   name: Checkout code
-                uses: actions/checkout@v6
+                uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
             -   name: Set NuGet Version to Tag Number
                 if: startsWith(github.ref, 'refs/tags/') && (!endsWith(github.ref, '-mediaelement') && !endsWith(github.ref, '-camera') && !endsWith(github.ref, '-maps'))
@@ -141,17 +141,17 @@ jobs:
 
             -   name: Set Xcode Version
                 if: runner.os == 'macOS'
-                uses: maxim-lobanov/setup-xcode@v1
+                uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
                 with:
                     xcode-version: ${{ env.CommunityToolkitLibrary_Xcode_Version }}
 
             -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
-                uses: actions/setup-dotnet@v5
+                uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
                 with:
                     dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
                     dotnet-quality: 'ga'
 
-            -   uses: actions/setup-java@v5
+            -   uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287 # v5
                 with:
                     distribution: 'microsoft'
                     java-version: '17'
@@ -262,7 +262,7 @@ jobs:
                 shell: pwsh
 
             -   name: Upload Package List
-                uses: actions/upload-artifact@v7
+                uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
                 if: ${{ runner.os == 'Windows' }}
                 with:
                     name: nuget-list
@@ -272,7 +272,7 @@ jobs:
 
             -   name: Publish Packages
                 if: ${{ runner.os == 'Windows' }}
-                uses: actions/upload-artifact@v7
+                uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
                 with:
                     name: packages
                     path: ${{ github.workspace }}/nuget/
@@ -286,19 +286,19 @@ jobs:
         
         steps:
             -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
-                uses: actions/setup-dotnet@v5
+                uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
                 with:
                     dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
                     dotnet-quality: 'ga'
 
             -   name: Download NuGet List
-                uses: actions/download-artifact@v8
+                uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
                 with:
                     name: nuget-list
                     path: ./
 
             -   name: Download Package List
-                uses: actions/download-artifact@v8
+                uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
                 with:
                     name: packages
                     path: ./packages
@@ -344,7 +344,7 @@ jobs:
                     --verbosity Information
 
             -   name: Publish Packages
-                uses: actions/upload-artifact@v7
+                uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
                 with:
                     name: signed-packages
                     if-no-files-found: error
@@ -358,13 +358,13 @@ jobs:
         
         steps:
             -   name: Install .NET SDK
-                uses: actions/setup-dotnet@v5
+                uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
                 with:
                     dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
                     dotnet-quality: 'ga'
 
             -   name: Download signed packages
-                uses: actions/download-artifact@v8
+                uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
                 with:
                     name: signed-packages
                     path: ./packages
@@ -386,13 +386,13 @@ jobs:
         
         steps:
             -   name: Install .NET SDK
-                uses: actions/setup-dotnet@v5
+                uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
                 with:
                     dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
                     dotnet-quality: 'ga'
 
             -   name: Download signed packages
-                uses: actions/download-artifact@v8
+                uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
                 with:
                     name: signed-packages
                     path: ./packages
