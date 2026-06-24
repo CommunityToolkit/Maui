@@ -17,12 +17,60 @@ static partial class HttpClientExtensions
 
 		try
 		{
-			return await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
+			var response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+			if (!response.IsSuccessStatusCode)
+			{
+				response.Dispose();
+				Trace.WriteLine($"Could not retrieve {uri}, status code {response.StatusCode}");
+				return Stream.Null;
+			}
+
+			return new ResponseStream(
+				await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false),
+				response);
 		}
 		catch (Exception ex)
 		{
 			Trace.WriteLine($"Error getting stream for {uri}: {ex}");
 			return Stream.Null;
+		}
+	}
+
+	sealed class ResponseStream(Stream innerStream, IDisposable response) : Stream
+	{
+		public override bool CanRead => innerStream.CanRead;
+
+		public override bool CanSeek => innerStream.CanSeek;
+
+		public override bool CanWrite => innerStream.CanWrite;
+
+		public override long Length => innerStream.Length;
+
+		public override long Position
+		{
+			get => innerStream.Position;
+			set => innerStream.Position = value;
+		}
+
+		public override void Flush() => innerStream.Flush();
+
+		public override int Read(byte[] buffer, int offset, int count) => innerStream.Read(buffer, offset, count);
+
+		public override long Seek(long offset, SeekOrigin origin) => innerStream.Seek(offset, origin);
+
+		public override void SetLength(long value) => innerStream.SetLength(value);
+
+		public override void Write(byte[] buffer, int offset, int count) => innerStream.Write(buffer, offset, count);
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				innerStream.Dispose();
+				response.Dispose();
+			}
+
+			base.Dispose(disposing);
 		}
 	}
 }

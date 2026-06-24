@@ -1,4 +1,9 @@
-﻿namespace CommunityToolkit.Maui;
+﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using Microsoft.Maui.ApplicationModel;
+
+namespace CommunityToolkit.Maui;
 
 /// <summary>
 /// Represents a resource that is aware of the operating system theme.
@@ -31,26 +36,141 @@ public abstract class AppThemeObject<T>
 	/// <summary>
 	/// Gets a bindable object which holds the different values for each operating system theme. 
 	/// </summary>
-	/// <returns>A <see cref="AppThemeBinding"/> instance with the respective theme values.</returns>
+	/// <remarks>
+	/// This targetless overload cannot preserve values created by <see cref="Microsoft.Maui.Controls.Xaml.DynamicResourceExtension"/>
+	/// because public MAUI binding converter APIs do not expose the target <see cref="BindableProperty"/>.
+	/// Use the toolkit AppTheme extension methods or <see cref="Extensions.AppThemeResourceExtension"/> when
+	/// <see cref="Light"/>, <see cref="Dark"/>, or <see cref="Default"/> can be dynamic resources.
+	/// </remarks>
+	/// <returns>A <see cref="BindingBase"/> instance with the respective theme values.</returns>
 	public virtual BindingBase GetBinding()
 	{
-		var binding = new AppThemeBinding();
+		return new Binding(
+			nameof(AppThemeSource.RequestedTheme),
+			converter: new AppThemeObjectConverter(Light, Dark, Default),
+			source: AppThemeSource.Instance);
+	}
 
-		if (Light is not null)
+	internal BindingBase GetBinding(BindableProperty targetProperty)
+	{
+		return new MultiBinding
 		{
-			binding.Light = Light;
+			Converter = new AppThemeObjectConverter(Light, Dark, Default),
+			ConverterParameter = targetProperty,
+			Bindings =
+			{
+				new Binding(Binding.SelfPath, source: RelativeBindingSource.Self),
+				new Binding(nameof(AppThemeSource.RequestedTheme), source: AppThemeSource.Instance)
+			}
+		};
+	}
+
+	sealed class AppThemeObjectConverter(T? light, T? dark, T? defaultValue) : IValueConverter, IMultiValueConverter
+	{
+		public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+		{
+			var requestedTheme = value is AppTheme theme ? theme : AppInfo.RequestedTheme;
+
+			return GetValue(requestedTheme);
 		}
 
-		if (Dark is not null)
+		public object? Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
 		{
-			binding.Dark = Dark;
+			var target = values.Length > 0 ? values[0] : null;
+			var requestedTheme = values.Length > 1 && values[1] is AppTheme theme
+				? theme
+				: AppInfo.RequestedTheme;
+
+			var value = GetValue(requestedTheme);
+
+			if (target is Element targetElement && parameter is BindableProperty targetProperty)
+			{
+				if (TryGetDynamicResourceKey(value, out var key))
+				{
+					targetElement.SetDynamicResource(targetProperty, key);
+					return Binding.DoNothing;
+				}
+
+				targetElement.RemoveDynamicResource(targetProperty);
+			}
+
+			return value;
 		}
 
-		if (Default is not null)
+		public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+			throw new NotSupportedException($"{nameof(AppThemeObject<T>)} only supports one-way bindings.");
+
+		public object[]? ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) =>
+			throw new NotSupportedException($"{nameof(AppThemeObject<T>)} only supports one-way bindings.");
+
+		object? GetValue(AppTheme requestedTheme) =>
+			requestedTheme switch
+			{
+				AppTheme.Dark => dark ?? defaultValue,
+				_ => light ?? defaultValue
+			};
+
+		static bool TryGetDynamicResourceKey(object? value, [NotNullWhen(true)] out string? key)
 		{
-			binding.Default = Default;
+			key = null;
+
+			if (value is null)
+			{
+				return false;
+			}
+
+			var valueType = value.GetType();
+			if (valueType.Name is not "DynamicResource"
+				|| valueType.Assembly != typeof(BindableObject).Assembly)
+			{
+				return false;
+			}
+
+			key = TypeDescriptor.GetProperties(value)["Key"]?.GetValue(value) as string;
+
+			return key is not null;
+		}
+	}
+
+	sealed class AppThemeSource : INotifyPropertyChanged
+	{
+		Application? subscribedApplication;
+
+		public static AppThemeSource Instance { get; } = new();
+
+		public event PropertyChangedEventHandler? PropertyChanged;
+
+		public AppTheme RequestedTheme
+		{
+			get
+			{
+				Subscribe(Application.Current);
+
+				return Application.Current?.RequestedTheme ?? AppInfo.RequestedTheme;
+			}
 		}
 
-		return binding;
+		void Subscribe(Application? application)
+		{
+			if (ReferenceEquals(subscribedApplication, application))
+			{
+				return;
+			}
+
+			if (subscribedApplication is not null)
+			{
+				subscribedApplication.RequestedThemeChanged -= OnRequestedThemeChanged;
+			}
+
+			subscribedApplication = application;
+
+			if (subscribedApplication is not null)
+			{
+				subscribedApplication.RequestedThemeChanged += OnRequestedThemeChanged;
+			}
+		}
+
+		void OnRequestedThemeChanged(object? sender, AppThemeChangedEventArgs e) =>
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RequestedTheme)));
 	}
 }

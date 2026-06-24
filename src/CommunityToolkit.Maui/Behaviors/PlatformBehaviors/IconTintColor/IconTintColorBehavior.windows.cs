@@ -54,9 +54,9 @@ public partial class IconTintColorBehavior
 		return image is not null;
 	}
 
-	static bool TryGetSourceImageUri(WImage? imageControl, IImageElement? imageElement, [NotNullWhen(true)] out Uri? uri)
+	static bool TryGetSourceImageUri(WImage? imageControl, ImageSource? imageSource, [NotNullWhen(true)] out Uri? uri)
 	{
-		if (imageElement?.Source is UriImageSource uriImageSource)
+		if (imageSource is UriImageSource uriImageSource)
 		{
 			uri = uriImageSource.Uri;
 			return true;
@@ -143,7 +143,7 @@ public partial class IconTintColorBehavior
 
 	void LoadAndApplyImageTintColor(IView element, WImage image, Color color)
 	{
-		if (element is IImageElement { Source: UriImageSource uriImageSource })
+		if (GetImageSource(element) is UriImageSource uriImageSource)
 		{
 			image.Source = Path.GetExtension(uriImageSource.Uri.AbsolutePath) switch
 			{
@@ -157,7 +157,7 @@ public partial class IconTintColorBehavior
 		{
 			// Sometimes WImage source doesn't match View source so the image is not ready to be tinted
 			// We must wait for next ImageOpened event
-			if (element is IImageElement { Source: FileImageSource fileImageSource }
+			if (GetImageSource(element) is FileImageSource fileImageSource
 				&& image.Source is BitmapImage bitmapImage
 				&& Uri.Compare(new Uri($"{bitmapImage.UriSource.Scheme}:///{fileImageSource.File}"), bitmapImage.UriSource, UriComponents.Path, UriFormat.Unescaped, StringComparison.OrdinalIgnoreCase) is not 0)
 			{
@@ -208,7 +208,7 @@ public partial class IconTintColorBehavior
 
 	void ApplyImageTintColor(IView element, WImage image, Color color)
 	{
-		if (!TryGetSourceImageUri(image, (IImageElement)element, out var uri))
+		if (!TryGetSourceImageUri(image, GetImageSource(element), out var uri))
 		{
 			return;
 		}
@@ -296,4 +296,11 @@ public partial class IconTintColorBehavior
 
 		image.Source = originalImage;
 	}
+
+	static ImageSource? GetImageSource(IView element) => element switch
+	{
+		Image image => image.Source,
+		ImageButton imageButton => imageButton.Source,
+		_ => null
+	};
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.Windows.AppNotifications;
+using CommunityToolkit.Maui.Extensions;
+using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
 
 namespace CommunityToolkit.Maui.Alerts;

@@ -60,7 +60,7 @@ public partial class Snackbar : ISnackbar
 	/// <inheritdoc/>
 	public IView? Anchor
 	{
-		get => weakView?.GetTargetOrDefault();
+		get => weakView is null ? null : CommunityToolkit.Maui.Extensions.WeakReferenceExtensions.GetTargetOrDefault(weakView);
 		init
 		{
 			if (value is null)

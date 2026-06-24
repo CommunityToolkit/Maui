@@ -10,6 +10,8 @@ public partial class GravatarImageSource : StreamImageSource
 
 	readonly TimeSpan cancellationTokenSourceTimeout = TimeSpan.FromMilliseconds(737);
 
+	CancellationTokenSource? uriUpdateTokenSource;
+
 	Uri? lastDispatch;
 
 	/// <summary>Initializes a new instance of the <see cref="GravatarImageSource"/> class.</summary>
@@ -104,13 +106,13 @@ public partial class GravatarImageSource : StreamImageSource
 	static async void OnDefaultImagePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		GravatarImageSource gravatarImageSource = (GravatarImageSource)bindable;
-		await gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, (DefaultImage)newValue, gravatarImageSource.CancellationTokenSource?.Token ?? CancellationToken.None);
+		await gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, (DefaultImage)newValue, CancellationToken.None);
 	}
 
 	static async void OnEmailPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		GravatarImageSource gravatarImageSource = (GravatarImageSource)bindable;
-		await gravatarImageSource.HandleNewUriRequested((string?)newValue, gravatarImageSource.Image, gravatarImageSource.CancellationTokenSource?.Token ?? CancellationToken.None);
+		await gravatarImageSource.HandleNewUriRequested((string?)newValue, gravatarImageSource.Image, CancellationToken.None);
 	}
 
 	static async void OnSizePropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -128,7 +130,7 @@ public partial class GravatarImageSource : StreamImageSource
 		}
 
 		gravatarImageSource.GravatarSize = Math.Min(gravatarImageSource.ParentWidth, gravatarImageSource.ParentHeight);
-		await gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, gravatarImageSource.Image, gravatarImageSource.CancellationTokenSource?.Token ?? CancellationToken.None);
+		await gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, gravatarImageSource.Image, CancellationToken.None);
 	}
 
 	Task HandleNewUriRequested(string? email, DefaultImage image, CancellationToken token)
@@ -152,17 +154,30 @@ public partial class GravatarImageSource : StreamImageSource
 			return;
 		}
 
+		var uriUpdateToken = ResetUriUpdateTokenSource(token);
+
 		try
 		{
-			await Task.Delay(cancellationTokenSourceTimeout, token);
-			await (CancellationTokenSource?.CancelAsync() ?? Task.CompletedTask);
+			await Task.Delay(cancellationTokenSourceTimeout, uriUpdateToken);
 			lastDispatch = Uri;
-			await Dispatcher.DispatchIfRequiredAsync(OnSourceChanged).WaitAsync(token);
+			await CommunityToolkit.Maui.Extensions.DispatcherExtensions.DispatchIfRequiredAsync(Dispatcher, OnSourceChanged).WaitAsync(uriUpdateToken);
 		}
-		catch (TaskCanceledException)
+		catch (OperationCanceledException) when (uriUpdateToken.IsCancellationRequested)
 		{
 			// Do nothing
 		}
+	}
+
+	CancellationToken ResetUriUpdateTokenSource(CancellationToken token)
+	{
+		uriUpdateTokenSource?.Cancel();
+		uriUpdateTokenSource?.Dispose();
+
+		uriUpdateTokenSource = token.CanBeCanceled
+			? CancellationTokenSource.CreateLinkedTokenSource(token)
+			: new CancellationTokenSource();
+
+		return uriUpdateTokenSource.Token;
 	}
 }
 

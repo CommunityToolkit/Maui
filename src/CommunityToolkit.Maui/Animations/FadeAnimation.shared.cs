@@ -22,7 +22,9 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 
 		var originalOpacity = view.Opacity;
 
+#pragma warning disable CA2016 // .NET MAUI 10 does not expose cancellation-aware animation overloads.
 		await view.FadeToAsync(Opacity, Length, Easing).WaitAsync(token);
 		await view.FadeToAsync(originalOpacity, Length, Easing).WaitAsync(token);
+#pragma warning restore CA2016
 	}
 }
