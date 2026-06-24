@@ -39,7 +39,7 @@ public partial class AvatarView : Border, IAvatarView
 		nameof(FontSize),
 		typeof(double),
 		typeof(AvatarView),
-		0d,
+		-1d,
 		propertyChanged: static (bindable, oldValue, newValue) =>
 			((AvatarView)bindable).OnFontSizeChanged((double)oldValue, (double)newValue));
 

@@ -117,6 +117,8 @@ public partial class ImageTouchBehavior : TouchBehavior
 			case ImageButton imageButton:
 				imageButton.SetValue(ImageButton.SourceProperty, imageSource);
 				break;
+			default:
+				throw new NotSupportedException($"{imageElement.GetType()} is not supported by {nameof(ImageTouchBehavior)}");
 		}
 	}
 }
