@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
+using MImageSource = Microsoft.Maui.Controls.ImageSource;
 using WButton = Microsoft.UI.Xaml.Controls.Button;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
@@ -54,7 +55,7 @@ public partial class IconTintColorBehavior
 		return image is not null;
 	}
 
-	static bool TryGetSourceImageUri(WImage? imageControl, ImageSource? imageSource, [NotNullWhen(true)] out Uri? uri)
+	static bool TryGetSourceImageUri(WImage? imageControl, MImageSource? imageSource, [NotNullWhen(true)] out Uri? uri)
 	{
 		if (imageSource is UriImageSource uriImageSource)
 		{
@@ -297,7 +298,7 @@ public partial class IconTintColorBehavior
 		image.Source = originalImage;
 	}
 
-	static ImageSource? GetImageSource(IView element) => element switch
+	static MImageSource? GetImageSource(IView element) => element switch
 	{
 		Image image => image.Source,
 		ImageButton imageButton => imageButton.Source,

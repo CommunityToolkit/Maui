@@ -15,7 +15,7 @@ public sealed class AppThemeObject : AppThemeObject<object>
 /// <summary>
 /// Represents an object that is aware of the operating system theme.
 /// </summary>
-public abstract class AppThemeObject<T>
+public abstract partial class AppThemeObject<T>
 {
 	/// <summary>
 	/// The <see cref="object"/> that is used when the operating system uses light theme.
@@ -132,7 +132,7 @@ public abstract class AppThemeObject<T>
 		}
 	}
 
-	sealed class AppThemeSource : INotifyPropertyChanged
+	sealed partial class AppThemeSource : INotifyPropertyChanged
 	{
 		Application? subscribedApplication;
 

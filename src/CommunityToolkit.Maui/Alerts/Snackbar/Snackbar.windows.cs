@@ -18,7 +18,7 @@ public partial class Snackbar
 	{
 		if (args.Arguments.TryGetValue(snackbarIdentifierArgumentKey, out var id) && actions.TryGetValue(id, out var action) && action is not null)
 		{
-			Dispatcher.GetForCurrentThread().DispatchIfRequired(action);
+			CommunityToolkit.Maui.Extensions.DispatcherExtensions.DispatchIfRequired(Dispatcher.GetForCurrentThread(), action);
 		}
 	}
 
