@@ -4,6 +4,7 @@ using Android.Graphics.Drawables;
 using Android.Util;
 using Android.Widget;
 using Google.Android.Material.Snackbar;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform;
 using Object = Java.Lang.Object;
@@ -114,7 +115,7 @@ public partial class Snackbar
 			PlatformSnackbar.SetAnchorView(Anchor?.Handler?.PlatformView as View);
 		}
 
-		var fontManager = Application.Current?.RequireFontManager() ?? throw new InvalidOperationException($"{nameof(IFontManager)} Required");
+		var fontManager = Application.Current?.Handler?.MauiContext?.Services.GetRequiredService<IFontManager>() ?? throw new InvalidOperationException($"{nameof(IFontManager)} Required");
 		SetLayoutParametersForView(snackbarView);
 		SetContainerForView(snackbarView);
 		SetMessageForView(snackbarView, fontManager);
