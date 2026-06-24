@@ -19,6 +19,12 @@ This document provides guidelines for using GitHub Copilot to contribute to the 
 * Avoid using Xamarin.Forms-specific code unless there is a direct .NET MAUI equivalent.
 * Follow the project's coding style and best practices as outlined in the [contributing](https://github.com/CommunityToolkit/Maui/blob/main/CONTRIBUTING.md) document.
 
+### C# File Naming
+* Platform-suffix naming is required for files in projects that produce NuGet packages.
+* Determine package-producing projects by checking for NuGet metadata in the `.csproj` (for example `PackageId`) and by following the pack targets in `.github/workflows/dotnet-build.yml`.
+* For package-producing projects, C# files must use one of these patterns: `*.shared.cs`, `*.net.cs`, `*.ios.cs`, `*.macos.cs`, `*.macios.cs`, `*.android.cs`, `*.windows.cs`, `*.tizen.cs`.
+* Projects that do not produce NuGet packages (for example samples, tests, analyzers, and benchmarks) should keep standard `*.cs` naming, ignoring generated patterns like `*.xaml.cs` and `*.Designer.cs`.
+
 ## Best Practices
 * Use **Trace.WriteLine()** for debug logging instead of **Debug.WriteLine()**.
 * Include a **CancellationToken** as a parameter for methods returning **Task** or **ValueTask**.

@@ -1,6 +1,13 @@
 # Coding Style Guide
 This guide provides a set of best practices and coding standards for writing C# code with GitHub Copilot. It covers various aspects of C# programming, including naming conventions, code structure, control flow, nullability, safe operations, asynchronous programming, and symbol references.
 
+## C# File Naming
+
+- Platform-suffix naming is required for files in projects that produce NuGet packages.
+- Determine package-producing projects by checking for NuGet metadata in the `.csproj` (for example `PackageId`) and by following the pack targets in `.github/workflows/dotnet-build.yml`.
+- For package-producing projects, C# files must use one of these patterns: `*.shared.cs`, `*.net.cs`, `*.ios.cs`, `*.macos.cs`, `*.macios.cs`, `*.android.cs`, `*.windows.cs`, `*.tizen.cs`.
+- Projects that do not produce NuGet packages (for example samples, tests, analyzers, and benchmarks) should keep standard `*.cs` naming, ignoring generated patterns like `*.xaml.cs` and `*.Designer.cs`.
+
 ## Type Definitions:
 - Prefer records for data types:
 	```csharp
@@ -600,4 +607,3 @@ Here Key Components of the Try Pattern:
 4. Null Analysis Attribute: [NotNullWhen(true)] (or [MaybeNullWhen(false)]) informs the compiler that if the method returns true, the out parameter is guaranteed to be non-null. 
 
 This pattern allows for high-performance retrieval or parsing without throwing exceptions for expected failures. It also allows cleaner call sites by eliminating the need for null-checking the output variable within the if block, as seen in Dictionary<TKey, TValue>.TryGetValue. 
-
