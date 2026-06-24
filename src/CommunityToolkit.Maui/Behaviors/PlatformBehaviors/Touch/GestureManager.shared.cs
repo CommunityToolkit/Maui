@@ -36,8 +36,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 
 	internal static bool TryGetBindableImageTouchBehaviorElement(ImageTouchBehavior imageTouchBehavior, [NotNullWhen(true)] out BindableObject? bindable)
 	{
-		// Validate the ImageTouchBehaviorElement is both a BindableObject and IImage
-		if (imageTouchBehavior.Element is not (BindableObject and Microsoft.Maui.IImage))
+		if (imageTouchBehavior.Element is not Image and not ImageButton)
 		{
 			bindable = null;
 			return false;
@@ -595,7 +594,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		}
 
 #pragma warning disable CA2016 // .NET MAUI 10 does not expose cancellation-aware animation overloads.
-		return await element.TranslateToAsync(updatedTranslationX.Value, updatedTranslationY.Value, (uint)Abs(duration.Milliseconds), easing).WaitAsync(token);
+		return await element.TranslateToAsync(updatedTranslationX.Value, updatedTranslationY.Value, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
 #pragma warning restore CA2016
 	}
 
@@ -781,7 +780,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		}
 
 #pragma warning disable CA2016 // .NET MAUI 10 does not expose cancellation-aware animation overloads.
-		return await element.RotateYToAsync(updatedRotationY.Value, (uint)Abs(duration.Milliseconds), easing).WaitAsync(token);
+		return await element.RotateYToAsync(updatedRotationY.Value, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
 #pragma warning restore CA2016
 	}
 

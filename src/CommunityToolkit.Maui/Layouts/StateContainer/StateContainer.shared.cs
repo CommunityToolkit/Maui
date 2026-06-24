@@ -50,26 +50,14 @@ public static partial class StateContainer
 		{
 			if (layout.Children.Count > 0 && beforeStateChange is not null)
 			{
-				var beforeAnimationTCS = new TaskCompletionSource<bool>();
-				foreach (var view in layout.Children.OfType<View>())
-				{
-					view.Animate(nameof(beforeStateChange), beforeStateChange, finished: (_, result) => beforeAnimationTCS.SetResult(result));
-				}
-
-				await beforeAnimationTCS.Task.WaitAsync(token);
+				await AnimateChildren(layout, nameof(beforeStateChange), beforeStateChange, token);
 			}
 
 			ChangeState(bindable, state);
 
 			if (layout.Children.Count > 0 && afterStateChange is not null)
 			{
-				var animationAnimationTCS = new TaskCompletionSource<bool>();
-				foreach (var view in layout.Children.OfType<View>())
-				{
-					view.Animate(nameof(afterStateChange), afterStateChange, finished: (_, result) => animationAnimationTCS.SetResult(result));
-				}
-
-				await animationAnimationTCS.Task.WaitAsync(token);
+				await AnimateChildren(layout, nameof(afterStateChange), afterStateChange, token);
 			}
 		}
 		finally
@@ -77,6 +65,19 @@ public static partial class StateContainer
 			SetCanStateChange(bindable, true);
 			SetCurrentState(bindable, state);
 		}
+	}
+
+	static async Task AnimateChildren(Layout layout, string name, Animation animation, CancellationToken token)
+	{
+		List<Task<bool>> animationTasks = [];
+		foreach (var view in layout.Children.OfType<View>())
+		{
+			var animationTCS = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			view.Animate(name, animation, finished: (_, result) => animationTCS.TrySetResult(result));
+			animationTasks.Add(animationTCS.Task);
+		}
+
+		await Task.WhenAll(animationTasks).WaitAsync(token);
 	}
 
 	/// <summary>

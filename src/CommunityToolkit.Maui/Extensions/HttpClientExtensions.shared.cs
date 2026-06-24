@@ -15,24 +15,29 @@ static partial class HttpClientExtensions
 		ArgumentNullException.ThrowIfNull(client);
 		ArgumentNullException.ThrowIfNull(uri);
 
+		HttpResponseMessage? response = null;
 		try
 		{
-			var response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+			response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 			if (!response.IsSuccessStatusCode)
 			{
-				response.Dispose();
 				Trace.WriteLine($"Could not retrieve {uri}, status code {response.StatusCode}");
 				return Stream.Null;
 			}
 
-			return new ResponseStream(
-				await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false),
-				response);
+			var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+			var responseStream = new ResponseStream(contentStream, response);
+			response = null;
+			return responseStream;
 		}
 		catch (Exception ex)
 		{
 			Trace.WriteLine($"Error getting stream for {uri}: {ex}");
 			return Stream.Null;
+		}
+		finally
+		{
+			response?.Dispose();
 		}
 	}
 

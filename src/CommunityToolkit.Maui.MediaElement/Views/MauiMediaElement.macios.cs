@@ -38,7 +38,7 @@ public class MauiMediaElement : UIView
 		else if (virtualView.TryFindParent<Page>(out var page)
 			&& page.Handler?.PlatformView is UIView pageView)
 		{
-			viewController = GetViewController(pageView);
+			viewController = GetViewController(pageView) ?? GetCurrentUIViewController();
 		}
 		// If the parent Page cannot be found, MediaElement is being used inside a DataTemplate. I.e. The MediaElement is being used inside a CarouselView or a CollectionView
 		// The top-most parent is null when MediaElement is placed in a DataTemplate because DataTemplates defer loading until they are about to be displayed on the screen 
