@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.Maui.ApplicationModel;
 
@@ -15,6 +14,10 @@ public sealed class AppThemeObject : AppThemeObject<object>
 /// <summary>
 /// Represents an object that is aware of the operating system theme.
 /// </summary>
+/// <remarks>
+/// Values created by <see cref="Microsoft.Maui.Controls.Xaml.DynamicResourceExtension"/> cannot be preserved by this
+/// public-API-only implementation because MAUI does not expose the resource key from the provided dynamic resource value.
+/// </remarks>
 public abstract partial class AppThemeObject<T>
 {
 	/// <summary>
@@ -37,10 +40,8 @@ public abstract partial class AppThemeObject<T>
 	/// Gets a bindable object which holds the different values for each operating system theme. 
 	/// </summary>
 	/// <remarks>
-	/// This targetless overload cannot preserve values created by <see cref="Microsoft.Maui.Controls.Xaml.DynamicResourceExtension"/>
-	/// because public MAUI binding converter APIs do not expose the target <see cref="BindableProperty"/>.
-	/// Use the toolkit AppTheme extension methods or <see cref="Extensions.AppThemeResourceExtension"/> when
-	/// <see cref="Light"/>, <see cref="Dark"/>, or <see cref="Default"/> can be dynamic resources.
+	/// This overload cannot preserve values created by <see cref="Microsoft.Maui.Controls.Xaml.DynamicResourceExtension"/>
+	/// because MAUI does not expose the resource key from the provided dynamic resource value.
 	/// </remarks>
 	/// <returns>A <see cref="BindingBase"/> instance with the respective theme values.</returns>
 	public virtual BindingBase GetBinding()
@@ -85,12 +86,6 @@ public abstract partial class AppThemeObject<T>
 
 			if (target is Element targetElement && parameter is BindableProperty targetProperty)
 			{
-				if (TryGetDynamicResourceKey(value, out var key))
-				{
-					targetElement.SetDynamicResource(targetProperty, key);
-					return Binding.DoNothing;
-				}
-
 				targetElement.RemoveDynamicResource(targetProperty);
 			}
 
@@ -109,27 +104,6 @@ public abstract partial class AppThemeObject<T>
 				AppTheme.Dark => dark ?? defaultValue,
 				_ => light ?? defaultValue
 			};
-
-		static bool TryGetDynamicResourceKey(object? value, [NotNullWhen(true)] out string? key)
-		{
-			key = null;
-
-			if (value is null)
-			{
-				return false;
-			}
-
-			var valueType = value.GetType();
-			if (valueType.Name is not "DynamicResource"
-				|| valueType.Assembly != typeof(BindableObject).Assembly)
-			{
-				return false;
-			}
-
-			key = TypeDescriptor.GetProperties(value)["Key"]?.GetValue(value) as string;
-
-			return key is not null;
-		}
 	}
 
 	sealed partial class AppThemeSource : INotifyPropertyChanged
