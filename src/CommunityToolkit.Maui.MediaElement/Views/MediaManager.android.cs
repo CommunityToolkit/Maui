@@ -331,6 +331,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	protected virtual async partial ValueTask PlatformUpdateSource()
 	{
 		var hasSetSource = false;
+		hasMediaOpened = false;
 
 		if (Player is null)
 		{
