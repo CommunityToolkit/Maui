@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
-using Microsoft.Maui.Controls.Xaml;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Essentials;
@@ -114,30 +113,32 @@ public class AppThemeTests : BaseViewTest
 	}
 
 	[Fact]
-	public void AppThemeResourceAppliesDynamicResourceForTheme()
+	public void AppThemeResourceRemovesExistingDynamicResourceForStaticThemeValue()
 	{
 		ArgumentNullException.ThrowIfNull(Application.Current);
 
-		Application.Current.Resources["LightTextColor"] = Colors.Green;
-		Application.Current.Resources["DarkTextColor"] = Colors.Red;
+		Application.Current.Resources["TextColor"] = Colors.Green;
+		label.SetDynamicResource(Label.TextColorProperty, "TextColor");
+
+		label.TextColor.Should().Be(Colors.Green);
 
 		AppThemeObject resource = new()
 		{
-			Light = CreateDynamicResource("LightTextColor"),
-			Dark = CreateDynamicResource("DarkTextColor")
+			Light = Colors.Blue,
+			Dark = Colors.Purple
 		};
 
 		label.SetAppTheme(Label.TextColorProperty, resource);
 
-		label.TextColor.Should().Be(Colors.Green);
+		label.TextColor.Should().Be(Colors.Blue);
 
 		SetAppTheme(AppTheme.Dark, Application.Current);
 
-		label.TextColor.Should().Be(Colors.Red);
+		label.TextColor.Should().Be(Colors.Purple);
 
-		Application.Current.Resources["DarkTextColor"] = Colors.Blue;
+		Application.Current.Resources["TextColor"] = Colors.Red;
 
-		label.TextColor.Should().Be(Colors.Blue);
+		label.TextColor.Should().Be(Colors.Purple);
 	}
 
 	void SetAppTheme(in AppTheme theme, in IApplication app)
@@ -146,16 +147,4 @@ public class AppThemeTests : BaseViewTest
 		app.ThemeChanged();
 	}
 
-	static object CreateDynamicResource(string key) =>
-		new DynamicResourceExtension
-		{
-			Key = key
-		}.ProvideValue(EmptyServiceProvider.Instance);
-
-	sealed class EmptyServiceProvider : IServiceProvider
-	{
-		public static EmptyServiceProvider Instance { get; } = new();
-
-		public object? GetService(Type serviceType) => null;
-	}
 }
