@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using UIKit;
 using Font = Microsoft.Maui.Font;
 
@@ -13,7 +14,7 @@ public static class UIFontExtensions
 	/// </summary>
 	public static UIFont ToUIFont(this Font font)
 	{
-		var fontManager = Application.Current?.RequireFontManager();
+		var fontManager = Application.Current?.Handler?.MauiContext?.Services.GetService<IFontManager>();
 		return fontManager is null ? UIFont.SystemFontOfSize((nfloat)font.Size) : fontManager.GetFont(font, UIFont.SystemFontSize);
 	}
 }
