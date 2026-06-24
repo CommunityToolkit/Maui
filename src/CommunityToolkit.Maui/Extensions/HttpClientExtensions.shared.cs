@@ -41,7 +41,7 @@ static partial class HttpClientExtensions
 		}
 	}
 
-	sealed class ResponseStream(Stream innerStream, IDisposable response) : Stream
+	sealed partial class ResponseStream(Stream innerStream, IDisposable response) : Stream
 	{
 		public override bool CanRead => innerStream.CanRead;
 
