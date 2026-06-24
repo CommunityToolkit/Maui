@@ -1,5 +1,8 @@
-using Microsoft.Maui.Controls.Platform;
-using Microsoft.UI.Xaml.Controls;
+using PlatformGridView = Microsoft.UI.Xaml.Controls.GridView;
+using PlatformGridViewItem = Microsoft.UI.Xaml.Controls.GridViewItem;
+using PlatformItemsControl = Microsoft.UI.Xaml.Controls.ItemsControl;
+using PlatformListView = Microsoft.UI.Xaml.Controls.ListView;
+using PlatformListViewItem = Microsoft.UI.Xaml.Controls.ListViewItem;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -12,12 +15,12 @@ public partial class Expander
 			return;
 		}
 
-		if (collectionView.Handler?.PlatformView is FormsListView formsListView)
+		if (collectionView.Handler?.PlatformView is PlatformListView listView)
 		{
 			var offset = 0.0;
-			foreach (var item in formsListView.Items)
+			foreach (var item in listView.Items)
 			{
-				if (formsListView.ContainerFromItem(item) is ListViewItem cell)
+				if (listView.ContainerFromItem(item) is PlatformListViewItem cell)
 				{
 					if (tapLocation.Value.Y >= offset && tapLocation.Value.Y <= offset + cell.ActualHeight)
 					{
@@ -29,17 +32,18 @@ public partial class Expander
 				}
 			}
 		}
-		else if (collectionView.Handler?.PlatformView is FormsGridView gridView)
+		else if (collectionView.Handler?.PlatformView is PlatformGridView gridView)
 		{
-			var numberOfColumns = gridView.Span;
-			if (numberOfColumns == 0)
+			if (collectionView.ItemsLayout is not GridItemsLayout { Span: > 0 } gridItemsLayout)
 			{
 				return;
 			}
 
+			var numberOfColumns = gridItemsLayout.Span;
+
 			for (var i = 0; i < gridView.Items.Count; i++)
 			{
-				if (gridView.ContainerFromIndex(i) is GridViewItem gridViewItem)
+				if (gridView.ContainerFromIndex(i) is PlatformGridViewItem gridViewItem)
 				{
 					var itemTransform = gridViewItem.TransformToVisual(gridView);
 					var itemPosition = itemTransform.TransformPoint(new Windows.Foundation.Point(0, 0));
@@ -55,7 +59,7 @@ public partial class Expander
 		}
 	}
 
-	static void IterateItemsInRow(ItemsControl gridView, int itemIndex, int totalColumns, double height)
+	static void IterateItemsInRow(PlatformItemsControl gridView, int itemIndex, int totalColumns, double height)
 	{
 		var rowToIterate = itemIndex / totalColumns;
 		var startIndex = rowToIterate * totalColumns;
@@ -67,7 +71,7 @@ public partial class Expander
 				break;
 			}
 
-			if (gridView.ContainerFromIndex(i) is GridViewItem cell)
+			if (gridView.ContainerFromIndex(i) is PlatformGridViewItem cell)
 			{
 				cell.Height = height + Random.Shared.NextDouble();
 			}
