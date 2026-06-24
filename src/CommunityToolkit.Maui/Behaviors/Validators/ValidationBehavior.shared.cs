@@ -300,7 +300,7 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 			IsValid = true;
 			IsRunning = false;
 		}
-		else if (isForced || (currentStatus != ValidationFlags.None && Flags.HasFlag(currentStatus)))
+		else if (isForced || (currentStatus != ValidationFlags.None && flags.HasFlag(currentStatus)))
 		{
 			IsRunning = true;
 
