@@ -143,11 +143,13 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return;
 		}
+		
 		if (playWhenReady)
 		{
 			MediaElement.CurrentStateChanged(MediaElementState.Playing);
 
 		}
+		
 		else
 		{
 			MediaElement.CurrentStateChanged(MediaElementState.Paused);
@@ -181,6 +183,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			endedState => MediaElementState.Stopped,
 			_ => MediaElement.CurrentState
 		};
+
 		if (newState == MediaElementState.Playing)
 		{
 			MediaElement.Duration = TimeSpan.FromMilliseconds(Player.Duration < 0 ? 0 : Player.Duration);
@@ -194,6 +197,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 			seekToTaskCompletionSource?.TrySetResult();
 		}
+
 		if (MediaElementState.Stopped == newState)
 		{
 			MediaElement.MediaEnded();
