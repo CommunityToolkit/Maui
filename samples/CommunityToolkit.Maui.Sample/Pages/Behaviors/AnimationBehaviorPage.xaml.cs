@@ -15,8 +15,17 @@ partial class SampleScaleAnimation : BaseAnimation
 {
 	public override async Task Animate(VisualElement view, CancellationToken token)
 	{
-		await view.ScaleToAsync(1.2, Length, Easing).WaitAsync(token);
-		await view.ScaleToAsync(1, Length, Easing).WaitAsync(token);
+		await ScaleToAsync(view, 1.2, Length, Easing, token);
+		await ScaleToAsync(view, 1, Length, Easing, token);
+	}
+
+	static Task ScaleToAsync(VisualElement view, double scale, uint length, Easing? easing, CancellationToken token)
+	{
+#if NET11_0_OR_GREATER
+		return view.ScaleToAsync(scale, length, easing, token);
+#else
+		return view.ScaleToAsync(scale, length, easing).WaitAsync(token);
+#endif
 	}
 }
 
@@ -25,5 +34,14 @@ partial class SampleScaleToAnimation : BaseAnimation
 	public double Scale { get; set; }
 
 	public override Task Animate(VisualElement view, CancellationToken token)
-		=> view.ScaleToAsync(Scale, Length, Easing).WaitAsync(token);
+		=> ScaleToAsync(view, Scale, Length, Easing, token);
+
+	static Task ScaleToAsync(VisualElement view, double scale, uint length, Easing? easing, CancellationToken token)
+	{
+#if NET11_0_OR_GREATER
+		return view.ScaleToAsync(scale, length, easing, token);
+#else
+		return view.ScaleToAsync(scale, length, easing).WaitAsync(token);
+#endif
+	}
 }
