@@ -144,6 +144,8 @@ public partial class IconTintColorBehavior
 
 	void LoadAndApplyImageTintColor(IView element, WImage image, Color color)
 	{
+		var isSizeChangedSubscribed = false;
+
 		if (GetImageSource(element) is UriImageSource uriImageSource)
 		{
 			image.Source = Path.GetExtension(uriImageSource.Uri.AbsolutePath) switch
@@ -186,23 +188,39 @@ public partial class IconTintColorBehavior
 
 		void ApplyTintColor()
 		{
-			if (image.ActualSize != Vector2.Zero)
+			if (IsImageFullyMeasured(image))
 			{
 				ApplyImageTintColor(element, image, color);
+				return;
 			}
-			else
+
+			// Sometimes the ActualSize of the image is still not ready, therefore we have to wait for the next SizeChange event.
+			SubscribeToSizeChanged();
+
+			void SubscribeToSizeChanged()
 			{
-				// Sometimes the ActualSize of the image is still not ready, therefore we have to wait for the next SizeChange event. 
-				image.SizeChanged += OnImageSizeChanged;
-
-				void OnImageSizeChanged(object sender, SizeChangedEventArgs e)
+				if (isSizeChangedSubscribed)
 				{
-					ArgumentNullException.ThrowIfNull(sender);
-					var image = (WImage)sender;
-
-					image.SizeChanged -= OnImageSizeChanged;
-					ApplyImageTintColor(element, image, color);
+					return;
 				}
+
+				image.SizeChanged += OnImageSizeChanged;
+				isSizeChangedSubscribed = true;
+			}
+
+			void OnImageSizeChanged(object sender, SizeChangedEventArgs e)
+			{
+				ArgumentNullException.ThrowIfNull(sender);
+				var image = (WImage)sender;
+
+				if (!IsImageFullyMeasured(image))
+				{
+					return;
+				}
+
+				image.SizeChanged -= OnImageSizeChanged;
+				isSizeChangedSubscribed = false;
+				ApplyImageTintColor(element, image, color);
 			}
 		}
 	}
@@ -214,8 +232,15 @@ public partial class IconTintColorBehavior
 			return;
 		}
 
-		var width = (float)image.ActualWidth;
-		var height = (float)image.ActualHeight;
+		if (!IsImageFullyMeasured(image))
+		{
+			return;
+		}
+
+		var imageWidth = image.ActualWidth;
+		var imageHeight = image.ActualHeight;
+		var width = (float)imageWidth;
+		var height = (float)imageHeight;
 		var anchorPoint = new Vector2((float)element.AnchorX, (float)element.AnchorY);
 
 		// Requested size requires additional offset to re-center tinted image.
@@ -223,17 +248,23 @@ public partial class IconTintColorBehavior
 
 		ApplyTintCompositionEffect(image, color, width, height, offset, anchorPoint, uri);
 
+		var pixelWidth = Math.Max(1, (int)Math.Ceiling(imageWidth));
+		var pixelHeight = Math.Max(1, (int)Math.Ceiling(imageHeight));
+
 		// Hide possible visible pixels from original image by replacing with a transparent image of the same size
 		if (blankImage is null
-			|| (blankImage.PixelWidth != (int)width && blankImage.PixelHeight != (int)height))
+			|| blankImage.PixelWidth != pixelWidth
+			|| blankImage.PixelHeight != pixelHeight)
 		{
 			// Source image has changed, update the cached blank image
-			blankImage = new WriteableBitmap((int)width, (int)height);
+			blankImage = new WriteableBitmap(pixelWidth, pixelHeight);
 		}
 
 		originalImage = image.Source;
 		image.Source = blankImage;
 	}
+
+	static bool IsImageFullyMeasured(WImage image) => image.ActualWidth > 0 && image.ActualHeight > 0;
 
 	void ApplyTintCompositionEffect(FrameworkElement platformView, Color color, float width, float height, Vector3 offset, Vector2 anchorPoint, Uri surfaceMaskUri)
 	{
