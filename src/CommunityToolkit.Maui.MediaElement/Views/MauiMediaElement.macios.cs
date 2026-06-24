@@ -1,11 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using AVKit;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
-using Microsoft.Maui.Controls.Handlers.Items;
-using Microsoft.Maui.Controls.Handlers.Items2;
-using Microsoft.Maui.Handlers;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -40,9 +36,9 @@ public class MauiMediaElement : UIView
 		// If none of the Parents in the VisualTree of MediaElement use a UIViewController, we can use the ViewController in the PageHandler
 		// To find the PageHandler, we traverse `MediaElement.Parent` until the Page is located
 		else if (virtualView.TryFindParent<Page>(out var page)
-			&& page.Handler is PageHandler { ViewController: not null } pageHandler)
+			&& page.Handler?.PlatformView is UIView pageView)
 		{
-			viewController = pageHandler.ViewController;
+			viewController = GetViewController(pageView);
 		}
 		// If the parent Page cannot be found, MediaElement is being used inside a DataTemplate. I.e. The MediaElement is being used inside a CarouselView or a CollectionView
 		// The top-most parent is null when MediaElement is placed in a DataTemplate because DataTemplates defer loading until they are about to be displayed on the screen 
@@ -60,42 +56,12 @@ public class MauiMediaElement : UIView
 			// look for an ItemsView (e.g. CarouselView or CollectionView) on page 
 			if (TryGetItemsViewOnPage(currentPage, out var itemsView))
 			{
-				var parentViewController = itemsView.Handler switch
-				{
-					CarouselViewHandler carouselViewHandler => carouselViewHandler.ViewController ?? GetInternalControllerForItemsView(carouselViewHandler),
-					CarouselViewHandler2 carouselViewHandler2 => carouselViewHandler2.ViewController ?? GetInternalControllerForItemsView2(carouselViewHandler2),
-					CollectionViewHandler collectionViewHandler => collectionViewHandler.ViewController ?? GetInternalControllerForItemsView(collectionViewHandler),
-					CollectionViewHandler2 collectionViewHandler2 => collectionViewHandler2.ViewController ?? GetInternalControllerForItemsView2(collectionViewHandler2),
-					null => throw new InvalidOperationException("Handler cannot be null"),
-					_ => throw new NotSupportedException($"{itemsView.Handler.GetType()} not yet supported")
-				};
-
-				viewController = parentViewController;
-
-				// The Controller we need is a `protected internal` property called ItemsViewController in the ItemsViewHandler class: https://github.com/dotnet/maui/blob/cf002538cb73db4bf187a51e4786d7478a7025ee/src/Controls/src/Core/Handlers/Items/ItemsViewHandler.iOS.cs#L39
-				// In this method, we must use reflection to get the value of its backing field 
-				static ItemsViewController<TItemsView> GetInternalControllerForItemsView<TItemsView>(ItemsViewHandler<TItemsView> handler) where TItemsView : ItemsView
-				{
-					var nonPublicInstanceFields = typeof(ItemsViewHandler<TItemsView>).GetFields(BindingFlags.NonPublic | BindingFlags.Instance);
-
-					var controllerProperty = nonPublicInstanceFields.Single(x => x.FieldType == typeof(ItemsViewController<TItemsView>));
-					return (ItemsViewController<TItemsView>)(controllerProperty.GetValue(handler) ?? throw new InvalidOperationException($"Unable to get the value for the Controller property on {handler.GetType()}"));
-				}
-
-				// The Controller we need is a `protected internal` property called ItemsViewController in the ItemsViewHandler2 class: https://github.com/dotnet/maui/blob/70e8ddfd4bd494bc71aa7afb812cc09161cf0c72/src/Controls/src/Core/Handlers/Items2/ItemsViewHandler2.iOS.cs#L64
-				// In this method, we must use reflection to get the value of its backing field 
-				static ItemsViewController2<TItemsView> GetInternalControllerForItemsView2<TItemsView>(ItemsViewHandler2<TItemsView> handler) where TItemsView : ItemsView
-				{
-					var nonPublicInstanceFields = typeof(ItemsViewHandler2<TItemsView>).GetFields(BindingFlags.NonPublic | BindingFlags.Instance);
-
-					var controllerProperty = nonPublicInstanceFields.Single(x => x.FieldType == typeof(ItemsViewController2<TItemsView>));
-					return (ItemsViewController2<TItemsView>)(controllerProperty.GetValue(handler) ?? throw new InvalidOperationException($"Unable to get the value for the Controller property on {handler.GetType()}"));
-				}
+				viewController = GetViewController(itemsView);
 			}
 			// If we don't find an ItemsView, default to the current UIViewController
 			else
 			{
-				viewController = Platform.GetCurrentUIViewController();
+				viewController = GetCurrentUIViewController();
 			}
 		}
 
@@ -116,7 +82,7 @@ public class MauiMediaElement : UIView
 
 	static bool TryGetItemsViewOnPage(Page currentPage, [NotNullWhen(true)] out ItemsView? itemsView)
 	{
-		var itemsViewsOnPage = ((IElementController)currentPage).Descendants().OfType<ItemsView>().ToList();
+		var itemsViewsOnPage = currentPage.GetVisualTreeDescendants().OfType<ItemsView>().ToList();
 		switch (itemsViewsOnPage.Count)
 		{
 			case > 1:
@@ -130,6 +96,45 @@ public class MauiMediaElement : UIView
 				itemsView = null;
 				return false;
 		}
+	}
+
+	static UIViewController? GetViewController(ItemsView itemsView)
+	{
+		return itemsView.Handler?.PlatformView switch
+		{
+			UIView platformView => GetViewController(platformView) ?? GetCurrentUIViewController(),
+			null => throw new InvalidOperationException("Handler cannot be null"),
+			_ => throw new NotSupportedException($"{itemsView.Handler.GetType()} not yet supported")
+		};
+	}
+
+	static UIViewController? GetViewController(UIView view)
+	{
+		for (UIResponder? responder = view; responder is not null; responder = responder.NextResponder)
+		{
+			if (responder is UIViewController viewController)
+			{
+				return viewController;
+			}
+		}
+
+		return null;
+	}
+
+	static UIViewController? GetCurrentUIViewController()
+	{
+		var rootViewController = UIApplication.SharedApplication.ConnectedScenes
+			.OfType<UIWindowScene>()
+			.SelectMany(static scene => scene.Windows)
+			.FirstOrDefault(static window => window.IsKeyWindow)?
+			.RootViewController;
+
+		while (rootViewController?.PresentedViewController is not null)
+		{
+			rootViewController = rootViewController.PresentedViewController;
+		}
+
+		return rootViewController;
 	}
 
 	static bool TryGetCurrentPage([NotNullWhen(true)] out Page? currentPage)

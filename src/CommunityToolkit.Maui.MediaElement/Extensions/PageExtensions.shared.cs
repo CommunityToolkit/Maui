@@ -7,7 +7,7 @@ static class PageExtensions
 {
 	internal static Page GetCurrentPage(this Page currentPage)
 	{
-		if (currentPage.NavigationProxy.ModalStack.LastOrDefault() is Page modal)
+		if (currentPage.Navigation.ModalStack.LastOrDefault() is Page modal)
 		{
 			return modal;
 		}
@@ -15,9 +15,9 @@ static class PageExtensions
 		{
 			return GetCurrentPage(fp.Detail);
 		}
-		else if (currentPage is Shell shell && shell.CurrentItem?.CurrentItem is IShellSectionController ssc)
+		else if (currentPage is Shell shell && shell.CurrentPage is Page shellPage)
 		{
-			return ssc.PresentedPage;
+			return GetCurrentPage(shellPage);
 		}
 		else if (currentPage is IPageContainer<Page> pc)
 		{

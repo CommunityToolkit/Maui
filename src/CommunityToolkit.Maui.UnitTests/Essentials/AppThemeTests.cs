@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
+using Microsoft.Maui.Controls.Xaml;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Essentials;
@@ -112,9 +113,49 @@ public class AppThemeTests : BaseViewTest
 		label.Text.Should().Be("Dark Theme");
 	}
 
+	[Fact]
+	public void AppThemeResourceAppliesDynamicResourceForTheme()
+	{
+		ArgumentNullException.ThrowIfNull(Application.Current);
+
+		Application.Current.Resources["LightTextColor"] = Colors.Green;
+		Application.Current.Resources["DarkTextColor"] = Colors.Red;
+
+		AppThemeObject resource = new()
+		{
+			Light = CreateDynamicResource("LightTextColor"),
+			Dark = CreateDynamicResource("DarkTextColor")
+		};
+
+		label.SetAppTheme(Label.TextColorProperty, resource);
+
+		label.TextColor.Should().Be(Colors.Green);
+
+		SetAppTheme(AppTheme.Dark, Application.Current);
+
+		label.TextColor.Should().Be(Colors.Red);
+
+		Application.Current.Resources["DarkTextColor"] = Colors.Blue;
+
+		label.TextColor.Should().Be(Colors.Blue);
+	}
+
 	void SetAppTheme(in AppTheme theme, in IApplication app)
 	{
 		mockAppInfo.RequestedTheme = theme;
 		app.ThemeChanged();
+	}
+
+	static object CreateDynamicResource(string key) =>
+		new DynamicResourceExtension
+		{
+			Key = key
+		}.ProvideValue(EmptyServiceProvider.Instance);
+
+	sealed class EmptyServiceProvider : IServiceProvider
+	{
+		public static EmptyServiceProvider Instance { get; } = new();
+
+		public object? GetService(Type serviceType) => null;
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Windows.Input;
@@ -11,6 +12,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// </summary>
 public partial class EventToCommandBehavior : BaseBehavior<VisualElement>
 {
+	[DynamicDependency(nameof(OnTriggerHandled), typeof(EventToCommandBehavior))]
 	readonly MethodInfo eventHandlerMethodInfo = typeof(EventToCommandBehavior).GetTypeInfo().GetDeclaredMethod(nameof(OnTriggerHandled)) ?? throw new InvalidOperationException($"Cannot find method {nameof(OnTriggerHandled)}");
 
 	Delegate? eventHandler;
@@ -96,7 +98,6 @@ public partial class EventToCommandBehavior : BaseBehavior<VisualElement>
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="eventArgs"></param>
-	[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 	protected virtual void OnTriggerHandled(object? sender = null, object? eventArgs = null)
 	{
 		var parameter = CommandParameter

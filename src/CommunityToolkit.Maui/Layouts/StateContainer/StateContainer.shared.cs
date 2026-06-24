@@ -51,7 +51,10 @@ public static partial class StateContainer
 			if (layout.Children.Count > 0 && beforeStateChange is not null)
 			{
 				var beforeAnimationTCS = new TaskCompletionSource<bool>();
-				layout.Children.OfType<View>().ForEach(view => view.Animate(nameof(beforeStateChange), beforeStateChange, finished: (_, result) => beforeAnimationTCS.SetResult(result)));
+				foreach (var view in layout.Children.OfType<View>())
+				{
+					view.Animate(nameof(beforeStateChange), beforeStateChange, finished: (_, result) => beforeAnimationTCS.SetResult(result));
+				}
 
 				await beforeAnimationTCS.Task.WaitAsync(token);
 			}
@@ -61,7 +64,10 @@ public static partial class StateContainer
 			if (layout.Children.Count > 0 && afterStateChange is not null)
 			{
 				var animationAnimationTCS = new TaskCompletionSource<bool>();
-				layout.Children.OfType<View>().ForEach(view => view.Animate(nameof(afterStateChange), afterStateChange, finished: (_, result) => animationAnimationTCS.SetResult(result)));
+				foreach (var view in layout.Children.OfType<View>())
+				{
+					view.Animate(nameof(afterStateChange), afterStateChange, finished: (_, result) => animationAnimationTCS.SetResult(result));
+				}
 
 				await animationAnimationTCS.Task.WaitAsync(token);
 			}
