@@ -139,21 +139,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason)
 	{
-		if(!hasMediaOpened)
+		if (!hasMediaOpened || Player is null || MediaElement.Source is null || Player.PlaybackState != readyState)
 		{
 			return;
 		}
-		
-		if (playWhenReady)
-		{
-			MediaElement.CurrentStateChanged(MediaElementState.Playing);
 
-		}
-		
-		else
-		{
-			MediaElement.CurrentStateChanged(MediaElementState.Paused);
-		}
+		MediaElement.CurrentStateChanged(playWhenReady ? MediaElementState.Playing : MediaElementState.Paused);
 	}
 
 	/// <summary>
@@ -174,7 +165,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaElementState newState = playbackState switch
 		{
 			idleState => MediaElement.CurrentState is not MediaElementState.Failed
-				? MediaElementState.None
+				? MediaElementState.Stopped
 				: MediaElementState.Failed,
 			bufferState => MediaElementState.Buffering,
 			readyState => Player.PlayWhenReady
