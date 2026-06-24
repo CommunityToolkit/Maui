@@ -184,7 +184,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			_ => MediaElement.CurrentState
 		};
 
-		if (newState == MediaElementState.Playing)
+		if (playbackState == readyState)
 		{
 			MediaElement.Duration = TimeSpan.FromMilliseconds(Player.Duration < 0 ? 0 : Player.Duration);
 			MediaElement.Position = TimeSpan.FromMilliseconds(Player.CurrentPosition < 0 ? 0 : Player.CurrentPosition);
