@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Core.Primitives;
+﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Storage;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
