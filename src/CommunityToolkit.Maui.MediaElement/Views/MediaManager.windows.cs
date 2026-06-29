@@ -5,9 +5,6 @@ using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Media;
@@ -21,7 +18,6 @@ using HttpMethod = Windows.Web.Http.HttpMethod;
 using HttpRequestMessage = Windows.Web.Http.HttpRequestMessage;
 using ParentWindow = CommunityToolkit.Maui.Extensions.PageExtensions.ParentWindow;
 using WindowsMediaElement = Windows.Media.Playback.MediaPlayer;
-using WinMediaSource = Windows.Media.Core.MediaSource;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -74,7 +70,6 @@ partial class MediaManager : IDisposable
 
 		Player.MediaPlayer.SystemMediaTransportControls.IsEnabled = false;
 		systemMediaControls = Player.MediaPlayer.SystemMediaTransportControls;
-
 		return Player;
 	}
 
@@ -341,7 +336,7 @@ partial class MediaManager : IDisposable
 			if (streamMediaSource.Stream is not null)
 			{
 				var randomAccessStream = streamMediaSource.Stream.AsRandomAccessStream();
-				Player.Source = WinMediaSource.CreateFromStream(randomAccessStream, streamMediaSource.Stream.GetMimeType());
+				Player.Source = Windows.Media.Core.MediaSource.CreateFromStream(randomAccessStream, streamMediaSource.Stream.GetMimeType());
 			}
 		}
 	}
@@ -371,7 +366,7 @@ partial class MediaManager : IDisposable
 			adaptiveMediaSource = adaptiveResult.MediaSource;
 			adaptiveMediaSource.DownloadRequested += OnAdaptiveMediaSourceDownloadRequested;
 
-			var mediaSource = WinMediaSource.CreateFromAdaptiveMediaSource(adaptiveMediaSource);
+			var mediaSource = Windows.Media.Core.MediaSource.CreateFromAdaptiveMediaSource(adaptiveMediaSource);
 			await Dispatcher.DispatchAsync(() =>
 			{
 				Player.AutoPlay = MediaElement.ShouldAutoPlay;
@@ -384,7 +379,7 @@ partial class MediaManager : IDisposable
 			await Dispatcher.DispatchAsync(() =>
 			{
 				Player.AutoPlay = MediaElement.ShouldAutoPlay;
-				Player.Source = WinMediaSource.CreateFromStream(stream, string.Empty);
+				Player.Source = Windows.Media.Core.MediaSource.CreateFromStream(stream, string.Empty);
 			});
 		}
 	}
