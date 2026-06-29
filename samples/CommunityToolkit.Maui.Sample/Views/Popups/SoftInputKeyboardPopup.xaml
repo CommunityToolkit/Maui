@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<mct:Popup  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+            xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+            x:Class="CommunityToolkit.Maui.Sample.Views.Popups.SoftInputKeyboardPopup"
+            CanBeDismissedByTappingOutsideOfPopup="True">
+
+    <VerticalStackLayout Spacing="12">
+
+        <Label
+            Text="Keyboard for Entry"
+            FontSize="18"
+            HorizontalTextAlignment="Center"
+            VerticalTextAlignment="Center"
+            VerticalOptions="Center"
+            HorizontalOptions="Center"
+            FontAttributes="Bold" />
+
+        <Entry
+            Placeholder="Click here to enter text..."
+            TextColor="Black"
+            HorizontalTextAlignment="Start"
+            VerticalTextAlignment="Center"
+            VerticalOptions="Center"
+            HorizontalOptions="Center" />
+
+        <Label
+            x:Name="PickerForIOSLabel"
+            Text="Keyboard for Picker (iOS only)"
+            FontSize="18"
+            HorizontalTextAlignment="Center"
+            VerticalTextAlignment="Center"
+            VerticalOptions="Center"
+            HorizontalOptions="Center"
+            FontAttributes="Bold"
+            IsVisible="False" />
+
+        <Picker
+            x:Name="PickerForIOS"
+            Title="Select a monkey"
+            HorizontalTextAlignment="Center"
+            VerticalTextAlignment="Center"
+            VerticalOptions="Center"
+            HorizontalOptions="Center"
+            IsVisible="False">
+            <Picker.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                <x:String>Baboon</x:String>
+                <x:String>Capuchin Monkey</x:String>
+                <x:String>Blue Monkey</x:String>
+                <x:String>Squirrel Monkey</x:String>
+                <x:String>Golden Lion Tamarin</x:String>
+                <x:String>Howler Monkey</x:String>
+                <x:String>Japanese Macaque</x:String>
+                </x:Array>
+            </Picker.ItemsSource>
+        </Picker>
+
+        <Label
+            x:Name="DatePickerForIOSLabel"
+            Text="Keyboard for DatePicker (iOS only)"
+            FontSize="18"
+            HorizontalTextAlignment="Center"
+            VerticalTextAlignment="Center"
+            VerticalOptions="Center"
+            HorizontalOptions="Center"
+            FontAttributes="Bold"
+            IsVisible="False" />
+
+        <DatePicker
+            x:Name="DatePickerForIOS"
+            MinimumDate="01/01/2020"
+            MaximumDate="12/31/2030"
+            Date="02/23/2026"
+            VerticalOptions="Center"
+            HorizontalOptions="Center"
+            IsVisible="False" />
+
+        <Button
+            Text="Close"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"
+            Clicked="ClosePopup" />
+
+    </VerticalStackLayout>
+</mct:Popup>
