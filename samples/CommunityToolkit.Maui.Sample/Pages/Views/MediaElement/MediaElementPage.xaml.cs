@@ -12,6 +12,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 {
 	const string loadOnlineMp4 = "Load Online MP4";
 	const string loadHls = "Load HTTP Live Stream (HLS)";
+	const string loadDASH = "Load MPEG-DASH (not supported on iOS/MacCatalyst)";
 	const string loadLocalResource = "Load Local Resource";
 	const string resetSource = "Reset Source to null";
 	const string loadMusic = "Load Music";
@@ -219,7 +220,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	async void ChangeSourceClicked(object? sender, EventArgs? e)
 	{
 		var result = await DisplayActionSheetAsync("Choose a source", "Cancel", null,
-			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadMusic);
+			loadOnlineMp4, loadHls, loadDASH, loadLocalResource, resetSource, loadMusic);
 
 		MediaElement.Stop();
 		MediaElement.Source = null;
@@ -242,6 +243,12 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.Source = hlsSource;
 				return;
 
+			case loadDASH:
+				MediaElement.MetadataArtist = "DASH Album";
+				MediaElement.MetadataArtworkUrl = botImageUrl;
+				MediaElement.MetadataTitle = "DASH Title";
+				MediaElement.Source = new UriMediaSource { Uri = new Uri(StreamingUrls.DashTestUrl) };
+				return;
 			case resetSource:
 				MediaElement.MetadataArtworkUrl = string.Empty;
 				MediaElement.MetadataTitle = string.Empty;
