@@ -41,7 +41,7 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 	private protected static string DomainMapper(Match match)
 	{
 		var domainName = match.Groups[2].Value;
-		if (domainName.StartsWith('-'))
+		if (domainName.StartsWith("-", StringComparison.Ordinal))
 		{
 			throw new ArgumentException("Domain name cannot start with hyphen.");
 		}
@@ -99,7 +99,7 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 	static bool IsValidEmail(string? email)
 	{
 		if (string.IsNullOrWhiteSpace(email)
-			|| email.StartsWith('.')
+			|| email.StartsWith(".", StringComparison.Ordinal)
 			|| email.Contains("..", StringComparison.Ordinal)
 			|| email.Contains(".@", StringComparison.Ordinal))
 		{

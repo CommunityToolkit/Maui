@@ -1,4 +1,8 @@
-﻿namespace CommunityToolkit.Maui;
+﻿using System.ComponentModel;
+using System.Globalization;
+using Microsoft.Maui.ApplicationModel;
+
+namespace CommunityToolkit.Maui;
 
 /// <summary>
 /// Represents a resource that is aware of the operating system theme.
@@ -10,7 +14,11 @@ public sealed class AppThemeObject : AppThemeObject<object>
 /// <summary>
 /// Represents an object that is aware of the operating system theme.
 /// </summary>
-public abstract class AppThemeObject<T>
+/// <remarks>
+/// Values created by <see cref="Microsoft.Maui.Controls.Xaml.DynamicResourceExtension"/> cannot be preserved by this
+/// public-API-only implementation because MAUI does not expose the resource key from the provided dynamic resource value.
+/// </remarks>
+public abstract partial class AppThemeObject<T>
 {
 	/// <summary>
 	/// The <see cref="object"/> that is used when the operating system uses light theme.
@@ -31,26 +39,112 @@ public abstract class AppThemeObject<T>
 	/// <summary>
 	/// Gets a bindable object which holds the different values for each operating system theme. 
 	/// </summary>
-	/// <returns>A <see cref="AppThemeBinding"/> instance with the respective theme values.</returns>
+	/// <remarks>
+	/// This overload cannot preserve values created by <see cref="Microsoft.Maui.Controls.Xaml.DynamicResourceExtension"/>
+	/// because MAUI does not expose the resource key from the provided dynamic resource value.
+	/// </remarks>
+	/// <returns>A <see cref="BindingBase"/> instance with the respective theme values.</returns>
 	public virtual BindingBase GetBinding()
 	{
-		var binding = new AppThemeBinding();
+		return new Binding(
+			nameof(AppThemeSource.RequestedTheme),
+			converter: new AppThemeObjectConverter(Light, Dark, Default),
+			source: AppThemeSource.Instance);
+	}
 
-		if (Light is not null)
+	internal BindingBase GetBinding(BindableProperty targetProperty)
+	{
+		return new MultiBinding
 		{
-			binding.Light = Light;
+			Converter = new AppThemeObjectConverter(Light, Dark, Default),
+			ConverterParameter = targetProperty,
+			Bindings =
+			{
+				new Binding(Binding.SelfPath, source: RelativeBindingSource.Self),
+				new Binding(nameof(AppThemeSource.RequestedTheme), source: AppThemeSource.Instance)
+			}
+		};
+	}
+
+	sealed class AppThemeObjectConverter(T? light, T? dark, T? defaultValue) : IValueConverter, IMultiValueConverter
+	{
+		public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+		{
+			var requestedTheme = value is AppTheme theme ? theme : AppInfo.RequestedTheme;
+
+			return GetValue(requestedTheme);
 		}
 
-		if (Dark is not null)
+		public object? Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
 		{
-			binding.Dark = Dark;
+			var target = values.Length > 0 ? values[0] : null;
+			var requestedTheme = values.Length > 1 && values[1] is AppTheme theme
+				? theme
+				: AppInfo.RequestedTheme;
+
+			var value = GetValue(requestedTheme);
+
+			if (target is Element targetElement && parameter is BindableProperty targetProperty)
+			{
+				targetElement.RemoveDynamicResource(targetProperty);
+			}
+
+			return value;
 		}
 
-		if (Default is not null)
+		public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+			throw new NotSupportedException($"{nameof(AppThemeObject<T>)} only supports one-way bindings.");
+
+		public object[]? ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) =>
+			throw new NotSupportedException($"{nameof(AppThemeObject<T>)} only supports one-way bindings.");
+
+		object? GetValue(AppTheme requestedTheme) =>
+			requestedTheme switch
+			{
+				AppTheme.Dark => dark ?? defaultValue,
+				_ => light ?? defaultValue
+			};
+	}
+
+	sealed partial class AppThemeSource : INotifyPropertyChanged
+	{
+		Application? subscribedApplication;
+
+		public static AppThemeSource Instance { get; } = new();
+
+		public event PropertyChangedEventHandler? PropertyChanged;
+
+		public AppTheme RequestedTheme
 		{
-			binding.Default = Default;
+			get
+			{
+				Subscribe(Application.Current);
+
+				return Application.Current?.RequestedTheme ?? AppInfo.RequestedTheme;
+			}
 		}
 
-		return binding;
+		void Subscribe(Application? application)
+		{
+			if (ReferenceEquals(subscribedApplication, application))
+			{
+				return;
+			}
+
+			if (subscribedApplication is not null)
+			{
+				subscribedApplication.RequestedThemeChanged -= OnRequestedThemeChanged;
+			}
+
+			subscribedApplication = application;
+
+			if (subscribedApplication is not null)
+			{
+				subscribedApplication.RequestedThemeChanged += OnRequestedThemeChanged;
+			}
+		}
+
+		void OnRequestedThemeChanged(object? sender, AppThemeChangedEventArgs e) =>
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RequestedTheme)));
 	}
 }
