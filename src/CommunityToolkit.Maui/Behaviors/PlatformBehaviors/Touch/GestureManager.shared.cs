@@ -275,7 +275,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 
 		if (!TryGetBindableImageTouchBehaviorElement(imageTouchBehavior, out var bindable))
 		{
-			throw new InvalidOperationException($"{nameof(ImageTouchBehavior)} can only be attached to an {nameof(Microsoft.Maui.IImage)}");
+			throw new InvalidOperationException($"{nameof(ImageTouchBehavior)} can only be attached to an {nameof(Image)} or {nameof(ImageButton)}");
 		}
 
 		try
