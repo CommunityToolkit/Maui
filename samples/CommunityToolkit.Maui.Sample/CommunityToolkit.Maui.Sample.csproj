@@ -28,11 +28,14 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     
     <NoWarn>IL2026</NoWarn>
+
+    <WindowsSdkPackageVersion>10.0.19041.56</WindowsSdkPackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'
-      AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
-    <!-- Windows error NETSDK1102: Optimizing assemblies for size is not supported for the selected publish configuration. -->
+      AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'
+      AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'maccatalyst'">
+    <!-- Windows + MacCatalyt error NETSDK1102: Optimizing assemblies for size is not supported for the selected publish configuration. -->
     <PublishAot>false</PublishAot>
     <PublishTrimmed>true</PublishTrimmed>
     <TrimMode>partial</TrimMode>
@@ -57,10 +60,10 @@
     <MauiFont Include="Resources\Fonts\*" />
 
     <PackageReference Include="Microsoft.Maui.Controls" Version="*" />
-    <PackageReference Include="CommunityToolkit.Maui.Markup" Version="7.0.0" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.2" />
+    <PackageReference Include="CommunityToolkit.Maui.Markup" Version="7.0.1" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.5.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.6" />
   </ItemGroup>
 
   <PropertyGroup>

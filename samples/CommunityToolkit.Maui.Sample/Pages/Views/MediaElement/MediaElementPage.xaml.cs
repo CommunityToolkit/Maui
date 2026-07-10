@@ -17,9 +17,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string loadMusic = "Load Music";
 
 	const string botImageUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
-	const string hlsStreamTestUrl = "https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8";
-	const string hal9000AudioUrl = "https://github.com/prof3ssorSt3v3/media-sample-files/raw/master/hal-9000.mp3";
-
 
 	readonly ILogger logger;
 	readonly IDeviceInfo deviceInfo;
@@ -149,18 +146,74 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.Pause();
 	}
 
-	async void Button_Clicked(object? sender, EventArgs? e)
+	async void CustomUrlLoadButtonClicked(object? sender, EventArgs? e)
 	{
 		if (string.IsNullOrWhiteSpace(CustomSourceEntry.Text))
 		{
 			await DisplayAlertAsync("Error Loading URL Source", "No value was found to load as a media source. " +
-				"When you do enter a value, make sure it's a valid URL. No additional validation is done.",
+																"When you do enter a value, make sure it's a valid URL. No additional validation is done.",
 				"OK");
 
 			return;
 		}
 
-		MediaElement.Source = MediaSource.FromUri(CustomSourceEntry.Text);
+		var customSource = new UriMediaSource { Uri = new Uri(CustomSourceEntry.Text) };
+		MediaElement.Source = customSource;
+	}
+
+	void AddHeaderClicked(object? sender, EventArgs? e)
+	{
+		if (MediaElement.Source is UriMediaSource uriMediaSource)
+		{
+			var name = HeaderNameEntry.Text?.Trim();
+			var value = HeaderValueEntry.Text?.Trim();
+
+			if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(value))
+			{
+				return;
+			}
+
+			uriMediaSource.HttpHeaders[name] = value;
+			UpdateHeadersSummary(uriMediaSource);
+		}
+
+		HeaderNameEntry.Text = string.Empty;
+		HeaderValueEntry.Text = string.Empty;
+	}
+
+	void ClearHeadersClicked(object? sender, EventArgs? e)
+	{
+		if (MediaElement.Source is UriMediaSource uriMediaSource)
+		{
+			ClearHeaders(uriMediaSource);
+		}
+	}
+
+	void CustomHeadersToggled(object? sender, ToggledEventArgs e)
+	{
+		HeadersPanel.IsVisible = e.Value;
+		if (!e.Value)
+		{
+			if (MediaElement.Source is UriMediaSource uriMediaSource)
+			{
+				ClearHeaders(uriMediaSource);
+			}
+		}
+	}
+
+	void ClearHeaders(in UriMediaSource uriMediaSource)
+	{
+		uriMediaSource.HttpHeaders.Clear();
+		UpdateHeadersSummary(uriMediaSource);
+
+		logger.LogInformation("Custom HTTP headers cleared.");
+	}
+
+	void UpdateHeadersSummary(in UriMediaSource uriMediaSource)
+	{
+		HeadersSummaryLabel.Text = uriMediaSource.HttpHeaders.Count <= 0
+			? "No headers defined"
+			: string.Join(", ", uriMediaSource.HttpHeaders.Keys);
 	}
 
 	async void ChangeSourceClicked(object? sender, EventArgs? e)
@@ -177,15 +230,16 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				MediaElement.MetadataTitle = "Big Buck Bunny";
 				MediaElement.MetadataArtworkUrl = botImageUrl;
 				MediaElement.MetadataArtist = "Big Buck Bunny Album";
-				MediaElement.Source =
-					MediaSource.FromUri(StreamingVideoUrls.BuckBunny);
+				var mp4Source = new UriMediaSource { Uri = new Uri(StreamingUrls.BuckBunny) };
+				MediaElement.Source = mp4Source;
 				return;
 
 			case loadHls:
 				MediaElement.MetadataArtist = "HLS Album";
 				MediaElement.MetadataArtworkUrl = botImageUrl;
 				MediaElement.MetadataTitle = "HLS Title";
-				MediaElement.Source = MediaSource.FromUri(hlsStreamTestUrl);
+				var hlsSource = new UriMediaSource { Uri = new Uri(StreamingUrls.HlsTestStream) };
+				MediaElement.Source = hlsSource;
 				return;
 
 			case resetSource:
@@ -213,13 +267,15 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 				{
 					MediaElement.Source = MediaSource.FromResource("WindowsVideo.mp4");
 				}
+
 				return;
 
 			case loadMusic:
 				MediaElement.MetadataTitle = "HAL 9000";
 				MediaElement.MetadataArtist = "HAL 9000 Album";
 				MediaElement.MetadataArtworkUrl = botImageUrl;
-				MediaElement.Source = MediaSource.FromUri(hal9000AudioUrl);
+				var musicSource = new UriMediaSource { Uri = new Uri(StreamingUrls.Hal9000Audio) };
+				MediaElement.Source = musicSource;
 				return;
 		}
 	}

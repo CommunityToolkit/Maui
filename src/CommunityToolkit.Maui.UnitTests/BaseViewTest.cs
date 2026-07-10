@@ -63,7 +63,7 @@ public abstract class BaseViewTest : BaseTest
 		appBuilder.Services.AddTransientPopup<GarbageCollectionHeavySelfClosingPopup, MockPageViewModel>();
 		appBuilder.Services.AddTransientPopup<SingleConstructionPopup, SingleConstructionViewModel>();
 		appBuilder.Services.AddTransientPopup<CustomButton>();
-		
+
 		appBuilder.Services.AddTransientPopup<MockPopup>();
 		#endregion
 

@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Globalization;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.Shapes;
@@ -23,9 +24,17 @@ sealed partial class PopupPage<T>(Popup<T> popup, IPopupOptions? popupOptions)
 
 partial class PopupPage : ContentPage, IQueryAttributable
 {
+	/// <summary>
+	/// Used by all <c>ShowPopup</c> and <c>ClosePopup</c> flows to ensure navigation operations for <see cref="PopupPage"/>
+	/// are queued and never run concurrently, avoiding race conditions with the .NET MAUI navigation stack.
+	/// (e.g. <see cref="INavigation.PushModalAsync(Page, bool)"/>, <see cref="INavigation.PopModalAsync(bool)"/>, and <see cref="Shell.GoToAsync(ShellNavigationState, IDictionary{string,object})"/>).
+	/// </summary>
+	static readonly SemaphoreSlim navigationSemaphoreSlim = new(1, 1);
+
 	readonly Popup popup;
 	readonly IPopupOptions popupOptions;
 	readonly Command tapOutsideOfPopupCommand;
+
 
 	public PopupPage(View view, IPopupOptions? popupOptions)
 		: this(view as Popup ?? CreatePopupFromView<Popup>(view), popupOptions)
@@ -69,6 +78,46 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	// Casts `PopupPage.Content` to return typeof(PopupPageLayout)
 	internal new PopupPageLayout Content => (PopupPageLayout)base.Content;
 
+	public async Task ShowAsync(INavigation navigation, CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(navigation);
+		await navigationSemaphoreSlim.WaitAsync(token);
+
+		try
+		{
+			token.ThrowIfCancellationRequested();
+			await navigation.PushModalAsync(this, false);
+		}
+		finally
+		{
+			navigationSemaphoreSlim.Release();
+		}
+	}
+
+	public async Task ShowAsync(Shell shell, string shellRoute, IDictionary<string, object>? shellParameters = null, CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(shell);
+		ArgumentException.ThrowIfNullOrEmpty(shellRoute, nameof(shellRoute));
+		await navigationSemaphoreSlim.WaitAsync(token);
+
+		try
+		{
+			token.ThrowIfCancellationRequested();
+			if (shellParameters is null)
+			{
+				await shell.GoToAsync(shellRoute);
+			}
+			else
+			{
+				await shell.GoToAsync(shellRoute, shellParameters);
+			}
+		}
+		finally
+		{
+			navigationSemaphoreSlim.Release();
+		}
+	}
+
 	public async Task CloseAsync(PopupResult result, CancellationToken token = default)
 	{
 		// We first call `.ThrowIfCancellationRequested()` to ensure we don't throw one of the `InvalidOperationException`s (below) if the `CancellationToken` has already been canceled.
@@ -77,43 +126,109 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		token.ThrowIfCancellationRequested();
 
 		// Handle edge case where a Popup was pushed inside a custom IPageContainer (e.g. a NavigationPage) on the Modal Stack
-		var customPageContainer = Navigation.ModalStack.OfType<IPageContainer<Page>>().LastOrDefault();
-		if (customPageContainer is not null && customPageContainer.CurrentPage is not PopupPage)
+		var navigationPageOnModalStackContainingPopupPage = Navigation.ModalStack.OfType<IPageContainer<Page>>().LastOrDefault();
+		if (navigationPageOnModalStackContainingPopupPage is not null && navigationPageOnModalStackContainingPopupPage.CurrentPage is not PopupPage)
 		{
-			throw new PopupNotFoundException();
+			navigationPageOnModalStackContainingPopupPage = null;
 		}
 
-		var popupPageToClose = customPageContainer?.CurrentPage as PopupPage
-							   ?? Navigation.ModalStack.OfType<PopupPage>().LastOrDefault()
-							   ?? throw new PopupNotFoundException();
+		var popupPageToClose = navigationPageOnModalStackContainingPopupPage?.CurrentPage as PopupPage
+		                       ?? Navigation.ModalStack.OfType<PopupPage>().LastOrDefault()
+		                       ?? throw new PopupNotFoundException();
 
 		// PopModalAsync will pop the last (top) page from the ModalStack
 		// Ensure that the PopupPage the user is attempting to close is the last (top) page on the Modal stack before calling Navigation.PopModalAsync
-		if (Navigation.ModalStack[^1] is IPageContainer<Page> { CurrentPage: PopupPage visiblePopupPageInCustomPageContainer }
-			 && visiblePopupPageInCustomPageContainer.Content != Content)
+		switch (Navigation.ModalStack[^1])
 		{
-			throw new PopupBlockedException(visiblePopupPageInCustomPageContainer);
+			// Handle the edge case where the visible modal page is a navigation page containing a Popup that is not the Popup to be closed 
+			case IPageContainer<Page> { CurrentPage: PopupPage visiblePopupPageInCustomPageContainer } when visiblePopupPageInCustomPageContainer.Content != Content:
+				throw new PopupBlockedException(visiblePopupPageInCustomPageContainer);
+
+			// Handle edge case where the top of the modal stack is an IPageContainer whose CurrentPage is NOT a PopupPage
+			// (e.g. a modal NavigationPage pushed after showing a popup).
+			case IPageContainer<Page> { CurrentPage: not PopupPage }:
+				throw new PopupBlockedException(Navigation.ModalStack[^1]);
+
+			// Handle edge case where the visible modal page is not the Popup to be closed 
+			case ContentPage currentVisibleModalPage when currentVisibleModalPage.Content != Content:
+				throw new PopupBlockedException(currentVisibleModalPage);
 		}
-		else if (Navigation.ModalStack[^1] is ContentPage currentVisibleModalPage
-				 && currentVisibleModalPage.Content != Content)
+
+		if (popupPageToClose.Content != Content)
 		{
-			throw new PopupBlockedException(currentVisibleModalPage);
+			throw new PopupBlockedException(popupPageToClose);
 		}
 
-		// We call `.ThrowIfCancellationRequested()` again to avoid a race condition where a developer cancels the CancellationToken after we check for an InvalidOperationException
-		// At first glance, it may look redundant given that we are using `.WaitAsync(token)` in the next step,
-		// However, `Navigation.PopModalAsync()` may return a completed Task, and when a completed Task is returned, `.WaitAsync(token)` is never invoked.
-		// In other words, `.WaitAsync(token)` may not throw an `OperationCanceledException` as expected which is why we call `.ThrowIfCancellationRequested()` again here
-		// Here's the .NET MAUI Source code demonstrating that `Navigation.PopModalAsync()` sometimes returns `Task.FromResult()`: https://github.com/dotnet/maui/blob/e5c252ec7f430cbaf28c8a815a249e3270b49844/src/Controls/src/Core/NavigationProxy.cs#L192-L196
-		token.ThrowIfCancellationRequested();
-		await Navigation.PopModalAsync(false).WaitAsync(token);
+		var popupConfirmedPoppedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var parentWindow = GetParentWindow();
+		parentWindow.ModalPopped += HandleModalPagePopped;
+		NavigatedFrom += HandleNavigatedFrom;
 
-		// Clean up Popup resources
-		Content.TapGestureGestureOverlay.GestureRecognizers.Clear();
-		popup.PropertyChanged -= HandlePopupPropertyChanged;
 
-		PopupClosed?.Invoke(this, result);
-		popup.NotifyPopupIsClosed();
+		try
+		{
+			// navigationSemaphoreSlim must be in the outer try/finally block to ensure we unsubscribe ModalPopped and NavigatedFrom events when CancellationToken is canceled
+			// When CancellationToken is canceled during navigationSemaphoreSlim.WaitAsync(), the SemaphoreSlim is never acquired. We only want to release navigationSemaphoreSlim in a finally block if it has been acquired (i.e. after navigationSemaphoreSlim.WaitAsync executes successfully) 
+			// The inner try/finally block ensures we release navigationSemaphoreSlim after its acquisition if any subsequent line of code throws an exception or completes successfully
+			await navigationSemaphoreSlim.WaitAsync(token);
+
+			try
+			{
+				await Navigation.PopModalAsync(false);
+
+				// Clean up Popup resources
+				Content.TapGestureGestureOverlay.GestureRecognizers.Clear();
+				popup.PropertyChanged -= HandlePopupPropertyChanged;
+				if (popupOptions is BindableObject bindablePopupOptions)
+				{
+					bindablePopupOptions.PropertyChanged -= HandlePopupOptionsPropertyChanged;
+				}
+
+				// Wait for MAUI to confirm the PopupPage has been popped before invoking the PopupClosed event and notifying the Popup that it may invoke its `Popup.Closed` event.
+				// This guarantees the Popup has been removed from MAUI's ModalStack
+				await popupConfirmedPoppedTcs.Task;
+
+				PopupClosed?.Invoke(this, result);
+				popup.NotifyPopupIsClosed();
+			}
+			finally
+			{
+				navigationSemaphoreSlim.Release();
+			}
+		}
+		finally
+		{
+			parentWindow.ModalPopped -= HandleModalPagePopped;
+			NavigatedFrom -= HandleNavigatedFrom;
+		}
+
+		void HandleModalPagePopped(object? sender, ModalPoppedEventArgs e)
+		{
+			if (e.Modal == this)
+			{
+				popupConfirmedPoppedTcs.TrySetResult();
+			}
+		}
+
+		void HandleNavigatedFrom(object? sender, NavigatedFromEventArgs e)
+		{
+			if (e.IsDestinationPageACommunityToolkitPopupPage())
+			{
+				// Ignore transitions where the destination is another PopupPage
+				// that means this popup is still active in popup-navigation flows.
+				return;
+			}
+
+			if (navigationPageOnModalStackContainingPopupPage?.CurrentPage == this)
+			{
+				// When `navigationPageOnModalStackContainingPopupPage.CurrentPage == this` is true,
+				// this PopupPage is still the active page in the custom IPageContainer.
+				// In other words, MAUI has not yet popped it off the ModalStack.
+				return;
+			}
+
+			popupConfirmedPoppedTcs.TrySetResult();
+		}
 	}
 
 	protected override bool OnBackButtonPressed()
@@ -241,6 +356,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 			Children.Add(TapGestureGestureOverlay);
 			Children.Add(PopupBorder);
+
+			AutomationProperties.SetIsInAccessibleTree(this, false);
+			AutomationProperties.SetIsInAccessibleTree(PopupBorder, false);
 		}
 
 		void HandleOverlayTapped(object? sender, TappedEventArgs e)

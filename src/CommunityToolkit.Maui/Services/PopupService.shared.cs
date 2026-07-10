@@ -180,14 +180,14 @@ public class PopupService : IPopupService
 
 	View GetPopupContent<T>()
 	{
-		if (viewModelToViewMappings.TryGetValue(typeof(T), out var viewType) 
-		    && serviceProvider.GetRequiredService(viewType) is View content)
+		if (viewModelToViewMappings.TryGetValue(typeof(T), out var viewType)
+			&& serviceProvider.GetRequiredService(viewType) is View content)
 		{
 			return content;
 		}
 
 		var bindingContext = serviceProvider.GetRequiredService(typeof(T));
-			
+
 		if (bindingContext is View view)
 		{
 			return view;
