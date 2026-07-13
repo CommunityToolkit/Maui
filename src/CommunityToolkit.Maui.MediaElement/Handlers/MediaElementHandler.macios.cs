@@ -42,4 +42,9 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		playerViewController?.Dispose();
 		playerViewController = null;
 	}
+
+	partial void PlatformRefreshPlaybackControlsVisibility(bool shouldShowPlaybackControls)
+	{
+		PlatformView?.RefreshPlaybackControlsVisibility(shouldShowPlaybackControls);
+	}
 }
