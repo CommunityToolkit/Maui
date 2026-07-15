@@ -27,7 +27,7 @@
 
   <ItemGroup>
     <!--Fix vulnerabilities-->
-    <PackageReference Include="System.Formats.Asn1" Version="10.0.9" />
+    <PackageReference Include="System.Formats.Asn1" Version="10.0.10" />
     <PackageReference Include="System.Private.Uri" Version="4.3.2" />
   </ItemGroup>
 
