@@ -434,9 +434,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return true;
 		}
 
-#pragma warning disable CA2016 // .NET MAUI 10 does not expose cancellation-aware animation overloads.
-		return await element.FadeToAsync(updatedOpacity.Value, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
-#pragma warning restore CA2016
+		return await element.FadeToAsync(updatedOpacity.Value, (uint)Abs(duration.TotalMilliseconds), easing, token);
 	}
 
 	static async Task<bool> SetScale(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
@@ -593,9 +591,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return true;
 		}
 
-#pragma warning disable CA2016 // .NET MAUI 10 does not expose cancellation-aware animation overloads.
-		return await element.TranslateToAsync(updatedTranslationX.Value, updatedTranslationY.Value, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
-#pragma warning restore CA2016
+		return await element.TranslateToAsync(updatedTranslationX.Value, updatedTranslationY.Value, (uint)Abs(duration.TotalMilliseconds), easing, token);
 	}
 
 	static async Task<bool> SetRotation(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
@@ -655,9 +651,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return true;
 		}
 
-#pragma warning disable CA2016 // .NET MAUI 10 does not expose cancellation-aware animation overloads.
-		return await element.RotateToAsync(updatedRotation.Value, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
-#pragma warning restore CA2016
+		return await element.RotateToAsync(updatedRotation.Value, (uint)Abs(duration.TotalMilliseconds), easing, token);
 	}
 
 	static async Task<bool> SetRotationX(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
@@ -717,9 +711,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return true;
 		}
 
-#pragma warning disable CA2016 // .NET MAUI 10 does not expose cancellation-aware animation overloads.
-		return await element.RotateXToAsync(updatedRotationX.Value, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
-#pragma warning restore CA2016
+		return await element.RotateXToAsync(updatedRotationX.Value, (uint)Abs(duration.TotalMilliseconds), easing, token);
 	}
 
 	static async Task<bool> SetRotationY(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
@@ -779,9 +771,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return true;
 		}
 
-#pragma warning disable CA2016 // .NET MAUI 10 does not expose cancellation-aware animation overloads.
-		return await element.RotateYToAsync(updatedRotationY.Value, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
-#pragma warning restore CA2016
+		return await element.RotateYToAsync(updatedRotationY.Value, (uint)Abs(duration.TotalMilliseconds), easing, token);
 	}
 
 	async Task<bool> SetBackgroundColor(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)

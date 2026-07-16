@@ -21,11 +21,7 @@ partial class SampleScaleAnimation : BaseAnimation
 
 	static Task ScaleToAsync(VisualElement view, double scale, uint length, Easing? easing, CancellationToken token)
 	{
-#if NET11_0_OR_GREATER
 		return view.ScaleToAsync(scale, length, easing, token);
-#else
-		return view.ScaleToAsync(scale, length, easing).WaitAsync(token);
-#endif
 	}
 }
 
@@ -38,10 +34,6 @@ partial class SampleScaleToAnimation : BaseAnimation
 
 	static Task ScaleToAsync(VisualElement view, double scale, uint length, Easing? easing, CancellationToken token)
 	{
-#if NET11_0_OR_GREATER
 		return view.ScaleToAsync(scale, length, easing, token);
-#else
-		return view.ScaleToAsync(scale, length, easing).WaitAsync(token);
-#endif
 	}
 }
