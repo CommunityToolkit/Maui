@@ -385,6 +385,7 @@ jobs:
         permissions:
             id-token: write
             contents: read
+            actions: read
         runs-on: ubuntu-latest
         
         steps:
