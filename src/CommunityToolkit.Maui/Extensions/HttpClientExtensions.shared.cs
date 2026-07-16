@@ -59,13 +59,25 @@ static partial class HttpClientExtensions
 
 		public override void Flush() => innerStream.Flush();
 
+		public override Task FlushAsync(CancellationToken cancellationToken) => innerStream.FlushAsync(cancellationToken);
+
+		public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken) => innerStream.CopyToAsync(destination, bufferSize, cancellationToken);
+
 		public override int Read(byte[] buffer, int offset, int count) => innerStream.Read(buffer, offset, count);
+
+		public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) => innerStream.ReadAsync(buffer, offset, count, cancellationToken);
+
+		public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) => innerStream.ReadAsync(buffer, cancellationToken);
 
 		public override long Seek(long offset, SeekOrigin origin) => innerStream.Seek(offset, origin);
 
 		public override void SetLength(long value) => innerStream.SetLength(value);
 
 		public override void Write(byte[] buffer, int offset, int count) => innerStream.Write(buffer, offset, count);
+
+		public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) => innerStream.WriteAsync(buffer, offset, count, cancellationToken);
+
+		public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default) => innerStream.WriteAsync(buffer, cancellationToken);
 
 		protected override void Dispose(bool disposing)
 		{

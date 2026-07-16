@@ -11,7 +11,11 @@ static class DispatcherExtensions
 		dispatcher = EnsureDispatcher(dispatcher);
 		if (dispatcher.IsDispatchRequired)
 		{
-			dispatcher.Dispatch(action);
+			if (!dispatcher.Dispatch(action))
+			{
+				throw new InvalidOperationException("The dispatcher was unable to queue the requested action.");
+			}
+
 			return;
 		}
 
