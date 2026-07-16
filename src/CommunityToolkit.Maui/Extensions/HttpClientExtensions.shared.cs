@@ -41,6 +41,7 @@ static partial class HttpClientExtensions
 		}
 	}
 
+	// Keep the response alive for the lifetime of the returned content stream, then dispose both together.
 	sealed partial class ResponseStream(Stream innerStream, IDisposable response) : Stream
 	{
 		public override bool CanRead => innerStream.CanRead;

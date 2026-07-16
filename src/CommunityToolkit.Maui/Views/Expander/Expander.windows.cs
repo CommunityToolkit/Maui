@@ -39,8 +39,6 @@ public partial class Expander
 				return;
 			}
 
-			var numberOfColumns = gridItemsLayout.Span;
-
 			for (var i = 0; i < gridView.Items.Count; i++)
 			{
 				if (gridView.ContainerFromIndex(i) is PlatformGridViewItem gridViewItem)
@@ -51,7 +49,7 @@ public partial class Expander
 
 					if (itemBounds.Contains(tapLocation.Value))
 					{
-						IterateItemsInRow(gridView, i, numberOfColumns, size.Height);
+						IterateItemsInRow(gridView, i, gridItemsLayout.Span, size.Height);
 						break;
 					}
 				}

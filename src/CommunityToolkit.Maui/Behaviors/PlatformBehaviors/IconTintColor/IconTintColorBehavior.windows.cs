@@ -237,10 +237,8 @@ public partial class IconTintColorBehavior
 			return;
 		}
 
-		var imageWidth = image.ActualWidth;
-		var imageHeight = image.ActualHeight;
-		var width = (float)imageWidth;
-		var height = (float)imageHeight;
+		var width = (float)image.ActualWidth;
+		var height = (float)image.ActualHeight;
 		var anchorPoint = new Vector2((float)element.AnchorX, (float)element.AnchorY);
 
 		// Requested size requires additional offset to re-center tinted image.
@@ -248,8 +246,8 @@ public partial class IconTintColorBehavior
 
 		ApplyTintCompositionEffect(image, color, width, height, offset, anchorPoint, uri);
 
-		var pixelWidth = Math.Max(1, (int)Math.Ceiling(imageWidth));
-		var pixelHeight = Math.Max(1, (int)Math.Ceiling(imageHeight));
+		var pixelWidth = Math.Max(1, (int)Math.Ceiling(image.ActualWidth));
+		var pixelHeight = Math.Max(1, (int)Math.Ceiling(image.ActualHeight));
 
 		// Hide possible visible pixels from original image by replacing with a transparent image of the same size
 		if (blankImage is null
@@ -333,6 +331,6 @@ public partial class IconTintColorBehavior
 	{
 		Image image => image.Source,
 		ImageButton imageButton => imageButton.Source,
-		_ => null
+		_ => throw new NotSupportedException($"The type {element.GetType().FullName} is not supported.")
 	};
 }

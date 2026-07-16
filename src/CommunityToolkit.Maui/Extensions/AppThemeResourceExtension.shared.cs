@@ -113,8 +113,8 @@ public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 		resource = null;
 
 		// If the element has a public Resources property, check it directly.
-		if (element is VisualElement { Resources: { } resources }
-			&& resources.TryGetValue(key, out resource))
+		if (element is VisualElement elementWithResources
+			&& elementWithResources.Resources.TryGetValue(key, out resource))
 		{
 			return true;
 		}
@@ -127,8 +127,8 @@ public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 					var parent = elementObj.Parent;
 					while (parent is not null)
 					{
-						if (parent is VisualElement { Resources: { } parentResources }
-							&& parentResources.TryGetValue(key, out resource))
+						if (parent is VisualElement parentElement
+							&& parentElement.Resources.TryGetValue(key, out resource))
 						{
 							return true;
 						}
@@ -150,7 +150,7 @@ public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 	{
 		return valueTarget?.TargetObject switch
 		{
-			Setter { Property: { } setterProperty } => setterProperty,
+			Setter setter => setter.Property,
 			_ => valueTarget?.TargetProperty as BindableProperty
 		};
 	}

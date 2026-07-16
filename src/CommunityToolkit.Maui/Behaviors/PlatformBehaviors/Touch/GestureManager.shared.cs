@@ -162,9 +162,9 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 				touchBehavior.RaiseLongPressCompleted();
 			});
 
-			await CommunityToolkit.Maui.Extensions.DispatcherExtensions.DispatchIfRequiredAsync(touchBehavior.Dispatcher, longPressAction).WaitAsync(token);
+			await CommunityToolkit.Maui.Extensions.DispatcherExtensions.DispatchIfRequiredAsync(touchBehavior.Dispatcher, longPressAction, token);
 		}
-		catch (TaskCanceledException)
+		catch (OperationCanceledException)
 		{
 			return;
 		}

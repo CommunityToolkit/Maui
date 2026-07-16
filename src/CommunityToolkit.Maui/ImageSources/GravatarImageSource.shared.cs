@@ -4,7 +4,7 @@ namespace CommunityToolkit.Maui.ImageSources;
 
 /// <summary>Gravatar image source.</summary>
 /// <remarks>Note that <see cref="UriImageSource"/> is sealed and can't be used as a parent!</remarks>
-public partial class GravatarImageSource : StreamImageSource
+public partial class GravatarImageSource : StreamImageSource, IDisposable
 {
 	static readonly Lazy<HttpClient> singletonHttpClientHolder = new();
 
@@ -13,6 +13,8 @@ public partial class GravatarImageSource : StreamImageSource
 	CancellationTokenSource? uriUpdateTokenSource;
 
 	Uri? lastDispatch;
+
+	bool isDisposed;
 
 	/// <summary>Initializes a new instance of the <see cref="GravatarImageSource"/> class.</summary>
 	public GravatarImageSource()
@@ -79,6 +81,13 @@ public partial class GravatarImageSource : StreamImageSource
 	public override string ToString()
 	{
 		return $"Uri: {Uri}\nEmail: {Email}\nSize: {GravatarSize}\nImage: {DefaultGravatarName(Image)}\nCacheValidity: {CacheValidity}\nCachingEnabled: {CachingEnabled}";
+	}
+
+	/// <inheritdoc/>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
 	}
 
 	/// <summary>On parent set.</summary>
@@ -160,7 +169,7 @@ public partial class GravatarImageSource : StreamImageSource
 		{
 			await Task.Delay(cancellationTokenSourceTimeout, uriUpdateToken);
 			lastDispatch = Uri;
-			await CommunityToolkit.Maui.Extensions.DispatcherExtensions.DispatchIfRequiredAsync(Dispatcher, OnSourceChanged).WaitAsync(uriUpdateToken);
+			await CommunityToolkit.Maui.Extensions.DispatcherExtensions.DispatchIfRequiredAsync(Dispatcher, OnSourceChanged, uriUpdateToken);
 		}
 		catch (OperationCanceledException) when (uriUpdateToken.IsCancellationRequested)
 		{
@@ -178,6 +187,25 @@ public partial class GravatarImageSource : StreamImageSource
 			: new CancellationTokenSource();
 
 		return uriUpdateTokenSource.Token;
+	}
+
+	/// <summary>Disposes the resources used by the <see cref="GravatarImageSource"/>.</summary>
+	/// <param name="disposing"><see langword="true"/> when called from <see cref="Dispose()"/>.</param>
+	protected virtual void Dispose(bool disposing)
+	{
+		if (isDisposed)
+		{
+			return;
+		}
+
+		if (disposing)
+		{
+			uriUpdateTokenSource?.Cancel();
+			uriUpdateTokenSource?.Dispose();
+			uriUpdateTokenSource = null;
+		}
+
+		isDisposed = true;
 	}
 }
 

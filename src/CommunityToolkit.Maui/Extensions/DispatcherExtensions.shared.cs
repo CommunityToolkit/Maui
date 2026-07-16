@@ -22,35 +22,45 @@ static class DispatcherExtensions
 		action();
 	}
 
-	public static Task DispatchIfRequiredAsync(this IDispatcher? dispatcher, Action action)
+	public static async Task DispatchIfRequiredAsync(this IDispatcher? dispatcher, Action action, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(action);
+		token.ThrowIfCancellationRequested();
 
 		dispatcher = EnsureDispatcher(dispatcher);
 		if (!dispatcher.IsDispatchRequired)
 		{
 			action();
-			return Task.CompletedTask;
+			return;
 		}
 
 		var taskCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		using var cancellationTokenRegistration = token.Register(static state =>
+			((TaskCompletionSource)state!).TrySetCanceled(), taskCompletionSource);
+
 		if (!dispatcher.Dispatch(() =>
 		{
+			if (token.IsCancellationRequested)
+			{
+				taskCompletionSource.TrySetCanceled(token);
+				return;
+			}
+
 			try
 			{
 				action();
-				taskCompletionSource.SetResult();
+				taskCompletionSource.TrySetResult();
 			}
 			catch (Exception ex)
 			{
-				taskCompletionSource.SetException(ex);
+				taskCompletionSource.TrySetException(ex);
 			}
 		}))
 		{
-			taskCompletionSource.SetException(new InvalidOperationException("The dispatcher was unable to queue the requested action."));
+			taskCompletionSource.TrySetException(new InvalidOperationException("The dispatcher was unable to queue the requested action."));
 		}
 
-		return taskCompletionSource.Task;
+		await taskCompletionSource.Task.ConfigureAwait(false);
 	}
 
 	static IDispatcher EnsureDispatcher(IDispatcher? dispatcher)
