@@ -7,70 +7,6 @@ namespace CommunityToolkit.Maui.Views;
 /// <summary>AvatarView control.</summary>
 public partial class AvatarView : Border, IAvatarView
 {
-	/// <summary>The backing store for the <c>FontAttributes</c> bindable property.</summary>
-	public static readonly BindableProperty FontAttributesProperty = BindableProperty.Create(
-		nameof(FontAttributes),
-		typeof(FontAttributes),
-		typeof(AvatarView),
-		FontAttributes.None,
-		propertyChanged: static (bindable, oldValue, newValue) =>
-			((AvatarView)bindable).OnFontAttributesChanged((FontAttributes)oldValue, (FontAttributes)newValue));
-
-	/// <summary>The backing store for the <c>FontAutoScalingEnabled</c> bindable property.</summary>
-	public static readonly BindableProperty FontAutoScalingEnabledProperty = BindableProperty.Create(
-		nameof(FontAutoScalingEnabled),
-		typeof(bool),
-		typeof(AvatarView),
-		true,
-		propertyChanged: static (bindable, oldValue, newValue) =>
-			((AvatarView)bindable).OnFontAutoScalingEnabledChanged((bool)oldValue, (bool)newValue));
-
-	/// <summary>The backing store for the <c>FontFamily</c> bindable property.</summary>
-	public static readonly BindableProperty FontFamilyProperty = BindableProperty.Create(
-		nameof(FontFamily),
-		typeof(string),
-		typeof(AvatarView),
-		default(string),
-		propertyChanged: static (bindable, oldValue, newValue) =>
-			((AvatarView)bindable).OnFontFamilyChanged((string?)oldValue, (string?)newValue));
-
-	/// <summary>The backing store for the <c>FontSize</c> bindable property.</summary>
-	public static readonly BindableProperty FontSizeProperty = BindableProperty.Create(
-		nameof(FontSize),
-		typeof(double),
-		typeof(AvatarView),
-		-1d,
-		propertyChanged: static (bindable, oldValue, newValue) =>
-			((AvatarView)bindable).OnFontSizeChanged((double)oldValue, (double)newValue));
-
-	/// <summary>The backing store for the <see cref="ITextStyle.TextColor" /> bindable property.</summary>
-	public static readonly BindableProperty TextColorProperty = BindableProperty.Create(
-		nameof(TextColor),
-		typeof(Color),
-		typeof(AvatarView),
-		default(Color),
-		propertyChanged: static (bindable, oldValue, newValue) =>
-			((AvatarView)bindable).OnTextColorPropertyChanged((Color?)oldValue, (Color?)newValue));
-
-	/// <summary>The backing store for the <see cref="CharacterSpacing" /> bindable property.</summary>
-	public static readonly BindableProperty CharacterSpacingProperty = BindableProperty.Create(
-		nameof(CharacterSpacing),
-		typeof(double),
-		typeof(AvatarView),
-		0d,
-		propertyChanged: static (bindable, oldValue, newValue) =>
-			((AvatarView)bindable).OnCharacterSpacingPropertyChanged((double)oldValue, (double)newValue));
-
-	/// <summary>The backing store for the <see cref="TextTransform" /> bindable property.</summary>
-	public static readonly BindableProperty TextTransformProperty = BindableProperty.Create(
-		nameof(TextTransform),
-		typeof(TextTransform),
-		typeof(AvatarView),
-		TextTransform.Default,
-		propertyChanged: static (bindable, oldValue, newValue) =>
-			((AvatarView)bindable).OnTextTransformChanged((TextTransform)oldValue, (TextTransform)newValue));
-
-
 	readonly Image avatarImage = new()
 	{
 		Aspect = Aspect.AspectFill,
@@ -116,54 +52,33 @@ public partial class AvatarView : Border, IAvatarView
 	/// <summary>
 	/// Gets or sets a value of the control text character spacing property.
 	/// </summary>
-	public double CharacterSpacing
-	{
-		get => (double)GetValue(CharacterSpacingProperty);
-		set => SetValue(CharacterSpacingProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnCharacterSpacingPropertyChanged))]
+	public partial double CharacterSpacing { get; set; }
 
 	/// <summary>Gets or sets a value of the control font attributes property.</summary>
-	public FontAttributes FontAttributes
-	{
-		get => (FontAttributes)GetValue(FontAttributesProperty);
-		set => SetValue(FontAttributesProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnFontAttributesBindablePropertyChanged))]
+	public partial FontAttributes FontAttributes { get; set; } = FontAttributes.None;
 
-	/// <summary>Gets or sets a value indicating whether control font auto scaling enabled property.</summary>
-	public bool FontAutoScalingEnabled
-	{
-		get => (bool)GetValue(FontAutoScalingEnabledProperty);
-		set => SetValue(FontAutoScalingEnabledProperty, value);
-	}
+	/// <summary>Gets or sets a value indicating whether control font auto-scaling enabled property.</summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnFontAutoScalingEnabledPropertyChanged))]
+	public partial bool FontAutoScalingEnabled { get; set; } = true;
 
 	/// <summary>Gets or sets a value of the control font family property.</summary>
-	public string? FontFamily
-	{
-		get => (string?)GetValue(FontFamilyProperty);
-		set => SetValue(FontFamilyProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnFontFamilyPropertyChanged))]
+	public partial string? FontFamily { get; set; }
 
 	/// <summary>Gets or sets a value of the control font size property.</summary>
 	[TypeConverter(typeof(FontSizeConverter))]
-	public double FontSize
-	{
-		get => (double)GetValue(FontSizeProperty);
-		set => SetValue(FontSizeProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnFontSizePropertyChanged))]
+	public partial double FontSize { get; set; } = -1d;
 
 	/// <summary>Gets or sets a value of the control text colour property.</summary>
-	public Color TextColor
-	{
-		get => (Color)GetValue(TextColorProperty);
-		set => SetValue(TextColorProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnTextColorPropertyChanged))]
+	public partial Color TextColor { get; set; }
 
-	/// <inheritdoc/>
-	public TextTransform TextTransform
-	{
-		get => (TextTransform)GetValue(TextTransformProperty);
-		set => SetValue(TextTransformProperty, value);
-	}
+	/// <summary>Gets or sets a value of the control text transform property.</summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnTextTransformPropertyChanged))]
+	public partial TextTransform TextTransform { get; set; } = TextTransform.Default;
 
 	/// <summary>Gets or sets a value of the control border colour.</summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnBorderColorPropertyChanged))]
@@ -212,10 +127,17 @@ public partial class AvatarView : Border, IAvatarView
 
 	TextDecorations ILabel.TextDecorations => avatarLabel.TextDecorations;
 
-	void OnCharacterSpacingPropertyChanged(double oldValue, double newValue)
+
+	void OnCharacterSpacingChanged(double oldValue, double newValue)
 	{
 		InvalidateMeasure();
 		avatarLabel.CharacterSpacing = newValue;
+	}
+
+	static void OnCharacterSpacingPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		avatarView.OnCharacterSpacingChanged((double)oldValue, (double)newValue);
 	}
 
 	void OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue)
@@ -224,10 +146,28 @@ public partial class AvatarView : Border, IAvatarView
 		avatarLabel.FontAttributes = newValue;
 	}
 
+	static void OnFontAttributesBindablePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		avatarView.OnFontAttributesChanged((FontAttributes)oldValue, (FontAttributes)newValue);
+	}
+
 	void OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue)
 	{
 		HandleFontChanged();
 		avatarLabel.FontAutoScalingEnabled = newValue;
+	}
+
+	static void OnFontAutoScalingEnabledPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		avatarView.OnFontAutoScalingEnabledChanged((bool)oldValue, (bool)newValue);
+	}
+
+	static void OnFontFamilyPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		avatarView.OnFontFamilyChanged(oldValue as string, newValue as string);
 	}
 
 	void OnFontFamilyChanged(string? oldValue, string? newValue)
@@ -242,40 +182,41 @@ public partial class AvatarView : Border, IAvatarView
 		avatarLabel.FontSize = newValue;
 	}
 
-	void OnTextColorPropertyChanged(Color? oldValue, Color? newValue) => avatarLabel.TextColor = newValue;
-
-	void OnTextTransformChanged(TextTransform oldValue, TextTransform newValue)
+	static void OnFontSizePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		InvalidateMeasure();
-		avatarLabel.TextTransform = newValue;
+		var avatarView = (AvatarView)bindable;
+		avatarView.OnFontSizeChanged((double)oldValue, (double)newValue);
 	}
 
-	void IImageSourcePart.UpdateIsLoading(bool isLoading)
+	static void OnTextColorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		if (!isLoading && wasImageLoading)
-		{
-			Handler?.UpdateValue(nameof(AvatarView));
-		}
+		var avatarView = (AvatarView)bindable;
+		avatarView.avatarLabel.TextColor = (Color?)newValue;
+	}
 
-		wasImageLoading = isLoading;
+	static void OnTextTransformPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		avatarView.InvalidateMeasure();
+		avatarView.avatarLabel.TextTransform = (TextTransform)newValue;
 	}
 
 	static void OnBorderColorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		AvatarView avatarView = (AvatarView)bindable;
+		var avatarView = (AvatarView)bindable;
 		avatarView.Stroke = (Color)newValue;
 	}
 
 	static void OnBorderWidthPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		AvatarView avatarView = (AvatarView)bindable;
+		var avatarView = (AvatarView)bindable;
 		avatarView.StrokeThickness = (double)newValue;
 	}
 
 	static void OnCornerRadiusPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		AvatarView avatarView = (AvatarView)bindable;
-		CornerRadius corderRadius = (CornerRadius)newValue;
+		var avatarView = (AvatarView)bindable;
+		var corderRadius = (CornerRadius)newValue;
 
 		avatarView.StrokeShape = new RoundRectangle
 		{
@@ -285,14 +226,24 @@ public partial class AvatarView : Border, IAvatarView
 
 	static void OnImageSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		AvatarView avatarView = (AvatarView)bindable;
+		var avatarView = (AvatarView)bindable;
 		avatarView.HandleImageChanged((ImageSource?)newValue);
 	}
 
 	static void OnTextPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		AvatarView avatarView = (AvatarView)bindable;
+		var avatarView = (AvatarView)bindable;
 		avatarView.avatarLabel.Text = (string)newValue;
+	}
+	
+	void IImageSourcePart.UpdateIsLoading(bool isLoading)
+	{
+		if (!isLoading && wasImageLoading)
+		{
+			Handler?.UpdateValue(nameof(AvatarView));
+		}
+
+		wasImageLoading = isLoading;
 	}
 
 	void HandleFontChanged()
@@ -325,11 +276,11 @@ public partial class AvatarView : Border, IAvatarView
 	{
 		// Ensure avatarImage is clipped to the bounds of the AvatarView whenever its Height, Width, CornerRadius, Border, StrokeThickness and Padding properties change
 		if (e.PropertyName == HeightProperty.PropertyName
-			|| e.PropertyName == WidthProperty.PropertyName
-			|| e.PropertyName == PaddingProperty.PropertyName
-			|| e.PropertyName == BorderWidthProperty.PropertyName
-			|| e.PropertyName == CornerRadiusProperty.PropertyName
-			|| e.PropertyName == StrokeThicknessProperty.PropertyName
+		    || e.PropertyName == WidthProperty.PropertyName
+		    || e.PropertyName == PaddingProperty.PropertyName
+		    || e.PropertyName == BorderWidthProperty.PropertyName
+		    || e.PropertyName == CornerRadiusProperty.PropertyName
+		    || e.PropertyName == StrokeThicknessProperty.PropertyName
 		   )
 		{
 			RefreshAvatarImage();
@@ -339,19 +290,19 @@ public partial class AvatarView : Border, IAvatarView
 	void RefreshAvatarImage()
 	{
 		if (Height >= 0 // The default value of Height (before the view is drawn onto the page) is -1
-			&& Width >= 0 // The default value of Width (before the view is drawn onto the page) is -1
-			&& avatarImage.Source is not null)
+		    && Width >= 0 // The default value of Width (before the view is drawn onto the page) is -1
+		    && avatarImage.Source is not null)
 		{
 			Geometry? avatarImageClipGeometry = null;
 #if WINDOWS
 			double offsetX = 0;
 			double offsetY = 0;
 #else
-			double offsetX = StrokeThickness + Padding.Left;
-			double offsetY = StrokeThickness + Padding.Top;
+			var offsetX = StrokeThickness + Padding.Left;
+			var offsetY = StrokeThickness + Padding.Top;
 #endif
-			double imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
-			double imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
+			var imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
+			var imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
 			avatarImage.WidthRequest = imageWidth;
 			avatarImage.HeightRequest = imageHeight;
 
