@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Maui.Extensions;
 using static System.Math;
 
@@ -162,7 +163,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 				touchBehavior.RaiseLongPressCompleted();
 			});
 
-			await CommunityToolkit.Maui.Extensions.DispatcherExtensions.DispatchIfRequiredAsync(touchBehavior.Dispatcher, longPressAction, token);
+			await touchBehavior.Dispatcher.DispatchIfRequiredAsync(longPressAction, token);
 		}
 		catch (OperationCanceledException)
 		{

@@ -159,7 +159,7 @@ public class MauiMediaElement : UIView
 		}
 		if (Application.Current.Windows[0].Page is Page page)
 		{
-			currentPage = PageExtensions.GetCurrentPage(page);
+			currentPage = page.GetCurrentPage();
 			return true;
 		}
 		return false;

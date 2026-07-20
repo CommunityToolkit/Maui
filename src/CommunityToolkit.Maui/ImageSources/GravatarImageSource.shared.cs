@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Core.Extensions;
 
 namespace CommunityToolkit.Maui.ImageSources;
 
@@ -169,7 +170,7 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 		{
 			await Task.Delay(cancellationTokenSourceTimeout, uriUpdateToken);
 			lastDispatch = Uri;
-			await CommunityToolkit.Maui.Extensions.DispatcherExtensions.DispatchIfRequiredAsync(Dispatcher, OnSourceChanged, uriUpdateToken);
+			await Dispatcher.DispatchIfRequiredAsync(OnSourceChanged, uriUpdateToken);
 		}
 		catch (OperationCanceledException) when (uriUpdateToken.IsCancellationRequested)
 		{
