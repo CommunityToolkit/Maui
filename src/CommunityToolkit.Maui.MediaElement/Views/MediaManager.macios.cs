@@ -16,6 +16,7 @@ public partial class MediaManager : IDisposable
 	Metadata? metaData;
 	StreamAssetResourceLoader? streamResourceLoader;
 
+	MediaManagerDelegate? fullScreenDelegate;
 	// Media would still start playing when Speed was set although ShouldAutoPlay=False
 	// This field was added to overcome that.
 	bool isInitialSpeedSet;
@@ -27,11 +28,14 @@ public partial class MediaManager : IDisposable
 	public (PlatformMediaElement Player, AVPlayerViewController PlayerViewController) CreatePlatformView()
 	{
 		Player = new();
+		fullScreenDelegate = new MediaManagerDelegate();
+		fullScreenDelegate.ScreenStateChanged += OnScreenStateChanged;
+
 		PlayerViewController = new()
 		{
-			Player = Player
+			Player = Player,
+			Delegate = fullScreenDelegate,
 		};
-
 		// Pre-initialize Volume and Muted properties to the player object
 		Player.Muted = MediaElement.ShouldMute;
 		var volumeDiff = Math.Abs(Player.Volume - MediaElement.Volume);
@@ -56,6 +60,11 @@ public partial class MediaManager : IDisposable
 		AddErrorObservers();
 
 		return (Player, PlayerViewController);
+	}
+
+	void OnScreenStateChanged(object? sender, ScreenStateChangedEventArgs e)
+	{
+		UpdateFullScreenState(e.NewState);
 	}
 
 	/// <summary>
@@ -468,7 +477,7 @@ public partial class MediaManager : IDisposable
 				UIApplication.SharedApplication.IdleTimerDisabled = false;
 				var audioSession = AVAudioSession.SharedInstance();
 				audioSession.SetActive(false);
-
+				fullScreenDelegate?.ScreenStateChanged -= OnScreenStateChanged;
 				DestroyErrorObservers();
 				DestroyPlayedToEndObserver();
 
@@ -808,5 +817,28 @@ public partial class MediaManager : IDisposable
 				MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = metaData.NowPlayingInfo;
 			}
 		}
+	}
+}
+
+sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
+{
+	readonly WeakEventManager fullScreenEventManager = new();
+	internal event EventHandler<ScreenStateChangedEventArgs> ScreenStateChanged
+	{
+		add => fullScreenEventManager.AddEventHandler(value);
+		remove => fullScreenEventManager.RemoveEventHandler(value);
+	}
+
+	public override void WillBeginFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
+	{
+		var oldState = MediaElementScreenState.Default;
+		var newState = MediaElementScreenState.FullScreen;
+		fullScreenEventManager.HandleEvent(this, new ScreenStateChangedEventArgs(oldState, newState), nameof(ScreenStateChanged));
+	}
+	public override void WillEndFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
+	{
+		var oldState = MediaElementScreenState.FullScreen;
+		var newState = MediaElementScreenState.Default;
+		fullScreenEventManager.HandleEvent(this, new ScreenStateChangedEventArgs(oldState, newState), nameof(ScreenStateChanged));
 	}
 }

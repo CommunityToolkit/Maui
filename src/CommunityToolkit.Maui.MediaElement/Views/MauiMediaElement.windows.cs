@@ -3,8 +3,6 @@ using System.Runtime.InteropServices;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Devices;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -33,12 +31,20 @@ public partial class MauiMediaElement : Grid, IDisposable
 		var hwnd = GetForegroundWindow();
 		return hwnd == IntPtr.Zero ? null : hwnd;
 	}
+
+	readonly WeakEventManager fullScreenEventManager = new();
 	readonly Popup popup = new();
 	readonly Grid fullScreenGrid = new();
 	readonly MediaPlayerElement mediaPlayerElement;
 	readonly CustomTransportControls? customTransportControls;
 	bool doesNavigationBarExistBeforeFullScreen;
 	bool isDisposed;
+
+	internal event EventHandler<ScreenStateChangedEventArgs> FullScreenStateChanged
+	{
+		add => fullScreenEventManager.AddEventHandler(value);
+		remove => fullScreenEventManager.RemoveEventHandler(value);
+	}
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
@@ -178,7 +184,7 @@ public partial class MauiMediaElement : Grid, IDisposable
 	{
 		var currentPage = CurrentPage;
 		var appWindow = GetAppWindowForCurrentWindow();
-
+		var mediaElementState = MediaElementScreenState.Default;
 		if (appWindow.Presenter.Kind is AppWindowPresenterKind.FullScreen)
 		{
 			appWindow.SetPresenter(AppWindowPresenterKind.Default);
@@ -221,6 +227,10 @@ public partial class MauiMediaElement : Grid, IDisposable
 			{
 				popup.IsOpen = true;
 			}
+			mediaElementState = MediaElementScreenState.FullScreen;
 		}
+		var newState = mediaElementState;
+		var oldState = newState == MediaElementScreenState.FullScreen ? MediaElementScreenState.Default : MediaElementScreenState.FullScreen;
+		fullScreenEventManager.HandleEvent(this, new ScreenStateChangedEventArgs(oldState, newState), nameof(FullScreenStateChanged));
 	}
 }
