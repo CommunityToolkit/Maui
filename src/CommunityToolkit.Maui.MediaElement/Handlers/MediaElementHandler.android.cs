@@ -24,14 +24,36 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 								VirtualView,
 								Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
 
-		var (_, playerView) = MediaManager.CreatePlatformView(VirtualView.AndroidViewType, VirtualView.IsAndroidForegroundServiceEnabled);
+		var playerView = MediaManager.CreatePlatformView(VirtualView.AndroidViewType, VirtualView.IsAndroidForegroundServiceEnabled);
 		return new(Context, playerView);
 	}
+	protected override async void ConnectHandler(MauiMediaElement platformView)
+	{
+		base.ConnectHandler(platformView);
+		if (platformView is null)
+		{
+			throw new InvalidOperationException($"{nameof(platformView)} cannot be null");
+		}
+		if (MediaManager is null)
+		{
+			throw new InvalidOperationException($"{nameof(MediaManager)} cannot be null");
+		}
 
+		try
+		{
+			var player = await MediaManager.CreatePlatformPlayer();
+			platformView.SetView(player);
+			await MediaManager.SynchronizePlayerStateAsync();
+		}
+		catch (Exception exception)
+		{
+			((IMediaElement)VirtualView).MediaFailed(new MediaFailedEventArgs(exception.Message));
+		}
+	}
 	protected override void DisconnectHandler(MauiMediaElement platformView)
 	{
-		platformView.Dispose();
 		Dispose();
+		platformView.Dispose();
 		base.DisconnectHandler(platformView);
 	}
 }
