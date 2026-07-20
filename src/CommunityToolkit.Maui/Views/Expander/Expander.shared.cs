@@ -189,6 +189,7 @@ public partial class Expander : ContentView, IExpander
 		HandleHeaderTapped?.Invoke(tappedEventArgs);
 	}
 
+	[Obsolete]
 	void ResizeExpanderInItemsView(TappedEventArgs tappedEventArgs)
 	{
 		if (Header is null)

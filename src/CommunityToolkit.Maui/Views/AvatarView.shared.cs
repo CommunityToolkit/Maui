@@ -235,7 +235,7 @@ public partial class AvatarView : Border, IAvatarView
 		var avatarView = (AvatarView)bindable;
 		avatarView.avatarLabel.Text = (string)newValue;
 	}
-	
+
 	void IImageSourcePart.UpdateIsLoading(bool isLoading)
 	{
 		if (!isLoading && wasImageLoading)
@@ -276,11 +276,11 @@ public partial class AvatarView : Border, IAvatarView
 	{
 		// Ensure avatarImage is clipped to the bounds of the AvatarView whenever its Height, Width, CornerRadius, Border, StrokeThickness and Padding properties change
 		if (e.PropertyName == HeightProperty.PropertyName
-		    || e.PropertyName == WidthProperty.PropertyName
-		    || e.PropertyName == PaddingProperty.PropertyName
-		    || e.PropertyName == BorderWidthProperty.PropertyName
-		    || e.PropertyName == CornerRadiusProperty.PropertyName
-		    || e.PropertyName == StrokeThicknessProperty.PropertyName
+			|| e.PropertyName == WidthProperty.PropertyName
+			|| e.PropertyName == PaddingProperty.PropertyName
+			|| e.PropertyName == BorderWidthProperty.PropertyName
+			|| e.PropertyName == CornerRadiusProperty.PropertyName
+			|| e.PropertyName == StrokeThicknessProperty.PropertyName
 		   )
 		{
 			RefreshAvatarImage();
@@ -290,8 +290,8 @@ public partial class AvatarView : Border, IAvatarView
 	void RefreshAvatarImage()
 	{
 		if (Height >= 0 // The default value of Height (before the view is drawn onto the page) is -1
-		    && Width >= 0 // The default value of Width (before the view is drawn onto the page) is -1
-		    && avatarImage.Source is not null)
+			&& Width >= 0 // The default value of Width (before the view is drawn onto the page) is -1
+			&& avatarImage.Source is not null)
 		{
 			Geometry? avatarImageClipGeometry = null;
 #if WINDOWS
