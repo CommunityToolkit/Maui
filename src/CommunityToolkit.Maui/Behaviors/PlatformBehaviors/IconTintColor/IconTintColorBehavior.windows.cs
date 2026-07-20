@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
+using MImageSource = Microsoft.Maui.Controls.ImageSource;
 using WButton = Microsoft.UI.Xaml.Controls.Button;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
@@ -54,9 +55,9 @@ public partial class IconTintColorBehavior
 		return image is not null;
 	}
 
-	static bool TryGetSourceImageUri(WImage? imageControl, IImageElement? imageElement, [NotNullWhen(true)] out Uri? uri)
+	static bool TryGetSourceImageUri(WImage? imageControl, MImageSource? imageSource, [NotNullWhen(true)] out Uri? uri)
 	{
-		if (imageElement?.Source is UriImageSource uriImageSource)
+		if (imageSource is UriImageSource uriImageSource)
 		{
 			uri = uriImageSource.Uri;
 			return true;
@@ -143,7 +144,9 @@ public partial class IconTintColorBehavior
 
 	void LoadAndApplyImageTintColor(IView element, WImage image, Color color)
 	{
-		if (element is IImageElement { Source: UriImageSource uriImageSource })
+		var isSizeChangedSubscribed = false;
+
+		if (GetImageSource(element) is UriImageSource uriImageSource)
 		{
 			image.Source = Path.GetExtension(uriImageSource.Uri.AbsolutePath) switch
 			{
@@ -157,7 +160,7 @@ public partial class IconTintColorBehavior
 		{
 			// Sometimes WImage source doesn't match View source so the image is not ready to be tinted
 			// We must wait for next ImageOpened event
-			if (element is IImageElement { Source: FileImageSource fileImageSource }
+			if (GetImageSource(element) is FileImageSource fileImageSource
 				&& image.Source is BitmapImage bitmapImage
 				&& Uri.Compare(new Uri($"{bitmapImage.UriSource.Scheme}:///{fileImageSource.File}"), bitmapImage.UriSource, UriComponents.Path, UriFormat.Unescaped, StringComparison.OrdinalIgnoreCase) is not 0)
 			{
@@ -185,21 +188,37 @@ public partial class IconTintColorBehavior
 
 		void ApplyTintColor()
 		{
-			if (image.ActualSize != Vector2.Zero)
+			if (IsImageFullyMeasured(image))
 			{
 				ApplyImageTintColor(element, image, color);
+				return;
 			}
-			else
+
+			// Sometimes the ActualSize of the image is still not ready, therefore we have to wait for the next SizeChange event.
+			SubscribeToSizeChanged();
+
+			void SubscribeToSizeChanged()
 			{
-				// Sometimes the ActualSize of the image is still not ready, therefore we have to wait for the next SizeChange event. 
+				if (isSizeChangedSubscribed)
+				{
+					return;
+				}
+
 				image.SizeChanged += OnImageSizeChanged;
+				isSizeChangedSubscribed = true;
 
 				void OnImageSizeChanged(object sender, SizeChangedEventArgs e)
 				{
 					ArgumentNullException.ThrowIfNull(sender);
 					var image = (WImage)sender;
 
+					if (!IsImageFullyMeasured(image))
+					{
+						return;
+					}
+
 					image.SizeChanged -= OnImageSizeChanged;
+					isSizeChangedSubscribed = false;
 					ApplyImageTintColor(element, image, color);
 				}
 			}
@@ -208,7 +227,12 @@ public partial class IconTintColorBehavior
 
 	void ApplyImageTintColor(IView element, WImage image, Color color)
 	{
-		if (!TryGetSourceImageUri(image, (IImageElement)element, out var uri))
+		if (!TryGetSourceImageUri(image, GetImageSource(element), out var uri))
+		{
+			return;
+		}
+
+		if (!IsImageFullyMeasured(image))
 		{
 			return;
 		}
@@ -222,17 +246,23 @@ public partial class IconTintColorBehavior
 
 		ApplyTintCompositionEffect(image, color, width, height, offset, anchorPoint, uri);
 
+		var pixelWidth = Math.Max(1, (int)Math.Ceiling(image.ActualWidth));
+		var pixelHeight = Math.Max(1, (int)Math.Ceiling(image.ActualHeight));
+
 		// Hide possible visible pixels from original image by replacing with a transparent image of the same size
 		if (blankImage is null
-			|| (blankImage.PixelWidth != (int)width && blankImage.PixelHeight != (int)height))
+			|| blankImage.PixelWidth != pixelWidth
+			|| blankImage.PixelHeight != pixelHeight)
 		{
 			// Source image has changed, update the cached blank image
-			blankImage = new WriteableBitmap((int)width, (int)height);
+			blankImage = new WriteableBitmap(pixelWidth, pixelHeight);
 		}
 
 		originalImage = image.Source;
 		image.Source = blankImage;
 	}
+
+	static bool IsImageFullyMeasured(WImage image) => image.ActualWidth > 0 && image.ActualHeight > 0;
 
 	void ApplyTintCompositionEffect(FrameworkElement platformView, Color color, float width, float height, Vector3 offset, Vector2 anchorPoint, Uri surfaceMaskUri)
 	{
@@ -296,4 +326,11 @@ public partial class IconTintColorBehavior
 
 		image.Source = originalImage;
 	}
+
+	static MImageSource? GetImageSource(IView element) => element switch
+	{
+		Image image => image.Source,
+		ImageButton imageButton => imageButton.Source,
+		_ => throw new NotSupportedException($"The type {element.GetType().FullName} is not supported.")
+	};
 }

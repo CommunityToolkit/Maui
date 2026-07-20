@@ -4,7 +4,7 @@
 /// <typeparam name="T">Type of the Attached Bindable Property. Set <see cref="AttachedBindablePropertyAttribute{T}.IsNullable"/> to <see langword="true"/> to generate a nullable type for <typeparamref name="T"/></typeparam>
 /// <param name="propertyName">Name of the Attached Property</param>
 /// <remarks> 
-///* Generates a <see langword="readonly"/> <see langword="static"/> <see cref="Microsoft.Maui.Controls.BindableProperty"/> field using <see cref="Microsoft.Maui.Controls.BindableProperty.CreateAttached(string, Type, Type, object, BindingMode, BindableProperty.ValidateValueDelegate, BindableProperty.BindingPropertyChangedDelegate, BindableProperty.BindingPropertyChangingDelegate, BindableProperty.CoerceValueDelegate, BindableProperty.BindablePropertyBindingChanging, bool, BindableProperty.CreateDefaultValueDelegate)"/><br/>
+///* Generates a <see langword="readonly"/> <see langword="static"/> <see cref="Microsoft.Maui.Controls.BindableProperty"/> field using <c>BindableProperty.CreateAttached</c><br/>
 ///* Generates <see langword="static"/> <c>Get{PropertyName}(BindableObject bindable)</c><br/>
 ///* Generates <see langword="static"/> <c>Set{PropertyName}(BindableObject bindable, T value)</c><br/>
 ///* The property type <typeparamref name="T"/> will be treated as non-nullable unless <see cref="AttachedBindablePropertyAttribute{T}.IsNullable"/> is set to <see langword="true"/>

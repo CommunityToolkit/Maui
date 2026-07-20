@@ -13,7 +13,7 @@ public partial class AnimationBehaviorPage : BasePage<AnimationBehaviorViewModel
 
 partial class SampleScaleAnimation : BaseAnimation
 {
-	public override async Task Animate(VisualElement view, CancellationToken token)
+	public override async Task Animate(VisualElement view, CancellationToken token = default)
 	{
 		await view.ScaleToAsync(1.2, Length, Easing).WaitAsync(token);
 		await view.ScaleToAsync(1, Length, Easing).WaitAsync(token);
@@ -24,6 +24,6 @@ partial class SampleScaleToAnimation : BaseAnimation
 {
 	public double Scale { get; set; }
 
-	public override Task Animate(VisualElement view, CancellationToken token)
+	public override Task Animate(VisualElement view, CancellationToken token = default)
 		=> view.ScaleToAsync(Scale, Length, Easing).WaitAsync(token);
 }

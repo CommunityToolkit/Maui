@@ -36,7 +36,7 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 	}
 
 	[Fact]
-	public void VerifyCanOnlyBeAttachedToIImageText()
+	public void VerifyCanOnlyBeAttachedToSupportedImages()
 	{
 		InvalidOperationException? exception = null;
 
@@ -60,6 +60,13 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 		AttachTouchBehaviorToVisualElement(image);
 
 		Assert.Single(image.Behaviors.OfType<ImageTouchBehavior>());
+
+		var imageButton = new ImageButton();
+		using var imageButtonBehavior = new ImageTouchBehavior();
+		imageButton.Behaviors.Add(imageButtonBehavior);
+		imageButtonBehavior.Element = imageButton;
+
+		Assert.Single(imageButton.Behaviors.OfType<ImageTouchBehavior>());
 		Assert.NotNull(exception);
 	}
 

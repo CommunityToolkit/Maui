@@ -1,33 +1,12 @@
 using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
-using ILineHeightElement = Microsoft.Maui.Controls.ILineHeightElement;
 
 namespace CommunityToolkit.Maui.Views;
 
 /// <summary>AvatarView control.</summary>
-public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITextElement, IImageElement, ITextAlignmentElement, ILineHeightElement, ICornerElement
+public partial class AvatarView : Border, IAvatarView
 {
-	/// <summary>The backing store for the <see cref="IFontElement.FontAttributes" /> bindable property.</summary>
-	public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
-
-	/// <summary>The backing store for the <see cref="IFontElement.FontAutoScalingEnabled" /> bindable property.</summary>
-	public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
-
-	/// <summary>The backing store for the <see cref="IFontElement.FontFamily" /> bindable property.</summary>
-	public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
-
-	/// <summary>The backing store for the <see cref="IFontElement.FontSize" /> bindable property.</summary>
-	public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
-
-	/// <summary>The backing store for the <see cref="ITextStyle.TextColor" /> bindable property.</summary>
-	public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
-
-	/// <summary>The backing store for the <see cref="TextTransform" /> bindable property.</summary>
-	public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
-
-
 	readonly Image avatarImage = new()
 	{
 		Aspect = Aspect.AspectFill,
@@ -68,59 +47,38 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 	/// <summary>
 	/// Gets or sets the control font.
 	/// </summary>
-	public Microsoft.Maui.Font Font { get; set; } = Microsoft.Maui.Font.SystemFontOfSize((double)FontElement.FontSizeProperty.DefaultValue);
+	public Microsoft.Maui.Font Font { get; set; } = Microsoft.Maui.Font.SystemFontOfSize((double)FontSizeProperty.DefaultValue);
 
 	/// <summary>
 	/// Gets or sets a value of the control text character spacing property.
 	/// </summary>
-	public double CharacterSpacing
-	{
-		get => (double)GetValue(TextElement.CharacterSpacingProperty);
-		set => SetValue(TextElement.CharacterSpacingProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnCharacterSpacingPropertyChanged))]
+	public partial double CharacterSpacing { get; set; }
 
 	/// <summary>Gets or sets a value of the control font attributes property.</summary>
-	public FontAttributes FontAttributes
-	{
-		get => (FontAttributes)GetValue(FontElement.FontAttributesProperty);
-		set => SetValue(FontElement.FontAttributesProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnFontAttributesBindablePropertyChanged))]
+	public partial FontAttributes FontAttributes { get; set; } = FontAttributes.None;
 
-	/// <summary>Gets or sets a value indicating whether control font auto scaling enabled property.</summary>
-	public bool FontAutoScalingEnabled
-	{
-		get => (bool)GetValue(FontElement.FontAutoScalingEnabledProperty);
-		set => SetValue(FontElement.FontAutoScalingEnabledProperty, value);
-	}
+	/// <summary>Gets or sets a value indicating whether control font auto-scaling enabled property.</summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnFontAutoScalingEnabledPropertyChanged))]
+	public partial bool FontAutoScalingEnabled { get; set; } = true;
 
 	/// <summary>Gets or sets a value of the control font family property.</summary>
-	public string FontFamily
-	{
-		get => (string)GetValue(FontElement.FontFamilyProperty);
-		set => SetValue(FontElement.FontFamilyProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnFontFamilyPropertyChanged))]
+	public partial string? FontFamily { get; set; }
 
 	/// <summary>Gets or sets a value of the control font size property.</summary>
 	[TypeConverter(typeof(FontSizeConverter))]
-	public double FontSize
-	{
-		get => (double)GetValue(FontElement.FontSizeProperty);
-		set => SetValue(FontElement.FontSizeProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnFontSizePropertyChanged))]
+	public partial double FontSize { get; set; } = -1d;
 
 	/// <summary>Gets or sets a value of the control text colour property.</summary>
-	public Color TextColor
-	{
-		get => (Color)GetValue(TextElement.TextColorProperty);
-		set => SetValue(TextElement.TextColorProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnTextColorPropertyChanged))]
+	public partial Color TextColor { get; set; }
 
-	/// <inheritdoc/>
-	public TextTransform TextTransform
-	{
-		get => (TextTransform)GetValue(TextElement.TextTransformProperty);
-		set => SetValue(TextElement.TextTransformProperty, value);
-	}
+	/// <summary>Gets or sets a value of the control text transform property.</summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnTextTransformPropertyChanged))]
+	public partial TextTransform TextTransform { get; set; } = TextTransform.Default;
 
 	/// <summary>Gets or sets a value of the control border colour.</summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnBorderColorPropertyChanged))]
@@ -151,112 +109,132 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 	[BindableProperty(PropertyChangedMethodName = nameof(OnTextPropertyChanged))]
 	public partial string Text { get; set; } = AvatarViewDefaults.Text;
 
-	Aspect Microsoft.Maui.IImage.Aspect => ((IImageElement)this).Aspect;
+	Aspect Microsoft.Maui.IImage.Aspect => avatarImage.Aspect;
 
-	Aspect IImageElement.Aspect => avatarImage.Aspect;
-
-	Color IBorderElement.BorderColorDefaultValue => AvatarViewDefaults.BorderColor;
-
-	double IBorderElement.BorderWidthDefaultValue => AvatarViewDefaults.BorderWidth;
-
-	int IBorderElement.CornerRadius => (int)GetAverageCorderRadius(CornerRadius);
-
-	int IBorderElement.CornerRadiusDefaultValue => (int)GetAverageCorderRadius(AvatarViewDefaults.CornerRadius);
-
-	TextAlignment ITextAlignment.HorizontalTextAlignment => ((ITextAlignmentElement)this).HorizontalTextAlignment;
-
-	TextAlignment ITextAlignmentElement.HorizontalTextAlignment => avatarLabel.HorizontalTextAlignment;
-
-	bool IImageElement.IsAnimationPlaying => avatarImage.IsAnimationPlaying;
-
-	bool IImageSourcePart.IsAnimationPlaying => ((IImageElement)this).IsAnimationPlaying;
+	TextAlignment ITextAlignment.HorizontalTextAlignment => avatarLabel.HorizontalTextAlignment;
 
 	bool IImageSource.IsEmpty => avatarImage.Source is null;
 
-	bool IImageElement.IsLoading => avatarImage.IsLoading;
+	bool IImageSourcePart.IsAnimationPlaying => avatarImage.IsAnimationPlaying;
 
-	bool Microsoft.Maui.IImage.IsOpaque => ((IImageElement)this).IsOpaque;
+	bool Microsoft.Maui.IImage.IsOpaque => avatarImage.IsOpaque;
 
-	bool IImageElement.IsOpaque => avatarImage.IsOpaque;
-
-	double ILabel.LineHeight => ((ILineHeightElement)this).LineHeight;
-
-	double ILineHeightElement.LineHeight => avatarLabel.LineHeight;
+	double ILabel.LineHeight => avatarLabel.LineHeight;
 
 	IImageSource? IImageSourcePart.Source => ImageSource;
 
-	ImageSource IImageElement.Source => avatarImage.Source;
-
-	TextAlignment ITextAlignment.VerticalTextAlignment => ((ITextAlignmentElement)this).VerticalTextAlignment;
-
-	TextAlignment ITextAlignmentElement.VerticalTextAlignment => avatarLabel.VerticalTextAlignment;
+	TextAlignment ITextAlignment.VerticalTextAlignment => avatarLabel.VerticalTextAlignment;
 
 	TextDecorations ILabel.TextDecorations => avatarLabel.TextDecorations;
 
-	double IFontElement.FontSizeDefaultValueCreator() => this.GetDefaultFontSize();
 
-	bool IBorderElement.IsBackgroundColorSet() => IsSet(BackgroundColorProperty);
-
-	bool IBorderElement.IsBackgroundSet() => IsSet(BackgroundProperty);
-
-	bool IBorderElement.IsBorderColorSet() => IsSet(BorderColorProperty);
-
-	bool IBorderElement.IsBorderWidthSet() => IsSet(BorderWidthProperty);
-
-	bool IBorderElement.IsCornerRadiusSet() => IsSet(CornerRadiusProperty);
-
-	void IBorderElement.OnBorderColorPropertyChanged(Color oldValue, Color newValue) => Stroke = newValue;
-
-	void ITextElement.OnCharacterSpacingPropertyChanged(double oldValue, double newValue)
+	void OnCharacterSpacingChanged(double oldValue, double newValue)
 	{
 		InvalidateMeasure();
 		avatarLabel.CharacterSpacing = newValue;
 	}
 
-	void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue)
+	static void OnCharacterSpacingPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		avatarView.OnCharacterSpacingChanged((double)oldValue, (double)newValue);
+	}
+
+	void OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue)
 	{
 		HandleFontChanged();
 		avatarLabel.FontAttributes = newValue;
 	}
 
-	void IFontElement.OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue)
+	static void OnFontAttributesBindablePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		avatarView.OnFontAttributesChanged((FontAttributes)oldValue, (FontAttributes)newValue);
+	}
+
+	void OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue)
 	{
 		HandleFontChanged();
 		avatarLabel.FontAutoScalingEnabled = newValue;
 	}
 
-	void IFontElement.OnFontFamilyChanged(string oldValue, string newValue)
+	static void OnFontAutoScalingEnabledPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		avatarView.OnFontAutoScalingEnabledChanged((bool)oldValue, (bool)newValue);
+	}
+
+	static void OnFontFamilyPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		avatarView.OnFontFamilyChanged(oldValue as string, newValue as string);
+	}
+
+	void OnFontFamilyChanged(string? oldValue, string? newValue)
 	{
 		HandleFontChanged();
 		avatarLabel.FontFamily = newValue;
 	}
 
-	void IFontElement.OnFontSizeChanged(double oldValue, double newValue)
+	void OnFontSizeChanged(double oldValue, double newValue)
 	{
 		HandleFontChanged();
 		avatarLabel.FontSize = newValue;
 	}
 
-	void ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(TextAlignment oldValue, TextAlignment newValue) =>
-		((ITextAlignmentElement)avatarLabel).OnHorizontalTextAlignmentPropertyChanged(oldValue, newValue);
-
-	void IImageElement.OnImageSourceSourceChanged(object sender, EventArgs e) =>
-		((IImageElement)avatarImage).OnImageSourceSourceChanged(sender, e);
-
-	void ILineHeightElement.OnLineHeightChanged(double oldValue, double newValue) =>
-		((ILineHeightElement)avatarLabel).OnLineHeightChanged(oldValue, newValue);
-
-	void ITextElement.OnTextColorPropertyChanged(Color oldValue, Color newValue) => avatarLabel.TextColor = newValue;
-
-	void ITextElement.OnTextTransformChanged(TextTransform oldValue, TextTransform newValue)
+	static void OnFontSizePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-		avatarLabel.TextTransform = newValue;
+		var avatarView = (AvatarView)bindable;
+		avatarView.OnFontSizeChanged((double)oldValue, (double)newValue);
 	}
 
-	void IImageElement.RaiseImageSourcePropertyChanged() => ((IImageElement)avatarImage).RaiseImageSourcePropertyChanged();
+	static void OnTextColorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		avatarView.avatarLabel.TextColor = (Color?)newValue;
+	}
 
-	string ITextElement.UpdateFormsText(string original, TextTransform transform) => TextTransformUtilities.GetTransformedText(original, transform);
+	static void OnTextTransformPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		avatarView.InvalidateMeasure();
+		avatarView.avatarLabel.TextTransform = (TextTransform)newValue;
+	}
+
+	static void OnBorderColorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		avatarView.Stroke = (Color)newValue;
+	}
+
+	static void OnBorderWidthPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		avatarView.StrokeThickness = (double)newValue;
+	}
+
+	static void OnCornerRadiusPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		var corderRadius = (CornerRadius)newValue;
+
+		avatarView.StrokeShape = new RoundRectangle
+		{
+			CornerRadius = corderRadius
+		};
+	}
+
+	static void OnImageSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		avatarView.HandleImageChanged((ImageSource?)newValue);
+	}
+
+	static void OnTextPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		avatarView.avatarLabel.Text = (string)newValue;
+	}
 
 	void IImageSourcePart.UpdateIsLoading(bool isLoading)
 	{
@@ -268,48 +246,16 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 		wasImageLoading = isLoading;
 	}
 
-	static double GetAverageCorderRadius(in CornerRadius cornerRadius) =>
-		new[] { cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomLeft, cornerRadius.BottomRight }.Average();
-
-	static void OnBorderColorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		AvatarView avatarView = (AvatarView)bindable;
-		avatarView.Stroke = (Color)newValue;
-	}
-
-	static void OnBorderWidthPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		AvatarView avatarView = (AvatarView)bindable;
-		avatarView.StrokeThickness = (double)newValue;
-	}
-
-	static void OnCornerRadiusPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		AvatarView avatarView = (AvatarView)bindable;
-		CornerRadius corderRadius = (CornerRadius)newValue;
-
-		avatarView.StrokeShape = new RoundRectangle
-		{
-			CornerRadius = corderRadius
-		};
-	}
-
-	static void OnImageSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		AvatarView avatarView = (AvatarView)bindable;
-		avatarView.HandleImageChanged((ImageSource?)newValue);
-	}
-
-	static void OnTextPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		AvatarView avatarView = (AvatarView)bindable;
-		avatarView.avatarLabel.Text = (string)newValue;
-	}
-
 	void HandleFontChanged()
 	{
+		Font = Microsoft.Maui.Font.OfSize(
+			FontFamily,
+			FontSize,
+			FontAttributes.HasFlag(FontAttributes.Bold) ? FontWeight.Bold : FontWeight.Regular,
+			FontAttributes.HasFlag(FontAttributes.Italic) ? FontSlant.Italic : FontSlant.Default,
+			FontAutoScalingEnabled);
 		Handler?.UpdateValue(nameof(ITextStyle.Font));
-		InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+		InvalidateMeasure();
 	}
 
 	void HandleImageChanged(ImageSource? newValue)
@@ -352,11 +298,11 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 			double offsetX = 0;
 			double offsetY = 0;
 #else
-			double offsetX = StrokeThickness + Padding.Left;
-			double offsetY = StrokeThickness + Padding.Top;
+			var offsetX = StrokeThickness + Padding.Left;
+			var offsetY = StrokeThickness + Padding.Top;
 #endif
-			double imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
-			double imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
+			var imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
+			var imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
 			avatarImage.WidthRequest = imageWidth;
 			avatarImage.HeightRequest = imageHeight;
 

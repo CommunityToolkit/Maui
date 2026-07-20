@@ -106,8 +106,12 @@ public partial class Expander : ContentView, IExpander
 		{
 			view.SetBinding(IsVisibleProperty, new Binding(nameof(IsExpanded), source: expander));
 
-			expander.ContentGrid.Remove(oldValue);
-			expander.ContentGrid.Add(newValue);
+			if (oldValue is IView oldView)
+			{
+				expander.ContentGrid.Remove(oldView);
+			}
+
+			expander.ContentGrid.Add(view);
 			expander.ContentGrid.SetRow(view, expander.Direction switch
 			{
 				ExpandDirection.Down => 1,
@@ -124,8 +128,12 @@ public partial class Expander : ContentView, IExpander
 		{
 			expander.SetHeaderGestures(view);
 
-			expander.ContentGrid.Remove(oldValue);
-			expander.ContentGrid.Add(newValue);
+			if (oldValue is IView oldView)
+			{
+				expander.ContentGrid.Remove(oldView);
+			}
+
+			expander.ContentGrid.Add(view);
 
 			expander.ContentGrid.SetRow(view, expander.Direction switch
 			{
@@ -181,7 +189,7 @@ public partial class Expander : ContentView, IExpander
 		HandleHeaderTapped?.Invoke(tappedEventArgs);
 	}
 
-	void ResizeExpanderInItemsView(TappedEventArgs tappedEventArgs)
+	void  ResizeExpanderInItemsView(TappedEventArgs tappedEventArgs)
 	{
 		if (Header is null)
 		{
