@@ -31,8 +31,8 @@ public partial class StateContainerPage : BasePage<StateContainerViewModel>
 		{
 			await StateContainer.ChangeStateWithAnimation(GridWithAnimation,
 															null,
-															(element, token) => ScaleToAsync(element, 0, 100, Easing.SpringIn, token),
-															(element, token) => ScaleToAsync(element, 1, 250, Easing.SpringOut, token),
+															(element, token) => element.ScaleToAsync(0, 100, Easing.SpringIn).WaitAsync(token),
+															(element, token) => element.ScaleToAsync( 1, 250, Easing.SpringOut).WaitAsync(token),
 															CancellationToken.None);
 		}
 
@@ -40,14 +40,9 @@ public partial class StateContainerPage : BasePage<StateContainerViewModel>
 		{
 			await StateContainer.ChangeStateWithAnimation(GridWithAnimation,
 															"ReplaceGrid",
-															(element, token) => ScaleToAsync(element, 0, 100, Easing.SpringIn, token),
-															(element, token) => ScaleToAsync(element, 1, 250, Easing.SpringOut, token),
+															(element, token) => element.ScaleToAsync(0, 100, Easing.SpringIn).WaitAsync(token),
+															(element, token) => element.ScaleToAsync(1, 250, Easing.SpringOut).WaitAsync(token),
 															CancellationToken.None);
 		}
-	}
-
-	static Task ScaleToAsync(VisualElement element, double scale, uint length, Easing? easing, CancellationToken token)
-	{
-		return element.ScaleToAsync(scale, length, easing).WaitAsync(token);
 	}
 }
