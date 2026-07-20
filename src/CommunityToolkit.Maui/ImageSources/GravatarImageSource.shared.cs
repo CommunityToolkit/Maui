@@ -1,5 +1,5 @@
-﻿using CommunityToolkit.Maui.Extensions;
-using CommunityToolkit.Maui.Core.Extensions;
+﻿using CommunityToolkit.Maui.Core.Extensions;
+using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.ImageSources;
 
