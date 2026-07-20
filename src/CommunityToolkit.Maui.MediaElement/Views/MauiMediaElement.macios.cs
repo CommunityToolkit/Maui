@@ -104,7 +104,7 @@ public class MauiMediaElement : UIView
 		{
 			UIView platformView => GetViewController(platformView) ?? GetCurrentUIViewController(),
 			null => throw new InvalidOperationException("Handler cannot be null"),
-			_ => throw new NotSupportedException($"{itemsView.Handler?.PlatformView.GetType()} not yet supported")
+			_ => throw new NotSupportedException($"{itemsView.Handler.PlatformView.GetType()} not yet supported")
 		};
 	}
 
