@@ -1,4 +1,3 @@
-using CommunityToolkit.Maui.Extensions;
 using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
 
@@ -18,7 +17,16 @@ public partial class Snackbar
 	{
 		if (args.Arguments.TryGetValue(snackbarIdentifierArgumentKey, out var id) && actions.TryGetValue(id, out var action) && action is not null)
 		{
-			CommunityToolkit.Maui.Extensions.DispatcherExtensions.DispatchIfRequired(Dispatcher.GetForCurrentThread(), action);
+			var dispatcher = Dispatcher.GetForCurrentThread();
+
+			if (dispatcher is not null)
+			{
+				Core.Extensions.DispatcherExtensions.DispatchIfRequired(dispatcher, action);
+			}
+			else
+			{
+				action();
+			}
 		}
 	}
 
