@@ -48,6 +48,6 @@ public partial class StateContainerPage : BasePage<StateContainerViewModel>
 
 	static Task ScaleToAsync(VisualElement element, double scale, uint length, Easing? easing, CancellationToken token)
 	{
-		return element.ScaleToAsync(scale, length, easing, token);
+		return element.ScaleToAsync(scale, length, easing).WaitAsync(token);
 	}
 }

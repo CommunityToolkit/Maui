@@ -22,7 +22,7 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 
 		var originalOpacity = view.Opacity;
 
-		await view.FadeToAsync(Opacity, Length, Easing, token);
-		await view.FadeToAsync(originalOpacity, Length, Easing, token);
+		await view.FadeToAsync(Opacity, Length, Easing).WaitAsync(token);
+		await view.FadeToAsync(originalOpacity, Length, Easing).WaitAsync(token);
 	}
 }
