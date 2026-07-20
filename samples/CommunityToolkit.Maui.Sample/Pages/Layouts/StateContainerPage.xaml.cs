@@ -32,7 +32,7 @@ public partial class StateContainerPage : BasePage<StateContainerViewModel>
 			await StateContainer.ChangeStateWithAnimation(GridWithAnimation,
 															null,
 															(element, token) => element.ScaleToAsync(0, 100, Easing.SpringIn).WaitAsync(token),
-															(element, token) => element.ScaleToAsync( 1, 250, Easing.SpringOut).WaitAsync(token),
+															(element, token) => element.ScaleToAsync(1, 250, Easing.SpringOut).WaitAsync(token),
 															CancellationToken.None);
 		}
 

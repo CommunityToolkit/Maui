@@ -40,23 +40,23 @@ static class DispatcherExtensions
 			((TaskCompletionSource?)state)?.TrySetCanceled(), taskCompletionSource);
 
 		if (!dispatcher.Dispatch(() =>
-		    {
-			    if (token.IsCancellationRequested)
-			    {
-				    taskCompletionSource.TrySetCanceled(token);
-				    return;
-			    }
+			{
+				if (token.IsCancellationRequested)
+				{
+					taskCompletionSource.TrySetCanceled(token);
+					return;
+				}
 
-			    try
-			    {
-				    action();
-				    taskCompletionSource.TrySetResult();
-			    }
-			    catch (Exception ex)
-			    {
-				    taskCompletionSource.TrySetException(ex);
-			    }
-		    }))
+				try
+				{
+					action();
+					taskCompletionSource.TrySetResult();
+				}
+				catch (Exception ex)
+				{
+					taskCompletionSource.TrySetException(ex);
+				}
+			}))
 		{
 			taskCompletionSource.TrySetException(new InvalidOperationException("The dispatcher was unable to queue the requested action."));
 		}
