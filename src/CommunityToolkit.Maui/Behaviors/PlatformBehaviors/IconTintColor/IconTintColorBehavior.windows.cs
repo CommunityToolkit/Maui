@@ -206,21 +206,21 @@ public partial class IconTintColorBehavior
 
 				image.SizeChanged += OnImageSizeChanged;
 				isSizeChangedSubscribed = true;
-			}
 
-			void OnImageSizeChanged(object sender, SizeChangedEventArgs e)
-			{
-				ArgumentNullException.ThrowIfNull(sender);
-				var image = (WImage)sender;
-
-				if (!IsImageFullyMeasured(image))
+				void OnImageSizeChanged(object sender, SizeChangedEventArgs e)
 				{
-					return;
-				}
+					ArgumentNullException.ThrowIfNull(sender);
+					var image = (WImage)sender;
 
-				image.SizeChanged -= OnImageSizeChanged;
-				isSizeChangedSubscribed = false;
-				ApplyImageTintColor(element, image, color);
+					if (!IsImageFullyMeasured(image))
+					{
+						return;
+					}
+
+					image.SizeChanged -= OnImageSizeChanged;
+					isSizeChangedSubscribed = false;
+					ApplyImageTintColor(element, image, color);
+				}
 			}
 		}
 	}
