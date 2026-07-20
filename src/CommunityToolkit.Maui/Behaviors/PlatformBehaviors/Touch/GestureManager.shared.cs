@@ -37,7 +37,8 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 
 	internal static bool TryGetBindableImageTouchBehaviorElement(ImageTouchBehavior imageTouchBehavior, [NotNullWhen(true)] out BindableObject? bindable)
 	{
-		if (imageTouchBehavior.Element is not Image and not ImageButton)
+		// Validate the ImageTouchBehaviorElement is both a BindableObject and IImage
+		if (imageTouchBehavior.Element is not (BindableObject and Microsoft.Maui.IImage))
 		{
 			bindable = null;
 			return false;
@@ -347,15 +348,18 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 				throw new NotSupportedException($"The combination of {nameof(TouchState)} {touchState} and {nameof(HoverState)} {hoverState} is not yet supported");
 		}
 
-		if (bindable is Image image)
+		switch (bindable)
 		{
-			image.SetValue(Image.SourceProperty, updatedImageSource);
-			image.SetValue(Image.AspectProperty, updatedImageAspect);
-		}
-		else if (bindable is ImageButton imageButton)
-		{
-			imageButton.SetValue(ImageButton.SourceProperty, updatedImageSource);
-			imageButton.SetValue(ImageButton.AspectProperty, updatedImageAspect);
+			case Image image:
+				image.SetValue(Image.SourceProperty, updatedImageSource);
+				image.SetValue(Image.AspectProperty, updatedImageAspect);
+				break;
+			case ImageButton imageButton:
+				imageButton.SetValue(ImageButton.SourceProperty, updatedImageSource);
+				imageButton.SetValue(ImageButton.AspectProperty, updatedImageAspect);
+				break;
+			default:
+				throw new NotSupportedException($"{bindable.GetType()} is not yet supported");
 		}
 	}
 
