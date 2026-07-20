@@ -90,6 +90,25 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
+	
+	/// <summary>Disposes the resources used by the <see cref="GravatarImageSource"/>.</summary>
+	/// <param name="disposing"><see langword="true"/> when called from <see cref="Dispose()"/>.</param>
+	protected virtual void Dispose(bool disposing)
+	{
+		if (isDisposed)
+		{
+			return;
+		}
+
+		if (disposing)
+		{
+			uriUpdateTokenSource?.Cancel();
+			uriUpdateTokenSource?.Dispose();
+			uriUpdateTokenSource = null;
+		}
+
+		isDisposed = true;
+	}
 
 	/// <summary>On parent set.</summary>
 	protected override void OnParentSet()
@@ -115,13 +134,13 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 
 	static async void OnDefaultImagePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		GravatarImageSource gravatarImageSource = (GravatarImageSource)bindable;
+		var gravatarImageSource = (GravatarImageSource)bindable;
 		await gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, (DefaultImage)newValue, CancellationToken.None);
 	}
 
 	static async void OnEmailPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		GravatarImageSource gravatarImageSource = (GravatarImageSource)bindable;
+		var gravatarImageSource = (GravatarImageSource)bindable;
 		await gravatarImageSource.HandleNewUriRequested((string?)newValue, gravatarImageSource.Image, CancellationToken.None);
 	}
 
@@ -132,7 +151,7 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 			return;
 		}
 
-		GravatarImageSource gravatarImageSource = (GravatarImageSource)bindable;
+		var gravatarImageSource = (GravatarImageSource)bindable;
 		if (gravatarImageSource.GravatarSize is null)
 		{
 			gravatarImageSource.GravatarSize = intNewValue;
@@ -188,25 +207,6 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 			: new CancellationTokenSource();
 
 		return uriUpdateTokenSource.Token;
-	}
-
-	/// <summary>Disposes the resources used by the <see cref="GravatarImageSource"/>.</summary>
-	/// <param name="disposing"><see langword="true"/> when called from <see cref="Dispose()"/>.</param>
-	protected virtual void Dispose(bool disposing)
-	{
-		if (isDisposed)
-		{
-			return;
-		}
-
-		if (disposing)
-		{
-			uriUpdateTokenSource?.Cancel();
-			uriUpdateTokenSource?.Dispose();
-			uriUpdateTokenSource = null;
-		}
-
-		isDisposed = true;
 	}
 }
 
