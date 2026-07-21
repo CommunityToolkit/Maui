@@ -6,23 +6,44 @@ jobs:
   dotnet-format:
     runs-on: windows-latest
     steps:
-      - name: Install dotnet-format
-        run: dotnet tool install -g dotnet-format
-
       - name: Checkout repo
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Run dotnet format
-        id: format
-        uses: jfversluis/dotnet-format@5742daa75ac922cd73c747d7fd31f4279aaf5a24 # v1.0.9
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          action: "fix"
-          #only-changed-files: true # only works for PRs
-          workspace: "samples/CommunityToolkit.Maui.Sample.sln"
-    
+          dotnet-version: '10.0.x'
+          dotnet-quality: 'ga'
+
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5
+        with:
+          distribution: 'microsoft'
+          java-version: '21'
+
+      - name: Install .NET MAUI Workload
+        run: |
+          dotnet workload install maui
+          dotnet workload update
+
+      # CS0612, CS0618, CS0672, CS1062 and CS1064 are excluded to stop `dotnet format` from applying
+      # Roslyn's "Add [Obsolete]" code fix, which adds the [Obsolete] attribute to every member that
+      # uses or overrides an obsolete API (see https://github.com/dotnet/format/issues/1230).
+      # Excluding them here only affects `dotnet format`; `dotnet build` still reports these warnings.
+      - name: Run dotnet format
+        run: dotnet format samples/CommunityToolkit.Maui.Sample.slnx --exclude-diagnostics CS0612 CS0618 CS0672 CS1062 CS1064
+
+      - name: Check for changes
+        id: format
+        shell: pwsh
+        run: |
+          if (git status --porcelain --untracked-files=no) {
+            "has-changes=true" >> $env:GITHUB_OUTPUT
+          } else {
+            "has-changes=false" >> $env:GITHUB_OUTPUT
+          }
+
       - name: Commit files
         if: steps.format.outputs.has-changes == 'true'
         run: |
