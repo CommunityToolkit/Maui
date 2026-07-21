@@ -42,16 +42,18 @@ public abstract class BasePlatformBehavior<TView, TPlatformView> : PlatformBehav
 
 	}
 
-	/// <summary>
-	/// View used by the Behavior
-	/// </summary>
-	protected TView? View { get; set; }
-
 	TView? ICommunityToolkitBehavior<TView>.View
 	{
 		get => View;
 		set => View = value;
 	}
+
+	/// <summary>
+	/// View used by the Behavior
+	/// </summary>
+	protected TView? View { get; set; }
+
+	void ICommunityToolkitBehavior<TView>.OnViewPropertyChanged(TView sender, PropertyChangedEventArgs e) => OnViewPropertyChanged(sender, e);
 
 	/// <summary>
 	/// Virtual method that executes when a property on the View has changed
@@ -78,6 +80,4 @@ public abstract class BasePlatformBehavior<TView, TPlatformView> : PlatformBehav
 
 		((ICommunityToolkitBehavior<TView>)this).UninitializeBehavior(bindable);
 	}
-
-	void ICommunityToolkitBehavior<TView>.OnViewPropertyChanged(TView sender, PropertyChangedEventArgs e) => OnViewPropertyChanged(sender, e);
 }

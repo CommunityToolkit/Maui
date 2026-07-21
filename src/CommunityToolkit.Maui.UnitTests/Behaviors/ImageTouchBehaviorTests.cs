@@ -10,17 +10,6 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 {
 	readonly ImageTouchBehavior imageTouchBehavior = new();
 
-	protected override void Dispose(bool isDisposing)
-	{
-		base.Dispose(isDisposing);
-
-		imageTouchBehavior.Dispose();
-
-		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleTouch(TouchStatus.Canceled));
-		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleHover(HoverStatus.Entered));
-		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleUserInteraction(TouchInteractionStatus.Started));
-	}
-
 	[Fact]
 	public void VerifyDefaults()
 	{
@@ -318,6 +307,17 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 		// Verify Default Aspect appears when neither active
 		imageTouchBehavior.HandleHover(HoverStatus.Exited);
 		Assert.Equal(imageTouchBehavior.DefaultImageAspect, image.Aspect);
+	}
+
+	protected override void Dispose(bool isDisposing)
+	{
+		base.Dispose(isDisposing);
+
+		imageTouchBehavior.Dispose();
+
+		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleTouch(TouchStatus.Canceled));
+		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleHover(HoverStatus.Entered));
+		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleUserInteraction(TouchInteractionStatus.Started));
 	}
 
 	void AttachTouchBehaviorToVisualElement(in VisualElement element)

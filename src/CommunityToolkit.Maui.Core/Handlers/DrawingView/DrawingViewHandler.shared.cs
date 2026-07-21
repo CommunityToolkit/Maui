@@ -55,12 +55,6 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 
 	IDrawingLineAdapter adapter = new DrawingLineAdapter();
 
-	/// <inheritdoc />
-	public void SetDrawingLineAdapter(IDrawingLineAdapter drawingLineAdapter)
-	{
-		adapter = drawingLineAdapter;
-	}
-
 	/// <summary>
 	/// Action that's triggered when the DrawingView <see cref="IDrawingView.Lines"/> property changes.
 	/// </summary>
@@ -129,6 +123,12 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	public static void MapDrawingViewBackground(DrawingViewHandler handler, IDrawingView view)
 	{
 		handler.PlatformView.SetPaint(view.Background ?? new SolidPaint(DrawingViewDefaults.BackgroundColor));
+	}
+
+	/// <inheritdoc />
+	public void SetDrawingLineAdapter(IDrawingLineAdapter drawingLineAdapter)
+	{
+		adapter = drawingLineAdapter;
 	}
 
 	/// <inheritdoc />

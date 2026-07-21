@@ -3,6 +3,33 @@ using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.ImageSources;
 
+/// <summary>Default image enumerator.</summary>
+public enum DefaultImage
+{
+	/// <summary>(mystery-person) A simple, cartoon-style silhouetted outline of a person (does not vary by email hash)</summary>
+	MysteryPerson = 0,
+
+	/// <summary>404: Do not load any image if none is associated with the email hash, instead return an HTTP 404 (File Not Found) response.</summary>
+	FileNotFound,
+
+	/// <summary>A geometric pattern based on an email hash.</summary>
+	Identicon,
+
+	/// <summary>A generated 'monster' with different colors, faces, etc.</summary>
+	MonsterId,
+
+	/// <summary>Generated faces with differing features and backgrounds.</summary>
+	Wavatar,
+
+	/// <summary>Awesome generated, 8-bit arcade-style pixilated faces.</summary>
+	Retro,
+
+	/// <summary>A generated robot with different colors, faces, etc.</summary>
+	Robohash,
+
+	/// <summary>A transparent PNG image.</summary>
+	Blank,
+}
 /// <summary>Gravatar image source.</summary>
 /// <remarks>Note that <see cref="UriImageSource"/> is sealed and can't be used as a parent!</remarks>
 public partial class GravatarImageSource : StreamImageSource, IDisposable
@@ -54,6 +81,8 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 	[BindableProperty(PropertyChangedMethodName = nameof(OnSizePropertyChanged))]
 	internal partial int ParentWidth { get; set; } = GravatarImageSourceDefaults.ParentWidth;
 
+	static HttpClient SingletonHttpClient => singletonHttpClientHolder.Value;
+
 	/// <summary>Gets or sets the image size.</summary>
 	/// <remarks>
 	/// Size is limited to be in the range of 1 to 2048.
@@ -75,8 +104,6 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 		}
 	}
 
-	static HttpClient SingletonHttpClient => singletonHttpClientHolder.Value;
-
 	/// <summary>Returns the Uri as a string.</summary>
 	/// <returns>String of the URI.</returns>
 	public override string ToString()
@@ -90,7 +117,7 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
-	
+
 	/// <summary>Disposes the resources used by the <see cref="GravatarImageSource"/>.</summary>
 	/// <param name="disposing"><see langword="true"/> when called from <see cref="Dispose()"/>.</param>
 	protected virtual void Dispose(bool disposing)
@@ -208,32 +235,4 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 
 		return uriUpdateTokenSource.Token;
 	}
-}
-
-/// <summary>Default image enumerator.</summary>
-public enum DefaultImage
-{
-	/// <summary>(mystery-person) A simple, cartoon-style silhouetted outline of a person (does not vary by email hash)</summary>
-	MysteryPerson = 0,
-
-	/// <summary>404: Do not load any image if none is associated with the email hash, instead return an HTTP 404 (File Not Found) response.</summary>
-	FileNotFound,
-
-	/// <summary>A geometric pattern based on an email hash.</summary>
-	Identicon,
-
-	/// <summary>A generated 'monster' with different colors, faces, etc.</summary>
-	MonsterId,
-
-	/// <summary>Generated faces with differing features and backgrounds.</summary>
-	Wavatar,
-
-	/// <summary>Awesome generated, 8-bit arcade-style pixilated faces.</summary>
-	Retro,
-
-	/// <summary>A generated robot with different colors, faces, etc.</summary>
-	Robohash,
-
-	/// <summary>A transparent PNG image.</summary>
-	Blank,
 }

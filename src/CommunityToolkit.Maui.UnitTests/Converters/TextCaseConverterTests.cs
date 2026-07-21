@@ -10,6 +10,8 @@ public class TextCaseConverterTests : BaseOneWayConverterTest<TextCaseConverter>
 	const string test = nameof(test);
 	const string t = nameof(t);
 
+	enum MockEnum { Foo, Bar, Baz }
+
 	public static TheoryData<object?, TextCaseType?, object?> Data { get; } = new()
 	{
 		{
@@ -55,8 +57,6 @@ public class TextCaseConverterTests : BaseOneWayConverterTest<TextCaseConverter>
 			new MockItem("Test Item", true), TextCaseType.Upper, "TEST ITEM IS COMPLETED"
 		},
 	};
-
-	enum MockEnum { Foo, Bar, Baz }
 
 	[Theory]
 	[InlineData((TextCaseType)int.MinValue)]

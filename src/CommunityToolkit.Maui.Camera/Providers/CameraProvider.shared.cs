@@ -16,11 +16,6 @@ sealed partial class CameraProvider : ICameraProvider
 		remove => availableCamerasChangedEventManager.RemoveEventHandler(value);
 	}
 
-	public void Dispose()
-	{
-		refreshAvailableCamerasSemaphore.Dispose();
-	}
-
 	/// <inheritdoc/>
 	public IReadOnlyList<CameraInfo>? AvailableCameras
 	{
@@ -33,6 +28,11 @@ sealed partial class CameraProvider : ICameraProvider
 				availableCamerasChangedEventManager.HandleEvent(this, value, nameof(AvailableCamerasChanged));
 			}
 		}
+	}
+
+	public void Dispose()
+	{
+		refreshAvailableCamerasSemaphore.Dispose();
 	}
 
 	/// <inheritdoc/>

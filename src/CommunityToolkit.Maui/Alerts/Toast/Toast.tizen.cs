@@ -16,6 +16,14 @@ public partial class Toast
 	}
 
 	/// <summary>
+	/// Dismiss Toast
+	/// </summary>
+	static void DismissPlatform(CancellationToken token)
+	{
+		token.ThrowIfCancellationRequested();
+	}
+
+	/// <summary>
 	/// Show Toast
 	/// </summary>
 	void ShowPlatform(CancellationToken token)
@@ -27,13 +35,5 @@ public partial class Toast
 		{
 			Message = Text
 		}.Post();
-	}
-
-	/// <summary>
-	/// Dismiss Toast
-	/// </summary>
-	static void DismissPlatform(CancellationToken token)
-	{
-		token.ThrowIfCancellationRequested();
 	}
 }

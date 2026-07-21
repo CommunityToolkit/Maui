@@ -231,18 +231,28 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 	}
 
-	protected override bool OnBackButtonPressed()
+	void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
 	{
-		TryExecuteTapOutsideOfPopupCommand();
+		if (popup is IQueryAttributable popupIQueryAttributable)
+		{
+			popupIQueryAttributable.ApplyQueryAttributes(query);
+		}
 
-		// Always return true to let the Android Operating System know that we are manually handling the Navigation request from the Android Back Button
-		return true;
+		if (popup.Content is IQueryAttributable popupContentIQueryAttributable)
+		{
+			popupContentIQueryAttributable.ApplyQueryAttributes(query);
+		}
 	}
 
-	protected override void OnNavigatedTo(NavigatedToEventArgs args)
+	internal bool TryExecuteTapOutsideOfPopupCommand()
 	{
-		base.OnNavigatedTo(args);
-		popup.NotifyPopupIsOpened();
+		if (!tapOutsideOfPopupCommand.CanExecute(null))
+		{
+			return false;
+		}
+
+		tapOutsideOfPopupCommand.Execute(null);
+		return true;
 	}
 
 	protected static T CreatePopupFromView<T>(in View view) where T : Popup, new()
@@ -268,15 +278,18 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		return popup;
 	}
 
-	internal bool TryExecuteTapOutsideOfPopupCommand()
+	protected override bool OnBackButtonPressed()
 	{
-		if (!tapOutsideOfPopupCommand.CanExecute(null))
-		{
-			return false;
-		}
+		TryExecuteTapOutsideOfPopupCommand();
 
-		tapOutsideOfPopupCommand.Execute(null);
+		// Always return true to let the Android Operating System know that we are manually handling the Navigation request from the Android Back Button
 		return true;
+	}
+
+	protected override void OnNavigatedTo(NavigatedToEventArgs args)
+	{
+		base.OnNavigatedTo(args);
+		popup.NotifyPopupIsOpened();
 	}
 
 	// Only dismiss when a user taps outside Popup when **both** Popup.CanBeDismissedByTappingOutsideOfPopup and PopupOptions.CanBeDismissedByTappingOutsideOfPopup are true
@@ -296,19 +309,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		if (e.PropertyName == Popup.CanBeDismissedByTappingOutsideOfPopupProperty.PropertyName)
 		{
 			tapOutsideOfPopupCommand.ChangeCanExecute();
-		}
-	}
-
-	void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
-	{
-		if (popup is IQueryAttributable popupIQueryAttributable)
-		{
-			popupIQueryAttributable.ApplyQueryAttributes(query);
-		}
-
-		if (popup.Content is IQueryAttributable popupContentIQueryAttributable)
-		{
-			popupContentIQueryAttributable.ApplyQueryAttributes(query);
 		}
 	}
 
@@ -361,6 +361,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			AutomationProperties.SetIsInAccessibleTree(PopupBorder, false);
 		}
 
+		public Border PopupBorder { get; }
+		public PopupGestureOverlay TapGestureGestureOverlay { get; }
+
 		void HandleOverlayTapped(object? sender, TappedEventArgs e)
 		{
 			ArgumentNullException.ThrowIfNull(sender);
@@ -378,9 +381,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 				tryExecuteTapOutsideOfPopupCommand();
 			}
 		}
-
-		public Border PopupBorder { get; }
-		public PopupGestureOverlay TapGestureGestureOverlay { get; }
 
 		sealed partial class BorderStrokeThicknessConverter : BaseConverterOneWay<Shape?, double>
 		{

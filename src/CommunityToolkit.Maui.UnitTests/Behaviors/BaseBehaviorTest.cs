@@ -74,8 +74,6 @@ public abstract class BaseBehaviorTest<TBehavior, TView> : BaseTest
 		view.Behaviors.Clear();
 	}
 
-	sealed class MockViewModel;
-
 	protected sealed class MockValidationBehavior : ValidationBehavior<string>
 	{
 		public string? ExpectedValue { get; init; }
@@ -91,4 +89,6 @@ public abstract class BaseBehaviorTest<TBehavior, TView> : BaseTest
 			return value == ExpectedValue;
 		}
 	}
+
+	sealed class MockViewModel;
 }

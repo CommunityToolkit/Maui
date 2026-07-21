@@ -73,6 +73,15 @@ public partial class IconTintColorBehavior
 		return false;
 	}
 
+	static bool IsImageFullyMeasured(WImage image) => image.ActualWidth > 0 && image.ActualHeight > 0;
+
+	static MImageSource? GetImageSource(IView element) => element switch
+	{
+		Image image => image.Source,
+		ImageButton imageButton => imageButton.Source,
+		_ => throw new NotSupportedException($"The type {element.GetType().FullName} is not supported.")
+	};
+
 	void OnIconTintColorBehaviorPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		ArgumentNullException.ThrowIfNull(sender);
@@ -262,8 +271,6 @@ public partial class IconTintColorBehavior
 		image.Source = blankImage;
 	}
 
-	static bool IsImageFullyMeasured(WImage image) => image.ActualWidth > 0 && image.ActualHeight > 0;
-
 	void ApplyTintCompositionEffect(FrameworkElement platformView, Color color, float width, float height, Vector3 offset, Vector2 anchorPoint, Uri surfaceMaskUri)
 	{
 		var compositor = ElementCompositionPreview.GetElementVisual(platformView).Compositor;
@@ -326,11 +333,4 @@ public partial class IconTintColorBehavior
 
 		image.Source = originalImage;
 	}
-
-	static MImageSource? GetImageSource(IView element) => element switch
-	{
-		Image image => image.Source,
-		ImageButton imageButton => imageButton.Source,
-		_ => throw new NotSupportedException($"The type {element.GetType().FullName} is not supported.")
-	};
 }

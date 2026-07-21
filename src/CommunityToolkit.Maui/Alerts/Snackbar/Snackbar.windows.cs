@@ -7,11 +7,11 @@ public partial class Snackbar
 {
 	const string snackbarIdentifierArgumentKey = "snackbarIdentifier";
 
-	static AppNotification? PlatformSnackbar { get; set; }
-
 	static Dictionary<string, Action?> actions = [];
 
 	TaskCompletionSource<bool>? dismissedTCS;
+
+	static AppNotification? PlatformSnackbar { get; set; }
 
 	internal static void HandleSnackbarAction(AppNotificationActivatedEventArgs args)
 	{

@@ -12,6 +12,15 @@ public partial class MaxLengthReachedBehavior : BaseBehavior<InputView>
 	readonly WeakEventManager maxLengthReachedEventManager = new();
 
 	/// <summary>
+	/// Event that is triggered when the value configured in <see cref="InputView.MaxLength" /> is reached. Both the <see cref="Command"/> and this event are triggered. This is a bindable property.
+	/// </summary>
+	public event EventHandler<MaxLengthReachedEventArgs> MaxLengthReached
+	{
+		add => maxLengthReachedEventManager.AddEventHandler(value);
+		remove => maxLengthReachedEventManager.RemoveEventHandler(value);
+	}
+
+	/// <summary>
 	/// Command that is triggered when the value configured in <see cref="InputView.MaxLength" /> is reached. Both the <see cref="MaxLengthReached"/> event and this command are triggered. This is a bindable property.
 	/// </summary>
 	[BindableProperty]
@@ -22,15 +31,6 @@ public partial class MaxLengthReachedBehavior : BaseBehavior<InputView>
 	/// </summary>
 	[BindableProperty]
 	public partial bool ShouldDismissKeyboardAutomatically { get; set; } = MaxLengthReachedBehaviorDefaults.ShouldDismissKeyboardAutomatically;
-
-	/// <summary>
-	/// Event that is triggered when the value configured in <see cref="InputView.MaxLength" /> is reached. Both the <see cref="Command"/> and this event are triggered. This is a bindable property.
-	/// </summary>
-	public event EventHandler<MaxLengthReachedEventArgs> MaxLengthReached
-	{
-		add => maxLengthReachedEventManager.AddEventHandler(value);
-		remove => maxLengthReachedEventManager.RemoveEventHandler(value);
-	}
 
 	/// <inheritdoc/>
 	protected override void OnViewPropertyChanged(InputView sender, PropertyChangedEventArgs e)

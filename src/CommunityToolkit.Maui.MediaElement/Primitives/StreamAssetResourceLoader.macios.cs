@@ -36,6 +36,15 @@ sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 		return true;
 	}
 
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			// Don't dispose the stream here - let the caller manage its lifetime
+		}
+		base.Dispose(disposing);
+	}
+
 	void FillContentInformation(AVAssetResourceLoadingContentInformationRequest contentInformationRequest)
 	{
 		contentInformationRequest.ContentType = contentType;
@@ -77,14 +86,5 @@ sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 			// Log error but don't throw - let AVFoundation handle it
 			System.Diagnostics.Debug.WriteLine($"Error reading stream data: {ex.Message}");
 		}
-	}
-
-	protected override void Dispose(bool disposing)
-	{
-		if (disposing)
-		{
-			// Don't dispose the stream here - let the caller manage its lifetime
-		}
-		base.Dispose(disposing);
 	}
 }

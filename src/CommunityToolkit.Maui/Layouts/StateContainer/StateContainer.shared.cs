@@ -67,19 +67,6 @@ public static partial class StateContainer
 		}
 	}
 
-	static async Task AnimateChildren(Layout layout, string name, Animation animation, CancellationToken token)
-	{
-		List<Task<bool>> animationTasks = [];
-		foreach (var view in layout.Children.OfType<View>())
-		{
-			var animationTCS = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-			view.Animate(name, animation, finished: (_, result) => animationTCS.TrySetResult(result));
-			animationTasks.Add(animationTCS.Task);
-		}
-
-		await Task.WhenAll(animationTasks).WaitAsync(token);
-	}
-
 	/// <summary>
 	/// Change state with custom animation.
 	/// </summary>
@@ -152,6 +139,19 @@ public static partial class StateContainer
 			SetCanStateChange(bindable, true);
 			SetCurrentState(bindable, state);
 		}
+	}
+
+	static async Task AnimateChildren(Layout layout, string name, Animation animation, CancellationToken token)
+	{
+		List<Task<bool>> animationTasks = [];
+		foreach (var view in layout.Children.OfType<View>())
+		{
+			var animationTCS = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			view.Animate(name, animation, finished: (_, result) => animationTCS.TrySetResult(result));
+			animationTasks.Add(animationTCS.Task);
+		}
+
+		await Task.WhenAll(animationTasks).WaitAsync(token);
 	}
 
 	static void OnCurrentStateChanging(BindableObject bindable, object oldValue, object newValue)

@@ -57,6 +57,23 @@ public partial class EventToCommandBehavior : BaseBehavior<VisualElement>
 		base.OnDetachingFrom(bindable);
 	}
 
+	/// <summary>
+	/// Virtual method that executes when a Command is invoked
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="eventArgs"></param>
+	protected virtual void OnTriggerHandled(object? sender = null, object? eventArgs = null)
+	{
+		var parameter = CommandParameter
+			?? EventArgsConverter?.Convert(eventArgs, typeof(object), null, CultureInfo.InvariantCulture);
+
+		var command = Command;
+		if (command?.CanExecute(parameter) ?? false)
+		{
+			command.Execute(parameter);
+		}
+	}
+
 	static void OnEventNamePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		=> ((EventToCommandBehavior)bindable).RegisterEvent();
 
@@ -91,22 +108,5 @@ public partial class EventToCommandBehavior : BaseBehavior<VisualElement>
 
 		eventInfo = null;
 		eventHandler = null;
-	}
-
-	/// <summary>
-	/// Virtual method that executes when a Command is invoked
-	/// </summary>
-	/// <param name="sender"></param>
-	/// <param name="eventArgs"></param>
-	protected virtual void OnTriggerHandled(object? sender = null, object? eventArgs = null)
-	{
-		var parameter = CommandParameter
-			?? EventArgsConverter?.Convert(eventArgs, typeof(object), null, CultureInfo.InvariantCulture);
-
-		var command = Command;
-		if (command?.CanExecute(parameter) ?? false)
-		{
-			command.Execute(parameter);
-		}
 	}
 }

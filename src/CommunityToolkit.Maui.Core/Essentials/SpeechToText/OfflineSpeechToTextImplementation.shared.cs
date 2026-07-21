@@ -60,6 +60,15 @@ public sealed partial class OfflineSpeechToTextImplementation : ISpeechToText
 		return Task.CompletedTask;
 	}
 
+#if !MACCATALYST && !IOS
+	/// <inheritdoc/>
+	public async Task<bool> RequestPermissions(CancellationToken cancellationToken = default)
+	{
+		var status = await Permissions.RequestAsync<Permissions.Microphone>().WaitAsync(cancellationToken).ConfigureAwait(false);
+		return status is PermissionStatus.Granted;
+	}
+#endif
+
 	void OnRecognitionResultUpdated(string recognitionResult)
 	{
 		recognitionResultUpdatedWeakEventManager.HandleEvent(this, new SpeechToTextRecognitionResultUpdatedEventArgs(recognitionResult), nameof(RecognitionResultUpdated));
@@ -74,13 +83,4 @@ public sealed partial class OfflineSpeechToTextImplementation : ISpeechToText
 	{
 		speechToTextStateChangedWeakEventManager.HandleEvent(this, new SpeechToTextStateChangedEventArgs(speechToTextState), nameof(StateChanged));
 	}
-
-#if !MACCATALYST && !IOS
-	/// <inheritdoc/>
-	public async Task<bool> RequestPermissions(CancellationToken cancellationToken = default)
-	{
-		var status = await Permissions.RequestAsync<Permissions.Microphone>().WaitAsync(cancellationToken).ConfigureAwait(false);
-		return status is PermissionStatus.Granted;
-	}
-#endif
 }

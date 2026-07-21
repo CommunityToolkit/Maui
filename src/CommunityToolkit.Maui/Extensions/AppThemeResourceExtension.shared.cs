@@ -105,6 +105,8 @@ public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 		throw new XamlParseException($"Resource not found for key {Key}.", xmlInfo);
 	}
 
+	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider) => ProvideValue(serviceProvider);
+
 	/// <summary>
 	/// Attempts to locate a resource by walking up the visual tree from a target object.
 	/// </summary>
@@ -157,6 +159,4 @@ public sealed class AppThemeResourceExtension : IMarkupExtension<BindingBase>
 
 	static BindingBase GetBinding<T>(AppThemeObject<T> theme, BindableProperty? targetProperty) =>
 		targetProperty is null ? theme.GetBinding() : theme.GetBinding(targetProperty);
-
-	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider) => ProvideValue(serviceProvider);
 }

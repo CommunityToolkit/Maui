@@ -17,9 +17,6 @@ public sealed partial class CompareConverter : CompareConverter<IComparable, obj
 /// </summary>
 public abstract class CompareConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TValue, TReturnObject> : BaseConverterOneWay<TValue, object> where TValue : IComparable
 {
-	/// <inheritdoc/>
-	public override object DefaultConvertReturnValue { get; set; } = new();
-
 	/// <summary>
 	/// Math operator type
 	/// </summary>
@@ -56,6 +53,9 @@ public abstract class CompareConverter<[DynamicallyAccessedMembers(DynamicallyAc
 		/// </summary>
 		GreaterOrEqual = 1 << 4,
 	}
+
+	/// <inheritdoc/>
+	public override object DefaultConvertReturnValue { get; set; } = new();
 
 	/// <summary>
 	/// The comparing value.

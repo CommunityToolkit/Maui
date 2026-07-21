@@ -110,9 +110,9 @@ public abstract partial class AppThemeObject<T>
 	{
 		Application? subscribedApplication;
 
-		public static AppThemeSource Instance { get; } = new();
-
 		public event PropertyChangedEventHandler? PropertyChanged;
+
+		public static AppThemeSource Instance { get; } = new();
 
 		public AppTheme RequestedTheme
 		{

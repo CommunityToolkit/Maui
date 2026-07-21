@@ -128,10 +128,14 @@ public partial class AvatarView : Border, IAvatarView
 	TextDecorations ILabel.TextDecorations => avatarLabel.TextDecorations;
 
 
-	void OnCharacterSpacingChanged(double oldValue, double newValue)
+	void IImageSourcePart.UpdateIsLoading(bool isLoading)
 	{
-		InvalidateMeasure();
-		avatarLabel.CharacterSpacing = newValue;
+		if (!isLoading && wasImageLoading)
+		{
+			Handler?.UpdateValue(nameof(AvatarView));
+		}
+
+		wasImageLoading = isLoading;
 	}
 
 	static void OnCharacterSpacingPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -140,22 +144,10 @@ public partial class AvatarView : Border, IAvatarView
 		avatarView.OnCharacterSpacingChanged((double)oldValue, (double)newValue);
 	}
 
-	void OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue)
-	{
-		HandleFontChanged();
-		avatarLabel.FontAttributes = newValue;
-	}
-
 	static void OnFontAttributesBindablePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var avatarView = (AvatarView)bindable;
 		avatarView.OnFontAttributesChanged((FontAttributes)oldValue, (FontAttributes)newValue);
-	}
-
-	void OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue)
-	{
-		HandleFontChanged();
-		avatarLabel.FontAutoScalingEnabled = newValue;
 	}
 
 	static void OnFontAutoScalingEnabledPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -168,18 +160,6 @@ public partial class AvatarView : Border, IAvatarView
 	{
 		var avatarView = (AvatarView)bindable;
 		avatarView.OnFontFamilyChanged(oldValue as string, newValue as string);
-	}
-
-	void OnFontFamilyChanged(string? oldValue, string? newValue)
-	{
-		HandleFontChanged();
-		avatarLabel.FontFamily = newValue;
-	}
-
-	void OnFontSizeChanged(double oldValue, double newValue)
-	{
-		HandleFontChanged();
-		avatarLabel.FontSize = newValue;
 	}
 
 	static void OnFontSizePropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -236,14 +216,34 @@ public partial class AvatarView : Border, IAvatarView
 		avatarView.avatarLabel.Text = (string)newValue;
 	}
 
-	void IImageSourcePart.UpdateIsLoading(bool isLoading)
+	void OnCharacterSpacingChanged(double oldValue, double newValue)
 	{
-		if (!isLoading && wasImageLoading)
-		{
-			Handler?.UpdateValue(nameof(AvatarView));
-		}
+		InvalidateMeasure();
+		avatarLabel.CharacterSpacing = newValue;
+	}
 
-		wasImageLoading = isLoading;
+	void OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue)
+	{
+		HandleFontChanged();
+		avatarLabel.FontAttributes = newValue;
+	}
+
+	void OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue)
+	{
+		HandleFontChanged();
+		avatarLabel.FontAutoScalingEnabled = newValue;
+	}
+
+	void OnFontFamilyChanged(string? oldValue, string? newValue)
+	{
+		HandleFontChanged();
+		avatarLabel.FontFamily = newValue;
+	}
+
+	void OnFontSizeChanged(double oldValue, double newValue)
+	{
+		HandleFontChanged();
+		avatarLabel.FontSize = newValue;
 	}
 
 	void HandleFontChanged()

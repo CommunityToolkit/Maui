@@ -8,24 +8,13 @@ namespace CommunityToolkit.Maui.UnitTests;
 [Collection("CommunityToolkit.UnitTests")]
 public abstract class BaseTest : IDisposable, IAsyncDisposable
 {
-	readonly CultureInfo defaultCulture, defaultUiCulture;
-	protected readonly MockAppInfo mockAppInfo;
 	protected const AppTheme initialAppTheme = AppTheme.Light;
 
-	bool isDisposed;
+	protected readonly MockAppInfo mockAppInfo;
 
-	protected enum TestDuration
-	{
-#if DEBUG
-		Short = 20_000,
-		Medium = 50_000,
-		Long = 100_000
-#else
-		Short = 2_000,
-		Medium = 5_000,
-		Long = 10_000
-#endif
-	}
+	readonly CultureInfo defaultCulture, defaultUiCulture;
+
+	bool isDisposed;
 
 	protected BaseTest()
 	{
@@ -45,6 +34,19 @@ public abstract class BaseTest : IDisposable, IAsyncDisposable
 
 	~BaseTest() => Dispose(false);
 
+	protected enum TestDuration
+	{
+#if DEBUG
+		Short = 20_000,
+		Medium = 50_000,
+		Long = 100_000
+#else
+		Short = 2_000,
+		Medium = 5_000,
+		Long = 10_000
+#endif
+	}
+
 	public async ValueTask DisposeAsync()
 	{
 		await DisposeAsyncCore().ConfigureAwait(false);
@@ -57,6 +59,32 @@ public abstract class BaseTest : IDisposable, IAsyncDisposable
 	{
 		Dispose(true);
 		GC.SuppressFinalize(this);
+	}
+
+	protected static Task<Stream> GetStreamFromImageSource(StreamImageSource imageSource, CancellationToken token)
+		=> imageSource.Stream(token);
+
+	protected static bool StreamEquals(Stream a, Stream b)
+	{
+		if (a == b)
+		{
+			return true;
+		}
+
+		if (a.Length != b.Length)
+		{
+			return false;
+		}
+
+		for (var i = 0; i < a.Length; i++)
+		{
+			if (a.ReadByte() != b.ReadByte())
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	protected virtual ValueTask DisposeAsyncCore()
@@ -92,31 +120,5 @@ public abstract class BaseTest : IDisposable, IAsyncDisposable
 		mediaElementOptions.SetDefaultAndroidViewType(AndroidViewType.SurfaceView);
 		mediaElementOptions.SetIsAndroidForegroundServiceEnabled(false);
 		isDisposed = true;
-	}
-
-	protected static Task<Stream> GetStreamFromImageSource(StreamImageSource imageSource, CancellationToken token)
-		=> imageSource.Stream(token);
-
-	protected static bool StreamEquals(Stream a, Stream b)
-	{
-		if (a == b)
-		{
-			return true;
-		}
-
-		if (a.Length != b.Length)
-		{
-			return false;
-		}
-
-		for (var i = 0; i < a.Length; i++)
-		{
-			if (a.ReadByte() != b.ReadByte())
-			{
-				return false;
-			}
-		}
-
-		return true;
 	}
 }

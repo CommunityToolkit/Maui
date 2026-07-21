@@ -82,6 +82,9 @@ public sealed partial class UriMediaSource : MediaSource
 		public int Count => innerDictionary.Count;
 		public bool IsReadOnly => false;
 
+		public ICollection<K> Keys => innerDictionary.Keys;
+		public ICollection<V> Values => innerDictionary.Values;
+
 		public V this[K key]
 		{
 			get => innerDictionary[key];
@@ -96,9 +99,6 @@ public sealed partial class UriMediaSource : MediaSource
 				ContentsChanged?.Invoke(this, EventArgs.Empty);
 			}
 		}
-
-		public ICollection<K> Keys => innerDictionary.Keys;
-		public ICollection<V> Values => innerDictionary.Values;
 
 		public IEnumerator<KeyValuePair<K, V>> GetEnumerator() => innerDictionary.GetEnumerator();
 

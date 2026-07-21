@@ -16,6 +16,12 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public static partial class DrawingViewService
 {
+	static readonly CanvasStrokeStyle roundStartEndCapCanvasStrokeStyle = new()
+	{
+		StartCap = CanvasCapStyle.Round,
+		EndCap = CanvasCapStyle.Round,
+	};
+
 	/// <summary>
 	/// Get image stream from lines
 	/// </summary>
@@ -155,12 +161,6 @@ public static partial class DrawingViewService
 
 		return offscreen;
 	}
-
-	static readonly CanvasStrokeStyle roundStartEndCapCanvasStrokeStyle = new()
-	{
-		StartCap = CanvasCapStyle.Round,
-		EndCap = CanvasCapStyle.Round,
-	};
 
 	static void DrawInk(this CanvasDrawingSession session, IEnumerable<InkStroke> strokes)
 	{

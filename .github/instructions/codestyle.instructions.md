@@ -1,3 +1,8 @@
+---
+description: 'C# coding style guide covering naming conventions, code structure, element positioning (StyleCop SA1201, SA1202, SA1204, SA1214, SA1215), control flow, nullability, and asynchronous programming'
+applyTo: '**/*.cs'
+---
+
 # Coding Style Guide
 This guide provides a set of best practices and coding standards for writing C# code with GitHub Copilot. It covers various aspects of C# programming, including naming conventions, code structure, control flow, nullability, safe operations, asynchronous programming, and symbol references.
 

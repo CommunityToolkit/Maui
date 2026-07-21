@@ -88,6 +88,16 @@ public partial class Expander : ContentView, IExpander
 
 	Grid ContentGrid => (Grid)base.Content;
 
+	void IExpander.ExpandedChanged(bool isExpanded)
+	{
+		if (Command?.CanExecute(CommandParameter) is true)
+		{
+			Command.Execute(CommandParameter);
+		}
+
+		tappedEventManager.HandleEvent(this, new ExpandedChangedEventArgs(isExpanded), nameof(ExpandedChanged));
+	}
+
 	static void OnExpandDirectionChanging(BindableObject bindable, object oldValue, object newValue)
 	{
 		var direction = (Expander)bindable;
@@ -189,7 +199,7 @@ public partial class Expander : ContentView, IExpander
 		HandleHeaderTapped?.Invoke(tappedEventArgs);
 	}
 
-	void  ResizeExpanderInItemsView(TappedEventArgs tappedEventArgs)
+	void ResizeExpanderInItemsView(TappedEventArgs tappedEventArgs)
 	{
 		if (Header is null)
 		{
@@ -225,15 +235,5 @@ public partial class Expander : ContentView, IExpander
 
 			element = element.Parent;
 		}
-	}
-
-	void IExpander.ExpandedChanged(bool isExpanded)
-	{
-		if (Command?.CanExecute(CommandParameter) is true)
-		{
-			Command.Execute(CommandParameter);
-		}
-
-		tappedEventManager.HandleEvent(this, new ExpandedChangedEventArgs(isExpanded), nameof(ExpandedChanged));
 	}
 }

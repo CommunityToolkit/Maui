@@ -818,6 +818,24 @@ public class RatingViewTests : BaseViewTest
 		var rvControl = ratingView.RatingLayout;
 		rvControl.Spacing.Should().Be(RatingViewDefaults.Spacing);
 	}
+	[Fact]
+	public void EnsureDefaults()
+	{
+		var ratingView = new RatingView();
+		Assert.Equal(RatingViewDefaults.Rating, ratingView.Rating);
+		Assert.Equal(RatingViewDefaults.EmptyShapeColor, ratingView.EmptyShapeColor);
+		Assert.Equal(RatingViewDefaults.FillColor, ratingView.FillColor);
+		Assert.Equal(RatingViewDefaults.IsReadOnly, ratingView.IsReadOnly);
+		Assert.Equal(RatingViewDefaults.ShapePadding, ratingView.ShapePadding);
+		Assert.Equal(RatingViewDefaults.ItemShapeSize, ratingView.ShapeDiameter);
+		Assert.Equal(RatingViewDefaults.MaximumRating, ratingView.MaximumRating);
+		Assert.Equal(RatingViewDefaults.Shape, ratingView.Shape);
+		Assert.Equal(RatingViewDefaults.ShapeBorderColor, ratingView.ShapeBorderColor);
+		Assert.Equal(RatingViewDefaults.ShapeBorderThickness, ratingView.ShapeBorderThickness);
+		Assert.Equal(RatingViewDefaults.Spacing, ratingView.Spacing);
+		Assert.Equal(RatingViewDefaults.FillWhenTapped, ratingView.FillWhenTapped);
+		Assert.Equal(RatingViewDefaults.FillOption, ratingView.FillOption);
+	}
 
 	static Microsoft.Maui.Controls.Shapes.Path GetItemShape(in RatingView ratingView, int itemIndex)
 	{
@@ -843,23 +861,5 @@ public class RatingViewTests : BaseViewTest
 				}
 			}
 		} = 0;
-	}
-	[Fact]
-	public void EnsureDefaults()
-	{
-		var ratingView = new RatingView();
-		Assert.Equal(RatingViewDefaults.Rating, ratingView.Rating);
-		Assert.Equal(RatingViewDefaults.EmptyShapeColor, ratingView.EmptyShapeColor);
-		Assert.Equal(RatingViewDefaults.FillColor, ratingView.FillColor);
-		Assert.Equal(RatingViewDefaults.IsReadOnly, ratingView.IsReadOnly);
-		Assert.Equal(RatingViewDefaults.ShapePadding, ratingView.ShapePadding);
-		Assert.Equal(RatingViewDefaults.ItemShapeSize, ratingView.ShapeDiameter);
-		Assert.Equal(RatingViewDefaults.MaximumRating, ratingView.MaximumRating);
-		Assert.Equal(RatingViewDefaults.Shape, ratingView.Shape);
-		Assert.Equal(RatingViewDefaults.ShapeBorderColor, ratingView.ShapeBorderColor);
-		Assert.Equal(RatingViewDefaults.ShapeBorderThickness, ratingView.ShapeBorderThickness);
-		Assert.Equal(RatingViewDefaults.Spacing, ratingView.Spacing);
-		Assert.Equal(RatingViewDefaults.FillWhenTapped, ratingView.FillWhenTapped);
-		Assert.Equal(RatingViewDefaults.FillOption, ratingView.FillOption);
 	}
 }

@@ -36,48 +36,6 @@ public partial class MapHandlerWindows : MapHandler
 	internal static string? MapsKey { get; set; }
 	internal static string? MapPage { get; private set; }
 
-	/// <inheritdoc/>
-	protected override FrameworkElement CreatePlatformView()
-	{
-		if (string.IsNullOrEmpty(MapsKey))
-		{
-			throw new InvalidOperationException("You need to specify a Bing Maps Key");
-		}
-
-		MapPage = GetMapHtmlPage(MapsKey);
-		var webView = new MauiWebView(new WebViewHandler());
-
-		return webView;
-	}
-
-	/// <inheritdoc />
-	protected override void ConnectHandler(FrameworkElement platformView)
-	{
-		if (platformView is MauiWebView mauiWebView)
-		{
-			LoadMap(platformView);
-
-			mauiWebView.NavigationCompleted += HandleWebViewNavigationCompleted;
-			mauiWebView.WebMessageReceived += WebViewWebMessageReceived;
-			Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
-		}
-
-		base.ConnectHandler(platformView);
-	}
-
-	/// <inheritdoc />
-	protected override void DisconnectHandler(FrameworkElement platformView)
-	{
-		if (platformView is MauiWebView mauiWebView)
-		{
-			Connectivity.ConnectivityChanged -= Connectivity_ConnectivityChanged;
-			mauiWebView.NavigationCompleted -= HandleWebViewNavigationCompleted;
-			mauiWebView.WebMessageReceived -= WebViewWebMessageReceived;
-		}
-
-		base.DisconnectHandler(platformView);
-	}
-
 	/// <summary>
 	/// Maps Map type
 	/// </summary>
@@ -168,6 +126,48 @@ public partial class MapHandlerWindows : MapHandler
 		}
 
 		await TryCallJSMethod(handler.PlatformView, $"setRegion({newRegion.Center.Latitude.ToString(CultureInfo.InvariantCulture)},{newRegion.Center.Longitude.ToString(CultureInfo.InvariantCulture)},{newRegion.LatitudeDegrees.ToString(CultureInfo.InvariantCulture)},{newRegion.LongitudeDegrees.ToString(CultureInfo.InvariantCulture)});");
+	}
+
+	/// <inheritdoc/>
+	protected override FrameworkElement CreatePlatformView()
+	{
+		if (string.IsNullOrEmpty(MapsKey))
+		{
+			throw new InvalidOperationException("You need to specify a Bing Maps Key");
+		}
+
+		MapPage = GetMapHtmlPage(MapsKey);
+		var webView = new MauiWebView(new WebViewHandler());
+
+		return webView;
+	}
+
+	/// <inheritdoc />
+	protected override void ConnectHandler(FrameworkElement platformView)
+	{
+		if (platformView is MauiWebView mauiWebView)
+		{
+			LoadMap(platformView);
+
+			mauiWebView.NavigationCompleted += HandleWebViewNavigationCompleted;
+			mauiWebView.WebMessageReceived += WebViewWebMessageReceived;
+			Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
+		}
+
+		base.ConnectHandler(platformView);
+	}
+
+	/// <inheritdoc />
+	protected override void DisconnectHandler(FrameworkElement platformView)
+	{
+		if (platformView is MauiWebView mauiWebView)
+		{
+			Connectivity.ConnectivityChanged -= Connectivity_ConnectivityChanged;
+			mauiWebView.NavigationCompleted -= HandleWebViewNavigationCompleted;
+			mauiWebView.WebMessageReceived -= WebViewWebMessageReceived;
+		}
+
+		base.DisconnectHandler(platformView);
 	}
 
 	static async Task<bool> TryCallJSMethod(FrameworkElement platformWebView, string script)
@@ -426,6 +426,14 @@ public partial class MapHandlerWindows : MapHandler
 		}
 	}
 
+	static void LoadMap(FrameworkElement platformView)
+	{
+		if (platformView is MauiWebView mauiWebView && Connectivity.NetworkAccess == NetworkAccess.Internet)
+		{
+			mauiWebView.LoadHtml(MapPage, null);
+		}
+	}
+
 	async void HandleWebViewNavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
 	{
 		// Update initial properties when our page is loaded
@@ -516,13 +524,5 @@ public partial class MapHandlerWindows : MapHandler
 	void Connectivity_ConnectivityChanged(object? sender, ConnectivityChangedEventArgs e)
 	{
 		LoadMap(PlatformView);
-	}
-
-	static void LoadMap(FrameworkElement platformView)
-	{
-		if (platformView is MauiWebView mauiWebView && Connectivity.NetworkAccess == NetworkAccess.Internet)
-		{
-			mauiWebView.LoadHtml(MapPage, null);
-		}
 	}
 }

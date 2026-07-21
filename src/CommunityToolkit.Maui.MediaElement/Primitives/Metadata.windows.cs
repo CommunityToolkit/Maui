@@ -19,6 +19,26 @@ sealed class Metadata
 		systemMediaControls.ButtonPressed += OnSystemMediaControlsButtonPressed;
 	}
 
+	/// <summary>
+	/// Sets the metadata for the given MediaElement.
+	/// </summary>
+	public void SetMetadata(IMediaElement mp)
+	{
+		if (systemMediaControls is null || mediaElement is null)
+		{
+			return;
+		}
+
+		if (!string.IsNullOrEmpty(mp.MetadataArtworkUrl))
+		{
+			systemMediaControls.DisplayUpdater.Thumbnail = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromUri(new Uri(mp.MetadataArtworkUrl ?? string.Empty));
+		}
+		systemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Music;
+		systemMediaControls.DisplayUpdater.MusicProperties.Artist = mp.MetadataTitle;
+		systemMediaControls.DisplayUpdater.MusicProperties.Title = mp.MetadataArtist;
+		systemMediaControls.DisplayUpdater.Update();
+	}
+
 
 	void OnSystemMediaControlsButtonPressed(SystemMediaTransportControls sender, SystemMediaTransportControlsButtonPressedEventArgs args)
 	{
@@ -49,25 +69,5 @@ sealed class Metadata
 				mediaElement.Pause();
 			}
 		}
-	}
-
-	/// <summary>
-	/// Sets the metadata for the given MediaElement.
-	/// </summary>
-	public void SetMetadata(IMediaElement mp)
-	{
-		if (systemMediaControls is null || mediaElement is null)
-		{
-			return;
-		}
-
-		if (!string.IsNullOrEmpty(mp.MetadataArtworkUrl))
-		{
-			systemMediaControls.DisplayUpdater.Thumbnail = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromUri(new Uri(mp.MetadataArtworkUrl ?? string.Empty));
-		}
-		systemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Music;
-		systemMediaControls.DisplayUpdater.MusicProperties.Artist = mp.MetadataTitle;
-		systemMediaControls.DisplayUpdater.MusicProperties.Title = mp.MetadataArtist;
-		systemMediaControls.DisplayUpdater.Update();
 	}
 }

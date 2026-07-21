@@ -641,8 +641,17 @@ public class StateContainerTests : BaseTest
 		Assert.Empty(grid2StateViews);
 	}
 
+	static class StateKey
+	{
+		public const string Loading = "LoadingStateKey";
+		public const string Error = "ErrorStateKey";
+		public const string Anything = "AnythingStateKey";
+	}
+
 	sealed class ViewModel : INotifyPropertyChanged
 	{
+		public event PropertyChangedEventHandler? PropertyChanged;
+
 		public bool CanChangeState
 		{
 			get;
@@ -660,16 +669,7 @@ public class StateContainerTests : BaseTest
 		[field: AllowNull, MaybeNull]
 		Command ChangeStateCommand => field ??= new Command(() => Trace.WriteLine("Command Tapped"), () => CanChangeState);
 
-		public event PropertyChangedEventHandler? PropertyChanged;
-
 		void OnPropertyChanged([CallerMemberName] string propertyName = "") =>
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-	}
-
-	static class StateKey
-	{
-		public const string Loading = "LoadingStateKey";
-		public const string Error = "ErrorStateKey";
-		public const string Anything = "AnythingStateKey";
 	}
 }

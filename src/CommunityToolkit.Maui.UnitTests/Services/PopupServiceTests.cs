@@ -747,16 +747,21 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable, IDisposable
 		Dispose(false);
 	}
 
+	public static Color DefaultBackgroundColor { get; } = Colors.White;
+
 	public object? Result { get; }
 
 	public TimeSpan DisplayDuration { get; }
-
-	public static Color DefaultBackgroundColor { get; } = Colors.White;
 
 	public void Dispose()
 	{
 		Dispose(true);
 		GC.SuppressFinalize(this);
+	}
+
+	void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
+	{
+		BackgroundColor = (Color)query[nameof(BackgroundColor)];
 	}
 
 	protected virtual void HandlePopupClosed(object? sender, EventArgs e)
@@ -800,23 +805,18 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable, IDisposable
 			cancellationTokenSource?.Dispose();
 		}
 	}
-
-	void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
-	{
-		BackgroundColor = (Color)query[nameof(BackgroundColor)];
-	}
 }
 
 sealed class MockPopup : Popup;
 
 sealed class SingleConstructionViewModel : MockPageViewModel
 {
-	public static int ConstructorCallCount { get; set; }
-
 	public SingleConstructionViewModel()
 	{
 		ConstructorCallCount++;
 	}
+
+	public static int ConstructorCallCount { get; set; }
 }
 
 sealed class SingleConstructionPopup : MockSelfClosingPopup

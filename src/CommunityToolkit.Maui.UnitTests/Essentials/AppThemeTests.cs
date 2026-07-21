@@ -26,12 +26,6 @@ public class AppThemeTests : BaseViewTest
 		Assert.Equal(initialAppTheme, Application.Current.PlatformAppTheme);
 	}
 
-	protected override void Dispose(bool isDisposing)
-	{
-		Application.Current?.RemoveWindow(window);
-		base.Dispose(isDisposing);
-	}
-
 	[Fact]
 	public void AppThemeColorUsesCorrectColorForTheme()
 	{
@@ -139,6 +133,12 @@ public class AppThemeTests : BaseViewTest
 		Application.Current.Resources["TextColor"] = Colors.Red;
 
 		label.TextColor.Should().Be(Colors.Purple);
+	}
+
+	protected override void Dispose(bool isDisposing)
+	{
+		Application.Current?.RemoveWindow(window);
+		base.Dispose(isDisposing);
 	}
 
 	void SetAppTheme(in AppTheme theme, in IApplication app)
