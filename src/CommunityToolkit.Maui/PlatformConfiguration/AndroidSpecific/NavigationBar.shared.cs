@@ -21,7 +21,7 @@ public static partial class NavigationBar
 	/// <returns>The platform element configuration.</returns>
 	public static IPlatformElementConfiguration<MAndroid, MauiElement> SetColor(this IPlatformElementConfiguration<MAndroid, MauiElement> config, Color value)
 	{
-		SetColor(config.Element, value);
+		SetColor((IPlatformElementConfiguration<MAndroid, MauiElement>)config.Element, value);
 		return config;
 	}
 
@@ -32,7 +32,7 @@ public static partial class NavigationBar
 	/// <returns>The color of the navigation bar.</returns>
 	public static Color GetColor(this IPlatformElementConfiguration<MAndroid, MauiElement> config)
 	{
-		return GetColor(config.Element);
+		return GetColor((IPlatformElementConfiguration<MAndroid, MauiElement>)config.Element);
 	}
 
 	/// <summary>
@@ -43,7 +43,7 @@ public static partial class NavigationBar
 	/// <returns>The platform element configuration.</returns>
 	public static IPlatformElementConfiguration<MAndroid, MauiElement> SetStyle(this IPlatformElementConfiguration<MAndroid, MauiElement> config, NavigationBarStyle value)
 	{
-		SetStyle(config.Element, value);
+		SetStyle((IPlatformElementConfiguration<MAndroid, MauiElement>)config.Element, value);
 		return config;
 	}
 
@@ -54,7 +54,7 @@ public static partial class NavigationBar
 	/// <returns>The style of the navigation bar.</returns>
 	public static NavigationBarStyle GetStyle(this IPlatformElementConfiguration<MAndroid, MauiElement> config)
 	{
-		return GetStyle(config.Element);
+		return GetStyle((IPlatformElementConfiguration<MAndroid, MauiElement>)config.Element);
 	}
 
 	internal static partial void RemapForControls();

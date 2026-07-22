@@ -45,7 +45,7 @@ static partial class NavigationBar
 		}
 
 		var activity = (Activity?)handler.PlatformView.Context ?? throw new InvalidOperationException("Activity cannot be null.");
-		var style = GetStyle(page);
+		var style = GetStyle((IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android, Page>)page);
 
 		switch (style)
 		{
@@ -94,7 +94,7 @@ static partial class NavigationBar
 		var activity = (Activity?)handler.PlatformView.Context ?? throw new InvalidOperationException("Activity cannot be null.");
 		var window = activity.GetCurrentWindow();
 
-		var color = GetColor(page).ToPlatform();
+		var color = GetColor((IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android, Page>)page).ToPlatform();
 
 		if (OperatingSystem.IsAndroidVersionAtLeast(35))
 		{
