@@ -60,8 +60,8 @@ jobs:
           committer: GitHub <noreply@github.com>
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           labels: approved
-          assignees: jfversluis
-          reviewers: jfversluis, brminnick
+          assignees: TheCodeTraveler
+          reviewers: TheCodeTraveler
           branch: housekeeping/fix-codeformatting
 
       # Pushing won't work to forked repos
