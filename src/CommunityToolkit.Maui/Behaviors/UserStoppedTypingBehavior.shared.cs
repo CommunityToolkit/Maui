@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Extensions;
+using ToolkitDispatcherExtensions = CommunityToolkit.Maui.Core.Extensions.DispatcherExtensions;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -105,12 +105,17 @@ public partial class UserStoppedTypingBehavior : BaseBehavior<InputView>, IDispo
 
 		if (ShouldDismissKeyboardAutomatically)
 		{
-			await Dispatcher.DispatchIfRequiredAsync(view.Unfocus);
+			// Called explicitly through the toolkit's own DispatcherExtensions.
+			// An extension-method call here would bind to MAUI's internal
+			// Microsoft.Maui.Controls.DispatcherExtensions.DispatchIfRequiredAsync(IDispatcher, Action)
+			// whenever that assembly grants us InternalsVisibleTo, which produced a MethodAccessException
+			// in any build where that grant is absent.
+			await ToolkitDispatcherExtensions.DispatchIfRequiredAsync(Dispatcher, view.Unfocus);
 		}
 
 		if (Command?.CanExecute(CommandParameter ?? text) is true)
 		{
-			await Dispatcher.DispatchIfRequiredAsync(() => Command.Execute(CommandParameter ?? text));
+			await ToolkitDispatcherExtensions.DispatchIfRequiredAsync(Dispatcher, () => Command.Execute(CommandParameter ?? text));
 		}
 	}
 }

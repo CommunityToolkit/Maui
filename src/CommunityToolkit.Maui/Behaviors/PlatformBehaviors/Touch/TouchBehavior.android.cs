@@ -3,6 +3,7 @@ using Android.OS;
 using Android.Views;
 using Android.Views.Accessibility;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Platform;
 using static System.OperatingSystem;
 using AView = Android.Views.View;
