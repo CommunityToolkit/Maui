@@ -75,6 +75,8 @@ partial class CameraManager
 	readonly SemaphoreSlim videoRecordingSemaphoreSlim = new(1, 1);
 	readonly SemaphoreSlim cameraPreviewSemaphoreSlim = new(1, 1);
 
+	readonly IList<UseCase> additionalUseCases = [];
+
 	NativePlatformCameraPreviewView? previewView;
 	IExecutorService? cameraExecutor;
 	ProcessCameraProvider? processCameraProvider;
@@ -377,6 +379,26 @@ partial class CameraManager
 		RebuildImageCapture();
 		RebuildVideoCapture();
 	}
+	
+	internal partial void AddPlatformScenario(PlatformCameraScenario scenario)
+	{
+		AddUseCase(scenario.UseCase);
+	}
+	
+	internal partial void RemovePlatformScenario(PlatformCameraScenario scenario)
+	{
+		RemoveUseCase(scenario.UseCase);
+	}
+	
+	internal void AddUseCase(UseCase useCase)
+	{
+		additionalUseCases.Add(useCase);
+	}
+
+	internal void RemoveUseCase(UseCase useCase)
+	{
+		additionalUseCases.Remove(useCase);
+	}
 
 	void RebuildCameraPreview()
 	{
@@ -481,11 +503,11 @@ partial class CameraManager
 
 		if (sessionMode is CaptureSessionMode.Photo)
 		{
-			OnCameraBound(BindCamera(processCameraProvider, cameraSelector, cameraPreview, imageCapture));
+			OnCameraBound(BindCamera(processCameraProvider, cameraSelector, [..additionalUseCases, cameraPreview, imageCapture]));
 		}
 		else if (videoCapture is not null)
 		{
-			OnCameraBound(BindCamera(processCameraProvider, cameraSelector, cameraPreview, imageCapture, videoCapture));
+			OnCameraBound(BindCamera(processCameraProvider, cameraSelector, [..additionalUseCases, cameraPreview, imageCapture, videoCapture]));
 		}
 	}
 
