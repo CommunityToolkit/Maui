@@ -36,6 +36,8 @@ partial class CameraManager
 {
 	readonly Context context = mauiContext.Context ?? throw new CameraException($"Unable to retrieve {nameof(Context)}");
 
+	readonly IList<UseCase> additionalUseCases = [];
+	
 	NativePlatformCameraPreviewView? previewView;
 	IExecutorService? cameraExecutor;
 	ProcessCameraProvider? processCameraProvider;
@@ -241,6 +243,26 @@ partial class CameraManager
 		RebuildImageCapture();
 		RebuildVideoCapture();
 	}
+	
+	internal partial void AddPlatformScenario(PlatformCameraScenario scenario)
+	{
+		AddUseCase(scenario.UseCase);
+	}
+	
+	internal partial void RemovePlatformScenario(PlatformCameraScenario scenario)
+	{
+		RemoveUseCase(scenario.UseCase);
+	}
+	
+	internal void AddUseCase(UseCase useCase)
+	{
+		additionalUseCases.Add(useCase);
+	}
+
+	internal void RemoveUseCase(UseCase useCase)
+	{
+		additionalUseCases.Remove(useCase);
+	}
 
 	void RebuildCameraPreview()
 	{
@@ -309,7 +331,7 @@ partial class CameraManager
 		{
 			return;
 		}
-		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, token, cameraPreview, imageCapture);
+		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, token, [..additionalUseCases, cameraPreview, imageCapture]);
 		cameraControl = camera.CameraControl;
 	}
 
@@ -323,7 +345,7 @@ partial class CameraManager
 		{
 			return;
 		}
-		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, token, cameraPreview, imageCapture, videoCapture);
+		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, token, [..additionalUseCases, cameraPreview, imageCapture, videoCapture]);
 		cameraControl = camera.CameraControl;
 	}
 

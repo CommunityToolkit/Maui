@@ -27,4 +27,8 @@ sealed partial class CameraManager
 	private partial void PlatformDisconnect() => throw new NotSupportedException(notSupportedMessage);
 
 	private partial ValueTask PlatformTakePicture(CancellationToken token) => throw new NotSupportedException(notSupportedMessage);
+	
+	internal partial void AddPlatformScenario(PlatformCameraScenario scenario) => throw new NotSupportedException(notSupportedMessage);
+	
+	internal partial void RemovePlatformScenario(PlatformCameraScenario scenario) => throw new NotSupportedException(notSupportedMessage);
 }

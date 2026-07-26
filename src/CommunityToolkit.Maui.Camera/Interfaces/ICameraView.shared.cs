@@ -49,6 +49,11 @@ public interface ICameraView : IView
 	bool IsBusy { get; internal set; }
 
 	/// <summary>
+	/// Gets the collection of <see cref="CameraScenario"/> instances associated with the camera view.
+	/// </summary>
+	IList<CameraScenario> Scenarios { get; }
+
+	/// <summary>
 	/// Triggers the camera to capture an image.
 	/// </summary>
 	/// <remarks>

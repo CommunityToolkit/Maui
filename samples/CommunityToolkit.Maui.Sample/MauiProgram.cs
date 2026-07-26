@@ -249,6 +249,7 @@ public static class MauiProgram
 
 		// Add Views Pages + ViewModels
 		services.AddTransientWithShellRoute<BasicMapsPage, BasicMapsViewModel>();
+		services.AddTransientWithShellRoute<BarcodeScanningPage, BarcodeScanningViewModel>();
 		services.AddTransientWithShellRoute<CameraViewPage, CameraViewViewModel>();
 		services.AddTransientWithShellRoute<DrawingViewPage, DrawingViewViewModel>();
 		services.AddTransientWithShellRoute<ExpanderPage, ExpanderViewModel>();

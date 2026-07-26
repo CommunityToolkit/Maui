@@ -17,6 +17,8 @@ partial class CameraManager
 	AVCaptureDeviceInput? audioInput;
 	AVCaptureDevice? captureDevice;
 	AVCaptureDeviceInput? captureInput;
+	
+	readonly IList<PlatformCameraScenario> cameraScenarios = [];
 
 	AVCaptureSession? captureSession;
 
@@ -270,6 +272,16 @@ partial class CameraManager
 			throw new CameraException(errorMessage);
 		}
 
+		foreach (var scenario in cameraScenarios)
+		{
+			if (captureSession.CanAddOutput(scenario.Output))
+			{
+				captureSession.AddOutput(scenario.Output);
+
+				scenario.OnAttached();
+			}
+		}
+
 		// On iOS 17+, create a new instance of AVCaptureDeviceRotationCoordinator when switching to a new camera
 		if (UIDevice.CurrentDevice.CheckSystemVersion(17, 0))
 		{
@@ -289,6 +301,16 @@ partial class CameraManager
 		captureSession.StartRunning();
 		isInitialized = true;
 		onLoaded.Invoke();
+	}
+	
+	internal partial void AddPlatformScenario(PlatformCameraScenario scenario)
+	{
+		cameraScenarios.Add(scenario);
+	}
+	
+	internal partial void RemovePlatformScenario(PlatformCameraScenario scenario)
+	{
+		cameraScenarios.Remove(scenario);
 	}
 
 	private partial void PlatformStopCameraPreview()
