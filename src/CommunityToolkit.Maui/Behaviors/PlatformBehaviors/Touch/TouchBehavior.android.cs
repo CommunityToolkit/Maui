@@ -42,7 +42,7 @@ public partial class TouchBehavior
 
 		Element = bindable;
 		view = platformView;
-		viewGroup = platformView.GetParentOfType<ViewGroup>();
+		viewGroup = platformView.FindParentOfType<ViewGroup>();
 
 		platformView.Touch += OnTouch;
 		platformView.KeyPress += OnKeyPressed;
@@ -107,7 +107,7 @@ public partial class TouchBehavior
 
 	void UpdateClickHandler()
 	{
-		if (view is null || !view.IsAlive())
+		if (view is null || !view.IsPeerAlive())
 		{
 			return;
 		}

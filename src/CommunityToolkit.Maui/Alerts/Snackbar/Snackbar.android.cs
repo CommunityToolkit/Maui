@@ -91,7 +91,7 @@ public partial class Snackbar
 
 		token.ThrowIfCancellationRequested();
 
-		if (!PlatformSnackbar.IsDisposed())
+		if (!PlatformSnackbar.IsPeerDisposed())
 		{
 			PlatformSnackbar.Dismiss();
 		}

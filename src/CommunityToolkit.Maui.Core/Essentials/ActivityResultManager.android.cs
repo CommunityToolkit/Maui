@@ -26,12 +26,14 @@ static class ActivityResultManager
 	/// <param name="intent">The intent to launch.</param>
 	/// <param name="requestCode">Used to namespace the registry key; keeps concurrent launches distinct.</param>
 	/// <param name="onResult">Invoked with the result intent when the activity completes successfully.</param>
+	/// <param name="token">Cancels the wait, unregisters the launcher and releases the callback.</param>
 	/// <returns>The result <see cref="Intent"/>.</returns>
 	/// <exception cref="InvalidOperationException">Thrown when there is no current activity to launch from.</exception>
-	/// <exception cref="TaskCanceledException">Thrown when the user cancels or dismisses the activity.</exception>
-	public static Task<Intent> StartAsync(Intent intent, AndroidRequestCode requestCode, Action<Intent>? onResult = null)
+	/// <exception cref="TaskCanceledException">Thrown when the user cancels or dismisses the activity, or when <paramref name="token"/> is cancelled.</exception>
+	public static Task<Intent> StartAsync(Intent intent, AndroidRequestCode requestCode, Action<Intent>? onResult = null, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(intent);
+		token.ThrowIfCancellationRequested();
 
 		if (Microsoft.Maui.ApplicationModel.Platform.CurrentActivity is not ComponentActivity activity)
 		{
@@ -45,12 +47,30 @@ static class ActivityResultManager
 		var key = $"{nameof(CommunityToolkit)}.{nameof(Maui)}.{requestCode}.{Guid.NewGuid():N}";
 
 		ActivityResultLauncher? launcher = null;
+		CancellationTokenRegistration cancellationRegistration = default;
+
+		// Releases the launcher exactly once, whichever of the result callback, cancellation
+		// or a failed Launch gets there first, so nothing stays rooted in the registry.
+		void Release()
+		{
+			cancellationRegistration.Dispose();
+
+			if (Interlocked.Exchange(ref launcher, null) is not ActivityResultLauncher launcherToRelease)
+			{
+				return;
+			}
+
+			// Activity.RunOnUiThread invokes inline when already on the UI thread.
+			activity.RunOnUiThread(() =>
+			{
+				launcherToRelease.Unregister();
+				launcherToRelease.Dispose();
+			});
+		}
 
 		var callback = new ActivityResultCallback(result =>
 		{
-			// Unregister first so the registry never keeps a reference to a completed launch.
-			launcher?.Unregister();
-			launcher?.Dispose();
+			Release();
 
 			if (result is not ActivityResult activityResult || activityResult.ResultCode is (int)Android.App.Result.Canceled)
 			{
@@ -79,10 +99,17 @@ static class ActivityResultManager
 		}
 		catch
 		{
-			launcher.Unregister();
-			launcher.Dispose();
+			Release();
 			throw;
 		}
+
+		// Registered after Launch so a cancellation that arrives first cannot release the launcher
+		// while it is still being started. Register invokes inline if the token is already cancelled.
+		cancellationRegistration = token.Register(() =>
+		{
+			Release();
+			taskCompletionSource.TrySetCanceled(token);
+		});
 
 		return taskCompletionSource.Task;
 	}

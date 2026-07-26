@@ -11,13 +11,20 @@ namespace CommunityToolkit.Maui.Extensions;
 /// These replace equivalents that used to be consumed from .NET MAUI's internal
 /// <c>Microsoft.Maui.Platform.ViewExtensions</c> and <c>Microsoft.Maui.JavaObjectExtensions</c>.
 /// Those are not part of MAUI's public API surface, so the toolkit owns them here instead.
+/// <para>
+/// The names deliberately differ from MAUI's (<c>GetParentOfType</c>, <c>IsAlive</c>, <c>IsDisposed</c>).
+/// While MAUI still grants us <c>InternalsVisibleTo</c> those identical names are in scope at the same
+/// time as these, which makes every call site ambiguous (CS0121). Distinct names bind correctly whether
+/// or not that grant is present.
+/// </para>
 /// </remarks>
 static class PlatformViewExtensions
 {
 	/// <summary>
-	/// Walks up the native view tree and returns the first parent of type <typeparamref name="T"/>.
+	/// Returns <paramref name="view"/> itself when it is a <typeparamref name="T"/>, otherwise walks up
+	/// the native view tree and returns the first parent of type <typeparamref name="T"/>.
 	/// </summary>
-	public static T? GetParentOfType<T>(this AView? view) where T : class
+	public static T? FindParentOfType<T>(this AView? view) where T : class
 	{
 		if (view is T self)
 		{
@@ -40,9 +47,9 @@ static class PlatformViewExtensions
 	}
 
 	/// <summary>
-	/// Returns <see langword="true"/> when the peer's native handle has already been released.
+	/// Returns <see langword="true"/> when the Java peer's native handle has already been released.
 	/// </summary>
-	public static bool IsDisposed(this JavaObject javaObject)
+	public static bool IsPeerDisposed(this JavaObject javaObject)
 	{
 		ArgumentNullException.ThrowIfNull(javaObject);
 
@@ -50,7 +57,7 @@ static class PlatformViewExtensions
 	}
 
 	/// <summary>
-	/// Returns <see langword="true"/> when the peer is non-<see langword="null"/> and its native handle is still valid.
+	/// Returns <see langword="true"/> when the Java peer is non-<see langword="null"/> and its native handle is still valid.
 	/// </summary>
-	public static bool IsAlive(this JavaObject? javaObject) => javaObject is not null && javaObject.Handle != IntPtr.Zero;
+	public static bool IsPeerAlive(this JavaObject? javaObject) => javaObject is not null && javaObject.Handle != IntPtr.Zero;
 }
