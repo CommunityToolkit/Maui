@@ -11,17 +11,11 @@ using Scanner = Xamarin.Google.MLKit.Vision.BarCode.BarcodeScanning;
 
 namespace CommunityToolkit.Maui.Sample;
 
-public class BarcodeAnalyzer : Java.Lang.Object, ImageAnalysis.IAnalyzer
+public class BarcodeAnalyzer(Func<ICommand?> commandProvider) : Java.Lang.Object, ImageAnalysis.IAnalyzer
 {
-	readonly ICommand command;
 	IBarcodeScanner? barcodeScanner;
 	readonly Lock resultsLock = new();
 
-	public BarcodeAnalyzer(ICommand command)
-	{
-		this.command = command;
-	}
-	
 	internal void UpdateSymbologies()
 	{
 		barcodeScanner?.Dispose();
@@ -72,6 +66,11 @@ public class BarcodeAnalyzer : Java.Lang.Object, ImageAnalysis.IAnalyzer
 			return;
 		}
 
+		if (commandProvider.Invoke() is not Command command)
+		{
+			return;
+		}
+
 		foreach (Barcode barcode in javaList)
 		{
 			if (barcode is null)
@@ -84,9 +83,9 @@ public class BarcodeAnalyzer : Java.Lang.Object, ImageAnalysis.IAnalyzer
 				continue;
 			}
 
-			if (this.command?.CanExecute(barcode.RawValue) is true)
+			if (command.CanExecute(barcode.RawValue) is true)
 			{
-				this.command.Execute(barcode.RawValue);
+				command.Execute(barcode.RawValue);
 			}
 		}
 	}

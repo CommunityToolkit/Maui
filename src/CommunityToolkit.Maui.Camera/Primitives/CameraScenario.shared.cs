@@ -19,14 +19,14 @@ public abstract class CameraScenario : BindableObject
 	}
 	
 	/// <summary>
-	/// 
+	/// Called when the scenario is attached to the platform layer.
 	/// </summary>
 	public virtual void OnAttached()
 	{
 	}
 	
 	/// <summary>
-	/// 
+	/// Called when the scenario is detached from the platform layer.
 	/// </summary>
 	public virtual void OnDetached()
 	{

@@ -27,19 +27,13 @@ public partial class PlatformBarcodeScanningScenario
 
 	public override void OnAttached()
 	{
+		// Must apply this here once the output has been attached to the capture session.
 		lazyOutput.Value.MetadataObjectTypes = lazyOutput.Value.AvailableMetadataObjectTypes;
 	}
 }
 
-sealed class BarcodeDetectionDelegate : AVCaptureMetadataOutputObjectsDelegate
+sealed class BarcodeDetectionDelegate(Func<ICommand?> command) : AVCaptureMetadataOutputObjectsDelegate
 {
-	readonly Func<ICommand?> command;
-
-	public BarcodeDetectionDelegate(Func<ICommand?> command)
-	{
-		this.command = command;
-	}
-	
 	public override void DidOutputMetadataObjects(
 		AVCaptureMetadataOutput captureOutput,
 		AVMetadataObject[] metadataObjects,
@@ -53,7 +47,7 @@ sealed class BarcodeDetectionDelegate : AVCaptureMetadataOutputObjectsDelegate
 					
 				Console.WriteLine($"Metadata object {code} at {string.Join(",", readableObject.Corners?? [])}");
 
-				var invokeCommand = this.command.Invoke(); 
+				var invokeCommand = command.Invoke(); 
 
 				if (invokeCommand?.CanExecute(readableObject.StringValue) is true)
 				{
