@@ -14,6 +14,7 @@ partial class CameraManager
 	MediaFrameSource? frameSource;
 	LowLagMediaRecording? mediaRecording;
 	Stream? videoCaptureStream;
+	readonly IList<PlatformCameraScenario> cameraScenarios = [];
 
 	public MediaPlayerElement CreatePlatformView()
 	{
@@ -153,6 +154,11 @@ partial class CameraManager
 
 		isInitialized = true;
 
+		foreach (var scenario in cameraScenarios)
+		{
+			await scenario.OnAttached(mediaCapture);
+		}
+
 		await PlatformUpdateResolution(cameraView.ImageCaptureResolution, token);
 
 		onLoaded.Invoke();
@@ -170,6 +176,12 @@ partial class CameraManager
 
 		mediaCapture = null;
 		isInitialized = false;
+	}
+
+	private async partial Task PlatformConnectCamera(CancellationToken token)
+	{
+		// On Windows, StartCameraPreview does the initialization.
+		await Task.CompletedTask;
 	}
 
 	async Task PlatformUpdateResolution(Size resolution, CancellationToken token)
@@ -190,6 +202,16 @@ partial class CameraManager
 		{
 			await mediaCapture.VideoDeviceController.SetMediaStreamPropertiesAsync(MediaStreamType.Photo, filteredPropertiesList.First()).AsTask(token);
 		}
+	}
+
+	partial void AddPlatformScenario(PlatformCameraScenario scenario)
+	{
+		cameraScenarios.Add(scenario);
+	}
+
+	partial void RemovePlatformScenario(PlatformCameraScenario scenario)
+	{
+		cameraScenarios.Remove(scenario);
 	}
 
 	private async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)

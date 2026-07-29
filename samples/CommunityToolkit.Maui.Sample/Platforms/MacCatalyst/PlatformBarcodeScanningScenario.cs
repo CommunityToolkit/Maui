@@ -5,12 +5,15 @@ using CoreFoundation;
 namespace CommunityToolkit.Maui.Sample;
 
 /// <summary>
-/// Apple based implementation
+/// Apple based implementation of <see cref="PlatformBarcodeScanningScenario"/>.
 /// </summary>
 public partial class PlatformBarcodeScanningScenario
 {
 	readonly Lazy<AVCaptureMetadataOutput> lazyOutput;
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="PlatformBarcodeScanningScenario"/> class.
+	/// </summary>
 	public PlatformBarcodeScanningScenario()
 	{
 		lazyOutput = new Lazy<AVCaptureMetadataOutput>(() =>
@@ -23,8 +26,10 @@ public partial class PlatformBarcodeScanningScenario
 		});
 	}
 
+	/// <inheritdoc/>
 	public override AVCaptureOutput Output => lazyOutput.Value;
 
+	/// <inheritdoc/>
 	public override void OnAttached()
 	{
 		// Must apply this here once the output has been attached to the capture session.
@@ -32,7 +37,7 @@ public partial class PlatformBarcodeScanningScenario
 	}
 }
 
-sealed class BarcodeDetectionDelegate(Func<ICommand?> command) : AVCaptureMetadataOutputObjectsDelegate
+sealed class BarcodeDetectionDelegate(Func<ICommand?> commandProvider) : AVCaptureMetadataOutputObjectsDelegate
 {
 	public override void DidOutputMetadataObjects(
 		AVCaptureMetadataOutput captureOutput,
@@ -47,7 +52,7 @@ sealed class BarcodeDetectionDelegate(Func<ICommand?> command) : AVCaptureMetada
 					
 				Console.WriteLine($"Metadata object {code} at {string.Join(",", readableObject.Corners?? [])}");
 
-				var invokeCommand = command.Invoke(); 
+				var invokeCommand = commandProvider.Invoke(); 
 
 				if (invokeCommand?.CanExecute(readableObject.StringValue) is true)
 				{

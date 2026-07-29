@@ -99,6 +99,7 @@ sealed partial class CameraManager(
 		
 		if (scenario is PlatformCameraScenario platformScenario)
 		{
+			platformScenario.OnDetached();
 			RemovePlatformScenario(platformScenario);
 		}
 
@@ -111,6 +112,7 @@ sealed partial class CameraManager(
 		{
 			if (scenario is PlatformCameraScenario platformScenario)
 			{
+				platformScenario.OnDetached();
 				RemovePlatformScenario(platformScenario);
 			}
 		}

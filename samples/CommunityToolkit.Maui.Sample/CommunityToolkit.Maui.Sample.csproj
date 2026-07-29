@@ -93,6 +93,10 @@
     <PackageReference Include="Xamarin.Google.MLKit.BarcodeScanning" Version="117.3.0.3" />
   </ItemGroup>
 
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+    <PackageReference Include="ZXing.Net" Version="0.16.10" />
+  </ItemGroup>
+
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='windows' and $(Configuration) == 'Release'">
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
