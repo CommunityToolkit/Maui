@@ -244,12 +244,12 @@ partial class CameraManager
 		RebuildVideoCapture();
 	}
 	
-	internal partial void AddPlatformScenario(PlatformCameraScenario scenario)
+	partial void AddPlatformScenario(PlatformCameraScenario scenario)
 	{
 		AddUseCase(scenario.UseCase);
 	}
 	
-	internal partial void RemovePlatformScenario(PlatformCameraScenario scenario)
+	partial void RemovePlatformScenario(PlatformCameraScenario scenario)
 	{
 		RemoveUseCase(scenario.UseCase);
 	}

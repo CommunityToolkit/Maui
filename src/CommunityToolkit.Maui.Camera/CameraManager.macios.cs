@@ -303,12 +303,12 @@ partial class CameraManager
 		onLoaded.Invoke();
 	}
 	
-	internal partial void AddPlatformScenario(PlatformCameraScenario scenario)
+	partial void AddPlatformScenario(PlatformCameraScenario scenario)
 	{
 		cameraScenarios.Add(scenario);
 	}
 	
-	internal partial void RemovePlatformScenario(PlatformCameraScenario scenario)
+	partial void RemovePlatformScenario(PlatformCameraScenario scenario)
 	{
 		cameraScenarios.Remove(scenario);
 	}

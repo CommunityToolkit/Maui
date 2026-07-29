@@ -24,7 +24,7 @@ sealed partial class CameraManager(
 	
 	readonly IList<CameraScenario> scenarios = [];
 	
-	protected IReadOnlyList<CameraScenario> Scenarios => scenarios.AsReadOnly();
+	IReadOnlyList<CameraScenario> Scenarios => scenarios.AsReadOnly();
 
 	/// <summary>
 	/// Connects to the camera.
@@ -128,9 +128,9 @@ sealed partial class CameraManager(
 		}
 	}
 	
-	internal partial void AddPlatformScenario(PlatformCameraScenario scenario);
+	partial void AddPlatformScenario(PlatformCameraScenario scenario);
 	
-	internal partial void RemovePlatformScenario(PlatformCameraScenario scenario);
+	partial void RemovePlatformScenario(PlatformCameraScenario scenario);
 
 	/// <summary>
 	/// Updates the current camera.
