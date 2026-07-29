@@ -239,7 +239,8 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<NavigationBarPage, NavigationBarAndroidViewModel>();
 
 		// Add Views Pages + ViewModels
-		services.AddTransientWithShellRoute<BarcodeScanningPage, BarcodeScanningViewModel>();
+		services.AddTransientWithShellRoute<PlatformSpecificBarcodeScanningPage, PlatformSpecificBarcodeScanningViewModel>();
+		services.AddTransientWithShellRoute<SharedBarcodeScanningPage, SharedBarcodeScanningViewModel>();
 		services.AddTransientWithShellRoute<CameraViewPage, CameraViewViewModel>();
 		services.AddTransientWithShellRoute<DrawingViewPage, DrawingViewViewModel>();
 		services.AddTransientWithShellRoute<ExpanderPage, ExpanderViewModel>();

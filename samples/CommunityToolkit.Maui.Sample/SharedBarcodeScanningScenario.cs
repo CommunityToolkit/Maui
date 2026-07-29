@@ -1,5 +1,6 @@
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
+using ZXing;
 
 namespace CommunityToolkit.Maui.Sample;
 
@@ -8,6 +9,15 @@ namespace CommunityToolkit.Maui.Sample;
 /// </summary>
 public class SharedBarcodeScanningScenario : FrameBasedCameraScenario
 {
+	readonly BarcodeReaderGeneric barcodeReader = new()
+	{
+		Options = new ZXing.Common.DecodingOptions
+		{
+			PossibleFormats = [BarcodeFormat.QR_CODE, BarcodeFormat.CODE_128, BarcodeFormat.EAN_13, BarcodeFormat.EAN_8],
+			TryHarder = true
+		}
+	};
+
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="Command"/> property.
 	/// </summary>
@@ -26,10 +36,15 @@ public class SharedBarcodeScanningScenario : FrameBasedCameraScenario
 	/// <inheritdoc/>
 	public override void OnFrameReceived(CameraFrame frame)
 	{
-		// This is where common barcode scanning logic would go.
-		// For example, using ZXing.Net to process the raw byte array in frame.Data.
-		// To avoid adding a heavy dependency to the core library for this sample,
-		// we'll just demonstrate the frame receiving capability.
-		System.Diagnostics.Trace.WriteLine($"Frame received: {frame.Width}x{frame.Height}");
+		var luminanceSource = new RGBLuminanceSource(frame.Data, frame.Width, frame.Height);
+		var result = barcodeReader.Decode(luminanceSource);
+
+		if (result is not null)
+		{
+			if (Command?.CanExecute(result.Text) is true)
+			{
+				MainThread.BeginInvokeOnMainThread(() => Command.Execute(result.Text));
+			}
+		}
 	}
 }

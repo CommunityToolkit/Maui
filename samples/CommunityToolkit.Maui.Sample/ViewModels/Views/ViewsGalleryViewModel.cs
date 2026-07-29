@@ -5,7 +5,8 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 public sealed partial class ViewsGalleryViewModel() : BaseGalleryViewModel(
 [
 	SectionModel.Create<AvatarViewsViewModel>("AvatarViews Page", Colors.Red, "A page demonstrating multiple different AvatarViews"),
-	SectionModel.Create<BarcodeScanningViewModel>("Barcode Scanning Page", Colors.Red, "Extend CameraView functionality to scan barcodes."),
+	SectionModel.Create<PlatformSpecificBarcodeScanningViewModel>("Platform Specific Barcode Scanning", Colors.Red, "Extend CameraView functionality to scan barcodes using platform specific implementations."),
+	SectionModel.Create<SharedBarcodeScanningViewModel>("Shared Barcode Scanning", Colors.Red, "Extend CameraView functionality to scan barcodes using a shared implementation."),
 	SectionModel.Create<CameraViewViewModel>("CameraView Page", Colors.Red, "CameraView is a view for displaying camera output."),
 	SectionModel.Create<DrawingViewViewModel>("DrawingView", Colors.Red, "DrawingView provides a canvas for users to \"paint\" on the screen. The drawing can also be captured and displayed as an Image."),
 	SectionModel.Create<ExpanderViewModel>("Expander Page", Colors.Red, "Expander allows collapse and expand content."),
