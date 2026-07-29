@@ -451,11 +451,13 @@ partial class CameraManager
 	partial void AddPlatformScenario(PlatformCameraScenario scenario)
 	{
 		cameraScenarios.Add(scenario);
+		_ = RefreshCameraPreview();
 	}
 
 	partial void RemovePlatformScenario(PlatformCameraScenario scenario)
 	{
 		cameraScenarios.Remove(scenario);
+		_ = RefreshCameraPreview();
 	}
 
 	private partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)

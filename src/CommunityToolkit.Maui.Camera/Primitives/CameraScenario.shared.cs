@@ -3,19 +3,10 @@ namespace CommunityToolkit.Maui.Core;
 /// <summary>
 /// Base class for output based processing for camera related activities.
 /// </summary>
-public abstract class CameraScenario : BindableObject
+public abstract class CameraScenario : BindableObject, IDisposable
 {
-	/// <summary>
-	/// Gets whether the scenario has been initialized.
-	/// </summary>
-	public bool IsInitialized { get; protected set; }
-
-	/// <summary>
-	/// Initializes the scenario.
-	/// </summary>
-	public virtual void Initialize()
+	private protected CameraScenario()
 	{
-		IsInitialized = true;
 	}
 	
 	/// <summary>
@@ -29,6 +20,23 @@ public abstract class CameraScenario : BindableObject
 	/// Called when the scenario is detached from the platform layer.
 	/// </summary>
 	public virtual void OnDetached()
+	{
+	}
+
+	/// <summary>
+	/// Disposes the scenario.
+	/// </summary>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	/// <summary>
+	/// Disposes the scenario.
+	/// </summary>
+	/// <param name="disposing">Whether the scenario is being disposed.</param>
+	protected virtual void Dispose(bool disposing)
 	{
 	}
 }

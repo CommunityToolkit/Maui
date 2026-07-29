@@ -73,6 +73,12 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="11.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="11.0.0" />
+
+    <!-- Required for 2 separate examples:
+      1. Windows implementation of the PlatformBarcodeScanningScenario, in this implementation the PackageReference is only required for Windows
+      2. Implementation of the SharedBarcodeScanningScenario. 
+    -->
+    <PackageReference Include="ZXing.Net" Version="0.16.10" />
   </ItemGroup>
 
   <ItemGroup>
@@ -110,10 +116,6 @@
   <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
     <!-- Required NuGet Packages -->
     <PackageReference Include="Xamarin.Google.MLKit.BarcodeScanning" Version="117.3.0.3" />
-  </ItemGroup>
-
-  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
-    <PackageReference Include="ZXing.Net" Version="0.16.10" />
   </ItemGroup>
 
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='windows' and $(Configuration) == 'Release'">
