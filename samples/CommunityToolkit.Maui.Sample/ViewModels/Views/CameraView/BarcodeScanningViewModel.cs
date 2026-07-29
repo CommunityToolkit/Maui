@@ -4,16 +4,19 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public partial class BarcodeScanningViewModel(ICameraProvider cameraProvider) : BaseViewModel
+public abstract partial class BarcodeScanningViewModel(ICameraProvider cameraProvider) : BaseViewModel
 {
-	readonly ICameraProvider cameraProvider = cameraProvider;
-	
 	[ObservableProperty]
 	public partial string DetectedCode { get; set; }
 	
 	[RelayCommand]
-	void OnCodeDetected(string code)
+	void OnCodeDetected(string? code)
 	{
+		if (string.IsNullOrWhiteSpace(code))
+		{
+			return;
+		}
+
 		DetectedCode = code;
 	}
 	

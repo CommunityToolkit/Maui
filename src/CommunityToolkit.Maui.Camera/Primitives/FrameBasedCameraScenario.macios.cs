@@ -7,36 +7,25 @@ namespace CommunityToolkit.Maui.Core;
 
 public abstract partial class FrameBasedCameraScenario
 {
-	AVCaptureVideoDataOutput? videoDataOutput;
+	readonly Lazy<AVCaptureVideoDataOutput> videoDataOutput;
 
-	/// <inheritdoc />
-	public override void OnAttached()
+	/// <summary>
+	/// Creates a new instance of <see cref="FrameBasedCameraScenario"/>.
+	/// </summary>
+	public FrameBasedCameraScenario()
 	{
-		base.OnAttached();
-
-		if (videoDataOutput is not null)
+		videoDataOutput = new Lazy<AVCaptureVideoDataOutput>(() =>
 		{
-			videoDataOutput.Dispose();
-		}
-
-		videoDataOutput = new AVCaptureVideoDataOutput();
-		videoDataOutput.SetSampleBufferDelegate(new VideoDataOutputDelegate(this), CoreFoundation.DispatchQueue.MainQueue);
+			var output = new AVCaptureVideoDataOutput();
+			
+			output.SetSampleBufferDelegate(new VideoDataOutputDelegate(this), CoreFoundation.DispatchQueue.MainQueue);
+			
+			return output;
+		});
 	}
 
 	/// <inheritdoc />
-	public override void OnDetached()
-	{
-		base.OnDetached();
-
-		if (videoDataOutput is not null)
-		{
-			videoDataOutput.Dispose();
-			videoDataOutput = null;
-		}
-	}
-
-	/// <inheritdoc />
-	public override AVCaptureOutput Output => videoDataOutput ?? throw new InvalidOperationException("Scenario not attached");
+	public override AVCaptureOutput Output => videoDataOutput.Value ?? throw new InvalidOperationException("Scenario not attached");
 
 	sealed class VideoDataOutputDelegate(FrameBasedCameraScenario scenario) : AVCaptureVideoDataOutputSampleBufferDelegate
 	{
@@ -66,18 +55,6 @@ public abstract partial class FrameBasedCameraScenario
 			scenario.OnFrameReceived(cameraFrame);
 
 			sampleBuffer.Dispose();
-		}
-	}
-
-	/// <inheritdoc />
-	protected override void Dispose(bool disposing)
-	{
-		base.Dispose(disposing);
-
-		if (disposing)
-		{
-			videoDataOutput?.Dispose();
-			videoDataOutput = null;
 		}
 	}
 }

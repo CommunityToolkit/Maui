@@ -2,9 +2,9 @@ using CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-public partial class BarcodeScanningPage : BasePage<BarcodeScanningViewModel>
+public partial class PlatformSpecificBarcodeScanningPage : BasePage<PlatformSpecificBarcodeScanningViewModel>
 {
-	public BarcodeScanningPage(BarcodeScanningViewModel viewModel) : base(viewModel)
+	public PlatformSpecificBarcodeScanningPage(PlatformSpecificBarcodeScanningViewModel viewModel) : base(viewModel)
 	{
 		InitializeComponent();
 	}

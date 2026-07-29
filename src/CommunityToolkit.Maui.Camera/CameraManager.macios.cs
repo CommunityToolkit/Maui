@@ -307,30 +307,30 @@ partial class CameraManager
 	{
 		cameraScenarios.Add(scenario);
 
-		if (captureSession is not null && captureSession.CanAddOutput(scenario.Output))
-		{
-			captureSession.AddOutput(scenario.Output);
-			scenario.OnAttached();
-		}
-		else
-		{
+		// if (captureSession is not null && captureSession.CanAddOutput(scenario.Output))
+		// {
+		// 	captureSession.AddOutput(scenario.Output);
+		// 	scenario.OnAttached();
+		// }
+		// else
+		// {
 			_ = RefreshCameraPreview(); // TODO: better async handling?
-		}
+		// }
 	}
 
 	partial void RemovePlatformScenario(PlatformCameraScenario scenario)
 	{
 		cameraScenarios.Remove(scenario);
 
-		if (captureSession is not null)
-		{
-			captureSession.RemoveOutput(scenario.Output);
-			scenario.OnDetached();
-		}
-		else
-		{
+		// if (captureSession is not null)
+		// {
+		// 	captureSession.RemoveOutput(scenario.Output);
+		// 	scenario.OnDetached();
+		// }
+		// else
+		// {
 			_ = RefreshCameraPreview();// TODO: better async handling?
-		}
+		// }
 	}
 
 	private partial void PlatformStopCameraPreview()
