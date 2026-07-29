@@ -4,7 +4,7 @@ using CommunityToolkit.Maui.Core;
 namespace CommunityToolkit.Maui.Sample;
 
 /// <summary>
-/// 
+/// A <see cref="PlatformCameraScenario"/> implementation that provides barcode scanning.
 /// </summary>
 public partial class PlatformBarcodeScanningScenario : PlatformCameraScenario
 {

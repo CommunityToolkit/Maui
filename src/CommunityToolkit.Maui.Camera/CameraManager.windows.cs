@@ -17,6 +17,7 @@ partial class CameraManager
 	MediaFrameSource? frameSource;
 	LowLagMediaRecording? mediaRecording;
 	Stream? videoCaptureStream;
+	readonly IList<PlatformCameraScenario> cameraScenarios = [];
 
 	// The video of a stop that its token cancelled after the recording was finished: the next StopVideoRecording returns it, as on Android, iOS
 	// and Mac Catalyst, where the token only cancels waiting for the video
@@ -348,6 +349,11 @@ partial class CameraManager
 
 		isInitialized = true;
 
+		foreach (var scenario in cameraScenarios)
+		{
+			await scenario.OnAttached(mediaCapture);
+		}
+
 		try
 		{
 			await PlatformUpdateResolution(cameraView.ImageCaptureResolution, token);
@@ -440,6 +446,16 @@ partial class CameraManager
 		{
 			await setPhotoStreamProperties(mediaCapture, filteredPropertiesList.First(), token);
 		}
+	}
+
+	partial void AddPlatformScenario(PlatformCameraScenario scenario)
+	{
+		cameraScenarios.Add(scenario);
+	}
+
+	partial void RemovePlatformScenario(PlatformCameraScenario scenario)
+	{
+		cameraScenarios.Remove(scenario);
 	}
 
 	private partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
