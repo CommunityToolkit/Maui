@@ -36,7 +36,7 @@ partial class CameraManager
 {
 	readonly Context context = mauiContext.Context ?? throw new CameraException($"Unable to retrieve {nameof(Context)}");
 
-	readonly IList<UseCase> additionalUseCases = [];
+	readonly IList<CameraScenario> scenarios = [];
 	
 	NativePlatformCameraPreviewView? previewView;
 	IExecutorService? cameraExecutor;
@@ -246,22 +246,14 @@ partial class CameraManager
 	
 	partial void AddPlatformScenario(PlatformCameraScenario scenario)
 	{
-		AddUseCase(scenario.UseCase);
-	}
-	
-	partial void RemovePlatformScenario(PlatformCameraScenario scenario)
-	{
-		RemoveUseCase(scenario.UseCase);
-	}
-	
-	internal void AddUseCase(UseCase useCase)
-	{
-		additionalUseCases.Add(useCase);
+		scenarios.Add(scenario);
+		InitializeUseCases();
 	}
 
-	internal void RemoveUseCase(UseCase useCase)
+	partial void RemovePlatformScenario(PlatformCameraScenario scenario)
 	{
-		additionalUseCases.Remove(useCase);
+		scenarios.Remove(scenario);
+		InitializeUseCases();
 	}
 
 	void RebuildCameraPreview()
@@ -331,7 +323,12 @@ partial class CameraManager
 		{
 			return;
 		}
-		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, token, [..additionalUseCases, cameraPreview, imageCapture]);
+
+		var useCases = scenarios.Select(s => s.UseCase).ToList();
+		useCases.Add(cameraPreview);
+		useCases.Add(imageCapture);
+
+		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, token, [..useCases]);
 		cameraControl = camera.CameraControl;
 	}
 
@@ -345,7 +342,13 @@ partial class CameraManager
 		{
 			return;
 		}
-		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, token, [..additionalUseCases, cameraPreview, imageCapture, videoCapture]);
+
+		var useCases = scenarios.Select(s => s.UseCase).ToList();
+		useCases.Add(cameraPreview);
+		useCases.Add(imageCapture);
+		useCases.Add(videoCapture);
+
+		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, token, [..useCases]);
 		cameraControl = camera.CameraControl;
 	}
 

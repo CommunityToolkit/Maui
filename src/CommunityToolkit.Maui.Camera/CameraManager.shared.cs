@@ -131,7 +131,7 @@ sealed partial class CameraManager(
 	}
 	
 	partial void AddPlatformScenario(PlatformCameraScenario scenario);
-	
+
 	partial void RemovePlatformScenario(PlatformCameraScenario scenario);
 
 	/// <summary>

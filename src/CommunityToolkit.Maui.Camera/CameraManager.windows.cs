@@ -128,7 +128,7 @@ partial class CameraManager
 
 	private async partial Task PlatformConnectCamera(CancellationToken token)
 	{
-		await StartCameraPreview(token);
+		await Task.CompletedTask;
 	}
 
 	private async partial Task PlatformStartCameraPreview(CancellationToken token)
@@ -207,11 +207,13 @@ partial class CameraManager
 	partial void AddPlatformScenario(PlatformCameraScenario scenario)
 	{
 		cameraScenarios.Add(scenario);
+		_ = RefreshCameraPreview();
 	}
 
 	partial void RemovePlatformScenario(PlatformCameraScenario scenario)
 	{
 		cameraScenarios.Remove(scenario);
+		_ = RefreshCameraPreview();
 	}
 
 	private async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)

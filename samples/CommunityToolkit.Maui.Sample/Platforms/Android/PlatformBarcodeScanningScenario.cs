@@ -21,12 +21,7 @@ public partial class PlatformBarcodeScanningScenario
 					.SetBackpressureStrategy(ImageAnalysis.StrategyKeepOnlyLatest)
 					.Build();
 
-			if (imageAnalysis.BackgroundExecutor is null)
-			{
-				throw new InvalidOperationException("Background executor must be set before use case.");
-			}
-
-			imageAnalysis.SetAnalyzer(imageAnalysis.BackgroundExecutor, new BarcodeAnalyzer(() => Command));
+			imageAnalysis.SetAnalyzer(Android.Runtime.AndroidEnvironment.MainThreadExecutor, new BarcodeAnalyzer(() => Command));
 		
 			return imageAnalysis;
 		});
