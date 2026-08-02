@@ -23,6 +23,10 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj" />
+    <Project Path="CommunityToolkit.Maui.DeviceTests.UnitTests/CommunityToolkit.Maui.DeviceTests.UnitTests.csproj" />
+    <Project Path="CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj">
+      <Deploy />
+    </Project>
     <Project Path="CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests/CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests.csproj" />
     <Project Path="CommunityToolkit.Maui.SourceGenerators.UnitTests/CommunityToolkit.Maui.SourceGenerators.UnitTests.csproj" />
     <Project Path="CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj">

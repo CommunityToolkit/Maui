@@ -216,10 +216,9 @@ https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitati
     </WarningsAsErrors>
 
     <!--
-      Once the repo moves to .NET 10 SDK, TestingPlatformDotnetTestSupport should be
-      replaced by dotnet.config that opts in the new dotnet test experience for Microsoft.Testing.Platform
+      MTP mode for dotnet test is enabled via the "test" section in global.json.
+      TestingPlatformDotnetTestSupport is no longer needed on .NET 10 SDK+.
     -->
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
     <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
   </PropertyGroup>
 
