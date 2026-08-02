@@ -179,9 +179,8 @@ public partial class Snackbar : ISnackbar
 	{
 		try
 		{
-			var packageType = Type.GetType("Windows.ApplicationModel.Package, Windows, ContentType=WindowsRuntime");
-			var currentProperty = packageType?.GetProperty("Current", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-			return currentProperty?.GetValue(null) is not null;
+			_ = global::Windows.ApplicationModel.Package.Current;
+			return true;
 		}
 		catch
 		{
