@@ -93,12 +93,6 @@
         <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
       </BuildMappings>
     </Project>
-    <Project Path="CommunityToolkit.Maui.DeviceTests.UnitTests/CommunityToolkit.Maui.DeviceTests.UnitTests.csproj">
-      <BuildMappings>
-        <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
-        <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
-      </BuildMappings>
-    </Project>
     <Project Path="CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj">
       <BuildMappings>
         <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
