@@ -3,6 +3,7 @@ using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 #if WINDOWS
+using System.Diagnostics;
 using Microsoft.Maui.LifecycleEvents;
 #endif
 
@@ -86,8 +87,15 @@ public class Options : Core.Options
 
 						else if (Application.Current.Windows.Count is 1)
 						{
-							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked += OnSnackbarNotificationInvoked;
-							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Register();
+							if (IsPackagedApp())
+							{
+								Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked += OnSnackbarNotificationInvoked;
+								Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Register();
+							}
+							else
+							{
+								Trace.WriteLine($"{nameof(Alerts.Snackbar)} is not supported on unpackaged Windows apps. {nameof(Alerts.Snackbar)} requires the app to be packaged (MSIX). See https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar for more information.");
+							}
 						}
 					})
 					.OnClosed((_, _) =>
@@ -96,7 +104,7 @@ public class Options : Core.Options
 						{
 							throw new InvalidOperationException($"{nameof(Application)}.{nameof(Application.Current)} cannot be null when Windows are closed");
 						}
-						else if (Application.Current.Windows.Count is 0)
+						else if (Application.Current.Windows.Count is 0 && IsPackagedApp())
 						{
 							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked -= OnSnackbarNotificationInvoked;
 							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Unregister();
@@ -108,6 +116,20 @@ public class Options : Core.Options
 														Microsoft.Windows.AppNotifications.AppNotificationActivatedEventArgs args)
 			{
 				Alerts.Snackbar.HandleSnackbarAction(args);
+			}
+
+			static bool IsPackagedApp()
+			{
+				try
+				{
+					var packageType = Type.GetType("Windows.ApplicationModel.Package, Windows, ContentType=WindowsRuntime");
+					var currentProperty = packageType?.GetProperty("Current", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+					return currentProperty?.GetValue(null) is not null;
+				}
+				catch
+				{
+					return false;
+				}
 			}
 		}
 #endif

@@ -48,6 +48,14 @@ public partial class Snackbar : ISnackbar
 				HelpLink = "https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar"
 			};
 		}
+
+		if (!IsPackagedApp())
+		{
+			throw new InvalidOperationException($"{nameof(Snackbar)} is not supported on unpackaged Windows apps. {nameof(Snackbar)} requires the app to be packaged (MSIX) because it uses the Windows App SDK AppNotificationManager API. See https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar for more information.")
+			{
+				HelpLink = "https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar"
+			};
+		}
 #endif
 
 		Duration = GetDefaultTimeSpan();
@@ -165,6 +173,22 @@ public partial class Snackbar : ISnackbar
 	public virtual Task Dismiss(CancellationToken token = default) => DismissPlatform(token);
 
 	internal static TimeSpan GetDefaultTimeSpan() => TimeSpan.FromSeconds(3);
+
+#if WINDOWS
+	static bool IsPackagedApp()
+	{
+		try
+		{
+			var packageType = Type.GetType("Windows.ApplicationModel.Package, Windows, ContentType=WindowsRuntime");
+			var currentProperty = packageType?.GetProperty("Current", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+			return currentProperty?.GetValue(null) is not null;
+		}
+		catch
+		{
+			return false;
+		}
+	}
+#endif
 
 	void OnShown()
 	{
