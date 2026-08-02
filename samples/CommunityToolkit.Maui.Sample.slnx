@@ -1,10 +1,4 @@
 <Solution>
-  <Configurations>
-    <Platform Name="Any CPU">
-      <Configuration Name="Debug" />
-      <Configuration Name="Release" />
-    </Platform>
-  </Configurations>
   <Folder Name="/Analyzers/">
     <Project Path="../src/CommunityToolkit.Maui.Analyzers.CodeFixes/CommunityToolkit.Maui.Analyzers.CodeFixes.csproj">
       <BuildMappings>
