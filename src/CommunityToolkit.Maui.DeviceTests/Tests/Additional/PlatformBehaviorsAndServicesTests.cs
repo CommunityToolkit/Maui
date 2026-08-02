@@ -5,6 +5,7 @@ using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
+using Microsoft.Maui.ApplicationModel;
 using Xunit;
 
 namespace CommunityToolkit.Maui.DeviceTests.Tests.Additional;
@@ -314,6 +315,18 @@ public class IconTintColorBehaviorTests
 		behavior.TintColor = null;
 		Assert.Null(behavior.TintColor);
 	}
+
+	[Fact]
+	public void IconTintColorBehavior_TintColorBindableProperty_ReadsBackCorrectValue()
+	{
+		var behavior = new IconTintColorBehavior();
+		var expectedColor = Colors.Fuchsia;
+		behavior.TintColor = expectedColor;
+
+		var appliedColor = behavior.GetValue(IconTintColorBehavior.TintColorProperty) as Color;
+
+		Assert.Equal(expectedColor, appliedColor);
+	}
 }
 
 #endregion
@@ -335,6 +348,150 @@ public class StatusBarApplyOnTests
 	{
 		var values = Enum.GetValues<StatusBarApplyOn>();
 		Assert.Equal(2, values.Length);
+	}
+}
+
+#endregion
+
+#region StatusBarBehavior Tests
+
+public class StatusBarBehaviorTests
+{
+	[Fact]
+	public void StatusBarBehavior_DefaultStatusBarColor_IsTransparent()
+	{
+		var behavior = new StatusBarBehavior();
+		Assert.Equal(Colors.Transparent, behavior.StatusBarColor);
+	}
+
+	[Fact]
+	public void StatusBarBehavior_DefaultStatusBarStyle_IsDefault()
+	{
+		var behavior = new StatusBarBehavior();
+		Assert.Equal(StatusBarStyle.Default, behavior.StatusBarStyle);
+	}
+
+	[Fact]
+	public void StatusBarBehavior_DefaultApplyOn_IsOnBehaviorAttachedTo()
+	{
+		var behavior = new StatusBarBehavior();
+		Assert.Equal(StatusBarApplyOn.OnBehaviorAttachedTo, behavior.ApplyOn);
+	}
+
+	[Fact]
+	public async Task StatusBarBehavior_SetStatusBarColor_UpdatesValue()
+	{
+		await MainThread.InvokeOnMainThreadAsync(() =>
+		{
+			var behavior = new StatusBarBehavior
+			{
+				StatusBarColor = Colors.Fuchsia,
+			};
+
+			Assert.Equal(Colors.Fuchsia, behavior.StatusBarColor);
+		});
+	}
+
+	[Fact]
+	public async Task StatusBarBehavior_SetStatusBarStyle_UpdatesValue()
+	{
+		await MainThread.InvokeOnMainThreadAsync(() =>
+		{
+			var behavior = new StatusBarBehavior
+			{
+				StatusBarStyle = StatusBarStyle.LightContent,
+			};
+
+			Assert.Equal(StatusBarStyle.LightContent, behavior.StatusBarStyle);
+		});
+	}
+
+	[Fact]
+	public void StatusBarBehavior_SetApplyOn_OnPageNavigatedTo_UpdatesValue()
+	{
+		var behavior = new StatusBarBehavior
+		{
+			ApplyOn = StatusBarApplyOn.OnPageNavigatedTo,
+		};
+
+		Assert.Equal(StatusBarApplyOn.OnPageNavigatedTo, behavior.ApplyOn);
+	}
+
+	[Fact]
+	public void StatusBarBehavior_IsBasePlatformBehaviorOfPage()
+	{
+		var behavior = new StatusBarBehavior();
+		Assert.IsAssignableFrom<BasePlatformBehavior<Page>>(behavior);
+	}
+
+	[Fact]
+	public async Task StatusBarBehavior_CanBeAttachedToPage()
+	{
+		await MainThread.InvokeOnMainThreadAsync(() =>
+		{
+			var page = new ContentPage();
+			var behavior = new StatusBarBehavior
+			{
+				StatusBarColor = Colors.Fuchsia,
+			};
+
+			page.Behaviors.Add(behavior);
+
+			var attachedBehavior = page.Behaviors.FirstOrDefault(x => x is StatusBarBehavior);
+			Assert.NotNull(attachedBehavior);
+			Assert.Same(behavior, attachedBehavior);
+		});
+	}
+
+	[Fact]
+	public async Task StatusBarBehavior_AttachedToPage_ColorIsPreserved()
+	{
+		await MainThread.InvokeOnMainThreadAsync(() =>
+		{
+			var page = new ContentPage();
+			var behavior = new StatusBarBehavior
+			{
+				StatusBarColor = Colors.Fuchsia,
+			};
+
+			page.Behaviors.Add(behavior);
+
+			var attachedBehavior = page.Behaviors.OfType<StatusBarBehavior>().FirstOrDefault();
+			Assert.NotNull(attachedBehavior);
+			Assert.Equal(Colors.Fuchsia, attachedBehavior.StatusBarColor);
+		});
+	}
+
+	[Fact]
+	public void StatusBarBehavior_CanBeDetachedFromPage()
+	{
+		var page = new ContentPage();
+		var behavior = new StatusBarBehavior();
+
+		page.Behaviors.Add(behavior);
+		Assert.Single(page.Behaviors.OfType<StatusBarBehavior>());
+
+		page.Behaviors.Remove(behavior);
+		Assert.Empty(page.Behaviors.OfType<StatusBarBehavior>());
+	}
+
+	[Fact]
+	public async Task StatusBarBehavior_MultipleBehaviors_CanBeAttached()
+	{
+		await MainThread.InvokeOnMainThreadAsync(() =>
+		{
+			var page = new ContentPage();
+			var behavior1 = new StatusBarBehavior { StatusBarColor = Colors.Red };
+			var behavior2 = new StatusBarBehavior { StatusBarColor = Colors.Blue };
+
+			page.Behaviors.Add(behavior1);
+			page.Behaviors.Add(behavior2);
+
+			var behaviors = page.Behaviors.OfType<StatusBarBehavior>().ToList();
+			Assert.Equal(2, behaviors.Count);
+			Assert.Equal(Colors.Red, behaviors[0].StatusBarColor);
+			Assert.Equal(Colors.Blue, behaviors[1].StatusBarColor);
+		});
 	}
 }
 
