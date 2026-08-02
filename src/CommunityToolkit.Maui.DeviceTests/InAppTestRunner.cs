@@ -201,6 +201,7 @@ public static class InAppTestRunner
 
 	static void Log(string message)
 	{
+		Console.WriteLine(message);
 		Trace.WriteLine(message);
 		outputBuilder.AppendLine(message);
 		OutputWritten?.Invoke(null, message);
