@@ -120,9 +120,7 @@ public class Options : Core.Options
 
 			static bool IsPackagedApp()
 			{
-				var packageType = Type.GetType("Windows.ApplicationModel.Package, Windows, ContentType=WindowsRuntime");
-				var currentProperty = packageType?.GetProperty("Current", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-				return currentProperty?.GetValue(null) is not null;
+				return global::Windows.ApplicationModel.Package.Current is not null;
 			}
 		}
 #endif
