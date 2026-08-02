@@ -1,17 +1,82 @@
 <Solution>
+  <Configurations>
+    <Platform Name="Any CPU">
+      <Configuration Name="Debug" />
+      <Configuration Name="Release" />
+    </Platform>
+  </Configurations>
   <Folder Name="/Analyzers/">
-    <Project Path="CommunityToolkit.Maui.Analyzers.CodeFixes/CommunityToolkit.Maui.Analyzers.CodeFixes.csproj" />
-    <Project Path="CommunityToolkit.Maui.Analyzers/CommunityToolkit.Maui.Analyzers.csproj" />
-    <Project Path="CommunityToolkit.Maui.Camera.Analyzers.CodeFixes/CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.csproj" />
-    <Project Path="CommunityToolkit.Maui.Camera.Analyzers/CommunityToolkit.Maui.Camera.Analyzers.csproj" />
-    <Project Path="CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj" />
-    <Project Path="CommunityToolkit.Maui.MediaElement.Analyzers/CommunityToolkit.Maui.MediaElement.Analyzers.csproj" />
-    <Project Path="CommunityToolkit.Maui.MediaElement.SourceGenerators/CommunityToolkit.Maui.MediaElement.SourceGenerators.csproj" />
-    <Project Path="CommunityToolkit.Maui.SourceGenerators/CommunityToolkit.Maui.SourceGenerators.csproj" />
+    <Project Path="CommunityToolkit.Maui.Analyzers.CodeFixes/CommunityToolkit.Maui.Analyzers.CodeFixes.csproj">
+      <BuildMappings>
+        <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
+        <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
+      </BuildMappings>
+    </Project>
+    <Project Path="CommunityToolkit.Maui.Analyzers/CommunityToolkit.Maui.Analyzers.csproj">
+      <BuildMappings>
+        <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
+        <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
+      </BuildMappings>
+    </Project>
+    <Project Path="CommunityToolkit.Maui.Camera.Analyzers.CodeFixes/CommunityToolkit.Maui.Camera.Analyzers.CodeFixes.csproj">
+      <BuildMappings>
+        <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
+        <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
+      </BuildMappings>
+    </Project>
+    <Project Path="CommunityToolkit.Maui.Camera.Analyzers/CommunityToolkit.Maui.Camera.Analyzers.csproj">
+      <BuildMappings>
+        <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
+        <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
+      </BuildMappings>
+    </Project>
+    <Project Path="CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes/CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes.csproj">
+      <BuildMappings>
+        <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
+        <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
+      </BuildMappings>
+    </Project>
+    <Project Path="CommunityToolkit.Maui.MediaElement.Analyzers/CommunityToolkit.Maui.MediaElement.Analyzers.csproj">
+      <BuildMappings>
+        <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
+        <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
+      </BuildMappings>
+    </Project>
+    <Project Path="CommunityToolkit.Maui.MediaElement.SourceGenerators/CommunityToolkit.Maui.MediaElement.SourceGenerators.csproj">
+      <BuildMappings>
+        <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
+        <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
+      </BuildMappings>
+    </Project>
+    <Project Path="CommunityToolkit.Maui.SourceGenerators/CommunityToolkit.Maui.SourceGenerators.csproj">
+      <BuildMappings>
+        <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
+        <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
+      </BuildMappings>
+    </Project>
   </Folder>
   <Folder Name="/Benchmarks/">
-    <Project Path="CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj" />
-    <Project Path="CommunityToolkit.Maui.SourceGenerators.Benchmarks/CommunityToolkit.Maui.SourceGenerators.Benchmarks.csproj" />
+    <Project Path="CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj">
+      <BuildMappings>
+        <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
+        <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
+      </BuildMappings>
+    </Project>
+    <Project Path="CommunityToolkit.Maui.SourceGenerators.Benchmarks/CommunityToolkit.Maui.SourceGenerators.Benchmarks.csproj">
+      <BuildMappings>
+        <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
+        <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
+      </BuildMappings>
+    </Project>
+  </Folder>
+  <Folder Name="/Samples/">
+    <Project Path="../samples/CommunityToolkit.Maui.Sample/CommunityToolkit.Maui.Sample.csproj">
+      <BuildMappings>
+        <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
+        <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
+      </BuildMappings>
+      <Deploy />
+    </Project>
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="../.editorconfig" />
@@ -22,19 +87,73 @@
     <File Path="../global.json" />
   </Folder>
   <Folder Name="/Tests/">
-    <Project Path="CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj" />
+    <Project Path="CommunityToolkit.Maui.Analyzers.UnitTests/CommunityToolkit.Maui.Analyzers.UnitTests.csproj">
+      <BuildMappings>
+        <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
+        <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
+      </BuildMappings>
+    </Project>
+    <Project Path="CommunityToolkit.Maui.DeviceTests.UnitTests/CommunityToolkit.Maui.DeviceTests.UnitTests.csproj">
+      <BuildMappings>
+        <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
+        <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
+      </BuildMappings>
+    </Project>
     <Project Path="CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj">
+      <BuildMappings>
+        <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
+        <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
+      </BuildMappings>
       <Deploy />
     </Project>
-    <Project Path="CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests/CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests.csproj" />
-    <Project Path="CommunityToolkit.Maui.SourceGenerators.UnitTests/CommunityToolkit.Maui.SourceGenerators.UnitTests.csproj" />
+    <Project Path="CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests/CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests.csproj">
+      <BuildMappings>
+        <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
+        <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
+      </BuildMappings>
+    </Project>
+    <Project Path="CommunityToolkit.Maui.SourceGenerators.UnitTests/CommunityToolkit.Maui.SourceGenerators.UnitTests.csproj">
+      <BuildMappings>
+        <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
+        <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
+      </BuildMappings>
+    </Project>
     <Project Path="CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj">
+      <BuildMappings>
+        <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
+        <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
+      </BuildMappings>
       <Deploy />
     </Project>
   </Folder>
-  <Project Path="CommunityToolkit.Maui.Camera/CommunityToolkit.Maui.Camera.csproj" />
-  <Project Path="CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj" />
-  <Project Path="CommunityToolkit.Maui.Maps/CommunityToolkit.Maui.Maps.csproj" />
-  <Project Path="CommunityToolkit.Maui.MediaElement/CommunityToolkit.Maui.MediaElement.csproj" />
-  <Project Path="CommunityToolkit.Maui/CommunityToolkit.Maui.csproj" />
+  <Project Path="CommunityToolkit.Maui.Camera/CommunityToolkit.Maui.Camera.csproj">
+    <BuildMappings>
+      <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
+      <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
+    </BuildMappings>
+  </Project>
+  <Project Path="CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj">
+    <BuildMappings>
+      <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
+      <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
+    </BuildMappings>
+  </Project>
+  <Project Path="CommunityToolkit.Maui.Maps/CommunityToolkit.Maui.Maps.csproj">
+    <BuildMappings>
+      <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
+      <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
+    </BuildMappings>
+  </Project>
+  <Project Path="CommunityToolkit.Maui.MediaElement/CommunityToolkit.Maui.MediaElement.csproj">
+    <BuildMappings>
+      <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
+      <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
+    </BuildMappings>
+  </Project>
+  <Project Path="CommunityToolkit.Maui/CommunityToolkit.Maui.csproj">
+    <BuildMappings>
+      <BuildMapping Configuration="Debug" Platform="Any CPU" ProjectConfiguration="Debug" ProjectPlatform="Any CPU" />
+      <BuildMapping Configuration="Release" Platform="Any CPU" ProjectConfiguration="Release" ProjectPlatform="Any CPU" />
+    </BuildMappings>
+  </Project>
 </Solution>
