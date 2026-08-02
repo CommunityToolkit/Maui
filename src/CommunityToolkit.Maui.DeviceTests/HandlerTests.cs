@@ -8,48 +8,64 @@ public class HandlerTests
 	{
 		var window = Application.Current?.Windows[0];
 		Assert.NotNull(window);
-		Assert.NotNull(window.Page);
-		return (ContentPage)window.Page;
+
+		// Create a dedicated page for each test so the main results page stays clean.
+		var page = new ContentPage();
+		window.Page = page;
+		return page;
+	}
+
+	static async Task WaitForHandlerAsync(VisualElement element)
+	{
+		// Handlers are created during the platform render pass, which happens after the
+		// current synchronous code completes. Poll until the handler is attached.
+		for (var attempt = 0; attempt < 100 && element.Handler is null; attempt++)
+		{
+			await Task.Delay(50);
+		}
 	}
 
 	[Fact]
-	public void LabelHandlerIsCreated()
+	public async Task LabelHandlerIsCreated()
 	{
 		var label = new Label { Text = "Test" };
 		var page = GetTestPage();
 
 		page.Content = label;
+		await WaitForHandlerAsync(label);
 
 		Assert.NotNull(label.Handler);
 		Assert.NotNull(label.Handler.PlatformView);
 	}
 
 	[Fact]
-	public void ButtonHandlerIsCreated()
+	public async Task ButtonHandlerIsCreated()
 	{
 		var button = new Button { Text = "Click Me" };
 		var page = GetTestPage();
 
 		page.Content = button;
+		await WaitForHandlerAsync(button);
 
 		Assert.NotNull(button.Handler);
 		Assert.NotNull(button.Handler.PlatformView);
 	}
 
 	[Fact]
-	public void EntryHandlerIsCreated()
+	public async Task EntryHandlerIsCreated()
 	{
 		var entry = new Entry { Text = "Hello" };
 		var page = GetTestPage();
 
 		page.Content = entry;
+		await WaitForHandlerAsync(entry);
 
 		Assert.NotNull(entry.Handler);
 		Assert.NotNull(entry.Handler.PlatformView);
 	}
 
 	[Fact]
-	public void StackLayoutHandlerIsCreated()
+	public async Task StackLayoutHandlerIsCreated()
 	{
 		var layout = new VerticalStackLayout
 		{
@@ -63,6 +79,7 @@ public class HandlerTests
 		var page = GetTestPage();
 
 		page.Content = layout;
+		await WaitForHandlerAsync(layout);
 
 		Assert.NotNull(layout.Handler);
 		Assert.NotNull(layout.Handler.PlatformView);

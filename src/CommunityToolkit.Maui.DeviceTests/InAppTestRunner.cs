@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.Reflection;
+using System.Text;
 using Xunit;
 using Xunit.Sdk;
 
@@ -9,11 +11,24 @@ namespace CommunityToolkit.Maui.DeviceTests;
 /// </summary>
 public static class InAppTestRunner
 {
+	static readonly StringBuilder outputBuilder = new();
+
+	/// <summary>Gets the summary text from the most recent test run.</summary>
+	public static string LastRunSummary { get; private set; } = string.Empty;
+
+	/// <summary>Gets the full captured output from the most recent test run.</summary>
+	public static string LastRunOutput { get; private set; } = string.Empty;
+
+	/// <summary>Raised for each line of output as it is written, allowing live UI updates.</summary>
+	public static event EventHandler<string>? OutputWritten;
+
 	public static async Task<int> RunTestsAsync(CancellationToken cancellationToken = default)
 		=> await RunTestsAsync(typeof(InAppTestRunner).Assembly, cancellationToken: cancellationToken);
 
 	public static async Task<int> RunTestsAsync(Assembly assembly, Func<Type, bool>? typeFilter = null, CancellationToken cancellationToken = default)
 	{
+		outputBuilder.Clear();
+
 		var testClasses = assembly.GetTypes()
 			.Where(t => t.IsClass && !t.IsAbstract && t.GetMethods().Any(m => m.GetCustomAttribute<FactAttribute>() is not null || m.GetCustomAttribute<TheoryAttribute>() is not null))
 			.Where(t => typeFilter?.Invoke(t) ?? true)
@@ -24,13 +39,13 @@ public static class InAppTestRunner
 		var failedTests = 0;
 		var skippedTests = 0;
 
-		Console.WriteLine("=== CommunityToolkit.Maui Device Tests ===");
-		Console.WriteLine($"Test Classes Found: {testClasses.Count}");
-		Console.WriteLine();
+		Log("=== CommunityToolkit.Maui Device Tests ===");
+		Log($"Test Classes Found: {testClasses.Count}");
+		Log(string.Empty);
 
 		foreach (var testClass in testClasses)
 		{
-			Console.WriteLine($"--- {testClass.Name} ---");
+			Log($"--- {testClass.Name} ---");
 
 			object? instance = null;
 
@@ -40,7 +55,7 @@ public static class InAppTestRunner
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"  [ERROR] Failed to create instance: {ex.Message}");
+				Log($"  [ERROR] Failed to create instance: {ex.Message}");
 				failedTests++;
 				totalTests++;
 				continue;
@@ -57,7 +72,7 @@ public static class InAppTestRunner
 
 				if (factAttribute?.Skip is not null)
 				{
-					Console.WriteLine($"  [SKIP] {method.Name}: {factAttribute.Skip}");
+					Log($"  [SKIP] {method.Name}: {factAttribute.Skip}");
 					totalTests++;
 					skippedTests++;
 					continue;
@@ -65,7 +80,7 @@ public static class InAppTestRunner
 
 				if (theoryAttribute?.Skip is not null)
 				{
-					Console.WriteLine($"  [SKIP] {method.Name}: {theoryAttribute.Skip}");
+					Log($"  [SKIP] {method.Name}: {theoryAttribute.Skip}");
 					totalTests++;
 					skippedTests++;
 					continue;
@@ -102,17 +117,17 @@ public static class InAppTestRunner
 									await valueTask;
 								}
 
-								Console.WriteLine($"  [PASS] {method.Name}({string.Join(", ", data)})");
+								Log($"  [PASS] {method.Name}({string.Join(", ", data)})");
 								passedTests++;
 							}
 							catch (TargetInvocationException tie) when (tie.InnerException is not null)
 							{
-								Console.WriteLine($"  [FAIL] {method.Name}({string.Join(", ", data)}): {tie.InnerException.Message}");
+								Log($"  [FAIL] {method.Name}({string.Join(", ", data)}): {tie.InnerException.Message}");
 								failedTests++;
 							}
 							catch (Exception ex)
 							{
-								Console.WriteLine($"  [FAIL] {method.Name}({string.Join(", ", data)}): {ex.Message}");
+								Log($"  [FAIL] {method.Name}({string.Join(", ", data)}): {ex.Message}");
 								failedTests++;
 							}
 						}
@@ -120,7 +135,7 @@ public static class InAppTestRunner
 
 					if (!hasInlineData)
 					{
-						Console.WriteLine($"  [SKIP] {method.Name}: No InlineData found");
+						Log($"  [SKIP] {method.Name}: No InlineData found");
 						totalTests++;
 						skippedTests++;
 					}
@@ -143,17 +158,17 @@ public static class InAppTestRunner
 						await valueTask;
 					}
 
-					Console.WriteLine($"  [PASS] {method.Name}");
+					Log($"  [PASS] {method.Name}");
 					passedTests++;
 				}
 				catch (TargetInvocationException tie) when (tie.InnerException is not null)
 				{
-					Console.WriteLine($"  [FAIL] {method.Name}: {tie.InnerException.Message}");
+					Log($"  [FAIL] {method.Name}: {tie.InnerException.Message}");
 					failedTests++;
 				}
 				catch (Exception ex)
 				{
-					Console.WriteLine($"  [FAIL] {method.Name}: {ex.Message}");
+					Log($"  [FAIL] {method.Name}: {ex.Message}");
 					failedTests++;
 				}
 			}
@@ -168,23 +183,26 @@ public static class InAppTestRunner
 				await asyncDisposable.DisposeAsync();
 			}
 
-			Console.WriteLine();
+			Log(string.Empty);
 		}
 
-		Console.WriteLine("=== Test Results ===");
-		Console.WriteLine($"Total:   {totalTests}");
-		Console.WriteLine($"Passed:  {passedTests}");
-		Console.WriteLine($"Failed:  {failedTests}");
-		Console.WriteLine($"Skipped: {skippedTests}");
-		Console.WriteLine();
+		var resultText = failedTests > 0 ? "RESULT: FAILED" : "RESULT: PASSED";
+		var summary = $"Total:   {totalTests}\nPassed:  {passedTests}\nFailed:  {failedTests}\nSkipped: {skippedTests}\n\n{resultText}";
 
-		if (failedTests > 0)
-		{
-			Console.WriteLine("RESULT: FAILED");
-			return 1;
-		}
+		Log("=== Test Results ===");
+		Log(summary);
+		Log(string.Empty);
 
-		Console.WriteLine("RESULT: PASSED");
-		return 0;
+		LastRunSummary = summary;
+		LastRunOutput = outputBuilder.ToString();
+
+		return failedTests > 0 ? 1 : 0;
+	}
+
+	static void Log(string message)
+	{
+		Trace.WriteLine(message);
+		outputBuilder.AppendLine(message);
+		OutputWritten?.Invoke(null, message);
 	}
 }
