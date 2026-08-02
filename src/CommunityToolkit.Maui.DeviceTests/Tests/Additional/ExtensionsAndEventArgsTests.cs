@@ -123,7 +123,9 @@ public partial class ServiceCollectionExtensionsTests
 
 	partial class TestPopupViewModel : System.ComponentModel.INotifyPropertyChanged
 	{
+#pragma warning disable CS0067 // Event is required by INotifyPropertyChanged but never raised in this test stub
 		public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+#pragma warning restore CS0067
 	}
 }
 
