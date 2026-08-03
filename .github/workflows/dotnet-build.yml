@@ -366,6 +366,8 @@ jobs:
     device_test_maccatalyst:
         name: Run Device Tests (macOS Catalyst)
         runs-on: macos-26
+        env:
+            CommunityToolkitLibrary_Xcode_Version: '26.6'
         steps:
             -   name: Checkout code
                 uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
