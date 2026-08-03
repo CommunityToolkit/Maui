@@ -280,7 +280,6 @@ jobs:
     
     device_test_windows:
         name: Run Device Tests (Windows)
-        needs: [ build_library ]
         runs-on: windows-latest
         steps:
             -   name: Checkout code
@@ -366,7 +365,6 @@ jobs:
     
     device_test_maccatalyst:
         name: Run Device Tests (macOS Catalyst)
-        needs: [ build_library ]
         runs-on: macos-26
         steps:
             -   name: Checkout code
