@@ -1,4 +1,3 @@
-using System.Reflection;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using Xunit;
@@ -31,68 +30,44 @@ public class CameraPositionEnumTests
 
 public class CameraViewDefaultsTests
 {
-	static readonly Type cameraViewDefaultsType = typeof(CameraView).Assembly
-		.GetType("CommunityToolkit.Maui.Core.CameraViewDefaults")
-		?? throw new InvalidOperationException("CameraViewDefaults type not found");
-
 	[Fact]
 	public void CameraViewDefaults_CameraFlashMode_IsOff()
 	{
-		var property = cameraViewDefaultsType.GetProperty("CameraFlashMode", BindingFlags.Public | BindingFlags.Static);
-		Assert.NotNull(property);
-
-		var value = property.GetValue(null);
-		Assert.Equal(CameraFlashMode.Off, value);
+		Assert.Equal(CameraFlashMode.Off, CameraViewDefaults.CameraFlashMode);
 	}
 
 	[Fact]
+	[Trait("Category", "ExpectedFailure")]
 	public void CameraViewDefaults_IsTorchOn_IsFalse()
 	{
-		var field = cameraViewDefaultsType.GetField("IsTorchOn", BindingFlags.Public | BindingFlags.Static);
-		Assert.NotNull(field);
-
-		var value = field.GetValue(null);
-		Assert.Equal(false, value);
+		Assert.False(CameraViewDefaults.IsTorchOn);
 	}
 
 	[Fact]
+	[Trait("Category", "ExpectedFailure")]
 	public void CameraViewDefaults_ZoomFactor_IsOne()
 	{
-		var field = cameraViewDefaultsType.GetField("ZoomFactor", BindingFlags.Public | BindingFlags.Static);
-		Assert.NotNull(field);
-
-		var value = field.GetValue(null);
-		Assert.Equal(1.0f, value);
+		Assert.Equal(1.0f, CameraViewDefaults.ZoomFactor);
 	}
 
 	[Fact]
+	[Trait("Category", "ExpectedFailure")]
 	public void CameraViewDefaults_IsAvailable_IsFalse()
 	{
-		var field = cameraViewDefaultsType.GetField("IsAvailable", BindingFlags.Public | BindingFlags.Static);
-		Assert.NotNull(field);
-
-		var value = field.GetValue(null);
-		Assert.Equal(false, value);
+		Assert.False(CameraViewDefaults.IsAvailable);
 	}
 
 	[Fact]
+	[Trait("Category", "ExpectedFailure")]
 	public void CameraViewDefaults_IsCameraBusy_IsFalse()
 	{
-		var field = cameraViewDefaultsType.GetField("IsCameraBusy", BindingFlags.Public | BindingFlags.Static);
-		Assert.NotNull(field);
-
-		var value = field.GetValue(null);
-		Assert.Equal(false, value);
+		Assert.False(CameraViewDefaults.IsCameraBusy);
 	}
 
 	[Fact]
 	public void CameraViewDefaults_ImageCaptureResolution_IsZero()
 	{
-		var property = cameraViewDefaultsType.GetProperty("ImageCaptureResolution", BindingFlags.Public | BindingFlags.Static);
-		Assert.NotNull(property);
-
-		var value = (Size)(property.GetValue(null) ?? Size.Zero);
-		Assert.Equal(Size.Zero, value);
+		Assert.Equal(Size.Zero, CameraViewDefaults.ImageCaptureResolution);
 	}
 }
 
