@@ -138,6 +138,20 @@ if (something is not null)
 * Please avoid adding new code that throws a `NotImplementedException`. According to the [Microsoft Docs](https://docs.microsoft.com/dotnet/api/system.notimplementedexception), we should only "throw a `NotImplementedException` exception in properties or methods in your own types when that member is still in development and will only later be implemented in production code. In other words, a NotImplementedException exception should be synonymous with 'still in development.'"
 In other words, `NotImplementedException` implies that a feature is still in development, indicating that the Pull Request is incomplete.
 
+### ExpectedFailure Trait for Device Tests
+* Use `[Trait("Category", "ExpectedFailure")]` on device tests that are known to fail on certain platforms but are still under investigation. This allows CI to filter them out with `--filter "Category!=ExpectedFailure"` while keeping them runnable locally.
+* Do **not** use `[Fact(Skip = "...")]` for platform-specific failures — `Skip` hides the test entirely and it may silently rot. Prefer `[Trait("Category", "ExpectedFailure")]` so the test still runs locally and in unfiltered CI runs.
+* Example:
+```csharp
+[Fact]
+[Trait("Category", "ExpectedFailure")]
+public void Snackbar_Make_CreatesInstance()
+{
+    var snackbar = Snackbar.Make("Hello");
+    Assert.NotNull(snackbar);
+}
+```
+
 ### Bug Fixes
 If you're looking for something to fix, please browse [open issues](https://github.com/CommunityToolkit/Maui/issues).
 

@@ -46,6 +46,7 @@ env:
     PathToCommunityToolkitMediaElementSourceGeneratorsUnitTestDirectory: 'src/CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests'
     PathToCommunityToolkitSourceGeneratorsUnitTestCsproj: 'src/CommunityToolkit.Maui.SourceGenerators.UnitTests/CommunityToolkit.Maui.SourceGenerators.UnitTests.csproj'
     PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
+    PathToCommunityToolkitDeviceTestsCsproj: 'src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj'
     CommunityToolkitLibrary_Xcode_Version: '26.1'
     CommunityToolkitSample_Xcode_Version: '^26'
 
@@ -255,7 +256,7 @@ jobs:
                 run: dotnet pack -c Release ${{ env.PathToCommunityToolkitMapsCsproj }} -p:PackageVersion=${{ env.NugetPackageVersionMaps }} -p:Version=${{ env.NugetPackageVersionMaps }}
 
             -   name: Copy NuGet Packages to Staging Directory
-                if: ${{ runner.os == 'Windows' }} && !startsWith(github.ref, 'refs/tags/')
+                if: ${{ runner.os == 'Windows' && !startsWith(github.ref, 'refs/tags/') }}
                 run: |
                     mkdir -p ${{ github.workspace }}/nuget
                     Get-ChildItem -Path "./src" -Recurse | Where-Object { $_.Extension -match "nupkg" } | Copy-Item -Destination "${{ github.workspace }}/nuget"
@@ -276,6 +277,146 @@ jobs:
                 with:
                     name: packages
                     path: ${{ github.workspace }}/nuget/
+    
+    device_test_windows:
+        name: Run Device Tests (Windows)
+        needs: [ build_library ]
+        runs-on: windows-latest
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
+                uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+                with:
+                    dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+                    dotnet-quality: 'ga'
+
+            -   name: Install .NET MAUI Workload
+                run: |
+                    dotnet workload install maui
+                    dotnet workload update
+
+            -   name: Display dotnet info
+                run: dotnet --info
+
+            -   name: Enable Windows Developer Mode
+                run: |
+                    reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowDevelopmentWithoutDevLicense /t REG_DWORD /d 1 /f
+                    reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
+                shell: pwsh
+
+            -   name: Restore test project
+                run: dotnet restore ${{ env.PathToCommunityToolkitDeviceTestsCsproj }}
+
+            -   name: Install Windows App Runtime framework
+                shell: pwsh
+                run: |
+                    $packagesRoot = Join-Path $env:USERPROFILE ".nuget/packages"
+                    $wasdkPackages = Get-ChildItem $packagesRoot -Directory |
+                        Where-Object { $_.Name -like 'microsoft.windowsappsdk*' } |
+                        Sort-Object Name -Descending
+
+                    if (-not $wasdkPackages) {
+                        Write-Error "Windows App SDK NuGet package not found"
+                        exit 1
+                    }
+
+                    $msixFiles = foreach ($package in $wasdkPackages) {
+                        Get-ChildItem $package.FullName -Recurse -Filter '*.msix' -ErrorAction SilentlyContinue |
+                            Where-Object { $_.FullName -match 'tools[\\/]+MSIX[\\/]+.*\.msix$' }
+                    }
+
+                    $msixFiles = $msixFiles | Sort-Object FullName -Unique
+                    if (-not $msixFiles) {
+                        Write-Error "Windows App SDK MSIX runtime files were not found"
+                        exit 1
+                    }
+
+                    $msixFiles | ForEach-Object {
+                        Write-Host "Installing: $($_.FullName)"
+                        Add-AppxPackage -Path $_.FullName -ErrorAction SilentlyContinue
+                    }
+
+            -   name: Run Tests
+                run: |
+                    dotnet test ${{ env.PathToCommunityToolkitDeviceTestsCsproj }} `
+                        -f net10.0-windows10.0.19041.0 `
+                        -c Release `
+                        -p:IsCI=true `
+                        --filter "Category!=ExpectedFailure" `
+                        --logger "trx;LogFileName=test-results.trx" `
+                        --results-directory .\artifacts\test-results `
+                        /bl:.\artifacts\logs\msbuild-test.binlog
+                shell: pwsh
+
+            -   name: Clean up build artifacts before upload
+                if: always()
+                shell: pwsh
+                run: |
+                    Remove-Item -Recurse -Force .\artifacts\bin -ErrorAction SilentlyContinue
+                    Remove-Item -Recurse -Force .\artifacts\obj -ErrorAction SilentlyContinue
+
+            -   name: Upload Test Results
+                if: always()
+                uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+                with:
+                    name: Test Results (dotnet test) - Windows
+                    path: .\artifacts
+    
+    device_test_maccatalyst:
+        name: Run Device Tests (macOS Catalyst)
+        needs: [ build_library ]
+        runs-on: macos-26
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Set Xcode Version
+                uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
+                with:
+                    xcode-version: ${{ env.CommunityToolkitLibrary_Xcode_Version }}
+
+            -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
+                uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+                with:
+                    dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+                    dotnet-quality: 'ga'
+
+            -   name: Install .NET MAUI Workload
+                run: |
+                    dotnet workload install maui
+                    dotnet workload update
+
+            -   name: Display dotnet info
+                run: dotnet --info
+
+            -   name: Run Tests
+                run: |
+                    dotnet test ${{ env.PathToCommunityToolkitDeviceTestsCsproj }} \
+                        -f net10.0-maccatalyst \
+                        -r maccatalyst-x64 \
+                        -c Release \
+                        -p:IsCI=true \
+                        --filter "Category!=ExpectedFailure" \
+                        --logger "trx;LogFileName=test-results.trx" \
+                        --results-directory ./artifacts/test-results \
+                        /bl:./artifacts/logs/msbuild-test.binlog
+                shell: bash
+
+            -   name: Clean up build artifacts before upload
+                if: always()
+                shell: bash
+                run: |
+                    rm -rf ./artifacts/bin
+                    rm -rf ./artifacts/obj
+
+            -   name: Upload Test Results
+                if: always()
+                uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+                with:
+                    name: Test Results (dotnet test) - macOS Catalyst
+                    path: ./artifacts
     
     sign:
         needs: [ build_library ]

@@ -583,11 +583,12 @@ public class ToastTests
 
 public class SnackbarTests
 {
-	// Snackbar on Windows requires Package.appxmanifest setup + SetShouldEnableSnackbarOnWindows(true),
-	// which is not configured in the test host. Skip on Windows to avoid the platform guard exception.
-	const string windowsSkipReason = "Snackbar requires Package.appxmanifest setup on Windows";
+	// Snackbar on Windows requires Package.appxmanifest setup + SetShouldEnableSnackbarOnWindows(true).
+	// When running unpackaged (WindowsPackageType=None), these tests throw a platform guard exception.
+	// With MSIX packaging in CI, they should pass. Tagged ExpectedFailure until verified on all platforms.
 
-	[Fact(Skip = windowsSkipReason)]
+	[Fact]
+	[Trait("Category", "ExpectedFailure")]
 	public void Snackbar_Make_CreatesInstance()
 	{
 		var snackbar = Snackbar.Make("Hello");
@@ -595,7 +596,8 @@ public class SnackbarTests
 		Assert.NotNull(snackbar);
 	}
 
-	[Fact(Skip = windowsSkipReason)]
+	[Fact]
+	[Trait("Category", "ExpectedFailure")]
 	public void Snackbar_Make_WithMessage_SetsText()
 	{
 		var snackbar = Snackbar.Make("Test message");
@@ -603,7 +605,8 @@ public class SnackbarTests
 		Assert.Equal("Test message", snackbar.Text);
 	}
 
-	[Fact(Skip = windowsSkipReason)]
+	[Fact]
+	[Trait("Category", "ExpectedFailure")]
 	public void Snackbar_Make_DefaultActionButtonText()
 	{
 		var snackbar = Snackbar.Make("Hello");
@@ -612,7 +615,8 @@ public class SnackbarTests
 		Assert.NotEmpty(snackbar.ActionButtonText);
 	}
 
-	[Fact(Skip = windowsSkipReason)]
+	[Fact]
+	[Trait("Category", "ExpectedFailure")]
 	public void Snackbar_Make_WithActionButtonText()
 	{
 		var snackbar = Snackbar.Make("Hello", actionButtonText: "OK");
@@ -620,7 +624,8 @@ public class SnackbarTests
 		Assert.Equal("OK", snackbar.ActionButtonText);
 	}
 
-	[Fact(Skip = windowsSkipReason)]
+	[Fact]
+	[Trait("Category", "ExpectedFailure")]
 	public void Snackbar_Make_WithAction()
 	{
 		var actionCalled = false;
@@ -631,7 +636,8 @@ public class SnackbarTests
 		Assert.True(actionCalled);
 	}
 
-	[Fact(Skip = windowsSkipReason)]
+	[Fact]
+	[Trait("Category", "ExpectedFailure")]
 	public void Snackbar_Make_WithDuration_SetsDuration()
 	{
 		var duration = TimeSpan.FromSeconds(5);

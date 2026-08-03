@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(NetVersion)-android;$(NetVersion)-ios;$(NetVersion)-maccatalyst</TargetFrameworks>
@@ -21,7 +21,7 @@
     <ApplicationVersion>1</ApplicationVersion>
 
     <!-- Windows unpackaged for easier local debugging -->
-    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsPackageType>MSIX</WindowsPackageType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <!-- DeviceRunners provides its own Program.Main; disable the auto-generated testing platform entry point -->
