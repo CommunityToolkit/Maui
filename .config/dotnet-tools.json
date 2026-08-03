@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "microsoft.dotnet.xharness.cli": {
+      "version": "11.0.0-prerelease.26259.3",
+      "commands": [
+        "xharness"
+      ],
+      "rollForward": false
+    },
+    "androidsdk.tool": {
+      "version": "0.35.1",
+      "commands": [
+        "android"
+      ],
+      "rollForward": false
+    },
+    "appledev.tools": {
+      "version": "0.8.10",
+      "commands": [
+        "apple"
+      ],
+      "rollForward": false
+    }
+  }
+}

@@ -97,7 +97,7 @@ CommunityToolkit.Maui.DeviceTests/
 
 ## Notes
 
-- Tests run inside a real MAUI application on the target platform via `XunitFrontController`
+- Tests run inside a real MAUI application on the target platform. DeviceRunners handles test discovery, execution, and result collection — do **not** build custom `XunitFrontController` wrappers or `DeviceRunner` classes.
 - The app displays a visual test runner page while tests execute
 - This project does NOT produce a NuGet package — it is test-only
-- The XHarness packages are sourced from the `dotnet-eng` Azure DevOps NuGet feed (not nuget.org)
+- All NuGet packages (including transitive XHarness dependencies) come from nuget.org; no custom feeds are required
