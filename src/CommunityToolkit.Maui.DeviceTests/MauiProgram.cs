@@ -1,5 +1,4 @@
-using System.Reflection;
-using CommunityToolkit.Maui.DeviceTests;
+using DeviceRunners.VisualRunners;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
@@ -10,26 +9,15 @@ public static class MauiProgram
 		var builder = MauiApp.CreateBuilder();
 
 		builder
-			.UseMauiApp<App>()
+			.UseVisualTestRunner(conf => conf
+				.AddCliConfiguration()
+				.AddConsoleResultChannel()
+				.AddTestAssembly(typeof(MauiProgram).Assembly)
+				.AddXunit())
 			.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 			});
-
-		builder.ConfigureTests(options =>
-		{
-			options.Assemblies =
-			[
-				Assembly.GetExecutingAssembly(),
-			];
-		});
-
-		builder.UseVisualRunner();
-
-		builder.UseHeadlessRunner(new HeadlessRunnerOptions
-		{
-			RequiresUIContext = true,
-		});
 
 		return builder.Build();
 	}

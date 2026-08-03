@@ -1,5 +1,5 @@
 ---
-description: 'Building and running device tests for the .NET MAUI Community Toolkit: the XHarness/XunitFrontController test runner, handler creation without page navigation, and avoiding infinite re-run loops'
+description: 'Building and running device tests for the .NET MAUI Community Toolkit: the DeviceRunners test runner, handler creation without page navigation, and avoiding infinite re-run loops'
 applyTo: 'src/CommunityToolkit.Maui.DeviceTests/**/*.cs'
 ---
 
@@ -9,11 +9,14 @@ Device tests live in `src/CommunityToolkit.Maui.DeviceTests` and run inside a re
 
 ### Test runner architecture
 
-The runner mirrors the [dotnet/maui](https://github.com/dotnet/maui) team's approach:
+The project uses [DeviceRunners](https://github.com/mattleibow/DeviceRunners) by Matthew Leibowitz — the same infrastructure recommended by the .NET MAUI team:
 
-- **`DeviceRunner`** discovers and executes tests directly through xunit's `XunitFrontController` (from the `xunit.runner.utility` package). Do **not** load the XHarness runner types via reflection (`Activator.CreateInstance` for `XUnitTestRunner`, or `XmlResultJargon` for results) — that fails silently and tests never run.
-- Results are counted per-test from the execution sink messages (`ITestPassed`, `ITestFailed`, `ITestSkipped`). `ITestAssemblyFinished` does not expose a summary in the xunit version in use.
-- The execution sink implements `IExecutionSink` directly (including `OnMessageWithTypes`) and must be marked `partial` to satisfy the CsWinRT analyzer on Windows (CsWinRT1028). The outer `DeviceRunner` must also be `partial` for the same reason.
+- **`DeviceRunners.VisualRunners.Maui`** provides the visual runner UI, pages, view models, and diagnostics.
+- **`DeviceRunners.VisualRunners.Xunit`** provides xUnit v2 test discovery and execution.
+- **`DeviceRunners.Testing.Targets`** enables `dotnet test` for device projects (TRX results, filtering, CI integration).
+- Tests are registered via `builder.UseVisualTestRunner(conf => conf.AddTestAssembly(...).AddXunit())` in `MauiProgram.cs`.
+
+Do **not** build a custom `DeviceRunner`/`XunitFrontController` wrapper — DeviceRunners handles discovery, execution, result collection, and diagnostics.
 
 ### Creating handlers in tests
 
@@ -24,21 +27,43 @@ var context = Application.Current?.Handler?.MauiContext;
 var handler = element.ToHandler(context);
 ```
 
-Replacing `window.Page` hides the visual test runner page (leaving stray content such as a "Click Me" button) and forces the runner to restore the page afterward. Handler creation must run on the main thread (`MainThread.InvokeOnMainThreadAsync`).
+Handler creation must run on the main thread (`MainThread.InvokeOnMainThreadAsync`).
 
-### Run tests exactly once
+### Platform behavior tests
 
-`VisualRunnerPage` runs tests from `OnAppearing`. Anything that reassigns `window.Page` (or otherwise re-shows the page) re-fires `OnAppearing` and can cause an infinite re-run loop. Guard with a `hasRun` flag so the suite executes a single time per app launch.
+Tests that construct platform behaviors (e.g., `StatusBarBehavior`) or add behaviors to a `Page` must also run on the main thread, because Android requires all view hierarchy operations on the main thread:
 
-### Packages and feeds
-
-- xunit **v2** (`2.9.3`) is required — XHarness is not compatible with xunit v3.
-- XHarness packages (`Microsoft.DotNet.XHarness.TestRunners.Xunit`) come from the `dotnet-eng` Azure DevOps NuGet feed configured in `NuGet.config`, not nuget.org.
+```csharp
+[Fact]
+public async Task StatusBarBehavior_CanBeAttachedToPage()
+{
+    await MainThread.InvokeOnMainThreadAsync(() =>
+    {
+        var page = new ContentPage();
+        var behavior = new StatusBarBehavior { StatusBarColor = Colors.Fuchsia };
+        page.Behaviors.Add(behavior);
+        Assert.Single(page.Behaviors.OfType<StatusBarBehavior>());
+    });
+}
+```
 
 ### Running
 
+**Visual Runner (IDE / Interactive):**
 ```bash
-dotnet build src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -f net10.0-windows10.0.19041.0 -t:Run
+dotnet build src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -f net10.0-android -t:Run
 ```
 
-The visual runner displays results in the app UI and reports pass/fail counts to the trace log.
+**`dotnet test` (CI / Headless, Recommended):**
+```bash
+dotnet test src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -f net10.0-android
+dotnet test ... --filter "FullyQualifiedName~StatusBarBehavior"
+```
+
+The `DeviceRunners.Testing.Targets` package hooks into `dotnet test` to build, deploy, run, and collect TRX results automatically.
+
+### Packages
+
+- xunit **v2** (`2.9.3`) is required.
+- DeviceRunners packages are from NuGet.org (`DeviceRunners.VisualRunners.Maui`, `DeviceRunners.VisualRunners.Xunit`, `DeviceRunners.Testing.Targets` at `0.1.0-preview.12`).
+- No custom NuGet feeds are needed — the `NuGet.config` for `dotnet-eng` has been removed.

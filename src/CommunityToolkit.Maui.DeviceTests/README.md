@@ -2,7 +2,7 @@
 
 Device tests for the .NET MAUI Community Toolkit. These tests run on actual devices/emulators and verify platform-specific behavior that cannot be tested with unit tests alone.
 
-This project uses the same test-runner approach as the .NET MAUI team: tests are discovered and executed directly through xunit's `XunitFrontController` (from the `xunit.runner.utility` package), with no reflection-based runner loading.
+This project uses [DeviceRunners](https://github.com/mattleibow/DeviceRunners) by Matthew Leibowitz, the same test-runner infrastructure recommended by the .NET MAUI team. Tests are discovered and executed through `DeviceRunners.VisualRunners.Xunit`, with a built-in visual runner UI and `dotnet test` support via `DeviceRunners.Testing.Targets`.
 
 ## Prerequisites
 
@@ -11,65 +11,51 @@ This project uses the same test-runner approach as the .NET MAUI team: tests are
 - For iOS/MacCatalyst: macOS with Xcode installed
 - For Windows: Windows 10/11 with Windows App SDK
 
-## Running Tests Locally
+## Running Tests
 
-When the app launches, the **visual test runner** (`VisualRunnerPage`) automatically discovers and executes all tests in the assembly via `DeviceRunner`, which drives xunit directly through `XunitFrontController`. Results are displayed in the UI.
+### Visual Runner (IDE / Interactive)
 
-### Windows
-
-```bash
-dotnet build src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -f net10.0-windows10.0.19041.0 -t:Run
-```
-
-Or press F5 in Visual Studio / VS Code with the Windows Machine profile selected.
-
-### Android
+Launch the app like any other MAUI app — F5 in Visual Studio / VS Code, or:
 
 ```bash
-# Ensure an emulator is running or a device is connected
 dotnet build src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -f net10.0-android -t:Run
 ```
 
-### iOS (macOS only)
+The **DeviceRunners visual runner** UI displays test results with pass/fail counts, per-test details, and diagnostics.
+
+### `dotnet test` (CI / Headless, Recommended)
 
 ```bash
-# Ensure a simulator is available
-dotnet build src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -f net10.0-ios -t:Run
+dotnet test src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -f net10.0-android
+dotnet test src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -f net10.0-ios
+dotnet test src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -f net10.0-maccatalyst
+dotnet test src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -f net10.0-windows10.0.19041.0
 ```
 
-### MacCatalyst (macOS only)
+The `DeviceRunners.Testing.Targets` package hooks into `dotnet test` to build, deploy, run, and collect TRX results automatically. Filter tests with `--filter`:
 
 ```bash
-dotnet build src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -f net10.0-maccatalyst -t:Run
+dotnet test ... -f net10.0-android --filter "FullyQualifiedName~StatusBarBehavior"
 ```
-
-## Running Tests Headlessly (CI)
-
-The `HeadlessRunnerService` is registered in DI and can be used for automated CI pipelines. It runs all tests without UI interaction via `DeviceRunner` and reports pass/fail counts to the trace log.
-
-The headless runner is configured in `MauiProgram.cs`:
-
-```csharp
-builder.UseHeadlessRunner(new HeadlessRunnerOptions
-{
-    RequiresUIContext = true,
-});
-```
-
-To run headlessly from a CI script, resolve `HeadlessRunnerService` from the service provider and call `RunTestsAsync()`. It returns a non-zero exit code when any test fails, and writes the pass/fail summary plus failure details to the trace log.
 
 ## Architecture
 
-The test runner follows the pattern established by the [dotnet/maui](https://github.com/dotnet/maui) team:
+Powered by [DeviceRunners](https://github.com/mattleibow/DeviceRunners):
 
-- **`TestOptions`** — Configuration for test assemblies and skip categories
-- **`HeadlessRunnerOptions`** — Configuration for CI/automated headless execution
-- **`DeviceRunner`** — Discovers and executes xunit tests via `XunitFrontController` (no reflection)
-- **`VisualRunnerPage`** — In-app visual test runner that displays results in the UI
-- **`HeadlessRunnerService`** — Headless runner service for automated CI pipelines
-- **`AppBuilderExtensions`** — `ConfigureTests()`, `UseVisualRunner()`, `UseHeadlessRunner()` extension methods
+- **`DeviceRunners.VisualRunners.Maui`** — MAUI visual runner UI (pages, view models, diagnostics)
+- **`DeviceRunners.VisualRunners.Xunit`** — xUnit v2 test discovery and execution adapter
+- **`DeviceRunners.Testing.Targets`** — MSBuild targets enabling `dotnet test` for device projects
+- **`DeviceRunners.Core`** / **`DeviceRunners.VisualRunners.Core`** — Core abstractions (test runners, result channels, formatters)
 
-Tests are discovered and executed directly through `XunitFrontController` from the `xunit.runner.utility` package, mirroring the `DeviceRunner` used by the [dotnet/maui](https://github.com/dotnet/maui) team. This avoids reflection-based runner loading so tests reliably execute on all platforms.
+Configured in `MauiProgram.cs`:
+
+```csharp
+builder.UseVisualTestRunner(conf => conf
+    .AddCliConfiguration()
+    .AddConsoleResultChannel()
+    .AddTestAssembly(typeof(MauiProgram).Assembly)
+    .AddXunit());
+```
 
 ## Project Structure
 
@@ -83,11 +69,6 @@ CommunityToolkit.Maui.DeviceTests/
 ├── Resources/
 │   ├── AppIcon/              # App icon assets
 │   └── Splash/               # Splash screen assets
-├── Runners/
-│   ├── AppBuilderExtensions.cs   # ConfigureTests / UseVisualRunner / UseHeadlessRunner
-│   ├── DeviceRunner.cs           # XunitFrontController-based test discovery & execution
-│   ├── HeadlessRunnerService.cs  # Headless CI test runner
-│   └── VisualRunnerPage.cs       # In-app visual test runner
 ├── Tests/                    # Device test classes organized by area
 │   ├── Additional/           # Additional cross-cutting tests
 │   ├── Behaviors/            # Behavior tests
@@ -100,15 +81,11 @@ CommunityToolkit.Maui.DeviceTests/
 │   └── Views/                # View tests
 ├── Properties/
 │   └── launchSettings.json
-├── App.cs                    # MAUI Application class
 ├── MauiProgram.cs            # App builder / DI configuration
-├── TestOptions.cs            # Test configuration options
-├── HeadlessRunnerOptions.cs  # Headless runner configuration
 ├── GlobalUsings.cs           # Assembly-level xunit configuration
 ├── SmokeTests.cs             # Basic app boot verification tests
 ├── PlatformDetectionTests.cs # Platform detection tests
-├── HandlerTests.cs           # Handler creation tests
-└── NuGet.config              # NuGet feed for XHarness packages (dotnet-eng)
+└── HandlerTests.cs           # Handler creation tests
 ```
 
 ## Adding New Tests
