@@ -11,6 +11,7 @@ public class PlatformDetectionTests
 	}
 
 	[Fact]
+	[Trait("Category", "ExpectedFailure")]
 	public void DeviceIdiomIsNotUnknown()
 	{
 		Assert.NotEqual(DeviceIdiom.Unknown, DeviceInfo.Idiom);

@@ -373,6 +373,11 @@ jobs:
             -   name: Set Xcode Version
                 uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
                 with:
+                    xcode-version: '26.6'
+
+            -   name: Set Xcode Version
+                uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
+                with:
                     xcode-version: ${{ env.CommunityToolkitLibrary_Xcode_Version }}
 
             -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
