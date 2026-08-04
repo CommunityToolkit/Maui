@@ -53,4 +53,16 @@ public abstract partial class FrameBasedCameraScenario : PlatformCameraScenario
 
 		throw new NotSupportedException($"Conversion from {frame.Format} to {format} is not supported by default. Override this method in your scenario to provide a custom implementation.");
 	}
+
+	/// <summary>
+	/// Creates a new <see cref="CameraFrame"/> with a disposal action.
+	/// </summary>
+	/// <param name="data">The raw frame data.</param>
+	/// <param name="width">The width of the frame.</param>
+	/// <param name="height">The height of the frame.</param>
+	/// <param name="format">The format of the frame data.</param>
+	/// <param name="onDispose">The action to be called when the frame is disposed.</param>
+	/// <returns>A new <see cref="CameraFrame"/>.</returns>
+	protected CameraFrame CreateFrame(byte[] data, int width, int height, CameraFrameFormat format, Action<byte[]> onDispose)
+		=> new(data, width, height, format, onDispose);
 }
