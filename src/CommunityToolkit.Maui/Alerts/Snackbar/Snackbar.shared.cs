@@ -177,7 +177,14 @@ public partial class Snackbar : ISnackbar
 #if WINDOWS
 	static bool IsPackagedApp()
 	{
-		return global::Windows.ApplicationModel.Package.Current is not null;
+		try
+		{
+			return global::Windows.ApplicationModel.Package.Current is not null;
+		}
+		catch
+		{
+			return false;
+		}
 	}
 #endif
 
