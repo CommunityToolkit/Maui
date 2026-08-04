@@ -19,6 +19,15 @@ public class SharedBarcodeScanningScenario : FrameBasedCameraScenario
 	};
 
 	/// <summary>
+	/// Initializes a new instance of the <see cref="SharedBarcodeScanningScenario"/> class.
+	/// </summary>
+	public SharedBarcodeScanningScenario()
+	{
+		// Request BGRA8888 as it is commonly supported and easy to work with in ZXing
+		PreferredFormat = CameraFrameFormat.Bgra8888;
+	}
+
+	/// <summary>
 	/// Backing BindableProperty for the <see cref="Command"/> property.
 	/// </summary>
 	public static readonly BindableProperty CommandProperty =

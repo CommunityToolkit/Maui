@@ -20,7 +20,18 @@ public abstract partial class FrameBasedCameraScenario
 			return;
 		}
 
-		var preferredFormat = source.SupportedFormats.FirstOrDefault(f => f.Subtype == "NV12") ?? source.SupportedFormats.FirstOrDefault();
+		var preferredFormatName = PreferredFormat switch
+		{
+			CameraFrameFormat.Nv12 => "NV12",
+			CameraFrameFormat.Bgra8888 => "BGRA8",
+			CameraFrameFormat.Rgba8888 => "RGBA8",
+			CameraFrameFormat.Yuv420 => "YUY2",
+			_ => null
+		};
+
+		var preferredFormat = source.SupportedFormats.FirstOrDefault(f => f.Subtype == preferredFormatName) 
+		                      ?? source.SupportedFormats.FirstOrDefault(f => f.Subtype == "NV12") 
+		                      ?? source.SupportedFormats.FirstOrDefault();
 		if (preferredFormat is null)
 		{
 			return;

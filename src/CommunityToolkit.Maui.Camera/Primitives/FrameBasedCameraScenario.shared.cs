@@ -7,6 +7,14 @@ namespace CommunityToolkit.Maui.Core;
 public abstract partial class FrameBasedCameraScenario : PlatformCameraScenario
 {
 	/// <summary>
+	/// Gets or sets the preferred format for camera frames.
+	/// </summary>
+	/// <remarks>
+	/// The platform will attempt to provide frames in this format. If the format is not supported, it will fall back to a default format.
+	/// </remarks>
+	public CameraFrameFormat PreferredFormat { get; set; } = CameraFrameFormat.Unknown;
+
+	/// <summary>
 	/// Called when a new frame is received from the camera.
 	/// </summary>
 	/// <param name="frame">The camera frame.</param>
