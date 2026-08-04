@@ -275,7 +275,6 @@ public class NullableExtensionsTests
 
 #region PropertyChangedEventArgsExtensions Tests
 
-[Trait("Category", "ExpectedFailure")]
 public class PropertyChangedEventArgsExtensionsTests
 {
 	[Fact]

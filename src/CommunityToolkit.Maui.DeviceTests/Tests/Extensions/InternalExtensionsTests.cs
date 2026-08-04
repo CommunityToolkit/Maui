@@ -69,7 +69,6 @@ public class CryptographyExtensionsTests
 	}
 }
 
-[Trait("Category", "ExpectedFailure")]
 public class WeakReferenceExtensionsTests
 {
 	[Fact]
@@ -121,7 +120,6 @@ public class WeakReferenceExtensionsTests
 	}
 }
 
-[Trait("Category", "ExpectedFailure")]
 public class SafeFireAndForgetExtensionsTests
 {
 	[Fact]

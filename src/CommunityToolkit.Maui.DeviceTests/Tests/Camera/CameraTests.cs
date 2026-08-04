@@ -37,28 +37,24 @@ public class CameraViewDefaultsTests
 	}
 
 	[Fact]
-	[Trait("Category", "ExpectedFailure")]
 	public void CameraViewDefaults_IsTorchOn_IsFalse()
 	{
 		Assert.False(CameraViewDefaults.IsTorchOn);
 	}
 
 	[Fact]
-	[Trait("Category", "ExpectedFailure")]
 	public void CameraViewDefaults_ZoomFactor_IsOne()
 	{
 		Assert.Equal(1.0f, CameraViewDefaults.ZoomFactor);
 	}
 
 	[Fact]
-	[Trait("Category", "ExpectedFailure")]
 	public void CameraViewDefaults_IsAvailable_IsFalse()
 	{
 		Assert.False(CameraViewDefaults.IsAvailable);
 	}
 
 	[Fact]
-	[Trait("Category", "ExpectedFailure")]
 	public void CameraViewDefaults_IsCameraBusy_IsFalse()
 	{
 		Assert.False(CameraViewDefaults.IsCameraBusy);

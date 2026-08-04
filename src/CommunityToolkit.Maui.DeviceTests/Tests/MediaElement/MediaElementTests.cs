@@ -33,7 +33,6 @@ public class AndroidViewTypeEnumTests
 	}
 }
 
-[Trait("Category", "ExpectedFailure")]
 public class MediaElementDefaultsTests
 {
 	[Fact]
@@ -115,7 +114,6 @@ public class MediaElementDefaultsTests
 	}
 }
 
-[Trait("Category", "ExpectedFailure")]
 public class MediaElementOptionsTests
 {
 	[Fact]
@@ -462,7 +460,6 @@ public class FileMediaSourceConverterTests
 	}
 }
 
-[Trait("Category", "ExpectedFailure")]
 public partial class StreamExtensionsTests
 {
 	// GetMimeType is a media-format detector (audio/video containers), not a general image/pdf sniffer.

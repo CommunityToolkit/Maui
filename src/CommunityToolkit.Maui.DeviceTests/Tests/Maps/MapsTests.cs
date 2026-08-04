@@ -6,7 +6,6 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.DeviceTests.Tests.Maps;
 
-[Trait("Category", "ExpectedFailure")]
 public class BoundsTests
 {
 	[Fact]
@@ -43,7 +42,6 @@ public class BoundsTests
 	}
 }
 
-[Trait("Category", "ExpectedFailure")]
 public class CenterTests
 {
 	[Fact]
@@ -75,7 +73,6 @@ public class CenterTests
 	}
 }
 
-[Trait("Category", "ExpectedFailure")]
 public class EventIdentifierEnumTests
 {
 	[Fact]
@@ -121,7 +118,6 @@ public class EventIdentifierEnumTests
 	}
 }
 
-[Trait("Category", "ExpectedFailure")]
 public class EventMessageTests
 {
 	[Fact]
@@ -158,7 +154,6 @@ public class EventMessageTests
 	}
 }
 
-[Trait("Category", "ExpectedFailure")]
 public class InfoWindowTests
 {
 	[Fact]
@@ -181,7 +176,6 @@ public class InfoWindowTests
 	}
 }
 
-[Trait("Category", "ExpectedFailure")]
 public class SerializerContextTests
 {
 	static JsonTypeInfo GetTypeInfo(string typeName)
