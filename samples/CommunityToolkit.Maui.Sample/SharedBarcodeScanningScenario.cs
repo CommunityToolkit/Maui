@@ -36,14 +36,26 @@ public class SharedBarcodeScanningScenario : FrameBasedCameraScenario
 	/// <inheritdoc/>
 	public override void OnFrameReceived(CameraFrame frame)
 	{
-		var luminanceSource = new RGBLuminanceSource(frame.Data, frame.Width, frame.Height);
-		var result = barcodeReader.Decode(luminanceSource);
-
-		if (result is not null)
+		using (frame)
 		{
-			if (Command?.CanExecute(result.Text) is true)
+			// If we needed to convert to a specific format, we could do it here:
+			// using var convertedFrame = Convert(frame, CameraFrameFormat.Rgba8888);
+			
+			RGBLuminanceSource luminanceSource = frame.Format switch
 			{
-				MainThread.BeginInvokeOnMainThread(() => Command.Execute(result.Text));
+				CameraFrameFormat.Rgba8888 => new RGBLuminanceSource(frame.Data, frame.Width, frame.Height, RGBLuminanceSource.BitmapFormat.RGBA32),
+				CameraFrameFormat.Bgra8888 => new RGBLuminanceSource(frame.Data, frame.Width, frame.Height, RGBLuminanceSource.BitmapFormat.BGRA32),
+				_ => new RGBLuminanceSource(frame.Data, frame.Width, frame.Height) // Fallback to grayscale/luminance only
+			};
+
+			var result = barcodeReader.Decode(luminanceSource);
+
+			if (result is not null)
+			{
+				if (Command?.CanExecute(result.Text) is true)
+				{
+					MainThread.BeginInvokeOnMainThread(() => Command.Execute(result.Text));
+				}
 			}
 		}
 	}
