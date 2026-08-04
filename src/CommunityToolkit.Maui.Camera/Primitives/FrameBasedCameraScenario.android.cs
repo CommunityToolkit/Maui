@@ -58,10 +58,16 @@ public abstract partial class FrameBasedCameraScenario
 				return;
 			}
 
-			var data = new byte[buffer.Remaining()];
-			buffer.Get(data);
+			var data = scenario.Allocate(buffer.Remaining());
+			buffer.Get(data, 0, buffer.Remaining());
 
-			var cameraFrame = new CameraFrame(data, image.Width, image.Height);
+			var format = image.Format switch
+			{
+				(int)Android.Graphics.ImageFormatType.Yuv420888 => CameraFrameFormat.Yuv420,
+				_ => CameraFrameFormat.Unknown
+			};
+
+			var cameraFrame = new CameraFrame(data, image.Width, image.Height, format, scenario.Free);
 			
 			scenario.OnFrameReceived(cameraFrame);
 

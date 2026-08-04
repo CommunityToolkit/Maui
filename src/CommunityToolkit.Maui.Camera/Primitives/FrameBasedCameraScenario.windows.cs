@@ -62,10 +62,20 @@ public abstract partial class FrameBasedCameraScenario
 		// To get raw bytes from SoftwareBitmap:
 		var width = softwareBitmap.PixelWidth;
 		var height = softwareBitmap.PixelHeight;
-		var data = new byte[4 * width * height];
-		softwareBitmap.CopyByteArrayToBuffer(data.AsBuffer());
+		var size = 4 * width * height;
+		var data = Allocate(size);
+		softwareBitmap.CopyByteArrayToBuffer(data.AsBuffer(0, size));
 
-		var cameraFrame = new CameraFrame(data, width, height);
+		var format = softwareBitmap.BitmapPixelFormat switch
+		{
+			Windows.Graphics.Imaging.BitmapPixelFormat.Bgra8 => CameraFrameFormat.Bgra8888,
+			Windows.Graphics.Imaging.BitmapPixelFormat.Rgba8 => CameraFrameFormat.Rgba8888,
+			Windows.Graphics.Imaging.BitmapPixelFormat.Nv12 => CameraFrameFormat.Nv12,
+			Windows.Graphics.Imaging.BitmapPixelFormat.Yuy2 => CameraFrameFormat.Yuv420, // Not exactly same but close for this enum
+			_ => CameraFrameFormat.Unknown
+		};
+
+		var cameraFrame = new CameraFrame(data, width, height, format, Free);
 
 		OnFrameReceived(cameraFrame);
 	}

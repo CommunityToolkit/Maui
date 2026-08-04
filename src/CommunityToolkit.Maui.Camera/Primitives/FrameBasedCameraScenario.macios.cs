@@ -45,12 +45,21 @@ public abstract partial class FrameBasedCameraScenario
 			var bytesPerRow = (int)imageBuffer.BytesPerRow;
 			var bufferSize = bytesPerRow * height;
 
-			var data = new byte[bufferSize];
+			var data = scenario.Allocate(bufferSize);
 			System.Runtime.InteropServices.Marshal.Copy(baseAddress, data, 0, bufferSize);
 
 			imageBuffer.Unlock(CVPixelBufferLock.ReadOnly);
 
-			var cameraFrame = new CameraFrame(data, width, height);
+			var format = imageBuffer.PixelFormatType switch
+			{
+				CVPixelFormatType.CV32BGRA => CameraFrameFormat.Bgra8888,
+				CVPixelFormatType.CV32RGBA => CameraFrameFormat.Rgba8888,
+				CVPixelFormatType.CV420YpCbCr8BiPlanarVideoRange => CameraFrameFormat.Yuv420BiPlanar,
+				CVPixelFormatType.CV420YpCbCr8BiPlanarFullRange => CameraFrameFormat.Yuv420BiPlanar,
+				_ => CameraFrameFormat.Unknown
+			};
+
+			var cameraFrame = new CameraFrame(data, width, height, format, scenario.Free);
 
 			scenario.OnFrameReceived(cameraFrame);
 
