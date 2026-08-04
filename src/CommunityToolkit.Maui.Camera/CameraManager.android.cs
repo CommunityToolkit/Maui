@@ -322,7 +322,7 @@ partial class CameraManager
 			return;
 		}
 
-		var useCases = scenarios.Select(s => s.UseCase).ToList();
+		var useCases = scenarios.OfType<PlatformCameraScenario>().Select(s => s.UseCase).ToList();
 		useCases.Add(cameraPreview);
 		useCases.Add(imageCapture);
 
@@ -341,7 +341,7 @@ partial class CameraManager
 			return;
 		}
 
-		var useCases = scenarios.Select(s => s.UseCase).ToList();
+		var useCases = scenarios.OfType<PlatformCameraScenario>().Select(s => s.UseCase).ToList();
 		useCases.Add(cameraPreview);
 		useCases.Add(imageCapture);
 		useCases.Add(videoCapture);
