@@ -125,10 +125,10 @@ partial class CameraManager
 			throw;
 		}
 	}
-
+	
 	private async partial Task PlatformConnectCamera(CancellationToken token)
 	{
-		await Task.CompletedTask;
+		await StartCameraPreview(token);
 	}
 
 	private async partial Task PlatformStartCameraPreview(CancellationToken token)
@@ -176,12 +176,6 @@ partial class CameraManager
 
 		mediaCapture = null;
 		isInitialized = false;
-	}
-
-	private async partial Task PlatformConnectCamera(CancellationToken token)
-	{
-		// On Windows, StartCameraPreview does the initialization.
-		await Task.CompletedTask;
 	}
 
 	async Task PlatformUpdateResolution(Size resolution, CancellationToken token)

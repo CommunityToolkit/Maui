@@ -35,8 +35,6 @@ public class CameraConsumer(TaskCompletionSource finalizeTcs) : Object, IConsume
 partial class CameraManager
 {
 	readonly Context context = mauiContext.Context ?? throw new CameraException($"Unable to retrieve {nameof(Context)}");
-
-	readonly IList<CameraScenario> scenarios = [];
 	
 	NativePlatformCameraPreviewView? previewView;
 	IExecutorService? cameraExecutor;

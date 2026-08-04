@@ -30,8 +30,8 @@ partial class CameraManager
 
 	private partial Task<Stream> PlatformStopVideoRecording(CancellationToken token) => throw new NotSupportedException(notSupportedMessage);
 
-	internal partial void AddPlatformScenario(PlatformCameraScenario scenario) => throw new NotSupportedException(notSupportedMessage);
+	partial void AddPlatformScenario(PlatformCameraScenario scenario) => throw new NotSupportedException(notSupportedMessage);
 
-	internal partial void RemovePlatformScenario(PlatformCameraScenario scenario) => throw new NotSupportedException(notSupportedMessage);
+	partial void RemovePlatformScenario(PlatformCameraScenario scenario) => throw new NotSupportedException(notSupportedMessage);
 
 }
