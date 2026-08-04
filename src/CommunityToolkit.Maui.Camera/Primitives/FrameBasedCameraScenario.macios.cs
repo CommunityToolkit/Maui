@@ -17,6 +17,19 @@ public abstract partial class FrameBasedCameraScenario
 		videoDataOutput = new Lazy<AVCaptureVideoDataOutput>(() =>
 		{
 			var output = new AVCaptureVideoDataOutput();
+
+			var pixelFormat = PreferredFormat switch
+			{
+				CameraFrameFormat.Rgba8888 => CVPixelFormatType.CV32RGBA,
+				CameraFrameFormat.Bgra8888 => CVPixelFormatType.CV32BGRA,
+				CameraFrameFormat.Yuv420BiPlanar => CVPixelFormatType.CV420YpCbCr8BiPlanarVideoRange,
+				_ => (CVPixelFormatType?)null
+			};
+
+			if (pixelFormat.HasValue)
+			{
+				output.WeakVideoSettings = new NSDictionary(CVPixelBuffer.PixelFormatTypeKey, NSNumber.FromUInt32((uint)pixelFormat.Value));
+			}
 			
 			output.SetSampleBufferDelegate(new VideoDataOutputDelegate(this), CoreFoundation.DispatchQueue.MainQueue);
 			
