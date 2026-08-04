@@ -41,17 +41,16 @@ public partial class Snackbar : ISnackbar
 	public Snackbar()
 	{
 #if WINDOWS
-		if (!Options.ShouldEnableSnackbarOnWindows)
+		if (!IsPackagedApp())
 		{
-			throw new InvalidOperationException($"Additional setup is required in the Package.appxmanifest file to enable {nameof(Snackbar)} on Windows. Additonally, `{nameof(AppBuilderExtensions.UseMauiCommunityToolkit)}(options => options.{nameof(Options.SetShouldEnableSnackbarOnWindows)}({bool.TrueString.ToLower()});` must be called to enable Snackbar on Windows. See the Platform Specific Initialization section of the {nameof(Snackbar)} documentaion for more information: https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar")
+			throw new InvalidOperationException($"{nameof(Snackbar)} is not supported on unpackaged Windows apps. {nameof(Snackbar)} requires the app to be packaged (MSIX) because it uses the Windows App SDK AppNotificationManager API. See https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar for more information.")
 			{
 				HelpLink = "https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar"
 			};
 		}
-
-		if (!IsPackagedApp())
+		if (!Options.ShouldEnableSnackbarOnWindows)
 		{
-			throw new InvalidOperationException($"{nameof(Snackbar)} is not supported on unpackaged Windows apps. {nameof(Snackbar)} requires the app to be packaged (MSIX) because it uses the Windows App SDK AppNotificationManager API. See https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar for more information.")
+			throw new InvalidOperationException($"Additional setup is required in the Package.appxmanifest file to enable {nameof(Snackbar)} on Windows. Additonally, `{nameof(AppBuilderExtensions.UseMauiCommunityToolkit)}(options => options.{nameof(Options.SetShouldEnableSnackbarOnWindows)}({bool.TrueString.ToLower()});` must be called to enable Snackbar on Windows. See the Platform Specific Initialization section of the {nameof(Snackbar)} documentaion for more information: https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar")
 			{
 				HelpLink = "https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar"
 			};
