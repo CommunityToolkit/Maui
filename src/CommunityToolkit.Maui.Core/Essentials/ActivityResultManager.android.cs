@@ -3,7 +3,9 @@ using AndroidX.Activity;
 using AndroidX.Activity.Result;
 using AndroidX.Activity.Result.Contract;
 using CommunityToolkit.Maui.Storage;
+using Microsoft.Maui.ApplicationModel;
 using JavaObject = Java.Lang.Object;
+using MauiPlatform = Microsoft.Maui.ApplicationModel.Platform;
 
 namespace CommunityToolkit.Maui.Core.Essentials;
 
@@ -12,14 +14,20 @@ namespace CommunityToolkit.Maui.Core.Essentials;
 /// </summary>
 /// <remarks>
 /// This replaces .NET MAUI's internal <c>Microsoft.Maui.ApplicationModel.IntermediateActivity</c>.
-/// Rather than routing through an extra <see cref="Android.App.Activity"/> (which needs a manifest
-/// entry and hand-rolled instance-state plumbing), this uses AndroidX's
-/// <see cref="ActivityResultRegistry"/>. The three-argument <c>Register</c> overload deliberately
-/// takes no <c>ILifecycleOwner</c>, so it is safe to call at any point in the host activity's
-/// lifecycle - which is exactly what an on-demand picker needs.
+/// Rather than routing through an extra <see cref="Android.App.Activity"/>, this uses AndroidX's
+/// <see cref="ActivityResultRegistry"/> and stable registry keys. Pending callbacks are registered
+/// again when the host activity is recreated so AndroidX can deliver restored results.
 /// </remarks>
 static class ActivityResultManager
 {
+	static readonly object pendingRequestsLock = new();
+	static readonly Dictionary<string, PendingRequest> pendingRequests = [];
+
+	static ActivityResultManager()
+	{
+		MauiPlatform.ActivityStateChanged += OnActivityStateChanged;
+	}
+
 	/// <summary>
 	/// Starts <paramref name="intent"/> and completes when the user finishes the activity.
 	/// </summary>
@@ -41,21 +49,285 @@ static class ActivityResultManager
 				$"The current activity must derive from {nameof(ComponentActivity)} (for example MauiAppCompatActivity) in order to receive activity results.");
 		}
 
-		var taskCompletionSource = new TaskCompletionSource<Intent>(TaskCreationOptions.RunContinuationsAsynchronously);
-
 		// Keys must be unique per in-flight launch, otherwise a second launch would clobber the first.
 		var key = $"{nameof(CommunityToolkit)}.{nameof(Maui)}.{requestCode}.{Guid.NewGuid():N}";
+		var pendingRequest = new PendingRequest(key, onResult, token);
 
-		ActivityResultLauncher? launcher = null;
-		CancellationTokenRegistration cancellationRegistration = default;
-
-		// Releases the launcher exactly once, whichever of the result callback, cancellation
-		// or a failed Launch gets there first, so nothing stays rooted in the registry.
-		void Release()
+		lock (pendingRequestsLock)
 		{
-			cancellationRegistration.Dispose();
+			pendingRequests.Add(key, pendingRequest);
+		}
 
-			if (Interlocked.Exchange(ref launcher, null) is not ActivityResultLauncher launcherToRelease)
+		try
+		{
+			pendingRequest.Register(activity);
+			pendingRequest.Launch(intent);
+		}
+		catch
+		{
+			pendingRequest.Dispose();
+			throw;
+		}
+
+		pendingRequest.RegisterCancellation();
+		return pendingRequest.Task;
+	}
+
+	static PendingRequest[] GetPendingRequests()
+	{
+		lock (pendingRequestsLock)
+		{
+			return [.. pendingRequests.Values];
+		}
+	}
+
+	static void OnActivityStateChanged(object? sender, ActivityStateChangedEventArgs e)
+	{
+		if (e.Activity is not ComponentActivity activity)
+		{
+			return;
+		}
+
+		var requests = GetPendingRequests();
+
+		switch (e.State)
+		{
+			case ActivityState.Created:
+				RegisterPendingRequests(activity, requests);
+				break;
+			case ActivityState.Destroyed:
+				foreach (var request in requests)
+				{
+					request.Detach(activity, activity.IsFinishing);
+				}
+
+				if (!activity.IsFinishing
+					&& MauiPlatform.CurrentActivity is ComponentActivity currentActivity
+					&& !ReferenceEquals(activity, currentActivity))
+				{
+					RegisterPendingRequests(currentActivity, requests);
+				}
+				break;
+		}
+	}
+
+	static void RegisterPendingRequests(ComponentActivity activity, IEnumerable<PendingRequest> requests)
+	{
+		foreach (var request in requests)
+		{
+			try
+			{
+				request.Register(activity);
+			}
+			catch (Exception ex)
+			{
+				request.Fail(ex);
+			}
+		}
+	}
+
+	static void Remove(PendingRequest request)
+	{
+		lock (pendingRequestsLock)
+		{
+			if (pendingRequests.TryGetValue(request.Key, out var currentRequest)
+				&& ReferenceEquals(request, currentRequest))
+			{
+				pendingRequests.Remove(request.Key);
+			}
+		}
+	}
+
+	sealed class ActivityResultCallback(Action<JavaObject?> onActivityResult) : JavaObject, IActivityResultCallback
+	{
+		public void OnActivityResult(JavaObject? result) => onActivityResult(result);
+	}
+
+	sealed class PendingRequest : IDisposable
+	{
+		readonly object requestLock = new();
+		readonly Action<Intent>? onResult;
+		readonly CancellationToken token;
+		readonly TaskCompletionSource<Intent> taskCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
+		readonly ActivityResultCallback callback;
+		ActivityResultLauncher? launcher;
+		ComponentActivity? activity;
+		CancellationTokenRegistration cancellationRegistration;
+		RequestState state;
+
+		public PendingRequest(string key, Action<Intent>? onResult, CancellationToken token)
+		{
+			Key = key;
+			this.onResult = onResult;
+			this.token = token;
+			callback = new ActivityResultCallback(OnActivityResult);
+		}
+
+		enum RequestState
+		{
+			Pending = 0,
+			Canceled = 1,
+			Completed = 2
+		}
+
+		public string Key { get; }
+
+		public Task<Intent> Task => taskCompletionSource.Task;
+
+		public void Detach(ComponentActivity activity, bool isFinishing)
+		{
+			ActivityResultLauncher? launcherToRelease;
+			RequestState previousState;
+
+			lock (requestLock)
+			{
+				if (!ReferenceEquals(this.activity, activity))
+				{
+					return;
+				}
+
+				this.activity = null;
+				launcherToRelease = launcher;
+				launcher = null;
+				previousState = state;
+
+				if (isFinishing)
+				{
+					state = RequestState.Completed;
+				}
+			}
+
+			ReleaseLauncher(activity, launcherToRelease);
+
+			if (isFinishing && previousState is not RequestState.Completed)
+			{
+				Remove(this);
+				cancellationRegistration.Dispose();
+				callback.Dispose();
+				taskCompletionSource.TrySetCanceled();
+			}
+		}
+
+		public void Dispose()
+		{
+			var previousState = Complete(out var activityToRelease, out var launcherToRelease);
+			ReleaseLauncher(activityToRelease, launcherToRelease);
+			DisposeCallback(previousState);
+		}
+
+		public void Fail(Exception exception)
+		{
+			ArgumentNullException.ThrowIfNull(exception);
+
+			var previousState = Complete(out var activityToRelease, out var launcherToRelease);
+			ReleaseLauncher(activityToRelease, launcherToRelease);
+			DisposeCallback(previousState);
+
+			if (previousState is RequestState.Pending)
+			{
+				taskCompletionSource.TrySetException(exception);
+			}
+		}
+
+		public void Launch(Intent intent)
+		{
+			ActivityResultLauncher launcherToUse;
+
+			lock (requestLock)
+			{
+				launcherToUse = launcher ?? throw new InvalidOperationException("Unable to register the activity result launcher.");
+			}
+
+			launcherToUse.Launch(intent);
+		}
+
+		public void Register(ComponentActivity activity)
+		{
+			lock (requestLock)
+			{
+				if (state is RequestState.Completed || this.activity is not null)
+				{
+					return;
+				}
+
+				this.activity = activity;
+			}
+
+			ActivityResultLauncher newLauncher;
+
+			try
+			{
+				newLauncher = activity.ActivityResultRegistry.Register(
+					Key,
+					new ActivityResultContracts.StartActivityForResult(),
+					callback);
+			}
+			catch
+			{
+				lock (requestLock)
+				{
+					if (ReferenceEquals(this.activity, activity))
+					{
+						this.activity = null;
+					}
+				}
+
+				throw;
+			}
+
+			var releaseNewLauncher = false;
+
+			lock (requestLock)
+			{
+				if (state is RequestState.Completed || !ReferenceEquals(this.activity, activity))
+				{
+					releaseNewLauncher = true;
+				}
+				else
+				{
+					launcher = newLauncher;
+				}
+			}
+
+			if (releaseNewLauncher)
+			{
+				ReleaseLauncher(activity, newLauncher);
+			}
+		}
+
+		public void RegisterCancellation()
+		{
+			var registration = token.Register(static state =>
+			{
+				if (state is PendingRequest request)
+				{
+					request.Cancel();
+				}
+			}, this);
+
+			var disposeRegistration = false;
+
+			lock (requestLock)
+			{
+				if (state is RequestState.Completed)
+				{
+					disposeRegistration = true;
+				}
+				else
+				{
+					cancellationRegistration = registration;
+				}
+			}
+
+			if (disposeRegistration)
+			{
+				registration.Dispose();
+			}
+		}
+
+		static void ReleaseLauncher(ComponentActivity? activity, ActivityResultLauncher? launcher)
+		{
+			if (activity is null || launcher is null)
 			{
 				return;
 			}
@@ -63,14 +335,105 @@ static class ActivityResultManager
 			// Activity.RunOnUiThread invokes inline when already on the UI thread.
 			activity.RunOnUiThread(() =>
 			{
-				launcherToRelease.Unregister();
-				launcherToRelease.Dispose();
+				launcher.Unregister();
+				launcher.Dispose();
 			});
 		}
 
-		var callback = new ActivityResultCallback(result =>
+		static void ReleaseLauncherAfterResult(ComponentActivity? activity, ActivityResultLauncher? launcher, ActivityResultCallback callback, bool disposeCallback)
 		{
-			Release();
+			if (activity is null)
+			{
+				launcher?.Dispose();
+
+				if (disposeCallback)
+				{
+					callback.Dispose();
+				}
+
+				return;
+			}
+
+			void Release()
+			{
+				launcher?.Unregister();
+				launcher?.Dispose();
+
+				if (disposeCallback)
+				{
+					callback.Dispose();
+				}
+			}
+
+			// ActivityResultRegistry removes the launched key only after invoking its callback.
+			// Post cleanup so Unregister can remove the key-to-request-code mappings as well.
+			if (activity.Window?.DecorView?.Post(Release) is not true)
+			{
+				Release();
+			}
+		}
+
+		void Cancel()
+		{
+			lock (requestLock)
+			{
+				if (state is not RequestState.Pending)
+				{
+					return;
+				}
+
+				state = RequestState.Canceled;
+			}
+
+			// AndroidX retains an in-flight registry key after Unregister. Keep the callback
+			// registered until its result arrives so the key and pending result can be drained.
+			taskCompletionSource.TrySetCanceled(token);
+		}
+
+		RequestState Complete(out ComponentActivity? activityToRelease, out ActivityResultLauncher? launcherToRelease)
+		{
+			RequestState previousState;
+
+			lock (requestLock)
+			{
+				previousState = state;
+				state = RequestState.Completed;
+				activityToRelease = activity;
+				activity = null;
+				launcherToRelease = launcher;
+				launcher = null;
+			}
+
+			if (previousState is not RequestState.Completed)
+			{
+				Remove(this);
+				cancellationRegistration.Dispose();
+			}
+
+			return previousState;
+		}
+
+		void DisposeCallback(RequestState previousState)
+		{
+			if (previousState is not RequestState.Completed)
+			{
+				callback.Dispose();
+			}
+		}
+
+		void OnActivityResult(JavaObject? result)
+		{
+			var previousState = Complete(out var activityToRelease, out var launcherToRelease);
+			ReleaseLauncherAfterResult(
+				activityToRelease,
+				launcherToRelease,
+				callback,
+				previousState is not RequestState.Completed);
+
+			if (previousState is not RequestState.Pending)
+			{
+				return;
+			}
 
 			if (result is not ActivityResult activityResult || activityResult.ResultCode is (int)Android.App.Result.Canceled)
 			{
@@ -89,33 +452,6 @@ static class ActivityResultManager
 			{
 				taskCompletionSource.TrySetException(ex);
 			}
-		});
-
-		launcher = activity.ActivityResultRegistry.Register(key, new ActivityResultContracts.StartActivityForResult(), callback);
-
-		try
-		{
-			launcher.Launch(intent);
 		}
-		catch
-		{
-			Release();
-			throw;
-		}
-
-		// Registered after Launch so a cancellation that arrives first cannot release the launcher
-		// while it is still being started. Register invokes inline if the token is already cancelled.
-		cancellationRegistration = token.Register(() =>
-		{
-			Release();
-			taskCompletionSource.TrySetCanceled(token);
-		});
-
-		return taskCompletionSource.Task;
-	}
-
-	sealed class ActivityResultCallback(Action<JavaObject?> onActivityResult) : JavaObject, IActivityResultCallback
-	{
-		public void OnActivityResult(JavaObject? result) => onActivityResult(result);
 	}
 }
