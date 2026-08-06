@@ -401,7 +401,7 @@ public class GravatarImageSourceTests : BaseViewTest
 	[Fact]
 	public void TestToolbar()
 	{
-		Toolbar testControl = new(new View())
+		Toolbar testControl = new(new MockView())
 		{
 			TitleIcon = new GravatarImageSource(),
 		};

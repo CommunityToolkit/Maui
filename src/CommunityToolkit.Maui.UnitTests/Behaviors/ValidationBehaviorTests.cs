@@ -5,7 +5,7 @@ using Xunit.v3;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseBehaviorTest<ValidationBehavior, VisualElement>(new MockValidationBehavior(), new View())
+public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseBehaviorTest<ValidationBehavior, VisualElement>(new MockValidationBehavior(), new MockView())
 {
 	[Fact]
 	public void ValidateOnValueChanged()
@@ -217,7 +217,7 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 	public void TestRemoveValidationBindingWithBindingContext()
 	{
 		var behavior = new MockValidationBehavior();
-		var view = new View
+		var view = new MockView
 		{
 			BindingContext = new MockPageViewModel()
 		};
@@ -235,7 +235,7 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 	public void TestRemoveValidationBindingWithoutBindingContext()
 	{
 		var behavior = new MockValidationBehavior();
-		var view = new View();
+		var view = new MockView();
 
 		view.Behaviors.Add(behavior);
 

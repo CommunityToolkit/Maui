@@ -82,8 +82,8 @@ public class ProgressBarAnimationBehaviorTests() : BaseBehaviorTest<ProgressBarA
 			new Button(),
 			new Border(),
 			new Label(),
-			new VisualElement(),
-			new View(),
+			new MockVisualElement(),
+			new MockView(),
 			new Entry(),
 		];
 
