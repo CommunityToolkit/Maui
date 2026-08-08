@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Alerts;
 
@@ -34,14 +35,13 @@ public partial class Snackbar : ISnackbar
 
 	bool isDisposed;
 	WeakReference<IView>? weakView;
-
 	/// <summary>
 	/// Initializes a new instance of <see cref="Snackbar"/>
 	/// </summary>
 	public Snackbar()
 	{
 #if WINDOWS
-		if (!IsPackagedApp())
+		if (!AppPackageExtensions.IsPackagedApp)
 		{
 			throw new InvalidOperationException($"{nameof(Snackbar)} is not supported on unpackaged Windows apps. {nameof(Snackbar)} requires the app to be packaged (MSIX) because it uses the Windows App SDK AppNotificationManager API. See https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar for more information.")
 			{
@@ -173,19 +173,6 @@ public partial class Snackbar : ISnackbar
 
 	internal static TimeSpan GetDefaultTimeSpan() => TimeSpan.FromSeconds(3);
 
-#if WINDOWS
-	static bool IsPackagedApp()
-	{
-		try
-		{
-			return global::Windows.ApplicationModel.Package.Current is not null;
-		}
-		catch
-		{
-			return false;
-		}
-	}
-#endif
 
 	void OnShown()
 	{

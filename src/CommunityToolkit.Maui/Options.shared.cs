@@ -87,7 +87,7 @@ public class Options : Core.Options
 
 						else if (Application.Current.Windows.Count is 1)
 						{
-							if (IsPackagedApp())
+							if (AppPackageExtensions.IsPackagedApp)
 							{
 								Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked += OnSnackbarNotificationInvoked;
 								Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Register();
@@ -104,7 +104,7 @@ public class Options : Core.Options
 						{
 							throw new InvalidOperationException($"{nameof(Application)}.{nameof(Application.Current)} cannot be null when Windows are closed");
 						}
-						else if (Application.Current.Windows.Count is 0 && IsPackagedApp())
+						else if (Application.Current.Windows.Count is 0 && AppPackageExtensions.IsPackagedApp)
 						{
 							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked -= OnSnackbarNotificationInvoked;
 							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Unregister();
@@ -116,18 +116,6 @@ public class Options : Core.Options
 														Microsoft.Windows.AppNotifications.AppNotificationActivatedEventArgs args)
 			{
 				Alerts.Snackbar.HandleSnackbarAction(args);
-			}
-
-			static bool IsPackagedApp()
-			{
-				try
-				{
-					return global::Windows.ApplicationModel.Package.Current is not null;
-				}
-				catch
-				{
-					return false;
-				}
 			}
 		}
 #endif
