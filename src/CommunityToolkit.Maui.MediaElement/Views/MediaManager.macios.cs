@@ -319,23 +319,6 @@ public partial class MediaManager : IDisposable
 
 		Player.ReplaceCurrentItemWithPlayerItem(PlayerItem);
 
-		CurrentItemErrorObserver = PlayerItem?.AddObserver("error",
-			ValueObserverOptions, (NSObservedChange change) =>
-			{
-				if (Player.CurrentItem?.Error is null)
-				{
-					return;
-				}
-
-				var message = $"{Player.CurrentItem?.Error?.LocalizedDescription} - " +
-							  $"{Player.CurrentItem?.Error?.LocalizedFailureReason}";
-
-				MediaElement.MediaFailed(
-					new MediaFailedEventArgs(message));
-
-				Logger.LogError("{LogMessage}", message);
-			});
-
 		if (PlayerItem is null)
 		{
 			MediaElement.MediaWidth = MediaElement.MediaHeight = 0;
