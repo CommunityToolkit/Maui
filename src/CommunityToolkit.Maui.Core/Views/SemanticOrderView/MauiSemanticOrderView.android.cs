@@ -2,6 +2,7 @@
 using System.Runtime.Versioning;
 using Android.Content;
 using Microsoft.Maui.Platform;
+using AView = Android.Views.View;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -36,8 +37,8 @@ public class MauiSemanticOrderView(Context context) : ContentViewGroup(context)
 
 		for (var i = 1; i < viewOrder.Count; i++)
 		{
-			var view1 = (viewOrder[i - 1].Handler as IPlatformViewHandler)?.PlatformView;
-			var view2 = (viewOrder[i].Handler as IPlatformViewHandler)?.PlatformView;
+			var view1 = viewOrder[i - 1].Handler?.PlatformView as AView;
+			var view2 = viewOrder[i].Handler?.PlatformView as AView;
 
 			if (view1 is null || view2 is null)
 			{

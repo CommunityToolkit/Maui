@@ -1,5 +1,4 @@
 using UIKit;
-using IImage = Microsoft.Maui.IImage;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -8,9 +7,9 @@ public partial class ImageTouchBehavior
 	/// <inheritdoc/>
 	protected override void OnAttachedTo(VisualElement bindable, UIView platformView)
 	{
-		if (bindable is not IImage)
+		if (bindable is not Image and not ImageButton)
 		{
-			throw new InvalidOperationException($"{nameof(ImageTouchBehavior)} can only be attached to an {nameof(IImage)}");
+			throw new InvalidOperationException($"{nameof(ImageTouchBehavior)} can only be attached to an {nameof(Image)} or {nameof(ImageButton)}");
 		}
 
 		base.OnAttachedTo(bindable, platformView);

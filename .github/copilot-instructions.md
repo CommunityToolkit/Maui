@@ -19,6 +19,12 @@ This document provides guidelines for using GitHub Copilot to contribute to the 
 * Avoid using Xamarin.Forms-specific code unless there is a direct .NET MAUI equivalent.
 * Follow the project's coding style and best practices as outlined in the [contributing](https://github.com/CommunityToolkit/Maui/blob/main/CONTRIBUTING.md) document.
 
+### C# File Naming
+* Platform-suffix naming is required for files in projects that produce NuGet packages.
+* Determine package-producing projects by checking for NuGet metadata in the `.csproj` (for example `PackageId`) and by following the pack targets in `.github/workflows/dotnet-build.yml`.
+* For package-producing projects, C# files must use one of these patterns: `*.shared.cs`, `*.net.cs`, `*.ios.cs`, `*.macos.cs`, `*.macios.cs`, `*.android.cs`, `*.windows.cs`, `*.tizen.cs`.
+* Projects that do not produce NuGet packages (for example samples, tests, analyzers, and benchmarks) should keep standard `*.cs` naming, ignoring generated patterns like `*.xaml.cs` and `*.Designer.cs`.
+
 ## Best Practices
 * Use **Trace.WriteLine()** for debug logging instead of **Debug.WriteLine()**.
 * Include a **CancellationToken** as a parameter for methods returning **Task** or **ValueTask**.
@@ -26,6 +32,15 @@ This document provides guidelines for using GitHub Copilot to contribute to the 
 * Use file-scoped namespaces to reduce code verbosity.
 * Avoid using the **!** null forgiving operator.
 * Follow naming conventions for enums and property names.
+
+### Element Positioning (enforced as build warnings)
+StyleCop rules SA1201, SA1202, SA1204, SA1214, and SA1215 are reported as **build warnings** via `.editorconfig`. Always write new and modified C# code in the correct order so no warnings are introduced:
+* **Within a type, members appear in this order:** fields → constructors → finalizers/destructors → delegates → events → enums → interfaces → properties → indexers → methods.
+* **Within each member kind, order by access level:** public → internal → protected internal → protected → private protected → private.
+* **Within the same member kind and access level:** static members before instance members; readonly fields before non-readonly fields.
+* **Within a file:** usings → namespace → delegates → enums → interfaces → structs → classes; static classes before non-static classes of the same access level.
+* To fix violations, reorder the members to comply with these rules, or use the IDE code fix (lightbulb). When a `BindableProperty`/`BindablePropertyKey` static initializer depends on another field, initialization order takes precedence — suppress with a targeted `#pragma warning disable` and a comment explaining why.
+
 
 ### Debug Logging
 * Always use `Trace.WriteLine()` instead of `Debug.WriteLine` for debug logging because `Debug.WriteLine` is removed by the compiler in Release builds

@@ -36,7 +36,7 @@ public static class PopupExtensions
 
 		var popupPage = new PopupPage(view, options);
 
-		await navigation.PushModalAsync(popupPage, false);
+		await popupPage.ShowAsync(navigation);
 	}
 
 	/// <summary>
@@ -136,7 +136,8 @@ public static class PopupExtensions
 		var popupPage = new PopupPage(view, options);
 		popupPage.PopupClosed += HandlePopupClosed;
 
-		await navigation.PushModalAsync(popupPage, false).WaitAsync(token);
+		await popupPage.ShowAsync(navigation, token);
+
 		return await taskCompletionSource.Task.WaitAsync(token);
 
 		void HandlePopupClosed(object? sender, IPopupResult e)
@@ -173,15 +174,7 @@ public static class PopupExtensions
 
 		try
 		{
-			if (shellParameters is null)
-			{
-				await shell.GoToAsync(popupPageRoute).WaitAsync(token);
-			}
-			else
-			{
-				await shell.GoToAsync(popupPageRoute, shellParameters).WaitAsync(token);
-			}
-
+			await popupPage.ShowAsync(shell, popupPageRoute, shellParameters, token);
 			return await taskCompletionSource.Task.WaitAsync(token);
 		}
 		finally

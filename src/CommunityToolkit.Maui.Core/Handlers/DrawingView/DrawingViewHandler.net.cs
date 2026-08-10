@@ -4,9 +4,6 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 
 public partial class DrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawingViewHandler
 {
-	/// <inheritdoc />
-	protected override object CreatePlatformView() => throw new NotSupportedException();
-
 	/// <summary>
 	/// Action that's triggered when the DrawingView <see cref="IDrawingView.Lines"/> property changes.
 	/// </summary>
@@ -74,4 +71,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, object>, IDr
 	public void SetDrawingLineAdapter(IDrawingLineAdapter drawingLineAdapter)
 	{
 	}
+
+	/// <inheritdoc />
+	protected override object CreatePlatformView() => throw new NotSupportedException();
 }

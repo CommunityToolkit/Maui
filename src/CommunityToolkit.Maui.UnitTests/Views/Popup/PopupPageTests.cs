@@ -31,7 +31,7 @@ public class PopupPageTests : BaseViewTest
 		act.Should().Throw<ArgumentNullException>();
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task Close_ShouldThrowInvalidOperationException_NoPopupPageFound()
 	{
 		// Arrange
@@ -44,7 +44,7 @@ public class PopupPageTests : BaseViewTest
 		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task Close_ShouldSetResultAndPopModalAsync()
 	{
 		// Arrange
@@ -115,7 +115,7 @@ public class PopupPageTests : BaseViewTest
 		act.Should().Throw<ArgumentNullException>();
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task PopupPageT_Close_ShouldSetResultAndPopModalAsync()
 	{
 		// Arrange
@@ -147,7 +147,7 @@ public class PopupPageTests : BaseViewTest
 		}
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task PopupPageT_CloseAfterAdditionalModalPage_ShouldThrowInvalidOperationException()
 	{
 		// Arrange
@@ -170,7 +170,7 @@ public class PopupPageTests : BaseViewTest
 		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task PopupPageT_CloseWhenUsingCustomNavigationPage_ShouldClose()
 	{
 		// Arrange
@@ -204,14 +204,44 @@ public class PopupPageTests : BaseViewTest
 				await customNavigationPage.Navigation.PushModalAsync(popupPage);
 			}
 		}
-
 		void HandlePopupPageClosed(object? sender, IPopupResult e)
 		{
 			wasPopupPageClosed = true;
 		}
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task PopupPageT_CloseWhenUsingCustomNavigationPageInsideShell_ModalPoppedShouldReportContainerPage()
+	{
+		// Arrange
+		if (Application.Current?.Windows[0] is not Window window)
+		{
+			throw new InvalidOperationException("Unable to locate Window");
+		}
+
+		var popupPage = new PopupPage<string>(new ContentView(), new MockPopupOptions());
+		var customNavigationPage = new NavigationPage(new ContentPage());
+		Page? poppedModal = null;
+
+		window.ModalPopped += HandleModalPopped;
+
+		// Act
+		await Shell.Current.Navigation.PushModalAsync(customNavigationPage, true);
+		await customNavigationPage.Navigation.PushModalAsync(popupPage);
+		await window.Navigation.PopModalAsync(false);
+
+		window.ModalPopped -= HandleModalPopped;
+
+		// Assert
+		Assert.Same(customNavigationPage, poppedModal);
+
+		void HandleModalPopped(object? sender, ModalPoppedEventArgs e)
+		{
+			poppedModal = e.Modal;
+		}
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task PopupPageT_CloseAfterAdditionalModalPageToCustomNavigationPage_ShouldThrowPopupBlockedException()
 	{
 		// Arrange
@@ -252,7 +282,7 @@ public class PopupPageTests : BaseViewTest
 		}
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task PopupPageT_CloseAfterAdditionalModalPageToCustomNavigationPage_ShouldThrowPopupNotFound()
 	{
 		// Arrange
@@ -296,7 +326,7 @@ public class PopupPageTests : BaseViewTest
 		}
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_FromModalNavigationPage_ShouldCloseSuccessfully()
 	{
 		// Remove shell navigation
@@ -500,7 +530,7 @@ public class PopupPageTests : BaseViewTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task OnTappingOutsideOfPopup_ShouldClosePopupWhenCanBeDismissedIsTrue()
 	{
 		// Arrange
@@ -642,7 +672,7 @@ public class PopupPageTests : BaseViewTest
 		Assert.True(result);
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task Close_ShouldThrowException_WhenCalledOnNonModalPopup()
 	{
 		// Arrange
@@ -654,7 +684,7 @@ public class PopupPageTests : BaseViewTest
 		await Assert.ThrowsAsync<PopupNotFoundException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task CloseAsync_ShouldThrowPopupBlockedException_WhenPopupIsBehindModalNavigationPage()
 	{
 		// Arrange
@@ -698,7 +728,7 @@ public class PopupPageTests : BaseViewTest
 		}
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task CloseAsync_ShouldThrowPopupBlockedException_WhenPopupIsHiddenBehindAnotherPopupAndNavigationPage()
 	{
 		// Arrange
@@ -735,6 +765,30 @@ public class PopupPageTests : BaseViewTest
 		}
 	}
 
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task CloseAsync_ShouldThrowPopupBlockedException_WhenResolvedPopupPageToCloseHasDifferentContent()
+	{
+		// Arrange
+		if (Application.Current?.Windows[0].Page?.Navigation is not INavigation navigation)
+		{
+			throw new InvalidOperationException("Unable to locate Navigation page");
+		}
+
+		var requestedPopupPage = new PopupPage<string>(new ContentView(), new MockPopupOptions());
+		var resolvedPopupPageToClose = new PopupPage<string>(new Button(), new MockPopupOptions());
+		var pageOnTop = new NonContentModalPage();
+
+		// Act
+		await navigation.PushModalAsync(requestedPopupPage);
+		await navigation.PushModalAsync(resolvedPopupPageToClose);
+		await navigation.PushModalAsync(pageOnTop);
+
+		// Assert
+		await Assert.ThrowsAsync<PopupBlockedException>(async () => await requestedPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidPopupOperationException>(async () => await requestedPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await requestedPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+	}
+
 	[Fact]
 	public void PopupPage_ShouldRespectLayoutOptions()
 	{
@@ -755,12 +809,76 @@ public class PopupPageTests : BaseViewTest
 		Assert.Equal(LayoutOptions.End, border.HorizontalOptions);
 	}
 
+	[Fact]
+	public void ApplyQueryAttributes_ShouldForwardToPopupAndPopupContent_WhenBothImplementIQueryAttributable()
+	{
+		// Arrange
+		const string popupValue = "popup";
+		const string contentValue = "content";
+		var query = new Dictionary<string, object>
+		{
+			[nameof(QueryAttributablePopup.PopupValue)] = popupValue,
+			[nameof(QueryAttributableContentView.ContentValue)] = contentValue
+		};
+		var popupContent = new QueryAttributableContentView();
+		var popup = new QueryAttributablePopup
+		{
+			Content = popupContent
+		};
+		var popupPage = new PopupPage(popup, PopupOptions.Empty);
+
+		// Act
+		((IQueryAttributable)popupPage).ApplyQueryAttributes(query);
+
+		// Assert
+		Assert.Equal(popupValue, popup.PopupValue);
+		Assert.Equal(contentValue, popupContent.ContentValue);
+	}
+
+	[Fact]
+	public void ApplyQueryAttributes_ShouldNotThrow_WhenPopupAndContentDoNotImplementIQueryAttributable()
+	{
+		// Arrange
+		var popupPage = new PopupPage(new Popup(), PopupOptions.Empty);
+		var query = new Dictionary<string, object>();
+
+		// Act
+		var exception = Record.Exception(() => ((IQueryAttributable)popupPage).ApplyQueryAttributes(query));
+
+		// Assert
+		Assert.Null(exception);
+	}
+
 	// Helper class for testing protected methods
 	sealed class TestablePopupPage(View view, IPopupOptions popupOptions) : PopupPage(view, popupOptions)
 	{
 		public bool TestOnBackButtonPressed()
 		{
 			return OnBackButtonPressed();
+		}
+	}
+
+	sealed class NonContentModalPage : Page
+	{
+	}
+
+	sealed class QueryAttributablePopup : Popup, IQueryAttributable
+	{
+		public string? PopupValue { get; private set; }
+
+		void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
+		{
+			PopupValue = (string)query[nameof(PopupValue)];
+		}
+	}
+
+	sealed class QueryAttributableContentView : ContentView, IQueryAttributable
+	{
+		public string? ContentValue { get; private set; }
+
+		void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
+		{
+			ContentValue = (string)query[nameof(ContentValue)];
 		}
 	}
 

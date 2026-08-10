@@ -21,6 +21,59 @@ public class DefaultPopupOptionsSettingsTests : BaseViewTest
 	}
 
 	[Fact]
+	public void DefaultPopupOptionsSettings_DefaultConstructor_UsesExpectedDefaults()
+	{
+		// Arrange
+		IPopupOptions defaults = new DefaultPopupOptionsSettings();
+
+		// Assert
+		Assert.True(defaults.CanBeDismissedByTappingOutsideOfPopup);
+		Assert.Null(defaults.OnTappingOutsideOfPopup);
+		Assert.Equal(Colors.Black.WithAlpha(0.3f), defaults.PageOverlayColor);
+		Assert.Equal(Colors.LightGray, ((RoundRectangle?)defaults.Shape)?.Stroke);
+		Assert.Equal(2, ((RoundRectangle?)defaults.Shape)?.StrokeThickness);
+		Assert.Equal(Colors.Black, defaults.Shadow?.Brush);
+	}
+
+	[Fact]
+	public void DefaultPopupOptionsSettings_WithOverrides_UsesProvidedValues()
+	{
+		// Arrange
+		bool actionInvoked = false;
+		var expectedShape = new Ellipse
+		{
+			Stroke = Colors.Red,
+			StrokeThickness = 8
+		};
+		var expectedShadow = new Shadow
+		{
+			Brush = Colors.Blue,
+			Offset = new Point(1, 2),
+			Radius = 3,
+			Opacity = 0.4f
+		};
+
+		IPopupOptions options = new DefaultPopupOptionsSettings
+		{
+			CanBeDismissedByTappingOutsideOfPopup = false,
+			OnTappingOutsideOfPopup = () => actionInvoked = true,
+			PageOverlayColor = Colors.Green,
+			Shape = expectedShape,
+			Shadow = expectedShadow
+		};
+
+		// Act
+		options.OnTappingOutsideOfPopup?.Invoke();
+
+		// Assert
+		Assert.False(options.CanBeDismissedByTappingOutsideOfPopup);
+		Assert.True(actionInvoked);
+		Assert.Equal(Colors.Green, options.PageOverlayColor);
+		Assert.Same(expectedShape, options.Shape);
+		Assert.Same(expectedShadow, options.Shadow);
+	}
+
+	[Fact]
 	public void Popup_SetPopupOptionsDefaultsNotCalled_UsesPopupOptionsDefaults()
 	{
 		// Arrange

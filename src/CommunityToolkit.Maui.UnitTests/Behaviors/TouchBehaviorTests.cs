@@ -8,16 +8,6 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 {
 	readonly TouchBehavior touchBehavior = new();
 
-	protected override void Dispose(bool isDisposing)
-	{
-		base.Dispose(isDisposing);
-		touchBehavior.Dispose();
-
-		Assert.Throws<ObjectDisposedException>(() => touchBehavior.HandleTouch(TouchStatus.Canceled));
-		Assert.Throws<ObjectDisposedException>(() => touchBehavior.HandleHover(HoverStatus.Entered));
-		Assert.Throws<ObjectDisposedException>(() => touchBehavior.HandleUserInteraction(TouchInteractionStatus.Started));
-	}
-
 	[Fact]
 	public void VerifyAttachToViewSucceeds()
 	{
@@ -1302,6 +1292,16 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		// Verify Default is set when neither active
 		touchBehavior.HandleHover(HoverStatus.Exited);
 		Assert.Equal(touchBehavior.DefaultRotationY, image.RotationY);
+	}
+
+	protected override void Dispose(bool isDisposing)
+	{
+		base.Dispose(isDisposing);
+		touchBehavior.Dispose();
+
+		Assert.Throws<ObjectDisposedException>(() => touchBehavior.HandleTouch(TouchStatus.Canceled));
+		Assert.Throws<ObjectDisposedException>(() => touchBehavior.HandleHover(HoverStatus.Entered));
+		Assert.Throws<ObjectDisposedException>(() => touchBehavior.HandleUserInteraction(TouchInteractionStatus.Started));
 	}
 
 	void AttachTouchBehaviorToVisualElement(in VisualElement element)

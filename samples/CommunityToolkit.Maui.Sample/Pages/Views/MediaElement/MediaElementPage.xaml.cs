@@ -34,6 +34,14 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 	void MediaElement_FullScreenStateChanged(object? sender, ScreenStateChangedEventArgs e) =>
 		logger.LogInformation("FullScreen State Changed. Old State: {PreviousState}, New State: {NewState}", e.PreviousState, e.NewState);
+
+	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
+	{
+		base.OnNavigatedFrom(args);
+		MediaElement.Stop();
+		MediaElement.Handler?.DisconnectHandler();
+	}
+
 	void MediaElement_PropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (e.PropertyName == MediaElement.DurationProperty.PropertyName)
@@ -124,13 +132,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	void OnMuteClicked(object? sender, EventArgs? e)
 	{
 		MediaElement.ShouldMute = !MediaElement.ShouldMute;
-	}
-
-	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
-	{
-		base.OnNavigatedFrom(args);
-		MediaElement.Stop();
-		MediaElement.Handler?.DisconnectHandler();
 	}
 
 	async void Slider_DragCompleted(object? sender, EventArgs? e)

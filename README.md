@@ -29,6 +29,8 @@ dotnet add package CommunityToolkit.Maui.Maps
 dotnet add package CommunityToolkit.Maui.Camera
 ```
 
+### Install Prerelease
+
 You can also try the latest pre-release version of the main branch. We use GitHub Packages to host the pre-release versions of the .NET MAUI Community Toolkit. To install the pre-release version, you need to add the GitHub Packages source to your NuGet configuration. GitHub Packages only supports authentication using a personal access token (classic) (https://github.com/settings/tokens). For more information, see [Managing your personal access tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token). You can use a personal access token (classic) to authenticate to GitHub Packages. When you create a personal access token (classic), you can assign the token different scopes depending on your needs, but `read:packages` is enough.
 
 ```bash

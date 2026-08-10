@@ -221,11 +221,11 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 
 	class MockAnimation : BaseAnimation
 	{
-		public bool HasAnimated { get; private set; }
-
 		public event EventHandler? AnimationStarted;
 
 		public event EventHandler? AnimationEnded;
+
+		public bool HasAnimated { get; private set; }
 
 		public override async Task Animate(VisualElement element, CancellationToken token)
 		{

@@ -40,6 +40,13 @@ public partial class Toast
 		}
 	}
 
+	static AppNotificationDuration GetAppNotificationDuration(ToastDuration duration) => duration switch
+	{
+		ToastDuration.Short => AppNotificationDuration.Default,
+		ToastDuration.Long => AppNotificationDuration.Long,
+		_ => throw new InvalidEnumArgumentException(nameof(Duration), (int)duration, typeof(ToastDuration))
+	};
+
 	async Task ShowPlatform(CancellationToken token)
 	{
 		await DismissPlatform(token);
@@ -51,11 +58,4 @@ public partial class Toast
 		PlatformToast.Expiration = DateTimeOffset.Now.Add(GetDuration(Duration));
 		AppNotificationManager.Default.Show(PlatformToast);
 	}
-
-	static AppNotificationDuration GetAppNotificationDuration(ToastDuration duration) => duration switch
-	{
-		ToastDuration.Short => AppNotificationDuration.Default,
-		ToastDuration.Long => AppNotificationDuration.Long,
-		_ => throw new InvalidEnumArgumentException(nameof(Duration), (int)duration, typeof(ToastDuration))
-	};
 }

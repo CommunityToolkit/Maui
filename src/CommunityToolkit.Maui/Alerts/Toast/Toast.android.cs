@@ -37,6 +37,8 @@ public partial class Toast
 		PlatformToast.Cancel();
 	}
 
+	static ToastLength GetToastLength(Core.ToastDuration duration) => (ToastLength)(int)duration;
+
 	void ShowPlatform(CancellationToken token)
 	{
 		DismissPlatform(token);
@@ -51,6 +53,4 @@ public partial class Toast
 
 		PlatformToast.Show();
 	}
-
-	static ToastLength GetToastLength(Core.ToastDuration duration) => (ToastLength)(int)duration;
 }

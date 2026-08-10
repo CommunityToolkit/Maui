@@ -32,6 +32,6 @@ public class MauiSemanticOrderView : ContentViewGroup
 			return;
 		}
 
-		// Tizen needs to provide IPlatformViewHandler to update view order.
+		// Tizen needs platform handlers to update view order.
 	}
 }
