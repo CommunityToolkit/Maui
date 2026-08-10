@@ -722,21 +722,34 @@ public partial class MediaManager : IDisposable
 
 				hasMediaOpened = true;
 
-				MediaElement.Duration = ConvertTime(PlayerItem.Duration);
-				MediaElement.Position = ConvertTime(PlayerItem.CurrentTime);
+				var playerItem = PlayerItem;
+				if (playerItem is null)
+				{
+					return;
+				}
+
+				MediaElement.Duration = ConvertTime(playerItem.Duration);
+				MediaElement.Position = ConvertTime(playerItem.CurrentTime);
 
 				MediaElement.CurrentStateChanged(
 					Player?.Rate > 0
 						? MediaElementState.Playing
 						: MediaElementState.Paused);
 
-				(MediaElement.MediaWidth, MediaElement.MediaHeight) = await GetVideoDimensions(PlayerItem);
+				(MediaElement.MediaWidth, MediaElement.MediaHeight) = await GetVideoDimensions(playerItem);
+
+				// Source may have changed while awaiting; don't apply stale results
+				if (!ReferenceEquals(PlayerItem, playerItem))
+				{
+					return;
+				}
 
 				MediaElement.MediaOpened();
 
-				if (MediaElement.ShouldAutoPlay)
+				if (MediaElement.ShouldAutoPlay && Player is not null)
 				{
-					Player?.Play();
+					Player.Play();
+					Player.Rate = (float)MediaElement.Speed;
 				}
 
 				await SetPoster();
@@ -752,8 +765,6 @@ public partial class MediaManager : IDisposable
 				MediaElement.CurrentStateChanged(MediaElementState.Failed);
 				MediaElement.MediaFailed(new MediaFailedEventArgs(message));
 				Logger.LogError("{LogMessage}", message);
-				break;
-
 				break;
 		}
 	}
