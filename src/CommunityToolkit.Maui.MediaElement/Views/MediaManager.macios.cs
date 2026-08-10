@@ -15,7 +15,11 @@ public partial class MediaManager : IDisposable
 {
 	Metadata? metaData;
 	StreamAssetResourceLoader? streamResourceLoader;
+
+	// Media would still start playing when Speed was set although ShouldAutoPlay=False
+	// This field was added to overcome that.
 	bool isInitialSpeedSet;
+	
 	bool hasMediaOpened;
 
 	/// <summary>
@@ -24,9 +28,9 @@ public partial class MediaManager : IDisposable
 	protected NSKeyValueObservingOptions ValueObserverOptions => NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.New;
 
 	/// <summary>
-	/// Observer that tracks the status of the current <see cref="AVPlayerItem"/>.
+	/// Observer that tracks when an error has occurred in the playback of the current item.
 	/// </summary>
-	protected IDisposable? PlayerItemStatusObserver { get; set; }
+	protected IDisposable? CurrentItemErrorObserver { get; set; }
 
 	/// <summary>
 	/// Observer that tracks when an error has occurred with media playback.
@@ -307,7 +311,7 @@ public partial class MediaManager : IDisposable
 			: null;
 
 		metaData.SetMetadata(PlayerItem, MediaElement);
-		PlayerItemStatusObserver?.Dispose();
+		CurrentItemErrorObserver?.Dispose();
 
 		hasMediaOpened = false;
 
@@ -321,7 +325,7 @@ public partial class MediaManager : IDisposable
 		}
 		else
 		{
-			PlayerItemStatusObserver = PlayerItem.AddObserver("status",
+			CurrentItemErrorObserver = PlayerItem.AddObserver("status",
 				ValueObserverOptions, PlayerItemStatusChanged);
 		}
 	}
@@ -451,8 +455,8 @@ public partial class MediaManager : IDisposable
 				RateObserver?.Dispose();
 				RateObserver = null;
 
-				PlayerItemStatusObserver?.Dispose();
-				PlayerItemStatusObserver = null;
+				CurrentItemErrorObserver?.Dispose();
+				CurrentItemErrorObserver = null;
 
 				Player.ReplaceCurrentItemWithPlayerItem(null);
 
