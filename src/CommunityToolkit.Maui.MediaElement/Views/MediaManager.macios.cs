@@ -1,5 +1,6 @@
 ﻿using AVFoundation;
 using AVKit;
+using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Views;
 using CoreFoundation;
 using CoreGraphics;
@@ -24,6 +25,11 @@ public partial class MediaManager : IDisposable
 	/// The default <see cref="NSKeyValueObservingOptions"/> flags used in the iOS and macOS observers.
 	/// </summary>
 	protected NSKeyValueObservingOptions ValueObserverOptions => NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.New;
+
+	/// <summary>
+	/// Observer that tracks the status of the current <see cref="AVPlayerItem"/>.
+	/// </summary>
+	protected IDisposable? PlayerItemStatusObserver { get; set; }
 
 	/// <summary>
 	/// Observer that tracks when an error has occurred in the playback of the current item.
@@ -310,6 +316,7 @@ public partial class MediaManager : IDisposable
 
 		metaData.SetMetadata(PlayerItem, MediaElement);
 		CurrentItemErrorObserver?.Dispose();
+		PlayerItemStatusObserver?.Dispose();
 
 		Player.ReplaceCurrentItemWithPlayerItem(PlayerItem);
 
@@ -330,24 +337,16 @@ public partial class MediaManager : IDisposable
 				Logger.LogError("{LogMessage}", message);
 			});
 
-		if (PlayerItem is not null && PlayerItem.Error is null)
-		{
-			MediaElement.MediaOpened();
-
-			(MediaElement.MediaWidth, MediaElement.MediaHeight) = await GetVideoDimensions(PlayerItem);
-
-			if (MediaElement.ShouldAutoPlay)
-			{
-				Player.Play();
-			}
-
-			await SetPoster();
-		}
-		else if (PlayerItem is null)
+		if (PlayerItem is null)
 		{
 			MediaElement.MediaWidth = MediaElement.MediaHeight = 0;
 
 			MediaElement.CurrentStateChanged(MediaElementState.None);
+		}
+		else
+		{
+			PlayerItemStatusObserver = PlayerItem.AddObserver("status",
+				ValueObserverOptions, PlayerItemStatusChanged);
 		}
 	}
 
@@ -477,6 +476,9 @@ public partial class MediaManager : IDisposable
 
 				CurrentItemErrorObserver?.Dispose();
 				CurrentItemErrorObserver = null;
+
+				PlayerItemStatusObserver?.Dispose();
+				PlayerItemStatusObserver = null;
 
 				Player.ReplaceCurrentItemWithPlayerItem(null);
 
@@ -701,6 +703,50 @@ public partial class MediaManager : IDisposable
 		PlayedToEndObserver?.Dispose();
 	}
 
+
+	async void PlayerItemStatusChanged(NSObservedChange change)
+	{
+		if (PlayerItem is null)
+		{
+			return;
+		}
+
+		switch (PlayerItem.Status)
+		{
+			case AVPlayerItemStatus.ReadyToPlay:
+				MediaElement.MediaOpened();
+				await OnPlayerItemReady();
+				break;
+
+			case AVPlayerItemStatus.Failed:
+				if (PlayerItem.Error is not null)
+				{
+					var message = $"{PlayerItem.Error.LocalizedDescription} - " +
+								  $"{PlayerItem.Error.LocalizedFailureReason}";
+					MediaElement.MediaFailed(new MediaFailedEventArgs(message));
+					Logger.LogError("{LogMessage}", message);
+				}
+
+				break;
+		}
+	}
+
+	async Task OnPlayerItemReady()
+	{
+		if (PlayerItem is null)
+		{
+			return;
+		}
+
+		(MediaElement.MediaWidth, MediaElement.MediaHeight) = await GetVideoDimensions(PlayerItem);
+
+		if (MediaElement.ShouldAutoPlay)
+		{
+			Player?.Play();
+		}
+
+		await SetPoster();
+	}
 
 	void StatusChanged(NSObservedChange obj)
 	{
