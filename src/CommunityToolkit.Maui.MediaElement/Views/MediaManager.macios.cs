@@ -744,13 +744,15 @@ public partial class MediaManager : IDisposable
 				break;
 
 			case AVPlayerItemStatus.Failed:
-				if (PlayerItem.Error is not null)
-				{
-					var message = $"{PlayerItem.Error.LocalizedDescription} - " +
-								  $"{PlayerItem.Error.LocalizedFailureReason}";
-					MediaElement.MediaFailed(new MediaFailedEventArgs(message));
-					Logger.LogError("{LogMessage}", message);
-				}
+				var error = PlayerItem.Error;
+				var message = error is not null
+					? $"{error.LocalizedDescription} - {error.LocalizedFailureReason}"
+					: "AVPlayerItem failed.";
+
+				MediaElement.CurrentStateChanged(MediaElementState.Failed);
+				MediaElement.MediaFailed(new MediaFailedEventArgs(message));
+				Logger.LogError("{LogMessage}", message);
+				break;
 
 				break;
 		}
