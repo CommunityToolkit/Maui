@@ -29,11 +29,6 @@ public partial class MediaManager : IDisposable
 	protected IDisposable? PlayerItemStatusObserver { get; set; }
 
 	/// <summary>
-	/// Observer that tracks when an error has occurred in the playback of the current item.
-	/// </summary>
-	protected IDisposable? CurrentItemErrorObserver { get; set; }
-
-	/// <summary>
 	/// Observer that tracks when an error has occurred with media playback.
 	/// </summary>
 	protected NSObject? ErrorObserver { get; set; }
@@ -312,7 +307,6 @@ public partial class MediaManager : IDisposable
 			: null;
 
 		metaData.SetMetadata(PlayerItem, MediaElement);
-		CurrentItemErrorObserver?.Dispose();
 		PlayerItemStatusObserver?.Dispose();
 
 		hasMediaOpened = false;
@@ -456,9 +450,6 @@ public partial class MediaManager : IDisposable
 
 				RateObserver?.Dispose();
 				RateObserver = null;
-
-				CurrentItemErrorObserver?.Dispose();
-				CurrentItemErrorObserver = null;
 
 				PlayerItemStatusObserver?.Dispose();
 				PlayerItemStatusObserver = null;
