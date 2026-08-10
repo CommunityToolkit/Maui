@@ -15,14 +15,7 @@ public partial class MediaManager : IDisposable
 {
 	Metadata? metaData;
 	StreamAssetResourceLoader? streamResourceLoader;
-
-	// Media would still start playing when Speed was set although ShouldAutoPlay=False
-	// This field was added to overcome that.
 	bool isInitialSpeedSet;
-
-	/// <summary>
-	/// Prevents <see cref="MediaElement.MediaOpened"/> from firing more than once per source.
-	/// </summary>
 	bool hasMediaOpened;
 
 	/// <summary>
