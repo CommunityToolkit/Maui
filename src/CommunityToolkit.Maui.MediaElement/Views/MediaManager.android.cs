@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Android.App;
 using Android.Content;
 using Android.Util;
 using Android.Views;
@@ -164,9 +163,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		MediaElementState newState = playbackState switch
 		{
-			idleState => MediaElement.CurrentState is not MediaElementState.Failed
+			idleState => hasMediaOpened
 				? MediaElementState.Stopped
-				: MediaElementState.Failed,
+				: MediaElement.CurrentState is not MediaElementState.Failed
+					? MediaElementState.None
+					: MediaElementState.Failed,
 			bufferState => MediaElementState.Buffering,
 			readyState => Player.PlayWhenReady
 			  ? MediaElementState.Playing
@@ -189,7 +190,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			seekToTaskCompletionSource?.TrySetResult();
 		}
 
-		if (MediaElementState.Stopped == newState)
+		if (playbackState == endedState)
 		{
 			MediaElement.MediaEnded();
 		}
