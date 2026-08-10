@@ -21,48 +21,6 @@ public partial class MediaManager : IDisposable
 	// This field was added to overcome that.
 	bool isInitialSpeedSet;
 
-	/// <summary>
-
-	/// Creates the corresponding platform view of <see cref="MediaElement"/> on iOS and macOS.
-	/// </summary>
-	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
-	public (PlatformMediaElement Player, AVPlayerViewController PlayerViewController) CreatePlatformView()
-	{
-		Player = new();
-		fullScreenDelegate = new MediaManagerDelegate();
-		fullScreenDelegate.ScreenStateChanged += OnScreenStateChanged;
-
-		PlayerViewController = new()
-		{
-			Player = Player,
-			Delegate = fullScreenDelegate,
-		};
-		// Pre-initialize Volume and Muted properties to the player object
-		Player.Muted = MediaElement.ShouldMute;
-		var volumeDiff = Math.Abs(Player.Volume - MediaElement.Volume);
-		if (volumeDiff > 0.01)
-		{
-			Player.Volume = (float)MediaElement.Volume;
-		}
-
-		UIApplication.SharedApplication.BeginReceivingRemoteControlEvents();
-
-#if IOS
-		PlayerViewController.UpdatesNowPlayingInfoCenter = false;
-#else
-		PlayerViewController.UpdatesNowPlayingInfoCenter = true;
-#endif
-		var avSession = AVAudioSession.SharedInstance();
-		avSession.SetCategory(AVAudioSessionCategory.Playback);
-		avSession.SetActive(true);
-
-		AddStatusObservers();
-		AddPlayedToEndObserver();
-		AddErrorObservers();
-
-		return (Player, PlayerViewController);
-	}
-
 	void OnScreenStateChanged(object? sender, ScreenStateChangedEventArgs e)
 	{
 		UpdateFullScreenState(e.NewState);
@@ -149,9 +107,13 @@ public partial class MediaManager : IDisposable
 	public (PlatformMediaElement Player, AVPlayerViewController PlayerViewController) CreatePlatformView()
 	{
 		Player = new();
+		fullScreenDelegate = new MediaManagerDelegate();
+		fullScreenDelegate.ScreenStateChanged += OnScreenStateChanged;
+
 		PlayerViewController = new()
 		{
-			Player = Player
+			Player = Player,
+			Delegate = fullScreenDelegate,
 		};
 
 		// Pre-initialize Volume and Muted properties to the player object
@@ -178,15 +140,6 @@ public partial class MediaManager : IDisposable
 		AddErrorObservers();
 
 		return (Player, PlayerViewController);
-	}
-
-	/// <summary>
-	/// Releases the managed and unmanaged resources used by the <see cref="MediaManager"/>.
-	/// </summary>
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
 	}
 
 	protected virtual partial void PlatformPlay()
