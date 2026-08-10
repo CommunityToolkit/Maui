@@ -21,6 +21,11 @@ public partial class MediaManager : IDisposable
 	bool isInitialSpeedSet;
 
 	/// <summary>
+	/// Prevents <see cref="MediaElement.MediaOpened"/> from firing more than once per source.
+	/// </summary>
+	bool hasMediaOpened;
+
+	/// <summary>
 	/// The default <see cref="NSKeyValueObservingOptions"/> flags used in the iOS and macOS observers.
 	/// </summary>
 	protected NSKeyValueObservingOptions ValueObserverOptions => NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.New;
@@ -317,6 +322,8 @@ public partial class MediaManager : IDisposable
 		CurrentItemErrorObserver?.Dispose();
 		PlayerItemStatusObserver?.Dispose();
 
+		hasMediaOpened = false;
+
 		Player.ReplaceCurrentItemWithPlayerItem(PlayerItem);
 
 		CurrentItemErrorObserver = PlayerItem?.AddObserver("error",
@@ -356,8 +363,9 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		// First time we're getting a playback speed and should NOT auto play, do nothing.
-		if (!isInitialSpeedSet && !MediaElement.ShouldAutoPlay)
+		// First time we're getting a playback speed, defer to PlayerItemStatusChanged
+		// which calls Player?.Play() after the AVPlayerItem reaches ReadyToPlay.
+		if (!isInitialSpeedSet)
 		{
 			isInitialSpeedSet = true;
 			return;
@@ -713,8 +721,33 @@ public partial class MediaManager : IDisposable
 		switch (PlayerItem.Status)
 		{
 			case AVPlayerItemStatus.ReadyToPlay:
+
+				if (hasMediaOpened)
+				{
+					return;
+				}
+
+				hasMediaOpened = true;
+
+				MediaElement.Duration = ConvertTime(PlayerItem.Duration);
+				MediaElement.Position = ConvertTime(PlayerItem.CurrentTime);
+
+				MediaElement.CurrentStateChanged(
+					Player?.Rate > 0
+						? MediaElementState.Playing
+						: MediaElementState.Paused);
+
+				(MediaElement.MediaWidth, MediaElement.MediaHeight) = await GetVideoDimensions(PlayerItem);
+
 				MediaElement.MediaOpened();
-				await OnPlayerItemReady();
+
+				if (MediaElement.ShouldAutoPlay)
+				{
+					Player?.Play();
+				}
+
+				await SetPoster();
+
 				break;
 
 			case AVPlayerItemStatus.Failed:
@@ -728,23 +761,6 @@ public partial class MediaManager : IDisposable
 
 				break;
 		}
-	}
-
-	async Task OnPlayerItemReady()
-	{
-		if (PlayerItem is null)
-		{
-			return;
-		}
-
-		(MediaElement.MediaWidth, MediaElement.MediaHeight) = await GetVideoDimensions(PlayerItem);
-
-		if (MediaElement.ShouldAutoPlay)
-		{
-			Player?.Play();
-		}
-
-		await SetPoster();
 	}
 
 	void StatusChanged(NSObservedChange obj)
