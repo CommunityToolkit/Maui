@@ -19,6 +19,18 @@ using Object = Java.Lang.Object;
 
 namespace CommunityToolkit.Maui.Core;
 
+public class CameraConsumer(TaskCompletionSource finalizeTcs) : Object, IConsumer
+{
+	readonly TaskCompletionSource? finalizeTcs = finalizeTcs;
+
+	public void Accept(Object? videoRecordEvent)
+	{
+		if (videoRecordEvent is VideoRecordEvent.Finalize)
+		{
+			finalizeTcs?.SetResult();
+		}
+	}
+}
 [SupportedOSPlatform("android21.0")]
 partial class CameraManager
 {
@@ -43,9 +55,9 @@ partial class CameraManager
 	Stream? videoRecordingStream;
 	int extensionMode = ExtensionMode.Auto;
 	CaptureSessionMode currentSessionMode = CaptureSessionMode.Photo;
-	bool IsCapturePhotoSession => currentSessionMode is CaptureSessionMode.Photo;
-
 	enum CaptureSessionMode { Photo, Video }
+
+	bool IsCapturePhotoSession => currentSessionMode is CaptureSessionMode.Photo;
 
 	public async Task SetExtensionMode(int mode, CancellationToken token)
 	{
@@ -191,6 +203,14 @@ partial class CameraManager
 			await PlatformStartCameraPreview(token);
 		}
 	}
+
+	static int GetSurfaceRotation(int orientationDegrees) => orientationDegrees switch
+	{
+		>= 45 and < 135 => (int)SurfaceOrientation.Rotation270,
+		>= 135 and < 225 => (int)SurfaceOrientation.Rotation180,
+		>= 225 and < 315 => (int)SurfaceOrientation.Rotation90,
+		_ => (int)SurfaceOrientation.Rotation0
+	};
 
 	private async partial Task PlatformConnectCamera(CancellationToken token)
 	{
@@ -539,14 +559,6 @@ partial class CameraManager
 		cameraPreview?.TargetRotation = targetRotation;
 	}
 
-	static int GetSurfaceRotation(int orientationDegrees) => orientationDegrees switch
-	{
-		>= 45 and < 135 => (int)SurfaceOrientation.Rotation270,
-		>= 135 and < 225 => (int)SurfaceOrientation.Rotation180,
-		>= 225 and < 315 => (int)SurfaceOrientation.Rotation90,
-		_ => (int)SurfaceOrientation.Rotation0
-	};
-
 	sealed class ImageCallBack(ICameraView cameraView) : ImageCapture.OnImageCapturedCallback
 	{
 		public override void OnCaptureSuccess(IImageProxy image)
@@ -630,19 +642,6 @@ partial class CameraManager
 			}
 
 			callback.Invoke(orientation);
-		}
-	}
-}
-
-public class CameraConsumer(TaskCompletionSource finalizeTcs) : Object, IConsumer
-{
-	readonly TaskCompletionSource? finalizeTcs = finalizeTcs;
-
-	public void Accept(Object? videoRecordEvent)
-	{
-		if (videoRecordEvent is VideoRecordEvent.Finalize)
-		{
-			finalizeTcs?.SetResult();
 		}
 	}
 }

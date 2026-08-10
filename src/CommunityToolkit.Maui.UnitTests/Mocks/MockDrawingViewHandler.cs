@@ -10,8 +10,6 @@ namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
 public sealed class MockDrawingViewHandler(IPropertyMapper mapper) : ViewHandler<IDrawingView, DrawingView>(mapper), IDrawingViewHandler
 {
-	IDrawingLineAdapter adapter = new DrawingLineAdapter();
-
 	public static readonly PropertyMapper<IDrawingView, MockDrawingViewHandler> DrawingViewPropertyMapper = new()
 	{
 		[nameof(IDrawingView.LineWidth)] = MapLineWidth,
@@ -20,6 +18,8 @@ public sealed class MockDrawingViewHandler(IPropertyMapper mapper) : ViewHandler
 		[nameof(IDrawingView.IsMultiLineModeEnabled)] = MapIsMultiLineModeEnabled,
 		[nameof(IDrawingView.DrawAction)] = MapDrawAction
 	};
+
+	IDrawingLineAdapter adapter = new DrawingLineAdapter();
 
 	public MockDrawingViewHandler() : this(DrawingViewPropertyMapper)
 	{

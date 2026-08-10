@@ -10,17 +10,6 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 {
 	readonly ImageTouchBehavior imageTouchBehavior = new();
 
-	protected override void Dispose(bool isDisposing)
-	{
-		base.Dispose(isDisposing);
-
-		imageTouchBehavior.Dispose();
-
-		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleTouch(TouchStatus.Canceled));
-		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleHover(HoverStatus.Entered));
-		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleUserInteraction(TouchInteractionStatus.Started));
-	}
-
 	[Fact]
 	public void VerifyDefaults()
 	{
@@ -36,7 +25,7 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 	}
 
 	[Fact]
-	public void VerifyCanOnlyBeAttachedToIImageText()
+	public void VerifyCanOnlyBeAttachedToSupportedImages()
 	{
 		InvalidOperationException? exception = null;
 
@@ -60,6 +49,13 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 		AttachTouchBehaviorToVisualElement(image);
 
 		Assert.Single(image.Behaviors.OfType<ImageTouchBehavior>());
+
+		var imageButton = new ImageButton();
+		using var imageButtonBehavior = new ImageTouchBehavior();
+		imageButton.Behaviors.Add(imageButtonBehavior);
+		imageButtonBehavior.Element = imageButton;
+
+		Assert.Single(imageButton.Behaviors.OfType<ImageTouchBehavior>());
 		Assert.NotNull(exception);
 	}
 
@@ -311,6 +307,17 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 		// Verify Default Aspect appears when neither active
 		imageTouchBehavior.HandleHover(HoverStatus.Exited);
 		Assert.Equal(imageTouchBehavior.DefaultImageAspect, image.Aspect);
+	}
+
+	protected override void Dispose(bool isDisposing)
+	{
+		base.Dispose(isDisposing);
+
+		imageTouchBehavior.Dispose();
+
+		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleTouch(TouchStatus.Canceled));
+		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleHover(HoverStatus.Entered));
+		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleUserInteraction(TouchInteractionStatus.Started));
 	}
 
 	void AttachTouchBehaviorToVisualElement(in VisualElement element)

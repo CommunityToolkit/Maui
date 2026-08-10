@@ -24,11 +24,11 @@ public partial class TouchBehavior
 	AccessibilityManager? accessibilityManager;
 	AccessibilityListener? accessibilityListener;
 
+	internal bool IsCanceled { get; set; }
+
 	bool IsAccessibilityMode => accessibilityManager is not null
 		&& accessibilityManager.IsEnabled
 		&& accessibilityManager.IsTouchExplorationEnabled;
-
-	internal bool IsCanceled { get; set; }
 
 	/// <summary>
 	/// Attaches the behavior to the platform view.

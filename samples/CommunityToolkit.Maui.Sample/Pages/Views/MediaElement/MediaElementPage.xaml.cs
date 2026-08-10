@@ -32,6 +32,13 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.PropertyChanged += MediaElement_PropertyChanged;
 	}
 
+	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
+	{
+		base.OnNavigatedFrom(args);
+		MediaElement.Stop();
+		MediaElement.Handler?.DisconnectHandler();
+	}
+
 	void MediaElement_PropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		if (e.PropertyName == MediaElement.DurationProperty.PropertyName)
@@ -122,13 +129,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	void OnMuteClicked(object? sender, EventArgs? e)
 	{
 		MediaElement.ShouldMute = !MediaElement.ShouldMute;
-	}
-
-	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
-	{
-		base.OnNavigatedFrom(args);
-		MediaElement.Stop();
-		MediaElement.Handler?.DisconnectHandler();
 	}
 
 	async void Slider_DragCompleted(object? sender, EventArgs? e)

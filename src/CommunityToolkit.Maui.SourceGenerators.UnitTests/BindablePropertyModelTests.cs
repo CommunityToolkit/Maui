@@ -152,21 +152,6 @@ public class BindablePropertyModelTests : BaseTest
 		Assert.Single(semanticValues.BindableProperties);
 	}
 
-	static Compilation CreateCompilation(string source)
-	{
-		var syntaxTree = CSharpSyntaxTree.ParseText(source);
-		var references = new[]
-		{
-			MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
-		};
-
-		return CSharpCompilation.Create(
-			"TestAssembly",
-			[syntaxTree],
-			references,
-			new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-	}
-
 	[Fact]
 	public void BindablePropertyName_WithInitializer_ReturnsCorrectEffectiveDefaultValueCreatorMethodName()
 	{
@@ -247,5 +232,20 @@ public class BindablePropertyModelTests : BaseTest
 
 		// Assert
 		Assert.Equal("CreateTextDefaultValue", effectiveDefaultValueCreatorMethodName);
+	}
+
+	static Compilation CreateCompilation(string source)
+	{
+		var syntaxTree = CSharpSyntaxTree.ParseText(source);
+		var references = new[]
+		{
+			MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
+		};
+
+		return CSharpCompilation.Create(
+			"TestAssembly",
+			[syntaxTree],
+			references,
+			new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 	}
 }

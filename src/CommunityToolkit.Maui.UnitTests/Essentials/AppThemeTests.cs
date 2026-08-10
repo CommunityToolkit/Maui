@@ -26,12 +26,6 @@ public class AppThemeTests : BaseViewTest
 		Assert.Equal(initialAppTheme, Application.Current.PlatformAppTheme);
 	}
 
-	protected override void Dispose(bool isDisposing)
-	{
-		Application.Current?.RemoveWindow(window);
-		base.Dispose(isDisposing);
-	}
-
 	[Fact]
 	public void AppThemeColorUsesCorrectColorForTheme()
 	{
@@ -112,9 +106,45 @@ public class AppThemeTests : BaseViewTest
 		label.Text.Should().Be("Dark Theme");
 	}
 
+	[Fact]
+	public void AppThemeResourceRemovesExistingDynamicResourceForStaticThemeValue()
+	{
+		ArgumentNullException.ThrowIfNull(Application.Current);
+
+		Application.Current.Resources["TextColor"] = Colors.Green;
+		label.SetDynamicResource(Label.TextColorProperty, "TextColor");
+
+		label.TextColor.Should().Be(Colors.Green);
+
+		AppThemeObject resource = new()
+		{
+			Light = Colors.Blue,
+			Dark = Colors.Purple
+		};
+
+		label.SetAppTheme(Label.TextColorProperty, resource);
+
+		label.TextColor.Should().Be(Colors.Blue);
+
+		SetAppTheme(AppTheme.Dark, Application.Current);
+
+		label.TextColor.Should().Be(Colors.Purple);
+
+		Application.Current.Resources["TextColor"] = Colors.Red;
+
+		label.TextColor.Should().Be(Colors.Purple);
+	}
+
+	protected override void Dispose(bool isDisposing)
+	{
+		Application.Current?.RemoveWindow(window);
+		base.Dispose(isDisposing);
+	}
+
 	void SetAppTheme(in AppTheme theme, in IApplication app)
 	{
 		mockAppInfo.RequestedTheme = theme;
 		app.ThemeChanged();
 	}
+
 }

@@ -40,6 +40,34 @@ indent_size = 2
 # Organize usings
 dotnet_sort_system_directives_first = true
 
+# StyleCop.Analyzers: only the Element Positioning rules below are enabled, reported as warnings.
+# All other StyleCop rule categories are explicitly disabled.
+# See the "Element Positioning" section of .github/instructions/codestyle.instructions.md
+# Violations don't fail the build; fix them via the IDE code fix (lightbulb) or ask GitHub Copilot to reorder the members.
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.SpecialRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.SpacingRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.ReadabilityRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.OrderingRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.NamingRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.MaintainabilityRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.LayoutRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.DocumentationRules.severity = none
+
+# SA1201: Elements should appear in the correct order (fields -> constructors -> finalizers -> delegates -> events -> enums -> interfaces -> properties -> indexers -> methods)
+dotnet_diagnostic.SA1201.severity = warning
+
+# SA1202: Elements should be ordered by access (public -> internal -> protected internal -> protected -> private protected -> private)
+dotnet_diagnostic.SA1202.severity = warning
+
+# SA1204: Static elements should appear before instance elements
+dotnet_diagnostic.SA1204.severity = warning
+
+# SA1214: Readonly fields should appear before non-readonly fields
+dotnet_diagnostic.SA1214.severity = warning
+
+# SA1215: Instance readonly elements should appear before instance non-readonly elements
+dotnet_diagnostic.SA1215.severity = warning
+
 # IDE0160: Use file scoped namespace
 csharp_style_namespace_declarations = file_scoped:error
 

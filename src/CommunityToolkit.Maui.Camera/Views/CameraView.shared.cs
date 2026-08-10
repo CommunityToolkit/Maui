@@ -112,8 +112,6 @@ public partial class CameraView : View, ICameraView, IDisposable
 		remove => weakEventManager.RemoveEventHandler(value);
 	}
 
-	static ICameraProvider CameraProvider => IPlatformApplication.Current?.Services.GetRequiredService<ICameraProvider>() ?? throw new CameraException("Unable to retrieve CameraProvider");
-
 	/// <inheritdoc cref="ICameraView.IsAvailable"/>
 	public bool IsAvailable => (bool)GetValue(IsAvailableProperty);
 
@@ -192,8 +190,6 @@ public partial class CameraView : View, ICameraView, IDisposable
 		set => SetValue(IsTorchOnProperty, value);
 	}
 
-	new CameraViewHandler Handler => (CameraViewHandler)(base.Handler ?? throw new InvalidOperationException("Unable to retrieve Handler"));
-
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	bool ICameraView.IsAvailable
 	{
@@ -207,6 +203,10 @@ public partial class CameraView : View, ICameraView, IDisposable
 		get => IsBusy;
 		set => SetValue(isBusyPropertyKey, value);
 	}
+
+	static ICameraProvider CameraProvider => IPlatformApplication.Current?.Services.GetRequiredService<ICameraProvider>() ?? throw new CameraException("Unable to retrieve CameraProvider");
+
+	new CameraViewHandler Handler => (CameraViewHandler)(base.Handler ?? throw new InvalidOperationException("Unable to retrieve Handler"));
 
 	/// <inheritdoc/>
 	public void Dispose()
@@ -297,6 +297,16 @@ public partial class CameraView : View, ICameraView, IDisposable
 	public Task<Stream> StopVideoRecording(CancellationToken token = default) =>
 		Handler.CameraManager.StopVideoRecording(token);
 
+	void ICameraView.OnMediaCaptured(Stream imageData)
+	{
+		weakEventManager.HandleEvent(this, new MediaCapturedEventArgs(imageData), nameof(MediaCaptured));
+	}
+
+	void ICameraView.OnMediaCapturedFailed(string failureReason)
+	{
+		weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(failureReason), nameof(MediaCaptureFailed));
+	}
+
 	/// <inheritdoc/>
 	protected virtual void Dispose(bool disposing)
 	{
@@ -361,15 +371,5 @@ public partial class CameraView : View, ICameraView, IDisposable
 		}
 
 		return input;
-	}
-
-	void ICameraView.OnMediaCaptured(Stream imageData)
-	{
-		weakEventManager.HandleEvent(this, new MediaCapturedEventArgs(imageData), nameof(MediaCaptured));
-	}
-
-	void ICameraView.OnMediaCapturedFailed(string failureReason)
-	{
-		weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(failureReason), nameof(MediaCaptureFailed));
 	}
 }

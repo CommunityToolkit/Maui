@@ -7,6 +7,19 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public partial class PopupPositionViewModel : BaseViewModel
 {
+	public enum PopupPosition
+	{
+		TopLeft = 0,
+		Top = 1,
+		TopRight = 2,
+		Left = 3,
+		Center = 4,
+		Right = 5,
+		BottomLeft = 6,
+		Bottom = 7,
+		BottomRight = 8
+	}
+
 	static Page Page => Application.Current?.Windows[0].Page ?? throw new InvalidOperationException("MainPage cannot be null");
 
 	[RelayCommand]
@@ -75,18 +88,5 @@ public partial class PopupPositionViewModel : BaseViewModel
 			HorizontalOptions = horizontalOptions,
 			Padding = 0
 		});
-	}
-
-	public enum PopupPosition
-	{
-		TopLeft = 0,
-		Top = 1,
-		TopRight = 2,
-		Left = 3,
-		Center = 4,
-		Right = 5,
-		BottomLeft = 6,
-		Bottom = 7,
-		BottomRight = 8
 	}
 }

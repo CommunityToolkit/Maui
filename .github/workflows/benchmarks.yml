@@ -27,10 +27,10 @@ jobs:
         runs-on: windows-latest            
         steps:
             -   name: Checkout code
-                uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
             -   name: Install Latest Version of .NET, v${{ env.LATEST_NET_VERSION }}
-                uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
+                uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
                 with:
                     dotnet-version: ${{ env.LATEST_NET_VERSION }}
                     dotnet-quality: 'ga'
@@ -53,7 +53,10 @@ jobs:
                 run: dotnet run --project ${{ env.PathToCommunityToolkitAnalyzersBenchmarksCsproj }} -c Release -- -a "${{ runner.temp }}"
 
             -   name: Run Source Generator Benchmarks
-                run: dotnet run --project ${{ env.PathToCommunityToolkitSourceGeneratorsBenchmarksCsproj }} -c Release -- -a "${{ runner.temp }}"
+                run: |
+                    dotnet build-server shutdown
+                    dotnet build ${{ env.PathToCommunityToolkitSourceGeneratorsBenchmarksCsproj }} -c Release -m:1 --disable-build-servers
+                    dotnet run --no-build --project ${{ env.PathToCommunityToolkitSourceGeneratorsBenchmarksCsproj }} -c Release -- -a "${{ runner.temp }}"
 
             -   name: Publish Benchmarks
                 uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

@@ -226,6 +226,22 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 
 namespace Unique.Namespace.TextStyle
 {
+	// Ensures custom ITextStyle interfaces are supported
+	interface ICustomTextStyle : ITextStyle
+	{
+
+	}
+
+	public readonly record struct RecordStructConstraint
+	{
+
+	}
+
+	public struct StructConstraint
+	{
+
+	}
+
 	public class PublicTextStyleView : View, ICustomTextStyle
 	{
 		public Color TextColor { get; set; } = new();
@@ -233,21 +249,6 @@ namespace Unique.Namespace.TextStyle
 		public Font Font { get; set; }
 
 		public double CharacterSpacing { get; set; }
-	}
-
-	class InternalTextStyleView : View, ICustomTextStyle
-	{
-		public Color TextColor { get; set; } = new();
-
-		public Font Font { get; set; }
-
-		public double CharacterSpacing { get; set; }
-	}
-
-	// Ensures custom ITextStyle interfaces are supported
-	interface ICustomTextStyle : ITextStyle
-	{
-
 	}
 
 	public class ClassConstraintWithInterface : ISomeInterface
@@ -260,28 +261,21 @@ namespace Unique.Namespace.TextStyle
 
 	}
 
+	class InternalTextStyleView : View, ICustomTextStyle
+	{
+		public Color TextColor { get; set; } = new();
+
+		public Font Font { get; set; }
+
+		public double CharacterSpacing { get; set; }
+	}
+
 	class MyGenericPicker<T> : Picker
 	{
 
 	}
 
 	public record RecordClassConstraint
-	{
-
-	}
-
-
-	public readonly record struct RecordStructConstraint
-	{
-
-	}
-
-	class MoreGenericPicker<T> : MyGenericPicker<T>
-	{
-
-	}
-
-	public struct StructConstraint
 	{
 
 	}
@@ -306,6 +300,11 @@ namespace Unique.Namespace.TextStyle
 		public Color TextColor { get; set; } = Colors.Transparent;
 
 		public Font Font { get; set; }
+	}
+
+	class MoreGenericPicker<T> : MyGenericPicker<T>
+	{
+
 	}
 
 	class BrandNewControl : View, ITextStyle, IAnimatable

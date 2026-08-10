@@ -7,8 +7,6 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 public partial class MapsPinsPage : BasePage<MapsPinsViewModel>
 {
 	readonly Random locationRandomSeed = new();
-	int locationIncrement = 0;
-
 	// TODO generate actual random pins
 	readonly Location[] randomLocations =
 	[
@@ -48,6 +46,8 @@ public partial class MapsPinsPage : BasePage<MapsPinsViewModel>
 		new Location(33.45, 112.066666666667),
 		new Location(46.6, 112.033333333333),
 	];
+
+	int locationIncrement = 0;
 
 	public MapsPinsPage(MapsPinsViewModel mapsPinsViewModel) : base(mapsPinsViewModel)
 	{

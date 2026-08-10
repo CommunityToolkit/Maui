@@ -63,7 +63,7 @@ jobs:
                 os: [ windows-latest, macos-26 ]
         steps:
             -   name: Checkout code
-                uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
             -   name: Set Latest Xcode Version
                 if: runner.os == 'macOS'
@@ -72,12 +72,12 @@ jobs:
                     xcode-version: ${{ env.CommunityToolkitSample_Xcode_Version }}
 
             -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
-                uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
+                uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
                 with:
                     dotnet-version: ${{ env.LATEST_NET_VERSION }}
                     dotnet-quality: 'ga'
 
-            -   uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287 # v5
+            -   uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
                 with:
                     distribution: 'microsoft'
                     java-version: '21'
@@ -108,7 +108,7 @@ jobs:
                 os: [ windows-latest, macos-26 ]
         steps:
             -   name: Checkout code
-                uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
             -   name: Set NuGet Version to Tag Number
                 if: startsWith(github.ref, 'refs/tags/') && (!endsWith(github.ref, '-mediaelement') && !endsWith(github.ref, '-camera') && !endsWith(github.ref, '-maps'))
@@ -146,12 +146,12 @@ jobs:
                     xcode-version: ${{ env.CommunityToolkitLibrary_Xcode_Version }}
 
             -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
-                uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
+                uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
                 with:
                     dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
                     dotnet-quality: 'ga'
 
-            -   uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287 # v5
+            -   uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
                 with:
                     distribution: 'microsoft'
                     java-version: '17'
@@ -286,7 +286,7 @@ jobs:
         
         steps:
             -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
-                uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
+                uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
                 with:
                     dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
                     dotnet-quality: 'ga'
@@ -358,7 +358,7 @@ jobs:
         
         steps:
             -   name: Install .NET SDK
-                uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
+                uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
                 with:
                     dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
                     dotnet-quality: 'ga'
@@ -382,11 +382,15 @@ jobs:
         if: ${{ startsWith(github.ref, 'refs/tags/') }}
         needs: [ sign ]
         environment: nuget-release-gate # This gates this job until manually approved
+        permissions:
+            id-token: write
+            contents: read
+            actions: read
         runs-on: ubuntu-latest
         
         steps:
             -   name: Install .NET SDK
-                uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
+                uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
                 with:
                     dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
                     dotnet-quality: 'ga'
@@ -397,10 +401,16 @@ jobs:
                     name: signed-packages
                     path: ./packages
 
+            -   name: NuGet login (OIDC)
+                id: login
+                uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1
+                with:
+                    user: jfversluis_MSFT
+
             -   name: Push to NuGet.org
                 run: >
                     dotnet nuget push
                     **/*.nupkg
                     --source https://api.nuget.org/v3/index.json
-                    --api-key ${{ secrets.NUGET_PACKAGE_PUSH_TOKEN }}
+                    --api-key ${{ steps.login.outputs.NUGET_API_KEY }}
                     --skip-duplicate
