@@ -105,11 +105,6 @@ public partial class UserStoppedTypingBehavior : BaseBehavior<InputView>, IDispo
 
 		if (ShouldDismissKeyboardAutomatically)
 		{
-			// Called explicitly through the toolkit's own DispatcherExtensions.
-			// An extension-method call here would bind to MAUI's internal
-			// Microsoft.Maui.Controls.DispatcherExtensions.DispatchIfRequiredAsync(IDispatcher, Action)
-			// whenever that assembly grants us InternalsVisibleTo, which produced a MethodAccessException
-			// in any build where that grant is absent.
 			await ToolkitDispatcherExtensions.DispatchIfRequiredAsync(Dispatcher, view.Unfocus);
 		}
 
