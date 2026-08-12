@@ -21,6 +21,10 @@ sealed partial class CameraManager(
 	readonly Action onLoaded = onLoaded;
 
 	bool isInitialized;
+	
+	readonly IList<CameraScenario> scenarios = [];
+	
+	IReadOnlyList<CameraScenario> Scenarios => scenarios.AsReadOnly();
 
 	/// <summary>
 	/// Connects to the camera.
@@ -76,6 +80,59 @@ sealed partial class CameraManager(
 	/// Stops the camera preview.
 	/// </summary>
 	public void StopCameraPreview() => PlatformStopCameraPreview();
+	
+	internal async Task AddScenario(CameraScenario scenario)
+	{
+		this.scenarios.Add(scenario);
+		
+		if (scenario is PlatformCameraScenario platformScenario)
+		{
+			AddPlatformScenario(platformScenario);
+		}
+
+		await RefreshCameraPreview();
+	}
+	
+	internal async Task RemoveScenario(CameraScenario scenario)
+	{
+		this.scenarios.Remove(scenario);
+		
+		if (scenario is PlatformCameraScenario platformScenario)
+		{
+			platformScenario.OnDetached();
+			RemovePlatformScenario(platformScenario);
+		}
+
+		await RefreshCameraPreview();
+	}
+
+	internal async Task ResetScenarios()
+	{
+		foreach (var scenario in scenarios)
+		{
+			if (scenario is PlatformCameraScenario platformScenario)
+			{
+				platformScenario.OnDetached();
+				RemovePlatformScenario(platformScenario);
+			}
+		}
+		scenarios.Clear();
+
+		await RefreshCameraPreview();
+	}
+
+	async Task RefreshCameraPreview()
+	{
+		if (isInitialized)
+		{
+			PlatformStopCameraPreview();
+			await PlatformStartCameraPreview(CancellationToken.None);
+		}
+	}
+	
+	partial void AddPlatformScenario(PlatformCameraScenario scenario);
+
+	partial void RemovePlatformScenario(PlatformCameraScenario scenario);
 
 	/// <summary>
 	/// Updates the current camera.

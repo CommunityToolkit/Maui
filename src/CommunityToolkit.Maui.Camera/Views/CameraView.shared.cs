@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
@@ -12,6 +13,24 @@ public partial class CameraView : View, ICameraView, IDisposable
 {
 	static readonly BindablePropertyKey isAvailablePropertyKey =
 		BindableProperty.CreateReadOnly(nameof(IsAvailable), typeof(bool), typeof(CameraView), CameraViewDefaults.IsAvailable);
+	
+	internal static readonly BindablePropertyKey ScenariosPropertyKey = BindableProperty.CreateReadOnly(nameof(Scenarios), typeof(IList<CameraScenario>), typeof(CameraView), default(IList<CameraScenario>),
+		defaultValueCreator: bindable =>
+		{
+			var collection = new ObservableCollection<CameraScenario>();
+			return collection;
+		});
+
+	/// <summary>Bindable property for <see cref="CameraScenario"/>.</summary>
+	public static readonly BindableProperty ScenariosProperty = ScenariosPropertyKey.BindableProperty;
+
+	/// <summary>
+	/// Represents a collection of <see cref="CameraScenario"/> instances associated with the camera view.
+	/// </summary>
+	public IList<CameraScenario> Scenarios
+	{
+		get { return (IList<CameraScenario>)GetValue(ScenariosProperty); }
+	}
 
 	/// <summary>
 	/// Backing <see cref="BindableProperty"/> for the <see cref="CameraFlashMode"/> property.
@@ -271,12 +290,10 @@ public partial class CameraView : View, ICameraView, IDisposable
 	}
 
 	/// <inheritdoc cref="ICameraView.StartCameraPreview"/>
-	public Task StartCameraPreview(CancellationToken token) =>
-		Handler.CameraManager.StartCameraPreview(token);
+	public Task StartCameraPreview(CancellationToken token) => Handler.CameraManager.StartCameraPreview(token);
 
 	/// <inheritdoc cref="ICameraView.StopCameraPreview"/>
-	public void StopCameraPreview() =>
-		Handler.CameraManager.StopCameraPreview();
+	public void StopCameraPreview() =>Handler.CameraManager.StopCameraPreview();
 
 	/// <inheritdoc cref="ICameraView.StartVideoRecording(CancellationToken)"/>
 	public Task StartVideoRecording(CancellationToken token = default) =>

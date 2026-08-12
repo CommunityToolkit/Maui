@@ -17,6 +17,8 @@ partial class CameraManager
 	AVCaptureDeviceInput? audioInput;
 	AVCaptureDevice? captureDevice;
 	AVCaptureDeviceInput? captureInput;
+	
+	readonly IList<PlatformCameraScenario> cameraScenarios = [];
 
 	AVCaptureSession? captureSession;
 
@@ -100,8 +102,8 @@ partial class CameraManager
 	public partial void UpdateIsTorchOn(bool isTorchOn)
 	{
 		if (!isInitialized ||
-			captureDevice is null ||
-			!captureDevice.TorchAvailable)
+		    captureDevice is null ||
+		    !captureDevice.TorchAvailable)
 		{
 			return;
 		}
@@ -226,7 +228,7 @@ partial class CameraManager
 	{
 		var dimensions = ((CMVideoFormatDescription)format.FormatDescription).Dimensions;
 		return dimensions.Width <= resolution.Width
-			   && dimensions.Height <= resolution.Height;
+		       && dimensions.Height <= resolution.Height;
 	}
 
 	private async partial Task PlatformConnectCamera(CancellationToken token)
@@ -270,6 +272,16 @@ partial class CameraManager
 			throw new CameraException(errorMessage);
 		}
 
+		foreach (var scenario in cameraScenarios)
+		{
+			if (captureSession.CanAddOutput(scenario.Output))
+			{
+				captureSession.AddOutput(scenario.Output);
+
+				scenario.OnAttached();
+			}
+		}
+
 		// On iOS 17+, create a new instance of AVCaptureDeviceRotationCoordinator when switching to a new camera
 		if (UIDevice.CurrentDevice.CheckSystemVersion(17, 0))
 		{
@@ -289,6 +301,36 @@ partial class CameraManager
 		captureSession.StartRunning();
 		isInitialized = true;
 		onLoaded.Invoke();
+	}
+	
+	partial void AddPlatformScenario(PlatformCameraScenario scenario)
+	{
+		cameraScenarios.Add(scenario);
+
+		// if (captureSession is not null && captureSession.CanAddOutput(scenario.Output))
+		// {
+		// 	captureSession.AddOutput(scenario.Output);
+		// 	scenario.OnAttached();
+		// }
+		// else
+		// {
+			_ = RefreshCameraPreview(); // TODO: better async handling?
+		// }
+	}
+
+	partial void RemovePlatformScenario(PlatformCameraScenario scenario)
+	{
+		cameraScenarios.Remove(scenario);
+
+		// if (captureSession is not null)
+		// {
+		// 	captureSession.RemoveOutput(scenario.Output);
+		// 	scenario.OnDetached();
+		// }
+		// else
+		// {
+			_ = RefreshCameraPreview();// TODO: better async handling?
+		// }
 	}
 
 	private partial void PlatformStopCameraPreview()
@@ -384,10 +426,10 @@ partial class CameraManager
 	private async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
 	{
 		if (captureSession is null
-			|| videoRecordingFileName is null
-			|| videoOutput is null
-			|| videoRecordingStream is null
-			|| videoRecordingFinalizeTcs is null)
+		    || videoRecordingFileName is null
+		    || videoOutput is null
+		    || videoRecordingStream is null
+		    || videoRecordingFinalizeTcs is null)
 		{
 			return Stream.Null;
 		}

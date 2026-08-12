@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Extensions;
+﻿using System.Collections.Specialized;
+using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
@@ -19,7 +20,8 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		[nameof(ICameraView.IsAvailable)] = MapIsAvailable,
 		[nameof(ICameraView.ZoomFactor)] = MapZoomFactor,
 		[nameof(ICameraView.ImageCaptureResolution)] = MapImageCaptureResolution,
-		[nameof(ICameraView.SelectedCamera)] = MapSelectedCamera
+		[nameof(ICameraView.SelectedCamera)] = MapSelectedCamera,
+		[nameof(ICameraView.Scenarios)] = MapScenarios
 	};
 
 	/// <summary>
@@ -94,6 +96,11 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	{
 		base.DisconnectHandler(platformView);
 
+		if (VirtualView.Scenarios is INotifyCollectionChanged scenarios)
+		{
+			scenarios.CollectionChanged -= OnScenariosCollectionChanged;
+		}
+
 		CameraManager.Disconnect();
 
 		Dispose();
@@ -156,5 +163,43 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	static void MapZoomFactor(CameraViewHandler handler, ICameraView view)
 	{
 		handler.CameraManager.UpdateZoom(view.ZoomFactor);
+	}
+
+	static async void MapScenarios(CameraViewHandler handler, ICameraView view)
+	{
+		if (view.Scenarios is INotifyCollectionChanged scenarios)
+		{
+			scenarios.CollectionChanged -= handler.OnScenariosCollectionChanged;
+			scenarios.CollectionChanged += handler.OnScenariosCollectionChanged;
+		}
+
+		foreach (var scenario in view.Scenarios)
+		{
+			await handler.CameraManager.AddScenario(scenario);
+		}
+	}
+
+	async void OnScenariosCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+	{
+		if (e.Action is NotifyCollectionChangedAction.Reset)
+		{
+			await CameraManager.ResetScenarios();
+		}
+
+		if (e.OldItems is not null)
+		{
+			foreach (CameraScenario scenario in e.OldItems)
+			{
+				await CameraManager.RemoveScenario(scenario);
+			}
+		}
+
+		if (e.NewItems is not null)
+		{
+			foreach (CameraScenario scenario in e.NewItems)
+			{
+				await CameraManager.AddScenario(scenario);
+			}
+		}
 	}
 }

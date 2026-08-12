@@ -15,6 +15,8 @@ public sealed partial class ViewsGalleryViewModel() : BaseGalleryViewModel(
 	SectionModel.Create<AvatarViewShadowsViewModel>("AvatarView Shadows Page", Colors.Red, "A page demonstrating AvatarViews with various shadow options."),
 	SectionModel.Create<AvatarViewShapesViewModel>("AvatarView Shapes Page", Colors.Red, "A page demonstrating AvatarViews with various shape options."),
 	SectionModel.Create<AvatarViewSizesViewModel>("AvatarView Sizes Page", Colors.Red, "A page demonstrating AvatarViews with various size options."),
+	SectionModel.Create<PlatformSpecificBarcodeScanningViewModel>("Platform Specific Barcode Scanning", Colors.Red, "Extend CameraView functionality to scan barcodes using platform specific implementations."),
+	SectionModel.Create<SharedBarcodeScanningViewModel>("Shared Barcode Scanning", Colors.Red, "Extend CameraView functionality to scan barcodes using a shared implementation."),
 	SectionModel.Create<CameraViewViewModel>("CameraView Page", Colors.Red, "CameraView is a view for displaying camera output."),
 	SectionModel.Create<DrawingViewViewModel>("DrawingView", Colors.Red, "DrawingView provides a canvas for users to \"paint\" on the screen. The drawing can also be captured and displayed as an Image."),
 	SectionModel.Create<ExpanderViewModel>("Expander Page", Colors.Red, "Expander allows collapse and expand content."),
