@@ -3,6 +3,7 @@ using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 #if WINDOWS
+using System.Diagnostics;
 using Microsoft.Maui.LifecycleEvents;
 #endif
 
@@ -86,8 +87,15 @@ public class Options : Core.Options
 
 						else if (Application.Current.Windows.Count is 1)
 						{
-							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked += OnSnackbarNotificationInvoked;
-							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Register();
+							if (AppPackageExtensions.IsPackagedApp)
+							{
+								Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked += OnSnackbarNotificationInvoked;
+								Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Register();
+							}
+							else
+							{
+								Trace.WriteLine($"{nameof(Alerts.Snackbar)} is not supported on unpackaged Windows apps. {nameof(Alerts.Snackbar)} requires the app to be packaged (MSIX). See https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar for more information.");
+							}
 						}
 					})
 					.OnClosed((_, _) =>
@@ -96,7 +104,7 @@ public class Options : Core.Options
 						{
 							throw new InvalidOperationException($"{nameof(Application)}.{nameof(Application.Current)} cannot be null when Windows are closed");
 						}
-						else if (Application.Current.Windows.Count is 0)
+						else if (Application.Current.Windows.Count is 0 && AppPackageExtensions.IsPackagedApp)
 						{
 							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked -= OnSnackbarNotificationInvoked;
 							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Unregister();
