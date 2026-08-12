@@ -20,7 +20,7 @@ namespace CommunityToolkit.Maui.Core.Essentials;
 /// </remarks>
 static class ActivityResultManager
 {
-	static readonly object pendingRequestsLock = new();
+	static readonly Lock pendingRequestsLock = new();
 	static readonly Dictionary<string, PendingRequest> pendingRequests = [];
 
 	static ActivityResultManager()
@@ -145,7 +145,7 @@ static class ActivityResultManager
 
 	sealed class PendingRequest : IDisposable
 	{
-		readonly object requestLock = new();
+		readonly Lock requestLock = new();
 		readonly Action<Intent>? onResult;
 		readonly CancellationToken token;
 		readonly TaskCompletionSource<Intent> taskCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
