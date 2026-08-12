@@ -452,6 +452,57 @@ public class PopupServiceTests : BaseViewTest
 		await Assert.ThrowsAsync<OperationCanceledException>(() => popupService.ShowPopupAsync<ShortLivedSelfClosingPopup>(shell, PopupOptions.Empty, shellParameters, cts.Token));
 	}
 
+	[Fact]
+	public void Constructor_Default_ShouldCreateInstance_WhenPlatformServicesAvailable()
+	{
+		// Act
+		var popupService = new PopupService();
+
+		// Assert
+		Assert.NotNull(popupService);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ClosePopupAsync_UsingNavigation_ShouldThrowOperationCanceledException_WhenTokenIsCanceled()
+	{
+		// Arrange
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+		var cancellationTokenSource = new CancellationTokenSource();
+		await cancellationTokenSource.CancelAsync();
+
+		// Act / Assert
+		await Assert.ThrowsAsync<OperationCanceledException>(() => popupService.ClosePopupAsync(navigation, cancellationTokenSource.Token));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ClosePopupAsyncT_UsingNavigation_ShouldThrowOperationCanceledException_WhenTokenIsCanceled()
+	{
+		// Arrange
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+		var cancellationTokenSource = new CancellationTokenSource();
+		await cancellationTokenSource.CancelAsync();
+
+		// Act / Assert
+		await Assert.ThrowsAsync<OperationCanceledException>(() => popupService.ClosePopupAsync(navigation, 2, cancellationTokenSource.Token));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ClosePopupAsync_UsingPage_ShouldThrowOperationCanceledException_WhenTokenIsCanceled()
+	{
+		// Arrange
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+		var cancellationTokenSource = new CancellationTokenSource();
+		await cancellationTokenSource.CancelAsync();
+
+		if (Application.Current?.Windows[0].Page is not Page page)
+		{
+			throw new InvalidOperationException("Page cannot be null");
+		}
+
+		// Act / Assert
+		await Assert.ThrowsAsync<OperationCanceledException>(() => popupService.ClosePopupAsync(page, cancellationTokenSource.Token));
+	}
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ClosePopupAsync_UsingPage_ShouldThrowArgumentNullException_WhenPageIsNull()
 	{

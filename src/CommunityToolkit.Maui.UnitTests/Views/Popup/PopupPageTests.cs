@@ -531,6 +531,30 @@ public class PopupPageTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowAsync_Shell_ShouldThrowArgumentNullException_WhenShellIsNull()
+	{
+		// Arrange
+		var popupPage = new PopupPage(new Label(), PopupOptions.Empty);
+
+		// Act / Assert
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		await Assert.ThrowsAsync<ArgumentNullException>(() => popupPage.ShowAsync((Shell?)null, "route", token: TestContext.Current.CancellationToken));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowAsync_Shell_ShouldThrowArgumentException_WhenRouteIsEmpty()
+	{
+		// Arrange
+		var shell = new Shell();
+		shell.Items.Add(new ContentPage());
+		var popupPage = new PopupPage(new Label(), PopupOptions.Empty);
+
+		// Act / Assert
+		await Assert.ThrowsAsync<ArgumentException>(() => popupPage.ShowAsync(shell, string.Empty, token: TestContext.Current.CancellationToken));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task OnTappingOutsideOfPopup_ShouldClosePopupWhenCanBeDismissedIsTrue()
 	{
 		// Arrange
@@ -832,6 +856,51 @@ public class PopupPageTests : BaseViewTest
 
 		// Assert
 		Assert.Equal(popupValue, popup.PopupValue);
+		Assert.Equal(contentValue, popupContent.ContentValue);
+	}
+
+	[Fact]
+	public void ApplyQueryAttributes_ShouldForwardToPopupOnly_WhenContentDoesNotImplementIQueryAttributable()
+	{
+		// Arrange
+		const string popupValue = "popup-only";
+		var query = new Dictionary<string, object>
+		{
+			[nameof(QueryAttributablePopup.PopupValue)] = popupValue
+		};
+		var popup = new QueryAttributablePopup
+		{
+			Content = new ContentView()
+		};
+		var popupPage = new PopupPage(popup, PopupOptions.Empty);
+
+		// Act
+		((IQueryAttributable)popupPage).ApplyQueryAttributes(query);
+
+		// Assert
+		Assert.Equal(popupValue, popup.PopupValue);
+	}
+
+	[Fact]
+	public void ApplyQueryAttributes_ShouldForwardToPopupContentOnly_WhenPopupDoesNotImplementIQueryAttributable()
+	{
+		// Arrange
+		const string contentValue = "content-only";
+		var query = new Dictionary<string, object>
+		{
+			[nameof(QueryAttributableContentView.ContentValue)] = contentValue
+		};
+		var popupContent = new QueryAttributableContentView();
+		var popup = new Popup
+		{
+			Content = popupContent
+		};
+		var popupPage = new PopupPage(popup, PopupOptions.Empty);
+
+		// Act
+		((IQueryAttributable)popupPage).ApplyQueryAttributes(query);
+
+		// Assert
 		Assert.Equal(contentValue, popupContent.ContentValue);
 	}
 

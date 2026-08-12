@@ -97,7 +97,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	public async Task ShowAsync(Shell shell, string shellRoute, IDictionary<string, object>? shellParameters = null, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(shell);
-		ArgumentException.ThrowIfNullOrEmpty(shellRoute, nameof(shellRoute));
+		ArgumentException.ThrowIfNullOrEmpty(shellRoute);
 		await navigationSemaphoreSlim.WaitAsync(token);
 
 		try

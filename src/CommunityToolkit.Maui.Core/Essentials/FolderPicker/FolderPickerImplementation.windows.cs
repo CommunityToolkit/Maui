@@ -1,4 +1,4 @@
-using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.UI;
 using Microsoft.Windows.AppLifecycle;

@@ -1,5 +1,5 @@
 using System.Runtime.Versioning;
-using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.ApplicationModel;
 using UniformTypeIdentifiers;
 
