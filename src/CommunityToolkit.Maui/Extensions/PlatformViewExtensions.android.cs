@@ -53,11 +53,11 @@ static class PlatformViewExtensions
 	{
 		ArgumentNullException.ThrowIfNull(javaObject);
 
-		return javaObject.Handle is IntPtr.Zero;
+		return javaObject.Handle == IntPtr.Zero;
 	}
 
 	/// <summary>
 	/// Returns <see langword="true"/> when the Java peer is non-<see langword="null"/> and its native handle is still valid.
 	/// </summary>
-	public static bool IsPeerAlive(this JavaObject? javaObject) => javaObject is not null && javaObject.Handle is not IntPtr.Zero;
+	public static bool IsPeerAlive(this JavaObject? javaObject) => javaObject is not null && javaObject.Handle != IntPtr.Zero;
 }
