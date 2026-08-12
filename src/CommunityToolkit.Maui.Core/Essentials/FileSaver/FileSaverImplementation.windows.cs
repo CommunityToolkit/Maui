@@ -33,7 +33,15 @@ public sealed partial class FileSaverImplementation : IFileSaver
 			SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
 			SuggestedFileName = Path.GetFileNameWithoutExtension(fileName)
 		};
-		WinRT.Interop.InitializeWithWindow.Initialize(savePicker, Process.GetCurrentProcess().MainWindowHandle);
+
+		var hwnd = Process.GetCurrentProcess().MainWindowHandle;
+		if (hwnd == IntPtr.Zero)
+		{
+			throw new FileSaveException(
+				"Cannot present file picker: No active window found. Ensure the app is active with a visible window.");
+		}
+
+		WinRT.Interop.InitializeWithWindow.Initialize(savePicker, hwnd);
 #endif
 
 		var extension = Path.GetExtension(fileName);
