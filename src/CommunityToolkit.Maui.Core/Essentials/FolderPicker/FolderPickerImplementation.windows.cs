@@ -35,7 +35,15 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 		{
 			SuggestedStartLocation = PickerLocationId.DocumentsLibrary
 		};
-		WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, Process.GetCurrentProcess().MainWindowHandle);
+
+		var hwnd = Process.GetCurrentProcess().MainWindowHandle;
+		if (hwnd == IntPtr.Zero)
+		{
+			throw new FolderPickerException(
+				"Cannot present folder picker: No active window found. Ensure the app is active with a visible window.");
+		}
+
+		WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, hwnd);
 		folderPicker.FileTypeFilter.Add("*");
 #endif
 
