@@ -14,8 +14,8 @@ namespace CommunityToolkit.Maui.Extensions;
 /// <para>
 /// The names deliberately differ from MAUI's (<c>GetParentOfType</c>, <c>IsAlive</c>, <c>IsDisposed</c>).
 /// While MAUI still grants us <c>InternalsVisibleTo</c> those identical names are in scope at the same
-/// time as these, which makes every call site ambiguous (CS0121). Distinct names bind correctly whether
-/// or not that grant is present.
+/// time as these, which makes every call site ambiguous (CS0121). Distinct names bind correctly whether 
+/// that grant is present.
 /// </para>
 /// </remarks>
 static class PlatformViewExtensions
@@ -53,11 +53,11 @@ static class PlatformViewExtensions
 	{
 		ArgumentNullException.ThrowIfNull(javaObject);
 
-		return javaObject.Handle == IntPtr.Zero;
+		return javaObject.Handle is IntPtr.Zero;
 	}
 
 	/// <summary>
 	/// Returns <see langword="true"/> when the Java peer is non-<see langword="null"/> and its native handle is still valid.
 	/// </summary>
-	public static bool IsPeerAlive(this JavaObject? javaObject) => javaObject is not null && javaObject.Handle != IntPtr.Zero;
+	public static bool IsPeerAlive(this JavaObject? javaObject) => javaObject is not null && javaObject.Handle is not IntPtr.Zero;
 }
