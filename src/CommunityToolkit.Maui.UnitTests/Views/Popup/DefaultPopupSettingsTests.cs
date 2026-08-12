@@ -94,7 +94,7 @@ public class DefaultPopupSettingsTests : BaseViewTest
 	public void View_SetPopupDefaultsNotCalled_UsesPopupDefaults()
 	{
 		// Arrange
-		var popupPage = new PopupPage(new View(), PopupOptions.Empty);
+		var popupPage = new PopupPage(new MockView(), PopupOptions.Empty);
 		var popupBorder = popupPage.Content.PopupBorder;
 		var popup = (Popup)(popupBorder.Content ?? throw new InvalidOperationException("Popup cannot be null"));
 
@@ -124,7 +124,7 @@ public class DefaultPopupSettingsTests : BaseViewTest
 		var builder = MauiApp.CreateBuilder();
 		builder.UseMauiCommunityToolkit(options => { options.SetPopupDefaults(defaultPopupSettings); });
 
-		var popupPage = new PopupPage(new View(), PopupOptions.Empty);
+		var popupPage = new PopupPage(new MockView(), PopupOptions.Empty);
 		var popupBorder = popupPage.Content.PopupBorder;
 		var popup = (Popup)(popupBorder.Content ?? throw new InvalidOperationException("Popup cannot be null"));
 

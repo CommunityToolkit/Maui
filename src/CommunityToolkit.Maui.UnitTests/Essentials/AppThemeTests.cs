@@ -19,11 +19,11 @@ public class AppThemeTests : BaseViewTest
 			Page = page
 		};
 		CreateViewHandler<MockPageHandler>(page);
-		Application.Current.AddWindow(window);
+		Application.Current.OpenWindow(window);
 
 		SetAppTheme(initialAppTheme, Application.Current);
 
-		Assert.Equal(initialAppTheme, Application.Current.PlatformAppTheme);
+		Assert.Equal(initialAppTheme, Application.Current.RequestedTheme);
 	}
 
 	[Fact]
@@ -137,14 +137,12 @@ public class AppThemeTests : BaseViewTest
 
 	protected override void Dispose(bool isDisposing)
 	{
-		Application.Current?.RemoveWindow(window);
 		base.Dispose(isDisposing);
 	}
 
-	void SetAppTheme(in AppTheme theme, in IApplication app)
+	static void SetAppTheme(in AppTheme theme, Application app)
 	{
-		mockAppInfo.RequestedTheme = theme;
-		app.ThemeChanged();
+		app.UserAppTheme = theme;
 	}
 
 }

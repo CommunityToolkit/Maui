@@ -108,6 +108,12 @@ public static partial class DrawingViewService
 
 		var context = UIGraphics.GetCurrentContext();
 
+		if (context is null)
+		{
+			UIGraphics.EndImageContext();
+			return null;
+		}
+
 		DrawBackground(context, background, imageSize);
 
 		var offset = canvasSize is null ? new Size(minPointX, minPointY) : Size.Zero;
@@ -148,7 +154,7 @@ public static partial class DrawingViewService
 		var resultImage = UIGraphics.GetImageFromCurrentImageContext();
 		UIGraphics.EndImageContext();
 
-		return resultImage;
+		return resultImage ?? throw new InvalidOperationException("Unable to create the resized image.");
 	}
 	static void DrawBackground(CGContext context, Paint? brush, CGSize imageSize)
 	{

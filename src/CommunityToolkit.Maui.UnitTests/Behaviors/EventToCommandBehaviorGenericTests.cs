@@ -6,7 +6,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class EventToCommandBehaviorGenericTests() : BaseBehaviorTest<EventToCommandBehavior<Coffee>, VisualElement>(new EventToCommandBehavior<Coffee>(), new View())
+public class EventToCommandBehaviorGenericTests() : BaseBehaviorTest<EventToCommandBehavior<Coffee>, VisualElement>(new EventToCommandBehavior<Coffee>(), new MockView())
 {
 	[Fact]
 	public void ArgumentExceptionIfSpecifiedEventDoesNotExist()

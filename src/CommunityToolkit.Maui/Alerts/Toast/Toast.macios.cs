@@ -55,12 +55,14 @@ public partial class Toast
 
 		var cornerRadius = CreateCornerRadius();
 		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height);
+		var font = UIFont.SystemFontOfSize((NFloat)TextSize)
+			?? throw new InvalidOperationException("Unable to create the toast font.");
 
 		PlatformToast = new PlatformToast(Text,
 											AlertDefaults.BackgroundColor.ToPlatform(),
 											cornerRadius,
 											AlertDefaults.TextColor.ToPlatform(),
-											UIFont.SystemFontOfSize((NFloat)TextSize),
+											font,
 											AlertDefaults.CharacterSpacing,
 											padding)
 		{
