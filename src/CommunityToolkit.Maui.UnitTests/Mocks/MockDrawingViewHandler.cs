@@ -97,7 +97,7 @@ public sealed class MockDrawingViewHandler(IPropertyMapper mapper) : ViewHandler
 
 		if (Lines.Count > 0)
 		{
-			var drawingLine = adapter.ConvertMauiDrawingLine(Lines.Last());
+			var drawingLine = adapter.ConvertMauiDrawingLine(Lines[^1]);
 			VirtualView.OnDrawingLineCompleted(drawingLine);
 		}
 	}

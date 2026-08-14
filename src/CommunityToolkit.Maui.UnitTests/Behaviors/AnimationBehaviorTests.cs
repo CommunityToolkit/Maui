@@ -7,7 +7,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, VisualElement>(new AnimationBehavior(), new View())
+public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, VisualElement>(new AnimationBehavior(), new MockView())
 {
 	[Fact]
 	public void TapGestureRecognizerAttachedWhenAnimateOnTapSetToTrue()
@@ -196,6 +196,8 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 			Behaviors = { behavior }
 		}.EnableAnimations();
 
+		Assert.True(SpinWait.SpinUntil(() => animationCommandCts.IsCancellationRequested, TimeSpan.FromSeconds(1)));
+
 		try
 		{
 			// Run using AsyncContext to catch Exception thrown by fire-and-forget AnimateCommand (ICommand)
@@ -233,7 +235,11 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 
 			AnimationStarted?.Invoke(this, EventArgs.Empty);
 
+#if NET11_0_OR_GREATER
+			await element.RotateToAsync(70, 250, null, token);
+#else
 			await element.RotateToAsync(70).WaitAsync(token);
+#endif
 
 			HasAnimated = true;
 

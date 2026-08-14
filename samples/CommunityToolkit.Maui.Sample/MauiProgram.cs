@@ -41,8 +41,6 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.Maui.Platform;
 #endif
 
-[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
-
 namespace CommunityToolkit.Maui.Sample;
 
 public static class MauiProgram

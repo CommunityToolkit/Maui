@@ -6,7 +6,7 @@ using View = Microsoft.Maui.Controls.View;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, VisualElement>(new ImageTouchBehavior(), new View())
+public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, VisualElement>(new ImageTouchBehavior(), new MockView())
 {
 	readonly ImageTouchBehavior imageTouchBehavior = new();
 
@@ -29,7 +29,7 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 	{
 		InvalidOperationException? exception = null;
 
-		var view = new View();
+		var view = new MockView();
 
 		try
 		{

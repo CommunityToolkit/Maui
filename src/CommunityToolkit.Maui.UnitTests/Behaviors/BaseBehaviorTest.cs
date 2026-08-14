@@ -61,7 +61,7 @@ public abstract class BaseBehaviorTest<TBehavior, TView> : BaseTest
 
 		Assert.Equal(view.BindingContext, attachedBehavior.BindingContext);
 
-		var wasSuccessful = view.Behaviors.TryRemove(attachedBehavior);
+		var wasSuccessful = view.Behaviors.Remove(attachedBehavior);
 
 		Assert.True(wasSuccessful);
 		Assert.Equal(view.BindingContext, attachedBehavior.BindingContext);
