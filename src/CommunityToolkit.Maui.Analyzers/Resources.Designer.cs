@@ -19,7 +19,7 @@ namespace CommunityToolkit.Maui.Analyzers {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -61,6 +61,33 @@ namespace CommunityToolkit.Maui.Analyzers {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to To ensure each BindableObject receives a unique instance, DefaultValueCreatorMethodName methods must return a new instance, not a static field or property..
+        /// </summary>
+        internal static string BindablePropertyDefaultValueCreatorErrorMessage {
+            get {
+                return ResourceManager.GetString("BindablePropertyDefaultValueCreatorErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DefaultValueCreatorMethodName Returns Shared Static Instance.
+        /// </summary>
+        internal static string BindablePropertyDefaultValueCreatorErrorTitle {
+            get {
+                return ResourceManager.GetString("BindablePropertyDefaultValueCreatorErrorTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Method &apos;{0}&apos; returns a static field or property. This will cause all instances to share the same reference. Return a new instance instead..
+        /// </summary>
+        internal static string BindablePropertyDefaultValueCreatorMessageFormat {
+            get {
+                return ResourceManager.GetString("BindablePropertyDefaultValueCreatorMessageFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to `.UseMauiCommunityToolkit()` must be chained to `.UseMauiApp&lt;T&gt;()`.
         /// </summary>
         internal static string InitalizationMessageFormat {
@@ -70,7 +97,7 @@ namespace CommunityToolkit.Maui.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to `.UseMauiCommunityToolkit()` is required to initalize .NET MAUI Community Toolkit.
+        ///   Looks up a localized string similar to `.UseMauiCommunityToolkit()` is required to initialize .NET MAUI Community Toolkit.
         /// </summary>
         internal static string InitializationErrorMessage {
             get {
