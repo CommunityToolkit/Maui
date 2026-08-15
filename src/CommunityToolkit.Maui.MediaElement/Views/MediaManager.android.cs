@@ -16,6 +16,7 @@ using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
+using Java.Net;
 using Microsoft.Extensions.Logging;
 using AudioAttributes = AndroidX.Media3.Common.AudioAttributes;
 using DeviceInfo = AndroidX.Media3.Common.DeviceInfo;
@@ -345,6 +346,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	public void OnMediaItemTransition(MediaItem? mediaItem, int reason)
 	{
+		if (Player is not null && MediaElement.Source is HttpListMediaSource httplist)
+		{
+			httplist.Index = Player.CurrentMediaItemIndex;
+			UpdateNotifications();
+		}
 	}
 
 	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata)
@@ -545,6 +551,111 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 
 		Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
+
+		// The playlist hands the player a list of media sources, not a single media item: the flow below is for a single item, and the
+		// null media item SetPlayerData gets for a playlist would take its no-data path and stop the player, so the list is taken here
+		if (MediaElement.Source is HttpListMediaSource httpListMediaSource)
+		{
+			var sources = httpListMediaSource.Sources;
+			if (sources is null)
+			{
+				return;
+			}
+
+			var mediaList = new List<IMediaSource>();
+			var httpDataSourceFactory = new DefaultHttpDataSource.Factory();
+			httpDataSourceFactory.SetAllowCrossProtocolRedirects(true);
+
+			// Only a failure to build the list or to hand it to the player is a failure of the source: an exception of an event handler
+			// the player raises while it takes the list is reported once by UpdateSource, as in the single-item flow below
+			var isListTakingTheSource = false;
+			try
+			{
+				foreach (var meta in sources)
+				{
+					if (meta is null || meta.Uri is null)
+					{
+						break;
+					}
+
+					var uri = meta.Uri;
+					var headers = meta.HttpHeaders ?? httpListMediaSource.DefaultHttpHeaders;
+					var mediaitem = MediaItem.FromUri(uri.AbsoluteUri);
+					if (mediaitem is null)
+					{
+						break;
+					}
+
+					// An item without its own headers and no default headers sets none: the Java factory rejects a null map
+					if (headers is not null)
+					{
+						httpDataSourceFactory.SetDefaultRequestProperties(headers);
+					}
+
+					var mediaSourceFactory = new DefaultMediaSourceFactory(httpDataSourceFactory);
+					var mediaSource = mediaSourceFactory.CreateMediaSource(mediaitem);
+					if (mediaSource is null)
+					{
+						break;
+					}
+
+					MediaMetadata.Builder mediaMetaData = new();
+					mediaMetaData.SetArtist(meta.Artist);
+					mediaMetaData.SetTitle(meta.Title);
+					if (meta.ArtworkUrl is not null)
+					{
+						mediaMetaData.SetArtworkUri(Android.Net.Uri.Parse(meta.ArtworkUrl.AbsoluteUri));
+					}
+
+					mediaitem.MediaId = uri.AbsoluteUri;
+					mediaitem.MediaMetadata = mediaMetaData.Build();
+					mediaList.Add(mediaSource);
+				}
+
+				// The player raises its events synchronously while it takes the sources: from here on, only an exception of the
+				// player itself, a Java exception, is a failure of the source
+				isListTakingTheSource = true;
+				Player.SetMediaSources(mediaList, httpListMediaSource.Index, 0);
+			}
+			catch (Exception exception) when (!isListTakingTheSource || exception is Java.Lang.Throwable)
+			{
+				// A newer source, or the disconnection of the handler, replaced this source while the list was built: the failure is
+				// that of a source the MediaElement no longer has
+				if (token.IsCancellationRequested)
+				{
+					return;
+				}
+
+				Player.Stop();
+				Player.ClearMediaItems();
+
+				currentStreamDataSourceFactory?.Dispose();
+				currentStreamDataSourceFactory = null;
+
+				MediaElement.MediaFailed(new MediaFailedEventArgs(exception.Message));
+				Logger.LogError(exception, "{LogMessage}", exception.Message);
+
+				return;
+			}
+
+			// A StateChanged handler the player raised while it took the sources can set another Source, whose update replaces this one
+			if (token.IsCancellationRequested)
+			{
+				return;
+			}
+
+			if (Player.PlayerError is null)
+			{
+				MediaElement.MediaOpened();
+			}
+
+			if (isAndroidForegroundServiceEnabled)
+			{
+				UpdateNotifications();
+			}
+
+			return;
+		}
 
 		// Only a failure to apply the source (to create its media item or media source, or to hand it to the player) is a failure of the source.
 		// An exception of an event handler is not, whether the handler is that of an event raised after this part (MediaOpened, or None for a
@@ -971,6 +1082,22 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 					}
 
 					break;
+				}
+			case MetaMediaSource metaMediaSource:
+				{
+					var uri = metaMediaSource.Uri;
+					if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
+					{
+						UpdateMeidaElementMetaData(metaMediaSource.Title, metaMediaSource.Artist, metaMediaSource.ArtworkUrl);
+						return await CreateMediaItem(uri.AbsoluteUri, cancellationToken).ConfigureAwait(false);
+					}
+
+					break;
+				}
+			case HttpListMediaSource httpListMediaSource:
+				{
+					//Special type.
+					return null;
 				}
 			default:
 				throw new NotSupportedException($"{MediaElement.Source.GetType().FullName} is not yet supported for {nameof(MediaElement.Source)}");

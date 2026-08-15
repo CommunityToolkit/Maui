@@ -588,7 +588,7 @@ partial class MediaManager : IDisposable
 					break;
 				}
 
-				var headers = meta.HttpHeaders;
+				var headers = meta.HttpHeaders ?? httpListMediaSource.DefaultHttpHeaders;
 				if (headers is null)
 				{
 					mediaPlaybackList.Items.Add(new MediaPlaybackItem(WinMediaSource.CreateFromUri(meta.Uri)));
@@ -951,13 +951,6 @@ partial class MediaManager : IDisposable
 		{
 			deferral.Complete();
 		}
-	}
-
-	void UpdateMeidaElementMetaData(string? title, string? artist, Uri? uri)
-	{
-		MediaElement.MetadataTitle = title ?? MediaElementDefaults.MetadataTitle;
-		MediaElement.MetadataArtist = artist ?? MediaElementDefaults.MetadataArtist;
-		MediaElement.MetadataArtworkUrl = uri is null ? MediaElementDefaults.MetadataArtworkUrl : uri.ToString();
 	}
 
 	async ValueTask UpdateMetadata()
