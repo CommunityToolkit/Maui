@@ -688,10 +688,26 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				else if (MediaElement.Source is UriMediaSource uriMediaSource && uriMediaSource.HttpHeaders.Count > 0)
 				{
 					var httpDataSourceFactory = new DefaultHttpDataSource.Factory();
+					httpDataSourceFactory.SetAllowCrossProtocolRedirects(true);
 					httpDataSourceFactory.SetDefaultRequestProperties(uriMediaSource.HttpHeaders);
 
 					var mediaSourceFactory = new DefaultMediaSourceFactory(httpDataSourceFactory);
 					mediaSource = mediaSourceFactory.CreateMediaSource(item);
+				}
+				else if (MediaElement.Source is MetaMediaSource metaMediaSource)
+				{
+					// A MetaMediaSource is not a UriMediaSource, so the branch above never takes it: without this one, its headers would
+					// never reach the request of a bearer-protected URL
+					var headers = metaMediaSource.HttpHeaders;
+					if (headers is not null && headers.Count > 0)
+					{
+						var httpDataSourceFactory = new DefaultHttpDataSource.Factory();
+						httpDataSourceFactory.SetAllowCrossProtocolRedirects(true);
+						httpDataSourceFactory.SetDefaultRequestProperties(headers);
+
+						var mediaSourceFactory = new DefaultMediaSourceFactory(httpDataSourceFactory);
+						mediaSource = mediaSourceFactory.CreateMediaSource(item);
+					}
 				}
 
 				// The player raises its events synchronously while it takes the source (StateChanged for Buffering, for example): from here on, only
