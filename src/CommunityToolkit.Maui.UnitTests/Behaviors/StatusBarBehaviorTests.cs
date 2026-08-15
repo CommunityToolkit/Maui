@@ -35,7 +35,7 @@ public class StatusBarBehaviorTests() : BaseBehaviorTest<StatusBarBehavior, Page
 	{
 		var statusBarBehavior = new StatusBarBehavior();
 
-		var view = new View();
+		var view = new MockView();
 
 		Assert.Throws<InvalidOperationException>(() => view.Behaviors.Add(statusBarBehavior));
 	}

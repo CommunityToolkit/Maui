@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class RequiredStringValidationBehaviorTests() : BaseBehaviorTest<RequiredStringValidationBehavior, VisualElement>(new RequiredStringValidationBehavior(), new View())
+public class RequiredStringValidationBehaviorTests() : BaseBehaviorTest<RequiredStringValidationBehavior, VisualElement>(new RequiredStringValidationBehavior(), new MockView())
 {
 	[Fact]
 	public void IsValidTrueWhenBothIsNull_Test()

@@ -4,14 +4,14 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElement>(new TouchBehavior(), new View())
+public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElement>(new TouchBehavior(), new MockView())
 {
 	readonly TouchBehavior touchBehavior = new();
 
 	[Fact]
 	public void VerifyAttachToViewSucceeds()
 	{
-		var view = new View();
+		var view = new MockView();
 		view.Behaviors.Add(touchBehavior);
 
 		Assert.Single(view.Behaviors.OfType<TouchBehavior>());
@@ -94,7 +94,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		const double updatedDefaultOpacity = 0.9;
 		const double updatedHoveredOpacity = 0.7;
 
-		var view = new View();
+		var view = new MockView();
 		AttachTouchBehaviorToVisualElement(view);
 		Assert.Null(touchBehavior.DefaultOpacity);
 		Assert.Null(touchBehavior.HoveredOpacity);
@@ -119,7 +119,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 	[Fact]
 	public void HoverEdgeCaseTests()
 	{
-		AttachTouchBehaviorToVisualElement(new View());
+		AttachTouchBehaviorToVisualElement(new MockView());
 		Assert.NotNull(touchBehavior.Element);
 		Assert.Throws<NotSupportedException>(() => touchBehavior.HandleHover((HoverStatus)(-1)));
 		Assert.Throws<NotSupportedException>(() => touchBehavior.HandleHover((HoverStatus)(Enum.GetValues<HoverStatus>().Length + 1)));
@@ -136,7 +136,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		const double updatedDefaultOpacity = 0.9;
 		const double updatedHoveredOpacity = 0.7;
 
-		var view = new View();
+		var view = new MockView();
 		AttachTouchBehaviorToVisualElement(view);
 		Assert.Null(touchBehavior.DefaultOpacity);
 		Assert.Null(touchBehavior.HoveredOpacity);
@@ -162,7 +162,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		const int updatedDefaultTranslation = 10;
 		const int updatedHoveredTranslation = 20;
 
-		var view = new View();
+		var view = new MockView();
 		AttachTouchBehaviorToVisualElement(view);
 		touchBehavior.DefaultTranslationX = updatedDefaultTranslation;
 		touchBehavior.DefaultTranslationY = updatedDefaultTranslation;
@@ -191,7 +191,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		const int updatedDefaultTranslation = 10;
 		const int updatedPressedTranslation = 20;
 
-		var view = new View();
+		var view = new MockView();
 		AttachTouchBehaviorToVisualElement(view);
 		touchBehavior.DefaultTranslationX = updatedDefaultTranslation;
 		touchBehavior.DefaultTranslationY = updatedDefaultTranslation;
@@ -220,7 +220,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		const int updatedDefaultScale = 10;
 		const int updatedHoveredScale = 20;
 
-		var view = new View();
+		var view = new MockView();
 		AttachTouchBehaviorToVisualElement(view);
 
 		touchBehavior.DefaultScale = updatedDefaultScale;
@@ -244,7 +244,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		const int updatedDefaultScale = 10;
 		const int updatedPressedScale = 20;
 
-		var view = new View();
+		var view = new MockView();
 		AttachTouchBehaviorToVisualElement(view);
 		touchBehavior.DefaultScale = updatedDefaultScale;
 		touchBehavior.PressedScale = updatedPressedScale;
@@ -267,7 +267,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		const int updatedDefaultRotation = 10;
 		const int updatedHoveredRotation = 20;
 
-		var view = new View();
+		var view = new MockView();
 		AttachTouchBehaviorToVisualElement(view);
 		touchBehavior.DefaultRotation = updatedDefaultRotation;
 		touchBehavior.DefaultRotationX = updatedDefaultRotation;
@@ -302,7 +302,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		const int updatedDefaultRotation = 10;
 		const int updatedPressedRotation = 20;
 
-		var view = new View();
+		var view = new MockView();
 		AttachTouchBehaviorToVisualElement(view);
 		touchBehavior.DefaultRotation = updatedDefaultRotation;
 		touchBehavior.DefaultRotationX = updatedDefaultRotation;
@@ -335,7 +335,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 	[Fact]
 	public async Task VerifyHoverBackgroundColorChange()
 	{
-		var view = new View();
+		var view = new MockView();
 		AttachTouchBehaviorToVisualElement(view);
 		var defaultColor = Colors.Red;
 		var hoverColor = Colors.Blue;
@@ -358,7 +358,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task VerifyPressedBackgroundColorChange()
 	{
-		var view = new View();
+		var view = new MockView();
 		AttachTouchBehaviorToVisualElement(view);
 
 		var defaultColor = Colors.Red;
@@ -382,7 +382,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task TestRaiseLongPressCompleted()
 	{
-		var view = new View();
+		var view = new MockView();
 		AttachTouchBehaviorToVisualElement(view);
 		var hasLongPressCompleted = false;
 		var longPressCompletedTCS = new TaskCompletionSource<bool>();
@@ -405,7 +405,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task TestRaiseEvent()
 	{
-		var view = new View();
+		var view = new MockView();
 		AttachTouchBehaviorToVisualElement(view);
 		var hasTouchCompleted = false;
 		var touchCompletedTCS = new TaskCompletionSource<bool>();
@@ -432,7 +432,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 	{
 		TouchInteractionStatus? firstInteractionResult = null, finalInteractionResult = null;
 
-		var view = new View();
+		var view = new MockView();
 		AttachTouchBehaviorToVisualElement(view);
 
 		var interactionStatusChangedCompletedTCS = new TaskCompletionSource<TouchInteractionStatus>();
@@ -469,7 +469,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 	{
 		HoverStatus? firstHoverStatusResult = null, finalHoverStatusResult = null;
 
-		var view = new View();
+		var view = new MockView();
 		AttachTouchBehaviorToVisualElement(view);
 
 		var hoverStatusChangedTCS = new TaskCompletionSource<HoverStatus>();
@@ -506,7 +506,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 	{
 		HoverState? firstHoverStateResult = null, finalHoverStateResult = null;
 
-		var view = new View();
+		var view = new MockView();
 		AttachTouchBehaviorToVisualElement(view);
 
 		var hoverStateChangedTCS = new TaskCompletionSource<HoverState>();
@@ -547,7 +547,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		const bool commandParameter = true;
 		touchBehavior.CommandParameter = commandParameter;
 
-		var view = new View();
+		var view = new MockView();
 		AttachTouchBehaviorToVisualElement(view);
 
 		var touchGestureCompletedTCS = new TaskCompletionSource<object?>();
@@ -611,7 +611,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		touchBehavior.LongPressCommandParameter = longPressCompletedParameter;
 		touchBehavior.CurrentInteractionStatus = TouchInteractionStatus.Started;
 
-		var view = new View();
+		var view = new MockView();
 		AttachTouchBehaviorToVisualElement(view);
 
 		var longPressCompletedTCS = new TaskCompletionSource<object?>();
@@ -668,7 +668,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 	public async Task VerifyIsToggledChangesState()
 	{
 		TouchStatus? touchStatus;
-		var view = new View();
+		var view = new MockView();
 		AttachTouchBehaviorToVisualElement(view);
 
 		var touchStatusChangedTCS = new TaskCompletionSource<TouchStatus>();
@@ -713,7 +713,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 	public void CanExecuteTest()
 	{
 		var canExecute = false;
-		var view = new View();
+		var view = new MockView();
 
 		var touchBehaviorCommandTCS = new TaskCompletionSource();
 
@@ -774,7 +774,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		// element is null
 		Assert.False(touchCompletedTCS.Task.IsCompleted);
 
-		var view = new View();
+		var view = new MockView();
 		AttachTouchBehaviorToVisualElement(view);
 
 		touchBehavior.RaiseTouchGestureCompleted();
@@ -816,7 +816,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		// element is null
 		Assert.False(longPressCompletedTCS.Task.IsCompleted);
 
-		var view = new View();
+		var view = new MockView();
 		AttachTouchBehaviorToVisualElement(view);
 
 		touchBehavior.RaiseLongPressCompleted();
@@ -1003,10 +1003,10 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 	[Fact]
 	public void ChangeVisualElementTest()
 	{
-		var view = new View();
+		var view = new MockView();
 		AttachTouchBehaviorToVisualElement(view);
 
-		Assert.IsType<View>(touchBehavior.Element);
+		Assert.IsType<View>(touchBehavior.Element, exactMatch: false);
 
 		var button = new Button();
 		AttachTouchBehaviorToVisualElement(button);

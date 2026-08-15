@@ -204,7 +204,7 @@ public class StateContainerTests : BaseTest
 		Assert.True(StateContainer.GetCanStateChange(layout));
 		Assert.Equal(StateKey.Error, StateContainer.GetCurrentState(layout));
 
-		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateToAsync(0.75, 500).WaitAsync(token);
+		static Task CustomAnimation(VisualElement element, CancellationToken token) => RotateToAsync(element, 0.75, 500, token);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -258,7 +258,7 @@ public class StateContainerTests : BaseTest
 		await Task.Delay(10, TestContext.Current.CancellationToken);
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, null, CustomAnimation, cancelledTokenSource.Token));
 
-		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateToAsync(0.75, 1000).WaitAsync(token);
+		static Task CustomAnimation(VisualElement element, CancellationToken token) => RotateToAsync(element, 0.75, 1000, token);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -276,7 +276,7 @@ public class StateContainerTests : BaseTest
 		var exception = Assert.Throws<StateContainerException>(() => StateContainer.SetCurrentState(layout, StateKey.Anything));
 		var exception2 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, TestContext.Current.CancellationToken));
 		var exception3 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, [], null, TestContext.Current.CancellationToken));
-		var exception4 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, (element, _) => element.FadeToAsync(1), null, TestContext.Current.CancellationToken));
+		var exception4 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, FadeToAsync, null, TestContext.Current.CancellationToken));
 
 		await changeStateWithAnimationTask;
 
@@ -308,7 +308,7 @@ public class StateContainerTests : BaseTest
 		var exception = Assert.Throws<StateContainerException>(() => StateContainer.SetCurrentState(layout, StateKey.Anything));
 		var exception2 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, TestContext.Current.CancellationToken));
 		var exception3 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, [], null, TestContext.Current.CancellationToken));
-		var exception4 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, (element, _) => element.FadeToAsync(1), null, TestContext.Current.CancellationToken));
+		var exception4 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, FadeToAsync, null, TestContext.Current.CancellationToken));
 
 		await changeStateWithAnimationTask;
 
@@ -340,7 +340,7 @@ public class StateContainerTests : BaseTest
 		var exception = Assert.Throws<StateContainerException>(() => StateContainer.SetCurrentState(layout, StateKey.Anything));
 		var exception2 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, TestContext.Current.CancellationToken));
 		var exception3 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, [], null, TestContext.Current.CancellationToken));
-		var exception4 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, (element, _) => element.FadeToAsync(1), null, TestContext.Current.CancellationToken));
+		var exception4 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, FadeToAsync, null, TestContext.Current.CancellationToken));
 
 		await changeStateWithAnimationTask;
 
@@ -377,7 +377,7 @@ public class StateContainerTests : BaseTest
 		var exception = Assert.Throws<StateContainerException>(() => StateContainer.SetCurrentState(layout, StateKey.Anything));
 		var exception2 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, TestContext.Current.CancellationToken));
 		var exception3 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, [], null, TestContext.Current.CancellationToken));
-		var exception4 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, (element, _) => element.FadeToAsync(1), null, TestContext.Current.CancellationToken));
+		var exception4 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, FadeToAsync, null, TestContext.Current.CancellationToken));
 
 		await changeStateWithAnimationTask;
 
@@ -422,7 +422,7 @@ public class StateContainerTests : BaseTest
 		var exception = Assert.Throws<StateContainerException>(() => StateContainer.SetCurrentState(layout, StateKey.Anything));
 		var exception2 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, TestContext.Current.CancellationToken));
 		var exception3 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, [], null, TestContext.Current.CancellationToken));
-		var exception4 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, (element, _) => element.FadeToAsync(1), null, TestContext.Current.CancellationToken));
+		var exception4 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, FadeToAsync, null, TestContext.Current.CancellationToken));
 
 		await changeStateWithAnimationTask;
 
@@ -433,7 +433,7 @@ public class StateContainerTests : BaseTest
 
 		Assert.True(StateContainer.GetCanStateChange(layout));
 
-		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateToAsync(0.75, 500).WaitAsync(token);
+		static Task CustomAnimation(VisualElement element, CancellationToken token) => RotateToAsync(element, 0.75, 500, token);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -451,7 +451,7 @@ public class StateContainerTests : BaseTest
 		var exception = Assert.Throws<StateContainerException>(() => StateContainer.SetCurrentState(layout, StateKey.Anything));
 		var exception2 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, TestContext.Current.CancellationToken));
 		var exception3 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, [], null, TestContext.Current.CancellationToken));
-		var exception4 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, (element, _) => element.FadeToAsync(1), null, TestContext.Current.CancellationToken));
+		var exception4 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, FadeToAsync, null, TestContext.Current.CancellationToken));
 
 		await changeStateWithAnimationTask;
 
@@ -462,7 +462,7 @@ public class StateContainerTests : BaseTest
 
 		Assert.True(StateContainer.GetCanStateChange(layout));
 
-		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateToAsync(0.75, 500).WaitAsync(token);
+		static Task CustomAnimation(VisualElement element, CancellationToken token) => RotateToAsync(element, 0.75, 500, token);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -480,7 +480,7 @@ public class StateContainerTests : BaseTest
 		var exception = Assert.Throws<StateContainerException>(() => StateContainer.SetCurrentState(layout, StateKey.Anything));
 		var exception2 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, TestContext.Current.CancellationToken));
 		var exception3 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, [], null, TestContext.Current.CancellationToken));
-		var exception4 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, (element, _) => element.FadeToAsync(1), null, TestContext.Current.CancellationToken));
+		var exception4 = await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Anything, FadeToAsync, null, TestContext.Current.CancellationToken));
 
 		await changeStateWithAnimationTask;
 
@@ -491,13 +491,13 @@ public class StateContainerTests : BaseTest
 
 		Assert.True(StateContainer.GetCanStateChange(layout));
 
-		static Task CustomAnimation(VisualElement element, CancellationToken token) => element.RotateToAsync(0.75, 500).WaitAsync(token);
+		static Task CustomAnimation(VisualElement element, CancellationToken token) => RotateToAsync(element, 0.75, 500, token);
 	}
 
 	[Fact]
 	public void StateContainer_ElementNotInheritsLayoutThrowsException()
 	{
-		var invalidElement = new View();
+		var invalidElement = new MockView();
 
 		var exception = Assert.Throws<StateContainerException>(() => StateContainer.SetCurrentState(invalidElement, "abc"));
 
@@ -639,6 +639,24 @@ public class StateContainerTests : BaseTest
 		Assert.NotSame(grid1StateViews, grid2StateViews);
 		Assert.Single(grid1StateViews);
 		Assert.Empty(grid2StateViews);
+	}
+
+	static Task FadeToAsync(VisualElement element, CancellationToken token)
+	{
+#if NET11_0_OR_GREATER
+		return element.FadeToAsync(1, 250, null, token);
+#else
+		return element.FadeToAsync(1).WaitAsync(token);
+#endif
+	}
+
+	static Task RotateToAsync(VisualElement element, double rotation, uint length, CancellationToken token)
+	{
+#if NET11_0_OR_GREATER
+		return element.RotateToAsync(rotation, length, null, token);
+#else
+		return element.RotateToAsync(rotation, length).WaitAsync(token);
+#endif
 	}
 
 	static class StateKey

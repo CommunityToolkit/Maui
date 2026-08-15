@@ -275,7 +275,14 @@ public partial class MediaManager : IDisposable
 				var url = NSBundle.MainBundle.GetUrlForResource(filename,
 					extension, directory);
 
-				asset = AVAsset.FromUrl(url);
+				if (url is not null)
+				{
+					asset = AVAsset.FromUrl(url);
+				}
+				else
+				{
+					Logger.LogWarning("Resource file was not found.");
+				}
 			}
 			else
 			{

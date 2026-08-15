@@ -1175,7 +1175,7 @@ public class PopupExtensionsTests : BaseViewTest
 		// Act
 		var showPopupTask = navigation.ShowPopupAsync<object?>(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
 
-		var popupPage = (PopupPage)navigation.ModalStack.Last();
+		var popupPage = (PopupPage)navigation.ModalStack[^1];
 		await popupPage.CloseAsync(new PopupResult(true), TestContext.Current.CancellationToken);
 		var result = await showPopupTask;
 
@@ -1199,7 +1199,7 @@ public class PopupExtensionsTests : BaseViewTest
 		// Act
 		var showPopupTask = shell.ShowPopupAsync<object?>(new Popup(), PopupOptions.Empty, shellParameters, TestContext.Current.CancellationToken);
 
-		var popupPage = (PopupPage)shellNavigation.ModalStack.Last();
+		var popupPage = (PopupPage)shellNavigation.ModalStack[^1];
 		await popupPage.CloseAsync(new PopupResult(true), TestContext.Current.CancellationToken);
 		var result = await showPopupTask;
 
@@ -1807,7 +1807,7 @@ public class PopupExtensionsTests : BaseViewTest
 	{
 		// Arrange
 		var showPopupTask = navigation.ShowPopupAsync<int>(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
-		var popupPage = (PopupPage)navigation.ModalStack.Last();
+		var popupPage = (PopupPage)navigation.ModalStack[^1];
 
 		// Act
 		await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);

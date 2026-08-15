@@ -71,7 +71,7 @@ public class RatingViewTests : BaseViewTest
 		firstItemShape.Should().BeOfType<Microsoft.Maui.Controls.Shapes.Path>();
 		firstItemShape.Aspect.Should().Be(Stretch.Uniform);
 		firstItemShape.HeightRequest.Should().Be(RatingViewDefaults.ItemShapeSize);
-		firstItemShape.Stroke.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(RatingViewDefaults.ShapeBorderColor));
+		GetBrushColor(firstItemShape.Stroke).Should().Be(RatingViewDefaults.ShapeBorderColor);
 		firstItemShape.StrokeLineCap.Should().Be(PenLineCap.Round);
 		firstItemShape.StrokeLineJoin.Should().Be(PenLineJoin.Round);
 		firstItemShape.StrokeThickness.Should().Be(RatingViewDefaults.ShapeBorderThickness);
@@ -106,11 +106,11 @@ public class RatingViewTests : BaseViewTest
 			MaximumRating = 1
 		};
 		var child = (Border)ratingView.RatingLayout.Children[0];
-		var tapGestureRecognizer = (TapGestureRecognizer)child.GestureRecognizers[0];
-		tapGestureRecognizer.SendTapped(child);
+		Assert.IsType<TapGestureRecognizer>(Assert.Single(child.GestureRecognizers));
+		ratingView.HandleShapeTapped(child);
 		ratingView.Rating.Should().Be(1);
 
-		tapGestureRecognizer.SendTapped(child);
+		ratingView.HandleShapeTapped(child);
 		ratingView.Rating.Should().Be(0);
 	}
 
@@ -121,8 +121,8 @@ public class RatingViewTests : BaseViewTest
 		RatingView ratingView = new();
 		ratingView.Rating.Should().Be(handlerTappedCount);
 		var child = (Border)ratingView.RatingLayout.Children[0];
-		var tgr = (TapGestureRecognizer)child.GestureRecognizers[0];
-		tgr.SendTapped(child);
+		Assert.IsType<TapGestureRecognizer>(Assert.Single(child.GestureRecognizers));
+		ratingView.HandleShapeTapped(child);
 		handlerTappedCount++;
 		ratingView.Rating.Should().Be(handlerTappedCount);
 	}
@@ -410,13 +410,13 @@ public class RatingViewTests : BaseViewTest
 		ratingView.FillColor = FillColor;
 		ratingView.FillColor.Should().Be(FillColor);
 		var filledRatingShape = GetItemShape(ratingView, (int)Math.Floor(rating));
-		filledRatingShape.Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyShapeColor));
+		GetBrushColor(filledRatingShape.Fill).Should().Be(emptyShapeColor);
 		var filledRatingItem = (Border)ratingView.RatingLayout.Children[0];
-		filledRatingItem.Background.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(FillColor));
+		GetBrushColor(filledRatingItem.Background).Should().Be(FillColor);
 		var partialFilledRatingItem = (Border)ratingView.RatingLayout.Children[(int)Math.Floor(rating)];
 		partialFilledRatingItem.Background.Should().BeOfType<LinearGradientBrush>();
 		var emptyFilledRatingItem = (Border)ratingView.RatingLayout.Children[maximumRating - 1]; // Check the last one, as this is where we expect the background colour to be set
-		emptyFilledRatingItem.Background.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(backgroundColor));
+		GetBrushColor(emptyFilledRatingItem.Background).Should().Be(backgroundColor);
 	}
 
 	[Fact]
@@ -539,7 +539,6 @@ public class RatingViewTests : BaseViewTest
 	public void Properties_Change_ShapeBorderColor()
 	{
 		var shapeBorderColor = Colors.Snow;
-		Brush brush = new SolidColorBrush(shapeBorderColor);
 		RatingView ratingView = new();
 
 		ratingView.ShapeBorderColor.Should().NotBe(shapeBorderColor);
@@ -547,7 +546,7 @@ public class RatingViewTests : BaseViewTest
 		ratingView.ShapeBorderColor.Should().Be(shapeBorderColor);
 
 		var firstRatingItem = GetItemShape(ratingView, 0);
-		firstRatingItem.Stroke.Should().BeOfType<SolidColorBrush>().And.Be(brush);
+		GetBrushColor(firstRatingItem.Stroke).Should().Be(shapeBorderColor);
 	}
 
 	[Fact]
@@ -762,16 +761,16 @@ public class RatingViewTests : BaseViewTest
 		var emptyFilledRatingItem = (Border)ratingView.RatingLayout.Children[2];
 
 		filledRatingItem.Content.Should().NotBeNull();
-		filledRatingItem.Background.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(FillColor));
-		((Shape)filledRatingItem.Content).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyShapeColor));
+		GetBrushColor(filledRatingItem.Background).Should().Be(FillColor);
+		GetBrushColor(((Shape)filledRatingItem.Content).Fill).Should().Be(emptyShapeColor);
 
 		partialFilledRatingItem.Content.Should().NotBeNull();
 		partialFilledRatingItem.Background.Should().BeOfType<LinearGradientBrush>();
-		((Shape)partialFilledRatingItem.Content).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyShapeColor));
+		GetBrushColor(((Shape)partialFilledRatingItem.Content).Fill).Should().Be(emptyShapeColor);
 
 		emptyFilledRatingItem.Content.Should().NotBeNull();
-		emptyFilledRatingItem.Background.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(backgroundColor));
-		((Shape)emptyFilledRatingItem.Content).Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyShapeColor));
+		GetBrushColor(emptyFilledRatingItem.Background).Should().Be(backgroundColor);
+		GetBrushColor(((Shape)emptyFilledRatingItem.Content).Fill).Should().Be(emptyShapeColor);
 	}
 
 	[Fact]
@@ -806,8 +805,8 @@ public class RatingViewTests : BaseViewTest
 		var filledRatingItem = GetItemShape(ratingView, 0);
 		var partialFilledRatingItem = GetItemShape(ratingView, 1);
 		var emptyFilledRatingItem = GetItemShape(ratingView, 2);
-		filledRatingItem.Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(FillColor));
-		emptyFilledRatingItem.Fill.Should().BeOfType<SolidColorBrush>().And.Be(new SolidColorBrush(emptyShapeColor));
+		GetBrushColor(filledRatingItem.Fill).Should().Be(FillColor);
+		GetBrushColor(emptyFilledRatingItem.Fill).Should().Be(emptyShapeColor);
 		partialFilledRatingItem.Fill.Should().BeOfType<LinearGradientBrush>();
 	}
 
@@ -836,6 +835,12 @@ public class RatingViewTests : BaseViewTest
 		Assert.Equal(RatingViewDefaults.FillWhenTapped, ratingView.FillWhenTapped);
 		Assert.Equal(RatingViewDefaults.FillOption, ratingView.FillOption);
 	}
+
+	static Color GetBrushColor(Brush? brush) => (Paint?)brush switch
+	{
+		SolidPaint solidPaint => solidPaint.Color,
+		_ => throw new InvalidOperationException($"Expected a solid color brush, but found {brush?.GetType().Name ?? "null"}.")
+	};
 
 	static Microsoft.Maui.Controls.Shapes.Path GetItemShape(in RatingView ratingView, int itemIndex)
 	{
