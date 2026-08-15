@@ -195,6 +195,7 @@ public partial class MauiMediaElement : Grid, IDisposable
 			var parent = mediaPlayerElement.Parent as FrameworkElement;
 			mediaPlayerElement.Width = parent?.Width ?? mediaPlayerElement.Width;
 			mediaPlayerElement.Height = parent?.Height ?? mediaPlayerElement.Height;
+			customTransportControls?.FullScreenButton.Icon = new FontIcon { Glyph = "\uE740" };
 		}
 		else
 		{
@@ -221,6 +222,7 @@ public partial class MauiMediaElement : Grid, IDisposable
 			{
 				popup.IsOpen = true;
 			}
+			customTransportControls?.FullScreenButton.Icon = new SymbolIcon(Symbol.BackToWindow);
 		}
 	}
 }
