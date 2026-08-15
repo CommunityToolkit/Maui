@@ -570,6 +570,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				else if (MediaElement.Source is UriMediaSource uriMediaSource && uriMediaSource.HttpHeaders.Count > 0)
 				{
 					var httpDataSourceFactory = new DefaultHttpDataSource.Factory();
+					httpDataSourceFactory.SetAllowCrossProtocolRedirects(true);
 					httpDataSourceFactory.SetDefaultRequestProperties(uriMediaSource.HttpHeaders);
 
 					var mediaSourceFactory = new DefaultMediaSourceFactory(httpDataSourceFactory);
@@ -580,6 +581,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				else if (MediaElement.Source is MetaMediaSource metaMediaSource)
 				{
 					var httpDataSourceFactory = new DefaultHttpDataSource.Factory();
+					httpDataSourceFactory.SetAllowCrossProtocolRedirects(true);
 					httpDataSourceFactory.SetDefaultRequestProperties(metaMediaSource.HttpHeaders);
 
 					var mediaSourceFactory = new DefaultMediaSourceFactory(httpDataSourceFactory);
