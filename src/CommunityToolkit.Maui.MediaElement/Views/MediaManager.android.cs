@@ -16,6 +16,7 @@ using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
+using Java.Net;
 using Microsoft.Extensions.Logging;
 using AudioAttributes = AndroidX.Media3.Common.AudioAttributes;
 using DeviceInfo = AndroidX.Media3.Common.DeviceInfo;
@@ -337,6 +338,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	public void OnMediaItemTransition(MediaItem? mediaItem, int reason)
 	{
+		if (Player is not null && MediaElement.Source is HttpListMediaSource httplist)
+		{
+			httplist.Index = Player.CurrentMediaItemIndex;
+			UpdateNotifications();
+
+		}
 	}
 
 	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata)
@@ -502,39 +509,93 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 		Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
-		cancellationTokenSource ??= new();
-		// ConfigureAwait(true) is required to prevent crash on startup
-		var result = await SetPlayerData(cancellationTokenSource.Token).ConfigureAwait(true);
-		var item = result?.Build();
 
-		if (item?.MediaMetadata is not null)
+		if (MediaElement.Source is HttpListMediaSource httpListMediaSource)
 		{
-			// If we have a custom stream data source, we need to set the media source differently
-			if (currentStreamDataSourceFactory is not null && MediaElement.Source is StreamMediaSource)
+			var sources = httpListMediaSource.Sources;
+			if (sources is null)
 			{
-				var mediaSource = new AndroidX.Media3.ExoPlayer.Source.ProgressiveMediaSource.Factory(currentStreamDataSourceFactory)
-					.CreateMediaSource(item);
-				Player.SetMediaSource(mediaSource);
+				return;
 			}
-			else if (MediaElement.Source is UriMediaSource uriMediaSource && uriMediaSource.HttpHeaders.Count > 0)
+			var mediaList = new List<IMediaSource>();
+			var httpDataSourceFactory = new DefaultHttpDataSource.Factory();
+			httpDataSourceFactory.SetAllowCrossProtocolRedirects(true);
+			foreach (var meta in sources)
 			{
-				var httpDataSourceFactory = new DefaultHttpDataSource.Factory();
-				httpDataSourceFactory.SetDefaultRequestProperties(uriMediaSource.HttpHeaders);
-
+				var uri = meta.Uri;
+				if (meta is null || uri is null)
+				{
+					break;
+				}
+				var headers = meta.HttpHeaders ?? httpListMediaSource.DefaultHttpHeaders;
+				var mediaitem = MediaItem.FromUri(uri.AbsoluteUri);
+				if (mediaitem is null)
+				{
+					break;
+				}
+				httpDataSourceFactory.SetDefaultRequestProperties(headers);
 				var mediaSourceFactory = new DefaultMediaSourceFactory(httpDataSourceFactory);
-				var mediaSource = mediaSourceFactory.CreateMediaSource(item);
-
-				Player.SetMediaSource(mediaSource);
+				var mediaSource = mediaSourceFactory.CreateMediaSource(mediaitem);
+				if (mediaSource is null)
+				{
+					break;
+				}
+				MediaMetadata.Builder mediaMetaData = new();
+				mediaMetaData.SetArtist(meta.Artist);
+				mediaMetaData.SetTitle(meta.Title);
+				mediaMetaData.SetArtworkUri(Android.Net.Uri.Parse(meta.ArtworkUrl?.AbsoluteUri));
+				mediaitem.MediaId = uri.AbsoluteUri;
+				mediaitem.MediaMetadata = mediaMetaData.Build();
+				mediaList.Add(mediaSource);
 			}
-			else
-			{
-				Player.SetMediaItem(item);
-			}
-
-			Player.Prepare();
+			Player.SetMediaSources(mediaList,httpListMediaSource.Index,0);
 			hasSetSource = true;
 		}
+		else
+		{
+			cancellationTokenSource ??= new();
+			// ConfigureAwait(true) is required to prevent crash on startup
+			var result = await SetPlayerData(cancellationTokenSource.Token).ConfigureAwait(true);
+			var item = result?.Build();
 
+			if (item?.MediaMetadata is not null)
+			{
+				// If we have a custom stream data source, we need to set the media source differently
+				if (currentStreamDataSourceFactory is not null && MediaElement.Source is StreamMediaSource)
+				{
+					var mediaSource = new AndroidX.Media3.ExoPlayer.Source.ProgressiveMediaSource.Factory(currentStreamDataSourceFactory)
+						.CreateMediaSource(item);
+					Player.SetMediaSource(mediaSource);
+				}
+				else if (MediaElement.Source is UriMediaSource uriMediaSource && uriMediaSource.HttpHeaders.Count > 0)
+				{
+					var httpDataSourceFactory = new DefaultHttpDataSource.Factory();
+					httpDataSourceFactory.SetDefaultRequestProperties(uriMediaSource.HttpHeaders);
+
+					var mediaSourceFactory = new DefaultMediaSourceFactory(httpDataSourceFactory);
+					var mediaSource = mediaSourceFactory.CreateMediaSource(item);
+
+					Player.SetMediaSource(mediaSource);
+				}
+				else if (MediaElement.Source is MetaMediaSource metaMediaSource)
+				{
+					var httpDataSourceFactory = new DefaultHttpDataSource.Factory();
+					httpDataSourceFactory.SetDefaultRequestProperties(metaMediaSource.HttpHeaders);
+
+					var mediaSourceFactory = new DefaultMediaSourceFactory(httpDataSourceFactory);
+					var mediaSource = mediaSourceFactory.CreateMediaSource(item);
+
+					Player.SetMediaSource(mediaSource);
+				}
+				else
+				{
+					Player.SetMediaItem(item);
+				}
+
+				Player.Prepare();
+				hasSetSource = true;
+			}
+		}
 		if (hasSetSource)
 		{
 			if (Player.PlayerError is null)
@@ -875,6 +936,22 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 					}
 
 					break;
+				}
+			case MetaMediaSource metaMediaSource:
+				{
+					var uri = metaMediaSource.Uri;
+					if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
+					{
+						UpdateMeidaElementMetaData(metaMediaSource.Title, metaMediaSource.Artist, metaMediaSource.ArtworkUrl);
+						return await CreateMediaItem(uri.AbsoluteUri, cancellationToken).ConfigureAwait(false);
+					}
+
+					break;
+				}
+			case HttpListMediaSource httpListMediaSource:
+				{
+					//Special type.
+					return null;
 				}
 			default:
 				throw new NotSupportedException($"{MediaElement.Source.GetType().FullName} is not yet supported for {nameof(MediaElement.Source)}");

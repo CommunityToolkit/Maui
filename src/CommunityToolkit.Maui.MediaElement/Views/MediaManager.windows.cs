@@ -370,7 +370,7 @@ partial class MediaManager : IDisposable
 				{
 					break;
 				}
-				var headers = meta.HttpHeaders;
+				var headers = meta.HttpHeaders ?? httpListMediaSource.DefaultHttpHeaders;
 				if (headers is null)
 				{
 					mediaPlaybackList.Items.Add(new MediaPlaybackItem(WinMediaSource.CreateFromUri(meta.Uri)));
@@ -394,9 +394,8 @@ partial class MediaManager : IDisposable
 			httplist.Index = list.Items.IndexOf(args.NewItem);
 			var meta = httplist.Sources![httplist.Index];
 			UpdateMeidaElementMetaData(meta.Title, meta.Artist, meta.ArtworkUrl);
+			await UpdateMetadata();
 		}
-		await UpdateMetadata();
-
 	}
 
 
@@ -593,12 +592,6 @@ partial class MediaManager : IDisposable
 		}
 	}
 
-	void UpdateMeidaElementMetaData(string? title, string? artist, Uri? uri)
-	{
-		MediaElement.MetadataTitle = title ?? MediaElementDefaults.MetadataTitle;
-		MediaElement.MetadataArtist = artist ?? MediaElementDefaults.MetadataArtist;
-		MediaElement.MetadataArtworkUrl = uri is null ? MediaElementDefaults.MetadataArtworkUrl : uri.ToString();
-	}
 	async ValueTask UpdateMetadata()
 	{
 		if (systemMediaControls is null || Player is null)
