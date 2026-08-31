@@ -14,7 +14,7 @@ static class CameraViewExtensions
 		cameraView.IsAvailable = videoCaptureDevices.Count > 0;
 	}
 
-	public static async Task InitializeCameraForCameraView(this MediaCapture mediaCapture, string deviceId, CancellationToken token)
+	public static async Task<bool> InitializeCameraForCameraView(this MediaCapture mediaCapture, string deviceId, CancellationToken token)
 	{
 		try
 		{
@@ -48,6 +48,14 @@ static class CameraViewExtensions
 		catch (System.Runtime.InteropServices.COMException)
 		{
 			// Camera already initialized
+			return false;
 		}
+		catch (UnauthorizedAccessException)
+		{
+			// Can't access the camera
+			return false;
+		}
+
+		return true;
 	}
 }
