@@ -48,7 +48,7 @@ static class CameraViewExtensions
 		catch (System.Runtime.InteropServices.COMException)
 		{
 			// Camera already initialized
-			return false;
+			return true;
 		}
 		catch (UnauthorizedAccessException)
 		{
