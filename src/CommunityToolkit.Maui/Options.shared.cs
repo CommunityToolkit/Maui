@@ -13,6 +13,7 @@ namespace CommunityToolkit.Maui;
 /// </summary>
 public class Options : Core.Options
 {
+	const string windowsAppRuntimeInsightsResourceDll = "Microsoft.WindowsAppRuntime.Insights.Resource.dll";
 	const int moduleNotFoundHResult = unchecked((int)0x8007007E);
 #if WINDOWS
 	static bool isSnackbarNotificationManagerRegistered;
@@ -91,18 +92,17 @@ public class Options : Core.Options
 						else if (Application.Current.Windows.Count is 1)
 						{
 							var notificationManager = Microsoft.Windows.AppNotifications.AppNotificationManager.Default;
-							notificationManager.NotificationInvoked += OnSnackbarNotificationInvoked;
 
 							try
 							{
 								notificationManager.Register();
 								isSnackbarNotificationManagerRegistered = true;
+								notificationManager.NotificationInvoked += OnSnackbarNotificationInvoked;
 							}
 							// Windows App SDK can omit the Insights resource DLL from self-contained unpackaged apps.
 							// Registration then fails, but notifications can still be shown without action callbacks. See https://github.com/microsoft/WindowsAppSDK/issues/6071.
 							catch (System.Runtime.InteropServices.COMException exception) when (IsWindowsAppRuntimeModuleUnavailable(exception))
 							{
-								notificationManager.NotificationInvoked -= OnSnackbarNotificationInvoked;
 								System.Diagnostics.Trace.WriteLine(
 									$"{nameof(Alerts.Snackbar)} action callbacks could not be registered because a Windows App Runtime module is unavailable. Snackbar notifications remain enabled. {exception}");
 							}
@@ -155,5 +155,6 @@ public class Options : Core.Options
 	}
 
 	internal static bool IsWindowsAppRuntimeModuleUnavailable(System.Runtime.InteropServices.COMException exception)
-		=> exception.HResult is moduleNotFoundHResult;
+		=> exception.HResult is moduleNotFoundHResult
+			&& exception.Message.Contains(windowsAppRuntimeInsightsResourceDll, StringComparison.OrdinalIgnoreCase);
 }
