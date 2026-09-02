@@ -144,6 +144,16 @@ public class AppBuilderExtensionsTests : BaseTest
 		}
 	}
 
+	[Theory]
+	[InlineData(unchecked((int)0x8007007E), true)]
+	[InlineData(unchecked((int)0x80004005), false)]
+	public void IsWindowsAppRuntimeModuleUnavailableReturnsExpectedResult(int hresult, bool expected)
+	{
+		var exception = new System.Runtime.InteropServices.COMException(string.Empty, hresult);
+
+		Assert.Equal(expected, Options.IsWindowsAppRuntimeModuleUnavailable(exception));
+	}
+
 	[Fact]
 	public void UseMauiCommunityToolkitMediaElement_ShouldUseSurfaceViewByDefault()
 	{
