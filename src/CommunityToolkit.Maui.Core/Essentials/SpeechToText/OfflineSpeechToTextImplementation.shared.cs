@@ -1,4 +1,3 @@
-using System.Globalization;
 using Microsoft.Maui.ApplicationModel;
 
 namespace CommunityToolkit.Maui.Media;
@@ -58,6 +57,12 @@ public sealed partial class OfflineSpeechToTextImplementation : ISpeechToText
 		cancellationToken.ThrowIfCancellationRequested();
 		InternalStopListening();
 		return Task.CompletedTask;
+	}
+
+	/// <inheritdoc />
+	public Task<string?> RecognizeAsync(Stream stream, SpeechToTextOptions options, CancellationToken cancellationToken = default)
+	{
+		return new SpeechToTextImplementation().RecognizeAsync(stream, options, cancellationToken);
 	}
 
 #if !MACCATALYST && !IOS

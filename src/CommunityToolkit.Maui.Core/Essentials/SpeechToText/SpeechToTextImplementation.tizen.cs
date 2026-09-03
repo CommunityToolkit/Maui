@@ -154,4 +154,9 @@ public sealed partial class SpeechToTextImplementation
 
 		return Task.CompletedTask;
 	}
+
+	async Task<string?> InternalRecognizeAsync(Stream stream, SpeechToTextOptions options, CancellationToken cancellationToken)
+	{
+		return null;
+	}
 }

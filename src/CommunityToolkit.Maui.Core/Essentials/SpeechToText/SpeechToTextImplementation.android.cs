@@ -1,5 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Mime;
 using Android.Content;
+using Android.Media;
+using Android.OS;
 using Android.Runtime;
 using Android.Speech;
 using CommunityToolkit.Maui.Core;
@@ -64,6 +67,12 @@ public sealed partial class SpeechToTextImplementation
 	}
 
 	static bool IsSpeechRecognitionAvailable() => SpeechRecognizer.IsRecognitionAvailable(Application.Context);
+
+	async Task<string?> InternalRecognizeAsync(System.IO.Stream stream, SpeechToTextOptions options, CancellationToken cancellationToken)
+	{
+		using var transcriber = new AudioStreamTranscriber(Application.Context);
+		return await transcriber.TranscribePcmStreamAsync(stream, language: Java.Util.Locale.ForLanguageTag(options.Culture.Name).ToLanguageTag());
+	}
 
 	[MemberNotNull(nameof(speechRecognizer), nameof(listener))]
 	Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
@@ -185,4 +194,128 @@ public sealed partial class SpeechToTextImplementation
 			action.Invoke(matches[0]);
 		}
 	}
+}
+
+public class AudioStreamTranscriber : Java.Lang.Object, IRecognitionListener
+{
+	readonly Context context;
+	SpeechRecognizer? recognizer;
+	ParcelFileDescriptor? readPipe;
+	TaskCompletionSource<string>? tcs;
+
+	public AudioStreamTranscriber(Context context)
+	{
+		this.context = context;
+	}
+
+	public Task<string> TranscribePcmStreamAsync(
+		System.IO.Stream pcmAudioStream,
+		int sampleRate = 16000,
+		int channelCount = 1,
+		string language = "en-US")
+	{
+		if (Build.VERSION.SdkInt < BuildVersionCodes.Tiramisu)
+		{
+			throw new PlatformNotSupportedException("ExtraAudioSource requires Android 13 (API 33)+.");
+		}
+
+		tcs = new TaskCompletionSource<string>();
+
+		Application.SynchronizationContext.Post(_ =>
+		{
+			try
+			{
+				var pipe = ParcelFileDescriptor.CreatePipe();
+				if (pipe == null || pipe.Length != 2)
+				{
+					throw new InvalidOperationException("Failed to create ParcelFileDescriptor pipe.");
+				}
+
+				readPipe = pipe[0];
+				ParcelFileDescriptor writePipe = pipe[1];
+
+				_ = Task.Run(async () =>
+				{
+					try
+					{
+						using (writePipe)
+						using (var nativeOutputStream = new ParcelFileDescriptor.AutoCloseOutputStream(writePipe))
+						{
+							byte[] buffer = new byte[4096];
+							int bytesRead;
+							while ((bytesRead = await pcmAudioStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) > 0)
+							{
+								await nativeOutputStream.WriteAsync(buffer, 0, bytesRead).ConfigureAwait(false);
+							}
+
+							nativeOutputStream.Flush();
+						}
+					}
+					catch (Exception ex)
+					{
+						System.Diagnostics.Debug.WriteLine($"Pipe streaming error: {ex}");
+					}
+				});
+
+				recognizer = SpeechRecognizer.IsOnDeviceRecognitionAvailable(context)
+					? SpeechRecognizer.CreateOnDeviceSpeechRecognizer(context)
+					: SpeechRecognizer.CreateSpeechRecognizer(context);
+
+				recognizer?.SetRecognitionListener(this);
+
+				var intent = new Intent(RecognizerIntent.ActionRecognizeSpeech);
+				intent.PutExtra(RecognizerIntent.ExtraLanguageModel, RecognizerIntent.LanguageModelFreeForm);
+				intent.PutExtra(RecognizerIntent.ExtraLanguage, language);
+
+				// Pass the read end of the pipe
+				intent.PutExtra(RecognizerIntent.ExtraAudioSource, readPipe);
+				intent.PutExtra(RecognizerIntent.ExtraAudioSourceSamplingRate, sampleRate);
+				intent.PutExtra(RecognizerIntent.ExtraAudioSourceChannelCount, channelCount);
+				intent.PutExtra(RecognizerIntent.ExtraAudioSourceEncoding, (int)Encoding.Pcm16bit);
+
+				recognizer?.StartListening(intent);
+			}
+			catch (Exception ex)
+			{
+				Cleanup();
+				tcs.TrySetException(ex);
+			}
+		}, null);
+
+		return tcs.Task;
+	}
+
+	public void OnResults(Bundle? results)
+	{
+		var matches = results?.GetStringArrayList(SpeechRecognizer.ResultsRecognition);
+		var text = matches != null && matches.Count > 0 ? matches[0] : string.Empty;
+
+		Cleanup();
+		tcs?.TrySetResult(text);
+	}
+
+	public void OnError([GeneratedEnum] SpeechRecognizerError error)
+	{
+		Cleanup();
+		tcs?.TrySetException(new Exception($"Speech recognition error: {error}"));
+	}
+
+	void Cleanup()
+	{
+		readPipe?.Close();
+		readPipe?.Dispose();
+		readPipe = null;
+
+		recognizer?.Destroy();
+		recognizer?.Dispose();
+		recognizer = null;
+	}
+
+	public void OnReadyForSpeech(Bundle? @params) { }
+	public void OnBeginningOfSpeech() { }
+	public void OnRmsChanged(float rmsdB) { }
+	public void OnBufferReceived(byte[]? buffer) { }
+	public void OnEndOfSpeech() { }
+	public void OnPartialResults(Bundle? partialResults) { }
+	public void OnEvent(int eventType, Bundle? @params) { }
 }
