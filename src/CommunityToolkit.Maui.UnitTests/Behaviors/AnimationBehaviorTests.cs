@@ -108,8 +108,8 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 
 		behavior.AnimateCommand.Execute(TestContext.Current.CancellationToken);
 
-		await animationStartedTcs.Task;
-		await animationEndedTcs.Task;
+		await animationStartedTcs.Task.WaitAsync(TestContext.Current.CancellationToken);
+		await animationEndedTcs.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		animationEnded.Should().BeTrue();
 		animationStarted.Should().BeTrue();

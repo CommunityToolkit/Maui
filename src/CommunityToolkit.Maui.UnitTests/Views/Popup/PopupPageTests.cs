@@ -65,7 +65,7 @@ public class PopupPageTests : BaseViewTest
 		await navigation.PushModalAsync(popupPage);
 
 		await popupPage.CloseAsync(expectedResult, TestContext.Current.CancellationToken);
-		var actualResult = await tcs.Task;
+		var actualResult = await tcs.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// Assert
 		actualResult.Should().Be(expectedResult);
@@ -83,7 +83,7 @@ public class PopupPageTests : BaseViewTest
 		PopupPage popupPage;
 		var view = new ContentView();
 		var result = new PopupResult(false);
-		var cts = new CancellationTokenSource();
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		if (Application.Current?.Windows[0].Page is not Page mainPage)
 		{
 			throw new InvalidOperationException("Failed to locate main page");
@@ -136,7 +136,7 @@ public class PopupPageTests : BaseViewTest
 		await navigation.PushModalAsync(popupPage);
 
 		await popupPage.CloseAsync(expectedResult, TestContext.Current.CancellationToken);
-		var actualResult = await taskCompletionSource.Task;
+		var actualResult = await taskCompletionSource.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// Assert
 		actualResult.Should().Be(expectedResult);
@@ -226,9 +226,9 @@ public class PopupPageTests : BaseViewTest
 		window.ModalPopped += HandleModalPopped;
 
 		// Act
-		await Shell.Current.Navigation.PushModalAsync(customNavigationPage, true);
-		await customNavigationPage.Navigation.PushModalAsync(popupPage);
-		await window.Navigation.PopModalAsync(false);
+		await Shell.Current.Navigation.PushModalAsync(customNavigationPage, true).WaitAsync(TestContext.Current.CancellationToken);
+		await customNavigationPage.Navigation.PushModalAsync(popupPage).WaitAsync(TestContext.Current.CancellationToken);
+		await window.Navigation.PopModalAsync(false).WaitAsync(TestContext.Current.CancellationToken);
 
 		window.ModalPopped -= HandleModalPopped;
 
@@ -350,8 +350,8 @@ public class PopupPageTests : BaseViewTest
 		await rootPage.Navigation.PushModalAsync(modalNavigationPage, false);
 
 		// Assert - Verify modal stack has the modal navigation page
-		Assert.Single(rootPage.Navigation.ModalStack);
-		Assert.Same(modalNavigationPage, rootPage.Navigation.ModalStack[0]);
+		var modalPage = Assert.Single(rootPage.Navigation.ModalStack);
+		Assert.Same(modalNavigationPage, modalPage);
 
 		// Act
 		var showPopupAsyncTask = modalNavigationPage.ShowPopupAsync<string>(popup, token: TestContext.Current.CancellationToken);
@@ -493,8 +493,8 @@ public class PopupPageTests : BaseViewTest
 
 		// Verify content has tap gesture recognizer overlay	
 		var gestureRecognizers = popupPage.Content.TapGestureGestureOverlay.GestureRecognizers;
-		Assert.Single(gestureRecognizers);
-		Assert.IsType<TapGestureRecognizer>(gestureRecognizers[0]);
+		var gestureRecognizer = Assert.Single(gestureRecognizers);
+		Assert.IsType<TapGestureRecognizer>(gestureRecognizer);
 
 		// Verify PopupPageLayout structure
 		var pageContent = popupPage.Content;
@@ -550,7 +550,7 @@ public class PopupPageTests : BaseViewTest
 		// Act & Assert
 		popupOptions.OnTappingOutsideOfPopup?.Invoke();
 
-		var result = await actionInvokedTCS.Task;
+		var result = await actionInvokedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.True(result);
 		Assert.True(actionInvoked);

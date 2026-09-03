@@ -126,7 +126,7 @@ public class StateContainerTests : BaseTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task StateContainer_CancellationTokenCanceled()
 	{
-		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		layout.EnableAnimations();
 		foreach (var child in layout.Children)
@@ -542,58 +542,51 @@ public class StateContainerTests : BaseTest
 	public void Controller_SwitchesToStateFromContentSuccess()
 	{
 		controller.SwitchToState(StateKey.Loading);
-		var state = controller.GetLayout().Children[0];
+		var state = Assert.IsType<Label>(controller.GetLayout().Children[0]);
 
-		Assert.IsType<Label>(state);
-		Assert.Equal("Loading", ((Label)state).Text);
+		Assert.Equal("Loading", state.Text);
 	}
 
 	[Fact]
 	public void Controller_SwitchesToContentFromStateSuccess()
 	{
 		controller.SwitchToState(StateKey.Loading);
-		var label = controller.GetLayout().Children[0];
+		var label = Assert.IsType<Label>(controller.GetLayout().Children[0]);
 
-		Assert.IsType<Label>(label);
-		Assert.Equal("Loading", ((Label)label).Text);
+		Assert.Equal("Loading", label.Text);
 
 		controller.SwitchToContent();
-		label = controller.GetLayout().Children[0];
+		label = Assert.IsType<Label>(controller.GetLayout().Children[0]);
 
-		Assert.IsType<Label>(label);
-		Assert.Equal("Default", ((Label)label).Text);
+		Assert.Equal("Default", label.Text);
 	}
 
 	[Fact]
 	public void Controller_SwitchesToStateFromStateSuccess()
 	{
 		controller.SwitchToState(StateKey.Anything);
-		var label = controller.GetLayout().Children[0];
+		var label = Assert.IsType<Label>(controller.GetLayout().Children[0]);
 
-		Assert.IsType<Label>(label);
-		Assert.Equal("Anything", ((Label)label).Text);
+		Assert.Equal("Anything", label.Text);
 
 		controller.SwitchToState(StateKey.Loading);
-		label = controller.GetLayout().Children[0];
+		label = Assert.IsType<Label>(controller.GetLayout().Children[0]);
 
-		Assert.IsType<Label>(label);
-		Assert.Equal("Loading", ((Label)label).Text);
+		Assert.Equal("Loading", label.Text);
 	}
 
 	[Fact]
 	public void Controller_SwitchesToStateFromSameStateSuccess()
 	{
 		controller.SwitchToState(StateKey.Loading);
-		var label = controller.GetLayout().Children[0];
+		var label = Assert.IsType<Label>(controller.GetLayout().Children[0]);
 
-		Assert.IsType<Label>(label);
-		Assert.Equal("Loading", ((Label)label).Text);
+		Assert.Equal("Loading", label.Text);
 
 		controller.SwitchToState(StateKey.Loading);
-		label = controller.GetLayout().Children[0];
+		label = Assert.IsType<Label>(controller.GetLayout().Children[0]);
 
-		Assert.IsType<Label>(label);
-		Assert.Equal("Loading", ((Label)label).Text);
+		Assert.Equal("Loading", label.Text);
 	}
 
 	[Fact]

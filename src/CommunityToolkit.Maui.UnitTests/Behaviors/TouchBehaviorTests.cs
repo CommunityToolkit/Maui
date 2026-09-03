@@ -389,7 +389,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		touchBehavior.LongPressCompleted += HandleLongPressCompleted;
 
 		touchBehavior.RaiseLongPressCompleted();
-		hasLongPressCompleted = await longPressCompletedTCS.Task;
+		hasLongPressCompleted = await longPressCompletedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.True(hasLongPressCompleted);
 
@@ -414,7 +414,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		Assert.False(hasTouchCompleted);
 
 		touchBehavior.RaiseTouchGestureCompleted();
-		hasTouchCompleted = await touchCompletedTCS.Task;
+		hasTouchCompleted = await touchCompletedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.True(hasTouchCompleted);
 
@@ -443,14 +443,14 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		Assert.Equal(firstInteractionResult, finalInteractionResult);
 
 		touchBehavior.HandleUserInteraction(TouchInteractionStatus.Started);
-		firstInteractionResult = await interactionStatusChangedCompletedTCS.Task;
+		firstInteractionResult = await interactionStatusChangedCompletedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.Equal(TouchInteractionStatus.Started, firstInteractionResult);
 		Assert.Equal(firstInteractionResult, touchBehavior.CurrentInteractionStatus);
 
 		interactionStatusChangedCompletedTCS = new TaskCompletionSource<TouchInteractionStatus>();
 		touchBehavior.HandleUserInteraction(TouchInteractionStatus.Completed);
-		finalInteractionResult = await interactionStatusChangedCompletedTCS.Task;
+		finalInteractionResult = await interactionStatusChangedCompletedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.Equal(TouchInteractionStatus.Completed, finalInteractionResult);
 		Assert.Equal(finalInteractionResult, touchBehavior.CurrentInteractionStatus);
@@ -480,14 +480,14 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		Assert.Equal(firstHoverStatusResult, finalHoverStatusResult);
 
 		touchBehavior.HandleHover(HoverStatus.Entered);
-		firstHoverStatusResult = await hoverStatusChangedTCS.Task;
+		firstHoverStatusResult = await hoverStatusChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.Equal(HoverStatus.Entered, firstHoverStatusResult);
 		Assert.Equal(firstHoverStatusResult, touchBehavior.CurrentHoverStatus);
 
 		hoverStatusChangedTCS = new TaskCompletionSource<HoverStatus>();
 		touchBehavior.HandleHover(HoverStatus.Exited);
-		finalHoverStatusResult = await hoverStatusChangedTCS.Task;
+		finalHoverStatusResult = await hoverStatusChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.Equal(HoverStatus.Exited, finalHoverStatusResult);
 		Assert.Equal(finalHoverStatusResult, touchBehavior.CurrentHoverStatus);
@@ -517,14 +517,14 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		Assert.Equal(firstHoverStateResult, finalHoverStateResult);
 
 		touchBehavior.HandleHover(HoverStatus.Entered);
-		firstHoverStateResult = await hoverStateChangedTCS.Task;
+		firstHoverStateResult = await hoverStateChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.Equal(HoverState.Hovered, firstHoverStateResult);
 		Assert.Equal(firstHoverStateResult, touchBehavior.CurrentHoverState);
 
 		hoverStateChangedTCS = new TaskCompletionSource<HoverState>();
 		touchBehavior.HandleHover(HoverStatus.Exited);
-		finalHoverStateResult = await hoverStateChangedTCS.Task;
+		finalHoverStateResult = await hoverStateChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.Equal(HoverState.Default, finalHoverStateResult);
 		Assert.Equal(finalHoverStateResult, touchBehavior.CurrentHoverState);
@@ -558,13 +558,13 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		Assert.Null(completedTouchGestureCompletedCommandParameter);
 
 		touchBehavior.HandleTouch(TouchStatus.Started);
-		startedTouchStateChanged = await touchStateChangedTCS.Task;
+		startedTouchStateChanged = await touchStateChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 		Assert.Equal(TouchState.Pressed, startedTouchStateChanged);
 
 		touchStateChangedTCS = new TaskCompletionSource<TouchState>();
 		touchBehavior.HandleTouch(TouchStatus.Completed);
-		completedTouchGestureCompletedCommandParameter = await touchGestureCompletedTCS.Task;
-		completedTouchStateChanged = await touchStateChangedTCS.Task;
+		completedTouchGestureCompletedCommandParameter = await touchGestureCompletedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+		completedTouchStateChanged = await touchStateChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.Equal(commandParameter, completedTouchGestureCompletedCommandParameter);
 		Assert.Equal(completedTouchGestureCompletedCommandParameter, touchBehavior.CommandParameter);
@@ -574,12 +574,12 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		touchStateChangedTCS = new TaskCompletionSource<TouchState>();
 
 		touchBehavior.HandleTouch(TouchStatus.Started);
-		await touchStateChangedTCS.Task;
+		await touchStateChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		touchStateChangedTCS = new TaskCompletionSource<TouchState>();
 		touchBehavior.HandleTouch(TouchStatus.Canceled);
 
-		canceledTouchStateChanged = await touchStateChangedTCS.Task;
+		canceledTouchStateChanged = await touchStateChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.Equal(TouchStatus.Canceled, touchBehavior.CurrentTouchStatus);
 		Assert.Equal(TouchState.Default, canceledTouchStateChanged);
@@ -622,8 +622,8 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		Assert.Null(longPressCompletedCommandParameter);
 
 		touchBehavior.RaiseLongPressCompleted();
-		await longPressCommandTCS.Task;
-		raiseLongPressCompletedCommandParameter = await longPressCompletedTCS.Task;
+		await longPressCommandTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+		raiseLongPressCompletedCommandParameter = await longPressCompletedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.Equal(longPressCompletedParameter, raiseLongPressCompletedCommandParameter);
 
@@ -631,8 +631,8 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		longPressCommandTCS = new TaskCompletionSource();
 
 		touchBehavior.HandleTouch(TouchStatus.Started);
-		longPressCompletedCommandParameter = await longPressCompletedTCS.Task;
-		await longPressCommandTCS.Task;
+		longPressCompletedCommandParameter = await longPressCompletedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+		await longPressCommandTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 		touchBehavior.HandleTouch(TouchStatus.Completed);
 
 		Assert.Equal(longPressCompletedParameter, longPressCompletedCommandParameter);
@@ -643,8 +643,8 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		touchBehavior.HandleUserInteraction(TouchInteractionStatus.Started);
 
 		touchBehavior.HandleTouch(TouchStatus.Started);
-		longPressCanceledTouchGestureCompletedCommandParameter = await longPressCompletedTCS.Task;
-		await longPressCommandTCS.Task;
+		longPressCanceledTouchGestureCompletedCommandParameter = await longPressCompletedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+		await longPressCommandTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 		touchBehavior.HandleTouch(TouchStatus.Canceled);
 
 		Assert.Equal(longPressCompletedParameter, longPressCanceledTouchGestureCompletedCommandParameter);
@@ -678,25 +678,25 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 
 		touchStatusChangedTCS = new TaskCompletionSource<TouchStatus>();
 		touchBehavior.HandleTouch(TouchStatus.Started);
-		touchStatus = await touchStatusChangedTCS.Task;
+		touchStatus = await touchStatusChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.Equal(TouchStatus.Started, touchStatus);
 
 		touchStatusChangedTCS = new TaskCompletionSource<TouchStatus>();
 		touchBehavior.HandleTouch(TouchStatus.Completed);
-		touchStatus = await touchStatusChangedTCS.Task;
+		touchStatus = await touchStatusChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.Equal(TouchStatus.Completed, touchStatus);
 
 		touchStatusChangedTCS = new TaskCompletionSource<TouchStatus>();
 		touchBehavior.HandleTouch(TouchStatus.Started);
-		touchStatus = await touchStatusChangedTCS.Task;
+		touchStatus = await touchStatusChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.Equal(TouchStatus.Started, touchStatus);
 
 		touchStatusChangedTCS = new TaskCompletionSource<TouchStatus>();
 		touchBehavior.HandleTouch(TouchStatus.Completed);
-		touchStatus = await touchStatusChangedTCS.Task;
+		touchStatus = await touchStatusChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.Equal(TouchStatus.Completed, touchStatus);
 
@@ -778,8 +778,8 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		AttachTouchBehaviorToVisualElement(view);
 
 		touchBehavior.RaiseTouchGestureCompleted();
-		var touchCompletedResult = await touchCompletedTCS.Task;
-		var commandResult = await touchCommandTCS.Task;
+		var touchCompletedResult = await touchCompletedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+		var commandResult = await touchCommandTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.Equal(touchGestureCompletedParameter, touchCompletedResult);
 		Assert.True(commandResult);
@@ -820,8 +820,8 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		AttachTouchBehaviorToVisualElement(view);
 
 		touchBehavior.RaiseLongPressCompleted();
-		var longPressCompletedResult = await longPressCompletedTCS.Task;
-		var longPressCommandResult = await longPressCommandTCS.Task;
+		var longPressCompletedResult = await longPressCompletedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+		var longPressCommandResult = await longPressCommandTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// Event fires and LongPressCommand executes when Element is not null
 		Assert.Equal(longPressCompletedParameter, longPressCompletedResult);

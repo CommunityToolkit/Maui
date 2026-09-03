@@ -335,16 +335,15 @@ public class GravatarImageSourceTests : BaseViewTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task TestDefaultStream()
 	{
-		CancellationTokenSource cts = new();
 		var gravatarImageSource = new GravatarImageSource();
-		await using var stream = await gravatarImageSource.Stream(cts.Token);
+		await using var stream = await gravatarImageSource.Stream(TestContext.Current.CancellationToken);
 		stream.Should().NotBeNull();
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task TestDefaultStreamCanceled()
 	{
-		CancellationTokenSource cts = new();
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		var gravatarImageSource = new GravatarImageSource();
 		cts.Cancel();
 		Stream stream = await gravatarImageSource.Stream(cts.Token);
