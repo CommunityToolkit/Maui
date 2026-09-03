@@ -42,7 +42,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 		[Fact(Timeout = (int)TestDuration.Short)]
 		public async Task TextColorTo_CancellationTokenCanceled()
 		{
-			var cts = new CancellationTokenSource();
+			using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 			var label = new Label { TextColor = Colors.Blue };
 			label.EnableAnimations();

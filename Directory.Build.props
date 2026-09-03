@@ -141,10 +141,30 @@ https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitati
      xUnit1041:	Fixture arguments to test classes must have fixture sources
      xUnit1042: The member referenced by the MemberData attribute returns untyped data rows
      xUnit1043: Constructors on classes derived from FactAttribute must be public when used on test methods
+     xUnit1044: Avoid using TheoryData type arguments that are not serializable
+     xUnit1046: Avoid using TheoryDataRow arguments that are not serializable
      xUnit1048: Avoid using 'async void' for test methods as it is deprecated in xUnit.net v3
      xUnit1049: Do not use 'async void' for test methods as it is no longer supported
      xUnit1050: The class referenced by the ClassData attribute returns untyped data rows
      xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken
+     xUnit1052: Avoid using 'TheoryData<...>' with types that implement 'ITheoryDataRow'
+     xUnit1053: The static member used as theory data must be statically initialized
+     xUnit1054: Properties used for conditional skipping must be public, static, and return bool
+     xUnit1055: Conditional skipping cannot set both SkipUnless and SkipWhen
+     xUnit1056: Type must have a single public non-static constructor
+     xUnit1057: Type must be public or internal
+     xUnit1058: Generic collection definitions are not supported in Native AOT
+     xUnit1059: Test classes may not be decorated with ICollectionFixture<>
+     xUnit1060: Cultured test methods must have at least one culture
+     xUnit1061: Fact methods cannot be generic
+     xUnit1062: Theory methods cannot be generic in Native AOT
+     xUnit1063: Test class cannot be an open generic type
+     xUnit1064: Theory parameter cannot use params modifier in Native AOT
+     xUnit1065: MemberData method is ambiguous
+     xUnit1066: MemberData parameter cannot use params modifier in Native AOT
+     xUnit1067: There is no matching MemberData method argument
+     xUnit1068: MemberData cannot point to an open generic type
+     xUnit1069: Test methods with a Timeout should reference TestContext.Current.CancellationToken
      xUnit2000: Constants and literals should be the expected argument
      xUnit2001: Do not use invalid equality check
      xUnit2002: Do not use null check on value type
@@ -178,9 +198,16 @@ https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitati
      xUnit2030:	Do not use Assert.NotEmpty to check if a value exists in a collection
      xUnit2031:	Do not use Where clause with Assert.Single
      xUnit2032:	Type assertions based on 'assignable from' are confusingly named
+     xUnit2033:	Use the assertion return value instead of re-deriving it
      xUnit3000: Classes which cross AppDomain boundaries must derive directly or indirectly from LongLivedMarshalByRefObject
      xUnit3001: Classes that are marked as serializable (or created by the test framework at runtime) must have a public parameterless constructor
      xUnit3002: Classes which are JSON serializable should not be tested for their concrete type
+     xUnit3003: Classes which extend FactAttribute (directly or indirectly) should provide a public constructor for source information
+     xUnit3004: Type must implement appropriate interface
+     xUnit3005: Type must have an appropriate non-obsolete public constructor
+     xUnit3006: Test case implementation must be serializable
+     xUnit3007: Test case implementation might not be serializable
+     xUnit1045 + xUnit1047 ("might not be serializable") are intentionally excluded: they flag every TheoryData<object?>, TheoryData<IEnumerable?>, etc. used to test converters and behaviors, which cannot be resolved without suppressing the diagnostic
      XC0045: Binding: Property not found
      XC0103: Consider attributing the markup extension with [RequireService] or [AcceptEmptyServiceProvider] if it doesn't require any
      XC0618: Property, Property setter or BindableProperty "BackgroundColor" is deprecated
@@ -194,9 +221,9 @@ https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitati
       CsWinRT1028,CsWinRT1030,
       MVVMTK0001,MVVMTK0002,MVVMTK0003,MVVMTK0009,MVVMTK0010,MVVMTK0011,MVVMTK0012,MVVMTK0013,MVVMTK0017,MVVMTK0018,MVVMTK0019,MVVMTK0020,MVVMTK0023,MVVMTK0024,MVVMTK0032,MVVMTK0033,MVVMTK0034,MVVMTK0035,MVVMTK0036,MVVMTK0039,MVVMTK0042,MVVMTK0049,MVVMTK0050,MVVMTK0052,MVVMTK0053,MVVMTK0054,MVVMTK0055,MVVMTK0056,
       NU1900,NU1901,NU1902,NU1903,NU1904,NU1905,
-      xUnit1000,xUnit1001,xUnit1002,xUnit1003,xUnit1004,xUnit1005,xUnit1006,xUnit1007,xUnit1008,xUnit1009,xUnit1010,xUnit1011,xUnit1012,xUnit1013,xUnit1014,xUnit1015,xUnit1016,xUnit1017,xUnit1018,xUnit1019,xUnit1020,xUnit1021,xUnit1022,xUnit1023,xUnit1024,xUnit1025,xUnit1026,xUnit1027,xUnit1028,xUnit1029,xUnit1030,xUnit1031,xUnit1032,xUnit1033,xUnit1034,xUnit1035,xUnit1036,xUnit1037,xUnit1038,xUnit1039,xUnit1040,xUnit1041,xUnit1042,xUnit1043,xUnit1048,xUnit1049,xUnit1050,xUnit1051,
-      xUnit2000,xUnit2001,xUnit2002,xUnit2003,xUnit2004,xUnit2005,xUnit2006,xUnit2007,xUnit2008,xUnit2009,xUnit2010,xUnit2011,xUnit2012,xUnit2013,xUnit2014,xUnit2015,xUnit2016,xUnit2017,xUnit2018,xUnit2019,xUnit2020,xUnit2021,xUnit2022,xUnit2023,xUnit2024,xUnit2025,xUnit2026,xUnit2027,xUnit2028,xUnit2029,xUnit2030,xUnit2031,xUnit2032,
-      xUnit3000,xUnit3001,xUnit3002,
+      xUnit1000,xUnit1001,xUnit1002,xUnit1003,xUnit1004,xUnit1005,xUnit1006,xUnit1007,xUnit1008,xUnit1009,xUnit1010,xUnit1011,xUnit1012,xUnit1013,xUnit1014,xUnit1015,xUnit1016,xUnit1017,xUnit1018,xUnit1019,xUnit1020,xUnit1021,xUnit1022,xUnit1023,xUnit1024,xUnit1025,xUnit1026,xUnit1027,xUnit1028,xUnit1029,xUnit1030,xUnit1031,xUnit1032,xUnit1033,xUnit1034,xUnit1035,xUnit1036,xUnit1037,xUnit1038,xUnit1039,xUnit1040,xUnit1041,xUnit1042,xUnit1043,xUnit1044,xUnit1046,xUnit1048,xUnit1049,xUnit1050,xUnit1051,xUnit1052,xUnit1053,xUnit1054,xUnit1055,xUnit1056,xUnit1057,xUnit1058,xUnit1059,xUnit1060,xUnit1061,xUnit1062,xUnit1063,xUnit1064,xUnit1065,xUnit1066,xUnit1067,xUnit1068,xUnit1069,
+      xUnit2000,xUnit2001,xUnit2002,xUnit2003,xUnit2004,xUnit2005,xUnit2006,xUnit2007,xUnit2008,xUnit2009,xUnit2010,xUnit2011,xUnit2012,xUnit2013,xUnit2014,xUnit2015,xUnit2016,xUnit2017,xUnit2018,xUnit2019,xUnit2020,xUnit2021,xUnit2022,xUnit2023,xUnit2024,xUnit2025,xUnit2026,xUnit2027,xUnit2028,xUnit2029,xUnit2030,xUnit2031,xUnit2032,xUnit2033,
+      xUnit3000,xUnit3001,xUnit3002,xUnit3003,xUnit3004,xUnit3005,xUnit3006,xUnit3007,
       XC0045,XC0103,XC0618,
       IL2001,IL2002,IL2003,IL2004,IL2005,IL2006,IL2007,IL2008,IL2009,
       IL2010,IL2011,IL2012,IL2013,IL2014,IL2015,IL2016,IL2017,IL2018,IL2019,

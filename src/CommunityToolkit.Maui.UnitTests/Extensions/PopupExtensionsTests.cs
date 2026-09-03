@@ -36,7 +36,7 @@ public class PopupExtensionsTests : BaseViewTest
 	public async Task ClosePopup_TokenExpired_ShouldThrowOperationCancelledException()
 	{
 		// Arrange
-		var cts = new CancellationTokenSource();
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		// Act
 		await cts.CancelAsync();
@@ -183,8 +183,8 @@ public class PopupExtensionsTests : BaseViewTest
 		navigation.ShowPopup(selfClosingPopup);
 
 		// Assert
-		Assert.Single(navigation.ModalStack);
-		Assert.IsType<PopupPage>(navigation.ModalStack[0]);
+		var modalPage = Assert.Single(navigation.ModalStack);
+		Assert.IsType<PopupPage>(modalPage);
 
 		// Act
 		await navigation.ClosePopupAsync(TestContext.Current.CancellationToken);
@@ -209,8 +209,8 @@ public class PopupExtensionsTests : BaseViewTest
 		shell.ShowPopup(new Popup());
 
 		// Assert
-		Assert.Single(shellNavigation.ModalStack);
-		Assert.IsType<PopupPage>(shellNavigation.ModalStack[0]);
+		var modalPage = Assert.Single(shellNavigation.ModalStack);
+		Assert.IsType<PopupPage>(modalPage);
 
 		// Act
 		await navigation.ClosePopupAsync(TestContext.Current.CancellationToken);
@@ -229,8 +229,8 @@ public class PopupExtensionsTests : BaseViewTest
 		navigation.ShowPopup(view);
 
 		// Assert
-		Assert.Single(navigation.ModalStack);
-		Assert.IsType<PopupPage>(navigation.ModalStack[0]);
+		var modalPage = Assert.Single(navigation.ModalStack);
+		Assert.IsType<PopupPage>(modalPage);
 	}
 
 	[Fact]
@@ -275,8 +275,8 @@ public class PopupExtensionsTests : BaseViewTest
 		shell.ShowPopup(viewWithQueryable, shellParameters: shellParameters);
 
 		// Assert
-		Assert.Single(shellNavigation.ModalStack);
-		Assert.IsType<PopupPage>(shellNavigation.ModalStack[0]);
+		var modalPage = Assert.Single(shellNavigation.ModalStack);
+		Assert.IsType<PopupPage>(modalPage);
 		Assert.Equal(shellParameterBackgroundColorValue, viewWithQueryable.BackgroundColor);
 		Assert.Equal(shellParameterViewModelTextValue, viewWithQueryable.BindingContext.Text);
 	}
@@ -844,7 +844,7 @@ public class PopupExtensionsTests : BaseViewTest
 	{
 		// Arrange
 		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
-		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		// Act
 		await cts.CancelAsync(); // Ensure CancellationToken has expired
@@ -866,7 +866,7 @@ public class PopupExtensionsTests : BaseViewTest
 		var shellNavigation = Shell.Current.Navigation;
 		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
 
-		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		// Act
 		await cts.CancelAsync();
@@ -881,7 +881,7 @@ public class PopupExtensionsTests : BaseViewTest
 	{
 		// Arrange
 		var view = new Grid();
-		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		// Act
 		await cts.CancelAsync(); // Ensure CancellationToken has expired
@@ -903,7 +903,7 @@ public class PopupExtensionsTests : BaseViewTest
 		var shellNavigation = Shell.Current.Navigation;
 		var view = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
 
-		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		// Act
 		await cts.CancelAsync();
@@ -1449,8 +1449,8 @@ public class PopupExtensionsTests : BaseViewTest
 		page.ShowPopup(new MockPopup());
 
 		// Assert
-		Assert.Single(page.Navigation.ModalStack);
-		Assert.IsType<PopupPage>(page.Navigation.ModalStack[0]);
+		var modalPage = Assert.Single(page.Navigation.ModalStack);
+		Assert.IsType<PopupPage>(modalPage);
 
 		// Act
 		var popupResult = await page.ClosePopupAsync(TestContext.Current.CancellationToken);
@@ -1473,8 +1473,8 @@ public class PopupExtensionsTests : BaseViewTest
 		page.ShowPopup(new MockPopup());
 
 		// Assert
-		Assert.Single(page.Navigation.ModalStack);
-		Assert.IsType<PopupPage>(page.Navigation.ModalStack[0]);
+		var modalPage = Assert.Single(page.Navigation.ModalStack);
+		Assert.IsType<PopupPage>(modalPage);
 
 		// Act
 		var popupResult = await page.ClosePopupAsync(page, TestContext.Current.CancellationToken);
@@ -1498,8 +1498,8 @@ public class PopupExtensionsTests : BaseViewTest
 		page.ShowPopup(new Popup());
 
 		// Assert
-		Assert.Single(page.Navigation.ModalStack);
-		Assert.IsType<PopupPage>(page.Navigation.ModalStack[0]);
+		var modalPage = Assert.Single(page.Navigation.ModalStack);
+		Assert.IsType<PopupPage>(modalPage);
 
 		// Act
 		var popupResult = await page.ClosePopupAsync(expectedResult, TestContext.Current.CancellationToken);
@@ -1525,8 +1525,8 @@ public class PopupExtensionsTests : BaseViewTest
 		page.ShowPopup(new MockPopup());
 
 		// Assert
-		Assert.Single(page.Navigation.ModalStack);
-		Assert.IsType<PopupPage>(page.Navigation.ModalStack[0]);
+		var modalPage = Assert.Single(page.Navigation.ModalStack);
+		Assert.IsType<PopupPage>(modalPage);
 
 		// Act
 		var popupResult = await page.ClosePopupAsync(expectedResult, TestContext.Current.CancellationToken);
@@ -1553,8 +1553,8 @@ public class PopupExtensionsTests : BaseViewTest
 		showPopupAsyncTask = page.ShowPopupAsync(new MockPopup(), token: TestContext.Current.CancellationToken);
 
 		// Assert
-		Assert.Single(page.Navigation.ModalStack);
-		Assert.IsType<PopupPage>(page.Navigation.ModalStack[0]);
+		var modalPage = Assert.Single(page.Navigation.ModalStack);
+		Assert.IsType<PopupPage>(modalPage);
 
 		// Act
 		var popupResult = await page.ClosePopupAsync(expectedResult, TestContext.Current.CancellationToken);
@@ -1579,6 +1579,7 @@ public class PopupExtensionsTests : BaseViewTest
 		Assert.Single(navigation.ModalStack);
 
 		// Act - The second ShowPopup can only display if the semaphore was released after the first push
+		TestContext.Current.CancellationToken.ThrowIfCancellationRequested();
 		navigation.ShowPopup(new Grid());
 
 		// Assert
@@ -1633,6 +1634,7 @@ public class PopupExtensionsTests : BaseViewTest
 		Assert.Single(shellNavigation.ModalStack);
 
 		// Act - The second display proves the semaphore was released by the null-parameters branch
+		TestContext.Current.CancellationToken.ThrowIfCancellationRequested();
 		shell.ShowPopup(new Popup());
 
 		// Assert
@@ -1662,6 +1664,7 @@ public class PopupExtensionsTests : BaseViewTest
 		Assert.Single(shellNavigation.ModalStack);
 
 		// Act - The second display proves the semaphore was released by the with-parameters branch
+		TestContext.Current.CancellationToken.ThrowIfCancellationRequested();
 		shell.ShowPopup(secondView, PopupOptions.Empty, shellParameters);
 
 		// Assert
@@ -1672,7 +1675,7 @@ public class PopupExtensionsTests : BaseViewTest
 	public async Task ShowPopupAsync_INavigation_SemaphoreReleasedAfterCancellation_AllowsSubsequentPopup()
 	{
 		// Arrange
-		var cts = new CancellationTokenSource();
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await cts.CancelAsync();
 
 		// Act - A canceled token forces ShowPopupAsync to throw; the semaphore must not be leaked
@@ -1701,7 +1704,7 @@ public class PopupExtensionsTests : BaseViewTest
 		var shellNavigation = Shell.Current.Navigation;
 		var view = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
 
-		var cts = new CancellationTokenSource();
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await cts.CancelAsync();
 
 		// Act - A canceled token forces ShowPopupAsync to throw; the semaphore must not be leaked
@@ -1730,7 +1733,7 @@ public class PopupExtensionsTests : BaseViewTest
 		var shellNavigation = Shell.Current.Navigation;
 		var view = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
 
-		var cts = new CancellationTokenSource();
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await cts.CancelAsync();
 
 		// Act - A canceled token (with null shellParameters) forces ShowPopupAsync to throw; the semaphore must not be leaked

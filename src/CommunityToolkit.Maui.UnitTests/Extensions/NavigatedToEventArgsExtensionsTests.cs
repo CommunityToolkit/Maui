@@ -58,7 +58,7 @@ public class NavigatedToEventArgsExtensionsTests : BaseViewTest
 
 		// Act
 		await mainPage.Navigation.PushAsync(shellContentPage);
-		var wasPreviousPageACommunityToolkitPopupPage = await wasPreviousPageACommunityToolkitPopupPageTCS.Task;
+		var wasPreviousPageACommunityToolkitPopupPage = await wasPreviousPageACommunityToolkitPopupPageTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.False(wasPreviousPageACommunityToolkitPopupPage);
