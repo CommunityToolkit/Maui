@@ -212,7 +212,7 @@ jobs:
             -   name: Run CommunityToolkit Analyzers UnitTests
                 run: |
                     cd ${{ env.PathToCommunityToolkitAnalyzersUnitTestProjectDirectory }}
-                    dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-analyzers.cobertura.xml" --coverage-output-format cobertura --report-xunit
+                    dotnet test -c Release --report-gh -report-xunit-trx --report-xunit-trx-filename "ut-analyzers.trx" --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-analyzers.cobertura.xml" --coverage-output-format cobertura
                     
             -   name: Run CommunityToolkit Source Generators UnitTests
                 if: runner.os == 'Windows'
