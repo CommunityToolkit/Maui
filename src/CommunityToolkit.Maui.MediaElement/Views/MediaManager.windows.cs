@@ -282,7 +282,10 @@ partial class MediaManager : IDisposable
 		adaptiveMediaSource = null;
 
 		await Dispatcher.DispatchAsync(() => Player.PosterSource = new BitmapImage());
-
+		if (Player.Source is MediaPlaybackList playbackList)
+		{
+			playbackList.CurrentItemChanged -= MediaPlaybackList_CurrentItemChanged;
+		}
 		if (MediaElement.Source is null)
 		{
 			Player.Source = null;
@@ -300,18 +303,7 @@ partial class MediaManager : IDisposable
 		if (MediaElement.Source is UriMediaSource uriMediaSource)
 		{
 			var uri = uriMediaSource.Uri?.AbsoluteUri;
-			if (!string.IsNullOrWhiteSpace(uri))
-			{
-				var headers = uriMediaSource.HttpHeaders;
-				if (headers.Count > 0)
-				{
-					await SetUriSourceWithHeaders(new Uri(uri), headers);
-				}
-				else
-				{
-					Player.MediaPlayer.SetUriSource(new Uri(uri));
-				}
-			}
+			await SetHttpSource(uri, uriMediaSource.HttpHeaders);
 		}
 		else if (MediaElement.Source is FileMediaSource fileMediaSource)
 		{
@@ -342,6 +334,87 @@ partial class MediaManager : IDisposable
 			{
 				var randomAccessStream = streamMediaSource.Stream.AsRandomAccessStream();
 				Player.Source = WinMediaSource.CreateFromStream(randomAccessStream, streamMediaSource.Stream.GetMimeType());
+			}
+		}
+		else if (MediaElement.Source is MetaMediaSource metaMediaSource)
+		{
+			UpdateMeidaElementMetaData(metaMediaSource.Title,
+				metaMediaSource.Artist,
+				metaMediaSource.ArtworkUrl);
+			var uri = metaMediaSource.Uri?.AbsoluteUri;
+			if (string.IsNullOrWhiteSpace(uri))
+			{
+				return;
+			}
+			var headers = metaMediaSource.HttpHeaders;
+			if (headers is null)
+			{
+				Player.MediaPlayer.SetUriSource(new Uri(uri));
+			}
+			else
+			{
+				await SetHttpSource(uri, headers);
+			}
+		}
+		else if (MediaElement.Source is HttpListMediaSource httpListMediaSource)
+		{
+			var sources = httpListMediaSource.Sources;
+			if (sources is null)
+			{
+				return;
+			}
+			var mediaPlaybackList = new MediaPlaybackList();
+			foreach (var meta in sources)
+			{
+				if (meta is null || meta.Uri is null)
+				{
+					break;
+				}
+				var headers = meta.HttpHeaders ?? httpListMediaSource.DefaultHttpHeaders;
+				if (headers is null)
+				{
+					mediaPlaybackList.Items.Add(new MediaPlaybackItem(WinMediaSource.CreateFromUri(meta.Uri)));
+
+				}
+				else
+				{
+					mediaPlaybackList.Items.Add(new MediaPlaybackItem(await GetUriSourceWithHeaders(meta.Uri, headers)));
+				}
+			}
+			mediaPlaybackList.StartingItem = mediaPlaybackList.Items[httpListMediaSource.Index];
+			mediaPlaybackList.CurrentItemChanged += MediaPlaybackList_CurrentItemChanged;
+			Player.Source = mediaPlaybackList;
+		}
+	}
+
+	async void MediaPlaybackList_CurrentItemChanged(MediaPlaybackList list, CurrentMediaPlaybackItemChangedEventArgs args)
+	{
+		if (MediaElement.Source is HttpListMediaSource httplist)
+		{
+			httplist.Index = list.Items.IndexOf(args.NewItem);
+			var meta = httplist.Sources![httplist.Index];
+			UpdateMeidaElementMetaData(meta.Title, meta.Artist, meta.ArtworkUrl);
+			await UpdateMetadata();
+		}
+	}
+
+
+	/// <summary>
+	/// </summary>
+	/// <param name="uri"></param>
+	/// <param name="headers"></param>
+	/// <returns></returns>
+	async ValueTask SetHttpSource(string? uri, IDictionary<string, string>? headers)
+	{
+		if (!string.IsNullOrWhiteSpace(uri))
+		{
+			if (headers?.Count > 0)
+			{
+				await SetUriSourceWithHeaders(new Uri(uri), headers);
+			}
+			else
+			{
+				Player?.MediaPlayer.SetUriSource(new Uri(uri));
 			}
 		}
 	}
@@ -410,6 +483,47 @@ partial class MediaManager : IDisposable
 		return TValue.IsZero(numericValue);
 	}
 
+	/// <summary>
+	/// Don't forget sync the autoplay property with Dispatcher.DispatchAsync.
+	/// </summary>
+	/// <param name="uri"></param>
+	/// <param name="headers"></param>
+	/// <returns></returns>
+	/// <exception cref="InvalidOperationException"></exception>
+	async Task<WinMediaSource?> GetUriSourceWithHeaders(Uri uri, IDictionary<string, string> headers)
+	{
+		if (Player is null)
+		{
+			return null;
+		}
+
+		headerHttpClient ??= new HttpClient();
+		headerHttpClient.DefaultRequestHeaders.Clear();
+
+		foreach (var header in headers)
+		{
+			if (!headerHttpClient.DefaultRequestHeaders.TryAppendWithoutValidation(header.Key, header.Value))
+			{
+				throw new InvalidOperationException($"Failed to append HTTP header '{header.Key}'. The header name may be empty or contain invalid characters.");
+			}
+		}
+
+		var adaptiveResult = await AdaptiveMediaSource.CreateFromUriAsync(uri, headerHttpClient).AsTask().ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+
+		if (adaptiveResult.Status is AdaptiveMediaSourceCreationStatus.Success && adaptiveResult.MediaSource is not null)
+		{
+			adaptiveMediaSource = adaptiveResult.MediaSource;
+			adaptiveMediaSource.DownloadRequested += OnAdaptiveMediaSourceDownloadRequested;
+
+			var mediaSource = WinMediaSource.CreateFromAdaptiveMediaSource(adaptiveMediaSource);
+			return mediaSource;
+		}
+		else
+		{
+			var stream = await HttpRandomAccessStream.CreateAsync(headerHttpClient, uri);
+			return WinMediaSource.CreateFromStream(stream, string.Empty);
+		}
+	}
 	async Task SetUriSourceWithHeaders(Uri uri, IDictionary<string, string> headers)
 	{
 		if (Player is null)

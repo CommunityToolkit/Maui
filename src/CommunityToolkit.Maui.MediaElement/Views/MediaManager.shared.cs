@@ -250,6 +250,13 @@ public partial class MediaManager
 	/// Invokes the platform functionality to update the media playback volume.
 	/// </summary>
 	protected virtual partial void PlatformUpdateVolume();
+
+	void UpdateMeidaElementMetaData(string? title, string? artist, Uri? uri)
+	{
+		MediaElement.MetadataTitle = title ?? MediaElementDefaults.MetadataTitle;
+		MediaElement.MetadataArtist = artist ?? MediaElementDefaults.MetadataArtist;
+		MediaElement.MetadataArtworkUrl = uri is null ? MediaElementDefaults.MetadataArtworkUrl : uri.AbsoluteUri;
+	}
 }
 
 #if !(WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN)
