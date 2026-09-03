@@ -92,12 +92,15 @@ public class Options : Core.Options
 						else if (Application.Current.Windows.Count is 1)
 						{
 							var notificationManager = Microsoft.Windows.AppNotifications.AppNotificationManager.Default;
+							var registrationSucceeded = false;
 
 							try
 							{
-								notificationManager.Register();
-								isSnackbarNotificationManagerRegistered = true;
+								// Windows App SDK requires event handlers to be subscribed before Register is called.
 								notificationManager.NotificationInvoked += OnSnackbarNotificationInvoked;
+								notificationManager.Register();
+								registrationSucceeded = true;
+								isSnackbarNotificationManagerRegistered = true;
 							}
 							// Windows App SDK can omit the Insights resource DLL from self-contained unpackaged apps.
 							// Registration then fails, but notifications can still be shown without action callbacks. See https://github.com/microsoft/WindowsAppSDK/issues/6071.
@@ -105,6 +108,13 @@ public class Options : Core.Options
 							{
 								System.Diagnostics.Trace.WriteLine(
 									$"{nameof(Alerts.Snackbar)} action callbacks could not be registered because a Windows App Runtime module is unavailable. Snackbar notifications remain enabled. {exception}");
+							}
+							finally
+							{
+								if (registrationSucceeded is false)
+								{
+									notificationManager.NotificationInvoked -= OnSnackbarNotificationInvoked;
+								}
 							}
 						}
 					})
