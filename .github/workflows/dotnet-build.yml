@@ -218,18 +218,18 @@ jobs:
                 if: runner.os == 'Windows'
                 run: |
                     cd ${{ env.PathToCommunityToolkitSourceGeneratorsUnitTestDirectory }}
-                    dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-sourcegenerators.cobertura.xml" --coverage-output-format cobertura --report-xunit
+                    dotnet test -c Release --report-gh -report-xunit-trx --report-xunit-trx-filename "ut-sourcegenerators.trx" --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-sourcegenerators.cobertura.xml" --coverage-output-format cobertura
 
             -   name: Run CommunityToolkit MediaElement Source Generators UnitTests
                 if: runner.os == 'Windows'
                 run: |
                     cd ${{ env.PathToCommunityToolkitMediaElementSourceGeneratorsUnitTestDirectory }}
-                    dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-mediaelement-sourcegenerators.cobertura.xml" --coverage-output-format cobertura --report-xunit
+                    dotnet test -c Release --report-gh -report-xunit-trx --report-xunit-trx-filename "ut-mediaelement-sourcegenerators.trx" --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-mediaelement-sourcegenerators.cobertura.xml" --coverage-output-format cobertura
 
             -   name: Run CommunityToolkit UnitTests
                 run: |
                     cd ${{ env.PathToCommunityToolkitUnitTestProjectDirectory }}
-                    dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut.cobertura.xml" --coverage-output-format cobertura --report-xunit
+                    dotnet test -c Release --report-gh -report-xunit-trx --report-xunit-trx-filename "ut.trx" --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut.cobertura.xml" --coverage-output-format cobertura
 
             -   name: Create code coverage report
                 if: ${{ runner.os == 'Windows' && (success() || failure()) }}
