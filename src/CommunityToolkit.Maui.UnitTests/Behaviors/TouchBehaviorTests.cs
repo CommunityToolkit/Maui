@@ -678,25 +678,25 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 
 		touchStatusChangedTCS = new TaskCompletionSource<TouchStatus>();
 		touchBehavior.HandleTouch(TouchStatus.Started);
-		touchStatus = await touchStatusChangedTCS.Task;
+		touchStatus = await touchStatusChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.Equal(TouchStatus.Started, touchStatus);
 
 		touchStatusChangedTCS = new TaskCompletionSource<TouchStatus>();
 		touchBehavior.HandleTouch(TouchStatus.Completed);
-		touchStatus = await touchStatusChangedTCS.Task;
+		touchStatus = await touchStatusChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.Equal(TouchStatus.Completed, touchStatus);
 
 		touchStatusChangedTCS = new TaskCompletionSource<TouchStatus>();
 		touchBehavior.HandleTouch(TouchStatus.Started);
-		touchStatus = await touchStatusChangedTCS.Task;
+		touchStatus = await touchStatusChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.Equal(TouchStatus.Started, touchStatus);
 
 		touchStatusChangedTCS = new TaskCompletionSource<TouchStatus>();
 		touchBehavior.HandleTouch(TouchStatus.Completed);
-		touchStatus = await touchStatusChangedTCS.Task;
+		touchStatus = await touchStatusChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.Equal(TouchStatus.Completed, touchStatus);
 

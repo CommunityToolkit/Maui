@@ -29,7 +29,7 @@ public class NavigatedToEventArgsExtensionsTests : BaseViewTest
 		// Act
 		await mainPage.Navigation.PushAsync(shellContentPage);
 		await popupService.ShowPopupAsync<ShortLivedMockPageViewModel>(shell, null, shellParameters, TestContext.Current.CancellationToken);
-		var wasPreviousPageACommunityToolkitPopupPage = await wasPreviousPageACommunityToolkitPopupPageTCS.Task;
+		var wasPreviousPageACommunityToolkitPopupPage = await wasPreviousPageACommunityToolkitPopupPageTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.True(wasPreviousPageACommunityToolkitPopupPage);

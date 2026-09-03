@@ -65,7 +65,7 @@ public class PopupPageTests : BaseViewTest
 		await navigation.PushModalAsync(popupPage);
 
 		await popupPage.CloseAsync(expectedResult, TestContext.Current.CancellationToken);
-		var actualResult = await tcs.Task;
+		var actualResult = await tcs.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// Assert
 		actualResult.Should().Be(expectedResult);
@@ -136,7 +136,7 @@ public class PopupPageTests : BaseViewTest
 		await navigation.PushModalAsync(popupPage);
 
 		await popupPage.CloseAsync(expectedResult, TestContext.Current.CancellationToken);
-		var actualResult = await taskCompletionSource.Task;
+		var actualResult = await taskCompletionSource.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// Assert
 		actualResult.Should().Be(expectedResult);

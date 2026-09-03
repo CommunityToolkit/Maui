@@ -1228,7 +1228,7 @@ public class PopupExtensionsTests : BaseViewTest
 		{
 		}
 
-		var popupClosedResult = await popupClosedTCS.Task;
+		var popupClosedResult = await popupClosedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 		var showPopupResult = await showPopupTask;
 
 		// Assert
@@ -1269,7 +1269,7 @@ public class PopupExtensionsTests : BaseViewTest
 		{
 		}
 
-		var popupClosedResult = await popupClosedTCS.Task;
+		var popupClosedResult = await popupClosedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 		var showPopupResult = await showPopupTask;
 
 		// Assert
@@ -1303,7 +1303,7 @@ public class PopupExtensionsTests : BaseViewTest
 		{
 		}
 
-		var popupClosedResult = await popupClosedTCS.Task;
+		var popupClosedResult = await popupClosedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 		var showPopupResult = await showPopupTask;
 
 		// Assert
@@ -1344,7 +1344,7 @@ public class PopupExtensionsTests : BaseViewTest
 		{
 		}
 
-		var popupClosedResult = await popupClosedTCS.Task;
+		var popupClosedResult = await popupClosedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 		var showPopupResult = await showPopupTask;
 
 		// Assert
@@ -1378,7 +1378,7 @@ public class PopupExtensionsTests : BaseViewTest
 		{
 		}
 
-		var popupClosedResult = await popupClosedTCS.Task;
+		var popupClosedResult = await popupClosedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 		var showPopupResult = await showPopupTask;
 
 		// Assert
@@ -1420,7 +1420,7 @@ public class PopupExtensionsTests : BaseViewTest
 		{
 		}
 
-		var popupClosedResult = await popupClosedTCS.Task;
+		var popupClosedResult = await popupClosedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 		var showPopupResult = await showPopupTask;
 
 		// Assert
