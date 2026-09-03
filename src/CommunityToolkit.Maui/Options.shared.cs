@@ -13,6 +13,11 @@ namespace CommunityToolkit.Maui;
 /// </summary>
 public class Options : Core.Options
 {
+	const string windowsAppRuntimeInsightsResourceDll = "Microsoft.WindowsAppRuntime.Insights.Resource.dll";
+	const int moduleNotFoundHResult = unchecked((int)0x8007007E);
+#if WINDOWS
+	static bool isSnackbarNotificationManagerRegistered;
+#endif
 	readonly MauiAppBuilder? builder;
 
 	internal Options(in MauiAppBuilder builder) : this()
@@ -86,8 +91,21 @@ public class Options : Core.Options
 
 						else if (Application.Current.Windows.Count is 1)
 						{
-							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked += OnSnackbarNotificationInvoked;
-							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Register();
+							var notificationManager = Microsoft.Windows.AppNotifications.AppNotificationManager.Default;
+
+							try
+							{
+								notificationManager.Register();
+								isSnackbarNotificationManagerRegistered = true;
+								notificationManager.NotificationInvoked += OnSnackbarNotificationInvoked;
+							}
+							// Windows App SDK can omit the Insights resource DLL from self-contained unpackaged apps.
+							// Registration then fails, but notifications can still be shown without action callbacks. See https://github.com/microsoft/WindowsAppSDK/issues/6071.
+							catch (System.Runtime.InteropServices.COMException exception) when (IsWindowsAppRuntimeModuleUnavailable(exception))
+							{
+								System.Diagnostics.Trace.WriteLine(
+									$"{nameof(Alerts.Snackbar)} action callbacks could not be registered because a Windows App Runtime module is unavailable. Snackbar notifications remain enabled. {exception}");
+							}
 						}
 					})
 					.OnClosed((_, _) =>
@@ -96,10 +114,11 @@ public class Options : Core.Options
 						{
 							throw new InvalidOperationException($"{nameof(Application)}.{nameof(Application.Current)} cannot be null when Windows are closed");
 						}
-						else if (Application.Current.Windows.Count is 0)
+						else if (Application.Current.Windows.Count is 0 && isSnackbarNotificationManagerRegistered)
 						{
 							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.NotificationInvoked -= OnSnackbarNotificationInvoked;
 							Microsoft.Windows.AppNotifications.AppNotificationManager.Default.Unregister();
+							isSnackbarNotificationManagerRegistered = false;
 						}
 					}));
 			});
@@ -134,4 +153,8 @@ public class Options : Core.Options
 	{
 		DefaultPopupOptionsSettings = globalPopupOptionsSettings;
 	}
+
+	internal static bool IsWindowsAppRuntimeModuleUnavailable(System.Runtime.InteropServices.COMException exception)
+		=> exception.HResult is moduleNotFoundHResult
+			&& exception.Message.Contains(windowsAppRuntimeInsightsResourceDll, StringComparison.OrdinalIgnoreCase);
 }
