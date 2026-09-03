@@ -12,8 +12,8 @@
     <PackageReference Include="FluentAssertions.Analyzers" Version="0.34.1" />
     <PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
     <PackageReference Include="xunit.v3" Version="4.0.0" />
-    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.10.0" />
-    <PackageReference Include="Microsoft.Testing.Extensions.GitHubActionsReport" Version="1.0.0-alpha.26377.5" />
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.11.0" />
+    <PackageReference Include="Microsoft.Testing.Extensions.GitHubActionsReport" Version="2.4.0" />
   </ItemGroup>
 
   <ItemGroup>
