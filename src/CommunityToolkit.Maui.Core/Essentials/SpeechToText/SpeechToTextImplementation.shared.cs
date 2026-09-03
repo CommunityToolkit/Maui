@@ -55,6 +55,12 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 	/// <inheritdoc/>
 	public Task StopListenAsync(CancellationToken cancellationToken = default) => InternalStopListeningAsync(cancellationToken);
 
+	/// <inheritdoc />
+	public Task<string?> RecognizeAsync(Stream stream, SpeechToTextOptions options, CancellationToken cancellationToken = default)
+	{
+		return InternalRecognizeAsync(stream, options, cancellationToken);
+	}
+
 #if !MACCATALYST && !IOS
 	/// <inheritdoc/>
 	public async Task<bool> RequestPermissions(CancellationToken cancellationToken = default)

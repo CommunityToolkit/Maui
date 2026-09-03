@@ -1,5 +1,6 @@
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Speech.Recognition;
+using System.Text;
 using Microsoft.Maui.ApplicationModel;
 using Windows.Globalization;
 using Windows.Media.SpeechRecognition;
@@ -36,6 +37,48 @@ public sealed partial class SpeechToTextImplementation
 	public async ValueTask DisposeAsync()
 	{
 		await StopRecording(CancellationToken.None);
+	}
+
+	async Task<string?> InternalRecognizeAsync(Stream stream, SpeechToTextOptions options, CancellationToken cancellationToken)
+	{
+		if (stream.CanSeek)
+		{
+			stream.Position = 0;
+		}
+
+		using var recognizer = new SpeechRecognitionEngine(options.Culture);
+
+		// Synchronous loading ensures the grammar is ready immediately
+		recognizer.LoadGrammar(new DictationGrammar());
+
+		recognizer.SetInputToWaveStream(stream);
+
+		var sb = new StringBuilder();
+		var tcs = new TaskCompletionSource<string>();
+
+		recognizer.SpeechRecognized += (s, e) =>
+		{
+			if (e.Result?.Text != null)
+			{
+				sb.Append(e.Result.Text).Append(' ');
+			}
+		};
+
+		recognizer.RecognizeCompleted += (s, e) =>
+		{
+			if (e.Error != null)
+			{
+				tcs.TrySetException(e.Error);
+			}
+			else
+			{
+				tcs.TrySetResult(sb.ToString().Trim());
+			}
+		};
+
+		recognizer.RecognizeAsync(RecognizeMode.Multiple);
+
+		return await tcs.Task;
 	}
 
 	async Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)

@@ -20,6 +20,10 @@ public static class SpeechToText
 	public static Task StopListenAsync(CancellationToken cancellationToken = default) =>
 		Default.StopListenAsync(cancellationToken);
 
+	/// <inheritdoc cref="ISpeechToText.StopListenAsync"/>
+	public static Task<string?> RecognizeAsync(Stream stream, SpeechToTextOptions options, CancellationToken cancellationToken = default) =>
+		Default.RecognizeAsync(stream, options, cancellationToken);
+
 	/// <inheritdoc cref="ISpeechToText.RequestPermissions"/>
 	public static Task<bool> RequestPermissions(CancellationToken cancellationToken = default) =>
 		Default.RequestPermissions(cancellationToken);

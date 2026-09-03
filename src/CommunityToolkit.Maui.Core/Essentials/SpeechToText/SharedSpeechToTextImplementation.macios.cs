@@ -1,4 +1,5 @@
-﻿using AVFoundation;
+﻿using System.Runtime.InteropServices;
+using AVFoundation;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Dispatching;
@@ -80,6 +81,84 @@ public sealed partial class SpeechToTextImplementation
 
 		// Dispose all IDisposables before calling `OnSpeechToTextStateChanged` to ensure CurrentState == SpeechToTextState.Stopped
 		OnSpeechToTextStateChanged(CurrentState);
+	}
+
+	async Task<string?> InternalRecognizeAsync(Stream stream, SpeechToTextOptions options, CancellationToken cancellationToken)
+	{
+		var locale = new NSLocale(options.Culture.Name);
+		using var recognizer = new SFSpeechRecognizer(locale);
+
+		if (!recognizer.Available)
+		{
+			throw new InvalidOperationException("Speech recognizer is currently unavailable.");
+		}
+
+		var tcs = new TaskCompletionSource<string>();
+		using var recognitionRequest = new SFSpeechAudioBufferRecognitionRequest
+		{
+			ShouldReportPartialResults = options.ShouldReportPartialResults,
+			RequiresOnDeviceRecognition = recognizer.SupportsOnDeviceRecognition
+		};
+
+		uint channelCount = 1;
+
+		// Define the PCM format expected from the stream (16-bit signed integer linear PCM)
+		using var audioFormat = new AVAudioFormat(
+			format: AVAudioCommonFormat.PCMInt16,
+			sampleRate: 16000,
+			channels: channelCount,
+			interleaved: false);
+
+		using var recognitionTask = recognizer.GetRecognitionTask(recognitionRequest, (result, error) =>
+		{
+			if (error != null)
+			{
+				tcs.TrySetException(new NSErrorException(error));
+				return;
+			}
+
+			if (result != null && (result.Final || !recognitionRequest.ShouldReportPartialResults))
+			{
+				tcs.TrySetResult(result.BestTranscription.FormattedString);
+			}
+		});
+
+		_ = Task.Run(async () =>
+		{
+			try
+			{
+				const int bytesPerSample = 2; // 16-bit PCM = 2 bytes
+				uint bytesPerFrame = channelCount * bytesPerSample;
+				const uint frameCapacity = 4096;
+				byte[] byteBuffer = new byte[frameCapacity * bytesPerFrame];
+
+				int bytesRead;
+				while ((bytesRead = await stream.ReadAsync(byteBuffer, 0, byteBuffer.Length).ConfigureAwait(false)) > 0)
+				{
+					uint framesRead = (uint)(bytesRead / bytesPerFrame);
+					if (framesRead == 0)
+					{
+						continue;
+					}
+
+					using var pcmBuffer = new AVAudioPcmBuffer(audioFormat, framesRead);
+					pcmBuffer.FrameLength = framesRead;
+
+					IntPtr channelPointer = Marshal.ReadIntPtr(pcmBuffer.Int16ChannelData);
+					Marshal.Copy(byteBuffer, 0, channelPointer, bytesRead);
+
+					recognitionRequest.Append(pcmBuffer);
+				}
+
+				recognitionRequest.EndAudio();
+			}
+			catch (Exception ex)
+			{
+				tcs.TrySetException(ex);
+			}
+		}, cancellationToken);
+
+		return await tcs.Task;
 	}
 
 	Task InternalStopListeningAsync(CancellationToken cancellationToken)
