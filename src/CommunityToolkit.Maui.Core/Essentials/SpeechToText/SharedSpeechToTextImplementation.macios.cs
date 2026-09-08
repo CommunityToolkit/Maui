@@ -132,9 +132,7 @@ public sealed partial class SpeechToTextImplementation
 				const uint frameCapacity = 4096;
 				byte[] byteBuffer = new byte[frameCapacity * bytesPerFrame];
 
-				int bytesRead;
-				while ((bytesRead = await stream.ReadAsync(byteBuffer, 0, byteBuffer.Length).ConfigureAwait(false)) > 0)
-				{
+				while ((bytesRead = await stream.ReadAsync(byteBuffer, 0, byteBuffer.Length, cancellationToken).ConfigureAwait(false)) > 0)
 					uint framesRead = (uint)(bytesRead / bytesPerFrame);
 					if (framesRead == 0)
 					{
