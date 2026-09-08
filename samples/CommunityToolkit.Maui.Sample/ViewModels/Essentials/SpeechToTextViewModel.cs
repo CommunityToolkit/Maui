@@ -72,10 +72,7 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 		}
 
 		await using var audioStream = await pickResult.OpenReadAsync();
-		var text = await speechToText.RecognizeAsync(audioStream, new SpeechToTextOptions(){Culture = CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage),
-		}, cancellationToken: token);
-		await Shell.Current.DisplayAlertAsync("Recognition Result", text, "OK");
-	}
+		await Shell.Current.DisplayAlertAsync("Recognition Result", text ?? string.Empty, "OK");
 
 	[RelayCommand]
 	async Task SetLocales(CancellationToken token)
