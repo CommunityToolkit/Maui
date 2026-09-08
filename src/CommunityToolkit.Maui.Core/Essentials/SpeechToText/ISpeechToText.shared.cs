@@ -50,7 +50,7 @@ public interface ISpeechToText : IAsyncDisposable
 	/// Recognize audio stream and return the recognized text.
 	/// </summary>
 	/// <remarks>
-	/// Speech recognition results will be surfaced via <see cref="RecognitionResultCompleted"/>
+	/// Returns the recognized text from the provided audio stream.
 	/// </remarks>
 	/// <param name="options">The <see cref="SpeechToTextOptions"/> used to customize how the speech will be detected and converted to text.</param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
