@@ -218,9 +218,7 @@ public class AudioStreamTranscriber : Java.Lang.Object, IRecognitionListener
 		{
 			throw new PlatformNotSupportedException("ExtraAudioSource requires Android 13 (API 33)+.");
 		}
-
-		tcs = new TaskCompletionSource<string>();
-
+		tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
 		Application.SynchronizationContext.Post(_ =>
 		{
 			try
