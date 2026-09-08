@@ -279,7 +279,7 @@ public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBe
 	{
 		// Arrange
 		var behavior = new EmailValidationBehavior();
-		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		var entry = new Entry
 		{

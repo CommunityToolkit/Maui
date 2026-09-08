@@ -161,6 +161,7 @@ public class DefaultPopupSettingsTests : BaseViewTest
 
 		// Act
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+		TestContext.Current.CancellationToken.ThrowIfCancellationRequested();
 		popupService.ShowPopup<CustomButton>(page.Navigation);
 
 		if (Application.Current.Windows[0].Page is not Shell { CurrentPage: PopupPage popupPage })
@@ -210,6 +211,7 @@ public class DefaultPopupSettingsTests : BaseViewTest
 
 		// Act
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+		TestContext.Current.CancellationToken.ThrowIfCancellationRequested();
 		popupService.ShowPopup<MockPopup>(page.Navigation);
 
 		if (Application.Current.Windows[0].Page is not Shell { CurrentPage: PopupPage popupPage })
