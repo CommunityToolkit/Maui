@@ -155,8 +155,8 @@ public sealed partial class SpeechToTextImplementation
 		return Task.CompletedTask;
 	}
 
-	async Task<string?> InternalRecognizeAsync(Stream stream, SpeechToTextOptions options, CancellationToken cancellationToken)
+	async Task<SpeechToTextResult> InternalRecognizeAsync(Stream stream, SpeechToTextOptions options, CancellationToken cancellationToken)
 	{
-		return null;
+		return Task.FromException<SpeechToTextResult>(new NotSupportedException("STT is not available"));
 	}
 }

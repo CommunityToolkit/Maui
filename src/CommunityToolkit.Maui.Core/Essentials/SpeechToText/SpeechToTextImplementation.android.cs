@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Mime;
 using Android.Content;
 using Android.Media;
 using Android.OS;
@@ -68,7 +67,7 @@ public sealed partial class SpeechToTextImplementation
 
 	static bool IsSpeechRecognitionAvailable() => SpeechRecognizer.IsRecognitionAvailable(Application.Context);
 
-	async Task<string?> InternalRecognizeAsync(System.IO.Stream stream, SpeechToTextOptions options, CancellationToken cancellationToken)
+	async Task<SpeechToTextResult> InternalRecognizeAsync(System.IO.Stream stream, SpeechToTextOptions options, CancellationToken cancellationToken)
 	{
 		using var transcriber = new AudioStreamTranscriber(Application.Context);
 		return await transcriber.TranscribePcmStreamAsync(stream, language: Java.Util.Locale.ForLanguageTag(options.Culture.Name).ToLanguageTag());
@@ -196,19 +195,13 @@ public sealed partial class SpeechToTextImplementation
 	}
 }
 
-public class AudioStreamTranscriber : Java.Lang.Object, IRecognitionListener
+class AudioStreamTranscriber(Context context) : Java.Lang.Object, IRecognitionListener
 {
-	readonly Context context;
 	SpeechRecognizer? recognizer;
 	ParcelFileDescriptor? readPipe;
-	TaskCompletionSource<string>? tcs;
+	TaskCompletionSource<SpeechToTextResult>? tcs;
 
-	public AudioStreamTranscriber(Context context)
-	{
-		this.context = context;
-	}
-
-	public Task<string> TranscribePcmStreamAsync(
+	public Task<SpeechToTextResult> TranscribePcmStreamAsync(
 		System.IO.Stream pcmAudioStream,
 		int sampleRate = 16000,
 		int channelCount = 1,
@@ -218,7 +211,7 @@ public class AudioStreamTranscriber : Java.Lang.Object, IRecognitionListener
 		{
 			throw new PlatformNotSupportedException("ExtraAudioSource requires Android 13 (API 33)+.");
 		}
-		tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+		tcs = new TaskCompletionSource<SpeechToTextResult>(TaskCreationOptions.RunContinuationsAsynchronously);
 		Application.SynchronizationContext.Post(_ =>
 		{
 			try
@@ -251,6 +244,7 @@ public class AudioStreamTranscriber : Java.Lang.Object, IRecognitionListener
 					}
 					catch (Exception ex)
 					{
+						tcs?.TrySetResult(SpeechToTextResult.Failed(ex));
 						System.Diagnostics.Debug.WriteLine($"Pipe streaming error: {ex}");
 					}
 				});
@@ -276,7 +270,7 @@ public class AudioStreamTranscriber : Java.Lang.Object, IRecognitionListener
 			catch (Exception ex)
 			{
 				Cleanup();
-				tcs.TrySetException(ex);
+				tcs.TrySetResult(SpeechToTextResult.Failed(ex));
 			}
 		}, null);
 
@@ -289,13 +283,13 @@ public class AudioStreamTranscriber : Java.Lang.Object, IRecognitionListener
 		var text = matches != null && matches.Count > 0 ? matches[0] : string.Empty;
 
 		Cleanup();
-		tcs?.TrySetResult(text);
+		tcs?.TrySetResult(SpeechToTextResult.Success(text));
 	}
 
 	public void OnError([GeneratedEnum] SpeechRecognizerError error)
 	{
 		Cleanup();
-		tcs?.TrySetException(new Exception($"Speech recognition error: {error}"));
+		tcs?.TrySetResult(SpeechToTextResult.Failed(new Exception($"Speech recognition error: {error}")));
 	}
 
 	void Cleanup()

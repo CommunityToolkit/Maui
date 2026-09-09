@@ -56,7 +56,8 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 	public Task StopListenAsync(CancellationToken cancellationToken = default) => InternalStopListeningAsync(cancellationToken);
 
 	/// <inheritdoc />
-	public Task<string?> RecognizeAsync(Stream stream, SpeechToTextOptions options, CancellationToken cancellationToken = default)
+	public Task<SpeechToTextResult> RecognizeAsync(Stream stream, SpeechToTextOptions options,
+		CancellationToken cancellationToken = default)
 	{
 		return InternalRecognizeAsync(stream, options, cancellationToken);
 	}

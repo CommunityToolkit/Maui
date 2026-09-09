@@ -83,7 +83,7 @@ public sealed partial class SpeechToTextImplementation
 		OnSpeechToTextStateChanged(CurrentState);
 	}
 
-	async Task<string?> InternalRecognizeAsync(Stream stream, SpeechToTextOptions options, CancellationToken cancellationToken)
+	async Task<SpeechToTextResult> InternalRecognizeAsync(Stream stream, SpeechToTextOptions options, CancellationToken cancellationToken)
 	{
 		var locale = new NSLocale(options.Culture.Name);
 		using var recognizer = new SFSpeechRecognizer(locale);
@@ -93,33 +93,26 @@ public sealed partial class SpeechToTextImplementation
 			throw new InvalidOperationException("Speech recognizer is currently unavailable.");
 		}
 
-		var tcs = new TaskCompletionSource<string>();
-		using var recognitionRequest = new SFSpeechAudioBufferRecognitionRequest
+		var tcs = new TaskCompletionSource<SpeechToTextResult>();
+		var recognitionRequest = new SFSpeechAudioBufferRecognitionRequest
 		{
 			ShouldReportPartialResults = options.ShouldReportPartialResults,
-			RequiresOnDeviceRecognition = recognizer.SupportsOnDeviceRecognition
+			RequiresOnDeviceRecognition = false
 		};
 
 		uint channelCount = 1;
 
-		// Define the PCM format expected from the stream (16-bit signed integer linear PCM)
-		using var audioFormat = new AVAudioFormat(
-			format: AVAudioCommonFormat.PCMInt16,
-			sampleRate: 16000,
-			channels: channelCount,
-			interleaved: false);
-
-		using var recognitionTask = recognizer.GetRecognitionTask(recognitionRequest, (result, error) =>
+		using var speechRecognitionTask = recognizer.GetRecognitionTask(recognitionRequest, (result, error) =>
 		{
-			if (error != null)
+			if (error is not null)
 			{
-				tcs.TrySetException(new NSErrorException(error));
+				tcs.TrySetResult(SpeechToTextResult.Failed(new NSErrorException(error)));
 				return;
 			}
 
-			if (result != null && (result.Final || !recognitionRequest.ShouldReportPartialResults))
+			if (result is { Final: true })
 			{
-				tcs.TrySetResult(result.BestTranscription.FormattedString);
+				tcs.TrySetResult(SpeechToTextResult.Success(result.BestTranscription.FormattedString));
 			}
 		});
 
@@ -127,12 +120,19 @@ public sealed partial class SpeechToTextImplementation
 		{
 			try
 			{
+				using var audioFormat = new AVAudioFormat(
+					format: AVAudioCommonFormat.PCMInt16,
+					sampleRate: 44100,
+					channels: channelCount,
+					interleaved: false);
 				const int bytesPerSample = 2; // 16-bit PCM = 2 bytes
 				uint bytesPerFrame = channelCount * bytesPerSample;
 				const uint frameCapacity = 4096;
 				byte[] byteBuffer = new byte[frameCapacity * bytesPerFrame];
+				int bytesRead;
 
 				while ((bytesRead = await stream.ReadAsync(byteBuffer, 0, byteBuffer.Length, cancellationToken).ConfigureAwait(false)) > 0)
+				{
 					uint framesRead = (uint)(bytesRead / bytesPerFrame);
 					if (framesRead == 0)
 					{
@@ -156,7 +156,14 @@ public sealed partial class SpeechToTextImplementation
 			}
 		}, cancellationToken);
 
-		return await tcs.Task;
+		try
+		{
+			return await tcs.Task;
+		}
+		finally
+		{
+			recognitionRequest.Dispose();
+		}
 	}
 
 	Task InternalStopListeningAsync(CancellationToken cancellationToken)

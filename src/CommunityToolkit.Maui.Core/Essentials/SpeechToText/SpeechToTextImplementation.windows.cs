@@ -39,7 +39,7 @@ public sealed partial class SpeechToTextImplementation
 		await StopRecording(CancellationToken.None);
 	}
 
-	async Task<string?> InternalRecognizeAsync(Stream stream, SpeechToTextOptions options, CancellationToken cancellationToken)
+	async Task<SpeechToTextResult> InternalRecognizeAsync(Stream stream, SpeechToTextOptions options, CancellationToken cancellationToken)
 	{
 		if (stream.CanSeek)
 		{
@@ -54,7 +54,7 @@ public sealed partial class SpeechToTextImplementation
 		recognizer.SetInputToWaveStream(stream);
 
 		var sb = new StringBuilder();
-		var tcs = new TaskCompletionSource<string>();
+		var tcs = new TaskCompletionSource<SpeechToTextResult>();
 
 		recognizer.SpeechRecognized += (s, e) =>
 		{
@@ -68,17 +68,17 @@ public sealed partial class SpeechToTextImplementation
 		{
 			if (e.Error != null)
 			{
-				tcs.TrySetException(e.Error);
+				tcs.TrySetResult(SpeechToTextResult.Failed(new Exception(e.Error)));
 			}
 			else
 			{
-				tcs.TrySetResult(sb.ToString().Trim());
+				tcs.TrySetResult(SpeechToTextResult.Success(sb.ToString().Trim()));
 			}
 		};
 
 		recognizer.RecognizeAsync(RecognizeMode.Multiple);
 
-		return await tcs.Task;
+		return await tcs.Task.WaitAsync(cancellationToken);
 	}
 
 	async Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)

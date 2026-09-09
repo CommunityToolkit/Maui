@@ -27,6 +27,11 @@ class SpeechToTextImplementationMock(string partialText, string finalText) : ISp
 		return ValueTask.CompletedTask;
 	}
 
+	public Task<SpeechToTextResult> RecognizeAsync(Stream stream, SpeechToTextOptions options, CancellationToken cancellationToken = default)
+	{
+		return Task.FromResult<SpeechToTextResult>(SpeechToTextResult.Success(string.Empty));
+	}
+
 	public Task<bool> RequestPermissions(CancellationToken cancellationToken)
 	{
 		return Task.FromResult(true);

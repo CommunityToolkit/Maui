@@ -59,7 +59,9 @@ public sealed partial class OfflineSpeechToTextImplementation : ISpeechToText
 		return Task.CompletedTask;
 	}
 
-	public async Task<string?> RecognizeAsync(Stream stream, SpeechToTextOptions options, CancellationToken cancellationToken = default)
+	/// <inheritdoc/>
+	public async Task<SpeechToTextResult> RecognizeAsync(Stream stream, SpeechToTextOptions options,
+		CancellationToken cancellationToken = default)
 	{
 		await using var speechToText = new SpeechToTextImplementation();
 		return await speechToText.RecognizeAsync(stream, options, cancellationToken).ConfigureAwait(false);
