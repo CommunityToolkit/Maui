@@ -29,6 +29,7 @@ partial class CameraManager
 	AVCaptureVideoOrientation videoOrientation;
 	AVCaptureMovieFileOutput? videoOutput;
 	AVCaptureDeviceRotationCoordinator? rotationCoordinator;
+	AVCaptureMovieFileOutputRecordingDelegate? videoRecordingDelegate;
 	string? videoRecordingFileName;
 	TaskCompletionSource? videoRecordingFinalizeTcs;
 	Stream? videoRecordingStream;
@@ -378,7 +379,8 @@ partial class CameraManager
 		videoRecordingFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.mov");
 
 		var outputUrl = NSUrl.FromFilename(videoRecordingFileName);
-		videoOutput.StartRecordingToOutputFile(outputUrl, new AVCaptureMovieFileOutputRecordingDelegate(videoRecordingFinalizeTcs));
+		videoRecordingDelegate = new AVCaptureMovieFileOutputRecordingDelegate(videoRecordingFinalizeTcs);
+		videoOutput.StartRecordingToOutputFile(outputUrl, videoRecordingDelegate);
 	}
 
 	private async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
@@ -434,6 +436,8 @@ partial class CameraManager
 
 		videoOutput = null;
 		audioInput = null;
+		videoRecordingDelegate?.Dispose();
+		videoRecordingDelegate = null;
 
 		// Clean up temporary file
 		if (videoRecordingFileName is not null)
