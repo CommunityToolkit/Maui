@@ -97,7 +97,7 @@ public class MultiValidationBehaviorTests() : BaseBehaviorTest<MultiValidationBe
 	public async Task ForceValidateCancellationTokenCanceled()
 	{
 		// Arrange
-		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		var characterValidationBehavior = new CharactersValidationBehavior();
 		var requiredStringValidationBehavior = new RequiredStringValidationBehavior();

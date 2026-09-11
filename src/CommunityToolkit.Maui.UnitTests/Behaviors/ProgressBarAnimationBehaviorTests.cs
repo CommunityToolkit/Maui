@@ -38,9 +38,9 @@ public class ProgressBarAnimationBehaviorTests() : BaseBehaviorTest<ProgressBarA
 		progressBarAnimationBehavior.Easing = easing;
 		progressBarAnimationBehavior.Progress = progress;
 
-		if (progressBar.Progress != progress)
+		if (Math.Abs(progressBar.Progress - progress) > 0.01)
 		{
-			await progressBarAnimationCompletedTcs.Task;
+			await progressBarAnimationCompletedTcs.Task.WaitAsync(TestContext.Current.CancellationToken);
 		}
 
 		Assert.Equal(progress, progressBar.Progress);
