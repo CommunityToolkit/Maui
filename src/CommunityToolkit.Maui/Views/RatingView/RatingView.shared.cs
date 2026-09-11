@@ -143,6 +143,15 @@ public partial class RatingView : TemplatedView, IRatingView
 
 	internal HorizontalStackLayout RatingLayout { get; } = [];
 
+	internal void HandleShapeTapped(Border tappedShape)
+	{
+		var tappedShapeIndex = RatingLayout.Children.IndexOf(tappedShape);
+
+		Rating = MaximumRating > 1
+			? tappedShapeIndex + 1
+			: GetRatingWhenMaximumRatingEqualsOne(Rating);
+	}
+
 	static int GetRatingWhenMaximumRatingEqualsOne(double rating) => rating.Equals(0.0) ? 1 : 0;
 
 	static Border CreateChild(in string shape, in Thickness itemPadding, in double shapeBorderThickness, in double itemShapeSize, in Brush shapeBorderColor, in Color itemColor) => new()
@@ -447,11 +456,7 @@ public partial class RatingView : TemplatedView, IRatingView
 			return;
 		}
 
-		var tappedShapeIndex = RatingLayout.Children.IndexOf(tappedShape);
-
-		Rating = MaximumRating > 1
-			? tappedShapeIndex + 1
-			: GetRatingWhenMaximumRatingEqualsOne(Rating);
+		HandleShapeTapped(tappedShape);
 	}
 
 	void UpdateShapeFills(RatingViewFillOption ratingViewFillOption)

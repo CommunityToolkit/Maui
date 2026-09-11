@@ -7,7 +7,7 @@ static class PageExtensions
 {
 	internal static Page GetCurrentPage(this Page currentPage)
 	{
-		if (currentPage.NavigationProxy.ModalStack.LastOrDefault() is Page modal)
+		if (currentPage.Navigation.ModalStack.LastOrDefault() is Page modal)
 		{
 			return modal;
 		}
@@ -15,9 +15,9 @@ static class PageExtensions
 		{
 			return GetCurrentPage(fp.Detail);
 		}
-		else if (currentPage is Shell shell && shell.CurrentItem?.CurrentItem is IShellSectionController ssc)
+		else if (currentPage is Shell shell && shell.CurrentPage is Page shellPage)
 		{
-			return ssc.PresentedPage;
+			return GetCurrentPage(shellPage);
 		}
 		else if (currentPage is IPageContainer<Page> pc)
 		{
@@ -31,7 +31,6 @@ static class PageExtensions
 
 	internal record struct ParentWindow
 	{
-		static Page CurrentPage => GetCurrentPage(Application.Current?.Windows[^1].Page ?? throw new InvalidOperationException($"{nameof(Page)} cannot be null."));
 		/// <summary>
 		/// Checks if the parent window is null.
 		/// </summary>
@@ -51,5 +50,6 @@ static class PageExtensions
 				return CurrentPage.GetParentWindow().Handler?.PlatformView is not null;
 			}
 		}
+		static Page CurrentPage => GetCurrentPage(Application.Current?.Windows[^1].Page ?? throw new InvalidOperationException($"{nameof(Page)} cannot be null."));
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Brushes;
+using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Maui.Platform;
 using Windows.Storage.Streams;
 using Windows.UI.Input.Inking;
@@ -15,6 +16,12 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public static partial class DrawingViewService
 {
+	static readonly CanvasStrokeStyle roundStartEndCapCanvasStrokeStyle = new()
+	{
+		StartCap = CanvasCapStyle.Round,
+		EndCap = CanvasCapStyle.Round,
+	};
+
 	/// <summary>
 	/// Get image stream from lines
 	/// </summary>
@@ -167,7 +174,8 @@ public static partial class DrawingViewService
 				session.DrawLine(
 					new Vector2((float)currentPoint.X, (float)currentPoint.Y),
 					new Vector2((float)nextPoint.X, (float)nextPoint.Y),
-					stroke.DrawingAttributes.Color, (float)stroke.DrawingAttributes.Size.Width);
+					stroke.DrawingAttributes.Color, (float)stroke.DrawingAttributes.Size.Width,
+					roundStartEndCapCanvasStrokeStyle);
 			}
 		}
 	}

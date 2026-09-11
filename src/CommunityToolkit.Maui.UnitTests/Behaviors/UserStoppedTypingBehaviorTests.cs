@@ -21,7 +21,7 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 
 		// act
 		entry.Text = "1";
-		await commandTCS.Task;
+		await commandTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// assert
 		Assert.True(commandHasBeenExecuted);
@@ -41,7 +41,7 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 
 		// act
 		entry.Text = "1";
-		await commandTCS.Task;
+		await commandTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// assert
 		Assert.True(commandHasBeenExecuted);
@@ -66,7 +66,7 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 		Assert.False(commandHasBeenExecuted);
 
 		// act
-		await commandTCS.Task;
+		await commandTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.True(commandHasBeenExecuted);
 	}
@@ -90,7 +90,7 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 		entry.Text = "12";
 		entry.Text = "123";
 		entry.Text = "1234";
-		await commandTCS.Task;
+		await commandTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// assert
 		Assert.Equal(1, timesExecuted);
@@ -108,7 +108,7 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 		entry.Focus();
 		entry.Text = "1";
 
-		await unfocusTCS.Task;
+		await unfocusTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// assert
 		Assert.False(entry.IsFocused);
@@ -137,7 +137,7 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 		entry.Text = "1";
 		entry.Text = "12";
 		entry.Text = "123";
-		await commandTCS.Task;
+		await commandTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// assert
 		Assert.True(commandHasBeenExecuted);
@@ -162,14 +162,14 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 		// act
 		entry.Focus();
 		entry.Text = "1";
-		await focusTCS.Task;
+		await focusTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// assert
 		Assert.False(commandHasBeenExecuted);
 
 		// act
 		entry.Text = "123";
-		await commandTCS.Task;
+		await commandTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// assert
 		Assert.True(commandHasBeenExecuted);
@@ -196,14 +196,14 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 		entry.Focus();
 
 		entry.Text = "1";
-		await focusTCS.Task;
+		await focusTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// assert
 		Assert.True(entry.IsFocused);
 
 		// act
 		entry.Text = "123";
-		await unfocusTCS.Task;
+		await unfocusTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// assert
 		Assert.False(entry.IsFocused);
@@ -235,7 +235,7 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 
 		// act
 		entry.Text = "1";
-		await commandTCS.Task;
+		await commandTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// assert
 		Assert.True(commandHasBeenExecuted);

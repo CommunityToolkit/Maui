@@ -54,6 +54,7 @@ public sealed class MediaSourceConverter : TypeConverter
 		UriMediaSource uriMediaSource => uriMediaSource.ToString(),
 		FileMediaSource fileMediaSource => fileMediaSource.ToString(),
 		ResourceMediaSource resourceMediaSource => resourceMediaSource.ToString(),
+		StreamMediaSource streamMediaSource => streamMediaSource.ToString(),
 		MediaSource => string.Empty,
 		_ => throw new ArgumentException($"Invalid Media Source", nameof(value))
 	};

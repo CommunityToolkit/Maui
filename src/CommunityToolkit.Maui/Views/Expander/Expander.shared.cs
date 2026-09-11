@@ -86,7 +86,23 @@ public partial class Expander : ContentView, IExpander
 
 	internal TapGestureRecognizer HeaderTapGestureRecognizer { get; } = new();
 
+	internal void HandleHeaderTap(TappedEventArgs tappedEventArgs)
+	{
+		IsExpanded = !IsExpanded;
+		HandleHeaderTapped?.Invoke(tappedEventArgs);
+	}
+
 	Grid ContentGrid => (Grid)base.Content;
+
+	void IExpander.ExpandedChanged(bool isExpanded)
+	{
+		if (Command?.CanExecute(CommandParameter) is true)
+		{
+			Command.Execute(CommandParameter);
+		}
+
+		tappedEventManager.HandleEvent(this, new ExpandedChangedEventArgs(isExpanded), nameof(ExpandedChanged));
+	}
 
 	static void OnExpandDirectionChanging(BindableObject bindable, object oldValue, object newValue)
 	{
@@ -106,8 +122,12 @@ public partial class Expander : ContentView, IExpander
 		{
 			view.SetBinding(IsVisibleProperty, new Binding(nameof(IsExpanded), source: expander));
 
-			expander.ContentGrid.Remove(oldValue);
-			expander.ContentGrid.Add(newValue);
+			if (oldValue is IView oldView)
+			{
+				expander.ContentGrid.Remove(oldView);
+			}
+
+			expander.ContentGrid.Add(view);
 			expander.ContentGrid.SetRow(view, expander.Direction switch
 			{
 				ExpandDirection.Down => 1,
@@ -124,8 +144,12 @@ public partial class Expander : ContentView, IExpander
 		{
 			expander.SetHeaderGestures(view);
 
-			expander.ContentGrid.Remove(oldValue);
-			expander.ContentGrid.Add(newValue);
+			if (oldValue is IView oldView)
+			{
+				expander.ContentGrid.Remove(oldView);
+			}
+
+			expander.ContentGrid.Add(view);
 
 			expander.ContentGrid.SetRow(view, expander.Direction switch
 			{
@@ -177,8 +201,7 @@ public partial class Expander : ContentView, IExpander
 
 	void OnHeaderTapGestureRecognizerTapped(object? sender, TappedEventArgs tappedEventArgs)
 	{
-		IsExpanded = !IsExpanded;
-		HandleHeaderTapped?.Invoke(tappedEventArgs);
+		HandleHeaderTap(tappedEventArgs);
 	}
 
 	void ResizeExpanderInItemsView(TappedEventArgs tappedEventArgs)
@@ -217,15 +240,5 @@ public partial class Expander : ContentView, IExpander
 
 			element = element.Parent;
 		}
-	}
-
-	void IExpander.ExpandedChanged(bool isExpanded)
-	{
-		if (Command?.CanExecute(CommandParameter) is true)
-		{
-			Command.Execute(CommandParameter);
-		}
-
-		tappedEventManager.HandleEvent(this, new ExpandedChangedEventArgs(isExpanded), nameof(ExpandedChanged));
 	}
 }

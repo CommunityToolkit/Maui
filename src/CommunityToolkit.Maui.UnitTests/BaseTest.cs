@@ -8,11 +8,21 @@ namespace CommunityToolkit.Maui.UnitTests;
 [Collection("CommunityToolkit.UnitTests")]
 public abstract class BaseTest : IDisposable, IAsyncDisposable
 {
-	readonly CultureInfo defaultCulture, defaultUiCulture;
-	protected readonly MockAppInfo mockAppInfo;
 	protected const AppTheme initialAppTheme = AppTheme.Light;
 
+	readonly CultureInfo defaultCulture, defaultUiCulture;
+
 	bool isDisposed;
+
+	protected BaseTest()
+	{
+		defaultCulture = Thread.CurrentThread.CurrentCulture;
+		defaultUiCulture = Thread.CurrentThread.CurrentUICulture;
+
+		DispatcherProvider.SetCurrent(new MockDispatcherProvider());
+	}
+
+	~BaseTest() => Dispose(false);
 
 	protected enum TestDuration
 	{
@@ -27,24 +37,6 @@ public abstract class BaseTest : IDisposable, IAsyncDisposable
 #endif
 	}
 
-	protected BaseTest()
-	{
-		defaultCulture = Thread.CurrentThread.CurrentCulture;
-		defaultUiCulture = Thread.CurrentThread.CurrentUICulture;
-
-		DeviceDisplay.SetCurrent(null);
-		DeviceInfo.SetCurrent(null);
-		AppInfo.SetCurrent(mockAppInfo = new()
-		{
-			RequestedTheme = initialAppTheme
-		});
-
-		DispatcherProvider.SetCurrent(new MockDispatcherProvider());
-		DeviceDisplay.SetCurrent(null);
-	}
-
-	~BaseTest() => Dispose(false);
-
 	public async ValueTask DisposeAsync()
 	{
 		await DisposeAsyncCore().ConfigureAwait(false);
@@ -57,41 +49,6 @@ public abstract class BaseTest : IDisposable, IAsyncDisposable
 	{
 		Dispose(true);
 		GC.SuppressFinalize(this);
-	}
-
-	protected virtual ValueTask DisposeAsyncCore()
-	{
-		return ValueTask.CompletedTask;
-	}
-
-	protected virtual void Dispose(bool isDisposing)
-	{
-		if (isDisposed)
-		{
-			return;
-		}
-
-		Thread.CurrentThread.CurrentCulture = defaultCulture;
-		Thread.CurrentThread.CurrentUICulture = defaultUiCulture;
-
-		DeviceDisplay.SetCurrent(null);
-		DispatcherProvider.SetCurrent(null);
-
-		// Restore default options
-		var options = new Options();
-		options.SetShouldUseStatusBarBehaviorOnAndroidModalPage(true);
-		options.SetShouldEnableSnackbarOnWindows(false);
-		options.SetShouldSuppressExceptionsInAnimations(false);
-		options.SetShouldSuppressExceptionsInBehaviors(false);
-		options.SetShouldSuppressExceptionsInConverters(false);
-		options.SetPopupDefaults(new DefaultPopupSettings());
-		options.SetPopupOptionsDefaults(new DefaultPopupOptionsSettings());
-
-		// Restore default MediaElementOptions
-		var mediaElementOptions = new MediaElementOptions();
-		mediaElementOptions.SetDefaultAndroidViewType(AndroidViewType.SurfaceView);
-		mediaElementOptions.SetIsAndroidForegroundServiceEnabled(false);
-		isDisposed = true;
 	}
 
 	protected static Task<Stream> GetStreamFromImageSource(StreamImageSource imageSource, CancellationToken token)
@@ -118,5 +75,39 @@ public abstract class BaseTest : IDisposable, IAsyncDisposable
 		}
 
 		return true;
+	}
+
+	protected virtual ValueTask DisposeAsyncCore()
+	{
+		return ValueTask.CompletedTask;
+	}
+
+	protected virtual void Dispose(bool isDisposing)
+	{
+		if (isDisposed)
+		{
+			return;
+		}
+
+		Thread.CurrentThread.CurrentCulture = defaultCulture;
+		Thread.CurrentThread.CurrentUICulture = defaultUiCulture;
+
+		DispatcherProvider.SetCurrent(null);
+
+		// Restore default options
+		var options = new Options();
+		options.SetShouldUseStatusBarBehaviorOnAndroidModalPage(true);
+		options.SetShouldEnableSnackbarOnWindows(false);
+		options.SetShouldSuppressExceptionsInAnimations(false);
+		options.SetShouldSuppressExceptionsInBehaviors(false);
+		options.SetShouldSuppressExceptionsInConverters(false);
+		options.SetPopupDefaults(new DefaultPopupSettings());
+		options.SetPopupOptionsDefaults(new DefaultPopupOptionsSettings());
+
+		// Restore default MediaElementOptions
+		var mediaElementOptions = new MediaElementOptions();
+		mediaElementOptions.SetDefaultAndroidViewType(AndroidViewType.SurfaceView);
+		mediaElementOptions.SetIsAndroidForegroundServiceEnabled(false);
+		isDisposed = true;
 	}
 }

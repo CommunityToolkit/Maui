@@ -10,9 +10,9 @@ namespace CommunityToolkit.Maui.Core.Layouts;
 /// </remarks>
 public class UniformItemsLayoutManager(IUniformItemsLayout uniformItemsLayout) : LayoutManager(uniformItemsLayout)
 {
-	double childWidth, childHeight;
-
 	readonly IUniformItemsLayout uniformItemsLayout = uniformItemsLayout;
+
+	double childWidth, childHeight;
 
 	/// <summary>
 	/// Arrange children

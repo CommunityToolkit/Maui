@@ -40,6 +40,8 @@ public abstract partial class BaseGalleryPage<TViewModel> : BasePage<TViewModel>
 		enum Row { TopPadding, Content, BottomPadding }
 		enum Column { LeftPadding, Content, RightPadding }
 
+		enum CardRow { Title, Description }
+
 		static Grid CreateDataTemplate(IDeviceInfo deviceInfo) => new()
 		{
 			RowDefinitions = Rows.Define(
@@ -97,7 +99,5 @@ public abstract partial class BaseGalleryPage<TViewModel> : BasePage<TViewModel>
 				};
 			}
 		}
-
-		enum CardRow { Title, Description }
 	}
 }

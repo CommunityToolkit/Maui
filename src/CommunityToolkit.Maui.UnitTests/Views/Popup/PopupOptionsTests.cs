@@ -172,6 +172,42 @@ public class PopupOptionsTests : BaseTest
 		Assert.Equal(horizontalOptions, options.HorizontalOptions);
 	}
 
+	[Fact]
+	public void Empty_ShouldReturnSameInstance_AndExposeDefaultValues()
+	{
+		// Arrange
+		var emptyA = PopupOptions.Empty;
+		var emptyB = PopupOptions.Empty;
+
+		// Assert
+		Assert.Same(emptyA, emptyB);
+		Assert.True(emptyA.CanBeDismissedByTappingOutsideOfPopup);
+		Assert.Equal(Colors.Black.WithAlpha(0.3f), emptyA.PageOverlayColor);
+		Assert.Null(emptyA.OnTappingOutsideOfPopup);
+		Assert.Equal(Colors.LightGray, ((RoundRectangle?)emptyA.Shape)?.Stroke);
+	}
+
+	[Fact]
+	public void PopupOptions_ShouldImplementIPopupOptionsContract()
+	{
+		// Arrange
+		IPopupOptions options = new PopupOptions
+		{
+			CanBeDismissedByTappingOutsideOfPopup = false,
+			PageOverlayColor = Colors.Purple,
+			OnTappingOutsideOfPopup = null,
+			Shape = null,
+			Shadow = null
+		};
+
+		// Assert
+		Assert.False(options.CanBeDismissedByTappingOutsideOfPopup);
+		Assert.Equal(Colors.Purple, options.PageOverlayColor);
+		Assert.Null(options.OnTappingOutsideOfPopup);
+		Assert.Null(options.Shape);
+		Assert.Null(options.Shadow);
+	}
+
 	sealed class MockPopupOptions : IPopupOptions
 	{
 		public bool CanBeDismissedByTappingOutsideOfPopup { get; set; }

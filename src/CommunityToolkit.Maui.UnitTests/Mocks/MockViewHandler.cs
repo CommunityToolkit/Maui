@@ -12,10 +12,11 @@ public class MockAvatarViewHandler(IPropertyMapper mapper) : ViewHandler<IAvatar
 
 	}
 
-	protected override AvatarView CreatePlatformView() => avatarView;
-
 	public new AvatarView PlatformView => avatarView;
 	public new AvatarView VirtualView => (AvatarView)base.VirtualView;
+
+	object IBorderHandler.PlatformView => PlatformView;
+	IBorderView IBorderHandler.VirtualView => base.VirtualView;
 
 	public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 	{
@@ -25,6 +26,5 @@ public class MockAvatarViewHandler(IPropertyMapper mapper) : ViewHandler<IAvatar
 		return new Size(width, height);
 	}
 
-	object IBorderHandler.PlatformView => PlatformView;
-	IBorderView IBorderHandler.VirtualView => base.VirtualView;
+	protected override AvatarView CreatePlatformView() => avatarView;
 }

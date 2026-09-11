@@ -108,6 +108,12 @@ sealed partial class CameraManager(
 	public partial void UpdateFlashMode(CameraFlashMode flashMode);
 
 	/// <summary>
+	/// Updates if the torch of the camera is on.
+	/// </summary>
+	/// <param name="isTorchOn">The new <see cref="bool"/> value to set.</param>
+	public partial void UpdateIsTorchOn(bool isTorchOn);
+
+	/// <summary>
 	/// Updates the zoom level of the camera.
 	/// </summary>
 	/// <param name="zoomLevel">The new zoom level to set.</param>
@@ -122,7 +128,7 @@ sealed partial class CameraManager(
 	public partial ValueTask UpdateCaptureResolution(Size resolution, CancellationToken token);
 
 	/// <summary>
-	/// Performs the capturing of a picture at the platform-specific level. 
+	/// Performs the capturing of a picture at the platform-specific level.
 	/// </summary>
 	/// <param name="token">A <see cref="CancellationToken"/> that can be used to cancel the work.</param>
 	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>

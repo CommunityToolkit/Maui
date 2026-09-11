@@ -1,3 +1,8 @@
+---
+description: 'Preventing memory leaks in .NET MAUI: avoiding circular references on iOS/Mac Catalyst, event unsubscription, and proper handler disconnection'
+applyTo: '**/*.cs'
+---
+
 ## Memory Leaks
 
 ### Avoid circular references on iOS and Catalyst

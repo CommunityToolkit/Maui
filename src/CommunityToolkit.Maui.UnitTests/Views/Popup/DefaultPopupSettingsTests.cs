@@ -8,6 +8,44 @@ namespace CommunityToolkit.Maui.UnitTests.Views;
 public class DefaultPopupSettingsTests : BaseViewTest
 {
 	[Fact]
+	public void DefaultPopupSettings_DefaultConstructor_UsesExpectedDefaults()
+	{
+		// Arrange
+		var settings = new DefaultPopupSettings();
+
+		// Assert
+		Assert.True(settings.CanBeDismissedByTappingOutsideOfPopup);
+		Assert.Equal(new Thickness(30), settings.Margin);
+		Assert.Equal(new Thickness(15), settings.Padding);
+		Assert.Equal(LayoutOptions.Center, settings.HorizontalOptions);
+		Assert.Equal(LayoutOptions.Center, settings.VerticalOptions);
+		Assert.Equal(Colors.White, settings.BackgroundColor);
+	}
+
+	[Fact]
+	public void DefaultPopupSettings_WithOverrides_UsesProvidedValues()
+	{
+		// Arrange
+		var settings = new DefaultPopupSettings
+		{
+			CanBeDismissedByTappingOutsideOfPopup = false,
+			BackgroundColor = Colors.Orange,
+			HorizontalOptions = LayoutOptions.End,
+			VerticalOptions = LayoutOptions.Start,
+			Margin = 72,
+			Padding = 4
+		};
+
+		// Assert
+		Assert.False(settings.CanBeDismissedByTappingOutsideOfPopup);
+		Assert.Equal(Colors.Orange, settings.BackgroundColor);
+		Assert.Equal(LayoutOptions.End, settings.HorizontalOptions);
+		Assert.Equal(LayoutOptions.Start, settings.VerticalOptions);
+		Assert.Equal(new Thickness(72), settings.Margin);
+		Assert.Equal(new Thickness(4), settings.Padding);
+	}
+
+	[Fact]
 	public void Popup_SetPopupDefaultsNotCalled_UsesPopupDefaults()
 	{
 		// Arrange
@@ -56,7 +94,7 @@ public class DefaultPopupSettingsTests : BaseViewTest
 	public void View_SetPopupDefaultsNotCalled_UsesPopupDefaults()
 	{
 		// Arrange
-		var popupPage = new PopupPage(new View(), PopupOptions.Empty);
+		var popupPage = new PopupPage(new MockView(), PopupOptions.Empty);
 		var popupBorder = popupPage.Content.PopupBorder;
 		var popup = (Popup)(popupBorder.Content ?? throw new InvalidOperationException("Popup cannot be null"));
 
@@ -86,7 +124,7 @@ public class DefaultPopupSettingsTests : BaseViewTest
 		var builder = MauiApp.CreateBuilder();
 		builder.UseMauiCommunityToolkit(options => { options.SetPopupDefaults(defaultPopupSettings); });
 
-		var popupPage = new PopupPage(new View(), PopupOptions.Empty);
+		var popupPage = new PopupPage(new MockView(), PopupOptions.Empty);
 		var popupBorder = popupPage.Content.PopupBorder;
 		var popup = (Popup)(popupBorder.Content ?? throw new InvalidOperationException("Popup cannot be null"));
 
@@ -123,6 +161,7 @@ public class DefaultPopupSettingsTests : BaseViewTest
 
 		// Act
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+		TestContext.Current.CancellationToken.ThrowIfCancellationRequested();
 		popupService.ShowPopup<CustomButton>(page.Navigation);
 
 		if (Application.Current.Windows[0].Page is not Shell { CurrentPage: PopupPage popupPage })
@@ -172,6 +211,7 @@ public class DefaultPopupSettingsTests : BaseViewTest
 
 		// Act
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+		TestContext.Current.CancellationToken.ThrowIfCancellationRequested();
 		popupService.ShowPopup<MockPopup>(page.Navigation);
 
 		if (Application.Current.Windows[0].Page is not Shell { CurrentPage: PopupPage popupPage })

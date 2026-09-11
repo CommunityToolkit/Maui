@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.Platform;
-using Tizen.NUI;
+﻿using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
 using NLinearLayout = Tizen.NUI.LinearLayout;
 using NVerticalAlignment = Tizen.NUI.VerticalAlignment;
@@ -114,7 +113,8 @@ public partial class Snackbar
 
 		if (Anchor is not null)
 		{
-			var anchorPlatformView = (Tizen.NUI.BaseComponents.View)Anchor.ToPlatform();
+			var anchorPlatformView = Anchor.Handler?.PlatformView as NView
+				?? throw new InvalidOperationException($"{nameof(Anchor)} must be connected to a handler before showing a snackbar.");
 
 			// can't measure height of content on NUI
 			var maximumHeight = (float)(100 * DeviceInfo.ScalingFactor);

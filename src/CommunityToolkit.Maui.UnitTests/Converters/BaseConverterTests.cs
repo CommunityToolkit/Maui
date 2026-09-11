@@ -11,6 +11,11 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 /// </summary>
 public abstract class BaseConverterTests
 {
+	protected BaseConverterTests(bool suppressExceptions)
+	{
+		new Options().SetShouldSuppressExceptionsInConverters(suppressExceptions);
+	}
+
 	[Theory]
 	[InlineData(4.123, typeof(double))]
 	[InlineData(4, typeof(int))]
@@ -54,11 +59,6 @@ public abstract class BaseConverterTests
 		DefaultConvertReturnValue = "Three",
 		DefaultConvertBackReturnValue = 42
 	};
-
-	protected BaseConverterTests(bool suppressExceptions)
-	{
-		new Options().SetShouldSuppressExceptionsInConverters(suppressExceptions);
-	}
 }
 
 /// <summary>

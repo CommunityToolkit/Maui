@@ -6,6 +6,13 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class EnumToIntConverterTests : BaseConverterTest<EnumToIntConverter>
 {
+	public enum TestEnum
+	{
+		None = 0,
+		One = 1,
+		FortyTwo = 42,
+	}
+
 	[Theory]
 	[InlineData(int.MinValue)]
 	[InlineData(-1)]
@@ -89,12 +96,5 @@ public class EnumToIntConverterTests : BaseConverterTest<EnumToIntConverter>
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new EnumToIntConverter()).ConvertBack(null, typeof(TestEnum), null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new EnumToIntConverter()).ConvertBack(1, typeof(TestEnum), null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-	}
-
-	public enum TestEnum
-	{
-		None = 0,
-		One = 1,
-		FortyTwo = 42,
 	}
 }

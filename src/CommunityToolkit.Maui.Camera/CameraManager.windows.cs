@@ -56,6 +56,23 @@ partial class CameraManager
 
 	}
 
+	public partial void UpdateIsTorchOn(bool isTorchOn)
+	{
+		if (!isInitialized ||
+			mediaCapture is null ||
+			!(mediaCapture.VideoDeviceController?.TorchControl?.Supported ?? false))
+		{
+			return;
+		}
+
+		bool isCurrentlyOn = mediaCapture.VideoDeviceController.TorchControl.Enabled;
+
+		if (isTorchOn != isCurrentlyOn)
+		{
+			mediaCapture.VideoDeviceController.TorchControl.Enabled = isTorchOn;
+		}
+	}
+
 	public partial void UpdateZoom(float zoomLevel)
 	{
 		if (!isInitialized || mediaCapture is null || !mediaCapture.VideoDeviceController.ZoomControl.Supported)

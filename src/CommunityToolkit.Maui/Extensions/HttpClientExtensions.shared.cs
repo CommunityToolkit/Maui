@@ -15,14 +15,80 @@ static partial class HttpClientExtensions
 		ArgumentNullException.ThrowIfNull(client);
 		ArgumentNullException.ThrowIfNull(uri);
 
+		HttpResponseMessage? response = null;
 		try
 		{
-			return await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
+			response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+			if (!response.IsSuccessStatusCode)
+			{
+				Trace.WriteLine($"Could not retrieve {uri}, status code {response.StatusCode}");
+				return Stream.Null;
+			}
+
+			var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+			var responseStream = new ResponseStream(contentStream, response);
+			response = null;
+			return responseStream;
 		}
 		catch (Exception ex)
 		{
 			Trace.WriteLine($"Error getting stream for {uri}: {ex}");
 			return Stream.Null;
+		}
+		finally
+		{
+			response?.Dispose();
+		}
+	}
+
+	// Keep the response alive for the lifetime of the returned content stream, then dispose both together.
+	sealed partial class ResponseStream(Stream innerStream, IDisposable response) : Stream
+	{
+		public override bool CanRead => innerStream.CanRead;
+
+		public override bool CanSeek => innerStream.CanSeek;
+
+		public override bool CanWrite => innerStream.CanWrite;
+
+		public override long Length => innerStream.Length;
+
+		public override long Position
+		{
+			get => innerStream.Position;
+			set => innerStream.Position = value;
+		}
+
+		public override void Flush() => innerStream.Flush();
+
+		public override Task FlushAsync(CancellationToken cancellationToken) => innerStream.FlushAsync(cancellationToken);
+
+		public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken) => innerStream.CopyToAsync(destination, bufferSize, cancellationToken);
+
+		public override int Read(byte[] buffer, int offset, int count) => innerStream.Read(buffer, offset, count);
+
+		public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) => innerStream.ReadAsync(buffer, offset, count, cancellationToken);
+
+		public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) => innerStream.ReadAsync(buffer, cancellationToken);
+
+		public override long Seek(long offset, SeekOrigin origin) => innerStream.Seek(offset, origin);
+
+		public override void SetLength(long value) => innerStream.SetLength(value);
+
+		public override void Write(byte[] buffer, int offset, int count) => innerStream.Write(buffer, offset, count);
+
+		public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) => innerStream.WriteAsync(buffer, offset, count, cancellationToken);
+
+		public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default) => innerStream.WriteAsync(buffer, cancellationToken);
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				innerStream.Dispose();
+				response.Dispose();
+			}
+
+			base.Dispose(disposing);
 		}
 	}
 }

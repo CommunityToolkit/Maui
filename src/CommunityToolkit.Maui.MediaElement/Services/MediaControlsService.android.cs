@@ -152,6 +152,19 @@ sealed partial class MediaControlsService : Service
 		notificationMnaManager.CreateNotificationChannel(channel);
 	}
 
+	static PendingIntent CreateActivityPendingIntent()
+	{
+		var packageName = Platform.AppContext.PackageName ?? throw new InvalidOperationException("PackageName cannot be null");
+		var packageManager = Platform.AppContext.PackageManager ?? throw new InvalidOperationException("PackageManager cannot be null");
+		var launchIntent = packageManager.GetLaunchIntentForPackage(packageName) ?? throw new InvalidOperationException("Launch intent cannot be null");
+
+		launchIntent.SetFlags(ActivityFlags.ClearTop | ActivityFlags.SingleTop);
+
+		var flags = PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable;
+		return PendingIntent.GetActivity(Platform.AppContext, 0, launchIntent, flags)
+			   ?? throw new InvalidOperationException("PendingIntent cannot be null");
+	}
+
 	[MemberNotNull(nameof(notificationBuilder), nameof(NotificationManager))]
 	void StartForegroundServices()
 	{
@@ -177,18 +190,5 @@ sealed partial class MediaControlsService : Service
 		{
 			StartForeground(1, notificationBuilder.Build());
 		}
-	}
-
-	static PendingIntent CreateActivityPendingIntent()
-	{
-		var packageName = Platform.AppContext.PackageName ?? throw new InvalidOperationException("PackageName cannot be null");
-		var packageManager = Platform.AppContext.PackageManager ?? throw new InvalidOperationException("PackageManager cannot be null");
-		var launchIntent = packageManager.GetLaunchIntentForPackage(packageName) ?? throw new InvalidOperationException("Launch intent cannot be null");
-
-		launchIntent.SetFlags(ActivityFlags.ClearTop | ActivityFlags.SingleTop);
-
-		var flags = PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable;
-		return PendingIntent.GetActivity(Platform.AppContext, 0, launchIntent, flags)
-			   ?? throw new InvalidOperationException("PendingIntent cannot be null");
 	}
 }

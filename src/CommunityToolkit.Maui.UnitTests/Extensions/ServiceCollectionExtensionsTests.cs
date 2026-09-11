@@ -478,7 +478,7 @@ public class ServiceCollectionExtensionsTests : BaseTest
 
 	protected override void Dispose(bool isDisposing)
 	{
-		Routing.Clear();
+		Routing.UnRegisterRoute(customRoute);
 		base.Dispose(isDisposing);
 	}
 

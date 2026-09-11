@@ -16,10 +16,9 @@ public class ParentWindowTests : BaseViewTest
 		{
 			Page = new ContentPage()
 		};
-		Application.Current.AddWindow(window);
+		Application.Current.OpenWindow(window);
 
 		ParentWindow.Exists.Should().BeFalse();
-		Application.Current.RemoveWindow(window);
 	}
 
 	[Fact]
@@ -30,10 +29,9 @@ public class ParentWindowTests : BaseViewTest
 		var mockWindow = new Window();
 		var mockPage = new ContentPage();
 		mockWindow.Page = mockPage;
-		Application.Current.AddWindow(mockWindow);
+		Application.Current.OpenWindow(mockWindow);
 
 		ParentWindow.Exists.Should().BeFalse();
-		Application.Current.RemoveWindow(mockWindow);
 	}
 
 	[Fact]
@@ -44,13 +42,12 @@ public class ParentWindowTests : BaseViewTest
 		var mockWindow = new Window();
 		var mockPage = new ContentPage();
 		mockWindow.Page = mockPage;
-		Application.Current.AddWindow(mockWindow);
+		Application.Current.OpenWindow(mockWindow);
 
 		// Simulate a scenario where the handler is set but the platform view is null
 		mockWindow.Handler = new MockWindowHandler();
 
 		ParentWindow.Exists.Should().BeFalse();
-		Application.Current.RemoveWindow(mockWindow);
 	}
 
 	[Fact]
@@ -61,12 +58,11 @@ public class ParentWindowTests : BaseViewTest
 		var mockWindow = new Window();
 		var mockPage = new ContentPage();
 		mockWindow.Page = mockPage;
-		Application.Current.AddWindow(mockWindow);
+		Application.Current.OpenWindow(mockWindow);
 
 		// Simulate a scenario where all conditions are met
 		mockWindow.Handler = new MockWindowHandler { PlatformView = new object() };
 
 		ParentWindow.Exists.Should().BeTrue();
-		Application.Current.RemoveWindow(mockWindow);
 	}
 }

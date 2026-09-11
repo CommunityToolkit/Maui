@@ -1,4 +1,9 @@
+#if NET11_0_OR_GREATER
 using Microsoft.Windows.Storage.Pickers;
+#else
+using System.Diagnostics;
+using Windows.Storage.Pickers;
+#endif
 
 namespace CommunityToolkit.Maui.Storage;
 
@@ -9,6 +14,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 
 	async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
 	{
+#if NET11_0_OR_GREATER
 		if (IPlatformApplication.Current?.Application.Windows[0].Handler?.PlatformView is not MauiWinUIWindow window)
 		{
 			throw new FileSaveException(
@@ -21,6 +27,22 @@ public sealed partial class FileSaverImplementation : IFileSaver
 			SuggestedFolder = initialPath,
 			SuggestedFileName = Path.GetFileNameWithoutExtension(fileName)
 		};
+#else
+		var savePicker = new FileSavePicker
+		{
+			SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+			SuggestedFileName = Path.GetFileNameWithoutExtension(fileName)
+		};
+
+		var hwnd = Process.GetCurrentProcess().MainWindowHandle;
+		if (hwnd == IntPtr.Zero)
+		{
+			throw new FileSaveException(
+				"Cannot present file picker: No active window found. Ensure the app is active with a visible window.");
+		}
+
+		WinRT.Interop.InitializeWithWindow.Initialize(savePicker, hwnd);
+#endif
 
 		var extension = Path.GetExtension(fileName);
 		if (!string.IsNullOrEmpty(extension))

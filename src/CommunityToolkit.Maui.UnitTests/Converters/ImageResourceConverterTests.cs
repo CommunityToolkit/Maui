@@ -52,7 +52,7 @@ public class ImageResourceConverterTests : BaseOneWayConverterTest<ImageResource
 	public async Task ImageResourceConverter_CancellationTokenCancelled()
 	{
 		const string resourceToLoad = "CommunityToolkit.Maui.UnitTests.Resources.dotnet-bot.png";
-		var cts = new CancellationTokenSource();
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		var imageResourceConverter = new ImageResourceConverter();
 

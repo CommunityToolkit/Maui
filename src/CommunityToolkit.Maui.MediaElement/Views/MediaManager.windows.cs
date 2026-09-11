@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Numerics;
+using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
@@ -26,11 +27,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 partial class MediaManager : IDisposable
 {
-	Metadata? metadata;
-	SystemMediaTransportControls? systemMediaControls;
-	HttpClient? headerHttpClient;
-	AdaptiveMediaSource? adaptiveMediaSource;
-
 	// States that allow changing position
 	readonly IReadOnlyList<MediaElementState> allowUpdatePositionStates =
 	[
@@ -38,6 +34,11 @@ partial class MediaManager : IDisposable
 		MediaElementState.Paused,
 		MediaElementState.Stopped,
 	];
+
+	Metadata? metadata;
+	SystemMediaTransportControls? systemMediaControls;
+	HttpClient? headerHttpClient;
+	AdaptiveMediaSource? adaptiveMediaSource;
 
 	// The requests to keep display active are cumulative, this bool makes sure it only gets requested once
 	bool displayActiveRequested;
@@ -335,6 +336,78 @@ partial class MediaManager : IDisposable
 				Player.MediaPlayer.SetUriSource(new Uri(path));
 			}
 		}
+		else if (MediaElement.Source is StreamMediaSource streamMediaSource)
+		{
+			if (streamMediaSource.Stream is not null)
+			{
+				var randomAccessStream = streamMediaSource.Stream.AsRandomAccessStream();
+				Player.Source = WinMediaSource.CreateFromStream(randomAccessStream, streamMediaSource.Stream.GetMimeType());
+			}
+		}
+	}
+
+	protected virtual partial void PlatformUpdateShouldLoopPlayback()
+	{
+		if (Player is null)
+		{
+			return;
+		}
+
+		Player.MediaPlayer.IsLoopingEnabled = MediaElement.ShouldLoopPlayback;
+	}
+
+	/// <summary>
+	/// Releases the unmanaged resources used by the <see cref="MediaManager"/> and optionally releases the managed resources.
+	/// </summary>
+	/// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
+	protected virtual void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			adaptiveMediaSource?.DownloadRequested -= OnAdaptiveMediaSourceDownloadRequested;
+			adaptiveMediaSource = null;
+
+			headerHttpClient?.Dispose();
+			headerHttpClient = null;
+
+			if (Player?.MediaPlayer is not null)
+			{
+				if (displayActiveRequested)
+				{
+					DisplayRequest.RequestRelease();
+					displayActiveRequested = false;
+				}
+
+				Player.MediaPlayer.MediaOpened -= OnMediaElementMediaOpened;
+				Player.MediaPlayer.MediaFailed -= OnMediaElementMediaFailed;
+				Player.MediaPlayer.MediaEnded -= OnMediaElementMediaEnded;
+				Player.MediaPlayer.VolumeChanged -= OnMediaElementVolumeChanged;
+				Player.MediaPlayer.IsMutedChanged -= OnMediaElementIsMutedChanged;
+
+				if (Player.MediaPlayer.PlaybackSession is not null)
+				{
+					Player.MediaPlayer.PlaybackSession.NaturalVideoSizeChanged -= OnNaturalVideoSizeChanged;
+					Player.MediaPlayer.PlaybackSession.PlaybackRateChanged -= OnPlaybackSessionPlaybackRateChanged;
+					Player.MediaPlayer.PlaybackSession.PlaybackStateChanged -= OnPlaybackSessionPlaybackStateChanged;
+					Player.MediaPlayer.PlaybackSession.SeekCompleted -= OnPlaybackSessionSeekCompleted;
+				}
+			}
+		}
+	}
+
+	static string GetFullAppPackageFilePath(in string filename)
+	{
+		ArgumentNullException.ThrowIfNull(filename);
+
+		var normalizedFilename = NormalizePath(filename);
+		return Path.Combine(AppPackageService.FullAppPackageFilePath, normalizedFilename);
+
+		static string NormalizePath(string filename) => filename.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
+	}
+
+	static bool IsZero<TValue>(TValue numericValue) where TValue : INumber<TValue>
+	{
+		return TValue.IsZero(numericValue);
 	}
 
 	async Task SetUriSourceWithHeaders(Uri uri, IDictionary<string, string> headers)
@@ -403,70 +476,6 @@ partial class MediaManager : IDisposable
 		{
 			deferral.Complete();
 		}
-	}
-
-	protected virtual partial void PlatformUpdateShouldLoopPlayback()
-	{
-		if (Player is null)
-		{
-			return;
-		}
-
-		Player.MediaPlayer.IsLoopingEnabled = MediaElement.ShouldLoopPlayback;
-	}
-
-	/// <summary>
-	/// Releases the unmanaged resources used by the <see cref="MediaManager"/> and optionally releases the managed resources.
-	/// </summary>
-	/// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
-	protected virtual void Dispose(bool disposing)
-	{
-		if (disposing)
-		{
-			adaptiveMediaSource?.DownloadRequested -= OnAdaptiveMediaSourceDownloadRequested;
-			adaptiveMediaSource = null;
-
-			headerHttpClient?.Dispose();
-			headerHttpClient = null;
-
-			if (Player?.MediaPlayer is not null)
-			{
-				if (displayActiveRequested)
-				{
-					DisplayRequest.RequestRelease();
-					displayActiveRequested = false;
-				}
-
-				Player.MediaPlayer.MediaOpened -= OnMediaElementMediaOpened;
-				Player.MediaPlayer.MediaFailed -= OnMediaElementMediaFailed;
-				Player.MediaPlayer.MediaEnded -= OnMediaElementMediaEnded;
-				Player.MediaPlayer.VolumeChanged -= OnMediaElementVolumeChanged;
-				Player.MediaPlayer.IsMutedChanged -= OnMediaElementIsMutedChanged;
-
-				if (Player.MediaPlayer.PlaybackSession is not null)
-				{
-					Player.MediaPlayer.PlaybackSession.NaturalVideoSizeChanged -= OnNaturalVideoSizeChanged;
-					Player.MediaPlayer.PlaybackSession.PlaybackRateChanged -= OnPlaybackSessionPlaybackRateChanged;
-					Player.MediaPlayer.PlaybackSession.PlaybackStateChanged -= OnPlaybackSessionPlaybackStateChanged;
-					Player.MediaPlayer.PlaybackSession.SeekCompleted -= OnPlaybackSessionSeekCompleted;
-				}
-			}
-		}
-	}
-
-	static string GetFullAppPackageFilePath(in string filename)
-	{
-		ArgumentNullException.ThrowIfNull(filename);
-
-		var normalizedFilename = NormalizePath(filename);
-		return Path.Combine(AppPackageService.FullAppPackageFilePath, normalizedFilename);
-
-		static string NormalizePath(string filename) => filename.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
-	}
-
-	static bool IsZero<TValue>(TValue numericValue) where TValue : INumber<TValue>
-	{
-		return TValue.IsZero(numericValue);
 	}
 
 	async ValueTask UpdateMetadata()

@@ -43,7 +43,7 @@ static class AnimationExtensions
 
 			IMauiHandlersFactory IMauiContext.Handlers => throw new NotSupportedException();
 
-			public object GetService(Type serviceType)
+			public object? GetService(Type serviceType)
 			{
 				if (serviceType == typeof(IAnimationManager))
 				{
@@ -54,7 +54,7 @@ static class AnimationExtensions
 					return DispatcherProvider.GetForCurrentThread() ?? throw new NullReferenceException();
 				}
 
-				throw new NotSupportedException();
+				return null;
 			}
 		}
 

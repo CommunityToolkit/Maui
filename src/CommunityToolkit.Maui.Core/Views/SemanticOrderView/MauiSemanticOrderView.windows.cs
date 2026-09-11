@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -29,10 +30,9 @@ public partial class MauiSemanticOrderView : ContentPanel
 		var i = 1;
 		foreach (var element in VirtualView.ViewOrder)
 		{
-			if (element.Handler is IPlatformViewHandler platformViewHandler
-				&& platformViewHandler.PlatformView is not null)
+			if (element.Handler?.PlatformView is FrameworkElement platformView)
 			{
-				platformViewHandler.PlatformView.TabIndex = i++;
+				platformView.TabIndex = i++;
 			}
 		}
 	}

@@ -7,6 +7,9 @@ public partial class CollectionViewPopupViewModel(IPopupService popupService) : 
 {
 	readonly INavigation navigation = Application.Current?.Windows[0].Page?.Navigation ?? throw new InvalidOperationException("Unable to locate INavigation");
 
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ReturnButtonTappedCommand))]
+	public partial string? SelectedTitle { get; set; }
+
 	bool CanReturnButtonExecute => SelectedTitle?.Length > 0;
 
 	[RelayCommand(CanExecute = nameof(CanReturnButtonExecute))]
@@ -14,7 +17,4 @@ public partial class CollectionViewPopupViewModel(IPopupService popupService) : 
 	{
 		await popupService.ClosePopupAsync<string>(navigation, SelectedTitle ?? string.Empty, token);
 	}
-
-	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ReturnButtonTappedCommand))]
-	public partial string? SelectedTitle { get; set; }
 }

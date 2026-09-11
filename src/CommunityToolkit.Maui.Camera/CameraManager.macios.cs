@@ -29,6 +29,7 @@ partial class CameraManager
 	AVCaptureVideoOrientation videoOrientation;
 	AVCaptureMovieFileOutput? videoOutput;
 	AVCaptureDeviceRotationCoordinator? rotationCoordinator;
+	AVCaptureMovieFileOutputRecordingDelegate? videoRecordingDelegate;
 	string? videoRecordingFileName;
 	TaskCompletionSource? videoRecordingFinalizeTcs;
 	Stream? videoRecordingStream;
@@ -97,6 +98,31 @@ partial class CameraManager
 		this.flashMode = flashMode.ToPlatform();
 	}
 
+	public partial void UpdateIsTorchOn(bool isTorchOn)
+	{
+		if (!isInitialized ||
+			captureDevice is null ||
+			!captureDevice.TorchAvailable)
+		{
+			return;
+		}
+
+		bool isCurrentlyOn = captureDevice.TorchActive;
+
+		if (isCurrentlyOn != isTorchOn)
+		{
+			captureDevice.LockForConfiguration(out NSError? error);
+			if (error is not null)
+			{
+				Trace.WriteLine(error);
+				return;
+			}
+
+			captureDevice.TorchMode = isTorchOn ? AVCaptureTorchMode.On : AVCaptureTorchMode.Off;
+			captureDevice.UnlockForConfiguration();
+		}
+	}
+
 	public partial void UpdateZoom(float zoomLevel)
 	{
 		if (!isInitialized || captureDevice is null)
@@ -153,6 +179,55 @@ partial class CameraManager
 
 		captureDevice.UnlockForConfiguration();
 		return ValueTask.CompletedTask;
+	}
+
+	static AVCaptureVideoOrientation GetVideoOrientationFromAccelerometer(double x, double y)
+	{
+		// Absolute values help determine which axis is dominant
+		if (Math.Abs(y) >= Math.Abs(x))
+		{
+			return y > 0 ? AVCaptureVideoOrientation.PortraitUpsideDown : AVCaptureVideoOrientation.Portrait;
+		}
+		else
+		{
+			// x > 0 is LandscapeRight for device, which is LandscapeLeft for Video
+			return x > 0 ? AVCaptureVideoOrientation.LandscapeLeft : AVCaptureVideoOrientation.LandscapeRight;
+		}
+	}
+
+	static AVCaptureVideoOrientation GetVideoOrientation()
+	{
+		IEnumerable<UIScene> scenes = UIApplication.SharedApplication.ConnectedScenes;
+
+		UIInterfaceOrientation interfaceOrientation;
+		if (!(OperatingSystem.IsMacCatalystVersionAtLeast(26) || OperatingSystem.IsIOSVersionAtLeast(26)))
+		{
+			interfaceOrientation = scenes.FirstOrDefault() is UIWindowScene windowScene
+				? windowScene.InterfaceOrientation
+				: UIApplication.SharedApplication.StatusBarOrientation;
+		}
+		else
+		{
+			interfaceOrientation = scenes.FirstOrDefault() is UIWindowScene windowScene
+				? windowScene.EffectiveGeometry.InterfaceOrientation
+				: UIApplication.SharedApplication.StatusBarOrientation;
+		}
+
+		return interfaceOrientation switch
+		{
+			UIInterfaceOrientation.Portrait => AVCaptureVideoOrientation.Portrait,
+			UIInterfaceOrientation.PortraitUpsideDown => AVCaptureVideoOrientation.PortraitUpsideDown,
+			UIInterfaceOrientation.LandscapeRight => AVCaptureVideoOrientation.LandscapeRight,
+			UIInterfaceOrientation.LandscapeLeft => AVCaptureVideoOrientation.LandscapeLeft,
+			_ => AVCaptureVideoOrientation.Portrait
+		};
+	}
+
+	static bool MatchesResolution(AVCaptureDeviceFormat format, Size resolution)
+	{
+		var dimensions = ((CMVideoFormatDescription)format.FormatDescription).Dimensions;
+		return dimensions.Width <= resolution.Width
+			   && dimensions.Height <= resolution.Height;
 	}
 
 	private async partial Task PlatformConnectCamera(CancellationToken token)
@@ -304,7 +379,8 @@ partial class CameraManager
 		videoRecordingFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.mov");
 
 		var outputUrl = NSUrl.FromFilename(videoRecordingFileName);
-		videoOutput.StartRecordingToOutputFile(outputUrl, new AVCaptureMovieFileOutputRecordingDelegate(videoRecordingFinalizeTcs));
+		videoRecordingDelegate = new AVCaptureMovieFileOutputRecordingDelegate(videoRecordingFinalizeTcs);
+		videoOutput.StartRecordingToOutputFile(outputUrl, videoRecordingDelegate);
 	}
 
 	private async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
@@ -360,6 +436,8 @@ partial class CameraManager
 
 		videoOutput = null;
 		audioInput = null;
+		videoRecordingDelegate?.Dispose();
+		videoRecordingDelegate = null;
 
 		// Clean up temporary file
 		if (videoRecordingFileName is not null)
@@ -426,48 +504,6 @@ partial class CameraManager
 		}
 	}
 
-	static AVCaptureVideoOrientation GetVideoOrientationFromAccelerometer(double x, double y)
-	{
-		// Absolute values help determine which axis is dominant
-		if (Math.Abs(y) >= Math.Abs(x))
-		{
-			return y > 0 ? AVCaptureVideoOrientation.PortraitUpsideDown : AVCaptureVideoOrientation.Portrait;
-		}
-		else
-		{
-			// x > 0 is LandscapeRight for device, which is LandscapeLeft for Video
-			return x > 0 ? AVCaptureVideoOrientation.LandscapeLeft : AVCaptureVideoOrientation.LandscapeRight;
-		}
-	}
-
-	static AVCaptureVideoOrientation GetVideoOrientation()
-	{
-		IEnumerable<UIScene> scenes = UIApplication.SharedApplication.ConnectedScenes;
-
-		UIInterfaceOrientation interfaceOrientation;
-		if (!(OperatingSystem.IsMacCatalystVersionAtLeast(26) || OperatingSystem.IsIOSVersionAtLeast(26)))
-		{
-			interfaceOrientation = scenes.FirstOrDefault() is UIWindowScene windowScene
-				? windowScene.InterfaceOrientation
-				: UIApplication.SharedApplication.StatusBarOrientation;
-		}
-		else
-		{
-			interfaceOrientation = scenes.FirstOrDefault() is UIWindowScene windowScene
-				? windowScene.EffectiveGeometry.InterfaceOrientation
-				: UIApplication.SharedApplication.StatusBarOrientation;
-		}
-
-		return interfaceOrientation switch
-		{
-			UIInterfaceOrientation.Portrait => AVCaptureVideoOrientation.Portrait,
-			UIInterfaceOrientation.PortraitUpsideDown => AVCaptureVideoOrientation.PortraitUpsideDown,
-			UIInterfaceOrientation.LandscapeRight => AVCaptureVideoOrientation.LandscapeRight,
-			UIInterfaceOrientation.LandscapeLeft => AVCaptureVideoOrientation.LandscapeLeft,
-			_ => AVCaptureVideoOrientation.Portrait
-		};
-	}
-
 	bool TryConfigureAVCaptureConnection(in AVCaptureOutput captureOutput, [NotNullWhen(false)] out string? errorMessage)
 	{
 		errorMessage = null;
@@ -527,13 +563,6 @@ partial class CameraManager
 		}
 
 		return formats;
-	}
-
-	static bool MatchesResolution(AVCaptureDeviceFormat format, Size resolution)
-	{
-		var dimensions = ((CMVideoFormatDescription)format.FormatDescription).Dimensions;
-		return dimensions.Width <= resolution.Width
-			   && dimensions.Height <= resolution.Height;
 	}
 
 	sealed class AVCapturePhotoCaptureDelegateWrapper : AVCapturePhotoCaptureDelegate

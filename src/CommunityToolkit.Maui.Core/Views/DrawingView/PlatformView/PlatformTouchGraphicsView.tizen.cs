@@ -26,15 +26,6 @@ public class PlatformTouchGraphicsView : SkiaGraphicsView
 	}
 
 	/// <summary>
-	/// Handles the view's resize events.
-	/// </summary>
-	protected override void OnResized()
-	{
-		base.OnResized();
-		bounds = new RectF(0, 0, (float)(SizeWidth / DeviceInfo.ScalingFactor), (float)(SizeHeight / DeviceInfo.ScalingFactor));
-	}
-
-	/// <summary>
 	/// Connects this platform view to the cross-platform IGraphicsView interface.
 	/// </summary>
 	/// <param name="graphicsView"></param>
@@ -44,6 +35,15 @@ public class PlatformTouchGraphicsView : SkiaGraphicsView
 	/// Disconnects from the IGraphicsView.
 	/// </summary>
 	public void Disconnect() => graphicsView = null;
+
+	/// <summary>
+	/// Handles the view's resize events.
+	/// </summary>
+	protected override void OnResized()
+	{
+		base.OnResized();
+		bounds = new RectF(0, 0, (float)(SizeWidth / DeviceInfo.ScalingFactor), (float)(SizeHeight / DeviceInfo.ScalingFactor));
+	}
 
 	bool OnTouchEvent(object source, TouchEventArgs e)
 	{

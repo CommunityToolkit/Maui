@@ -14,6 +14,7 @@
             x:Name="Camera"
             Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Grid.RowSpan="3"
             CameraFlashMode="{Binding FlashMode}"
+            IsTorchOn="{Binding IsTorchOn, Mode=TwoWay}"
             ZoomFactor="{Binding CurrentZoom}"
             ImageCaptureResolution="{Binding SelectedResolution}"
             SelectedCamera="{Binding SelectedCamera}"/>
@@ -71,6 +72,11 @@
                     IsVisible="{Binding Path=SelectedCamera.IsFlashSupported, FallbackValue=false}"
                     ItemsSource="{Binding FlashModes}"
                     SelectedItem="{Binding FlashMode}" />
+
+                <HorizontalStackLayout>
+                    <CheckBox IsChecked="{Binding IsTorchOn, Mode=TwoWay}" />
+                    <Label Text="Torch" VerticalOptions="Center" />
+                </HorizontalStackLayout>
 
                 <Button Command="{Binding StartCameraPreviewCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}"
                         CommandParameter="{Binding Token}"

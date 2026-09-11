@@ -4,7 +4,6 @@ namespace CommunityToolkit.Maui.Primitives;
 
 sealed partial class CustomTransportControls : MediaTransportControls
 {
-	public event EventHandler<EventArgs>? OnTemplateLoaded;
 	public AppBarButton FullScreenButton = new();
 	bool isFullScreen = false;
 
@@ -12,6 +11,8 @@ sealed partial class CustomTransportControls : MediaTransportControls
 	{
 		this.DefaultStyleKey = typeof(CustomTransportControls);
 	}
+
+	public event EventHandler<EventArgs>? OnTemplateLoaded;
 
 	protected override void OnApplyTemplate()
 	{
