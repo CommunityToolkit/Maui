@@ -19,15 +19,32 @@ using Object = Java.Lang.Object;
 
 namespace CommunityToolkit.Maui.Core;
 
-public class CameraConsumer(TaskCompletionSource finalizeTcs) : Object, IConsumer
+public class CameraConsumer : Object, IConsumer
 {
-	readonly TaskCompletionSource? finalizeTcs = finalizeTcs;
+	readonly TaskCompletionSource? finalizeTcs;
+	readonly VideoRecordingState? recordingState;
+
+	public CameraConsumer(TaskCompletionSource finalizeTcs)
+	{
+		this.finalizeTcs = finalizeTcs;
+	}
+
+	internal CameraConsumer(VideoRecordingState recordingState)
+	{
+		this.recordingState = recordingState;
+	}
 
 	public void Accept(Object? videoRecordEvent)
 	{
-		if (videoRecordEvent is VideoRecordEvent.Finalize)
+		switch (videoRecordEvent)
 		{
-			finalizeTcs?.SetResult();
+			case VideoRecordEvent.Start:
+				recordingState?.OnStarted();
+				break;
+			case VideoRecordEvent.Finalize finalizeEvent:
+				recordingState?.OnFinalized(new CameraException($"Video recording finished before it started (CameraX error {finalizeEvent.Error})."));
+				finalizeTcs?.TrySetResult();
+				break;
 		}
 	}
 }
@@ -51,7 +68,7 @@ partial class CameraManager
 	ResolutionFilter? resolutionFilter;
 	OrientationListener? orientationListener;
 	Java.IO.File? videoRecordingFile;
-	TaskCompletionSource? videoRecordingFinalizeTcs;
+	VideoRecordingState? videoRecordingState;
 	Stream? videoRecordingStream;
 	int extensionMode = ExtensionMode.Auto;
 	CaptureSessionMode currentSessionMode = CaptureSessionMode.Photo;
@@ -416,6 +433,11 @@ partial class CameraManager
 
 	private async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
 	{
+		if (videoRecordingState?.Finalized.IsCompleted is true)
+		{
+			CleanupVideoRecordingResources(videoRecordingState);
+		}
+
 		if (previewView is null
 			|| processCameraProvider is null
 			|| cameraPreview is null
@@ -441,17 +463,29 @@ partial class CameraManager
 		}
 
 		videoRecordingFile = new Java.IO.File(context.CacheDir, $"{DateTime.UtcNow.Ticks}.mp4");
-		videoRecordingFile.CreateNewFile();
+		var recordingState = new VideoRecordingState();
+		videoRecordingState = recordingState;
+		bool recordingRequested = false;
 
-		var outputOptions = new FileOutputOptions.Builder(videoRecordingFile).Build();
+		try
+		{
+			videoRecordingFile.CreateNewFile();
+			var outputOptions = new FileOutputOptions.Builder(videoRecordingFile).Build();
+			var captureListener = new CameraConsumer(recordingState);
+			var executor = ContextCompat.GetMainExecutor(context) ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
+			videoRecording = videoRecorder
+				.PrepareRecording(context, outputOptions)
+				?.WithAudioEnabled()
+				.Start(executor, captureListener) ?? throw new InvalidOperationException("Unable to prepare recording");
+			recordingRequested = true;
 
-		videoRecordingFinalizeTcs = new TaskCompletionSource();
-		var captureListener = new CameraConsumer(videoRecordingFinalizeTcs);
-		var executor = ContextCompat.GetMainExecutor(context) ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
-		videoRecording = videoRecorder
-			.PrepareRecording(context, outputOptions)
-			?.WithAudioEnabled()
-			.Start(executor, captureListener) ?? throw new InvalidOperationException("Unable to prepare recording");
+			await recordingState.Started.WaitAsync(token);
+		}
+		catch
+		{
+			await CancelVideoRecordingStart(recordingState, recordingRequested, CancellationToken.None);
+			throw;
+		}
 
 		// `.PrepareRecording()` should never return null
 		// According to the Android docs, `Recorder.prepareRecording(Context, eMediaSoreOutputOptions)` returns a `NonNull` object
@@ -464,19 +498,26 @@ partial class CameraManager
 		ArgumentNullException.ThrowIfNull(cameraExecutor);
 		if (videoRecording is null
 			|| videoRecordingFile is null
-			|| videoRecordingFinalizeTcs is null
+			|| videoRecordingState is null
 			|| videoRecordingStream is null)
 		{
 			return Stream.Null;
 		}
 
+		var recordingState = videoRecordingState;
+		if (!recordingState.TryOwnStop())
+		{
+			await recordingState.Finalized.WaitAsync(token);
+			return Stream.Null;
+		}
+
 		videoRecording.Stop();
-		await videoRecordingFinalizeTcs.Task.WaitAsync(token);
+		await recordingState.Finalized.WaitAsync(token);
 
 		await using var inputStream = new FileStream(videoRecordingFile.AbsolutePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 		await inputStream.CopyToAsync(videoRecordingStream, token);
 		await videoRecordingStream.FlushAsync(token);
-		CleanupVideoRecordingResources();
+		CleanupVideoRecordingResources(recordingState);
 
 		// Rebuild the ImageCapture use case with the CaptureModeMaximizeQuality capture mode
 		// to optimize for quality during photo capture sessions
@@ -492,8 +533,40 @@ partial class CameraManager
 		return videoRecordingStream;
 	}
 
-	void CleanupVideoRecordingResources()
+	async Task CancelVideoRecordingStart(VideoRecordingState recordingState, bool recordingRequested, CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
+
+		if (!recordingState.TryOwnStop())
+		{
+			return;
+		}
+
+		try
+		{
+			if (recordingRequested)
+			{
+				videoRecording?.Stop();
+				await recordingState.Finalized.WaitAsync(token);
+			}
+		}
+		catch (System.Exception exception)
+		{
+			System.Diagnostics.Trace.WriteLine($"Unable to stop video recording after start failed: {exception}");
+		}
+		finally
+		{
+			CleanupVideoRecordingResources(recordingState);
+		}
+	}
+
+	void CleanupVideoRecordingResources(VideoRecordingState? expectedState = null)
+	{
+		if (expectedState is not null && !ReferenceEquals(expectedState, videoRecordingState))
+		{
+			return;
+		}
+
 		videoRecording?.Dispose();
 		videoRecording = null;
 
@@ -508,7 +581,7 @@ partial class CameraManager
 			videoRecordingFile = null;
 		}
 
-		videoRecordingFinalizeTcs = null;
+		videoRecordingState = null;
 	}
 
 	async Task<CameraSelector> EnableModes(CameraInfo selectedCamera, CancellationToken token)
