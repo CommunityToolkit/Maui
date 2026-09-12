@@ -37,6 +37,7 @@ public class VideoRecordingStateTests
 
 		recordingState.OnStarted();
 		recordingState.OnFinalized(new CameraException("Ignored after start."));
+		recordingState.CancelPendingTasks();
 
 		await recordingState.Started;
 		await recordingState.Finalized;
@@ -57,12 +58,15 @@ public class VideoRecordingStateTests
 	}
 
 	[Fact]
-	public void StopHasOnlyOneOwner()
+	public async Task StopLockCanBeReacquired()
 	{
 		var recordingState = new VideoRecordingState();
 
-		Assert.True(recordingState.TryOwnStop());
-		Assert.False(recordingState.TryOwnStop());
+		Assert.True(await recordingState.StopSemaphore.WaitAsync(0, TestContext.Current.CancellationToken));
+		Assert.False(await recordingState.StopSemaphore.WaitAsync(0, TestContext.Current.CancellationToken));
+		recordingState.StopSemaphore.Release();
+		Assert.True(await recordingState.StopSemaphore.WaitAsync(0, TestContext.Current.CancellationToken));
+		recordingState.StopSemaphore.Release();
 	}
 
 	[Fact]
@@ -79,5 +83,35 @@ public class VideoRecordingStateTests
 
 		await recordingState.Started;
 		await recordingState.Finalized;
+	}
+
+	[Fact]
+	public async Task DuplicateStartIsIgnoredUntilCleanup()
+	{
+		VideoRecordingState? currentState = null;
+		var recordingState = Assert.IsType<VideoRecordingState>(VideoRecordingState.TryStart(ref currentState));
+
+		Assert.Null(VideoRecordingState.TryStart(ref currentState));
+		recordingState.OnStarted();
+		Assert.Null(VideoRecordingState.TryStart(ref currentState));
+		recordingState.OnFinalized(new CameraException("Ignored after start."));
+		Assert.Null(VideoRecordingState.TryStart(ref currentState));
+		Assert.Same(recordingState, currentState);
+
+		await recordingState.Started;
+		await recordingState.Finalized;
+	}
+
+	[Fact]
+	public async Task TeardownCancelsPendingNativeWaits()
+	{
+		var recordingState = new VideoRecordingState();
+
+		recordingState.CancelPendingTasks();
+		recordingState.OnStarted();
+		recordingState.OnFinalized(new CameraException("Ignored after teardown."));
+
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => recordingState.Started);
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => recordingState.Finalized);
 	}
 }

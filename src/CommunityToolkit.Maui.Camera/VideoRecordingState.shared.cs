@@ -4,16 +4,17 @@ sealed class VideoRecordingState
 {
 	readonly TaskCompletionSource finalizedTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
 	readonly TaskCompletionSource startedTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
-	int hasStopOwner;
 
 	public Task Finalized => finalizedTcs.Task;
 
 	public Task Started => startedTcs.Task;
 
-	public void OnFinalized(Exception startException)
+	public SemaphoreSlim StopSemaphore { get; } = new(1, 1);
+
+	public static VideoRecordingState? TryStart(ref VideoRecordingState? currentState)
 	{
-		startedTcs.TrySetException(startException);
-		finalizedTcs.TrySetResult();
+		var recordingState = new VideoRecordingState();
+		return Interlocked.CompareExchange(ref currentState, recordingState, null) is null ? recordingState : null;
 	}
 
 	public void OnStarted()
@@ -21,8 +22,15 @@ sealed class VideoRecordingState
 		startedTcs.TrySetResult();
 	}
 
-	public bool TryOwnStop()
+	public void OnFinalized(Exception startException)
 	{
-		return Interlocked.CompareExchange(ref hasStopOwner, 1, 0) is 0;
+		startedTcs.TrySetException(startException);
+		finalizedTcs.TrySetResult();
+	}
+
+	public void CancelPendingTasks()
+	{
+		startedTcs.TrySetCanceled();
+		finalizedTcs.TrySetCanceled();
 	}
 }

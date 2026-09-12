@@ -433,11 +433,6 @@ partial class CameraManager
 
 	private async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
 	{
-		if (videoRecordingState?.Finalized.IsCompleted is true)
-		{
-			CleanupVideoRecordingResources(videoRecordingState);
-		}
-
 		if (previewView is null
 			|| processCameraProvider is null
 			|| cameraPreview is null
@@ -448,27 +443,33 @@ partial class CameraManager
 			return;
 		}
 
-		videoRecordingStream = stream;
-
-		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
-
-		// Rebuild the ImageCapture use case with the CaptureModeMinimizeLatency capture mode
-		// to optimize for latency during video recording sessions
-		currentSessionMode = CaptureSessionMode.Video;
-		RebuildImageCapture();
-
-		if (camera is null || !IsVideoSessionBound())
+		if (VideoRecordingState.TryStart(ref videoRecordingState) is not { } recordingState)
 		{
-			await BindVideoSessionAsync(token);
+			return;
 		}
 
-		videoRecordingFile = new Java.IO.File(context.CacheDir, $"{DateTime.UtcNow.Ticks}.mp4");
-		var recordingState = new VideoRecordingState();
-		videoRecordingState = recordingState;
 		bool recordingRequested = false;
 
 		try
 		{
+			token.ThrowIfCancellationRequested();
+			videoRecordingStream = stream;
+
+			cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
+
+			// Rebuild the ImageCapture use case with the CaptureModeMinimizeLatency capture mode
+			// to optimize for latency during video recording sessions
+			currentSessionMode = CaptureSessionMode.Video;
+			RebuildImageCapture();
+
+			if (camera is null || !IsVideoSessionBound())
+			{
+				await BindVideoSessionAsync(token);
+			}
+
+			ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
+
+			videoRecordingFile = new Java.IO.File(context.CacheDir, $"{DateTime.UtcNow.Ticks}.mp4");
 			videoRecordingFile.CreateNewFile();
 			var outputOptions = new FileOutputOptions.Builder(videoRecordingFile).Build();
 			var captureListener = new CameraConsumer(recordingState);
@@ -498,56 +499,84 @@ partial class CameraManager
 		ArgumentNullException.ThrowIfNull(cameraExecutor);
 		if (videoRecording is null
 			|| videoRecordingFile is null
-			|| videoRecordingState is null
-			|| videoRecordingStream is null)
+			|| videoRecordingStream is null
+			|| videoRecordingState is not { } recordingState)
 		{
 			return Stream.Null;
 		}
 
-		var recordingState = videoRecordingState;
-		if (!recordingState.TryOwnStop())
+		await recordingState.StopSemaphore.WaitAsync(token);
+		try
 		{
+			if (!ReferenceEquals(recordingState, videoRecordingState)
+				|| videoRecording is not { } recording
+				|| videoRecordingFile is not { } recordingFile
+				|| videoRecordingStream is not { } recordingStream)
+			{
+				return Stream.Null;
+			}
+
+			if (!recordingState.Finalized.IsCompleted)
+			{
+				recording.Stop();
+			}
+
 			await recordingState.Finalized.WaitAsync(token);
-			return Stream.Null;
+			ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
+
+			await using (var inputStream = new FileStream(recordingFile.AbsolutePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+			{
+				await inputStream.CopyToAsync(recordingStream, token);
+				await recordingStream.FlushAsync(token);
+			}
+
+			await RestorePhotoSession(recordingState, token);
+			ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
+			CleanupVideoRecordingResources(recordingState);
+
+			if (recordingStream.CanSeek)
+			{
+				recordingStream.Position = 0;
+			}
+
+			return recordingStream;
 		}
-
-		videoRecording.Stop();
-		await recordingState.Finalized.WaitAsync(token);
-
-		await using var inputStream = new FileStream(videoRecordingFile.AbsolutePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-		await inputStream.CopyToAsync(videoRecordingStream, token);
-		await videoRecordingStream.FlushAsync(token);
-		CleanupVideoRecordingResources(recordingState);
-
-		// Rebuild the ImageCapture use case with the CaptureModeMaximizeQuality capture mode
-		// to optimize for quality during photo capture sessions
-		currentSessionMode = CaptureSessionMode.Photo;
-		RebuildImageCapture();
-		await BindPhotoSessionAsync(token);
-
-		if (videoRecordingStream.CanSeek)
+		finally
 		{
-			videoRecordingStream.Position = 0;
+			recordingState.StopSemaphore.Release();
 		}
-
-		return videoRecordingStream;
 	}
 
 	async Task CancelVideoRecordingStart(VideoRecordingState recordingState, bool recordingRequested, CancellationToken token)
 	{
-		token.ThrowIfCancellationRequested();
-
-		if (!recordingState.TryOwnStop())
-		{
-			return;
-		}
-
+		await recordingState.StopSemaphore.WaitAsync(token);
 		try
 		{
+			if (!ReferenceEquals(recordingState, videoRecordingState))
+			{
+				return;
+			}
+
 			if (recordingRequested)
 			{
-				videoRecording?.Stop();
+				if (!recordingState.Finalized.IsCompleted)
+				{
+					videoRecording?.Stop();
+				}
+
 				await recordingState.Finalized.WaitAsync(token);
+			}
+
+			try
+			{
+				if (currentSessionMode is CaptureSessionMode.Video)
+				{
+					await RestorePhotoSession(recordingState, token);
+				}
+			}
+			finally
+			{
+				CleanupVideoRecordingResources(recordingState);
 			}
 		}
 		catch (System.Exception exception)
@@ -556,7 +585,7 @@ partial class CameraManager
 		}
 		finally
 		{
-			CleanupVideoRecordingResources(recordingState);
+			recordingState.StopSemaphore.Release();
 		}
 	}
 
@@ -566,6 +595,8 @@ partial class CameraManager
 		{
 			return;
 		}
+
+		videoRecordingState?.CancelPendingTasks();
 
 		videoRecording?.Dispose();
 		videoRecording = null;
@@ -582,6 +613,15 @@ partial class CameraManager
 		}
 
 		videoRecordingState = null;
+	}
+
+	async Task RestorePhotoSession(VideoRecordingState recordingState, CancellationToken token)
+	{
+		ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
+
+		currentSessionMode = CaptureSessionMode.Photo;
+		RebuildImageCapture();
+		await BindPhotoSessionAsync(token);
 	}
 
 	async Task<CameraSelector> EnableModes(CameraInfo selectedCamera, CancellationToken token)
