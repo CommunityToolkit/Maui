@@ -425,12 +425,13 @@ partial class CameraManager
 
 			await recordingState.Finalized.WaitAsync(token);
 			ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
+			token.ThrowIfCancellationRequested();
 
 			if (File.Exists(recordingFileName))
 			{
 				await using var inputStream = new FileStream(recordingFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-				await inputStream.CopyToAsync(recordingStream, token);
-				await recordingStream.FlushAsync(token);
+				await inputStream.CopyToAsync(recordingStream, CancellationToken.None);
+				await recordingStream.FlushAsync(CancellationToken.None);
 				if (recordingStream.CanSeek)
 				{
 					recordingStream.Position = 0;

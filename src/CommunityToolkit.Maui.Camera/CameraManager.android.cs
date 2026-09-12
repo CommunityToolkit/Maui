@@ -524,13 +524,16 @@ partial class CameraManager
 			await recordingState.Finalized.WaitAsync(token);
 			ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
 
+			await RestorePhotoSession(recordingState, token);
+			ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
+			token.ThrowIfCancellationRequested();
+
 			await using (var inputStream = new FileStream(recordingFile.AbsolutePath, FileMode.Open, FileAccess.Read, FileShare.Read))
 			{
-				await inputStream.CopyToAsync(recordingStream, token);
-				await recordingStream.FlushAsync(token);
+				await inputStream.CopyToAsync(recordingStream, CancellationToken.None);
+				await recordingStream.FlushAsync(CancellationToken.None);
 			}
 
-			await RestorePhotoSession(recordingState, token);
 			ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
 			CleanupVideoRecordingResources(recordingState);
 
