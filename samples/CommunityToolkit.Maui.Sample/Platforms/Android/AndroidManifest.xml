@@ -21,5 +21,11 @@
     <intent>
       <action android:name="android.intent.action.TTS_SERVICE"/>
     </intent>
+    <intent>
+      <action android:name="android.media.action.IMAGE_CAPTURE" />
+    </intent>
+    <intent>
+      <action android:name="android.media.action.VIDEO_CAPTURE"/>
+    </intent>
   </queries>
 </manifest>
