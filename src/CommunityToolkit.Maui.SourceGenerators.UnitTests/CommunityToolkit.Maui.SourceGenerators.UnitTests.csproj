@@ -19,7 +19,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="1.1.4" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" Version="1.1.4" />
-    <PackageReference Include="xunit.v3" Version="4.0.0" />
+    <PackageReference Include="xunit.v3" Version="4.0.1" />
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.11.0" />
     <PackageReference Include="Microsoft.Testing.Extensions.GitHubActionsReport" Version="2.4.1" />
     <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="2.4.0" />
