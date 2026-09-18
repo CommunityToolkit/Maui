@@ -1,0 +1,46 @@
+using BenchmarkDotNet.Attributes;
+using CommunityToolkit.Maui.Analyzers.UnitTests;
+namespace CommunityToolkit.Maui.Analyzers.Benchmarks;
+
+[MemoryDiagnoser]
+public class BindablePropertyDefaultValueCreatorAnalyzerBenchmarks
+{
+	static readonly BindablePropertyDefaultValueCreatorAnalyzerTests bindablePropertyDefaultValueCreatorAnalyzerTests = new();
+	static readonly AttachedBindablePropertyDefaultValueCreatorAnalyzerTests attachedBindablePropertyDefaultValueCreatorAnalyzerTests = new();
+
+	[Benchmark]
+	public Task BindablePropertyDefaultValueCreatorAnalyzerTests_VerifyErrorWhenDefaultValueCreatorMethodHasBlockBodyReturningStaticReadonlyField()
+	{
+		return bindablePropertyDefaultValueCreatorAnalyzerTests.VerifyErrorWhenDefaultValueCreatorMethodHasBlockBodyReturningStaticReadonlyField();
+	}
+	
+	[Benchmark]
+	public Task AttachedBindablePropertyDefaultValueCreatorAnalyzerTests_VerifyErrorWhenDefaultValueCreatorMethodHasBlockBodyReturningStaticReadonlyField()
+	{
+		return attachedBindablePropertyDefaultValueCreatorAnalyzerTests.VerifyErrorWhenDefaultValueCreatorMethodHasBlockBodyReturningStaticReadonlyField();
+	}
+	
+	[Benchmark]
+	public Task BindablePropertyDefaultValueCreatorAnalyzerTests_VerifyErrorWhenDefaultValueCreatorMethodReturnsStaticReadonlyPropertyFromDifferentClass()
+	{
+		return bindablePropertyDefaultValueCreatorAnalyzerTests.VerifyErrorWhenDefaultValueCreatorMethodReturnsStaticReadonlyPropertyFromDifferentClass();
+	}
+	
+	[Benchmark]
+	public Task AttachedBindablePropertyDefaultValueCreatorAnalyzerTests_VerifyErrorWhenDefaultValueCreatorMethodReturnsStaticReadonlyPropertyFromDifferentClass()
+	{
+		return attachedBindablePropertyDefaultValueCreatorAnalyzerTests.VerifyErrorWhenDefaultValueCreatorMethodReturnsStaticReadonlyPropertyFromDifferentClass();
+	}
+	
+	[Benchmark]
+	public Task BindablePropertyDefaultValueCreatorAnalyzerTests_VerifyNoErrorWhenDefaultValueCreatorMethodHasBlockBodyReturningNewInstance()
+	{
+		return bindablePropertyDefaultValueCreatorAnalyzerTests.VerifyNoErrorWhenDefaultValueCreatorMethodHasBlockBodyReturningNewInstance();
+	}
+	
+	[Benchmark]
+	public Task AttachedBindablePropertyDefaultValueCreatorAnalyzerTests_VerifyNoErrorWhenDefaultValueCreatorMethodHasBlockBodyReturningNewInstance()
+	{
+		return attachedBindablePropertyDefaultValueCreatorAnalyzerTests.VerifyNoErrorWhenDefaultValueCreatorMethodHasBlockBodyReturningNewInstance();
+	}
+}
