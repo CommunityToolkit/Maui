@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.OverflowingTitleViewPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <Shell.TitleView>
+        <Grid BackgroundColor="Yellow">
+            <Label HorizontalOptions="Center" Text="TITLE VIEW" />
+        </Grid>
+    </Shell.TitleView>
+
+    <Grid RowDefinitions="auto, auto, *">
+        <Label Text="Top line" />
+
+        <VerticalStackLayout
+            Grid.Row="1"
+            Padding="30,0"
+            Spacing="25">
+            <Image
+                Aspect="AspectFit"
+                HeightRequest="185"
+                SemanticProperties.Description="dot net bot in a race car number eight"
+                Source="dotnet_bot.png" />
+
+            <Label SemanticProperties.HeadingLevel="Level1" Text="Hello, World!" />
+
+            <Label
+                SemanticProperties.Description="Welcome to dot net Multi platform App U I"
+                SemanticProperties.HeadingLevel="Level2"
+                Text="Welcome to &#10;.NET Multi-platform App UI" />
+
+            <Button
+                Clicked="OnNavigateToMainPageButtonClicked"
+                HorizontalOptions="Fill"
+                SemanticProperties.Hint="Navigate to MainPage"
+                Text="Click me"
+                x:Name="CounterBtn" />
+        </VerticalStackLayout>
+
+        <Label
+            Grid.Row="2"
+            Text="Bottom"
+            VerticalOptions="End" />
+
+    </Grid>
+
+</ContentPage>
