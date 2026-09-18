@@ -20,7 +20,16 @@ partial class CameraProvider
 		foreach (var sourceGroup in videoCaptureSourceGroup)
 		{
 			using var mediaCapture = new MediaCapture();
-			await mediaCapture.InitializeCameraForCameraView(sourceGroup.Id, token);
+
+			try
+			{
+				await mediaCapture.InitializeCameraForCameraView(sourceGroup.Id, token);
+			}
+			catch (Exception)
+			{
+				// can't use that camera
+				continue;
+			}
 
 			CameraPosition position = CameraPosition.Unknown;
 			var device = deviceInfoCollection.FirstOrDefault(deviceInfo => deviceInfo.Id == sourceGroup.Id);
