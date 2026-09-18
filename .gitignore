@@ -268,3 +268,5 @@ paket-files/
 
 # Benchmarkdot
 BenchmarkDotNet.Artifacts/
+/src/CommunityToolkit.Maui.DeviceTests/test-results
+/CLAUDE.md
