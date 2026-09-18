@@ -19,6 +19,8 @@ public partial class MediaManager : IDisposable
 	// Media would still start playing when Speed was set although ShouldAutoPlay=False
 	// This field was added to overcome that.
 	bool isInitialSpeedSet;
+	
+	bool hasMediaOpened;
 
 	/// <summary>
 	/// The default <see cref="NSKeyValueObservingOptions"/> flags used in the iOS and macOS observers.
@@ -318,43 +320,20 @@ public partial class MediaManager : IDisposable
 		metaData.SetMetadata(PlayerItem, MediaElement);
 		CurrentItemErrorObserver?.Dispose();
 
+		hasMediaOpened = false;
+
 		Player.ReplaceCurrentItemWithPlayerItem(PlayerItem);
 
-		CurrentItemErrorObserver = PlayerItem?.AddObserver("error",
-			ValueObserverOptions, (NSObservedChange change) =>
-			{
-				if (Player.CurrentItem?.Error is null)
-				{
-					return;
-				}
-
-				var message = $"{Player.CurrentItem?.Error?.LocalizedDescription} - " +
-							  $"{Player.CurrentItem?.Error?.LocalizedFailureReason}";
-
-				MediaElement.MediaFailed(
-					new MediaFailedEventArgs(message));
-
-				Logger.LogError("{LogMessage}", message);
-			});
-
-		if (PlayerItem is not null && PlayerItem.Error is null)
-		{
-			MediaElement.MediaOpened();
-
-			(MediaElement.MediaWidth, MediaElement.MediaHeight) = await GetVideoDimensions(PlayerItem);
-
-			if (MediaElement.ShouldAutoPlay)
-			{
-				Player.Play();
-			}
-
-			await SetPoster();
-		}
-		else if (PlayerItem is null)
+		if (PlayerItem is null)
 		{
 			MediaElement.MediaWidth = MediaElement.MediaHeight = 0;
 
 			MediaElement.CurrentStateChanged(MediaElementState.None);
+		}
+		else
+		{
+			CurrentItemErrorObserver = PlayerItem.AddObserver("status",
+				ValueObserverOptions, PlayerItemStatusChanged);
 		}
 	}
 
@@ -365,8 +344,9 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		// First time we're getting a playback speed and should NOT auto play, do nothing.
-		if (!isInitialSpeedSet && !MediaElement.ShouldAutoPlay)
+		// First time we're getting a playback speed, defer to PlayerItemStatusChanged
+		// which calls Player?.Play() after the AVPlayerItem reaches ReadyToPlay.
+		if (!isInitialSpeedSet)
 		{
 			isInitialSpeedSet = true;
 			return;
@@ -708,6 +688,71 @@ public partial class MediaManager : IDisposable
 		PlayedToEndObserver?.Dispose();
 	}
 
+
+	async void PlayerItemStatusChanged(NSObservedChange change)
+	{
+		if (PlayerItem is null)
+		{
+			return;
+		}
+
+		switch (PlayerItem.Status)
+		{
+			case AVPlayerItemStatus.ReadyToPlay:
+
+				if (hasMediaOpened)
+				{
+					return;
+				}
+
+				hasMediaOpened = true;
+
+				var playerItem = PlayerItem;
+				if (playerItem is null)
+				{
+					return;
+				}
+
+				MediaElement.Duration = ConvertTime(playerItem.Duration);
+				MediaElement.Position = ConvertTime(playerItem.CurrentTime);
+
+				MediaElement.CurrentStateChanged(
+					Player?.Rate > 0
+						? MediaElementState.Playing
+						: MediaElementState.Paused);
+
+				(MediaElement.MediaWidth, MediaElement.MediaHeight) = await GetVideoDimensions(playerItem);
+
+				// Source may have changed while awaiting; don't apply stale results
+				if (!ReferenceEquals(PlayerItem, playerItem))
+				{
+					return;
+				}
+
+				MediaElement.MediaOpened();
+
+				if (MediaElement.ShouldAutoPlay && Player is not null)
+				{
+					Player.Play();
+					Player.Rate = (float)MediaElement.Speed;
+				}
+
+				await SetPoster();
+
+				break;
+
+			case AVPlayerItemStatus.Failed:
+				var error = PlayerItem.Error;
+				var message = error is not null
+					? $"{error.LocalizedDescription} - {error.LocalizedFailureReason}"
+					: "AVPlayerItem failed.";
+
+				MediaElement.CurrentStateChanged(MediaElementState.Failed);
+				MediaElement.MediaFailed(new MediaFailedEventArgs(message));
+				Logger.LogError("{LogMessage}", message);
+				break;
+		}
+	}
 
 	void StatusChanged(NSObservedChange obj)
 	{
