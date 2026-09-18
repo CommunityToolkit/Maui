@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using FluentAssertions;
+using System.Collections.Generic;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
@@ -144,5 +145,81 @@ public class MediaElementTests : BaseViewTest
 				Volume = -double.Epsilon
 			};
 		});
+	}
+
+	[Fact]
+	public void FullScreenChanged_RaisesEventAndUpdatesState()
+	{
+		// Arrange
+		var media = new MediaElement();
+		var captured = new List<ScreenStateChangedEventArgs>();
+
+		media.ScreenStateChanged += (_, e) => captured.Add(e);
+
+		var imedia = (IMediaElement)media;
+
+		// Pre-assert default
+		Assert.Equal(MediaElementScreenState.Default, media.ScreenState);
+
+		// Act
+		imedia.FullScreenChanged(MediaElementScreenState.FullScreen);
+
+		// Assert
+		Assert.Equal(MediaElementScreenState.FullScreen, media.ScreenState);
+		Assert.Single(captured);
+		Assert.Equal(MediaElementScreenState.Default, captured[0].PreviousState);
+		Assert.Equal(MediaElementScreenState.FullScreen, captured[0].NewState);
+	}
+
+	[Fact]
+	public void FullScreenChanged_ToggleBack_RaisesEventWithPreviousState()
+	{
+		// Arrange
+		var media = new MediaElement();
+		var captured = new List<ScreenStateChangedEventArgs>();
+
+		media.ScreenStateChanged += (_, e) => captured.Add(e);
+
+		var imedia = (IMediaElement)media;
+
+		// Set to full screen first
+		imedia.FullScreenChanged(MediaElementScreenState.FullScreen);
+		Assert.Equal(MediaElementScreenState.FullScreen, media.ScreenState);
+
+		captured.Clear();
+
+		// Act - toggle back to default
+		imedia.FullScreenChanged(MediaElementScreenState.Default);
+
+		// Assert
+		Assert.Equal(MediaElementScreenState.Default, media.ScreenState);
+		Assert.Single(captured);
+		Assert.Equal(MediaElementScreenState.FullScreen, captured[0].PreviousState);
+		Assert.Equal(MediaElementScreenState.Default, captured[0].NewState);
+	}
+
+	[Fact]
+	public void SettingBindableProperty_DoesNotChangeReadOnlyState()
+	{
+		// Arrange
+		var media = new MediaElement();
+		var captured = new List<ScreenStateChangedEventArgs>();
+
+		media.ScreenStateChanged += (_, e) => captured.Add(e);
+
+		// Act - ScreenStateProperty is read-only; attempting to set via BindableProperty may throw
+		try
+		{
+			media.SetValue(MediaElement.ScreenStateProperty, MediaElementScreenState.FullScreen);
+		}
+		catch (System.Exception ex)
+		{
+			// If the framework throws, ensure it's the expected type
+			Assert.IsType<InvalidOperationException>(ex);
+		}
+
+		// Ensure state remains unchanged and no event was raised in either case
+		Assert.Equal(MediaElementScreenState.Default, media.ScreenState);
+		Assert.Empty(captured);
 	}
 }
