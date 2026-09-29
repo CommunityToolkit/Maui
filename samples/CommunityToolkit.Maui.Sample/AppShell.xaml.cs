@@ -125,6 +125,7 @@ public partial class AppShell : Shell
 		CreateViewModelMapping<LazyViewPage, LazyViewViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<MapsPinsPage, MapsPinsViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<MediaElementPage, MediaElementViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
+		CreateViewModelMapping<MediaElementFromStreamPage, MediaElementFromStreamViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<MediaElementCarouselViewPage, MediaElementCarouselViewViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<MediaElementCollectionViewPage, MediaElementCollectionViewViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
 		CreateViewModelMapping<MediaElementMultipleWindowsPage, MediaElementMultipleWindowsViewModel, ViewsGalleryPage, ViewsGalleryViewModel>(),
@@ -149,12 +150,6 @@ public partial class AppShell : Shell
 		SetupNavigationView();
 	}
 
-	protected override void OnNavigated(ShellNavigatedEventArgs args)
-	{
-		SetupNavigationView();
-		base.OnNavigated(args);
-	}
-
 	public static string GetPageRoute<TViewModel>() where TViewModel : BaseViewModel
 	{
 		return GetPageRoute(typeof(TViewModel));
@@ -172,8 +167,13 @@ public partial class AppShell : Shell
 			throw new KeyNotFoundException($"No map for ${viewModelType} was found on navigation mappings. Please register your ViewModel in {nameof(AppShell)}.{nameof(viewModelMappings)}");
 		}
 
-		var uri = new UriBuilder("", GetPageRoute(mapping.GalleryPageType, mapping.ContentPageType));
-		return uri.Uri.OriginalString[..^1];
+		return GetPageRoute(mapping.GalleryPageType, mapping.ContentPageType);
+	}
+
+	protected override void OnNavigated(ShellNavigatedEventArgs args)
+	{
+		SetupNavigationView();
+		base.OnNavigated(args);
 	}
 
 	static string GetPageRoute(Type galleryPageType, Type contentPageType) => $"//{galleryPageType.Name}/{contentPageType.Name}";

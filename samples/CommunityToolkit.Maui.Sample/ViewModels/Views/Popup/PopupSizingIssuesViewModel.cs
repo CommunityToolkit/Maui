@@ -32,6 +32,8 @@ public partial class PopupSizingIssuesViewModel : BaseViewModel
 	[ObservableProperty]
 	public partial int Margin { get; set; } = 12;
 
+	static Label GetContentLabel(in string text) => new Label { LineBreakMode = LineBreakMode.WordWrap }.Text(text, Colors.Black).Center();
+
 	[RelayCommand]
 	async Task OnShowPopup()
 	{
@@ -78,8 +80,6 @@ public partial class PopupSizingIssuesViewModel : BaseViewModel
 
 		window.Page.ShowPopup(popup);
 	}
-
-	static Label GetContentLabel(in string text) => new Label { LineBreakMode = LineBreakMode.WordWrap }.Text(text, Colors.Black).Center();
 }
 
 public partial class ContainerModel(in string name, in ControlTemplate controlTemplate) : ObservableObject

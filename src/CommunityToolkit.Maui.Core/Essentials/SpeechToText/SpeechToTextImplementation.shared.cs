@@ -1,4 +1,3 @@
-using System.Globalization;
 using Microsoft.Maui.ApplicationModel;
 
 namespace CommunityToolkit.Maui.Media;
@@ -35,12 +34,35 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 	public async Task StartListenAsync(SpeechToTextOptions options, CancellationToken cancellationToken = default)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
+		if (CurrentState is not SpeechToTextState.Stopped)
+		{
+			return;
+		}
 
-		await InternalStartListeningAsync(options, cancellationToken).ConfigureAwait(false);
+		try
+		{
+			await InternalStartListeningAsync(options, cancellationToken).ConfigureAwait(false);
+		}
+		catch (Exception)
+		{
+			// Use `CancellationToken.None` to ensure `InternalStopListeningAsync` completes
+			// This prevents `InternalStopListeningAsync` from throwing a OperationCancelledException if `cancellationToken` has been canceled
+			await StopListenAsync(CancellationToken.None).ConfigureAwait(false);
+			throw;
+		}
 	}
 
 	/// <inheritdoc/>
 	public Task StopListenAsync(CancellationToken cancellationToken = default) => InternalStopListeningAsync(cancellationToken);
+
+#if !MACCATALYST && !IOS
+	/// <inheritdoc/>
+	public async Task<bool> RequestPermissions(CancellationToken cancellationToken = default)
+	{
+		var status = await Permissions.RequestAsync<Permissions.Microphone>().WaitAsync(cancellationToken).ConfigureAwait(false);
+		return status is PermissionStatus.Granted;
+	}
+#endif
 
 	void OnRecognitionResultUpdated(string recognitionResult)
 	{
@@ -56,13 +78,4 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 	{
 		speechToTextStateChangedWeakEventManager.HandleEvent(this, new SpeechToTextStateChangedEventArgs(speechToTextState), nameof(StateChanged));
 	}
-
-#if !MACCATALYST && !IOS
-	/// <inheritdoc/>
-	public async Task<bool> RequestPermissions(CancellationToken cancellationToken = default)
-	{
-		var status = await Permissions.RequestAsync<Permissions.Microphone>().WaitAsync(cancellationToken).ConfigureAwait(false);
-		return status is PermissionStatus.Granted;
-	}
-#endif
 }

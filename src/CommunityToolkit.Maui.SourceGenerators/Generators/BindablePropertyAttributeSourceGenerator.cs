@@ -237,7 +237,9 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(GetFormattedReturnType(nonNullableReturnType))
 			.Append("), typeof(")
 			.Append(info.DeclaringType)
-			.Append("), null, ")
+			.Append("), ")
+			.Append(info.ResolvedInitializerExpression ?? "null")
+			.Append(", ")
 			.Append(info.DefaultBindingMode)
 			.Append(", ")
 			.Append(info.ValidateValueMethodName)
@@ -304,7 +306,9 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			.Append(GetFormattedReturnType(nonNullableReturnType))
 			.Append("), typeof(")
 			.Append(info.DeclaringType)
-			.Append("), null, ")
+			.Append("), ")
+			.Append(info.ResolvedInitializerExpression ?? "null")
+			.Append(", ")
 			.Append(info.DefaultBindingMode)
 			.Append(", ")
 			.Append(info.ValidateValueMethodName)
@@ -408,8 +412,15 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		var propertyAccessibility = GetPropertyAccessibility(propertySymbol);
 
+		// Resolve initializer expression to a fully qualified string for use as defaultValue
+		string? resolvedInitializer = null;
+		if (hasInitializer && propertyDeclarationSyntax.Initializer is not null)
+		{
+			InitializerExpressionResolver.TryResolve(propertyDeclarationSyntax.Initializer.Value, semanticModel, out resolvedInitializer);
+		}
+
 		var attributeData = context.Attributes[0];
-		bindablePropertyModels[0] = CreateBindablePropertyModel(attributeData, propertySymbol.ContainingType, propertySymbol.Name, returnType, doesContainNewKeyword, isReadOnlyBindableProperty, setterAccessibility, hasInitializer, propertyAccessibility);
+		bindablePropertyModels[0] = CreateBindablePropertyModel(attributeData, propertySymbol.ContainingType, propertySymbol.Name, returnType, doesContainNewKeyword, isReadOnlyBindableProperty, setterAccessibility, hasInitializer, propertyAccessibility, resolvedInitializer);
 
 		return new(propertyInfo, ImmutableArray.Create(bindablePropertyModels));
 	}
@@ -517,7 +528,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		return sb.ToString();
 	}
 
-	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string propertyName, in ITypeSymbol returnType, in bool doesContainNewKeyword, in bool isReadOnly, in string? setterAccessibility, in bool hasInitializer, in string? propertyAccessibility)
+	static BindablePropertyModel CreateBindablePropertyModel(in AttributeData attributeData, in INamedTypeSymbol declaringType, in string propertyName, in ITypeSymbol returnType, in bool doesContainNewKeyword, in bool isReadOnly, in string? setterAccessibility, in bool hasInitializer, in string? propertyAccessibility, in string? resolvedInitializerExpression)
 	{
 		if (attributeData.AttributeClass is null)
 		{
@@ -532,7 +543,10 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		var validateValueMethodName = attributeData.GetNamedMethodGroupArgumentsAttributeValueByNameAsString(nameof(BindablePropertyModel.ValidateValueMethodName));
 		var newKeywordText = doesContainNewKeyword ? "new " : string.Empty;
 
-		return new BindablePropertyModel(propertyName, returnType, declaringType, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText, isReadOnly, setterAccessibility, hasInitializer, propertyAccessibility);
+		// Only use the resolved initializer when there's no explicit DefaultValueCreatorMethodName
+		var effectiveResolvedInitializer = defaultValueCreatorMethodName is "null" ? resolvedInitializerExpression : null;
+
+		return new BindablePropertyModel(propertyName, returnType, declaringType, defaultBindingMode, validateValueMethodName, propertyChangedMethodName, propertyChangingMethodName, coerceValueMethodName, defaultValueCreatorMethodName, newKeywordText, isReadOnly, setterAccessibility, hasInitializer, propertyAccessibility, effectiveResolvedInitializer);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

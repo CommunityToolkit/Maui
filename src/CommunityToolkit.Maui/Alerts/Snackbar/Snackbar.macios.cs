@@ -44,6 +44,11 @@ public partial class Snackbar
 		return Task.CompletedTask;
 	}
 
+	static CGRect GetCornerRadius(CornerRadius cornerRadius)
+	{
+		return new CGRect(cornerRadius.BottomLeft, cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomRight);
+	}
+
 	/// <summary>
 	/// Show Snackbar
 	/// </summary>
@@ -76,10 +81,5 @@ public partial class Snackbar
 		PlatformSnackbar.Show();
 
 		static T? GetMaximum<T>(params IReadOnlyList<T> items) => items.Max();
-	}
-
-	static CGRect GetCornerRadius(CornerRadius cornerRadius)
-	{
-		return new CGRect(cornerRadius.BottomLeft, cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomRight);
 	}
 }

@@ -59,12 +59,12 @@ public partial class ImageTouchBehavior : TouchBehavior
 			return;
 		}
 
-		// GestureManager does not automatically toggle ImageElement.SourceProperty when currently being displayed
+		// GestureManager does not automatically toggle the image source when currently being displayed
 		switch (imageTouchBehavior.CurrentTouchState, imageTouchBehavior.CurrentHoverState)
 		{
 			case (TouchState.Default, HoverState.Hovered) when imageTouchBehavior.HoveredImageSource is null:
 			case (TouchState.Default, HoverState.Default):
-				imageElement.SetValue(ImageElement.SourceProperty, updatedImageSource);
+				SetImageSource(imageElement, updatedImageSource);
 				break;
 		}
 	}
@@ -79,11 +79,11 @@ public partial class ImageTouchBehavior : TouchBehavior
 			return;
 		}
 
-		// GestureManager does not automatically toggle ImageElement.SourceProperty when currently being displayed
+		// GestureManager does not automatically toggle the image source when currently being displayed
 		switch (imageTouchBehavior.CurrentTouchState, imageTouchBehavior.CurrentHoverState)
 		{
 			case (TouchState.Pressed, _):
-				imageElement.SetValue(ImageElement.SourceProperty, updatedImageSource);
+				SetImageSource(imageElement, updatedImageSource);
 				break;
 		}
 	}
@@ -98,12 +98,27 @@ public partial class ImageTouchBehavior : TouchBehavior
 			return;
 		}
 
-		// GestureManager does not automatically toggle ImageElement.SourceProperty when currently being displayed
+		// GestureManager does not automatically toggle the image source when currently being displayed
 		switch (imageTouchBehavior.CurrentTouchState, imageTouchBehavior.CurrentHoverState)
 		{
 			case (TouchState.Default, HoverState.Hovered):
-				imageElement.SetValue(ImageElement.SourceProperty, updatedImageSource);
+				SetImageSource(imageElement, updatedImageSource);
 				break;
+		}
+	}
+
+	static void SetImageSource(BindableObject imageElement, ImageSource? imageSource)
+	{
+		switch (imageElement)
+		{
+			case Image image:
+				image.SetValue(Image.SourceProperty, imageSource);
+				break;
+			case ImageButton imageButton:
+				imageButton.SetValue(ImageButton.SourceProperty, imageSource);
+				break;
+			default:
+				throw new NotSupportedException($"{imageElement.GetType()} is not supported by {nameof(ImageTouchBehavior)}");
 		}
 	}
 }

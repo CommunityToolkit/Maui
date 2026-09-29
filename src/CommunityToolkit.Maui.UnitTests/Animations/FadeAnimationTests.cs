@@ -22,7 +22,7 @@ public class FadeAnimationTests : BaseTest
 	public async Task CancellationTokenCanceled()
 	{
 		FadeAnimation animation = new();
-		var cts = new CancellationTokenSource();
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		var label = new Label
 		{

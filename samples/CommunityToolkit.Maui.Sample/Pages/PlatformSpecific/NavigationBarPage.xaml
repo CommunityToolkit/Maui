@@ -108,8 +108,8 @@
 				ThumbColor="Blue"
 				Value="{Binding BlueSliderValue}" />
 
-			<VerticalStackLayout Spacing="15">
-				<Label Text="Select NavigationBar style" />
+			<Label Text="Select NavigationBar style" />
+			<HorizontalStackLayout Spacing="15">
 
 				<RadioButton IsChecked="{Binding IsDefaultChecked}" VerticalOptions="Center">
 					<RadioButton.Content>
@@ -125,7 +125,7 @@
 					<RadioButton.Content>
 						<Label
 							Margin="10,0,0,0"
-							Text="Light Content"
+							Text="Light&#10;Content"
 							VerticalOptions="Center"
 							VerticalTextAlignment="Center" />
 					</RadioButton.Content>
@@ -135,12 +135,12 @@
 					<RadioButton.Content>
 						<Label
 							Margin="10,0,0,0"
-							Text="Dark Content"
+							Text="Dark&#10;Content"
 							VerticalOptions="Center"
 							VerticalTextAlignment="Center" />
 					</RadioButton.Content>
 				</RadioButton>
-			</VerticalStackLayout>
+			</HorizontalStackLayout>
 		</VerticalStackLayout>
 	</ScrollView>
 </pages:BasePage>

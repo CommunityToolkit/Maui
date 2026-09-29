@@ -454,6 +454,16 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		Handler?.Invoke(nameof(StopRequested));
 	}
 
+	void IMediaElement.MediaEnded() => OnMediaEnded();
+
+	void IMediaElement.MediaFailed(MediaFailedEventArgs args) => OnMediaFailed(args);
+
+	void IMediaElement.MediaOpened() => OnMediaOpened();
+
+	void IMediaElement.SeekCompleted() => OnSeekCompleted();
+
+	void IMediaElement.CurrentStateChanged(MediaElementState newState) => CurrentState = newState;
+
 	internal void OnMediaEnded()
 	{
 		CurrentState = MediaElementState.Stopped;
@@ -535,16 +545,6 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 
 		mediaElement.OnStateChanged(new MediaStateChangedEventArgs(previousState, newState));
 	}
-
-	void IMediaElement.MediaEnded() => OnMediaEnded();
-
-	void IMediaElement.MediaFailed(MediaFailedEventArgs args) => OnMediaFailed(args);
-
-	void IMediaElement.MediaOpened() => OnMediaOpened();
-
-	void IMediaElement.SeekCompleted() => OnSeekCompleted();
-
-	void IMediaElement.CurrentStateChanged(MediaElementState newState) => CurrentState = newState;
 
 	void OnTimerTick(object? sender, EventArgs e)
 	{

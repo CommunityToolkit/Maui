@@ -144,6 +144,17 @@ public class AppBuilderExtensionsTests : BaseTest
 		}
 	}
 
+	[Theory]
+	[InlineData(unchecked((int)0x8007007E), "Unable to load resource dll. Microsoft.WindowsAppRuntime.Insights.Resource.dll", true)]
+	[InlineData(unchecked((int)0x8007007E), "Unable to load resource dll. Other.Resource.dll", false)]
+	[InlineData(unchecked((int)0x80004005), "Unable to load resource dll. Microsoft.WindowsAppRuntime.Insights.Resource.dll", false)]
+	public void IsWindowsAppRuntimeModuleUnavailableReturnsExpectedResult(int hresult, string message, bool expected)
+	{
+		var exception = new System.Runtime.InteropServices.COMException(message, hresult);
+
+		Assert.Equal(expected, Options.IsWindowsAppRuntimeModuleUnavailable(exception));
+	}
+
 	[Fact]
 	public void UseMauiCommunityToolkitMediaElement_ShouldUseSurfaceViewByDefault()
 	{
@@ -166,7 +177,7 @@ public class AppBuilderExtensionsTests : BaseTest
 
 		MediaElementOptions.DefaultAndroidViewType.Should().Be(AndroidViewType.TextureView);
 	}
-	
+
 	[Fact]
 	public void UseMauiCommunityToolkitMediaElement_isAndroidForegroundServiceEnabledParameterFalse_IgnoreIsAndroidForegroundServiceEnabled_AndroidForegroundServiceShouldRemainDisabled()
 	{
@@ -180,7 +191,7 @@ public class AppBuilderExtensionsTests : BaseTest
 
 		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(false);
 	}
-	
+
 	[Fact]
 	public void UseMauiCommunityToolkitMediaElement_isAndroidForegroundServiceEnabledParameterTrue_IgnoreIsAndroidForegroundServiceEnabled_ShouldEnableAndroidForegroundService()
 	{
@@ -194,7 +205,7 @@ public class AppBuilderExtensionsTests : BaseTest
 
 		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(true);
 	}
-	
+
 	[Fact]
 	public void UseMauiCommunityToolkitMediaElement_isAndroidForegroundServiceEnabledParameterFalse_SetIsAndroidForegroundServiceEnabledFalse_AndroidForegroundServiceShouldRemainDisabled()
 	{
@@ -209,7 +220,7 @@ public class AppBuilderExtensionsTests : BaseTest
 
 		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(false);
 	}
-	
+
 	[Fact]
 	public void UseMauiCommunityToolkitMediaElement_isAndroidForegroundServiceEnabledParameterTrue_SetIsAndroidForegroundServiceEnabledTrue_ShouldEnableAndroidForegroundService()
 	{
@@ -224,7 +235,7 @@ public class AppBuilderExtensionsTests : BaseTest
 
 		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(true);
 	}
-	
+
 	[Fact]
 	public void UseMauiCommunityToolkitMediaElement_isAndroidForegroundServiceEnabledParameterFalse_SetIsAndroidForegroundServiceEnabledTrue_ShouldEnableAndroidForegroundService()
 	{
@@ -239,7 +250,7 @@ public class AppBuilderExtensionsTests : BaseTest
 
 		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(true);
 	}
-	
+
 	[Fact]
 	public void UseMauiCommunityToolkitMediaElement_isAndroidForegroundServiceEnabledParameterTrue_SetIsAndroidForegroundServiceEnabledFalse_ShouldEnableAndroidForegroundService()
 	{

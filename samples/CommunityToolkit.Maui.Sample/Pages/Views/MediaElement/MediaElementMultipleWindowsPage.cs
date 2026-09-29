@@ -23,7 +23,7 @@ public partial class MediaElementMultipleWindowsPage : BasePage<MediaElementMult
 			Content = new MediaElement
 			{
 				AndroidViewType= AndroidViewType.SurfaceView,
-				Source = StreamingVideoUrls.ElephantsDream,
+				Source = StreamingUrls.Jellyfish,
 				ShouldAutoPlay = true
 			}
 		});
@@ -31,7 +31,7 @@ public partial class MediaElementMultipleWindowsPage : BasePage<MediaElementMult
 		Content = new MediaElement
 		{
 			AndroidViewType= AndroidViewType.SurfaceView,
-			Source = StreamingVideoUrls.BuckBunny,
+			Source = StreamingUrls.BuckBunny,
 			ShouldAutoPlay = true
 		};
 #else

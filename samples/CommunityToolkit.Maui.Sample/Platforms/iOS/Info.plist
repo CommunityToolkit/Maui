@@ -40,5 +40,7 @@
 	<array>
 		<string>audio</string>
 	</array>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>This sample needs permission to save photos and videos to your photo library.</string>
 </dict>
 </plist>

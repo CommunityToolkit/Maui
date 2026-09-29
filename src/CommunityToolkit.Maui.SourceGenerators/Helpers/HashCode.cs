@@ -29,6 +29,58 @@ struct HashCode
 	uint length;
 
 	/// <summary>
+	/// Adds a single value to the current hash.
+	/// </summary>
+	/// <typeparam name="T">The type of the value to add into the hash code.</typeparam>
+	/// <param name="value">The value to add into the hash code.</param>
+	public void Add<T>(T value)
+	{
+		Add(value?.GetHashCode() ?? 0);
+	}
+
+	/// <summary>
+	/// Gets the resulting hashcode from the current instance.
+	/// </summary>
+	/// <returns>The resulting hashcode from the current instance.</returns>
+	public int ToHashCode()
+	{
+		uint length = this.length;
+		uint position = length % 4;
+		uint hash = length < 4 ? MixEmptyState() : MixState(v1, v2, v3, v4);
+
+		hash += length * 4;
+
+		if (position > 0)
+		{
+			hash = QueueRound(hash, queue1);
+
+			if (position > 1)
+			{
+				hash = QueueRound(hash, queue2);
+
+				if (position > 2)
+				{
+					hash = QueueRound(hash, queue3);
+				}
+			}
+		}
+
+		hash = MixFinal(hash);
+
+		return (int)hash;
+	}
+
+	/// <inheritdoc/>
+	[Obsolete("HashCode is a mutable struct and should not be compared with other HashCodes. Use ToHashCode to retrieve the computed hash code.", error: true)]
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public override int GetHashCode() => throw new NotSupportedException();
+
+	/// <inheritdoc/>
+	[Obsolete("HashCode is a mutable struct and should not be compared with other HashCodes.", error: true)]
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public override bool Equals(object? obj) => throw new NotSupportedException();
+
+	/// <summary>
 	/// Initializes the default seed.
 	/// </summary>
 	/// <returns>A random seed.</returns>
@@ -39,16 +91,6 @@ struct HashCode
 		RandomNumberGenerator.Create().GetBytes(bytes);
 
 		return BitConverter.ToUInt32(bytes, 0);
-	}
-
-	/// <summary>
-	/// Adds a single value to the current hash.
-	/// </summary>
-	/// <typeparam name="T">The type of the value to add into the hash code.</typeparam>
-	/// <param name="value">The value to add into the hash code.</param>
-	public void Add<T>(T value)
-	{
-		Add(value?.GetHashCode() ?? 0);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -96,6 +138,20 @@ struct HashCode
 		return hash;
 	}
 
+	/// <summary>
+	/// Rotates the specified value left by the specified number of bits.
+	/// Similar in behavior to the x86 instruction ROL.
+	/// </summary>
+	/// <param name="value">The value to rotate.</param>
+	/// <param name="offset">The number of bits to rotate by.
+	/// Any value outside the range [0..31] is treated as congruent mod 32.</param>
+	/// <returns>The rotated value.</returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	static uint RotateLeft(uint value, int offset)
+	{
+		return (value << offset) | (value >> (32 - offset));
+	}
+
 	void Add(int value)
 	{
 		uint val = (uint)value;
@@ -126,62 +182,6 @@ struct HashCode
 			v3 = Round(v3, queue3);
 			v4 = Round(v4, val);
 		}
-	}
-
-	/// <summary>
-	/// Gets the resulting hashcode from the current instance.
-	/// </summary>
-	/// <returns>The resulting hashcode from the current instance.</returns>
-	public int ToHashCode()
-	{
-		uint length = this.length;
-		uint position = length % 4;
-		uint hash = length < 4 ? MixEmptyState() : MixState(v1, v2, v3, v4);
-
-		hash += length * 4;
-
-		if (position > 0)
-		{
-			hash = QueueRound(hash, queue1);
-
-			if (position > 1)
-			{
-				hash = QueueRound(hash, queue2);
-
-				if (position > 2)
-				{
-					hash = QueueRound(hash, queue3);
-				}
-			}
-		}
-
-		hash = MixFinal(hash);
-
-		return (int)hash;
-	}
-
-	/// <inheritdoc/>
-	[Obsolete("HashCode is a mutable struct and should not be compared with other HashCodes. Use ToHashCode to retrieve the computed hash code.", error: true)]
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public override int GetHashCode() => throw new NotSupportedException();
-
-	/// <inheritdoc/>
-	[Obsolete("HashCode is a mutable struct and should not be compared with other HashCodes.", error: true)]
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public override bool Equals(object? obj) => throw new NotSupportedException();
-
-	/// <summary>
-	/// Rotates the specified value left by the specified number of bits.
-	/// Similar in behavior to the x86 instruction ROL.
-	/// </summary>
-	/// <param name="value">The value to rotate.</param>
-	/// <param name="offset">The number of bits to rotate by.
-	/// Any value outside the range [0..31] is treated as congruent mod 32.</param>
-	/// <returns>The rotated value.</returns>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	static uint RotateLeft(uint value, int offset)
-	{
-		return (value << offset) | (value >> (32 - offset));
 	}
 #pragma warning restore CS0809
 }

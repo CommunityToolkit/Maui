@@ -66,5 +66,5 @@ public static partial class NavigationBar
 	}
 #endif
 
-	static Color CreateColorDefaultValue(BindableObject bindable) => Colors.Transparent;
+	static Color CreateColorDefaultValue(BindableObject bindable) => Color.FromUint(0u);
 }

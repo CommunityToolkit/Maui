@@ -14,15 +14,14 @@ public partial class IconTintColorBehavior
 		if ((e.PropertyName != ImageButton.IsLoadingProperty.PropertyName
 			&& e.PropertyName != Image.SourceProperty.PropertyName
 			&& e.PropertyName != ImageButton.SourceProperty.PropertyName)
-			|| sender is not IImageElement element
 			|| sender.Handler?.PlatformView is not UIView platformView)
 		{
 			return;
 		}
 
-		if (!element.IsLoading)
+		if (sender is Image { IsLoading: false } or ImageButton { IsLoading: false })
 		{
-			ApplyTintColor(platformView, (View)element, TintColor);
+			ApplyTintColor(platformView, sender, TintColor);
 		}
 	}
 

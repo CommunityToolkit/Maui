@@ -32,39 +32,6 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 	[GeneratedRegex(@"(@)(.+)$", RegexOptions.None, 250)]
 	protected static partial Regex EmailDomainRegex();
 
-	/// <summary>
-	/// Examines the email address domain and normalizes it to ASCII
-	/// </summary>
-	/// <param name="match"></param>
-	/// <returns></returns>
-	/// <exception cref="ArgumentException"></exception>
-	private protected static string DomainMapper(Match match)
-	{
-		var domainName = match.Groups[2].Value;
-		if (domainName.StartsWith('-'))
-		{
-			throw new ArgumentException("Domain name cannot start with hyphen.");
-		}
-
-		// Use IdnMapping class to convert Unicode domain names.
-		var idn = new IdnMapping();
-
-		// Pull out and process domain name (throws ArgumentException on invalid)
-		var asciiDomainName = idn.GetAscii(domainName);
-
-		if (IsIPv4(asciiDomainName) && !IsValidIPv4(asciiDomainName))
-		{
-			throw new ArgumentException("Invalid IPv4 Address.");
-		}
-
-		if (IsIPv6(asciiDomainName) && !IsValidIPv6(asciiDomainName))
-		{
-			throw new ArgumentException("Invalid IPv6 Address.");
-		}
-
-		return match.Groups[1].Value + asciiDomainName;
-	}
-
 	/// <inheritdoc /> 
 	protected override async ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
 	{
@@ -95,11 +62,44 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 		base.OnDetachingFrom(bindable);
 	}
 
+	/// <summary>
+	/// Examines the email address domain and normalizes it to ASCII
+	/// </summary>
+	/// <param name="match"></param>
+	/// <returns></returns>
+	/// <exception cref="ArgumentException"></exception>
+	private protected static string DomainMapper(Match match)
+	{
+		var domainName = match.Groups[2].Value;
+		if (domainName.StartsWith("-", StringComparison.Ordinal))
+		{
+			throw new ArgumentException("Domain name cannot start with hyphen.");
+		}
+
+		// Use IdnMapping class to convert Unicode domain names.
+		var idn = new IdnMapping();
+
+		// Pull out and process domain name (throws ArgumentException on invalid)
+		var asciiDomainName = idn.GetAscii(domainName);
+
+		if (IsIPv4(asciiDomainName) && !IsValidIPv4(asciiDomainName))
+		{
+			throw new ArgumentException("Invalid IPv4 Address.");
+		}
+
+		if (IsIPv6(asciiDomainName) && !IsValidIPv6(asciiDomainName))
+		{
+			throw new ArgumentException("Invalid IPv6 Address.");
+		}
+
+		return match.Groups[1].Value + asciiDomainName;
+	}
+
 	// https://docs.microsoft.com/dotnet/standard/base-types/how-to-verify-that-strings-are-in-valid-email-format
 	static bool IsValidEmail(string? email)
 	{
 		if (string.IsNullOrWhiteSpace(email)
-			|| email.StartsWith('.')
+			|| email.StartsWith(".", StringComparison.Ordinal)
 			|| email.Contains("..", StringComparison.Ordinal)
 			|| email.Contains(".@", StringComparison.Ordinal))
 		{

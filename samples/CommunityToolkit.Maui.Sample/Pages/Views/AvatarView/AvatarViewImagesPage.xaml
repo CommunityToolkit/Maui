@@ -91,6 +91,20 @@
         </VerticalStackLayout.Resources>
         <Label Style="{StaticResource Description}" Text="AvatarView can use local or URL image sources." />
         <Line Style="{StaticResource HR}" />
+        <HorizontalStackLayout HorizontalOptions="Center" Spacing="12">
+            <Button
+                Margin="10"
+                Clicked="SetImageSourceButtonClicked"
+                Text="Press me" />
+
+            <mct:AvatarView
+                BorderColor="Red"
+                HeightRequest="32"
+                Text="AV"
+                WidthRequest="32"
+                x:Name="DelayedImageSourceImage" />
+        </HorizontalStackLayout>
+
         <Grid
             ColumnDefinitions="Auto"
             HorizontalOptions="Center"

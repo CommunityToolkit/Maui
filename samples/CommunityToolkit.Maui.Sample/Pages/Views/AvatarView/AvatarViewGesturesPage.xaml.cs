@@ -7,6 +7,12 @@ public partial class AvatarViewGesturesPage : BasePage<AvatarViewGesturesViewMod
 {
 	public AvatarViewGesturesPage(AvatarViewGesturesViewModel avatarViewGesturesViewModel) : base(avatarViewGesturesViewModel) => InitializeComponent();
 
+	static Task ShowToastGestureMessage(string message, CancellationToken token)
+	{
+		Core.IToast toast = Toast.Make(message, Core.ToastDuration.Short);
+		return toast.Show(token);
+	}
+
 	async void DragGestureRecognizer_DragStarting(object? sender, DragStartingEventArgs? e)
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
@@ -35,11 +41,5 @@ public partial class AvatarViewGesturesPage : BasePage<AvatarViewGesturesViewMod
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 		await ShowToastGestureMessage("AvatarView Tap Gesture Recognizer, tapped.", cts.Token);
-	}
-
-	static Task ShowToastGestureMessage(string message, CancellationToken token)
-	{
-		Core.IToast toast = Toast.Make(message, Core.ToastDuration.Short);
-		return toast.Show(token);
 	}
 }

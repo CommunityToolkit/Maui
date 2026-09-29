@@ -99,6 +99,21 @@ public partial class AnimationBehavior : EventToCommandBehavior
 		}
 	}
 
+	static Command<CancellationToken> CreateAnimateCommand(BindableObject bindable)
+	{
+		var animationBehavior = (AnimationBehavior)bindable;
+		return new Command<CancellationToken>(async token => await animationBehavior.OnAnimate(token).ConfigureAwait(false));
+	}
+
+	static void OnAnimateCommandChanging(BindableObject bindable, object oldValue, object newValue)
+	{
+		if (newValue is not Command<CancellationToken>)
+		{
+			var animationBehavior = (AnimationBehavior)bindable;
+			throw new InvalidOperationException($"{nameof(AnimateCommand)} must of Type {animationBehavior.AnimateCommand.GetType().FullName}");
+		}
+	}
+
 	void AddTapGestureRecognizer()
 	{
 		if (View is not IGestureRecognizers gestureRecognizers)
@@ -126,21 +141,6 @@ public partial class AnimationBehavior : EventToCommandBehavior
 		gestureRecognizers.GestureRecognizers.Remove(tapGestureRecognizer);
 		tapGestureRecognizer.Tapped -= OnTriggerHandled;
 		tapGestureRecognizer = null;
-	}
-
-	static Command<CancellationToken> CreateAnimateCommand(BindableObject bindable)
-	{
-		var animationBehavior = (AnimationBehavior)bindable;
-		return new Command<CancellationToken>(async token => await animationBehavior.OnAnimate(token).ConfigureAwait(false));
-	}
-
-	static void OnAnimateCommandChanging(BindableObject bindable, object oldValue, object newValue)
-	{
-		if (newValue is not Command<CancellationToken>)
-		{
-			var animationBehavior = (AnimationBehavior)bindable;
-			throw new InvalidOperationException($"{nameof(AnimateCommand)} must of Type {animationBehavior.AnimateCommand.GetType().FullName}");
-		}
 	}
 
 	async Task OnAnimate(CancellationToken token)
