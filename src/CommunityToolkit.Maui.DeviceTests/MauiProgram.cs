@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Maps;
 using DeviceRunners.VisualRunners;
 
 namespace CommunityToolkit.Maui.DeviceTests;
@@ -14,9 +15,16 @@ public static class MauiProgram
 				.AddConsoleResultChannel()
 				.AddTestAssembly(typeof(MauiProgram).Assembly)
 				.AddXunit())
-			.UseMauiCommunityToolkit()
+			// Snackbar on Windows also requires the notification activation entries in Platforms/Windows/Package.appxmanifest
+			.UseMauiCommunityToolkit(static options => options.SetShouldEnableSnackbarOnWindows(true))
 			.UseMauiCommunityToolkitCamera()
 			.UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: false)
+#if WINDOWS
+			// Registers the Windows map handler; the tests never render a map, so no real Bing Maps key is needed
+			.UseMauiCommunityToolkitMaps("KEY")
+#else
+			.UseMauiMaps()
+#endif
 			.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

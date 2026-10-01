@@ -584,11 +584,9 @@ public class ToastTests
 public class SnackbarTests
 {
 	// Snackbar on Windows requires the notification activation entries in Package.appxmanifest + SetShouldEnableSnackbarOnWindows(true).
-	// This app does neither, so on Windows these tests throw the InvalidOperationException from the Snackbar guard, with or without MSIX packaging.
-	// Tagged ExpectedFailure until the Windows setup is added.
+	// The app does both, see MauiProgram.cs and Platforms/Windows/Package.appxmanifest.
 
 	[Fact]
-	[Trait("Category", "ExpectedFailure")]
 	public void Snackbar_Make_CreatesInstance()
 	{
 		var snackbar = Snackbar.Make("Hello");
@@ -597,7 +595,6 @@ public class SnackbarTests
 	}
 
 	[Fact]
-	[Trait("Category", "ExpectedFailure")]
 	public void Snackbar_Make_WithMessage_SetsText()
 	{
 		var snackbar = Snackbar.Make("Test message");
@@ -606,7 +603,6 @@ public class SnackbarTests
 	}
 
 	[Fact]
-	[Trait("Category", "ExpectedFailure")]
 	public void Snackbar_Make_DefaultActionButtonText()
 	{
 		var snackbar = Snackbar.Make("Hello");
@@ -616,7 +612,6 @@ public class SnackbarTests
 	}
 
 	[Fact]
-	[Trait("Category", "ExpectedFailure")]
 	public void Snackbar_Make_WithActionButtonText()
 	{
 		var snackbar = Snackbar.Make("Hello", actionButtonText: "OK");
@@ -625,7 +620,6 @@ public class SnackbarTests
 	}
 
 	[Fact]
-	[Trait("Category", "ExpectedFailure")]
 	public void Snackbar_Make_WithAction()
 	{
 		var actionCalled = false;
@@ -637,7 +631,6 @@ public class SnackbarTests
 	}
 
 	[Fact]
-	[Trait("Category", "ExpectedFailure")]
 	public void Snackbar_Make_WithDuration_SetsDuration()
 	{
 		var duration = TimeSpan.FromSeconds(5);
