@@ -139,7 +139,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		Player?.Play();
+		PlayAtSpeed();
 	}
 
 	protected virtual partial void PlatformPause()
@@ -345,7 +345,7 @@ public partial class MediaManager : IDisposable
 
 			if (MediaElement.ShouldAutoPlay)
 			{
-				Player.Play();
+				PlayAtSpeed();
 			}
 
 			await SetPoster();
@@ -783,7 +783,7 @@ public partial class MediaManager : IDisposable
 		if (MediaElement.ShouldLoopPlayback)
 		{
 			PlayerViewController?.Player?.Seek(CMTime.Zero);
-			Player.Play();
+			PlayAtSpeed();
 		}
 		else
 		{
@@ -806,14 +806,35 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		if (!AreFloatingPointNumbersEqual(MediaElement.Speed, Player.Rate))
+		// AVPlayer reports a rate of 0 while paused, that is not a change of the requested Speed
+		if (Player.Rate is 0 || AreFloatingPointNumbersEqual(MediaElement.Speed, Player.Rate))
 		{
-			MediaElement.Speed = Player.Rate;
-			if (metaData is not null)
-			{
-				metaData.NowPlayingInfo.PlaybackRate = (float)MediaElement.Speed;
-				MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = metaData.NowPlayingInfo;
-			}
+			return;
+		}
+
+		MediaElement.Speed = Player.Rate;
+		if (metaData is not null)
+		{
+			metaData.NowPlayingInfo.PlaybackRate = (float)MediaElement.Speed;
+			MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = metaData.NowPlayingInfo;
+		}
+	}
+
+	void PlayAtSpeed()
+	{
+		if (Player is null)
+		{
+			return;
+		}
+
+		// AVPlayer.Play() always starts playback at a rate of 1, setting the rate starts playback at the requested Speed
+		if (MediaElement.Speed > 0)
+		{
+			Player.Rate = (float)MediaElement.Speed;
+		}
+		else
+		{
+			Player.Play();
 		}
 	}
 }
