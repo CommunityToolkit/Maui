@@ -87,26 +87,28 @@ public class DockLayoutManagerTests
 	public void Measure_RespectsWidthConstraint()
 	{
 		var child = new TestView(1000, 50);
-		var layout = new TestDockLayout();
-		layout.AddChild(child, DockPosition.Top);
+		var layout = new TestDockLayout { HorizontalSpacing = 10 };
+		layout.AddChild(child, DockPosition.Left);
 		var manager = new DockLayoutManager(layout);
 
 		var result = manager.Measure(200, 500);
 
-		Assert.True(result.Width <= 200);
+		// The Left-docked child fills the constraint (200) and its spacing (10) overflows it, the manager clamps the total
+		Assert.Equal(200, result.Width);
 	}
 
 	[Fact]
 	public void Measure_RespectsHeightConstraint()
 	{
 		var child = new TestView(100, 1000);
-		var layout = new TestDockLayout();
-		layout.AddChild(child, DockPosition.Left);
+		var layout = new TestDockLayout { VerticalSpacing = 10 };
+		layout.AddChild(child, DockPosition.Top);
 		var manager = new DockLayoutManager(layout);
 
 		var result = manager.Measure(500, 200);
 
-		Assert.True(result.Height <= 200);
+		// The Top-docked child fills the constraint (200) and its spacing (10) overflows it, the manager clamps the total
+		Assert.Equal(200, result.Height);
 	}
 
 	[Fact]

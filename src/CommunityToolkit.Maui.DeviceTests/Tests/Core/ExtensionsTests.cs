@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Maui.Core.Extensions;
 using Xunit;
 
@@ -74,7 +75,8 @@ public class ColorConversionExtensionsTests
 	{
 		var color = new Color(0.0f, 1.0f, 0.0f, 0.5f); // Green with 50% alpha
 
-		var result = color.ToRgbaString();
+		// Without a culture the alpha is formatted with the device's current culture, e.g. "0,5"
+		var result = color.ToRgbaString(CultureInfo.InvariantCulture);
 
 		// Alpha is emitted as the raw float value (0.5), not a byte value
 		Assert.Equal("RGBA(0,255,0,0.5)", result);

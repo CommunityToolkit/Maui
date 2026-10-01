@@ -94,30 +94,24 @@ public class WeakReferenceExtensionsTests
 	}
 
 	[Fact]
-	public void GetTargetOrDefault_CollectedReference_ReturnsNull()
+	public async Task GetTargetOrDefault_CollectedReference_ReturnsNull()
 	{
-		var weakRef = CreateCollectedWeakReference();
+		// The target is created on another thread so that no stack slot of this test can keep it alive
+		var weakRef = await Task.Run(CreateWeakReference);
 
-		var result = weakRef.GetTargetOrDefault();
-
-		// GC collection is non-deterministic. Only assert null if the target was actually collected.
-		if (!weakRef.TryGetTarget(out _))
+		for (var attempt = 0; attempt < 10 && weakRef.TryGetTarget(out _); attempt++)
 		{
-			Assert.Null(result);
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
 		}
+
+		Assert.False(weakRef.TryGetTarget(out _), "The target was not collected");
+		Assert.Null(weakRef.GetTargetOrDefault());
 	}
 
 	[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-	static WeakReference<object> CreateCollectedWeakReference()
-	{
-		var target = new object();
-		var weakRef = new WeakReference<object>(target);
-		target = null;
-		GC.Collect();
-		GC.WaitForPendingFinalizers();
-		GC.Collect();
-		return weakRef;
-	}
+	static WeakReference<object> CreateWeakReference() => new(new object());
 }
 
 public class SafeFireAndForgetExtensionsTests

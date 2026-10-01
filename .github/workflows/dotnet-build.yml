@@ -368,17 +368,16 @@ jobs:
     
     device_test_maccatalyst:
         name: Run Device Tests (macOS Catalyst)
-        runs-on: macos-26
-        env:
-            CommunityToolkitLibrary_Xcode_Version: '26.6'
+        runs-on: xcode-27
         steps:
             -   name: Checkout code
                 uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+            # `dotnet workload update` installs the latest Mac Catalyst workload, which requires the same Xcode as the sample build
             -   name: Set Xcode Version
                 uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
                 with:
-                    xcode-version: ${{ env.CommunityToolkitLibrary_Xcode_Version }}
+                    xcode-version: ${{ env.CommunityToolkitSample_Xcode_Version }}
 
             -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
                 uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
