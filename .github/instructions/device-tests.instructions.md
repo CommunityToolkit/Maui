@@ -13,7 +13,7 @@ The project uses [DeviceRunners](https://github.com/mattleibow/DeviceRunners) by
 
 - **`DeviceRunners.VisualRunners.Maui`** provides the visual runner UI, pages, view models, and diagnostics.
 - **`DeviceRunners.VisualRunners.Xunit`** provides xUnit v2 test discovery and execution.
-- **`DeviceRunners.Testing.Targets`** enables `dotnet test` for device projects (TRX results, filtering, CI integration).
+- **`DeviceRunners.Testing.Targets`** provides the headless `VSTest` target for device projects (TRX results, filtering, CI integration).
 - Tests are registered via `builder.UseVisualTestRunner(conf => conf.AddTestAssembly(...).AddXunit())` in `MauiProgram.cs`.
 
 Do **not** build a custom `DeviceRunner`/`XunitFrontController` wrapper — DeviceRunners handles discovery, execution, result collection, and diagnostics.
@@ -54,13 +54,15 @@ public async Task StatusBarBehavior_CanBeAttachedToPage()
 dotnet build src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -f net10.0-android -t:Run
 ```
 
-**`dotnet test` (CI / Headless, Recommended):**
+**`VSTest` target (CI / Headless, Recommended):**
 ```bash
-dotnet test src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -f net10.0-android
-dotnet test ... --filter "FullyQualifiedName~StatusBarBehavior"
+dotnet build src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -t:VSTest -f net10.0-android
+dotnet build ... -t:VSTest "-p:VSTestTestCaseFilter=FullyQualifiedName~StatusBarBehavior"
 ```
 
-The `DeviceRunners.Testing.Targets` package hooks into `dotnet test` to build, deploy, run, and collect TRX results automatically.
+The `DeviceRunners.Testing.Targets` package replaces the `VSTest` target to build, deploy, run, and collect TRX results automatically.
+
+Do **not** use `dotnet test` for this project: `global.json` selects Microsoft.Testing.Platform, and `dotnet test` then rejects VSTest-based projects such as this one.
 
 ### Packages
 

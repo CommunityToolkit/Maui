@@ -179,9 +179,9 @@ DeviceRunners is a set of NuGet packages. This project consumes these packages �
 | `DeviceRunners.VisualRunners.Core` | Visual runner abstractions: result channels, formatters, test events |
 | `DeviceRunners.VisualRunners.Maui` | MAUI visual runner UI (pages, view models, diagnostics, app shell). Provides `UseVisualTestRunner()`. |
 | `DeviceRunners.VisualRunners.Xunit` | xUnit v2 test discovery and execution adapter. Provides `AddXunit()`. |
-| `DeviceRunners.Testing.Targets` | MSBuild targets enabling `dotnet test` for device projects (build → deploy → run → TRX). Provides `AddCliConfiguration()`. |
+| `DeviceRunners.Testing.Targets` | MSBuild targets providing the headless `VSTest` target for device projects (build → deploy → run → TRX). Provides `AddCliConfiguration()`. |
 
-Do **not** build custom `XunitFrontController` wrappers or `DeviceRunner` classes — DeviceRunners provides discovery, execution, visual runner UI, result collection, and `dotnet test` integration.
+Do **not** build custom `XunitFrontController` wrappers or `DeviceRunner` classes — DeviceRunners provides discovery, execution, visual runner UI, result collection, and the headless `VSTest` target.
 
 ### Platform Support
 
@@ -229,7 +229,7 @@ public static class MauiProgram
 }
 ```
 
-- `AddCliConfiguration()` enables `dotnet test` support — reads env vars / CLI args for auto-start and TCP result streaming. When running interactively from the IDE (no env vars present), it is a no-op and the visual runner behaves normally.
+- `AddCliConfiguration()` enables headless (`VSTest` target) runs — reads env vars / CLI args for auto-start and TCP result streaming. When running interactively from the IDE (no env vars present), it is a no-op and the visual runner behaves normally.
 - `AddXunit()` registers the xUnit v2 test discoverer and runner. The project uses **xunit v2 (2.9.3)** — not xunit v3.
 - `AddTestAssembly(...)` tells the runner which assemblies contain tests.
 - `AddConsoleResultChannel()` writes pass/fail results to the console / trace log.
@@ -321,14 +321,16 @@ dotnet build src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceT
 ```
 Launches the app with the DeviceRunners visual runner UI showing pass/fail counts, per-test details, and diagnostics.
 
-**`dotnet test` (CI / headless, recommended):**
+**`VSTest` target (CI / headless, recommended):**
 ```bash
-dotnet test src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -f net10.0-android
-dotnet test ... -f net10.0-android --filter "FullyQualifiedName~StatusBarBehavior"
+dotnet build src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -t:VSTest -f net10.0-android
+dotnet build ... -t:VSTest -f net10.0-android "-p:VSTestTestCaseFilter=FullyQualifiedName~StatusBarBehavior"
 ```
-`DeviceRunners.Testing.Targets` hooks into `dotnet test` to build, deploy, run, and collect TRX results automatically. Filter with standard `--filter` syntax.
+`DeviceRunners.Testing.Targets` replaces the `VSTest` target to build, deploy, run, and collect TRX results automatically. Filter with `-p:VSTestTestCaseFilter` using the standard filter syntax.
 
-How `dotnet test` works under the hood:
+Do **not** use `dotnet test` for this project: `global.json` selects Microsoft.Testing.Platform, and `dotnet test` then rejects VSTest-based projects such as this one.
+
+How the `VSTest` target works under the hood:
 1. **Build** — The app is compiled for the target platform (APK, .app bundle, .exe)
 2. **Deploy** — The DeviceRunners CLI tool installs the app on the device/simulator
 3. **Launch** — The app starts with configuration (env vars or CLI args) that tells it to auto-run tests and connect back via TCP
@@ -412,7 +414,7 @@ public interface IDiagnosticsManager
 #### When debugging test failures
 - Android: Check `adb logcat` for `[DeviceRunners]` / `[FAIL]` trace messages
 - The visual runner's Diagnostics page shows assembly paths, environment, and runner logs
-- Use `--filter "FullyQualifiedName~TestName"` with `dotnet test` to isolate a single test
+- Use `"-p:VSTestTestCaseFilter=FullyQualifiedName~TestName"` with `dotnet build -t:VSTest` to isolate a single test
 
 #### When working with MAUI integration
 - Use MAUI service registration patterns via `builder.Services`
@@ -427,7 +429,7 @@ public interface IDiagnosticsManager
 - Use `Trace.WriteLine()` (not `Debug.WriteLine()`) for logging
 - Add tests in `Tests/` organized by area (`Behaviors/`, `Converters/`, `Views/`, etc.)
 - Use `xunit` v2 `[Fact]` and `[Theory]` attributes
-- Use `dotnet test` for CI/headless runs; use `dotnet build -t:Run` for interactive debugging
+- Use `dotnet build -t:VSTest` for CI/headless runs; use `dotnet build -t:Run` for interactive debugging
 
 **Don't:**
 - Don't build custom `DeviceRunner` or `XunitFrontController` wrappers — DeviceRunners handles this

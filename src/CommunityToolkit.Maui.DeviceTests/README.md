@@ -48,7 +48,7 @@ Powered by [DeviceRunners](https://github.com/mattleibow/DeviceRunners):
 
 - **`DeviceRunners.VisualRunners.Maui`** — MAUI visual runner UI (pages, view models, diagnostics)
 - **`DeviceRunners.VisualRunners.Xunit`** — xUnit v2 test discovery and execution adapter
-- **`DeviceRunners.Testing.Targets`** — MSBuild targets enabling `dotnet test` for device projects
+- **`DeviceRunners.Testing.Targets`** — MSBuild targets providing the headless `VSTest` target for device projects
 - **`DeviceRunners.Core`** / **`DeviceRunners.VisualRunners.Core`** — Core abstractions (test runners, result channels, formatters)
 
 Configured in `MauiProgram.cs`:

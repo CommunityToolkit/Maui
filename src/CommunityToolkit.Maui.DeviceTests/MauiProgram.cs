@@ -14,6 +14,9 @@ public static class MauiProgram
 				.AddConsoleResultChannel()
 				.AddTestAssembly(typeof(MauiProgram).Assembly)
 				.AddXunit())
+			.UseMauiCommunityToolkit()
+			.UseMauiCommunityToolkitCamera()
+			.UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: false)
 			.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
