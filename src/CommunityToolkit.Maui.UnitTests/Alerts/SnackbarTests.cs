@@ -46,7 +46,7 @@ public class SnackbarTests : BaseTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarShow_CancellationTokenCanceled()
 	{
-		var cts = new CancellationTokenSource();
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(() =>
 		{
@@ -69,7 +69,7 @@ public class SnackbarTests : BaseTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarDismiss_CancellationTokenCanceled()
 	{
-		var cts = new CancellationTokenSource();
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(() =>
 		{
@@ -176,7 +176,7 @@ public class SnackbarTests : BaseTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarShow_CancellationTokenCancelled_ReceiveException()
 	{
-		using var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		cancellationTokenSource.Cancel();
 
@@ -186,7 +186,7 @@ public class SnackbarTests : BaseTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarDismiss_CancellationTokenCancelled_ReceiveException()
 	{
-		using var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		cancellationTokenSource.Cancel();
 
@@ -196,14 +196,14 @@ public class SnackbarTests : BaseTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarShow_CancellationTokenNotCancelled_NotReceiveException()
 	{
-		using var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await snackbar.Invoking(x => x.Show(cancellationTokenSource.Token)).Should().NotThrowAsync<OperationCanceledException>();
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarDismiss_CancellationTokenNotCancelled_NotReceiveException()
 	{
-		using var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await snackbar.Invoking(x => x.Dismiss(cancellationTokenSource.Token)).Should().NotThrowAsync<OperationCanceledException>();
 	}
 

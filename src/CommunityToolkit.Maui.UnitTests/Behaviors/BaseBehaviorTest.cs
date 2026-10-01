@@ -36,8 +36,8 @@ public abstract class BaseBehaviorTest<TBehavior, TView> : BaseTest
 
 		view.Behaviors.Add((Behavior)behavior);
 
-		Assert.Single(view.Behaviors);
-		Assert.Null(view.Behaviors[0].BindingContext);
+		var attachedBehavior = Assert.Single(view.Behaviors);
+		Assert.Null(attachedBehavior.BindingContext);
 	}
 
 	[Fact]
@@ -61,7 +61,7 @@ public abstract class BaseBehaviorTest<TBehavior, TView> : BaseTest
 
 		Assert.Equal(view.BindingContext, attachedBehavior.BindingContext);
 
-		var wasSuccessful = view.Behaviors.TryRemove(attachedBehavior);
+		var wasSuccessful = view.Behaviors.Remove(attachedBehavior);
 
 		Assert.True(wasSuccessful);
 		Assert.Equal(view.BindingContext, attachedBehavior.BindingContext);

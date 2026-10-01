@@ -86,6 +86,12 @@ public partial class Expander : ContentView, IExpander
 
 	internal TapGestureRecognizer HeaderTapGestureRecognizer { get; } = new();
 
+	internal void HandleHeaderTap(TappedEventArgs tappedEventArgs)
+	{
+		IsExpanded = !IsExpanded;
+		HandleHeaderTapped?.Invoke(tappedEventArgs);
+	}
+
 	Grid ContentGrid => (Grid)base.Content;
 
 	void IExpander.ExpandedChanged(bool isExpanded)
@@ -195,8 +201,7 @@ public partial class Expander : ContentView, IExpander
 
 	void OnHeaderTapGestureRecognizerTapped(object? sender, TappedEventArgs tappedEventArgs)
 	{
-		IsExpanded = !IsExpanded;
-		HandleHeaderTapped?.Invoke(tappedEventArgs);
+		HandleHeaderTap(tappedEventArgs);
 	}
 
 	void ResizeExpanderInItemsView(TappedEventArgs tappedEventArgs)

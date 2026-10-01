@@ -34,7 +34,7 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 		var intent = new Intent(Intent.ActionOpenDocumentTree);
 		intent.PutExtra(DocumentsContract.ExtraInitialUri, initialFolderUri);
 
-		await IntermediateActivity.StartAsync(intent, (int)AndroidRequestCode.RequestCodeFolderPicker, onResult: OnResult).WaitAsync(cancellationToken);
+		await ActivityResultManager.StartAsync(intent, AndroidRequestCode.RequestCodeFolderPicker, OnResult, cancellationToken);
 
 		return folder ?? throw new FolderPickerException("Unable to get folder.");
 

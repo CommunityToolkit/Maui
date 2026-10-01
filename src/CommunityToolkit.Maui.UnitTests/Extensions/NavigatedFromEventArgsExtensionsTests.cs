@@ -29,7 +29,7 @@ public class NavigatedFromEventArgsExtensionsTests : BaseViewTest
 		// Act
 		await mainPage.Navigation.PushAsync(shellContentPage);
 		await popupService.ShowPopupAsync<ShortLivedMockPageViewModel>(shell, null, shellParameters, TestContext.Current.CancellationToken);
-		var isDestinationPageACommunityToolkitPopupPage = await isDestinationPageACommunityToolkitPopupPageTCS.Task;
+		var isDestinationPageACommunityToolkitPopupPage = await isDestinationPageACommunityToolkitPopupPageTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.True(isDestinationPageACommunityToolkitPopupPage);
@@ -59,7 +59,7 @@ public class NavigatedFromEventArgsExtensionsTests : BaseViewTest
 		await mainPage.Navigation.PushAsync(shellContentPage);
 		//push a new content page on top to make sure the navigation handler doesn't think we're navigating to a popup page
 		await mainPage.Navigation.PushAsync(newShellContentPage);
-		var isDestinationPageACommunityToolkitPopupPage = await isDestinationPageACommunityToolkitPopupPageTCS.Task;
+		var isDestinationPageACommunityToolkitPopupPage = await isDestinationPageACommunityToolkitPopupPageTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.False(isDestinationPageACommunityToolkitPopupPage);
