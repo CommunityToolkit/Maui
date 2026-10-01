@@ -11,6 +11,13 @@ public partial class StateContainerPage : BasePage<StateContainerViewModel>
 		Padding = new Thickness(12, 12, 12, 0);
 	}
 
+	static Task ScaleToAsync(VisualElement element, double scale, uint length, Easing easing, CancellationToken token)
+#if NET11_0_OR_GREATER
+		=> element.ScaleToAsync(scale, length, easing, token);
+#else
+		=> element.ScaleToAsync(scale, length, easing).WaitAsync(token);
+#endif
+
 	async void ChangeStateWithFadeAnimation(object? sender, EventArgs e)
 	{
 		var currentState = StateContainer.GetCurrentState(GridWithAnimation);
@@ -31,8 +38,8 @@ public partial class StateContainerPage : BasePage<StateContainerViewModel>
 		{
 			await StateContainer.ChangeStateWithAnimation(GridWithAnimation,
 															null,
-															(element, token) => element.ScaleToAsync(0, 100, Easing.SpringIn).WaitAsync(token),
-															(element, token) => element.ScaleToAsync(1, 250, Easing.SpringOut).WaitAsync(token),
+															(element, token) => ScaleToAsync(element, 0, 100, Easing.SpringIn, token),
+															(element, token) => ScaleToAsync(element, 1, 250, Easing.SpringOut, token),
 															CancellationToken.None);
 		}
 
@@ -40,8 +47,8 @@ public partial class StateContainerPage : BasePage<StateContainerViewModel>
 		{
 			await StateContainer.ChangeStateWithAnimation(GridWithAnimation,
 															"ReplaceGrid",
-															(element, token) => element.ScaleToAsync(0, 100, Easing.SpringIn).WaitAsync(token),
-															(element, token) => element.ScaleToAsync(1, 250, Easing.SpringOut).WaitAsync(token),
+															(element, token) => ScaleToAsync(element, 0, 100, Easing.SpringIn, token),
+															(element, token) => ScaleToAsync(element, 1, 250, Easing.SpringOut, token),
 															CancellationToken.None);
 		}
 	}

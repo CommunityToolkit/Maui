@@ -88,7 +88,7 @@ public class CameraViewTests : BaseViewTest
 
 		((ICameraView)cameraView).OnMediaCapturedFailed(failureMessage);
 
-		var mediaCaptureFailedEventArgs = await mediaCaptureFailedTcs.Task;
+		var mediaCaptureFailedEventArgs = await mediaCaptureFailedTcs.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		Assert.True(wasEventRaised);
 		Assert.Equal(failureMessage, mediaCaptureFailedEventArgs.FailureReason);
