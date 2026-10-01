@@ -29,7 +29,7 @@ public partial class MediaManager : IDisposable
 	protected NSKeyValueObservingOptions ValueObserverOptions => NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.New;
 
 	/// <summary>
-	/// Observer that tracks when an error has occurred in the playback of the current item.
+	/// Observer that tracks the status of the current item, both when it becomes ready to play and when it fails.
 	/// </summary>
 	protected IDisposable? CurrentItemErrorObserver { get; set; }
 
@@ -715,8 +715,8 @@ public partial class MediaManager : IDisposable
 
 				hasMediaOpened = true;
 
-				MediaElement.Duration = ConvertTime(playerItem.Duration);
-				MediaElement.Position = ConvertTime(playerItem.CurrentTime);
+				// Handles CMTime.Indefinite durations (e.g. HLS/live) via the seekable range
+				PlatformUpdatePosition();
 
 				MediaElement.CurrentStateChanged(
 					Player.Rate > 0
