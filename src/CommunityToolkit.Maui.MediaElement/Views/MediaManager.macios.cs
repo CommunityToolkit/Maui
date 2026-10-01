@@ -213,14 +213,14 @@ public partial class MediaManager : IDisposable
 		};
 	}
 
-	protected virtual async partial ValueTask PlatformUpdateSource()
+	protected virtual partial ValueTask PlatformUpdateSource()
 	{
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 
 		AVAsset? asset = null;
 		if (Player is null)
 		{
-			return;
+			return ValueTask.CompletedTask;
 		}
 
 		// Clean up previous stream resource loader if switching sources
@@ -325,9 +325,13 @@ public partial class MediaManager : IDisposable
 		}
 		else
 		{
-			CurrentItemErrorObserver = PlayerItem.AddObserver("status",
-				ValueObserverOptions, PlayerItemStatusChanged);
+			// Bind the callback to the observed item so a stale callback can't act on a newer item
+			var playerItem = PlayerItem;
+			CurrentItemErrorObserver = playerItem.AddObserver("status",
+				ValueObserverOptions, _ => PlayerItemStatusChanged(playerItem));
 		}
+
+		return ValueTask.CompletedTask;
 	}
 
 	protected virtual partial void PlatformUpdateSpeed()
@@ -682,14 +686,15 @@ public partial class MediaManager : IDisposable
 	}
 
 
-	async void PlayerItemStatusChanged(NSObservedChange change)
+	async void PlayerItemStatusChanged(AVPlayerItem playerItem)
 	{
-		if (PlayerItem is null)
+		// Ignore callbacks from an item that is no longer current, or that arrive after disposal
+		if (Player is null || !ReferenceEquals(PlayerItem, playerItem))
 		{
 			return;
 		}
 
-		switch (PlayerItem.Status)
+		switch (playerItem.Status)
 		{
 			case AVPlayerItemStatus.ReadyToPlay:
 
@@ -700,31 +705,27 @@ public partial class MediaManager : IDisposable
 
 				hasMediaOpened = true;
 
-				var playerItem = PlayerItem;
-				if (playerItem is null)
-				{
-					return;
-				}
-
 				MediaElement.Duration = ConvertTime(playerItem.Duration);
 				MediaElement.Position = ConvertTime(playerItem.CurrentTime);
 
 				MediaElement.CurrentStateChanged(
-					Player?.Rate > 0
+					Player.Rate > 0
 						? MediaElementState.Playing
 						: MediaElementState.Paused);
 
-				(MediaElement.MediaWidth, MediaElement.MediaHeight) = await GetVideoDimensions(playerItem);
+				var (mediaWidth, mediaHeight) = await GetVideoDimensions(playerItem);
 
-				// Source may have changed while awaiting; don't apply stale results
-				if (!ReferenceEquals(PlayerItem, playerItem))
+				// Source may have changed, or the player been disposed, while awaiting; don't apply stale results
+				if (Player is null || !ReferenceEquals(PlayerItem, playerItem))
 				{
 					return;
 				}
 
+				(MediaElement.MediaWidth, MediaElement.MediaHeight) = (mediaWidth, mediaHeight);
+
 				MediaElement.MediaOpened();
 
-				if (MediaElement.ShouldAutoPlay && Player is not null)
+				if (MediaElement.ShouldAutoPlay)
 				{
 					Player.Play();
 					Player.Rate = (float)MediaElement.Speed;
@@ -735,7 +736,7 @@ public partial class MediaManager : IDisposable
 				break;
 
 			case AVPlayerItemStatus.Failed:
-				var error = PlayerItem.Error;
+				var error = playerItem.Error;
 				var message = error is not null
 					? $"{error.LocalizedDescription} - {error.LocalizedFailureReason}"
 					: "AVPlayerItem failed.";
