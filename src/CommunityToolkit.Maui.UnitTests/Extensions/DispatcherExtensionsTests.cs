@@ -107,7 +107,7 @@ public class DispatcherExtensionsTests : BaseTest
 	{
 		var dispatcher = new ConfigurableMockDispatcher(isDispatchRequired);
 		var wasActionExecuted = false;
-		using var cts = new CancellationTokenSource();
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await cts.CancelAsync();
 
 		await Assert.ThrowsAsync<OperationCanceledException>(() => ToolkitDispatcherExtensions.DispatchIfRequiredAsync(dispatcher, () => wasActionExecuted = true, cts.Token));
@@ -198,7 +198,7 @@ public class DispatcherExtensionsTests : BaseTest
 	{
 		var dispatcher = new ConfigurableMockDispatcher(isDispatchRequired: true, executeDispatchedActionsImmediately: false);
 		var wasActionExecuted = false;
-		using var cts = new CancellationTokenSource();
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		var dispatchTask = ToolkitDispatcherExtensions.DispatchIfRequiredAsync(dispatcher, () => wasActionExecuted = true, cts.Token);
 
@@ -214,7 +214,7 @@ public class DispatcherExtensionsTests : BaseTest
 	{
 		var dispatcher = new ConfigurableMockDispatcher(isDispatchRequired: true, executeDispatchedActionsImmediately: false);
 		var wasActionExecuted = false;
-		using var cts = new CancellationTokenSource();
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		var dispatchTask = ToolkitDispatcherExtensions.DispatchIfRequiredAsync(dispatcher, () => wasActionExecuted = true, cts.Token);
 

@@ -3,7 +3,7 @@ using CommunityToolkit.Maui.Behaviors;
 using Xunit;
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBehavior, VisualElement>(new EmailValidationBehavior(), new View())
+public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBehavior, VisualElement>(new EmailValidationBehavior(), new MockView())
 {
 	public static TheoryData<Keyboard> NonDefaultKeyboardData { get; } =
 	[
@@ -279,7 +279,7 @@ public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBe
 	{
 		// Arrange
 		var behavior = new EmailValidationBehavior();
-		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		var entry = new Entry
 		{

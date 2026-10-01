@@ -14,7 +14,9 @@ public static class UIFontExtensions
 	/// </summary>
 	public static UIFont ToUIFont(this Font font)
 	{
+		var defaultFont = UIFont.SystemFontOfSize((nfloat)font.Size)
+			?? throw new InvalidOperationException("Unable to create the default font.");
 		var fontManager = Application.Current?.Handler?.MauiContext?.Services.GetService<IFontManager>();
-		return fontManager is null ? UIFont.SystemFontOfSize((nfloat)font.Size) : fontManager.GetFont(font, UIFont.SystemFontSize);
+		return fontManager?.GetFont(font, UIFont.SystemFontSize) ?? defaultFont;
 	}
 }

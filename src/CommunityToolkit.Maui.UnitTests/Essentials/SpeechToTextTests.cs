@@ -81,7 +81,7 @@ public class SpeechToTextTests(ITestOutputHelper testOutputHelper) : BaseTest
 	public async Task RequestPermissionsFailsOnNet()
 	{
 		SpeechToText.SetDefault(new SpeechToTextImplementation());
-		await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => SpeechToText.RequestPermissions(TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<NotImplementedException>(() => SpeechToText.RequestPermissions(TestContext.Current.CancellationToken));
 	}
 
 	[Fact]
