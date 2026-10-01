@@ -22,14 +22,17 @@ sealed class Metadata
 	};
 
 	readonly PlatformMediaElement player;
+	readonly Action play;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="Metadata"/> class.
 	/// </summary>
 	/// <param name="player"></param>
-	public Metadata(PlatformMediaElement player)
+	/// <param name="play">Starts playback at the requested speed, <see cref="AVPlayer.Play"/> always starts playback at a rate of 1.</param>
+	public Metadata(PlatformMediaElement player, Action play)
 	{
 		this.player = player;
+		this.play = play;
 		MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = nowPlayingInfoDefault;
 
 		var commandCenter = MPRemoteCommandCenter.Shared;
@@ -148,7 +151,7 @@ sealed class Metadata
 			return MPRemoteCommandHandlerStatus.CommandFailed;
 		}
 
-		player.Play();
+		play();
 		return MPRemoteCommandHandlerStatus.Success;
 	}
 
@@ -172,7 +175,7 @@ sealed class Metadata
 
 		if (player.Rate is 0)
 		{
-			player.Play();
+			play();
 		}
 		else
 		{

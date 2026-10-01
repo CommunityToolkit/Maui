@@ -228,7 +228,7 @@ public partial class MediaManager : IDisposable
 			streamResourceLoader = null;
 		}
 
-		metaData ??= new(Player);
+		metaData ??= new(Player, PlayAtSpeed);
 		Metadata.ClearNowPlaying();
 		PlayerViewController?.ContentOverlayView?.Subviews.FirstOrDefault()?.RemoveFromSuperview();
 
