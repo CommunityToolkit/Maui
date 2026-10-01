@@ -2,7 +2,7 @@
 
 Device tests for the .NET MAUI Community Toolkit. These tests run on actual devices/emulators and verify platform-specific behavior that cannot be tested with unit tests alone.
 
-This project uses [DeviceRunners](https://github.com/mattleibow/DeviceRunners) by Matthew Leibowitz, the same test-runner infrastructure recommended by the .NET MAUI team. Tests are discovered and executed through `DeviceRunners.VisualRunners.Xunit`, with a built-in visual runner UI and `dotnet test` support via `DeviceRunners.Testing.Targets`.
+This project uses [DeviceRunners](https://github.com/mattleibow/DeviceRunners) by Matthew Leibowitz, the same test-runner infrastructure recommended by the .NET MAUI team. Tests are discovered and executed through `DeviceRunners.VisualRunners.Xunit`, with a built-in visual runner UI and headless runs through the `VSTest` target (`dotnet build -t:VSTest`) provided by `DeviceRunners.Testing.Targets`.
 
 ## Prerequisites
 

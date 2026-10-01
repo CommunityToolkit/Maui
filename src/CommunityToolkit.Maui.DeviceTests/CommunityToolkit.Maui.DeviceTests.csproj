@@ -24,7 +24,7 @@
     <WindowsPackageType>MSIX</WindowsPackageType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-    <!-- DeviceRunners provides its own Program.Main; disable the auto-generated testing platform entry point -->
+    <!-- The app already has its entry points (Program.cs on iOS/Mac Catalyst, MAUI's generated startup on Android/Windows); disable the Microsoft.Testing.Platform generated entry point to avoid a duplicate -->
     <GenerateTestingPlatformEntryPoint>false</GenerateTestingPlatformEntryPoint>
 
     <!-- Suppress xunit analyzer rules for pre-existing test patterns -->

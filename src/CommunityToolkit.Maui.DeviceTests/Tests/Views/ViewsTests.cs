@@ -583,9 +583,9 @@ public class ToastTests
 
 public class SnackbarTests
 {
-	// Snackbar on Windows requires Package.appxmanifest setup + SetShouldEnableSnackbarOnWindows(true).
-	// When running unpackaged (WindowsPackageType=None), these tests throw a platform guard exception.
-	// With MSIX packaging in CI, they should pass. Tagged ExpectedFailure until verified on all platforms.
+	// Snackbar on Windows requires the notification activation entries in Package.appxmanifest + SetShouldEnableSnackbarOnWindows(true).
+	// This app does neither, so on Windows these tests throw the InvalidOperationException from the Snackbar guard, with or without MSIX packaging.
+	// Tagged ExpectedFailure until the Windows setup is added.
 
 	[Fact]
 	[Trait("Category", "ExpectedFailure")]

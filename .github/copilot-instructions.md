@@ -139,7 +139,7 @@ if (something is not null)
 In other words, `NotImplementedException` implies that a feature is still in development, indicating that the Pull Request is incomplete.
 
 ### ExpectedFailure Trait for Device Tests
-* Use `[Trait("Category", "ExpectedFailure")]` on device tests that are known to fail on certain platforms but are still under investigation. This allows CI to filter them out with `--filter "Category!=ExpectedFailure"` while keeping them runnable locally.
+* Use `[Trait("Category", "ExpectedFailure")]` on device tests that are known to fail on certain platforms but are still under investigation. This allows CI to filter them out with `"-p:VSTestTestCaseFilter=Category!=ExpectedFailure"` (passed to `dotnet build -t:VSTest`) while keeping them runnable locally.
 * Do **not** use `[Fact(Skip = "...")]` for platform-specific failures — `Skip` hides the test entirely and it may silently rot. Prefer `[Trait("Category", "ExpectedFailure")]` so the test still runs locally and in unfiltered CI runs.
 * Example:
 ```csharp
