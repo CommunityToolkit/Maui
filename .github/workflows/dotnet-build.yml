@@ -48,7 +48,7 @@ env:
     PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
     PathToCommunityToolkitDeviceTestsCsproj: 'src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj'
     CommunityToolkitLibrary_Xcode_Version: '26.1'
-    CommunityToolkitSample_Xcode_Version: '^26'
+    CommunityToolkitSample_Xcode_Version: 'latest-stable'
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
