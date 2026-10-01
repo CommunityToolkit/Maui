@@ -65,8 +65,8 @@ public class PopupServiceTests : BaseViewTest
 		popupService.ShowPopup<MockPageViewModel>(navigation);
 
 		// Assert
-		Assert.Single(navigation.ModalStack);
-		Assert.IsType<PopupPage>(navigation.ModalStack[0]);
+		var modalPage = Assert.Single(navigation.ModalStack);
+		Assert.IsType<PopupPage>(modalPage);
 	}
 
 	[Fact]
@@ -84,8 +84,8 @@ public class PopupServiceTests : BaseViewTest
 		popupService.ShowPopup<MockPopup>(page);
 
 		// Assert
-		Assert.Single(navigation.ModalStack);
-		Assert.IsType<PopupPage>(navigation.ModalStack[0]);
+		var modalPage = Assert.Single(navigation.ModalStack);
+		Assert.IsType<PopupPage>(modalPage);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -109,10 +109,9 @@ public class PopupServiceTests : BaseViewTest
 		}
 
 		// Assert
-		Assert.Single(shell.Navigation.ModalStack);
-		Assert.IsType<PopupPage>(shell.Navigation.ModalStack[0]);
+		var modalPage = Assert.Single(shell.Navigation.ModalStack);
+		var popupPage = Assert.IsType<PopupPage>(modalPage);
 
-		var popupPage = (PopupPage)shell.Navigation.ModalStack[0];
 		var popup = (ShortLivedSelfClosingPopup)(popupPage.Content.PopupBorder.Content ?? throw new InvalidOperationException("Popup content cannot be null"));
 		Assert.Equal((Color)shellParameters[nameof(View.BackgroundColor)], popup.BackgroundColor);
 	}
@@ -295,7 +294,7 @@ public class PopupServiceTests : BaseViewTest
 	{
 		// Arrange
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
-		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		// Act
 		await cts.CancelAsync();
@@ -445,7 +444,7 @@ public class PopupServiceTests : BaseViewTest
 		Application.Current.Windows[0].Page = shell;
 
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
-		var cts = new CancellationTokenSource();
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await cts.CancelAsync();
 
 		// Act / Assert
@@ -550,8 +549,8 @@ public class PopupServiceTests : BaseViewTest
 		popupService.ShowPopup<MockPopup>(page.Navigation);
 
 		// Assert
-		Assert.Single(page.Navigation.ModalStack);
-		Assert.IsType<PopupPage>(page.Navigation.ModalStack[0]);
+		var modalPage = Assert.Single(page.Navigation.ModalStack);
+		Assert.IsType<PopupPage>(modalPage);
 
 		// Act 
 		var popupResult = await popupService.ClosePopupAsync(page.Navigation, TestContext.Current.CancellationToken);
@@ -577,8 +576,8 @@ public class PopupServiceTests : BaseViewTest
 		popupService.ShowPopup<MockPopup>(page);
 
 		// Assert
-		Assert.Single(page.Navigation.ModalStack);
-		Assert.IsType<PopupPage>(page.Navigation.ModalStack[0]);
+		var modalPage = Assert.Single(page.Navigation.ModalStack);
+		Assert.IsType<PopupPage>(modalPage);
 
 		// Act 
 		var popupResult = await popupService.ClosePopupAsync(page, TestContext.Current.CancellationToken);
@@ -604,8 +603,8 @@ public class PopupServiceTests : BaseViewTest
 		popupService.ShowPopup<MockPopup>(page.Navigation);
 
 		// Assert
-		Assert.Single(page.Navigation.ModalStack);
-		Assert.IsType<PopupPage>(page.Navigation.ModalStack[0]);
+		var modalPage = Assert.Single(page.Navigation.ModalStack);
+		Assert.IsType<PopupPage>(modalPage);
 
 		// Act 
 		var popupResult = await popupService.ClosePopupAsync(page.Navigation, expectedResult, TestContext.Current.CancellationToken);
@@ -632,8 +631,8 @@ public class PopupServiceTests : BaseViewTest
 		popupService.ShowPopup<MockPopup>(page);
 
 		// Assert
-		Assert.Single(page.Navigation.ModalStack);
-		Assert.IsType<PopupPage>(page.Navigation.ModalStack[0]);
+		var modalPage = Assert.Single(page.Navigation.ModalStack);
+		Assert.IsType<PopupPage>(modalPage);
 
 		// Act 
 		var popupResult = await popupService.ClosePopupAsync(page.Navigation, expectedResult, TestContext.Current.CancellationToken);

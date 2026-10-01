@@ -215,7 +215,7 @@ public class DefaultPopupOptionsSettingsTests : BaseViewTest
 	public void View_SetPopupOptionsDefaultsNotCalled_UsesPopupOptionsDefaults()
 	{
 		// Arrange
-		var popupPage = new PopupPage(new View(), null);
+		var popupPage = new PopupPage(new MockView(), null);
 		var popupBorder = popupPage.Content.PopupBorder;
 
 		// Assert
@@ -246,7 +246,7 @@ public class DefaultPopupOptionsSettingsTests : BaseViewTest
 	public void View_SetPopupOptionsNotCalled_PopupOptionsEmptyUsed_UsesPopupOptionsDefaults()
 	{
 		// Arrange
-		var popupPage = new PopupPage(new View(), PopupOptions.Empty);
+		var popupPage = new PopupPage(new MockView(), PopupOptions.Empty);
 		var popupBorder = popupPage.Content.PopupBorder;
 
 		// Assert
@@ -290,7 +290,7 @@ public class DefaultPopupOptionsSettingsTests : BaseViewTest
 		var builder = MauiApp.CreateBuilder();
 		builder.UseMauiCommunityToolkit(options => { options.SetPopupOptionsDefaults(defaultPopupSettings); });
 
-		var popupPage = new PopupPage(new View(), null);
+		var popupPage = new PopupPage(new MockView(), null);
 		var popupBorder = popupPage.Content.PopupBorder;
 
 		// Act
@@ -328,7 +328,7 @@ public class DefaultPopupOptionsSettingsTests : BaseViewTest
 		var builder = MauiApp.CreateBuilder();
 		builder.UseMauiCommunityToolkit(options => { options.SetPopupOptionsDefaults(new DefaultPopupOptionsSettings()); });
 
-		var popupPage = new PopupPage(new View(), defaultPopupSettings);
+		var popupPage = new PopupPage(new MockView(), defaultPopupSettings);
 		var popupBorder = popupPage.Content.PopupBorder;
 
 		// // Assert

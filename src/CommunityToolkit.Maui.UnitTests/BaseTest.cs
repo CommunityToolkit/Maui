@@ -10,8 +10,6 @@ public abstract class BaseTest : IDisposable, IAsyncDisposable
 {
 	protected const AppTheme initialAppTheme = AppTheme.Light;
 
-	protected readonly MockAppInfo mockAppInfo;
-
 	readonly CultureInfo defaultCulture, defaultUiCulture;
 
 	bool isDisposed;
@@ -21,15 +19,7 @@ public abstract class BaseTest : IDisposable, IAsyncDisposable
 		defaultCulture = Thread.CurrentThread.CurrentCulture;
 		defaultUiCulture = Thread.CurrentThread.CurrentUICulture;
 
-		DeviceDisplay.SetCurrent(null);
-		DeviceInfo.SetCurrent(null);
-		AppInfo.SetCurrent(mockAppInfo = new()
-		{
-			RequestedTheme = initialAppTheme
-		});
-
 		DispatcherProvider.SetCurrent(new MockDispatcherProvider());
-		DeviceDisplay.SetCurrent(null);
 	}
 
 	~BaseTest() => Dispose(false);
@@ -102,7 +92,6 @@ public abstract class BaseTest : IDisposable, IAsyncDisposable
 		Thread.CurrentThread.CurrentCulture = defaultCulture;
 		Thread.CurrentThread.CurrentUICulture = defaultUiCulture;
 
-		DeviceDisplay.SetCurrent(null);
 		DispatcherProvider.SetCurrent(null);
 
 		// Restore default options
