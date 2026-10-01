@@ -345,17 +345,8 @@ public partial class MediaManager : IDisposable
 			playerItemCancellationTokenSource = new();
 			var token = playerItemCancellationTokenSource.Token;
 
-			var observer = playerItem.AddObserver("status", ValueObserverOptions,
+			CurrentItemErrorObserver = playerItem.AddObserver("status", ValueObserverOptions,
 				_ => PlayerItemStatusChanged(playerItem, token).SafeFireAndForget(OnPlayerItemStatusChangedException, continueOnCapturedContext: true));
-
-			// The initial notification runs before `AddObserver` returns, and an event handler it raises can change the source or disconnect the handler
-			if (Player is null || !ReferenceEquals(PlayerItem, playerItem))
-			{
-				observer.Dispose();
-				return ValueTask.CompletedTask;
-			}
-
-			CurrentItemErrorObserver = observer;
 		}
 
 		return ValueTask.CompletedTask;
