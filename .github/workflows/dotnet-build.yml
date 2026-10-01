@@ -48,7 +48,7 @@ env:
     PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
     PathToCommunityToolkitDeviceTestsCsproj: 'src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj'
     CommunityToolkitLibrary_Xcode_Version: '26.1'
-    CommunityToolkitSample_Xcode_Version: 'latest-stable'
+    CommunityToolkitSample_Xcode_Version: '27.0'
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -61,7 +61,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                os: [ windows-latest, macos-26 ]
+                os: [ windows-latest, xcode-27 ]
         steps:
             -   name: Checkout code
                 uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
