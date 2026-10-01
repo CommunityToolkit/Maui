@@ -3,4 +3,5 @@
   <application android:allowBackup="false" android:icon="@mipmap/appicon" android:hardwareAccelerated="true" android:supportsRtl="true" android:usesCleartextTraffic="false">
   </application>
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

@@ -23,19 +23,23 @@ dotnet build src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceT
 
 The **DeviceRunners visual runner** UI displays test results with pass/fail counts, per-test details, and diagnostics.
 
-### `dotnet test` (CI / Headless, Recommended)
+### `VSTest` target (CI / Headless, Recommended)
 
 ```bash
-dotnet test src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -f net10.0-android
-dotnet test src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -f net10.0-ios
-dotnet test src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -f net10.0-maccatalyst
-dotnet test src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -f net10.0-windows10.0.19041.0
+dotnet build src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -t:VSTest -f net10.0-android
+dotnet build src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -t:VSTest -f net10.0-ios
+dotnet build src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -t:VSTest -f net10.0-maccatalyst
+dotnet build src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj -t:VSTest -f net10.0-windows10.0.19041.0
 ```
 
-The `DeviceRunners.Testing.Targets` package hooks into `dotnet test` to build, deploy, run, and collect TRX results automatically. Filter tests with `--filter`:
+The `DeviceRunners.Testing.Targets` package replaces the `VSTest` target to build, deploy, run, and collect TRX results automatically.
+
+> `dotnet test` cannot be used for this project: `global.json` opts the repository into Microsoft.Testing.Platform, and `dotnet test` then rejects VSTest-based projects such as this one. Invoking the `VSTest` target through `dotnet build` runs the same DeviceRunners pipeline.
+
+Filter tests with `-p:VSTestTestCaseFilter`:
 
 ```bash
-dotnet test ... -f net10.0-android --filter "FullyQualifiedName~StatusBarBehavior"
+dotnet build ... -t:VSTest -f net10.0-android "-p:VSTestTestCaseFilter=FullyQualifiedName~StatusBarBehavior"
 ```
 
 ## Architecture

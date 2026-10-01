@@ -1,6 +1,7 @@
 using System.Reflection;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
@@ -215,59 +216,44 @@ public partial class MultiValueConverterExtensionTests
 
 #endregion
 
-#region NullableExtensions Tests (internal, via reflection)
+#region NullableExtensions Tests (internal)
 
 public class NullableExtensionsTests
 {
-	// NullableExtensions lives in CommunityToolkit.Maui.Core, not CommunityToolkit.Maui
-	static readonly Type nullableExtensionsType = typeof(CommunityToolkit.Maui.Core.Extensions.ColorConversionExtensions).Assembly
-		.GetType("CommunityToolkit.Maui.Core.Extensions.NullableExtensions")
-		?? throw new InvalidOperationException("NullableExtensions type not found");
-
-	static readonly MethodInfo isNullableMethod = nullableExtensionsType
-		.GetMethod("IsNullable", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
-		?? throw new InvalidOperationException("IsNullable method not found");
-
 	[Fact]
 	public void IsNullable_ReferenceType_ReturnsTrue()
 	{
-		var result = isNullableMethod.Invoke(null, [typeof(string)]);
-		Assert.Equal(true, result);
+		Assert.True(typeof(string).IsNullable());
 	}
 
 	[Fact]
 	public void IsNullable_NullableValueType_ReturnsTrue()
 	{
-		var result = isNullableMethod.Invoke(null, [typeof(int?)]);
-		Assert.Equal(true, result);
+		Assert.True(typeof(int?).IsNullable());
 	}
 
 	[Fact]
 	public void IsNullable_ValueType_ReturnsFalse()
 	{
-		var result = isNullableMethod.Invoke(null, [typeof(int)]);
-		Assert.Equal(false, result);
+		Assert.False(typeof(int).IsNullable());
 	}
 
 	[Fact]
 	public void IsNullable_Bool_ReturnsFalse()
 	{
-		var result = isNullableMethod.Invoke(null, [typeof(bool)]);
-		Assert.Equal(false, result);
+		Assert.False(typeof(bool).IsNullable());
 	}
 
 	[Fact]
 	public void IsNullable_NullableBool_ReturnsTrue()
 	{
-		var result = isNullableMethod.Invoke(null, [typeof(bool?)]);
-		Assert.Equal(true, result);
+		Assert.True(typeof(bool?).IsNullable());
 	}
 
 	[Fact]
 	public void IsNullable_Object_ReturnsTrue()
 	{
-		var result = isNullableMethod.Invoke(null, [typeof(object)]);
-		Assert.Equal(true, result);
+		Assert.True(typeof(object).IsNullable());
 	}
 }
 

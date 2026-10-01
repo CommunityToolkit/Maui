@@ -29,7 +29,7 @@
 
     <!-- Suppress xunit analyzer rules for pre-existing test patterns -->
     <!-- IL3000: Assembly.Location is valid for MAUI device test apps (not single-file published) -->
-    <NoWarn>$(NoWarn);xUnit2032;xUnit1004;IL3000</NoWarn>
+    <NoWarn>$(NoWarn);xUnit2032;IL3000</NoWarn>
 
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>

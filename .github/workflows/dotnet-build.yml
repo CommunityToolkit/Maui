@@ -337,15 +337,18 @@ jobs:
                         Add-AppxPackage -Path $_.FullName -ErrorAction SilentlyContinue
                     }
 
+            # global.json opts `dotnet test` into Microsoft.Testing.Platform, which rejects the VSTest-based DeviceRunners project.
+            # Invoke the DeviceRunners VSTest target directly instead.
             -   name: Run Tests
                 run: |
-                    dotnet test ${{ env.PathToCommunityToolkitDeviceTestsCsproj }} `
+                    dotnet build ${{ env.PathToCommunityToolkitDeviceTestsCsproj }} `
+                        -t:VSTest `
                         -f net10.0-windows10.0.19041.0 `
                         -c Release `
                         -p:IsCI=true `
-                        --filter "Category!=ExpectedFailure" `
-                        --logger "trx;LogFileName=test-results.trx" `
-                        --results-directory .\artifacts\test-results `
+                        "-p:VSTestTestCaseFilter=Category!=ExpectedFailure" `
+                        "-p:VSTestLogger=trx%3BLogFileName=test-results.trx" `
+                        "-p:VSTestResultsDirectory=${{ github.workspace }}\artifacts\test-results" `
                         /bl:.\artifacts\logs\msbuild-test.binlog
                 shell: pwsh
 
@@ -375,11 +378,6 @@ jobs:
             -   name: Set Xcode Version
                 uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
                 with:
-                    xcode-version: '26.6'
-
-            -   name: Set Xcode Version
-                uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
-                with:
                     xcode-version: ${{ env.CommunityToolkitLibrary_Xcode_Version }}
 
             -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
@@ -396,16 +394,19 @@ jobs:
             -   name: Display dotnet info
                 run: dotnet --info
 
+            # global.json opts `dotnet test` into Microsoft.Testing.Platform, which rejects the VSTest-based DeviceRunners project.
+            # Invoke the DeviceRunners VSTest target directly instead.
             -   name: Run Tests
                 run: |
-                    dotnet test ${{ env.PathToCommunityToolkitDeviceTestsCsproj }} \
+                    dotnet build ${{ env.PathToCommunityToolkitDeviceTestsCsproj }} \
+                        -t:VSTest \
                         -f net10.0-maccatalyst \
                         -r maccatalyst-x64 \
                         -c Release \
                         -p:IsCI=true \
-                        --filter "Category!=ExpectedFailure" \
-                        --logger "trx;LogFileName=test-results.trx" \
-                        --results-directory ./artifacts/test-results \
+                        "-p:VSTestTestCaseFilter=Category!=ExpectedFailure" \
+                        "-p:VSTestLogger=trx%3BLogFileName=test-results.trx" \
+                        "-p:VSTestResultsDirectory=${{ github.workspace }}/artifacts/test-results" \
                         /bl:./artifacts/logs/msbuild-test.binlog
                 shell: bash
 

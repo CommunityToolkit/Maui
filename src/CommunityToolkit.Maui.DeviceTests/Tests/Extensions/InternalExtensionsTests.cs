@@ -30,7 +30,7 @@ public class CryptographyExtensionsTests
 	[Fact]
 	public void GetMd5Hash_DefaultSeparator_UsesDash()
 	{
-		var hash = "test".GetMd5Hash("-");
+		var hash = "test".GetMd5Hash();
 
 		Assert.NotNull(hash);
 		Assert.Contains("-", hash);
@@ -122,6 +122,9 @@ public class WeakReferenceExtensionsTests
 
 public class SafeFireAndForgetExtensionsTests
 {
+	// Upper bound for the onException callback; the test fails with a TimeoutException if it is never invoked
+	static readonly TimeSpan callbackTimeout = TimeSpan.FromSeconds(5);
+
 	[Fact]
 	public async Task SafeFireAndForget_CompletedTask_DoesNotThrow()
 	{
@@ -147,11 +150,7 @@ public class SafeFireAndForgetExtensionsTests
 
 		faultedTask.SafeFireAndForget(in onException, in continueOnCapturedContext);
 
-		// Give the fire-and-forget a moment to process
-		await Task.Delay(100);
-
-		Assert.True(tcs.Task.IsCompleted);
-		Assert.IsType<InvalidOperationException>(await tcs.Task);
+		Assert.IsType<InvalidOperationException>(await tcs.Task.WaitAsync(callbackTimeout));
 	}
 
 	[Fact]
@@ -176,9 +175,6 @@ public class SafeFireAndForgetExtensionsTests
 
 		faultedTask.SafeFireAndForget(in onException, in continueOnCapturedContext);
 
-		await Task.Delay(100);
-
-		Assert.True(tcs.Task.IsCompleted);
-		Assert.IsType<InvalidOperationException>(await tcs.Task);
+		Assert.IsType<InvalidOperationException>(await tcs.Task.WaitAsync(callbackTimeout));
 	}
 }

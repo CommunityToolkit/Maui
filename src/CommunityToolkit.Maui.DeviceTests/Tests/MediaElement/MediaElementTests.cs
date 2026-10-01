@@ -127,18 +127,36 @@ public class MediaElementOptionsTests
 	public void MediaElementOptions_SetDefaultAndroidViewType()
 	{
 		var options = new MediaElementOptions();
-		options.SetDefaultAndroidViewType(AndroidViewType.TextureView);
+		var originalViewType = MediaElementOptions.DefaultAndroidViewType;
 
-		Assert.Equal(AndroidViewType.TextureView, MediaElementOptions.DefaultAndroidViewType);
+		try
+		{
+			options.SetDefaultAndroidViewType(AndroidViewType.TextureView);
+
+			Assert.Equal(AndroidViewType.TextureView, MediaElementOptions.DefaultAndroidViewType);
+		}
+		finally
+		{
+			options.SetDefaultAndroidViewType(originalViewType);
+		}
 	}
 
 	[Fact]
 	public void MediaElementOptions_SetIsAndroidForegroundServiceEnabled()
 	{
 		var options = new MediaElementOptions();
-		options.SetIsAndroidForegroundServiceEnabled(true);
+		var originalIsEnabled = MediaElementOptions.IsAndroidForegroundServiceEnabled;
 
-		Assert.True(MediaElementOptions.IsAndroidForegroundServiceEnabled);
+		try
+		{
+			options.SetIsAndroidForegroundServiceEnabled(true);
+
+			Assert.True(MediaElementOptions.IsAndroidForegroundServiceEnabled);
+		}
+		finally
+		{
+			options.SetIsAndroidForegroundServiceEnabled(originalIsEnabled);
+		}
 	}
 }
 

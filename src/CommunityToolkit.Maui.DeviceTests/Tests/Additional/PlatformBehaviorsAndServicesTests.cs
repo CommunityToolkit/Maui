@@ -463,16 +463,19 @@ public class StatusBarBehaviorTests
 	}
 
 	[Fact]
-	public void StatusBarBehavior_CanBeDetachedFromPage()
+	public async Task StatusBarBehavior_CanBeDetachedFromPage()
 	{
-		var page = new ContentPage();
-		var behavior = new StatusBarBehavior();
+		await MainThread.InvokeOnMainThreadAsync(() =>
+		{
+			var page = new ContentPage();
+			var behavior = new StatusBarBehavior();
 
-		page.Behaviors.Add(behavior);
-		Assert.Single(page.Behaviors.OfType<StatusBarBehavior>());
+			page.Behaviors.Add(behavior);
+			Assert.Single(page.Behaviors.OfType<StatusBarBehavior>());
 
-		page.Behaviors.Remove(behavior);
-		Assert.Empty(page.Behaviors.OfType<StatusBarBehavior>());
+			page.Behaviors.Remove(behavior);
+			Assert.Empty(page.Behaviors.OfType<StatusBarBehavior>());
+		});
 	}
 
 	[Fact]
@@ -860,65 +863,34 @@ public class OptionsTests
 	[Fact]
 	public void Options_SetShouldSuppressExceptionsInConverters_Works()
 	{
-		var options = CreateOptions();
+		var options = new Options();
 		options.SetShouldSuppressExceptionsInConverters(true);
-
-		var value = GetInternalStaticProperty<bool>("CommunityToolkit.Maui.Options", "ShouldSuppressExceptionsInConverters");
-		Assert.True(value);
+		Assert.True(Options.ShouldSuppressExceptionsInConverters);
 
 		options.SetShouldSuppressExceptionsInConverters(false);
-		value = GetInternalStaticProperty<bool>("CommunityToolkit.Maui.Options", "ShouldSuppressExceptionsInConverters");
-		Assert.False(value);
+		Assert.False(Options.ShouldSuppressExceptionsInConverters);
 	}
 
 	[Fact]
 	public void Options_SetShouldSuppressExceptionsInAnimations_Works()
 	{
-		var options = CreateOptions();
+		var options = new Options();
 		options.SetShouldSuppressExceptionsInAnimations(true);
-
-		var value = GetInternalStaticProperty<bool>("CommunityToolkit.Maui.Options", "ShouldSuppressExceptionsInAnimations");
-		Assert.True(value);
+		Assert.True(Options.ShouldSuppressExceptionsInAnimations);
 
 		options.SetShouldSuppressExceptionsInAnimations(false);
-		value = GetInternalStaticProperty<bool>("CommunityToolkit.Maui.Options", "ShouldSuppressExceptionsInAnimations");
-		Assert.False(value);
+		Assert.False(Options.ShouldSuppressExceptionsInAnimations);
 	}
 
 	[Fact]
 	public void Options_SetShouldSuppressExceptionsInBehaviors_Works()
 	{
-		var options = CreateOptions();
+		var options = new Options();
 		options.SetShouldSuppressExceptionsInBehaviors(true);
-
-		var value = GetInternalStaticProperty<bool>("CommunityToolkit.Maui.Options", "ShouldSuppressExceptionsInBehaviors");
-		Assert.True(value);
+		Assert.True(Options.ShouldSuppressExceptionsInBehaviors);
 
 		options.SetShouldSuppressExceptionsInBehaviors(false);
-		value = GetInternalStaticProperty<bool>("CommunityToolkit.Maui.Options", "ShouldSuppressExceptionsInBehaviors");
-		Assert.False(value);
-	}
-
-	static Options CreateOptions()
-	{
-		var type = typeof(Options);
-		var constructor = type.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
-		Assert.NotNull(constructor);
-		return (Options)constructor.Invoke(null);
-	}
-
-	static T GetInternalStaticProperty<T>(string typeName, string propertyName)
-	{
-		var assembly = typeof(Options).Assembly;
-		var type = assembly.GetType(typeName);
-		Assert.NotNull(type);
-
-		var property = type.GetProperty(propertyName, BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
-		Assert.NotNull(property);
-
-		var value = property.GetValue(null);
-		Assert.NotNull(value);
-		return (T)value;
+		Assert.False(Options.ShouldSuppressExceptionsInBehaviors);
 	}
 }
 

@@ -82,7 +82,7 @@ public class CameraInfoTests
 {
 	/// <summary>
 	/// CameraInfo has platform-specific constructor parameters (e.g. MediaFrameSourceGroup on Windows)
-	/// that require real camera hardware to instantiate. Skip these tests in CI/headless environments.
+	/// that require real camera hardware to instantiate. These tests are tagged ExpectedFailure so CI filters them out.
 	/// </summary>
 	static CameraInfo CreateCameraInfo(string name, string deviceId, CameraPosition position, bool isFlashSupported, float minZoom, float maxZoom, IEnumerable<Size> resolutions)
 	{
@@ -111,7 +111,8 @@ public class CameraInfoTests
 		return (CameraInfo)constructors[0].Invoke(args);
 	}
 
-	[Fact(Skip = "Requires platform-specific camera hardware (MediaFrameSourceGroup on Windows)")]
+	[Fact]
+	[Trait("Category", "ExpectedFailure")]
 	public void CameraInfo_CanBeCreated()
 	{
 		var cameraInfo = CreateCameraInfo(
@@ -127,7 +128,8 @@ public class CameraInfoTests
 		Assert.Equal(2, cameraInfo.SupportedResolutions.Count);
 	}
 
-	[Fact(Skip = "Requires platform-specific camera hardware (MediaFrameSourceGroup on Windows)")]
+	[Fact]
+	[Trait("Category", "ExpectedFailure")]
 	public void CameraInfo_FrontCamera()
 	{
 		var cameraInfo = CreateCameraInfo(
@@ -138,7 +140,8 @@ public class CameraInfoTests
 		Assert.False(cameraInfo.IsFlashSupported);
 	}
 
-	[Fact(Skip = "Requires platform-specific camera hardware (MediaFrameSourceGroup on Windows)")]
+	[Fact]
+	[Trait("Category", "ExpectedFailure")]
 	public void CameraInfo_Equality()
 	{
 		var camera1 = CreateCameraInfo("Cam", "id1", CameraPosition.Rear, true, 1.0f, 5.0f, [new Size(1920, 1080)]);
@@ -147,7 +150,8 @@ public class CameraInfoTests
 		Assert.Equal(camera1, camera2);
 	}
 
-	[Fact(Skip = "Requires platform-specific camera hardware (MediaFrameSourceGroup on Windows)")]
+	[Fact]
+	[Trait("Category", "ExpectedFailure")]
 	public void CameraInfo_Inequality()
 	{
 		var camera1 = CreateCameraInfo("Cam1", "id1", CameraPosition.Rear, true, 1.0f, 5.0f, [new Size(1920, 1080)]);
