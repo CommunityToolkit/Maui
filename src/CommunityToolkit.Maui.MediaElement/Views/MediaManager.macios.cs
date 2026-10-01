@@ -807,12 +807,16 @@ public partial class MediaManager : IDisposable
 		}
 
 		// AVPlayer reports a rate of 0 while paused, that is not a change of the requested Speed
-		if (Player.Rate is 0 || AreFloatingPointNumbersEqual(MediaElement.Speed, Player.Rate))
+		if (Player.Rate is 0)
 		{
 			return;
 		}
 
-		MediaElement.Speed = Player.Rate;
+		if (!AreFloatingPointNumbersEqual(MediaElement.Speed, Player.Rate))
+		{
+			MediaElement.Speed = Player.Rate;
+		}
+
 		if (metaData is not null)
 		{
 			metaData.NowPlayingInfo.PlaybackRate = (float)MediaElement.Speed;
@@ -828,13 +832,13 @@ public partial class MediaManager : IDisposable
 		}
 
 		// AVPlayer.Play() always starts playback at a rate of 1, setting the rate starts playback at the requested Speed
-		if (MediaElement.Speed > 0)
+		if (MediaElement.Speed is 0)
 		{
-			Player.Rate = (float)MediaElement.Speed;
+			Player.Play();
 		}
 		else
 		{
-			Player.Play();
+			Player.Rate = (float)MediaElement.Speed;
 		}
 	}
 }
