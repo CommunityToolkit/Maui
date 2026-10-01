@@ -1,5 +1,6 @@
 ﻿using AVFoundation;
 using AVKit;
+using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Views;
 using CoreFoundation;
 using CoreGraphics;
@@ -335,7 +336,9 @@ public partial class MediaManager : IDisposable
 			// Bind the callback to the observed item so a stale callback can't act on a newer item
 			var playerItem = PlayerItem;
 			CurrentItemErrorObserver = playerItem.AddObserver("status",
-				ValueObserverOptions, _ => PlayerItemStatusChanged(playerItem));
+				ValueObserverOptions, _ => PlayerItemStatusChanged(playerItem).SafeFireAndForget(
+					ex => Logger.LogError(ex, "{LogMessage}", "Failed to handle AVPlayerItem status change."),
+					continueOnCapturedContext: true));
 		}
 
 		return ValueTask.CompletedTask;
@@ -693,7 +696,7 @@ public partial class MediaManager : IDisposable
 	}
 
 
-	async void PlayerItemStatusChanged(AVPlayerItem playerItem)
+	async Task PlayerItemStatusChanged(AVPlayerItem playerItem)
 	{
 		// Ignore callbacks from an item that is no longer current, or that arrive after disposal
 		if (Player is null || !ReferenceEquals(PlayerItem, playerItem))
