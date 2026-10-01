@@ -36,6 +36,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	// Ensures MediaOpened is raised once per source; ExoPlayer re-enters the ready state after every seek and rebuffer
 	bool hasMediaOpened;
 
+	// True from the moment a new source is assigned until it is handed to ExoPlayer.
+	// Until then the player still reports the previous source, which must not overwrite the Opening state or raise events
+	bool isSourceChanging;
+
 	double? previousSpeed;
 	float volumeBeforeMute = 1;
 
@@ -150,7 +154,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason)
 	{
 		// Outside of the ready state, playWhenReady does not change what the player is doing
-		if (Player?.PlaybackState is not readyState)
+		if (isSourceChanging || Player?.PlaybackState is not readyState)
 		{
 			return;
 		}
@@ -168,7 +172,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// </remarks>
 	public void OnPlaybackStateChanged(int playbackState)
 	{
-		if (Player is null || MediaElement.Source is null)
+		if (isSourceChanging || Player is null || MediaElement.Source is null)
 		{
 			return;
 		}
@@ -462,6 +466,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		if (MediaElement.Source is null)
 		{
+			isSourceChanging = false;
 			Player.ClearMediaItems();
 			MediaElement.Duration = TimeSpan.Zero;
 			MediaElement.CurrentStateChanged(MediaElementState.None);
@@ -479,17 +484,28 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			currentStreamDataSourceFactory = null;
 		}
 
+		var source = MediaElement.Source;
+		isSourceChanging = true;
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
-		Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
 		cancellationTokenSource ??= new();
 		// ConfigureAwait(true) is required to prevent crash on startup
 		var result = await SetPlayerData(cancellationTokenSource.Token).ConfigureAwait(true);
+
+		// The source was changed again while awaiting, the newer update is responsible for the player
+		if (!ReferenceEquals(source, MediaElement.Source))
+		{
+			return;
+		}
+
 		var item = result?.Build();
 
 		if (item?.MediaMetadata is not null)
 		{
-			// Reset here, not before the await above, as the previous source can still reach the ready state until it is replaced
 			hasMediaOpened = false;
+
+			// Set while the listener is still ignoring the player, as this would otherwise be reported for the previous source
+			Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
+			isSourceChanging = false;
 
 			// If we have a custom stream data source, we need to set the media source differently
 			if (currentStreamDataSourceFactory is not null && MediaElement.Source is StreamMediaSource)
@@ -515,6 +531,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 			Player.Prepare();
 			hasSetSource = true;
+		}
+		else
+		{
+			isSourceChanging = false;
 		}
 
 		if (hasSetSource && isAndroidForegroundServiceEnabled)
