@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Android.App;
 using Android.Content;
 using Android.Util;
 using Android.Views;
@@ -25,6 +24,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : Java.Lang.Object, IPlayerListener
 {
+	const int idleState = 1;
 	const int bufferState = 2;
 	const int readyState = 3;
 	const int endedState = 4;
@@ -32,6 +32,13 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	readonly HttpClient client = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 	bool isAndroidForegroundServiceEnabled = false;
+
+	// Ensures MediaOpened is raised once per source; ExoPlayer re-enters the ready state after every seek and rebuffer
+	bool hasMediaOpened;
+
+	// True from the moment a new source is assigned until it is handed to ExoPlayer.
+	// Until then the player still reports the previous source, which must not overwrite the Opening state or raise events
+	bool isSourceChanging;
 
 	double? previousSpeed;
 	float volumeBeforeMute = 1;
@@ -76,56 +83,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		if (session is not null && Player is not null)
 		{
 			connection.Binder.Service.UpdateNotifications(session, Player);
-		}
-	}
-
-	/// <summary>
-	/// Occurs when ExoPlayer changes the player state.
-	/// </summary>
-	/// <paramref name="playWhenReady">Indicates whether the player should start playing the media whenever the media is ready.</paramref>
-	/// <paramref name="playbackState">The state that the player has transitioned to.</paramref>
-	/// <remarks>
-	/// This is part of the <see cref="IPlayerListener"/> implementation.
-	/// While this method does not seem to have any references, it's invoked at runtime.
-	/// </remarks>
-	public void OnPlayerStateChanged(bool playWhenReady, int playbackState)
-	{
-		if (Player is null || MediaElement.Source is null)
-		{
-			return;
-		}
-
-		var newState = playbackState switch
-		{
-			PlaybackState.StateFastForwarding
-				or PlaybackState.StateRewinding
-				or PlaybackState.StateSkippingToNext
-				or PlaybackState.StateSkippingToPrevious
-				or PlaybackState.StateSkippingToQueueItem
-				or PlaybackState.StatePlaying => playWhenReady
-					? MediaElementState.Playing
-					: MediaElementState.Paused,
-
-			PlaybackState.StatePaused => MediaElementState.Paused,
-
-			PlaybackState.StateConnecting
-				or PlaybackState.StateBuffering => MediaElementState.Buffering,
-
-			PlaybackState.StateNone => MediaElementState.None,
-			PlaybackState.StateStopped => MediaElement.CurrentState is not MediaElementState.Failed
-				? MediaElementState.Stopped
-				: MediaElementState.Failed,
-
-			PlaybackState.StateError => MediaElementState.Failed,
-
-			_ => MediaElementState.None,
-		};
-
-		MediaElement.CurrentStateChanged(newState);
-		if (playbackState is readyState)
-		{
-			MediaElement.Duration = TimeSpan.FromMilliseconds(Player.Duration < 0 ? 0 : Player.Duration);
-			MediaElement.Position = TimeSpan.FromMilliseconds(Player.CurrentPosition < 0 ? 0 : Player.CurrentPosition);
 		}
 	}
 
@@ -186,6 +143,26 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	}
 
 	/// <summary>
+	/// Occurs when ExoPlayer is asked to play or pause.
+	/// </summary>
+	/// <paramref name="playWhenReady">Indicates whether the player should start playing the media whenever the media is ready.</paramref>
+	/// <paramref name="reason">The reason for the change.</paramref>
+	/// <remarks>
+	/// This is part of the <see cref="IPlayerListener"/> implementation.
+	/// While this method does not seem to have any references, it's invoked at runtime.
+	/// </remarks>
+	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason)
+	{
+		// Outside of the ready state, playWhenReady does not change what the player is doing
+		if (isSourceChanging || Player?.PlaybackState is not readyState)
+		{
+			return;
+		}
+
+		UpdateCurrentState();
+	}
+
+	/// <summary>
 	/// Occurs when ExoPlayer changes the playback state.
 	/// </summary>
 	/// <paramref name="playbackState">The state that the player has transitioned to.</paramref>
@@ -195,27 +172,35 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// </remarks>
 	public void OnPlaybackStateChanged(int playbackState)
 	{
-		if (MediaElement.Source is null)
+		if (isSourceChanging || Player is null || MediaElement.Source is null)
 		{
 			return;
 		}
 
-		MediaElementState newState = MediaElement.CurrentState;
-		switch (playbackState)
+		if (playbackState is readyState)
 		{
-			case bufferState:
-				newState = MediaElementState.Buffering;
-				break;
-			case endedState:
-				newState = MediaElementState.Stopped;
-				MediaElement.MediaEnded();
-				break;
-			case readyState:
-				seekToTaskCompletionSource?.TrySetResult();
-				break;
+			MediaElement.Duration = TimeSpan.FromMilliseconds(Player.Duration < 0 ? 0 : Player.Duration);
+			MediaElement.Position = TimeSpan.FromMilliseconds(Player.CurrentPosition < 0 ? 0 : Player.CurrentPosition);
 		}
 
-		MediaElement.CurrentStateChanged(newState);
+		// Update the state before raising events so that handlers observe the new state and can safely change it
+		UpdateCurrentState();
+
+		switch (playbackState)
+		{
+			case readyState:
+				if (!hasMediaOpened)
+				{
+					hasMediaOpened = true;
+					MediaElement.MediaOpened();
+				}
+
+				seekToTaskCompletionSource?.TrySetResult();
+				break;
+			case endedState:
+				MediaElement.MediaEnded();
+				break;
+		}
 	}
 
 	/// <summary>
@@ -347,10 +332,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	{
 	}
 
-	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason)
-	{
-	}
-
 	public void OnPositionDiscontinuity(PlayerPositionInfo? oldPosition, PlayerPositionInfo? newPosition, int reason)
 	{
 	}
@@ -406,6 +387,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnTracksChanged(Tracks? tracks)
 	{
 	}
+
+	#endregion
 
 	protected virtual partial void PlatformPlay()
 	{
@@ -483,6 +466,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		if (MediaElement.Source is null)
 		{
+			isSourceChanging = false;
 			Player.ClearMediaItems();
 			MediaElement.Duration = TimeSpan.Zero;
 			MediaElement.CurrentStateChanged(MediaElementState.None);
@@ -500,15 +484,29 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			currentStreamDataSourceFactory = null;
 		}
 
+		var source = MediaElement.Source;
+		isSourceChanging = true;
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
-		Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
 		cancellationTokenSource ??= new();
 		// ConfigureAwait(true) is required to prevent crash on startup
 		var result = await SetPlayerData(cancellationTokenSource.Token).ConfigureAwait(true);
+
+		// The source was changed again while awaiting, the newer update is responsible for the player
+		if (!ReferenceEquals(source, MediaElement.Source))
+		{
+			return;
+		}
+
 		var item = result?.Build();
 
 		if (item?.MediaMetadata is not null)
 		{
+			hasMediaOpened = false;
+
+			// Set while the listener is still ignoring the player, as this would otherwise be reported for the previous source
+			Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
+			isSourceChanging = false;
+
 			// If we have a custom stream data source, we need to set the media source differently
 			if (currentStreamDataSourceFactory is not null && MediaElement.Source is StreamMediaSource)
 			{
@@ -534,18 +532,14 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			Player.Prepare();
 			hasSetSource = true;
 		}
-
-		if (hasSetSource)
+		else
 		{
-			if (Player.PlayerError is null)
-			{
-				MediaElement.MediaOpened();
-			}
+			isSourceChanging = false;
+		}
 
-			if (isAndroidForegroundServiceEnabled)
-			{
-				UpdateNotifications();
-			}
+		if (hasSetSource && isAndroidForegroundServiceEnabled)
+		{
+			UpdateNotifications();
 		}
 	}
 
@@ -928,22 +922,27 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		return mediaItem;
 	}
 
-	#endregion
-
-	static class PlaybackState
+	void UpdateCurrentState()
 	{
-		public const int StateBuffering = 6;
-		public const int StateConnecting = 8;
-		public const int StateFailed = 7;
-		public const int StateFastForwarding = 4;
-		public const int StateNone = 0;
-		public const int StatePaused = 2;
-		public const int StatePlaying = 3;
-		public const int StateRewinding = 5;
-		public const int StateSkippingToNext = 10;
-		public const int StateSkippingToPrevious = 9;
-		public const int StateSkippingToQueueItem = 11;
-		public const int StateStopped = 1;
-		public const int StateError = 7;
+		if (Player is null || MediaElement.Source is null)
+		{
+			return;
+		}
+
+		var newState = Player.PlaybackState switch
+		{
+			// ExoPlayer only returns to idle when it is stopped or when it fails
+			idleState => Player.PlayerError is null
+				? MediaElementState.Stopped
+				: MediaElementState.Failed,
+			bufferState => MediaElementState.Buffering,
+			readyState => Player.PlayWhenReady
+				? MediaElementState.Playing
+				: MediaElementState.Paused,
+			endedState => MediaElementState.Stopped,
+			_ => MediaElement.CurrentState
+		};
+
+		MediaElement.CurrentStateChanged(newState);
 	}
 }
