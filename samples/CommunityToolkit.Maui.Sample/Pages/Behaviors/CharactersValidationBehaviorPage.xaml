@@ -23,7 +23,7 @@
     <pages:BasePage.Content>
         <VerticalStackLayout
             Spacing="25"
-            VerticalOptions="StartAndExpand">
+            VerticalOptions="Start">
             <Label
                 Text="Text color will change accordingly to the style that is configured when an invalid string is entered." />
 
@@ -46,24 +46,24 @@
                     ItemsSource="{Binding CharacterTypes, Mode=OneTime}" />
                 <Label Grid.Row="1"
                        Grid.Column="0"
-                       VerticalOptions="FillAndExpand"
+                       VerticalOptions="Fill"
                        VerticalTextAlignment="Center"
                        Text="MinimumCharacterCountEntry" />
                 <Entry Grid.Row="1" Grid.Column="1"
                        x:Name="MinimumCharacterCountEntry"
                        Keyboard="Numeric"
                        Text="2"
-                       VerticalOptions="FillAndExpand" />
+                       VerticalOptions="Fill" />
                 <Label Grid.Row="2"
                        Grid.Column="0"
-                       VerticalOptions="FillAndExpand"
+                       VerticalOptions="Fill"
                        VerticalTextAlignment="Center"
                        Text="MaximumCharacterCountEntry" />
                 <Entry Grid.Row="2" Grid.Column="1"
                        x:Name="MaximumCharacterCountEntry"
                        Keyboard="Numeric"
                        Text="20"
-                       VerticalOptions="FillAndExpand" />
+                       VerticalOptions="Fill" />
             </Grid>
 
             <Label Text="Type characters for validation behavior according to the settings you set upon." />

@@ -27,8 +27,8 @@
               ColumnDefinitions="Auto, Auto">
 
             <Label Text="The IndexToArrayItemConverter is a converter that allows users to convert a int value binding to an item in an array. The int value being data bound represents the indexer used to access the array. The array is passed in through the ConverterParameter."
-                   VerticalOptions="FillAndExpand"
-                   HorizontalOptions="FillAndExpand" 
+                   VerticalOptions="Fill"
+                   HorizontalOptions="Fill" 
                    Grid.ColumnSpan="2"/>
 
             <Label Text="Change SelectedIndex to change SelectedItem"
@@ -47,7 +47,7 @@
 
             <Label x:DataType="{x:Type Stepper}" 
                     Text="{Binding Source={x:Reference Stepper}, Path=Value, StringFormat='Selected index: {0}'}"
-                    VerticalOptions="CenterAndExpand"
+                    VerticalOptions="Center"
                     FontAttributes="Bold"
                     Grid.Row="2"
                     Grid.Column="1"/>

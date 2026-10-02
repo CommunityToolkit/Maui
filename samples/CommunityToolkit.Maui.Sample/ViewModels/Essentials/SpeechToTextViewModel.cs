@@ -22,6 +22,7 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 
 		Locales.CollectionChanged += HandleLocalesCollectionChanged;
 		this.speechToText.StateChanged += HandleSpeechToTextStateChanged;
+		this.speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
 		this.speechToText.RecognitionResultCompleted += HandleRecognitionResultCompleted;
 	}
 
@@ -41,19 +42,42 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StopListenCommand))]
 	public partial bool CanStopListenExecute { get; set; } = false;
 
+	public async ValueTask DisposeAsync()
+	{
+		GC.SuppressFinalize(this);
+
+		Locales.CollectionChanged -= HandleLocalesCollectionChanged;
+		this.speechToText.StateChanged -= HandleSpeechToTextStateChanged;
+		this.speechToText.RecognitionResultUpdated -= HandleRecognitionResultUpdated;
+		this.speechToText.RecognitionResultCompleted -= HandleRecognitionResultCompleted;
+		await speechToText.DisposeAsync();
+	}
+
+	static async Task<bool> ArePermissionsGranted(ISpeechToText speechToText)
+	{
+		var microphonePermissionStatus = await Permissions.RequestAsync<Permissions.Microphone>();
+		var isSpeechToTextPermissionsGranted = await speechToText.RequestPermissions(CancellationToken.None);
+
+		return microphonePermissionStatus is PermissionStatus.Granted
+			   && isSpeechToTextPermissionsGranted;
+	}
+
 	[RelayCommand]
 	async Task SetLocales(CancellationToken token)
 	{
 		Locales.Clear();
 
-		var locales = await textToSpeech.GetLocalesAsync().WaitAsync(token);
+		IReadOnlyList<Locale> locales = [.. await textToSpeech.GetLocalesAsync().WaitAsync(token)];
 
 		foreach (var locale in locales.OrderBy(x => x.Language).ThenBy(x => x.Name))
 		{
 			Locales.Add(locale);
 		}
 
-		CurrentLocale = Locales.FirstOrDefault();
+		var currentLocale = locales.FirstOrDefault(l => l.Language.Equals(CultureInfo.CurrentUICulture.Name, StringComparison.OrdinalIgnoreCase))
+							?? locales.FirstOrDefault(l => l.Language.Equals(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, StringComparison.OrdinalIgnoreCase));
+
+		CurrentLocale = currentLocale ?? locales[0];
 	}
 
 	[RelayCommand]
@@ -80,21 +104,25 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 	}
 
 	[RelayCommand(CanExecute = nameof(CanStartListenExecute))]
-	async Task StartListen()
+	async Task StartListen(CancellationToken cancellationToken)
 	{
 		CanStartListenExecute = false;
 		CanStopListenExecute = true;
 
-		var isGranted = await speechToText.RequestPermissions(CancellationToken.None);
+		var isGranted = await ArePermissionsGranted(speechToText);
 		if (!isGranted)
 		{
-			await Toast.Make("Permission not granted").Show(CancellationToken.None);
+			await Toast.Make("Permission not granted").Show(cancellationToken);
+			CanStartListenExecute = true;
+			CanStopListenExecute = false;
 			return;
 		}
 
-		if (Connectivity.NetworkAccess != NetworkAccess.Internet)
+		if (Connectivity.NetworkAccess is not NetworkAccess.Internet)
 		{
-			await Toast.Make("Internet connection is required").Show(CancellationToken.None);
+			await Toast.Make("Internet connection is required").Show(cancellationToken);
+			CanStartListenExecute = true;
+			CanStopListenExecute = false;
 			return;
 		}
 
@@ -102,34 +130,42 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 
 		RecognitionText = beginSpeakingPrompt;
 
-		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
-
-		await speechToText.StartListenAsync(new SpeechToTextOptions()
+		try
 		{
-			Culture = CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage),
-			ShouldReportPartialResults = true
-		}, CancellationToken.None);
 
-		if (RecognitionText is beginSpeakingPrompt)
+			await speechToText.StartListenAsync(new SpeechToTextOptions
+			{
+				Culture = CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage),
+				AutoStopSilenceTimeout = TimeSpan.FromSeconds(5),
+				ShouldReportPartialResults = true
+			}, cancellationToken);
+
+			if (RecognitionText is beginSpeakingPrompt)
+			{
+				RecognitionText = string.Empty;
+			}
+		}
+		catch
 		{
-			RecognitionText = string.Empty;
+			CanStartListenExecute = true;
+			CanStopListenExecute = false;
+
+			throw;
 		}
 	}
 
 	[RelayCommand(CanExecute = nameof(CanStopListenExecute))]
-	Task StopListen()
+	Task StopListen(CancellationToken cancellationToken)
 	{
 		CanStartListenExecute = true;
 		CanStopListenExecute = false;
 
-		speechToText.RecognitionResultUpdated -= HandleRecognitionResultUpdated;
-
-		return speechToText.StopListenAsync(CancellationToken.None);
+		return speechToText.StopListenAsync(cancellationToken);
 	}
 
 	void HandleRecognitionResultUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs e)
 	{
-		RecognitionText += e.RecognitionResult;
+		RecognitionText += $" {e.RecognitionResult}";
 	}
 
 	void HandleRecognitionResultCompleted(object? sender, SpeechToTextRecognitionResultCompletedEventArgs e)
@@ -145,10 +181,5 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 	void HandleLocalesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 	{
 		OnPropertyChanged(nameof(CurrentLocale));
-	}
-
-	public async ValueTask DisposeAsync()
-	{
-		await speechToText.DisposeAsync();
 	}
 }

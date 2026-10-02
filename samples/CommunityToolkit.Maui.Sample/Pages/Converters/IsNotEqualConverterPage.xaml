@@ -25,10 +25,10 @@
             <Label Text="The IsNotEqualConverter is a converter that allows users to convert any value binding to a boolean depending on whether or not it is equal to a different value. The initial binding contains the object that will be compared and the ConverterParameter contains the object to compare it to." TextColor="{StaticResource NormalLabelTextColor}" />
             <Entry Margin="0"
                     Text="{Binding InputValue}" 
-                    HorizontalOptions="FillAndExpand"/>
+                    HorizontalOptions="Fill"/>
             <Label Text="Does the entry text not equal &quot;MAUI&quot;?"/>
-            <Label FontSize="Large" 
-                    HorizontalOptions="FillAndExpand"
+            <Label FontSize="24" 
+                    HorizontalOptions="Fill"
                     Text="No, it does not"
                     TextColor="Red">
                 <Label.Triggers>

@@ -19,7 +19,7 @@
                 <Setter Property="Margin" Value="0,16,0,6" />
                 <Setter Property="FontAttributes" Value="Bold" />
                 <Setter Property="HorizontalOptions" Value="Center" />
-                <Setter Property="FontSize" Value="Large" />
+                <Setter Property="FontSize" Value="24" />
             </Style>
         </ResourceDictionary>
     </ContentPage.Resources>
@@ -29,7 +29,7 @@
 
             <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
                 <Label
-                    FontSize="Body"
+                    FontSize="14"
                     HorizontalOptions="Center"
                     HorizontalTextAlignment="Center"
                     Text="{Binding TouchCount, StringFormat='Touches: {0}'}" />
@@ -46,7 +46,7 @@
                 </Image>
 
                 <Label Style="{StaticResource SectionHeader}" Text="Scale | Fade | Animated" />
-                <HorizontalStackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="Center">
+                <HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Center">
                     <HorizontalStackLayout.Behaviors>
                         <mct:TouchBehavior
                             BindingContext="{Binding Path=BindingContext, Source={x:Reference CurrentPage}, x:DataType=ContentPage}"
@@ -77,13 +77,13 @@
 
                 <Label
                     Margin="0,0,0,6"
-                    FontSize="Body"
-                    HorizontalOptions="CenterAndExpand"
+                    FontSize="12"
+                    HorizontalOptions="Center"
                     Text="{Binding LongPressCount, StringFormat='Long press count: {0}'}" />
                 <HorizontalStackLayout
                     Padding="20"
                     Background="Black"
-                    HorizontalOptions="CenterAndExpand">
+                    HorizontalOptions="Center">
                     <HorizontalStackLayout.Behaviors>
                         <mct:TouchBehavior
                             BindingContext="{Binding Path=BindingContext, Source={x:Reference CurrentPage}, x:DataType=ContentPage}"
@@ -93,7 +93,7 @@
                             LongPressCommand="{Binding IncreaseLongPressCountCommand}" />
                     </HorizontalStackLayout.Behaviors>
                     <Label
-                        FontSize="Large"
+                        FontSize="24"
                         Text="TITLE"
                         TextColor="White"
                         VerticalOptions="Start" />
@@ -106,7 +106,7 @@
                 <HorizontalStackLayout
                     Padding="20"
                     BackgroundColor="Gold"
-                    HorizontalOptions="CenterAndExpand">
+                    HorizontalOptions="Center">
 
                     <HorizontalStackLayout.Behaviors>
                         <mct:TouchBehavior
@@ -120,7 +120,7 @@
                     </HorizontalStackLayout.Behaviors>
 
                     <Label
-                        FontSize="Large"
+                        FontSize="24"
                         Text="TITLE"
                         TextColor="White" />
                 </HorizontalStackLayout>

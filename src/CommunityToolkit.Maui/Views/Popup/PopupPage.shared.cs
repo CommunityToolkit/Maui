@@ -1,12 +1,13 @@
 using System.ComponentModel;
 using System.Globalization;
-using System.Windows.Input;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.Shapes;
+using NavigationPage = Microsoft.Maui.Controls.NavigationPage;
+using Page = Microsoft.Maui.Controls.Page;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -23,9 +24,17 @@ sealed partial class PopupPage<T>(Popup<T> popup, IPopupOptions? popupOptions)
 
 partial class PopupPage : ContentPage, IQueryAttributable
 {
+	/// <summary>
+	/// Used by all <c>ShowPopup</c> and <c>ClosePopup</c> flows to ensure navigation operations for <see cref="PopupPage"/>
+	/// are queued and never run concurrently, avoiding race conditions with the .NET MAUI navigation stack.
+	/// (e.g. <see cref="INavigation.PushModalAsync(Page, bool)"/>, <see cref="INavigation.PopModalAsync(bool)"/>, and <see cref="Shell.GoToAsync(ShellNavigationState, IDictionary{string,object})"/>).
+	/// </summary>
+	static readonly SemaphoreSlim navigationSemaphoreSlim = new(1, 1);
+
 	readonly Popup popup;
 	readonly IPopupOptions popupOptions;
 	readonly Command tapOutsideOfPopupCommand;
+
 
 	public PopupPage(View view, IPopupOptions? popupOptions)
 		: this(view as Popup ?? CreatePopupFromView<Popup>(view), popupOptions)
@@ -46,14 +55,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			await CloseAsync(new PopupResult(true));
 		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
 
-
-		var pageTapGestureRecognizer = new TapGestureRecognizer();
-		pageTapGestureRecognizer.Tapped += HandleTapGestureRecognizerTapped;
-
-		base.Content = new PopupPageLayout(popup, popupOptions)
-		{
-			GestureRecognizers = { pageTapGestureRecognizer }
-		};
+		var popupPageLayout = new PopupPageLayout(popup, popupOptions, () => TryExecuteTapOutsideOfPopupCommand());
+		base.Content = popupPageLayout;
 
 		popup.PropertyChanged += HandlePopupPropertyChanged;
 		if (popupOptions is BindableObject bindablePopupOptions)
@@ -66,6 +69,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		Shell.SetPresentationMode(this, PresentationMode.ModalNotAnimated);
 		On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.OverFullScreen);
+		NavigationPage.SetHasNavigationBar(this, false);
 	}
 
 	public event EventHandler<IPopupResult>? PopupClosed;
@@ -74,6 +78,46 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	// Casts `PopupPage.Content` to return typeof(PopupPageLayout)
 	internal new PopupPageLayout Content => (PopupPageLayout)base.Content;
 
+	public async Task ShowAsync(INavigation navigation, CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(navigation);
+		await navigationSemaphoreSlim.WaitAsync(token);
+
+		try
+		{
+			token.ThrowIfCancellationRequested();
+			await navigation.PushModalAsync(this, false);
+		}
+		finally
+		{
+			navigationSemaphoreSlim.Release();
+		}
+	}
+
+	public async Task ShowAsync(Shell shell, string shellRoute, IDictionary<string, object>? shellParameters = null, CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(shell);
+		ArgumentException.ThrowIfNullOrEmpty(shellRoute, nameof(shellRoute));
+		await navigationSemaphoreSlim.WaitAsync(token);
+
+		try
+		{
+			token.ThrowIfCancellationRequested();
+			if (shellParameters is null)
+			{
+				await shell.GoToAsync(shellRoute);
+			}
+			else
+			{
+				await shell.GoToAsync(shellRoute, shellParameters);
+			}
+		}
+		finally
+		{
+			navigationSemaphoreSlim.Release();
+		}
+	}
+
 	public async Task CloseAsync(PopupResult result, CancellationToken token = default)
 	{
 		// We first call `.ThrowIfCancellationRequested()` to ensure we don't throw one of the `InvalidOperationException`s (below) if the `CancellationToken` has already been canceled.
@@ -81,50 +125,134 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		// It may feel a bit redundant, given that we again call `ThrowIfCancellationRequested` later in this method, however, this ensures we propagate the correct Exception to the developer.
 		token.ThrowIfCancellationRequested();
 
-		var popupPageToClose = Navigation.ModalStack.OfType<PopupPage>().LastOrDefault(popupPage => popupPage.Content == Content);
-
-		if (popupPageToClose is null)
+		// Handle edge case where a Popup was pushed inside a custom IPageContainer (e.g. a NavigationPage) on the Modal Stack
+		var navigationPageOnModalStackContainingPopupPage = Navigation.ModalStack.OfType<IPageContainer<Page>>().LastOrDefault();
+		if (navigationPageOnModalStackContainingPopupPage is not null && navigationPageOnModalStackContainingPopupPage.CurrentPage is not PopupPage)
 		{
-			throw new PopupNotFoundException();
+			navigationPageOnModalStackContainingPopupPage = null;
 		}
 
-		if (Navigation.ModalStack[^1] is Microsoft.Maui.Controls.Page currentVisibleModalPage
-			&& currentVisibleModalPage != popupPageToClose)
+		var popupPageToClose = navigationPageOnModalStackContainingPopupPage?.CurrentPage as PopupPage
+							   ?? Navigation.ModalStack.OfType<PopupPage>().LastOrDefault()
+							   ?? throw new PopupNotFoundException();
+
+		// PopModalAsync will pop the last (top) page from the ModalStack
+		// Ensure that the PopupPage the user is attempting to close is the last (top) page on the Modal stack before calling Navigation.PopModalAsync
+		switch (Navigation.ModalStack[^1])
 		{
-			throw new PopupBlockedException(currentVisibleModalPage);
+			// Handle the edge case where the visible modal page is a navigation page containing a Popup that is not the Popup to be closed 
+			case IPageContainer<Page> { CurrentPage: PopupPage visiblePopupPageInCustomPageContainer } when visiblePopupPageInCustomPageContainer.Content != Content:
+				throw new PopupBlockedException(visiblePopupPageInCustomPageContainer);
+
+			// Handle edge case where the top of the modal stack is an IPageContainer whose CurrentPage is NOT a PopupPage
+			// (e.g. a modal NavigationPage pushed after showing a popup).
+			case IPageContainer<Page> { CurrentPage: not PopupPage }:
+				throw new PopupBlockedException(Navigation.ModalStack[^1]);
+
+			// Handle edge case where the visible modal page is not the Popup to be closed 
+			case ContentPage currentVisibleModalPage when currentVisibleModalPage.Content != Content:
+				throw new PopupBlockedException(currentVisibleModalPage);
 		}
 
-		// We call `.ThrowIfCancellationRequested()` again to avoid a race condition where a developer cancels the CancellationToken after we check for an InvalidOperationException
-		// At first glance, it may look redundant given that we are using `.WaitAsync(token)` in the next step,
-		// However, `Navigation.PopModalAsync()` may return a completed Task, and when a completed Task is returned, `.WaitAsync(token)` is never invoked.
-		// In other words, `.WaitAsync(token)` may not throw an `OperationCanceledException` as expected which is why we call `.ThrowIfCancellationRequested()` again here
-		// Here's the .NET MAUI Source code demonstrating that `Navigation.PopModalAsync()` sometimes returns `Task.FromResult()`: https://github.com/dotnet/maui/blob/e5c252ec7f430cbaf28c8a815a249e3270b49844/src/Controls/src/Core/NavigationProxy.cs#L192-L196
-		token.ThrowIfCancellationRequested();
-		await Navigation.PopModalAsync(false).WaitAsync(token);
+		if (popupPageToClose.Content != Content)
+		{
+			throw new PopupBlockedException(popupPageToClose);
+		}
 
-		PopupClosed?.Invoke(this, result);
+		var popupConfirmedPoppedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var parentWindow = GetParentWindow();
+		parentWindow.ModalPopped += HandleModalPagePopped;
+		NavigatedFrom += HandleNavigatedFrom;
+
+
+		try
+		{
+			// navigationSemaphoreSlim must be in the outer try/finally block to ensure we unsubscribe ModalPopped and NavigatedFrom events when CancellationToken is canceled
+			// When CancellationToken is canceled during navigationSemaphoreSlim.WaitAsync(), the SemaphoreSlim is never acquired. We only want to release navigationSemaphoreSlim in a finally block if it has been acquired (i.e. after navigationSemaphoreSlim.WaitAsync executes successfully) 
+			// The inner try/finally block ensures we release navigationSemaphoreSlim after its acquisition if any subsequent line of code throws an exception or completes successfully
+			await navigationSemaphoreSlim.WaitAsync(token);
+
+			try
+			{
+				await Navigation.PopModalAsync(false);
+
+				// Clean up Popup resources
+				Content.TapGestureGestureOverlay.GestureRecognizers.Clear();
+				popup.PropertyChanged -= HandlePopupPropertyChanged;
+				if (popupOptions is BindableObject bindablePopupOptions)
+				{
+					bindablePopupOptions.PropertyChanged -= HandlePopupOptionsPropertyChanged;
+				}
+
+				// Wait for MAUI to confirm the PopupPage has been popped before invoking the PopupClosed event and notifying the Popup that it may invoke its `Popup.Closed` event.
+				// This guarantees the Popup has been removed from MAUI's ModalStack
+				await popupConfirmedPoppedTcs.Task;
+
+				PopupClosed?.Invoke(this, result);
+				popup.NotifyPopupIsClosed();
+			}
+			finally
+			{
+				navigationSemaphoreSlim.Release();
+			}
+		}
+		finally
+		{
+			parentWindow.ModalPopped -= HandleModalPagePopped;
+			NavigatedFrom -= HandleNavigatedFrom;
+		}
+
+		void HandleModalPagePopped(object? sender, ModalPoppedEventArgs e)
+		{
+			if (e.Modal == this)
+			{
+				popupConfirmedPoppedTcs.TrySetResult();
+			}
+		}
+
+		void HandleNavigatedFrom(object? sender, NavigatedFromEventArgs e)
+		{
+			if (e.IsDestinationPageACommunityToolkitPopupPage())
+			{
+				// Ignore transitions where the destination is another PopupPage
+				// that means this popup is still active in popup-navigation flows.
+				return;
+			}
+
+			if (navigationPageOnModalStackContainingPopupPage?.CurrentPage == this)
+			{
+				// When `navigationPageOnModalStackContainingPopupPage.CurrentPage == this` is true,
+				// this PopupPage is still the active page in the custom IPageContainer.
+				// In other words, MAUI has not yet popped it off the ModalStack.
+				return;
+			}
+
+			popupConfirmedPoppedTcs.TrySetResult();
+		}
 	}
 
-	protected override bool OnBackButtonPressed()
+	void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
 	{
-		TryExecuteTapOutsideOfPopupCommand();
+		if (popup is IQueryAttributable popupIQueryAttributable)
+		{
+			popupIQueryAttributable.ApplyQueryAttributes(query);
+		}
 
-		// Always return true to let the Android Operating System know that we are manually handling the Navigation request from the Android Back Button
+		if (popup.Content is IQueryAttributable popupContentIQueryAttributable)
+		{
+			popupContentIQueryAttributable.ApplyQueryAttributes(query);
+		}
+	}
+
+	internal bool TryExecuteTapOutsideOfPopupCommand()
+	{
+		if (!tapOutsideOfPopupCommand.CanExecute(null))
+		{
+			return false;
+		}
+
+		tapOutsideOfPopupCommand.Execute(null);
 		return true;
-	}
-
-	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
-	{
-		popup.NotifyPopupIsClosed();
-		base.Content.GestureRecognizers.Clear();
-		popup.PropertyChanged -= HandlePopupPropertyChanged;
-		base.OnNavigatedFrom(args);
-	}
-
-	protected override void OnNavigatedTo(NavigatedToEventArgs args)
-	{
-		base.OnNavigatedTo(args);
-		popup.NotifyPopupIsOpened();
 	}
 
 	protected static T CreatePopupFromView<T>(in View view) where T : Popup, new()
@@ -150,15 +278,18 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		return popup;
 	}
 
-	internal bool TryExecuteTapOutsideOfPopupCommand()
+	protected override bool OnBackButtonPressed()
 	{
-		if (!tapOutsideOfPopupCommand.CanExecute(null))
-		{
-			return false;
-		}
+		TryExecuteTapOutsideOfPopupCommand();
 
-		tapOutsideOfPopupCommand.Execute(null);
+		// Always return true to let the Android Operating System know that we are manually handling the Navigation request from the Android Back Button
 		return true;
+	}
+
+	protected override void OnNavigatedTo(NavigatedToEventArgs args)
+	{
+		base.OnNavigatedTo(args);
+		popup.NotifyPopupIsOpened();
 	}
 
 	// Only dismiss when a user taps outside Popup when **both** Popup.CanBeDismissedByTappingOutsideOfPopup and PopupOptions.CanBeDismissedByTappingOutsideOfPopup are true
@@ -181,42 +312,22 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 	}
 
-	void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
+	internal sealed partial class PopupGestureOverlay : BoxView
 	{
-		if (popup is IQueryAttributable popupIQueryAttributable)
+		public PopupGestureOverlay()
 		{
-			popupIQueryAttributable.ApplyQueryAttributes(query);
-		}
-
-		if (popup.Content is IQueryAttributable popupContentIQueryAttributable)
-		{
-			popupContentIQueryAttributable.ApplyQueryAttributes(query);
-		}
-	}
-
-	void HandleTapGestureRecognizerTapped(object? sender, TappedEventArgs e)
-	{
-		ArgumentNullException.ThrowIfNull(sender);
-
-		var popupPageLayout = (PopupPageLayout)sender;
-		var position = e.GetPosition(Content);
-
-		if (position is null)
-		{
-			return;
-		}
-
-		// Execute tapOutsideOfPopupCommand only if tap occurred outside the PopupBorder 
-		if (popupPageLayout.PopupBorder.Bounds.Contains(position.Value) is false)
-		{
-			TryExecuteTapOutsideOfPopupCommand();
+			BackgroundColor = Colors.Transparent;
+			Background = Brush.Transparent;
 		}
 	}
 
 	internal sealed partial class PopupPageLayout : Grid
 	{
-		public PopupPageLayout(in Popup popupContent, in IPopupOptions options)
+		readonly Action tryExecuteTapOutsideOfPopupCommand;
+
+		public PopupPageLayout(in Popup popupContent, in IPopupOptions options, in Action tryExecuteTapOutsideOfPopupCommand)
 		{
+			this.tryExecuteTapOutsideOfPopupCommand = tryExecuteTapOutsideOfPopupCommand;
 			Background = BackgroundColor = null;
 
 			PopupBorder = new Border
@@ -238,10 +349,38 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			PopupBorder.SetBinding(Border.StrokeShapeProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay);
 			PopupBorder.SetBinding(Border.StrokeThicknessProperty, static (IPopupOptions options) => options.Shape, source: options, mode: BindingMode.OneWay, converter: new BorderStrokeThicknessConverter());
 
+			var overlayTapGestureRecognizer = new TapGestureRecognizer();
+			overlayTapGestureRecognizer.Tapped += HandleOverlayTapped;
+			TapGestureGestureOverlay = new PopupGestureOverlay();
+			TapGestureGestureOverlay.GestureRecognizers.Add(overlayTapGestureRecognizer);
+
+			Children.Add(TapGestureGestureOverlay);
 			Children.Add(PopupBorder);
+
+			AutomationProperties.SetIsInAccessibleTree(this, false);
+			AutomationProperties.SetIsInAccessibleTree(PopupBorder, false);
 		}
 
 		public Border PopupBorder { get; }
+		public PopupGestureOverlay TapGestureGestureOverlay { get; }
+
+		void HandleOverlayTapped(object? sender, TappedEventArgs e)
+		{
+			ArgumentNullException.ThrowIfNull(sender);
+
+			var position = e.GetPosition(this);
+
+			if (position is null)
+			{
+				return;
+			}
+
+			// Execute tapOutsideOfPopupCommand only if tap occurred outside the PopupBorder 
+			if (PopupBorder.Bounds.Contains(position.Value) is false)
+			{
+				tryExecuteTapOutsideOfPopupCommand();
+			}
+		}
 
 		sealed partial class BorderStrokeThicknessConverter : BaseConverterOneWay<Shape?, double>
 		{
@@ -261,21 +400,21 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		{
 			public override LayoutOptions DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.HorizontalOptions;
 
-			public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? Options.DefaultPopupSettings.HorizontalOptions : value;
+			public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? DefaultConvertReturnValue : value;
 		}
 
 		sealed partial class VerticalOptionsConverter : BaseConverterOneWay<LayoutOptions, LayoutOptions>
 		{
 			public override LayoutOptions DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.VerticalOptions;
 
-			public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? Options.DefaultPopupSettings.VerticalOptions : value;
+			public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? DefaultConvertReturnValue : value;
 		}
 
 		sealed partial class BackgroundColorConverter : BaseConverterOneWay<Color?, Color>
 		{
 			public override Color DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.BackgroundColor;
 
-			public override Color ConvertFrom(Color? value, CultureInfo? culture) => value ?? Options.DefaultPopupSettings.BackgroundColor;
+			public override Color ConvertFrom(Color? value, CultureInfo? culture) => value ?? DefaultConvertReturnValue;
 		}
 	}
 
@@ -283,13 +422,13 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	{
 		public override Thickness DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.Padding;
 
-		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value == default ? Options.DefaultPopupSettings.Padding : value;
+		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value.IsEmpty || value.IsNaN ? DefaultConvertReturnValue : value;
 	}
 
 	sealed partial class MarginConverter : BaseConverterOneWay<Thickness, Thickness>
 	{
 		public override Thickness DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.Margin;
 
-		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value == default ? Options.DefaultPopupSettings.Margin : value;
+		public override Thickness ConvertFrom(Thickness value, CultureInfo? culture) => value.IsEmpty || value.IsNaN ? DefaultConvertReturnValue : value;
 	}
 }

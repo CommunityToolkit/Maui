@@ -6,19 +6,16 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 /// <summary>
 /// Handler definition for the <see cref="ICameraView"/> implementation on each platform.
 /// </summary>
-#if TIZEN
-public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>
-#else
 public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>, IDisposable
-#endif
 {
 	/// <summary>
 	/// The currently defined mappings between properties on the <see cref="ICameraView"/> and
-	/// properties on the <see cref="NativePlatformCameraPreviewView"/>. 
+	/// properties on the <see cref="NativePlatformCameraPreviewView"/>.
 	/// </summary>
 	public static IPropertyMapper<ICameraView, CameraViewHandler> PropertyMapper = new PropertyMapper<ICameraView, CameraViewHandler>(ViewMapper)
 	{
 		[nameof(ICameraView.CameraFlashMode)] = MapCameraFlashMode,
+		[nameof(ICameraView.IsTorchOn)] = MapIsTorchOn,
 		[nameof(ICameraView.IsAvailable)] = MapIsAvailable,
 		[nameof(ICameraView.ZoomFactor)] = MapZoomFactor,
 		[nameof(ICameraView.ImageCaptureResolution)] = MapImageCaptureResolution,
@@ -27,7 +24,7 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 
 	/// <summary>
 	/// The currently defined mappings between commands on the <see cref="ICameraView"/> and
-	/// commands on the <see cref="NativePlatformCameraPreviewView"/>. 
+	/// commands on the <see cref="NativePlatformCameraPreviewView"/>.
 	/// </summary>
 	public static CommandMapper<ICameraView, CameraViewHandler> CommandMapper = new(ViewCommandMapper);
 
@@ -54,15 +51,15 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 
 	}
 
+	internal CameraManager CameraManager => cameraManager
+		?? throw new InvalidOperationException($"{nameof(CameraManager)} cannot be used until the native view has been created");
+
 	/// <inheritdoc/>
 	public void Dispose()
 	{
 		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
-
-	internal CameraManager CameraManager => cameraManager
-		?? throw new InvalidOperationException($"{nameof(CameraManager)} cannot be used until the native view has been created");
 
 	/// <summary>
 	/// Creates a platform-specific view that will be rendered on that platform.
@@ -72,13 +69,14 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		ArgumentNullException.ThrowIfNull(MauiContext);
 		cameraManager = new(MauiContext, VirtualView, cameraProvider, () => Init(VirtualView));
 
-		return (NativePlatformCameraPreviewView)CameraManager.CreatePlatformView();
+		return CameraManager.CreatePlatformView();
 
 		// When camera is loaded(switched), map the current flash mode to the platform view,
 		// reset the zoom factor to 1
 		void Init(ICameraView view)
 		{
 			MapCameraFlashMode(this, view);
+			MapIsTorchOn(this, view);
 			view.ZoomFactor = 1.0f;
 		}
 	}
@@ -88,15 +86,16 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	{
 		base.ConnectHandler(platformView);
 
-		await CameraManager.ArePermissionsGranted();
 		await CameraManager.ConnectCamera(CancellationToken.None);
-		await cameraProvider.RefreshAvailableCameras(CancellationToken.None);
 	}
 
 	/// <inheritdoc/>
 	protected override void DisconnectHandler(NativePlatformCameraPreviewView platformView)
 	{
 		base.DisconnectHandler(platformView);
+
+		CameraManager.Disconnect();
+
 		Dispose();
 	}
 
@@ -147,6 +146,11 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	static void MapCameraFlashMode(CameraViewHandler handler, ICameraView view)
 	{
 		handler.CameraManager.UpdateFlashMode(view.CameraFlashMode);
+	}
+
+	static void MapIsTorchOn(CameraViewHandler handler, ICameraView view)
+	{
+		handler.CameraManager.UpdateIsTorchOn(view.IsTorchOn);
 	}
 
 	static void MapZoomFactor(CameraViewHandler handler, ICameraView view)

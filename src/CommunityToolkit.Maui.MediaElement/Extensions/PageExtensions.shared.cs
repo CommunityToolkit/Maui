@@ -1,3 +1,4 @@
+using Microsoft.Maui.Controls;
 namespace CommunityToolkit.Maui.Extensions;
 
 // Since MediaElement can't access .NET MAUI internals we have to copy this code here
@@ -6,32 +7,30 @@ static class PageExtensions
 {
 	internal static Page GetCurrentPage(this Page currentPage)
 	{
-		if (currentPage.NavigationProxy.ModalStack.LastOrDefault() is Page modal)
+		if (currentPage.Navigation.ModalStack.LastOrDefault() is Page modal)
 		{
 			return modal;
 		}
-
-		if (currentPage is FlyoutPage flyoutPage)
+		else if (currentPage is FlyoutPage fp)
 		{
-			return GetCurrentPage(flyoutPage.Detail);
+			return GetCurrentPage(fp.Detail);
 		}
-
-		if (currentPage is Shell { CurrentItem.CurrentItem: IShellSectionController shellSectionController })
+		else if (currentPage is Shell shell && shell.CurrentPage is Page shellPage)
 		{
-			return shellSectionController.PresentedPage;
+			return GetCurrentPage(shellPage);
 		}
-
-		if (currentPage is IPageContainer<Page> paigeContainer)
+		else if (currentPage is IPageContainer<Page> pc)
 		{
-			return GetCurrentPage(paigeContainer.CurrentPage);
+			return GetCurrentPage(pc.CurrentPage);
 		}
-
-		return currentPage;
+		else
+		{
+			return currentPage;
+		}
 	}
 
 	internal record struct ParentWindow
 	{
-		static Page CurrentPage => GetCurrentPage(Application.Current?.Windows[^1].Page ?? throw new InvalidOperationException($"{nameof(Page)} cannot be null."));
 		/// <summary>
 		/// Checks if the parent window is null.
 		/// </summary>
@@ -51,5 +50,6 @@ static class PageExtensions
 				return CurrentPage.GetParentWindow().Handler?.PlatformView is not null;
 			}
 		}
+		static Page CurrentPage => GetCurrentPage(Application.Current?.Windows[^1].Page ?? throw new InvalidOperationException($"{nameof(Page)} cannot be null."));
 	}
 }

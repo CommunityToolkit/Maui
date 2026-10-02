@@ -3,23 +3,21 @@
 /// <summary>
 /// StateContainer Controller
 /// </summary>
-sealed class StateContainerController
+/// <remarks>
+/// Initialize <see cref="StateContainerController"/> with a <see cref="Layout"/>
+/// </remarks>
+/// <param name="layout">The layout that this controller manages.</param>
+sealed class StateContainerController(Layout layout)
 {
-	readonly WeakReference<Layout> layoutWeakReference;
+	readonly WeakReference<Layout> layoutWeakReference = new(layout);
 
 	string? previousState;
 	List<IView> originalContent = Enumerable.Empty<IView>().ToList();
 
 	/// <summary>
-	/// Initialize <see cref="StateContainerController"/> with a <see cref="Layout"/>
-	/// </summary>
-	/// <param name="layout"></param>
-	public StateContainerController(Layout layout) => layoutWeakReference = new WeakReference<Layout>(layout);
-
-	/// <summary>
 	/// The StateViews defined in the StateContainer.
 	/// </summary>
-	public required IList<View> StateViews { get; set; }
+	public required IList<View> StateViews { get; init; }
 
 	/// <summary>
 	/// Display the default content.
@@ -84,7 +82,14 @@ sealed class StateContainerController
 
 	View GetViewForState(string state)
 	{
-		var view = StateViews.FirstOrDefault(x => StateView.GetStateKey(x) == state);
-		return view ?? throw new StateContainerException($"View for {state} not defined.");
+		try
+		{
+			var view = StateViews.SingleOrDefault(x => StateView.GetStateKey(x) == state);
+			return view ?? throw new StateContainerException($"{nameof(StateView)} for {state} not defined.");
+		}
+		catch (InvalidOperationException e)
+		{
+			throw new StateContainerException($"Unable to determine {nameof(StateView)} for State: {state}. This State has been assigned to multiple {nameof(StateView)}s. Ensure each {nameof(StateView)} has a unique StateKey", e);
+		}
 	}
 }

@@ -20,7 +20,7 @@
 
     <VerticalStackLayout Padding="{StaticResource ContentPadding}"
                  Spacing="50"
-                 VerticalOptions="StartAndExpand">
+                 VerticalOptions="Start">
 
         <Label Text="The RequiredStringValidationBehavior is a behavior that allows the user to determine if text input is equal to specific text. For example, an Entry control can be styled differently depending on whether a valid or an invalid text input is provided. Additional properties handling validation are inherited from ValidationBehavior"
                TextColor="{StaticResource NormalLabelTextColor}" />

@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Animations;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
@@ -21,7 +22,7 @@ public class FadeAnimationTests : BaseTest
 	public async Task CancellationTokenCanceled()
 	{
 		FadeAnimation animation = new();
-		var cts = new CancellationTokenSource();
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		var label = new Label
 		{
@@ -66,5 +67,17 @@ public class FadeAnimationTests : BaseTest
 		await animation.Animate(label, TestContext.Current.CancellationToken);
 
 		label.Opacity.Should().Be(0.9);
+	}
+
+	[Fact]
+	public void EnsureDefaults()
+	{
+		// Arrange
+		var animation = new FadeAnimation();
+
+		// Act // Assert
+		Assert.Equal(BaseAnimationDefaults.Easing, animation.Easing);
+		Assert.Equal(FadeAnimationDefaults.Length, animation.Length);
+		Assert.Equal(FadeAnimationDefaults.Opacity, animation.Opacity);
 	}
 }

@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class TextValidationBehaviorTests() : BaseBehaviorTest<TextValidationBehavior, VisualElement>(new CharactersValidationBehavior(), new View())
+public class TextValidationBehaviorTests() : BaseBehaviorTest<TextValidationBehavior, VisualElement>(new CharactersValidationBehavior(), new MockView())
 {
 	[Theory]
 	[InlineData("mi.....ft", RegexOptions.IgnoreCase, 5, 25, TextDecorationFlags.None, "Microsoft", true)]
@@ -83,5 +83,19 @@ public class TextValidationBehaviorTests() : BaseBehaviorTest<TextValidationBeha
 			await cts.CancelAsync();
 			await behavior.ForceValidate(cts.Token);
 		});
+	}
+
+	[Fact]
+	public void VerifyDefaults()
+	{
+		// Arrange
+		var textValidationBehavior = new TextValidationBehavior();
+
+		// Act Assert
+		Assert.Equal(TextValidationBehaviorDefaults.DecorationFlags, textValidationBehavior.DecorationFlags);
+		Assert.Equal(TextValidationBehaviorDefaults.MaximumLength, textValidationBehavior.MaximumLength);
+		Assert.Equal(TextValidationBehaviorDefaults.MinimumLength, textValidationBehavior.MinimumLength);
+		Assert.Equal(TextValidationBehaviorDefaults.RegexOptions, textValidationBehavior.RegexOptions);
+		Assert.Equal(TextValidationBehaviorDefaults.RegexPattern, textValidationBehavior.RegexPattern);
 	}
 }

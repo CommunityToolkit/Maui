@@ -5,6 +5,7 @@
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Essentials.SpeechToTextPage"
                 xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Essentials"
                 xmlns:essentials="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Essentials"
+                xmlns:media="clr-namespace:Microsoft.Maui.Media;assembly=Microsoft.Maui.Essentials"
                 x:TypeArguments="vm:SpeechToTextViewModel"
                 x:DataType="vm:SpeechToTextViewModel"
                 Title="SpeechToText">
@@ -29,7 +30,7 @@
             <Picker
                 ItemsSource="{Binding Locales}"
                 SelectedItem="{Binding CurrentLocale}"
-                ItemDisplayBinding="{Binding ., x:DataType={x:Type Picker}, Converter={StaticResource PickerLocaleDisplayConverter}}"/>
+                ItemDisplayBinding="{Binding ., x:DataType={x:Type media:Locale}, Converter={StaticResource PickerLocaleDisplayConverter}}"/>
 
             <Label
                 Text="State"

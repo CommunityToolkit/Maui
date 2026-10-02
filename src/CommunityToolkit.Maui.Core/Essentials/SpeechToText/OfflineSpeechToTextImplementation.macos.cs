@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using AVFoundation;
 using Speech;
 
@@ -8,22 +7,18 @@ namespace CommunityToolkit.Maui.Media;
 /// <inheritdoc />
 public sealed partial class OfflineSpeechToTextImplementation
 {
-	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest))]
-	Task InternalStartListening(SpeechToTextOptions options, CancellationToken token = default)
+	[MemberNotNull(nameof(liveSpeechRequest))]
+	async Task InternalStartListening(SpeechToTextOptions options, CancellationToken token = default)
 	{
 		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(options.Culture.Name));
 		speechRecognizer.SupportsOnDeviceRecognition = true;
 
 		if (!speechRecognizer.Available)
 		{
-			throw new ArgumentException("Speech recognizer is not available");
+			throw new InvalidOperationException("Speech recognizer is not available");
 		}
 
-		audioEngine = new AVAudioEngine
-		{
-			AutoShutdownEnabled = false
-		};
-		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest()
+		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest
 		{
 			ShouldReportPartialResults = options.ShouldReportPartialResults,
 			RequiresOnDeviceRecognition = true
@@ -38,60 +33,30 @@ public sealed partial class OfflineSpeechToTextImplementation
 		audioSession.SetMode(mode, out var audioSessionError);
 		if (audioSessionError is not null)
 		{
-			throw new Exception(audioSessionError.LocalizedDescription);
+			throw new NSErrorException(audioSessionError);
 		}
 
 		audioSession.SetActive(true, AVAudioSessionSetActiveOptions.NotifyOthersOnDeactivation, out audioSessionError);
 		if (audioSessionError is not null)
 		{
-			throw new Exception(audioSessionError.LocalizedDescription);
+			throw new NSErrorException(audioSessionError);
 		}
 
 		var node = audioEngine.InputNode;
-		var recordingFormat = node.GetBusOutputFormat(0);
-		node.InstallTapOnBus(0, 1024, recordingFormat, (buffer, _) => liveSpeechRequest.Append(buffer));
+		var recordingFormat = node.GetBusOutputFormat(audioEngineBusTap);
+		node.InstallTapOnBus(audioEngineBusTap, 1024, recordingFormat, (buffer, _) => liveSpeechRequest.Append(buffer));
 
 		audioEngine.Prepare();
 		audioEngine.StartAndReturnError(out var error);
 
 		if (error is not null)
 		{
-			throw new Exception(error.LocalizedDescription);
+			throw new NSErrorException(error);
 		}
 
-		var currentIndex = 0;
-		recognitionTask = speechRecognizer.GetRecognitionTask(liveSpeechRequest, (result, err) =>
-		{
-			if (err is not null)
-			{
-				InternalStopListening();
-				OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception(err.LocalizedDescription)));
-			}
-			else
-			{
-				if (result.Final)
-				{
-					currentIndex = 0;
-					InternalStopListening();
-					OnRecognitionResultCompleted(SpeechToTextResult.Success(result.BestTranscription.FormattedString));
-				}
-				else
-				{
-					if (currentIndex <= 0)
-					{
-						OnSpeechToTextStateChanged(CurrentState);
-					}
+		token.ThrowIfCancellationRequested();
 
-					for (var i = currentIndex; i < result.BestTranscription.Segments.Length; i++)
-					{
-						var s = result.BestTranscription.Segments[i].Substring;
-						currentIndex++;
-						OnRecognitionResultUpdated(s);
-					}
-				}
-			}
-		});
-
-		return Task.CompletedTask;
+		silenceTimer = await CreateSilenceTimer(options, token);
+		recognitionTask = CreateSpeechRecognizerTask(speechRecognizer, liveSpeechRequest);
 	}
 }

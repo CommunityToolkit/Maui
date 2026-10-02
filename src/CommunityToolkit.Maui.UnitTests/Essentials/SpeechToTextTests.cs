@@ -21,7 +21,7 @@ public class SpeechToTextTests(ITestOutputHelper testOutputHelper) : BaseTest
 	public async Task StartListenAsyncFailsOnNet()
 	{
 		SpeechToText.SetDefault(new SpeechToTextImplementation());
-		await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => SpeechToText.StartListenAsync(new SpeechToTextOptions { Culture = CultureInfo.CurrentCulture }, TestContext.Current.CancellationToken));
+		await Assert.ThrowsAsync<NotSupportedException>(() => SpeechToText.StartListenAsync(new SpeechToTextOptions { Culture = CultureInfo.CurrentCulture }, TestContext.Current.CancellationToken));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -81,7 +81,7 @@ public class SpeechToTextTests(ITestOutputHelper testOutputHelper) : BaseTest
 	public async Task RequestPermissionsFailsOnNet()
 	{
 		SpeechToText.SetDefault(new SpeechToTextImplementation());
-		await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => SpeechToText.RequestPermissions(TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<NotImplementedException>(() => SpeechToText.RequestPermissions(TestContext.Current.CancellationToken));
 	}
 
 	[Fact]

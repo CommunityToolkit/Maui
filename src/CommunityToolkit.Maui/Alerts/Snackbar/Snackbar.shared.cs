@@ -2,12 +2,38 @@ using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Alerts;
 
+/// <summary>
+/// Extension methods for <see cref="VisualElement"/>.
+/// </summary>
+public static class SnackbarVisualElementExtension
+{
+	/// <summary>
+	/// Display snackbar anchored to <see cref="VisualElement"/>
+	/// </summary>
+	/// <param name="visualElement">Anchor element</param>
+	/// <param name="message">Text of the snackbar</param>
+	/// <param name="actionButtonText">Text of the snackbar button</param>
+	/// <param name="action">Action of the snackbar button</param>
+	/// <param name="duration">Snackbar duration</param>
+	/// <param name="visualOptions">Snackbar visual options</param>
+	/// <param name="token">Cancellation token</param>
+	public static Task DisplaySnackbar(
+		this VisualElement? visualElement,
+		string message,
+		Action? action = null,
+		string actionButtonText = AlertDefaults.ActionButtonText,
+		TimeSpan? duration = null,
+		SnackbarOptions? visualOptions = null,
+		CancellationToken token = default) => Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show(token);
+}
+
 /// <inheritdoc/>
 public partial class Snackbar : ISnackbar
 {
 	static readonly WeakEventManager weakEventManager = new();
 
 	bool isDisposed;
+	WeakReference<IView>? weakView;
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="Snackbar"/>
@@ -26,6 +52,24 @@ public partial class Snackbar : ISnackbar
 
 		Duration = GetDefaultTimeSpan();
 		VisualOptions = new SnackbarOptions();
+	}
+
+	/// <summary>
+	/// Occurs when <see cref="IsShown"/> changes.
+	/// </summary>
+	public static event EventHandler Shown
+	{
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
+	}
+
+	/// <summary>
+	/// Occurs when Snackbar is dismissed.
+	/// </summary>
+	public static event EventHandler Dismissed
+	{
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
 	}
 
 	/// <summary>
@@ -57,24 +101,19 @@ public partial class Snackbar : ISnackbar
 	public Action? Action { get; init; }
 
 	/// <inheritdoc/>
-	public IView? Anchor { get; init; }
-
-	/// <summary>
-	/// Occurs when <see cref="IsShown"/> changes.
-	/// </summary>
-	public static event EventHandler Shown
+	public IView? Anchor
 	{
-		add => weakEventManager.AddEventHandler(value);
-		remove => weakEventManager.RemoveEventHandler(value);
-	}
+		get => weakView is not null && weakView.TryGetTarget(out var view) ? view : null;
+		init
+		{
+			if (value is null)
+			{
+				weakView = null;
+				return;
+			}
 
-	/// <summary>
-	/// Occurs when Snackbar is dismissed.
-	/// </summary>
-	public static event EventHandler Dismissed
-	{
-		add => weakEventManager.AddEventHandler(value);
-		remove => weakEventManager.RemoveEventHandler(value);
+			weakView = new(value);
+		}
 	}
 
 	/// <summary>
@@ -138,29 +177,4 @@ public partial class Snackbar : ISnackbar
 		IsShown = false;
 		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(Dismissed));
 	}
-}
-
-/// <summary>
-/// Extension methods for <see cref="VisualElement"/>.
-/// </summary>
-public static class SnackbarVisualElementExtension
-{
-	/// <summary>
-	/// Display snackbar anchored to <see cref="VisualElement"/>
-	/// </summary>
-	/// <param name="visualElement">Anchor element</param>
-	/// <param name="message">Text of the snackbar</param>
-	/// <param name="actionButtonText">Text of the snackbar button</param>
-	/// <param name="action">Action of the snackbar button</param>
-	/// <param name="duration">Snackbar duration</param>
-	/// <param name="visualOptions">Snackbar visual options</param>
-	/// <param name="token">Cancellation token</param>
-	public static Task DisplaySnackbar(
-		this VisualElement? visualElement,
-		string message,
-		Action? action = null,
-		string actionButtonText = AlertDefaults.ActionButtonText,
-		TimeSpan? duration = null,
-		SnackbarOptions? visualOptions = null,
-		CancellationToken token = default) => Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show(token);
 }

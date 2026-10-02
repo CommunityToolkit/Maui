@@ -4,8 +4,6 @@ namespace CommunityToolkit.Maui.SourceGenerators;
 
 static class TextColorToDiagnostic
 {
-	const string category = "TextColorTo";
-
 	public static readonly DiagnosticDescriptor GlobalNamespace = new(
 		   "MCTSG001",
 		   "Global namespace is not support for this Source Generator",
@@ -37,5 +35,7 @@ static class TextColorToDiagnostic
 		   category,
 		   DiagnosticSeverity.Info,
 		   true);
+
+	const string category = "TextColorTo";
 
 }

@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.ExceptionServices;
 
 namespace CommunityToolkit.Maui.Storage;
 
@@ -17,6 +18,11 @@ public record FileSaverResult(string? FilePath, Exception? Exception)
 	public bool IsSuccessful => Exception is null;
 
 	/// <summary>
+	/// Check if the operation was cancelled.
+	/// </summary>
+	public bool IsCancelled => Exception is OperationCanceledException;
+
+	/// <summary>
 	/// Check if the operation was successful.
 	/// </summary>
 	[MemberNotNull(nameof(FilePath))]
@@ -24,7 +30,7 @@ public record FileSaverResult(string? FilePath, Exception? Exception)
 	{
 		if (!IsSuccessful)
 		{
-			throw Exception;
+			ExceptionDispatchInfo.Throw(Exception);
 		}
 	}
 }

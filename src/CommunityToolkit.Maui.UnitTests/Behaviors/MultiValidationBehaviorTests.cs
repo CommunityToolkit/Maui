@@ -1,9 +1,10 @@
 ﻿using CommunityToolkit.Maui.Behaviors;
+using CommunityToolkit.Maui.Core;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class MultiValidationBehaviorTests() : BaseBehaviorTest<MultiValidationBehavior, VisualElement>(new MultiValidationBehavior(), new View())
+public class MultiValidationBehaviorTests() : BaseBehaviorTest<MultiValidationBehavior, VisualElement>(new MultiValidationBehavior(), new MockView())
 {
 	[Theory]
 	[InlineData(CharacterType.Any, 1, 2, "A", "A", true)]
@@ -96,7 +97,7 @@ public class MultiValidationBehaviorTests() : BaseBehaviorTest<MultiValidationBe
 	public async Task ForceValidateCancellationTokenCanceled()
 	{
 		// Arrange
-		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		var characterValidationBehavior = new CharactersValidationBehavior();
 		var requiredStringValidationBehavior = new RequiredStringValidationBehavior();
@@ -118,5 +119,16 @@ public class MultiValidationBehaviorTests() : BaseBehaviorTest<MultiValidationBe
 
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await multiBehavior.ForceValidate(cts.Token));
+	}
+
+	[Fact]
+	public void VerifyDefaults()
+	{
+		// Arrange
+		var multiValidationBehavior = new MultiValidationBehavior();
+
+		// Act // Assert
+		Assert.Equal(MultiValidationBehaviorDefaults.Errors, multiValidationBehavior.Errors);
+		Assert.Equal(MultiValidationBehaviorDefaults.Error, MultiValidationBehavior.GetError(multiValidationBehavior));
 	}
 }

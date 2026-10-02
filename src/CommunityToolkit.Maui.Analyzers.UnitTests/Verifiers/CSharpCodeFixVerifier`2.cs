@@ -3,8 +3,10 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
+using Xunit;
 
 namespace CommunityToolkit.Maui.Analyzers.UnitTests;
+
 public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
 	where TAnalyzer : DiagnosticAnalyzer, new()
 	where TCodeFix : CodeFixProvider, new()
@@ -30,7 +32,7 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
 		};
 
 		test.ExpectedDiagnostics.AddRange(expected);
-		await test.RunAsync(CancellationToken.None);
+		await test.RunAsync(TestContext.Current.CancellationToken);
 	}
 
 	/// <inheritdoc cref="CodeFixVerifier{TAnalyzer, TCodeFix, TTest, TVerifier}.VerifyCodeFixAsync(string, string)"/>
@@ -51,6 +53,6 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
 		};
 
 		test.ExpectedDiagnostics.AddRange(expected);
-		await test.RunAsync(CancellationToken.None);
+		await test.RunAsync(TestContext.Current.CancellationToken);
 	}
 }

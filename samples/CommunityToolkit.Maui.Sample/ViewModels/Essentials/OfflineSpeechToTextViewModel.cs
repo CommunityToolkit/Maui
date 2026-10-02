@@ -10,12 +10,11 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 {
 	readonly ISpeechToText speechToText;
 
-	public OfflineSpeechToTextViewModel()
+	public OfflineSpeechToTextViewModel([FromKeyedServices("Offline")] ISpeechToText offlineTextToSpeech)
 	{
-		// For demo purposes. You can resolve dependency from the DI container,
-		speechToText = OfflineSpeechToText.Default;
-
+		speechToText = offlineTextToSpeech;
 		speechToText.StateChanged += HandleSpeechToTextStateChanged;
+		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
 		speechToText.RecognitionResultCompleted += HandleRecognitionResultCompleted;
 	}
 
@@ -24,13 +23,33 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 	[ObservableProperty]
 	public partial string? RecognitionText { get; set; } = "Welcome to .NET MAUI Community Toolkit!";
 
-	[RelayCommand]
-	async Task StartListen()
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StartListenCommand))]
+	public partial bool CanStartListenExecute { get; set; } = true;
+
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StopListenCommand))]
+	public partial bool CanStopListenExecute { get; set; } = false;
+
+	static async Task<bool> ArePermissionsGranted(ISpeechToText speechToText)
 	{
-		var isGranted = await speechToText.RequestPermissions(CancellationToken.None);
+		var microphonePermissionStatus = await Permissions.RequestAsync<Permissions.Microphone>();
+		var isSpeechToTextRequestPermissionsGranted = await speechToText.RequestPermissions(CancellationToken.None);
+
+		return microphonePermissionStatus is PermissionStatus.Granted
+			   && isSpeechToTextRequestPermissionsGranted;
+	}
+
+	[RelayCommand(CanExecute = nameof(CanStartListenExecute))]
+	async Task StartListen(CancellationToken token)
+	{
+		CanStartListenExecute = false;
+		CanStopListenExecute = true;
+
+		var isGranted = await ArePermissionsGranted(speechToText);
 		if (!isGranted)
 		{
-			await Toast.Make("Permission not granted").Show(CancellationToken.None);
+			await Toast.Make("Permission not granted").Show(token);
+			CanStartListenExecute = true;
+			CanStopListenExecute = false;
 			return;
 		}
 
@@ -38,26 +57,36 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 
 		RecognitionText = beginSpeakingPrompt;
 
-		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
-
-		await speechToText.StartListenAsync(new SpeechToTextOptions
+		try
 		{
-			Culture = CultureInfo.CurrentCulture,
-			ShouldReportPartialResults = true
-		}, CancellationToken.None);
+			await speechToText.StartListenAsync(new SpeechToTextOptions
+			{
+				AutoStopSilenceTimeout = TimeSpan.FromSeconds(5),
+				Culture = CultureInfo.CurrentCulture,
+				ShouldReportPartialResults = true
+			}, token);
 
-		if (RecognitionText is beginSpeakingPrompt)
+			if (RecognitionText is beginSpeakingPrompt)
+			{
+				RecognitionText = string.Empty;
+			}
+		}
+		catch
 		{
-			RecognitionText = string.Empty;
+			CanStartListenExecute = true;
+			CanStopListenExecute = false;
+
+			throw;
 		}
 	}
 
-	[RelayCommand]
-	Task StopListen()
+	[RelayCommand(CanExecute = nameof(CanStopListenExecute))]
+	Task StopListen(CancellationToken token)
 	{
-		speechToText.RecognitionResultUpdated -= HandleRecognitionResultUpdated;
+		CanStartListenExecute = true;
+		CanStopListenExecute = false;
 
-		return speechToText.StopListenAsync(CancellationToken.None);
+		return speechToText.StopListenAsync(token);
 	}
 
 	void HandleRecognitionResultUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs e)

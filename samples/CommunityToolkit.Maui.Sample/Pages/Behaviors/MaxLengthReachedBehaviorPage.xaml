@@ -30,7 +30,7 @@
                                VerticalTextAlignment="Center" />
                         <Entry x:Name="MaxLengthSetting"
                                Text="6"
-                               HorizontalOptions="StartAndExpand"
+                               HorizontalOptions="Start"
                                Keyboard="Numeric"
                                Grid.Column="1" />
 

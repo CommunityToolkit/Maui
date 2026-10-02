@@ -66,7 +66,7 @@ public static class ColorConversionExtensions
 	public static string ToCmykaString(this Color color, CultureInfo? cultureInfo = null)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return $"CMYKA({color.GetPercentCyan():P0},{color.GetPercentMagenta():P0},{color.GetPercentYellow():P0},{color.GetPercentBlackKey():P0},{color.Alpha.ToString(cultureInfo)})";
+		return $"CMYKA({color.GetPercentCyan().ToString("P0", cultureInfo)},{color.GetPercentMagenta().ToString("P0", cultureInfo)},{color.GetPercentYellow().ToString("P0", cultureInfo)},{color.GetPercentBlackKey().ToString("P0", cultureInfo)},{color.Alpha.ToString(cultureInfo)})";
 	}
 
 	/// <summary>

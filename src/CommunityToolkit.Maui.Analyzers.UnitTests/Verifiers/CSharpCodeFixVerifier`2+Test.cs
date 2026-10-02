@@ -5,16 +5,17 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 
 namespace CommunityToolkit.Maui.Analyzers.UnitTests;
+
 public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
 	where TAnalyzer : DiagnosticAnalyzer, new()
 	where TCodeFix : CodeFixProvider, new()
 {
-	protected class Test : CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier>
+	class Test : CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier>
 	{
 		public Test(params ReadOnlySpan<Type> assembliesUnderTest)
 		{
-#if NET9_0
-			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net90;
+#if NET10_0
+			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net100;
 #else
 #error ReferenceAssemblies must be updated to current version of .NET
 #endif

@@ -1,11 +1,12 @@
 ﻿using System.Globalization;
 using CommunityToolkit.Maui.Behaviors;
+using CommunityToolkit.Maui.Core;
 using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidationBehavior, VisualElement>(new NumericValidationBehavior(), new View())
+public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidationBehavior, VisualElement>(new NumericValidationBehavior(), new MockView())
 {
 	[Theory]
 	[InlineData("en-US", "15.2", 1.0, 16.0, 0, 16, true)]
@@ -86,7 +87,11 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 		};
 		entry.Behaviors.Add(behavior);
 
-		await Assert.ThrowsAsync<ArgumentNullException>(async () => await behavior.ForceValidate(TestContext.Current.CancellationToken));
+		//Act
+		await behavior.ForceValidate(TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.False(behavior.IsValid);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -158,5 +163,18 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 			await cts.CancelAsync();
 			await behavior.ForceValidate(cts.Token);
 		});
+	}
+
+	[Fact]
+	public void VerifyDefaults()
+	{
+		// Arrange
+		var numericValidationBehavior = new NumericValidationBehavior();
+
+		// Act Assert
+		Assert.Equal(NumericValidationBehaviorDefaults.MaximumDecimalPlaces, numericValidationBehavior.MaximumDecimalPlaces);
+		Assert.Equal(NumericValidationBehaviorDefaults.MaximumValue, numericValidationBehavior.MaximumValue);
+		Assert.Equal(NumericValidationBehaviorDefaults.MinimumDecimalPlaces, numericValidationBehavior.MinimumDecimalPlaces);
+		Assert.Equal(NumericValidationBehaviorDefaults.MinimumValue, numericValidationBehavior.MinimumValue);
 	}
 }

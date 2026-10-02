@@ -235,7 +235,7 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 						.Row(Row.TimeSpanExample1).Column(Column.Result)
 						.TextCenter()
 						.Bind<Label, TimePicker, TimeSpan, TimeSpan>(Label.StyleProperty,
-								static (TimePicker timeSpanInputPicker) => timeSpanInputPicker.Time,
+								static (TimePicker timeSpanInputPicker) => timeSpanInputPicker.Time ?? TimeSpan.Zero,
 								mode: BindingMode.OneWay,
 								converter: new IsInRangeConverter
 								{
@@ -255,7 +255,7 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 						.TextCenter()
 						.Bind<Label, TimePicker, TimeSpan, TimeSpan>(
 								Label.StyleProperty,
-								static (TimePicker timeSpanInputPicker) => timeSpanInputPicker.Time,
+								static (TimePicker timeSpanInputPicker) => timeSpanInputPicker.Time ?? TimeSpan.Zero,
 								mode: BindingMode.OneWay,
 								converter: new IsInRangeConverter
 								{
@@ -274,7 +274,7 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 						.TextCenter()
 						.Bind<Label, TimePicker, TimeSpan, TimeSpan>(
 								Label.StyleProperty,
-								static (TimePicker timeSpanInputPicker) => timeSpanInputPicker.Time,
+								static (TimePicker timeSpanInputPicker) => timeSpanInputPicker.Time ?? TimeSpan.Zero,
 								mode: BindingMode.OneWay,
 								converter: new IsInRangeConverter
 								{

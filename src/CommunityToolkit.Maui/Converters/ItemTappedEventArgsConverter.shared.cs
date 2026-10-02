@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts/Extracts the incoming value from <see cref="ItemTappedEventArgs"/> object and returns the value of <see cref="ItemTappedEventArgs.Item"/> property from it.
 /// </summary>
-[AcceptEmptyServiceProvider]
+[AcceptEmptyServiceProvider, Obsolete($"{nameof(ListView)} is deprecated. Please use {nameof(CollectionView)} instead.'")]
 public partial class ItemTappedEventArgsConverter : BaseConverterOneWay<ItemTappedEventArgs?, object?>
 {
 	/// <inheritdoc/>

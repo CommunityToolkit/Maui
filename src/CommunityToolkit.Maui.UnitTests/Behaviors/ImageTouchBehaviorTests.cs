@@ -6,41 +6,30 @@ using View = Microsoft.Maui.Controls.View;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, VisualElement>(new ImageTouchBehavior(), new View())
+public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, VisualElement>(new ImageTouchBehavior(), new MockView())
 {
 	readonly ImageTouchBehavior imageTouchBehavior = new();
-
-	protected override void Dispose(bool isDisposing)
-	{
-		base.Dispose(isDisposing);
-
-		imageTouchBehavior.Dispose();
-
-		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleTouch(TouchStatus.Canceled));
-		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleHover(HoverStatus.Entered));
-		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleUserInteraction(TouchInteractionStatus.Started));
-	}
 
 	[Fact]
 	public void VerifyDefaults()
 	{
-		Assert.Equal(ImageTouchBehaviorDefaults.DefaultBackgroundImageSource, imageTouchBehavior.DefaultImageSource);
-		Assert.Equal(ImageTouchBehaviorDefaults.HoveredBackgroundImageSource, imageTouchBehavior.HoveredImageSource);
-		Assert.Equal(ImageTouchBehaviorDefaults.PressedBackgroundImageSource, imageTouchBehavior.PressedImageSource);
+		Assert.Null(imageTouchBehavior.DefaultImageSource);
+		Assert.Null(imageTouchBehavior.HoveredImageSource);
+		Assert.Null(imageTouchBehavior.PressedImageSource);
 
-		Assert.Equal(ImageTouchBehaviorDefaults.DefaultBackgroundImageAspect, imageTouchBehavior.DefaultImageAspect);
-		Assert.Equal(ImageTouchBehaviorDefaults.HoveredBackgroundImageAspect, imageTouchBehavior.HoveredImageAspect);
-		Assert.Equal(ImageTouchBehaviorDefaults.PressedBackgroundImageAspect, imageTouchBehavior.PressedImageAspect);
+		Assert.Null(imageTouchBehavior.DefaultImageAspect);
+		Assert.Null(imageTouchBehavior.HoveredImageAspect);
+		Assert.Null(imageTouchBehavior.PressedImageAspect);
 
 		Assert.Equal(ImageTouchBehaviorDefaults.ShouldSetImageOnAnimationEnd, imageTouchBehavior.ShouldSetImageOnAnimationEnd);
 	}
 
 	[Fact]
-	public void VerifyCanOnlyBeAttachedToIImageText()
+	public void VerifyCanOnlyBeAttachedToSupportedImages()
 	{
 		InvalidOperationException? exception = null;
 
-		var view = new View();
+		var view = new MockView();
 
 		try
 		{
@@ -60,6 +49,13 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 		AttachTouchBehaviorToVisualElement(image);
 
 		Assert.Single(image.Behaviors.OfType<ImageTouchBehavior>());
+
+		var imageButton = new ImageButton();
+		using var imageButtonBehavior = new ImageTouchBehavior();
+		imageButton.Behaviors.Add(imageButtonBehavior);
+		imageButtonBehavior.Element = imageButton;
+
+		Assert.Single(imageButton.Behaviors.OfType<ImageTouchBehavior>());
 		Assert.NotNull(exception);
 	}
 
@@ -74,8 +70,6 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 
 		imageTouchBehavior.DefaultImageSource = normalImageSource;
 		imageTouchBehavior.PressedImageSource = pressedImageSource;
-
-		Assert.Null(view.Source);
 
 		await imageTouchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
 		Assert.Equal(normalImageSource, view.Source);
@@ -180,6 +174,54 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 	}
 
 	[Fact]
+	public void VerifyImageSourceStateMachineWhenImageSourceSetToNullWhilstActive()
+	{
+		var image = new Image();
+		AttachTouchBehaviorToVisualElement(image);
+
+		// Verify Default Source appears when Hover Active but not set
+		imageTouchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);
+
+		imageTouchBehavior.DefaultImageSource = ImageSource.FromUri(new Uri("https://www.google.com/images/branding/googlelogo/2x/googlelogo_dark_color_272x92dp.png"));
+		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);
+
+		imageTouchBehavior.DefaultImageSource = null;
+		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);
+
+		// Verify Pressed Source appears when Hover + Press simultaneously active
+		imageTouchBehavior.HandleTouch(TouchStatus.Started);
+		imageTouchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(imageTouchBehavior.PressedImageSource, image.Source);
+
+		imageTouchBehavior.PressedImageSource = ImageSource.FromUri(new Uri("https://www.google.com/images/branding/googlelogo/2x/googlelogo_light_color_272x92dp.png"));
+		Assert.Equal(imageTouchBehavior.PressedImageSource, image.Source);
+
+		imageTouchBehavior.PressedImageSource = null;
+		Assert.Equal(imageTouchBehavior.PressedImageSource, image.Source);
+
+		// Verify Hovered Source appears when Hover active
+		imageTouchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(imageTouchBehavior.HoveredImageSource, image.Source);
+
+		imageTouchBehavior.HoveredImageSource = ImageSource.FromUri(new Uri("https://www.google.com/images/branding/googlelogo/1x/googlelogo_dark_color_272x92dp.png"));
+		Assert.Equal(imageTouchBehavior.HoveredImageSource, image.Source);
+
+		imageTouchBehavior.HoveredImageSource = null;
+		Assert.Equal(imageTouchBehavior.HoveredImageSource, image.Source);
+
+		// Verify Default Source appears when neither active
+		imageTouchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);
+
+		imageTouchBehavior.DefaultImageSource = ImageSource.FromUri(new Uri("https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png"));
+		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);
+
+		imageTouchBehavior.DefaultImageSource = null;
+		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);
+	}
+
+	[Fact]
 	public void VerifyImageSourceStateMachine()
 	{
 		var image = new Image();
@@ -199,7 +241,30 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 		imageTouchBehavior.HandleHover(HoverStatus.Entered);
 		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);
 
+		imageTouchBehavior.HoveredImageSource = ImageSource.FromUri(new Uri("https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png"));
+
+		// Verify Pressed Source appears when Hover + Press simultaneously active
+		imageTouchBehavior.HandleTouch(TouchStatus.Started);
+		imageTouchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(imageTouchBehavior.PressedImageSource, image.Source);
+
+		// Verify Hovered Source appears when Hover active
+		imageTouchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(imageTouchBehavior.HoveredImageSource, image.Source);
+
+		// Verify Default Source appears when neither active
+		imageTouchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);
+
+		imageTouchBehavior.DefaultImageSource = null;
 		imageTouchBehavior.HoveredImageSource = null;
+		imageTouchBehavior.PressedImageSource = null;
+
+		// Verify Default Source appears when Hover Active but not set
+		imageTouchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(imageTouchBehavior.DefaultImageSource, image.Source);
+
+		imageTouchBehavior.HoveredImageSource = ImageSource.FromUri(new Uri("https://www.google.com/images/branding/googlelogo/2x/googlelogo_dark_color_272x92dp.png"));
 
 		// Verify Pressed Source appears when Hover + Press simultaneously active
 		imageTouchBehavior.HandleTouch(TouchStatus.Started);
@@ -242,6 +307,17 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 		// Verify Default Aspect appears when neither active
 		imageTouchBehavior.HandleHover(HoverStatus.Exited);
 		Assert.Equal(imageTouchBehavior.DefaultImageAspect, image.Aspect);
+	}
+
+	protected override void Dispose(bool isDisposing)
+	{
+		base.Dispose(isDisposing);
+
+		imageTouchBehavior.Dispose();
+
+		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleTouch(TouchStatus.Canceled));
+		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleHover(HoverStatus.Entered));
+		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleUserInteraction(TouchInteractionStatus.Started));
 	}
 
 	void AttachTouchBehaviorToVisualElement(in VisualElement element)

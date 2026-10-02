@@ -2,8 +2,7 @@
 <?xaml-comp compile="true" ?>
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit">
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
     <!-- Explicit styles -->
     <Style x:Key="PopupLayout" TargetType="Layout" ApplyToDerivedTypes="true">
@@ -28,6 +27,11 @@
 
     <Style TargetType="VerticalStackLayout" ApplyToDerivedTypes="true">
         <Setter Property="Spacing" Value="0" />
+    </Style>
+    
+    <!-- Highlights that this style will not be inherited by a popup -->
+    <Style TargetType="BoxView" ApplyToDerivedTypes="True">
+        <Setter Property="BackgroundColor" Value="Yellow" />
     </Style>
 
     <Style TargetType="Button">
@@ -123,13 +127,6 @@
         </Setter>
     </Style>
 
-    <Style TargetType="Frame" ApplyToDerivedTypes="true" >
-        <Setter Property="HasShadow" Value="True" />
-        <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray950}}" />
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray950}}" />
-        <Setter Property="CornerRadius" Value="8" />
-    </Style>
-
     <Style TargetType="ImageButton">
         <Setter Property="Opacity" Value="1" />
         <Setter Property="BorderColor" Value="Transparent"/>
@@ -164,11 +161,6 @@
                 </VisualStateGroup>
             </VisualStateGroupList>
         </Setter>
-    </Style>
-
-    <Style TargetType="ListView">
-        <Setter Property="SeparatorColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}" />
-        <Setter Property="RefreshControlColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}" />
     </Style>
 
     <Style TargetType="Picker">
@@ -349,16 +341,16 @@
     </Style>
 
     <Style TargetType="Shell" ApplyToDerivedTypes="True">
-        <Setter Property="Shell.BackgroundColor" Value="{OnPlatform WinUI=Transparent, Default={AppThemeBinding Light={StaticResource NavBarColor}, Dark={StaticResource Gray950}}}" />
-        <Setter Property="Shell.ForegroundColor" Value="{AppThemeBinding Light={OnPlatform WinUI={StaticResource Black}, Default={StaticResource White}}, Dark={StaticResource White}}" />
-        <Setter Property="Shell.TitleColor" Value="{AppThemeBinding Light={OnPlatform WinUI={StaticResource Black}, Default={StaticResource White}}, Dark={StaticResource White}}" />
-        <Setter Property="Shell.DisabledColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray950}}" />
-        <Setter Property="Shell.UnselectedColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray200}}" />
-        <Setter Property="Shell.NavBarHasShadow" Value="True" />
-        <Setter Property="Shell.TabBarBackgroundColor" Value="{OnPlatform WinUI=Transparent, Default={AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}}" />
-        <Setter Property="Shell.TabBarForegroundColor" Value="{AppThemeBinding Light={StaticResource PrimaryColor}, Dark={StaticResource White}}" />
-        <Setter Property="Shell.TabBarTitleColor" Value="{AppThemeBinding Light={StaticResource PrimaryColor}, Dark={StaticResource White}}" />
-        <Setter Property="Shell.TabBarUnselectedColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}" />
+        <Setter Property="BackgroundColor" Value="{OnPlatform WinUI=Transparent, Default={AppThemeBinding Light={StaticResource NavBarColor}, Dark={StaticResource Gray950}}}" />
+        <Setter Property="ForegroundColor" Value="{AppThemeBinding Light={OnPlatform WinUI={StaticResource Black}, Default={StaticResource White}}, Dark={StaticResource White}}" />
+        <Setter Property="TitleColor" Value="{AppThemeBinding Light={OnPlatform WinUI={StaticResource Black}, Default={StaticResource White}}, Dark={StaticResource White}}" />
+        <Setter Property="DisabledColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray950}}" />
+        <Setter Property="UnselectedColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray200}}" />
+        <Setter Property="NavBarHasShadow" Value="True" />
+        <Setter Property="TabBarBackgroundColor" Value="{OnPlatform WinUI=Transparent, Default={AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}}" />
+        <Setter Property="TabBarForegroundColor" Value="{AppThemeBinding Light={StaticResource PrimaryColor}, Dark={StaticResource White}}" />
+        <Setter Property="TabBarTitleColor" Value="{AppThemeBinding Light={StaticResource PrimaryColor}, Dark={StaticResource White}}" />
+        <Setter Property="TabBarUnselectedColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}" />
     </Style>
 
     <Style TargetType="TabbedPage">
@@ -369,7 +361,7 @@
     </Style>
 
     <Style x:Key="LabelWelcomeHeader" TargetType="Label">
-        <Setter Property="FontSize" Value="Title" />
+        <Setter Property="FontSize" Value="24" />
         <Setter Property="TextColor" Value="{StaticResource HeadingLabelTextColor}" />
     </Style>
 

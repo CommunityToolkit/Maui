@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Core.Platform;
 static partial class StatusBar
 {
 	/// <summary>
-	/// Method to update the status bar size.
+	/// Update the status bar size.
 	/// </summary>
 	public static void SetBarSize(bool isUsingSafeArea)
 	{

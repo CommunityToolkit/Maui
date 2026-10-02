@@ -1,5 +1,9 @@
+#if NET11_0_OR_GREATER
+using Microsoft.Windows.Storage.Pickers;
+#else
 using System.Diagnostics;
 using Windows.Storage.Pickers;
+#endif
 
 namespace CommunityToolkit.Maui.Storage;
 
@@ -10,11 +14,35 @@ public sealed partial class FileSaverImplementation : IFileSaver
 
 	async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
 	{
+#if NET11_0_OR_GREATER
+		if (IPlatformApplication.Current?.Application.Windows[0].Handler?.PlatformView is not MauiWinUIWindow window)
+		{
+			throw new FileSaveException(
+				"Cannot present file picker: No active window found. Ensure the app is active with a visible window.");
+		}
+
+		var savePicker = new FileSavePicker(window.AppWindow.Id)
+		{
+			SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+			SuggestedFolder = initialPath,
+			SuggestedFileName = Path.GetFileNameWithoutExtension(fileName)
+		};
+#else
 		var savePicker = new FileSavePicker
 		{
-			SuggestedStartLocation = PickerLocationId.DocumentsLibrary
+			SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+			SuggestedFileName = Path.GetFileNameWithoutExtension(fileName)
 		};
-		WinRT.Interop.InitializeWithWindow.Initialize(savePicker, Process.GetCurrentProcess().MainWindowHandle);
+
+		var hwnd = Process.GetCurrentProcess().MainWindowHandle;
+		if (hwnd == IntPtr.Zero)
+		{
+			throw new FileSaveException(
+				"Cannot present file picker: No active window found. Ensure the app is active with a visible window.");
+		}
+
+		WinRT.Interop.InitializeWithWindow.Initialize(savePicker, hwnd);
+#endif
 
 		var extension = Path.GetExtension(fileName);
 		if (!string.IsNullOrEmpty(extension))
@@ -23,15 +51,18 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		}
 
 		savePicker.FileTypeChoices.Add("All files", allFilesExtension);
-		savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(fileName);
 
 		var filePickerOperation = savePicker.PickSaveFileAsync();
-
 		await using var _ = cancellationToken.Register(CancelFilePickerOperation);
 		var file = await filePickerOperation;
-		if (string.IsNullOrEmpty(file?.Path))
+		if (file is null)
 		{
-			throw new FileSaveException("Operation cancelled or Path doesn't exist.");
+			throw new OperationCanceledException("Operation cancelled.");
+		}
+
+		if (string.IsNullOrEmpty(file.Path))
+		{
+			throw new FileSaveException("Path doesn't exist.");
 		}
 
 		await WriteStream(stream, file.Path, progress, cancellationToken).ConfigureAwait(false);

@@ -1,9 +1,10 @@
 ﻿using CommunityToolkit.Maui.Behaviors;
+using CommunityToolkit.Maui.Core;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class UriValidationBehaviorTests() : BaseBehaviorTest<UriValidationBehavior, VisualElement>(new UriValidationBehavior(), new View())
+public class UriValidationBehaviorTests() : BaseBehaviorTest<UriValidationBehavior, VisualElement>(new UriValidationBehavior(), new MockView())
 {
 	[Theory]
 	[InlineData(@"http://microsoft.com", UriKind.Absolute, true)]
@@ -74,5 +75,15 @@ public class UriValidationBehaviorTests() : BaseBehaviorTest<UriValidationBehavi
 			await cts.CancelAsync();
 			await behavior.ForceValidate(cts.Token);
 		});
+	}
+
+	[Fact]
+	public void VerifyDefaults()
+	{
+		// Arrange
+		var behavior = new UriValidationBehavior();
+
+		// Act Assert
+		Assert.Equal(UriValidationBehaviorDefaults.UriKind, behavior.UriKind);
 	}
 }

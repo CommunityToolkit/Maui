@@ -5,7 +5,7 @@ using Xunit.v3;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseBehaviorTest<ValidationBehavior, VisualElement>(new MockValidationBehavior(), new View())
+public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseBehaviorTest<ValidationBehavior, VisualElement>(new MockValidationBehavior(), new MockView())
 {
 	[Fact]
 	public void ValidateOnValueChanged()
@@ -217,7 +217,7 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 	public void TestRemoveValidationBindingWithBindingContext()
 	{
 		var behavior = new MockValidationBehavior();
-		var view = new View
+		var view = new MockView
 		{
 			BindingContext = new MockPageViewModel()
 		};
@@ -235,7 +235,7 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 	public void TestRemoveValidationBindingWithoutBindingContext()
 	{
 		var behavior = new MockValidationBehavior();
-		var view = new View();
+		var view = new MockView();
 
 		view.Behaviors.Add(behavior);
 
@@ -244,6 +244,24 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 		view.Behaviors.Remove(behavior);
 
 		Assert.Empty(view.Behaviors);
+	}
+
+	[Fact]
+	public void VerifyDefaults()
+	{
+		// Arrange
+		var behavior = new MockValidationBehavior();
+
+		// Act Assert
+		Assert.Equal(ValidationBehaviorDefaults.IsNotValid, behavior.IsNotValid);
+		Assert.Equal(ValidationBehaviorDefaults.IsValid, behavior.IsValid);
+		Assert.Equal(ValidationBehaviorDefaults.IsRunning, behavior.IsRunning);
+		Assert.Equal(ValidationBehaviorDefaults.ValidStyle, behavior.ValidStyle);
+		Assert.Equal(ValidationBehaviorDefaults.InvalidStyle, behavior.InvalidStyle);
+		Assert.Equal(ValidationBehaviorDefaults.Value, behavior.Value);
+		Assert.Equal(ValidationBehaviorDefaults.ValuePropertyName, behavior.ValuePropertyName);
+		Assert.Equal(ValidationBehaviorDefaults.Flags, behavior.Flags);
+
 	}
 }
 
