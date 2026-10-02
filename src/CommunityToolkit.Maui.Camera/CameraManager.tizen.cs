@@ -10,6 +10,8 @@ partial class CameraManager
 
 	public partial void UpdateFlashMode(CameraFlashMode flashMode) => throw new NotSupportedException(notSupportedMessage);
 
+	public partial void UpdateIsTorchOn(bool isTorchOn) => throw new NotSupportedException(notSupportedMessage);
+
 	public partial void UpdateZoom(float zoomLevel) => throw new NotSupportedException(notSupportedMessage);
 
 	public partial ValueTask UpdateCaptureResolution(Size resolution, CancellationToken token) => throw new NotSupportedException(notSupportedMessage);

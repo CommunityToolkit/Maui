@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
+using ToolkitDispatcherExtensions = CommunityToolkit.Maui.Core.Extensions.DispatcherExtensions;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -104,12 +105,12 @@ public partial class UserStoppedTypingBehavior : BaseBehavior<InputView>, IDispo
 
 		if (ShouldDismissKeyboardAutomatically)
 		{
-			Dispatcher.DispatchIfRequired(view.Unfocus);
+			await ToolkitDispatcherExtensions.DispatchIfRequiredAsync(Dispatcher, view.Unfocus);
 		}
 
 		if (Command?.CanExecute(CommandParameter ?? text) is true)
 		{
-			await Dispatcher.DispatchIfRequiredAsync(() => Command.Execute(CommandParameter ?? text));
+			await ToolkitDispatcherExtensions.DispatchIfRequiredAsync(Dispatcher, () => Command.Execute(CommandParameter ?? text));
 		}
 	}
 }

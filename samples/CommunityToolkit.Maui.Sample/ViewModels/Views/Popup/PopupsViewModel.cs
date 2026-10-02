@@ -5,10 +5,10 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 public partial class PopupsViewModel(IPopupService popupService) : BaseViewModel
 {
-	static INavigation currentNavigation => Application.Current?.Windows[0].Page?.Navigation ?? throw new InvalidOperationException($"{nameof(Page.Navigation)} not found");
-
 	[ObservableProperty]
 	public partial Color PageOverlayBackgroundColor { get; set; } = Colors.Orange.WithAlpha(0.2f);
+
+	static INavigation currentNavigation => Application.Current?.Windows[0].Page?.Navigation ?? throw new InvalidOperationException($"{nameof(Page.Navigation)} not found");
 
 	[RelayCommand]
 	void OnCsharpBindingPopup()

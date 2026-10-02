@@ -67,17 +67,18 @@ public class ExpanderTests : BaseViewTest
 	{
 		var isExpanded_Initial = expander.IsExpanded;
 
-		var header = new View();
+		var header = new MockView();
 		expander.Header = header;
+		Assert.IsType<TapGestureRecognizer>(Assert.Single(header.GestureRecognizers));
 
-		expander.HeaderTapGestureRecognizer.SendTapped(header);
+		expander.HandleHeaderTap(new TappedEventArgs(header));
 		var isExpanded_Final = expander.IsExpanded;
 
 		Assert.True(isExpanded_Final);
 		Assert.False(isExpanded_Initial);
 		Assert.NotEqual(isExpanded_Initial, isExpanded_Final);
 
-		expander.HeaderTapGestureRecognizer.SendTapped(header);
+		expander.HandleHeaderTap(new TappedEventArgs(header));
 
 		Assert.False(expander.IsExpanded);
 	}
@@ -88,18 +89,18 @@ public class ExpanderTests : BaseViewTest
 		int handleHeaderTappedCount = 0;
 		bool didHandleHeaderTappedExecute = false;
 
-		var header = new View();
-		expander.Header = new View();
+		var header = new MockView();
+		expander.Header = new MockView();
 		expander.HandleHeaderTapped = HandleHeaderTapped;
 
-		expander.HeaderTapGestureRecognizer.SendTapped(header);
+		expander.HandleHeaderTap(new TappedEventArgs(header));
 
 		Assert.True(didHandleHeaderTappedExecute);
 		Assert.Equal(1, handleHeaderTappedCount);
 
 		expander.HandleHeaderTapped = null;
 
-		expander.HeaderTapGestureRecognizer.SendTapped(header);
+		expander.HandleHeaderTap(new TappedEventArgs(header));
 
 		Assert.True(didHandleHeaderTappedExecute);
 		Assert.Equal(1, handleHeaderTappedCount);
