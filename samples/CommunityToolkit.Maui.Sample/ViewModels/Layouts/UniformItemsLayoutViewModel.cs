@@ -5,6 +5,8 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 
 public partial class UniformItemsLayoutViewModel : BaseViewModel
 {
+	public ObservableCollection<string> Items { get; } = [];
+
 	[RelayCommand]
 	void AddItem()
 	{
@@ -16,6 +18,4 @@ public partial class UniformItemsLayoutViewModel : BaseViewModel
 	{
 		Items.Clear();
 	}
-
-	public ObservableCollection<string> Items { get; } = [];
 }

@@ -151,6 +151,25 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 	internal ValueTask ValidateNestedAsync(CancellationToken token) => UpdateStateAsync(View, Flags, true, token);
 
 	/// <summary>
+	/// Used when a property in <see cref="ValidationBehavior"/> changes to update the validation state
+	/// </summary>
+	/// <param name="bindable"></param>
+	/// <param name="oldValue"></param>
+	/// <param name="newValue"></param>
+	protected static async void OnValidationPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		try
+		{
+			var validationBehavior = (ValidationBehavior)bindable;
+			await validationBehavior.UpdateStateAsync(validationBehavior.View, validationBehavior.Flags, false);
+		}
+		catch (Exception ex) when (Options.ShouldSuppressExceptionsInBehaviors)
+		{
+			Trace.TraceInformation("{0}", ex);
+		}
+	}
+
+	/// <summary>
 	/// Validate value
 	/// </summary>
 	protected abstract ValueTask<bool> ValidateAsync(object? value, CancellationToken token);
@@ -225,25 +244,6 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 		}
 	}
 
-	/// <summary>
-	/// Used when a property in <see cref="ValidationBehavior"/> changes to update the validation state
-	/// </summary>
-	/// <param name="bindable"></param>
-	/// <param name="oldValue"></param>
-	/// <param name="newValue"></param>
-	protected static async void OnValidationPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		try
-		{
-			var validationBehavior = (ValidationBehavior)bindable;
-			await validationBehavior.UpdateStateAsync(validationBehavior.View, validationBehavior.Flags, false);
-		}
-		catch (Exception ex) when (Options.ShouldSuppressExceptionsInBehaviors)
-		{
-			Trace.TraceInformation("{0}", ex);
-		}
-	}
-
 	static void OnIsValidPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		=> ((ValidationBehavior)bindable).OnIsValidPropertyChanged();
 
@@ -300,7 +300,7 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 			IsValid = true;
 			IsRunning = false;
 		}
-		else if (isForced || (currentStatus != ValidationFlags.None && Flags.HasFlag(currentStatus)))
+		else if (isForced || (currentStatus != ValidationFlags.None && flags.HasFlag(currentStatus)))
 		{
 			IsRunning = true;
 

@@ -239,6 +239,17 @@ sealed class FileFolderDialog : Popup<string>
 		return content;
 	}
 
+	static bool IsHorizontal()
+	{
+		return Window.Default.WindowSize.Width > Window.Default.WindowSize.Height;
+	}
+
+	static bool CreateSubDirectory(string newDirectory)
+	{
+		Directory.CreateDirectory(newDirectory);
+		return Directory.Exists(newDirectory);
+	}
+
 	async void OnNewFolderButtonClicked(object? sender, Tizen.NUI.Components.ClickedEventArgs e)
 	{
 		try
@@ -295,17 +306,6 @@ sealed class FileFolderDialog : Popup<string>
 		{
 			content.SizeWidth = Window.Default.WindowSize.Width * (IsHorizontal() ? 0.5f : 0.8f);
 		}
-	}
-
-	static bool IsHorizontal()
-	{
-		return Window.Default.WindowSize.Width > Window.Default.WindowSize.Height;
-	}
-
-	static bool CreateSubDirectory(string newDirectory)
-	{
-		Directory.CreateDirectory(newDirectory);
-		return Directory.Exists(newDirectory);
 	}
 
 	void ProcessSelect(string selectedItem)

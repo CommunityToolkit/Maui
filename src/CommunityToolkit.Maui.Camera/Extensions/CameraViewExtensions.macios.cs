@@ -9,6 +9,25 @@ namespace CommunityToolkit.Maui.Extensions;
 /// </summary>
 static class CameraViewExtensions
 {
+	extension(AVCaptureDeviceFormat avCaptureDeviceFormat)
+	{
+		/// <summary>
+		/// Gets the total resolution area in pixels (width × height) of the <see cref="AVCaptureDeviceFormat"/>.
+		/// </summary>
+		/// <value>
+		/// The total number of pixels, calculated as width multiplied by height.
+		/// </value>
+		public int ResolutionArea
+		{
+			get
+			{
+				var dimensions = ((CMVideoFormatDescription)avCaptureDeviceFormat.FormatDescription).Dimensions;
+				return dimensions.Width * dimensions.Height;
+			}
+		}
+
+	}
+
 	/// <summary>
 	/// Converts a <see cref="CameraFlashMode"/> to the platform-specific flash mode.
 	/// </summary>
@@ -30,24 +49,5 @@ static class CameraViewExtensions
 	public static void UpdateAvailability(this ICameraView cameraView)
 	{
 		cameraView.IsAvailable = AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Video) is not null;
-	}
-
-	extension(AVCaptureDeviceFormat avCaptureDeviceFormat)
-	{
-		/// <summary>
-		/// Gets the total resolution area in pixels (width × height) of the <see cref="AVCaptureDeviceFormat"/>.
-		/// </summary>
-		/// <value>
-		/// The total number of pixels, calculated as width multiplied by height.
-		/// </value>
-		public int ResolutionArea
-		{
-			get
-			{
-				var dimensions = ((CMVideoFormatDescription)avCaptureDeviceFormat.FormatDescription).Dimensions;
-				return dimensions.Width * dimensions.Height;
-			}
-		}
-
 	}
 }

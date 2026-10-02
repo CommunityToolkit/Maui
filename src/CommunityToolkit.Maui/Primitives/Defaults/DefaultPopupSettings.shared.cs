@@ -32,6 +32,11 @@ public record DefaultPopupSettings
 	static class PopupDefaults
 	{
 		/// <summary>
+		/// Default value for <see cref="Popup.CanBeDismissedByTappingOutsideOfPopup"/>
+		/// </summary>
+		public const bool CanBeDismissedByTappingOutsideOfPopup = true;
+
+		/// <summary>
 		/// Default value for <see cref="Popup.Margin"/> 
 		/// </summary>
 		public static Thickness Margin { get; } = new(30);
@@ -55,10 +60,5 @@ public record DefaultPopupSettings
 		/// Default value for <see cref="VisualElement.BackgroundColor"/> BackgroundColor 
 		/// </summary>
 		public static Color BackgroundColor { get; } = Colors.White;
-
-		/// <summary>
-		/// Default value for <see cref="Popup.CanBeDismissedByTappingOutsideOfPopup"/>
-		/// </summary>
-		public const bool CanBeDismissedByTappingOutsideOfPopup = true;
 	}
 }

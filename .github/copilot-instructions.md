@@ -33,6 +33,15 @@ This document provides guidelines for using GitHub Copilot to contribute to the 
 * Avoid using the **!** null forgiving operator.
 * Follow naming conventions for enums and property names.
 
+### Element Positioning (enforced as build warnings)
+StyleCop rules SA1201, SA1202, SA1204, SA1214, and SA1215 are reported as **build warnings** via `.editorconfig`. Always write new and modified C# code in the correct order so no warnings are introduced:
+* **Within a type, members appear in this order:** fields → constructors → finalizers/destructors → delegates → events → enums → interfaces → properties → indexers → methods.
+* **Within each member kind, order by access level:** public → internal → protected internal → protected → private protected → private.
+* **Within the same member kind and access level:** static members before instance members; readonly fields before non-readonly fields.
+* **Within a file:** usings → namespace → delegates → enums → interfaces → structs → classes; static classes before non-static classes of the same access level.
+* To fix violations, reorder the members to comply with these rules, or use the IDE code fix (lightbulb). When a `BindableProperty`/`BindablePropertyKey` static initializer depends on another field, initialization order takes precedence — suppress with a targeted `#pragma warning disable` and a comment explaining why.
+
+
 ### Debug Logging
 * Always use `Trace.WriteLine()` instead of `Debug.WriteLine` for debug logging because `Debug.WriteLine` is removed by the compiler in Release builds
 

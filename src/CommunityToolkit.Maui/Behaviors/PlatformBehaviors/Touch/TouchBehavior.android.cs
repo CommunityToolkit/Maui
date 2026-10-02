@@ -3,6 +3,7 @@ using Android.OS;
 using Android.Views;
 using Android.Views.Accessibility;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Platform;
 using static System.OperatingSystem;
 using AView = Android.Views.View;
@@ -24,11 +25,11 @@ public partial class TouchBehavior
 	AccessibilityManager? accessibilityManager;
 	AccessibilityListener? accessibilityListener;
 
+	internal bool IsCanceled { get; set; }
+
 	bool IsAccessibilityMode => accessibilityManager is not null
 		&& accessibilityManager.IsEnabled
 		&& accessibilityManager.IsTouchExplorationEnabled;
-
-	internal bool IsCanceled { get; set; }
 
 	/// <summary>
 	/// Attaches the behavior to the platform view.
@@ -41,7 +42,7 @@ public partial class TouchBehavior
 
 		Element = bindable;
 		view = platformView;
-		viewGroup = platformView.GetParentOfType<ViewGroup>();
+		viewGroup = platformView.FindParentOfType<ViewGroup>();
 
 		platformView.Touch += OnTouch;
 		platformView.KeyPress += OnKeyPressed;
@@ -106,7 +107,7 @@ public partial class TouchBehavior
 
 	void UpdateClickHandler()
 	{
-		if (view is null || !view.IsAlive())
+		if (view is null || !view.IsPeerAlive())
 		{
 			return;
 		}

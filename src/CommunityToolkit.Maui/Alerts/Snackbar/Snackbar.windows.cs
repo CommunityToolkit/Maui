@@ -1,4 +1,4 @@
-﻿using Microsoft.Windows.AppNotifications;
+using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
 
 namespace CommunityToolkit.Maui.Alerts;
@@ -7,17 +7,26 @@ public partial class Snackbar
 {
 	const string snackbarIdentifierArgumentKey = "snackbarIdentifier";
 
-	static AppNotification? PlatformSnackbar { get; set; }
-
 	static Dictionary<string, Action?> actions = [];
 
 	TaskCompletionSource<bool>? dismissedTCS;
+
+	static AppNotification? PlatformSnackbar { get; set; }
 
 	internal static void HandleSnackbarAction(AppNotificationActivatedEventArgs args)
 	{
 		if (args.Arguments.TryGetValue(snackbarIdentifierArgumentKey, out var id) && actions.TryGetValue(id, out var action) && action is not null)
 		{
-			Dispatcher.GetForCurrentThread().DispatchIfRequired(action);
+			var dispatcher = Dispatcher.GetForCurrentThread();
+
+			if (dispatcher is not null)
+			{
+				Core.Extensions.DispatcherExtensions.DispatchIfRequired(dispatcher, action);
+			}
+			else
+			{
+				action();
+			}
 		}
 	}
 

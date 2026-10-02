@@ -31,7 +31,7 @@ public class LazyViewTests : BaseViewTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task LoadViewAsync_CancellationTokenCanceled()
 	{
-		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		var lazyView = new LazyView<Button>();
 
 		// Ensure CancellationToken Expired

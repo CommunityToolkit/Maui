@@ -14,18 +14,6 @@ public partial class DrawingViewViewModel : BaseViewModel
 {
 	readonly IFileSaver fileSaver;
 
-	public List<DrawingViewOutputOption> AvailableOutputOptions { get; } = [DrawingViewOutputOption.Lines, DrawingViewOutputOption.FullCanvas];
-
-	[ObservableProperty]
-	public partial string Logs { get; private set; } = string.Empty;
-
-	[ObservableProperty]
-	public partial DrawingViewOutputOption SelectedOutputOption { get; set; } = DrawingViewOutputOption.Lines;
-
-	public double CanvasHeight { get; set; }
-
-	public double CanvasWidth { get; set; }
-
 	public DrawingViewViewModel(IFileSaver fileSaver)
 	{
 		this.fileSaver = fileSaver;
@@ -52,6 +40,18 @@ public partial class DrawingViewViewModel : BaseViewModel
 			});
 		});
 	}
+
+	public List<DrawingViewOutputOption> AvailableOutputOptions { get; } = [DrawingViewOutputOption.Lines, DrawingViewOutputOption.FullCanvas];
+
+	[ObservableProperty]
+	public partial string Logs { get; private set; } = string.Empty;
+
+	[ObservableProperty]
+	public partial DrawingViewOutputOption SelectedOutputOption { get; set; } = DrawingViewOutputOption.Lines;
+
+	public double CanvasHeight { get; set; }
+
+	public double CanvasWidth { get; set; }
 
 	public ObservableCollection<IDrawingLine> Lines { get; } = [];
 

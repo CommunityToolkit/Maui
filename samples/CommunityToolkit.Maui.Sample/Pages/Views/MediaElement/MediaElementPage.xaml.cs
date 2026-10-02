@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Sample.Constants;
@@ -31,6 +32,19 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		this.deviceInfo = deviceInfo;
 		this.fileSystem = fileSystem;
 		MediaElement.PropertyChanged += MediaElement_PropertyChanged;
+		MediaElement.MediaOpened += HandleMediaOpened;
+	}
+
+	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
+	{
+		base.OnNavigatedFrom(args);
+		MediaElement.Stop();
+		MediaElement.Handler?.DisconnectHandler();
+	}
+	
+	async void HandleMediaOpened(object? sender, EventArgs e)
+	{
+		await Toast.Make("Media opened").Show();
 	}
 
 	void MediaElement_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -123,13 +137,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	void OnMuteClicked(object? sender, EventArgs? e)
 	{
 		MediaElement.ShouldMute = !MediaElement.ShouldMute;
-	}
-
-	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
-	{
-		base.OnNavigatedFrom(args);
-		MediaElement.Stop();
-		MediaElement.Handler?.DisconnectHandler();
 	}
 
 	async void Slider_DragCompleted(object? sender, EventArgs? e)
