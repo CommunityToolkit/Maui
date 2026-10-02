@@ -32,8 +32,16 @@ sealed partial class CameraManager(
 		{
 			await cameraProvider.RefreshAvailableCameras(token);
 		}
-		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
-		await PlatformConnectCamera(token);
+		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault();
+
+		try
+		{
+			await PlatformConnectCamera(token);
+		}
+		catch
+		{
+			// can't init camera
+		}
 	}
 
 	/// <summary>
