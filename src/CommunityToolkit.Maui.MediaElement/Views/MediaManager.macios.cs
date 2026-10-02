@@ -375,6 +375,13 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
+		// RateChanged copies the player's rate into Speed, so don't send it back: setting the rate again starts a new rate change, and when
+		// two rates are set in the same main-loop turn AVPlayer reports the earlier one again afterwards, so the two would keep replacing each other
+		if (AreFloatingPointNumbersEqual(MediaElement.Speed, PlayerViewController.Player.Rate))
+		{
+			return;
+		}
+
 		PlayerViewController.Player.Rate = (float)MediaElement.Speed;
 	}
 
