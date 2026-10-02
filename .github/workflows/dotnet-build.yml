@@ -400,7 +400,6 @@ jobs:
                     dotnet build ${{ env.PathToCommunityToolkitDeviceTestsCsproj }} \
                         -t:VSTest \
                         -f net10.0-maccatalyst \
-                        -r maccatalyst-x64 \
                         -c Release \
                         -p:IsCI=true \
                         "-p:VSTestTestCaseFilter=Category!=ExpectedFailure" \
