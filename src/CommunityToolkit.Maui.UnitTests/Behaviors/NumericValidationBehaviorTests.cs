@@ -85,6 +85,25 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 		}
 	}
 
+	[Theory]
+	[InlineData(double.NaN)]
+	[InlineData(double.PositiveInfinity)]
+	[InlineData(double.NegativeInfinity)]
+	public void SetInvalidIntervalValue_ShouldKeepPreviousValue(double invalidInterval)
+	{
+		// Arrange
+		var behavior = new NumericValidationBehavior
+		{
+			Interval = 5.0
+		};
+
+		// Act
+		behavior.Interval = invalidInterval;
+
+		// Assert - Invalid values rejected by ValidateInterval should revert or maintain previous value
+		Assert.Equal(5.0, behavior.Interval);
+	}
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task IsNull()
 	{
@@ -188,5 +207,6 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 		Assert.Equal(NumericValidationBehaviorDefaults.MaximumValue, numericValidationBehavior.MaximumValue);
 		Assert.Equal(NumericValidationBehaviorDefaults.MinimumDecimalPlaces, numericValidationBehavior.MinimumDecimalPlaces);
 		Assert.Equal(NumericValidationBehaviorDefaults.MinimumValue, numericValidationBehavior.MinimumValue);
+		Assert.Null(numericValidationBehavior.Interval);
 	}
 }

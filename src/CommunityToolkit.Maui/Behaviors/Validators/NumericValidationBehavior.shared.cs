@@ -38,8 +38,19 @@ public partial class NumericValidationBehavior : ValidationBehavior<string>
 	/// <summary>
 	/// The interval value that the entered value must be divisible by. This is a bindable property.
 	/// </summary>
-	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	/// <remarks>
+	/// A <see langword="null"/> value or a value of <c>0</c> disables interval validation (all values are considered valid). Value must be a finite number; non-finite values such as <see cref="double.NaN"/>, <see cref="double.PositiveInfinity"/> or <see cref="double.NegativeInfinity"/> are rejected. Negative values use their absolute magnitude. Divisibility accounts for floating-point rounding.
+	/// </remarks>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged), ValidateValueMethodName = nameof(ValidateInterval))]
 	public partial double? Interval { get; set; }
+
+	static bool ValidateInterval(BindableObject bindableObject, object value)
+		=> value switch
+		{
+			null => true,
+			double interval => double.IsFinite(interval),
+			_ => false
+		};
 
 	/// <inheritdoc/>
 	protected override string? Decorate(string? value)
@@ -58,6 +69,9 @@ public partial class NumericValidationBehavior : ValidationBehavior<string>
 		// Interval of 0 would make every value invalid (x % 0 == NaN), so treat it as "no restriction"
 		if (Interval.HasValue && Interval.Value != 0D)
 		{
+			// Interval validation relies on Interval being a finite double, as double.NaN and infinity
+			// are already rejected by ValidateInterval during property assignment.
+
 			var remainder = Math.Abs(numeric % Interval.Value);
 			// Check if the remainder is close to 0 or close to the divisor (to account for floating-point inaccuracies)
 			const double epsilon = 1e-9;
