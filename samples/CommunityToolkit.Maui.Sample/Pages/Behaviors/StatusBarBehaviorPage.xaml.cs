@@ -68,4 +68,10 @@ public partial class StatusBarBehaviorPage : BasePage<StatusBarBehaviorViewModel
 
 		return false;
 	}
+
+	void OnBrokenShellButtonClicked(object? sender, EventArgs e)
+	{
+		Application.Current?.Windows[0].Page = new BrokenTitleViewShell();
+
+	}
 }

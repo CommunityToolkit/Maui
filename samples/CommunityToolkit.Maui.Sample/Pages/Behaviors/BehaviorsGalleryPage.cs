@@ -9,6 +9,7 @@ public partial class BehaviorsGalleryPage : BaseGalleryPage<BehaviorsGalleryView
 	{
 #if ANDROID || IOS
 		AddStatusBarBehavior();
+		SafeAreaEdges = SafeAreaEdges.Default;
 #endif
 	}
 
