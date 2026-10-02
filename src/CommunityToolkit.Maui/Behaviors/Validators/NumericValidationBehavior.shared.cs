@@ -35,6 +35,12 @@ public partial class NumericValidationBehavior : ValidationBehavior<string>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
 	public partial int MaximumDecimalPlaces { get; set; } = NumericValidationBehaviorDefaults.MaximumDecimalPlaces;
 
+	/// <summary>
+	/// The interval value that the entered value must be divisible by. This is a bindable property.
+	/// </summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
+	public partial double? Interval { get; set; }
+
 	/// <inheritdoc/>
 	protected override string? Decorate(string? value)
 		=> base.Decorate(value)?.Trim();
@@ -47,6 +53,18 @@ public partial class NumericValidationBehavior : ValidationBehavior<string>
 			&& numeric <= MaximumValue))
 		{
 			return new ValueTask<bool>(false);
+		}
+
+		// Interval of 0 would make every value invalid (x % 0 == NaN), so treat it as "no restriction"
+		if (Interval.HasValue && Interval.Value != 0D)
+		{
+			var remainder = Math.Abs(numeric % Interval.Value);
+			// Check if the remainder is close to 0 or close to the divisor (to account for floating-point inaccuracies)
+			const double epsilon = 1e-9;
+			if (remainder > epsilon && Math.Abs(remainder - Math.Abs(Interval.Value)) > epsilon)
+			{
+				return new ValueTask<bool>(false);
+			}
 		}
 
 		var decimalDelimiterIndex = value.IndexOf(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator, StringComparison.Ordinal);
