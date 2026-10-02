@@ -143,7 +143,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		Player?.Play();
+		PlayAtSpeed();
 	}
 
 	protected virtual partial void PlatformPause()
@@ -232,7 +232,7 @@ public partial class MediaManager : IDisposable
 			streamResourceLoader = null;
 		}
 
-		metaData ??= new(Player);
+		metaData ??= new(Player, PlayAtSpeed);
 		Metadata.ClearNowPlaying();
 		PlayerViewController?.ContentOverlayView?.Subviews.FirstOrDefault()?.RemoveFromSuperview();
 
@@ -372,6 +372,13 @@ public partial class MediaManager : IDisposable
 		if (!isInitialSpeedSet)
 		{
 			isInitialSpeedSet = true;
+			return;
+		}
+
+		// RateChanged copies the player's rate into Speed, so don't send it back: setting the rate again starts a new rate change, and when
+		// two rates are set in the same main-loop turn AVPlayer reports the earlier one again afterwards, so the two would keep replacing each other
+		if (AreFloatingPointNumbersEqual(MediaElement.Speed, PlayerViewController.Player.Rate))
+		{
 			return;
 		}
 
@@ -754,17 +761,10 @@ public partial class MediaManager : IDisposable
 				// Start playback before raising MediaOpened so a Pause(), Stop() or SeekTo() from a MediaOpened handler isn't overridden
 				if (MediaElement.ShouldAutoPlay)
 				{
-					// Read Speed before Play(), which changes the rate and raises RateChanged
-					var speed = (float)MediaElement.Speed;
-					Player.Play();
+					// Start at the requested Speed with a single rate change. Play() followed by setting Rate changes the rate twice,
+					// and RateChanged, which copies the player's rate into Speed, then keeps switching Speed between 1 and the requested value
+					PlayAtSpeed();
 					token.ThrowIfCancellationRequested();
-
-					// Apply Speed unless a StateChanged handler raised by Play() paused playback
-					if (Player.Rate > 0)
-					{
-						Player.Rate = speed;
-						token.ThrowIfCancellationRequested();
-					}
 				}
 
 				MediaElement.CurrentStateChanged(Player.TimeControlStatus switch
@@ -882,7 +882,7 @@ public partial class MediaManager : IDisposable
 		if (MediaElement.ShouldLoopPlayback)
 		{
 			PlayerViewController?.Player?.Seek(CMTime.Zero);
-			Player.Play();
+			PlayAtSpeed();
 		}
 		else
 		{
@@ -905,14 +905,39 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
+		// AVPlayer reports a rate of 0 while paused, that is not a change of the requested Speed
+		if (Player.Rate is 0)
+		{
+			return;
+		}
+
 		if (!AreFloatingPointNumbersEqual(MediaElement.Speed, Player.Rate))
 		{
 			MediaElement.Speed = Player.Rate;
-			if (metaData is not null)
-			{
-				metaData.NowPlayingInfo.PlaybackRate = (float)MediaElement.Speed;
-				MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = metaData.NowPlayingInfo;
-			}
+		}
+
+		if (metaData is not null)
+		{
+			metaData.NowPlayingInfo.PlaybackRate = (float)MediaElement.Speed;
+			MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = metaData.NowPlayingInfo;
+		}
+	}
+
+	void PlayAtSpeed()
+	{
+		if (Player is null)
+		{
+			return;
+		}
+
+		// AVPlayer.Play() always starts playback at a rate of 1, setting the rate starts playback at the requested Speed
+		if (MediaElement.Speed is 0)
+		{
+			Player.Play();
+		}
+		else
+		{
+			Player.Rate = (float)MediaElement.Speed;
 		}
 	}
 }
