@@ -11,4 +11,15 @@ static class PropertyChangedEventArgsExtensions
 	{
 		return bindableProperties.Any(bindableProperty => bindableProperty.PropertyName == propertyName);
 	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static bool IsOneOf(this string propertyName, BindableProperty p0, BindableProperty p1, BindableProperty p2, BindableProperty p3, BindableProperty p4, BindableProperty p5)
+	{
+		return propertyName == p0.PropertyName
+			|| propertyName == p1.PropertyName
+			|| propertyName == p2.PropertyName
+			|| propertyName == p3.PropertyName
+			|| propertyName == p4.PropertyName
+			|| propertyName == p5.PropertyName;
+	}
 }
