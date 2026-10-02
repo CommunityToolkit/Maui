@@ -11,24 +11,6 @@ using System.Runtime.CompilerServices;
 namespace CommunityToolkit.Maui.SourceGenerators.Helpers;
 
 /// <summary>
-/// Extensions for <see cref="EquatableArray{T}"/>.
-/// </summary>
-static class EquatableArray
-{
-	/// <summary>
-	/// Creates an <see cref="EquatableArray{T}"/> instance from a given <see cref="ImmutableArray{T}"/>.
-	/// </summary>
-	/// <typeparam name="T">The type of items in the input array.</typeparam>
-	/// <param name="array">The input <see cref="ImmutableArray{T}"/> instance.</param>
-	/// <returns>An <see cref="EquatableArray{T}"/> instance from a given <see cref="ImmutableArray{T}"/>.</returns>
-	public static EquatableArray<T> AsEquatableArray<T>(this ImmutableArray<T> array)
-		where T : IEquatable<T>
-	{
-		return new(array);
-	}
-}
-
-/// <summary>
 /// An immutable, equatable array. This is equivalent to <see cref="ImmutableArray{T}"/> but with value equality support.
 /// </summary>
 /// <typeparam name="T">The type of values in the array.</typeparam>
@@ -50,6 +32,15 @@ public readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IEnume
 	}
 
 	/// <summary>
+	/// Gets a value indicating whether the current array is empty.
+	/// </summary>
+	public bool IsEmpty
+	{
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => AsImmutableArray().IsEmpty;
+	}
+
+	/// <summary>
 	/// Gets a reference to an item at a specified position within the array.
 	/// </summary>
 	/// <param name="index">The index of the item to retrieve a reference to.</param>
@@ -61,12 +52,53 @@ public readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IEnume
 	}
 
 	/// <summary>
-	/// Gets a value indicating whether the current array is empty.
+	/// Implicitly converts an <see cref="ImmutableArray{T}"/> to <see cref="EquatableArray{T}"/>.
 	/// </summary>
-	public bool IsEmpty
+	/// <returns>An <see cref="EquatableArray{T}"/> instance from a given <see cref="ImmutableArray{T}"/>.</returns>
+	public static implicit operator EquatableArray<T>(ImmutableArray<T> array)
 	{
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get => AsImmutableArray().IsEmpty;
+		return FromImmutableArray(array);
+	}
+
+	/// <summary>
+	/// Implicitly converts an <see cref="EquatableArray{T}"/> to <see cref="ImmutableArray{T}"/>.
+	/// </summary>
+	/// <returns>An <see cref="ImmutableArray{T}"/> instance from a given <see cref="EquatableArray{T}"/>.</returns>
+	public static implicit operator ImmutableArray<T>(EquatableArray<T> array)
+	{
+		return array.AsImmutableArray();
+	}
+
+	/// <summary>
+	/// Checks whether two <see cref="EquatableArray{T}"/> values are the same.
+	/// </summary>
+	/// <param name="left">The first <see cref="EquatableArray{T}"/> value.</param>
+	/// <param name="right">The second <see cref="EquatableArray{T}"/> value.</param>
+	/// <returns>Whether <paramref name="left"/> and <paramref name="right"/> are equal.</returns>
+	public static bool operator ==(EquatableArray<T> left, EquatableArray<T> right)
+	{
+		return left.Equals(right);
+	}
+
+	/// <summary>
+	/// Checks whether two <see cref="EquatableArray{T}"/> values are not the same.
+	/// </summary>
+	/// <param name="left">The first <see cref="EquatableArray{T}"/> value.</param>
+	/// <param name="right">The second <see cref="EquatableArray{T}"/> value.</param>
+	/// <returns>Whether <paramref name="left"/> and <paramref name="right"/> are not equal.</returns>
+	public static bool operator !=(EquatableArray<T> left, EquatableArray<T> right)
+	{
+		return !left.Equals(right);
+	}
+
+	/// <summary>
+	/// Creates an <see cref="EquatableArray{T}"/> instance from a given <see cref="ImmutableArray{T}"/>.
+	/// </summary>
+	/// <param name="array">The input <see cref="ImmutableArray{T}"/> instance.</param>
+	/// <returns>An <see cref="EquatableArray{T}"/> instance from a given <see cref="ImmutableArray{T}"/>.</returns>
+	public static EquatableArray<T> FromImmutableArray(ImmutableArray<T> array)
+	{
+		return new(array);
 	}
 
 	/// <sinheritdoc/>
@@ -110,16 +142,6 @@ public readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IEnume
 	}
 
 	/// <summary>
-	/// Creates an <see cref="EquatableArray{T}"/> instance from a given <see cref="ImmutableArray{T}"/>.
-	/// </summary>
-	/// <param name="array">The input <see cref="ImmutableArray{T}"/> instance.</param>
-	/// <returns>An <see cref="EquatableArray{T}"/> instance from a given <see cref="ImmutableArray{T}"/>.</returns>
-	public static EquatableArray<T> FromImmutableArray(ImmutableArray<T> array)
-	{
-		return new(array);
-	}
-
-	/// <summary>
 	/// Returns a <see cref="ReadOnlySpan{T}"/> wrapping the current items.
 	/// </summary>
 	/// <returns>A <see cref="ReadOnlySpan{T}"/> wrapping the current items.</returns>
@@ -157,44 +179,21 @@ public readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IEnume
 	{
 		return ((IEnumerable)AsImmutableArray()).GetEnumerator();
 	}
-
+}
+/// <summary>
+/// Extensions for <see cref="EquatableArray{T}"/>.
+/// </summary>
+static class EquatableArray
+{
 	/// <summary>
-	/// Implicitly converts an <see cref="ImmutableArray{T}"/> to <see cref="EquatableArray{T}"/>.
+	/// Creates an <see cref="EquatableArray{T}"/> instance from a given <see cref="ImmutableArray{T}"/>.
 	/// </summary>
+	/// <typeparam name="T">The type of items in the input array.</typeparam>
+	/// <param name="array">The input <see cref="ImmutableArray{T}"/> instance.</param>
 	/// <returns>An <see cref="EquatableArray{T}"/> instance from a given <see cref="ImmutableArray{T}"/>.</returns>
-	public static implicit operator EquatableArray<T>(ImmutableArray<T> array)
+	public static EquatableArray<T> AsEquatableArray<T>(this ImmutableArray<T> array)
+		where T : IEquatable<T>
 	{
-		return FromImmutableArray(array);
-	}
-
-	/// <summary>
-	/// Implicitly converts an <see cref="EquatableArray{T}"/> to <see cref="ImmutableArray{T}"/>.
-	/// </summary>
-	/// <returns>An <see cref="ImmutableArray{T}"/> instance from a given <see cref="EquatableArray{T}"/>.</returns>
-	public static implicit operator ImmutableArray<T>(EquatableArray<T> array)
-	{
-		return array.AsImmutableArray();
-	}
-
-	/// <summary>
-	/// Checks whether two <see cref="EquatableArray{T}"/> values are the same.
-	/// </summary>
-	/// <param name="left">The first <see cref="EquatableArray{T}"/> value.</param>
-	/// <param name="right">The second <see cref="EquatableArray{T}"/> value.</param>
-	/// <returns>Whether <paramref name="left"/> and <paramref name="right"/> are equal.</returns>
-	public static bool operator ==(EquatableArray<T> left, EquatableArray<T> right)
-	{
-		return left.Equals(right);
-	}
-
-	/// <summary>
-	/// Checks whether two <see cref="EquatableArray{T}"/> values are not the same.
-	/// </summary>
-	/// <param name="left">The first <see cref="EquatableArray{T}"/> value.</param>
-	/// <param name="right">The second <see cref="EquatableArray{T}"/> value.</param>
-	/// <returns>Whether <paramref name="left"/> and <paramref name="right"/> are not equal.</returns>
-	public static bool operator !=(EquatableArray<T> left, EquatableArray<T> right)
-	{
-		return !left.Equals(right);
+		return new(array);
 	}
 }

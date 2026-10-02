@@ -90,6 +90,11 @@ public class ImageLineOptions : ImageOptions
 	}
 
 	/// <summary>
+	/// Gets the lines that will be rendered in the resulting image.
+	/// </summary>
+	public IList<IDrawingLine> Lines { get; }
+
+	/// <summary>
 	/// Creates an instance of <see cref="ImageLineOptions"/> that will result in the output image covering the top-left to the bottom-right most points.
 	/// </summary>
 	/// <param name="lines">The lines that will be rendered in the resulting image.</param>
@@ -113,9 +118,4 @@ public class ImageLineOptions : ImageOptions
 	{
 		return new ImageLineOptions(lines, desiredSize, background, canvasSize);
 	}
-
-	/// <summary>
-	/// Gets the lines that will be rendered in the resulting image.
-	/// </summary>
-	public IList<IDrawingLine> Lines { get; }
 }

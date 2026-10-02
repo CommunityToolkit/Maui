@@ -39,7 +39,7 @@ public class BackgroundColorToTests : BaseTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task BackgroundColorTo_CancellationTokenCanceled()
 	{
-		var cts = new CancellationTokenSource();
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		VisualElement element = new Label { BackgroundColor = Colors.Blue };
 		element.EnableAnimations();

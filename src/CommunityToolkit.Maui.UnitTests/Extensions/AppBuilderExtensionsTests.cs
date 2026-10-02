@@ -144,6 +144,17 @@ public class AppBuilderExtensionsTests : BaseTest
 		}
 	}
 
+	[Theory]
+	[InlineData(unchecked((int)0x8007007E), "Unable to load resource dll. Microsoft.WindowsAppRuntime.Insights.Resource.dll", true)]
+	[InlineData(unchecked((int)0x8007007E), "Unable to load resource dll. Other.Resource.dll", false)]
+	[InlineData(unchecked((int)0x80004005), "Unable to load resource dll. Microsoft.WindowsAppRuntime.Insights.Resource.dll", false)]
+	public void IsWindowsAppRuntimeModuleUnavailableReturnsExpectedResult(int hresult, string message, bool expected)
+	{
+		var exception = new System.Runtime.InteropServices.COMException(message, hresult);
+
+		Assert.Equal(expected, Options.IsWindowsAppRuntimeModuleUnavailable(exception));
+	}
+
 	[Fact]
 	public void UseMauiCommunityToolkitMediaElement_ShouldUseSurfaceViewByDefault()
 	{

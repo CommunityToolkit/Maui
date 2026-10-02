@@ -33,9 +33,9 @@ public class MauiSemanticOrderView : ContentView, IUIAccessibilityContainer
 
 		foreach (var view in viewOrder)
 		{
-			if (view.Handler is IPlatformViewHandler { PlatformView: not null } platformViewHandler)
+			if (view.Handler?.PlatformView is NSObject platformView)
 			{
-				yield return platformViewHandler.PlatformView;
+				yield return platformView;
 			}
 		}
 	}
