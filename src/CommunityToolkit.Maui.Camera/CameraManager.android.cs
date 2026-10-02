@@ -19,15 +19,32 @@ using Object = Java.Lang.Object;
 
 namespace CommunityToolkit.Maui.Core;
 
-public class CameraConsumer(TaskCompletionSource finalizeTcs) : Object, IConsumer
+public class CameraConsumer : Object, IConsumer
 {
-	readonly TaskCompletionSource? finalizeTcs = finalizeTcs;
+	readonly TaskCompletionSource? finalizeTcs;
+	readonly VideoRecordingState? recordingState;
+
+	public CameraConsumer(TaskCompletionSource finalizeTcs)
+	{
+		this.finalizeTcs = finalizeTcs;
+	}
+
+	internal CameraConsumer(VideoRecordingState recordingState)
+	{
+		this.recordingState = recordingState;
+	}
 
 	public void Accept(Object? videoRecordEvent)
 	{
-		if (videoRecordEvent is VideoRecordEvent.Finalize)
+		switch (videoRecordEvent)
 		{
-			finalizeTcs?.SetResult();
+			case VideoRecordEvent.Start:
+				recordingState?.OnStarted();
+				break;
+			case VideoRecordEvent.Finalize finalizeEvent:
+				recordingState?.OnFinalized(new CameraException($"Video recording finished before it started (CameraX error {finalizeEvent.Error})."));
+				finalizeTcs?.TrySetResult();
+				break;
 		}
 	}
 }
@@ -51,7 +68,7 @@ partial class CameraManager
 	ResolutionFilter? resolutionFilter;
 	OrientationListener? orientationListener;
 	Java.IO.File? videoRecordingFile;
-	TaskCompletionSource? videoRecordingFinalizeTcs;
+	VideoRecordingState? videoRecordingState;
 	Stream? videoRecordingStream;
 	int extensionMode = ExtensionMode.Auto;
 	CaptureSessionMode currentSessionMode = CaptureSessionMode.Photo;
@@ -426,32 +443,50 @@ partial class CameraManager
 			return;
 		}
 
-		videoRecordingStream = stream;
-
-		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
-
-		// Rebuild the ImageCapture use case with the CaptureModeMinimizeLatency capture mode
-		// to optimize for latency during video recording sessions
-		currentSessionMode = CaptureSessionMode.Video;
-		RebuildImageCapture();
-
-		if (camera is null || !IsVideoSessionBound())
+		if (VideoRecordingState.TryStart(ref videoRecordingState) is not { } recordingState)
 		{
-			await BindVideoSessionAsync(token);
+			return;
 		}
 
-		videoRecordingFile = new Java.IO.File(context.CacheDir, $"{DateTime.UtcNow.Ticks}.mp4");
-		videoRecordingFile.CreateNewFile();
+		bool recordingRequested = false;
 
-		var outputOptions = new FileOutputOptions.Builder(videoRecordingFile).Build();
+		try
+		{
+			token.ThrowIfCancellationRequested();
+			videoRecordingStream = stream;
 
-		videoRecordingFinalizeTcs = new TaskCompletionSource();
-		var captureListener = new CameraConsumer(videoRecordingFinalizeTcs);
-		var executor = ContextCompat.GetMainExecutor(context) ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
-		videoRecording = videoRecorder
-			.PrepareRecording(context, outputOptions)
-			?.WithAudioEnabled()
-			.Start(executor, captureListener) ?? throw new InvalidOperationException("Unable to prepare recording");
+			cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
+
+			// Rebuild the ImageCapture use case with the CaptureModeMinimizeLatency capture mode
+			// to optimize for latency during video recording sessions
+			currentSessionMode = CaptureSessionMode.Video;
+			RebuildImageCapture();
+
+			if (camera is null || !IsVideoSessionBound())
+			{
+				await BindVideoSessionAsync(token);
+			}
+
+			ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
+
+			videoRecordingFile = new Java.IO.File(context.CacheDir, $"{DateTime.UtcNow.Ticks}.mp4");
+			videoRecordingFile.CreateNewFile();
+			var outputOptions = new FileOutputOptions.Builder(videoRecordingFile).Build();
+			var captureListener = new CameraConsumer(recordingState);
+			var executor = ContextCompat.GetMainExecutor(context) ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
+			videoRecording = videoRecorder
+				.PrepareRecording(context, outputOptions)
+				?.WithAudioEnabled()
+				.Start(executor, captureListener) ?? throw new InvalidOperationException("Unable to prepare recording");
+			recordingRequested = true;
+
+			await recordingState.Started.WaitAsync(token);
+		}
+		catch
+		{
+			await CancelVideoRecordingStart(recordingState, recordingRequested, CancellationToken.None);
+			throw;
+		}
 
 		// `.PrepareRecording()` should never return null
 		// According to the Android docs, `Recorder.prepareRecording(Context, eMediaSoreOutputOptions)` returns a `NonNull` object
@@ -464,36 +499,108 @@ partial class CameraManager
 		ArgumentNullException.ThrowIfNull(cameraExecutor);
 		if (videoRecording is null
 			|| videoRecordingFile is null
-			|| videoRecordingFinalizeTcs is null
-			|| videoRecordingStream is null)
+			|| videoRecordingStream is null
+			|| videoRecordingState is not { } recordingState)
 		{
 			return Stream.Null;
 		}
 
-		videoRecording.Stop();
-		await videoRecordingFinalizeTcs.Task.WaitAsync(token);
-
-		await using var inputStream = new FileStream(videoRecordingFile.AbsolutePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-		await inputStream.CopyToAsync(videoRecordingStream, token);
-		await videoRecordingStream.FlushAsync(token);
-		CleanupVideoRecordingResources();
-
-		// Rebuild the ImageCapture use case with the CaptureModeMaximizeQuality capture mode
-		// to optimize for quality during photo capture sessions
-		currentSessionMode = CaptureSessionMode.Photo;
-		RebuildImageCapture();
-		await BindPhotoSessionAsync(token);
-
-		if (videoRecordingStream.CanSeek)
+		await recordingState.StopSemaphore.WaitAsync(token);
+		try
 		{
-			videoRecordingStream.Position = 0;
-		}
+			if (!ReferenceEquals(recordingState, videoRecordingState)
+				|| videoRecording is not { } recording
+				|| videoRecordingFile is not { } recordingFile
+				|| videoRecordingStream is not { } recordingStream)
+			{
+				return Stream.Null;
+			}
 
-		return videoRecordingStream;
+			if (!recordingState.Finalized.IsCompleted)
+			{
+				recording.Stop();
+			}
+
+			await recordingState.Finalized.WaitAsync(token);
+			ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
+
+			await RestorePhotoSession(recordingState, token);
+			ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
+			token.ThrowIfCancellationRequested();
+
+			await using (var inputStream = new FileStream(recordingFile.AbsolutePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+			{
+				await inputStream.CopyToAsync(recordingStream, CancellationToken.None);
+				await recordingStream.FlushAsync(CancellationToken.None);
+			}
+
+			ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
+			CleanupVideoRecordingResources(recordingState);
+
+			if (recordingStream.CanSeek)
+			{
+				recordingStream.Position = 0;
+			}
+
+			return recordingStream;
+		}
+		finally
+		{
+			recordingState.StopSemaphore.Release();
+		}
 	}
 
-	void CleanupVideoRecordingResources()
+	async Task CancelVideoRecordingStart(VideoRecordingState recordingState, bool recordingRequested, CancellationToken token)
 	{
+		await recordingState.StopSemaphore.WaitAsync(token);
+		try
+		{
+			if (!ReferenceEquals(recordingState, videoRecordingState))
+			{
+				return;
+			}
+
+			if (recordingRequested)
+			{
+				if (!recordingState.Finalized.IsCompleted)
+				{
+					videoRecording?.Stop();
+				}
+
+				await recordingState.Finalized.WaitAsync(token);
+			}
+
+			try
+			{
+				if (currentSessionMode is CaptureSessionMode.Video)
+				{
+					await RestorePhotoSession(recordingState, token);
+				}
+			}
+			finally
+			{
+				CleanupVideoRecordingResources(recordingState);
+			}
+		}
+		catch (System.Exception exception)
+		{
+			System.Diagnostics.Trace.WriteLine($"Unable to stop video recording after start failed: {exception}");
+		}
+		finally
+		{
+			recordingState.StopSemaphore.Release();
+		}
+	}
+
+	void CleanupVideoRecordingResources(VideoRecordingState? expectedState = null)
+	{
+		if (expectedState is not null && !ReferenceEquals(expectedState, videoRecordingState))
+		{
+			return;
+		}
+
+		videoRecordingState?.CancelPendingTasks();
+
 		videoRecording?.Dispose();
 		videoRecording = null;
 
@@ -508,7 +615,16 @@ partial class CameraManager
 			videoRecordingFile = null;
 		}
 
-		videoRecordingFinalizeTcs = null;
+		videoRecordingState = null;
+	}
+
+	async Task RestorePhotoSession(VideoRecordingState recordingState, CancellationToken token)
+	{
+		ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
+
+		currentSessionMode = CaptureSessionMode.Photo;
+		RebuildImageCapture();
+		await BindPhotoSessionAsync(token);
 	}
 
 	async Task<CameraSelector> EnableModes(CameraInfo selectedCamera, CancellationToken token)
