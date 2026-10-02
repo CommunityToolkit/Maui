@@ -1,5 +1,6 @@
 ﻿using AVFoundation;
 using AVKit;
+using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Views;
 using CoreFoundation;
 using CoreGraphics;
@@ -15,10 +16,13 @@ public partial class MediaManager : IDisposable
 {
 	Metadata? metaData;
 	StreamAssetResourceLoader? streamResourceLoader;
+	CancellationTokenSource? playerItemCancellationTokenSource;
 
-	// Media would still start playing when Speed was set although ShouldAutoPlay=False
-	// This field was added to overcome that.
+	// Setting AVPlayer.Rate starts playback, so the initial Speed mapping is skipped to respect ShouldAutoPlay=False.
+	// When ShouldAutoPlay=True, the initial Speed is applied once the AVPlayerItem reaches ReadyToPlay.
 	bool isInitialSpeedSet;
+
+	bool hasMediaOpened;
 
 	/// <summary>
 	/// The default <see cref="NSKeyValueObservingOptions"/> flags used in the iOS and macOS observers.
@@ -26,7 +30,7 @@ public partial class MediaManager : IDisposable
 	protected NSKeyValueObservingOptions ValueObserverOptions => NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.New;
 
 	/// <summary>
-	/// Observer that tracks when an error has occurred in the playback of the current item.
+	/// Observer that tracks the status of the current item, both when it becomes ready to play and when it fails.
 	/// </summary>
 	protected IDisposable? CurrentItemErrorObserver { get; set; }
 
@@ -211,14 +215,14 @@ public partial class MediaManager : IDisposable
 		};
 	}
 
-	protected virtual async partial ValueTask PlatformUpdateSource()
+	protected virtual partial ValueTask PlatformUpdateSource()
 	{
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 
 		AVAsset? asset = null;
 		if (Player is null)
 		{
-			return;
+			return ValueTask.CompletedTask;
 		}
 
 		// Clean up previous stream resource loader if switching sources
@@ -316,46 +320,45 @@ public partial class MediaManager : IDisposable
 			: null;
 
 		metaData.SetMetadata(PlayerItem, MediaElement);
-		CurrentItemErrorObserver?.Dispose();
+		DestroyPlayerItemStatusObserver();
 
-		Player.ReplaceCurrentItemWithPlayerItem(PlayerItem);
+		hasMediaOpened = false;
 
-		CurrentItemErrorObserver = PlayerItem?.AddObserver("error",
-			ValueObserverOptions, (NSObservedChange change) =>
-			{
-				if (Player.CurrentItem?.Error is null)
-				{
-					return;
-				}
+		var playerItem = PlayerItem;
+		Player.ReplaceCurrentItemWithPlayerItem(playerItem);
 
-				var message = $"{Player.CurrentItem?.Error?.LocalizedDescription} - " +
-							  $"{Player.CurrentItem?.Error?.LocalizedFailureReason}";
-
-				MediaElement.MediaFailed(
-					new MediaFailedEventArgs(message));
-
-				Logger.LogError("{LogMessage}", message);
-			});
-
-		if (PlayerItem is not null && PlayerItem.Error is null)
+		// A StateChanged handler raised during the `ReplaceCurrentItemWithPlayerItem` can change the source or disconnect the handler
+		if (Player is null || !ReferenceEquals(PlayerItem, playerItem))
 		{
-			MediaElement.MediaOpened();
-
-			(MediaElement.MediaWidth, MediaElement.MediaHeight) = await GetVideoDimensions(PlayerItem);
-
-			if (MediaElement.ShouldAutoPlay)
-			{
-				PlayAtSpeed();
-			}
-
-			await SetPoster();
+			return ValueTask.CompletedTask;
 		}
-		else if (PlayerItem is null)
+
+		if (playerItem is null)
 		{
 			MediaElement.MediaWidth = MediaElement.MediaHeight = 0;
 
 			MediaElement.CurrentStateChanged(MediaElementState.None);
 		}
+		else
+		{
+			// Bind the callback to the observed item and its token, which is canceled when the source changes or the player is disposed
+			playerItemCancellationTokenSource = new();
+			var token = playerItemCancellationTokenSource.Token;
+
+			var observer = playerItem.AddObserver("status", ValueObserverOptions,
+				_ => DispatchQueue.MainQueue.DispatchAsync(() => PlayerItemStatusChanged(playerItem, token).SafeFireAndForget(OnPlayerItemStatusChangedException, continueOnCapturedContext: true)));
+
+			// The initial notification runs before `AddObserver` returns, and an event handler it raises can change the source or disconnect the handler
+			if (Player is null || !ReferenceEquals(PlayerItem, playerItem))
+			{
+				observer.Dispose();
+				return ValueTask.CompletedTask;
+			}
+
+			CurrentItemErrorObserver = observer;
+		}
+
+		return ValueTask.CompletedTask;
 	}
 
 	protected virtual partial void PlatformUpdateSpeed()
@@ -365,8 +368,8 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		// First time we're getting a playback speed and should NOT auto play, do nothing.
-		if (!isInitialSpeedSet && !MediaElement.ShouldAutoPlay)
+		// First time we're getting a playback speed, skip it; see isInitialSpeedSet
+		if (!isInitialSpeedSet)
 		{
 			isInitialSpeedSet = true;
 			return;
@@ -397,7 +400,7 @@ public partial class MediaManager : IDisposable
 		{
 			if (PlayerItem.Duration == CMTime.Indefinite)
 			{
-				var range = PlayerItem.SeekableTimeRanges?.LastOrDefault();
+				var range = PlayerItem.SeekableTimeRanges.LastOrDefault();
 
 				if (range?.CMTimeRangeValue is not null)
 				{
@@ -482,8 +485,7 @@ public partial class MediaManager : IDisposable
 				RateObserver?.Dispose();
 				RateObserver = null;
 
-				CurrentItemErrorObserver?.Dispose();
-				CurrentItemErrorObserver = null;
+				DestroyPlayerItemStatusObserver();
 
 				Player.ReplaceCurrentItemWithPlayerItem(null);
 
@@ -554,14 +556,8 @@ public partial class MediaManager : IDisposable
 
 	static TimeSpan ConvertTime(CMTime cmTime) => TimeSpan.FromSeconds(double.IsNaN(cmTime.Seconds) ? 0 : cmTime.Seconds);
 
-	static async Task<(int Width, int Height)> GetVideoDimensions(AVPlayerItem avPlayerItem)
+	static (int Width, int Height) GetVideoDimensions(AVPlayerItem avPlayerItem, AVAssetTrack? videoTrack)
 	{
-		// Create an AVAsset instance with the video file URL
-		var asset = avPlayerItem.Asset;
-
-		// Retrieve the video track
-		var videoTrack = await GetTrack(asset);
-
 		if (videoTrack is null)
 		{
 			// HLS doesn't have tracks, try to get the dimensions this way
@@ -583,7 +579,7 @@ public partial class MediaManager : IDisposable
 		return ((int)width, (int)height);
 	}
 
-	static async Task<AVAssetTrack?> GetTrack(AVAsset asset)
+	static async Task<AVAssetTrack?> GetTrack(AVAsset asset, CancellationToken token)
 	{
 		if (!(OperatingSystem.IsMacCatalystVersionAtLeast(18)
 			  || OperatingSystem.IsIOSVersionAtLeast(18)))
@@ -592,7 +588,7 @@ public partial class MediaManager : IDisposable
 			return asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant() ?? "0").FirstOrDefault();
 		}
 
-		var tracks = await asset.LoadTracksWithMediaTypeAsync(AVMediaTypes.Video.GetConstant() ?? "0");
+		var tracks = await asset.LoadTracksWithMediaTypeAsync(AVMediaTypes.Video.GetConstant() ?? "0").WaitAsync(token);
 
 		return tracks.Count <= 0 ? null : tracks[0];
 	}
@@ -611,20 +607,14 @@ public partial class MediaManager : IDisposable
 		RateObserver = AVPlayer.Notifications.ObserveRateDidChange(RateChanged);
 	}
 
-	async Task SetPoster()
+	void SetPoster(in AVPlayerItem playerItem)
 	{
-		if (PlayerItem is null || metaData is null)
+		if (metaData is null)
 		{
 			return;
 		}
 
-		var videoTrack = await GetTrack(PlayerItem.Asset);
-		if (videoTrack is not null)
-		{
-			return;
-		}
-
-		if (PlayerItem.Asset.Tracks.Length == 0)
+		if (playerItem.Asset.Tracks.Length == 0)
 		{
 			// No video track found and no tracks found. This is likely an audio file. So we can't set a poster.
 			return;
@@ -708,6 +698,108 @@ public partial class MediaManager : IDisposable
 		PlayedToEndObserver?.Dispose();
 	}
 
+	void DestroyPlayerItemStatusObserver()
+	{
+		CurrentItemErrorObserver?.Dispose();
+		CurrentItemErrorObserver = null;
+
+		playerItemCancellationTokenSource?.Cancel();
+		playerItemCancellationTokenSource?.Dispose();
+		playerItemCancellationTokenSource = null;
+	}
+
+
+	async ValueTask PlayerItemStatusChanged(AVPlayerItem playerItem, CancellationToken token)
+	{
+		token.ThrowIfCancellationRequested();
+
+		switch (playerItem.Status)
+		{
+			case AVPlayerItemStatus.ReadyToPlay:
+				if (hasMediaOpened)
+				{
+					return;
+				}
+
+				hasMediaOpened = true;
+
+				// The video track is only used for the dimensions and the poster, so failing to load it must not prevent MediaOpened
+				AVAssetTrack? videoTrack = null;
+				var didLoadTracks = false;
+				try
+				{
+					videoTrack = await GetTrack(playerItem.Asset, token);
+					didLoadTracks = true;
+				}
+				catch (Exception ex) when (ex is not OperationCanceledException)
+				{
+					Logger.LogWarning(ex, "{LogMessage}", "Failed to load the video track; using the presentation size instead.");
+				}
+
+				token.ThrowIfCancellationRequested();
+
+				// The item can fail while its tracks are loading
+				if (Player is null || playerItem.Status is not AVPlayerItemStatus.ReadyToPlay)
+				{
+					return;
+				}
+
+				// Event handlers raised below run synchronously and may change the source or disconnect the handler, which cancels the token
+				(MediaElement.MediaWidth, MediaElement.MediaHeight) = GetVideoDimensions(playerItem, videoTrack);
+
+				// Handles CMTime.Indefinite durations (e.g. HLS/live) via the seekable range
+				PlatformUpdatePosition();
+				token.ThrowIfCancellationRequested();
+
+				// Start playback before raising MediaOpened so a Pause(), Stop() or SeekTo() from a MediaOpened handler isn't overridden
+				if (MediaElement.ShouldAutoPlay)
+				{
+					// Start at the requested Speed with a single rate change. Play() followed by setting Rate changes the rate twice,
+					// and RateChanged, which copies the player's rate into Speed, then keeps switching Speed between 1 and the requested value
+					PlayAtSpeed();
+					token.ThrowIfCancellationRequested();
+				}
+
+				MediaElement.CurrentStateChanged(Player.TimeControlStatus switch
+				{
+					AVPlayerTimeControlStatus.Playing => MediaElementState.Playing,
+					AVPlayerTimeControlStatus.WaitingToPlayAtSpecifiedRate => MediaElementState.Buffering,
+					_ => MediaElementState.Paused
+				});
+				token.ThrowIfCancellationRequested();
+
+				MediaElement.MediaOpened();
+				token.ThrowIfCancellationRequested();
+
+				if (didLoadTracks && videoTrack is null)
+				{
+					SetPoster(playerItem);
+				}
+
+				break;
+
+			case AVPlayerItemStatus.Failed:
+				var error = playerItem.Error;
+				var message = error is not null
+					? $"{error.LocalizedDescription} - {error.LocalizedFailureReason}"
+					: "AVPlayerItem failed.";
+
+				MediaElement.MediaFailed(new MediaFailedEventArgs(message));
+				Logger.LogError("{LogMessage}", message);
+				break;
+		}
+	}
+
+	void OnPlayerItemStatusChangedException(Exception exception)
+	{
+		// Cancellation means the source changed or the player was disposed, which is expected
+		if (exception is OperationCanceledException)
+		{
+			return;
+		}
+
+		Logger.LogError(exception, "{LogMessage}", "Failed to handle AVPlayerItem status change.");
+	}
 
 	void StatusChanged(NSObservedChange obj)
 	{
@@ -768,7 +860,7 @@ public partial class MediaManager : IDisposable
 			message = args.Notification?.ToString() ??
 					  "Media playback failed for an unknown reason.";
 
-			Logger?.LogWarning("{LogMessage}", message);
+			Logger.LogWarning("{LogMessage}", message);
 		}
 	}
 
