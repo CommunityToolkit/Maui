@@ -29,9 +29,27 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		return new(mediaPlatform);
 	}
 
+	/// <summary>
+	/// Establishes a connection between the handler and the specified platform-specific media element view.
+	/// </summary>
+	/// <remarks>Overrides the base implementation to provide custom connection logic for the media element on the
+	/// Windows platform.</remarks>
+	/// <param name="platformView">The platform-specific media element view to connect to the handler. Cannot be null.</param>
+	protected override void ConnectHandler(MauiMediaElement platformView)
+	{
+		platformView.FullScreenStateChanged += OnScreenStateChanged;
+		base.ConnectHandler(platformView);
+	}
+
+	void OnScreenStateChanged(object? sender, ScreenStateChangedEventArgs e)
+	{
+		MediaManager?.UpdateFullScreenState(e.NewState);
+	}
+
 	/// <inheritdoc/>
 	protected override void DisconnectHandler(MauiMediaElement platformView)
 	{
+		platformView.FullScreenStateChanged -= OnScreenStateChanged;
 		Dispose();
 		UnloadPlatformView(platformView);
 		base.DisconnectHandler(platformView);
