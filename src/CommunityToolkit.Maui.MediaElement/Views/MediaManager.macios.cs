@@ -235,14 +235,18 @@ public partial class MediaManager : IDisposable
 		// Metadata is retained for the app's lifetime by the shared MPRemoteCommandCenter, so pass a weak-reference
 		// playback callback. Passing PlayAtSpeed directly would give Metadata a strong reference to this MediaManager and,
 		// through it, its MediaElement and MauiContext, keeping them (and their managed view trees) alive after disposal.
-		var manager = new WeakReference<MediaManager>(this);
-		metaData ??= new(Player, () =>
+		metaData ??= new(Player, CreatePlaybackCallback(new WeakReference<MediaManager>(this)));
+
+		static Action CreatePlaybackCallback(WeakReference<MediaManager> manager)
 		{
-			if (manager.TryGetTarget(out var target))
+			return () =>
 			{
-				target.PlayAtSpeed();
-			}
-		});
+				if (manager.TryGetTarget(out var target))
+				{
+					target.PlayAtSpeed();
+				}
+			};
+		}
 		Metadata.ClearNowPlaying();
 		PlayerViewController?.ContentOverlayView?.Subviews.FirstOrDefault()?.RemoveFromSuperview();
 
