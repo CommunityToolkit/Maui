@@ -18,7 +18,7 @@ public abstract class BaseTest
 
 		var test = new ExperimentalBindablePropertyTest<TSourceGenerator>
 		{
-#if NET10_0
+#if NET11_0
 			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net100,
 #else
 #error ReferenceAssemblies must be updated to current version of .NET

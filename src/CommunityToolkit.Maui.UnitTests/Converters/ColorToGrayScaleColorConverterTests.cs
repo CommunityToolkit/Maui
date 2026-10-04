@@ -5,66 +5,66 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToGrayScaleColorConverterTests : BaseOneWayConverterTest<ColorToGrayScaleColorConverter>
 {
-	public static TheoryData<Color, Color> ColorToGrayScaleColorData { get; } = new()
+	public static TheoryData<int, int> ColorToGrayScaleColorData { get; } = new()
 	{
 		{
-			Colors.White, Colors.White
+			Colors.White.ToInt(), Colors.White.ToInt()
 		},
 		{
-			Colors.Yellow, new Color(2f / 3f, 2f / 3f, 2f / 3f, 1)
+			Colors.Yellow.ToInt(), new Color(2f / 3f, 2f / 3f, 2f / 3f, 1).ToInt()
 		},
 		{
-			Colors.Pink, new Color(0.8496732f, 0.8496732f, 0.8496732f, 1)
+			Colors.Pink.ToInt(), new Color(0.8496732f, 0.8496732f, 0.8496732f, 1).ToInt()
 		},
 		{
-			Colors.LightBlue, new Color(0.8091503f, 0.8091503f, 0.8091503f, 1)
+			Colors.LightBlue.ToInt(), new Color(0.8091503f, 0.8091503f, 0.8091503f, 1).ToInt()
 		},
 		{
-			Colors.Wheat, new Color(0.84444445f, 0.84444445f, 0.84444445f, 1)
+			Colors.Wheat.ToInt(), new Color(0.84444445f, 0.84444445f, 0.84444445f, 1).ToInt()
 		},
 		{
-			Colors.Black, Colors.Black
+			Colors.Black.ToInt(), Colors.Black.ToInt()
 		},
 		{
-			Colors.DarkBlue, new Color(0.18169935f, 0.18169935f, 0.18169935f, 1)
+			Colors.DarkBlue.ToInt(), new Color(0.18169935f, 0.18169935f, 0.18169935f, 1).ToInt()
 		},
 		{
-			Colors.DarkCyan, new Color(0.3633987f, 0.3633987f, 0.3633987f, 1)
+			Colors.DarkCyan.ToInt(), new Color(0.3633987f, 0.3633987f, 0.3633987f, 1).ToInt()
 		},
 		{
-			Colors.Brown, new Color(0.3254902f, 0.3254902f, 0.3254902f, 1)
+			Colors.Brown.ToInt(), new Color(0.3254902f, 0.3254902f, 0.3254902f, 1).ToInt()
 		},
 		{
-			Colors.DarkGreen, new Color(0.13071896f, 0.13071896f, 0.13071896f, 1)
+			Colors.DarkGreen.ToInt(), new Color(0.13071896f, 0.13071896f, 0.13071896f, 1).ToInt()
 		},
 		{
-			Colors.DarkSlateGray, new Color(0.26797387f, 0.26797387f, 0.26797387f, 1)
+			Colors.DarkSlateGray.ToInt(), new Color(0.26797387f, 0.26797387f, 0.26797387f, 1).ToInt()
 		},
 		{
-			Colors.Transparent, Colors.Black
+			Colors.Transparent.ToInt(), Colors.Black.ToInt()
 		},
 		{
-			Colors.DarkSalmon, new Color(0.66013074f, 0.66013074f, 0.66013074f, 1)
+			Colors.DarkSalmon.ToInt(), new Color(0.66013074f, 0.66013074f, 0.66013074f, 1).ToInt()
 		},
 		{
-			Colors.DarkOrchid, new Color(0.5320262f, 0.5320262f, 0.5320262f, 1)
+			Colors.DarkOrchid.ToInt(), new Color(0.5320262f, 0.5320262f, 0.5320262f, 1).ToInt()
 		},
 		{
-			Colors.DarkGrey, new Color(0.6627451f, 0.6627451f, 0.6627451f, 1)
+			Colors.DarkGrey.ToInt(), new Color(0.6627451f, 0.6627451f, 0.6627451f, 1).ToInt()
 		}
 	};
 
 	[Theory]
 	[MemberData(nameof(ColorToGrayScaleColorData))]
-	public void ColorToGrayScaleColorConverterValidArgumentsTest(Color initialColor, Color expectedColor)
+	public void ColorToGrayScaleColorConverterValidArgumentsTest(int initialColor, int expectedColor)
 	{
 		var converter = new ColorToGrayScaleColorConverter();
 
-		var convertedColor = ((ICommunityToolkitValueConverter)converter).Convert(initialColor, typeof(Color), null, null);
-		var convertedColorFrom = converter.ConvertFrom(initialColor);
+		var convertedColor = ((ICommunityToolkitValueConverter)converter).Convert(Color.FromInt(initialColor), typeof(Color), null, null);
+		var convertedColorFrom = converter.ConvertFrom(Color.FromInt(initialColor));
 
-		Assert.Equal(expectedColor, convertedColor);
-		Assert.Equal(expectedColor, convertedColorFrom);
+		Assert.Equal(Color.FromInt(expectedColor), convertedColor);
+		Assert.Equal(Color.FromInt(expectedColor), convertedColorFrom);
 	}
 
 	[Theory]

@@ -4,10 +4,10 @@
     <Nullable>enable</Nullable>
     <!-- Remove MCTEXP001 once the BindablePropertySourceGenerator is Released and no longer in Experimental -->
     <NoWarn>NETSDK1023,MCTEXP001</NoWarn>
-    <NetVersion>net10.0</NetVersion>
+    <NetVersion>net11.0</NetVersion>
     <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
-    <CodeAnalysisVersion>5.0.0</CodeAnalysisVersion>
+    <CodeAnalysisVersion>5.9.0</CodeAnalysisVersion>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
@@ -24,7 +24,7 @@ https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitati
 
     <!-- MAUI Specific -->
     <MauiXamlInflator>SourceGen</MauiXamlInflator>
-    <MauiPackageVersion>10.0.90</MauiPackageVersion>
+    <MauiPackageVersion>11.0.0-rc.1.26451.6</MauiPackageVersion>
     <MauiStrictXamlCompilation>true</MauiStrictXamlCompilation>
     <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
