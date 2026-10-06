@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls;
 namespace CommunityToolkit.Maui.Extensions;
 
@@ -30,40 +29,6 @@ static class PageExtensions
 		{
 			return currentPage;
 		}
-	}
-
-	internal static bool TryGetCurrentPages([NotNullWhen(true)] out IReadOnlyList<Page>? currentPages)
-	{
-		currentPages = null;
-
-		if (Application.Current?.Windows is not IReadOnlyList<Window> windows)
-		{
-			return false;
-		}
-
-		if (windows.Count is 0)
-		{
-			return false;
-		}
-
-		List<Page> pages = [];
-		foreach (var window in windows)
-		{
-			if (window.Page is null)
-			{
-				continue;
-			}
-
-			pages.Add(window.GetCurrentPage());
-		}
-
-		if (pages.Count is 0)
-		{
-			return false;
-		}
-
-		currentPages = pages;
-		return true;
 	}
 
 	internal record struct ParentWindow

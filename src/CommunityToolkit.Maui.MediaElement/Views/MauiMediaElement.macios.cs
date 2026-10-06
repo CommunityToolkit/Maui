@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Versioning;
 using AVKit;
 using CommunityToolkit.Maui.Views;
 using UIKit;
@@ -10,13 +11,11 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiMediaElement : UIView
 {
-	#if IOS16_0_OR_GREATER || MACCATALYST16_1_OR_GREATER
 	readonly AVPlayerViewController playerViewController;
-	#endif
 	readonly UIView playerView;
-	
+
 	/// <summary>
-	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
+	/// Initializes a new instance of the <see cref="MediaElement"/> class.
 	/// </summary>
 	/// <param name="playerViewController">The <see cref="AVPlayerViewController"/> that acts as the platform media player.</param>
 	/// <param name="virtualView">The <see cref="MediaElement"/> used as the VirtualView for this <see cref="MauiMediaElement"/>.</param>
@@ -25,11 +24,8 @@ public class MauiMediaElement : UIView
 	{
 		ArgumentNullException.ThrowIfNull(virtualView);
 
-		#if IOS16_0_OR_GREATER || MACCATALYST16_1_OR_GREATER
 		this.playerViewController = playerViewController;
-		#endif
 		playerView = playerViewController.View ?? throw new InvalidOperationException($"{nameof(playerViewController)}.{nameof(playerViewController.View)} cannot be null.");
-
 		playerView.Frame = Bounds;
 		AddSubview(playerView);
 		TryAttachToParentViewController();
@@ -77,12 +73,45 @@ public class MauiMediaElement : UIView
 		playerView.SetNeedsDisplay();
 	}
 
+	/// <summary>
+	/// Removes the player view controller from its current parent.
+	/// </summary>
+	/// <remarks>
+	/// The player view controller is added as a child controller in <see cref="TryAttachToParentViewController"/>.
+	/// When the handler is disconnected the parent still retains the child controller, so it must be removed
+	/// here to avoid leaving a stale/disposed child controller in the parent view controller.
+	/// </remarks>
+	[SupportedOSPlatform("ios16.0")]
+	[SupportedOSPlatform("maccatalyst16.1")]
+	public void DetachFromParentViewController()
+	{
+		if (playerViewController.ParentViewController is not null)
+		{
+			if (playerViewController.View is UIView attachedView)
+			{
+				attachedView.RemoveFromSuperview();
+			}
+
+			playerViewController.WillMoveToParentViewController(null);
+			playerViewController.RemoveFromParentViewController();
+		}
+	}
+
 	void TryAttachToParentViewController(bool forceReattach = false)
 	{
-#if IOS16_0_OR_GREATER || MACCATALYST16_1_OR_GREATER
+		if (!OperatingSystem.IsIOSVersionAtLeast(16) && !OperatingSystem.IsMacCatalystVersionAtLeast(16, 1))
+		{
+			return;
+		}
+
 		if (!TryGetParentViewController(out var viewController) || viewController.View is not UIView parentView)
 		{
 			return;
+		}
+
+		if (IsAdditionalSafeAreaInsetsStale(parentView))
+		{
+			ApplySafeAreaInsets(parentView);
 		}
 
 		if (!forceReattach && ReferenceEquals(playerViewController.ParentViewController, viewController))
@@ -103,22 +132,49 @@ public class MauiMediaElement : UIView
 			playerViewController.RemoveFromParentViewController();
 		}
 
-		UIEdgeInsets insets = parentView.SafeAreaInsets;
-		playerViewController.AdditionalSafeAreaInsets =
-			new UIEdgeInsets(insets.Top * -1, insets.Left, insets.Bottom * -1, insets.Right);
-
+		ApplySafeAreaInsets(parentView);
 		viewController.AddChildViewController(playerViewController);
 		playerViewController.DidMoveToParentViewController(viewController);
-#endif
 	}
 
-	#if IOS16_0_OR_GREATER || MACCATALYST16_1_OR_GREATER
+	[SupportedOSPlatform("ios16.0")]
+	[SupportedOSPlatform("maccatalyst16.1")]
+	bool IsAdditionalSafeAreaInsetsStale(UIView parentView)
+	{
+		UIEdgeInsets expected = CreateSafeAreaInsets(parentView);
+		UIEdgeInsets actual = playerViewController.AdditionalSafeAreaInsets;
+
+		return actual.Top != expected.Top
+		       || actual.Left != expected.Left
+		       || actual.Bottom != expected.Bottom
+		       || actual.Right != expected.Right;
+	}
+
+	[SupportedOSPlatform("ios16.0")]
+	[SupportedOSPlatform("maccatalyst16.1")]
+	void ApplySafeAreaInsets(UIView parentView)
+	{
+		playerViewController.AdditionalSafeAreaInsets = CreateSafeAreaInsets(parentView);
+	}
+
+	[SupportedOSPlatform("ios16.0")]
+	[SupportedOSPlatform("maccatalyst16.1")]
+	static UIEdgeInsets CreateSafeAreaInsets(UIView parentView)
+	{
+		UIEdgeInsets insets = parentView.SafeAreaInsets;
+		return new UIEdgeInsets(insets.Top * -1, insets.Left, insets.Bottom * -1, insets.Right);
+	}
+
+	[SupportedOSPlatform("ios16.0")]
+	[SupportedOSPlatform("maccatalyst16.1")]
 	bool TryGetParentViewController([NotNullWhen(true)] out UIViewController? viewController)
 	{
 		viewController = GetViewControllerFromResponderChain();
 		return viewController is not null;
 	}
 
+	[SupportedOSPlatform("ios16.0")]
+	[SupportedOSPlatform("maccatalyst16.1")]
 	UIViewController? GetViewControllerFromResponderChain()
 	{
 		for (UIResponder? responder = NextResponder; responder is not null; responder = responder.NextResponder)
@@ -131,5 +187,4 @@ public class MauiMediaElement : UIView
 
 		return null;
 	}
-	#endif
 }

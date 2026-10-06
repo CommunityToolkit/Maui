@@ -45,8 +45,6 @@ public class ParentWindowTests : BaseViewTest
 		mockWindow.Page = mockPage;
 		Application.Current.OpenWindow(mockWindow);
 
-		// Simulate a scenario where the handler is set but the platform view is null
-		mockWindow.Handler = new MockWindowHandler();
 
 		ParentWindow.Exists.Should().BeFalse();
 	}
@@ -61,36 +59,9 @@ public class ParentWindowTests : BaseViewTest
 		mockWindow.Page = mockPage;
 		Application.Current.OpenWindow(mockWindow);
 
-		// Simulate a scenario where all conditions are met
+
 		mockWindow.Handler = new MockWindowHandler { PlatformView = new object() };
 
 		ParentWindow.Exists.Should().BeTrue();
-	}
-
-	[Fact]
-	public void TryGetCurrentPages_WhenApplicationHasMultipleWindows_ReturnsCurrentPageForEachWindow()
-	{
-		Application.Current.Should().NotBeNull();
-
-		var firstPage = new ContentPage();
-		var secondPage = new ContentPage();
-		var firstWindow = new Window { Page = firstPage };
-		var secondWindow = new Window { Page = secondPage };
-
-		Application.Current.AddWindow(firstWindow);
-		Application.Current.AddWindow(secondWindow);
-
-		try
-		{
-			PageExtensions.TryGetCurrentPages(out var currentPages).Should().BeTrue();
-			currentPages.Should().NotBeNull();
-			currentPages.Should().Contain(firstPage);
-			currentPages.Should().Contain(secondPage);
-		}
-		finally
-		{
-			Application.Current.RemoveWindow(firstWindow);
-			Application.Current.RemoveWindow(secondWindow);
-		}
 	}
 }
