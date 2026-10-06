@@ -68,6 +68,12 @@ public partial class Toast : IToast
 	/// <summary>
 	/// Show Toast
 	/// </summary>
+	/// <remarks>
+	/// On Windows, enable notification registration by calling <see cref="AppBuilderExtensions.UseMauiCommunityToolkit"/>
+	/// with <see cref="Options.SetShouldEnableSnackbarOnWindows"/> set to <see langword="true"/>.
+	/// Packaged Windows apps also require the manifest setup described in the
+	/// <see href="https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/toast">Toast documentation</see>.
+	/// </remarks>
 	public virtual Task Show(CancellationToken token = default)
 	{
 #if WINDOWS
@@ -98,6 +104,17 @@ public partial class Toast : IToast
 	{
 		Dispose(true);
 		GC.SuppressFinalize(this);
+	}
+
+	internal static void EnsureWindowsToastEnabled()
+	{
+		if (!Options.ShouldEnableSnackbarOnWindows)
+		{
+			throw new InvalidOperationException($"To enable {nameof(Toast)} on Windows, call {nameof(AppBuilderExtensions.UseMauiCommunityToolkit)}(options => options.{nameof(Options.SetShouldEnableSnackbarOnWindows)}(true)). Packaged Windows apps also require additional setup in Package.appxmanifest. See https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/toast")
+			{
+				HelpLink = "https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/toast"
+			};
+		}
 	}
 
 	static TimeSpan GetDuration(ToastDuration duration) => duration switch
