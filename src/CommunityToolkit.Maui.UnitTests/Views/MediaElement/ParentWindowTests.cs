@@ -44,7 +44,7 @@ public class ParentWindowTests : BaseViewTest
 		var mockPage = new ContentPage();
 		mockWindow.Page = mockPage;
 		Application.Current.OpenWindow(mockWindow);
-
+		mockWindow.Handler = new MockWindowHandler();
 
 		ParentWindow.Exists.Should().BeFalse();
 	}
