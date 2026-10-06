@@ -15,7 +15,7 @@ public class MauiMediaElement : UIView
 	readonly UIView playerView;
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="MediaElement"/> class.
+	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
 	/// </summary>
 	/// <param name="playerViewController">The <see cref="AVPlayerViewController"/> that acts as the platform media player.</param>
 	/// <param name="virtualView">The <see cref="MediaElement"/> used as the VirtualView for this <see cref="MauiMediaElement"/>.</param>
