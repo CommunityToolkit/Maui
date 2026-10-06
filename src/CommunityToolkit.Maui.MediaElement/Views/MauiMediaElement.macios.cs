@@ -87,12 +87,13 @@ public class MauiMediaElement : UIView
 	{
 		if (playerViewController.ParentViewController is not null)
 		{
+			playerViewController.WillMoveToParentViewController(null);
+
 			if (playerViewController.View is UIView attachedView)
 			{
 				attachedView.RemoveFromSuperview();
 			}
 
-			playerViewController.WillMoveToParentViewController(null);
 			playerViewController.RemoveFromParentViewController();
 		}
 	}
