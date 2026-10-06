@@ -2,6 +2,7 @@ using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
 using ParentWindow = CommunityToolkit.Maui.Extensions.PageExtensions.ParentWindow;
+using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
@@ -43,8 +44,6 @@ public class ParentWindowTests : BaseViewTest
 		var mockPage = new ContentPage();
 		mockWindow.Page = mockPage;
 		Application.Current.OpenWindow(mockWindow);
-
-		// Simulate a scenario where the handler is set but the platform view is null
 		mockWindow.Handler = new MockWindowHandler();
 
 		ParentWindow.Exists.Should().BeFalse();
@@ -60,7 +59,7 @@ public class ParentWindowTests : BaseViewTest
 		mockWindow.Page = mockPage;
 		Application.Current.OpenWindow(mockWindow);
 
-		// Simulate a scenario where all conditions are met
+
 		mockWindow.Handler = new MockWindowHandler { PlatformView = new object() };
 
 		ParentWindow.Exists.Should().BeTrue();

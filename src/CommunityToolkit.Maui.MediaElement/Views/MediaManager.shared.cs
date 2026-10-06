@@ -77,7 +77,7 @@ public partial class MediaManager
 	/// <param name="number2"></param>
 	/// <param name="tolerance"></param>
 	/// <returns></returns>
-	public static bool AreFloatingPointNumbersEqual(in double number1, in double number2, double tolerance = 0.01) => Math.Abs(number1 - number2) > tolerance;
+	public static bool AreFloatingPointNumbersEqual(in double number1, in double number2, double tolerance = 0.01) => Math.Abs(number1 - number2) <= tolerance;
 
 	/// <summary>
 	/// Invokes the play operation on the platform element.

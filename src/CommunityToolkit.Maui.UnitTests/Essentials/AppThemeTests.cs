@@ -26,8 +26,10 @@ public class AppThemeTests : BaseViewTest
 		Assert.Equal(initialAppTheme, Application.Current.RequestedTheme);
 	}
 
-	[Fact]
-	public void AppThemeColorUsesCorrectColorForTheme()
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void AppThemeColorUsesCorrectColorForTheme(bool usePublicBinding)
 	{
 		ArgumentNullException.ThrowIfNull(Application.Current);
 
@@ -37,13 +39,24 @@ public class AppThemeTests : BaseViewTest
 			Dark = Colors.Red
 		};
 
-		label.SetAppThemeColor(Label.TextColorProperty, color);
+		if (usePublicBinding)
+		{
+			label.SetBinding(Label.TextColorProperty, color.GetBinding());
+		}
+		else
+		{
+			label.SetAppThemeColor(Label.TextColorProperty, color);
+		}
 
 		Assert.Equal(Colors.Green, label.TextColor);
 
 		SetAppTheme(AppTheme.Dark, Application.Current);
 
 		Assert.Equal(Colors.Red, label.TextColor);
+
+		SetAppTheme(AppTheme.Light, Application.Current);
+
+		Assert.Equal(Colors.Green, label.TextColor);
 	}
 
 	[Fact]
@@ -86,8 +99,10 @@ public class AppThemeTests : BaseViewTest
 		Assert.Equal(Colors.Red, label.TextColor);
 	}
 
-	[Fact]
-	public void AppThemeResourceUpdatesLabelText()
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void AppThemeResourceUpdatesLabelText(bool usePublicBinding)
 	{
 		ArgumentNullException.ThrowIfNull(Application.Current);
 
@@ -97,13 +112,24 @@ public class AppThemeTests : BaseViewTest
 			Dark = "Dark Theme"
 		};
 
-		label.SetAppTheme(Label.TextProperty, resource);
+		if (usePublicBinding)
+		{
+			label.SetBinding(Label.TextProperty, resource.GetBinding());
+		}
+		else
+		{
+			label.SetAppTheme(Label.TextProperty, resource);
+		}
 
 		label.Text.Should().Be("Light Theme");
 
 		SetAppTheme(AppTheme.Dark, Application.Current);
 
 		label.Text.Should().Be("Dark Theme");
+
+		SetAppTheme(AppTheme.Light, Application.Current);
+
+		label.Text.Should().Be("Light Theme");
 	}
 
 	[Fact]
