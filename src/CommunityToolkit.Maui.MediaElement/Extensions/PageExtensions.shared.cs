@@ -5,6 +5,8 @@ namespace CommunityToolkit.Maui.Extensions;
 // https://github.com/dotnet/maui/blob/main/src/Controls/src/Core/Platform/PageExtensions.cs
 static class PageExtensions
 {
+	internal static Page GetCurrentPage(this Window window) => GetCurrentPage(window.Page ?? throw new InvalidOperationException($"{nameof(Page)} cannot be null."));
+
 	internal static Page GetCurrentPage(this Page currentPage)
 	{
 		if (currentPage.Navigation.ModalStack.LastOrDefault() is Page modal)
@@ -50,6 +52,6 @@ static class PageExtensions
 				return CurrentPage.GetParentWindow().Handler?.PlatformView is not null;
 			}
 		}
-		static Page CurrentPage => GetCurrentPage(Application.Current?.Windows[^1].Page ?? throw new InvalidOperationException($"{nameof(Page)} cannot be null."));
+		static Page CurrentPage => (Application.Current?.Windows[^1] ?? throw new InvalidOperationException($"{nameof(Window)} cannot be null.")).GetCurrentPage();
 	}
 }
