@@ -146,9 +146,9 @@ public class MauiMediaElement : UIView
 		UIEdgeInsets actual = playerViewController.AdditionalSafeAreaInsets;
 
 		return actual.Top != expected.Top
-		       || actual.Left != expected.Left
-		       || actual.Bottom != expected.Bottom
-		       || actual.Right != expected.Right;
+			   || actual.Left != expected.Left
+			   || actual.Bottom != expected.Bottom
+			   || actual.Right != expected.Right;
 	}
 
 	[SupportedOSPlatform("ios16.0")]
