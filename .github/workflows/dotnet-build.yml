@@ -22,8 +22,8 @@ env:
     NugetPackageVersionCamera: '99.0.0-preview${{ github.run_number }}'
     NugetPackageVersionMediaElement: '99.0.0-preview${{ github.run_number }}'
     NugetPackageVersionMaps: '99.0.0-preview${{ github.run_number }}'
-    TOOLKIT_NET_VERSION: '10.0.100'
-    LATEST_NET_VERSION: '10.0.x'
+    TOOLKIT_NET_VERSION: '11.0.100-rc.1.26425.128'
+    LATEST_NET_VERSION: '11.0.x'
     PathToLibrarySolution: 'src/CommunityToolkit.Maui.slnx'
     PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.slnx'
     PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
@@ -46,7 +46,7 @@ env:
     PathToCommunityToolkitMediaElementSourceGeneratorsUnitTestDirectory: 'src/CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests'
     PathToCommunityToolkitSourceGeneratorsUnitTestCsproj: 'src/CommunityToolkit.Maui.SourceGenerators.UnitTests/CommunityToolkit.Maui.SourceGenerators.UnitTests.csproj'
     PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
-    CommunityToolkitLibrary_Xcode_Version: '26.1'
+    CommunityToolkitLibrary_Xcode_Version: '27.0'
     CommunityToolkitSample_Xcode_Version: '27.0'
 
 concurrency:
@@ -64,13 +64,7 @@ jobs:
         steps:
             -   name: Checkout code
                 uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-            -   name: Set Latest Xcode Version
-                if: runner.os == 'macOS'
-                uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
-                with:
-                    xcode-version: ${{ env.CommunityToolkitSample_Xcode_Version }}
-
+                
             -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
                 uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
                 with:
@@ -105,7 +99,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                os: [ windows-latest, macos-26 ]
+                os: [ windows-latest, xcode-27 ]
         steps:
             -   name: Checkout code
                 uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -138,12 +132,6 @@ jobs:
                     echo "NugetPackageVersionMediaElement=${{ env.CurrentSemanticVersionBase }}-build-${{ github.event.pull_request.number }}.${{ github.run_number }}+${{ github.sha }}"
                     echo "NugetPackageVersionMaps=${{ env.CurrentSemanticVersionBase }}-build-${{ github.event.pull_request.number }}.${{ github.run_number }}+${{ github.sha }}"
                 shell: bash
-
-            -   name: Set Xcode Version
-                if: runner.os == 'macOS'
-                uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
-                with:
-                    xcode-version: ${{ env.CommunityToolkitLibrary_Xcode_Version }}
 
             -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
                 uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
