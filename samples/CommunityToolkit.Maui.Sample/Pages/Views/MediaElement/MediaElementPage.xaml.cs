@@ -40,7 +40,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.Stop();
 		MediaElement.Handler?.DisconnectHandler();
 	}
-	
+
 	async void HandleMediaOpened(object? sender, EventArgs e)
 	{
 		await Toast.Make("Media opened").Show();
