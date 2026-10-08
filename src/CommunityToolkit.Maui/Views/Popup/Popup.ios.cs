@@ -28,7 +28,10 @@ public partial class Popup
 
 	partial void OnPlatformPopupOpened()
     {
-        if (Handler?.PlatformView is UIView view)
+        willShow?.Dispose();
+		willHide?.Dispose();
+
+		if (Handler?.PlatformView is UIView view)
 		{
 			popupNativeView = view;
 		}
