@@ -1,8 +1,8 @@
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
 using ParentWindow = CommunityToolkit.Maui.Extensions.PageExtensions.ParentWindow;
-using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 

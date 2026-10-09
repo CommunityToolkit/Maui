@@ -41,6 +41,21 @@ public class FileSaverTests : BaseTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task SaveAsyncWithNullInitialPathReturnsArgumentNullException()
+	{
+		FileSaver.SetDefault(new FileSaverImplementation());
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var result = await FileSaver.SaveAsync(null, "fileName", Stream.Null, TestContext.Current.CancellationToken);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+		result.Should().NotBeNull();
+		result.Exception.Should().BeOfType<ArgumentNullException>()
+			.Which.ParamName.Should().Be("initialPath");
+		result.FilePath.Should().BeNull();
+		result.IsSuccessful.Should().BeFalse();
+		Assert.Throws<ArgumentNullException>(result.EnsureSuccess);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SaveAsyncProgressFailsOnNet()
 	{
 		FileSaver.SetDefault(new FileSaverImplementation());
@@ -62,5 +77,20 @@ public class FileSaverTests : BaseTest
 		result.FilePath.Should().BeNull();
 		result.IsSuccessful.Should().BeFalse();
 		Assert.Throws<NotImplementedException>(result.EnsureSuccess);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task SaveAsyncProgressWithNullInitialPathReturnsArgumentNullException()
+	{
+		FileSaver.SetDefault(new FileSaverImplementation());
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var result = await FileSaver.SaveAsync(null, "fileName", Stream.Null, new Progress<double>(), TestContext.Current.CancellationToken);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+		result.Should().NotBeNull();
+		result.Exception.Should().BeOfType<ArgumentNullException>()
+			.Which.ParamName.Should().Be("initialPath");
+		result.FilePath.Should().BeNull();
+		result.IsSuccessful.Should().BeFalse();
+		Assert.Throws<ArgumentNullException>(result.EnsureSuccess);
 	}
 }
