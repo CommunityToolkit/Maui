@@ -86,6 +86,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		try
 		{
 			token.ThrowIfCancellationRequested();
+			
+			TryInheritHideSoftInputFromPresentingPage(navigation.NavigationStack.LastOrDefault() ?? null);
+
 			await navigation.PushModalAsync(this, false);
 		}
 		finally
@@ -103,6 +106,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		try
 		{
 			token.ThrowIfCancellationRequested();
+			
+			TryInheritHideSoftInputFromPresentingPage(shell.CurrentPage);
+
 			if (shellParameters is null)
 			{
 				await shell.GoToAsync(shellRoute);
@@ -295,6 +301,18 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	// Only dismiss when a user taps outside Popup when **both** Popup.CanBeDismissedByTappingOutsideOfPopup and PopupOptions.CanBeDismissedByTappingOutsideOfPopup are true
 	// If either value is false, do not dismiss Popup
 	static bool GetCanBeDismissedByTappingOutsideOfPopup(in Popup popup, in IPopupOptions popupOptions) => popup.CanBeDismissedByTappingOutsideOfPopup & popupOptions.CanBeDismissedByTappingOutsideOfPopup;
+	
+	bool TryInheritHideSoftInputFromPresentingPage(in Page? presentingPage)
+	{
+		// HideSoftInputOnTapped is only declared on ContentPage, so guard for that type before reading the value.
+		if (presentingPage is not ContentPage contentPage)
+		{
+			return false;
+		}
+
+		HideSoftInputOnTapped = contentPage.HideSoftInputOnTapped;
+		return true;
+	}
 
 	void HandlePopupOptionsPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
@@ -336,7 +354,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 				Content = popupContent
 			};
 
-			// Bind `Popup` values through to Border using OneWay Bindings 
+			// Bind `Popup` values through to Border using OneWay Bindings
 			PopupBorder.SetBinding(Border.MarginProperty, static (Popup popup) => popup.Margin, source: popupContent, mode: BindingMode.OneWay, converter: new MarginConverter());
 			PopupBorder.SetBinding(Border.BackgroundProperty, static (Popup popup) => popup.Background, source: popupContent, mode: BindingMode.OneWay);
 			PopupBorder.SetBinding(Border.BackgroundColorProperty, static (Popup popup) => popup.BackgroundColor, source: popupContent, mode: BindingMode.OneWay, converter: new BackgroundColorConverter());
@@ -375,7 +393,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 				return;
 			}
 
-			// Execute tapOutsideOfPopupCommand only if tap occurred outside the PopupBorder 
+			// Execute tapOutsideOfPopupCommand only if tap occurred outside the PopupBorder
 			if (PopupBorder.Bounds.Contains(position.Value) is false)
 			{
 				tryExecuteTapOutsideOfPopupCommand();

@@ -365,6 +365,170 @@ public class PopupPageTests : BaseViewTest
 		await rootPage.Navigation.PopModalAsync(false);
 	}
 
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowAsync_ShouldInheritHideSoftInputOnTapped_True_WhenPresentingPageIsContentPage()
+	{
+		// Arrange
+		// The presenting page (a ContentPage) has HideSoftInputOnTapped = true; the PopupPage is pre-set to the opposite
+		// value so a `true` result proves the value was inherited from the presenting page, not just left at the ContentPage default (true).
+		const bool presentingPageHideSoftInputOnTapped = true;
+		var rootNavigationPage = new NavigationPage(new ContentPage { Title = "Root" });
+		var presentingPage = new ContentPage { Title = "Presenting", HideSoftInputOnTapped = presentingPageHideSoftInputOnTapped };
+
+		if (Application.Current is null)
+		{
+			throw new InvalidOperationException("Application.Current is null. Unable to set the root page.");
+		}
+
+		if (Application.Current.Windows.Count == 0)
+		{
+			throw new InvalidOperationException("No application windows found. Unable to set the root page.");
+		}
+
+		Application.Current.Windows[0].Page = rootNavigationPage;
+
+		// Push the presenting page so it is on top of the navigation stack (a root page is not part of its own navigation stack).
+		await rootNavigationPage.Navigation.PushAsync(presentingPage);
+
+		var navigation = presentingPage.Navigation;
+		var popupPage = new PopupPage(new Label(), new MockPopupOptions()) { HideSoftInputOnTapped = false };
+
+		// Act
+		await popupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+
+		// Assert
+		popupPage.HideSoftInputOnTapped.Should().Be(presentingPageHideSoftInputOnTapped);
+
+		// Cleanup
+		await navigation.PopModalAsync(false);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowAsync_ShouldInheritHideSoftInputOnTapped_False_WhenPresentingPageIsContentPage()
+	{
+		// Arrange
+		// The presenting page (a ContentPage) has HideSoftInputOnTapped = false; the PopupPage is pre-set to the opposite
+		// value so a `false` result proves the value was inherited from the presenting page, not just left at the ContentPage default (true).
+		const bool presentingPageHideSoftInputOnTapped = false;
+		var rootNavigationPage = new NavigationPage(new ContentPage { Title = "Root" });
+		var presentingPage = new ContentPage { Title = "Presenting", HideSoftInputOnTapped = presentingPageHideSoftInputOnTapped };
+
+		if (Application.Current is null)
+		{
+			throw new InvalidOperationException("Application.Current is null. Unable to set the root page.");
+		}
+
+		if (Application.Current.Windows.Count == 0)
+		{
+			throw new InvalidOperationException("No application windows found. Unable to set the root page.");
+		}
+
+		Application.Current.Windows[0].Page = rootNavigationPage;
+
+		// Push the presenting page so it is on top of the navigation stack (a root page is not part of its own navigation stack).
+		await rootNavigationPage.Navigation.PushAsync(presentingPage);
+
+		var navigation = presentingPage.Navigation;
+		var popupPage = new PopupPage(new Label(), new MockPopupOptions()) { HideSoftInputOnTapped = !presentingPageHideSoftInputOnTapped };
+
+		// Act
+		await popupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+
+		// Assert
+		popupPage.HideSoftInputOnTapped.Should().Be(presentingPageHideSoftInputOnTapped);
+
+		// Cleanup
+		await navigation.PopModalAsync(false);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowAsync_ShouldNotInheritHideSoftInputOnTapped_WhenPresentingPageIsNotAContentPage()
+	{
+		// Arrange
+		// The presenting page is a plain Page (not a ContentPage). Since HideSoftInputOnTapped only exists on ContentPage,
+		// inheritance must be skipped and the PopupPage value left unchanged.
+		var rootNavigationPage = new NavigationPage(new ContentPage { Title = "Root" });
+		var presentingPage = new NonContentModalPage();
+
+		if (Application.Current is null)
+		{
+			throw new InvalidOperationException("Application.Current is null. Unable to set the root page.");
+		}
+
+		if (Application.Current.Windows.Count == 0)
+		{
+			throw new InvalidOperationException("No application windows found. Unable to set the root page.");
+		}
+
+		Application.Current.Windows[0].Page = rootNavigationPage;
+
+		// Push the presenting page so it is the top of the navigation stack (a root page is not part of its own navigation stack).
+		await rootNavigationPage.Navigation.PushAsync(presentingPage);
+
+		var navigation = presentingPage.Navigation;
+
+		// Pre-set to `false` (differing from the ContentPage default of `true`); since the presenter is not a ContentPage,
+		// the value must remain `false` (i.e. not overwritten to the default `true`).
+		var popupPage = new PopupPage(new Label(), new MockPopupOptions()) { HideSoftInputOnTapped = false };
+
+		// Act
+		await popupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+
+		// Assert
+		popupPage.HideSoftInputOnTapped.Should().BeFalse();
+
+		// Cleanup
+		await navigation.PopModalAsync(false);
+	}
+
+	[Fact]
+	public void ShowPopup_Shell_ShouldInheritHideSoftInputOnTapped_False_WhenCurrentPageIsContentPage()
+	{
+		// Arrange
+		// The Shell's CurrentPage (a ContentPage) has HideSoftInputOnTapped = false, which differs from the ContentPage default (true),
+		// so a `false` result proves the value was inherited from shell.CurrentPage.
+		const bool presentingPageHideSoftInputOnTapped = false;
+		var currentPage = new ContentPage { HideSoftInputOnTapped = presentingPageHideSoftInputOnTapped };
+		var shell = new Shell();
+		shell.Items.Add(currentPage);
+
+		if (Application.Current is null)
+		{
+			throw new InvalidOperationException("Application.Current is null. Unable to set the root page.");
+		}
+
+		Application.Current.Windows[0].Page = shell;
+		var shellNavigation = Shell.Current.Navigation;
+
+		// Act
+		shell.ShowPopup(new Label(), new MockPopupOptions());
+
+		// Assert
+		var popupPage = Assert.Single(shellNavigation.ModalStack).As<PopupPage>();
+		popupPage.HideSoftInputOnTapped.Should().Be(presentingPageHideSoftInputOnTapped);
+	}
+
+	[Fact]
+	public void ShowPopup_Shell_ShouldInheritHideSoftInputOnTapped_True_WhenCurrentPageIsContentPage()
+	{
+		// Arrange
+		const bool presentingPageHideSoftInputOnTapped = true;
+		var currentPage = new ContentPage { HideSoftInputOnTapped = presentingPageHideSoftInputOnTapped };
+		var shell = new Shell();
+		shell.Items.Add(currentPage);
+
+		Assert.NotNull(Application.Current);
+		Application.Current!.Windows[0].Page = shell;
+		var shellNavigation = Shell.Current.Navigation;
+
+		// Act
+		shell.ShowPopup(new Label(), new MockPopupOptions());
+
+		// Assert
+		var popupPage = Assert.Single(shellNavigation.ModalStack).As<PopupPage>();
+		popupPage.HideSoftInputOnTapped.Should().Be(presentingPageHideSoftInputOnTapped);	
+	}
+
 	[Fact]
 	public void PopupPageT_Close_ShouldThrowOperationCanceledException_WhenTokenIsCancelled()
 	{
