@@ -25,7 +25,7 @@ partial class CameraProvider
 			{
 				await mediaCapture.InitializeCameraForCameraView(sourceGroup.Id, token);
 			}
-			catch (Exception)
+			catch (Exception ex) when (ex is not OperationCanceledException)
 			{
 				// can't use that camera
 				continue;

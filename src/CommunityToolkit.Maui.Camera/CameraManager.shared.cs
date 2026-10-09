@@ -35,7 +35,7 @@ sealed partial class CameraManager(
 
 		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault();
 
-		if (cameraView.SelectedCamera == null)
+		if (cameraView.SelectedCamera is null)
 		{
 			cameraView.OnErrorOccurred(
 				new CameraException("Couldn't connect to camera; no cameras available"));

@@ -3,7 +3,7 @@
 /// <summary>
 /// Event args containing all contextual information related to the error occurred event.
 /// </summary>
-/// <param name="ex">The <see cref="Exception"/>exception.</param>
+/// <param name="ex">The exception that caused the event.</param>
 public class ErrorOccurredEventArgs(Exception ex) : EventArgs
 {
 	/// <summary>

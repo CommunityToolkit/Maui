@@ -113,7 +113,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 	}
 
 	/// <summary>
-	/// Event that is raised when the an error occurred.
+	/// Event that is raised when an error occurs.
 	/// </summary>
 	public event EventHandler<ErrorOccurredEventArgs> ErrorOccurred
 	{

@@ -139,7 +139,7 @@ partial class CameraManager
 
 		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault();
 
-		if (cameraView.SelectedCamera == null)
+		if (cameraView.SelectedCamera is null)
 		{
 			cameraView.OnErrorOccurred(
 				new CameraException("Couldn't start camera preview; no cameras available"));
@@ -152,10 +152,23 @@ partial class CameraManager
 		{
 			await mediaCapture.InitializeCameraForCameraView(cameraView.SelectedCamera.DeviceId, token);
 		}
+		catch (OperationCanceledException)
+		{
+			throw;
+		}
 		catch (Exception ex)
 		{
 			// can't use that camera
+			mediaCapture?.Dispose();
+			mediaCapture = null;
+
+			if (ex is OperationCanceledException)
+			{
+				throw;
+			}
+
 			cameraView.OnErrorOccurred(ex);
+
 			return;
 		}
 
