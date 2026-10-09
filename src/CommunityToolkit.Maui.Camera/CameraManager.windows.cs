@@ -162,10 +162,6 @@ partial class CameraManager
 			mediaCapture?.Dispose();
 			mediaCapture = null;
 
-			if (ex is OperationCanceledException)
-			{
-				throw;
-			}
 
 			cameraView.OnErrorOccurred(ex);
 
