@@ -57,7 +57,7 @@ public partial class ColorToRgbaStringConverter : BaseConverter<Color, string>
 	public override string ConvertFrom(Color value, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(value);
-		return value.ToRgbaString(culture);
+		return value.ToRgbaString();
 	}
 }
 
@@ -172,7 +172,7 @@ public partial class ColorToCmykaStringConverter : BaseConverterOneWay<Color, st
 	public override string ConvertFrom(Color value, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(value);
-		return value.ToCmykaString(culture);
+		return value.ToCmykaString();
 	}
 }
 
@@ -206,6 +206,6 @@ public partial class ColorToHslaStringConverter : BaseConverterOneWay<Color, str
 	public override string ConvertFrom(Color value, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(value);
-		return value.ToHslaString(culture);
+		return value.ToHslaString();
 	}
 }
