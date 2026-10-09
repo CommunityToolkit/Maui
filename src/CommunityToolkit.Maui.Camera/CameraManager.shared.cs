@@ -46,7 +46,7 @@ sealed partial class CameraManager(
 		{
 			await PlatformConnectCamera(token);
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
 			cameraView.OnErrorOccurred(ex);
 		}
