@@ -18,11 +18,26 @@ public partial class MediaManager : IDisposable
 	StreamAssetResourceLoader? streamResourceLoader;
 	CancellationTokenSource? playerItemCancellationTokenSource;
 
+	MediaManagerDelegate? fullScreenDelegate;
 	// Setting AVPlayer.Rate starts playback, so the initial Speed mapping is skipped to respect ShouldAutoPlay=False.
 	// When ShouldAutoPlay=True, the initial Speed is applied once the AVPlayerItem reaches ReadyToPlay.
 	bool isInitialSpeedSet;
 
 	bool hasMediaOpened;
+
+	void OnScreenStateChanged(object? sender, ScreenStateChangedEventArgs e)
+	{
+		UpdateFullScreenState(e.NewState);
+	}
+
+	/// <summary>
+	/// Releases the managed and unmanaged resources used by the <see cref="MediaManager"/>.
+	/// </summary>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
 
 	/// <summary>
 	/// The default <see cref="NSKeyValueObservingOptions"/> flags used in the iOS and macOS observers.
@@ -96,9 +111,13 @@ public partial class MediaManager : IDisposable
 	public (PlatformMediaElement Player, AVPlayerViewController PlayerViewController) CreatePlatformView()
 	{
 		Player = new();
+		fullScreenDelegate = new MediaManagerDelegate();
+		fullScreenDelegate.ScreenStateChanged += OnScreenStateChanged;
+
 		PlayerViewController = new()
 		{
-			Player = Player
+			Player = Player,
+			Delegate = fullScreenDelegate,
 		};
 		PlayerViewController.ShowsPlaybackControls = MediaElement.ShouldShowPlaybackControls;
 
@@ -126,15 +145,6 @@ public partial class MediaManager : IDisposable
 		AddErrorObservers();
 
 		return (Player, PlayerViewController);
-	}
-
-	/// <summary>
-	/// Releases the managed and unmanaged resources used by the <see cref="MediaManager"/>.
-	/// </summary>
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
 	}
 
 	protected virtual partial void PlatformPlay()
@@ -503,7 +513,7 @@ public partial class MediaManager : IDisposable
 				UIApplication.SharedApplication.IdleTimerDisabled = false;
 				var audioSession = AVAudioSession.SharedInstance();
 				audioSession.SetActive(false);
-
+				fullScreenDelegate?.ScreenStateChanged -= OnScreenStateChanged;
 				DestroyErrorObservers();
 				DestroyPlayedToEndObserver();
 
@@ -957,5 +967,28 @@ public partial class MediaManager : IDisposable
 		{
 			Player.Rate = (float)MediaElement.Speed;
 		}
+	}
+}
+
+sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
+{
+	readonly WeakEventManager fullScreenEventManager = new();
+	internal event EventHandler<ScreenStateChangedEventArgs> ScreenStateChanged
+	{
+		add => fullScreenEventManager.AddEventHandler(value);
+		remove => fullScreenEventManager.RemoveEventHandler(value);
+	}
+
+	public override void WillBeginFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
+	{
+		var oldState = MediaElementScreenState.Default;
+		var newState = MediaElementScreenState.FullScreen;
+		fullScreenEventManager.HandleEvent(this, new ScreenStateChangedEventArgs(oldState, newState), nameof(ScreenStateChanged));
+	}
+	public override void WillEndFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
+	{
+		var oldState = MediaElementScreenState.FullScreen;
+		var newState = MediaElementScreenState.Default;
+		fullScreenEventManager.HandleEvent(this, new ScreenStateChangedEventArgs(oldState, newState), nameof(ScreenStateChanged));
 	}
 }

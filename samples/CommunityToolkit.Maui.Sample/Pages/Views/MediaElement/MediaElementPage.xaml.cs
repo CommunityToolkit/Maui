@@ -34,6 +34,9 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		MediaElement.MediaOpened += HandleMediaOpened;
 	}
 
+	void MediaElement_FullScreenStateChanged(object? sender, ScreenStateChangedEventArgs e) =>
+		logger.LogInformation("FullScreen State Changed. Old State: {PreviousState}, New State: {NewState}", e.PreviousState, e.NewState);
+
 	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
 	{
 		base.OnNavigatedFrom(args);
