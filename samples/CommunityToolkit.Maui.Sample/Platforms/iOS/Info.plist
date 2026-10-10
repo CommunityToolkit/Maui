@@ -46,8 +46,6 @@
 			</array>
 		</dict>
 	</dict>
-	<key>UIViewControllerBasedStatusBarAppearance</key>
-	<false/>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>ISpeechToText Uses Speech Recognition</string>
 	<key>NSMicrophoneUsageDescription</key>
