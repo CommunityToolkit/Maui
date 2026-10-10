@@ -24,13 +24,12 @@ public static partial class StatusBar
 	/// every view controller that does not choose a style returns the requested one. Those are the view controllers of .NET MAUI and the system view
 	/// controllers that apps present, such as the photo, image, contact and document pickers and event edit. View controllers that override
 	/// <c>preferredStatusBarStyle</c> keep their own style, and an override that returns the base implementation gets the requested style. Safari
-	/// (SFSafariViewController) also keeps its own style. <see cref="StatusBarStyle.Default"/> gives every view controller its own style back. On
-	/// iPhone a page sheet or a form sheet shows the light content that UIKit chooses for it. Unlike the <c>Window.StatusBarTheme</c> of .NET 11,
-	/// which each window has, the style belongs to the app. UIKit takes the style from the view controllers only when the app's Info.plist does not
-	/// set <c>UIViewControllerBasedStatusBarAppearance</c> to false. With false (the .NET 10 setup of StatusBarBehavior) the call sets the style of
-	/// the whole app with UIApplication.SetStatusBarStyle instead: UIKit applies it in an app built with an iOS SDK before 27.0. In an app built with
-	/// a later SDK the status bar keeps its style and the call writes a trace message: remove the key. Call it on the main thread: a call from
-	/// another thread throws <c>UIKitThreadAccessException</c>, also in a Release build.
+	/// (SFSafariViewController) also keeps its own style. <see cref="StatusBarStyle.Default"/> gives every view controller its own style back. Unlike
+	/// the <c>Window.StatusBarTheme</c> of .NET 11, which each window has, the style belongs to the app. UIKit takes the style from the view
+	/// controllers only when the app's Info.plist does not set <c>UIViewControllerBasedStatusBarAppearance</c> to false. With false (the .NET 10
+	/// setup of StatusBarBehavior) the call sets the style of the whole app with UIApplication.SetStatusBarStyle instead: UIKit applies it in an app
+	/// built with an iOS SDK before 27.0. In an app built with a later SDK the status bar keeps its style and the call writes a trace message: remove
+	/// the key. Call it on the main thread: a call from another thread throws <c>UIKitThreadAccessException</c>, also in a Release build.
 	/// </para>
 	/// <para>
 	/// iOS, .NET 11: sets <c>Window.StatusBarTheme</c> of every window that the app has at the time of the call, and the view controllers of .NET MAUI
