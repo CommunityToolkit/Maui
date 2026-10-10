@@ -439,7 +439,7 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 	}
 
 	[Fact]
-	public async Task StartCameraPreviewWithoutAnyCameraThrowsCameraException()
+	public async Task StartCameraPreviewWithoutAnyCameraRaisesErrorOccurred()
 	{
 		SetupBuilder();
 
@@ -449,7 +449,7 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 			using var scope = new AppleCameraManagerScope(MauiContext, provider);
 			scope.Manager.CreatePlatformView();
 
-			var exception = await StartCameraPreviewExpectingFailureAsync(scope);
+			var exception = await StartCameraPreviewExpectingAnErrorAsync(scope);
 
 			Assert.Equal("No camera available on device", exception.Message);
 			Assert.Null(scope.View.SelectedCamera);
@@ -460,7 +460,7 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 	}
 
 	[Fact]
-	public async Task StartCameraPreviewWithoutProviderCamerasThrowsCameraException()
+	public async Task StartCameraPreviewWithoutProviderCamerasRaisesErrorOccurred()
 	{
 		SetupBuilder();
 
@@ -470,7 +470,7 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 			using var scope = new AppleCameraManagerScope(MauiContext, provider);
 			scope.Manager.CreatePlatformView();
 
-			var exception = await StartCameraPreviewExpectingFailureAsync(scope);
+			var exception = await StartCameraPreviewExpectingAnErrorAsync(scope);
 
 			Assert.Equal("No camera available on device", exception.Message);
 			Assert.Equal(0, provider.RefreshCount);
@@ -478,7 +478,7 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 	}
 
 	[Fact]
-	public async Task StartCameraPreviewSelectsTheFirstProviderCameraAndThrowsWhenItHasNoCaptureDevice()
+	public async Task StartCameraPreviewSelectsTheFirstProviderCameraAndRaisesErrorOccurredWhenItHasNoCaptureDevice()
 	{
 		SetupBuilder();
 
@@ -488,7 +488,7 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 			using var scope = new AppleCameraManagerScope(MauiContext, provider);
 			scope.Manager.CreatePlatformView();
 
-			var exception = await StartCameraPreviewExpectingFailureAsync(scope);
+			var exception = await StartCameraPreviewExpectingAnErrorAsync(scope);
 
 			Assert.Equal("No Camera found", exception.Message);
 			Assert.Same(cameraWithoutCaptureDevice, scope.View.SelectedCamera);
@@ -512,7 +512,7 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 			scope.Manager.CreatePlatformView();
 			scope.View.SelectedCamera = cameraWithoutCaptureDevice;
 
-			await StartCameraPreviewExpectingFailureAsync(scope);
+			await StartCameraPreviewExpectingAnErrorAsync(scope);
 
 			Assert.Same(cameraWithoutCaptureDevice, scope.View.SelectedCamera);
 		});
@@ -531,7 +531,7 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 			var provider = new AppleFakeCameraProvider { AvailableCameras = [] };
 			var scope = new AppleCameraManagerScope(MauiContext, provider);
 			var platformView = scope.Manager.CreatePlatformView();
-			await Assert.ThrowsAsync<CameraException>(() => scope.Manager.StartCameraPreview(CancellationToken.None));
+			await StartCameraPreviewExpectingAnErrorAsync(scope);
 
 			scope.Dispose();
 
@@ -1080,8 +1080,9 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 		return output;
 	}
 
-	static async Task<CameraException> StartCameraPreviewExpectingFailureAsync(AppleCameraManagerScope scope) =>
-		await Assert.ThrowsAsync<CameraException>(() => scope.Manager.StartCameraPreview(CancellationToken.None));
+	// StartCameraPreview reports a preview that cannot start through ErrorOccurred instead of throwing (#3299).
+	static Task<CameraException> StartCameraPreviewExpectingAnErrorAsync(AppleCameraManagerScope scope) =>
+		CameraErrorRecorder.AssertReportsAsync<CameraException>(scope.View, () => scope.Manager.StartCameraPreview(CancellationToken.None));
 
 	static UIWindowScene GetWindowScene()
 	{

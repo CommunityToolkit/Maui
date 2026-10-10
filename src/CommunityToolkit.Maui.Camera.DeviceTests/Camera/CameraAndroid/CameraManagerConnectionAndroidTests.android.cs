@@ -700,10 +700,12 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		});
 	}
 
+	// StartCameraPreview reports a preview that cannot start through ErrorOccurred instead of throwing (#3299), as on iOS, Mac Catalyst and
+	// Windows: an app that starts the preview from a command could not catch the exception.
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
-	public async Task StartCameraPreviewThrowsCameraExceptionWhenNoCameraIsAvailableAnymore(bool providerHasNoList)
+	public async Task StartCameraPreviewRaisesErrorOccurredWhenNoCameraIsAvailableAnymore(bool providerHasNoList)
 	{
 		SetupBuilder();
 		EnsureCameraPermissions();
@@ -716,14 +718,14 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			provider.AvailableCameras = providerHasNoList ? null : [];
 			session.View.SelectedCamera = null;
 
-			var exception = await Assert.ThrowsAsync<CameraException>(() => session.Manager.StartCameraPreview(CancellationToken.None));
+			var exception = await CameraErrorRecorder.AssertReportsAsync<CameraException>(session.View, () => session.Manager.StartCameraPreview(CancellationToken.None));
 
 			Assert.Equal("No camera available on device", exception.Message);
 		}, provider);
 	}
 
 	[Fact]
-	public async Task StartCameraPreviewWithoutACameraSelectorThrowsCameraException()
+	public async Task StartCameraPreviewWithoutACameraSelectorRaisesErrorOccurred()
 	{
 		SetupBuilder();
 		EnsureCameraPermissions();
@@ -734,9 +736,30 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			session.Manager.StopCameraPreview();
 			session.View.SelectedCamera = new CameraInfo("Selector-less camera", "no-selector", CameraPosition.Rear, false, 1, 1, [], null!);
 
-			var exception = await Assert.ThrowsAsync<CameraException>(() => session.Manager.StartCameraPreview(CancellationToken.None));
+			var exception = await CameraErrorRecorder.AssertReportsAsync<CameraException>(session.View, () => session.Manager.StartCameraPreview(CancellationToken.None));
 
 			Assert.Equal("Unable to retrieve CameraSelector", exception.Message);
+		});
+	}
+
+	// A camera that CameraX cannot bind (for example an unplugged USB camera) is reported like every other preview that cannot start, with the
+	// exception of CameraX.
+	[Fact]
+	public async Task StartCameraPreviewOfACameraThatCanNotBeBoundRaisesErrorOccurred()
+	{
+		SetupBuilder();
+
+		await RunWithStreamingSessionAsync(async session =>
+		{
+			session.Manager.StopCameraPreview();
+			session.View.SelectedCamera = CreateCameraThatCanNotBeBound();
+			var loadedBefore = session.LoadedCount;
+			using var errors = new CameraErrorRecorder(session.View);
+
+			await session.Manager.StartCameraPreview(CancellationToken.None).WaitAsync(CameraTimeout);
+
+			Assert.IsType<Java.Lang.IllegalArgumentException>(Assert.Single(errors.Errors), exactMatch: false);
+			Assert.Equal(loadedBefore, session.LoadedCount);
 		});
 	}
 

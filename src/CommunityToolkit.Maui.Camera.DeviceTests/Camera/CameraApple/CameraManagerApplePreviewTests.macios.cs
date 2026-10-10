@@ -383,13 +383,13 @@ public class CameraManagerApplePreviewTests : CameraHandlerTestBase
 	}
 
 	[Fact]
-	public async Task StartCameraPreviewThatCannotAddTheInputThrowsCameraExceptionAfterClosingTheConfiguration()
+	public async Task StartCameraPreviewThatCannotAddTheInputRaisesErrorOccurredAfterClosingTheConfiguration()
 	{
 		await RunAsync(async preview =>
 		{
 			preview.Session.CanAddInputResult = false;
 
-			var exception = await Assert.ThrowsAsync<CameraException>(() => preview.Scope.Manager.StartCameraPreview(CancellationToken.None));
+			var exception = await CameraErrorRecorder.AssertReportsAsync<CameraException>(preview.Scope.View, () => preview.Scope.Manager.StartCameraPreview(CancellationToken.None));
 
 			Assert.Equal("Unable to add capture device input to capture session.", exception.Message);
 			Assert.Equal(["begin", "commit"], preview.Session.Calls);
@@ -404,7 +404,7 @@ public class CameraManagerApplePreviewTests : CameraHandlerTestBase
 	}
 
 	[Fact]
-	public async Task StartCameraPreviewWhenTheInputCannotBeCreatedThrowsCameraExceptionWithTheNativeError()
+	public async Task StartCameraPreviewWhenTheInputCannotBeCreatedRaisesErrorOccurredWithTheNativeError()
 	{
 		await RunAsync(async preview =>
 		{
@@ -412,10 +412,10 @@ public class CameraManagerApplePreviewTests : CameraHandlerTestBase
 			CameraException exception;
 
 			// The same failure with ThrowOnInitFailure = false; with the default see
-			// CameraManagerAppleSessionTests.StartCameraPreviewWhenTheCameraInputCannotBeCreatedThrowsCameraException.
+			// CameraManagerAppleSessionTests.StartCameraPreviewWhenTheCameraInputCannotBeCreatedRaisesErrorOccurred.
 			using (new AppleInitFailureBehavior(throwOnInitFailure: false))
 			{
-				exception = await Assert.ThrowsAsync<CameraException>(() => preview.Scope.Manager.StartCameraPreview(CancellationToken.None));
+				exception = await CameraErrorRecorder.AssertReportsAsync<CameraException>(preview.Scope.View, () => preview.Scope.Manager.StartCameraPreview(CancellationToken.None));
 			}
 
 			Assert.Equal("Error creating capture device input: Cannot use the camera", exception.Message);

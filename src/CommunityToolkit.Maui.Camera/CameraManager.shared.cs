@@ -71,8 +71,23 @@ sealed partial class CameraManager(
 	/// <summary>
 	/// Starts the camera preview.
 	/// </summary>
-	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
-	public Task StartCameraPreview(CancellationToken token) => PlatformStartCameraPreview(token);
+	/// <remarks>
+	/// A preview that cannot start is reported through <see cref="ICameraView.OnErrorOccurred(Exception)"/> instead of an exception, on every
+	/// platform: for example no camera is available, or the selected camera cannot be started (another app uses it, or it was unplugged).
+	/// A cancelled start throws <see cref="OperationCanceledException"/>.
+	/// </remarks>
+	/// <returns>A <see cref="Task"/> that can be awaited.</returns>
+	public async Task StartCameraPreview(CancellationToken token)
+	{
+		try
+		{
+			await PlatformStartCameraPreview(token);
+		}
+		catch (Exception ex) when (ex is not OperationCanceledException)
+		{
+			cameraView.OnErrorOccurred(ex);
+		}
+	}
 
 	/// <summary>
 	/// Starts the video recording.

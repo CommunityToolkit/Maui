@@ -131,7 +131,7 @@ public class CameraManagerAppleSessionTests : CameraHandlerTestBase
 			session.SeedInput(first);
 			session.SeedInput(second);
 
-			await Assert.ThrowsAsync<CameraException>(() => scope.Manager.StartCameraPreview(CancellationToken.None));
+			await CameraErrorRecorder.AssertReportsAsync<CameraException>(scope.View, () => scope.Manager.StartCameraPreview(CancellationToken.None));
 
 			Assert.Equal(["begin", "remove-input", "remove-input"], session.Calls.Take(3));
 			Assert.DoesNotContain("add-input", session.Calls);
@@ -148,7 +148,7 @@ public class CameraManagerAppleSessionTests : CameraHandlerTestBase
 		var provider = new AppleFakeCameraProvider { AvailableCameras = [] };
 		await RunAsync(async (scope, session) =>
 		{
-			var exception = await Assert.ThrowsAsync<CameraException>(() => scope.Manager.StartCameraPreview(CancellationToken.None));
+			var exception = await CameraErrorRecorder.AssertReportsAsync<CameraException>(scope.View, () => scope.Manager.StartCameraPreview(CancellationToken.None));
 
 			Assert.Equal("No camera available on device", exception.Message);
 			Assert.Equal("begin", session.Calls[0]);
@@ -167,7 +167,7 @@ public class CameraManagerAppleSessionTests : CameraHandlerTestBase
 		var provider = new AppleFakeCameraProvider { AvailableCameras = [] };
 		await RunAsync(async (scope, session) =>
 		{
-			await Assert.ThrowsAsync<CameraException>(() => scope.Manager.StartCameraPreview(CancellationToken.None));
+			await CameraErrorRecorder.AssertReportsAsync<CameraException>(scope.View, () => scope.Manager.StartCameraPreview(CancellationToken.None));
 
 			Assert.False(session.IsConfiguring);
 		}, provider);
@@ -175,9 +175,10 @@ public class CameraManagerAppleSessionTests : CameraHandlerTestBase
 
 	// With the default ObjCRuntime.Class.ThrowOnInitFailure the binding's AVCaptureDeviceInput constructor throws System.Exception ('Could not
 	// initialize an instance of the type AVFoundation.AVCaptureDeviceInput: the native initWithDevice:error: method returned nil') and loses the
-	// NSError, so a camera in use or a denied permission must still surface as CameraException with the native error.
+	// NSError, so a camera in use or a denied permission must still surface as CameraException with the native error (reported through
+	// ErrorOccurred: StartCameraPreview does not throw).
 	[Fact]
-	public async Task StartCameraPreviewWhenTheCameraInputCannotBeCreatedThrowsCameraException()
+	public async Task StartCameraPreviewWhenTheCameraInputCannotBeCreatedRaisesErrorOccurred()
 	{
 		using var device = new FakeCaptureDevice();
 		var camera = AppleFakeCameras.Create(device);
@@ -186,7 +187,7 @@ public class CameraManagerAppleSessionTests : CameraHandlerTestBase
 		{
 			using var inputs = new AppleDeviceInputStub { FailureFor = _ => AppleDeviceInputStub.CreateError("Cannot use the camera") };
 
-			var exception = await Assert.ThrowsAsync<CameraException>(() => scope.Manager.StartCameraPreview(CancellationToken.None));
+			var exception = await CameraErrorRecorder.AssertReportsAsync<CameraException>(scope.View, () => scope.Manager.StartCameraPreview(CancellationToken.None));
 
 			Assert.Equal("Error creating capture device input: Cannot use the camera", exception.Message);
 			Assert.False(session.IsConfiguring);

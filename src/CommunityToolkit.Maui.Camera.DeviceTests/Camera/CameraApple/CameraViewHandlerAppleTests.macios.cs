@@ -462,7 +462,7 @@ public class CameraViewHandlerAppleTests : CameraHandlerTestBase
 	}
 
 	[Fact]
-	public async Task StartCameraPreviewWithoutAnyCameraThrowsCameraException()
+	public async Task StartCameraPreviewWithoutAnyCameraRaisesErrorOccurred()
 	{
 		Skip.If(AppleCameraEnvironment.HasVideoCaptureDevice,
 			$"Needs a device without a camera, such as the iOS simulator: with a camera this would open a capture session and the permission prompt ({AppleCameraEnvironment.DescribeCameraAccess()}).");
@@ -476,7 +476,7 @@ public class CameraViewHandlerAppleTests : CameraHandlerTestBase
 
 			try
 			{
-				var exception = await Assert.ThrowsAsync<CameraException>(() => view.StartCameraPreview(CancellationToken.None));
+				var exception = await CameraErrorRecorder.AssertReportsAsync<CameraException>(view, () => view.StartCameraPreview(CancellationToken.None));
 
 				Assert.Equal("No camera available on device", exception.Message);
 				Assert.False(access.IsInitialized);

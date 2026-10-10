@@ -119,8 +119,8 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// It reports the failures of the work that the handler starts on its own, which no caller could catch: connecting the camera when the
 	/// handler connects the view (for example when no camera is available, when the camera permission was removed, or on Android when CameraX
 	/// cannot initialize), switching to the camera that <see cref="SelectedCamera"/> selects, applying <see cref="ImageCaptureResolution"/>
-	/// and, on Windows, updating <see cref="IsAvailable"/>. Failures after the handler was disconnected are not reported. On Windows it also
-	/// reports a camera that <see cref="StartCameraPreview(CancellationToken)"/> cannot start, instead of an exception.
+	/// and, on Windows, updating <see cref="IsAvailable"/>. Failures after the handler was disconnected are not reported. It also reports a
+	/// camera that <see cref="StartCameraPreview(CancellationToken)"/> cannot start, instead of an exception, on every platform.
 	/// </remarks>
 	public event EventHandler<ErrorOccurredEventArgs> ErrorOccurred
 	{

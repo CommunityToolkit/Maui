@@ -81,10 +81,12 @@ public interface ICameraView : IView
 	/// <remarks>
 	/// To customize the behavior of starting the camera preview, consider overriding the behavior through
 	/// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.StartCameraPreview), ADD YOUR METHOD);</c>.
-	/// On Windows, a camera that cannot be started (none is available, or Media Foundation cannot open the selected camera, for example
-	/// because another app uses it or the camera permission was removed) is reported through the ErrorOccurred event of the view instead of
-	/// an exception.
+	/// A preview that cannot start is reported through the ErrorOccurred event of the view instead of an exception, on every platform: for
+	/// example no camera is available, or the selected camera cannot be opened (another app uses it, or it was unplugged).
 	/// </remarks>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is cancelled before the preview started.</exception>
+	/// <exception cref="InvalidOperationException">Thrown when the view has no handler, for example before it is shown or after its handler was
+	/// disconnected.</exception>
 	Task StartCameraPreview(CancellationToken token);
 
 	/// <summary>
