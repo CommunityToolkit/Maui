@@ -5,6 +5,7 @@ using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Platform;
 using ObjCRuntime;
 using UIKit;
+using MauiModalPresentationStyle = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
@@ -161,6 +162,34 @@ public partial class StatusBarTests
 			var modalPage = CreateStyleTestPage();
 			await mauiWindow.Window.Navigation.PushModalAsync(modalPage, false);
 			await modalPage.OnLoadedAsync(navigationTimeout);
+			await AssertStatusBarStyleAsync(mauiWindow, UIStatusBarStyle.DarkContent);
+
+			await SetStyleAndAssertAsync(mauiWindow, StatusBarStyle.LightContent, UIStatusBarStyle.LightContent);
+
+			await mauiWindow.Window.Navigation.PopModalAsync(false);
+			await AssertStatusBarStyleAsync(mauiWindow, UIStatusBarStyle.LightContent);
+		});
+	}
+
+	// A modal page that .NET MAUI shows as a page sheet or a form sheet, which on iPhone leaves the status bar to the page under it: the status bar
+	// shows the style while the sheet is shown, also a style that is set then, and after the sheet closes
+	[Theory]
+	[InlineData(MauiModalPresentationStyle.PageSheet)]
+	[InlineData(MauiModalPresentationStyle.FormSheet)]
+	public async Task SetStyleStaysWhenAModalPageIsShownAsASheet(MauiModalPresentationStyle presentationStyle)
+	{
+		SetupBuilder();
+		await ResetNativeStateAsync();
+		var page = CreateStyleTestPage();
+
+		await RunInMauiWindowAsync(StatusBarWindowPage.ContentPage, page, async mauiWindow =>
+		{
+			await SetStyleAndAssertAsync(mauiWindow, StatusBarStyle.DarkContent, UIStatusBarStyle.DarkContent);
+
+			var sheetPage = CreateStyleTestPage();
+			Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetModalPresentationStyle(sheetPage.On<Microsoft.Maui.Controls.PlatformConfiguration.iOS>(), presentationStyle);
+			await mauiWindow.Window.Navigation.PushModalAsync(sheetPage, false);
+			await sheetPage.OnLoadedAsync(navigationTimeout);
 			await AssertStatusBarStyleAsync(mauiWindow, UIStatusBarStyle.DarkContent);
 
 			await SetStyleAndAssertAsync(mauiWindow, StatusBarStyle.LightContent, UIStatusBarStyle.LightContent);
