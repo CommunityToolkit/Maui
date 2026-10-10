@@ -43,7 +43,45 @@ public class CameraViewHandlerAppleConnectTests : CameraHandlerTestBase
 
 			Assert.Equal(1, provider.RefreshCount);
 			Assert.Same(cameraWithoutCaptureDevice, view.SelectedCamera);
-			Assert.False(access.IsInitialized);
+
+			// The connection failed on the camera without capture device, but the preview counts as started: the next SelectedCamera starts it.
+			Assert.True(access.IsInitialized);
+		});
+	}
+
+	// The camera that the connection selected cannot start (here it has no capture device, as for one that another app uses): the view reports
+	// it, and selecting another camera starts the preview with that camera, as on Android. Before, the failed connection left the manager
+	// stopped and the handler ignored every SelectedCamera until the app called StartCameraPreview. The second camera starts on a
+	// FakeCaptureSession with stubbed device input and rotation coordinator, so no camera is needed.
+	[Fact]
+	public async Task SelectingACameraAfterTheConnectionFailedStartsThePreviewWithIt()
+	{
+		using var device = new FakeCaptureDevice { Identifier = "fake-connect-after-failure" };
+		var validCamera = AppleFakeCameras.Create(device, CameraPosition.Rear, new FakeCaptureDeviceFormat(640, 480));
+		using var inputs = new AppleDeviceInputStub();
+		using var coordinators = new AppleRotationCoordinatorStub();
+		var provider = new AppleFakeCameraProvider { AvailableCameras = [cameraWithoutCaptureDevice] };
+
+		await ConnectAsync(provider, (view, handler, unhandled, errors) =>
+		{
+			var access = new CameraManagerAccessor(handler.CameraManager);
+			Assert.Equal("No Camera found", Assert.IsType<CameraException>(Assert.Single(errors)).Message);
+			var session = new FakeCaptureSession();
+			access.CaptureSession = session;
+			var context = new AppleRecordingSynchronizationContext();
+
+			using (context.Install())
+			{
+				view.SelectedCamera = validCamera;
+			}
+
+			Assert.Empty(unhandled);
+			Assert.Empty(context.Drain());
+			Assert.Same(device, Assert.Single(inputs.Devices));
+			Assert.Same(device, access.CaptureDevice);
+			Assert.True(session.IsRunning);
+			Assert.True(access.IsInitialized);
+			access.CaptureDevice = null;
 		});
 	}
 

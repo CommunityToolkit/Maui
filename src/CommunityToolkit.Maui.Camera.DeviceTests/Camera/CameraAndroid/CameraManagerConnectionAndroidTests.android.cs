@@ -763,6 +763,78 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		});
 	}
 
+	// A start that fails on a camera that CameraX cannot bind leaves the preview started, like a camera switch that fails
+	// (UpdateCurrentCameraToAValidCameraAfterOneThatCanNotBeBoundOpensTheValidCamera): the next SelectedCamera opens its camera. iOS, Mac Catalyst
+	// and Windows do the same since decision P.
+	[Fact]
+	public async Task StartCameraPreviewOfACameraThatCanNotBeBoundLeavesThePreviewStartedForTheNextSelectedCamera()
+	{
+		SetupBuilder();
+
+		await RunWithStreamingSessionAsync(async session =>
+		{
+			var valid = session.View.SelectedCamera!;
+			session.Manager.StopCameraPreview();
+			session.View.SelectedCamera = CreateCameraThatCanNotBeBound();
+			using var errors = new CameraErrorRecorder(session.View);
+			await session.Manager.StartCameraPreview(CancellationToken.None).WaitAsync(CameraTimeout);
+			Assert.Single(errors.Errors);
+			var loadedBefore = session.LoadedCount;
+
+			session.View.SelectedCamera = valid;
+			await session.Manager.UpdateCurrentCamera(valid, CancellationToken.None).AsTask().WaitAsync(CameraTimeout);
+
+			Assert.Equal(loadedBefore + 1, session.LoadedCount);
+			await WaitForNativeCameraStateAsync(valid.DeviceId, "OPEN");
+			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+		});
+	}
+
+	// CameraX binds the use cases also without the camera permission and then keeps trying to open the camera without reporting anything. A
+	// start without the permission fails instead: it is reported, nothing is bound, and the preview stays stopped (a later SelectedCamera does
+	// not start it) until StartCameraPreview is called once the app has the permission, like on iOS, Mac Catalyst and Windows. Android kills the
+	// app when a granted runtime permission is revoked, so the manager's Context denies it.
+	[Fact]
+	public async Task StartCameraPreviewWithoutTheCameraPermissionRaisesErrorOccurredAndLeavesThePreviewStopped()
+	{
+		SetupBuilder();
+		EnsureCameraPermissions();
+		var cameras = await GetRealCamerasAsync();
+		var provider = new StubCameraProvider { AvailableCameras = cameras };
+		var context = new ConfigurableContext(AppContext);
+		context.DeniedPermissions.Add(CameraPermission);
+
+		await RunWithSessionAsync(async session =>
+		{
+			using var errors = new CameraErrorRecorder(session.View);
+
+			await session.ConnectAsync().WaitAsync(CameraTimeout);
+
+			var exception = Assert.IsType<CameraException>(Assert.Single(errors.Errors));
+			Assert.Equal("Camera permission is not granted. Please enable it in the app settings.", exception.Message);
+			Assert.Equal(0, session.LoadedCount);
+			Assert.False(GetPrivateField<bool>(session.Manager, "isInitialized"));
+			Assert.False(await IsNativelyBoundAsync(session.CameraPreview));
+			await AssertEveryCameraIsClosedAsync();
+
+			// The stopped preview does not follow the selection.
+			session.View.SelectedCamera = cameras[^1];
+			await session.Manager.UpdateCurrentCamera(cameras[^1], CancellationToken.None).AsTask().WaitAsync(CameraTimeout);
+			await SettleUiThreadAsync();
+			Assert.Equal(0, session.LoadedCount);
+			await AssertEveryCameraIsClosedAsync();
+
+			// The app has the permission now.
+			context.DeniedPermissions.Clear();
+			await session.Manager.StartCameraPreview(CancellationToken.None).WaitAsync(CameraTimeout);
+
+			Assert.Single(errors.Errors);
+			Assert.Equal(1, session.LoadedCount);
+			await WaitForNativeCameraStateAsync(cameras[^1].DeviceId, "OPEN");
+			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+		}, provider, new TestMauiContext(MauiContext, context));
+	}
+
 	[Fact]
 	public async Task UpdateCurrentCameraWithNullDoesNothing()
 	{

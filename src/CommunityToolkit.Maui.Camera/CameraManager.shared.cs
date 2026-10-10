@@ -73,8 +73,11 @@ sealed partial class CameraManager(
 	/// </summary>
 	/// <remarks>
 	/// A preview that cannot start is reported through <see cref="ICameraView.OnErrorOccurred(Exception)"/> instead of an exception, on every
-	/// platform: for example no camera is available, or the selected camera cannot be started (another app uses it, or it was unplugged).
-	/// A cancelled start throws <see cref="OperationCanceledException"/>.
+	/// platform: for example no camera is available, the camera permission is not granted, or the selected camera cannot be started (another
+	/// app uses it, or it was unplugged). A cancelled start throws <see cref="OperationCanceledException"/>.
+	/// A start that failed because of the selected camera leaves the <see cref="CameraManager"/> initialized, like a camera switch that failed:
+	/// the next camera change starts the preview with that camera (<see cref="UpdateCurrentCamera(CameraInfo?, CancellationToken)"/>). A start
+	/// without a camera, without the camera permission or that was cancelled leaves it stopped until the next start.
 	/// </remarks>
 	/// <returns>A <see cref="Task"/> that can be awaited.</returns>
 	public async Task StartCameraPreview(CancellationToken token)
@@ -134,21 +137,9 @@ sealed partial class CameraManager(
 		{
 			PlatformStopCameraPreviewForCameraSwitch();
 
-			try
-			{
-				await PlatformStartCameraPreview(token);
-			}
-			catch (Exception ex) when (ex is not OperationCanceledException)
-			{
-				// The preview was started before the switch: it stays started, so that selecting another camera opens that camera instead of
-				// being ignored (a stopped manager does not follow SelectedCamera). A cancelled switch leaves the preview stopped, like a
-				// cancelled StartCameraPreview
-				isInitialized = true;
-				throw;
-			}
-
-			// Windows reports a camera that cannot be started through ErrorOccurred instead of throwing: the preview stays started there too
-			isInitialized = true;
+			// A camera that cannot be started leaves the manager initialized, so that selecting another camera opens that camera instead of being
+			// ignored (a stopped manager does not follow SelectedCamera): PlatformStartCameraPreview decides, as for the first start
+			await PlatformStartCameraPreview(token);
 		}
 	}
 

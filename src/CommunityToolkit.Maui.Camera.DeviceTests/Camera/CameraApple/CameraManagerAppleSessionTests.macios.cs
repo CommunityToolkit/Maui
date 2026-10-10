@@ -175,8 +175,9 @@ public class CameraManagerAppleSessionTests : CameraHandlerTestBase
 
 	// With the default ObjCRuntime.Class.ThrowOnInitFailure the binding's AVCaptureDeviceInput constructor throws System.Exception ('Could not
 	// initialize an instance of the type AVFoundation.AVCaptureDeviceInput: the native initWithDevice:error: method returned nil') and loses the
-	// NSError, so a camera in use or a denied permission must still surface as CameraException with the native error (reported through
-	// ErrorOccurred: StartCameraPreview does not throw).
+	// NSError, so a camera in use must still surface as CameraException with the native error (reported through ErrorOccurred: StartCameraPreview
+	// does not throw). A denied permission surfaces as the permission (see
+	// CameraManagerApplePreviewTests.StartCameraPreviewWithoutTheCameraPermissionLeavesThePreviewStoppedUntilItIsStartedAgain).
 	[Fact]
 	public async Task StartCameraPreviewWhenTheCameraInputCannotBeCreatedRaisesErrorOccurred()
 	{

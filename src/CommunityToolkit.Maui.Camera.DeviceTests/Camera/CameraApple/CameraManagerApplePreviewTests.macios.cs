@@ -398,8 +398,11 @@ public class CameraManagerApplePreviewTests : CameraHandlerTestBase
 			Assert.Null(preview.Scope.Access.CaptureInput);
 			Assert.Empty(preview.Session.Inputs);
 			Assert.Null(preview.Scope.Access.PhotoOutput);
-			Assert.False(preview.Scope.Access.IsInitialized);
+			Assert.False(preview.Session.IsRunning);
 			Assert.Equal(0, preview.Scope.LoadedCount);
+
+			// The camera cannot be started, but the preview counts as started: the next SelectedCamera starts it (as on Android).
+			Assert.True(preview.Scope.Access.IsInitialized);
 		});
 	}
 
@@ -422,10 +425,100 @@ public class CameraManagerApplePreviewTests : CameraHandlerTestBase
 			Assert.Equal(["begin", "commit"], preview.Session.Calls);
 			Assert.Empty(preview.Inputs.CreatedInputs);
 			Assert.Null(preview.Scope.Access.CaptureInput);
-			Assert.False(preview.Scope.Access.IsInitialized);
 			Assert.Equal(0, preview.Scope.LoadedCount);
+
+			// The camera cannot be opened, but the preview counts as started: the next SelectedCamera starts it (as on Android).
+			Assert.True(preview.Scope.Access.IsInitialized);
 		});
 	}
+
+	// The first start fails because of the selected camera, as a camera switch can (see
+	// UpdateCurrentCameraAfterASwitchThatFailedStartsTheNextSelectedCamera): the preview counts as started, so that the next SelectedCamera
+	// starts the preview with that camera, as on Android. Before, iOS and Mac Catalyst left the manager stopped and ignored every later
+	// SelectedCamera until the app called StartCameraPreview.
+	[Theory]
+	[InlineData("noCaptureDevice")]
+	[InlineData("inputCannotBeCreated")]
+	[InlineData("sessionRejectsTheInput")]
+	public async Task StartCameraPreviewThatFailsBecauseOfTheCameraStartsTheNextSelectedCamera(string failure)
+	{
+		using var failingDevice = new FakeCaptureDevice { Identifier = "fake-first-start-failing", DevicePosition = AVCaptureDevicePosition.Front };
+		using var nextDevice = new FakeCaptureDevice { Identifier = "fake-first-start-next", DevicePosition = AVCaptureDevicePosition.Front };
+		var failingCamera = failure is "noCaptureDevice"
+			? AppleFakeCameras.WithoutCaptureDevice("fake-first-start-without-device", CameraPosition.Front)
+			: AppleFakeCameras.Create(failingDevice, CameraPosition.Front);
+		var nextCamera = AppleFakeCameras.Create(nextDevice, CameraPosition.Front);
+
+		await RunAsync(async preview =>
+		{
+			preview.Inputs.FailureFor = device => failure is "inputCannotBeCreated" && ReferenceEquals(device, failingDevice) ? AppleDeviceInputStub.CreateError("Cannot use the camera") : null;
+			preview.Session.CanAddInputResult = failure is not "sessionRejectsTheInput";
+			preview.Scope.View.SelectedCamera = failingCamera;
+
+			await CameraErrorRecorder.AssertReportsAsync<CameraException>(preview.Scope.View, () => preview.Scope.Manager.StartCameraPreview(CancellationToken.None));
+
+			Assert.True(preview.Scope.Access.IsInitialized);
+			Assert.False(preview.Session.IsRunning);
+			Assert.False(preview.Session.IsConfiguring);
+			Assert.Empty(preview.Session.Inputs);
+			Assert.Equal(0, preview.Scope.LoadedCount);
+
+			preview.Session.CanAddInputResult = true;
+			preview.Scope.View.SelectedCamera = nextCamera;
+			await preview.Scope.Manager.UpdateCurrentCamera(nextCamera, CancellationToken.None);
+
+			Assert.Same(nextDevice, preview.Inputs.Devices[^1]);
+			Assert.Same(nextDevice, preview.Scope.Access.CaptureDevice);
+			Assert.Equal(preview.Inputs.CreatedInputs[^1], Assert.Single(preview.Session.Inputs).Handle.Handle);
+			Assert.True(preview.Session.IsRunning);
+			Assert.True(preview.Scope.Access.IsInitialized);
+			Assert.Equal(1, preview.Scope.LoadedCount);
+		});
+	}
+
+	// AVFoundation refuses the camera input of an app without the camera permission (AVErrorApplicationIsNotAuthorizedToUseDevice): unlike a
+	// camera that cannot be opened, the start leaves the preview stopped, so that selecting another camera does not try again, until the app
+	// calls StartCameraPreview once it has the permission. The failure names the permission, like StartVideoRecording.
+	[Fact]
+	public async Task StartCameraPreviewWithoutTheCameraPermissionLeavesThePreviewStoppedUntilItIsStartedAgain()
+	{
+		using var nextDevice = new FakeCaptureDevice { Identifier = "fake-after-denied-permission", DevicePosition = AVCaptureDevicePosition.Front };
+		var nextCamera = AppleFakeCameras.Create(nextDevice, CameraPosition.Front);
+
+		await RunAsync(async preview =>
+		{
+			preview.Inputs.FailureFor = _ => CreateNotAuthorizedError();
+
+			var exception = await CameraErrorRecorder.AssertReportsAsync<CameraException>(preview.Scope.View, () => preview.Scope.Manager.StartCameraPreview(CancellationToken.None));
+
+			Assert.Equal("Camera permission is not granted. Please enable it in the app settings.", exception.Message);
+			Assert.False(preview.Scope.Access.IsInitialized);
+			Assert.False(preview.Session.IsConfiguring);
+			Assert.Empty(preview.Session.Inputs);
+
+			preview.Scope.View.SelectedCamera = nextCamera;
+			await preview.Scope.Manager.UpdateCurrentCamera(nextCamera, CancellationToken.None);
+
+			Assert.DoesNotContain(nextDevice, preview.Inputs.Devices);
+			Assert.False(preview.Session.IsRunning);
+			Assert.False(preview.Scope.Access.IsInitialized);
+
+			// The app has the permission now.
+			preview.Inputs.FailureFor = static _ => null;
+			await preview.Scope.Manager.StartCameraPreview(CancellationToken.None);
+
+			Assert.Same(nextDevice, preview.Scope.Access.CaptureDevice);
+			Assert.True(preview.Session.IsRunning);
+			Assert.True(preview.Scope.Access.IsInitialized);
+			Assert.Equal(1, preview.Scope.LoadedCount);
+		});
+	}
+
+	// The error with which -[AVCaptureDeviceInput initWithDevice:error:] refuses a camera that the app may not use (the camera permission was
+	// denied or is restricted).
+	static NSError CreateNotAuthorizedError() =>
+		new(AVErrorKeys.ErrorDomain, (nint)(long)AVError.ApplicationIsNotAuthorizedToUseDevice,
+			NSDictionary.FromObjectAndKey(new NSString("Cannot use FaceTime HD Camera"), NSError.LocalizedDescriptionKey));
 
 	[Fact]
 	public async Task DisposeAfterAStartedPreviewReleasesTheInputTheCoordinatorAndThePhotoOutput()

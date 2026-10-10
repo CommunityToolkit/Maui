@@ -33,7 +33,10 @@ public interface ICameraView : IView
 	/// This property will be <c>null</c> if no camera is selected.
 	/// Changing it while the camera preview runs restarts the preview with the new camera. When the new camera cannot be started (for example
 	/// because another app uses it), the preview stays stopped, the view reports the failure through its ErrorOccurred event, and selecting
-	/// another camera starts the preview with that camera.
+	/// another camera starts the preview with that camera. The same holds after a start of the preview (when the view connects its camera, or
+	/// <see cref="StartCameraPreview(CancellationToken)"/>) that failed because of the selected camera. After a start that failed because the
+	/// camera permission is not granted, changing it does not start the preview: call <see cref="StartCameraPreview(CancellationToken)"/> once
+	/// the app has the permission.
 	/// On Android, selecting another camera while a video recording runs does not end the recording, nor does selecting the camera of the
 	/// recording again (for example after <c>null</c>): the change waits until the recording is stopped or replaced. <see cref="StopVideoRecording(CancellationToken)"/> applies the change before it returns, and
 	/// <see cref="StartVideoRecording(CancellationToken)"/> or <see cref="StartVideoRecording(Stream, CancellationToken)"/> applies it before it
@@ -82,7 +85,11 @@ public interface ICameraView : IView
 	/// To customize the behavior of starting the camera preview, consider overriding the behavior through
 	/// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.StartCameraPreview), ADD YOUR METHOD);</c>.
 	/// A preview that cannot start is reported through the ErrorOccurred event of the view instead of an exception, on every platform: for
-	/// example no camera is available, or the selected camera cannot be opened (another app uses it, or it was unplugged).
+	/// example no camera is available, the camera permission is not granted, or the selected camera cannot be opened (another app uses it, or
+	/// it was unplugged). A preview whose selected camera cannot be opened counts as started: selecting another camera starts the preview with
+	/// that camera (see <see cref="SelectedCamera"/>). A preview without the camera permission stays stopped until this method is called again
+	/// once the app has the permission; on Android that is also the case when the view connected its camera before the app asked for the
+	/// permission.
 	/// </remarks>
 	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is cancelled before the preview started.</exception>
 	/// <exception cref="InvalidOperationException">Thrown when the view has no handler, for example before it is shown or after its handler was

@@ -12,6 +12,8 @@ namespace CommunityToolkit.Maui.Core;
 
 partial class CameraManager
 {
+	const string cameraPermissionNotGrantedMessage = "Camera permission is not granted. Please enable it in the app settings.";
+
 	// TODO: Check if we really need this
 	readonly NSDictionary<NSString, NSObject> codecSettings = new([AVVideo.CodecKey], [new NSString("jpeg")]);
 	AVCaptureDeviceInput? audioInput;
@@ -257,6 +259,11 @@ partial class CameraManager
 
 	private async partial Task PlatformConnectCamera(CancellationToken token)
 	{
+		// CameraViewHandler connects the camera in ConnectHandler, right before MAUI maps the properties of the view. Started at once, the camera
+		// would be started a second time by the mapping of SelectedCamera (UpdateCurrentCamera), which also reported a camera that cannot start
+		// a second time. Like on Android and Windows, whose connections complete asynchronously, the camera starts once the mapping is done
+		await Task.Yield();
+
 		await PlatformStartCameraPreview(token);
 	}
 
@@ -268,6 +275,9 @@ partial class CameraManager
 		}
 
 		captureSession.BeginConfiguration();
+
+		// Whether AVFoundation refused the camera because the app may not use it (the camera permission)
+		var isCameraAccessDenied = false;
 
 		// The configuration is committed also when the start fails: AVCaptureSession raises NSGenericException when stopRunning
 		// (which Dispose calls) or startRunning is called between beginConfiguration and commitConfiguration
@@ -301,9 +311,12 @@ partial class CameraManager
 			}
 			else
 			{
-				var errorMessage = error is not null
-					? $"Error creating capture device input: {error.LocalizedDescription}"
-					: "Unable to add capture device input to capture session.";
+				isCameraAccessDenied = IsCameraAccessDenied(error);
+				var errorMessage = isCameraAccessDenied
+					? cameraPermissionNotGrantedMessage
+					: error is not null
+						? $"Error creating capture device input: {error.LocalizedDescription}"
+						: "Unable to add capture device input to capture session.";
 
 				captureInput?.Dispose();
 				captureInput = null;
@@ -325,6 +338,15 @@ partial class CameraManager
 
 			await UpdateCaptureResolution(cameraView.ImageCaptureResolution, token);
 		}
+		catch (Exception ex) when (ex is not OperationCanceledException && cameraView.SelectedCamera is not null && !isCameraAccessDenied)
+		{
+			// The selected camera cannot be started (it has no capture device, it cannot be opened, for example while another app uses it, or the
+			// session rejects it): the preview stays started, so that selecting another camera starts the preview with that camera
+			// (UpdateCurrentCamera), as on Android. Without a camera, without the camera permission or when the start was cancelled, it stays
+			// stopped until StartCameraPreview is called again
+			isInitialized = true;
+			throw;
+		}
 		finally
 		{
 			captureSession.CommitConfiguration();
@@ -334,6 +356,13 @@ partial class CameraManager
 		isInitialized = true;
 		onLoaded.Invoke();
 	}
+
+	// AVFoundation refuses the device input of a camera that the app may not use (the camera permission was denied, or is restricted) with
+	// AVErrorApplicationIsNotAuthorizedToUseDevice
+	static bool IsCameraAccessDenied(NSError? error) =>
+		error is not null
+		&& error.Code == (nint)(long)AVError.ApplicationIsNotAuthorizedToUseDevice
+		&& error.Domain == AVErrorKeys.ErrorDomain.ToString();
 
 	private partial void PlatformStopCameraPreviewForCameraSwitch() => PlatformStopCameraPreview();
 
@@ -375,7 +404,7 @@ partial class CameraManager
 		var isPermissionGranted = await AVCaptureDevice.RequestAccessForMediaTypeAsync(AVAuthorizationMediaType.Video).WaitAsync(token);
 		if (!isPermissionGranted)
 		{
-			throw new CameraException("Camera permission is not granted. Please enable it in the app settings.");
+			throw new CameraException(cameraPermissionNotGrantedMessage);
 		}
 
 		if (captureSession is null)

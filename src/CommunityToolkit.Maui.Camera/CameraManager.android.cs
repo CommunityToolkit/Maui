@@ -51,6 +51,8 @@ public class CameraConsumer(TaskCompletionSource finalizeTcs) : Object, IConsume
 [SupportedOSPlatform("android21.0")]
 partial class CameraManager
 {
+	const string cameraPermissionNotGrantedMessage = "Camera permission is not granted. Please enable it in the app settings.";
+
 	readonly Context context = mauiContext.Context ?? throw new CameraException($"Unable to retrieve {nameof(Context)}");
 
 	// StartVideoRecording and StopVideoRecording both wait for CameraX: without this, one could work on a recording that the other one
@@ -550,6 +552,14 @@ partial class CameraManager
 		if (isCameraSwitchDeferred && IsRecordingBound())
 		{
 			return;
+		}
+
+		// CameraX binds the use cases also without the camera permission, and then keeps trying to open the camera without reporting anything.
+		// Like a denied permission on iOS, Mac Catalyst and Windows, a start without the permission fails and leaves the preview stopped until
+		// StartCameraPreview is called again once the app has the permission
+		if (ContextCompat.CheckSelfPermission(context, Android.Manifest.Permission.Camera) is not Android.Content.PM.Permission.Granted)
+		{
+			throw new CameraException(cameraPermissionNotGrantedMessage);
 		}
 
 		if (camera is null || !IsPhotoSessionBound())

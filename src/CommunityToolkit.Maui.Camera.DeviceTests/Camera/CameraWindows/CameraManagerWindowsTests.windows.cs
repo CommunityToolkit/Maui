@@ -712,7 +712,44 @@ public class CameraManagerWindowsTests : CameraHandlerTestBase
 			await scope.Manager.StartCameraPreview(CancellationToken.None);
 
 			Assert.Equal(CameraThatCannotBeOpenedMessage, Assert.IsType<CameraException>(Assert.Single(errors.Errors)).Message);
-			Assert.False(scope.Access.IsInitialized);
+			Assert.Null(scope.Access.MediaCapture);
+			Assert.Equal(0, scope.LoadedCount);
+
+			// The camera cannot be opened, but the preview counts as started: the next SelectedCamera tries to open its camera (as on Android).
+			Assert.True(scope.Access.IsInitialized);
+		});
+	}
+
+	// The first start fails on a camera that cannot be opened, as a camera switch can (see
+	// UpdateCurrentCameraAfterASwitchThatFailedOpensTheNextSelectedCamera): the preview counts as started, so that the next SelectedCamera opens
+	// its camera (which fails the same way here, a camera that no device has) instead of being ignored, as on Android, iOS and Mac Catalyst.
+	// Before, Windows left the manager stopped after a failed first start.
+	[Fact]
+	public async Task StartCameraPreviewOfACameraThatCannotBeOpenedOpensTheNextSelectedCamera()
+	{
+		SetupBuilder();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var first = new CameraInfo("Unknown camera", "fake-unknown-first-start-device", CameraPosition.Rear, false, 1f, 1f, [], null!, []);
+			var next = new CameraInfo("Other unknown camera", "fake-unknown-after-first-start-device", CameraPosition.Front, false, 1f, 1f, [], null!, []);
+			var provider = new WindowsFakeCameraProvider { AvailableCameras = [first, next] };
+			using var scope = new WindowsCameraManagerScope(MauiContext, provider);
+			using var errors = new CameraErrorRecorder(scope.View);
+			scope.Manager.CreatePlatformView();
+
+			await scope.Manager.StartCameraPreview(CancellationToken.None);
+
+			Assert.Same(first, scope.View.SelectedCamera);
+			Assert.Equal(CameraThatCannotBeOpenedMessage, Assert.IsType<CameraException>(Assert.Single(errors.Errors)).Message);
+			Assert.True(scope.Access.IsInitialized);
+
+			scope.View.SelectedCamera = next;
+			await scope.Manager.UpdateCurrentCamera(next, CancellationToken.None);
+
+			Assert.Equal(2, errors.Errors.Count);
+			Assert.Equal(CameraThatCannotBeOpenedMessage, Assert.IsType<CameraException>(errors.Errors[1]).Message);
+			Assert.True(scope.Access.IsInitialized);
 			Assert.Null(scope.Access.MediaCapture);
 			Assert.Equal(0, scope.LoadedCount);
 		});

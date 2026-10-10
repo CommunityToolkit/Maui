@@ -495,7 +495,9 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 			Assert.Null(scope.Access.CaptureInput);
 			Assert.Empty(scope.Access.CaptureSession?.Inputs ?? []);
 			Assert.Equal(0, scope.LoadedCount);
-			Assert.False(scope.Access.IsInitialized);
+
+			// The selected camera cannot be started, but the preview counts as started: the next SelectedCamera starts it (as on Android).
+			Assert.True(scope.Access.IsInitialized);
 		});
 	}
 
