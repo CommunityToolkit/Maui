@@ -605,6 +605,110 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		}, includeRecordAudio: true, disconnectWhenDone: false);
 	}
 
+	// ICommand.Execute cannot return the task of the work that a command starts: an exception that escaped a command would reach no caller and
+	// end the app (the async void guard of the test base receives it here), and an app that binds the command in XAML cannot catch it. A command
+	// reports its failure once instead, through the event that describes it.
+
+	// The platform reports a capture that cannot start (no ImageCapture before the camera connected) through MediaCaptureFailed itself: the
+	// command must not report it a second time, and the CameraException of CaptureImage must not escape.
+	[Fact]
+	public async Task CaptureImageCommandBeforeTheCameraStartedRaisesMediaCaptureFailedOnceAndLetsNothingEscape()
+	{
+		SetupBuilder();
+		UseCameraProvider(new StubCameraProvider { AvailableCameras = [] });
+
+		await RunWithCameraViewAsync(async host =>
+		{
+			await SettleUiThreadAsync();
+			var failures = new System.Collections.Concurrent.ConcurrentQueue<string>();
+			EventHandler<MediaCaptureFailedEventArgs> onFailed = (_, e) => failures.Enqueue(e.FailureReason);
+			host.View.MediaCaptureFailed += onFailed;
+
+			host.View.CaptureImageCommand.Execute(CancellationToken.None);
+			await SettleUiThreadAsync();
+
+			Assert.Empty(UnhandledAsyncVoidExceptions);
+			Assert.Equal(["Unable to capture an image because the camera is not initialized."], failures);
+			GC.KeepAlive(onFailed);
+		}, waitForStreaming: false);
+	}
+
+	// StartCameraPreview reports a preview that cannot start (here a camera that CameraX cannot bind) through ErrorOccurred itself: the command
+	// must not report it a second time, and before, the IllegalArgumentException of CameraX escaped the command.
+	[Fact]
+	public async Task StartCameraPreviewCommandOfACameraThatCanNotBeBoundRaisesErrorOccurredOnceAndLetsNothingEscape()
+	{
+		SetupBuilder();
+
+		await RunWithCameraViewAsync(async host =>
+		{
+			host.View.StopCameraPreview();
+			await WaitForNativeCameraStateAsync(host.SelectedCameraId, "CLOSED");
+
+			// The stopped preview does not follow the selection: only the command starts the camera that cannot be bound.
+			host.View.SelectedCamera = CreateCameraThatCanNotBeBound();
+			await SettleUiThreadAsync();
+			using var errors = new CameraErrorRecorder(host.View);
+
+			host.View.StartCameraPreviewCommand.Execute(CancellationToken.None);
+			await AssertionExtensions.AssertEventually(() => errors.Errors.Count > 0, 30000, 50, "The start of the camera that cannot be bound was not reported.");
+			await SettleUiThreadAsync();
+
+			Assert.Empty(UnhandledAsyncVoidExceptions);
+			Assert.IsType<Java.Lang.IllegalArgumentException>(Assert.Single(errors.Errors), exactMatch: false);
+		});
+	}
+
+	// StopCameraPreviewCommand is a synchronous Command: an exception would escape to the caller of ICommand.Execute. CameraX unbinds the use
+	// cases only on the main thread, so the command fails when it is executed on another thread.
+	[Fact]
+	public async Task StopCameraPreviewCommandOffTheUiThreadRaisesErrorOccurredOnceAndLetsNothingEscape()
+	{
+		SetupBuilder();
+
+		await RunWithCameraViewAsync(async host =>
+		{
+			using var errors = new CameraErrorRecorder(host.View);
+			var command = host.View.StopCameraPreviewCommand;
+
+			var escaped = await Task.Run(() => Record.Exception(() => command.Execute(null)));
+
+			Assert.Null(escaped);
+			var exception = Assert.IsType<Java.Lang.IllegalStateException>(Assert.Single(errors.Errors), exactMatch: false);
+			Assert.Contains("main thread", exception.Message);
+		});
+	}
+
+	// The recording is stopped right after it started, before it recorded anything: CameraX finalizes it with ERROR_NO_VALID_DATA, and the
+	// CameraException of StopVideoRecording used to escape the command.
+	[Fact]
+	public async Task StopVideoRecordingCommandOfARecordingThatRecordedNothingRaisesMediaCaptureFailedOnceAndLetsNothingEscape()
+	{
+		SetupBuilder();
+		RequireVideoRecording();
+
+		await RunWithCameraViewAsync(async host =>
+		{
+			var failures = new System.Collections.Concurrent.ConcurrentQueue<string>();
+			var failed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			EventHandler<MediaCaptureFailedEventArgs> onFailed = (_, e) =>
+			{
+				failures.Enqueue(e.FailureReason);
+				failed.TrySetResult();
+			};
+			host.View.MediaCaptureFailed += onFailed;
+			await host.View.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(CameraTimeout);
+
+			host.View.StopVideoRecordingCommand.Execute(CancellationToken.None);
+
+			await failed.Task.WaitAsync(CameraTimeout);
+			await SettleUiThreadAsync();
+			Assert.Empty(UnhandledAsyncVoidExceptions);
+			Assert.Contains($"VideoRecordEvent.Finalize error code {AndroidX.Camera.Video.VideoRecordEvent.Finalize.ErrorNoValidData}", Assert.Single(failures));
+			GC.KeepAlive(onFailed);
+		}, includeRecordAudio: true);
+	}
+
 	[Fact]
 	public async Task StartVideoRecordingWithoutAStreamRecordsIntoANewMemoryStream()
 	{

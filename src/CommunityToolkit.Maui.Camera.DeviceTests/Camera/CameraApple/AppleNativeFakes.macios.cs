@@ -519,8 +519,8 @@ sealed class FakeCaptureSession : AVCaptureSession
 
 	public bool CanAddOutputResult { get; set; } = true;
 
-	// AVFoundation raises NSInvalidArgumentException for an input or output that the session cannot take, which the binding surfaces as
-	// ObjCException.
+	// AVFoundation raises NSInvalidArgumentException for an input or output that the session cannot take, and NSGenericException for
+	// stopRunning between beginConfiguration and commitConfiguration, which the binding surfaces as ObjCException.
 	public Dictionary<string, Exception> Failures { get; } = [];
 
 	public bool IsRunning { get; set; }
@@ -599,6 +599,7 @@ sealed class FakeCaptureSession : AVCaptureSession
 
 	public override void StopRunning()
 	{
+		ThrowIfScriptedToFail("stop");
 		Record("stop");
 		IsRunning = false;
 	}
