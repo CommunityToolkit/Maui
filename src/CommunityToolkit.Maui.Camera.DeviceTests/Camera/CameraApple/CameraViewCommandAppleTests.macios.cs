@@ -113,6 +113,42 @@ public class CameraViewCommandAppleTests : CameraHandlerTestBase
 		});
 	}
 
+	// A recording command that fails while a capture waits for its photo reports the failure through MediaCaptureFailed, the event with which
+	// the platform also answers a capture that failed. The failure is the recording's: the capture still returns the photo that the platform
+	// delivers afterwards, and each event is raised once.
+	[Fact]
+	public async Task CaptureImageReturnsThePhotoAlthoughARecordingCommandReportsAFailureWhileItWaits()
+	{
+		await RunAsync(async (view, access, context) =>
+		{
+			var recorder = new AppleMediaRecorder(view);
+			var pendingCompletions = new List<(FakePhotoOutput Output, AVCapturePhotoCaptureDelegate Completion)>();
+			access.PhotoOutput = new FakePhotoOutput { OnCapture = (fakeOutput, completion) => pendingCompletions.Add((fakeOutput, completion)) };
+			using var permission = new AppleRequestAccessStub(videoAnswer: false);
+			using var destination = new MemoryStream();
+
+			var capture = view.CaptureImage(CancellationToken.None);
+			var (output, completion) = Assert.Single(pendingCompletions);
+
+			using (context.Install())
+			{
+				view.StartVideoRecordingCommand.Execute(destination);
+			}
+
+			Assert.Empty(context.Drain());
+			Assert.Equal(["Camera permission is not granted. Please enable it in the app settings."], recorder.Failures);
+
+			completion.DidFinishProcessingPhoto(output, new FakeCapturePhoto(() => NSData.FromArray([1, 2, 3])), null!);
+			var photo = await capture.WaitAsync(TimeSpan.FromSeconds(5));
+
+			Assert.Equal(3, photo.Length);
+			Assert.Same(photo, Assert.Single(recorder.Captured));
+			Assert.Equal(["Camera permission is not granted. Please enable it in the app settings."], recorder.Failures);
+			Assert.Empty(context.Drain());
+			GC.KeepAlive(recorder);
+		});
+	}
+
 	// AVFoundation ended the recording with an error before the app stopped it (here the disk filled up) and wrote no movie: StopVideoRecording
 	// throws CameraException. The recording runs on a FakeCaptureSession without a microphone, and the movie output's recording is scripted.
 	[Fact]

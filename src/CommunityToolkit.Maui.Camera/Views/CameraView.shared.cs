@@ -91,6 +91,10 @@ public partial class CameraView : View, ICameraView, IDisposable
 
 	bool isDisposed;
 
+	// The capture that TakePicture waits for, set while it holds captureImageSemaphoreSlim. Only the platform's answer to the picture
+	// (ICameraView.OnMediaCaptured or OnMediaCapturedFailed) completes it: a failure that a command reports through MediaCaptureFailed does not
+	TaskCompletionSource<PictureOutcome>? pendingPictureTCS;
+
 	/// <summary>
 	/// Event that is raised when the camera capture fails.
 	/// </summary>
@@ -336,12 +340,17 @@ public partial class CameraView : View, ICameraView, IDisposable
 
 	void ICameraView.OnMediaCaptured(Stream imageData)
 	{
+		// TrySetResult: a second answer of the platform must not throw into the platform's callback
+		Volatile.Read(ref pendingPictureTCS)?.TrySetResult(new(imageData, string.Empty));
+
 		weakEventManager.HandleEvent(this, new MediaCapturedEventArgs(imageData), nameof(MediaCaptured));
 	}
 
 	void ICameraView.OnMediaCapturedFailed(string failureReason)
 	{
-		weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(failureReason), nameof(MediaCaptureFailed));
+		Volatile.Read(ref pendingPictureTCS)?.TrySetResult(new(null, failureReason));
+
+		RaiseMediaCaptureFailed(failureReason);
 	}
 
 	void ICameraView.OnErrorOccurred(Exception ex)
@@ -426,18 +435,15 @@ public partial class CameraView : View, ICameraView, IDisposable
 		}
 	}
 
-	// Takes a picture and waits for the event that the platform raises for it: MediaCaptured with the image, or MediaCaptureFailed with the reason
-	// of the failure. What fails before the platform answered, for example a view without a handler, throws
+	// Takes a picture and waits for the platform's answer to it: ICameraView.OnMediaCaptured with the image, or OnMediaCapturedFailed with the
+	// reason of the failure. What fails before the platform answered, for example a view without a handler, throws
 	async Task<PictureOutcome> TakePicture(CancellationToken token)
 	{
-		// Use SemaphoreSlim to ensure `MediaCaptured` and `MediaCaptureFailed` events are unsubscribed before calling `TakePicture` again
-		// Without this SemaphoreSlim, previous calls to this method will fire `MediaCaptured` and/or `MediaCaptureFailed` events causing this method to return the wrong Stream or throw the wrong Exception
+		// One capture at a time: the platform's answer completes the pending capture, so a second capture waits until the first one has ended
 		await captureImageSemaphoreSlim.WaitAsync(token);
 
 		var pictureOutcomeTCS = new TaskCompletionSource<PictureOutcome>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-		MediaCaptured += HandleMediaCaptured;
-		MediaCaptureFailed += HandleMediaCapturedFailed;
+		Volatile.Write(ref pendingPictureTCS, pictureOutcomeTCS);
 
 		try
 		{
@@ -447,19 +453,18 @@ public partial class CameraView : View, ICameraView, IDisposable
 		}
 		finally
 		{
-			MediaCaptured -= HandleMediaCaptured;
-			MediaCaptureFailed -= HandleMediaCapturedFailed;
+			// Cleared before the semaphore is released: an answer that arrives while no capture waits completes nothing
+			Volatile.Write(ref pendingPictureTCS, null);
 
-			// Release SemaphoreSlim after `MediaCaptured` and `MediaCaptureFailed` events are unsubscribed
 			captureImageSemaphoreSlim.Release();
 		}
-
-		void HandleMediaCaptured(object? sender, MediaCapturedEventArgs e) => pictureOutcomeTCS.SetResult(new(e.Media, string.Empty));
-
-		void HandleMediaCapturedFailed(object? sender, MediaCaptureFailedEventArgs e) => pictureOutcomeTCS.SetResult(new(null, e.FailureReason));
 	}
 
-	void ReportMediaCaptureFailure(Exception exception) => ((ICameraView)this).OnMediaCapturedFailed(exception.Message);
+	// A failure of a command is reported to the app only: it is not the platform's answer to a capture that is pending
+	void ReportMediaCaptureFailure(Exception exception) => RaiseMediaCaptureFailed(exception.Message);
+
+	void RaiseMediaCaptureFailed(string failureReason) =>
+		weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(failureReason), nameof(MediaCaptureFailed));
 
 	void ReportError(Exception exception) => ((ICameraView)this).OnErrorOccurred(exception);
 

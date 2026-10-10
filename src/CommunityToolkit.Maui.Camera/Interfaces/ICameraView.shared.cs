@@ -73,6 +73,8 @@ public interface ICameraView : IView
 	/// <remarks>
 	/// To customize the behavior of the camera when capturing an image, consider overriding the behavior through
 	/// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.CaptureImage), ADD YOUR METHOD);</c>.
+	/// The capture ends with the platform's answer to it. A failure that the view reports through its MediaCaptureFailed event while the capture
+	/// waits for that answer, for example of a video recording that its command cannot start, does not end the capture.
 	/// </remarks>
 	/// <exception cref="CameraException">Thrown when the platform reports that the image could not be captured, for example when the camera
 	/// preview has not been started; the view raises its MediaCaptureFailed event with the same reason.</exception>
