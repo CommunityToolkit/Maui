@@ -42,9 +42,10 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 	/// </summary>
 	/// <remarks>
 	/// <para>
-	/// iOS, .NET 10: the behavior applies the style to the whole app with <see cref="StatusBar.SetStyle(StatusBarStyle)"/> (UIApplication.SetStatusBarStyle),
-	/// which UIKit applies only when the app's Info.plist sets <c>UIViewControllerBasedStatusBarAppearance</c> to false, and ignores in an app built with
-	/// the iOS 27 SDK (Xcode 27) or later: the status bar then keeps the style that the view controllers of the app return.
+	/// iOS, .NET 10: the behavior sets the style of the whole app with <see cref="StatusBar.SetStyle(StatusBarStyle)"/>, whose remarks say which status
+	/// bars show it, when it applies the style (see <see cref="ApplyOn"/>) and whenever the style changes, also while it is not attached to a page. The
+	/// style stays until a behavior or <see cref="StatusBar.SetStyle(StatusBarStyle)"/> sets another one; <see cref="StatusBarStyle.Default"/> gives every
+	/// view controller its own style back.
 	/// </para>
 	/// <para>
 	/// iOS, .NET 11: the behavior sets <c>Window.StatusBarTheme</c> of its page's window, and the view controllers of .NET MAUI return the matching
