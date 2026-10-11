@@ -22,7 +22,7 @@
             Spacing="16"
             VerticalOptions="Fill">
 
-            <Label Text="The IsStringNullOrEmptyConverter is a converter that allows usersc to convert an incoming string binding to a bool value. This value represents if the incoming string binding value is null or empty using string.IsNullOrEmpty." TextColor="{StaticResource NormalLabelTextColor}" />
+            <Label Text="The IsStringNullOrEmptyConverter is a converter that allows users to convert an incoming string binding to a bool value. This value represents if the incoming string binding value is null or empty using string.IsNullOrEmpty." TextColor="{StaticResource NormalLabelTextColor}" />
 
             <Label
                 Text="Enter text into the Entry, below. If the text is null or empty, the value will be true."
