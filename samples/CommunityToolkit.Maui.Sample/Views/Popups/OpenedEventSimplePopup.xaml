@@ -24,6 +24,7 @@
                 <Style x:Key="Content" TargetType="Label">
                     <Setter Property="HorizontalTextAlignment" Value="Start" />
                     <Setter Property="VerticalTextAlignment" Value="Center" />
+                    <Setter Property="TextColor" Value="#000" />
                 </Style>
             </ResourceDictionary>
         </VerticalStackLayout.Resources>
