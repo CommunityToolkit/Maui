@@ -39,6 +39,14 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <see cref="ImageButton"/> or a <see cref="CheckBox"/>, does so and takes the next touch. A <see cref="CollectionView"/> selects an item
 /// whose template has the behavior when the item is tapped, next to the behavior's own gesture.
 /// </para>
+/// <para>
+/// On Android and Windows the view the behavior is attached to takes the tap for itself: when the view is in the item template of a
+/// <see cref="CollectionView"/>, the platform list does not select the item for a tap on the view. On these two platforms the behavior
+/// selects the item when it completes its gesture, following the <see cref="SelectableItemsView.SelectionMode"/> of the
+/// <see cref="CollectionView"/>: <see cref="SelectionMode.Single"/> makes the item the <see cref="SelectableItemsView.SelectedItem"/>,
+/// <see cref="SelectionMode.Multiple"/> adds the item to the <see cref="SelectableItemsView.SelectedItems"/> or removes it from them, and
+/// <see cref="SelectionMode.None"/> selects nothing.
+/// </para>
 /// </remarks>
 public partial class TouchBehavior : BasePlatformBehavior<VisualElement>
 {

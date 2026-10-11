@@ -4,10 +4,15 @@ using CommunityToolkit.Maui.Core;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 /// <summary>
-/// On Android a completed touch of a <see cref="TouchBehavior"/> in the item template of a <see cref="CollectionView"/> selects the item through
-/// the toolkit (<c>GestureManager.HandleCollectionViewSelection</c>, compiled for Android only); on the other platforms the touch is the
-/// platform's business, so the toolkit must leave the selection alone (on iOS and Mac Catalyst the collection view selects the item for a tap
-/// that UIKit delivers, see the macios partial).
+/// On Android and Windows the behavior's view takes the touch, so the platform list never selects the item for it: a completed touch of a
+/// <see cref="TouchBehavior"/> in the item template of a <see cref="CollectionView"/> selects the item through the toolkit
+/// (<c>GestureManager.HandleCollectionViewSelection</c>, compiled for Android and Windows). On iOS and Mac Catalyst the touch is the
+/// platform's business, so the toolkit must leave the selection alone (the collection view selects the item for a tap that UIKit delivers,
+/// see the macios partial).
+/// <para>
+/// Windows takes no pointer input from a test (see <see cref="TouchBehaviorTestBase.NativePointerInputUnavailableReason"/>), so there a tap
+/// is the sequence of internal calls that the behavior's pointer handlers make for a press and a release.
+/// </para>
 /// </summary>
 [Category(TestCategory.TouchBehavior)]
 [Collection(TestCollections.DisableParallelization)]
@@ -16,7 +21,7 @@ public partial class GestureManagerCollectionViewTests : TouchBehaviorTestBase
 	sealed record Item(string Name);
 
 	static readonly bool selectsThroughTheToolkit =
-#if ANDROID
+#if ANDROID || WINDOWS
 		true;
 #else
 		false;
@@ -25,7 +30,6 @@ public partial class GestureManagerCollectionViewTests : TouchBehaviorTestBase
 	[Fact]
 	public async Task TappedItemIsSelectedWhenSelectionIsSingle()
 	{
-		RequireNativePointerInput();
 		SetupBuilder();
 
 		var (collectionView, labels, items) = CreateCollectionView(SelectionMode.Single, nested: false);
@@ -48,7 +52,6 @@ public partial class GestureManagerCollectionViewTests : TouchBehaviorTestBase
 	[Fact]
 	public async Task TappedItemsToggleInTheSelectionWhenSelectionIsMultiple()
 	{
-		RequireNativePointerInput();
 		SetupBuilder();
 
 		var (collectionView, labels, items) = CreateCollectionView(SelectionMode.Multiple, nested: false);
@@ -76,7 +79,6 @@ public partial class GestureManagerCollectionViewTests : TouchBehaviorTestBase
 	[Fact]
 	public async Task TappedItemIsNotSelectedWhenSelectionIsNone()
 	{
-		RequireNativePointerInput();
 		SetupBuilder();
 
 		var (collectionView, labels, _) = CreateCollectionView(SelectionMode.None, nested: false);
@@ -95,7 +97,6 @@ public partial class GestureManagerCollectionViewTests : TouchBehaviorTestBase
 	[Fact]
 	public async Task ItemIsFoundWhenTheBehaviorIsNestedInsideTheTemplate()
 	{
-		RequireNativePointerInput();
 		SetupBuilder();
 
 		var (collectionView, labels, items) = CreateCollectionView(SelectionMode.Single, nested: true);
@@ -109,6 +110,55 @@ public partial class GestureManagerCollectionViewTests : TouchBehaviorTestBase
 			AssertSelection(collectionView, selectsThroughTheToolkit ? items[0] : null);
 		});
 	}
+
+#if ANDROID || WINDOWS
+	// HandleTouch is called directly, as the platform's touch handler calls it, so that the NotSupportedException is thrown to the test.
+	[Fact]
+	public async Task UnsupportedSelectionModeIsReported()
+	{
+		SetupBuilder();
+
+		var (collectionView, labels, _) = CreateCollectionView(SelectionMode.Single, nested: false);
+
+		await RunLoadedAsync(collectionView, async _ =>
+		{
+			var label = await WaitForAttachedLabelAsync(labels, 0);
+			var behavior = label.Behaviors.OfType<TouchBehavior>().Single();
+			var rejected = Record.Exception(() => collectionView.SelectionMode = (SelectionMode)99);
+			Skip.If(rejected is not null, $"MAUI already rejects a selection mode outside the enum ({rejected?.GetType().Name}), so the default arm of the toolkit's switch cannot be reached.");
+
+			var completed = TouchStatus.Completed;
+			Assert.Throws<NotSupportedException>(() => GestureManager.HandleTouch(in behavior, in completed));
+		});
+	}
+
+	// Hosted headless under a Window that has no handler, the label's behavior never received the native touches (Android API 36), so the tree
+	// is not hosted: the behavior gets its element directly and the touch comes through the internal handlers that the platform's touch
+	// listener (Android) or pointer handlers (Windows) call.
+	[Fact]
+	public async Task SearchForTheCollectionViewEndsAtAnAncestorThatIsNotAVisualElement()
+	{
+		SetupBuilder();
+
+		var command = new CountingCommand();
+		var behavior = new DirectTouchBehavior { Command = command };
+		var label = new Label { Text = "label" };
+		var page = new ContentPage { Content = new Grid { Children = { label } } };
+		var window = new Window(page);
+		Assert.Same(window, page.Parent);
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			behavior.SetViewOnly(label);
+
+			SimulatePress(behavior);
+			SimulateRelease(behavior);
+
+			Assert.Equal(TouchStatus.Completed, behavior.CurrentTouchStatus);
+			Assert.Equal(1, command.ExecuteCount);
+		});
+	}
+#endif
 
 	(CollectionView CollectionView, List<Label> Labels, Item[] Items) CreateCollectionView(SelectionMode selectionMode, bool nested)
 	{
@@ -143,12 +193,21 @@ public partial class GestureManagerCollectionViewTests : TouchBehaviorTestBase
 		return labels[index];
 	}
 
+	// Windows: what the behavior's pointer handlers do for a press and a release on the element (OnPointerPressed: interaction and touch
+	// Started; OnPointerReleased: touch Completed, then interaction Completed), through the same internal calls.
 	void Tap(Label label)
 	{
+#if WINDOWS
+		var behavior = label.Behaviors.OfType<TouchBehavior>().Single();
+
+		SimulatePress(behavior);
+		SimulateRelease(behavior);
+#else
 		var handler = (IPlatformViewHandler)label.Handler!;
 
 		NativePress(handler, 10, 10);
 		NativeRelease(handler, 10, 10);
+#endif
 	}
 
 	static void AssertSelection(CollectionView collectionView, Item? expected) =>

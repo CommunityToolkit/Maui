@@ -288,7 +288,11 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return;
 		}
 
-#if ANDROID
+#if ANDROID || WINDOWS
+		// A tap on the behavior's view never reaches the platform list of a CollectionView on Android (the behavior makes the view clickable,
+		// so the view takes the touch) or on Windows (the behavior's pointer handlers capture the pointer and handle the press and the
+		// release, so the ListViewItem does not select): the behavior selects the item itself. On iOS and Mac Catalyst the behavior's
+		// recognizer leaves the touch to the collection view, which selects the item.
 		HandleCollectionViewSelection(touchBehavior);
 #endif
 
@@ -302,7 +306,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		touchBehavior.RaiseTouchGestureCompleted();
 	}
 
-#if ANDROID
+#if ANDROID || WINDOWS
 	static void HandleCollectionViewSelection(in TouchBehavior touchBehavior)
 	{
 		if (touchBehavior.Element is null
