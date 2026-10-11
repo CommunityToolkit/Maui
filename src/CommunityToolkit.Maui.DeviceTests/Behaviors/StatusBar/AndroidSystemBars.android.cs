@@ -77,6 +77,15 @@ static class AndroidSystemBars
 
 	public static Android.Graphics.Color? BackgroundColor(AView view) => (view.Background as Android.Graphics.Drawables.ColorDrawable)?.Color;
 
+	// An edge-to-edge window (API 35+) without DrawsSystemBarBackgrounds paints these black over the content. The decor view adds such a background
+	// view only once it shows it, and hides it again with a short fade.
+	public static bool PaintsASystemBarBlack(AWindow window) =>
+		IsBlackBackground(window.DecorView.FindViewById(Android.Resource.Id.StatusBarBackground))
+		|| IsBlackBackground(window.DecorView.FindViewById(Android.Resource.Id.NavigationBarBackground));
+
+	static bool IsBlackBackground(AView? background) =>
+		background is { Visibility: ViewStates.Visible } && BackgroundColor(background) == Android.Graphics.Color.Black;
+
 	public static void AssertDrawnAboveTheContent(AWindow window, AView overlay)
 	{
 		var decor = Decor(window);

@@ -81,6 +81,28 @@ public partial class StatusBarTests
 		});
 	}
 
+	// For white with alpha 0 the Sample's StatusBarBehaviorPage showed black status and navigation bars on Android 16 while the toolkit still cleared
+	// DrawsSystemBarBackgrounds for every color without alpha, which #3189 stopped.
+	[Theory]
+	[InlineData(0x00000000u)]
+	[InlineData(0x00FFFFFFu)]
+	[InlineData(0x80FFFFFFu)]
+	[InlineData(0xFFFFFFFFu)]
+	public async Task SetColorOnAndroid15AndLaterKeepsTheSystemBarBackgroundsForEveryAlpha(uint argb)
+	{
+		Skip.IfNot(OperatingSystem.IsAndroidVersionAtLeast(35), "Only an edge-to-edge window (Android 15 and later) paints its system bars black without DrawsSystemBarBackgrounds.");
+		SetupBuilder();
+		await ResetNativeStateAsync();
+		await AssertEventuallyOnMainThread(static () => !AndroidSystemBars.PaintsASystemBarBlack(AndroidSystemBars.ActivityWindow), "The decor view still paints a system bar black after the reset.");
+		var color = Color.FromUint(argb);
+
+		await InvokeOnMainThreadAsync(() => StatusBar.SetColor(color));
+
+		await AssertStatusBarShowsAsync(color);
+		await InvokeOnMainThreadAsync(static () => AndroidSystemBars.FlushPostedActions(AndroidSystemBars.ActivityWindow));
+		await InvokeOnMainThreadAsync(static () => Assert.False(AndroidSystemBars.PaintsASystemBarBlack(AndroidSystemBars.ActivityWindow), "The decor view paints the status bar or the navigation bar black."));
+	}
+
 	[Fact]
 	public async Task SetColorKeepsTheWindowFlagsWhileSwitchingBetweenTransparentAndOpaque()
 	{
