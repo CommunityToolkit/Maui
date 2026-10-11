@@ -80,15 +80,16 @@
                     FontSize="12"
                     HorizontalOptions="Center"
                     Text="{Binding LongPressCount, StringFormat='Long press count: {0}'}" />
+                <!-- TouchBehavior animates BackgroundColor: a Background brush would hide the hovered colour -->
                 <HorizontalStackLayout
                     Padding="20"
-                    Background="Black"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource Gray600}}"
                     HorizontalOptions="Center">
                     <HorizontalStackLayout.Behaviors>
                         <mct:TouchBehavior
                             BindingContext="{Binding Path=BindingContext, Source={x:Reference CurrentPage}, x:DataType=ContentPage}"
                             Command="{Binding IncreaseTouchCountCommand}"
-                            HoveredBackgroundColor="{StaticResource Gray900}"
+                            HoveredBackgroundColor="{StaticResource Gray500}"
                             HoveredScale="1.2"
                             LongPressCommand="{Binding IncreaseLongPressCountCommand}" />
                     </HorizontalStackLayout.Behaviors>
