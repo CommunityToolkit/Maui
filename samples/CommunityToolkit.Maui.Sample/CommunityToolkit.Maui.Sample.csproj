@@ -74,6 +74,16 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.11" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- StateContainerPage opts out of the XAML source generator (MauiXamlInflator=SourceGen in Directory.Build.props): XamlC compiles it
+         in Release, and Debug inflates it at runtime (MAUI's default for XamlC in Debug). When a property element has a single child that is
+         itself a collection, here <mct:StateContainer.StateViews> holding one VerticalStackLayout, the source generator emits
+         SetValue(StateContainer.StateViewsProperty, (IList<View>)child) instead of adding the child to StateViews, so the page threw
+         InvalidCastException in InitializeComponent on every platform. It is a regression from dotnet/maui#32780: MAUI 10.0.0 and 10.0.11 add
+         the child; 10.0.20 through 10.0.110 and 11.0.0-rc.1 cast it. Remove this once the source generator adds the child. -->
+    <MauiXaml Update="Pages\Layouts\StateContainerPage.xaml" Inflator="XamlC" />
+  </ItemGroup>
+
   <PropertyGroup>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">17.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">17.0</SupportedOSPlatformVersion>
