@@ -515,7 +515,10 @@ public class StateContainerTests : BaseTest
 	[Fact]
 	public void Controller_ThrowsStateContainerExceptionInvalidStateKey()
 	{
-		Assert.Throws<StateContainerException>(() => controller.SwitchToState("InvalidStateKey"));
+		var exception = Assert.Throws<StateContainerException>(() => controller.SwitchToState("InvalidStateKey"));
+
+		Assert.Equal("StateView for InvalidStateKey not defined.", exception.Message);
+		Assert.Null(exception.InnerException);
 	}
 
 	[Fact]

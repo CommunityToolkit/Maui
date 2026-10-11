@@ -82,14 +82,17 @@ sealed class StateContainerController(Layout layout)
 
 	View GetViewForState(string state)
 	{
+		View? view;
 		try
 		{
-			var view = StateViews.SingleOrDefault(x => StateView.GetStateKey(x) == state);
-			return view ?? throw new StateContainerException($"{nameof(StateView)} for {state} not defined.");
+			view = StateViews.SingleOrDefault(x => StateView.GetStateKey(x) == state);
 		}
 		catch (InvalidOperationException e)
 		{
 			throw new StateContainerException($"Unable to determine {nameof(StateView)} for State: {state}. This State has been assigned to multiple {nameof(StateView)}s. Ensure each {nameof(StateView)} has a unique StateKey", e);
 		}
+
+		// Thrown outside the try block: StateContainerException is an InvalidOperationException, which the catch block above would report as a duplicate StateKey
+		return view ?? throw new StateContainerException($"{nameof(StateView)} for {state} not defined.");
 	}
 }
