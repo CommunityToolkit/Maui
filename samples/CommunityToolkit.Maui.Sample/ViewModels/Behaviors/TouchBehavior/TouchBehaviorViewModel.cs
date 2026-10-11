@@ -11,6 +11,9 @@ public partial class TouchBehaviorViewModel : BaseViewModel
 	[ObservableProperty]
 	public partial int LongPressCount { get; private set; }
 
+	[ObservableProperty]
+	public partial int ImageTouchCount { get; private set; }
+
 	static Task DisplayAlertAsync(string title, CancellationToken token)
 		=> Shell.Current.DisplayAlertAsync(title, null, "Ok").WaitAsync(token);
 
@@ -44,5 +47,13 @@ public partial class TouchBehaviorViewModel : BaseViewModel
 	void IncreaseLongPressCount()
 	{
 		LongPressCount++;
+	}
+
+	// A touch of the image is also one of the page's touches
+	[RelayCommand]
+	void IncreaseImageTouchCount()
+	{
+		ImageTouchCount++;
+		TouchCount++;
 	}
 }

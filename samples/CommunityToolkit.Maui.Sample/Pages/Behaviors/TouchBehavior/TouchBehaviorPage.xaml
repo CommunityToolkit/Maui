@@ -127,8 +127,15 @@
                 </HorizontalStackLayout>
             </VerticalStackLayout>
 
-            <Label Style="{StaticResource SectionHeader}" Text="Image | Native" />
-            <Border StrokeThickness="1">
+            <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
+                <Label Style="{StaticResource SectionHeader}" Text="Image | Translation | Spring" />
+
+                <Label
+                    Margin="0,0,0,6"
+                    FontSize="12"
+                    HorizontalOptions="Center"
+                    Text="{Binding ImageTouchCount, StringFormat='Image touches: {0}'}" />
+                <!-- The image moves down quickly when pressed and springs back when released -->
                 <Image
                     HeightRequest="100"
                     Source="button.png"
@@ -136,10 +143,14 @@
                     <Image.Behaviors>
                         <mct:TouchBehavior
                             BindingContext="{Binding Path=BindingContext, Source={x:Reference CurrentPage}, x:DataType=ContentPage}"
-                            Command="{Binding IncreaseTouchCountCommand}" />
+                            Command="{Binding IncreaseImageTouchCountCommand}"
+                            DefaultAnimationDuration="600"
+                            DefaultAnimationEasing="{x:Static Easing.SpringOut}"
+                            PressedAnimationDuration="100"
+                            PressedTranslationY="10" />
                     </Image.Behaviors>
                 </Image>
-            </Border>
+            </VerticalStackLayout>
 
             <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
                 <Label Style="{StaticResource SectionHeader}" Text="Nested effect" />
