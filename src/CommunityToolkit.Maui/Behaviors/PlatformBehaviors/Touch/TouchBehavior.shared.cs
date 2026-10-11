@@ -45,7 +45,8 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// selects the item when it completes its gesture, following the <see cref="SelectableItemsView.SelectionMode"/> of the
 /// <see cref="CollectionView"/>: <see cref="SelectionMode.Single"/> makes the item the <see cref="SelectableItemsView.SelectedItem"/>,
 /// <see cref="SelectionMode.Multiple"/> adds the item to the <see cref="SelectableItemsView.SelectedItems"/> or removes it from them, and
-/// <see cref="SelectionMode.None"/> selects nothing.
+/// <see cref="SelectionMode.None"/> selects nothing. The header, the footer and the empty view of the <see cref="CollectionView"/>, and the
+/// header and the footer of a group, are no items: a tap on a view in them selects nothing.
 /// </para>
 /// </remarks>
 public partial class TouchBehavior : BasePlatformBehavior<VisualElement>

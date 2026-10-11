@@ -310,7 +310,8 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 	static void HandleCollectionViewSelection(in TouchBehavior touchBehavior)
 	{
 		if (touchBehavior.Element is null
-			|| !TryFindParentElementWithParentOfType(touchBehavior.Element, out var child, out CollectionView? collectionView))
+			|| !TryFindParentElementWithParentOfType(touchBehavior.Element, out var child, out CollectionView? collectionView)
+			|| IsHeaderFooterOrEmptyView(child, collectionView))
 		{
 			return;
 		}
@@ -365,6 +366,27 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			}
 
 			return false;
+		}
+
+		// The header, the footer and the empty view of the CollectionView, and the header and the footer of each group, are its children as
+		// well, but they are no items: a tap on them selects nothing. Where the platform shows a View set as the content as it is, the View is
+		// the child. Through a template, the child is the template's root, whose BindingContext is the content (the group, for the header and
+		// the footer of a group): on Android whatever the content is, a View or null included; on Windows the template itself when there is no
+		// content. Other content is plain platform text, which cannot have a behavior.
+		static bool IsHeaderFooterOrEmptyView(VisualElement child, CollectionView collectionView)
+		{
+			var bindingContext = child.BindingContext;
+
+			return IsShownBy(collectionView.Header, collectionView.HeaderTemplate)
+				|| IsShownBy(collectionView.Footer, collectionView.FooterTemplate)
+				|| IsShownBy(collectionView.EmptyView, collectionView.EmptyViewTemplate)
+				|| (collectionView.IsGrouped
+					&& (collectionView.GroupHeaderTemplate is not null || collectionView.GroupFooterTemplate is not null)
+					&& bindingContext is not null
+					&& collectionView.ItemsSource?.Cast<object?>().Any(group => ReferenceEquals(group, bindingContext)) is true);
+
+			bool IsShownBy(object? content, DataTemplate? template) => ReferenceEquals(content, child)
+				|| (template is not null && (ReferenceEquals(content, bindingContext) || ReferenceEquals(template, bindingContext)));
 		}
 	}
 #endif
