@@ -20,8 +20,11 @@ public partial class StatusBarBehaviorPage : BasePage<StatusBarBehaviorViewModel
 	{
 		base.OnNavigatedTo(args);
 
+		// StatusBar supports Android and iOS only: on Mac Catalyst and Windows, StatusBar.SetColor throws NotSupportedException
+#if ANDROID || IOS
 		var statusBarColor = Color.FromRgba(BindingContext.RedSliderValue, BindingContext.GreenSliderValue, BindingContext.BlueSliderValue, 1.0);
 		Core.Platform.StatusBar.SetColor(statusBarColor);
+#endif
 	}
 
 	static async void HandleModalButtonClicked(object? sender, EventArgs e)

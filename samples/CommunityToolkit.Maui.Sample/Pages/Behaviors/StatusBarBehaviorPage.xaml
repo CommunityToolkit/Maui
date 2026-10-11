@@ -86,6 +86,9 @@
 
         <VerticalStackLayout Padding="15,0" Spacing="30" IgnoreSafeArea="False">
 
+            <Label Text="NOTE: StatusBarBehavior changes the status bar on Android and iOS only. It has no effect on Mac Catalyst and Windows."
+                   IsVisible="{OnPlatform Default='false', MacCatalyst='true', WinUI='true'}" />
+
             <Label Text="Slide to change StatusBar color" />
 
             <Label Text="Red" />
