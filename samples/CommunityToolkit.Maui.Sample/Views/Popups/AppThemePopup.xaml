@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<mct:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+           xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+           xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+           x:Class="CommunityToolkit.Maui.Sample.Views.Popups.AppThemePopup">
+
+    <VerticalStackLayout Spacing="12" WidthRequest="280">
+        <VerticalStackLayout.Resources>
+            <ResourceDictionary>
+                <Style x:Key="Title" TargetType="Label">
+                    <Setter Property="FontSize" Value="26" />
+                    <Setter Property="FontAttributes" Value="Bold" />
+                    <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                    <Setter Property="VerticalTextAlignment" Value="Center" />
+                    <Setter Property="HorizontalTextAlignment" Value="Center" />
+                </Style>
+            </ResourceDictionary>
+        </VerticalStackLayout.Resources>
+
+        <Label Style="{StaticResource Title}" Text="Theme-aware Popup" />
+
+        <Label Text="BackgroundColor is initialized in MauiProgram, not set on this popup. Change the app theme to see the background update while the popup stays open."
+               TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+
+        <Button Text="Light" Clicked="HandleLightThemeClicked" />
+
+        <Button Text="Dark" Clicked="HandleDarkThemeClicked" />
+
+        <Button Text="Use System Theme" Clicked="HandleSystemThemeClicked" />
+
+        <Button Text="Close" Clicked="HandleCloseClicked" />
+    </VerticalStackLayout>
+</mct:Popup>

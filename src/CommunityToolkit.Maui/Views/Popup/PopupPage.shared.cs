@@ -49,6 +49,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		this.popup = popup;
 		this.popupOptions = popupOptions ??= Options.DefaultPopupOptionsSettings;
 
+		Options.DefaultPopupSettings.Initialize?.Invoke(popup);
+
 		tapOutsideOfPopupCommand = new Command(async () =>
 		{
 			popupOptions.OnTappingOutsideOfPopup?.Invoke();

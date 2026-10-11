@@ -1,4 +1,5 @@
 #pragma warning disable CA1416
+using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.UnitTests.Services;
 using CommunityToolkit.Maui.Views;
 using Xunit;
@@ -20,6 +21,7 @@ public class DefaultPopupSettingsTests : BaseViewTest
 		Assert.Equal(LayoutOptions.Center, settings.HorizontalOptions);
 		Assert.Equal(LayoutOptions.Center, settings.VerticalOptions);
 		Assert.Equal(Colors.White, settings.BackgroundColor);
+		Assert.Null(settings.Initialize);
 	}
 
 	[Fact]
@@ -59,6 +61,107 @@ public class DefaultPopupSettingsTests : BaseViewTest
 		Assert.Equal(LayoutOptions.Center, popup.HorizontalOptions);
 		Assert.Equal(LayoutOptions.Center, popup.VerticalOptions);
 		Assert.Equal(Colors.White, popup.BackgroundColor);
+	}
+
+	[Theory]
+	[InlineData(false, false, AppTheme.Light)]
+	[InlineData(false, true, AppTheme.Light)]
+	[InlineData(true, false, AppTheme.Light)]
+	[InlineData(true, true, AppTheme.Light)]
+	[InlineData(false, false, AppTheme.Dark)]
+	[InlineData(false, true, AppTheme.Dark)]
+	[InlineData(true, false, AppTheme.Dark)]
+	[InlineData(true, true, AppTheme.Dark)]
+	public void Initialize_AppThemeBinding_UpdatesPopupAndBorder(bool useContentView, bool useGenericPopup, AppTheme initialTheme)
+	{
+		// Arrange
+		var application = Application.Current ?? throw new InvalidOperationException("Application cannot be null");
+		application.UserAppTheme = initialTheme;
+		View view = useContentView ? new ContentView() : useGenericPopup ? new Popup<string>() : new Popup();
+		view.BackgroundColor = Colors.Orange;
+		Popup? initializedPopup = null;
+		var initializationCount = 0;
+		new Options().SetPopupDefaults(new DefaultPopupSettings
+		{
+			Initialize = popup =>
+			{
+				initializedPopup = popup;
+				initializationCount++;
+				Assert.Equal(Colors.Orange, popup.BackgroundColor);
+				if (useContentView)
+				{
+					Assert.Same(view, popup.Content);
+				}
+				else
+				{
+					Assert.Same(view, popup);
+				}
+
+				popup.SetAppThemeColor(VisualElement.BackgroundColorProperty, Colors.White, Colors.Black);
+			}
+		});
+
+		// Act
+		var popupPage = useGenericPopup ? new PopupPage<string>(view, null) : new PopupPage(view, null);
+		CreateViewHandler<MockPageHandler>(popupPage);
+		application.OpenWindow(new Window { Page = popupPage });
+		var border = popupPage.Content.PopupBorder;
+		var popup = Assert.IsType<Popup>(border.Content, exactMatch: false);
+
+		// Assert
+		Assert.Same(initializedPopup, popup);
+		Assert.Equal(1, initializationCount);
+		Assert.Equal(initialTheme == AppTheme.Dark ? Colors.Black : Colors.White, popup.BackgroundColor);
+		Assert.Equal(popup.BackgroundColor, border.BackgroundColor);
+
+		application.UserAppTheme = initialTheme == AppTheme.Dark ? AppTheme.Light : AppTheme.Dark;
+		Assert.Equal(initialTheme == AppTheme.Dark ? Colors.White : Colors.Black, popup.BackgroundColor);
+		Assert.Equal(popup.BackgroundColor, border.BackgroundColor);
+
+		application.UserAppTheme = initialTheme;
+		Assert.Equal(initialTheme == AppTheme.Dark ? Colors.Black : Colors.White, popup.BackgroundColor);
+		Assert.Equal(popup.BackgroundColor, border.BackgroundColor);
+		Assert.Equal(1, initializationCount);
+	}
+
+	[Fact]
+	public void Initialize_RepeatedPresentation_InvokesCallbackForEachPresentation()
+	{
+		// Arrange
+		var initializationCount = 0;
+		new Options().SetPopupDefaults(new DefaultPopupSettings
+		{
+			Initialize = _ => initializationCount++
+		});
+		var popup = new Popup();
+
+		// Act
+		var firstPopupPage = new PopupPage(popup, null);
+		var secondPopupPage = new PopupPage(popup, null);
+
+		// Assert
+		Assert.Equal(2, initializationCount);
+		Assert.Same(popup, secondPopupPage.Content.PopupBorder.Content);
+		Assert.NotSame(firstPopupPage, secondPopupPage);
+	}
+
+	[Fact]
+	public void Initialize_CallbackThrows_PropagatesExceptionWithoutParentingPopup()
+	{
+		// Arrange
+		var expectedException = new InvalidOperationException("Popup initialization failed");
+		new Options().SetPopupDefaults(new DefaultPopupSettings
+		{
+			Initialize = _ => throw expectedException
+		});
+		var popup = new Popup();
+
+		// Act
+		var exception = Assert.Throws<InvalidOperationException>(() => new PopupPage(popup, null));
+
+		// Assert
+		Assert.Same(expectedException, exception);
+		Assert.Null(popup.Parent);
 	}
 
 	[Fact]
