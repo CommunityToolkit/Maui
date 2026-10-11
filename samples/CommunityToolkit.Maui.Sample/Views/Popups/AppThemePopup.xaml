@@ -19,7 +19,7 @@
 
         <Label Style="{StaticResource Title}" Text="Theme-aware Popup" />
 
-        <Label Text="BackgroundColor is initialized in MauiProgram, not set on this popup. Change the app theme to see the background update while the popup stays open."
+        <Label Text="Change the app theme to see the background update while the popup stays open."
                TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
 
         <Button Text="Light" Clicked="HandleLightThemeClicked" />

@@ -27,6 +27,11 @@ public record DefaultPopupSettings
 	public Color BackgroundColor { get; init; } = PopupDefaults.BackgroundColor;
 
 	/// <summary>
+	/// Popup's background color in dark mode.
+	/// </summary>
+	public Color BackgroundColorDark { get; init; } = PopupDefaults.BackgroundColorDark;
+
+	/// <summary>
 	/// Gets the optional callback used to configure each <see cref="Popup"/> before it is displayed. Defaults to <see langword="null"/>.
 	/// </summary>
 	public Action<Popup>? Initialize { get; init; } = PopupDefaults.Initialize;
@@ -65,6 +70,11 @@ public record DefaultPopupSettings
 		/// Default value for <see cref="VisualElement.BackgroundColor"/> BackgroundColor 
 		/// </summary>
 		public static Color BackgroundColor { get; } = Colors.White;
+
+		/// <summary>
+		/// Default value for Popup's background color in dark mode
+		/// </summary>
+		public static Color BackgroundColorDark { get; } = Colors.Black;
 
 		/// <summary>
 		/// Default value for <see cref="DefaultPopupSettings.Initialize"/>

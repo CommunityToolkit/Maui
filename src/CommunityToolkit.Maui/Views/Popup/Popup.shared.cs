@@ -17,8 +17,10 @@ public partial class Popup : ContentView
 		Padding = Options.DefaultPopupSettings.Padding;
 		HorizontalOptions = Options.DefaultPopupSettings.HorizontalOptions;
 		VerticalOptions = Options.DefaultPopupSettings.VerticalOptions;
-		BackgroundColor = Options.DefaultPopupSettings.BackgroundColor;
 		CanBeDismissedByTappingOutsideOfPopup = Options.DefaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup;
+		this.SetAppThemeColor(BackgroundColorProperty, Options.DefaultPopupSettings.BackgroundColor, Options.DefaultPopupSettings.BackgroundColorDark);
+
+		Options.DefaultPopupSettings.Initialize?.Invoke(this);
 	}
 
 	/// <summary>

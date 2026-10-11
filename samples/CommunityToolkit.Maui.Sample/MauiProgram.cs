@@ -52,14 +52,13 @@ public static class MauiProgram
 								.UseMauiCommunityToolkit(static options =>
 								{
 									options.SetShouldEnableSnackbarOnWindows(true);
-									options.SetPopupDefaults(CreateDefaultPopupSettings());
+									options.SetPopupDefaults(new DefaultPopupSettings());
 									options.SetPopupOptionsDefaults(new DefaultPopupOptionsSettings());
 								})
 #else
 								.UseMauiCommunityToolkit(static options =>
 								{
 									options.SetShouldEnableSnackbarOnWindows(true);
-									options.SetPopupDefaults(CreateDefaultPopupSettings());
 									options.SetShouldSuppressExceptionsInConverters(true);
 									options.SetShouldSuppressExceptionsInBehaviors(true);
 									options.SetShouldSuppressExceptionsInAnimations(true);
@@ -136,21 +135,6 @@ public static class MauiProgram
 
 		return builder.Build();
 	}
-
-	static DefaultPopupSettings CreateDefaultPopupSettings() => new()
-	{
-		Initialize = static popup =>
-		{
-			// Limit theme initialization to this demo so other popup samples retain their styling.
-			if (popup is AppThemePopup)
-			{
-				popup.SetAppThemeColor(
-					VisualElement.BackgroundColorProperty,
-					Microsoft.Maui.Graphics.Colors.White,
-					Microsoft.Maui.Graphics.Colors.Black);
-			}
-		}
-	};
 
 	static void RegisterViewsAndViewModels(in IServiceCollection services)
 	{
