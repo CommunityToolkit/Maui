@@ -21,94 +21,96 @@
         </Style>
     </pages:BasePage.Resources>
     <pages:BasePage.Content>
-        <VerticalStackLayout
-            Spacing="25"
-            VerticalOptions="Start">
-            <Label
-                Text="Text color will change accordingly to the style that is configured when an invalid string is entered." />
+        <ScrollView>
+            <VerticalStackLayout
+                Spacing="25"
+                VerticalOptions="Start">
+                <Label
+                    Text="Text color will change accordingly to the style that is configured when an invalid string is entered." />
 
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Label Text="CharacterType" />
-                <Picker
-                    x:Name="CharacterTypePicker"
-                    Grid.Row="0"
-                    Grid.Column="1"
-                    Title="CharacterType"
-                    ItemsSource="{Binding CharacterTypes, Mode=OneTime}" />
-                <Label Grid.Row="1"
-                       Grid.Column="0"
-                       VerticalOptions="Fill"
-                       VerticalTextAlignment="Center"
-                       Text="MinimumCharacterCountEntry" />
-                <Entry Grid.Row="1" Grid.Column="1"
-                       x:Name="MinimumCharacterCountEntry"
-                       Keyboard="Numeric"
-                       Text="2"
-                       VerticalOptions="Fill" />
-                <Label Grid.Row="2"
-                       Grid.Column="0"
-                       VerticalOptions="Fill"
-                       VerticalTextAlignment="Center"
-                       Text="MaximumCharacterCountEntry" />
-                <Entry Grid.Row="2" Grid.Column="1"
-                       x:Name="MaximumCharacterCountEntry"
-                       Keyboard="Numeric"
-                       Text="20"
-                       VerticalOptions="Fill" />
-            </Grid>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Label Text="CharacterType" />
+                    <Picker
+                        x:Name="CharacterTypePicker"
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Title="CharacterType"
+                        ItemsSource="{Binding CharacterTypes, Mode=OneTime}" />
+                    <Label Grid.Row="1"
+                           Grid.Column="0"
+                           VerticalOptions="Fill"
+                           VerticalTextAlignment="Center"
+                           Text="MinimumCharacterCountEntry" />
+                    <Entry Grid.Row="1" Grid.Column="1"
+                           x:Name="MinimumCharacterCountEntry"
+                           Keyboard="Numeric"
+                           Text="2"
+                           VerticalOptions="Fill" />
+                    <Label Grid.Row="2"
+                           Grid.Column="0"
+                           VerticalOptions="Fill"
+                           VerticalTextAlignment="Center"
+                           Text="MaximumCharacterCountEntry" />
+                    <Entry Grid.Row="2" Grid.Column="1"
+                           x:Name="MaximumCharacterCountEntry"
+                           Keyboard="Numeric"
+                           Text="20"
+                           VerticalOptions="Fill" />
+                </Grid>
 
-            <Label Text="Type characters for validation behavior according to the settings you set upon." />
-            <Entry Placeholder="Type characters..." x:Name="TypeCharactersEntry">
-                <Entry.Behaviors>
-                    <mct:CharactersValidationBehavior
-                        BindingContext="{Binding Path = BindingContext, Source={x:Reference TypeCharactersEntry}, x:DataType=Entry}"
-                        CharacterType="{Binding SelectedItem, Source={x:Reference CharacterTypePicker}, x:DataType=Picker}"
-                        Flags="ValidateOnValueChanged"
-                        InvalidStyle="{StaticResource InvalidEntryStyle}"
-                        ValidStyle="{StaticResource ValidEntryStyle}"
-                        MaximumCharacterTypeCount="{Binding Text, Source={x:Reference MaximumCharacterCountEntry}, x:DataType=Entry}"
-                        MinimumCharacterTypeCount="{Binding Text, Source={x:Reference MinimumCharacterCountEntry}, x:DataType=Entry}" />
-                </Entry.Behaviors>
-            </Entry>
+                <Label Text="Type characters for validation behavior according to the settings you set upon." />
+                <Entry Placeholder="Type characters..." x:Name="TypeCharactersEntry">
+                    <Entry.Behaviors>
+                        <mct:CharactersValidationBehavior
+                            BindingContext="{Binding Path = BindingContext, Source={x:Reference TypeCharactersEntry}, x:DataType=Entry}"
+                            CharacterType="{Binding SelectedItem, Source={x:Reference CharacterTypePicker}, x:DataType=Picker}"
+                            Flags="ValidateOnValueChanged"
+                            InvalidStyle="{StaticResource InvalidEntryStyle}"
+                            ValidStyle="{StaticResource ValidEntryStyle}"
+                            MaximumCharacterTypeCount="{Binding Text, Source={x:Reference MaximumCharacterCountEntry}, x:DataType=Entry}"
+                            MinimumCharacterTypeCount="{Binding Text, Source={x:Reference MinimumCharacterCountEntry}, x:DataType=Entry}" />
+                    </Entry.Behaviors>
+                </Entry>
 
-            <Label Text="The same but styling handled by visual state manager." />
-            <Entry Placeholder="Type characters..." x:Name="VisualStateEntry">
-                <Entry.Behaviors>
-                    <mct:CharactersValidationBehavior
-                        Flags="ValidateOnValueChanged"
-                        BindingContext="{Binding Path = BindingContext, Source={x:Reference VisualStateEntry}, x:DataType=Entry}"
-                        CharacterType="{Binding SelectedItem, Source={x:Reference CharacterTypePicker}, x:DataType=Picker}"
-                        MaximumCharacterTypeCount="{Binding Text, Source={x:Reference MaximumCharacterCountEntry}, x:DataType=Entry}"
-                        MinimumCharacterTypeCount="{Binding Text, Source={x:Reference MinimumCharacterCountEntry}, x:DataType=Entry}" />
-                </Entry.Behaviors>
+                <Label Text="The same but styling handled by visual state manager." />
+                <Entry Placeholder="Type characters..." x:Name="VisualStateEntry">
+                    <Entry.Behaviors>
+                        <mct:CharactersValidationBehavior
+                            Flags="ValidateOnValueChanged"
+                            BindingContext="{Binding Path = BindingContext, Source={x:Reference VisualStateEntry}, x:DataType=Entry}"
+                            CharacterType="{Binding SelectedItem, Source={x:Reference CharacterTypePicker}, x:DataType=Picker}"
+                            MaximumCharacterTypeCount="{Binding Text, Source={x:Reference MaximumCharacterCountEntry}, x:DataType=Entry}"
+                            MinimumCharacterTypeCount="{Binding Text, Source={x:Reference MinimumCharacterCountEntry}, x:DataType=Entry}" />
+                    </Entry.Behaviors>
 
-                <VisualStateManager.VisualStateGroups>
-                    <VisualStateGroupList>
-                        <VisualStateGroup x:Name="CommonStates">
-                            <VisualState x:Name="Valid">
-                                <VisualState.Setters>
-                                    <Setter Property="TextColor" Value="Green" />
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState x:Name="Invalid">
-                                <VisualState.Setters>
-                                    <Setter Property="TextColor" Value="IndianRed" />
-                                </VisualState.Setters>
-                            </VisualState>
-                        </VisualStateGroup>
-                    </VisualStateGroupList>
-                </VisualStateManager.VisualStateGroups>
-            </Entry>
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroupList>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Valid">
+                                    <VisualState.Setters>
+                                        <Setter Property="TextColor" Value="Green" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Invalid">
+                                    <VisualState.Setters>
+                                        <Setter Property="TextColor" Value="IndianRed" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateGroupList>
+                    </VisualStateManager.VisualStateGroups>
+                </Entry>
 
-        </VerticalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
     </pages:BasePage.Content>
 </pages:BasePage>
