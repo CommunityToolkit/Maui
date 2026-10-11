@@ -47,11 +47,11 @@
 		</dict>
 	</dict>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>ISpeechToText Uses Speech Recognition</string>
+	<string>This sample uses speech recognition to convert speech to text.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>ISpeechToText Uses Microphone</string>
+	<string>This sample uses the microphone to convert speech to text and to record the sound of videos.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>ICameraView Uses Camera</string>
+	<string>This sample uses the camera to take photos and to record videos.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>
