@@ -1,5 +1,7 @@
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
+using Microsoft.Windows.AppNotifications;
+using Microsoft.Windows.AppNotifications.Builder;
 using static CommunityToolkit.Maui.DeviceTests.AssertHelpers;
 
 namespace CommunityToolkit.Maui.DeviceTests;
@@ -71,10 +73,12 @@ public partial class ToastTests
 		});
 	}
 
+	// The toolkit removes the toast at the end of its Duration (NotificationIsRemovedAtTheEndOfTheDurationBeforeItExpires): the notification
+	// expires a minute later, which only takes it out of the Action Center when the app ends before the end of the Duration.
 	[Theory]
 	[InlineData(ToastDuration.Short, 2.0)]
 	[InlineData(ToastDuration.Long, 3.5)]
-	public async Task ExpirationIsTheTimeOfShowPlusTheDuration(ToastDuration duration, double expectedSeconds)
+	public async Task ExpirationIsAMinuteAfterTheEndOfTheDuration(ToastDuration duration, double durationSeconds)
 	{
 		SetupBuilder();
 		await PreparePlatformAsync();
@@ -87,8 +91,52 @@ public partial class ToastTests
 
 			var after = DateTimeOffset.Now;
 			var expiration = (AlertsWindows.GetPlatformToast() ?? throw new InvalidOperationException("No notification was shown.")).Expiration;
-			var expected = TimeSpan.FromSeconds(expectedSeconds);
+			var expected = TimeSpan.FromSeconds(durationSeconds) + TimeSpan.FromMinutes(1);
 			Assert.InRange(expiration, before + expected - expirationMargin, after + expected + expirationMargin);
+		});
+	}
+
+	// Windows shows the banner of a notification for its own time (about 6 s, up to 25 s for a long one) and queues the next notification
+	// of the app behind it. Removing the notification takes the banner off screen, but only while the notification has not expired, and an
+	// expired notification that waits in the queue is never shown. So the toolkit removes the toast at the end of its Duration, before the
+	// notification expires: Windows no longer lists it, and its expiration is still to come.
+	// Catches: the notification expiring at the end of the Duration (its banner then stays on screen for the Windows time, and a toast
+	// shown after that expiration while the banner is up is lost), and a toast that is never removed.
+	[Theory]
+	[InlineData(ToastDuration.Short, 2.0)]
+	[InlineData(ToastDuration.Long, 3.5)]
+	public async Task NotificationIsRemovedAtTheEndOfTheDurationBeforeItExpires(ToastDuration duration, double durationSeconds)
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var shown = DateTimeOffset.Now;
+			await ShowAndWaitForDisplayAsync(Toast.Make("Removed at the end of its duration", duration));
+			var notification = AlertsWindows.GetPlatformToast() ?? throw new InvalidOperationException("No notification was shown.");
+
+			await AssertEventually(async () => !await IsDisplayedAsync(), timeout: 10000, interval: 50, message: "Windows still lists the toast after the end of its duration.");
+
+			var removed = DateTimeOffset.Now;
+			Assert.True(removed >= shown + TimeSpan.FromSeconds(durationSeconds) - expirationMargin, $"The toast was gone {removed - shown} after Show, before the end of its duration.");
+			Assert.True(removed < notification.Expiration, $"The toast expired at {notification.Expiration:O} instead of being removed before that (gone at {removed:O}): Windows keeps the banner of an expired notification on screen.");
+		});
+	}
+
+	// The removal at the end of the Duration removes the notification of the toast by its Id: the other notifications of the app stay.
+	[Fact]
+	public async Task RemovalAtTheEndOfTheDurationKeepsTheOtherNotificationsOfTheApp()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			await ShowAndWaitForDisplayAsync(Toast.Make("Removed at the end of its duration"));
+			AppNotificationManager.Default.Show(new AppNotificationBuilder().AddText("Another notification of the app").BuildNotification());
+
+			await AssertEventually(async () => (await GetDisplayedTextsAsync()) is ["Another notification of the app"], timeout: 10000, message: "Windows does not list only the other notification of the app after the end of the duration of the toast.");
 		});
 	}
 
