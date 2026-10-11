@@ -7,6 +7,7 @@ using CommunityToolkit.Maui.Layouts;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
+using ViewExtensions = Microsoft.Maui.Controls.ViewExtensions;
 
 namespace CommunityToolkit.Maui.UnitTests.Layouts;
 
@@ -155,6 +156,133 @@ public class StateContainerTests : BaseTest
 
 		Assert.True(StateContainer.GetCanStateChange(layout));
 		Assert.Equal(StateKey.Error, StateContainer.GetCurrentState(layout));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public async Task StateContainer_DefaultAnimation_ReplacedViewsKeepTheirOpacity()
+	{
+		layout.EnableAnimations();
+		var defaultContent = (View)layout.Children[0];
+		defaultContent.EnableAnimations();
+		var errorView = stateViews[1];
+
+		await StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, TestContext.Current.CancellationToken);
+
+		Assert.DoesNotContain(defaultContent, layout.Children);
+		Assert.Equal(1, defaultContent.Opacity);
+		Assert.Equal(1, errorView.Opacity);
+
+		await StateContainer.ChangeStateWithAnimation(layout, null, TestContext.Current.CancellationToken);
+
+		Assert.DoesNotContain(errorView, layout.Children);
+		Assert.Equal(1, errorView.Opacity);
+		Assert.Equal(1, defaultContent.Opacity);
+
+		// A StateView that the fade animation replaced is visible when a state change without animation shows it again
+		StateContainer.SetCurrentState(layout, StateKey.Error);
+
+		Assert.Same(errorView, Assert.Single(layout.Children));
+		Assert.Equal(1, errorView.Opacity);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public async Task StateContainer_DefaultAnimation_FadesInTheShownViews()
+	{
+		layout.EnableAnimations();
+		foreach (var child in layout.Children)
+		{
+			child.EnableAnimations();
+		}
+
+		var errorView = stateViews[1];
+		List<double> errorViewOpacities = [];
+		errorView.PropertyChanged += (_, e) =>
+		{
+			if (e.PropertyName == VisualElement.OpacityProperty.PropertyName)
+			{
+				errorViewOpacities.Add(errorView.Opacity);
+			}
+		};
+
+		await StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, TestContext.Current.CancellationToken);
+
+		Assert.NotEmpty(errorViewOpacities);
+		Assert.Equal(0, errorViewOpacities[0]);
+		Assert.Equal(1, errorViewOpacities[^1]);
+		Assert.Equal(1, errorView.Opacity);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public async Task StateContainer_DefaultAnimation_CanceledFadeOutKeepsTheReplacedViewsVisible()
+	{
+		layout.EnableAnimations();
+		var defaultContent = (View)layout.Children[0];
+		defaultContent.EnableAnimations();
+
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+		var changeStateWithAnimationTask = StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, cts.Token);
+
+		// Cancel while the default content fades out
+		await cts.CancelAsync();
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => changeStateWithAnimationTask);
+
+		// A fade-out that went on after the state change ended would make the default content transparent again
+		while (defaultContent.AnimationIsRunning(nameof(ViewExtensions.FadeToAsync)))
+		{
+			await Task.Delay(TimeSpan.FromMilliseconds(16), TestContext.Current.CancellationToken);
+		}
+
+		StateContainer.SetCurrentState(layout, null);
+
+		Assert.Same(defaultContent, Assert.Single(layout.Children));
+		Assert.Equal(1, defaultContent.Opacity);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public async Task StateContainer_DefaultAnimation_CanceledFadeInLeavesTheShownViewsVisible()
+	{
+		layout.EnableAnimations();
+		var defaultContent = (View)layout.Children[0];
+		defaultContent.EnableAnimations();
+		var errorView = stateViews[1];
+		errorView.EnableAnimations();
+
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+
+		// Cancel when the error view starts to fade in: the state change sets its Opacity to 0 first
+		errorView.PropertyChanged += (_, e) =>
+		{
+			if (e.PropertyName == VisualElement.OpacityProperty.PropertyName && errorView.Opacity == 0 && !cts.IsCancellationRequested)
+			{
+				cts.Cancel();
+			}
+		};
+
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, cts.Token));
+
+		Assert.False(errorView.AnimationIsRunning(nameof(ViewExtensions.FadeToAsync)));
+		Assert.Equal(1, errorView.Opacity);
+
+		// The next state change gives the error view the Opacity it had when that state change started, so it must not be partly transparent
+		await StateContainer.ChangeStateWithAnimation(layout, null, TestContext.Current.CancellationToken);
+		StateContainer.SetCurrentState(layout, StateKey.Error);
+
+		Assert.Same(errorView, Assert.Single(layout.Children));
+		Assert.Equal(1, errorView.Opacity);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public async Task StateContainer_DefaultAnimation_UndefinedStateKeepsTheCurrentViewsVisible()
+	{
+		layout.EnableAnimations();
+		var defaultContent = (View)layout.Children[0];
+		defaultContent.EnableAnimations();
+
+		await Assert.ThrowsAsync<StateContainerException>(() => StateContainer.ChangeStateWithAnimation(layout, "UndefinedStateKey", TestContext.Current.CancellationToken));
+
+		Assert.Same(defaultContent, Assert.Single(layout.Children));
+		Assert.Equal(1, defaultContent.Opacity);
+		Assert.True(StateContainer.GetCanStateChange(layout));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Long)]
