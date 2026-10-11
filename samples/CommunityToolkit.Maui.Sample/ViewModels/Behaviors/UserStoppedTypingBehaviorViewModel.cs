@@ -9,5 +9,5 @@ public partial class UserStoppedTypingBehaviorViewModel : BaseViewModel
 	public partial string PerformedSearches { get; set; } = string.Empty;
 
 	[RelayCommand]
-	void Search(string searchTerms) => PerformedSearches += string.Format($"Performed search for '{searchTerms}'.") + Environment.NewLine;
+	void Search(string searchTerms) => PerformedSearches += $"Performed search for '{searchTerms}'." + Environment.NewLine;
 }
