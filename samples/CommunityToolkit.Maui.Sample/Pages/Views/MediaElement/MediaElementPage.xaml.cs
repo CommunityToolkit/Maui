@@ -235,8 +235,16 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 	async void ChangeSourceClicked(object? sender, EventArgs? e)
 	{
-		var result = await DisplayActionSheetAsync("Choose a source", "Cancel", null,
+		const string cancel = "Cancel";
+
+		var result = await DisplayActionSheetAsync("Choose a source", cancel, null,
 			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadMusic);
+
+		// Cancel, or dismissing the action sheet without a choice, keeps the current source
+		if (result is null or cancel)
+		{
+			return;
+		}
 
 		MediaElement.Stop();
 		MediaElement.Source = null;
