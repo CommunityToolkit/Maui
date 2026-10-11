@@ -145,22 +145,18 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 				RecognitionText = string.Empty;
 			}
 		}
-		catch (PermissionException e)
+		catch (Exception e)
 		{
-			// The permission requests above do not cover every case, for example on Windows when "Online speech recognition" is
-			// switched off in the privacy settings.
+			// An exception that escapes the command ends the app, and the permission requests above do not cover every failure: for example a
+			// PermissionException on Windows when "Online speech recognition" is switched off in the privacy settings, a FeatureNotSupportedException on
+			// Android when the device has no speech recognition service, or an exception of the audio engine on the iOS simulator when it gets no audio input.
 			CanStartListenExecute = true;
 			CanStopListenExecute = false;
 
-			RecognitionText = e.Message;
-			await Toast.Make($"{nameof(PermissionException)}: {e.Message}").Show(cancellationToken);
-		}
-		catch
-		{
-			CanStartListenExecute = true;
-			CanStopListenExecute = false;
-
-			throw;
+			// The message of the audio engine's ObjCException continues with the native stack trace: the page shows its first line
+			var message = e.Message.Split('\n', 2)[0].TrimEnd();
+			RecognitionText = message;
+			await Toast.Make($"{e.GetType().Name}: {message}").Show(cancellationToken);
 		}
 	}
 

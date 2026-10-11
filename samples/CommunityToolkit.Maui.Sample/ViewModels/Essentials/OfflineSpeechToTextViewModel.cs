@@ -71,12 +71,18 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 				RecognitionText = string.Empty;
 			}
 		}
-		catch
+		catch (Exception e)
 		{
+			// For example a FeatureNotSupportedException on Android 13 and earlier, or on a device without on-device speech recognition, a NotSupportedException on
+			// Android when the on-device recognizer does not support the culture, or an exception of the audio engine on the iOS simulator when it gets no audio input.
+			// The page shows the failure: an exception that escapes the command ends the app
 			CanStartListenExecute = true;
 			CanStopListenExecute = false;
 
-			throw;
+			// The message of the audio engine's ObjCException continues with the native stack trace: the page shows its first line
+			var message = e.Message.Split('\n', 2)[0].TrimEnd();
+			RecognitionText = message;
+			await Toast.Make($"{e.GetType().Name}: {message}").Show(token);
 		}
 	}
 
