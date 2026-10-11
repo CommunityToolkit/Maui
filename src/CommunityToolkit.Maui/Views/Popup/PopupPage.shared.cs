@@ -330,9 +330,17 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			this.tryExecuteTapOutsideOfPopupCommand = tryExecuteTapOutsideOfPopupCommand;
 			Background = BackgroundColor = null;
 
+			if (popupContent.BackgroundColor is null)
+			{
+				popupContent.SetAppThemeColor(
+					Popup.BackgroundColorProperty,
+					Options.DefaultPopupSettings.BackgroundColor,
+					Options.DefaultPopupSettings.BackgroundColorDark);
+			}
+
 			PopupBorder = new Border
 			{
-				BackgroundColor = popupContent.BackgroundColor ??= Options.DefaultPopupSettings.BackgroundColor,
+				BackgroundColor = popupContent.BackgroundColor,
 				Content = popupContent
 			};
 
