@@ -9,6 +9,11 @@ public static partial class StatusBar
 	/// Method to change the color of the status bar.
 	/// </summary>
 	/// <param name="color">The <see cref="Color"/> that will be set to the status bar.</param>
+	/// <remarks>
+	/// iOS: the color is a view at the top of every window of the app, in front of the window's other views; touches go through it to the views below
+	/// it. The view covers the status bar of the window's scene, or the window's top safe area after <c>SetBarSize(true)</c>, and keeps covering it when
+	/// the window rotates or its width changes: in landscape, where an iPhone hides its status bar, the view has no height.
+	/// </remarks>
 	public static void SetColor(Color? color) =>
 		PlatformSetColor(color ?? Colors.Transparent);
 

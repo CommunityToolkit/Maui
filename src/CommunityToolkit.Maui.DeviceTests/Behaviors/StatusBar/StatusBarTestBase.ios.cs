@@ -3,6 +3,7 @@ using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Platform;
 #endif
 using CommunityToolkit.Maui.DeviceTests.Runners;
+using CoreGraphics;
 using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
@@ -51,6 +52,59 @@ public abstract partial class StatusBarTestBase
 				Assert.Null(view.BackgroundColor);
 			}
 		});
+
+	// The runner's Info.plist supports portrait and both landscape orientations on iPhone.
+	protected async Task RotateAsync(UIInterfaceOrientationMask orientation)
+	{
+		Skip.IfNot(OperatingSystem.IsIOSVersionAtLeast(16), "Rotating the interface needs UIWindowScene.RequestGeometryUpdate (iOS 16); the simulators of the pool run iOS 27.");
+
+		var isLandscape = orientation is UIInterfaceOrientationMask.Landscape or UIInterfaceOrientationMask.LandscapeLeft or UIInterfaceOrientationMask.LandscapeRight;
+		var refusal = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+		await InvokeOnMainThreadAsync(() =>
+		{
+			if (OperatingSystem.IsIOSVersionAtLeast(16))
+			{
+				IosStatusBarViews.RunnerScene.RequestGeometryUpdate(new UIWindowSceneGeometryPreferencesIOS(orientation), error => refusal.TrySetResult(error.LocalizedDescription));
+			}
+		});
+
+		await AssertEventuallyOnMainThread(() => refusal.Task.IsCompleted || IsLandscape(TestWindow.PlatformWindow) == isLandscape, $"The runner's window did not rotate to {orientation}.");
+		Assert.False(refusal.Task.IsCompleted, $"UIKit refused to rotate the interface to {orientation}: {(refusal.Task.IsCompleted ? refusal.Task.Result : string.Empty)}");
+	}
+
+	// The window resizes the views when it rotates, and UIKit lays them out afterwards.
+	protected async Task AssertStatusBarViewsCoverTheStatusBarAsync(bool isUsingSafeArea)
+	{
+		try
+		{
+			await AssertEventuallyOnMainThread(() => IosStatusBarViews.WindowsWithStatusBar().All(window => IosStatusBarViews.TaggedSubviews(window) is [var view] && view.Frame == ExpectedStatusBarViewFrame(window, isUsingSafeArea)), "The status bar views do not cover the status bar.");
+		}
+		catch (Xunit.Sdk.XunitException)
+		{
+			// The assertions below show the frames
+		}
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var windows = IosStatusBarViews.WindowsWithStatusBar();
+			Assert.NotEmpty(windows);
+			foreach (var window in windows)
+			{
+				Assert.Equal(ExpectedStatusBarViewFrame(window, isUsingSafeArea).ToString(), Assert.Single(IosStatusBarViews.TaggedSubviews(window)).Frame.ToString());
+			}
+		});
+	}
+
+	// A hidden status bar, e.g. of an iPhone in landscape, has an empty frame: the view then has no height and the width of the window.
+	protected static CGRect ExpectedStatusBarViewFrame(UIWindow window, bool isUsingSafeArea)
+	{
+		var statusBarFrame = IosStatusBarViews.SceneStatusBarFrame(window) ?? throw new InvalidOperationException("The window has no status bar frame.");
+		var frame = statusBarFrame.IsEmpty ? new CGRect(0, 0, window.Bounds.Width, 0) : statusBarFrame;
+
+		return isUsingSafeArea ? new CGRect(frame.X, frame.Y, frame.Width, window.SafeAreaInsets.Top) : frame;
+	}
+
+	static bool IsLandscape(UIWindow window) => window.Bounds.Width > window.Bounds.Height;
 
 	// The call is counted on the topmost view controller (the one that controls the status bar) itself, so the check does not depend on UIKit
 	// re-reading the style, which it only does with view controller-based status bar appearance (an app may set

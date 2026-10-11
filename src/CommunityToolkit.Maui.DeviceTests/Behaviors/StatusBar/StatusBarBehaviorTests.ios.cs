@@ -184,6 +184,35 @@ public partial class StatusBarBehaviorTests
 		});
 	}
 
+	// What the Sample showed: a page with the behavior was on screen and is gone, so the behavior detached and sizes nothing any more, and then the
+	// window rotates. The status bar view sizes itself: in landscape it must not cover the navigation bar of the page that is on screen then.
+	[Fact]
+	public async Task StatusBarViewFollowsTheStatusBarWhenTheWindowRotatesAfterThePageOfTheBehaviorUnloaded()
+	{
+		SetupBuilder();
+		var page = CreatePage();
+		var behavior = await CreateBehaviorAsync(static behavior => behavior.StatusBarColor = Colors.Red);
+		page.Behaviors.Add(behavior);
+		await ResetNativeStateAsync();
+
+		await AttachPageAndRun(page, _ => AssertStatusBarShowsAsync(Colors.Red));
+		await WaitForDetachAsync(behavior);
+
+		try
+		{
+			await RotateAsync(UIInterfaceOrientationMask.LandscapeRight);
+			await AssertStatusBarViewsCoverTheStatusBarAsync(false);
+
+			await RotateAsync(UIInterfaceOrientationMask.Portrait);
+			await AssertStatusBarViewsCoverTheStatusBarAsync(false);
+			await AssertStatusBarShowsAsync(Colors.Red);
+		}
+		finally
+		{
+			await RotateAsync(UIInterfaceOrientationMask.Portrait);
+		}
+	}
+
 	[Fact]
 	public async Task DisplayInfoChangeSizesTheStatusBarViewOnlyWhileTheBehaviorIsAttached()
 	{

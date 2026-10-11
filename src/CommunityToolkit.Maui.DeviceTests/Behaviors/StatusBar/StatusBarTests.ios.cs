@@ -397,6 +397,72 @@ public partial class StatusBarTests
 		});
 	}
 
+	// The status bar view lies in front of the window's other views and must not take their touches: with a frame that is out of date, e.g. the
+	// portrait frame in landscape, it covers the buttons of the navigation bar.
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public async Task StatusBarViewLetsTouchesThroughToTheViewsBelowIt(bool isAddedBySetColor)
+	{
+		SetupBuilder();
+		await ResetNativeStateAsync();
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			if (isAddedBySetColor)
+			{
+				StatusBar.SetColor(Colors.Red);
+			}
+			else
+			{
+				StatusBar.SetBarSize(false);
+			}
+
+			var windows = IosStatusBarViews.WindowsWithStatusBar();
+			Assert.NotEmpty(windows);
+			foreach (var window in windows)
+			{
+				var statusBarView = Assert.Single(IosStatusBarViews.TaggedSubviews(window));
+				Assert.False(statusBarView.UserInteractionEnabled);
+
+				var pointInTheStatusBarView = new CGPoint(statusBarView.Frame.GetMidX(), statusBarView.Frame.GetMidY());
+				Assert.False(ReferenceEquals(statusBarView, window.HitTest(pointInTheStatusBarView, null)), "The status bar view takes the touches of the views below it.");
+			}
+		});
+	}
+
+	// The status bar view sizes itself again when the window rotates, also when nothing calls StatusBar any more (a StatusBarBehavior sizes it only
+	// while it is attached to a page that is on screen): in landscape, where an iPhone hides its status bar, it must not cover the navigation bar,
+	// and back in portrait it colors the status bar again.
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task StatusBarViewFollowsTheStatusBarWhenTheWindowRotates(bool isUsingSafeArea)
+	{
+		SetupBuilder();
+		await ResetNativeStateAsync();
+		await InvokeOnMainThreadAsync(() =>
+		{
+			StatusBar.SetColor(Colors.Red);
+			StatusBar.SetBarSize(isUsingSafeArea);
+		});
+		await AssertStatusBarViewsCoverTheStatusBarAsync(isUsingSafeArea);
+
+		try
+		{
+			await RotateAsync(UIInterfaceOrientationMask.LandscapeRight);
+			await AssertStatusBarViewsCoverTheStatusBarAsync(isUsingSafeArea);
+
+			await RotateAsync(UIInterfaceOrientationMask.Portrait);
+			await AssertStatusBarViewsCoverTheStatusBarAsync(isUsingSafeArea);
+			await AssertStatusBarShowsAsync(Colors.Red);
+		}
+		finally
+		{
+			await RotateAsync(UIInterfaceOrientationMask.Portrait);
+		}
+	}
+
 	// UIKit takes the style from the view controllers: on .NET 11 SetStyle sets Window.StatusBarTheme of the app's windows, whose view controllers
 	// return the style of their theme, and on .NET 10 every view controller that does not choose a style returns the one that SetStyle requested.
 	// Each step sets a style that differs from the one before, so every assertion proves a change.
