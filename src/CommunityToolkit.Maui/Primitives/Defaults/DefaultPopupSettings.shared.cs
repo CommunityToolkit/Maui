@@ -32,7 +32,8 @@ public record DefaultPopupSettings
 	public Color BackgroundColorDark { get; init; } = PopupDefaults.BackgroundColorDark;
 
 	/// <summary>
-	/// Gets the optional callback used to configure each <see cref="Popup"/> before it is displayed. Defaults to <see langword="null"/>.
+	/// Gets the optional callback invoked once per instance during the <see cref="Popup"/> base constructor,
+	/// after its default properties are applied. Defaults to <see langword="null"/>.
 	/// </summary>
 	public Action<Popup>? Initialize { get; init; } = PopupDefaults.Initialize;
 
