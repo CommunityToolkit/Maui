@@ -158,13 +158,23 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		if (string.IsNullOrWhiteSpace(CustomSourceEntry.Text))
 		{
 			await DisplayAlertAsync("Error Loading URL Source", "No value was found to load as a media source. " +
-																"When you do enter a value, make sure it's a valid URL. No additional validation is done.",
+																"When you do enter a value, make sure it's a valid URL.",
 				"OK");
 
 			return;
 		}
 
-		var customSource = new UriMediaSource { Uri = new Uri(CustomSourceEntry.Text) };
+		// UriMediaSource only accepts an absolute URI
+		if (!Uri.TryCreate(CustomSourceEntry.Text.Trim(), UriKind.Absolute, out var customUri))
+		{
+			await DisplayAlertAsync("Error Loading URL Source", $"\"{CustomSourceEntry.Text}\" is not a valid URL. " +
+																"Enter an absolute URL, for example https://example.com/video.mp4.",
+				"OK");
+
+			return;
+		}
+
+		var customSource = new UriMediaSource { Uri = customUri };
 		MediaElement.Source = customSource;
 	}
 
