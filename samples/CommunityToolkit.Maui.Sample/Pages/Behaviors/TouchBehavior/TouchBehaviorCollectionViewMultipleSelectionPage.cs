@@ -3,6 +3,7 @@ using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
+using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
@@ -12,16 +13,24 @@ public partial class TouchBehaviorCollectionViewMultipleSelectionPage : BasePage
 
 	public TouchBehaviorCollectionViewMultipleSelectionPage(TouchBehaviorCollectionViewMultipleSelectionViewModel viewModel) : base(viewModel)
 	{
-		Content = new VerticalStackLayout
+		// The CollectionView gets the height the description leaves, so that it scrolls through the creators below the screen;
+		// a StackLayout would make it as tall as all of its items
+		Content = new Grid
 		{
+			RowDefinitions = Rows.Define(
+				(Row.Description, Auto),
+				(Row.ContentCreators, Star)),
+
 			Children =
 			{
 				new Label()
+					.Row(Row.Description)
 					.Text($"This page demonstrates how to use the TouchBehavior inside of a CollectionView when {nameof(SelectionMode)}.{nameof(SelectionMode.Multiple)} is in use")
 					.Center()
 					.TextCenter(),
 
 				new CollectionView { SelectionMode = SelectionMode.Multiple }
+					.Row(Row.ContentCreators)
 					.ItemTemplate(new CreatorsDataTemplate(viewModel))
 					.Invoke(collectionView => collectionView.SelectionChanged += HandleSelectionChanged)
 					.Bind(CollectionView.ItemsSourceProperty,
@@ -31,6 +40,8 @@ public partial class TouchBehaviorCollectionViewMultipleSelectionPage : BasePage
 			}
 		};
 	}
+
+	enum Row { Description, ContentCreators }
 
 	async void HandleSelectionChanged(object? sender, SelectionChangedEventArgs e)
 	{
