@@ -9,11 +9,23 @@
 	Title="IconTintColorBehaviorPage"
 	x:DataType="vm:IconTintColorBehaviorViewModel"
 	x:TypeArguments="vm:IconTintColorBehaviorViewModel">
+
+    <pages:BasePage.Resources>
+        <!-- shield.png is black: on the dark theme's black background the untinted icons would disappear, so each icon sits on a light tile there -->
+        <Style x:Key="IconTileStyle" TargetType="Border">
+            <Setter Property="HorizontalOptions" Value="Center" />
+            <Setter Property="Padding" Value="6" />
+            <Setter Property="StrokeThickness" Value="0" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 8" />
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=Transparent, Dark={StaticResource Gray100}}" />
+        </Style>
+    </pages:BasePage.Resources>
+
     <ScrollView>
         <Grid
 			Padding="20" 
 			ColumnDefinitions="*, *, *"
-			RowDefinitions="Auto, Auto, 60, Auto, 60, Auto, Auto, 60, 40, 112, Auto"
+			RowDefinitions="Auto, Auto, 72, Auto, 72, Auto, Auto, 60, Auto, 112, Auto"
 			RowSpacing="20">
 
             <Label
@@ -33,28 +45,34 @@
 				HorizontalTextAlignment="Center"
 				Text="Image control" />
 
-            <Image
+            <Border
 				Grid.Row="2"
 				Grid.Column="0"
-				Source="shield.png" />
+				Style="{StaticResource IconTileStyle}">
+                <Image Source="shield.png" />
+            </Border>
 
-            <Image
+            <Border
 				Grid.Row="2"
 				Grid.Column="1"
-				Source="shield.png">
-                <Image.Behaviors>
-                    <mct:IconTintColorBehavior TintColor="Red" />
-                </Image.Behaviors>
-            </Image>
+				Style="{StaticResource IconTileStyle}">
+                <Image Source="shield.png">
+                    <Image.Behaviors>
+                        <mct:IconTintColorBehavior TintColor="Red" />
+                    </Image.Behaviors>
+                </Image>
+            </Border>
 
-            <Image
+            <Border
 				Grid.Row="2"
 				Grid.Column="2"
-				Source="shield.png">
-                <Image.Behaviors>
-                    <mct:IconTintColorBehavior TintColor="Green" />
-                </Image.Behaviors>
-            </Image>
+				Style="{StaticResource IconTileStyle}">
+                <Image Source="shield.png">
+                    <Image.Behaviors>
+                        <mct:IconTintColorBehavior TintColor="Green" />
+                    </Image.Behaviors>
+                </Image>
+            </Border>
 
             <Label
 				Grid.Column="0"
@@ -66,36 +84,44 @@
 				HorizontalTextAlignment="Center"
 				Text="ImageButton control" />
 
-            <ImageButton
+            <Border
 				Grid.Row="4"
 				Grid.Column="0"
-				Source="shield.png" />
+				Style="{StaticResource IconTileStyle}">
+                <ImageButton Source="shield.png" />
+            </Border>
 
-            <ImageButton
+            <Border
 				Grid.Row="4"
 				Grid.Column="1"
-				Command="{Binding ToggleImageButtonCommand, Mode=OneTime}"
-				Source="{Binding ToggleableImageSource}"
-                x:Name="ToggleImageSourceButton">
-                <ImageButton.Behaviors>
-                    <mct:IconTintColorBehavior 
-                        BindingContext="{Binding Path=BindingContext, Source={x:Reference ToggleImageSourceButton}, x:DataType=ImageButton}"
-                        TintColor="{Binding ToggleableIconTintColor}" />
-                </ImageButton.Behaviors>
-            </ImageButton>
+				Style="{StaticResource IconTileStyle}">
+                <ImageButton
+					Command="{Binding ToggleImageButtonCommand, Mode=OneTime}"
+					Source="{Binding ToggleableImageSource}"
+                    x:Name="ToggleImageSourceButton">
+                    <ImageButton.Behaviors>
+                        <mct:IconTintColorBehavior
+                            BindingContext="{Binding Path=BindingContext, Source={x:Reference ToggleImageSourceButton}, x:DataType=ImageButton}"
+                            TintColor="{Binding ToggleableIconTintColor}" />
+                    </ImageButton.Behaviors>
+                </ImageButton>
+            </Border>
 
-            <ImageButton
+            <Border
 				Grid.Row="4"
 				Grid.Column="2"
-				Command="{Binding ChangeColorCommand}"
-				Source="shield.png"
-                x:Name="ShieldButton">
-                <ImageButton.Behaviors>
-                    <mct:IconTintColorBehavior
-                        BindingContext="{Binding Path=BindingContext, Source={x:Reference ShieldButton}, x:DataType=ImageButton}"
-                        TintColor="{Binding ToggleableIconTintColor}" />
-                </ImageButton.Behaviors>
-            </ImageButton>
+				Style="{StaticResource IconTileStyle}">
+                <ImageButton
+					Command="{Binding ChangeColorCommand}"
+					Source="shield.png"
+                    x:Name="ShieldButton">
+                    <ImageButton.Behaviors>
+                        <mct:IconTintColorBehavior
+                            BindingContext="{Binding Path=BindingContext, Source={x:Reference ShieldButton}, x:DataType=ImageButton}"
+                            TintColor="{Binding ToggleableIconTintColor}" />
+                    </ImageButton.Behaviors>
+                </ImageButton>
+            </Border>
 
             <Label
 				Grid.Row="5"
