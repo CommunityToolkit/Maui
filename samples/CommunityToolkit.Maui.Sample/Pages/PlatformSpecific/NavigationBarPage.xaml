@@ -3,12 +3,9 @@
 	x:Class="CommunityToolkit.Maui.Sample.Pages.PlatformSpecific.NavigationBarPage"
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	xmlns:droid="clr-namespace:CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;assembly=CommunityToolkit.Maui"
 	xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
 	xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.PlatformSpecific"
 	Title="NavigationBarPage"
-	droid:NavigationBar.Color="{Binding NavigationBarColor}"
-	droid:NavigationBar.Style="{Binding NavigationBarStyle}"
 	x:DataType="vm:NavigationBarAndroidViewModel"
 	x:TypeArguments="vm:NavigationBarAndroidViewModel">
 
