@@ -8,6 +8,8 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Essentials;
 
 public partial class OfflineSpeechToTextViewModel : BaseViewModel
 {
+	const string beginSpeakingPrompt = "Begin speaking...";
+
 	readonly ISpeechToText speechToText;
 
 	public OfflineSpeechToTextViewModel([FromKeyedServices("Offline")] ISpeechToText offlineTextToSpeech)
@@ -18,7 +20,12 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 		speechToText.RecognitionResultCompleted += HandleRecognitionResultCompleted;
 	}
 
-	public SpeechToTextState? State => speechToText.CurrentState;
+	// After StartListenAsync, CurrentState stays Stopped until speech begins on Android, and until the first result on iOS and Mac Catalyst:
+	// until then the State label shows that the session waits for speech
+	public string State => IsWaitingForSpeech ? "Waiting for speech" : speechToText.CurrentState.ToString();
+
+	[ObservableProperty, NotifyPropertyChangedFor(nameof(State))]
+	public partial bool IsWaitingForSpeech { get; set; }
 
 	[ObservableProperty]
 	public partial string? RecognitionText { get; set; } = "Welcome to .NET MAUI Community Toolkit!";
@@ -42,20 +49,20 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 	async Task StartListen(CancellationToken token)
 	{
 		CanStartListenExecute = false;
-		CanStopListenExecute = true;
 
 		var isGranted = await ArePermissionsGranted(speechToText);
 		if (!isGranted)
 		{
 			await Toast.Make("Permission not granted").Show(token);
 			CanStartListenExecute = true;
-			CanStopListenExecute = false;
 			return;
 		}
 
-		const string beginSpeakingPrompt = "Begin speaking...";
-
+		// StartListenAsync returns once the session has started: the prompt stays until the first result replaces it, and the session ends with the
+		// RecognitionResultCompleted event (also when it stops by itself, after AutoStopSilenceTimeout or an error) or with StopListenAsync
+		CanStopListenExecute = true;
 		RecognitionText = beginSpeakingPrompt;
+		IsWaitingForSpeech = true;
 
 		try
 		{
@@ -65,17 +72,13 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 				Culture = CultureInfo.CurrentCulture,
 				ShouldReportPartialResults = true
 			}, token);
-
-			if (RecognitionText is beginSpeakingPrompt)
-			{
-				RecognitionText = string.Empty;
-			}
 		}
 		catch (Exception e)
 		{
 			// For example a FeatureNotSupportedException on Android 13 and earlier, or on a device without on-device speech recognition, a NotSupportedException on
 			// Android when the on-device recognizer does not support the culture, or an exception of the audio engine on the iOS simulator when it gets no audio input.
 			// The page shows the failure: an exception that escapes the command ends the app
+			IsWaitingForSpeech = false;
 			CanStartListenExecute = true;
 			CanStopListenExecute = false;
 
@@ -87,26 +90,56 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 	}
 
 	[RelayCommand(CanExecute = nameof(CanStopListenExecute))]
-	Task StopListen(CancellationToken token)
+	async Task StopListen(CancellationToken token)
 	{
-		CanStartListenExecute = true;
+		IsWaitingForSpeech = false;
 		CanStopListenExecute = false;
 
-		return speechToText.StopListenAsync(token);
-	}
+		await speechToText.StopListenAsync(token);
 
-	void HandleRecognitionResultUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs e)
-	{
-		RecognitionText += e.RecognitionResult;
-	}
+		// StartListenAsync is enabled again once the stop has completed, so an outcome that the stop reports cannot end the next session
+		CanStartListenExecute = true;
 
-	void HandleRecognitionResultCompleted(object? sender, SpeechToTextRecognitionResultCompletedEventArgs e)
-	{
-		RecognitionText = e.RecognitionResult.IsSuccessful ? e.RecognitionResult.Text : e.RecognitionResult.Exception.Message;
-	}
+		// A session that was stopped before its first result does not keep showing the prompt: Windows reports no RecognitionResultCompleted after StopListenAsync
+		if (RecognitionText is beginSpeakingPrompt)
+		{
+			RecognitionText = string.Empty;
+		}
 
-	void HandleSpeechToTextStateChanged(object? sender, SpeechToTextStateChangedEventArgs e)
-	{
+		// Windows unsubscribes from StateChanged before it releases the recognizer, so no event refreshes the State label
 		OnPropertyChanged(nameof(State));
 	}
+
+	// The speech-to-text events can come on a background thread (Windows): the view model handles them on the main thread, where the buttons are updated
+	void HandleRecognitionResultUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs e) => MainThread.BeginInvokeOnMainThread(() =>
+	{
+		// The recognizer heard speech; its first result replaces the prompt
+		IsWaitingForSpeech = false;
+		RecognitionText = RecognitionText is beginSpeakingPrompt ? e.RecognitionResult : RecognitionText + e.RecognitionResult;
+	});
+
+	void HandleRecognitionResultCompleted(object? sender, SpeechToTextRecognitionResultCompletedEventArgs e) => MainThread.BeginInvokeOnMainThread(() =>
+	{
+		// The session ended by itself (after AutoStopSilenceTimeout or an error, for example 'NoMatch' on Android when nothing was said): a new session can start.
+		// The outcome of a session that StopListenAsync stopped can also come later, after the buttons were reset or while a new start requests the permissions
+		if (CanStopListenExecute)
+		{
+			IsWaitingForSpeech = false;
+			CanStartListenExecute = true;
+			CanStopListenExecute = false;
+		}
+
+		RecognitionText = e.RecognitionResult.IsSuccessful ? e.RecognitionResult.Text : e.RecognitionResult.Exception.Message;
+	});
+
+	void HandleSpeechToTextStateChanged(object? sender, SpeechToTextStateChangedEventArgs e) => MainThread.BeginInvokeOnMainThread(() =>
+	{
+		// Listening or Silence: the recognizer reports that it listens, so the State label shows CurrentState again
+		if (e.State is not SpeechToTextState.Stopped)
+		{
+			IsWaitingForSpeech = false;
+		}
+
+		OnPropertyChanged(nameof(State));
+	});
 }
