@@ -36,13 +36,14 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StopListenCommand))]
 	public partial bool CanStopListenExecute { get; set; } = false;
 
+	// On iOS and Mac Catalyst, ISpeechToText.RequestPermissions requests the speech recognition permission; on Android and Windows it requests the microphone
+	// permission again. It is requested only once the microphone permission is granted, so Android does not show its microphone dialog a second time after a denial
 	static async Task<bool> ArePermissionsGranted(ISpeechToText speechToText)
 	{
 		var microphonePermissionStatus = await Permissions.RequestAsync<Permissions.Microphone>();
-		var isSpeechToTextRequestPermissionsGranted = await speechToText.RequestPermissions(CancellationToken.None);
 
 		return microphonePermissionStatus is PermissionStatus.Granted
-			   && isSpeechToTextRequestPermissionsGranted;
+			   && await speechToText.RequestPermissions(CancellationToken.None);
 	}
 
 	[RelayCommand(CanExecute = nameof(CanStartListenExecute))]

@@ -59,31 +59,38 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 		await speechToText.DisposeAsync();
 	}
 
+	// On iOS and Mac Catalyst, ISpeechToText.RequestPermissions requests the speech recognition permission; on Android and Windows it requests the microphone
+	// permission again. It is requested only once the microphone permission is granted, so Android does not show its microphone dialog a second time after a denial
 	static async Task<bool> ArePermissionsGranted(ISpeechToText speechToText)
 	{
 		var microphonePermissionStatus = await Permissions.RequestAsync<Permissions.Microphone>();
-		var isSpeechToTextPermissionsGranted = await speechToText.RequestPermissions(CancellationToken.None);
 
 		return microphonePermissionStatus is PermissionStatus.Granted
-			   && isSpeechToTextPermissionsGranted;
+			   && await speechToText.RequestPermissions(CancellationToken.None);
 	}
+
+	// The culture of a text-to-speech locale: Android names its language and region in Language and Country ("en", "US"), iOS, Mac Catalyst and Windows in Language ("en-US")
+	static string GetCultureName(Locale locale) => string.IsNullOrEmpty(locale.Country) ? locale.Language : $"{locale.Language}-{locale.Country}";
 
 	[RelayCommand]
 	async Task SetLocales(CancellationToken token)
 	{
 		Locales.Clear();
 
-		IReadOnlyList<Locale> locales = [.. await textToSpeech.GetLocalesAsync().WaitAsync(token)];
+		// Android returns a locale for each voice, and the voices of a language and region have the same Language, Country and Name: the Picker lists them once
+		IReadOnlyList<Locale> locales = [.. (await textToSpeech.GetLocalesAsync().WaitAsync(token)).DistinctBy(static x => (x.Language, x.Country, x.Name))];
 
-		foreach (var locale in locales.OrderBy(x => x.Language).ThenBy(x => x.Name))
+		foreach (var locale in locales.OrderBy(static x => x.Language).ThenBy(static x => x.Name))
 		{
 			Locales.Add(locale);
 		}
 
-		var currentLocale = locales.FirstOrDefault(l => l.Language.Equals(CultureInfo.CurrentUICulture.Name, StringComparison.OrdinalIgnoreCase))
-							?? locales.FirstOrDefault(l => l.Language.Equals(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, StringComparison.OrdinalIgnoreCase));
-
-		CurrentLocale = currentLocale ?? locales[0];
+		// The locale of the device's language and region, else one of its language. It is looked up in the order of GetLocalesAsync, not in the Picker's
+		// alphabetical order, which starts with novelty voices on iOS ('en-US Albert' instead of 'en-US Samantha'): Play speaks with the picked voice
+		var currentCulture = CultureInfo.CurrentUICulture;
+		CurrentLocale = locales.FirstOrDefault(l => GetCultureName(l).Equals(currentCulture.Name, StringComparison.OrdinalIgnoreCase))
+						?? locales.FirstOrDefault(l => GetCultureName(l).Split('-')[0].Equals(currentCulture.TwoLetterISOLanguageName, StringComparison.OrdinalIgnoreCase))
+						?? locales.FirstOrDefault();
 	}
 
 	[RelayCommand]
@@ -139,7 +146,7 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 		{
 			await speechToText.StartListenAsync(new SpeechToTextOptions
 			{
-				Culture = CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage),
+				Culture = CultureInfo.GetCultureInfo(CurrentLocale is null ? defaultLanguage : GetCultureName(CurrentLocale)),
 				AutoStopSilenceTimeout = TimeSpan.FromSeconds(5),
 				ShouldReportPartialResults = true
 			}, cancellationToken);
