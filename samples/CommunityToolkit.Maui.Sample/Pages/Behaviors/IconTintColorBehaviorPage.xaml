@@ -142,10 +142,11 @@
                 </Image.Behaviors>
             </Image>
 
-            <!-- UriImageSource using SVG is not yet supported on iOS + Android: https://github.com/dotnet/maui/issues/10050 -->
+            <!-- .NET MAUI only displays an SVG from a URL (UriImageSource) on Windows; iOS, Android and Mac Catalyst cannot decode it: https://github.com/dotnet/maui/issues/10050 -->
             <Image 
                 Grid.Row="7"
                 Grid.Column="2"
+                IsVisible="{OnPlatform WinUI=True, Default=False}"
                 HorizontalOptions="Center"
                 VerticalOptions="End"
                 MinimumHeightRequest="60"
@@ -155,7 +156,17 @@
                     <mct:IconTintColorBehavior TintColor="Purple" />
                 </Image.Behaviors>
             </Image>
-            
+
+            <Label
+                Grid.Row="7"
+                Grid.Column="2"
+                IsVisible="{OnPlatform WinUI=False, Default=True}"
+                FontSize="10"
+                FontAttributes="Italic"
+                HorizontalTextAlignment="Center"
+                VerticalOptions="Center"
+                Text=".NET MAUI cannot show an SVG from a URL here yet (dotnet/maui#10050)" />
+
             <Label
                 Grid.Row="8"
                 Grid.ColumnSpan="3"
