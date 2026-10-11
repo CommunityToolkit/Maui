@@ -37,8 +37,21 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
 	{
 		base.OnNavigatedFrom(args);
-		MediaElement.Stop();
-		MediaElement.Handler?.DisconnectHandler();
+
+		switch (args.NavigationType)
+		{
+			// The page left the navigation stack: release the player
+			case NavigationType.Pop or NavigationType.PopToRoot or NavigationType.Remove:
+				MediaElement.Stop();
+				MediaElement.Handler?.DisconnectHandler();
+				break;
+
+			// The page stays in the navigation stack and can be shown again, for example after the Popup (a modal page) closes,
+			// or when Shell comes back to this flyout item: keep the player, and only pause the media
+			default:
+				MediaElement.Pause();
+				break;
+		}
 	}
 
 	async void HandleMediaOpened(object? sender, EventArgs e)
@@ -366,7 +379,8 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 		await this.ShowPopupAsync(popupMediaElement);
 
+		// The Popup has closed: release the player of its MediaElement (on Android also its media session and notification)
 		popupMediaElement.Stop();
-		popupMediaElement.Source = null;
+		popupMediaElement.Handler?.DisconnectHandler();
 	}
 }
