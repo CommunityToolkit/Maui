@@ -267,7 +267,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		};
 		popup.SetBinding(BackgroundProperty, static (View view) => view.Background, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(BindingContextProperty, static (View view) => view.BindingContext, source: view, mode: BindingMode.OneWay);
-		if (view.BackgroundColor is { } explicitBackgroundColor && explicitBackgroundColor != Colors.Transparent)
+		if (view.BackgroundColor is Color explicitBackgroundColor && explicitBackgroundColor != Colors.Transparent)
 		{
 			popup.SetBinding(BackgroundColorProperty, static (View view) => view.BackgroundColor, source: view, mode: BindingMode.OneWay);
 		}
