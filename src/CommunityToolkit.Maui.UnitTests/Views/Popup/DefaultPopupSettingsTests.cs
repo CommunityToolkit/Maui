@@ -22,7 +22,7 @@ public class DefaultPopupSettingsTests : BaseViewTest
 		Assert.Equal(LayoutOptions.Center, settings.VerticalOptions);
 		Assert.Equal(Colors.White, settings.BackgroundColor);
 		Assert.Equal(Colors.Black, settings.BackgroundColorDark);
-		Assert.Null(settings.Initialize);
+		Assert.Null(settings.OnInitializing);
 	}
 
 	[Fact]
@@ -152,6 +152,54 @@ public class DefaultPopupSettingsTests : BaseViewTest
 	}
 
 	[Theory]
+	[InlineData(false, AppTheme.Light, false)]
+	[InlineData(false, AppTheme.Dark, false)]
+	[InlineData(true, AppTheme.Light, false)]
+	[InlineData(true, AppTheme.Dark, false)]
+	[InlineData(false, AppTheme.Light, true)]
+	[InlineData(false, AppTheme.Dark, true)]
+	[InlineData(true, AppTheme.Light, true)]
+	[InlineData(true, AppTheme.Dark, true)]
+	public void View_BackgroundColorNotSet_UsesThemeAwareDefaultAcrossThemeChanges(bool useGenericPopup, AppTheme initialTheme, bool useCustomDefaults)
+	{
+		// Arrange
+		var application = Application.Current ?? throw new InvalidOperationException("Application cannot be null");
+		application.UserAppTheme = initialTheme;
+		var lightColor = useCustomDefaults ? Colors.Orange : Colors.White;
+		var darkColor = useCustomDefaults ? Colors.Purple : Colors.Black;
+		if (useCustomDefaults)
+		{
+			new Options().SetPopupDefaults(new DefaultPopupSettings
+			{
+				BackgroundColor = lightColor,
+				BackgroundColorDark = darkColor
+			});
+		}
+
+		// A view with no explicit background color (its default is Colors.Transparent).
+		var view = new ContentView();
+
+		// Act
+		var popupPage = useGenericPopup ? new PopupPage<string>(view, null) : new PopupPage(view, null);
+		CreateViewHandler<MockPageHandler>(popupPage);
+		application.OpenWindow(new Window { Page = popupPage });
+		var border = popupPage.Content.PopupBorder;
+		var popup = Assert.IsType<Popup>(border.Content, exactMatch: false);
+
+		// Assert — the background-less view falls back to the theme-aware default (resolves #3310), not transparent.
+		Assert.Equal(initialTheme == AppTheme.Dark ? darkColor : lightColor, popup.BackgroundColor);
+		Assert.Equal(popup.BackgroundColor, border.BackgroundColor);
+
+		application.UserAppTheme = initialTheme == AppTheme.Dark ? AppTheme.Light : AppTheme.Dark;
+		Assert.Equal(initialTheme == AppTheme.Dark ? lightColor : darkColor, popup.BackgroundColor);
+		Assert.Equal(popup.BackgroundColor, border.BackgroundColor);
+
+		application.UserAppTheme = initialTheme;
+		Assert.Equal(initialTheme == AppTheme.Dark ? darkColor : lightColor, popup.BackgroundColor);
+		Assert.Equal(popup.BackgroundColor, border.BackgroundColor);
+	}
+
+	[Theory]
 	[InlineData(false, false, AppTheme.Light)]
 	[InlineData(false, true, AppTheme.Light)]
 	[InlineData(true, false, AppTheme.Light)]
@@ -160,7 +208,7 @@ public class DefaultPopupSettingsTests : BaseViewTest
 	[InlineData(false, true, AppTheme.Dark)]
 	[InlineData(true, false, AppTheme.Dark)]
 	[InlineData(true, true, AppTheme.Dark)]
-	public void Initialize_AppThemeBinding_UpdatesPopupAndBorder(bool useContentView, bool useGenericPopup, AppTheme initialTheme)
+	public void OnInitializing_AppThemeBinding_UpdatesPopupAndBorder(bool useContentView, bool useGenericPopup, AppTheme initialTheme)
 	{
 		// Arrange
 		var application = Application.Current ?? throw new InvalidOperationException("Application cannot be null");
@@ -171,7 +219,7 @@ public class DefaultPopupSettingsTests : BaseViewTest
 		var initializationCount = 0;
 		new Options().SetPopupDefaults(new DefaultPopupSettings
 		{
-			Initialize = popup =>
+			OnInitializing = popup =>
 			{
 				initializedPopup = popup;
 				initializationCount++;
@@ -213,13 +261,13 @@ public class DefaultPopupSettingsTests : BaseViewTest
 	}
 
 	[Fact]
-	public void Initialize_RepeatedPresentation_InvokesCallbackForEachPresentation()
+	public void OnInitializing_RepeatedPresentation_InvokesCallbackForEachPresentation()
 	{
 		// Arrange
 		var initializationCount = 0;
 		new Options().SetPopupDefaults(new DefaultPopupSettings
 		{
-			Initialize = _ => initializationCount++
+			OnInitializing = _ => initializationCount++
 		});
 		var popup = new Popup();
 
@@ -234,13 +282,13 @@ public class DefaultPopupSettingsTests : BaseViewTest
 	}
 
 	[Fact]
-	public void Initialize_CallbackThrows_PropagatesExceptionWithoutParentingPopup()
+	public void OnInitializing_CallbackThrows_PropagatesExceptionWithoutParentingPopup()
 	{
 		// Arrange
 		var expectedException = new InvalidOperationException("Popup initialization failed");
 		new Options().SetPopupDefaults(new DefaultPopupSettings
 		{
-			Initialize = _ => throw expectedException
+			OnInitializing = _ => throw expectedException
 		});
 		var popup = new Popup();
 
