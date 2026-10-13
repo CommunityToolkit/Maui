@@ -49,6 +49,9 @@ public partial class Toast
 
 	async Task ShowPlatform(CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
+		EnsureWindowsToastEnabled();
+
 		await DismissPlatform(token);
 		token.ThrowIfCancellationRequested();
 		PlatformToast = new AppNotificationBuilder()

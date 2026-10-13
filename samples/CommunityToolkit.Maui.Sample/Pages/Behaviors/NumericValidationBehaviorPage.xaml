@@ -39,9 +39,22 @@
             </Entry.Behaviors>
         </Entry>
 
-        <Button Clicked="SetEntryValue" Text="Set Entry Value To Null" IsEnabled="{Binding Path=Text, Source={x:Reference SafeEntry}, Converter={StaticResource IsNotNullConverter}, x:DataType=Entry}"/>
+        <Button Clicked="SetSafeEntryValue" Text="Set Entry Value To Null" IsEnabled="{Binding Path=Text, Source={x:Reference SafeEntry}, Converter={StaticResource IsNotNullConverter}, x:DataType=Entry}"/>
         <Label Text="After entering text then setting the above Entry value to null, the app will crash because null is not a valid input for NumericValidationBehavior and CommunityToolkit.Maui.Options.SetShouldSuppressExceptionsInBehaviors is not set to true."
                TextColor="{StaticResource NormalLabelTextColor}" />
+
+        <Label Text="The Interval property restricts input to multiples of a given value. Below, only multiples of 5 within the range (min: 0.0, max: 100.0) are considered valid - e.g. 0, 5, 10 ... 100." />
+
+        <Entry x:Name="IntervalEntry" Placeholder="Multiple of 5" Keyboard="Numeric">
+            <Entry.Behaviors>
+                <mct:NumericValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                               ValidStyle="{StaticResource ValidEntryStyle}"
+                                               Flags="ValidateOnValueChanged"
+                                               MinimumValue="0.0"
+                                               MaximumValue="100.0"
+                                               Interval="5.0"/>
+            </Entry.Behaviors>
+        </Entry>
     </VerticalStackLayout>
 
 </pages:BasePage>

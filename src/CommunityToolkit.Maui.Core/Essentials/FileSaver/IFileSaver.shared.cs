@@ -10,7 +10,7 @@ public interface IFileSaver
 	/// <summary>
 	/// Saves a file to a target folder on the file system
 	/// </summary>
-	/// <param name="initialPath">Initial path</param>
+	/// <param name="initialPath">Initial path. Must not be null.</param>
 	/// <param name="fileName">File name with extension</param>
 	/// <param name="stream"><see cref="Stream"/></param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
@@ -37,7 +37,7 @@ public interface IFileSaver
 	/// <summary>
 	/// Saves a file to a target folder on the file system
 	/// </summary>
-	/// <param name="initialPath">Initial path</param>
+	/// <param name="initialPath">Initial path. Must not be null.</param>
 	/// <param name="fileName">File name with extension</param>
 	/// <param name="stream"><see cref="Stream"/></param>
 	/// <param name="progress">Saving file progress in percentage</param>

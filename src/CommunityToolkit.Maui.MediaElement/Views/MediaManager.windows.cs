@@ -705,7 +705,7 @@ partial class MediaManager : IDisposable
 
 	void OnPlaybackSessionPlaybackRateChanged(MediaPlaybackSession sender, object args)
 	{
-		if (AreFloatingPointNumbersEqual(MediaElement.Speed, sender.PlaybackRate))
+		if (!AreFloatingPointNumbersEqual(MediaElement.Speed, sender.PlaybackRate))
 		{
 			if (Dispatcher.IsDispatchRequired)
 			{
