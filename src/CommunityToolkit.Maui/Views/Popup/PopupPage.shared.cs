@@ -46,6 +46,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	{
 		ArgumentNullException.ThrowIfNull(popup);
 
+		Options.DefaultPopupSettings.OnInitializing?.Invoke(popup);
+
 		this.popup = popup;
 		this.popupOptions = popupOptions ??= Options.DefaultPopupOptionsSettings;
 
@@ -265,7 +267,10 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		};
 		popup.SetBinding(BackgroundProperty, static (View view) => view.Background, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(BindingContextProperty, static (View view) => view.BindingContext, source: view, mode: BindingMode.OneWay);
-		popup.SetBinding(BackgroundColorProperty, static (View view) => view.BackgroundColor, source: view, mode: BindingMode.OneWay);
+		if (view.IsSet(Microsoft.Maui.Controls.VisualElement.BackgroundColorProperty))
+		{
+			popup.SetBinding(BackgroundColorProperty, static (View view) => view.BackgroundColor, source: view, mode: BindingMode.OneWay);
+		}
 		popup.SetBinding(Popup.MarginProperty, static (View view) => view.Margin, source: view, mode: BindingMode.OneWay, converter: new MarginConverter());
 		popup.SetBinding(Popup.VerticalOptionsProperty, static (View view) => view.VerticalOptions, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(Popup.HorizontalOptionsProperty, static (View view) => view.HorizontalOptions, source: view, mode: BindingMode.OneWay);
@@ -330,9 +335,17 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			this.tryExecuteTapOutsideOfPopupCommand = tryExecuteTapOutsideOfPopupCommand;
 			Background = BackgroundColor = null;
 
+			if (popupContent.BackgroundColor is null)
+			{
+				popupContent.SetAppThemeColor(
+					Popup.BackgroundColorProperty,
+					Options.DefaultPopupSettings.BackgroundColor,
+					Options.DefaultPopupSettings.BackgroundColorDark);
+			}
+
 			PopupBorder = new Border
 			{
-				BackgroundColor = popupContent.BackgroundColor ??= Options.DefaultPopupSettings.BackgroundColor,
+				BackgroundColor = popupContent.BackgroundColor,
 				Content = popupContent
 			};
 
