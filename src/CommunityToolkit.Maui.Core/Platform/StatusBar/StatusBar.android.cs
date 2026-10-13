@@ -87,10 +87,7 @@ static partial class StatusBar
 					return;
 				}
 
-				var insets = window.DecorView.RootWindowInsets;
-				var height = insets?.GetInsets(WindowInsets.Type.StatusBars()).Top ?? 0;
-
-				ApplyStatusBarOverlay(height, platformColor, decorGroup);
+				ApplyStatusBarOverlay(window, platformColor, decorGroup);
 				ApplyWindowFlags(window);
 			});
 		}
