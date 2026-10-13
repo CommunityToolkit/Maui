@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 
@@ -7,7 +6,6 @@ namespace CommunityToolkit.Maui.Views;
 
 /// <inheritdoc cref="IExpander"/>
 [ContentProperty(nameof(Content))]
-[RequiresUnreferencedCode("Calls Microsoft.Maui.Controls.Binding.Binding(String, BindingMode, IValueConverter, Object, String, Object)")]
 public partial class Expander : ContentView, IExpander
 {
 	readonly WeakEventManager tappedEventManager = new();
@@ -120,7 +118,7 @@ public partial class Expander : ContentView, IExpander
 		var expander = (Expander)bindable;
 		if (newValue is View view)
 		{
-			view.SetBinding(IsVisibleProperty, new Binding(nameof(IsExpanded), source: expander));
+			view.SetBinding(IsVisibleProperty, static (Expander x) => x.IsExpanded, source: expander);
 
 			if (oldValue is IView oldView)
 			{
