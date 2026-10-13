@@ -10,6 +10,7 @@ public sealed partial class FileSaverImplementation
 		try
 		{
 			cancellationToken.ThrowIfCancellationRequested();
+			ArgumentNullException.ThrowIfNull(initialPath);
 			var path = await InternalSaveAsync(initialPath, fileName, stream, null, cancellationToken);
 			return new FileSaverResult(path, null);
 		}
@@ -40,6 +41,7 @@ public sealed partial class FileSaverImplementation
 		try
 		{
 			cancellationToken.ThrowIfCancellationRequested();
+			ArgumentNullException.ThrowIfNull(initialPath);
 			var path = await InternalSaveAsync(initialPath, fileName, stream, progress, cancellationToken);
 			return new FileSaverResult(path, null);
 		}

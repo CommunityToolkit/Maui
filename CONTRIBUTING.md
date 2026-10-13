@@ -202,6 +202,26 @@ if (something is Bucket bucket)
 }
 ```
 
+#### Property patterns (non-null checks)
+
+* Avoid the empty property pattern `is { }` (e.g. `x is { } value`) to check for a non-null value and bind it. It reads unclearly and is hard to interpret for a human reviewing the code.
+* Prefer a **type pattern** (`x is Type value`) instead: it both confirms the type and binds the value, and reads clearly.
+* For a pure non-null check with no binding, use `is not null` (see [Null checking](#null-checking)).
+
+e.g.
+
+```csharp
+// Avoid - the empty property pattern is not clear at a glance
+if (someColor is { } color && color != Colors.Transparent)
+{
+}
+
+// Prefer - a type pattern reads clearly and binds the value
+if (someColor is Color color && color != Colors.Transparent)
+{
+}
+```
+
 ### File Scoped Namespaces
 
 * Use [file scoped namespaces](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-10.0/file-scoped-namespaces) to help reduce code verbosity.
