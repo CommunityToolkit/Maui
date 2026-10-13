@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.Maui.ApplicationModel;
 
@@ -58,17 +57,16 @@ public abstract partial class AppThemeObject<T>
 			ConverterParameter = targetProperty,
 			Bindings =
 			{
-				new Binding(Binding.SelfPath, source: RelativeBindingSource.Self),
+				Binding.Create(static (BindableObject x) => x, source: RelativeBindingSource.Self),
 				CreateThemeBinding(null)
 			}
 		};
 	}
 
-	// The binding accesses this property by name; its getter also subscribes to theme changes.
-	[DynamicDependency(nameof(AppThemeSource.RequestedTheme), typeof(AppThemeObject<>.AppThemeSource))]
-	static Binding CreateThemeBinding(IValueConverter? converter) =>
-		new(
-			nameof(AppThemeSource.RequestedTheme),
+	// The RequestedTheme getter also subscribes to theme changes.
+	static BindingBase CreateThemeBinding(IValueConverter? converter) =>
+		Binding.Create(
+			static (AppThemeSource x) => x.RequestedTheme,
 			converter: converter,
 			source: AppThemeSource.Instance);
 
@@ -111,46 +109,46 @@ public abstract partial class AppThemeObject<T>
 				_ => light ?? defaultValue
 			};
 	}
+}
 
-	sealed partial class AppThemeSource : INotifyPropertyChanged
+sealed class AppThemeSource : INotifyPropertyChanged
+{
+	Application? subscribedApplication;
+
+	public event PropertyChangedEventHandler? PropertyChanged;
+
+	public static AppThemeSource Instance { get; } = new();
+
+	public AppTheme RequestedTheme
 	{
-		Application? subscribedApplication;
-
-		public event PropertyChangedEventHandler? PropertyChanged;
-
-		public static AppThemeSource Instance { get; } = new();
-
-		public AppTheme RequestedTheme
+		get
 		{
-			get
-			{
-				Subscribe(Application.Current);
+			Subscribe(Application.Current);
 
-				return Application.Current?.RequestedTheme ?? AppInfo.RequestedTheme;
-			}
+			return Application.Current?.RequestedTheme ?? AppInfo.RequestedTheme;
 		}
-
-		void Subscribe(Application? application)
-		{
-			if (ReferenceEquals(subscribedApplication, application))
-			{
-				return;
-			}
-
-			if (subscribedApplication is not null)
-			{
-				subscribedApplication.RequestedThemeChanged -= OnRequestedThemeChanged;
-			}
-
-			subscribedApplication = application;
-
-			if (subscribedApplication is not null)
-			{
-				subscribedApplication.RequestedThemeChanged += OnRequestedThemeChanged;
-			}
-		}
-
-		void OnRequestedThemeChanged(object? sender, AppThemeChangedEventArgs e) =>
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RequestedTheme)));
 	}
+
+	void Subscribe(Application? application)
+	{
+		if (ReferenceEquals(subscribedApplication, application))
+		{
+			return;
+		}
+
+		if (subscribedApplication is not null)
+		{
+			subscribedApplication.RequestedThemeChanged -= OnRequestedThemeChanged;
+		}
+
+		subscribedApplication = application;
+
+		if (subscribedApplication is not null)
+		{
+			subscribedApplication.RequestedThemeChanged += OnRequestedThemeChanged;
+		}
+	}
+
+	void OnRequestedThemeChanged(object? sender, AppThemeChangedEventArgs e) =>
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RequestedTheme)));
 }
