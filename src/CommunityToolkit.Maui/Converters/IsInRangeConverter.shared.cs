@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters;
 
@@ -8,7 +7,7 @@ namespace CommunityToolkit.Maui.Converters;
 public sealed partial class IsInRangeConverter : IsInRangeConverter<IComparable, object>;
 
 /// <summary>Converts the incoming value to a <see cref="bool"/> indicating whether the value is within a range.</summary>
-public abstract partial class IsInRangeConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TValue, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TReturnObject> : BaseConverterOneWay<TValue, object> where TValue : IComparable
+public abstract partial class IsInRangeConverter<TValue, TReturnObject> : BaseConverterOneWay<TValue, object> where TValue : IComparable
 {
 	/// <inheritdoc/>
 	public override object DefaultConvertReturnValue { get; set; } = new();
