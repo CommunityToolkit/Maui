@@ -111,7 +111,7 @@ public abstract partial class AppThemeObject<T>
 	}
 }
 
-sealed class AppThemeSource : INotifyPropertyChanged
+partial sealed class AppThemeSource : INotifyPropertyChanged
 {
 	Application? subscribedApplication;
 
