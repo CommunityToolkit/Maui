@@ -5,6 +5,8 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
+	
+#pragma warning disable CA1416
 public class StatusBarBehaviorTests() : BaseBehaviorTest<StatusBarBehavior, Page>(new StatusBarBehavior(), new ContentPage())
 {
 	[Fact]
@@ -100,4 +102,4 @@ public class StatusBarBehaviorTests() : BaseBehaviorTest<StatusBarBehavior, Page
 
 		changedProperty.Should().Be(nameof(StatusBarBehavior.ApplyOn));
 	}
-}
+#pragma warning restore CA1416
