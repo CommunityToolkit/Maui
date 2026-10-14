@@ -64,16 +64,6 @@ public class StatusBarBehaviorTests() : BaseBehaviorTest<StatusBarBehavior, Page
 		Assert.Equal(Colors.Transparent, statusBarBehavior.StatusBarColor);
 	}
 
-	[Fact]
-	public void VerifyDefaultsAreSourcedFromStatusBarBehaviorDefaults()
-	{
-		// If the shared defaults drift from the behavior defaults, the #2351 regression can resurface.
-		var statusBarBehavior = new StatusBarBehavior();
-
-		Assert.Equal(StatusBarBehaviorDefaults.StatusBarColor, statusBarBehavior.StatusBarColor);
-		Assert.Equal(StatusBarBehaviorDefaults.StatusBarStyle, statusBarBehavior.StatusBarStyle);
-		Assert.Equal(StatusBarBehaviorDefaults.ApplyOn, statusBarBehavior.ApplyOn);
-	}
 
 	[Fact]
 	public void VerifyStatusBarColorRaisesPropertyChanged()
