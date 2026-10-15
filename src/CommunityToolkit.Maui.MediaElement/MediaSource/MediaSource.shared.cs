@@ -104,6 +104,26 @@ public abstract class MediaSource : Element
 	}
 
 	/// <summary>
+	/// Set List to OS's console.
+	/// </summary>
+	/// <param name="list"></param>
+	/// <param name="headers"></param>
+	/// <param name="index"></param>
+	/// <returns></returns>
+	public static MediaSource FromList(IList<MetaMediaSource> list, IDictionary<string, string>? headers = null, int index = 0)
+	{
+		ArgumentNullException.ThrowIfNull(list);
+		return new HttpListMediaSource()
+		{
+			Sources = list,
+			DefaultHttpHeaders = headers,
+			Index = index
+		};
+	}
+
+
+
+	/// <summary>
 	/// Triggers the <see cref="SourceChanged"/> event.
 	/// </summary>
 	protected void OnSourceChanged() => weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(SourceChanged));
