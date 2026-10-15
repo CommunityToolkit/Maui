@@ -69,9 +69,15 @@ public partial class StatusBarBehaviorPage : BasePage<StatusBarBehaviorViewModel
 		return false;
 	}
 
-	void OnBrokenShellButtonClicked(object? sender, EventArgs e)
+	void OnEdgeToEdgeShellButtonClicked(object? sender, EventArgs e)
 	{
-		Application.Current?.Windows[0].Page = new BrokenTitleViewShell();
+		var window = Application.Current?.Windows[0];
+		if (window is null)
+		{
+			return;
+		}
 
+		EdgeToEdgeTitleViewPage.PreviousPage = window.Page;
+		window.Page = new EdgeToEdgeTitleViewShell();
 	}
 }

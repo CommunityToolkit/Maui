@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
-public partial class BrokenTitleViewShell : Shell
+public partial class EdgeToEdgeTitleViewShell : Shell
 {
 	bool hasNavigatedToTabbar;
 
-	public BrokenTitleViewShell()
+	public EdgeToEdgeTitleViewShell()
 	{
 		InitializeComponent();
 	}

@@ -2,8 +2,8 @@
 
 <Shell
     Shell.FlyoutBehavior="Disabled"
-    Title="MauiApp1"
-    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.BrokenTitleViewShell"
+    Title="Edge-to-Edge TitleView"
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.EdgeToEdgeTitleViewShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:statusBarBehavior="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Behaviors"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -14,16 +14,16 @@
     </Shell.Behaviors>
 
     <ShellContent
-        ContentTemplate="{DataTemplate statusBarBehavior:OverflowingTitleViewPage}"
+        ContentTemplate="{DataTemplate statusBarBehavior:EdgeToEdgeTitleViewPage}"
         Route="MainPage"
         Title="Home" />
 
     <TabBar Route="Tabbar">
         <Tab Title="Tab 1">
-            <ShellContent ContentTemplate="{DataTemplate statusBarBehavior:OverflowingTitleViewPage}" Title="Tab 1" />
+            <ShellContent ContentTemplate="{DataTemplate statusBarBehavior:EdgeToEdgeTitleViewPage}" Title="Tab 1" />
         </Tab>
         <Tab Title="Tab 2">
-            <ShellContent ContentTemplate="{DataTemplate statusBarBehavior:OverflowingTitleViewPage}" Title="Tab 2" />
+            <ShellContent ContentTemplate="{DataTemplate statusBarBehavior:EdgeToEdgeTitleViewPage}" Title="Tab 2" />
         </Tab>
     </TabBar>
 </Shell>

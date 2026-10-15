@@ -172,10 +172,10 @@
                 x:Name="ModalPageButton"
                 HorizontalOptions="Center"
                 VerticalOptions="Center" />
-             <Button
-                Clicked="OnBrokenShellButtonClicked"
+            <Button
+                Clicked="OnEdgeToEdgeShellButtonClicked"
                 HorizontalOptions="Center"
-                Text="Go to Broken Shell.TitleView"
+                Text="Go to Edge-to-Edge Shell.TitleView demo"
                 VerticalOptions="Center" />
         </VerticalStackLayout>
     </ScrollView>
