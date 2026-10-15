@@ -7,13 +7,6 @@ public partial class StatusBarBehaviorPage : BasePage<StatusBarBehaviorViewModel
 {
 	const string tryStatusBarOnModalPageButtonText = "Try StatusBarBehavior on Modal Page";
 
-	const int maximumRestoreAttempts = 20;
-	const double scrollRestoreTolerance = 1;
-
-	static readonly TimeSpan restoreAttemptInterval = TimeSpan.FromMilliseconds(50);
-
-	double? scrollYToRestore;
-
 	public StatusBarBehaviorPage(StatusBarBehaviorViewModel viewModel)
 		: base(viewModel)
 	{
@@ -21,8 +14,6 @@ public partial class StatusBarBehaviorPage : BasePage<StatusBarBehaviorViewModel
 
 		ModalPageButton.Text = tryStatusBarOnModalPageButtonText;
 		ModalPageButton.Clicked += HandleModalButtonClicked;
-
-		Loaded += HandleLoaded;
 	}
 
 	protected override void OnNavigatedTo(NavigatedToEventArgs args)
@@ -90,57 +81,8 @@ public partial class StatusBarBehaviorPage : BasePage<StatusBarBehaviorViewModel
 		return false;
 	}
 
-	// On Android, setting the app's Shell back gives this page a new ScrollView, which starts at the top; iOS and Windows keep theirs
-	async void HandleLoaded(object? sender, EventArgs e)
+	async void OnEdgeToEdgeShellButtonClicked(object? sender, EventArgs e)
 	{
-		if (scrollYToRestore is not double scrollY)
-		{
-			return;
-		}
-
-		scrollYToRestore = null;
-
-		// On Android, Loaded fires when the new ScrollView is attached but before it is laid out, so the scroll waits for the dispatcher
-		await Dispatcher.DispatchAsync(async () =>
-		{
-			var scrollView = (ScrollView)Content;
-
-			// On Android, ScrollY keeps the old ScrollView's offset until the new one scrolls, so a scroll that the new one cannot make yet would look
-			// done: start ScrollY from the new ScrollView's top
-			if (OperatingSystem.IsAndroid())
-			{
-				((Microsoft.Maui.IScrollView)scrollView).VerticalOffset = 0;
-			}
-
-			for (var attempt = 0; attempt < maximumRestoreAttempts; attempt++)
-			{
-				await scrollView.ScrollToAsync(0, scrollY, false);
-
-				// On Android, the new ScrollView can scroll less far than the old one until the window insets give it its bottom padding, after its first layout, and at
-				// the default font size not at all: a scroll beyond its end stops there, so scroll again once it can
-				if (!OperatingSystem.IsAndroid() || scrollView.ScrollY >= scrollY - scrollRestoreTolerance)
-				{
-					return;
-				}
-
-				await Task.Delay(restoreAttemptInterval);
-			}
-		});
-	}
-
-	void OnEdgeToEdgeShellButtonClicked(object? sender, EventArgs e)
-	{
-		var window = Application.Current?.Windows[0];
-		if (window is null)
-		{
-			return;
-		}
-
-		// The Edge-to-Edge Shell.TitleView demo returns to this page the same way main's removed TitleViewShell navigation did (a window.Page swap),
-		// so record the scroll position here, as main's removed OnTitleViewShellButtonClicked did, to keep the return-as-left feature working
-		scrollYToRestore = ((ScrollView)Content).ScrollY;
-
-		EdgeToEdgeTitleViewPage.PreviousPage = window.Page;
-		window.Page = new EdgeToEdgeTitleViewShell();
+		await Shell.Current.Navigation.PushModalAsync(new EdgeToEdgeTitleViewPage());
 	}
 }
