@@ -47,6 +47,7 @@
                             VerticalOptions="Center" />
                         <Switch
                             x:Name="StatusColorSwitch"
+                            SemanticProperties.Description="Use a red status bar"
                             Toggled="OnStatusColorSwitchToggled" />
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
