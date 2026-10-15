@@ -69,15 +69,8 @@ public partial class StatusBarBehaviorPage : BasePage<StatusBarBehaviorViewModel
 		return false;
 	}
 
-	void OnEdgeToEdgeShellButtonClicked(object? sender, EventArgs e)
+	async void OnEdgeToEdgeShellButtonClicked(object? sender, EventArgs e)
 	{
-		var window = Application.Current?.Windows[0];
-		if (window is null)
-		{
-			return;
-		}
-
-		EdgeToEdgeTitleViewPage.PreviousPage = window.Page;
-		window.Page = new EdgeToEdgeTitleViewShell();
+		await Shell.Current.Navigation.PushModalAsync(new EdgeToEdgeTitleViewPage());
 	}
 }
