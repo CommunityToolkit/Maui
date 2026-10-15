@@ -128,12 +128,19 @@ public partial class StatusBarBehaviorPage : BasePage<StatusBarBehaviorViewModel
 		});
 	}
 
-	void OnTitleViewShellButtonClicked(object? sender, EventArgs e)
+	void OnEdgeToEdgeShellButtonClicked(object? sender, EventArgs e)
 	{
-		if (Window?.Page is Page previousPage)
+		var window = Application.Current?.Windows[0];
+		if (window is null)
 		{
-			scrollYToRestore = ((ScrollView)Content).ScrollY;
-			Window.Page = new TitleViewShell(previousPage);
+			return;
 		}
+
+		// The Edge-to-Edge Shell.TitleView demo returns to this page the same way main's removed TitleViewShell navigation did (a window.Page swap),
+		// so record the scroll position here, as main's removed OnTitleViewShellButtonClicked did, to keep the return-as-left feature working
+		scrollYToRestore = ((ScrollView)Content).ScrollY;
+
+		EdgeToEdgeTitleViewPage.PreviousPage = window.Page;
+		window.Page = new EdgeToEdgeTitleViewShell();
 	}
 }

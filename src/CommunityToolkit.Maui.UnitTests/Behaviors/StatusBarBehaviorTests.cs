@@ -4,7 +4,6 @@ using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
-
 	
 #pragma warning disable CA1416
 public class StatusBarBehaviorTests() : BaseBehaviorTest<StatusBarBehavior, Page>(new StatusBarBehavior(), new ContentPage())
@@ -102,4 +101,36 @@ public class StatusBarBehaviorTests() : BaseBehaviorTest<StatusBarBehavior, Page
 
 		changedProperty.Should().Be(nameof(StatusBarBehavior.ApplyOn));
 	}
+
+	[Fact]
+	public void VerifyStatusBarBehaviorOnContentPageHostedInNavigationPage()
+	{
+		var statusBarBehavior = new StatusBarBehavior();
+		var contentPage = new ContentPage
+		{
+			Behaviors = { statusBarBehavior }
+		};
+		var navigationPage = new NavigationPage(contentPage);
+
+		Assert.Contains(contentPage, navigationPage.Navigation.NavigationStack);
+		Assert.Single(contentPage.Behaviors.OfType<StatusBarBehavior>());
+		Assert.Equal(Colors.Transparent, statusBarBehavior.StatusBarColor);
+	}
+
+	[Fact]
+	public void VerifyStatusBarBehaviorOnContentPagePushedModally()
+	{
+		var statusBarBehavior = new StatusBarBehavior();
+		var modalPage = new ContentPage
+		{
+			Behaviors = { statusBarBehavior }
+		};
+		var navigationPage = new NavigationPage(new ContentPage());
+		navigationPage.Navigation.PushModalAsync(modalPage);
+
+		Assert.Contains(modalPage, navigationPage.Navigation.ModalStack);
+		Assert.Single(modalPage.Behaviors.OfType<StatusBarBehavior>());
+		Assert.Equal(Colors.Transparent, statusBarBehavior.StatusBarColor);
+	}
+}
 #pragma warning restore CA1416

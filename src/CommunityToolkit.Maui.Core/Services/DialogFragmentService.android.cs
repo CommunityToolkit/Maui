@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Versioning;
 using Android.Content;
 using Android.Views;
 using AndroidX.AppCompat.App;
@@ -109,44 +110,84 @@ sealed partial class DialogFragmentService : IDialogFragmentService
 			throw new InvalidOperationException("Dialog window cannot be null");
 		}
 
-		var isColorTransparent = platformColor == Android.Graphics.Color.Transparent;
-
-		if (OperatingSystem.IsAndroidVersionAtLeast(30))
+		if (OperatingSystem.IsAndroidVersionAtLeast(35))
 		{
-			var windowInsetsController = dialogWindow.InsetsController;
-			var appearance = activity.Window.InsetsController?.SystemBarsAppearance;
-
-			if (windowInsetsController is null)
-			{
-				System.Diagnostics.Trace.WriteLine("WindowInsetsController is null, cannot set system bars appearance.");
-				return;
-			}
-
-			if (appearance.HasValue)
-			{
-				// The mask also holds the light status bars bit, so that the dialog loses light status bars the activity does not have (.NET MAUI gives the dialog of a modal page light status bars in day mode)
-				windowInsetsController.SetSystemBarsAppearance(appearance.Value, appearance.Value | (int)WindowInsetsControllerAppearance.LightStatusBars);
-			}
-			else
-			{
-				windowInsetsController.SetSystemBarsAppearance(
-					isColorTransparent ? 0 : (int)WindowInsetsControllerAppearance.LightStatusBars,
-					(int)WindowInsetsControllerAppearance.LightStatusBars);
-			}
-
-			dialogWindow.SetStatusBarColor(platformColor);
-
-			// Whatever the color, as StatusBar.SetColor does for the activity's window (#3189)
-			AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(dialogWindow, false);
+			HandleStatusBarColor_AndroidApi35AndHigher(dialogWindow, activity, platformColor);
+		}
+		else if (OperatingSystem.IsAndroidVersionAtLeast(30))
+		{
+			HandleStatusBarColor_AndroidApi30To34(dialogWindow, activity, platformColor);
+		}
+		else if (OperatingSystem.IsAndroidVersionAtLeast(21))
+		{
+			HandleStatusBarColor_AndroidApiLessThan30(dialogWindow, platformColor);
 		}
 		else
 		{
-			dialogWindow.SetStatusBarColor(platformColor);
-
-			// LayoutNoLimits is cleared for every color, as StatusBar.SetColor does for the activity's window (#3189): it lays the content out behind the system bars with no window insets to avoid them (#2351)
-			dialogWindow.ClearFlags(WindowManagerFlags.LayoutNoLimits);
-			dialogWindow.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
-			AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(dialogWindow, false);
+			// Unreachable: the minimum supported Android version is 21. Kept as a guard so the per-API methods above stay exhaustive.
+			throw new NotSupportedException($"{nameof(DialogFragmentService)} requires Android API 21 or higher");
 		}
+	}
+
+	// LayoutNoLimits is cleared because it pushed modal content behind the system bars for the default transparent color (#2351).
+	[SupportedOSPlatform("android21.0"), UnsupportedOSPlatform("android30.0")]
+	static void HandleStatusBarColor_AndroidApiLessThan30(in Window dialogWindow, in Android.Graphics.Color platformColor)
+	{
+		dialogWindow.SetStatusBarColor(platformColor);
+		dialogWindow.ClearFlags(WindowManagerFlags.LayoutNoLimits);
+		dialogWindow.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
+		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(dialogWindow, false);
+	}
+
+	[SupportedOSPlatform("android30.0"), UnsupportedOSPlatform("android35.0")]
+	static void HandleStatusBarColor_AndroidApi30To34(in Window dialogWindow, in AppCompatActivity activity, in Android.Graphics.Color platformColor)
+	{
+		if (!TrySetSystemBarsAppearance(dialogWindow, activity, platformColor))
+		{
+			return;
+		}
+
+		dialogWindow.SetStatusBarColor(platformColor);
+		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(dialogWindow, false);
+	}
+
+	// SetStatusBarColor is obsoleted on API 35+, so it is intentionally not called here.
+	[SupportedOSPlatform("android35.0")]
+	static void HandleStatusBarColor_AndroidApi35AndHigher(in Window dialogWindow, in AppCompatActivity activity, in Android.Graphics.Color platformColor)
+	{
+		if (!TrySetSystemBarsAppearance(dialogWindow, activity, platformColor))
+		{
+			return;
+		}
+
+		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(dialogWindow, false);
+	}
+
+	[SupportedOSPlatform("android30.0")]
+	static bool TrySetSystemBarsAppearance(in Window dialogWindow, in AppCompatActivity activity, in Android.Graphics.Color platformColor)
+	{
+		var isColorTransparent = platformColor == Android.Graphics.Color.Transparent;
+		var windowInsetsController = dialogWindow.InsetsController;
+		var appearance = activity.Window?.InsetsController?.SystemBarsAppearance;
+
+		if (windowInsetsController is null)
+		{
+			System.Diagnostics.Trace.WriteLine("WindowInsetsController is null, cannot set system bars appearance.");
+			return false;
+		}
+
+		if (appearance.HasValue)
+		{
+			// The mask also holds the light status bars bit, so that the dialog loses light status bars the activity does not have (.NET MAUI gives the dialog of a modal page light status bars in day mode)
+			windowInsetsController.SetSystemBarsAppearance(appearance.Value, appearance.Value | (int)WindowInsetsControllerAppearance.LightStatusBars);
+		}
+		else
+		{
+			windowInsetsController.SetSystemBarsAppearance(
+				isColorTransparent ? 0 : (int)WindowInsetsControllerAppearance.LightStatusBars,
+				(int)WindowInsetsControllerAppearance.LightStatusBars);
+		}
+
+		return true;
 	}
 }
