@@ -122,8 +122,10 @@ sealed partial class DialogFragmentService : IDialogFragmentService
 		{
 			HandleStatusBarColor_AndroidApiLessThan30(dialogWindow, platformColor);
 		}
-
-		throw new NotSupportedException($"{nameof(DialogFragmentService)} requires Android API 21 or higher");
+		else
+		{
+			throw new NotSupportedException($"{nameof(DialogFragmentService)} requires Android API 21 or higher");
+		}
 	}
 
 	// LayoutNoLimits is cleared because it pushed modal content behind the system bars for the default transparent color (#2351).

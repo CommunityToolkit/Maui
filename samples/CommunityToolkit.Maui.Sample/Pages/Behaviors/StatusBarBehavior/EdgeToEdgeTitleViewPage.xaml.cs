@@ -17,6 +17,12 @@ public partial class EdgeToEdgeTitleViewPage : ContentPage
 		Core.Platform.StatusBar.SetColor(Color.FromHex(statusColorBlue));
 	}
 
+	protected override void OnAppearing()
+	{
+		base.OnAppearing();
+		Core.Platform.StatusBar.SetColor(Color.FromHex(StatusColorSwitch.IsToggled ? statusColorRed : statusColorBlue));
+	}
+
 	void OnStatusColorSwitchToggled(object? sender, ToggledEventArgs e)
 	{
 		Core.Platform.StatusBar.SetColor(Color.FromHex(e.Value ? statusColorRed : statusColorBlue));
