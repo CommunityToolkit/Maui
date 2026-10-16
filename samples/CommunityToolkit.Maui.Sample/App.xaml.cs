@@ -20,6 +20,7 @@ public partial class App : Application
 	{
 #if ANDROID
 		// Every Activity needs its own Window and appShell can only belong to one, so the Shell demo's Activity gets a Shell of its own.
+		// This is used to regression test the StatusBarBehavior
 		if (activationState?.Context.Services.GetService(typeof(global::Android.App.Activity)) is EdgeToEdgeShellActivity)
 		{
 			return new Window(new EdgeToEdgeTitleViewShell());
