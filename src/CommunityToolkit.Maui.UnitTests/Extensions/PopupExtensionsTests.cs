@@ -320,8 +320,8 @@ public class PopupExtensionsTests : BaseViewTest
 		Assert.Equal(shellParameterBackgroundColorValue, selfClosingPopup.BackgroundColor);
 	}
 
-	[Fact]
-	public void ShowPopup_NavigationModalStackCountIncreases()
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopup_NavigationModalStackCountIncreases()
 	{
 		// Arrange
 		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
@@ -332,6 +332,8 @@ public class PopupExtensionsTests : BaseViewTest
 
 		// Assert
 		Assert.Single(navigation.ModalStack);
+
+		await selfClosingPopup.WaitUntilClosedAsync(TestContext.Current.CancellationToken);
 	}
 
 	[Fact]
@@ -401,8 +403,8 @@ public class PopupExtensionsTests : BaseViewTest
 		Assert.Equal(shellParameterViewModelTextValue, viewWithQueryable.BindingContext.Text);
 	}
 
-	[Fact]
-	public void ShowPopup_MultiplePopupsDisplayed()
+	[Fact(Timeout = (int)TestDuration.Medium)]
+	public async Task ShowPopup_MultiplePopupsDisplayed()
 	{
 		// Arrange
 		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
@@ -414,10 +416,13 @@ public class PopupExtensionsTests : BaseViewTest
 
 		// Assert
 		Assert.Equal(2, navigation.ModalStack.Count);
+
+		await selfClosingPopup.WaitUntilClosedAsync(TestContext.Current.CancellationToken);
+		await longLivedSelfClosingPopup.WaitUntilClosedAsync(TestContext.Current.CancellationToken);
 	}
 
-	[Fact]
-	public void ShowPopup_Shell_MultiplePopupsDisplayed()
+	[Fact(Timeout = (int)TestDuration.Medium)]
+	public async Task ShowPopup_Shell_MultiplePopupsDisplayed()
 	{
 		// Arrange
 		var selfClosingPopup = ServiceProvider.GetRequiredService<ShortLivedSelfClosingPopup>() ?? throw new InvalidOperationException();
@@ -437,6 +442,9 @@ public class PopupExtensionsTests : BaseViewTest
 		// Assert
 		Assert.Equal(2, shellNavigation.ModalStack.Count);
 		Assert.Equal(shellParameterBackgroundColorValue, selfClosingPopup.BackgroundColor);
+
+		await selfClosingPopup.WaitUntilClosedAsync(TestContext.Current.CancellationToken);
+		await longLivedSelfClosingPopup.WaitUntilClosedAsync(TestContext.Current.CancellationToken);
 	}
 
 	[Fact]
@@ -477,8 +485,8 @@ public class PopupExtensionsTests : BaseViewTest
 	}
 
 
-	[Fact]
-	public void ShowPopupAsync_WithCustomOptions_AppliesOptions()
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_WithCustomOptions_AppliesOptions()
 	{
 		// Arrange
 		var onTappingOutsideOfPopup = () => { };
@@ -539,10 +547,12 @@ public class PopupExtensionsTests : BaseViewTest
 
 		// Verify PopupPage Bindings to PopupOptions
 		Assert.Equal(options.PageOverlayColor, popupPage.BackgroundColor);
+
+		await selfClosingPopup.WaitUntilClosedAsync(TestContext.Current.CancellationToken);
 	}
 
-	[Fact]
-	public void ShowPopupAsync_Shell_WithCustomOptions_AppliesOptions()
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_Shell_WithCustomOptions_AppliesOptions()
 	{
 		// Arrange
 		var shell = new Shell();
@@ -613,6 +623,8 @@ public class PopupExtensionsTests : BaseViewTest
 
 		// Verify IQueryAttributable Propagates through Popup
 		Assert.Equal(shellParameterBackgroundColorValue, selfClosingPopup.BackgroundColor);
+
+		await selfClosingPopup.WaitUntilClosedAsync(TestContext.Current.CancellationToken);
 	}
 
 	[Fact]
