@@ -403,7 +403,7 @@ public partial class StatusBarTests
 	}
 
 #if NET11_0_OR_GREATER
-	// .NET 11 (every iOS app is scene-based): SetStyle sets Window.StatusBarTheme of the app's windows, and UIKit takes the style from the view
+	// .NET 11: SetStyle sets Window.StatusBarTheme of the app's windows, and UIKit takes the style from the view
 	// controllers of .NET MAUI, which return the style of their window's theme. Each step changes the style that the step before set: LightContent
 	// after Default and after DarkContent, DarkContent after LightContent, Default after LightContent.
 	[Theory]
@@ -548,7 +548,8 @@ public partial class StatusBarTests
 	}
 
 	// UIKit asks the view controllers for the style only when the app's Info.plist does not set UIViewControllerBasedStatusBarAppearance to false
-	// (with false the status bar keeps its style): SetStyle still sets the theme of the windows, and says that UIKit ignores it only for false.
+	// (with false it shows the style of the whole app, which the runner ignores): SetStyle still sets the theme of the windows, and says that UIKit
+	// ignores the style only for false.
 	[Theory]
 	[InlineData(false, true)]
 	[InlineData(true, false)]
@@ -565,6 +566,93 @@ public partial class StatusBarTests
 			Assert.Equal(StatusBarTheme.Dark, mauiWindow.Window.StatusBarTheme);
 			Assert.Equal(isTraced, listener.Messages.Contains(styleIgnoredByUIKitMessage));
 			return Task.CompletedTask;
+		});
+	}
+
+	// With UIViewControllerBasedStatusBarAppearance set to false (the .NET 10 setup of StatusBarBehavior) UIKit ignores the theme of the windows and
+	// shows the style of the whole app, which an app built with an iOS SDK before 27.0 takes from UIApplication.SetStatusBarStyle.
+	[Theory]
+	[InlineData(false, true)]
+	[InlineData(true, false)]
+	[InlineData(null!, false)]
+	public async Task SetStyleSetsTheStyleOfTheWholeAppOnlyWhenInfoPlistTurnsViewControllerBasedStatusBarAppearanceOff(bool? viewControllerBasedStatusBarAppearance, bool setsTheStyleOfTheWholeApp)
+	{
+		SetupBuilder();
+		await ResetNativeStateAsync();
+
+		await RunInMauiWindowAsync(StatusBarWindowPage.ContentPage, CreateStyleTestPage(), mauiWindow =>
+		{
+			var (listener, stylesOfTheWholeApp) = CaptureStylesOfTheWholeApp(viewControllerBasedStatusBarAppearance, isAppliedByUIKit: true, static () => StatusBar.SetStyle(StatusBarStyle.LightContent));
+
+			UIStatusBarStyle[] expectedStylesOfTheWholeApp = setsTheStyleOfTheWholeApp ? [UIStatusBarStyle.LightContent] : [];
+			Assert.Equal(expectedStylesOfTheWholeApp, stylesOfTheWholeApp);
+			Assert.Equal(StatusBarTheme.Dark, mauiWindow.Window.StatusBarTheme);
+			Assert.DoesNotContain(styleIgnoredByUIKitMessage, listener.Messages);
+			return Task.CompletedTask;
+		});
+	}
+
+	// An app built with the iOS 27 SDK or later ignores UIApplication.SetStatusBarStyle too, and only then does the status bar keep its style.
+	[Theory]
+	[InlineData(true, false)]
+	[InlineData(false, true)]
+	public async Task SetStyleTracesThatUIKitIgnoresTheStyleOnlyWhenUIKitIgnoresTheStyleOfTheWholeAppToo(bool isAppliedByUIKit, bool isTraced)
+	{
+		SetupBuilder();
+		await ResetNativeStateAsync();
+
+		await RunInMauiWindowAsync(StatusBarWindowPage.ContentPage, CreateStyleTestPage(), _ =>
+		{
+			var (listener, stylesOfTheWholeApp) = CaptureStylesOfTheWholeApp(false, isAppliedByUIKit, static () => StatusBar.SetStyle(StatusBarStyle.DarkContent));
+
+			Assert.Equal([UIStatusBarStyle.DarkContent], stylesOfTheWholeApp);
+			Assert.Equal(isTraced, listener.Messages.Contains(styleIgnoredByUIKitMessage));
+			return Task.CompletedTask;
+		});
+	}
+
+	// The style of the whole app needs no window: CommunityToolkit.Maui.Core sets it without UseMauiCommunityToolkit, as on .NET 10.
+	[Fact]
+	public async Task SetStyleWithoutUseMauiCommunityToolkitSetsTheStyleOfTheWholeAppWhenInfoPlistTurnsViewControllerBasedStatusBarAppearanceOff()
+	{
+		SetupBuilder();
+		await ResetNativeStateAsync();
+		var setStatusBarThemeOfEveryWindow = StatusBar.SetStatusBarThemeOfEveryWindow;
+
+		try
+		{
+			await RunInMauiWindowAsync(StatusBarWindowPage.ContentPage, CreateStyleTestPage(), mauiWindow =>
+			{
+				StatusBar.SetStatusBarThemeOfEveryWindow = null;
+
+				var (listener, stylesOfTheWholeApp) = CaptureStylesOfTheWholeApp(false, isAppliedByUIKit: true, static () => StatusBar.SetStyle(StatusBarStyle.LightContent));
+
+				Assert.Equal([UIStatusBarStyle.LightContent], stylesOfTheWholeApp);
+				Assert.DoesNotContain(windowsUnknownMessage, listener.Messages);
+				Assert.Equal(StatusBarTheme.Default, mauiWindow.Window.StatusBarTheme);
+				return Task.CompletedTask;
+			});
+		}
+		finally
+		{
+			StatusBar.SetStatusBarThemeOfEveryWindow = setStatusBarThemeOfEveryWindow;
+		}
+	}
+
+	// The runner keeps view controller-based status bar appearance, so UIKit ignores UIApplication.SetStatusBarStyle there, as it does in every app
+	// built with the iOS 27 SDK: the style that the toolkit reads back from the scene has to show that.
+	[Fact]
+	public async Task TrySetApplicationStatusBarStyleReportsThatUIKitIgnoresTheStyleOfTheWholeApp()
+	{
+		SetupBuilder();
+		await ResetNativeStateAsync();
+
+		await RunInMauiWindowAsync(StatusBarWindowPage.ContentPage, CreateStyleTestPage(), async mauiWindow =>
+		{
+			await AssertStatusBarStyleAsync(mauiWindow, UIStatusBarStyle.Default);
+
+			Assert.False(StatusBar.TrySetApplicationStatusBarStyle(UIStatusBarStyle.LightContent));
+			Assert.Equal(UIStatusBarStyle.Default, mauiWindow.Scene.StatusBarManager?.StatusBarStyle);
 		});
 	}
 
@@ -587,8 +675,8 @@ public partial class StatusBarTests
 		});
 	}
 #else
-	// A scene-based app such as the runner ignores the style that SetStyle passes to UIApplication.SetStatusBarStyle (UIKit reports no change),
-	// so the mapping from StatusBarStyle is asserted where SetStyle takes it from.
+	// The runner ignores the style that SetStyle passes to UIApplication.SetStatusBarStyle (UIKit reports no change): its Info.plist keeps view
+	// controller-based status bar appearance, and CI builds it with the iOS 27 SDK. So the mapping from StatusBarStyle is asserted where SetStyle takes it from.
 	[Theory]
 	[InlineData(StatusBarStyle.Default, UIStatusBarStyle.Default)]
 	[InlineData(StatusBarStyle.LightContent, UIStatusBarStyle.LightContent)]

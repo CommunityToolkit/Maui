@@ -71,71 +71,12 @@ static partial class StatusBar
 		}
 	}
 
-	// statusBarFrame is the status bar frame of the window's scene: the deprecated UIApplication.StatusBarFrame is CGRect.Null in a scene-based app
+	// statusBarFrame is the status bar frame of the window's scene: the deprecated UIApplication.StatusBarFrame is CGRect.Null in an app built with the iOS 27 SDK
 	static CGRect GetStatusBarFrame(in UIWindow window, in CGRect statusBarFrame, in bool isUsingSafeArea)
 	{
 		return isUsingSafeArea
 			? new CGRect(statusBarFrame.X, statusBarFrame.Y, statusBarFrame.Width, window.SafeAreaInsets.Top)
 			: statusBarFrame;
-	}
-
-#if NET11_0_OR_GREATER
-	const string viewControllerBasedStatusBarAppearanceKey = "UIViewControllerBasedStatusBarAppearance";
-
-	/// <summary>
-	/// Sets the <see cref="IWindow.StatusBarTheme"/> of every window of the app. CommunityToolkit.Maui sets it in UseMauiCommunityToolkit:
-	/// only Microsoft.Maui.Controls.Window can change the theme, and CommunityToolkit.Maui.Core does not reference Microsoft.Maui.Controls.
-	/// </summary>
-	internal static Action<StatusBarTheme>? SetStatusBarThemeOfEveryWindow { get; set; }
-
-	/// <summary>
-	/// Reads the value of UIViewControllerBasedStatusBarAppearance in the app's Info.plist (<see langword="null"/> without the key). The device tests
-	/// replace it to show what each value does.
-	/// </summary>
-	internal static Func<NSObject?> ReadViewControllerBasedStatusBarAppearance { get; set; } = static () => NSBundle.MainBundle.ObjectForInfoDictionary(viewControllerBasedStatusBarAppearanceKey);
-
-	// Every .NET 11 iOS app is scene-based (the Xcode 27 SDK requires the UIScene life cycle), and UIKit takes the status bar style of a scene only
-	// from its view controllers, ignoring UIApplication.SetStatusBarStyle. The view controllers of .NET MAUI return the style of their window's StatusBarTheme.
-	static void PlatformSetStyle(StatusBarStyle statusBarStyle)
-	{
-		var statusBarTheme = ToStatusBarTheme(statusBarStyle);
-
-		if (SetStatusBarThemeOfEveryWindow is not Action<StatusBarTheme> setStatusBarThemeOfEveryWindow)
-		{
-			Trace.WriteLine("Unable to set the Status Bar Style because the windows of the app are unknown: call UseMauiCommunityToolkit() in MauiProgram.cs");
-			return;
-		}
-
-		setStatusBarThemeOfEveryWindow(statusBarTheme);
-		TraceIfUIKitIgnoresTheStyle();
-	}
-
-	/// <summary>
-	/// Writes a trace message when UIKit ignores the style that the view controllers return: the app's Info.plist sets
-	/// UIViewControllerBasedStatusBarAppearance to false (a &lt;false/&gt; value is an NSNumber). The status bar then keeps its style.
-	/// </summary>
-	internal static void TraceIfUIKitIgnoresTheStyle()
-	{
-		if (ReadViewControllerBasedStatusBarAppearance() is NSNumber { BoolValue: false })
-		{
-			Trace.WriteLine("Unable to apply the Status Bar Style because Info.plist sets UIViewControllerBasedStatusBarAppearance to false: remove the key from Info.plist");
-		}
-	}
-
-	// StatusBarTheme names the background of the status bar: light content (light text and icons) is the style of a dark one
-	internal static StatusBarTheme ToStatusBarTheme(StatusBarStyle statusBarStyle) => statusBarStyle switch
-	{
-		StatusBarStyle.Default => StatusBarTheme.Default,
-		StatusBarStyle.LightContent => StatusBarTheme.Dark,
-		StatusBarStyle.DarkContent => StatusBarTheme.Light,
-		_ => throw new NotSupportedException($"{nameof(StatusBarStyle)} {statusBarStyle} is not yet supported on iOS")
-	};
-#else
-	static void PlatformSetStyle(StatusBarStyle statusBarStyle)
-	{
-		UIApplication.SharedApplication.SetStatusBarStyle(ToUIStatusBarStyle(statusBarStyle), false);
-
-		TryUpdateStatusBarAppearance();
 	}
 
 	internal static UIStatusBarStyle ToUIStatusBarStyle(StatusBarStyle statusBarStyle) => statusBarStyle switch
@@ -156,6 +97,82 @@ static partial class StatusBar
 		}
 
 		return didUpdateAllStatusBars;
+	}
+
+#if NET11_0_OR_GREATER
+	const string viewControllerBasedStatusBarAppearanceKey = "UIViewControllerBasedStatusBarAppearance";
+
+	/// <summary>
+	/// Sets the <see cref="IWindow.StatusBarTheme"/> of every window of the app. CommunityToolkit.Maui sets it in UseMauiCommunityToolkit:
+	/// only Microsoft.Maui.Controls.Window can change the theme, and CommunityToolkit.Maui.Core does not reference Microsoft.Maui.Controls.
+	/// </summary>
+	internal static Action<StatusBarTheme>? SetStatusBarThemeOfEveryWindow { get; set; }
+
+	/// <summary>
+	/// Reads the value of UIViewControllerBasedStatusBarAppearance in the app's Info.plist (<see langword="null"/> without the key). The device tests
+	/// replace it to show what each value does.
+	/// </summary>
+	internal static Func<NSObject?> ReadViewControllerBasedStatusBarAppearance { get; set; } = static () => NSBundle.MainBundle.ObjectForInfoDictionary(viewControllerBasedStatusBarAppearanceKey);
+
+	/// <summary>
+	/// Sets the status bar style of the whole app with UIApplication.SetStatusBarStyle and returns whether UIKit applied it to the status bar of every
+	/// scene. The device tests replace it: UIKit ignores the call in the runner, whose Info.plist keeps view controller-based status bar appearance.
+	/// </summary>
+	internal static Func<UIStatusBarStyle, bool> TrySetApplicationStatusBarStyle { get; set; } = static uiStatusBarStyle =>
+	{
+		UIApplication.SharedApplication.SetStatusBarStyle(uiStatusBarStyle, false);
+		TryUpdateStatusBarAppearance();
+
+		return UIApplication.SharedApplication.Windows.All(window => window.WindowScene?.StatusBarManager is not UIStatusBarManager statusBarManager || statusBarManager.StatusBarStyle == uiStatusBarStyle);
+	};
+
+	/// <summary>
+	/// Whether the app's Info.plist sets UIViewControllerBasedStatusBarAppearance to false (a &lt;false/&gt; value is an NSNumber), the setup that
+	/// StatusBarBehavior documents for .NET 10: UIKit then ignores the style that the view controllers return.
+	/// </summary>
+	internal static bool IsViewControllerBasedStatusBarAppearanceOff => ReadViewControllerBasedStatusBarAppearance() is NSNumber { BoolValue: false };
+
+	// The view controllers of .NET MAUI return the style of their window's StatusBarTheme. UIKit takes the style from them unless Info.plist turns
+	// view controller-based status bar appearance off: then it shows the style that UIApplication.SetStatusBarStyle sets for the whole app.
+	static void PlatformSetStyle(StatusBarStyle statusBarStyle)
+	{
+		var statusBarTheme = ToStatusBarTheme(statusBarStyle);
+
+		if (IsViewControllerBasedStatusBarAppearanceOff)
+		{
+			SetStyleOfTheWholeApp(statusBarStyle);
+		}
+		else if (SetStatusBarThemeOfEveryWindow is null)
+		{
+			Trace.WriteLine("Unable to set the Status Bar Style because the windows of the app are unknown: call UseMauiCommunityToolkit() in MauiProgram.cs");
+		}
+
+		SetStatusBarThemeOfEveryWindow?.Invoke(statusBarTheme);
+	}
+
+	// An app built with the iOS 27 SDK or later ignores UIApplication.SetStatusBarStyle: only view controller-based status bar appearance can change its style
+	internal static void SetStyleOfTheWholeApp(StatusBarStyle statusBarStyle)
+	{
+		if (!TrySetApplicationStatusBarStyle(ToUIStatusBarStyle(statusBarStyle)))
+		{
+			Trace.WriteLine("Unable to apply the Status Bar Style because Info.plist sets UIViewControllerBasedStatusBarAppearance to false: remove the key from Info.plist");
+		}
+	}
+
+	// StatusBarTheme names the background of the status bar: light content (light text and icons) is the style of a dark one
+	internal static StatusBarTheme ToStatusBarTheme(StatusBarStyle statusBarStyle) => statusBarStyle switch
+	{
+		StatusBarStyle.Default => StatusBarTheme.Default,
+		StatusBarStyle.LightContent => StatusBarTheme.Dark,
+		StatusBarStyle.DarkContent => StatusBarTheme.Light,
+		_ => throw new NotSupportedException($"{nameof(StatusBarStyle)} {statusBarStyle} is not yet supported on iOS")
+	};
+#else
+	static void PlatformSetStyle(StatusBarStyle statusBarStyle)
+	{
+		UIApplication.SharedApplication.SetStatusBarStyle(ToUIStatusBarStyle(statusBarStyle), false);
+
+		TryUpdateStatusBarAppearance();
 	}
 #endif
 

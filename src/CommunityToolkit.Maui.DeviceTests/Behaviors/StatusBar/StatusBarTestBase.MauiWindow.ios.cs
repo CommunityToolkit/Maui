@@ -7,8 +7,9 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// .NET 11: a scene-based app takes the status bar style from the view controllers of its .NET MAUI windows (Window.StatusBarTheme). The
-// headless runner's window has no .NET MAUI window (Application.Current.Windows is empty), so the style tests show their page in one.
+// .NET 11: an app whose Info.plist keeps view controller-based status bar appearance, such as the runner, takes the status bar style from the view
+// controllers of its .NET MAUI windows (Window.StatusBarTheme). The headless runner's window has no .NET MAUI window (Application.Current.Windows is
+// empty), so the style tests show their page in one.
 public abstract partial class StatusBarTestBase
 {
 	/// <summary>What the toolkit traces when it sets the style while the app's Info.plist sets UIViewControllerBasedStatusBarAppearance to false.</summary>
@@ -37,6 +38,32 @@ public abstract partial class StatusBarTestBase
 		finally
 		{
 			StatusBar.ReadViewControllerBasedStatusBarAppearance = readViewControllerBasedStatusBarAppearance;
+		}
+	}
+
+	/// <summary>
+	/// <see cref="CaptureTraceWithViewControllerBasedStatusBarAppearance"/> that also records the styles that the toolkit sets for the whole app with
+	/// UIApplication.SetStatusBarStyle, instead of passing them to UIKit: the runner's Info.plist keeps view controller-based status bar appearance, so
+	/// UIKit would ignore them. <paramref name="isAppliedByUIKit"/> is what UIKit reports back: true in an app built with an iOS SDK before 27.0 whose
+	/// Info.plist sets the key to false, false in an app built with a later SDK.
+	/// </summary>
+	private protected static (CapturingTraceListener Listener, List<UIStatusBarStyle> StylesOfTheWholeApp) CaptureStylesOfTheWholeApp(bool? viewControllerBasedStatusBarAppearance, bool isAppliedByUIKit, Action action)
+	{
+		var trySetApplicationStatusBarStyle = StatusBar.TrySetApplicationStatusBarStyle;
+		var stylesOfTheWholeApp = new List<UIStatusBarStyle>();
+		StatusBar.TrySetApplicationStatusBarStyle = style =>
+		{
+			stylesOfTheWholeApp.Add(style);
+			return isAppliedByUIKit;
+		};
+
+		try
+		{
+			return (CaptureTraceWithViewControllerBasedStatusBarAppearance(viewControllerBasedStatusBarAppearance, action), stylesOfTheWholeApp);
+		}
+		finally
+		{
+			StatusBar.TrySetApplicationStatusBarStyle = trySetApplicationStatusBarStyle;
 		}
 	}
 

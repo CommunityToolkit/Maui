@@ -43,17 +43,18 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 	/// <remarks>
 	/// <para>
 	/// iOS, .NET 10: the behavior applies the style to the whole app with <see cref="StatusBar.SetStyle(StatusBarStyle)"/> (UIApplication.SetStatusBarStyle),
-	/// which a scene-based app (every app built with the Xcode 27 SDK) ignores, and which iOS 27 reports as a no-op: the status bar keeps the style that the
-	/// view controllers of the app return.
+	/// which UIKit applies only when the app's Info.plist sets <c>UIViewControllerBasedStatusBarAppearance</c> to false, and ignores in an app built with
+	/// the iOS 27 SDK (Xcode 27) or later: the status bar then keeps the style that the view controllers of the app return.
 	/// </para>
 	/// <para>
 	/// iOS, .NET 11: the behavior sets <c>Window.StatusBarTheme</c> of its page's window, and the view controllers of .NET MAUI return the matching
 	/// style: <see cref="StatusBarStyle.LightContent"/> sets <c>StatusBarTheme.Dark</c>, <see cref="StatusBarStyle.DarkContent"/> sets
 	/// <c>StatusBarTheme.Light</c> and <see cref="StatusBarStyle.Default"/> sets <c>StatusBarTheme.Default</c>. It does so when it applies the style
 	/// (see <see cref="ApplyOn"/>) and when the style changes while it is attached. The other windows of the app keep their style, and a style that
-	/// changes while the behavior is not attached to a page of a window changes no status bar. UIKit applies the style only when the app's Info.plist
-	/// does not set <c>UIViewControllerBasedStatusBarAppearance</c> to false: with false the status bar keeps its style and the behavior writes a trace
-	/// message when it sets the theme. Remove that key, which the .NET 10 setup of this behavior adds.
+	/// changes while the behavior is not attached to a page of a window changes no status bar. UIKit applies the theme only when the app's Info.plist
+	/// does not set <c>UIViewControllerBasedStatusBarAppearance</c> to false. With false (the .NET 10 setup of this behavior) the behavior also applies
+	/// the style to the whole app with UIApplication.SetStatusBarStyle, as on .NET 10, when it sets the theme: UIKit applies it in an app built with an
+	/// iOS SDK before 27.0. In an app built with a later SDK the status bar keeps its style and the behavior writes a trace message: remove the key.
 	/// </para>
 	/// </remarks>
 	[BindableProperty]
@@ -187,7 +188,12 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 		if (View?.Window is Window window)
 		{
 			window.StatusBarTheme = statusBarTheme;
-			StatusBar.TraceIfUIKitIgnoresTheStyle();
+
+			// UIKit ignores the theme of the window when Info.plist turns view controller-based status bar appearance off, the .NET 10 setup of this behavior
+			if (StatusBar.IsViewControllerBasedStatusBarAppearanceOff)
+			{
+				StatusBar.SetStyleOfTheWholeApp(StatusBarStyle);
+			}
 		}
 #else
 		StatusBar.SetStyle(StatusBarStyle);

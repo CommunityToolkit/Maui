@@ -16,8 +16,9 @@ namespace CommunityToolkit.Maui.DeviceTests;
 // The status bar code changes every window of UIApplication.Windows, and that list is not only the runner's window: once any text input
 // was first responder in the app run (another feature's test), UIKit keeps a second window of the scene listed for good. So the tests
 // check each window's status bar view (AssertStatusBarShows and the helpers below) and never count the views of all windows together.
-// The style: on .NET 10 the behavior calls StatusBar.SetStyle (UIApplication.SetStatusBarStyle, which the runner, a scene-based app, ignores);
-// on .NET 11 it sets Window.StatusBarTheme of its page's window, which the tests show in a .NET MAUI window (RunInMauiWindowAsync).
+// The style: on .NET 10 the behavior calls StatusBar.SetStyle (UIApplication.SetStatusBarStyle, which the runner ignores: its Info.plist keeps view
+// controller-based status bar appearance); on .NET 11 it sets Window.StatusBarTheme of its page's window, which the tests show in a .NET MAUI
+// window (RunInMauiWindowAsync).
 public partial class StatusBarBehaviorTests
 {
 	static readonly CGRect sentinelFrame = new(7, 11, 13, 17);
@@ -273,7 +274,7 @@ public partial class StatusBarBehaviorTests
 	}
 
 #if NET11_0_OR_GREATER
-	// .NET 11 (every iOS app is scene-based): the behavior sets Window.StatusBarTheme of its page's window, and UIKit takes the style from the
+	// .NET 11: the behavior sets Window.StatusBarTheme of its page's window, and UIKit takes the style from the
 	// view controllers of .NET MAUI, which return the style of their window's theme.
 	[Theory]
 	[InlineData(StatusBarWindowPage.ContentPage)]
@@ -493,7 +494,8 @@ public partial class StatusBarBehaviorTests
 	}
 
 	// UIKit asks the view controllers for the style only when the app's Info.plist does not set UIViewControllerBasedStatusBarAppearance to false
-	// (with false the status bar keeps its style): the behavior still sets the theme of its window, and says that UIKit ignores it only for false.
+	// (with false it shows the style of the whole app, which the runner ignores): the behavior still sets the theme of its window, and says that UIKit
+	// ignores the style only for false.
 	[Theory]
 	[InlineData(false, true)]
 	[InlineData(true, false)]
@@ -516,7 +518,34 @@ public partial class StatusBarBehaviorTests
 		});
 	}
 
-	// The behavior reports the ignored style when it sets the theme of a window: without a window it sets none, and says nothing.
+	// With UIViewControllerBasedStatusBarAppearance set to false (the .NET 10 setup of the behavior) UIKit ignores the theme of the window and shows
+	// the style of the whole app, which an app built with an iOS SDK before 27.0 takes from UIApplication.SetStatusBarStyle.
+	[Theory]
+	[InlineData(false, true)]
+	[InlineData(true, false)]
+	[InlineData(null!, false)]
+	public async Task StyleSetsTheStyleOfTheWholeAppOnlyWhenInfoPlistTurnsViewControllerBasedStatusBarAppearanceOff(bool? viewControllerBasedStatusBarAppearance, bool setsTheStyleOfTheWholeApp)
+	{
+		SetupBuilder();
+		var page = CreateStyleTestPage();
+		var behavior = await CreateBehaviorAsync();
+		await ResetNativeStateAsync();
+		page.Behaviors.Add(behavior);
+
+		await RunInMauiWindowAsync(StatusBarWindowPage.ContentPage, page, mauiWindow =>
+		{
+			var (listener, stylesOfTheWholeApp) = CaptureStylesOfTheWholeApp(viewControllerBasedStatusBarAppearance, isAppliedByUIKit: true, () => behavior.StatusBarStyle = StatusBarStyle.LightContent);
+
+			UIStatusBarStyle[] expectedStylesOfTheWholeApp = setsTheStyleOfTheWholeApp ? [UIStatusBarStyle.LightContent] : [];
+			Assert.Equal(expectedStylesOfTheWholeApp, stylesOfTheWholeApp);
+			Assert.Equal(StatusBarTheme.Dark, mauiWindow.Window.StatusBarTheme);
+			Assert.DoesNotContain(styleIgnoredByUIKitMessage, listener.Messages);
+			return Task.CompletedTask;
+		});
+	}
+
+	// The behavior sets a style, of its window or of the whole app, only while it is attached to a page of a window: without a window it sets none,
+	// and says nothing.
 	[Fact]
 	public async Task StyleOfABehaviorWithoutAWindowDoesNotTraceThatUIKitIgnoresIt()
 	{
@@ -526,9 +555,10 @@ public partial class StatusBarBehaviorTests
 
 		await InvokeOnMainThreadAsync(() =>
 		{
-			var listener = CaptureTraceWithViewControllerBasedStatusBarAppearance(false, () => behavior.StatusBarStyle = StatusBarStyle.LightContent);
+			var (listener, stylesOfTheWholeApp) = CaptureStylesOfTheWholeApp(false, isAppliedByUIKit: false, () => behavior.StatusBarStyle = StatusBarStyle.LightContent);
 
 			Assert.False(behavior.IsAttached);
+			Assert.Empty(stylesOfTheWholeApp);
 			Assert.DoesNotContain(styleIgnoredByUIKitMessage, listener.Messages);
 		});
 	}
