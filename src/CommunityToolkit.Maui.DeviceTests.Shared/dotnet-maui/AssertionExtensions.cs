@@ -6,9 +6,12 @@
 //                 no-argument IElement.ToPlatform() -> ToPlatform(IMauiContext), platform OnLoaded/IsLoaded -> VisualElement events
 //                 plus IsLoadedOnPlatform); keyboard helpers and the internet-connection helpers were dropped.
 // Toolkit change: added OnLoadedAsync/OnUnloadedAsync/WaitForLoaded (from ControlsHandlerTestBase) as extension methods.
+// Toolkit change: Collect first overwrites the unused stack of the main thread (ClearMainThreadStackAsync).
 #nullable enable
 using System;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Maui.DeviceTests.Runners;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,12 +29,32 @@ namespace CommunityToolkit.Maui.DeviceTests
 		public static async Task Collect()
 		{
 			await Task.Yield();
+			await ClearMainThreadStackAsync();
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 			GC.Collect(2, GCCollectionMode.Forced, true);
 			GC.WaitForPendingFinalizers();
 			GC.Collect(2, GCCollectionMode.Forced, true);
 			await Task.Yield();
+		}
+
+		// Mono (Android, iOS, Mac Catalyst) scans thread stacks conservatively. With compiled code (Release; Debug runs the interpreter), the frames
+		// of the main thread's idle run loop can contain slots they never wrote, which still hold the address of a view that an earlier call
+		// handled, and that keeps the view alive: on Android API 28 the leak tests of DrawingView and TouchBehavior failed in Release only, and
+		// the views were collected once the main thread had overwritten that memory. CoreCLR (Windows) scans stacks precisely. 256 KB stays well
+		// inside the 1 MB main thread stack of an iOS device.
+		public static Task ClearMainThreadStackAsync() =>
+			OperatingSystem.IsWindows() ? Task.CompletedTask : TestDispatcher.Current.DispatchAsync(ClearStack);
+
+		// Volatile writes: an optimizing compiler (LLVM in an iOS Release build) drops plain writes to stack memory that nothing reads again.
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static void ClearStack()
+		{
+			Span<nint> stack = stackalloc nint[256 * 1024 / IntPtr.Size];
+			for (var i = 0; i < stack.Length; i++)
+			{
+				Volatile.Write(ref stack[i], 0);
+			}
 		}
 
 		public static async Task<bool> WaitForCollect(this WeakReference reference)

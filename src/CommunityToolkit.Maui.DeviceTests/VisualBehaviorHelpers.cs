@@ -100,7 +100,8 @@ static class VisualBehaviorHelpers
 	// - The Mono runtime of Android, iOS and Mac Catalyst scans the stacks of its threads conservatively, and the stack of the collecting thread
 	//   includes the frames of the collector itself. On iOS the whole test runs on the main thread, which hosts the views and then runs the
 	//   collections, so a stale slot left there by the code that touched a view can keep that one object alive (seen once: the Image survived 40
-	//   collections, its behavior and its native view did not). So every round collects on a thread of its own, whose stack has never held a view.
+	//   collections, its behavior and its native view did not). So every round overwrites the unused stack of the main thread first
+	//   (AssertionExtensions.ClearMainThreadStackAsync) and collects on a thread of its own, whose stack has never held a view.
 	// - On Android the managed peer of a native view lives until the Java side was collected too, which takes a moment. The rounds go on for
 	//   collectionTimeout, and AssertionExtensions.WaitForGC then decides and names what is still alive.
 	public static async Task WaitForGCAsync(params WeakReference[] references)
@@ -118,6 +119,7 @@ static class VisualBehaviorHelpers
 
 		do
 		{
+			await AssertionExtensions.ClearMainThreadStackAsync();
 			await CollectOnNewThreadAsync();
 
 			if (references.All(static reference => !reference.IsAlive))
