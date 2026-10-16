@@ -56,7 +56,8 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 					await DisplayCustomSnackbarButtonAnchoredToButton.BackgroundColorTo(colors[Random.Shared.Next(colors.Count)], length: 500);
 					DisplayCustomSnackbarButtonAnchoredToButton.Text = DisplayCustomSnackbarText;
 				},
-				FontAwesomeIcons.Microsoft,
+				// Windows shows the Snackbar as an app notification, which draws its button in the system font: the Font Awesome glyph would be an empty box
+				OperatingSystem.IsWindows() ? "Change Color" : FontAwesomeIcons.Microsoft,
 				TimeSpan.FromSeconds(30),
 				options,
 				DisplayCustomSnackbarButtonAnchoredToButton);
