@@ -283,7 +283,7 @@ public class PopupServiceTests : BaseViewTest
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
 		// Act
-		await Task.Delay(100, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		if (Application.Current?.Windows[0].Page is not Page page)
 		{

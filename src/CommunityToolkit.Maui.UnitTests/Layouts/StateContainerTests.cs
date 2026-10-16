@@ -117,8 +117,7 @@ public class StateContainerTests : BaseTest
 			child.EnableAnimations();
 		}
 
-		// Ensure CancellationToken has expired
-		await Task.Delay(100, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, cts.Token));
 	}
@@ -217,7 +216,7 @@ public class StateContainerTests : BaseTest
 		}
 
 		var cancelledTokenSource = new CancellationTokenSource(TimeSpan.FromMicroseconds(1));
-		await Task.Delay(10, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cancelledTokenSource.Token, TestContext.Current.CancellationToken);
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, cancelledTokenSource.Token));
 	}
 
@@ -241,7 +240,7 @@ public class StateContainerTests : BaseTest
 		};
 
 		var cancelledTokenSource = new CancellationTokenSource(TimeSpan.FromMicroseconds(1));
-		await Task.Delay(10, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cancelledTokenSource.Token, TestContext.Current.CancellationToken);
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, beforeStateChangeAnimation, afterStateChangeAnimation, cancelledTokenSource.Token));
 	}
 
@@ -255,7 +254,7 @@ public class StateContainerTests : BaseTest
 		}
 
 		var cancelledTokenSource = new CancellationTokenSource(TimeSpan.FromMicroseconds(1));
-		await Task.Delay(10, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cancelledTokenSource.Token, TestContext.Current.CancellationToken);
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, null, CustomAnimation, cancelledTokenSource.Token));
 
 		static Task CustomAnimation(VisualElement element, CancellationToken token) => RotateToAsync(element, 0.75, 1000, token);

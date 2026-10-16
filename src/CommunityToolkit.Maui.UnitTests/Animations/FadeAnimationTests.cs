@@ -61,7 +61,7 @@ public class FadeAnimationTests : BaseTest
 		};
 		label.EnableAnimations();
 
-		await Task.Delay(10, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => animation.Animate(label, cts.Token));
 	}
 

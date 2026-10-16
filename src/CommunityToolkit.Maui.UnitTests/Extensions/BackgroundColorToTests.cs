@@ -30,8 +30,7 @@ public class BackgroundColorToTests : BaseTest
 		VisualElement element = new Label { BackgroundColor = Colors.Blue };
 		element.EnableAnimations();
 
-		// Ensure CancellationToken has expired
-		await Task.Delay(100, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(() => element.BackgroundColorTo(Colors.Green, token: cts.Token));
 	}

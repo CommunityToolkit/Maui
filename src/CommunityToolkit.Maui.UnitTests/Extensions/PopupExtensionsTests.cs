@@ -807,7 +807,7 @@ public class PopupExtensionsTests : BaseViewTest
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
 		// Act
-		await Task.Delay(100, TestContext.Current.CancellationToken); // Ensure CancellationToken has expired
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ShowPopupAsync(selfClosingPopup, PopupOptions.Empty, cts.Token));
@@ -829,7 +829,7 @@ public class PopupExtensionsTests : BaseViewTest
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
 		// Act
-		await Task.Delay(100, TestContext.Current.CancellationToken); // Ensure CancellationToken has expired
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(() => shell.ShowPopupAsync(selfClosingPopup, PopupOptions.Empty, shellParameters, cts.Token));
@@ -844,7 +844,7 @@ public class PopupExtensionsTests : BaseViewTest
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
 		// Act
-		await Task.Delay(100, TestContext.Current.CancellationToken); // Ensure CancellationToken has expired
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(() => navigation.ShowPopupAsync(view, PopupOptions.Empty, cts.Token));
@@ -866,7 +866,7 @@ public class PopupExtensionsTests : BaseViewTest
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
 		// Act
-		await Task.Delay(100, TestContext.Current.CancellationToken); // Ensure CancellationToken has expired
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(() => shell.ShowPopupAsync(view, PopupOptions.Empty, shellParameters, cts.Token));

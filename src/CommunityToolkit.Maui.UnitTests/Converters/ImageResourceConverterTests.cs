@@ -42,8 +42,7 @@ public class ImageResourceConverterTests : BaseOneWayConverterTest<ImageResource
 
 		var convertFromResult = (StreamImageSource)imageResourceConverter.ConvertFrom(resourceToLoad, CultureInfo.CurrentCulture);
 
-		// Ensure CancellationToken has expired
-		await Task.Delay(100, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<TaskCanceledException>(() => GetStreamFromImageSource(convertFromResult, cts.Token));
 	}

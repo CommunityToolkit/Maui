@@ -196,7 +196,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 			Behaviors = { behavior }
 		}.EnableAnimations();
 
-		Assert.True(SpinWait.SpinUntil(() => animationCommandCts.IsCancellationRequested, TimeSpan.FromSeconds(1)));
+		Assert.True(SpinWait.SpinUntil(() => animationCommandCts.IsCancellationRequested, TimeSpan.FromMilliseconds((int)TestDuration.Short)));
 
 		try
 		{

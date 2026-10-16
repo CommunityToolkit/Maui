@@ -37,8 +37,7 @@ public class SnackbarTests : BaseTest
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
-		// Ensure CancellationToken expires
-		await Task.Delay(100, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(() => snackbar.Show(cts.Token));
 	}
@@ -60,8 +59,7 @@ public class SnackbarTests : BaseTest
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
-		// Ensure CancellationToken expires
-		await Task.Delay(100, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(() => snackbar.Dismiss(cts.Token));
 	}

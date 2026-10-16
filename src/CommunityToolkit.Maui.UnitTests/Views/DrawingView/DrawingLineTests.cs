@@ -74,8 +74,7 @@ public class DrawingLineTests : BaseViewTest
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
-		// Ensure CancellationToken Expired
-		await Task.Delay(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await drawingLine.GetImageStream(10, 10, Colors.Blue.AsPaint(), cts.Token));
 	}

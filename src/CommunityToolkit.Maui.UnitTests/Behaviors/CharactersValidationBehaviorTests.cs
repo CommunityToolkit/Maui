@@ -71,9 +71,7 @@ public class CharactersValidationBehaviorTests() : BaseBehaviorTest<CharactersVa
 		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
-
-		// Ensure CancellationToken expires
-		await Task.Delay(100, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await behavior.ForceValidate(cts.Token));
