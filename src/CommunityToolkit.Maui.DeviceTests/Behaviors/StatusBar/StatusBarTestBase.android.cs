@@ -11,9 +11,7 @@ public abstract partial class StatusBarTestBase
 {
 	protected Task AttachPageAndRun(Page page, Func<IPlatformViewHandler, Task> action) => AttachViewAndRun(page, action);
 
-	// Not AttachAndRun: it waits for the view's root to report IsLaidOut, which a MAUI page's root view never does on Android, and its
-	// WaitForLayout leaves a layout listener and timer behind that keep the platform view alive for a second after the test, which a leak
-	// test would see.
+	// Not AttachAndRun: it waits for the view's root to report IsLaidOut, which a MAUI page's root view never does on Android.
 	protected Task AttachViewAndRun(VisualElement view, Func<IPlatformViewHandler, Task> action) =>
 		InvokeOnMainThreadAsync(async () =>
 		{

@@ -6,6 +6,8 @@
 //                 The keyboard, accessibility and tab helpers (internal MAUI API) were dropped, the internal
 //                 Java.Lang.Object.IsAlive() is replaced by a Handle check and the SearchView special case of WaitForFocused
 //                 was removed. Added IsLoadedOnPlatform.
+// Toolkit change: WaitForLayout disposes its timeout once the view was laid out. The pending timeout kept the view alive for a second,
+//                 about as long as the 40 collections of WaitForGC take.
 #nullable enable
 using System;
 using System.IO;
@@ -128,9 +130,9 @@ namespace CommunityToolkit.Maui.DeviceTests
 		public static Task<bool> WaitForLayout(this AView view, int timeout = 1000)
 		{
 			var tcs = new TaskCompletionSource<bool>();
+			var cts = new CancellationTokenSource();
 
 			view.LayoutChange += OnLayout;
-			var cts = new CancellationTokenSource();
 			cts.Token.Register(() => OnLayout(view), true);
 			cts.CancelAfter(timeout);
 
@@ -142,6 +144,9 @@ namespace CommunityToolkit.Maui.DeviceTests
 
 				if (view.Handle != IntPtr.Zero)
 					view.LayoutChange -= OnLayout;
+
+				if (e is not null)
+					cts.Dispose();
 
 				// let the layout resolve after changing
 				tcs.TrySetResult(e != null);

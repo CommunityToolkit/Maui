@@ -364,10 +364,9 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		}
 	}
 
-	// The Java peers of a view are released by CameraX and the Android runtime a little later than the managed objects, and the layout helpers
-	// of the test runner keep a view alive for up to a second through a timer, so this retries for up to 20 seconds. Unlike
-	// AssertionExtensions.WaitForGC it lists the survivors by type name: the toolkit disposes the Java peers of its views, and ToString on a
-	// disposed peer throws.
+	// The Java peers of a view are released by CameraX and the Android runtime a little later than the managed objects, so this retries for up
+	// to 20 seconds. Unlike AssertionExtensions.WaitForGC it lists the survivors by type name: the toolkit disposes the Java peers of its views,
+	// and ToString on a disposed peer throws.
 	protected static async Task AssertCollectedAsync(params (string Name, WeakReference Reference)[] references)
 	{
 		var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(20);
@@ -411,8 +410,6 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 			root.AddView(container);
 			try
 			{
-				// Polls instead of using AssertionExtensions.WaitForLayout, whose timer holds the view for its whole timeout,
-				// so that nothing stays alive once the view is laid out.
 				await AssertionExtensions.AssertEventually(() => views[0].IsLaidOut && views[0].Width > 0 && views[0].Height > 0, 5000, 20, "The hosted view was not laid out.");
 				await body();
 			}
