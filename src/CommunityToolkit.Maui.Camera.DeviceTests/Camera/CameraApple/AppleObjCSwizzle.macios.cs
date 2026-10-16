@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using ObjCRuntime;
@@ -18,17 +17,30 @@ sealed class ObjCMethodReplacement : IDisposable
 {
 	const string objcLibrary = "/usr/lib/libobjc.dylib";
 
-	// A native caller can still be inside a replacement when it is restored; the delegates stay alive for the life of the process.
-	static readonly ConcurrentBag<Delegate> keepAlive = [];
+	// Native code calls a replacement through the static trampoline of its signature (ObjCTrampolines), which finds it here: in an iOS or Mac
+	// Catalyst Release build (Mono full AOT) native code can only call a static method marked [MonoPInvokeCallback], and a delegate of an
+	// instance method or a lambda fails with "Attempting to JIT compile method '(wrapper native-to-managed) ...' while running in aot-only
+	// mode". A native caller can still be inside a replacement when it is restored, so a restored method keeps its last replacement here.
+	static readonly Dictionary<IntPtr, Delegate> replacements = [];
 
 	readonly IntPtr method;
+	readonly Delegate? outerReplacement;
 	bool isDisposed;
 
 	ObjCMethodReplacement(IntPtr method, Delegate replacement)
 	{
 		this.method = method;
-		keepAlive.Add(replacement);
-		OriginalImplementation = method_setImplementation(method, Marshal.GetFunctionPointerForDelegate(replacement));
+		var trampoline = ObjCTrampolines.For(replacement);
+
+		lock (replacements)
+		{
+			replacements.TryGetValue(method, out var registered);
+			replacements[method] = replacement;
+			OriginalImplementation = method_setImplementation(method, trampoline);
+
+			// A method that already runs the trampoline is replaced a second time: the outer replacement is the original of this one.
+			outerReplacement = OriginalImplementation == trampoline ? registered : null;
+		}
 	}
 
 	public IntPtr OriginalImplementation { get; }
@@ -40,8 +52,9 @@ sealed class ObjCMethodReplacement : IDisposable
 	public static ObjCMethodReplacement OfClassMethod(Type nativeType, string selector, Delegate replacement) =>
 		new(FindMethod(class_getClassMethod, nativeType, selector), replacement);
 
+	// The original implementation of a nested replacement is the trampoline, which would only call the nested replacement again.
 	public TDelegate GetOriginal<TDelegate>() where TDelegate : Delegate =>
-		Marshal.GetDelegateForFunctionPointer<TDelegate>(OriginalImplementation);
+		outerReplacement as TDelegate ?? Marshal.GetDelegateForFunctionPointer<TDelegate>(OriginalImplementation);
 
 	public void Dispose()
 	{
@@ -51,7 +64,33 @@ sealed class ObjCMethodReplacement : IDisposable
 		}
 
 		isDisposed = true;
-		method_setImplementation(method, OriginalImplementation);
+		lock (replacements)
+		{
+			method_setImplementation(method, OriginalImplementation);
+			if (outerReplacement is not null)
+			{
+				replacements[method] = outerReplacement;
+			}
+		}
+	}
+
+	// A trampoline knows the receiver and the selector, not the replaced method: that is the method that the receiver's class resolves the
+	// selector to, or a superclass's when an override in a subclass called super.
+	public static TDelegate? Find<TDelegate>(IntPtr self, IntPtr selector) where TDelegate : Delegate
+	{
+		for (var objectiveCClass = object_getClass(self); objectiveCClass != IntPtr.Zero; objectiveCClass = class_getSuperclass(objectiveCClass))
+		{
+			var candidate = class_getInstanceMethod(objectiveCClass, selector);
+			lock (replacements)
+			{
+				if (replacements.TryGetValue(candidate, out var replacement))
+				{
+					return replacement as TDelegate;
+				}
+			}
+		}
+
+		return null;
 	}
 
 	static IntPtr FindMethod(Func<IntPtr, IntPtr, IntPtr> lookup, Type nativeType, string selector)
@@ -69,6 +108,64 @@ sealed class ObjCMethodReplacement : IDisposable
 
 	[DllImport(objcLibrary)]
 	static extern IntPtr method_setImplementation(IntPtr method, IntPtr implementation);
+
+	[DllImport(objcLibrary)]
+	static extern IntPtr object_getClass(IntPtr nativeObject);
+
+	[DllImport(objcLibrary)]
+	static extern IntPtr class_getSuperclass(IntPtr cls);
+}
+
+// One static entry point per native signature (see ObjCMethodReplacement). A replacement that cannot be found answers nil, 0 or nothing.
+static class ObjCTrampolines
+{
+	static readonly ObjCImplementationObject objectTrampoline = CallObject;
+	static readonly ObjCImplementationObjectObject objectObjectTrampoline = CallObjectObject;
+	static readonly ObjCImplementationObjectObjectObject objectObjectObjectTrampoline = CallObjectObjectObject;
+	static readonly ObjCImplementationObjectObjectObjectInteger objectObjectObjectIntegerTrampoline = CallObjectObjectObjectInteger;
+	static readonly ObjCImplementationVoid voidTrampoline = CallVoid;
+	static readonly ObjCImplementationVoidObjectObject voidObjectObjectTrampoline = CallVoidObjectObject;
+	static readonly ObjCImplementationInteger integerTrampoline = CallInteger;
+
+	public static IntPtr For(Delegate replacement) => Marshal.GetFunctionPointerForDelegate(replacement switch
+	{
+		ObjCImplementationObject => (Delegate)objectTrampoline,
+		ObjCImplementationObjectObject => objectObjectTrampoline,
+		ObjCImplementationObjectObjectObject => objectObjectObjectTrampoline,
+		ObjCImplementationObjectObjectObjectInteger => objectObjectObjectIntegerTrampoline,
+		ObjCImplementationVoid => voidTrampoline,
+		ObjCImplementationVoidObjectObject => voidObjectObjectTrampoline,
+		ObjCImplementationInteger => integerTrampoline,
+		_ => throw new NotSupportedException($"ObjCTrampolines has no trampoline for {replacement.GetType().Name}.")
+	});
+
+	[MonoPInvokeCallback(typeof(ObjCImplementationObject))]
+	static IntPtr CallObject(IntPtr self, IntPtr selector) =>
+		ObjCMethodReplacement.Find<ObjCImplementationObject>(self, selector)?.Invoke(self, selector) ?? IntPtr.Zero;
+
+	[MonoPInvokeCallback(typeof(ObjCImplementationObjectObject))]
+	static IntPtr CallObjectObject(IntPtr self, IntPtr selector, IntPtr first) =>
+		ObjCMethodReplacement.Find<ObjCImplementationObjectObject>(self, selector)?.Invoke(self, selector, first) ?? IntPtr.Zero;
+
+	[MonoPInvokeCallback(typeof(ObjCImplementationObjectObjectObject))]
+	static IntPtr CallObjectObjectObject(IntPtr self, IntPtr selector, IntPtr first, IntPtr second) =>
+		ObjCMethodReplacement.Find<ObjCImplementationObjectObjectObject>(self, selector)?.Invoke(self, selector, first, second) ?? IntPtr.Zero;
+
+	[MonoPInvokeCallback(typeof(ObjCImplementationObjectObjectObjectInteger))]
+	static IntPtr CallObjectObjectObjectInteger(IntPtr self, IntPtr selector, IntPtr first, IntPtr second, nint third) =>
+		ObjCMethodReplacement.Find<ObjCImplementationObjectObjectObjectInteger>(self, selector)?.Invoke(self, selector, first, second, third) ?? IntPtr.Zero;
+
+	[MonoPInvokeCallback(typeof(ObjCImplementationVoid))]
+	static void CallVoid(IntPtr self, IntPtr selector) =>
+		ObjCMethodReplacement.Find<ObjCImplementationVoid>(self, selector)?.Invoke(self, selector);
+
+	[MonoPInvokeCallback(typeof(ObjCImplementationVoidObjectObject))]
+	static void CallVoidObjectObject(IntPtr self, IntPtr selector, IntPtr first, IntPtr second) =>
+		ObjCMethodReplacement.Find<ObjCImplementationVoidObjectObject>(self, selector)?.Invoke(self, selector, first, second);
+
+	[MonoPInvokeCallback(typeof(ObjCImplementationInteger))]
+	static nint CallInteger(IntPtr self, IntPtr selector) =>
+		ObjCMethodReplacement.Find<ObjCImplementationInteger>(self, selector)?.Invoke(self, selector) ?? 0;
 }
 
 // Native signatures: (self, _cmd, arguments...) -> result. IntPtr is an object or a pointer, nint an NSInteger.
