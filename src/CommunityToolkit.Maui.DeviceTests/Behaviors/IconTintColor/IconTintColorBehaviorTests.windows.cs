@@ -469,15 +469,20 @@ public partial class IconTintColorBehaviorTests
 		await AssertStreamLoadedImageIsTintedAsync(image);
 	}
 
-	// ImageSource.FromStream(() => stream) gives the same stream every time, and MAUI disposes it once it has loaded the image from it: the
-	// mask of the tint cannot be loaded from it. The image is then shown untinted, instead of behind a tint without a mask, which shows nothing.
+	// A stream image source that gives the same stream every time, like ImageSource.FromStream(() => stream), cannot give the mask of the
+	// tint: MAUI disposes the stream once it has loaded the image from it. The image is then shown untinted, instead of behind a tint without a
+	// mask, which shows nothing.
 	[Fact]
 	public async Task ImageWithAStreamImageSourceThatCannotBeReadAgainIsShownUntinted()
 	{
 		SetupBuilder();
 
 		var stream = new MemoryStream(DiscPngBytes);
-		var image = new Image { Source = ImageSource.FromStream(() => stream) };
+
+		// The stream is handed out once the tinted state was checked: FromStream(() => stream) hands it out through Task.Run, which can finish
+		// before the behavior awaits it, and the behavior then removes the tint before AttachTo returns.
+		var streamRequest = new TaskCompletionSource<Stream>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var image = new Image { Source = ImageSource.FromStream(_ => streamRequest.Task) };
 
 		// What MAUI's StreamImageSourceService does with the stream once it has loaded the image.
 		stream.Dispose();
@@ -496,6 +501,8 @@ public partial class IconTintColorBehaviorTests
 
 				// The tint is applied before the mask is loaded.
 				Assert.True(IsNativeTinted(wImage, Colors.Blue), DescribeNativeTint(wImage));
+
+				streamRequest.SetResult(stream);
 
 				await AssertEventually(() => IsNativeUntinted(wImage), timeout: 3000, message: $"The image is still hidden by a tint without a mask: {DescribeNativeTint(wImage)}");
 				Assert.Same(source, wImage.Source);
