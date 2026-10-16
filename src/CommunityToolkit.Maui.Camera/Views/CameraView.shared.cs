@@ -115,6 +115,13 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// <summary>
 	/// Event that is raised when an error occurs.
 	/// </summary>
+	/// <remarks>
+	/// It reports the failures of the work that the handler starts on its own, which no caller could catch: connecting the camera when the
+	/// handler connects the view (for example when no camera is available, when the camera permission was removed, or on Android when CameraX
+	/// cannot initialize), switching to the camera that <see cref="SelectedCamera"/> selects, applying <see cref="ImageCaptureResolution"/>
+	/// and, on Windows, updating <see cref="IsAvailable"/>. Failures after the handler was disconnected are not reported. On Windows it also
+	/// reports a camera that <see cref="StartCameraPreview(CancellationToken)"/> cannot start, instead of an exception.
+	/// </remarks>
 	public event EventHandler<ErrorOccurredEventArgs> ErrorOccurred
 	{
 		add => weakEventManager.AddEventHandler(value);
@@ -132,6 +139,12 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// </summary>
 	/// <remarks>
 	/// <see cref="CaptureImageCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter
+	/// <para>
+	/// The command does not catch the exceptions of <see cref="CaptureImage(CancellationToken)"/>, such as the <see cref="CameraException"/> of a
+	/// capture that fails. <see cref="System.Windows.Input.ICommand.Execute(object)"/> cannot return the task of the capture, so such an exception
+	/// reaches no caller: it is raised as an unhandled exception, which usually ends the app. To handle failures, call
+	/// <see cref="CaptureImage(CancellationToken)"/> and catch its exceptions.
+	/// </para>
 	/// </remarks>
 	public Command<CancellationToken> CaptureImageCommand => (Command<CancellationToken>)GetValue(CaptureImageCommandProperty);
 
@@ -153,6 +166,12 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// </summary>
 	/// <remarks>
 	/// <see cref="StartVideoRecordingCommand"/> has a <see cref="Type"/> of Command&lt;Stream&gt; which requires a <see cref="Stream"/> as a CommandParameter. See <see cref="Command{Stream}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="Stream"/> into <see cref="Command{T}"/> as a CommandParameter
+	/// <para>
+	/// The command does not catch the exceptions of <see cref="StartVideoRecording(Stream, CancellationToken)"/>, such as the
+	/// <see cref="CameraException"/> of a recording that cannot start. <see cref="System.Windows.Input.ICommand.Execute(object)"/> cannot return the
+	/// task of the recording, so such an exception reaches no caller: it is raised as an unhandled exception, which usually ends the app. To handle
+	/// failures, call <see cref="StartVideoRecording(Stream, CancellationToken)"/> and catch its exceptions.
+	/// </para>
 	/// </remarks>
 	public Command<Stream> StartVideoRecordingCommand => (Command<Stream>)GetValue(StartVideoRecordingCommandProperty);
 
@@ -161,6 +180,12 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// </summary>
 	/// <remarks>
 	/// <see cref="StopVideoRecordingCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter
+	/// <para>
+	/// The command does not catch the exceptions of <see cref="StopVideoRecording(CancellationToken)"/>, such as the <see cref="CameraException"/>
+	/// of a recording that failed without a usable video. <see cref="System.Windows.Input.ICommand.Execute(object)"/> cannot return the task of
+	/// the stop, so such an exception reaches no caller: it is raised as an unhandled exception, which usually ends the app. To handle failures,
+	/// call <see cref="StopVideoRecording(CancellationToken)"/> and catch its exceptions.
+	/// </para>
 	/// </remarks>
 	public Command<CancellationToken> StopVideoRecordingCommand => (Command<CancellationToken>)GetValue(StopVideoRecordingCommandProperty);
 
@@ -240,6 +265,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// Set Extension Mode
 	/// </summary>
 	/// <param name="mode">mode</param>
+	/// <param name="token"></param>
 	public Task SetExtensionMode(int mode, CancellationToken token = default)
 	{
 		return Handler.CameraManager.SetExtensionMode(mode, token);
@@ -295,7 +321,20 @@ public partial class CameraView : View, ICameraView, IDisposable
 	public Task StartVideoRecording(Stream stream, CancellationToken token = default) =>
 		Handler.CameraManager.StartVideoRecording(stream, token);
 
-	/// <inheritdoc cref="ICameraView.StopVideoRecording"/>
+	/// <summary>
+	/// Stops the ongoing video recording operation and returns the stream that received the video as a <typeparamref name="TStream"/>.
+	/// </summary>
+	/// <remarks>
+	/// Works like <see cref="StopVideoRecording(CancellationToken)"/> and casts its result to <typeparamref name="TStream"/>.
+	/// </remarks>
+	/// <typeparam name="TStream">The type of the stream that the recording was started with.</typeparam>
+	/// <param name="token">A cancellation token that can be used to cancel the stop operation.</param>
+	/// <returns>A task that represents the asynchronous stop operation. Its result is the stream that received the video.</returns>
+	/// <exception cref="InvalidCastException">Thrown when the result of <see cref="StopVideoRecording(CancellationToken)"/> is not a
+	/// <typeparamref name="TStream"/>: the recording was started with a stream of another type, or the result is <see cref="Stream.Null"/>
+	/// because no recording runs (for example on a second call after the recording was stopped), or, on Android, iOS and Mac Catalyst, because
+	/// the camera was released while the stop waited for the platform to finish the recording.</exception>
+	/// <exception cref="CameraException">Thrown in the cases that <see cref="StopVideoRecording(CancellationToken)"/> describes.</exception>
 	public async Task<TStream> StopVideoRecording<TStream>(CancellationToken token = default) where TStream : Stream
 	{
 		var stream = await Handler.CameraManager.StopVideoRecording(token);

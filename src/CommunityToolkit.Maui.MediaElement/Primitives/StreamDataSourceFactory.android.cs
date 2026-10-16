@@ -45,6 +45,9 @@ sealed class StreamDataSourceFactory : Java.Lang.Object, IDataSourceFactory
 			// No-op: transfer listeners not supported for stream sources
 		}
 
+		// ExoPlayer opens and reads the source on its loading thread, where an exception that is not a Java exception ends the app: it arrives
+		// there as a java.lang.Error, which ExoPlayer's Loader rethrows. A position at which the stream cannot be read, or a stream that fails, is
+		// a failure of the source instead: a Java IOException, which the player reports as a source error (MediaFailed)
 		public long Open(DataSpec? dataSpec)
 		{
 			ArgumentNullException.ThrowIfNull(dataSpec);
@@ -53,21 +56,31 @@ sealed class StreamDataSourceFactory : Java.Lang.Object, IDataSourceFactory
 
 			if (stream.CanSeek)
 			{
-				stream.Seek(dataSpec.Position, SeekOrigin.Begin);
+				try
+				{
+					stream.Seek(dataSpec.Position, SeekOrigin.Begin);
+				}
+				catch (Exception exception) when (exception is not Java.Lang.Throwable)
+				{
+					throw ToIOException(exception);
+				}
 			}
 			else if (dataSpec.Position > 0)
 			{
-				throw new InvalidOperationException("Cannot open a non-seekable stream at a non-zero position.");
+				// This happens, for example, after a seek outside of what the player has buffered. A position out of range is a failure that ExoPlayer
+				// does not retry.
+				throw new DataSourceException("Cannot open a non-seekable stream at a non-zero position.", PlaybackException.ErrorCodeIoReadPositionOutOfRange);
 			}
 
 			bytesRemaining = dataSpec.Length != C.LengthUnset
 				? dataSpec.Length
 				: (length != C.LengthUnset ? length - dataSpec.Position : C.LengthUnset);
 
-			if (bytesRemaining < 0)
+			// A stream whose length is unknown (C.LengthUnset) is read to its end: only a known length can be exceeded
+			if (bytesRemaining < 0 && length != C.LengthUnset)
 			{
-				throw new ArgumentOutOfRangeException(nameof(dataSpec),
-					$"Position {dataSpec.Position} exceeds stream length {length}.");
+				throw new DataSourceException($"Position {dataSpec.Position} exceeds stream length {length}.",
+					PlaybackException.ErrorCodeIoReadPositionOutOfRange);
 			}
 
 			return bytesRemaining;
@@ -91,7 +104,16 @@ sealed class StreamDataSourceFactory : Java.Lang.Object, IDataSourceFactory
 				? (int)Math.Min(bytesRemaining, length)
 				: length;
 
-			int bytesRead = stream.Read(buffer, offset, bytesToRead);
+			int bytesRead;
+			try
+			{
+				bytesRead = stream.Read(buffer, offset, bytesToRead);
+			}
+			catch (Exception exception) when (exception is not Java.Lang.Throwable)
+			{
+				// A stream that fails to read (a network stream that lost its connection, for example) is a failure of the source (see Open)
+				throw ToIOException(exception);
+			}
 
 			if (bytesRead == 0)
 			{
@@ -121,5 +143,7 @@ sealed class StreamDataSourceFactory : Java.Lang.Object, IDataSourceFactory
 
 			base.Dispose(disposing);
 		}
+
+		static Java.IO.IOException ToIOException(Exception exception) => new(exception.Message, Java.Lang.Throwable.FromException(exception));
 	}
 }

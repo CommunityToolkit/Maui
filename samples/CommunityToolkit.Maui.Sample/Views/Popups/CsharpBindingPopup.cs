@@ -16,7 +16,7 @@ public partial class CsharpBindingPopup : Popup
 			{
 				new Label()
 					.Font(size: 26, bold: true)
-					.TextColor(Colors.Black)
+					.AppThemeColorBinding(Label.TextColorProperty, Colors.Black, Colors.White)
 					.TextCenter()
 					.Top().Center()
 					.Bind(Label.TextProperty,
@@ -30,7 +30,7 @@ public partial class CsharpBindingPopup : Popup
 				new Label()
 					.Center()
 					.TextCenter()
-					.TextColor(Colors.Black)
+					.AppThemeColorBinding(Label.TextColorProperty, Colors.Black, Colors.White)
 					.Bind(Label.TextProperty,
 						getter: static (CsharpBindingPopupViewModel vm) => vm.Message)
 

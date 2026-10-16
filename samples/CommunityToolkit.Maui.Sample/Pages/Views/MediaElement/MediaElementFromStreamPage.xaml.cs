@@ -38,7 +38,13 @@ public sealed partial class MediaElementFromStreamPage : BasePage<MediaElementFr
 	{
 		base.OnNavigatedFrom(args);
 		MediaElement.Stop();
-		MediaElement.Handler?.DisconnectHandler();
+
+		// Release the player only when the page leaves the navigation stack. When another flyout item is selected (NavigationType.Replace),
+		// Shell keeps the page in the navigation stack of the Views item and shows it again, with this MediaElement, when the user comes back
+		if (args.NavigationType is NavigationType.Pop or NavigationType.PopToRoot or NavigationType.Remove)
+		{
+			MediaElement.Handler?.DisconnectHandler();
+		}
 	}
 
 	protected override async void OnDisappearing()
@@ -55,8 +61,17 @@ public sealed partial class MediaElementFromStreamPage : BasePage<MediaElementFr
 	{
 		base.OnAppearing();
 
-		await using var networkStream = await httpClient.GetStreamAsync(StreamingUrls.BuckBunny);
-		await UpdateSourceStream(networkStream);
+		try
+		{
+			await using var networkStream = await httpClient.GetStreamAsync(StreamingUrls.BuckBunny);
+			await UpdateSourceStream(networkStream);
+		}
+		catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+		{
+			// For example, the device is offline (HttpRequestException) or the download timed out (TaskCanceledException)
+			logger.LogError(ex, "Failed to download the video");
+			await Toast.Make("Failed to download the video. Check the internet connection.").Show();
+		}
 	}
 
 	void MediaElement_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -209,10 +224,29 @@ public sealed partial class MediaElementFromStreamPage : BasePage<MediaElementFr
 
 	async void OnRecordVideoClicked(object? sender, EventArgs? e)
 	{
-		var videoResult = await MediaPicker.Default.CaptureVideoAsync(new MediaPickerOptions
+		FileResult? videoResult;
+
+		try
 		{
-			Title = "Capture Video"
-		});
+			videoResult = await MediaPicker.Default.CaptureVideoAsync(new MediaPickerOptions
+			{
+				Title = "Capture Video"
+			});
+		}
+		catch (PermissionException ex)
+		{
+			// A permission that video capture needs was denied: the camera, the microphone (iOS, Mac Catalyst) or the storage (Android 12 and lower).
+			// The message names it, for example "Camera permission was not granted: Denied"
+			logger.LogWarning(ex, "Unable to record a video");
+			await Toast.Make($"Unable to record a video. {ex.Message}").Show();
+			return;
+		}
+		catch (FeatureNotSupportedException ex)
+		{
+			logger.LogWarning(ex, "Unable to record a video");
+			await Toast.Make("Unable to record a video. Video capture is not supported on this device.").Show();
+			return;
+		}
 
 		if (videoResult is null)
 		{

@@ -21,7 +21,9 @@
   <Folder Name="/Solution Items/">
     <File Path="../.editorconfig" />
     <File Path="../.github/workflows/benchmarks.yml" />
+    <File Path="../.github/workflows/device-tests.yml" />
     <File Path="../.github/workflows/dotnet-build.yml" />
+    <File Path="../.github/workflows/shared.env" />
     <File Path="../Directory.Build.props" />
     <File Path="../Directory.Build.targets" />
     <File Path="../global.json" />
@@ -31,6 +33,20 @@
     <Project Path="../src/CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests/CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests.csproj" />
     <Project Path="../src/CommunityToolkit.Maui.SourceGenerators.UnitTests/CommunityToolkit.Maui.SourceGenerators.UnitTests.csproj" />
     <Project Path="../src/CommunityToolkit.Maui.UnitTests/CommunityToolkit.Maui.UnitTests.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Tests/Device Tests/">
+    <Project Path="../src/CommunityToolkit.Maui.Camera.DeviceTests/CommunityToolkit.Maui.Camera.DeviceTests.csproj">
+      <Deploy />
+    </Project>
+    <Project Path="../src/CommunityToolkit.Maui.DeviceTests.Runners.SourceGen/CommunityToolkit.Maui.DeviceTests.Runners.SourceGen.csproj" />
+    <Project Path="../src/CommunityToolkit.Maui.DeviceTests.Runners/CommunityToolkit.Maui.DeviceTests.Runners.csproj" />
+    <Project Path="../src/CommunityToolkit.Maui.DeviceTests.Shared/CommunityToolkit.Maui.DeviceTests.Shared.csproj" />
+    <Project Path="../src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj">
+      <Deploy />
+    </Project>
+    <Project Path="../src/CommunityToolkit.Maui.MediaElement.DeviceTests/CommunityToolkit.Maui.MediaElement.DeviceTests.csproj">
       <Deploy />
     </Project>
   </Folder>

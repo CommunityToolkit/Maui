@@ -117,8 +117,23 @@ sealed partial class CameraManager(
 
 		if (isInitialized)
 		{
-			PlatformStopCameraPreview();
-			await PlatformStartCameraPreview(token);
+			PlatformStopCameraPreviewForCameraSwitch();
+
+			try
+			{
+				await PlatformStartCameraPreview(token);
+			}
+			catch (Exception ex) when (ex is not OperationCanceledException)
+			{
+				// The preview was started before the switch: it stays started, so that selecting another camera opens that camera instead of
+				// being ignored (a stopped manager does not follow SelectedCamera). A cancelled switch leaves the preview stopped, like a
+				// cancelled StartCameraPreview
+				isInitialized = true;
+				throw;
+			}
+
+			// Windows reports a camera that cannot be started through ErrorOccurred instead of throwing: the preview stays started there too
+			isInitialized = true;
 		}
 	}
 
@@ -178,6 +193,8 @@ sealed partial class CameraManager(
 	/// Stops the preview from the camera, at the platform-specific level.
 	/// </summary>
 	private partial void PlatformStopCameraPreview();
+
+	private partial void PlatformStopCameraPreviewForCameraSwitch();
 
 	/// <summary>
 	/// Starts video recording and writes the recorded data to the specified stream.

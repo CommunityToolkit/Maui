@@ -72,6 +72,15 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, object>, IDr
 	{
 	}
 
+	// Without a platform there is no platform view and nothing to stop listening to: the handler stays connected, as on the platforms
+	internal void StopListeningUntilLoaded()
+	{
+	}
+
+	internal void ListenAgain()
+	{
+	}
+
 	/// <inheritdoc />
 	protected override object CreatePlatformView() => throw new NotSupportedException();
 }

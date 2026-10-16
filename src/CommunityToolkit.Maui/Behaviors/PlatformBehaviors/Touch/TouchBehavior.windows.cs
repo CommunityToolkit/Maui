@@ -20,12 +20,18 @@ public partial class TouchBehavior
 
 	Storyboard? pointerUpStoryboard;
 
+	FrameworkElement? view;
+
+	// A WinUI button (MAUI's Button and ImageButton) raises its Click, which MAUI turns into Clicked, for the pointer and the keyboard itself
+	internal bool IsClickedRaisedByPlatformView => view is Microsoft.UI.Xaml.Controls.Primitives.ButtonBase;
+
 	/// <inheritdoc/>
 	protected override void OnAttachedTo(VisualElement bindable, FrameworkElement platformView)
 	{
 		base.OnAttachedTo(bindable, platformView);
 
 		Element = bindable;
+		view = platformView;
 
 		if (string.IsNullOrEmpty(platformView.Name))
 		{
@@ -73,23 +79,36 @@ public partial class TouchBehavior
 	/// <inheritdoc/>
 	protected override void OnDetachedFrom(VisualElement bindable, FrameworkElement platformView)
 	{
+		// Element must be cleared before the base class clears View (which Element returns): the Element setter undoes what the attach did
+		// to the element (the layout's ChildAdded subscription, the children's InputTransparent) only while it still knows the element.
+		Element = null;
 		base.OnDetachedFrom(bindable, platformView);
 
-		if (!IsEnabled)
-		{
-			return;
-		}
+		RemovePointerHandlers(platformView);
+		view = null;
 
-		Element = null;
+		isPressed = false;
+	}
 
+	void RemovePointerHandlers(FrameworkElement platformView)
+	{
 		platformView.PointerPressed -= OnPointerPressed;
 		platformView.PointerReleased -= OnPointerReleased;
 		platformView.PointerCanceled -= OnPointerCanceled;
 		platformView.PointerExited -= OnPointerExited;
 		platformView.PointerEntered -= OnPointerEntered;
 		platformView.PointerCaptureLost -= OnPointerCaptureLost;
+	}
 
-		isPressed = false;
+	partial void PlatformDispose()
+	{
+		// A handler left on the element would hand the next pointer event (a mouse moving over the element is enough) to the disposed
+		// behavior, which throws.
+		if (view is not null)
+		{
+			RemovePointerHandlers(view);
+			view = null;
+		}
 	}
 
 	void OnPointerEntered(object? sender, PointerRoutedEventArgs e)

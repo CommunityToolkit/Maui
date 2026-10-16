@@ -103,6 +103,8 @@ partial class CameraManager
 	{
 		if (mediaCapture is null)
 		{
+			// CameraView.CaptureImage waits for MediaCaptured or MediaCaptureFailed, so a capture that cannot start must be reported
+			cameraView.OnMediaCapturedFailed("Unable to capture an image because the camera is not initialized. Start the camera preview first.");
 			return;
 		}
 
@@ -120,8 +122,9 @@ partial class CameraManager
 		}
 		catch (Exception ex)
 		{
+			// Reported like on Android, iOS and Mac Catalyst: CameraView.CaptureImage then throws the CameraException of MediaCaptureFailed
+			// (a rethrow here made it throw the platform exception instead and left that CameraException unobserved)
 			cameraView.OnMediaCapturedFailed(ex.Message);
-			throw;
 		}
 	}
 
@@ -150,11 +153,15 @@ partial class CameraManager
 
 		try
 		{
-			await mediaCapture.InitializeCameraForCameraView(cameraView.SelectedCamera.DeviceId, token);
+			if (!await mediaCapture.InitializeCameraForCameraView(cameraView.SelectedCamera.DeviceId, token))
+			{
+				throw new CameraException("Unable to open the selected camera. It may be unavailable or in use by another application.");
+			}
 		}
 		catch (Exception ex)
 		{
-			// can't use that camera
+			// A MediaCapture that Media Foundation could not initialize cannot preview or capture, whatever stopped its initialization (a camera
+			// that cannot be opened, the cancellation of the token, a camera that the privacy settings block)
 			mediaCapture?.Dispose();
 			mediaCapture = null;
 
@@ -182,6 +189,8 @@ partial class CameraManager
 
 		onLoaded.Invoke();
 	}
+
+	private partial void PlatformStopCameraPreviewForCameraSwitch() => PlatformStopCameraPreview();
 
 	private partial void PlatformStopCameraPreview()
 	{
@@ -224,10 +233,12 @@ partial class CameraManager
 			return;
 		}
 
-		videoCaptureStream = stream;
-
 		var profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto);
 		mediaRecording = await mediaCapture.PrepareLowLagRecordToStreamAsync(profile, stream.AsRandomAccessStream());
+
+		// Only a recording that could be prepared replaces the stream: a stream that is refused (AsRandomAccessStream throws for a stream
+		// that cannot seek) must not replace the stream of a recording that is running
+		videoCaptureStream = stream;
 
 		frameSource = mediaCapture.FrameSources
 			.FirstOrDefault(static source => source.Value.Info.MediaStreamType is MediaStreamType.VideoRecord && source.Value.Info.SourceKind is MediaFrameSourceKind.Color)
@@ -256,13 +267,23 @@ partial class CameraManager
 			return Stream.Null;
 		}
 
-		await mediaRecording.StopAsync();
+		// The stop ends the recording, as on Android, iOS and Mac Catalyst: a later StopVideoRecording finds no recording and returns
+		// Stream.Null instead of stopping the stopped LowLagMediaRecording again, which throws a COMException
+		var recording = mediaRecording;
+		var stream = videoCaptureStream;
+		mediaRecording = null;
+		videoCaptureStream = null;
 
-		if (videoCaptureStream.CanSeek)
+		await recording.StopAsync();
+
+		// Releases the resources of the recording; LowLagMediaRecording cannot be started again after FinishAsync
+		await recording.FinishAsync();
+
+		if (stream.CanSeek)
 		{
-			videoCaptureStream.Position = 0;
+			stream.Position = 0;
 		}
 
-		return videoCaptureStream;
+		return stream;
 	}
 }

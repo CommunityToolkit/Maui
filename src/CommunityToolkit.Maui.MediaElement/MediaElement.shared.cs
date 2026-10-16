@@ -298,6 +298,20 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// <summary>
 	/// Gets or sets the <see cref="Source"/> of the media.
 	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// A source without data (a <see cref="UriMediaSource"/> without <see cref="UriMediaSource.Uri"/>, a <see cref="FileMediaSource"/> or
+	/// <see cref="ResourceMediaSource"/> without a path, a <see cref="StreamMediaSource"/> without a stream) empties the player and reports
+	/// <see cref="MediaElementState.None"/>, like a <see langword="null"/> source. On iOS and Mac Catalyst, a <see cref="ResourceMediaSource"/> whose
+	/// file is not in the app bundle, or whose path has no extension, is handled the same way, and a warning is logged. A kind of
+	/// <see cref="MediaSource"/> that the platform does not support is reported through <see cref="MediaFailed"/>.
+	/// </para>
+	/// <para>
+	/// A source that cannot be applied or played is reported through <see cref="MediaFailed"/>. An exception thrown by an event handler that the
+	/// change of the source raises, for example a <see cref="StateChanged"/> handler for <see cref="MediaElementState.Opening"/>, is not a failure of
+	/// the source: it propagates to the code that set the source, or, once the change continues asynchronously, to the dispatcher.
+	/// </para>
+	/// </remarks>
 	[TypeConverter(typeof(MediaSourceConverter))]
 	public MediaSource? Source
 	{
@@ -442,6 +456,13 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		}
 		finally
 		{
+			// When the token ended the wait, the seek can still end or fail later, and nothing awaits its task any more: the task is cancelled, so that a
+			// later failure cannot fault it (an unobserved exception, TaskScheduler.UnobservedTaskException). A failure that came first is observed here.
+			if (!seekCompletedTaskCompletionSource.TrySetCanceled(token))
+			{
+				_ = seekCompletedTaskCompletionSource.Task.Exception;
+			}
+
 			seekCompletedTaskCompletionSource = new();
 			seekToSemaphoreSlim.Release();
 		}

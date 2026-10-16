@@ -38,6 +38,7 @@ public partial class SelectAllTextBehavior : PlatformBehavior<InputView, TextBox
 			editText.GotFocus += OnGotFocus;
 		}
 
-		void OnGotFocus(object sender, RoutedEventArgs e) => editText?.SelectAll();
+		// Static, so that the handler removed when the behavior detaches is the one added when it attached.
+		static void OnGotFocus(object sender, RoutedEventArgs e) => (sender as TextBox)?.SelectAll();
 	}
 }

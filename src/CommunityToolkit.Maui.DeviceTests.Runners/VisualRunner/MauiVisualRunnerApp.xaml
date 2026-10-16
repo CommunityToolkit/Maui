@@ -1,0 +1,21 @@
+﻿<!-- Vendored from dotnet/maui @ 2067dd42c6032fbc40d2e46245806679a85df5e6. Original path: src/TestUtils/src/DeviceTests.Runners/VisualRunner/MauiVisualRunnerApp.xaml.
+     Copyright (c) .NET Foundation and Contributors. Licensed under the MIT License (see LICENSE-dotnet-maui.txt).
+     Toolkit change: namespaces renamed from Microsoft.Maui.TestUtils.DeviceTests.Runners* to CommunityToolkit.Maui.DeviceTests.Runners*. -->
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="using:CommunityToolkit.Maui.DeviceTests.Runners.VisualRunner"
+             x:Class="CommunityToolkit.Maui.DeviceTests.Runners.VisualRunner.MauiVisualRunnerApp">
+    <Application.Resources>
+        <ResourceDictionary>
+
+            <Color x:Key="VisualRunnerNoTestsColor">#ff7f00</Color>
+            <Color x:Key="VisualRunnerNotRunTestsColor">DarkGray</Color>
+            <Color x:Key="VisualRunnerSkippedTestsColor">#ff7700</Color>
+            <Color x:Key="VisualRunnerFailedTestsColor">Red</Color>
+            <Color x:Key="VisualRunnerSuccessfulTestsColor">Green</Color>
+
+            <local:RunStatusToColorConverter x:Key="RunStatusToColorConverter" />
+
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

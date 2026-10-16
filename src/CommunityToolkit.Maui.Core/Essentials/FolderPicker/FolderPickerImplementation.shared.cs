@@ -8,6 +8,7 @@ public sealed partial class FolderPickerImplementation
 		try
 		{
 			cancellationToken.ThrowIfCancellationRequested();
+			ArgumentNullException.ThrowIfNull(initialPath);
 			var folder = await InternalPickAsync(initialPath, cancellationToken);
 			return new FolderPickerResult(folder, null);
 		}

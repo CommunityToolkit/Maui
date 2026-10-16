@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "microsoft.dotnet.xharness.cli": {
+      "version": "11.0.0-prerelease.26466.1",
+      "commands": [
+        "xharness"
+      ],
+      "rollForward": false
+    },
+    "coverlet.console": {
+      "version": "10.1.0",
+      "commands": [
+        "coverlet"
+      ],
+      "rollForward": false
+    },
+    "dotnet-reportgenerator-globaltool": {
+      "version": "5.5.11",
+      "commands": [
+        "reportgenerator"
+      ],
+      "rollForward": false
+    }
+  }
+}

@@ -1,0 +1,481 @@
+name: Device Tests
+
+# dotnet-build.yml calls this workflow, so the device tests are part of the Build run and its jobs can wait for them.
+on:
+    workflow_call:
+    workflow_dispatch:
+        inputs:
+            project:
+                description: 'Device test app(s) to build and run'
+                required: false
+                type: choice
+                default: 'All'
+                options:
+                    - All
+                    - Maui
+                    - MediaElement
+                    - Camera
+            test-filter:
+                description: 'TestFilter, for example Category=IconTintColorBehavior (choose project Maui) or SkipCategories=A,B (empty runs every test). A Category= filter selects one app''s tests: choose that app in project, because an app with 0 matching tests fails (exit code 94).'
+                required: false
+                default: ''
+            run-everything:
+                description: 'Also run the tests that each job declares its runner cannot run (empties DEVICE_TEST_SKIP_CAPABILITIES), to find out whether the runner can run them now'
+                required: false
+                type: boolean
+                default: false
+
+permissions:
+    contents: read
+
+env:
+    DOTNET_NOLOGO: true
+    DOTNET_CLI_TELEMETRY_OPTOUT: true
+    TEST_FILTER: ${{ inputs.test-filter }}
+    # A Build run passes no inputs, so it builds and runs all three apps.
+    DEVICE_TEST_PROJECT: ${{ inputs.project || 'All' }}
+
+# No concurrency group: called from dotnet-build.yml, the Build run's group cancels this workflow with the rest of the run (a group of
+# its own would be the caller's, since github.workflow is the caller's name there, and deadlock with it); a manual run cancels nothing.
+
+jobs:
+    # Collecting coverage (DEVICE_TEST_COVERAGE; eng/devices/README.md, "Code coverage") packages the apps a second time with instrumented
+    # toolkit assemblies, so a manual run collects none: nothing merges it there, a run of one app or with a filter covers only part of the
+    # tests, and a run started to answer a question does not need the extra packaging. In a called workflow, github.event_name is the
+    # caller's event, so != 'workflow_dispatch' is true in a Build run only.
+    device_tests_android:
+        name: Device Tests (Android API ${{ matrix.api-level }})
+        permissions:
+            contents: read
+        # Pinned: ubuntu-latest moves to Ubuntu 26.04 from 2026-10-19 (actions/runner-images #14748).
+        runs-on: ubuntu-24.04
+        # Coverage (API 36) packages the three apps a second time, which took 6 minutes on an M4 Max.
+        timeout-minutes: 110
+        strategy:
+            fail-fast: false
+            matrix:
+                api-level: [ 36, 28 ]
+                include:
+                    # The API 28 x86_64 image (google_apis r11, PSR1.180720.122, a 2020 build) turns on GLDMA, YUVCache and YUV420888toNV21
+                    # (its advancedFeatures.ini; the arm64 API 28 images turn on none of them). Its YUV buffers then go through the host's YUV
+                    # converter, which aborted the whole emulator ("FATAL | Unknown format: 0x18", gfxstream's getYUVOffsets, emulator
+                    # 37.2.12) as soon as the Camera app's first test started the preview. Turned off, the image handles YUV itself, as the
+                    # arm64 API 28 images do. (On an arm64 API 28 image, turning them on makes YUV images that an app writes read back as
+                    # zeros: the YUV round trip of CameraManagerCaptureAndroidTests fails.) The API 36 image turns on GLDMA and YUVCache with
+                    # a newer guest and ran every test.
+                    -   api-level: 28
+                        emulator-features: -feature -GLDMA,-YUVCache,-YUV420888toNV21
+        env:
+            # One Android level is enough for the merged coverage report; API 28 runs without the extra packaging.
+            DEVICE_TEST_COVERAGE: ${{ github.event_name != 'workflow_dispatch' && matrix.api-level == 36 }}
+            # OnDeviceSpeech: the emulator image gets no Play updates, so its on-device recognizer may have no language installed or never
+            # answer, and then every OfflineSpeechToTextTests question waits 30 s (25 rows on API 36), which can exceed the time budget.
+            # Delete it when a run-everything run shows those rows passing, or skipping without the 30 s waits, on both API levels.
+            DEVICE_TEST_SKIP_CAPABILITIES: ${{ !inputs.run-everything && 'OnDeviceSpeech' || '' }}
+            # SecondCamera: the emulator has a back and a front camera (-camera-front emulated below), so the two-camera tests fail, instead of
+            # skipping, if the emulator options ever lose one.
+            DEVICE_TEST_REQUIRE_CAPABILITIES: 'SecondCamera'
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Load shared environment variables
+                uses: ./.github/actions/load-shared-env
+
+            -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
+                uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+                with:
+                    dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+                    dotnet-quality: 'ga'
+
+            -   uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+                with:
+                    distribution: 'microsoft'
+                    java-version: '17'
+
+            # Directory.Build.targets removes the iOS and Mac Catalyst target frameworks on Linux, so restore only needs Android.
+            -   name: Install .NET MAUI Android Workload
+                run: dotnet workload install maui-android
+
+            -   name: Display dotnet info
+                run: dotnet --info
+
+            -   name: Restore .NET tools
+                id: tools
+                run: dotnet tool restore
+
+            -   name: Enable KVM
+                run: |
+                    echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+                    sudo udevadm control --reload-rules
+                    # --settle returns once udevd has applied the rule; without it, trigger only queues the event and the check below can run first.
+                    sudo udevadm trigger --name-match=kvm --settle
+                    # Without a usable /dev/kvm the emulator action only warns and runs the x86_64 emulator with -accel off, far too slowly.
+                    if ! { test -r /dev/kvm && test -w /dev/kvm; }; then
+                        echo '::error::/dev/kvm is not usable, so the Android emulator cannot use hardware acceleration.'
+                        exit 1
+                    fi
+
+            -   name: Runner diagnostics
+                run: |
+                    nproc
+                    free -h
+                    df -h "$GITHUB_WORKSPACE" "$HOME"
+
+            -   name: Build device test apps
+                run: pwsh ./eng/devices/android.ps1 -Target buildOnly -Project "$DEVICE_TEST_PROJECT"
+
+            # Runs even when an app failed to build, so the other apps are still tested.
+            -   name: Run device tests
+                if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+                uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+                with:
+                    api-level: ${{ matrix.api-level }}
+                    target: google_apis
+                    arch: x86_64
+                    profile: pixel_7_pro
+                    cores: 4
+                    ram-size: 4096M
+                    disk-size: 6000M
+                    force-avd-creation: false
+                    # No snapshot: the action appends the hardware settings (cores, RAM, disk) to the AVD's config.ini each time it starts an
+                    # emulator, so a saved snapshot never matched the next start's configuration ("The emulator is starting from scratch.
+                    # Reason: different AVD configuration") and every run cold-booted anyway. AVDs that avdmanager creates have no front
+                    # camera (hw.camera.front=none); -camera-front emulated adds one for the two-camera tests.
+                    emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated ${{ matrix.emulator-features }}
+                    disable-animations: true
+                    # 30 minutes per app: the main app took 5.5 minutes on an arm64 emulator on an M4 Max; this one has 4 cores and software rendering.
+                    script: pwsh ./eng/devices/android.ps1 -Target testOnly -Project "$DEVICE_TEST_PROJECT" -DeviceId emulator-5554 -Timeout 00:30:00 -Results artifacts/device-tests/android-api${{ matrix.api-level }}
+
+            -   name: Upload device test results
+                if: always()
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: device-tests-android-api${{ matrix.api-level }}
+                    path: |
+                        artifacts/device-tests/
+                        artifacts/logs/
+
+            -   name: Upload device test coverage
+                if: ${{ !cancelled() && env.DEVICE_TEST_COVERAGE == 'true' }}
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: coverage-device-tests-android-api${{ matrix.api-level }}
+                    path: artifacts/device-tests/android-api${{ matrix.api-level }}/coverage/*.cobertura.xml
+                    if-no-files-found: warn
+
+    device_tests_ios:
+        name: Device Tests (iOS Simulator)
+        permissions:
+            contents: read
+        runs-on: xcode-27
+        timeout-minutes: 90
+        env:
+            DEVICE_TEST_COVERAGE: ${{ github.event_name != 'workflow_dispatch' }}
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Load shared environment variables
+                uses: ./.github/actions/load-shared-env
+
+            -   name: Set Xcode Version
+                uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
+                with:
+                    xcode-version: ${{ env.CommunityToolkitSample_Xcode_Version }}
+
+            # The apps build against the Xcode 27 SDK, which the workload packs of the latest .NET SDK feature band support (as in build_sample).
+            -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
+                uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+                with:
+                    dotnet-version: ${{ env.LATEST_NET_VERSION }}
+                    dotnet-quality: 'ga'
+
+            # Restore evaluates every target framework of the toolkit libraries, so Android and Mac Catalyst are needed too.
+            -   name: Install .NET MAUI Workload
+                run: dotnet workload install maui
+
+            -   name: Display dotnet info
+                run: dotnet --info
+
+            -   name: Restore .NET tools
+                id: tools
+                run: dotnet tool restore
+
+            -   name: Runner diagnostics
+                run: |
+                    sw_vers
+                    sysctl -n hw.ncpu hw.memsize
+                    xcrun simctl list runtimes
+                    system_profiler SPAudioDataType SPCameraDataType || true
+
+            -   name: Build device test apps
+                run: pwsh ./eng/devices/ios.ps1 -Target buildOnly -Project "$DEVICE_TEST_PROJECT"
+
+            # 40 minutes per app: the main app took 8 minutes on an M4 Max; the runner has 3 M1 cores.
+            -   name: Run device tests
+                if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+                run: pwsh ./eng/devices/ios.ps1 -Target testOnly -Project "$DEVICE_TEST_PROJECT" -Timeout 00:40:00
+
+            -   name: Upload device test results
+                if: always()
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: device-tests-ios
+                    path: |
+                        artifacts/device-tests/
+                        artifacts/logs/
+
+            -   name: Upload device test coverage
+                if: ${{ !cancelled() && env.DEVICE_TEST_COVERAGE == 'true' }}
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: coverage-device-tests-ios
+                    path: artifacts/device-tests/ios/coverage/*.cobertura.xml
+                    if-no-files-found: warn
+
+    device_tests_maccatalyst:
+        name: Device Tests (Mac Catalyst)
+        permissions:
+            contents: read
+        runs-on: xcode-27
+        timeout-minutes: 90
+        env:
+            # Camera: the runner VM has no camera and no step can add one (local runs on a Mac run these tests). Delete it if the runner
+            # image gains a camera.
+            DEVICE_TEST_SKIP_CAPABILITIES: ${{ !inputs.run-everything && 'Camera' || '' }}
+            DEVICE_TEST_COVERAGE: ${{ github.event_name != 'workflow_dispatch' }}
+            HOMEBREW_NO_AUTO_UPDATE: 1
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Load shared environment variables
+                uses: ./.github/actions/load-shared-env
+
+            -   name: Set Xcode Version
+                uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
+                with:
+                    xcode-version: ${{ env.CommunityToolkitSample_Xcode_Version }}
+
+            # The apps build against the Xcode 27 SDK, which the workload packs of the latest .NET SDK feature band support (as in build_sample).
+            -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
+                uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+                with:
+                    dotnet-version: ${{ env.LATEST_NET_VERSION }}
+                    dotnet-quality: 'ga'
+
+            # Restore evaluates every target framework of the toolkit libraries, so Android and iOS are needed too.
+            -   name: Install .NET MAUI Workload
+                run: dotnet workload install maui
+
+            -   name: Display dotnet info
+                run: dotnet --info
+
+            -   name: Restore .NET tools
+                id: tools
+                run: dotnet tool restore
+
+            -   name: Runner diagnostics
+                run: |
+                    sw_vers
+                    csrutil status || true
+                    sysctl -n hw.ncpu hw.memsize
+                    system_profiler SPAudioDataType SPCameraDataType || true
+
+            # Four camera permission tests need an audio input, and audio playback has stalled on runner VMs without audio devices
+            # (actions/runner-images #9330, #10902, #11251). The images no longer include BlackHole (#9487); restarting coreaudiod makes
+            # it appear without a reboot (#11746).
+            -   name: Audio devices
+                run: |
+                    if system_profiler SPAudioDataType | grep -q 'Input Channels'; then
+                        echo 'The runner has an audio input.'
+                        exit 0
+                    fi
+                    if brew install --cask blackhole-2ch && sudo killall coreaudiod; then
+                        sleep 5
+                        system_profiler SPAudioDataType
+                    fi
+                    if ! system_profiler SPAudioDataType | grep -q 'Input Channels'; then
+                        echo '::warning::No audio input on this runner: the tests that need one skip.'
+                    fi
+
+            # CI only (a headless run cannot answer the permission prompts). On macOS 27 the per-user TCC database is under
+            # /private/var/containers/Data/ProtectedSystem, found the way the runner image's configure-tccdb-macos-27.sh finds it; writing it
+            # needs sudo and SIP off, which the runner VMs have. Without it the apps keep undecided permissions and those tests skip, so a
+            # grant that cannot be written only warns, as on the iOS simulator (ios.ps1), and the apps are still built and tested.
+            -   name: Grant camera, microphone and speech recognition to the test apps
+                run: |
+                    db=$(sudo find /private/var/containers/Data/ProtectedSystem -mindepth 6 -maxdepth 6 -type f -path '*/Data/Library/Application Support/com.apple.TCC/TCC.db' 2>/dev/null || true)
+                    if [ "$(printf '%s\n' "$db" | grep -c .)" -ne 1 ]; then
+                        db=$(sudo lsof -c tccd -Fn | sed -n 's/^n//p' | grep '/ProtectedSystem/.*/com\.apple\.TCC/TCC\.db$' | sort -u | head -n 1)
+                    fi
+                    if [ -z "$db" ]; then
+                        echo '::warning::No user TCC database found; the apps keep undecided permissions.'
+                        exit 0
+                    fi
+                    now=$(date +%s)
+                    for app in com.communitytoolkit.maui.devicetests com.communitytoolkit.maui.camera.devicetests com.communitytoolkit.maui.mediaelement.devicetests; do
+                        for service in kTCCServiceCamera kTCCServiceMicrophone kTCCServiceSpeechRecognition; do
+                            if ! sudo sqlite3 -cmd '.timeout 5000' "$db" "INSERT OR REPLACE INTO access (service,client,client_type,auth_value,auth_reason,auth_version,csreq,policy_id,indirect_object_identifier_type,indirect_object_identifier,indirect_object_code_identity,flags,last_modified,pid,pid_version,boot_uuid,last_reminded) VALUES ('$service','$app',0,2,4,1,NULL,NULL,0,'UNUSED',NULL,0,$now,NULL,NULL,'UNUSED',$now);"; then
+                                echo "::warning::Could not grant $service to $app in $db; the app keeps an undecided permission."
+                            fi
+                        done
+                    done
+                    sudo sqlite3 -cmd '.timeout 5000' "$db" "SELECT service, client, auth_value FROM access WHERE client LIKE 'com.communitytoolkit.maui.%';" || true
+
+            -   name: Build device test apps
+                run: pwsh ./eng/devices/catalyst.ps1 -Target buildOnly -Project "$DEVICE_TEST_PROJECT"
+
+            # 30 minutes per app: the main app took 5.5 minutes on an M4 Max; the runner has 3 M1 cores.
+            -   name: Run device tests
+                if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+                run: pwsh ./eng/devices/catalyst.ps1 -Target testOnly -Project "$DEVICE_TEST_PROJECT" -Timeout 00:30:00
+
+            -   name: Upload device test results
+                if: always()
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: device-tests-maccatalyst
+                    path: |
+                        artifacts/device-tests/
+                        artifacts/logs/
+
+            -   name: Upload device test coverage
+                if: ${{ !cancelled() && env.DEVICE_TEST_COVERAGE == 'true' }}
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: coverage-device-tests-maccatalyst
+                    path: artifacts/device-tests/maccatalyst/coverage/*.cobertura.xml
+                    if-no-files-found: warn
+
+    device_tests_windows:
+        name: Device Tests (Windows ${{ matrix.packaging }})
+        permissions:
+            contents: read
+        # Pinned: windows-latest, windows-2025 and windows-2025-vs2026 run the same image today (Windows Server 2025, x64), but windows-latest
+        # moves on.
+        runs-on: windows-2025
+        timeout-minutes: 100
+        strategy:
+            fail-fast: false
+            matrix:
+                packaging: [ packaged, unpackaged ]
+        env:
+            # VideoRendering: the runner has no GPU (Direct3D on WARP), and no run has shown its MediaPlayer rendering the H.264 test clip, so the
+            # 48 MediaElement tests that need rendering are skipped here; local runs keep them. Delete it when a run-everything run shows them
+            # passing. Camera: the runner has none; delete it if the job gains one (for example a virtual camera).
+            DEVICE_TEST_SKIP_CAPABILITIES: ${{ !inputs.run-everything && 'VideoRendering,Camera' || '' }}
+            # MediaPlayback: this job installs Media Foundation, so the MediaElement tests fail, instead of skipping, when no MediaPlayer or
+            # H.264 decoder works. WebView2: the image has the runtime that the map tests host.
+            DEVICE_TEST_REQUIRE_CAPABILITIES: 'MediaPlayback,WebView2'
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Load shared environment variables
+                uses: ./.github/actions/load-shared-env
+
+            # The MediaElement tests need Media Foundation, which the Windows Server runner images do not install (Server-Media-Foundation is
+            # not among the windowsFeatures of actions/runner-images). It installs in a few minutes without a restart; none is possible here,
+            # so if the feature asks for one, the step warns and the tests decide: DEVICE_TEST_REQUIRE_CAPABILITIES (MediaPlayback) makes them
+            # fail when media playback is unavailable. It runs first, so that a broken install shows before the long build.
+            -   name: Install Media Foundation
+                shell: powershell
+                run: |
+                    if (-not (Get-Command Get-WindowsFeature -ErrorAction SilentlyContinue)) {
+                        Write-Output 'No ServerManager module (client Windows): Media Foundation is part of the operating system.'
+                        exit 0
+                    }
+                    $feature = Get-WindowsFeature -Name Server-Media-Foundation
+                    if ($null -eq $feature) {
+                        throw 'This Windows Server has no Server-Media-Foundation feature.'
+                    }
+                    if ($feature.InstallState -ne 'Installed') {
+                        $result = Install-WindowsFeature -Name Server-Media-Foundation
+                        if (-not $result.Success) {
+                            throw "Install-WindowsFeature Server-Media-Foundation failed (exit code $($result.ExitCode))."
+                        }
+                        if ("$($result.RestartNeeded)" -ne 'No') {
+                            Write-Output "::warning::Server-Media-Foundation reports RestartNeeded=$($result.RestartNeeded); the runner cannot restart, so the MediaElement tests show whether media playback works without it."
+                        }
+                    }
+                    Get-WindowsFeature -Name Server-Media-Foundation | Format-Table -AutoSize Name, InstallState
+
+            -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
+                uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+                with:
+                    dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+                    dotnet-quality: 'ga'
+
+            # Restore evaluates every target framework of the toolkit libraries, so every MAUI platform is needed.
+            -   name: Install .NET MAUI Workload
+                id: workload
+                run: dotnet workload install maui
+
+            -   name: Display dotnet info
+                run: dotnet --info
+
+            # No test needs an audio device here: the MediaElement test clip has no audio track, and the speech tests adapt to a machine
+            # without a microphone or a recognizer. If the recognizers below appear, a virtual audio device and microphone consent would
+            # let more speech tests run.
+            -   name: Runner diagnostics
+                shell: powershell
+                run: |
+                    Get-ComputerInfo -Property OsName, OsVersion, CsNumberOfLogicalProcessors, CsTotalPhysicalMemory | Format-List
+                    Get-CimInstance Win32_VideoController | Format-Table -AutoSize Name, CurrentHorizontalResolution, CurrentVerticalResolution
+                    Get-PnpDevice -Class Camera, Image, AudioEndpoint -ErrorAction SilentlyContinue | Format-Table -AutoSize Class, FriendlyName, Status
+                    Get-AppxPackage -Name '*WindowsAppRuntime*' | Format-Table -AutoSize Name, Version, Architecture
+                    Add-Type -AssemblyName System.Speech
+                    'System.Speech recognizers: ' + (([System.Speech.Recognition.SpeechRecognitionEngine]::InstalledRecognizers() | ForEach-Object { $_.Culture.Name }) -join ', ')
+
+            # The default is 1024x768; 1920x1080 is the largest mode (actions/runner-images #2935).
+            -   name: Set the display resolution
+                shell: powershell
+                run: Set-DisplayResolution -Width 1920 -Height 1080 -Force
+
+            -   name: Allow sideloading
+                if: matrix.packaging == 'packaged'
+                shell: powershell
+                run: |
+                    reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
+                    reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowDevelopmentWithoutDevLicense /t REG_DWORD /d 1 /f
+
+            # windows.ps1 runs in Windows PowerShell 5.1, which has the Appx and PKI cmdlets the packaged run needs.
+            -   name: Build device test apps
+                shell: powershell
+                run: .\eng\devices\windows.ps1 -Target buildOnly -Packaging ${{ matrix.packaging }} -Project $env:DEVICE_TEST_PROJECT
+
+            -   name: Run device tests
+                if: ${{ !cancelled() && steps.workload.outcome == 'success' }}
+                shell: powershell
+                run: .\eng\devices\windows.ps1 -Target testOnly -Packaging ${{ matrix.packaging }} -Project $env:DEVICE_TEST_PROJECT -Timeout 00:30:00
+
+            -   name: Upload device test results
+                if: always()
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: device-tests-windows-${{ matrix.packaging }}
+                    path: |
+                        artifacts/device-tests/
+                        artifacts/logs/
+
+    # The single status check to require in branch protection ("Device Tests / Device Tests" in a Build run).
+    device_tests:
+        name: Device Tests
+        if: ${{ always() }}
+        needs: [ device_tests_android, device_tests_ios, device_tests_maccatalyst, device_tests_windows ]
+        runs-on: ubuntu-latest
+        permissions: {}
+        timeout-minutes: 5
+        steps:
+            -   name: Check device test jobs
+                env:
+                    NEEDS: ${{ toJSON(needs) }}
+                    ANY_JOB_NOT_SUCCEEDED: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}
+                run: |
+                    echo "$NEEDS"
+                    if [ "$ANY_JOB_NOT_SUCCEEDED" = "true" ]; then
+                        echo "::error::One or more device test jobs did not succeed."
+                        exit 1
+                    fi

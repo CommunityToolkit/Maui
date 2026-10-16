@@ -5,9 +5,29 @@ using Microsoft.Maui.Controls.Shapes;
 namespace CommunityToolkit.Maui.Views;
 
 /// <summary>AvatarView control.</summary>
+/// <remarks>
+/// AvatarView changes the defaults of these <see cref="Border"/> and <see cref="View"/> properties: <see cref="VisualElement.WidthRequest"/> and
+/// <see cref="VisualElement.HeightRequest"/> are 48, <see cref="Border.Padding"/> is 1, <see cref="Border.Stroke"/> is white,
+/// <see cref="Border.StrokeThickness"/> is 1, <see cref="Border.StrokeShape"/> is a <see cref="RoundRectangle"/> with a corner radius of 24, and
+/// <see cref="View.HorizontalOptions"/> and <see cref="View.VerticalOptions"/> are <see cref="LayoutOptions.Center"/>. Any value given to one of these
+/// properties replaces its default, whether it comes from a local assignment, a binding, a <see cref="Style"/> (explicit or implicit), a trigger or a
+/// visual state, and the default comes back when that value is removed.
+/// </remarks>
 public partial class AvatarView : Border, IAvatarView
 {
-	readonly Image avatarImage = new()
+	static readonly BindableProperty[] propertiesWithAvatarViewDefaults =
+	[
+		HorizontalOptionsProperty,
+		VerticalOptionsProperty,
+		HeightRequestProperty,
+		WidthRequestProperty,
+		PaddingProperty,
+		StrokeProperty,
+		StrokeThicknessProperty,
+		StrokeShapeProperty,
+	];
+
+	readonly AvatarImage avatarImage = new()
 	{
 		Aspect = Aspect.AspectFill,
 	};
@@ -19,7 +39,9 @@ public partial class AvatarView : Border, IAvatarView
 		Text = AvatarViewDefaults.Text,
 	};
 
+	RoundRectangle? defaultStrokeShape;
 	bool wasImageLoading;
+	bool currentLoadSucceeded;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="AvatarView"/> class.
@@ -28,20 +50,17 @@ public partial class AvatarView : Border, IAvatarView
 	{
 		PropertyChanged += HandlePropertyChanged;
 
-		IsEnabled = true;
-		HorizontalOptions = VerticalOptions = LayoutOptions.Center;
-		HeightRequest = AvatarViewDefaults.HeightRequest;
-		WidthRequest = AvatarViewDefaults.WidthRequest;
-		Padding = AvatarViewDefaults.Padding;
-		Stroke = AvatarViewDefaults.BorderColor;
-		StrokeThickness = AvatarViewDefaults.BorderWidth;
-		StrokeShape = new RoundRectangle
+		foreach (var property in propertiesWithAvatarViewDefaults)
 		{
-			CornerRadius = new CornerRadius(AvatarViewDefaults.CornerRadius.TopLeft, AvatarViewDefaults.CornerRadius.TopRight, AvatarViewDefaults.CornerRadius.BottomLeft, AvatarViewDefaults.CornerRadius.BottomRight),
-		};
+			SetAvatarViewDefault(property);
+		}
+
 		Content = avatarLabel;
 		avatarImage.SetBinding(WidthRequestProperty, BindingBase.Create<VisualElement, double>(static p => p.WidthRequest, source: this));
 		avatarImage.SetBinding(HeightRequestProperty, BindingBase.Create<VisualElement, double>(static p => p.HeightRequest, source: this));
+		avatarImage.SourceLoadStarted += HandleImageSourceLoadStarted;
+		avatarImage.SourceLoaded += HandleImageSourceLoaded;
+		avatarImage.SourceFailedToLoad += HandleImageSourceFailedToLoad;
 	}
 
 	/// <summary>
@@ -99,6 +118,12 @@ public partial class AvatarView : Border, IAvatarView
 	/// <summary>
 	/// Gets or sets a value of the control image source property.
 	/// </summary>
+	/// <remarks>
+	/// While an image source is set, the control shows the image instead of its <see cref="Text"/>. When the image source is empty (its
+	/// <see cref="Microsoft.Maui.Controls.ImageSource.IsEmpty"/> is <see langword="true"/>, for example a <see cref="UriImageSource"/> without a
+	/// <see cref="UriImageSource.Uri"/>) or fails to load (for example a URL that cannot be reached), the control shows its <see cref="Text"/>
+	/// again, until the image source is not empty and loads, or another image source is set.
+	/// </remarks>
 	[TypeConverter(typeof(ImageSourceConverter))]
 	[BindableProperty(PropertyChangedMethodName = nameof(OnImageSourcePropertyChanged))]
 	public partial ImageSource? ImageSource { get; set; }
@@ -113,7 +138,7 @@ public partial class AvatarView : Border, IAvatarView
 
 	TextAlignment ITextAlignment.HorizontalTextAlignment => avatarLabel.HorizontalTextAlignment;
 
-	bool IImageSource.IsEmpty => avatarImage.Source is null;
+	bool IImageSource.IsEmpty => avatarImage.Source is null || avatarImage.Source.IsEmpty;
 
 	bool IImageSourcePart.IsAnimationPlaying => avatarImage.IsAnimationPlaying;
 
@@ -258,11 +283,23 @@ public partial class AvatarView : Border, IAvatarView
 		InvalidateMeasure();
 	}
 
+	/// <inheritdoc/>
+	protected override void OnBindingContextChanged()
+	{
+		base.OnBindingContextChanged();
+
+		// The image is the Content only while it shows: after a failed load the text replaces it, and an Element out of the tree loses the
+		// BindingContext it inherits, and with it the bindings of its ImageSource (the Email of a GravatarImageSource, for example).
+		avatarImage.BindingContext = BindingContext;
+	}
+
 	void HandleImageChanged(ImageSource? newValue)
 	{
 		avatarImage.Source = newValue;
 		if (newValue is not null)
 		{
+			// An empty source gets the image too: an image that was never the Content has no handler to load the source when it stops being empty
+			// (the Email of a GravatarImageSource, for example), and the text replaces the image once the load is reported.
 			RefreshAvatarImage();
 			Content = avatarImage;
 		}
@@ -272,15 +309,133 @@ public partial class AvatarView : Border, IAvatarView
 		}
 	}
 
+	void HandleImageSourceLoadStarted(object? sender, EventArgs e) => currentLoadSucceeded = false;
+
+	// A failed load can be followed by a successful one without ImageSource being set again: the source itself can change, a UriImageSource's Uri for example.
+	void HandleImageSourceLoaded(object? sender, EventArgs e)
+	{
+		currentLoadSucceeded = true;
+		var loadedSource = avatarImage.Source;
+		PostContentChange(() =>
+		{
+			if (!ReferenceEquals(avatarImage.Source, loadedSource))
+			{
+				return;
+			}
+
+			// iOS, Mac Catalyst and Windows report the load of an empty source as a success, and Android as a failure: the text shows on all of them.
+			if (loadedSource is null || loadedSource.IsEmpty)
+			{
+				Content = avatarLabel;
+			}
+			else if (ReferenceEquals(Content, avatarLabel))
+			{
+				RefreshAvatarImage();
+				Content = avatarImage;
+			}
+		});
+	}
+
+	void HandleImageSourceFailedToLoad(object? sender, EventArgs e)
+	{
+		var failedSource = avatarImage.Source;
+
+		// .NET MAUI reports a failure without its source. Once the current load has succeeded, only a load that another one replaced can still
+		// fail, and .NET MAUI clears the image whichever load failed: the image loads again, instead of the text replacing it.
+		var replacedLoadFailed = currentLoadSucceeded;
+		currentLoadSucceeded = false;
+		PostContentChange(() =>
+		{
+			if (!ReferenceEquals(avatarImage.Source, failedSource) || !ReferenceEquals(Content, avatarImage))
+			{
+				return;
+			}
+
+			if (replacedLoadFailed)
+			{
+				avatarImage.Handler?.UpdateValue(nameof(Image.Source));
+			}
+			else
+			{
+				Content = avatarLabel;
+			}
+		});
+	}
+
+	// Posted, never run at once: a load that ends synchronously, such as that of a StreamImageSource whose stream is already there, reports while the
+	// handler of the AvatarView is still mapping the image as its Content (Windows), and that mapping then shows the image whatever Content became.
+	// A change posted for a source that the image no longer has does nothing: setting ImageSource already chose the Content for the new source. A
+	// dispatcher refuses work only while the app shuts down.
+	void PostContentChange(Action changeContent) => _ = Dispatcher.Dispatch(changeContent);
+
+	// Element.SetValueFromRenderer instead of a local value: a local value takes precedence over every Style setter, so no Style could size an AvatarView
+	// or change its stroke, while a value from the handler only stays until another value replaces it.
+	void SetAvatarViewDefault(BindableProperty property)
+	{
+		object defaultValue = property.PropertyName switch
+		{
+			nameof(HorizontalOptions) or nameof(VerticalOptions) => LayoutOptions.Center,
+			nameof(HeightRequest) => AvatarViewDefaults.HeightRequest,
+			nameof(WidthRequest) => AvatarViewDefaults.WidthRequest,
+			nameof(Padding) => AvatarViewDefaults.Padding,
+			// AvatarViewDefaults.BorderColor, as an immutable brush: Border registers a mutable brush with the AvatarView, and does not unregister a brush
+			// from the handler when another value replaces it.
+			nameof(Stroke) => Brush.White,
+			nameof(StrokeThickness) => AvatarViewDefaults.BorderWidth,
+			nameof(StrokeShape) => defaultStrokeShape = new RoundRectangle { CornerRadius = AvatarViewDefaults.CornerRadius },
+			_ => throw new ArgumentOutOfRangeException(nameof(property), property.PropertyName, "AvatarView does not change the default of this property.")
+		};
+
+		SetValueFromRenderer(property, defaultValue);
+	}
+
+	void HandleAvatarViewDefault(string? propertyName)
+	{
+		foreach (var property in propertiesWithAvatarViewDefaults)
+		{
+			if (property.PropertyName == propertyName)
+			{
+				HandleAvatarViewDefault(property);
+				return;
+			}
+		}
+	}
+
+	void HandleAvatarViewDefault(BindableProperty property)
+	{
+		if (property == StrokeShapeProperty && defaultStrokeShape is not null && !ReferenceEquals(StrokeShape, defaultStrokeShape))
+		{
+			// Border removes the previous StrokeShape from its logical children, but it reads that shape once a value from the handler is already
+			// discarded: the default shape would stay a logical child.
+			RemoveLogicalChild(defaultStrokeShape);
+			defaultStrokeShape = null;
+		}
+
+		if (!IsSet(property))
+		{
+			SetAvatarViewDefault(property);
+
+			if (property == StrokeShapeProperty && defaultStrokeShape is not null)
+			{
+				// Border adds the StrokeShape to its logical children when the notification of the removed value ends, after this handler: the default
+				// shape, which SetValueFromRenderer has just added, would be there twice.
+				RemoveLogicalChild(defaultStrokeShape);
+			}
+		}
+	}
+
 	void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		// Ensure avatarImage is clipped to the bounds of the AvatarView whenever its Height, Width, CornerRadius, Border, StrokeThickness and Padding properties change
+		HandleAvatarViewDefault(e.PropertyName);
+
+		// Ensure avatarImage is clipped to the bounds of the AvatarView whenever its Height, Width, CornerRadius, Border, StrokeThickness, StrokeShape and Padding properties change
 		if (e.PropertyName == HeightProperty.PropertyName
 			|| e.PropertyName == WidthProperty.PropertyName
 			|| e.PropertyName == PaddingProperty.PropertyName
 			|| e.PropertyName == BorderWidthProperty.PropertyName
 			|| e.PropertyName == CornerRadiusProperty.PropertyName
 			|| e.PropertyName == StrokeThicknessProperty.PropertyName
+			|| e.PropertyName == StrokeShapeProperty.PropertyName
 		   )
 		{
 			RefreshAvatarImage();
@@ -294,13 +449,6 @@ public partial class AvatarView : Border, IAvatarView
 			&& avatarImage.Source is not null)
 		{
 			Geometry? avatarImageClipGeometry = null;
-#if WINDOWS
-			double offsetX = 0;
-			double offsetY = 0;
-#else
-			var offsetX = StrokeThickness + Padding.Left;
-			var offsetY = StrokeThickness + Padding.Top;
-#endif
 			var imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
 			var imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
 			avatarImage.WidthRequest = imageWidth;
@@ -308,10 +456,12 @@ public partial class AvatarView : Border, IAvatarView
 
 			if (!OperatingSystem.IsIOS() && !OperatingSystem.IsMacCatalyst() && !OperatingSystem.IsMacOS())
 			{
+				// The clip is in the image's own coordinates, and the image is already laid out inside the stroke and the padding:
+				// the clip starts at the image's origin
 				avatarImageClipGeometry = new RoundRectangleGeometry
 				{
 					CornerRadius = CornerRadius,
-					Rect = new(offsetX, offsetY, imageWidth, imageHeight)
+					Rect = new(0, 0, imageWidth, imageHeight)
 				};
 			}
 
@@ -326,5 +476,29 @@ public partial class AvatarView : Border, IAvatarView
 				_ => avatarImageClipGeometry
 			};
 		}
+	}
+
+	// MAUI's Image has no event for a source that fails to load, and then shows nothing: the image handler reports whether the image source loaded
+	// through IImageSourcePartEvents. Partial for CsWinRT on Windows (CsWinRT1028: Image implements WinRT interfaces).
+	sealed partial class AvatarImage : Image, IImageSourcePartEvents
+	{
+		public event EventHandler? SourceLoadStarted;
+
+		public event EventHandler? SourceLoaded;
+
+		public event EventHandler? SourceFailedToLoad;
+
+		void IImageSourcePartEvents.LoadingStarted() => SourceLoadStarted?.Invoke(this, EventArgs.Empty);
+
+		// Not successful: the load was canceled or replaced by the load of another source, which reports for itself.
+		void IImageSourcePartEvents.LoadingCompleted(bool successful)
+		{
+			if (successful)
+			{
+				SourceLoaded?.Invoke(this, EventArgs.Empty);
+			}
+		}
+
+		void IImageSourcePartEvents.LoadingFailed(Exception exception) => SourceFailedToLoad?.Invoke(this, EventArgs.Empty);
 	}
 }

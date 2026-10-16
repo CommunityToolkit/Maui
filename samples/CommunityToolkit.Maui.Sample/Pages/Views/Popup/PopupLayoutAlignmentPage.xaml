@@ -30,22 +30,22 @@
                Text="100"
                x:Name="widthEntry"
                Keyboard="Numeric"
-               WidthRequest="100"
                HorizontalTextAlignment="End" />
 
         <Label Grid.Row="1"
-               Grid.Column="4"
+               Grid.Column="3"
                FontSize="12"
                Text="Height"
                FontAttributes="Bold"
+               HorizontalOptions="End"
                VerticalOptions="Center" />
 
         <Entry Grid.Row="1"
-               Grid.Column="5"
+               Grid.Column="4"
+               Grid.ColumnSpan="2"
                Text="100"
                x:Name="heightEntry"
                Keyboard="Numeric"
-               WidthRequest="100"
                HorizontalTextAlignment="End" />
 
         <Label

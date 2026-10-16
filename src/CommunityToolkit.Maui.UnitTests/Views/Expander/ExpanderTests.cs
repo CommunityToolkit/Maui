@@ -63,6 +63,82 @@ public class ExpanderTests : BaseViewTest
 	}
 
 	[Fact]
+	public void BoundDirectionFollowsEveryChangeOfTheSource()
+	{
+		var header = new MockView();
+		var content = new MockView();
+		var viewModel = new DirectionViewModel();
+
+		expander.Header = header;
+		expander.Content = content;
+		expander.BindingContext = viewModel;
+		expander.SetBinding(Maui.Views.Expander.DirectionProperty, nameof(DirectionViewModel.Direction));
+
+		foreach (var direction in new[] { ExpandDirection.Up, ExpandDirection.Down, ExpandDirection.Up, ExpandDirection.Down })
+		{
+			viewModel.Direction = direction;
+
+			Assert.Equal(direction, expander.Direction);
+			Assert.Equal(direction is ExpandDirection.Down ? 0 : 1, Grid.GetRow(header));
+			Assert.Equal(direction is ExpandDirection.Down ? 1 : 0, Grid.GetRow(content));
+		}
+	}
+
+	[Fact]
+	public void ImplicitGridStyleDoesNotReachTheGridThatHoldsHeaderAndContent()
+	{
+		Application.Current!.Resources.Add(new Style(typeof(Grid))
+		{
+			Setters =
+			{
+				new Setter { Property = VisualElement.BackgroundColorProperty, Value = Colors.White },
+				new Setter { Property = Grid.RowSpacingProperty, Value = 20d },
+				new Setter { Property = Layout.PaddingProperty, Value = new Thickness(10) }
+			}
+		});
+
+		var header = new MockView();
+		var appGrid = new Grid();
+		expander.BackgroundColor = Colors.LightGray;
+		expander.Header = header;
+		expander.Content = new MockView();
+		ShowOnPage(new VerticalStackLayout { expander, appGrid });
+
+		var expanderGrid = Assert.IsType<Grid>(header.Parent, exactMatch: false);
+		Assert.Same(expander, expanderGrid.Parent);
+		Assert.Equal(Colors.White, appGrid.BackgroundColor);
+
+		Assert.Null(((IView)expanderGrid).Background);
+		Assert.Equal(0d, expanderGrid.RowSpacing);
+		Assert.Equal(Thickness.Zero, expanderGrid.Padding);
+		Assert.Equal(Colors.LightGray, expander.BackgroundColor);
+	}
+
+	[Fact]
+	public void GridStyleThatAppliesToDerivedTypesDoesNotPaintOverTheExpanderBackground()
+	{
+		Application.Current!.Resources.Add(new Style(typeof(Grid))
+		{
+			ApplyToDerivedTypes = true,
+			Setters =
+			{
+				new Setter { Property = VisualElement.BackgroundColorProperty, Value = Colors.White },
+				new Setter { Property = VisualElement.BackgroundProperty, Value = new SolidColorBrush(Colors.White) }
+			}
+		});
+
+		var header = new MockView();
+		expander.BackgroundColor = Colors.LightGray;
+		expander.Header = header;
+		expander.Content = new MockView();
+		ShowOnPage(expander);
+
+		var expanderGrid = Assert.IsType<Grid>(header.Parent, exactMatch: false);
+		Assert.Null(((IView)expanderGrid).Background);
+		Assert.Equal(Colors.LightGray, expander.BackgroundColor);
+	}
+
+	[Fact]
 	public void EnsureExpandedChanged()
 	{
 		var isExpanded_Initial = expander.IsExpanded;
@@ -117,5 +193,26 @@ public class ExpanderTests : BaseViewTest
 	{
 		var expander = new Maui.Views.Expander();
 		Assert.Equal(ExpanderDefaults.Direction, expander.Direction);
+	}
+
+	// Implicit Styles in Application.Resources reach the elements of the Window's Page
+	static void ShowOnPage(View view) => Application.Current!.Windows[0].Page = new ContentPage { Content = view };
+
+	sealed class DirectionViewModel : INotifyPropertyChanged
+	{
+		public event PropertyChangedEventHandler? PropertyChanged;
+
+		public ExpandDirection Direction
+		{
+			get;
+			set
+			{
+				if (value != field)
+				{
+					field = value;
+					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Direction)));
+				}
+			}
+		}
 	}
 }

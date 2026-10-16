@@ -96,6 +96,29 @@
                 </Border.Content>
             </Border>
 
+            <Border
+                StrokeThickness="2"
+                Stroke="#808080"
+                StrokeShape="RoundRectangle 8,8,8,8"
+                Padding="12">
+                <Border.Content>
+                    <VerticalStackLayout Spacing="12">
+
+                        <Button
+                            Text="StopListenAsync with a canceled token"
+                            Command="{Binding StopListenWithCanceledTokenCommand}"
+                            HorizontalOptions="Center" />
+
+                        <Label
+                            Text="While the recognizer listens, `StopListenAsync` is called with a token that is already canceled. Windows ignores the token and releases the recognizer. Android, iOS and Mac Catalyst throw an `OperationCanceledException` before they stop anything, so the recognizer keeps listening."
+                            HorizontalOptions="Center"
+                            HorizontalTextAlignment="Center"
+                            FontSize="12"/>
+
+                    </VerticalStackLayout>
+                </Border.Content>
+            </Border>
+
         </VerticalStackLayout>
     </ScrollView>
 

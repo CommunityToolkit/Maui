@@ -50,6 +50,10 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 
 	partial void PlatformRefreshPlaybackControlsVisibility(bool shouldShowPlaybackControls)
 	{
-		PlatformView?.RefreshPlaybackControlsVisibility(shouldShowPlaybackControls);
+		// The mapper also runs while the handler has no platform view (after DisconnectHandler), and the PlatformView property throws then
+		if (((IElementHandler)this).PlatformView is MauiMediaElement platformView)
+		{
+			platformView.RefreshPlaybackControlsVisibility(shouldShowPlaybackControls);
+		}
 	}
 }

@@ -5,30 +5,44 @@ namespace CommunityToolkit.Maui;
 /// <summary>
 /// Sets global app defaults for <see cref="Popup"/>
 /// </summary>
-/// <remarks>Set in .UseMauiCommunityToolkit(Options)</remarks>
+/// <remarks>
+/// Set in .UseMauiCommunityToolkit(Options).
+/// These are default values: a value set on the <see cref="Popup"/>, a binding or a <see cref="Style"/> takes precedence over them.
+/// </remarks>
 public record DefaultPopupSettings
 {
-	/// <inheritdoc cref="Views.Popup.Margin"/>
+	/// <inheritdoc cref="Views.Popup.Margin" path="/summary"/>
 	public Thickness Margin { get; init; } = PopupDefaults.Margin;
 
-	/// <inheritdoc cref="Views.Popup.Padding"/>
+	/// <inheritdoc cref="Views.Popup.Padding" path="/summary"/>
 	public Thickness Padding { get; init; } = PopupDefaults.Padding;
 
-	/// <inheritdoc cref="Views.Popup.HorizontalOptions"/>
+	/// <inheritdoc cref="Views.Popup.HorizontalOptions" path="/summary"/>
 	public LayoutOptions HorizontalOptions { get; init; } = PopupDefaults.HorizontalOptions;
 
-	/// <inheritdoc cref="Views.Popup.VerticalOptions"/>
+	/// <inheritdoc cref="Views.Popup.VerticalOptions" path="/summary"/>
 	public LayoutOptions VerticalOptions { get; init; } = PopupDefaults.VerticalOptions;
 
-	/// <inheritdoc cref="Views.Popup.CanBeDismissedByTappingOutsideOfPopup"/>
+	/// <inheritdoc cref="Views.Popup.CanBeDismissedByTappingOutsideOfPopup" path="/summary"/>
 	public bool CanBeDismissedByTappingOutsideOfPopup { get; init; } = PopupDefaults.CanBeDismissedByTappingOutsideOfPopup;
 
-	/// <inheritdoc cref="VisualElement.BackgroundColor"/>
+	/// <summary>
+	/// Gets the color that fills the background of a <see cref="Popup"/> whose <see cref="VisualElement.BackgroundColor"/> is <see langword="null"/>,
+	/// unless the app uses the dark theme (see <see cref="BackgroundColorDark"/>).
+	/// </summary>
+	/// <remarks>
+	/// <see cref="Popup"/> does not set its own <see cref="VisualElement.BackgroundColor"/> to this value, so a <see cref="Style"/> can set it.
+	/// </remarks>
 	public Color BackgroundColor { get; init; } = PopupDefaults.BackgroundColor;
 
 	/// <summary>
-	/// Popup's background color in dark mode.
+	/// Gets the color that fills the background of a <see cref="Popup"/> whose <see cref="VisualElement.BackgroundColor"/> is <see langword="null"/>
+	/// while the app uses the dark theme (<see cref="AppTheme.Dark"/>).
 	/// </summary>
+	/// <remarks>
+	/// <see cref="Popup"/> does not set its own <see cref="VisualElement.BackgroundColor"/> to this value, so a <see cref="Style"/> can set it.
+	/// The displayed background follows changes of the app's theme while the <see cref="Popup"/> is displayed.
+	/// </remarks>
 	public Color BackgroundColorDark { get; init; } = PopupDefaults.BackgroundColorDark;
 
 	/// <summary>

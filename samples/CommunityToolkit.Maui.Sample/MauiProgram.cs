@@ -75,6 +75,10 @@ public static class MauiProgram
 #if IOS || MACCATALYST
 									handlers.AddHandler<CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
 									handlers.AddHandler<CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
+#elif ANDROID
+									// Material Components limit a button to 320dp (mtrl_btn_max_width). MAUI measures a Button within that limit, so a long
+									// caption wraps at 320dp even when the Button is laid out wider, and a full-width Button keeps the height of the wrapped caption
+									Microsoft.Maui.Handlers.ButtonHandler.Mapper.AppendToMapping("RemoveMaterialMaximumWidth", static (handler, _) => handler.PlatformView.SetMaxWidth(int.MaxValue));
 #endif
 								})
 
@@ -123,8 +127,6 @@ public static class MauiProgram
 
 		builder.Services.AddHttpClient<MediaElementFromStreamPage>()
 			.AddStandardResilienceHandler(static options => options.Retry = new MobileHttpRetryStrategyOptions());
-
-		builder.Services.AddSingleton<AppShell>();
 
 		RegisterViewsAndViewModels(builder.Services);
 		RegisterEssentials(builder.Services);

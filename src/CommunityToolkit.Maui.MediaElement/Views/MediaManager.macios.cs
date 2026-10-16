@@ -6,7 +6,6 @@ using CoreFoundation;
 using CoreGraphics;
 using CoreMedia;
 using Foundation;
-using MediaPlayer;
 using Microsoft.Extensions.Logging;
 using UIKit;
 
@@ -14,13 +13,14 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : IDisposable
 {
+	const string playableKey = "playable";
+	const string tracksKey = "tracks";
+
 	Metadata? metaData;
 	StreamAssetResourceLoader? streamResourceLoader;
 	CancellationTokenSource? playerItemCancellationTokenSource;
 
-	// Setting AVPlayer.Rate starts playback, so the initial Speed mapping is skipped to respect ShouldAutoPlay=False.
-	// When ShouldAutoPlay=True, the initial Speed is applied once the AVPlayerItem reaches ReadyToPlay.
-	bool isInitialSpeedSet;
+	float? previousSpeed;
 
 	bool hasMediaOpened;
 
@@ -139,9 +139,10 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformPlay()
 	{
-		if (Player?.CurrentTime == PlayerItem?.Duration)
+		// Media that played to its end has nothing left to play: Play() starts it again from its start, as on Android.
+		if (Player is not null && PlayerItem is not null && Player.CurrentTime == PlayerItem.Duration)
 		{
-			return;
+			Player.Seek(CMTime.Zero);
 		}
 
 		PlayAtSpeed();
@@ -168,24 +169,16 @@ public partial class MediaManager : IDisposable
 			throw new InvalidOperationException($"{nameof(AVPlayer)}.{nameof(AVPlayer.Status)} must first be set to {AVPlayerStatus.ReadyToPlay}");
 		}
 
-		var ranges = Player.CurrentItem.SeekableTimeRanges;
-		var seekToTime = new CMTime(Convert.ToInt64(position.TotalMilliseconds), 1000);
-		foreach (var range in ranges.Select(r => r.CMTimeRangeValue))
+		// AVPlayer moves the playhead to a nearby key frame, which for the end of the media is one before the end: the end is sought without a
+		// tolerance before it, so SeekTo(Duration) goes to the end.
+		var (seekToTime, isEnd) = ClampToSeekableTimeRanges(Player.CurrentItem, position);
+		Player.Seek(seekToTime, isEnd ? CMTime.Zero : CMTime.PositiveInfinity, CMTime.PositiveInfinity, _ =>
 		{
-			if (seekToTime >= range.Start && seekToTime < (range.Start + range.Duration))
-			{
-				Player.Seek(seekToTime, complete =>
-				{
-					if (!complete)
-					{
-						throw new InvalidOperationException("Seek Failed");
-					}
-
-					seekTaskCompletionSource.SetResult();
-				});
-				break;
-			}
-		}
+			// AVPlayer reports a seek that something else interrupted (Stop(), another seek, the scrubber of the playback controls, a remote
+			// command or the restart of a looping media) as not finished. The seek has ended all the same: like on Android, SeekTo completes and
+			// raises SeekCompleted
+			seekTaskCompletionSource.TrySetResult();
+		});
 
 		await seekTaskCompletionSource.Task.WaitAsync(token);
 
@@ -220,7 +213,6 @@ public partial class MediaManager : IDisposable
 	{
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 
-		AVAsset? asset = null;
 		if (Player is null)
 		{
 			return ValueTask.CompletedTask;
@@ -251,88 +243,20 @@ public partial class MediaManager : IDisposable
 		Metadata.ClearNowPlaying();
 		PlayerViewController?.ContentOverlayView?.Subviews.FirstOrDefault()?.RemoveFromSuperview();
 
-		if (MediaElement.Source is UriMediaSource uriMediaSource)
+		// Only a failure to create the asset or the item of the source is a failure of the source (below: MediaFailed). The events that the update
+		// raises (StateChanged, also from the observers of the player while its item is replaced) are not in this part: an exception of their
+		// handlers is not a failure of the source, and propagates to the code that set the Source
+		Exception? sourceException = null;
+		try
 		{
-			var uri = uriMediaSource.Uri;
-			if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
-			{
-				var nsUrl = new NSUrl(uri.AbsoluteUri);
-				var headers = uriMediaSource.HttpHeaders;
-				if (headers.Count > 0)
-				{
-					var pairs = headers.ToArray();
-					var nativeHeaders = NSDictionary.FromObjectsAndKeys(
-						pairs.Select(p => p.Value).ToArray<object>(),
-						pairs.Select(p => p.Key).ToArray<object>());
-					var options = new NSDictionary("AVURLAssetHTTPHeaderFieldsKey", nativeHeaders);
-					asset = new AVUrlAsset(nsUrl, new AVUrlAssetOptions(options));
-				}
-				else
-				{
-					asset = AVAsset.FromUrl(nsUrl);
-				}
-			}
+			PlayerItem = CreateAsset() is AVAsset asset ? new AVPlayerItem(asset) : null;
 		}
-		else if (MediaElement.Source is FileMediaSource fileMediaSource)
+		catch (Exception exception)
 		{
-			var uri = fileMediaSource.Path;
-
-			if (!string.IsNullOrWhiteSpace(uri))
-			{
-				asset = AVAsset.FromUrl(NSUrl.CreateFileUrl(uri));
-			}
+			// The source cannot be applied: it fails (below) instead of the previous media staying in the player
+			sourceException = exception;
+			PlayerItem = null;
 		}
-		else if (MediaElement.Source is ResourceMediaSource resourceMediaSource)
-		{
-			var path = resourceMediaSource.Path;
-
-			if (!string.IsNullOrWhiteSpace(path) && Path.HasExtension(path))
-			{
-				string directory = Path.GetDirectoryName(path) ?? "";
-				string filename = Path.GetFileNameWithoutExtension(path);
-				string extension = Path.GetExtension(path)[1..];
-				var url = NSBundle.MainBundle.GetUrlForResource(filename,
-					extension, directory);
-
-				if (url is not null)
-				{
-					asset = AVAsset.FromUrl(url);
-				}
-				else
-				{
-					Logger.LogWarning("Resource file was not found.");
-				}
-			}
-			else
-			{
-				Logger.LogWarning("Invalid file path for ResourceMediaSource.");
-			}
-		}
-		else if (MediaElement.Source is StreamMediaSource streamMediaSource)
-		{
-			if (streamMediaSource.Stream is not null)
-			{
-				// Create a custom URL scheme for the stream
-				var streamUrl = new NSUrl("stream://media");
-
-				// Create an AVURLAsset with the custom scheme
-				var urlAsset = new AVUrlAsset(streamUrl);
-
-				// Create and set up the resource loader
-				streamResourceLoader?.Dispose();
-				streamResourceLoader = new StreamAssetResourceLoader(streamMediaSource.Stream, GetStreamContentType(streamMediaSource.Stream));
-
-				// Assign the resource loader delegate to a serial background queue to avoid blocking the UI thread
-				var resourceLoaderQueue = new DispatchQueue("CommunityToolkit.Maui.MediaElement.StreamResourceLoader");
-				urlAsset.ResourceLoader.SetDelegate(streamResourceLoader, resourceLoaderQueue);
-
-				asset = urlAsset;
-			}
-		}
-
-		PlayerItem = asset is not null
-			? new AVPlayerItem(asset)
-			: null;
 
 		metaData.SetMetadata(PlayerItem, MediaElement);
 		DestroyPlayerItemStatusObserver();
@@ -350,9 +274,16 @@ public partial class MediaManager : IDisposable
 
 		if (playerItem is null)
 		{
-			MediaElement.MediaWidth = MediaElement.MediaHeight = 0;
+			if (sourceException is not null)
+			{
+				ReportMediaFailure(sourceException.Message, sourceException);
+			}
+			else
+			{
+				MediaElement.MediaWidth = MediaElement.MediaHeight = 0;
 
-			MediaElement.CurrentStateChanged(MediaElementState.None);
+				MediaElement.CurrentStateChanged(MediaElementState.None);
+			}
 		}
 		else
 		{
@@ -378,29 +309,42 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformUpdateSpeed()
 	{
-		if (PlayerViewController?.Player is null)
+		if (PlayerViewController?.Player is not AVPlayer player)
 		{
 			return;
 		}
 
-		// First time we're getting a playback speed, skip it; see isInitialSpeedSet
-		if (!isInitialSpeedSet)
+		var speed = (float)MediaElement.Speed;
+		var previous = previousSpeed;
+		previousSpeed = speed;
+
+		// The playback controls of the AVPlayerViewController call AVPlayer.Play(), which starts at the default rate, so the default rate follows
+		// the Speed (setting it does not start playback). Before iOS 16 and Mac Catalyst 16 there is no default rate: the playback controls start
+		// playback at a rate of 1, which RateChanged reports as the Speed.
+		if (speed > 0 && (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16)))
 		{
-			isInitialSpeedSet = true;
-			return;
+			player.DefaultRate = speed;
 		}
 
 		// RateChanged copies the player's rate into Speed, so don't send it back: setting the rate again starts a new rate change, and when
 		// two rates are set in the same main-loop turn AVPlayer reports the earlier one again afterwards, so the two would keep replacing each other.
 		// Skip only when the requested rate (as the same float AVPlayer last stored, Rate was set to (float)Speed) matches the native rate
 		// within a 0.005 rounding margin to handle floating point math.
-		var requestedRate = (float)MediaElement.Speed;
-		if (Math.Abs(requestedRate - PlayerViewController.Player.Rate) < .005)
+		if (Math.Abs(speed - player.Rate) < .005)
 		{
 			return;
 		}
 
-		PlayerViewController.Player.Rate = requestedRate;
+		// Setting the rate starts playback: it changes while the media plays (a Speed of 0 pauses it), and a positive Speed that
+		// follows a Speed of 0 resumes playback, as on Android and Windows; any other change waits for the next start of playback.
+		if (player.Rate is not 0)
+		{
+			player.Rate = speed;
+		}
+		else if (previous is 0 && speed > 0)
+		{
+			PlayAtSpeed();
+		}
 	}
 
 	protected virtual partial void PlatformUpdateShouldShowPlaybackControls()
@@ -495,6 +439,11 @@ public partial class MediaManager : IDisposable
 	{
 		if (disposing)
 		{
+			// Disposed before Pause(), which raises the time control status observer even for a player that is already paused: it would publish this
+			// player's Now Playing info again, and Metadata.Dispose would then clear it while another MediaElement's media is shown
+			metaData?.Dispose();
+			metaData = null;
+
 			if (Player is not null)
 			{
 				Player.Pause();
@@ -533,15 +482,110 @@ public partial class MediaManager : IDisposable
 			streamResourceLoader?.Dispose();
 			streamResourceLoader = null;
 
+			// An event handler raised above (for example a StateChanged handler of the Pause()) can have set a source, whose update created a
+			// new Metadata
+			metaData?.Dispose();
+			metaData = null;
+
 			PlayerViewController?.Dispose();
 			PlayerViewController = null;
 		}
 	}
 
+	AVAsset? CreateAsset()
+	{
+		AVAsset? asset = null;
+		if (MediaElement.Source is UriMediaSource uriMediaSource)
+		{
+			var uri = uriMediaSource.Uri;
+			if (!string.IsNullOrWhiteSpace(uri?.AbsoluteUri))
+			{
+				var nsUrl = new NSUrl(uri.AbsoluteUri);
+				var headers = uriMediaSource.HttpHeaders;
+				if (headers.Count > 0)
+				{
+					var pairs = headers.ToArray();
+					var nativeHeaders = NSDictionary.FromObjectsAndKeys(
+						pairs.Select(p => p.Value).ToArray<object>(),
+						pairs.Select(p => p.Key).ToArray<object>());
+					var options = new NSDictionary("AVURLAssetHTTPHeaderFieldsKey", nativeHeaders);
+					asset = new AVUrlAsset(nsUrl, new AVUrlAssetOptions(options));
+				}
+				else
+				{
+					asset = AVAsset.FromUrl(nsUrl);
+				}
+			}
+		}
+		else if (MediaElement.Source is FileMediaSource fileMediaSource)
+		{
+			var uri = fileMediaSource.Path;
+
+			if (!string.IsNullOrWhiteSpace(uri))
+			{
+				asset = AVAsset.FromUrl(NSUrl.CreateFileUrl(uri));
+			}
+		}
+		else if (MediaElement.Source is ResourceMediaSource resourceMediaSource)
+		{
+			var path = resourceMediaSource.Path;
+
+			if (!string.IsNullOrWhiteSpace(path) && Path.HasExtension(path))
+			{
+				string directory = Path.GetDirectoryName(path) ?? "";
+				string filename = Path.GetFileNameWithoutExtension(path);
+				string extension = Path.GetExtension(path)[1..];
+				var url = NSBundle.MainBundle.GetUrlForResource(filename,
+					extension, directory);
+
+				if (url is not null)
+				{
+					asset = AVAsset.FromUrl(url);
+				}
+				else
+				{
+					Logger.LogWarning("Resource file was not found.");
+				}
+			}
+			else
+			{
+				Logger.LogWarning("Invalid file path for ResourceMediaSource.");
+			}
+		}
+		else if (MediaElement.Source is StreamMediaSource streamMediaSource)
+		{
+			if (streamMediaSource.Stream is not null)
+			{
+				// Create a custom URL scheme for the stream
+				var streamUrl = new NSUrl("stream://media");
+
+				// Create an AVURLAsset with the custom scheme
+				var urlAsset = new AVUrlAsset(streamUrl);
+
+				// A stream that cannot be read throws here: the new source fails instead of the previous media staying in the player.
+				streamResourceLoader?.Dispose();
+				streamResourceLoader = null;
+				streamResourceLoader = new StreamAssetResourceLoader(streamMediaSource.Stream, GetStreamContentType(streamMediaSource.Stream));
+
+				// Assign the resource loader delegate to a serial background queue to avoid blocking the UI thread
+				var resourceLoaderQueue = new DispatchQueue("CommunityToolkit.Maui.MediaElement.StreamResourceLoader");
+				urlAsset.ResourceLoader.SetDelegate(streamResourceLoader, resourceLoaderQueue);
+
+				asset = urlAsset;
+			}
+		}
+		else if (MediaElement.Source is not null)
+		{
+			throw new NotSupportedException($"{MediaElement.Source.GetType().FullName} is not yet supported for {nameof(MediaElement.Source)}");
+		}
+
+		return asset;
+	}
+
 	static string GetStreamContentType(Stream stream)
 	{
-		// Try to detect content type from magic bytes
-		if (stream is not { CanSeek: true, Length: > 12 })
+		// The file type header is 12 bytes long.
+		if (stream is not { CanSeek: true, Length: >= 12 })
 		{
 			return StreamAssetResourceLoader.DefaultContentType;
 		}
@@ -551,7 +595,9 @@ public partial class MediaManager : IDisposable
 		{
 			stream.Position = 0;
 			var buffer = new byte[12];
-			var bytesRead = stream.Read(buffer, 0, 12);
+
+			// Stream.Read may return fewer bytes than requested before the end of the stream
+			var bytesRead = stream.ReadAtLeast(buffer, buffer.Length, throwOnEndOfStream: false);
 
 			if (bytesRead >= 12)
 			{
@@ -580,6 +626,33 @@ public partial class MediaManager : IDisposable
 	}
 
 	static TimeSpan ConvertTime(CMTime cmTime) => TimeSpan.FromSeconds(double.IsNaN(cmTime.Seconds) ? 0 : cmTime.Seconds);
+
+	// The seekable time ranges span the media, or the window of a live stream. Without any, only a position before the start of the media can
+	// be clamped, to the start.
+	static (CMTime Time, bool IsEnd) ClampToSeekableTimeRanges(AVPlayerItem item, TimeSpan position)
+	{
+		var time = new CMTime(Convert.ToInt64(position.TotalMilliseconds), 1000);
+		var ranges = item.SeekableTimeRanges.Select(static value => value.CMTimeRangeValue).ToArray();
+		if (ranges.Length is 0)
+		{
+			return (time < CMTime.Zero ? CMTime.Zero : time, false);
+		}
+
+		var start = ranges[0].Start;
+		var end = ranges[0].Start + ranges[0].Duration;
+		foreach (var range in ranges.Skip(1))
+		{
+			var rangeEnd = range.Start + range.Duration;
+			start = range.Start < start ? range.Start : start;
+			end = rangeEnd > end ? rangeEnd : end;
+		}
+
+		// The Duration is the end as a TimeSpan (ConvertTime), which the whole milliseconds of time can round down to before the end (a media of
+		// 61061/30000 s, 2035.3667 ms, is sought as 2035 ms): a position at or after the end as a TimeSpan is the end too
+		var isEnd = time >= end || (end.IsNumeric && position >= ConvertTime(end));
+
+		return time < start ? (start, false) : isEnd ? (end, true) : (time, false);
+	}
 
 	static (int Width, int Height) GetVideoDimensions(AVPlayerItem avPlayerItem, AVAssetTrack? videoTrack)
 	{
@@ -647,7 +720,14 @@ public partial class MediaManager : IDisposable
 
 		if (PlayerViewController?.View is not null && PlayerViewController.ContentOverlayView is not null && !string.IsNullOrEmpty(MediaElement.MetadataArtworkUrl))
 		{
-			var image = UIImage.LoadFromData(NSData.FromUrl(new NSUrl(MediaElement.MetadataArtworkUrl))) ?? new UIImage();
+			// Artwork that cannot be read or decoded shows no poster (an image without a size has no aspect ratio to keep)
+			var artworkData = NSUrl.FromString(MediaElement.MetadataArtworkUrl) is NSUrl artworkUrl ? NSData.FromUrl(artworkUrl) : null;
+			var image = artworkData is null ? null : UIImage.LoadFromData(artworkData);
+			if (image is null || image.Size.Width <= 0 || image.Size.Height <= 0)
+			{
+				return;
+			}
+
 			var imageView = new UIImageView(image)
 			{
 				ContentMode = UIViewContentMode.ScaleAspectFit,
@@ -776,8 +856,9 @@ public partial class MediaManager : IDisposable
 				PlatformUpdatePosition();
 				token.ThrowIfCancellationRequested();
 
-				// Start playback before raising MediaOpened so a Pause(), Stop() or SeekTo() from a MediaOpened handler isn't overridden
-				if (MediaElement.ShouldAutoPlay)
+				// Start playback before raising MediaOpened so a Pause(), Stop() or SeekTo() from a MediaOpened handler isn't overridden. A Speed
+				// of 0 pauses the media (PlatformUpdateSpeed): Play() would start it at the default rate, which RateChanged would make the Speed
+				if (MediaElement.ShouldAutoPlay && MediaElement.Speed is not 0)
 				{
 					// Start at the requested Speed with a single rate change. Play() followed by setting Rate changes the rate twice,
 					// and RateChanged, which copies the player's rate into Speed, then keeps switching Speed between 1 and the requested value
@@ -809,10 +890,39 @@ public partial class MediaManager : IDisposable
 					? $"{error.LocalizedDescription} - {error.LocalizedFailureReason}"
 					: "AVPlayerItem failed.";
 
-				MediaElement.MediaFailed(new MediaFailedEventArgs(message));
-				Logger.LogError("{LogMessage}", message);
+				ReportMediaFailure(message);
+				break;
+
+			case AVPlayerItemStatus.Unknown:
+				// AVFoundation never makes the item of media without any track (AVAsset.Playable is false) ReadyToPlay or Failed, so such media
+				// would be neither opened nor failed. The tracks of media that cannot be read fail to load instead, and its item fails.
+				var asset = playerItem.Asset;
+				await asset.LoadValuesTaskAsync([playableKey, tracksKey]).WaitAsync(token);
+				token.ThrowIfCancellationRequested();
+
+				// Playable is read first: reading Tracks creates the managed wrappers of the tracks, which only an asset that cannot play may get
+				// here (the video track of playable media is loaded with LoadTracksWithMediaTypeAsync once it is ready)
+				if (Player is not null
+					&& playerItem.Status is AVPlayerItemStatus.Unknown
+					&& asset.StatusOfValue(playableKey, out _) is AVKeyValueStatus.Loaded
+					&& asset.StatusOfValue(tracksKey, out _) is AVKeyValueStatus.Loaded
+					&& !asset.Playable
+					&& asset.Tracks.Length is 0)
+				{
+					ReportMediaFailure("The media has no tracks to play.");
+				}
+
 				break;
 		}
+	}
+
+	void ReportMediaFailure(string message, Exception? exception = null)
+	{
+		// Only media that opens gets a size: a failed source must not keep the size of the previous media
+		MediaElement.MediaWidth = MediaElement.MediaHeight = 0;
+
+		MediaElement.MediaFailed(new MediaFailedEventArgs(message));
+		Logger.LogError(exception, "{LogMessage}", message);
 	}
 
 	void OnPlayerItemStatusChangedException(Exception exception)
@@ -836,7 +946,10 @@ public partial class MediaManager : IDisposable
 		var newState = Player.Status switch
 		{
 			AVPlayerStatus.Unknown => MediaElementState.Stopped,
-			AVPlayerStatus.ReadyToPlay => MediaElementState.Paused,
+
+			// The player can become ready after its item was removed (a cleared source) or while its item cannot be played: only media
+			// that is ready to play is paused
+			AVPlayerStatus.ReadyToPlay when PlayerItem?.Status is AVPlayerItemStatus.ReadyToPlay => MediaElementState.Paused,
 			AVPlayerStatus.Failed => MediaElementState.Failed,
 			_ => MediaElement.CurrentState
 		};
@@ -870,6 +983,12 @@ public partial class MediaManager : IDisposable
 	void ErrorOccurred(object? sender, NSNotificationEventArgs args)
 	{
 		string message;
+
+		// The observers receive the notifications of every AVPlayerItem in the app: those of another player's item are not this media's
+		if (args.Notification?.Object is AVPlayerItem notifiedItem && !notifiedItem.Equals(Player?.CurrentItem))
+		{
+			return;
+		}
 
 		var error = Player?.CurrentItem?.Error;
 		if (error is not null)
@@ -918,26 +1037,39 @@ public partial class MediaManager : IDisposable
 
 	void RateChanged(object? sender, NSNotificationEventArgs args)
 	{
-		if (Player is null)
+		// The observer receives the rate changes of every AVPlayer in the app
+		if (Player is not AVPlayer player || !ReferenceEquals(args.Notification?.Object, player))
 		{
 			return;
 		}
 
-		// AVPlayer reports a rate of 0 while paused, that is not a change of the requested Speed
-		if (Player.Rate is 0)
+		// The notification is disposed once this handler returns (NSNotificationCenter.AddObserver), so the dispatched update only uses the player
+		if (Dispatcher.IsDispatchRequired)
+		{
+			Dispatcher.Dispatch(() => UpdateSpeedFromRate(player));
+			return;
+		}
+
+		UpdateSpeedFromRate(player);
+	}
+
+	void UpdateSpeedFromRate(AVPlayer player)
+	{
+		// A dispatched update can run after the player was disposed. AVPlayer reports a rate of 0 while paused, that is not a change of the requested Speed
+		if (!ReferenceEquals(player, Player) || player.Rate is 0)
 		{
 			return;
 		}
 
-		if (!AreFloatingPointNumbersEqual(MediaElement.Speed, Player.Rate))
+		if (!AreFloatingPointNumbersEqual(MediaElement.Speed, player.Rate))
 		{
-			MediaElement.Speed = Player.Rate;
+			MediaElement.Speed = player.Rate;
 		}
 
 		if (metaData is not null)
 		{
 			metaData.NowPlayingInfo.PlaybackRate = (float)MediaElement.Speed;
-			MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = metaData.NowPlayingInfo;
+			metaData.PublishNowPlayingInfo();
 		}
 	}
 
@@ -948,7 +1080,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		// AVPlayer.Play() always starts playback at a rate of 1, setting the rate starts playback at the requested Speed
+		// AVPlayer.Play() starts playback at its default rate (1 unless PlatformUpdateSpeed set it), setting the rate starts playback at the requested Speed
 		if (MediaElement.Speed is 0)
 		{
 			Player.Play();

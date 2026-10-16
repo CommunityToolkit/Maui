@@ -1,9 +1,11 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Util;
 using Android.Widget;
 using CommunityToolkit.Maui.Extensions;
+using Google.Android.Material.Shape;
 using Google.Android.Material.Snackbar;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Platform;
@@ -39,7 +41,7 @@ public partial class Snackbar
 
 	static bool TryGetPageActiveModalPage([NotNullWhen(true)] out View? modalPage)
 	{
-		if (Application.Current?.Windows[0].Page is Page mainPage
+		if (Application.Current?.Windows is [{ Page: Page mainPage }, ..]
 			&& mainPage.Navigation.ModalStack.Count > 0
 			&& mainPage.Navigation.ModalStack.Last().Handler?.PlatformView is View platformModalPage)
 		{
@@ -83,13 +85,13 @@ public partial class Snackbar
 
 	async Task DismissPlatform(CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
+
 		if (PlatformSnackbar is null)
 		{
 			dismissedTCS = null;
 			return;
 		}
-
-		token.ThrowIfCancellationRequested();
 
 		if (!PlatformSnackbar.IsPeerDisposed())
 		{
@@ -110,12 +112,17 @@ public partial class Snackbar
 		await DismissPlatform(token);
 		token.ThrowIfCancellationRequested();
 
-		PlatformSnackbar = Google.Android.Material.Snackbar.Snackbar.Make(GetParentView(), Text, (int)Duration.TotalMilliseconds);
+		PlatformSnackbar = Google.Android.Material.Snackbar.Snackbar.Make(GetParentView(), Text, GetMaterialDuration(Duration));
 		var snackbarView = PlatformSnackbar.View;
 
 		if (Anchor is not Page)
 		{
 			PlatformSnackbar.SetAnchorView(Anchor?.Handler?.PlatformView as View);
+
+			// Material places an anchored snackbar above its anchor when it shows it, and places it again after a layout pass only when its
+			// anchor layout listener is enabled. Without the listener the snackbar keeps the bottom margin computed when it was shown: after a
+			// rotation to landscape that margin can be taller than the parent, and the snackbar is laid out above the screen with no height
+			PlatformSnackbar.AnchorViewLayoutListenerEnabled = true;
 		}
 
 		var fontManager = Application.Current?.Handler?.MauiContext?.Services.GetRequiredService<IFontManager>() ?? throw new InvalidOperationException($"{nameof(IFontManager)} Required");
@@ -127,35 +134,43 @@ public partial class Snackbar
 		PlatformSnackbar.Show();
 	}
 
+	// Material reads 0, -1 and -2 as its LENGTH_LONG, LENGTH_SHORT and LENGTH_INDEFINITE constants and only a positive duration as a
+	// number of milliseconds: a Duration below 1 ms is shown for 1 ms, so that the snackbar goes away at once, as on the other platforms
+	static int GetMaterialDuration(TimeSpan duration) => (int)Math.Max(duration.TotalMilliseconds, 1);
+
 	void SetContainerForView(in View snackbarView)
 	{
-		if (snackbarView.Background is not GradientDrawable shape)
-		{
-			return;
-		}
-
-		shape.SetColor(VisualOptions.BackgroundColor.ToPlatform().ToArgb());
-
 		var density = snackbarView.Context?.Resources?.DisplayMetrics?.Density ?? 1;
-		var cornerRadius = new Thickness(
-			VisualOptions.CornerRadius.BottomLeft * density,
-			VisualOptions.CornerRadius.TopLeft * density,
-			VisualOptions.CornerRadius.TopRight * density,
-			VisualOptions.CornerRadius.BottomRight * density);
+		var topLeft = (float)(VisualOptions.CornerRadius.TopLeft * density);
+		var topRight = (float)(VisualOptions.CornerRadius.TopRight * density);
+		var bottomRight = (float)(VisualOptions.CornerRadius.BottomRight * density);
+		var bottomLeft = (float)(VisualOptions.CornerRadius.BottomLeft * density);
 
-		shape.SetCornerRadii(
-		[
-			(float)cornerRadius.Left,
-			(float)cornerRadius.Left,
-			(float)cornerRadius.Top,
-			(float)cornerRadius.Top,
-			(float)cornerRadius.Right,
-			(float)cornerRadius.Right,
-			(float)cornerRadius.Bottom,
-			(float)cornerRadius.Bottom
-		]);
+		switch (snackbarView.Background)
+		{
+			// The background that Material builds for a snackbar under a Material Components theme
+			case GradientDrawable gradientDrawable:
+				gradientDrawable.SetColor(VisualOptions.BackgroundColor.ToPlatform().ToArgb());
 
-		snackbarView.SetBackground(shape);
+				// GradientDrawable takes an x and a y radius per corner, in the order top left, top right, bottom right, bottom left
+				gradientDrawable.SetCornerRadii([topLeft, topLeft, topRight, topRight, bottomRight, bottomRight, bottomLeft, bottomLeft]);
+
+				snackbarView.SetBackground(gradientDrawable);
+				break;
+
+			// The background that Material builds under a Material 3 theme. Its snackbar style colors it with a backgroundTint, which
+			// replaces the fill color, so the color is applied as the tint (as Material's Snackbar.setBackgroundTint does)
+			case MaterialShapeDrawable materialShapeDrawable:
+				materialShapeDrawable.ShapeAppearanceModel = materialShapeDrawable.ShapeAppearanceModel.ToBuilder()
+					.SetTopLeftCornerSize(topLeft)
+					.SetTopRightCornerSize(topRight)
+					.SetBottomRightCornerSize(bottomRight)
+					.SetBottomLeftCornerSize(bottomLeft)
+					.Build();
+
+				snackbarView.BackgroundTintList = ColorStateList.ValueOf(VisualOptions.BackgroundColor.ToPlatform());
+				break;
+		}
 	}
 
 	void SetMessageForView(in View snackbarView, IFontManager fontManager)
@@ -207,8 +222,12 @@ public partial class Snackbar
 		{
 			base.OnDismissed(transientBottomBar, e);
 
-			dismissedTCS.TrySetResult(true);
-			snackbar.OnDismissed();
+			// Material reports a snackbar that is dismissed again while it animates out (for example by the next snackbar, as
+			// DISMISS_EVENT_CONSECUTIVE after DISMISS_EVENT_MANUAL) once per dismissal: raise Dismissed only for the first one
+			if (dismissedTCS.TrySetResult(true))
+			{
+				snackbar.OnDismissed();
+			}
 		}
 	}
 }

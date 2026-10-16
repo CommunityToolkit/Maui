@@ -10,6 +10,10 @@ public partial class TouchBehavior
 	UIGestureRecognizer? touchGesture;
 	UIGestureRecognizer? hoverGesture;
 
+	// The UIButton of a Button or an ImageButton raises Clicked for a tap itself (TouchUpInside): the behavior's recognizer leaves the
+	// button's touches to it (TouchUITapGestureRecognizer)
+	internal bool IsClickedRaisedByPlatformView => Element?.Handler?.PlatformView is UIButton;
+
 	/// <summary>
 	/// Attaches the behavior to the platform view.
 	/// </summary>
@@ -41,6 +45,9 @@ public partial class TouchBehavior
 	/// <param name="platformView">Native View</param>
 	protected override void OnDetachedFrom(VisualElement bindable, UIView platformView)
 	{
+		// Element must be cleared before the base class clears View (which Element returns): the Element setter undoes what the attach did
+		// to the element (the layout's ChildAdded subscription, the children's InputTransparent) only while it still knows the element.
+		Element = null;
 		base.OnDetachedFrom(bindable, platformView);
 
 		if (touchGesture is not null)
@@ -57,7 +64,19 @@ public partial class TouchBehavior
 			hoverGesture = null;
 		}
 
-		Element = null;
+		// The attach turned user interaction on. MAUI sets it from InputTransparent (MAUI layouts track it for their hit testing) and, for a
+		// view that is not a UIControl, from IsEnabled (whichever changed last), so the element's handler applies them again instead of the
+		// value read at attach, which can be out of date: a disabled or input transparent view takes no touches. Another TouchBehavior that is
+		// still attached to the element needs user interaction: that one gives it back.
+		if (GetOtherAttachedTouchBehavior(bindable, this) is null)
+		{
+			bindable.Handler?.UpdateValue(nameof(VisualElement.InputTransparent));
+
+			if (!bindable.IsEnabled)
+			{
+				bindable.Handler?.UpdateValue(nameof(VisualElement.IsEnabled));
+			}
+		}
 	}
 
 	void OnHover()
@@ -74,6 +93,7 @@ public partial class TouchBehavior
 				HandleHover(HoverStatus.Entered);
 				break;
 			case UIGestureRecognizerState.Ended:
+			case UIGestureRecognizerState.Cancelled:
 				HandleHover(HoverStatus.Exited);
 				break;
 		}
@@ -81,11 +101,20 @@ public partial class TouchBehavior
 
 	partial void PlatformDispose()
 	{
-		touchGesture?.Dispose();
-		touchGesture = null;
+		// The recognizers are removed from the view first: UIKit would keep calling a disposed recognizer for every touch on the view.
+		if (touchGesture is not null)
+		{
+			touchGesture.View?.RemoveGestureRecognizer(touchGesture);
+			touchGesture.Dispose();
+			touchGesture = null;
+		}
 
-		hoverGesture?.Dispose();
-		hoverGesture = null;
+		if (hoverGesture is not null)
+		{
+			hoverGesture.View?.RemoveGestureRecognizer(hoverGesture);
+			hoverGesture.Dispose();
+			hoverGesture = null;
+		}
 	}
 
 	sealed class TouchUITapGestureRecognizer : UIGestureRecognizer
@@ -99,7 +128,13 @@ public partial class TouchBehavior
 		public TouchUITapGestureRecognizer(TouchBehavior behavior)
 		{
 			this.behavior = behavior;
+
+			// The view gets its touches as without the recognizer. The recognizer never recognizes (it stays Possible), so with UIKit's
+			// default it would hold the ended touches back from the view for good: a control that acts when a touch ends inside it (the
+			// UIButton of a Button, an ImageButton or a CheckBox) would never see its touch end (no TouchUpInside, no Released) and would
+			// not take another touch.
 			CancelsTouchesInView = false;
+			DelaysTouchesEnded = false;
 			Delegate = new TouchUITapGestureRecognizerDelegate();
 		}
 
@@ -127,8 +162,17 @@ public partial class TouchBehavior
 				return;
 			}
 
-			HandleTouch(behavior.CurrentTouchStatus is TouchStatus.Started ? TouchStatus.Completed : TouchStatus.Canceled,
-				TouchInteractionStatus.Completed);
+			if (isCanceled)
+			{
+				// The touch was canceled while it moved (it left the view or went past DisallowTouchThreshold) and keeps that status,
+				// but it has ended now: the interaction completes, as on the other platforms.
+				behavior.HandleUserInteraction(TouchInteractionStatus.Completed);
+			}
+			else
+			{
+				HandleTouch(behavior.CurrentTouchStatus is TouchStatus.Started ? TouchStatus.Completed : TouchStatus.Canceled,
+					TouchInteractionStatus.Completed);
+			}
 
 			isCanceled = true;
 		}
@@ -142,7 +186,15 @@ public partial class TouchBehavior
 				return;
 			}
 
-			HandleTouch(TouchStatus.Canceled, TouchInteractionStatus.Completed);
+			if (isCanceled)
+			{
+				// As in TouchesEnded: a touch that was canceled while it moved keeps that status, and its interaction completes now.
+				behavior.HandleUserInteraction(TouchInteractionStatus.Completed);
+			}
+			else
+			{
+				HandleTouch(TouchStatus.Canceled, TouchInteractionStatus.Completed);
+			}
 
 			isCanceled = true;
 		}

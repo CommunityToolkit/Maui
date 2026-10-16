@@ -27,7 +27,13 @@ public partial class PopupOnDisappearingPage : ContentPage
 	{
 		base.OnDisappearing();
 
-		await this.ShowPopupAsync(new RedBlueBoxPopup().Padding(0), new PopupOptions
+		// RedBlueBoxPopup has no size of its own: without one its four 10x10 corner squares lie on top of each other, so give it the 100x100 of the Popup Layout page
+		await this.ShowPopupAsync(new RedBlueBoxPopup
+		{
+			Padding = 0,
+			WidthRequest = 100,
+			HeightRequest = 100
+		}, new PopupOptions
 		{
 			Shape = null,
 		});

@@ -102,6 +102,12 @@ public static partial class DrawingViewService
 	static SKBitmap? GetBitmapForLines(in IList<IDrawingLine> lines, in Paint? background, Size? canvasSize)
 	{
 		var points = lines.SelectMany(static x => x.Points).ToList();
+		if (points.Count is 0)
+		{
+			// Max() below needs a line, and every platform returns Stream.Null when there is nothing to draw
+			return null;
+		}
+
 		var maxLineWidth = lines.Select(x => x.LineWidth).Max();
 		var (image, offset) = GetBitmap(points, maxLineWidth, canvasSize);
 

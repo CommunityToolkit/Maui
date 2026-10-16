@@ -14,13 +14,10 @@ public partial class NumericValidationBehaviorPage : BasePage<NumericValidationB
 
 	async void SetSafeEntryValue(object? sender, EventArgs e)
 	{
-		var toastVisibilityTimeSpan = TimeSpan.FromSeconds(5);
-		var cts = new CancellationTokenSource(toastVisibilityTimeSpan);
-
-		await Toast.Make($"The app will crash because `null` is an invalid value for {nameof(NumericValidationBehavior)}.\nOptionally, {nameof(Options)}.{nameof(Options.SetShouldSuppressExceptionsInBehaviors)} can be set to true", Core.ToastDuration.Long).Show(cts.Token);
-
-		await Task.Delay(toastVisibilityTimeSpan, cts.Token);
-
+		// NumericValidationBehavior does not throw for null: it validates null as invalid
 		SafeEntry.Text = null;
+
+		// Keep the text short: Android 12+ shows at most two lines in a Toast
+		await Toast.Make($"Text set to null: invalid for {nameof(NumericValidationBehavior)}", Core.ToastDuration.Long).Show(CancellationToken.None);
 	}
 }

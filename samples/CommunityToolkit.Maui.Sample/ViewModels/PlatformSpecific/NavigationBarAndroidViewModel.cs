@@ -44,7 +44,7 @@ public partial class NavigationBarAndroidViewModel : BaseViewModel
 				return NavigationBarStyle.DarkContent;
 			}
 
-			throw new NotSupportedException($"{nameof(NavigationBarStyle)} {NavigationBarStyle} is not supported.");
+			throw new NotSupportedException($"{nameof(NavigationBarStyle)} type is not supported.");
 		}
 	}
 }

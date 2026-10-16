@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Core.Views;
 
 namespace CommunityToolkit.Maui.Views;
@@ -8,6 +9,13 @@ namespace CommunityToolkit.Maui.Views;
 /// <summary>
 /// The DrawingView allows you to draw one or multiple lines on a canvas.
 /// </summary>
+/// <remarks>
+/// While the <see cref="DrawingView"/> is unloaded (for example while its page is not shown), it keeps its handler, so that it can be removed from
+/// its layout or added to another one meanwhile, but the handler stops listening to the platform view and to <see cref="Lines"/>, so that
+/// a <see cref="Lines"/> collection that the app keeps does not keep the view alive. Changes to the other properties still reach the platform view.
+/// When the <see cref="DrawingView"/> is loaded again, its handler listens again and the platform view shows the current <see cref="Lines"/>,
+/// including the lines added or removed while the <see cref="DrawingView"/> was unloaded.
+/// </remarks>
 public partial class DrawingView : View, IDrawingView
 {
 	readonly WeakEventManager drawingViewEventManager = new();
@@ -18,6 +26,7 @@ public partial class DrawingView : View, IDrawingView
 	public DrawingView()
 	{
 		BackgroundColor = DrawingViewDefaults.BackgroundColor;
+		Loaded += OnDrawingViewLoaded;
 		Unloaded += OnDrawingViewUnloaded;
 	}
 
@@ -60,6 +69,11 @@ public partial class DrawingView : View, IDrawingView
 	/// <summary>
 	/// Gets or sets the action that allows drawing on the <see cref="IDrawingView"/>.
 	/// </summary>
+	/// <remarks>
+	/// The action draws above the background and below the lines, in a canvas state of its own: the fill paint of the background is not set on
+	/// the canvas that the action receives, and the canvas state is restored after the action, so the fill paint, stroke settings, transforms and
+	/// other canvas state that the action sets do not apply to the lines.
+	/// </remarks>
 	[BindableProperty]
 	public partial Action<ICanvas, RectF>? DrawAction { get; set; }
 
@@ -123,7 +137,7 @@ public partial class DrawingView : View, IDrawingView
 	/// </summary>
 	/// <param name="options">The options controlling how the resulting image is generated.</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
-	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's provided through the <paramref name="options"/> parameter.</returns>
+	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's provided through the <paramref name="options"/> parameter, or <see cref="Stream.Null"/> when there is nothing to draw (no lines, or no line with points).</returns>
 	public static ValueTask<Stream> GetImageStream(
 		ImageLineOptions options,
 		CancellationToken token = default) =>
@@ -205,9 +219,29 @@ public partial class DrawingView : View, IDrawingView
 		}
 	}
 
+	// While the DrawingView is out of the window, its handler does not listen to the platform view and to Lines (#420), so that the platform view and
+	// the Lines, which the app may keep, do not keep each other alive. The DrawingView keeps its handler: MAUI needs it to remove the DrawingView from its
+	// layout (LayoutHandler.Remove) while its page is away. The DrawingView keeps listening, as it can leave the window again.
+	// A handler of another type has no StopListeningUntilLoaded: it is disconnected, as before.
 	void OnDrawingViewUnloaded(object? sender, EventArgs e)
 	{
-		Unloaded -= OnDrawingViewUnloaded;
-		Handler?.DisconnectHandler();
+		if (Handler is DrawingViewHandler drawingViewHandler)
+		{
+			drawingViewHandler.StopListeningUntilLoaded();
+		}
+		else
+		{
+			Handler?.DisconnectHandler();
+		}
+	}
+
+	// DrawingViewHandler also listens again when its platform view is in a window again; Loaded also covers an Unloaded that arrives after that
+	// (MAUI then raises Loaded right after it).
+	void OnDrawingViewLoaded(object? sender, EventArgs e)
+	{
+		if (Handler is DrawingViewHandler drawingViewHandler)
+		{
+			drawingViewHandler.ListenAgain();
+		}
 	}
 }

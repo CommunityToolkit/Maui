@@ -43,7 +43,7 @@ static partial class StatusBar
 			return;
 		}
 
-		var statusBarOverlay = decorGroup.FindViewWithTag(statusBarOverlayTag);
+		var statusBarOverlay = decorGroup.FindChildWithTag(statusBarOverlayTag);
 		statusBarOverlay?.LayoutParameters?.Height = GetStatusBarHeight(window) + statusBarHeightPadding;
 	}
 
@@ -72,13 +72,13 @@ static partial class StatusBar
 	[SupportedOSPlatform("android36.0")]
 	static void PlatformSetColor_AndroidApi36AndHigher(Window window, PlatformColor platformColor, ViewGroup decorGroup)
 	{
-		var statusBarOverlay = decorGroup.FindViewWithTag(statusBarOverlayTag);
+		var statusBarOverlay = decorGroup.FindChildWithTag(statusBarOverlayTag);
 
 		if (statusBarOverlay is null)
 		{
 			window.DecorView.Post(() =>
 			{
-				var existingOverlay = decorGroup.FindViewWithTag(statusBarOverlayTag);
+				var existingOverlay = decorGroup.FindChildWithTag(statusBarOverlayTag);
 
 				if (existingOverlay is not null)
 				{
@@ -101,7 +101,7 @@ static partial class StatusBar
 	[SupportedOSPlatform("android35.0"), UnsupportedOSPlatform("android36.0")]
 	static void PlatformSetColor_AndroidApi35(in Window window, in PlatformColor platformColor, in ViewGroup decorGroup)
 	{
-		var statusBarOverlay = decorGroup.FindViewWithTag(statusBarOverlayTag);
+		var statusBarOverlay = decorGroup.FindChildWithTag(statusBarOverlayTag);
 		if (statusBarOverlay is null)
 		{
 			ApplyStatusBarOverlay(window, platformColor, decorGroup);

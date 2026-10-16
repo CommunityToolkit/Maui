@@ -1,7 +1,9 @@
-﻿using System.Runtime.Versioning;
+﻿using System.Diagnostics;
+using System.Runtime.Versioning;
 using Android.Content;
 using Android.Runtime;
 using Android.Views;
+using AndroidX.Camera.Camera2.InterOp;
 using AndroidX.Camera.Core;
 using AndroidX.Camera.Core.ResolutionSelector;
 using AndroidX.Camera.Extensions;
@@ -23,10 +25,25 @@ public class CameraConsumer(TaskCompletionSource finalizeTcs) : Object, IConsume
 {
 	readonly TaskCompletionSource? finalizeTcs = finalizeTcs;
 
+	internal int Error { get; private set; } = VideoRecordEvent.Finalize.ErrorNone;
+
+	internal string? FailureReason { get; private set; }
+
 	public void Accept(Object? videoRecordEvent)
 	{
-		if (videoRecordEvent is VideoRecordEvent.Finalize)
+		if (videoRecordEvent is VideoRecordEvent.Finalize finalizeEvent)
 		{
+			// CameraX finalizes a recording that failed with an error (the storage is full, the camera closed, ...) also when the video
+			// recorded until then is in the file, so the error is kept for StopVideoRecording to decide whether that video can be played
+			if (finalizeEvent.HasError)
+			{
+				Error = finalizeEvent.Error;
+				var error = $"CameraX finalized the recording with VideoRecordEvent.Finalize error code {finalizeEvent.Error}";
+				FailureReason = finalizeEvent.Cause?.Message is { Length: > 0 } causeMessage
+					? $"{error} - {causeMessage}"
+					: error;
+			}
+
 			finalizeTcs?.SetResult();
 		}
 	}
@@ -35,6 +52,10 @@ public class CameraConsumer(TaskCompletionSource finalizeTcs) : Object, IConsume
 partial class CameraManager
 {
 	readonly Context context = mauiContext.Context ?? throw new CameraException($"Unable to retrieve {nameof(Context)}");
+
+	// StartVideoRecording and StopVideoRecording both wait for CameraX: without this, one could work on a recording that the other one
+	// is ending or replacing
+	readonly SemaphoreSlim videoRecordingSemaphoreSlim = new(1, 1);
 
 	NativePlatformCameraPreviewView? previewView;
 	IExecutorService? cameraExecutor;
@@ -52,8 +73,13 @@ partial class CameraManager
 	OrientationListener? orientationListener;
 	Java.IO.File? videoRecordingFile;
 	TaskCompletionSource? videoRecordingFinalizeTcs;
+	CameraConsumer? videoRecordingConsumer;
 	Stream? videoRecordingStream;
 	int extensionMode = ExtensionMode.Auto;
+	bool isDisposed;
+
+	bool isCameraSwitchDeferred;
+
 	CaptureSessionMode currentSessionMode = CaptureSessionMode.Photo;
 	enum CaptureSessionMode { Photo, Video }
 
@@ -69,22 +95,53 @@ partial class CameraManager
 			return;
 		}
 
+		// Binding the use cases again would make CameraX finalize the running recording: the new extension mode applies when the
+		// session is bound next (StopVideoRecording binds the photo session)
+		if (IsRecordingBound())
+		{
+			return;
+		}
+
 		await RebindCurrentSessionAsync(token);
 	}
 
 	public void Dispose()
 	{
+		// Work that still waits for CameraX (connecting, binding the camera, finalizing a recording) ends with ObjectDisposedException
+		// instead of using what is released here
+		isDisposed = true;
+
 		CleanupVideoRecordingResources();
 
-		camera?.Dispose();
-		camera = null;
+		// The ProcessCameraProvider is process-wide, and CameraX hands the same camera and CameraControl to every manager bound to the same
+		// LifecycleOwner, so their managed peers are shared: release them, never dispose them.
+		UnbindUseCases();
+		processCameraProvider = null;
 
-		cameraControl?.Dispose();
+		camera = null;
 		cameraControl = null;
 
 		cameraPreview?.Dispose();
 		cameraPreview = null;
 
+		// Unbinding the ImageCapture aborted the captures that were still pending, and CameraX queued their onError on the
+		// camera executor: the callback is disposed after them, on the same executor
+		if (imageCallback is not null)
+		{
+			if (cameraExecutor is null)
+			{
+				imageCallback.Dispose();
+			}
+			else
+			{
+				cameraExecutor.Execute(new Runnable(imageCallback.Dispose));
+			}
+
+			imageCallback = null;
+		}
+
+		// The executor runs what was queued before (the callbacks above), then its thread ends
+		cameraExecutor?.Shutdown();
 		cameraExecutor?.Dispose();
 		cameraExecutor = null;
 
@@ -97,15 +154,8 @@ partial class CameraManager
 		videoRecorder?.Dispose();
 		videoRecorder = null;
 
-		imageCallback?.Dispose();
-		imageCallback = null;
-
 		previewView?.Dispose();
 		previewView = null;
-
-		processCameraProvider?.UnbindAll();
-		processCameraProvider?.Dispose();
-		processCameraProvider = null;
 
 		resolutionSelector?.Dispose();
 		resolutionSelector = null;
@@ -222,14 +272,34 @@ partial class CameraManager
 
 		var cameraProviderTCS = new TaskCompletionSource();
 
+		// The listener runs later on the UI thread, outside of this method: its outcome completes ConnectCamera, nothing escapes from it
 		cameraProviderFuture.AddListener(new Runnable(async () =>
 		{
-			processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new CameraException($"Unable to retrieve {nameof(ProcessCameraProvider)}"));
+			try
+			{
+				// Dispose released what the use cases need before CameraX answered: connect nothing. The released camera ends the connection like
+				// a cancellation, which ConnectCamera ends quietly, instead of an error that the view would report although it is gone
+				if (isDisposed)
+				{
+					cameraProviderTCS.TrySetCanceled();
+					return;
+				}
 
-			InitializeUseCases();
-			await PlatformStartCameraPreview(token);
+				processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new CameraException($"Unable to retrieve {nameof(ProcessCameraProvider)}"));
 
-			cameraProviderTCS.SetResult();
+				InitializeUseCases();
+				await PlatformStartCameraPreview(token);
+
+				cameraProviderTCS.SetResult();
+			}
+			catch (OperationCanceledException ex)
+			{
+				cameraProviderTCS.TrySetCanceled(ex.CancellationToken);
+			}
+			catch (System.Exception ex)
+			{
+				cameraProviderTCS.TrySetException(ex);
+			}
 		}), ContextCompat.GetMainExecutor(context));
 
 		await cameraProviderTCS.Task.WaitAsync(token);
@@ -256,32 +326,41 @@ partial class CameraManager
 		cameraPreview.SetSurfaceProvider(cameraExecutor, previewView?.SurfaceProvider);
 	}
 
-	void RebuildImageCapture()
+	void RebuildImageCapture() => ReplaceImageCapture(CreateImageCapture(currentSessionMode));
+
+	ImageCapture CreateImageCapture(CaptureSessionMode sessionMode)
 	{
 		ArgumentNullException.ThrowIfNull(resolutionSelector);
 
-		var imageCaptureMode = currentSessionMode switch
+		var imageCaptureMode = sessionMode switch
 		{
 			CaptureSessionMode.Video => ImageCapture.CaptureModeMinimizeLatency,
 			_ => ImageCapture.CaptureModeMaximizeQuality
 		};
 
+		// A new ImageCapture starts with CameraX's default flash mode, not the one of the view
+		return new ImageCapture.Builder()
+			.SetCaptureMode(imageCaptureMode)
+			.SetFlashMode(cameraView.CameraFlashMode.ToPlatform())
+			.SetResolutionSelector(resolutionSelector)
+			.Build();
+	}
+
+	// The current ImageCapture is released once its replacement exists, so that a failure while creating the replacement (an undefined
+	// CameraFlashMode) never leaves a disposed ImageCapture behind
+	void ReplaceImageCapture(ImageCapture replacement)
+	{
 		if (imageCapture is not null)
 		{
 			processCameraProvider?.Unbind(imageCapture);
 			imageCapture.Dispose();
 		}
 
-		imageCapture = new ImageCapture.Builder()
-			.SetCaptureMode(imageCaptureMode)
-			.SetResolutionSelector(resolutionSelector)
-			.Build();
+		imageCapture = replacement;
 	}
 
 	void RebuildVideoCapture()
 	{
-		ArgumentNullException.ThrowIfNull(cameraExecutor);
-
 		if (videoCapture is not null)
 		{
 			processCameraProvider?.Unbind(videoCapture);
@@ -289,8 +368,9 @@ partial class CameraManager
 		}
 		videoRecorder?.Dispose();
 
-		var videoRecorderBuilder = new Recorder.Builder()
-			.SetExecutor(cameraExecutor);
+		// The Recorder runs on the I/O executor of CameraX (its default), not on the camera executor: it still finalizes recordings
+		// and releases its encoders after its VideoCapture is unbound, which the camera executor that Dispose shuts down would reject
+		var videoRecorderBuilder = new Recorder.Builder();
 
 		if (Quality.Highest is not null)
 		{
@@ -300,41 +380,135 @@ partial class CameraManager
 		videoCapture = VideoCapture.WithOutput(videoRecorder);
 	}
 
-	async Task BindPhotoSessionAsync(CancellationToken token)
+	Task BindPhotoSessionAsync(CancellationToken token) => BindSessionAsync(CaptureSessionMode.Photo, token);
+
+	Task BindVideoSessionAsync(CancellationToken token) => BindSessionAsync(CaptureSessionMode.Video, token);
+
+	// CameraX resolves the camera selector first, and the session and its use cases are read once it answered: a session switch or a new
+	// capture resolution can have replaced (and disposed) the use cases meanwhile, and a recording can have started.
+	async Task BindSessionAsync(CaptureSessionMode? sessionMode, CancellationToken token)
 	{
-		if (processCameraProvider is null
-			|| cameraView.SelectedCamera is null
-			|| cameraPreview is null
-			|| imageCapture is null)
+		if (processCameraProvider is null || cameraView.SelectedCamera is null)
 		{
 			return;
 		}
-		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, token, cameraPreview, imageCapture);
-		cameraControl = camera.CameraControl;
-	}
 
-	async Task BindVideoSessionAsync(CancellationToken token)
-	{
-		if (processCameraProvider is null
-			|| cameraView.SelectedCamera is null
-			|| cameraPreview is null
-			|| imageCapture is null
-			|| videoCapture is null)
+		var cameraSelector = await EnableModes(cameraView.SelectedCamera, token);
+
+		ObjectDisposedException.ThrowIf(isDisposed, this);
+
+		// Binding the use cases again would make CameraX finalize the recording that started meanwhile, whose session is bound already
+		if (IsRecordingBound())
 		{
 			return;
 		}
-		camera = await RebindCamera(processCameraProvider, cameraView.SelectedCamera, token, cameraPreview, imageCapture, videoCapture);
-		cameraControl = camera.CameraControl;
+
+		BindSession(sessionMode ?? currentSessionMode, cameraSelector);
 	}
 
-	Task RebindCurrentSessionAsync(CancellationToken token)
+	void BindSession(CaptureSessionMode sessionMode, CameraSelector cameraSelector)
 	{
-		return currentSessionMode switch
+		if (processCameraProvider is null || cameraPreview is null || imageCapture is null)
 		{
-			CaptureSessionMode.Video => BindVideoSessionAsync(token),
-			_ => BindPhotoSessionAsync(token)
-		};
+			return;
+		}
+
+		if (sessionMode is CaptureSessionMode.Photo)
+		{
+			OnCameraBound(BindCamera(processCameraProvider, cameraSelector, cameraPreview, imageCapture));
+		}
+		else if (videoCapture is not null)
+		{
+			OnCameraBound(BindCamera(processCameraProvider, cameraSelector, cameraPreview, imageCapture, videoCapture));
+		}
 	}
+
+	// CameraX resolves the camera selector and the new ImageCapture is created before anything changes, so that a cancelled token (or an
+	// ImageCapture that can not be created) leaves the current session as it was.
+	async Task SwitchSessionAsync(CaptureSessionMode sessionMode, bool bindSession, CancellationToken token)
+	{
+		var cameraSelector = bindSession && cameraView.SelectedCamera is not null
+			? await EnableModes(cameraView.SelectedCamera, token)
+			: null;
+
+		ObjectDisposedException.ThrowIf(isDisposed, this);
+
+		var sessionImageCapture = CreateImageCapture(sessionMode);
+		currentSessionMode = sessionMode;
+		ReplaceImageCapture(sessionImageCapture);
+
+		if (!bindSession)
+		{
+			UnbindUseCases();
+		}
+		else if (cameraSelector is not null)
+		{
+			BindSession(sessionMode, cameraSelector);
+		}
+	}
+
+	// Called once no recording runs any more, also when the token of the call was cancelled meanwhile. A preview that the app stopped stays
+	// stopped. A camera switch that waited for the recording to end completes now, the way UpdateCurrentCamera completes a switch.
+	async Task ReturnToPhotoSessionAsync()
+	{
+		if (isDisposed)
+		{
+			return;
+		}
+
+		// A selection that came back to the camera of the recording (for example through null) needs no other camera: the photo session is
+		// bound to that camera again, as after a recording without a switch, instead of closing the camera and opening it again
+		var completeCameraSwitch = isCameraSwitchDeferred && isInitialized && !IsBoundTo(cameraView.SelectedCamera);
+		isCameraSwitchDeferred = false;
+
+		await SwitchSessionAsync(CaptureSessionMode.Photo, bindSession: isInitialized && !completeCameraSwitch, CancellationToken.None);
+
+		if (!completeCameraSwitch)
+		{
+			return;
+		}
+
+		try
+		{
+			await PlatformStartCameraPreview(CancellationToken.None);
+		}
+		catch (System.Exception ex) when (!isDisposed)
+		{
+			// Like a switch to a camera that can not be bound (CameraViewHandler.MapSelectedCamera reports it), which keeps the preview
+			// started for the next selection: the recording that ended is not affected
+			Trace.TraceError($"{nameof(CameraManager)}: unable to switch to the selected camera: {ex}");
+		}
+	}
+
+	bool IsBoundTo(CameraInfo? cameraInfo) => camera is not null
+		&& cameraInfo is not null
+		&& string.Equals(Camera2CameraInfo.From(camera.CameraInfo)?.CameraId, cameraInfo.DeviceId, StringComparison.Ordinal);
+
+	// CameraX finalizes a recording as soon as its VideoCapture is unbound, which binding the use cases again does
+	bool IsRecordingBound() => videoRecording is not null
+		&& videoCapture is not null
+		&& processCameraProvider?.IsBound(videoCapture) is true;
+
+	// The ProcessCameraProvider is process-wide, so only the use cases of this manager are unbound
+	void UnbindUseCases()
+	{
+		UseCase[] useCases = [.. new UseCase?[] { cameraPreview, imageCapture, videoCapture }.OfType<UseCase>()];
+		processCameraProvider?.Unbind(useCases);
+	}
+
+	void OnCameraBound(ICamera boundCamera)
+	{
+		camera = boundCamera;
+		cameraControl = boundCamera.CameraControl;
+
+		// CameraX starts a camera that is bound again with its defaults (zoom ratio 1, torch off). Its camera thread resets the published
+		// zoom state when it detaches the use cases, which can come after this zoom request was published (the request itself still reaches
+		// the camera), so the zoom of the view is requested again once CameraX answered.
+		cameraControl?.SetZoomRatio(cameraView.ZoomFactor)?.AddListener(new Runnable(() => UpdateZoom(cameraView.ZoomFactor)), ContextCompat.GetMainExecutor(context));
+		UpdateIsTorchOn(cameraView.IsTorchOn);
+	}
+
+	Task RebindCurrentSessionAsync(CancellationToken token) => BindSessionAsync(null, token);
 
 	bool IsPhotoSessionBound()
 	{
@@ -348,24 +522,19 @@ partial class CameraManager
 
 	bool IsSessionBound(CaptureSessionMode mode)
 	{
-		if (processCameraProvider is null || cameraPreview is null)
+		if (processCameraProvider is null || cameraPreview is null || imageCapture is null)
 		{
 			return false;
 		}
 
-		UseCase? useCase = mode switch
+		var arePreviewAndImageCaptureBound = processCameraProvider.IsBound(cameraPreview)
+			&& processCameraProvider.IsBound(imageCapture);
+
+		return mode switch
 		{
-			CaptureSessionMode.Video => videoCapture,
-			_ => imageCapture
+			CaptureSessionMode.Video => arePreviewAndImageCaptureBound && videoCapture is not null && processCameraProvider.IsBound(videoCapture),
+			_ => arePreviewAndImageCaptureBound
 		};
-
-		if (useCase is null)
-		{
-			return false;
-		}
-
-		return processCameraProvider.IsBound(cameraPreview)
-			&& processCameraProvider.IsBound(useCase);
 	}
 
 	private async partial Task PlatformStartCameraPreview(CancellationToken token)
@@ -377,9 +546,25 @@ partial class CameraManager
 
 		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
+		// The recording keeps its camera until it ends (see PlatformStopCameraPreviewForCameraSwitch)
+		if (isCameraSwitchDeferred && IsRecordingBound())
+		{
+			return;
+		}
+
 		if (camera is null || !IsPhotoSessionBound())
 		{
-			await BindPhotoSessionAsync(token);
+			try
+			{
+				await BindPhotoSessionAsync(token);
+			}
+			catch (System.Exception ex) when (ex is not OperationCanceledException)
+			{
+				// The selected camera can not be bound (for example an unplugged USB camera): the preview stays started, so that
+				// selecting another camera (UpdateCurrentCamera) opens it
+				isInitialized = true;
+				throw;
+			}
 		}
 
 		var point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
@@ -390,6 +575,20 @@ partial class CameraManager
 		onLoaded.Invoke();
 	}
 
+	// Unbinding the use cases of a recording would make CameraX finalize it, so while a recording runs the switch is deferred until the
+	// recording ends (StopVideoRecording, or a StartVideoRecording that replaces it or fails)
+	private partial void PlatformStopCameraPreviewForCameraSwitch()
+	{
+		if (processCameraProvider is not null && isInitialized && IsRecordingBound())
+		{
+			isCameraSwitchDeferred = true;
+			return;
+		}
+
+		PlatformStopCameraPreview();
+	}
+
+	// StopCameraPreview always stops the preview, also a running recording (CameraX finalizes it) and a camera switch that waits for it
 	private partial void PlatformStopCameraPreview()
 	{
 		if (processCameraProvider is null)
@@ -397,6 +596,7 @@ partial class CameraManager
 			return;
 		}
 
+		isCameraSwitchDeferred = false;
 		processCameraProvider.UnbindAll();
 		isInitialized = false;
 	}
@@ -410,58 +610,146 @@ partial class CameraManager
 		ArgumentNullException.ThrowIfNull(cameraExecutor);
 		ArgumentNullException.ThrowIfNull(imageCallback);
 
-		imageCapture?.TakePicture(cameraExecutor, imageCallback);
+		if (imageCapture is null)
+		{
+			// CameraView.CaptureImage waits for MediaCaptured or MediaCaptureFailed, so a capture that can not start (the camera never started,
+			// for example without a camera) is reported: CaptureImage throws CameraException instead of waiting for its token, as on Windows
+			cameraView.OnMediaCapturedFailed("Unable to capture an image because the camera is not initialized.");
+			return ValueTask.CompletedTask;
+		}
+
+		imageCapture.TakePicture(cameraExecutor, imageCallback);
 		return ValueTask.CompletedTask;
 	}
 
 	private async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
 	{
+		await videoRecordingSemaphoreSlim.WaitAsync(token);
+
+		try
+		{
+			await StartRecordingAsync(stream, token);
+		}
+		finally
+		{
+			videoRecordingSemaphoreSlim.Release();
+		}
+	}
+
+	async Task StartRecordingAsync(Stream stream, CancellationToken token)
+	{
 		if (previewView is null
 			|| processCameraProvider is null
 			|| cameraPreview is null
 			|| videoCapture is null
-			|| videoRecorder is null
-			|| videoRecordingFile is not null)
+			|| videoRecorder is null)
 		{
 			return;
 		}
 
-		videoRecordingStream = stream;
-
 		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
-		// Rebuild the ImageCapture use case with the CaptureModeMinimizeLatency capture mode
-		// to optimize for latency during video recording sessions
-		currentSessionMode = CaptureSessionMode.Video;
-		RebuildImageCapture();
-
-		if (camera is null || !IsVideoSessionBound())
+		if (videoRecording is not null && videoRecordingFinalizeTcs is not null)
 		{
-			await BindVideoSessionAsync(token);
+			// Like on iOS and Windows, the stream of the latest StartVideoRecording receives the video: the running recording ends and its
+			// video is discarded
+			token.ThrowIfCancellationRequested();
+			videoRecording.Stop();
+			await videoRecordingFinalizeTcs.Task.WaitAsync(token);
+
+			ObjectDisposedException.ThrowIf(isDisposed, this);
+
+			CleanupVideoRecordingResources();
+
+			// A camera switch that waited for the ended recording completes first: the new recording records with the selected camera
+			if (isCameraSwitchDeferred)
+			{
+				await ReturnToPhotoSessionAsync();
+			}
 		}
 
-		videoRecordingFile = new Java.IO.File(context.CacheDir, $"{DateTime.UtcNow.Ticks}.mp4");
-		videoRecordingFile.CreateNewFile();
+		// The recording file and the recording (which checks RECORD_AUDIO) are prepared before the session changes, and the manager
+		// keeps the recording state only once the recording started: a StartVideoRecording that fails leaves nothing behind
+		var recordingFile = new Java.IO.File(context.CacheDir, $"{DateTime.UtcNow.Ticks}.mp4");
+		try
+		{
+			recordingFile.CreateNewFile();
 
-		var outputOptions = new FileOutputOptions.Builder(videoRecordingFile).Build();
+			var outputOptions = new FileOutputOptions.Builder(recordingFile).Build();
 
-		videoRecordingFinalizeTcs = new TaskCompletionSource();
-		var captureListener = new CameraConsumer(videoRecordingFinalizeTcs);
-		var executor = ContextCompat.GetMainExecutor(context) ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
-		videoRecording = videoRecorder
-			.PrepareRecording(context, outputOptions)
-			?.WithAudioEnabled()
-			.Start(executor, captureListener) ?? throw new InvalidOperationException("Unable to prepare recording");
+			var pendingRecording = videoRecorder
+				.PrepareRecording(context, outputOptions)
+				?.WithAudioEnabled() ?? throw new InvalidOperationException("Unable to prepare recording");
 
-		// `.PrepareRecording()` should never return null
-		// According to the Android docs, `Recorder.prepareRecording(Context, eMediaSoreOutputOptions)` returns a `NonNull` object
-		// `Recorder.PrepareRecording(Context, eMediaSoreOutputOptions)` returning a nullable object in .NET for Android is likely a C# Binding mistake
-		// https://developer.android.com/reference/androidx/camera/video/Recorder#prepareRecording(android.content.Context,androidx.camera.video.MediaStoreOutputOptions)
+			// `.PrepareRecording()` should never return null
+			// According to the Android docs, `Recorder.prepareRecording(Context, eMediaSoreOutputOptions)` returns a `NonNull` object
+			// `Recorder.PrepareRecording(Context, eMediaSoreOutputOptions)` returning a nullable object in .NET for Android is likely a C# Binding mistake
+			// https://developer.android.com/reference/androidx/camera/video/Recorder#prepareRecording(android.content.Context,androidx.camera.video.MediaStoreOutputOptions)
+
+			if (IsCapturePhotoSession)
+			{
+				// Rebuild the ImageCapture use case with the CaptureModeMinimizeLatency capture mode
+				// to optimize for latency during video recording sessions
+				await SwitchSessionAsync(CaptureSessionMode.Video, bindSession: true, token);
+			}
+			else if (camera is null || !IsVideoSessionBound())
+			{
+				await BindVideoSessionAsync(token);
+			}
+
+			var finalizeTcs = new TaskCompletionSource();
+			var executor = ContextCompat.GetMainExecutor(context) ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
+			var consumer = new CameraConsumer(finalizeTcs);
+
+			videoRecording = pendingRecording.Start(executor, consumer);
+			videoRecordingConsumer = consumer;
+			videoRecordingFile = recordingFile;
+			videoRecordingFinalizeTcs = finalizeTcs;
+			videoRecordingStream = stream;
+		}
+		catch
+		{
+			recordingFile.Delete();
+			recordingFile.Dispose();
+
+			// No recording runs any more: the running recording ended above, or the session switched to video before the failure
+			if (!IsCapturePhotoSession)
+			{
+				await ReturnToPhotoSessionAsync();
+			}
+
+			throw;
+		}
 	}
 
 	private async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
 	{
 		ArgumentNullException.ThrowIfNull(cameraExecutor);
+
+		// Like on iOS, the recording stops also when the token is cancelled already: the token cancels waiting for CameraX to finalize
+		// the recording and copying it into the stream, and a stop whose token was cancelled while it waited can be called again
+		videoRecording?.Stop();
+
+		await videoRecordingSemaphoreSlim.WaitAsync(token);
+
+		try
+		{
+			return await StopRecordingAsync(token);
+		}
+		catch (ObjectDisposedException) when (isDisposed)
+		{
+			// Dispose released the recording and the stream while the stop waited (the page closed right after the user tapped stop):
+			// there is no video to return, and nothing may escape from the async void StopVideoRecordingCommand
+			return Stream.Null;
+		}
+		finally
+		{
+			videoRecordingSemaphoreSlim.Release();
+		}
+	}
+
+	async Task<Stream> StopRecordingAsync(CancellationToken token)
+	{
 		if (videoRecording is null
 			|| videoRecordingFile is null
 			|| videoRecordingFinalizeTcs is null
@@ -470,26 +758,84 @@ partial class CameraManager
 			return Stream.Null;
 		}
 
+		var stream = videoRecordingStream;
+
 		videoRecording.Stop();
 		await videoRecordingFinalizeTcs.Task.WaitAsync(token);
 
-		await using var inputStream = new FileStream(videoRecordingFile.AbsolutePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-		await inputStream.CopyToAsync(videoRecordingStream, token);
-		await videoRecordingStream.FlushAsync(token);
-		CleanupVideoRecordingResources();
+		ObjectDisposedException.ThrowIf(isDisposed, this);
 
-		// Rebuild the ImageCapture use case with the CaptureModeMaximizeQuality capture mode
-		// to optimize for quality during photo capture sessions
-		currentSessionMode = CaptureSessionMode.Photo;
-		RebuildImageCapture();
-		await BindPhotoSessionAsync(token);
-
-		if (videoRecordingStream.CanSeek)
+		try
 		{
-			videoRecordingStream.Position = 0;
+			// Without a video that can be played the caller gets the failure instead of its stream, which would look like a successful
+			// recording; a video recorded until the failure (for example until StopCameraPreview closed the camera) is returned like the
+			// video of a recording that was stopped
+			if (videoRecordingConsumer?.FailureReason is string failureReason)
+			{
+				if (!HasPlayableVideo(videoRecordingConsumer.Error, videoRecordingFile))
+				{
+					throw new CameraException($"Video recording failed: {failureReason}");
+				}
+
+				Trace.TraceWarning($"{nameof(CameraManager)}: StopVideoRecording returns the video recorded until the recording failed: {failureReason}");
+			}
+
+			await using var inputStream = new FileStream(videoRecordingFile.AbsolutePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+			await inputStream.CopyToAsync(stream, token);
+			await stream.FlushAsync(token);
+		}
+		finally
+		{
+			CleanupVideoRecordingResources();
+			await ReturnToPhotoSessionAsync();
 		}
 
-		return videoRecordingStream;
+		if (stream.CanSeek)
+		{
+			stream.Position = 0;
+		}
+
+		return stream;
+	}
+
+	// The errors are classified according to the documentation of VideoRecordEvent.Finalize:
+	// - ERROR_INVALID_OUTPUT_OPTIONS generates no output file, the output file of ERROR_ENCODING_FAILED and ERROR_RECORDER_ERROR "is not
+	//   properly constructed", and ERROR_NO_VALID_DATA misses "the essential data for a recording to be played correctly": no video.
+	// - ERROR_SOURCE_INACTIVE (the camera closed: StopCameraPreview, the app went to the background), ERROR_INSUFFICIENT_STORAGE (the storage
+	//   became full while recording), ERROR_FILE_SIZE_LIMIT_REACHED, ERROR_DURATION_LIMIT_REACHED and ERROR_RECORDING_GARBAGE_COLLECTED keep
+	//   the video recorded until then in the file, unless the recording ended before CameraX wrote anything, and ERROR_UNKNOWN "may or may
+	//   not" generate the output file: for these errors (and any other one) the file decides, it must hold a video that Android can read.
+	static bool HasPlayableVideo(int error, Java.IO.File file)
+	{
+		if (error is VideoRecordEvent.Finalize.ErrorInvalidOutputOptions
+			or VideoRecordEvent.Finalize.ErrorEncodingFailed
+			or VideoRecordEvent.Finalize.ErrorRecorderError
+			or VideoRecordEvent.Finalize.ErrorNoValidData)
+		{
+			return false;
+		}
+
+		// The manager creates the file before the recording starts: it stays empty when CameraX wrote nothing
+		if (!file.Exists() || file.Length() is 0)
+		{
+			return false;
+		}
+
+		using var retriever = new Android.Media.MediaMetadataRetriever();
+		try
+		{
+			retriever.SetDataSource(file.AbsolutePath);
+			return retriever.ExtractMetadata(Android.Media.MetadataKey.HasVideo) is "yes";
+		}
+		catch (Java.Lang.RuntimeException)
+		{
+			// MediaMetadataRetriever can not read the file, for example an MP4 file without the index that the recording writes last
+			return false;
+		}
+		finally
+		{
+			retriever.Release();
+		}
 	}
 
 	void CleanupVideoRecordingResources()
@@ -509,6 +855,7 @@ partial class CameraManager
 		}
 
 		videoRecordingFinalizeTcs = null;
+		videoRecordingConsumer = null;
 	}
 
 	async Task<CameraSelector> EnableModes(CameraInfo selectedCamera, CancellationToken token)
@@ -543,9 +890,8 @@ partial class CameraManager
 		return cameraSelector;
 	}
 
-	async Task<ICamera> RebindCamera(ProcessCameraProvider provider, CameraInfo cameraInfo, CancellationToken token, params UseCase[] useCases)
+	ICamera BindCamera(ProcessCameraProvider provider, CameraSelector cameraSelector, params UseCase[] useCases)
 	{
-		var cameraSelector = await EnableModes(cameraInfo, token);
 		provider.UnbindAll();
 		return provider.BindToLifecycle((ILifecycleOwner)context, cameraSelector, useCases);
 	}
@@ -569,6 +915,7 @@ partial class CameraManager
 			if (img is null)
 			{
 				cameraView.OnMediaCapturedFailed("Unable to obtain Image data.");
+				image?.Close();
 				return;
 			}
 
