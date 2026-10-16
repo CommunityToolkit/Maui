@@ -192,14 +192,15 @@ partial class PopupPage : ContentPage, IQueryAttributable
 				// Wait for MAUI to confirm the PopupPage has been popped before invoking the PopupClosed event and notifying the Popup that it may invoke its `Popup.Closed` event.
 				// This guarantees the Popup has been removed from MAUI's ModalStack
 				await popupConfirmedPoppedTcs.Task;
-
-				PopupClosed?.Invoke(this, result);
-				popup.NotifyPopupIsClosed();
 			}
 			finally
 			{
 				navigationSemaphoreSlim.Release();
 			}
+
+			// Raised after navigationSemaphoreSlim is released because PopupClosed completes ShowPopupAsync, whose caller may show another popup right away
+			PopupClosed?.Invoke(this, result);
+			popup.NotifyPopupIsClosed();
 		}
 		finally
 		{

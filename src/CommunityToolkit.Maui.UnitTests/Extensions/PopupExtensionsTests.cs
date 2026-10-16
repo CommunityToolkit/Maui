@@ -1650,6 +1650,38 @@ public class PopupExtensionsTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_INavigation_SemaphoreReleasedBeforeResultIsReturned_AllowsNextPopupToDisplayImmediately()
+	{
+		using var nextPopupShown = new ManualResetEventSlim();
+		var popup = new Popup();
+
+		// Popup.Closed is raised after ShowPopupAsync returns its result: blocking it until the next popup is shown keeps the close in progress without depending on timing
+		popup.Closed += (_, _) => nextPopupShown.Wait(TestContext.Current.CancellationToken);
+
+		var showPopupTask = navigation.ShowPopupAsync(popup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+
+		// Closed on its own thread, like a popup that closes itself, because the Closed handler blocks it
+		var closePopupTask = Task.Run(() => popup.CloseAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
+
+		List<Page> modalStackAfterShowPopup;
+		try
+		{
+			await showPopupTask;
+			navigation.ShowPopup(new Grid());
+			modalStackAfterShowPopup = [.. navigation.ModalStack];
+		}
+		finally
+		{
+			nextPopupShown.Set();
+		}
+
+		await closePopupTask;
+
+		var modalPage = Assert.Single(modalStackAfterShowPopup);
+		Assert.IsType<PopupPage>(modalPage);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public void ShowPopup_Shell_SemaphoreReleasedAfterDisplay_NullParameters_AllowsAdditionalPopups()
 	{
 		// Arrange
