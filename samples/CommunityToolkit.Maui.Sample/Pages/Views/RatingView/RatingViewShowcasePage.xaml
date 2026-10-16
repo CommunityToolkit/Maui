@@ -76,9 +76,11 @@
             <Border
                 Margin="0"
                 Padding="10"
-                BackgroundColor="White"
+                BackgroundColor="{AppThemeBinding Light=White,
+                                                  Dark={StaticResource Gray950}}"
                 MaximumWidthRequest="500"
-                Stroke="#E5E5DD"
+                Stroke="{AppThemeBinding Light=#E5E5DD,
+                                         Dark={StaticResource Gray600}}"
                 StrokeThickness="2">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="10" />
@@ -90,7 +92,9 @@
                         Radius="7"
                         Offset="1,1" />
                 </Border.Shadow>
+                <!--  Transparent: the Sample's implicit Grid style would paint the page background over the card  -->
                 <Grid
+                    BackgroundColor="Transparent"
                     ColumnDefinitions="100, *"
                     RowDefinitions="100, 20, *"
                     RowSpacing="10">
@@ -127,8 +131,7 @@
                     <Label
                         Grid.Row="1"
                         Grid.Column="0"
-                        Grid.ColumnSpan="2"
-                        TextColor="Black">
+                        Grid.ColumnSpan="2">
                         <Label.FormattedText>
                             <FormattedString>
                                 <FormattedString.Spans>
@@ -143,8 +146,7 @@
                         Grid.Row="2"
                         Grid.Column="0"
                         Grid.ColumnSpan="2"
-                        Text="&#x22;I have used the .NET MAUI Community Toolkit in all of my cross-platform projects.  It's everything I could want and the community are great&#x2026;&#x22;"
-                        TextColor="Black" />
+                        Text="&#x22;I have used the .NET MAUI Community Toolkit in all of my cross-platform projects.  It's everything I could want and the community are great&#x2026;&#x22;" />
 
                 </Grid>
             </Border>
