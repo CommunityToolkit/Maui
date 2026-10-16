@@ -30,6 +30,7 @@ This document provides guidelines for using GitHub Copilot to contribute to the 
 * Include a **CancellationToken** as a parameter for methods returning **Task** or **ValueTask**.
 * Use **is** for null checking and type checking.
 * Use file-scoped namespaces to reduce code verbosity.
+* Write comments only to explain **why** (a non-intuitive decision, a platform quirk or workaround, code that looks out of scope); never to explain **what** the code does. Use descriptive names instead.
 * Avoid using the **!** null forgiving operator.
 * Follow naming conventions for enums and property names.
 
@@ -63,6 +64,31 @@ StyleCop rules SA1201, SA1202, SA1204, SA1214, and SA1215 are reported as **buil
 ### Units
 * Use the standard units and most well accepted units when possible. For instance Hectopascals are used on UWP/Android and iOS uses Kilopascals so we have chosen Hectopascals.
 
+### Comments
+* Never write a comment that explains what the code does: the names of types, members and variables carry that. When code seems to need a "what" comment, rename it or extract a well-named method instead.
+* Write a comment only when it explains why: a non-intuitive decision, a platform quirk or workaround (with the issue link), an ordering or timing constraint, or code that looks unexpected or out of scope.
+* Keep XML documentation comments on public APIs: they document the contract for callers.
+
+e.g.
+
+```csharp
+// Avoid - the comment repeats the code
+// Check whether the user can retry
+if (attempts < 3 && !isCancelled)
+{
+}
+
+// Prefer - the name says what the code does
+var canRetry = attempts < maximumAttempts && !isCancelled;
+if (canRetry)
+{
+}
+
+// Prefer - a comment that explains why
+// AVPlayerItem reports an indefinite duration until its asset has loaded, so wait for ReadyToPlay before reading it
+await readyToPlay.Task.WaitAsync(token);
+```
+
 ### Pattern matching
 #### Null checking
 * Prefer using `is` when checking for null instead of `==`.
@@ -94,6 +120,25 @@ e.g.
 if (something is Bucket bucket)
 {
    bucket.Empty();
+}
+```
+
+#### Property patterns (non-null checks)
+* Never use the empty property pattern `is { }` (e.g. `x is { } value`) to check for a non-null value and bind it: it is hard to read.
+* Use a **type pattern** (`x is Type value`) instead, with the expression's exact type (for a nullable value type `Size?`, `is Size size`).
+* For a pure non-null check with no binding, use `is not null`.
+
+e.g.
+
+```csharp
+// Avoid
+if (someColor is { } color && color != Colors.Transparent)
+{
+}
+
+// Prefer
+if (someColor is Color color && color != Colors.Transparent)
+{
 }
 ```
 

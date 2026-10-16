@@ -140,6 +140,36 @@ pwsh eng/format.ps1 -Verify   # change nothing; fail if a file needs formatting
 
 Please use the script instead of a plain `dotnet format`. The script passes `--exclude-diagnostics CS0612 CS0618 CS0672 CS1062 CS1064`, which is required because, without it, `dotnet format` applies Roslyn's "Add `[Obsolete]`" code fix for these compiler warnings (see [dotnet/format#1230](https://github.com/dotnet/format/issues/1230)), adding the `[Obsolete]` attribute to every member that uses (CS0612, CS0618, CS1062, CS1064) or overrides (CS0672) an obsolete API. Excluding these diagnostics only affects `dotnet format`; the compiler still reports the warnings when building.
 
+### Comments
+
+* Write code that reads like a book: the names of types, members and variables should tell the reader what the code does.
+* Don't write a comment that explains *what* the code does. If the code is hard to follow without one, rename things or extract a well-named method instead.
+* Write a comment only to explain *why*: a decision that is not intuitive, a platform quirk or workaround (link the issue), an ordering or timing constraint, or code that looks unexpected or out of scope but is needed.
+* XML documentation comments on public APIs are different: they document the API for its callers, so every public API keeps them.
+
+e.g.
+
+```csharp
+// Avoid - the comment repeats what the code says
+// Check whether the user can retry
+if (attempts < 3 && !isCancelled)
+{
+	await RetryAsync(token);
+}
+
+// Prefer - the names say what the code does
+var canRetry = attempts < maximumAttempts && !isCancelled;
+if (canRetry)
+{
+	await RetryAsync(token);
+}
+
+// Prefer - a comment that explains why
+// AVPlayerItem reports an indefinite duration until its asset has loaded, so wait for ReadyToPlay before reading it
+await readyToPlay.Task.WaitAsync(token);
+var duration = playerItem.Duration;
+```
+
 ### Debug Logging
 
 * Always use `Trace.WriteLine()` instead of `Debug.WriteLine` for debug logging because `Debug.WriteLine` is removed by the compiler in Release builds
