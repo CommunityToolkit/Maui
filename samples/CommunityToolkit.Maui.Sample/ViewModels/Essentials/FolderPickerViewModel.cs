@@ -1,5 +1,5 @@
 using CommunityToolkit.Maui.Alerts;
-using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Mvvm.Input;
 
@@ -25,6 +25,28 @@ public partial class FolderPickerViewModel(IFolderPicker folderPicker) : BaseVie
 		return false;
 	}
 
+	// The picked folder is shown in an alert, not in a toast: Android 12 and later cut a toast after two lines, which a folder's path can fill on its own
+	static string DescribeFolder(Folder folder) => $"Name: {folder.Name}\nPath: {folder.Path}";
+
+	static string CountFiles(string folderPath)
+	{
+		// On Android 10 and later, scoped storage keeps System.IO from listing files that other apps put in a shared folder, so a count would be too low
+		if (OperatingSystem.IsAndroidVersionAtLeast(29))
+		{
+			return "not available on Android 10 and later (scoped storage hides files of other apps from System.IO)";
+		}
+
+		try
+		{
+			return $"{Directory.EnumerateFiles(folderPath).Count()}";
+		}
+		catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+		{
+			// A folder that the app is not allowed to list
+			return $"not available, {e.Message}";
+		}
+	}
+
 	[RelayCommand]
 	async Task PickFolder(CancellationToken cancellationToken)
 	{
@@ -37,7 +59,7 @@ public partial class FolderPickerViewModel(IFolderPicker folderPicker) : BaseVie
 		var folderPickerResult = await folderPicker.PickAsync(initialFolder, cancellationToken);
 		if (folderPickerResult.IsSuccessful)
 		{
-			await Toast.Make($"Folder picked: Name - {folderPickerResult.Folder.Name}, Path - {folderPickerResult.Folder.Path}", ToastDuration.Long).Show(cancellationToken);
+			await Shell.Current.CurrentPage.DisplayAlertAsync("Folder picked", DescribeFolder(folderPickerResult.Folder), "OK");
 		}
 		else
 		{
@@ -56,8 +78,7 @@ public partial class FolderPickerViewModel(IFolderPicker folderPicker) : BaseVie
 		var folderResult = await FolderPicker.PickAsync("DCIM", cancellationToken);
 		if (folderResult.IsSuccessful)
 		{
-			var filesCount = Directory.EnumerateFiles(folderResult.Folder.Path).Count();
-			await Toast.Make($"Folder picked: Name - {folderResult.Folder.Name}, Path - {folderResult.Folder.Path}, Files count - {filesCount}", ToastDuration.Long).Show(cancellationToken);
+			await Shell.Current.CurrentPage.DisplayAlertAsync("Folder picked", $"{DescribeFolder(folderResult.Folder)}\nFiles count: {CountFiles(folderResult.Folder.Path)}", "OK");
 		}
 		else
 		{
@@ -79,7 +100,7 @@ public partial class FolderPickerViewModel(IFolderPicker folderPicker) : BaseVie
 			var folderPickerResult = await folderPickerInstance.PickAsync(cancellationToken);
 			folderPickerResult.EnsureSuccess();
 
-			await Toast.Make($"Folder picked: Name - {folderPickerResult.Folder.Name}, Path - {folderPickerResult.Folder.Path}", ToastDuration.Long).Show(cancellationToken);
+			await Shell.Current.CurrentPage.DisplayAlertAsync("Folder picked", DescribeFolder(folderPickerResult.Folder), "OK");
 		}
 		catch (Exception e)
 		{
