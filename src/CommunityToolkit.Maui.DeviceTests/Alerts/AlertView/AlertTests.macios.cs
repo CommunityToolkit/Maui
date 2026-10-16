@@ -103,7 +103,7 @@ public class AlertTests : AlertsTestBase
 	}
 
 	// The fire date of the NSTimer pins the interval in both directions, which the tests that wait for the alert to go away cannot do on a
-	// busy main thread. NSTimer uses 0.1 ms for an interval that is not positive.
+	// busy main thread.
 	[Theory]
 	[InlineData(-2)]
 	[InlineData(0)]

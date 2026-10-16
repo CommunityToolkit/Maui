@@ -96,8 +96,9 @@ static class AlertsApple
 		(NSTimer?)(typeof(Alert).GetField("timer", BindingFlags.Instance | BindingFlags.NonPublic)
 			?? throw new InvalidOperationException("Alert.timer was not found.")).GetValue(alert);
 
-	// NSTimer sets its fire date to the time it is created plus the interval, and uses 0.1 ms for an interval that is not positive.
-	// The margin only absorbs floating point rounding.
+	// NSTimer sets its fire date to the time it is created plus the interval, a negative interval included, although its documentation says
+	// that it uses 0.1 ms for an interval that is not positive: a duration of -2 ms gave fire dates 1.2 to 1.7 ms before `before`. The margin
+	// only absorbs floating point rounding.
 	public static void AssertTimerFiresAfterTheDuration(Alert alert, TimeSpan duration, double before, double after)
 	{
 		var timer = GetTimer(alert);
@@ -105,8 +106,7 @@ static class AlertsApple
 		Assert.True(timer.IsValid, "The timer of the alert is not valid.");
 		var fireDate = timer.FireDate;
 		Assert.NotNull(fireDate);
-		var interval = Math.Max(duration.TotalSeconds, 0.0001);
-		Assert.InRange(fireDate.SecondsSinceReferenceDate, before + interval - 0.001, after + interval + 0.001);
+		Assert.InRange(fireDate.SecondsSinceReferenceDate, before + duration.TotalSeconds - 0.001, after + Math.Max(duration.TotalSeconds, 0.0001) + 0.001);
 	}
 }
 
