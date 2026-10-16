@@ -79,7 +79,6 @@ public partial class StatusBarBehaviorPage : BasePage<StatusBarBehaviorViewModel
 
 	async void OnEdgeToEdgeModalButtonClicked(object? sender, EventArgs e)
 	{
-		// A modal copies the status bar of the window it opens from, and #3353 only shows for exactly Colors.Transparent: an alpha of 0 with other color channels does not count.
 		BindingContext.RedSliderValue = 0;
 		BindingContext.GreenSliderValue = 0;
 		BindingContext.BlueSliderValue = 0;

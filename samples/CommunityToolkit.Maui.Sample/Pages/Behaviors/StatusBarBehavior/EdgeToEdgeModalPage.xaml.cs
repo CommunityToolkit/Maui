@@ -1,6 +1,5 @@
 namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
-// This page deliberately has no StatusBarBehavior: a behavior re-applies the window flags once the modal is visible, which would hide a bug in DialogFragmentService.
 public partial class EdgeToEdgeModalPage : ContentPage
 {
 	public EdgeToEdgeModalPage()
