@@ -282,6 +282,28 @@ public class PopupExtensionsTests : BaseViewTest
 		Assert.Equal(shellParameterViewModelTextValue, viewWithQueryable.BindingContext.Text);
 	}
 
+	[Fact]
+	public void ShowPopupAsync_Shell_WithViewType_BackgroundColorFromShellParameters_ShowsColorOnBorder()
+	{
+		var viewWithQueryable = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
+		var shell = new Shell();
+		shell.Items.Add(new MockPage(new MockPageViewModel()));
+
+		Assert.NotNull(Application.Current);
+		Application.Current.Windows[0].Page = shell;
+
+		var shellNavigation = Shell.Current.Navigation;
+
+		// ViewWithIQueryAttributable sets its BackgroundColor when Shell applies the parameters, after the PopupPage created the Popup that wraps it
+		shell.ShowPopup(viewWithQueryable, shellParameters: shellParameters);
+
+		var popupPage = Assert.IsType<PopupPage>(Assert.Single(shellNavigation.ModalStack));
+		var popupBorder = popupPage.Content.PopupBorder;
+		var popup = Assert.IsType<Popup>(popupBorder.Content, exactMatch: false);
+		Assert.Equal(shellParameterBackgroundColorValue, popup.BackgroundColor);
+		Assert.Equal(shellParameterBackgroundColorValue, popupBorder.BackgroundColor);
+	}
+
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public async Task ShowPopupAsync_AwaitingShowPopupAsync_EnsurePreviousPopupClosed()
 	{
