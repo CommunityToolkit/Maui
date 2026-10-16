@@ -344,6 +344,56 @@ public class AvatarViewImageTests : BaseViewTest
 		avatarView.Content.Should().BeOfType<Label>();
 	}
 
+	[Fact]
+	public void TextIsShownWhenTheImageSourceFailsToLoadAfterItLoaded()
+	{
+		var avatarView = CreateAvatarViewWithAnImageSource();
+		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+		ReportLoadSuccess(image);
+
+		ReportLoadFailure(image);
+
+		avatarView.Content.Should().BeOfType<Label>();
+	}
+
+	// .NET MAUI reports a failed load without its source, also for a load that another source replaced, and clears the image whichever load failed.
+	[Fact]
+	public void ImageIsLoadedAgainWhenAReplacedLoadFailsAfterTheNewImageSourceLoaded()
+	{
+		var avatarView = CreateAvatarViewWithAnImageSource();
+		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+		var imageHandler = new RecordingViewHandler();
+		image.Handler = imageHandler;
+		var loadEvents = (IImageSourcePartEvents)image;
+		loadEvents.LoadingStarted();
+		avatarView.ImageSource = new UriImageSource { Uri = new Uri("https://aka.ms/campus.jpg") };
+		loadEvents.LoadingStarted();
+		loadEvents.LoadingCompleted(true);
+		imageHandler.UpdatedProperties.Clear();
+
+		loadEvents.LoadingFailed(new InvalidOperationException("Unable to load image stream from URI."));
+
+		avatarView.Content.Should().BeSameAs(image);
+		imageHandler.UpdatedProperties.Should().Equal(nameof(Image.Source));
+	}
+
+	[Fact]
+	public void ImageIsShownWhenTheNewImageSourceLoadsAfterAReplacedLoadFailed()
+	{
+		var avatarView = CreateAvatarViewWithAnImageSource();
+		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+		var loadEvents = (IImageSourcePartEvents)image;
+		loadEvents.LoadingStarted();
+		avatarView.ImageSource = new UriImageSource { Uri = new Uri("https://aka.ms/campus.jpg") };
+		loadEvents.LoadingStarted();
+		loadEvents.LoadingFailed(new InvalidOperationException("Unable to load image stream from URI."));
+		avatarView.Content.Should().BeOfType<Label>();
+
+		loadEvents.LoadingCompleted(true);
+
+		avatarView.Content.Should().BeSameAs(image);
+	}
+
 	// After a failed load the text replaces the image, which leaves the tree, where an Element loses the BindingContext it inherits: the bindings
 	// of the image source keep working, so a source that a binding changes (the Email of a GravatarImageSource, for example) loads and shows the image.
 	[Fact]
@@ -432,5 +482,43 @@ public class AvatarViewImageTests : BaseViewTest
 				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Uri)));
 			}
 		}
+	}
+	sealed class RecordingViewHandler : IViewHandler
+	{
+		public List<string> UpdatedProperties { get; } = [];
+
+		public bool HasContainer { get; set; }
+
+		public object? PlatformView => null;
+
+		public object? ContainerView => null;
+
+		public IView? VirtualView { get; private set; }
+
+		public IMauiContext? MauiContext => null;
+
+		IElement? IElementHandler.VirtualView => VirtualView;
+
+		public void DisconnectHandler()
+		{
+		}
+
+		public Size GetDesiredSize(double widthConstraint, double heightConstraint) => Size.Zero;
+
+		public void Invoke(string command, object? args = null)
+		{
+		}
+
+		public void PlatformArrange(Rect frame)
+		{
+		}
+
+		public void SetMauiContext(IMauiContext mauiContext)
+		{
+		}
+
+		public void SetVirtualView(IElement view) => VirtualView = view as IView;
+
+		public void UpdateValue(string property) => UpdatedProperties.Add(property);
 	}
 }

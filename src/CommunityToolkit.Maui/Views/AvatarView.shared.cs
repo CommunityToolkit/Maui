@@ -41,6 +41,7 @@ public partial class AvatarView : Border, IAvatarView
 
 	RoundRectangle? defaultStrokeShape;
 	bool wasImageLoading;
+	bool currentLoadSucceeded;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="AvatarView"/> class.
@@ -57,6 +58,7 @@ public partial class AvatarView : Border, IAvatarView
 		Content = avatarLabel;
 		avatarImage.SetBinding(WidthRequestProperty, BindingBase.Create<VisualElement, double>(static p => p.WidthRequest, source: this));
 		avatarImage.SetBinding(HeightRequestProperty, BindingBase.Create<VisualElement, double>(static p => p.HeightRequest, source: this));
+		avatarImage.SourceLoadStarted += HandleImageSourceLoadStarted;
 		avatarImage.SourceLoaded += HandleImageSourceLoaded;
 		avatarImage.SourceFailedToLoad += HandleImageSourceFailedToLoad;
 	}
@@ -307,9 +309,12 @@ public partial class AvatarView : Border, IAvatarView
 		}
 	}
 
+	void HandleImageSourceLoadStarted(object? sender, EventArgs e) => currentLoadSucceeded = false;
+
 	// A failed load can be followed by a successful one without ImageSource being set again: the source itself can change, a UriImageSource's Uri for example.
 	void HandleImageSourceLoaded(object? sender, EventArgs e)
 	{
+		currentLoadSucceeded = true;
 		var loadedSource = avatarImage.Source;
 		PostContentChange(() =>
 		{
@@ -334,9 +339,23 @@ public partial class AvatarView : Border, IAvatarView
 	void HandleImageSourceFailedToLoad(object? sender, EventArgs e)
 	{
 		var failedSource = avatarImage.Source;
+
+		// .NET MAUI reports a failure without its source. Once the current load has succeeded, only a load that another one replaced can still
+		// fail, and .NET MAUI clears the image whichever load failed: the image loads again, instead of the text replacing it.
+		var replacedLoadFailed = currentLoadSucceeded;
+		currentLoadSucceeded = false;
 		PostContentChange(() =>
 		{
-			if (ReferenceEquals(avatarImage.Source, failedSource) && ReferenceEquals(Content, avatarImage))
+			if (!ReferenceEquals(avatarImage.Source, failedSource) || !ReferenceEquals(Content, avatarImage))
+			{
+				return;
+			}
+
+			if (replacedLoadFailed)
+			{
+				avatarImage.Handler?.UpdateValue(nameof(Image.Source));
+			}
+			else
 			{
 				Content = avatarLabel;
 			}
@@ -463,13 +482,13 @@ public partial class AvatarView : Border, IAvatarView
 	// through IImageSourcePartEvents. Partial for CsWinRT on Windows (CsWinRT1028: Image implements WinRT interfaces).
 	sealed partial class AvatarImage : Image, IImageSourcePartEvents
 	{
+		public event EventHandler? SourceLoadStarted;
+
 		public event EventHandler? SourceLoaded;
 
 		public event EventHandler? SourceFailedToLoad;
 
-		void IImageSourcePartEvents.LoadingStarted()
-		{
-		}
+		void IImageSourcePartEvents.LoadingStarted() => SourceLoadStarted?.Invoke(this, EventArgs.Empty);
 
 		// Not successful: the load was canceled or replaced by the load of another source, which reports for itself.
 		void IImageSourcePartEvents.LoadingCompleted(bool successful)

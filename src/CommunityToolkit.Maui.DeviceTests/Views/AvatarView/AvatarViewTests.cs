@@ -31,6 +31,9 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 	const double perturbedWidth = 1;
 	const double perturbedHeight = 2;
 
+	// The failure of a replaced load cannot be observed, so the test waits this long for it to be reported before it checks that nothing changed.
+	const int failureReportTimeout = 500;
+
 	public enum NativeContent
 	{
 		None,
@@ -506,6 +509,37 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 
 			await AssertNativeContentAsync(handler, NativeContent.Label);
 			Assert.Equal("AB", Assert.IsType<Label>(avatar.Content).Text);
+		});
+	}
+
+	// This load ignores its token, so replacing the source does not cancel it: .NET MAUI reports its failure without the source that failed, and
+	// clears the image whichever load failed.
+	[Fact]
+	public async Task ImageStaysWhenAReplacedLoadFailsAfterTheNewImageSourceLoaded()
+	{
+		SetupBuilder();
+		var replacedLoad = new TaskCompletionSource<Stream>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var textWasShown = false;
+		var avatar = await CreateAvatarViewAsync(strokeThickness: 1, padding: new Thickness(1), withImage: false, avatar =>
+		{
+			avatar.Text = "AB";
+			avatar.ImageSource = new StreamImageSource { Stream = _ => replacedLoad.Task };
+			avatar.PropertyChanged += (_, e) => textWasShown |= e.PropertyName == nameof(AvatarView.Content) && avatar.Content is Label;
+		});
+
+		await AttachAndRun(avatar, async handler =>
+		{
+			await LoadedAndLaidOutAsync(avatar);
+			avatar.ImageSource = CreateRedImage();
+			await AssertPixelAsync(handler, avatarSize / 2, avatarSize / 2, Colors.Red);
+
+			replacedLoad.SetException(new InvalidOperationException("The server answered after the image source was replaced."));
+			// Nothing tells when the failure was reported, and a state that did not change cannot be polled.
+			await Task.Delay(failureReportTimeout);
+
+			await AssertPixelAsync(handler, avatarSize / 2, avatarSize / 2, Colors.Red);
+			await AssertNativeContentAsync(handler, NativeContent.Image);
+			Assert.False(textWasShown, "The text replaced the image of the new source.");
 		});
 	}
 
