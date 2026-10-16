@@ -350,6 +350,27 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
+	// This stream is already there, so the load fails synchronously while the handler of the AvatarView is still mapping the image (Windows), where
+	// ImageSource.FromStream opens its stream on another thread and fails later.
+	[Fact]
+	public async Task TextIsShownWhenTheImageSourceFailsAtOnce()
+	{
+		SetupBuilder();
+		var avatar = await CreateAvatarViewAsync(strokeThickness: 1, padding: new Thickness(1), withImage: false, static avatar =>
+		{
+			avatar.Text = "AB";
+			avatar.ImageSource = new StreamImageSource { Stream = UndecodableImageStreamAsync };
+		});
+
+		await AttachAndRun(avatar, async handler =>
+		{
+			await LoadedAndLaidOutAsync(avatar);
+
+			await AssertNativeContentAsync(handler, NativeContent.Label);
+			Assert.Equal("AB", Assert.IsType<Label>(avatar.Content).Text);
+		});
+	}
+
 	[Fact]
 	public async Task ImageIsShownWhenAnotherImageSourceIsSetAfterAFailure()
 	{

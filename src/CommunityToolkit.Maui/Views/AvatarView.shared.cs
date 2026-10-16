@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.Shapes;
-using ToolkitDispatcherExtensions = CommunityToolkit.Maui.Core.Extensions.DispatcherExtensions;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -306,22 +305,35 @@ public partial class AvatarView : Border, IAvatarView
 	}
 
 	// A failed load can be followed by a successful one without ImageSource being set again: the source itself can change, a UriImageSource's Uri for example.
-	void HandleImageSourceLoaded(object? sender, EventArgs e) => ToolkitDispatcherExtensions.DispatchIfRequired(Dispatcher, () =>
+	void HandleImageSourceLoaded(object? sender, EventArgs e)
 	{
-		if (avatarImage.Source is not null && ReferenceEquals(Content, avatarLabel))
+		var loadedSource = avatarImage.Source;
+		PostContentChange(() =>
 		{
-			RefreshAvatarImage();
-			Content = avatarImage;
-		}
-	});
+			if (loadedSource is not null && ReferenceEquals(avatarImage.Source, loadedSource) && ReferenceEquals(Content, avatarLabel))
+			{
+				RefreshAvatarImage();
+				Content = avatarImage;
+			}
+		});
+	}
 
-	void HandleImageSourceFailedToLoad(object? sender, EventArgs e) => ToolkitDispatcherExtensions.DispatchIfRequired(Dispatcher, () =>
+	void HandleImageSourceFailedToLoad(object? sender, EventArgs e)
 	{
-		if (ReferenceEquals(Content, avatarImage))
+		var failedSource = avatarImage.Source;
+		PostContentChange(() =>
 		{
-			Content = avatarLabel;
-		}
-	});
+			if (ReferenceEquals(avatarImage.Source, failedSource) && ReferenceEquals(Content, avatarImage))
+			{
+				Content = avatarLabel;
+			}
+		});
+	}
+
+	// Posted, never run at once: a load that ends synchronously, such as that of a StreamImageSource whose stream is already there, reports while the
+	// handler of the AvatarView is still mapping the image as its Content (Windows), and that mapping then shows the image whatever Content became.
+	// A load of an earlier source that reports after another source was set changes nothing. A dispatcher refuses work only while the app shuts down.
+	void PostContentChange(Action changeContent) => _ = Dispatcher.Dispatch(changeContent);
 
 	// Element.SetValueFromRenderer instead of a local value: a local value takes precedence over every Style setter, so no Style could size an AvatarView
 	// or change its stroke, while a value from the handler only stays until another value replaces it.
