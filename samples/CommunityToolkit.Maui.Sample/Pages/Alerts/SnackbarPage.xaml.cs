@@ -113,7 +113,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 				.Text("Back to Snackbar MainPage");
 			backButton.Command = new AsyncRelayCommand(mainPage.Navigation.PopModalAsync);
 
-			await mainPage.Navigation.PushModalAsync(new ContentPage
+			var modalPage = new ContentPage
 			{
 				// A Snackbar anchored to a View appears above that View (on iOS and MacCatalyst, below it when there is no room above it),
 				// so the buttons are at the bottom of the Page, and the Back button is below the anchor, where the Snackbar does not cover it
@@ -128,7 +128,16 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 						backButton
 					}
 				}.Bottom()
-			}.Padding(12));
+			}.Padding(12);
+
+			// The implicit Page style makes every Page Transparent on Windows, so that the Mica backdrop of the window shows through it. On Windows, .NET MAUI keeps
+			// the Page below a modal Page that has a BackgroundColor on screen, where it shows through the Transparent modal Page: without one, the modal Page replaces it
+			if (OperatingSystem.IsWindows())
+			{
+				modalPage.SetValue(BackgroundColorProperty, null);
+			}
+
+			await mainPage.Navigation.PushModalAsync(modalPage);
 		}
 	}
 }
