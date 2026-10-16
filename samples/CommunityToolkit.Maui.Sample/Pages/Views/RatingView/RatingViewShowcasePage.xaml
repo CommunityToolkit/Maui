@@ -47,7 +47,7 @@
                 <HorizontalStackLayout Grid.Row="2" Spacing="8">
                     <toolkit:RatingView
                         Margin="5,0,0,0"
-                        EmptyShapeColor="White"
+                        EmptyShapeColor="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray500}}"
                         FillColor="#04DA8D"
                         HorizontalOptions="Start"
                         IsReadOnly="True"
@@ -115,7 +115,7 @@
                         Margin="5,0,0,0"
                         Padding="2"
                         CustomShapePath="M296.863,587.059l14.254-3.612 l5.956,18.355L296.863,587.059z M329.668,563.334h-25.091l-7.713-23.627l-7.713,23.627h-25.091l20.307,14.645l-7.713,23.627 l20.307-14.645l12.497-8.982L329.668,563.334L329.668,563.334L329.668,563.334L329.668,563.334z"
-                        EmptyShapeColor="White"
+                        EmptyShapeColor="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray500}}"
                         FillColor="#04DA8D"
                         HorizontalOptions="Start"
                         IsReadOnly="True"
@@ -154,7 +154,7 @@
             <toolkit:RatingView
                 Margin="0"
                 CustomShapePath="M12,17.964l5.214-1.321l2.179,6.714L12,17.964z M24,9.286h-9.179L12,0.643L9.179,9.286 H0l7.429,5.357l-2.821,8.643l7.429-5.357l4.571-3.286L24,9.286L24,9.286L24,9.286L24,9.286z"
-                EmptyShapeColor="White"
+                EmptyShapeColor="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray500}}"
                 FillColor="#04DA8D"
                 HorizontalOptions="Start"
                 IsReadOnly="True"
@@ -163,14 +163,14 @@
                 MaximumRating="5"
                 Rating="4.9"
                 FillOption="Background"
-                ShapeBorderColor="Black"
+                ShapeBorderColor="{AppThemeBinding Light=Black, Dark=White}"
                 ShapeBorderThickness="3"
                 Spacing="5" />
             <Label Text="A negative trust review 1 out of 5" />
             <toolkit:RatingView
                 Margin="0"
                 CustomShapePath="M12,17.964l5.214-1.321l2.179,6.714L12,17.964z M24,9.286h-9.179L12,0.643L9.179,9.286 H0l7.429,5.357l-2.821,8.643l7.429-5.357l4.571-3.286L24,9.286L24,9.286L24,9.286L24,9.286z"
-                EmptyShapeColor="White"
+                EmptyShapeColor="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray500}}"
                 FillColor="#FF3722"
                 HorizontalOptions="Start"
                 IsReadOnly="True"
