@@ -4,6 +4,7 @@ using System.Runtime.Versioning;
 using Android.Content;
 using Android.Views;
 using AndroidX.AppCompat.App;
+using CommunityToolkit.Maui.Core.Platform;
 using DialogFragment = AndroidX.Fragment.App.DialogFragment;
 using Fragment = AndroidX.Fragment.App.Fragment;
 using FragmentManager = AndroidX.Fragment.App.FragmentManager;
@@ -112,7 +113,7 @@ sealed partial class DialogFragmentService : IDialogFragmentService
 
 		if (OperatingSystem.IsAndroidVersionAtLeast(35))
 		{
-			HandleStatusBarColor_AndroidApi35AndHigher(dialogWindow, activity, platformColor);
+			HandleStatusBarColor_AndroidApi35AndHigher(dialogWindow, activity.Window, activity, platformColor);
 		}
 		else if (OperatingSystem.IsAndroidVersionAtLeast(30))
 		{
@@ -150,13 +151,30 @@ sealed partial class DialogFragmentService : IDialogFragmentService
 		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(dialogWindow, false);
 	}
 
-	// SetStatusBarColor is obsoleted on API 35+, so it is intentionally not called here.
+	// On API 35+, StatusBar.SetColor draws an overlay view on top of the window's status bar color, which Android only draws for apps that target API 34 or lower.
 	[SupportedOSPlatform("android35.0")]
-	static void HandleStatusBarColor_AndroidApi35AndHigher(in Window dialogWindow, in AppCompatActivity activity, in Android.Graphics.Color platformColor)
+	static void HandleStatusBarColor_AndroidApi35AndHigher(in Window dialogWindow, in Window hostWindow, in AppCompatActivity activity, in Android.Graphics.Color platformColor)
 	{
 		if (!TrySetSystemBarsAppearance(dialogWindow, activity, platformColor))
 		{
 			return;
+		}
+
+		var hasOverlayColor = StatusBar.TryGetOverlayColor(hostWindow, out var overlayColor);
+
+		if (activity.ApplicationInfo?.TargetSdkVersion < Android.OS.BuildVersionCodes.VanillaIceCream)
+		{
+			var hostStatusBarColor = hasOverlayColor
+				? new Android.Graphics.Color(AndroidX.Core.Graphics.ColorUtils.CompositeColors(overlayColor.ToArgb(), platformColor.ToArgb()))
+				: platformColor;
+
+#pragma warning disable CA1422 // Obsoleted on API 35+, but still honored for apps that target API 34 or lower
+			dialogWindow.SetStatusBarColor(hostStatusBarColor);
+#pragma warning restore CA1422
+		}
+		else if (hasOverlayColor)
+		{
+			StatusBar.SetOverlayColor(dialogWindow, overlayColor);
 		}
 
 		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(dialogWindow, false);

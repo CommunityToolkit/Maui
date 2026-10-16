@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
+using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
 using AndroidX.Core.View;
@@ -112,6 +113,37 @@ static partial class StatusBar
 		}
 
 		ApplyWindowFlags(window);
+	}
+
+	[SupportedOSPlatform("android35.0")]
+	internal static bool TryGetOverlayColor(in Window window, out PlatformColor overlayColor)
+	{
+		if (window.DecorView.RootView?.FindViewWithTag(statusBarOverlayTag)?.Background is ColorDrawable overlayBackground)
+		{
+			overlayColor = new PlatformColor(overlayBackground.Color);
+			return true;
+		}
+
+		overlayColor = default;
+		return false;
+	}
+
+	[SupportedOSPlatform("android35.0")]
+	internal static void SetOverlayColor(in Window window, in PlatformColor platformColor)
+	{
+		if (window.DecorView.RootView is not ViewGroup decorGroup)
+		{
+			return;
+		}
+
+		if (OperatingSystem.IsAndroidVersionAtLeast(36))
+		{
+			PlatformSetColor_AndroidApi36AndHigher(window, platformColor, decorGroup);
+		}
+		else
+		{
+			PlatformSetColor_AndroidApi35(window, platformColor, decorGroup);
+		}
 	}
 
 	[SupportedOSPlatform("android"), UnsupportedOSPlatform("android35.0")]
