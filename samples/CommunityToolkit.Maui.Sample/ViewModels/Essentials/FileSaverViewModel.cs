@@ -45,6 +45,13 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 				return;
 			}
 
+			// An empty name names no file: on iOS and Mac Catalyst the save would fail with a misleading "Access to the path ... is denied"
+			if (string.IsNullOrWhiteSpace(fileName))
+			{
+				await Toast.Make("File is not saved, the file name is empty").Show(cancellationToken);
+				return;
+			}
+
 			var initialFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 			var fileLocationResult = await fileSaver.SaveAsync(initialFolder, fileName, stream, cancellationToken);
 			fileLocationResult.EnsureSuccess();
