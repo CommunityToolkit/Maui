@@ -339,6 +339,7 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 
 				if (token.IsCancellationRequested)
 				{
+					StopRunningUnlessSuperseded(tokenSource);
 					return;
 				}
 
@@ -348,6 +349,7 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 			}
 			catch (TaskCanceledException)
 			{
+				StopRunningUnlessSuperseded(tokenSource);
 				return;
 			}
 			catch (Exception ex) when (Options.ShouldSuppressExceptionsInBehaviors)
@@ -357,6 +359,12 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 				IsRunning = false;
 
 				Trace.TraceInformation("{0}", ex);
+			}
+			catch (OperationCanceledException)
+			{
+				// Not swallowed like TaskCanceledException above, so that the caller still sees it
+				StopRunningUnlessSuperseded(tokenSource);
+				throw;
 			}
 		}
 
@@ -396,6 +404,19 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 		{
 			validationTokenSource = newTokenSource;
 		}
+	}
+
+	// ResetValidationTokenSource cancels the token source of the validation it replaces, and the newer validation then owns IsRunning
+	// A validation cancelled through the caller's token has no newer validation, so it has to reset IsRunning itself
+	void StopRunningUnlessSuperseded(CancellationTokenSource tokenSource)
+	{
+		if (tokenSource.IsCancellationRequested)
+		{
+			return;
+		}
+
+		validationTokenSource = null;
+		IsRunning = false;
 	}
 }
 

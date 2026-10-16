@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Maui.Behaviors;
+﻿using System.Collections.Concurrent;
+using System.ComponentModel;
+using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Core;
 using Xunit;
 
@@ -147,6 +149,105 @@ public class MultiValidationBehaviorTests() : BaseBehaviorTest<MultiValidationBe
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await multiBehavior.ForceValidate(cts.Token));
 	}
 
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public void Errors_AreSetOnTheUIThread_WhenAChildValidatesAsynchronously()
+	{
+		var child = new AsynchronousValidationBehavior();
+		MultiValidationBehavior.SetError(child, "Invalid");
+
+		var multiBehavior = new MultiValidationBehavior();
+		multiBehavior.Children.Add(child);
+
+		var entry = new Entry
+		{
+			Text = "Hello"
+		};
+		var propertiesChangedOffTheUIThread = new ConcurrentQueue<string>();
+
+		RunOnUIThread(async () =>
+		{
+			var uiThreadId = Environment.CurrentManagedThreadId;
+
+			void RecordPropertyChangesOffTheUIThread(object? sender, PropertyChangedEventArgs e)
+			{
+				if (Environment.CurrentManagedThreadId != uiThreadId)
+				{
+					propertiesChangedOffTheUIThread.Enqueue($"{sender?.GetType().Name}.{e.PropertyName}");
+				}
+			}
+
+			multiBehavior.PropertyChanged += RecordPropertyChangesOffTheUIThread;
+			child.PropertyChanged += RecordPropertyChangesOffTheUIThread;
+			entry.Behaviors.Add(multiBehavior);
+
+			await multiBehavior.ForceValidate(TestContext.Current.CancellationToken);
+		});
+
+		Assert.Empty(propertiesChangedOffTheUIThread);
+		Assert.NotNull(multiBehavior.Errors);
+		Assert.Equal("Invalid", Assert.Single(multiBehavior.Errors));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public void IsRunning_IsFalse_WhenForceValidateIsCancelledMidValidation()
+	{
+		var child = new MockValidationBehavior
+		{
+			SimulateValidationDelay = true
+		};
+
+		var multiBehavior = new MultiValidationBehavior();
+		multiBehavior.Children.Add(child);
+
+		var entry = new Entry
+		{
+			Text = "Hello"
+		};
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+
+		RunOnUIThread(async () =>
+		{
+			entry.Behaviors.Add(multiBehavior);
+
+			var forceValidateTask = multiBehavior.ForceValidate(cts.Token);
+			Assert.True(multiBehavior.IsRunning);
+			Assert.True(child.IsRunning);
+
+			await cts.CancelAsync();
+			await forceValidateTask;
+
+			Assert.False(multiBehavior.IsRunning);
+			Assert.False(child.IsRunning);
+		});
+	}
+
+	[Fact]
+	public void IsRunning_IsFalse_WhenTheViewGetsFocusedWhileAChildValidates()
+	{
+		var child = new MockValidationBehavior
+		{
+			SimulateValidationDelay = true
+		};
+
+		var multiBehavior = new MultiValidationBehavior();
+		multiBehavior.Children.Add(child);
+
+		var entry = new Entry();
+
+		RunOnUIThread(() =>
+		{
+			entry.Behaviors.Add(multiBehavior);
+			((IView)entry).IsFocused = true;
+			((IView)entry).IsFocused = false;
+			Assert.True(child.IsRunning);
+
+			((IView)entry).IsFocused = true;
+		});
+
+		Assert.False(multiBehavior.IsRunning);
+		Assert.False(child.IsRunning);
+	}
+
 	[Fact]
 	public void VerifyDefaults()
 	{
@@ -156,5 +257,14 @@ public class MultiValidationBehaviorTests() : BaseBehaviorTest<MultiValidationBe
 		// Act // Assert
 		Assert.Equal(MultiValidationBehaviorDefaults.Errors, multiValidationBehavior.Errors);
 		Assert.Equal(MultiValidationBehaviorDefaults.Error, MultiValidationBehavior.GetError(multiValidationBehavior));
+	}
+
+	sealed class AsynchronousValidationBehavior : ValidationBehavior<string>
+	{
+		protected override async ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
+		{
+			await Task.Yield();
+			return false;
+		}
 	}
 }

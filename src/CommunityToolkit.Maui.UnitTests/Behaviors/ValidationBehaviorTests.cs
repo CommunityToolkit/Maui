@@ -7,6 +7,13 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
 public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseBehaviorTest<ValidationBehavior, VisualElement>(new MockValidationBehavior(), new MockView())
 {
+	public enum CancellationHandling
+	{
+		ThrowsTaskCanceledException,
+		ThrowsOperationCanceledException,
+		IgnoresToken
+	}
+
 	[Fact]
 	public void ValidateOnValueChanged()
 	{
@@ -170,6 +177,134 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 		});
 	}
 
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[InlineData(CancellationHandling.ThrowsTaskCanceledException)]
+	[InlineData(CancellationHandling.ThrowsOperationCanceledException)]
+	[InlineData(CancellationHandling.IgnoresToken)]
+	public void IsRunning_IsFalse_WhenForceValidateIsCancelledMidValidation(CancellationHandling cancellationHandling)
+	{
+		var entry = new Entry();
+		var behavior = new GatedValidationBehavior(cancellationHandling);
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+
+		RunOnUIThread(async () =>
+		{
+			entry.Behaviors.Add(behavior);
+
+			var forceValidateTask = behavior.ForceValidate(cts.Token);
+			Assert.True(behavior.IsRunning);
+
+			await cts.CancelAsync();
+			behavior.CompleteAll(isValid: false);
+
+			try
+			{
+				await forceValidateTask;
+			}
+			catch (OperationCanceledException)
+			{
+				// A validator that throws OperationCanceledException surfaces it to the caller, and this test is about IsRunning, not about that exception
+			}
+
+			Assert.False(behavior.IsRunning);
+			Assert.True(behavior.IsValid);
+		});
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public void IsRunning_IsFalse_WhenTheValidatorTimesOut()
+	{
+		var entry = new Entry();
+		var behavior = new GatedValidationBehavior(CancellationHandling.IgnoresToken);
+
+		RunOnUIThread(async () =>
+		{
+			entry.Behaviors.Add(behavior);
+
+			var forceValidateTask = behavior.ForceValidate(TestContext.Current.CancellationToken);
+			Assert.True(behavior.IsRunning);
+
+			behavior.TimeOut(validationIndex: 0);
+			await forceValidateTask;
+
+			Assert.False(behavior.IsRunning);
+			Assert.True(behavior.IsValid);
+		});
+	}
+
+	[Fact]
+	public void IsRunning_StaysTrueUntilTheNewerValidationFinishes_WhenAValidationIsSuperseded()
+	{
+		var entry = new Entry();
+		var behavior = new GatedValidationBehavior(CancellationHandling.IgnoresToken)
+		{
+			Flags = ValidationFlags.ValidateOnValueChanged
+		};
+
+		RunOnUIThread(() =>
+		{
+			entry.Behaviors.Add(behavior);
+
+			try
+			{
+				entry.Text = "first";
+				entry.Text = "second";
+				Assert.Equal(2, behavior.ValidationCount);
+
+				behavior.Complete(validationIndex: 0, isValid: false);
+
+				Assert.True(behavior.IsRunning);
+				Assert.True(behavior.IsValid);
+
+				behavior.Complete(validationIndex: 1, isValid: false);
+
+				Assert.False(behavior.IsRunning);
+				Assert.False(behavior.IsValid);
+			}
+			finally
+			{
+				behavior.CompleteAll(isValid: false);
+			}
+		});
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public void IsRunning_StaysTrue_WhenForceValidateIsCancelledWhileANewerValidationRuns()
+	{
+		var entry = new Entry();
+		var behavior = new GatedValidationBehavior(CancellationHandling.IgnoresToken)
+		{
+			Flags = ValidationFlags.ValidateOnValueChanged
+		};
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+
+		RunOnUIThread(async () =>
+		{
+			entry.Behaviors.Add(behavior);
+
+			try
+			{
+				var forceValidateTask = behavior.ForceValidate(cts.Token);
+				entry.Text = "newer";
+				Assert.Equal(2, behavior.ValidationCount);
+
+				await cts.CancelAsync();
+				behavior.Complete(validationIndex: 0, isValid: false);
+				await forceValidateTask;
+
+				Assert.True(behavior.IsRunning);
+
+				behavior.Complete(validationIndex: 1, isValid: true);
+
+				Assert.False(behavior.IsRunning);
+			}
+			finally
+			{
+				behavior.CompleteAll(isValid: true);
+			}
+		});
+	}
+
 	[Fact]
 	public void ForceValidateCommand()
 	{
@@ -311,6 +446,47 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 		Assert.Equal(ValidationBehaviorDefaults.ValuePropertyName, behavior.ValuePropertyName);
 		Assert.Equal(ValidationBehaviorDefaults.Flags, behavior.Flags);
 
+	}
+
+	sealed class GatedValidationBehavior(CancellationHandling cancellationHandling) : ValidationBehavior<string>
+	{
+		readonly List<TaskCompletionSource<bool>> validations = [];
+
+		public int ValidationCount => validations.Count;
+
+		public void Complete(int validationIndex, bool isValid) => validations[validationIndex].TrySetResult(isValid);
+
+		// HttpClient reports a timeout as a TaskCanceledException although no token was cancelled
+		public void TimeOut(int validationIndex) => validations[validationIndex].TrySetCanceled();
+
+		// A validation that never completes keeps AsyncContext.Run waiting, so a test completes them all in a finally block to fail on a broken assertion instead of hanging
+		public void CompleteAll(bool isValid)
+		{
+			foreach (var validation in validations)
+			{
+				validation.TrySetResult(isValid);
+			}
+		}
+
+		protected override async ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
+		{
+			var validation = new TaskCompletionSource<bool>();
+			validations.Add(validation);
+
+			if (cancellationHandling is CancellationHandling.ThrowsTaskCanceledException)
+			{
+				return await validation.Task.WaitAsync(token);
+			}
+
+			var isValid = await validation.Task;
+
+			if (cancellationHandling is CancellationHandling.ThrowsOperationCanceledException)
+			{
+				token.ThrowIfCancellationRequested();
+			}
+
+			return isValid;
+		}
 	}
 
 	sealed class UppercaseDecoratingValidationBehavior : ValidationBehavior<string>
