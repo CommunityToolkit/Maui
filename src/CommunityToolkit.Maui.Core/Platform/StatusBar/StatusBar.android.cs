@@ -48,6 +48,32 @@ static partial class StatusBar
 		statusBarOverlay?.LayoutParameters?.Height = GetStatusBarHeight(window) + statusBarHeightPadding;
 	}
 
+	[SupportedOSPlatform("android35.0")]
+	internal static bool TryGetOverlayColor(in Window window, out PlatformColor overlayColor)
+	{
+		if (window.DecorView.RootView?.FindViewWithTag(statusBarOverlayTag)?.Background is ColorDrawable overlayBackground)
+		{
+			overlayColor = new PlatformColor(overlayBackground.Color);
+			return true;
+		}
+
+		overlayColor = default;
+		return false;
+	}
+
+	[SupportedOSPlatform("android35.0")]
+	internal static void AddOverlayIfMissing(Window window, PlatformColor platformColor)
+	{
+		// Posted to run after the window's first layout, where Android adds the view that draws the window's own status bar color: an overlay added before that view is drawn under it.
+		window.DecorView.Post(() =>
+		{
+			if (window.DecorView.RootView is ViewGroup decorGroup && decorGroup.FindViewWithTag(statusBarOverlayTag) is null)
+			{
+				ApplyStatusBarOverlay(window, platformColor, decorGroup);
+			}
+		});
+	}
+
 	static void PlatformSetColor(Color color)
 	{
 		if (!TryGetWindowAndDecorGroup(out var window, out var decorGroup))
@@ -113,32 +139,6 @@ static partial class StatusBar
 		}
 
 		ApplyWindowFlags(window);
-	}
-
-	[SupportedOSPlatform("android35.0")]
-	internal static bool TryGetOverlayColor(in Window window, out PlatformColor overlayColor)
-	{
-		if (window.DecorView.RootView?.FindViewWithTag(statusBarOverlayTag)?.Background is ColorDrawable overlayBackground)
-		{
-			overlayColor = new PlatformColor(overlayBackground.Color);
-			return true;
-		}
-
-		overlayColor = default;
-		return false;
-	}
-
-	[SupportedOSPlatform("android35.0")]
-	internal static void AddOverlayIfMissing(Window window, PlatformColor platformColor)
-	{
-		// Posted to run after the window's first layout, where Android adds the view that draws the window's own status bar color: an overlay added before that view is drawn under it.
-		window.DecorView.Post(() =>
-		{
-			if (window.DecorView.RootView is ViewGroup decorGroup && decorGroup.FindViewWithTag(statusBarOverlayTag) is null)
-			{
-				ApplyStatusBarOverlay(window, platformColor, decorGroup);
-			}
-		});
 	}
 
 	[SupportedOSPlatform("android"), UnsupportedOSPlatform("android35.0")]
