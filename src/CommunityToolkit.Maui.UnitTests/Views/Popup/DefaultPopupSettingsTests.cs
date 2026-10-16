@@ -229,7 +229,7 @@ public class DefaultPopupSettingsTests : BaseViewTest
 		var popup = Assert.IsType<Popup>(border.Content, exactMatch: false);
 
 		// Assert — the background-less view falls back to the theme-aware default (resolves #3310), not transparent.
-		// The Popup keeps BackgroundColor null, so that a Style can set it (PopupStyleTests).
+		// The Popup keeps the View's null BackgroundColor instead of the default, so that a color the View gets later still reaches it.
 		Assert.Null(popup.BackgroundColor);
 		Assert.Equal(initialTheme == AppTheme.Dark ? darkColor : lightColor, border.BackgroundColor);
 
