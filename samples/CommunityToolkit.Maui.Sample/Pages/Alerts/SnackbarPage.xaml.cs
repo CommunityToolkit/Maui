@@ -102,7 +102,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 				.CenterHorizontal()
 				.Text("Display Snackbar");
 			button.Command = new AsyncRelayCommand(token => button.DisplaySnackbar(
-				"This Snackbar is anchored to the button on the bottom to avoid clipping the Snackbar on the top of the Page.",
+				"This Snackbar is anchored to the Display Snackbar button at the bottom of the Page to avoid clipping the Snackbar on the top of the Page.",
 				() => { },
 				"Close",
 				TimeSpan.FromSeconds(5), token: token));
@@ -114,6 +114,8 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 
 			await mainPage.Navigation.PushModalAsync(new ContentPage
 			{
+				// A Snackbar anchored to a View appears above that View (on iOS and MacCatalyst, below it when there is no room above it),
+				// so the buttons are at the bottom of the Page, and the Back button is below the anchor, where the Snackbar does not cover it
 				Content = new VerticalStackLayout
 				{
 					Spacing = 12,
@@ -124,7 +126,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 
 						backButton
 					}
-				}
+				}.Bottom()
 			}.Padding(12));
 		}
 	}
