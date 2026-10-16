@@ -50,7 +50,8 @@ public partial class UserStoppedTypingBehavior : BaseBehavior<InputView>, IDispo
 	/// Indicates whether the keyboard should be dismissed automatically after the user stopped typing. This is a bindable property.
 	/// </summary>
 	/// <remarks>
-	/// Dismissing the keyboard also removes the focus from the <see cref="InputView"/>.
+	/// Dismissing the keyboard also removes the focus from the <see cref="InputView"/>. The keyboard is only dismissed while the <see cref="InputView"/> has the focus:
+	/// when the user moved to another view before <see cref="StoppedTypingTimeThreshold"/> elapsed, the keyboard of that view stays open.
 	/// </remarks>
 	[BindableProperty]
 	public partial bool ShouldDismissKeyboardAutomatically { get; set; } = UserStoppedTypingBehaviorDefaults.ShouldDismissKeyboardAutomatically;

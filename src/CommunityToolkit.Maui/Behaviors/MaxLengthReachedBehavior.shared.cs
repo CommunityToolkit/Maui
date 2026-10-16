@@ -31,7 +31,8 @@ public partial class MaxLengthReachedBehavior : BaseBehavior<InputView>
 	/// Indicates whether the keyboard should be dismissed automatically after the maximum length is reached. This is a bindable property.
 	/// </summary>
 	/// <remarks>
-	/// Dismissing the keyboard also removes the focus from the <see cref="InputView"/>.
+	/// Dismissing the keyboard also removes the focus from the <see cref="InputView"/>. The keyboard is only dismissed while the <see cref="InputView"/> has the focus,
+	/// so the keyboard of another view that the user types in stays open.
 	/// </remarks>
 	[BindableProperty]
 	public partial bool ShouldDismissKeyboardAutomatically { get; set; } = MaxLengthReachedBehaviorDefaults.ShouldDismissKeyboardAutomatically;
