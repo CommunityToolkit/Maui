@@ -1,6 +1,8 @@
+using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Core.Platform;
 using static CommunityToolkit.Maui.DeviceTests.AssertHelpers;
 using AView = Android.Views.View;
+using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
@@ -56,6 +58,43 @@ public partial class UserStoppedTypingBehaviorTests
 			Assert.Equal("abc", await commandExecuted.WaitAsync(TimeSpan.FromSeconds(5)));
 			Assert.True(otherEntry.IsFocused, "The other Entry lost the focus.");
 			await AssertSoftKeyboardIsDismissedAsync(frame, isDismissed: false);
+		});
+	}
+
+	// MAUI keeps the IsFocused of a SearchBar from the focus of its query editor, not of its SearchView, and the behavior only dismisses the keyboard
+	// of an InputView that has the focus.
+	[Fact]
+	public async Task SoftKeyboardIsHiddenWhenTheUserStopsTypingInASearchBar()
+	{
+		SetupBuilder();
+		SkipWhenTheSoftKeyboardCannotShow();
+		await EnsureSoftKeyboardHiddenAsync();
+		var commandTCS = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var searchBar = new SearchBar
+		{
+			WidthRequest = 200,
+			Behaviors =
+			{
+				new UserStoppedTypingBehavior
+				{
+					StoppedTypingTimeThreshold = 100,
+					ShouldDismissKeyboardAutomatically = true,
+					Command = new Command<string>(text => commandTCS.TrySetResult(text))
+				}
+			}
+		};
+
+		await AttachAndRun(searchBar, async _ =>
+		{
+			await searchBar.OnLoadedAsync();
+			var searchView = (SearchView)GetPlatformView(searchBar);
+			var frame = await ShowSoftKeyboardAsync(searchBar, searchView);
+
+			searchView.SetQuery("abc", false);
+
+			Assert.Equal("abc", await commandTCS.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+			await AssertSoftKeyboardIsDismissedAsync(frame, isDismissed: true);
+			Assert.False(searchBar.IsFocused, "The SearchBar kept the focus.");
 		});
 	}
 }
