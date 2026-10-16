@@ -12,8 +12,13 @@ namespace CommunityToolkit.Maui.Views;
 /// They are default values, not local values, so a <see cref="Style"/> (explicit, implicit, <c>StyleClass</c> or <c>DynamicResource</c>) can set these properties.
 /// </para>
 /// <para>
-/// <see cref="VisualElement.BackgroundColor"/> is not set by default, and returns <see langword="null"/> until a value or a <see cref="Style"/> sets it.
-/// While it is <see langword="null"/>, the <see cref="Popup"/> is displayed with <see cref="DefaultPopupSettings.BackgroundColor"/>, or with <see cref="DefaultPopupSettings.BackgroundColorDark"/> while the app uses the dark theme (<see cref="AppTheme.Dark"/>), and follows changes of the theme.
+/// <see cref="VisualElement.BackgroundColor"/> is not set by default, and returns <see langword="null"/> until a value, a binding or a <see cref="Style"/> sets it.
+/// While it is <see langword="null"/> and the <see cref="Popup"/> has no <see cref="VisualElement.Background"/>, the <see cref="Popup"/> is displayed with <see cref="DefaultPopupSettings.BackgroundColor"/>, or with <see cref="DefaultPopupSettings.BackgroundColorDark"/> while the app uses the dark theme (<see cref="AppTheme.Dark"/>), and follows changes of the theme.
+/// </para>
+/// <para>
+/// When a <see cref="View"/> that is not a <see cref="Popup"/> is displayed, the <see cref="Popup"/> created to contain it binds its <see cref="Margin"/>, <see cref="HorizontalOptions"/>, <see cref="VerticalOptions"/>, <see cref="VisualElement.Background"/>, <see cref="VisualElement.BackgroundColor"/>
+/// and, when the <see cref="View"/> has a padding, <see cref="Padding"/> to those of the <see cref="View"/>, so a <see cref="Style"/> cannot set them.
+/// A margin or padding of the <see cref="View"/> that is 0 on every side gives the <see cref="Popup"/> <see cref="DefaultPopupSettings.Margin"/> or <see cref="DefaultPopupSettings.Padding"/> instead.
 /// </para>
 /// <para>
 /// While the <see cref="Popup"/> is displayed, a <see cref="VisualElement.WidthRequest"/> or <see cref="VisualElement.HeightRequest"/> larger than the space inside the window
@@ -41,28 +46,37 @@ public partial class Popup : ContentView, IPaddingElement, IView
 	/// <summary>
 	/// Gets or sets the margin between the <see cref="Popup"/> and the edge of the window.
 	/// </summary>
-	/// <remarks>The default value is <see cref="DefaultPopupSettings.Margin"/>.</remarks>
+	/// <remarks>
+	/// The default value is <see cref="DefaultPopupSettings.Margin"/>.
+	/// While the margin is 0 on every side, the <see cref="Popup"/> is displayed with <see cref="DefaultPopupSettings.Margin"/>.
+	/// </remarks>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultMargin))]
 	public new partial Thickness Margin { get; set; }
 
 	/// <summary>
 	/// Gets or sets the horizontal position of the <see cref="Popup"/> when displayed on screen.
 	/// </summary>
-	/// <remarks>The default value is <see cref="DefaultPopupSettings.HorizontalOptions"/>.</remarks>
+	/// <remarks>
+	/// The default value is <see cref="DefaultPopupSettings.HorizontalOptions"/>.
+	/// While it is <see cref="LayoutOptions.Fill"/>, the <see cref="Popup"/> is displayed with <see cref="DefaultPopupSettings.HorizontalOptions"/>.
+	/// </remarks>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultHorizontalOptions))]
 	public new partial LayoutOptions HorizontalOptions { get; set; }
 
 	/// <summary>
 	/// Gets or sets the vertical position of the <see cref="Popup"/> when displayed on screen.
 	/// </summary>
-	/// <remarks>The default value is <see cref="DefaultPopupSettings.VerticalOptions"/>.</remarks>
+	/// <remarks>
+	/// The default value is <see cref="DefaultPopupSettings.VerticalOptions"/>.
+	/// While it is <see cref="LayoutOptions.Fill"/>, the <see cref="Popup"/> is displayed with <see cref="DefaultPopupSettings.VerticalOptions"/>.
+	/// </remarks>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultVerticalOptions))]
 	public new partial LayoutOptions VerticalOptions { get; set; }
 
-	/// <inheritdoc cref="IPopupOptions.CanBeDismissedByTappingOutsideOfPopup"/> />
+	/// <inheritdoc cref="IPopupOptions.CanBeDismissedByTappingOutsideOfPopup"/>
 	/// <remarks>
-	/// When true and the user taps outside the popup, it will dismiss.
-	/// On Android - when false the hardware back button is disabled.
+	/// While both this property and <see cref="IPopupOptions.CanBeDismissedByTappingOutsideOfPopup"/> are <see langword="true"/>, the <see cref="Popup"/> is dismissed when the user taps outside of it or, on Android, presses the hardware back button.
+	/// While either is <see langword="false"/>, tapping outside of the <see cref="Popup"/> and the hardware back button do nothing.
 	/// The default value is <see cref="DefaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup"/>.
 	/// </remarks>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultCanBeDismissedByTappingOutsideOfPopup))]
