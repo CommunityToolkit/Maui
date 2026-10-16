@@ -4,6 +4,7 @@
 // Toolkit change: namespace changed from Microsoft.Maui(.DeviceTests) to CommunityToolkit.Maui.DeviceTests.
 // Toolkit change: renamed to the toolkit's platform suffix (UINSWindow.macios.cs).
 // Toolkit change: #nullable enable added: the upstream project enables nullable reference types, these copies are compiled as generated code.
+// Toolkit change: From skips null items instead of dereferencing them: NSArray.GetItem<T> returns T? in the iOS bindings of .NET 11 and of iOS 26.4 or later on .NET 10 (the iOS 26.0 bindings of net10.0-ios return T), so the upstream code fails CS8602 (nullable warnings are errors).
 #nullable enable
 using System;
 using System.Runtime.InteropServices;
@@ -91,6 +92,8 @@ public static class UIWindowExtensions
 			for (nuint i = 0; i < windows!.Count; i++)
 			{
 				var nswin = windows.GetItem<NSObject>(i);
+				if (nswin is null)
+					continue;
 
 				var uiwindows = nswin.PerformSelector(UIWindowsSelector) as NSArray;
 
@@ -98,7 +101,7 @@ public static class UIWindowExtensions
 				{
 					var uiwin = uiwindows.GetItem<UIWindow>(j);
 
-					if (uiwin.Handle == uiWindow.Handle)
+					if (uiwin is not null && uiwin.Handle == uiWindow.Handle)
 						return new UINSWindow(nswin.Handle, uiWindow);
 				}
 			}

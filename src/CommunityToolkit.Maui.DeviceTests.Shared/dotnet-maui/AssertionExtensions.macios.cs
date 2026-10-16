@@ -8,6 +8,7 @@
 // Toolkit change: when the attached view belongs to a view controller that has no parent (e.g. a Page's PageViewController),
 //                 AttachAndRun attaches that controller's view as a child view controller of the window's root view controller,
 //                 so UIKit view-controller containment stays consistent.
+// Toolkit change: ToBitmap throws when there is no current graphics context or image: UIGraphics.GetCurrentContext and GetImageFromCurrentImageContext return nullable types in the iOS bindings of .NET 11 and of iOS 26.4 or later on .NET 10 (the iOS 26.0 bindings of net10.0-ios return non-null types), so the upstream code fails CS8604 and CS8619 (nullable warnings are errors).
 #nullable enable
 using System;
 using System.Threading;
@@ -261,13 +262,13 @@ namespace CommunityToolkit.Maui.DeviceTests
 
 #pragma warning disable CA1416, CA1422 // Validate platform compatibility
 			UIGraphics.BeginImageContext(imageRect.Size);
-			var context = UIGraphics.GetCurrentContext();
+			var context = UIGraphics.GetCurrentContext() ?? throw new InvalidOperationException("Could not create bitmap - unable to find the current graphics context");
 			view.Layer.RenderInContext(context);
 			var image = UIGraphics.GetImageFromCurrentImageContext();
 			UIGraphics.EndImageContext();
 #pragma warning restore CA1416, CA1422 // Validate platform compatibility
 
-			return Task.FromResult(image);
+			return Task.FromResult(image ?? throw new InvalidOperationException("Could not create bitmap - unable to get the image from the current image context"));
 		}
 
 		public static UIColor ColorAtPoint(this UIImage bitmap, int x, int y)

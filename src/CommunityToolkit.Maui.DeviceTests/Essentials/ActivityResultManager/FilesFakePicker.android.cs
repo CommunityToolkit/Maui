@@ -6,6 +6,8 @@ using Android.OS;
 using Android.Runtime;
 using AndroidX.Activity;
 using Microsoft.Maui.ApplicationModel;
+// Xamarin.AndroidX.Activity 1.13, which MAUI 11 restores, declares an ActivityFlags of its own that is ambiguous with Android.Content.ActivityFlags.
+using ActivityFlags = Android.Content.ActivityFlags;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
