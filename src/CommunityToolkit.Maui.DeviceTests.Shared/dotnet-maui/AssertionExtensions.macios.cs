@@ -8,7 +8,10 @@
 // Toolkit change: when the attached view belongs to a view controller that has no parent (e.g. a Page's PageViewController),
 //                 AttachAndRun attaches that controller's view as a child view controller of the window's root view controller,
 //                 so UIKit view-controller containment stays consistent.
-// Toolkit change: ToBitmap throws when there is no current graphics context or image: UIGraphics.GetCurrentContext and GetImageFromCurrentImageContext return nullable types in the iOS bindings of .NET 11 and of iOS 26.4 or later on .NET 10 (the iOS 26.0 bindings of net10.0-ios return non-null types), so the upstream code fails CS8604 and CS8619 (nullable warnings are errors).
+// Toolkit change: ToBitmap throws when there is no current graphics context or image: UIGraphics.GetCurrentContext and
+//                 GetImageFromCurrentImageContext return nullable types in the iOS and Mac Catalyst bindings of .NET 11 and of
+//                 26.4 or later on .NET 10 (the 26.0 bindings that net10.0-ios and net10.0-maccatalyst compile against return
+//                 non-null types), so the upstream code fails CS8604 and CS8619 (nullable warnings are errors).
 #nullable enable
 using System;
 using System.Threading;

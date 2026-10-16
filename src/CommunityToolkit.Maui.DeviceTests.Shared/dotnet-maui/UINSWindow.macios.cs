@@ -4,7 +4,7 @@
 // Toolkit change: namespace changed from Microsoft.Maui(.DeviceTests) to CommunityToolkit.Maui.DeviceTests.
 // Toolkit change: renamed to the toolkit's platform suffix (UINSWindow.macios.cs).
 // Toolkit change: #nullable enable added: the upstream project enables nullable reference types, these copies are compiled as generated code.
-// Toolkit change: From skips null items instead of dereferencing them: NSArray.GetItem<T> returns T? in the iOS bindings of .NET 11 and of iOS 26.4 or later on .NET 10 (the iOS 26.0 bindings of net10.0-ios return T), so the upstream code fails CS8602 (nullable warnings are errors).
+// Toolkit change: From skips null items instead of dereferencing them: NSArray.GetItem<T> returns T? in the iOS and Mac Catalyst bindings of .NET 11 and of 26.4 or later on .NET 10 (the 26.0 bindings that net10.0-ios and net10.0-maccatalyst compile against return T), so the upstream code fails CS8602 (nullable warnings are errors).
 #nullable enable
 using System;
 using System.Runtime.InteropServices;
