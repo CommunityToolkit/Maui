@@ -105,6 +105,8 @@ public static class FilesFakePicker
 	public const string FakePickerJavaName = "com.communitytoolkit.maui.devicetests.files.FilesFakePickerActivity";
 	public const string PlainJavaName = "com.communitytoolkit.maui.devicetests.files.FilesPlainActivity";
 
+	const string startIdExtra = "files.test.START_ID";
+
 	static readonly Lock gate = new();
 	static readonly List<FilesFakePickerLaunch> launches = [];
 	static readonly List<FilesFakePickerActivity> liveActivities = [];
@@ -156,11 +158,13 @@ public static class FilesFakePicker
 	public static async Task<TActivity> StartActivityAsync<TActivity>(ActivityFlags flags = 0, CancellationToken token = default)
 		where TActivity : Activity
 	{
+		// Another instance of TActivity can be resumed while this one starts, so the activity is recognized by the intent that started it.
+		var startId = Guid.NewGuid().ToString("N");
 		var resumed = new TaskCompletionSource<TActivity>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 		void OnActivityStateChanged(object? sender, ActivityStateChangedEventArgs e)
 		{
-			if (e.State is ActivityState.Resumed && e.Activity is TActivity activity)
+			if (e.State is ActivityState.Resumed && e.Activity is TActivity activity && activity.Intent?.GetStringExtra(startIdExtra) == startId)
 			{
 				resumed.TrySetResult(activity);
 			}
@@ -174,6 +178,7 @@ public static class FilesFakePicker
 				var host = Platform.CurrentActivity ?? throw new InvalidOperationException("There is no current activity to start the test activity from.");
 				var intent = new Intent(host, typeof(TActivity));
 				intent.AddFlags(flags);
+				intent.PutExtra(startIdExtra, startId);
 				host.StartActivity(intent);
 			});
 
