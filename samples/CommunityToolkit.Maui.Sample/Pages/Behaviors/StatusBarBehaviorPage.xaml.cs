@@ -79,17 +79,35 @@ public partial class StatusBarBehaviorPage : BasePage<StatusBarBehaviorViewModel
 
 	async void OnEdgeToEdgeModalButtonClicked(object? sender, EventArgs e)
 	{
-		BindingContext.RedSliderValue = 0;
+		SetStatusBarForEdgeToEdgeModalPage(isStatusBarSolidRed: false);
+		await Shell.Current.Navigation.PushModalAsync(new EdgeToEdgeModalPage(isStatusBarSolidRed: false));
+	}
+
+	async void OnSolidRedEdgeToEdgeModalButtonClicked(object? sender, EventArgs e)
+	{
+		SetStatusBarForEdgeToEdgeModalPage(isStatusBarSolidRed: true);
+		await Shell.Current.Navigation.PushModalAsync(new EdgeToEdgeModalPage(isStatusBarSolidRed: true));
+	}
+
+	void SetStatusBarForEdgeToEdgeModalPage(bool isStatusBarSolidRed)
+	{
+		BindingContext.RedSliderValue = isStatusBarSolidRed ? 1 : 0;
 		BindingContext.GreenSliderValue = 0;
 		BindingContext.BlueSliderValue = 0;
-		BindingContext.AlphaSliderValue = 0;
-		BindingContext.IsDarkContentChecked = true;
+		BindingContext.AlphaSliderValue = isStatusBarSolidRed ? 1 : 0;
+
+		if (isStatusBarSolidRed)
+		{
+			BindingContext.IsLightContentChecked = true;
+		}
+		else
+		{
+			BindingContext.IsDarkContentChecked = true;
+		}
 
 #if ANDROID
 		// Closing a modal runs OnNavigatedTo, which makes the status bar opaque again, and the sliders above only apply a color when their value changes.
-		Core.Platform.StatusBar.SetColor(Colors.Transparent);
+		Core.Platform.StatusBar.SetColor(isStatusBarSolidRed ? Colors.Red : Colors.Transparent);
 #endif
-
-		await Shell.Current.Navigation.PushModalAsync(new EdgeToEdgeModalPage());
 	}
 }
