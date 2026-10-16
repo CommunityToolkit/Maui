@@ -18,7 +18,9 @@ namespace CommunityToolkit.Maui.DeviceTests;
 public static class FilesActivityResultManagerState
 {
 	const string managerTypeName = "CommunityToolkit.Maui.Core.Essentials.ActivityResultManager";
-	const string pendingRequestTypeName = managerTypeName + "+PendingRequest";
+	// Outer.Inner, not the reflection name Outer+Inner: DynamicDependency takes a documentation comment ID, and the trimmer of a Release build
+	// reports the reflection name as unresolved (IL2036, an error in this repository).
+	const string pendingRequestTypeName = managerTypeName + ".PendingRequest";
 	const string coreAssemblyName = "CommunityToolkit.Maui.Core";
 	const BindingFlags anyMember = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
 
