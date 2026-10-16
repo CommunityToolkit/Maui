@@ -1,4 +1,3 @@
-#if NET11_0_OR_GREATER
 using CommunityToolkit.Maui.Core.Platform;
 using CommunityToolkit.Maui.DeviceTests.Runners;
 using Foundation;
@@ -7,9 +6,10 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// .NET 11: an app whose Info.plist keeps view controller-based status bar appearance, such as the runner, takes the status bar style from the view
-// controllers of its .NET MAUI windows (Window.StatusBarTheme). The headless runner's window has no .NET MAUI window (Application.Current.Windows is
-// empty), so the style tests show their page in one.
+// An app whose Info.plist keeps view controller-based status bar appearance, such as the runner, takes the status bar style from the view
+// controllers of its windows: on .NET 11 those of a .NET MAUI window return the style of its Window.StatusBarTheme, and on .NET 10 every view
+// controller that does not choose a style returns the one that StatusBar.SetStyle requested. The headless runner's window has no .NET MAUI window
+// (Application.Current.Windows is empty), so the style tests show their page in one.
 public abstract partial class StatusBarTestBase
 {
 	protected const string styleIgnoredByUIKitMessage = "Unable to apply the Status Bar Style because Info.plist sets UIViewControllerBasedStatusBarAppearance to false: remove the key from Info.plist";
@@ -61,10 +61,17 @@ public abstract partial class StatusBarTestBase
 	}
 
 	protected Task RunInMauiWindowAsync(StatusBarWindowPage kind, ContentPage page, Func<HostedMauiWindow, Task> action) =>
+		RunInMauiWindowAsync(CreateRootPage(kind, page), kind is StatusBarWindowPage.ModalPage, page, action);
+
+	/// <summary>
+	/// <see cref="RunInMauiWindowAsync(StatusBarWindowPage, ContentPage, Func{HostedMauiWindow, Task})"/> with a root page that the test builds itself:
+	/// <paramref name="page"/> is <paramref name="root"/> or one of its pages, or with <paramref name="isPagePresentedModally"/> the page that the window
+	/// presents modally over <paramref name="root"/>.
+	/// </summary>
+	protected Task RunInMauiWindowAsync(Page root, bool isPagePresentedModally, ContentPage page, Func<HostedMauiWindow, Task> action) =>
 		InvokeOnMainThreadAsync(async () =>
 		{
 			var previousApplication = Application.Current;
-			var root = CreateRootPage(kind, page);
 			var scene = IosStatusBarViews.RunnerScene;
 			var platformWindow = new UIWindow(scene) { Frame = scene.CoordinateSpace.Bounds };
 			Window? window = null;
@@ -81,7 +88,7 @@ public abstract partial class StatusBarTestBase
 				((IWindow)window).Activated(); // .NET MAUI presents modal pages only in an activated window
 				isActivated = true;
 
-				if (kind is StatusBarWindowPage.ModalPage)
+				if (isPagePresentedModally)
 				{
 					await root.OnLoadedAsync(pageLoadTimeout);
 					await window.Navigation.PushModalAsync(page, false);
@@ -197,4 +204,3 @@ public abstract partial class StatusBarTestBase
 		public object? GetService(Type serviceType) => serviceType == typeof(UIWindow) ? platformWindow : context.Services.GetService(serviceType);
 	}
 }
-#endif

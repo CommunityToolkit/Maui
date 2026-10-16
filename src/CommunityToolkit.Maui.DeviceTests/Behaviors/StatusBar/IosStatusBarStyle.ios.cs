@@ -1,4 +1,3 @@
-#if NET11_0_OR_GREATER
 using System.Runtime.InteropServices;
 using CoreGraphics;
 using ObjCRuntime;
@@ -113,4 +112,3 @@ readonly record struct StatusBarContent(int LightPixels, int DarkPixels)
 
 	public override string ToString() => $"{LightPixels} near-white and {DarkPixels} near-black pixels";
 }
-#endif

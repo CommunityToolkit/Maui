@@ -1,3 +1,7 @@
+#if !NET11_0_OR_GREATER
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Platform;
+#endif
 using CommunityToolkit.Maui.DeviceTests.Runners;
 using UIKit;
 
@@ -5,7 +9,15 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 public abstract partial class StatusBarTestBase
 {
-	protected partial Task ResetNativeStateAsync() => InvokeOnMainThreadAsync(IosStatusBarViews.Reset);
+	// .NET 10: a style that a test set stays the style of the whole app until SetStyle(Default), also after the test ends
+	protected partial Task ResetNativeStateAsync() =>
+		InvokeOnMainThreadAsync(static () =>
+		{
+			IosStatusBarViews.Reset();
+#if !NET11_0_OR_GREATER
+			StatusBar.SetStyle(StatusBarStyle.Default);
+#endif
+		});
 
 	protected Task AssertStatusBarShowsAsync(Color color) => InvokeOnMainThreadAsync(() => AssertStatusBarShows(color));
 

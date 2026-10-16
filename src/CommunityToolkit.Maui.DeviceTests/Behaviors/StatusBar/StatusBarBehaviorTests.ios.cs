@@ -11,9 +11,8 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 // StatusBar.SetBarSize is the only code that moves an existing status bar view, so these tests give the views a frame that the toolkit
 // never produces: a frame that changed proves that SetBarSize ran, whatever frame it computed.
-// The style: on .NET 10 the behavior calls StatusBar.SetStyle (UIApplication.SetStatusBarStyle, which the runner ignores: its Info.plist keeps view
-// controller-based status bar appearance); on .NET 11 it sets Window.StatusBarTheme of its page's window, which the tests show in a .NET MAUI
-// window (RunInMauiWindowAsync).
+// The style: on .NET 10 the behavior sets the style of the whole app (StatusBar.SetStyle), and on .NET 11 Window.StatusBarTheme of its page's
+// window. The tests show the page in a .NET MAUI window (RunInMauiWindowAsync) and read the style of its status bar.
 public partial class StatusBarBehaviorTests
 {
 	static readonly CGRect sentinelFrame = new(7, 11, 13, 17);
@@ -268,8 +267,8 @@ public partial class StatusBarBehaviorTests
 			Assert.Throws<InvalidCastException>(static () => StatusBarEventRaisers.InvokeBehaviorMember(null, "OnPageSizeChanged", new object(), EventArgs.Empty)));
 	}
 
-#if NET11_0_OR_GREATER
-	// .NET 11: UIKit takes the style from the view controllers of .NET MAUI, which return the style of their window's theme.
+	// UIKit takes the style from the view controllers: on .NET 11 those of .NET MAUI return the style of their window's theme, and on .NET 10 every
+	// view controller that does not choose a style returns the style of the app.
 	[Theory]
 	[InlineData(StatusBarWindowPage.ContentPage)]
 	[InlineData(StatusBarWindowPage.NavigationPage)]
@@ -288,7 +287,9 @@ public partial class StatusBarBehaviorTests
 		await RunInMauiWindowAsync(kind, page, async mauiWindow =>
 		{
 			Assert.True(behavior.IsAttached);
+#if NET11_0_OR_GREATER
 			Assert.Equal(StatusBarTheme.Light, mauiWindow.Window.StatusBarTheme);
+#endif
 
 			await AssertStatusBarStyleAsync(mauiWindow, UIStatusBarStyle.DarkContent);
 		});
@@ -335,7 +336,7 @@ public partial class StatusBarBehaviorTests
 	}
 
 	// .NET MAUI raises NavigatedTo itself when it shows the page of a NavigationPage, Shell, TabbedPage, FlyoutPage or modal page, so the test
-	// first sets the window back to the default style: the style that follows comes from the navigation that the test raises.
+	// first sets the window (.NET 10: the app) back to the default style: the style that follows comes from the navigation that the test raises.
 	[Theory]
 	[InlineData(StatusBarWindowPage.ContentPage)]
 	[InlineData(StatusBarWindowPage.NavigationPage)]
@@ -358,18 +359,25 @@ public partial class StatusBarBehaviorTests
 		await RunInMauiWindowAsync(kind, page, async mauiWindow =>
 		{
 			Assert.True(behavior.IsAttached);
+#if NET11_0_OR_GREATER
 			mauiWindow.Window.StatusBarTheme = StatusBarTheme.Default;
+#else
+			StatusBar.SetStyle(StatusBarStyle.Default);
+#endif
 			await AssertStatusBarStyleAsync(mauiWindow, UIStatusBarStyle.Default);
 
 			StatusBarEventRaisers.RaiseNavigatedTo(page);
 
+#if NET11_0_OR_GREATER
 			Assert.Equal(StatusBarTheme.Light, mauiWindow.Window.StatusBarTheme);
+#endif
 			await AssertStatusBarStyleAsync(mauiWindow, UIStatusBarStyle.DarkContent);
 		});
 	}
 
 	// The push is animated: .NET MAUI then raises NavigatedTo when the push finished, after the page loaded and the behavior attached.
 	// Without the animation MAUI 11 RC1 raises NavigatedTo before the page loads, before the behavior attaches and starts listening.
+	// On .NET 10 the behavior already set the style of the app when the test configured it, so the reset sets Default again.
 	[Fact]
 	public async Task StyleAppliedOnNavigationReachesTheStatusBarWhenANavigationPagePushesThePage()
 	{
@@ -397,6 +405,7 @@ public partial class StatusBarBehaviorTests
 		});
 	}
 
+#if NET11_0_OR_GREATER
 	[Fact]
 	public async Task StyleChangesOnlyTheStatusBarThemeOfTheWindowOfThePage()
 	{
