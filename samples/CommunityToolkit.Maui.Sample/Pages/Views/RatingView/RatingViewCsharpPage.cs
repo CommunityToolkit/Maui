@@ -280,7 +280,7 @@ public partial class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						{
 							Increment = 1,
 							Minimum = 1,
-							Maximum = 25,
+							Maximum = 10, // RatingView throws an ArgumentOutOfRangeException when MaximumRating is greater than 10
 							Value = 1
 						}
 						.End()
