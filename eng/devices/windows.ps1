@@ -179,10 +179,14 @@ function Get-WindowsBuildProperties {
 
 function Find-AppPackage {
     # A recursive search also finds the framework packages under Dependencies, which dotnet/maui's **/AppPackages/*/*.msix does not reach.
-    param($Project)
+    # Every configuration packages into the same AppPackages folder (<name>_<version>_<arch>_Debug.msix, but <name>_<version>_<arch>.msix
+    # for Release), so the newest package alone can be another configuration's.
+    param($Project, [string]$Configuration)
 
+    $suffix = if ($Configuration -eq 'Release') { '' } else { "_$Configuration" }
     $packages = @(Get-ChildItem -LiteralPath $Project.Directory -Recurse -Filter '*.msix' -File -ErrorAction SilentlyContinue |
             Where-Object { $_.FullName -match '[\\/]AppPackages[\\/]' -and $_.FullName -notmatch '[\\/]Dependencies[\\/]' } |
+            Where-Object { $_.BaseName -match "_(x86|x64|arm64)$([regex]::Escape($suffix))$" } |
             Sort-Object LastWriteTimeUtc -Descending)
     if ($packages.Count -eq 0) {
         return $null
@@ -677,9 +681,9 @@ function Invoke-WindowsDeviceTests {
     }
 
     if ($Packaging -eq 'packaged') {
-        $package = Find-AppPackage -Project $Project
+        $package = Find-AppPackage -Project $Project -Configuration $Context.Configuration
         if ($null -eq $package) {
-            $verdict = New-DeviceTestVerdict -ExitCode 4 -Directory $windowsOutput -Reason "No MSIX under $($Project.Directory)\**\AppPackages. Build it first with -Target buildOnly or buildAndTest."
+            $verdict = New-DeviceTestVerdict -ExitCode 4 -Directory $windowsOutput -Reason "No $($Context.Configuration) MSIX under $($Project.Directory)\**\AppPackages. Build it first with -Target buildOnly or buildAndTest."
             $verdict.Project = $Project.Name
             return $verdict
         }
