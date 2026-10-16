@@ -164,8 +164,9 @@ sealed partial class DialogFragmentService : IDialogFragmentService
 		dialogWindow.SetStatusBarColor(platformColor);
 #pragma warning restore CA1422
 
+		// A floating dialog, like a picker, does not reach the status bar, so the overlay would cover its content.
 		// The fragment also starts each time the app returns to the foreground, and by then the modal page may have set its own color.
-		if (StatusBar.TryGetOverlayColor(hostWindow, out var hostOverlayColor))
+		if (!dialogWindow.IsFloating && StatusBar.TryGetOverlayColor(hostWindow, out var hostOverlayColor))
 		{
 			StatusBar.AddOverlayIfMissing(dialogWindow, hostOverlayColor);
 		}
