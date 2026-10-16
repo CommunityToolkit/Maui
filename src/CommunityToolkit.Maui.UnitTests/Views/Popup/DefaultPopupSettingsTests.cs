@@ -218,7 +218,7 @@ public class DefaultPopupSettingsTests : BaseViewTest
 			});
 		}
 
-		// A view with no explicit background color (its default is Colors.Transparent).
+		// A view with no explicit background color: its BackgroundColor is null, not Colors.Transparent.
 		var view = new ContentView();
 
 		// Act
