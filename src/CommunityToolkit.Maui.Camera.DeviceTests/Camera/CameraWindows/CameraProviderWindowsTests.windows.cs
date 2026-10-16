@@ -33,14 +33,10 @@ public class CameraProviderWindowsTests : CameraHandlerTestBase
 	}
 
 	// RefreshAvailableCameras never passes its caller's token to the platform method (the refresh is shared between callers, so it runs without
-	// a token and each caller's token only ends that caller's wait), so the test calls PlatformRefreshAvailableCameras directly. A WinRT
-	// operation that completes before AsTask registers the cancellation (or that ignores Cancel) ends the refresh normally, which skips the
-	// test visibly.
+	// a token and each caller's token only ends that caller's wait), so the test calls PlatformRefreshAvailableCameras directly.
 	[Fact]
 	public async Task PlatformRefreshWithACancelledTokenThrowsAndPublishesNothing()
 	{
-		// If the first operation wins the race, the second one lists the frame source groups (Media Foundation).
-		await WindowsCameraEnvironment.SkipUnlessFrameSourceGroupsCanBeListedAsync();
 		using var provider = new CameraProvider();
 		var changes = new CameraListRecorder(provider);
 		var platformRefresh = typeof(CameraProvider).GetMethod("PlatformRefreshAvailableCameras", BindingFlags.Instance | BindingFlags.NonPublic)
@@ -50,7 +46,6 @@ public class CameraProviderWindowsTests : CameraHandlerTestBase
 
 		var exception = await Record.ExceptionAsync(async () => await (ValueTask)platformRefresh.Invoke(provider, [cancellationTokenSource.Token])!);
 
-		Skip.If(exception is null, "The WinRT operations completed before AsTask observed the cancelled token.");
 		Assert.IsType<OperationCanceledException>(exception, exactMatch: false);
 		Assert.Null(provider.AvailableCameras);
 		Assert.Empty(changes.Lists);

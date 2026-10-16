@@ -47,17 +47,24 @@ public class CameraViewExtensionsWindowsTests : CameraHandlerTestBase
 		Assert.True(view.IsAvailable);
 	}
 
+	// AsTask only asks the device enumeration to cancel, and on the CI runner the enumeration sometimes completed anyway: the cancelled update is
+	// repeated because one call can miss that race. The kept value is the opposite of what an update sets, so an update that completed changes it.
 	[Fact]
 	public async Task UpdateAvailabilityWithACancelledTokenThrowsAndKeepsTheValue()
 	{
 		using var view = new CameraView();
-		((ICameraView)view).IsAvailable = true;
+		await view.UpdateAvailability(CancellationToken.None);
+		var keptValue = !view.IsAvailable;
+		((ICameraView)view).IsAvailable = keptValue;
 		using var cancellationTokenSource = new CancellationTokenSource();
 		await cancellationTokenSource.CancelAsync();
 
-		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => view.UpdateAvailability(cancellationTokenSource.Token));
+		for (var attempt = 0; attempt < 50; attempt++)
+		{
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => view.UpdateAvailability(cancellationTokenSource.Token));
+		}
 
-		Assert.True(view.IsAvailable);
+		Assert.Equal(keptValue, view.IsAvailable);
 	}
 
 	[Fact]
@@ -105,6 +112,18 @@ public class CameraViewExtensionsWindowsTests : CameraHandlerTestBase
 		await cancellationTokenSource.CancelAsync();
 
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => mediaCapture.InitializeCameraForCameraView(cameras[0].DeviceId, cancellationTokenSource.Token));
+	}
+
+	// Media Foundation rejects a device id that no camera has before AsTask can cancel the initialization: without its own check of the token the
+	// method returns false. Needs Media Foundation, not a camera.
+	[Fact]
+	public async Task InitializeCameraForCameraViewWithACancelledTokenThrowsForADeviceThatCannotBeOpened()
+	{
+		using var mediaCapture = WindowsCameraEnvironment.CreateMediaCapture();
+		using var cancellationTokenSource = new CancellationTokenSource();
+		await cancellationTokenSource.CancelAsync();
+
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => mediaCapture.InitializeCameraForCameraView("fake-unknown-device", cancellationTokenSource.Token));
 	}
 
 	// The catch of InitializeCameraForCameraView: whatever MediaCapture.InitializeAsync does with a device id that does not exist, no

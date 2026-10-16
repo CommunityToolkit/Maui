@@ -11,6 +11,9 @@ partial class CameraProvider
 {
 	private async partial ValueTask PlatformRefreshAvailableCameras(CancellationToken token)
 	{
+		// AsTask only asks the WinRT operations to cancel, and an enumeration that completes first still returns its devices
+		token.ThrowIfCancellationRequested();
+
 		var deviceInfoCollection = await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture).AsTask(token);
 		var mediaFrameSourceGroup = await MediaFrameSourceGroup.FindAllAsync().AsTask(token);
 		var videoCaptureSourceGroup = mediaFrameSourceGroup.Where(sourceGroup => deviceInfoCollection.Any(deviceInfo => deviceInfo.Id == sourceGroup.Id)).ToList();
