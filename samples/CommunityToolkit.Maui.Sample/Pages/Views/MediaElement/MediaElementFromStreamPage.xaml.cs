@@ -38,7 +38,13 @@ public sealed partial class MediaElementFromStreamPage : BasePage<MediaElementFr
 	{
 		base.OnNavigatedFrom(args);
 		MediaElement.Stop();
-		MediaElement.Handler?.DisconnectHandler();
+
+		// Release the player only when the page leaves the navigation stack. When another flyout item is selected (NavigationType.Replace),
+		// Shell keeps the page in the navigation stack of the Views item and shows it again, with this MediaElement, when the user comes back
+		if (args.NavigationType is NavigationType.Pop or NavigationType.PopToRoot or NavigationType.Remove)
+		{
+			MediaElement.Handler?.DisconnectHandler();
+		}
 	}
 
 	protected override async void OnDisappearing()
