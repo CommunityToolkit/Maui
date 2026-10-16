@@ -14,8 +14,8 @@
       coverage). The tools name nested, generic and file-local classes differently, and ReportGenerator merges by class.
     A line then counts as covered when any test run covered it, and as coverable when any build of its file has it.
 
-    The unit test coverage must come from a Debug build, as the device tests use: a Release build has fewer coverable lines (no
-    sequence points on braces), so the lines covered only by unit tests would show as uncovered device test lines.
+    The unit test coverage must come from the configuration that the device tests use (Release in CI): a Debug build has more
+    coverable lines (sequence points on braces), so the braces of code that only the Release tests run would show as uncovered.
 
     Writes to -Output:
     * summary.md: the line and branch coverage of all assemblies together, then ReportGenerator's folded section of each assembly
@@ -47,8 +47,8 @@
     The coverage (percent) from which summary.md flags blue instead of green: Google's "exemplary". Defaults to 90.
 
 .EXAMPLE
-    dotnet test --project src/CommunityToolkit.Maui.UnitTests -c Debug --coverage --coverage-output-format cobertura --coverage-output "$PWD/artifacts/coverage/unit-tests.cobertura.xml"
-    pwsh eng/devices/ios.ps1 -Project All -Coverage
+    dotnet test --project src/CommunityToolkit.Maui.UnitTests -c Release --coverage --coverage-output-format cobertura --coverage-output "$PWD/artifacts/coverage/unit-tests.cobertura.xml"
+    pwsh eng/devices/ios.ps1 -Project All -Configuration Release -Coverage
     pwsh eng/coverage-report.ps1 -Report artifacts/coverage,artifacts/device-tests/ios/coverage
 #>
 [CmdletBinding()]

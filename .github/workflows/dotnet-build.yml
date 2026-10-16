@@ -242,17 +242,17 @@ jobs:
                     cd ${{ env.PathToCommunityToolkitUnitTestProjectDirectory }}
                     dotnet test -c Release --report-gh -report-xunit-trx --report-xunit-trx-filename "ut.trx" --results-directory "${{ runner.temp }}"
 
-            # The code_coverage job merges this with the device tests' coverage, which comes from Debug builds: a Release build has fewer
-            # coverable lines (no sequence points on braces), so the lines that only unit tests cover would show as uncovered. It also runs
-            # when the steps above failed, so that a failing build still has a coverage report. It only collects coverage: the Release run
-            # above is the unit test gate and reports the results, so a failure here (a test host crash, for example) neither fails the
-            # job nor skips the packages; the coverage report may then lack the unit tests.
-            -   name: Run CommunityToolkit UnitTests with code coverage (Debug)
+            # Release, as the device tests' coverage that the code_coverage job merges this with: a Debug build has more coverable lines
+            # (sequence points on braces), so the braces of code that only the device tests run would show as uncovered. It also runs
+            # when the steps above failed, so that a failing build still has a coverage report. It only collects coverage: the run above
+            # is the unit test gate and reports the results, so a failure here (a test host crash, for example) neither fails the job nor
+            # skips the packages; the coverage report may then lack the unit tests.
+            -   name: Run CommunityToolkit UnitTests with code coverage (Release)
                 if: ${{ runner.os == 'Windows' && (success() || failure()) }}
                 continue-on-error: true
                 run: |
                     cd ${{ env.PathToCommunityToolkitUnitTestProjectDirectory }}
-                    dotnet test -c Debug --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut.cobertura.xml" --coverage-output-format cobertura
+                    dotnet test -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut.cobertura.xml" --coverage-output-format cobertura
 
             -   name: Upload unit test coverage
                 if: ${{ runner.os == 'Windows' && (success() || failure()) }}
@@ -340,7 +340,7 @@ jobs:
                 shell: pwsh
                 run: |
                     ./eng/coverage-report.ps1 -Report artifacts/coverage -Output artifacts/coverage-report -Note @(
-                        'Reports: `ut` is the toolkit''s unit tests (Debug), `ut-*` the analyzer and source generator unit tests; the others are the device tests of Android API 36, the iOS simulator and Mac Catalyst.',
+                        'Reports: `ut` is the toolkit''s unit tests (Release), `ut-*` the analyzer and source generator unit tests; the others are the device tests of Android API 36, the iOS simulator and Mac Catalyst.',
                         'Not included: the Windows device tests (no way of collecting their coverage has been verified, so `windows.ps1` has no `-Coverage`) and the Android API 28 job (one Android level is collected).')
 
             -   name: Upload coverage report
