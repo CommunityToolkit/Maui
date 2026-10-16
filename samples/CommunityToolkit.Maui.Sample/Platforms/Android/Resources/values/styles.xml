@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Derived from the main theme because MAUI replaces Maui.SplashTheme with Maui.MainTheme.NoActionBar in OnCreate, which would drop the toolbar style. -->
+  <style name="EdgeToEdgeShellTheme" parent="Maui.MainTheme.NoActionBar">
+    <item name="toolbarStyle">@style/EdgeToEdgeShellToolbar</item>
+  </style>
+
+  <!-- A Toolbar leaves its first 16dp empty by default, so the TitleView of the Shell demo would stop short of the left edge. -->
+  <style name="EdgeToEdgeShellToolbar" parent="Widget.MaterialComponents.Toolbar">
+    <item name="contentInsetStart">0dp</item>
+    <item name="contentInsetStartWithNavigation">0dp</item>
+  </style>
+</resources>
