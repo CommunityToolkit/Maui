@@ -1655,7 +1655,7 @@ public class PopupExtensionsTests : BaseViewTest
 		using var nextPopupShown = new ManualResetEventSlim();
 		var popup = new Popup();
 
-		// Popup.Closed is raised after ShowPopupAsync returns its result: blocking it until the next popup is shown keeps the close in progress without depending on timing
+		// Popup.Closed is raised after ShowPopupAsync's result is set: blocking it until the next popup is shown keeps the close in progress without depending on timing
 		popup.Closed += (_, _) => nextPopupShown.Wait(TestContext.Current.CancellationToken);
 
 		var showPopupTask = navigation.ShowPopupAsync(popup, PopupOptions.Empty, TestContext.Current.CancellationToken);
