@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
+using Android.Runtime;
 using Android.Widget;
 using AndroidX.Camera.Core;
 using AndroidX.Camera.Lifecycle;
@@ -166,8 +167,11 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	protected static async Task<string> GetNativeCameraStateAsync(string cameraId) =>
 		GetNativeCameraState(await GetNativeCameraInfoAsync(cameraId));
 
-	protected static float GetNativeZoomRatio(ICameraInfo nativeInfo) =>
-		(nativeInfo.ZoomState.Value as IZoomState)?.ZoomRatio ?? throw new InvalidOperationException("The native camera has no zoom state.");
+	// JavaCast, as CameraProvider reads it: in a trimmed (Release) app the value is a plain Java.Lang.Object, which a cast to IZoomState rejects.
+	protected static IZoomState GetNativeZoomState(ICameraInfo nativeInfo) =>
+		nativeInfo.ZoomState.Value?.JavaCast<IZoomState>() ?? throw new InvalidOperationException("The native camera has no zoom state.");
+
+	protected static float GetNativeZoomRatio(ICameraInfo nativeInfo) => GetNativeZoomState(nativeInfo).ZoomRatio;
 
 	protected static bool IsNativeTorchOn(ICameraInfo nativeInfo) =>
 		(nativeInfo.TorchState.Value as Java.Lang.Integer)?.IntValue() == 1;

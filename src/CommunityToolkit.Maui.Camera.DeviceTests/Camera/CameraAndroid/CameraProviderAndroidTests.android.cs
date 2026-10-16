@@ -121,7 +121,7 @@ public class CameraProviderAndroidTests : CameraAndroidTestBase
 
 		foreach (var camera in cameras)
 		{
-			var zoomState = (IZoomState)(await GetNativeCameraInfoAsync(camera.DeviceId)).ZoomState.Value!;
+			var zoomState = GetNativeZoomState(await GetNativeCameraInfoAsync(camera.DeviceId));
 			Assert.Equal(zoomState.MinZoomRatio, camera.MinimumZoomFactor);
 			Assert.Equal(zoomState.MaxZoomRatio, camera.MaximumZoomFactor);
 			Assert.True(camera.MinimumZoomFactor <= camera.MaximumZoomFactor);
