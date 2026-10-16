@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.EdgeToEdgeModalPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <Label
+            Grid.Row="0"
+            Style="{StaticResource LabelEdgeToEdgeMarker}"
+            Text="TOP OF THE MODAL: nothing may cover this bar" />
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout
+                Padding="20,16"
+                Spacing="24">
+
+                <Label
+                    Style="{StaticResource LabelSectionTitle}"
+                    Text="Modal page (DialogFragment)" />
+
+                <Border Style="{StaticResource BorderGalleryCard}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label
+                            FontAttributes="Bold"
+                            Text="What to check" />
+                        <Label
+                            LineBreakMode="WordWrap"
+                            Style="{StaticResource LabelSectionText}"
+                            Text="The amber bars at the very top and bottom of this page, then again after switching the status bar to solid red below." />
+                        <Label
+                            FontAttributes="Bold"
+                            Text="Correct result" />
+                        <Label
+                            LineBreakMode="WordWrap"
+                            Style="{StaticResource LabelSectionText}"
+                            Text="Both bars are completely visible, between the status bar and the navigation bar, before and after the switch." />
+                        <Label
+                            FontAttributes="Bold"
+                            Text="Bug (#3353)" />
+                        <Label
+                            LineBreakMode="WordWrap"
+                            Style="{StaticResource LabelSectionText}"
+                            Text="The status bar covers the top bar, or the navigation bar covers the bottom bar." />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border Style="{StaticResource BorderGalleryCard}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label
+                            FontAttributes="Bold"
+                            Text="Status bar color" />
+                        <Label
+                            LineBreakMode="WordWrap"
+                            Style="{StaticResource LabelSectionText}"
+                            Text="Transparent is the default. Switch it on for a solid red status bar: the result must be the same." />
+                        <HorizontalStackLayout Spacing="12">
+                            <Label
+                                Text="Solid red"
+                                VerticalOptions="Center" />
+                            <Switch
+                                SemanticProperties.Description="Use a solid red status bar"
+                                Toggled="OnSolidStatusBarSwitchToggled" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Button
+                    Clicked="OnBackButtonClicked"
+                    HorizontalOptions="Center"
+                    Text="Back to StatusBarBehavior demo" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Label
+            Grid.Row="2"
+            Style="{StaticResource LabelEdgeToEdgeMarker}"
+            Text="BOTTOM OF THE MODAL: nothing may cover this bar" />
+    </Grid>
+</ContentPage>

@@ -1,4 +1,7 @@
 ﻿using Application = Microsoft.Maui.Controls.Application;
+#if ANDROID
+using CommunityToolkit.Maui.Sample.Pages.Behaviors;
+#endif
 
 namespace CommunityToolkit.Maui.Sample;
 
@@ -16,6 +19,11 @@ public partial class App : Application
 	protected override Window CreateWindow(IActivationState? activationState)
 	{
 #if ANDROID
+		// Every Activity needs its own Window and appShell can only belong to one, so the Shell demo's Activity gets a Shell of its own.
+		if (activationState?.Context.Services.GetService(typeof(global::Android.App.Activity)) is EdgeToEdgeShellActivity)
+		{
+			return new Window(new EdgeToEdgeTitleViewShell());
+		}
 		// Android asks for the window again when it creates the Activity again in the same process, e.g. after the app language
 		// changed or with "Don't keep activities": reuse the AppShell, so that the app stays on the page it showed.
 		return new(appShell ??= new AppShell());
