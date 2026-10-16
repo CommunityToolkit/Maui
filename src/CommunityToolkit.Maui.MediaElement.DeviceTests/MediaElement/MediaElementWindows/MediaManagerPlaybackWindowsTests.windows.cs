@@ -790,6 +790,46 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		});
 	}
 
+	// The worker thread of a rate event reads the rate and queues the update of Speed, so the app can apply a newer Speed before the update
+	// runs. The manager's handler gets the session of a plain player, whose rate the test sets as that newer Speed would set it: no event of
+	// the manager's own player can then queue an update of its own.
+	[Fact]
+	public async Task QueuedRateChangeOfAnEarlierSpeedDoesNotUndoANewerSpeed()
+	{
+		SetupWindowsBuilder();
+		await RequireDecoderAsync();
+		var (plain, failure) = await WinMediaPlainPlayer.OpenAsync(player => player.SetUriSource(WinMediaAssets.VideoUri), TimeSpan.FromMilliseconds(decodeTimeoutMilliseconds));
+		await using (plain)
+		{
+			Assert.True(failure is null, $"A plain MediaPlayer did not open the clip: {failure}");
+			var session = plain.Player.PlaybackSession;
+			var dispatcher = new WinMediaCapturingDispatcher(isDispatchRequired: true);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var view = new MediaElement();
+				var manager = new WinMediaManager(MauiContext, view, dispatcher);
+				var platformView = new WinMediaView(manager.CreatePlatformView());
+				RegisterCleanup(() =>
+				{
+					manager.Dispose();
+					platformView.Dispose();
+					view.Dispose();
+				});
+
+				session.PlaybackRate = 2;
+				WinMediaReflection.Invoke(manager, "OnPlaybackSessionPlaybackRateChanged", session, null);
+				var queuedUpdate = Assert.Single(dispatcher.TakeQueued());
+
+				view.Speed = 1.5;
+				session.PlaybackRate = 1.5;
+				queuedUpdate();
+
+				Assert.Equal(1.5, view.Speed);
+			});
+		}
+	}
+
 	[Fact]
 	public async Task MediaOpenedHandledOnTheUiThreadSetsTheDurationInline()
 	{

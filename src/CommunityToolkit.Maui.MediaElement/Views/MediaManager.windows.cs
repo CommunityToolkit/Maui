@@ -947,7 +947,15 @@ partial class MediaManager : IDisposable
 		{
 			if (Dispatcher.IsDispatchRequired)
 			{
-				Dispatcher.Dispatch(() => UpdateSpeed(MediaElement, playbackRate));
+				// The event of every write of the rate arrives on a worker thread, so the app may have applied a newer Speed by the time the update
+				// runs, which the rate of an earlier write must not undo: only a rate that the open session still has is applied.
+				Dispatcher.Dispatch(() =>
+				{
+					if (Player?.MediaPlayer is not null && AreFloatingPointNumbersEqual(sender.PlaybackRate, playbackRate))
+					{
+						UpdateSpeed(MediaElement, playbackRate);
+					}
+				});
 			}
 			else
 			{
