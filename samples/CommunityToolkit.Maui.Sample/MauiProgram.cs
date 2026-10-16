@@ -54,6 +54,8 @@ public static class MauiProgram
 									options.SetShouldEnableSnackbarOnWindows(true);
 									options.SetPopupDefaults(new DefaultPopupSettings());
 									options.SetPopupOptionsDefaults(new DefaultPopupOptionsSettings());
+									// Off by default; the StatusBarBehavior modal demo only reaches the Android modal fix when this is on.
+									options.SetShouldUseStatusBarBehaviorOnAndroidModalPage(true);
 								})
 #else
 								.UseMauiCommunityToolkit(static options =>
@@ -62,6 +64,8 @@ public static class MauiProgram
 									options.SetShouldSuppressExceptionsInConverters(true);
 									options.SetShouldSuppressExceptionsInBehaviors(true);
 									options.SetShouldSuppressExceptionsInAnimations(true);
+									// Off by default; the StatusBarBehavior modal demo only reaches the Android modal fix when this is on.
+									options.SetShouldUseStatusBarBehaviorOnAndroidModalPage(true);
 								})
 #endif
 								.UseMauiCommunityToolkitMarkup()

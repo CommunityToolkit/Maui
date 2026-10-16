@@ -172,11 +172,28 @@
                 x:Name="ModalPageButton"
                 HorizontalOptions="Center"
                 VerticalOptions="Center" />
-            <Button
-                Clicked="OnEdgeToEdgeShellButtonClicked"
-                HorizontalOptions="Center"
-                Text="Go to Edge-to-Edge Shell.TitleView demo"
-                VerticalOptions="Center" />
+
+            <VerticalStackLayout
+                IsVisible="{OnPlatform Android=True, Default=False}"
+                Spacing="12">
+                <Label
+                    Style="{StaticResource LabelSectionTitle}"
+                    Text="Android regression tests" />
+                <Label
+                    LineBreakMode="WordWrap"
+                    Style="{StaticResource LabelSectionText}"
+                    Text="Each demo says what to check. The modal demo copies the status bar of this page, so it first resets the sliders above to transparent (the default)." />
+                <Button
+                    Clicked="OnEdgeToEdgeModalButtonClicked"
+                    HorizontalOptions="Center"
+                    Text="Modal page demo (#3353)"
+                    VerticalOptions="Center" />
+                <Button
+                    Clicked="OnEdgeToEdgeShellButtonClicked"
+                    HorizontalOptions="Center"
+                    Text="Shell demo (#2351)"
+                    VerticalOptions="Center" />
+            </VerticalStackLayout>
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>

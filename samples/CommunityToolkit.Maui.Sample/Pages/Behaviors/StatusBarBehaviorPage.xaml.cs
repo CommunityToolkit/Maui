@@ -69,8 +69,23 @@ public partial class StatusBarBehaviorPage : BasePage<StatusBarBehaviorViewModel
 		return false;
 	}
 
-	async void OnEdgeToEdgeShellButtonClicked(object? sender, EventArgs e)
+	void OnEdgeToEdgeShellButtonClicked(object? sender, EventArgs e)
 	{
-		await Shell.Current.Navigation.PushModalAsync(new EdgeToEdgeTitleViewPage());
+#if ANDROID
+		// Application.OpenWindow opens nothing on Android: MainActivity is SingleTask, so the new-window intent is routed to the running Activity.
+		Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.StartActivity(typeof(EdgeToEdgeShellActivity));
+#endif
+	}
+
+	async void OnEdgeToEdgeModalButtonClicked(object? sender, EventArgs e)
+	{
+		// A modal copies the status bar of the window it opens from, and #3353 only shows for exactly Colors.Transparent: an alpha of 0 with other color channels does not count.
+		BindingContext.RedSliderValue = 0;
+		BindingContext.GreenSliderValue = 0;
+		BindingContext.BlueSliderValue = 0;
+		BindingContext.AlphaSliderValue = 0;
+		BindingContext.IsDarkContentChecked = true;
+
+		await Shell.Current.Navigation.PushModalAsync(new EdgeToEdgeModalPage());
 	}
 }
