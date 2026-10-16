@@ -5,7 +5,6 @@
     <item name="toolbarStyle">@style/EdgeToEdgeShellToolbar</item>
   </style>
 
-  <!-- A Toolbar leaves its first 16dp empty by default, so the TitleView of the Shell demo would stop short of the left edge. -->
   <style name="EdgeToEdgeShellToolbar" parent="Widget.MaterialComponents.Toolbar">
     <item name="contentInsetStart">0dp</item>
     <item name="contentInsetStartWithNavigation">0dp</item>
