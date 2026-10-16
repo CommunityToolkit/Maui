@@ -384,6 +384,16 @@ sealed class AppleViewlessPlayerViewController : AVPlayerViewController
 
 sealed class AppleParentTrackingPlayerViewController : AVPlayerViewController
 {
+	public AppleParentTrackingPlayerViewController()
+	{
+	}
+
+	// Mac Catalyst sends -didMoveToParentViewController: at the end of the Core Animation transaction, after the test disposed the controller.
+	// Without this constructor the runtime cannot create a managed peer for that call and aborts the app (seen with AOT code, in Release).
+	AppleParentTrackingPlayerViewController(ObjCRuntime.NativeHandle handle) : base(handle)
+	{
+	}
+
 	public List<UIViewController?> MovedToParents { get; } = [];
 
 	public override void DidMoveToParentViewController(UIViewController? parent)
