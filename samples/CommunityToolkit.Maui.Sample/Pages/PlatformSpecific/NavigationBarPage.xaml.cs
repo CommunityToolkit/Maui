@@ -14,9 +14,9 @@ public partial class NavigationBarPage : BasePage<NavigationBarAndroidViewModel>
 	}
 
 #if ANDROID
-	// The page shows its navigation bar color and style while it is shown. Once the page clears NavigationBar.Color and NavigationBar.Style,
-	// the window gets back the navigation bar it had before the page changed it. The page sets the values instead of binding them:
-	// .NET MAUI keeps the value that a binding set after the binding is removed, so a bound value cannot be cleared.
+	// Once the page clears NavigationBar.Color and NavigationBar.Style, the window gets back the navigation bar it had before the page changed it.
+	// The page sets the values instead of binding them: .NET MAUI keeps the value that a binding set after the binding is removed, so a bound value
+	// cannot be cleared.
 	protected override void OnNavigatedTo(NavigatedToEventArgs args)
 	{
 		base.OnNavigatedTo(args);

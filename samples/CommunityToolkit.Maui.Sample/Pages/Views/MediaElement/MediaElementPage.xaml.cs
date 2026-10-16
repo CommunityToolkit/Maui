@@ -40,7 +40,6 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 		switch (args.NavigationType)
 		{
-			// The page left the navigation stack: release the player
 			case NavigationType.Pop or NavigationType.PopToRoot or NavigationType.Remove:
 				MediaElement.Stop();
 				MediaElement.Handler?.DisconnectHandler();

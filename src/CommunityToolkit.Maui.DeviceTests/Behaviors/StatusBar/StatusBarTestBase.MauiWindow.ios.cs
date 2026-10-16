@@ -63,11 +63,7 @@ public abstract partial class StatusBarTestBase
 	protected Task RunInMauiWindowAsync(StatusBarWindowPage kind, ContentPage page, Func<HostedMauiWindow, Task> action) =>
 		RunInMauiWindowAsync(CreateRootPage(kind, page), kind is StatusBarWindowPage.ModalPage, page, action);
 
-	/// <summary>
-	/// <see cref="RunInMauiWindowAsync(StatusBarWindowPage, ContentPage, Func{HostedMauiWindow, Task})"/> with a root page that the test builds itself:
-	/// <paramref name="page"/> is <paramref name="root"/> or one of its pages, or with <paramref name="isPagePresentedModally"/> the page that the window
-	/// presents modally over <paramref name="root"/>.
-	/// </summary>
+	// page is root or one of its pages, or with isPagePresentedModally the page that the window presents modally over root.
 	protected Task RunInMauiWindowAsync(Page root, bool isPagePresentedModally, ContentPage page, Func<HostedMauiWindow, Task> action) =>
 		InvokeOnMainThreadAsync(async () =>
 		{

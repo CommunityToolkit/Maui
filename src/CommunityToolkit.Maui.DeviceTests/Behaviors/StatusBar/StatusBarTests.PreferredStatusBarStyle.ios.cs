@@ -10,10 +10,9 @@ using MauiModalPresentationStyle = Microsoft.Maui.Controls.PlatformConfiguration
 namespace CommunityToolkit.Maui.DeviceTests;
 
 // .NET 10: UIKit takes the status bar style of an app whose Info.plist keeps view controller-based status bar appearance, such as the runner, from its
-// view controllers, and the view controllers of .NET MAUI 10 choose no style. StatusBar.SetStyle sets the style of the whole app: the first
-// LightContent or DarkContent replaces -preferredStatusBarStyle of UIViewController (and of the UIKit containers that have their own), and every view
-// controller that does not choose a style returns the requested one until SetStyle(Default). The tests show their page in a .NET MAUI window and read what UIKit shows (AssertStatusBarStyleAsync): the style of the
-// view controller that UIKit asks, the style of the scene's status bar and the content on the screen. The base class sets Default after each test.
+// view controllers, and those of .NET MAUI 10 choose none, so StatusBar.SetStyle replaces -preferredStatusBarStyle. The tests read what UIKit shows
+// (AssertStatusBarStyleAsync): the style of the view controller that UIKit asks, the style of the scene's status bar and the content on the screen.
+// The base class sets Default after each test.
 public partial class StatusBarTests
 {
 	static readonly TimeSpan navigationTimeout = TimeSpan.FromSeconds(10);
@@ -41,7 +40,6 @@ public partial class StatusBarTests
 		});
 	}
 
-	// The page that a NavigationPage pushes, and the page that it pops back to, show the style, with and without the animations
 	[Fact]
 	public async Task SetStyleStaysWhenANavigationPagePushesAndPops()
 	{
@@ -171,8 +169,7 @@ public partial class StatusBarTests
 		});
 	}
 
-	// A modal page that .NET MAUI shows as a page sheet or a form sheet, which on iPhone leaves the status bar to the page under it: the status bar
-	// shows the style while the sheet is shown, also a style that is set then, and after the sheet closes
+	// On iPhone a page sheet or a form sheet leaves the status bar to the page under it.
 	[Theory]
 	[InlineData(MauiModalPresentationStyle.PageSheet)]
 	[InlineData(MauiModalPresentationStyle.FormSheet)]
@@ -199,7 +196,6 @@ public partial class StatusBarTests
 		});
 	}
 
-	// The window gets another page (a new root view controller), and its first page back
 	[Fact]
 	public async Task SetStyleStaysWhenThePageOfTheWindowIsReplaced()
 	{
@@ -224,7 +220,6 @@ public partial class StatusBarTests
 		});
 	}
 
-	// The style belongs to the app: a second window, which opens after the call, shows it, and so does the first window again
 	[Fact]
 	public async Task SetStyleReachesEveryWindowAlsoOneThatOpensLater()
 	{
@@ -258,8 +253,6 @@ public partial class StatusBarTests
 		});
 	}
 
-	// View controllers of the app that choose their own style (override preferredStatusBarStyle) keep it, also after Default, and a view controller
-	// presented over one of them shows the requested style
 	[Fact]
 	public async Task ViewControllersThatChooseTheirOwnStyleKeepIt()
 	{
@@ -288,8 +281,8 @@ public partial class StatusBarTests
 		});
 	}
 
-	// An override of preferredStatusBarStyle that returns the style of the base implementation (as the view controllers of .NET MAUI 11 do for
-	// StatusBarTheme.Default) returns the requested style: a view controller, and a navigation controller, whose class has its own implementation
+	// The view controllers of .NET MAUI 11 return the style of the base implementation for StatusBarTheme.Default, and UINavigationController
+	// has an implementation of its own.
 	[Fact]
 	public async Task OverridesThatReturnTheBaseStyleReturnTheRequestedStyle()
 	{
@@ -398,9 +391,8 @@ public partial class StatusBarTests
 		});
 	}
 
-	// Default requests no style and replaces nothing. The first LightContent or DarkContent replaces the implementation of UIViewController and of each
-	// container class that has its own (the others have UIViewController's method), once: the toolkit keeps UIKit's implementations and calls them for
-	// Default. The test starts from UIKit's implementations, whatever the tests before it did.
+	// The classes without an implementation of their own have UIViewController's method. The test starts from UIKit's implementations, whatever
+	// the tests before it did.
 	[Fact]
 	public async Task SetStyleReplacesTheImplementationsOfUIKitOnceAndOnlyForAStyle()
 	{
@@ -468,7 +460,6 @@ public partial class StatusBarTests
 		});
 	}
 
-	// The first replacement, run by several threads at the same time: each class gets the toolkit's implementation once, and the toolkit keeps UIKit's
 	[Fact]
 	public async Task ReplacementsAtTheSameTimeReplaceEachImplementationOnce()
 	{
@@ -508,9 +499,7 @@ public partial class StatusBarTests
 		});
 	}
 
-	// UIKit asks for the style on the main thread. The first calls, from several other threads at the same time, throw before they change anything (no
-	// style, no replacement), also when .NET for iOS does not check the thread of UIKit calls, as in a Release build
-	// (UIApplication.CheckForIllegalCrossThreadCalls is false).
+	// With UIApplication.CheckForIllegalCrossThreadCalls false, as in a Release build, .NET for iOS does not check the thread of UIKit calls.
 	[Fact]
 	public async Task SetStyleFromOtherThreadsThrowsBeforeItChangesAnything()
 	{
@@ -560,7 +549,7 @@ public partial class StatusBarTests
 	static UIViewController RootViewController(HostedMauiWindow mauiWindow) =>
 		mauiWindow.PlatformWindow.RootViewController ?? throw new InvalidOperationException("The window has no root view controller.");
 
-	// A full-screen red view controller without a style of its own: the status bar shows its white or black content over it
+	// Red, so that the white or black content of the status bar can be read from the screen.
 	class RedViewController : UIViewController
 	{
 		public RedViewController() => ModalPresentationStyle = UIModalPresentationStyle.FullScreen;
@@ -602,16 +591,12 @@ public partial class StatusBarTests
 	}
 }
 
-/// <summary>
-/// The toolkit's replacement of -preferredStatusBarStyle (StatusBar.ios.cs, .NET 10), read through the Objective-C runtime and its private fields.
-/// <see cref="Undo"/> takes it out, so that a test can start from UIKit's implementations whatever the tests before it did. Call it on the UI thread
-/// (<see cref="Replace"/> on any).
-/// </summary>
+// Undo takes the replacement out, so that a test can start from UIKit's implementations whatever the tests before it did.
 static class ToolkitReplacement
 {
 	const BindingFlags privateStatic = BindingFlags.NonPublic | BindingFlags.Static;
 
-	/// <summary>The classes whose implementation the toolkit replaces when they have their own; their StatusBar fields are named after them without "UI".</summary>
+	// The StatusBar fields are named after these classes without "UI".
 	public static readonly string[] ClassNames = ["UIViewController", "UINavigationController", "UITabBarController", "UISplitViewController"];
 
 	static readonly IntPtr preferredStatusBarStyleSelector = Selector.GetHandle("preferredStatusBarStyle");
@@ -628,26 +613,19 @@ static class ToolkitReplacement
 
 	public static Dictionary<string, IntPtr> Implementations() => ClassNames.ToDictionary(static className => className, Implementation);
 
-	/// <summary>Whether the class has a method of its own, not UIViewController's (UIViewController has its own).</summary>
 	public static bool HasOwnMethod(string className) => className is "UIViewController" || Method(className) != Method("UIViewController");
 
-	/// <summary>The toolkit's implementation for the class.</summary>
 	public static IntPtr ToolkitImplementation(string className) => ImplementationField($"toolkit{className[2..]}Implementation");
 
-	/// <summary>The implementation that the toolkit replaced in the class (IntPtr.Zero if none).</summary>
 	public static IntPtr ReplacedImplementation(string className) => ImplementationField($"replaced{className[2..]}Implementation");
 
 	public static Dictionary<string, IntPtr> ReplacedImplementations() => ClassNames.ToDictionary(static className => className, ReplacedImplementation);
 
-	/// <summary>Runs the toolkit's replacement (StatusBar.ReplacePreferredStatusBarStyle), which the first LightContent or DarkContent runs.</summary>
 	public static void Replace() =>
 		(typeof(StatusBar).GetMethod("ReplacePreferredStatusBarStyle", privateStatic, Type.EmptyTypes) ?? throw new InvalidOperationException("StatusBar has no private static ReplacePreferredStatusBarStyle()."))
 			.Invoke(null, null);
 
-	/// <summary>
-	/// Gives each class whose implementation the toolkit replaced that implementation back, and lets the toolkit forget it: the next LightContent or
-	/// DarkContent replaces the implementations again, as the first one after the app started does.
-	/// </summary>
+	// The next LightContent or DarkContent replaces the implementations again, as the first one after the app started does.
 	public static void Undo()
 	{
 		StatusBar.SetStyle(StatusBarStyle.Default);
@@ -666,7 +644,6 @@ static class ToolkitReplacement
 		IsReplaced = false;
 	}
 
-	/// <summary>The file name of the image (library or executable) that has the code at <paramref name="address"/>.</summary>
 	public static string ImageName(IntPtr address) =>
 		dladdr(address, out var info) != 0 && info.FileName != IntPtr.Zero ? Path.GetFileName(Marshal.PtrToStringUTF8(info.FileName) ?? string.Empty) : string.Empty;
 
@@ -702,10 +679,8 @@ static class ToolkitReplacement
 	}
 }
 
-/// <summary>
-/// What another library does that replaces -[UIViewController preferredStatusBarStyle]: its implementation returns a style of its own, or without one the
-/// style of the implementation that it replaced. Call it on the UI thread.
-/// </summary>
+// Another library's replacement of -[UIViewController preferredStatusBarStyle]: it returns a style of its own, or without one the style of the
+// implementation that it replaced.
 static class AnotherLibrary
 {
 	static readonly PreferredStatusBarStyleImplementation implementation = PreferredStatusBarStyle;
@@ -716,10 +691,8 @@ static class AnotherLibrary
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	delegate nint PreferredStatusBarStyleImplementation(IntPtr self, IntPtr selector);
 
-	/// <summary>The library's implementation.</summary>
 	public static IntPtr Implementation { get; } = Marshal.GetFunctionPointerForDelegate(implementation);
 
-	/// <summary>How often UIKit called the library's implementation since <see cref="ReplacePreferredStatusBarStyle"/>.</summary>
 	public static int StyleQueries { get; private set; }
 
 	public static void ReplacePreferredStatusBarStyle(UIStatusBarStyle? style = null)
@@ -732,7 +705,6 @@ static class AnotherLibrary
 		ToolkitReplacement.SetImplementation(method, Implementation);
 	}
 
-	/// <summary>Gives the method the implementation back that the library replaced.</summary>
 	public static void RestorePreferredStatusBarStyle() => ToolkitReplacement.SetImplementation(ToolkitReplacement.Method("UIViewController"), replacedImplementationPointer);
 
 	[MonoPInvokeCallback(typeof(PreferredStatusBarStyleImplementation))]

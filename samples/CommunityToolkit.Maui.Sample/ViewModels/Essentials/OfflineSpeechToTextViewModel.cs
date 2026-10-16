@@ -76,9 +76,9 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 		}
 		catch (Exception e)
 		{
-			// For example a FeatureNotSupportedException on Android 13 and earlier, or on a device without on-device speech recognition, a NotSupportedException on
-			// Android when the on-device recognizer does not support the culture, or an exception of the audio engine on the iOS simulator when it gets no audio input.
-			// The page shows the failure: an exception that escapes the command ends the app
+			// An exception that escapes the command ends the app: for example a FeatureNotSupportedException on Android 13 and earlier, or on a device
+			// without on-device speech recognition, a NotSupportedException on Android when the on-device recognizer does not support the culture, or an
+			// exception of the audio engine on the iOS simulator when it gets no audio input.
 			IsWaitingForSpeech = false;
 			CanStartListenExecute = true;
 			CanStopListenExecute = false;
@@ -114,7 +114,6 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 	// The speech-to-text events can come on a background thread (Windows): the view model handles them on the main thread, where the buttons are updated
 	void HandleRecognitionResultUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs e) => MainThread.BeginInvokeOnMainThread(() =>
 	{
-		// The recognizer heard speech; its first result replaces the prompt
 		IsWaitingForSpeech = false;
 		RecognitionText = RecognitionText is beginSpeakingPrompt ? e.RecognitionResult : RecognitionText + e.RecognitionResult;
 	});

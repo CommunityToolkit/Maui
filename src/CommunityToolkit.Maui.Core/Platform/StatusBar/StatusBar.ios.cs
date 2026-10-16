@@ -70,7 +70,6 @@ static partial class StatusBar
 	// inside the window.
 	static StatusBarView? FindStatusBarView(UIWindow window) => window.Subviews.OfType<StatusBarView>().FirstOrDefault();
 
-	// Removes every other view with the status bar tag from the window and puts the status bar view in front of the window's views.
 	static void ShowInFront(UIWindow window, StatusBarView statusBar)
 	{
 		var statusBarSubViews = window.Subviews.Where(static x => x.Tag == StatusBarView.StatusBarTag).ToList();
@@ -346,12 +345,8 @@ static partial class StatusBar
 		return true;
 	}
 
-	/// <summary>
-	/// The view that colors the status bar of a window: a subview of the window itself, in front of the window's other views, through which touches
-	/// go to the views below it. When UIKit lays it out, e.g. after the window resized it because the window rotated, it sizes itself again if the
-	/// window's size or safe area or the status bar of the window's scene changed since <see cref="SizeToStatusBar"/> sized it, and otherwise keeps its
-	/// frame. A StatusBarBehavior calls SetBarSize only while it is attached to a page that is on screen.
-	/// </summary>
+	// A StatusBarBehavior calls SetBarSize only while it is attached to a page that is on screen, so the view sizes itself again when UIKit lays it
+	// out after its window, the window's safe area or the status bar of the window's scene changed, e.g. after a rotation.
 	sealed class StatusBarView : UIView
 	{
 		public const int StatusBarTag = 38482;
@@ -368,7 +363,6 @@ static partial class StatusBar
 			AutoresizingMask = UIViewAutoresizing.FlexibleWidth;
 		}
 
-		// Sizes the view to the status bar of the window's scene, or to the window's top safe area inset
 		public void SizeToStatusBar(UIWindow window, CGRect statusBarFrame, bool isUsingSafeArea)
 		{
 			this.isUsingSafeArea = isUsingSafeArea;
@@ -389,6 +383,5 @@ static partial class StatusBar
 		}
 	}
 
-	// What a status bar view was sized for: the size and the safe area of its window, and the status bar frame of the window's scene
 	readonly record struct StatusBarGeometry(CGSize WindowSize, UIEdgeInsets SafeAreaInsets, CGRect StatusBarFrame);
 }

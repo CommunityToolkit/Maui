@@ -30,9 +30,8 @@ public partial class BehaviorsGalleryPage : BaseGalleryPage<BehaviorsGalleryView
 		SetStatusBarColor(Application.Current?.RequestedTheme ?? AppTheme.Unspecified);
 	}
 
-	// The status bar gets the color of the Shell's navigation bar, which depends on the app theme. The color is updated when the theme changes
-	// (an AppThemeBinding does not follow theme changes on a Behavior, which is not an Element), so no band of the other theme's color shows above the
-	// navigation bar, also on the pages that are opened after this one
+	// An AppThemeBinding does not follow theme changes on a Behavior, which is not an Element, so the page updates the color when the theme changes:
+	// otherwise a band of the other theme's color stays above the navigation bar, also on the pages that are opened after this one.
 	void AddStatusBarBehavior()
 	{
 		var application = Application.Current ?? throw new InvalidOperationException($"{nameof(Application)}.{nameof(Application.Current)} cannot be null");

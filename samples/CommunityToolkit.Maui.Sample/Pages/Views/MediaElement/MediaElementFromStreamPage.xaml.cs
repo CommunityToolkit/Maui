@@ -243,7 +243,6 @@ public sealed partial class MediaElementFromStreamPage : BasePage<MediaElementFr
 		}
 		catch (FeatureNotSupportedException ex)
 		{
-			// The device has no camera that can record a video
 			logger.LogWarning(ex, "Unable to record a video");
 			await Toast.Make("Unable to record a video. Video capture is not supported on this device.").Show();
 			return;

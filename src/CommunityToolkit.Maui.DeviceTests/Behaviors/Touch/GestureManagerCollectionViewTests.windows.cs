@@ -7,8 +7,6 @@ namespace CommunityToolkit.Maui.DeviceTests;
 public partial class GestureManagerCollectionViewTests
 {
 	// A tap selects the item in the platform list too: what a person sees, and what UI Automation reports for the item.
-	// Catches: a tap on the behavior's view leaving the platform list without a selection (a click on the content of an item selected
-	// nothing, in either selection mode), a second tap on a selected item leaving it selected in Multiple mode.
 	[Theory]
 	[InlineData(SelectionMode.Single)]
 	[InlineData(SelectionMode.Multiple)]

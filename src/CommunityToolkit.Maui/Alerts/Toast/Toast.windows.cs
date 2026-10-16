@@ -54,9 +54,8 @@ public partial class Toast
 		_ => throw new InvalidEnumArgumentException(nameof(Duration), (int)duration, typeof(ToastDuration))
 	};
 
-	// Takes the notification off screen at the end of the Duration of the toast, as the toast disappears on the other platforms. It is
-	// removed by its Id, so the other notifications of the app stay, and also when PlatformToast is another toast by then: two Show calls
-	// that overlap can both show their notification. When Show or Dismiss removed it first, there is nothing left to remove.
+	// The notification is removed by its Id, so the other notifications of the app stay, and also when PlatformToast is another toast by then:
+	// two Show calls that overlap can both show their notification. When Show or Dismiss removed it first, there is nothing left to remove.
 	// Best effort: nothing awaits the removal, and the notification expires a minute later anyway.
 	static async Task RemoveAtTheEndOfTheDurationAsync(AppNotification platformToast, TimeSpan duration)
 	{

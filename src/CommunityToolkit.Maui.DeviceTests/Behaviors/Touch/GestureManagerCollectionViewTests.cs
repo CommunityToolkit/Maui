@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 /// <see cref="TouchBehavior"/> in the item template of a <see cref="CollectionView"/> selects the item through the toolkit
 /// (<c>GestureManager.HandleCollectionViewSelection</c>, compiled for Android and Windows). On iOS and Mac Catalyst the touch is the
 /// platform's business, so the toolkit must leave the selection alone (the collection view selects the item for a tap that UIKit delivers,
-/// see the macios partial). A tap in the header, the footer, the empty view or the header of a group selects nothing on any platform.
+/// see the macios partial).
 /// <para>
 /// Windows takes no pointer input from a test (see <see cref="TouchBehaviorTestBase.NativePointerInputUnavailableReason"/>), so there a tap
 /// is the sequence of internal calls that the behavior's pointer handlers make for a press and a release.
@@ -125,9 +125,6 @@ public partial class GestureManagerCollectionViewTests : TouchBehaviorTestBase
 
 	// The header, the footer and the empty view are children of the CollectionView as well, so the search for the item ends at them (the
 	// grid around the behavior's label, which is the View set as the content or the root of its template).
-	// Catches: a tap in them selecting what they show on Android and Windows (the BindingContext of the child: the page's model for a View,
-	// the header object for a template; for a template without a Header, null on Android, which only Multiple mode shows as a selection, and
-	// the template itself on Windows), and an item no longer being selected next to them.
 	[Theory]
 	[InlineData(nameof(CollectionView.Header), SelectionMode.Single)]
 	[InlineData(nameof(CollectionView.Header), SelectionMode.Multiple)]
@@ -205,8 +202,7 @@ public partial class GestureManagerCollectionViewTests : TouchBehaviorTestBase
 		}
 	}
 
-	// Catches: a tap on the header of a group selecting the group (the BindingContext of the header's template) on Android and Windows, and
-	// an item of a grouped CollectionView no longer being selected.
+	// The BindingContext of the template of a group's header is the group, which a tap selected on Android and Windows.
 	[Fact]
 	public async Task TapOnAGroupHeaderSelectsNothingAndATapOnAnItemOfTheGroupSelectsIt()
 	{
@@ -323,8 +319,6 @@ public partial class GestureManagerCollectionViewTests : TouchBehaviorTestBase
 		return labels[index];
 	}
 
-	// Windows: what the behavior's pointer handlers do for a press and a release on the element (OnPointerPressed: interaction and touch
-	// Started; OnPointerReleased: touch Completed, then interaction Completed), through the same internal calls.
 	void Tap(Label label)
 	{
 #if WINDOWS

@@ -227,7 +227,6 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 	// The speech-to-text events can come on a background thread (Windows): the view model handles them on the main thread, where the buttons are updated
 	void HandleRecognitionResultUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs e) => MainThread.BeginInvokeOnMainThread(() =>
 	{
-		// The recognizer heard speech; its first result replaces the prompt
 		IsWaitingForSpeech = false;
 		RecognitionText = RecognitionText is beginSpeakingPrompt ? e.RecognitionResult : $"{RecognitionText} {e.RecognitionResult}";
 	});

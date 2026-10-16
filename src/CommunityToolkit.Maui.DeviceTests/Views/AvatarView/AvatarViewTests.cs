@@ -70,7 +70,6 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 		Implicit,
 	}
 
-	// The BindingContext of an avatar whose StreamImageSource binds its Stream.
 	sealed class ImageStreamViewModel : INotifyPropertyChanged
 	{
 		public event PropertyChangedEventHandler? PropertyChanged;

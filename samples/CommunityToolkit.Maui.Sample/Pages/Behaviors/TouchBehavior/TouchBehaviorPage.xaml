@@ -135,7 +135,6 @@
                     FontSize="12"
                     HorizontalOptions="Center"
                     Text="{Binding ImageTouchCount, StringFormat='Image touches: {0}'}" />
-                <!-- The image moves down quickly when pressed and springs back when released -->
                 <Image
                     HeightRequest="100"
                     Source="button.png"

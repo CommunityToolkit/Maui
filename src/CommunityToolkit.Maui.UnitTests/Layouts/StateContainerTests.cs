@@ -248,7 +248,6 @@ public class StateContainerTests : BaseTest
 		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		var changeStateWithAnimationTask = StateContainer.ChangeStateWithAnimation(layout, StateKey.Error, cts.Token);
 
-		// Cancel while the default content fades out
 		await cts.CancelAsync();
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => changeStateWithAnimationTask);
 

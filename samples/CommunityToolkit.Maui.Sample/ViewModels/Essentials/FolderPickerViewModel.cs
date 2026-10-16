@@ -42,7 +42,6 @@ public partial class FolderPickerViewModel(IFolderPicker folderPicker) : BaseVie
 		}
 		catch (Exception e) when (e is IOException or UnauthorizedAccessException)
 		{
-			// A folder that the app is not allowed to list
 			return $"not available, {e.Message}";
 		}
 	}

@@ -100,8 +100,6 @@ public partial class ToastTests
 	// of the app behind it. Removing the notification takes the banner off screen, but only while the notification has not expired, and an
 	// expired notification that waits in the queue is never shown. So the toolkit removes the toast at the end of its Duration, before the
 	// notification expires: Windows no longer lists it, and its expiration is still to come.
-	// Catches: the notification expiring at the end of the Duration (its banner then stays on screen for the Windows time, and a toast
-	// shown after that expiration while the banner is up is lost), and a toast that is never removed.
 	[Theory]
 	[InlineData(ToastDuration.Short, 2.0)]
 	[InlineData(ToastDuration.Long, 3.5)]
@@ -124,7 +122,6 @@ public partial class ToastTests
 		});
 	}
 
-	// The removal at the end of the Duration removes the notification of the toast by its Id: the other notifications of the app stay.
 	[Fact]
 	public async Task RemovalAtTheEndOfTheDurationKeepsTheOtherNotificationsOfTheApp()
 	{

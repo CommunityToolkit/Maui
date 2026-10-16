@@ -14,7 +14,6 @@ public partial class PopupLayoutAlignmentPage : BasePage<PopupLayoutAlignmentVie
 		InitializeComponent();
 	}
 
-	// An Entry that is empty or does not hold a number greater than 0 falls back to the default size, and shows that size
 	static double GetPopupSize(Entry sizeEntry)
 	{
 		if (double.TryParse(sizeEntry.Text, out var size) && double.IsFinite(size) && size > 0)

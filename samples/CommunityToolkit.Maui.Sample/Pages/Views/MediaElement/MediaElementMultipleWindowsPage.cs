@@ -35,7 +35,7 @@ public partial class MediaElementMultipleWindowsPage : BasePage<MediaElementMult
 	{
 		base.OnAppearing();
 #if WINDOWS || MACCATALYST
-		// The second window belongs to this page: it is open while the page is shown, once
+		// The page opens its second window once, however often it appears.
 		if (secondWindow is not null)
 		{
 			return;
@@ -59,7 +59,7 @@ public partial class MediaElementMultipleWindowsPage : BasePage<MediaElementMult
 	{
 		base.OnDisappearing();
 #if WINDOWS || MACCATALYST
-		// Leaving the page closes its second window, after releasing the player of the window's MediaElement
+		// Otherwise every visit to the page leaves one more window open.
 		if (secondWindow is null)
 		{
 			return;
