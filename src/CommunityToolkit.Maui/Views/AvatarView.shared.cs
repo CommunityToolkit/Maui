@@ -280,6 +280,17 @@ public partial class AvatarView : Border, IAvatarView
 		InvalidateMeasure();
 	}
 
+	/// <inheritdoc/>
+	protected override void OnBindingContextChanged()
+	{
+		base.OnBindingContextChanged();
+
+		// The image is the Content only while it shows: after a failed load the text replaces it, and an Element out of the tree loses the
+		// BindingContext it inherits, and with it its ImageSource. Giving the image the BindingContext of the AvatarView keeps the bindings of
+		// the ImageSource working (the Email of a GravatarImageSource, for example), so the source can change, load and show the image again.
+		avatarImage.BindingContext = BindingContext;
+	}
+
 	void HandleImageChanged(ImageSource? newValue)
 	{
 		avatarImage.Source = newValue;

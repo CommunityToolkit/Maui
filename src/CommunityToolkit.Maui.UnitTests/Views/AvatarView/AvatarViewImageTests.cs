@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using System.ComponentModel;
+using CommunityToolkit.Maui.Core;
 using FluentAssertions;
 using Microsoft.Maui.Controls.Shapes;
 using Xunit;
@@ -288,6 +289,50 @@ public class AvatarViewImageTests : BaseViewTest
 		avatarView.Content.Should().BeOfType<Label>();
 	}
 
+	// After a failed load the text replaces the image, which leaves the tree, where an Element loses the BindingContext it inherits: the bindings
+	// of the image source keep working, so a source that a binding changes (the Email of a GravatarImageSource, for example) loads and shows the image.
+	[Fact]
+	public void BindingsOfTheImageSourceKeepWorkingWhileTheTextIsShown()
+	{
+		var viewModel = new AvatarViewModel { Uri = new Uri("https://example.invalid/avatar.png") };
+		var avatarView = CreateAvatarViewWithABoundImageSource(viewModel, out var source);
+		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+		ReportLoadFailure(image);
+
+		viewModel.Uri = new Uri("https://aka.ms/campus.jpg");
+
+		source.BindingContext.Should().BeSameAs(viewModel);
+		source.Uri.Should().Be(viewModel.Uri);
+		ReportLoadSuccess(image);
+		avatarView.Content.Should().BeSameAs(image);
+	}
+
+	[Fact]
+	public void ImageSourceTakesANewBindingContextWhileTheTextIsShown()
+	{
+		var avatarView = CreateAvatarViewWithABoundImageSource(new AvatarViewModel { Uri = new Uri("https://example.invalid/avatar.png") }, out var source);
+		ReportLoadFailure(avatarView.Content.Should().BeAssignableTo<Image>().Subject);
+		var otherViewModel = new AvatarViewModel { Uri = new Uri("https://aka.ms/campus.jpg") };
+
+		avatarView.BindingContext = otherViewModel;
+
+		source.BindingContext.Should().BeSameAs(otherViewModel);
+		source.Uri.Should().Be(otherViewModel.Uri);
+	}
+
+	static Maui.Views.AvatarView CreateAvatarViewWithABoundImageSource(AvatarViewModel viewModel, out UriImageSource source)
+	{
+		source = new UriImageSource();
+		source.SetBinding(UriImageSource.UriProperty, new Binding(nameof(AvatarViewModel.Uri)));
+
+		return new Maui.Views.AvatarView
+		{
+			Text = "GL",
+			ImageSource = source,
+			BindingContext = viewModel,
+		};
+	}
+
 	static Maui.Views.AvatarView CreateAvatarViewWithAnImageSource() => new()
 	{
 		Text = "GL",
@@ -308,5 +353,20 @@ public class AvatarViewImageTests : BaseViewTest
 	{
 		((IImageSourcePartEvents)image).LoadingStarted();
 		((IImageSourcePartEvents)image).LoadingCompleted(true);
+	}
+
+	sealed class AvatarViewModel : INotifyPropertyChanged
+	{
+		public event PropertyChangedEventHandler? PropertyChanged;
+
+		public Uri? Uri
+		{
+			get;
+			set
+			{
+				field = value;
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Uri)));
+			}
+		}
 	}
 }

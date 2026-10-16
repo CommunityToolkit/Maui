@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
@@ -67,6 +68,22 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 	{
 		Explicit,
 		Implicit,
+	}
+
+	// The BindingContext of an avatar whose StreamImageSource binds its Stream.
+	sealed class ImageStreamViewModel : INotifyPropertyChanged
+	{
+		public event PropertyChangedEventHandler? PropertyChanged;
+
+		public Func<CancellationToken, Task<Stream>>? Stream
+		{
+			get;
+			set
+			{
+				field = value;
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Stream)));
+			}
+		}
 	}
 
 	// The size of an AvatarView (48x48 unless it is set) is a default that a Style replaces, as AvatarViewBordersPage does: as a local value it
@@ -349,6 +366,35 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 			await AssertNativeContentAsync(handler, NativeContent.Label);
 
 			avatar.ImageSource = CreateRedImage();
+
+			await AssertPixelAsync(handler, avatarSize / 2, avatarSize / 2, Colors.Red);
+			await AssertNativeContentAsync(handler, NativeContent.Image);
+		});
+	}
+
+	// After a failed load the text replaces the image, which leaves the tree: a binding of the image source still applies there, and the image
+	// replaces the text once the source that the binding changes loads (a GravatarImageSource whose bound Email changes, for example).
+	[Fact]
+	public async Task ImageIsShownWhenABindingChangesTheImageSourceAfterAFailure()
+	{
+		SetupBuilder();
+		var viewModel = new ImageStreamViewModel { Stream = UndecodableImageStreamAsync };
+		var avatar = await CreateAvatarViewAsync(strokeThickness: 1, padding: new Thickness(1), withImage: false, avatar =>
+		{
+			var source = new StreamImageSource();
+			source.SetBinding(StreamImageSource.StreamProperty, new Binding(nameof(ImageStreamViewModel.Stream)));
+
+			avatar.Text = "AB";
+			avatar.ImageSource = source;
+			avatar.BindingContext = viewModel;
+		});
+
+		await AttachAndRun(avatar, async handler =>
+		{
+			await LoadedAndLaidOutAsync(avatar);
+			await AssertNativeContentAsync(handler, NativeContent.Label);
+
+			viewModel.Stream = RedImageStreamAsync;
 
 			await AssertPixelAsync(handler, avatarSize / 2, avatarSize / 2, Colors.Red);
 			await AssertNativeContentAsync(handler, NativeContent.Image);
@@ -640,7 +686,13 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 	static ImageSource CreateRedImage() => ImageSource.FromStream(() => new MemoryStream(Convert.FromBase64String(redPngBase64)));
 
 	// Simulates a server that answers the request for an avatar with an error page, without a network.
-	static ImageSource CreateUndecodableImage() => ImageSource.FromStream(() => new MemoryStream("<html><body>403 Forbidden</body></html>"u8.ToArray()));
+	static ImageSource CreateUndecodableImage() => ImageSource.FromStream(() => new MemoryStream(UndecodableImageBytes()));
+
+	static byte[] UndecodableImageBytes() => "<html><body>403 Forbidden</body></html>"u8.ToArray();
+
+	static Task<Stream> RedImageStreamAsync(CancellationToken token) => Task.FromResult<Stream>(new MemoryStream(Convert.FromBase64String(redPngBase64)));
+
+	static Task<Stream> UndecodableImageStreamAsync(CancellationToken token) => Task.FromResult<Stream>(new MemoryStream(UndecodableImageBytes()));
 
 	static async Task AssertNativeContentAsync(IPlatformViewHandler handler, NativeContent expected)
 	{
