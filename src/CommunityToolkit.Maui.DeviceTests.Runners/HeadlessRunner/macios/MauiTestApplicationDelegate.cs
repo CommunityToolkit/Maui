@@ -5,6 +5,7 @@
 // Toolkit change: moved from HeadlessRunner/iOS to HeadlessRunner/macios (iOS + Mac Catalyst, toolkit platform-folder convention).
 // Toolkit change: the scene-manifest check is no longer Mac Catalyst only: apps linked against the iOS 27 SDK are killed at launch without the UIScene life cycle.
 // Toolkit change: implements IPlatformApplication and sets IPlatformApplication.Current, as MauiUIApplicationDelegate does on a real app (toolkit code resolves services through it).
+// Toolkit change: the Runtime.MarshalManagedException and MarshalObjectiveCException handlers let the compiler infer their parameter types: .NET 10 declares the sender as object and .NET 11 as object?, so explicit types fail one of them (CS8622, nullable warnings are errors).
 #nullable enable
 using System;
 using System.Collections.Generic;
@@ -100,7 +101,7 @@ namespace CommunityToolkit.Maui.DeviceTests.Runners.HeadlessRunner
 
 		public override bool WillFinishLaunching(UIApplication application, NSDictionary? launchOptions)
 		{
-			Runtime.MarshalManagedException += (object sender, MarshalManagedExceptionEventArgs args) =>
+			Runtime.MarshalManagedException += (_, args) =>
 			{
 				Console.WriteLine("Marshaling managed exception");
 				Console.WriteLine("    Exception: {0}", args.Exception);
@@ -108,7 +109,7 @@ namespace CommunityToolkit.Maui.DeviceTests.Runners.HeadlessRunner
 
 			};
 
-			Runtime.MarshalObjectiveCException += (object sender, MarshalObjectiveCExceptionEventArgs args) =>
+			Runtime.MarshalObjectiveCException += (_, args) =>
 			{
 				Console.WriteLine("Marshaling Objective-C exception");
 				Console.WriteLine("    Exception: {0}", args.Exception);
