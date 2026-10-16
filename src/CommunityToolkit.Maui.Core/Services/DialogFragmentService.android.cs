@@ -1,8 +1,10 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Versioning;
 using Android.Content;
 using Android.Views;
 using AndroidX.AppCompat.App;
+using CommunityToolkit.Maui.Core.Platform;
 using DialogFragment = AndroidX.Fragment.App.DialogFragment;
 using Fragment = AndroidX.Fragment.App.Fragment;
 using FragmentManager = AndroidX.Fragment.App.FragmentManager;
@@ -109,55 +111,93 @@ sealed partial class DialogFragmentService : IDialogFragmentService
 			throw new InvalidOperationException("Dialog window cannot be null");
 		}
 
-		var isColorTransparent = platformColor == Android.Graphics.Color.Transparent;
-
-		if (OperatingSystem.IsAndroidVersionAtLeast(30))
+		if (OperatingSystem.IsAndroidVersionAtLeast(35))
 		{
-			var windowInsetsController = dialogWindow.InsetsController;
-			var appearance = activity.Window.InsetsController?.SystemBarsAppearance;
-
-			if (windowInsetsController is null)
-			{
-				System.Diagnostics.Trace.WriteLine("WindowInsetsController is null, cannot set system bars appearance.");
-				return;
-			}
-
-			if (appearance.HasValue)
-			{
-				windowInsetsController.SetSystemBarsAppearance(appearance.Value, appearance.Value);
-			}
-			else
-			{
-				windowInsetsController.SetSystemBarsAppearance(
-					isColorTransparent ? 0 : (int)WindowInsetsControllerAppearance.LightStatusBars,
-					(int)WindowInsetsControllerAppearance.LightStatusBars);
-			}
-
-			dialogWindow.SetStatusBarColor(platformColor);
-
-			if (!OperatingSystem.IsAndroidVersionAtLeast(35))
-			{
-				dialogWindow.SetDecorFitsSystemWindows(!isColorTransparent);
-			}
-			else
-			{
-				AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(dialogWindow, !isColorTransparent);
-			}
+			HandleStatusBarColor_AndroidApi35AndHigher(dialogWindow, activity.Window, activity, platformColor);
+		}
+		else if (OperatingSystem.IsAndroidVersionAtLeast(30))
+		{
+			HandleStatusBarColor_AndroidApi30To34(dialogWindow, activity, platformColor);
+		}
+		else if (OperatingSystem.IsAndroidVersionAtLeast(21))
+		{
+			HandleStatusBarColor_AndroidApiLessThan30(dialogWindow, platformColor);
 		}
 		else
 		{
-			dialogWindow.SetStatusBarColor(platformColor);
-
-			if (isColorTransparent)
-			{
-				dialogWindow.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
-				dialogWindow.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
-			}
-			else
-			{
-				dialogWindow.ClearFlags(WindowManagerFlags.LayoutNoLimits);
-				dialogWindow.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
-			}
+			throw new NotSupportedException($"{nameof(DialogFragmentService)} requires Android API 21 or higher");
 		}
+	}
+
+	// LayoutNoLimits is cleared because it pushed modal content behind the system bars for the default transparent color (#2351).
+	[SupportedOSPlatform("android21.0"), UnsupportedOSPlatform("android30.0")]
+	static void HandleStatusBarColor_AndroidApiLessThan30(in Window dialogWindow, in Android.Graphics.Color platformColor)
+	{
+		dialogWindow.SetStatusBarColor(platformColor);
+		dialogWindow.ClearFlags(WindowManagerFlags.LayoutNoLimits);
+		dialogWindow.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
+		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(dialogWindow, false);
+	}
+
+	[SupportedOSPlatform("android30.0"), UnsupportedOSPlatform("android35.0")]
+	static void HandleStatusBarColor_AndroidApi30To34(in Window dialogWindow, in AppCompatActivity activity, in Android.Graphics.Color platformColor)
+	{
+		if (!TrySetSystemBarsAppearance(dialogWindow, activity, platformColor))
+		{
+			return;
+		}
+
+		dialogWindow.SetStatusBarColor(platformColor);
+		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(dialogWindow, false);
+	}
+
+	// On API 35+, StatusBar.SetColor draws an overlay view on top of the window's status bar color, which Android only draws for apps that target API 34 or lower.
+	[SupportedOSPlatform("android35.0")]
+	static void HandleStatusBarColor_AndroidApi35AndHigher(in Window dialogWindow, in Window hostWindow, in AppCompatActivity activity, in Android.Graphics.Color platformColor)
+	{
+		if (!TrySetSystemBarsAppearance(dialogWindow, activity, platformColor))
+		{
+			return;
+		}
+
+#pragma warning disable CA1422 // Obsoleted on API 35+, but still honored for apps that target API 34 or lower
+		dialogWindow.SetStatusBarColor(platformColor);
+#pragma warning restore CA1422
+
+		// A floating dialog, like a picker, does not reach the status bar, so the overlay would cover its content.
+		// The fragment also starts each time the app returns to the foreground, and by then the modal page may have set its own color.
+		if (!dialogWindow.IsFloating && StatusBar.TryGetOverlayColor(hostWindow, out var hostOverlayColor))
+		{
+			StatusBar.AddOverlayIfMissing(dialogWindow, hostOverlayColor);
+		}
+
+		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(dialogWindow, false);
+	}
+
+	[SupportedOSPlatform("android30.0")]
+	static bool TrySetSystemBarsAppearance(in Window dialogWindow, in AppCompatActivity activity, in Android.Graphics.Color platformColor)
+	{
+		var isColorTransparent = platformColor == Android.Graphics.Color.Transparent;
+		var windowInsetsController = dialogWindow.InsetsController;
+		var appearance = activity.Window?.InsetsController?.SystemBarsAppearance;
+
+		if (windowInsetsController is null)
+		{
+			System.Diagnostics.Trace.WriteLine("WindowInsetsController is null, cannot set system bars appearance.");
+			return false;
+		}
+
+		if (appearance.HasValue)
+		{
+			windowInsetsController.SetSystemBarsAppearance(appearance.Value, appearance.Value);
+		}
+		else
+		{
+			windowInsetsController.SetSystemBarsAppearance(
+				isColorTransparent ? 0 : (int)WindowInsetsControllerAppearance.LightStatusBars,
+				(int)WindowInsetsControllerAppearance.LightStatusBars);
+		}
+
+		return true;
 	}
 }

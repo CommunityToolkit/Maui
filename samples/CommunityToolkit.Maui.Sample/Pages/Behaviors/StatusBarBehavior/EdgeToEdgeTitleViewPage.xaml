@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.EdgeToEdgeTitleViewPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:DataType="vm:EdgeToEdgeShellViewModel">
+
+    <Shell.TitleView>
+        <Label
+            Style="{StaticResource LabelEdgeToEdgeMarker}"
+            Text="TITLE VIEW: nothing may cover this bar" />
+    </Shell.TitleView>
+
+    <ScrollView>
+        <VerticalStackLayout
+            Padding="20,16"
+            Spacing="24">
+
+            <Label
+                Style="{StaticResource LabelSectionTitle}"
+                Text="Shell (TitleView + TabBar)" />
+
+            <Border Style="{StaticResource BorderGalleryCard}">
+                <VerticalStackLayout Spacing="8">
+                    <Label
+                        FontAttributes="Bold"
+                        Text="What to check" />
+                    <Label
+                        LineBreakMode="WordWrap"
+                        Style="{StaticResource LabelSectionText}"
+                        Text="The amber TitleView at the top and the tabs at the bottom. Switch between the tabs." />
+                    <Label
+                        FontAttributes="Bold"
+                        Text="Correct result" />
+                    <Label
+                        LineBreakMode="WordWrap"
+                        Style="{StaticResource LabelSectionText}"
+                        Text="The TitleView is completely visible below the status bar, and the tabs are above the navigation bar and can be tapped." />
+                    <Label
+                        FontAttributes="Bold"
+                        Text="Bug (#2351)" />
+                    <Label
+                        LineBreakMode="WordWrap"
+                        Style="{StaticResource LabelSectionText}"
+                        Text="The TitleView is behind the status bar, or the tabs are behind the navigation bar." />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource BorderGalleryCard}">
+                <VerticalStackLayout Spacing="8">
+                    <Label
+                        FontAttributes="Bold"
+                        Text="Status bar color" />
+                    <Label
+                        LineBreakMode="WordWrap"
+                        Style="{StaticResource LabelSectionText}"
+                        Text="Transparent is the default. Switch it on for a solid red status bar: the result must be the same on both tabs." />
+                    <HorizontalStackLayout Spacing="12">
+                        <Label
+                            Text="Solid red"
+                            VerticalOptions="Center" />
+                        <Switch
+                            IsToggled="{Binding IsSolidStatusBarColor}"
+                            SemanticProperties.Description="Use a solid red status bar" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <Button
+                Clicked="OnCloseButtonClicked"
+                HorizontalOptions="Center"
+                Text="Close the Shell demo" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
