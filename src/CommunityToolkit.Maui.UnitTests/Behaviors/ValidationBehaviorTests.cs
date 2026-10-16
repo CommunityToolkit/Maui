@@ -21,7 +21,7 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 			Flags = ValidationFlags.ValidateOnValueChanged
 		};
 
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 		entry.Text = "321";
@@ -80,7 +80,7 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 			InvalidStyle = invalidStyle
 		};
 
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 		entry.Text = "321";
@@ -112,7 +112,7 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 			InvalidStyle = invalidStyle
 		};
 
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 		entry.Text = "321";
@@ -136,7 +136,7 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task IsRunning()
+	public void IsRunning()
 	{
 		// Arrange
 		var entry = new Entry
@@ -149,7 +149,7 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 			SimulateValidationDelay = true
 		};
 
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 		entry.Text = "321";
@@ -157,14 +157,17 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 		// Assert
 		Assert.False(behavior.IsRunning);
 
-		// Act
-		var forceValidateTask = behavior.ForceValidate(TestContext.Current.CancellationToken);
+		RunOnUIThread(async () =>
+		{
+			// Act
+			var forceValidateTask = behavior.ForceValidate(TestContext.Current.CancellationToken);
 
-		// Assert
-		Assert.True(behavior.IsRunning);
+			// Assert
+			Assert.True(behavior.IsRunning);
 
-		// Act
-		await forceValidateTask;
+			// Act
+			await forceValidateTask;
+		});
 	}
 
 	[Fact]
@@ -184,7 +187,7 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 			})
 		};
 
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 		behavior.ForceValidateCommand.Execute(null);
@@ -204,7 +207,7 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 
@@ -226,7 +229,7 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 

@@ -48,7 +48,7 @@ public class CharactersValidationBehaviorTests() : BaseBehaviorTest<CharactersVa
 		{
 			Text = value
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 		await behavior.ForceValidate(TestContext.Current.CancellationToken);
@@ -68,7 +68,7 @@ public class CharactersValidationBehaviorTests() : BaseBehaviorTest<CharactersVa
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 
@@ -90,7 +90,7 @@ public class CharactersValidationBehaviorTests() : BaseBehaviorTest<CharactersVa
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 

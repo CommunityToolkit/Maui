@@ -145,7 +145,7 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 		{
 			Text = value
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		try
 		{
@@ -183,7 +183,7 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 			// Use the culture's own symbol, e.g. "∞", so the text parses back to infiniteValue
 			Text = infiniteValue.ToString(CultureInfo.CurrentCulture)
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		try
 		{
@@ -272,7 +272,7 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 		{
 			Text = "15"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 		await behavior.ForceValidate(TestContext.Current.CancellationToken);
@@ -421,7 +421,7 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 		{
 			Text = value
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 		behavior.Interval = double.NaN;
@@ -487,7 +487,7 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 
@@ -509,7 +509,7 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 

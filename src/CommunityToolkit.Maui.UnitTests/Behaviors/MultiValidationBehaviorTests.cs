@@ -56,7 +56,7 @@ public class MultiValidationBehaviorTests() : BaseBehaviorTest<MultiValidationBe
 		{
 			Text = value
 		};
-		entry.Behaviors.Add(multiBehavior);
+		RunOnUIThread(() => entry.Behaviors.Add(multiBehavior));
 
 		// Act
 		await multiBehavior.ForceValidate(TestContext.Current.CancellationToken);
@@ -83,7 +83,7 @@ public class MultiValidationBehaviorTests() : BaseBehaviorTest<MultiValidationBe
 		{
 			Text = " 12 "
 		};
-		entry.Behaviors.Add(multiBehavior);
+		RunOnUIThread(() => entry.Behaviors.Add(multiBehavior));
 
 		await multiBehavior.ForceValidate(TestContext.Current.CancellationToken);
 
@@ -108,7 +108,7 @@ public class MultiValidationBehaviorTests() : BaseBehaviorTest<MultiValidationBe
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(multiBehavior);
+		RunOnUIThread(() => entry.Behaviors.Add(multiBehavior));
 
 		// Act
 
@@ -136,7 +136,7 @@ public class MultiValidationBehaviorTests() : BaseBehaviorTest<MultiValidationBe
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(multiBehavior);
+		RunOnUIThread(() => entry.Behaviors.Add(multiBehavior));
 
 		// Act
 

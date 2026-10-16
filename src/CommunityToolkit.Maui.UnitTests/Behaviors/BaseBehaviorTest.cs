@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Behaviors;
+using Nito.AsyncEx;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
@@ -73,6 +74,12 @@ public abstract class BaseBehaviorTest<TBehavior, TView> : BaseTest
 
 		view.Behaviors.Clear();
 	}
+
+	// A ValidationBehavior attached to a view that already has a value handles that value after OnAttachedTo returns: on the UI thread in an app, but on a thread-pool
+	// thread in a unit test, which has no SynchronizationContext. There it races the test on a BindableObject, which is not thread-safe.
+	protected static void RunOnUIThread(Action action) => AsyncContext.Run(action);
+
+	protected static void RunOnUIThread(Func<Task> action) => AsyncContext.Run(action);
 
 	protected sealed class MockValidationBehavior : ValidationBehavior<string>
 	{

@@ -40,7 +40,7 @@ public class UriValidationBehaviorTests() : BaseBehaviorTest<UriValidationBehavi
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 
@@ -62,7 +62,7 @@ public class UriValidationBehaviorTests() : BaseBehaviorTest<UriValidationBehavi
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 

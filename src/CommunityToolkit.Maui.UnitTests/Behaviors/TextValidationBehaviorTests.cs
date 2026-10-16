@@ -38,7 +38,7 @@ public class TextValidationBehaviorTests() : BaseBehaviorTest<TextValidationBeha
 		{
 			Text = value
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 		await behavior.ForceValidate(TestContext.Current.CancellationToken);
@@ -80,7 +80,7 @@ public class TextValidationBehaviorTests() : BaseBehaviorTest<TextValidationBeha
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 
@@ -102,7 +102,7 @@ public class TextValidationBehaviorTests() : BaseBehaviorTest<TextValidationBeha
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 
@@ -207,7 +207,7 @@ public class TextValidationBehaviorTests() : BaseBehaviorTest<TextValidationBeha
 		firstEntry.Behaviors.Remove(behavior);
 
 		var secondEntry = new Entry();
-		secondEntry.Behaviors.Add(behavior);
+		RunOnUIThread(() => secondEntry.Behaviors.Add(behavior));
 
 		behavior.MinimumLength = 1;
 

@@ -243,7 +243,7 @@ public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBe
 		{
 			Text = value
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 		await behavior.ForceValidate(TestContext.Current.CancellationToken);
@@ -271,7 +271,7 @@ public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBe
 		{
 			Text = value
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		await behavior.ForceValidate(TestContext.Current.CancellationToken);
 
@@ -289,7 +289,7 @@ public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBe
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 
@@ -311,7 +311,7 @@ public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBe
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 
@@ -334,7 +334,7 @@ public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBe
 		};
 
 		// Act 
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Assert
 		Assert.Equal(Keyboard.Email, entry.Keyboard);
@@ -358,7 +358,7 @@ public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBe
 		};
 
 		// Act 
-		editor.Behaviors.Add(behavior);
+		RunOnUIThread(() => editor.Behaviors.Add(behavior));
 
 		// Assert
 		Assert.Equal(Keyboard.Email, editor.Keyboard);
@@ -384,7 +384,7 @@ public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBe
 		};
 
 		// Act 
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Assert
 		Assert.Equal(keyboard, entry.Keyboard);
@@ -410,7 +410,7 @@ public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBe
 		};
 
 		// Act 
-		editor.Behaviors.Add(behavior);
+		RunOnUIThread(() => editor.Behaviors.Add(behavior));
 
 		// Assert
 		Assert.Equal(keyboard, editor.Keyboard);
