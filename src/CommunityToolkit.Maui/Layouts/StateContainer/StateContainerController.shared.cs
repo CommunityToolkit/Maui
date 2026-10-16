@@ -20,11 +20,19 @@ sealed class StateContainerController(Layout layout)
 	public required IList<View> StateViews { get; init; }
 
 	/// <summary>
-	/// Display the default content.
+	/// Display the default content. Does nothing while the default content is displayed.
 	/// </summary>
 	public void SwitchToContent()
 	{
 		var layout = GetLayout();
+
+		// The default content is displayed: originalContent is only captured when a state replaces it, so it is empty before the first state
+		// and misses the children added since the last state; clearing the layout here would remove them
+		if (previousState is null)
+		{
+			return;
+		}
+
 		previousState = null;
 		layout.Children.Clear();
 

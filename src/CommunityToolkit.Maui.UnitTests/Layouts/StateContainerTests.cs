@@ -90,6 +90,32 @@ public class StateContainerTests : BaseTest
 	}
 
 	[Fact]
+	public void StateContainer_EmptyStateBeforeAnyStateKeepsTheDefaultContent()
+	{
+		var defaultContent = layout.Children[0];
+
+		// For example a view model whose state property starts as string.Empty
+		StateContainer.SetCurrentState(layout, string.Empty);
+
+		Assert.Same(defaultContent, Assert.Single(layout.Children));
+	}
+
+	[Fact]
+	public void StateContainer_DefaultContentAddedAfterAStateIsKept()
+	{
+		var defaultContent = layout.Children[0];
+		var addedContent = new Label { Text = "Added" };
+
+		StateContainer.SetCurrentState(layout, StateKey.Loading);
+		StateContainer.SetCurrentState(layout, string.Empty);
+		layout.Children.Add(addedContent);
+
+		StateContainer.SetCurrentState(layout, null);
+
+		Assert.Equal([defaultContent, addedContent], layout.Children);
+	}
+
+	[Fact]
 	public void StateContainer_CanStateChangePropertyReadOnly()
 	{
 		var viewModel = new ViewModel
@@ -283,6 +309,19 @@ public class StateContainerTests : BaseTest
 		Assert.Same(defaultContent, Assert.Single(layout.Children));
 		Assert.Equal(1, defaultContent.Opacity);
 		Assert.True(StateContainer.GetCanStateChange(layout));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public async Task StateContainer_DefaultAnimation_NullStateBeforeAnyStateKeepsTheDefaultContent()
+	{
+		layout.EnableAnimations();
+		var defaultContent = (View)layout.Children[0];
+		defaultContent.EnableAnimations();
+
+		await StateContainer.ChangeStateWithAnimation(layout, null, TestContext.Current.CancellationToken);
+
+		Assert.Same(defaultContent, Assert.Single(layout.Children));
+		Assert.Equal(1, defaultContent.Opacity);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -687,6 +726,15 @@ public class StateContainerTests : BaseTest
 
 		controller.SwitchToContent();
 		label = Assert.IsType<Label>(controller.GetLayout().Children[0]);
+
+		Assert.Equal("Default", label.Text);
+	}
+
+	[Fact]
+	public void Controller_SwitchesToContentFromContentSuccess()
+	{
+		controller.SwitchToContent();
+		var label = Assert.IsType<Label>(Assert.Single(controller.GetLayout().Children));
 
 		Assert.Equal("Default", label.Text);
 	}
