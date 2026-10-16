@@ -7,6 +7,33 @@ namespace CommunityToolkit.Maui.DeviceTests;
 [Collection(TestCollections.DisableParallelization)]
 public partial class UserStoppedTypingBehaviorTests : KeyboardDismissalTestBase
 {
+	// Long enough for the test to move the focus to the other Entry before the behavior dismisses the keyboard, also on a slow device.
+	const int thresholdThatOutlastsMovingTheFocus = 2000;
+
+	[Fact]
+	public async Task AnotherInputKeepsTheFocusWhenTheUserMovesToItBeforeTheyStopTyping()
+	{
+		SetupBuilder();
+		var (entry, commandExecuted) = CreateEntryWithBehavior(shouldDismissKeyboardAutomatically: true, thresholdThatOutlastsMovingTheFocus);
+		var otherEntry = new Entry { WidthRequest = 200 };
+
+		await AttachAndRun(new VerticalStackLayout { entry, otherEntry }, async _ =>
+		{
+			await entry.OnLoadedAsync();
+			await otherEntry.OnLoadedAsync();
+			var otherPlatformView = GetPlatformView(otherEntry);
+			await FocusAsync(entry);
+
+			SetPlatformText(GetPlatformView(entry), "abc");
+			await FocusAsync(otherEntry);
+			Assert.False(commandExecuted.IsCompleted, "The behavior ran before the focus moved to the other Entry.");
+
+			Assert.Equal("abc", await commandExecuted.WaitAsync(TimeSpan.FromSeconds(5)));
+			Assert.True(otherEntry.IsFocused, "The other Entry lost the focus.");
+			Assert.True(IsPlatformViewFocused(otherPlatformView), "The platform view of the other Entry lost the focus.");
+		});
+	}
+
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
@@ -38,7 +65,7 @@ public partial class UserStoppedTypingBehaviorTests : KeyboardDismissalTestBase
 	}
 
 	// The behavior dismisses the keyboard before it runs the Command, so the tests can assert the focus once the Command has run.
-	static (Entry Entry, Task<string> CommandExecuted) CreateEntryWithBehavior(bool shouldDismissKeyboardAutomatically)
+	static (Entry Entry, Task<string> CommandExecuted) CreateEntryWithBehavior(bool shouldDismissKeyboardAutomatically, int stoppedTypingTimeThreshold = 100)
 	{
 		var commandTCS = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
 		var entry = new Entry
@@ -48,7 +75,7 @@ public partial class UserStoppedTypingBehaviorTests : KeyboardDismissalTestBase
 			{
 				new UserStoppedTypingBehavior
 				{
-					StoppedTypingTimeThreshold = 100,
+					StoppedTypingTimeThreshold = stoppedTypingTimeThreshold,
 					ShouldDismissKeyboardAutomatically = shouldDismissKeyboardAutomatically,
 					Command = new Command<string>(text => commandTCS.TrySetResult(text))
 				}

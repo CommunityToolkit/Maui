@@ -9,6 +9,29 @@ public partial class MaxLengthReachedBehaviorTests : KeyboardDismissalTestBase
 {
 	const int maxLength = 3;
 
+	// A binding can set the Text of an Entry while the user types in another one.
+	[Fact]
+	public async Task AnotherInputKeepsTheFocusWhenTheTextOfAnInputWithoutTheFocusReachesMaxLength()
+	{
+		SetupBuilder();
+		var (entry, maxLengthReached) = CreateEntryWithBehavior(shouldDismissKeyboardAutomatically: true);
+		var otherEntry = new Entry { WidthRequest = 200 };
+
+		await AttachAndRun(new VerticalStackLayout { entry, otherEntry }, async _ =>
+		{
+			await entry.OnLoadedAsync();
+			await otherEntry.OnLoadedAsync();
+			var otherPlatformView = GetPlatformView(otherEntry);
+			await FocusAsync(otherEntry);
+
+			entry.Text = "abc";
+
+			Assert.Equal("abc", await maxLengthReached.WaitAsync(TimeSpan.FromSeconds(2)));
+			Assert.True(otherEntry.IsFocused, "The other Entry lost the focus.");
+			Assert.True(IsPlatformViewFocused(otherPlatformView), "The platform view of the other Entry lost the focus.");
+		});
+	}
+
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
