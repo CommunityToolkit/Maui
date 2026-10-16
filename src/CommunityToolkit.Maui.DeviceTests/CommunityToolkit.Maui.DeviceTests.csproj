@@ -20,6 +20,12 @@
     <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">android-arm64;android-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
+  <!-- UIKit's thread checks, which the SDK keeps in Debug builds only: six tests verify that the toolkit lets UIKitThreadAccessException
+       through when it is called off the main thread, and CI runs the device tests in Release. -->
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
+    <CheckForIllegalCrossThreadCalls>true</CheckForIllegalCrossThreadCalls>
+  </PropertyGroup>
+
   <Import Project="..\CommunityToolkit.Maui.DeviceTests.Runners\CommunityToolkit.Maui.DeviceTests.Runners.props" />
 
   <PropertyGroup>
