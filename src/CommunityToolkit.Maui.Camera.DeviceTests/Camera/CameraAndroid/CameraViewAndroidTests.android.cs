@@ -424,9 +424,12 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 			SetPrivateField(host.Manager, "imageCallback", CreateImageCallbackOf(new CameraView()));
 			try
 			{
-				using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
+				using var cancellation = new CancellationTokenSource();
+				var capture = host.View.CaptureImage(cancellation.Token);
+				// The timer starts once the capture waits for its image, so the token cannot expire before the capture began.
+				cancellation.CancelAfter(TimeSpan.FromMilliseconds(500));
 
-				await Assert.ThrowsAnyAsync<OperationCanceledException>(() => host.View.CaptureImage(cancellation.Token).WaitAsync(CameraTimeout));
+				await Assert.ThrowsAnyAsync<OperationCanceledException>(() => capture.WaitAsync(CameraTimeout));
 			}
 			finally
 			{
@@ -447,8 +450,12 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 			SetPrivateField(host.Manager, "imageCallback", CreateImageCallbackOf(new CameraView()));
 			try
 			{
-				using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
-				await Assert.ThrowsAnyAsync<OperationCanceledException>(() => host.View.CaptureImage(cancellation.Token).WaitAsync(CameraTimeout));
+				using var cancellation = new CancellationTokenSource();
+				var capture = host.View.CaptureImage(cancellation.Token);
+				// The timer starts once the capture waits for its image, so the token cannot expire before the capture began.
+				cancellation.CancelAfter(TimeSpan.FromMilliseconds(500));
+
+				await Assert.ThrowsAnyAsync<OperationCanceledException>(() => capture.WaitAsync(CameraTimeout));
 			}
 			finally
 			{

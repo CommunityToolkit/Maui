@@ -110,10 +110,14 @@ public class CameraManagerApplePermissionTests : CameraHandlerTestBase
 			scope.Manager.CreatePlatformView();
 			using var destination = new MemoryStream();
 			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
-			using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(300));
+			using var cancellationTokenSource = new CancellationTokenSource();
 
 			// The session is not running, so the movie output never reports that it finished.
-			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scope.Manager.StopVideoRecording(cancellationTokenSource.Token));
+			var stop = scope.Manager.StopVideoRecording(cancellationTokenSource.Token);
+			// The timer starts once the stop waits for the movie, so the token cannot expire before the stop began.
+			cancellationTokenSource.CancelAfter(TimeSpan.FromMilliseconds(300));
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => stop);
 
 			Assert.Equal(0, destination.Length);
 			Assert.False(scope.Access.VideoRecordingFinalizeTcs?.Task.IsCompleted);

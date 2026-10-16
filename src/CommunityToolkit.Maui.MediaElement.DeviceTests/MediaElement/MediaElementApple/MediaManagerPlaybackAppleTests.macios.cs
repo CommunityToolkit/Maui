@@ -251,11 +251,13 @@ public class MediaManagerPlaybackAppleTests : AppleMediaElementTestBase
 		{
 			var manager = handler.Manager!;
 			await LoadAsync(mediaElement, handler, ResourceSource(VideoResource));
-			using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(300));
+			using var cancellation = new CancellationTokenSource();
 
 			// No seekable range contains the position (the end of a range is exclusive). Whatever the manager does with such a position,
 			// the cancellation token must end the call.
 			var seek = manager.Seek(TimeSpan.FromMilliseconds(positionInMilliseconds), cancellation.Token);
+			// The timer starts once the seek runs, so the token cannot expire before the seek began.
+			cancellation.CancelAfter(TimeSpan.FromMilliseconds(300));
 			var exception = await Record.ExceptionAsync(() => seek.WaitAsync(TimeSpan.FromSeconds(5)));
 
 			Assert.IsNotType<TimeoutException>(exception);
@@ -449,9 +451,12 @@ public class MediaManagerPlaybackAppleTests : AppleMediaElementTestBase
 			// The player never reports the result, so only the requests count; the token ends the call.
 			var player = new AppleFakeAVPlayer { StatusOverride = AVPlayerStatus.ReadyToPlay, UseCurrentItemOverride = true, CurrentItemOverride = item, HoldSeekCompletion = true };
 			manager.NativePlayer = player;
-			using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(300));
+			using var cancellation = new CancellationTokenSource();
+			var seek = manager.Seek(TimeSpan.FromMilliseconds(1500), cancellation.Token);
+			// The timer starts once the seek waits for the player: a token that expired first would end the seek before it reached the player.
+			cancellation.CancelAfter(TimeSpan.FromMilliseconds(300));
 
-			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => manager.Seek(TimeSpan.FromMilliseconds(1500), cancellation.Token).WaitAsync(TimeSpan.FromSeconds(5)));
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => seek.WaitAsync(TimeSpan.FromSeconds(5)));
 
 			Assert.Equal(1.5, Assert.Single(player.SeekRequests).Seconds, precision: 3);
 		});
@@ -472,9 +477,12 @@ public class MediaManagerPlaybackAppleTests : AppleMediaElementTestBase
 			};
 			var player = new AppleFakeAVPlayer { StatusOverride = AVPlayerStatus.ReadyToPlay, UseCurrentItemOverride = true, CurrentItemOverride = item, HoldSeekCompletion = true };
 			manager.NativePlayer = player;
-			using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(300));
+			using var cancellation = new CancellationTokenSource();
+			var seek = manager.Seek(TimeSpan.FromSeconds(1), cancellation.Token);
+			// The timer starts once the seek waits for the player: a token that expired first would end the seek before it reached the player.
+			cancellation.CancelAfter(TimeSpan.FromMilliseconds(300));
 
-			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => manager.Seek(TimeSpan.FromSeconds(1), cancellation.Token));
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => seek);
 
 			Assert.Equal(1.0, Assert.Single(player.SeekRequests).Seconds, precision: 3);
 		});
