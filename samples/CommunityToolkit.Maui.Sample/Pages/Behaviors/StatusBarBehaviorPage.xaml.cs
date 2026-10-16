@@ -44,6 +44,13 @@ public partial class StatusBarBehaviorPage : BasePage<StatusBarBehaviorViewModel
 		modalPageButton.Clicked -= HandleModalButtonClicked;
 		modalPageButton.Clicked += async (_, _) => await Shell.Current.Navigation.PopModalAsync();
 
+		// The implicit Page style makes every Page Transparent on Windows, so that the Mica backdrop of the window shows through it. On Windows, .NET MAUI keeps
+		// the Page below a modal Page that has a BackgroundColor on screen, where it shows through the Transparent modal Page: without one, the modal Page replaces it
+		if (OperatingSystem.IsWindows())
+		{
+			statusBarBehaviorModelPage.SetValue(BackgroundColorProperty, null);
+		}
+
 		await Shell.Current.Navigation.PushModalAsync(statusBarBehaviorModelPage);
 	}
 
