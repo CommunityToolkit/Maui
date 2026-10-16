@@ -24,7 +24,7 @@ public sealed class VisibleFrame
 
 	public bool ShowsKeyboard => bottomWithoutKeyboard - Bottom(view) > minimumKeyboardHeight;
 
-	// A test cannot rely on the one before it for the baseline: that one can leave the soft keyboard showing, or still on its way up.
+	// A test cannot rely on the one before it for the baseline: a soft keyboard that one asked for can still come up after this test started.
 	public static async Task<VisibleFrame> RecordWithoutKeyboardAsync(AView view)
 	{
 		Assert.True(await SoftKeyboardHelpers.HideWhenShowingAsync(), $"The soft keyboard was still showing {SoftKeyboardHelpers.Timeout} ms after it was asked to hide, so no visible frame without keyboard can be recorded: {SoftKeyboardHelpers.Describe()}.");

@@ -50,8 +50,15 @@ static class SoftKeyboardHelpers
 
 	public static Task<bool> HideWhenShowingAsync() => WaitUntilHiddenAsync(requestEvenWhenNothingShows: false);
 
-	public static async Task EnsureHiddenAsync() =>
-		Assert.True(await HideAsync(), $"The soft keyboard could not be hidden within {Timeout} ms: {Describe()}.");
+	// The tests call this from their own thread and the description reads the window's views, so it is made on the UI thread, and only when
+	// the keyboard did not hide.
+	public static async Task EnsureHiddenAsync()
+	{
+		if (!await HideAsync())
+		{
+			Assert.Fail($"The soft keyboard could not be hidden within {Timeout} ms: {await TestDispatcher.Current.DispatchAsync(Describe)}.");
+		}
+	}
 
 	public static string Describe() => $"{VisibleFrame.Describe(DecorView)}, the window insets {(InsetsShowKeyboard(DecorView) ? "show" : "do not show")} the keyboard";
 
@@ -86,10 +93,8 @@ static class SoftKeyboardHelpers
 		}, Timeout, pollInterval);
 	});
 
-	// A keyboard can only be hidden through the view that the input method manager serves, and on Android 9 that can be a view that already left
-	// the window: MAUI posts the focus of an Entry and its request to show the keyboard, and Android posts its check of the focus behind them,
-	// so a test that ends right after Focus removes the view before they run. Asking through the window then hides nothing. A view that is in
-	// the window and has the focus becomes the served view, so it can hide the keyboard.
+	// On Android 9 only the view that the input method manager serves can hide the keyboard, and that can be an Entry that left the window
+	// before Android handled its focus (a test that ends right after Focus). A focused view that is in the window becomes the served view.
 	static void RequestHide()
 	{
 		var activity = RunnerActivity;
@@ -109,7 +114,7 @@ static class SoftKeyboardHelpers
 		}
 		finally
 		{
-			// Cleared first, so that removing the view does not hand the focus to the first focusable view of the window
+			// Cleared first, so that removing the view does not hand the focus to the first focusable view of the window.
 			servingView.ClearFocus();
 			content.RemoveView(servingView);
 		}

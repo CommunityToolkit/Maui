@@ -4,8 +4,8 @@ namespace CommunityToolkit.Maui.DeviceTests;
 [Collection(TestCollections.DisableParallelization)]
 public class SoftKeyboardHelpersTests : CommunityToolkitHandlerTestBase
 {
-	// The CI failure behind SoftKeyboardHelpers: the test ends before Android handled the focus of its Entry, so the keyboard is requested for a
-	// view that already left the window, and the keyboard of that view cannot be hidden through the window.
+	// Android 9 shows the keyboard for an Entry that left the window before Android handled its focus, and a request through the window cannot
+	// hide it, so the next test failed with "A soft keyboard was showing when the visible frame without keyboard was recorded."
 	[Fact]
 	public async Task HideAsyncHidesTheKeyboardOfAViewThatLeftTheWindowBeforeAndroidHandledItsFocus()
 	{
@@ -19,7 +19,7 @@ public class SoftKeyboardHelpersTests : CommunityToolkitHandlerTestBase
 			await entry.OnLoadedAsync();
 			entry.Focus();
 
-			// The focus runs now, and what it posts waits behind this continuation, which ends the test and removes the view
+			// The focus runs now, and what it posts waits behind this continuation, which ends the test and removes the view.
 			await Task.Yield();
 		});
 
