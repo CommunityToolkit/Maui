@@ -105,7 +105,7 @@ public abstract partial class StatusBarTestBase
 				var hadLayoutNoLimits = dialog?.FlagsWhenShown.HasFlag(Android.Views.WindowManagerFlags.LayoutNoLimits) ?? AndroidSystemBars.OriginalState.HasFlag(Android.Views.WindowManagerFlags.LayoutNoLimits);
 				Assert.Equal(hadLayoutNoLimits, AndroidSystemBars.HasFlag(window, Android.Views.WindowManagerFlags.LayoutNoLimits));
 
-				// From API 35 on, the decor's fitting has no getter and sets no system UI flag
+				// From API 35 on, the decor's fitting has no getter and sets no system UI flag.
 				if (!OperatingSystem.IsAndroidVersionAtLeast(35))
 				{
 					Assert.Equal(AndroidSystemBars.LayoutStableSystemUiFlag, AndroidSystemBars.SystemUiVisibility(window) & AndroidSystemBars.LayoutStableSystemUiFlag);

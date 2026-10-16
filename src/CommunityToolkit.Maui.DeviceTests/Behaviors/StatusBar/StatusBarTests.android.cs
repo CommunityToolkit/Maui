@@ -364,8 +364,8 @@ public partial class StatusBarTests
 			var window = AndroidSystemBars.ActivityWindow;
 			var decorGroup = (Android.Views.ViewGroup)window.DecorView.RootView!;
 
-			// Start from window flags that the implementation does not set itself (LayoutNoLimits on, no system bar background): from
-			// Android 11 (API 30) on it leaves the window flags alone, whatever the color.
+			// Start from window flags that the implementation does not set itself: from Android 11 (API 30) on it leaves the window flags alone,
+			// whatever the color.
 			window.AddFlags(Android.Views.WindowManagerFlags.LayoutNoLimits);
 			window.ClearFlags(Android.Views.WindowManagerFlags.DrawsSystemBarBackgrounds);
 

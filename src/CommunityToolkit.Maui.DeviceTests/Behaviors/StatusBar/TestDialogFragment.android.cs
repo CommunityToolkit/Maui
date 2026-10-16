@@ -16,7 +16,6 @@ public sealed class TestDialogFragment : DialogFragment
 {
 	AView? embeddedContainer;
 
-	/// <summary>The flags of the dialog's window when <see cref="Show"/> returned, before a test changed them (none if the dialog had no window yet).</summary>
 	public WindowManagerFlags FlagsWhenShown { get; private set; }
 
 	public override AView? OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState) =>

@@ -275,8 +275,6 @@ public class DialogFragmentServiceTests : FragmentTestBase
 		}));
 	}
 
-	// The dialog of a modal page lays out behind every status bar color without alpha that it takes over from the activity, not only behind
-	// 0x00000000: a color that cannot be seen is transparent.
 	[Theory]
 	[InlineData(0x00FF0000u)]
 	[InlineData(0x00FFFFFFu)]
@@ -412,8 +410,6 @@ public class DialogFragmentServiceTests : FragmentTestBase
 		});
 	}
 
-	// The dialog of a modal page treats every status bar color without alpha as transparent, not only 0x00000000, for the light icons it falls
-	// back to and for its decor.
 	[Theory]
 	[InlineData(0x00FF0000u)]
 	[InlineData(0x00FFFFFFu)]

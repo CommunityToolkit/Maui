@@ -95,7 +95,7 @@ public class DefaultPopupSettingsTests : BaseViewTest
 		// Act
 		Popup popup = useGenericPopup ? new Popup<string>() : new Popup();
 
-		// Assert - the Popup keeps BackgroundColor null, so that a Style can set it (PopupStyleTests); its Border displays the default of the app's theme
+		// Assert - the Popup keeps BackgroundColor null, so that a Style can set it (PopupStyleTests)
 		Assert.Null(popup.BackgroundColor);
 
 		var popupPage = useGenericPopup ? new PopupPage<string>(popup, null) : new PopupPage(popup, null);
@@ -159,7 +159,6 @@ public class DefaultPopupSettingsTests : BaseViewTest
 	[InlineData(true, AppTheme.Dark)]
 	public void BackgroundColorDark_StyleBackgroundColor_PreservesOverrideAcrossThemeChanges(bool useGenericPopup, AppTheme initialTheme)
 	{
-		// Arrange
 		var application = Application.Current ?? throw new InvalidOperationException("Application cannot be null");
 		application.UserAppTheme = initialTheme;
 		new Options().SetPopupDefaults(new DefaultPopupSettings
@@ -173,13 +172,11 @@ public class DefaultPopupSettingsTests : BaseViewTest
 			Setters = { new Setter { Property = VisualElement.BackgroundColorProperty, Value = Colors.Green } }
 		};
 
-		// Act
 		var popupPage = useGenericPopup ? new PopupPage<string>(popup, null) : new PopupPage(popup, null);
 		CreateViewHandler<MockPageHandler>(popupPage);
 		application.OpenWindow(new Window { Page = popupPage });
 		var border = popupPage.Content.PopupBorder;
 
-		// Assert - the theme-aware default does not take precedence over the Style
 		Assert.Equal(Colors.Green, popup.BackgroundColor);
 		Assert.Equal(Colors.Green, border.BackgroundColor);
 
@@ -187,7 +184,6 @@ public class DefaultPopupSettingsTests : BaseViewTest
 		Assert.Equal(Colors.Green, popup.BackgroundColor);
 		Assert.Equal(Colors.Green, border.BackgroundColor);
 
-		// Without the Style the Border displays the default of the app's theme again, and keeps following the theme
 		popup.Style = null;
 		Assert.Null(popup.BackgroundColor);
 		Assert.Equal(initialTheme == AppTheme.Dark ? Colors.Orange : Colors.Purple, border.BackgroundColor);
@@ -233,7 +229,7 @@ public class DefaultPopupSettingsTests : BaseViewTest
 		var popup = Assert.IsType<Popup>(border.Content, exactMatch: false);
 
 		// Assert — the background-less view falls back to the theme-aware default (resolves #3310), not transparent.
-		// The Popup keeps BackgroundColor null, so that a Style can set it (PopupStyleTests); its Border displays the default.
+		// The Popup keeps BackgroundColor null, so that a Style can set it (PopupStyleTests).
 		Assert.Null(popup.BackgroundColor);
 		Assert.Equal(initialTheme == AppTheme.Dark ? darkColor : lightColor, border.BackgroundColor);
 

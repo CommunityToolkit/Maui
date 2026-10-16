@@ -37,12 +37,9 @@ public abstract partial class StatusBarTestBase
 		}
 	}
 
-	/// <summary>
-	/// <see cref="CaptureTraceWithViewControllerBasedStatusBarAppearance"/> that also records the styles that the toolkit sets for the whole app with
-	/// UIApplication.SetStatusBarStyle, instead of passing them to UIKit: the runner's Info.plist keeps view controller-based status bar appearance, so
-	/// UIKit would ignore them. <paramref name="isAppliedByUIKit"/> is what UIKit reports back: true in an app built with an iOS SDK before 27.0 whose
-	/// Info.plist sets the key to false, false in an app built with a later SDK.
-	/// </summary>
+	// The styles of the whole app are recorded instead of passed to UIKit: the runner's Info.plist keeps view controller-based status bar appearance, so
+	// UIKit would ignore them. isAppliedByUIKit is what UIKit reports back: true in an app built with an iOS SDK before 27.0 whose Info.plist sets the
+	// key to false, false in an app built with a later SDK.
 	private protected static (CapturingTraceListener Listener, List<UIStatusBarStyle> StylesOfTheWholeApp) CaptureStylesOfTheWholeApp(bool? viewControllerBasedStatusBarAppearance, bool isAppliedByUIKit, Action action)
 	{
 		var trySetApplicationStatusBarStyle = StatusBar.TrySetApplicationStatusBarStyle;

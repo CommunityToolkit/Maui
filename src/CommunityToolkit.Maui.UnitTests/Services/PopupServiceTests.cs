@@ -762,7 +762,7 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable, IDisposable
 	public TimeSpan DisplayDuration { get; }
 
 	// A test that shows this popup without awaiting its result awaits this before it ends. If the popup closes itself during a later test, the Shell
-	// navigation of that close resets the static routes .NET MAUI keeps for the later test's Shell, which then fails to navigate and crashes the test process
+	// navigation of that close resets the static routes .NET MAUI keeps for the later test's Shell, which then fails to navigate and crashes the test process.
 	public Task WaitUntilClosedAsync(CancellationToken token) => popupClosedTCS.Task.WaitAsync(token);
 
 	public void Dispose()

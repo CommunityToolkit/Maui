@@ -465,7 +465,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? DefaultConvertReturnValue : value;
 		}
 
-		// values: Popup.BackgroundColor, then the default background color of the app's current theme (AppThemeColor)
 		sealed class BackgroundColorConverter : IMultiValueConverter
 		{
 			public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture) => values switch

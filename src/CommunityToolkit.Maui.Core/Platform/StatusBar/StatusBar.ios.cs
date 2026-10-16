@@ -109,10 +109,7 @@ static partial class StatusBar
 	// The device tests replace it to show what each value of UIViewControllerBasedStatusBarAppearance does.
 	internal static Func<NSObject?> ReadViewControllerBasedStatusBarAppearance { get; set; } = static () => NSBundle.MainBundle.ObjectForInfoDictionary(viewControllerBasedStatusBarAppearanceKey);
 
-	/// <summary>
-	/// Sets the status bar style of the whole app with UIApplication.SetStatusBarStyle and returns whether UIKit applied it to the status bar of every
-	/// scene. The device tests replace it: UIKit ignores the call in the runner, whose Info.plist keeps view controller-based status bar appearance.
-	/// </summary>
+	// The device tests replace it: UIKit ignores the call in the runner, whose Info.plist keeps view controller-based status bar appearance.
 	internal static Func<UIStatusBarStyle, bool> TrySetApplicationStatusBarStyle { get; set; } = static uiStatusBarStyle =>
 	{
 		UIApplication.SharedApplication.SetStatusBarStyle(uiStatusBarStyle, false);
@@ -121,10 +118,7 @@ static partial class StatusBar
 		return UIApplication.SharedApplication.Windows.All(window => window.WindowScene?.StatusBarManager is not UIStatusBarManager statusBarManager || statusBarManager.StatusBarStyle == uiStatusBarStyle);
 	};
 
-	/// <summary>
-	/// Whether the app's Info.plist sets UIViewControllerBasedStatusBarAppearance to false (a &lt;false/&gt; value is an NSNumber), the setup that
-	/// StatusBarBehavior documents for .NET 10: UIKit then ignores the style that the view controllers return.
-	/// </summary>
+	// A <false/> value is an NSNumber. False is the setup that StatusBarBehavior documents for .NET 10.
 	internal static bool IsViewControllerBasedStatusBarAppearanceOff => ReadViewControllerBasedStatusBarAppearance() is NSNumber { BoolValue: false };
 
 	// The view controllers of .NET MAUI return the style of their window's StatusBarTheme. UIKit takes the style from them unless Info.plist turns
