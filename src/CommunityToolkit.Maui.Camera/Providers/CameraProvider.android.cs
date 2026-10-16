@@ -3,6 +3,7 @@ using Android.Content;
 using Android.Graphics;
 using Android.Hardware.Camera2;
 using Android.Hardware.Camera2.Params;
+using Android.Runtime;
 using AndroidX.Camera.Camera2.InterOp;
 using AndroidX.Camera.Core;
 using AndroidX.Camera.Lifecycle;
@@ -80,12 +81,17 @@ partial class CameraProvider
 						}
 					}
 
+					// JavaCast, not a C# cast: nothing references the binding of CameraX's ZoomState implementation, so trimming removes it. In a
+					// trimmed (Release) app the value is then a plain Java.Lang.Object, which a cast to IZoomState turns into null, so every camera
+					// reported a zoom range of 1 to 1 (https://github.com/CommunityToolkit/Maui/issues/2389).
+					var zoomState = cameraXInfo.ZoomState?.Value?.JavaCast<IZoomState>();
+
 					var cameraInfo = new CameraInfo(name,
 						camera2Info.CameraId ?? throw new InvalidOperationException("Unable to retrieve Camera ID"),
 						position,
 						cameraXInfo.HasFlashUnit,
-						(cameraXInfo.ZoomState?.Value as IZoomState)?.MinZoomRatio ?? 1.0f,
-						(cameraXInfo.ZoomState?.Value as IZoomState)?.MaxZoomRatio ?? 1.0f,
+						zoomState?.MinZoomRatio ?? 1.0f,
+						zoomState?.MaxZoomRatio ?? 1.0f,
 						supportedResolutions,
 						cameraXInfo.CameraSelector ?? throw new InvalidOperationException($"Unable to retrieve {nameof(ICameraInfo.CameraSelector)}"));
 
