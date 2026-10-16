@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using CommunityToolkit.Maui.ImageSources;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Handlers;
@@ -46,6 +47,14 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 		BorderWidthAlone,
 		StrokeThickness,
 		CornerRadius,
+	}
+
+	public enum EmptyImageSourceKind
+	{
+		File,
+		Uri,
+		Stream,
+		Gravatar,
 	}
 
 	public enum FrameSide
@@ -421,6 +430,85 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
+	// .NET MAUI reports the load of an empty image source as a failure on Android and as a success on the other platforms.
+	[Theory]
+	[InlineData(EmptyImageSourceKind.File)]
+	[InlineData(EmptyImageSourceKind.Uri)]
+	[InlineData(EmptyImageSourceKind.Stream)]
+	[InlineData(EmptyImageSourceKind.Gravatar)]
+	public async Task TextIsShownWhenTheImageSourceIsEmpty(EmptyImageSourceKind kind)
+	{
+		SetupBuilder();
+		var avatar = await CreateAvatarViewAsync(strokeThickness: 1, padding: new Thickness(1), withImage: false, avatar =>
+		{
+			avatar.Text = "AB";
+			avatar.ImageSource = CreateEmptyImageSource(kind);
+		});
+
+		await AttachAndRun(avatar, async handler =>
+		{
+			await LoadedAndLaidOutAsync(avatar);
+
+			await AssertNativeContentAsync(handler, NativeContent.Label);
+			Assert.Equal("AB", Assert.IsType<Label>(avatar.Content).Text);
+		});
+	}
+
+	// A binding fills the source after the first load, as a person typing the Email of a bound GravatarImageSource does.
+	[Fact]
+	public async Task ImageIsShownWhenAnEmptyImageSourceGetsItsStream()
+	{
+		SetupBuilder();
+		var viewModel = new ImageStreamViewModel();
+		var avatar = await CreateAvatarViewAsync(strokeThickness: 1, padding: new Thickness(1), withImage: false, avatar =>
+		{
+			var source = new StreamImageSource();
+			source.SetBinding(StreamImageSource.StreamProperty, new Binding(nameof(ImageStreamViewModel.Stream)));
+
+			avatar.Text = "AB";
+			avatar.ImageSource = source;
+			avatar.BindingContext = viewModel;
+		});
+
+		await AttachAndRun(avatar, async handler =>
+		{
+			await LoadedAndLaidOutAsync(avatar);
+			await AssertNativeContentAsync(handler, NativeContent.Label);
+
+			viewModel.Stream = RedImageStreamAsync;
+
+			await AssertPixelAsync(handler, avatarSize / 2, avatarSize / 2, Colors.Red);
+			await AssertNativeContentAsync(handler, NativeContent.Image);
+		});
+	}
+
+	[Fact]
+	public async Task TextIsShownWhenTheImageSourceBecomesEmpty()
+	{
+		SetupBuilder();
+		var viewModel = new ImageStreamViewModel { Stream = RedImageStreamAsync };
+		var avatar = await CreateAvatarViewAsync(strokeThickness: 1, padding: new Thickness(1), withImage: false, avatar =>
+		{
+			var source = new StreamImageSource();
+			source.SetBinding(StreamImageSource.StreamProperty, new Binding(nameof(ImageStreamViewModel.Stream)));
+
+			avatar.Text = "AB";
+			avatar.ImageSource = source;
+			avatar.BindingContext = viewModel;
+		});
+
+		await AttachAndRun(avatar, async handler =>
+		{
+			await LoadedAndLaidOutAsync(avatar);
+			await AssertPixelAsync(handler, avatarSize / 2, avatarSize / 2, Colors.Red);
+
+			viewModel.Stream = null;
+
+			await AssertNativeContentAsync(handler, NativeContent.Label);
+			Assert.Equal("AB", Assert.IsType<Label>(avatar.Content).Text);
+		});
+	}
+
 	// The text would show through the transparent parts of an image.
 	[Fact]
 	public async Task ImageThatLoadsIsShownWithoutTheText()
@@ -702,6 +790,15 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 
 		return avatar;
 	}
+
+	static ImageSource CreateEmptyImageSource(EmptyImageSourceKind kind) => kind switch
+	{
+		EmptyImageSourceKind.File => new FileImageSource(),
+		EmptyImageSourceKind.Uri => new UriImageSource(),
+		EmptyImageSourceKind.Stream => new StreamImageSource(),
+		EmptyImageSourceKind.Gravatar => new GravatarImageSource(),
+		_ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
+	};
 
 	static ImageSource CreateRedImage() => ImageSource.FromStream(() => new MemoryStream(Convert.FromBase64String(redPngBase64)));
 

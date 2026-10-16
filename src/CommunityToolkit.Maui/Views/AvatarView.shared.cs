@@ -117,8 +117,10 @@ public partial class AvatarView : Border, IAvatarView
 	/// Gets or sets a value of the control image source property.
 	/// </summary>
 	/// <remarks>
-	/// While an image source is set, the control shows the image instead of its <see cref="Text"/>. When the image source fails to load (for example a
-	/// URL that cannot be reached), the control shows its <see cref="Text"/> again, until the image source loads or another image source is set.
+	/// While an image source is set, the control shows the image instead of its <see cref="Text"/>. When the image source is empty (its
+	/// <see cref="Microsoft.Maui.Controls.ImageSource.IsEmpty"/> is <see langword="true"/>, for example a <see cref="UriImageSource"/> without a
+	/// <see cref="UriImageSource.Uri"/>) or fails to load (for example a URL that cannot be reached), the control shows its <see cref="Text"/>
+	/// again, until the image source is not empty and loads, or another image source is set.
 	/// </remarks>
 	[TypeConverter(typeof(ImageSourceConverter))]
 	[BindableProperty(PropertyChangedMethodName = nameof(OnImageSourcePropertyChanged))]
@@ -134,7 +136,7 @@ public partial class AvatarView : Border, IAvatarView
 
 	TextAlignment ITextAlignment.HorizontalTextAlignment => avatarLabel.HorizontalTextAlignment;
 
-	bool IImageSource.IsEmpty => avatarImage.Source is null;
+	bool IImageSource.IsEmpty => avatarImage.Source is null || avatarImage.Source.IsEmpty;
 
 	bool IImageSourcePart.IsAnimationPlaying => avatarImage.IsAnimationPlaying;
 
@@ -294,6 +296,8 @@ public partial class AvatarView : Border, IAvatarView
 		avatarImage.Source = newValue;
 		if (newValue is not null)
 		{
+			// An empty source gets the image too: an image that was never the Content has no handler to load the source when it stops being empty
+			// (the Email of a GravatarImageSource, for example), and the text replaces the image once the load is reported.
 			RefreshAvatarImage();
 			Content = avatarImage;
 		}
@@ -309,7 +313,17 @@ public partial class AvatarView : Border, IAvatarView
 		var loadedSource = avatarImage.Source;
 		PostContentChange(() =>
 		{
-			if (loadedSource is not null && ReferenceEquals(avatarImage.Source, loadedSource) && ReferenceEquals(Content, avatarLabel))
+			if (!ReferenceEquals(avatarImage.Source, loadedSource))
+			{
+				return;
+			}
+
+			// iOS, Mac Catalyst and Windows report the load of an empty source as a success, and Android as a failure: the text shows on all of them.
+			if (loadedSource is null || loadedSource.IsEmpty)
+			{
+				Content = avatarLabel;
+			}
+			else if (ReferenceEquals(Content, avatarLabel))
 			{
 				RefreshAvatarImage();
 				Content = avatarImage;

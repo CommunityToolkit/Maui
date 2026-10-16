@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.ImageSources;
 using FluentAssertions;
 using Microsoft.Maui.Controls.Shapes;
 using Xunit;
@@ -11,6 +12,14 @@ public class AvatarViewImageTests : BaseViewTest
 	public AvatarViewImageTests()
 	{
 		Assert.IsType<IAvatarView>(new Maui.Views.AvatarView(), exactMatch: false);
+	}
+
+	public enum EmptyImageSourceKind
+	{
+		File,
+		Uri,
+		Stream,
+		Gravatar,
 	}
 
 	[Fact]
@@ -289,6 +298,52 @@ public class AvatarViewImageTests : BaseViewTest
 		avatarView.Content.Should().BeOfType<Label>();
 	}
 
+	// .NET MAUI reports the load of an empty image source as a success on iOS, Mac Catalyst and Windows, and as a failure on Android.
+	[Theory]
+	[InlineData(EmptyImageSourceKind.File)]
+	[InlineData(EmptyImageSourceKind.Uri)]
+	[InlineData(EmptyImageSourceKind.Stream)]
+	[InlineData(EmptyImageSourceKind.Gravatar)]
+	public void TextIsShownWhenTheLoadOfAnEmptyImageSourceSucceeds(EmptyImageSourceKind kind)
+	{
+		var avatarView = new Maui.Views.AvatarView { Text = "GL", ImageSource = CreateEmptyImageSource(kind) };
+		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+
+		ReportLoadSuccess(image);
+
+		avatarView.Content.Should().BeOfType<Label>().Which.Text.Should().Be("GL");
+	}
+
+	[Fact]
+	public void ImageIsShownWhenTheEmptyImageSourceGetsAnUri()
+	{
+		var source = new UriImageSource();
+		var avatarView = new Maui.Views.AvatarView { Text = "GL", ImageSource = source };
+		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+		ReportLoadSuccess(image);
+		avatarView.Content.Should().BeOfType<Label>();
+		source.Uri = new Uri("https://aka.ms/campus.jpg");
+
+		ReportLoadSuccess(image);
+
+		avatarView.Content.Should().BeSameAs(image);
+	}
+
+	[Fact]
+	public void TextIsShownWhenTheImageSourceBecomesEmpty()
+	{
+		var source = new UriImageSource { Uri = new Uri("https://aka.ms/campus.jpg") };
+		var avatarView = new Maui.Views.AvatarView { Text = "GL", ImageSource = source };
+		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+		ReportLoadSuccess(image);
+		avatarView.Content.Should().BeSameAs(image);
+		source.ClearValue(UriImageSource.UriProperty);
+
+		ReportLoadSuccess(image);
+
+		avatarView.Content.Should().BeOfType<Label>();
+	}
+
 	// After a failed load the text replaces the image, which leaves the tree, where an Element loses the BindingContext it inherits: the bindings
 	// of the image source keep working, so a source that a binding changes (the Email of a GravatarImageSource, for example) loads and shows the image.
 	[Fact]
@@ -319,6 +374,15 @@ public class AvatarViewImageTests : BaseViewTest
 		source.BindingContext.Should().BeSameAs(otherViewModel);
 		source.Uri.Should().Be(otherViewModel.Uri);
 	}
+
+	static ImageSource CreateEmptyImageSource(EmptyImageSourceKind kind) => kind switch
+	{
+		EmptyImageSourceKind.File => new FileImageSource(),
+		EmptyImageSourceKind.Uri => new UriImageSource(),
+		EmptyImageSourceKind.Stream => new StreamImageSource(),
+		EmptyImageSourceKind.Gravatar => new GravatarImageSource(),
+		_ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
+	};
 
 	static Maui.Views.AvatarView CreateAvatarViewWithABoundImageSource(AvatarViewModel viewModel, out UriImageSource source)
 	{

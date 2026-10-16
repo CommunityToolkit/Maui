@@ -55,6 +55,16 @@ public class AvatarViewInterfaceTests : BaseViewTest
 	}
 
 	[Fact]
+	public void IImageSourceIsEmptyWhenTheImageSourceIsEmpty()
+	{
+		var avatarView = new Maui.Views.AvatarView
+		{
+			ImageSource = new UriImageSource(),
+		};
+		((IImageSource)avatarView).IsEmpty.Should().BeTrue();
+	}
+
+	[Fact]
 	public void IImageIsOpaque()
 	{
 		var avatarView = new Maui.Views.AvatarView();
