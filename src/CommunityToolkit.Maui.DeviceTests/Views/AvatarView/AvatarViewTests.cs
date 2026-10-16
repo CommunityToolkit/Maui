@@ -534,7 +534,6 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 			await AssertPixelAsync(handler, avatarSize / 2, avatarSize / 2, Colors.Red);
 
 			replacedLoad.SetException(new InvalidOperationException("The server answered after the image source was replaced."));
-			// Nothing tells when the failure was reported, and a state that did not change cannot be polled.
 			await Task.Delay(failureReportTimeout);
 
 			await AssertPixelAsync(handler, avatarSize / 2, avatarSize / 2, Colors.Red);

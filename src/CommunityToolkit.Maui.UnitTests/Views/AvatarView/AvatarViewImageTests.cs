@@ -483,6 +483,7 @@ public class AvatarViewImageTests : BaseViewTest
 			}
 		}
 	}
+
 	sealed class RecordingViewHandler : IViewHandler
 	{
 		public List<string> UpdatedProperties { get; } = [];
