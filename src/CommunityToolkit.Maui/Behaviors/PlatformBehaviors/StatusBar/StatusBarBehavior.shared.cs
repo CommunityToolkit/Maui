@@ -50,7 +50,7 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 	/// iOS, .NET 11: the behavior sets <c>Window.StatusBarTheme</c> of its page's window, and the view controllers of .NET MAUI return the matching
 	/// style: <see cref="StatusBarStyle.LightContent"/> sets <c>StatusBarTheme.Dark</c>, <see cref="StatusBarStyle.DarkContent"/> sets
 	/// <c>StatusBarTheme.Light</c> and <see cref="StatusBarStyle.Default"/> sets <c>StatusBarTheme.Default</c>. It does so when it applies the style
-	/// (see <see cref="ApplyOn"/>) and when the style changes while it is attached. The other windows of the app keep their style, and a style that
+	/// (see <see cref="ApplyOn"/>) and when the style changes while it is attached. The other windows of the app keep their theme, and a style that
 	/// changes while the behavior is not attached to a page of a window changes no status bar. UIKit applies the theme only when the app's Info.plist
 	/// does not set <c>UIViewControllerBasedStatusBarAppearance</c> to false. With false (the .NET 10 setup of this behavior) the behavior also applies
 	/// the style to the whole app with UIApplication.SetStatusBarStyle, as on .NET 10, when it sets the theme: UIKit applies it in an app built with an
@@ -178,8 +178,9 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 		}
 	}
 
-	// iOS, .NET 11: the style of the status bar of the page's window only (see the remarks of StatusBarStyle). The style is mapped first, so that an
-	// undefined StatusBarStyle throws NotSupportedException whether or not the behavior is attached, as StatusBar.SetStyle does.
+	// iOS, .NET 11: the behavior sets the theme of its page's window only, where StatusBar.SetStyle sets the theme of every window (see the remarks of
+	// StatusBarStyle). The style is mapped first, so that an undefined StatusBarStyle throws NotSupportedException whether or not the behavior is
+	// attached, as StatusBar.SetStyle does.
 	void ApplyStatusBarStyle()
 	{
 #if IOS && NET11_0_OR_GREATER
