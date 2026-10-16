@@ -406,11 +406,11 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 		}
 	}
 
-	// ResetValidationTokenSource cancels the token source of the validation it replaces, and the newer validation then owns IsRunning
-	// A validation cancelled through the caller's token has no newer validation, so it has to reset IsRunning itself
+	// A newer validation that replaced this one in validationTokenSource owns IsRunning; otherwise, as after a cancellation through the caller's token, nothing else resets it
+	// Checking tokenSource.IsCancellationRequested is not enough: a newer validation cancels nothing when an older validation that finished has already cleared validationTokenSource
 	void StopRunningUnlessSuperseded(CancellationTokenSource tokenSource)
 	{
-		if (tokenSource.IsCancellationRequested)
+		if (validationTokenSource != tokenSource)
 		{
 			return;
 		}

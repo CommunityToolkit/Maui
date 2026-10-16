@@ -197,13 +197,13 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 			await cts.CancelAsync();
 			behavior.CompleteAll(isValid: false);
 
-			try
+			if (cancellationHandling is CancellationHandling.ThrowsOperationCanceledException)
+			{
+				await Assert.ThrowsAsync<OperationCanceledException>(async () => await forceValidateTask);
+			}
+			else
 			{
 				await forceValidateTask;
-			}
-			catch (OperationCanceledException)
-			{
-				// A validator that throws OperationCanceledException surfaces it to the caller, and this test is about IsRunning, not about that exception
 			}
 
 			Assert.False(behavior.IsRunning);
@@ -295,6 +295,49 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 				Assert.True(behavior.IsRunning);
 
 				behavior.Complete(validationIndex: 1, isValid: true);
+
+				Assert.False(behavior.IsRunning);
+			}
+			finally
+			{
+				behavior.CompleteAll(isValid: true);
+			}
+		});
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public void IsRunning_StaysTrue_WhenForceValidateIsCancelledWhileANewerValidationRuns_AfterAnOlderValidationFinished()
+	{
+		var entry = new Entry();
+		var behavior = new GatedValidationBehavior(CancellationHandling.IgnoresToken)
+		{
+			Flags = ValidationFlags.ValidateOnValueChanged
+		};
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+
+		RunOnUIThread(async () =>
+		{
+			entry.Behaviors.Add(behavior);
+
+			try
+			{
+				var olderForceValidateTask = behavior.ForceValidate(TestContext.Current.CancellationToken);
+				var forceValidateTask = behavior.ForceValidate(cts.Token);
+
+				// The superseded older validation clears validationTokenSource when it finishes, so the newer validation below does not cancel the token source of forceValidateTask
+				behavior.Complete(validationIndex: 0, isValid: true);
+				await olderForceValidateTask;
+
+				entry.Text = "newer";
+				Assert.Equal(3, behavior.ValidationCount);
+
+				await cts.CancelAsync();
+				behavior.Complete(validationIndex: 1, isValid: false);
+				await forceValidateTask;
+
+				Assert.True(behavior.IsRunning);
+
+				behavior.Complete(validationIndex: 2, isValid: true);
 
 				Assert.False(behavior.IsRunning);
 			}
