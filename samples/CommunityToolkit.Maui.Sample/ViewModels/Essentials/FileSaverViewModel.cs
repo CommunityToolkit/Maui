@@ -95,9 +95,16 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 		using var client = new HttpClient();
 
 		const string communityToolkitNuGetUrl = "https://www.nuget.org/api/v2/package/CommunityToolkit.Maui/5.0.0";
-		await using var stream = await client.GetStreamAsync(communityToolkitNuGetUrl, cancellationToken);
+
+		Progress = 0;
+
 		try
 		{
+			// The whole package is downloaded before the save UI opens: a failed download (no network, for example) is reported like a failed save, and
+			// no network stream is open while the person chooses where to save (a connection left idle that long can end before the file is complete, and
+			// on Android, disposing a stream that was not read to its end reads from the network, which the main thread is not allowed to do)
+			using var stream = new MemoryStream(await client.GetByteArrayAsync(communityToolkitNuGetUrl, cancellationToken));
+
 			var fileSaverInstance = new FileSaverImplementation();
 			var fileSaverResult = await fileSaverInstance.SaveAsync("communitytoolkit.maui.5.0.0.nupkg", stream, new Progress<double>(percent => Progress = percent / 100), cancellationToken);
 			fileSaverResult.EnsureSuccess();
