@@ -86,6 +86,11 @@ public partial class StatusBarBehaviorPage : BasePage<StatusBarBehaviorViewModel
 		BindingContext.AlphaSliderValue = 0;
 		BindingContext.IsDarkContentChecked = true;
 
+#if ANDROID
+		// Closing a modal runs OnNavigatedTo, which makes the status bar opaque again, and the sliders above only apply a color when their value changes.
+		Core.Platform.StatusBar.SetColor(Colors.Transparent);
+#endif
+
 		await Shell.Current.Navigation.PushModalAsync(new EdgeToEdgeModalPage());
 	}
 }
