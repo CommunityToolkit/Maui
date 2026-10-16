@@ -43,4 +43,17 @@ public partial class SelectAllTextBehaviorTests
 		Assert.Equal(0, behavior.AttachedCount);
 		Assert.Equal(0, behavior.DetachedCount);
 	}
+
+	// Focusing an input asks for its soft keyboard, which neither clearing the focus nor ending the test reliably takes back.
+	protected override async ValueTask DisposeAsyncCore()
+	{
+		try
+		{
+			await base.DisposeAsyncCore();
+		}
+		finally
+		{
+			_ = await SoftKeyboardHelpers.HideAsync();
+		}
+	}
 }

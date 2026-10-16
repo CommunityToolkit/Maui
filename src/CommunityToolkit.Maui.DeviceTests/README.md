@@ -261,6 +261,10 @@ All of these are in the `CommunityToolkit.Maui.DeviceTests` namespace.
 - `StaticPropertySnapshot`: `new StaticPropertySnapshot().Capture(typeof(X)).Restore()` for static option types.
 - Main app only, `VisualBehaviorHelpers` (app root): `WaitForPixelsAsync`, the leak helper `WaitForGCAsync` and the other helpers of the
   visual behavior tests.
+- Main app, Android only, `SoftKeyboardHelpers` and `VisibleFrame` (app root), for a test that shows the soft keyboard or focuses an input:
+  `await VisibleFrame.RecordWithoutKeyboardAsync(platformView)` hides any soft keyboard first and records the frame that
+  `ShowsKeyboard` measures against; `SoftKeyboardHelpers.HideAsync()` and `EnsureHiddenAsync()` hide a keyboard that the view which
+  opened it can no longer hide, because it has left the window.
 - `[Repeat(n)]` with a `[Theory]` and an `int` parameter repeats a test n times while you hunt flakiness. Do not commit it.
 - `[SkipOnIOSVersion(major, minor, build, reason)]`: Skipped on iOS and Mac Catalyst from that version on.
 - `Skip.If(condition, reason)`, `Skip.IfNot(condition, reason)` and `throw new SkipException(reason)`: run-time skips,

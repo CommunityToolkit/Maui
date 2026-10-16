@@ -1,7 +1,6 @@
 using Android.Content;
 using Android.Views.InputMethods;
 using Android.Widget;
-using AndroidX.Core.View;
 using CommunityToolkit.Maui.Core.Platform;
 using Microsoft.Maui.Handlers;
 using static CommunityToolkit.Maui.DeviceTests.AssertHelpers;
@@ -12,7 +11,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 public partial class KeyboardExtensionsTests
 {
-	const int imeTimeout = 5000;
+	const int imeTimeout = SoftKeyboardHelpers.Timeout;
 
 	[Theory]
 	[InlineData(TextInputKind.Entry)]
@@ -31,7 +30,7 @@ public partial class KeyboardExtensionsTests
 			var platformView = (AView)handler.PlatformView!;
 			Assert.False(view.IsFocused, "The view is already focused: this test is about the unfocused path.");
 			Assert.False(input.IsSoftKeyboardShowing());
-			var frame = VisibleFrame.RecordWithoutKeyboard(platformView);
+			var frame = await VisibleFrame.RecordWithoutKeyboardAsync(platformView);
 
 			try
 			{
@@ -43,7 +42,7 @@ public partial class KeyboardExtensionsTests
 			}
 			finally
 			{
-				await HideAndWait(platformView);
+				await SoftKeyboardHelpers.HideAsync();
 			}
 		});
 	}
@@ -64,7 +63,7 @@ public partial class KeyboardExtensionsTests
 			await view.OnLoadedAsync();
 			var input = (ITextInput)view;
 			var platformView = (AView)handler.PlatformView!;
-			var frame = VisibleFrame.RecordWithoutKeyboard(platformView);
+			var frame = await VisibleFrame.RecordWithoutKeyboardAsync(platformView);
 
 			try
 			{
@@ -80,7 +79,7 @@ public partial class KeyboardExtensionsTests
 			}
 			finally
 			{
-				await HideAndWait(platformView);
+				await SoftKeyboardHelpers.HideAsync();
 			}
 		});
 	}
@@ -99,7 +98,7 @@ public partial class KeyboardExtensionsTests
 			await searchBar.OnLoadedAsync();
 			var input = (ITextInput)searchBar;
 			var platformView = (AView)handler.PlatformView!;
-			var frame = VisibleFrame.RecordWithoutKeyboard(platformView);
+			var frame = await VisibleFrame.RecordWithoutKeyboardAsync(platformView);
 
 			try
 			{
@@ -110,7 +109,7 @@ public partial class KeyboardExtensionsTests
 			}
 			finally
 			{
-				await HideAndWait(platformView);
+				await SoftKeyboardHelpers.HideAsync();
 			}
 		});
 	}
@@ -131,7 +130,7 @@ public partial class KeyboardExtensionsTests
 			await view.OnLoadedAsync();
 			var input = (ITextInput)view;
 			var platformView = (AView)handler.PlatformView!;
-			var frame = VisibleFrame.RecordWithoutKeyboard(platformView);
+			var frame = await VisibleFrame.RecordWithoutKeyboardAsync(platformView);
 
 			try
 			{
@@ -149,7 +148,7 @@ public partial class KeyboardExtensionsTests
 			}
 			finally
 			{
-				await HideAndWait(platformView);
+				await SoftKeyboardHelpers.HideAsync();
 			}
 		});
 	}
@@ -170,7 +169,7 @@ public partial class KeyboardExtensionsTests
 			await entry.OnLoadedAsync();
 			var input = (ITextInput)entry;
 			var platformView = (AView)handler.PlatformView!;
-			var frame = VisibleFrame.RecordWithoutKeyboard(platformView);
+			var frame = await VisibleFrame.RecordWithoutKeyboardAsync(platformView);
 
 			try
 			{
@@ -188,7 +187,7 @@ public partial class KeyboardExtensionsTests
 			}
 			finally
 			{
-				await HideAndWait(platformView);
+				await SoftKeyboardHelpers.HideAsync();
 			}
 		});
 	}
@@ -269,7 +268,7 @@ public partial class KeyboardExtensionsTests
 		{
 			await entry.OnLoadedAsync();
 			var platformView = (AView)handler.PlatformView!;
-			Assert.False(IsKeyboardVisible(platformView));
+			Assert.False(SoftKeyboardHelpers.InsetsShowKeyboard(platformView));
 
 			// Nothing is showing, so asking the platform to hide the keyboard changes nothing and it answers the same way again.
 			// The answer depends on the Android version (observed: API 28 false, API 36 true), so the platform is the oracle.
@@ -317,7 +316,7 @@ public partial class KeyboardExtensionsTests
 			}
 			finally
 			{
-				await HideAndWait(editText);
+				await SoftKeyboardHelpers.HideAsync();
 			}
 		}));
 	}
@@ -359,7 +358,7 @@ public partial class KeyboardExtensionsTests
 
 		await InvokeOnMainThreadAsync(() => editText.AttachAndRun(async () =>
 		{
-			var frame = VisibleFrame.RecordWithoutKeyboard(editText);
+			var frame = await VisibleFrame.RecordWithoutKeyboardAsync(editText);
 			try
 			{
 				Assert.True(editText.RequestFocus());
@@ -373,7 +372,7 @@ public partial class KeyboardExtensionsTests
 			}
 			finally
 			{
-				await HideAndWait(editText);
+				await SoftKeyboardHelpers.HideAsync();
 			}
 		}));
 	}
@@ -399,7 +398,7 @@ public partial class KeyboardExtensionsTests
 
 		await InvokeOnMainThreadAsync(() => editText.AttachAndRun(async () =>
 		{
-			var frame = VisibleFrame.RecordWithoutKeyboard(editText);
+			var frame = await VisibleFrame.RecordWithoutKeyboardAsync(editText);
 			try
 			{
 				var shown = await input.ShowKeyboardAsync();
@@ -410,7 +409,7 @@ public partial class KeyboardExtensionsTests
 			}
 			finally
 			{
-				await HideAndWait(editText);
+				await SoftKeyboardHelpers.HideAsync();
 			}
 		}));
 	}
@@ -429,7 +428,7 @@ public partial class KeyboardExtensionsTests
 
 			// The stub handler ignores the Focus command, so the view is never focused and the input method refuses to show.
 			Assert.False(await input.ShowKeyboardAsync());
-			Assert.False(IsKeyboardVisible(editText));
+			Assert.False(SoftKeyboardHelpers.InsetsShowKeyboard(editText));
 		}));
 	}
 
@@ -452,7 +451,7 @@ public partial class KeyboardExtensionsTests
 
 		await InvokeOnMainThreadAsync(() => container.AttachAndRun(async () =>
 		{
-			var frame = VisibleFrame.RecordWithoutKeyboard(editText);
+			var frame = await VisibleFrame.RecordWithoutKeyboardAsync(editText);
 			try
 			{
 				Assert.True(editText.RequestFocus());
@@ -464,7 +463,7 @@ public partial class KeyboardExtensionsTests
 			}
 			finally
 			{
-				await HideAndWait(editText);
+				await SoftKeyboardHelpers.HideAsync();
 			}
 		}));
 	}
@@ -488,7 +487,7 @@ public partial class KeyboardExtensionsTests
 
 		await InvokeOnMainThreadAsync(() => container.AttachAndRun(async () =>
 		{
-			var frame = VisibleFrame.RecordWithoutKeyboard(editText);
+			var frame = await VisibleFrame.RecordWithoutKeyboardAsync(editText);
 			try
 			{
 				Assert.True(editText.RequestFocus());
@@ -500,7 +499,7 @@ public partial class KeyboardExtensionsTests
 			}
 			finally
 			{
-				await HideAndWait(editText);
+				await SoftKeyboardHelpers.HideAsync();
 			}
 		}));
 	}
@@ -522,7 +521,7 @@ public partial class KeyboardExtensionsTests
 		await InvokeOnMainThreadAsync(() => container.AttachAndRun(async () =>
 		{
 			Assert.False(await input.ShowKeyboardAsync());
-			Assert.False(IsKeyboardVisible(container));
+			Assert.False(SoftKeyboardHelpers.InsetsShowKeyboard(container));
 		}));
 	}
 
@@ -538,7 +537,7 @@ public partial class KeyboardExtensionsTests
 		await InvokeOnMainThreadAsync(() => imageView.AttachAndRun(async () =>
 		{
 			Assert.False(await input.ShowKeyboardAsync());
-			Assert.False(IsKeyboardVisible(imageView));
+			Assert.False(SoftKeyboardHelpers.InsetsShowKeyboard(imageView));
 		}));
 	}
 
@@ -557,7 +556,7 @@ public partial class KeyboardExtensionsTests
 			Assert.Null(editText.Context!.GetSystemService(Context.InputMethodService));
 
 			Assert.False(await input.ShowKeyboardAsync());
-			Assert.False(IsKeyboardVisible(editText));
+			Assert.False(SoftKeyboardHelpers.InsetsShowKeyboard(editText));
 		}));
 	}
 
@@ -577,7 +576,7 @@ public partial class KeyboardExtensionsTests
 		{
 			await entry.OnLoadedAsync();
 			var platformView = (AView)handler.PlatformView!;
-			var frame = VisibleFrame.RecordWithoutKeyboard(platformView);
+			var frame = await VisibleFrame.RecordWithoutKeyboardAsync(platformView);
 
 			await AttachToActivityAsync(other, async () =>
 			{
@@ -596,7 +595,7 @@ public partial class KeyboardExtensionsTests
 				}
 				finally
 				{
-					await HideAndWait(platformView);
+					await SoftKeyboardHelpers.HideAsync();
 				}
 			});
 		});
@@ -614,7 +613,7 @@ public partial class KeyboardExtensionsTests
 		{
 			ActivityContext.GetActivityOrNull()?.CurrentFocus?.ClearFocus();
 			Assert.Null(ActivityContext.GetActivityOrNull()?.Window?.CurrentFocus);
-			Assert.False(IsKeyboardVisible(view));
+			Assert.False(SoftKeyboardHelpers.InsetsShowKeyboard(view));
 
 			// There is no keyboard to hide, so the platform answers the way it does for any hide request without a keyboard (it depends on
 			// the Android version).
@@ -639,7 +638,7 @@ public partial class KeyboardExtensionsTests
 		{
 			await entry.OnLoadedAsync();
 			var platformView = (AView)handler.PlatformView!;
-			var frame = VisibleFrame.RecordWithoutKeyboard(platformView);
+			var frame = await VisibleFrame.RecordWithoutKeyboardAsync(platformView);
 
 			await AttachToActivityAsync(applicationContextView, async () =>
 			{
@@ -656,7 +655,7 @@ public partial class KeyboardExtensionsTests
 				}
 				finally
 				{
-					await HideAndWait(platformView);
+					await SoftKeyboardHelpers.HideAsync();
 				}
 			});
 		});
@@ -676,7 +675,7 @@ public partial class KeyboardExtensionsTests
 		{
 			await entry.OnLoadedAsync();
 			var platformView = (AView)handler.PlatformView!;
-			var frame = VisibleFrame.RecordWithoutKeyboard(platformView);
+			var frame = await VisibleFrame.RecordWithoutKeyboardAsync(platformView);
 
 			await AttachToActivityAsync(view, async () =>
 			{
@@ -693,7 +692,7 @@ public partial class KeyboardExtensionsTests
 				}
 				finally
 				{
-					await HideAndWait(platformView);
+					await SoftKeyboardHelpers.HideAsync();
 				}
 			});
 		});
@@ -713,7 +712,7 @@ public partial class KeyboardExtensionsTests
 		{
 			await entry.OnLoadedAsync();
 			var platformView = (AView)handler.PlatformView!;
-			var frame = VisibleFrame.RecordWithoutKeyboard(platformView);
+			var frame = await VisibleFrame.RecordWithoutKeyboardAsync(platformView);
 
 			try
 			{
@@ -729,7 +728,7 @@ public partial class KeyboardExtensionsTests
 			}
 			finally
 			{
-				await HideAndWait(platformView);
+				await SoftKeyboardHelpers.HideAsync();
 			}
 		});
 	}
@@ -743,17 +742,13 @@ public partial class KeyboardExtensionsTests
 		}
 		finally
 		{
-			await EnsureKeyboardHiddenAsync();
+			_ = await SoftKeyboardHelpers.HideAsync();
 		}
 	}
 
-	static Task EnsureKeyboardHiddenAsync() =>
-		InvokeOnMainThreadAsync(async () =>
-		{
-			var decorView = (ActivityContext.GetActivityOrNull() ?? throw new InvalidOperationException("The runner's activity is not available.")).Window!.DecorView;
-			decorView.FindFocus()?.ClearFocus();
-			await HideAndWait(decorView);
-		});
+	static Task EnsureKeyboardHiddenAsync() => SoftKeyboardHelpers.EnsureHiddenAsync();
+
+	static void SkipWhenTheSoftKeyboardCannotShow() => SoftKeyboardHelpers.SkipWhenTheSoftKeyboardCannotShow();
 
 	static Context ActivityContext => MauiProgramDefaults.DefaultContext
 		?? throw new InvalidOperationException("The runner's activity is not available.");
@@ -764,31 +759,6 @@ public partial class KeyboardExtensionsTests
 	{
 		var inputMethodManager = (InputMethodManager)view.Context!.GetSystemService(Context.InputMethodService)!;
 		return inputMethodManager.HideSoftInputFromWindow(view.WindowToken, HideSoftInputFlags.None);
-	}
-
-	// Android never shows the soft keyboard while the device reports a hardware keyboard (an AVD with hw.keyboard=yes), unless the user turned
-	// "show_ime_with_hard_keyboard" on. The pooled emulators have no hardware keyboard.
-	static void SkipWhenTheSoftKeyboardCannotShow()
-	{
-		var configuration = ActivityContext.Resources!.Configuration!;
-		var hasHardwareKeyboard = configuration.Keyboard != Android.Content.Res.KeyboardType.Nokeys && configuration.HardKeyboardHidden != Android.Content.Res.HardKeyboardHidden.Yes;
-		var showsImeWithHardwareKeyboard = Android.Provider.Settings.Secure.GetInt(ActivityContext.ContentResolver, "show_ime_with_hard_keyboard", 0) == 1;
-
-		Skip.If(hasHardwareKeyboard && !showsImeWithHardwareKeyboard, "This Android device reports a hardware keyboard (AVD hw.keyboard=yes), so Android does not show the soft keyboard.");
-	}
-
-	// The same AndroidX call as the toolkit: used to prepare and clean up, never as the oracle of a toolkit result.
-	static bool IsKeyboardVisible(AView view) =>
-		ViewCompat.GetRootWindowInsets(view)?.IsVisible(WindowInsetsCompat.Type.Ime()) is true;
-
-	static async Task HideAndWait(AView view)
-	{
-		if (view.WindowToken is not null && view.Context?.GetSystemService(Context.InputMethodService) is InputMethodManager inputMethodManager)
-		{
-			inputMethodManager.HideSoftInputFromWindow(view.WindowToken, HideSoftInputFlags.None);
-		}
-
-		await Wait(() => !IsKeyboardVisible(view), imeTimeout);
 	}
 
 	// AttachAndRun needs a view whose context is an activity.
@@ -806,41 +776,6 @@ public partial class KeyboardExtensionsTests
 		finally
 		{
 			content.RemoveView(view);
-		}
-	}
-
-	// An oracle that shares no code with the toolkit (which asks AndroidX for the IME window insets): the window manager's visible display
-	// frame of the window loses the soft keyboard's height at its bottom, whatever the soft input mode (pan or resize) is. The keyboard counts
-	// as showing while the frame is more than 100 dp shorter (more than any navigation bar, less than any soft keyboard).
-	sealed class VisibleFrame
-	{
-		const int minimumKeyboardHeightInDp = 100;
-
-		readonly AView view;
-		readonly int bottomWithoutKeyboard;
-		readonly float minimumKeyboardHeight;
-
-		VisibleFrame(AView view)
-		{
-			Assert.True(view.IsAttachedToWindow, "The visible frame is read from a view that is in a window.");
-			Assert.False(IsKeyboardVisible(view), "A soft keyboard was showing when the visible frame without keyboard was recorded.");
-			this.view = view;
-			bottomWithoutKeyboard = Bottom(view);
-			minimumKeyboardHeight = minimumKeyboardHeightInDp * view.Resources!.DisplayMetrics!.Density;
-		}
-
-		public bool ShowsKeyboard => bottomWithoutKeyboard - Bottom(view) > minimumKeyboardHeight;
-
-		public static VisibleFrame RecordWithoutKeyboard(AView view) => new(view);
-
-		public override string ToString() =>
-			$"visible frame bottom {Bottom(view)} px, {bottomWithoutKeyboard} px without keyboard, keyboard threshold {minimumKeyboardHeight} px";
-
-		static int Bottom(AView view)
-		{
-			using var frame = new Android.Graphics.Rect();
-			view.GetWindowVisibleDisplayFrame(frame);
-			return frame.Bottom;
 		}
 	}
 
