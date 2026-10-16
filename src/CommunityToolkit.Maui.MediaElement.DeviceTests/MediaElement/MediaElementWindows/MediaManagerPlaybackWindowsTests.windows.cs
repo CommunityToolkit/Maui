@@ -40,6 +40,14 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		await WaitUntilAsync(() => fixture.Player!.PlaybackSession.PlaybackState is MediaPlaybackState.Playing, "The native player never started playing.", decodeTimeoutMilliseconds);
 	}
 
+	// In one call on the UI thread, as the handler's mapper applies Speed: in between, a late rate event of the earlier Speed would find the
+	// player still at that rate and take Speed back to it.
+	static Task SetSpeedAsync(WinMediaManagerFixture fixture, double speed) => InvokeOnMainThreadAsync(() =>
+	{
+		fixture.View.Speed = speed;
+		fixture.Manager.UpdateSpeed();
+	});
+
 	[Fact]
 	public async Task OpenedMediaReportsDurationNaturalSizeAndPausedState()
 	{
@@ -669,12 +677,10 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		var playRequests = 0;
 		fixture.View.PlayRequested += (_, _) => Interlocked.Increment(ref playRequests);
 
-		fixture.View.Speed = 2;
-		await InvokeOnMainThreadAsync(() => fixture.Manager.UpdateSpeed());
+		await SetSpeedAsync(fixture, 2);
 		await WaitUntilAsync(() => Math.Abs(fixture.Player!.PlaybackSession.PlaybackRate - 2) < 0.001, "The native playback rate did not follow Speed.");
 
-		fixture.View.Speed = 1.5;
-		await InvokeOnMainThreadAsync(() => fixture.Manager.UpdateSpeed());
+		await SetSpeedAsync(fixture, 1.5);
 		await WaitUntilAsync(() => Math.Abs(fixture.Player!.PlaybackSession.PlaybackRate - 1.5) < 0.001, "The native playback rate did not follow the second Speed.");
 
 		// Neither 1 -> 2 nor 2 -> 1.5 passes through zero, so neither pauses nor requests Play.
@@ -692,8 +698,7 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		var playRequests = 0;
 		fixture.View.PlayRequested += (_, _) => Interlocked.Increment(ref playRequests);
 
-		fixture.View.Speed = 0;
-		await InvokeOnMainThreadAsync(() => fixture.Manager.UpdateSpeed());
+		await SetSpeedAsync(fixture, 0);
 		await WaitUntilAsync(() => fixture.Player!.PlaybackSession.PlaybackState is MediaPlaybackState.Paused, "Speed 0 did not pause the native player.", decodeTimeoutMilliseconds);
 		Assert.Equal(0, fixture.Player!.PlaybackSession.PlaybackRate);
 		Assert.Equal(0, playRequests);
@@ -703,8 +708,7 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		Assert.Equal(0, playRequests);
 
 		// MediaElement.Play() only raises PlayRequested here: without a handler, nothing else happens.
-		fixture.View.Speed = 1;
-		await InvokeOnMainThreadAsync(() => fixture.Manager.UpdateSpeed());
+		await SetSpeedAsync(fixture, 1);
 		Assert.Equal(1, playRequests);
 		Assert.Equal(1, fixture.Player.PlaybackSession.PlaybackRate, 3);
 	}
@@ -716,8 +720,7 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		await RequirePlayAtZeroRateAsync();
 
 		var fixture = await OpenVideoAsync();
-		fixture.View.Speed = 0;
-		await InvokeOnMainThreadAsync(() => fixture.Manager.UpdateSpeed());
+		await SetSpeedAsync(fixture, 0);
 		await WaitUntilAsync(() => fixture.Player!.PlaybackSession.PlaybackRate == 0, "The native rate did not become 0.");
 
 		var nativePlaying = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -756,8 +759,7 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		SetupWindowsBuilder();
 
 		var fixture = await OpenVideoAsync();
-		fixture.View.Speed = 1.5;
-		await InvokeOnMainThreadAsync(() => fixture.Manager.UpdateSpeed());
+		await SetSpeedAsync(fixture, 1.5);
 		await WaitUntilAsync(() => Math.Abs(fixture.Player!.PlaybackSession.PlaybackRate - 1.5) < 0.001, "The native rate did not become 1.5.");
 
 		// Registered after the manager's handler: once it ran, the manager's handler ran for the same event.
