@@ -113,6 +113,10 @@ public sealed class SpeechFrameworkStub : IDisposable
 
 	delegate byte BoolGetterImplementation(IntPtr self, IntPtr selector);
 
+	// The stub also calls an original implementation through this delegate type (GetDelegateForFunctionPointer). Mono's AOT compiler only
+	// precompiles that managed-to-native wrapper for a delegate type marked [UnmanagedFunctionPointer], and an iOS or Mac Catalyst Release
+	// build runs AOT code only, so it cannot create the wrapper at run time.
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	delegate void BoolSetterImplementation(IntPtr self, IntPtr selector, byte value);
 
 	delegate void BlockArgumentImplementation(IntPtr self, IntPtr selector, IntPtr block);
@@ -121,6 +125,8 @@ public sealed class SpeechFrameworkStub : IDisposable
 
 	delegate void NoArgumentImplementation(IntPtr self, IntPtr selector);
 
+	// Also called through GetDelegateForFunctionPointer (see BoolSetterImplementation).
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	delegate IntPtr PointerGetterImplementation(IntPtr self, IntPtr selector);
 
 	delegate byte SetModeImplementation(IntPtr self, IntPtr selector, IntPtr mode, IntPtr outError);
