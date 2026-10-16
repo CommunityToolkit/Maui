@@ -39,7 +39,7 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StartListenCommand))]
 	public partial bool CanStartListenExecute { get; set; } = true;
 
-	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StopListenCommand))]
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StopListenCommand)), NotifyCanExecuteChangedFor(nameof(StopListenWithCanceledTokenCommand))]
 	public partial bool CanStopListenExecute { get; set; } = false;
 
 	public async ValueTask DisposeAsync()
@@ -145,6 +145,15 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 				RecognitionText = string.Empty;
 			}
 		}
+		catch (PermissionException e)
+		{
+			// For example on Windows, when "Online speech recognition" is switched off in the privacy settings
+			CanStartListenExecute = true;
+			CanStopListenExecute = false;
+
+			RecognitionText = e.Message;
+			await Toast.Make($"{nameof(PermissionException)}: {e.Message}").Show(cancellationToken);
+		}
 		catch
 		{
 			CanStartListenExecute = true;
@@ -161,6 +170,36 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 		CanStopListenExecute = false;
 
 		return speechToText.StopListenAsync(cancellationToken);
+	}
+
+	// Calls StopListenAsync with a token that is already canceled while the recognizer listens. The outcome depends on the platform:
+	// Windows ignores the canceled token, so the recognizer is still released; Android, iOS and Mac Catalyst throw an OperationCanceledException
+	// before they stop anything, so the recognizer keeps listening until StopListenAsync is called again.
+	[RelayCommand(CanExecute = nameof(CanStopListenExecute))]
+	async Task StopListenWithCanceledToken(CancellationToken cancellationToken)
+	{
+		using var canceledTokenSource = new CancellationTokenSource();
+		await canceledTokenSource.CancelAsync();
+
+		string outcome;
+		try
+		{
+			await speechToText.StopListenAsync(canceledTokenSource.Token);
+
+			CanStartListenExecute = true;
+			CanStopListenExecute = false;
+
+			outcome = "returned without an exception";
+		}
+		catch (OperationCanceledException)
+		{
+			outcome = $"threw {nameof(OperationCanceledException)}";
+		}
+
+		// Windows unsubscribes from StateChanged before it releases the recognizer, so no event refreshes the State label
+		OnPropertyChanged(nameof(State));
+
+		await Toast.Make($"StopListenAsync with a canceled token {outcome}. State: {State}").Show(cancellationToken);
 	}
 
 	void HandleRecognitionResultUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs e)

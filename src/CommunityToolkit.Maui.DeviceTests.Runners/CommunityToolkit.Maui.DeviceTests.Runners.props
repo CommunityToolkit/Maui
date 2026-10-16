@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Adapted from dotnet/maui @ 2067dd42c6032fbc40d2e46245806679a85df5e6, src/Microsoft.Maui.TestUtils.DeviceTests.Runners.props.
+     Copyright (c) .NET Foundation and Contributors. Licensed under the MIT License (see LICENSE-dotnet-maui.txt).
+     Imported by every device-test app right after its first PropertyGroup. -->
+<Project>
+
+  <PropertyGroup>
+    <!-- Windows: CsWinRT generates WinRT marshalling code with unsafe blocks (CsWinRT1030); CsWinRT1028 asks for partial classes
+         (e.g. any test helper deriving from a MAUI view), which only matters for trimmed/AOT apps. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);CsWinRT1028</NoWarn>
+
+    <!-- Unpackaged Windows builds (-p:_CtmDeviceTestUnpackaged=true, dotnet/maui's _MauiDeviceTestUnpackaged) bundle the
+         Windows App SDK next to the exe. Never pass WindowsAppSDKSelfContained on the command line: a global property flows
+         into every referenced project. Packaged (MSIX) builds must not set it. -->
+    <WindowsAppSDKSelfContained Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(_CtmDeviceTestUnpackaged)' == 'true'">true</WindowsAppSDKSelfContained>
+  </PropertyGroup>
+
+</Project>

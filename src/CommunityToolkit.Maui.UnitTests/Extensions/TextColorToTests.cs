@@ -121,6 +121,36 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 		}
 
 		[Fact]
+		public void LabelTextColorTo_DoesNotAllowZeroRate()
+		{
+			Color originalTextColor = Colors.Blue;
+
+			var label = new Label { TextColor = originalTextColor };
+			label.EnableAnimations();
+
+			// Thrown by the call itself, before an animation starts: .NET MAUI divides by the rate on every frame of the platform's animation ticker
+			Assert.Throws<ArgumentOutOfRangeException>("rate", () => { _ = label.TextColorTo(Colors.Red, rate: 0, token: TestContext.Current.CancellationToken); });
+
+			// The generated TextColorTo names its animation nameof(TextColorTo)
+			Assert.False(label.AnimationIsRunning("TextColorTo"));
+			Assert.Equal(originalTextColor, label.TextColor);
+		}
+
+		[Fact(Timeout = (int)TestDuration.Short)]
+		public async Task LabelTextColorTo_VerifyColorChangedForSmallestRate()
+		{
+			Color originalTextColor = Colors.Blue, updatedTextColor = Colors.Red;
+
+			var label = new Label { TextColor = originalTextColor };
+			label.EnableAnimations();
+
+			var isSuccessful = await label.TextColorTo(updatedTextColor, rate: 1, token: TestContext.Current.CancellationToken);
+
+			Assert.True(isSuccessful);
+			Assert.Equal(updatedTextColor, label.TextColor);
+		}
+
+		[Fact]
 		public async Task Extensions_For_Generic_Class()
 		{
 			Color originalTextColor = Colors.Blue, updatedTextColor = Colors.Red;

@@ -309,6 +309,35 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 		Assert.Equal(imageTouchBehavior.DefaultImageAspect, image.Aspect);
 	}
 
+	// Image sources that arrive after the attach, as a binding that resolves later sets them: from then on the default state shows the
+	// behavior's image with the built-in aspect, before the first touch as well as after it (not the view's own aspect until the first touch).
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void VerifyImageSourcesSetAfterTheAttachShowTheSameAspectBeforeAndAfterATouch(bool isImageButton)
+	{
+		VisualElement view = isImageButton ? new ImageButton { Aspect = Aspect.Fill } : new Image { Aspect = Aspect.Fill };
+		AttachTouchBehaviorToVisualElement(view);
+
+		imageTouchBehavior.DefaultImageSource = new FileImageSource { File = "default.png" };
+		imageTouchBehavior.PressedImageSource = new FileImageSource { File = "pressed.png" };
+
+		Assert.Same(imageTouchBehavior.DefaultImageSource, GetSource(view));
+		Assert.Equal(ImageTouchBehaviorDefaults.DefaultBackgroundImageAspect, GetAspect(view));
+
+		imageTouchBehavior.HandleTouch(TouchStatus.Started);
+		Assert.Same(imageTouchBehavior.PressedImageSource, GetSource(view));
+		Assert.Equal(ImageTouchBehaviorDefaults.DefaultBackgroundImageAspect, GetAspect(view));
+
+		imageTouchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Same(imageTouchBehavior.DefaultImageSource, GetSource(view));
+		Assert.Equal(ImageTouchBehaviorDefaults.DefaultBackgroundImageAspect, GetAspect(view));
+
+		static ImageSource? GetSource(VisualElement view) => view is ImageButton imageButton ? imageButton.Source : ((Image)view).Source;
+
+		static Aspect GetAspect(VisualElement view) => view is ImageButton imageButton ? imageButton.Aspect : ((Image)view).Aspect;
+	}
+
 	protected override void Dispose(bool isDisposing)
 	{
 		base.Dispose(isDisposing);

@@ -24,12 +24,13 @@ public partial class Toast
 
 	static async Task DismissPlatform(CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
+
 		if (PlatformToast is null)
 		{
 			return;
 		}
 
-		token.ThrowIfCancellationRequested();
 		await AppNotificationManager.Default.RemoveAllAsync();
 
 		// Verify PlatformToast is not null again after `await`

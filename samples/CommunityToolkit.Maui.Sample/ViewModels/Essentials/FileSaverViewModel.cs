@@ -37,9 +37,16 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 		using var stream = new MemoryStream(Encoding.Default.GetBytes("Hello from the Community Toolkit!"));
 		try
 		{
-			var fileName = Application.Current?.Windows[0].Page?.DisplayPromptAsync("FileSaver", "Choose filename") ?? Task.FromResult("test.txt");
+			var fileName = await (Application.Current?.Windows[0].Page?.DisplayPromptAsync("FileSaver", "Choose filename") ?? Task.FromResult("test.txt"));
+
+			// DisplayPromptAsync returns null when the prompt is canceled: there is no file name, so nothing is saved
+			if (fileName is null)
+			{
+				return;
+			}
+
 			var initialFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-			var fileLocationResult = await fileSaver.SaveAsync(initialFolder, await fileName, stream, cancellationToken);
+			var fileLocationResult = await fileSaver.SaveAsync(initialFolder, fileName, stream, cancellationToken);
 			fileLocationResult.EnsureSuccess();
 
 			await Toast.Make($"File is saved: {fileLocationResult.FilePath}").Show(cancellationToken);
@@ -85,7 +92,7 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 		try
 		{
 			var fileSaverInstance = new FileSaverImplementation();
-			var fileSaverResult = await fileSaverInstance.SaveAsync("communitytoolkit.maui.5.0.0.nupkg", stream, new Progress<double>(p => Progress = p), cancellationToken);
+			var fileSaverResult = await fileSaverInstance.SaveAsync("communitytoolkit.maui.5.0.0.nupkg", stream, new Progress<double>(percent => Progress = percent / 100), cancellationToken);
 			fileSaverResult.EnsureSuccess();
 
 			await Toast.Make($"File is saved: {fileSaverResult.FilePath}").Show(cancellationToken);

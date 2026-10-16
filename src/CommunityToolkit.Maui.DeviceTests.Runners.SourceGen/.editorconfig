@@ -1,0 +1,4 @@
+# Vendored from dotnet/maui (see README.md). Treated as generated code so the repository's style analyzers do not
+# rewrite upstream code, which keeps it diffable against dotnet/maui. Compiler diagnostics still apply.
+[*.cs]
+generated_code = true

@@ -65,6 +65,35 @@ public class MultiValidationBehaviorTests() : BaseBehaviorTest<MultiValidationBe
 		Assert.Equal(expectedValue, multiBehavior.IsValid);
 	}
 
+	[Theory]
+	[InlineData(TextDecorationFlags.None, false)]
+	[InlineData(TextDecorationFlags.Trim, true)]
+	public async Task IsValid_ChildDecorationFlagsAreAppliedBeforeValidation(TextDecorationFlags flags, bool expectedValue)
+	{
+		// Arrange
+		var textValidationBehavior = new TextValidationBehavior
+		{
+			RegexPattern = "^[0-9]+$",
+			DecorationFlags = flags
+		};
+
+		var multiBehavior = new MultiValidationBehavior();
+		multiBehavior.Children.Add(textValidationBehavior);
+
+		var entry = new Entry
+		{
+			Text = " 12 "
+		};
+		entry.Behaviors.Add(multiBehavior);
+
+		// Act
+		await multiBehavior.ForceValidate(TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.Equal(expectedValue, textValidationBehavior.IsValid);
+		Assert.Equal(expectedValue, multiBehavior.IsValid);
+	}
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ForceValidateCancellationTokenExpired()
 	{

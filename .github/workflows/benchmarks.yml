@@ -13,7 +13,7 @@ on:
             - '*'
 
 env:
-    LATEST_NET_VERSION: '10.0.x'
+    # LATEST_NET_VERSION is in shared.env, next to this file; the job loads it after its checkout.
     PathToCommunityToolkitAnalyzersBenchmarksCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
     PathToCommunityToolkitSourceGeneratorsBenchmarksCsproj: 'src/CommunityToolkit.Maui.SourceGenerators.Benchmarks/CommunityToolkit.Maui.SourceGenerators.Benchmarks.csproj'
 
@@ -28,6 +28,9 @@ jobs:
         steps:
             -   name: Checkout code
                 uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Load shared environment variables
+                uses: ./.github/actions/load-shared-env
 
             -   name: Install Latest Version of .NET, v${{ env.LATEST_NET_VERSION }}
                 uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0

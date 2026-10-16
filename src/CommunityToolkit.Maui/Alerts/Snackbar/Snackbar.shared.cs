@@ -101,6 +101,10 @@ public partial class Snackbar : ISnackbar
 	public Action? Action { get; init; }
 
 	/// <inheritdoc/>
+	/// <remarks>
+	/// While the snackbar is shown, it is placed next to its anchor again whenever the layout changes, for example when the device is rotated
+	/// (Android, iOS and Mac Catalyst; Windows does not use the anchor).
+	/// </remarks>
 	public IView? Anchor
 	{
 		get => weakView is not null && weakView.TryGetTarget(out var view) ? view : null;

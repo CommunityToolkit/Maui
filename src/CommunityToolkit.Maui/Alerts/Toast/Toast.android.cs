@@ -6,6 +6,9 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Toast
 {
+	// The platform toast that this instance showed last: PlatformToast is shared by every Toast, so another instance may have replaced it
+	Android.Widget.Toast? shownPlatformToast;
+
 	static Android.Widget.Toast? PlatformToast { get; set; }
 
 	/// <summary>
@@ -18,9 +21,17 @@ public partial class Toast
 			return;
 		}
 
-		if (isDisposing)
+		if (isDisposing && shownPlatformToast is not null)
 		{
-			PlatformToast?.Dispose();
+			// Only the platform toast of this instance is disposed, and forgotten while it is still the shared one: a Show or Dismiss after
+			// this one must not reach the disposed Java peer, and the toast that another instance showed stays dismissable
+			if (PlatformToast == shownPlatformToast)
+			{
+				PlatformToast = null;
+			}
+
+			shownPlatformToast.Dispose();
+			shownPlatformToast = null;
 		}
 
 		isDisposed = true;
@@ -28,12 +39,13 @@ public partial class Toast
 
 	static void DismissPlatform(CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
+
 		if (PlatformToast is null)
 		{
 			return;
 		}
 
-		token.ThrowIfCancellationRequested();
 		PlatformToast.Cancel();
 	}
 
@@ -48,7 +60,7 @@ public partial class Toast
 		var styledText = new SpannableStringBuilder(Text);
 		styledText.SetSpan(new AbsoluteSizeSpan((int)TextSize, true), 0, Text.Length, 0);
 
-		PlatformToast = Android.Widget.Toast.MakeText(Platform.CurrentActivity?.Window?.DecorView.FindViewById(Android.Resource.Id.Content)?.RootView?.Context, styledText, GetToastLength(Duration))
+		PlatformToast = shownPlatformToast = Android.Widget.Toast.MakeText(Platform.CurrentActivity?.Window?.DecorView.FindViewById(Android.Resource.Id.Content)?.RootView?.Context, styledText, GetToastLength(Duration))
 						  ?? throw new Exception("Unable to create toast");
 
 		PlatformToast.Show();

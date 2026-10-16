@@ -14,7 +14,9 @@ static class CameraViewExtensions
 		cameraView.IsAvailable = videoCaptureDevices.Count > 0;
 	}
 
-	public static async Task InitializeCameraForCameraView(this MediaCapture mediaCapture, string deviceId, CancellationToken token)
+	// Returns false when Media Foundation could not open the camera (a COMException, for example for a device id that no camera has; Windows 11
+	// still opens a camera that another capture holds): the camera discovery skips that camera, the preview reports it
+	public static async Task<bool> InitializeCameraForCameraView(this MediaCapture mediaCapture, string deviceId, CancellationToken token)
 	{
 		try
 		{
@@ -44,10 +46,13 @@ static class CameraViewExtensions
 			}
 
 			await mediaCapture.InitializeAsync(settings).AsTask(token);
+
+			return true;
 		}
 		catch (System.Runtime.InteropServices.COMException)
 		{
-			// Camera already initialized
+			// Media Foundation could not open the camera
+			return false;
 		}
 	}
 }

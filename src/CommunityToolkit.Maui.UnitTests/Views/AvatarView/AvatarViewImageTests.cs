@@ -31,7 +31,7 @@ public class AvatarViewImageTests : BaseViewTest
 			ImageSource = source
 		};
 		avatarView.ImageSource.Should().NotBeNull();
-		avatarView.Content.Should().BeOfType<Image>();
+		avatarView.Content.Should().BeAssignableTo<Image>();
 		if (avatarView.Content is Image avatarImage)
 		{
 			avatarImage.Should().NotBeNull();
@@ -60,7 +60,7 @@ public class AvatarViewImageTests : BaseViewTest
 		};
 		avatarView.Arrange(new Rect(0, 0, 73, 73));
 		avatarView.ImageSource.Should().NotBeNull();
-		avatarView.Content.Should().BeOfType<Image>();
+		avatarView.Content.Should().BeAssignableTo<Image>();
 		if (avatarView.Content is Image avatarImage)
 		{
 			avatarImage.BackgroundColor.Should().BeNull();
@@ -141,7 +141,7 @@ public class AvatarViewImageTests : BaseViewTest
 		avatarView.Arrange(new Rect(0, 0, 73, 73));
 
 		avatarView.ImageSource.Should().NotBeNull();
-		avatarView.Content.Should().BeOfType<Image>();
+		avatarView.Content.Should().BeAssignableTo<Image>();
 		if (avatarView.Content is not Image avatarImage)
 		{
 			throw new InvalidCastException($"{nameof(avatarView.Content)} must be of type {nameof(Image)}");
@@ -175,7 +175,7 @@ public class AvatarViewImageTests : BaseViewTest
 			}
 		};
 		avatarView.ImageSource.Should().NotBeNull();
-		avatarView.Content.Should().BeOfType<Image>();
+		avatarView.Content.Should().BeAssignableTo<Image>();
 
 		avatarView.Arrange(new Rect(0, 0, 73, 73));
 
@@ -184,5 +184,131 @@ public class AvatarViewImageTests : BaseViewTest
 			throw new InvalidCastException($"{nameof(avatarView.Content)} must be of type {nameof(Image)}");
 		}
 		avatarImage.Clip.Should().BeOfType<RectangleGeometry>();
+	}
+
+	[Fact]
+	public void ImageClip_WhenStrokeShapeChanged()
+	{
+		var clip = new RectangleGeometry(new Rect(0, 0, 30, 30));
+		var avatarView = new Maui.Views.AvatarView
+		{
+			WidthRequest = 73,
+			HeightRequest = 73,
+			ImageSource = ImageSource.FromFile("File.png"),
+		};
+		avatarView.Arrange(new Rect(0, 0, 73, 73));
+
+		if (avatarView.Content is not Image avatarImage)
+		{
+			throw new InvalidCastException($"{nameof(avatarView.Content)} must be of type {nameof(Image)}");
+		}
+
+		// The default stroke shape (a RoundRectangle) has no clip of its own
+		avatarImage.Clip.Should().BeNull();
+
+		avatarView.StrokeShape = new Ellipse
+		{
+			Clip = clip
+		};
+
+		avatarImage.Clip.Should().BeSameAs(clip);
+	}
+
+	// The image handler reports how the load of the image source ended through IImageSourcePartEvents: a source that fails to load shows nothing,
+	// so the avatar shows its text instead.
+	[Fact]
+	public void TextIsShownWhenTheImageSourceFailsToLoad()
+	{
+		var avatarView = CreateAvatarViewWithAnImageSource();
+		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+
+		ReportLoadFailure(image);
+
+		avatarView.Content.Should().BeOfType<Label>().Which.Text.Should().Be("GL");
+	}
+
+	[Fact]
+	public void ImageIsShownWhenTheImageSourceLoads()
+	{
+		var avatarView = CreateAvatarViewWithAnImageSource();
+		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+
+		ReportLoadSuccess(image);
+
+		avatarView.Content.Should().BeSameAs(image);
+	}
+
+	// Each load of the image source reports how it ended: a source that loads after a failure (its Uri changed, for example) shows the image again.
+	[Fact]
+	public void ImageIsShownAgainWhenTheImageSourceLoadsAfterAFailure()
+	{
+		var avatarView = CreateAvatarViewWithAnImageSource();
+		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+		ReportLoadFailure(image);
+
+		ReportLoadSuccess(image);
+
+		avatarView.Content.Should().BeSameAs(image);
+	}
+
+	[Fact]
+	public void ImageIsShownWhenAnotherImageSourceIsSetAfterAFailure()
+	{
+		var avatarView = CreateAvatarViewWithAnImageSource();
+		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+		ReportLoadFailure(image);
+		var otherSource = new UriImageSource { Uri = new Uri("https://aka.ms/campus.jpg") };
+
+		avatarView.ImageSource = otherSource;
+
+		avatarView.Content.Should().BeSameAs(image);
+		image.Source.Should().BeSameAs(otherSource);
+	}
+
+	// A load that does not complete successfully was canceled, or another load replaced it: that load reports for itself.
+	[Fact]
+	public void ImageStaysWhenTheLoadOfTheImageSourceIsCanceled()
+	{
+		var avatarView = CreateAvatarViewWithAnImageSource();
+		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+
+		((IImageSourcePartEvents)image).LoadingStarted();
+		((IImageSourcePartEvents)image).LoadingCompleted(false);
+
+		avatarView.Content.Should().BeSameAs(image);
+	}
+
+	[Fact]
+	public void TextStaysWhenALoadEndsAfterTheImageSourceWasRemoved()
+	{
+		var avatarView = CreateAvatarViewWithAnImageSource();
+		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+
+		avatarView.ImageSource = null;
+		ReportLoadSuccess(image);
+		ReportLoadFailure(image);
+
+		avatarView.Content.Should().BeOfType<Label>();
+	}
+
+	static Maui.Views.AvatarView CreateAvatarViewWithAnImageSource() => new()
+	{
+		Text = "GL",
+		ImageSource = new UriImageSource
+		{
+			Uri = new Uri("https://example.invalid/avatar.png"),
+		},
+	};
+
+	static void ReportLoadFailure(Image image)
+	{
+		((IImageSourcePartEvents)image).LoadingStarted();
+		((IImageSourcePartEvents)image).LoadingFailed(new InvalidOperationException("Unable to load image stream from URI."));
+	}
+
+	static void ReportLoadSuccess(Image image)
+	{
+		((IImageSourcePartEvents)image).LoadingStarted();
+		((IImageSourcePartEvents)image).LoadingCompleted(true);
 	}
 }

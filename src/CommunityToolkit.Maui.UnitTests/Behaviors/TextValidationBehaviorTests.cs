@@ -12,6 +12,16 @@ public class TextValidationBehaviorTests() : BaseBehaviorTest<TextValidationBeha
 	[InlineData("mi.....ft", RegexOptions.IgnoreCase, 5, 25, TextDecorationFlags.None, "microservice", false)]
 	[InlineData("mi.....ft", RegexOptions.IgnoreCase, 5, 6, TextDecorationFlags.None, "Microsoft", false)]
 	[InlineData("mi.....ft", RegexOptions.IgnoreCase, 10, 11, TextDecorationFlags.None, "Microsoft", false)]
+	[InlineData("^[0-9]*$", RegexOptions.None, 0, int.MaxValue, TextDecorationFlags.None, " 12 ", false)]
+	[InlineData("^[0-9]*$", RegexOptions.None, 0, int.MaxValue, TextDecorationFlags.Trim, " 12 ", true)]
+	[InlineData("^[0-9]*$", RegexOptions.None, 0, int.MaxValue, TextDecorationFlags.TrimStart, " 12", true)]
+	[InlineData("^[0-9]*$", RegexOptions.None, 0, int.MaxValue, TextDecorationFlags.TrimStart, "12 ", false)]
+	[InlineData("^[0-9]*$", RegexOptions.None, 0, int.MaxValue, TextDecorationFlags.TrimEnd, "12 ", true)]
+	[InlineData("^[0-9]*$", RegexOptions.None, 0, int.MaxValue, TextDecorationFlags.TrimEnd, " 12", false)]
+	[InlineData(".*", RegexOptions.None, 2, 2, TextDecorationFlags.None, " 12 ", false)]
+	[InlineData(".*", RegexOptions.None, 2, 2, TextDecorationFlags.Trim, " 12 ", true)]
+	[InlineData("^Hello World$", RegexOptions.None, 0, int.MaxValue, TextDecorationFlags.None, "Hello    World", false)]
+	[InlineData("^Hello World$", RegexOptions.None, 0, int.MaxValue, TextDecorationFlags.NormalizeWhiteSpace, "Hello    World", true)]
 	public async Task IsValid(string pattern, RegexOptions options, int minLength, int maxLength, TextDecorationFlags flags, string value, bool expectedValue)
 	{
 		// Arrange
@@ -27,6 +37,31 @@ public class TextValidationBehaviorTests() : BaseBehaviorTest<TextValidationBeha
 		var entry = new Entry
 		{
 			Text = value
+		};
+		entry.Behaviors.Add(behavior);
+
+		// Act
+		await behavior.ForceValidate(TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.Equal(expectedValue, behavior.IsValid);
+	}
+
+	[Theory]
+	[InlineData(TextDecorationFlags.None, false)]
+	[InlineData(TextDecorationFlags.NullToEmpty, true)]
+	public async Task IsValid_NullText_IsValidatedAsAnEmptyStringWhenDecorationFlagsIncludesNullToEmpty(TextDecorationFlags flags, bool expectedValue)
+	{
+		// Arrange
+		// The default RegexPattern ("") and MinimumLength (0) accept an empty string
+		var behavior = new TextValidationBehavior
+		{
+			DecorationFlags = flags
+		};
+
+		var entry = new Entry
+		{
+			Text = null
 		};
 		entry.Behaviors.Add(behavior);
 
@@ -83,6 +118,126 @@ public class TextValidationBehaviorTests() : BaseBehaviorTest<TextValidationBeha
 			await cts.CancelAsync();
 			await behavior.ForceValidate(cts.Token);
 		});
+	}
+
+	[Fact]
+	public void IsValid_ShouldRevalidate_WhenRegexPatternChangesAfterTheViewLostFocus()
+	{
+		// Arrange
+		var behavior = new TextValidationBehavior
+		{
+			Flags = ValidationFlags.ValidateOnValueChanged,
+			RegexPattern = "^[0-9]*$"
+		};
+
+		var entry = new Entry();
+		entry.Behaviors.Add(behavior);
+
+		((IView)entry).IsFocused = true;
+		entry.Text = "abc";
+		((IView)entry).IsFocused = false;
+
+		// Assert
+		Assert.False(behavior.IsValid);
+
+		// Act
+		behavior.RegexPattern = "^[a-z]*$";
+
+		// Assert
+		Assert.True(behavior.IsValid);
+	}
+
+	// The settings of the Sample's TextValidationBehaviorPage, with DecorationFlags set after the text was validated
+	[Fact]
+	public void IsValid_ShouldRevalidate_WhenDecorationFlagsChangesAfterTheViewLostFocus()
+	{
+		// Arrange
+		var behavior = new TextValidationBehavior
+		{
+			Flags = ValidationFlags.ValidateOnValueChanged,
+			RegexPattern = "^[0-9]*$"
+		};
+
+		var entry = new Entry();
+		entry.Behaviors.Add(behavior);
+
+		((IView)entry).IsFocused = true;
+		entry.Text = "12 ";
+		((IView)entry).IsFocused = false;
+
+		// Assert
+		Assert.False(behavior.IsValid);
+
+		// Act
+		behavior.DecorationFlags = TextDecorationFlags.Trim;
+
+		// Assert
+		Assert.True(behavior.IsValid);
+	}
+
+	[Fact]
+	public void IsValid_ShouldStayValid_WhenARuleChangesWhileTheViewIsFocusedAndFlagsIncludesForceMakeValidWhenFocused()
+	{
+		// Arrange
+		var behavior = new TextValidationBehavior
+		{
+			Flags = ValidationFlags.ValidateOnUnfocused | ValidationFlags.ForceMakeValidWhenFocused,
+			MinimumLength = 1
+		};
+
+		var entry = new Entry();
+		entry.Behaviors.Add(behavior);
+
+		((IView)entry).IsFocused = true;
+		entry.Text = "abc";
+		((IView)entry).IsFocused = false;
+		((IView)entry).IsFocused = true;
+
+		// Act
+		behavior.MinimumLength = 5;
+
+		// Assert
+		Assert.True(behavior.IsValid);
+
+		// Act
+		((IView)entry).IsFocused = false;
+
+		// Assert
+		Assert.False(behavior.IsValid);
+	}
+
+	[Fact]
+	public void IsValid_ShouldNotValidate_WhenARuleChangesBeforeTheFirstValidationOfAnotherView()
+	{
+		// Arrange
+		var behavior = new TextValidationBehavior
+		{
+			Flags = ValidationFlags.ValidateOnUnfocused
+		};
+
+		var firstEntry = new Entry();
+		firstEntry.Behaviors.Add(behavior);
+
+		((IView)firstEntry).IsFocused = true;
+		firstEntry.Text = "abc";
+		((IView)firstEntry).IsFocused = false;
+		firstEntry.Behaviors.Remove(behavior);
+
+		var secondEntry = new Entry();
+		secondEntry.Behaviors.Add(behavior);
+
+		// Act
+		behavior.MinimumLength = 1;
+
+		// Assert
+		Assert.True(behavior.IsValid);
+
+		// Act
+		((IView)secondEntry).IsFocused = true;
+		((IView)secondEntry).IsFocused = false;
+
+		// Assert
+		Assert.False(behavior.IsValid);
 	}
 
 	[Fact]

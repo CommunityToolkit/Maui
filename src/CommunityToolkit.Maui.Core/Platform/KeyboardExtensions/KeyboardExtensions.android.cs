@@ -14,7 +14,8 @@ public static partial class KeyboardExtensions
 		var focusedView = inputView.Context?.GetActivity()?.Window?.CurrentFocus;
 		AView tokenView = focusedView ?? inputView;
 
-		using var inputMethodManager = (InputMethodManager?)tokenView.Context?.GetSystemService(Context.InputMethodService);
+		// Not disposed: GetSystemService returns the same .NET wrapper of the input method manager to every caller
+		var inputMethodManager = (InputMethodManager?)tokenView.Context?.GetSystemService(Context.InputMethodService);
 		var windowToken = tokenView.WindowToken;
 
 		if (windowToken is not null && inputMethodManager is not null)
@@ -27,7 +28,8 @@ public static partial class KeyboardExtensions
 
 	static bool ShowKeyboard(this TextView inputView)
 	{
-		using var inputMethodManager = (InputMethodManager?)inputView.Context?.GetSystemService(Context.InputMethodService);
+		// Not disposed: GetSystemService returns the same .NET wrapper of the input method manager to every caller
+		var inputMethodManager = (InputMethodManager?)inputView.Context?.GetSystemService(Context.InputMethodService);
 
 		// The zero value for the second parameter comes from 
 		// https://developer.android.com/reference/android/view/inputmethod/InputMethodManager#showSoftInput(android.view.View,%20int)
@@ -38,7 +40,9 @@ public static partial class KeyboardExtensions
 	static bool ShowKeyboard(this AView view) => view switch
 	{
 		TextView textView => textView.ShowKeyboard(),
-		ViewGroup viewGroup => viewGroup.GetFirstChildOfType<TextView>()?.ShowKeyboard() is true,
+		// The text editor of the group, as MAUI finds the query editor of a SearchView: its first TextView is not necessarily editable
+		// (a SearchView starts with its zero-size search badge)
+		ViewGroup viewGroup => viewGroup.GetFirstChildOfType<EditText>()?.ShowKeyboard() is true,
 		_ => false,
 	};
 

@@ -26,6 +26,24 @@
 	</array>
 	<key>XSAppIconAssets</key>
 	<string>Assets.xcassets/appicon.appiconset</string>
+	<!-- The macOS 27 SDK (Xcode 27) terminates apps that do not adopt the UIScene life cycle; SceneDelegate creates the window. Multiple scenes stay on for the MediaElementMultipleWindowsPage sample, which opens a second window. -->
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<true/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>__MAUI_DEFAULT_SCENE_CONFIGURATION__</string>
+					<key>UISceneDelegateClassName</key>
+					<string>SceneDelegate</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>ISpeechToText Uses Speech Recognition</string>
 	<key>NSLocalNetworkUsageDescription</key>

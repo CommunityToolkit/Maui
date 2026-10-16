@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- dotnet/maui's device-test runner (headless XHarness runner + visual runner), vendored: see README.md. -->
+
+  <PropertyGroup>
+    <!-- No plain $(NetVersion) target (the code needs a platform): on Linux, where the Apple workloads do not exist, only Android. -->
+    <TargetFrameworks>$(NetVersion)-android</TargetFrameworks>
+    <TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">$(TargetFrameworks);$(NetVersion)-ios;$(NetVersion)-maccatalyst</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);$(NetVersion)-windows10.0.19041.0</TargetFrameworks>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <IsPackable>false</IsPackable>
+    <!-- The xunit package marks every project that references it as a test project; `dotnet test` (Microsoft.Testing.Platform
+         mode, see global.json) would then refuse to run the solution's unit tests. -->
+    <IsTestProject>false</IsTestProject>
+    <RootNamespace>CommunityToolkit.Maui.DeviceTests.Runners</RootNamespace>
+    <!-- Not dotnet/maui's assembly name: Microsoft.Maui.dll grants [InternalsVisibleTo] to "Microsoft.Maui.TestUtils.DeviceTests.Runners",
+         so keeping that name would silently compile against MAUI internals. -->
+    <AssemblyName>CommunityToolkit.Maui.DeviceTests.Runners</AssemblyName>
+    <!-- Same as dotnet/maui: the vendored sources declare their usings and are written for a nullable-disabled project
+         (files opt in with #nullable enable). -->
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <!-- CS0618: the vendored visual-runner XAML uses Frame, obsolete since .NET 9.
+         Windows: CsWinRT generates the WinRT marshalling code with unsafe blocks (CsWinRT1030), and CsWinRT1028 asks for
+         partial classes, which only matters for trimmed/AOT apps. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);CA1416;CS0618;CsWinRT1028;XC0022;XC0023</NoWarn>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0022;XC0023</WarningsNotAsErrors>
+
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\credits.html" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Keep Microsoft.DotNet.XHarness.TestRunners.Xunit on the same version as the xharness CLI in .config/dotnet-tools.json.
+         It comes from the dotnet-eng feed (see NuGet.config); dotnet/maui main pins the same version. -->
+    <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="11.0.0-prerelease.26466.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiPackageVersion)" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.abstractions" Version="2.0.3" />
+    <PackageReference Include="xunit.runner.utility" Version="2.9.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="VisualRunner\Pages\TestAssemblyPage.xaml.cs">
+      <DependentUpon>TestAssemblyPage.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+</Project>

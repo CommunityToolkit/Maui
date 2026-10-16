@@ -84,4 +84,33 @@ public class BackgroundColorToTests : BaseTest
 		await Assert.ThrowsAsync<ArgumentNullException>(() => element.BackgroundColorTo(null, token: TestContext.Current.CancellationToken));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
+
+	[Fact]
+	public void BackgroundColorTo_DoesNotAllowZeroRate()
+	{
+		Color originalBackgroundColor = Colors.Blue;
+
+		VisualElement element = new Label { BackgroundColor = originalBackgroundColor };
+		element.EnableAnimations();
+
+		// Thrown by the call itself, before an animation starts: .NET MAUI divides by the rate on every frame of the platform's animation ticker
+		Assert.Throws<ArgumentOutOfRangeException>("rate", () => { _ = element.BackgroundColorTo(Colors.Red, rate: 0, token: TestContext.Current.CancellationToken); });
+
+		Assert.False(element.AnimationIsRunning(nameof(ColorAnimationExtensions.BackgroundColorTo)));
+		Assert.Equal(originalBackgroundColor, element.BackgroundColor);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task BackgroundColorTo_VerifyColorChangedForSmallestRate()
+	{
+		Color originalBackgroundColor = Colors.Blue, updatedBackgroundColor = Colors.Red;
+
+		VisualElement element = new Label { BackgroundColor = originalBackgroundColor };
+		element.EnableAnimations();
+
+		var isSuccessful = await element.BackgroundColorTo(updatedBackgroundColor, rate: 1, token: TestContext.Current.CancellationToken);
+
+		Assert.True(isSuccessful);
+		Assert.Equal(updatedBackgroundColor, element.BackgroundColor);
+	}
 }

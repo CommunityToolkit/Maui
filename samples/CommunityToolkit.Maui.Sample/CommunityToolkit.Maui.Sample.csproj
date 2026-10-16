@@ -41,6 +41,14 @@
     <TrimMode>partial</TrimMode>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'
+      AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+    <!-- The Release build for iOS is AOT compiled and cannot JIT. With dynamic code supported, reflection emits dynamic methods: MauiUIApplicationDelegate
+         then crashes at launch in HasSceneManifest ("Attempting to JIT compile method ... NSMutableDictionary..ctor ... while running in aot-only mode")
+         as soon as Info.plist has the UIApplicationSceneManifest that the iOS 27 SDK requires. -->
+    <DynamicCodeSupport>false</DynamicCodeSupport>
+  </PropertyGroup>
+
   <ItemGroup>    
     <!-- App Icon -->
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />

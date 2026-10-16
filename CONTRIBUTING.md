@@ -131,13 +131,14 @@ Here we will have some:
 
 ### Code Formatting
 
-To format your code, run [`dotnet format`](https://learn.microsoft.com/dotnet/core/tools/dotnet-format) on the samples solution (it includes every project in this repository):
+To format your code, run `eng/format.ps1`. It runs [`dotnet format`](https://learn.microsoft.com/dotnet/core/tools/dotnet-format) on the samples solution, which includes every project in this repository:
 
 ```bash
-dotnet format samples/CommunityToolkit.Maui.Sample.slnx --exclude-diagnostics CS0612 CS0618 CS0672 CS1062 CS1064
+pwsh eng/format.ps1           # format every project
+pwsh eng/format.ps1 -Verify   # change nothing; fail if a file needs formatting
 ```
 
-The `--exclude-diagnostics` flag is required because, without it, `dotnet format` applies Roslyn's "Add `[Obsolete]`" code fix for these compiler warnings (see [dotnet/format#1230](https://github.com/dotnet/format/issues/1230)), adding the `[Obsolete]` attribute to every member that uses (CS0612, CS0618, CS1062, CS1064) or overrides (CS0672) an obsolete API. Excluding these diagnostics only affects `dotnet format`; the compiler still reports the warnings when building.
+Please use the script instead of a plain `dotnet format`. The script passes `--exclude-diagnostics CS0612 CS0618 CS0672 CS1062 CS1064`, which is required because, without it, `dotnet format` applies Roslyn's "Add `[Obsolete]`" code fix for these compiler warnings (see [dotnet/format#1230](https://github.com/dotnet/format/issues/1230)), adding the `[Obsolete]` attribute to every member that uses (CS0612, CS0618, CS1062, CS1064) or overrides (CS0672) an obsolete API. Excluding these diagnostics only affects `dotnet format`; the compiler still reports the warnings when building.
 
 ### Debug Logging
 

@@ -141,6 +141,8 @@
 					</RadioButton.Content>
 				</RadioButton>
 			</HorizontalStackLayout>
+
+			<Label Text="DarkContent shows dark navigation buttons, Default and LightContent light ones. With gesture navigation, Android may tint the gesture handle to contrast with what is behind it, whatever the style." />
 		</VerticalStackLayout>
 	</ScrollView>
 </pages:BasePage>

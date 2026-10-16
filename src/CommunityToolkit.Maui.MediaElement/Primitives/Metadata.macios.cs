@@ -6,7 +6,7 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.Core;
 
-sealed class Metadata
+sealed class Metadata : IDisposable
 {
 	static readonly UIImage defaultUIImage = new();
 	static readonly MPNowPlayingInfo nowPlayingInfoDefault = new()
@@ -21,14 +21,18 @@ sealed class Metadata
 		Artwork = new(boundsSize: new(0, 0), requestHandler: _ => defaultUIImage)
 	};
 
+	// The instance whose media the shared MPNowPlayingInfoCenter shows, if any
+	static Metadata? nowPlayingInfoPublisher;
+
 	readonly PlatformMediaElement player;
 	readonly Action play;
+	readonly List<(MPRemoteCommand Command, NSObject Target)> remoteCommandTargets = [];
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="Metadata"/> class.
 	/// </summary>
 	/// <param name="player"></param>
-	/// <param name="play">Starts playback at the requested speed, <see cref="AVPlayer.Play"/> always starts playback at a rate of 1.</param>
+	/// <param name="play">Starts playback at the requested speed (<see cref="AVPlayer.Play"/> starts at <see cref="AVPlayer.DefaultRate"/>, which only exists from iOS 16 and Mac Catalyst 16).</param>
 	public Metadata(PlatformMediaElement player, Action play)
 	{
 		this.player = player;
@@ -38,22 +42,22 @@ sealed class Metadata
 		var commandCenter = MPRemoteCommandCenter.Shared;
 
 		commandCenter.TogglePlayPauseCommand.Enabled = true;
-		commandCenter.TogglePlayPauseCommand.AddTarget(ToggleCommand);
+		AddTarget(commandCenter.TogglePlayPauseCommand, ToggleCommand);
 
 		commandCenter.PlayCommand.Enabled = true;
-		commandCenter.PlayCommand.AddTarget(PlayCommand);
+		AddTarget(commandCenter.PlayCommand, PlayCommand);
 
 		commandCenter.PauseCommand.Enabled = true;
-		commandCenter.PauseCommand.AddTarget(PauseCommand);
+		AddTarget(commandCenter.PauseCommand, PauseCommand);
 
 		commandCenter.ChangePlaybackPositionCommand.Enabled = true;
-		commandCenter.ChangePlaybackPositionCommand.AddTarget(SeekCommand);
+		AddTarget(commandCenter.ChangePlaybackPositionCommand, SeekCommand);
 
 		commandCenter.SeekBackwardCommand.Enabled = true;
-		commandCenter.SeekBackwardCommand.AddTarget(SeekBackwardCommand);
+		AddTarget(commandCenter.SeekBackwardCommand, SeekBackwardCommand);
 
 		commandCenter.SeekForwardCommand.Enabled = false;
-		commandCenter.SeekForwardCommand.AddTarget(SeekForwardCommand);
+		AddTarget(commandCenter.SeekForwardCommand, SeekForwardCommand);
 	}
 
 	/// <summary>
@@ -65,7 +69,11 @@ sealed class Metadata
 	/// <summary>
 	/// Clears the metadata for the currently playing media.
 	/// </summary>
-	public static void ClearNowPlaying() => MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = nowPlayingInfoDefault;
+	public static void ClearNowPlaying()
+	{
+		nowPlayingInfoPublisher = null;
+		MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = nowPlayingInfoDefault;
+	}
 
 	/// <summary>
 	/// Sets the data for the currently playing media from the media element.
@@ -89,7 +97,38 @@ sealed class Metadata
 		NowPlayingInfo.PlaybackRate = mediaElement.Speed;
 		NowPlayingInfo.ElapsedPlaybackTime = playerItem?.CurrentTime.Seconds ?? 0;
 		NowPlayingInfo.Artwork = new(boundsSize: new(320, 240), requestHandler: _ => GetImage(url));
+		PublishNowPlayingInfo();
+	}
+
+	/// <summary>
+	/// Shows <see cref="NowPlayingInfo"/> on the shared <see cref="MPNowPlayingInfoCenter"/> (lock screen and Control Center).
+	/// </summary>
+	public void PublishNowPlayingInfo()
+	{
+		nowPlayingInfoPublisher = this;
 		MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = NowPlayingInfo;
+	}
+
+	/// <summary>
+	/// Removes the targets that this instance registered on the shared <see cref="MPRemoteCommandCenter"/>, so that the commands no
+	/// longer reach a player that is gone and this instance can be collected, and clears the Now Playing info if it is this instance's.
+	/// </summary>
+	public void Dispose()
+	{
+		// The command center is shared by every player of the app: only this instance's targets are removed
+		foreach (var (command, target) in remoteCommandTargets)
+		{
+			command.RemoveTarget(target);
+			target.Dispose();
+		}
+
+		remoteCommandTargets.Clear();
+
+		// The lock screen and Control Center must not keep showing the media of a player that is gone; another player's media stays
+		if (ReferenceEquals(nowPlayingInfoPublisher, this))
+		{
+			ClearNowPlaying();
+		}
 	}
 
 	static UIImage GetImage(string imageUri)
@@ -108,6 +147,9 @@ sealed class Metadata
 		}
 	}
 
+	void AddTarget(MPRemoteCommand command, Func<MPRemoteCommandEvent, MPRemoteCommandHandlerStatus> handler) =>
+		remoteCommandTargets.Add((command, command.AddTarget(handler)));
+
 	MPRemoteCommandHandlerStatus SeekCommand(MPRemoteCommandEvent? commandEvent)
 	{
 		if (commandEvent is not MPChangePlaybackPositionCommandEvent eventArgs)
@@ -115,7 +157,8 @@ sealed class Metadata
 			return MPRemoteCommandHandlerStatus.CommandFailed;
 		}
 
-		var seekTime = CMTime.FromSeconds(eventArgs.PositionTime, 1);
+		// A time scale of 1000 keeps the milliseconds of the requested position (a time scale of 1 rounds it to whole seconds)
+		var seekTime = CMTime.FromSeconds(eventArgs.PositionTime, 1000);
 		player.Seek(seekTime);
 		return MPRemoteCommandHandlerStatus.Success;
 	}
@@ -168,7 +211,7 @@ sealed class Metadata
 
 	MPRemoteCommandHandlerStatus ToggleCommand(MPRemoteCommandEvent? commandEvent)
 	{
-		if (commandEvent is not null)
+		if (commandEvent is null)
 		{
 			return MPRemoteCommandHandlerStatus.CommandFailed;
 		}

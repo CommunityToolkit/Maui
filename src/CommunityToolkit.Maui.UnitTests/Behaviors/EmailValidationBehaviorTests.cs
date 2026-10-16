@@ -252,6 +252,35 @@ public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBe
 		Assert.Equal(expectedValue, behavior.IsValid);
 	}
 
+	[Theory]
+	[InlineData(TextDecorationFlags.None, " email@example.com ", false)]
+	[InlineData(TextDecorationFlags.Trim, " email@example.com ", true)]
+	[InlineData(TextDecorationFlags.TrimStart, " email@example.com", true)]
+	[InlineData(TextDecorationFlags.TrimStart, "email@example.com ", false)]
+	[InlineData(TextDecorationFlags.TrimEnd, "email@example.com ", true)]
+	[InlineData(TextDecorationFlags.TrimEnd, " email@example.com", false)]
+	[InlineData(TextDecorationFlags.Trim, " email @example.com ", false)]
+	public async Task IsValid_DecorationFlagsAreAppliedBeforeValidation(TextDecorationFlags flags, string value, bool expectedValue)
+	{
+		// Arrange
+		var behavior = new EmailValidationBehavior
+		{
+			DecorationFlags = flags
+		};
+
+		var entry = new Entry
+		{
+			Text = value
+		};
+		entry.Behaviors.Add(behavior);
+
+		// Act
+		await behavior.ForceValidate(TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.Equal(expectedValue, behavior.IsValid);
+	}
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ForceValidateCancellationTokenExpired()
 	{

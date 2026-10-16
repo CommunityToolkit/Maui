@@ -49,7 +49,7 @@ public partial class MauiMediaElement : Grid, IDisposable
 	/// Gets the presented page.
 	/// </summary>
 	protected static Page CurrentPage =>
-		PageExtensions.GetCurrentPage(Application.Current?.Windows[0].Page ?? throw new InvalidOperationException($"{nameof(Page)} cannot be null."));
+		PageExtensions.GetCurrentPage(Application.Current?.Windows.FirstOrDefault()?.Page ?? throw new InvalidOperationException($"{nameof(Page)} cannot be null."));
 
 	/// <summary>
 	/// Releases the managed and unmanaged resources used by the <see cref="MauiMediaElement"/>.
@@ -81,13 +81,15 @@ public partial class MauiMediaElement : Grid, IDisposable
 		{
 			return;
 		}
-		if (customTransportControls?.FullScreenButton is not null)
-		{
-			customTransportControls.FullScreenButton.Click -= OnFullScreenButtonClick;
-		}
 
 		if (disposing)
 		{
+			// The button is a XAML object: only Dispose(true) may touch it, Dispose(false) runs on the finalizer thread
+			if (customTransportControls?.FullScreenButton is not null)
+			{
+				customTransportControls.FullScreenButton.Click -= OnFullScreenButtonClick;
+			}
+
 			mediaPlayerElement.MediaPlayer.Pause();
 
 			if (mediaPlayerElement.MediaPlayer.Source is Windows.Media.Core.MediaSource mediaSource)
@@ -110,6 +112,20 @@ public partial class MauiMediaElement : Grid, IDisposable
 		var id = Win32Interop.GetWindowIdFromWindow(windowHandle);
 		return AppWindow.GetFromWindowId(id);
 	}
+
+	// The window that hosts this element. The foreground window can be another one: another window of the app (or of another app) is in front
+	// when the button is pressed from the keyboard or by assistive technology.
+	AppWindow? GetAppWindowOfThisElement() =>
+		XamlRoot?.ContentIslandEnvironment is Microsoft.UI.Content.ContentIslandEnvironment environment && environment.AppWindowId.Value is not 0
+			? AppWindow.GetFromWindowId(environment.AppWindowId)
+			: null;
+
+	// The page whose navigation bar full screen hides: the current page of the application's window that is shown in appWindow, or of the first
+	// window (CurrentPage) when none of them is
+	static Page GetCurrentPageOfWindow(AppWindow appWindow) =>
+		Application.Current?.Windows.FirstOrDefault(window => window.Handler?.PlatformView is Microsoft.UI.Xaml.Window platformWindow && platformWindow.AppWindow.Id == appWindow.Id)?.Page is Page page
+			? PageExtensions.GetCurrentPage(page)
+			: CurrentPage;
 
 	void LoadResourceDictionary()
 	{
@@ -176,20 +192,27 @@ public partial class MauiMediaElement : Grid, IDisposable
 
 	void OnFullScreenButtonClick(object sender, RoutedEventArgs e)
 	{
-		var currentPage = CurrentPage;
-		var appWindow = GetAppWindowForCurrentWindow();
+		var appWindow = GetAppWindowOfThisElement() ?? GetAppWindowForCurrentWindow();
+		var currentPage = GetCurrentPageOfWindow(appWindow);
+
+		// The window can also enter or leave full screen without this button (F11, the app, the user): the element is moved, and the
+		// navigation bar hidden or restored, only when the element is not already where the new presenter needs it
+		var isElementInFullScreenPopup = fullScreenGrid.Children.Contains(mediaPlayerElement);
 
 		if (appWindow.Presenter.Kind is AppWindowPresenterKind.FullScreen)
 		{
 			appWindow.SetPresenter(AppWindowPresenterKind.Default);
-			Shell.SetNavBarIsVisible(CurrentPage, doesNavigationBarExistBeforeFullScreen);
 
-			if (popup.IsOpen)
+			if (!isElementInFullScreenPopup)
 			{
-				popup.IsOpen = false;
-				popup.Child = null;
-				fullScreenGrid.Children.Clear();
+				return;
 			}
+
+			Shell.SetNavBarIsVisible(currentPage, doesNavigationBarExistBeforeFullScreen);
+
+			popup.IsOpen = false;
+			popup.Child = null;
+			fullScreenGrid.Children.Clear();
 			Children.Add(mediaPlayerElement);
 
 			var parent = mediaPlayerElement.Parent as FrameworkElement;
@@ -199,8 +222,16 @@ public partial class MauiMediaElement : Grid, IDisposable
 		else
 		{
 			appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
+
+			// The window left full screen without this button while the element was shown full screen: the element is still in the popup,
+			// and the navigation bar is still hidden, so its saved state must stay
+			if (isElementInFullScreenPopup)
+			{
+				return;
+			}
+
 			doesNavigationBarExistBeforeFullScreen = Shell.GetNavBarIsVisible(currentPage);
-			Shell.SetNavBarIsVisible(CurrentPage, false);
+			Shell.SetNavBarIsVisible(currentPage, false);
 
 			var displayInfo = DeviceDisplay.Current.MainDisplayInfo;
 			mediaPlayerElement.Width = displayInfo.Width / displayInfo.Density;

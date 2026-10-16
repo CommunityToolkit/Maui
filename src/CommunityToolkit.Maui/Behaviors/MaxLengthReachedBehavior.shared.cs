@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -29,6 +30,9 @@ public partial class MaxLengthReachedBehavior : BaseBehavior<InputView>
 	/// <summary>
 	/// Indicates whether the keyboard should be dismissed automatically after the maximum length is reached. This is a bindable property.
 	/// </summary>
+	/// <remarks>
+	/// Dismissing the keyboard also removes the focus from the <see cref="InputView"/>.
+	/// </remarks>
 	[BindableProperty]
 	public partial bool ShouldDismissKeyboardAutomatically { get; set; } = MaxLengthReachedBehaviorDefaults.ShouldDismissKeyboardAutomatically;
 
@@ -52,7 +56,7 @@ public partial class MaxLengthReachedBehavior : BaseBehavior<InputView>
 
 		if (ShouldDismissKeyboardAutomatically)
 		{
-			View.Unfocus();
+			View.DismissKeyboard();
 		}
 
 		var newTextValue = View.Text[..View.MaxLength];

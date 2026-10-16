@@ -124,8 +124,6 @@ public static class MauiProgram
 		builder.Services.AddHttpClient<MediaElementFromStreamPage>()
 			.AddStandardResilienceHandler(static options => options.Retry = new MobileHttpRetryStrategyOptions());
 
-		builder.Services.AddSingleton<AppShell>();
-
 		RegisterViewsAndViewModels(builder.Services);
 		RegisterEssentials(builder.Services);
 

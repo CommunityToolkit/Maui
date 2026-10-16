@@ -19,6 +19,7 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 		imagePath = Path.Combine(fileSystem.CacheDirectory, "camera-view-image.jpg");
 
 		Camera.MediaCaptured += OnMediaCaptured;
+		Camera.ErrorOccurred += OnCameraErrorOccurred;
 	}
 
 	protected override async void OnAppearing()
@@ -70,6 +71,7 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 	void Cleanup()
 	{
 		Camera.MediaCaptured -= OnMediaCaptured;
+		Camera.ErrorOccurred -= OnCameraErrorOccurred;
 	}
 
 	void OnMediaCaptured(object? sender, MediaCapturedEventArgs e)
@@ -102,6 +104,13 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 		}
 	}
 
+	// ErrorOccurred reports the failures of the work that CameraView starts on its own, which no caller could catch: connecting the camera when the
+	// page opens (for example on a device without a camera), switching to the camera picked in the Cameras picker, applying the picked resolution
+	async void OnCameraErrorOccurred(object? sender, ErrorOccurredEventArgs e)
+	{
+		await Dispatcher.DispatchAsync(() => DisplayCameraError("Camera Error", e.Exception));
+	}
+
 	void ZoomIn(object? sender, EventArgs? e)
 	{
 		Camera.ZoomFactor += 1.0f;
@@ -112,43 +121,121 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 		Camera.ZoomFactor -= 1.0f;
 	}
 
+	// The camera methods below throw when the camera fails, for example when the device has no camera, the preview was not started, a permission
+	// was not granted, or the page closed during a capture. An exception that escapes an async void event handler ends the app: catch them
 	async void SetNightMode(object? sender, EventArgs? e)
 	{
 #if ANDROID
-		await Camera.SetExtensionMode(AndroidX.Camera.Extensions.ExtensionMode.Night);
+		try
+		{
+			await Camera.SetExtensionMode(AndroidX.Camera.Extensions.ExtensionMode.Night);
+		}
+		catch (Exception ex)
+		{
+			await DisplayCameraError("Unable to Set Night Mode", ex);
+		}
 #else
 		await Task.CompletedTask;
 #endif
 	}
 
+	async void StartCameraPreview(object? sender, EventArgs? e)
+	{
+		try
+		{
+			await Camera.StartCameraPreview(CancellationToken.None);
+		}
+		catch (Exception ex)
+		{
+			await DisplayCameraError("Unable to Start Camera Preview", ex);
+		}
+	}
+
+	async void CaptureImage(object? sender, EventArgs? e)
+	{
+		try
+		{
+			// OnMediaCaptured shows the captured image
+			await Camera.CaptureImage(CancellationToken.None);
+		}
+		catch (Exception ex)
+		{
+			await DisplayCameraError("Unable to Capture Image", ex);
+		}
+	}
+
 	async void StartCameraRecording(object? sender, EventArgs? e)
 	{
-		await Camera.StartVideoRecording(CancellationToken.None);
+		try
+		{
+			await Camera.StartVideoRecording(CancellationToken.None);
+		}
+		catch (Exception ex)
+		{
+			await DisplayCameraError("Unable to Start Video Recording", ex);
+		}
 	}
 
 	async void StopCameraRecording(object? sender, EventArgs? e)
 	{
-		videoRecordingStream = await Camera.StopVideoRecording(CancellationToken.None);
+		try
+		{
+			var recordingStream = await Camera.StopVideoRecording(CancellationToken.None);
+
+			// StopVideoRecording returns Stream.Null when no recording runs, for example when Stop Video Recording is tapped twice:
+			// keep the recording that was not saved yet
+			if (recordingStream != Stream.Null)
+			{
+				await videoRecordingStream.DisposeAsync();
+				videoRecordingStream = recordingStream;
+			}
+		}
+		catch (Exception ex)
+		{
+			await DisplayCameraError("Unable to Stop Video Recording", ex);
+		}
 	}
 
 	async void SaveVideo(object? sender, EventArgs? e)
 	{
-		if (videoRecordingStream == Stream.Null)
+		try
 		{
-			await DisplayAlertAsync("Unable to Save Video", "Stream is null", "OK");
-		}
-		else
-		{
-			var status = await Permissions.RequestAsync<Permissions.StorageWrite>();
-			if (status is not PermissionStatus.Granted)
+			if (videoRecordingStream == Stream.Null)
 			{
-				await Shell.Current.CurrentPage.DisplayAlertAsync("Storage permission is not granted.", "Please grant the permission to use this feature.", "OK");
-				return;
+				await DisplayAlertAsync("Unable to Save Video", "Stream is null", "OK");
 			}
+			else
+			{
+				var status = await Permissions.RequestAsync<Permissions.StorageWrite>();
+				if (status is not PermissionStatus.Granted)
+				{
+					await Shell.Current.CurrentPage.DisplayAlertAsync("Storage permission is not granted.", "Please grant the permission to use this feature.", "OK");
+					return;
+				}
 
-			await fileSaver.SaveAsync("recording.mp4", videoRecordingStream);
-			await videoRecordingStream.DisposeAsync();
-			videoRecordingStream = Stream.Null;
+				var fileSaverResult = await fileSaver.SaveAsync("recording.mp4", videoRecordingStream);
+				if (!fileSaverResult.IsSuccessful)
+				{
+					// The recording is kept, so it can be saved again. A save that the user cancelled needs no message
+					if (!fileSaverResult.IsCancelled)
+					{
+						await DisplayAlertAsync("Unable to Save Video", fileSaverResult.Exception.Message, "OK");
+					}
+
+					return;
+				}
+
+				await videoRecordingStream.DisposeAsync();
+				videoRecordingStream = Stream.Null;
+			}
+		}
+		catch (Exception ex)
+		{
+			await DisplayCameraError("Unable to Save Video", ex);
 		}
 	}
+
+	// The failure of work that still ran when the page closed, for example a capture that fails with "Camera is closed" because the CameraView
+	// released the camera, shows no alert: DisplayAlertAsync shows nothing for a page that is no longer in a window
+	Task DisplayCameraError(string title, Exception exception) => DisplayAlertAsync(title, exception.Message, "OK");
 }

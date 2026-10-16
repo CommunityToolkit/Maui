@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Foundation;
 using Microsoft.Maui.Platform;
 using UIKit;
 
@@ -6,10 +7,32 @@ namespace CommunityToolkit.Maui.Behaviors;
 
 public partial class IconTintColorBehavior
 {
+	// The states whose title color MAUI sets on a UIButton (ButtonHandler). A title without a color of its own follows the tint color.
+	static readonly UIControlState[] titleColorStates = [UIControlState.Normal, UIControlState.Highlighted, UIControlState.Disabled];
+
+	// What the behavior changed to tint the platform view, put back when the tint is removed. Null while the view is not tinted.
+	OriginalTint? originalTint;
+
+	// Watches the image of a Button's UIButton. MAUI gives the button the image of a new ImageSource once it has loaded it, as AlwaysOriginal,
+	// and unlike Image and ImageButton, a Button has no IsLoading that tells when.
+	IDisposable? buttonImageObserver;
+
+	// The image view that buttonImageObserver watches. The observer only holds a weak reference to the managed UIImageView, and cannot remove
+	// the observation once that is collected: it is kept for as long as the observation.
+	UIImageView? observedButtonImageView;
+
 	/// <inheritdoc/>
 	protected override void OnViewPropertyChanged(View sender, PropertyChangedEventArgs e)
 	{
 		base.OnViewPropertyChanged(sender, e);
+
+		// MAUI maps Button.TextColor to the tint color and the title colors of the UIButton (ButtonExtensions.UpdateTextColor) after this
+		// notification, which recolors the icon: it is tinted again once MAUI is done.
+		if (e.PropertyName == Button.TextColorProperty.PropertyName && sender is Button && originalTint is not null)
+		{
+			sender.Dispatcher.Dispatch(OnButtonTextColorMapped);
+			return;
+		}
 
 		if ((e.PropertyName != ImageButton.IsLoadingProperty.PropertyName
 			&& e.PropertyName != Image.SourceProperty.PropertyName
@@ -32,13 +55,14 @@ public partial class IconTintColorBehavior
 
 		ApplyTintColor(platformView, bindable, TintColor);
 
-		PropertyChanged += (s, e) =>
+		PropertyChanged += OnIconTintColorBehaviorPropertyChanged;
+
+		if (bindable is Button { Handler.PlatformView: UIButton button })
 		{
-			if (e.PropertyName == TintColorProperty.PropertyName)
-			{
-				ApplyTintColor(platformView, bindable, TintColor);
-			}
-		};
+			StopObservingButtonImage();
+			observedButtonImageView = button.ImageView;
+			buttonImageObserver = observedButtonImageView.AddObserver("image", NSKeyValueObservingOptions.New, OnButtonImageChanged);
+		}
 	}
 
 	/// <inheritdoc/>
@@ -46,10 +70,91 @@ public partial class IconTintColorBehavior
 	{
 		base.OnDetachedFrom(bindable, platformView);
 
+		PropertyChanged -= OnIconTintColorBehaviorPropertyChanged;
+
+		StopObservingButtonImage();
+
 		ClearTintColor(platformView, bindable);
 	}
 
-	static void ClearTintColor(UIView platformView, View element)
+	// UIKit dims the tint color of the views behind an alert, an action sheet or a popover (TintAdjustmentMode Dimmed), and a button reports
+	// its tint color, and the title colors that follow it, dimmed meanwhile. The colors the behavior keeps, compares and puts back are the
+	// ones without the dimming: the view is undimmed while it runs the action, then gets its mode back.
+	static void RunUndimmed(UIView view, Action action)
+	{
+		if (view.TintAdjustmentMode is not UIViewTintAdjustmentMode.Dimmed)
+		{
+			action();
+			return;
+		}
+
+		// Dimmed by its superview, the view follows it again (MAUI leaves TintAdjustmentMode Automatic); otherwise it is dimmed of its own.
+		var tintAdjustmentMode = view.Superview?.TintAdjustmentMode is UIViewTintAdjustmentMode.Dimmed ? UIViewTintAdjustmentMode.Automatic : UIViewTintAdjustmentMode.Dimmed;
+		view.TintAdjustmentMode = UIViewTintAdjustmentMode.Normal;
+
+		try
+		{
+			action();
+		}
+		finally
+		{
+			view.TintAdjustmentMode = tintAdjustmentMode;
+		}
+	}
+
+	void StopObservingButtonImage()
+	{
+		buttonImageObserver?.Dispose();
+		buttonImageObserver = null;
+		observedButtonImageView = null;
+	}
+
+	void OnIconTintColorBehaviorPropertyChanged(object? sender, PropertyChangedEventArgs e)
+	{
+		if (e.PropertyName == TintColorProperty.PropertyName && View?.Handler?.PlatformView is UIView platformView)
+		{
+			ApplyTintColor(platformView, View, TintColor);
+		}
+	}
+
+	// UIKit reports the new image while the button is still updating it: the image is tinted once the button is done.
+	void OnButtonImageChanged(NSObservedChange change)
+	{
+		if (GetButtonWithAnUntintedImage() is not null)
+		{
+			View?.Dispatcher.Dispatch(() =>
+			{
+				if (GetButtonWithAnUntintedImage() is UIButton button && View is View view && TintColor is Color tintColor)
+				{
+					SetUIButtonTintColor(button, view, tintColor);
+				}
+			});
+		}
+	}
+
+	// MAUI has given the button the tint color and the title colors of its TextColor: they are the colors to put back from now on, and the
+	// icon is tinted again. MAUI leaves the tint color alone when it styles the button through its UIButtonConfiguration (Mac idiom).
+	void OnButtonTextColorMapped()
+	{
+		if (originalTint is null || TintColor is not Color tintColor || View is not Button view || view.Handler?.PlatformView is not UIButton button)
+		{
+			return;
+		}
+
+		RunUndimmed(button, () =>
+		{
+			if (!tintColor.ToPlatform().Equals(button.TintColor))
+			{
+				originalTint = null;
+				SetUIButtonTintColor(button, view, tintColor);
+			}
+		});
+	}
+
+	UIButton? GetButtonWithAnUntintedImage() =>
+		TintColor is not null && View?.Handler?.PlatformView is UIButton { CurrentImage.RenderingMode: not UIImageRenderingMode.AlwaysTemplate } button ? button : null;
+
+	void ClearTintColor(UIView platformView, View element)
 	{
 		switch (platformView)
 		{
@@ -59,22 +164,54 @@ public partial class IconTintColorBehavior
 					imageView.Image = imageView.Image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 				}
 
-				break;
-			case UIButton button:
-				if (button.ImageView.Image is not null)
+				// MAUI never sets the tint color of an image view: it follows the one of its superview again.
+				if (originalTint is not null)
 				{
-					var originalImage = button.CurrentImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
-					button.SetImage(originalImage, UIControlState.Normal);
+					imageView.TintColor = null;
 				}
 
+				break;
+			case UIButton button:
+				RunUndimmed(button, () => ClearUIButtonTintColor(button));
 				break;
 
 			default:
 				throw new NotSupportedException($"{nameof(IconTintColorBehavior)} only currently supports {nameof(UIButton)} and {nameof(UIImageView)}.");
 		}
+
+		originalTint = null;
 	}
 
-	static void ApplyTintColor(UIView platformView, View element, Color? color)
+	void ClearUIButtonTintColor(UIButton button)
+	{
+		// CurrentImage is the image the behavior tints (SetUIButtonTintColor): it is null for an image that comes from a UIButtonConfiguration.
+		if (button.CurrentImage is UIImage currentImage)
+		{
+			var originalImage = currentImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+			button.SetImage(originalImage, UIControlState.Normal);
+		}
+
+		if (originalTint is null)
+		{
+			return;
+		}
+
+		button.TintColor = originalTint.TintColor;
+
+		// MAUI never sets the tint color of the button's image view: it follows the button's again.
+		button.ImageView.TintColor = null;
+
+		// The title colors the behavior set are removed, unless the button got other title colors in the meantime.
+		foreach (var (state, titleColor) in originalTint.TitleColors)
+		{
+			if (titleColor.Equals(button.TitleColor(state)))
+			{
+				button.SetTitleColor(null, state);
+			}
+		}
+	}
+
+	void ApplyTintColor(UIView platformView, View element, Color? color)
 	{
 		if (color is null)
 		{
@@ -95,30 +232,58 @@ public partial class IconTintColorBehavior
 		}
 	}
 
-	static void SetUIButtonTintColor(UIButton button, View element, Color color)
+	void SetUIButtonTintColor(UIButton button, View element, Color color)
 	{
-		if (button.ImageView.Image is null || button.CurrentImage is null)
+		if (button.ImageView.Image is null || button.CurrentImage is not UIImage currentImage)
 		{
 			return;
 		}
 
-		var templatedImage = button.CurrentImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+		RunUndimmed(button, () =>
+		{
+			var templatedImage = currentImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+			var titleColors = Array.ConvertAll(titleColorStates, button.TitleColor);
+			var tint = originalTint ??= new(button.TintColor);
 
-		button.SetImage(null, UIControlState.Normal);
-		var platformColor = color.ToPlatform();
-		button.TintColor = platformColor;
-		button.ImageView.TintColor = platformColor;
-		button.SetImage(templatedImage, UIControlState.Normal);
+			button.SetImage(null, UIControlState.Normal);
+			var platformColor = color.ToPlatform();
+			button.TintColor = platformColor;
+			button.ImageView.TintColor = platformColor;
+			button.SetImage(templatedImage, UIControlState.Normal);
+
+			// The tint color is for the icon: the title keeps the color it had in each state. A state's title color can follow the tint color, or
+			// the Normal one once that is set (Disabled does), so each state is compared after the previous ones were set back.
+			for (var i = 0; i < titleColorStates.Length; i++)
+			{
+				if (titleColors[i] is UIColor titleColor && !titleColor.Equals(button.TitleColor(titleColorStates[i])))
+				{
+					button.SetTitleColor(titleColor, titleColorStates[i]);
+					tint.TitleColors.Add((titleColorStates[i], titleColor));
+				}
+			}
+		});
 	}
 
-	static void SetUIImageViewTintColor(UIImageView imageView, View element, Color color)
+	void SetUIImageViewTintColor(UIImageView imageView, View element, Color color)
 	{
 		if (imageView.Image is null)
 		{
 			return;
 		}
 
+		// MAUI never sets the tint color of an image view: ClearTintColor gives it back the one of its superview.
+		originalTint ??= new(null);
+
 		imageView.Image = imageView.Image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
 		imageView.TintColor = color.ToPlatform();
+	}
+
+	// The tint color of a UIButton before the behavior tinted it (MAUI maps Button.TextColor to it), and the title colors the behavior set on
+	// the button to keep its title out of the tint. An image view has neither.
+	sealed class OriginalTint(UIColor? tintColor)
+	{
+		public UIColor? TintColor { get; } = tintColor;
+
+		public List<(UIControlState State, UIColor Color)> TitleColors { get; } = [];
 	}
 }

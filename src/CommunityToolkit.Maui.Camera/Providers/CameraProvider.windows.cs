@@ -23,7 +23,11 @@ partial class CameraProvider
 
 			try
 			{
-				await mediaCapture.InitializeCameraForCameraView(sourceGroup.Id, token);
+				if (!await mediaCapture.InitializeCameraForCameraView(sourceGroup.Id, token))
+				{
+					// Media Foundation could not open that camera, and the VideoDeviceController of a MediaCapture that is not initialized throws
+					continue;
+				}
 			}
 			catch (Exception ex) when (ex is not OperationCanceledException)
 			{

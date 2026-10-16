@@ -149,6 +149,12 @@ Follow the style used by the [.NET Foundation](https://github.com/dotnet/runtime
 
 Read and follow our [Pull Request template](https://github.com/CommunityToolkit/Maui/blob/main/.github/PULL_REQUEST_TEMPLATE.md)
 
+## Device Tests
+* Platform code that the `net10.0` unit tests cannot reach is covered by device tests that run inside real apps on Android, iOS, Mac Catalyst and Windows, built like dotnet/maui's device tests (xUnit, dotnet/maui's test runner, XHarness).
+* There is one test app per shipped feature package: `src/CommunityToolkit.Maui.DeviceTests` (`CommunityToolkit.Maui`, `.Core` and `.Maps`), `src/CommunityToolkit.Maui.MediaElement.DeviceTests` and `src/CommunityToolkit.Maui.Camera.DeviceTests`.
+* Give every test class a `[Category(TestCategory.X)]` and name platform-specific test files with the same suffixes as the libraries (`.android.cs`, `.ios.cs`, `.macos.cs`, `.macios.cs`, `.windows.cs`). How to write them is in [src/CommunityToolkit.Maui.DeviceTests/README.md](https://github.com/CommunityToolkit/Maui/blob/main/src/CommunityToolkit.Maui.DeviceTests/README.md).
+* `dotnet test` does not run them. Use `eng/devices/android.ps1`, `ios.ps1`, `catalyst.ps1` or `windows.ps1`, as described in [eng/devices/README.md](https://github.com/CommunityToolkit/Maui/blob/main/eng/devices/README.md); the `Device Tests` workflow runs them on every pull request.
+
 ## Submitting Contributions
 1.	Fork the repository and create a new branch for your changes.
 2.	Implement your changes using GitHub Copilot as needed.

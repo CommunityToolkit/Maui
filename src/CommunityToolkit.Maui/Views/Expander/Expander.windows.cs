@@ -17,18 +17,20 @@ public partial class Expander
 
 		if (collectionView.Handler?.PlatformView is PlatformListView listView)
 		{
-			var offset = 0.0;
 			foreach (var item in listView.Items)
 			{
 				if (listView.ContainerFromItem(item) is PlatformListViewItem cell)
 				{
-					if (tapLocation.Value.Y >= offset && tapLocation.Value.Y <= offset + cell.ActualHeight)
+					// Where the list shows the container (horizontal or vertical, scrolled or not), in the coordinates of the tap location
+					var cellTransform = cell.TransformToVisual(listView);
+					var cellPosition = cellTransform.TransformPoint(new Windows.Foundation.Point(0, 0));
+					var cellBounds = new Rect(cellPosition.X, cellPosition.Y, cell.ActualWidth, cell.ActualHeight);
+
+					if (cellBounds.Contains(tapLocation.Value))
 					{
 						cell.Height = size.Height;
-						offset += cell.Height - cell.ActualHeight;
+						break;
 					}
-
-					offset += cell.ActualHeight;
 				}
 			}
 		}

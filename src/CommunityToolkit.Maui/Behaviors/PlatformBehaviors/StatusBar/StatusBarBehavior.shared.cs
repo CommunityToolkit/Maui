@@ -19,6 +19,9 @@ public enum StatusBarApplyOn
 	/// <summary>
 	/// Apply color and style when the page has been navigated to.
 	/// </summary>
+	/// <remarks>
+	/// A navigation that .NET MAUI reports before the page loads applies nothing: see <see cref="StatusBarBehavior.ApplyOn"/>.
+	/// </remarks>
 	OnPageNavigatedTo
 }
 
@@ -35,14 +38,36 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 	public partial Color StatusBarColor { get; set; } = StatusBarBehaviorDefaults.StatusBarColor;
 
 	/// <summary>
-	/// Property that holds the value of the Status bar color. 
+	/// Property that holds the value of the Status bar style.
 	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// iOS, .NET 10: the behavior applies the style to the whole app with <see cref="StatusBar.SetStyle(StatusBarStyle)"/> (UIApplication.SetStatusBarStyle),
+	/// which a scene-based app (every app built with the Xcode 27 SDK) ignores, and which iOS 27 reports as a no-op: the status bar keeps the style that the
+	/// view controllers of the app return.
+	/// </para>
+	/// <para>
+	/// iOS, .NET 11: the behavior sets <c>Window.StatusBarTheme</c> of its page's window, and the view controllers of .NET MAUI return the matching
+	/// style: <see cref="StatusBarStyle.LightContent"/> sets <c>StatusBarTheme.Dark</c>, <see cref="StatusBarStyle.DarkContent"/> sets
+	/// <c>StatusBarTheme.Light</c> and <see cref="StatusBarStyle.Default"/> sets <c>StatusBarTheme.Default</c>. It does so when it applies the style
+	/// (see <see cref="ApplyOn"/>) and when the style changes while it is attached. The other windows of the app keep their style, and a style that
+	/// changes while the behavior is not attached to a page of a window changes no status bar. UIKit applies the style only when the app's Info.plist
+	/// does not set <c>UIViewControllerBasedStatusBarAppearance</c> to false: with false the status bar keeps its style and the behavior writes a trace
+	/// message when it sets the theme. Remove that key, which the .NET 10 setup of this behavior adds.
+	/// </para>
+	/// </remarks>
 	[BindableProperty]
 	public partial StatusBarStyle StatusBarStyle { get; set; } = StatusBarBehaviorDefaults.StatusBarStyle;
 
 	/// <summary>
 	/// When the status bar color and style should be applied.
 	/// </summary>
+	/// <remarks>
+	/// With <see cref="StatusBarApplyOn.OnPageNavigatedTo"/> the behavior applies them when the page raises <see cref="Page.NavigatedTo"/> while the
+	/// behavior is attached, and the behavior attaches when the page loads: a NavigatedTo that .NET MAUI raises before the page loads applies nothing.
+	/// On iOS that is the case when a TabbedPage selects the tab of the page and when a FlyoutPage shows the page as its Detail, and, with .NET 11, also
+	/// when a NavigationPage pushes the page, or pops back to it, without animation.
+	/// </remarks>
 	[BindableProperty]
 	public partial StatusBarApplyOn ApplyOn { get; set; } = StatusBarBehaviorDefaults.ApplyOn;
 
@@ -68,7 +93,7 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 #endif
 
 			StatusBar.SetColor(StatusBarColor);
-			StatusBar.SetStyle(StatusBarStyle);
+			ApplyStatusBarStyle();
 		}
 
 		page.NavigatedTo += OnPageNavigatedTo;
@@ -118,7 +143,7 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 		}
 		else if (propertyName == StatusBarStyleProperty.PropertyName)
 		{
-			StatusBar.SetStyle(StatusBarStyle);
+			ApplyStatusBarStyle();
 		}
 	}
 #endif
@@ -131,13 +156,42 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 	}
 #endif
 
+#if IOS && NET11_0_OR_GREATER
+	// UseMauiCommunityToolkit connects StatusBar.SetStyle to this method (StatusBar.SetStatusBarThemeOfEveryWindow): only Microsoft.Maui.Controls.Window
+	// can change the StatusBarTheme that the view controllers of .NET MAUI return, and CommunityToolkit.Maui.Core does not reference Microsoft.Maui.Controls
+	internal static void SetStatusBarThemeOfEveryWindow(StatusBarTheme statusBarTheme)
+	{
+		foreach (var window in Application.Current?.Windows ?? [])
+		{
+			window.StatusBarTheme = statusBarTheme;
+		}
+	}
+#endif
+
 	void OnPageNavigatedTo(object? sender, NavigatedToEventArgs e)
 	{
 		if (ApplyOn is StatusBarApplyOn.OnPageNavigatedTo)
 		{
 			StatusBar.SetColor(StatusBarColor);
-			StatusBar.SetStyle(StatusBarStyle);
+			ApplyStatusBarStyle();
 		}
+	}
+
+	// iOS, .NET 11: the style of the status bar of the page's window only (see the remarks of StatusBarStyle). The style is mapped first, so that an
+	// undefined StatusBarStyle throws NotSupportedException whether or not the behavior is attached, as StatusBar.SetStyle does.
+	void ApplyStatusBarStyle()
+	{
+#if IOS && NET11_0_OR_GREATER
+		var statusBarTheme = StatusBar.ToStatusBarTheme(StatusBarStyle);
+
+		if (View?.Window is Window window)
+		{
+			window.StatusBarTheme = statusBarTheme;
+			StatusBar.TraceIfUIKitIgnoresTheStyle();
+		}
+#else
+		StatusBar.SetStyle(StatusBarStyle);
+#endif
 	}
 
 	void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)

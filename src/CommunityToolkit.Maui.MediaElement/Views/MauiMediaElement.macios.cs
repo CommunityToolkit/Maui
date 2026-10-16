@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using AVKit;
 using CommunityToolkit.Maui.Views;
+using ObjCRuntime;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -105,6 +106,13 @@ public class MauiMediaElement : UIView
 			return;
 		}
 
+		// MediaElementHandler disposes the AVPlayerViewController while this view can still be in the view hierarchy, where UIKit keeps
+		// calling LayoutSubviews, MovedToSuperview and MovedToWindow: a disposed controller cannot be added to a view controller anymore
+		if (playerViewController.Handle == NativeHandle.Zero)
+		{
+			return;
+		}
+
 		if (!TryGetParentViewController(out var viewController) || viewController.View is not UIView parentView)
 		{
 			return;
@@ -162,8 +170,11 @@ public class MauiMediaElement : UIView
 	[SupportedOSPlatform("maccatalyst16.1")]
 	static UIEdgeInsets CreateSafeAreaInsets(UIView parentView)
 	{
+		// The view of the AVPlayerViewController already gets the parent's safe area where the two overlap: its additional safe area
+		// insets must not add the parent's insets to that a second time. They are the negated insets of the parent, which adds none
+		// (UIKit does not apply negative additional insets, so this does not zero out the safe area of the AVPlayerViewController)
 		UIEdgeInsets insets = parentView.SafeAreaInsets;
-		return new UIEdgeInsets(insets.Top * -1, insets.Left, insets.Bottom * -1, insets.Right);
+		return new UIEdgeInsets(insets.Top * -1, insets.Left * -1, insets.Bottom * -1, insets.Right * -1);
 	}
 
 	[SupportedOSPlatform("ios16.0")]

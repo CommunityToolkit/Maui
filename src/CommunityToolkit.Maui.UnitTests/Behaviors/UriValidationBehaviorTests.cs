@@ -78,6 +78,33 @@ public class UriValidationBehaviorTests() : BaseBehaviorTest<UriValidationBehavi
 	}
 
 	[Fact]
+	public void IsValid_ShouldRevalidate_WhenUriKindChangesAfterTheViewLostFocus()
+	{
+		// Arrange
+		var behavior = new UriValidationBehavior
+		{
+			Flags = ValidationFlags.ValidateOnValueChanged,
+			UriKind = UriKind.Absolute
+		};
+
+		var entry = new Entry();
+		entry.Behaviors.Add(behavior);
+
+		((IView)entry).IsFocused = true;
+		entry.Text = "microsoft/xamarin/news";
+		((IView)entry).IsFocused = false;
+
+		// Assert
+		Assert.False(behavior.IsValid);
+
+		// Act
+		behavior.UriKind = UriKind.Relative;
+
+		// Assert
+		Assert.True(behavior.IsValid);
+	}
+
+	[Fact]
 	public void VerifyDefaults()
 	{
 		// Arrange

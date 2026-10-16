@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Extensions;
@@ -35,20 +36,61 @@ partial class MediaManager : IDisposable
 		MediaElementState.Stopped,
 	];
 
+	// UpdateMetadata runs on the thread that raised MediaOpened and Dispose on the UI thread: the lock keeps a MediaOpened that is still being
+	// handled from using metadata while Dispose releases it, and from subscribing to the controls again once Dispose cleared them
+	readonly Lock metadataLock = new();
 	Metadata? metadata;
 	SystemMediaTransportControls? systemMediaControls;
 	HttpClient? headerHttpClient;
 	AdaptiveMediaSource? adaptiveMediaSource;
 
+	// The player of Player. Windows.Media.Playback.MediaPlayer can be used on any thread, unlike MediaPlayerElement.MediaPlayer (a XAML
+	// property that only the UI thread can read)
+	WindowsMediaElement? mediaPlayer;
+
+	// Every source update, and Dispose, changes sourceUpdateVersion: an update that awaits (a file, a header source) applies its source only
+	// while it is still the latest one. The lock keeps the version and the adaptive source of the latest update together across threads.
+	readonly Lock sourceUpdateLock = new();
+	int sourceUpdateVersion;
+
 	// The requests to keep display active are cumulative, this bool makes sure it only gets requested once
 	bool displayActiveRequested;
+
+	// keepReportingStopped and isStopSettling change together: Play(), Stop() and a new source run on the UI thread, the native state changes arrive
+	// on other threads. Nothing calls the native player while it holds the lock.
+	readonly Lock playbackStateLock = new();
+
+	// Set when Stopped is reported (Stop() or the end of the media): the native player then pauses, and can buffer (a network source loading the
+	// position Stop() rewound to, for example), before it settles, and those state changes must not overwrite Stopped. Play(), a new source and
+	// the native Opening and None states clear it, and so does a native Playing once the stop has settled: that play did not go through Play()
+	// (the play button of the transport controls, for example, plays the native player directly).
+	bool keepReportingStopped;
+
+	// Set by a Stop() of a player that was opening, buffering or playing: the Playing state of that playback can still be reported after Stopped.
+	// PlaybackStateChanged carries no state, so its handler reads the live state of the player, which stays Playing until the pause of Stop() has
+	// taken effect. Until the player reports that pause (Paused), a Playing is stale and does not overwrite Stopped either. A Play() that the
+	// player has not started yet when Stop() reads its state (still Paused, as right after Play() in the same UI-thread turn) does not set it: the
+	// pause of Stop() cancels that play, and the player then reports no state at all (Windows 11 26200), so there is no pause to wait for. Should
+	// a player start such a play anyway after Stop() read Paused, its Playing is reported as a new play.
+	bool isStopSettling;
+
+	// Set when a source update fails, which the update reports through MediaFailed (Failed): the update took the previous media out of the player,
+	// and the states the player reports while it closes that media must not overwrite Failed. The next source update clears it.
+	volatile bool keepReportingFailed;
 
 	/// <summary>
 	/// The <see cref="DisplayRequest"/> is used to enable the <see cref="MediaElement.ShouldKeepScreenOn"/> functionality.
 	/// </summary>
 	/// <remarks>
+	/// <para>
 	/// Calls to <see cref="DisplayRequest.RequestActive"/> and <see cref="DisplayRequest.RequestRelease"/> should be in balance.
 	/// Not doing so will result in the screen staying on and negatively impacting the environment :(
+	/// </para>
+	/// <para>
+	/// Play() makes the request while <see cref="MediaElement.ShouldKeepScreenOn"/> is set, as does turning it on while the media is playing, paused
+	/// or stopped. Pause(), Stop(), turning it off, disposing the manager, and a source update that takes the media out of the player (a
+	/// <see langword="null"/> source, a source without data, or a source that cannot be applied) end the request.
+	/// </para>
 	/// </remarks>
 	protected DisplayRequest DisplayRequest { get; } = new();
 
@@ -59,10 +101,10 @@ partial class MediaManager : IDisposable
 	public PlatformMediaElement CreatePlatformView()
 	{
 		Player = new();
-		WindowsMediaElement MediaElement = new();
-		MediaElement.MediaOpened += OnMediaElementMediaOpened;
+		mediaPlayer = new();
+		mediaPlayer.MediaOpened += OnMediaElementMediaOpened;
 
-		Player.SetMediaPlayer(MediaElement);
+		Player.SetMediaPlayer(mediaPlayer);
 		Player.MediaPlayer.PlaybackSession.NaturalVideoSizeChanged += OnNaturalVideoSizeChanged;
 		Player.MediaPlayer.PlaybackSession.PlaybackRateChanged += OnPlaybackSessionPlaybackRateChanged;
 		Player.MediaPlayer.PlaybackSession.PlaybackStateChanged += OnPlaybackSessionPlaybackStateChanged;
@@ -72,6 +114,8 @@ partial class MediaManager : IDisposable
 		Player.MediaPlayer.VolumeChanged += OnMediaElementVolumeChanged;
 		Player.MediaPlayer.IsMutedChanged += OnMediaElementIsMutedChanged;
 
+		// Off until media with metadata opens (Metadata.SetMetadata): a MediaPlayer whose system media transport controls are on is a system
+		// media session, which the system media overlay shows and the media keys control, whatever it plays
 		Player.MediaPlayer.SystemMediaTransportControls.IsEnabled = false;
 		systemMediaControls = Player.MediaPlayer.SystemMediaTransportControls;
 
@@ -89,6 +133,12 @@ partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformPlay()
 	{
+		lock (playbackStateLock)
+		{
+			// The native states of the playback that starts (Buffering first, for a network source) are reported as they come
+			keepReportingStopped = isStopSettling = false;
+		}
+
 		Player?.MediaPlayer.Play();
 
 		if (MediaElement.ShouldKeepScreenOn
@@ -112,20 +162,62 @@ partial class MediaManager : IDisposable
 
 	protected virtual async partial Task PlatformSeek(TimeSpan position, CancellationToken token)
 	{
-		if (Player?.MediaPlayer.CanSeek is true)
+		// Seek can be called on any thread, so whether the media can seek, and its duration, are read from the MediaPlayer itself (once: Dispose
+		// can clear the field meanwhile) before the update is dispatched. Without media there is nothing to seek
+		if (Player is not null && mediaPlayer is WindowsMediaElement seekablePlayer && CanSeekMedia(seekablePlayer))
 		{
+			// Also before the update is queued: WaitAsync(token) stops the wait for a queued update, not the update
+			token.ThrowIfCancellationRequested();
+
+			// A position outside the media goes to its start or its end (IMediaElement.SeekTo)
+			position = ClampToTheMedia(position, seekablePlayer.PlaybackSession.NaturalDuration);
+
 			if (Dispatcher.IsDispatchRequired)
 			{
-				await Dispatcher.DispatchAsync(() => UpdatePosition(Player, position)).WaitAsync(token);
+				await Dispatcher.DispatchAsync(() =>
+				{
+					// The seek can have been cancelled while the update waited in the queue
+					if (!token.IsCancellationRequested)
+					{
+						UpdatePosition(Player, position);
+					}
+				}).WaitAsync(token);
 			}
 			else
 			{
-				token.ThrowIfCancellationRequested();
 				UpdatePosition(Player, position);
 			}
 		}
 
-		static void UpdatePosition(in MediaPlayerElement mediaPlayerElement, in TimeSpan position) => mediaPlayerElement.MediaPlayer.Position = position;
+		static void UpdatePosition(in MediaPlayerElement? mediaPlayerElement, in TimeSpan position)
+		{
+			// A queued update can run after the platform view was disposed, which detached the player (SetMediaPlayer(null))
+			if (mediaPlayerElement?.MediaPlayer is WindowsMediaElement player)
+			{
+				player.Position = position;
+			}
+		}
+	}
+
+	// Whether the player has media whose position can be set. Neither CanSeek nor the playback state tells it alone (Windows 11 26200): a
+	// MediaPlayer without media reports CanSeek, and takes a position, while its state is None (its state until media is set), and once Pause()
+	// has made such a player Paused, reading its CanSeek throws COMException (E_FAIL). MediaPlayer.Source is no witness either: SetUriSource and
+	// SetFileSource, which the source update uses, leave it null.
+	static bool CanSeekMedia(MediaPlayer player)
+	{
+		if (player.PlaybackSession.PlaybackState is MediaPlaybackState.None)
+		{
+			return false;
+		}
+
+		try
+		{
+			return player.CanSeek;
+		}
+		catch (COMException)
+		{
+			return false;
+		}
 	}
 
 	protected virtual partial void PlatformStop()
@@ -135,9 +227,26 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
+		var nativeState = Player.MediaPlayer.PlaybackSession.PlaybackState;
+
+		lock (playbackStateLock)
+		{
+			// Set before the pause: the PlaybackStateChanged(Paused) it raises arrives on another thread, after Stopped was reported
+			keepReportingStopped = true;
+
+			// A paused player reports no Playing that came before this Stop() (a Play() it has not started yet is cancelled by the pause): a Playing
+			// it reports from now on comes from a new play
+			isStopSettling = nativeState is MediaPlaybackState.Opening or MediaPlaybackState.Buffering or MediaPlaybackState.Playing;
+		}
+
 		// There's no Stop method so pause the video and reset its position
 		Player.MediaPlayer.Pause();
-		Player.MediaPlayer.Position = TimeSpan.Zero;
+
+		// Without media that can seek there is no position to reset, and the platform may refuse to set one
+		if (CanSeekMedia(Player.MediaPlayer))
+		{
+			Player.MediaPlayer.Position = TimeSpan.Zero;
+		}
 
 		MediaElement.CurrentStateChanged(MediaElementState.Stopped);
 
@@ -238,7 +347,14 @@ partial class MediaManager : IDisposable
 			UpdateVolume(Player, MediaElement.Volume);
 		}
 
-		static void UpdateVolume(in MediaPlayerElement mediaPlayerElement, in double volume) => mediaPlayerElement.MediaPlayer.Volume = volume;
+		static void UpdateVolume(in MediaPlayerElement? mediaPlayerElement, in double volume)
+		{
+			// A queued update can run after the platform view was disposed, which detached the player (SetMediaPlayer(null))
+			if (mediaPlayerElement?.MediaPlayer is WindowsMediaElement mediaPlayer)
+			{
+				mediaPlayer.Volume = volume;
+			}
+		}
 	}
 
 	protected virtual partial void PlatformUpdateShouldKeepScreenOn()
@@ -268,7 +384,20 @@ partial class MediaManager : IDisposable
 		{
 			return;
 		}
-		Dispatcher.Dispatch(() => Player.MediaPlayer.IsMuted = MediaElement.ShouldMute);
+		// Always queued, so it can run after the platform view was disposed, which detached the player (SetMediaPlayer(null))
+		Dispatcher.Dispatch(() =>
+		{
+			if (Player?.MediaPlayer is WindowsMediaElement mediaPlayer)
+			{
+				// PlatformUpdateVolume ignores Volume while muted: unmuting applies the current one
+				if (!MediaElement.ShouldMute)
+				{
+					mediaPlayer.Volume = MediaElement.Volume;
+				}
+
+				mediaPlayer.IsMuted = MediaElement.ShouldMute;
+			}
+		});
 	}
 
 	protected virtual async partial ValueTask PlatformUpdateSource()
@@ -278,15 +407,33 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
-		adaptiveMediaSource?.DownloadRequested -= OnAdaptiveMediaSourceDownloadRequested;
-		adaptiveMediaSource = null;
+		// The native states of a new source are reported as they come
+		lock (playbackStateLock)
+		{
+			keepReportingStopped = isStopSettling = false;
+		}
+
+		keepReportingFailed = false;
+
+		int version;
+		lock (sourceUpdateLock)
+		{
+			version = ++sourceUpdateVersion;
+			adaptiveMediaSource?.DownloadRequested -= OnAdaptiveMediaSourceDownloadRequested;
+			adaptiveMediaSource = null;
+		}
 
 		await Dispatcher.DispatchAsync(() => Player.PosterSource = new BitmapImage());
 
-		if (MediaElement.Source is null)
+		// A newer source update (or Dispose) started while this one awaited: that one applies its source
+		if (!IsCurrentSourceUpdate(version))
 		{
-			Player.Source = null;
-			MediaElement.MediaWidth = MediaElement.MediaHeight = 0;
+			return;
+		}
+
+		if (MediaElement.Source is not MediaSource source)
+		{
+			ClearSource(Player);
 
 			MediaElement.CurrentStateChanged(MediaElementState.None);
 
@@ -297,53 +444,120 @@ partial class MediaManager : IDisposable
 		MediaElement.Duration = TimeSpan.Zero;
 		Player.AutoPlay = MediaElement.ShouldAutoPlay;
 
-		if (MediaElement.Source is UriMediaSource uriMediaSource)
+		// A handler of the events of these resets can set another Source, whose update replaces this one
+		if (!IsCurrentSourceUpdate(version))
+		{
+			return;
+		}
+
+		// Only giving the source to the player is guarded: an exception of the app's own event handlers (those of the resets above, for example)
+		// propagates, and neither takes the media out of the player nor becomes MediaFailed
+		bool hasMedia;
+		try
+		{
+			hasMedia = await SetPlayerSource(Player, source, version);
+		}
+		catch (Exception) when (!IsCurrentSourceUpdate(version))
+		{
+			// Superseded while it was opening its source: the failure concerns a source the MediaElement no longer has
+			return;
+		}
+		catch (Exception ex) when (ex is not OperationCanceledException)
+		{
+			// A source that cannot be applied is reported like a source that cannot be played, through MediaFailed. It replaces the previous media:
+			// that media leaves the player, so that it neither keeps playing nor reports a state over Failed. The awaits above resume on the UI
+			// thread, which the player requires.
+			keepReportingFailed = true;
+			ClearSource(Player);
+			MediaElement.MediaFailed(new MediaFailedEventArgs(ex.Message));
+			Logger.LogError(ex, "{LogMessage}", ex.Message);
+
+			return;
+		}
+
+		// A source without data (a Uri, File, Resource or Stream source with nothing in it) loads nothing, like a null Source: the previous media
+		// leaves the player
+		if (!hasMedia && IsCurrentSourceUpdate(version))
+		{
+			ClearSource(Player);
+
+			MediaElement.CurrentStateChanged(MediaElementState.None);
+		}
+	}
+
+	// Gives the player the media of source and returns true, or returns false for a source without data, which gives it nothing. Throws when the
+	// source cannot be applied, NotSupportedException for a kind of MediaSource it does not know. version is the source update this call belongs to.
+	async ValueTask<bool> SetPlayerSource(MediaPlayerElement player, MediaSource source, int version)
+	{
+		if (source is UriMediaSource uriMediaSource)
 		{
 			var uri = uriMediaSource.Uri?.AbsoluteUri;
-			if (!string.IsNullOrWhiteSpace(uri))
+			if (string.IsNullOrWhiteSpace(uri))
 			{
-				var headers = uriMediaSource.HttpHeaders;
-				if (headers.Count > 0)
-				{
-					await SetUriSourceWithHeaders(new Uri(uri), headers);
-				}
-				else
-				{
-					Player.MediaPlayer.SetUriSource(new Uri(uri));
-				}
+				return false;
 			}
+
+			var headers = uriMediaSource.HttpHeaders;
+			if (headers.Count > 0)
+			{
+				await SetUriSourceWithHeaders(new Uri(uri), headers, version);
+			}
+			else
+			{
+				player.MediaPlayer.SetUriSource(new Uri(uri));
+			}
+
+			return true;
 		}
-		else if (MediaElement.Source is FileMediaSource fileMediaSource)
+
+		if (source is FileMediaSource fileMediaSource)
 		{
 			var filename = fileMediaSource.Path;
-			if (!string.IsNullOrWhiteSpace(filename))
+			if (string.IsNullOrWhiteSpace(filename))
 			{
-				StorageFile storageFile = await StorageFile.GetFileFromPathAsync(filename);
-				Player.MediaPlayer.SetFileSource(storageFile);
+				return false;
 			}
+
+			StorageFile storageFile = await StorageFile.GetFileFromPathAsync(filename);
+			if (IsCurrentSourceUpdate(version))
+			{
+				player.MediaPlayer.SetFileSource(storageFile);
+			}
+
+			return true;
 		}
-		else if (MediaElement.Source is ResourceMediaSource resourceMediaSource)
+
+		if (source is ResourceMediaSource resourceMediaSource)
 		{
 			if (string.IsNullOrWhiteSpace(resourceMediaSource.Path))
 			{
 				Logger.LogInformation("ResourceMediaSource Path is null or empty");
-				return;
+				return false;
 			}
 
 			string path = GetFullAppPackageFilePath(resourceMediaSource.Path);
-			if (!string.IsNullOrWhiteSpace(path))
+			if (string.IsNullOrWhiteSpace(path))
 			{
-				Player.MediaPlayer.SetUriSource(new Uri(path));
+				return false;
 			}
+
+			player.MediaPlayer.SetUriSource(new Uri(path));
+			return true;
 		}
-		else if (MediaElement.Source is StreamMediaSource streamMediaSource)
+
+		if (source is StreamMediaSource streamMediaSource)
 		{
-			if (streamMediaSource.Stream is not null)
+			if (streamMediaSource.Stream is null)
 			{
-				var randomAccessStream = streamMediaSource.Stream.AsRandomAccessStream();
-				Player.Source = WinMediaSource.CreateFromStream(randomAccessStream, streamMediaSource.Stream.GetMimeType());
+				return false;
 			}
+
+			var randomAccessStream = streamMediaSource.Stream.AsRandomAccessStream();
+			player.Source = WinMediaSource.CreateFromStream(randomAccessStream, streamMediaSource.Stream.GetMimeType());
+			return true;
 		}
+
+		throw new NotSupportedException($"{source.GetType().FullName} is not yet supported for {nameof(MediaElement.Source)}");
 	}
 
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()
@@ -364,11 +578,25 @@ partial class MediaManager : IDisposable
 	{
 		if (disposing)
 		{
-			adaptiveMediaSource?.DownloadRequested -= OnAdaptiveMediaSourceDownloadRequested;
-			adaptiveMediaSource = null;
+			lock (sourceUpdateLock)
+			{
+				// A source update that is still opening its source must not apply it any more
+				sourceUpdateVersion++;
+				adaptiveMediaSource?.DownloadRequested -= OnAdaptiveMediaSourceDownloadRequested;
+				adaptiveMediaSource = null;
+			}
 
 			headerHttpClient?.Dispose();
 			headerHttpClient = null;
+
+			lock (metadataLock)
+			{
+				metadata?.Dispose();
+				metadata = null;
+				systemMediaControls = null;
+			}
+
+			mediaPlayer = null;
 
 			if (Player?.MediaPlayer is not null)
 			{
@@ -410,46 +638,128 @@ partial class MediaManager : IDisposable
 		return TValue.IsZero(numericValue);
 	}
 
-	async Task SetUriSourceWithHeaders(Uri uri, IDictionary<string, string> headers)
+	// The start of the media for a negative position, its end for a position beyond it. A live stream has no end (its NaturalDuration is
+	// TimeSpan.MaxValue), and neither has media whose duration the player does not know (zero).
+	static TimeSpan ClampToTheMedia(TimeSpan position, TimeSpan naturalDuration)
 	{
-		if (Player is null)
+		if (position < TimeSpan.Zero)
+		{
+			return TimeSpan.Zero;
+		}
+
+		return naturalDuration > TimeSpan.Zero && position > naturalDuration ? naturalDuration : position;
+	}
+
+	async Task SetUriSourceWithHeaders(Uri uri, IDictionary<string, string> headers, int version)
+	{
+		// version is the source update this call belongs to. A newer update can already have started: the handlers of the PositionChanged and
+		// PropertyChanged events that PlatformUpdateSource raises before this call run synchronously and can set Source again.
+		if (Player is null || !IsCurrentSourceUpdate(version))
 		{
 			return;
 		}
 
-		headerHttpClient ??= new HttpClient();
-		headerHttpClient.DefaultRequestHeaders.Clear();
+		var httpClient = headerHttpClient ??= new HttpClient();
+		httpClient.DefaultRequestHeaders.Clear();
 
 		foreach (var header in headers)
 		{
-			if (!headerHttpClient.DefaultRequestHeaders.TryAppendWithoutValidation(header.Key, header.Value))
+			if (!httpClient.DefaultRequestHeaders.TryAppendWithoutValidation(header.Key, header.Value))
 			{
 				throw new InvalidOperationException($"Failed to append HTTP header '{header.Key}'. The header name may be empty or contain invalid characters.");
 			}
 		}
 
-		var adaptiveResult = await AdaptiveMediaSource.CreateFromUriAsync(uri, headerHttpClient).AsTask().ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+		var adaptiveResult = await AdaptiveMediaSource.CreateFromUriAsync(uri, httpClient).AsTask().ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
 
 		if (adaptiveResult.Status is AdaptiveMediaSourceCreationStatus.Success && adaptiveResult.MediaSource is not null)
 		{
-			adaptiveMediaSource = adaptiveResult.MediaSource;
-			adaptiveMediaSource.DownloadRequested += OnAdaptiveMediaSourceDownloadRequested;
+			var newAdaptiveMediaSource = adaptiveResult.MediaSource;
+			bool isSuperseded;
+			lock (sourceUpdateLock)
+			{
+				// Superseded while the manifest loaded: the newer update has already released the previous adaptive source
+				isSuperseded = version != sourceUpdateVersion;
+				if (!isSuperseded)
+				{
+					adaptiveMediaSource = newAdaptiveMediaSource;
+					adaptiveMediaSource.DownloadRequested += OnAdaptiveMediaSourceDownloadRequested;
+				}
+			}
 
-			var mediaSource = WinMediaSource.CreateFromAdaptiveMediaSource(adaptiveMediaSource);
+			if (isSuperseded)
+			{
+				// Nothing uses the adaptive source this update created: it is closed, not left to the garbage collector
+				newAdaptiveMediaSource.Dispose();
+				return;
+			}
+
+			var mediaSource = WinMediaSource.CreateFromAdaptiveMediaSource(newAdaptiveMediaSource);
 			await Dispatcher.DispatchAsync(() =>
 			{
+				// Checked again on the UI thread, where source updates start: a newer update has also released this adaptive source, so neither
+				// source is used, and both are closed
+				if (!IsCurrentSourceUpdate(version))
+				{
+					mediaSource.Dispose();
+					newAdaptiveMediaSource.Dispose();
+					return;
+				}
+
 				Player.AutoPlay = MediaElement.ShouldAutoPlay;
 				Player.Source = mediaSource;
 			});
 		}
 		else
 		{
-			var stream = await HttpRandomAccessStream.CreateAsync(headerHttpClient, uri);
-			await Dispatcher.DispatchAsync(() =>
+			// The response of the manifest request (here a media file, not a manifest) comes with its body unread, and it holds its connection
+			// until its content is closed: left to the garbage collector, six of them use up the connections that this process may open to that
+			// host (HttpBaseProtocolFilter.MaxConnectionsPerServer), and every later request to the host, the HEAD below included, waits for one
+			// until it times out
+			if (adaptiveResult.HttpResponseMessage is Windows.Web.Http.HttpResponseMessage manifestResponse)
 			{
-				Player.AutoPlay = MediaElement.ShouldAutoPlay;
-				Player.Source = WinMediaSource.CreateFromStream(stream, string.Empty);
-			});
+				manifestResponse.Content?.Dispose();
+				manifestResponse.Dispose();
+			}
+
+			if (IsCurrentSourceUpdate(version))
+			{
+				var stream = await HttpRandomAccessStream.CreateAsync(httpClient, uri);
+				await Dispatcher.DispatchAsync(() =>
+				{
+					if (IsCurrentSourceUpdate(version))
+					{
+						Player.AutoPlay = MediaElement.ShouldAutoPlay;
+						Player.Source = WinMediaSource.CreateFromStream(stream, string.Empty);
+					}
+				});
+			}
+		}
+	}
+
+	bool IsCurrentSourceUpdate(int version) => Volatile.Read(ref sourceUpdateVersion) == version;
+
+	// Takes the media out of the player
+	void ClearSource(MediaPlayerElement player)
+	{
+		player.Source = null;
+
+		// File, Uri and Resource sources are given to the MediaPlayer itself (Set*Source), not through MediaPlayerElement.Source. Its Source can
+		// then still be null, and setting null again is not forwarded to the player, so the player's own source is cleared as well.
+		player.MediaPlayer?.Source = null;
+		MediaElement.MediaWidth = MediaElement.MediaHeight = 0;
+
+		lock (metadataLock)
+		{
+			// Without media there is no system media session (Metadata.SetMetadata switches the controls on again for media with metadata)
+			systemMediaControls?.IsEnabled = false;
+		}
+
+		// Without media nothing plays: the request to keep the screen on that Play() made ends, as Pause() and Stop() end it
+		if (displayActiveRequested)
+		{
+			DisplayRequest.RequestRelease();
+			displayActiveRequested = false;
 		}
 	}
 
@@ -464,6 +774,15 @@ partial class MediaManager : IDisposable
 		try
 		{
 			using var request = new HttpRequestMessage(HttpMethod.Get, args.ResourceUri);
+
+			// A byte-range resource (an #EXT-X-BYTERANGE segment, for example) is a part of a larger file: fetch only that part
+			if (args.ResourceByteRangeOffset is ulong offset)
+			{
+				request.Headers.TryAppendWithoutValidation("Range", args.ResourceByteRangeLength is ulong length and > 0
+					? $"bytes={offset}-{offset + length - 1}"
+					: $"bytes={offset}-");
+			}
+
 			using var response = await headerHttpClient.SendRequestAsync(request).AsTask().ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
 			response.EnsureSuccessStatusCode();
 			args.Result.InputStream = await response.Content.ReadAsInputStreamAsync().AsTask();
@@ -480,18 +799,29 @@ partial class MediaManager : IDisposable
 
 	async ValueTask UpdateMetadata()
 	{
-		if (systemMediaControls is null || Player is null)
+		if (Player is null)
 		{
 			return;
 		}
 
-		metadata ??= new(systemMediaControls, MediaElement, Dispatcher);
-		metadata.SetMetadata(MediaElement);
+		lock (metadataLock)
+		{
+			// No controls: there was no platform view, or the manager was disposed while a MediaOpened was still being handled
+			if (systemMediaControls is null)
+			{
+				return;
+			}
+
+			metadata ??= new(systemMediaControls, MediaElement, Dispatcher);
+			metadata.SetMetadata(MediaElement);
+		}
+
 		if (string.IsNullOrEmpty(MediaElement.MetadataArtworkUrl))
 		{
 			return;
 		}
-		if (!Uri.TryCreate(MediaElement.MetadataArtworkUrl, UriKind.RelativeOrAbsolute, out var metadataArtworkUri))
+		// BitmapImage needs an absolute URI (a relative one cannot be converted to a Windows.Foundation.Uri)
+		if (!Uri.TryCreate(MediaElement.MetadataArtworkUrl, UriKind.Absolute, out var metadataArtworkUri))
 		{
 			Trace.TraceError($"{nameof(MediaElement)} unable to update artwork because {nameof(MediaElement.MetadataArtworkUrl)} is not a valid URI");
 			return;
@@ -532,16 +862,30 @@ partial class MediaManager : IDisposable
 
 		await UpdateMetadata();
 
-		static void SetDuration(in IMediaElement mediaElement, in MediaPlayerElement mediaPlayerElement)
+		static void SetDuration(in IMediaElement mediaElement, in MediaPlayerElement? mediaPlayerElement)
 		{
-			mediaElement.Duration = mediaPlayerElement.MediaPlayer.NaturalDuration == TimeSpan.MaxValue
+			// A queued update can run after the platform view was disposed, which detached the player (SetMediaPlayer(null))
+			if (mediaPlayerElement?.MediaPlayer is not WindowsMediaElement mediaPlayer)
+			{
+				return;
+			}
+
+			mediaElement.Duration = mediaPlayer.NaturalDuration == TimeSpan.MaxValue
 				? TimeSpan.Zero
-				: mediaPlayerElement.MediaPlayer.NaturalDuration;
+				: mediaPlayer.NaturalDuration;
 		}
 	}
 
 	void OnMediaElementMediaEnded(WindowsMediaElement sender, object args)
 	{
+		lock (playbackStateLock)
+		{
+			// The player settles in Paused at the end of the media, which must not overwrite the Stopped state reported here. The media has played
+			// to its end, so a Playing that follows comes from a new play (the transport controls) and is reported.
+			keepReportingStopped = true;
+			isStopSettling = false;
+		}
+
 		MediaElement?.MediaEnded();
 	}
 
@@ -570,15 +914,30 @@ partial class MediaManager : IDisposable
 		Logger?.LogError("{LogMessage}", message);
 	}
 
-	void OnMediaElementIsMutedChanged(WindowsMediaElement sender, object args)
+	// The MediaPlayer raises IsMutedChanged and VolumeChanged on a worker thread, and the event of a change can arrive after the app made another
+	// one: the event of the volume the manager applied when it connected the player can come after the app's next Volume. So the view gets the
+	// player's state when the UI thread handles the event, not the state the event reports, and a late event cannot undo a newer ShouldMute or
+	// Volume (both of which the app sets on the UI thread).
+	void OnMediaElementIsMutedChanged(WindowsMediaElement sender, object args) => Dispatcher.Dispatch(() =>
 	{
-		MediaElement.ShouldMute = sender.IsMuted;
-	}
+		if (GetPlayerInUse() is WindowsMediaElement player)
+		{
+			MediaElement.ShouldMute = player.IsMuted;
+		}
+	});
 
-	void OnMediaElementVolumeChanged(WindowsMediaElement sender, object args)
+	void OnMediaElementVolumeChanged(WindowsMediaElement sender, object args) => Dispatcher.Dispatch(() =>
 	{
-		MediaElement.Volume = sender.Volume;
-	}
+		if (GetPlayerInUse() is WindowsMediaElement player)
+		{
+			MediaElement.Volume = player.Volume;
+		}
+	});
+
+	// The player while the manager and its platform view both use it, else null: an update queued by a player event can run after Dispose, which
+	// removed the event handlers and released the player, or after the platform view was disposed, which closed the player and detached it
+	// (SetMediaPlayer(null)). UI thread only (MediaPlayerElement.MediaPlayer).
+	WindowsMediaElement? GetPlayerInUse() => mediaPlayer is WindowsMediaElement player && ReferenceEquals(Player?.MediaPlayer, player) ? player : null;
 
 	void OnNaturalVideoSizeChanged(MediaPlaybackSession sender, object args)
 	{
@@ -591,15 +950,19 @@ partial class MediaManager : IDisposable
 
 	void OnPlaybackSessionPlaybackRateChanged(MediaPlaybackSession sender, object args)
 	{
-		if (!AreFloatingPointNumbersEqual(MediaElement.Speed, sender.PlaybackRate))
+		// Read here: a queued update can run after the platform view was disposed, which closed the player and this session
+		var playbackRate = sender.PlaybackRate;
+
+		// Speed follows the native rate (the transport controls' playback-rate button) unless they differ by no more than 0.01
+		if (!AreFloatingPointNumbersEqual(MediaElement.Speed, playbackRate))
 		{
 			if (Dispatcher.IsDispatchRequired)
 			{
-				Dispatcher.Dispatch(() => UpdateSpeed(MediaElement, sender.PlaybackRate));
+				Dispatcher.Dispatch(() => UpdateSpeed(MediaElement, playbackRate));
 			}
 			else
 			{
-				UpdateSpeed(MediaElement, sender.PlaybackRate);
+				UpdateSpeed(MediaElement, playbackRate);
 			}
 		}
 
@@ -608,6 +971,12 @@ partial class MediaManager : IDisposable
 
 	void OnPlaybackSessionPlaybackStateChanged(MediaPlaybackSession sender, object args)
 	{
+		// The states of the media that a failed source update took out of the player do not overwrite Failed
+		if (keepReportingFailed)
+		{
+			return;
+		}
+
 		var newState = sender.PlaybackState switch
 		{
 			MediaPlaybackState.Buffering => MediaElementState.Buffering,
@@ -617,13 +986,54 @@ partial class MediaManager : IDisposable
 			_ => MediaElementState.None,
 		};
 
-		MediaElement?.CurrentStateChanged(newState);
+		bool isReported;
+		lock (playbackStateLock)
+		{
+			isReported = IsNativeStateReported(newState);
+		}
+
+		if (isReported)
+		{
+			MediaElement?.CurrentStateChanged(newState);
+		}
+
 		if (sender.PlaybackState == MediaPlaybackState.Playing && IsZero<double>(sender.PlaybackRate))
 		{
 			Dispatcher.Dispatch(() =>
 			{
-				sender.PlaybackRate = 1;
+				// The queued write can run after the platform view was disposed, which closed the player and this session
+				if (Player?.MediaPlayer is not null)
+				{
+					sender.PlaybackRate = 1;
+				}
 			});
+		}
+	}
+
+	// Whether a native state is reported, and what it changes in the latches. Called under playbackStateLock.
+	bool IsNativeStateReported(MediaElementState newState)
+	{
+		if (!keepReportingStopped)
+		{
+			return true;
+		}
+
+		switch (newState)
+		{
+			case MediaElementState.Paused:
+				// The pause of Stop() (or of the end of the media) has taken effect: a Playing from now on comes from a new play
+				isStopSettling = false;
+				return false;
+
+			case MediaElementState.Buffering:
+			case MediaElementState.Playing when isStopSettling:
+				// After Stop() or the end of the media, the player buffers before it settles, and a play that came before Stop() is stale
+				return false;
+
+			default:
+				// A play started after the stop settled without Play() (the transport controls), or the media changes (Opening) or closes (None)
+				keepReportingStopped = isStopSettling = false;
+				return true;
 		}
 	}
 

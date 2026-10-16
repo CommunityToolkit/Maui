@@ -13,6 +13,11 @@ public class AlertView(bool shouldFillAndExpandHorizontally) : UIView
 	readonly List<UIView> children = [];
 	readonly bool shouldFillAndExpandHorizontally = shouldFillAndExpandHorizontally;
 
+	// The constraints that place the view vertically: at the bottom of the safe area, or above or below placedAnchorView
+	NSLayoutConstraint[] verticalConstraints = [];
+	UIView? placedAnchorView;
+	bool isPlacedBelowAnchorView;
+
 	/// <summary>
 	/// Parent UIView
 	/// </summary>
@@ -72,22 +77,60 @@ public class AlertView(bool shouldFillAndExpandHorizontally) : UIView
 	public override void LayoutSubviews()
 	{
 		base.LayoutSubviews();
+		UpdateVerticalConstraints();
+	}
 
-		if (AnchorView is null)
+	// Places the view at the bottom of the safe area or, when it has an anchor, above the anchor if it fits between the top of the safe
+	// area and the anchor, and below the anchor otherwise. This runs on every layout pass, so the constraints are only replaced when the
+	// placement changes (or UIKit removed them together with a view they referred to): constraints added on every pass pile up and
+	// contradict each other.
+	void UpdateVerticalConstraints()
+	{
+		// UIKit throws (NSGenericException) when it activates a constraint between views that have no common ancestor: the view is only
+		// constrained while it is in the parent view, and an anchor that is not, or no longer, in the parent view is ignored
+		if (!IsDescendantOfView(ParentView))
 		{
-			this.SafeBottomAnchor().ConstraintEqualTo(ParentView.SafeBottomAnchor(), -defaultSpacing).Active = true;
-			this.SafeTopAnchor().ConstraintGreaterThanOrEqualTo(ParentView.SafeTopAnchor(), defaultSpacing).Active = true;
+			return;
 		}
-		else if (AnchorView.Superview is not null
-				 && AnchorView.Superview.ConvertRectToView(AnchorView.Frame, null).Top < Container.Frame.Height + SafeAreaLayoutGuide.LayoutFrame.Bottom)
+
+		var anchorView = AnchorView?.IsDescendantOfView(ParentView) is true ? AnchorView : null;
+		var isBelowAnchorView = anchorView is not null && !FitsAbove(anchorView);
+
+		if (verticalConstraints.Length > 0
+			&& anchorView == placedAnchorView
+			&& isBelowAnchorView == isPlacedBelowAnchorView
+			&& Array.TrueForAll(verticalConstraints, static constraint => constraint.Active))
 		{
-			var top = AnchorView.Superview.Frame.Top + AnchorView.Frame.Height + defaultSpacing;
-			this.SafeTopAnchor().ConstraintEqualTo(ParentView.TopAnchor, top).Active = true;
+			return;
 		}
-		else
+
+		NSLayoutConstraint.DeactivateConstraints(verticalConstraints);
+
+		verticalConstraints = anchorView switch
 		{
-			this.SafeBottomAnchor().ConstraintEqualTo(AnchorView.SafeTopAnchor(), 0).Active = true;
-		}
+			null =>
+			[
+				this.SafeBottomAnchor().ConstraintEqualTo(ParentView.SafeBottomAnchor(), -defaultSpacing),
+				this.SafeTopAnchor().ConstraintGreaterThanOrEqualTo(ParentView.SafeTopAnchor(), defaultSpacing)
+			],
+			UIView anchor when isBelowAnchorView => [this.SafeTopAnchor().ConstraintEqualTo(anchor.SafeBottomAnchor(), defaultSpacing)],
+			UIView anchor => [this.SafeBottomAnchor().ConstraintEqualTo(anchor.SafeTopAnchor())]
+		};
+
+		NSLayoutConstraint.ActivateConstraints(verticalConstraints);
+		placedAnchorView = anchorView;
+		isPlacedBelowAnchorView = isBelowAnchorView;
+	}
+
+	// Whether the view fits between the top of the parent's safe area and the anchor. The height comes from Container, which
+	// base.LayoutSubviews has laid out: unlike the view's own frame, it does not depend on where the view is placed (the view grows by
+	// the safe area insets it overlaps) and it is already known on the first layout pass.
+	bool FitsAbove(UIView anchorView)
+	{
+		var height = Container.Frame.Height + (2 * defaultSpacing);
+		var anchorTop = anchorView.ConvertRectToView(anchorView.Bounds, ParentView).Top;
+
+		return anchorTop - height >= ParentView.SafeAreaLayoutGuide.LayoutFrame.Top;
 	}
 
 	void SetParentConstraints()

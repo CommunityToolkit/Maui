@@ -50,7 +50,9 @@ public class RoundedView(nfloat leftPadding, nfloat topPadding, nfloat rightPadd
 	public override void LayoutSubviews()
 	{
 		base.LayoutSubviews();
-		Draw(Frame);
+
+		// The mask is in the coordinate space of the view's own layer: Frame would offset it by the view's position in its superview
+		Draw(Bounds);
 	}
 
 	static CGPath? GetRoundedPath(CGRect rect, nfloat left, nfloat top, nfloat right, nfloat bottom)

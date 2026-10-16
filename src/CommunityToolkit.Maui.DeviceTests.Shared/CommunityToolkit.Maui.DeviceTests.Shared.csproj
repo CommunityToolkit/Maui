@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Helpers and base classes shared by the device-test apps (dotnet/maui's TestUtils.DeviceTests + Core.DeviceTests.Shared
+       equivalent). It does not reference the toolkit: each app adds its own package (see README.md of
+       CommunityToolkit.Maui.DeviceTests). dotnet-maui/ holds the vendored and ported dotnet/maui sources. -->
+
+  <PropertyGroup>
+    <!-- No plain $(NetVersion) target (the code needs a platform): on Linux, where the Apple workloads do not exist, only Android. -->
+    <TargetFrameworks>$(NetVersion)-android</TargetFrameworks>
+    <TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">$(TargetFrameworks);$(NetVersion)-ios;$(NetVersion)-maccatalyst</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);$(NetVersion)-windows10.0.19041.0</TargetFrameworks>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <IsPackable>false</IsPackable>
+    <!-- The xunit package marks every project that references it as a test project; `dotnet test` (Microsoft.Testing.Platform
+         mode, see global.json) would then refuse to run the solution's unit tests. -->
+    <IsTestProject>false</IsTestProject>
+    <RootNamespace>CommunityToolkit.Maui.DeviceTests</RootNamespace>
+    <!-- The xUnit discoverers in dotnet-maui/xUnitCustomizations.cs and xUnitSharedAttributes.cs name this assembly. -->
+    <AssemblyName>CommunityToolkit.Maui.DeviceTests.Shared</AssemblyName>
+    <!-- The vendored files declare their usings; MAUI's implicit usings would make e.g. Application ambiguous on Android. -->
+    <ImplicitUsings>disable</ImplicitUsings>
+    <!-- Windows: CsWinRT generates WinRT marshalling code with unsafe blocks (CsWinRT1030); CsWinRT1028 asks for partial
+         classes, which only matters for trimmed/AOT apps. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);CA1416;CsWinRT1028</NoWarn>
+
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiPackageVersion)" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CommunityToolkit.Maui.DeviceTests.Runners\CommunityToolkit.Maui.DeviceTests.Runners.csproj" />
+  </ItemGroup>
+
+</Project>

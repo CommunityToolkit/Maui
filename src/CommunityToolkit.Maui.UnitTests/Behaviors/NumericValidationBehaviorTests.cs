@@ -39,6 +39,10 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 	[InlineData("de-DE", " ", 0.0, 16.0, 0, 16, null, false)]
 	[InlineData("de-DE", "15.2", 1.0, 16.0, 0, 16, null, false)]
 	[InlineData("de-DE", "1,115.2", 1.0, 2000.0, 0, 16, null, false)]
+	[InlineData("en-US", "15.2 ", 1.0, 16.0, 0, 1, null, true)]
+	[InlineData("en-US", " 15.2 ", 1.0, 16.0, 0, 1, null, true)]
+	[InlineData("en-US", "15.2 ", 1.0, 16.0, 2, 16, null, false)]
+	[InlineData("de-DE", "15,2 ", 1.0, 16.0, 0, 1, null, true)]
 	[InlineData("en-US", "15", 0.0, 100.0, 0, 16, 5.0, true)]
 	[InlineData("en-US", "0", 0.0, 100.0, 0, 16, 5.0, true)]
 	[InlineData("en-US", "100", 0.0, 100.0, 0, 16, 25.0, true)]
@@ -518,6 +522,32 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 			await cts.CancelAsync();
 			await behavior.ForceValidate(cts.Token);
 		});
+	}
+
+	[Fact]
+	public void IsValid_ShouldRevalidate_WhenMaximumValueChangesAfterTheViewLostFocus()
+	{
+		// Arrange
+		var behavior = new NumericValidationBehavior
+		{
+			Flags = ValidationFlags.ValidateOnValueChanged
+		};
+
+		var entry = new Entry();
+		entry.Behaviors.Add(behavior);
+
+		((IView)entry).IsFocused = true;
+		entry.Text = "15";
+		((IView)entry).IsFocused = false;
+
+		// Assert
+		Assert.True(behavior.IsValid);
+
+		// Act
+		behavior.MaximumValue = 10;
+
+		// Assert
+		Assert.False(behavior.IsValid);
 	}
 
 	[Fact]

@@ -34,7 +34,7 @@ public class AvatarViewInterfaceTests : BaseViewTest
 				Uri = new Uri("https://aka.ms/campus.jpg"),
 			}
 		};
-		avatarView.Content.Should().BeOfType<Image>();
+		avatarView.Content.Should().BeAssignableTo<Image>();
 		if (avatarView.Content is Image avatarImage)
 		{
 			avatarImage.Should().NotBeNull();

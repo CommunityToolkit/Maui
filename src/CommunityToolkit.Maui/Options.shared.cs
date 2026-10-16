@@ -152,7 +152,7 @@ public class Options : Core.Options
 	/// Sets the default settings for <see cref="Popup"/>
 	/// </summary>
 	/// <param name="globalPopupSettings"></param>
-	/// <remarks>The settings passed in here will be set on initialization of every new Popup</remarks>
+	/// <remarks>The settings passed in here are the default values of every Popup. A value set on the Popup, a binding or a <see cref="Style"/> takes precedence over them.</remarks>
 	public void SetPopupDefaults(DefaultPopupSettings globalPopupSettings)
 	{
 		DefaultPopupSettings = globalPopupSettings;

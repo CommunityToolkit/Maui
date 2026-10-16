@@ -10,7 +10,7 @@
            x:TypeArguments="system:String">
 
     <mct:Popup.Resources>
-        <mct:AppThemeColor Light="Black" Dark="Black" x:Key="TextColor" />
+        <mct:AppThemeColor Light="Black" Dark="White" x:Key="TextColor" />
     </mct:Popup.Resources>
 
     <VerticalStackLayout Spacing="12">

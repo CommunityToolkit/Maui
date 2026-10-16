@@ -86,6 +86,12 @@ public static partial class DrawingViewService
 	static Bitmap? GetBitmapForLines(IList<IDrawingLine> lines, Paint? background, Size? canvasSize)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
+		if (points.Count is 0)
+		{
+			// nothing to draw (no lines, or lines without points): Stream.Null, as on every platform (Max() below needs a line)
+			return null;
+		}
+
 		var maxLineWidth = lines.Select(x => x.LineWidth).Max();
 		var (image, offset) = GetBitmap(points, maxLineWidth, canvasSize);
 		if (image is null)
@@ -146,14 +152,17 @@ public static partial class DrawingViewService
 			AntiAlias = true
 		};
 
-		if (OperatingSystem.IsAndroidVersionAtLeast(29))
-		{
-			paint.Color = strokeColor.ToPlatform();
-		}
-
+		paint.Color = strokeColor.ToPlatform();
 		paint.SetStyle(APaint.Style.Stroke);
 
 		var pointsCount = points.Count;
+		if (pointsCount is 1)
+		{
+			// a single point (a tap) is a dot of the line width, as MauiDrawingView draws it: with the round cap, DrawPoint draws a circle of the stroke width
+			var point = points.First();
+			canvas.DrawPoint(point.X - offset.Width, point.Y - offset.Height, paint);
+		}
+
 		for (var i = 0; i < pointsCount - 1; i++)
 		{
 			var p1 = points.ElementAt(i);
@@ -180,6 +189,12 @@ public static partial class DrawingViewService
 		{
 			case SolidPaint solidColorBrush:
 				canvas.DrawColor(solidColorBrush.Color.ToPlatform(DrawingViewDefaults.BackgroundColor));
+				break;
+			// Android's gradient shaders need two colors or more: a gradient with a single stop is filled with that color, as iOS, Mac Catalyst and Windows draw it.
+			// A gradient without stops only comes from GradientPaint.SetGradientStops (the GradientStops setter replaces an empty array with two white stops):
+			// it is filled with the default background.
+			case GradientPaint { GradientStops.Length: < 2 } gradientBrush:
+				canvas.DrawColor((gradientBrush.GradientStops.FirstOrDefault()?.Color ?? DrawingViewDefaults.BackgroundColor).ToPlatform());
 				break;
 			case LinearGradientPaint linearGradientBrush:
 				{
@@ -218,10 +233,18 @@ public static partial class DrawingViewService
 						positions[index] = gradientStop.Offset;
 					}
 
+					// as in MAUI's canvas, the radius is relative to the larger side of the image, and a radius of 0 spans the diagonal of the image
+					// (Android's RadialGradient needs a positive radius)
+					var radius = (float)radialGradientBrush.Radius * Math.Max(canvas.Width, canvas.Height);
+					if (radius is not > 0)
+					{
+						radius = (float)Math.Sqrt(((double)canvas.Width * canvas.Width) + ((double)canvas.Height * canvas.Height));
+					}
+
 					var shader = new RadialGradient(
 						(float)radialGradientBrush.Center.X * canvas.Width,
 						(float)radialGradientBrush.Center.Y * canvas.Height,
-						(float)radialGradientBrush.Radius * canvas.Width,
+						radius,
 						colors,
 						positions,
 						Shader.TileMode.Clamp ?? throw new NullReferenceException("TileMode is null"));

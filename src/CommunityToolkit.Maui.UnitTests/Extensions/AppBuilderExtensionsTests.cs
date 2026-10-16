@@ -146,6 +146,7 @@ public class AppBuilderExtensionsTests : BaseTest
 
 	[Theory]
 	[InlineData(unchecked((int)0x8007007E), "Unable to load resource dll. Microsoft.WindowsAppRuntime.Insights.Resource.dll", true)]
+	[InlineData(unchecked((int)0x8007007E), "Unable to load resource dll. MICROSOFT.WINDOWSAPPRUNTIME.INSIGHTS.RESOURCE.DLL", true)]
 	[InlineData(unchecked((int)0x8007007E), "Unable to load resource dll. Other.Resource.dll", false)]
 	[InlineData(unchecked((int)0x80004005), "Unable to load resource dll. Microsoft.WindowsAppRuntime.Insights.Resource.dll", false)]
 	public void IsWindowsAppRuntimeModuleUnavailableReturnsExpectedResult(int hresult, string message, bool expected)

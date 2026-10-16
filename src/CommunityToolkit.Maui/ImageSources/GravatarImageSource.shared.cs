@@ -62,6 +62,11 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 	public partial bool CachingEnabled { get; set; } = GravatarImageSourceDefaults.CachingEnabled;
 
 	/// <summary>Gets or sets the email address.</summary>
+	/// <remarks>
+	/// As Gravatar requires, the address is trimmed and converted to lower case before it is hashed,
+	/// so <c>" User@Example.com "</c> and <c>"user@example.com"</c> load the same image.
+	/// The value of this property is not changed.
+	/// </remarks>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnEmailPropertyChanged))]
 	public partial string? Email { get; set; } = GravatarImageSourceDefaults.Email;
 
@@ -159,6 +164,13 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 		_ => defaultGravatar.ToString().ToLower(),
 	};
 
+	/// <summary>Gets the hash that identifies <paramref name="email"/> on Gravatar.</summary>
+	/// <remarks>
+	/// Gravatar hashes the address with leading and trailing white space removed and in lower case
+	/// (<see href="https://docs.gravatar.com/rest/hash/">Creating identifier (hash)</see>); it still accepts the MD5 hash used here.
+	/// </remarks>
+	static string? GetGravatarHash(string? email) => email?.Trim().ToLowerInvariant().GetMd5Hash(string.Empty).ToLowerInvariant();
+
 	static async void OnDefaultImagePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var gravatarImageSource = (GravatarImageSource)bindable;
@@ -198,7 +210,7 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 
 		Uri = IsEmpty
 			? new Uri($"{GravatarImageSourceDefaults.Url}?s={GravatarSize}")
-			: new Uri($"{GravatarImageSourceDefaults.Url}{email?.GetMd5Hash(string.Empty).ToLowerInvariant()}?s={GravatarSize}&d={DefaultGravatarName(image)}");
+			: new Uri($"{GravatarImageSourceDefaults.Url}{GetGravatarHash(email)}?s={GravatarSize}&d={DefaultGravatarName(image)}");
 
 		return OnUriChanged(token);
 	}

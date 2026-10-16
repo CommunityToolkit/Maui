@@ -106,6 +106,91 @@ public class CharactersValidationBehaviorTests() : BaseBehaviorTest<CharactersVa
 	}
 
 	[Fact]
+	public void IsValid_ShouldRevalidate_WhenMinimumCharacterTypeCountChangesAfterTheViewLostFocus()
+	{
+		// Arrange
+		var (entry, behavior) = CreateEntryWithTypedText("12");
+		((IView)entry).IsFocused = false;
+
+		// Assert
+		Assert.True(behavior.IsValid);
+
+		// Act
+		behavior.MinimumCharacterTypeCount = 5;
+
+		// Assert
+		Assert.False(behavior.IsValid);
+
+		// Act
+		behavior.MinimumCharacterTypeCount = 2;
+
+		// Assert
+		Assert.True(behavior.IsValid);
+	}
+
+	[Fact]
+	public void IsValid_ShouldRevalidate_WhenCharacterTypeChangesAfterTheViewLostFocus()
+	{
+		// Arrange
+		var (entry, behavior) = CreateEntryWithTypedText("ab");
+		((IView)entry).IsFocused = false;
+
+		// Assert
+		Assert.False(behavior.IsValid);
+
+		// Act
+		behavior.CharacterType = CharacterType.Letter;
+
+		// Assert
+		Assert.True(behavior.IsValid);
+	}
+
+	[Fact]
+	public void IsValid_ShouldRevalidate_WhenARuleChangesAfterTheViewIsFocusedAgain()
+	{
+		// Arrange
+		var (entry, behavior) = CreateEntryWithTypedText("12");
+		((IView)entry).IsFocused = false;
+		((IView)entry).IsFocused = true;
+
+		// Act
+		behavior.MinimumCharacterTypeCount = 5;
+
+		// Assert
+		Assert.False(behavior.IsValid);
+	}
+
+	[Fact]
+	public void IsValid_ShouldNotValidate_WhenARuleChangesBeforeTheFirstValidation()
+	{
+		// Arrange
+		var behavior = new CharactersValidationBehavior
+		{
+			Flags = ValidationFlags.ValidateOnUnfocused,
+			CharacterType = CharacterType.Digit,
+			MinimumCharacterTypeCount = 1
+		};
+
+		var entry = new Entry();
+		entry.Behaviors.Add(behavior);
+
+		((IView)entry).IsFocused = true;
+		entry.Text = "1";
+
+		// Act
+		behavior.MinimumCharacterTypeCount = 5;
+
+		// Assert
+		Assert.True(behavior.IsValid);
+
+		// Act
+		((IView)entry).IsFocused = false;
+
+		// Assert
+		Assert.False(behavior.IsValid);
+	}
+
+	[Fact]
 	public void EnsureObjectDisposedExceptionThrownWhenDisposedBehaviorAttachedToVisualElement()
 	{
 		var behavior = new CharactersValidationBehavior();
@@ -135,5 +220,26 @@ public class CharactersValidationBehaviorTests() : BaseBehaviorTest<CharactersVa
 		Assert.Equal(CharactersValidationBehaviorDefaults.CharacterType, charactersValidationBehavior.CharacterType);
 		Assert.Equal(CharactersValidationBehaviorDefaults.MaximumCharacterTypeCount, charactersValidationBehavior.MaximumCharacterTypeCount);
 		Assert.Equal(CharactersValidationBehaviorDefaults.MinimumCharacterTypeCount, charactersValidationBehavior.MinimumCharacterTypeCount);
+	}
+
+	// The settings of the Sample's CharactersValidationBehaviorPage, whose rules are bound to other controls: changing a rule there takes the focus from the Entry
+	static (Entry Entry, CharactersValidationBehavior Behavior) CreateEntryWithTypedText(string text)
+	{
+		var behavior = new CharactersValidationBehavior
+		{
+			Flags = ValidationFlags.ValidateOnValueChanged,
+			CharacterType = CharacterType.Digit,
+			MinimumCharacterTypeCount = 2,
+			MaximumCharacterTypeCount = 20
+		};
+
+		// Set Text after attaching the behavior, so that the validation of the new value completes before the asserts (see NumericValidationBehaviorTests)
+		var entry = new Entry();
+		entry.Behaviors.Add(behavior);
+
+		((IView)entry).IsFocused = true;
+		entry.Text = text;
+
+		return (entry, behavior);
 	}
 }

@@ -51,6 +51,15 @@ public partial class MauiDrawingView
 		remove => weakEventManager.RemoveEventHandler(value);
 	}
 
+	// Raised when the view is in a window: on the main thread after the attach, as MAUI raises VisualElement.Loaded, and only if the view is still
+	// in a window then (iOS and Mac Catalyst raise it). DrawingViewHandler listens again from it after the DrawingView was unloaded. Weak, like the
+	// other events: while the DrawingView is unloaded, the view must not keep its handler alive.
+	internal event EventHandler AttachedToWindow
+	{
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
+	}
+
 	/// <summary>
 	/// Drawing Lines
 	/// </summary>
@@ -79,7 +88,20 @@ public partial class MauiDrawingView
 	/// <summary>
 	/// Used to draw any shape on the canvas
 	/// </summary>
-	public Action<ICanvas, RectF>? DrawAction { get; set; }
+	/// <remarks>
+	/// The action draws above the background and below the lines, in a canvas state of its own: the fill paint of the background is not set on
+	/// the canvas that the action receives, and the canvas state is restored after the action, so the fill paint, stroke settings, transforms and
+	/// other canvas state that the action sets do not apply to the lines.
+	/// </remarks>
+	public Action<ICanvas, RectF>? DrawAction
+	{
+		get;
+		set
+		{
+			field = value;
+			Redraw();
+		}
+	}
 
 	/// <summary>
 	/// Drawable background
@@ -185,8 +207,12 @@ public partial class MauiDrawingView
 	void OnDrawingStarted(PointF point) =>
 		weakEventManager.HandleEvent(this, new MauiDrawingStartedEventArgs(point), nameof(DrawingStarted));
 
+	// DrawingCancelled is declared with MauiDrawingStartedEventArgs, so it is raised with them: the point where the cancelled drawing started
 	void OnDrawingCancelled() =>
-		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(DrawingCancelled));
+		weakEventManager.HandleEvent(this, new MauiDrawingStartedEventArgs(previousPoint), nameof(DrawingCancelled));
+
+	internal void RaiseAttachedToWindow() =>
+		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(AttachedToWindow));
 
 	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => LoadLines();
 
@@ -209,10 +235,20 @@ public partial class MauiDrawingView
 
 		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
+			// The background and the DrawAction each draw in a canvas state of their own, so that the fill paint they set does not reach the strokes
+			// that follow: while a gradient, pattern or image fill paint is set, MAUI's Android canvas (Microsoft.Maui.Graphics 10.0.70 and later)
+			// strokes paths with that paint instead of the stroke color, so a gradient background painted the lines with the gradient and hid them.
+			canvas.SaveState();
 			canvas.SetFillPaint(drawingView.Paint, dirtyRect);
 			canvas.FillRectangle(dirtyRect);
+			canvas.RestoreState();
 
-			drawingView.DrawAction?.Invoke(canvas, dirtyRect);
+			if (drawingView.DrawAction is Action<ICanvas, RectF> drawAction)
+			{
+				canvas.SaveState();
+				drawAction(canvas, dirtyRect);
+				canvas.RestoreState();
+			}
 
 			DrawCurrentLines(canvas, drawingView);
 

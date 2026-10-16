@@ -5,6 +5,9 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MauiDrawingView : PlatformTouchGraphicsView
 {
+	// The UIScrollView ancestors that cannot scroll while a gesture is in progress. They are found when the gesture starts and released when it
+	// ends or is cancelled: kept longer, an ancestor (which retains this view as a subview) and this view keep each other alive, and the list
+	// goes stale when this view moves into another UIScrollView.
 	readonly List<UIScrollView> scrollViewParents = [];
 
 	/// <inheritdoc />
@@ -33,6 +36,7 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		base.TouchesEnded(touches, evt);
 		OnFinish();
 		SetParentTouches(true);
+		scrollViewParents.Clear();
 	}
 
 	/// <inheritdoc />
@@ -41,6 +45,7 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		base.TouchesCancelled(touches, evt);
 		OnCancel();
 		SetParentTouches(true);
+		scrollViewParents.Clear();
 	}
 
 	/// <summary>
@@ -50,6 +55,24 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 	{
 		Drawable = new DrawingViewDrawable(this);
 		Lines.CollectionChanged += OnLinesCollectionChanged;
+	}
+
+	/// <inheritdoc/>
+	public override void MovedToWindow()
+	{
+		base.MovedToWindow();
+
+		// AttachedToWindow is raised after the move, as MAUI raises Loaded, so that its subscribers can change the view hierarchy
+		if (Window is not null)
+		{
+			BeginInvokeOnMainThread(() =>
+			{
+				if (Window is not null)
+				{
+					RaiseAttachedToWindow();
+				}
+			});
+		}
 	}
 
 	/// <inheritdoc/>
@@ -67,6 +90,7 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 	{
 		if (scrollViewParents.Count > 0)
 		{
+			// the gesture that found them has not ended yet
 			return;
 		}
 

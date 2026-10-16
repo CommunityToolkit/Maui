@@ -538,6 +538,47 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		}
 	}
 
+	// Without a platform view (this target framework) nothing clicks a Button for a tap but the behavior: a completed touch raises its Clicked
+	// once, and a cancelled one does not.
+	[Fact]
+	public void VerifyCompletedTouchClicksAButtonWithoutAPlatformViewOnce()
+	{
+		var clicks = 0;
+		var button = new Button();
+		button.Clicked += (_, _) => clicks++;
+		AttachTouchBehaviorToVisualElement(button);
+
+		Assert.False(touchBehavior.IsClickedRaisedByPlatformView);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(1, clicks);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.HandleTouch(TouchStatus.Canceled);
+		Assert.Equal(1, clicks);
+	}
+
+	// The hover status is updated before the hover state: a HoverStateChanged handler reads the status of the same change, and a
+	// HoverStatusChanged handler still reads the previous state.
+	[Fact]
+	public void VerifyHoverStateChangedHandlersSeeTheHoverStatusOfTheSameChange()
+	{
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+
+		var statesSeen = new List<(HoverState State, HoverStatus Status)>();
+		var statusesSeen = new List<(HoverStatus Status, HoverState State)>();
+		touchBehavior.HoverStateChanged += (_, e) => statesSeen.Add((e.State, touchBehavior.CurrentHoverStatus));
+		touchBehavior.HoverStatusChanged += (_, e) => statusesSeen.Add((e.Status, touchBehavior.CurrentHoverState));
+
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		touchBehavior.HandleHover(HoverStatus.Exited);
+
+		Assert.Equal([(HoverState.Hovered, HoverStatus.Entered), (HoverState.Default, HoverStatus.Exited)], statesSeen);
+		Assert.Equal([(HoverStatus.Entered, HoverState.Default), (HoverStatus.Exited, HoverState.Hovered)], statusesSeen);
+	}
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task TestRaiseTouchGestureCompletedEvent()
 	{
@@ -1113,6 +1154,321 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		Assert.Equal(touchBehavior.DefaultBackgroundColor, image.BackgroundColor);
 	}
 
+	// A behavior without background colours leaves an element whose colour comes from a binding or a DynamicResource following that
+	// source while it is attached, before a touch and after one: a colour that the behavior set on the element would take the source's place.
+	[Theory]
+	[InlineData(false, false)]
+	[InlineData(false, true)]
+	[InlineData(true, false)]
+	[InlineData(true, true)]
+	public void VerifyBackgroundColorFromABindingOrDynamicResourceKeepsFollowingItsSource(bool isDynamicResource, bool touchFirst)
+	{
+		const string colorKey = "TouchBackground";
+		var viewModel = new BackgroundColorViewModel { Color = Colors.Red };
+		var view = new MockView { BindingContext = viewModel, Resources = new ResourceDictionary { [colorKey] = Colors.Red } };
+
+		if (isDynamicResource)
+		{
+			view.SetDynamicResource(VisualElement.BackgroundColorProperty, colorKey);
+		}
+		else
+		{
+			view.SetBinding(VisualElement.BackgroundColorProperty, nameof(BackgroundColorViewModel.Color));
+		}
+
+		AttachTouchBehaviorToVisualElement(view);
+		Assert.Equal(Colors.Red, view.BackgroundColor);
+
+		if (touchFirst)
+		{
+			touchBehavior.HandleTouch(TouchStatus.Started);
+			touchBehavior.HandleTouch(TouchStatus.Completed);
+			Assert.Equal(Colors.Red, view.BackgroundColor);
+		}
+
+		if (isDynamicResource)
+		{
+			view.Resources[colorKey] = Colors.Green;
+		}
+		else
+		{
+			viewModel.Color = Colors.Green;
+		}
+
+		Assert.Equal(Colors.Green, view.BackgroundColor);
+	}
+
+	// With a pressed colour configured, the release gives the element back the app's colour and its source: a binding, a DynamicResource or
+	// a Style the behavior's colour hid works again, and a value the app set on the element is set again.
+	[Theory]
+	[InlineData("Binding")]
+	[InlineData("DynamicResource")]
+	[InlineData("LocalValue")]
+	[InlineData("Style")]
+	public void VerifyStateWithoutAColorOfItsOwnGivesTheAppsBackgroundColorBack(string source)
+	{
+		const string colorKey = "TouchBackground";
+		var viewModel = new BackgroundColorViewModel { Color = Colors.Red };
+		var view = new MockView { BindingContext = viewModel, Resources = new ResourceDictionary { [colorKey] = Colors.Red } };
+
+		switch (source)
+		{
+			case "Binding":
+				view.SetBinding(VisualElement.BackgroundColorProperty, nameof(BackgroundColorViewModel.Color));
+				break;
+			case "DynamicResource":
+				view.SetDynamicResource(VisualElement.BackgroundColorProperty, colorKey);
+				break;
+			case "LocalValue":
+				view.BackgroundColor = Colors.Red;
+				break;
+			case "Style":
+				view.Style = CreateBackgroundStyle(Colors.Red);
+				break;
+		}
+
+		touchBehavior.PressedBackgroundColor = Colors.Yellow;
+		AttachTouchBehaviorToVisualElement(view);
+		Assert.Equal(Colors.Red, view.BackgroundColor);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(Colors.Red, view.BackgroundColor);
+
+		switch (source)
+		{
+			case "Binding":
+				viewModel.Color = Colors.Green;
+				break;
+			case "DynamicResource":
+				view.Resources[colorKey] = Colors.Green;
+				break;
+			case "LocalValue":
+				view.BackgroundColor = Colors.Green;
+				break;
+			case "Style":
+				view.Style = CreateBackgroundStyle(Colors.Green);
+				break;
+		}
+
+		Assert.Equal(Colors.Green, view.BackgroundColor);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(Colors.Green, view.BackgroundColor);
+
+		static Style CreateBackgroundStyle(Color color) => new(typeof(MockView))
+		{
+			Setters = { new Setter { Property = VisualElement.BackgroundColorProperty, Value = color } }
+		};
+	}
+
+	// A colour of the app's source that changes while the behavior's hovered colour is shown appears when the hover ends.
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void VerifyAppColorChangedWhileTheHoveredColorIsShownAppearsWhenTheHoverEnds(bool isDynamicResource)
+	{
+		const string colorKey = "TouchBackground";
+		var viewModel = new BackgroundColorViewModel { Color = Colors.Red };
+		var view = new MockView { BindingContext = viewModel, Resources = new ResourceDictionary { [colorKey] = Colors.Red } };
+
+		if (isDynamicResource)
+		{
+			view.SetDynamicResource(VisualElement.BackgroundColorProperty, colorKey);
+		}
+		else
+		{
+			view.SetBinding(VisualElement.BackgroundColorProperty, nameof(BackgroundColorViewModel.Color));
+		}
+
+		touchBehavior.HoveredBackgroundColor = Colors.Yellow;
+		AttachTouchBehaviorToVisualElement(view);
+
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+
+		if (isDynamicResource)
+		{
+			view.Resources[colorKey] = Colors.Green;
+		}
+		else
+		{
+			viewModel.Color = Colors.Green;
+		}
+
+		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(Colors.Green, view.BackgroundColor);
+	}
+
+	// An element without a background colour gets the colour of the attach (TouchBehaviorDefaults.DefaultBackgroundColor) as its own: the
+	// states without a colour of their own and the detach leave it on the element, whether the behavior configures no colour at all, only a
+	// pressed colour or only a hovered colour.
+	[Theory]
+	[InlineData(false, false)]
+	[InlineData(true, false)]
+	[InlineData(false, true)]
+	public void VerifyUnpaintedElementKeepsTheColorOfTheAttach(bool hasPressedColor, bool hasHoveredColor)
+	{
+		var view = new MockView();
+		touchBehavior.PressedScale = 0.9;
+		touchBehavior.PressedBackgroundColor = hasPressedColor ? Colors.Yellow : null;
+		touchBehavior.HoveredBackgroundColor = hasHoveredColor ? Colors.Yellow : null;
+		var attachColor = TouchBehaviorDefaults.DefaultBackgroundColor;
+
+		AttachTouchBehaviorToVisualElement(view);
+		Assert.Equal(attachColor, view.BackgroundColor);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		Assert.Equal(hasPressedColor ? Colors.Yellow : attachColor, view.BackgroundColor);
+
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(attachColor, view.BackgroundColor);
+
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(hasHoveredColor ? Colors.Yellow : attachColor, view.BackgroundColor);
+
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(attachColor, view.BackgroundColor);
+
+		touchBehavior.Element = null;
+		Assert.Equal(attachColor, view.BackgroundColor);
+	}
+
+	// The detach while the behavior's hovered colour is shown (the behavior is removed, or the element is unloaded) gives the element back the
+	// app's colour and its source: a binding, a DynamicResource or a Style the behavior's colour hid works again, and a value the app set on
+	// the element is set again. The next attach starts from the app's current colour.
+	[Theory]
+	[InlineData("Binding")]
+	[InlineData("DynamicResource")]
+	[InlineData("LocalValue")]
+	[InlineData("Style")]
+	public void VerifyDetachWhileAStateColorIsShownGivesTheAppsBackgroundColorBack(string source)
+	{
+		const string colorKey = "TouchBackground";
+		var viewModel = new BackgroundColorViewModel { Color = Colors.Red };
+		var view = new MockView { BindingContext = viewModel, Resources = new ResourceDictionary { [colorKey] = Colors.Red } };
+
+		switch (source)
+		{
+			case "Binding":
+				view.SetBinding(VisualElement.BackgroundColorProperty, nameof(BackgroundColorViewModel.Color));
+				break;
+			case "DynamicResource":
+				view.SetDynamicResource(VisualElement.BackgroundColorProperty, colorKey);
+				break;
+			case "LocalValue":
+				view.BackgroundColor = Colors.Red;
+				break;
+			case "Style":
+				view.Style = CreateBackgroundStyle(Colors.Red);
+				break;
+		}
+
+		touchBehavior.HoveredBackgroundColor = Colors.Yellow;
+		AttachTouchBehaviorToVisualElement(view);
+
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+
+		touchBehavior.Element = null;
+		Assert.Equal(Colors.Red, view.BackgroundColor);
+
+		ChangeAppColor(Colors.Green);
+		Assert.Equal(Colors.Green, view.BackgroundColor);
+
+		// Attached again while the hover goes on: the hovered colour, then the app's current colour when the hover ends
+		touchBehavior.Element = view;
+		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(Colors.Green, view.BackgroundColor);
+
+		ChangeAppColor(Colors.Red);
+		Assert.Equal(Colors.Red, view.BackgroundColor);
+
+		void ChangeAppColor(Color color)
+		{
+			switch (source)
+			{
+				case "Binding":
+					viewModel.Color = color;
+					break;
+				case "DynamicResource":
+					view.Resources[colorKey] = color;
+					break;
+				case "LocalValue":
+					view.BackgroundColor = color;
+					break;
+				case "Style":
+					view.Style = CreateBackgroundStyle(color);
+					break;
+			}
+		}
+
+		static Style CreateBackgroundStyle(Color color) => new(typeof(MockView))
+		{
+			Setters = { new Setter { Property = VisualElement.BackgroundColorProperty, Value = color } }
+		};
+	}
+
+	// A colour that the app sets on the element while the behavior's hovered colour is shown takes the place of the behavior's colour: the
+	// detach leaves it on the element and does not set the app's earlier colour back.
+	[Fact]
+	public void VerifyColorTheAppSetWhileAStateColorIsShownStaysAfterTheDetach()
+	{
+		var view = new MockView { BackgroundColor = Colors.Red };
+		touchBehavior.HoveredBackgroundColor = Colors.Yellow;
+		AttachTouchBehaviorToVisualElement(view);
+
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+
+		view.BackgroundColor = Colors.Green;
+		touchBehavior.Element = null;
+
+		Assert.Equal(Colors.Green, view.BackgroundColor);
+	}
+
+	// A colour that the app set on the element itself comes back in one change, when a state without a colour of its own follows a state
+	// colour and at the detach: the behavior sets it in the place of its own colour, and the element never shows another colour in between.
+	[Fact]
+	public void VerifyAppsOwnColorComesBackInOneChange()
+	{
+		var view = new MockView { BackgroundColor = Colors.Red };
+		touchBehavior.PressedBackgroundColor = Colors.Yellow;
+		AttachTouchBehaviorToVisualElement(view);
+
+		var changes = new List<Color?>();
+		view.PropertyChanged += (_, e) =>
+		{
+			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+			{
+				changes.Add(view.BackgroundColor);
+			}
+		};
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+
+		changes.Clear();
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal([Colors.Red], changes);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+
+		changes.Clear();
+		touchBehavior.Element = null;
+		Assert.Equal([Colors.Red], changes);
+	}
+
 	[Fact]
 	public void VerifyOpacityStateMachine()
 	{
@@ -1308,6 +1664,23 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 	{
 		element.Behaviors.Add(touchBehavior);
 		touchBehavior.Element = element;
+	}
+
+	sealed class BackgroundColorViewModel : System.ComponentModel.INotifyPropertyChanged
+	{
+		Color color = Colors.Transparent;
+
+		public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+		public Color Color
+		{
+			get => color;
+			set
+			{
+				color = value;
+				PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(Color)));
+			}
+		}
 	}
 
 	sealed class TouchBehaviorViewModel

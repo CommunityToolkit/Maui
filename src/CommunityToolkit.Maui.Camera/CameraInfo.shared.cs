@@ -111,9 +111,12 @@ public class CameraInfo(
 	{
 		var resolutionStringBuilder = new StringBuilder();
 
-		foreach (var resolutionSize in SupportedResolutions)
+		for (var i = 0; i < SupportedResolutions.Count; i++)
 		{
-			var endString = resolutionSize == SupportedResolutions.Last()
+			var resolutionSize = SupportedResolutions[i];
+
+			// Compare the position, not the value: a resolution can be listed more than once
+			var endString = i == SupportedResolutions.Count - 1
 				? "."
 				: ", ";
 

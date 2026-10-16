@@ -11,10 +11,14 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Install .NET SDK
+      # The .NET SDK version is in shared.env, next to this file
+      - name: Load shared environment variables
+        uses: ./.github/actions/load-shared-env
+
+      - name: Install .NET SDK v${{ env.LATEST_NET_VERSION }}
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: ${{ env.LATEST_NET_VERSION }}
           dotnet-quality: 'ga'
 
       - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
@@ -30,12 +34,10 @@ jobs:
       - name: Build solution
         run: dotnet build samples/CommunityToolkit.Maui.Sample.slnx
 
-      # CS0612, CS0618, CS0672, CS1062 and CS1064 are excluded to stop `dotnet format` from applying
-      # Roslyn's "Add [Obsolete]" code fix, which adds the [Obsolete] attribute to every member that
-      # uses or overrides an obsolete API (see https://github.com/dotnet/format/issues/1230).
-      # Excluding them here only affects `dotnet format`; `dotnet build` still reports these warnings.
+      # eng/format.ps1 runs dotnet format with the diagnostics excluded that would otherwise make it add [Obsolete] attributes
       - name: Run dotnet format
-        run: dotnet format samples/CommunityToolkit.Maui.Sample.slnx --exclude-diagnostics CS0612 CS0618 CS0672 CS1062 CS1064
+        shell: pwsh
+        run: ./eng/format.ps1
 
       - name: Check for changes
         id: format
