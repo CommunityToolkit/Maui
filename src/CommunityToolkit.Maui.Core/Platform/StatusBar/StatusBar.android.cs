@@ -129,21 +129,16 @@ static partial class StatusBar
 	}
 
 	[SupportedOSPlatform("android35.0")]
-	internal static void SetOverlayColor(in Window window, in PlatformColor platformColor)
+	internal static void AddOverlayIfMissing(Window window, PlatformColor platformColor)
 	{
-		if (window.DecorView.RootView is not ViewGroup decorGroup)
+		// Posted to run after the window's first layout, where Android adds the view that draws the window's own status bar color: an overlay added before that view is drawn under it.
+		window.DecorView.Post(() =>
 		{
-			return;
-		}
-
-		if (OperatingSystem.IsAndroidVersionAtLeast(36))
-		{
-			PlatformSetColor_AndroidApi36AndHigher(window, platformColor, decorGroup);
-		}
-		else
-		{
-			PlatformSetColor_AndroidApi35(window, platformColor, decorGroup);
-		}
+			if (window.DecorView.RootView is ViewGroup decorGroup && decorGroup.FindViewWithTag(statusBarOverlayTag) is null)
+			{
+				ApplyStatusBarOverlay(window, platformColor, decorGroup);
+			}
+		});
 	}
 
 	[SupportedOSPlatform("android"), UnsupportedOSPlatform("android35.0")]

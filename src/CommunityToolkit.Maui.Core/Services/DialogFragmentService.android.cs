@@ -160,21 +160,14 @@ sealed partial class DialogFragmentService : IDialogFragmentService
 			return;
 		}
 
-		var hasOverlayColor = StatusBar.TryGetOverlayColor(hostWindow, out var overlayColor);
-
-		if (activity.ApplicationInfo?.TargetSdkVersion < Android.OS.BuildVersionCodes.VanillaIceCream)
-		{
-			var hostStatusBarColor = hasOverlayColor
-				? new Android.Graphics.Color(AndroidX.Core.Graphics.ColorUtils.CompositeColors(overlayColor.ToArgb(), platformColor.ToArgb()))
-				: platformColor;
-
 #pragma warning disable CA1422 // Obsoleted on API 35+, but still honored for apps that target API 34 or lower
-			dialogWindow.SetStatusBarColor(hostStatusBarColor);
+		dialogWindow.SetStatusBarColor(platformColor);
 #pragma warning restore CA1422
-		}
-		else if (hasOverlayColor)
+
+		// The fragment also starts each time the app returns to the foreground, and by then the modal page may have set its own color.
+		if (StatusBar.TryGetOverlayColor(hostWindow, out var hostOverlayColor))
 		{
-			StatusBar.SetOverlayColor(dialogWindow, overlayColor);
+			StatusBar.AddOverlayIfMissing(dialogWindow, hostOverlayColor);
 		}
 
 		AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(dialogWindow, false);
