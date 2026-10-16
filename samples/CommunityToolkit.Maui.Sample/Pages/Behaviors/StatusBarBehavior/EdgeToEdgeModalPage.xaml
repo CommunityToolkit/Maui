@@ -28,14 +28,14 @@
                         <Label
                             LineBreakMode="WordWrap"
                             Style="{StaticResource LabelSectionText}"
-                            Text="The amber bars at the very top and bottom of this page, then again after switching the status bar to solid red below." />
+                            Text="The status bar color as this page opens, and the amber bars at the very top and bottom of this page. Then the bars again after toggling the switch below." />
                         <Label
                             FontAttributes="Bold"
                             Text="Correct result" />
                         <Label
                             LineBreakMode="WordWrap"
                             Style="{StaticResource LabelSectionText}"
-                            Text="Both bars are completely visible, between the status bar and the navigation bar, before and after the switch." />
+                            Text="The status bar opens with the color of the StatusBarBehavior page: transparent, or solid red from the solid red demo. Both bars are completely visible, between the status bar and the navigation bar, before and after the switch." />
                         <Label
                             FontAttributes="Bold"
                             Text="Bug (#3353)" />
@@ -43,6 +43,13 @@
                             LineBreakMode="WordWrap"
                             Style="{StaticResource LabelSectionText}"
                             Text="The status bar covers the top bar, or the navigation bar covers the bottom bar." />
+                        <Label
+                            FontAttributes="Bold"
+                            Text="Bug (color)" />
+                        <Label
+                            LineBreakMode="WordWrap"
+                            Style="{StaticResource LabelSectionText}"
+                            Text="The status bar opens with a different color than the StatusBarBehavior page." />
                     </VerticalStackLayout>
                 </Border>
 
@@ -54,14 +61,14 @@
                         <Label
                             LineBreakMode="WordWrap"
                             Style="{StaticResource LabelSectionText}"
-                            Text="Transparent is the default. Switch it on for a solid red status bar: the result must be the same." />
+                            Text="On is solid red, off is transparent. The switch starts with the color this page opened with: toggle it, and the result must be the same." />
                         <HorizontalStackLayout Spacing="12">
                             <Label
                                 Text="Solid red"
                                 VerticalOptions="Center" />
                             <Switch
-                                SemanticProperties.Description="Use a solid red status bar"
-                                Toggled="OnSolidStatusBarSwitchToggled" />
+                                x:Name="SolidStatusBarSwitch"
+                                SemanticProperties.Description="Use a solid red status bar" />
                         </HorizontalStackLayout>
                     </VerticalStackLayout>
                 </Border>
