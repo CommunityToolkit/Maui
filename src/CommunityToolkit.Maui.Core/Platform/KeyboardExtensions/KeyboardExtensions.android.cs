@@ -11,7 +11,9 @@ public static partial class KeyboardExtensions
 {
 	static bool HideKeyboard(this AView inputView)
 	{
-		var focusedView = inputView.Context?.GetActivity()?.Window?.CurrentFocus;
+		// A view with the focus can be in a dialog window of its own (a modal page or a Popup) while the activity's window keeps a focused view,
+		// and the input method manager only hides the keyboard for the token of the window that the keyboard serves.
+		var focusedView = inputView.HasFocus ? inputView : inputView.Context?.GetActivity()?.Window?.CurrentFocus;
 		AView tokenView = focusedView ?? inputView;
 
 		// Not disposed: GetSystemService returns the same .NET wrapper of the input method manager to every caller
